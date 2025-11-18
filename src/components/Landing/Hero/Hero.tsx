@@ -1,10 +1,10 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
-import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
-import { JumpInIcon } from 'decentraland-ui2'
+import { CDNSource, JumpInIcon, getCDNRelease } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { isWebpSupported, useImageOptimization, useVideoOptimization } from '../../../hooks/contentful'
 import { useFeatureFlagContext } from '../../../hooks/useFeatureFlagContext'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
@@ -41,6 +41,8 @@ const Hero = memo((props: HeroComponentProps) => {
 
   const [isOnboardingFlowV2, setIsOnboardingFlowV2] = useState(false)
 
+  const trackClick = useTrackClick()
+
   useEffect(() => {
     const checkOnboardingFlowV2 = async () => {
       const isWebGpuSupported = await checkWebGpuSupport()
@@ -57,12 +59,12 @@ const Hero = memo((props: HeroComponentProps) => {
   const handleClick = useCallback(
     async (event: React.MouseEvent<HTMLButtonElement>) => {
       event.preventDefault()
-      // TODO: Track link click
+      trackClick(event)
       setTimeout(() => {
         window.location.href = onboardingUrl
       }, 500)
     },
-    [onboardingUrl]
+    [onboardingUrl, trackClick]
   )
 
   const links = useMemo(() => sanitizeCDNReleaseLinks(getCDNRelease(CDNSource.LAUNCHER)) || {}, [])

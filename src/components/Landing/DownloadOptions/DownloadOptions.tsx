@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useCallback, useEffect, useMemo } from 'react'
 import { Logo } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { useTrackLinkContext } from '../../../hooks/adapters/useTrackLinkContext'
+import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useGetIdentityId } from '../../../hooks/useGetIdentityId'
 import appleLogo from '../../../images/apple-logo.svg'
 import microsoftLogo from '../../../images/microsoft-logo.svg'
@@ -40,7 +40,7 @@ const DownloadOptions = React.memo((props: DownloadOptionsProps) => {
 
   const getIdentityId = useGetIdentityId()
   const l = useFormatMessage()
-  const onClickHandle = useTrackLinkContext()
+  const trackClick = useTrackClick()
 
   const searchParams = new URLSearchParams(window.location.search)
   const event = searchParams.get('event')
@@ -175,7 +175,7 @@ const DownloadOptions = React.memo((props: DownloadOptionsProps) => {
                   href={option.link!}
                   onClick={(event) => {
                     event.preventDefault()
-                    onClickHandle(event)
+                    trackClick(event)
                     onClickDownloadHandler(option)
                   }}
                   event={SegmentEvent.Download}
@@ -202,7 +202,7 @@ const DownloadOptions = React.memo((props: DownloadOptionsProps) => {
                     color="inherit"
                     onClick={(event) => {
                       event.preventDefault()
-                      onClickHandle(event)
+                      trackClick(event)
                       onClickDownloadHandler(option)
                     }}
                     href={option.link}

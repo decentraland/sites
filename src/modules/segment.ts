@@ -17,7 +17,8 @@ enum SegmentEvent {
   MissionsExperience = 'experience',
   MissionsCreate = 'create',
   MissionsInfluence = 'influence',
-  InviteHero = 'Invite Hero'
+  InviteHero = 'Invite Hero',
+  Click = 'Click'
 }
 
 enum SectionViewedTrack {

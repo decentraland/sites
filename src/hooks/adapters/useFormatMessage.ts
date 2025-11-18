@@ -6,7 +6,7 @@ type FormatMessageValues = Record<string, string | number | boolean | ReactNode 
 export function useFormatMessage() {
   const intl = useIntl()
 
-  return (key: string, values?: FormatMessageValues) => {
-    return intl.formatMessage({ id: key }, values)
+  return (key: string, values?: FormatMessageValues): string | ReactNode[] => {
+    return intl.formatMessage({ id: key }, values) as string | ReactNode[]
   }
 }
