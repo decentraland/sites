@@ -34,11 +34,11 @@
   },
   "dependencies": {
     "@contentful/rich-text-types": "^17.2.5",
-    "@dcl/hooks": "^0.0.4",
+    "@dcl/hooks": "^0.1.0",
     "@dcl/ui-env": "^1.5.1",
     "@mui/icons-material": "^7.3.5",
     "@reduxjs/toolkit": "^2.10.1",
-    "decentraland-ui2": "^0.42.1",
+    "decentraland-ui2": "^0.42.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-intersection-observer": "^10.0.0",
