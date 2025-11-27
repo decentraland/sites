@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react'
+
 type BannerButtonProps = {
   href: string
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
-  label: string
+  label: string | ReactNode[]
   eventPlace: string
   metadata: Partial<Record<'title' | 'subtitle' | 'subSection', string>>
   variant?: 'text' | 'outlined' | 'contained'
