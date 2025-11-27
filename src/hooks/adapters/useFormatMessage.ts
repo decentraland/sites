@@ -1,12 +1,19 @@
-import type { ReactNode } from 'react'
+import { useCallback } from 'react'
 import { useIntl } from 'react-intl'
 
-type FormatMessageValues = Record<string, string | number | boolean | ReactNode | ((chunks: ReactNode) => ReactNode) | undefined>
-
-export function useFormatMessage() {
+function useFormatMessage() {
   const intl = useIntl()
 
-  return (key: string, values?: FormatMessageValues): string | ReactNode[] => {
-    return intl.formatMessage({ id: key }, values) as string | ReactNode[]
-  }
+  return useCallback(
+    function format<V extends {}>(id?: string | null, values?: V) {
+      if (!id || !intl.messages[id]) {
+        return id || ''
+      }
+
+      return intl.formatMessage({ id }, { ...values })
+    },
+    [intl]
+  )
 }
+
+export { useFormatMessage, useIntl }
