@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@contentful/rich-text-types": "^17.2.5",
-    "@dcl/hooks": "^0.1.1",
+    "@dcl/hooks": "^0.3.0",
     "@dcl/ui-env": "^1.5.1",
     "@mui/icons-material": "^7.3.5",
     "@reduxjs/toolkit": "^2.10.1",
