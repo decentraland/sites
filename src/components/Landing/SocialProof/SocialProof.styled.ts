@@ -1,10 +1,10 @@
 import { Box, Typography, styled } from 'decentraland-ui2'
 
-const SocialProofSection = styled('section')({
+const SocialProofSection = styled('section')(({ theme }) => ({
   width: '100%',
   padding: 0,
   margin: 0,
-  marginBottom: '150px',
+  marginBottom: theme.spacing(18.75),
   position: 'relative',
   minHeight: '600px',
   display: 'flex',
@@ -12,7 +12,7 @@ const SocialProofSection = styled('section')({
   alignItems: 'center',
   flexDirection: 'column',
   zIndex: 15
-})
+}))
 
 const SocialProofContainer = styled(Box)(({ theme }) => {
   return {

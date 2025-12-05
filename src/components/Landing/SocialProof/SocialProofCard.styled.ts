@@ -15,7 +15,7 @@ const SocialProof = styled(Box)(({ theme }) => {
     display: 'flex',
     flexFlow: 'column nowrap',
     justifyContent: 'center',
-    paddingTop: '0',
+    paddingTop: 0,
     '&::after': {
       content: '""',
       position: 'absolute',
@@ -28,7 +28,7 @@ const SocialProof = styled(Box)(({ theme }) => {
     },
     [theme.breakpoints.down('xs')]: {
       justifyContent: 'flex-end',
-      paddingBottom: '70px',
+      paddingBottom: theme.spacing(8.75),
       '&::after': {
         content: '""',
         position: 'absolute',
@@ -105,7 +105,7 @@ const SocialProofCardBadgeContainer = styled(Box)(({ theme }) => ({
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center',
-  padding: `${theme.spacing(2.75)} ${theme.spacing(2.125)}`,
+  padding: theme.spacing(2.75, 2.125),
   minHeight: '190px',
   background: `linear-gradient(243.96deg, ${dclColors.brand.ruby} -11.67%,${dclColors.brand.yellow} 88.23%)`
 }))
