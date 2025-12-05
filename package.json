@@ -38,7 +38,7 @@
     "@dcl/ui-env": "^1.5.1",
     "@mui/icons-material": "^7.3.5",
     "@reduxjs/toolkit": "^2.10.1",
-    "decentraland-ui2": "^0.43.0",
+    "decentraland-ui2": "^0.44.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-intersection-observer": "^10.0.0",
