@@ -29,10 +29,10 @@ const MissionDetail = React.memo((props: MissionsDetailProps) => {
   const handleMainCTA = useTrackClick()
 
   const handleClick = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
+    (event: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
       event.preventDefault()
       handleMainCTA(event)
-      const href = (event.currentTarget as unknown as HTMLAnchorElement).href || getEnv('ONBOARDING_URL')!
+      const href = event.currentTarget instanceof HTMLAnchorElement ? event.currentTarget.href : getEnv('ONBOARDING_URL')!
       setTimeout(() => {
         window.location.href = href
       }, 500)
