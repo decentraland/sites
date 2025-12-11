@@ -8,24 +8,29 @@ const __dirname = path.dirname(__filename)
 
 // Get all markdown files
 const markdownDir = path.join(__dirname, '../src/pages/markdown')
-const files = fs.readdirSync(markdownDir).filter((file) => file.endsWith('.md'))
-
 const routes = []
 
-files.forEach((file) => {
-  const filePath = path.join(markdownDir, file)
-  const content = fs.readFileSync(filePath, 'utf-8')
-  const { data } = matter(content)
+// Skip if markdown directory doesn't exist yet
+if (fs.existsSync(markdownDir)) {
+  const files = fs.readdirSync(markdownDir).filter((file) => file.endsWith('.md'))
 
-  if (data.menu && data.slug) {
-    routes.push({
-      path: data.slug,
-      title: data.title,
-      description: data.description,
-      image: data.image
-    })
-  }
-})
+  files.forEach((file) => {
+    const filePath = path.join(markdownDir, file)
+    const content = fs.readFileSync(filePath, 'utf-8')
+    const { data } = matter(content)
+
+    if (data.menu && data.slug) {
+      routes.push({
+        path: data.slug,
+        title: data.title,
+        description: data.description,
+        image: data.image
+      })
+    }
+  })
+} else {
+  console.log('No markdown directory found, skipping...')
+}
 
 console.log('Found markdown routes:', routes.map((r) => r.path).join(', '))
 
