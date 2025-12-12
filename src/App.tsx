@@ -1,12 +1,13 @@
-import { Box, Typography } from "decentraland-ui2"
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { IndexPage } from './pages/index.tsx'
 
 const App = () => {
   return (
-    <Box>
-      <Typography variant="h4">
-        This is a Decentraland dApps template
-      </Typography>
-    </Box>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<IndexPage />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
