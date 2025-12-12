@@ -25,8 +25,8 @@ const DownloadImageContainer = styled(Box)(({ theme }) => ({
 }))
 
 const DownloadImage = styled('img', {
-  shouldForwardProp: (prop) => prop !== 'objectFit'
-})<{ objectFit?: 'cover' | 'contain' }>((props) => ({
+  shouldForwardProp: prop => prop !== 'objectFit'
+})<{ objectFit?: 'cover' | 'contain' }>(props => ({
   width: '100%',
   height: '100%',
   objectFit: props.objectFit || 'cover'
@@ -60,7 +60,7 @@ const DownloadSubtitle = styled(Typography)(({ theme }) => ({
   marginTop: theme.spacing(1),
   marginBottom: theme.spacing(2),
   color: theme.palette.text.secondary,
-  '& span': {
+  ['& span']: {
     fontWeight: 700
   },
   [theme.breakpoints.down('sm')]: {
@@ -94,7 +94,7 @@ const DownloadButtonsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
   gap: theme.spacing(2),
-  '@media (max-width: 1830px)': {
+  ['@media (max-width: 1830px)']: {
     flexDirection: 'column',
     alignItems: 'flex-start'
   }
@@ -122,22 +122,22 @@ const DownloadCounts = styled(Typography)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1.5),
-  borderRight: `0.5px solid`,
+  borderRight: '0.5px solid',
   marginTop: `${theme.spacing(1)} !important`,
   paddingRight: theme.spacing(2),
   marginRight: theme.spacing(2),
-  '& svg': {
-    '& path': {
+  ['& svg']: {
+    ['& path']: {
       fill: theme.palette.common.white
     },
-    '& path:nth-of-type(3)': {
+    ['& path:nth-of-type(3)']: {
       fill: theme.palette.common.black
     }
   }
 }))
 
 const DownloadAlternativeTitle = styled(Typography)(({ theme }) => ({
-  '&.MuiTypography-root.MuiTypography-body1': {
+  ['&.MuiTypography-root.MuiTypography-body1']: {
     marginTop: theme.spacing(1),
     marginRight: theme.spacing(1)
   }
@@ -152,11 +152,11 @@ const DownloadAlternativeButtonsWrapper = styled(Box)(({ theme }) => ({
 const DownloadAlternativeButton = styled(Button)({
   display: 'flex',
   alignItems: 'center',
-  '& span.MuiButton-icon.MuiButton-startIcon.MuiButton-iconSizeMedium': {
+  ['& span.MuiButton-icon.MuiButton-startIcon.MuiButton-iconSizeMedium']: {
     marginRight: 0,
     marginLeft: 0
   },
-  '&.MuiButtonBase-root.MuiButton-root.MuiButton-sizeMedium': {
+  ['&.MuiButtonBase-root.MuiButton-root.MuiButton-sizeMedium']: {
     gap: '4px',
     fontWeight: 400,
     fontSize: '1rem',

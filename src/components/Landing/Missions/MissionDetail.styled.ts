@@ -2,8 +2,8 @@ import { Box, Typography, styled } from 'decentraland-ui2'
 import { MissionType } from './Missions.types'
 
 const MissionDetailContainer = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'isInView'
-})<{ isInView: boolean }>((props) => {
+  shouldForwardProp: prop => prop !== 'isInView'
+})<{ isInView: boolean }>(props => {
   const { isInView } = props
   return {
     position: 'absolute',
@@ -16,8 +16,8 @@ const MissionDetailContainer = styled(Box, {
 })
 
 const MissionDetailWrapper = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'isInView' && prop !== 'missionId'
-})<{ isInView: boolean; missionId: MissionType }>((props) => {
+  shouldForwardProp: prop => prop !== 'isInView' && prop !== 'missionId'
+})<{ isInView: boolean; missionId: MissionType }>(props => {
   const { isInView, missionId, theme } = props
 
   let radianColor = 'radial-gradient(50% 61.46% at 0% 49.93%, rgba(211, 78, 222, 0.3) 0%, rgba(211, 78, 222, 0) 75%)'
@@ -57,7 +57,7 @@ const MissionDetailWrapper = styled(Box, {
       display: 'flex',
       flexDirection: 'column',
       paddingTop: isInView ? '44vh' : '100vh',
-      paddingBottom: isInView ? theme.spacing(7) : `-48vh`,
+      paddingBottom: isInView ? theme.spacing(7) : '-48vh',
       right: 0,
       left: 0,
       zIndex: 2,
@@ -75,8 +75,8 @@ const MissionDetailWrapper = styled(Box, {
 })
 
 const MissionTextContainer = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'isInView'
-})<{ isInView: boolean }>((props) => {
+  shouldForwardProp: prop => prop !== 'isInView'
+})<{ isInView: boolean }>(props => {
   const { isInView, theme } = props
 
   return {
@@ -96,8 +96,8 @@ const MissionTextContainer = styled(Box, {
 })
 
 const MissionActionsContainer = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'isInView'
-})<{ isInView: boolean }>((props) => {
+  shouldForwardProp: prop => prop !== 'isInView'
+})<{ isInView: boolean }>(props => {
   const { isInView, theme } = props
 
   return {
@@ -149,7 +149,7 @@ const MissionDescription = styled(Typography)(({ theme }) => {
 })
 
 const MissionJumpInWrapper = styled(Box)({
-  '& .MuiButton-sizeSmall.MuiButton-containedPrimary:not(.Mui-disabled):not(.Mui-focusVisible)': {
+  ['& .MuiButton-sizeSmall.MuiButton-containedPrimary:not(.Mui-disabled):not(.Mui-focusVisible)']: {
     height: '63px',
     width: '246px',
     ['& span']: {

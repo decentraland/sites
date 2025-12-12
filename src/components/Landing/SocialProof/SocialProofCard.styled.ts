@@ -16,7 +16,7 @@ const SocialProof = styled(Box)(({ theme }) => {
     flexFlow: 'column nowrap',
     justifyContent: 'center',
     paddingTop: 0,
-    '&::after': {
+    ['&::after']: {
       content: '""',
       position: 'absolute',
       left: 0,
@@ -29,7 +29,7 @@ const SocialProof = styled(Box)(({ theme }) => {
     [theme.breakpoints.down('xs')]: {
       justifyContent: 'flex-end',
       paddingBottom: theme.spacing(8.75),
-      '&::after': {
+      ['&::after']: {
         content: '""',
         position: 'absolute',
         left: 0,
@@ -62,8 +62,8 @@ const SocialProofContentLoading = styled(Skeleton)({
 })
 
 const SocialProofCardTextContainer = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'hasBackground'
-})<{ hasBackground: boolean }>((props) => {
+  shouldForwardProp: prop => prop !== 'hasBackground'
+})<{ hasBackground: boolean }>(props => {
   const { hasBackground, theme } = props
   let hasBackgroundStyle = {}
   if (hasBackground) {

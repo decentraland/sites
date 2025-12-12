@@ -1,20 +1,20 @@
 import { Box, Button, styled } from 'decentraland-ui2'
 
 const DownloadButtonStyled = styled(Button)(({ theme }) => ({
-  '&.MuiButton-sizeMedium.MuiButton-containedPrimary': {
+  ['&.MuiButton-sizeMedium.MuiButton-containedPrimary']: {
     padding: theme.spacing(3, 6),
     fontSize: '16px',
     fontWeight: 700,
     borderRadius: theme.shape.borderRadius,
     boxShadow: 'rgba(0, 0, 0, 0.4) 0px 2px 8px',
-    '& .MuiButton-icon.MuiButton-endIcon': {
+    ['& .MuiButton-icon.MuiButton-endIcon']: {
       marginLeft: theme.spacing(5.25)
     }
   },
-  '&.MuiButton-sizeMedium.MuiButton-containedPrimary:not(.Mui-disabled):not(.Mui-focusVisible):hover': {
+  ['&.MuiButton-sizeMedium.MuiButton-containedPrimary:not(.Mui-disabled):not(.Mui-focusVisible):hover']: {
     backgroundColor: theme.palette.primary.main
   },
-  '&::before': {
+  ['&::before']: {
     content: "''",
     position: 'absolute',
     top: 0,
@@ -29,8 +29,8 @@ const DownloadButtonStyled = styled(Button)(({ theme }) => ({
       easing: theme.transitions.easing.easeInOut
     })
   },
-  '&:hover': {
-    '&::before': {
+  ['&:hover']: {
+    ['&::before']: {
       opacity: 1,
       top: '-7.5px',
       right: '-7.5px',
@@ -43,7 +43,7 @@ const DownloadButtonStyled = styled(Button)(({ theme }) => ({
 const DownloadButtonLabelContainer = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
-  '& span': {
+  ['& span']: {
     display: 'block',
     fontSize: '14px',
     fontWeight: 400,

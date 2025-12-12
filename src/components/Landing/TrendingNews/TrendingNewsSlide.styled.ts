@@ -13,7 +13,7 @@ const TrendingNewsSlide = styled(Box)(({ theme }) => {
     borderTopRightRadius: '16px',
     borderTopLeftRadius: '16px',
     overflow: 'hidden',
-    '::after': {
+    ['::after']: {
       content: "''",
       position: 'absolute',
       top: '50%',
@@ -81,17 +81,17 @@ const TrendingNewsSlideActionsContainer = styled(Box)(({ theme }) => ({
 
 const TrendingNewsSlideButton = styled(Button)(({ theme }) => {
   return {
-    '&.MuiButton-sizeMedium.MuiButton-outlinedSecondary:not(.Mui-disabled):not(.Mui-focusVisible):not(:hover)': {
+    ['&.MuiButton-sizeMedium.MuiButton-outlinedSecondary:not(.Mui-disabled):not(.Mui-focusVisible):not(:hover)']: {
       color: theme.palette.secondary.main
     },
-    '&.MuiButton-sizeMedium.MuiButton-outlinedSecondary:not(.Mui-disabled):not(.Mui-focusVisible):hover': {
+    ['&.MuiButton-sizeMedium.MuiButton-outlinedSecondary:not(.Mui-disabled):not(.Mui-focusVisible):hover']: {
       color: theme.palette.secondary.main
     },
-    '&.MuiButton-sizeMedium.MuiButton-outlinedSecondary': {
+    ['&.MuiButton-sizeMedium.MuiButton-outlinedSecondary']: {
       height: '54px'
     },
     [theme.breakpoints.down('xs')]: {
-      '&.MuiButton-sizeMedium.MuiButton-outlinedSecondary': {
+      ['&.MuiButton-sizeMedium.MuiButton-outlinedSecondary']: {
         height: '54px'
       }
     }
