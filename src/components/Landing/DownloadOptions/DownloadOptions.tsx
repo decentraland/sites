@@ -1,5 +1,5 @@
-import * as React from 'react'
-import { useCallback, useEffect, useMemo } from 'react'
+import { memo, useCallback, useEffect, useMemo } from 'react'
+import type { ReactNode } from 'react'
 import { Logo } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
@@ -31,11 +31,11 @@ import {
 } from './DownloadOptions.styled'
 
 const imageByOs: Record<string, string> = {
-  Windows: microsoftLogo,
-  macOS: appleLogo
+  [OperativeSystem.WINDOWS]: microsoftLogo,
+  [OperativeSystem.MACOS]: appleLogo
 }
 
-const DownloadOptions = React.memo((props: DownloadOptionsProps) => {
+const DownloadOptions = memo((props: DownloadOptionsProps) => {
   const { userAgentData, title, links, redirectPath, hideLogo, downloadCounts } = props
 
   const getIdentityId = useGetIdentityId()
@@ -143,7 +143,7 @@ const DownloadOptions = React.memo((props: DownloadOptionsProps) => {
           <DownloadTitle variant="h3">{l('page.download.not_available')}</DownloadTitle>
           <DownloadSubtitle>
             {l('page.download.not_available_subtitle', {
-              span: (chunks: React.ReactNode) => <span>{chunks}</span>
+              span: (chunks: ReactNode) => <span>{chunks}</span>
             })}
           </DownloadSubtitle>
           <DownloadUnavailableIFrame
@@ -173,13 +173,13 @@ const DownloadOptions = React.memo((props: DownloadOptionsProps) => {
                 <DownloadButton
                   key={index}
                   href={option.link!}
-                  onClick={(event) => {
+                  onClick={event => {
                     event.preventDefault()
                     trackClick(event)
                     onClickDownloadHandler(option)
                   }}
-                  event={SegmentEvent.Download}
-                  place={SectionViewedTrack.Download}
+                  event={SegmentEvent.DOWNLOAD}
+                  place={SectionViewedTrack.DOWNLOAD}
                   endIcon={<DownloadButtonImage src={option.image} />}
                   label={l('page.download.download')}
                   isFullWidth={false}
@@ -200,7 +200,7 @@ const DownloadOptions = React.memo((props: DownloadOptionsProps) => {
                   <DownloadAlternativeButton
                     variant="text"
                     color="inherit"
-                    onClick={(event) => {
+                    onClick={event => {
                       event.preventDefault()
                       trackClick(event)
                       onClickDownloadHandler(option)

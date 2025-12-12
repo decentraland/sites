@@ -10,7 +10,7 @@ export function useTrackClick() {
       const element = event.currentTarget
       const payload: Record<string, string | null> = {}
 
-      Array.from(element.attributes).forEach((attr) => {
+      Array.from(element.attributes).forEach(attr => {
         if (attr.name.startsWith('data-')) {
           const key = attr.name
             .slice(5)
@@ -21,7 +21,7 @@ export function useTrackClick() {
         }
       })
 
-      track(SegmentEvent.Click, payload)
+      track(SegmentEvent.CLICK, payload)
     },
     [isInitialized, track]
   )
