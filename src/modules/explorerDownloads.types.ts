@@ -1,9 +1,9 @@
 type ExplorerDownloadsData = {
   description: string
-  dimension_descriptions: string[]
-  dimension_display_names: string[]
+  dimensionDescriptions: string[]
+  dimensionDisplayNames: string[]
   dimensions: string[]
-  metric_type: string
+  metricType: string
   name: string
   values: Array<[string, number]>
 }
