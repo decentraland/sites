@@ -1,12 +1,12 @@
-import * as React from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
+import type { MouseEvent } from 'react'
 import { useInView } from 'react-intersection-observer'
 import { JumpIn } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { isWebpSupported, useImageOptimization, useVideoOptimization } from '../../../hooks/contentful'
 import { useFeatureFlagContext } from '../../../hooks/useFeatureFlagContext'
-import { FeatureFlag, OnboardingFlowVariant } from '../../../modules/ff'
+import { FEATURE_FLAG, OnboardingFlowVariant } from '../../../modules/ff'
 import { checkWebGpuSupport } from '../../../modules/webgpu'
 import { BannerButton } from '../../Buttons/BannerButton'
 import { BannerCTAProps } from './BannerCTA.types'
@@ -24,7 +24,7 @@ import {
   BannerCTAVideo
 } from './BannerCTA.styled'
 
-const BannerCTA = React.memo((props: BannerCTAProps) => {
+const BannerCTA = memo((props: BannerCTAProps) => {
   const {
     title,
     subtitle,
@@ -53,14 +53,14 @@ const BannerCTA = React.memo((props: BannerCTAProps) => {
   useEffect(() => {
     const checkOnboardingFlowV2 = async () => {
       const isWebGpuSupported = await checkWebGpuSupport()
-      const onboardingVariant = ff.variants[FeatureFlag.OnboardingFlow] as { name?: string } | undefined
+      const onboardingVariant = ff.variants[FEATURE_FLAG.onboardingFlow] as { name?: string } | undefined
       setIsOnboardingFlowV2(!featureFlagsLoading && onboardingVariant?.name === OnboardingFlowVariant.V2 && isWebGpuSupported)
     }
     checkOnboardingFlowV2()
-  }, [ff.variants[FeatureFlag.OnboardingFlow], featureFlagsLoading])
+  }, [ff.variants[FEATURE_FLAG.onboardingFlow], featureFlagsLoading])
 
   const handleClick = useCallback(
-    (event: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
+    (event: MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
       event.preventDefault()
       handleMainCTA(event)
       const href = event.currentTarget instanceof HTMLAnchorElement ? event.currentTarget.href : url

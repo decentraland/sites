@@ -1,7 +1,7 @@
-import * as React from 'react'
+import { Fragment, memo } from 'react'
 import { DecentralandText } from './WrapDecentralandText.styled'
 
-const WrapDecentralandText = React.memo((props: { text: string }) => {
+const WrapDecentralandText = memo((props: { text: string }) => {
   const { text } = props
 
   const parts = text.split(/(Decentraland)/gi)
@@ -9,12 +9,12 @@ const WrapDecentralandText = React.memo((props: { text: string }) => {
     <>
       {parts.map((part, index) =>
         part.toLowerCase() === 'decentraland' ? (
-          <React.Fragment key={index}>
+          <Fragment key={index}>
             <DecentralandText>{part}</DecentralandText>
             <br />
-          </React.Fragment>
+          </Fragment>
         ) : (
-          <React.Fragment key={index}>{part}</React.Fragment>
+          <Fragment key={index}>{part}</Fragment>
         )
       )}
     </>

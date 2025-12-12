@@ -1,5 +1,5 @@
-import * as React from 'react'
-import { useCallback } from 'react'
+import { memo, useCallback } from 'react'
+import type { MouseEvent } from 'react'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { isWebpSupported, useImageOptimization } from '../../../hooks/contentful'
 import { TrendingNewsSlideProps } from './TrendingNewsSlide.types'
@@ -15,13 +15,13 @@ import {
   TrendingNewsSlideTitle
 } from './TrendingNewsSlide.styled'
 
-const TrendingNewsSlide = React.memo((props: TrendingNewsSlideProps) => {
+const TrendingNewsSlide = memo((props: TrendingNewsSlideProps) => {
   const { title, subtitle, image, buttonLink, buttonLabel, id } = props
 
   const handleMainCTA = useTrackClick()
 
   const handleClick = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+    (event: MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
       event.preventDefault()
       handleMainCTA(event)
       const href = (event.currentTarget as HTMLAnchorElement).href ?? buttonLink

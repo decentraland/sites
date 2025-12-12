@@ -1,9 +1,9 @@
-import * as React from 'react'
+import { memo } from 'react'
 import { ContentfulSocialProofImageEntryFieldsProps } from '../../../features/landing/landing.types'
 import { isWebpSupported, useImageOptimization } from '../../../hooks/contentful'
 import { SocialProofCardContainer, SocialProofCardImage as SocialProofCardImageMedia } from './SocialProofCard.styled'
 
-const SocialProofCardImage = React.memo((props: ContentfulSocialProofImageEntryFieldsProps) => {
+const SocialProofCardImage = memo((props: ContentfulSocialProofImageEntryFieldsProps) => {
   const { image } = props
   const imageOptimized = useImageOptimization(image.url)
   return (

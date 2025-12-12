@@ -1,9 +1,9 @@
-import * as React from 'react'
+import { memo } from 'react'
 import { ContentfulSocialProofVideoEntryFieldsProps } from '../../../features/landing/landing.types'
 import { useVideoOptimization } from '../../../hooks/contentful'
 import { SocialProofCardContainer, SocialProofCardVideoMedia } from './SocialProofCard.styled'
 
-const SocialProofCardVideo = React.memo((props: ContentfulSocialProofVideoEntryFieldsProps) => {
+const SocialProofCardVideo = memo((props: ContentfulSocialProofVideoEntryFieldsProps) => {
   const { video } = props
   const videoOptimized = useVideoOptimization(video.url)
 

@@ -1,4 +1,4 @@
-import * as React from 'react'
+import { memo } from 'react'
 import { Avatar } from 'decentraland-ui2'
 import { ContentfulSocialProofQuoteEntryFieldsProps } from '../../../features/landing/landing.types'
 import { isWebpSupported, useImageOptimization } from '../../../hooks/contentful'
@@ -11,9 +11,9 @@ import {
   SocialProofCardUserName
 } from './SocialProofCard.styled'
 
-const SocialProofCardQuote = React.memo((props: ContentfulSocialProofQuoteEntryFieldsProps) => {
+const SocialProofCardQuote = memo((props: ContentfulSocialProofQuoteEntryFieldsProps) => {
   const { text, userName, userAvatar, quoteBackground } = props
-  const userAvatarOptimized = useImageOptimization(userAvatar.url)!
+  const userAvatarOptimized = useImageOptimization(userAvatar.url)
   return (
     <SocialProofCardContainer>
       <SocialProofCardQuoteContainer sx={{ backgroundColor: quoteBackground }}>

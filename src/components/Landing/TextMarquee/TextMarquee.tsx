@@ -1,15 +1,17 @@
-import * as React from 'react'
-import Marquee from 'react-fast-marquee'
+import { memo } from 'react'
+import { default as marquee } from 'react-fast-marquee'
 import { useMobileMediaQuery } from 'decentraland-ui2/dist/components/Media'
 import { ContentfulTextMarqueeEntry } from '../../../features/landing/landing.types'
 import { TextMarqueeSection } from './TextMarquee.styled'
 
-const TextMarquee = React.memo((props: Pick<ContentfulTextMarqueeEntry, 'text'>) => {
+const MarqueeComponent = marquee
+
+const TextMarquee = memo((props: Pick<ContentfulTextMarqueeEntry, 'text'>) => {
   const { text } = props
   const isMobile = useMobileMediaQuery()
   return (
     <TextMarqueeSection>
-      <Marquee
+      <MarqueeComponent
         speed={50}
         gradient={false}
         style={{
@@ -19,7 +21,7 @@ const TextMarquee = React.memo((props: Pick<ContentfulTextMarqueeEntry, 'text'>)
         }}
       >
         {text.text}
-      </Marquee>
+      </MarqueeComponent>
     </TextMarqueeSection>
   )
 })
