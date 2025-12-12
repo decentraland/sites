@@ -5,7 +5,6 @@ import { Typography, useDesktopMediaQuery } from 'decentraland-ui2'
 import { Hero } from '../components/Landing/Hero'
 import { Layout } from '../components/Layout'
 import { getEnv } from '../config/env'
-import { useAuth } from '../context/Auth/useAuth'
 import {
   useGetLandingCreateAvatarBannerQuery,
   useGetLandingFaqQuery,
@@ -67,8 +66,9 @@ const IndexPage = () => {
   const { data: faq, isLoading: isLoadingFaq } = useGetLandingFaqQuery()
   const { data: textMarquee } = useGetLandingTextMarqueeQuery()
 
-  const { isConnected, isConnecting } = useAuth()
-
+  // TODO: use auth logic from @dcl/core-web3
+  const isConnected = false
+  const isConnecting = false
   const hideNavbar = useMemo(() => {
     if (typeof window === 'undefined') return false
     const searchParams = new URLSearchParams(window.location.search)
