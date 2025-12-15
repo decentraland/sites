@@ -1,13 +1,13 @@
-import * as React from 'react'
-import { useCallback, useEffect, useState } from 'react'
-import ExpandMoreSharpIcon from '@mui/icons-material/ExpandMoreSharp'
+import { createElement, memo, useCallback, useEffect, useState } from 'react'
+import type { MouseEvent } from 'react'
+import { ExpandMoreSharp as expandMoreSharpIcon } from '@mui/icons-material'
 import { useTabletAndBelowMediaQuery } from 'decentraland-ui2/dist/components/Media'
 import { JumpIn } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useFeatureFlagContext } from '../../../hooks/useFeatureFlagContext'
-import { FeatureFlag, OnboardingFlowVariant } from '../../../modules/ff'
+import { FEATURE_FLAG, OnboardingFlowVariant } from '../../../modules/ff'
 import { SectionViewedTrack } from '../../../modules/segment'
 import { checkWebGpuSupport } from '../../../modules/webgpu'
 import { BannerButton } from '../../Buttons/BannerButton'
@@ -23,13 +23,13 @@ import {
   MissionTitle
 } from './MissionDetail.styled'
 
-const MissionDetail = React.memo((props: MissionsDetailProps) => {
+const MissionDetail = memo((props: MissionsDetailProps) => {
   const { title, description, buttonLabel, buttonLink, buttonType, isSectionInView, isLoggedIn, id } = props
 
   const handleMainCTA = useTrackClick()
 
   const handleClick = useCallback(
-    (event: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
+    (event: MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
       event.preventDefault()
       handleMainCTA(event)
       const href = event.currentTarget instanceof HTMLAnchorElement ? event.currentTarget.href : getEnv('ONBOARDING_URL')!
@@ -49,11 +49,11 @@ const MissionDetail = React.memo((props: MissionsDetailProps) => {
   useEffect(() => {
     const checkOnboardingFlowV2 = async () => {
       const isWebGpuSupported = await checkWebGpuSupport()
-      const variant = ff.variants[FeatureFlag.OnboardingFlow] as { name?: string } | undefined
+      const variant = ff.variants[FEATURE_FLAG.onboardingFlow] as { name?: string } | undefined
       setIsOnboardingFlowV2(!featureFlagsLoading && variant?.name === OnboardingFlowVariant.V2 && isWebGpuSupported)
     }
     checkOnboardingFlowV2()
-  }, [ff.variants[FeatureFlag.OnboardingFlow], featureFlagsLoading])
+  }, [ff.variants[FEATURE_FLAG.onboardingFlow], featureFlagsLoading])
 
   return (
     <MissionDetailContainer isInView={isSectionInView}>
@@ -71,7 +71,7 @@ const MissionDetail = React.memo((props: MissionsDetailProps) => {
                 href={getEnv('ONBOARDING_URL')!}
                 onClick={handleClick}
                 label={l('component.landing.missions.jump_in')}
-                eventPlace={SectionViewedTrack.LandingMissions}
+                eventPlace={SectionViewedTrack.LANDING_MISSIONS}
                 metadata={{
                   title: String(l('component.landing.missions.jump_in')),
                   subSection: id
@@ -98,18 +98,14 @@ const MissionDetail = React.memo((props: MissionsDetailProps) => {
               href={buttonLink}
               onClick={handleClick}
               label={buttonLabel}
-              eventPlace={SectionViewedTrack.LandingMissions}
+              eventPlace={SectionViewedTrack.LANDING_MISSIONS}
               metadata={{
                 title,
                 subSection: id
               }}
             />
           )}
-          {isTabletAndBelow && (
-            <MissionButtonBottom>
-              <ExpandMoreSharpIcon fontSize="inherit" />
-            </MissionButtonBottom>
-          )}
+          {isTabletAndBelow && <MissionButtonBottom>{createElement(expandMoreSharpIcon, { fontSize: 'inherit' })}</MissionButtonBottom>}
         </MissionActionsContainer>
       </MissionDetailWrapper>
     </MissionDetailContainer>

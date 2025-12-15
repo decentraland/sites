@@ -33,26 +33,26 @@ const TrendingNewsContainer = styled(Box)(({ theme }) => {
   }
 })
 
-const SwiperStyled = styled(Swiper)({ '&.swiper': { overflow: 'visible' } })
+const SwiperStyled = styled(Swiper)({ ['&.swiper']: { overflow: 'visible' } })
 
 const SwiperSlideStyled = styled(SwiperSlide)(({ theme }) => {
   return {
-    '&.swiper-slide': {
+    ['&.swiper-slide']: {
       borderRadius: '20px',
       overflow: 'hidden'
     },
-    '& .swiper-slide-shadow-left': {
+    ['& .swiper-slide-shadow-left']: {
       backgroundImage: `linear-gradient(to left, ${theme.palette.background.default}, rgba(22, 21, 24, 0))!important`
     },
-    '& .swiper-slide-shadow-right': {
+    ['& .swiper-slide-shadow-right']: {
       backgroundImage: `linear-gradient(to right, ${theme.palette.background.default}, rgba(22, 21, 24, 0))!important`
     }
   }
 })
 
 const NavigationButton = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'direction'
-})<{ direction: 'prev' | 'next' }>((props) => {
+  shouldForwardProp: prop => prop !== 'direction'
+})<{ direction: 'prev' | 'next' }>(props => {
   const { direction, theme } = props
   return {
     position: 'absolute',
@@ -67,11 +67,11 @@ const NavigationButton = styled(Box, {
     alignItems: 'center',
     cursor: 'pointer',
     transition: theme.transitions.create(['background-color']),
-    '& svg': {
+    ['& svg']: {
       color: dclColors.neutral.gray0
     },
     [direction === 'prev' ? 'left' : 'right']: '42px',
-    '&:hover': {
+    ['&:hover']: {
       backgroundColor: '#736f7db8'
     }
   }

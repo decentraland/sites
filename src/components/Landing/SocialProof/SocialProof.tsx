@@ -1,13 +1,13 @@
-import * as React from 'react'
+import { memo } from 'react'
 import { ImageList } from 'decentraland-ui2'
+import { ContentfulSocialProofListProps } from '../../../features/landing/landing.types'
+import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { SocialProofCardImage } from './SocialProofCardImage'
 import { SocialProofCardQuote } from './SocialProofCardQuote'
 import { SocialProofCardVideo } from './SocialProofCardVideo'
-import { ContentfulSocialProofListProps } from '../../../features/landing/landing.types'
-import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { SocialProofContainer, SocialProofSection, SocialProofTitle } from './SocialProof.styled'
 
-const SocialProof = React.memo((props: { socialProof: ContentfulSocialProofListProps }) => {
+const SocialProof = memo((props: { socialProof: ContentfulSocialProofListProps }) => {
   const { list } = props.socialProof
 
   const l = useFormatMessage()

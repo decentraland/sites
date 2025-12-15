@@ -1,8 +1,7 @@
-import * as React from 'react'
-import { useEffect, useRef } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import type { VideoProps } from './Video.types'
 
-const Video = React.memo((props: VideoProps) => {
+const Video = memo((props: VideoProps) => {
   const ref = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {

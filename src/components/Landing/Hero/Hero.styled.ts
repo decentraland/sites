@@ -31,7 +31,7 @@ const HeroWrapper = styled(Box)(({ theme }) => {
     flexFlow: 'column nowrap',
     justifyContent: 'center',
     paddingTop: '0',
-    '&::after': {
+    ['&::after']: {
       content: '""',
       position: 'absolute',
       left: 0,
@@ -43,7 +43,7 @@ const HeroWrapper = styled(Box)(({ theme }) => {
     },
     [theme.breakpoints.down('sm')]: {
       justifyContent: 'flex-end',
-      '&::after': {
+      ['&::after']: {
         content: '""',
         position: 'absolute',
         left: 0,
@@ -144,7 +144,7 @@ const HeroActionsContainer = styled(Box)(({ theme }) => {
       fontSize: '36px',
       marginBottom: theme.spacing(2),
       width: '100%',
-      '& svg.MuiSvgIcon-root.MuiSvgIcon-fontSizeInherit': {
+      ['& svg.MuiSvgIcon-root.MuiSvgIcon-fontSizeInherit']: {
         width: '36px',
         heigth: '36px'
       }
@@ -174,7 +174,7 @@ const HeroImageContainer = styled(Box)<{ imageUrl?: string }>(({ imageUrl, theme
 })
 
 const HeroVideo = styled(Video, {
-  shouldForwardProp: (prop) => prop !== 'isInView'
+  shouldForwardProp: prop => prop !== 'isInView'
 })((props: VideoProps & { isInView: boolean }) => {
   const { isInView } = props
   return {
@@ -188,14 +188,14 @@ const HeroVideo = styled(Video, {
     objectFit: 'cover',
     objectPosition: 'center',
     transition: 'opacity .5s',
-    '@media (max-aspect-ratio: 16 / 9)': {
-      '&.Video': {
+    ['@media (max-aspect-ratio: 16 / 9)']: {
+      ['&.Video']: {
         width: '100%',
         height: '100%'
       }
     },
-    '@media (min-aspect-ratio: 16 / 9)': {
-      '&.Video': {
+    ['@media (min-aspect-ratio: 16 / 9)']: {
+      ['&.Video']: {
         width: '100%',
         height: '100%'
       }

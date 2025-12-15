@@ -5,7 +5,7 @@ function useFormatMessage() {
   const intl = useIntl()
 
   return useCallback(
-    function format<V extends {}>(id?: string | null, values?: V) {
+    function format<TValues extends Record<string, unknown>>(id?: string | null, values?: TValues) {
       if (!id || !intl.messages[id]) {
         return id || ''
       }

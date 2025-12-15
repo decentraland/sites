@@ -1,7 +1,7 @@
-const FeatureFlag = {
-  ConferencePage: 'landing-conference-page',
-  UnityWearablePreview: 'dapps-unity-wearable-preview',
-  OnboardingFlow: 'dapps-onboarding-flow'
+const FEATURE_FLAG = {
+  conferencePage: 'landing-conference-page',
+  unityWearablePreview: 'dapps-unity-wearable-preview',
+  onboardingFlow: 'dapps-onboarding-flow'
 } as const
 
 enum OnboardingFlowVariant {
@@ -9,4 +9,4 @@ enum OnboardingFlowVariant {
   V2 = 'V2'
 }
 
-export { FeatureFlag, OnboardingFlowVariant }
+export { FEATURE_FLAG, OnboardingFlowVariant }

@@ -1,13 +1,16 @@
-import * as React from 'react'
-import { useEffect, useRef } from 'react'
+import { createElement, memo, useEffect, useRef } from 'react'
 import { useInView } from 'react-intersection-observer'
-import ArrowBackIosNewRoundedIcon from '@mui/icons-material/ArrowBackIosNewRounded'
-import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded'
-import { useMobileMediaQuery } from 'decentraland-ui2/dist/components/Media'
+import { ArrowBackIosNewRounded as arrowBackIcon, ArrowForwardIosRounded as arrowForwardIcon } from '@mui/icons-material'
+import type { Swiper as SwiperClass } from 'swiper'
+import 'swiper/css'
+import 'swiper/css/effect-coverflow'
+import 'swiper/css/navigation'
 import { EffectCoverflow, Navigation } from 'swiper/modules'
-import { TrendingNewsSlide } from './TrendingNewsSlide'
+import type { NavigationOptions } from 'swiper/types'
+import { useMobileMediaQuery } from 'decentraland-ui2/dist/components/Media'
 import { ContentfulWhatsHotListProps } from '../../../features/landing/landing.types'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { TrendingNewsSlide } from './TrendingNewsSlide'
 import {
   NavigationButton,
   SwiperSlideStyled,
@@ -16,14 +19,8 @@ import {
   TrendingNewsSection,
   TrendingNewsTitle
 } from './TrendingNews.styled'
-import type { Swiper as SwiperClass } from 'swiper'
-import type { NavigationOptions } from 'swiper/types'
 
-import 'swiper/css'
-import 'swiper/css/effect-coverflow'
-import 'swiper/css/navigation'
-
-const TrendingNews = React.memo((props: ContentfulWhatsHotListProps) => {
+const TrendingNews = memo((props: ContentfulWhatsHotListProps) => {
   const { list } = props
 
   const l = useFormatMessage()
@@ -65,7 +62,7 @@ const TrendingNews = React.memo((props: ContentfulWhatsHotListProps) => {
       <TrendingNewsTitle variant="h3">{l('component.landing.whats_hot.title')}</TrendingNewsTitle>
       <TrendingNewsContainer ref={sectionInView}>
         <SwiperStyled
-          onBeforeInit={(swiper) => {
+          onBeforeInit={swiper => {
             swiperRef.current = swiper
           }}
           modules={[EffectCoverflow, Navigation]}
@@ -93,10 +90,10 @@ const TrendingNews = React.memo((props: ContentfulWhatsHotListProps) => {
         {!isMobile && (
           <>
             <NavigationButton direction="prev" ref={navigationPrevRef}>
-              <ArrowBackIosNewRoundedIcon />
+              {createElement(arrowBackIcon)}
             </NavigationButton>
             <NavigationButton direction="next" ref={navigationNextRef}>
-              <ArrowForwardIosRoundedIcon />
+              {createElement(arrowForwardIcon)}
             </NavigationButton>
           </>
         )}

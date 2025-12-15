@@ -1,10 +1,10 @@
 import { Fragment, memo, useEffect, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
+import { ContentfulMissionsListProps } from '../../../features/landing/landing.types'
+import { SegmentEvent } from '../../../modules/segment'
 import { MissionDetail } from './MissionDetail'
 import { MissionVideo } from './MissionVideo'
 import { MissionView } from './MissionView'
-import { ContentfulMissionsListProps } from '../../../features/landing/landing.types'
-import { SegmentEvent } from '../../../modules/segment'
 import { MissionType } from './Missions.types'
 import { MissionsContainer, MissionsSection } from './Missions.styled'
 
@@ -33,7 +33,7 @@ const Missions = memo((props: { missions: ContentfulMissionsListProps; isDesktop
               <MissionVideo
                 {...mission}
                 isSectionInView={id === activeSection}
-                eventData={SegmentEvent.MissionsExperience}
+                eventData={SegmentEvent.MISSIONS_EXPERIENCE}
                 isDesktop={isDesktop}
               />
             </Fragment>

@@ -13,7 +13,7 @@ const MissionContent = styled(Box)({
 })
 
 const MissionVideo = styled(Video, {
-  shouldForwardProp: (prop) => prop !== 'isInView'
+  shouldForwardProp: prop => prop !== 'isInView'
 })<{ isInView: boolean }>(({ theme, isInView }) => {
   return {
     position: 'sticky',
@@ -28,27 +28,27 @@ const MissionVideo = styled(Video, {
     objectFit: 'cover',
     objectPosition: 'right',
     transition: 'opacity 1s',
-    '@media (max-aspect-ratio: 16 / 9)': {
-      '&.Video': {
+    ['@media (max-aspect-ratio: 16 / 9)']: {
+      ['&.Video']: {
         width: '100vw',
         height: '100vh'
       }
     },
-    '@media (min-aspect-ratio: 16 / 9)': {
-      '&.Video': {
+    ['@media (min-aspect-ratio: 16 / 9)']: {
+      ['&.Video']: {
         width: '100vw',
         height: '100vh'
       }
     },
     [theme.breakpoints.down('sm')]: {
-      '@media (max-aspect-ratio: 16 / 9)': {
-        '&.Video': {
+      ['@media (max-aspect-ratio: 16 / 9)']: {
+        ['&.Video']: {
           width: '100vw',
           height: '100vh',
           paddingBottom: '53vh'
         }
       },
-      '&.Video': {
+      ['&.Video']: {
         objectFit: 'contain',
         objectPosition: 'bottom'
       }
