@@ -1,9 +1,9 @@
-import * as React from 'react'
+import { memo } from 'react'
 import { useVideoOptimization } from '../../../hooks/contentful'
 import { MissionsProps } from './Missions.types'
 import { MissionContent, MissionVideo as StyledMissionVideo } from './MissionVideo.styled'
 
-const MissionVideo = React.memo((props: MissionsProps & { isSectionInView: boolean }) => {
+const MissionVideo = memo((props: MissionsProps & { isSectionInView: boolean }) => {
   const { videoLandscape, videoPortrait, isDesktop, isSectionInView } = props
   const videoLandscapeOptimized = useVideoOptimization(videoLandscape?.url)
   const videoPortraitOptimized = useVideoOptimization(videoPortrait?.url)

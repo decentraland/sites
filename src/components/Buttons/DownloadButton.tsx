@@ -1,9 +1,9 @@
-import * as React from 'react'
+import { memo } from 'react'
 import { CircularProgress } from 'decentraland-ui2'
 import { DownloadButtonProps } from './DownloadButton.types'
 import { DownloadButtonLabelContainer, DownloadButtonStyled } from './DownloadButton.styled'
 
-const DownloadButton = React.memo((props: DownloadButtonProps) => {
+const DownloadButton = memo((props: DownloadButtonProps) => {
   const { href, onClick, label, subLabel, place, event, isFullWidth, startIcon, endIcon, isLoading } = props
   return (
     <DownloadButtonStyled
