@@ -20,7 +20,7 @@ const BannerCTASection = styled('section')(() => {
 })
 
 const BannerCTAContainer = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'isCentered'
+  shouldForwardProp: prop => prop !== 'isCentered'
 })((props: { isCentered: boolean }) => {
   const { isCentered } = props
   const theme = useTheme()
@@ -33,7 +33,7 @@ const BannerCTAContainer = styled(Box, {
     justifyContent: 'center',
     paddingTop: '0',
     alignItems: isCentered ? 'center' : 'flex-start',
-    '&::after': {
+    ['&::after']: {
       content: '""',
       position: 'absolute',
       left: 0,
@@ -41,19 +41,19 @@ const BannerCTAContainer = styled(Box, {
       bottom: '-1px',
       right: isCentered ? 0 : '50%',
       backgroundImage: isCentered
-        ? `radial-gradient(#161518a8, #161518a8)`
+        ? 'radial-gradient(#161518a8, #161518a8)'
         : 'linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))',
       zIndex: 1
     },
     [theme.breakpoints.down('sm')]: {
       justifyContent: isCentered ? 'center' : 'flex-end',
-      '&::after': {
+      ['&::after']: {
         left: 0,
         top: isCentered ? 0 : '50%',
         bottom: 0,
         right: 0,
         backgroundImage: isCentered
-          ? `radial-gradient(#161518a8, #161518a8)`
+          ? 'radial-gradient(#161518a8, #161518a8)'
           : 'linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))'
       }
     },
@@ -75,7 +75,7 @@ const BannerCTAContent = styled(Box)({
 })
 
 const BannerCTATextContainer = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'isCentered' && prop !== 'isInView'
+  shouldForwardProp: prop => prop !== 'isCentered' && prop !== 'isInView'
 })((props: { isCentered: boolean; isInView: boolean }) => {
   const { isCentered, isInView } = props
   const theme = useTheme()
@@ -127,7 +127,7 @@ const BannerCTATextWrapper = styled(Box)(() => {
 })
 
 const BannerCTATitle = styled(Typography, {
-  shouldForwardProp: (prop) => prop !== 'isPositionFirst'
+  shouldForwardProp: prop => prop !== 'isPositionFirst'
 })((props: { isPositionFirst?: boolean }) => {
   const { isPositionFirst } = props
   const theme = useTheme()
@@ -164,7 +164,7 @@ const BannerCTATitle = styled(Typography, {
 })
 
 const BannerCTASubTitle = styled(Typography, {
-  shouldForwardProp: (prop) => prop !== 'isPositionFirst'
+  shouldForwardProp: prop => prop !== 'isPositionFirst'
 })((props: { isPositionFirst: boolean }) => {
   const { isPositionFirst } = props
   const theme = useTheme()
@@ -219,7 +219,7 @@ const BannerCTAImageContainer = styled('div')<{ imageUrl?: string }>(({ imageUrl
 })
 
 const BannerCTAVideo = styled(Video, {
-  shouldForwardProp: (prop) => prop !== 'isInView'
+  shouldForwardProp: prop => prop !== 'isInView'
 })((props: VideoProps & { isInView: boolean }) => {
   const { isInView } = props
   const theme = useTheme()
@@ -236,10 +236,10 @@ const BannerCTAVideo = styled(Video, {
     objectFit: 'cover',
     objectPosition: 'right',
     transition: 'opacity .5s',
-    '&::-webkit-media-controls-fullscreen-button': {
+    ['&::-webkit-media-controls-fullscreen-button']: {
       display: 'none !important'
     },
-    '&::-webkit-media-controls': {
+    ['&::-webkit-media-controls']: {
       display: 'none !important'
     },
     pointerEvents: 'none',
@@ -252,7 +252,7 @@ const BannerCTAVideo = styled(Video, {
 })
 
 const BannerCTAJumpInWrapper = styled(Box)({
-  '& .MuiButton-sizeSmall.MuiButton-containedPrimary:not(.Mui-disabled):not(.Mui-focusVisible)': {
+  ['& .MuiButton-sizeSmall.MuiButton-containedPrimary:not(.Mui-disabled):not(.Mui-focusVisible)']: {
     height: '63px',
     width: '246px',
     ['& span']: {
