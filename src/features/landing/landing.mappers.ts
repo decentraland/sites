@@ -55,12 +55,12 @@ function mapHero(entry: ContentfulEntry): ContentfulHeroEntryFieldsProps | null 
       text:
         (typeof fields.subtitle === 'object' && fields.subtitle?.text) || (typeof fields.subtitle === 'string' ? fields.subtitle : '') || ''
     },
-    buttonPrimaryPreLabel: fields.buttonPrimaryPreLabel as string | undefined,
-    buttonPrimaryLabel: fields.buttonPrimaryLabel as string | undefined,
-    buttonPrimaryLink: fields.buttonPrimaryLink as string | undefined,
-    buttonSecondaryPreLabel: fields.buttonSecondaryPreLabel as string | undefined,
-    buttonSecondaryLabel: fields.buttonSecondaryLabel as string | undefined,
-    buttonSecondaryLink: fields.buttonSecondaryLink as string | undefined,
+    buttonPrimaryPreLabel: fields.buttonPrimaryPreLabel,
+    buttonPrimaryLabel: fields.buttonPrimaryLabel,
+    buttonPrimaryLink: fields.buttonPrimaryLink,
+    buttonSecondaryPreLabel: fields.buttonSecondaryPreLabel,
+    buttonSecondaryLabel: fields.buttonSecondaryLabel,
+    buttonSecondaryLink: fields.buttonSecondaryLink,
     imageLandscape: mapContentfulAsset(fields.imageLandscape) || ({} as ContentfulMediaProps),
     videoLandscape: mapContentfulAsset(fields.videoLandscape) || ({} as ContentfulMediaProps),
     imagePortrait: mapContentfulAsset(fields.imagePortrait) || ({} as ContentfulMediaProps),
@@ -69,7 +69,7 @@ function mapHero(entry: ContentfulEntry): ContentfulHeroEntryFieldsProps | null 
   }
 }
 
-function mapBannerCTA(entry: ContentfulEntry): ContentfulBannerCTAEntryFieldsProps | null {
+function mapBannerCta(entry: ContentfulEntry): ContentfulBannerCTAEntryFieldsProps | null {
   if (!entry || !entry.fields) {
     return null
   }
@@ -92,10 +92,10 @@ function mapBannerCTA(entry: ContentfulEntry): ContentfulBannerCTAEntryFieldsPro
     subtitle: fields.subtitle ?? '',
     buttonLabel: fields.buttonLabel ?? '',
     url: fields.url ?? '',
-    imageLandscape: mapContentfulAsset(fields.imageLandscape as ContentfulEntry | null | undefined) || ({} as ContentfulMediaProps),
-    videoLandscape: mapContentfulAsset(fields.videoLandscape as ContentfulEntry | null | undefined) || ({} as ContentfulMediaProps),
-    imagePortrait: mapContentfulAsset(fields.imagePortrait as ContentfulEntry | null | undefined) || ({} as ContentfulMediaProps),
-    videoPortrait: mapContentfulAsset(fields.videoPortrait as ContentfulEntry | null | undefined) || ({} as ContentfulMediaProps),
+    imageLandscape: mapContentfulAsset(fields.imageLandscape) || ({} as ContentfulMediaProps),
+    videoLandscape: mapContentfulAsset(fields.videoLandscape) || ({} as ContentfulMediaProps),
+    imagePortrait: mapContentfulAsset(fields.imagePortrait) || ({} as ContentfulMediaProps),
+    videoPortrait: mapContentfulAsset(fields.videoPortrait) || ({} as ContentfulMediaProps),
     textPosition: (fields.textPosition as 'left' | 'center') || 'center',
     titlePosition: (fields.titlePosition as 'first' | 'center') || 'center',
     id: entry.sys.id
@@ -129,8 +129,8 @@ function mapMissions(entry: ContentfulEntry): ContentfulMissionsListProps {
       buttonLabel: fields?.buttonLabel ?? '',
       buttonLink: fields?.buttonLink ?? '',
       buttonType: fields?.buttonType || 'primary',
-      videoLandscape: mapContentfulAsset(fields?.videoLandscape as ContentfulEntry | null | undefined) || ({} as ContentfulMediaProps),
-      videoPortrait: mapContentfulAsset(fields?.videoPortrait as ContentfulEntry | null | undefined) || ({} as ContentfulMediaProps),
+      videoLandscape: mapContentfulAsset(fields?.videoLandscape) || ({} as ContentfulMediaProps),
+      videoPortrait: mapContentfulAsset(fields?.videoPortrait) || ({} as ContentfulMediaProps),
       id: item.sys?.id || ''
     }
   })
@@ -161,7 +161,7 @@ function mapWhatsHot(entry: ContentfulEntry): ContentfulWhatsHotListProps {
       },
       buttonLink: fields?.buttonLink ?? '',
       buttonLabel: fields?.buttonLabel ?? '',
-      image: mapContentfulAsset(fields?.image as ContentfulEntry | null | undefined) || ({} as ContentfulMediaProps),
+      image: mapContentfulAsset(fields?.image) || ({} as ContentfulMediaProps),
       id: item.sys?.id || ''
     }
   })
@@ -213,7 +213,7 @@ function mapSocialProof(entry: ContentfulEntry): ContentfulSocialProofListProps 
         image: null as never,
         video: null as never,
         userName: fields?.userName ?? '',
-        userAvatar: mapContentfulAsset(fields?.userAvatar as ContentfulEntry | null | undefined) || ({} as ContentfulMediaProps),
+        userAvatar: mapContentfulAsset(fields?.userAvatar) || ({} as ContentfulMediaProps),
         badgeCount: null as never,
         quoteBackground: fields?.quoteBackground ?? '',
         type: 'quote' as const
@@ -222,7 +222,7 @@ function mapSocialProof(entry: ContentfulEntry): ContentfulSocialProofListProps 
       return {
         ...base,
         image: null as never,
-        video: mapContentfulAsset(fields?.video as ContentfulEntry | null | undefined) || ({} as ContentfulMediaProps),
+        video: mapContentfulAsset(fields?.video) || ({} as ContentfulMediaProps),
         userName: null as never,
         userAvatar: null as never,
         badgeCount: null as never,
@@ -232,7 +232,7 @@ function mapSocialProof(entry: ContentfulEntry): ContentfulSocialProofListProps 
     } else {
       return {
         ...base,
-        image: mapContentfulAsset(fields?.image as ContentfulEntry | null | undefined) || ({} as ContentfulMediaProps),
+        image: mapContentfulAsset(fields?.image) || ({} as ContentfulMediaProps),
         video: null as never,
         userName: null as never,
         userAvatar: null as never,
@@ -272,4 +272,4 @@ function mapFaq(entry: ContentfulEntry): ContentfulFaqEntriesProps {
   return { list }
 }
 
-export { mapBannerCTA, mapContentfulAsset, mapFaq, mapHero, mapMissions, mapSocialProof, mapTextMarquee, mapWhatsHot }
+export { mapBannerCta, mapContentfulAsset, mapFaq, mapHero, mapMissions, mapSocialProof, mapTextMarquee, mapWhatsHot }

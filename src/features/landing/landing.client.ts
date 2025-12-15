@@ -1,8 +1,7 @@
-import { clearContentfulCache, resolveLinks } from './landing.helper'
-import { mapBannerCTA, mapFaq, mapHero, mapMissions, mapSocialProof, mapTextMarquee, mapWhatsHot } from './landing.mappers'
 import { getEnv } from '../../config/env'
 import { api } from '../../services/api'
-import type { ContentfulEntry } from './contentful.types'
+import { clearContentfulCache, resolveLinks } from './landing.helper'
+import { mapBannerCta, mapFaq, mapHero, mapMissions, mapSocialProof, mapTextMarquee, mapWhatsHot } from './landing.mappers'
 import type {
   ContentfulBannerCTAEntryFieldsProps,
   ContentfulFaqEntriesProps,
@@ -15,7 +14,7 @@ import type {
 
 // RTK Query endpoints
 const landingClient = api.injectEndpoints({
-  endpoints: (build) => ({
+  endpoints: build => ({
     // Priority query - just the hero for immediate display
     getLandingHero: build.query<ContentfulHeroEntryFieldsProps, void>({
       query: () => {
@@ -25,7 +24,7 @@ const landingClient = api.injectEndpoints({
       transformResponse: async (entry: unknown) => {
         try {
           const heroEntry = await resolveLinks(entry)
-          const hero = mapHero(heroEntry as ContentfulEntry)
+          const hero = mapHero(heroEntry)
           if (!hero) {
             throw new Error('Failed to map hero content')
           }
@@ -47,7 +46,7 @@ const landingClient = api.injectEndpoints({
       transformResponse: async (entry: unknown) => {
         try {
           const resolved = await resolveLinks(entry)
-          return mapMissions(resolved as ContentfulEntry)
+          return mapMissions(resolved)
         } catch (error) {
           throw {
             status: 'CUSTOM_ERROR',
@@ -65,7 +64,7 @@ const landingClient = api.injectEndpoints({
       transformResponse: async (entry: unknown) => {
         try {
           const resolved = await resolveLinks(entry)
-          return mapFaq(resolved as ContentfulEntry)
+          return mapFaq(resolved)
         } catch (error) {
           throw {
             status: 'CUSTOM_ERROR',
@@ -83,7 +82,7 @@ const landingClient = api.injectEndpoints({
       transformResponse: async (entry: unknown) => {
         try {
           const resolved = await resolveLinks(entry)
-          return mapBannerCTA(resolved as ContentfulEntry)
+          return mapBannerCta(resolved)
         } catch (error) {
           throw {
             status: 'CUSTOM_ERROR',
@@ -101,7 +100,7 @@ const landingClient = api.injectEndpoints({
       transformResponse: async (entry: unknown) => {
         try {
           const resolved = await resolveLinks(entry)
-          return mapBannerCTA(resolved as ContentfulEntry)
+          return mapBannerCta(resolved)
         } catch (error) {
           throw {
             status: 'CUSTOM_ERROR',
@@ -119,7 +118,7 @@ const landingClient = api.injectEndpoints({
       transformResponse: async (entry: unknown) => {
         try {
           const resolved = await resolveLinks(entry)
-          return mapWhatsHot(resolved as ContentfulEntry)
+          return mapWhatsHot(resolved)
         } catch (error) {
           throw {
             status: 'CUSTOM_ERROR',
@@ -137,7 +136,7 @@ const landingClient = api.injectEndpoints({
       transformResponse: async (entry: unknown) => {
         try {
           const resolved = await resolveLinks(entry)
-          return mapTextMarquee(resolved as ContentfulEntry)
+          return mapTextMarquee(resolved)
         } catch (error) {
           throw {
             status: 'CUSTOM_ERROR',
@@ -155,7 +154,7 @@ const landingClient = api.injectEndpoints({
       transformResponse: async (entry: unknown) => {
         try {
           const resolved = await resolveLinks(entry)
-          return mapSocialProof(resolved as ContentfulEntry)
+          return mapSocialProof(resolved)
         } catch (error) {
           throw {
             status: 'CUSTOM_ERROR',

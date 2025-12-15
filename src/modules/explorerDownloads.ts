@@ -1,8 +1,8 @@
 import type { ExplorerDownloadsData, PlatformDownloads } from './explorerDownloads.types'
 
 class ExplorerDownloads {
-  static URL = import.meta.env.VITE_DOWNLOAD_COUNTS_URL || ''
-  static CACHE = new Map<string, ExplorerDownloads>()
+  static url = import.meta.env.VITE_DOWNLOAD_COUNTS_URL || ''
+  static cache = new Map<string, ExplorerDownloads>()
   private baseUrl: string
 
   constructor(url: string) {
@@ -10,15 +10,15 @@ class ExplorerDownloads {
   }
 
   static from(url: string) {
-    if (!this.CACHE.has(url)) {
-      this.CACHE.set(url, new ExplorerDownloads(url))
+    if (!this.cache.has(url)) {
+      this.cache.set(url, new ExplorerDownloads(url))
     }
 
-    return this.CACHE.get(url)!
+    return this.cache.get(url)!
   }
 
   static get() {
-    return this.from(this.URL)
+    return this.from(this.url)
   }
 
   async fetch<T>(path: string): Promise<T> {
@@ -40,13 +40,13 @@ class ExplorerDownloads {
 
   async getWindowsDownloads(): Promise<number> {
     const downloads = await this.getDownloads()
-    const windows = downloads.find((item) => item.platform === 'Windows')
+    const windows = downloads.find(item => item.platform === 'Windows')
     return windows?.downloads || 0
   }
 
   async getMacDownloads(): Promise<number> {
     const downloads = await this.getDownloads()
-    const mac = downloads.find((item) => item.platform === 'Mac')
+    const mac = downloads.find(item => item.platform === 'Mac')
     return mac?.downloads || 0
   }
 
