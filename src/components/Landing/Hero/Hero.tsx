@@ -8,7 +8,7 @@ import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { isWebpSupported, useImageOptimization, useVideoOptimization } from '../../../hooks/contentful'
 import { useFeatureFlagContext } from '../../../hooks/useFeatureFlagContext'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
-import { FeatureFlag, OnboardingFlowVariant } from '../../../modules/ff'
+import { FEATURE_FLAG, OnboardingFlowVariant } from '../../../modules/ff'
 import { formatToShorthand } from '../../../modules/number'
 import { SectionViewedTrack } from '../../../modules/segment'
 import { sanitizeCDNReleaseLinks } from '../../../modules/url'
@@ -46,11 +46,11 @@ const Hero = memo((props: HeroComponentProps) => {
   useEffect(() => {
     const checkOnboardingFlowV2 = async () => {
       const isWebGpuSupported = await checkWebGpuSupport()
-      const variant = ff.variants[FeatureFlag.OnboardingFlow] as { name?: string } | undefined
+      const variant = ff.variants[FEATURE_FLAG.onboardingFlow] as { name?: string } | undefined
       setIsOnboardingFlowV2(!featureFlagsLoading && variant?.name === OnboardingFlowVariant.V2 && isWebGpuSupported)
     }
     checkOnboardingFlowV2()
-  }, [ff.variants[FeatureFlag.OnboardingFlow], featureFlagsLoading])
+  }, [ff.variants[FEATURE_FLAG.onboardingFlow], featureFlagsLoading])
 
   const l = useFormatMessage()
 
@@ -107,7 +107,7 @@ const Hero = memo((props: HeroComponentProps) => {
                     href={onboardingUrl}
                     onClick={handleClick}
                     label={l('component.landing.hero.create_your_avatar')}
-                    place={SectionViewedTrack.LandingHero}
+                    place={SectionViewedTrack.LANDING_HERO}
                     isFullWidth
                     isLoading={isLoadingUserAgentData || isLoading}
                     endIcon={<JumpInIcon fontSize="large" />}
