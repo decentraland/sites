@@ -81,7 +81,7 @@ function optimize(image?: string | null): ImageOptimized {
       originalFormat
     }
   } catch (err) {
-    console.error(`Error optimizing:`, image, err)
+    console.error('Error optimizing:', image, err)
     return {}
   }
 }
@@ -101,7 +101,7 @@ function optimizeVideo(video?: string | null): string | null {
 
     return url.toString()
   } catch (err) {
-    console.error(`Error optimizing video:`, video, err)
+    console.error('Error optimizing video:', video, err)
     return null
   }
 }
