@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react'
-import { getEnv } from '../config/env'
 import type { BaseQueryFn } from '@reduxjs/toolkit/query/react'
+import { getEnv } from '../config/env'
 
 const spaceId = getEnv('CONTENTFUL_SPACE_ID')!
 const environment = getEnv('CONTENTFUL_ENVIRONMENT')!

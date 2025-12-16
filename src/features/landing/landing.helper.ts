@@ -51,7 +51,7 @@ const resolveLinksInFields = async (entry: unknown): Promise<ContentfulEntry> =>
   const fieldPromises = Object.entries(contentfulEntry.fields).map(async ([key, value]) => {
     let resolvedValue: unknown
     if (Array.isArray(value)) {
-      resolvedValue = await Promise.all(value.map((item) => resolveLink(item)))
+      resolvedValue = await Promise.all(value.map(item => resolveLink(item)))
     } else {
       resolvedValue = await resolveLink(value)
     }
@@ -81,7 +81,7 @@ const resolveLink = async (link: unknown): Promise<unknown> => {
     } else if (contentfulLink.sys.linkType === 'Entry') {
       const cacheKey = contentfulLink.sys.id
       if (!entryCache.has(cacheKey)) {
-        const entryPromise = fetchEntry(cacheKey).then((entry) => resolveLinksInFields(entry))
+        const entryPromise = fetchEntry(cacheKey).then(entry => resolveLinksInFields(entry))
         entryCache.set(cacheKey, entryPromise)
       }
       resolved = await entryCache.get(cacheKey)!

@@ -5,12 +5,13 @@ function useFormatMessage() {
   const intl = useIntl()
 
   return useCallback(
-    function format<TValues extends Record<string, unknown>>(id?: string | null, values?: TValues) {
+    function format<TValues extends Record<string, unknown>>(id?: string | null, values?: TValues): string {
       if (!id || !intl.messages[id]) {
         return id || ''
       }
 
-      return intl.formatMessage({ id }, { ...values })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return intl.formatMessage({ id }, values as any)
     },
     [intl]
   )

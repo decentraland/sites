@@ -52,10 +52,12 @@ function getPublicUrls() {
   const isStatic = !!process.env.GEN_STATIC_LOCAL
   const isCI = !!process.env.CI
   const isVercel = isCI && !!process.env.VERCEL
-  const isCDN = !isStatic && isCI && !isVercel
+  const isCloudflarePages = isCI && !!process.env.CF_PAGES
+  const isCDN = !isStatic && isCI && !isVercel && !isCloudflarePages
   console.log("is static", isStatic)
   console.log("is CI", isCI)
   console.log("is Vercel", isVercel)
+  console.log("is Cloudflare Pages", isCloudflarePages)
   console.log("is CDN", isCDN)
   if (isCDN) {
     // master/main branch, also releases
@@ -65,8 +67,8 @@ function getPublicUrls() {
       VITE_BASE_URL: cdnUrl,
     }
   }
-  // localhost
-  console.log("Using empty pubic url")
+  // localhost, Vercel, or Cloudflare Pages
+  console.log("Using empty public url")
   return {
     VITE_BASE_URL: "",
   }
