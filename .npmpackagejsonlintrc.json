@@ -1,7 +1,19 @@
 {
   "rules": {
-    "prefer-caret-version-dependencies": "error",
-    "prefer-caret-version-devDependencies": "error",
+    "prefer-absolute-version-dependencies": [
+      "warning",
+      {
+        "exceptions": ["@dcl/hooks", "@dcl/schemas", "@dcl/ui-env", "decentraland-ui2"]
+      }
+    ],
+    "prefer-absolute-version-devDependencies": [
+      "warning",
+      {
+        "exceptions": ["@dcl/eslint-config"]
+      }
+    ],
+    "no-file-dependencies": "error",
+    "no-git-dependencies": "error",
     "no-duplicate-properties": "error",
     "prefer-property-order": [
       "error",
