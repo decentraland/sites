@@ -69,7 +69,7 @@ const Hero = memo((props: HeroComponentProps) => {
 
   const links = useMemo(() => sanitizeCDNReleaseLinks(getCDNRelease(CDNSource.LAUNCHER)) || {}, [])
 
-  const [, userAgentData] = useAdvancedUserAgentData()
+  const [isLoadingUserAgentData, userAgentData] = useAdvancedUserAgentData()
 
   const [downloads, downloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
 
