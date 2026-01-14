@@ -69,7 +69,6 @@ const Hero = memo((props: HeroComponentProps) => {
 
   const links = useMemo(() => sanitizeCDNReleaseLinks(getCDNRelease(CDNSource.LAUNCHER)) || {}, [])
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoadingUserAgentData, userAgentData] = useAdvancedUserAgentData()
 
   const [downloads, downloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])

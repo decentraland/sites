@@ -90,7 +90,7 @@ const resolveLink = async (link: unknown): Promise<unknown> => {
     }
 
     return resolved
-  } catch (error) {
+  } catch {
     return link
   }
 }
