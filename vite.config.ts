@@ -16,13 +16,21 @@ export default defineConfig(({ command, mode }) => {
     ],
     ...(command === 'build' ? { base: envVariables.VITE_BASE_URL } : undefined),
     server: {
+      /* eslint-disable @typescript-eslint/naming-convention */
       proxy: {
         '/api/cms': {
           target: 'https://cms.decentraland.org',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/cms/, '')
+          rewrite: path => path.replace(/^\/api\/cms/, '')
+        },
+        '/auth': {
+          target: 'https://decentraland.zone',
+          changeOrigin: true,
+          secure: false,
+          ws: true
         }
       }
+      /* eslint-enable @typescript-eslint/naming-convention */
     }
   }
 })
