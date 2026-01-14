@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@contentful/rich-text-types": "17.2.5",
-    "@dcl/hooks": "^0.3.0",
+    "@dcl/hooks": "^1.0.0",
     "@mui/icons-material": "7.3.5",
     "react-fast-marquee": "1.6.5",
     "react-intersection-observer": "10.0.0",
