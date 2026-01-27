@@ -1,3 +1,4 @@
+import { clearWagmiState } from '@dcl/core-web3'
 import { getEnv } from '../config/env'
 
 /**
@@ -24,23 +25,6 @@ function buildAuthRedirectUrl(path: string, queryParams?: Record<string, string>
 
   const pathWithQuery = url.pathname + url.search
   return `${basePath}${pathWithQuery}`
-}
-
-/**
- * Clears wagmi localStorage state before redirecting to auth.
- *
- * wagmi trusts its stored state; if it stored a disconnected state, it may not
- * re-check authorization after returning from auth. Clearing ensures a fresh reconnect.
- */
-function clearWagmiState(): void {
-  const keysToRemove: string[] = []
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i)
-    if (key?.startsWith('wagmi.')) {
-      keysToRemove.push(key)
-    }
-  }
-  keysToRemove.forEach(key => localStorage.removeItem(key))
 }
 
 /**
