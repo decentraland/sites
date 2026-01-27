@@ -19,5 +19,8 @@
   "CONTENTFUL_LANDING_INVITE_HERO_ID": "4dQBwONGwS3YbJlPgaGSpg",
   "CONTENTFUL_LANDING_INVITE_SECOND_HERO_ID": "4p5Q3yWrY66YGb7Motl4ed",
   "ONBOARDING_URL": "https://decentraland.org/auth/login/?newUser&redirectTo=https%3A%2F%2Fdecentraland.org%2Fdownload",
-  "AUTH_URL": "https://decentraland.org/auth"
+  "AUTH_URL": "https://decentraland.org/auth",
+  "MAGIC_API_KEY": "pk_live_212568025B158355",
+  "PEER_URL": "https://peer.decentraland.org",
+  "WALLET_CONNECT_PROJECT_ID": "61570c542c2d66c659492e5b24a41522"
 }
