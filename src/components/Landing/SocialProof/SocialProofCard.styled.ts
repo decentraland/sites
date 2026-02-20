@@ -143,18 +143,26 @@ const SocialProofCardVideoMedia = styled(Video)({
   display: 'block'
 })
 
+const SocialProofCardVideoPlaceholder = styled(Box, {
+  shouldForwardProp: prop => prop !== 'aspectRatio'
+})<{ aspectRatio: number }>(({ aspectRatio }) => ({
+  width: '100%',
+  aspectRatio: String(aspectRatio)
+}))
+
 export {
-  SocialProofCardContainer,
   SocialProof,
+  SocialProofCardBadgeContainer,
+  SocialProofCardContainer,
+  SocialProofCardImage,
+  SocialProofCardQuoteContainer,
+  SocialProofCardQuoteText,
+  SocialProofCardTextContainer,
+  SocialProofCardUserContainer,
+  SocialProofCardUserName,
+  SocialProofCardVideoMedia,
+  SocialProofCardVideoPlaceholder,
   SocialProofContent,
   SocialProofContentLoading,
-  SocialProofCardTextContainer,
-  SocialProofCardQuoteContainer,
-  SocialProofCardBadgeContainer,
-  SocialProofCardUserContainer,
-  SocialProofCardQuoteText,
-  SocialProofCardUserName,
-  SocialProofTitle,
-  SocialProofCardImage,
-  SocialProofCardVideoMedia
+  SocialProofTitle
 }
