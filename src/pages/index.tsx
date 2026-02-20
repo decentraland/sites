@@ -1,6 +1,6 @@
 import { Suspense, lazy, useMemo } from 'react'
+import { useWallet } from '@dcl/core-web3'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
-import { FooterLanding } from 'decentraland-ui2/dist/components/FooterLanding/FooterLanding'
 import { Typography, useDesktopMediaQuery } from 'decentraland-ui2'
 import { Hero } from '../components/Landing/Hero'
 import { Layout } from '../components/Layout'
@@ -71,9 +71,7 @@ const IndexPage = () => {
   const { data: faq, isLoading: isLoadingFaq } = useGetLandingFaqQuery()
   const { data: textMarquee } = useGetLandingTextMarqueeQuery()
 
-  // TODO: use auth logic from @dcl/core-web3
-  const isConnected = false
-  const isConnecting = false
+  const { isConnected, isConnecting } = useWallet()
   const hideNavbar = useMemo(() => {
     if (typeof window === 'undefined') return false
     const searchParams = new URLSearchParams(window.location.search)
@@ -163,10 +161,6 @@ const IndexPage = () => {
             />
           </Suspense>
         )}
-
-        <Suspense fallback={<SuspenseFallback />}>
-          <FooterLanding />
-        </Suspense>
       </Suspense>
     </Layout>
   )
