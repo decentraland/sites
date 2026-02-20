@@ -2,17 +2,18 @@ import { memo, useEffect, useRef } from 'react'
 import type { VideoProps } from './Video.types'
 
 const Video = memo((props: VideoProps) => {
+  const { play, source, className, ...videoProps } = props
   const ref = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    if (!ref.current || typeof props.play !== 'boolean') {
+    if (!ref.current || typeof play !== 'boolean') {
       return
     }
 
     const video = ref.current
     const isPlaying = video.currentTime > 0 && !video.paused && !video.ended && video.readyState > video.HAVE_CURRENT_DATA
 
-    if (props.play) {
+    if (play) {
       if (isPlaying) return
       const playVideo = async () => {
         try {
@@ -35,23 +36,9 @@ const Video = memo((props: VideoProps) => {
       if (!isPlaying) return
       video.pause()
     }
-  }, [ref.current, props.play])
+  }, [play, source])
 
-  useEffect(() => {
-    if (ref.current && props.source) {
-      ref.current.src = props.source
-      ref.current.load()
-      ref.current.play()
-    }
-  }, [props.source])
-
-  const { source, sourceType, ...videoProps } = props
-
-  return (
-    <video {...videoProps} ref={ref}>
-      <source src={source} type={sourceType} />
-    </video>
-  )
+  return <video {...videoProps} ref={ref} src={source} className={className} />
 })
 
 export { Video }

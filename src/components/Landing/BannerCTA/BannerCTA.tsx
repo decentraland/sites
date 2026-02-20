@@ -7,7 +7,6 @@ import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { isWebpSupported, useImageOptimization, useVideoOptimization } from '../../../hooks/contentful'
 import { useFeatureFlagContext } from '../../../hooks/useFeatureFlagContext'
 import { FEATURE_FLAG, OnboardingFlowVariant } from '../../../modules/ff'
-import { checkWebGpuSupport } from '../../../modules/webgpu'
 import { BannerButton } from '../../Buttons/BannerButton'
 import { BannerCTAProps } from './BannerCTA.types'
 import {
@@ -52,9 +51,21 @@ const BannerCTA = memo((props: BannerCTAProps) => {
 
   useEffect(() => {
     const checkOnboardingFlowV2 = async () => {
-      const isWebGpuSupported = await checkWebGpuSupport()
+      const searchParams = new URLSearchParams(window.location.search)
+      const flowParam = searchParams.get('flow')
+
+      if (flowParam === 'V1') {
+        setIsOnboardingFlowV2(false)
+        return
+      }
+
+      if (flowParam === 'V2') {
+        setIsOnboardingFlowV2(true)
+        return
+      }
+
       const onboardingVariant = ff.variants[FEATURE_FLAG.onboardingFlow] as { name?: string } | undefined
-      setIsOnboardingFlowV2(!featureFlagsLoading && onboardingVariant?.name === OnboardingFlowVariant.V2 && isWebGpuSupported)
+      setIsOnboardingFlowV2(!featureFlagsLoading && onboardingVariant?.name === OnboardingFlowVariant.V2)
     }
     checkOnboardingFlowV2()
   }, [ff.variants[FEATURE_FLAG.onboardingFlow], featureFlagsLoading])
@@ -132,10 +143,10 @@ const BannerCTA = memo((props: BannerCTAProps) => {
                 <BannerCTAVideo
                   loop
                   muted
-                  autoPlay
+                  play={isSectionInView}
+                  preload={isSectionInView ? 'metadata' : 'none'}
                   playsInline={true}
                   webkit-playsinline="true"
-                  preload="metadata"
                   width={videoLandscape.width}
                   height={videoLandscape.height}
                   poster={
@@ -161,7 +172,8 @@ const BannerCTA = memo((props: BannerCTAProps) => {
                 <BannerCTAVideo
                   loop
                   muted
-                  autoPlay
+                  play={isSectionInView}
+                  preload={isSectionInView ? 'metadata' : 'none'}
                   playsInline={true}
                   webkit-playsinline="true"
                   width={videoPortrait.width}
