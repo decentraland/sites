@@ -70,7 +70,8 @@ const Hero = memo((props: HeroComponentProps) => {
         return
       }
 
-      setIsOnboardingFlowV2(ff.variants[FEATURE_FLAG.onboardingFlow]?.name === OnboardingFlowVariant.V2)
+      const onboardingVariant = ff.variants[FEATURE_FLAG.onboardingFlow] as { name?: string } | undefined
+      setIsOnboardingFlowV2(onboardingVariant?.name === OnboardingFlowVariant.V2)
       setIsOnboardingFlowReady(true)
     }
     checkOnboardingFlowV2()
