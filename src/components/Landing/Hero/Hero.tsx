@@ -1,5 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { CDNSource, JumpInIcon, getCDNRelease } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
@@ -13,13 +15,17 @@ import { formatToShorthand } from '../../../modules/number'
 import { SectionViewedTrack } from '../../../modules/segment'
 import { sanitizeCDNReleaseLinks } from '../../../modules/url'
 import { normalizeUserAgentArchitectureByOs } from '../../../modules/userAgent'
-import { checkWebGpuSupport } from '../../../modules/webgpu'
 import { DownloadButton } from '../../Buttons/DownloadButton'
+import { VerifiedIcon } from '../../Icon/VerifiedIcon'
 import { DownloadOptions } from '../DownloadOptions'
+import { DownloadCounts } from '../DownloadOptions/DownloadOptions.styled'
 import { OperativeSystem } from '../DownloadOptions/DownloadOptions.types'
 import { HeroComponentProps } from './Hero.types'
 import {
   HeroActionsContainer,
+  HeroActionsWrapper,
+  HeroAlreadyUserContainer,
+  HeroAlreadyUserLink,
   HeroButtonContainer,
   HeroContainer,
   HeroContent,
@@ -40,14 +46,33 @@ const Hero = memo((props: HeroComponentProps) => {
   const [ff, { loading: featureFlagsLoading }] = useFeatureFlagContext()
 
   const [isOnboardingFlowV2, setIsOnboardingFlowV2] = useState(false)
+  const [isOnboardingFlowReady, setIsOnboardingFlowReady] = useState(false)
 
   const trackClick = useTrackClick()
 
   useEffect(() => {
     const checkOnboardingFlowV2 = async () => {
-      const isWebGpuSupported = await checkWebGpuSupport()
-      const variant = ff.variants[FEATURE_FLAG.onboardingFlow] as { name?: string } | undefined
-      setIsOnboardingFlowV2(!featureFlagsLoading && variant?.name === OnboardingFlowVariant.V2 && isWebGpuSupported)
+      const searchParams = new URLSearchParams(window.location.search)
+      const flowParam = searchParams.get('flow')
+
+      if (flowParam === 'V1') {
+        setIsOnboardingFlowReady(true)
+        return
+      }
+
+      if (flowParam === 'V2') {
+        setIsOnboardingFlowV2(true)
+        setIsOnboardingFlowReady(true)
+        return
+      }
+
+      if (featureFlagsLoading) {
+        return
+      }
+
+      const onboardingVariant = ff.variants[FEATURE_FLAG.onboardingFlow] as { name?: string } | undefined
+      setIsOnboardingFlowV2(onboardingVariant?.name === OnboardingFlowVariant.V2)
+      setIsOnboardingFlowReady(true)
     }
     checkOnboardingFlowV2()
   }, [ff.variants[FEATURE_FLAG.onboardingFlow], featureFlagsLoading])
@@ -100,28 +125,54 @@ const Hero = memo((props: HeroComponentProps) => {
             </HeroSubtitle>
 
             <HeroActionsContainer>
-              {!featureFlagsLoading && !isLoggedIn && isOnboardingFlowV2 && (
-                <HeroButtonContainer>
-                  <DownloadButton
-                    href={onboardingUrl}
-                    onClick={handleClick}
-                    label={l('component.landing.hero.create_your_avatar')}
-                    place={SectionViewedTrack.LANDING_HERO}
-                    isFullWidth
-                    isLoading={isLoadingUserAgentData || isLoading}
-                    endIcon={<JumpInIcon fontSize="large" />}
+              {!featureFlagsLoading && isOnboardingFlowReady && !isLoggedIn && isOnboardingFlowV2 && (
+                <HeroActionsWrapper>
+                  <HeroButtonContainer>
+                    <DownloadButton
+                      href={onboardingUrl}
+                      onClick={handleClick}
+                      label={l('component.landing.hero.create_your_avatar')}
+                      place={SectionViewedTrack.LANDING_HERO}
+                      isFullWidth
+                      isLoading={isLoadingUserAgentData || isLoading}
+                      endIcon={<JumpInIcon fontSize="large" />}
+                    />
+                  </HeroButtonContainer>
+                  {isDesktop && userAgentData && (
+                    <HeroAlreadyUserContainer>
+                      {l('component.landing.hero.already_user', {
+                        download: (
+                          <HeroAlreadyUserLink
+                            href={`${getEnv('VITE_DOWNLOAD_SUCCESS_URL') ?? '/download_success'}?os=${userAgentData.os.name}`}
+                          >
+                            {l('component.landing.hero.download')} <FileDownloadOutlinedIcon fontSize="large" />
+                          </HeroAlreadyUserLink>
+                        )
+                      })}
+                    </HeroAlreadyUserContainer>
+                  )}
+                  {!downloadsStatus.loading && downloadsStatus.loaded && (
+                    <DownloadCounts variant="body1">
+                      <VerifiedIcon fontStyle="#fff" />{' '}
+                      {l('page.download.total_downloads', {
+                        downloads: formatToShorthand(downloads || 0)
+                      })}
+                    </DownloadCounts>
+                  )}
+                </HeroActionsWrapper>
+              )}
+              {!featureFlagsLoading &&
+                isOnboardingFlowReady &&
+                !isLoadingUserAgentData &&
+                (isLoggedIn || (!isLoggedIn && !isOnboardingFlowV2)) && (
+                  <DownloadOptions
+                    userAgentData={userAgentData}
+                    links={links}
+                    redirectPath={getEnv('VITE_DOWNLOAD_SUCCESS_URL') ?? '/download_success'}
+                    hideLogo
+                    downloadCounts={!downloadsStatus.loading && downloadsStatus.loaded && formatToShorthand(downloads || 0)}
                   />
-                </HeroButtonContainer>
-              )}
-              {!featureFlagsLoading && !isLoadingUserAgentData && (isLoggedIn || (!isLoggedIn && !isOnboardingFlowV2)) && (
-                <DownloadOptions
-                  userAgentData={userAgentData}
-                  links={links}
-                  redirectPath={getEnv('VITE_DOWNLOAD_SUCCESS_URL') ?? '/download_success'}
-                  hideLogo
-                  downloadCounts={!downloadsStatus.loading && downloadsStatus.loaded && formatToShorthand(downloads || 0)}
-                />
-              )}
+                )}
             </HeroActionsContainer>
           </HeroTextContainer>
           <HeroContent>
@@ -132,7 +183,8 @@ const Hero = memo((props: HeroComponentProps) => {
                   <HeroVideo
                     loop
                     muted
-                    autoPlay
+                    play={isSectionInView}
+                    preload={isSectionInView ? 'metadata' : 'none'}
                     playsInline={true}
                     width={videoLandscape.width}
                     height={videoLandscape.height}
@@ -163,7 +215,8 @@ const Hero = memo((props: HeroComponentProps) => {
                   <HeroVideo
                     loop
                     muted
-                    autoPlay
+                    play={isSectionInView}
+                    preload={isSectionInView ? 'metadata' : 'none'}
                     playsInline={true}
                     width={videoPortrait.width}
                     height={videoPortrait.height}

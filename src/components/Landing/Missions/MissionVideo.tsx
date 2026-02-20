@@ -14,7 +14,8 @@ const MissionVideo = memo((props: MissionsProps & { isSectionInView: boolean }) 
         <StyledMissionVideo
           loop
           muted
-          autoPlay
+          play={isSectionInView}
+          preload={isSectionInView ? 'metadata' : 'none'}
           playsInline={true}
           width={videoLandscape.width}
           height={videoLandscape.height}
@@ -28,7 +29,8 @@ const MissionVideo = memo((props: MissionsProps & { isSectionInView: boolean }) 
         <StyledMissionVideo
           loop
           muted
-          autoPlay
+          play={isSectionInView}
+          preload={isSectionInView ? 'metadata' : 'none'}
           playsInline={true}
           width={videoPortrait.width}
           height={videoPortrait.height}

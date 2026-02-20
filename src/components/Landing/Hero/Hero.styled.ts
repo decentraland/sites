@@ -62,7 +62,17 @@ const HeroContent = styled(Box)({
   right: 0,
   bottom: 0,
   left: 0,
-  zIndex: 1
+  zIndex: 1,
+  ['&::after']: {
+    content: '""',
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    right: 0,
+    backgroundImage: 'linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))',
+    zIndex: 2
+  }
 })
 
 const HeroContentLoading = styled(Skeleton)({
@@ -78,7 +88,7 @@ const HeroContentLoading = styled(Skeleton)({
 const HeroTextContainer = styled(Box)(({ theme }) => {
   return {
     maxWidth: '580px',
-    zIndex: 2,
+    zIndex: 3,
     marginLeft: theme.spacing(20),
     marginRight: theme.spacing(20),
     [theme.breakpoints.down('xl')]: {
@@ -189,37 +199,72 @@ const HeroVideo = styled(Video, {
     objectPosition: 'center',
     transition: 'opacity .5s',
     ['@media (max-aspect-ratio: 16 / 9)']: {
-      ['&.Video']: {
-        width: '100%',
-        height: '100%'
-      }
+      width: '100%',
+      height: '100%'
     },
     ['@media (min-aspect-ratio: 16 / 9)']: {
-      ['&.Video']: {
-        width: '100%',
-        height: '100%'
-      }
+      width: '100%',
+      height: '100%'
     }
   }
 })
 
-const HeroButtonContainer = styled(Box)({
+const HeroActionsWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
-  flexDirection: 'column'
-})
+  flexDirection: 'column',
+  justifyContent: 'flex-start',
+  width: '100%',
+  [theme.breakpoints.down('sm')]: {
+    alignItems: 'center'
+  }
+}))
+
+const HeroButtonContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  width: 'fit-content',
+  [theme.breakpoints.down('sm')]: {
+    width: '100%'
+  }
+}))
+
+const HeroAlreadyUserContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'flex-start',
+  width: '100%',
+  alignItems: 'center',
+  marginTop: theme.spacing(4),
+  fontSize: theme.typography.pxToRem(20)
+}))
+
+const HeroAlreadyUserLink = styled('a')(({ theme }) => ({
+  textDecoration: 'underline',
+  textDecorationStyle: 'solid',
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  cursor: 'pointer',
+  textTransform: 'uppercase',
+  marginLeft: theme.spacing(1),
+  fontWeight: 700
+}))
 
 export {
-  HeroSection,
+  HeroActionsContainer,
+  HeroActionsWrapper,
+  HeroAlreadyUserContainer,
+  HeroAlreadyUserLink,
+  HeroButtonContainer,
+  HeroChevronContainer,
   HeroContainer,
-  HeroWrapper,
   HeroContent,
   HeroContentLoading,
+  HeroImageContainer,
+  HeroSection,
+  HeroSubtitle,
   HeroTextContainer,
   HeroTitle,
-  HeroSubtitle,
-  HeroActionsContainer,
-  HeroChevronContainer,
-  HeroImageContainer,
   HeroVideo,
-  HeroButtonContainer
+  HeroWrapper
 }
