@@ -46,6 +46,11 @@ const TextMarquee = lazy(() =>
     default: m.TextMarquee
   }))
 )
+const Faqs = lazy(() =>
+  import('../components/Landing/Faqs').then(m => ({
+    default: m.Faqs
+  }))
+)
 
 const IndexPage = () => {
   const l = useFormatMessage()
@@ -137,6 +142,12 @@ const IndexPage = () => {
         {socialProof && (
           <Suspense fallback={<SuspenseFallback />}>
             <SocialProof socialProof={socialProof} />
+          </Suspense>
+        )}
+
+        {faq && faq.list.length > 0 && (
+          <Suspense fallback={<SuspenseFallback />}>
+            <Faqs faqs={faq} />
           </Suspense>
         )}
 
