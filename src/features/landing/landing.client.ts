@@ -1,9 +1,27 @@
 import { getEnv } from '../../config/env'
 import { api } from '../../services/api'
 import { clearContentfulCache, resolveLinks } from './landing.helper'
-import { mapBannerCta, mapFaq, mapHero, mapMissions, mapSocialProof, mapTextMarquee, mapWhatsHot } from './landing.mappers'
+import {
+  mapBannerCta,
+  mapCreatorsConnect,
+  mapCreatorsCreate,
+  mapCreatorsHero,
+  mapCreatorsLearn,
+  mapCreatorsWhy,
+  mapFaq,
+  mapHero,
+  mapMissions,
+  mapSocialProof,
+  mapTextMarquee,
+  mapWhatsHot
+} from './landing.mappers'
 import type {
   ContentfulBannerCTAEntryFieldsProps,
+  ContentfulCreatorsConnectListProps,
+  ContentfulCreatorsCreateListProps,
+  ContentfulCreatorsHeroEntryFieldsProps,
+  ContentfulCreatorsLearnListProps,
+  ContentfulCreatorsWhyListProps,
   ContentfulFaqEntriesProps,
   ContentfulHeroEntryFieldsProps,
   ContentfulMissionsListProps,
@@ -163,6 +181,118 @@ const landingClient = api.injectEndpoints({
         }
       },
       providesTags: ['LandingContent']
+    }),
+    getCreatorsHero: build.query<ContentfulCreatorsHeroEntryFieldsProps, void>({
+      query: () => {
+        const heroId = getEnv('CONTENTFUL_LANDING_CREATORS_HERO_ID')!
+        return { url: `/entries/${heroId}` }
+      },
+      transformResponse: async (entry: unknown) => {
+        try {
+          const resolved = await resolveLinks(entry)
+          const hero = mapCreatorsHero(resolved)
+          if (!hero || !hero.titleFirstLine) {
+            throw new Error('Failed to map creators hero content')
+          }
+          return hero
+        } catch (error) {
+          throw {
+            status: 'CUSTOM_ERROR',
+            error: error instanceof Error ? error.message : 'Unknown error'
+          }
+        }
+      },
+      providesTags: ['LandingContent']
+    }),
+    getCreatorsWhy: build.query<ContentfulCreatorsWhyListProps, void>({
+      query: () => {
+        const id = getEnv('CONTENTFUL_LANDING_CREATORS_WHY_ID')!
+        return { url: `/entries/${id}` }
+      },
+      transformResponse: async (entry: unknown) => {
+        try {
+          const resolved = await resolveLinks(entry)
+          return mapCreatorsWhy(resolved)
+        } catch (error) {
+          throw {
+            status: 'CUSTOM_ERROR',
+            error: error instanceof Error ? error.message : 'Unknown error'
+          }
+        }
+      },
+      providesTags: ['LandingContent']
+    }),
+    getCreatorsCreate: build.query<ContentfulCreatorsCreateListProps, void>({
+      query: () => {
+        const id = getEnv('CONTENTFUL_LANDING_CREATORS_CREATE_ID')!
+        return { url: `/entries/${id}` }
+      },
+      transformResponse: async (entry: unknown) => {
+        try {
+          const resolved = await resolveLinks(entry)
+          return mapCreatorsCreate(resolved)
+        } catch (error) {
+          throw {
+            status: 'CUSTOM_ERROR',
+            error: error instanceof Error ? error.message : 'Unknown error'
+          }
+        }
+      },
+      providesTags: ['LandingContent']
+    }),
+    getCreatorsConnect: build.query<ContentfulCreatorsConnectListProps, void>({
+      query: () => {
+        const id = getEnv('CONTENTFUL_LANDING_CREATORS_CONNECT_ID')!
+        return { url: `/entries/${id}` }
+      },
+      transformResponse: async (entry: unknown) => {
+        try {
+          const resolved = await resolveLinks(entry)
+          return mapCreatorsConnect(resolved)
+        } catch (error) {
+          throw {
+            status: 'CUSTOM_ERROR',
+            error: error instanceof Error ? error.message : 'Unknown error'
+          }
+        }
+      },
+      providesTags: ['LandingContent']
+    }),
+    getCreatorsLearn: build.query<ContentfulCreatorsLearnListProps, void>({
+      query: () => {
+        const id = getEnv('CONTENTFUL_LANDING_CREATORS_LEARN_ID')!
+        return { url: `/entries/${id}` }
+      },
+      transformResponse: async (entry: unknown) => {
+        try {
+          const resolved = await resolveLinks(entry)
+          return mapCreatorsLearn(resolved)
+        } catch (error) {
+          throw {
+            status: 'CUSTOM_ERROR',
+            error: error instanceof Error ? error.message : 'Unknown error'
+          }
+        }
+      },
+      providesTags: ['LandingContent']
+    }),
+    getCreatorsFaq: build.query<ContentfulFaqEntriesProps, void>({
+      query: () => {
+        const id = getEnv('CONTENTFUL_LANDING_CREATORS_FAQ_ID')!
+        return { url: `/entries/${id}` }
+      },
+      transformResponse: async (entry: unknown) => {
+        try {
+          const resolved = await resolveLinks(entry)
+          return mapFaq(resolved)
+        } catch (error) {
+          throw {
+            status: 'CUSTOM_ERROR',
+            error: error instanceof Error ? error.message : 'Unknown error'
+          }
+        }
+      },
+      providesTags: ['LandingContent']
     })
   })
 })
@@ -175,7 +305,13 @@ const {
   useGetLandingSocialProofQuery,
   useGetLandingStartExploringBannerQuery,
   useGetLandingTextMarqueeQuery,
-  useGetLandingWhatsHotQuery
+  useGetLandingWhatsHotQuery,
+  useGetCreatorsHeroQuery,
+  useGetCreatorsWhyQuery,
+  useGetCreatorsCreateQuery,
+  useGetCreatorsConnectQuery,
+  useGetCreatorsLearnQuery,
+  useGetCreatorsFaqQuery
 } = landingClient
 
 export {
@@ -187,5 +323,11 @@ export {
   useGetLandingSocialProofQuery,
   useGetLandingStartExploringBannerQuery,
   useGetLandingTextMarqueeQuery,
-  useGetLandingWhatsHotQuery
+  useGetLandingWhatsHotQuery,
+  useGetCreatorsHeroQuery,
+  useGetCreatorsWhyQuery,
+  useGetCreatorsCreateQuery,
+  useGetCreatorsConnectQuery,
+  useGetCreatorsLearnQuery,
+  useGetCreatorsFaqQuery
 }

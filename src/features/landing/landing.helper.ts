@@ -16,6 +16,54 @@ const clearContentfulCache = (): void => {
   assetCache.clear()
 }
 
+const FETCH_TIMEOUT = 10000
+const MAX_CONCURRENT = 6
+
+let activeRequests = 0
+const requestQueue: Array<{
+  execute: () => Promise<unknown>
+  resolve: (value: unknown) => void
+  reject: (reason: unknown) => void
+}> = []
+
+const processQueue = (): void => {
+  while (requestQueue.length > 0 && activeRequests < MAX_CONCURRENT) {
+    const next = requestQueue.shift()
+    if (next) {
+      activeRequests++
+      next
+        .execute()
+        .then(next.resolve)
+        .catch(next.reject)
+        .finally(() => {
+          activeRequests--
+          processQueue()
+        })
+    }
+  }
+}
+
+const enqueueRequest = (execute: () => Promise<unknown>): Promise<unknown> => {
+  if (activeRequests < MAX_CONCURRENT) {
+    activeRequests++
+    return execute().finally(() => {
+      activeRequests--
+      processQueue()
+    })
+  }
+
+  return new Promise((resolve, reject) => {
+    requestQueue.push({ execute, resolve, reject })
+  })
+}
+
+const fetchWithTimeout = (url: string, timeout: number): Promise<Response> => {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+  return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timeoutId))
+}
+
 const fetchFromCMS = async (endpoint: string, params?: CMSQueryParams): Promise<unknown> => {
   const baseUrl = CMS_BASE_URL.startsWith('/') ? `${window.location.origin}${CMS_BASE_URL}` : CMS_BASE_URL
   const url = new URL(`${baseUrl}${endpoint}`)
@@ -28,13 +76,15 @@ const fetchFromCMS = async (endpoint: string, params?: CMSQueryParams): Promise<
     })
   }
 
-  const response = await fetch(url.toString())
+  return enqueueRequest(async () => {
+    const response = await fetchWithTimeout(url.toString(), FETCH_TIMEOUT)
 
-  if (!response.ok) {
-    throw new Error(`CMS API error: ${response.status} ${response.statusText}`)
-  }
+    if (!response.ok) {
+      throw new Error(`CMS API error: ${response.status} ${response.statusText}`)
+    }
 
-  return response.json()
+    return response.json()
+  })
 }
 
 const fetchEntry = async (id: string) => fetchFromCMS(`/entries/${id}`)
@@ -90,7 +140,8 @@ const resolveLink = async (link: unknown): Promise<unknown> => {
     }
 
     return resolved
-  } catch {
+  } catch (error) {
+    console.warn('[CMS] Failed to resolve link:', contentfulLink.sys?.id, error)
     return link
   }
 }

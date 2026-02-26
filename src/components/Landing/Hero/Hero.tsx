@@ -1,9 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
-import { CDNSource, JumpInIcon, getCDNRelease } from 'decentraland-ui2'
+import { CDNSource, JumpInIcon, getCDNRelease, muiIcons } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
@@ -38,6 +36,8 @@ import {
   HeroVideo,
   HeroWrapper
 } from './Hero.styled'
+
+const FileDownloadOutlinedIcon = muiIcons.FileDownloadOutlined
 
 const Hero = memo((props: HeroComponentProps) => {
   const { isDesktop, hideNavbar, isLoggedIn, isLoading } = props

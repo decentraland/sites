@@ -120,14 +120,14 @@ const SocialProofCardUserContainer = styled(Box)(({ theme }) => ({
 const SocialProofCardQuoteText = styled(Typography)({
   fontSize: '1rem',
   fontWeight: 500,
-  color: '#161518',
+  color: dclColors.neutral.softBlack1,
   textAlign: 'center'
 })
 
 const SocialProofCardUserName = styled(Typography)({
   marginLeft: '4px',
   marginRight: '4px',
-  color: '#161518'
+  color: dclColors.neutral.softBlack1
 })
 
 const SocialProofTitle = styled(Typography)({})
