@@ -32,7 +32,9 @@ const FaqsSubtitle = styled(Typography)(({ theme }) => ({
 
 const FaqsTitle = styled(Typography)(({ theme }) => ({
   textAlign: 'center',
+  fontSize: '84px',
   fontWeight: 700,
+  lineHeight: '109.2px',
   letterSpacing: '-0.01em',
   paddingBottom: '0.5em',
   whiteSpace: 'pre-line',
@@ -116,6 +118,10 @@ const FaqAnswerText = styled(Typography)(({ theme }) => ({
   lineHeight: '165%',
   whiteSpace: 'pre-line',
   color: dclColors.neutral.gray5,
+  ['& a']: {
+    color: dclColors.base.primary,
+    textDecoration: 'underline'
+  },
   [theme.breakpoints.down('xs')]: {
     fontWeight: 400,
     fontSize: '16px',

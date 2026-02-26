@@ -8,11 +8,11 @@ const CARD_GRADIENTS: Record<string, string> = {
 
 const CreatorsWhyCardContainer = styled(Box, {
   shouldForwardProp: prop => prop !== 'cardId'
-})<{ cardId?: string }>(({ _theme, cardId }) => ({
+})<{ cardId?: string }>(({ theme, cardId }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
-  padding: '24px 24px 32px',
+  padding: theme.spacing(3, 3, 4),
   borderRadius: '20px',
   background:
     cardId && CARD_GRADIENTS[cardId]
@@ -29,7 +29,7 @@ const CreatorsWhyCardContainer = styled(Box, {
 const CreatorsWhyCardImageContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   borderRadius: '16px',
-  marginBottom: '24px',
+  marginBottom: theme.spacing(3),
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -54,9 +54,9 @@ const CreatorsWhyCardTitle = styled(Typography)(({ theme }) => ({
   fontWeight: 600,
   fontSize: '24px',
   lineHeight: '30px',
-  marginBottom: '8px',
-  paddingLeft: '10px',
-  paddingRight: '10px',
+  marginBottom: theme.spacing(1),
+  paddingLeft: theme.spacing(1.25),
+  paddingRight: theme.spacing(1.25),
   color: dclColors.neutral.white,
   [theme.breakpoints.down('sm')]: {
     fontWeight: 700,
@@ -65,13 +65,13 @@ const CreatorsWhyCardTitle = styled(Typography)(({ theme }) => ({
   }
 }))
 
-const CreatorsWhyCardDescription = styled(Typography)({
+const CreatorsWhyCardDescription = styled(Typography)(({ theme }) => ({
   fontSize: '18px',
   lineHeight: '24px',
   fontWeight: 400,
   color: dclColors.neutral.white,
-  paddingLeft: '10px',
-  paddingRight: '10px'
-})
+  paddingLeft: theme.spacing(1.25),
+  paddingRight: theme.spacing(1.25)
+}))
 
 export { CreatorsWhyCardContainer, CreatorsWhyCardDescription, CreatorsWhyCardImageContainer, CreatorsWhyCardTitle }
