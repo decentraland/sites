@@ -8,7 +8,12 @@ const SocialProofCardImage = memo((props: ContentfulSocialProofImageEntryFieldsP
   const imageOptimized = useImageOptimization(image.url)
   return (
     <SocialProofCardContainer>
-      <SocialProofCardImageMedia src={(isWebpSupported() && imageOptimized.webp) || imageOptimized.jpg || imageOptimized.optimized} />
+      <SocialProofCardImageMedia
+        loading="lazy"
+        width={image.width}
+        height={image.height}
+        src={(isWebpSupported() && imageOptimized.webp) || imageOptimized.jpg || imageOptimized.optimized}
+      />
     </SocialProofCardContainer>
   )
 })
