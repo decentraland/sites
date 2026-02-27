@@ -1,8 +1,7 @@
 import { createElement, memo, useCallback, useEffect, useState } from 'react'
 import type { MouseEvent } from 'react'
-import { ExpandMoreSharp as expandMoreSharpIcon } from '@mui/icons-material'
 import { useTabletAndBelowMediaQuery } from 'decentraland-ui2/dist/components/Media'
-import { JumpIn } from 'decentraland-ui2'
+import { JumpIn, muiIcons } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
@@ -22,6 +21,8 @@ import {
   MissionTextContainer,
   MissionTitle
 } from './MissionDetail.styled'
+
+const expandMoreSharpIcon = muiIcons.ExpandMoreSharp
 
 const MissionDetail = memo((props: MissionsDetailProps) => {
   const { title, description, buttonLabel, buttonLink, buttonType, isSectionInView, isLoggedIn, id } = props

@@ -1,6 +1,5 @@
-import { getEnv } from '../../config/env'
 import { api } from '../../services/api'
-import { clearContentfulCache, resolveLinks } from './landing.helper'
+import { ContentfulEntryKey, clearContentfulCache, contentfulEndpoint } from '../contentful/contentful.helper'
 import { mapBannerCta, mapFaq, mapHero, mapMissions, mapSocialProof, mapTextMarquee, mapWhatsHot } from './landing.mappers'
 import type {
   ContentfulBannerCTAEntryFieldsProps,
@@ -16,154 +15,31 @@ import type {
 const landingClient = api.injectEndpoints({
   endpoints: build => ({
     // Priority query - just the hero for immediate display
-    getLandingHero: build.query<ContentfulHeroEntryFieldsProps, void>({
-      query: () => {
-        const heroMainId = getEnv('CONTENTFUL_LANDING_HERO_MAIN_ID')!
-        return { url: `/entries/${heroMainId}` }
-      },
-      transformResponse: async (entry: unknown) => {
-        try {
-          const heroEntry = await resolveLinks(entry)
-          const hero = mapHero(heroEntry)
-          if (!hero) {
-            throw new Error('Failed to map hero content')
-          }
-          return hero
-        } catch (error) {
-          throw {
-            status: 'CUSTOM_ERROR',
-            error: error instanceof Error ? error.message : 'Unknown error'
-          }
-        }
-      },
-      providesTags: ['LandingContent']
-    }),
-    getLandingMissions: build.query<ContentfulMissionsListProps, void>({
-      query: () => {
-        const missionsId = getEnv('CONTENTFUL_LANDING_MISSIONS_V2_ID')!
-        return { url: `/entries/${missionsId}` }
-      },
-      transformResponse: async (entry: unknown) => {
-        try {
-          const resolved = await resolveLinks(entry)
-          return mapMissions(resolved)
-        } catch (error) {
-          throw {
-            status: 'CUSTOM_ERROR',
-            error: error instanceof Error ? error.message : 'Unknown error'
-          }
-        }
-      },
-      providesTags: ['LandingContent']
-    }),
-    getLandingFaq: build.query<ContentfulFaqEntriesProps, void>({
-      query: () => {
-        const faqId = getEnv('CONTENTFUL_LANDING_FAQ_ID')!
-        return { url: `/entries/${faqId}` }
-      },
-      transformResponse: async (entry: unknown) => {
-        try {
-          const resolved = await resolveLinks(entry)
-          return mapFaq(resolved)
-        } catch (error) {
-          throw {
-            status: 'CUSTOM_ERROR',
-            error: error instanceof Error ? error.message : 'Unknown error'
-          }
-        }
-      },
-      providesTags: ['LandingContent']
-    }),
-    getLandingCreateAvatarBanner: build.query<ContentfulBannerCTAEntryFieldsProps | null, void>({
-      query: () => {
-        const createAvatarId = getEnv('CONTENTFUL_LANDING_CREATE_AVATAR_ID')!
-        return { url: `/entries/${createAvatarId}` }
-      },
-      transformResponse: async (entry: unknown) => {
-        try {
-          const resolved = await resolveLinks(entry)
-          return mapBannerCta(resolved)
-        } catch (error) {
-          throw {
-            status: 'CUSTOM_ERROR',
-            error: error instanceof Error ? error.message : 'Unknown error'
-          }
-        }
-      },
-      providesTags: ['LandingContent']
-    }),
-    getLandingStartExploringBanner: build.query<ContentfulBannerCTAEntryFieldsProps | null, void>({
-      query: () => {
-        const startExploringId = getEnv('CONTENTFUL_LANDING_START_EXPLORING_ID')!
-        return { url: `/entries/${startExploringId}` }
-      },
-      transformResponse: async (entry: unknown) => {
-        try {
-          const resolved = await resolveLinks(entry)
-          return mapBannerCta(resolved)
-        } catch (error) {
-          throw {
-            status: 'CUSTOM_ERROR',
-            error: error instanceof Error ? error.message : 'Unknown error'
-          }
-        }
-      },
-      providesTags: ['LandingContent']
-    }),
-    getLandingWhatsHot: build.query<ContentfulWhatsHotListProps, void>({
-      query: () => {
-        const whatsHotId = getEnv('CONTENTFUL_LANDING_WHATS_HOT_ID')!
-        return { url: `/entries/${whatsHotId}` }
-      },
-      transformResponse: async (entry: unknown) => {
-        try {
-          const resolved = await resolveLinks(entry)
-          return mapWhatsHot(resolved)
-        } catch (error) {
-          throw {
-            status: 'CUSTOM_ERROR',
-            error: error instanceof Error ? error.message : 'Unknown error'
-          }
-        }
-      },
-      providesTags: ['LandingContent']
-    }),
-    getLandingTextMarquee: build.query<ContentfulTextMarqueeEntry | null, void>({
-      query: () => {
-        const marqueeId = getEnv('CONTENTFUL_LANDING_MARQUEE_ID')!
-        return { url: `/entries/${marqueeId}` }
-      },
-      transformResponse: async (entry: unknown) => {
-        try {
-          const resolved = await resolveLinks(entry)
-          return mapTextMarquee(resolved)
-        } catch (error) {
-          throw {
-            status: 'CUSTOM_ERROR',
-            error: error instanceof Error ? error.message : 'Unknown error'
-          }
-        }
-      },
-      providesTags: ['LandingContent']
-    }),
-    getLandingSocialProof: build.query<ContentfulSocialProofListProps, void>({
-      query: () => {
-        const socialProofId = getEnv('CONTENTFUL_LANDING_SOCIAL_PROOF_ID')!
-        return { url: `/entries/${socialProofId}` }
-      },
-      transformResponse: async (entry: unknown) => {
-        try {
-          const resolved = await resolveLinks(entry)
-          return mapSocialProof(resolved)
-        } catch (error) {
-          throw {
-            status: 'CUSTOM_ERROR',
-            error: error instanceof Error ? error.message : 'Unknown error'
-          }
-        }
-      },
-      providesTags: ['LandingContent']
-    })
+    getLandingHero: build.query<ContentfulHeroEntryFieldsProps, void>(
+      contentfulEndpoint(ContentfulEntryKey.LANDING_HERO, mapHero, hero => {
+        if (!hero) throw new Error('Failed to map hero content')
+        return hero
+      })
+    ),
+    getLandingMissions: build.query<ContentfulMissionsListProps, void>(
+      contentfulEndpoint(ContentfulEntryKey.LANDING_MISSIONS, mapMissions)
+    ),
+    getLandingFaq: build.query<ContentfulFaqEntriesProps, void>(contentfulEndpoint(ContentfulEntryKey.LANDING_FAQ, mapFaq)),
+    getLandingCreateAvatarBanner: build.query<ContentfulBannerCTAEntryFieldsProps | null, void>(
+      contentfulEndpoint(ContentfulEntryKey.LANDING_CREATE_AVATAR_BANNER, mapBannerCta)
+    ),
+    getLandingStartExploringBanner: build.query<ContentfulBannerCTAEntryFieldsProps | null, void>(
+      contentfulEndpoint(ContentfulEntryKey.LANDING_START_EXPLORING_BANNER, mapBannerCta)
+    ),
+    getLandingWhatsHot: build.query<ContentfulWhatsHotListProps, void>(
+      contentfulEndpoint(ContentfulEntryKey.LANDING_WHATS_HOT, mapWhatsHot)
+    ),
+    getLandingTextMarquee: build.query<ContentfulTextMarqueeEntry | null, void>(
+      contentfulEndpoint(ContentfulEntryKey.LANDING_TEXT_MARQUEE, mapTextMarquee)
+    ),
+    getLandingSocialProof: build.query<ContentfulSocialProofListProps, void>(
+      contentfulEndpoint(ContentfulEntryKey.LANDING_SOCIAL_PROOF, mapSocialProof)
+    )
   })
 })
 

@@ -1,6 +1,5 @@
 import { createElement, memo, useEffect, useRef } from 'react'
 import { useInView } from 'react-intersection-observer'
-import { ArrowBackIosNewRounded as arrowBackIcon, ArrowForwardIosRounded as arrowForwardIcon } from '@mui/icons-material'
 import type { Swiper as SwiperClass } from 'swiper'
 import 'swiper/css'
 import 'swiper/css/effect-coverflow'
@@ -8,6 +7,7 @@ import 'swiper/css/navigation'
 import { EffectCoverflow, Navigation } from 'swiper/modules'
 import type { NavigationOptions } from 'swiper/types'
 import { useMobileMediaQuery } from 'decentraland-ui2/dist/components/Media'
+import { muiIcons } from 'decentraland-ui2'
 import { ContentfulWhatsHotListProps } from '../../../features/landing/landing.types'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { TrendingNewsSlide } from './TrendingNewsSlide'
@@ -19,6 +19,9 @@ import {
   TrendingNewsSection,
   TrendingNewsTitle
 } from './TrendingNews.styled'
+
+const arrowBackIcon = muiIcons.ArrowBackIosNewRounded
+const arrowForwardIcon = muiIcons.ArrowForwardIosRounded
 
 const TrendingNews = memo((props: ContentfulWhatsHotListProps) => {
   const { list } = props

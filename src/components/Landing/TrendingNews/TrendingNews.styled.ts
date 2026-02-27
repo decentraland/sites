@@ -61,7 +61,7 @@ const NavigationButton = styled(Box, {
     width: '48px',
     height: '48px',
     borderRadius: '50%',
-    backgroundColor: '#fff',
+    backgroundColor: dclColors.neutral.white,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',

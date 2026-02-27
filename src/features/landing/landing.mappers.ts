@@ -1,7 +1,7 @@
-import type { ContentfulEntry } from './contentful.types'
+import { mapContentfulAsset, mapFaq } from '../contentful/contentful.helper'
+import type { ContentfulEntry } from '../contentful/contentful.types'
 import type {
   ContentfulBannerCTAEntryFieldsProps,
-  ContentfulFaqEntriesProps,
   ContentfulHeroEntryFieldsProps,
   ContentfulMediaProps,
   ContentfulMissionsListProps,
@@ -9,25 +9,6 @@ import type {
   ContentfulTextMarqueeEntry,
   ContentfulWhatsHotListProps
 } from './landing.types'
-
-function mapContentfulAsset(asset: ContentfulEntry | null | undefined): ContentfulMediaProps | null {
-  if (!asset || !asset.fields || !asset.fields.file) {
-    return null
-  }
-
-  const file = asset.fields.file as {
-    url?: string
-    contentType?: string
-    details?: { image?: { width?: number; height?: number } }
-  }
-
-  return {
-    url: file.url || '',
-    mimeType: file.contentType || '',
-    width: file.details?.image?.width || 0,
-    height: file.details?.image?.height || 0
-  }
-}
 
 function mapHero(entry: ContentfulEntry): ContentfulHeroEntryFieldsProps | null {
   if (!entry || !entry.fields) {
@@ -242,32 +223,6 @@ function mapSocialProof(entry: ContentfulEntry): ContentfulSocialProofListProps 
       }
     }
   }) as ContentfulSocialProofListProps['list']
-
-  return { list }
-}
-
-function mapFaq(entry: ContentfulEntry): ContentfulFaqEntriesProps {
-  if (!entry || !entry.fields || !entry.fields.list) {
-    return { list: [] }
-  }
-
-  const list = (entry.fields.list as ContentfulEntry[]).map((item: ContentfulEntry) => {
-    const fields = item.fields as {
-      question?: { text?: string } | string
-      answer?: { raw?: string } | string
-    }
-
-    const questionText =
-      (typeof fields?.question === 'object' && fields.question?.text) || (typeof fields?.question === 'string' ? fields.question : '') || ''
-
-    const answerRaw =
-      (typeof fields?.answer === 'object' && fields.answer?.raw) || (typeof fields?.answer === 'string' ? fields.answer : '') || ''
-
-    return {
-      question: { text: questionText },
-      answer: { raw: answerRaw }
-    }
-  })
 
   return { list }
 }

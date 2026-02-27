@@ -20,6 +20,7 @@ import {
   DownloadAlternativeButtonImage,
   DownloadAlternativeButtonsWrapper,
   DownloadAlternativeContainer,
+  DownloadAlternativeTitle,
   DownloadButtonImage,
   DownloadButtonsContainer,
   DownloadCounts,
@@ -36,7 +37,7 @@ const imageByOs: Record<string, string> = {
 }
 
 const DownloadOptions = memo((props: DownloadOptionsProps) => {
-  const { userAgentData, title, links, redirectPath, hideLogo, downloadCounts } = props
+  const { userAgentData, title, label, alternativeText, links, redirectPath, hideLogo, downloadCounts, center, withoutIdentity } = props
 
   const getIdentityId = useGetIdentityId()
   const l = useFormatMessage()
@@ -83,14 +84,16 @@ const DownloadOptions = memo((props: DownloadOptionsProps) => {
       return []
     }
 
-    const options: DownloadOptionProps[] = [
-      {
+    const options: DownloadOptionProps[] = []
+
+    if (userAgentData.os.name === OperativeSystem.MACOS && links[OperativeSystem.MACOS].amd64) {
+      options.push({
         text: OperativeSystem.MACOS,
         image: imageByOs[OperativeSystem.MACOS],
         link: userAgentData.os.name === OperativeSystem.MACOS ? links[OperativeSystem.MACOS].amd64 : links[OperativeSystem.MACOS].arm64,
         arch: userAgentData.os.name === OperativeSystem.MACOS ? 'amd64' : undefined
-      }
-    ]
+      })
+    }
 
     if (userAgentData.os.name === OperativeSystem.MACOS) {
       options.push({
@@ -107,13 +110,20 @@ const DownloadOptions = memo((props: DownloadOptionsProps) => {
     async (option: DownloadOptionProps) => {
       const params = { event }
 
-      await downloadWithIdentity({
-        os: option.text,
-        arch: option.arch,
-        fallbackLinks: links,
-        queryParams: params,
-        getIdentityId
-      })
+      if (withoutIdentity) {
+        if (!option.link) {
+          throw new Error('Download link is not available')
+        }
+        window.location.href = option.link
+      } else {
+        await downloadWithIdentity({
+          os: option.text,
+          arch: option.arch,
+          fallbackLinks: links,
+          queryParams: params,
+          getIdentityId
+        })
+      }
 
       if (option.redirectOs) {
         const redirectUrl = updateUrlWithLastValue(window.location.href, 'os', option.redirectOs)
@@ -132,16 +142,18 @@ const DownloadOptions = memo((props: DownloadOptionsProps) => {
         }, 3000)
       }
     },
-    [redirectPath, event, getIdentityId, links]
+    [redirectPath, event, getIdentityId, links, withoutIdentity]
   )
 
   return (
-    <DownloadDetail>
+    <DownloadDetail center={center}>
       {!hideLogo && <Logo size="huge" />}
       {primaryDownloadOptions.length === 0 && (
-        <DownloadUnavailable>
-          <DownloadTitle variant="h3">{l('page.download.not_available')}</DownloadTitle>
-          <DownloadSubtitle>
+        <DownloadUnavailable center={center}>
+          <DownloadTitle variant="h3" center={center}>
+            {l('page.download.not_available')}
+          </DownloadTitle>
+          <DownloadSubtitle center={center}>
             {l('page.download.not_available_subtitle', {
               span: (chunks: ReactNode) => <span>{chunks}</span>
             })}
@@ -163,12 +175,12 @@ const DownloadOptions = memo((props: DownloadOptionsProps) => {
       {primaryDownloadOptions.length > 0 && (
         <>
           {title && (
-            <DownloadTitle variant="h2">
+            <DownloadTitle variant="h2" center={center}>
               <WrapDecentralandText text={title} />
             </DownloadTitle>
           )}
-          <DownloadActions>
-            <DownloadButtonsContainer>
+          <DownloadActions center={center} sx={hideLogo && !title ? { marginTop: 0 } : undefined}>
+            <DownloadButtonsContainer center={center}>
               {primaryDownloadOptions.map((option, index) => (
                 <DownloadButton
                   key={index}
@@ -181,12 +193,12 @@ const DownloadOptions = memo((props: DownloadOptionsProps) => {
                   event={SegmentEvent.DOWNLOAD}
                   place={SectionViewedTrack.DOWNLOAD}
                   endIcon={<DownloadButtonImage src={option.image} />}
-                  label={l('page.download.download')}
+                  label={label ?? l('page.download.download')}
                   isFullWidth={false}
                 />
               ))}
             </DownloadButtonsContainer>
-            <DownloadAlternativeContainer>
+            <DownloadAlternativeContainer center={center}>
               {downloadCounts && (
                 <DownloadCounts variant="body1">
                   <VerifiedIcon />
@@ -195,7 +207,8 @@ const DownloadOptions = memo((props: DownloadOptionsProps) => {
                   })}
                 </DownloadCounts>
               )}
-              <DownloadAlternativeButtonsWrapper>
+              <DownloadAlternativeButtonsWrapper center={center}>
+                {alternativeText && <DownloadAlternativeTitle variant="body2">{alternativeText}</DownloadAlternativeTitle>}
                 {secondaryDownloadOptions.map((option, index) => (
                   <DownloadAlternativeButton
                     variant="text"

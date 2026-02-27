@@ -11,8 +11,11 @@ type DownloadOptionsProps = {
   userAgentData: AdvancedNavigatorUAData | undefined
   links: Record<string, Record<string, string>>
   hideLogo?: boolean
+  center?: boolean
+  withoutIdentity?: boolean
   title?: string
   label?: string
+  alternativeText?: string
   redirectPath?: string
   logoVariant?: 'colored' | 'white'
   downloadCounts?: string | boolean

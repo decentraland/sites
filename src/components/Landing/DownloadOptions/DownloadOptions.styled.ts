@@ -1,10 +1,17 @@
 import { Box, Button, Typography, dclColors, styled } from 'decentraland-ui2'
 
-const DownloadDetail = styled(Box)(({ theme }) => ({
+type CenteredProps = {
+  center?: boolean
+}
+
+const DownloadDetail = styled(Box, {
+  shouldForwardProp: prop => prop !== 'center'
+})<CenteredProps>(({ theme, center }) => ({
   display: 'flex',
   flexDirection: 'column',
   width: '100%',
   border: 'none',
+  alignItems: center ? 'center' : 'flex-start',
   [theme.breakpoints.down('md')]: {
     width: '100%',
     alignItems: 'center',
@@ -32,8 +39,11 @@ const DownloadImage = styled('img', {
   objectFit: props.objectFit || 'cover'
 }))
 
-const DownloadTitle = styled(Typography)(({ theme }) => ({
+const DownloadTitle = styled(Typography, {
+  shouldForwardProp: prop => prop !== 'center'
+})<CenteredProps>(({ theme, center }) => ({
   marginTop: theme.spacing(1),
+  textAlign: center ? 'center' : 'left',
   [theme.breakpoints.down('sm')]: {
     textAlign: 'center',
     fontSize: '3rem'
@@ -56,10 +66,13 @@ const DecentralandText = styled('span')({
   letterSpacing: 'inherit'
 })
 
-const DownloadSubtitle = styled(Typography)(({ theme }) => ({
+const DownloadSubtitle = styled(Typography, {
+  shouldForwardProp: prop => prop !== 'center'
+})<CenteredProps>(({ theme, center }) => ({
   marginTop: theme.spacing(1),
   marginBottom: theme.spacing(2),
   color: theme.palette.text.secondary,
+  textAlign: center ? 'center' : 'left',
   ['& span']: {
     fontWeight: 700
   },
@@ -68,9 +81,13 @@ const DownloadSubtitle = styled(Typography)(({ theme }) => ({
   }
 }))
 
-const DownloadUnavailable = styled(Box)(({ theme }) => ({
+const DownloadUnavailable = styled(Box, {
+  shouldForwardProp: prop => prop !== 'center'
+})<CenteredProps>(({ theme, center }) => ({
   marginTop: theme.spacing(1),
   width: '460px',
+  marginLeft: center ? 'auto' : 0,
+  marginRight: center ? 'auto' : 0,
   [theme.breakpoints.down('xl')]: {
     width: '390px'
   },
@@ -84,19 +101,26 @@ const DownloadUnavailableIFrame = styled('iframe')({
   border: 'none'
 })
 
-const DownloadActions = styled(Box)(({ theme }) => ({
+const DownloadActions = styled(Box, {
+  shouldForwardProp: prop => prop !== 'center'
+})<CenteredProps>(({ theme, center }) => ({
   display: 'flex',
   flexDirection: 'column',
-  marginTop: theme.spacing(7.5)
+  marginTop: theme.spacing(7.5),
+  alignItems: center ? 'center' : 'flex-start'
 }))
 
-const DownloadButtonsContainer = styled(Box)(({ theme }) => ({
+const DownloadButtonsContainer = styled(Box, {
+  shouldForwardProp: prop => prop !== 'center'
+})<CenteredProps>(({ theme, center }) => ({
   display: 'flex',
   flexDirection: 'row',
   gap: theme.spacing(2),
+  justifyContent: center ? 'center' : 'flex-start',
+  alignItems: center ? 'center' : 'flex-start',
   ['@media (max-width: 1830px)']: {
     flexDirection: 'column',
-    alignItems: 'flex-start'
+    alignItems: center ? 'center' : 'flex-start'
   }
 }))
 
@@ -106,12 +130,14 @@ const DownloadButtonImage = styled('img')({
   filter: 'brightness(0) invert(1)'
 })
 
-const DownloadAlternativeContainer = styled(Box)(({ theme }) => ({
+const DownloadAlternativeContainer = styled(Box, {
+  shouldForwardProp: prop => prop !== 'center'
+})<CenteredProps>(({ theme, center }) => ({
   width: '100%',
   display: 'flex',
   flexDirection: 'row',
-  alignItems: 'flex-start',
-  justifyContent: 'flex-start',
+  alignItems: center ? 'center' : 'flex-start',
+  justifyContent: center ? 'center' : 'flex-start',
   marginTop: theme.spacing(2),
   [theme.breakpoints.down('md')]: {
     justifyContent: 'center'
@@ -137,16 +163,18 @@ const DownloadCounts = styled(Typography)(({ theme }) => ({
 }))
 
 const DownloadAlternativeTitle = styled(Typography)(({ theme }) => ({
-  ['&.MuiTypography-root.MuiTypography-body1']: {
-    marginTop: theme.spacing(1),
-    marginRight: theme.spacing(1)
-  }
+  color: theme.palette.text.primary,
+  marginTop: theme.spacing(1),
+  marginRight: theme.spacing(1)
 }))
 
-const DownloadAlternativeButtonsWrapper = styled(Box)(({ theme }) => ({
+const DownloadAlternativeButtonsWrapper = styled(Box, {
+  shouldForwardProp: prop => prop !== 'center'
+})<CenteredProps>(({ theme, center }) => ({
   display: 'flex',
   flexDirection: 'row',
-  gap: theme.spacing(1.25)
+  gap: theme.spacing(1.25),
+  justifyContent: center ? 'center' : 'flex-start'
 }))
 
 const DownloadAlternativeButton = styled(Button)({
