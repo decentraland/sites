@@ -30,7 +30,7 @@ function usePageNotifications(props: UsePageNotificationsProps): UsePageNotifica
 
   const handleNotificationsError = useCallback(() => {
     if (isNotificationsEnabled) {
-      setIsPollingEnabled(prevState => (prevState ? false : prevState))
+      setIsPollingEnabled(false)
     }
   }, [isNotificationsEnabled])
 
