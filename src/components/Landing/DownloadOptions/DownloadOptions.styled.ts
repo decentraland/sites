@@ -125,15 +125,7 @@ const DownloadCounts = styled(Typography)(({ theme }) => ({
   borderRight: '0.5px solid',
   marginTop: `${theme.spacing(1)} !important`,
   paddingRight: theme.spacing(2),
-  marginRight: theme.spacing(2),
-  ['& svg']: {
-    ['& path']: {
-      fill: theme.palette.common.white
-    },
-    ['& path:nth-of-type(3)']: {
-      fill: theme.palette.common.black
-    }
-  }
+  marginRight: theme.spacing(2)
 }))
 
 const DownloadAlternativeTitle = styled(Typography)(({ theme }) => ({

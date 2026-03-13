@@ -22,5 +22,6 @@
   "AUTH_URL": "/auth",
   "MAGIC_API_KEY": "pk_live_CE856A4938B36648",
   "PEER_URL": "https://peer.decentraland.zone",
-  "WALLET_CONNECT_PROJECT_ID": "61570c542c2d66c659492e5b24a41522"
+  "WALLET_CONNECT_PROJECT_ID": "61570c542c2d66c659492e5b24a41522",
+  "VITE_": "https://cdn-data.decentraland.org/public/current/explorer-alpha-downloads.json"
 }
