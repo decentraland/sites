@@ -1,10 +1,13 @@
 import { Box, Button, styled } from 'decentraland-ui2'
 
-const DownloadButtonStyled = styled(Button)(({ theme }) => ({
+const CTAButtonStyled = styled(Button)(({ theme }) => ({
   ['&.MuiButton-sizeMedium.MuiButton-containedPrimary']: {
     padding: theme.spacing(3, 6),
-    fontSize: '16px',
-    fontWeight: 700,
+    fontSize: '19.89px',
+    fontWeight: 600,
+    lineHeight: '31.82px',
+    letterSpacing: '0.61px',
+    textTransform: 'uppercase',
     borderRadius: theme.shape.borderRadius,
     boxShadow: 'rgba(0, 0, 0, 0.4) 0px 2px 8px',
     ['& .MuiButton-icon.MuiButton-endIcon']: {
@@ -40,7 +43,7 @@ const DownloadButtonStyled = styled(Button)(({ theme }) => ({
   }
 }))
 
-const DownloadButtonLabelContainer = styled(Box)({
+const CTAButtonLabelContainer = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
   ['& span']: {
@@ -51,4 +54,4 @@ const DownloadButtonLabelContainer = styled(Box)({
   }
 })
 
-export { DownloadButtonLabelContainer, DownloadButtonStyled }
+export { CTAButtonLabelContainer, CTAButtonStyled }
