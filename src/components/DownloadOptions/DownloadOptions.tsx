@@ -27,6 +27,7 @@ import {
 
 interface DownloadOptionsProps {
   hideDownloadCounts?: boolean
+  downloadOnClick?: boolean
 }
 
 const imageByOs: Record<string, string> = {
@@ -34,7 +35,7 @@ const imageByOs: Record<string, string> = {
   [OperativeSystem.MACOS]: appleLogo
 }
 
-const DownloadOptions = memo(({ hideDownloadCounts }: DownloadOptionsProps) => {
+const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadOptionsProps) => {
   const [isLoadingUserAgentData, userAgentData] = useAdvancedUserAgentData()
   const getIdentityId = useGetIdentityId()
   const l = useFormatMessage()
@@ -114,21 +115,26 @@ const DownloadOptions = memo(({ hideDownloadCounts }: DownloadOptionsProps) => {
 
   const onClickDownloadHandler = useCallback(
     async (option: DownloadOptionProps) => {
-      await downloadWithIdentity({
-        os: option.text,
-        arch: option.arch,
-        fallbackLinks: links,
-        getIdentityId
-      })
+      if (downloadOnClick) {
+        await downloadWithIdentity({
+          os: option.text,
+          arch: option.arch,
+          fallbackLinks: links,
+          getIdentityId
+        })
+      }
 
       const redirectPath = '/download_success'
       const redirectUrl = updateUrlWithLastValue(new URL(redirectPath, window.location.origin).toString(), 'os', option.text)
       const finalUrl = addQueryParamsToUrlString(redirectUrl, { arch: option.arch })
-      setTimeout(() => {
-        window.location.href = finalUrl
-      }, 3000)
+      setTimeout(
+        () => {
+          window.location.href = finalUrl
+        },
+        downloadOnClick ? 3000 : 0
+      )
     },
-    [getIdentityId, links]
+    [downloadOnClick, getIdentityId, links]
   )
 
   const downloadCountsFormatted = !downloadsStatus.loading && downloadsStatus.loaded && downloads ? formatToShorthand(downloads) : null
