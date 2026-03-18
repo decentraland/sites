@@ -2,10 +2,10 @@ import { memo } from 'react'
 import { useWallet } from '@dcl/core-web3'
 import { DownloadOptions } from '../../DownloadOptions'
 import { JumpIn } from '../../JumpIn'
-import type { HeroSectionProps } from './HeroSection.types'
-import { HeroBackground, HeroContainer, HeroContent, HeroOverlay, HeroSubtitle, HeroTitle } from './HeroSection.styled'
+import type { HeroProps } from './Hero.types'
+import { HeroBackground, HeroContainer, HeroContent, HeroOverlay, HeroSubtitle, HeroTitle } from './Hero.styled'
 
-const HeroSection = memo(({ hero, isDesktop }: HeroSectionProps) => {
+const Hero = memo(({ hero, isDesktop }: HeroProps) => {
   const backgroundImage = isDesktop ? hero.imageLandscape?.url : hero.imagePortrait?.url
   const backgroundVideo = isDesktop ? hero.videoLandscape?.url : hero.videoPortrait?.url
   const { isConnected } = useWallet()
@@ -33,6 +33,6 @@ const HeroSection = memo(({ hero, isDesktop }: HeroSectionProps) => {
   )
 })
 
-HeroSection.displayName = 'HeroSection'
+Hero.displayName = 'Hero'
 
-export { HeroSection }
+export { Hero }

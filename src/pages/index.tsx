@@ -1,34 +1,34 @@
 import { Suspense } from 'react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { FooterLanding } from 'decentraland-ui2/dist/components/FooterLanding/FooterLanding'
-import { useDesktopMediaQuery } from 'decentraland-ui2'
-import { HeroSection } from '../components/Home/HeroSection'
+import { CircularProgress, useDesktopMediaQuery } from 'decentraland-ui2'
+import { Hero } from '../components/Home/Hero'
 import { Layout } from '../components/Layout'
 import { useGetLandingHeroQuery } from '../features/landing/landing.client'
 import { Feed } from './index.types'
-import { SuspenseFallback } from './index.styled'
+import { LoadingContainer, SuspenseFallback } from './index.styled'
 
 const IndexPage = () => {
   const isDesktop = useDesktopMediaQuery()
 
   const [isLoadingUserAgentData] = useAdvancedUserAgentData()
 
-  // Load hero first for immediate display
-  const { data: heroData } = useGetLandingHeroQuery()
+  const { data: heroData, isLoading: isLoadingHero } = useGetLandingHeroQuery()
 
-  // Show hero immediately, even while loading other content
-  const showHero = !isLoadingUserAgentData && !!heroData
+  const isLoading = isLoadingUserAgentData || isLoadingHero
 
   return (
     <Layout>
-      {/* Hero - loads first */}
-      {showHero && heroData && <HeroSection hero={heroData} isDesktop={isDesktop} />}
+      {isLoading ? (
+        <LoadingContainer>
+          <CircularProgress color="inherit" />
+        </LoadingContainer>
+      ) : (
+        heroData && <Hero hero={heroData} isDesktop={isDesktop} />
+      )}
 
-      {/* Rest of content - lazy loaded */}
       <Suspense fallback={<SuspenseFallback />}>
-        <Suspense fallback={<SuspenseFallback />}>
-          <FooterLanding />
-        </Suspense>
+        <FooterLanding />
       </Suspense>
     </Layout>
   )

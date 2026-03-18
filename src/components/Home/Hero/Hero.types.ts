@@ -23,9 +23,9 @@ interface HeroData {
   id: string
 }
 
-interface HeroSectionProps {
+interface HeroProps {
   hero: HeroData
   isDesktop: boolean
 }
 
-export type { HeroSectionProps, HeroData }
+export type { HeroProps, HeroData }
