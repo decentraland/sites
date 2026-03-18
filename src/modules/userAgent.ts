@@ -1,5 +1,5 @@
 import type { AdvancedNavigatorUAData } from '@dcl/hooks'
-import { OperativeSystem } from '../components/Landing/DownloadOptions/DownloadOptions.types'
+import { OperativeSystem } from '../types/download.types'
 
 const normalizeUserAgentArchitectureByOs = (userAgent: AdvancedNavigatorUAData, os: OperativeSystem): AdvancedNavigatorUAData => {
   if (os === OperativeSystem.MACOS) {

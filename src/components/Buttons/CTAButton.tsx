@@ -1,12 +1,12 @@
 import { memo } from 'react'
 import { CircularProgress } from 'decentraland-ui2'
-import { DownloadButtonProps } from './DownloadButton.types'
-import { DownloadButtonLabelContainer, DownloadButtonStyled } from './DownloadButton.styled'
+import { CTAButtonProps } from './CTAButton.types'
+import { CTAButtonLabelContainer, CTAButtonStyled } from './CTAButton.styled'
 
-const DownloadButton = memo((props: DownloadButtonProps) => {
+const CTAButton = memo((props: CTAButtonProps) => {
   const { href, onClick, label, subLabel, place, event, isFullWidth, startIcon, endIcon, isLoading } = props
   return (
-    <DownloadButtonStyled
+    <CTAButtonStyled
       variant="contained"
       data-place={place}
       data-event={event || 'click'}
@@ -19,13 +19,15 @@ const DownloadButton = memo((props: DownloadButtonProps) => {
     >
       {isLoading && <CircularProgress size={24} color="inherit" />}
       {!isLoading && (
-        <DownloadButtonLabelContainer>
+        <CTAButtonLabelContainer>
           {label}
           {subLabel && <span>{subLabel}</span>}
-        </DownloadButtonLabelContainer>
+        </CTAButtonLabelContainer>
       )}
-    </DownloadButtonStyled>
+    </CTAButtonStyled>
   )
 })
 
-export { DownloadButton }
+CTAButton.displayName = 'CTAButton'
+
+export { CTAButton }

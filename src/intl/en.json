@@ -307,17 +307,13 @@
         "create_your_avatar": "Jump In",
         "already_user": "Already have an account? {download}",
         "download": "Download"
-      },
-      "banner_cta": {
-        "jump_in": {
-          "modal_props": {
-            "title": "Download Decentraland",
-            "description": "To jump in, you'll need to download the Decentraland app",
-            "button_label": "Download"
-          },
-          "button_text_jump_in": "Jump in",
-          "button_text_get_started": "Get Started"
-        }
+      }
+    },
+    "home": {
+      "hero": {
+        "jump_in": "Jump In",
+        "already_user": "Already have an account? {download}",
+        "download": "Download"
       }
     }
   }

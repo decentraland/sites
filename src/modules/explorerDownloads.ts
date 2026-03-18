@@ -1,7 +1,7 @@
+import { getEnv } from '../config/env'
 import type { ExplorerDownloadsData, PlatformDownloads } from './explorerDownloads.types'
 
 class ExplorerDownloads {
-  static url = import.meta.env.VITE_DOWNLOAD_COUNTS_URL || ''
   static cache = new Map<string, ExplorerDownloads>()
   private baseUrl: string
 
@@ -18,7 +18,7 @@ class ExplorerDownloads {
   }
 
   static get() {
-    return this.from(this.url)
+    return this.from(getEnv('DOWNLOAD_COUNTS_URL') || '')
   }
 
   async fetch<T>(path: string): Promise<T> {
