@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 
-type DownloadButtonProps = {
+type CTAButtonProps = {
   href: string
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
   label: string | ReactNode[]
@@ -14,4 +14,4 @@ type DownloadButtonProps = {
   isLoading?: boolean
 }
 
-export type { DownloadButtonProps }
+export type { CTAButtonProps }

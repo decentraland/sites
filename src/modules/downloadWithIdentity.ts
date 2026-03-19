@@ -1,4 +1,4 @@
-import { Architecture } from '../components/Landing/DownloadOptions/DownloadOptions.types'
+import { Architecture } from '../types/download.types'
 import { triggerFileDownload } from './file'
 import { addQueryParamsToUrlString, calculateCDNReleaseLinksWithIdentity, extractDownloadLinkFromCDNReleaseOption } from './url'
 

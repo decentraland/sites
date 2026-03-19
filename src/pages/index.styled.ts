@@ -4,9 +4,8 @@ const LoadingContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  minHeight: '60vh',
-  color: theme.palette.text.primary,
-  ...theme.typography.body1
+  minHeight: '100vh',
+  color: theme.palette.common.white
 }))
 
 const SuspenseFallback = styled(Box)(({ theme }) => ({
