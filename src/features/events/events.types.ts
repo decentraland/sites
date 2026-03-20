@@ -7,6 +7,7 @@ interface EventEntry {
   url: string
   live: boolean
   coordinates: [number, number]
+  user: string
 }
 
 interface EventsResponse {
@@ -38,6 +39,7 @@ interface WhatsOnCard {
   coordinates: string
   url: string
   isLive: boolean
+  creatorAddress?: string
 }
 
 export { WhatsOnCardType }
