@@ -40,7 +40,8 @@ describe('findEventAtCoords', () => {
         y: 20,
         url: 'https://example.com/1',
         live: true,
-        coordinates: [10, 20]
+        coordinates: [10, 20],
+        user: '0x123'
       },
       {
         id: 'event-2',
@@ -50,7 +51,8 @@ describe('findEventAtCoords', () => {
         y: 15,
         url: 'https://example.com/2',
         live: true,
-        coordinates: [-5, 15]
+        coordinates: [-5, 15],
+        user: '0x456'
       }
     ]
   })
