@@ -26,8 +26,7 @@ function buildPlazaCard(scenesData: HotScene[], jumpInUrl: string): WhatsOnCard 
     users: plaza?.usersTotalCount ?? 0,
     image: plaza?.thumbnail ?? '',
     coordinates: plazaCoords,
-    url: `${jumpInUrl}?position=${plazaCoords}`,
-    isLive: true
+    url: `${jumpInUrl}?position=${plazaCoords}`
   }
 }
 

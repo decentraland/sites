@@ -62,7 +62,6 @@ const eventsClient = createApi({
                 image: matchedEvent.image,
                 coordinates: coordsKey(matchedEvent.x, matchedEvent.y),
                 url: matchedEvent.url,
-                isLive: true,
                 creatorAddress: matchedEvent.user
               })
               usedSceneIds.add(scene.id)
@@ -83,8 +82,7 @@ const eventsClient = createApi({
               users: scene.usersTotalCount,
               image: scene.thumbnail,
               coordinates: coordsKey(scene.baseCoords[0], scene.baseCoords[1]),
-              url: `${jumpInUrl}?position=${scene.baseCoords[0]},${scene.baseCoords[1]}`,
-              isLive: true
+              url: `${jumpInUrl}?position=${scene.baseCoords[0]},${scene.baseCoords[1]}`
             })
           }
 

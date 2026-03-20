@@ -38,7 +38,6 @@ interface WhatsOnCard {
   image: string
   coordinates: string
   url: string
-  isLive: boolean
   creatorAddress?: string
 }
 
