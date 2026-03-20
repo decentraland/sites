@@ -5,7 +5,7 @@ import type { WhatsOnCard } from '../../../features/events/events.types'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
 
 const WhatsOnCard = memo(({ card }: { card: WhatsOnCard }) => {
-  const { data: profile } = useGetProfileQuery(card.creatorAddress)
+  const { data: profile } = useGetProfileQuery(card.creatorAddress, { skip: !card.creatorAddress })
   const avatar = profile?.avatars?.[0]
 
   return (
