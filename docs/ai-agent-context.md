@@ -58,7 +58,7 @@
 
 **Key Concepts:**
 
-- **Per-section Contentful entry IDs**: Each landing section is a distinct Contentful entry whose ID is stored in `src/config/env/prd.json` (e.g., `CONTENTFUL_LANDING_HERO_MAIN_ID`, `CONTENTFUL_LANDING_MISSIONS_V2_ID`, `CONTENTFUL_LANDING_FAQ_ID`). RTK Query endpoints in `landing.client.ts` read the relevant ID from config and call `/entries/{id}`.
+- **Per-section Contentful entry IDs**: Each landing section is a distinct Contentful entry whose ID is stored in `src/config/env/prd.json` (e.g., `CONTENTFUL_HOMEPAGE_HERO_ID`, `CONTENTFUL_LANDING_MISSIONS_V2_ID`, `CONTENTFUL_LANDING_FAQ_ID`). RTK Query endpoints in `landing.client.ts` read the relevant ID from config and call `/entries/{id}`.
 - **`resolveLinks` helper** (`src/features/landing/landing.helper.ts`): Contentful entries returned from the REST API contain `{sys: {type: "Link"}}` references. `resolveLinks` recursively resolves these into fully hydrated objects before passing them to mappers.
 - **Section mappers** (`src/features/landing/landing.mappers.ts`): Each section has a dedicated mapper (`mapHero`, `mapMissions`, `mapFaq`, `mapBannerCta`, `mapSocialProof`, `mapTextMarquee`, `mapWhatsHot`) that transforms raw Contentful responses into typed domain objects (`landing.types.ts`).
 - **Contentful type definitions** (`src/features/landing/contentful.types.ts`): TypeScript interfaces for raw Contentful entry shapes (hero, missions, FAQ, banners, social proof, marquee, what's hot) used by mappers before transformation.
@@ -134,24 +134,24 @@ src/
 
 Key environment variables (defined in `src/config/env/prd.json`):
 
-| Variable | Purpose |
-|---|---|
-| `CONTENTFUL_SPACE_ID` | Contentful space ID |
-| `CONTENTFUL_ENVIRONMENT` | Contentful environment (e.g., `master`) |
-| `CONTENTFUL_LANDING_HERO_MAIN_ID` | Contentful entry ID for hero section |
-| `CONTENTFUL_LANDING_MISSIONS_V2_ID` | Contentful entry ID for missions section |
-| `CONTENTFUL_LANDING_FAQ_ID` | Contentful entry ID for FAQ section |
-| `CONTENTFUL_LANDING_CREATE_AVATAR_ID` | Contentful entry ID for "Create Avatar" banner |
+| Variable                                | Purpose                                          |
+| --------------------------------------- | ------------------------------------------------ |
+| `CONTENTFUL_SPACE_ID`                   | Contentful space ID                              |
+| `CONTENTFUL_ENVIRONMENT`                | Contentful environment (e.g., `master`)          |
+| `CONTENTFUL_HOMEPAGE_HERO_ID`           | Contentful entry ID for hero section             |
+| `CONTENTFUL_LANDING_MISSIONS_V2_ID`     | Contentful entry ID for missions section         |
+| `CONTENTFUL_LANDING_FAQ_ID`             | Contentful entry ID for FAQ section              |
+| `CONTENTFUL_LANDING_CREATE_AVATAR_ID`   | Contentful entry ID for "Create Avatar" banner   |
 | `CONTENTFUL_LANDING_START_EXPLORING_ID` | Contentful entry ID for "Start Exploring" banner |
-| `CONTENTFUL_LANDING_WHATS_HOT_ID` | Contentful entry ID for "What's Hot" section |
-| `CONTENTFUL_LANDING_MARQUEE_ID` | Contentful entry ID for text marquee |
-| `CONTENTFUL_LANDING_SOCIAL_PROOF_ID` | Contentful entry ID for social proof section |
-| `CONTENTFUL_LANDING_INVITE_HERO_ID` | Contentful entry ID for invite hero |
-| `AUTH_URL` | Decentraland SSO auth URL |
-| `PEER_URL` | Decentraland Catalyst peer URL |
-| `ONBOARDING_URL` | New-user onboarding URL |
-| `MAGIC_API_KEY` | Magic SDK publishable key |
-| `WALLET_CONNECT_PROJECT_ID` | WalletConnect project ID |
+| `CONTENTFUL_LANDING_WHATS_HOT_ID`       | Contentful entry ID for "What's Hot" section     |
+| `CONTENTFUL_LANDING_MARQUEE_ID`         | Contentful entry ID for text marquee             |
+| `CONTENTFUL_LANDING_SOCIAL_PROOF_ID`    | Contentful entry ID for social proof section     |
+| `CONTENTFUL_LANDING_INVITE_HERO_ID`     | Contentful entry ID for invite hero              |
+| `AUTH_URL`                              | Decentraland SSO auth URL                        |
+| `PEER_URL`                              | Decentraland Catalyst peer URL                   |
+| `ONBOARDING_URL`                        | New-user onboarding URL                          |
+| `MAGIC_API_KEY`                         | Magic SDK publishable key                        |
+| `WALLET_CONNECT_PROJECT_ID`             | WalletConnect project ID                         |
 
 **Testing:**
 

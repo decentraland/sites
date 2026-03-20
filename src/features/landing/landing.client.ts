@@ -18,7 +18,7 @@ const landingClient = api.injectEndpoints({
     // Priority query - just the hero for immediate display
     getLandingHero: build.query<ContentfulHeroEntryFieldsProps, void>({
       query: () => {
-        const heroMainId = getEnv('CONTENTFUL_LANDING_HERO_MAIN_ID')!
+        const heroMainId = getEnv('CONTENTFUL_HOMEPAGE_HERO_ID')!
         return { url: `/entries/${heroMainId}` }
       },
       transformResponse: async (entry: unknown) => {

@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { getEnv } from '../../config/env'
-import { coordsKey, findEventAtCoords } from './events.helpers'
+import { buildPlazaCard, coordsKey, findEventAtCoords } from './events.helpers'
 import { WhatsOnCardType } from './events.types'
 import type { EventsResponse, HotScene, WhatsOnCard } from './events.types'
 
@@ -13,11 +13,8 @@ import type { EventsResponse, HotScene, WhatsOnCard } from './events.types'
  * 4. Remaining hot scenes without events → place card
  * 5. Priority order: events (by users desc) > places (by users desc)
  * 6. Return at most MAX_CARDS for the homepage
- * 7. If fewer than MAX_CARDS, fill with Genesis Plaza (0,0)
+ * 7. If fewer than MAX_CARDS, fill with Genesis Plaza
  */
-
-const EVENTS_API_URL = getEnv('EVENTS_API_URL') || 'https://events.decentraland.org/api'
-const HOT_SCENES_URL = 'https://realm-provider-ea.decentraland.org/hot-scenes'
 
 const MIN_USERS = 5
 const MAX_CARDS = 3
@@ -31,10 +28,18 @@ const eventsClient = createApi({
     getWhatsOnCards: build.query<WhatsOnCard[], void>({
       queryFn: async () => {
         try {
+          const eventsApiUrl = getEnv('EVENTS_API_URL') || 'https://events.decentraland.org/api'
+          const hotScenesUrl = getEnv('HOT_SCENES_URL') || 'https://realm-provider-ea.decentraland.org/hot-scenes'
+          const jumpInUrl = getEnv('JUMP_IN_URL') || 'https://decentraland.org/jump'
+
           const [eventsRes, scenesRes] = await Promise.all([
-            fetch(`${EVENTS_API_URL}/events?list=live&limit=20&order=asc`),
-            fetch(HOT_SCENES_URL)
+            fetch(`${eventsApiUrl}/events?list=live&limit=20&order=asc&world=false`),
+            fetch(hotScenesUrl)
           ])
+
+          if (!eventsRes.ok || !scenesRes.ok) {
+            return { error: { status: 'FETCH_ERROR', error: 'Failed to fetch events or hot scenes' } }
+          }
 
           const eventsData: EventsResponse = await eventsRes.json()
           const scenesData: HotScene[] = await scenesRes.json()
@@ -57,7 +62,8 @@ const eventsClient = createApi({
                 image: matchedEvent.image,
                 coordinates: coordsKey(matchedEvent.x, matchedEvent.y),
                 url: matchedEvent.url,
-                isLive: true
+                isLive: true,
+                creatorAddress: matchedEvent.user
               })
               usedSceneIds.add(scene.id)
             }
@@ -77,33 +83,23 @@ const eventsClient = createApi({
               users: scene.usersTotalCount,
               image: scene.thumbnail,
               coordinates: coordsKey(scene.baseCoords[0], scene.baseCoords[1]),
-              url: `https://decentraland.org/jump?position=${scene.baseCoords[0]},${scene.baseCoords[1]}`,
+              url: `${jumpInUrl}?position=${scene.baseCoords[0]},${scene.baseCoords[1]}`,
               isLive: true
             })
           }
 
           // Fill with Genesis Plaza if fewer than MAX_CARDS
           if (cards.length < MAX_CARDS) {
-            const plaza = scenesData.find(s => s.name.toLowerCase().includes('genesis plaza'))
-            const plazaAlreadyIncluded = plaza && cards.some(c => c.id === plaza.id)
+            const plazaCard = buildPlazaCard(scenesData, jumpInUrl)
+            const plazaAlreadyIncluded = cards.some(c => c.id === plazaCard.id)
             if (!plazaAlreadyIncluded) {
-              const plazaCoords = plaza ? coordsKey(plaza.baseCoords[0], plaza.baseCoords[1]) : '0,0'
-              cards.push({
-                type: WhatsOnCardType.PLACE,
-                id: plaza?.id ?? 'genesis-plaza',
-                title: plaza?.name ?? 'Genesis Plaza',
-                users: plaza?.usersTotalCount ?? 0,
-                image: plaza?.thumbnail ?? '',
-                coordinates: plazaCoords,
-                url: `https://decentraland.org/jump?position=${plazaCoords}`,
-                isLive: true
-              })
+              cards.push(plazaCard)
             }
           }
 
           return { data: cards.slice(0, MAX_CARDS) }
         } catch (error) {
-          return { error: { status: 'CUSTOM_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
         }
       },
       providesTags: ['WhatsOn']
