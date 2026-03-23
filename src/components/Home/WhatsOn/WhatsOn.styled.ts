@@ -22,10 +22,11 @@ const SectionTitle = styled(Typography)({
 })
 
 const CardsGrid = styled(Box)(({ theme }) => ({
-  display: 'flex',
   justifyContent: 'center',
   gap: theme.spacing(2),
   width: 'calc(100% - 160px)',
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
   ['& > *']: {
     flex: '1 1 0',
     minWidth: 0

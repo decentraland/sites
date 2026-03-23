@@ -5,11 +5,13 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { WhatsOnCard } from './WhatsOnCard'
 import { CardsGrid, SectionTitle, WhatsOnContainer } from './WhatsOn.styled'
 
+const LOADING_PLACEHOLDERS = [0, 1, 2]
+
 const WhatsOn = memo(() => {
   const l = useFormatMessage()
-  const { data: cards = [] } = useGetWhatsOnCardsQuery(undefined, { pollingInterval: 60000 })
+  const { data: cards = [], isLoading } = useGetWhatsOnCardsQuery(undefined, { pollingInterval: 60000 })
 
-  if (cards.length === 0) return null
+  if (!isLoading && cards.length === 0) return null
 
   return (
     <WhatsOnContainer>
@@ -17,9 +19,9 @@ const WhatsOn = memo(() => {
       {/* TODO: migrate section title to Contentful */}
       <SectionTitle variant="h3">{l('component.home.whats_on.title')}</SectionTitle>
       <CardsGrid>
-        {cards.map(card => (
-          <WhatsOnCard key={card.id} card={card} />
-        ))}
+        {isLoading
+          ? LOADING_PLACEHOLDERS.map(i => <WhatsOnCard key={i} loading />)
+          : cards.map(card => <WhatsOnCard key={card.id} card={card} />)}
       </CardsGrid>
     </WhatsOnContainer>
   )
