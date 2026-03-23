@@ -39,6 +39,7 @@ interface WhatsOnCard {
   coordinates: string
   url: string
   creatorAddress?: string
+  creatorName?: string
 }
 
 export { WhatsOnCardType }
