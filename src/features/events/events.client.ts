@@ -74,13 +74,15 @@ const eventsClient = createApi({
           const scenesWithoutEvents = hotScenes.filter(s => !usedSceneIds.has(s.id)).sort((a, b) => b.usersTotalCount - a.usersTotalCount)
 
           for (const scene of scenesWithoutEvents) {
+            const isGenesis = scene.name.toLowerCase().includes('genesis plaza')
             cards.push({
               type: WhatsOnCardType.PLACE,
               id: scene.id,
               title: scene.name,
               users: scene.usersTotalCount,
               image: scene.thumbnail,
-              coordinates: coordsKey(scene.baseCoords[0], scene.baseCoords[1])
+              coordinates: coordsKey(scene.baseCoords[0], scene.baseCoords[1]),
+              ...(isGenesis && { creatorName: 'Decentraland Foundation' })
             })
           }
 
