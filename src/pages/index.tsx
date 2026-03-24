@@ -3,6 +3,7 @@ import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { FooterLanding } from 'decentraland-ui2/dist/components/FooterLanding/FooterLanding'
 import { CircularProgress, useDesktopMediaQuery } from 'decentraland-ui2'
 import { Hero } from '../components/Home/Hero'
+import { WhatsOn } from '../components/Home/WhatsOn'
 import { Layout } from '../components/Layout'
 import { useGetLandingHeroQuery } from '../features/landing/landing.client'
 import { Feed } from './index.types'
@@ -26,6 +27,8 @@ const IndexPage = () => {
       ) : (
         heroData && <Hero hero={heroData} isDesktop={isDesktop} />
       )}
+
+      <WhatsOn />
 
       <Suspense fallback={<SuspenseFallback />}>
         <FooterLanding />

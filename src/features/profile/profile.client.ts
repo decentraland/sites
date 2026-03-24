@@ -2,15 +2,14 @@ import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { Avatar } from '@dcl/schemas'
 import { getEnv } from '../../config/env'
 
-const PEER_URL = getEnv('PEER_URL') ?? 'https://peer.decentraland.zone'
-
 interface ProfileResponse {
   avatars: Avatar[]
 }
 
 async function fetchProfile(address: string): Promise<ProfileResponse | null> {
   try {
-    const response = await fetch(`${PEER_URL}/lambdas/profiles/${address.toLowerCase()}`)
+    const peerUrl = getEnv('PEER_URL')
+    const response = await fetch(`${peerUrl}/lambdas/profiles/${address.toLowerCase()}`)
     if (!response.ok) return null
     const data = await response.json()
     return Array.isArray(data) ? data[0] : data

@@ -314,6 +314,10 @@
         "jump_in": "Jump In",
         "already_user": "Already have an account? {download}",
         "download": "Download"
+      },
+      "whats_on": {
+        "title": "What's On",
+        "live": "Live"
       }
     }
   }

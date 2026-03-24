@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { networkReducer, transactionsReducer, walletReducer } from '@dcl/core-web3'
+import { eventsClient } from '../features/events/events.client'
 import { profileClient } from '../features/profile/profile.client'
 import { api } from '../services/api'
 
@@ -9,6 +10,7 @@ const store = configureStore({
     transactions: transactionsReducer,
     wallet: walletReducer,
     [api.reducerPath]: api.reducer,
+    [eventsClient.reducerPath]: eventsClient.reducer,
     [profileClient.reducerPath]: profileClient.reducer
   },
   middleware: getDefaultMiddleware =>
@@ -16,7 +18,7 @@ const store = configureStore({
       serializableCheck: {
         ignoredActions: ['persist/PERSIST']
       }
-    }).concat(api.middleware, profileClient.middleware),
+    }).concat(api.middleware, eventsClient.middleware, profileClient.middleware),
   devTools: import.meta.env.MODE !== 'production'
 })
 
