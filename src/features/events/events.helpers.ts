@@ -1,5 +1,5 @@
 import { WhatsOnCardType } from './events.types'
-import type { EventEntry, HotScene, WhatsOnCard } from './events.types'
+import type { EventEntry, HotScene, WhatsOn } from './events.types'
 
 function coordsKey(x: number, y: number): string {
   return `${x},${y}`
@@ -16,7 +16,7 @@ function findEventAtCoords(events: EventEntry[], parcels: Array<[number, number]
   return undefined
 }
 
-function buildPlazaCard(scenesData: HotScene[], jumpInUrl: string): WhatsOnCard {
+function buildPlazaCard(scenesData: HotScene[]): WhatsOn {
   const plaza = scenesData.find(s => s.name.toLowerCase().includes('genesis plaza'))
   const plazaCoords = plaza ? coordsKey(plaza.baseCoords[0], plaza.baseCoords[1]) : '0,0'
   return {
@@ -26,7 +26,6 @@ function buildPlazaCard(scenesData: HotScene[], jumpInUrl: string): WhatsOnCard 
     users: plaza?.usersTotalCount ?? 0,
     image: plaza?.thumbnail ?? '',
     coordinates: plazaCoords,
-    url: `${jumpInUrl}?position=${plazaCoords}`,
     creatorName: 'Decentraland Foundation'
   }
 }

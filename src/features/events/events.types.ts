@@ -30,17 +30,16 @@ enum WhatsOnCardType {
   PLACE = 'place'
 }
 
-interface WhatsOnCard {
+interface WhatsOn {
   type: WhatsOnCardType
   id: string
   title: string
   users: number
   image: string
   coordinates: string
-  url: string
   creatorAddress?: string
   creatorName?: string
 }
 
 export { WhatsOnCardType }
-export type { EventEntry, EventsResponse, HotScene, WhatsOnCard }
+export type { EventEntry, EventsResponse, HotScene, WhatsOn }

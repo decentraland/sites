@@ -8,7 +8,7 @@ interface ProfileResponse {
 
 async function fetchProfile(address: string): Promise<ProfileResponse | null> {
   try {
-    const peerUrl = getEnv('PEER_URL') ?? 'https://peer.decentraland.zone'
+    const peerUrl = getEnv('PEER_URL')
     const response = await fetch(`${peerUrl}/lambdas/profiles/${address.toLowerCase()}`)
     if (!response.ok) return null
     const data = await response.json()

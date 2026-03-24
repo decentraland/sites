@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { getEnv } from '../../config/env'
 import { buildPlazaCard, coordsKey, findEventAtCoords } from './events.helpers'
 import { WhatsOnCardType } from './events.types'
-import type { EventsResponse, HotScene, WhatsOnCard } from './events.types'
+import type { EventsResponse, HotScene, WhatsOn } from './events.types'
 
 /**
  * WhatsOn cards logic:
@@ -25,12 +25,11 @@ const eventsClient = createApi({
   tagTypes: ['WhatsOn'],
   keepUnusedDataFor: 60,
   endpoints: build => ({
-    getWhatsOnCards: build.query<WhatsOnCard[], void>({
+    getWhatsOnCards: build.query<WhatsOn[], void>({
       queryFn: async () => {
         try {
           const eventsApiUrl = getEnv('EVENTS_API_URL') || 'https://events.decentraland.org/api'
           const hotScenesUrl = getEnv('HOT_SCENES_URL') || 'https://realm-provider-ea.decentraland.org/hot-scenes'
-          const jumpInUrl = getEnv('JUMP_IN_URL') || 'https://decentraland.org/jump'
 
           const [eventsRes, scenesRes] = await Promise.all([
             fetch(`${eventsApiUrl}/events?list=live&limit=20&order=asc&world=false`),
@@ -38,22 +37,22 @@ const eventsClient = createApi({
           ])
 
           if (!eventsRes.ok || !scenesRes.ok) {
-            return { error: { status: 'FETCH_ERROR', error: 'Failed to fetch events or hot scenes' } }
+            throw new Error('Failed to fetch events or hot scenes')
           }
 
-          const eventsData: EventsResponse = await eventsRes.json()
-          const scenesData: HotScene[] = await scenesRes.json()
+          const [eventsData, scenesData]: [EventsResponse, HotScene[]] = await Promise.all([eventsRes.json(), scenesRes.json()])
 
           const liveEvents = eventsData.data ?? []
           const hotScenes = scenesData.filter(s => s.usersTotalCount >= MIN_USERS)
 
-          const cards: WhatsOnCard[] = []
+          const cards: WhatsOn[] = []
           const usedSceneIds = new Set<string>()
+          const usedEventIds = new Set<string>()
 
           // Priority 1: events that match a hot scene (have real users)
           for (const scene of hotScenes) {
             const matchedEvent = findEventAtCoords(liveEvents, scene.parcels)
-            if (matchedEvent) {
+            if (matchedEvent && !usedEventIds.has(matchedEvent.id)) {
               cards.push({
                 type: WhatsOnCardType.EVENT,
                 id: matchedEvent.id,
@@ -61,10 +60,10 @@ const eventsClient = createApi({
                 users: scene.usersTotalCount,
                 image: matchedEvent.image,
                 coordinates: coordsKey(matchedEvent.x, matchedEvent.y),
-                url: matchedEvent.url,
                 creatorAddress: matchedEvent.user
               })
               usedSceneIds.add(scene.id)
+              usedEventIds.add(matchedEvent.id)
             }
           }
 
@@ -81,14 +80,13 @@ const eventsClient = createApi({
               title: scene.name,
               users: scene.usersTotalCount,
               image: scene.thumbnail,
-              coordinates: coordsKey(scene.baseCoords[0], scene.baseCoords[1]),
-              url: `${jumpInUrl}?position=${scene.baseCoords[0]},${scene.baseCoords[1]}`
+              coordinates: coordsKey(scene.baseCoords[0], scene.baseCoords[1])
             })
           }
 
           // Fill with Genesis Plaza if fewer than MAX_CARDS
           if (cards.length < MAX_CARDS) {
-            const plazaCard = buildPlazaCard(scenesData, jumpInUrl)
+            const plazaCard = buildPlazaCard(scenesData)
             const plazaAlreadyIncluded = cards.some(c => c.id === plazaCard.id)
             if (!plazaAlreadyIncluded) {
               cards.push(plazaCard)
