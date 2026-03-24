@@ -2,10 +2,10 @@ import { memo } from 'react'
 import type { Avatar } from '@dcl/schemas'
 import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
 import { WhatsOnCardType } from '../../../features/events/events.types'
-import type { WhatsOnCard } from '../../../features/events/events.types'
+import type { WhatsOn } from '../../../features/events/events.types'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
 
-const WhatsOnCard = memo(({ card, loading }: { card?: WhatsOnCard; loading?: boolean }) => {
+const WhatsOnCard = memo(({ card, loading }: { card?: WhatsOn; loading?: boolean }) => {
   const { data: profile } = useGetProfileQuery(card?.creatorAddress, { skip: !card?.creatorAddress })
   const fetchedAvatar = profile?.avatars?.[0]
   const avatar: Avatar | undefined =
