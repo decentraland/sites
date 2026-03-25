@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { AuthIdentity } from '@dcl/crypto'
 import { useNotifications } from '@dcl/hooks'
-import { NotificationActiveTab, Profile, dclAddressUtils } from 'decentraland-ui2'
+import { NotificationActiveTab } from 'decentraland-ui2'
 import type { NotificationLocale, NotificationsProps } from 'decentraland-ui2'
 import { getEnv } from '../../config/env'
 
@@ -65,16 +65,6 @@ function usePageNotifications(props: UsePageNotificationsProps): UsePageNotifica
     [handleOnChangeModalTab]
   )
 
-  const renderProfile = useCallback(
-    (profileAddress: string) => (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-        <Profile address={profileAddress} size="normal" imageOnly />
-        {dclAddressUtils.shorten(profileAddress)}
-      </div>
-    ),
-    []
-  )
-
   const notificationProps = useMemo<NotificationsProps | undefined>(() => {
     if (!isNotificationsEnabled) {
       return undefined
@@ -90,8 +80,7 @@ function usePageNotifications(props: UsePageNotificationsProps): UsePageNotifica
       onClick: handleNotificationsOpen,
       onClose: handleNotificationsOpen,
       onBegin: handleOnBegin,
-      onChangeTab: handleChangeTab,
-      renderProfile
+      onChangeTab: handleChangeTab
     }
   }, [
     isNotificationsEnabled,
@@ -103,8 +92,7 @@ function usePageNotifications(props: UsePageNotificationsProps): UsePageNotifica
     modalActiveTab,
     handleNotificationsOpen,
     handleOnBegin,
-    handleChangeTab,
-    renderProfile
+    handleChangeTab
   ])
 
   return { notificationProps }
