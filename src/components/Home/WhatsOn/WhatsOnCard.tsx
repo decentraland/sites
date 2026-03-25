@@ -9,7 +9,7 @@ const WhatsOnCard = memo(({ card, loading }: { card?: WhatsOn; loading?: boolean
   const { data: profile } = useGetProfileQuery(card?.creatorAddress, { skip: !card?.creatorAddress })
   const fetchedAvatar = profile?.avatars?.[0]
   const avatar: Avatar | undefined =
-    fetchedAvatar ?? (card?.creatorName ? ({ name: card.creatorName, ethAddress: '' } as Avatar) : undefined)
+    (fetchedAvatar as Avatar | undefined) ?? (card?.creatorName ? ({ name: card.creatorName, ethAddress: '' } as Avatar) : undefined)
 
   return (
     <EventCard
