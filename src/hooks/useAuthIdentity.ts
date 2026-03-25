@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useWallet } from '@dcl/core-web3'
 import type { AuthIdentity } from '@dcl/crypto'
-import { LocalStorageUtils } from '@dcl/single-sign-on-client'
+import { localStorageGetIdentity } from '@dcl/single-sign-on-client'
 
 type UseAuthIdentityResult = {
   identity: AuthIdentity | undefined
@@ -21,7 +21,7 @@ function useAuthIdentity(): UseAuthIdentityResult {
     }
 
     try {
-      const result = LocalStorageUtils.getIdentity(walletAddress.toLowerCase())
+      const result = localStorageGetIdentity(walletAddress.toLowerCase())
       setIdentity(result ?? undefined)
     } catch (error) {
       console.error('[useAuthIdentity] Failed to get identity:', error)
