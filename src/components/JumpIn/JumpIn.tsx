@@ -1,8 +1,6 @@
 import { memo, useCallback } from 'react'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
-import { JumpInIcon } from 'decentraland-ui2'
+import { JumpInIcon, muiIcons } from 'decentraland-ui2'
 import { getEnv } from '../../config/env'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
@@ -12,6 +10,8 @@ import { SectionViewedTrack } from '../../modules/segment'
 import { CTAButton } from '../Buttons/CTAButton'
 import { VerifiedIcon } from '../Icon/VerifiedIcon'
 import { AlreadyUserContainer, AlreadyUserLink, JumpInButtonWrapper, JumpInContainer, JumpInDownloadCounts } from './JumpIn.styled'
+
+const { FileDownloadOutlined: FileDownloadOutlinedIcon } = muiIcons
 
 interface JumpInProps {
   isDesktop: boolean

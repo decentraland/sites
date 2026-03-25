@@ -1,6 +1,7 @@
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import { AnimatedBackground } from 'decentraland-ui2'
-import { useGetWhatsOnCardsQuery } from '../../../features/events/events.client'
+import { useGetWhatsOnDataQuery } from '../../../features/events/events.client'
+import { buildWhatsOnCards } from '../../../features/events/events.helpers'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { WhatsOnCard } from './WhatsOnCard'
 import { CardsGrid, SectionTitle, WhatsOnContainer } from './WhatsOn.styled'
@@ -9,7 +10,12 @@ const LOADING_PLACEHOLDERS = [0, 1, 2]
 
 const WhatsOn = memo(() => {
   const l = useFormatMessage()
-  const { data: cards = [], isLoading } = useGetWhatsOnCardsQuery(undefined, { pollingInterval: 60000 })
+  const { data, isLoading } = useGetWhatsOnDataQuery(undefined, { pollingInterval: 60000 })
+
+  const cards = useMemo(() => {
+    if (!data) return []
+    return buildWhatsOnCards(data.liveEvents, data.hotScenes)
+  }, [data])
 
   if (!isLoading && cards.length === 0) return null
 

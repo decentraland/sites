@@ -4,7 +4,6 @@ import { FooterLanding } from 'decentraland-ui2/dist/components/FooterLanding/Fo
 import { CircularProgress, useDesktopMediaQuery } from 'decentraland-ui2'
 import { Hero } from '../components/Home/Hero'
 import { WhatsOn } from '../components/Home/WhatsOn'
-import { Layout } from '../components/Layout'
 import { useGetLandingHeroQuery } from '../features/landing/landing.client'
 import { Feed } from './index.types'
 import { LoadingContainer, SuspenseFallback } from './index.styled'
@@ -19,7 +18,7 @@ const IndexPage = () => {
   const isLoading = isLoadingUserAgentData || isLoadingHero
 
   return (
-    <Layout>
+    <>
       {isLoading ? (
         <LoadingContainer>
           <CircularProgress color="inherit" />
@@ -33,7 +32,7 @@ const IndexPage = () => {
       <Suspense fallback={<SuspenseFallback />}>
         <FooterLanding />
       </Suspense>
-    </Layout>
+    </>
   )
 }
 
