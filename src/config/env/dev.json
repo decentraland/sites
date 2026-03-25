@@ -10,5 +10,6 @@
   "DOWNLOAD_COUNTS_URL": "https://cdn-data.decentraland.org/public/current/explorer-alpha-downloads.json",
   "EVENTS_API_URL": "https://events.decentraland.zone/api",
   "HOT_SCENES_URL": "https://realm-provider-ea.decentraland.org/hot-scenes",
-  "JUMP_IN_URL": "https://decentraland.zone/jump"
+  "JUMP_IN_URL": "https://decentraland.zone/jump",
+  "NOTIFICATIONS_API_URL": "https://notifications.decentraland.zone"
 }
