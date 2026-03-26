@@ -17,8 +17,8 @@ async function loadRemoteModule(remoteName: string, exposedModule: string): Prom
     return { default: factory() }
   }
 
-  // eslint-disable-next-line import/no-unresolved
-  return import('whats_on/App')
+  const modulePath = `${remoteName}/${exposedModule.replace('./', '')}`
+  return import(/* @vite-ignore */ modulePath)
 }
 
 const WhatsOnRemote = lazy(() => loadRemoteModule('whats_on', './App'))
