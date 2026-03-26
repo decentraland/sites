@@ -7,7 +7,6 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 // eslint-disable-next-line import/no-default-export
 export default defineConfig(({ command, mode }) => {
   const envVariables = loadEnv(mode, process.cwd())
-
   return {
     resolve: {
       dedupe: ['@emotion/react', '@emotion/styled', '@mui/material']
@@ -21,7 +20,7 @@ export default defineConfig(({ command, mode }) => {
       federation({
         name: 'landing_host',
         remotes: {
-          whats_on: envVariables.VITE_WHATS_ON_REMOTE_URL || 'http://localhost:5001/assets/remoteEntry.js'
+          ...(envVariables.VITE_WHATS_ON_REMOTE_URL ? { whats_on: envVariables.VITE_WHATS_ON_REMOTE_URL } : {})
         },
         shared: {
           react: { singleton: true, requiredVersion: '^18.3.0' },
