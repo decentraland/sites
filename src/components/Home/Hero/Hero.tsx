@@ -1,33 +1,59 @@
-import { memo } from 'react'
-import { useWallet } from '@dcl/core-web3'
-import { DownloadOptions } from '../../DownloadOptions'
-import { JumpIn } from '../../JumpIn'
-import type { HeroProps } from './Hero.types'
-import { HeroBackground, HeroContainer, HeroContent, HeroOverlay, HeroSubtitle, HeroTitle } from './Hero.styled'
+import { memo, useCallback } from 'react'
+import { JumpInIcon } from 'decentraland-ui2'
+import { getEnv } from '../../../config/env'
+import { heroContent } from '../../../data/static-content'
+import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
+import { SectionViewedTrack } from '../../../modules/segment'
+import {
+  GradientBottom,
+  GradientTop,
+  HangOutButton,
+  HeroBackground,
+  HeroContainer,
+  HeroContent,
+  HeroTitle,
+  JumpInIconWrapper
+} from './Hero.styled'
 
-const Hero = memo(({ hero, isDesktop }: HeroProps) => {
-  const backgroundImage = isDesktop ? hero.imageLandscape?.url : hero.imagePortrait?.url
-  const backgroundVideo = isDesktop ? hero.videoLandscape?.url : hero.videoPortrait?.url
-  const { isConnected } = useWallet()
+const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
+  const onClickHandle = useTrackClick()
+
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault()
+      onClickHandle(event)
+      const href = getEnv('ONBOARDING_URL')!
+      setTimeout(() => {
+        window.location.href = href
+      }, 500)
+    },
+    [onClickHandle]
+  )
 
   return (
     <HeroContainer>
-      {(backgroundVideo || backgroundImage) && (
-        <HeroBackground>
-          {backgroundVideo ? (
-            <video autoPlay loop muted playsInline poster={backgroundImage}>
-              <source src={backgroundVideo} type={hero.videoLandscape?.mimeType || 'video/mp4'} />
-            </video>
-          ) : (
-            <img src={backgroundImage} alt="" />
-          )}
-        </HeroBackground>
-      )}
-      <HeroOverlay />
+      <HeroBackground>
+        <video autoPlay loop muted playsInline poster="/landing_hero.png" preload="none">
+          <source src={heroContent.backgroundVideo} type="video/mp4" />
+        </video>
+      </HeroBackground>
+      <GradientTop />
+      <GradientBottom />
       <HeroContent>
-        <HeroTitle variant="h2">{hero.title}</HeroTitle>
-        {hero.subtitle?.text && <HeroSubtitle variant="h4">{hero.subtitle.text}</HeroSubtitle>}
-        {isConnected ? <DownloadOptions /> : <JumpIn isDesktop={isDesktop} hideAlreadyUser hideDownloadCounts />}
+        <HeroTitle variant={isDesktop ? 'h2' : 'h3'}>{heroContent.title}</HeroTitle>
+        <HangOutButton
+          variant="contained"
+          data-place={SectionViewedTrack.LANDING_HERO}
+          data-event="click"
+          onClick={handleClick}
+          endIcon={
+            <JumpInIconWrapper>
+              <JumpInIcon />
+            </JumpInIconWrapper>
+          }
+        >
+          HANG OUT NOW
+        </HangOutButton>
       </HeroContent>
     </HeroContainer>
   )

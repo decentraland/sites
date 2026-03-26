@@ -7,8 +7,10 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 // eslint-disable-next-line import/no-default-export
 export default defineConfig(({ command, mode }) => {
   const envVariables = loadEnv(mode, process.cwd())
-
   return {
+    resolve: {
+      dedupe: ['@emotion/react', '@emotion/styled', '@mui/material']
+    },
     plugins: [
       react(),
       nodePolyfills({
@@ -48,11 +50,6 @@ export default defineConfig(({ command, mode }) => {
     server: {
       /* eslint-disable @typescript-eslint/naming-convention */
       proxy: {
-        '/api/cms': {
-          target: 'https://cms.decentraland.org',
-          changeOrigin: true,
-          rewrite: path => path.replace(/^\/api\/cms/, '')
-        },
         '/auth': {
           target: 'https://decentraland.zone',
           changeOrigin: true,
