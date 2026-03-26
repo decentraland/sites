@@ -14,14 +14,15 @@ jobs:
 
     permissions:
       id-token: write
+      contents: read
 
     steps:
       - uses: actions/checkout@main
 
-      - name: Use Node.js 20.x
+      - name: Use Node.js 24.x
         uses: actions/setup-node@v4.0.1
         with:
-          node-version: 20.x
+          node-version: 24.x
 
       - name: Set package.json version
         uses: decentraland/oddish-action@master
@@ -30,15 +31,12 @@ jobs:
           only-update-versions: true
 
       - name: Install
-        run: npm ci
+        run: npm install
         env:
           HUSKY: 0
 
       - name: Build
         run: npm run build
-        env:
-          NODE_PATH: 'src'
-          NODE_OPTIONS: '--max-old-space-size=6144'
 
       - name: Publish
         uses: decentraland/oddish-action@master
