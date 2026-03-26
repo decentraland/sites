@@ -7,6 +7,7 @@ import type {
   ContentfulMissionsListProps,
   ContentfulSocialProofListProps,
   ContentfulTextMarqueeEntry,
+  ContentfulWeeklyRitualsProps,
   ContentfulWhatsHotListProps
 } from './landing.types'
 
@@ -272,4 +273,34 @@ function mapFaq(entry: ContentfulEntry): ContentfulFaqEntriesProps {
   return { list }
 }
 
-export { mapBannerCta, mapContentfulAsset, mapFaq, mapHero, mapMissions, mapSocialProof, mapTextMarquee, mapWhatsHot }
+function mapWeeklyRituals(entry: ContentfulEntry): ContentfulWeeklyRitualsProps {
+  if (!entry || !entry.fields) {
+    return { title: '', list: [] }
+  }
+
+  const fields = entry.fields as {
+    title?: string
+    list?: ContentfulEntry[]
+  }
+
+  const list = (fields.list ?? []).map((item: ContentfulEntry) => {
+    const cardFields = item.fields as {
+      title?: string
+      image?: ContentfulEntry | null
+      buttonLink?: string
+    }
+    return {
+      title: cardFields?.title ?? '',
+      image: mapContentfulAsset(cardFields?.image) || ({} as ContentfulMediaProps),
+      buttonLink: cardFields?.buttonLink ?? '',
+      id: item.sys?.id || ''
+    }
+  })
+
+  return {
+    title: (fields.title as string) || '',
+    list
+  }
+}
+
+export { mapBannerCta, mapContentfulAsset, mapFaq, mapHero, mapMissions, mapSocialProof, mapTextMarquee, mapWeeklyRituals, mapWhatsHot }

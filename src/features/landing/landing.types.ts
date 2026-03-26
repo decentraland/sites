@@ -143,6 +143,18 @@ interface ContentfulLandingContentProps {
   socialProof: ContentfulSocialProofListProps
 }
 
+interface ContentfulWeeklyRitualsCardProps {
+  title: string
+  image: ContentfulMediaProps
+  buttonLink: string
+  id: string
+}
+
+interface ContentfulWeeklyRitualsProps {
+  title: string
+  list: ContentfulWeeklyRitualsCardProps[]
+}
+
 export type {
   ContentfulBannerCTAEntryFieldsProps,
   ContentfulFaqEntriesProps,
@@ -156,6 +168,8 @@ export type {
   ContentfulSocialProofQuoteEntryFieldsProps,
   ContentfulSocialProofVideoEntryFieldsProps,
   ContentfulTextMarqueeEntry,
+  ContentfulWeeklyRitualsCardProps,
+  ContentfulWeeklyRitualsProps,
   ContentfulWhatsHotEntriesProps,
   ContentfulWhatsHotListProps
 }

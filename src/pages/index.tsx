@@ -2,7 +2,10 @@ import { Suspense } from 'react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { FooterLanding } from 'decentraland-ui2/dist/components/FooterLanding/FooterLanding'
 import { CircularProgress, useDesktopMediaQuery } from 'decentraland-ui2'
+import { CatchTheVibe } from '../components/Home/CatchTheVibe'
+import { ComeHangOut } from '../components/Home/ComeHangOut'
 import { Hero } from '../components/Home/Hero'
+import { WeeklyRituals } from '../components/Home/WeeklyRituals'
 import { WhatsOn } from '../components/Home/WhatsOn'
 import { useGetLandingHeroQuery } from '../features/landing/landing.client'
 import { Feed } from './index.types'
@@ -28,6 +31,12 @@ const IndexPage = () => {
       )}
 
       <WhatsOn />
+
+      <CatchTheVibe />
+
+      <WeeklyRituals />
+
+      <ComeHangOut />
 
       <Suspense fallback={<SuspenseFallback />}>
         <FooterLanding />
