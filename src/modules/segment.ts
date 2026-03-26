@@ -18,7 +18,10 @@ enum SegmentEvent {
   MISSIONS_CREATE = 'create',
   MISSIONS_INFLUENCE = 'influence',
   INVITE_HERO = 'Invite Hero',
-  CLICK = 'Click'
+  CLICK = 'Click',
+  DOWNLOAD_STARTED = 'download_started',
+  DOWNLOAD_SUCCESS = 'download_success',
+  DOWNLOAD_FAILED = 'download_failed'
 }
 
 enum SectionViewedTrack {
