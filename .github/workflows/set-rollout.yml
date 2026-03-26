@@ -24,7 +24,7 @@ jobs:
           packageVersion: ${{ github.event.deployment.payload.packageVersion }}
 
           # Rollout information
-          deploymentPath: 'landing-site-site'
+          deploymentPath: 'landing-site'
           deploymentEnvironment: 'zone'
           deploymentName: '_site'
           percentage: 100
