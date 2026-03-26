@@ -1,0 +1,1 @@
+export { BrandTerms } from './BrandTerms'
