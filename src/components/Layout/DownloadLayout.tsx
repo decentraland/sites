@@ -1,6 +1,10 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
-import { Button, Typography, launchDesktopApp, muiIcons, useDesktopMediaQuery } from 'decentraland-ui2'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
+import { Button, Typography, launchDesktopApp, useDesktopMediaQuery } from 'decentraland-ui2'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { DownloadOptions } from '../DownloadOptions'
 import { WrapDecentralandText } from '../WrapDecentralandText'
@@ -26,9 +30,6 @@ import {
   ShareButton,
   ShareContainer
 } from './DownloadLayout.styled'
-
-const FileDownloadOutlinedIcon = muiIcons.FileDownloadOutlined
-const ShareOutlinedIcon = muiIcons.ShareOutlined
 
 const DownloadLayout = memo((props: DownloadLayoutProps) => {
   const { title } = props
