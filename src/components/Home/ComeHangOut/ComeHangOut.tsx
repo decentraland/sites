@@ -1,5 +1,5 @@
 import { memo, useCallback } from 'react'
-import { JumpInIcon } from 'decentraland-ui2'
+import { AnimatedBackground, JumpInIcon } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { SectionViewedTrack } from '../../../modules/segment'
@@ -22,6 +22,7 @@ const ComeHangOut = memo(() => {
 
   return (
     <ComeHangOutContainer>
+      <AnimatedBackground variant="absolute" />
       <Content>
         <Title variant="h2">Come Hang Out</Title>
         <HangOutButton

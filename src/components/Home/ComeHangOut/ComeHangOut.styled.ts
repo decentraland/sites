@@ -9,9 +9,6 @@ const ComeHangOutContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   height: 840,
   overflow: 'hidden',
-  backgroundImage: 'url(/jump_into_background.png)',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
   [theme.breakpoints.down('sm')]: {
     height: 600
   }

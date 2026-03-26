@@ -1,46 +1,53 @@
-import { Suspense } from 'react'
+import { Suspense, lazy } from 'react'
+import { useInView } from 'react-intersection-observer'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
-import { FooterLanding } from 'decentraland-ui2/dist/components/FooterLanding/FooterLanding'
 import { CircularProgress, useDesktopMediaQuery } from 'decentraland-ui2'
-import { CatchTheVibe } from '../components/Home/CatchTheVibe'
-import { ComeHangOut } from '../components/Home/ComeHangOut'
 import { Hero } from '../components/Home/Hero'
-import { WeeklyRituals } from '../components/Home/WeeklyRituals'
-import { WhatsOn } from '../components/Home/WhatsOn'
-import { useGetLandingHeroQuery } from '../features/landing/landing.client'
 import { Feed } from './index.types'
 import { LoadingContainer, SuspenseFallback } from './index.styled'
 
+const WhatsOn = lazy(() => import('../components/Home/WhatsOn').then(m => ({ default: m.WhatsOn })))
+const CatchTheVibe = lazy(() => import('../components/Home/CatchTheVibe').then(m => ({ default: m.CatchTheVibe })))
+const WeeklyRituals = lazy(() => import('../components/Home/WeeklyRituals').then(m => ({ default: m.WeeklyRituals })))
+const ComeHangOut = lazy(() => import('../components/Home/ComeHangOut').then(m => ({ default: m.ComeHangOut })))
+const FooterLanding = lazy(() =>
+  import('decentraland-ui2/dist/components/FooterLanding/FooterLanding').then(m => ({ default: m.FooterLanding }))
+)
+
 const IndexPage = () => {
   const isDesktop = useDesktopMediaQuery()
-
   const [isLoadingUserAgentData] = useAdvancedUserAgentData()
-
-  const { data: heroData, isLoading: isLoadingHero } = useGetLandingHeroQuery()
-
-  const isLoading = isLoadingUserAgentData || isLoadingHero
+  const { ref: belowFoldRef, inView: belowFoldInView } = useInView({ triggerOnce: true, rootMargin: '200px' })
+  const { ref: footerRef, inView: footerInView } = useInView({ triggerOnce: true, rootMargin: '400px' })
 
   return (
     <>
-      {isLoading ? (
+      {isLoadingUserAgentData ? (
         <LoadingContainer>
           <CircularProgress color="inherit" />
         </LoadingContainer>
       ) : (
-        heroData && <Hero hero={heroData} isDesktop={isDesktop} />
+        <Hero isDesktop={isDesktop} />
       )}
-
-      <WhatsOn />
-
-      <CatchTheVibe />
-
-      <WeeklyRituals />
-
-      <ComeHangOut />
-
       <Suspense fallback={<SuspenseFallback />}>
-        <FooterLanding />
+        <WhatsOn />
       </Suspense>
+      <div ref={belowFoldRef}>
+        {belowFoldInView && (
+          <Suspense fallback={<SuspenseFallback />}>
+            <CatchTheVibe />
+            <WeeklyRituals />
+            <ComeHangOut />
+          </Suspense>
+        )}
+      </div>
+      <div ref={footerRef}>
+        {footerInView && (
+          <Suspense fallback={<SuspenseFallback />}>
+            <FooterLanding />
+          </Suspense>
+        )}
+      </div>
     </>
   )
 }

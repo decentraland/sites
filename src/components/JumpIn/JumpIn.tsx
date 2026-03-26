@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
-import { JumpInIcon, muiIcons } from 'decentraland-ui2'
+import { JumpInIcon } from 'decentraland-ui2'
 import { getEnv } from '../../config/env'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
@@ -10,8 +10,6 @@ import { SectionViewedTrack } from '../../modules/segment'
 import { CTAButton } from '../Buttons/CTAButton'
 import { VerifiedIcon } from '../Icon/VerifiedIcon'
 import { AlreadyUserContainer, AlreadyUserLink, JumpInButtonWrapper, JumpInContainer, JumpInDownloadCounts } from './JumpIn.styled'
-
-const { FileDownloadOutlined: FileDownloadOutlinedIcon } = muiIcons
 
 interface JumpInProps {
   isDesktop: boolean
@@ -58,7 +56,7 @@ const JumpIn = memo(({ isDesktop, isLoading, hideAlreadyUser, hideDownloadCounts
           {l('component.home.hero.already_user', {
             download: (
               <AlreadyUserLink href={`/download_success?os=${userAgentData.os.name}`}>
-                {l('component.home.hero.download')} <FileDownloadOutlinedIcon fontSize="large" />
+                {l('component.home.hero.download')} <img src="/JumpIn.svg" alt="" width={24} height={24} />
               </AlreadyUserLink>
             )
           })}

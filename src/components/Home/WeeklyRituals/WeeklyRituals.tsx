@@ -4,7 +4,7 @@ import 'swiper/css'
 import 'swiper/css/pagination'
 import { Autoplay, Navigation, Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { useGetWeeklyRitualsQuery } from '../../../features/landing/landing.client'
+import { weeklyRitualsContent } from '../../../data/static-content'
 import {
   CardImage,
   CarouselWrapper,
@@ -17,16 +17,11 @@ import {
 } from './WeeklyRituals.styled'
 
 const WeeklyRituals = memo(() => {
-  const { data, isLoading } = useGetWeeklyRitualsQuery()
   const swiperRef = useRef<SwiperType | null>(null)
-
-  if (isLoading || !data || data.list.length === 0) {
-    return null
-  }
 
   return (
     <WeeklyRitualsContainer>
-      <SectionTitle variant="h3">{data.title}</SectionTitle>
+      <SectionTitle variant="h3">{weeklyRitualsContent.title}</SectionTitle>
       <CarouselWrapper>
         <EdgeFadeLeft />
         <EdgeFadeRight />
@@ -48,8 +43,10 @@ const WeeklyRituals = memo(() => {
             swiperRef.current = swiper
           }}
         >
-          {data.list.map(card => (
-            <SwiperSlide key={card.id}>{card.image?.url && <CardImage src={card.image.url} alt={card.title} loading="lazy" />}</SwiperSlide>
+          {weeklyRitualsContent.cards.map(card => (
+            <SwiperSlide key={card.id}>
+              <CardImage src={card.imageUrl} alt={card.title} loading="lazy" />
+            </SwiperSlide>
           ))}
         </Swiper>
         <NavButtonPrev className="weekly-rituals-nav" onClick={() => swiperRef.current?.slidePrev()}>

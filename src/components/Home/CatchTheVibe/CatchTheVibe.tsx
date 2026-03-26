@@ -3,8 +3,7 @@ import 'swiper/css'
 import 'swiper/css/pagination'
 import { Autoplay, Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { getEnv } from '../../../config/env'
-import { useGetLandingSocialProofQuery } from '../../../features/landing/landing.client'
+import { catchTheVibeContent } from '../../../data/static-content'
 import {
   CardsRow,
   CatchTheVibeContainer,
@@ -20,47 +19,32 @@ import {
 } from './CatchTheVibe.styled'
 
 interface VideoItem {
-  video?: { url: string }
-  userName?: string
-  userAvatar?: { url: string }
+  videoUrl: string
+  userName: string
+  userAvatarUrl: string
 }
 
 const VideoCardContent = ({ item }: { item: VideoItem }) => (
   <VideoCard>
-    <VideoElement autoPlay loop muted playsInline src={item.video?.url} />
-    {item.userName && (
-      <VideoCardFooter>
-        <UserInfo>
-          {item.userAvatar?.url && <UserAvatar src={item.userAvatar.url} alt={item.userName} />}
-          <UserName>{item.userName}</UserName>
-        </UserInfo>
-      </VideoCardFooter>
-    )}
+    <VideoElement autoPlay loop muted playsInline preload="none" src={item.videoUrl} />
+    <VideoCardFooter>
+      <UserInfo>
+        <UserAvatar src={item.userAvatarUrl} alt={item.userName} />
+        <UserName>{item.userName}</UserName>
+      </UserInfo>
+    </VideoCardFooter>
   </VideoCard>
 )
 
 const CatchTheVibe = memo(() => {
-  const isConfigured = !!getEnv('CONTENTFUL_HOMEPAGE_CATCH_THE_VIBE_ID')
-  const { data, isLoading } = useGetLandingSocialProofQuery(undefined, { skip: !isConfigured })
-
-  const videoItems = (data?.list?.filter(item => item.type === 'video').slice(0, 2) ?? []) as unknown as VideoItem[]
-
-  if (!isConfigured || isLoading || videoItems.length === 0) {
-    return null
-  }
-
   return (
     <CatchTheVibeContainer>
-      <CatchTheVibeTitle variant="h3">Catch the Vibe</CatchTheVibeTitle>
-
-      {/* Desktop: 2 cards side by side */}
+      <CatchTheVibeTitle variant="h3">{catchTheVibeContent.title}</CatchTheVibeTitle>
       <CardsRow>
-        {videoItems.map((item, index) => (
+        {catchTheVibeContent.videos.map((item, index) => (
           <VideoCardContent key={index} item={item} />
         ))}
       </CardsRow>
-
-      {/* Mobile: carousel */}
       <MobileCarouselContainer>
         <Swiper
           modules={[Pagination, Autoplay]}
@@ -70,14 +54,13 @@ const CatchTheVibe = memo(() => {
           spaceBetween={0}
           slidesPerView={1}
         >
-          {videoItems.map((item, index) => (
+          {catchTheVibeContent.videos.map((item, index) => (
             <SwiperSlide key={index}>
               <VideoCardContent item={item} />
             </SwiperSlide>
           ))}
         </Swiper>
       </MobileCarouselContainer>
-
       <PersonaImage src="/persona.png" alt="" aria-hidden />
     </CatchTheVibeContainer>
   )
