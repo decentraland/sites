@@ -44,12 +44,19 @@ export default defineConfig(({ command, mode }) => {
       target: 'esnext',
       rollupOptions: {
         output: {
-          manualChunks: {
-            /* eslint-disable @typescript-eslint/naming-convention */
-            'vendor-react': ['react', 'react-dom'],
-            'vendor-mui': ['@mui/material', '@emotion/react', '@emotion/styled'],
-            'vendor-web3': ['wagmi', 'viem', '@coinbase/wallet-sdk']
-            /* eslint-enable @typescript-eslint/naming-convention */
+          // Function-based manualChunks: matches by resolved file path,
+          // so it works with transitive deps in nested node_modules
+          // (unlike object syntax which tries to resolve module names from root)
+          manualChunks(id) {
+            if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
+              return 'vendor-react'
+            }
+            if (id.includes('node_modules/@mui/') || id.includes('node_modules/@emotion/')) {
+              return 'vendor-mui'
+            }
+            if (id.includes('node_modules/wagmi') || id.includes('node_modules/viem') || id.includes('node_modules/@coinbase/')) {
+              return 'vendor-web3'
+            }
           }
         }
       }
