@@ -20,7 +20,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["@types/node", "@types/jest"]
+    "types": ["node", "jest", "react", "react-dom"]
   },
   "include": ["src"]
 }

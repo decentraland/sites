@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useWallet } from '@dcl/core-web3'
 import { usePageTracking } from '@dcl/hooks'
 import { Box, Footer, Navbar, NavbarPages, type NavbarProps } from 'decentraland-ui2'
@@ -88,7 +88,7 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
   return (
     <Box>
       {withNavbar && <Navbar {...navbarProps} />}
-      {children}
+      {children ?? <Outlet />}
       {withFooter && <Footer />}
     </Box>
   )

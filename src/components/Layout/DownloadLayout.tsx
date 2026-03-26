@@ -1,14 +1,8 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { useAsyncMemo } from '@dcl/hooks'
+import { useInView } from 'react-intersection-observer'
 import { Button, Typography, launchDesktopApp, muiIcons, useDesktopMediaQuery } from 'decentraland-ui2'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
-import backgroundImage from '../../images/download/download_background.webp'
-import { ExplorerDownloads } from '../../modules/explorerDownloads'
-import { formatToShorthand } from '../../modules/number'
-import { normalizeUserAgentArchitectureByOs } from '../../modules/userAgent'
-import backgroundVideo from '../../videos/download_background.webm'
-import { DownloadOptions } from '../Landing/DownloadOptions/DownloadOptions'
-import { OperativeSystem } from '../Landing/DownloadOptions/DownloadOptions.types'
+import { DownloadOptions } from '../DownloadOptions'
 import { WrapDecentralandText } from '../WrapDecentralandText'
 import { DownloadLayoutProps } from './DownloadLayout.types'
 import {
@@ -16,12 +10,12 @@ import {
   AlreadyDownloadedLink,
   AlreadyDownloadedText,
   DclLogo,
+  DownloadBackgroundOverlay,
   DownloadContainer,
   DownloadImageContainer,
   DownloadOptionsContainer,
   DownloadPageContainer,
-  DownloadVideo,
-  DownloadVideoOverlay,
+  DownloadTitle,
   DownloadWearablePreviewContainer,
   DownloadWearablePreviewOverlay,
   MobileTitle,
@@ -37,9 +31,8 @@ const FileDownloadOutlinedIcon = muiIcons.FileDownloadOutlined
 const ShareOutlinedIcon = muiIcons.ShareOutlined
 
 const DownloadLayout = memo((props: DownloadLayoutProps) => {
-  const { userAgentData, title, links, redirectPath } = props
+  const { title } = props
 
-  const [isClient, setIsClient] = useState(false)
   const [openModal, setOpenModal] = useState(false)
   // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-explicit-any
   const [WearablePreviewComponent, setWearablePreviewComponent] = useState<any>(null)
@@ -47,8 +40,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   const l = useFormatMessage()
   const isDesktop = useDesktopMediaQuery()
 
-  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
-  const os = searchParams?.get('os')
+  const { ref: wearableRef, inView } = useInView({ triggerOnce: true, rootMargin: '200px' })
 
   const handleJumpIn = useCallback(async () => {
     const hasLauncher = await launchDesktopApp({})
@@ -58,28 +50,16 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   }, [])
 
   useEffect(() => {
-    setIsClient(true)
-  }, [])
-
-  useEffect(() => {
-    if (isClient) {
+    if (inView) {
       import('decentraland-ui2/dist/components/WearablePreview/WearablePreview').then(module => {
         setWearablePreviewComponent(() => module.WearablePreview)
       })
     }
-  }, [isClient])
+  }, [inView])
 
   const randomDefaultProfile = useMemo(() => {
     return 'default' + (Math.floor(Math.random() * (160 - 1 + 1)) + 1)
   }, [])
-
-  useEffect(() => {
-    if (userAgentData && os) {
-      normalizeUserAgentArchitectureByOs(userAgentData, os as OperativeSystem)
-    }
-  }, [userAgentData, os])
-
-  const [downloads, downloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
 
   const handleShare = useCallback(() => {
     navigator.share({
@@ -91,7 +71,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
   return (
     <DownloadPageContainer>
-      <DownloadVideo src={backgroundVideo} poster={backgroundImage} autoPlay muted loop playsInline={true} />
+      <DownloadBackgroundOverlay />
 
       <DownloadContainer>
         <DclLogo onClick={() => (window.location.href = 'https://decentraland.org')} />
@@ -105,14 +85,10 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
               </AlreadyDownloadedText>
             </AlreadyDownloadedContainer>
             <DownloadOptionsContainer>
-              <DownloadOptions
-                userAgentData={userAgentData}
-                links={links}
-                title={title}
-                redirectPath={redirectPath}
-                hideLogo
-                downloadCounts={!downloadsStatus.loading && downloadsStatus.loaded ? formatToShorthand(downloads || 0) : undefined}
-              />
+              <DownloadTitle variant="h2">
+                <WrapDecentralandText text={title} />
+              </DownloadTitle>
+              <DownloadOptions downloadOnClick />
             </DownloadOptionsContainer>
           </>
         )}
@@ -124,10 +100,10 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
         )}
 
         <DownloadImageContainer>
-          <DownloadVideoOverlay />
+          <DownloadBackgroundOverlay />
           {!isDesktop && <DownloadWearablePreviewOverlay />}
-          <DownloadWearablePreviewContainer>
-            {isClient && WearablePreviewComponent && (
+          <DownloadWearablePreviewContainer ref={wearableRef}>
+            {WearablePreviewComponent && (
               <WearablePreviewComponent
                 unity
                 unityMode="profile"
