@@ -1,19 +1,17 @@
 import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react'
-import type { Avatar } from '@dcl/schemas'
+import { type LambdasClient, createLambdasClient } from 'dcl-catalyst-client'
+import type { Profile } from 'dcl-catalyst-client/dist/client/specs/lambdas-client'
 import { getEnv } from '../../config/env'
 
-const PEER_URL = getEnv('PEER_URL') ?? 'https://peer.decentraland.zone'
-
-interface ProfileResponse {
-  avatars: Avatar[]
+function getLambdasClient(): LambdasClient {
+  const peerUrl = getEnv('PEER_URL')
+  return createLambdasClient({ url: `${peerUrl}/lambdas`, fetcher: { fetch: fetch as never } })
 }
 
-async function fetchProfile(address: string): Promise<ProfileResponse | null> {
+async function fetchProfile(address: string): Promise<Profile | null> {
   try {
-    const response = await fetch(`${PEER_URL}/lambdas/profiles/${address.toLowerCase()}`)
-    if (!response.ok) return null
-    const data = await response.json()
-    return Array.isArray(data) ? data[0] : data
+    const client = getLambdasClient()
+    return await client.getAvatarDetails(address.toLowerCase())
   } catch {
     return null
   }
@@ -27,7 +25,7 @@ const profileClient = createApi({
   refetchOnFocus: false,
   refetchOnReconnect: false,
   endpoints: build => ({
-    getProfile: build.query<ProfileResponse | null, string | undefined>({
+    getProfile: build.query<Profile | null, string | undefined>({
       queryFn: async address => {
         if (!address) return { data: null }
         try {
@@ -44,4 +42,4 @@ const profileClient = createApi({
 
 const { useGetProfileQuery } = profileClient
 
-export { profileClient, useGetProfileQuery, type ProfileResponse }
+export { profileClient, useGetProfileQuery, type Profile }

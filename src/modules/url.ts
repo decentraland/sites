@@ -1,5 +1,5 @@
 import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
-import { Architecture } from '../components/Landing/DownloadOptions/DownloadOptions.types'
+import { Architecture } from '../types/download.types'
 
 const addQueryParamsToUrlString = (url: string, params: Record<string, string | undefined | null>): string => {
   if (!params || Object.keys(params).length === 0) {
