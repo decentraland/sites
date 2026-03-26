@@ -5,23 +5,38 @@ import { ErrorContainer, LoadingContainer } from './RemoteLoader.styled'
 
 const isDev = import.meta.env.DEV
 
-async function loadRemoteModule(remoteName: string, exposedModule: string): Promise<{ default: ComponentType }> {
-  const runtimeUrl = window.__REMOTE_URLS__?.[remoteName]
+/**
+ * If runtime URLs are injected by the worker, override the federation
+ * remote config before the first lazy load. This uses the plugin's
+ * internal __federation_method_setRemote to update the URL while keeping
+ * the shared scope resolution intact.
+ */
+async function initRuntimeRemotes() {
+  const urls = window.__REMOTE_URLS__
+  if (!urls) return
 
-  if (runtimeUrl) {
-    const container = await import(/* @vite-ignore */ runtimeUrl)
-    if (container.init) {
-      await container.init({})
+  try {
+    // eslint-disable-next-line import/no-unresolved
+    const federation = await import('virtual:__federation__')
+    for (const [remoteName, url] of Object.entries(urls)) {
+      federation.__federation_method_setRemote(remoteName, {
+        url,
+        format: 'esm',
+        from: 'vite'
+      })
     }
-    const factory = await container.get(exposedModule)
-    return { default: factory() }
+  } catch (e) {
+    console.error('[RemoteLoader] Failed to set runtime remote URLs:', e)
   }
-
-  const modulePath = `${remoteName}/${exposedModule.replace('./', '')}`
-  return import(/* @vite-ignore */ modulePath)
 }
 
-const WhatsOnRemote = lazy(() => loadRemoteModule('whats_on', './App'))
+const remoteInitPromise = initRuntimeRemotes()
+
+const WhatsOnRemote = lazy(async () => {
+  await remoteInitPromise
+  // eslint-disable-next-line import/no-unresolved
+  return import('whats_on/App')
+})
 
 const remoteMap: Record<string, LazyExoticComponent<ComponentType>> = {
   // eslint-disable-next-line @typescript-eslint/naming-convention
