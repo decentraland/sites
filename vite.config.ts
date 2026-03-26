@@ -9,6 +9,9 @@ export default defineConfig(({ command, mode }) => {
   const envVariables = loadEnv(mode, process.cwd())
 
   return {
+    resolve: {
+      dedupe: ['@emotion/react', '@emotion/styled', '@mui/material']
+    },
     plugins: [
       react(),
       nodePolyfills({
@@ -38,17 +41,30 @@ export default defineConfig(({ command, mode }) => {
       /* eslint-enable @typescript-eslint/naming-convention */
     ],
     build: {
-      target: 'esnext'
+      target: 'esnext',
+      rollupOptions: {
+        output: {
+          // Function-based manualChunks: matches by resolved file path,
+          // so it works with transitive deps in nested node_modules
+          // (unlike object syntax which tries to resolve module names from root)
+          manualChunks(id) {
+            if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
+              return 'vendor-react'
+            }
+            if (id.includes('node_modules/@mui/') || id.includes('node_modules/@emotion/')) {
+              return 'vendor-mui'
+            }
+            if (id.includes('node_modules/wagmi') || id.includes('node_modules/viem') || id.includes('node_modules/@coinbase/')) {
+              return 'vendor-web3'
+            }
+          }
+        }
+      }
     },
     ...(command === 'build' ? { base: envVariables.VITE_BASE_URL } : undefined),
     server: {
       /* eslint-disable @typescript-eslint/naming-convention */
       proxy: {
-        '/api/cms': {
-          target: 'https://cms.decentraland.org',
-          changeOrigin: true,
-          rewrite: path => path.replace(/^\/api\/cms/, '')
-        },
         '/auth': {
           target: 'https://decentraland.zone',
           changeOrigin: true,

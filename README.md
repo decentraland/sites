@@ -62,7 +62,7 @@ cp .env.example .env.development
 ### Running the UI
 
 ```bash
-npm run start
+npm run start || npm run dev
 ```
 
 ## Testing
