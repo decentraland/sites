@@ -48,6 +48,17 @@ const VideoCard = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
   backgroundColor: 'rgba(0, 0, 0, 0.6)',
   boxShadow: '0px 2px 4px 0px rgba(0, 0, 0, 0.04)',
+  cursor: 'pointer',
+  display: 'flex',
+  flexDirection: 'column',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:hover .catch-vibe-video': {
+    opacity: 1
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:hover .catch-vibe-image': {
+    opacity: 0
+  },
   [theme.breakpoints.down('lg')]: {
     height: 380
   },
@@ -56,22 +67,42 @@ const VideoCard = styled(Box)(({ theme }) => ({
   }
 }))
 
-const VideoElement = styled('video')({
+const MediaContainer = styled(Box)({
+  position: 'relative',
+  flex: 1,
+  minHeight: 0,
+  borderRadius: '24px',
+  overflow: 'hidden'
+})
+
+const CardImage = styled('img')({
+  position: 'absolute',
+  top: 0,
+  left: 0,
   width: '100%',
   height: '100%',
-  objectFit: 'cover'
+  objectFit: 'cover',
+  transition: 'opacity 0.4s ease',
+  zIndex: 1
+})
+
+const VideoElement = styled('video')({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+  opacity: 0,
+  transition: 'opacity 0.4s ease'
 })
 
 const VideoCardFooter = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  right: 0,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: theme.spacing(2),
-  background: 'linear-gradient(transparent, rgba(0, 0, 0, 0.7))'
+  padding: `${theme.spacing(2)} ${theme.spacing(1.5)} ${theme.spacing(2)} ${theme.spacing(2)}`,
+  flexShrink: 0
 }))
 
 const UserInfo = styled(Box)(({ theme }) => ({
@@ -80,22 +111,86 @@ const UserInfo = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1)
 }))
 
-const UserAvatar = styled('img')(({ theme }) => ({
+const ProfilePic = styled(Box)({
+  position: 'relative',
   width: 35,
   height: 35,
   borderRadius: '50%',
   border: '2.5px solid rgba(255, 255, 255, 0.5)',
-  objectFit: 'cover',
-  [theme.breakpoints.down('md')]: {
-    width: 28,
-    height: 28
-  }
-}))
+  backgroundColor: '#00B453',
+  flexShrink: 0
+})
+
+const UserAvatar = styled('img')({
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 30,
+  height: 30,
+  borderRadius: '50%',
+  objectFit: 'cover'
+})
+
+const GreenDot = styled(Box)({
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 30.5,
+  height: 30.5,
+  borderRadius: '50%',
+  backgroundColor: '#31C11A',
+  overflow: 'hidden',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center'
+})
 
 const UserName = styled(Typography)({
   color: dclColors.neutral.white,
   fontWeight: 600,
-  fontSize: 14
+  fontSize: 14,
+  lineHeight: 1.57
+})
+
+const CommunityLabel = styled(Typography)({
+  color: dclColors.neutral.white,
+  fontWeight: 600,
+  fontSize: 14,
+  lineHeight: 1.57
+})
+
+const PlayBadge = styled(Box)({
+  position: 'absolute',
+  bottom: 13,
+  left: 13,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  height: 26,
+  padding: '5.5px 6px',
+  borderRadius: 8,
+  backgroundColor: '#161518',
+  zIndex: 2,
+  transition: 'opacity 0.3s ease'
+})
+
+const PlayIcon = styled(Box)({
+  width: 0,
+  height: 0,
+  borderStyle: 'solid',
+  borderWidth: '5px 0 5px 8px',
+  borderColor: 'transparent transparent transparent #FCFCFC',
+  flexShrink: 0
+})
+
+const DurationText = styled(Typography)({
+  color: '#FCFCFC',
+  fontWeight: 600,
+  fontSize: 14,
+  lineHeight: 'normal',
+  whiteSpace: 'nowrap'
 })
 
 const PersonaImage = styled('img')(({ theme }) => ({
@@ -151,11 +246,19 @@ const MobileCarouselContainer = styled(Box)(({ theme }) => ({
 }))
 
 export {
+  CardImage,
   CardsRow,
+  MediaContainer,
   CatchTheVibeContainer,
   CatchTheVibeTitle,
+  CommunityLabel,
+  DurationText,
+  GreenDot,
   MobileCarouselContainer,
   PersonaImage,
+  PlayBadge,
+  PlayIcon,
+  ProfilePic,
   UserAvatar,
   UserInfo,
   UserName,

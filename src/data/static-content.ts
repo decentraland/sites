@@ -4,19 +4,21 @@ const heroContent = {
   backgroundVideo: '/video_landing.mp4'
 }
 
-// CatchTheVibe - 2 video cards
+// CatchTheVibe - 2 cards with image + hover video
 const catchTheVibeContent = {
   title: 'Catch the Vibe',
-  videos: [
+  cards: [
     {
-      videoUrl: '/videos/catch-vibe-1.mp4',
-      userName: 'MetaTiger',
-      userAvatarUrl: '/avatars/metatiger.png'
+      imageUrl: '/catch_the_vibe/alan.png',
+      videoUrl: '/catch_the_vibe/alan.mp4',
+      userName: 'AlanHowick',
+      userAvatarUrl: '/avatar_face.png'
     },
     {
-      videoUrl: '/videos/catch-vibe-2.mp4',
-      userName: 'PaulRoustan',
-      userAvatarUrl: '/avatars/paulroustan.png'
+      imageUrl: '/catch_the_vibe/roustan.png',
+      videoUrl: '/catch_the_vibe/roustan.mp4',
+      userName: 'Roustan',
+      userAvatarUrl: '/avatar_face.png'
     }
   ]
 }
