@@ -45,7 +45,7 @@ const WeeklyRituals = memo(() => {
         >
           {weeklyRitualsContent.cards.map(card => (
             <SwiperSlide key={card.id}>
-              <CardImage src={card.imageUrl} alt={card.title} loading="lazy" />
+              <CardImage src={card.imageUrl} alt={card.title} loading="lazy" width={1340} height={670} />
             </SwiperSlide>
           ))}
         </Swiper>
