@@ -1,7 +1,4 @@
 {
-  "CONTENTFUL_SPACE_ID": "ea2ybdmmn1kv",
-  "CONTENTFUL_ENVIRONMENT": "master",
-  "CONTENTFUL_HOMEPAGE_HERO_ID": "4YacZz1F0pbW0Thy2wD1lj",
   "ONBOARDING_URL": "https://decentraland.org/auth/login/?newUser&redirectTo=https%3A%2F%2Fdecentraland.org%2Fdownload",
   "AUTH_URL": "https://decentraland.today/auth",
   "MAGIC_API_KEY": "pk_live_CE856A4938B36648",
