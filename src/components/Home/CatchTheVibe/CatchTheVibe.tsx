@@ -4,6 +4,7 @@ import 'swiper/css/pagination'
 import { Autoplay, Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { catchTheVibeContent } from '../../../data/static-content'
+import { assetUrl } from '../../../utils/assetUrl'
 import {
   CardImage,
   CardsRow,
@@ -78,7 +79,7 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
   return (
     <VideoCard onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <MediaContainer>
-        <CardImage className="catch-vibe-image" src={item.imageUrl} alt={item.userName} loading="lazy" />
+        <CardImage className="catch-vibe-image" src={item.imageUrl} alt={item.userName} loading="lazy" width={680} height={382} />
         <VideoElement className="catch-vibe-video" ref={videoRef} loop muted playsInline preload="metadata" src={item.videoUrl} />
         {!isPlaying && (
           <PlayBadge>
@@ -127,7 +128,7 @@ const CatchTheVibe = memo(() => {
           ))}
         </Swiper>
       </MobileCarouselContainer>
-      <PersonaImage src="/persona.png" alt="" aria-hidden />
+      <PersonaImage src={assetUrl('/persona.webp')} alt="" aria-hidden width={400} height={600} />
     </CatchTheVibeContainer>
   )
 })

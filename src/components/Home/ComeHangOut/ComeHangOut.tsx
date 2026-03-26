@@ -3,6 +3,7 @@ import { AnimatedBackground, JumpInIcon } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { SectionViewedTrack } from '../../../modules/segment'
+import { assetUrl } from '../../../utils/assetUrl'
 import { AvatarsImage, ComeHangOutContainer, Content, HangOutButton, Title } from './ComeHangOut.styled'
 
 const ComeHangOut = memo(() => {
@@ -35,7 +36,7 @@ const ComeHangOut = memo(() => {
           HANG OUT NOW
         </HangOutButton>
       </Content>
-      <AvatarsImage src="/come_hang_out_background.png" alt="" aria-hidden />
+      <AvatarsImage src={assetUrl('/come_hang_out_background.webp')} alt="" aria-hidden width={1920} height={840} loading="lazy" />
     </ComeHangOutContainer>
   )
 })

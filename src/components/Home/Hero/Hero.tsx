@@ -4,6 +4,7 @@ import { getEnv } from '../../../config/env'
 import { heroContent } from '../../../data/static-content'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { SectionViewedTrack } from '../../../modules/segment'
+import { assetUrl } from '../../../utils/assetUrl'
 import {
   GradientBottom,
   GradientTop,
@@ -33,7 +34,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   return (
     <HeroContainer>
       <HeroBackground>
-        <video autoPlay loop muted playsInline poster="/landing_hero.png" preload="none">
+        <video autoPlay loop muted playsInline poster={assetUrl('/landing_hero.webp')} preload="none">
           <source src={heroContent.backgroundVideo} type="video/mp4" />
         </video>
       </HeroBackground>

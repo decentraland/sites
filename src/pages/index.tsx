@@ -1,10 +1,9 @@
 import { Suspense, lazy } from 'react'
 import { useInView } from 'react-intersection-observer'
-import { useAdvancedUserAgentData } from '@dcl/hooks'
-import { CircularProgress, useDesktopMediaQuery } from 'decentraland-ui2'
+import { useDesktopMediaQuery } from 'decentraland-ui2'
 import { Hero } from '../components/Home/Hero'
 import { Feed } from './index.types'
-import { LoadingContainer, SuspenseFallback } from './index.styled'
+import { SuspenseFallback } from './index.styled'
 
 const WhatsOn = lazy(() => import('../components/Home/WhatsOn').then(m => ({ default: m.WhatsOn })))
 const CatchTheVibe = lazy(() => import('../components/Home/CatchTheVibe').then(m => ({ default: m.CatchTheVibe })))
@@ -16,19 +15,12 @@ const FooterLanding = lazy(() =>
 
 const IndexPage = () => {
   const isDesktop = useDesktopMediaQuery()
-  const [isLoadingUserAgentData] = useAdvancedUserAgentData()
   const { ref: belowFoldRef, inView: belowFoldInView } = useInView({ triggerOnce: true, rootMargin: '200px' })
   const { ref: footerRef, inView: footerInView } = useInView({ triggerOnce: true, rootMargin: '400px' })
 
   return (
     <>
-      {isLoadingUserAgentData ? (
-        <LoadingContainer>
-          <CircularProgress color="inherit" />
-        </LoadingContainer>
-      ) : (
-        <Hero isDesktop={isDesktop} />
-      )}
+      <Hero isDesktop={isDesktop} />
       <Suspense fallback={<SuspenseFallback />}>
         <WhatsOn />
       </Suspense>

@@ -11,16 +11,16 @@ const catchTheVibeContent = {
   title: 'Catch the Vibe',
   cards: [
     {
-      imageUrl: assetUrl('/catch_the_vibe/alan.png'),
+      imageUrl: assetUrl('/catch_the_vibe/alan.webp'),
       videoUrl: assetUrl('/catch_the_vibe/alan.mp4'),
       userName: 'AlanHowick',
-      userAvatarUrl: assetUrl('/avatar_face.png')
+      userAvatarUrl: assetUrl('/avatar_face.webp')
     },
     {
-      imageUrl: assetUrl('/catch_the_vibe/roustan.png'),
+      imageUrl: assetUrl('/catch_the_vibe/roustan.webp'),
       videoUrl: assetUrl('/catch_the_vibe/roustan.mp4'),
       userName: 'Roustan',
-      userAvatarUrl: assetUrl('/avatar_face.png')
+      userAvatarUrl: assetUrl('/avatar_face.webp')
     }
   ]
 }
