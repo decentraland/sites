@@ -1,4 +1,7 @@
-import { Box, Button, Typography, dclColors, styled } from 'decentraland-ui2'
+import type { AnchorHTMLAttributes } from 'react'
+import { Box, Button, type ButtonProps, Typography, dclColors, styled } from 'decentraland-ui2'
+
+type AnchorButtonProps = ButtonProps & AnchorHTMLAttributes<HTMLAnchorElement>
 
 const UpcomingEventsContainer = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -80,7 +83,7 @@ const MobileCarousel = styled(Box)(({ theme }) => ({
   }
 }))
 
-const SeeAllButton = styled(Button)(({ theme }) => ({
+const SeeAllButton = styled(Button)<AnchorButtonProps>(({ theme }) => ({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&.MuiButton-root': {
     backgroundColor: 'transparent',
