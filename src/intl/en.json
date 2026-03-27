@@ -32,6 +32,8 @@
       "amd64_processors_short": "Intel",
       "arm64_processors_short": "Apple Silicon",
       "x64_processors_short": "x64",
+      "pre_title": "{name} is Ready!",
+      "your_account": "Your Account",
       "already_downloaded": "Already downloaded?",
       "jump_in": "Jump In",
       "mobile": {
