@@ -56,13 +56,11 @@ const DownloadSuccess = memo(() => {
   const hasDownloadedRef = useRef(false)
 
   const rawOs = searchParams.get('os') || ''
-  const clientOS = (
-    rawOs.toLowerCase() === 'windows'
-      ? OperativeSystem.WINDOWS
-      : rawOs.toLowerCase() === 'macos'
-        ? OperativeSystem.MACOS
-        : OperativeSystem.MACOS
-  ) as OperativeSystem
+  const osMap: Record<string, OperativeSystem> = {
+    windows: OperativeSystem.WINDOWS,
+    macos: OperativeSystem.MACOS
+  }
+  const clientOS = osMap[rawOs.toLowerCase()] ?? OperativeSystem.MACOS
   const clientArch = (
     clientOS === OperativeSystem.WINDOWS ? searchParams.get('arch') || 'amd64' : searchParams.get('arch') || 'arm64'
   ) as Architecture
