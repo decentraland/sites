@@ -9,8 +9,6 @@ import { weeklyRitualsContent } from '../../../data/static-content'
 import {
   CardImage,
   CarouselWrapper,
-  EdgeFadeLeft,
-  EdgeFadeRight,
   NavButtonNext,
   NavButtonPrev,
   SectionTitle,
@@ -35,8 +33,6 @@ const WeeklyRituals = memo(() => {
     <WeeklyRitualsContainer>
       <SectionTitle variant="h3">{weeklyRitualsContent.title}</SectionTitle>
       <CarouselWrapper>
-        <EdgeFadeLeft />
-        <EdgeFadeRight />
         {isDesktop ? (
           <Swiper
             modules={[Pagination, Autoplay, Navigation]}

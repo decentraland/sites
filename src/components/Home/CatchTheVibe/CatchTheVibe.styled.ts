@@ -111,42 +111,6 @@ const UserInfo = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1)
 }))
 
-const ProfilePic = styled(Box)({
-  position: 'relative',
-  width: 35,
-  height: 35,
-  borderRadius: '50%',
-  border: '2.5px solid rgba(255, 255, 255, 0.5)',
-  backgroundColor: '#00B453',
-  flexShrink: 0
-})
-
-const UserAvatar = styled('img')({
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 30,
-  height: 30,
-  borderRadius: '50%',
-  objectFit: 'cover'
-})
-
-const GreenDot = styled(Box)({
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 30.5,
-  height: 30.5,
-  borderRadius: '50%',
-  backgroundColor: '#31C11A',
-  overflow: 'hidden',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center'
-})
-
 const UserName = styled(Typography)({
   color: dclColors.neutral.white,
   fontWeight: 600,
@@ -252,13 +216,10 @@ export {
   CatchTheVibeTitle,
   CommunityLabel,
   DurationText,
-  GreenDot,
   MobileCarouselContainer,
   PersonaImage,
   PlayBadge,
   PlayIcon,
-  ProfilePic,
-  UserAvatar,
   UserInfo,
   UserName,
   VideoCard,

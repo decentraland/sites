@@ -138,20 +138,4 @@ const NavButtonNext = styled(NavButton)(({ theme }) => ({
   }
 }))
 
-// Edge fades hidden — side cards use opacity: 0.5 instead for a cleaner effect
-// that doesn't fight the radial-gradient background
-const EdgeFadeLeft = styled(Box)({ display: 'none' })
-
-const EdgeFadeRight = styled(Box)({ display: 'none' })
-
-export {
-  CardImage,
-  CarouselWrapper,
-  EdgeFadeLeft,
-  EdgeFadeRight,
-  NavButtonNext,
-  NavButtonPrev,
-  SectionTitle,
-  SlideColumn,
-  WeeklyRitualsContainer
-}
+export { CardImage, CarouselWrapper, NavButtonNext, NavButtonPrev, SectionTitle, SlideColumn, WeeklyRitualsContainer }

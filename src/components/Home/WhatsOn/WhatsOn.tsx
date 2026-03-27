@@ -23,9 +23,13 @@ const WhatsOn = memo(() => {
 
   if (!isLoading && cards.length === 0) return null
 
-  const cardElements = isLoading
-    ? LOADING_PLACEHOLDERS.map(i => <WhatsOnCard key={i} loading />)
-    : cards.map(card => <WhatsOnCard key={card.id} card={card} />)
+  const cardElements = useMemo(
+    () =>
+      isLoading
+        ? LOADING_PLACEHOLDERS.map(i => <WhatsOnCard key={i} loading />)
+        : cards.map(card => <WhatsOnCard key={card.id} card={card} />),
+    [isLoading, cards]
+  )
 
   return (
     <WhatsOnContainer>
