@@ -3,7 +3,7 @@ import { useInView } from 'react-intersection-observer'
 import { useDesktopMediaQuery } from 'decentraland-ui2'
 import { Hero } from '../components/Home/Hero'
 import { Feed } from './index.types'
-import { SuspenseFallback } from './index.styled'
+import { BelowFoldContent, SuspenseFallback } from './index.styled'
 
 const WhatsOn = lazy(() => import('../components/Home/WhatsOn').then(m => ({ default: m.WhatsOn })))
 const CatchTheVibe = lazy(() => import('../components/Home/CatchTheVibe').then(m => ({ default: m.CatchTheVibe })))
@@ -28,10 +28,12 @@ const IndexPage = () => {
       <div ref={belowFoldRef}>
         {belowFoldInView && (
           <Suspense fallback={<SuspenseFallback />}>
-            <WhatsOn />
-            <CatchTheVibe />
-            <WeeklyRituals />
-            <ComeHangOut />
+            <BelowFoldContent>
+              <WhatsOn />
+              <CatchTheVibe />
+              <WeeklyRituals />
+              <ComeHangOut />
+            </BelowFoldContent>
           </Suspense>
         )}
       </div>

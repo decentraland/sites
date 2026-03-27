@@ -3,7 +3,10 @@ import 'swiper/css'
 import 'swiper/css/pagination'
 import { Autoplay, Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
+import type { Avatar } from '@dcl/schemas'
+import { AvatarFace } from 'decentraland-ui2'
 import { catchTheVibeContent } from '../../../data/static-content'
+import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { assetUrl } from '../../../utils/assetUrl'
 import {
   CardImage,
@@ -12,14 +15,11 @@ import {
   CatchTheVibeTitle,
   CommunityLabel,
   DurationText,
-  GreenDot,
   MediaContainer,
   MobileCarouselContainer,
   PersonaImage,
   PlayBadge,
   PlayIcon,
-  ProfilePic,
-  UserAvatar,
   UserInfo,
   UserName,
   VideoCard,
@@ -31,6 +31,7 @@ interface CardItem {
   imageUrl: string
   videoUrl: string
   userName: string
+  userAddress?: string
   userAvatarUrl: string
 }
 
@@ -44,6 +45,20 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [duration, setDuration] = useState<string | null>(null)
+  const { data: profile } = useGetProfileQuery(item.userAddress, { skip: !item.userAddress })
+  const fetchedAvatar = profile?.avatars?.[0] as Avatar | undefined
+  // AvatarFace only passes through URLs starting with https://.
+  const fallbackFace = `${window.location.origin}${item.userAvatarUrl}`.replace(/^http:\/\//, 'https://')
+
+  // Use fetched profile if it has a face256 snapshot, otherwise fall back to static image
+  const hasFace = !!fetchedAvatar?.avatar?.snapshots?.face256
+  const avatar: Avatar = hasFace
+    ? fetchedAvatar
+    : ({
+        name: fetchedAvatar?.name ?? item.userName,
+        ethAddress: item.userAddress ?? '',
+        avatar: { snapshots: { face256: fallbackFace, body: '' } }
+      } as Avatar)
 
   useEffect(() => {
     const video = videoRef.current
@@ -90,11 +105,7 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
       </MediaContainer>
       <VideoCardFooter>
         <UserInfo>
-          <ProfilePic>
-            <GreenDot>
-              <UserAvatar src={item.userAvatarUrl} alt={item.userName} />
-            </GreenDot>
-          </ProfilePic>
+          <AvatarFace size="small" avatar={avatar} />
           <UserName>{item.userName}</UserName>
         </UserInfo>
         <CommunityLabel>Community Member</CommunityLabel>
@@ -118,8 +129,8 @@ const CatchTheVibe = memo(() => {
           pagination={{ clickable: true }}
           autoplay={{ delay: 5000, disableOnInteraction: false }}
           loop
-          spaceBetween={0}
           slidesPerView={1}
+          spaceBetween={0}
         >
           {catchTheVibeContent.cards.map((item, index) => (
             <SwiperSlide key={index}>
