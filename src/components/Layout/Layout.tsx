@@ -88,7 +88,7 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
   return (
     <Box>
       {withNavbar && <Navbar {...navbarProps} />}
-      {children ?? <Outlet />}
+      <Box component="main">{children ?? <Outlet />}</Box>
       {withFooter && <Footer />}
     </Box>
   )

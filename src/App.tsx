@@ -2,10 +2,8 @@ import { Suspense, lazy } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { RemoteLoader } from './components/RemoteLoader'
-import { IndexPage } from './pages/index.tsx'
 
-// Route-based code splitting: legal/utility pages are lazy-loaded so they don't
-// bloat the main bundle for the landing page (saves ~560 KB of unused JS).
+const IndexPage = lazy(() => import('./pages/index').then(m => ({ default: m.IndexPage })))
 const BrandTerms = lazy(() => import('./pages/brand').then(m => ({ default: m.BrandTerms })))
 const ContentPolicy = lazy(() => import('./pages/content').then(m => ({ default: m.ContentPolicy })))
 const DownloadPage = lazy(() => import('./pages/download').then(m => ({ default: m.DownloadPage })))
