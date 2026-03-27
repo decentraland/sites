@@ -35,21 +35,33 @@ const CarouselWrapper = styled(Box)(({ theme }) => ({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .swiper': {
     paddingBottom: theme.spacing(5),
-    overflow: 'visible'
+    overflow: 'visible',
+    margin: '0 80px',
+    [theme.breakpoints.down('sm')]: {
+      margin: 0
+    }
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .swiper-slide': {
     height: 370,
     borderRadius: 16,
     overflow: 'hidden',
-    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    opacity: 0.5,
+    transition: 'opacity 0.3s ease, box-shadow 0.3s ease',
     [theme.breakpoints.down('sm')]: {
-      height: 280
+      height: 'auto',
+      opacity: 1,
+      borderRadius: 0,
+      overflow: 'visible'
     }
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .swiper-slide-active, & .swiper-slide-next': {
-    boxShadow: '0px 2px 8px 8px rgba(255, 255, 255, 0.2)'
+    opacity: 1,
+    boxShadow: '0px 2px 8px 8px rgba(255, 255, 255, 0.15)',
+    [theme.breakpoints.down('sm')]: {
+      boxShadow: 'none'
+    }
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .swiper-pagination': {
@@ -68,13 +80,23 @@ const CarouselWrapper = styled(Box)(({ theme }) => ({
   }
 }))
 
-const CardImage = styled('img')({
+const SlideColumn = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
+  height: '100%'
+}))
+
+const CardImage = styled('img')(({ theme }) => ({
   width: '100%',
   height: '100%',
   objectFit: 'cover',
   display: 'block',
-  borderRadius: 16
-})
+  borderRadius: 16,
+  [theme.breakpoints.down('sm')]: {
+    height: 170
+  }
+}))
 
 const NavButton = styled('button')(({ theme }) => ({
   position: 'absolute',
@@ -116,26 +138,20 @@ const NavButtonNext = styled(NavButton)(({ theme }) => ({
   }
 }))
 
-const EdgeFadeLeft = styled(Box)({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  width: 170,
-  height: '100%',
-  background: 'linear-gradient(90deg, rgba(104, 20, 155, 1) 10%, rgba(98, 18, 151, 0) 100%)',
-  zIndex: 5,
-  pointerEvents: 'none'
-})
+// Edge fades hidden — side cards use opacity: 0.5 instead for a cleaner effect
+// that doesn't fight the radial-gradient background
+const EdgeFadeLeft = styled(Box)({ display: 'none' })
 
-const EdgeFadeRight = styled(Box)({
-  position: 'absolute',
-  top: 0,
-  right: 0,
-  width: 137,
-  height: '100%',
-  background: 'linear-gradient(270deg, rgba(145, 36, 201, 1) 10%, rgba(98, 18, 151, 0) 100%)',
-  zIndex: 5,
-  pointerEvents: 'none'
-})
+const EdgeFadeRight = styled(Box)({ display: 'none' })
 
-export { CardImage, CarouselWrapper, EdgeFadeLeft, EdgeFadeRight, NavButtonNext, NavButtonPrev, SectionTitle, WeeklyRitualsContainer }
+export {
+  CardImage,
+  CarouselWrapper,
+  EdgeFadeLeft,
+  EdgeFadeRight,
+  NavButtonNext,
+  NavButtonPrev,
+  SectionTitle,
+  SlideColumn,
+  WeeklyRitualsContainer
+}

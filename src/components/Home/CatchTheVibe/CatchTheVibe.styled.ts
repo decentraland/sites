@@ -219,14 +219,13 @@ const MobileCarouselContainer = styled(Box)(({ theme }) => ({
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .swiper': {
-    paddingBottom: theme.spacing(5)
+    paddingBottom: theme.spacing(6)
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .swiper-slide': {
     height: 300,
-    display: 'flex',
-    justifyContent: 'center',
-    padding: `0 ${theme.spacing(2)}`
+    padding: '0 16px',
+    boxSizing: 'border-box'
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .swiper-pagination': {
