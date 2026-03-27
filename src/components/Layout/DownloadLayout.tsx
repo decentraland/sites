@@ -56,7 +56,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   const { data: profile } = useGetProfileQuery(profileAddress ?? undefined, { skip: !profileAddress })
   const profileName = profile?.avatars?.[0]?.name
 
-  const wearableContainerRef = useRef<HTMLDivElement>(null)
+  const wearableContainerRef = useRef<HTMLDivElement | null>(null)
   const { ref: wearableRef, inView } = useInView({ triggerOnce: true, rootMargin: '200px' })
 
   const handleJumpIn = useCallback(async () => {
