@@ -73,6 +73,17 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
     }
   }, [inView])
 
+  useEffect(() => {
+    if (!WearablePreviewComponent) return
+    const timer = setTimeout(() => {
+      const iframe = document.querySelector<HTMLIFrameElement>('.dcl.wearable-preview iframe, iframe[allow="autoplay"]')
+      if (iframe && !iframe.title) {
+        iframe.title = 'Decentraland Avatar Preview'
+      }
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [WearablePreviewComponent])
+
   const randomDefaultProfile = useMemo(() => {
     return 'default' + (Math.floor(Math.random() * (160 - 1 + 1)) + 1)
   }, [])
