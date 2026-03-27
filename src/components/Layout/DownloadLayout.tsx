@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
@@ -56,6 +56,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   const { data: profile } = useGetProfileQuery(profileAddress ?? undefined, { skip: !profileAddress })
   const profileName = profile?.avatars?.[0]?.name
 
+  const wearableContainerRef = useRef<HTMLDivElement | null>(null)
   const { ref: wearableRef, inView } = useInView({ triggerOnce: true, rootMargin: '200px' })
 
   const handleJumpIn = useCallback(async () => {
@@ -72,6 +73,47 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
       })
     }
   }, [inView])
+
+  useEffect(() => {
+    if (!WearablePreviewComponent) return
+    const container = wearableContainerRef.current
+    if (!container) return
+
+    const setIframeTitle = (iframe: HTMLIFrameElement) => {
+      if (!iframe.title) {
+        iframe.title = 'Decentraland Avatar Preview'
+      }
+    }
+
+    const existing = container.querySelector<HTMLIFrameElement>('iframe')
+    if (existing) {
+      setIframeTitle(existing)
+      return
+    }
+
+    const observer = new MutationObserver(mutations => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (node instanceof HTMLIFrameElement) {
+            setIframeTitle(node)
+            observer.disconnect()
+            return
+          }
+          if (node instanceof HTMLElement) {
+            const iframe = node.querySelector<HTMLIFrameElement>('iframe')
+            if (iframe) {
+              setIframeTitle(iframe)
+              observer.disconnect()
+              return
+            }
+          }
+        }
+      }
+    })
+
+    observer.observe(container, { childList: true, subtree: true })
+    return () => observer.disconnect()
+  }, [WearablePreviewComponent])
 
   const randomDefaultProfile = useMemo(() => {
     return 'default' + (Math.floor(Math.random() * (160 - 1 + 1)) + 1)
@@ -124,7 +166,12 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
         <DownloadImageContainer>
           <DownloadBackgroundOverlay />
           {!isDesktop && <DownloadWearablePreviewOverlay />}
-          <DownloadWearablePreviewContainer ref={wearableRef}>
+          <DownloadWearablePreviewContainer
+            ref={(node: HTMLDivElement | null) => {
+              wearableRef(node)
+              wearableContainerRef.current = node
+            }}
+          >
             {WearablePreviewComponent && (
               <WearablePreviewComponent
                 unity

@@ -155,6 +155,29 @@ const PlayBadge = styled(Box)({
   transition: 'opacity 0.3s ease'
 })
 
+const MuteButton = styled('button')({
+  position: 'absolute',
+  top: 12,
+  right: 12,
+  width: 32,
+  height: 32,
+  borderRadius: 8,
+  border: 'none',
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  color: '#FCFCFC',
+  fontSize: 16,
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 3,
+  transition: 'background-color 0.2s ease',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:hover': {
+    backgroundColor: 'rgba(0, 0, 0, 0.8)'
+  }
+})
+
 const PlayIcon = styled(Box)({
   width: 0,
   height: 0,
@@ -232,6 +255,7 @@ export {
   CommunityLabel,
   DurationText,
   MobileCarouselContainer,
+  MuteButton,
   PersonaImage,
   PlayBadge,
   PlayIcon,
