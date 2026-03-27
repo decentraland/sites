@@ -14,12 +14,14 @@ const catchTheVibeContent = {
       imageUrl: assetUrl('/catch_the_vibe/alan.webp'),
       videoUrl: assetUrl('/catch_the_vibe/alan.mp4'),
       userName: 'AlanHowick',
+      userAddress: '0xd82d005e8f8d5385db40ba23884a5c967bb1e8af',
       userAvatarUrl: assetUrl('/avatar_face.webp')
     },
     {
       imageUrl: assetUrl('/catch_the_vibe/roustan.webp'),
       videoUrl: assetUrl('/catch_the_vibe/roustan.mp4'),
       userName: 'Roustan',
+      userAddress: '0x54e93609eb454a1f152edefdf022480794ce2130',
       userAvatarUrl: assetUrl('/avatar_face.webp')
     }
   ]
