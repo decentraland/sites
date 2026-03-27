@@ -326,6 +326,11 @@
       "whats_hot": {
         "title": "Trending News"
       },
+      "upcoming_events": {
+        "title": "Upcoming Events",
+        "cta": "See all events",
+        "cta_link": "https://events.decentraland.org/"
+      },
       "social_proof": {
         "title": "Join the Community"
       },

@@ -8,6 +8,11 @@ interface EventEntry {
   live: boolean
   coordinates: [number, number]
   user: string
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  next_start_at?: string
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  finish_at?: string
+  attending?: number
 }
 
 interface EventsResponse {
