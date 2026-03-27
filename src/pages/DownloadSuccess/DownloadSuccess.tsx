@@ -55,7 +55,14 @@ const DownloadSuccess = memo(() => {
   const [isFileSaved, setIsFileSaved] = useState(false)
   const hasDownloadedRef = useRef(false)
 
-  const clientOS = (searchParams.get('os') || OperativeSystem.MACOS) as OperativeSystem
+  const rawOs = searchParams.get('os') || ''
+  const clientOS = (
+    rawOs.toLowerCase() === 'windows'
+      ? OperativeSystem.WINDOWS
+      : rawOs.toLowerCase() === 'macos'
+        ? OperativeSystem.MACOS
+        : OperativeSystem.MACOS
+  ) as OperativeSystem
   const clientArch = (
     clientOS === OperativeSystem.WINDOWS ? searchParams.get('arch') || 'amd64' : searchParams.get('arch') || 'arm64'
   ) as Architecture
