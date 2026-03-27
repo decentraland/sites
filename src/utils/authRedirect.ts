@@ -1,13 +1,5 @@
+import { clearWagmiState } from '@dcl/core-web3'
 import { getEnv } from '../config/env'
-
-function clearWagmiState() {
-  for (let i = localStorage.length - 1; i >= 0; i--) {
-    const key = localStorage.key(i)
-    if (key?.startsWith('wagmi.')) {
-      localStorage.removeItem(key)
-    }
-  }
-}
 
 /**
  * Returns the base path the app is served from (Vite BASE_URL without trailing slash).
