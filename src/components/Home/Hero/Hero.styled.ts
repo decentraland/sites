@@ -56,9 +56,9 @@ const HeroContent = styled(Box)(({ theme }) => ({
   gap: theme.spacing(7.5),
   paddingBottom: theme.spacing(15),
   [theme.breakpoints.down('sm')]: {
-    gap: theme.spacing(4),
-    paddingBottom: theme.spacing(8),
-    padding: `0 ${theme.spacing(3)} ${theme.spacing(8)}`
+    gap: theme.spacing(3),
+    paddingBottom: theme.spacing(12),
+    padding: `0 ${theme.spacing(3)} ${theme.spacing(12)}`
   }
 }))
 
@@ -88,16 +88,43 @@ const HangOutButton = styled(Button)(({ theme }) => ({
     letterSpacing: 0.61,
     textTransform: 'uppercase',
     whiteSpace: 'nowrap',
-    boxShadow: 'none',
+    boxShadow: 'rgba(0, 0, 0, 0.4) 0px 2px 8px',
     // eslint-disable-next-line @typescript-eslint/naming-convention
     '&:hover': {
-      backgroundColor: '#E0264B',
-      boxShadow: 'none'
+      backgroundColor: '#FF2D55'
     },
     // eslint-disable-next-line @typescript-eslint/naming-convention
     '& .MuiButton-endIcon': {
       marginLeft: 0
+    },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    '& .MuiSvgIcon-root': {
+      fontSize: 32
     }
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&::before': {
+    content: "''",
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    border: `4px solid ${dclColors.neutral.white}`,
+    borderRadius: 14,
+    opacity: 0,
+    transition: theme.transitions.create(['top', 'right', 'bottom', 'left', 'opacity'], {
+      duration: theme.transitions.duration.shorter,
+      easing: theme.transitions.easing.easeInOut
+    })
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:hover::before': {
+    opacity: 1,
+    top: -7.5,
+    right: -7.5,
+    bottom: -7.5,
+    left: -7.5
   },
   [theme.breakpoints.down('sm')]: {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -110,15 +137,4 @@ const HangOutButton = styled(Button)(({ theme }) => ({
   }
 }))
 
-const JumpInIconWrapper = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 32,
-  height: 32,
-  borderRadius: 8,
-  border: '2.5px solid rgba(252, 252, 252, 0.5)',
-  backgroundColor: '#FF2D55'
-})
-
-export { GradientBottom, GradientTop, HangOutButton, HeroBackground, HeroContainer, HeroContent, HeroTitle, JumpInIconWrapper }
+export { GradientBottom, GradientTop, HangOutButton, HeroBackground, HeroContainer, HeroContent, HeroTitle }

@@ -28,7 +28,10 @@ const CardsGrid = styled(Box)(({ theme }) => ({
   width: '100%',
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& > *': {
-    flex: '0 1 510px'
+    flex: '0 1 510px',
+    // Fix: prevent card from shrinking on hover by locking its height
+    // after first render via min-height on the container
+    minHeight: 452
   },
   [theme.breakpoints.down('sm')]: {
     display: 'none'
