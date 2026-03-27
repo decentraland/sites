@@ -8,7 +8,7 @@ import { AvatarsImage, ComeHangOutContainer, Content, HangOutButton, Title } fro
 
 const ComeHangOut = memo(() => {
   const onClickHandle = useTrackClick()
-  const { handleClick, isDownloadModalOpen, closeDownloadModal } = useHangOutAction()
+  const { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
 
   return (
     <ComeHangOutContainer>
@@ -29,17 +29,7 @@ const ComeHangOut = memo(() => {
         </HangOutButton>
       </Content>
       <AvatarsImage src={assetUrl('/come_hang_out_background.webp')} alt="" aria-hidden width={1920} height={840} loading="lazy" />
-      <DownloadModal
-        open={isDownloadModalOpen}
-        onClose={closeDownloadModal}
-        title="Download Decentraland"
-        description="Get the desktop app to explore Decentraland."
-        buttonLabel="Download"
-        onDownloadClick={() => {
-          window.open('https://decentraland.org/download', '_blank')
-          closeDownloadModal()
-        }}
-      />
+      <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />
     </ComeHangOutContainer>
   )
 })

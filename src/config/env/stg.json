@@ -8,5 +8,6 @@
   "EVENTS_API_URL": "https://events.decentraland.org/api",
   "HOT_SCENES_URL": "https://realm-provider-ea.decentraland.org/hot-scenes",
   "JUMP_IN_URL": "https://decentraland.org/jump",
-  "NOTIFICATIONS_API_URL": "https://notifications.decentraland.org"
+  "NOTIFICATIONS_API_URL": "https://notifications.decentraland.org",
+  "DOWNLOAD_URL": "https://decentraland.org/download"
 }

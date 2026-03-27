@@ -9,7 +9,7 @@ import { GradientBottom, GradientTop, HangOutButton, HeroBackground, HeroContain
 
 const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const onClickHandle = useTrackClick()
-  const { handleClick, isDownloadModalOpen, closeDownloadModal } = useHangOutAction()
+  const { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
 
   return (
     <HeroContainer>
@@ -35,17 +35,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
           HANG OUT NOW
         </HangOutButton>
       </HeroContent>
-      <DownloadModal
-        open={isDownloadModalOpen}
-        onClose={closeDownloadModal}
-        title="Download Decentraland"
-        description="Get the desktop app to explore Decentraland."
-        buttonLabel="Download"
-        onDownloadClick={() => {
-          window.open('https://decentraland.org/download', '_blank')
-          closeDownloadModal()
-        }}
-      />
+      <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />
     </HeroContainer>
   )
 })
