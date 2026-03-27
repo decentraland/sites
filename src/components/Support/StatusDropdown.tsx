@@ -77,6 +77,7 @@ const StatusDropdown = memo(function StatusDropdown({ serviceList }: StatusDropd
           paper: {
             sx: {
               backgroundColor: '#280d2be5',
+              backgroundImage: 'none',
               border: '1px solid #444444',
               mt: 1
             }
