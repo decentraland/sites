@@ -1,13 +1,12 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import 'swiper/css'
 import 'swiper/css/pagination'
-import { Autoplay, Pagination } from 'swiper/modules'
+import { Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import type { Avatar } from '@dcl/schemas'
 import { AvatarFace } from 'decentraland-ui2'
 import { catchTheVibeContent } from '../../../data/static-content'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
-import { assetUrl } from '../../../utils/assetUrl'
 import {
   CardImage,
   CardsRow,
@@ -17,7 +16,6 @@ import {
   DurationText,
   MediaContainer,
   MobileCarouselContainer,
-  PersonaImage,
   PlayBadge,
   PlayIcon,
   UserInfo,
@@ -124,14 +122,7 @@ const CatchTheVibe = memo(() => {
         ))}
       </CardsRow>
       <MobileCarouselContainer>
-        <Swiper
-          modules={[Pagination, Autoplay]}
-          pagination={{ clickable: true }}
-          autoplay={{ delay: 5000, disableOnInteraction: false }}
-          loop
-          slidesPerView={1}
-          spaceBetween={0}
-        >
+        <Swiper modules={[Pagination]} pagination={{ clickable: true }} loop slidesPerView={1} spaceBetween={0}>
           {catchTheVibeContent.cards.map((item, index) => (
             <SwiperSlide key={index}>
               <VideoCardContent item={item} />
@@ -139,7 +130,6 @@ const CatchTheVibe = memo(() => {
           ))}
         </Swiper>
       </MobileCarouselContainer>
-      <PersonaImage src={assetUrl('/persona.webp')} alt="" aria-hidden width={400} height={600} />
     </CatchTheVibeContainer>
   )
 })
