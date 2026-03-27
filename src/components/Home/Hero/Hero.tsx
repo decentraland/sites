@@ -1,35 +1,15 @@
-import { memo, useCallback } from 'react'
-import { JumpInIcon } from 'decentraland-ui2'
-import { getEnv } from '../../../config/env'
+import { memo } from 'react'
+import { DownloadModal, JumpInIcon } from 'decentraland-ui2'
 import { heroContent } from '../../../data/static-content'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
+import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import { SectionViewedTrack } from '../../../modules/segment'
 import { assetUrl } from '../../../utils/assetUrl'
-import {
-  GradientBottom,
-  GradientTop,
-  HangOutButton,
-  HeroBackground,
-  HeroContainer,
-  HeroContent,
-  HeroTitle,
-  JumpInIconWrapper
-} from './Hero.styled'
+import { GradientBottom, GradientTop, HangOutButton, HeroBackground, HeroContainer, HeroContent, HeroTitle } from './Hero.styled'
 
 const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const onClickHandle = useTrackClick()
-
-  const handleClick = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
-      event.preventDefault()
-      onClickHandle(event)
-      const href = getEnv('ONBOARDING_URL')!
-      setTimeout(() => {
-        window.location.href = href
-      }, 500)
-    },
-    [onClickHandle]
-  )
+  const { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
 
   return (
     <HeroContainer>
@@ -46,16 +26,16 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
           variant="contained"
           data-place={SectionViewedTrack.LANDING_HERO}
           data-event="click"
-          onClick={handleClick}
-          endIcon={
-            <JumpInIconWrapper>
-              <JumpInIcon />
-            </JumpInIconWrapper>
-          }
+          onClick={e => {
+            onClickHandle(e)
+            handleClick(e)
+          }}
+          endIcon={<JumpInIcon />}
         >
           HANG OUT NOW
         </HangOutButton>
       </HeroContent>
+      <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />
     </HeroContainer>
   )
 })

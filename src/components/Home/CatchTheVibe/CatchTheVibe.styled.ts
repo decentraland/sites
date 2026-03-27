@@ -8,8 +8,23 @@ const CatchTheVibeContainer = styled(Box)(({ theme }) => ({
   gap: theme.spacing(6),
   padding: `${theme.spacing(10)} ${theme.spacing(2.5)}`,
   width: '100%',
-  backgroundColor: 'rgba(0, 0, 0, 0.1)',
+  backgroundColor: '#570F88',
   overflow: 'hidden',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '60%',
+    height: '100%',
+    backgroundImage: 'url(/ellipse_gradient.webp)',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center left',
+    backgroundRepeat: 'no-repeat',
+    pointerEvents: 'none',
+    zIndex: 0
+  },
   [theme.breakpoints.down('sm')]: {
     padding: `${theme.spacing(6)} 0`,
     gap: theme.spacing(4)

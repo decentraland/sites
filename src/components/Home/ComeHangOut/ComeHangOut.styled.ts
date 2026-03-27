@@ -16,12 +16,10 @@ const ComeHangOutContainer = styled(Box)(({ theme }) => ({
 
 const AvatarsImage = styled('img')(({ theme }) => ({
   position: 'absolute',
-  top: 'calc(30% - 20px)',
+  top: 'calc(40% - 20px)',
   left: '50%',
   transform: 'translateX(-50%)',
-  width: '100%',
-  minWidth: 1920,
-  maxWidth: 1920,
+  width: 'auto',
   pointerEvents: 'none',
   [theme.breakpoints.down('sm')]: {
     position: 'absolute',

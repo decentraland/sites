@@ -32,10 +32,15 @@ const weeklyRitualsContent = {
   title: 'Your Weekly Rituals',
   cards: [
     { id: 'career-mondays', title: 'Career Mondays', imageUrl: assetUrl('/weekly-rituals/career-mondays.webp'), link: '/events' },
-    { id: 'watch-party', title: 'Watch Party', imageUrl: assetUrl('/weekly-rituals/watch-party.webp'), link: '/events' },
-    { id: 'play-with-friends', title: 'Play with Friends', imageUrl: assetUrl('/weekly-rituals/play-with-friends.webp'), link: '/events' },
+    { id: 'takeover-tuesdays', title: 'Takeover Tuesdays', imageUrl: assetUrl('/weekly-rituals/takeover-tuesdays.webp'), link: '/events' },
+    { id: 'watch-party', title: 'Watch Party Wednesdays', imageUrl: assetUrl('/weekly-rituals/watch-party.webp'), link: '/events' },
     { id: 'trivia-thursdays', title: 'Trivia Thursdays', imageUrl: assetUrl('/weekly-rituals/trivia-thursdays.webp'), link: '/events' },
-    { id: 'takeover-tuesdays', title: 'Takeover Tuesdays', imageUrl: assetUrl('/weekly-rituals/takeover-tuesdays.webp'), link: '/events' }
+    {
+      id: 'play-with-friends',
+      title: 'Play with Friends Fridays',
+      imageUrl: assetUrl('/weekly-rituals/play-with-friends.webp'),
+      link: '/events'
+    }
   ]
 }
 
