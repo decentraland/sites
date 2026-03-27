@@ -52,7 +52,7 @@ export default defineConfig(({ command, mode }) => {
     ],
     build: {
       target: 'esnext',
-      sourcemap: true
+      sourcemap: 'hidden'
     },
     ...(command === 'build' ? { base: envVariables.VITE_BASE_URL } : undefined),
     server: {
