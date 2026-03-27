@@ -7,6 +7,7 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import { Button, Typography, launchDesktopApp, useDesktopMediaQuery } from 'decentraland-ui2'
+import { getEnv } from '../../config/env'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { DownloadOptions } from '../DownloadOptions'
@@ -128,7 +129,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
                 disableBackground={true}
                 lockBeta={true}
                 dev={false}
-                baseUrl="https://wearable-preview-git-feat-update-aang-rend-07d7f6-decentraland1.vercel.app/"
+                baseUrl={getEnv('WEARABLE_PREVIEW_URL')}
               />
             )}
           </DownloadWearablePreviewContainer>
