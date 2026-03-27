@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, CardMedia, LinearProgress, Typography, dclColors, styled } from 'decentraland-ui2'
+import { Box, Card, CardContent, CardMedia, LinearProgress, Typography, dclColors, keyframes, styled } from 'decentraland-ui2'
 
 const DownloadSuccessPageContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -41,27 +41,6 @@ const DownloadSuccessSubtitle = styled(Typography)(({ theme }) => ({
     color: theme.palette.primary.main
   }
 }))
-
-const DownloadArrowContainer = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  right: '-200px',
-  bottom: 0,
-  width: '200px',
-  height: '200px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  [theme.breakpoints.down('lg')]: {
-    right: '-100px'
-  },
-  [theme.breakpoints.down('md')]: {
-    display: 'none'
-  }
-}))
-
-const DownloadArrowImage = styled('img')({
-  width: '100%'
-})
 
 const DownloadSuccessCardWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -107,6 +86,12 @@ const DownloadSuccessCardMedia = styled(CardMedia)(({ theme }) => ({
   }
 }))
 
+const highlightFadeIn = keyframes`
+  0% { box-shadow: 0 0 0 0 ${dclColors.brand.lavender}; }
+  50% { box-shadow: 0 0 25px 18.5px ${dclColors.brand.lavender}; }
+  100% { box-shadow: 0 0 0 0 ${dclColors.brand.lavender}; }
+`
+
 const HighlightAnimation = styled(Box)(({ theme }) => ({
   position: 'absolute',
   top: '272px',
@@ -117,12 +102,7 @@ const HighlightAnimation = styled(Box)(({ theme }) => ({
   pointerEvents: 'none',
   zIndex: 1,
   backgroundColor: 'transparent',
-  ['@keyframes highlightFadeIn']: {
-    ['0%']: { boxShadow: `0 0 0 0 ${dclColors.brand.lavender}` },
-    ['50%']: { boxShadow: `0 0 25px 18.5px ${dclColors.brand.lavender}` },
-    ['100%']: { boxShadow: `0 0 0 0 ${dclColors.brand.lavender}` }
-  },
-  animation: 'highlightFadeIn 1s ease-in-out infinite',
+  animation: `${highlightFadeIn} 1s ease-in-out infinite`,
   [theme.breakpoints.down('lg')]: {
     display: 'none'
   }
@@ -221,8 +201,6 @@ const DownloadProgressBar = styled(LinearProgress)(({ theme }) => ({
 }))
 
 export {
-  DownloadArrowContainer,
-  DownloadArrowImage,
   DownloadBackdrop,
   DownloadBackdropContent,
   DownloadBackdropText,
