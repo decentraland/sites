@@ -21,12 +21,10 @@ const IndexPage = () => {
   return (
     <>
       <Hero isDesktop={isDesktop} />
-      <Suspense fallback={<SuspenseFallback />}>
-        <WhatsOn />
-      </Suspense>
       <div ref={belowFoldRef}>
         {belowFoldInView && (
           <Suspense fallback={<SuspenseFallback />}>
+            <WhatsOn />
             <CatchTheVibe />
             <WeeklyRituals />
             <ComeHangOut />
