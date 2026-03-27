@@ -18,6 +18,7 @@ const SignInRedirect = lazy(() => import('./pages/SignInRedirect').then(m => ({ 
 const TermsOfUse = lazy(() => import('./pages/terms').then(m => ({ default: m.TermsOfUse })))
 const DownloadSuccessPage = lazy(() => import('./pages/DownloadSuccess').then(m => ({ default: m.DownloadSuccess })))
 const HelpPage = lazy(() => import('./pages/help').then(m => ({ default: m.HelpPage })))
+const ExplorePage = lazy(() => import('./pages/explore').then(m => ({ default: m.ExplorePage })))
 
 const App = () => {
   return (
@@ -37,6 +38,7 @@ const App = () => {
             <Route path="/referral-terms" element={<ReferralTerms />} />
             <Route path="/terms" element={<TermsOfUse />} />
             <Route path="/help" element={<HelpPage />} />
+            <Route path="/explore" element={<ExplorePage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
             <Route path="/whats-on/*" element={<RemoteLoader name="whats-on" />} />
             <Route path="*" element={<Navigate to="/" replace />} />
