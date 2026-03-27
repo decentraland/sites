@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://decentraland.org/sitemap.xml
