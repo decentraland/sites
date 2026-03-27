@@ -180,7 +180,12 @@ const DownloadBackdropContent = styled(Box)(({ theme }) => ({
   borderRadius: theme.spacing(4),
   padding: theme.spacing(6),
   gap: theme.spacing(4),
-  backgroundColor: dclColors.brand.purple
+  backgroundColor: dclColors.brand.purple,
+  [theme.breakpoints.down('sm')]: {
+    width: 'calc(100% - 32px)',
+    height: 'auto',
+    padding: theme.spacing(4)
+  }
 }))
 
 const DownloadBackdropText = styled(Typography)(({ theme }) => ({

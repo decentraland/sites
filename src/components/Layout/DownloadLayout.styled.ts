@@ -80,16 +80,16 @@ const DownloadOptionsContainer = styled(Box)({
   }
 })
 
-const AlreadyDownloadedContainer = styled(Box)({
+const AlreadyDownloadedContainer = styled(Box)(({ theme }) => ({
   position: 'absolute',
   bottom: '10%',
   left: '212px',
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
-  gap: '4px',
+  gap: theme.spacing(0.5),
   zIndex: 10
-})
+}))
 
 const AlreadyDownloadedText = styled(Typography)({
   fontSize: '20px',
