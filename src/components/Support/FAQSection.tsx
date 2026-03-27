@@ -38,7 +38,7 @@ const FAQSection = ({ isActive }: FAQSectionProps) => {
       <HelpSectionTexts>
         <HelpSectionTitle>{t(`${FAQ_PREFIX}.title`)}</HelpSectionTitle>
         <HelpSectionDescription>
-          {t(`${FAQ_PREFIX}.paragraph`)} <a href="https://docs.decentraland.org/player/general/faq/">{t(`${FAQ_PREFIX}.cta_link`)}.</a>
+          {t(`${FAQ_PREFIX}.paragraph`)} <a href="https://docs.decentraland.org/faqs/decentraland-101">{t(`${FAQ_PREFIX}.cta_link`)}.</a>
         </HelpSectionDescription>
       </HelpSectionTexts>
       <AccordionContainer>

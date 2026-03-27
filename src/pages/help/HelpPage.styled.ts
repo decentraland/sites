@@ -84,7 +84,8 @@ const HelpTabButton = styled(Button)<{ active?: boolean }>(({ theme, active }) =
   gap: theme.spacing(1),
   height: 40,
   borderRadius: 8,
-  backgroundColor: active ? '#ffffff' : 'transparent',
+  background: active ? '#ffffff' : 'transparent',
+  backgroundImage: 'none',
   color: active ? '#161518' : '#cfcdd4',
   textTransform: 'none',
   fontSize: 14,
@@ -95,7 +96,8 @@ const HelpTabButton = styled(Button)<{ active?: boolean }>(({ theme, active }) =
   marginBottom: theme.spacing(1),
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:hover': {
-    backgroundColor: active ? '#ffffff' : 'rgba(255, 255, 255, 0.1)'
+    background: active ? '#ffffff' : 'rgba(255, 255, 255, 0.1)',
+    backgroundImage: 'none'
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& svg': {
@@ -147,15 +149,17 @@ const FaqAccordion = styled(Accordion)(({ theme }) => ({
   minWidth: 661,
   maxWidth: 661,
   minHeight: 64,
-  backgroundColor: '#331636',
+  background: '#331636',
+  backgroundImage: 'none',
   borderRadius: '27px !important',
   padding: `${theme.spacing(1.5)} ${theme.spacing(2)}`,
   boxShadow: 'none',
   cursor: 'pointer',
-  transition: 'background-color 0.2s ease',
+  transition: 'background 0.2s ease',
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:hover': {
-    backgroundColor: '#3d1a41'
+    background: '#3d1a41',
+    backgroundImage: 'none'
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:before': {
@@ -165,7 +169,8 @@ const FaqAccordion = styled(Accordion)(({ theme }) => ({
   '&.Mui-expanded': {
     margin: `0 0 ${theme.spacing(1)} 0`,
     minHeight: 'unset',
-    backgroundColor: '#3d1a41'
+    background: '#3d1a41',
+    backgroundImage: 'none'
   },
   [theme.breakpoints.down('sm')]: {
     minWidth: 'unset',
@@ -184,6 +189,10 @@ const FaqAccordionSummary = styled(AccordionSummary)({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .MuiAccordionSummary-expandIconWrapper': {
     display: 'none'
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:hover': {
+    backgroundColor: 'transparent'
   },
   minHeight: 40,
   padding: 0,
