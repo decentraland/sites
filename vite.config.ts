@@ -51,7 +51,7 @@ export default defineConfig(({ command, mode }) => {
       /* eslint-enable @typescript-eslint/naming-convention */
     ],
     build: {
-      target: 'es2020',
+      target: 'es2022',
       sourcemap: 'hidden'
     },
     ...(command === 'build' ? { base: envVariables.VITE_BASE_URL } : undefined),

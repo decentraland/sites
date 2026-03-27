@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { useWallet } from '@dcl/core-web3'
 import { usePageTracking } from '@dcl/hooks'
 import { Box, Footer, Navbar, NavbarPages, type NavbarProps } from 'decentraland-ui2'
 import { usePageNotifications } from '../../features/notifications/usePageNotifications'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+import { useWalletState } from '../../hooks/useWalletState'
 import { redirectToAuth } from '../../utils/authRedirect'
 import type { LayoutProps } from './Layout.types'
 
@@ -20,7 +20,7 @@ function resolveActivePage(pathname: string): string {
 const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter = true }) => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { address, isConnected, isConnecting, isDisconnecting, disconnect } = useWallet()
+  const { address, isConnected, isConnecting, isDisconnecting, disconnect } = useWalletState()
   usePageTracking(location.pathname)
 
   const { identity } = useAuthIdentity()

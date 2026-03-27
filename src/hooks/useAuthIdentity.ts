@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useWallet } from '@dcl/core-web3'
 import type { AuthIdentity } from '@dcl/crypto'
 import { localStorageGetIdentity } from '@dcl/single-sign-on-client'
+import { useWalletState } from './useWalletState'
 
 type UseAuthIdentityResult = {
   identity: AuthIdentity | undefined
@@ -10,7 +10,7 @@ type UseAuthIdentityResult = {
 }
 
 function useAuthIdentity(): UseAuthIdentityResult {
-  const { address } = useWallet()
+  const { address } = useWalletState()
   const walletAddress = address ? (address as `0x${string}`) : undefined
   const [identity, setIdentity] = useState<AuthIdentity | undefined>(undefined)
 

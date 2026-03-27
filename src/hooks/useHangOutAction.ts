@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react'
-import { useWallet } from '@dcl/core-web3'
 import { launchDesktopApp } from 'decentraland-ui2'
 import type { DownloadModalProps } from 'decentraland-ui2'
 import { getEnv } from '../config/env'
 import { redirectToAuth } from '../utils/authRedirect'
+import { useWalletState } from './useWalletState'
 
 const DOWNLOAD_MODAL_PROPS = {
   title: 'Download Decentraland',
@@ -18,7 +18,7 @@ const DOWNLOAD_MODAL_PROPS = {
  * - Signed in, has launcher → open the game directly
  */
 function useHangOutAction() {
-  const { isConnected } = useWallet()
+  const { isConnected } = useWalletState()
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false)
   const downloadUrl = getEnv('DOWNLOAD_URL') ?? 'https://decentraland.org/download'
 

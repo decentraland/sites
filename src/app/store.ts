@@ -1,18 +1,16 @@
-import { configureStore } from '@reduxjs/toolkit'
-import { networkReducer, transactionsReducer, walletReducer } from '@dcl/core-web3'
+import { type Reducer, combineReducers, configureStore } from '@reduxjs/toolkit'
 import { eventsClient } from '../features/events/events.client'
 import { profileClient } from '../features/profile/profile.client'
 import { api } from '../services/api'
 
+const staticReducers = {
+  [api.reducerPath]: api.reducer,
+  [eventsClient.reducerPath]: eventsClient.reducer,
+  [profileClient.reducerPath]: profileClient.reducer
+}
+
 const store = configureStore({
-  reducer: {
-    network: networkReducer,
-    transactions: transactionsReducer,
-    wallet: walletReducer,
-    [api.reducerPath]: api.reducer,
-    [eventsClient.reducerPath]: eventsClient.reducer,
-    [profileClient.reducerPath]: profileClient.reducer
-  },
+  reducer: staticReducers,
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
       serializableCheck: {
@@ -22,7 +20,21 @@ const store = configureStore({
   devTools: import.meta.env.MODE !== 'production'
 })
 
+let web3Injected = false
+
+function injectWeb3Reducers(reducers: Record<string, Reducer>) {
+  if (web3Injected) return
+  web3Injected = true
+
+  store.replaceReducer(
+    combineReducers({
+      ...staticReducers,
+      ...reducers
+    })
+  )
+}
+
 type RootState = ReturnType<typeof store.getState>
 type AppDispatch = typeof store.dispatch
 
-export { store, type RootState, type AppDispatch }
+export { injectWeb3Reducers, store, type AppDispatch, type RootState }
