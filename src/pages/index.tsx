@@ -15,7 +15,11 @@ const FooterLanding = lazy(() =>
 
 const IndexPage = () => {
   const isDesktop = useDesktopMediaQuery()
-  const { ref: belowFoldRef, inView: belowFoldInView } = useInView({ triggerOnce: true, rootMargin: '200px' })
+  // Negative bottom margin (-1px) prevents the observer from triggering on initial load.
+  // Hero is 100vh so belowFoldRef sits exactly at the viewport's bottom edge — any positive
+  // or zero rootMargin would include it, firing API calls (hot-scenes, events) during the LCP window.
+  // With -1px the element must be at least 1px inside the viewport to intersect, which requires a scroll.
+  const { ref: belowFoldRef, inView: belowFoldInView } = useInView({ triggerOnce: true, rootMargin: '0px 0px -1px 0px' })
   const { ref: footerRef, inView: footerInView } = useInView({ triggerOnce: true, rootMargin: '400px' })
 
   return (
