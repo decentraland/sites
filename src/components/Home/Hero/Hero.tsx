@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { DownloadModal, JumpInIcon } from 'decentraland-ui2'
 import { heroContent } from '../../../data/static-content'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
@@ -7,16 +7,39 @@ import { SectionViewedTrack } from '../../../modules/segment'
 import { assetUrl } from '../../../utils/assetUrl'
 import { GradientBottom, GradientTop, HangOutButton, HeroBackground, HeroContainer, HeroContent, HeroTitle } from './Hero.styled'
 
+const heroImageUrl = assetUrl('/landing_hero.webp')
+
 const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const onClickHandle = useTrackClick()
   const { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
 
+  // On mobile: show poster image first for fast LCP, defer video load after paint.
+  // On desktop: load video immediately (bandwidth is not constrained).
+  // Defer video on mobile — show poster image first for fast LCP.
+  // Falls back to setTimeout for Safari which lacks requestIdleCallback.
+  const [showVideo, setShowVideo] = useState(isDesktop)
+  useEffect(() => {
+    if (!isDesktop) {
+      const cb = () => setShowVideo(true)
+      if (typeof requestIdleCallback === 'function') {
+        const id = requestIdleCallback(cb, { timeout: 3000 })
+        return () => cancelIdleCallback(id)
+      }
+      const id = setTimeout(cb, 1)
+      return () => clearTimeout(id)
+    }
+  }, [isDesktop])
+
   return (
     <HeroContainer>
       <HeroBackground>
-        <video autoPlay loop muted playsInline poster={assetUrl('/landing_hero.webp')} preload="none">
-          <source src={heroContent.backgroundVideo} type="video/mp4" />
-        </video>
+        {showVideo ? (
+          <video autoPlay loop muted playsInline poster={heroImageUrl} preload="none">
+            <source src={heroContent.backgroundVideo} type="video/mp4" />
+          </video>
+        ) : (
+          <img src={heroImageUrl} alt="" />
+        )}
       </HeroBackground>
       <GradientTop />
       <GradientBottom />
