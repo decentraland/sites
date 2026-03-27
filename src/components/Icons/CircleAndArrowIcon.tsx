@@ -7,7 +7,15 @@ type CircleAndArrowIconProps = React.SVGAttributes<SVGElement> & {
 const CircleAndArrowIcon = memo(function CircleAndArrowIcon({ isOpen, ...props }: CircleAndArrowIconProps) {
   const clipId = useId()
   return (
-    <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <svg
+      width="72"
+      height="72"
+      viewBox="0 0 72 72"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }}
+      {...props}
+    >
       <circle opacity={isOpen ? '1' : '0.2'} cx="36" cy="36" r="35" stroke="white" fill={isOpen ? 'white' : 'none'} strokeWidth="2" />
       <g clipPath={`url(#${clipId})`}>
         <path
