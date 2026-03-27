@@ -15,11 +15,18 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
 
   // On mobile: show poster image first for fast LCP, defer video load after paint.
   // On desktop: load video immediately (bandwidth is not constrained).
+  // Defer video on mobile — show poster image first for fast LCP.
+  // Falls back to setTimeout for Safari which lacks requestIdleCallback.
   const [showVideo, setShowVideo] = useState(isDesktop)
   useEffect(() => {
     if (!isDesktop) {
-      const id = requestIdleCallback(() => setShowVideo(true), { timeout: 3000 })
-      return () => cancelIdleCallback(id)
+      const cb = () => setShowVideo(true)
+      if (typeof requestIdleCallback === 'function') {
+        const id = requestIdleCallback(cb, { timeout: 3000 })
+        return () => cancelIdleCallback(id)
+      }
+      const id = setTimeout(cb, 1)
+      return () => clearTimeout(id)
     }
   }, [isDesktop])
 
