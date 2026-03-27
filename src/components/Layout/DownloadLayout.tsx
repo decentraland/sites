@@ -1,10 +1,14 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import { Button, Typography, launchDesktopApp, useDesktopMediaQuery } from 'decentraland-ui2'
+import { getEnv } from '../../config/env'
+import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { DownloadOptions } from '../DownloadOptions'
 import { WrapDecentralandText } from '../WrapDecentralandText'
@@ -27,6 +31,7 @@ import {
   ModalContent,
   ModalIcon,
   ModalTitle,
+  PreTitleContainer,
   ShareButton,
   ShareContainer
 } from './DownloadLayout.styled'
@@ -40,6 +45,12 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
   const l = useFormatMessage()
   const isDesktop = useDesktopMediaQuery()
+
+  const searchParams = useMemo(() => new URLSearchParams(window.location.search), [])
+  const user = searchParams.get('user')
+
+  const { data: profile } = useGetProfileQuery(user ?? undefined, { skip: !user })
+  const profileName = profile?.avatars?.[0]?.name
 
   const { ref: wearableRef, inView } = useInView({ triggerOnce: true, rootMargin: '200px' })
 
@@ -72,8 +83,6 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
   return (
     <DownloadPageContainer>
-      <DownloadBackgroundOverlay />
-
       <DownloadContainer>
         <DclLogo onClick={() => (window.location.href = 'https://decentraland.org')} />
 
@@ -86,6 +95,14 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
               </AlreadyDownloadedText>
             </AlreadyDownloadedContainer>
             <DownloadOptionsContainer>
+              <PreTitleContainer>
+                <CheckCircleIcon htmlColor="#34CE77" fontSize="large" />
+                <Typography variant="h4">
+                  {l('page.download.pre_title', {
+                    name: profileName || l('page.download.your_account')
+                  })}
+                </Typography>
+              </PreTitleContainer>
               <DownloadTitle variant="h2">
                 <WrapDecentralandText text={title} />
               </DownloadTitle>
@@ -107,11 +124,12 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
             {WearablePreviewComponent && (
               <WearablePreviewComponent
                 unity
-                unityMode="profile"
-                profile={randomDefaultProfile}
+                unityMode="jesus"
+                profile={profile?.avatars?.[0]?.ethAddress || randomDefaultProfile}
                 disableBackground={true}
                 lockBeta={true}
                 dev={false}
+                baseUrl={getEnv('WEARABLE_PREVIEW_URL')}
               />
             )}
           </DownloadWearablePreviewContainer>

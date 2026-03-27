@@ -9,5 +9,6 @@
   "HOT_SCENES_URL": "https://realm-provider-ea.decentraland.org/hot-scenes",
   "JUMP_IN_URL": "https://decentraland.org/jump",
   "NOTIFICATIONS_API_URL": "https://notifications.decentraland.org",
-  "DOWNLOAD_URL": "https://decentraland.org/download"
+  "DOWNLOAD_URL": "https://decentraland.org/download",
+  "WEARABLE_PREVIEW_URL": "https://wearable-preview.decentraland.org/"
 }
