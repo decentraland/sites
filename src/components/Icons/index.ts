@@ -1,0 +1,6 @@
+export { CircleAndArrowIcon } from './CircleAndArrowIcon'
+export { FaqIcon } from './FaqIcon'
+export { StatusHealthyIcon } from './StatusHealthyIcon'
+export { StatusUnhealthyIcon } from './StatusUnhealthyIcon'
+export { StatusWarningIcon } from './StatusWarningIcon'
+export { SupportIcon } from './SupportIcon'
