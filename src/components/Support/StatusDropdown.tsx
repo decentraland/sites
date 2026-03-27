@@ -68,7 +68,8 @@ const StatusDropdown = memo(function StatusDropdown({ serviceList }: StatusDropd
       <StatusGlobalIcon>
         <StatusResult status={globalStatus.status} />
       </StatusGlobalIcon>
-      <StatusMenuButton onClick={e => setAnchorEl(e.currentTarget)}>{t('component.landing.help.dropdown.title')}</StatusMenuButton>
+      {/* eslint-disable-next-line prettier/prettier */}
+      <StatusMenuButton onClick={(e) => setAnchorEl(e.currentTarget)}>{t('component.landing.help.dropdown.title')}</StatusMenuButton>
       <Menu
         anchorEl={anchorEl}
         open={open}

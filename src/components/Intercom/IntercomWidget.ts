@@ -72,8 +72,7 @@ class IntercomWidget {
   }
 
   inject() {
-    // eslint-disable-next-line prettier/prettier
-    return new Promise<void>((resolve) => {
+    return new Promise<void>((resolve, reject) => {
       if (isInjected()) {
         return resolve()
       }
@@ -81,6 +80,7 @@ class IntercomWidget {
         src: `https://widget.intercom.io/widget/${this._appId}`
       })
       script.addEventListener('load', () => resolve(), true)
+      script.addEventListener('error', () => reject(new Error('Failed to load Intercom script')), true)
     }).then(() => {
       if (!this._appId) {
         throw new Error('No AppId defined')

@@ -17,7 +17,7 @@ const PressPage = () => {
         }
         <PressEmailLink href={`mailto:${PRESS_EMAIL}`}>{PRESS_EMAIL}</PressEmailLink>.
       </PressDescription>
-      <Button variant="contained" onClick={() => window.open(PRESS_KIT_URL, '_blank', 'noopener,noreferrer')}>
+      <Button variant="contained" component="a" href={PRESS_KIT_URL} target="_blank" rel="noopener noreferrer">
         Download Press Kit
       </Button>
     </PressContainer>

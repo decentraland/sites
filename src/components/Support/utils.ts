@@ -18,10 +18,8 @@ const fetchServiceStatus = async (url: string): Promise<{ status: ServiceStatus 
     const response = await fetch(url)
     if (response.ok) {
       return { status: ServiceStatus.OK }
-    } else if (response.status >= 500) {
-      return { status: ServiceStatus.DOWN }
     }
-    return { status: ServiceStatus.SLOW }
+    return { status: ServiceStatus.DOWN }
   } catch {
     return { status: ServiceStatus.DOWN }
   }
@@ -39,7 +37,8 @@ const determineGlobalStatus = (
       color: StatusColor.GREEN,
       text: t('component.landing.help.dropdown.status.all_operational')
     }
-  } else if (statusValues.every(s => s === ServiceStatus.DOWN)) {
+    // eslint-disable-next-line prettier/prettier
+  } else if (statusValues.every((s) => s === ServiceStatus.DOWN)) {
     return {
       status: ServiceStatus.DOWN,
       color: StatusColor.RED,

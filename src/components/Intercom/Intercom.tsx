@@ -1,11 +1,14 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useWallet } from '@dcl/core-web3'
 import { IntercomWidget } from './IntercomWidget'
-import type { IntercomProps } from './Intercom.types'
+import type { IntercomProps, IntercomSettings } from './Intercom.types'
+
+const DEFAULT_DATA: Record<string, unknown> = {}
+const DEFAULT_SETTINGS: IntercomSettings = { alignment: 'right' }
 
 // eslint-disable-next-line react/prop-types
-const Intercom: React.FC<IntercomProps> = ({ appId, data = {}, settings = { alignment: 'right' } }) => {
-  const widget = IntercomWidget.getInstance()
+const Intercom: React.FC<IntercomProps> = ({ appId, data = DEFAULT_DATA, settings = DEFAULT_SETTINGS }) => {
+  const widget = useMemo(() => IntercomWidget.getInstance(), [])
   const { address } = useWallet()
 
   useEffect(() => {
