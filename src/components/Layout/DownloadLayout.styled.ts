@@ -71,14 +71,14 @@ const DownloadContainer = styled(Box)(({ theme }) => ({
 const DownloadOptionsContainer = styled(Box)({
   zIndex: 10,
   position: 'relative',
-  width: '100vw',
-  ['& > *']: {
-    alignItems: 'flex-start'
-  },
-  ['& > * > *']: {
-    justifyContent: 'flex-start'
-  }
+  width: '100vw'
 })
+
+const PreTitleContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1)
+}))
 
 const AlreadyDownloadedContainer = styled(Box)(({ theme }) => ({
   position: 'absolute',
@@ -108,6 +108,7 @@ const AlreadyDownloadedLink = styled(Link)({
 
 const DownloadImageContainer = styled(Box)(({ theme }) => ({
   maxWidth: '900px',
+  minWidth: '50vh',
   width: '100%',
   height: '100%',
   overflow: 'hidden',
@@ -236,6 +237,7 @@ export {
   ModalContent,
   ModalIcon,
   ModalTitle,
+  PreTitleContainer,
   ShareButton,
   ShareContainer
 }

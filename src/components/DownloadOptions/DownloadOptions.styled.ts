@@ -1,16 +1,25 @@
-import { Box, Button, Typography, dclColors, styled } from 'decentraland-ui2'
+import { Box, Button, Typography, styled } from 'decentraland-ui2'
 
 const DownloadOptionsContainer = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
-  width: '100%',
-  alignItems: 'center'
+  width: '100%'
+})
+
+const DownloadActions = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  marginTop: '60px'
 })
 
 const DownloadButtonsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
-  gap: theme.spacing(2)
+  gap: '16px',
+  [theme.breakpoints.down('xl')]: {
+    flexDirection: 'column',
+    alignItems: 'flex-start'
+  }
 }))
 
 const DownloadButtonImage = styled('img')({
@@ -19,25 +28,24 @@ const DownloadButtonImage = styled('img')({
   filter: 'brightness(0) invert(1)'
 })
 
-const DownloadCounts = styled(Typography)(({ theme }) => ({
+const DownloadCounts = styled(Typography)({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1.5),
-  width: 'fit-content',
-  color: dclColors.neutral.white,
-  borderRight: `0.5px solid ${dclColors.neutral.white}`,
-  paddingRight: theme.spacing(2),
-  marginRight: theme.spacing(2),
-  height: '24px'
-}))
+  gap: '12px',
+  borderRight: '0.5px solid',
+  marginTop: '8px !important',
+  paddingRight: '16px',
+  marginRight: '16px',
+  width: 'fit-content'
+})
 
 const AlternativeContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   display: 'flex',
   flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginTop: theme.spacing(2),
+  alignItems: 'flex-start',
+  justifyContent: 'flex-start',
+  marginTop: '16px',
   [theme.breakpoints.down('md')]: {
     justifyContent: 'center'
   }
@@ -76,6 +84,7 @@ export {
   AlternativeButtonImage,
   AlternativeButtonsWrapper,
   AlternativeContainer,
+  DownloadActions,
   DownloadButtonImage,
   DownloadButtonsContainer,
   DownloadCounts,
