@@ -19,7 +19,7 @@ const HeroSection = styled(Box)(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     height: `calc(100vh - ${NAVBAR_HEIGHT_MOBILE}px)`
   },
-  // Make Swiper fill the section
+  /* eslint-disable @typescript-eslint/naming-convention */
   '& .swiper': {
     width: '100%',
     height: '100%'
@@ -28,7 +28,6 @@ const HeroSection = styled(Box)(({ theme }) => ({
     width: '100%',
     height: '100%'
   },
-  // Navigation arrows
   '& .swiper-button-prev, & .swiper-button-next': {
     color: dclColors.neutral.white,
     width: 44,
@@ -48,7 +47,6 @@ const HeroSection = styled(Box)(({ theme }) => ({
       display: 'none'
     }
   },
-  // Pagination
   '& .swiper-pagination': {
     bottom: '24px !important'
   },
@@ -64,6 +62,7 @@ const HeroSection = styled(Box)(({ theme }) => ({
     width: 28,
     borderRadius: 4
   }
+  /* eslint-enable @typescript-eslint/naming-convention */
 }))
 
 const HeroSlide = styled(Box)({
@@ -147,7 +146,7 @@ const ParallaxSticky = styled(Box)({
   width: '100%',
   height: '100vh',
   overflow: 'hidden',
-  // Subtle gradient fades blend the parallax into its neighbors
+  /* eslint-disable @typescript-eslint/naming-convention */
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -170,6 +169,7 @@ const ParallaxSticky = styled(Box)({
     zIndex: 10,
     pointerEvents: 'none'
   }
+  /* eslint-enable @typescript-eslint/naming-convention */
 })
 
 interface ParallaxImageWrapperProps {
@@ -184,9 +184,7 @@ const ParallaxImageWrapper = styled(Box, {
   aspectRatio: '3 / 4',
   top: '50%',
   // Horizontal placement driven by the $position prop
-  ...($position === 'left'
-    ? { left: 'clamp(24px, 8vw, 140px)' }
-    : { right: 'clamp(24px, 8vw, 140px)' }),
+  ...($position === 'left' ? { left: 'clamp(24px, 8vw, 140px)' } : { right: 'clamp(24px, 8vw, 140px)' }),
   // The JS scroll handler overrides transform & opacity in-place via refs.
   // We keep a sensible default here and rely on CSS transition for smoothness.
   transform: 'translateY(calc(-50% + 25%))',
@@ -197,6 +195,7 @@ const ParallaxImageWrapper = styled(Box, {
   overflow: 'hidden',
   boxShadow: '0 24px 80px rgba(0,0,0,0.55)',
   zIndex: 5,
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   '& img': {
     width: '100%',
     height: '100%',
@@ -205,15 +204,11 @@ const ParallaxImageWrapper = styled(Box, {
   },
   [theme.breakpoints.down('md')]: {
     width: 'clamp(140px, 28vw, 260px)',
-    ...($position === 'left'
-      ? { left: 'clamp(16px, 5vw, 80px)' }
-      : { right: 'clamp(16px, 5vw, 80px)' })
+    ...($position === 'left' ? { left: 'clamp(16px, 5vw, 80px)' } : { right: 'clamp(16px, 5vw, 80px)' })
   },
   [theme.breakpoints.down('sm')]: {
     width: 'clamp(110px, 38vw, 180px)',
-    ...($position === 'left'
-      ? { left: 12 }
-      : { right: 12 })
+    ...($position === 'left' ? { left: 12 } : { right: 12 })
   }
 }))
 

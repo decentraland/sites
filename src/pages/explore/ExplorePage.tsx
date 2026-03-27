@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef } from 'react'
+import { Suspense, lazy, useEffect, useRef } from 'react'
 import { useInView } from 'react-intersection-observer'
 import 'swiper/css'
 import 'swiper/css/navigation'
@@ -162,11 +162,7 @@ const ExplorePage = () => {
           {heroSlides.map((slide, index) => (
             <SwiperSlide key={index}>
               <HeroSlide>
-                <HeroSlideImage
-                  src={slide.imageUrl}
-                  alt={slide.title}
-                  loading={index === 0 ? 'eager' : 'lazy'}
-                />
+                <HeroSlideImage src={slide.imageUrl} alt={slide.title} loading={index === 0 ? 'eager' : 'lazy'} />
                 <HeroSlideOverlay />
                 <HeroSlideContent>
                   <HeroSlideTitle variant={isDesktop ? 'h2' : 'h3'}>{slide.title}</HeroSlideTitle>
@@ -198,26 +194,24 @@ const ExplorePage = () => {
           <AboutTitle variant="h2">What is Decentraland?</AboutTitle>
 
           <AboutLead>
-            Decentraland is the world&apos;s first fully decentralized virtual world — a place where you truly own every
-            piece of your experience.
+            Decentraland is the world&apos;s first fully decentralized virtual world — a place where you truly own every piece of your
+            experience.
           </AboutLead>
 
           <AboutBody>
-            Built on the Ethereum blockchain, Decentraland is an open metaverse where users can explore vast lands,
-            attend live events, play games, visit art galleries, and connect with people from around the globe — all
-            without any central authority controlling what you can do or own.
+            Built on the Ethereum blockchain, Decentraland is an open metaverse where users can explore vast lands, attend live events, play
+            games, visit art galleries, and connect with people from around the globe — all without any central authority controlling what
+            you can do or own.
           </AboutBody>
 
           <AboutBody>
-            Every parcel of LAND is a unique NFT you can buy, sell, and build on. Your avatar, wearables, and name are
-            yours — stored on the blockchain and portable across the metaverse. You&apos;re not just a player; you&apos;re a
-            citizen, creator, and owner.
+            Every parcel of LAND is a unique NFT you can buy, sell, and build on. Your avatar, wearables, and name are yours — stored on the
+            blockchain and portable across the metaverse. You&apos;re not just a player; you&apos;re a citizen, creator, and owner.
           </AboutBody>
 
           <AboutBody>
-            Whether you want to host events, build interactive experiences, launch your own art exhibition, or simply
-            hang out with friends, Decentraland gives you the tools and the freedom to make it happen — on your
-            terms, in your world.
+            Whether you want to host events, build interactive experiences, launch your own art exhibition, or simply hang out with friends,
+            Decentraland gives you the tools and the freedom to make it happen — on your terms, in your world.
           </AboutBody>
 
           <AboutTagline>Your world. Your rules. Your ownership.</AboutTagline>
