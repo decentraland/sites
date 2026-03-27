@@ -13,15 +13,21 @@ enum StatusColor {
 
 type Service = { name: string; url: string }
 
+const FETCH_TIMEOUT_MS = 8000
+
 const fetchServiceStatus = async (url: string): Promise<{ status: ServiceStatus }> => {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
   try {
-    const response = await fetch(url)
+    const response = await fetch(url, { signal: controller.signal })
     if (response.ok) {
       return { status: ServiceStatus.OK }
     }
     return { status: ServiceStatus.DOWN }
   } catch {
     return { status: ServiceStatus.DOWN }
+  } finally {
+    clearTimeout(timeout)
   }
 }
 
@@ -30,15 +36,14 @@ const determineGlobalStatus = (
   t: (key: string) => string
 ): { status: ServiceStatus; color: StatusColor; text: string } => {
   const statusValues = Object.values(statuses)
-  // eslint-disable-next-line prettier/prettier
-  if (statusValues.every((s) => s === ServiceStatus.OK)) {
+
+  if (statusValues.every(s => s === ServiceStatus.OK)) {
     return {
       status: ServiceStatus.OK,
       color: StatusColor.GREEN,
       text: t('component.landing.help.dropdown.status.all_operational')
     }
-    // eslint-disable-next-line prettier/prettier
-  } else if (statusValues.every((s) => s === ServiceStatus.DOWN)) {
+  } else if (statusValues.every(s => s === ServiceStatus.DOWN)) {
     return {
       status: ServiceStatus.DOWN,
       color: StatusColor.RED,

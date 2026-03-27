@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useIntl } from 'react-intl'
 import { CircularProgress, Menu } from 'decentraland-ui2'
 import { StatusResult } from './StatusResult'
@@ -19,7 +19,7 @@ type StatusDropdownProps = {
 
 const StatusDropdown = memo(function StatusDropdown({ serviceList }: StatusDropdownProps) {
   const intl = useIntl()
-  const t = (id: string) => intl.formatMessage({ id })
+  const t = useCallback((id: string) => intl.formatMessage({ id }), [intl])
 
   const [statuses, setStatuses] = useState<Record<string, ServiceStatus>>({})
   const [loading, setLoading] = useState(true)
@@ -31,8 +31,7 @@ const StatusDropdown = memo(function StatusDropdown({ serviceList }: StatusDropd
 
     const loadStatuses = async () => {
       const results = await Promise.all(
-        // eslint-disable-next-line prettier/prettier
-        serviceList.map((service) => fetchServiceStatus(service.url).then((result) => ({ name: service.name, status: result.status })))
+        serviceList.map(service => fetchServiceStatus(service.url).then(result => ({ name: service.name, status: result.status })))
       )
 
       if (!cancelled) {
@@ -68,8 +67,8 @@ const StatusDropdown = memo(function StatusDropdown({ serviceList }: StatusDropd
       <StatusGlobalIcon>
         <StatusResult status={globalStatus.status} />
       </StatusGlobalIcon>
-      {/* eslint-disable-next-line prettier/prettier */}
-      <StatusMenuButton onClick={(e) => setAnchorEl(e.currentTarget)}>{t('component.landing.help.dropdown.title')}</StatusMenuButton>
+      {}
+      <StatusMenuButton onClick={e => setAnchorEl(e.currentTarget)}>{t('component.landing.help.dropdown.title')}</StatusMenuButton>
       <Menu
         anchorEl={anchorEl}
         open={open}

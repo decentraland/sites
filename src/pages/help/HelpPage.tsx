@@ -4,6 +4,7 @@ import { FAQSection, HelpCenterSection, HelpTab, StatusDropdown, SupportUpdatesS
 import { DesktopStatusWrapper, HelpContentArea, HelpPageContainer } from './HelpPage.styled'
 
 const INTERCOM_APP_ID = 'z0h94kay'
+const INTERCOM_SETTINGS = { alignment: 'right' } as const
 
 const SERVICES = [
   { name: 'Catalyst EC1', url: 'https://peer-ec1.decentraland.org/about' },
@@ -37,7 +38,7 @@ const HelpPage = () => {
           <StatusDropdown serviceList={SERVICES} />
         </DesktopStatusWrapper>
       </HelpPageContainer>
-      <Intercom appId={INTERCOM_APP_ID} settings={{ alignment: 'right' }} />
+      <Intercom appId={INTERCOM_APP_ID} settings={INTERCOM_SETTINGS} />
     </>
   )
 }
