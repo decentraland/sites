@@ -4,9 +4,12 @@ import 'swiper/css/pagination'
 import { Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import type { Avatar } from '@dcl/schemas'
-import { AvatarFace } from 'decentraland-ui2'
+import { AvatarFace, DownloadModal, JumpInIcon } from 'decentraland-ui2'
 import { catchTheVibeContent } from '../../../data/static-content'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
+import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
+import { useHangOutAction } from '../../../hooks/useHangOutAction'
+import { SectionViewedTrack } from '../../../modules/segment'
 import {
   CardImage,
   CardsRow,
@@ -14,6 +17,7 @@ import {
   CatchTheVibeTitle,
   CommunityLabel,
   DurationText,
+  HangOutButton,
   MediaContainer,
   MobileCarouselContainer,
   MuteButton,
@@ -85,8 +89,10 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
     if (video) {
       video.pause()
       video.currentTime = 0
+      video.muted = true
     }
     setIsPlaying(false)
+    setIsMuted(true)
   }, [])
 
   const toggleMute = useCallback((e: React.MouseEvent) => {
@@ -127,6 +133,9 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
 }
 
 const CatchTheVibe = memo(() => {
+  const onClickHandle = useTrackClick()
+  const { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
+
   return (
     <CatchTheVibeContainer>
       <CatchTheVibeTitle variant="h3">{catchTheVibeContent.title}</CatchTheVibeTitle>
@@ -144,6 +153,19 @@ const CatchTheVibe = memo(() => {
           ))}
         </Swiper>
       </MobileCarouselContainer>
+      <HangOutButton
+        variant="contained"
+        onClick={e => {
+          onClickHandle(e)
+          handleClick(e)
+        }}
+        data-place={SectionViewedTrack.LANDING_HERO}
+        data-event="click"
+        endIcon={<JumpInIcon />}
+      >
+        HANG OUT NOW
+      </HangOutButton>
+      <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />
     </CatchTheVibeContainer>
   )
 })
