@@ -67,7 +67,6 @@ const UpcomingEvents = memo(() => {
       </MobileCarousel>
       <SeeAllButton
         variant="outlined"
-        component="a"
         href={l('component.landing.upcoming_events.cta_link')}
         target="_blank"
         rel="noopener noreferrer"
