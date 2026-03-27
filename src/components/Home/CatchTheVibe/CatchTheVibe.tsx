@@ -16,6 +16,7 @@ import {
   DurationText,
   MediaContainer,
   MobileCarouselContainer,
+  MuteButton,
   PlayBadge,
   PlayIcon,
   UserInfo,
@@ -42,6 +43,7 @@ function formatDuration(seconds: number): string {
 const VideoCardContent = ({ item }: { item: CardItem }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isMuted, setIsMuted] = useState(true)
   const [duration, setDuration] = useState<string | null>(null)
   const { data: profile } = useGetProfileQuery(item.userAddress, { skip: !item.userAddress })
   const fetchedAvatar = profile?.avatars?.[0] as Avatar | undefined
@@ -73,7 +75,6 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
   const handleMouseEnter = useCallback(() => {
     const video = videoRef.current
     if (video) {
-      video.muted = false
       video.play()
     }
     setIsPlaying(true)
@@ -84,9 +85,17 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
     if (video) {
       video.pause()
       video.currentTime = 0
-      video.muted = true
     }
     setIsPlaying(false)
+  }, [])
+
+  const toggleMute = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    const video = videoRef.current
+    if (video) {
+      video.muted = !video.muted
+      setIsMuted(video.muted)
+    }
   }, [])
 
   return (
@@ -99,6 +108,11 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
             <PlayIcon />
             <DurationText>{duration ?? '0:00'}</DurationText>
           </PlayBadge>
+        )}
+        {isPlaying && (
+          <MuteButton onClick={toggleMute} aria-label={isMuted ? 'Unmute' : 'Mute'}>
+            {isMuted ? '🔇' : '🔊'}
+          </MuteButton>
         )}
       </MediaContainer>
       <VideoCardFooter>
