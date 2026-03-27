@@ -9,6 +9,7 @@ const WhatsOn = lazy(() => import('../components/Home/WhatsOn').then(m => ({ def
 const CatchTheVibe = lazy(() => import('../components/Home/CatchTheVibe').then(m => ({ default: m.CatchTheVibe })))
 const WeeklyRituals = lazy(() => import('../components/Home/WeeklyRituals').then(m => ({ default: m.WeeklyRituals })))
 const ComeHangOut = lazy(() => import('../components/Home/ComeHangOut').then(m => ({ default: m.ComeHangOut })))
+const UpcomingEvents = lazy(() => import('../components/Home/UpcomingEvents').then(m => ({ default: m.UpcomingEvents })))
 const FooterLanding = lazy(() =>
   import('decentraland-ui2/dist/components/FooterLanding/FooterLanding').then(m => ({ default: m.FooterLanding }))
 )
@@ -33,6 +34,7 @@ const IndexPage = () => {
               <CatchTheVibe />
               <WeeklyRituals />
               <ComeHangOut />
+              <UpcomingEvents />
             </BelowFoldContent>
           </Suspense>
         )}

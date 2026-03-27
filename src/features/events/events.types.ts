@@ -8,6 +8,9 @@ interface EventEntry {
   live: boolean
   coordinates: [number, number]
   user: string
+  user_name?: string
+  start_at?: string
+  finish_at?: string
 }
 
 interface EventsResponse {

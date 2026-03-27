@@ -10,7 +10,7 @@ interface WhatsOnData {
 const eventsClient = createApi({
   reducerPath: 'eventsClient',
   baseQuery: fetchBaseQuery({ baseUrl: '/' }),
-  tagTypes: ['WhatsOn'],
+  tagTypes: ['WhatsOn', 'UpcomingEvents'],
   keepUnusedDataFor: 60,
   endpoints: build => ({
     getWhatsOnData: build.query<WhatsOnData, void>({
@@ -41,11 +41,27 @@ const eventsClient = createApi({
         }
       },
       providesTags: ['WhatsOn']
+    }),
+    getUpcomingEvents: build.query<EventEntry[], void>({
+      queryFn: async () => {
+        try {
+          const eventsApiUrl = getEnv('EVENTS_API_URL') || 'https://events.decentraland.org/api'
+          const res = await fetch(`${eventsApiUrl}/events?list=upcoming&limit=4&order=asc&world=false`)
+          if (!res.ok) {
+            throw new Error('Failed to fetch upcoming events')
+          }
+          const data: EventsResponse = await res.json()
+          return { data: data.data ?? [] }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      },
+      providesTags: ['UpcomingEvents']
     })
   })
 })
 
-const { useGetWhatsOnDataQuery } = eventsClient
+const { useGetWhatsOnDataQuery, useGetUpcomingEventsQuery } = eventsClient
 
-export { eventsClient, useGetWhatsOnDataQuery }
+export { eventsClient, useGetWhatsOnDataQuery, useGetUpcomingEventsQuery }
 export type { WhatsOnData }
