@@ -1,4 +1,5 @@
-import { Box, Card, CardContent, CardMedia, LinearProgress, Typography, dclColors, keyframes, styled } from 'decentraland-ui2'
+import { keyframes } from '@emotion/react'
+import { Box, Card, CardContent, CardMedia, LinearProgress, Typography, dclColors, styled } from 'decentraland-ui2'
 
 const DownloadSuccessPageContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
