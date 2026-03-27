@@ -21,6 +21,9 @@ const WalletStateContext = createContext<WalletState>(DEFAULT_STATE)
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const WalletStateSetterContext = createContext<(state: WalletState) => void>(() => {})
 
+// Reads wagmi v2.x persisted store to derive initial wallet state without importing wagmi.
+// Structure: { state: { connections: { value: Map-as-entries }, current: string } }
+// If wagmi upgrades change this format, this function will safely return disconnected state.
 function readWagmiLocalStorage(): Pick<WalletState, 'address' | 'isConnected'> {
   try {
     const raw = localStorage.getItem('wagmi.store')
