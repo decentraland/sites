@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { RemoteLoader } from './components/RemoteLoader'
 import { IndexPage } from './pages/index.tsx'
@@ -39,6 +39,7 @@ const App = () => {
             <Route path="/help" element={<HelpPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
             <Route path="/whats-on/*" element={<RemoteLoader name="whats-on" />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
       </Suspense>
