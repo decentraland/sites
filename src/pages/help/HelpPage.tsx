@@ -16,7 +16,7 @@ const SERVICES = [
   { name: 'Catalyst DCLNodes', url: 'https://peer.dclnodes.io/about' },
   { name: 'Catalyst AP1', url: 'https://peer-ap1.decentraland.org/about' },
   { name: 'Catalyst EU1', url: 'https://peer-eu1.decentraland.org/about' },
-  { name: 'Marketplace', url: 'https://marketplace-api.decentraland.org/v1/status' },
+  { name: 'Marketplace', url: 'https://marketplace-api.decentraland.org/ping' },
   { name: 'Chat', url: 'https://peer-wc1.decentraland.org/about' },
   { name: 'Builder', url: 'https://builder-api.decentraland.org/v1/info' },
   { name: 'Places', url: 'https://places.decentraland.org/api/status' },
