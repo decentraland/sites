@@ -21,6 +21,7 @@ async function initRuntimeRemotes() {
     }
   } catch (e) {
     console.error('[RemoteLoader] Failed to set runtime remote URLs:', e)
+    throw e
   }
 }
 
