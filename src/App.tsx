@@ -18,6 +18,7 @@ const SignInRedirect = lazy(() => import('./pages/SignInRedirect').then(m => ({ 
 const TermsOfUse = lazy(() => import('./pages/terms').then(m => ({ default: m.TermsOfUse })))
 const DownloadSuccessPage = lazy(() => import('./pages/DownloadSuccess').then(m => ({ default: m.DownloadSuccess })))
 const HelpPage = lazy(() => import('./pages/help').then(m => ({ default: m.HelpPage })))
+const InvitePage = lazy(() => import('./pages/invite/InvitePage').then(m => ({ default: m.InvitePage })))
 
 const App = () => {
   return (
@@ -26,6 +27,7 @@ const App = () => {
         <Routes>
           <Route path="/download" element={<DownloadPage />} />
           <Route path="/download_success" element={<DownloadSuccessPage />} />
+          <Route path="/invite/:referrer" element={<InvitePage />} />
           <Route element={<Layout />}>
             <Route path="/" element={<IndexPage />} />
             <Route path="/brand" element={<BrandTerms />} />
