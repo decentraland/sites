@@ -1,16 +1,10 @@
-import { Component, Suspense, lazy } from 'react'
+import { Component, Suspense, lazy, useMemo } from 'react'
 import type { ComponentType, LazyExoticComponent, ReactNode } from 'react'
 import { CircularProgress } from 'decentraland-ui2'
 import { ErrorContainer, LoadingContainer } from './RemoteLoader.styled'
 
 const isDev = import.meta.env.DEV
 
-/**
- * If runtime URLs are injected by the worker, override the federation
- * remote config before the first lazy load. This uses the plugin's
- * internal __federation_method_setRemote to update the URL while keeping
- * the shared scope resolution intact.
- */
 async function initRuntimeRemotes() {
   const urls = window.__REMOTE_URLS__
   if (!urls) return
@@ -32,15 +26,22 @@ async function initRuntimeRemotes() {
 
 const remoteInitPromise = initRuntimeRemotes()
 
-const WhatsOnRemote = lazy(async () => {
-  await remoteInitPromise
-  // eslint-disable-next-line import/no-unresolved
-  return import('whats_on/App')
-})
+const remoteCache = new Map<string, LazyExoticComponent<ComponentType>>()
 
-const remoteMap: Record<string, LazyExoticComponent<ComponentType>> = {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  'whats-on': WhatsOnRemote
+function getRemoteComponent(remoteName: string): LazyExoticComponent<ComponentType> {
+  const cached = remoteCache.get(remoteName)
+  if (cached) return cached
+
+  const component = lazy(async () => {
+    await remoteInitPromise
+    // eslint-disable-next-line import/no-unresolved
+    const federation = await import('virtual:__federation__')
+    const factory = await federation.__federation_method_getRemote(remoteName, './App')
+    return { default: factory() as ComponentType }
+  })
+
+  remoteCache.set(remoteName, component)
+  return component
 }
 
 class RemoteErrorBoundary extends Component<{ children: ReactNode; name: string }, { hasError: boolean }> {
@@ -63,8 +64,7 @@ class RemoteErrorBoundary extends Component<{ children: ReactNode; name: string 
 }
 
 function RemoteLoader({ name }: { name: string }) {
-  const Remote = remoteMap[name]
-  if (!Remote) return null
+  const Remote = useMemo(() => getRemoteComponent(name), [name])
 
   return (
     <RemoteErrorBoundary name={name}>
