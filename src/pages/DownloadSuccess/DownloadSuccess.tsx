@@ -6,7 +6,6 @@ import { Logo, Typography } from 'decentraland-ui2'
 import { useIntl } from '../../hooks/adapters/useFormatMessage'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
-import arrowToDownload from '../../images/download/arrow-pointing-downloads.webp'
 import macOsLauncher from '../../images/download/macos_launcher.webp'
 import macOsLaunchingDecentraland from '../../images/download/macos_launching_decentraland.webp'
 import macOsRecentDownload from '../../images/download/macos_recent_download.webp'
@@ -21,8 +20,6 @@ import { FALLBACK_CDN_RELEASE_LINKS } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
 import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from './DownloadSuccess.types'
 import {
-  DownloadArrowContainer,
-  DownloadArrowImage,
   DownloadBackdrop,
   DownloadBackdropContent,
   DownloadBackdropText,
@@ -206,9 +203,6 @@ const DownloadSuccess = memo(() => {
               action: productAction
             })}
           </DownloadSuccessSubtitle>
-          <DownloadArrowContainer>
-            <DownloadArrowImage src={arrowToDownload} alt="" loading="lazy" />
-          </DownloadArrowContainer>
         </DownloadSuccessHeaderContainer>
 
         <DownloadSuccessCardWrapper>
