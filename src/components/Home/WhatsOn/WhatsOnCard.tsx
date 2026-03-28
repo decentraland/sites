@@ -4,12 +4,33 @@ import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-u
 import { WhatsOnCardType } from '../../../features/events/events.types'
 import type { WhatsOn } from '../../../features/events/events.types'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
+import { assetUrl } from '../../../utils/assetUrl'
+
+// AvatarFace only passes through URLs starting with https://, otherwise it
+// prepends peer.decentraland.org. In prod assetUrl gives https://cdn..., in
+// dev we force https by replacing the protocol.
+const DCL_LOGO_URL = assetUrl('/dcl-logo.svg').replace(/^http:\/\//, 'https://')
+
+const DCL_FOUNDATION_NAMES = ['decentraland foundation', 'decentraland', 'dcl']
+
+function isDclFoundation(name?: string): boolean {
+  return !!name && DCL_FOUNDATION_NAMES.includes(name.toLowerCase())
+}
 
 const WhatsOnCard = memo(({ card, loading }: { card?: WhatsOn; loading?: boolean }) => {
   const { data: profile } = useGetProfileQuery(card?.creatorAddress, { skip: !card?.creatorAddress })
   const fetchedAvatar = profile?.avatars?.[0]
-  const avatar: Avatar | undefined =
-    (fetchedAvatar as Avatar | undefined) ?? (card?.creatorName ? ({ name: card.creatorName, ethAddress: '' } as Avatar) : undefined)
+
+  let avatar: Avatar | undefined = fetchedAvatar as Avatar | undefined
+  if (!avatar && card?.creatorName) {
+    avatar = {
+      name: card.creatorName,
+      ethAddress: '',
+      ...(isDclFoundation(card.creatorName) && {
+        avatar: { snapshots: { face256: DCL_LOGO_URL, body: '' } }
+      })
+    } as Avatar
+  }
 
   return (
     <EventCard

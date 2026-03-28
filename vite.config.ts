@@ -8,6 +8,13 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 export default defineConfig(({ command, mode }) => {
   const envVariables = loadEnv(mode, process.cwd())
   return {
+    define: {
+      /* eslint-disable @typescript-eslint/naming-convention */
+      'process.env': {
+        VITE_BASE_URL: envVariables.VITE_BASE_URL
+      }
+      /* eslint-enable @typescript-eslint/naming-convention */
+    },
     resolve: {
       dedupe: ['@emotion/react', '@emotion/styled', '@mui/material']
     },
@@ -44,7 +51,8 @@ export default defineConfig(({ command, mode }) => {
       /* eslint-enable @typescript-eslint/naming-convention */
     ],
     build: {
-      target: 'esnext'
+      target: 'esnext',
+      sourcemap: 'hidden'
     },
     ...(command === 'build' ? { base: envVariables.VITE_BASE_URL } : undefined),
     server: {

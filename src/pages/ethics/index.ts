@@ -1,0 +1,1 @@
+export { CodeOfEthics } from './CodeOfEthics'

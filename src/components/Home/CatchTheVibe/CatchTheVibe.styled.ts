@@ -8,8 +8,23 @@ const CatchTheVibeContainer = styled(Box)(({ theme }) => ({
   gap: theme.spacing(6),
   padding: `${theme.spacing(10)} ${theme.spacing(2.5)}`,
   width: '100%',
-  backgroundColor: 'rgba(0, 0, 0, 0.1)',
+  backgroundColor: '#570F88',
   overflow: 'hidden',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '60%',
+    height: '100%',
+    backgroundImage: 'url(/ellipse_gradient.webp)',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center left',
+    backgroundRepeat: 'no-repeat',
+    pointerEvents: 'none',
+    zIndex: 0
+  },
   [theme.breakpoints.down('sm')]: {
     padding: `${theme.spacing(6)} 0`,
     gap: theme.spacing(4)
@@ -111,42 +126,6 @@ const UserInfo = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1)
 }))
 
-const ProfilePic = styled(Box)({
-  position: 'relative',
-  width: 35,
-  height: 35,
-  borderRadius: '50%',
-  border: '2.5px solid rgba(255, 255, 255, 0.5)',
-  backgroundColor: '#00B453',
-  flexShrink: 0
-})
-
-const UserAvatar = styled('img')({
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 30,
-  height: 30,
-  borderRadius: '50%',
-  objectFit: 'cover'
-})
-
-const GreenDot = styled(Box)({
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 30.5,
-  height: 30.5,
-  borderRadius: '50%',
-  backgroundColor: '#31C11A',
-  overflow: 'hidden',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center'
-})
-
 const UserName = styled(Typography)({
   color: dclColors.neutral.white,
   fontWeight: 600,
@@ -174,6 +153,29 @@ const PlayBadge = styled(Box)({
   backgroundColor: '#161518',
   zIndex: 2,
   transition: 'opacity 0.3s ease'
+})
+
+const MuteButton = styled('button')({
+  position: 'absolute',
+  top: 12,
+  right: 12,
+  width: 32,
+  height: 32,
+  borderRadius: 8,
+  border: 'none',
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  color: '#FCFCFC',
+  fontSize: 16,
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 3,
+  transition: 'background-color 0.2s ease',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:hover': {
+    backgroundColor: 'rgba(0, 0, 0, 0.8)'
+  }
 })
 
 const PlayIcon = styled(Box)({
@@ -219,14 +221,13 @@ const MobileCarouselContainer = styled(Box)(({ theme }) => ({
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .swiper': {
-    paddingBottom: theme.spacing(5)
+    paddingBottom: theme.spacing(6)
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .swiper-slide': {
     height: 300,
-    display: 'flex',
-    justifyContent: 'center',
-    padding: `0 ${theme.spacing(2)}`
+    padding: '0 16px',
+    boxSizing: 'border-box'
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .swiper-pagination': {
@@ -253,13 +254,11 @@ export {
   CatchTheVibeTitle,
   CommunityLabel,
   DurationText,
-  GreenDot,
   MobileCarouselContainer,
+  MuteButton,
   PersonaImage,
   PlayBadge,
   PlayIcon,
-  ProfilePic,
-  UserAvatar,
   UserInfo,
   UserName,
   VideoCard,

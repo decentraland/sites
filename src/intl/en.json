@@ -32,6 +32,8 @@
       "amd64_processors_short": "Intel",
       "arm64_processors_short": "Apple Silicon",
       "x64_processors_short": "x64",
+      "pre_title": "{name} is Ready!",
+      "your_account": "Your Account",
       "already_downloaded": "Already downloaded?",
       "jump_in": "Jump In",
       "mobile": {
@@ -184,6 +186,14 @@
       "sign_up": "Sign up",
       "signed_up": "Thank you for subscribing!",
       "sign_up_fail": "Oops, something went wrong!"
+    },
+    "press": {
+      "title": "Decentraland Press Kit",
+      "description": "Download Decentraland press materials and brand assets"
+    },
+    "support": {
+      "title": "Decentraland - Help Center",
+      "description": "Get help with Decentraland. Browse FAQs, check service status, and contact support."
     }
   },
   "component": {
@@ -270,7 +280,22 @@
         "faq_section": {
           "title": "Frequently Asked Questions",
           "paragraph": "Don't see your question below? Check out our full FAQ resources",
-          "cta_link": "here"
+          "cta_link": "here",
+          "item_count": "7",
+          "item_0_question": "What is Decentraland?",
+          "item_0_answer": "Decentraland is an open-source, community-driven virtual world where users can create, experience, and monetize content and applications. It runs on the Ethereum blockchain and allows users to purchase virtual land and build interactive experiences.",
+          "item_1_question": "How do I enter Decentraland?",
+          "item_1_answer": "You can enter Decentraland by visiting decentraland.org/download to get the desktop client for the best experience, or jump in directly from your browser at decentraland.org/play. Create a free avatar and start exploring right away.",
+          "item_2_question": "Do I need cryptocurrency or a digital wallet to use Decentraland?",
+          "item_2_answer": "No, you can explore Decentraland for free without cryptocurrency or a digital wallet. However, if you want to buy LAND, wearables, NAMEs, or other items, you will need a digital wallet and MANA or other supported cryptocurrencies.",
+          "item_3_question": "How do I become a Decentraland Creator?",
+          "item_3_answer": "Anyone can become a Decentraland Creator! Visit the Creator Hub at decentraland.org/create to access the Scene Editor and SDK tools. You can build interactive 3D scenes, design wearables, and publish content to the world.",
+          "item_4_question": "What is a NAME?",
+          "item_4_answer": "A NAME is a unique, human-readable identity in Decentraland represented as an NFT. Instead of being identified by a wallet address, NAMEs allow other users to easily find and recognize you in the virtual world.",
+          "item_5_question": "What is the difference between LANDs and Worlds?",
+          "item_5_answer": "LANDs are non-fungible digital assets (ERC-721) representing permanent parcels within the Decentraland map. Worlds are personal, off-map spaces where anyone can deploy scenes without owning LAND, making it easier for creators to build and share experiences.",
+          "item_6_question": "How can I get help and contact the Support Team?",
+          "item_6_answer": "You can reach the Support Team directly using the chat box on the bottom right of this page. You can also browse our FAQ resources at docs.decentraland.org or check our community channels for additional help."
         },
         "center": {
           "title": "Help Center",
@@ -279,7 +304,14 @@
           "support_updates_button_label": "SUPPORT UPDATES"
         },
         "support_updates_section": {
-          "title": "Support Updates"
+          "title": "Support Updates",
+          "item_count": "3",
+          "item_0_question": "Desktop Client Update - Improved Performance",
+          "item_0_answer": "The latest desktop client includes significant performance improvements, reduced loading times, and better stability across all supported platforms.",
+          "item_1_question": "Catalyst Network Infrastructure Update",
+          "item_1_answer": "We have expanded our catalyst network with additional nodes to improve connection reliability and reduce latency for users worldwide.",
+          "item_2_question": "Marketplace Improvements",
+          "item_2_answer": "Recent marketplace updates include improved search functionality, faster listing times, and enhanced filtering options for wearables and emotes."
         },
         "dropdown": {
           "title": "System Status",
@@ -316,7 +348,7 @@
         "download": "Download"
       },
       "whats_on": {
-        "title": "What's On",
+        "title": "Jump Into What's Happening",
         "live": "Live"
       }
     }

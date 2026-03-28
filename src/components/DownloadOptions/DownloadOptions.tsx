@@ -19,6 +19,7 @@ import {
   AlternativeButtonImage,
   AlternativeButtonsWrapper,
   AlternativeContainer,
+  DownloadActions,
   DownloadButtonImage,
   DownloadButtonsContainer,
   DownloadCounts,
@@ -144,7 +145,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
   return (
     <DownloadOptionsContainer>
       {primaryDownloadOptions.length > 0 && (
-        <>
+        <DownloadActions>
           <DownloadButtonsContainer>
             {primaryDownloadOptions.map((option, index) => (
               <CTAButton
@@ -188,7 +189,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
               ))}
             </AlternativeButtonsWrapper>
           </AlternativeContainer>
-        </>
+        </DownloadActions>
       )}
     </DownloadOptionsContainer>
   )

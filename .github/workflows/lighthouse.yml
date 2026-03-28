@@ -1,0 +1,146 @@
+name: Lighthouse Audit
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v4.0.1
+        with:
+          node-version: 24.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+        env:
+          HUSKY: 0
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_BASE_URL: ''
+
+      - name: Start static server
+        run: |
+          npx serve@14 ./dist --single --listen 8080 &
+          timeout 30 bash -c 'until curl -sf http://localhost:8080 > /dev/null; do sleep 1; done'
+
+      - name: Run Lighthouse audits
+        run: |
+          npm install -g lighthouse
+          mkdir -p ./lighthouse-results
+
+          ROUTES="/ /download /brand /content /ethics /privacy /terms"
+
+          for route in $ROUTES; do
+            SAFE_NAME=$(echo "$route" | sed 's/\//_/g' | sed 's/^_//')
+            [ -z "$SAFE_NAME" ] && SAFE_NAME="root"
+
+            npx lighthouse "http://localhost:8080${route}" \
+              --output=json \
+              --output-path="./lighthouse-results/${SAFE_NAME}.json" \
+              --chrome-flags="--headless --no-sandbox --disable-gpu" \
+              --quiet \
+              || true
+          done
+
+      - name: Parse Lighthouse results
+        run: |
+          COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+
+          BODY="<!-- lighthouse-audit-comment -->"
+          BODY+=$'\n'"## Lighthouse Audit Results"$'\n'
+          BODY+=$'\n'"**Commit:** \`${SHORT_SHA}\` (${COMMIT_SHA})"$'\n'
+          BODY+=$'\n'"### Scores"$'\n'
+          BODY+=$'\n'"| Route | Performance | Accessibility | Best Practices | SEO |"
+          BODY+=$'\n'"|-------|:-----------:|:-------------:|:--------------:|:---:|"
+
+          DETAILS=""
+
+          score_icon() {
+            local score=$1
+            if [ "$score" -ge 90 ]; then echo "🟢 ${score}";
+            elif [ "$score" -ge 50 ]; then echo "🟠 ${score}";
+            else echo "🔴 ${score}"; fi
+          }
+
+          for file in ./lighthouse-results/*.json; do
+            [ -f "$file" ] || continue
+
+            BASENAME=$(basename "$file" .json)
+            if [ "$BASENAME" = "root" ]; then
+              ROUTE_DISPLAY="/"
+            else
+              ROUTE_DISPLAY="/${BASENAME//_//}"
+            fi
+
+            PERF=$(jq '.categories.performance.score // 0 | . * 100 | round' "$file")
+            A11Y=$(jq '.categories.accessibility.score // 0 | . * 100 | round' "$file")
+            BP=$(jq '.categories["best-practices"].score // 0 | . * 100 | round' "$file")
+            SEO=$(jq '.categories.seo.score // 0 | . * 100 | round' "$file")
+
+            BODY+=$'\n'"| \`${ROUTE_DISPLAY}\` | $(score_icon $PERF) | $(score_icon $A11Y) | $(score_icon $BP) | $(score_icon $SEO) |"
+
+            FINDINGS=$(jq -r '
+              [.audits | to_entries[] |
+               select(.value.score != null and .value.score < 1 and .value.score >= 0) |
+               select(.value.details.items != null and (.value.details.items | length) > 0) |
+               {title: .value.title, score: (.value.score * 100 | round), displayValue: (.value.displayValue // "")}
+              ] | sort_by(.score) | .[0:8] |
+              .[] | "- **\(.title)** — score: \(.score)\(if .displayValue != "" then " (\(.displayValue))" else "" end)"
+            ' "$file")
+
+            if [ -n "$FINDINGS" ]; then
+              DETAILS+=$'\n\n'"<details>"
+              DETAILS+=$'\n'"<summary>Findings for <code>${ROUTE_DISPLAY}</code></summary>"
+              DETAILS+=$'\n\n'"${FINDINGS}"
+              DETAILS+=$'\n'"</details>"
+            fi
+          done
+
+          BODY+=$'\n\n'"### Key Findings"
+          BODY+="${DETAILS}"
+          BODY+=$'\n\n'"---"
+          BODY+=$'\n'"<sub>Score legend: 🟢 90-100 | 🟠 50-89 | 🔴 0-49</sub>"
+
+          echo "$BODY" > ./lighthouse-comment.md
+
+      - name: Post or update PR comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          MARKER="<!-- lighthouse-audit-comment -->"
+          BODY=$(cat ./lighthouse-comment.md)
+
+          # Find existing comment with our marker
+          COMMENT_ID=$(gh api \
+            "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+            --paginate \
+            --jq ".[] | select(.body | startswith(\"${MARKER}\")) | .id" \
+            | head -n 1)
+
+          if [ -n "$COMMENT_ID" ]; then
+            gh api \
+              --method PATCH \
+              "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}" \
+              -f body="$BODY"
+          else
+            gh api \
+              --method POST \
+              "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+              -f body="$BODY"
+          fi

@@ -1,41 +1,45 @@
-import { memo, useCallback } from 'react'
-import { JumpInIcon } from 'decentraland-ui2'
-import { getEnv } from '../../../config/env'
+import { memo, useEffect, useState } from 'react'
+import { DownloadModal, JumpInIcon } from 'decentraland-ui2'
 import { heroContent } from '../../../data/static-content'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
+import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import { SectionViewedTrack } from '../../../modules/segment'
-import {
-  GradientBottom,
-  GradientTop,
-  HangOutButton,
-  HeroBackground,
-  HeroContainer,
-  HeroContent,
-  HeroTitle,
-  JumpInIconWrapper
-} from './Hero.styled'
+import { assetUrl } from '../../../utils/assetUrl'
+import { GradientBottom, GradientTop, HangOutButton, HeroBackground, HeroContainer, HeroContent, HeroTitle } from './Hero.styled'
+
+const heroImageUrl = assetUrl('/landing_hero.webp')
 
 const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const onClickHandle = useTrackClick()
+  const { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
 
-  const handleClick = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
-      event.preventDefault()
-      onClickHandle(event)
-      const href = getEnv('ONBOARDING_URL')!
-      setTimeout(() => {
-        window.location.href = href
-      }, 500)
-    },
-    [onClickHandle]
-  )
+  // On mobile: show poster image first for fast LCP, defer video load after paint.
+  // On desktop: load video immediately (bandwidth is not constrained).
+  // Defer video on mobile — show poster image first for fast LCP.
+  // Falls back to setTimeout for Safari which lacks requestIdleCallback.
+  const [showVideo, setShowVideo] = useState(isDesktop)
+  useEffect(() => {
+    if (!isDesktop) {
+      const cb = () => setShowVideo(true)
+      if (typeof requestIdleCallback === 'function') {
+        const id = requestIdleCallback(cb, { timeout: 3000 })
+        return () => cancelIdleCallback(id)
+      }
+      const id = setTimeout(cb, 1)
+      return () => clearTimeout(id)
+    }
+  }, [isDesktop])
 
   return (
     <HeroContainer>
       <HeroBackground>
-        <video autoPlay loop muted playsInline poster="/landing_hero.png" preload="none">
-          <source src={heroContent.backgroundVideo} type="video/mp4" />
-        </video>
+        {showVideo ? (
+          <video autoPlay loop muted playsInline poster={heroImageUrl} preload="none">
+            <source src={heroContent.backgroundVideo} type="video/mp4" />
+          </video>
+        ) : (
+          <img src={heroImageUrl} alt="" />
+        )}
       </HeroBackground>
       <GradientTop />
       <GradientBottom />
@@ -45,16 +49,16 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
           variant="contained"
           data-place={SectionViewedTrack.LANDING_HERO}
           data-event="click"
-          onClick={handleClick}
-          endIcon={
-            <JumpInIconWrapper>
-              <JumpInIcon />
-            </JumpInIconWrapper>
-          }
+          onClick={e => {
+            onClickHandle(e)
+            handleClick(e)
+          }}
+          endIcon={<JumpInIcon />}
         >
           HANG OUT NOW
         </HangOutButton>
       </HeroContent>
+      <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />
     </HeroContainer>
   )
 })

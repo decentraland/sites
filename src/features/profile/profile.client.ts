@@ -1,17 +1,13 @@
 import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react'
-import { type LambdasClient, createLambdasClient } from 'dcl-catalyst-client'
 import type { Profile } from 'dcl-catalyst-client/dist/client/specs/lambdas-client'
 import { getEnv } from '../../config/env'
 
-function getLambdasClient(): LambdasClient {
-  const peerUrl = getEnv('PEER_URL')
-  return createLambdasClient({ url: `${peerUrl}/lambdas`, fetcher: { fetch: fetch as never } })
-}
-
 async function fetchProfile(address: string): Promise<Profile | null> {
   try {
-    const client = getLambdasClient()
-    return await client.getAvatarDetails(address.toLowerCase())
+    const peerUrl = getEnv('PEER_URL')
+    const response = await fetch(`${peerUrl}/lambdas/profiles/${address.toLowerCase()}`)
+    const data = await response.json()
+    return data ?? null
   } catch {
     return null
   }

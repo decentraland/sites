@@ -1,9 +1,12 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import 'swiper/css'
 import 'swiper/css/pagination'
-import { Autoplay, Pagination } from 'swiper/modules'
+import { Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
+import type { Avatar } from '@dcl/schemas'
+import { AvatarFace } from 'decentraland-ui2'
 import { catchTheVibeContent } from '../../../data/static-content'
+import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import {
   CardImage,
   CardsRow,
@@ -11,14 +14,11 @@ import {
   CatchTheVibeTitle,
   CommunityLabel,
   DurationText,
-  GreenDot,
   MediaContainer,
   MobileCarouselContainer,
-  PersonaImage,
+  MuteButton,
   PlayBadge,
   PlayIcon,
-  ProfilePic,
-  UserAvatar,
   UserInfo,
   UserName,
   VideoCard,
@@ -30,6 +30,7 @@ interface CardItem {
   imageUrl: string
   videoUrl: string
   userName: string
+  userAddress?: string
   userAvatarUrl: string
 }
 
@@ -42,7 +43,22 @@ function formatDuration(seconds: number): string {
 const VideoCardContent = ({ item }: { item: CardItem }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isMuted, setIsMuted] = useState(true)
   const [duration, setDuration] = useState<string | null>(null)
+  const { data: profile } = useGetProfileQuery(item.userAddress, { skip: !item.userAddress })
+  const fetchedAvatar = profile?.avatars?.[0] as Avatar | undefined
+  // AvatarFace only passes through URLs starting with https://.
+  const fallbackFace = `${window.location.origin}${item.userAvatarUrl}`.replace(/^http:\/\//, 'https://')
+
+  // Use fetched profile if it has a face256 snapshot, otherwise fall back to static image
+  const hasFace = !!fetchedAvatar?.avatar?.snapshots?.face256
+  const avatar: Avatar = hasFace
+    ? fetchedAvatar
+    : ({
+        name: fetchedAvatar?.name ?? item.userName,
+        ethAddress: item.userAddress ?? '',
+        avatar: { snapshots: { face256: fallbackFace, body: '' } }
+      } as Avatar)
 
   useEffect(() => {
     const video = videoRef.current
@@ -59,7 +75,6 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
   const handleMouseEnter = useCallback(() => {
     const video = videoRef.current
     if (video) {
-      video.muted = false
       video.play()
     }
     setIsPlaying(true)
@@ -70,15 +85,23 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
     if (video) {
       video.pause()
       video.currentTime = 0
-      video.muted = true
     }
     setIsPlaying(false)
+  }, [])
+
+  const toggleMute = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    const video = videoRef.current
+    if (video) {
+      video.muted = !video.muted
+      setIsMuted(video.muted)
+    }
   }, [])
 
   return (
     <VideoCard onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <MediaContainer>
-        <CardImage className="catch-vibe-image" src={item.imageUrl} alt={item.userName} loading="lazy" />
+        <CardImage className="catch-vibe-image" src={item.imageUrl} alt={item.userName} loading="lazy" width={680} height={382} />
         <VideoElement className="catch-vibe-video" ref={videoRef} loop muted playsInline preload="metadata" src={item.videoUrl} />
         {!isPlaying && (
           <PlayBadge>
@@ -86,14 +109,15 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
             <DurationText>{duration ?? '0:00'}</DurationText>
           </PlayBadge>
         )}
+        {isPlaying && (
+          <MuteButton onClick={toggleMute} aria-label={isMuted ? 'Unmute' : 'Mute'}>
+            {isMuted ? '🔇' : '🔊'}
+          </MuteButton>
+        )}
       </MediaContainer>
       <VideoCardFooter>
         <UserInfo>
-          <ProfilePic>
-            <GreenDot>
-              <UserAvatar src={item.userAvatarUrl} alt={item.userName} />
-            </GreenDot>
-          </ProfilePic>
+          <AvatarFace size="small" avatar={avatar} />
           <UserName>{item.userName}</UserName>
         </UserInfo>
         <CommunityLabel>Community Member</CommunityLabel>
@@ -112,14 +136,7 @@ const CatchTheVibe = memo(() => {
         ))}
       </CardsRow>
       <MobileCarouselContainer>
-        <Swiper
-          modules={[Pagination, Autoplay]}
-          pagination={{ clickable: true }}
-          autoplay={{ delay: 5000, disableOnInteraction: false }}
-          loop
-          spaceBetween={0}
-          slidesPerView={1}
-        >
+        <Swiper modules={[Pagination]} pagination={{ clickable: true }} loop slidesPerView={1} spaceBetween={0}>
           {catchTheVibeContent.cards.map((item, index) => (
             <SwiperSlide key={index}>
               <VideoCardContent item={item} />
@@ -127,7 +144,6 @@ const CatchTheVibe = memo(() => {
           ))}
         </Swiper>
       </MobileCarouselContainer>
-      <PersonaImage src="/persona.png" alt="" aria-hidden />
     </CatchTheVibeContainer>
   )
 })

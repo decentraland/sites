@@ -1,10 +1,9 @@
 import { Suspense, lazy } from 'react'
 import { useInView } from 'react-intersection-observer'
-import { useAdvancedUserAgentData } from '@dcl/hooks'
-import { CircularProgress, useDesktopMediaQuery } from 'decentraland-ui2'
+import { useDesktopMediaQuery } from 'decentraland-ui2'
 import { Hero } from '../components/Home/Hero'
 import { Feed } from './index.types'
-import { LoadingContainer, SuspenseFallback } from './index.styled'
+import { BelowFoldContent, SuspenseFallback } from './index.styled'
 
 const WhatsOn = lazy(() => import('../components/Home/WhatsOn').then(m => ({ default: m.WhatsOn })))
 const CatchTheVibe = lazy(() => import('../components/Home/CatchTheVibe').then(m => ({ default: m.CatchTheVibe })))
@@ -16,28 +15,25 @@ const FooterLanding = lazy(() =>
 
 const IndexPage = () => {
   const isDesktop = useDesktopMediaQuery()
-  const [isLoadingUserAgentData] = useAdvancedUserAgentData()
-  const { ref: belowFoldRef, inView: belowFoldInView } = useInView({ triggerOnce: true, rootMargin: '200px' })
+  // Negative bottom margin (-1px) prevents the observer from triggering on initial load.
+  // Hero is 100vh so belowFoldRef sits exactly at the viewport's bottom edge — any positive
+  // or zero rootMargin would include it, firing API calls (hot-scenes, events) during the LCP window.
+  // With -1px the element must be at least 1px inside the viewport to intersect, which requires a scroll.
+  const { ref: belowFoldRef, inView: belowFoldInView } = useInView({ triggerOnce: true, rootMargin: '0px 0px -1px 0px' })
   const { ref: footerRef, inView: footerInView } = useInView({ triggerOnce: true, rootMargin: '400px' })
 
   return (
     <>
-      {isLoadingUserAgentData ? (
-        <LoadingContainer>
-          <CircularProgress color="inherit" />
-        </LoadingContainer>
-      ) : (
-        <Hero isDesktop={isDesktop} />
-      )}
-      <Suspense fallback={<SuspenseFallback />}>
-        <WhatsOn />
-      </Suspense>
+      <Hero isDesktop={isDesktop} />
       <div ref={belowFoldRef}>
         {belowFoldInView && (
           <Suspense fallback={<SuspenseFallback />}>
-            <CatchTheVibe />
-            <WeeklyRituals />
-            <ComeHangOut />
+            <BelowFoldContent>
+              <WhatsOn />
+              <CatchTheVibe />
+              <WeeklyRituals />
+              <ComeHangOut />
+            </BelowFoldContent>
           </Suspense>
         )}
       </div>

@@ -2,11 +2,13 @@
   "ONBOARDING_URL": "https://decentraland.zone/auth/login/?newUser&redirectTo=https%3A%2F%2Fdecentraland.zone%2Fdownload",
   "AUTH_URL": "/auth",
   "MAGIC_API_KEY": "pk_live_CE856A4938B36648",
-  "PEER_URL": "https://peer.decentraland.zone",
+  "PEER_URL": "https://peer.decentraland.org",
   "WALLET_CONNECT_PROJECT_ID": "61570c542c2d66c659492e5b24a41522",
   "DOWNLOAD_COUNTS_URL": "https://cdn-data.decentraland.org/public/current/explorer-alpha-downloads.json",
   "EVENTS_API_URL": "https://events.decentraland.zone/api",
   "HOT_SCENES_URL": "https://realm-provider-ea.decentraland.org/hot-scenes",
   "JUMP_IN_URL": "https://decentraland.zone/jump",
-  "NOTIFICATIONS_API_URL": "https://notifications.decentraland.zone"
+  "NOTIFICATIONS_API_URL": "https://notifications.decentraland.zone",
+  "DOWNLOAD_URL": "https://decentraland.zone/download",
+  "WEARABLE_PREVIEW_URL": "https://wearable-preview.decentraland.org/"
 }
