@@ -54,7 +54,7 @@ export default defineConfig(({ command, mode }) => {
       target: 'esnext',
       sourcemap: 'hidden'
     },
-    ...(command === 'build' ? { base: envVariables.VITE_BASE_URL } : undefined),
+    ...(command === 'build' ? { base: envVariables.VITE_BASE_URL || '/' } : undefined),
     server: {
       /* eslint-disable @typescript-eslint/naming-convention */
       proxy: {
