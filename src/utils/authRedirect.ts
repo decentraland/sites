@@ -1,4 +1,13 @@
-import { clearWagmiState } from '@dcl/core-web3'
+/** Clears wagmi localStorage state so reconnection works after auth redirect. */
+function clearWagmiState(): void {
+  if (typeof window === 'undefined' || !window.localStorage) return
+  const keysToRemove: string[] = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key?.startsWith('wagmi.')) keysToRemove.push(key)
+  }
+  keysToRemove.forEach(key => localStorage.removeItem(key))
+}
 import { getEnv } from '../config/env'
 
 /**
