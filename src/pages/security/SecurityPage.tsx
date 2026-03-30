@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { Button } from 'decentraland-ui2'
 import { LegalPageLayout, Paragraph } from '../../components/LegalPage'
 import type { TOCEntry } from '../../components/LegalPage'
 
@@ -11,11 +12,9 @@ const SecurityPage = memo(() => (
       look at some of our code, contracts, or websites and found a vulnerability, you&apos;re eligible for a bounty for doing a responsible
       disclosure of that bug.
     </Paragraph>
-    <Paragraph>
-      <a href="https://immunefi.com/bounty/decentraland/" target="_blank" rel="noopener noreferrer">
-        Submit a report on Immunefi
-      </a>
-    </Paragraph>
+    <Button component="a" href="https://immunefi.com/bounty/decentraland/" target="_blank" rel="noopener noreferrer" variant="contained">
+      Submit a report on Immunefi
+    </Button>
   </LegalPageLayout>
 ))
 
