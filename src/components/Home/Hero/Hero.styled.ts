@@ -72,5 +72,113 @@ const HeroTitle = styled(Typography)(({ theme }) => ({
   }
 }))
 
-export { GradientBottom, GradientTop, HeroBackground, HeroContainer, HeroContent, HeroTitle }
+const HeroCTAWrapper = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: theme.spacing(3),
+  // Reserve space so the title doesn't shift when content loads async
+  // Desktop: button (60) + gap (24) + info row (~28) = 112
+  // Mobile: button (52) only
+  minHeight: 112,
+  justifyContent: 'flex-start',
+  [theme.breakpoints.down('sm')]: {
+    minHeight: 52
+  }
+}))
+
+const AlreadyUserText = styled(Typography)({
+  color: dclColors.neutral.white,
+  fontSize: 16,
+  lineHeight: 1.75,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4
+})
+
+const AlreadyUserDownloadLink = styled('a')({
+  color: '#FF2D55',
+  textDecoration: 'none',
+  textTransform: 'uppercase',
+  fontWeight: 600,
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:hover': {
+    opacity: 0.8
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& svg': {
+    width: 24,
+    height: 24
+  }
+})
+
+const HeroDownloadInfo = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(2),
+  flexWrap: 'wrap',
+  justifyContent: 'center'
+}))
+
+const HeroDownloadCounts = styled(Typography)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  color: dclColors.neutral.white,
+  fontSize: 16,
+  lineHeight: 1.5,
+  whiteSpace: 'nowrap'
+})
+
+const HeroPlatformSeparator = styled(Box)({
+  width: 1,
+  height: 20,
+  backgroundColor: 'rgba(255, 255, 255, 0.3)'
+})
+
+const HeroPlatformIcons = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1)
+}))
+
+const HeroPlatformIcon = styled('img')({
+  width: 24,
+  height: 24,
+  filter: 'brightness(0) invert(1)'
+})
+
+const HeroPlatformLabel = styled(Typography)({
+  color: '#ECEBED',
+  fontSize: 16,
+  lineHeight: 1.5
+})
+
+const HeroOsIcon = styled('img')({
+  width: 32,
+  height: 32,
+  filter: 'brightness(0) invert(1)'
+})
+
+export {
+  AlreadyUserDownloadLink,
+  AlreadyUserText,
+  GradientBottom,
+  GradientTop,
+  HeroBackground,
+  HeroCTAWrapper,
+  HeroContainer,
+  HeroContent,
+  HeroDownloadCounts,
+  HeroDownloadInfo,
+  HeroOsIcon,
+  HeroPlatformIcon,
+  HeroPlatformIcons,
+  HeroPlatformLabel,
+  HeroPlatformSeparator,
+  HeroTitle
+}
 export { HangOutButton } from '../shared/HangOutButton.styled'

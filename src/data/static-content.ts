@@ -31,14 +31,39 @@ const catchTheVibeContent = {
 const weeklyRitualsContent = {
   title: 'Your Weekly Rituals',
   cards: [
-    { id: 'career-mondays', title: 'Career Mondays', imageUrl: assetUrl('/weekly-rituals/career-mondays.webp'), link: '/events' },
-    { id: 'takeover-tuesdays', title: 'Takeover Tuesdays', imageUrl: assetUrl('/weekly-rituals/takeover-tuesdays.webp'), link: '/events' },
-    { id: 'watch-party', title: 'Watch Party Wednesdays', imageUrl: assetUrl('/weekly-rituals/watch-party.webp'), link: '/events' },
-    { id: 'trivia-thursdays', title: 'Trivia Thursdays', imageUrl: assetUrl('/weekly-rituals/trivia-thursdays.webp'), link: '/events' },
+    {
+      id: 'career-mondays',
+      title: 'Career Mondays',
+      imageUrl: assetUrl('/weekly-rituals/career-mondays.webp'),
+      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Monday-Mobile.webp'),
+      link: '/events'
+    },
+    {
+      id: 'takeover-tuesdays',
+      title: 'Takeover Tuesdays',
+      imageUrl: assetUrl('/weekly-rituals/takeover-tuesdays.webp'),
+      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Tuesday Mobile.webp'),
+      link: '/events'
+    },
+    {
+      id: 'watch-party',
+      title: 'Watch Party Wednesdays',
+      imageUrl: assetUrl('/weekly-rituals/watch-party.webp'),
+      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Wednesday Mobile.webp'),
+      link: '/events'
+    },
+    {
+      id: 'trivia-thursdays',
+      title: 'Trivia Thursdays',
+      imageUrl: assetUrl('/weekly-rituals/trivia-thursdays.webp'),
+      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Thursday Mobile.webp'),
+      link: '/events'
+    },
     {
       id: 'play-with-friends',
       title: 'Play with Friends Fridays',
       imageUrl: assetUrl('/weekly-rituals/play-with-friends.webp'),
+      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Fridays-Mobile.webp'),
       link: '/events'
     }
   ]

@@ -51,8 +51,8 @@ const CarouselWrapper = styled(Box)(({ theme }) => ({
     [theme.breakpoints.down('sm')]: {
       height: 'auto',
       opacity: 1,
-      borderRadius: 0,
-      overflow: 'visible'
+      borderRadius: 16,
+      overflow: 'hidden'
     }
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -80,23 +80,22 @@ const CarouselWrapper = styled(Box)(({ theme }) => ({
   }
 }))
 
-const SlideColumn = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(2),
-  height: '100%'
-}))
-
-const CardImage = styled('img')(({ theme }) => ({
+const CardImage = styled('img')({
   width: '100%',
   height: '100%',
   objectFit: 'cover',
   display: 'block',
+  borderRadius: 16
+})
+
+const MobileCardImage = styled('img')({
+  display: 'block',
+  width: 358,
+  maxWidth: '100%',
+  margin: '0 auto',
   borderRadius: 16,
-  [theme.breakpoints.down('sm')]: {
-    height: 170
-  }
-}))
+  objectFit: 'cover'
+})
 
 const NavButton = styled('button')(({ theme }) => ({
   position: 'absolute',
@@ -138,4 +137,4 @@ const NavButtonNext = styled(NavButton)(({ theme }) => ({
   }
 }))
 
-export { CardImage, CarouselWrapper, NavButtonNext, NavButtonPrev, SectionTitle, SlideColumn, WeeklyRitualsContainer }
+export { CardImage, CarouselWrapper, MobileCardImage, NavButtonNext, NavButtonPrev, SectionTitle, WeeklyRitualsContainer }

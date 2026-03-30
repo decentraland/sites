@@ -1,4 +1,4 @@
-import { memo, useMemo, useRef } from 'react'
+import { memo, useRef } from 'react'
 import type { Swiper as SwiperType } from 'swiper'
 import 'swiper/css'
 import 'swiper/css/pagination'
@@ -9,25 +9,16 @@ import { weeklyRitualsContent } from '../../../data/static-content'
 import {
   CardImage,
   CarouselWrapper,
+  MobileCardImage,
   NavButtonNext,
   NavButtonPrev,
   SectionTitle,
-  SlideColumn,
   WeeklyRitualsContainer
 } from './WeeklyRituals.styled'
 
 const WeeklyRituals = memo(() => {
   const swiperRef = useRef<SwiperType | null>(null)
   const isDesktop = useDesktopMediaQuery()
-
-  // Mobile: group cards into pairs (2 stacked per slide)
-  const cardPairs = useMemo(() => {
-    const pairs: (typeof weeklyRitualsContent.cards)[] = []
-    for (let i = 0; i < weeklyRitualsContent.cards.length; i += 2) {
-      pairs.push(weeklyRitualsContent.cards.slice(i, i + 2))
-    }
-    return pairs
-  }, [])
 
   return (
     <WeeklyRitualsContainer>
@@ -57,20 +48,16 @@ const WeeklyRituals = memo(() => {
             pagination={{ clickable: true }}
             autoplay={{ delay: 4000, disableOnInteraction: false }}
             loop
-            slidesPerView={1.05}
+            slidesPerView={1}
             centeredSlides
             spaceBetween={12}
             onSwiper={swiper => {
               swiperRef.current = swiper
             }}
           >
-            {cardPairs.map((pair, i) => (
-              <SwiperSlide key={i}>
-                <SlideColumn>
-                  {pair.map(card => (
-                    <CardImage key={card.id} src={card.imageUrl} alt={card.title} loading="lazy" width={1340} height={670} />
-                  ))}
-                </SlideColumn>
+            {weeklyRitualsContent.cards.map(card => (
+              <SwiperSlide key={card.id}>
+                <MobileCardImage src={card.mobileImageUrl} alt={card.title} loading="lazy" />
               </SwiperSlide>
             ))}
           </Swiper>
