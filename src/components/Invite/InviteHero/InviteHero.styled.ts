@@ -155,14 +155,6 @@ const HeroTitle = styled(Typography)(({ theme }) => ({
   lineHeight: '120%',
   letterSpacing: '-0.5px',
   marginBottom: theme.spacing(6),
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .decentraland-gradient': {
-    background: 'linear-gradient(261.51deg, #FF2D55 6.92%, #FFBC5B 83.3%)',
-    backgroundClip: 'text',
-    ['WebkitBackgroundClip' as string]: 'text',
-    ['WebkitTextFillColor' as string]: 'transparent',
-    color: 'transparent'
-  },
   [theme.breakpoints.down('lg')]: {
     fontSize: '48px'
   },
@@ -183,6 +175,16 @@ const HeroSubTitle = styled(Typography)(({ theme }) => ({
     fontSize: '20px'
   }
 }))
+
+/* eslint-disable @typescript-eslint/naming-convention */
+const GradientText = styled('span')({
+  background: 'linear-gradient(261.51deg, #FF2D55 6.92%, #FFBC5B 83.3%)',
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  color: 'transparent'
+})
+/* eslint-enable @typescript-eslint/naming-convention */
 
 const HeroActionsContainer = styled(Box)({})
 
@@ -253,6 +255,7 @@ export {
   EnvelopeImage,
   EnvelopeImageContainer,
   EnvelopeShadow,
+  GradientText,
   HeroActionsContainer,
   HeroContainer,
   HeroContent,

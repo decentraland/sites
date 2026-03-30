@@ -13,6 +13,7 @@ import {
   EnvelopeImage,
   EnvelopeImageContainer,
   EnvelopeShadow,
+  GradientText,
   HeroActionsContainer,
   HeroContainer,
   HeroContent,
@@ -42,7 +43,7 @@ const processTitleWithGradient = (title: string) => {
   return (
     <>
       {before}
-      <span className="decentraland-gradient">Decentraland</span>
+      <GradientText>Decentraland</GradientText>
       {after}
     </>
   )
