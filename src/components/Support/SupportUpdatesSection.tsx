@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useIntl } from 'react-intl'
+import { useTranslation } from '@dcl/hooks'
 import {
   AccordionContainer,
   FaqAccordion,
@@ -18,17 +18,16 @@ type SupportUpdatesSectionProps = {
 const SUPPORT_PREFIX = 'component.landing.help.support_updates_section'
 
 const SupportUpdatesSection = ({ isActive }: SupportUpdatesSectionProps) => {
-  const intl = useIntl()
-  const t = (id: string) => intl.formatMessage({ id })
+  const { t } = useTranslation()
   const [expanded, setExpanded] = useState<number | false>(false)
 
   const items = useMemo(() => {
-    const count = Number(intl.formatMessage({ id: `${SUPPORT_PREFIX}.item_count` }))
+    const count = Number(t(`${SUPPORT_PREFIX}.item_count`))
     return Array.from({ length: count }, (_, i) => ({
-      question: intl.formatMessage({ id: `${SUPPORT_PREFIX}.item_${i}_question` }),
-      answer: intl.formatMessage({ id: `${SUPPORT_PREFIX}.item_${i}_answer` })
+      question: t(`${SUPPORT_PREFIX}.item_${i}_question`),
+      answer: t(`${SUPPORT_PREFIX}.item_${i}_answer`)
     }))
-  }, [intl])
+  }, [t])
 
   if (!isActive) return null
 
