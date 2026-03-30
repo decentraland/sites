@@ -28,7 +28,7 @@ function LazyWeb3({ children }: PropsWithChildren) {
   const [Wrapper, setWrapper] = useState<ComponentType<PropsWithChildren> | null>(null)
 
   useEffect(() => {
-    Promise.all([import('@dcl/core-web3/lazy'), import('./web3.config')]).then(([lazy, config]) => {
+    Promise.all([import('@dcl/core-web3/lazy'), import('./web3.config'), import('@dcl/core-web3')]).then(([lazy, config, core]) => {
       injectWeb3Reducers()
 
       // Pre-seed the wallet reducer with the cached address BEFORE wagmi mounts.
@@ -37,7 +37,7 @@ function LazyWeb3({ children }: PropsWithChildren) {
       // localStorage-derived address for ~30ms until wagmi reconnects.
       const address = getCachedAddress()
       if (address) {
-        store.dispatch({ type: 'wallet/setAccount', payload: address })
+        store.dispatch(core.walletActions.setAccount(address))
       }
 
       const provider = lazy.Web3LazyProvider

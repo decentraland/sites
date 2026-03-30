@@ -1,3 +1,5 @@
+import { getEnv } from '../config/env'
+
 /** Clears wagmi localStorage state so reconnection works after auth redirect. */
 function clearWagmiState(): void {
   if (typeof window === 'undefined' || !window.localStorage) return
@@ -8,7 +10,6 @@ function clearWagmiState(): void {
   }
   keysToRemove.forEach(key => localStorage.removeItem(key))
 }
-import { getEnv } from '../config/env'
 
 /**
  * Returns the base path the app is served from (Vite BASE_URL without trailing slash).

@@ -25,8 +25,6 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
   const avatar = profile?.avatars?.[0]
   // If we have an address (from localStorage cache), treat as signed in immediately
   // to avoid the flash of "Download" button while wagmi reconnects.
-  // If we have an address (from localStorage cache), treat as signed in immediately
-  // to avoid the flash of "Download" button while wagmi reconnects.
   const effectivelySignedIn = isConnected || !!address
   usePageTracking(location.pathname)
 
@@ -78,7 +76,7 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
       }) as NavbarProps,
     [
       activePage,
-      isConnected,
+      effectivelySignedIn,
       isConnecting,
       isDisconnecting,
       address,
