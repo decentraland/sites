@@ -60,7 +60,7 @@ const weeklyRitualsContent = {
       id: 'play-with-friends',
       titleKey: 'page.home.weekly_rituals.play_with_friends_fridays',
       imageUrl: assetUrl('/weekly-rituals/play-with-friends.webp'),
-      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Fridays-Mobile.webp'),
+      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Friday-Mobile.webp'),
       link: '/events'
     }
   ]
