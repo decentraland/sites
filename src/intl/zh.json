@@ -404,9 +404,9 @@
           "item_1_question": "全新 Creator Hub (v0.35.0) 发布",
           "item_1_answer": "新功能：\n- Spawn Areas：现在你可以直接在场景编辑器中看到出生区域的可视化表示，并可视化地调整出生区域，包括随机偏移范围。\n- 动态资产目录与 SDK 兼容性：资产目录现在在运行时从 CDN 加载最新版本，因此新资产会自动出现，无需等待完整的应用更新。\n- World 访问权限：\"访问\"选项卡现在可在 Worlds 设置中使用，让你可以直接从 Creator Hub 管理谁可以进入你的 world。\n\n修复：\n- 高级模式下的场景布局：在高级模式下编辑时，场景布局现在可以正确更新。\n- 场景中的重复地面：打开场景不再渲染重复的地面平面。\n- 获取托管项目：修复了加载托管项目时的失败问题。\n- Windows 代码签名：Windows 构建管道现在会在代码签名错误时正确失败，而不是静默生成未签名的可执行文件。\n- 移除旧版依赖：用基于 viem 的更轻量的 vendored 实现替换了已弃用的 decentraland-connect 库，减小了 bundle 大小。\n\n改进：\n- UI 优化：更新了颜色、组件样式、变换对齐、实体检查器标题、实体重命名和资产选项卡样式，以获得更好的编辑体验。\n- 协作者选项卡文案：更新了协作者选项卡中的文字，提供更清晰的指导。",
           "item_2_question": "创作者注意：Backface Culling 更新",
-          "item_2_answer": "Backface Culling 将在引擎中默认对所有模型材质启用。\n\n时间：一个月后（March 19th）\n原因：显著的性能优化。\n方式：由于这是引擎级别的优化，它也会影响已经发布的材质。\n\n行动要点：\n我们建议你按照文档中的故障排除部分检查你的场景。\n\n一些值得优先检查的场景：\n- 旗帜、窗帘、由平面制成的墙壁：如果一面墙由具有单面材质的平面制成，则无法从另一侧看到。\n- 由具有单面材质的平面制成的草地/树叶：与上述情况相同。\n- 用作房间的立方体和其他形状的内部：如果立方体材质朝外，则无法从内部看到。",
+          "item_2_answer": "Backface Culling 现已在引擎中默认对所有模型材质启用。\n\n原因：显著的性能优化。\n方式：由于这是引擎级别的优化，它也会影响已经发布的材质。\n\n行动要点：\n我们建议你按照文档中的故障排除部分检查你的场景。\n\n一些值得优先检查的场景：\n- 旗帜、窗帘、由平面制成的墙壁：如果一面墙由具有单面材质的平面制成，则无法从另一侧看到。\n- 由具有单面材质的平面制成的草地/树叶：与上述情况相同。\n- 用作房间的立方体和其他形状的内部：如果立方体材质朝外，则无法从内部看到。",
           "item_3_question": "Visual Studio 扩展 - 停止支持",
-          "item_3_answer": "随着重心转向 Creator Hub，Visual Studio 扩展将不再获得支持。\n\n从 6th of June 2025 起，该扩展将从 VS Marketplace 移除。",
+          "item_3_answer": "随着重心转向 Creator Hub，Visual Studio 扩展已不再获得支持。\n\n该扩展已从 VS Marketplace 移除。",
           "item_4_question": "Player.logs - 如何获取",
           "item_4_answer": "以下是如何查找和生成 Player.log 文件的指南。这些文件在排查报告的问题时很有帮助。\n\n在 Decentraland 桌面应用中打开聊天并输入：/logs\n\n或者：\n\n对于 Windows：\n导航到：C:\\Users\\{YourUserName}\\AppData\\LocalLow\\Decentraland\\Explorer\n找到名为 Player.log 的文件\n\n对于 Mac：\n打开 Finder 并按 Cmd + Shift + G 打开\"前往文件夹\"对话框。\n输入路径：/Users/UserName/Library/Logs/Decentraland/Explorer/\n找到名为 Player.log 的文件\n\nPlayer.log 文件显示当前/活跃会话的问题。\nPlayer-prev.log 文件显示上一个会话的问题。\n\nLauncher 日志 (output.log)：\nWindows：C:\\Users\\username\\AppData\\Roaming\\DecentralandLauncherLight\nMac：/Users/UserName/Library/Logs/DecentralandLauncherLight"
         },
