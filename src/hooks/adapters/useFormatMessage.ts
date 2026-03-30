@@ -1,20 +1,25 @@
 import { useCallback } from 'react'
-import { useIntl } from 'react-intl'
+import { useTranslation } from '@dcl/hooks'
 
 function useFormatMessage() {
-  const intl = useIntl()
+  const { t } = useTranslation()
 
   return useCallback(
     function format<TValues extends Record<string, unknown>>(id?: string | null, values?: TValues): string {
-      if (!id || !intl.messages[id]) {
-        return id || ''
+      if (!id) {
+        return ''
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return intl.formatMessage({ id }, values as any)
+      return t(id, values as any)
     },
-    [intl]
+    [t]
   )
+}
+
+function useIntl() {
+  const { intl } = useTranslation()
+  return intl
 }
 
 export { useFormatMessage, useIntl }

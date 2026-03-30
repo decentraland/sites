@@ -101,7 +101,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
       <GradientTop />
       <GradientBottom />
       <HeroContent>
-        <HeroTitle variant={isDesktop ? 'h2' : 'h3'}>{heroContent.title}</HeroTitle>
+        <HeroTitle variant={isDesktop ? 'h2' : 'h3'}>{l('page.home.hero.title')}</HeroTitle>
 
         {effectivelySignedIn && isDesktop ? (
           <HeroCTAWrapper>
@@ -144,14 +144,14 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
               }}
               endIcon={<JumpInIcon />}
             >
-              HANG OUT NOW
+              {l('page.home.hang_out_now')}
             </HangOutButton>
             {isDesktop && userAgentData && (
               <AlreadyUserText>
-                {l('component.home.hero.already_user', {
+                {l('page.home.hero.already_user', {
                   download: (
                     <AlreadyUserDownloadLink href={`/download_success?os=${userAgentData.os.name}`}>
-                      {l('component.home.hero.download')} <DownloadIcon />
+                      {l('page.home.hero.download')} <DownloadIcon />
                     </AlreadyUserDownloadLink>
                   )
                 })}

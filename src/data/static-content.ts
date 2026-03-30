@@ -2,13 +2,11 @@ import { assetUrl } from '../utils/assetUrl'
 
 // Hero
 const heroContent = {
-  title: 'Close the Feed. Come Hang Out.',
   backgroundVideo: assetUrl('/video_landing.mp4')
 }
 
 // CatchTheVibe - 2 cards with image + hover video
 const catchTheVibeContent = {
-  title: 'Catch the Vibe',
   cards: [
     {
       imageUrl: assetUrl('/catch_the_vibe/alan.webp'),
@@ -29,41 +27,40 @@ const catchTheVibeContent = {
 
 // WeeklyRituals - carousel cards
 const weeklyRitualsContent = {
-  title: 'Your Weekly Rituals',
   cards: [
     {
       id: 'career-mondays',
-      title: 'Career Mondays',
+      titleKey: 'page.home.weekly_rituals.career_mondays',
       imageUrl: assetUrl('/weekly-rituals/career-mondays.webp'),
       mobileImageUrl: assetUrl('/weekly-rituals/mobile/Monday-Mobile.webp'),
       link: '/events'
     },
     {
       id: 'takeover-tuesdays',
-      title: 'Takeover Tuesdays',
+      titleKey: 'page.home.weekly_rituals.takeover_tuesdays',
       imageUrl: assetUrl('/weekly-rituals/takeover-tuesdays.webp'),
       mobileImageUrl: assetUrl('/weekly-rituals/mobile/Tuesday-Mobile.webp'),
       link: '/events'
     },
     {
       id: 'watch-party',
-      title: 'Watch Party Wednesdays',
+      titleKey: 'page.home.weekly_rituals.watch_party_wednesdays',
       imageUrl: assetUrl('/weekly-rituals/watch-party.webp'),
       mobileImageUrl: assetUrl('/weekly-rituals/mobile/Wednesday-Mobile.webp'),
       link: '/events'
     },
     {
       id: 'trivia-thursdays',
-      title: 'Trivia Thursdays',
+      titleKey: 'page.home.weekly_rituals.trivia_thursdays',
       imageUrl: assetUrl('/weekly-rituals/trivia-thursdays.webp'),
       mobileImageUrl: assetUrl('/weekly-rituals/mobile/Thursday-Mobile.webp'),
       link: '/events'
     },
     {
       id: 'play-with-friends',
-      title: 'Play with Friends Fridays',
+      titleKey: 'page.home.weekly_rituals.play_with_friends_fridays',
       imageUrl: assetUrl('/weekly-rituals/play-with-friends.webp'),
-      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Fridays-Mobile.webp'),
+      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Friday-Mobile.webp'),
       link: '/events'
     }
   ]

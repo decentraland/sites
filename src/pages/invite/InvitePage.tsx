@@ -1,8 +1,7 @@
 import { Suspense, lazy, memo, useEffect } from 'react'
-import { useIntl } from 'react-intl'
 import { useParams } from 'react-router-dom'
 import type { Profile } from 'dcl-catalyst-client/dist/client/specs/lambdas-client'
-import { useAsyncMemo } from '@dcl/hooks'
+import { useAsyncMemo, useTranslation } from '@dcl/hooks'
 import { EthAddress } from '@dcl/schemas/dist/misc'
 import { FooterLanding, useDesktopMediaQuery } from 'decentraland-ui2'
 import { InviteHero } from '../../components/Invite/InviteHero/InviteHero'
@@ -79,22 +78,22 @@ function useDocumentMeta(title: string, description: string) {
 const InvitePage = memo(() => {
   const { referrer = '' } = useParams<{ referrer: string }>()
   const isDesktop = useDesktopMediaQuery()
-  const intl = useIntl()
+  const { t } = useTranslation()
 
   const [referrerProfile, referrerProfileStatus] = useAsyncMemo(async () => {
     if (!referrer) return null
     return resolveReferrerProfile(referrer)
   }, [referrer])
 
-  useDocumentMeta(intl.formatMessage({ id: 'page_invite.social.title' }), intl.formatMessage({ id: 'page_invite.social.description' }))
+  useDocumentMeta(t('page_invite.social.title'), t('page_invite.social.description'))
 
   return (
     <>
       <InviteHero
         key="invite-first-hero"
-        title={intl.formatMessage({ id: 'page_invite.hero.title' })}
-        subtitle={intl.formatMessage({ id: 'page_invite.hero.subtitle' })}
-        buttonLabel={intl.formatMessage({ id: 'page_invite.hero.button_label' })}
+        title={t('page_invite.hero.title')}
+        subtitle={t('page_invite.hero.subtitle')}
+        buttonLabel={t('page_invite.hero.button_label')}
         media={INVITE_HERO_MEDIA}
         referrer={referrerProfile ?? null}
         eventPlace={SectionViewedTrack.INVITE_FIRST_HERO}
@@ -103,9 +102,9 @@ const InvitePage = memo(() => {
       />
       <InviteHero
         key="invite-second-hero"
-        title={intl.formatMessage({ id: 'page_invite.second_hero.title' })}
-        subtitle={intl.formatMessage({ id: 'page_invite.second_hero.subtitle' })}
-        buttonLabel={intl.formatMessage({ id: 'page_invite.second_hero.button_label' })}
+        title={t('page_invite.second_hero.title')}
+        subtitle={t('page_invite.second_hero.subtitle')}
+        buttonLabel={t('page_invite.second_hero.button_label')}
         media={INVITE_SECOND_HERO_MEDIA}
         referrer={referrerProfile ?? null}
         eventPlace={SectionViewedTrack.INVITE_SECOND_HERO}

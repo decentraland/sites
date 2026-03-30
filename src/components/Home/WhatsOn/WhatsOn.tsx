@@ -34,7 +34,7 @@ const WhatsOn = memo(() => {
   return (
     <WhatsOnContainer>
       <AnimatedBackground variant="absolute" />
-      <SectionTitle variant="h3">{l('component.home.whats_on.title')}</SectionTitle>
+      <SectionTitle variant="h3">{l('page.home.whats_on.title')}</SectionTitle>
       <CardsGrid>{cardElements}</CardsGrid>
       <MobileCarousel>
         <Swiper

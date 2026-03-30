@@ -45,7 +45,7 @@ const JumpIn = memo(({ isDesktop, isLoading, hideAlreadyUser, hideDownloadCounts
         <CTAButton
           href={getEnv('ONBOARDING_URL')!}
           onClick={handleOnboardingClick}
-          label={l('component.home.hero.jump_in')}
+          label={l('page.home.hero.jump_in')}
           place={SectionViewedTrack.LANDING_HERO}
           isLoading={isLoadingUserAgentData || isLoading}
           endIcon={<JumpInIcon fontSize="large" />}
@@ -53,10 +53,10 @@ const JumpIn = memo(({ isDesktop, isLoading, hideAlreadyUser, hideDownloadCounts
       </JumpInButtonWrapper>
       {!hideAlreadyUser && isDesktop && userAgentData && (
         <AlreadyUserContainer>
-          {l('component.home.hero.already_user', {
+          {l('page.home.hero.already_user', {
             download: (
               <AlreadyUserLink href={`/download_success?os=${userAgentData.os.name}`}>
-                {l('component.home.hero.download')} <img src="/JumpIn.svg" alt="" width={24} height={24} />
+                {l('page.home.hero.download')} <img src="/JumpIn.svg" alt="" width={24} height={24} />
               </AlreadyUserLink>
             )
           })}

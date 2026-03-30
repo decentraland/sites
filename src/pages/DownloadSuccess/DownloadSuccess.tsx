@@ -1,9 +1,8 @@
-import { type ReactNode, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useAnalytics } from '@dcl/hooks'
+import { useAnalytics, useTranslation } from '@dcl/hooks'
 import { FooterLanding } from 'decentraland-ui2/dist/components/FooterLanding/FooterLanding'
 import { Logo, Typography } from 'decentraland-ui2'
-import { useIntl } from '../../hooks/adapters/useFormatMessage'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsLauncher from '../../images/download/macos_launcher.webp'
@@ -43,7 +42,7 @@ import {
 
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
-  const intl = useIntl()
+  const { intl } = useTranslation()
   const { isInitialized, track } = useAnalytics()
   const getIdentityId = useGetIdentityId()
 
@@ -66,14 +65,8 @@ const DownloadSuccess = memo(() => {
   const osLink =
     clientOS === OperativeSystem.WINDOWS ? FALLBACK_CDN_RELEASE_LINKS[clientOS]?.amd64 : FALLBACK_CDN_RELEASE_LINKS[clientOS]?.[clientArch]
 
-  const l = useCallback(
-    (id: string, values?: Record<string, ReactNode | ((chunks: ReactNode) => ReactNode)>): ReactNode => {
-      if (!intl.messages[id]) return id
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return intl.formatMessage({ id }, values as any)
-    },
-    [intl]
-  )
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const l = useCallback((id: string, values?: Record<string, any>) => intl.formatMessage({ id }, values), [intl])
 
   const productAction = l('page.download.success.subtitle_action_exploring') as string
 
@@ -185,7 +178,7 @@ const DownloadSuccess = memo(() => {
           <DownloadBackdropContent>
             <Logo size="huge" />
             <DownloadDetailContainer>
-              <DownloadBackdropText variant="h6">Downloading Decentraland...</DownloadBackdropText>
+              <DownloadBackdropText variant="h6">{l('page.download.downloading')}</DownloadBackdropText>
               <DownloadProgressContainer>
                 <DownloadProgressBar />
               </DownloadProgressContainer>
