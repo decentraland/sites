@@ -151,7 +151,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
               <DownloadTitle variant="h2">
                 <WrapDecentralandText text={title} />
               </DownloadTitle>
-              <DownloadOptions downloadOnClick />
+              <DownloadOptions />
             </DownloadOptionsContainer>
           </>
         )}
