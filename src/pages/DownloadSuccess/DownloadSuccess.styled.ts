@@ -80,7 +80,7 @@ const DownloadSuccessCard = styled(Card)(({ theme }) => ({
 }))
 
 const DownloadSuccessCardMedia = styled(CardMedia)(({ theme }) => ({
-  height: '240px',
+  minHeight: '240px',
   backgroundColor: '#5122545e',
   [theme.breakpoints.down('md')]: {
     minHeight: '200px'
@@ -111,10 +111,13 @@ const HighlightAnimation = styled(Box)(({ theme }) => ({
 
 const DownloadSuccessCardContent = styled(CardContent)({})
 
-const DownloadSuccessCardTitle = styled(Typography)({})
+const DownloadSuccessCardTitle = styled(Typography)({
+  fontSize: '1.775rem'
+})
 
 const DownloadSuccessCardSubtitle = styled(Typography)(({ theme }) => ({
-  marginTop: theme.spacing(2),
+  marginTop: theme.spacing(1),
+  fontSize: '0.875rem',
   fontWeight: 700,
   color: '#CFCDD4',
   ['& span']: {
