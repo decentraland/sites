@@ -32,30 +32,35 @@ const weeklyRitualsContent = {
       id: 'career-mondays',
       titleKey: 'page.home.weekly_rituals.career_mondays',
       imageUrl: assetUrl('/weekly-rituals/career-mondays.webp'),
+      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Monday-Mobile.webp'),
       link: '/events'
     },
     {
       id: 'takeover-tuesdays',
       titleKey: 'page.home.weekly_rituals.takeover_tuesdays',
       imageUrl: assetUrl('/weekly-rituals/takeover-tuesdays.webp'),
+      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Tuesday-Mobile.webp'),
       link: '/events'
     },
     {
       id: 'watch-party',
       titleKey: 'page.home.weekly_rituals.watch_party_wednesdays',
       imageUrl: assetUrl('/weekly-rituals/watch-party.webp'),
+      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Wednesday-Mobile.webp'),
       link: '/events'
     },
     {
       id: 'trivia-thursdays',
       titleKey: 'page.home.weekly_rituals.trivia_thursdays',
       imageUrl: assetUrl('/weekly-rituals/trivia-thursdays.webp'),
+      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Thursday-Mobile.webp'),
       link: '/events'
     },
     {
       id: 'play-with-friends',
       titleKey: 'page.home.weekly_rituals.play_with_friends_fridays',
       imageUrl: assetUrl('/weekly-rituals/play-with-friends.webp'),
+      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Fridays-Mobile.webp'),
       link: '/events'
     }
   ]

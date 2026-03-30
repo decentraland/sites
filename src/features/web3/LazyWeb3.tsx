@@ -1,5 +1,5 @@
 import { type ComponentType, type PropsWithChildren, useEffect, useState } from 'react'
-import { injectWeb3Reducers, store } from '../../app/store'
+import { staticReducers, store } from '../../app/store'
 
 /** Read wagmi persisted address from localStorage (same key WalletStateProvider uses). */
 function getCachedAddress(): string | null {
@@ -29,7 +29,10 @@ function LazyWeb3({ children }: PropsWithChildren) {
 
   useEffect(() => {
     Promise.all([import('@dcl/core-web3/lazy'), import('./web3.config'), import('@dcl/core-web3')]).then(([lazy, config, core]) => {
-      injectWeb3Reducers()
+      // Inject web3 reducers lazily — createLazyStoreEnhancer imports walletReducer/networkReducer
+      // which transitively import wagmi, so this MUST be in the lazy chunk.
+      const injectReducers = lazy.createLazyStoreEnhancer(store, staticReducers)
+      injectReducers()
 
       // Pre-seed the wallet reducer with the cached address BEFORE wagmi mounts.
       // This prevents a flash in the UI: without this, Web3Sync reads fresh Redux state

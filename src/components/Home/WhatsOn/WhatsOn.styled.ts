@@ -54,7 +54,10 @@ const MobileCarousel = styled(Box)(({ theme }) => ({
     boxSizing: 'border-box',
     // eslint-disable-next-line @typescript-eslint/naming-convention
     '& > *': {
-      maxWidth: '100%'
+      maxWidth: 358,
+      minWidth: 0,
+      width: '100%',
+      margin: '0 auto'
     }
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention

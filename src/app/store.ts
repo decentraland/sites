@@ -1,5 +1,4 @@
 import { configureStore } from '@reduxjs/toolkit'
-import { createLazyStoreEnhancer } from '@dcl/core-web3/lazy'
 import { eventsClient } from '../features/events/events.client'
 import { profileClient } from '../features/profile/profile.client'
 import { api } from '../services/api'
@@ -21,9 +20,7 @@ const store = configureStore({
   devTools: import.meta.env.MODE !== 'production'
 })
 
-const injectWeb3Reducers = createLazyStoreEnhancer(store, staticReducers)
-
 type RootState = ReturnType<typeof store.getState>
 type AppDispatch = typeof store.dispatch
 
-export { store, injectWeb3Reducers, type RootState, type AppDispatch }
+export { store, staticReducers, type RootState, type AppDispatch }
