@@ -47,7 +47,8 @@ enum SectionViewedTrack {
   INVITE_FIRST_HERO = 'Referrer Invite First Hero',
   INVITE_SECOND_HERO = 'Referrer Invite Second Hero',
   INVITE_THIRD_HERO = 'Referrer Invite Third Hero',
-  INVITE_FAQS = 'Referrer Invite Faqs'
+  INVITE_FAQS = 'Referrer Invite Faqs',
+  LANDING_CATCH_THE_VIBE = 'Landing Catch The Vibe'
 }
 
 export { SegmentEvent, SectionViewedTrack }
