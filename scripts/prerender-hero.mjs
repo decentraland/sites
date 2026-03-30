@@ -5,12 +5,17 @@
  * Usage: node scripts/prerender-hero.mjs
  */
 
-import { readFileSync, writeFileSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const distPath = resolve(__dirname, '..', 'dist', 'index.html')
+
+if (!existsSync(distPath)) {
+  console.error(`❌ Hero shell prerender failed: ${distPath} not found. Was the build step successful?`)
+  process.exit(1)
+}
 
 // DCL logo SVG
 const dclLogoSvg = `<svg viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M45 89.9999C69.8528 89.9999 89.9999 69.8528 89.9999 45C89.9999 20.1472 69.8528 0 45 0C20.1472 0 0 20.1472 0 45C0 69.8528 20.1472 89.9999 45 89.9999Z" fill="url(#dcl0)"/><path fill-rule="evenodd" clip-rule="evenodd" d="M18 80.9996C25.515 86.6471 34.875 89.9996 45 89.9996C55.125 89.9996 64.485 86.6471 72 80.9996H18Z" fill="#FF2D55"/><path fill-rule="evenodd" clip-rule="evenodd" d="M9 71.9996C11.565 75.397 14.603 78.435 18 80.9996H72C75.398 78.435 78.435 75.397 81 71.9996H9Z" fill="#FFA25A"/><path fill-rule="evenodd" clip-rule="evenodd" d="M60.368 62.9997H3.758C5.153 66.2172 6.93 69.2322 9 71.9997H60.39V62.9997H60.368Z" fill="#FFC95B"/><path fill-rule="evenodd" clip-rule="evenodd" d="M31.883 29.25V63H60.008L31.883 29.25Z" fill="url(#dcl1)"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3.758 63H31.883V29.25L3.758 63Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M60.368 47.25V72H81L60.368 47.25Z" fill="url(#dcl2)"/><path fill-rule="evenodd" clip-rule="evenodd" d="M39.757 72H60.367V47.25L39.757 72Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M60.368 40.5C66.58 40.5 71.618 35.463 71.618 29.25C71.618 23.037 66.58 18 60.368 18C54.154 18 49.118 23.037 49.118 29.25C49.118 35.463 54.154 40.5 60.368 40.5Z" fill="#FFC95B"/><path fill-rule="evenodd" clip-rule="evenodd" d="M31.882 22.5C34.989 22.5 37.507 19.981 37.507 16.875C37.507 13.768 34.989 11.25 31.882 11.25C28.776 11.25 26.257 13.768 26.257 16.875C26.257 19.981 28.776 22.5 31.882 22.5Z" fill="#FFC95B"/><defs><linearGradient id="dcl0" x1="45" y1="-18.64" x2="-18.64" y2="45" gradientUnits="userSpaceOnUse"><stop stop-color="#FF2D55"/><stop offset="1" stop-color="#FFBC5B"/></linearGradient><linearGradient id="dcl1" x1="31.873" y1="29.25" x2="31.873" y2="63" gradientUnits="userSpaceOnUse"><stop stop-color="#A524B3"/><stop offset="1" stop-color="#FF2D55"/></linearGradient><linearGradient id="dcl2" x1="60.36" y1="47.25" x2="60.36" y2="72" gradientUnits="userSpaceOnUse"><stop stop-color="#A524B3"/><stop offset="1" stop-color="#FF2D55"/></linearGradient></defs></svg>`

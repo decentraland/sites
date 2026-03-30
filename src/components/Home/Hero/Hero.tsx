@@ -44,7 +44,12 @@ const imageByOs: Record<string, string> = {
   [OperativeSystem.MACOS]: appleLogo
 }
 
-// Module-level cache — survives component remounts (StrictMode, Suspense, etc.)
+// Module-level cache — useRef doesn't work here because React StrictMode and
+// Suspense remount the component, destroying refs. useEffect runs after paint
+// so it can't prevent the flash. useAdvancedUserAgentData() from @dcl/hooks
+// resets to null on every remount, causing the UI to flicker between states.
+// Module-level vars survive remounts and the writes are idempotent (same OS/count
+// every time), so concurrent renders are safe.
 let cachedUserAgentData: AdvancedNavigatorUAData | null = null
 let cachedDownloadCounts: string | null = null
 
@@ -71,6 +76,8 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const handleDownloadClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       onClickHandle(e)
+      // Intentional hard navigation — /download_success triggers a real file download
+      // via the browser, which requires a full page load (not SPA navigation).
       if (userAgentData) {
         window.location.href = `/download_success?os=${userAgentData.os.name}`
       }

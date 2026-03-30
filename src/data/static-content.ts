@@ -42,21 +42,21 @@ const weeklyRitualsContent = {
       id: 'takeover-tuesdays',
       title: 'Takeover Tuesdays',
       imageUrl: assetUrl('/weekly-rituals/takeover-tuesdays.webp'),
-      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Tuesday Mobile.webp'),
+      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Tuesday-Mobile.webp'),
       link: '/events'
     },
     {
       id: 'watch-party',
       title: 'Watch Party Wednesdays',
       imageUrl: assetUrl('/weekly-rituals/watch-party.webp'),
-      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Wednesday Mobile.webp'),
+      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Wednesday-Mobile.webp'),
       link: '/events'
     },
     {
       id: 'trivia-thursdays',
       title: 'Trivia Thursdays',
       imageUrl: assetUrl('/weekly-rituals/trivia-thursdays.webp'),
-      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Thursday Mobile.webp'),
+      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Thursday-Mobile.webp'),
       link: '/events'
     },
     {
