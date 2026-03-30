@@ -13,7 +13,8 @@ async function initRuntimeRemotes() {
     // eslint-disable-next-line import/no-unresolved
     const federation = await import('virtual:__federation__')
     for (const [remoteName, url] of Object.entries(urls)) {
-      federation.__federation_method_setRemote(remoteName, {
+      const normalizedName = remoteName.replace(/-/g, '_')
+      federation.__federation_method_setRemote(normalizedName, {
         url,
         format: 'esm',
         from: 'vite'
