@@ -1,5 +1,5 @@
-import { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { useIntl } from 'react-intl'
+import { memo, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from '@dcl/hooks'
 import { CircularProgress, Menu } from 'decentraland-ui2'
 import { StatusResult } from './StatusResult'
 import { type Service, ServiceStatus, determineGlobalStatus, fetchServiceStatus } from './utils'
@@ -18,8 +18,7 @@ type StatusDropdownProps = {
 }
 
 const StatusDropdown = memo(function StatusDropdown({ serviceList }: StatusDropdownProps) {
-  const intl = useIntl()
-  const t = useCallback((id: string) => intl.formatMessage({ id }), [intl])
+  const { t } = useTranslation()
 
   const [statuses, setStatuses] = useState<Record<string, ServiceStatus>>({})
   const [loading, setLoading] = useState(true)

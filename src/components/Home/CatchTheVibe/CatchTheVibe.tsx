@@ -4,9 +4,14 @@ import 'swiper/css/pagination'
 import { Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import type { Avatar } from '@dcl/schemas'
-import { AvatarFace } from 'decentraland-ui2'
+import { AvatarFace, DownloadModal, JumpInIcon } from 'decentraland-ui2'
 import { catchTheVibeContent } from '../../../data/static-content'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
+import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
+import { useHangOutAction } from '../../../hooks/useHangOutAction'
+import { SectionViewedTrack } from '../../../modules/segment'
+import { HangOutButton } from '../shared/HangOutButton.styled'
 import {
   CardImage,
   CardsRow,
@@ -41,6 +46,7 @@ function formatDuration(seconds: number): string {
 }
 
 const VideoCardContent = ({ item }: { item: CardItem }) => {
+  const l = useFormatMessage()
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
@@ -85,8 +91,10 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
     if (video) {
       video.pause()
       video.currentTime = 0
+      video.muted = true
     }
     setIsPlaying(false)
+    setIsMuted(true)
   }, [])
 
   const toggleMute = useCallback((e: React.MouseEvent) => {
@@ -110,7 +118,7 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
           </PlayBadge>
         )}
         {isPlaying && (
-          <MuteButton onClick={toggleMute} aria-label={isMuted ? 'Unmute' : 'Mute'}>
+          <MuteButton onClick={toggleMute} aria-label={isMuted ? l('page.home.catch_the_vibe.unmute') : l('page.home.catch_the_vibe.mute')}>
             {isMuted ? '🔇' : '🔊'}
           </MuteButton>
         )}
@@ -120,16 +128,20 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
           <AvatarFace size="small" avatar={avatar} />
           <UserName>{item.userName}</UserName>
         </UserInfo>
-        <CommunityLabel>Community Member</CommunityLabel>
+        <CommunityLabel>{l('page.home.catch_the_vibe.community_member')}</CommunityLabel>
       </VideoCardFooter>
     </VideoCard>
   )
 }
 
 const CatchTheVibe = memo(() => {
+  const l = useFormatMessage()
+  const onClickHandle = useTrackClick()
+  const { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
+
   return (
     <CatchTheVibeContainer>
-      <CatchTheVibeTitle variant="h3">{catchTheVibeContent.title}</CatchTheVibeTitle>
+      <CatchTheVibeTitle variant="h3">{l('page.home.catch_the_vibe.title')}</CatchTheVibeTitle>
       <CardsRow>
         {catchTheVibeContent.cards.map((item, index) => (
           <VideoCardContent key={index} item={item} />
@@ -144,6 +156,19 @@ const CatchTheVibe = memo(() => {
           ))}
         </Swiper>
       </MobileCarouselContainer>
+      <HangOutButton
+        variant="contained"
+        onClick={e => {
+          onClickHandle(e)
+          handleClick(e)
+        }}
+        data-place={SectionViewedTrack.LANDING_CATCH_THE_VIBE}
+        data-event="click"
+        endIcon={<JumpInIcon />}
+      >
+        {l('page.home.hang_out_now')}
+      </HangOutButton>
+      <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />
     </CatchTheVibeContainer>
   )
 })

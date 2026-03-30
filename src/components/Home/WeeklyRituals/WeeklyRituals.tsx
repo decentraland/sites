@@ -1,4 +1,4 @@
-import { memo, useMemo, useRef } from 'react'
+import { memo, useRef } from 'react'
 import type { Swiper as SwiperType } from 'swiper'
 import 'swiper/css'
 import 'swiper/css/pagination'
@@ -6,32 +6,25 @@ import { Autoplay, Navigation, Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { useDesktopMediaQuery } from 'decentraland-ui2'
 import { weeklyRitualsContent } from '../../../data/static-content'
+import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import {
   CardImage,
   CarouselWrapper,
+  MobileCardImage,
   NavButtonNext,
   NavButtonPrev,
   SectionTitle,
-  SlideColumn,
   WeeklyRitualsContainer
 } from './WeeklyRituals.styled'
 
 const WeeklyRituals = memo(() => {
+  const l = useFormatMessage()
   const swiperRef = useRef<SwiperType | null>(null)
   const isDesktop = useDesktopMediaQuery()
 
-  // Mobile: group cards into pairs (2 stacked per slide)
-  const cardPairs = useMemo(() => {
-    const pairs: (typeof weeklyRitualsContent.cards)[] = []
-    for (let i = 0; i < weeklyRitualsContent.cards.length; i += 2) {
-      pairs.push(weeklyRitualsContent.cards.slice(i, i + 2))
-    }
-    return pairs
-  }, [])
-
   return (
     <WeeklyRitualsContainer>
-      <SectionTitle variant="h3">{weeklyRitualsContent.title}</SectionTitle>
+      <SectionTitle variant="h3">{l('page.home.weekly_rituals.title')}</SectionTitle>
       <CarouselWrapper>
         {isDesktop ? (
           <Swiper
@@ -47,7 +40,7 @@ const WeeklyRituals = memo(() => {
           >
             {weeklyRitualsContent.cards.map(card => (
               <SwiperSlide key={card.id}>
-                <CardImage src={card.imageUrl} alt={card.title} loading="lazy" width={1340} height={670} />
+                <CardImage src={card.imageUrl} alt={l(card.titleKey)} loading="lazy" width={1340} height={670} />
               </SwiperSlide>
             ))}
           </Swiper>
@@ -57,20 +50,16 @@ const WeeklyRituals = memo(() => {
             pagination={{ clickable: true }}
             autoplay={{ delay: 4000, disableOnInteraction: false }}
             loop
-            slidesPerView={1.05}
+            slidesPerView={1}
             centeredSlides
             spaceBetween={12}
             onSwiper={swiper => {
               swiperRef.current = swiper
             }}
           >
-            {cardPairs.map((pair, i) => (
-              <SwiperSlide key={i}>
-                <SlideColumn>
-                  {pair.map(card => (
-                    <CardImage key={card.id} src={card.imageUrl} alt={card.title} loading="lazy" width={1340} height={670} />
-                  ))}
-                </SlideColumn>
+            {weeklyRitualsContent.cards.map(card => (
+              <SwiperSlide key={card.id}>
+                <MobileCardImage src={card.mobileImageUrl} alt={l(card.titleKey)} loading="lazy" />
               </SwiperSlide>
             ))}
           </Swiper>

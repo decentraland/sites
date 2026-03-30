@@ -6,7 +6,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
-import { useWallet } from '@dcl/core-web3'
+import { useWalletState } from '@dcl/core-web3/lazy'
 import { Button, Typography, launchDesktopApp, useDesktopMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../config/env'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
@@ -47,7 +47,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   const l = useFormatMessage()
   const isDesktop = useDesktopMediaQuery()
 
-  const { address } = useWallet()
+  const { address } = useWalletState()
 
   const searchParams = useMemo(() => new URLSearchParams(window.location.search), [])
   const user = searchParams.get('user')
@@ -81,7 +81,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
     const setIframeTitle = (iframe: HTMLIFrameElement) => {
       if (!iframe.title) {
-        iframe.title = 'Decentraland Avatar Preview'
+        iframe.title = l('page.download.avatar_preview')
       }
     }
 
@@ -113,7 +113,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
     observer.observe(container, { childList: true, subtree: true })
     return () => observer.disconnect()
-  }, [WearablePreviewComponent])
+  }, [WearablePreviewComponent, l])
 
   const randomDefaultProfile = useMemo(() => {
     return 'default' + (Math.floor(Math.random() * (160 - 1 + 1)) + 1)
@@ -121,11 +121,11 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
   const handleShare = useCallback(() => {
     navigator.share({
-      title: 'Download Decentraland',
-      text: 'Download Decentraland',
+      title: l('page.download.share_title'),
+      text: l('page.download.share_title'),
       url: window.location.href
     })
-  }, [])
+  }, [l])
 
   return (
     <DownloadPageContainer>
