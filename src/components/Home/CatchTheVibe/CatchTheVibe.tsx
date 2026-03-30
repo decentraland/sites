@@ -10,6 +10,7 @@ import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import { SectionViewedTrack } from '../../../modules/segment'
+import { HangOutButton } from '../shared/HangOutButton.styled'
 import {
   CardImage,
   CardsRow,
@@ -17,7 +18,6 @@ import {
   CatchTheVibeTitle,
   CommunityLabel,
   DurationText,
-  HangOutButton,
   MediaContainer,
   MobileCarouselContainer,
   MuteButton,
@@ -159,7 +159,7 @@ const CatchTheVibe = memo(() => {
           onClickHandle(e)
           handleClick(e)
         }}
-        data-place={SectionViewedTrack.LANDING_HERO}
+        data-place={SectionViewedTrack.LANDING_CATCH_THE_VIBE}
         data-event="click"
         endIcon={<JumpInIcon />}
       >
