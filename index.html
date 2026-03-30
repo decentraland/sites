@@ -27,7 +27,27 @@
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!--
+      Pre-rendered Hero shell: painted by the browser BEFORE any JS loads.
+      This gives us instant FCP/LCP (~0.5s) instead of waiting for the
+      ~760 KB React+MUI bundle to download and execute (~5.8s on mobile).
+      React replaces this content when it hydrates.
+    -->
+    <div id="hero-shell" style="position:relative;width:100%;min-height:100vh;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;background-color:#39055C">
+      <picture style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0">
+        <source srcset="/hero_mobile.webp" media="(max-width: 599px)" />
+        <source srcset="/landing_hero.webp" media="(min-width: 600px)" />
+        <img src="/landing_hero.webp" alt="" style="width:100%;height:100%;object-fit:cover" />
+      </picture>
+      <div style="position:absolute;top:0;left:0;width:100%;height:24.3%;background:linear-gradient(180deg,#000 0%,rgba(0,0,0,0) 100%);z-index:1"></div>
+      <div style="position:absolute;bottom:0;left:0;width:100%;height:50%;background:linear-gradient(0deg,#39055C 0%,rgba(0,0,0,0) 100%);z-index:1"></div>
+      <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;gap:60px;padding-bottom:120px">
+        <h2 style="color:#FCFCFC;font-family:Inter,Helvetica,Arial,sans-serif;font-weight:600;font-size:3.75rem;line-height:1.2;letter-spacing:-0.5px;margin:0">Close the Feed.<br>Come Hang Out.</h2>
+        <button style="background:#FF2D55;color:#FCFCFC;border:none;width:270px;height:60px;border-radius:16px;font-size:19.89px;font-weight:600;letter-spacing:0.61px;text-transform:uppercase;cursor:pointer;font-family:Inter,Helvetica,Arial,sans-serif;box-shadow:rgba(0,0,0,0.4) 0px 2px 8px">HANG OUT NOW ➜</button>
+      </div>
+    </div>
+  </div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 
