@@ -212,6 +212,7 @@ const FaqAccordionSummary = styled(AccordionSummary)({
 
 const FaqAccordionDetails = styled(AccordionDetails)(({ theme }) => ({
   padding: `${theme.spacing(1)} 0 0 ${theme.spacing(3)}`,
+  whiteSpace: 'pre-line',
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& p': {
     fontSize: 14,
