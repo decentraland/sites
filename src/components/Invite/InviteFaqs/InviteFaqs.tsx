@@ -1,5 +1,5 @@
 import { type KeyboardEvent, memo, useCallback, useMemo, useRef, useState } from 'react'
-import { useIntl } from 'react-intl'
+import { useTranslation } from '@dcl/hooks'
 import { CircleAndArrow } from '../../Icon/CircleAndArrow'
 import {
   FaqAccordionItem,
@@ -66,33 +66,29 @@ const FaqAccordion = memo((props: FaqAccordionProps) => {
 })
 
 const InviteFaqs = memo(() => {
-  const intl = useIntl()
+  const { t } = useTranslation()
   const [expanded, setExpanded] = useState<number | false>(false)
 
   const faqs = useMemo(() => {
-    const count = parseInt(intl.formatMessage({ id: 'page_invite.faq.item_count' }), 10)
+    const count = parseInt(t('page_invite.faq.item_count'), 10)
     return Array.from({ length: count }, (_, i) => ({
-      question: intl.formatMessage({ id: `page_invite.faq.item_${i}_question` }),
-      answer: intl.formatMessage({ id: `page_invite.faq.item_${i}_answer` })
+      question: t(`page_invite.faq.item_${i}_question`),
+      answer: t(`page_invite.faq.item_${i}_answer`)
     }))
-  }, [intl])
+  }, [t])
 
   return (
     <FaqsSection aria-label="Frequently Asked Questions">
       <FaqsInnerBorder>
         <FaqsContainer>
-          <FaqsSubtitle>{intl.formatMessage({ id: 'component.landing.faqs.subtitle' })}</FaqsSubtitle>
-          <FaqsTitle {...({ component: 'h2' } as Record<string, unknown>)}>
-            {intl.formatMessage({ id: 'component.landing.faqs.title' })}
-          </FaqsTitle>
+          <FaqsSubtitle>{t('component.landing.faqs.subtitle')}</FaqsSubtitle>
+          <FaqsTitle {...({ component: 'h2' } as Record<string, unknown>)}>{t('component.landing.faqs.title')}</FaqsTitle>
           {faqs.map((faq, index) => (
             <FaqAccordion key={index} title={faq.question} index={index} expanded={expanded} setExpanded={setExpanded}>
               {faq.answer}
             </FaqAccordion>
           ))}
-          <FaqsCta href={intl.formatMessage({ id: 'component.landing.faqs.cta.link' })}>
-            {intl.formatMessage({ id: 'component.landing.faqs.cta.label' })}
-          </FaqsCta>
+          <FaqsCta href={t('component.landing.faqs.cta.link')}>{t('component.landing.faqs.cta.label')}</FaqsCta>
         </FaqsContainer>
       </FaqsInnerBorder>
     </FaqsSection>

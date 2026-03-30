@@ -1,0 +1,438 @@
+{
+  "general": {
+    "main_browser_cta": "commencer",
+    "main_browser_cta_target": "https://decentraland.org/play/",
+    "mvmf_main_stage_target": "https://decentraland.org/play/?position=-62%2C58",
+    "see_festival_events_target": "https://events.decentraland.org/schedule/?id=297fb4fa-fe11-4746-8abd-ce6c77bad3e2",
+    "main_desktop_cta": "télécharger",
+    "secondary_desktop_cta": "ouvrir dans le navigateur",
+    "discord_cta": "rejoignez notre discord",
+    "discord_cta_target": "https://dcl.gg/discord",
+    "discord": "Discord",
+    "twitter_cta_target": "https://twitter.com/decentraland",
+    "follow_us_on": "Suivez-nous sur ",
+    "twitter": "Twitter",
+    "telegram_cta_target": "https://t.me/decentralandTG",
+    "join_us_on": "Rejoignez-nous sur ",
+    "telegram": "Telegram",
+    "sdk_cta_target": "https://developers.decentraland.org/",
+    "get_started_with_our": "Commencez avec notre ",
+    "sdk": "SDK"
+  },
+  "page": {
+    "download": {
+      "title": "Télécharger Decentraland",
+      "description": "Téléchargez Decentraland et commencez à explorer le métavers",
+      "download_onboarding_title": "Téléchargez Decentraland\n\net plongez !",
+      "not_available": "Non disponible pour votre système d'exploitation",
+      "not_available_subtitle": "Decentraland est disponible pour <span>Windows</span> et <span>macOS</span>.",
+      "download": "Télécharger",
+      "download_for": "Télécharger pour {os_name}",
+      "total_downloads": "Téléchargements totaux : {downloads}",
+      "amd64_processors_short": "Intel",
+      "arm64_processors_short": "Apple Silicon",
+      "x64_processors_short": "x64",
+      "pre_title": "{name} est prêt !",
+      "your_account": "Votre Compte",
+      "already_downloaded": "Déjà téléchargé ?",
+      "jump_in": "Plonger",
+      "mobile": {
+        "switch_to_computer": "Passez sur votre ordinateur pour télécharger Decentraland",
+        "send_link": "Envoyez-moi le lien"
+      },
+      "modal": {
+        "title_first_line": "Vous n'avez pas encore",
+        "title_second_line": "l'application Decentraland",
+        "cta": "Compris"
+      },
+      "downloading": "Téléchargement de Decentraland...",
+      "avatar_preview": "Aperçu de l'Avatar Decentraland",
+      "share_title": "Télécharger Decentraland",
+      "success": {
+        "title": "Téléchargement lancé !",
+        "subtitle": "Ouvrez le fichier que vous venez de télécharger pour terminer l'installation de Decentraland et commencer à {action}",
+        "subtitle_action_exploring": "explorer",
+        "step": "Étape",
+        "footer": "Problème avec le téléchargement ? Réessayons : {link}",
+        "footer_link_label": "Télécharger à nouveau",
+        "event": "Une fois le téléchargement terminé, retournez sur la page de l'événement {event} pour plonger. Redirection dans {seconds} secondes.",
+        "steps": {
+          "windows": {
+            "step1": {
+              "title": "Ouvrir le fichier",
+              "text": "Trouvez le fichier <span>Setup.exe</span> dans votre dossier de téléchargements et double-cliquez dessus pour lancer l'installation"
+            },
+            "step2": {
+              "title": "Suivre l'installateur",
+              "text": "L'installateur Decentraland vous guidera tout au long du processus. Cliquez simplement sur <span>Suivant</span> et suivez les instructions"
+            },
+            "step3": {
+              "title": "Lancer Decentraland",
+              "text": "Une fois installé, ouvrez Decentraland depuis votre bureau ou le menu démarrer et <span>Plongez !</span>"
+            }
+          },
+          "macOS": {
+            "step1": {
+              "title": "Ouvrir le fichier",
+              "text": "Trouvez le fichier <span>Decentraland.dmg</span> dans vos téléchargements et double-cliquez pour l'ouvrir"
+            },
+            "step2": {
+              "title": "Glisser dans Applications",
+              "text": "Glissez l'icône Decentraland dans votre dossier <span>Applications</span> pour l'installer"
+            },
+            "step3": {
+              "title": "Lancer Decentraland",
+              "text": "Ouvrez Decentraland depuis votre dossier Applications et <span>Plongez !</span>"
+            }
+          },
+          "macos": {
+            "step1": {
+              "title": "Ouvrir le fichier",
+              "text": "Trouvez le fichier <span>Decentraland.dmg</span> dans vos téléchargements et double-cliquez pour l'ouvrir"
+            },
+            "step2": {
+              "title": "Glisser dans Applications",
+              "text": "Glissez l'icône Decentraland dans votre dossier <span>Applications</span> pour l'installer"
+            },
+            "step3": {
+              "title": "Lancer Decentraland",
+              "text": "Ouvrez Decentraland depuis votre dossier Applications et <span>Plongez !</span>"
+            }
+          }
+        }
+      }
+    },
+    "home": {
+      "hang_out_now": "TRAÎNEZ MAINTENANT",
+      "hero": {
+        "title": "Fermez le Feed. Venez traîner.",
+        "jump_in": "Plonger",
+        "already_user": "Vous avez déjà un compte ? {download}",
+        "download": "Télécharger"
+      },
+      "come_hang_out": {
+        "title": "Venez traîner"
+      },
+      "catch_the_vibe": {
+        "title": "Ressentez l'Ambiance",
+        "community_member": "Membre de la Communauté",
+        "mute": "Couper le son",
+        "unmute": "Activer le son"
+      },
+      "weekly_rituals": {
+        "title": "Vos Rituels Hebdomadaires",
+        "career_mondays": "Lundis Carrière",
+        "takeover_tuesdays": "Mardis Takeover",
+        "watch_party_wednesdays": "Mercredis Watch Party",
+        "trivia_thursdays": "Jeudis Trivia",
+        "play_with_friends_fridays": "Vendredis Jouer entre Amis"
+      },
+      "whats_on": {
+        "title": "Plongez dans ce qui se passe",
+        "live": "En direct"
+      }
+    }
+  },
+  "page_invite": {
+    "social": {
+      "title": "Rejoignez Decentraland - Un monde virtuel construit par sa communauté",
+      "description": "Personnalisez votre avatar, retrouvez des gens du monde entier et découvrez Decentraland. Commencez depuis votre navigateur, puis téléchargez l'application pour entrer."
+    },
+    "hero": {
+      "title": "vous a invité à rejoindre Decentraland",
+      "subtitle": "Un monde virtuel social où vous pouvez vous connecter, créer et être vous-même",
+      "button_label": "REJOINDRE MAINTENANT"
+    },
+    "second_hero": {
+      "title": "Traînez dans Decentraland",
+      "subtitle": "Rencontrez des gens du monde entier, assistez à des événements en direct et personnalisez votre identité numérique -- le tout dans un monde virtuel appartenant à sa communauté.",
+      "button_label": "REJOINDRE GRATUITEMENT"
+    },
+    "get_started": {
+      "how_to": "Comment ",
+      "get_started": "Commencer",
+      "step1": "Créez votre compte Decentraland",
+      "step2": "Téléchargez l'application Decentraland pour ordinateur",
+      "step3": "Plongez dans Decentraland et retrouvez {referrer} !",
+      "step3_referrer_name": "la communauté",
+      "create_account": "CRÉER UN COMPTE"
+    },
+    "faq": {
+      "item_count": "7",
+      "item_0_question": "Qu'est-ce que Decentraland ?",
+      "item_0_answer": "Decentraland est un monde virtuel animé par la communauté où vous pouvez vous connecter, explorer et créer. Construit sur le moteur Unity, Decentraland diffuse et rend un vaste environnement continu rempli de contenu diversifié généré par les utilisateurs. En explorant ce paysage immersif, vous découvrez de nouvelles créations chaque jour, des jeux et puzzles aux scènes et œuvres d'art, le tout créé par la vibrante communauté de créateurs de Decentraland.\n\nDecentraland va au-delà des expériences de jeu traditionnelles. Dans Decentraland, vous pouvez assister à des concerts en direct, des conférences, des expositions, des soirées dansantes et bien plus encore.\n\nVos nouveaux amis vous attendent -- Téléchargez Decentraland aujourd'hui et plongez !",
+      "item_1_question": "Comment entrer dans Decentraland ?",
+      "item_1_answer": "Étape 1 : Téléchargez et installez le client\nVous devrez d'abord installer le client, rendez-vous sur Decentraland et cliquez sur télécharger.\n\nÉtape 2 : Créez votre compte\nLorsque vous entrez dans Decentraland, vous pouvez utiliser un portefeuille web3 standard comme Metamask, ou vous connecter avec un compte social (Google, Discord, X ou Apple).\n\nÉtape 3 : Personnalisez votre avatar\nUne fois dans Decentraland, on vous demandera d'abord de personnaliser votre avatar.\n\nÉtape 4 : Explorez !\nAprès avoir complété un tutoriel rapide, Decentraland est à vous pour explorer !\n\nÉtape 5 : Amusez-vous !\nPromenez-vous, discutez avec les autres via le chat et participez à des événements !",
+      "item_2_question": "Ai-je besoin de cryptomonnaie ou d'un portefeuille numérique pour utiliser Decentraland ?",
+      "item_2_answer": "Vous n'avez pas besoin de posséder de cryptomonnaie pour profiter de Decentraland car il est gratuit. Si vous décidez d'acheter une création de la communauté sur le Marketplace, plusieurs options de paiement sont disponibles, comme la carte de crédit/débit et le virement bancaire en plus de diverses cryptomonnaies.\n\nQuant à posséder un portefeuille numérique, si vous n'en avez pas déjà un, vous n'avez pas besoin d'en obtenir un vous-même. Lorsque vous vous connectez à Decentraland pour la première fois, un portefeuille numérique sera créé pour vous automatiquement si vous choisissez d'utiliser un compte social.",
+      "item_3_question": "Comment devenir créateur Decentraland ?",
+      "item_3_answer": "Decentraland est un monde créé par ses utilisateurs, ce qui signifie que vous pouvez être créateur de tout, des Wearables, Emotes, scènes entières avec des bâtiments et/ou paysages, expériences interactives et jeux.\n\nLa plupart des designers de Wearables et Emotes utilisent Blender pour concevoir leurs créations. Une fois terminées, les articles sont soumis pour publication sur le Marketplace.\n\nVous pouvez aussi télécharger le Creator Hub qui combine toute la facilité d'utilisation de l'Éditeur Web avec la puissance de l'écriture de code.",
+      "item_4_question": "Qu'est-ce qu'un NAME ?",
+      "item_4_answer": "Coûtant seulement 100 MANA, la monnaie de Decentraland, un NAME Decentraland est essentiellement un nom d'utilisateur unique et personnalisé pour votre avatar qui représente votre identité virtuelle au sein de l'écosystème Decentraland. Obtenir un NAME Decentraland offre le bonus supplémentaire d'accorder au propriétaire son propre World.",
+      "item_5_question": "Quelle est la différence entre les LANDs et les Worlds ?",
+      "item_5_answer": "Actuellement, les Worlds ne peuvent accueillir que 100 visiteurs à la fois et les scènes sont limitées à 100 Mo, tandis que les parcelles LAND n'ont pas de telles limitations. Si vous souhaitez construire de grandes scènes ou organiser de grands événements, acheter ou louer un LAND sera une meilleure option.\n\nLes scènes déployées sur les LANDs dans Genesis City sont également plus facilement découvertes par les utilisateurs car ils n'ont pas besoin de connaître votre NAME pour visiter.",
+      "item_6_question": "Comment obtenir de l'aide et contacter l'équipe de support ?",
+      "item_6_answer": "Vous pouvez contacter l'équipe de support Decentraland via le chat en direct ou rejoindre le serveur officiel Discord de Decentraland. N'oubliez pas que le personnel de Decentraland ne vous demandera jamais la clé privée (phrase de récupération) de votre portefeuille crypto."
+    },
+    "social_proof": {
+      "item_count": "5",
+      "item_0_name": "Kenji",
+      "item_0_quote": "Même si je ne suis pas bon en anglais, j'aime participer aux événements et discuter avec des avatars qui deviennent progressivement mes amis. Decentraland est ma maison dans le métavers.",
+      "item_0_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/2VxXeuchdLchYvXSgESGxS/d057a08c193b98e4e0dd564e58d73aee/kenji.png",
+      "item_1_name": "Skat Lionrock",
+      "item_1_quote": "Decentraland est un endroit pour rencontrer des personnes que je n'aurais pas eu la chance de rencontrer dans le monde réel. Cela me permet de me faire de nouveaux amis, de collaborer avec la communauté et d'explorer pleinement mon potentiel.",
+      "item_1_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/45Agmcczmcdp09J4ztx7Ug/ac3ae46aff8cc64d677a21894c303a9b/Screen_Shot_2024-10-18_at_3.21.20_PM.png",
+      "item_2_name": "Pablo",
+      "item_2_quote": "J'adore Decentraland car il rassemble mes passions ; c'est un terrain de jeu créatif pour les compétences techniques et artistiques, le tout dans la philosophie web3, où je sens vraiment que je possède une part de l'avenir.",
+      "item_2_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/5byXkcSVoAAOy2N5uAGeaU/505f0751f6f3a6d1bbe716784e01ab35/Screen_Shot_2024-10-18_at_3.32.56_PM.png",
+      "item_3_name": "Metaryuk",
+      "item_3_quote": "Ce qui m'enthousiasme dans Decentraland, c'est qu'il offre aux architectes talentueux une plateforme et les outils pour recréer dans un monde virtuel des structures incroyables qui sont soit trop éloignées pour être visitées, soit disparues à cause du développement moderne.",
+      "item_3_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/6QCXcmUL2KhKFXLMvOZM3t/9d9491bb50bd4f4e9a58cc640989b210/Screen_Shot_2024-10-18_at_3.43.58_PM.png",
+      "item_4_name": "Doki",
+      "item_4_quote": "Je suis éternellement reconnaissant d'avoir été accueilli si chaleureusement, Decentraland a vraiment changé la trajectoire de beaucoup de choses dans ma vie et j'ai rencontré des personnes incroyables grâce à lui.",
+      "item_4_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/2VxXeuchdLchYvXSgESGxS/d057a08c193b98e4e0dd564e58d73aee/kenji.png"
+    }
+  },
+  "index": {
+    "create_my_account": "Créer mon compte",
+    "get_started": "Commencer",
+    "social": {
+      "title": "Decentraland | Venez traîner",
+      "description": "Decentraland est l'endroit où vous traînez en ligne. Rejoignez des projections de films, de la musique en direct, des quiz et d'autres événements communautaires. Passez quand vous voulez et voyez qui est là."
+    },
+    "mobile_modal": {
+      "description": "Decentraland est actuellement disponible uniquement sur ordinateur. Entrez votre email pour être notifié dès que nous serons sur mobile.",
+      "placeholder": "email@domaine.com",
+      "sign_up": "S'inscrire",
+      "signed_up": "Merci pour votre inscription !",
+      "sign_up_fail": "Oups, quelque chose s'est mal passé !",
+      "close": "Fermer"
+    },
+    "main": {
+      "title": "Bienvenue sur Decentraland",
+      "description": "Créez, explorez et échangez dans le premier monde virtuel appartenant à ses utilisateurs.",
+      "jump_in": "Plonger",
+      "see_festival_events": "voir les événements du festival"
+    },
+    "explore": {
+      "title": "Explorer",
+      "subtitle": "Perdez-vous dans un monde incroyable en constante évolution",
+      "description": "Explorez les LANDs des utilisateurs pour découvrir des scènes et structures incroyables. D'une aventure spatiale à un labyrinthe de donjons médiévaux en passant par des villages entiers créés par la communauté.",
+      "main_cta": "commencer à explorer",
+      "main_cta_target": "https://decentraland.org/play/",
+      "secondary_cta": "",
+      "secondary_cta_target": ""
+    },
+    "create": {
+      "title": "Créer",
+      "subtitle": "Testez les limites de votre imagination",
+      "description": "Créez des scènes, des œuvres d'art, des défis et plus encore avec l'outil Builder, puis participez à des événements pour gagner des prix. Pour les créateurs plus expérimentés, le SDK fournit les outils pour remplir le monde de jeux sociaux et d'applications.",
+      "main_cta": "commencer à construire",
+      "main_cta_target": "https://builder.decentraland.org/",
+      "secondary_cta": "commencer à développer",
+      "secondary_cta_target": "https://developers.decentraland.org/"
+    },
+    "trade": {
+      "title": "Échanger",
+      "subtitle": "La destination virtuelle pour les actifs numériques",
+      "description": "Achetez et vendez des LAND, Estates, wearables d'Avatar et noms sur le Marketplace Decentraland : les meilleurs biens numériques soutenus par la blockchain Ethereum.",
+      "main_cta": "commencer à parcourir",
+      "main_cta_target": "https://market.decentraland.org/",
+      "secondary_cta": "",
+      "secondary_cta_target": ""
+    },
+    "where_to_start": {
+      "title": "Vous ne savez pas par où commencer ?",
+      "description": "",
+      "poi": "point d'intérêt",
+      "our_picks": "nos sélections",
+      "our_events": "événements à venir",
+      "target_events": "https://events.decentraland.org",
+      "more_events": "plus d'événements",
+      "best_multiplayer": "meilleur multijoueur",
+      "best_adventures": "meilleures aventures"
+    },
+    "dao": {
+      "title": "À propos de Decentraland",
+      "subtitle": "Déterminez l'avenir du monde virtuel",
+      "description": "Le premier monde entièrement décentralisé, Decentraland est contrôlé via le DAO, qui possède les contrats intelligents et actifs les plus importants de Decentraland. Via le DAO, vous décidez et votez sur le fonctionnement du monde.",
+      "main_cta": "en savoir plus",
+      "main_cta_target": "https://dao.decentraland.org/",
+      "secondary_cta": "",
+      "secondary_cta_target": ""
+    },
+    "blog": {
+      "title": "Du blog",
+      "more": "plus d'articles",
+      "target": "https://decentraland.org/blog"
+    },
+    "contact": {
+      "title": "Contactez-nous",
+      "description": "Vous nous trouverez à toute heure sur Discord. Vous pouvez aussi nous contacter par les canaux habituels.",
+      "main_cta": "nous contacter",
+      "main_cta_target": "mailto:hello@decentraland.org"
+    },
+    "subscribe": {
+      "title": "Recevez les dernières nouvelles",
+      "description": "Actualités sur les événements, compétitions et nouveautés de Decentraland, directement dans votre boîte mail",
+      "placeholder": "email@domaine.com",
+      "sign_up": "S'inscrire",
+      "signed_up": "Merci pour votre inscription !",
+      "sign_up_fail": "Oups, quelque chose s'est mal passé !"
+    },
+    "press": {
+      "title": "Kit Presse Decentraland",
+      "description": "Téléchargez les matériaux presse et actifs de marque de Decentraland"
+    },
+    "support": {
+      "title": "Decentraland - Centre d'aide",
+      "description": "Obtenez de l'aide avec Decentraland. Parcourez les FAQ, vérifiez l'état du service et contactez le support."
+    }
+  },
+  "component": {
+    "landing": {
+      "faqs": {
+        "title": "Questions\nFréquentes",
+        "subtitle": "En savoir plus sur Decentraland",
+        "cta": {
+          "label": "voir plus",
+          "link": "https://docs.decentraland.org/player/general/faq/"
+        }
+      },
+      "marketplace": {
+        "title": "Articles Tendance",
+        "cta": {
+          "label": "aller au marketplace",
+          "link": "https://market.decentraland.org/"
+        },
+        "card": {
+          "polygon": "polygon",
+          "stock": "Stock"
+        }
+      },
+      "footer": {
+        "subscribe": {
+          "stay_updated_with": "Restez à jour avec",
+          "decentraland": "Decentraland",
+          "title": "Restez à jour avec <b>Decentraland</b>",
+          "cta": "S'abonner",
+          "src": "https://embeds.beehiiv.com/f8da188c-39d0-4fd9-9631-1a39cf9ed00d?slim=true"
+        },
+        "social": {
+          "resources": "Ressources",
+          "marketplace": "Marketplace",
+          "creator_hub": "Creator Hub",
+          "docs": "Documentation",
+          "events": "Événements",
+          "blog": "Blog",
+          "connect": "Connecter",
+          "support": "Support",
+          "email": "Email",
+          "dao": "DAO",
+          "faq": "FAQ"
+        }
+      },
+      "events_places": {
+        "subtitle": "Dans Decentraland",
+        "events": {
+          "title": "Événements",
+          "cta": {
+            "label": "voir tous les événements",
+            "link": "https://events.decentraland.org/"
+          },
+          "attendees": "y vont",
+          "people_are_here": "personnes sont ici",
+          "find_out_more": "En savoir plus",
+          "jump_in": "Plonger"
+        },
+        "places": {
+          "title": "Lieux",
+          "cta": {
+            "label": "voir tous les lieux",
+            "link": "https://places.decentraland.org/"
+          },
+          "jump_in": "Plonger"
+        },
+        "events_feed_group": {
+          "live_now": "en direct",
+          "public_organized_by": "Par"
+        },
+        "places_feed_group": {
+          "created_by": "Par"
+        }
+      },
+      "blog": {
+        "title": "Quoi de neuf ?",
+        "cta": {
+          "label": "voir toutes les publications",
+          "link": "https://decentraland.org/blog"
+        }
+      },
+      "help": {
+        "title": "Decentraland - Centre d'aide",
+        "faq_section": {
+          "title": "Questions Fréquentes",
+          "paragraph": "Vous ne trouvez pas votre question ci-dessous ? Consultez nos ressources FAQ complètes",
+          "cta_link": "ici",
+          "item_count": "7",
+          "item_0_question": "Qu'est-ce que Decentraland ?",
+          "item_0_answer": "Decentraland est un monde virtuel open-source, animé par la communauté, où les utilisateurs peuvent créer, vivre et monétiser du contenu et des applications. Il fonctionne sur la blockchain Ethereum et permet aux utilisateurs d'acheter des terrains virtuels et de construire des expériences interactives.",
+          "item_1_question": "Comment entrer dans Decentraland ?",
+          "item_1_answer": "Vous pouvez entrer dans Decentraland en visitant decentraland.org/download pour obtenir le client de bureau pour la meilleure expérience, ou plonger directement depuis votre navigateur sur decentraland.org/play. Créez un avatar gratuit et commencez à explorer immédiatement.",
+          "item_2_question": "Ai-je besoin de cryptomonnaie ou d'un portefeuille numérique pour utiliser Decentraland ?",
+          "item_2_answer": "Non, vous pouvez explorer Decentraland gratuitement sans cryptomonnaie ni portefeuille numérique. Cependant, si vous souhaitez acheter des LAND, wearables, NAMEs ou d'autres articles, vous aurez besoin d'un portefeuille numérique et de MANA ou d'autres cryptomonnaies compatibles.",
+          "item_3_question": "Comment devenir Créateur Decentraland ?",
+          "item_3_answer": "Tout le monde peut devenir Créateur Decentraland ! Visitez le Creator Hub sur decentraland.org/create pour accéder à l'Éditeur de Scènes et aux outils SDK. Vous pouvez construire des scènes 3D interactives, concevoir des wearables et publier du contenu dans le monde.",
+          "item_4_question": "Qu'est-ce qu'un NAME ?",
+          "item_4_answer": "Un NAME est une identité unique et lisible dans Decentraland représentée sous forme de NFT. Au lieu d'être identifié par une adresse de portefeuille, les NAMEs permettent aux autres utilisateurs de vous trouver et vous reconnaître facilement dans le monde virtuel.",
+          "item_5_question": "Quelle est la différence entre les LANDs et les Worlds ?",
+          "item_5_answer": "Les LANDs sont des actifs numériques non fongibles (ERC-721) représentant des parcelles permanentes sur la carte de Decentraland. Les Worlds sont des espaces personnels hors carte où chacun peut déployer des scènes sans posséder de LAND, facilitant la création et le partage d'expériences.",
+          "item_6_question": "Comment obtenir de l'aide et contacter l'Équipe Support ?",
+          "item_6_answer": "Vous pouvez contacter l'Équipe Support directement via le chat en bas à droite de cette page. Vous pouvez aussi consulter nos ressources FAQ sur docs.decentraland.org ou vérifier nos canaux communautaires pour une aide supplémentaire."
+        },
+        "center": {
+          "title": "Centre d'aide",
+          "paragraph": "Parcourez les FAQ et les Mises à jour du Support ou parlez directement avec l'Équipe Support via le chat en bas à droite.",
+          "faq_button_label": "FAQ",
+          "support_updates_button_label": "MISES À JOUR DU SUPPORT"
+        },
+        "support_updates_section": {
+          "title": "Mises à jour du Support",
+          "item_count": "3",
+          "item_0_question": "Mise à jour du Client Bureau - Performance Améliorée",
+          "item_0_answer": "Le dernier client de bureau comprend des améliorations significatives de performance, des temps de chargement réduits et une meilleure stabilité sur toutes les plateformes supportées.",
+          "item_1_question": "Mise à jour de l'Infrastructure Réseau Catalyst",
+          "item_1_answer": "Nous avons étendu notre réseau de catalyseurs avec des nœuds supplémentaires pour améliorer la fiabilité des connexions et réduire la latence pour les utilisateurs du monde entier.",
+          "item_2_question": "Améliorations du Marketplace",
+          "item_2_answer": "Les mises à jour récentes du marketplace incluent une fonctionnalité de recherche améliorée, des temps de mise en ligne plus rapides et des options de filtrage améliorées pour les wearables et emotes."
+        },
+        "dropdown": {
+          "title": "État du Système",
+          "cta": "Voir les Détails",
+          "status": {
+            "all_operational": "Tout Opérationnel",
+            "shutdown": "Services Arrêtés",
+            "warning": "Problèmes en Cours"
+          }
+        }
+      },
+      "whats_hot": {
+        "title": "Actualités Tendance"
+      },
+      "social_proof": {
+        "title": "Rejoignez la Communauté"
+      },
+      "missions": {
+        "jump_in": "Plonger",
+        "title": "Télécharger Decentraland",
+        "description": "Pour plonger, vous devrez télécharger l'application Decentraland",
+        "button_label": "Télécharger"
+      },
+      "hero": {
+        "create_your_avatar": "Plonger",
+        "already_user": "Vous avez déjà un compte ? {download}",
+        "download": "Télécharger"
+      }
+    }
+  }
+}

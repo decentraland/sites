@@ -81,7 +81,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
     const setIframeTitle = (iframe: HTMLIFrameElement) => {
       if (!iframe.title) {
-        iframe.title = 'Decentraland Avatar Preview'
+        iframe.title = l('page.download.avatar_preview')
       }
     }
 
@@ -113,7 +113,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
     observer.observe(container, { childList: true, subtree: true })
     return () => observer.disconnect()
-  }, [WearablePreviewComponent])
+  }, [WearablePreviewComponent, l])
 
   const randomDefaultProfile = useMemo(() => {
     return 'default' + (Math.floor(Math.random() * (160 - 1 + 1)) + 1)
@@ -121,11 +121,11 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
   const handleShare = useCallback(() => {
     navigator.share({
-      title: 'Download Decentraland',
-      text: 'Download Decentraland',
+      title: l('page.download.share_title'),
+      text: l('page.download.share_title'),
       url: window.location.href
     })
-  }, [])
+  }, [l])
 
   return (
     <DownloadPageContainer>

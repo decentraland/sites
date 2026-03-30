@@ -1,0 +1,438 @@
+{
+  "general": {
+    "main_browser_cta": "はじめる",
+    "main_browser_cta_target": "https://decentraland.org/play/",
+    "mvmf_main_stage_target": "https://decentraland.org/play/?position=-62%2C58",
+    "see_festival_events_target": "https://events.decentraland.org/schedule/?id=297fb4fa-fe11-4746-8abd-ce6c77bad3e2",
+    "main_desktop_cta": "ダウンロード",
+    "secondary_desktop_cta": "ブラウザで開く",
+    "discord_cta": "Discordに参加する",
+    "discord_cta_target": "https://dcl.gg/discord",
+    "discord": "Discord",
+    "twitter_cta_target": "https://twitter.com/decentraland",
+    "follow_us_on": "フォローする ",
+    "twitter": "Twitter",
+    "telegram_cta_target": "https://t.me/decentralandTG",
+    "join_us_on": "参加する ",
+    "telegram": "Telegram",
+    "sdk_cta_target": "https://developers.decentraland.org/",
+    "get_started_with_our": "はじめる ",
+    "sdk": "SDK"
+  },
+  "page": {
+    "download": {
+      "title": "Decentralandをダウンロード",
+      "description": "Decentralandをダウンロードしてメタバースの探検を始めましょう",
+      "download_onboarding_title": "Decentralandをダウンロード\n\nさあ飛び込もう！",
+      "not_available": "お使いのOSではご利用いただけません",
+      "not_available_subtitle": "Decentralandは<span>Windows</span>と<span>macOS</span>でご利用いただけます。",
+      "download": "ダウンロード",
+      "download_for": "{os_name}用をダウンロード",
+      "total_downloads": "総ダウンロード数：{downloads}",
+      "amd64_processors_short": "Intel",
+      "arm64_processors_short": "Apple Silicon",
+      "x64_processors_short": "x64",
+      "pre_title": "{name}の準備ができました！",
+      "your_account": "あなたのアカウント",
+      "already_downloaded": "すでにダウンロード済みですか？",
+      "jump_in": "入場する",
+      "mobile": {
+        "switch_to_computer": "Decentralandをダウンロードするにはパソコンに切り替えてください",
+        "send_link": "リンクを送る"
+      },
+      "modal": {
+        "title_first_line": "まだ",
+        "title_second_line": "Decentralandアプリがありません",
+        "cta": "了解"
+      },
+      "downloading": "Decentralandをダウンロード中...",
+      "avatar_preview": "Decentralandアバタープレビュー",
+      "share_title": "Decentralandをダウンロード",
+      "success": {
+        "title": "ダウンロード開始！",
+        "subtitle": "ダウンロードしたファイルを開いてDecentralandのインストールを完了し、{action}を始めましょう",
+        "subtitle_action_exploring": "探検",
+        "step": "ステップ",
+        "footer": "ダウンロードに問題がありますか？もう一度試しましょう：{link}",
+        "footer_link_label": "再ダウンロード",
+        "event": "ダウンロード完了後、{event}のイベントページに戻って入場してください。{seconds}秒後にリダイレクトされます。",
+        "steps": {
+          "windows": {
+            "step1": {
+              "title": "ファイルを開く",
+              "text": "ダウンロードフォルダで<span>Setup.exe</span>ファイルを見つけてダブルクリックし、インストールを開始します"
+            },
+            "step2": {
+              "title": "インストーラーに従う",
+              "text": "Decentralandインストーラーがプロセスをガイドします。<span>次へ</span>をクリックして指示に従ってください"
+            },
+            "step3": {
+              "title": "Decentralandを起動",
+              "text": "インストール完了後、デスクトップまたはスタートメニューからDecentralandを開いて<span>入場しましょう！</span>"
+            }
+          },
+          "macOS": {
+            "step1": {
+              "title": "ファイルを開く",
+              "text": "ダウンロードフォルダで<span>Decentraland.dmg</span>ファイルを見つけてダブルクリックして開きます"
+            },
+            "step2": {
+              "title": "アプリケーションにドラッグ",
+              "text": "Decentralandアイコンを<span>アプリケーション</span>フォルダにドラッグしてインストールします"
+            },
+            "step3": {
+              "title": "Decentralandを起動",
+              "text": "アプリケーションフォルダからDecentralandを開いて<span>入場しましょう！</span>"
+            }
+          },
+          "macos": {
+            "step1": {
+              "title": "ファイルを開く",
+              "text": "ダウンロードフォルダで<span>Decentraland.dmg</span>ファイルを見つけてダブルクリックして開きます"
+            },
+            "step2": {
+              "title": "アプリケーションにドラッグ",
+              "text": "Decentralandアイコンを<span>アプリケーション</span>フォルダにドラッグしてインストールします"
+            },
+            "step3": {
+              "title": "Decentralandを起動",
+              "text": "アプリケーションフォルダからDecentralandを開いて<span>入場しましょう！</span>"
+            }
+          }
+        }
+      }
+    },
+    "home": {
+      "hang_out_now": "今すぐ参加",
+      "hero": {
+        "title": "フィードを閉じて。一緒に遊ぼう。",
+        "jump_in": "入場する",
+        "already_user": "すでにアカウントをお持ちですか？{download}",
+        "download": "ダウンロード"
+      },
+      "come_hang_out": {
+        "title": "一緒に遊ぼう"
+      },
+      "catch_the_vibe": {
+        "title": "雰囲気を感じよう",
+        "community_member": "コミュニティメンバー",
+        "mute": "ミュート",
+        "unmute": "ミュート解除"
+      },
+      "weekly_rituals": {
+        "title": "ウィークリーアクティビティ",
+        "career_mondays": "キャリアマンデー",
+        "takeover_tuesdays": "テイクオーバーチューズデー",
+        "watch_party_wednesdays": "ウォッチパーティーウェンズデー",
+        "trivia_thursdays": "トリビアサーズデー",
+        "play_with_friends_fridays": "フレンドプレイフライデー"
+      },
+      "whats_on": {
+        "title": "今起きていることに飛び込もう",
+        "live": "ライブ"
+      }
+    }
+  },
+  "page_invite": {
+    "social": {
+      "title": "Decentralandに参加しよう - コミュニティが作るバーチャルワールド",
+      "description": "アバターをカスタマイズして、世界中の人々と交流し、Decentralandを発見しましょう。ブラウザから始めて、アプリをダウンロードして入場しましょう。"
+    },
+    "hero": {
+      "title": "があなたをDecentralandに招待しました",
+      "subtitle": "つながり、創造し、自分らしくいられるソーシャルバーチャルワールド",
+      "button_label": "今すぐ参加"
+    },
+    "second_hero": {
+      "title": "Decentralandで遊ぼう",
+      "subtitle": "世界中の人々と出会い、ライブイベントに参加し、デジタルな自分をカスタマイズしましょう——コミュニティが所有するバーチャルワールドで。",
+      "button_label": "無料で参加"
+    },
+    "get_started": {
+      "how_to": "",
+      "get_started": "始め方",
+      "step1": "Decentralandアカウントを作成する",
+      "step2": "デスクトップ用Decentralandアプリをダウンロード",
+      "step3": "Decentralandに入場して{referrer}と会おう！",
+      "step3_referrer_name": "コミュニティ",
+      "create_account": "アカウント作成"
+    },
+    "faq": {
+      "item_count": "7",
+      "item_0_question": "Decentralandとは何ですか？",
+      "item_0_answer": "Decentralandは、つながり、探索、創作ができるコミュニティ主導のバーチャルワールドです。Unityエンジン上に構築されたDecentralandは、多様なユーザー生成コンテンツで満たされた広大で連続的な環境をストリーミング・レンダリングします。この没入感あふれる景色を探索すると、ゲームやパズルからシーンやアートワークまで、毎日新しい作品に出会えます。すべてDecentralandの活気あるクリエイターコミュニティによって作られています。\n\nDecentralandは従来のゲーム体験を超えています。Decentralandでは、ライブ音楽イベント、カンファレンス、展示会、ダンスパーティーなどに参加できます。\n\n新しい友達が待っています——今すぐDecentralandをダウンロードして飛び込もう！",
+      "item_1_question": "Decentralandへの入場方法は？",
+      "item_1_answer": "ステップ1：クライアントをダウンロードしてインストール\nまずクライアントをインストールする必要があります。Decentralandにアクセスしてダウンロードをクリックしてください。\n\nステップ2：アカウントを作成\nDecentralandに入場する際、Metamaskなどの標準的なweb3ウォレットを使用するか、ソーシャルアカウント（Google、Discord、X、またはApple）でログインできます。\n\nステップ3：アバターをカスタマイズ\nDecentralandに入場すると、まずアバターのカスタマイズを求められます。\n\nステップ4：探索！\n簡単なチュートリアルを完了すると、Decentralandは自由に探索できます！\n\nステップ5：楽しもう！\n歩き回って、チャットボックスで他の人と話して、イベントに参加しましょう！",
+      "item_2_question": "Decentralandの利用に暗号資産やデジタルウォレットは必要ですか？",
+      "item_2_answer": "Decentralandは無料で利用できるため、暗号資産を所有する必要はありません。Marketplaceでコミュニティが作成した作品を購入する場合は、クレジットカード/デビットカードや銀行振込、さらに様々な暗号資産など、複数の支払い方法が利用可能です。\n\nデジタルウォレットについては、まだお持ちでなくても自分で用意する必要はありません。ソーシャルアカウントを使用してDecentralandに初めてサインインすると、裏側で自動的にデジタルウォレットが作成されます。",
+      "item_3_question": "Decentralandクリエイターになるには？",
+      "item_3_answer": "Decentralandはユーザーによって作られた世界です。つまり、Wearables、Emotes、建物や風景を含む完全なシーン、インタラクティブな体験、ゲームなど、あらゆるものの作成者になれます。\n\nほとんどのWearableおよびEmoteデザイナーは、Blenderを使用して作品をデザインしています。完成後、アイテムはMarketplaceでの公開のために提出されます。\n\nまた、Webエディターの使いやすさとコーディングの力を組み合わせたCreator Hubもダウンロードできます。",
+      "item_4_question": "NAMEとは何ですか？",
+      "item_4_answer": "Decentralandの通貨であるMANAわずか100で、Decentraland NAMEは本質的にDecentralandエコシステム内でのバーチャルアイデンティティを表すアバターの固有でパーソナライズされたユーザー名です。Decentraland NAMEを取得すると、所有者に自分のWorldが付与されるという追加特典もあります。",
+      "item_5_question": "LANDとWorldsの違いは何ですか？",
+      "item_5_answer": "現在、Worldsは一度に最大100人の訪問者しか受け入れられず、シーンは100MBに制限されていますが、LANDの区画にはそのような制限はありません。大規模なシーンを構築したり、大規模なイベントを開催したい場合は、LANDの購入またはレンタルがより良い選択肢です。\n\nGenesis CityのLANDにデプロイされたシーンは、ユーザーが訪問するためにNAMEを知る必要がないため、より簡単に発見されます。",
+      "item_6_question": "ヘルプの取得やサポートチームへの連絡方法は？",
+      "item_6_answer": "ライブチャットを通じてDecentralandサポートチームに連絡するか、公式Decentraland Discordサーバーに参加できます。Decentralandスタッフが暗号ウォレットの秘密鍵（シードフレーズ）を尋ねることは絶対にありませんのでご注意ください。"
+    },
+    "social_proof": {
+      "item_count": "5",
+      "item_0_name": "Kenji",
+      "item_0_quote": "英語が得意ではありませんが、イベントに参加したり、だんだん友達になっていくアバターたちとチャットしたりするのを楽しんでいます。Decentralandはメタバースでの私のホームです。",
+      "item_0_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/2VxXeuchdLchYvXSgESGxS/d057a08c193b98e4e0dd564e58d73aee/kenji.png",
+      "item_1_name": "Skat Lionrock",
+      "item_1_quote": "Decentralandは、現実世界では出会うチャンスのない人々と出会える場所です。新しい友達を作り、コミュニティと協力し、自分の可能性を最大限に探求できます。",
+      "item_1_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/45Agmcczmcdp09J4ztx7Ug/ac3ae46aff8cc64d677a21894c303a9b/Screen_Shot_2024-10-18_at_3.21.20_PM.png",
+      "item_2_name": "Pablo",
+      "item_2_quote": "Decentralandが好きなのは、私の情熱をひとつにまとめてくれるからです。技術的にも芸術的にもクリエイティブな遊び場であり、web3の哲学の中で、未来の一部を本当に所有していると感じられます。",
+      "item_2_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/5byXkcSVoAAOy2N5uAGeaU/505f0751f6f3a6d1bbe716784e01ab35/Screen_Shot_2024-10-18_at_3.32.56_PM.png",
+      "item_3_name": "Metaryuk",
+      "item_3_quote": "Decentralandで私をワクワクさせるのは、才能ある建築家にプラットフォームとツールを提供し、訪問するには遠すぎるか、近代開発によって失われた驚くべき建造物をバーチャルワールドで再現できることです。",
+      "item_3_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/6QCXcmUL2KhKFXLMvOZM3t/9d9491bb50bd4f4e9a58cc640989b210/Screen_Shot_2024-10-18_at_3.43.58_PM.png",
+      "item_4_name": "Doki",
+      "item_4_quote": "温かく迎え入れてもらえたことに永遠に感謝しています。Decentralandは私の人生の多くのことの軌道を本当に変えてくれ、素晴らしい人々に出会うことができました。",
+      "item_4_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/2VxXeuchdLchYvXSgESGxS/d057a08c193b98e4e0dd564e58d73aee/kenji.png"
+    }
+  },
+  "index": {
+    "create_my_account": "アカウントを作成",
+    "get_started": "はじめる",
+    "social": {
+      "title": "Decentraland | 一緒に遊ぼう",
+      "description": "Decentralandはオンラインで集まる場所です。映画上映、ライブ音楽、トリビア、その他のコミュニティイベントに参加しましょう。いつでも立ち寄って誰がいるか確認してください。"
+    },
+    "mobile_modal": {
+      "description": "Decentralandは現在デスクトップのみで利用可能です。モバイル対応時に通知を受け取るにはメールアドレスを入力してください。",
+      "placeholder": "email@domain.com",
+      "sign_up": "登録",
+      "signed_up": "ご登録ありがとうございます！",
+      "sign_up_fail": "エラーが発生しました！",
+      "close": "閉じる"
+    },
+    "main": {
+      "title": "Decentralandへようこそ",
+      "description": "ユーザーが所有する世界初のバーチャルワールドで、作成、探索、取引しましょう。",
+      "jump_in": "入場する",
+      "see_festival_events": "フェスティバルイベントを見る"
+    },
+    "explore": {
+      "title": "探索",
+      "subtitle": "驚くべき進化する世界に没入しましょう",
+      "description": "ユーザーが所有するLANDを探索して、素晴らしいシーンや建造物を体験しましょう。宇宙冒険から中世のダンジョン迷路、コミュニティメンバーが作った村まで。",
+      "main_cta": "探索を始める",
+      "main_cta_target": "https://decentraland.org/play/",
+      "secondary_cta": "",
+      "secondary_cta_target": ""
+    },
+    "create": {
+      "title": "作成",
+      "subtitle": "想像力の限界を試しましょう",
+      "description": "シンプルなBuilderツールを使ってシーン、アートワーク、チャレンジなどを作成し、イベントに参加して賞品を獲得しましょう。経験豊富なクリエイター向けに、SDKはソーシャルゲームやアプリケーションで世界を満たすツールを提供します。",
+      "main_cta": "ビルドを始める",
+      "main_cta_target": "https://builder.decentraland.org/",
+      "secondary_cta": "開発を始める",
+      "secondary_cta_target": "https://developers.decentraland.org/"
+    },
+    "trade": {
+      "title": "取引",
+      "subtitle": "デジタル資産のバーチャル目的地",
+      "description": "Decentralandマーケットプレイスで、LAND、エステート、アバターウェアラブル、ネームを売買しましょう。イーサリアムブロックチェーンに裏付けされた最高のデジタルグッズ。",
+      "main_cta": "ブラウジングを始める",
+      "main_cta_target": "https://market.decentraland.org/",
+      "secondary_cta": "",
+      "secondary_cta_target": ""
+    },
+    "where_to_start": {
+      "title": "どこから始めるか迷っていますか？",
+      "description": "",
+      "poi": "注目ポイント",
+      "our_picks": "おすすめ",
+      "our_events": "今後のイベント",
+      "target_events": "https://events.decentraland.org",
+      "more_events": "もっとイベントを見る",
+      "best_multiplayer": "ベストマルチプレイヤー",
+      "best_adventures": "ベストアドベンチャー"
+    },
+    "dao": {
+      "title": "Decentralandについて",
+      "subtitle": "バーチャルワールドの未来を決めましょう",
+      "description": "初の完全分散型ワールドであるDecentralandは、最も重要なスマートコントラクトと資産を所有するDAOを通じて管理されています。DAOを通じて、世界の仕組みについて決定し投票できます。",
+      "main_cta": "詳しく見る",
+      "main_cta_target": "https://dao.decentraland.org/",
+      "secondary_cta": "",
+      "secondary_cta_target": ""
+    },
+    "blog": {
+      "title": "ブログから",
+      "more": "もっと記事を見る",
+      "target": "https://decentraland.org/blog"
+    },
+    "contact": {
+      "title": "お問い合わせ",
+      "description": "Discordでいつでもお会いできます。通常のチャンネルからもご連絡いただけます。",
+      "main_cta": "お問い合わせ",
+      "main_cta_target": "mailto:hello@decentraland.org"
+    },
+    "subscribe": {
+      "title": "最新情報を受け取る",
+      "description": "Decentralandのイベント、コンペティション、新開発に関するニュースを直接受信箱にお届けします",
+      "placeholder": "email@domain.com",
+      "sign_up": "登録",
+      "signed_up": "ご登録ありがとうございます！",
+      "sign_up_fail": "エラーが発生しました！"
+    },
+    "press": {
+      "title": "Decentralandプレスキット",
+      "description": "Decentralandのプレス資料とブランドアセットをダウンロード"
+    },
+    "support": {
+      "title": "Decentraland - ヘルプセンター",
+      "description": "Decentralandのヘルプ。FAQの検索、サービスステータスの確認、サポートへのお問い合わせ。"
+    }
+  },
+  "component": {
+    "landing": {
+      "faqs": {
+        "title": "よくある\n質問",
+        "subtitle": "Decentralandについて詳しく見る",
+        "cta": {
+          "label": "もっと見る",
+          "link": "https://docs.decentraland.org/player/general/faq/"
+        }
+      },
+      "marketplace": {
+        "title": "トレンドアイテム",
+        "cta": {
+          "label": "マーケットプレイスへ",
+          "link": "https://market.decentraland.org/"
+        },
+        "card": {
+          "polygon": "polygon",
+          "stock": "在庫"
+        }
+      },
+      "footer": {
+        "subscribe": {
+          "stay_updated_with": "最新情報",
+          "decentraland": "Decentraland",
+          "title": "<b>Decentraland</b>の最新情報を受け取る",
+          "cta": "登録する",
+          "src": "https://embeds.beehiiv.com/f8da188c-39d0-4fd9-9631-1a39cf9ed00d?slim=true"
+        },
+        "social": {
+          "resources": "リソース",
+          "marketplace": "マーケットプレイス",
+          "creator_hub": "クリエイターハブ",
+          "docs": "ドキュメント",
+          "events": "イベント",
+          "blog": "ブログ",
+          "connect": "つながる",
+          "support": "サポート",
+          "email": "メール",
+          "dao": "DAO",
+          "faq": "FAQ"
+        }
+      },
+      "events_places": {
+        "subtitle": "Decentralandで",
+        "events": {
+          "title": "イベント",
+          "cta": {
+            "label": "すべてのイベントを見る",
+            "link": "https://events.decentraland.org/"
+          },
+          "attendees": "参加予定",
+          "people_are_here": "人がここにいます",
+          "find_out_more": "もっと見る",
+          "jump_in": "入場"
+        },
+        "places": {
+          "title": "場所",
+          "cta": {
+            "label": "すべての場所を見る",
+            "link": "https://places.decentraland.org/"
+          },
+          "jump_in": "入場"
+        },
+        "events_feed_group": {
+          "live_now": "ライブ配信中",
+          "public_organized_by": "主催"
+        },
+        "places_feed_group": {
+          "created_by": "制作"
+        }
+      },
+      "blog": {
+        "title": "新着情報",
+        "cta": {
+          "label": "すべての投稿を見る",
+          "link": "https://decentraland.org/blog"
+        }
+      },
+      "help": {
+        "title": "Decentraland - ヘルプセンター",
+        "faq_section": {
+          "title": "よくある質問",
+          "paragraph": "下に質問が見つかりませんか？FAQリソース全体をご確認ください",
+          "cta_link": "こちら",
+          "item_count": "7",
+          "item_0_question": "Decentralandとは何ですか？",
+          "item_0_answer": "Decentralandは、ユーザーがコンテンツやアプリケーションを作成、体験、収益化できるオープンソースのコミュニティ主導バーチャルワールドです。イーサリアムブロックチェーン上で動作し、ユーザーはバーチャルランドを購入してインタラクティブな体験を構築できます。",
+          "item_1_question": "Decentralandへの入場方法は？",
+          "item_1_answer": "decentraland.org/downloadでデスクトップクライアントをダウンロードして最高の体験を得るか、decentraland.org/playからブラウザで直接入場できます。無料アバターを作成してすぐに探索を始めましょう。",
+          "item_2_question": "Decentralandの利用に暗号資産やデジタルウォレットは必要ですか？",
+          "item_2_answer": "いいえ、暗号資産やデジタルウォレットなしで無料でDecentralandを探索できます。ただし、LAND、ウェアラブル、NAMEなどのアイテムを購入する場合は、デジタルウォレットとMANAまたはその他の対応暗号資産が必要です。",
+          "item_3_question": "Decentralandクリエイターになるには？",
+          "item_3_answer": "誰でもDecentralandクリエイターになれます！decentraland.org/createのクリエイターハブにアクセスして、シーンエディターとSDKツールをご利用ください。インタラクティブな3Dシーンの構築、ウェアラブルのデザイン、ワールドへのコンテンツ公開ができます。",
+          "item_4_question": "NAMEとは何ですか？",
+          "item_4_answer": "NAMEは、NFTとして表現されるDecentralandにおけるユニークで人が読める識別情報です。ウォレットアドレスの代わりに、NAMEを通じて他のユーザーがバーチャルワールドで簡単にあなたを見つけて認識できます。",
+          "item_5_question": "LANDとWorldの違いは何ですか？",
+          "item_5_answer": "LANDはDecentralandマップ内の永続的な区画を表す非代替性デジタル資産（ERC-721）です。WorldはLANDを所有しなくてもシーンをデプロイできる個人的なマップ外スペースで、クリエイターがより簡単に体験を構築・共有できます。",
+          "item_6_question": "ヘルプの取得やサポートチームへの連絡方法は？",
+          "item_6_answer": "このページの右下にあるチャットボックスを使用して、サポートチームに直接連絡できます。docs.decentraland.orgでFAQリソースを検索したり、コミュニティチャンネルで追加のヘルプを得ることもできます。"
+        },
+        "center": {
+          "title": "ヘルプセンター",
+          "paragraph": "FAQとサポートアップデートを検索するか、右下のチャットボックスを使用してサポートチームと直接お話しください。",
+          "faq_button_label": "FAQ",
+          "support_updates_button_label": "サポートアップデート"
+        },
+        "support_updates_section": {
+          "title": "サポートアップデート",
+          "item_count": "3",
+          "item_0_question": "デスクトップクライアントアップデート - パフォーマンス向上",
+          "item_0_answer": "最新のデスクトップクライアントには、大幅なパフォーマンス改善、読み込み時間の短縮、すべてのサポートプラットフォームでの安定性向上が含まれています。",
+          "item_1_question": "Catalystネットワークインフラアップデート",
+          "item_1_answer": "接続の信頼性を向上させ、世界中のユーザーの遅延を削減するため、追加ノードでCatalystネットワークを拡張しました。",
+          "item_2_question": "マーケットプレイスの改善",
+          "item_2_answer": "最近のマーケットプレイスアップデートには、検索機能の改善、リスティング時間の短縮、ウェアラブルとエモートのフィルタリングオプションの強化が含まれています。"
+        },
+        "dropdown": {
+          "title": "システムステータス",
+          "cta": "詳細を見る",
+          "status": {
+            "all_operational": "すべて正常稼働",
+            "shutdown": "サービス停止中",
+            "warning": "問題が発生中"
+          }
+        }
+      },
+      "whats_hot": {
+        "title": "トレンドニュース"
+      },
+      "social_proof": {
+        "title": "コミュニティに参加"
+      },
+      "missions": {
+        "jump_in": "入場",
+        "title": "Decentralandをダウンロード",
+        "description": "入場するには、Decentralandアプリのダウンロードが必要です",
+        "button_label": "ダウンロード"
+      },
+      "hero": {
+        "create_your_avatar": "入場する",
+        "already_user": "すでにアカウントをお持ちですか？{download}",
+        "download": "ダウンロード"
+      }
+    }
+  }
+}
