@@ -6,7 +6,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
-import { useWallet } from '@dcl/core-web3'
+import { useWalletState } from '@dcl/core-web3/lazy'
 import { Button, Typography, launchDesktopApp, useDesktopMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../config/env'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
@@ -47,7 +47,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   const l = useFormatMessage()
   const isDesktop = useDesktopMediaQuery()
 
-  const { address } = useWallet()
+  const { address } = useWalletState()
 
   const searchParams = useMemo(() => new URLSearchParams(window.location.search), [])
   const user = searchParams.get('user')

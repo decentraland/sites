@@ -1,18 +1,17 @@
 import { configureStore } from '@reduxjs/toolkit'
-import { networkReducer, transactionsReducer, walletReducer } from '@dcl/core-web3'
+import { createLazyStoreEnhancer } from '@dcl/core-web3/lazy'
 import { eventsClient } from '../features/events/events.client'
 import { profileClient } from '../features/profile/profile.client'
 import { api } from '../services/api'
 
+const staticReducers = {
+  [api.reducerPath]: api.reducer,
+  [eventsClient.reducerPath]: eventsClient.reducer,
+  [profileClient.reducerPath]: profileClient.reducer
+}
+
 const store = configureStore({
-  reducer: {
-    network: networkReducer,
-    transactions: transactionsReducer,
-    wallet: walletReducer,
-    [api.reducerPath]: api.reducer,
-    [eventsClient.reducerPath]: eventsClient.reducer,
-    [profileClient.reducerPath]: profileClient.reducer
-  },
+  reducer: staticReducers,
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
       serializableCheck: {
@@ -22,7 +21,9 @@ const store = configureStore({
   devTools: import.meta.env.MODE !== 'production'
 })
 
+const injectWeb3Reducers = createLazyStoreEnhancer(store, staticReducers)
+
 type RootState = ReturnType<typeof store.getState>
 type AppDispatch = typeof store.dispatch
 
-export { store, type RootState, type AppDispatch }
+export { store, injectWeb3Reducers, type RootState, type AppDispatch }
