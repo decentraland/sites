@@ -19,7 +19,6 @@ import {
   AlreadyDownloadedLink,
   AlreadyDownloadedText,
   DclLogo,
-  DownloadBackgroundOverlay,
   DownloadContainer,
   DownloadImageContainer,
   DownloadOptionsContainer,
@@ -164,7 +163,6 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
         )}
 
         <DownloadImageContainer>
-          <DownloadBackgroundOverlay />
           {!isDesktop && <DownloadWearablePreviewOverlay />}
           <DownloadWearablePreviewContainer
             ref={(node: HTMLDivElement | null) => {
