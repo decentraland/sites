@@ -458,13 +458,17 @@
         },
         "support_updates_section": {
           "title": "Support Updates",
-          "item_count": "3",
-          "item_0_question": "Desktop Client Update - Improved Performance",
-          "item_0_answer": "The latest desktop client includes significant performance improvements, reduced loading times, and better stability across all supported platforms.",
-          "item_1_question": "Catalyst Network Infrastructure Update",
-          "item_1_answer": "We have expanded our catalyst network with additional nodes to improve connection reliability and reduce latency for users worldwide.",
-          "item_2_question": "Marketplace Improvements",
-          "item_2_answer": "Recent marketplace updates include improved search functionality, faster listing times, and enhanced filtering options for wearables and emotes."
+          "item_count": "5",
+          "item_0_question": "Explorer Release - v0.135.0 (26/3/2026)",
+          "item_0_answer": "Client:\n\nFeatures:\n- Expanded settings\n- Ghosts (avatars will appear as ghosts when loading)\n\nFixes:\n- Promote to speaker sets as muted by default\n- Fixed deploy of avatar outfits/customization\n- Avoid showing the black event counter on no live events on the Navigation Bar",
+          "item_1_question": "New Creator Hub (v0.35.0) Release",
+          "item_1_answer": "Features:\n- Spawn Areas: You can now see a visual representation of spawn areas directly in the scene editor, and adjust spawn areas visually, including random offset ranges.\n- Dynamic Asset Catalog with SDK Compatibility: The asset catalog now loads the latest version from the CDN at runtime, so new assets appear automatically without waiting for a full app update.\n- World Access Permissions: The \"Access\" tab is now available in Worlds settings, letting you manage who can enter your world directly from the Creator Hub.\n\nFixes:\n- Scene Layout in Advanced Mode: The scene layout now updates correctly when editing in advanced mode.\n- Duplicated Ground in Scenes: Opening a scene no longer renders a duplicated ground plane.\n- Fetch Managed Projects: Fixed a failure when loading managed projects.\n- Windows Code Signing: The Windows build pipeline now properly fails on code-signing errors instead of silently producing unsigned executables.\n- Removed Legacy Dependency: Replaced the deprecated decentraland-connect library with a lighter vendored implementation using viem, reducing bundle size.\n\nImprovements:\n- UI Polish: Updated colors, component styles, transform alignment, entity inspector header, entity renaming, and asset tab styling for a better editing experience.\n- Collaborators Tab Copy: Updated the text in the collaborators tab with clearer guidance.",
+          "item_2_question": "Attention Creators: Backface Culling Updates",
+          "item_2_answer": "Backface Culling will be set to On on the engine by default on all model materials.\n\nWhen: In one month (March 19th)\nWhy: Significant Performance Optimization.\nHow: Because it is an engine optimization, it also affects materials that are already published.\n\nAction Points:\nWe encourage you to check your scenes following the Troubleshooting section in the documentation.\n\nSome scenarios worth checking first:\n- Flags, curtains, walls made of Planes: If a wall made of a plane with a single-sided material, it won't be seen from the other side.\n- Grass / Leaves of a tree made of Planes with single-sided materials: Same case as above.\n- Interior of Cubes and other shapes that act as rooms: If the cube material is facing out, it won't be seen from the inside.",
+          "item_3_question": "Visual Studio Extension - Support Ending",
+          "item_3_answer": "With the focus on the Creator Hub, the Visual Studio Extension will no longer be supported.\n\nFrom 6th of June 2025, the Extension will be removed from the VS Marketplace.",
+          "item_4_question": "Player.logs - How to get them",
+          "item_4_answer": "Below is a guide on how to find and generate the Player.log file. These files can be helpful when it comes to troubleshooting issues reported.\n\nOpen the chat in the Decentraland Desktop app and type: /logs\n\nOr:\n\nFor Windows:\nNavigate to: C:\\Users\\{YourUserName}\\AppData\\LocalLow\\Decentraland\\Explorer\nFind the file named Player.log\n\nFor Mac:\nOpen Finder and press Cmd + Shift + G to open the \"Go to Folder\" dialog.\nEnter the path: /Users/UserName/Library/Logs/Decentraland/Explorer/\nFind the file named Player.log\n\nPlayer.log file would show issues with the current/active session.\nPlayer-prev.log file would show issues with the previous session.\n\nLauncher Logs (output.log):\nWindows: C:\\Users\\username\\AppData\\Roaming\\DecentralandLauncherLight\nMac: /Users/UserName/Library/Logs/DecentralandLauncherLight"
         },
         "dropdown": {
           "title": "System Status",
