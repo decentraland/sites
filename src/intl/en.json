@@ -45,6 +45,9 @@
         "title_second_line": "Decentraland app yet",
         "cta": "Got it"
       },
+      "downloading": "Downloading Decentraland...",
+      "avatar_preview": "Decentraland Avatar Preview",
+      "share_title": "Download Decentraland",
       "success": {
         "title": "Download Started!",
         "subtitle": "Open the file you just downloaded to finish installing Decentraland and start {action}",
@@ -97,6 +100,36 @@
             }
           }
         }
+      }
+    },
+    "home": {
+      "hang_out_now": "HANG OUT NOW",
+      "hero": {
+        "title": "Close the Feed. Come Hang Out.",
+        "jump_in": "Jump In",
+        "already_user": "Already have an account? {download}",
+        "download": "Download"
+      },
+      "come_hang_out": {
+        "title": "Come Hang Out"
+      },
+      "catch_the_vibe": {
+        "title": "Catch the Vibe",
+        "community_member": "Community Member",
+        "mute": "Mute",
+        "unmute": "Unmute"
+      },
+      "weekly_rituals": {
+        "title": "Your Weekly Rituals",
+        "career_mondays": "Career Mondays",
+        "takeover_tuesdays": "Takeover Tuesdays",
+        "watch_party_wednesdays": "Watch Party Wednesdays",
+        "trivia_thursdays": "Trivia Thursdays",
+        "play_with_friends_fridays": "Play with Friends Fridays"
+      },
+      "whats_on": {
+        "title": "Jump Into What's Happening",
+        "live": "Live"
       }
     }
   },
@@ -399,17 +432,6 @@
         "create_your_avatar": "Jump In",
         "already_user": "Already have an account? {download}",
         "download": "Download"
-      }
-    },
-    "home": {
-      "hero": {
-        "jump_in": "Jump In",
-        "already_user": "Already have an account? {download}",
-        "download": "Download"
-      },
-      "whats_on": {
-        "title": "Jump Into What's Happening",
-        "live": "Live"
       }
     }
   }

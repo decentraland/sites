@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import { DownloadModal, JumpInIcon } from 'decentraland-ui2'
 import { heroContent } from '../../../data/static-content'
+import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import { SectionViewedTrack } from '../../../modules/segment'
@@ -11,6 +12,7 @@ const heroImageDesktop = assetUrl('/landing_hero.webp')
 const heroImageMobile = assetUrl('/hero_mobile.webp')
 
 const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
+  const l = useFormatMessage()
   const onClickHandle = useTrackClick()
   const { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
 
@@ -30,7 +32,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
       <GradientTop />
       <GradientBottom />
       <HeroContent>
-        <HeroTitle variant={isDesktop ? 'h2' : 'h3'}>{heroContent.title}</HeroTitle>
+        <HeroTitle variant={isDesktop ? 'h2' : 'h3'}>{l('page.home.hero.title')}</HeroTitle>
         <HangOutButton
           variant="contained"
           data-place={SectionViewedTrack.LANDING_HERO}
@@ -41,7 +43,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
           }}
           endIcon={<JumpInIcon />}
         >
-          HANG OUT NOW
+          {l('page.home.hang_out_now')}
         </HangOutButton>
       </HeroContent>
       <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />

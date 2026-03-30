@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useIntl } from 'react-intl'
+import { useTranslation } from '@dcl/hooks'
 import {
   HelpMobileHeader,
   HelpSidebar,
@@ -26,8 +26,7 @@ type HelpCenterSectionProps = {
 }
 
 const HelpCenterSection = ({ activeTab, setTab, serviceList }: HelpCenterSectionProps) => {
-  const intl = useIntl()
-  const t = (id: string) => intl.formatMessage({ id })
+  const { t } = useTranslation()
 
   const handleTabClick = useCallback(
     (tab: HelpTab) => () => {

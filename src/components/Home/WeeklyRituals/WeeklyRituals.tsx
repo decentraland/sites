@@ -6,6 +6,7 @@ import { Autoplay, Navigation, Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { useDesktopMediaQuery } from 'decentraland-ui2'
 import { weeklyRitualsContent } from '../../../data/static-content'
+import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import {
   CardImage,
   CarouselWrapper,
@@ -17,6 +18,7 @@ import {
 } from './WeeklyRituals.styled'
 
 const WeeklyRituals = memo(() => {
+  const l = useFormatMessage()
   const swiperRef = useRef<SwiperType | null>(null)
   const isDesktop = useDesktopMediaQuery()
 
@@ -31,7 +33,7 @@ const WeeklyRituals = memo(() => {
 
   return (
     <WeeklyRitualsContainer>
-      <SectionTitle variant="h3">{weeklyRitualsContent.title}</SectionTitle>
+      <SectionTitle variant="h3">{l('page.home.weekly_rituals.title')}</SectionTitle>
       <CarouselWrapper>
         {isDesktop ? (
           <Swiper
@@ -47,7 +49,7 @@ const WeeklyRituals = memo(() => {
           >
             {weeklyRitualsContent.cards.map(card => (
               <SwiperSlide key={card.id}>
-                <CardImage src={card.imageUrl} alt={card.title} loading="lazy" width={1340} height={670} />
+                <CardImage src={card.imageUrl} alt={l(card.titleKey)} loading="lazy" width={1340} height={670} />
               </SwiperSlide>
             ))}
           </Swiper>
@@ -68,7 +70,7 @@ const WeeklyRituals = memo(() => {
               <SwiperSlide key={i}>
                 <SlideColumn>
                   {pair.map(card => (
-                    <CardImage key={card.id} src={card.imageUrl} alt={card.title} loading="lazy" width={1340} height={670} />
+                    <CardImage key={card.id} src={card.imageUrl} alt={l(card.titleKey)} loading="lazy" width={1340} height={670} />
                   ))}
                 </SlideColumn>
               </SwiperSlide>
