@@ -20,7 +20,11 @@ const IndexPage = () => {
   // or zero rootMargin would include it, firing API calls (hot-scenes, events) during the LCP window.
   // With -1px the element must be at least 1px inside the viewport to intersect, which requires a scroll.
   const { ref: belowFoldRef, inView: belowFoldInView } = useInView({ triggerOnce: true, rootMargin: '0px 0px -1px 0px' })
-  const { ref: footerRef, inView: footerInView } = useInView({ triggerOnce: true, rootMargin: '400px' })
+  // Only start observing the footer after below-fold content has loaded.
+  // Without this, the footer div sits at y=100vh (right at viewport edge) and
+  // the 400px rootMargin triggers it immediately, loading beehiiv (~460KB JS)
+  // during the LCP window.
+  const { ref: footerRef, inView: footerInView } = useInView({ triggerOnce: true, rootMargin: '400px', skip: !belowFoldInView })
 
   return (
     <>
