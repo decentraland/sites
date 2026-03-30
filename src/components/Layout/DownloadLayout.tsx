@@ -113,7 +113,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
     observer.observe(container, { childList: true, subtree: true })
     return () => observer.disconnect()
-  }, [WearablePreviewComponent])
+  }, [WearablePreviewComponent, l])
 
   const randomDefaultProfile = useMemo(() => {
     return 'default' + (Math.floor(Math.random() * (160 - 1 + 1)) + 1)
@@ -125,7 +125,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
       text: l('page.download.share_title'),
       url: window.location.href
     })
-  }, [])
+  }, [l])
 
   return (
     <DownloadPageContainer>

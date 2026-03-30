@@ -33,6 +33,7 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
 
   const { identity } = useAuthIdentity()
 
+  // NotificationLocale only supports 'en' | 'es' | 'zh'; other locales fall back to 'en'
   const notificationLocale: NotificationLocale = locale === 'es' ? 'es' : locale === 'zh' ? 'zh' : 'en'
   const { notificationProps } = usePageNotifications({
     identity,
@@ -97,10 +98,7 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
       {withNavbar && <Navbar {...navbarProps} />}
       {children ?? <Outlet />}
       {withFooter && (
-        <Footer
-          selectedLanguage={locale as unknown as SupportedLanguage}
-          onLanguageChange={lang => setLocale(lang as unknown as SupportedLocale)}
-        />
+        <Footer selectedLanguage={locale as SupportedLanguage} onLanguageChange={lang => setLocale(lang as SupportedLocale)} />
       )}
     </Box>
   )
