@@ -69,7 +69,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const osImage = userAgentData ? imageByOs[userAgentData.os.name] : null
 
   const handleDownloadClick = useCallback(
-    (e: React.MouseEvent) => {
+    (e: React.MouseEvent<HTMLButtonElement>) => {
       onClickHandle(e)
       if (userAgentData) {
         window.location.href = `/download_success?os=${userAgentData.os.name}`
