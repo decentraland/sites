@@ -19,7 +19,6 @@ import {
   AlreadyDownloadedLink,
   AlreadyDownloadedText,
   DclLogo,
-  DownloadBackgroundOverlay,
   DownloadContainer,
   DownloadImageContainer,
   DownloadOptionsContainer,
@@ -129,7 +128,6 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
   return (
     <DownloadPageContainer>
-      <DownloadBackgroundOverlay />
       <DownloadContainer>
         <DclLogo onClick={() => (window.location.href = 'https://decentraland.org')} />
 
