@@ -108,11 +108,12 @@ const criticalCss = `
   #hero-shell-nav .nav-bar:first-child { top: 8px; }
   #hero-shell-nav .nav-bar:last-child { top: 21px; }
 
-  /* HERO CONTAINER — from HeroContainer styled component */
+  /* HERO CONTAINER — position:fixed so it doesn't push #root down when
+     reparented outside it, and stays visible as LCP while React loads. */
   #hero-shell {
-    position: relative; width: 100%; min-height: 100vh;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
     display: flex; align-items: flex-end; justify-content: center;
-    overflow: hidden; background-color: #39055C;
+    overflow: hidden; background-color: #39055C; z-index: 1000;
   }
   #hero-shell .hero-bg {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
