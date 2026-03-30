@@ -1,5 +1,15 @@
-import { clearWagmiState } from '@dcl/core-web3'
 import { getEnv } from '../config/env'
+
+/** Clears wagmi localStorage state so reconnection works after auth redirect. */
+function clearWagmiState(): void {
+  if (typeof window === 'undefined' || !window.localStorage) return
+  const keysToRemove: string[] = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key?.startsWith('wagmi.')) keysToRemove.push(key)
+  }
+  keysToRemove.forEach(key => localStorage.removeItem(key))
+}
 
 /**
  * Returns the base path the app is served from (Vite BASE_URL without trailing slash).

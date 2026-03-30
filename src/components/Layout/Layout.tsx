@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { useWallet } from '@dcl/core-web3'
+import { useWalletState } from '@dcl/core-web3/lazy'
 import { usePageTracking } from '@dcl/hooks'
 import { Box, Footer, Navbar, NavbarPages, type NavbarProps } from 'decentraland-ui2'
 import { usePageNotifications } from '../../features/notifications/usePageNotifications'
@@ -20,7 +20,12 @@ function resolveActivePage(pathname: string): string {
 const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter = true }) => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { address, isConnected, isConnecting, isDisconnecting, disconnect } = useWallet()
+  const { address, isConnected, isConnecting, isDisconnecting, disconnect } = useWalletState()
+  const { data: profile } = useGetProfileQuery(address ?? undefined, { skip: !address })
+  const avatar = profile?.avatars?.[0]
+  // If we have an address (from localStorage cache), treat as signed in immediately
+  // to avoid the flash of "Download" button while wagmi reconnects.
+  const effectivelySignedIn = isConnected || !!address
   usePageTracking(location.pathname)
 
   const { identity } = useAuthIdentity()
@@ -30,9 +35,6 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
     isConnected,
     locale: 'en'
   })
-
-  const { data: profile } = useGetProfileQuery(address ?? undefined, { skip: !address })
-  const avatar = profile?.avatars?.[0]
 
   const activePage = useMemo(() => resolveActivePage(location.pathname), [location.pathname])
 
@@ -61,9 +63,10 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
     () =>
       ({
         activePage,
-        isSignedIn: isConnected,
-        isSigningIn: isConnecting,
+        isSignedIn: effectivelySignedIn,
+        isSigningIn: isConnecting && !effectivelySignedIn,
         isDisconnecting,
+        hideDownloadButton: effectivelySignedIn,
         address: address || undefined,
         avatar,
         notifications: notificationProps,
@@ -73,7 +76,7 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
       }) as NavbarProps,
     [
       activePage,
-      isConnected,
+      effectivelySignedIn,
       isConnecting,
       isDisconnecting,
       address,
