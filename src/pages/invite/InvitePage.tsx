@@ -12,15 +12,18 @@ import { SectionViewedTrack } from '../../modules/segment'
 
 const InviteFaqs = lazy(() => import('../../components/Invite/InviteFaqs/InviteFaqs').then(m => ({ default: m.InviteFaqs })))
 
+const FETCH_TIMEOUT_MS = 5000
+
 async function resolveReferrerProfile(referrer: string): Promise<Profile | null> {
   const peerUrl = getEnv('PEER_URL') || 'https://peer.decentraland.org'
+  const signal = AbortSignal.timeout(FETCH_TIMEOUT_MS)
   let address: string | null = null
 
   if (EthAddress.validate(referrer)) {
     address = referrer
   } else {
     try {
-      const response = await fetch(`${peerUrl}/lambdas/users/${encodeURIComponent(referrer)}/names`)
+      const response = await fetch(`${peerUrl}/lambdas/users/${encodeURIComponent(referrer)}/names`, { signal })
       const data = await response.json()
       if (data?.[0]?.owner) {
         address = data[0].owner
@@ -33,7 +36,7 @@ async function resolveReferrerProfile(referrer: string): Promise<Profile | null>
   if (!address) return null
 
   try {
-    const response = await fetch(`${peerUrl}/lambdas/profiles/${address.toLowerCase()}`)
+    const response = await fetch(`${peerUrl}/lambdas/profiles/${address.toLowerCase()}`, { signal })
     const data = await response.json()
     return data ?? null
   } catch {

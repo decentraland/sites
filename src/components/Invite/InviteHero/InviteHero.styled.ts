@@ -1,11 +1,7 @@
 import { Box, Typography, styled } from 'decentraland-ui2'
 import { Video } from '../../Video'
 
-const HeroSection = styled('section', {
-  shouldForwardProp: prop => prop !== 'isSecondaryHero'
-})<{
-  isSecondaryHero?: boolean
-}>(({ theme }) => ({
+const HeroSection = styled('section')(({ theme }) => ({
   height: 'content',
   minHeight: '100vh',
   width: '100%',

@@ -89,7 +89,7 @@ const InviteHero = memo((props: InviteHeroProps) => {
   const processedTitle = processTitleWithGradient(title)
 
   return (
-    <HeroSection isSecondaryHero={isSecondaryHero}>
+    <HeroSection>
       <HeroContainer>
         <HeroTextContainer>
           <HeroTextWrapper>

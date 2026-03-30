@@ -166,15 +166,16 @@ const FaqQuestionText = styled(Typography)(({ theme }) => ({
 const FaqAnswerContainer = styled(Box, {
   shouldForwardProp: prop => prop !== 'isOpen'
 })<{ isOpen: boolean }>(({ isOpen }) => ({
-  overflow: 'hidden',
-  height: isOpen ? 'auto' : 0,
+  display: 'grid',
+  gridTemplateRows: isOpen ? '1fr' : '0fr',
   opacity: isOpen ? 1 : 0,
   pointerEvents: isOpen ? 'auto' : 'none',
-  transition: 'height 350ms cubic-bezier(0.16, 1, 0.3, 1), opacity 350ms cubic-bezier(0.16, 1, 0.3, 1)'
+  transition: 'grid-template-rows 350ms cubic-bezier(0.16, 1, 0.3, 1), opacity 350ms cubic-bezier(0.16, 1, 0.3, 1)'
 }))
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const FaqAnswerText = styled(Typography)(({ theme }) => ({
+  overflow: 'hidden',
   padding: '1em 0 2em',
   fontStyle: 'normal',
   fontWeight: 400,
