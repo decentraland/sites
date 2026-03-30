@@ -274,9 +274,23 @@ const heroHtml = `<script>
 const fontPreload = '<link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2" crossorigin />'
 
 let html = readFileSync(distPath, 'utf-8')
+
+// Extract CDN URLs from the <link rel="preload"> tags Vite already wrote.
+// This avoids duplicating the base URL logic and guarantees the <picture> in the
+// hero shell loads from the same origin as the preload, preventing a double fetch
+// where the zone origin returns text/html instead of the actual image.
+const mobileImgMatch = html.match(/<link[^>]*href="([^"]*hero_mobile\.webp)"[^>]*>/)
+const desktopImgMatch = html.match(/<link[^>]*href="([^"]*landing_hero\.webp)"[^>]*>/)
+const heroMobileUrl = mobileImgMatch?.[1] ?? './hero_mobile.webp'
+const heroDesktopUrl = desktopImgMatch?.[1] ?? './landing_hero.webp'
+
+const finalHeroHtml = heroHtml
+  .replace('./hero_mobile.webp', heroMobileUrl)
+  .replace(/\.\/landing_hero\.webp/g, heroDesktopUrl)
+
 html = html.replace(
   /<!-- HERO_SHELL_START -->[\s\S]*?<!-- HERO_SHELL_END -->/,
-  `<!-- HERO_SHELL_START -->${heroHtml}<!-- HERO_SHELL_END -->`
+  `<!-- HERO_SHELL_START -->${finalHeroHtml}<!-- HERO_SHELL_END -->`
 )
 html = html.replace('</head>', `${fontPreload}\n${criticalCss}\n</head>`)
 writeFileSync(distPath, html)
