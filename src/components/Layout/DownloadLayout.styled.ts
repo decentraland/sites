@@ -16,13 +16,11 @@ const DownloadPageContainer = styled(Box)({
 })
 
 const DownloadBackgroundOverlay = styled(Box)({
-  position: 'fixed',
+  position: 'absolute',
   top: 0,
   left: 0,
   right: 0,
   bottom: 0,
-  width: '100%',
-  height: '100%',
   backgroundImage:
     'linear-gradient(150deg, #2A0C43 0%, #2A0C43 25%, transparent 100%), linear-gradient(225deg, #2A0C43 0%, rgba(42, 12, 67, 0.8) 15%, transparent 100%)',
   zIndex: 1
