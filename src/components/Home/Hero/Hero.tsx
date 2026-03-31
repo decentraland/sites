@@ -146,7 +146,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
               <AlreadyUserText>
                 {l('page.home.hero.already_user', {
                   download: (
-                    <AlreadyUserDownloadLink href={`/download_success?os=${userAgentData.os.name}`}>
+                    <AlreadyUserDownloadLink key="download" href={`/download_success?os=${userAgentData.os.name}`}>
                       {l('page.home.hero.download')} <DownloadIcon />
                     </AlreadyUserDownloadLink>
                   )
