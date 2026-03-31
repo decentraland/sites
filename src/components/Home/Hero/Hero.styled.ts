@@ -1,6 +1,6 @@
 import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
 
-const HeroContainer = styled(Box)({
+const HeroContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   width: '100%',
   minHeight: '100vh',
@@ -8,8 +8,11 @@ const HeroContainer = styled(Box)({
   alignItems: 'flex-end',
   justifyContent: 'center',
   overflow: 'hidden',
-  backgroundColor: '#39055C'
-})
+  backgroundColor: '#39055C',
+  [theme.breakpoints.down('sm')]: {
+    minHeight: 'calc(var(--hero-vh, 1vh) * 100)'
+  }
+}))
 
 const HeroBackground = styled(Box)({
   position: 'absolute',
