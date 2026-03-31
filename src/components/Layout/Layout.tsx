@@ -11,6 +11,7 @@ import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { type SupportedLocale, useLocale } from '../../intl/LocaleContext'
 import { redirectToAuth } from '../../utils/authRedirect'
 import { LandingNavbar } from '../LandingNavbar'
+import type { LandingNavbarProps } from '../LandingNavbar'
 import type { LayoutProps } from './Layout.types'
 
 // eslint-disable-next-line react/prop-types
@@ -49,7 +50,7 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
           isSigningIn={isConnecting && !effectivelySignedIn}
           address={address || undefined}
           avatar={avatar}
-          notifications={notificationProps}
+          notifications={notificationProps as LandingNavbarProps['notifications']}
           onClickSignIn={handleSignIn}
           onClickSignOut={handleSignOut}
         />

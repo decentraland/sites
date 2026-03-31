@@ -94,7 +94,7 @@ interface NotificationsData {
   isOpen: boolean
   activeTab: NotificationActiveTab
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
-  onClose: () => void
+  onClose: (...args: unknown[]) => void
   onChangeTab: (e: unknown, tab: NotificationActiveTab) => void
 }
 
@@ -353,7 +353,7 @@ const LandingNavbar = memo(function LandingNavbar({
                 {desktopDropdown === section && (
                   <DesktopDropdown>
                     <DesktopDropdownInner>
-                      {MENU_CONFIG[section].items.map(item => (
+                      {MENU_CONFIG[section].items?.map(item => (
                         <DesktopDropdownItem
                           key={item.labelKey}
                           href={item.url}
