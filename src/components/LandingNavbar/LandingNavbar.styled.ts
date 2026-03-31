@@ -63,13 +63,15 @@ const NavBarRoot = styled('nav')({
       background: 'rgba(22, 21, 24, 0.4)'
     }
   },
-  // Minimal variant: transparent, no blur, no shadow (landing page not-logged-in)
+  // Minimal variant: transparent on desktop only, mobile keeps the gradient
   ['&.minimal::before']: {
-    background: 'transparent',
-    boxShadow: 'none',
-    backdropFilter: 'none',
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    WebkitBackdropFilter: 'none'
+    [DESKTOP_BREAKPOINT]: {
+      background: 'transparent',
+      boxShadow: 'none',
+      backdropFilter: 'none',
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      WebkitBackdropFilter: 'none'
+    }
   }
 })
 
@@ -410,6 +412,7 @@ const NotificationListItem = styled('div')({
 const NotificationItemImage = styled('div')({
   width: 56,
   height: 56,
+  marginLeft: 16,
   borderRadius: '50%',
   backgroundColor: 'rgba(103, 99, 112, 0.4)',
   display: 'flex',

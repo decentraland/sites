@@ -10,18 +10,21 @@ const WhatsOnContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(6, 0)
+    padding: theme.spacing(6, 2)
   }
 }))
 
-const SectionTitle = styled(Typography)({
+const SectionTitle = styled(Typography)(({ theme }) => ({
   color: dclColors.neutral.white,
   fontWeight: 700,
   textAlign: 'center',
   position: 'relative',
   zIndex: 10,
-  fontSize: 'clamp(1.75rem, 3vw, 2.5rem)'
-})
+  fontSize: 48,
+  [theme.breakpoints.down('sm')]: {
+    fontSize: 32
+  }
+}))
 
 const CardsGrid = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -89,6 +92,12 @@ const CardWrapper = styled('div')({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&& .MuiCardContent-root': {
     backgroundColor: 'rgba(0, 0, 0, 0.6)'
+  },
+  // Force card to respect container width on small screens
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&& .MuiCard-root': {
+    minWidth: 0,
+    maxWidth: '100%'
   }
 })
 
