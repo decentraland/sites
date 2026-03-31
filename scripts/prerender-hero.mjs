@@ -108,11 +108,12 @@ const criticalCss = `
   #hero-shell-nav .nav-bar:first-child { top: 8px; }
   #hero-shell-nav .nav-bar:last-child { top: 21px; }
 
-  /* HERO CONTAINER — from HeroContainer styled component */
+  /* HERO CONTAINER — position:fixed so it doesn't push #root down when
+     reparented outside it, and stays visible as LCP while React loads. */
   #hero-shell {
-    position: relative; width: 100%; min-height: 100vh;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
     display: flex; align-items: flex-end; justify-content: center;
-    overflow: hidden; background-color: #39055C;
+    overflow: hidden; background-color: #39055C; z-index: 1000;
   }
   #hero-shell .hero-bg {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
@@ -288,9 +289,18 @@ const finalHeroHtml = heroHtml
   .replace('./hero_mobile.webp', heroMobileUrl)
   .replace(/\.\/landing_hero\.webp/g, heroDesktopUrl)
 
+// Place the hero shell BEFORE #root, not inside it.  This is critical for LCP:
+// if the shell is inside #root, either createRoot destroys it (losing the LCP
+// image) or reparenting it with root.before() invalidates it as a LCP candidate
+// in Chrome's algorithm.  By placing it as a sibling before #root, the image
+// paints as LCP and is never touched by React until Hero's useEffect removes it.
 html = html.replace(
   /<!-- HERO_SHELL_START -->[\s\S]*?<!-- HERO_SHELL_END -->/,
-  `<!-- HERO_SHELL_START -->${finalHeroHtml}<!-- HERO_SHELL_END -->`
+  '<!-- HERO_SHELL_START --><!-- HERO_SHELL_END -->'
+)
+html = html.replace(
+  '<div id="root">',
+  `${finalHeroHtml}\n<div id="root">`
 )
 html = html.replace('</head>', `${fontPreload}\n${criticalCss}\n</head>`)
 writeFileSync(distPath, html)

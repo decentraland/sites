@@ -1,7 +1,6 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useEffect } from 'react'
 import { useWalletState } from '@dcl/core-web3/lazy'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
-import type { AdvancedNavigatorUAData } from '@dcl/hooks'
 import { DownloadModal, JumpInIcon } from 'decentraland-ui2'
 import { heroContent } from '../../../data/static-content'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
@@ -44,34 +43,31 @@ const imageByOs: Record<string, string> = {
   [OperativeSystem.MACOS]: appleLogo
 }
 
-// Module-level cache — useRef doesn't work here because React StrictMode and
-// Suspense remount the component, destroying refs. useEffect runs after paint
-// so it can't prevent the flash. useAdvancedUserAgentData() from @dcl/hooks
-// resets to null on every remount, causing the UI to flicker between states.
-// Module-level vars survive remounts and the writes are idempotent (same OS/count
-// every time), so concurrent renders are safe.
-let cachedUserAgentData: AdvancedNavigatorUAData | null = null
+// Module-level cache for download counts — survives component remounts.
+// useAdvancedUserAgentData cache is handled in @dcl/hooks directly.
 let cachedDownloadCounts: string | null = null
 
 const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const { isConnected, address } = useWalletState()
   const effectivelySignedIn = isConnected || !!address
-  const [, rawUserAgentData] = useAdvancedUserAgentData()
+  const [, userAgentData] = useAdvancedUserAgentData()
   const l = useFormatMessage()
   const onClickHandle = useTrackClick()
   const { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
 
   const [rawDownloads, rawDownloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
 
-  // Module-level cache: once we get a value, it sticks across remounts
-  if (rawUserAgentData) cachedUserAgentData = rawUserAgentData
-  const userAgentData = cachedUserAgentData
-
   const rawFormatted = !rawDownloadsStatus.loading && rawDownloadsStatus.loaded && rawDownloads ? formatToShorthand(rawDownloads) : null
   if (rawFormatted) cachedDownloadCounts = rawFormatted
   const downloadCountsFormatted = cachedDownloadCounts
 
   const osImage = userAgentData ? imageByOs[userAgentData.os.name] : null
+
+  // Remove the prerendered hero shell now that React's Hero has mounted.
+  useEffect(() => {
+    document.getElementById('hero-shell')?.remove()
+    document.getElementById('hero-shell-nav')?.remove()
+  }, [])
 
   const handleDownloadClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -150,7 +146,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
               <AlreadyUserText>
                 {l('page.home.hero.already_user', {
                   download: (
-                    <AlreadyUserDownloadLink href={`/download_success?os=${userAgentData.os.name}`}>
+                    <AlreadyUserDownloadLink key="download" href={`/download_success?os=${userAgentData.os.name}`}>
                       {l('page.home.hero.download')} <DownloadIcon />
                     </AlreadyUserDownloadLink>
                   )

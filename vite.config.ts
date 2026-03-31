@@ -46,7 +46,37 @@ export default defineConfig(({ command, mode }) => {
     ],
     build: {
       target: 'esnext',
-      sourcemap: 'hidden'
+      sourcemap: 'hidden',
+      rollupOptions: {
+        output: {
+          /* eslint-disable @typescript-eslint/naming-convention */
+          manualChunks: {
+            // Sentry (~900KB source) is pulled in transitively by @dcl/hooks but
+            // is NOT needed for First Contentful Paint or LCP.
+            'vendor-sentry': [
+              '@sentry/browser',
+              '@sentry/core',
+              '@sentry-internal/replay',
+              '@sentry-internal/browser-utils',
+              '@sentry-internal/feedback'
+            ],
+            // Schema validation (~510KB) is only needed when API responses arrive.
+            'vendor-schemas': ['@dcl/schemas', 'ajv'],
+            // @dcl/crypto + eth-connect are used for wallet signing, not rendering.
+            'vendor-crypto': ['@dcl/crypto', 'eth-connect'],
+            // Redux + RTK (~240KB source) — not needed for first paint.
+            'vendor-redux': ['@reduxjs/toolkit', 'react-redux', 'immer', 'reselect'],
+            // i18n + date formatting (~175KB source) — not needed for static shell.
+            'vendor-intl': ['@formatjs/icu-messageformat-parser', '@formatjs/intl', 'date-fns'],
+            // UA detection (~100KB source) — async hook, not needed for first paint.
+            'vendor-ua': ['ua-parser-js'],
+            // React Router (~340KB source) — route matching happens after React mounts,
+            // not during the static shell paint.
+            'vendor-router': ['react-router', 'react-router-dom']
+          }
+          /* eslint-enable @typescript-eslint/naming-convention */
+        }
+      }
     },
     ...(command === 'build' ? { base: envVariables.VITE_BASE_URL || '/' } : undefined),
     server: {
