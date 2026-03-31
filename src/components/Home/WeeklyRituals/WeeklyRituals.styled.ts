@@ -24,6 +24,7 @@ const WeeklyRitualsContainer = styled(Box)(({ theme }) => ({
 const SectionTitle = styled(Typography)(({ theme }) => ({
   color: dclColors.neutral.white,
   fontWeight: 600,
+  fontSize: 48,
   textAlign: 'center',
   [theme.breakpoints.down('sm')]: {
     fontSize: 32
