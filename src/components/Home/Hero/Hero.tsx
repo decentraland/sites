@@ -83,9 +83,12 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const isMobileVariant = isMobileAndroid || isMobileIos
 
   // Remove the prerendered hero shell now that React's Hero has mounted.
+  // Capture the initial viewport height for mobile so the hero doesn't resize
+  // when the browser toolbar hides/shows on scroll (iOS Safari workaround).
   useEffect(() => {
     document.getElementById('hero-shell')?.remove()
     document.getElementById('hero-shell-nav')?.remove()
+    document.documentElement.style.setProperty('--hero-vh', `${window.innerHeight * 0.01}px`)
   }, [])
 
   const handleDownloadClick = useCallback(
