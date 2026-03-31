@@ -82,7 +82,6 @@ const MobileCarousel = styled(Box)(({ theme }) => ({
 }))
 
 const CardWrapper = styled('div')({
-  backgroundColor: '#2a2435',
   borderRadius: 16,
   overflow: 'hidden',
   height: '100%'

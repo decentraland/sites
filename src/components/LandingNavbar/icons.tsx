@@ -172,4 +172,104 @@ const CopyIcon = memo(function CopyIcon(props: IconProps) {
   )
 })
 
-export { BellIcon, ChevronDownIcon, ChevronUpIcon, CloseIcon, CopyIcon, DclLogo, ExternalLinkIcon, HamburgerIcon, JumpInIcon, LogoutIcon }
+const AccountIcon = memo(function AccountIcon(props: IconProps) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path
+        d="M10 10C11.3807 10 12.5 8.88071 12.5 7.5C12.5 6.11929 11.3807 5 10 5C8.61929 5 7.5 6.11929 7.5 7.5C7.5 8.88071 8.61929 10 10 10Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M5 16.25C5 14.1789 7.23858 12.5 10 12.5C12.7614 12.5 15 14.1789 15 16.25"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+})
+
+const WearableIcon = memo(function WearableIcon(props: IconProps) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path
+        d="M15.8333 7.5L13.3333 3.33337H6.66667L4.16667 7.5L2.5 16.6667H17.5L15.8333 7.5Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M6.66667 3.33337L7.5 7.50004L10 9.16671L12.5 7.50004L13.3333 3.33337"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+})
+
+const SettingsIcon = memo(function SettingsIcon(props: IconProps) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path
+        d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M16.1666 10C16.1666 9.58337 16.1249 9.16671 16.0416 8.75004L17.9166 7.27087L16.4166 4.72921L14.1666 5.52087C13.5416 4.97921 12.8124 4.56254 11.9999 4.31254L11.6666 1.66671H8.33325L7.99992 4.31254C7.18742 4.56254 6.45825 4.97921 5.83325 5.52087L3.58325 4.72921L2.08325 7.27087L3.95825 8.75004C3.87492 9.16671 3.83325 9.58337 3.83325 10C3.83325 10.4167 3.87492 10.8334 3.95825 11.25L2.08325 12.7292L3.58325 15.2709L5.83325 14.4792C6.45825 15.0209 7.18742 15.4375 7.99992 15.6875L8.33325 18.3334H11.6666L11.9999 15.6875C12.8124 15.4375 13.5416 15.0209 14.1666 14.4792L16.4166 15.2709L17.9166 12.7292L16.0416 11.25C16.1249 10.8334 16.1666 10.4167 16.1666 10Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+})
+
+const ShoppingBagIcon = memo(function ShoppingBagIcon(props: IconProps) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path
+        d="M5 1.66663L2.5 4.99996V16.6666C2.5 17.1087 2.67559 17.5326 2.98816 17.8452C3.30072 18.1577 3.72464 18.3333 4.16667 18.3333H15.8333C16.2754 18.3333 16.6993 18.1577 17.0118 17.8452C17.3244 17.5326 17.5 17.1087 17.5 16.6666V4.99996L15 1.66663H5Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M2.5 5H17.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M13.3334 8.33337C13.3334 9.21743 12.9822 10.0653 12.3571 10.6904C11.7319 11.3155 10.8841 11.6667 10.0001 11.6667C9.11603 11.6667 8.26818 11.3155 7.64306 10.6904C7.01794 10.0653 6.66675 9.21743 6.66675 8.33337"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+})
+
+export {
+  AccountIcon,
+  BellIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  CloseIcon,
+  CopyIcon,
+  DclLogo,
+  ExternalLinkIcon,
+  HamburgerIcon,
+  JumpInIcon,
+  LogoutIcon,
+  SettingsIcon,
+  ShoppingBagIcon,
+  WearableIcon
+}
