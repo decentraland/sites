@@ -26,7 +26,16 @@ export default defineConfig(({ command, mode }) => {
       /* eslint-disable @typescript-eslint/naming-convention */
       federation({
         name: 'landing_host',
-        remotes: envVariables.VITE_WHATS_ON_REMOTE_URL ? { whats_on: envVariables.VITE_WHATS_ON_REMOTE_URL } : {},
+        // At least one remote must be declared so the plugin emits proper host
+        // code (share scope initialisation). Without it, the generated virtual
+        // module contains an unresolved `__rf_placeholder__shareScope` reference
+        // and the 54 top-level `await` calls that resolve shared packages hang
+        // silently, preventing React from mounting.
+        // The actual URL is overridden at runtime by the worker via
+        // `window.__REMOTE_URLS__` + `__federation_method_setRemote`.
+        remotes: {
+          whats_on: envVariables.VITE_WHATS_ON_REMOTE_URL || 'https://placeholder.decentraland.org/assets/remoteEntry.js'
+        },
         shared: {
           react: { singleton: true, requiredVersion: '^18.3.0' },
           'react-dom': { singleton: true, requiredVersion: '^18.3.0' },
@@ -50,9 +59,14 @@ export default defineConfig(({ command, mode }) => {
       rollupOptions: {
         output: {
           /* eslint-disable @typescript-eslint/naming-convention */
+          // Packages listed in federation `shared` MUST NOT appear in
+          // manualChunks. The federation plugin wraps shared imports with
+          // async loaders that emit `__federation_shared_<pkg>` chunks.
+          // If a shared package is forced into the same chunk as code that
+          // consumes it via the async wrapper, a circular top-level-await
+          // deadlock occurs (the chunk awaits its own shared wrapper, which
+          // re-imports the chunk).
           manualChunks: {
-            // Sentry (~900KB source) is pulled in transitively by @dcl/hooks but
-            // is NOT needed for First Contentful Paint or LCP.
             'vendor-sentry': [
               '@sentry/browser',
               '@sentry/core',
@@ -60,19 +74,12 @@ export default defineConfig(({ command, mode }) => {
               '@sentry-internal/browser-utils',
               '@sentry-internal/feedback'
             ],
-            // Schema validation (~510KB) is only needed when API responses arrive.
-            'vendor-schemas': ['@dcl/schemas', 'ajv'],
-            // @dcl/crypto + eth-connect are used for wallet signing, not rendering.
+            'vendor-schemas': ['ajv'],
             'vendor-crypto': ['@dcl/crypto', 'eth-connect'],
-            // Redux + RTK (~240KB source) — not needed for first paint.
-            'vendor-redux': ['@reduxjs/toolkit', 'react-redux', 'immer', 'reselect'],
-            // i18n + date formatting (~175KB source) — not needed for static shell.
+            'vendor-redux': ['immer', 'reselect'],
             'vendor-intl': ['@formatjs/icu-messageformat-parser', '@formatjs/intl', 'date-fns'],
-            // UA detection (~100KB source) — async hook, not needed for first paint.
             'vendor-ua': ['ua-parser-js'],
-            // React Router (~340KB source) — route matching happens after React mounts,
-            // not during the static shell paint.
-            'vendor-router': ['react-router', 'react-router-dom']
+            'vendor-router': ['react-router']
           }
           /* eslint-enable @typescript-eslint/naming-convention */
         }
