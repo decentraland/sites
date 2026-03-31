@@ -108,7 +108,12 @@
         "title": "关掉信息流，来一起玩。",
         "jump_in": "立即进入",
         "already_user": "已有账户？{download}",
-        "download": "下载"
+        "download": "下载",
+        "mobile_android_title": "随时随地 一起玩",
+        "mobile_android_subtitle": "Decentraland 现已登录移动端。",
+        "mobile_ios_subtitle": "请切换到桌面端下载。",
+        "mobile_ios_send_link": "发送链接给自己",
+        "mobile_ios_coming_soon": "即将推出"
       },
       "come_hang_out": {
         "title": "来一起玩"

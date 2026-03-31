@@ -108,7 +108,12 @@
         "title": "Fermez le Feed. Venez traîner.",
         "jump_in": "Plonger",
         "already_user": "Vous avez déjà un compte ? {download}",
-        "download": "Télécharger"
+        "download": "Télécharger",
+        "mobile_android_title": "Retrouvez-vous de N'importe Où",
+        "mobile_android_subtitle": "Decentraland maintenant sur mobile.",
+        "mobile_ios_subtitle": "Passez sur ordinateur pour télécharger.",
+        "mobile_ios_send_link": "Envoyez-vous le Lien",
+        "mobile_ios_coming_soon": "Bientôt Disponible"
       },
       "come_hang_out": {
         "title": "Venez traîner"

@@ -108,7 +108,12 @@
         "title": "피드를 끄세요. 함께 어울려요.",
         "jump_in": "입장하기",
         "already_user": "이미 계정이 있으신가요? {download}",
-        "download": "다운로드"
+        "download": "다운로드",
+        "mobile_android_title": "어디서나 어울리세요",
+        "mobile_android_subtitle": "Decentraland가 모바일에서도.",
+        "mobile_ios_subtitle": "다운로드하려면 데스크톱으로 전환하세요.",
+        "mobile_ios_send_link": "링크를 보내세요",
+        "mobile_ios_coming_soon": "곧 출시"
       },
       "come_hang_out": {
         "title": "함께 어울려요"

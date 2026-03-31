@@ -75,7 +75,8 @@ import {
   UserCardMenu,
   UserCardMenuItem,
   UserCardName,
-  UserCardWrapper
+  UserCardWrapper,
+  Wordmark
 } from './LandingNavbar.styled'
 
 interface NotificationItem {
@@ -101,6 +102,7 @@ interface NotificationsData {
 interface LandingNavbarProps {
   isSignedIn: boolean
   isSigningIn: boolean
+  isLandingPage?: boolean
   address?: string
   avatar?: { name?: string; avatar?: { snapshots?: { face256?: string; body?: string } } }
   notifications?: NotificationsData
@@ -135,12 +137,16 @@ function resolveContentUrl(hash: string | undefined): string | undefined {
 const LandingNavbar = memo(function LandingNavbar({
   isSignedIn,
   isSigningIn,
+  isLandingPage = false,
   address,
   avatar,
   notifications,
   onClickSignIn,
   onClickSignOut
 }: LandingNavbarProps) {
+  // On the landing page (/), show a minimal transparent navbar initially.
+  // Once we know the user is signed in, transition to the full navbar.
+  const showMinimalNavbar = isLandingPage && !isSignedIn
   const l = useFormatMessage()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mobileAccordion, setMobileAccordion] = useState<DropdownSection | null>(null)
@@ -322,6 +328,32 @@ const LandingNavbar = memo(function LandingNavbar({
       </>
     )
   }, [l, mobileAccordion, toggleMobileAccordion])
+
+  // Minimal navbar: transparent, only logo + sign in (no tabs, no blur, no shadow)
+  if (showMinimalNavbar) {
+    return (
+      <NavBarRoot ref={navRef} className="minimal">
+        <NavBarLeft>
+          <LogoLink href="https://decentraland.org" aria-label="Decentraland Home">
+            <DclLogo />
+          </LogoLink>
+          <Wordmark>Decentraland</Wordmark>
+        </NavBarLeft>
+        <NavBarRight>
+          <SignInButton onClick={onClickSignIn} disabled={isSigningIn}>
+            {isSigningIn ? l('component.landing.navbar.signing_in') : l('component.landing.navbar.sign_in')}
+          </SignInButton>
+          <HamburgerButton
+            onClick={toggleMobileMenu}
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? <CloseIcon /> : <HamburgerIcon />}
+          </HamburgerButton>
+        </NavBarRight>
+      </NavBarRoot>
+    )
+  }
 
   return (
     <>

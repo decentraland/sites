@@ -6,18 +6,19 @@ const DESKTOP_BREAKPOINT = '@media (min-width: 992px)'
 
 const NAV_SHADOW = '0px 1.333px 24px rgba(0,0,0,0.12), 0px 8px 13.333px rgba(0,0,0,0.14), 0px 4px 6.667px rgba(0,0,0,0.2)'
 const GLASS_BG = 'rgba(38, 38, 38, 0.8)'
-const GLASS_BORDER = `0.5px solid ${dclColors.neutral.gray1}`
-const GLASS_SHADOW = '0px 2px 20px rgba(0,0,0,0.25)'
+const GLASS_BORDER = '0.5px solid #5E5B67'
+const GLASS_SHADOW = '0 2px 20px 16px rgba(0, 0, 0, 0.25)'
 const GLASS_BLUR = 'blur(12.5px)'
 
+// NOTE: Do NOT use transform in this animation. backdrop-filter breaks when
+// the element has any transform set (even identity matrix), because it creates
+// a new stacking context that prevents the blur from seeing through to the page.
 const slideDown = keyframes({
   from: {
-    opacity: 0,
-    transform: 'translateY(-8px)'
+    opacity: 0
   },
   to: {
-    opacity: 1,
-    transform: 'translateY(0)'
+    opacity: 1
   }
 })
 
@@ -31,12 +32,26 @@ const NavBarRoot = styled('nav')({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  background: 'rgba(22, 21, 24, 0.75)',
-  boxShadow: NAV_SHADOW,
-  backdropFilter: 'saturate(1.8) blur(20px)',
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  WebkitBackdropFilter: 'saturate(1.8) blur(20px)',
   boxSizing: 'border-box',
+  // The navbar's own blur is on a ::before pseudo-element so that child
+  // dropdowns can have their own independent backdrop-filter. Nested
+  // backdrop-filter elements don't compose in CSS — the child would blur
+  // the parent's already-blurred content instead of the page behind.
+  ['&::before']: {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: -1,
+    background: 'rgba(22, 21, 24, 0.75)',
+    boxShadow: NAV_SHADOW,
+    backdropFilter: 'saturate(1.8) blur(20px)',
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    WebkitBackdropFilter: 'saturate(1.8) blur(20px)',
+    transition: 'background 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease'
+  },
   [MOBILE_BREAKPOINT]: {
     height: 64,
     padding: '12px 16px'
@@ -44,7 +59,17 @@ const NavBarRoot = styled('nav')({
   [DESKTOP_BREAKPOINT]: {
     height: 92,
     padding: '16px 54px',
-    background: 'rgba(22, 21, 24, 0.4)'
+    ['&::before']: {
+      background: 'rgba(22, 21, 24, 0.4)'
+    }
+  },
+  // Minimal variant: transparent, no blur, no shadow (landing page not-logged-in)
+  ['&.minimal::before']: {
+    background: 'transparent',
+    boxShadow: 'none',
+    backdropFilter: 'none',
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    WebkitBackdropFilter: 'none'
   }
 })
 
@@ -91,6 +116,20 @@ const LogoLink = styled('a')({
   ['& svg']: {
     width: '100%',
     height: '100%'
+  }
+})
+
+const Wordmark = styled('span')({
+  fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+  fontWeight: 700,
+  fontSize: 22,
+  letterSpacing: 1.5,
+  color: dclColors.neutral.white,
+  textTransform: 'uppercase',
+  whiteSpace: 'nowrap',
+  lineHeight: 1,
+  [MOBILE_BREAKPOINT]: {
+    display: 'none'
   }
 })
 
@@ -170,13 +209,10 @@ const DesktopDropdownWrapper = styled('div')({
 
 const DesktopDropdown = styled('div')({
   position: 'absolute',
-  top: 'calc(100% - 16px)',
+  top: '100%',
   left: 0,
-  paddingTop: 16,
-  minWidth: 220
-})
-
-const DesktopDropdownInner = styled('div')({
+  marginTop: 8,
+  minWidth: 220,
   background: GLASS_BG,
   backdropFilter: GLASS_BLUR,
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -187,6 +223,9 @@ const DesktopDropdownInner = styled('div')({
   padding: 12,
   animation: `${slideDown} 0.15s ease forwards`
 })
+
+// Keep for backwards compat but now a passthrough
+const DesktopDropdownInner = styled('div')({})
 
 const DesktopDropdownItem = styled('a')({
   display: 'flex',
@@ -999,5 +1038,6 @@ export {
   UserCardMenu,
   UserCardMenuItem,
   UserCardName,
-  UserCardWrapper
+  UserCardWrapper,
+  Wordmark
 }

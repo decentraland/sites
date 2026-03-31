@@ -108,7 +108,12 @@
         "title": "Close the Feed. Come Hang Out.",
         "jump_in": "Jump In",
         "already_user": "Already have an account? {download}",
-        "download": "Download"
+        "download": "Download",
+        "mobile_android_title": "Hang Out From Anywhere",
+        "mobile_android_subtitle": "Decentraland now on mobile.",
+        "mobile_ios_subtitle": "Switch to desktop to download.",
+        "mobile_ios_send_link": "Send Yourself the Link",
+        "mobile_ios_coming_soon": "Coming Soon"
       },
       "come_hang_out": {
         "title": "Come Hang Out"

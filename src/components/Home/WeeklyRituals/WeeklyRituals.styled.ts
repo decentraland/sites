@@ -52,7 +52,9 @@ const CarouselWrapper = styled(Box)(({ theme }) => ({
       height: 'auto',
       opacity: 1,
       borderRadius: 16,
-      overflow: 'hidden'
+      overflow: 'hidden',
+      padding: `0 ${theme.spacing(2)}`,
+      boxSizing: 'border-box'
     }
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -90,8 +92,8 @@ const CardImage = styled('img')({
 
 const MobileCardImage = styled('img')({
   display: 'block',
-  width: 358,
-  maxWidth: '100%',
+  width: '100%',
+  maxWidth: 358,
   margin: '0 auto',
   borderRadius: 16,
   objectFit: 'cover'

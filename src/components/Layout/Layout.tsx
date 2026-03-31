@@ -48,6 +48,7 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
         <LandingNavbar
           isSignedIn={effectivelySignedIn}
           isSigningIn={isConnecting && !effectivelySignedIn}
+          isLandingPage={location.pathname === '/'}
           address={address || undefined}
           avatar={avatar}
           notifications={notificationProps as LandingNavbarProps['notifications']}

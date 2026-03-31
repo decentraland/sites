@@ -5,6 +5,7 @@ import { WhatsOnCardType } from '../../../features/events/events.types'
 import type { WhatsOn } from '../../../features/events/events.types'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { assetUrl } from '../../../utils/assetUrl'
+import { CardWrapper } from './WhatsOn.styled'
 
 // AvatarFace only passes through URLs starting with https://, otherwise it
 // prepends peer.decentraland.org. In prod assetUrl gives https://cdn..., in
@@ -33,25 +34,27 @@ const WhatsOnCard = memo(({ card, loading }: { card?: WhatsOn; loading?: boolean
   }
 
   return (
-    <EventCard
-      loading={loading}
-      image={card?.image ?? ''}
-      sceneName={card?.title ?? ''}
-      avatar={avatar as Avatar}
-      coordinates={card?.coordinates}
-      leftBadgeTransparent
-      hideLocation
-      leftBadge={
-        card?.type === WhatsOnCardType.EVENT ? (
-          <BadgeGroup>
-            <LiveBadge />
+    <CardWrapper>
+      <EventCard
+        loading={loading}
+        image={card?.image ?? ''}
+        sceneName={card?.title ?? ''}
+        avatar={avatar as Avatar}
+        coordinates={card?.coordinates}
+        leftBadgeTransparent
+        hideLocation
+        leftBadge={
+          card?.type === WhatsOnCardType.EVENT ? (
+            <BadgeGroup>
+              <LiveBadge />
+              <UserCountBadge count={card.users} />
+            </BadgeGroup>
+          ) : card ? (
             <UserCountBadge count={card.users} />
-          </BadgeGroup>
-        ) : card ? (
-          <UserCountBadge count={card.users} />
-        ) : undefined
-      }
-    />
+          ) : undefined
+        }
+      />
+    </CardWrapper>
   )
 })
 

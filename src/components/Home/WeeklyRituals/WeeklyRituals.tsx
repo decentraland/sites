@@ -40,7 +40,9 @@ const WeeklyRituals = memo(() => {
           >
             {weeklyRitualsContent.cards.map(card => (
               <SwiperSlide key={card.id}>
-                <CardImage src={card.imageUrl} alt={l(card.titleKey)} loading="lazy" width={1340} height={670} />
+                <a href={card.link} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
+                  <CardImage src={card.imageUrl} alt={l(card.titleKey)} loading="lazy" width={1340} height={670} />
+                </a>
               </SwiperSlide>
             ))}
           </Swiper>
@@ -59,7 +61,9 @@ const WeeklyRituals = memo(() => {
           >
             {weeklyRitualsContent.cards.map(card => (
               <SwiperSlide key={card.id}>
-                <MobileCardImage src={card.mobileImageUrl} alt={l(card.titleKey)} loading="lazy" />
+                <a href={card.link} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center' }}>
+                  <MobileCardImage src={card.mobileImageUrl} alt={l(card.titleKey)} loading="lazy" />
+                </a>
               </SwiperSlide>
             ))}
           </Swiper>
