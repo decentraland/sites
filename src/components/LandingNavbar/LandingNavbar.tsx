@@ -1,10 +1,11 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { getEnv } from '../../config/env'
+import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { assetUrl } from '../../utils/assetUrl'
 // Module-level cache for notification type→component map from ui2.
 // Lazy-loaded on first bell click so it doesn't affect initial bundle.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _notifComponentMap: Record<string, React.ComponentType<any>> | null = null
-import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import {
   AccountIcon,
   BellIcon,
@@ -354,7 +355,7 @@ const LandingNavbar = memo(function LandingNavbar({
             <DclLogo />
           </LogoLink>
           <LogoLink href="https://decentraland.org" aria-label="Decentraland Home" className="desktop-only">
-            <img src="/dcl_logo_and_name.svg" alt="Decentraland" style={{ height: 40 }} />
+            <img src={assetUrl('/dcl_logo_and_name.svg')} alt="Decentraland" style={{ height: 40 }} />
           </LogoLink>
         </NavBarLeft>
         <NavBarRight>

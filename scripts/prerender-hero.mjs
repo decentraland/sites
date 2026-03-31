@@ -59,7 +59,10 @@ const criticalCss = `
   }
   @media (min-width: 992px) {
     #hero-shell-nav { height: 92px; padding: 16px 54px; }
-    #hero-shell-nav::before { background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+    #hero-shell-nav::before {
+      background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none;
+      transition: background 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+    }
     #hero-shell-nav .nav-logo svg { display: none; }
     #hero-shell-nav .nav-logo-full { display: block; }
   }
@@ -74,7 +77,7 @@ const criticalCss = `
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
   }
   #hero-shell .hero-bg img {
-    object-fit: cover; display: block;
+    width: 100%; height: 100%; object-fit: cover; display: block;
   }
   #hero-shell .gradient-top {
     position: absolute; top: 0; left: 0; width: 100%; height: 24.3%;
@@ -129,18 +132,31 @@ const criticalCss = `
   /* Desktop HANG OUT NOW button — hidden on mobile */
   #hero-shell .hero-cta-wrapper { display: none; }
   #hero-shell .hero-desktop-btn {
-    width: 270px; max-width: none; height: 60px; gap: 24px;
-    font-size: 19.89px; padding: 20px 40px; border-radius: 16px;
-    letter-spacing: 0.61px; text-transform: uppercase;
+    display: flex; align-items: center; justify-content: center;
+    appearance: none; -webkit-appearance: none;
+    width: 270px; height: 60px; gap: 24px;
+    background-color: #FF2D55; border: none; border-radius: 16px;
+    font-family: Inter, Helvetica, Arial, sans-serif;
+    font-size: 14px; font-weight: 600; line-height: 24px;
+    letter-spacing: 0.4px; text-transform: uppercase;
+    color: #fcfcfc; cursor: pointer; position: relative;
+    padding: 6px 16px; min-width: 64px; box-sizing: border-box;
+    white-space: nowrap; vertical-align: middle; user-select: none;
+    text-decoration: none; text-align: center;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
   }
-  #hero-shell .hero-desktop-btn svg { width: 32px; height: 32px; }
+  #hero-shell .hero-desktop-btn .hero-btn-icon {
+    display: flex; width: 32px; height: 32px; margin-left: 0; margin-right: -4px;
+  }
+  #hero-shell .hero-desktop-btn .hero-btn-icon svg { width: 32px; height: 32px; }
 
   /* DESKTOP overrides */
   @media (min-width: 992px) {
     #hero-shell .hero-content {
       gap: 60px; padding: 0 0 120px; max-width: none;
     }
-    #hero-shell .hero-title { font-size: 3.75rem; font-weight: 600; letter-spacing: -0.5px; }
+    #hero-shell .hero-title { font-size: 60px; font-weight: 600; letter-spacing: -0.5px; }
     #hero-shell .hero-subtitle { display: none; }
     /* Hide mobile iOS elements, show desktop CTA */
     #hero-shell .hero-btn:not(.hero-desktop-btn) { display: none; }
@@ -200,13 +216,15 @@ const heroTabletUrl = tabletImgMatch?.[1] ?? './hero_tablet.webp'
 const heroDesktopUrl = desktopImgMatch?.[1] ?? './landing_hero.webp'
 
 // Extract base URL from any CDN asset path for non-preloaded assets
-const baseMatch = heroMobileUrl.match(/^(.*\/)hero_mobile\.webp$/)
-const cdnBase = baseMatch?.[1] ?? './'
+// Extract base URL from the <base> tag or <script src> that Vite writes
+const baseTagMatch = html.match(/<base[^>]*href="([^"]*)"/)
+const scriptSrcMatch = html.match(/<script[^>]*src="([^"]*?)assets\//)
+const cdnBase = baseTagMatch?.[1] ?? scriptSrcMatch?.[1] ?? '/'
 
 const finalHeroHtml = heroHtml
-  .replace('./hero_mobile.webp', heroMobileUrl)
-  .replace('./hero_tablet.webp', heroTabletUrl)
-  .replace(/\.\/landing_hero\.webp/g, heroDesktopUrl)
+  .replace(/\.\/hero_mobile\.webp/g, `${cdnBase}hero_mobile.webp`)
+  .replace(/\.\/hero_tablet\.webp/g, `${cdnBase}hero_tablet.webp`)
+  .replace(/\.\/landing_hero\.webp/g, `${cdnBase}landing_hero.webp`)
   .replace('./dcl_logo_and_name.svg', `${cdnBase}dcl_logo_and_name.svg`)
 
 // Place the hero shell BEFORE #root, not inside it.  This is critical for LCP:
