@@ -1,8 +1,10 @@
-name: Lighthouse Audit
-
-on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+# name: Lighthouse Audit
+# Temporarily disabled — takes too long during active development
+#
+# on:
+#   pull_request:
+#     types: [opened, synchronize, reopened]
+on: workflow_dispatch
 
 permissions:
   contents: read
