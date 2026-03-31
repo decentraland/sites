@@ -11,6 +11,7 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import { SectionViewedTrack } from '../../../modules/segment'
+import { assetUrl } from '../../../utils/assetUrl'
 import { HangOutButton } from '../shared/HangOutButton.styled'
 import {
   CardImage,
@@ -141,6 +142,22 @@ const CatchTheVibe = memo(() => {
 
   return (
     <CatchTheVibeContainer>
+      <img
+        src={assetUrl('/ellipse_gradient.webp')}
+        alt=""
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '60%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: 'center left',
+          pointerEvents: 'none',
+          zIndex: 0
+        }}
+        className="desktop-only-ellipse"
+      />
       <CatchTheVibeTitle variant="h3">{l('page.home.catch_the_vibe.title')}</CatchTheVibeTitle>
       <CardsRow>
         {catchTheVibeContent.cards.map((item, index) => (
