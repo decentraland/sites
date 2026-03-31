@@ -56,12 +56,12 @@ const MobileCarousel = styled(Box)(({ theme }) => ({
   '& .swiper-slide': {
     padding: `0 ${theme.spacing(2)}`,
     boxSizing: 'border-box',
+    height: 486,
     // eslint-disable-next-line @typescript-eslint/naming-convention
     '& > *': {
-      maxWidth: 358,
       minWidth: 0,
       width: '100%',
-      margin: '0 auto'
+      height: '100%'
     }
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -84,7 +84,12 @@ const MobileCarousel = styled(Box)(({ theme }) => ({
 const CardWrapper = styled('div')({
   borderRadius: 16,
   overflow: 'hidden',
-  height: '100%'
+  height: '100%',
+  // Override ui2's 0.4 opacity to 0.6
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&& .MuiCardContent-root': {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)'
+  }
 })
 
 export { CardWrapper, CardsGrid, MobileCarousel, SectionTitle, WhatsOnContainer }
