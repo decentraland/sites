@@ -77,7 +77,7 @@ const criticalCss = `
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
   }
   #hero-shell .hero-bg img {
-    object-fit: cover; display: block;
+    width: 100%; height: 100%; object-fit: cover; display: block;
   }
   #hero-shell .gradient-top {
     position: absolute; top: 0; left: 0; width: 100%; height: 24.3%;
@@ -132,9 +132,19 @@ const criticalCss = `
   /* Desktop HANG OUT NOW button — hidden on mobile */
   #hero-shell .hero-cta-wrapper { display: none; }
   #hero-shell .hero-desktop-btn {
-    width: 270px; max-width: none; height: 60px; gap: 24px;
-    font-size: 19.89px; padding: 20px 40px; border-radius: 16px;
-    letter-spacing: 0.61px; text-transform: uppercase;
+    display: flex; align-items: center; justify-content: center;
+    appearance: none; -webkit-appearance: none;
+    width: 270px; height: 60px; gap: 24px;
+    background-color: #FF2D55; border: none; border-radius: 16px;
+    font-family: Inter, Helvetica, Arial, sans-serif;
+    font-size: 14px; font-weight: 600; line-height: 24px;
+    letter-spacing: 0.4px; text-transform: uppercase;
+    color: #fcfcfc; cursor: pointer; position: relative;
+    padding: 6px 16px; min-width: 64px; box-sizing: border-box;
+    white-space: nowrap; vertical-align: middle; user-select: none;
+    text-decoration: none; text-align: center;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
   }
   #hero-shell .hero-desktop-btn svg { width: 32px; height: 32px; }
 
@@ -209,8 +219,8 @@ const scriptSrcMatch = html.match(/<script[^>]*src="([^"]*?)assets\//)
 const cdnBase = baseTagMatch?.[1] ?? scriptSrcMatch?.[1] ?? '/'
 
 const finalHeroHtml = heroHtml
-  .replace('./hero_mobile.webp', `${cdnBase}hero_mobile.webp`)
-  .replace('./hero_tablet.webp', `${cdnBase}hero_tablet.webp`)
+  .replace(/\.\/hero_mobile\.webp/g, `${cdnBase}hero_mobile.webp`)
+  .replace(/\.\/hero_tablet\.webp/g, `${cdnBase}hero_tablet.webp`)
   .replace(/\.\/landing_hero\.webp/g, `${cdnBase}landing_hero.webp`)
   .replace('./dcl_logo_and_name.svg', `${cdnBase}dcl_logo_and_name.svg`)
 
