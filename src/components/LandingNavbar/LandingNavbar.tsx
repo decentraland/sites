@@ -476,15 +476,17 @@ const LandingNavbar = memo(function LandingNavbar({
                       {bodyUrl ? <UserCardAvatarBody src={bodyUrl} alt={userName || 'Avatar'} /> : null}
                     </UserCardAvatarContainer>
                     <UserCardMenu>
-                      <div style={{ paddingLeft: 16, paddingBottom: 8 }}>
+                      <div style={{ paddingLeft: 16, paddingBottom: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
                         <UserCardName title={userName}>{userName}</UserCardName>
-                        <UserCardAddressLabel>{l('component.landing.navbar.wallet_address')}</UserCardAddressLabel>
-                        <UserCardAddress>
-                          {shortAddress}
-                          <UserCardCopyButton onClick={copyAddress} aria-label="Copy address">
-                            <CopyIcon />
-                          </UserCardCopyButton>
-                        </UserCardAddress>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <UserCardAddressLabel>{l('component.landing.navbar.wallet_address')}</UserCardAddressLabel>
+                          <UserCardAddress>
+                            {shortAddress}
+                            <UserCardCopyButton onClick={copyAddress} aria-label="Copy address">
+                              <CopyIcon />
+                            </UserCardCopyButton>
+                          </UserCardAddress>
+                        </div>
                       </div>
                       <UserCardDivider />
                       {USER_MENU_ITEMS.map((item, i) => (
