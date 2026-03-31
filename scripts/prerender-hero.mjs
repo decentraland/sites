@@ -59,7 +59,10 @@ const criticalCss = `
   }
   @media (min-width: 992px) {
     #hero-shell-nav { height: 92px; padding: 16px 54px; }
-    #hero-shell-nav::before { background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+    #hero-shell-nav::before {
+      background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none;
+      transition: background 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+    }
     #hero-shell-nav .nav-logo svg { display: none; }
     #hero-shell-nav .nav-logo-full { display: block; }
   }
@@ -140,7 +143,7 @@ const criticalCss = `
     #hero-shell .hero-content {
       gap: 60px; padding: 0 0 120px; max-width: none;
     }
-    #hero-shell .hero-title { font-size: 3.75rem; font-weight: 600; letter-spacing: -0.5px; }
+    #hero-shell .hero-title { font-size: 60px; font-weight: 600; letter-spacing: -0.5px; }
     #hero-shell .hero-subtitle { display: none; }
     /* Hide mobile iOS elements, show desktop CTA */
     #hero-shell .hero-btn:not(.hero-desktop-btn) { display: none; }
@@ -200,13 +203,15 @@ const heroTabletUrl = tabletImgMatch?.[1] ?? './hero_tablet.webp'
 const heroDesktopUrl = desktopImgMatch?.[1] ?? './landing_hero.webp'
 
 // Extract base URL from any CDN asset path for non-preloaded assets
-const baseMatch = heroMobileUrl.match(/^(.*\/)hero_mobile\.webp$/)
-const cdnBase = baseMatch?.[1] ?? './'
+// Extract base URL from the <base> tag or <script src> that Vite writes
+const baseTagMatch = html.match(/<base[^>]*href="([^"]*)"/)
+const scriptSrcMatch = html.match(/<script[^>]*src="([^"]*?)assets\//)
+const cdnBase = baseTagMatch?.[1] ?? scriptSrcMatch?.[1] ?? '/'
 
 const finalHeroHtml = heroHtml
-  .replace('./hero_mobile.webp', heroMobileUrl)
-  .replace('./hero_tablet.webp', heroTabletUrl)
-  .replace(/\.\/landing_hero\.webp/g, heroDesktopUrl)
+  .replace('./hero_mobile.webp', `${cdnBase}hero_mobile.webp`)
+  .replace('./hero_tablet.webp', `${cdnBase}hero_tablet.webp`)
+  .replace(/\.\/landing_hero\.webp/g, `${cdnBase}landing_hero.webp`)
   .replace('./dcl_logo_and_name.svg', `${cdnBase}dcl_logo_and_name.svg`)
 
 // Place the hero shell BEFORE #root, not inside it.  This is critical for LCP:
