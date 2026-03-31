@@ -146,7 +146,10 @@ const criticalCss = `
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: rgba(0,0,0,0);
   }
-  #hero-shell .hero-desktop-btn svg { width: 32px; height: 32px; }
+  #hero-shell .hero-desktop-btn .hero-btn-icon {
+    display: flex; width: 32px; height: 32px; margin-left: 0; margin-right: -4px;
+  }
+  #hero-shell .hero-desktop-btn .hero-btn-icon svg { width: 32px; height: 32px; }
 
   /* DESKTOP overrides */
   @media (min-width: 992px) {
