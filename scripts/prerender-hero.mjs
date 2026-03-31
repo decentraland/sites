@@ -30,88 +30,43 @@ const criticalCss = `
 <style data-hero-shell>
   body { margin: 0; background-color: #000; }
 
-  /* NAVBAR header — computed from .css-5pnr1f */
+  /* NAVBAR — minimal style matching LandingNavbar not-signed-in */
   #hero-shell-nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    width: 100%;
-    height: 66px;
-    z-index: 1100;
-    display: flex;
-    flex-direction: column;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1100;
+    display: flex; align-items: center; justify-content: space-between;
     box-sizing: border-box;
-    flex-shrink: 0;
-    background-color: rgba(24, 20, 26, 0.9);
-    backdrop-filter: saturate(1.8) blur(20px);
-    -webkit-backdrop-filter: saturate(1.8) blur(20px);
-    box-shadow: rgba(0,0,0,0.2) 0px 2px 4px -1px, rgba(0,0,0,0.14) 0px 4px 5px 0px, rgba(0,0,0,0.12) 0px 1px 10px 0px;
-    color: rgb(255, 255, 255);
     font-family: Inter, Helvetica, Arial, sans-serif;
-    font-size: 16px;
+    color: #f0f0f0; font-size: 16px;
     -webkit-font-smoothing: antialiased;
+    height: 64px; padding: 12px 16px;
   }
-  /* Toolbar — computed: height 66px, padding 0 16px, align-items center */
-  #hero-shell-nav .nav-toolbar {
-    display: flex;
-    align-items: center;
-    position: relative;
-    height: 66px;
-    min-height: 56px;
-    padding: 0 16px;
+  /* Mobile: show blur bg */
+  #hero-shell-nav::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: -1;
+    background: rgba(22, 21, 24, 0.75);
+    box-shadow: 0px 1.333px 24px rgba(0,0,0,0.12), 0px 8px 13.333px rgba(0,0,0,0.14), 0px 4px 6.667px rgba(0,0,0,0.2);
+    backdrop-filter: saturate(1.8) blur(20px); -webkit-backdrop-filter: saturate(1.8) blur(20px);
   }
-  /* Wrapper — computed: justify-content space-between, width 100% */
-  #hero-shell-nav .nav-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 66px;
-    width: 100%;
+  #hero-shell-nav .nav-logo { display: flex; align-items: center; text-decoration: none; }
+  #hero-shell-nav .nav-logo svg { width: 40px; height: 40px; flex-shrink: 0; }
+  #hero-shell-nav .nav-logo-full { display: none; height: 40px; }
+  #hero-shell-nav .nav-signin {
+    all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+    padding: 8px 22px; border: 1px solid #fcfcfc; border-radius: 6px;
+    font-family: Inter, Helvetica, Arial, sans-serif; font-weight: 600; font-size: 15px;
+    line-height: 24px; letter-spacing: 0.46px; text-transform: uppercase; color: #fcfcfc;
+    cursor: pointer; white-space: nowrap;
   }
-  /* Logo + hamburger container — computed: width 85px, justify space-between */
-  #hero-shell-nav .nav-left {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 85px;
-    height: 66px;
+  @media (min-width: 992px) {
+    #hero-shell-nav { height: 92px; padding: 16px 54px; }
+    #hero-shell-nav::before { background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+    #hero-shell-nav .nav-logo svg { display: none; }
+    #hero-shell-nav .nav-logo-full { display: block; }
   }
-  /* Link wrapping logo — computed: display block, width 32px, height 36px */
-  #hero-shell-nav .nav-logo {
-    display: block;
-    width: 32px; height: 36px;
-    text-decoration: underline;
-    text-decoration-color: rgba(255, 45, 85, 0.4);
-    color: rgb(255, 45, 85);
-    cursor: pointer;
-    z-index: 1100;
-  }
-  /* Logo SVG — computed: 32x32, display inline-block, fill none */
-  #hero-shell-nav .nav-logo svg {
-    width: 32px; height: 32px;
-    display: inline-block;
-    flex-shrink: 0;
-    fill: none;
-    overflow: hidden;
-    user-select: none;
-  }
-  /* Hamburger button — computed: 32x32 */
-  #hero-shell-nav .nav-menu {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 32px; height: 32px; min-width: 32px;
-    cursor: pointer; background: transparent; border: none; padding: 0;
-    position: relative;
-  }
-  #hero-shell-nav .nav-bar {
-    position: absolute; left: 0; width: 100%; height: 2px;
-    background: rgba(240,240,240,1);
-  }
-  #hero-shell-nav .nav-bar:first-child { top: 8px; }
-  #hero-shell-nav .nav-bar:last-child { top: 21px; }
 
-  /* HERO CONTAINER — position:fixed so it doesn't push #root down when
-     reparented outside it, and stays visible as LCP while React loads. */
+  /* HERO CONTAINER */
   #hero-shell {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100dvh;
     display: flex; align-items: flex-end; justify-content: center;
     overflow: hidden; background-color: #39055C; z-index: 1000;
   }
@@ -119,7 +74,7 @@ const criticalCss = `
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
   }
   #hero-shell .hero-bg img {
-    width: 100%; height: 100%; object-fit: cover; display: block;
+    object-fit: cover; display: block;
   }
   #hero-shell .gradient-top {
     position: absolute; top: 0; left: 0; width: 100%; height: 24.3%;
@@ -136,125 +91,70 @@ const criticalCss = `
     }
   }
 
-  /* HERO CONTENT — computed from 4th div: gap 24px, padding 0 24px 96px */
+  /* HERO CONTENT — mobile: iOS-style layout */
   #hero-shell .hero-content {
-    position: relative; z-index: 2;
+    position: relative; z-index: 2; box-sizing: border-box;
     display: flex; flex-direction: column; align-items: center; text-align: center;
-    gap: 24px;
-    padding: 0 24px 96px;
+    gap: 24px; max-width: 393px; width: 100%;
+    padding: 0 24px 64px;
   }
-
-  /* TITLE — computed: font-size 36px, line-height 43.2px, letter-spacing -0.5px */
   #hero-shell .hero-title {
-    margin: 0;
-    font-family: Inter, Helvetica, Arial, sans-serif;
-    font-size: 36px;
-    color: rgb(255, 255, 255);
-    font-weight: 600;
-    line-height: 43.2px;
-    letter-spacing: -0.5px;
-    -webkit-font-smoothing: antialiased;
+    margin: 0; font-family: Inter, Helvetica, Arial, sans-serif;
+    font-weight: 700; font-size: 40px; line-height: 1.2;
+    color: white; -webkit-font-smoothing: antialiased;
   }
-
-  /* CTA wrapper — fixed height to prevent title shift on async load */
-  #hero-shell .hero-cta-wrapper {
-    display: flex; flex-direction: column; align-items: center; gap: 24px;
-    min-height: 52px; justify-content: flex-start;
+  #hero-shell .hero-subtitle {
+    margin: 0; font-family: Inter, Helvetica, Arial, sans-serif;
+    font-weight: 500; font-size: 20px; line-height: 28px;
+    color: #fcfcfc; text-shadow: 0 2px 4px rgba(0,0,0,0.25);
   }
-
-  /* BUTTON — computed: 240x52, border-radius 6px, font-size 14px, padding 6px 16px */
+  /* Mobile: "Send Yourself the Link" button */
   #hero-shell .hero-btn {
-    display: flex; align-items: center; justify-content: center;
-    box-sizing: border-box; cursor: pointer;
-    appearance: none; -webkit-appearance: none;
-    border: none; outline: 0; text-decoration: none;
-    font-family: Inter, Helvetica, Arial, sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 24px;
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
-    white-space: nowrap;
-    color: rgb(252, 252, 252);
-    background-color: rgb(255, 45, 85);
-    box-shadow: none;
-    border-radius: 6px;
-    gap: 24px;
-    width: 240px; height: 52px;
-    min-width: 64px;
-    padding: 6px 16px;
-    position: relative;
-    vertical-align: middle;
-    user-select: none;
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-    -webkit-font-smoothing: antialiased;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: calc(100% - 32px); max-width: 345px; height: 46px;
+    border-radius: 12px; background-color: #FF2D55; border: none;
+    font-family: Inter, sans-serif; font-weight: 700;
+    font-size: 16px; color: #fcfcfc; text-transform: uppercase;
+    cursor: pointer; box-shadow: rgba(0,0,0,0.4) 0px 2px 8px;
   }
-  /* Button endIcon span — computed: 32x32, margin-left 0, margin-right -4px */
-  #hero-shell .hero-btn-icon {
-    display: flex;
-    width: 32px; height: 32px;
-    margin-left: 0; margin-right: -4px;
+  #hero-shell .hero-btn svg { width: 20px; height: 20px; }
+  /* Coming Soon row */
+  #hero-shell .hero-coming-soon {
+    display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px;
   }
-  #hero-shell .hero-btn-icon svg { width: 32px; height: 32px; }
-
-  /* Already have an account — hidden on mobile, shown on desktop */
-  #hero-shell .hero-already-user {
-    display: none;
-    font-family: Inter, Helvetica, Arial, sans-serif;
-    font-size: 16px;
-    line-height: 1.75;
-    color: rgb(255, 255, 255);
-    align-items: center;
-    gap: 4px;
-    -webkit-font-smoothing: antialiased;
+  #hero-shell .hero-coming-soon svg { width: 24px; height: 32px; }
+  #hero-shell .hero-coming-soon span {
+    font-family: Inter, sans-serif; font-weight: 500; font-size: 18px; color: #fcfcfc;
   }
-  #hero-shell .hero-already-user a {
-    color: #FF2D55;
-    text-decoration: none;
-    text-transform: uppercase;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+  /* Desktop HANG OUT NOW button — hidden on mobile */
+  #hero-shell .hero-cta-wrapper { display: none; }
+  #hero-shell .hero-desktop-btn {
+    width: 270px; max-width: none; height: 60px; gap: 24px;
+    font-size: 19.89px; padding: 20px 40px; border-radius: 16px;
+    letter-spacing: 0.61px; text-transform: uppercase;
   }
-  #hero-shell .hero-already-user a svg { width: 24px; height: 24px; }
+  #hero-shell .hero-desktop-btn svg { width: 32px; height: 32px; }
 
   /* DESKTOP overrides */
-  @media (min-width: 991px) {
-    #hero-shell .hero-cta-wrapper {
-      min-height: 112px;
-    }
+  @media (min-width: 992px) {
     #hero-shell .hero-content {
-      gap: 60px; padding: 0 0 120px;
+      gap: 60px; padding: 0 0 120px; max-width: none;
     }
-    #hero-shell .hero-title {
-      font-size: 3rem; line-height: 1.2;
-    }
-    #hero-shell .hero-btn {
-      width: 270px; height: 60px;
-      font-size: 19.89px; padding: 20px 40px;
-      line-height: 31.82px; letter-spacing: 0.61px;
-      border-radius: 16px;
-      box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 8px;
-    }
-    #hero-shell .hero-already-user {
-      display: flex;
-    }
+    #hero-shell .hero-title { font-size: 3.75rem; font-weight: 600; letter-spacing: -0.5px; }
+    #hero-shell .hero-subtitle { display: none; }
+    /* Hide mobile iOS elements, show desktop CTA */
+    #hero-shell .hero-btn:not(.hero-desktop-btn) { display: none; }
+    #hero-shell .hero-coming-soon { display: none; }
+    #hero-shell .hero-cta-wrapper { display: flex; flex-direction: column; align-items: center; gap: 24px; min-height: 112px; }
   }
 </style>`
 
 const heroHtml = `<div id="hero-shell-nav">
-  <div class="nav-toolbar">
-    <div class="nav-wrapper">
-      <div class="nav-left">
-        <a class="nav-logo" href="https://decentraland.org" aria-label="Decentraland home">${dclLogoSvg}</a>
-        <button class="nav-menu" aria-label="toggle menu">
-          <span class="nav-bar"></span>
-          <span class="nav-bar"></span>
-        </button>
-      </div>
-    </div>
-  </div>
+  <a class="nav-logo" href="https://decentraland.org" aria-label="Decentraland home">
+    ${dclLogoSvg}
+    <img class="nav-logo-full" src="./dcl_logo_and_name.svg" alt="Decentraland" />
+  </a>
+  <button class="nav-signin">Sign In</button>
 </div>
 <div id="hero-shell">
   <div class="hero-bg">
@@ -262,16 +162,21 @@ const heroHtml = `<div id="hero-shell-nav">
       <source srcset="./hero_mobile.webp" media="(max-width: 599px)" />
       <source srcset="./hero_tablet.webp" media="(min-width: 600px) and (max-width: 991px)" />
       <source srcset="./landing_hero.webp" media="(min-width: 992px)" />
-      <img src="./landing_hero.webp" alt="" />
+      <img src="./hero_mobile.webp" alt="" />
     </picture>
   </div>
   <div class="gradient-top"></div>
   <div class="gradient-bottom"></div>
   <div class="hero-content">
     <h3 class="hero-title">Close the Feed. Come Hang Out.</h3>
+    <p class="hero-subtitle">Switch to desktop to download.</p>
+    <button class="hero-btn" type="button">Send Yourself the Link<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg></button>
+    <div class="hero-coming-soon">
+      <svg width="24" height="32" viewBox="-52.01 0 560.035 560.035" xmlns="http://www.w3.org/2000/svg" fill="white"><path d="M380.844 297.529c.787 84.752 74.349 112.955 75.164 113.314-.622 1.988-11.754 40.191-38.756 79.652-23.343 34.117-47.568 68.107-85.731 68.811-37.499.691-49.557-22.236-92.429-22.236-42.859 0-56.256 21.533-91.753 22.928-36.837 1.395-64.889-36.891-88.424-70.883-48.093-69.53-84.846-196.475-35.496-282.165 24.516-42.554 68.328-69.501 115.882-70.192 36.173-.69 70.315 24.336 92.429 24.336 22.1 0 63.59-30.096 107.208-25.676 18.26.76 69.517 7.376 102.429 55.552-2.652 1.644-61.159 35.704-60.523 106.559M310.369 89.418C329.926 65.745 343.089 32.79 339.498 0 311.308 1.133 277.22 18.785 257 42.445c-18.121 20.952-33.991 54.487-29.709 86.628 31.421 2.431 63.52-15.967 83.078-39.655"/></svg>
+      <span>Coming Soon</span>
+    </div>
     <div class="hero-cta-wrapper">
-      <button class="hero-btn" type="button">HANG OUT NOW<span class="hero-btn-icon">${jumpInSvg}</span></button>
-      <span class="hero-already-user">Already have an account? <a href="/download_success">DOWNLOAD <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/></svg></a></span>
+      <button class="hero-btn hero-desktop-btn" type="button">HANG OUT NOW<span class="hero-btn-icon">${jumpInSvg}</span></button>
     </div>
   </div>
 </div>
@@ -294,10 +199,15 @@ const heroMobileUrl = mobileImgMatch?.[1] ?? './hero_mobile.webp'
 const heroTabletUrl = tabletImgMatch?.[1] ?? './hero_tablet.webp'
 const heroDesktopUrl = desktopImgMatch?.[1] ?? './landing_hero.webp'
 
+// Extract base URL from any CDN asset path for non-preloaded assets
+const baseMatch = heroMobileUrl.match(/^(.*\/)hero_mobile\.webp$/)
+const cdnBase = baseMatch?.[1] ?? './'
+
 const finalHeroHtml = heroHtml
   .replace('./hero_mobile.webp', heroMobileUrl)
   .replace('./hero_tablet.webp', heroTabletUrl)
   .replace(/\.\/landing_hero\.webp/g, heroDesktopUrl)
+  .replace('./dcl_logo_and_name.svg', `${cdnBase}dcl_logo_and_name.svg`)
 
 // Place the hero shell BEFORE #root, not inside it.  This is critical for LCP:
 // if the shell is inside #root, either createRoot destroys it (losing the LCP
