@@ -10,7 +10,7 @@ const HeroContainer = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
   backgroundColor: '#39055C',
   [theme.breakpoints.down('sm')]: {
-    minHeight: '100dvh'
+    minHeight: '100svh'
   }
 }))
 
