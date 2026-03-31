@@ -7,7 +7,7 @@ const HangOutButton = styled(Button)(({ theme }) => ({
     color: '#FCFCFC',
     width: 270,
     height: 60,
-    borderRadius: 16,
+    borderRadius: '16px !important',
     padding: '20px 40px',
     gap: 24,
     fontSize: 19.89,
