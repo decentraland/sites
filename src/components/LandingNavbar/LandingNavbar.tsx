@@ -80,8 +80,7 @@ import {
   UserCardMenu,
   UserCardMenuItem,
   UserCardName,
-  UserCardWrapper,
-  Wordmark
+  UserCardWrapper
 } from './LandingNavbar.styled'
 
 interface NotificationItem {
@@ -338,22 +337,17 @@ const LandingNavbar = memo(function LandingNavbar({
     return (
       <NavBarRoot ref={navRef} className="minimal">
         <NavBarLeft>
-          <LogoLink href="https://decentraland.org" aria-label="Decentraland Home">
+          <LogoLink href="https://decentraland.org" aria-label="Decentraland Home" className="mobile-only">
             <DclLogo />
           </LogoLink>
-          <Wordmark>Decentraland</Wordmark>
+          <LogoLink href="https://decentraland.org" aria-label="Decentraland Home" className="desktop-only">
+            <img src="/dcl_logo_and_name.svg" alt="Decentraland" style={{ height: 40 }} />
+          </LogoLink>
         </NavBarLeft>
         <NavBarRight>
           <SignInButton onClick={onClickSignIn} disabled={isSigningIn}>
             {isSigningIn ? l('component.landing.navbar.signing_in') : l('component.landing.navbar.sign_in')}
           </SignInButton>
-          <HamburgerButton
-            onClick={toggleMobileMenu}
-            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={mobileMenuOpen}
-          >
-            {mobileMenuOpen ? <CloseIcon /> : <HamburgerIcon />}
-          </HamburgerButton>
         </NavBarRight>
       </NavBarRoot>
     )

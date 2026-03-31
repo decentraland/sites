@@ -81,6 +81,14 @@ const NavBarLeft = styled('div')({
   },
   [DESKTOP_BREAKPOINT]: {
     gap: 48
+  },
+  ['& .mobile-only']: {
+    display: 'flex',
+    [DESKTOP_BREAKPOINT]: { display: 'none' }
+  },
+  ['& .desktop-only']: {
+    display: 'none',
+    [DESKTOP_BREAKPOINT]: { display: 'flex' }
   }
 })
 

@@ -56,12 +56,12 @@ const MobileCarousel = styled(Box)(({ theme }) => ({
   '& .swiper-slide': {
     padding: `0 ${theme.spacing(2)}`,
     boxSizing: 'border-box',
+    height: 486,
     // eslint-disable-next-line @typescript-eslint/naming-convention
     '& > *': {
-      maxWidth: 358,
       minWidth: 0,
       width: '100%',
-      margin: '0 auto'
+      height: '100%'
     }
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
