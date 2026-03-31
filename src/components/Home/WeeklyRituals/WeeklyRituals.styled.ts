@@ -44,24 +44,28 @@ const CarouselWrapper = styled(Box)(({ theme }) => ({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .swiper-slide': {
     height: 370,
+    maxWidth: 750,
     borderRadius: 16,
     overflow: 'hidden',
     opacity: 0.5,
     transition: 'opacity 0.3s ease, box-shadow 0.3s ease',
-    [theme.breakpoints.down('sm')]: {
+    // Tablet + mobile: auto height, full opacity, show mobile card images
+    ['@media (max-width: 991px)']: {
       height: 'auto',
       opacity: 1,
-      borderRadius: 16,
       overflow: 'hidden',
-      padding: `0 ${theme.spacing(2)}`,
+      padding: `0 ${theme.spacing(1)}`,
       boxSizing: 'border-box'
+    },
+    [theme.breakpoints.down('sm')]: {
+      padding: `0 ${theme.spacing(2)}`
     }
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .swiper-slide-active, & .swiper-slide-next': {
     opacity: 1,
     boxShadow: '0px 2px 8px 8px rgba(255, 255, 255, 0.15)',
-    [theme.breakpoints.down('sm')]: {
+    ['@media (max-width: 991px)']: {
       boxShadow: 'none'
     }
   },

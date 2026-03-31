@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { getEnv } from '../../config/env'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import {
+  AccountIcon,
   BellIcon,
   ChevronDownIcon,
   ChevronUpIcon,
@@ -11,7 +12,10 @@ import {
   ExternalLinkIcon,
   HamburgerIcon,
   JumpInIcon,
-  LogoutIcon
+  LogoutIcon,
+  SettingsIcon,
+  ShoppingBagIcon,
+  WearableIcon
 } from './icons'
 import { DROPDOWN_SECTIONS, MENU_CONFIG, USER_MENU_ITEMS } from './navbarConfig'
 import type { DropdownSection } from './navbarConfig'
@@ -58,18 +62,19 @@ import {
   NotificationItemDescription,
   NotificationItemImage,
   NotificationItemTime,
-  NotificationItemType,
+  NotificationItemTitle,
   NotificationList,
   NotificationListItem,
   NotificationPanel,
-  NotificationTab,
-  NotificationTabs,
   NotificationTitle,
   NotificationWrapper,
   SignInButton,
   UserCard,
+  UserCardAddress,
+  UserCardAddressLabel,
   UserCardAvatarBody,
   UserCardAvatarContainer,
+  UserCardCopyButton,
   UserCardDivider,
   UserCardLogout,
   UserCardMenu,
@@ -157,7 +162,6 @@ const LandingNavbar = memo(function LandingNavbar({
   const dropdownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const unreadCount = notifications?.items?.filter(n => !n.read).length ?? 0
-  const activeNotifTab = notifications?.activeTab ?? 'newest'
 
   const onClickNotificationBell = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -423,49 +427,34 @@ const LandingNavbar = memo(function LandingNavbar({
                     <NotificationHeader>
                       <NotificationTitle>{l('component.landing.navbar.notifications_title')}</NotificationTitle>
                     </NotificationHeader>
-                    <NotificationTabs>
-                      <NotificationTab
-                        className={activeNotifTab === 'newest' ? 'active' : ''}
-                        onClick={() => notifications?.onChangeTab(null, 'newest')}
-                      >
-                        {l('component.landing.navbar.notifications_tab_new')} {unreadCount > 0 && `(${unreadCount})`}
-                      </NotificationTab>
-                      <NotificationTab
-                        className={activeNotifTab === 'read' ? 'active' : ''}
-                        onClick={() => notifications?.onChangeTab(null, 'read')}
-                      >
-                        {l('component.landing.navbar.notifications_tab_seen')}
-                      </NotificationTab>
-                    </NotificationTabs>
                     <NotificationList>
                       {notifications.isLoading ? (
                         <NotificationEmpty>{l('component.landing.navbar.notifications_loading')}</NotificationEmpty>
                       ) : (
                         (() => {
-                          const filtered = notifications.items.filter(item => (activeNotifTab === 'newest' ? !item.read : item.read))
-                          if (filtered.length === 0) {
-                            return (
-                              <NotificationEmpty>
-                                {activeNotifTab === 'newest'
-                                  ? l('component.landing.navbar.notifications_empty_new')
-                                  : l('component.landing.navbar.notifications_empty_read')}
-                              </NotificationEmpty>
-                            )
+                          const items = notifications.items
+                          if (items.length === 0) {
+                            return <NotificationEmpty>{l('component.landing.navbar.notifications_empty_new')}</NotificationEmpty>
                           }
-                          const metadataOf = (item: NotificationItem) => item.metadata as Record<string, string> | undefined
-                          return filtered.slice(0, 30).map(item => {
-                            const meta = metadataOf(item)
-                            const imageUrl = meta?.image
-                            const description = meta?.description || meta?.title
+                          return items.slice(0, 30).map(item => {
+                            const meta = item.metadata as Record<string, string> | undefined
+                            const imageUrl = meta?.image || meta?.nftImage || meta?.thumbnail || meta?.nftImageUrl
+                            const title = meta?.title || meta?.nftName || formatNotificationType(item.type)
+                            const description = meta?.description || meta?.message
+                            const link = meta?.link || meta?.url
                             return (
-                              <NotificationListItem key={item.id} className={!item.read ? 'unread' : ''}>
-                                <NotificationDot className={!item.read ? 'unread' : ''} />
+                              <NotificationListItem
+                                key={item.id}
+                                onClick={() => link && window.open(link, '_blank', 'noopener')}
+                                style={{ cursor: link ? 'pointer' : 'default' }}
+                              >
                                 <NotificationItemImage>{imageUrl ? <img src={imageUrl} alt="" /> : <BellIcon />}</NotificationItemImage>
                                 <NotificationItemContent>
-                                  <NotificationItemType>{formatNotificationType(item.type)}</NotificationItemType>
+                                  <NotificationItemTitle>{title}</NotificationItemTitle>
                                   {description && <NotificationItemDescription>{description}</NotificationItemDescription>}
                                   <NotificationItemTime>{formatTimeAgo(item.timestamp)}</NotificationItemTime>
                                 </NotificationItemContent>
+                                {!item.read && <NotificationDot className="unread" />}
                               </NotificationListItem>
                             )
                           })
@@ -487,9 +476,23 @@ const LandingNavbar = memo(function LandingNavbar({
                       {bodyUrl ? <UserCardAvatarBody src={bodyUrl} alt={userName || 'Avatar'} /> : null}
                     </UserCardAvatarContainer>
                     <UserCardMenu>
-                      <UserCardName title={userName}>{userName}</UserCardName>
-                      {USER_MENU_ITEMS.map(item => (
+                      <div style={{ paddingLeft: 16, paddingBottom: 8 }}>
+                        <UserCardName title={userName}>{userName}</UserCardName>
+                        <UserCardAddressLabel>{l('component.landing.navbar.wallet_address')}</UserCardAddressLabel>
+                        <UserCardAddress>
+                          {shortAddress}
+                          <UserCardCopyButton onClick={copyAddress} aria-label="Copy address">
+                            <CopyIcon />
+                          </UserCardCopyButton>
+                        </UserCardAddress>
+                      </div>
+                      <UserCardDivider />
+                      {USER_MENU_ITEMS.map((item, i) => (
                         <UserCardMenuItem key={item.labelKey} href={item.url}>
+                          {i === 0 && <AccountIcon />}
+                          {i === 1 && <WearableIcon />}
+                          {i === 2 && <SettingsIcon />}
+                          {i === 3 && <ShoppingBagIcon />}
                           {l(item.labelKey)}
                         </UserCardMenuItem>
                       ))}

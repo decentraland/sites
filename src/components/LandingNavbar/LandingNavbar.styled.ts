@@ -319,7 +319,7 @@ const NotificationPanel = styled('div')({
   top: '100%',
   right: -12,
   marginTop: 16,
-  width: 384,
+  width: 390,
   maxHeight: '70vh',
   zIndex: 1102,
   background: GLASS_BG,
@@ -332,6 +332,8 @@ const NotificationPanel = styled('div')({
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
+  paddingTop: 12,
+  paddingBottom: 24,
   animation: `${slideDown} 0.15s ease forwards`,
   [MOBILE_BREAKPOINT]: {
     position: 'fixed',
@@ -348,52 +350,15 @@ const NotificationHeader = styled('div')({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: '16px 16px 12px',
-  borderBottom: '0.5px solid rgba(255, 255, 255, 0.1)'
+  padding: '0 12px 12px 24px',
+  borderBottom: '0.5px solid #5e5b67'
 })
 
 const NotificationTitle = styled('span')({
   fontFamily: 'Inter, Helvetica, Arial, sans-serif',
   fontWeight: 600,
-  fontSize: 16,
-  color: dclColors.neutral.white
-})
-
-const NotificationTabs = styled('div')({
-  display: 'flex',
-  borderBottom: '0.5px solid rgba(255, 255, 255, 0.1)',
-  padding: '0 12px'
-})
-
-const NotificationTab = styled('button')({
-  all: 'unset',
-  flex: 1,
-  padding: '10px 8px',
-  fontFamily: 'Inter, Helvetica, Arial, sans-serif',
-  fontWeight: 600,
-  fontSize: 14,
-  color: dclColors.neutral.gray4,
-  textAlign: 'center',
-  cursor: 'pointer',
-  borderBottom: '2px solid transparent',
-  transition: 'color 0.15s ease, border-color 0.15s ease',
-  ['&.active']: {
-    color: dclColors.neutral.white,
-    borderBottomColor: dclColors.base.primary
-  },
-  ['&:hover']: {
-    color: dclColors.neutral.white
-  }
-})
-
-const NotificationUnreadBadge = styled('span')({
-  fontFamily: 'Inter, Helvetica, Arial, sans-serif',
-  fontSize: 12,
-  fontWeight: 600,
-  color: dclColors.base.primary,
-  backgroundColor: 'rgba(255, 45, 85, 0.15)',
-  borderRadius: 8,
-  padding: '2px 8px'
+  fontSize: 20,
+  color: '#fcfcfc'
 })
 
 const NotificationList = styled('div')({
@@ -424,19 +389,19 @@ const NotificationListItem = styled('div')({
   display: 'flex',
   alignItems: 'center',
   gap: 8,
-  padding: '8px 8px',
+  padding: '8px 16px',
+  borderRadius: 8,
+  width: '100%',
+  boxSizing: 'border-box',
   transition: 'background-color 0.15s ease',
   ['&:hover']: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)'
-  },
-  ['&.unread']: {
-    backgroundColor: 'rgba(255, 45, 85, 0.03)'
   }
 })
 
 const NotificationItemImage = styled('div')({
-  width: 48,
-  height: 48,
+  width: 56,
+  height: 56,
   borderRadius: '50%',
   backgroundColor: 'rgba(103, 99, 112, 0.4)',
   display: 'flex',
@@ -446,8 +411,9 @@ const NotificationItemImage = styled('div')({
   overflow: 'hidden',
   position: 'relative',
   ['& img']: {
-    width: '80%',
-    height: '80%',
+    width: 48,
+    height: 48,
+    borderRadius: '50%',
     objectFit: 'contain'
   }
 })
@@ -468,15 +434,14 @@ const NotificationItemContent = styled('div')({
   minWidth: 0,
   display: 'flex',
   flexDirection: 'column',
-  gap: 2
+  gap: 4
 })
 
-const NotificationItemType = styled('div')({
+const NotificationItemTitle = styled('div')({
   fontFamily: 'Inter, Helvetica, Arial, sans-serif',
-  fontSize: 14,
+  fontSize: 16,
   fontWeight: 600,
-  color: dclColors.neutral.white,
-  textTransform: 'capitalize',
+  color: '#fcfcfc',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap'
@@ -485,15 +450,17 @@ const NotificationItemType = styled('div')({
 const NotificationItemTime = styled('div')({
   fontFamily: 'Inter, Helvetica, Arial, sans-serif',
   fontSize: 12,
-  color: dclColors.neutral.gray4,
-  marginTop: 2
+  fontWeight: 400,
+  color: '#a09ba8'
 })
 
 const NotificationItemDescription = styled('div')({
   fontFamily: 'Inter, Helvetica, Arial, sans-serif',
-  fontSize: 13,
+  fontSize: 12,
   fontWeight: 400,
-  color: dclColors.neutral.gray4,
+  color: '#ecebed',
+  lineHeight: '20px',
+  maxWidth: 280,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap'
@@ -777,15 +744,15 @@ const UserCard = styled('div')({
   padding: 12,
   gap: 24,
   animation: `${slideDown} 0.15s ease forwards`,
-  minWidth: 340,
+  minWidth: 484,
   [DESKTOP_BREAKPOINT]: {
     display: 'flex'
   }
 })
 
 const UserCardAvatarContainer = styled('div')({
-  width: 120,
-  minHeight: 180,
+  width: 151,
+  minHeight: 240,
   borderRadius: 12,
   border: '0.5px solid #c640cd',
   background: 'linear-gradient(180deg, rgba(198, 64, 205, 0.2) 0%, rgba(105, 31, 169, 0.2) 100%)',
@@ -817,16 +784,49 @@ const UserCardName = styled('span')({
   fontFamily: 'Inter, Helvetica, Arial, sans-serif',
   fontWeight: 600,
   fontSize: 20,
-  color: dclColors.neutral.softWhite,
-  marginBottom: 8,
+  color: '#fcfcfc',
+  marginBottom: 4,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap'
 })
 
+const UserCardAddressLabel = styled('span')({
+  fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+  fontWeight: 400,
+  fontSize: 12,
+  color: '#cfcdd4'
+})
+
+const UserCardAddress = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+  fontWeight: 400,
+  fontSize: 12,
+  color: '#fcfcfc',
+  marginBottom: 4
+})
+
+const UserCardCopyButton = styled('button')({
+  all: 'unset',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  color: '#fcfcfc',
+  opacity: 0.7,
+  transition: 'opacity 0.15s ease',
+  ['&:hover']: {
+    opacity: 1
+  }
+})
+
 const UserCardMenuItem = styled('a')({
   display: 'flex',
   alignItems: 'center',
+  gap: 12,
   padding: '8px 16px',
   borderRadius: 12,
   fontFamily: 'Inter, Helvetica, Arial, sans-serif',
@@ -845,6 +845,11 @@ const UserCardMenuItem = styled('a')({
   ['&:focus-visible']: {
     outline: `2px solid ${dclColors.base.primary}`,
     outlineOffset: 2
+  },
+  ['& svg']: {
+    width: 20,
+    height: 20,
+    flexShrink: 0
   }
 })
 
@@ -1020,19 +1025,19 @@ export {
   NotificationItemDescription,
   NotificationItemImage,
   NotificationItemTime,
-  NotificationItemType,
+  NotificationItemTitle,
   NotificationList,
   NotificationListItem,
   NotificationPanel,
-  NotificationTab,
-  NotificationTabs,
   NotificationTitle,
-  NotificationUnreadBadge,
   NotificationWrapper,
   SignInButton,
   UserCard,
+  UserCardAddress,
+  UserCardAddressLabel,
   UserCardAvatarBody,
   UserCardAvatarContainer,
+  UserCardCopyButton,
   UserCardDivider,
   UserCardLogout,
   UserCardMenu,
