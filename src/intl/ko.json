@@ -456,7 +456,7 @@
         "notifications_empty_new": "모두 확인했습니다!",
         "notifications_empty_read": "읽은 알림이 없습니다",
         "notifications_loading": "로딩 중...",
-        "wallet_address": "지갑 주소",
+        "wallet_address": "User ID",
         "logout": "로그아웃",
         "shop_all": "전체 보기",
         "wearables": "웨어러블",

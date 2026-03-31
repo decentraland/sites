@@ -456,7 +456,7 @@
         "notifications_empty_new": "Vous êtes à jour !",
         "notifications_empty_read": "Aucune notification lue",
         "notifications_loading": "Chargement...",
-        "wallet_address": "Adresse du portefeuille",
+        "wallet_address": "User ID",
         "logout": "Déconnexion",
         "shop_all": "Tout voir",
         "wearables": "Vêtements",
