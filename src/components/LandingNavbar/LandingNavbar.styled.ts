@@ -275,15 +275,6 @@ const NotificationWrapper = styled('div')({
   position: 'relative'
 })
 
-const NotificationOverlay = styled('div')({
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  zIndex: 1101
-})
-
 const NotificationPanel = styled('div')({
   position: 'absolute',
   top: '100%',
@@ -393,9 +384,8 @@ const NotificationEmpty = styled('div')({
 const NotificationListItem = styled('div')({
   display: 'flex',
   alignItems: 'center',
-  gap: 16,
-  padding: '8px 16px',
-  cursor: 'pointer',
+  gap: 8,
+  padding: '8px 8px',
   transition: 'background-color 0.15s ease',
   ['&:hover']: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)'
@@ -732,15 +722,6 @@ const MobileMenuSubItem = styled('a')({
   }
 })
 
-const UserCardOverlay = styled('div')({
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  zIndex: 1200
-})
-
 const UserCard = styled('div')({
   position: 'fixed',
   top: 92,
@@ -1003,7 +984,6 @@ export {
   NotificationItemType,
   NotificationList,
   NotificationListItem,
-  NotificationOverlay,
   NotificationPanel,
   NotificationTab,
   NotificationTabs,
@@ -1019,6 +999,5 @@ export {
   UserCardMenu,
   UserCardMenuItem,
   UserCardName,
-  UserCardOverlay,
   UserCardWrapper
 }

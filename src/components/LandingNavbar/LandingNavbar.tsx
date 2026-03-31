@@ -94,7 +94,7 @@ interface NotificationsData {
   isOpen: boolean
   activeTab: NotificationActiveTab
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
-  onClose: (e: React.MouseEvent | MouseEvent) => void
+  onClose: () => void
   onChangeTab: (e: unknown, tab: NotificationActiveTab) => void
 }
 
@@ -151,7 +151,7 @@ const LandingNavbar = memo(function LandingNavbar({
   const dropdownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const unreadCount = notifications?.items?.filter(n => !n.read).length ?? 0
-  const [activeNotifTab, setActiveNotifTab] = useState<NotificationActiveTab>('newest')
+  const activeNotifTab = notifications?.activeTab ?? 'newest'
 
   const onClickNotificationBell = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -168,7 +168,7 @@ const LandingNavbar = memo(function LandingNavbar({
     // Only call onClose if notifications are actually open — the hook's
     // handler is a toggle, so calling it when already closed would open them.
     if (notifications?.isOpen && notifications?.onClose) {
-      notifications.onClose(new MouseEvent('click') as unknown as React.MouseEvent)
+      notifications.onClose()
     }
   }, [notifications])
 
@@ -392,10 +392,16 @@ const LandingNavbar = memo(function LandingNavbar({
                       <NotificationTitle>{l('component.landing.navbar.notifications_title')}</NotificationTitle>
                     </NotificationHeader>
                     <NotificationTabs>
-                      <NotificationTab className={activeNotifTab === 'newest' ? 'active' : ''} onClick={() => setActiveNotifTab('newest')}>
+                      <NotificationTab
+                        className={activeNotifTab === 'newest' ? 'active' : ''}
+                        onClick={() => notifications?.onChangeTab(null, 'newest')}
+                      >
                         {l('component.landing.navbar.notifications_tab_new')} {unreadCount > 0 && `(${unreadCount})`}
                       </NotificationTab>
-                      <NotificationTab className={activeNotifTab === 'read' ? 'active' : ''} onClick={() => setActiveNotifTab('read')}>
+                      <NotificationTab
+                        className={activeNotifTab === 'read' ? 'active' : ''}
+                        onClick={() => notifications?.onChangeTab(null, 'read')}
+                      >
                         {l('component.landing.navbar.notifications_tab_seen')}
                       </NotificationTab>
                     </NotificationTabs>
