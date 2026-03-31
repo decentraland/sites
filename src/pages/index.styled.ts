@@ -10,8 +10,8 @@ const LoadingContainer = styled(Box)(({ theme }) => ({
 }))
 
 const SuspenseFallback = styled(Box)({
-  minHeight: '100vh',
-  background: 'linear-gradient(180deg, #39055C 0%, #1a0230 100%)'
+  minHeight: '250vh',
+  background: 'linear-gradient(180deg, #39055C 0%, #570F88 30%, #6814A0 50%, #39055C 75%, #1a0230 100%)'
 })
 
 const fadeIn = keyframes`

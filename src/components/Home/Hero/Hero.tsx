@@ -15,9 +15,15 @@ import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
 import { DownloadIcon } from './DownloadIcon'
+import { ShareIcon } from './ShareIcon'
 import {
   AlreadyUserDownloadLink,
   AlreadyUserText,
+  AppleIcon,
+  ComingSoonRow,
+  ComingSoonText,
+  GooglePlayButton,
+  GooglePlayImage,
   GradientBottom,
   GradientTop,
   HangOutButton,
@@ -32,11 +38,20 @@ import {
   HeroPlatformIcons,
   HeroPlatformLabel,
   HeroPlatformSeparator,
-  HeroTitle
+  HeroTitle,
+  MobileHeroContent,
+  MobileHeroSubtitle,
+  MobileHeroTitle,
+  SendLinkButton
 } from './Hero.styled'
 
 const heroImageDesktop = assetUrl('/landing_hero.webp')
+const heroImageTablet = assetUrl('/hero_tablet.webp')
 const heroImageMobile = assetUrl('/hero_mobile.webp')
+const googlePlayBadge = assetUrl('/google_play_cta.svg')
+
+const GOOGLE_PLAY_URL =
+  'https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&pcampaignid=web_share&utm_source=dcl_foundation&utm_medium=internal&utm_campaign=mobile_launch&utm_content=android&pli=1'
 
 const imageByOs: Record<string, string> = {
   [OperativeSystem.WINDOWS]: microsoftLogo,
@@ -63,6 +78,10 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
 
   const osImage = userAgentData ? imageByOs[userAgentData.os.name] : null
 
+  const isMobileAndroid = !!userAgentData?.mobile && userAgentData.os.name === 'Android'
+  const isMobileIos = !!userAgentData?.mobile && userAgentData.os.name === 'iOS'
+  const isMobileVariant = isMobileAndroid || isMobileIos
+
   // Remove the prerendered hero shell now that React's Hero has mounted.
   useEffect(() => {
     document.getElementById('hero-shell')?.remove()
@@ -81,81 +100,129 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
     [onClickHandle, userAgentData]
   )
 
-  const heroImage = isDesktop ? heroImageDesktop : heroImageMobile
+  const handleShareClick = useCallback(async () => {
+    const shareData = {
+      title: 'Decentraland',
+      text: 'Download Decentraland',
+      url: window.location.href
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+      } catch {
+        // User cancelled sharing or share failed — silently ignore
+      }
+    } else {
+      await navigator.clipboard.writeText(window.location.href)
+    }
+  }, [])
 
   return (
     <HeroContainer>
       <HeroBackground>
         {isDesktop ? (
-          <video autoPlay loop muted playsInline poster={heroImage} preload="none">
+          <video autoPlay loop muted playsInline poster={heroImageDesktop} preload="none">
             <source src={heroContent.backgroundVideo} type="video/mp4" />
           </video>
         ) : (
-          <img src={heroImage} alt="" />
+          <picture>
+            <source srcSet={heroImageMobile} media="(max-width: 599px)" />
+            <source srcSet={heroImageTablet} media="(max-width: 991px)" />
+            <img src={heroImageTablet} alt="" />
+          </picture>
         )}
       </HeroBackground>
       <GradientTop />
       <GradientBottom />
-      <HeroContent>
-        <HeroTitle variant={isDesktop ? 'h2' : 'h3'}>{l('page.home.hero.title')}</HeroTitle>
 
-        {effectivelySignedIn && isDesktop ? (
-          <HeroCTAWrapper>
-            <HangOutButton
-              variant="contained"
-              data-place={SectionViewedTrack.LANDING_HERO}
-              data-event="click"
-              onClick={handleDownloadClick}
-              endIcon={osImage ? <HeroOsIcon src={osImage} alt={userAgentData?.os.name ?? ''} /> : undefined}
-            >
-              {l('page.download.download')}
-            </HangOutButton>
-            {downloadCountsFormatted && userAgentData && (
-              <HeroDownloadInfo>
-                <HeroDownloadCounts variant="body1">
-                  <VerifiedIcon /> {l('page.download.total_downloads', { downloads: downloadCountsFormatted })}
-                </HeroDownloadCounts>
-                <HeroPlatformSeparator />
-                <HeroPlatformIcons>
-                  <HeroPlatformIcon src={microsoftLogo} alt="Windows" />
-                </HeroPlatformIcons>
-                <HeroPlatformIcons>
-                  <HeroPlatformIcon src={appleLogo} alt="macOS" />
-                  {userAgentData.os.name === OperativeSystem.MACOS && userAgentData.cpu.architecture === 'amd64' && (
-                    <HeroPlatformLabel variant="body1">({l('page.download.amd64_processors_short')})</HeroPlatformLabel>
-                  )}
-                </HeroPlatformIcons>
-              </HeroDownloadInfo>
-            )}
-          </HeroCTAWrapper>
-        ) : (
-          <HeroCTAWrapper>
-            <HangOutButton
-              variant="contained"
-              data-place={SectionViewedTrack.LANDING_HERO}
-              data-event="click"
-              onClick={e => {
-                onClickHandle(e)
-                handleClick(e)
-              }}
-              endIcon={<JumpInIcon />}
-            >
-              {l('page.home.hang_out_now')}
-            </HangOutButton>
-            {isDesktop && userAgentData && (
-              <AlreadyUserText>
-                {l('page.home.hero.already_user', {
-                  download: (
-                    <AlreadyUserDownloadLink key="download" href={`/download_success?os=${userAgentData.os.name}`}>
-                      {l('page.home.hero.download')} <DownloadIcon />
-                    </AlreadyUserDownloadLink>
-                  )
-                })}
-              </AlreadyUserText>
-            )}
-          </HeroCTAWrapper>
-        )}
-      </HeroContent>
+      {isMobileAndroid && (
+        <MobileHeroContent>
+          <MobileHeroTitle>{l('page.home.hero.mobile_android_title')}</MobileHeroTitle>
+          <MobileHeroSubtitle>{l('page.home.hero.mobile_android_subtitle')}</MobileHeroSubtitle>
+          <GooglePlayButton href={GOOGLE_PLAY_URL} target="_blank" rel="noopener noreferrer">
+            <GooglePlayImage src={googlePlayBadge} alt="Get it on Google Play" />
+          </GooglePlayButton>
+        </MobileHeroContent>
+      )}
+
+      {isMobileIos && (
+        <MobileHeroContent>
+          <MobileHeroTitle>{l('page.home.hero.title')}</MobileHeroTitle>
+          <MobileHeroSubtitle>{l('page.home.hero.mobile_ios_subtitle')}</MobileHeroSubtitle>
+          <SendLinkButton type="button" onClick={handleShareClick}>
+            {l('page.home.hero.mobile_ios_send_link')}
+            <ShareIcon />
+          </SendLinkButton>
+          <ComingSoonRow>
+            <AppleIcon src={appleLogo} alt="Apple" />
+            <ComingSoonText>{l('page.home.hero.mobile_ios_coming_soon')}</ComingSoonText>
+          </ComingSoonRow>
+        </MobileHeroContent>
+      )}
+
+      {!isMobileVariant && (
+        <HeroContent>
+          <HeroTitle variant={isDesktop ? 'h2' : 'h3'}>{l('page.home.hero.title')}</HeroTitle>
+
+          {effectivelySignedIn && isDesktop ? (
+            <HeroCTAWrapper>
+              <HangOutButton
+                variant="contained"
+                data-place={SectionViewedTrack.LANDING_HERO}
+                data-event="click"
+                onClick={handleDownloadClick}
+                endIcon={osImage ? <HeroOsIcon src={osImage} alt={userAgentData?.os.name ?? ''} /> : undefined}
+              >
+                {l('page.download.download')}
+              </HangOutButton>
+              {downloadCountsFormatted && userAgentData && (
+                <HeroDownloadInfo>
+                  <HeroDownloadCounts variant="body1">
+                    <VerifiedIcon /> {l('page.download.total_downloads', { downloads: downloadCountsFormatted })}
+                  </HeroDownloadCounts>
+                  <HeroPlatformSeparator />
+                  <HeroPlatformIcons>
+                    <HeroPlatformIcon src={microsoftLogo} alt="Windows" />
+                  </HeroPlatformIcons>
+                  <HeroPlatformIcons>
+                    <HeroPlatformIcon src={appleLogo} alt="macOS" />
+                    {userAgentData.os.name === OperativeSystem.MACOS && userAgentData.cpu.architecture === 'amd64' && (
+                      <HeroPlatformLabel variant="body1">({l('page.download.amd64_processors_short')})</HeroPlatformLabel>
+                    )}
+                  </HeroPlatformIcons>
+                </HeroDownloadInfo>
+              )}
+            </HeroCTAWrapper>
+          ) : (
+            <HeroCTAWrapper>
+              <HangOutButton
+                variant="contained"
+                data-place={SectionViewedTrack.LANDING_HERO}
+                data-event="click"
+                onClick={e => {
+                  onClickHandle(e)
+                  handleClick(e)
+                }}
+                endIcon={<JumpInIcon />}
+              >
+                {l('page.home.hang_out_now')}
+              </HangOutButton>
+              {isDesktop && userAgentData && (
+                <AlreadyUserText>
+                  {l('page.home.hero.already_user', {
+                    download: (
+                      <AlreadyUserDownloadLink key="download" href={`/download_success?os=${userAgentData.os.name}`}>
+                        {l('page.home.hero.download')} <DownloadIcon />
+                      </AlreadyUserDownloadLink>
+                    )
+                  })}
+                </AlreadyUserText>
+              )}
+            </HeroCTAWrapper>
+          )}
+        </HeroContent>
+      )}
       <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />
     </HeroContainer>
   )

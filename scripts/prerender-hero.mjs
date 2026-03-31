@@ -238,7 +238,7 @@ const criticalCss = `
 </style>`
 
 const heroHtml = `<script>
-(function(){var p=location.pathname;var b=document.querySelector('base');if(b){var h=new URL(b.href).pathname.replace(/\\/$/,'');p=p.replace(h,'');}if(p!=='/'&&p!==''){var s=document.getElementById('hero-shell');var n=document.getElementById('hero-shell-nav');if(s)s.style.display='none';if(n)n.style.display='none';}})();
+(function(){var p=location.pathname;if(p!=='/'&&p!==''){var s=document.getElementById('hero-shell');var n=document.getElementById('hero-shell-nav');var st=document.querySelector('[data-hero-shell]');if(s)s.remove();if(n)n.remove();if(st)st.remove();}})();
 </script>
 <div id="hero-shell-nav">
   <div class="nav-toolbar">
@@ -257,7 +257,8 @@ const heroHtml = `<script>
   <div class="hero-bg">
     <picture>
       <source srcset="./hero_mobile.webp" media="(max-width: 599px)" />
-      <source srcset="./landing_hero.webp" media="(min-width: 600px)" />
+      <source srcset="./hero_tablet.webp" media="(min-width: 600px) and (max-width: 991px)" />
+      <source srcset="./landing_hero.webp" media="(min-width: 992px)" />
       <img src="./landing_hero.webp" alt="" />
     </picture>
   </div>
@@ -281,12 +282,15 @@ let html = readFileSync(distPath, 'utf-8')
 // hero shell loads from the same origin as the preload, preventing a double fetch
 // where the zone origin returns text/html instead of the actual image.
 const mobileImgMatch = html.match(/<link[^>]*href="([^"]*hero_mobile\.webp)"[^>]*>/)
+const tabletImgMatch = html.match(/<link[^>]*href="([^"]*hero_tablet\.webp)"[^>]*>/)
 const desktopImgMatch = html.match(/<link[^>]*href="([^"]*landing_hero\.webp)"[^>]*>/)
 const heroMobileUrl = mobileImgMatch?.[1] ?? './hero_mobile.webp'
+const heroTabletUrl = tabletImgMatch?.[1] ?? './hero_tablet.webp'
 const heroDesktopUrl = desktopImgMatch?.[1] ?? './landing_hero.webp'
 
 const finalHeroHtml = heroHtml
   .replace('./hero_mobile.webp', heroMobileUrl)
+  .replace('./hero_tablet.webp', heroTabletUrl)
   .replace(/\.\/landing_hero\.webp/g, heroDesktopUrl)
 
 // Place the hero shell BEFORE #root, not inside it.  This is critical for LCP:

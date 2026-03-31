@@ -108,7 +108,12 @@
         "title": "フィードを閉じて。一緒に遊ぼう。",
         "jump_in": "入場する",
         "already_user": "すでにアカウントをお持ちですか？{download}",
-        "download": "ダウンロード"
+        "download": "ダウンロード",
+        "mobile_android_title": "どこからでも遊べる",
+        "mobile_android_subtitle": "Decentralandがモバイルに対応。",
+        "mobile_ios_subtitle": "ダウンロードするにはデスクトップに切り替えてください。",
+        "mobile_ios_send_link": "リンクを送る",
+        "mobile_ios_coming_soon": "近日公開"
       },
       "come_hang_out": {
         "title": "一緒に遊ぼう"

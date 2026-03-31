@@ -108,7 +108,12 @@
         "title": "Cierra el Feed. Ven a pasar el rato.",
         "jump_in": "Entrar",
         "already_user": "¿Ya tienes una cuenta? {download}",
-        "download": "Descargar"
+        "download": "Descargar",
+        "mobile_android_title": "Pasa el Rato Desde Cualquier Lugar",
+        "mobile_android_subtitle": "Decentraland ahora en móvil.",
+        "mobile_ios_subtitle": "Cambiá a escritorio para descargar.",
+        "mobile_ios_send_link": "Enviate el Link",
+        "mobile_ios_coming_soon": "Próximamente"
       },
       "come_hang_out": {
         "title": "Ven a pasar el rato"

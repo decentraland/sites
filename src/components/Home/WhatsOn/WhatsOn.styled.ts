@@ -18,6 +18,8 @@ const SectionTitle = styled(Typography)({
   color: dclColors.neutral.white,
   fontWeight: 700,
   textAlign: 'center',
+  position: 'relative',
+  zIndex: 10,
   fontSize: 'clamp(1.75rem, 3vw, 2.5rem)'
 })
 
@@ -26,11 +28,11 @@ const CardsGrid = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   gap: theme.spacing(3),
   width: '100%',
+  position: 'relative',
+  zIndex: 10,
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& > *': {
     flex: '0 1 510px',
-    // Fix: prevent card from shrinking on hover by locking its height
-    // after first render via min-height on the container
     minHeight: 452
   },
   [theme.breakpoints.down('sm')]: {
@@ -41,6 +43,8 @@ const CardsGrid = styled(Box)(({ theme }) => ({
 const MobileCarousel = styled(Box)(({ theme }) => ({
   display: 'none',
   width: '100%',
+  position: 'relative',
+  zIndex: 10,
   [theme.breakpoints.down('sm')]: {
     display: 'block'
   },
@@ -77,4 +81,11 @@ const MobileCarousel = styled(Box)(({ theme }) => ({
   }
 }))
 
-export { CardsGrid, MobileCarousel, SectionTitle, WhatsOnContainer }
+const CardWrapper = styled('div')({
+  backgroundColor: '#2a2435',
+  borderRadius: 16,
+  overflow: 'hidden',
+  height: '100%'
+})
+
+export { CardWrapper, CardsGrid, MobileCarousel, SectionTitle, WhatsOnContainer }

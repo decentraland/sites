@@ -33,35 +33,21 @@ const weeklyRitualsContent = {
       titleKey: 'page.home.weekly_rituals.career_mondays',
       imageUrl: assetUrl('/weekly-rituals/career-mondays.webp'),
       mobileImageUrl: assetUrl('/weekly-rituals/mobile/Monday-Mobile.webp'),
-      link: '/events'
+      link: 'https://decentraland.org/jump/events/?id=746dc03a-649e-4874-ba32-c981bc8aecba'
     },
     {
       id: 'takeover-tuesdays',
       titleKey: 'page.home.weekly_rituals.takeover_tuesdays',
       imageUrl: assetUrl('/weekly-rituals/takeover-tuesdays.webp'),
       mobileImageUrl: assetUrl('/weekly-rituals/mobile/Tuesday-Mobile.webp'),
-      link: '/events'
+      link: 'https://decentraland.org/jump/events/?id=b9e88cf1-aa51-43f4-a00c-368aab1c5e46'
     },
     {
       id: 'watch-party',
       titleKey: 'page.home.weekly_rituals.watch_party_wednesdays',
       imageUrl: assetUrl('/weekly-rituals/watch-party.webp'),
       mobileImageUrl: assetUrl('/weekly-rituals/mobile/Wednesday-Mobile.webp'),
-      link: '/events'
-    },
-    {
-      id: 'trivia-thursdays',
-      titleKey: 'page.home.weekly_rituals.trivia_thursdays',
-      imageUrl: assetUrl('/weekly-rituals/trivia-thursdays.webp'),
-      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Thursday-Mobile.webp'),
-      link: '/events'
-    },
-    {
-      id: 'play-with-friends',
-      titleKey: 'page.home.weekly_rituals.play_with_friends_fridays',
-      imageUrl: assetUrl('/weekly-rituals/play-with-friends.webp'),
-      mobileImageUrl: assetUrl('/weekly-rituals/mobile/Friday-Mobile.webp'),
-      link: '/events'
+      link: 'https://decentraland.org/jump/events/?id=2391f98b-c70c-4ddc-9bfd-cecf3019d3f6'
     }
   ]
 }
