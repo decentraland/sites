@@ -1,8 +1,8 @@
-/* eslint-disable import/no-default-export */
-declare module 'whats_on/App' {
-  import type { ComponentType } from 'react'
-  const component: ComponentType
-  export default component
+declare module 'virtual:__federation__' {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  function __federation_method_setRemote(name: string, config: { url: string; format: string; from: string }): void
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  function __federation_method_getRemote(name: string, component: string): Promise<() => unknown>
 }
 
 interface Window {

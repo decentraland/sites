@@ -1,31 +1,49 @@
-import { Component, Suspense, lazy } from 'react'
+import { Component, Suspense, lazy, useMemo } from 'react'
 import type { ComponentType, LazyExoticComponent, ReactNode } from 'react'
 import { CircularProgress } from 'decentraland-ui2'
 import { ErrorContainer, LoadingContainer } from './RemoteLoader.styled'
 
 const isDev = import.meta.env.DEV
 
-async function loadRemoteModule(remoteName: string, exposedModule: string): Promise<{ default: ComponentType }> {
-  const runtimeUrl = window.__REMOTE_URLS__?.[remoteName]
+async function initRuntimeRemotes() {
+  const urls = window.__REMOTE_URLS__
+  if (!urls) return
 
-  if (runtimeUrl) {
-    const container = await import(/* @vite-ignore */ runtimeUrl)
-    if (container.init) {
-      await container.init({})
+  try {
+    // eslint-disable-next-line import/no-unresolved
+    const federation = await import('virtual:__federation__')
+    for (const [remoteName, url] of Object.entries(urls)) {
+      const normalizedName = remoteName.replace(/-/g, '_')
+      federation.__federation_method_setRemote(normalizedName, {
+        url,
+        format: 'esm',
+        from: 'vite'
+      })
     }
-    const factory = await container.get(exposedModule)
-    return { default: factory() }
+  } catch (e) {
+    console.error('[RemoteLoader] Failed to set runtime remote URLs:', e)
+    throw e
   }
-
-  const modulePath = `${remoteName}/${exposedModule.replace('./', '')}`
-  return import(/* @vite-ignore */ modulePath)
 }
 
-const WhatsOnRemote = lazy(() => loadRemoteModule('whats_on', './App'))
+const remoteInitPromise = initRuntimeRemotes()
 
-const remoteMap: Record<string, LazyExoticComponent<ComponentType>> = {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  'whats-on': WhatsOnRemote
+const remoteCache = new Map<string, LazyExoticComponent<ComponentType>>()
+
+function getRemoteComponent(remoteName: string): LazyExoticComponent<ComponentType> {
+  const cached = remoteCache.get(remoteName)
+  if (cached) return cached
+
+  const component = lazy(async () => {
+    await remoteInitPromise
+    // eslint-disable-next-line import/no-unresolved
+    const federation = await import('virtual:__federation__')
+    const factory = await federation.__federation_method_getRemote(remoteName, './App')
+    return { default: factory() as ComponentType }
+  })
+
+  remoteCache.set(remoteName, component)
+  return component
 }
 
 class RemoteErrorBoundary extends Component<{ children: ReactNode; name: string }, { hasError: boolean }> {
@@ -48,8 +66,7 @@ class RemoteErrorBoundary extends Component<{ children: ReactNode; name: string 
 }
 
 function RemoteLoader({ name }: { name: string }) {
-  const Remote = remoteMap[name]
-  if (!Remote) return null
+  const Remote = useMemo(() => getRemoteComponent(name), [name])
 
   return (
     <RemoteErrorBoundary name={name}>
