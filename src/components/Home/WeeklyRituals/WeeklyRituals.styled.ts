@@ -80,6 +80,7 @@ const CarouselWrapper = styled(Box)(({ theme }) => ({
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .swiper-slide': {
+    width: '750px !important',
     height: 370,
     borderRadius: 16,
     overflow: 'hidden',
@@ -129,7 +130,7 @@ const CarouselWrapper = styled(Box)(({ theme }) => ({
 const CardImage = styled('img')({
   width: '100%',
   height: '100%',
-  objectFit: 'cover',
+  objectFit: 'contain',
   display: 'block',
   borderRadius: 16
 })

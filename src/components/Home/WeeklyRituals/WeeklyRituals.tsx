@@ -34,7 +34,7 @@ const WeeklyRituals = memo(() => {
               modules={[Pagination, Navigation]}
               pagination={{ clickable: true }}
               loop
-              slidesPerView={1.6}
+              slidesPerView="auto"
               centeredSlides
               spaceBetween={24}
               initialSlide={0}

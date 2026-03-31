@@ -129,6 +129,12 @@ const criticalCss = `
     position: absolute; bottom: 0; left: 0; width: 100%; height: 50%;
     background: linear-gradient(0deg, #39055C 0%, rgba(0,0,0,0) 100%); z-index: 1;
   }
+  @media (max-width: 991px) {
+    #hero-shell .gradient-bottom {
+      height: 85%;
+      background: linear-gradient(0deg, #39055C 0%, #39055C 30%, rgba(57,5,92,0) 100%);
+    }
+  }
 
   /* HERO CONTENT — computed from 4th div: gap 24px, padding 0 24px 96px */
   #hero-shell .hero-content {

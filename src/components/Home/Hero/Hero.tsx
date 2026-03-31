@@ -128,8 +128,8 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
         ) : (
           <picture>
             <source srcSet={heroImageMobile} media="(max-width: 599px)" />
-            <source srcSet={heroImageTablet} media="(max-width: 991px)" />
-            <img src={heroImageTablet} alt="" />
+            <source srcSet={heroImageTablet} media="(min-width: 600px) and (max-width: 991px)" />
+            <img src={heroImageMobile} alt="" />
           </picture>
         )}
       </HeroBackground>

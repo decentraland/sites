@@ -11,19 +11,10 @@ const CatchTheVibeContainer = styled(Box)(({ theme }) => ({
   backgroundColor: '#570F88',
   overflow: 'hidden',
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '60%',
-    height: '100%',
-    backgroundImage: 'url(/ellipse_gradient.webp)',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center left',
-    backgroundRepeat: 'no-repeat',
-    pointerEvents: 'none',
-    zIndex: 0
+  '& .desktop-only-ellipse': {
+    [theme.breakpoints.down('sm')]: {
+      display: 'none'
+    }
   },
   [theme.breakpoints.down('sm')]: {
     padding: `${theme.spacing(6)} 0`,
