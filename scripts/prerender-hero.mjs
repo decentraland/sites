@@ -238,7 +238,7 @@ const criticalCss = `
 </style>`
 
 const heroHtml = `<script>
-(function(){var p=location.pathname;var b=document.querySelector('base');if(b){var h=new URL(b.href).pathname.replace(/\\/$/,'');p=p.replace(h,'');}var isHome=p==='/'||p==='';if(!isHome){var s=document.getElementById('hero-shell');var n=document.getElementById('hero-shell-nav');var st=document.querySelector('[data-hero-shell]');if(s)s.remove();if(n)n.remove();if(st)st.remove();}})();
+(function(){var p=location.pathname;if(p!=='/'&&p!==''){var s=document.getElementById('hero-shell');var n=document.getElementById('hero-shell-nav');var st=document.querySelector('[data-hero-shell]');if(s)s.remove();if(n)n.remove();if(st)st.remove();}})();
 </script>
 <div id="hero-shell-nav">
   <div class="nav-toolbar">
