@@ -36,15 +36,19 @@ const GradientTop = styled(Box)({
   zIndex: 1
 })
 
-const GradientBottom = styled(Box)({
+const GradientBottom = styled(Box)(({ theme }) => ({
   position: 'absolute',
   bottom: 0,
   left: 0,
   width: '100%',
   height: '50%',
   background: 'linear-gradient(0deg, #39055C 0%, rgba(0, 0, 0, 0) 100%)',
-  zIndex: 1
-})
+  zIndex: 1,
+  [theme.breakpoints.down('sm')]: {
+    height: '85%',
+    background: 'linear-gradient(0deg, #39055C 0%, #39055C 30%, rgba(57, 5, 92, 0) 100%)'
+  }
+}))
 
 const HeroContent = styled(Box)(({ theme }) => ({
   position: 'relative',

@@ -84,7 +84,12 @@ const MobileCarousel = styled(Box)(({ theme }) => ({
 const CardWrapper = styled('div')({
   borderRadius: 16,
   overflow: 'hidden',
-  height: '100%'
+  height: '100%',
+  // Override ui2's 0.4 opacity to 0.6
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&& .MuiCardContent-root': {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)'
+  }
 })
 
 export { CardWrapper, CardsGrid, MobileCarousel, SectionTitle, WhatsOnContainer }
