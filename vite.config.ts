@@ -52,7 +52,32 @@ export default defineConfig(({ command, mode }) => {
     ],
     build: {
       target: 'esnext',
-      sourcemap: 'hidden'
+      sourcemap: 'hidden',
+      rollupOptions: {
+        output: {
+          /* eslint-disable @typescript-eslint/naming-convention */
+          manualChunks: {
+            // Sentry (~900KB source) is pulled in transitively by @dcl/hooks but
+            // is NOT needed for First Contentful Paint or LCP.  Moving it to a
+            // separate chunk lets the browser parse/execute it in parallel with
+            // rendering, instead of blocking the main thread during the critical
+            // paint window.
+            'vendor-sentry': [
+              '@sentry/browser',
+              '@sentry/core',
+              '@sentry-internal/replay',
+              '@sentry-internal/browser-utils',
+              '@sentry-internal/feedback'
+            ],
+            // Schema validation (~510KB) is only needed when API responses arrive,
+            // not during initial render.
+            'vendor-schemas': ['@dcl/schemas', 'ajv'],
+            // @dcl/crypto + eth-connect are used for wallet signing, not rendering.
+            'vendor-crypto': ['@dcl/crypto', 'eth-connect']
+          }
+          /* eslint-enable @typescript-eslint/naming-convention */
+        }
+      }
     },
     ...(command === 'build' ? { base: envVariables.VITE_BASE_URL || '/' } : undefined),
     server: {

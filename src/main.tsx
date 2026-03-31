@@ -12,16 +12,7 @@ import { LocaleProvider } from './intl/LocaleContext'
 
 const segmentWriteKey = getEnv('VITE_SEGMENT_WRITE_KEY') || ''
 
-// Reparent the prerendered hero shell OUTSIDE #root so createRoot doesn't
-// destroy it.  The shell's hero image stays visible as the LCP element while
-// React loads; the Hero component removes the shell once it has mounted.
-const root = document.getElementById('root')!
-const heroShell = document.getElementById('hero-shell')
-const heroNav = document.getElementById('hero-shell-nav')
-if (heroNav) root.before(heroNav)
-if (heroShell) root.before(heroShell)
-
-createRoot(root).render(
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Provider store={store}>
       <WalletStateProvider>
