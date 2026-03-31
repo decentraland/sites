@@ -51,6 +51,7 @@ const Content = styled(Box)(({ theme }) => ({
 const Title = styled(Typography)(({ theme }) => ({
   color: dclColors.neutral.white,
   fontWeight: 600,
+  fontSize: 48,
   textAlign: 'center',
   letterSpacing: -0.5,
   [theme.breakpoints.down('sm')]: {

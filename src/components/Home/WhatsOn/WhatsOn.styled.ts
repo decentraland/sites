@@ -10,18 +10,21 @@ const WhatsOnContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(6, 0)
+    padding: theme.spacing(6, 2)
   }
 }))
 
-const SectionTitle = styled(Typography)({
+const SectionTitle = styled(Typography)(({ theme }) => ({
   color: dclColors.neutral.white,
   fontWeight: 700,
   textAlign: 'center',
   position: 'relative',
   zIndex: 10,
-  fontSize: 'clamp(1.75rem, 3vw, 2.5rem)'
-})
+  fontSize: 48,
+  [theme.breakpoints.down('sm')]: {
+    fontSize: 32
+  }
+}))
 
 const CardsGrid = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -56,12 +59,12 @@ const MobileCarousel = styled(Box)(({ theme }) => ({
   '& .swiper-slide': {
     padding: `0 ${theme.spacing(2)}`,
     boxSizing: 'border-box',
+    height: 486,
     // eslint-disable-next-line @typescript-eslint/naming-convention
     '& > *': {
-      maxWidth: 358,
       minWidth: 0,
       width: '100%',
-      margin: '0 auto'
+      height: '100%'
     }
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -84,7 +87,18 @@ const MobileCarousel = styled(Box)(({ theme }) => ({
 const CardWrapper = styled('div')({
   borderRadius: 16,
   overflow: 'hidden',
-  height: '100%'
+  height: '100%',
+  // Override ui2's 0.4 opacity to 0.6
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&& .MuiCardContent-root': {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)'
+  },
+  // Force card to respect container width on small screens
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&& .MuiCard-root': {
+    minWidth: 0,
+    maxWidth: '100%'
+  }
 })
 
 export { CardWrapper, CardsGrid, MobileCarousel, SectionTitle, WhatsOnContainer }
