@@ -121,6 +121,14 @@ const CardWrapper = styled('div')({
   '&& .MuiCard-root': {
     minWidth: 0,
     maxWidth: '100%'
+  },
+  // Clamp title to 1 line with ellipsis
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&& .MuiTypography-h6': {
+    display: 'block',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap'
   }
 })
 

@@ -24,8 +24,7 @@ const resourceLinks = [
   { labelKey: 'component.landing.footer.resources.creator_hub', url: 'https://decentraland.org/create/' },
   { labelKey: 'component.landing.footer.resources.docs', url: 'https://docs.decentraland.org' },
   { labelKey: 'component.landing.footer.resources.blog', url: 'https://decentraland.org/blog/' },
-  { labelKey: 'component.landing.footer.resources.dao', url: 'https://decentraland.org/dao' },
-  { labelKey: 'component.landing.footer.resources.vote', url: 'https://decentraland.org/governance' }
+  { labelKey: 'component.landing.footer.resources.vote', url: 'https://decentraland.org/dao' }
 ] as const
 
 export { gettingStartedLinks, resourceLinks, socialLinks }

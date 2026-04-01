@@ -185,16 +185,32 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
                   </HeroDownloadCounts>
                   <HeroPlatformSeparator />
                   <HeroPlatformIcons>
-                    <HeroPlatformIcon src={microsoftLogo} alt="Windows" style={{ filter: 'brightness(0) invert(1)' }} />
+                    <a href="/download_success?os=Windows">
+                      <HeroPlatformIcon src={microsoftLogo} alt="Windows" style={{ filter: 'brightness(0) invert(1)' }} />
+                    </a>
                   </HeroPlatformIcons>
                   <HeroPlatformIcons>
-                    <HeroPlatformIcon src={appleLogo} alt="macOS" style={{ filter: 'brightness(0) invert(1)' }} />
+                    <a href="/download_success?os=macOS">
+                      <HeroPlatformIcon src={appleLogo} alt="macOS" style={{ filter: 'brightness(0) invert(1)' }} />
+                    </a>
                   </HeroPlatformIcons>
                   <HeroPlatformIcons>
-                    <HeroPlatformIcon src={assetUrl('/android.svg')} alt="Android" style={{ filter: 'brightness(0) invert(1)' }} />
+                    <a
+                      href="https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&pcampaignid=web_share&utm_source=partners&utm_medium=pr&utm_campaign=mobile_launch&utm_content=android"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <HeroPlatformIcon
+                        src={assetUrl('/google_play_icon.svg')}
+                        alt="Android"
+                        style={{ filter: 'brightness(0) invert(1)' }}
+                      />
+                    </a>
                   </HeroPlatformIcons>
                   <HeroPlatformIcons>
-                    <HeroPlatformIcon src={assetUrl('/epic_games.svg')} alt="Epic Games" />
+                    <a href="https://store.epicgames.com/en-US/p/decentraland-b692fb" target="_blank" rel="noopener noreferrer">
+                      <HeroPlatformIcon src={assetUrl('/epic_icon.svg')} alt="Epic Games" style={{ filter: 'brightness(0) invert(1)' }} />
+                    </a>
                   </HeroPlatformIcons>
                 </HeroDownloadInfo>
               )}

@@ -86,7 +86,12 @@ const DownloadSeparator = styled('span')({
 const PlatformIcons = styled('span')({
   display: 'flex',
   gap: 8,
-  alignItems: 'center'
+  alignItems: 'center',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& a': {
+    display: 'flex',
+    lineHeight: 0
+  }
 })
 
 const PlatformIcon = styled('img')({
