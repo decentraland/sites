@@ -59,5 +59,58 @@ const Title = styled(Typography)(({ theme }) => ({
   }
 }))
 
-export { AvatarsImage, ComeHangOutContainer, Content, Title }
+const DownloadInfo = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 16,
+  flexWrap: 'wrap',
+  justifyContent: 'center',
+  position: 'relative',
+  zIndex: 1
+})
+
+const DownloadCounts = styled('span')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  color: '#fff',
+  fontSize: 16
+})
+
+const DownloadSeparator = styled('span')({
+  width: 1,
+  height: 20,
+  backgroundColor: 'rgba(255, 255, 255, 0.3)'
+})
+
+const PlatformIcons = styled('span')({
+  display: 'flex',
+  gap: 8,
+  alignItems: 'center'
+})
+
+const PlatformIcon = styled('img')({
+  width: 24,
+  height: 24,
+  filter: 'brightness(0) invert(1)'
+})
+
+const OsIcon = styled('img')({
+  width: 32,
+  height: 32,
+  filter: 'brightness(0) invert(1)'
+})
+
+export {
+  AvatarsImage,
+  ComeHangOutContainer,
+  Content,
+  DownloadCounts,
+  DownloadInfo,
+  DownloadSeparator,
+  OsIcon,
+  PlatformIcon,
+  PlatformIcons,
+  Title
+}
 export { HangOutButton } from '../shared/HangOutButton.styled'

@@ -13,13 +13,29 @@ import { SectionViewedTrack } from '../../../modules/segment'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
-import { AvatarsImage, ComeHangOutContainer, Content, HangOutButton, Title } from './ComeHangOut.styled'
+import {
+  AvatarsImage,
+  ComeHangOutContainer,
+  Content,
+  DownloadCounts,
+  DownloadInfo,
+  DownloadSeparator,
+  HangOutButton,
+  OsIcon,
+  PlatformIcon,
+  PlatformIcons,
+  Title
+} from './ComeHangOut.styled'
 
 const imageByOs: Record<string, string> = {
   [OperativeSystem.WINDOWS]: microsoftLogo,
   [OperativeSystem.MACOS]: appleLogo
 }
 
+// Module-level cache for the formatted download count string. Preferred over
+// useRef because this component lazy-loads after scroll and may remount via
+// Suspense — useRef would lose its value on unmount/remount, causing the count
+// to flash from null to the formatted value. Module scope survives all of that.
 let cachedDownloadCounts: string | null = null
 
 const ComeHangOut = memo(() => {
@@ -59,35 +75,23 @@ const ComeHangOut = memo(() => {
               onClick={handleDownloadClick}
               data-place={SectionViewedTrack.LANDING_HERO}
               data-event="click"
-              endIcon={
-                osImage ? <img src={osImage} alt="" style={{ width: 32, height: 32, filter: 'brightness(0) invert(1)' }} /> : undefined
-              }
+              endIcon={osImage ? <OsIcon src={osImage} alt="" /> : undefined}
             >
               {l('page.download.download')}
             </HangOutButton>
             {downloadCountsFormatted && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 16,
-                  flexWrap: 'wrap',
-                  justifyContent: 'center',
-                  position: 'relative',
-                  zIndex: 1
-                }}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: 12, color: '#fff', fontSize: 16 }}>
+              <DownloadInfo>
+                <DownloadCounts>
                   <VerifiedIcon /> {l('page.download.total_downloads', { downloads: downloadCountsFormatted })}
-                </span>
-                <span style={{ width: 1, height: 20, backgroundColor: 'rgba(255,255,255,0.3)' }} />
-                <span style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <img src={microsoftLogo} alt="Windows" style={{ width: 24, height: 24, filter: 'brightness(0) invert(1)' }} />
-                  <img src={appleLogo} alt="macOS" style={{ width: 24, height: 24, filter: 'brightness(0) invert(1)' }} />
-                  <img src={assetUrl('/android.svg')} alt="Android" style={{ width: 24, height: 24, filter: 'brightness(0) invert(1)' }} />
+                </DownloadCounts>
+                <DownloadSeparator />
+                <PlatformIcons>
+                  <PlatformIcon src={microsoftLogo} alt="Windows" />
+                  <PlatformIcon src={appleLogo} alt="macOS" />
+                  <PlatformIcon src={assetUrl('/android.svg')} alt="Android" />
                   <img src={assetUrl('/epic_games.svg')} alt="Epic Games" style={{ width: 24, height: 24, opacity: 0.9 }} />
-                </span>
-              </div>
+                </PlatformIcons>
+              </DownloadInfo>
             )}
           </>
         ) : (
