@@ -177,12 +177,14 @@ const LandingNavbar = memo(function LandingNavbar({
   const unreadCount = notifications?.items?.filter(n => !n.read).length ?? 0
 
   const [notifMapLoaded, setNotifMapLoaded] = useState(!!_notifComponentMap)
+  const notifOpenRef = useRef(false)
 
   const onClickNotificationBell = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       if (notifications?.onClick) {
         notifications.onClick(e)
       }
+      notifOpenRef.current = !notifOpenRef.current
       setUserCardOpen(false)
       setDesktopDropdown(null)
       // Lazy-load notification type renderers from ui2 on first click
@@ -197,14 +199,13 @@ const LandingNavbar = memo(function LandingNavbar({
   )
 
   const closeNotifications = useCallback(() => {
-    // Only call onClose if notifications are actually open — the hook's
-    // handler is a toggle, so calling it when already closed would open them.
-    if (notifications?.isOpen && notifications?.onClose) {
+    if (notifOpenRef.current && notifications?.onClose) {
       notifications.onClose()
+      notifOpenRef.current = false
     }
   }, [notifications])
 
-  const faceUrl = resolveContentUrl(avatar?.avatar?.snapshots?.face256)
+  const faceUrl = resolveContentUrl(avatar?.avatar?.snapshots?.face256) ?? assetUrl('/avatar_face.webp')
   const bodyUrl = resolveContentUrl(avatar?.avatar?.snapshots?.body)
   const userName = avatar?.name || (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '')
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''
@@ -260,10 +261,11 @@ const LandingNavbar = memo(function LandingNavbar({
       if (!prev) {
         setDesktopDropdown(null)
         setMobileMenuOpen(false)
+        closeNotifications()
       }
       return !prev
     })
-  }, [])
+  }, [closeNotifications])
 
   const closeUserCard = useCallback(() => {
     setUserCardOpen(false)
