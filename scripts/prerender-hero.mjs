@@ -77,7 +77,10 @@ const criticalCss = `
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
   }
   #hero-shell .hero-bg img {
-    width: 100%; height: 100%; object-fit: cover; display: block;
+    object-fit: cover; display: block;
+  }
+  @media (min-width: 992px) {
+    #hero-shell .hero-bg img { width: 100%; height: 100%; }
   }
   #hero-shell .gradient-top {
     position: absolute; top: 0; left: 0; width: 100%; height: 24.3%;
@@ -102,14 +105,17 @@ const criticalCss = `
     padding: 0 24px 64px;
   }
   #hero-shell .hero-title {
-    margin: 0; font-family: Inter, Helvetica, Arial, sans-serif;
-    font-weight: 700; font-size: 40px; line-height: 1.2;
+    margin: 0; font-family: Inter, sans-serif;
+    font-weight: 700; font-size: 40px; line-height: 48px;
+    letter-spacing: 0.3752px;
     color: white; -webkit-font-smoothing: antialiased;
   }
   #hero-shell .hero-subtitle {
-    margin: 0; font-family: Inter, Helvetica, Arial, sans-serif;
+    margin: 0; font-family: Inter, sans-serif;
     font-weight: 500; font-size: 20px; line-height: 28px;
+    letter-spacing: 0.1876px;
     color: #fcfcfc; text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    -webkit-font-smoothing: antialiased;
   }
   /* Mobile: "Send Yourself the Link" button */
   #hero-shell .hero-btn {
@@ -119,6 +125,7 @@ const criticalCss = `
     font-family: Inter, sans-serif; font-weight: 700;
     font-size: 16px; color: #fcfcfc; text-transform: uppercase;
     cursor: pointer; box-shadow: rgba(0,0,0,0.4) 0px 2px 8px;
+    -webkit-font-smoothing: antialiased;
   }
   #hero-shell .hero-btn svg { width: 20px; height: 20px; }
   /* Coming Soon row */
@@ -128,6 +135,7 @@ const criticalCss = `
   #hero-shell .hero-coming-soon svg { width: 24px; height: 32px; }
   #hero-shell .hero-coming-soon span {
     font-family: Inter, sans-serif; font-weight: 500; font-size: 18px; color: #fcfcfc;
+    letter-spacing: 0.16884px; line-height: 27px; -webkit-font-smoothing: antialiased;
   }
   /* Desktop HANG OUT NOW button — hidden on mobile */
   #hero-shell .hero-cta-wrapper { display: none; }
@@ -151,17 +159,36 @@ const criticalCss = `
   }
   #hero-shell .hero-desktop-btn .hero-btn-icon svg { width: 32px; height: 32px; }
 
+  /* Already have an account — desktop only */
+  #hero-shell .hero-already-user {
+    display: none; align-items: center; gap: 4px; margin: 0;
+    font-family: Inter, Helvetica, Arial, sans-serif; font-size: 16px;
+    font-weight: 400; line-height: 28px; color: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+  #hero-shell .hero-already-user a {
+    color: #FF2D55; text-decoration: none; text-transform: uppercase; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  #hero-shell .hero-already-user a:hover { opacity: 0.8; }
+  #hero-shell .hero-already-user a svg { width: 24px; height: 24px; }
+
   /* DESKTOP overrides */
   @media (min-width: 992px) {
     #hero-shell .hero-content {
       gap: 60px; padding: 0 0 120px; max-width: none;
     }
-    #hero-shell .hero-title { font-size: 60px; font-weight: 600; letter-spacing: -0.5px; }
+    #hero-shell .hero-title {
+      font-family: Inter, Helvetica, Arial, sans-serif;
+      font-size: 60px; font-weight: 600; line-height: 1.2; letter-spacing: -0.5px;
+      box-sizing: border-box; text-size-adjust: 100%;
+    }
     #hero-shell .hero-subtitle { display: none; }
     /* Hide mobile iOS elements, show desktop CTA */
     #hero-shell .hero-btn:not(.hero-desktop-btn) { display: none; }
     #hero-shell .hero-coming-soon { display: none; }
     #hero-shell .hero-cta-wrapper { display: flex; flex-direction: column; align-items: center; gap: 24px; min-height: 112px; }
+    #hero-shell .hero-already-user { display: flex; }
   }
 </style>`
 
@@ -193,6 +220,7 @@ const heroHtml = `<div id="hero-shell-nav">
     </div>
     <div class="hero-cta-wrapper">
       <button class="hero-btn hero-desktop-btn" type="button">HANG OUT NOW<span class="hero-btn-icon">${jumpInSvg}</span></button>
+      <p class="hero-already-user">Already have an account? <a href="/download_success">Download <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/></svg></a></p>
     </div>
   </div>
 </div>

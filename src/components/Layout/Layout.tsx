@@ -47,7 +47,7 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
       {withNavbar && (
         <LandingNavbar
           isSignedIn={effectivelySignedIn}
-          isSigningIn={isConnecting && !effectivelySignedIn}
+          isSigningIn={isConnecting && !effectivelySignedIn && !!address}
           isLandingPage={location.pathname === '/'}
           address={address || undefined}
           avatar={avatar}
