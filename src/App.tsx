@@ -44,7 +44,7 @@ const App = () => {
             <Route path="/terms" element={<TermsOfUse />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
-            <Route path="/whats-on/*" element={<RemoteLoader name="whats-on" />} />
+            <Route path="/whats-on/*" element={<RemoteLoader name="whats_on" />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
