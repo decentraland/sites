@@ -8,7 +8,9 @@ const ErrorContainer = styled(Box)(({ theme }) => ({
 const LoadingContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
-  padding: theme.spacing(10, 0)
+  alignItems: 'center',
+  padding: theme.spacing(10, 0),
+  minHeight: '60vh'
 }))
 
 export { ErrorContainer, LoadingContainer }
