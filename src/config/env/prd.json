@@ -2,6 +2,7 @@
   "ONBOARDING_URL": "https://decentraland.org/auth/login/?newUser&redirectTo=https%3A%2F%2Fdecentraland.org%2Fdownload",
   "AUTH_URL": "https://decentraland.org/auth",
   "MAGIC_API_KEY": "pk_live_212568025B158355",
+  "THIRDWEB_CLIENT_ID": "e1adce863fe287bb6cf0e3fd90bdb77f",
   "PEER_URL": "https://peer.decentraland.org",
   "WALLET_CONNECT_PROJECT_ID": "61570c542c2d66c659492e5b24a41522",
   "DOWNLOAD_COUNTS_URL": "https://cdn-data.decentraland.org/public/current/explorer-alpha-downloads.json",

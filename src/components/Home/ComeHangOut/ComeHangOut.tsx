@@ -51,6 +51,7 @@ const ComeHangOut = memo(() => {
   if (rawFormatted) cachedDownloadCounts = rawFormatted
   const downloadCountsFormatted = cachedDownloadCounts
 
+  const currentOs = userAgentData?.os.name
   const osImage = userAgentData ? imageByOs[userAgentData.os.name] : null
 
   const handleDownloadClick = useCallback(
@@ -86,12 +87,16 @@ const ComeHangOut = memo(() => {
                 </DownloadCounts>
                 <DownloadSeparator />
                 <PlatformIcons>
-                  <a href="/download_success?os=Windows">
-                    <PlatformIcon src={microsoftLogo} alt="Windows" />
-                  </a>
-                  <a href="/download_success?os=macOS">
-                    <PlatformIcon src={appleLogo} alt="macOS" />
-                  </a>
+                  {currentOs !== OperativeSystem.WINDOWS && (
+                    <a href="/download_success?os=Windows">
+                      <PlatformIcon src={microsoftLogo} alt="Windows" />
+                    </a>
+                  )}
+                  {currentOs !== OperativeSystem.MACOS && (
+                    <a href="/download_success?os=macOS">
+                      <PlatformIcon src={appleLogo} alt="macOS" />
+                    </a>
+                  )}
                   <a
                     href="https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&pcampaignid=web_share&utm_source=partners&utm_medium=pr&utm_campaign=mobile_launch&utm_content=android"
                     target="_blank"
