@@ -294,6 +294,17 @@ const LandingNavbar = memo(function LandingNavbar({
     return () => window.removeEventListener('scroll', handleScroll)
   }, [showMinimalNavbar])
 
+  // Close open panels on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      closeUserCard()
+      closeDesktopDropdown()
+      closeNotifications()
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [closeUserCard, closeDesktopDropdown, closeNotifications])
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
