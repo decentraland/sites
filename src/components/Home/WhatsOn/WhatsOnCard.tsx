@@ -2,7 +2,6 @@ import { memo } from 'react'
 import { useWalletState } from '@dcl/core-web3/lazy'
 import type { Avatar } from '@dcl/schemas'
 import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
-import { WhatsOnCardType } from '../../../features/events/events.types'
 import type { WhatsOn } from '../../../features/events/events.types'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
@@ -51,13 +50,11 @@ const WhatsOnCard = memo(({ card, loading }: { card?: WhatsOn; loading?: boolean
         leftBadgeTransparent
         hideLocation
         leftBadge={
-          card?.type === WhatsOnCardType.EVENT ? (
+          card ? (
             <BadgeGroup>
               <LiveBadge />
               <UserCountBadge count={card.users} />
             </BadgeGroup>
-          ) : card ? (
-            <UserCountBadge count={card.users} />
           ) : undefined
         }
       />

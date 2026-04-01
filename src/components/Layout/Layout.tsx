@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { Suspense, lazy, useCallback } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useWalletState } from '@dcl/core-web3/lazy'
 import { usePageTracking } from '@dcl/hooks'
@@ -8,10 +8,11 @@ import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useLocale } from '../../intl/LocaleContext'
 import { redirectToAuth } from '../../utils/authRedirect'
-import { LandingFooter } from '../LandingFooter'
+const LandingFooter = lazy(() => import('../LandingFooter').then(m => ({ default: m.LandingFooter })))
 import { LandingNavbar } from '../LandingNavbar'
 import type { LandingNavbarProps } from '../LandingNavbar'
 import type { LayoutProps } from './Layout.types'
+import { FooterFallback } from './Layout.styled'
 
 // eslint-disable-next-line react/prop-types
 const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter = true }) => {
@@ -56,7 +57,11 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
         />
       )}
       {children ?? <Outlet />}
-      {withFooter && <LandingFooter />}
+      {withFooter && (
+        <Suspense fallback={<FooterFallback />}>
+          <LandingFooter />
+        </Suspense>
+      )}
     </div>
   )
 }

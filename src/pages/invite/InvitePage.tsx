@@ -3,8 +3,9 @@ import { useParams } from 'react-router-dom'
 import type { Profile } from 'dcl-catalyst-client/dist/client/specs/lambdas-client'
 import { useAsyncMemo, useTranslation } from '@dcl/hooks'
 import { EthAddress } from '@dcl/schemas/dist/misc'
-import { FooterLanding, useDesktopMediaQuery } from 'decentraland-ui2'
+import { useDesktopMediaQuery } from 'decentraland-ui2'
 import { InviteHero } from '../../components/Invite/InviteHero/InviteHero'
+import { LandingFooter } from '../../components/LandingFooter'
 import { getEnv } from '../../config/env'
 import { INVITE_HERO_MEDIA, INVITE_SECOND_HERO_MEDIA } from '../../data/inviteContent'
 import { SectionViewedTrack } from '../../modules/segment'
@@ -115,7 +116,7 @@ const InvitePage = memo(() => {
       <Suspense fallback={null}>
         <InviteFaqs />
       </Suspense>
-      <FooterLanding />
+      <LandingFooter />
     </>
   )
 })
