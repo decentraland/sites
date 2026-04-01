@@ -7,7 +7,7 @@ const ComeHangOutContainer = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'flex-start',
   width: '100%',
-  height: 600,
+  height: 680,
   overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
     height: 480
