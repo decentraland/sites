@@ -40,11 +40,7 @@ const CardsGrid = styled(Box)(({ theme }) => ({
     flex: '0 1 510px'
   },
   '& .MuiCard-root': {
-    containerType: 'inline-size',
-    height: 'auto'
-  },
-  '& .MuiCardActionArea-root': {
-    height: '100%'
+    containerType: 'inline-size'
   },
   '& .MuiCardMedia-root': {
     height: '62.5cqw !important'
@@ -113,7 +109,8 @@ const MobileCarousel = styled(Box)(({ theme }) => ({
 const CardWrapper = styled('div')({
   borderRadius: 16,
   overflow: 'hidden',
-  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
   // Override ui2's 0.4 opacity to 0.6
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&& .MuiCardContent-root': {
