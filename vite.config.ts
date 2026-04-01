@@ -47,7 +47,7 @@ export default defineConfig(({ command, mode }) => {
           wagmi: { singleton: true, requiredVersion: '^2.19.0' },
           viem: { singleton: true, requiredVersion: '^2.44.0' },
           '@dcl/hooks': { singleton: true, requiredVersion: '^1.2.0' },
-          'decentraland-ui2': { singleton: true, requiredVersion: '^1.6.0' },
+          'decentraland-ui2': { singleton: true, requiredVersion: '^2.0.0' },
           '@dcl/schemas': { singleton: true, requiredVersion: '^25.2.0' }
         } as Record<string, { singleton: boolean; requiredVersion: string }>
       })
