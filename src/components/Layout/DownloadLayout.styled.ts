@@ -1,7 +1,7 @@
 import { Box, Button, Link, Logo, Typography, dclColors, dclModal, styled } from 'decentraland-ui2'
 import backgroundImage from '../../images/download/download_background.webp'
 
-const DownloadPageContainer = styled(Box)({
+const DownloadPageContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   display: 'flex',
   flexDirection: 'column',
@@ -12,8 +12,13 @@ const DownloadPageContainer = styled(Box)({
   justifyContent: 'center',
   backgroundImage: `linear-gradient(150deg, #2A0C43 0%, #2A0C43 25%, transparent 100%), linear-gradient(225deg, #2A0C43 0%, rgba(42, 12, 67, 0.8) 15%, transparent 100%), url(${backgroundImage})`,
   backgroundSize: 'cover',
-  backgroundPosition: 'center'
-})
+  backgroundPosition: 'center',
+  [theme.breakpoints.down('sm')]: {
+    height: '100svh',
+    minHeight: 'unset',
+    overflow: 'hidden'
+  }
+}))
 
 const DownloadWearablePreviewOverlay = styled(Box)({
   position: 'absolute',
@@ -47,7 +52,9 @@ const DownloadContainer = styled(Box)(({ theme }) => ({
     flexDirection: 'column',
     alignItems: 'flex-start',
     width: 'calc(100% - 32px)',
-    padding: theme.spacing(15.5)
+    padding: theme.spacing(15.5),
+    height: '100svh',
+    overflow: 'visible'
   },
   [theme.breakpoints.down('xs')]: {
     padding: theme.spacing(3),
@@ -105,10 +112,15 @@ const DownloadImageContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   [theme.breakpoints.down('md')]: {
     width: '100%'
+  },
+  [theme.breakpoints.down('sm')]: {
+    minWidth: 'unset',
+    maxWidth: '100%',
+    overflow: 'visible'
   }
 }))
 
-const DownloadWearablePreviewContainer = styled(Box)({
+const DownloadWearablePreviewContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   height: '110%',
   maxHeight: '700px',
@@ -119,8 +131,13 @@ const DownloadWearablePreviewContainer = styled(Box)({
   left: 0,
   right: 0,
   bottom: 0,
-  zIndex: 2
-})
+  zIndex: 2,
+  [theme.breakpoints.down('sm')]: {
+    minHeight: 'unset',
+    height: '60%',
+    top: '40%'
+  }
+}))
 
 const DclLogo = styled(Logo)(({ theme }) => ({
   height: '48px',
@@ -152,6 +169,12 @@ const DownloadTitle = styled(Typography)(({ theme }) => ({
   },
   [theme.breakpoints.down('xs')]: {
     fontSize: '1.8rem'
+  }
+}))
+
+const FooterWrapper = styled(Box)(({ theme }) => ({
+  [theme.breakpoints.down('sm')]: {
+    paddingBottom: '200px'
   }
 }))
 
@@ -218,6 +241,7 @@ export {
   DownloadTitle,
   DownloadWearablePreviewContainer,
   DownloadWearablePreviewOverlay,
+  FooterWrapper,
   MobileTitle,
   Modal,
   ModalContent,
