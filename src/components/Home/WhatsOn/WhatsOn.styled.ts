@@ -48,14 +48,8 @@ const CardsGrid = styled(Box)(({ theme }) => ({
   '& .MuiCardActionArea-root:hover .MuiCardMedia-root': {
     height: `calc(62.5cqw - ${JUMP_IN_HEIGHT}px) !important`
   },
-  '& .MuiCardContent-root .MuiTypography-h6': {
-    display: 'block',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    WebkitLineClamp: 'unset',
-    WebkitBoxOrient: 'unset'
-  },
+  // Expand avatar container so the "by" label is not truncated
+  // (targets the inner Box wrapping the AvatarFace inside EventCard)
   '& .MuiCardContent-root .MuiBox-root .MuiBox-root:has(.MuiAvatar-root)': {
     maxWidth: '100%'
   },
@@ -122,14 +116,16 @@ const CardWrapper = styled('div')({
     minWidth: 0,
     maxWidth: '100%'
   },
-  // Clamp title to 1 line with ellipsis
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+  /* eslint-disable @typescript-eslint/naming-convention */
   '&& .MuiTypography-h6': {
     display: 'block',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
+    whiteSpace: 'nowrap',
+    WebkitLineClamp: 'unset',
+    WebkitBoxOrient: 'unset'
   }
+  /* eslint-enable @typescript-eslint/naming-convention */
 })
 
 export { CardWrapper, CardsGrid, MobileCarousel, SectionTitle, WhatsOnContainer }
