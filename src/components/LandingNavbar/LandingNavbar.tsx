@@ -1,5 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { useAnalytics } from '@dcl/hooks'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { assetUrl } from '../../utils/assetUrl'
 // Module-level cache for notification type→component map from ui2.
 // Lazy-loaded on first bell click so it doesn't affect initial bundle.
@@ -154,7 +156,16 @@ const LandingNavbar = memo(function LandingNavbar({
   // Once we know the user is signed in, transition to the full navbar.
   const showMinimalNavbar = isLandingPage && !isSignedIn
   const l = useFormatMessage()
+  const { isInitialized, track } = useAnalytics()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const trackNavbar = useCallback(
+    (action: string) => {
+      if (!isInitialized) return
+      track(SegmentEvent.CLICK, { place: SectionViewedTrack.LANDING_NAVBAR, event: 'click', action })
+    },
+    [isInitialized, track]
+  )
   const [mobileAccordion, setMobileAccordion] = useState<DropdownSection | null>(null)
   const [desktopDropdown, setDesktopDropdown] = useState<DropdownSection | null>(null)
   const [userCardOpen, setUserCardOpen] = useState(false)
@@ -373,7 +384,13 @@ const LandingNavbar = memo(function LandingNavbar({
           />
         </NavBarLeft>
         <NavBarRight>
-          <SignInButton onClick={onClickSignIn} disabled={isSigningIn}>
+          <SignInButton
+            onClick={() => {
+              trackNavbar('sign_in')
+              onClickSignIn()
+            }}
+            disabled={isSigningIn}
+          >
             {isSigningIn ? l('component.landing.navbar.signing_in') : l('component.landing.navbar.sign_in')}
           </SignInButton>
         </NavBarRight>
@@ -551,7 +568,13 @@ const LandingNavbar = memo(function LandingNavbar({
           )}
 
           {!isSignedIn && (
-            <SignInButton onClick={onClickSignIn} disabled={isSigningIn}>
+            <SignInButton
+              onClick={() => {
+                trackNavbar('sign_in')
+                onClickSignIn()
+              }}
+              disabled={isSigningIn}
+            >
               {isSigningIn ? l('component.landing.navbar.signing_in') : l('component.landing.navbar.sign_in')}
             </SignInButton>
           )}

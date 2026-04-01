@@ -1,6 +1,8 @@
 import { FormEvent, memo, useCallback, useEffect, useRef, useState } from 'react'
+import { useAnalytics } from '@dcl/hooks'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { type SupportedLocale, useLocale } from '../../intl/LocaleContext'
+import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { assetUrl } from '../../utils/assetUrl'
 import { gettingStartedLinks, resourceLinks, socialLinks } from './footerConfig'
 import { ChevronDown, Discord, GitHub, Instagram, LinkedIn, TikTok, XTwitter, YouTube } from './SocialIcons'
@@ -67,12 +69,19 @@ const LANGUAGES: { code: SupportedLocale; label: string; flag: string }[] = [
   { code: 'ja', label: '日本語', flag: '🇯🇵' }
 ]
 
-const SocialIconsRow = () => (
+const SocialIconsRow = ({ onTrack }: { onTrack?: (platform: string) => void }) => (
   <SocialRow>
     {socialLinks.map(link => {
       const Icon = socialIconMap[link.name]
       return (
-        <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" aria-label={link.name}>
+        <a
+          key={link.name}
+          href={link.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={link.name}
+          onClick={() => onTrack?.(link.name)}
+        >
           <Icon />
         </a>
       )
@@ -83,6 +92,7 @@ const SocialIconsRow = () => (
 const LandingFooter = memo(() => {
   const l = useFormatMessage()
   const { locale, setLocale } = useLocale()
+  const { isInitialized, track } = useAnalytics()
   const [email, setEmail] = useState('')
   const [openSection, setOpenSection] = useState<string | null>(null)
   const [langOpen, setLangOpen] = useState(false)
@@ -90,14 +100,28 @@ const LandingFooter = memo(() => {
 
   const currentLang = LANGUAGES.find(lang => lang.code === locale) || LANGUAGES[0]
 
+  const trackFooter = useCallback(
+    (place: string, extra?: Record<string, string>) => {
+      if (!isInitialized) return
+      track(SegmentEvent.CLICK, { place, event: 'click', ...extra })
+    },
+    [isInitialized, track]
+  )
+
+  const handleSocialClick = useCallback(
+    (platform: string) => trackFooter(SectionViewedTrack.LANDING_FOOTER_SOCIAL, { platform }),
+    [trackFooter]
+  )
+
   const handleSubscribe = useCallback(
     (e: FormEvent) => {
       e.preventDefault()
       if (!email.trim()) return
+      trackFooter(SectionViewedTrack.LANDING_FOOTER_SUBSCRIBE)
       window.open(`${BEEHIIV_SUBSCRIBE_URL}?email=${encodeURIComponent(email.trim())}`, '_blank', 'noopener')
       setEmail('')
     },
-    [email]
+    [email, trackFooter]
   )
 
   const toggleSection = useCallback((key: string) => {
@@ -139,7 +163,7 @@ const LandingFooter = memo(() => {
 
           <ConnectSection className="desktop-only">
             <SectionLabel>{l('component.landing.footer.connect')}</SectionLabel>
-            <SocialIconsRow />
+            <SocialIconsRow onTrack={handleSocialClick} />
           </ConnectSection>
         </LeftColumn>
 
@@ -152,6 +176,7 @@ const LandingFooter = memo(() => {
                 href={link.url}
                 target={link.url.startsWith('http') ? '_blank' : undefined}
                 rel="noopener noreferrer"
+                onClick={() => trackFooter(SectionViewedTrack.LANDING_FOOTER_LINK, { link: l(link.labelKey) })}
               >
                 {l(link.labelKey)}
               </FooterLink>
@@ -160,7 +185,13 @@ const LandingFooter = memo(() => {
           <LinkColumn>
             <SectionLabel>{l('component.landing.footer.resources.title')}</SectionLabel>
             {resourceLinks.map(link => (
-              <FooterLink key={link.labelKey} href={link.url} target="_blank" rel="noopener noreferrer">
+              <FooterLink
+                key={link.labelKey}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackFooter(SectionViewedTrack.LANDING_FOOTER_LINK, { link: l(link.labelKey) })}
+              >
                 {l(link.labelKey)}
               </FooterLink>
             ))}
@@ -183,6 +214,7 @@ const LandingFooter = memo(() => {
                 href={link.url}
                 target={link.url.startsWith('http') ? '_blank' : undefined}
                 rel="noopener noreferrer"
+                onClick={() => trackFooter(SectionViewedTrack.LANDING_FOOTER_LINK, { link: l(link.labelKey) })}
               >
                 {l(link.labelKey)}
               </MobileFooterLink>
@@ -197,7 +229,13 @@ const LandingFooter = memo(() => {
           </MobileMenuDropdown>
           <DropdownContent open={openSection === 'resources'}>
             {resourceLinks.map(link => (
-              <MobileFooterLink key={link.labelKey} href={link.url} target="_blank" rel="noopener noreferrer">
+              <MobileFooterLink
+                key={link.labelKey}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackFooter(SectionViewedTrack.LANDING_FOOTER_LINK, { link: l(link.labelKey) })}
+              >
                 {l(link.labelKey)}
               </MobileFooterLink>
             ))}
@@ -206,7 +244,7 @@ const LandingFooter = memo(() => {
 
         <ConnectSection className="mobile-only">
           <SectionLabel>{l('component.landing.footer.connect')}</SectionLabel>
-          <SocialIconsRow />
+          <SocialIconsRow onTrack={handleSocialClick} />
         </ConnectSection>
       </FooterMain>
 

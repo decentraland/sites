@@ -5,6 +5,8 @@ import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-u
 import { WhatsOnCardType } from '../../../features/events/events.types'
 import type { WhatsOn } from '../../../features/events/events.types'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
+import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
+import { SectionViewedTrack } from '../../../modules/segment'
 import { assetUrl } from '../../../utils/assetUrl'
 import { CardWrapper } from './WhatsOn.styled'
 
@@ -22,6 +24,7 @@ function isDclFoundation(name?: string): boolean {
 const WhatsOnCard = memo(({ card, loading }: { card?: WhatsOn; loading?: boolean }) => {
   const { isConnected, address } = useWalletState()
   const isSignedIn = isConnected || !!address
+  const onClickHandle = useTrackClick()
   const { data: profile } = useGetProfileQuery(card?.creatorAddress, { skip: !card?.creatorAddress })
   const fetchedAvatar = profile?.avatars?.[0]
 
@@ -37,7 +40,7 @@ const WhatsOnCard = memo(({ card, loading }: { card?: WhatsOn; loading?: boolean
   }
 
   return (
-    <CardWrapper>
+    <CardWrapper data-place={SectionViewedTrack.LANDING_WHATS_ON} data-event="click" data-card={card?.title} onClick={onClickHandle}>
       <EventCard
         loading={loading}
         image={card?.image ?? ''}
