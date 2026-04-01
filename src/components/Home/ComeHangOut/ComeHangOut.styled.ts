@@ -24,7 +24,7 @@ const AvatarsImage = styled('img')(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     position: 'absolute',
     top: 'auto',
-    bottom: 0,
+    bottom: -50,
     left: '50%',
     transform: 'translateX(-50%)',
     width: 'auto',

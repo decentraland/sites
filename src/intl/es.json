@@ -103,37 +103,37 @@
       }
     },
     "home": {
-      "hang_out_now": "PASA EL RATO AHORA",
+      "hang_out_now": "UNITE AHORA",
       "hero": {
-        "title": "Cierra el Feed. Ven a pasar el rato.",
+        "title": "Dejá el scroll. Vení a pasarla bien.",
         "jump_in": "Entrar",
-        "already_user": "¿Ya tienes una cuenta? {download}",
+        "already_user": "¿Ya tenés cuenta? {download}",
         "download": "Descargar",
-        "mobile_android_title": "Pasa el Rato Desde Cualquier Lugar",
-        "mobile_android_subtitle": "Decentraland ahora en móvil.",
-        "mobile_ios_subtitle": "Cambiá a escritorio para descargar.",
-        "mobile_ios_send_link": "Enviate el Link",
+        "mobile_android_title": "Pasala bien desde donde estés",
+        "mobile_android_subtitle": "Decentraland ya está en celulares.",
+        "mobile_ios_subtitle": "Descargalo desde la compu.",
+        "mobile_ios_send_link": "Mandarte el link",
         "mobile_ios_coming_soon": "Próximamente"
       },
       "come_hang_out": {
-        "title": "Ven a pasar el rato"
+        "title": "Vení a pasarla bien"
       },
       "catch_the_vibe": {
-        "title": "Siente la Vibra",
-        "community_member": "Miembro de la Comunidad",
+        "title": "Sentí la Onda",
+        "community_member": "De la comunidad",
         "mute": "Silenciar",
         "unmute": "Activar sonido"
       },
       "weekly_rituals": {
-        "title": "Tus Rituales Semanales",
+        "title": "Tus Rituales de la Semana",
         "career_mondays": "Lunes de Carrera",
         "takeover_tuesdays": "Martes de Takeover",
-        "watch_party_wednesdays": "Miércoles de Watch Party",
+        "watch_party_wednesdays": "Miércoles de Cine",
         "trivia_thursdays": "Jueves de Trivia",
-        "play_with_friends_fridays": "Viernes de Jugar con Amigos"
+        "play_with_friends_fridays": "Viernes con Amigos"
       },
       "whats_on": {
-        "title": "Entra a lo que está pasando",
+        "title": "Mirá lo que está pasando",
         "live": "En vivo"
       }
     }
@@ -335,6 +335,30 @@
           "email": "Email",
           "dao": "DAO",
           "faq": "FAQ"
+        },
+        "newsletter": {
+          "title": "Recibí las novedades en tu inbox",
+          "placeholder": "Ingresá tu email",
+          "cta": "Suscribirse"
+        },
+        "connect": "Conectar",
+        "menu": "Menú",
+        "getting_started": {
+          "title": "Primeros pasos",
+          "what_is": "¿Qué es Decentraland?",
+          "download": "Descargar Decentraland",
+          "system_requirements": "Requisitos del sistema",
+          "faqs": "Preguntas frecuentes",
+          "contact_support": "Contactar soporte"
+        },
+        "resources": {
+          "title": "Recursos",
+          "marketplace": "Marketplace",
+          "creator_hub": "Creator Hub",
+          "docs": "Documentación",
+          "blog": "Blog",
+          "dao": "DAO",
+          "vote": "Votar"
         }
       },
       "events_places": {
@@ -443,36 +467,36 @@
         "download": "Descargar"
       },
       "navbar": {
-        "whats_on": "Novedades",
+        "whats_on": "Eventos",
         "shop": "Tienda",
         "create": "Crear",
-        "learn": "Aprender",
+        "learn": "Info",
         "jump_in": "Entrar",
-        "sign_in": "Iniciar sesión",
-        "signing_in": "Iniciando sesión...",
+        "sign_in": "Ingresar",
+        "signing_in": "Ingresando...",
         "notifications_title": "Notificaciones",
         "notifications_tab_new": "Nuevas",
-        "notifications_tab_seen": "Vistas",
+        "notifications_tab_seen": "Leídas",
         "notifications_empty_new": "¡Estás al día!",
         "notifications_empty_read": "No hay notificaciones leídas",
         "notifications_loading": "Cargando...",
         "wallet_address": "User ID",
-        "logout": "Cerrar sesión",
-        "shop_all": "Ver Todo",
-        "wearables": "Vestimenta",
+        "logout": "Salir",
+        "shop_all": "Ver todo",
+        "wearables": "Wearables",
         "emotes": "Emotes",
         "names": "Nombres",
         "land": "Terrenos",
-        "merch": "Mercancía",
+        "merch": "Merch",
         "create_in_decentraland": "Crear en Decentraland",
-        "publish_wearables_emotes": "Publicar Vestimenta y Emotes",
-        "publish_land": "Publicar Terreno",
-        "get_started": "Comenzar",
-        "start_creating": "Empezar a Crear",
-        "see_whats_new": "Ver Novedades",
-        "view_profile": "Ver Perfil",
-        "my_assets": "Mis Activos",
-        "account_settings": "Configuración de Cuenta",
+        "publish_wearables_emotes": "Publicar Wearables y Emotes",
+        "publish_land": "Publicar Terrenos",
+        "get_started": "Primeros pasos",
+        "start_creating": "Empezá a crear",
+        "see_whats_new": "Novedades",
+        "view_profile": "Mi perfil",
+        "my_assets": "Mis cosas",
+        "account_settings": "Configuración",
         "marketplace_authorizations": "Autorizaciones del Marketplace"
       }
     }
