@@ -86,10 +86,22 @@ const ComeHangOut = memo(() => {
                 </DownloadCounts>
                 <DownloadSeparator />
                 <PlatformIcons>
-                  <PlatformIcon src={microsoftLogo} alt="Windows" />
-                  <PlatformIcon src={appleLogo} alt="macOS" />
-                  <PlatformIcon src={assetUrl('/google_play_icon.svg')} alt="Android" />
-                  <PlatformIcon src={assetUrl('/epic_icon.svg')} alt="Epic Games" />
+                  <a href="/download_success?os=Windows">
+                    <PlatformIcon src={microsoftLogo} alt="Windows" />
+                  </a>
+                  <a href="/download_success?os=macOS">
+                    <PlatformIcon src={appleLogo} alt="macOS" />
+                  </a>
+                  <a
+                    href="https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&pcampaignid=web_share&utm_source=partners&utm_medium=pr&utm_campaign=mobile_launch&utm_content=android"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <PlatformIcon src={assetUrl('/google_play_icon.svg')} alt="Android" />
+                  </a>
+                  <a href="https://store.epicgames.com/en-US/p/decentraland-b692fb" target="_blank" rel="noopener noreferrer">
+                    <PlatformIcon src={assetUrl('/epic_icon.svg')} alt="Epic Games" />
+                  </a>
                 </PlatformIcons>
               </DownloadInfo>
             )}

@@ -50,7 +50,7 @@ const GradientBottom = styled(Box)(({ theme }) => ({
   bottom: 0,
   left: 0,
   width: '100%',
-  height: '50%',
+  height: '60%',
   background: 'linear-gradient(0deg, #39055C 0%, rgba(0, 0, 0, 0) 100%)',
   zIndex: 1,
   [theme.breakpoints.down('sm')]: {
@@ -157,7 +157,12 @@ const HeroPlatformSeparator = styled(Box)({
 const HeroPlatformIcons = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1)
+  gap: theme.spacing(1),
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& a': {
+    display: 'flex',
+    lineHeight: 0
+  }
 }))
 
 const HeroPlatformIcon = styled('img')({
