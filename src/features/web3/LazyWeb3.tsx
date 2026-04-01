@@ -29,8 +29,6 @@ function LazyWeb3({ children }: PropsWithChildren) {
 
   useEffect(() => {
     Promise.all([import('@dcl/core-web3/lazy'), import('./web3.config'), import('@dcl/core-web3')]).then(([lazy, config, core]) => {
-      // Inject web3 reducers lazily — createLazyStoreEnhancer imports walletReducer/networkReducer
-      // which transitively import wagmi, so this MUST be in the lazy chunk.
       const injectReducers = lazy.createLazyStoreEnhancer(store, staticReducers)
       injectReducers()
 

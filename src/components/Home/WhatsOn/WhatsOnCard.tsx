@@ -1,5 +1,4 @@
 import { memo } from 'react'
-import { useWalletState } from '@dcl/core-web3/lazy'
 import type { Avatar } from '@dcl/schemas'
 import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
 import type { WhatsOn } from '../../../features/events/events.types'
@@ -21,8 +20,6 @@ function isDclFoundation(name?: string): boolean {
 }
 
 const WhatsOnCard = memo(({ card, loading }: { card?: WhatsOn; loading?: boolean }) => {
-  const { isConnected, address } = useWalletState()
-  const isSignedIn = isConnected || !!address
   const onClickHandle = useTrackClick()
   const { data: profile } = useGetProfileQuery(card?.creatorAddress, { skip: !card?.creatorAddress })
   const fetchedAvatar = profile?.avatars?.[0]
@@ -46,7 +43,6 @@ const WhatsOnCard = memo(({ card, loading }: { card?: WhatsOn; loading?: boolean
         sceneName={card?.title ?? ''}
         avatar={avatar as Avatar}
         coordinates={card?.coordinates}
-        redirectToAuth={!isSignedIn}
         leftBadgeTransparent
         hideLocation
         leftBadge={
