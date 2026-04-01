@@ -36,7 +36,6 @@ import {
   HeroOsIcon,
   HeroPlatformIcon,
   HeroPlatformIcons,
-  HeroPlatformLabel,
   HeroPlatformSeparator,
   HeroTitle,
   MobileHeroContent,
@@ -186,13 +185,16 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
                   </HeroDownloadCounts>
                   <HeroPlatformSeparator />
                   <HeroPlatformIcons>
-                    <HeroPlatformIcon src={microsoftLogo} alt="Windows" />
+                    <HeroPlatformIcon src={microsoftLogo} alt="Windows" style={{ filter: 'brightness(0) invert(1)' }} />
                   </HeroPlatformIcons>
                   <HeroPlatformIcons>
-                    <HeroPlatformIcon src={appleLogo} alt="macOS" />
-                    {userAgentData.os.name === OperativeSystem.MACOS && userAgentData.cpu.architecture === 'amd64' && (
-                      <HeroPlatformLabel variant="body1">({l('page.download.amd64_processors_short')})</HeroPlatformLabel>
-                    )}
+                    <HeroPlatformIcon src={appleLogo} alt="macOS" style={{ filter: 'brightness(0) invert(1)' }} />
+                  </HeroPlatformIcons>
+                  <HeroPlatformIcons>
+                    <HeroPlatformIcon src={assetUrl('/android.svg')} alt="Android" style={{ filter: 'brightness(0) invert(1)' }} />
+                  </HeroPlatformIcons>
+                  <HeroPlatformIcons>
+                    <HeroPlatformIcon src={assetUrl('/epic_games.svg')} alt="Epic Games" />
                   </HeroPlatformIcons>
                 </HeroDownloadInfo>
               )}

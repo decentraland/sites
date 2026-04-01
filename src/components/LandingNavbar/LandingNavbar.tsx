@@ -1,5 +1,4 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
-import { getEnv } from '../../config/env'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { assetUrl } from '../../utils/assetUrl'
 // Module-level cache for notification type→component map from ui2.
@@ -16,7 +15,6 @@ import {
   DclLogo,
   ExternalLinkIcon,
   HamburgerIcon,
-  JumpInIcon,
   LogoutIcon,
   SettingsIcon,
   ShoppingBagIcon,
@@ -37,7 +35,6 @@ import {
   DesktopTabList,
   DesktopTabWithDropdown,
   HamburgerButton,
-  JumpInButton,
   LogoLink,
   MobileMenuAccordionHeader,
   MobileMenuItem,
@@ -161,6 +158,7 @@ const LandingNavbar = memo(function LandingNavbar({
   const [mobileAccordion, setMobileAccordion] = useState<DropdownSection | null>(null)
   const [desktopDropdown, setDesktopDropdown] = useState<DropdownSection | null>(null)
   const [userCardOpen, setUserCardOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
   const navRef = useRef<HTMLElement>(null)
   const dropdownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -277,6 +275,14 @@ const LandingNavbar = memo(function LandingNavbar({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [closeDesktopDropdown, closeUserCard, closeNotifications])
 
+  // Fade out "Decentraland" name on scroll
+  useEffect(() => {
+    if (!showMinimalNavbar) return
+    const handleScroll = () => setScrolled(window.scrollY > 50)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [showMinimalNavbar])
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
@@ -303,7 +309,7 @@ const LandingNavbar = memo(function LandingNavbar({
 
   const renderAvatar = useCallback(() => {
     if (faceUrl) {
-      return <AvatarImage src={faceUrl} alt={userName || 'Avatar'} />
+      return <AvatarImage src={faceUrl} alt="" />
     }
     return <AvatarFallback />
   }, [faceUrl, userName])
@@ -350,13 +356,21 @@ const LandingNavbar = memo(function LandingNavbar({
   if (showMinimalNavbar) {
     return (
       <NavBarRoot ref={navRef} className="minimal">
-        <NavBarLeft>
-          <LogoLink href="https://decentraland.org" aria-label="Decentraland Home" className="mobile-only">
-            <DclLogo />
+        <NavBarLeft style={{ gap: 16 }}>
+          <LogoLink href="https://decentraland.org" aria-label="Decentraland Home">
+            <img src={assetUrl('/dcl-logo.svg')} alt="" style={{ width: 40, height: 40 }} />
           </LogoLink>
-          <LogoLink href="https://decentraland.org" aria-label="Decentraland Home" className="desktop-only">
-            <img src={assetUrl('/dcl_logo_and_name.svg')} alt="Decentraland" style={{ height: 40 }} />
-          </LogoLink>
+          <img
+            src={assetUrl('/dcl_name.svg')}
+            alt="Decentraland"
+            className="desktop-only"
+            style={{
+              height: 20,
+              opacity: scrolled ? 0 : 1,
+              transition: 'opacity 0.3s ease',
+              pointerEvents: scrolled ? 'none' : 'auto'
+            }}
+          />
         </NavBarLeft>
         <NavBarRight>
           <SignInButton onClick={onClickSignIn} disabled={isSigningIn}>
@@ -369,7 +383,7 @@ const LandingNavbar = memo(function LandingNavbar({
 
   return (
     <>
-      <NavBarRoot ref={navRef}>
+      <NavBarRoot ref={navRef} className={isLandingPage && isSignedIn ? 'logged-landing' : ''}>
         <NavBarLeft>
           <LogoLink href="https://decentraland.org" aria-label="Decentraland Home">
             <DclLogo />
@@ -384,7 +398,14 @@ const LandingNavbar = memo(function LandingNavbar({
                 onMouseEnter={() => openDesktopDropdown(section)}
                 onMouseLeave={scheduleCloseDesktopDropdown}
               >
-                <DesktopTabWithDropdown aria-expanded={desktopDropdown === section} aria-haspopup="true">
+                <DesktopTabWithDropdown
+                  aria-expanded={desktopDropdown === section}
+                  aria-haspopup="true"
+                  onClick={() => {
+                    const firstItem = MENU_CONFIG[section].items?.[0]
+                    if (firstItem) window.open(firstItem.url, '_self')
+                  }}
+                >
                   {l(MENU_CONFIG[section].labelKey)}
                   <ChevronDownIcon
                     style={{
@@ -493,9 +514,7 @@ const LandingNavbar = memo(function LandingNavbar({
 
                 {userCardOpen && (
                   <UserCard onClick={e => e.stopPropagation()}>
-                    <UserCardAvatarContainer>
-                      {bodyUrl ? <UserCardAvatarBody src={bodyUrl} alt={userName || 'Avatar'} /> : null}
-                    </UserCardAvatarContainer>
+                    <UserCardAvatarContainer>{bodyUrl ? <UserCardAvatarBody src={bodyUrl} alt="" /> : null}</UserCardAvatarContainer>
                     <UserCardMenu>
                       <div style={{ paddingLeft: 16, paddingBottom: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
                         <UserCardName title={userName}>{userName}</UserCardName>
@@ -531,13 +550,6 @@ const LandingNavbar = memo(function LandingNavbar({
             </NavBarRightGroup>
           )}
 
-          {isSignedIn && (
-            <JumpInButton href={getEnv('ONBOARDING_URL') || 'https://decentraland.org/play'}>
-              {l('component.landing.navbar.jump_in')}
-              <JumpInIcon />
-            </JumpInButton>
-          )}
-
           {!isSignedIn && (
             <SignInButton onClick={onClickSignIn} disabled={isSigningIn}>
               {isSigningIn ? l('component.landing.navbar.signing_in') : l('component.landing.navbar.sign_in')}
@@ -562,9 +574,7 @@ const LandingNavbar = memo(function LandingNavbar({
       {isSignedIn && userCardOpen && (
         <MobileUserCard data-mobile-user-card onClick={e => e.stopPropagation()}>
           <MobileUserCardTop>
-            <MobileUserCardAvatar>
-              {faceUrl ? <MobileUserCardAvatarImage src={faceUrl} alt={userName || 'Avatar'} /> : null}
-            </MobileUserCardAvatar>
+            <MobileUserCardAvatar>{faceUrl ? <MobileUserCardAvatarImage src={faceUrl} alt="" /> : null}</MobileUserCardAvatar>
             <MobileUserCardInfo>
               <MobileUserCardName title={userName}>{userName}</MobileUserCardName>
               <MobileUserCardAddressLabel>{l('component.landing.navbar.wallet_address')}</MobileUserCardAddressLabel>

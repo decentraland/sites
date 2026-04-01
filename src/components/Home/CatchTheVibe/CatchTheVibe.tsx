@@ -18,7 +18,6 @@ import {
   CardsRow,
   CatchTheVibeContainer,
   CatchTheVibeTitle,
-  CommunityLabel,
   DurationText,
   MediaContainer,
   MobileCarouselContainer,
@@ -185,7 +184,6 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
           <AvatarFace size="small" avatar={avatar} />
           <UserName>{item.userName}</UserName>
         </UserInfo>
-        <CommunityLabel>{l('page.home.catch_the_vibe.community_member')}</CommunityLabel>
       </VideoCardFooter>
     </VideoCard>
   )

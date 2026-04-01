@@ -80,6 +80,7 @@ const HeroTitle = styled(Typography)(({ theme }) => ({
   fontWeight: 600,
   lineHeight: 1.2,
   letterSpacing: -0.5,
+  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
   [theme.breakpoints.down('sm')]: {
     fontSize: 36
   }
@@ -106,7 +107,8 @@ const AlreadyUserText = styled(Typography)({
   lineHeight: 1.75,
   display: 'flex',
   alignItems: 'center',
-  gap: 4
+  gap: 4,
+  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)'
 })
 
 const AlreadyUserDownloadLink = styled('a')({
@@ -160,8 +162,7 @@ const HeroPlatformIcons = styled(Box)(({ theme }) => ({
 
 const HeroPlatformIcon = styled('img')({
   width: 24,
-  height: 24,
-  filter: 'brightness(0) invert(1)'
+  height: 24
 })
 
 const HeroPlatformLabel = styled(Typography)({

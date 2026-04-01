@@ -9,7 +9,7 @@ const DclLogo = memo(function DclLogo(props: IconProps) {
         fillRule="evenodd"
         clipRule="evenodd"
         d="M45 89.9999C69.8528 89.9999 89.9999 69.8528 89.9999 45C89.9999 20.1472 69.8528 0 45 0C20.1472 0 0 20.1472 0 45C0 69.8528 20.1472 89.9999 45 89.9999Z"
-        fill="url(#dcl0)"
+        fill="url(#dcl-nav0)"
       />
       <path
         fillRule="evenodd"
@@ -29,9 +29,9 @@ const DclLogo = memo(function DclLogo(props: IconProps) {
         d="M60.368 62.9997H3.758C5.153 66.2172 6.93 69.2322 9 71.9997H60.39V62.9997H60.368Z"
         fill="#FFC95B"
       />
-      <path fillRule="evenodd" clipRule="evenodd" d="M31.883 29.25V63H60.008L31.883 29.25Z" fill="url(#dcl1)" />
+      <path fillRule="evenodd" clipRule="evenodd" d="M31.883 29.25V63H60.008L31.883 29.25Z" fill="url(#dcl-nav1)" />
       <path fillRule="evenodd" clipRule="evenodd" d="M3.758 63H31.883V29.25L3.758 63Z" fill="white" />
-      <path fillRule="evenodd" clipRule="evenodd" d="M60.368 47.25V72H81L60.368 47.25Z" fill="url(#dcl2)" />
+      <path fillRule="evenodd" clipRule="evenodd" d="M60.368 47.25V72H81L60.368 47.25Z" fill="url(#dcl-nav2)" />
       <path fillRule="evenodd" clipRule="evenodd" d="M39.757 72H60.367V47.25L39.757 72Z" fill="white" />
       <path
         fillRule="evenodd"
@@ -46,15 +46,15 @@ const DclLogo = memo(function DclLogo(props: IconProps) {
         fill="#FFC95B"
       />
       <defs>
-        <linearGradient id="dcl0" x1="45" y1="-18.64" x2="-18.64" y2="45" gradientUnits="userSpaceOnUse">
+        <linearGradient id="dcl-nav0" x1="45" y1="-18.64" x2="-18.64" y2="45" gradientUnits="userSpaceOnUse">
           <stop stopColor="#FF2D55" />
           <stop offset="1" stopColor="#FFBC5B" />
         </linearGradient>
-        <linearGradient id="dcl1" x1="31.873" y1="29.25" x2="31.873" y2="63" gradientUnits="userSpaceOnUse">
+        <linearGradient id="dcl-nav1" x1="31.873" y1="29.25" x2="31.873" y2="63" gradientUnits="userSpaceOnUse">
           <stop stopColor="#A524B3" />
           <stop offset="1" stopColor="#FF2D55" />
         </linearGradient>
-        <linearGradient id="dcl2" x1="60.36" y1="47.25" x2="60.36" y2="72" gradientUnits="userSpaceOnUse">
+        <linearGradient id="dcl-nav2" x1="60.36" y1="47.25" x2="60.36" y2="72" gradientUnits="userSpaceOnUse">
           <stop stopColor="#A524B3" />
           <stop offset="1" stopColor="#FF2D55" />
         </linearGradient>
