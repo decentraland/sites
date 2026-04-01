@@ -27,6 +27,7 @@ import {
   DownloadTitle,
   DownloadWearablePreviewContainer,
   DownloadWearablePreviewOverlay,
+  FooterWrapper,
   MobileTitle,
   Modal,
   ModalContent,
@@ -211,7 +212,9 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
           </ModalContent>
         </Modal>
       </DownloadPageContainer>
-      <LandingFooter />
+      <FooterWrapper>
+        <LandingFooter />
+      </FooterWrapper>
     </>
   )
 })

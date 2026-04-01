@@ -172,6 +172,12 @@ const DownloadTitle = styled(Typography)(({ theme }) => ({
   }
 }))
 
+const FooterWrapper = styled(Box)(({ theme }) => ({
+  [theme.breakpoints.down('sm')]: {
+    paddingBottom: '200px'
+  }
+}))
+
 const ShareContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -235,6 +241,7 @@ export {
   DownloadTitle,
   DownloadWearablePreviewContainer,
   DownloadWearablePreviewOverlay,
+  FooterWrapper,
   MobileTitle,
   Modal,
   ModalContent,
