@@ -26,6 +26,8 @@ const CatchTheVibeTitle = styled(Typography)(({ theme }) => ({
   color: dclColors.neutral.white,
   fontWeight: 600,
   textAlign: 'center',
+  position: 'relative',
+  zIndex: 1,
   [theme.breakpoints.down('sm')]: {
     fontSize: 32,
     padding: `0 ${theme.spacing(3)}`
