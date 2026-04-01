@@ -113,7 +113,7 @@ const SubscribeButton = styled('button')({
   backgroundColor: '#ff2d55',
   color: 'white',
   fontFamily: 'Inter, sans-serif',
-  fontWeight: 600,
+  fontWeight: 700,
   fontSize: 15,
   letterSpacing: 0.46,
   textTransform: 'uppercase' as const,
