@@ -1,16 +1,5 @@
 import { getEnv } from '../config/env'
 
-/** Clears wagmi localStorage state so reconnection works after auth redirect. */
-function clearWagmiState(): void {
-  if (typeof window === 'undefined' || !window.localStorage) return
-  const keysToRemove: string[] = []
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i)
-    if (key?.startsWith('wagmi.')) keysToRemove.push(key)
-  }
-  keysToRemove.forEach(key => localStorage.removeItem(key))
-}
-
 /**
  * Returns the base path the app is served from (Vite BASE_URL without trailing slash).
  */
@@ -62,7 +51,10 @@ function redirectToAuth(path: string, queryParams?: Record<string, string>): voi
   const redirectTo = buildAuthRedirectUrl(path, queryParams)
   const authUrl = resolveAuthUrl()
 
-  clearWagmiState()
+  // NOTE: We intentionally do NOT clear wagmi localStorage state here.
+  // Clearing wagmi's keys removes connector-specific storage (magicChainId,
+  // thirdwebChainId) and the persisted store, which prevents wagmi from
+  // reconnecting when the user returns from auth.
   window.location.replace(`${authUrl}/login?redirectTo=${encodeURIComponent(redirectTo)}`)
 }
 

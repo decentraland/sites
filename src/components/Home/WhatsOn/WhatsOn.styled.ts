@@ -26,6 +26,8 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   }
 }))
 
+const JUMP_IN_HEIGHT = 62
+
 const CardsGrid = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
@@ -33,11 +35,25 @@ const CardsGrid = styled(Box)(({ theme }) => ({
   width: '100%',
   position: 'relative',
   zIndex: 10,
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+  /* eslint-disable @typescript-eslint/naming-convention */
   '& > *': {
-    flex: '0 1 510px',
-    minHeight: 452
+    flex: '0 1 510px'
   },
+  '& .MuiCard-root': {
+    containerType: 'inline-size'
+  },
+  '& .MuiCardMedia-root': {
+    height: '62.5cqw !important'
+  },
+  '& .MuiCardActionArea-root:hover .MuiCardMedia-root': {
+    height: `calc(62.5cqw - ${JUMP_IN_HEIGHT}px) !important`
+  },
+  // Expand avatar container so the "by" label is not truncated
+  // (targets the inner Box wrapping the AvatarFace inside EventCard)
+  '& .MuiCardContent-root .MuiBox-root .MuiBox-root:has(.MuiAvatar-root)': {
+    maxWidth: '100%'
+  },
+  /* eslint-enable @typescript-eslint/naming-convention */
   [theme.breakpoints.down('sm')]: {
     display: 'none'
   }
@@ -87,7 +103,8 @@ const MobileCarousel = styled(Box)(({ theme }) => ({
 const CardWrapper = styled('div')({
   borderRadius: 16,
   overflow: 'hidden',
-  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
   // Override ui2's 0.4 opacity to 0.6
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&& .MuiCardContent-root': {
@@ -99,14 +116,16 @@ const CardWrapper = styled('div')({
     minWidth: 0,
     maxWidth: '100%'
   },
-  // Clamp title to 1 line with ellipsis
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+  /* eslint-disable @typescript-eslint/naming-convention */
   '&& .MuiTypography-h6': {
     display: 'block',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
+    whiteSpace: 'nowrap',
+    WebkitLineClamp: 'unset',
+    WebkitBoxOrient: 'unset'
   }
+  /* eslint-enable @typescript-eslint/naming-convention */
 })
 
 export { CardWrapper, CardsGrid, MobileCarousel, SectionTitle, WhatsOnContainer }

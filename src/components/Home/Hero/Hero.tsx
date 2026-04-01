@@ -77,7 +77,8 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
 
   const osImage = userAgentData ? imageByOs[userAgentData.os.name] : null
 
-  const isMobileAndroid = !!userAgentData?.mobile && userAgentData.os.name === 'Android'
+  const currentOs = userAgentData?.os.name
+  const isMobileAndroid = !!userAgentData?.mobile && currentOs === 'Android'
 
   // Remove the prerendered hero shell now that React's Hero has mounted.
   // Capture the initial viewport height for mobile so the hero doesn't resize
@@ -184,16 +185,20 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
                     <VerifiedIcon /> {l('page.download.total_downloads', { downloads: downloadCountsFormatted })}
                   </HeroDownloadCounts>
                   <HeroPlatformSeparator />
-                  <HeroPlatformIcons>
-                    <a href="/download_success?os=Windows">
-                      <HeroPlatformIcon src={microsoftLogo} alt="Windows" style={{ filter: 'brightness(0) invert(1)' }} />
-                    </a>
-                  </HeroPlatformIcons>
-                  <HeroPlatformIcons>
-                    <a href="/download_success?os=macOS">
-                      <HeroPlatformIcon src={appleLogo} alt="macOS" style={{ filter: 'brightness(0) invert(1)' }} />
-                    </a>
-                  </HeroPlatformIcons>
+                  {currentOs !== OperativeSystem.WINDOWS && (
+                    <HeroPlatformIcons>
+                      <a href="/download_success?os=Windows">
+                        <HeroPlatformIcon src={microsoftLogo} alt="Windows" style={{ filter: 'brightness(0) invert(1)' }} />
+                      </a>
+                    </HeroPlatformIcons>
+                  )}
+                  {currentOs !== OperativeSystem.MACOS && (
+                    <HeroPlatformIcons>
+                      <a href="/download_success?os=macOS">
+                        <HeroPlatformIcon src={appleLogo} alt="macOS" style={{ filter: 'brightness(0) invert(1)' }} />
+                      </a>
+                    </HeroPlatformIcons>
+                  )}
                   <HeroPlatformIcons>
                     <a
                       href="https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&pcampaignid=web_share&utm_source=partners&utm_medium=pr&utm_campaign=mobile_launch&utm_content=android"
