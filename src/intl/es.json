@@ -103,9 +103,9 @@
       }
     },
     "home": {
-      "hang_out_now": "UNITE AHORA",
+      "hang_out_now": "SUMATE AHORA",
       "hero": {
-        "title": "Dejá el scroll. Vení a pasarla bien.",
+        "title": "Dejá de mirar. Vení a pasarla bien.",
         "jump_in": "Entrar",
         "already_user": "¿Ya tenés cuenta? {download}",
         "download": "Descargar",
@@ -467,12 +467,12 @@
         "download": "Descargar"
       },
       "navbar": {
-        "whats_on": "Eventos",
+        "whats_on": "Explorar",
         "shop": "Marketplace",
         "create": "Crear",
         "learn": "Info",
         "jump_in": "Entrar",
-        "sign_in": "Ingresar",
+        "sign_in": "Iniciar sesion",
         "signing_in": "Ingresando...",
         "notifications_title": "Notificaciones",
         "notifications_tab_new": "Nuevas",
