@@ -48,7 +48,13 @@ enum SectionViewedTrack {
   INVITE_SECOND_HERO = 'Referrer Invite Second Hero',
   INVITE_THIRD_HERO = 'Referrer Invite Third Hero',
   INVITE_FAQS = 'Referrer Invite Faqs',
-  LANDING_CATCH_THE_VIBE = 'Landing Catch The Vibe'
+  LANDING_CATCH_THE_VIBE = 'Landing Catch The Vibe',
+  LANDING_WEEKLY_RITUALS = 'Landing Weekly Rituals',
+  LANDING_WHATS_ON = 'Landing Whats On',
+  LANDING_FOOTER_SOCIAL = 'Landing Footer Social',
+  LANDING_FOOTER_SUBSCRIBE = 'Landing Footer Subscribe',
+  LANDING_FOOTER_LINK = 'Landing Footer Link',
+  LANDING_NAVBAR = 'Landing Navbar'
 }
 
 export { SegmentEvent, SectionViewedTrack }

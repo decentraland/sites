@@ -101,7 +101,7 @@ const EmailInput = styled('input')({
   boxSizing: 'border-box',
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&::placeholder': {
-    color: '#a09ba8'
+    color: '#cfcdd4'
   }
 })
 
@@ -154,7 +154,7 @@ const SectionLabel = styled('p')({
   fontWeight: 400,
   fontSize: 16,
   lineHeight: 1.5,
-  color: '#a09ba8',
+  color: '#cfcdd4',
   margin: 0,
   textTransform: 'uppercase' as const
 })
@@ -233,7 +233,7 @@ const MobileMenuLabel = styled('div')({
   fontWeight: 400,
   fontSize: 14,
   lineHeight: 1.75,
-  color: '#a09ba8',
+  color: '#cfcdd4',
   textTransform: 'uppercase' as const
 })
 
@@ -325,12 +325,12 @@ const LegalLink = styled('a')({
   fontWeight: 400,
   fontSize: 14,
   lineHeight: 1.43,
-  color: '#716b7c',
+  color: '#a09ba8',
   textDecoration: 'none',
   whiteSpace: 'nowrap',
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:hover': {
-    color: '#a09ba8'
+    color: '#cfcdd4'
   }
 })
 
@@ -339,7 +339,7 @@ const CopyrightText = styled('span')({
   fontWeight: 400,
   fontSize: 15,
   lineHeight: '24px',
-  color: '#716b7c',
+  color: '#a09ba8',
   whiteSpace: 'nowrap'
 })
 

@@ -9,14 +9,14 @@ const socialLinks = [
 ] as const
 
 const gettingStartedLinks = [
-  { labelKey: 'component.landing.footer.getting_started.what_is', url: 'https://docs.decentraland.org/player/general/introduction/' },
+  { labelKey: 'component.landing.footer.getting_started.what_is', url: 'https://docs.decentraland.org/introduction/about-decentraland' },
   { labelKey: 'component.landing.footer.getting_started.download', url: '/download' },
   {
     labelKey: 'component.landing.footer.getting_started.system_requirements',
-    url: 'https://docs.decentraland.org/player/general/hardware-requirements/'
+    url: 'https://docs.decentraland.org/faqs/decentraland-101#the-basics'
   },
-  { labelKey: 'component.landing.footer.getting_started.faqs', url: 'https://docs.decentraland.org/player/general/faq/' },
-  { labelKey: 'component.landing.footer.getting_started.contact_support', url: 'https://decentraland.org/help' }
+  { labelKey: 'component.landing.footer.getting_started.faqs', url: 'https://docs.decentraland.org/faqs/decentraland-101' },
+  { labelKey: 'component.landing.footer.getting_started.contact_support', url: 'https://decentraland.org/help/' }
 ] as const
 
 const resourceLinks = [
