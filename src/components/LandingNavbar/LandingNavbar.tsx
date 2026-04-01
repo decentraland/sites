@@ -356,12 +356,9 @@ const LandingNavbar = memo(function LandingNavbar({
   if (showMinimalNavbar) {
     return (
       <NavBarRoot ref={navRef} className="minimal">
-        <NavBarLeft>
-          <LogoLink href="https://decentraland.org" aria-label="Decentraland Home" className="mobile-only">
-            <DclLogo />
-          </LogoLink>
-          <LogoLink href="https://decentraland.org" aria-label="Decentraland Home" className="desktop-only">
-            <DclLogo />
+        <NavBarLeft style={{ gap: 16 }}>
+          <LogoLink href="https://decentraland.org" aria-label="Decentraland Home">
+            <img src={assetUrl('/dcl-logo.svg')} alt="" style={{ width: 40, height: 40 }} />
           </LogoLink>
           <img
             src={assetUrl('/dcl_name.svg')}

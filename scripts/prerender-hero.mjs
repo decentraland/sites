@@ -86,7 +86,7 @@ const criticalCss = `
     }
   }
   @media (min-width: 992px) {
-    #hero-shell .hero-bg img { width: 100%; height: 100%; }
+    #hero-shell .hero-bg picture, #hero-shell .hero-bg img { width: 100%; height: 100%; }
   }
   #hero-shell .gradient-top {
     position: absolute; top: 0; left: 0; width: 100%; height: 24.3%;
