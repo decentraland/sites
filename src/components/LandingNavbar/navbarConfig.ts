@@ -28,18 +28,21 @@ const MENU_CONFIG: MenuConfig = {
       { labelKey: 'component.landing.navbar.shop_all', url: 'https://decentraland.org/marketplace' },
       {
         labelKey: 'component.landing.navbar.wearables',
-        url: 'https://decentraland.org/marketplace/browse?assetType=item&section=wearable'
+        url: 'https://decentraland.org/marketplace/browse?assetType=item&section=wearables&status=on_sale'
       },
-      { labelKey: 'component.landing.navbar.emotes', url: 'https://decentraland.org/marketplace/browse?assetType=item&section=emote' },
-      { labelKey: 'component.landing.navbar.names', url: 'https://decentraland.org/marketplace/names/browse' },
+      {
+        labelKey: 'component.landing.navbar.emotes',
+        url: 'https://decentraland.org/marketplace/browse?assetType=item&section=emotes&status=on_sale'
+      },
+      { labelKey: 'component.landing.navbar.names', url: 'https://decentraland.org/marketplace/names/claim' },
       { labelKey: 'component.landing.navbar.land', url: 'https://decentraland.org/marketplace/lands' },
-      { labelKey: 'component.landing.navbar.merch', url: 'https://merch.decentraland.org', isExternal: true }
+      { labelKey: 'component.landing.navbar.merch', url: 'https://store.decentraland.org/', isExternal: true }
     ]
   },
   create: {
     labelKey: 'component.landing.navbar.create',
     items: [
-      { labelKey: 'component.landing.navbar.create_in_decentraland', url: 'https://decentraland.org/creator' },
+      { labelKey: 'component.landing.navbar.create_in_decentraland', url: 'https://decentraland.org/create/' },
       { labelKey: 'component.landing.navbar.publish_wearables_emotes', url: 'https://decentraland.org/builder/collections' },
       { labelKey: 'component.landing.navbar.publish_land', url: 'https://decentraland.org/builder/land' }
     ]
@@ -47,9 +50,9 @@ const MENU_CONFIG: MenuConfig = {
   learn: {
     labelKey: 'component.landing.navbar.learn',
     items: [
-      { labelKey: 'component.landing.navbar.get_started', url: 'https://docs.decentraland.org', isExternal: true },
-      { labelKey: 'component.landing.navbar.start_creating', url: 'https://docs.decentraland.org/creator', isExternal: true },
-      { labelKey: 'component.landing.navbar.see_whats_new', url: 'https://decentraland.org/blog' }
+      { labelKey: 'component.landing.navbar.get_started', url: 'https://docs.decentraland.org/player/', isExternal: true },
+      { labelKey: 'component.landing.navbar.start_creating', url: 'https://docs.decentraland.org/creator/', isExternal: true },
+      { labelKey: 'component.landing.navbar.see_whats_new', url: 'https://decentraland.org/blog/' }
     ]
   }
 }

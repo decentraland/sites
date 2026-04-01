@@ -47,9 +47,10 @@ const criticalCss = `
     box-shadow: 0px 1.333px 24px rgba(0,0,0,0.12), 0px 8px 13.333px rgba(0,0,0,0.14), 0px 4px 6.667px rgba(0,0,0,0.2);
     backdrop-filter: saturate(1.8) blur(20px); -webkit-backdrop-filter: saturate(1.8) blur(20px);
   }
-  #hero-shell-nav .nav-logo { display: flex; align-items: center; text-decoration: none; }
-  #hero-shell-nav .nav-logo svg { width: 40px; height: 40px; flex-shrink: 0; }
-  #hero-shell-nav .nav-logo-full { display: none; height: 40px; }
+  #hero-shell-nav .nav-left { display: flex; align-items: center; gap: 16px; }
+  #hero-shell-nav .nav-logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; width: 40px; height: 40px; }
+  #hero-shell-nav .nav-logo svg { width: 40px; height: 40px; }
+  #hero-shell-nav .nav-logo-name { display: none; height: 20px; }
   #hero-shell-nav .nav-signin {
     all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
     padding: 8px 22px; border: 1px solid #fcfcfc; border-radius: 6px;
@@ -63,8 +64,8 @@ const criticalCss = `
       background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none;
       transition: background 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
     }
-    #hero-shell-nav .nav-logo svg { display: none; }
-    #hero-shell-nav .nav-logo-full { display: block; }
+    #hero-shell-nav .nav-logo { width: 60px; height: 60px; }
+    #hero-shell-nav .nav-logo-name { display: block; }
   }
 
   /* HERO CONTAINER */
@@ -76,11 +77,17 @@ const criticalCss = `
   #hero-shell .hero-bg {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
   }
-  #hero-shell .hero-bg img {
+  #hero-shell .hero-bg img,
+  #hero-shell .hero-bg picture {
     object-fit: cover; display: block;
   }
+  @media (max-width: 991px) {
+    #hero-shell .hero-bg, #hero-shell .hero-bg picture, #hero-shell .hero-bg img {
+      width: 100%; height: 100%;
+    }
+  }
   @media (min-width: 992px) {
-    #hero-shell .hero-bg img { width: 100%; height: 100%; }
+    #hero-shell .hero-bg picture, #hero-shell .hero-bg img { width: 100%; height: 100%; }
   }
   #hero-shell .gradient-top {
     position: absolute; top: 0; left: 0; width: 100%; height: 24.3%;
@@ -193,10 +200,10 @@ const criticalCss = `
 </style>`
 
 const heroHtml = `<div id="hero-shell-nav">
-  <a class="nav-logo" href="https://decentraland.org" aria-label="Decentraland home">
-    ${dclLogoSvg}
-    <img class="nav-logo-full" src="./dcl_logo_and_name.svg" alt="Decentraland" />
-  </a>
+  <div class="nav-left">
+    <a class="nav-logo" href="https://decentraland.org" aria-label="Decentraland home">${dclLogoSvg}</a>
+    <img class="nav-logo-name" src="./dcl_name.svg" alt="Decentraland" />
+  </div>
   <button class="nav-signin">Sign In</button>
 </div>
 <div id="hero-shell">
@@ -253,7 +260,7 @@ const finalHeroHtml = heroHtml
   .replace(/\.\/hero_mobile\.webp/g, `${cdnBase}hero_mobile.webp`)
   .replace(/\.\/hero_tablet\.webp/g, `${cdnBase}hero_tablet.webp`)
   .replace(/\.\/landing_hero\.webp/g, `${cdnBase}landing_hero.webp`)
-  .replace('./dcl_logo_and_name.svg', `${cdnBase}dcl_logo_and_name.svg`)
+  .replace('./dcl_name.svg', `${cdnBase}dcl_name.svg`)
 
 // Place the hero shell BEFORE #root, not inside it.  This is critical for LCP:
 // if the shell is inside #root, either createRoot destroys it (losing the LCP
@@ -269,6 +276,11 @@ html = html.replace(
   `${finalHeroHtml}\n<div id="root">`
 )
 html = html.replace('</head>', `${fontPreload}\n${criticalCss}\n</head>`)
+
+// Rewrite favicon href to CDN so it doesn't 404 on decentraland.zone
+// (the zone server's catch-all returns HTML for /favicon.ico)
+html = html.replace('href="/favicon.ico"', `href="${cdnBase}favicon.ico"`)
+
 writeFileSync(distPath, html)
 
 console.log('✅ Hero shell prerendered into dist/index.html')

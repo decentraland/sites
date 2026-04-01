@@ -335,6 +335,30 @@
           "email": "Email",
           "dao": "DAO",
           "faq": "FAQ"
+        },
+        "newsletter": {
+          "title": "Get the highlights in your inbox",
+          "placeholder": "Enter Your Email",
+          "cta": "Subscribe"
+        },
+        "connect": "Connect",
+        "menu": "Menu",
+        "getting_started": {
+          "title": "Getting Started",
+          "what_is": "What is Decentraland?",
+          "download": "Download Decentraland",
+          "system_requirements": "System Requirements",
+          "faqs": "FAQs",
+          "contact_support": "Contact Support"
+        },
+        "resources": {
+          "title": "Resources",
+          "marketplace": "Marketplace",
+          "creator_hub": "Creator Hub",
+          "docs": "Docs",
+          "blog": "Blog",
+          "dao": "DAO",
+          "vote": "Vote"
         }
       },
       "events_places": {

@@ -13,6 +13,11 @@ const web3Config = createWeb3CoreConfig({
     description: 'Decentraland Landing Site',
     url: typeof window !== 'undefined' ? window.location.origin : 'https://decentraland.org'
   },
+  connectors: {
+    // Disable Coinbase Wallet SDK to avoid COOP header warning.
+    // Users connect via the auth dapp which has its own wallet connectors.
+    coinbaseWallet: false
+  },
   additionalConnectors
 })
 
