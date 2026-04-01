@@ -88,6 +88,7 @@ const CarouselWrapper = styled(Box)(({ theme }) => ({
     transition: 'opacity 0.3s ease, box-shadow 0.3s ease',
     // Tablet + mobile: auto height, full opacity, show mobile card images
     ['@media (max-width: 991px)']: {
+      // Override Swiper's inline width (set from desktop slidesPerView="auto" + width: 750px)
       width: '100% !important',
       height: 'auto',
       opacity: 1,
@@ -168,7 +169,11 @@ const NavButton = styled('button')(({ theme }) => ({
   '&:hover': {
     backgroundColor: 'rgba(0, 0, 0, 0.6)'
   },
-  fontSize: 24
+  fontSize: 24,
+  // Hide on tablet and mobile — only show on desktop (where loop works)
+  ['@media (max-width: 991px)']: {
+    display: 'none'
+  }
 }))
 
 const NavButtonPrev = styled(NavButton)(({ theme }) => ({

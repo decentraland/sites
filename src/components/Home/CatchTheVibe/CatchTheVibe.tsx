@@ -81,7 +81,7 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
     return () => video.removeEventListener('loadedmetadata', handleLoaded)
   }, [])
 
-  const isTouchDevice = 'ontouchstart' in window
+  const isTouchDevice = typeof window !== 'undefined' && !window.matchMedia('(hover: hover)').matches
 
   const handleMobilePlay = useCallback(() => {
     const video = videoRef.current
@@ -96,7 +96,7 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
         // iOS fallback: if unmuted play fails, retry muted
         video.muted = true
         setIsMuted(true)
-        video.play().catch(() => {})
+        video.play().catch(e => console.warn('Video playback failed:', e))
       })
       setIsPlaying(true)
     }
@@ -164,7 +164,7 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
           loop
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
           poster={item.imageUrl}
           src={item.videoUrl}
         />
