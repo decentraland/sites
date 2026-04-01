@@ -36,10 +36,20 @@ function getRemoteComponent(remoteName: string): LazyExoticComponent<ComponentTy
 
   const component = lazy(async () => {
     await remoteInitPromise
+
+    // If no runtime URLs were injected (e.g. Vercel preview without the
+    // sites-deployer worker), skip loading to avoid fetching the build-time
+    // placeholder URL which does not exist.
+    const urls = window.__REMOTE_URLS__
+    const normalizedName = remoteName.replace(/-/g, '_')
+    if (!urls || !(remoteName in urls || normalizedName in urls)) {
+      throw new Error(`[RemoteLoader] No runtime URL for remote "${remoteName}"`)
+    }
+
     // eslint-disable-next-line import/no-unresolved
     const federation = await import('virtual:__federation__')
-    const factory = await federation.__federation_method_getRemote(remoteName, './App')
-    return { default: factory() as ComponentType }
+    const remoteModule = await federation.__federation_method_getRemote(normalizedName, './App')
+    return { default: (remoteModule.default ?? remoteModule) as ComponentType }
   })
 
   remoteCache.set(remoteName, component)
