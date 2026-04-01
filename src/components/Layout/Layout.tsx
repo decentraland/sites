@@ -2,14 +2,13 @@ import { useCallback } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useWalletState } from '@dcl/core-web3/lazy'
 import { usePageTracking } from '@dcl/hooks'
-import type { SupportedLanguage } from 'decentraland-ui2/dist/components/LanguageDropdown/LanguageDropdown.types'
-import { Footer } from 'decentraland-ui2'
 import type { NotificationLocale } from 'decentraland-ui2'
 import { usePageNotifications } from '../../features/notifications/usePageNotifications'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { type SupportedLocale, useLocale } from '../../intl/LocaleContext'
+import { useLocale } from '../../intl/LocaleContext'
 import { redirectToAuth } from '../../utils/authRedirect'
+import { LandingFooter } from '../LandingFooter'
 import { LandingNavbar } from '../LandingNavbar'
 import type { LandingNavbarProps } from '../LandingNavbar'
 import type { LayoutProps } from './Layout.types'
@@ -17,7 +16,7 @@ import type { LayoutProps } from './Layout.types'
 // eslint-disable-next-line react/prop-types
 const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter = true }) => {
   const location = useLocation()
-  const { locale, setLocale } = useLocale()
+  const { locale } = useLocale()
   const { address, isConnected, isConnecting, disconnect } = useWalletState()
   const { data: profile } = useGetProfileQuery(address ?? undefined, { skip: !address })
   const avatar = profile?.avatars?.[0]
@@ -57,9 +56,7 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
         />
       )}
       {children ?? <Outlet />}
-      {withFooter && (
-        <Footer selectedLanguage={locale as SupportedLanguage} onLanguageChange={lang => setLocale(lang as SupportedLocale)} />
-      )}
+      {withFooter && <LandingFooter />}
     </div>
   )
 }

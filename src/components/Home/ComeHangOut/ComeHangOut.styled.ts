@@ -7,16 +7,16 @@ const ComeHangOutContainer = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'flex-start',
   width: '100%',
-  height: 840,
+  height: 600,
   overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
-    height: 600
+    height: 480
   }
 }))
 
 const AvatarsImage = styled('img')(({ theme }) => ({
   position: 'absolute',
-  top: 'calc(40% - 20px)',
+  top: 'calc(35% - 20px)',
   left: '50%',
   transform: 'translateX(-50%)',
   width: 'auto',
@@ -24,7 +24,7 @@ const AvatarsImage = styled('img')(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     position: 'absolute',
     top: 'auto',
-    bottom: 0,
+    bottom: -50,
     left: '50%',
     transform: 'translateX(-50%)',
     width: 'auto',
@@ -40,11 +40,11 @@ const Content = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: theme.spacing(7.5),
-  paddingTop: theme.spacing(7.5),
+  gap: theme.spacing(3),
+  paddingTop: theme.spacing(5),
   [theme.breakpoints.down('sm')]: {
-    paddingTop: theme.spacing(6),
-    gap: theme.spacing(3)
+    paddingTop: theme.spacing(4),
+    gap: theme.spacing(2)
   }
 }))
 
@@ -59,5 +59,58 @@ const Title = styled(Typography)(({ theme }) => ({
   }
 }))
 
-export { AvatarsImage, ComeHangOutContainer, Content, Title }
+const DownloadInfo = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 16,
+  flexWrap: 'wrap',
+  justifyContent: 'center',
+  position: 'relative',
+  zIndex: 1
+})
+
+const DownloadCounts = styled('span')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  color: '#fff',
+  fontSize: 16
+})
+
+const DownloadSeparator = styled('span')({
+  width: 1,
+  height: 20,
+  backgroundColor: 'rgba(255, 255, 255, 0.3)'
+})
+
+const PlatformIcons = styled('span')({
+  display: 'flex',
+  gap: 8,
+  alignItems: 'center'
+})
+
+const PlatformIcon = styled('img')({
+  width: 24,
+  height: 24,
+  filter: 'brightness(0) invert(1)'
+})
+
+const OsIcon = styled('img')({
+  width: 32,
+  height: 32,
+  filter: 'brightness(0) invert(1)'
+})
+
+export {
+  AvatarsImage,
+  ComeHangOutContainer,
+  Content,
+  DownloadCounts,
+  DownloadInfo,
+  DownloadSeparator,
+  OsIcon,
+  PlatformIcon,
+  PlatformIcons,
+  Title
+}
 export { HangOutButton } from '../shared/HangOutButton.styled'

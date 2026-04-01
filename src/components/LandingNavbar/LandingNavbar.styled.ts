@@ -72,6 +72,21 @@ const NavBarRoot = styled('nav')({
       // eslint-disable-next-line @typescript-eslint/naming-convention
       WebkitBackdropFilter: 'none'
     }
+  },
+  // Logged-in on landing: not sticky, no blur on desktop
+  ['&.logged-landing']: {
+    [DESKTOP_BREAKPOINT]: {
+      position: 'absolute'
+    }
+  },
+  ['&.logged-landing::before']: {
+    [DESKTOP_BREAKPOINT]: {
+      background: 'transparent',
+      boxShadow: 'none',
+      backdropFilter: 'none',
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      WebkitBackdropFilter: 'none'
+    }
   }
 })
 
