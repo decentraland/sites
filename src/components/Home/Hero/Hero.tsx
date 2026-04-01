@@ -191,10 +191,10 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
                     <HeroPlatformIcon src={appleLogo} alt="macOS" style={{ filter: 'brightness(0) invert(1)' }} />
                   </HeroPlatformIcons>
                   <HeroPlatformIcons>
-                    <HeroPlatformIcon src={assetUrl('/android.svg')} alt="Android" style={{ filter: 'brightness(0) invert(1)' }} />
+                    <HeroPlatformIcon src={assetUrl('/google_play_icon.svg')} alt="Android" style={{ filter: 'brightness(0) invert(1)' }} />
                   </HeroPlatformIcons>
                   <HeroPlatformIcons>
-                    <HeroPlatformIcon src={assetUrl('/epic_games.svg')} alt="Epic Games" />
+                    <HeroPlatformIcon src={assetUrl('/epic_icon.svg')} alt="Epic Games" style={{ filter: 'brightness(0) invert(1)' }} />
                   </HeroPlatformIcons>
                 </HeroDownloadInfo>
               )}

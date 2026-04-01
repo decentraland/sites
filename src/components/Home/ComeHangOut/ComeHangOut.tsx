@@ -88,8 +88,8 @@ const ComeHangOut = memo(() => {
                 <PlatformIcons>
                   <PlatformIcon src={microsoftLogo} alt="Windows" />
                   <PlatformIcon src={appleLogo} alt="macOS" />
-                  <PlatformIcon src={assetUrl('/android.svg')} alt="Android" />
-                  <img src={assetUrl('/epic_games.svg')} alt="Epic Games" style={{ width: 24, height: 24, opacity: 0.9 }} />
+                  <PlatformIcon src={assetUrl('/google_play_icon.svg')} alt="Android" />
+                  <PlatformIcon src={assetUrl('/epic_icon.svg')} alt="Epic Games" />
                 </PlatformIcons>
               </DownloadInfo>
             )}
