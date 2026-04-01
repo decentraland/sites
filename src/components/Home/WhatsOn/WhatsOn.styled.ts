@@ -26,6 +26,8 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   }
 }))
 
+const JUMP_IN_HEIGHT = 62
+
 const CardsGrid = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
@@ -33,11 +35,35 @@ const CardsGrid = styled(Box)(({ theme }) => ({
   width: '100%',
   position: 'relative',
   zIndex: 10,
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+  /* eslint-disable @typescript-eslint/naming-convention */
   '& > *': {
-    flex: '0 1 510px',
-    minHeight: 452
+    flex: '0 1 510px'
   },
+  '& .MuiCard-root': {
+    containerType: 'inline-size',
+    height: 'auto'
+  },
+  '& .MuiCardActionArea-root': {
+    height: '100%'
+  },
+  '& .MuiCardMedia-root': {
+    height: '62.5cqw !important'
+  },
+  '& .MuiCardActionArea-root:hover .MuiCardMedia-root': {
+    height: `calc(62.5cqw - ${JUMP_IN_HEIGHT}px) !important`
+  },
+  '& .MuiCardContent-root .MuiTypography-h6': {
+    display: 'block',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    WebkitLineClamp: 'unset',
+    WebkitBoxOrient: 'unset'
+  },
+  '& .MuiCardContent-root .MuiBox-root .MuiBox-root:has(.MuiAvatar-root)': {
+    maxWidth: '100%'
+  },
+  /* eslint-enable @typescript-eslint/naming-convention */
   [theme.breakpoints.down('sm')]: {
     display: 'none'
   }
