@@ -72,6 +72,9 @@ const VideoCard = styled(Box)(({ theme }) => ({
   },
   [theme.breakpoints.down('md')]: {
     height: 320
+  },
+  [theme.breakpoints.down('sm')]: {
+    margin: '0 auto'
   }
 }))
 
