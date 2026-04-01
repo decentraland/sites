@@ -79,8 +79,6 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const osImage = userAgentData ? imageByOs[userAgentData.os.name] : null
 
   const isMobileAndroid = !!userAgentData?.mobile && userAgentData.os.name === 'Android'
-  const isMobileIos = !!userAgentData?.mobile && userAgentData.os.name === 'iOS'
-  const isMobileVariant = isMobileAndroid || isMobileIos
 
   // Remove the prerendered hero shell now that React's Hero has mounted.
   // Capture the initial viewport height for mobile so the hero doesn't resize
@@ -139,7 +137,9 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
       <GradientTop />
       <GradientBottom />
 
-      {isMobileAndroid && (
+      {/* Mobile: always show iOS-style layout to avoid jumps while UA loads.
+          Android-specific content replaces it once detected. */}
+      {!isDesktop && isMobileAndroid && (
         <MobileHeroContent>
           <MobileHeroTitle>{l('page.home.hero.mobile_android_title')}</MobileHeroTitle>
           <MobileHeroSubtitle>{l('page.home.hero.mobile_android_subtitle')}</MobileHeroSubtitle>
@@ -149,7 +149,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
         </MobileHeroContent>
       )}
 
-      {isMobileIos && (
+      {!isDesktop && !isMobileAndroid && (
         <MobileHeroContent>
           <MobileHeroTitle>{l('page.home.hero.title')}</MobileHeroTitle>
           <MobileHeroSubtitle>{l('page.home.hero.mobile_ios_subtitle')}</MobileHeroSubtitle>
@@ -164,7 +164,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
         </MobileHeroContent>
       )}
 
-      {!isMobileVariant && (
+      {isDesktop && (
         <HeroContent>
           <HeroTitle variant={isDesktop ? 'h2' : 'h3'}>{l('page.home.hero.title')}</HeroTitle>
 

@@ -56,7 +56,6 @@ const WeeklyRituals = memo(() => {
               modules={[Pagination, Autoplay]}
               pagination={{ clickable: true }}
               autoplay={{ delay: 4000, disableOnInteraction: false }}
-              loop
               slidesPerView={2}
               spaceBetween={16}
               onSwiper={swiper => {
@@ -76,9 +75,7 @@ const WeeklyRituals = memo(() => {
               modules={[Pagination, Autoplay]}
               pagination={{ clickable: true }}
               autoplay={{ delay: 4000, disableOnInteraction: false }}
-              loop
               slidesPerView={1}
-              centeredSlides
               spaceBetween={12}
               onSwiper={swiper => {
                 swiperRef.current = swiper

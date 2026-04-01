@@ -58,11 +58,11 @@ const VideoCard = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  '&:hover .catch-vibe-video': {
+  '&:hover .catch-vibe-video, &.playing .catch-vibe-video': {
     opacity: 1
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  '&:hover .catch-vibe-image': {
+  '&:hover .catch-vibe-image, &.playing .catch-vibe-image': {
     opacity: 0
   },
   [theme.breakpoints.down('lg')]: {
@@ -131,20 +131,32 @@ const CommunityLabel = styled(Typography)({
   lineHeight: 1.57
 })
 
-const PlayBadge = styled(Box)({
+const PlayBadge = styled(Box)(({ theme }) => ({
   position: 'absolute',
-  bottom: 13,
-  left: 13,
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
   display: 'flex',
   alignItems: 'center',
-  gap: 4,
-  height: 26,
-  padding: '5.5px 6px',
-  borderRadius: 8,
-  backgroundColor: '#161518',
+  justifyContent: 'center',
+  backgroundColor: 'rgba(0, 0, 0, 0.3)',
   zIndex: 2,
-  transition: 'opacity 0.3s ease'
-})
+  cursor: 'pointer',
+  transition: 'opacity 0.3s ease',
+  // Desktop: small badge at bottom-left
+  [theme.breakpoints.up('sm')]: {
+    top: 'auto',
+    right: 'auto',
+    bottom: 13,
+    left: 13,
+    width: 'auto',
+    height: 26,
+    padding: '5.5px 6px',
+    borderRadius: 8,
+    backgroundColor: '#161518'
+  }
+}))
 
 const MuteButton = styled('button')({
   position: 'absolute',
@@ -169,22 +181,31 @@ const MuteButton = styled('button')({
   }
 })
 
-const PlayIcon = styled(Box)({
+const PlayIcon = styled(Box)(({ theme }) => ({
   width: 0,
   height: 0,
   borderStyle: 'solid',
-  borderWidth: '5px 0 5px 8px',
   borderColor: 'transparent transparent transparent #FCFCFC',
-  flexShrink: 0
-})
+  flexShrink: 0,
+  // Mobile: large centered play triangle
+  borderWidth: '20px 0 20px 34px',
+  // Desktop: small badge play triangle
+  [theme.breakpoints.up('sm')]: {
+    borderWidth: '5px 0 5px 8px'
+  }
+}))
 
-const DurationText = styled(Typography)({
+const DurationText = styled(Typography)(({ theme }) => ({
   color: '#FCFCFC',
   fontWeight: 600,
   fontSize: 14,
   lineHeight: 'normal',
-  whiteSpace: 'nowrap'
-})
+  whiteSpace: 'nowrap',
+  // Hide duration in mobile overlay — only show on desktop badge
+  [theme.breakpoints.down('sm')]: {
+    display: 'none'
+  }
+}))
 
 const PersonaImage = styled('img')(({ theme }) => ({
   position: 'absolute',

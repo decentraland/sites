@@ -22,7 +22,13 @@ const HeroBackground = styled(Box)({
   height: '100%',
   zIndex: 0,
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& > video, & > img': {
+  '& > video, & > img, & > picture': {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover'
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& > picture > img': {
     width: '100%',
     height: '100%',
     objectFit: 'cover'

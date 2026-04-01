@@ -55,7 +55,9 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
   const { data: profile } = useGetProfileQuery(item.userAddress, { skip: !item.userAddress })
   const fetchedAvatar = profile?.avatars?.[0] as Avatar | undefined
   // AvatarFace only passes through URLs starting with https://.
-  const fallbackFace = `${window.location.origin}${item.userAvatarUrl}`.replace(/^http:\/\//, 'https://')
+  const fallbackFace = item.userAvatarUrl.startsWith('http')
+    ? item.userAvatarUrl
+    : `${window.location.origin}${item.userAvatarUrl}`.replace(/^http:\/\//, 'https://')
 
   // Use fetched profile if it has a face256 snapshot, otherwise fall back to static image
   const hasFace = !!fetchedAvatar?.avatar?.snapshots?.face256
@@ -78,6 +80,46 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
     video.addEventListener('loadedmetadata', handleLoaded)
     return () => video.removeEventListener('loadedmetadata', handleLoaded)
   }, [])
+
+  const isTouchDevice = 'ontouchstart' in window
+
+  const handleMobilePlay = useCallback(() => {
+    const video = videoRef.current
+    if (!video) return
+    if (isPlaying) {
+      video.pause()
+      setIsPlaying(false)
+    } else {
+      video.muted = false
+      setIsMuted(false)
+      video.play().catch(() => {
+        // iOS fallback: if unmuted play fails, retry muted
+        video.muted = true
+        setIsMuted(true)
+        video.play().catch(() => {})
+      })
+      setIsPlaying(true)
+    }
+  }, [isPlaying])
+
+  // Pause video when it scrolls out of view (e.g. swiper slide change)
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video || !isTouchDevice) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting && !video.paused) {
+          video.pause()
+          video.currentTime = 0
+          setIsPlaying(false)
+          setIsMuted(true)
+        }
+      },
+      { threshold: 0.3 }
+    )
+    observer.observe(video)
+    return () => observer.disconnect()
+  }, [isTouchDevice])
 
   const handleMouseEnter = useCallback(() => {
     const video = videoRef.current
@@ -108,10 +150,24 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
   }, [])
 
   return (
-    <VideoCard onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <VideoCard
+      className={isPlaying ? 'playing' : ''}
+      onMouseEnter={isTouchDevice ? undefined : handleMouseEnter}
+      onMouseLeave={isTouchDevice ? undefined : handleMouseLeave}
+      onClick={isTouchDevice ? handleMobilePlay : undefined}
+    >
       <MediaContainer>
         <CardImage className="catch-vibe-image" src={item.imageUrl} alt={item.userName} loading="lazy" width={680} height={382} />
-        <VideoElement className="catch-vibe-video" ref={videoRef} loop muted playsInline preload="metadata" src={item.videoUrl} />
+        <VideoElement
+          className="catch-vibe-video"
+          ref={videoRef}
+          loop
+          muted
+          playsInline
+          preload="auto"
+          poster={item.imageUrl}
+          src={item.videoUrl}
+        />
         {!isPlaying && (
           <PlayBadge>
             <PlayIcon />
