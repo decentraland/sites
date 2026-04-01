@@ -76,8 +76,14 @@ const criticalCss = `
   #hero-shell .hero-bg {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
   }
-  #hero-shell .hero-bg img {
+  #hero-shell .hero-bg img,
+  #hero-shell .hero-bg picture {
     object-fit: cover; display: block;
+  }
+  @media (max-width: 991px) {
+    #hero-shell .hero-bg, #hero-shell .hero-bg picture, #hero-shell .hero-bg img {
+      width: 100%; height: 100%;
+    }
   }
   @media (min-width: 992px) {
     #hero-shell .hero-bg img { width: 100%; height: 100%; }
@@ -269,6 +275,11 @@ html = html.replace(
   `${finalHeroHtml}\n<div id="root">`
 )
 html = html.replace('</head>', `${fontPreload}\n${criticalCss}\n</head>`)
+
+// Rewrite favicon href to CDN so it doesn't 404 on decentraland.zone
+// (the zone server's catch-all returns HTML for /favicon.ico)
+html = html.replace('href="/favicon.ico"', `href="${cdnBase}favicon.ico"`)
+
 writeFileSync(distPath, html)
 
 console.log('✅ Hero shell prerendered into dist/index.html')

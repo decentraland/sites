@@ -7,16 +7,16 @@ const ComeHangOutContainer = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'flex-start',
   width: '100%',
-  height: 840,
+  height: 600,
   overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
-    height: 600
+    height: 480
   }
 }))
 
 const AvatarsImage = styled('img')(({ theme }) => ({
   position: 'absolute',
-  top: 'calc(40% - 20px)',
+  top: 'calc(35% - 20px)',
   left: '50%',
   transform: 'translateX(-50%)',
   width: 'auto',
@@ -40,11 +40,11 @@ const Content = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: theme.spacing(7.5),
-  paddingTop: theme.spacing(7.5),
+  gap: theme.spacing(3),
+  paddingTop: theme.spacing(5),
   [theme.breakpoints.down('sm')]: {
-    paddingTop: theme.spacing(6),
-    gap: theme.spacing(3)
+    paddingTop: theme.spacing(4),
+    gap: theme.spacing(2)
   }
 }))
 
