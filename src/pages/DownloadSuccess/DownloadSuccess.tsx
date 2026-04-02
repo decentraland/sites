@@ -1,8 +1,8 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAnalytics, useTranslation } from '@dcl/hooks'
-import { FooterLanding } from 'decentraland-ui2/dist/components/FooterLanding/FooterLanding'
 import { Logo, Typography } from 'decentraland-ui2'
+import { LandingFooter } from '../../components/LandingFooter'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsLauncher from '../../images/download/macos_launcher.webp'
@@ -277,7 +277,7 @@ const DownloadSuccess = memo(() => {
         </DownloadSuccessFooterContainer>
       </DownloadSuccessPageContainer>
 
-      <FooterLanding />
+      <LandingFooter />
     </>
   )
 })

@@ -1,0 +1,1 @@
+export { CreatorsFaqs } from './Faqs'

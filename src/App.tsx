@@ -21,8 +21,13 @@ const SecurityPage = lazy(() => import('./pages/security').then(m => ({ default:
 const SignInRedirect = lazy(() => import('./pages/SignInRedirect').then(m => ({ default: m.SignInRedirect })))
 const TermsOfUse = lazy(() => import('./pages/terms').then(m => ({ default: m.TermsOfUse })))
 const DownloadSuccessPage = lazy(() => import('./pages/DownloadSuccess').then(m => ({ default: m.DownloadSuccess })))
+const CreatorHubDownloadPage = lazy(() => import('./pages/download/CreatorHubDownload').then(m => ({ default: m.CreatorHubDownload })))
+const CreatorHubDownloadSuccessPage = lazy(() =>
+  import('./pages/download/CreatorHubDownloadSuccess').then(m => ({ default: m.CreatorHubDownloadSuccess }))
+)
 const HelpPage = lazy(() => import('./pages/help').then(m => ({ default: m.HelpPage })))
 const InvitePage = lazy(() => import('./pages/invite/InvitePage').then(m => ({ default: m.InvitePage })))
+const CreatePage = lazy(() => import('./pages/create').then(m => ({ default: m.CreatePage })))
 
 const App = () => {
   return (
@@ -43,6 +48,9 @@ const App = () => {
             <Route path="/referral-terms" element={<ReferralTerms />} />
             <Route path="/terms" element={<TermsOfUse />} />
             <Route path="/help" element={<HelpPage />} />
+            <Route path="/create" element={<CreatePage />} />
+            <Route path="/download/creator-hub" element={<CreatorHubDownloadPage />} />
+            <Route path="/download/creator-hub-success" element={<CreatorHubDownloadSuccessPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
             <Route path="/whats-on/*" element={<RemoteLoader name="whats_on" />} />
             <Route path="*" element={<Navigate to="/" replace />} />
