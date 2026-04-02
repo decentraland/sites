@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useAnalytics, useTranslation } from '@dcl/hooks'
 import { FooterLanding } from 'decentraland-ui2/dist/components/FooterLanding/FooterLanding'
 import { Logo, Typography } from 'decentraland-ui2'
@@ -41,10 +41,9 @@ import {
 } from './DownloadSuccess.styled'
 
 const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
-const autoDownloadStartedForLocationKeys = new Set<string>()
+const AUTO_DOWNLOAD_HISTORY_STATE_KEY = 'downloadSuccess:autoDownloadKey'
 
 const DownloadSuccess = memo(() => {
-  const location = useLocation()
   const [searchParams] = useSearchParams()
   const { intl } = useTranslation()
   const { isInitialized, track } = useAnalytics()
@@ -124,11 +123,22 @@ const DownloadSuccess = memo(() => {
   const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
 
   useEffect(() => {
-    if (autoDownloadStartedForLocationKeys.has(location.key)) {
+    const autoDownloadKey = `${clientOS}:${clientArch}`
+    const historyState =
+      window.history.state && typeof window.history.state === 'object' ? (window.history.state as Record<string, unknown>) : {}
+
+    if (historyState[AUTO_DOWNLOAD_HISTORY_STATE_KEY] === autoDownloadKey) {
       return
     }
 
-    autoDownloadStartedForLocationKeys.add(location.key)
+    window.history.replaceState(
+      {
+        ...historyState,
+        [AUTO_DOWNLOAD_HISTORY_STATE_KEY]: autoDownloadKey
+      },
+      '',
+      window.location.href
+    )
 
     let cancelled = false
 
@@ -176,7 +186,7 @@ const DownloadSuccess = memo(() => {
     return () => {
       cancelled = true
     }
-  }, [clientOS, clientArch, location.key])
+  }, [clientOS, clientArch])
 
   const handleDownloadClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {
