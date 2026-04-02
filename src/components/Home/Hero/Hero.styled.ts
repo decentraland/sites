@@ -1,4 +1,14 @@
 import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
+import { DCL_RED } from '../shared/colors'
+
+const fullCoverageOverlay = {
+  position: 'absolute' as const,
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  pointerEvents: 'none' as const
+}
 
 const HeroContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -36,65 +46,53 @@ const HeroBackground = styled(Box)({
 })
 
 const GradientTop = styled(Box)({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  width: '100%',
+  ...fullCoverageOverlay,
   height: '28%',
   background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%)',
-  zIndex: 1
+  willChange: 'transform',
+  zIndex: 2
 })
 
 const GradientBottom = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  width: '100%',
-  height: '100%',
+  ...fullCoverageOverlay,
   background: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 66.6%, rgba(12, 12, 12, 0.8) 100%)',
-  zIndex: 1,
+  willChange: 'transform',
+  zIndex: 5,
   [theme.breakpoints.down('sm')]: {
     background: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(12, 12, 12, 0.9) 100%)'
   }
 }))
 
 const BackgroundOverlay = styled(Box)({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  width: '100%',
-  height: '100%',
+  ...fullCoverageOverlay,
   background: 'linear-gradient(to right, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 82%)',
-  zIndex: 1
+  willChange: 'transform',
+  zIndex: 3
 })
 
-const HalftoneOverlay = styled(Box)({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  width: '100%',
-  height: '100%',
-  zIndex: 1,
+const HalftoneOverlay = styled(Box)(({ theme }) => ({
+  ...fullCoverageOverlay,
   opacity: 0.06,
   backgroundImage:
-    'repeating-linear-gradient(0deg, rgba(255,255,255,0.8) 0px, rgba(255,255,255,0.8) 1.1px, transparent 1.1px, transparent 4px)',
+    'repeating-linear-gradient(0deg, rgba(255,255,255,0.8) 0px, rgba(255,255,255,0.8) 1px, transparent 1px, transparent 4px)',
   backgroundSize: '100% 4px',
-  pointerEvents: 'none'
-})
+  willChange: 'transform',
+  zIndex: 1,
+  [theme.breakpoints.down('sm')]: {
+    display: 'none'
+  }
+}))
 
 const RadialVignette = styled(Box)({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  width: '100%',
-  height: '100%',
+  ...fullCoverageOverlay,
   background: 'radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.7) 100%)',
-  zIndex: 1
+  willChange: 'transform',
+  zIndex: 4
 })
 
 const HeroContent = styled(Box)(({ theme }) => ({
   position: 'relative',
-  zIndex: 2,
+  zIndex: 10,
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -146,7 +144,7 @@ const AlreadyUserText = styled(Typography)({
 })
 
 const AlreadyUserDownloadLink = styled('a')({
-  color: '#FF2D55',
+  color: DCL_RED,
   textDecoration: 'none',
   textTransform: 'uppercase',
   fontWeight: 600,
@@ -204,12 +202,6 @@ const HeroPlatformIcon = styled('img')({
   height: 24
 })
 
-const HeroPlatformLabel = styled(Typography)({
-  color: '#ECEBED',
-  fontSize: 16,
-  lineHeight: 1.5
-})
-
 const HeroOsIcon = styled('img')({
   width: 32,
   height: 32,
@@ -218,7 +210,7 @@ const HeroOsIcon = styled('img')({
 
 const MobileHeroContent = styled(Box)(({ theme }) => ({
   position: 'relative',
-  zIndex: 2,
+  zIndex: 10,
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -257,7 +249,7 @@ const GooglePlayButton = styled('a')({
   maxWidth: 345,
   height: 64,
   borderRadius: 12,
-  backgroundColor: '#FF2D55',
+  backgroundColor: DCL_RED,
   textDecoration: 'none',
   cursor: 'pointer',
   boxShadow: 'rgba(0, 0, 0, 0.4) 0px 2px 8px',
@@ -285,7 +277,7 @@ const SendLinkButton = styled('button')({
   maxWidth: 345,
   height: 46,
   borderRadius: 12,
-  backgroundColor: '#FF2D55',
+  backgroundColor: DCL_RED,
   border: 'none',
   cursor: 'pointer',
   fontFamily: 'Inter, sans-serif',
@@ -352,7 +344,6 @@ export {
   HeroOsIcon,
   HeroPlatformIcon,
   HeroPlatformIcons,
-  HeroPlatformLabel,
   HeroPlatformSeparator,
   HeroTitle,
   MobileHeroContent,
