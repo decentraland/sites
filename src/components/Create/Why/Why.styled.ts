@@ -6,13 +6,6 @@ const WhySection = styled('section')(({ theme }) => ({
   gap: '1em',
   width: '100%',
   paddingBottom: 100,
-  opacity: 0,
-  transition: 'transform 0.9s cubic-bezier(0.4, 0, 0.2, 1), opacity 1.3s',
-  transform: 'translate(0, 100px)',
-  ['&.visible']: {
-    opacity: 1,
-    transform: 'translate(0, 0)'
-  },
   [theme.breakpoints.down('sm')]: {
     paddingBottom: 40,
     paddingLeft: theme.spacing(4),

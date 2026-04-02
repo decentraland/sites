@@ -1,21 +1,14 @@
 import { Box, Typography, styled } from 'decentraland-ui2'
 
-const ConnectSection = styled('section')(() => ({
+const ConnectSection = styled('section')({
   position: 'relative',
   overflow: 'hidden',
   width: '100%',
   backgroundRepeat: 'no-repeat',
   backgroundPosition: 'center',
   paddingLeft: 0,
-  paddingRight: 0,
-  opacity: 0,
-  transition: 'transform 0.9s cubic-bezier(0.4, 0, 0.2, 1), opacity 1.3s',
-  transform: 'translate(0, 100px)',
-  ['&.visible']: {
-    opacity: 1,
-    transform: 'translate(0, 0)'
-  }
-}))
+  paddingRight: 0
+})
 
 const ConnectTitle = styled(Typography)(({ theme }) => ({
   textAlign: 'center',

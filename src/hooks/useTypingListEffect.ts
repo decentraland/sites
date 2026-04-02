@@ -1,37 +1,49 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useReducer, useRef } from 'react'
 
 const DELAY = 100
+const PAUSE_DELAY = DELAY * 10
+
+type TypingState = {
+  letterPos: number
+  wordIndex: number
+  action: 'write' | 'erase'
+}
+
+type TypingAction = { type: 'tick'; wordLength: number; listLength: number }
+
+function typingReducer(state: TypingState, { wordLength, listLength }: TypingAction): TypingState {
+  if (state.action === 'write') {
+    if (state.letterPos === wordLength - 1) {
+      return { ...state, action: 'erase' }
+    }
+    return { ...state, letterPos: state.letterPos + 1 }
+  }
+
+  if (state.letterPos === 0) {
+    return {
+      letterPos: 0,
+      wordIndex: (state.wordIndex + 1) % listLength,
+      action: 'write'
+    }
+  }
+
+  return { ...state, letterPos: state.letterPos - 1 }
+}
 
 function useTypingListEffect(list: string[]) {
-  const [currentLetterPosition, setCurrentLetterPosition] = useState(0)
-  const [currentWordIndex, setCurrentWordIndex] = useState(0)
-  const [typingAction, setTypingAction] = useState<'write' | 'erase'>('write')
+  const [state, dispatch] = useReducer(typingReducer, { letterPos: 0, wordIndex: 0, action: 'write' })
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
 
+  const wordLength = list[state.wordIndex].length
+  const isAtEnd = state.letterPos === wordLength - 1
+
   useEffect(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current)
-
-    timeoutRef.current = setTimeout(
-      () => {
-        setCurrentLetterPosition(currentLetterIndex => {
-          if (typingAction === 'write' && currentLetterIndex === list[currentWordIndex].length - 1) {
-            setTypingAction('erase')
-          } else if (typingAction === 'write') {
-            return currentLetterIndex + 1
-          } else if (typingAction === 'erase' && currentLetterIndex === 0) {
-            setTypingAction('write')
-            setCurrentWordIndex(wordIndex => (wordIndex + 1 >= list.length ? 0 : wordIndex + 1))
-            return 0
-          }
-          return currentLetterIndex - 1
-        })
-      },
-      currentLetterPosition === list[currentWordIndex].length - 1 ? DELAY * 10 : DELAY
-    )
+    clearTimeout(timeoutRef.current)
+    timeoutRef.current = setTimeout(() => dispatch({ type: 'tick', wordLength, listLength: list.length }), isAtEnd ? PAUSE_DELAY : DELAY)
     return () => clearTimeout(timeoutRef.current)
-  }, [currentLetterPosition, typingAction, currentWordIndex, list])
+  }, [state, wordLength, list.length, isAtEnd])
 
-  return useMemo(() => list[currentWordIndex].slice(0, currentLetterPosition + 1), [currentLetterPosition, currentWordIndex, list])
+  return useMemo(() => list[state.wordIndex].slice(0, state.letterPos + 1), [state.letterPos, state.wordIndex, list])
 }
 
 export { useTypingListEffect }

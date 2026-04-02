@@ -1,4 +1,4 @@
-import { Box, Button, Typography, styled } from 'decentraland-ui2'
+import { Box, Typography, styled } from 'decentraland-ui2'
 
 const PageContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -43,11 +43,6 @@ const InfoContainer = styled(Box)(({ theme }) => ({
   minWidth: 0
 }))
 
-const DclIcon = styled('img')({
-  width: '48px',
-  height: '48px'
-})
-
 const Title = styled(Typography)(({ theme }) => ({
   fontWeight: 600,
   fontSize: '2.5rem',
@@ -75,46 +70,4 @@ const DownloadActions = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2)
 }))
 
-const DownloadButtonImage = styled('img')({
-  width: '20px',
-  height: '20px',
-  filter: 'brightness(0) invert(1)'
-})
-
-const AlsoAvailableContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1.5)
-}))
-
-const AlsoAvailableText = styled(Typography)({
-  fontSize: '14px',
-  color: 'rgba(255, 255, 255, 0.7)'
-})
-
-const AlternativeIconButton = styled(Button)({
-  minWidth: 'unset',
-  padding: '4px',
-  borderRadius: '4px'
-})
-
-const AlternativeButtonImage = styled('img')({
-  width: '20px',
-  height: '20px',
-  filter: 'brightness(0) invert(1)'
-})
-
-export {
-  AlsoAvailableContainer,
-  AlsoAvailableText,
-  AlternativeButtonImage,
-  AlternativeIconButton,
-  BannerImage,
-  CardContainer,
-  DclIcon,
-  DownloadActions,
-  DownloadButtonImage,
-  InfoContainer,
-  PageContainer,
-  Title
-}
+export { BannerImage, CardContainer, DownloadActions, InfoContainer, PageContainer, Title }

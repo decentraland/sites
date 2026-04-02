@@ -9,13 +9,6 @@ const EarnSection = styled('section')(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   overflow: 'hidden',
-  opacity: 0,
-  transition: 'transform 0.9s cubic-bezier(0.4, 0, 0.2, 1), opacity 1.3s',
-  transform: 'translate(0, 100px)',
-  ['&.visible']: {
-    opacity: 1,
-    transform: 'translate(0, 0)'
-  },
   [theme.breakpoints.down('sm')]: {
     height: 'auto',
     padding: `0 ${theme.spacing(4)}`

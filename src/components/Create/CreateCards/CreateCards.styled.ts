@@ -9,13 +9,6 @@ const CreateSection = styled('section')(({ theme }) => ({
   marginBottom: 40,
   padding: 0,
   position: 'relative',
-  opacity: 0,
-  transition: 'transform 0.9s cubic-bezier(0.4, 0, 0.2, 1), opacity 1.3s',
-  transform: 'translate(0, 100px)',
-  ['&.visible']: {
-    opacity: 1,
-    transform: 'translate(0, 0)'
-  },
   [theme.breakpoints.down('sm')]: {
     paddingLeft: theme.spacing(4),
     paddingRight: theme.spacing(4),

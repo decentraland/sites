@@ -608,11 +608,11 @@
     "creators_landing": {
       "why": {
         "title": "creators choose Decentraland",
-        "title_hightlight": "Why"
+        "title_highlight": "Why"
       },
       "create": {
         "title": "Explore the ",
-        "title_hightlight": "creative",
+        "title_highlight": "creative",
         "title_second_part": " possibilities",
         "tab": {
           "required_skills": "Required Skills",
@@ -621,12 +621,12 @@
       },
       "connect": {
         "title": "Decentraland creators say",
-        "title_hightlight": "What",
+        "title_highlight": "What",
         "join_the_community": "Join the Community"
       },
       "learn": {
         "title": "from Community Tutorials",
-        "title_hightlight": "Learn",
+        "title_highlight": "Learn",
         "watch_more": "Want to see more?",
         "watch_more_button": "visit our youtube channel",
         "watch_more_target": "https://www.youtube.com/@decentraland_foundation/videos",
@@ -637,7 +637,7 @@
       "earn": {
         "title": "Want to create but not a creator?",
         "second_title": "Hire the best through ",
-        "title_hightlight": "Decentraland Studios",
+        "title_highlight": "Decentraland Studios",
         "subtitle": "Browse a vetted registry of Decentraland's most talented creators skilled in:",
         "browse_creator_label": "Ready to get started?",
         "browse_creator_button": "browse creators",

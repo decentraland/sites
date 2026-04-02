@@ -1,7 +1,7 @@
 import { memo, useState } from 'react'
-import { useInView } from 'react-intersection-observer'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { Carousel } from '../../Carousel'
+import { AnimatedSection } from '../AnimatedSection'
 import { createCards } from '../data'
 import type { CreateCardData, CreateCardTab } from '../data'
 import {
@@ -98,17 +98,17 @@ const keyExtractor = (card: CreateCardData) => card.id
 
 const CreatorsCreate = memo(() => {
   const l = useFormatMessage()
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 })
-
   return (
-    <CreateSection ref={ref} className={inView ? 'visible' : ''}>
-      <CreateTitle>
-        {l('component.creators_landing.create.title')}
-        <span>{l('component.creators_landing.create.title_hightlight')}</span>
-        {l('component.creators_landing.create.title_second_part')}
-      </CreateTitle>
-      <Carousel items={createCards} renderItem={renderCard} keyExtractor={keyExtractor} slideWidth={1200} autoplayDelay={0} />
-    </CreateSection>
+    <AnimatedSection>
+      <CreateSection>
+        <CreateTitle>
+          {l('component.creators_landing.create.title')}
+          <span>{l('component.creators_landing.create.title_highlight')}</span>
+          {l('component.creators_landing.create.title_second_part')}
+        </CreateTitle>
+        <Carousel items={createCards} renderItem={renderCard} keyExtractor={keyExtractor} slideWidth={1200} autoplayDelay={0} />
+      </CreateSection>
+    </AnimatedSection>
   )
 })
 
