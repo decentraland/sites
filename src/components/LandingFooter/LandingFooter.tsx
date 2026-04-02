@@ -1,4 +1,4 @@
-import { FormEvent, memo, useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useAnalytics } from '@dcl/hooks'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { type SupportedLocale, useLocale } from '../../intl/LocaleContext'
@@ -15,8 +15,6 @@ import {
   DesktopLegalLinks,
   DropdownChevron,
   DropdownContent,
-  EmailInput,
-  EmailRow,
   FooterLink,
   FooterMain,
   FooterRoot,
@@ -36,11 +34,10 @@ import {
   RightColumn,
   SectionLabel,
   SocialRow,
-  SubscribeButton,
   Wordmark
 } from './LandingFooter.styled'
 
-const BEEHIIV_SUBSCRIBE_URL = 'https://embeds.beehiiv.com/f8da188c-39d0-4fd9-9631-1a39cf9ed00d'
+const BEEHIIV_EMBED_URL = 'https://embeds.beehiiv.com/ff89783d-748b-4ba3-8700-4759f6f62831?slim=true'
 
 const socialIconMap: Record<string, React.FC> = {
   Discord,
@@ -95,7 +92,6 @@ const LandingFooter = memo(() => {
   const l = useFormatMessage()
   const { locale, setLocale } = useLocale()
   const { isInitialized, track } = useAnalytics()
-  const [email, setEmail] = useState('')
   const [openSection, setOpenSection] = useState<string | null>(null)
   const [langOpen, setLangOpen] = useState(false)
   const langRef = useRef<HTMLDivElement>(null)
@@ -113,17 +109,6 @@ const LandingFooter = memo(() => {
   const handleSocialClick = useCallback(
     (platform: string) => trackFooter(SectionViewedTrack.LANDING_FOOTER_SOCIAL, { platform }),
     [trackFooter]
-  )
-
-  const handleSubscribe = useCallback(
-    (e: FormEvent) => {
-      e.preventDefault()
-      if (!email.trim()) return
-      trackFooter(SectionViewedTrack.LANDING_FOOTER_SUBSCRIBE)
-      window.open(`${BEEHIIV_SUBSCRIBE_URL}?email=${encodeURIComponent(email.trim())}`, '_blank', 'noopener')
-      setEmail('')
-    },
-    [email, trackFooter]
   )
 
   const toggleSection = useCallback((key: string) => {
@@ -151,16 +136,15 @@ const LandingFooter = memo(() => {
 
           <NewsletterSection>
             <NewsletterTitle>{l('component.landing.footer.newsletter.title')}</NewsletterTitle>
-            <EmailRow onSubmit={handleSubscribe}>
-              <EmailInput
-                type="email"
-                placeholder={l('component.landing.footer.newsletter.placeholder')}
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-              />
-              <SubscribeButton type="submit">{l('component.landing.footer.newsletter.cta')}</SubscribeButton>
-            </EmailRow>
+            <iframe
+              src={BEEHIIV_EMBED_URL}
+              data-test-id="beehiiv-embed"
+              height="52"
+              frameBorder="0"
+              scrolling="no"
+              style={{ width: '100%', maxWidth: 450, border: 'none', borderRadius: 6 }}
+              title="Newsletter signup"
+            />
           </NewsletterSection>
 
           <ConnectSection className="desktop-only">
