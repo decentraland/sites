@@ -43,6 +43,8 @@ const Content = styled(Box)(({ theme }) => ({
   gap: theme.spacing(3),
   padding: theme.spacing(10, 8),
   [theme.breakpoints.down('sm')]: {
+    width: '100%',
+    maxWidth: 393,
     padding: theme.spacing(6, 2),
     gap: theme.spacing(2)
   }
@@ -151,3 +153,4 @@ export {
   Title
 }
 export { HangOutButton } from '../shared/HangOutButton.styled'
+export { GooglePlayButton, GooglePlayImage, MobileHeroSubtitle, SendLinkButton } from '../Hero/Hero.styled'
