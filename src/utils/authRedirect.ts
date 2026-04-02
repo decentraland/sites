@@ -47,14 +47,32 @@ function resolveAuthUrl(): string {
   return 'https://decentraland.zone/auth'
 }
 
+/**
+ * Clear wagmi's "disconnected" flags so connectors will attempt reconnection
+ * after the user comes back from auth. Wagmi persists these flags when
+ * disconnect() is called and refuses to auto-reconnect if they exist.
+ * We preserve wagmi.store and connector-specific storage (magicChainId, etc).
+ */
+function clearDisconnectedFlags(): void {
+  if (typeof window === 'undefined' || !window.localStorage) return
+  const keysToRemove: string[] = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key && key.includes('.disconnected')) {
+      keysToRemove.push(key)
+    }
+  }
+  keysToRemove.forEach(key => localStorage.removeItem(key))
+}
+
 function redirectToAuth(path: string, queryParams?: Record<string, string>): void {
   const redirectTo = buildAuthRedirectUrl(path, queryParams)
   const authUrl = resolveAuthUrl()
 
-  // NOTE: We intentionally do NOT clear wagmi localStorage state here.
-  // Clearing wagmi's keys removes connector-specific storage (magicChainId,
-  // thirdwebChainId) and the persisted store, which prevents wagmi from
-  // reconnecting when the user returns from auth.
+  // Clear "disconnected" flags so wagmi will try to reconnect when returning
+  // from auth. We do NOT clear wagmi.store or connector storage.
+  clearDisconnectedFlags()
+
   window.location.replace(`${authUrl}/login?redirectTo=${encodeURIComponent(redirectTo)}`)
 }
 
