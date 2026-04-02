@@ -48,7 +48,12 @@ export function useGetIdentityId(): () => Promise<string | undefined> {
       const response = await fetch(`${authApiUrl}${path}`, {
         method,
         headers,
-        body: JSON.stringify({ identity: currentIdentity }),
+        body: JSON.stringify({
+          identity: {
+            authChain: currentIdentity.authChain,
+            expiration: currentIdentity.expiration
+          }
+        }),
         signal: AbortSignal.timeout(5000)
       })
 
