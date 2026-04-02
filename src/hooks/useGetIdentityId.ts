@@ -50,6 +50,7 @@ export function useGetIdentityId(): () => Promise<string | undefined> {
         headers,
         body: JSON.stringify({
           identity: {
+            ephemeralIdentity: currentIdentity.ephemeralIdentity,
             authChain: currentIdentity.authChain,
             expiration: currentIdentity.expiration
           }
