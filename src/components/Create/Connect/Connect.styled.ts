@@ -58,24 +58,6 @@ const ConnectTitle = styled(Typography)(({ theme }) => ({
   }
 }))
 
-const ConnectCardsContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  overflowX: 'auto',
-  gap: 16,
-  paddingLeft: 100,
-  paddingRight: 100,
-  paddingTop: 10,
-  paddingBottom: 10,
-  scrollbarWidth: 'none',
-  ['&::-webkit-scrollbar']: {
-    display: 'none'
-  },
-  [theme.breakpoints.down('sm')]: {
-    paddingLeft: 16,
-    paddingRight: 16
-  }
-}))
-
 const ConnectCard = styled(Box)(({ theme }) => ({
   width: 367,
   minWidth: 367,
@@ -194,7 +176,6 @@ export {
   ConnectCardUser,
   ConnectCardUserImage,
   ConnectCardUserName,
-  ConnectCardsContainer,
   ConnectSection,
   ConnectTitle,
   DiscordContainer,

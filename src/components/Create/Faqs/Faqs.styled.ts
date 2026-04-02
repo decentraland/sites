@@ -162,12 +162,18 @@ const FaqQuestionText = styled(Typography)(({ theme }) => ({
 const FaqAnswerContainer = styled(Box, {
   shouldForwardProp: prop => prop !== 'isOpen'
 })<{ isOpen: boolean }>(({ isOpen }) => ({
-  display: isOpen ? 'block' : 'none'
+  display: 'grid',
+  gridTemplateRows: isOpen ? '1fr' : '0fr',
+  opacity: isOpen ? 1 : 0,
+  marginTop: isOpen ? '8px' : 0,
+  transition:
+    'grid-template-rows 350ms cubic-bezier(0.16, 1, 0.3, 1), opacity 350ms cubic-bezier(0.16, 1, 0.3, 1), margin-top 350ms cubic-bezier(0.16, 1, 0.3, 1)'
 }))
 
 const FaqAnswerText = styled(Typography)(({ theme }) => ({
   overflow: 'hidden',
-  padding: '1em 0 0.5em',
+  minHeight: 0,
+  padding: 0,
   fontWeight: 400,
   fontSize: theme.typography.body1.fontSize,
   lineHeight: '165%',
