@@ -202,7 +202,6 @@ const criticalCss = `
 const heroHtml = `<div id="hero-shell-nav">
   <div class="nav-left">
     <a class="nav-logo" href="https://decentraland.org" aria-label="Decentraland home">${dclLogoSvg}</a>
-    <img class="nav-logo-name" src="./dcl_name.svg" alt="Decentraland" />
   </div>
 
 </div>
@@ -211,7 +210,7 @@ const heroHtml = `<div id="hero-shell-nav">
     <picture>
       <source srcset="./hero_mobile.webp" media="(max-width: 599px)" />
       <source srcset="./hero_tablet.webp" media="(min-width: 600px) and (max-width: 991px)" />
-      <source srcset="./landing_hero.webp" media="(min-width: 992px)" />
+      <source srcset="./hero_desktop.webp" media="(min-width: 992px)" />
       <img src="./hero_mobile.webp" alt="" />
     </picture>
   </div>
@@ -245,10 +244,10 @@ let html = readFileSync(distPath, 'utf-8')
 // where the zone origin returns text/html instead of the actual image.
 const mobileImgMatch = html.match(/<link[^>]*href="([^"]*hero_mobile\.webp)"[^>]*>/)
 const tabletImgMatch = html.match(/<link[^>]*href="([^"]*hero_tablet\.webp)"[^>]*>/)
-const desktopImgMatch = html.match(/<link[^>]*href="([^"]*landing_hero\.webp)"[^>]*>/)
+const desktopImgMatch = html.match(/<link[^>]*href="([^"]*hero_desktop\.webp)"[^>]*>/)
 const heroMobileUrl = mobileImgMatch?.[1] ?? './hero_mobile.webp'
 const heroTabletUrl = tabletImgMatch?.[1] ?? './hero_tablet.webp'
-const heroDesktopUrl = desktopImgMatch?.[1] ?? './landing_hero.webp'
+const heroDesktopUrl = desktopImgMatch?.[1] ?? './hero_desktop.webp'
 
 // Extract base URL from any CDN asset path for non-preloaded assets
 // Extract base URL from the <base> tag or <script src> that Vite writes
@@ -259,7 +258,7 @@ const cdnBase = baseTagMatch?.[1] ?? scriptSrcMatch?.[1] ?? '/'
 const finalHeroHtml = heroHtml
   .replace(/\.\/hero_mobile\.webp/g, `${cdnBase}hero_mobile.webp`)
   .replace(/\.\/hero_tablet\.webp/g, `${cdnBase}hero_tablet.webp`)
-  .replace(/\.\/landing_hero\.webp/g, `${cdnBase}landing_hero.webp`)
+  .replace(/\.\/hero_desktop\.webp/g, `${cdnBase}hero_desktop.webp`)
   .replace('./dcl_name.svg', `${cdnBase}dcl_name.svg`)
 
 // Place the hero shell BEFORE #root, not inside it.  This is critical for LCP:

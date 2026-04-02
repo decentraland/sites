@@ -2,7 +2,8 @@ import { assetUrl } from '../utils/assetUrl'
 
 // Hero
 const heroContent = {
-  backgroundVideo: assetUrl('/video_landing.mp4')
+  backgroundVideoWebm: assetUrl('/video_landing.webm'),
+  backgroundVideoMp4: assetUrl('/video_landing.mp4')
 }
 
 // CatchTheVibe - 2 cards with image + hover video
