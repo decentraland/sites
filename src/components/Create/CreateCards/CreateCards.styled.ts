@@ -52,13 +52,11 @@ const CreateCardContainer = styled(Box)(({ theme }) => ({
   flexDirection: 'row',
   background: '#242129',
   borderRadius: 24,
-  maxWidth: 1200,
   width: '100%',
+  height: '100%',
   padding: 32,
   alignItems: 'center',
-  margin: '0 auto 24px',
   [theme.breakpoints.down('md')]: {
-    maxWidth: 700,
     minHeight: 700
   },
   [theme.breakpoints.down('sm')]: {

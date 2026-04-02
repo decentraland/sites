@@ -1,6 +1,7 @@
 import { memo, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { Carousel } from '../../Carousel'
 import { createCards } from '../data'
 import type { CreateCardData, CreateCardTab } from '../data'
 import {
@@ -92,6 +93,9 @@ const CreateCard = memo(({ card }: CreateCardProps) => {
   )
 })
 
+const renderCard = (card: CreateCardData) => <CreateCard card={card} />
+const keyExtractor = (card: CreateCardData) => card.id
+
 const CreatorsCreate = memo(() => {
   const l = useFormatMessage()
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 })
@@ -103,9 +107,7 @@ const CreatorsCreate = memo(() => {
         <span>{l('component.creators_landing.create.title_hightlight')}</span>
         {l('component.creators_landing.create.title_second_part')}
       </CreateTitle>
-      {createCards.map(card => (
-        <CreateCard key={card.id} card={card} />
-      ))}
+      <Carousel items={createCards} renderItem={renderCard} keyExtractor={keyExtractor} slideWidth={1200} autoplayDelay={0} />
     </CreateSection>
   )
 })

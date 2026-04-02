@@ -1,7 +1,7 @@
 import { Box, Typography, styled } from 'decentraland-ui2'
 
 const HeroSection = styled('section')({
-  height: '80vh',
+  height: '90vh',
   width: '100%',
   position: 'relative',
   display: 'flex',
@@ -76,7 +76,8 @@ const HeroSubtitle = styled(Typography)(({ theme }) => ({
 
 const HeroActions = styled(Box)({
   display: 'flex',
-  justifyContent: 'center'
+  flexDirection: 'column',
+  alignItems: 'center'
 })
 
 const ChevronContainer = styled(Box)({

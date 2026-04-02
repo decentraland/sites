@@ -5,9 +5,9 @@ const FaqsSection = styled('section')(({ theme }) => ({
   position: 'relative',
   margin: 'auto',
   color: theme.palette.text.primary,
-  padding: `${theme.spacing(25)} ${theme.spacing(20)}`,
+  padding: `${theme.spacing(10)} ${theme.spacing(20)}`,
   [theme.breakpoints.down('sm')]: {
-    padding: `${theme.spacing(6)} ${theme.spacing(4)} ${theme.spacing(40)}`
+    padding: `${theme.spacing(6)} ${theme.spacing(4)} ${theme.spacing(10)}`
   }
 }))
 
@@ -44,7 +44,7 @@ const FaqsContainer = styled(Box)(({ theme }) => ({
   margin: 'auto',
   width: '100%',
   maxWidth: 1000,
-  padding: `${theme.spacing(9)} 0 ${theme.spacing(25)}`,
+  padding: `${theme.spacing(6)} 0 ${theme.spacing(8)}`,
   display: 'flex',
   flexDirection: 'column',
   [theme.breakpoints.down('sm')]: {
@@ -87,12 +87,12 @@ const FaqAccordionItem = styled(Box, {
   display: 'flex',
   flexDirection: 'column',
   borderRadius: 56,
-  padding: `${theme.spacing(3.5)} ${theme.spacing(5)} ${theme.spacing(3.5)} ${theme.spacing(14)}`,
+  padding: `${theme.spacing(3.5)} ${theme.spacing(5)} ${theme.spacing(3.5)} ${theme.spacing(5)}`,
   position: 'relative',
   overflow: 'hidden',
   zIndex: 1,
-  backgroundColor: theme.palette.background.default,
-  marginBottom: theme.spacing(5),
+  backgroundColor: '#242129',
+  marginBottom: theme.spacing(1.5),
   cursor: 'pointer',
   outline: 'none',
   '&::after': {
@@ -125,8 +125,8 @@ const FaqAccordionItem = styled(Box, {
     transform: 'rotate(180deg)'
   },
   [theme.breakpoints.down('xs')]: {
-    padding: `${theme.spacing(5)} ${theme.spacing(5)} ${theme.spacing(5)} ${theme.spacing(9)}`,
-    marginBottom: theme.spacing(2.5),
+    padding: `${theme.spacing(3)} ${theme.spacing(3)} ${theme.spacing(3)} ${theme.spacing(4)}`,
+    marginBottom: theme.spacing(1),
     borderRadius: 50,
     '& svg.close, & svg.open': {
       width: 48,

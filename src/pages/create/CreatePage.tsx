@@ -1,5 +1,4 @@
 import { memo } from 'react'
-import { FooterLanding } from 'decentraland-ui2'
 import { CreatorsConnect } from '../../components/Create/Connect'
 import { CreatorsCreate } from '../../components/Create/CreateCards'
 import { CreatorsEarn } from '../../components/Create/Earn'
@@ -18,7 +17,6 @@ const CreatePage = memo(() => {
       <CreatorsLearn />
       <CreatorsEarn />
       <CreatorsFaqs />
-      <FooterLanding />
     </>
   )
 })
