@@ -19,7 +19,7 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
   const location = useLocation()
   const { locale } = useLocale()
   const { address, isConnected, isConnecting, disconnect } = useWalletState()
-  const { data: profile } = useGetProfileQuery(address ?? undefined, { skip: !address })
+  const { data: profile, isLoading: isProfileLoading } = useGetProfileQuery(address ?? undefined, { skip: !address })
   const avatar = profile?.avatars?.[0]
   const effectivelySignedIn = isConnected || !!address
   usePageTracking(location.pathname)
@@ -48,6 +48,7 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
         <LandingNavbar
           isSignedIn={effectivelySignedIn}
           isSigningIn={isConnecting && !effectivelySignedIn && !!address}
+          isProfileLoading={isProfileLoading}
           isLandingPage={location.pathname === '/'}
           address={address || undefined}
           avatar={avatar}

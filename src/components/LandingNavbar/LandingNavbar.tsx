@@ -110,6 +110,7 @@ interface NotificationsData {
 interface LandingNavbarProps {
   isSignedIn: boolean
   isSigningIn: boolean
+  isProfileLoading?: boolean
   isLandingPage?: boolean
   address?: string
   avatar?: { name?: string; avatar?: { snapshots?: { face256?: string; body?: string } } }
@@ -145,6 +146,7 @@ function resolveContentUrl(hash: string | undefined): string | undefined {
 const LandingNavbar = memo(function LandingNavbar({
   isSignedIn,
   isSigningIn,
+  isProfileLoading = false,
   isLandingPage = false,
   address,
   avatar,
@@ -205,16 +207,26 @@ const LandingNavbar = memo(function LandingNavbar({
     }
   }, [notifications])
 
-  const faceUrl = resolveContentUrl(avatar?.avatar?.snapshots?.face256) ?? assetUrl('/avatar_face.webp')
+  const resolvedFace = resolveContentUrl(avatar?.avatar?.snapshots?.face256)
+  // Show fallback only after profile finished loading — not while loading
+  const faceUrl = resolvedFace ?? (isProfileLoading ? undefined : assetUrl('/avatar_face.webp'))
   const bodyUrl = resolveContentUrl(avatar?.avatar?.snapshots?.body)
   const userName = avatar?.name || (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '')
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''
 
+  const [addressCopied, setAddressCopied] = useState(false)
+
   const copyAddress = useCallback(() => {
     if (address) {
-      navigator.clipboard.writeText(address).catch(() => {
-        // Silently fail if clipboard API is not available
-      })
+      navigator.clipboard
+        .writeText(address)
+        .then(() => {
+          setAddressCopied(true)
+          setTimeout(() => setAddressCopied(false), 2000)
+        })
+        .catch(() => {
+          // Silently fail if clipboard API is not available
+        })
     }
   }, [address])
 
@@ -382,7 +394,7 @@ const LandingNavbar = memo(function LandingNavbar({
       <NavBarRoot ref={navRef} className="minimal">
         <NavBarLeft style={{ gap: 16 }}>
           <LogoLink href="https://decentraland.org" aria-label="Decentraland Home">
-            <img src={assetUrl('/dcl-logo.svg')} alt="" style={{ width: 40, height: 40 }} />
+            <DclLogo />
           </LogoLink>
           <img
             src={assetUrl('/dcl_name.svg')}
@@ -551,7 +563,7 @@ const LandingNavbar = memo(function LandingNavbar({
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <UserCardAddressLabel>{l('component.landing.navbar.wallet_address')}</UserCardAddressLabel>
                           <UserCardAddress>
-                            {shortAddress}
+                            {addressCopied ? l('component.landing.navbar.address_copied') : shortAddress}
                             <UserCardCopyButton onClick={copyAddress} aria-label="Copy address">
                               <CopyIcon />
                             </UserCardCopyButton>
@@ -615,7 +627,7 @@ const LandingNavbar = memo(function LandingNavbar({
               <MobileUserCardName title={userName}>{userName}</MobileUserCardName>
               <MobileUserCardAddressLabel>{l('component.landing.navbar.wallet_address')}</MobileUserCardAddressLabel>
               <MobileUserCardAddress>
-                {shortAddress}
+                {addressCopied ? l('component.landing.navbar.address_copied') : shortAddress}
                 <MobileUserCardCopyButton onClick={copyAddress} aria-label="Copy address">
                   <CopyIcon />
                 </MobileUserCardCopyButton>
