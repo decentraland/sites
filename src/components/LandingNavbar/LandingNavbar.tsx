@@ -637,8 +637,12 @@ const LandingNavbar = memo(function LandingNavbar({
           </MobileUserCardTop>
           <UserCardDivider />
           <UserCardMenu>
-            {USER_MENU_ITEMS.map(item => (
+            {USER_MENU_ITEMS.map((item, i) => (
               <UserCardMenuItem key={item.labelKey} href={item.url}>
+                {i === 0 && <AccountIcon />}
+                {i === 1 && <WearableIcon />}
+                {i === 2 && <SettingsIcon />}
+                {i === 3 && <ShoppingBagIcon />}
                 {l(item.labelKey)}
               </UserCardMenuItem>
             ))}
