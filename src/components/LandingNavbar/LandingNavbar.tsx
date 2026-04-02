@@ -111,6 +111,7 @@ interface LandingNavbarProps {
   isSignedIn: boolean
   isSigningIn: boolean
   isLandingPage?: boolean
+  isLoadingProfile?: boolean
   address?: string
   avatar?: { name?: string; avatar?: { snapshots?: { face256?: string; body?: string } } }
   notifications?: NotificationsData
@@ -146,6 +147,7 @@ const LandingNavbar = memo(function LandingNavbar({
   isSignedIn,
   isSigningIn,
   isLandingPage = false,
+  isLoadingProfile = false,
   address,
   avatar,
   notifications,
@@ -552,8 +554,14 @@ const LandingNavbar = memo(function LandingNavbar({
               </NotificationWrapper>
 
               <UserCardWrapper>
-                <AvatarButton onClick={toggleUserCard} aria-label="User menu" aria-expanded={userCardOpen} aria-haspopup="true">
-                  {renderAvatar()}
+                <AvatarButton
+                  onClick={toggleUserCard}
+                  aria-label="User menu"
+                  aria-expanded={userCardOpen}
+                  aria-haspopup="true"
+                  className={isLoadingProfile ? 'loading' : undefined}
+                >
+                  {!isLoadingProfile && renderAvatar()}
                 </AvatarButton>
 
                 {userCardOpen && (
@@ -624,14 +632,16 @@ const LandingNavbar = memo(function LandingNavbar({
       {isSignedIn && userCardOpen && (
         <MobileUserCard data-mobile-user-card onClick={e => e.stopPropagation()}>
           <MobileUserCardTop>
-            <MobileUserCardAvatar>
-              <MobileUserCardAvatarImage
-                src={faceUrl}
-                alt=""
-                onLoad={() => setLoadedUrl(faceUrl)}
-                onError={() => setLoadedUrl(faceUrl)}
-                style={{ opacity: faceLoaded ? 1 : 0 }}
-              />
+            <MobileUserCardAvatar className={isLoadingProfile ? 'loading' : undefined}>
+              {!isLoadingProfile && (
+                <MobileUserCardAvatarImage
+                  src={faceUrl}
+                  alt=""
+                  onLoad={() => setLoadedUrl(faceUrl)}
+                  onError={() => setLoadedUrl(faceUrl)}
+                  style={{ opacity: faceLoaded ? 1 : 0 }}
+                />
+              )}
             </MobileUserCardAvatar>
             <MobileUserCardInfo>
               <MobileUserCardName title={userName}>{userName}</MobileUserCardName>

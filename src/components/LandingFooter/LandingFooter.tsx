@@ -139,7 +139,7 @@ const LandingFooter = memo(() => {
             <iframe
               src={BEEHIIV_EMBED_URL}
               data-test-id="beehiiv-embed"
-              height="52"
+              height="65"
               frameBorder="0"
               scrolling="no"
               style={{ width: '100%', maxWidth: 450, border: 'none', borderRadius: 6 }}

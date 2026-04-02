@@ -43,6 +43,8 @@ const Content = styled(Box)(({ theme }) => ({
   gap: theme.spacing(3),
   padding: theme.spacing(10, 8),
   [theme.breakpoints.down('sm')]: {
+    width: '100%',
+    maxWidth: 393,
     padding: theme.spacing(6, 2),
     gap: theme.spacing(2)
   }
@@ -114,33 +116,9 @@ const OsIcon = styled('img')({
   filter: 'brightness(0) invert(1)'
 })
 
-const ComingSoonRow = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 8,
-  height: 46
-})
-
-const ComingSoonIcon = styled('img')({
-  width: 24,
-  height: 32,
-  filter: 'brightness(0) invert(1)'
-})
-
-const ComingSoonText = styled(Typography)({
-  fontFamily: 'Inter, sans-serif',
-  fontWeight: 500,
-  fontSize: 18,
-  color: '#FCFCFC'
-})
-
 export {
   AvatarsImage,
   ComeHangOutContainer,
-  ComingSoonIcon,
-  ComingSoonRow,
-  ComingSoonText,
   Content,
   DownloadCounts,
   DownloadInfo,
@@ -151,3 +129,12 @@ export {
   Title
 }
 export { HangOutButton } from '../shared/HangOutButton.styled'
+export {
+  ComingSoonIcon,
+  ComingSoonRow,
+  ComingSoonText,
+  GooglePlayButton,
+  GooglePlayImage,
+  MobileSubtitle,
+  SendLinkButton
+} from '../shared/MobileCTA.styled'

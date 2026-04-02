@@ -1,6 +1,5 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { RemoteLoader } from './components/RemoteLoader'
 import { IndexPage } from './pages/index.tsx'
 
 // Layout imports Navbar from decentraland-ui2 which pulls in ~1.3MB of MUI.
@@ -54,7 +53,6 @@ const App = () => {
             <Route path="/download/creator-hub-success" element={<CreatorHubDownloadSuccessPage />} />
             <Route path="/discord" element={<DiscordPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
-            <Route path="/whats-on/*" element={<RemoteLoader name="whats_on" />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
