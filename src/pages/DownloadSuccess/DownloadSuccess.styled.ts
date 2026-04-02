@@ -63,7 +63,7 @@ const DownloadSuccessCard = styled(Card)(({ theme }) => ({
   maxWidth: '350px',
   flex: 1,
   height: '420px',
-  borderRadius: theme.spacing(6),
+  borderRadius: theme.spacing(3),
   border: '1px solid #A09BA87A',
   backgroundColor: '#1c072fe6',
   marginRight: theme.spacing(4),
