@@ -1,7 +1,7 @@
 import { memo, useCallback } from 'react'
 import { useWalletState } from '@dcl/core-web3/lazy'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
-import { AnimatedBackground, DownloadModal, JumpInIcon, useDesktopMediaQuery } from 'decentraland-ui2'
+import { AnimatedBackground, DownloadModal, JumpInIcon } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
@@ -40,7 +40,6 @@ let cachedDownloadCounts: string | null = null
 
 const ComeHangOut = memo(() => {
   const l = useFormatMessage()
-  const isDesktop = useDesktopMediaQuery()
   const onClickHandle = useTrackClick()
   const { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
   const { isConnected, address } = useWalletState()
@@ -88,40 +87,26 @@ const ComeHangOut = memo(() => {
                 </DownloadCounts>
                 <DownloadSeparator />
                 <PlatformIcons>
-                  {currentOs !== OperativeSystem.WINDOWS &&
-                    (isDesktop ? (
-                      <a href="/download_success?os=Windows">
-                        <PlatformIcon src={microsoftLogo} alt="Windows" />
-                      </a>
-                    ) : (
+                  {currentOs !== OperativeSystem.WINDOWS && (
+                    <a href="/download_success?os=Windows">
                       <PlatformIcon src={microsoftLogo} alt="Windows" />
-                    ))}
-                  {currentOs !== OperativeSystem.MACOS &&
-                    (isDesktop ? (
-                      <a href="/download_success?os=macOS">
-                        <PlatformIcon src={appleLogo} alt="macOS" />
-                      </a>
-                    ) : (
+                    </a>
+                  )}
+                  {currentOs !== OperativeSystem.MACOS && (
+                    <a href="/download_success?os=macOS">
                       <PlatformIcon src={appleLogo} alt="macOS" />
-                    ))}
-                  {isDesktop ? (
-                    <a
-                      href="https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&pcampaignid=web_share&utm_source=partners&utm_medium=pr&utm_campaign=mobile_launch&utm_content=android"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <PlatformIcon src={assetUrl('/google_play_icon.svg')} alt="Android" />
                     </a>
-                  ) : (
+                  )}
+                  <a
+                    href="https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&pcampaignid=web_share&utm_source=partners&utm_medium=pr&utm_campaign=mobile_launch&utm_content=android"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <PlatformIcon src={assetUrl('/google_play_icon.svg')} alt="Android" />
-                  )}
-                  {isDesktop ? (
-                    <a href="https://store.epicgames.com/en-US/p/decentraland-b692fb" target="_blank" rel="noopener noreferrer">
-                      <PlatformIcon src={assetUrl('/epic_icon.svg')} alt="Epic Games" />
-                    </a>
-                  ) : (
+                  </a>
+                  <a href="https://store.epicgames.com/en-US/p/decentraland-b692fb" target="_blank" rel="noopener noreferrer">
                     <PlatformIcon src={assetUrl('/epic_icon.svg')} alt="Epic Games" />
-                  )}
+                  </a>
                 </PlatformIcons>
               </DownloadInfo>
             )}
