@@ -39,7 +39,7 @@ const HangOutButton = styled(Button)(({ theme }) => ({
     bottom: 0,
     left: 0,
     border: `4px solid ${dclColors.neutral.white}`,
-    borderRadius: 14,
+    borderRadius: 24,
     opacity: 0,
     transition: theme.transitions.create(['top', 'right', 'bottom', 'left', 'opacity'], {
       duration: theme.transitions.duration.shorter,
