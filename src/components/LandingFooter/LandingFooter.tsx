@@ -53,7 +53,6 @@ const socialIconMap: Record<string, React.FC> = {
 }
 
 const legalLinks = [
-  { label: 'Home', url: '/' },
   { label: 'Privacy Policy', url: '/privacy' },
   { label: 'Terms of Use', url: '/terms' },
   { label: 'Content Policy', url: '/content' },

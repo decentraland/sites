@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useAnalytics } from '@dcl/hooks'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { useLocale } from '../../intl/LocaleContext'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { assetUrl } from '../../utils/assetUrl'
 // Module-level cache for notification type→component map from ui2.
@@ -158,6 +159,7 @@ const LandingNavbar = memo(function LandingNavbar({
   // Once we know the user is signed in, transition to the full navbar.
   const showMinimalNavbar = isLandingPage && !isSignedIn
   const l = useFormatMessage()
+  const { locale } = useLocale()
   const { isInitialized, track } = useAnalytics()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -514,7 +516,7 @@ const LandingNavbar = memo(function LandingNavbar({
                               // Use ui2's full notification renderer (correct icon, title, description per type)
                               return (
                                 <NotificationListItem key={item.id} style={{ padding: 0 }}>
-                                  <Comp notification={item} locale="en" />
+                                  <Comp notification={item} locale={locale} />
                                 </NotificationListItem>
                               )
                             }
