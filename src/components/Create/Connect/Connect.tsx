@@ -1,15 +1,16 @@
 import { memo, useCallback } from 'react'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import discordImage from '../../../images/discord.svg'
+import { Carousel } from '../../Carousel'
 import { AnimatedSection } from '../AnimatedSection'
 import { connectCards } from '../data'
+import type { ConnectCardData } from '../data'
 import {
   ConnectCard,
   ConnectCardDescription,
   ConnectCardUser,
   ConnectCardUserImage,
   ConnectCardUserName,
-  ConnectCardsContainer,
   ConnectSection,
   ConnectTitle,
   DiscordContainer,
@@ -17,13 +18,28 @@ import {
   DiscordTitle
 } from './Connect.styled'
 
+const renderCard = (card: ConnectCardData) => (
+  <ConnectCard
+    onClick={() => {
+      if (card.url) window.open(card.url, '_blank', 'noopener,noreferrer')
+    }}
+    sx={{ cursor: card.url ? 'pointer' : 'default' }}
+  >
+    <ConnectCardDescription>&ldquo;{card.description}&rdquo;</ConnectCardDescription>
+    <ConnectCardUser>
+      <ConnectCardUserImage>
+        <img src={card.image} alt={card.name} />
+      </ConnectCardUserImage>
+      <ConnectCardUserName>{card.name}</ConnectCardUserName>
+    </ConnectCardUser>
+  </ConnectCard>
+)
+
+const keyExtractor = (card: ConnectCardData) => card.id
+
 const CreatorsConnect = memo(() => {
   const l = useFormatMessage()
-  const handleDiscordClick = useCallback(() => window.open(l('general.discord_cta_target'), '_blank'), [l])
-
-  const handleCardClick = useCallback((url?: string) => {
-    if (url) window.open(url, '_blank')
-  }, [])
+  const handleDiscordClick = useCallback(() => window.open(l('general.discord_cta_target'), '_blank', 'noopener,noreferrer'), [l])
 
   return (
     <AnimatedSection>
@@ -31,19 +47,7 @@ const CreatorsConnect = memo(() => {
         <ConnectTitle>
           <span>{l('component.creators_landing.connect.title_highlight')}</span> {l('component.creators_landing.connect.title')}
         </ConnectTitle>
-        <ConnectCardsContainer>
-          {connectCards.map(card => (
-            <ConnectCard key={card.id} onClick={() => handleCardClick(card.url)} sx={{ cursor: card.url ? 'pointer' : 'default' }}>
-              <ConnectCardDescription>&ldquo;{card.description}&rdquo;</ConnectCardDescription>
-              <ConnectCardUser>
-                <ConnectCardUserImage>
-                  <img src={card.image} alt={card.name} />
-                </ConnectCardUserImage>
-                <ConnectCardUserName>{card.name}</ConnectCardUserName>
-              </ConnectCardUser>
-            </ConnectCard>
-          ))}
-        </ConnectCardsContainer>
+        <Carousel items={connectCards} renderItem={renderCard} keyExtractor={keyExtractor} slideWidth={500} autoplayDelay={5000} />
         <DiscordContainer onClick={handleDiscordClick}>
           <DiscordTitle>{l('component.creators_landing.connect.join_the_community')}</DiscordTitle>
           <DiscordIcon>

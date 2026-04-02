@@ -89,7 +89,12 @@ const LearnCardVideoImage = styled(Box)(({ theme }) => ({
     top: '50%',
     left: '50%',
     transition: 'all 0.35s ease-in-out',
-    transform: 'translate(-50%, -50%)'
+    transform: 'translate(-50%, -50%)',
+    opacity: 0.7
+  },
+  ['&:hover .play-icon']: {
+    opacity: 1,
+    filter: 'brightness(1.3)'
   },
   [theme.breakpoints.down('sm')]: {
     height: 160
