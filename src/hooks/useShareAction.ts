@@ -1,6 +1,8 @@
 import { useCallback } from 'react'
 
-function useShareAction() {
+type ShareResult = 'shared' | 'copied' | 'failed'
+
+function useShareAction(): () => Promise<ShareResult> {
   return useCallback(async () => {
     const shareData = {
       title: 'Decentraland',
@@ -11,17 +13,20 @@ function useShareAction() {
     if (navigator.share) {
       try {
         await navigator.share(shareData)
+        return 'shared'
       } catch {
-        // User cancelled sharing or share failed — silently ignore
+        return 'failed'
       }
-    } else {
-      try {
-        await navigator.clipboard.writeText(window.location.href)
-      } catch {
-        // Clipboard API unavailable — silently ignore
-      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      return 'copied'
+    } catch {
+      return 'failed'
     }
   }, [])
 }
 
 export { useShareAction }
+export type { ShareResult }

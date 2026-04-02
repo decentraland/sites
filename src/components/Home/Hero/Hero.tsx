@@ -16,8 +16,8 @@ import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
 import { GOOGLE_PLAY_DESKTOP_URL, GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
+import { ShareIcon } from '../shared/ShareIcon'
 import { DownloadIcon } from './DownloadIcon'
-import { ShareIcon } from './ShareIcon'
 import {
   AlreadyUserDownloadLink,
   AlreadyUserText,

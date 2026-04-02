@@ -14,8 +14,8 @@ import { SectionViewedTrack } from '../../../modules/segment'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
-import { ShareIcon } from '../Hero/ShareIcon'
 import { GOOGLE_PLAY_DESKTOP_URL, GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
+import { ShareIcon } from '../shared/ShareIcon'
 import {
   AvatarsImage,
   ComeHangOutContainer,
