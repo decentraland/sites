@@ -1,15 +1,30 @@
 import { memo } from 'react'
 import { Button } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import earnVideo from '../../../videos/background_video_studios.mp4'
+import { Video } from '../../Video'
 import { AnimatedSection } from '../AnimatedSection'
 import { earnSkills } from '../data'
-import { EarnActionBlock, EarnActions, EarnContent, EarnSection, EarnSubtitle, EarnTitle, SkillBadge, SkillsContainer } from './Earn.styled'
+import {
+  EarnActionBlock,
+  EarnActions,
+  EarnBackground,
+  EarnContent,
+  EarnSection,
+  EarnSubtitle,
+  EarnTitle,
+  SkillBadge,
+  SkillsContainer
+} from './Earn.styled'
 
 const CreatorsEarn = memo(() => {
   const l = useFormatMessage()
   return (
     <AnimatedSection>
       <EarnSection>
+        <EarnBackground>
+          <Video loop muted autoPlay playsInline width={1352} height={534} source={earnVideo} />
+        </EarnBackground>
         <EarnContent>
           <EarnTitle>
             {l('component.creators_landing.earn.title')} {l('component.creators_landing.earn.second_title')}
