@@ -6,6 +6,7 @@ import { heroContent } from '../../../data/static-content'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
+import { useShareAction } from '../../../hooks/useShareAction'
 import appleLogo from '../../../images/apple-logo.svg'
 import microsoftLogo from '../../../images/microsoft-logo.svg'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
@@ -14,6 +15,7 @@ import { SectionViewedTrack } from '../../../modules/segment'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
+import { GOOGLE_PLAY_DESKTOP_URL, GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
 import { DownloadIcon } from './DownloadIcon'
 import { ShareIcon } from './ShareIcon'
 import {
@@ -47,10 +49,6 @@ import {
 const heroImageDesktop = assetUrl('/hero_desktop.webp')
 const heroImageTablet = assetUrl('/hero_tablet.webp')
 const heroImageMobile = assetUrl('/hero_mobile.webp')
-const googlePlayBadge = assetUrl('/google_play_cta.svg')
-
-const GOOGLE_PLAY_URL =
-  'https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&pcampaignid=web_share&utm_source=dcl_foundation&utm_medium=internal&utm_campaign=mobile_launch&utm_content=android&pli=1'
 
 const imageByOs: Record<string, string> = {
   [OperativeSystem.WINDOWS]: microsoftLogo,
@@ -89,6 +87,8 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
     document.documentElement.style.setProperty('--hero-vh', `${window.innerHeight * 0.01}px`)
   }, [])
 
+  const handleShareClick = useShareAction()
+
   const handleDownloadClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       onClickHandle(e)
@@ -100,24 +100,6 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
     },
     [onClickHandle, userAgentData]
   )
-
-  const handleShareClick = useCallback(async () => {
-    const shareData = {
-      title: 'Decentraland',
-      text: 'Download Decentraland',
-      url: window.location.href
-    }
-
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData)
-      } catch {
-        // User cancelled sharing or share failed — silently ignore
-      }
-    } else {
-      await navigator.clipboard.writeText(window.location.href)
-    }
-  }, [])
 
   return (
     <HeroContainer>
@@ -144,7 +126,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
         <MobileHeroContent>
           <MobileHeroTitle>{l('page.home.hero.mobile_android_title')}</MobileHeroTitle>
           <MobileHeroSubtitle>{l('page.home.hero.mobile_android_subtitle')}</MobileHeroSubtitle>
-          <GooglePlayButton href={GOOGLE_PLAY_URL} target="_blank" rel="noopener noreferrer">
+          <GooglePlayButton href={GOOGLE_PLAY_MOBILE_URL} target="_blank" rel="noopener noreferrer">
             <GooglePlayImage src={googlePlayBadge} alt="Get it on Google Play" />
           </GooglePlayButton>
         </MobileHeroContent>
@@ -201,11 +183,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
                     </HeroPlatformIcons>
                   )}
                   <HeroPlatformIcons>
-                    <a
-                      href="https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&pcampaignid=web_share&utm_source=partners&utm_medium=pr&utm_campaign=mobile_launch&utm_content=android"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                    <a href={GOOGLE_PLAY_DESKTOP_URL} target="_blank" rel="noopener noreferrer">
                       <HeroPlatformIcon
                         src={assetUrl('/google_play_icon.svg')}
                         alt="Android"

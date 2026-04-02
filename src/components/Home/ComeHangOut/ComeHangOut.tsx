@@ -5,6 +5,7 @@ import { AnimatedBackground, DownloadModal, JumpInIcon } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
+import { useShareAction } from '../../../hooks/useShareAction'
 import appleLogo from '../../../images/apple-logo.svg'
 import microsoftLogo from '../../../images/microsoft-logo.svg'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
@@ -14,6 +15,7 @@ import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
 import { ShareIcon } from '../Hero/ShareIcon'
+import { GOOGLE_PLAY_DESKTOP_URL, GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
 import {
   AvatarsImage,
   ComeHangOutContainer,
@@ -27,18 +29,13 @@ import {
   GooglePlayButton,
   GooglePlayImage,
   HangOutButton,
-  MobileHeroSubtitle,
+  MobileSubtitle,
   OsIcon,
   PlatformIcon,
   PlatformIcons,
   SendLinkButton,
   Title
 } from './ComeHangOut.styled'
-
-const googlePlayBadge = assetUrl('/google_play_cta.svg')
-
-const GOOGLE_PLAY_URL =
-  'https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&pcampaignid=web_share&utm_source=dcl_foundation&utm_medium=internal&utm_campaign=mobile_launch&utm_content=android&pli=1'
 
 const imageByOs: Record<string, string> = {
   [OperativeSystem.WINDOWS]: microsoftLogo,
@@ -69,6 +66,8 @@ const ComeHangOut = memo(() => {
   const isMobileAndroid = isMobile && currentOs === 'Android'
   const osImage = userAgentData ? imageByOs[userAgentData.os.name] : null
 
+  const handleShareClick = useShareAction()
+
   const handleDownloadClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       onClickHandle(e)
@@ -79,28 +78,10 @@ const ComeHangOut = memo(() => {
     [onClickHandle, userAgentData]
   )
 
-  const handleShareClick = useCallback(async () => {
-    const shareData = {
-      title: 'Decentraland',
-      text: 'Download Decentraland',
-      url: window.location.href
-    }
-
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData)
-      } catch {
-        // User cancelled sharing or share failed — silently ignore
-      }
-    } else {
-      await navigator.clipboard.writeText(window.location.href)
-    }
-  }, [])
-
   const renderMobileContent = () => {
     if (isMobileAndroid) {
       return (
-        <GooglePlayButton href={GOOGLE_PLAY_URL} target="_blank" rel="noopener noreferrer">
+        <GooglePlayButton href={GOOGLE_PLAY_MOBILE_URL} target="_blank" rel="noopener noreferrer">
           <GooglePlayImage src={googlePlayBadge} alt="Get it on Google Play" />
         </GooglePlayButton>
       )
@@ -108,7 +89,7 @@ const ComeHangOut = memo(() => {
 
     return (
       <>
-        <MobileHeroSubtitle>{l('page.home.hero.mobile_ios_subtitle')}</MobileHeroSubtitle>
+        <MobileSubtitle>{l('page.home.hero.mobile_ios_subtitle')}</MobileSubtitle>
         <SendLinkButton type="button" onClick={handleShareClick}>
           {l('page.home.hero.mobile_ios_send_link')}
           <ShareIcon />
@@ -151,11 +132,7 @@ const ComeHangOut = memo(() => {
                     <PlatformIcon src={appleLogo} alt="macOS" />
                   </a>
                 )}
-                <a
-                  href="https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&pcampaignid=web_share&utm_source=partners&utm_medium=pr&utm_campaign=mobile_launch&utm_content=android"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href={GOOGLE_PLAY_DESKTOP_URL} target="_blank" rel="noopener noreferrer">
                   <PlatformIcon src={assetUrl('/google_play_icon.svg')} alt="Android" />
                 </a>
                 <a href="https://store.epicgames.com/en-US/p/decentraland-b692fb" target="_blank" rel="noopener noreferrer">
