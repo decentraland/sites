@@ -98,7 +98,7 @@
   "homepage": "",
   "engines": {
     "node": "20.*",
-    "npm": "8.* || 9.*"
+    "npm": "10.*"
   },
   "overrides": {
     "@types/node": "20.8.3"
