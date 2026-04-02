@@ -394,7 +394,7 @@ const LandingNavbar = memo(function LandingNavbar({
       <NavBarRoot ref={navRef} className="minimal">
         <NavBarLeft style={{ gap: 16 }}>
           <LogoLink href="https://decentraland.org" aria-label="Decentraland Home">
-            <img src={assetUrl('/dcl-logo.svg')} alt="" />
+            <DclLogo />
           </LogoLink>
           <img
             src={assetUrl('/dcl_name.svg')}
