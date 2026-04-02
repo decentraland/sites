@@ -40,17 +40,16 @@ import {
   HighlightAnimation
 } from './DownloadSuccess.styled'
 
-let hasDownloaded = false
-
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
   const { intl } = useTranslation()
   const { isInitialized, track } = useAnalytics()
-  const { getIdentityId, authLoading } = useGetIdentityId()
+  const getIdentityId = useGetIdentityId()
 
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [isFileSaved, setIsFileSaved] = useState(false)
+  const hasDownloadedRef = useRef(false)
   const isInitializedRef = useRef(isInitialized)
   const trackRef = useRef(track)
   isInitializedRef.current = isInitialized
@@ -119,9 +118,10 @@ const DownloadSuccess = memo(() => {
   const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
 
   useEffect(() => {
-    if (authLoading) return
-    if (hasDownloaded) return
-    hasDownloaded = true
+    if (hasDownloadedRef.current) return
+    hasDownloadedRef.current = true
+
+    let cancelled = false
 
     const startDownload = async () => {
       setIsDownloading(true)
@@ -139,6 +139,8 @@ const DownloadSuccess = memo(() => {
         getIdentityId
       })
 
+      if (cancelled) return
+
       triggerFileDownload(url)
       setIsFileSaved(true)
 
@@ -149,17 +151,24 @@ const DownloadSuccess = memo(() => {
 
     startDownload()
       .catch(error => {
+        if (cancelled) return
         console.error('Download error:', error)
         setDownloadError(error instanceof Error ? error.message : 'Download failed')
         if (isInitializedRef.current) {
           trackRef.current(SegmentEvent.DOWNLOAD_FAILED)
         }
-        hasDownloaded = false
+        hasDownloadedRef.current = false
       })
       .finally(() => {
-        setIsDownloading(false)
+        if (!cancelled) {
+          setIsDownloading(false)
+        }
       })
-  }, [clientOS, clientArch, getIdentityId, authLoading])
+
+    return () => {
+      cancelled = true
+    }
+  }, [clientOS, clientArch, getIdentityId])
 
   const handleDownloadClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {

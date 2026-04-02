@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { Authenticator } from '@dcl/crypto/dist/Authenticator'
 import { Env, getEnv } from '@dcl/ui-env'
 import { useAuthIdentity } from './useAuthIdentity'
@@ -7,16 +7,20 @@ const AUTH_CHAIN_HEADER_PREFIX = 'x-identity-auth-chain-'
 const AUTH_TIMESTAMP_HEADER = 'x-identity-timestamp'
 const AUTH_METADATA_HEADER = 'x-identity-metadata'
 
-type UseGetIdentityIdResult = {
-  getIdentityId: () => Promise<string | undefined>
-  authLoading: boolean
+type IdentityApiResponse = {
+  ok?: boolean
+  data?: { identityId?: string }
+  identityId?: string
 }
 
-export function useGetIdentityId(): UseGetIdentityIdResult {
-  const { identity, loading } = useAuthIdentity()
+export function useGetIdentityId(): () => Promise<string | undefined> {
+  const { identity } = useAuthIdentity()
+  const identityRef = useRef(identity)
+  identityRef.current = identity
 
-  const getIdentityId = useCallback(async (): Promise<string | undefined> => {
-    if (!identity?.authChain || !identity?.ephemeralIdentity) {
+  return useCallback(async (): Promise<string | undefined> => {
+    const currentIdentity = identityRef.current
+    if (!currentIdentity?.authChain || !currentIdentity?.ephemeralIdentity) {
       return undefined
     }
 
@@ -29,7 +33,7 @@ export function useGetIdentityId(): UseGetIdentityIdResult {
       const timestamp = String(Date.now())
       const payload = [method, path, timestamp, JSON.stringify(metadata)].join(':').toLowerCase()
 
-      const chain = Authenticator.signPayload(identity, payload)
+      const chain = Authenticator.signPayload(currentIdentity, payload)
       const headers: Record<string, string> = {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         'Content-Type': 'application/json',
@@ -44,20 +48,18 @@ export function useGetIdentityId(): UseGetIdentityIdResult {
       const response = await fetch(`${authApiUrl}${path}`, {
         method,
         headers,
-        body: JSON.stringify({ identity })
+        body: JSON.stringify({ identity: { authChain: currentIdentity.authChain } })
       })
 
       if (!response.ok) {
         throw new Error(`Auth API responded with status ${response.status}`)
       }
 
-      const data = await response.json()
+      const data: IdentityApiResponse = await response.json()
       return data.data?.identityId ?? data.identityId
     } catch (error) {
       console.error('Failed to create identity ID:', error)
       return undefined
     }
-  }, [identity])
-
-  return { getIdentityId, authLoading: loading }
+  }, [])
 }

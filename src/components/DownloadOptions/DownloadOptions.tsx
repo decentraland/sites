@@ -38,7 +38,7 @@ const imageByOs: Record<string, string> = {
 
 const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadOptionsProps) => {
   const [isLoadingUserAgentData, userAgentData] = useAdvancedUserAgentData()
-  const { getIdentityId } = useGetIdentityId()
+  const getIdentityId = useGetIdentityId()
   const l = useFormatMessage()
   const onClickHandle = useTrackClick()
 
