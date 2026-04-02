@@ -1,4 +1,4 @@
-import { Box, Button, Typography, styled } from 'decentraland-ui2'
+import { Box, Typography, styled } from 'decentraland-ui2'
 
 const DiscordPageContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -34,12 +34,33 @@ const DiscordDescription = styled(Typography)(({ theme }) => ({
   }
 }))
 
-const DiscordButton = styled(Button)(({ theme }) => ({
+const DiscordCaptchaWrapper = styled(Box)({
+  display: 'flex',
+  justifyContent: 'center'
+})
+
+const DiscordButton = styled('a')(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   fontSize: 16,
   fontWeight: 600,
   padding: `${theme.spacing(1.5)} ${theme.spacing(4)}`,
   borderRadius: 8,
-  textTransform: 'none'
+  textTransform: 'none',
+  textDecoration: 'none',
+  color: theme.palette.primary.contrastText,
+  backgroundColor: theme.palette.primary.main,
+  cursor: 'pointer',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:hover': {
+    backgroundColor: theme.palette.primary.dark
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&[data-loading]': {
+    opacity: 0.6,
+    pointerEvents: 'none'
+  }
 }))
 
-export { DiscordButton, DiscordDescription, DiscordPageContainer, DiscordTitle }
+export { DiscordButton, DiscordCaptchaWrapper, DiscordDescription, DiscordPageContainer, DiscordTitle }
