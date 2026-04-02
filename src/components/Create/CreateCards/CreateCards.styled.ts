@@ -50,9 +50,6 @@ const CreateCardContainer = styled(Box)(({ theme }) => ({
   padding: 32,
   alignItems: 'center',
   [theme.breakpoints.down('md')]: {
-    minHeight: 700
-  },
-  [theme.breakpoints.down('sm')]: {
     flexDirection: 'column',
     height: 'auto',
     width: '100%',
@@ -84,13 +81,15 @@ const CreateCardImage = styled(Box, {
       transform: 'scale(1.05)'
     }
   },
-  [theme.breakpoints.down('sm')]: {
+  [theme.breakpoints.down('md')]: {
     height: 223,
     minHeight: 223,
     width: '100%',
     backgroundSize: '100%',
     borderRadius: '24px 24px 0 0',
     marginRight: 0,
+    position: 'relative',
+    overflow: 'hidden',
     ['& img']: {
       width: 'auto',
       height: '100%',
@@ -107,7 +106,7 @@ const CreateCardInfo = styled(Box)(({ theme }) => ({
   flexDirection: 'column',
   justifyContent: 'flex-start',
   width: 'calc(65% - 24px)',
-  [theme.breakpoints.down('sm')]: {
+  [theme.breakpoints.down('md')]: {
     padding: '32px 0',
     margin: '0 8px 8px',
     width: 'calc(100% - 16px)'

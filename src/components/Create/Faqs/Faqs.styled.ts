@@ -65,8 +65,8 @@ const FaqsSubtitle = styled(Typography)(({ theme }) => ({
 
 const FaqsTitle = styled(Typography)(({ theme }) => ({
   textAlign: 'center',
-  fontSize: 'clamp(2.25rem, 15.789vw - 6.632rem, 6rem)',
-  lineHeight: 'clamp(2.7rem, 21.474vw - 9.379rem, 7.8rem)',
+  fontSize: 60,
+  lineHeight: '72px',
   fontWeight: 700,
   letterSpacing: '-0.01em',
   paddingBottom: '0.5em',

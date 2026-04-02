@@ -1,14 +1,36 @@
 import { Box, Typography, styled } from 'decentraland-ui2'
+import gridBg from '../../../images/section_connection_grid.webp'
 
+/* eslint-disable @typescript-eslint/naming-convention */
 const ConnectSection = styled('section')({
   position: 'relative',
   overflow: 'hidden',
   width: '100%',
+  backgroundImage: `url(${gridBg})`,
+  backgroundSize: 'cover',
   backgroundRepeat: 'no-repeat',
   backgroundPosition: 'center',
   paddingLeft: 0,
-  paddingRight: 0
+  paddingRight: 0,
+  '&::before, &::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    width: '15%',
+    height: '100%',
+    zIndex: 1,
+    pointerEvents: 'none'
+  },
+  '&::before': {
+    left: 0,
+    background: 'linear-gradient(90deg, rgba(24, 20, 26, 0.8) 0%, rgba(24, 20, 26, 0) 100%)'
+  },
+  '&::after': {
+    right: 0,
+    background: 'linear-gradient(270deg, rgba(24, 20, 26, 0.8) 0%, rgba(24, 20, 26, 0) 100%)'
+  }
 })
+/* eslint-enable @typescript-eslint/naming-convention */
 
 const ConnectTitle = styled(Typography)(({ theme }) => ({
   textAlign: 'center',
