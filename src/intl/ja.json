@@ -481,6 +481,7 @@
         "notifications_empty_read": "既読の通知はありません",
         "notifications_loading": "読み込み中...",
         "wallet_address": "User ID",
+        "address_copied": "アドレスをコピーしました！",
         "logout": "ログアウト",
         "shop_all": "すべて見る",
         "wearables": "ウェアラブル",

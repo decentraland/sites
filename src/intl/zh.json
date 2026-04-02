@@ -481,6 +481,7 @@
         "notifications_empty_read": "没有已读通知",
         "notifications_loading": "加载中...",
         "wallet_address": "User ID",
+        "address_copied": "地址已复制！",
         "logout": "退出",
         "shop_all": "查看全部",
         "wearables": "穿戴装备",

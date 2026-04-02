@@ -481,6 +481,7 @@
         "notifications_empty_read": "No hay notificaciones leídas",
         "notifications_loading": "Cargando...",
         "wallet_address": "User ID",
+        "address_copied": "Dirección copiada!",
         "logout": "Salir",
         "shop_all": "Ver todo",
         "wearables": "Wearables",

@@ -123,7 +123,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
     <HeroContainer>
       <HeroBackground>
         {isDesktop ? (
-          <video autoPlay loop muted playsInline poster={heroImageDesktop} preload="none">
+          <video autoPlay loop muted playsInline poster={heroImageDesktop} preload="metadata">
             <source src={heroContent.backgroundVideo} type="video/mp4" />
           </video>
         ) : (
