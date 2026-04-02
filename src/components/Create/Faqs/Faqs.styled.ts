@@ -86,8 +86,8 @@ const FaqAccordionItem = styled(Box, {
   width: '100%',
   display: 'flex',
   flexDirection: 'column',
-  borderRadius: 56,
-  padding: `${theme.spacing(3.5)} ${theme.spacing(5)} ${theme.spacing(3.5)} ${theme.spacing(5)}`,
+  borderRadius: 32,
+  padding: `${theme.spacing(1.5)} ${theme.spacing(4)}`,
   position: 'relative',
   overflow: 'hidden',
   zIndex: 1,
@@ -115,24 +115,24 @@ const FaqAccordionItem = styled(Box, {
     outlineOffset: 2
   },
   '& svg.open, & svg.close': {
-    width: 57,
-    height: 57,
-    minWidth: 57,
-    minHeight: 57,
+    width: 40,
+    height: 40,
+    minWidth: 40,
+    minHeight: 40,
     transition: 'transform 350ms cubic-bezier(0.16, 1, 0.3, 1)'
   },
   '& svg.open': {
     transform: 'rotate(180deg)'
   },
   [theme.breakpoints.down('xs')]: {
-    padding: `${theme.spacing(3)} ${theme.spacing(3)} ${theme.spacing(3)} ${theme.spacing(4)}`,
+    padding: `${theme.spacing(2)} ${theme.spacing(3)}`,
     marginBottom: theme.spacing(1),
-    borderRadius: 50,
+    borderRadius: 24,
     '& svg.close, & svg.open': {
-      width: 48,
-      height: 48,
-      minWidth: 48,
-      minHeight: 48
+      width: 36,
+      height: 36,
+      minWidth: 36,
+      minHeight: 36
     }
   }
 }))
@@ -162,16 +162,12 @@ const FaqQuestionText = styled(Typography)(({ theme }) => ({
 const FaqAnswerContainer = styled(Box, {
   shouldForwardProp: prop => prop !== 'isOpen'
 })<{ isOpen: boolean }>(({ isOpen }) => ({
-  display: 'grid',
-  gridTemplateRows: isOpen ? '1fr' : '0fr',
-  opacity: isOpen ? 1 : 0,
-  pointerEvents: isOpen ? 'auto' : 'none',
-  transition: 'grid-template-rows 350ms cubic-bezier(0.16, 1, 0.3, 1), opacity 350ms cubic-bezier(0.16, 1, 0.3, 1)'
+  display: isOpen ? 'block' : 'none'
 }))
 
 const FaqAnswerText = styled(Typography)(({ theme }) => ({
   overflow: 'hidden',
-  padding: '1em 0 2em',
+  padding: '1em 0 0.5em',
   fontWeight: 400,
   fontSize: theme.typography.body1.fontSize,
   lineHeight: '165%',
@@ -193,6 +189,7 @@ const FaqsCta = styled('a')(({ theme }) => ({
   textDecoration: 'none',
   fontSize: 15,
   fontWeight: 600,
+  textTransform: 'uppercase',
   cursor: 'pointer',
   transition: 'background-color 200ms ease',
   ['&:hover']: {
