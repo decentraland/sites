@@ -515,7 +515,6 @@ const LandingNavbar = memo(function LandingNavbar({
                               return (
                                 <NotificationListItem key={item.id} style={{ padding: 0 }}>
                                   <Comp notification={item} locale="en" />
-                                  {!item.read && <NotificationDot className="unread" />}
                                 </NotificationListItem>
                               )
                             }
