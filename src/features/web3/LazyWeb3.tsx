@@ -21,15 +21,8 @@ function getCachedAddress(): string | null {
 }
 
 /**
- * The auth dapp (decentraland-connect) stores the active provider type in
- * localStorage. If it says "injected" (MetaMask) but wagmi has a
- * "disconnected" flag for the injected connector, wagmi will refuse to
- * reconnect. We reconcile by removing stale disconnected flags when
- * decentraland-connect reports an active session that wagmi doesn't know about.
- */
-/**
- * Find a valid (non-expired) identity in localStorage by scanning for
- * single-sign-on-0x... keys. Returns true if at least one exists.
+ * Check if there's at least one valid (non-expired) auth identity in
+ * localStorage by scanning single-sign-on-0x... keys.
  */
 function hasValidIdentity(): boolean {
   try {
@@ -50,16 +43,19 @@ function hasValidIdentity(): boolean {
 /**
  * Reconcile decentraland-connect sessions with wagmi's disconnected flags.
  *
- * The auth dapp uses decentraland-connect to persist the active provider,
- * while the landing uses wagmi. When the user logs out, wagmi sets
- * `.disconnected` flags that block reconnection. If the user then goes
- * to auth and logs in again, decentraland-connect has a session but wagmi
- * refuses to reconnect.
+ * The auth dapp uses decentraland-connect to persist the active provider type,
+ * while consumer dapps use wagmi. When a user disconnects, wagmi sets
+ * `.disconnected` flags in localStorage that block auto-reconnection. If the
+ * user then goes to the auth dapp and logs in again, decentraland-connect has
+ * a valid session but wagmi refuses to reconnect because of the stale flags.
  *
- * We only clear the flags if:
- * 1. decentraland-connect has an active provider
- * 2. There's a valid (non-expired) identity in single-sign-on storage
+ * This function runs before wagmi initializes and clears the flags only when:
+ * 1. decentraland-connect reports an active provider
+ * 2. A valid (non-expired) identity exists in single-sign-on storage
  * 3. wagmi has no active connection
+ *
+ * This is safe because the identity check ensures a real authenticated session
+ * exists — we're not blindly reconnecting to stale or expired sessions.
  */
 function reconcileDisconnectedFlags(): void {
   try {
@@ -71,8 +67,16 @@ function reconcileDisconnectedFlags(): void {
 
     if (!hasValidIdentity()) return
 
-    const wagmiStore = localStorage.getItem('wagmi.store')
-    const hasWagmiConnection = wagmiStore && wagmiStore.includes('"current"') && !wagmiStore.includes('"current":null')
+    let hasWagmiConnection = false
+    try {
+      const wagmiStore = localStorage.getItem('wagmi.store')
+      if (wagmiStore) {
+        const parsed = JSON.parse(wagmiStore) as { state?: { current?: string | null } }
+        hasWagmiConnection = parsed?.state?.current != null
+      }
+    } catch {
+      // treat as no connection
+    }
 
     if (!hasWagmiConnection) {
       const keysToRemove: string[] = []
@@ -106,6 +110,10 @@ function LazyWeb3({ children }: PropsWithChildren) {
       const injectReducers = lazy.createLazyStoreEnhancer(store, staticReducers)
       injectReducers()
 
+      // Pre-seed the wallet reducer with the cached address BEFORE wagmi mounts.
+      // This prevents a flash in the UI: without this, Web3Sync reads fresh Redux state
+      // (address: null) and pushes it to WalletStateContext, overriding the
+      // localStorage-derived address for ~30ms until wagmi reconnects.
       const address = getCachedAddress()
       if (address) {
         store.dispatch(core.walletActions.setAccount(address))
