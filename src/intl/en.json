@@ -20,6 +20,11 @@
     "sdk": "SDK"
   },
   "page": {
+    "discord": {
+      "title": "Decentraland Discord",
+      "description": "Join the Decentraland community on Discord to connect with other players, creators, and contributors.",
+      "cta": "Join Discord"
+    },
     "download": {
       "title": "Download Decentraland",
       "description": "Download Decentraland and start exploring the metaverse",
