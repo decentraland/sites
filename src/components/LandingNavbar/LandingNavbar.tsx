@@ -27,7 +27,6 @@ import { DROPDOWN_SECTIONS, MENU_CONFIG, USER_MENU_ITEMS } from './navbarConfig'
 import type { DropdownSection } from './navbarConfig'
 import {
   AvatarButton,
-  AvatarFallback,
   AvatarImage,
   BellButton,
   DesktopDropdown,
@@ -208,27 +207,9 @@ const LandingNavbar = memo(function LandingNavbar({
   }, [notifications])
 
   const resolvedFace = resolveContentUrl(avatar?.avatar?.snapshots?.face256)
-  const fallbackFace = assetUrl('/avatar_face.webp')
-  const [faceState, setFaceState] = useState<'loading' | 'loaded' | 'error'>('loading')
-
-  useEffect(() => {
-    if (!resolvedFace) {
-      setFaceState('loading')
-      return
-    }
-    // Reset to loading when URL changes (e.g. switching accounts)
-    setFaceState('loading')
-    const img = new Image()
-    img.onload = () => setFaceState('loaded')
-    img.onerror = () => setFaceState('error')
-    img.src = resolvedFace
-    return () => {
-      img.onload = null
-      img.onerror = null
-    }
-  }, [resolvedFace])
-
-  const faceUrl = faceState === 'loaded' ? resolvedFace : faceState === 'error' ? fallbackFace : undefined
+  const faceUrl = resolvedFace ?? assetUrl('/avatar_face.webp')
+  const [faceLoaded, setFaceLoaded] = useState(false)
+  useEffect(() => setFaceLoaded(false), [faceUrl])
   const bodyUrl = resolveContentUrl(avatar?.avatar?.snapshots?.body)
   const userName = avatar?.name || (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '')
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''
@@ -362,12 +343,10 @@ const LandingNavbar = memo(function LandingNavbar({
     }
   }, [mobileMenuOpen])
 
-  const renderAvatar = useCallback(() => {
-    if (faceUrl) {
-      return <AvatarImage src={faceUrl} alt="" />
-    }
-    return <AvatarFallback />
-  }, [faceUrl, userName])
+  const renderAvatar = useCallback(
+    () => <AvatarImage src={faceUrl} alt="" onLoad={() => setFaceLoaded(true)} style={{ opacity: faceLoaded ? 1 : 0 }} />,
+    [faceUrl, faceLoaded]
+  )
 
   const renderMobileMenuContent = useCallback(() => {
     return (
@@ -640,7 +619,9 @@ const LandingNavbar = memo(function LandingNavbar({
       {isSignedIn && userCardOpen && (
         <MobileUserCard data-mobile-user-card onClick={e => e.stopPropagation()}>
           <MobileUserCardTop>
-            <MobileUserCardAvatar>{faceUrl ? <MobileUserCardAvatarImage src={faceUrl} alt="" /> : null}</MobileUserCardAvatar>
+            <MobileUserCardAvatar>
+              <MobileUserCardAvatarImage src={faceUrl} alt="" onLoad={() => setFaceLoaded(true)} style={{ opacity: faceLoaded ? 1 : 0 }} />
+            </MobileUserCardAvatar>
             <MobileUserCardInfo>
               <MobileUserCardName title={userName}>{userName}</MobileUserCardName>
               <MobileUserCardAddressLabel>{l('component.landing.navbar.wallet_address')}</MobileUserCardAddressLabel>
