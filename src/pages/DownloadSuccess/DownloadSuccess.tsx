@@ -60,11 +60,10 @@ const DownloadSuccess = memo(() => {
     macos: OperativeSystem.MACOS
   }
   const clientOS = osMap[rawOs.toLowerCase()] ?? OperativeSystem.MACOS
-  const validArchs = new Set<string>([Architecture.AMD64, Architecture.ARM64])
-  const rawArch = searchParams.get('arch') || (clientOS === OperativeSystem.WINDOWS ? Architecture.AMD64 : Architecture.ARM64)
-  const clientArch = (
-    validArchs.has(rawArch) ? rawArch : clientOS === OperativeSystem.WINDOWS ? Architecture.AMD64 : Architecture.ARM64
-  ) as Architecture
+  const validArchs = new Set<string>(['amd64', 'arm64'])
+  const defaultArch = clientOS === OperativeSystem.WINDOWS ? 'amd64' : 'arm64'
+  const rawArch = searchParams.get('arch') || defaultArch
+  const clientArch = (validArchs.has(rawArch) ? rawArch : defaultArch) as Architecture
 
   const osIcon = clientOS === OperativeSystem.WINDOWS ? microsoftLogo : appleLogo
   const osLink =
