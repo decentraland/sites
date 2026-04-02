@@ -22,7 +22,7 @@
   "page": {
     "download": {
       "title": "Descargar Decentraland",
-      "description": "Descarga Decentraland y comienza a explorar el metaverso",
+      "description": "Descarga Decentraland y comienza a divertirte",
       "download_onboarding_title": "Descarga Decentraland\n\n¡y entra!",
       "not_available": "No disponible para tu sistema operativo",
       "not_available_subtitle": "Decentraland está disponible para <span>Windows</span> y <span>macOS</span>.",
@@ -37,7 +37,7 @@
       "already_downloaded": "¿Ya lo descargaste?",
       "jump_in": "Entrar",
       "mobile": {
-        "switch_to_computer": "Cambia a tu computadora para descargar Decentraland",
+        "switch_to_computer": "Usá tu computadora para descargar Decentraland",
         "send_link": "Enviarme el enlace"
       },
       "modal": {
@@ -103,30 +103,30 @@
       }
     },
     "home": {
-      "hang_out_now": "UNITE AHORA",
+      "hang_out_now": "SUMATE AHORA",
       "hero": {
-        "title": "Dejá el scroll. Vení a pasarla bien.",
+        "title": "Dejá de mirar. Vení a pasarla bien.",
         "jump_in": "Entrar",
         "already_user": "¿Ya tenés cuenta? {download}",
         "download": "Descargar",
         "mobile_android_title": "Pasala bien desde donde estés",
         "mobile_android_subtitle": "Decentraland ya está en celulares.",
         "mobile_ios_subtitle": "Descargalo desde la compu.",
-        "mobile_ios_send_link": "Mandarte el link",
+        "mobile_ios_send_link": "Enviarme el link",
         "mobile_ios_coming_soon": "Próximamente"
       },
       "come_hang_out": {
-        "title": "Vení a pasarla bien"
+        "title": "Vení a divertirte"
       },
       "catch_the_vibe": {
-        "title": "Sentí la Onda",
+        "title": "Así se vive adentro",
         "community_member": "De la comunidad",
         "mute": "Silenciar",
         "unmute": "Activar sonido"
       },
       "weekly_rituals": {
         "title": "Tus Rituales de la Semana",
-        "career_mondays": "Lunes de Carrera",
+        "career_mondays": "Lunes de Carreras",
         "takeover_tuesdays": "Martes de Takeover",
         "watch_party_wednesdays": "Miércoles de Cine",
         "trivia_thursdays": "Jueves de Trivia",
@@ -467,8 +467,8 @@
         "download": "Descargar"
       },
       "navbar": {
-        "whats_on": "Eventos",
-        "shop": "Tienda",
+        "whats_on": "Explorar",
+        "shop": "Marketplace",
         "create": "Crear",
         "learn": "Info",
         "jump_in": "Entrar",
@@ -485,12 +485,12 @@
         "shop_all": "Ver todo",
         "wearables": "Wearables",
         "emotes": "Emotes",
-        "names": "Nombres",
-        "land": "Terrenos",
+        "names": "NAMEs",
+        "land": "LANDs",
         "merch": "Merch",
         "create_in_decentraland": "Crear en Decentraland",
         "publish_wearables_emotes": "Publicar Wearables y Emotes",
-        "publish_land": "Publicar Terrenos",
+        "publish_land": "Publicar LANDs",
         "get_started": "Primeros pasos",
         "start_creating": "Empezá a crear",
         "see_whats_new": "Novedades",
