@@ -56,6 +56,7 @@
         "subtitle_action_creating": "creating",
         "step": "Step",
         "footer": "Trouble with the download? Let's try that again: {link}",
+        "footer_prefix": "Trouble with the download? Let's try that again:",
         "footer_link_label": "Download again",
         "event": "After the download is complete, go back to the {event} event page so you can jump in. Redirecting in {seconds} seconds.",
         "steps": {

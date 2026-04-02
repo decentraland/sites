@@ -1,8 +1,8 @@
 import { memo, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useTranslation } from '@dcl/hooks'
-import { FooterLanding } from 'decentraland-ui2/dist/components/FooterLanding/FooterLanding'
 import { Logo, Typography } from 'decentraland-ui2'
+import { LandingFooter } from '../../components/LandingFooter'
+import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { Repo, useLatestGithubRelease } from '../../hooks/useLatestGithubRelease'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsSetup from '../../images/download/creator-hub/mac_setup.svg'
@@ -38,9 +38,13 @@ import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from '../Downloa
 
 const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const RichText = memo(({ html }: { html: string }) => <span dangerouslySetInnerHTML={{ __html: html }} />)
+RichText.displayName = 'RichText'
+
 const CreatorHubDownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
-  const { intl } = useTranslation()
+  const l = useFormatMessage()
   const { links, loading: isLoadingLinks } = useLatestGithubRelease(Repo.CREATOR_HUB)
 
   const rawOs = searchParams.get('os') || ''
@@ -56,24 +60,19 @@ const CreatorHubDownloadSuccess = memo(() => {
   const osIcon = clientOS === OperativeSystem.WINDOWS ? microsoftLogo : appleLogo
   const osLink = links?.[clientOS]?.[clientArch]
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const l = useCallback((id: string, values?: Record<string, any>) => intl.formatMessage({ id }, values), [intl])
+  const productAction = l('page.download.success.subtitle_action_creating')
 
-  const productAction = l('page.download.success.subtitle_action_creating') as string
-
-  const steps: DownloadSuccessStepsWithOs = useMemo(() => {
-    const spanTag = (chunks: React.ReactNode) => <span>{chunks}</span>
-
-    return {
+  const steps: DownloadSuccessStepsWithOs = useMemo(
+    () => ({
       [OperativeSystem.WINDOWS]: [
         {
           title: l('page.creator-hub.download.success.steps.windows.step1.title'),
-          text: l('page.creator-hub.download.success.steps.windows.step1.text', { span: spanTag }),
+          text: <RichText html={l('page.creator-hub.download.success.steps.windows.step1.text')} />,
           image: windowsDownloadFolder
         },
         {
           title: l('page.creator-hub.download.success.steps.windows.step2.title'),
-          text: l('page.creator-hub.download.success.steps.windows.step2.text', { span: spanTag }),
+          text: <RichText html={l('page.creator-hub.download.success.steps.windows.step2.text')} />,
           image: windowsSetup
         },
         {
@@ -85,22 +84,23 @@ const CreatorHubDownloadSuccess = memo(() => {
       [OperativeSystem.MACOS]: [
         {
           title: l('page.creator-hub.download.success.steps.macos.step1.title'),
-          text: l('page.creator-hub.download.success.steps.macos.step1.text', { span: spanTag }),
+          text: <RichText html={l('page.creator-hub.download.success.steps.macos.step1.text')} />,
           image: macOsDownloadFolder
         },
         {
           title: l('page.creator-hub.download.success.steps.macos.step2.title'),
-          text: l('page.creator-hub.download.success.steps.macos.step2.text', { span: spanTag }),
+          text: <RichText html={l('page.creator-hub.download.success.steps.macos.step2.text')} />,
           image: macOsSetup
         },
         {
           title: l('page.creator-hub.download.success.steps.macos.step3.title'),
-          text: l('page.creator-hub.download.success.steps.macos.step3.text', { span: spanTag }),
+          text: <RichText html={l('page.creator-hub.download.success.steps.macos.step3.text')} />,
           image: macOsAppIcon
         }
       ]
-    }
-  }, [l])
+    }),
+    [l]
+  )
 
   const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
 
@@ -152,18 +152,15 @@ const CreatorHubDownloadSuccess = memo(() => {
 
         <DownloadSuccessFooterContainer>
           <Typography variant="body1">
-            {l('page.download.success.footer', {
-              link: (
-                <a href={osLink} onClick={handleDownloadClick}>
-                  {l('page.creator-hub.download.success.footer_link_label')}
-                </a>
-              )
-            })}
+            {l('page.download.success.footer_prefix')}{' '}
+            <a href={osLink} onClick={handleDownloadClick}>
+              {l('page.creator-hub.download.success.footer_link_label')}
+            </a>
           </Typography>
         </DownloadSuccessFooterContainer>
       </DownloadSuccessPageContainer>
 
-      <FooterLanding />
+      <LandingFooter />
     </>
   )
 })
