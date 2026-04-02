@@ -560,6 +560,48 @@
         "account_settings": "Account Settings",
         "marketplace_authorizations": "Marketplace Authorizations"
       }
+    },
+    "creators_landing": {
+      "why": {
+        "title": "creators choose Decentraland",
+        "title_hightlight": "Why"
+      },
+      "create": {
+        "title": "Explore the ",
+        "title_hightlight": "creative",
+        "title_second_part": " possibilities",
+        "tab": {
+          "required_skills": "Required Skills",
+          "useful_links": "Useful Links"
+        }
+      },
+      "connect": {
+        "title": "Decentraland creators say",
+        "title_hightlight": "What",
+        "join_the_community": "Join the Community"
+      },
+      "learn": {
+        "title": "from Community Tutorials",
+        "title_hightlight": "Learn",
+        "watch_more": "Want to see more?",
+        "watch_more_button": "visit our youtube channel",
+        "watch_more_target": "https://www.youtube.com/@decentraland_foundation/videos",
+        "your_tutorial": "Think your tutorial should be featured here?",
+        "your_tutorial_button": "Submit tutorial for review",
+        "your_tutorial_target": "https://docs.google.com/forms/d/e/1FAIpQLScn1HL8_ZFL_Lw-7sbqL9g4WLctWALWUKthGEtjBGQlmIuHLQ/viewform"
+      },
+      "earn": {
+        "title": "Want to create but not a creator?",
+        "second_title": "Hire the best through ",
+        "title_hightlight": "Decentraland Studios",
+        "subtitle": "Browse a vetted registry of Decentraland's most talented creators skilled in:",
+        "browse_creator_label": "Ready to get started?",
+        "browse_creator_button": "browse creators",
+        "browse_creator_url": "https://studios.decentraland.org/studios",
+        "are_you_creator_label": "Already a creator?",
+        "are_you_creator_button": "Join the Registry",
+        "are_you_creator_url": "https://docs.google.com/forms/d/e/1FAIpQLSc_KsbODUsJdC4_UTn7T91RTYwSJBAEZIWlCAxnk3rRBinFWg/viewform"
+      }
     }
   }
 }
