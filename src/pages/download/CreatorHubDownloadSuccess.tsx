@@ -1,7 +1,6 @@
 import { memo, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Logo, Typography } from 'decentraland-ui2'
-import { LandingFooter } from '../../components/LandingFooter'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { Repo, useLatestGithubRelease } from '../../hooks/useLatestGithubRelease'
 import appleLogo from '../../images/apple-logo.svg'
@@ -159,8 +158,6 @@ const CreatorHubDownloadSuccess = memo(() => {
           </Typography>
         </DownloadSuccessFooterContainer>
       </DownloadSuccessPageContainer>
-
-      <LandingFooter />
     </>
   )
 })

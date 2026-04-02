@@ -36,7 +36,6 @@ const App = () => {
         <Routes>
           <Route path="/download" element={<DownloadPage />} />
           <Route path="/download_success" element={<DownloadSuccessPage />} />
-          <Route path="/download/creator-hub-success" element={<CreatorHubDownloadSuccessPage />} />
           <Route path="/invite/:referrer" element={<InvitePage />} />
           <Route element={<Layout />}>
             <Route path="/" element={<IndexPage />} />
@@ -51,6 +50,7 @@ const App = () => {
             <Route path="/help" element={<HelpPage />} />
             <Route path="/create" element={<CreatePage />} />
             <Route path="/download/creator-hub" element={<CreatorHubDownloadPage />} />
+            <Route path="/download/creator-hub-success" element={<CreatorHubDownloadSuccessPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
             <Route path="/whats-on/*" element={<RemoteLoader name="whats_on" />} />
             <Route path="*" element={<Navigate to="/" replace />} />
