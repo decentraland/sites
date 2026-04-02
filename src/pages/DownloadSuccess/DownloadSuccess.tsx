@@ -123,26 +123,20 @@ const DownloadSuccess = memo(() => {
   const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
 
   useEffect(() => {
+    let cancelled = false
     const autoDownloadKey = `${clientOS}:${clientArch}`
-    const historyState =
+
+    const getHistoryState = (): Record<string, unknown> =>
       window.history.state && typeof window.history.state === 'object' ? (window.history.state as Record<string, unknown>) : {}
 
-    if (historyState[AUTO_DOWNLOAD_HISTORY_STATE_KEY] === autoDownloadKey) {
-      return
-    }
-
-    window.history.replaceState(
-      {
-        ...historyState,
-        [AUTO_DOWNLOAD_HISTORY_STATE_KEY]: autoDownloadKey
-      },
-      '',
-      window.location.href
-    )
-
-    let cancelled = false
-
     const startDownload = async () => {
+      const historyState = getHistoryState()
+
+      if (historyState[AUTO_DOWNLOAD_HISTORY_STATE_KEY] === autoDownloadKey) {
+        setIsFileSaved(true)
+        return
+      }
+
       setIsDownloading(true)
       setDownloadError(null)
       setIsFileSaved(false)
@@ -159,6 +153,18 @@ const DownloadSuccess = memo(() => {
       })
 
       if (cancelled) return
+
+      const latestHistoryState = getHistoryState()
+      if (latestHistoryState[AUTO_DOWNLOAD_HISTORY_STATE_KEY] !== autoDownloadKey) {
+        window.history.replaceState(
+          {
+            ...latestHistoryState,
+            [AUTO_DOWNLOAD_HISTORY_STATE_KEY]: autoDownloadKey
+          },
+          '',
+          window.location.href
+        )
+      }
 
       triggerFileDownload(url)
       setIsFileSaved(true)
