@@ -49,7 +49,7 @@
       "avatar_preview": "Decentraland 아바타 미리보기",
       "share_title": "Decentraland 다운로드",
       "success": {
-        "title": "다운로드가 시작되었습니다!",
+        "title": "거의 다 됐어요!",
         "subtitle": "방금 다운로드한 파일을 열어 Decentraland 설치를 완료하고 {action}을 시작하세요",
         "subtitle_action_exploring": "탐험",
         "step": "단계",
@@ -59,44 +59,44 @@
         "steps": {
           "windows": {
             "step1": {
-              "title": "파일 열기",
-              "text": "다운로드 폴더에서 <span>Setup.exe</span> 파일을 찾아 더블클릭하여 설치를 시작하세요"
+              "title": "열기",
+              "text": "다운로드 폴더에서 <span>Decentraland</span> 파일을 열어 설치 마법사를 시작하세요."
             },
             "step2": {
-              "title": "설치 프로그램 따라하기",
-              "text": "Decentraland 설치 프로그램이 과정을 안내합니다. <span>다음</span>을 클릭하고 안내를 따르세요"
+              "title": "설치",
+              "text": "설치 마법사의 안내를 따르세요. <span>완료</span>를 클릭하면 설치가 시작됩니다."
             },
             "step3": {
-              "title": "Decentraland 실행",
-              "text": "설치가 완료되면 바탕화면이나 시작 메뉴에서 Decentraland를 열고 <span>입장하세요!</span>"
+              "title": "탐험할 준비를 하세요!",
+              "text": "설치가 완료되면 Decentraland 앱이 작업 표시줄에 나타나고 자동으로 실행됩니다."
             }
           },
           "macOS": {
             "step1": {
-              "title": "파일 열기",
-              "text": "다운로드 폴더에서 <span>Decentraland.dmg</span> 파일을 찾아 더블클릭하여 여세요"
+              "title": "열기",
+              "text": "브라우저의 '최근 다운로드' 또는 '다운로드' 폴더에서 <span>Decentraland</span> 파일을 클릭하여 여세요."
             },
             "step2": {
-              "title": "응용 프로그램으로 드래그",
-              "text": "Decentraland 아이콘을 <span>응용 프로그램</span> 폴더로 드래그하여 설치하세요"
+              "title": "설치",
+              "text": "이 창이 나타납니다. <span>Decentraland</span> 버튼을 더블클릭하여 설치를 시작하세요."
             },
             "step3": {
-              "title": "Decentraland 실행",
-              "text": "응용 프로그램 폴더에서 Decentraland를 열고 <span>입장하세요!</span>"
+              "title": "탐험할 준비를 하세요!",
+              "text": "설치가 완료되면 Decentraland 앱이 Dock에 나타나고 자동으로 실행됩니다."
             }
           },
           "macos": {
             "step1": {
-              "title": "파일 열기",
-              "text": "다운로드 폴더에서 <span>Decentraland.dmg</span> 파일을 찾아 더블클릭하여 여세요"
+              "title": "열기",
+              "text": "브라우저의 '최근 다운로드' 또는 '다운로드' 폴더에서 <span>Decentraland</span> 파일을 클릭하여 여세요."
             },
             "step2": {
-              "title": "응용 프로그램으로 드래그",
-              "text": "Decentraland 아이콘을 <span>응용 프로그램</span> 폴더로 드래그하여 설치하세요"
+              "title": "설치",
+              "text": "이 창이 나타납니다. <span>Decentraland</span> 버튼을 더블클릭하여 설치를 시작하세요."
             },
             "step3": {
-              "title": "Decentraland 실행",
-              "text": "응용 프로그램 폴더에서 Decentraland를 열고 <span>입장하세요!</span>"
+              "title": "탐험할 준비를 하세요!",
+              "text": "설치가 완료되면 Decentraland 앱이 Dock에 나타나고 자동으로 실행됩니다."
             }
           }
         }
