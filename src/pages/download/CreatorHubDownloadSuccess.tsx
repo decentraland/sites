@@ -127,7 +127,7 @@ const CreatorHubDownloadSuccess = memo(() => {
         </DownloadBackdropContent>
       </DownloadBackdrop>
 
-      <DownloadSuccessPageContainer sx={{ paddingTop: '64px' }}>
+      <DownloadSuccessPageContainer sx={{ paddingTop: '120px' }}>
         <DownloadSuccessHeaderContainer>
           <DownloadSuccessOsIcon src={osIcon} alt="" loading="lazy" />
           <DownloadSuccessTitle variant="h3">{l('page.download.success.title')}</DownloadSuccessTitle>
