@@ -40,16 +40,21 @@ import {
   HighlightAnimation
 } from './DownloadSuccess.styled'
 
+let hasDownloaded = false
+
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
   const { intl } = useTranslation()
   const { isInitialized, track } = useAnalytics()
-  const getIdentityId = useGetIdentityId()
+  const { getIdentityId, authLoading } = useGetIdentityId()
 
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [isFileSaved, setIsFileSaved] = useState(false)
-  const hasDownloadedRef = useRef(false)
+  const isInitializedRef = useRef(isInitialized)
+  const trackRef = useRef(track)
+  isInitializedRef.current = isInitialized
+  trackRef.current = track
 
   const rawOs = searchParams.get('os') || ''
   const osMap: Record<string, OperativeSystem> = {
@@ -114,16 +119,17 @@ const DownloadSuccess = memo(() => {
   const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
 
   useEffect(() => {
-    if (hasDownloadedRef.current) return
-    hasDownloadedRef.current = true
+    if (authLoading) return
+    if (hasDownloaded) return
+    hasDownloaded = true
 
     const startDownload = async () => {
       setIsDownloading(true)
       setDownloadError(null)
       setIsFileSaved(false)
 
-      if (isInitialized) {
-        track(SegmentEvent.DOWNLOAD_STARTED)
+      if (isInitializedRef.current) {
+        trackRef.current(SegmentEvent.DOWNLOAD_STARTED)
       }
 
       const { url, filename } = await calculateDownloadUrl({
@@ -136,8 +142,8 @@ const DownloadSuccess = memo(() => {
       triggerFileDownload(url)
       setIsFileSaved(true)
 
-      if (isInitialized) {
-        track(SegmentEvent.DOWNLOAD_SUCCESS, { filename })
+      if (isInitializedRef.current) {
+        trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { filename })
       }
     }
 
@@ -145,15 +151,15 @@ const DownloadSuccess = memo(() => {
       .catch(error => {
         console.error('Download error:', error)
         setDownloadError(error instanceof Error ? error.message : 'Download failed')
-        if (isInitialized) {
-          track(SegmentEvent.DOWNLOAD_FAILED)
+        if (isInitializedRef.current) {
+          trackRef.current(SegmentEvent.DOWNLOAD_FAILED)
         }
-        hasDownloadedRef.current = false
+        hasDownloaded = false
       })
       .finally(() => {
         setIsDownloading(false)
       })
-  }, [clientOS, clientArch, getIdentityId, isInitialized, track])
+  }, [clientOS, clientArch, getIdentityId, authLoading])
 
   const handleDownloadClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {
