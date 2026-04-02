@@ -18,8 +18,9 @@ const HangOutButton = styled(Button)(({ theme }) => ({
     whiteSpace: 'nowrap',
     boxShadow: 'rgba(0, 0, 0, 0.4) 0px 2px 8px',
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    '&:hover': {
-      backgroundColor: '#FF2D55'
+    '&:hover, &:focus, &:active': {
+      backgroundColor: '#FF2D55 !important',
+      boxShadow: 'rgba(0, 0, 0, 0.4) 0px 2px 8px'
     },
     // eslint-disable-next-line @typescript-eslint/naming-convention
     '& .MuiButton-endIcon': {

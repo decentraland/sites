@@ -49,7 +49,7 @@
       "avatar_preview": "Vista previa del Avatar de Decentraland",
       "share_title": "Descargar Decentraland",
       "success": {
-        "title": "¡Descarga iniciada!",
+        "title": "¡Ya casi está!",
         "subtitle": "Abre el archivo que acabas de descargar para terminar de instalar Decentraland y comenzar a {action}",
         "subtitle_action_exploring": "explorar",
         "step": "Paso",
@@ -59,44 +59,44 @@
         "steps": {
           "windows": {
             "step1": {
-              "title": "Abre el archivo",
-              "text": "Encuentra el archivo <span>Setup.exe</span> en tu carpeta de descargas y haz doble clic para iniciar la instalación"
+              "title": "Abrir",
+              "text": "Abre el archivo <span>Decentraland</span> desde tu carpeta de Descargas para iniciar el Asistente de Instalación."
             },
             "step2": {
-              "title": "Sigue el instalador",
-              "text": "El instalador de Decentraland te guiará a través del proceso. Solo haz clic en <span>Siguiente</span> y sigue las instrucciones"
+              "title": "Instalar",
+              "text": "Sigue las instrucciones del Asistente de Instalación. Cuando hagas clic en <span>Finalizar</span>, comenzará el proceso de instalación."
             },
             "step3": {
-              "title": "Inicia Decentraland",
-              "text": "Una vez instalado, abre Decentraland desde tu escritorio o menú de inicio y <span>¡Entra!</span>"
+              "title": "¡Prepárate para explorar!",
+              "text": "Una vez completada la instalación, la app de Decentraland debería aparecer en tu barra de tareas y se iniciará automáticamente."
             }
           },
           "macOS": {
             "step1": {
-              "title": "Abre el archivo",
-              "text": "Encuentra el archivo <span>Decentraland.dmg</span> en tus descargas y haz doble clic para abrirlo"
+              "title": "Abrir",
+              "text": "Haz clic en el archivo <span>Decentraland</span> desde las 'Descargas recientes' de tu navegador o tu carpeta de 'Descargas' para abrirlo."
             },
             "step2": {
-              "title": "Arrastra a Aplicaciones",
-              "text": "Arrastra el ícono de Decentraland a tu carpeta de <span>Aplicaciones</span> para instalarlo"
+              "title": "Instalar",
+              "text": "Debería aparecer esta ventana. Haz doble clic en el botón <span>Decentraland</span> para iniciar la instalación."
             },
             "step3": {
-              "title": "Inicia Decentraland",
-              "text": "Abre Decentraland desde tu carpeta de Aplicaciones y <span>¡Entra!</span>"
+              "title": "¡Prepárate para explorar!",
+              "text": "Una vez completada la instalación, la app de Decentraland debería aparecer en tu Dock y se iniciará automáticamente."
             }
           },
           "macos": {
             "step1": {
-              "title": "Abre el archivo",
-              "text": "Encuentra el archivo <span>Decentraland.dmg</span> en tus descargas y haz doble clic para abrirlo"
+              "title": "Abrir",
+              "text": "Haz clic en el archivo <span>Decentraland</span> desde las 'Descargas recientes' de tu navegador o tu carpeta de 'Descargas' para abrirlo."
             },
             "step2": {
-              "title": "Arrastra a Aplicaciones",
-              "text": "Arrastra el ícono de Decentraland a tu carpeta de <span>Aplicaciones</span> para instalarlo"
+              "title": "Instalar",
+              "text": "Debería aparecer esta ventana. Haz doble clic en el botón <span>Decentraland</span> para iniciar la instalación."
             },
             "step3": {
-              "title": "Inicia Decentraland",
-              "text": "Abre Decentraland desde tu carpeta de Aplicaciones y <span>¡Entra!</span>"
+              "title": "¡Prepárate para explorar!",
+              "text": "Una vez completada la instalación, la app de Decentraland debería aparecer en tu Dock y se iniciará automáticamente."
             }
           }
         }
@@ -353,7 +353,7 @@
         },
         "resources": {
           "title": "Recursos",
-          "marketplace": "Marketplace",
+          "marketplace": "Comprar",
           "creator_hub": "Creator Hub",
           "docs": "Documentación",
           "blog": "Blog",
@@ -468,9 +468,9 @@
       },
       "navbar": {
         "whats_on": "Explorar",
-        "shop": "Marketplace",
+        "shop": "Comprar",
         "create": "Crear",
-        "learn": "Info",
+        "learn": "Aprender",
         "jump_in": "Entrar",
         "sign_in": "Ingresar",
         "signing_in": "Ingresando...",

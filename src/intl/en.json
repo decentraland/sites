@@ -49,7 +49,7 @@
       "avatar_preview": "Decentraland Avatar Preview",
       "share_title": "Download Decentraland",
       "success": {
-        "title": "Download Started!",
+        "title": "You're almost done!",
         "subtitle": "Open the file you just downloaded to finish installing Decentraland and start {action}",
         "subtitle_action_exploring": "exploring",
         "step": "Step",
@@ -59,44 +59,44 @@
         "steps": {
           "windows": {
             "step1": {
-              "title": "Open the file",
-              "text": "Find the <span>Setup.exe</span> file in your downloads folder and double-click it to start the installation"
+              "title": "Open",
+              "text": "Open the <span>Decentraland</span> file from your Downloads Folder to launch the Setup Wizard."
             },
             "step2": {
-              "title": "Follow the installer",
-              "text": "The Decentraland installer will guide you through the process. Just click <span>Next</span> and follow the prompts"
+              "title": "Install",
+              "text": "Follow the instructions in the Setup Wizard. When you click <span>Finish</span> the installation process will begin."
             },
             "step3": {
-              "title": "Launch Decentraland",
-              "text": "Once installed, open Decentraland from your desktop or start menu and <span>Jump In!</span>"
+              "title": "Get Ready to Explore!",
+              "text": "Once installation is complete, the Decentraland app should be visible in your taskbar and will launch automatically."
             }
           },
           "macOS": {
             "step1": {
-              "title": "Open the file",
-              "text": "Find the <span>Decentraland.dmg</span> file in your downloads and double-click to open it"
+              "title": "Open",
+              "text": "Click on the <span>Decentraland</span> file from your browser's 'Recent Downloads' or your 'Downloads' folder to open it."
             },
             "step2": {
-              "title": "Drag to Applications",
-              "text": "Drag the Decentraland icon to your <span>Applications</span> folder to install it"
+              "title": "Install",
+              "text": "This window should then appear—double click the <span>Decentraland</span> button to start installation."
             },
             "step3": {
-              "title": "Launch Decentraland",
-              "text": "Open Decentraland from your Applications folder and <span>Jump In!</span>"
+              "title": "Get Ready to Explore!",
+              "text": "Once installation is complete, the Decentraland app should be visible in your Dock and will launch automatically."
             }
           },
           "macos": {
             "step1": {
-              "title": "Open the file",
-              "text": "Find the <span>Decentraland.dmg</span> file in your downloads and double-click to open it"
+              "title": "Open",
+              "text": "Click on the <span>Decentraland</span> file from your browser's 'Recent Downloads' or your 'Downloads' folder to open it."
             },
             "step2": {
-              "title": "Drag to Applications",
-              "text": "Drag the Decentraland icon to your <span>Applications</span> folder to install it"
+              "title": "Install",
+              "text": "This window should then appear—double click the <span>Decentraland</span> button to start installation."
             },
             "step3": {
-              "title": "Launch Decentraland",
-              "text": "Open Decentraland from your Applications folder and <span>Jump In!</span>"
+              "title": "Get Ready to Explore!",
+              "text": "Once installation is complete, the Decentraland app should be visible in your Dock and will launch automatically."
             }
           }
         }
@@ -413,7 +413,7 @@
         },
         "resources": {
           "title": "Resources",
-          "marketplace": "Marketplace",
+          "marketplace": "Shop",
           "creator_hub": "Creator Hub",
           "docs": "Docs",
           "blog": "Blog",
@@ -546,12 +546,12 @@
         "shop_all": "Shop All",
         "wearables": "Wearables",
         "emotes": "Emotes",
-        "names": "Names",
-        "land": "Land",
+        "names": "NAMEs",
+        "land": "LAND",
         "merch": "Merch",
         "create_in_decentraland": "Create in Decentraland",
         "publish_wearables_emotes": "Publish Wearables & Emotes",
-        "publish_land": "Publish Land",
+        "publish_land": "Publish LAND",
         "get_started": "Get Started",
         "start_creating": "Start Creating",
         "see_whats_new": "See What's New",

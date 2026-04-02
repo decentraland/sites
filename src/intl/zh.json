@@ -49,7 +49,7 @@
       "avatar_preview": "Decentraland 头像预览",
       "share_title": "下载 Decentraland",
       "success": {
-        "title": "下载已开始！",
+        "title": "即将完成！",
         "subtitle": "打开刚下载的文件完成 Decentraland 安装并开始{action}",
         "subtitle_action_exploring": "探索",
         "step": "步骤",
@@ -59,44 +59,44 @@
         "steps": {
           "windows": {
             "step1": {
-              "title": "打开文件",
-              "text": "在下载文件夹中找到 <span>Setup.exe</span> 文件，双击开始安装"
+              "title": "打开",
+              "text": "从下载文件夹打开 <span>Decentraland</span> 文件以启动安装向导。"
             },
             "step2": {
-              "title": "跟随安装向导",
-              "text": "Decentraland 安装程序将引导您完成安装过程。只需点击 <span>下一步</span> 并按照提示操作"
+              "title": "安装",
+              "text": "按照安装向导的说明操作。点击 <span>完成</span> 后将开始安装。"
             },
             "step3": {
-              "title": "启动 Decentraland",
-              "text": "安装完成后，从桌面或开始菜单打开 Decentraland，<span>立即进入！</span>"
+              "title": "准备开始探索！",
+              "text": "安装完成后，Decentraland 应用将出现在任务栏中并自动启动。"
             }
           },
           "macOS": {
             "step1": {
-              "title": "打开文件",
-              "text": "在下载文件夹中找到 <span>Decentraland.dmg</span> 文件，双击打开"
+              "title": "打开",
+              "text": "从浏览器的\"最近下载\"或\"下载\"文件夹中点击 <span>Decentraland</span> 文件打开。"
             },
             "step2": {
-              "title": "拖入应用程序",
-              "text": "将 Decentraland 图标拖入 <span>应用程序</span> 文件夹进行安装"
+              "title": "安装",
+              "text": "此窗口将会出现——双击 <span>Decentraland</span> 按钮开始安装。"
             },
             "step3": {
-              "title": "启动 Decentraland",
-              "text": "从应用程序文件夹打开 Decentraland，<span>立即进入！</span>"
+              "title": "准备开始探索！",
+              "text": "安装完成后，Decentraland 应用将出现在 Dock 中并自动启动。"
             }
           },
           "macos": {
             "step1": {
-              "title": "打开文件",
-              "text": "在下载文件夹中找到 <span>Decentraland.dmg</span> 文件，双击打开"
+              "title": "打开",
+              "text": "从浏览器的\"最近下载\"或\"下载\"文件夹中点击 <span>Decentraland</span> 文件打开。"
             },
             "step2": {
-              "title": "拖入应用程序",
-              "text": "将 Decentraland 图标拖入 <span>应用程序</span> 文件夹进行安装"
+              "title": "安装",
+              "text": "此窗口将会出现——双击 <span>Decentraland</span> 按钮开始安装。"
             },
             "step3": {
-              "title": "启动 Decentraland",
-              "text": "从应用程序文件夹打开 Decentraland，<span>立即进入！</span>"
+              "title": "准备开始探索！",
+              "text": "安装完成后，Decentraland 应用将出现在 Dock 中并自动启动。"
             }
           }
         }
@@ -337,28 +337,28 @@
           "faq": "FAQ"
         },
         "newsletter": {
-          "title": "Get the highlights in your inbox",
-          "placeholder": "Enter Your Email",
-          "cta": "Subscribe"
+          "title": "订阅精选资讯",
+          "placeholder": "输入您的邮箱",
+          "cta": "订阅"
         },
-        "connect": "Connect",
-        "menu": "Menu",
+        "connect": "关注我们",
+        "menu": "菜单",
         "getting_started": {
-          "title": "Getting Started",
-          "what_is": "What is Decentraland?",
-          "download": "Download Decentraland",
-          "system_requirements": "System Requirements",
-          "faqs": "FAQs",
-          "contact_support": "Contact Support"
+          "title": "快速入门",
+          "what_is": "什么是 Decentraland？",
+          "download": "下载 Decentraland",
+          "system_requirements": "系统要求",
+          "faqs": "常见问题",
+          "contact_support": "联系支持"
         },
         "resources": {
-          "title": "Resources",
-          "marketplace": "Marketplace",
-          "creator_hub": "Creator Hub",
-          "docs": "Docs",
-          "blog": "Blog",
+          "title": "资源",
+          "marketplace": "市场",
+          "creator_hub": "创作者中心",
+          "docs": "文档",
+          "blog": "博客",
           "dao": "DAO",
-          "vote": "Vote"
+          "vote": "投票"
         }
       },
       "events_places": {

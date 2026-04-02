@@ -15,7 +15,8 @@ const CTAButtonStyled = styled(Button)(({ theme }) => ({
     }
   },
   ['&.MuiButton-sizeMedium.MuiButton-containedPrimary:not(.Mui-disabled):not(.Mui-focusVisible):hover']: {
-    backgroundColor: theme.palette.primary.main
+    backgroundColor: `${theme.palette.primary.main} !important`,
+    boxShadow: 'rgba(0, 0, 0, 0.4) 0px 2px 8px'
   },
   ['&::before']: {
     content: "''",

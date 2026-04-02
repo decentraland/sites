@@ -3,13 +3,13 @@
   "AUTH_URL": "/auth",
   "MAGIC_API_KEY": "pk_live_CE856A4938B36648",
   "THIRDWEB_CLIENT_ID": "e1adce863fe287bb6cf0e3fd90bdb77f",
-  "PEER_URL": "https://peer.decentraland.org",
+  "PEER_URL": "https://peer.decentraland.zone",
   "WALLET_CONNECT_PROJECT_ID": "61570c542c2d66c659492e5b24a41522",
   "DOWNLOAD_COUNTS_URL": "https://cdn-data.decentraland.org/public/current/explorer-alpha-downloads.json",
-  "EVENTS_API_URL": "https://events.decentraland.org/api",
-  "HOT_SCENES_URL": "https://realm-provider-ea.decentraland.org/hot-scenes",
+  "EVENTS_API_URL": "https://events.decentraland.zone/api",
+  "HOT_SCENES_URL": "https://realm-provider-ea.decentraland.zone/hot-scenes",
   "JUMP_IN_URL": "https://decentraland.zone/jump",
-  "NOTIFICATIONS_API_URL": "https://notifications.decentraland.org",
+  "NOTIFICATIONS_API_URL": "https://notifications.decentraland.zone",
   "DOWNLOAD_URL": "https://decentraland.zone/download",
-  "WEARABLE_PREVIEW_URL": "https://wearable-preview.decentraland.org/"
+  "WEARABLE_PREVIEW_URL": "https://wearable-preview.decentraland.zone/"
 }

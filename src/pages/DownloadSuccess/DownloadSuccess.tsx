@@ -52,8 +52,10 @@ const DownloadSuccess = memo(() => {
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [isFileSaved, setIsFileSaved] = useState(false)
   const downloadingRef = useRef(false)
+  const getIdentityIdRef = useRef(getIdentityId)
   const isInitializedRef = useRef(isInitialized)
   const trackRef = useRef(track)
+  getIdentityIdRef.current = getIdentityId
   isInitializedRef.current = isInitialized
   trackRef.current = track
 
@@ -135,7 +137,7 @@ const DownloadSuccess = memo(() => {
         os: clientOS,
         arch: clientArch,
         fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
-        getIdentityId
+        getIdentityId: getIdentityIdRef.current
       })
 
       if (cancelled) return
@@ -166,7 +168,7 @@ const DownloadSuccess = memo(() => {
     return () => {
       cancelled = true
     }
-  }, [clientOS, clientArch, getIdentityId])
+  }, [clientOS, clientArch])
 
   const handleDownloadClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {
