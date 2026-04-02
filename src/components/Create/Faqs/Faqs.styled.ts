@@ -48,7 +48,7 @@ const FaqsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   [theme.breakpoints.down('sm')]: {
-    padding: `${theme.spacing(16)} 0 ${theme.spacing(18)}`
+    padding: `${theme.spacing(6)} 0 ${theme.spacing(8)}`
   }
 }))
 
