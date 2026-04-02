@@ -41,6 +41,7 @@ import {
 } from './DownloadSuccess.styled'
 
 const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
+const AUTO_DOWNLOAD_HISTORY_STATE_KEY = 'downloadSuccess:autoDownloadKey'
 
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
@@ -123,8 +124,19 @@ const DownloadSuccess = memo(() => {
 
   useEffect(() => {
     let cancelled = false
+    const autoDownloadKey = `${clientOS}:${clientArch}`
+
+    const getHistoryState = (): Record<string, unknown> =>
+      window.history.state && typeof window.history.state === 'object' ? (window.history.state as Record<string, unknown>) : {}
 
     const startDownload = async () => {
+      const historyState = getHistoryState()
+
+      if (historyState[AUTO_DOWNLOAD_HISTORY_STATE_KEY] === autoDownloadKey) {
+        setIsFileSaved(true)
+        return
+      }
+
       setIsDownloading(true)
       setDownloadError(null)
       setIsFileSaved(false)
@@ -141,6 +153,18 @@ const DownloadSuccess = memo(() => {
       })
 
       if (cancelled) return
+
+      const latestHistoryState = getHistoryState()
+      if (latestHistoryState[AUTO_DOWNLOAD_HISTORY_STATE_KEY] !== autoDownloadKey) {
+        window.history.replaceState(
+          {
+            ...latestHistoryState,
+            [AUTO_DOWNLOAD_HISTORY_STATE_KEY]: autoDownloadKey
+          },
+          '',
+          window.location.href
+        )
+      }
 
       triggerFileDownload(url)
       setIsFileSaved(true)
