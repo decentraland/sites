@@ -8,7 +8,7 @@ const HeroContainer = styled(Box)(({ theme }) => ({
   alignItems: 'flex-end',
   justifyContent: 'center',
   overflow: 'hidden',
-  backgroundColor: '#39055C',
+  backgroundColor: '#0C0C0C',
   [theme.breakpoints.down('sm')]: {
     minHeight: 'calc(var(--hero-vh, 1vh) * 100)'
   }
@@ -40,24 +40,57 @@ const GradientTop = styled(Box)({
   top: 0,
   left: 0,
   width: '100%',
-  height: '24.3%',
-  background: 'linear-gradient(180deg, #000000 0%, rgba(0, 0, 0, 0) 100%)',
+  height: '28%',
+  background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%)',
   zIndex: 1
 })
 
 const GradientBottom = styled(Box)(({ theme }) => ({
   position: 'absolute',
-  bottom: 0,
+  top: 0,
   left: 0,
   width: '100%',
-  height: '60%',
-  background: 'linear-gradient(0deg, #39055C 0%, rgba(0, 0, 0, 0) 100%)',
+  height: '100%',
+  background: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 66.6%, rgba(12, 12, 12, 0.8) 100%)',
   zIndex: 1,
   [theme.breakpoints.down('sm')]: {
-    height: '85%',
-    background: 'linear-gradient(0deg, #39055C 0%, #39055C 30%, rgba(57, 5, 92, 0) 100%)'
+    background: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(12, 12, 12, 0.9) 100%)'
   }
 }))
+
+const BackgroundOverlay = styled(Box)({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  background: 'linear-gradient(to right, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 82%)',
+  zIndex: 1
+})
+
+const HalftoneOverlay = styled(Box)({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  zIndex: 1,
+  opacity: 0.06,
+  backgroundImage:
+    'repeating-linear-gradient(0deg, rgba(255,255,255,0.8) 0px, rgba(255,255,255,0.8) 1.1px, transparent 1.1px, transparent 4px)',
+  backgroundSize: '100% 4px',
+  pointerEvents: 'none'
+})
+
+const RadialVignette = styled(Box)({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  background: 'radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.7) 100%)',
+  zIndex: 1
+})
 
 const HeroContent = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -77,10 +110,11 @@ const HeroContent = styled(Box)(({ theme }) => ({
 
 const HeroTitle = styled(Typography)(({ theme }) => ({
   color: dclColors.neutral.white,
-  fontWeight: 600,
-  lineHeight: 1.2,
-  letterSpacing: -0.5,
-  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
+  fontWeight: 700,
+  fontSize: 80,
+  lineHeight: 1.08,
+  letterSpacing: -2.52,
+  textShadow: '0px 3.36px 63px rgba(0, 0, 0, 0.5)',
   [theme.breakpoints.down('sm')]: {
     fontSize: 36
   }
@@ -301,6 +335,7 @@ export {
   AlreadyUserDownloadLink,
   AlreadyUserText,
   AppleIcon,
+  BackgroundOverlay,
   ComingSoonRow,
   ComingSoonText,
   GooglePlayButton,
@@ -309,6 +344,7 @@ export {
   GradientTop,
   HeroBackground,
   HeroCTAWrapper,
+  HalftoneOverlay,
   HeroContainer,
   HeroContent,
   HeroDownloadCounts,
@@ -322,6 +358,7 @@ export {
   MobileHeroContent,
   MobileHeroSubtitle,
   MobileHeroTitle,
+  RadialVignette,
   SendLinkButton
 }
 export { HangOutButton } from '../shared/HangOutButton.styled'

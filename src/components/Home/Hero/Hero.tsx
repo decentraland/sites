@@ -20,12 +20,14 @@ import {
   AlreadyUserDownloadLink,
   AlreadyUserText,
   AppleIcon,
+  BackgroundOverlay,
   ComingSoonRow,
   ComingSoonText,
   GooglePlayButton,
   GooglePlayImage,
   GradientBottom,
   GradientTop,
+  HalftoneOverlay,
   HangOutButton,
   HeroBackground,
   HeroCTAWrapper,
@@ -41,6 +43,7 @@ import {
   MobileHeroContent,
   MobileHeroSubtitle,
   MobileHeroTitle,
+  RadialVignette,
   SendLinkButton
 } from './Hero.styled'
 
@@ -134,7 +137,10 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
           </picture>
         )}
       </HeroBackground>
+      <HalftoneOverlay />
       <GradientTop />
+      <BackgroundOverlay />
+      <RadialVignette />
       <GradientBottom />
 
       {/* Mobile: always show iOS-style layout to avoid jumps while UA loads.

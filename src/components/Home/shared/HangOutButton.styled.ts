@@ -18,8 +18,9 @@ const HangOutButton = styled(Button)(({ theme }) => ({
     whiteSpace: 'nowrap',
     boxShadow: 'rgba(0, 0, 0, 0.4) 0px 2px 8px',
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    '&:hover': {
-      backgroundColor: '#FF2D55'
+    '&:hover, &:focus, &:active, &.Mui-focusVisible': {
+      backgroundColor: '#FF2D55 !important',
+      boxShadow: 'rgba(0, 0, 0, 0.4) 0px 2px 8px !important'
     },
     // eslint-disable-next-line @typescript-eslint/naming-convention
     '& .MuiButton-endIcon': {
@@ -39,7 +40,7 @@ const HangOutButton = styled(Button)(({ theme }) => ({
     bottom: 0,
     left: 0,
     border: `4px solid ${dclColors.neutral.white}`,
-    borderRadius: 14,
+    borderRadius: 24,
     opacity: 0,
     transition: theme.transitions.create(['top', 'right', 'bottom', 'left', 'opacity'], {
       duration: theme.transitions.duration.shorter,
