@@ -59,8 +59,7 @@ const ConnectTitle = styled(Typography)(({ theme }) => ({
 }))
 
 const ConnectCard = styled(Box)(({ theme }) => ({
-  width: 367,
-  minWidth: 367,
+  width: '100%',
   padding: '32px 24px',
   background: '#fcfcfc',
   borderRadius: 20,
@@ -70,7 +69,6 @@ const ConnectCard = styled(Box)(({ theme }) => ({
   boxSizing: 'border-box',
   position: 'relative',
   transition: 'transform 0.3s ease-in-out',
-  marginBottom: 40,
   cursor: 'pointer',
   ['@media (hover: hover)']: {
     ['&:hover']: {
@@ -78,8 +76,6 @@ const ConnectCard = styled(Box)(({ theme }) => ({
     }
   },
   [theme.breakpoints.down('sm')]: {
-    width: 350,
-    minWidth: 350,
     padding: 24
   }
 }))
