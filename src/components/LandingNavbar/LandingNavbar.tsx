@@ -111,7 +111,6 @@ interface NotificationsData {
 interface LandingNavbarProps {
   isSignedIn: boolean
   isSigningIn: boolean
-  isProfileLoading?: boolean
   isLandingPage?: boolean
   address?: string
   avatar?: { name?: string; avatar?: { snapshots?: { face256?: string; body?: string } } }
@@ -147,7 +146,6 @@ function resolveContentUrl(hash: string | undefined): string | undefined {
 const LandingNavbar = memo(function LandingNavbar({
   isSignedIn,
   isSigningIn,
-  isProfileLoading = false,
   isLandingPage = false,
   address,
   avatar,
@@ -210,8 +208,27 @@ const LandingNavbar = memo(function LandingNavbar({
   }, [notifications])
 
   const resolvedFace = resolveContentUrl(avatar?.avatar?.snapshots?.face256)
-  // Show fallback only after profile finished loading — not while loading
-  const faceUrl = resolvedFace ?? (isProfileLoading ? undefined : assetUrl('/avatar_face.webp'))
+  const fallbackFace = assetUrl('/avatar_face.webp')
+  const [faceState, setFaceState] = useState<'loading' | 'loaded' | 'error'>('loading')
+
+  useEffect(() => {
+    if (!resolvedFace) {
+      setFaceState('loading')
+      return
+    }
+    // Reset to loading when URL changes (e.g. switching accounts)
+    setFaceState('loading')
+    const img = new Image()
+    img.onload = () => setFaceState('loaded')
+    img.onerror = () => setFaceState('error')
+    img.src = resolvedFace
+    return () => {
+      img.onload = null
+      img.onerror = null
+    }
+  }, [resolvedFace])
+
+  const faceUrl = faceState === 'loaded' ? resolvedFace : faceState === 'error' ? fallbackFace : undefined
   const bodyUrl = resolveContentUrl(avatar?.avatar?.snapshots?.body)
   const userName = avatar?.name || (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '')
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''
