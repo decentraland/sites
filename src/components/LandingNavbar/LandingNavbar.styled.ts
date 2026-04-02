@@ -498,7 +498,7 @@ const AvatarButton = styled('button')({
   cursor: 'pointer',
   flexShrink: 0,
   borderRadius: 100,
-  backgroundColor: '#3a3a3a',
+  backgroundColor: '#FF4BED',
   border: '2px solid rgba(255, 255, 255, 0.5)',
   overflow: 'hidden',
   [MOBILE_BREAKPOINT]: {
@@ -948,7 +948,7 @@ const MobileUserCardAvatar = styled('div')({
   height: 73,
   borderRadius: 100,
   border: '3px solid rgba(255, 255, 255, 0.5)',
-  backgroundColor: '#3a3a3a',
+  backgroundColor: '#FF4BED',
   overflow: 'hidden',
   flexShrink: 0
 })

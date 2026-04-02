@@ -208,8 +208,8 @@ const LandingNavbar = memo(function LandingNavbar({
 
   const resolvedFace = resolveContentUrl(avatar?.avatar?.snapshots?.face256)
   const faceUrl = resolvedFace ?? assetUrl('/avatar_face.webp')
-  const [faceLoaded, setFaceLoaded] = useState(false)
-  useEffect(() => setFaceLoaded(false), [faceUrl])
+  const [loadedUrl, setLoadedUrl] = useState<string>()
+  const faceLoaded = loadedUrl === faceUrl
   const bodyUrl = resolveContentUrl(avatar?.avatar?.snapshots?.body)
   const userName = avatar?.name || (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '')
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''
@@ -343,9 +343,14 @@ const LandingNavbar = memo(function LandingNavbar({
     }
   }, [mobileMenuOpen])
 
-  const renderAvatar = useCallback(
-    () => <AvatarImage src={faceUrl} alt="" onLoad={() => setFaceLoaded(true)} style={{ opacity: faceLoaded ? 1 : 0 }} />,
-    [faceUrl, faceLoaded]
+  const renderAvatar = () => (
+    <AvatarImage
+      src={faceUrl}
+      alt=""
+      onLoad={() => setLoadedUrl(faceUrl)}
+      onError={() => setLoadedUrl(faceUrl)}
+      style={{ opacity: faceLoaded ? 1 : 0 }}
+    />
   )
 
   const renderMobileMenuContent = useCallback(() => {
@@ -620,7 +625,13 @@ const LandingNavbar = memo(function LandingNavbar({
         <MobileUserCard data-mobile-user-card onClick={e => e.stopPropagation()}>
           <MobileUserCardTop>
             <MobileUserCardAvatar>
-              <MobileUserCardAvatarImage src={faceUrl} alt="" onLoad={() => setFaceLoaded(true)} style={{ opacity: faceLoaded ? 1 : 0 }} />
+              <MobileUserCardAvatarImage
+                src={faceUrl}
+                alt=""
+                onLoad={() => setLoadedUrl(faceUrl)}
+                onError={() => setLoadedUrl(faceUrl)}
+                style={{ opacity: faceLoaded ? 1 : 0 }}
+              />
             </MobileUserCardAvatar>
             <MobileUserCardInfo>
               <MobileUserCardName title={userName}>{userName}</MobileUserCardName>
