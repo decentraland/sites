@@ -48,12 +48,10 @@ export function useGetIdentityId(): () => Promise<string | undefined> {
       const response = await fetch(`${authApiUrl}${path}`, {
         method,
         headers,
-        body: JSON.stringify({
-          identity: {
-            authChain: currentIdentity.authChain,
-            expiration: currentIdentity.expiration
-          }
-        }),
+        // The auth API validates the ephemeral identity by deriving an address
+        // from the private key (ethers.Wallet) and comparing it to the provided
+        // address. The ephemeral key is short-lived and NOT the user's wallet key.
+        body: JSON.stringify({ identity: currentIdentity }),
         signal: AbortSignal.timeout(5000)
       })
 
