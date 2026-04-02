@@ -14,6 +14,8 @@ interface CarouselProps<T> {
   slideWidth?: number
   /** CSS aspect-ratio applied on desktop/tablet slides. E.g. "750 / 370" */
   slideAspectRatio?: string
+  /** Align items on the track. Default: 'stretch' */
+  alignItems?: 'stretch' | 'center' | 'flex-start' | 'flex-end'
   className?: string
 }
 
@@ -24,6 +26,7 @@ function Carousel<T>({
   autoplayDelay = 4000,
   slideWidth: desktopSlideWidth = 750,
   slideAspectRatio,
+  alignItems: trackAlignItems = 'stretch',
   className
 }: CarouselProps<T>) {
   const isDesktop = useDesktopMediaQuery()
@@ -238,6 +241,7 @@ function Carousel<T>({
           transform: `translateX(${translateX}px)`,
           transition: animated ? 'transform 0.4s ease' : 'none',
           gap,
+          alignItems: trackAlignItems,
           visibility: viewportWidth > 0 ? 'visible' : 'hidden'
         }}
         onMouseDown={handleMouseDown}

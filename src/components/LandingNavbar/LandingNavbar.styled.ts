@@ -10,6 +10,12 @@ const GLASS_BORDER = '0.5px solid #5E5B67'
 const GLASS_SHADOW = '0 2px 20px 16px rgba(0, 0, 0, 0.25)'
 const GLASS_BLUR = 'blur(12.5px)'
 
+const avatarPulse = keyframes`
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+`
+
 // NOTE: Do NOT use transform in this animation. backdrop-filter breaks when
 // the element has any transform set (even identity matrix), because it creates
 // a new stacking context that prevents the blur from seeing through to the page.
@@ -512,6 +518,9 @@ const AvatarButton = styled('button')({
   ['&:focus-visible']: {
     outline: `2px solid ${dclColors.base.primary}`,
     outlineOffset: 2
+  },
+  ['&.loading']: {
+    animation: `${avatarPulse} 1.5s ease-in-out infinite`
   }
 })
 
@@ -950,7 +959,10 @@ const MobileUserCardAvatar = styled('div')({
   border: '3px solid rgba(255, 255, 255, 0.5)',
   backgroundColor: '#FF4BED',
   overflow: 'hidden',
-  flexShrink: 0
+  flexShrink: 0,
+  ['&.loading']: {
+    animation: `${avatarPulse} 1.5s ease-in-out infinite`
+  }
 })
 
 const MobileUserCardAvatarImage = styled('img')({
