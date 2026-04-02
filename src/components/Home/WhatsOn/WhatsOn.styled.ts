@@ -40,10 +40,12 @@ const CardsGrid = styled(Box)(({ theme }) => ({
     flex: '0 1 510px'
   },
   '& .MuiCard-root': {
-    containerType: 'inline-size'
+    containerType: 'inline-size',
+    minHeight: 441
   },
   '& .MuiCardMedia-root': {
-    height: '62.5cqw !important'
+    height: '62.5cqw !important',
+    transition: 'height 0.3s ease'
   },
   '& .MuiCardActionArea-root:hover .MuiCardMedia-root': {
     height: `calc(62.5cqw - ${JUMP_IN_HEIGHT}px) !important`

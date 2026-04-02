@@ -337,28 +337,28 @@
           "faq": "FAQ"
         },
         "newsletter": {
-          "title": "Get the highlights in your inbox",
-          "placeholder": "Enter Your Email",
-          "cta": "Subscribe"
+          "title": "Recevez les dernières nouvelles",
+          "placeholder": "Entrez votre email",
+          "cta": "S'abonner"
         },
-        "connect": "Connect",
+        "connect": "Connecter",
         "menu": "Menu",
         "getting_started": {
-          "title": "Getting Started",
-          "what_is": "What is Decentraland?",
-          "download": "Download Decentraland",
-          "system_requirements": "System Requirements",
-          "faqs": "FAQs",
-          "contact_support": "Contact Support"
+          "title": "Pour commencer",
+          "what_is": "Qu'est-ce que Decentraland ?",
+          "download": "Télécharger Decentraland",
+          "system_requirements": "Configuration requise",
+          "faqs": "FAQ",
+          "contact_support": "Contacter le support"
         },
         "resources": {
-          "title": "Resources",
+          "title": "Ressources",
           "marketplace": "Marketplace",
           "creator_hub": "Creator Hub",
-          "docs": "Docs",
+          "docs": "Documentation",
           "blog": "Blog",
           "dao": "DAO",
-          "vote": "Vote"
+          "vote": "Voter"
         }
       },
       "events_places": {

@@ -337,28 +337,28 @@
           "faq": "FAQ"
         },
         "newsletter": {
-          "title": "Get the highlights in your inbox",
-          "placeholder": "Enter Your Email",
-          "cta": "Subscribe"
+          "title": "最新情報をお届けします",
+          "placeholder": "メールアドレスを入力",
+          "cta": "登録"
         },
-        "connect": "Connect",
-        "menu": "Menu",
+        "connect": "フォロー",
+        "menu": "メニュー",
         "getting_started": {
-          "title": "Getting Started",
-          "what_is": "What is Decentraland?",
-          "download": "Download Decentraland",
-          "system_requirements": "System Requirements",
-          "faqs": "FAQs",
-          "contact_support": "Contact Support"
+          "title": "はじめに",
+          "what_is": "Decentralandとは？",
+          "download": "Decentralandをダウンロード",
+          "system_requirements": "システム要件",
+          "faqs": "よくある質問",
+          "contact_support": "サポートに連絡"
         },
         "resources": {
-          "title": "Resources",
-          "marketplace": "Marketplace",
-          "creator_hub": "Creator Hub",
-          "docs": "Docs",
-          "blog": "Blog",
+          "title": "リソース",
+          "marketplace": "マーケットプレイス",
+          "creator_hub": "クリエイターハブ",
+          "docs": "ドキュメント",
+          "blog": "ブログ",
           "dao": "DAO",
-          "vote": "Vote"
+          "vote": "投票"
         }
       },
       "events_places": {

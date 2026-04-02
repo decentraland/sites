@@ -176,7 +176,9 @@ const DesktopTab = styled('button')({
   whiteSpace: 'nowrap',
   transition: 'background-color 0.15s ease, color 0.15s ease',
   ['&:hover']: {
-    color: dclColors.neutral.white
+    color: dclColors.neutral.white,
+    backgroundColor: GLASS_BG,
+    textShadow: '0 0 0.5px currentColor, 0 0 0.5px currentColor'
   },
   ['&:focus-visible']: {
     outline: `2px solid ${dclColors.base.primary}`,
@@ -205,7 +207,9 @@ const DesktopTabLink = styled('a')({
   whiteSpace: 'nowrap',
   transition: 'background-color 0.15s ease, color 0.15s ease',
   ['&:hover']: {
-    color: dclColors.neutral.white
+    color: dclColors.neutral.white,
+    backgroundColor: GLASS_BG,
+    textShadow: '0 0 0.5px currentColor, 0 0 0.5px currentColor'
   },
   ['&:focus-visible']: {
     outline: `2px solid ${dclColors.base.primary}`,
@@ -221,8 +225,8 @@ const DesktopDropdownWrapper = styled('div')({
   position: 'relative',
   // Extra padding at the bottom creates a hover "safe zone" between
   // the tab and the dropdown so the mouse doesn't leave the wrapper.
-  paddingBottom: 16,
-  marginBottom: -16,
+  paddingBottom: 8,
+  marginBottom: -8,
   cursor: 'pointer'
 })
 
@@ -230,7 +234,7 @@ const DesktopDropdown = styled('div')({
   position: 'absolute',
   top: '100%',
   left: 0,
-  marginTop: 8,
+  marginTop: 2,
   minWidth: 220,
   background: GLASS_BG,
   backdropFilter: GLASS_BLUR,
@@ -797,7 +801,10 @@ const UserCardMenu = styled('div')({
   paddingTop: 4,
   paddingBottom: 4,
   flex: 1,
-  minWidth: 0
+  minWidth: 0,
+  [MOBILE_BREAKPOINT]: {
+    gap: 12
+  }
 })
 
 const UserCardName = styled('span')({
@@ -994,10 +1001,13 @@ const MobileUserCardCopyButton = styled('button')({
   justifyContent: 'center',
   cursor: 'pointer',
   color: '#fcfcfc',
-  opacity: 0.7,
   transition: 'opacity 0.15s ease',
   ['&:hover']: {
-    opacity: 1
+    opacity: 0.7
+  },
+  ['& svg']: {
+    width: 20,
+    height: 20
   }
 })
 
