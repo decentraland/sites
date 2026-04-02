@@ -47,7 +47,14 @@ const CreatorsConnect = memo(() => {
         <ConnectTitle>
           <span>{l('component.creators_landing.connect.title_highlight')}</span> {l('component.creators_landing.connect.title')}
         </ConnectTitle>
-        <Carousel items={connectCards} renderItem={renderCard} keyExtractor={keyExtractor} slideWidth={500} autoplayDelay={5000} />
+        <Carousel
+          items={connectCards}
+          renderItem={renderCard}
+          keyExtractor={keyExtractor}
+          slideWidth={500}
+          autoplayDelay={5000}
+          alignItems="center"
+        />
         <DiscordContainer onClick={handleDiscordClick}>
           <DiscordTitle>{l('component.creators_landing.connect.join_the_community')}</DiscordTitle>
           <DiscordIcon>
