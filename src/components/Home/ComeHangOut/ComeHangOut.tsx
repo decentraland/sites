@@ -13,9 +13,13 @@ import { SectionViewedTrack } from '../../../modules/segment'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
+import { ShareIcon } from '../Hero/ShareIcon'
 import {
   AvatarsImage,
   ComeHangOutContainer,
+  ComingSoonIcon,
+  ComingSoonRow,
+  ComingSoonText,
   Content,
   DownloadCounts,
   DownloadInfo,
@@ -52,6 +56,9 @@ const ComeHangOut = memo(() => {
   const downloadCountsFormatted = cachedDownloadCounts
 
   const currentOs = userAgentData?.os.name
+  const isMobile = !!userAgentData?.mobile
+  const isMobileAndroid = isMobile && currentOs === 'Android'
+  const isMobileIos = isMobile && !isMobileAndroid
   const osImage = userAgentData ? imageByOs[userAgentData.os.name] : null
 
   const handleDownloadClick = useCallback(
@@ -73,42 +80,49 @@ const ComeHangOut = memo(() => {
           <>
             <HangOutButton
               variant="contained"
-              onClick={handleDownloadClick}
+              onClick={isMobile ? handleClick : handleDownloadClick}
               data-place={SectionViewedTrack.LANDING_HERO}
               data-event="click"
-              endIcon={osImage ? <OsIcon src={osImage} alt="" /> : undefined}
+              endIcon={isMobile ? <ShareIcon /> : osImage ? <OsIcon src={osImage} alt="" /> : undefined}
             >
-              {l('page.download.download')}
+              {isMobile ? l('page.home.hero.mobile_ios_send_link') : l('page.download.download')}
             </HangOutButton>
-            {downloadCountsFormatted && (
-              <DownloadInfo>
-                <DownloadCounts>
-                  <VerifiedIcon /> {l('page.download.total_downloads', { downloads: downloadCountsFormatted })}
-                </DownloadCounts>
-                <DownloadSeparator />
-                <PlatformIcons>
-                  {currentOs !== OperativeSystem.WINDOWS && (
-                    <a href="/download_success?os=Windows">
-                      <PlatformIcon src={microsoftLogo} alt="Windows" />
+            {isMobileIos ? (
+              <ComingSoonRow>
+                <ComingSoonIcon src={appleLogo} alt="Apple" />
+                <ComingSoonText>{l('page.home.hero.mobile_ios_coming_soon')}</ComingSoonText>
+              </ComingSoonRow>
+            ) : (
+              downloadCountsFormatted && (
+                <DownloadInfo>
+                  <DownloadCounts>
+                    <VerifiedIcon /> {l('page.download.total_downloads', { downloads: downloadCountsFormatted })}
+                  </DownloadCounts>
+                  <DownloadSeparator />
+                  <PlatformIcons>
+                    {currentOs !== OperativeSystem.WINDOWS && (
+                      <a href="/download_success?os=Windows">
+                        <PlatformIcon src={microsoftLogo} alt="Windows" />
+                      </a>
+                    )}
+                    {currentOs !== OperativeSystem.MACOS && (
+                      <a href="/download_success?os=macOS">
+                        <PlatformIcon src={appleLogo} alt="macOS" />
+                      </a>
+                    )}
+                    <a
+                      href="https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&pcampaignid=web_share&utm_source=partners&utm_medium=pr&utm_campaign=mobile_launch&utm_content=android"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <PlatformIcon src={assetUrl('/google_play_icon.svg')} alt="Android" />
                     </a>
-                  )}
-                  {currentOs !== OperativeSystem.MACOS && (
-                    <a href="/download_success?os=macOS">
-                      <PlatformIcon src={appleLogo} alt="macOS" />
+                    <a href="https://store.epicgames.com/en-US/p/decentraland-b692fb" target="_blank" rel="noopener noreferrer">
+                      <PlatformIcon src={assetUrl('/epic_icon.svg')} alt="Epic Games" />
                     </a>
-                  )}
-                  <a
-                    href="https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&pcampaignid=web_share&utm_source=partners&utm_medium=pr&utm_campaign=mobile_launch&utm_content=android"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <PlatformIcon src={assetUrl('/google_play_icon.svg')} alt="Android" />
-                  </a>
-                  <a href="https://store.epicgames.com/en-US/p/decentraland-b692fb" target="_blank" rel="noopener noreferrer">
-                    <PlatformIcon src={assetUrl('/epic_icon.svg')} alt="Epic Games" />
-                  </a>
-                </PlatformIcons>
-              </DownloadInfo>
+                  </PlatformIcons>
+                </DownloadInfo>
+              )
             )}
           </>
         ) : (
