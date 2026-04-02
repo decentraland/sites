@@ -64,7 +64,7 @@ const criticalCss = `
       background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none;
       transition: background 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
     }
-    #hero-shell-nav .nav-logo { width: 60px; height: 60px; }
+    #hero-shell-nav .nav-logo { width: 40px; height: 40px; }
     #hero-shell-nav .nav-logo-name { display: block; }
   }
 
@@ -202,16 +202,15 @@ const criticalCss = `
 const heroHtml = `<div id="hero-shell-nav">
   <div class="nav-left">
     <a class="nav-logo" href="https://decentraland.org" aria-label="Decentraland home">${dclLogoSvg}</a>
-    <img class="nav-logo-name" src="./dcl_name.svg" alt="Decentraland" />
   </div>
-  <button class="nav-signin">Sign In</button>
+
 </div>
 <div id="hero-shell">
   <div class="hero-bg">
     <picture>
       <source srcset="./hero_mobile.webp" media="(max-width: 599px)" />
       <source srcset="./hero_tablet.webp" media="(min-width: 600px) and (max-width: 991px)" />
-      <source srcset="./landing_hero.webp" media="(min-width: 992px)" />
+      <source srcset="./hero_desktop.webp" media="(min-width: 992px)" />
       <img src="./hero_mobile.webp" alt="" />
     </picture>
   </div>
@@ -227,7 +226,7 @@ const heroHtml = `<div id="hero-shell-nav">
     </div>
     <div class="hero-cta-wrapper">
       <button class="hero-btn hero-desktop-btn" type="button">HANG OUT NOW<span class="hero-btn-icon">${jumpInSvg}</span></button>
-      <p class="hero-already-user">Already have an account? <a href="/download_success">Download <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/></svg></a></p>
+      <p class="hero-already-user" style="visibility:hidden">Already have an account? Download</p>
     </div>
   </div>
 </div>
@@ -245,10 +244,10 @@ let html = readFileSync(distPath, 'utf-8')
 // where the zone origin returns text/html instead of the actual image.
 const mobileImgMatch = html.match(/<link[^>]*href="([^"]*hero_mobile\.webp)"[^>]*>/)
 const tabletImgMatch = html.match(/<link[^>]*href="([^"]*hero_tablet\.webp)"[^>]*>/)
-const desktopImgMatch = html.match(/<link[^>]*href="([^"]*landing_hero\.webp)"[^>]*>/)
+const desktopImgMatch = html.match(/<link[^>]*href="([^"]*hero_desktop\.webp)"[^>]*>/)
 const heroMobileUrl = mobileImgMatch?.[1] ?? './hero_mobile.webp'
 const heroTabletUrl = tabletImgMatch?.[1] ?? './hero_tablet.webp'
-const heroDesktopUrl = desktopImgMatch?.[1] ?? './landing_hero.webp'
+const heroDesktopUrl = desktopImgMatch?.[1] ?? './hero_desktop.webp'
 
 // Extract base URL from any CDN asset path for non-preloaded assets
 // Extract base URL from the <base> tag or <script src> that Vite writes
@@ -259,7 +258,7 @@ const cdnBase = baseTagMatch?.[1] ?? scriptSrcMatch?.[1] ?? '/'
 const finalHeroHtml = heroHtml
   .replace(/\.\/hero_mobile\.webp/g, `${cdnBase}hero_mobile.webp`)
   .replace(/\.\/hero_tablet\.webp/g, `${cdnBase}hero_tablet.webp`)
-  .replace(/\.\/landing_hero\.webp/g, `${cdnBase}landing_hero.webp`)
+  .replace(/\.\/hero_desktop\.webp/g, `${cdnBase}hero_desktop.webp`)
   .replace('./dcl_name.svg', `${cdnBase}dcl_name.svg`)
 
 // Place the hero shell BEFORE #root, not inside it.  This is critical for LCP:

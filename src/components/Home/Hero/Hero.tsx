@@ -44,7 +44,7 @@ import {
   SendLinkButton
 } from './Hero.styled'
 
-const heroImageDesktop = assetUrl('/landing_hero.webp')
+const heroImageDesktop = assetUrl('/hero_desktop.webp')
 const heroImageTablet = assetUrl('/hero_tablet.webp')
 const heroImageMobile = assetUrl('/hero_mobile.webp')
 const googlePlayBadge = assetUrl('/google_play_cta.svg')
@@ -123,8 +123,9 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
     <HeroContainer>
       <HeroBackground>
         {isDesktop ? (
-          <video autoPlay loop muted playsInline poster={heroImageDesktop} preload="none">
-            <source src={heroContent.backgroundVideo} type="video/mp4" />
+          <video autoPlay loop muted playsInline poster={heroImageDesktop} preload="metadata">
+            <source src={heroContent.backgroundVideoWebm} type="video/webm" />
+            <source src={heroContent.backgroundVideoMp4} type="video/mp4" />
           </video>
         ) : (
           <picture>

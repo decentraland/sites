@@ -13,7 +13,7 @@ const gettingStartedLinks = [
   { labelKey: 'component.landing.footer.getting_started.download', url: '/download' },
   {
     labelKey: 'component.landing.footer.getting_started.system_requirements',
-    url: 'https://docs.decentraland.org/faqs/decentraland-101#the-basics'
+    url: 'https://docs.decentraland.org/in-world/settings-and-performance'
   },
   { labelKey: 'component.landing.footer.getting_started.faqs', url: 'https://docs.decentraland.org/faqs/decentraland-101' },
   { labelKey: 'component.landing.footer.getting_started.contact_support', url: 'https://decentraland.org/help/' }
