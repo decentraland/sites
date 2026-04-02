@@ -60,13 +60,16 @@ const legalLinks = [
   { label: 'Code of Ethics', url: '/ethics' }
 ]
 
+// Country code → Twemoji CDN URL for cross-platform flag rendering (Windows lacks flag emojis)
+const flagUrl = (code: string) => `https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/${code}.svg`
+
 const LANGUAGES: { code: SupportedLocale; label: string; flag: string }[] = [
-  { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'es', label: 'Español', flag: '🇪🇸' },
-  { code: 'fr', label: 'Français', flag: '🇫🇷' },
-  { code: 'zh', label: '中文', flag: '🇨🇳' },
-  { code: 'ko', label: '한국어', flag: '🇰🇷' },
-  { code: 'ja', label: '日本語', flag: '🇯🇵' }
+  { code: 'en', label: 'English', flag: flagUrl('1f1ec-1f1e7') },
+  { code: 'es', label: 'Español', flag: flagUrl('1f1ea-1f1f8') },
+  { code: 'fr', label: 'Français', flag: flagUrl('1f1eb-1f1f7') },
+  { code: 'zh', label: '中文', flag: flagUrl('1f1e8-1f1f3') },
+  { code: 'ko', label: '한국어', flag: flagUrl('1f1f0-1f1f7') },
+  { code: 'ja', label: '日本語', flag: flagUrl('1f1ef-1f1f5') }
 ]
 
 const SocialIconsRow = ({ onTrack }: { onTrack?: (platform: string) => void }) => (
@@ -253,7 +256,7 @@ const LandingFooter = memo(() => {
         <BottomBarLeft>
           <LanguageWrapper ref={langRef}>
             <LanguageButton onClick={() => setLangOpen(o => !o)}>
-              <span style={{ fontSize: 16, lineHeight: 1 }}>{currentLang.flag}</span>
+              <img src={currentLang.flag} alt="" width={16} height={16} style={{ borderRadius: 2 }} />
               {currentLang.label}
               <DropdownChevron open={langOpen} style={{ display: 'inline-flex' }}>
                 <ChevronDown />
@@ -270,7 +273,7 @@ const LandingFooter = memo(() => {
                       setLangOpen(false)
                     }}
                   >
-                    <span style={{ fontSize: 16, lineHeight: 1 }}>{lang.flag}</span>
+                    <img src={lang.flag} alt="" width={16} height={16} style={{ borderRadius: 2 }} />
                     {lang.label}
                   </button>
                 ))}
