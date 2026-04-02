@@ -44,7 +44,7 @@ const FaqsContainer = styled(Box)(({ theme }) => ({
   margin: 'auto',
   width: '100%',
   maxWidth: 1000,
-  padding: `${theme.spacing(6)} 0 ${theme.spacing(8)}`,
+  padding: `${theme.spacing(8)} 0 ${theme.spacing(10)}`,
   display: 'flex',
   flexDirection: 'column',
   [theme.breakpoints.down('sm')]: {
