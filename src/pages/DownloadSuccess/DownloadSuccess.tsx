@@ -51,10 +51,11 @@ const DownloadSuccess = memo(() => {
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [isFileSaved, setIsFileSaved] = useState(false)
-  const hasDownloadedRef = useRef(false)
   const downloadingRef = useRef(false)
+  const getIdentityIdRef = useRef(getIdentityId)
   const isInitializedRef = useRef(isInitialized)
   const trackRef = useRef(track)
+  getIdentityIdRef.current = getIdentityId
   isInitializedRef.current = isInitialized
   trackRef.current = track
 
@@ -121,9 +122,6 @@ const DownloadSuccess = memo(() => {
   const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
 
   useEffect(() => {
-    if (hasDownloadedRef.current) return
-    hasDownloadedRef.current = true
-
     let cancelled = false
 
     const startDownload = async () => {
@@ -139,7 +137,7 @@ const DownloadSuccess = memo(() => {
         os: clientOS,
         arch: clientArch,
         fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
-        getIdentityId
+        getIdentityId: getIdentityIdRef.current
       })
 
       if (cancelled) return
@@ -160,7 +158,6 @@ const DownloadSuccess = memo(() => {
         if (isInitializedRef.current) {
           trackRef.current(SegmentEvent.DOWNLOAD_FAILED)
         }
-        hasDownloadedRef.current = false
       })
       .finally(() => {
         if (!cancelled) {
@@ -170,9 +167,8 @@ const DownloadSuccess = memo(() => {
 
     return () => {
       cancelled = true
-      hasDownloadedRef.current = false
     }
-  }, [clientOS, clientArch, getIdentityId])
+  }, [clientOS, clientArch])
 
   const handleDownloadClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {
