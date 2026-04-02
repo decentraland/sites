@@ -337,28 +337,28 @@
           "faq": "FAQ"
         },
         "newsletter": {
-          "title": "Get the highlights in your inbox",
-          "placeholder": "Enter Your Email",
-          "cta": "Subscribe"
+          "title": "주요 소식을 받아보세요",
+          "placeholder": "이메일을 입력하세요",
+          "cta": "구독"
         },
-        "connect": "Connect",
-        "menu": "Menu",
+        "connect": "팔로우",
+        "menu": "메뉴",
         "getting_started": {
-          "title": "Getting Started",
-          "what_is": "What is Decentraland?",
-          "download": "Download Decentraland",
-          "system_requirements": "System Requirements",
-          "faqs": "FAQs",
-          "contact_support": "Contact Support"
+          "title": "시작하기",
+          "what_is": "Decentraland란?",
+          "download": "Decentraland 다운로드",
+          "system_requirements": "시스템 요구 사항",
+          "faqs": "자주 묻는 질문",
+          "contact_support": "고객 지원"
         },
         "resources": {
-          "title": "Resources",
-          "marketplace": "Marketplace",
-          "creator_hub": "Creator Hub",
-          "docs": "Docs",
-          "blog": "Blog",
+          "title": "리소스",
+          "marketplace": "마켓플레이스",
+          "creator_hub": "크리에이터 허브",
+          "docs": "문서",
+          "blog": "블로그",
           "dao": "DAO",
-          "vote": "Vote"
+          "vote": "투표"
         }
       },
       "events_places": {

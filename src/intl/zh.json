@@ -337,28 +337,28 @@
           "faq": "FAQ"
         },
         "newsletter": {
-          "title": "Get the highlights in your inbox",
-          "placeholder": "Enter Your Email",
-          "cta": "Subscribe"
+          "title": "订阅精选资讯",
+          "placeholder": "输入您的邮箱",
+          "cta": "订阅"
         },
-        "connect": "Connect",
-        "menu": "Menu",
+        "connect": "关注我们",
+        "menu": "菜单",
         "getting_started": {
-          "title": "Getting Started",
-          "what_is": "What is Decentraland?",
-          "download": "Download Decentraland",
-          "system_requirements": "System Requirements",
-          "faqs": "FAQs",
-          "contact_support": "Contact Support"
+          "title": "快速入门",
+          "what_is": "什么是 Decentraland？",
+          "download": "下载 Decentraland",
+          "system_requirements": "系统要求",
+          "faqs": "常见问题",
+          "contact_support": "联系支持"
         },
         "resources": {
-          "title": "Resources",
-          "marketplace": "Marketplace",
-          "creator_hub": "Creator Hub",
-          "docs": "Docs",
-          "blog": "Blog",
+          "title": "资源",
+          "marketplace": "市场",
+          "creator_hub": "创作者中心",
+          "docs": "文档",
+          "blog": "博客",
           "dao": "DAO",
-          "vote": "Vote"
+          "vote": "投票"
         }
       },
       "events_places": {
