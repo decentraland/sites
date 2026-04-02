@@ -40,6 +40,8 @@ import {
   HighlightAnimation
 } from './DownloadSuccess.styled'
 
+const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
+
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
   const { intl } = useTranslation()
@@ -49,6 +51,7 @@ const DownloadSuccess = memo(() => {
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [isFileSaved, setIsFileSaved] = useState(false)
+  const downloadingRef = useRef(false)
   const isInitializedRef = useRef(isInitialized)
   const trackRef = useRef(track)
   isInitializedRef.current = isInitialized
@@ -60,10 +63,9 @@ const DownloadSuccess = memo(() => {
     macos: OperativeSystem.MACOS
   }
   const clientOS = osMap[rawOs.toLowerCase()] ?? OperativeSystem.MACOS
-  const validArchs = new Set<string>(['amd64', 'arm64'])
   const defaultArch = clientOS === OperativeSystem.WINDOWS ? 'amd64' : 'arm64'
   const rawArch = searchParams.get('arch') || defaultArch
-  const clientArch = (validArchs.has(rawArch) ? rawArch : defaultArch) as Architecture
+  const clientArch = (VALID_ARCHS.has(rawArch) ? rawArch : defaultArch) as Architecture
 
   const osIcon = clientOS === OperativeSystem.WINDOWS ? microsoftLogo : appleLogo
   const osLink =
@@ -169,9 +171,10 @@ const DownloadSuccess = memo(() => {
   const handleDownloadClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {
       event.preventDefault()
-      if (isDownloading) return
-
+      if (downloadingRef.current) return
+      downloadingRef.current = true
       setIsDownloading(true)
+
       try {
         await downloadWithIdentity({
           os: clientOS,
@@ -179,11 +182,15 @@ const DownloadSuccess = memo(() => {
           fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
           getIdentityId
         })
+      } catch (error) {
+        console.error('Download error:', error)
+        setDownloadError(error instanceof Error ? error.message : 'Download failed')
       } finally {
+        downloadingRef.current = false
         setIsDownloading(false)
       }
     },
-    [clientOS, clientArch, getIdentityId, isDownloading]
+    [clientOS, clientArch, getIdentityId]
   )
 
   const showBackdrop = isDownloading || (!downloadError && !isFileSaved)
