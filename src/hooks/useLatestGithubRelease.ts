@@ -50,8 +50,23 @@ async function fetchLatestRelease(repo: Repo): Promise<Release | null> {
   return null
 }
 
+const FALLBACK_LINKS: Record<Repo, Record<string, Record<string, string>>> = {
+  [Repo.CREATOR_HUB]: {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    Windows: {
+      amd64: 'https://github.com/decentraland/creator-hub/releases/latest/download/Decentraland.Creator.Hub-win-x64.exe'
+    },
+
+    macOS: {
+      amd64: 'https://github.com/decentraland/creator-hub/releases/latest/download/Decentraland.Creator.Hub-mac-x64.dmg',
+      arm64: 'https://github.com/decentraland/creator-hub/releases/latest/download/Decentraland.Creator.Hub-mac-arm64.dmg'
+    }
+  },
+  [Repo.LAUNCHER]: {}
+}
+
 function useLatestGithubRelease(repo: Repo) {
-  const [links, setLinks] = useState<Record<string, Record<string, string>> | null>(null)
+  const [links, setLinks] = useState<Record<string, Record<string, string>> | null>(FALLBACK_LINKS[repo] || null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
