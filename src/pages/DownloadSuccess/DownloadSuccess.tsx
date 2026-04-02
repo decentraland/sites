@@ -49,7 +49,6 @@ const DownloadSuccess = memo(() => {
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [isFileSaved, setIsFileSaved] = useState(false)
-  const hasDownloadedRef = useRef(false)
   const isInitializedRef = useRef(isInitialized)
   const trackRef = useRef(track)
   isInitializedRef.current = isInitialized
@@ -61,8 +60,10 @@ const DownloadSuccess = memo(() => {
     macos: OperativeSystem.MACOS
   }
   const clientOS = osMap[rawOs.toLowerCase()] ?? OperativeSystem.MACOS
+  const validArchs = new Set<string>([Architecture.AMD64, Architecture.ARM64])
+  const rawArch = searchParams.get('arch') || (clientOS === OperativeSystem.WINDOWS ? Architecture.AMD64 : Architecture.ARM64)
   const clientArch = (
-    clientOS === OperativeSystem.WINDOWS ? searchParams.get('arch') || 'amd64' : searchParams.get('arch') || 'arm64'
+    validArchs.has(rawArch) ? rawArch : clientOS === OperativeSystem.WINDOWS ? Architecture.AMD64 : Architecture.ARM64
   ) as Architecture
 
   const osIcon = clientOS === OperativeSystem.WINDOWS ? microsoftLogo : appleLogo
@@ -118,9 +119,6 @@ const DownloadSuccess = memo(() => {
   const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
 
   useEffect(() => {
-    if (hasDownloadedRef.current) return
-    hasDownloadedRef.current = true
-
     let cancelled = false
 
     const startDownload = async () => {
@@ -157,7 +155,6 @@ const DownloadSuccess = memo(() => {
         if (isInitializedRef.current) {
           trackRef.current(SegmentEvent.DOWNLOAD_FAILED)
         }
-        hasDownloadedRef.current = false
       })
       .finally(() => {
         if (!cancelled) {
@@ -173,15 +170,21 @@ const DownloadSuccess = memo(() => {
   const handleDownloadClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {
       event.preventDefault()
+      if (isDownloading) return
 
-      await downloadWithIdentity({
-        os: clientOS,
-        arch: clientArch,
-        fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
-        getIdentityId
-      })
+      setIsDownloading(true)
+      try {
+        await downloadWithIdentity({
+          os: clientOS,
+          arch: clientArch,
+          fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
+          getIdentityId
+        })
+      } finally {
+        setIsDownloading(false)
+      }
     },
-    [clientOS, clientArch, getIdentityId]
+    [clientOS, clientArch, getIdentityId, isDownloading]
   )
 
   const showBackdrop = isDownloading || (!downloadError && !isFileSaved)
