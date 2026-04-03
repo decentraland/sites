@@ -167,7 +167,8 @@ const HeroPlatformIcons = styled(Box)(({ theme }) => ({
 
 const HeroPlatformIcon = styled('img')({
   width: 24,
-  height: 24
+  height: 24,
+  filter: 'brightness(0) invert(1)'
 })
 
 const HeroPlatformLabel = styled(Typography)({
