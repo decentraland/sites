@@ -10,7 +10,7 @@ function useFormatMessage() {
         return ''
       }
 
-      return t(id, values)
+      return t(id, values as Record<string, string | number>)
     },
     [t]
   )
