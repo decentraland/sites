@@ -11,8 +11,7 @@ const staticReducers = {
 
 const store = configureStore({
   reducer: staticReducers,
-  middleware: getDefaultMiddleware =>
-    getDefaultMiddleware().concat(api.middleware, eventsClient.middleware, profileClient.middleware),
+  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(api.middleware, eventsClient.middleware, profileClient.middleware),
   devTools: import.meta.env.MODE !== 'production'
 })
 
