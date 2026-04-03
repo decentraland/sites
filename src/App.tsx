@@ -27,6 +27,7 @@ const CreatorHubDownloadSuccessPage = lazy(() =>
 const HelpPage = lazy(() => import('./pages/help').then(m => ({ default: m.HelpPage })))
 const InvitePage = lazy(() => import('./pages/invite/InvitePage').then(m => ({ default: m.InvitePage })))
 const CreatePage = lazy(() => import('./pages/create').then(m => ({ default: m.CreatePage })))
+const DiscordPage = lazy(() => import('./pages/discord').then(m => ({ default: m.DiscordPage })))
 
 const App = () => {
   return (
@@ -50,6 +51,7 @@ const App = () => {
             <Route path="/create" element={<CreatePage />} />
             <Route path="/download/creator-hub" element={<CreatorHubDownloadPage />} />
             <Route path="/download/creator-hub-success" element={<CreatorHubDownloadSuccessPage />} />
+            <Route path="/discord" element={<DiscordPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
