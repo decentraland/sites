@@ -1,5 +1,6 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { Env, getEnv } from '@dcl/ui-env'
 import { RemoteLoader } from './components/RemoteLoader.tsx'
 import { IndexPage } from './pages/index.tsx'
 
@@ -54,8 +55,12 @@ const App = () => {
             <Route path="/download/creator-hub-success" element={<CreatorHubDownloadSuccessPage />} />
             <Route path="/discord" element={<DiscordPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
-            <Route path="/whats-on/*" element={<RemoteLoader name="whats_on" />} />
-            <Route path="/blog/*" element={<RemoteLoader name="blog_site" />} />
+            {getEnv() !== Env.PRODUCTION && (
+              <>
+                <Route path="/whats-on/*" element={<RemoteLoader name="whats_on" />} />
+                <Route path="/blog/*" element={<RemoteLoader name="blog_site" />} />
+              </>
+            )}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
