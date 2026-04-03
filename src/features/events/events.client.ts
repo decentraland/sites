@@ -19,21 +19,33 @@ const eventsClient = createApi({
           const eventsApiUrl = getEnv('EVENTS_API_URL') || 'https://events.decentraland.org/api'
           const hotScenesUrl = getEnv('HOT_SCENES_URL') || 'https://realm-provider-ea.decentraland.org/hot-scenes'
 
-          const [eventsRes, scenesRes] = await Promise.all([
+          const [eventsResult, scenesResult] = await Promise.allSettled([
             fetch(`${eventsApiUrl}/events?list=live&limit=20&order=asc&world=false`),
             fetch(hotScenesUrl)
           ])
 
-          if (!eventsRes.ok || !scenesRes.ok) {
-            throw new Error('Failed to fetch events or hot scenes')
+          let liveEvents: EventEntry[] = []
+          let hotScenes: HotScene[] = []
+
+          if (eventsResult.status === 'fulfilled' && eventsResult.value.ok) {
+            const contentType = eventsResult.value.headers.get('content-type')
+            if (contentType?.includes('application/json')) {
+              const eventsData: EventsResponse = await eventsResult.value.json()
+              liveEvents = eventsData.data ?? []
+            }
           }
 
-          const [eventsData, scenesData]: [EventsResponse, HotScene[]] = await Promise.all([eventsRes.json(), scenesRes.json()])
+          if (scenesResult.status === 'fulfilled' && scenesResult.value.ok) {
+            const contentType = scenesResult.value.headers.get('content-type')
+            if (contentType?.includes('application/json')) {
+              hotScenes = await scenesResult.value.json()
+            }
+          }
 
           return {
             data: {
-              liveEvents: eventsData.data ?? [],
-              hotScenes: scenesData
+              liveEvents,
+              hotScenes
             }
           }
         } catch (error) {
