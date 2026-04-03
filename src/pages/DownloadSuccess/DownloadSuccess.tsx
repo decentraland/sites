@@ -17,6 +17,8 @@ import { triggerFileDownload } from '../../modules/file'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { FALLBACK_CDN_RELEASE_LINKS } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
+import { DownloadSuccessLayout } from './DownloadSuccessLayout'
+import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from './DownloadSuccess.types'
 import {
   DownloadBackdropContent,
   DownloadBackdropText,
@@ -25,8 +27,6 @@ import {
   DownloadProgressContainer,
   HighlightAnimation
 } from './DownloadSuccess.styled'
-import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from './DownloadSuccess.types'
-import { DownloadSuccessLayout } from './DownloadSuccessLayout'
 
 const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
 const AUTO_DOWNLOAD_HISTORY_STATE_KEY = 'downloadSuccess:autoDownloadKey'

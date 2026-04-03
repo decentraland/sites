@@ -1,8 +1,9 @@
 import { memo } from 'react'
 import type { ReactNode } from 'react'
-import type { SxProps, Theme } from 'decentraland-ui2'
 import { Logo, Typography } from 'decentraland-ui2'
+import type { SxProps, Theme } from 'decentraland-ui2'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import type { DownloadSuccessStep } from './DownloadSuccess.types'
 import {
   DownloadBackdrop,
   DownloadBackdropContent,
@@ -23,7 +24,6 @@ import {
   DownloadSuccessSubtitle,
   DownloadSuccessTitle
 } from './DownloadSuccess.styled'
-import type { DownloadSuccessStep } from './DownloadSuccess.types'
 
 type DownloadSuccessLayoutProps = {
   /** Whether the loading backdrop is visible */
@@ -49,7 +49,18 @@ type DownloadSuccessLayoutProps = {
 }
 
 const DownloadSuccessLayout = memo(
-  ({ loading, backdropContent, osIcon, title, subtitle, steps, renderCardOverlay, footer, afterContent, containerSx }: DownloadSuccessLayoutProps) => {
+  ({
+    loading,
+    backdropContent,
+    osIcon,
+    title,
+    subtitle,
+    steps,
+    renderCardOverlay,
+    footer,
+    afterContent,
+    containerSx
+  }: DownloadSuccessLayoutProps) => {
     const l = useFormatMessage()
 
     const defaultBackdropContent = (
