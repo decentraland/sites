@@ -112,7 +112,7 @@ src/
   images/           Static image assets
   intl/             i18n message definitions
   modules/
-    downloadWithIdentity.ts  Authenticated download flow
+    downloadWithIdentity.ts  Authenticated download flow (exports getDownloadLinkWithIdentity)
     explorerDownloads.ts     Download URL resolution by OS/arch
     explorerDownloads.types.ts
     ff.ts                    Feature flag helpers
