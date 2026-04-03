@@ -38,7 +38,76 @@ import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from '../Downloa
 const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const RichText = memo(({ html }: { html: string }) => <span dangerouslySetInnerHTML={{ __html: html }} />)
+const RichText = memo(({ html }: { html: string }) => {
+  const ALLOWED_TAGS = /(<\/?(b|strong|em|i)>)/g
+  const parts: React.ReactNode[] = []
+  let lastIndex = 0
+  const tagStack: string[] = []
+  const tokens = [...html.matchAll(ALLOWED_TAGS)]
+
+  for (const match of tokens) {
+    const [fullMatch, , tagName] = match
+    const idx = match.index!
+    if (idx > lastIndex) {
+      parts.push(html.slice(lastIndex, idx))
+    }
+    const isClosing = fullMatch.startsWith('</')
+    if (isClosing) {
+      if (tagStack.length > 0 && tagStack[tagStack.length - 1] === tagName) {
+        tagStack.pop()
+      }
+    } else {
+      tagStack.push(tagName)
+    }
+    // Render allowed tags by pushing marker tokens; we build a simple flat
+    // model: every opening tag starts collecting children until its close.
+    parts.push(fullMatch)
+    lastIndex = idx + fullMatch.length
+  }
+  if (lastIndex < html.length) {
+    parts.push(html.slice(lastIndex))
+  }
+
+  // Second pass: convert the flat token list into React elements.
+  const build = (tokens: React.ReactNode[]): React.ReactNode[] => {
+    const result: React.ReactNode[] = []
+    let i = 0
+    while (i < tokens.length) {
+      const token = tokens[i]
+      if (typeof token === 'string') {
+        const openMatch = /^<(b|strong|em|i)>$/.exec(token)
+        if (openMatch) {
+          const tag = openMatch[1]
+          const closeTag = `</${tag}>`
+          const children: React.ReactNode[] = []
+          i++
+          let depth = 1
+          while (i < tokens.length && depth > 0) {
+            const inner = tokens[i]
+            if (inner === `<${tag}>`) depth++
+            else if (inner === closeTag) {
+              depth--
+              if (depth === 0) break
+            }
+            children.push(inner)
+            i++
+          }
+          const Tag = tag as 'b' | 'strong' | 'em' | 'i'
+          result.push(<Tag key={`${tag}-${i}`}>{build(children)}</Tag>)
+          i++
+          continue
+        }
+        result.push(token)
+      } else {
+        result.push(token)
+      }
+      i++
+    }
+    return result
+  }
+
+  return <span>{build(parts)}</span>
+})
 RichText.displayName = 'RichText'
 
 const CreatorHubDownloadSuccess = memo(() => {
