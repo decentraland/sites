@@ -11,5 +11,8 @@
   "JUMP_IN_URL": "https://decentraland.org/jump",
   "NOTIFICATIONS_API_URL": "https://notifications.decentraland.org",
   "DOWNLOAD_URL": "https://decentraland.org/download",
-  "WEARABLE_PREVIEW_URL": "https://wearable-preview.decentraland.org/"
+  "WEARABLE_PREVIEW_URL": "https://wearable-preview.decentraland.org/",
+  "SEGMENT_KEY": "f0S2L1sWumT8BPjBmIBDTN5gIWjhrRHG",
+  "DISCORD_CAPTCHA_URL": "https://discord-lambdas.decentraland.io/captcha",
+  "HCAPTCHA_SITEKEY": "00c95ced-f512-4498-a5f2-7e0b0950d456"
 }

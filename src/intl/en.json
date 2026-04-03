@@ -20,6 +20,12 @@
     "sdk": "SDK"
   },
   "page": {
+    "discord": {
+      "title": "Decentraland Discord",
+      "description": "Join the Decentraland community on Discord to connect with other players, creators, and contributors.",
+      "cta": "Join Discord",
+      "error": "Something went wrong. Please try again."
+    },
     "download": {
       "title": "Download Decentraland",
       "description": "Download Decentraland and start exploring the metaverse",
@@ -28,6 +34,7 @@
       "not_available_subtitle": "Decentraland is available for <span>Windows</span> & <span>macOS</span>.",
       "download": "Download",
       "download_for": "Download for {os_name}",
+      "download_creator_hub": "Download Creator Hub",
       "total_downloads": "Total downloads: {downloads}",
       "amd64_processors_short": "Intel",
       "arm64_processors_short": "Apple Silicon",
@@ -49,54 +56,97 @@
       "avatar_preview": "Decentraland Avatar Preview",
       "share_title": "Download Decentraland",
       "success": {
-        "title": "Download Started!",
+        "title": "You're almost done!",
         "subtitle": "Open the file you just downloaded to finish installing Decentraland and start {action}",
         "subtitle_action_exploring": "exploring",
+        "subtitle_action_creating": "creating",
         "step": "Step",
         "footer": "Trouble with the download? Let's try that again: {link}",
+        "footer_prefix": "Trouble with the download? Let's try that again:",
         "footer_link_label": "Download again",
         "event": "After the download is complete, go back to the {event} event page so you can jump in. Redirecting in {seconds} seconds.",
         "steps": {
           "windows": {
             "step1": {
-              "title": "Open the file",
-              "text": "Find the <span>Setup.exe</span> file in your downloads folder and double-click it to start the installation"
+              "title": "Open",
+              "text": "Open the <span>Decentraland</span> file from your Downloads Folder to launch the Setup Wizard."
             },
             "step2": {
-              "title": "Follow the installer",
-              "text": "The Decentraland installer will guide you through the process. Just click <span>Next</span> and follow the prompts"
+              "title": "Install",
+              "text": "Follow the instructions in the Setup Wizard. When you click <span>Finish</span> the installation process will begin."
             },
             "step3": {
-              "title": "Launch Decentraland",
-              "text": "Once installed, open Decentraland from your desktop or start menu and <span>Jump In!</span>"
+              "title": "Get Ready to Explore!",
+              "text": "Once installation is complete, the Decentraland app should be visible in your taskbar and will launch automatically."
             }
           },
           "macOS": {
             "step1": {
-              "title": "Open the file",
-              "text": "Find the <span>Decentraland.dmg</span> file in your downloads and double-click to open it"
+              "title": "Open",
+              "text": "Click on the <span>Decentraland</span> file from your browser's 'Recent Downloads' or your 'Downloads' folder to open it."
             },
             "step2": {
-              "title": "Drag to Applications",
-              "text": "Drag the Decentraland icon to your <span>Applications</span> folder to install it"
+              "title": "Install",
+              "text": "This window should then appear—double click the <span>Decentraland</span> button to start installation."
             },
             "step3": {
-              "title": "Launch Decentraland",
-              "text": "Open Decentraland from your Applications folder and <span>Jump In!</span>"
+              "title": "Get Ready to Explore!",
+              "text": "Once installation is complete, the Decentraland app should be visible in your Dock and will launch automatically."
             }
           },
           "macos": {
             "step1": {
-              "title": "Open the file",
-              "text": "Find the <span>Decentraland.dmg</span> file in your downloads and double-click to open it"
+              "title": "Open",
+              "text": "Click on the <span>Decentraland</span> file from your browser's 'Recent Downloads' or your 'Downloads' folder to open it."
             },
             "step2": {
-              "title": "Drag to Applications",
-              "text": "Drag the Decentraland icon to your <span>Applications</span> folder to install it"
+              "title": "Install",
+              "text": "This window should then appear—double click the <span>Decentraland</span> button to start installation."
             },
             "step3": {
-              "title": "Launch Decentraland",
-              "text": "Open Decentraland from your Applications folder and <span>Jump In!</span>"
+              "title": "Get Ready to Explore!",
+              "text": "Once installation is complete, the Decentraland app should be visible in your Dock and will launch automatically."
+            }
+          }
+        }
+      }
+    },
+    "creator-hub": {
+      "title": "Download Decentraland Creator Hub",
+      "description": "Download the Creator Hub to start building immersive scenes and interactive experiences in Decentraland.",
+      "download": {
+        "title": "Decentraland Creator Hub",
+        "also_available": "Also available on",
+        "success": {
+          "footer_link_label": "Download Decentraland Creator Hub",
+          "steps": {
+            "windows": {
+              "step1": {
+                "title": "Open",
+                "text": "Open the <span>'Decentraland Creator Hub'</span> file from your Downloads Folder to begin the installation process."
+              },
+              "step2": {
+                "title": "Install",
+                "text": "Click <span>'Install'</span> and then <span>'Finish'</span>. <span>'Decentraland Creator Hub'</span> will automatically start."
+              },
+              "step3": {
+                "title": "Get ready",
+                "text": "Start Building!"
+              }
+            },
+            "macos": {
+              "step1": {
+                "title": "Open",
+                "text": "Open the <span>'Decentraland Creator Hub'</span> file from your Downloads Folder to begin the installation process."
+              },
+              "step2": {
+                "title": "Install",
+                "text": "Drag and drop <span>'Decentraland Creator Hub'</span> to the <span>'Applications folder'</span>. You might be asked to enter the admin password."
+              },
+              "step3": {
+                "title": "Get Ready",
+                "text": "Locate <span>'Decentraland Creator Hub'</span> in your <span>'Applications Folder'</span> and Start Building."
+              }
             }
           }
         }
@@ -397,7 +447,7 @@
           "faq": "FAQ"
         },
         "newsletter": {
-          "title": "Get the highlights in your inbox",
+          "title": "Get the weekly highlights in your inbox",
           "placeholder": "Enter Your Email",
           "cta": "Subscribe"
         },
@@ -413,7 +463,7 @@
         },
         "resources": {
           "title": "Resources",
-          "marketplace": "Marketplace",
+          "marketplace": "Shop",
           "creator_hub": "Creator Hub",
           "docs": "Docs",
           "blog": "Blog",
@@ -527,7 +577,7 @@
         "download": "Download"
       },
       "navbar": {
-        "whats_on": "What's On",
+        "whats_on": "Explore",
         "shop": "Shop",
         "create": "Create",
         "learn": "Learn",
@@ -546,12 +596,12 @@
         "shop_all": "Shop All",
         "wearables": "Wearables",
         "emotes": "Emotes",
-        "names": "Names",
-        "land": "Land",
+        "names": "NAMEs",
+        "land": "LAND",
         "merch": "Merch",
         "create_in_decentraland": "Create in Decentraland",
         "publish_wearables_emotes": "Publish Wearables & Emotes",
-        "publish_land": "Publish Land",
+        "publish_land": "Publish LAND",
         "get_started": "Get Started",
         "start_creating": "Start Creating",
         "see_whats_new": "See What's New",
@@ -559,6 +609,48 @@
         "my_assets": "My Assets",
         "account_settings": "Account Settings",
         "marketplace_authorizations": "Marketplace Authorizations"
+      }
+    },
+    "creators_landing": {
+      "why": {
+        "title": "creators choose Decentraland",
+        "title_highlight": "Why"
+      },
+      "create": {
+        "title": "Explore the ",
+        "title_highlight": "creative",
+        "title_second_part": " possibilities",
+        "tab": {
+          "required_skills": "Required Skills",
+          "useful_links": "Useful Links"
+        }
+      },
+      "connect": {
+        "title": "Decentraland creators say",
+        "title_highlight": "What",
+        "join_the_community": "Join the Community"
+      },
+      "learn": {
+        "title": "from Community Tutorials",
+        "title_highlight": "Learn",
+        "watch_more": "Want to see more?",
+        "watch_more_button": "visit our youtube channel",
+        "watch_more_target": "https://www.youtube.com/@decentraland_foundation/videos",
+        "your_tutorial": "Think your tutorial should be featured here?",
+        "your_tutorial_button": "Submit tutorial for review",
+        "your_tutorial_target": "https://docs.google.com/forms/d/e/1FAIpQLScn1HL8_ZFL_Lw-7sbqL9g4WLctWALWUKthGEtjBGQlmIuHLQ/viewform"
+      },
+      "earn": {
+        "title": "Want to create but not a creator?",
+        "second_title": "Hire the best through ",
+        "title_highlight": "Decentraland Studios",
+        "subtitle": "Browse a vetted registry of Decentraland's most talented creators skilled in:",
+        "browse_creator_label": "Ready to get started?",
+        "browse_creator_button": "browse creators",
+        "browse_creator_url": "https://studios.decentraland.org/studios",
+        "are_you_creator_label": "Already a creator?",
+        "are_you_creator_button": "Join the Registry",
+        "are_you_creator_url": "https://docs.google.com/forms/d/e/1FAIpQLSc_KsbODUsJdC4_UTn7T91RTYwSJBAEZIWlCAxnk3rRBinFWg/viewform"
       }
     }
   }

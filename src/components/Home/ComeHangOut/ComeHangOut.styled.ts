@@ -43,6 +43,8 @@ const Content = styled(Box)(({ theme }) => ({
   gap: theme.spacing(3),
   padding: theme.spacing(10, 8),
   [theme.breakpoints.down('sm')]: {
+    width: '100%',
+    maxWidth: 393,
     padding: theme.spacing(6, 2),
     gap: theme.spacing(2)
   }
@@ -83,7 +85,7 @@ const DownloadSeparator = styled('span')({
   backgroundColor: 'rgba(255, 255, 255, 0.3)'
 })
 
-const PlatformIcons = styled('span')({
+const PlatformIcons = styled('span')(({ theme }) => ({
   display: 'flex',
   gap: 8,
   alignItems: 'center',
@@ -91,8 +93,16 @@ const PlatformIcons = styled('span')({
   '& a': {
     display: 'flex',
     lineHeight: 0
+  },
+  [theme.breakpoints.down('sm')]: {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    '& a': {
+      pointerEvents: 'none',
+      color: 'inherit',
+      textDecoration: 'none'
+    }
   }
-})
+}))
 
 const PlatformIcon = styled('img')({
   width: 24,
@@ -119,3 +129,12 @@ export {
   Title
 }
 export { HangOutButton } from '../shared/HangOutButton.styled'
+export {
+  ComingSoonIcon,
+  ComingSoonRow,
+  ComingSoonText,
+  GooglePlayButton,
+  GooglePlayImage,
+  MobileSubtitle,
+  SendLinkButton
+} from '../shared/MobileCTA.styled'

@@ -10,6 +10,12 @@ const GLASS_BORDER = '0.5px solid #5E5B67'
 const GLASS_SHADOW = '0 2px 20px 16px rgba(0, 0, 0, 0.25)'
 const GLASS_BLUR = 'blur(12.5px)'
 
+const avatarPulse = keyframes`
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+`
+
 // NOTE: Do NOT use transform in this animation. backdrop-filter breaks when
 // the element has any transform set (even identity matrix), because it creates
 // a new stacking context that prevents the blur from seeing through to the page.
@@ -176,7 +182,9 @@ const DesktopTab = styled('button')({
   whiteSpace: 'nowrap',
   transition: 'background-color 0.15s ease, color 0.15s ease',
   ['&:hover']: {
-    color: dclColors.neutral.white
+    color: dclColors.neutral.white,
+    backgroundColor: GLASS_BG,
+    textShadow: '0 0 0.5px currentColor, 0 0 0.5px currentColor'
   },
   ['&:focus-visible']: {
     outline: `2px solid ${dclColors.base.primary}`,
@@ -205,7 +213,9 @@ const DesktopTabLink = styled('a')({
   whiteSpace: 'nowrap',
   transition: 'background-color 0.15s ease, color 0.15s ease',
   ['&:hover']: {
-    color: dclColors.neutral.white
+    color: dclColors.neutral.white,
+    backgroundColor: GLASS_BG,
+    textShadow: '0 0 0.5px currentColor, 0 0 0.5px currentColor'
   },
   ['&:focus-visible']: {
     outline: `2px solid ${dclColors.base.primary}`,
@@ -221,8 +231,8 @@ const DesktopDropdownWrapper = styled('div')({
   position: 'relative',
   // Extra padding at the bottom creates a hover "safe zone" between
   // the tab and the dropdown so the mouse doesn't leave the wrapper.
-  paddingBottom: 16,
-  marginBottom: -16,
+  paddingBottom: 8,
+  marginBottom: -8,
   cursor: 'pointer'
 })
 
@@ -230,7 +240,7 @@ const DesktopDropdown = styled('div')({
   position: 'absolute',
   top: '100%',
   left: 0,
-  marginTop: 8,
+  marginTop: 2,
   minWidth: 220,
   background: GLASS_BG,
   backdropFilter: GLASS_BLUR,
@@ -508,6 +518,9 @@ const AvatarButton = styled('button')({
   ['&:focus-visible']: {
     outline: `2px solid ${dclColors.base.primary}`,
     outlineOffset: 2
+  },
+  ['&.loading']: {
+    animation: `${avatarPulse} 1.5s ease-in-out infinite`
   }
 })
 
@@ -797,7 +810,10 @@ const UserCardMenu = styled('div')({
   paddingTop: 4,
   paddingBottom: 4,
   flex: 1,
-  minWidth: 0
+  minWidth: 0,
+  [MOBILE_BREAKPOINT]: {
+    gap: 12
+  }
 })
 
 const UserCardName = styled('span')({
@@ -943,7 +959,10 @@ const MobileUserCardAvatar = styled('div')({
   border: '3px solid rgba(255, 255, 255, 0.5)',
   backgroundColor: '#FF4BED',
   overflow: 'hidden',
-  flexShrink: 0
+  flexShrink: 0,
+  ['&.loading']: {
+    animation: `${avatarPulse} 1.5s ease-in-out infinite`
+  }
 })
 
 const MobileUserCardAvatarImage = styled('img')({
@@ -994,10 +1013,13 @@ const MobileUserCardCopyButton = styled('button')({
   justifyContent: 'center',
   cursor: 'pointer',
   color: '#fcfcfc',
-  opacity: 0.7,
   transition: 'opacity 0.15s ease',
   ['&:hover']: {
-    opacity: 1
+    opacity: 0.7
+  },
+  ['& svg']: {
+    width: 20,
+    height: 20
   }
 })
 

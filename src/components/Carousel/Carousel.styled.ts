@@ -27,7 +27,7 @@ const CarouselSlide = styled('div')(({ theme }) => ({
   flexShrink: 0,
   borderRadius: 16,
   overflow: 'hidden',
-  opacity: 0.7,
+  opacity: 0,
   transform: 'scale(0.8)',
   transition: 'opacity 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease',
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -38,6 +38,7 @@ const CarouselSlide = styled('div')(({ theme }) => ({
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&.prev': {
+    opacity: 0.7,
     maskImage: 'linear-gradient(to right, transparent 0%, black 50%)',
     // eslint-disable-next-line @typescript-eslint/naming-convention
     WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 50%)',
@@ -49,6 +50,7 @@ const CarouselSlide = styled('div')(({ theme }) => ({
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&.next': {
+    opacity: 0.7,
     maskImage: 'linear-gradient(to right, black 50%, transparent 100%)',
     // eslint-disable-next-line @typescript-eslint/naming-convention
     WebkitMaskImage: 'linear-gradient(to right, black 50%, transparent 100%)',

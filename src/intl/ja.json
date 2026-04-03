@@ -49,7 +49,7 @@
       "avatar_preview": "Decentralandアバタープレビュー",
       "share_title": "Decentralandをダウンロード",
       "success": {
-        "title": "ダウンロード開始！",
+        "title": "もう少しで完了です！",
         "subtitle": "ダウンロードしたファイルを開いてDecentralandのインストールを完了し、{action}を始めましょう",
         "subtitle_action_exploring": "探検",
         "step": "ステップ",
@@ -59,44 +59,44 @@
         "steps": {
           "windows": {
             "step1": {
-              "title": "ファイルを開く",
-              "text": "ダウンロードフォルダで<span>Setup.exe</span>ファイルを見つけてダブルクリックし、インストールを開始します"
+              "title": "開く",
+              "text": "ダウンロードフォルダから<span>Decentraland</span>ファイルを開いてセットアップウィザードを起動します。"
             },
             "step2": {
-              "title": "インストーラーに従う",
-              "text": "Decentralandインストーラーがプロセスをガイドします。<span>次へ</span>をクリックして指示に従ってください"
+              "title": "インストール",
+              "text": "セットアップウィザードの指示に従ってください。<span>完了</span>をクリックするとインストールが始まります。"
             },
             "step3": {
-              "title": "Decentralandを起動",
-              "text": "インストール完了後、デスクトップまたはスタートメニューからDecentralandを開いて<span>入場しましょう！</span>"
+              "title": "探検の準備をしましょう！",
+              "text": "インストールが完了すると、Decentralandアプリがタスクバーに表示され、自動的に起動します。"
             }
           },
           "macOS": {
             "step1": {
-              "title": "ファイルを開く",
-              "text": "ダウンロードフォルダで<span>Decentraland.dmg</span>ファイルを見つけてダブルクリックして開きます"
+              "title": "開く",
+              "text": "ブラウザの「最近のダウンロード」または「ダウンロード」フォルダから<span>Decentraland</span>ファイルをクリックして開きます。"
             },
             "step2": {
-              "title": "アプリケーションにドラッグ",
-              "text": "Decentralandアイコンを<span>アプリケーション</span>フォルダにドラッグしてインストールします"
+              "title": "インストール",
+              "text": "このウィンドウが表示されます。<span>Decentraland</span>ボタンをダブルクリックしてインストールを開始します。"
             },
             "step3": {
-              "title": "Decentralandを起動",
-              "text": "アプリケーションフォルダからDecentralandを開いて<span>入場しましょう！</span>"
+              "title": "探検の準備をしましょう！",
+              "text": "インストールが完了すると、DecentralandアプリがDockに表示され、自動的に起動します。"
             }
           },
           "macos": {
             "step1": {
-              "title": "ファイルを開く",
-              "text": "ダウンロードフォルダで<span>Decentraland.dmg</span>ファイルを見つけてダブルクリックして開きます"
+              "title": "開く",
+              "text": "ブラウザの「最近のダウンロード」または「ダウンロード」フォルダから<span>Decentraland</span>ファイルをクリックして開きます。"
             },
             "step2": {
-              "title": "アプリケーションにドラッグ",
-              "text": "Decentralandアイコンを<span>アプリケーション</span>フォルダにドラッグしてインストールします"
+              "title": "インストール",
+              "text": "このウィンドウが表示されます。<span>Decentraland</span>ボタンをダブルクリックしてインストールを開始します。"
             },
             "step3": {
-              "title": "Decentralandを起動",
-              "text": "アプリケーションフォルダからDecentralandを開いて<span>入場しましょう！</span>"
+              "title": "探検の準備をしましょう！",
+              "text": "インストールが完了すると、DecentralandアプリがDockに表示され、自動的に起動します。"
             }
           }
         }
@@ -337,28 +337,28 @@
           "faq": "FAQ"
         },
         "newsletter": {
-          "title": "Get the highlights in your inbox",
-          "placeholder": "Enter Your Email",
-          "cta": "Subscribe"
+          "title": "最新情報をお届けします",
+          "placeholder": "メールアドレスを入力",
+          "cta": "登録"
         },
-        "connect": "Connect",
-        "menu": "Menu",
+        "connect": "フォロー",
+        "menu": "メニュー",
         "getting_started": {
-          "title": "Getting Started",
-          "what_is": "What is Decentraland?",
-          "download": "Download Decentraland",
-          "system_requirements": "System Requirements",
-          "faqs": "FAQs",
-          "contact_support": "Contact Support"
+          "title": "はじめに",
+          "what_is": "Decentralandとは？",
+          "download": "Decentralandをダウンロード",
+          "system_requirements": "システム要件",
+          "faqs": "よくある質問",
+          "contact_support": "サポートに連絡"
         },
         "resources": {
-          "title": "Resources",
-          "marketplace": "Marketplace",
-          "creator_hub": "Creator Hub",
-          "docs": "Docs",
-          "blog": "Blog",
+          "title": "リソース",
+          "marketplace": "マーケットプレイス",
+          "creator_hub": "クリエイターハブ",
+          "docs": "ドキュメント",
+          "blog": "ブログ",
           "dao": "DAO",
-          "vote": "Vote"
+          "vote": "投票"
         }
       },
       "events_places": {

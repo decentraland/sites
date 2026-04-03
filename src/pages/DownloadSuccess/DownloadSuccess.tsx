@@ -1,8 +1,8 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAnalytics, useTranslation } from '@dcl/hooks'
-import { FooterLanding } from 'decentraland-ui2/dist/components/FooterLanding/FooterLanding'
 import { Logo, Typography } from 'decentraland-ui2'
+import { LandingFooter } from '../../components/LandingFooter'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsLauncher from '../../images/download/macos_launcher.webp'
@@ -40,6 +40,9 @@ import {
   HighlightAnimation
 } from './DownloadSuccess.styled'
 
+const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
+const AUTO_DOWNLOAD_HISTORY_STATE_KEY = 'downloadSuccess:autoDownloadKey'
+
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
   const { intl } = useTranslation()
@@ -49,7 +52,13 @@ const DownloadSuccess = memo(() => {
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [isFileSaved, setIsFileSaved] = useState(false)
-  const hasDownloadedRef = useRef(false)
+  const downloadingRef = useRef(false)
+  const getIdentityIdRef = useRef(getIdentityId)
+  const isInitializedRef = useRef(isInitialized)
+  const trackRef = useRef(track)
+  getIdentityIdRef.current = getIdentityId
+  isInitializedRef.current = isInitialized
+  trackRef.current = track
 
   const rawOs = searchParams.get('os') || ''
   const osMap: Record<string, OperativeSystem> = {
@@ -57,9 +66,9 @@ const DownloadSuccess = memo(() => {
     macos: OperativeSystem.MACOS
   }
   const clientOS = osMap[rawOs.toLowerCase()] ?? OperativeSystem.MACOS
-  const clientArch = (
-    clientOS === OperativeSystem.WINDOWS ? searchParams.get('arch') || 'amd64' : searchParams.get('arch') || 'arm64'
-  ) as Architecture
+  const defaultArch = clientOS === OperativeSystem.WINDOWS ? 'amd64' : 'arm64'
+  const rawArch = searchParams.get('arch') || defaultArch
+  const clientArch = (VALID_ARCHS.has(rawArch) ? rawArch : defaultArch) as Architecture
 
   const osIcon = clientOS === OperativeSystem.WINDOWS ? microsoftLogo : appleLogo
   const osLink =
@@ -114,57 +123,98 @@ const DownloadSuccess = memo(() => {
   const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
 
   useEffect(() => {
-    if (hasDownloadedRef.current) return
-    hasDownloadedRef.current = true
+    let cancelled = false
+    const autoDownloadKey = `${clientOS}:${clientArch}`
+
+    const getHistoryState = (): Record<string, unknown> =>
+      window.history.state && typeof window.history.state === 'object' ? (window.history.state as Record<string, unknown>) : {}
 
     const startDownload = async () => {
+      const historyState = getHistoryState()
+
+      if (historyState[AUTO_DOWNLOAD_HISTORY_STATE_KEY] === autoDownloadKey) {
+        setIsFileSaved(true)
+        return
+      }
+
       setIsDownloading(true)
       setDownloadError(null)
       setIsFileSaved(false)
 
-      if (isInitialized) {
-        track(SegmentEvent.DOWNLOAD_STARTED)
+      if (isInitializedRef.current) {
+        trackRef.current(SegmentEvent.DOWNLOAD_STARTED)
       }
 
       const { url, filename } = await calculateDownloadUrl({
         os: clientOS,
         arch: clientArch,
         fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
-        getIdentityId
+        getIdentityId: getIdentityIdRef.current
       })
+
+      if (cancelled) return
+
+      const latestHistoryState = getHistoryState()
+      if (latestHistoryState[AUTO_DOWNLOAD_HISTORY_STATE_KEY] !== autoDownloadKey) {
+        window.history.replaceState(
+          {
+            ...latestHistoryState,
+            [AUTO_DOWNLOAD_HISTORY_STATE_KEY]: autoDownloadKey
+          },
+          '',
+          window.location.href
+        )
+      }
 
       triggerFileDownload(url)
       setIsFileSaved(true)
 
-      if (isInitialized) {
-        track(SegmentEvent.DOWNLOAD_SUCCESS, { filename })
+      if (isInitializedRef.current) {
+        trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { filename })
       }
     }
 
     startDownload()
       .catch(error => {
+        if (cancelled) return
         console.error('Download error:', error)
         setDownloadError(error instanceof Error ? error.message : 'Download failed')
-        if (isInitialized) {
-          track(SegmentEvent.DOWNLOAD_FAILED)
+        if (isInitializedRef.current) {
+          trackRef.current(SegmentEvent.DOWNLOAD_FAILED)
         }
-        hasDownloadedRef.current = false
       })
       .finally(() => {
-        setIsDownloading(false)
+        if (!cancelled) {
+          setIsDownloading(false)
+        }
       })
-  }, [clientOS, clientArch, getIdentityId, isInitialized, track])
+
+    return () => {
+      cancelled = true
+    }
+  }, [clientOS, clientArch])
 
   const handleDownloadClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {
       event.preventDefault()
+      if (downloadingRef.current) return
+      downloadingRef.current = true
+      setIsDownloading(true)
 
-      await downloadWithIdentity({
-        os: clientOS,
-        arch: clientArch,
-        fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
-        getIdentityId
-      })
+      try {
+        await downloadWithIdentity({
+          os: clientOS,
+          arch: clientArch,
+          fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
+          getIdentityId
+        })
+      } catch (error) {
+        console.error('Download error:', error)
+        setDownloadError(error instanceof Error ? error.message : 'Download failed')
+      } finally {
+        downloadingRef.current = false
+        setIsDownloading(false)
+      }
     },
     [clientOS, clientArch, getIdentityId]
   )
@@ -227,7 +277,7 @@ const DownloadSuccess = memo(() => {
         </DownloadSuccessFooterContainer>
       </DownloadSuccessPageContainer>
 
-      <FooterLanding />
+      <LandingFooter />
     </>
   )
 })

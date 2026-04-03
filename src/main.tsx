@@ -10,7 +10,7 @@ import { getEnv } from './config/env'
 import { LazyWeb3 } from './features/web3/LazyWeb3'
 import { LocaleProvider } from './intl/LocaleContext'
 
-const segmentWriteKey = getEnv('VITE_SEGMENT_WRITE_KEY') || ''
+const segmentWriteKey = getEnv('SEGMENT_KEY') || ''
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
