@@ -34,11 +34,6 @@ const DiscordDescription = styled(Typography)(({ theme }) => ({
   }
 }))
 
-const DiscordCaptchaWrapper = styled(Box)({
-  display: 'flex',
-  justifyContent: 'center'
-})
-
 const DiscordButton = styled('a')(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
@@ -63,4 +58,10 @@ const DiscordButton = styled('a')(({ theme }) => ({
   }
 }))
 
-export { DiscordButton, DiscordCaptchaWrapper, DiscordDescription, DiscordPageContainer, DiscordTitle }
+const DiscordError = styled(Typography)(({ theme }) => ({
+  fontSize: 14,
+  color: theme.palette.error.main,
+  marginBottom: theme.spacing(2)
+}))
+
+export { DiscordButton, DiscordDescription, DiscordError, DiscordPageContainer, DiscordTitle }
