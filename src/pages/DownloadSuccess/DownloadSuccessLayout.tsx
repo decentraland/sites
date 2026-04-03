@@ -1,7 +1,6 @@
 import { memo } from 'react'
 import type { ReactNode } from 'react'
 import { Logo, Typography } from 'decentraland-ui2'
-import type { SxProps, Theme } from 'decentraland-ui2'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import type { DownloadSuccessStep } from './DownloadSuccess.types'
 import {
@@ -45,7 +44,7 @@ type DownloadSuccessLayoutProps = {
   /** Content rendered after the page container (e.g. LandingFooter) */
   afterContent?: ReactNode
   /** Optional sx overrides for the page container */
-  containerSx?: SxProps<Theme>
+  containerSx?: Record<string, unknown>
 }
 
 const DownloadSuccessLayout = memo(
