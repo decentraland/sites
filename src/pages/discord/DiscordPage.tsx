@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention, import/no-named-as-default
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { getEnv } from '../../config/env'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
