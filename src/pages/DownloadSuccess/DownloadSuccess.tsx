@@ -42,6 +42,7 @@ import {
 
 const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
 const AUTO_DOWNLOAD_HISTORY_STATE_KEY = 'downloadSuccess:autoDownloadKey'
+const AUTO_DOWNLOAD_SESSION_KEY = 'downloadSuccess:triggered'
 
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
@@ -130,6 +131,12 @@ const DownloadSuccess = memo(() => {
       window.history.state && typeof window.history.state === 'object' ? (window.history.state as Record<string, unknown>) : {}
 
     const startDownload = async () => {
+      const sessionKey = `${AUTO_DOWNLOAD_SESSION_KEY}:${autoDownloadKey}`
+      if (sessionStorage.getItem(sessionKey)) {
+        setIsFileSaved(true)
+        return
+      }
+
       const historyState = getHistoryState()
 
       if (historyState[AUTO_DOWNLOAD_HISTORY_STATE_KEY] === autoDownloadKey) {
@@ -166,6 +173,7 @@ const DownloadSuccess = memo(() => {
         )
       }
 
+      sessionStorage.setItem(sessionKey, '1')
       triggerFileDownload(url)
       setIsFileSaved(true)
 
