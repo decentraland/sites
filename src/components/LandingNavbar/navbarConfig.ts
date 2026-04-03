@@ -60,7 +60,7 @@ const MENU_CONFIG: MenuConfig = {
 const USER_MENU_ITEMS = [
   { labelKey: 'component.landing.navbar.view_profile', url: 'https://decentraland.org/profile' },
   { labelKey: 'component.landing.navbar.my_assets', url: 'https://decentraland.org/marketplace/account' },
-  { labelKey: 'component.landing.navbar.account_settings', url: 'https://decentraland.org/settings' },
+  { labelKey: 'component.landing.navbar.account_settings', url: 'https://decentraland.org/account' },
   { labelKey: 'component.landing.navbar.marketplace_authorizations', url: 'https://decentraland.org/marketplace/settings' }
 ] as const
 
