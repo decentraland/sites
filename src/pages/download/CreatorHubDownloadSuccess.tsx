@@ -37,7 +37,6 @@ import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from '../Downloa
 
 const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const RichText = memo(({ html }: { html: string }) => {
   const ALLOWED_TAGS = /(<\/?(b|strong|em|i)>)/g
   const parts: React.ReactNode[] = []
@@ -47,7 +46,7 @@ const RichText = memo(({ html }: { html: string }) => {
 
   for (const match of tokens) {
     const [fullMatch, , tagName] = match
-    const idx = match.index!
+    const idx = match.index
     if (idx > lastIndex) {
       parts.push(html.slice(lastIndex, idx))
     }
@@ -92,8 +91,9 @@ const RichText = memo(({ html }: { html: string }) => {
             children.push(inner)
             i++
           }
-          const Tag = tag as 'b' | 'strong' | 'em' | 'i'
-          result.push(<Tag key={`${tag}-${i}`}>{build(children)}</Tag>)
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          const TagName = tag as 'b' | 'strong' | 'em' | 'i'
+          result.push(<TagName key={`${tag}-${i}`}>{build(children)}</TagName>)
           i++
           continue
         }
