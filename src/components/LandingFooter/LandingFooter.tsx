@@ -25,7 +25,6 @@ import {
   LegalLink,
   LinkColumn,
   MobileFooterLink,
-  MobileLegalGrid,
   MobileMenu,
   MobileMenuDropdown,
   MobileMenuLabel,
@@ -51,9 +50,7 @@ const socialIconMap: Record<string, React.FC> = {
 
 const legalLinks = [
   { label: 'Privacy Policy', url: '/privacy' },
-  { label: 'Terms of Use', url: '/terms' },
-  { label: 'Content Policy', url: '/content' },
-  { label: 'Code of Ethics', url: '/ethics' }
+  { label: 'Terms of Use', url: '/terms' }
 ]
 
 // Country code → Twemoji CDN URL for cross-platform flag rendering (Windows lacks flag emojis)
@@ -272,16 +269,7 @@ const LandingFooter = memo(() => {
             ))}
           </DesktopLegalLinks>
 
-          <MobileLegalGrid>
-            <div>
-              <LegalLink href="/privacy">Privacy Policy</LegalLink>
-              <LegalLink href="/terms">Terms of Use</LegalLink>
-            </div>
-            <div>
-              <LegalLink href="/content">Content Policy</LegalLink>
-              <LegalLink href="/ethics">Code of Ethics</LegalLink>
-            </div>
-          </MobileLegalGrid>
+
         </BottomBarLeft>
 
         <BottomBarRight>

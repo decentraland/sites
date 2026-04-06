@@ -313,8 +313,9 @@ const BottomBarLeft = styled('div')(({ theme }) => ({
   alignItems: 'center',
   gap: 16,
   [theme.breakpoints.down('xs')]: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
     gap: 16
   }
 }))
@@ -404,28 +405,11 @@ const LanguageMenu = styled('div')({
   }
 })
 
-const MobileLegalGrid = styled('div')(({ theme }) => ({
-  display: 'none',
-  [theme.breakpoints.down('xs')]: {
-    display: 'flex',
-    gap: 142,
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    '& > div': {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 16
-    }
-  }
-}))
-
-const DesktopLegalLinks = styled('div')(({ theme }) => ({
+const DesktopLegalLinks = styled('div')({
   display: 'flex',
   alignItems: 'center',
-  gap: 16,
-  [theme.breakpoints.down('xs')]: {
-    display: 'none'
-  }
-}))
+  gap: 16
+})
 
 export {
   BottomBar,
@@ -448,7 +432,6 @@ export {
   LegalLink,
   LinkColumn,
   MobileFooterLink,
-  MobileLegalGrid,
   MobileMenu,
   MobileMenuDropdown,
   MobileMenuLabel,
