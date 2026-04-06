@@ -1,5 +1,5 @@
 import { Component, Suspense, lazy, useMemo } from 'react'
-import type { ComponentType, LazyExoticComponent, ReactNode } from 'react'
+import type { ComponentType, ErrorInfo, LazyExoticComponent, ReactNode } from 'react'
 import { CircularProgress } from 'decentraland-ui2'
 import { ErrorContainer, LoadingContainer } from './RemoteLoader.styled'
 
@@ -66,9 +66,15 @@ class RemoteErrorBoundary extends Component<{ children: ReactNode; name: string 
     return { hasError: true }
   }
 
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error(`[RemoteLoader] Failed to load remote "${this.props.name}":`, error, errorInfo)
+  }
+
   render() {
     if (this.state.hasError) {
-      if (isDev) return null
+      if (isDev) {
+        return <ErrorContainer>[DEV] Failed to load remote &quot;{this.props.name}&quot;. Check the console for details.</ErrorContainer>
+      }
       return <ErrorContainer>Failed to load {this.props.name}. Please try refreshing the page.</ErrorContainer>
     }
     return this.props.children
