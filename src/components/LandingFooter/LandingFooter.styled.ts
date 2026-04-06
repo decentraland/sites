@@ -137,7 +137,7 @@ const ConnectSection = styled('div')(({ theme }) => ({
   gap: 16,
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&.desktop-only': {
-    marginTop: 24,
+    marginTop: 4,
     [theme.breakpoints.down('xs')]: {
       display: 'none'
     }
