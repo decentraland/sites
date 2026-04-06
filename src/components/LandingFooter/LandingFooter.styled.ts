@@ -45,7 +45,7 @@ const LeftColumn = styled('div')(({ theme }) => ({
 }))
 
 const Wordmark = styled('img')(({ theme }) => ({
-  height: 48,
+  height: 20,
   width: 'auto',
   [theme.breakpoints.down('xs')]: {
     height: 40,
@@ -151,10 +151,10 @@ const ConnectSection = styled('div')(({ theme }) => ({
 
 const SectionLabel = styled('p')({
   fontFamily: 'Inter, sans-serif',
-  fontWeight: 400,
+  fontWeight: 700,
   fontSize: 16,
   lineHeight: 1.5,
-  color: '#cfcdd4',
+  color: '#fcfcfc',
   margin: 0,
   textTransform: 'uppercase' as const
 })
@@ -196,15 +196,15 @@ const RightColumn = styled('div')(({ theme }) => ({
 const LinkColumn = styled('div')({
   display: 'flex',
   flexDirection: 'column',
-  gap: 16
+  gap: 8
 })
 
 const FooterLink = styled('a')({
   fontFamily: 'Inter, sans-serif',
-  fontWeight: 600,
-  fontSize: 16,
+  fontWeight: 400,
+  fontSize: 14,
   lineHeight: 1.5,
-  color: 'white',
+  color: '#cfcdd4',
   textDecoration: 'none',
   whiteSpace: 'nowrap',
   // eslint-disable-next-line @typescript-eslint/naming-convention
