@@ -23,7 +23,7 @@ const FooterMain = styled('div')(({ theme }) => ({
     flexDirection: 'column',
     alignItems: 'center',
     gap: 32,
-    padding: '48px 16px',
+    padding: '48px 20px',
     background:
       'radial-gradient(ellipse at 0% 0%, rgba(109,34,151,1) 0%, rgba(89,26,125,1) 12%, rgba(69,18,99,1) 25%, rgba(48,9,72,1) 50%, rgba(28,1,46,1) 75%)'
   }
@@ -35,6 +35,7 @@ const LeftColumn = styled('div')(({ theme }) => ({
   flexDirection: 'column',
   gap: 16,
   padding: '40px 0',
+  width: 400,
   maxWidth: 450,
   [theme.breakpoints.down('xs')]: {
     padding: 0,
@@ -74,6 +75,7 @@ const NewsletterTitle = styled('p')(({ theme }) => ({
   color: '#fcfcfc',
   margin: 0,
   [theme.breakpoints.down('xs')]: {
+    fontSize: 16,
     textAlign: 'center'
   }
 }))
@@ -156,7 +158,7 @@ const ConnectSection = styled('div')(({ theme }) => ({
 const SectionLabel = styled('p')({
   fontFamily: 'Inter, sans-serif',
   fontWeight: 700,
-  fontSize: 16,
+  fontSize: 14,
   lineHeight: 1.5,
   color: '#fcfcfc',
   margin: 0
