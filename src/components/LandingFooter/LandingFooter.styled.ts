@@ -40,9 +40,9 @@ const LeftColumn = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('xs')]: {
     padding: 0,
     width: '100%',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     maxWidth: '100%',
-    gap: 40
+    gap: 20
   }
 }))
 
@@ -51,9 +51,9 @@ const Wordmark = styled('img')(({ theme }) => ({
   width: 'auto',
   alignSelf: 'flex-start',
   [theme.breakpoints.down('xs')]: {
-    height: 40,
+    height: 20,
     maxWidth: 322,
-    alignSelf: 'center'
+    alignSelf: 'flex-start'
   }
 }))
 
@@ -63,7 +63,7 @@ const NewsletterSection = styled('div')(({ theme }) => ({
   gap: 12,
   [theme.breakpoints.down('xs')]: {
     width: '100%',
-    alignItems: 'center'
+    alignItems: 'flex-start'
   }
 }))
 
@@ -76,7 +76,7 @@ const NewsletterTitle = styled('p')(({ theme }) => ({
   margin: 0,
   [theme.breakpoints.down('xs')]: {
     fontSize: 16,
-    textAlign: 'center'
+    textAlign: 'left'
   }
 }))
 
