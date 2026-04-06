@@ -80,58 +80,6 @@ const NewsletterTitle = styled('p')(({ theme }) => ({
   }
 }))
 
-const EmailRow = styled('form')(({ theme }) => ({
-  display: 'flex',
-  gap: 8,
-  height: 46,
-  width: '100%',
-  maxWidth: 450,
-  [theme.breakpoints.down('xs')]: {
-    height: 40,
-    maxWidth: '100%'
-  }
-}))
-
-const EmailInput = styled('input')({
-  flex: 1,
-  height: '100%',
-  padding: '0 16px',
-  borderRadius: 6,
-  border: '1px solid white',
-  backgroundColor: '#fcfcfc',
-  fontFamily: 'Inter, sans-serif',
-  fontSize: 16,
-  color: '#1b002e',
-  outline: 'none',
-  boxSizing: 'border-box',
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '&::placeholder': {
-    color: '#cfcdd4'
-  }
-})
-
-const SubscribeButton = styled('button')({
-  height: '100%',
-  padding: '0 22px',
-  borderRadius: 6,
-  border: 'none',
-  backgroundColor: '#ff2d55',
-  color: 'white',
-  fontFamily: 'Inter, sans-serif',
-  fontWeight: 700,
-  fontSize: 15,
-  letterSpacing: 0.46,
-  textTransform: 'uppercase' as const,
-  cursor: 'pointer',
-  whiteSpace: 'nowrap',
-  flexShrink: 0,
-  boxSizing: 'border-box',
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '&:hover': {
-    backgroundColor: '#e0264b'
-  }
-})
-
 // ── Connect / Social ──────────────────────────────────────────────────
 const ConnectSection = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -320,11 +268,8 @@ const BottomBarLeft = styled('div')(({ theme }) => ({
   }
 }))
 
-const BottomBarRight = styled('div')(({ theme }) => ({
-  [theme.breakpoints.down('xs')]: {
-    display: 'none'
-  }
-}))
+const BottomBarRight = styled('div')({})
+
 
 const LegalLink = styled('a')({
   fontFamily: 'Inter, sans-serif',
@@ -405,7 +350,7 @@ const LanguageMenu = styled('div')({
   }
 })
 
-const DesktopLegalLinks = styled('div')({
+const LegalLinks = styled('div')({
   display: 'flex',
   alignItems: 'center',
   gap: 16
@@ -417,11 +362,8 @@ export {
   BottomBarRight,
   ConnectSection,
   CopyrightText,
-  DesktopLegalLinks,
   DropdownChevron,
   DropdownContent,
-  EmailInput,
-  EmailRow,
   FooterLink,
   FooterMain,
   FooterRoot,
@@ -438,8 +380,8 @@ export {
   NewsletterSection,
   NewsletterTitle,
   RightColumn,
+  LegalLinks,
   SectionLabel,
   SocialRow,
-  SubscribeButton,
   Wordmark
 }

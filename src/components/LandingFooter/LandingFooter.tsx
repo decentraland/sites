@@ -12,7 +12,6 @@ import {
   BottomBarRight,
   ConnectSection,
   CopyrightText,
-  DesktopLegalLinks,
   DropdownChevron,
   DropdownContent,
   FooterLink,
@@ -21,6 +20,7 @@ import {
   LanguageButton,
   LanguageMenu,
   LanguageWrapper,
+  LegalLinks,
   LeftColumn,
   LegalLink,
   LinkColumn,
@@ -261,15 +261,13 @@ const LandingFooter = memo(() => {
             )}
           </LanguageWrapper>
 
-          <DesktopLegalLinks>
+          <LegalLinks>
             {legalLinks.map(link => (
               <LegalLink key={link.label} href={link.url}>
                 {link.label}
               </LegalLink>
             ))}
-          </DesktopLegalLinks>
-
-
+          </LegalLinks>
         </BottomBarLeft>
 
         <BottomBarRight>
