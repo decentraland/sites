@@ -1,8 +1,7 @@
 import { memo, useCallback, useState } from 'react'
-import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
-import { useLocale } from '../../intl/LocaleContext'
-import { BellIcon } from './icons'
-import type { NotificationsData } from './types'
+import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useLocale } from '../../../intl/LocaleContext'
+import { BellIcon } from '../icons'
 import {
   BellButton,
   NotificationBadge,
@@ -19,7 +18,8 @@ import {
   NotificationPanel as NotificationPanelStyled,
   NotificationTitle,
   NotificationWrapper
-} from './LandingNavbar.styled'
+} from '../LandingNavbar.styled'
+import type { NotificationBellProps } from './NotificationBell.types'
 
 // Module-level cache for notification type->component map from ui2.
 // Lazy-loaded on first bell click so it doesn't affect initial bundle.
@@ -39,12 +39,6 @@ function formatTimeAgo(timestamp: number): string {
 
 function formatNotificationType(type: string): string {
   return type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-}
-
-interface NotificationBellProps {
-  notifications: NotificationsData | undefined
-  onBellClick: (e: React.MouseEvent<HTMLButtonElement>) => void
-  unreadCount: number
 }
 
 const NotificationBell = memo(function NotificationBell({ notifications, onBellClick, unreadCount }: NotificationBellProps) {

@@ -1,8 +1,6 @@
 import { memo, useCallback, useState } from 'react'
-import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
-import { ChevronDownIcon, ChevronUpIcon, ExternalLinkIcon } from './icons'
-import { DROPDOWN_SECTIONS, MENU_CONFIG } from './navbarConfig'
-import type { DropdownSection } from './navbarConfig'
+import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { ChevronDownIcon, ChevronUpIcon, ExternalLinkIcon } from '../icons'
 import {
   MobileMenuAccordionHeader,
   MobileMenuItem,
@@ -11,12 +9,10 @@ import {
   MobileMenuPanel,
   MobileMenuSubItem,
   MobileMenuSubItems
-} from './LandingNavbar.styled'
-
-interface MobileMenuProps {
-  open: boolean
-  onClose: () => void
-}
+} from '../LandingNavbar.styled'
+import { DROPDOWN_SECTIONS, MENU_CONFIG } from '../navbarConfig'
+import type { DropdownSection } from '../navbarConfig'
+import type { MobileMenuProps } from './MobileMenu.types'
 
 const MobileMenu = memo(function MobileMenu({ open, onClose }: MobileMenuProps) {
   const l = useFormatMessage()

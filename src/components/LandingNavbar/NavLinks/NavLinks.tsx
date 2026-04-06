@@ -1,8 +1,6 @@
 import { memo } from 'react'
-import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
-import { ChevronDownIcon, ExternalLinkIcon } from './icons'
-import { DROPDOWN_SECTIONS, MENU_CONFIG } from './navbarConfig'
-import type { DropdownSection } from './navbarConfig'
+import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { ChevronDownIcon, ExternalLinkIcon } from '../icons'
 import {
   DesktopDropdown,
   DesktopDropdownInner,
@@ -11,13 +9,9 @@ import {
   DesktopTabLink,
   DesktopTabList,
   DesktopTabWithDropdown
-} from './LandingNavbar.styled'
-
-interface NavLinksProps {
-  desktopDropdown: DropdownSection | null
-  onOpenDropdown: (section: DropdownSection) => void
-  onScheduleCloseDropdown: () => void
-}
+} from '../LandingNavbar.styled'
+import { DROPDOWN_SECTIONS, MENU_CONFIG } from '../navbarConfig'
+import type { NavLinksProps } from './NavLinks.types'
 
 const NavLinks = memo(function NavLinks({ desktopDropdown, onOpenDropdown, onScheduleCloseDropdown }: NavLinksProps) {
   const l = useFormatMessage()

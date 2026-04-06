@@ -1,8 +1,7 @@
 import { memo, useCallback, useState } from 'react'
-import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
-import { assetUrl } from '../../utils/assetUrl'
-import { AccountIcon, CopyIcon, LogoutIcon, SettingsIcon, ShoppingBagIcon, WearableIcon } from './icons'
-import { USER_MENU_ITEMS } from './navbarConfig'
+import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { assetUrl } from '../../../utils/assetUrl'
+import { AccountIcon, CopyIcon, LogoutIcon, SettingsIcon, ShoppingBagIcon, WearableIcon } from '../icons'
 import {
   AvatarButton,
   AvatarImage,
@@ -27,7 +26,9 @@ import {
   UserCardMenuItem,
   UserCardName,
   UserCardWrapper
-} from './LandingNavbar.styled'
+} from '../LandingNavbar.styled'
+import { USER_MENU_ITEMS } from '../navbarConfig'
+import type { UserCardPanelProps } from './UserCardPanel.types'
 
 const PEER_BASE_URL = 'https://peer.decentraland.org/content/contents/'
 
@@ -36,15 +37,6 @@ function resolveContentUrl(hash: string | undefined): string | undefined {
   if (hash.startsWith('http://') || hash.startsWith('https://')) return hash
   if (hash.startsWith('data:')) return hash
   return `${PEER_BASE_URL}${hash}`
-}
-
-interface UserCardPanelProps {
-  isLoadingProfile: boolean
-  address?: string
-  avatar?: { name?: string; avatar?: { snapshots?: { face256?: string; body?: string } } }
-  userCardOpen: boolean
-  onToggleUserCard: () => void
-  onClickSignOut: () => void
 }
 
 const UserCardPanel = memo(function UserCardPanel({
