@@ -23,6 +23,17 @@ function getInitialLocale(): SupportedLocale {
   } catch {
     // localStorage unavailable
   }
+
+  // Check browser language preference
+  try {
+    const browserLang = navigator.language?.split('-')[0]
+    if (browserLang && browserLang in translations) {
+      return browserLang as SupportedLocale
+    }
+  } catch {
+    // navigator unavailable (e.g. SSR)
+  }
+
   return 'en'
 }
 

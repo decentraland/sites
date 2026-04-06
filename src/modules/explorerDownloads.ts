@@ -4,6 +4,7 @@ import type { ExplorerDownloadsData, PlatformDownloads } from './explorerDownloa
 class ExplorerDownloads {
   static cache = new Map<string, ExplorerDownloads>()
   private baseUrl: string
+  private downloadsPromise: Promise<PlatformDownloads[]> | null = null
 
   constructor(url: string) {
     this.baseUrl = url
@@ -21,7 +22,7 @@ class ExplorerDownloads {
     return this.from(getEnv('DOWNLOAD_COUNTS_URL') || '')
   }
 
-  async fetch<T>(path: string): Promise<T> {
+  async fetchJson<T>(path: string): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
@@ -30,7 +31,14 @@ class ExplorerDownloads {
   }
 
   async getDownloads(): Promise<PlatformDownloads[]> {
-    const response = await this.fetch<ExplorerDownloadsData>('')
+    if (!this.downloadsPromise) {
+      this.downloadsPromise = this.fetchDownloads()
+    }
+    return this.downloadsPromise
+  }
+
+  private async fetchDownloads(): Promise<PlatformDownloads[]> {
+    const response = await this.fetchJson<ExplorerDownloadsData>('')
 
     return response.values.map(([platform, downloads]) => ({
       platform,
