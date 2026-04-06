@@ -69,7 +69,7 @@ const NewsletterSection = styled('div')(({ theme }) => ({
 const NewsletterTitle = styled('p')(({ theme }) => ({
   fontFamily: 'Inter, sans-serif',
   fontWeight: 500,
-  fontSize: 20,
+  fontSize: 14,
   lineHeight: 1.6,
   color: '#fcfcfc',
   margin: 0,
@@ -159,8 +159,7 @@ const SectionLabel = styled('p')({
   fontSize: 16,
   lineHeight: 1.5,
   color: '#fcfcfc',
-  margin: 0,
-  textTransform: 'uppercase' as const
+  margin: 0
 })
 
 const SocialRow = styled('div')({
