@@ -1,6 +1,6 @@
 import { memo, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Logo, Typography } from 'decentraland-ui2'
+import { Typography } from 'decentraland-ui2'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { Repo, useLatestGithubRelease } from '../../hooks/useLatestGithubRelease'
 import appleLogo from '../../images/apple-logo.svg'
@@ -13,27 +13,8 @@ import windowsSetup from '../../images/download/creator-hub/windows_setup.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
 import { triggerFileDownload } from '../../modules/file'
 import { Architecture, OperativeSystem } from '../../types/download.types'
-import {
-  DownloadBackdrop,
-  DownloadBackdropContent,
-  DownloadBackdropText,
-  DownloadDetailContainer,
-  DownloadProgressBar,
-  DownloadProgressContainer,
-  DownloadSuccessCard,
-  DownloadSuccessCardContent,
-  DownloadSuccessCardMedia,
-  DownloadSuccessCardSubtitle,
-  DownloadSuccessCardTitle,
-  DownloadSuccessCardWrapper,
-  DownloadSuccessFooterContainer,
-  DownloadSuccessHeaderContainer,
-  DownloadSuccessOsIcon,
-  DownloadSuccessPageContainer,
-  DownloadSuccessSubtitle,
-  DownloadSuccessTitle
-} from '../DownloadSuccess/DownloadSuccess.styled'
 import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from '../DownloadSuccess/DownloadSuccess.types'
+import { DownloadSuccessLayout } from '../DownloadSuccess/DownloadSuccessLayout'
 
 const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
 
@@ -114,51 +95,22 @@ const CreatorHubDownloadSuccess = memo(() => {
   )
 
   return (
-    <>
-      <DownloadBackdrop open={isLoadingLinks}>
-        <DownloadBackdropContent>
-          <Logo size="huge" />
-          <DownloadDetailContainer>
-            <DownloadBackdropText variant="h6">{l('page.download.downloading')}</DownloadBackdropText>
-            <DownloadProgressContainer>
-              <DownloadProgressBar />
-            </DownloadProgressContainer>
-          </DownloadDetailContainer>
-        </DownloadBackdropContent>
-      </DownloadBackdrop>
-
-      <DownloadSuccessPageContainer sx={{ paddingTop: '120px' }}>
-        <DownloadSuccessHeaderContainer>
-          <DownloadSuccessOsIcon src={osIcon} alt="" loading="lazy" />
-          <DownloadSuccessTitle variant="h3">{l('page.download.success.title')}</DownloadSuccessTitle>
-          <DownloadSuccessSubtitle variant="h5">{l('page.download.success.subtitle', { action: productAction })}</DownloadSuccessSubtitle>
-        </DownloadSuccessHeaderContainer>
-
-        <DownloadSuccessCardWrapper>
-          {currentSteps.map((step, index) => (
-            <DownloadSuccessCard key={index}>
-              <DownloadSuccessCardContent>
-                <Typography variant="overline">
-                  {l('page.download.success.step')} {index + 1}
-                </Typography>
-                <DownloadSuccessCardTitle variant="h4">{step.title}</DownloadSuccessCardTitle>
-                <DownloadSuccessCardSubtitle variant="body1">{step.text}</DownloadSuccessCardSubtitle>
-              </DownloadSuccessCardContent>
-              <DownloadSuccessCardMedia image={step.image} />
-            </DownloadSuccessCard>
-          ))}
-        </DownloadSuccessCardWrapper>
-
-        <DownloadSuccessFooterContainer>
-          <Typography variant="body1">
-            {l('page.download.success.footer_prefix')}{' '}
-            <a href={osLink} onClick={handleDownloadClick}>
-              {l('page.creator-hub.download.success.footer_link_label')}
-            </a>
-          </Typography>
-        </DownloadSuccessFooterContainer>
-      </DownloadSuccessPageContainer>
-    </>
+    <DownloadSuccessLayout
+      loading={isLoadingLinks}
+      osIcon={osIcon}
+      title={l('page.download.success.title')}
+      subtitle={l('page.download.success.subtitle', { action: productAction })}
+      steps={currentSteps}
+      footer={
+        <Typography variant="body1">
+          {l('page.download.success.footer_prefix')}{' '}
+          <a href={osLink} onClick={handleDownloadClick}>
+            {l('page.creator-hub.download.success.footer_link_label')}
+          </a>
+        </Typography>
+      }
+      containerSx={{ paddingTop: '120px' }}
+    />
   )
 })
 

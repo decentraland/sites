@@ -85,7 +85,7 @@ async function calculateDownloadUrl(params: DownloadWithIdentityParams): Promise
  * @param params - Parameters for the download operation
  * @returns The download link that was used, or undefined if no link was available
  */
-async function downloadWithIdentity(params: DownloadWithIdentityParams): Promise<string | undefined> {
+async function getDownloadLinkWithIdentity(params: DownloadWithIdentityParams): Promise<string | undefined> {
   const { os, arch, fallbackLinks, queryParams, getIdentityId } = params
 
   const fallbackLink = extractFallbackLink(os, arch, fallbackLinks)
@@ -104,5 +104,5 @@ async function downloadWithIdentity(params: DownloadWithIdentityParams): Promise
   return finalLink
 }
 
-export { calculateDownloadUrl, downloadWithIdentity }
+export { calculateDownloadUrl, getDownloadLinkWithIdentity }
 export type { DownloadWithIdentityParams }
