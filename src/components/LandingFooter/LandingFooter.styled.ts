@@ -33,23 +33,26 @@ const FooterMain = styled('div')(({ theme }) => ({
 const LeftColumn = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  gap: 40,
+  gap: 16,
   padding: '40px 0',
   maxWidth: 450,
   [theme.breakpoints.down('xs')]: {
     padding: 0,
     width: '100%',
     alignItems: 'center',
-    maxWidth: '100%'
+    maxWidth: '100%',
+    gap: 40
   }
 }))
 
 const Wordmark = styled('img')(({ theme }) => ({
   height: 20,
   width: 'auto',
+  alignSelf: 'flex-start',
   [theme.breakpoints.down('xs')]: {
     height: 40,
-    maxWidth: 322
+    maxWidth: 322,
+    alignSelf: 'center'
   }
 }))
 
@@ -134,6 +137,7 @@ const ConnectSection = styled('div')(({ theme }) => ({
   gap: 16,
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&.desktop-only': {
+    marginTop: 24,
     [theme.breakpoints.down('xs')]: {
       display: 'none'
     }
