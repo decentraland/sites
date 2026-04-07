@@ -14,8 +14,8 @@ import { addQueryParamsToUrlString, sanitizeCDNReleaseLinks, updateUrlWithLastVa
 import { Architecture, DownloadOptionProps, OperativeSystem } from '../../types/download.types'
 import { assetUrl } from '../../utils/assetUrl'
 import { CTAButton } from '../Buttons/CTAButton'
-import { VerifiedIcon } from '../Icon/VerifiedIcon'
 import { GOOGLE_PLAY_DESKTOP_URL } from '../Home/shared/googlePlay'
+import { VerifiedIcon } from '../Icon/VerifiedIcon'
 import {
   AlternativeButton,
   AlternativeButtonImage,
