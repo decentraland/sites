@@ -39,6 +39,7 @@ interface WhatsOn {
   coordinates: string
   creatorAddress?: string
   creatorName?: string
+  isGenesisPlaza: boolean
 }
 
 export { WhatsOnCardType }

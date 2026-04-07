@@ -30,25 +30,34 @@ const JUMP_IN_HEIGHT = 62
 
 const CardsGrid = styled(Box)(({ theme }) => ({
   display: 'flex',
-  justifyContent: 'center',
   gap: theme.spacing(3),
+  justifyContent: 'center',
   width: '100%',
   position: 'relative',
   zIndex: 10,
   /* eslint-disable @typescript-eslint/naming-convention */
   '& > *': {
-    flex: '0 1 510px'
+    flex: '1 1 0',
+    minWidth: 0,
+    maxWidth: 510
   },
   '& .MuiCard-root': {
     containerType: 'inline-size',
-    minHeight: 441
+    overflow: 'hidden',
+    height: 'min(62.5cqw + 130px, 427px)'
   },
-  '& .MuiCardMedia-root': {
-    height: '62.5cqw !important',
+  '& .MuiCardActionArea-root': {
+    height: '100%'
+  },
+  '&& .MuiCardMedia-root': {
+    height: 'min(62.5cqw, 297px)',
     transition: 'height 0.3s ease'
   },
-  '& .MuiCardActionArea-root:hover .MuiCardMedia-root': {
-    height: `calc(62.5cqw - ${JUMP_IN_HEIGHT}px) !important`
+  '&& .MuiCardActionArea-root:hover .MuiCardMedia-root': {
+    height: `min(calc(62.5cqw - ${JUMP_IN_HEIGHT}px), ${297 - JUMP_IN_HEIGHT}px)`
+  },
+  '&& .MuiCardActionArea-root:hover .MuiCardContent-root > div:first-of-type > div:last-child': {
+    marginBottom: 0
   },
   // Expand avatar container so the "by" label is not truncated
   // (targets the inner Box wrapping the AvatarFace inside EventCard)

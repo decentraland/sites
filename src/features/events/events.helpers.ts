@@ -29,7 +29,8 @@ function buildPlazaCard(scenesData: HotScene[]): WhatsOn {
     users: plaza?.usersTotalCount ?? 0,
     image: plaza?.thumbnail ?? '',
     coordinates: plazaCoords,
-    creatorName: 'Decentraland Foundation'
+    creatorName: 'Decentraland Foundation',
+    isGenesisPlaza: true
   }
 }
 
@@ -49,7 +50,8 @@ function buildWhatsOnCards(liveEvents: EventEntry[], hotScenes: HotScene[]): Wha
         users: scene.usersTotalCount,
         image: matchedEvent.image,
         coordinates: coordsKey(matchedEvent.x, matchedEvent.y),
-        creatorAddress: matchedEvent.user
+        creatorAddress: matchedEvent.user,
+        isGenesisPlaza: false
       })
       usedSceneIds.add(scene.id)
       usedEventIds.add(matchedEvent.id)
@@ -69,7 +71,8 @@ function buildWhatsOnCards(liveEvents: EventEntry[], hotScenes: HotScene[]): Wha
       users: scene.usersTotalCount,
       image: scene.thumbnail,
       coordinates: coordsKey(scene.baseCoords[0], scene.baseCoords[1]),
-      ...(isGenesis && { creatorName: 'Decentraland Foundation' })
+      ...(isGenesis && { creatorName: 'Decentraland Foundation' }),
+      isGenesisPlaza: isGenesis
     })
   }
 
