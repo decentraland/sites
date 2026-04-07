@@ -197,6 +197,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                 href={GOOGLE_PLAY_DESKTOP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
+                sx={{ minWidth: 24 }}
                 startIcon={<AlternativeButtonImage src={assetUrl('/google_play_icon.svg')} />}
               />
               <AlternativeButton
@@ -205,6 +206,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                 href={EPIC_GAMES_URL}
                 target="_blank"
                 rel="noopener noreferrer"
+                sx={{ minWidth: 24 }}
                 startIcon={<AlternativeButtonImage src={assetUrl('/epic_icon.svg')} />}
               />
             </AlternativeButtonsWrapper>
