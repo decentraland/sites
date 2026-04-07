@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 const ALLOWED_DOMAINS = ['decentraland.org', 'decentraland.zone', 'decentraland.today', 'market.decentraland.org']
 
 /**
@@ -19,7 +21,7 @@ function safeOpenUrl(url: string): void {
   }
 }
 
-function formatTimeAgo(timestamp: number, t: (key: string, values?: Record<string, unknown>) => string): string {
+function formatTimeAgo(timestamp: number, t: (key: string, values?: Record<string, ReactNode>) => string): string {
   const seconds = Math.floor((Date.now() - timestamp) / 1000)
   if (seconds < 60) return t('component.landing.navbar.time_just_now')
   if (seconds < 3600) return t('component.landing.navbar.time_minutes_ago', { count: Math.floor(seconds / 60) })
