@@ -12,8 +12,10 @@ import { formatToShorthand } from '../../modules/number'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { addQueryParamsToUrlString, sanitizeCDNReleaseLinks, updateUrlWithLastValue } from '../../modules/url'
 import { Architecture, DownloadOptionProps, OperativeSystem } from '../../types/download.types'
+import { assetUrl } from '../../utils/assetUrl'
 import { CTAButton } from '../Buttons/CTAButton'
 import { VerifiedIcon } from '../Icon/VerifiedIcon'
+import { GOOGLE_PLAY_DESKTOP_URL } from '../Home/shared/googlePlay'
 import {
   AlternativeButton,
   AlternativeButtonImage,
@@ -25,6 +27,8 @@ import {
   DownloadCounts,
   DownloadOptionsContainer
 } from './DownloadOptions.styled'
+
+const EPIC_GAMES_URL = 'https://store.epicgames.com/en-US/p/decentraland-b692fb'
 
 interface DownloadOptionsProps {
   hideDownloadCounts?: boolean
@@ -187,6 +191,22 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                   {option.arch ? `(${l(`page.download.${option.arch}_processors_short`)})` : undefined}
                 </AlternativeButton>
               ))}
+              <AlternativeButton
+                variant="text"
+                color="inherit"
+                href={GOOGLE_PLAY_DESKTOP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                startIcon={<AlternativeButtonImage src={assetUrl('/google_play_icon.svg')} />}
+              />
+              <AlternativeButton
+                variant="text"
+                color="inherit"
+                href={EPIC_GAMES_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                startIcon={<AlternativeButtonImage src={assetUrl('/epic_icon.svg')} />}
+              />
             </AlternativeButtonsWrapper>
           </AlternativeContainer>
         </DownloadActions>
