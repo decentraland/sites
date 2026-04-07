@@ -1,6 +1,6 @@
 import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
 
-const WhatsOnContainer = styled(Box)(({ theme }) => ({
+const ExploreContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   padding: theme.spacing(10, 8),
   display: 'flex',
@@ -130,4 +130,4 @@ const CardWrapper = styled('div')({
   /* eslint-enable @typescript-eslint/naming-convention */
 })
 
-export { CardWrapper, CardsGrid, MobileCarousel, SectionTitle, WhatsOnContainer }
+export { CardWrapper, CardsGrid, ExploreContainer, MobileCarousel, SectionTitle }

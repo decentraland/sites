@@ -50,7 +50,7 @@ enum SectionViewedTrack {
   INVITE_FAQS = 'Referrer Invite Faqs',
   LANDING_CATCH_THE_VIBE = 'Landing Catch The Vibe',
   LANDING_WEEKLY_RITUALS = 'Landing Weekly Rituals',
-  LANDING_WHATS_ON = 'Landing Whats On',
+  LANDING_EXPLORE = 'Landing Explore',
   LANDING_FOOTER_SOCIAL = 'Landing Footer Social',
   LANDING_FOOTER_SUBSCRIBE = 'Landing Footer Subscribe',
   LANDING_FOOTER_LINK = 'Landing Footer Link',
