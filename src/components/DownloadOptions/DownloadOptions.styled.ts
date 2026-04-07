@@ -60,6 +60,7 @@ const AlternativeButtonsWrapper = styled(Box)(({ theme }) => ({
 const AlternativeButton = styled(Button)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
+  minWidth: 24,
   ['& span.MuiButton-icon.MuiButton-startIcon.MuiButton-iconSizeMedium']: {
     marginRight: 0,
     marginLeft: 0
