@@ -58,14 +58,11 @@ const LandingNavbar = memo(function LandingNavbar({
 
   const unreadCount = notifications?.items?.filter(n => !n.read).length ?? 0
 
-  const notifOpenRef = useRef(false)
-
   const onClickNotificationBell = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       if (notifications?.onClick) {
         notifications.onClick(e)
       }
-      notifOpenRef.current = !notifOpenRef.current
       setUserCardOpen(false)
       setDesktopDropdown(null)
     },
@@ -73,9 +70,8 @@ const LandingNavbar = memo(function LandingNavbar({
   )
 
   const closeNotifications = useCallback(() => {
-    if (notifOpenRef.current && notifications?.onClose) {
+    if (notifications?.isOpen && notifications?.onClose) {
       notifications.onClose()
-      notifOpenRef.current = false
     }
   }, [notifications])
 

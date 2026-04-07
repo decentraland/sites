@@ -19,27 +19,14 @@ import {
   NotificationTitle,
   NotificationWrapper
 } from '../LandingNavbar.styled'
+import { formatNotificationType, formatTimeAgo, safeOpenUrl } from '../utils'
 import type { NotificationBellProps } from './NotificationBell.types'
 
 // Module-level cache for notification type->component map from ui2.
 // Lazy-loaded on first bell click so it doesn't affect initial bundle.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _notifComponentMap: Record<string, React.ComponentType<any>> | null = null
-
-function formatTimeAgo(timestamp: number): string {
-  const seconds = Math.floor((Date.now() - timestamp) / 1000)
-  if (seconds < 60) return 'just now'
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  return `${days}d ago`
-}
-
-function formatNotificationType(type: string): string {
-  return type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-}
+let _importPending = false
 
 const NotificationBell = memo(function NotificationBell({ notifications, onBellClick, unreadCount }: NotificationBellProps) {
   const l = useFormatMessage()
@@ -50,11 +37,16 @@ const NotificationBell = memo(function NotificationBell({ notifications, onBellC
     (e: React.MouseEvent<HTMLButtonElement>) => {
       onBellClick(e)
       // Lazy-load notification type renderers from ui2 on first click
-      if (!_notifComponentMap) {
-        import('decentraland-ui2/dist/components/Notifications/utils').then(m => {
-          _notifComponentMap = m.NotificationComponentByType
-          setNotifMapLoaded(true)
-        })
+      if (!_notifComponentMap && !_importPending) {
+        _importPending = true
+        import('decentraland-ui2/dist/components/Notifications/utils')
+          .then(m => {
+            _notifComponentMap = m.NotificationComponentByType
+            setNotifMapLoaded(true)
+          })
+          .catch(() => {
+            _importPending = false
+          })
       }
     },
     [onBellClick]
@@ -98,14 +90,16 @@ const NotificationBell = memo(function NotificationBell({ notifications, onBellC
                     )
                   }
                   // Fallback while ui2 components load or for unknown types
-                  const meta = item.metadata as Record<string, string> | undefined
-                  const title = meta?.title || meta?.nftName || formatNotificationType(item.type)
-                  const description = meta?.description || meta?.message
-                  const link = meta?.link || meta?.url
+                  const meta = item.metadata as Record<string, unknown> | undefined
+                  const title = String(meta?.title || meta?.nftName || '') || formatNotificationType(item.type)
+                  const description =
+                    typeof meta?.description === 'string' ? meta.description : typeof meta?.message === 'string' ? meta.message : undefined
+                  const rawLink = typeof meta?.link === 'string' ? meta.link : typeof meta?.url === 'string' ? meta.url : undefined
+                  const link = rawLink && rawLink.startsWith('http') ? rawLink : undefined
                   return (
                     <NotificationListItem
                       key={item.id}
-                      onClick={() => link && window.open(link, '_blank', 'noopener')}
+                      onClick={() => link && safeOpenUrl(link)}
                       style={{ cursor: link ? 'pointer' : 'default' }}
                     >
                       <NotificationItemImage>
@@ -114,7 +108,7 @@ const NotificationBell = memo(function NotificationBell({ notifications, onBellC
                       <NotificationItemContent>
                         <NotificationItemTitle>{title}</NotificationItemTitle>
                         {description && <NotificationItemDescription>{description}</NotificationItemDescription>}
-                        <NotificationItemTime>{formatTimeAgo(item.timestamp)}</NotificationItemTime>
+                        <NotificationItemTime>{formatTimeAgo(item.timestamp, l)}</NotificationItemTime>
                       </NotificationItemContent>
                       {!item.read && (
                         <NotificationDot
@@ -125,7 +119,7 @@ const NotificationBell = memo(function NotificationBell({ notifications, onBellC
                           onKeyDown={e => {
                             if ((e.key === 'Enter' || e.key === ' ') && link) {
                               e.preventDefault()
-                              window.open(link, '_blank', 'noopener')
+                              safeOpenUrl(link)
                             }
                           }}
                         />

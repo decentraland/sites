@@ -3,7 +3,6 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { ChevronDownIcon, ExternalLinkIcon } from '../icons'
 import {
   DesktopDropdown,
-  DesktopDropdownInner,
   DesktopDropdownItem,
   DesktopDropdownWrapper,
   DesktopTabLink,
@@ -41,19 +40,17 @@ const NavLinks = memo(function NavLinks({ desktopDropdown, onOpenDropdown, onSch
 
           {desktopDropdown === section && (
             <DesktopDropdown>
-              <DesktopDropdownInner>
-                {MENU_CONFIG[section].items?.map(item => (
-                  <DesktopDropdownItem
-                    key={item.labelKey}
-                    href={item.url}
-                    target={item.isExternal ? '_blank' : undefined}
-                    rel={item.isExternal ? 'noopener noreferrer' : undefined}
-                  >
-                    {l(item.labelKey)}
-                    {item.isExternal && <ExternalLinkIcon />}
-                  </DesktopDropdownItem>
-                ))}
-              </DesktopDropdownInner>
+              {MENU_CONFIG[section].items?.map(item => (
+                <DesktopDropdownItem
+                  key={item.labelKey}
+                  href={item.url}
+                  target={item.isExternal ? '_blank' : undefined}
+                  rel={item.isExternal ? 'noopener noreferrer' : undefined}
+                >
+                  {l(item.labelKey)}
+                  {item.isExternal && <ExternalLinkIcon />}
+                </DesktopDropdownItem>
+              ))}
             </DesktopDropdown>
           )}
         </DesktopDropdownWrapper>

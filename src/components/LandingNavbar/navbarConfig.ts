@@ -58,11 +58,15 @@ const MENU_CONFIG: MenuConfig = {
 }
 
 const USER_MENU_ITEMS = [
-  { labelKey: 'component.landing.navbar.view_profile', url: 'https://decentraland.org/profile' },
-  { labelKey: 'component.landing.navbar.my_assets', url: 'https://decentraland.org/marketplace/account' },
-  { labelKey: 'component.landing.navbar.account_settings', url: 'https://decentraland.org/account' },
-  { labelKey: 'component.landing.navbar.marketplace_authorizations', url: 'https://decentraland.org/marketplace/settings' }
-] as const
+  { labelKey: 'component.landing.navbar.view_profile', url: 'https://decentraland.org/profile', icon: 'account' as const },
+  { labelKey: 'component.landing.navbar.my_assets', url: 'https://decentraland.org/marketplace/account', icon: 'wearable' as const },
+  { labelKey: 'component.landing.navbar.account_settings', url: 'https://decentraland.org/account', icon: 'settings' as const },
+  {
+    labelKey: 'component.landing.navbar.marketplace_authorizations',
+    url: 'https://decentraland.org/marketplace/settings',
+    icon: 'shopping' as const
+  }
+]
 
 const DROPDOWN_SECTIONS = ['shop', 'create', 'learn'] as const
 type DropdownSection = (typeof DROPDOWN_SECTIONS)[number]

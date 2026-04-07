@@ -9,7 +9,6 @@ import {
   MobileUserCardAddress,
   MobileUserCardAddressLabel,
   MobileUserCardAvatar,
-  MobileUserCardAvatarImage,
   MobileUserCardCopyButton,
   MobileUserCardInfo,
   MobileUserCardName,
@@ -29,6 +28,13 @@ import {
 } from '../LandingNavbar.styled'
 import { USER_MENU_ITEMS } from '../navbarConfig'
 import type { UserCardPanelProps } from './UserCardPanel.types'
+
+const ICON_MAP: Record<string, React.FC> = {
+  account: AccountIcon,
+  wearable: WearableIcon,
+  settings: SettingsIcon,
+  shopping: ShoppingBagIcon
+}
 
 const PEER_BASE_URL = 'https://peer.decentraland.org/content/contents/'
 
@@ -85,15 +91,15 @@ const UserCardPanel = memo(function UserCardPanel({
 
   const renderMenuItems = () => (
     <>
-      {USER_MENU_ITEMS.map((item, i) => (
-        <UserCardMenuItem key={item.labelKey} href={item.url}>
-          {i === 0 && <AccountIcon />}
-          {i === 1 && <WearableIcon />}
-          {i === 2 && <SettingsIcon />}
-          {i === 3 && <ShoppingBagIcon />}
-          {l(item.labelKey)}
-        </UserCardMenuItem>
-      ))}
+      {USER_MENU_ITEMS.map(item => {
+        const Icon = ICON_MAP[item.icon]
+        return (
+          <UserCardMenuItem key={item.labelKey} href={item.url}>
+            {Icon && <Icon />}
+            {l(item.labelKey)}
+          </UserCardMenuItem>
+        )
+      })}
       <UserCardDivider />
       <UserCardLogout onClick={onClickSignOut}>
         <LogoutIcon />
@@ -144,15 +150,7 @@ const UserCardPanel = memo(function UserCardPanel({
         <MobileUserCard data-mobile-user-card onClick={e => e.stopPropagation()}>
           <MobileUserCardTop>
             <MobileUserCardAvatar className={isLoadingProfile ? 'loading' : undefined}>
-              {!isLoadingProfile && (
-                <MobileUserCardAvatarImage
-                  src={faceUrl}
-                  alt=""
-                  onLoad={() => setLoadedUrl(faceUrl)}
-                  onError={() => setLoadedUrl(faceUrl)}
-                  style={{ opacity: faceLoaded ? 1 : 0 }}
-                />
-              )}
+              {!isLoadingProfile && renderAvatar()}
             </MobileUserCardAvatar>
             <MobileUserCardInfo>
               <MobileUserCardName title={userName}>{userName}</MobileUserCardName>

@@ -14,7 +14,7 @@ interface NotificationsData {
   isOpen: boolean
   activeTab: NotificationActiveTab
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
-  onClose: (...args: unknown[]) => void
+  onClose: () => void
   onChangeTab: (e: unknown, tab: NotificationActiveTab) => void
 }
 
