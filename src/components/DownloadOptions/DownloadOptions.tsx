@@ -6,7 +6,7 @@ import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
-import { downloadWithIdentity } from '../../modules/downloadWithIdentity'
+import { getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
 import { ExplorerDownloads } from '../../modules/explorerDownloads'
 import { formatToShorthand } from '../../modules/number'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
@@ -117,7 +117,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
   const onClickDownloadHandler = useCallback(
     async (option: DownloadOptionProps) => {
       if (downloadOnClick) {
-        await downloadWithIdentity({
+        await getDownloadLinkWithIdentity({
           os: option.text,
           arch: option.arch,
           fallbackLinks: links,
