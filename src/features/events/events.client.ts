@@ -7,6 +7,19 @@ interface WhatsOnData {
   hotScenes: HotScene[]
 }
 
+async function extractJson<T>(result: PromiseSettledResult<Response>): Promise<T | null> {
+  if (result.status !== 'fulfilled' || !result.value.ok) {
+    return null
+  }
+
+  const contentType = result.value.headers.get('content-type')
+  if (!contentType?.includes('application/json')) {
+    return null
+  }
+
+  return result.value.json()
+}
+
 const eventsClient = createApi({
   reducerPath: 'eventsClient',
   baseQuery: fetchBaseQuery({ baseUrl: '/' }),
@@ -24,23 +37,10 @@ const eventsClient = createApi({
             fetch(hotScenesUrl)
           ])
 
-          let liveEvents: EventEntry[] = []
-          let hotScenes: HotScene[] = []
+          const eventsData = await extractJson<EventsResponse>(eventsResult)
+          const liveEvents = eventsData?.data ?? []
 
-          if (eventsResult.status === 'fulfilled' && eventsResult.value.ok) {
-            const contentType = eventsResult.value.headers.get('content-type')
-            if (contentType?.includes('application/json')) {
-              const eventsData: EventsResponse = await eventsResult.value.json()
-              liveEvents = eventsData.data ?? []
-            }
-          }
-
-          if (scenesResult.status === 'fulfilled' && scenesResult.value.ok) {
-            const contentType = scenesResult.value.headers.get('content-type')
-            if (contentType?.includes('application/json')) {
-              hotScenes = await scenesResult.value.json()
-            }
-          }
+          const hotScenes = (await extractJson<HotScene[]>(scenesResult)) ?? []
 
           return {
             data: {
