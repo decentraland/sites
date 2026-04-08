@@ -106,26 +106,30 @@ function LazyWeb3({ children }: PropsWithChildren) {
     // but wagmi has stale disconnected flags, clear them.
     reconcileDisconnectedFlags()
 
-    Promise.all([import('@dcl/core-web3/lazy'), import('./web3.config'), import('@dcl/core-web3')]).then(([lazy, config, core]) => {
-      const injectReducers = lazy.createLazyStoreEnhancer(store, staticReducers)
-      injectReducers()
+    Promise.all([import('@dcl/core-web3/lazy'), import('./web3.config'), import('@dcl/core-web3')])
+      .then(([lazy, config, core]) => {
+        const injectReducers = lazy.createLazyStoreEnhancer(store, staticReducers)
+        injectReducers()
 
-      // Pre-seed the wallet reducer with the cached address BEFORE wagmi mounts.
-      // This prevents a flash in the UI: without this, Web3Sync reads fresh Redux state
-      // (address: null) and pushes it to WalletStateContext, overriding the
-      // localStorage-derived address for ~30ms until wagmi reconnects.
-      const address = getCachedAddress()
-      if (address) {
-        store.dispatch(core.walletActions.setAccount(address))
-      }
+        // Pre-seed the wallet reducer with the cached address BEFORE wagmi mounts.
+        // This prevents a flash in the UI: without this, Web3Sync reads fresh Redux state
+        // (address: null) and pushes it to WalletStateContext, overriding the
+        // localStorage-derived address for ~30ms until wagmi reconnects.
+        const address = getCachedAddress()
+        if (address) {
+          store.dispatch(core.walletActions.setAccount(address))
+        }
 
-      const provider = lazy.Web3LazyProvider
-      const web3Config = config.web3Config
-      setWrapper(() => ({ children: c }: PropsWithChildren) => {
-        const LazyProvider = provider
-        return <LazyProvider config={web3Config}>{c}</LazyProvider>
+        const provider = lazy.Web3LazyProvider
+        const web3Config = config.web3Config
+        setWrapper(() => ({ children: c }: PropsWithChildren) => {
+          const LazyProvider = provider
+          return <LazyProvider config={web3Config}>{c}</LazyProvider>
+        })
       })
-    })
+      .catch(() => {
+        // Web3 providers failed to load — app continues without wallet support
+      })
   }, [])
 
   if (!Wrapper) return <>{children}</>

@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
@@ -41,6 +41,14 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
   const getIdentityId = useGetIdentityId()
   const l = useFormatMessage()
   const onClickHandle = useTrackClick()
+
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(redirectTimerRef.current)
+    }
+  }, [])
 
   const links = useMemo(() => sanitizeCDNReleaseLinks(getCDNRelease(CDNSource.LAUNCHER)) || {}, [])
 
@@ -128,7 +136,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
       const redirectPath = '/download_success'
       const redirectUrl = updateUrlWithLastValue(new URL(redirectPath, window.location.origin).toString(), 'os', option.text)
       const finalUrl = addQueryParamsToUrlString(redirectUrl, { arch: option.arch })
-      setTimeout(
+      redirectTimerRef.current = setTimeout(
         () => {
           window.location.href = finalUrl
         },

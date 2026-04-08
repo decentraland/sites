@@ -29,7 +29,8 @@ function DiscordPage() {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         headers: { 'Content-Type': 'application/json' },
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        body: JSON.stringify({ 'captcha-response': token })
+        body: JSON.stringify({ 'captcha-response': token }),
+        signal: AbortSignal.timeout(8000)
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const body: DiscordCaptchaResponse = await res.json()

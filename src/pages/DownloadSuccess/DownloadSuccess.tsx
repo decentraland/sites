@@ -120,9 +120,13 @@ const DownloadSuccess = memo(() => {
 
     const startDownload = async () => {
       const sessionKey = `${AUTO_DOWNLOAD_SESSION_KEY}:${autoDownloadKey}`
-      if (sessionStorage.getItem(sessionKey)) {
-        setIsFileSaved(true)
-        return
+      try {
+        if (sessionStorage.getItem(sessionKey)) {
+          setIsFileSaved(true)
+          return
+        }
+      } catch {
+        // sessionStorage unavailable (private browsing, storage full)
       }
 
       const historyState = getHistoryState()
@@ -163,7 +167,11 @@ const DownloadSuccess = memo(() => {
 
       if (cancelled) return
 
-      sessionStorage.setItem(sessionKey, '1')
+      try {
+        sessionStorage.setItem(sessionKey, '1')
+      } catch {
+        // sessionStorage unavailable (private browsing, storage full)
+      }
       triggerFileDownload(url)
       setIsFileSaved(true)
 

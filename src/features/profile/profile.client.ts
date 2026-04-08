@@ -6,6 +6,7 @@ async function fetchProfile(address: string): Promise<Profile | null> {
   try {
     const peerUrl = getEnv('PEER_URL')
     const response = await fetch(`${peerUrl}/lambdas/profiles/${address.toLowerCase()}`)
+    if (!response.ok) return null
     const data = await response.json()
     return data ?? null
   } catch {

@@ -23,7 +23,7 @@ class ExplorerDownloads {
   }
 
   async fetchJson<T>(path: string): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${path}`)
+    const response = await fetch(`${this.baseUrl}${path}`, { signal: AbortSignal.timeout(8000) })
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
