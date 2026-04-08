@@ -7,6 +7,19 @@ interface ExploreData {
   hotScenes: HotScene[]
 }
 
+async function extractJson<T>(result: PromiseSettledResult<Response>): Promise<T | null> {
+  if (result.status !== 'fulfilled' || !result.value.ok) {
+    return null
+  }
+
+  const contentType = result.value.headers.get('content-type')
+  if (!contentType?.includes('application/json')) {
+    return null
+  }
+
+  return result.value.json()
+}
+
 const eventsClient = createApi({
   reducerPath: 'eventsClient',
   baseQuery: fetchBaseQuery({ baseUrl: '/' }),
@@ -19,21 +32,20 @@ const eventsClient = createApi({
           const eventsApiUrl = getEnv('EVENTS_API_URL') || 'https://events.decentraland.org/api'
           const hotScenesUrl = getEnv('HOT_SCENES_URL') || 'https://realm-provider-ea.decentraland.org/hot-scenes'
 
-          const [eventsRes, scenesRes] = await Promise.all([
+          const [eventsResult, scenesResult] = await Promise.allSettled([
             fetch(`${eventsApiUrl}/events?list=live&limit=20&order=asc&world=false`),
             fetch(hotScenesUrl)
           ])
 
-          if (!eventsRes.ok || !scenesRes.ok) {
-            throw new Error('Failed to fetch events or hot scenes')
-          }
+          const eventsData = await extractJson<EventsResponse>(eventsResult)
+          const liveEvents = eventsData?.data ?? []
 
-          const [eventsData, scenesData]: [EventsResponse, HotScene[]] = await Promise.all([eventsRes.json(), scenesRes.json()])
+          const hotScenes = (await extractJson<HotScene[]>(scenesResult)) ?? []
 
           return {
             data: {
-              liveEvents: eventsData.data ?? [],
-              hotScenes: scenesData
+              liveEvents,
+              hotScenes
             }
           }
         } catch (error) {

@@ -40,6 +40,11 @@ async function fetchLatestRelease(repo: Repo): Promise<Release | null> {
     throw new Error(`GitHub API error: ${response.status}`)
   }
 
+  const contentType = response.headers.get('content-type')
+  if (!contentType?.includes('application/json')) {
+    throw new Error(`Unexpected content-type: ${contentType}`)
+  }
+
   return response.json()
 }
 
@@ -66,18 +71,37 @@ function useLatestGithubRelease(repo: Repo) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchLatestRelease(repo)
-      .then(data => {
-        if (data?.assets?.length) {
-          setLinks(buildLinks(data.assets))
-        }
-      })
-      .catch(error => {
-        console.error('Failed to fetch GitHub release:', error)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
+    let cancelled = false
+    let retryTimeout: ReturnType<typeof setTimeout> | null = null
+
+    const attemptFetch = (isRetry = false) => {
+      fetchLatestRelease(repo)
+        .then(data => {
+          if (!cancelled && data?.assets?.length) {
+            setLinks(buildLinks(data.assets))
+          }
+        })
+        .catch(error => {
+          console.error('Failed to fetch GitHub release:', error)
+          if (!cancelled && !isRetry) {
+            retryTimeout = setTimeout(() => attemptFetch(true), 5000)
+          }
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setLoading(false)
+          }
+        })
+    }
+
+    attemptFetch()
+
+    return () => {
+      cancelled = true
+      if (retryTimeout) {
+        clearTimeout(retryTimeout)
+      }
+    }
   }, [repo])
 
   return { links, loading }
