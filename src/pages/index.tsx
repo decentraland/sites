@@ -3,7 +3,6 @@ import { useInView } from 'react-intersection-observer'
 import { useDesktopMediaQuery } from 'decentraland-ui2'
 import { Hero } from '../components/Home/Hero'
 import { useGetExploreDataQuery } from '../features/events/events.client'
-import { Feed } from './index.types'
 import { BelowFoldContent, SuspenseFallback } from './index.styled'
 
 const Explore = lazy(() => import('../components/Home/Explore').then(m => ({ default: m.Explore })))
@@ -40,4 +39,4 @@ const IndexPage = () => {
   )
 }
 
-export { Feed, IndexPage }
+export { IndexPage }
