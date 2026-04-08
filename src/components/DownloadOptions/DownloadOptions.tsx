@@ -1,5 +1,5 @@
 import { memo, useCallback, useMemo } from 'react'
-import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
+import { useAdvancedUserAgentData, useAnalytics, useAsyncMemo } from '@dcl/hooks'
 import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
@@ -9,6 +9,7 @@ import microsoftLogo from '../../images/microsoft-logo.svg'
 import { getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
 import { ExplorerDownloads } from '../../modules/explorerDownloads'
 import { formatToShorthand } from '../../modules/number'
+import { trackCheckpoint } from '../../modules/onboardingCheckpoint'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { addQueryParamsToUrlString, sanitizeCDNReleaseLinks, updateUrlWithLastValue } from '../../modules/url'
 import { Architecture, DownloadOptionProps, OperativeSystem } from '../../types/download.types'
@@ -40,7 +41,12 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
   const [isLoadingUserAgentData, userAgentData] = useAdvancedUserAgentData()
   const getIdentityId = useGetIdentityId()
   const l = useFormatMessage()
+  const { track } = useAnalytics()
   const onClickHandle = useTrackClick()
+
+  const searchParams = useMemo(() => new URLSearchParams(window.location.search), [])
+  const email = searchParams.get('email') || undefined
+  const user = searchParams.get('user') || undefined
 
   const links = useMemo(() => sanitizeCDNReleaseLinks(getCDNRelease(CDNSource.LAUNCHER)) || {}, [])
 
@@ -116,6 +122,25 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
 
   const onClickDownloadHandler = useCallback(
     async (option: DownloadOptionProps) => {
+      // CP5 completed + CP6 reached: user clicked download
+      const identifier = email || user
+      const idType = email ? 'email' : user ? 'wallet' : undefined
+      trackCheckpoint(track, {
+        checkpointId: 5,
+        action: 'completed',
+        userIdentifier: identifier,
+        identifierType: idType,
+        email
+      })
+      trackCheckpoint(track, {
+        checkpointId: 6,
+        action: 'reached',
+        userIdentifier: identifier,
+        identifierType: idType,
+        email,
+        metadata: { os: option.text, arch: option.arch }
+      })
+
       if (downloadOnClick) {
         await getDownloadLinkWithIdentity({
           os: option.text,

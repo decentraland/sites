@@ -7,10 +7,12 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import { useWalletState } from '@dcl/core-web3/lazy'
+import { useAnalytics } from '@dcl/hooks'
 import { Button, Typography, launchDesktopApp, useDesktopMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../config/env'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { trackCheckpoint } from '../../modules/onboardingCheckpoint'
 import { DownloadOptions } from '../DownloadOptions'
 import { LandingFooter } from '../LandingFooter'
 import { WrapDecentralandText } from '../WrapDecentralandText'
@@ -46,12 +48,25 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   const [WearablePreviewComponent, setWearablePreviewComponent] = useState<any>(null)
 
   const l = useFormatMessage()
+  const { track } = useAnalytics()
   const isDesktop = useDesktopMediaQuery()
 
   const { address } = useWalletState()
 
   const searchParams = useMemo(() => new URLSearchParams(window.location.search), [])
   const user = searchParams.get('user')
+  const email = searchParams.get('email')
+
+  // CP5 reached: download page viewed
+  useEffect(() => {
+    trackCheckpoint(track, {
+      checkpointId: 5,
+      action: 'reached',
+      userIdentifier: email || user || undefined,
+      identifierType: email ? 'email' : user ? 'wallet' : undefined,
+      email: email || undefined
+    })
+  }, [])
 
   const profileAddress = user || address
   const { data: profile } = useGetProfileQuery(profileAddress ?? undefined, { skip: !profileAddress })
