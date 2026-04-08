@@ -14,6 +14,7 @@ import { SectionViewedTrack } from '../../../modules/segment'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
+import { EPIC_GAMES_URL } from '../shared/epicGames'
 import { GOOGLE_PLAY_DESKTOP_URL, GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
 import { ShareIcon } from '../shared/ShareIcon'
 import {
@@ -135,7 +136,7 @@ const ComeHangOut = memo(() => {
                 <a href={GOOGLE_PLAY_DESKTOP_URL} target="_blank" rel="noopener noreferrer">
                   <PlatformIcon src={assetUrl('/google_play_icon.svg')} alt="Android" />
                 </a>
-                <a href="https://store.epicgames.com/en-US/p/decentraland-b692fb" target="_blank" rel="noopener noreferrer">
+                <a href={EPIC_GAMES_URL} target="_blank" rel="noopener noreferrer">
                   <PlatformIcon src={assetUrl('/epic_icon.svg')} alt="Epic Games" />
                 </a>
               </PlatformIcons>
