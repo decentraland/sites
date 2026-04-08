@@ -57,7 +57,7 @@ const App = () => {
             <Route path="/sign-in" element={<SignInRedirect />} />
             {getEnv() !== Env.PRODUCTION && (
               <>
-                <Route path="/whats-on/*" element={<RemoteLoader name="whats_on" />} />
+                <Route path="/explore/*" element={<RemoteLoader name="explore" />} />
                 <Route path="/blog/*" element={<RemoteLoader name="blog" />} />
               </>
             )}
