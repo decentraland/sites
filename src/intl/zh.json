@@ -132,7 +132,7 @@
         "trivia_thursdays": "问答星期四",
         "play_with_friends_fridays": "好友游戏星期五"
       },
-      "whats_on": {
+      "explore": {
         "title": "进入正在发生的事",
         "live": "直播"
       }
@@ -467,7 +467,7 @@
         "download": "下载"
       },
       "navbar": {
-        "whats_on": "最新活动",
+        "explore": "最新活动",
         "shop": "商店",
         "create": "创作",
         "learn": "学习",

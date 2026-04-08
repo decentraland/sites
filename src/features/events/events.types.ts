@@ -25,13 +25,13 @@ interface HotScene {
   thumbnail: string
 }
 
-enum WhatsOnCardType {
+enum ExploreCardType {
   EVENT = 'event',
   PLACE = 'place'
 }
 
-interface WhatsOn {
-  type: WhatsOnCardType
+interface ExploreItem {
+  type: ExploreCardType
   id: string
   title: string
   users: number
@@ -41,5 +41,5 @@ interface WhatsOn {
   creatorName?: string
 }
 
-export { WhatsOnCardType }
-export type { EventEntry, EventsResponse, HotScene, WhatsOn }
+export { ExploreCardType }
+export type { EventEntry, EventsResponse, ExploreItem, HotScene }

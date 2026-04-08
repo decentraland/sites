@@ -36,6 +36,15 @@ function Carousel<T>({
   // Triple the items for seamless infinite loop: [clone, real, clone].
   // Neighboring slides around any position match their real counterparts,
   // so the instant snap after a clone is visually imperceptible.
+  //
+  // NOTE: A modulo-based approach (rendering only one copy and wrapping indices)
+  // was considered but is impractical here. The carousel relies on CSS
+  // `transform: translateX()` with a `transition` to animate between slides.
+  // The browser needs real DOM elements at adjacent positions so that the
+  // transition can smoothly slide between them. After reaching a clone zone,
+  // `handleTransitionEnd` instantly snaps `pos` back into the real range
+  // (with transitions disabled), making the reset invisible. Without the
+  // extra DOM elements the transition would have no target to animate toward.
   const slides = [...items, ...items, ...items]
 
   // pos indexes into `slides`. Real items sit at total..2*total-1.

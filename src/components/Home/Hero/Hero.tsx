@@ -172,29 +172,25 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
                   {currentOs !== OperativeSystem.WINDOWS && (
                     <HeroPlatformIcons>
                       <a href="/download_success?os=Windows">
-                        <HeroPlatformIcon src={microsoftLogo} alt="Windows" style={{ filter: 'brightness(0) invert(1)' }} />
+                        <HeroPlatformIcon src={microsoftLogo} alt="Windows" />
                       </a>
                     </HeroPlatformIcons>
                   )}
                   {currentOs !== OperativeSystem.MACOS && (
                     <HeroPlatformIcons>
                       <a href="/download_success?os=macOS">
-                        <HeroPlatformIcon src={appleLogo} alt="macOS" style={{ filter: 'brightness(0) invert(1)' }} />
+                        <HeroPlatformIcon src={appleLogo} alt="macOS" />
                       </a>
                     </HeroPlatformIcons>
                   )}
                   <HeroPlatformIcons>
                     <a href={GOOGLE_PLAY_DESKTOP_URL} target="_blank" rel="noopener noreferrer">
-                      <HeroPlatformIcon
-                        src={assetUrl('/google_play_icon.svg')}
-                        alt="Android"
-                        style={{ filter: 'brightness(0) invert(1)' }}
-                      />
+                      <HeroPlatformIcon src={assetUrl('/google_play_icon.svg')} alt="Android" />
                     </a>
                   </HeroPlatformIcons>
                   <HeroPlatformIcons>
                     <a href={EPIC_GAMES_URL} target="_blank" rel="noopener noreferrer">
-                      <HeroPlatformIcon src={assetUrl('/epic_icon.svg')} alt="Epic Games" style={{ filter: 'brightness(0) invert(1)' }} />
+                      <HeroPlatformIcon src={assetUrl('/epic_icon.svg')} alt="Epic Games" />
                     </a>
                   </HeroPlatformIcons>
                 </HeroDownloadInfo>
