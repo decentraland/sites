@@ -161,6 +161,8 @@ const DownloadSuccess = memo(() => {
         )
       }
 
+      if (cancelled) return
+
       sessionStorage.setItem(sessionKey, '1')
       triggerFileDownload(url)
       setIsFileSaved(true)

@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 import { useInView } from 'react-intersection-observer'
 import { useDesktopMediaQuery } from 'decentraland-ui2'
 import { Hero } from '../components/Home/Hero'
+import { useGetWhatsOnDataQuery } from '../features/events/events.client'
 import { BelowFoldContent, SuspenseFallback } from './index.styled'
 
 const WhatsOn = lazy(() => import('../components/Home/WhatsOn').then(m => ({ default: m.WhatsOn })))
@@ -11,6 +12,8 @@ const ComeHangOut = lazy(() => import('../components/Home/ComeHangOut').then(m =
 
 const IndexPage = () => {
   const isDesktop = useDesktopMediaQuery()
+  // Prefetch events data immediately so it's cached by the time user scrolls
+  useGetWhatsOnDataQuery(undefined, { pollingInterval: 60000 })
   // Negative bottom margin (-1px) prevents the observer from triggering on initial load.
   // Hero is 100vh so belowFoldRef sits exactly at the viewport's bottom edge — any positive
   // or zero rootMargin would include it, firing API calls (hot-scenes, events) during the LCP window.

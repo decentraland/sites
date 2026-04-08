@@ -82,6 +82,11 @@ function useCreatorHubDownload() {
   const handleDownload = useCallback((option: DownloadOption) => {
     if (!option.link) return
 
+    if (redirectTimerRef.current !== null) {
+      clearTimeout(redirectTimerRef.current)
+      redirectTimerRef.current = null
+    }
+
     triggerFileDownload(option.link)
 
     const redirectUrl = updateUrlWithLastValue(new URL(REDIRECT_PATH, window.location.origin).toString(), 'os', option.text)
