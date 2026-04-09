@@ -13,12 +13,6 @@ import { CardWrapper } from './Explore.styled'
 // dev we force https by replacing the protocol.
 const DCL_LOGO_URL = assetUrl('/dcl-logo.svg').replace(/^http:\/\//, 'https://')
 
-const DCL_FOUNDATION_NAMES = ['decentraland foundation', 'decentraland', 'dcl']
-
-function isDclFoundation(name?: string): boolean {
-  return !!name && DCL_FOUNDATION_NAMES.includes(name.toLowerCase())
-}
-
 const ExploreCard = memo(({ card, loading }: { card?: ExploreItem; loading?: boolean }) => {
   const onClickHandle = useTrackClick()
   const { data: profile } = useGetProfileQuery(card?.creatorAddress, { skip: !card?.creatorAddress })
@@ -29,7 +23,7 @@ const ExploreCard = memo(({ card, loading }: { card?: ExploreItem; loading?: boo
     avatar = {
       name: card.creatorName,
       ethAddress: '',
-      ...(isDclFoundation(card.creatorName) && {
+      ...(card.isGenesisPlaza && {
         avatar: { snapshots: { face256: DCL_LOGO_URL, body: '' } }
       })
     } as Avatar
@@ -41,7 +35,7 @@ const ExploreCard = memo(({ card, loading }: { card?: ExploreItem; loading?: boo
         loading={loading}
         image={card?.image ?? ''}
         sceneName={card?.title ?? ''}
-        avatar={avatar as Avatar}
+        avatar={avatar}
         coordinates={card?.coordinates}
         leftBadgeTransparent
         hideLocation
