@@ -56,6 +56,8 @@ const CardsGrid = styled(Box)(({ theme }) => ({
   '&& .MuiCardActionArea-root:hover .MuiCardMedia-root': {
     height: `min(calc(62.5cqw - ${JUMP_IN_HEIGHT}px), ${297 - JUMP_IN_HEIGHT}px)`
   },
+  // Collapse the Jump In button container's bottom margin on hover
+  // (targets the last div inside EventCard's MuiCardContent layout)
   '&& .MuiCardActionArea-root:hover .MuiCardContent-root > div:first-of-type > div:last-child': {
     marginBottom: 0
   },
