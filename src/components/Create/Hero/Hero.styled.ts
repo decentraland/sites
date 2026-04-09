@@ -1,13 +1,14 @@
 import { Box, Typography, styled } from 'decentraland-ui2'
 
 const HeroSection = styled('section')({
-  height: '90vh',
+  height: 'calc(90vh - 96px)',
   width: '100%',
   position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
+  marginTop: 92,
   overflow: 'hidden'
 })
 

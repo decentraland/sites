@@ -5,7 +5,6 @@ import { Autoplay, Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { AnimatedBackground } from 'decentraland-ui2'
 import { useGetExploreDataQuery } from '../../../features/events/events.client'
-import { buildExploreCards } from '../../../features/events/events.helpers'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { ExploreCard } from './ExploreCard'
 import { CardsGrid, ExploreContainer, MobileCarousel, SectionTitle } from './Explore.styled'
@@ -14,12 +13,7 @@ const LOADING_PLACEHOLDERS = [0, 1, 2]
 
 const Explore = memo(() => {
   const l = useFormatMessage()
-  const { data, isLoading } = useGetExploreDataQuery(undefined, { pollingInterval: 60000 })
-
-  const cards = useMemo(() => {
-    if (!data) return []
-    return buildExploreCards(data.liveEvents, data.hotScenes)
-  }, [data])
+  const { data: cards = [], isLoading } = useGetExploreDataQuery(undefined, { pollingInterval: 60000 })
 
   if (!isLoading && cards.length === 0) return null
 
