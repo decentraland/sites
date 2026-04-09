@@ -49,11 +49,7 @@ const MENU_CONFIG: MenuConfig = {
   },
   learn: {
     labelKey: 'component.landing.navbar.learn',
-    items: [
-      { labelKey: 'component.landing.navbar.get_started', url: 'https://docs.decentraland.org/player/', isExternal: true },
-      { labelKey: 'component.landing.navbar.start_creating', url: 'https://docs.decentraland.org/creator/', isExternal: true },
-      { labelKey: 'component.landing.navbar.see_whats_new', url: 'https://decentraland.org/blog/' }
-    ]
+    url: 'https://decentraland.org/blog/'
   }
 }
 
@@ -64,7 +60,7 @@ const USER_MENU_ITEMS = [
   { labelKey: 'component.landing.navbar.marketplace_authorizations', url: 'https://decentraland.org/marketplace/settings' }
 ] as const
 
-const DROPDOWN_SECTIONS = ['shop', 'create', 'learn'] as const
+const DROPDOWN_SECTIONS = ['shop', 'create'] as const
 type DropdownSection = (typeof DROPDOWN_SECTIONS)[number]
 
 export { DROPDOWN_SECTIONS, MENU_CONFIG, USER_MENU_ITEMS }
