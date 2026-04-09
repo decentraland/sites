@@ -39,7 +39,10 @@ const CardsGrid = styled(Box)(({ theme }) => ({
   '& > *': {
     flex: '1 1 0',
     minWidth: 0,
-    maxWidth: 850
+    maxWidth: 850,
+    '&:only-child, &:first-child:nth-last-child(2), &:first-child:nth-last-child(2) ~ *': {
+      minHeight: 427
+    }
   },
   '& .MuiCard-root': {
     containerType: 'inline-size',
