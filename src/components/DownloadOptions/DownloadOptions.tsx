@@ -15,6 +15,7 @@ import { addQueryParamsToUrlString, sanitizeCDNReleaseLinks, updateUrlWithLastVa
 import { Architecture, DownloadOptionProps, OperativeSystem } from '../../types/download.types'
 import { assetUrl } from '../../utils/assetUrl'
 import { CTAButton } from '../Buttons/CTAButton'
+import { EPIC_GAMES_URL } from '../Home/shared/epicGames'
 import { GOOGLE_PLAY_DESKTOP_URL } from '../Home/shared/googlePlay'
 import { VerifiedIcon } from '../Icon/VerifiedIcon'
 import {
@@ -28,8 +29,6 @@ import {
   DownloadCounts,
   DownloadOptionsContainer
 } from './DownloadOptions.styled'
-
-const EPIC_GAMES_URL = 'https://store.epicgames.com/en-US/p/decentraland-b692fb'
 
 interface DownloadOptionsProps {
   hideDownloadCounts?: boolean
