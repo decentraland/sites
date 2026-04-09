@@ -4,31 +4,31 @@ const WALLET_RE = /^0x[0-9a-f]{40}$/i
 type CheckpointParams = {
   checkpointId: number
   action?: 'reached' | 'completed'
-  userIdentifier?: string
-  identifierType?: 'email' | 'wallet'
   email?: string
   wallet?: string
-  source?: string
   metadata?: Record<string, unknown>
 }
 
+function resolveIdentifier(email?: string, wallet?: string) {
+  if (email && EMAIL_RE.test(email)) return { userIdentifier: email, identifierType: 'email' as const }
+  if (wallet && WALLET_RE.test(wallet)) return { userIdentifier: wallet, identifierType: 'wallet' as const }
+  return { userIdentifier: undefined, identifierType: undefined }
+}
+
 export function trackCheckpoint(track: (event: string, data?: Record<string, unknown>) => void, params: CheckpointParams): void {
+  const { userIdentifier, identifierType } = resolveIdentifier(params.email, params.wallet)
+
   // Don't send checkpoints without an identifier — they cause 400s on the backend
   // and we can't send nudge emails without knowing who the user is
-  if (!params.userIdentifier || !params.identifierType) return
-
-  // Basic format validation to avoid sending garbage to the backend
-  if (params.identifierType === 'email' && !EMAIL_RE.test(params.userIdentifier)) return
-  if (params.identifierType === 'wallet' && !WALLET_RE.test(params.userIdentifier)) return
+  if (!userIdentifier || !identifierType) return
 
   track('Onboarding Checkpoint', {
     checkpointId: params.checkpointId,
     action: params.action ?? 'reached',
-    userIdentifier: params.userIdentifier,
-    identifierType: params.identifierType,
+    userIdentifier,
+    identifierType,
     email: params.email,
-    wallet: params.wallet,
-    source: params.source ?? 'landing',
+    source: 'landing',
     metadata: params.metadata
   })
 }

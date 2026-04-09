@@ -30,6 +30,8 @@ import {
 interface DownloadOptionsProps {
   hideDownloadCounts?: boolean
   downloadOnClick?: boolean
+  email?: string
+  user?: string
 }
 
 const imageByOs: Record<string, string> = {
@@ -37,16 +39,12 @@ const imageByOs: Record<string, string> = {
   [OperativeSystem.MACOS]: appleLogo
 }
 
-const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadOptionsProps) => {
+const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick, email, user }: DownloadOptionsProps) => {
   const [isLoadingUserAgentData, userAgentData] = useAdvancedUserAgentData()
   const getIdentityId = useGetIdentityId()
   const l = useFormatMessage()
   const { track } = useAnalytics()
   const onClickHandle = useTrackClick()
-
-  const searchParams = useMemo(() => new URLSearchParams(window.location.search), [])
-  const email = searchParams.get('email') || undefined
-  const user = searchParams.get('user') || undefined
 
   const links = useMemo(() => sanitizeCDNReleaseLinks(getCDNRelease(CDNSource.LAUNCHER)) || {}, [])
 
@@ -123,21 +121,17 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
   const onClickDownloadHandler = useCallback(
     async (option: DownloadOptionProps) => {
       // CP5 completed + CP6 reached: user clicked download
-      const identifier = email || user
-      const idType = email ? 'email' : user ? 'wallet' : undefined
       trackCheckpoint(track, {
         checkpointId: 5,
         action: 'completed',
-        userIdentifier: identifier,
-        identifierType: idType,
-        email
+        email,
+        wallet: user
       })
       trackCheckpoint(track, {
         checkpointId: 6,
         action: 'reached',
-        userIdentifier: identifier,
-        identifierType: idType,
         email,
+        wallet: user,
         metadata: { os: option.text, arch: option.arch }
       })
 

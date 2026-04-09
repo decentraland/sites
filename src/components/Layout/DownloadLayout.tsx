@@ -53,11 +53,12 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
   const { address } = useWalletState()
 
-  const searchParams = useMemo(() => new URLSearchParams(window.location.search), [])
-  const user = searchParams.get('user')
-  const email = searchParams.get('email')
+  const [email, user] = useMemo(() => {
+    const params = new URLSearchParams(window.location.search)
+    return [params.get('email') || undefined, params.get('user') || undefined]
+  }, [])
 
-  // CP5 reached: download page viewed (fire once when track is ready)
+  // CP5 reached: download page viewed (fire once on mount)
   const hasFiredCp5 = useRef(false)
   useEffect(() => {
     if (hasFiredCp5.current) return
@@ -65,9 +66,8 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
     trackCheckpoint(track, {
       checkpointId: 5,
       action: 'reached',
-      userIdentifier: email || user || undefined,
-      identifierType: email ? 'email' : user ? 'wallet' : undefined,
-      email: email || undefined
+      email,
+      wallet: user
     })
 
     // Strip PII from URL so it doesn't leak via Referer header to external resources
@@ -77,7 +77,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
       cleanUrl.searchParams.delete('email')
       window.history.replaceState(null, '', cleanUrl.toString())
     }
-  }, [track, email, user])
+  }, [])
 
   const profileAddress = user || address
   const { data: profile } = useGetProfileQuery(profileAddress ?? undefined, { skip: !profileAddress })
@@ -147,10 +147,12 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   }, [])
 
   const handleShare = useCallback(() => {
+    const shareUrl = new URL(window.location.href)
+    shareUrl.searchParams.delete('email')
     navigator.share({
       title: l('page.download.share_title'),
       text: l('page.download.share_title'),
-      url: window.location.href
+      url: shareUrl.toString()
     })
   }, [l])
 
@@ -180,7 +182,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
                 <DownloadTitle variant="h2">
                   <WrapDecentralandText text={title} />
                 </DownloadTitle>
-                <DownloadOptions />
+                <DownloadOptions email={email} user={user} />
               </DownloadOptionsContainer>
             </>
           )}
