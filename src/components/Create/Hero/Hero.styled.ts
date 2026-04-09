@@ -8,6 +8,7 @@ const HeroSection = styled('section')({
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
+  paddingTop: 92,
   overflow: 'hidden'
 })
 
