@@ -652,6 +652,11 @@
         "are_you_creator_button": "Join the Registry",
         "are_you_creator_url": "https://docs.google.com/forms/d/e/1FAIpQLSc_KsbODUsJdC4_UTn7T91RTYwSJBAEZIWlCAxnk3rRBinFWg/viewform"
       }
+    },
+    "press": {
+      "title": "Decentraland Press Kit",
+      "description": "We've put together all sorts of goodies that you're welcome to use when writing and talking about our project. Please direct any questions to ",
+      "download_button": "Download Press Kit"
     }
   }
 }

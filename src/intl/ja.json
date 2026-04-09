@@ -500,6 +500,11 @@
         "account_settings": "アカウント設定",
         "marketplace_authorizations": "マーケットプレイス認証"
       }
+    },
+    "press": {
+      "title": "Decentraland プレスキット",
+      "description": "プロジェクトについて執筆・発信する際にご自由にお使いいただける素材をご用意しました。ご質問は以下までお問い合わせください：",
+      "download_button": "プレスキットをダウンロード"
     }
   }
 }

@@ -500,6 +500,11 @@
         "account_settings": "계정 설정",
         "marketplace_authorizations": "마켓플레이스 승인"
       }
+    },
+    "press": {
+      "title": "Decentraland 프레스 키트",
+      "description": "프로젝트에 대해 글을 쓰거나 이야기할 때 자유롭게 사용할 수 있는 다양한 자료를 준비했습니다. 문의 사항은 다음으로 연락해 주세요: ",
+      "download_button": "프레스 키트 다운로드"
     }
   }
 }
