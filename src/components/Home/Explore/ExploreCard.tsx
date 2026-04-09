@@ -41,7 +41,7 @@ const ExploreCard = memo(({ card, loading }: { card?: ExploreItem; loading?: boo
         loading={loading}
         image={card?.image ?? ''}
         sceneName={card?.title ?? ''}
-        avatar={avatar as Avatar}
+        avatar={avatar}
         coordinates={card?.coordinates}
         leftBadgeTransparent
         hideLocation
