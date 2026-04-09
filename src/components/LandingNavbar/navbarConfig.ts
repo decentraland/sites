@@ -11,15 +11,15 @@ type MenuSection = {
 }
 
 type MenuConfig = {
-  whatsOn: MenuSection
+  explore: MenuSection
   shop: MenuSection
   create: MenuSection
   learn: MenuSection
 }
 
 const MENU_CONFIG: MenuConfig = {
-  whatsOn: {
-    labelKey: 'component.landing.navbar.whats_on',
+  explore: {
+    labelKey: 'component.landing.navbar.explore',
     url: 'https://decentraland.org/events'
   },
   shop: {

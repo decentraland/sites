@@ -15,6 +15,7 @@ import { SectionViewedTrack } from '../../../modules/segment'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
+import { EPIC_GAMES_URL } from '../shared/epicGames'
 import { GOOGLE_PLAY_DESKTOP_URL, GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
 import { ShareIcon } from '../shared/ShareIcon'
 import { DownloadIcon } from './DownloadIcon'
@@ -188,7 +189,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
                     </a>
                   </HeroPlatformIcons>
                   <HeroPlatformIcons>
-                    <a href="https://store.epicgames.com/en-US/p/decentraland-b692fb" target="_blank" rel="noopener noreferrer">
+                    <a href={EPIC_GAMES_URL} target="_blank" rel="noopener noreferrer">
                       <HeroPlatformIcon src={assetUrl('/epic_icon.svg')} alt="Epic Games" />
                     </a>
                   </HeroPlatformIcons>

@@ -34,7 +34,7 @@ export default defineConfig(({ command, mode }) => {
         // The actual URL is overridden at runtime by the worker via
         // `window.__REMOTE_URLS__` + `__federation_method_setRemote`.
         remotes: {
-          whats_on: envVariables.VITE_WHATS_ON_REMOTE_URL || 'https://placeholder.decentraland.org/assets/remoteEntry.js',
+          explore: envVariables.VITE_EXPLORE_REMOTE_URL || 'https://placeholder.decentraland.org/assets/remoteEntry.js',
           blog_site: envVariables.VITE_BLOG_SITE_REMOTE_URL || 'https://placeholder.decentraland.org/assets/remoteEntry.js'
         },
         shared: {

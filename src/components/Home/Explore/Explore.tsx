@@ -4,21 +4,21 @@ import 'swiper/css/pagination'
 import { Autoplay, Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { AnimatedBackground } from 'decentraland-ui2'
-import { useGetWhatsOnDataQuery } from '../../../features/events/events.client'
-import { buildWhatsOnCards } from '../../../features/events/events.helpers'
+import { useGetExploreDataQuery } from '../../../features/events/events.client'
+import { buildExploreCards } from '../../../features/events/events.helpers'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { WhatsOnCard } from './WhatsOnCard'
-import { CardsGrid, MobileCarousel, SectionTitle, WhatsOnContainer } from './WhatsOn.styled'
+import { ExploreCard } from './ExploreCard'
+import { CardsGrid, ExploreContainer, MobileCarousel, SectionTitle } from './Explore.styled'
 
 const LOADING_PLACEHOLDERS = [0, 1, 2]
 
-const WhatsOn = memo(() => {
+const Explore = memo(() => {
   const l = useFormatMessage()
-  const { data, isLoading } = useGetWhatsOnDataQuery(undefined, { pollingInterval: 60000 })
+  const { data, isLoading } = useGetExploreDataQuery(undefined, { pollingInterval: 60000 })
 
   const cards = useMemo(() => {
     if (!data) return []
-    return buildWhatsOnCards(data.liveEvents, data.hotScenes)
+    return buildExploreCards(data.liveEvents, data.hotScenes)
   }, [data])
 
   if (!isLoading && cards.length === 0) return null
@@ -26,15 +26,15 @@ const WhatsOn = memo(() => {
   const cardElements = useMemo(
     () =>
       isLoading
-        ? LOADING_PLACEHOLDERS.map(i => <WhatsOnCard key={i} loading />)
-        : cards.map(card => <WhatsOnCard key={card.id} card={card} />),
+        ? LOADING_PLACEHOLDERS.map(i => <ExploreCard key={i} loading />)
+        : cards.map(card => <ExploreCard key={card.id} card={card} />),
     [isLoading, cards]
   )
 
   return (
-    <WhatsOnContainer>
+    <ExploreContainer>
       <AnimatedBackground variant="absolute" />
-      <SectionTitle variant="h3">{l('page.home.whats_on.title')}</SectionTitle>
+      <SectionTitle variant="h3">{l('page.home.explore.title')}</SectionTitle>
       <CardsGrid>{cardElements}</CardsGrid>
       <MobileCarousel>
         <Swiper
@@ -48,20 +48,20 @@ const WhatsOn = memo(() => {
           {isLoading
             ? LOADING_PLACEHOLDERS.map(i => (
                 <SwiperSlide key={i}>
-                  <WhatsOnCard loading />
+                  <ExploreCard loading />
                 </SwiperSlide>
               ))
             : cards.map(card => (
                 <SwiperSlide key={card.id}>
-                  <WhatsOnCard card={card} />
+                  <ExploreCard card={card} />
                 </SwiperSlide>
               ))}
         </Swiper>
       </MobileCarousel>
-    </WhatsOnContainer>
+    </ExploreContainer>
   )
 })
 
-WhatsOn.displayName = 'WhatsOn'
+Explore.displayName = 'Explore'
 
-export { WhatsOn }
+export { Explore }

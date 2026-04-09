@@ -132,7 +132,7 @@
         "trivia_thursdays": "Jeudis Trivia",
         "play_with_friends_fridays": "Vendredis Jouer entre Amis"
       },
-      "whats_on": {
+      "explore": {
         "title": "Plongez dans ce qui se passe",
         "live": "En direct"
       }
@@ -467,7 +467,7 @@
         "download": "Télécharger"
       },
       "navbar": {
-        "whats_on": "Actualités",
+        "explore": "Actualités",
         "shop": "Boutique",
         "create": "Créer",
         "learn": "Apprendre",

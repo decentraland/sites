@@ -27,3 +27,6 @@ dist-ssr
 # Module Federation
 .__mf__temp/
 .mf/
+
+# Claude
+.claude
