@@ -1,1 +1,0 @@
-export { WhatsOn } from './WhatsOn'

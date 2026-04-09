@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import appleLogo from '../images/apple-logo.svg'
 import microsoftLogo from '../images/microsoft-logo.svg'
@@ -26,6 +26,15 @@ const imageByOs: Record<string, string> = {
 function useCreatorHubDownload() {
   const [isLoadingUserAgentData, userAgentData] = useAdvancedUserAgentData()
   const { links, loading: isLoadingLinks } = useLatestGithubRelease(Repo.CREATOR_HUB)
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimerRef.current !== null) {
+        clearTimeout(redirectTimerRef.current)
+      }
+    }
+  }, [])
 
   const isReady = !isLoadingLinks && !!links && !isLoadingUserAgentData
 
@@ -73,11 +82,16 @@ function useCreatorHubDownload() {
   const handleDownload = useCallback((option: DownloadOption) => {
     if (!option.link) return
 
+    if (redirectTimerRef.current !== null) {
+      clearTimeout(redirectTimerRef.current)
+      redirectTimerRef.current = null
+    }
+
     triggerFileDownload(option.link)
 
     const redirectUrl = updateUrlWithLastValue(new URL(REDIRECT_PATH, window.location.origin).toString(), 'os', option.text)
     const finalUrl = addQueryParamsToUrlString(redirectUrl, { arch: option.arch })
-    setTimeout(() => {
+    redirectTimerRef.current = setTimeout(() => {
       window.location.href = finalUrl
     }, REDIRECT_DELAY_MS)
   }, [])

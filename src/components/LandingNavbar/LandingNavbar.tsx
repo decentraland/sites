@@ -359,7 +359,7 @@ const LandingNavbar = memo(function LandingNavbar({
     return (
       <>
         <MobileMenuItem>
-          <MobileMenuLink href={MENU_CONFIG.whatsOn.url}>{l(MENU_CONFIG.whatsOn.labelKey)}</MobileMenuLink>
+          <MobileMenuLink href={MENU_CONFIG.explore.url}>{l(MENU_CONFIG.explore.labelKey)}</MobileMenuLink>
         </MobileMenuItem>
 
         {DROPDOWN_SECTIONS.map(section => {
@@ -389,6 +389,10 @@ const LandingNavbar = memo(function LandingNavbar({
             </MobileMenuItem>
           )
         })}
+
+        <MobileMenuItem>
+          <MobileMenuLink href={MENU_CONFIG.learn.url}>{l(MENU_CONFIG.learn.labelKey)}</MobileMenuLink>
+        </MobileMenuItem>
       </>
     )
   }, [l, mobileAccordion, toggleMobileAccordion])
@@ -437,7 +441,7 @@ const LandingNavbar = memo(function LandingNavbar({
           </LogoLink>
 
           <DesktopTabList>
-            <DesktopTabLink href={MENU_CONFIG.whatsOn.url}>{l(MENU_CONFIG.whatsOn.labelKey)}</DesktopTabLink>
+            <DesktopTabLink href={MENU_CONFIG.explore.url}>{l(MENU_CONFIG.explore.labelKey)}</DesktopTabLink>
 
             {DROPDOWN_SECTIONS.map(section => (
               <DesktopDropdownWrapper
@@ -481,6 +485,8 @@ const LandingNavbar = memo(function LandingNavbar({
                 )}
               </DesktopDropdownWrapper>
             ))}
+
+            <DesktopTabLink href={MENU_CONFIG.learn.url}>{l(MENU_CONFIG.learn.labelKey)}</DesktopTabLink>
           </DesktopTabList>
         </NavBarLeft>
 

@@ -1,5 +1,5 @@
-import { WhatsOnCardType } from './events.types'
-import type { EventEntry, HotScene, WhatsOn } from './events.types'
+import { ExploreCardType } from './events.types'
+import type { EventEntry, ExploreItem, HotScene } from './events.types'
 
 const MIN_USERS = 5
 const MAX_CARDS = 3
@@ -19,11 +19,11 @@ function findEventAtCoords(events: EventEntry[], parcels: Array<[number, number]
   return undefined
 }
 
-function buildPlazaCard(scenesData: HotScene[]): WhatsOn {
+function buildPlazaCard(scenesData: HotScene[]): ExploreItem {
   const plaza = scenesData.find(s => s.name.toLowerCase().includes('genesis plaza'))
   const plazaCoords = plaza ? coordsKey(plaza.baseCoords[0], plaza.baseCoords[1]) : '0,0'
   return {
-    type: WhatsOnCardType.PLACE,
+    type: ExploreCardType.PLACE,
     id: plaza?.id ?? 'genesis-plaza',
     title: plaza?.name ?? 'Genesis Plaza',
     users: plaza?.usersTotalCount ?? 0,
@@ -33,9 +33,9 @@ function buildPlazaCard(scenesData: HotScene[]): WhatsOn {
   }
 }
 
-function buildWhatsOnCards(liveEvents: EventEntry[], hotScenes: HotScene[]): WhatsOn[] {
+function buildExploreCards(liveEvents: EventEntry[], hotScenes: HotScene[]): ExploreItem[] {
   const filteredScenes = hotScenes.filter(s => s.usersTotalCount >= MIN_USERS)
-  const cards: WhatsOn[] = []
+  const cards: ExploreItem[] = []
   const usedSceneIds = new Set<string>()
   const usedEventIds = new Set<string>()
 
@@ -43,7 +43,7 @@ function buildWhatsOnCards(liveEvents: EventEntry[], hotScenes: HotScene[]): Wha
     const matchedEvent = findEventAtCoords(liveEvents, scene.parcels)
     if (matchedEvent && !usedEventIds.has(matchedEvent.id)) {
       cards.push({
-        type: WhatsOnCardType.EVENT,
+        type: ExploreCardType.EVENT,
         id: matchedEvent.id,
         title: matchedEvent.name,
         users: scene.usersTotalCount,
@@ -63,7 +63,7 @@ function buildWhatsOnCards(liveEvents: EventEntry[], hotScenes: HotScene[]): Wha
   for (const scene of scenesWithoutEvents) {
     const isGenesis = scene.name.toLowerCase().includes('genesis plaza')
     cards.push({
-      type: WhatsOnCardType.PLACE,
+      type: ExploreCardType.PLACE,
       id: scene.id,
       title: scene.name,
       users: scene.usersTotalCount,
@@ -84,4 +84,4 @@ function buildWhatsOnCards(liveEvents: EventEntry[], hotScenes: HotScene[]): Wha
   return cards.slice(0, MAX_CARDS)
 }
 
-export { buildPlazaCard, buildWhatsOnCards, coordsKey, findEventAtCoords }
+export { buildExploreCards, buildPlazaCard, coordsKey, findEventAtCoords }
