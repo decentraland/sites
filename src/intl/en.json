@@ -123,11 +123,11 @@
             "windows": {
               "step1": {
                 "title": "Open",
-                "text": "Open the <span>'Decentraland Creator Hub'</span> file from your Downloads Folder to begin the installation process."
+                "text": "Open the <span>Decentraland Creator Hub</span> file from your Downloads Folder to begin the installation process."
               },
               "step2": {
                 "title": "Install",
-                "text": "Click <span>'Install'</span> and then <span>'Finish'</span>. <span>'Decentraland Creator Hub'</span> will automatically start."
+                "text": "Click <span>Install</span> and then <span>Finish</span>. <span>Decentraland Creator Hub</span> will automatically start."
               },
               "step3": {
                 "title": "Get ready",
@@ -137,15 +137,15 @@
             "macos": {
               "step1": {
                 "title": "Open",
-                "text": "Open the <span>'Decentraland Creator Hub'</span> file from your Downloads Folder to begin the installation process."
+                "text": "Open the <span>Decentraland Creator Hub</span> file from your Downloads Folder to begin the installation process."
               },
               "step2": {
                 "title": "Install",
-                "text": "Drag and drop <span>'Decentraland Creator Hub'</span> to the <span>'Applications folder'</span>. You might be asked to enter the admin password."
+                "text": "Drag and drop <span>Decentraland Creator Hub</span> to the <span>Applications folder</span>. You might be asked to enter the admin password."
               },
               "step3": {
                 "title": "Get Ready",
-                "text": "Locate <span>'Decentraland Creator Hub'</span> in your <span>'Applications Folder'</span> and Start Building."
+                "text": "Locate <span>Decentraland Creator Hub</span> in your <span>Applications Folder</span> and Start Building."
               }
             }
           }
