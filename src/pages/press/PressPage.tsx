@@ -15,7 +15,7 @@ const PressPage = () => {
       </PressLogoWrapper>
       <PressTitle variant="h1">{l('page.press.title')}</PressTitle>
       <PressDescription>
-        {l('page.press.description')}
+        {l('page.press.page_description')}
         <PressEmailLink href={`mailto:${PRESS_EMAIL}`}>{PRESS_EMAIL}</PressEmailLink>.
       </PressDescription>
       <Button variant="contained" {...{ component: 'a', target: '_blank', rel: 'noopener noreferrer' }} href={PRESS_KIT_URL}>

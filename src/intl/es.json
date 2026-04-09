@@ -287,7 +287,9 @@
     },
     "press": {
       "title": "Kit de Prensa de Decentraland",
-      "description": "Descarga materiales de prensa y activos de marca de Decentraland"
+      "description": "Descarga materiales de prensa y activos de marca de Decentraland",
+      "page_description": "Hemos preparado todo tipo de recursos que podés usar libremente al escribir y hablar sobre nuestro proyecto. Por favor, dirigí cualquier consulta a ",
+      "download_button": "Descargar Kit de Prensa"
     },
     "support": {
       "title": "Decentraland - Centro de Ayuda",
@@ -500,11 +502,6 @@
         "account_settings": "Configuración",
         "marketplace_authorizations": "Autorizaciones del Marketplace"
       }
-    },
-    "press": {
-      "title": "Kit de Prensa de Decentraland",
-      "description": "Hemos preparado todo tipo de recursos que podés usar libremente al escribir y hablar sobre nuestro proyecto. Por favor, dirigí cualquier consulta a ",
-      "download_button": "Descargar Kit de Prensa"
     }
   }
 }
