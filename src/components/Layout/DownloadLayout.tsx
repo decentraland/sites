@@ -58,7 +58,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
     return [params.get('email') || undefined, params.get('user') || undefined]
   }, [])
 
-  // CP5 reached: download page viewed (fire once on mount)
+  // CP5 reached: download page viewed (fire once, ref guard prevents re-fires)
   const hasFiredCp5 = useRef(false)
   useEffect(() => {
     if (hasFiredCp5.current) return
@@ -72,12 +72,13 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
     // Strip PII from URL so it doesn't leak via Referer header to external resources
     // (e.g. WearablePreview iframe). We already captured the values above.
-    if (email) {
+    if (email || user) {
       const cleanUrl = new URL(window.location.href)
       cleanUrl.searchParams.delete('email')
+      cleanUrl.searchParams.delete('user')
       window.history.replaceState(null, '', cleanUrl.toString())
     }
-  }, [])
+  }, [track, email, user])
 
   const profileAddress = user || address
   const { data: profile } = useGetProfileQuery(profileAddress ?? undefined, { skip: !profileAddress })
@@ -146,14 +147,19 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
     return 'default' + (Math.floor(Math.random() * (160 - 1 + 1)) + 1)
   }, [])
 
-  const handleShare = useCallback(() => {
-    const shareUrl = new URL(window.location.href)
-    shareUrl.searchParams.delete('email')
-    navigator.share({
-      title: l('page.download.share_title'),
-      text: l('page.download.share_title'),
-      url: shareUrl.toString()
-    })
+  const handleShare = useCallback(async () => {
+    try {
+      const shareUrl = new URL(window.location.href)
+      shareUrl.searchParams.delete('email')
+      shareUrl.searchParams.delete('user')
+      await navigator.share({
+        title: l('page.download.share_title'),
+        text: l('page.download.share_title'),
+        url: shareUrl.toString()
+      })
+    } catch {
+      /* user cancelled or API unavailable */
+    }
   }, [l])
 
   return (

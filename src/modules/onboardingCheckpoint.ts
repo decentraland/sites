@@ -2,7 +2,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const WALLET_RE = /^0x[0-9a-f]{40}$/i
 
 type CheckpointParams = {
-  checkpointId: number
+  checkpointId: 5 | 6
   action?: 'reached' | 'completed'
   email?: string
   wallet?: string
@@ -27,7 +27,7 @@ export function trackCheckpoint(track: (event: string, data?: Record<string, unk
     action: params.action ?? 'reached',
     userIdentifier,
     identifierType,
-    email: params.email,
+    email: identifierType === 'email' ? userIdentifier : undefined,
     source: 'landing',
     metadata: params.metadata
   })
