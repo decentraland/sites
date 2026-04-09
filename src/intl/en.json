@@ -397,7 +397,9 @@
     },
     "press": {
       "title": "Decentraland Press Kit",
-      "description": "Download Decentraland press materials and brand assets"
+      "description": "Download Decentraland press materials and brand assets",
+      "page_description": "We've put together all sorts of goodies that you're welcome to use when writing and talking about our project. Please direct any questions to ",
+      "download_button": "Download Press Kit"
     },
     "support": {
       "title": "Decentraland - Help Center",
