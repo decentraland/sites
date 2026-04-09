@@ -214,16 +214,14 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick, email, user
                 variant="text"
                 color="inherit"
                 href={GOOGLE_PLAY_DESKTOP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
+                {...{ target: '_blank', rel: 'noopener noreferrer' }}
                 startIcon={<AlternativeButtonImage src={assetUrl('/google_play_icon.svg')} />}
               />
               <AlternativeButton
                 variant="text"
                 color="inherit"
                 href={EPIC_GAMES_URL}
-                target="_blank"
-                rel="noopener noreferrer"
+                {...{ target: '_blank', rel: 'noopener noreferrer' }}
                 startIcon={<AlternativeButtonImage src={assetUrl('/epic_icon.svg')} />}
               />
             </AlternativeButtonsWrapper>
