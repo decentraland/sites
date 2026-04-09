@@ -160,7 +160,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
         downloadOnClick ? 3000 : 0
       )
     },
-    [downloadOnClick, getIdentityId, links]
+    [downloadOnClick, getIdentityId, links, track, email, user]
   )
 
   const downloadCountsFormatted = !downloadsStatus.loading && downloadsStatus.loaded && downloads ? formatToShorthand(downloads) : null

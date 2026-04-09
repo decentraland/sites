@@ -1,3 +1,6 @@
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const WALLET_RE = /^0x[0-9a-f]{40}$/i
+
 type CheckpointParams = {
   checkpointId: number
   action?: 'reached' | 'completed'
@@ -13,6 +16,10 @@ export function trackCheckpoint(track: (event: string, data?: Record<string, unk
   // Don't send checkpoints without an identifier — they cause 400s on the backend
   // and we can't send nudge emails without knowing who the user is
   if (!params.userIdentifier || !params.identifierType) return
+
+  // Basic format validation to avoid sending garbage to the backend
+  if (params.identifierType === 'email' && !EMAIL_RE.test(params.userIdentifier)) return
+  if (params.identifierType === 'wallet' && !WALLET_RE.test(params.userIdentifier)) return
 
   track('Onboarding Checkpoint', {
     checkpointId: params.checkpointId,

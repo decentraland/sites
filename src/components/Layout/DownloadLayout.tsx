@@ -57,8 +57,11 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   const user = searchParams.get('user')
   const email = searchParams.get('email')
 
-  // CP5 reached: download page viewed
+  // CP5 reached: download page viewed (fire once when track is ready)
+  const hasFiredCp5 = useRef(false)
   useEffect(() => {
+    if (hasFiredCp5.current) return
+    hasFiredCp5.current = true
     trackCheckpoint(track, {
       checkpointId: 5,
       action: 'reached',
@@ -66,7 +69,15 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
       identifierType: email ? 'email' : user ? 'wallet' : undefined,
       email: email || undefined
     })
-  }, [])
+
+    // Strip PII from URL so it doesn't leak via Referer header to external resources
+    // (e.g. WearablePreview iframe). We already captured the values above.
+    if (email) {
+      const cleanUrl = new URL(window.location.href)
+      cleanUrl.searchParams.delete('email')
+      window.history.replaceState(null, '', cleanUrl.toString())
+    }
+  }, [track, email, user])
 
   const profileAddress = user || address
   const { data: profile } = useGetProfileQuery(profileAddress ?? undefined, { skip: !profileAddress })
