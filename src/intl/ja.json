@@ -132,7 +132,7 @@
         "trivia_thursdays": "トリビアサーズデー",
         "play_with_friends_fridays": "フレンドプレイフライデー"
       },
-      "whats_on": {
+      "explore": {
         "title": "今起きていることに飛び込もう",
         "live": "ライブ"
       }
@@ -467,7 +467,7 @@
         "download": "ダウンロード"
       },
       "navbar": {
-        "whats_on": "イベント情報",
+        "explore": "イベント情報",
         "shop": "ショップ",
         "create": "作成",
         "learn": "学ぶ",

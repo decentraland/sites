@@ -7,10 +7,12 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import { useWalletState } from '@dcl/core-web3/lazy'
+import { useAnalytics } from '@dcl/hooks'
 import { Button, Typography, launchDesktopApp, useDesktopMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../config/env'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { trackCheckpoint } from '../../modules/onboardingCheckpoint'
 import { DownloadOptions } from '../DownloadOptions'
 import { LandingFooter } from '../LandingFooter'
 import { WrapDecentralandText } from '../WrapDecentralandText'
@@ -46,12 +48,37 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   const [WearablePreviewComponent, setWearablePreviewComponent] = useState<any>(null)
 
   const l = useFormatMessage()
+  const { track } = useAnalytics()
   const isDesktop = useDesktopMediaQuery()
 
   const { address } = useWalletState()
 
-  const searchParams = useMemo(() => new URLSearchParams(window.location.search), [])
-  const user = searchParams.get('user')
+  const [email, user] = useMemo(() => {
+    const params = new URLSearchParams(window.location.search)
+    return [params.get('email') || undefined, params.get('user') || undefined]
+  }, [])
+
+  // CP5 reached: download page viewed (fire once, ref guard prevents re-fires)
+  const hasFiredCp5 = useRef(false)
+  useEffect(() => {
+    if (hasFiredCp5.current) return
+    hasFiredCp5.current = true
+    trackCheckpoint(track, {
+      checkpointId: 5,
+      action: 'reached',
+      email,
+      wallet: user
+    })
+
+    // Strip PII from URL so it doesn't leak via Referer header to external resources
+    // (e.g. WearablePreview iframe). We already captured the values above.
+    if (email || user) {
+      const cleanUrl = new URL(window.location.href)
+      cleanUrl.searchParams.delete('email')
+      cleanUrl.searchParams.delete('user')
+      window.history.replaceState(null, '', cleanUrl.toString())
+    }
+  }, [track, email, user])
 
   const profileAddress = user || address
   const { data: profile } = useGetProfileQuery(profileAddress ?? undefined, { skip: !profileAddress })
@@ -120,12 +147,19 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
     return 'default' + (Math.floor(Math.random() * (160 - 1 + 1)) + 1)
   }, [])
 
-  const handleShare = useCallback(() => {
-    navigator.share({
-      title: l('page.download.share_title'),
-      text: l('page.download.share_title'),
-      url: window.location.href
-    })
+  const handleShare = useCallback(async () => {
+    try {
+      const shareUrl = new URL(window.location.href)
+      shareUrl.searchParams.delete('email')
+      shareUrl.searchParams.delete('user')
+      await navigator.share({
+        title: l('page.download.share_title'),
+        text: l('page.download.share_title'),
+        url: shareUrl.toString()
+      })
+    } catch {
+      /* user cancelled or API unavailable */
+    }
   }, [l])
 
   return (
@@ -154,7 +188,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
                 <DownloadTitle variant="h2">
                   <WrapDecentralandText text={title} />
                 </DownloadTitle>
-                <DownloadOptions />
+                <DownloadOptions email={email} user={user} />
               </DownloadOptionsContainer>
             </>
           )}
