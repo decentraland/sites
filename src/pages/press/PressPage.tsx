@@ -1,24 +1,25 @@
 import { Button, Logo } from 'decentraland-ui2'
+import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { PressContainer, PressDescription, PressEmailLink, PressLogoWrapper, PressTitle } from './PressPage.styled'
 
 const PRESS_KIT_URL = 'https://dcl.gg/press'
 const PRESS_EMAIL = 'press@decentraland.org'
 
 const PressPage = () => {
+  const l = useFormatMessage()
+
   return (
     <PressContainer>
       <PressLogoWrapper>
         <Logo size="huge" />
       </PressLogoWrapper>
-      <PressTitle variant="h1">Decentraland Press Kit</PressTitle>
+      <PressTitle variant="h1">{l('index.press.title')}</PressTitle>
       <PressDescription>
-        {
-          "We've put together all sorts of goodies that you're welcome to use when writing and talking about our project. Please direct any questions to "
-        }
+        {l('index.press.page_description')}
         <PressEmailLink href={`mailto:${PRESS_EMAIL}`}>{PRESS_EMAIL}</PressEmailLink>.
       </PressDescription>
-      <Button variant="contained" component="a" href={PRESS_KIT_URL} target="_blank" rel="noopener noreferrer">
-        Download Press Kit
+      <Button variant="contained" {...{ component: 'a', target: '_blank', rel: 'noopener noreferrer' }} href={PRESS_KIT_URL}>
+        {l('index.press.download_button')}
       </Button>
     </PressContainer>
   )

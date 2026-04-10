@@ -4,6 +4,10 @@ import type { EventEntry, ExploreItem, HotScene } from './events.types'
 const MIN_USERS = 5
 const MAX_CARDS = 3
 
+function isGenesisPlazaScene(scene: HotScene): boolean {
+  return scene.name.toLowerCase().includes('genesis plaza')
+}
+
 function coordsKey(x: number, y: number): string {
   return `${x},${y}`
 }
@@ -20,7 +24,7 @@ function findEventAtCoords(events: EventEntry[], parcels: Array<[number, number]
 }
 
 function buildPlazaCard(scenesData: HotScene[]): ExploreItem {
-  const plaza = scenesData.find(s => s.name.toLowerCase().includes('genesis plaza'))
+  const plaza = scenesData.find(isGenesisPlazaScene)
   const plazaCoords = plaza ? coordsKey(plaza.baseCoords[0], plaza.baseCoords[1]) : '0,0'
   return {
     type: ExploreCardType.PLACE,
@@ -29,7 +33,8 @@ function buildPlazaCard(scenesData: HotScene[]): ExploreItem {
     users: plaza?.usersTotalCount ?? 0,
     image: plaza?.thumbnail ?? '',
     coordinates: plazaCoords,
-    creatorName: 'Decentraland Foundation'
+    creatorName: 'Decentraland Foundation',
+    isGenesisPlaza: true
   }
 }
 
@@ -49,7 +54,8 @@ function buildExploreCards(liveEvents: EventEntry[], hotScenes: HotScene[]): Exp
         users: scene.usersTotalCount,
         image: matchedEvent.image,
         coordinates: coordsKey(matchedEvent.x, matchedEvent.y),
-        creatorAddress: matchedEvent.user
+        creatorAddress: matchedEvent.user,
+        isGenesisPlaza: false
       })
       usedSceneIds.add(scene.id)
       usedEventIds.add(matchedEvent.id)
@@ -61,7 +67,7 @@ function buildExploreCards(liveEvents: EventEntry[], hotScenes: HotScene[]): Exp
   const scenesWithoutEvents = filteredScenes.filter(s => !usedSceneIds.has(s.id)).sort((a, b) => b.usersTotalCount - a.usersTotalCount)
 
   for (const scene of scenesWithoutEvents) {
-    const isGenesis = scene.name.toLowerCase().includes('genesis plaza')
+    const isGenesis = isGenesisPlazaScene(scene)
     cards.push({
       type: ExploreCardType.PLACE,
       id: scene.id,
@@ -69,7 +75,8 @@ function buildExploreCards(liveEvents: EventEntry[], hotScenes: HotScene[]): Exp
       users: scene.usersTotalCount,
       image: scene.thumbnail,
       coordinates: coordsKey(scene.baseCoords[0], scene.baseCoords[1]),
-      ...(isGenesis && { creatorName: 'Decentraland Foundation' })
+      ...(isGenesis && { creatorName: 'Decentraland Foundation' }),
+      isGenesisPlaza: isGenesis
     })
   }
 

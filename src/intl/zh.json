@@ -287,7 +287,9 @@
     },
     "press": {
       "title": "Decentraland 新闻资料包",
-      "description": "下载 Decentraland 新闻材料和品牌资产"
+      "description": "下载 Decentraland 新闻材料和品牌资产",
+      "page_description": "我们准备了各种素材，欢迎您在撰写和谈论我们的项目时自由使用。如有任何问题，请联系：",
+      "download_button": "下载新闻资料包"
     },
     "support": {
       "title": "Decentraland - 帮助中心",

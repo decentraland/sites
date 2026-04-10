@@ -39,6 +39,7 @@ interface ExploreItem {
   coordinates: string
   creatorAddress?: string
   creatorName?: string
+  isGenesisPlaza: boolean
 }
 
 export { ExploreCardType }
