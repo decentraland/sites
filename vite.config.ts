@@ -16,7 +16,14 @@ export default defineConfig(({ command, mode }) => {
       /* eslint-enable @typescript-eslint/naming-convention */
     },
     resolve: {
-      dedupe: ['@emotion/react', '@emotion/styled', '@mui/material']
+      dedupe: ['@emotion/react', '@emotion/styled', '@mui/material'],
+      alias: {
+        // Lazy-load Sentry: @dcl/hooks imports @sentry/browser statically
+        // just for captureException on async errors. This shim defers the
+        // real SDK (~111KB) until the first error actually occurs.
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        '@sentry/browser': '/src/shims/sentry-lazy.ts'
+      }
     },
     plugins: [
       react(),
@@ -68,13 +75,6 @@ export default defineConfig(({ command, mode }) => {
           // deadlock occurs (the chunk awaits its own shared wrapper, which
           // re-imports the chunk).
           manualChunks: {
-            'vendor-sentry': [
-              '@sentry/browser',
-              '@sentry/core',
-              '@sentry-internal/replay',
-              '@sentry-internal/browser-utils',
-              '@sentry-internal/feedback'
-            ],
             'vendor-schemas': ['ajv'],
             'vendor-crypto': ['@dcl/crypto', 'eth-connect'],
             'vendor-redux': ['immer', 'reselect'],
