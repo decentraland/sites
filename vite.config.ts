@@ -1,7 +1,10 @@
+import { resolve } from 'path'
 import federation from '@originjs/vite-plugin-federation'
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
+
+const sentryShimPath = resolve(__dirname, 'src/shims/sentry-lazy.ts')
 
 // https://vitejs.dev/config/
 // eslint-disable-next-line import/no-default-export
@@ -16,16 +19,21 @@ export default defineConfig(({ command, mode }) => {
       /* eslint-enable @typescript-eslint/naming-convention */
     },
     resolve: {
-      dedupe: ['@emotion/react', '@emotion/styled', '@mui/material'],
-      alias: {
-        // Lazy-load Sentry: @dcl/hooks imports @sentry/browser statically
-        // just for captureException on async errors. This shim defers the
-        // real SDK (~111KB) until the first error actually occurs.
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        '@sentry/browser': '/src/shims/sentry-lazy.ts'
-      }
+      dedupe: ['@emotion/react', '@emotion/styled', '@mui/material']
     },
     plugins: [
+      // Redirect @sentry/browser → lazy shim for all importers EXCEPT
+      // sentry-real.js (which needs the real SDK). This avoids resolve.alias
+      // which applies globally and can't be bypassed per-importer.
+      {
+        name: 'sentry-lazy-redirect',
+        enforce: 'pre' as const,
+        resolveId(source, importer) {
+          if (source === '@sentry/browser' && importer && !importer.includes('sentry-real')) {
+            return { id: sentryShimPath }
+          }
+        }
+      },
       react(),
       nodePolyfills({
         include: ['buffer']
