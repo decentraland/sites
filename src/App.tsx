@@ -57,9 +57,9 @@ const App = () => {
             <Route path="/discord" element={<DiscordPage />} />
             <Route path="/press" element={<PressPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
+            <Route path="/explore/*" element={<RemoteLoader name="explore" />} />
             {getEnv() !== Env.PRODUCTION && (
               <>
-                <Route path="/explore/*" element={<RemoteLoader name="explore" />} />
                 <Route path="/blog/*" element={<RemoteLoader name="blog" />} />
               </>
             )}
