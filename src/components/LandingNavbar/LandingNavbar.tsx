@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useAnalytics } from '@dcl/hooks'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { MIN_DISPLAY_BALANCE } from '../../hooks/useManaBalances'
 import { useLocale } from '../../intl/LocaleContext'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { assetUrl } from '../../utils/assetUrl'
@@ -153,6 +154,40 @@ function formatMana(balance: number): string {
     return balance.toFixed(2)
   }
   return Math.floor(balance).toString()
+}
+
+function renderManaBalances(
+  row: typeof ManaBalanceRow,
+  loading: boolean,
+  balances: { ethereum: number; polygon: number } | null | undefined
+) {
+  const Row = row
+  if (loading) {
+    return (
+      <Row>
+        <ManaBalanceSkeleton />
+        <ManaBalanceSkeleton />
+      </Row>
+    )
+  }
+  if (!balances) return null
+  const showEth = balances.ethereum >= MIN_DISPLAY_BALANCE
+  const showPoly = balances.polygon >= MIN_DISPLAY_BALANCE
+  if (!showEth && !showPoly) return null
+  return (
+    <Row>
+      {showEth && (
+        <ManaBalanceItem>
+          <ManaEthIcon /> {formatMana(balances.ethereum)}
+        </ManaBalanceItem>
+      )}
+      {showPoly && (
+        <ManaBalanceItem>
+          <ManaMaticIcon /> {formatMana(balances.polygon)}
+        </ManaBalanceItem>
+      )}
+    </Row>
+  )
 }
 
 function resolveContentUrl(hash: string | undefined): string | undefined {
@@ -608,26 +643,7 @@ const LandingNavbar = memo(function LandingNavbar({
                             </UserCardCopyButton>
                           </UserCardAddress>
                         </div>
-                        {isManaLoading && (
-                          <ManaBalanceRow>
-                            <ManaBalanceSkeleton />
-                            <ManaBalanceSkeleton />
-                          </ManaBalanceRow>
-                        )}
-                        {!isManaLoading && manaBalances && (manaBalances.ethereum > 0 || manaBalances.polygon > 0) && (
-                          <ManaBalanceRow>
-                            {manaBalances.ethereum > 0 && (
-                              <ManaBalanceItem>
-                                <ManaEthIcon /> {formatMana(manaBalances.ethereum)}
-                              </ManaBalanceItem>
-                            )}
-                            {manaBalances.polygon > 0 && (
-                              <ManaBalanceItem>
-                                <ManaMaticIcon /> {formatMana(manaBalances.polygon)}
-                              </ManaBalanceItem>
-                            )}
-                          </ManaBalanceRow>
-                        )}
+                        {renderManaBalances(ManaBalanceRow, isManaLoading, manaBalances)}
                       </div>
                       <UserCardDivider />
                       {USER_MENU_ITEMS.map((item, i) => (
@@ -703,26 +719,7 @@ const LandingNavbar = memo(function LandingNavbar({
               </MobileUserCardAddress>
             </MobileUserCardInfo>
           </MobileUserCardTop>
-          {isManaLoading && (
-            <MobileManaBalanceRow>
-              <ManaBalanceSkeleton />
-              <ManaBalanceSkeleton />
-            </MobileManaBalanceRow>
-          )}
-          {!isManaLoading && manaBalances && (manaBalances.ethereum > 0 || manaBalances.polygon > 0) && (
-            <MobileManaBalanceRow>
-              {manaBalances.ethereum > 0 && (
-                <ManaBalanceItem>
-                  <ManaEthIcon /> {formatMana(manaBalances.ethereum)}
-                </ManaBalanceItem>
-              )}
-              {manaBalances.polygon > 0 && (
-                <ManaBalanceItem>
-                  <ManaMaticIcon /> {formatMana(manaBalances.polygon)}
-                </ManaBalanceItem>
-              )}
-            </MobileManaBalanceRow>
-          )}
+          {renderManaBalances(MobileManaBalanceRow, isManaLoading, manaBalances)}
           <UserCardDivider />
           <UserCardMenu>
             {USER_MENU_ITEMS.map((item, i) => (
