@@ -1,0 +1,124 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: bug-type
+    attributes:
+      label: Bug Type
+      options:
+        - UI / Visual (layout, styling, responsiveness)
+        - Functionality (feature not working as expected)
+        - Performance (slow load, lag, high memory)
+        - Wallet / Auth (connection, signing, session)
+        - Navigation / Routing (broken links, 404s)
+        - Data (wrong content, missing data, stale content)
+        - Accessibility (screen reader, keyboard, contrast)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of the bug.
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: URL
+      description: The page URL where the bug occurred.
+      placeholder: https://decentraland.org/...
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Brave
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: auth-method
+    attributes:
+      label: Authentication Method
+      options:
+        - OTP (email code)
+        - Google
+        - Wallet Provider (MetaMask, Rabby, etc.)
+        - Not connected
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: auth-details
+    attributes:
+      label: Auth Details
+      description: If you selected "Wallet Provider" or "Other", please specify.
+      placeholder: e.g. Rabby, Coinbase Wallet...
+
+  - type: dropdown
+    id: network
+    attributes:
+      label: Network
+      options:
+        - Mainnet
+        - Polygon
+        - Sepolia
+        - N/A
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      value: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should have happened.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened.
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Screen Recording
+      description: If applicable, drag and drop screenshots or a recording.
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console Errors
+      description: Paste any relevant console errors.
+      render: shell
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: "Any other context (e.g. only on mobile, only when wallet is disconnected, etc.)"
