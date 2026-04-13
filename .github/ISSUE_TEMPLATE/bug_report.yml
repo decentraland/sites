@@ -48,6 +48,18 @@ body:
       required: true
 
   - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      options:
+        - Desktop
+        - Mobile (iOS)
+        - Mobile (Android)
+        - Tablet
+    validations:
+      required: true
+
+  - type: dropdown
     id: auth-method
     attributes:
       label: Authentication Method
