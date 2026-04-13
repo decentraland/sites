@@ -16,6 +16,10 @@ jest.mock('react', () => ({
   useMemo: (fn: () => unknown) => fn()
 }))
 
+const VALID_UUID_1 = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+const VALID_UUID_2 = 'f9e8d7c6-b5a4-3210-fedc-ba9876543210'
+const VALID_UUID_3 = '11111111-2222-3333-4444-555555555555'
+
 describe('useAnonUserId', () => {
   afterEach(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,21 +27,34 @@ describe('useAnonUserId', () => {
     jest.restoreAllMocks()
   })
 
-  describe('when anon_user_id is present in URL search params', () => {
+  describe('when anon_user_id is a valid UUID in URL search params', () => {
     let result: string | undefined
 
     beforeEach(() => {
-      mockSearchParams = new URLSearchParams('?anon_user_id=url-anon-123')
+      mockSearchParams = new URLSearchParams(`?anon_user_id=${VALID_UUID_1}`)
       result = useAnonUserId()
     })
 
     it('should return the URL param value', () => {
-      expect(result).toBe('url-anon-123')
+      expect(result).toBe(VALID_UUID_1)
+    })
+  })
+
+  describe('when anon_user_id is present but not a valid UUID', () => {
+    let result: string | undefined
+
+    beforeEach(() => {
+      mockSearchParams = new URLSearchParams('?anon_user_id=not-a-uuid')
+      result = useAnonUserId()
+    })
+
+    it('should reject the malformed value and return undefined', () => {
+      expect(result).toBeUndefined()
     })
   })
 
   describe('when anon_user_id is absent from URL search params', () => {
-    describe('and Segment anonymous ID is available', () => {
+    describe('and Segment anonymous ID is a valid UUID', () => {
       let result: string | undefined
 
       beforeEach(() => {
@@ -45,14 +62,33 @@ describe('useAnonUserId', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(globalThis as any).analytics = {
           user: () => ({
-            anonymousId: () => 'segment-anon-456'
+            anonymousId: () => VALID_UUID_2
           })
         }
         result = useAnonUserId()
       })
 
       it('should return the Segment anonymous ID', () => {
-        expect(result).toBe('segment-anon-456')
+        expect(result).toBe(VALID_UUID_2)
+      })
+    })
+
+    describe('and Segment returns a non-UUID string', () => {
+      let result: string | undefined
+
+      beforeEach(() => {
+        mockSearchParams = new URLSearchParams('')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(globalThis as any).analytics = {
+          user: () => ({
+            anonymousId: () => 'some-random-string'
+          })
+        }
+        result = useAnonUserId()
+      })
+
+      it('should return undefined', () => {
+        expect(result).toBeUndefined()
       })
     })
 
@@ -70,22 +106,22 @@ describe('useAnonUserId', () => {
     })
   })
 
-  describe('when both URL param and Segment anonymous ID are present', () => {
+  describe('when both URL param and Segment anonymous ID are valid UUIDs', () => {
     let result: string | undefined
 
     beforeEach(() => {
-      mockSearchParams = new URLSearchParams('?anon_user_id=url-anon-789')
+      mockSearchParams = new URLSearchParams(`?anon_user_id=${VALID_UUID_3}`)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(globalThis as any).analytics = {
         user: () => ({
-          anonymousId: () => 'segment-anon-999'
+          anonymousId: () => VALID_UUID_2
         })
       }
       result = useAnonUserId()
     })
 
     it('should return the URL param value taking priority over Segment ID', () => {
-      expect(result).toBe('url-anon-789')
+      expect(result).toBe(VALID_UUID_3)
     })
   })
 

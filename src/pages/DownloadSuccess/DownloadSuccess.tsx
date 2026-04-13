@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useAnalytics, useTranslation } from '@dcl/hooks'
 import { Logo, Typography } from 'decentraland-ui2'
 import { LandingFooter } from '../../components/LandingFooter'
-import { useAnonUserId } from '../../hooks/useAnonUserId'
+import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsLauncher from '../../images/download/macos_launcher.webp'
@@ -168,8 +168,7 @@ const DownloadSuccess = memo(() => {
       if (cancelled) return
 
       sessionStorage.setItem(sessionKey, '1')
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      const downloadUrl = addQueryParamsToUrlString(url, { anon_user_id: anonUserIdRef.current })
+      const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserIdRef.current })
       triggerFileDownload(downloadUrl)
       setIsFileSaved(true)
 
@@ -210,8 +209,7 @@ const DownloadSuccess = memo(() => {
           os: clientOS,
           arch: clientArch,
           fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          queryParams: { anon_user_id: anonUserId },
+          queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
           getIdentityId
         })
       } catch (error) {

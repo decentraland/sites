@@ -3,7 +3,7 @@ import { useAdvancedUserAgentData, useAnalytics, useAsyncMemo } from '@dcl/hooks
 import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
-import { useAnonUserId } from '../../hooks/useAnonUserId'
+import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
@@ -145,16 +145,14 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick, email, user
           os: option.text,
           arch: option.arch,
           fallbackLinks: links,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          queryParams: { anon_user_id: anonUserId },
+          queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
           getIdentityId
         })
       }
 
       const redirectPath = '/download_success'
       const redirectUrl = updateUrlWithLastValue(new URL(redirectPath, window.location.origin).toString(), 'os', option.text)
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      const finalUrl = addQueryParamsToUrlString(redirectUrl, { arch: option.arch, anon_user_id: anonUserId })
+      const finalUrl = addQueryParamsToUrlString(redirectUrl, { arch: option.arch, [ANON_USER_ID_PARAM]: anonUserId })
       setTimeout(
         () => {
           window.location.href = finalUrl
