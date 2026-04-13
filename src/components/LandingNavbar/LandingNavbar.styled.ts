@@ -1006,6 +1006,41 @@ const MobileUserCardAddress = styled('div')({
   color: '#fcfcfc'
 })
 
+const ManaBalanceRow = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 16,
+  paddingTop: 8
+})
+
+/** Mobile variant with left padding aligned to the avatar + gap (73px + 6px border + 12px gap) */
+const MobileManaBalanceRow = styled(ManaBalanceRow)({
+  paddingLeft: 91
+})
+
+const ManaBalanceItem = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+  fontSize: 14,
+  fontWeight: 500,
+  color: '#FCFCFC'
+})
+
+const skeletonPulse = keyframes`
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+`
+
+const ManaBalanceSkeleton = styled('div')({
+  width: 60,
+  height: 16,
+  borderRadius: 4,
+  backgroundColor: 'rgba(255,255,255,0.12)',
+  animation: `${skeletonPulse} 1.5s ease-in-out infinite`
+})
+
 const MobileUserCardCopyButton = styled('button')({
   all: 'unset',
   display: 'flex',
@@ -1039,6 +1074,10 @@ export {
   HamburgerButton,
   JumpInButton,
   LogoLink,
+  ManaBalanceItem,
+  ManaBalanceRow,
+  ManaBalanceSkeleton,
+  MobileManaBalanceRow,
   MobileMenuAccordionHeader,
   MobileMenuItem,
   MobileMenuLink,

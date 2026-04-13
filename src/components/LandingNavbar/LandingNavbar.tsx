@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useAnalytics } from '@dcl/hooks'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { MIN_DISPLAY_BALANCE } from '../../hooks/useManaBalances'
 import { useLocale } from '../../intl/LocaleContext'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { assetUrl } from '../../utils/assetUrl'
@@ -19,6 +20,8 @@ import {
   ExternalLinkIcon,
   HamburgerIcon,
   LogoutIcon,
+  ManaEthIcon,
+  ManaMaticIcon,
   SettingsIcon,
   ShoppingBagIcon,
   WearableIcon
@@ -38,6 +41,10 @@ import {
   DesktopTabWithDropdown,
   HamburgerButton,
   LogoLink,
+  ManaBalanceItem,
+  ManaBalanceRow,
+  ManaBalanceSkeleton,
+  MobileManaBalanceRow,
   MobileMenuAccordionHeader,
   MobileMenuItem,
   MobileMenuLink,
@@ -114,9 +121,12 @@ interface LandingNavbarProps {
   isLoadingProfile?: boolean
   address?: string
   avatar?: { name?: string; avatar?: { snapshots?: { face256?: string; body?: string } } }
+  manaBalances?: { ethereum: number; polygon: number } | null
+  isManaLoading?: boolean
   notifications?: NotificationsData
   onClickSignIn: () => void
   onClickSignOut: () => void
+  onOpenUserCard?: () => void
 }
 
 const PEER_BASE_URL = 'https://peer.decentraland.org/content/contents/'
@@ -136,6 +146,50 @@ function formatNotificationType(type: string): string {
   return type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
+function formatMana(balance: number): string {
+  if (balance >= 1000) {
+    return `${(balance / 1000).toFixed(1).replace(/\.0$/, '')}K`
+  }
+  if (balance < 1) {
+    return balance.toFixed(2)
+  }
+  return Math.floor(balance).toString()
+}
+
+function renderManaBalances(
+  row: typeof ManaBalanceRow,
+  loading: boolean,
+  balances: { ethereum: number; polygon: number } | null | undefined
+) {
+  const Row = row
+  if (loading) {
+    return (
+      <Row>
+        <ManaBalanceSkeleton />
+        <ManaBalanceSkeleton />
+      </Row>
+    )
+  }
+  if (!balances) return null
+  const showEth = balances.ethereum >= MIN_DISPLAY_BALANCE
+  const showPoly = balances.polygon >= MIN_DISPLAY_BALANCE
+  if (!showEth && !showPoly) return null
+  return (
+    <Row>
+      {showEth && (
+        <ManaBalanceItem>
+          <ManaEthIcon /> {formatMana(balances.ethereum)}
+        </ManaBalanceItem>
+      )}
+      {showPoly && (
+        <ManaBalanceItem>
+          <ManaMaticIcon /> {formatMana(balances.polygon)}
+        </ManaBalanceItem>
+      )}
+    </Row>
+  )
+}
+
 function resolveContentUrl(hash: string | undefined): string | undefined {
   if (!hash) return undefined
   if (hash.startsWith('http://') || hash.startsWith('https://')) return hash
@@ -150,9 +204,12 @@ const LandingNavbar = memo(function LandingNavbar({
   isLoadingProfile = false,
   address,
   avatar,
+  manaBalances,
+  isManaLoading = false,
   notifications,
   onClickSignIn,
-  onClickSignOut
+  onClickSignOut,
+  onOpenUserCard
 }: LandingNavbarProps) {
   // On the landing page (/), show a minimal transparent navbar initially.
   // Once we know the user is signed in, transition to the full navbar.
@@ -276,10 +333,11 @@ const LandingNavbar = memo(function LandingNavbar({
         setDesktopDropdown(null)
         setMobileMenuOpen(false)
         closeNotifications()
+        onOpenUserCard?.()
       }
       return !prev
     })
-  }, [closeNotifications])
+  }, [closeNotifications, onOpenUserCard])
 
   const closeUserCard = useCallback(() => {
     setUserCardOpen(false)
@@ -585,6 +643,7 @@ const LandingNavbar = memo(function LandingNavbar({
                             </UserCardCopyButton>
                           </UserCardAddress>
                         </div>
+                        {renderManaBalances(ManaBalanceRow, isManaLoading, manaBalances)}
                       </div>
                       <UserCardDivider />
                       {USER_MENU_ITEMS.map((item, i) => (
@@ -660,6 +719,7 @@ const LandingNavbar = memo(function LandingNavbar({
               </MobileUserCardAddress>
             </MobileUserCardInfo>
           </MobileUserCardTop>
+          {renderManaBalances(MobileManaBalanceRow, isManaLoading, manaBalances)}
           <UserCardDivider />
           <UserCardMenu>
             {USER_MENU_ITEMS.map((item, i) => (

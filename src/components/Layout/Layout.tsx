@@ -6,6 +6,7 @@ import type { NotificationLocale } from 'decentraland-ui2'
 import { usePageNotifications } from '../../features/notifications/usePageNotifications'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+import { useManaBalances } from '../../hooks/useManaBalances'
 import { useLocale } from '../../intl/LocaleContext'
 import { redirectToAuth } from '../../utils/authRedirect'
 const LandingFooter = lazy(() => import('../LandingFooter').then(m => ({ default: m.LandingFooter })))
@@ -24,6 +25,7 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
   const effectivelySignedIn = isConnected || !!address
   usePageTracking(location.pathname)
 
+  const { balances: manaBalances, isLoading: isManaLoading, fetchBalances: fetchManaBalances } = useManaBalances(address || undefined)
   const { identity } = useAuthIdentity()
 
   const notificationLocale: NotificationLocale = locale === 'es' ? 'es' : locale === 'zh' ? 'zh' : 'en'
@@ -52,6 +54,9 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
           isLoadingProfile={isLoadingProfile}
           address={address || undefined}
           avatar={avatar}
+          manaBalances={manaBalances}
+          isManaLoading={isManaLoading}
+          onOpenUserCard={fetchManaBalances}
           notifications={notificationProps as LandingNavbarProps['notifications']}
           onClickSignIn={handleSignIn}
           onClickSignOut={handleSignOut}
