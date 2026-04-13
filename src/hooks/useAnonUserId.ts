@@ -35,10 +35,16 @@ function useAnonUserId(): string | undefined {
       return fromUrl
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const segmentId = (window as any).analytics?.user?.()?.anonymousId?.()
-    if (typeof segmentId === 'string' && UUID_RE.test(segmentId)) {
-      return segmentId
+    // @segment/analytics-next stores the anonymous ID in localStorage under
+    // this key. We read it directly because the AnalyticsBrowser instance is
+    // not exposed globally (unlike the legacy analytics.js snippet).
+    const segmentId = localStorage.getItem('ajs_anonymous_id')
+    if (segmentId) {
+      // The value may be stored JSON-encoded (e.g. "\"uuid\""), so strip quotes
+      const cleaned = segmentId.replace(/^"|"$/g, '')
+      if (UUID_RE.test(cleaned)) {
+        return cleaned
+      }
     }
 
     return undefined

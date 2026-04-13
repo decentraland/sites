@@ -1,6 +1,18 @@
-// Polyfill window for Node test environment (source code references `window.analytics`)
+// Polyfill localStorage for Node test environment
+const store: Record<string, string> = {}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-;(globalThis as any).window = globalThis
+;(globalThis as any).localStorage = {
+  getItem: (key: string) => store[key] ?? null,
+  setItem: (key: string, value: string) => {
+    store[key] = value
+  },
+  removeItem: (key: string) => {
+    delete store[key]
+  },
+  clear: () => {
+    Object.keys(store).forEach(k => delete store[k])
+  }
+}
 
 import { useAnonUserId } from './useAnonUserId'
 
@@ -22,8 +34,7 @@ const VALID_UUID_3 = '11111111-2222-3333-4444-555555555555'
 
 describe('useAnonUserId', () => {
   afterEach(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (globalThis as any).analytics
+    localStorage.clear()
     jest.restoreAllMocks()
   })
 
@@ -54,17 +65,12 @@ describe('useAnonUserId', () => {
   })
 
   describe('when anon_user_id is absent from URL search params', () => {
-    describe('and Segment anonymous ID is a valid UUID', () => {
+    describe('and Segment anonymous ID is in localStorage', () => {
       let result: string | undefined
 
       beforeEach(() => {
         mockSearchParams = new URLSearchParams('')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(globalThis as any).analytics = {
-          user: () => ({
-            anonymousId: () => VALID_UUID_2
-          })
-        }
+        localStorage.setItem('ajs_anonymous_id', VALID_UUID_2)
         result = useAnonUserId()
       })
 
@@ -73,17 +79,26 @@ describe('useAnonUserId', () => {
       })
     })
 
-    describe('and Segment returns a non-UUID string', () => {
+    describe('and Segment anonymous ID is JSON-encoded in localStorage', () => {
       let result: string | undefined
 
       beforeEach(() => {
         mockSearchParams = new URLSearchParams('')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(globalThis as any).analytics = {
-          user: () => ({
-            anonymousId: () => 'some-random-string'
-          })
-        }
+        localStorage.setItem('ajs_anonymous_id', `"${VALID_UUID_2}"`)
+        result = useAnonUserId()
+      })
+
+      it('should strip quotes and return the UUID', () => {
+        expect(result).toBe(VALID_UUID_2)
+      })
+    })
+
+    describe('and localStorage contains a non-UUID string', () => {
+      let result: string | undefined
+
+      beforeEach(() => {
+        mockSearchParams = new URLSearchParams('')
+        localStorage.setItem('ajs_anonymous_id', 'some-random-string')
         result = useAnonUserId()
       })
 
@@ -92,7 +107,7 @@ describe('useAnonUserId', () => {
       })
     })
 
-    describe('and Segment anonymous ID is not available', () => {
+    describe('and localStorage does not have the Segment key', () => {
       let result: string | undefined
 
       beforeEach(() => {
@@ -106,58 +121,17 @@ describe('useAnonUserId', () => {
     })
   })
 
-  describe('when both URL param and Segment anonymous ID are valid UUIDs', () => {
+  describe('when both URL param and localStorage have valid UUIDs', () => {
     let result: string | undefined
 
     beforeEach(() => {
       mockSearchParams = new URLSearchParams(`?anon_user_id=${VALID_UUID_3}`)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(globalThis as any).analytics = {
-        user: () => ({
-          anonymousId: () => VALID_UUID_2
-        })
-      }
+      localStorage.setItem('ajs_anonymous_id', VALID_UUID_2)
       result = useAnonUserId()
     })
 
-    it('should return the URL param value taking priority over Segment ID', () => {
+    it('should return the URL param value taking priority over localStorage', () => {
       expect(result).toBe(VALID_UUID_3)
-    })
-  })
-
-  describe('when Segment analytics object exists but user() returns undefined', () => {
-    let result: string | undefined
-
-    beforeEach(() => {
-      mockSearchParams = new URLSearchParams('')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(globalThis as any).analytics = {
-        user: () => undefined
-      }
-      result = useAnonUserId()
-    })
-
-    it('should return undefined', () => {
-      expect(result).toBeUndefined()
-    })
-  })
-
-  describe('when Segment analytics object exists but anonymousId() returns null', () => {
-    let result: string | undefined
-
-    beforeEach(() => {
-      mockSearchParams = new URLSearchParams('')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(globalThis as any).analytics = {
-        user: () => ({
-          anonymousId: () => null
-        })
-      }
-      result = useAnonUserId()
-    })
-
-    it('should return undefined', () => {
-      expect(result).toBeUndefined()
     })
   })
 })
