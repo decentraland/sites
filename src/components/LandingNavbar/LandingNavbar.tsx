@@ -19,6 +19,8 @@ import {
   ExternalLinkIcon,
   HamburgerIcon,
   LogoutIcon,
+  ManaEthIcon,
+  ManaMaticIcon,
   SettingsIcon,
   ShoppingBagIcon,
   WearableIcon
@@ -38,6 +40,10 @@ import {
   DesktopTabWithDropdown,
   HamburgerButton,
   LogoLink,
+  ManaBalanceItem,
+  ManaBalanceRow,
+  ManaBalanceSkeleton,
+  MobileManaBalanceRow,
   MobileMenuAccordionHeader,
   MobileMenuItem,
   MobileMenuLink,
@@ -114,9 +120,12 @@ interface LandingNavbarProps {
   isLoadingProfile?: boolean
   address?: string
   avatar?: { name?: string; avatar?: { snapshots?: { face256?: string; body?: string } } }
+  manaBalances?: { ethereum: number; polygon: number } | null
+  isManaLoading?: boolean
   notifications?: NotificationsData
   onClickSignIn: () => void
   onClickSignOut: () => void
+  onOpenUserCard?: () => void
 }
 
 const PEER_BASE_URL = 'https://peer.decentraland.org/content/contents/'
@@ -136,6 +145,16 @@ function formatNotificationType(type: string): string {
   return type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
+function formatMana(balance: number): string {
+  if (balance >= 1000) {
+    return `${(balance / 1000).toFixed(1).replace(/\.0$/, '')}K`
+  }
+  if (balance < 1) {
+    return balance.toFixed(2)
+  }
+  return Math.floor(balance).toString()
+}
+
 function resolveContentUrl(hash: string | undefined): string | undefined {
   if (!hash) return undefined
   if (hash.startsWith('http://') || hash.startsWith('https://')) return hash
@@ -150,9 +169,12 @@ const LandingNavbar = memo(function LandingNavbar({
   isLoadingProfile = false,
   address,
   avatar,
+  manaBalances,
+  isManaLoading = false,
   notifications,
   onClickSignIn,
-  onClickSignOut
+  onClickSignOut,
+  onOpenUserCard
 }: LandingNavbarProps) {
   // On the landing page (/), show a minimal transparent navbar initially.
   // Once we know the user is signed in, transition to the full navbar.
@@ -276,10 +298,11 @@ const LandingNavbar = memo(function LandingNavbar({
         setDesktopDropdown(null)
         setMobileMenuOpen(false)
         closeNotifications()
+        onOpenUserCard?.()
       }
       return !prev
     })
-  }, [closeNotifications])
+  }, [closeNotifications, onOpenUserCard])
 
   const closeUserCard = useCallback(() => {
     setUserCardOpen(false)
@@ -585,6 +608,26 @@ const LandingNavbar = memo(function LandingNavbar({
                             </UserCardCopyButton>
                           </UserCardAddress>
                         </div>
+                        {isManaLoading && (
+                          <ManaBalanceRow>
+                            <ManaBalanceSkeleton />
+                            <ManaBalanceSkeleton />
+                          </ManaBalanceRow>
+                        )}
+                        {!isManaLoading && manaBalances && (manaBalances.ethereum > 0 || manaBalances.polygon > 0) && (
+                          <ManaBalanceRow>
+                            {manaBalances.ethereum > 0 && (
+                              <ManaBalanceItem>
+                                <ManaEthIcon /> {formatMana(manaBalances.ethereum)}
+                              </ManaBalanceItem>
+                            )}
+                            {manaBalances.polygon > 0 && (
+                              <ManaBalanceItem>
+                                <ManaMaticIcon /> {formatMana(manaBalances.polygon)}
+                              </ManaBalanceItem>
+                            )}
+                          </ManaBalanceRow>
+                        )}
                       </div>
                       <UserCardDivider />
                       {USER_MENU_ITEMS.map((item, i) => (
@@ -660,6 +703,26 @@ const LandingNavbar = memo(function LandingNavbar({
               </MobileUserCardAddress>
             </MobileUserCardInfo>
           </MobileUserCardTop>
+          {isManaLoading && (
+            <MobileManaBalanceRow>
+              <ManaBalanceSkeleton />
+              <ManaBalanceSkeleton />
+            </MobileManaBalanceRow>
+          )}
+          {!isManaLoading && manaBalances && (manaBalances.ethereum > 0 || manaBalances.polygon > 0) && (
+            <MobileManaBalanceRow>
+              {manaBalances.ethereum > 0 && (
+                <ManaBalanceItem>
+                  <ManaEthIcon /> {formatMana(manaBalances.ethereum)}
+                </ManaBalanceItem>
+              )}
+              {manaBalances.polygon > 0 && (
+                <ManaBalanceItem>
+                  <ManaMaticIcon /> {formatMana(manaBalances.polygon)}
+                </ManaBalanceItem>
+              )}
+            </MobileManaBalanceRow>
+          )}
           <UserCardDivider />
           <UserCardMenu>
             {USER_MENU_ITEMS.map((item, i) => (
