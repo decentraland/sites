@@ -1,3 +1,19 @@
+// Polyfill localStorage for Node test environment
+const store: Record<string, string> = {}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+;(globalThis as any).localStorage = {
+  getItem: (key: string) => store[key] ?? null,
+  setItem: (key: string, value: string) => {
+    store[key] = value
+  },
+  removeItem: (key: string) => {
+    delete store[key]
+  },
+  clear: () => {
+    Object.keys(store).forEach(k => delete store[k])
+  }
+}
+
 import { useAnonUserId } from './useAnonUserId'
 
 // Mock react-router-dom's useSearchParams
