@@ -3,6 +3,7 @@ import { useAdvancedUserAgentData, useAnalytics, useAsyncMemo } from '@dcl/hooks
 import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
+import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
@@ -45,6 +46,7 @@ const imageByOs: Record<string, string> = {
 const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick, email, user }: DownloadOptionsProps) => {
   const [isLoadingUserAgentData, userAgentData] = useAdvancedUserAgentData()
   const getIdentityId = useGetIdentityId()
+  const anonUserId = useAnonUserId()
   const l = useFormatMessage()
   const { track } = useAnalytics()
   const onClickHandle = useTrackClick()
@@ -143,13 +145,14 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick, email, user
           os: option.text,
           arch: option.arch,
           fallbackLinks: links,
+          queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
           getIdentityId
         })
       }
 
       const redirectPath = '/download_success'
       const redirectUrl = updateUrlWithLastValue(new URL(redirectPath, window.location.origin).toString(), 'os', option.text)
-      const finalUrl = addQueryParamsToUrlString(redirectUrl, { arch: option.arch })
+      const finalUrl = addQueryParamsToUrlString(redirectUrl, { arch: option.arch, [ANON_USER_ID_PARAM]: anonUserId })
       setTimeout(
         () => {
           window.location.href = finalUrl
@@ -157,7 +160,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick, email, user
         downloadOnClick ? 3000 : 0
       )
     },
-    [downloadOnClick, getIdentityId, links, track, email, user]
+    [downloadOnClick, getIdentityId, anonUserId, links, track, email, user]
   )
 
   const downloadCountsFormatted = !downloadsStatus.loading && downloadsStatus.loaded && downloads ? formatToShorthand(downloads) : null

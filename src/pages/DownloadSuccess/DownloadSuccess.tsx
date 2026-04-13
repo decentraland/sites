@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useAnalytics, useTranslation } from '@dcl/hooks'
 import { Logo, Typography } from 'decentraland-ui2'
 import { LandingFooter } from '../../components/LandingFooter'
+import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsLauncher from '../../images/download/macos_launcher.webp'
@@ -15,7 +16,7 @@ import microsoftLogo from '../../images/microsoft-logo.svg'
 import { calculateDownloadUrl, getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
 import { triggerFileDownload } from '../../modules/file'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
-import { FALLBACK_CDN_RELEASE_LINKS } from '../../modules/url'
+import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
 import { DownloadSuccessLayout } from './DownloadSuccessLayout'
 import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from './DownloadSuccess.types'
@@ -37,15 +38,18 @@ const DownloadSuccess = memo(() => {
   const { intl } = useTranslation()
   const { isInitialized, track } = useAnalytics()
   const getIdentityId = useGetIdentityId()
+  const anonUserId = useAnonUserId()
 
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [isFileSaved, setIsFileSaved] = useState(false)
   const downloadingRef = useRef(false)
   const getIdentityIdRef = useRef(getIdentityId)
+  const anonUserIdRef = useRef(anonUserId)
   const isInitializedRef = useRef(isInitialized)
   const trackRef = useRef(track)
   getIdentityIdRef.current = getIdentityId
+  anonUserIdRef.current = anonUserId
   isInitializedRef.current = isInitialized
   trackRef.current = track
 
@@ -164,7 +168,8 @@ const DownloadSuccess = memo(() => {
       if (cancelled) return
 
       sessionStorage.setItem(sessionKey, '1')
-      triggerFileDownload(url)
+      const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserIdRef.current })
+      triggerFileDownload(downloadUrl)
       setIsFileSaved(true)
 
       if (isInitializedRef.current) {
@@ -204,6 +209,7 @@ const DownloadSuccess = memo(() => {
           os: clientOS,
           arch: clientArch,
           fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
+          queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
           getIdentityId
         })
       } catch (error) {
@@ -214,7 +220,7 @@ const DownloadSuccess = memo(() => {
         setIsDownloading(false)
       }
     },
-    [clientOS, clientArch, getIdentityId]
+    [clientOS, clientArch, anonUserId, getIdentityId]
   )
 
   const showBackdrop = isDownloading || (!downloadError && !isFileSaved)
