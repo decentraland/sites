@@ -17,7 +17,8 @@
     "format": "prettier --write '**/*.{ts,tsx,js,jsx,json,md,mdx,css}'",
     "lint": "eslint ./src",
     "lint:fix": "npm run lint -- --fix",
-    "lint:pkg": "npmPkgJsonLint ."
+    "lint:pkg": "npmPkgJsonLint .",
+    "validate:federation": "node scripts/validate-federation.cjs"
   },
   "dependencies": {
     "@contentful/rich-text-react-renderer": "16.1.6",
