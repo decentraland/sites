@@ -18,10 +18,11 @@ if (!sharedBlockMatch) {
 }
 
 const sharedBlock = sharedBlockMatch[1]
-const entryPattern = /['"]?([^'":\s]+)['"]?\s*:\s*\{[^}]*requiredVersion:\s*'([^']+)'/g
+const entryPattern = /['"]?([^'":\s]+)['"]?\s*:\s*\{[^}]*requiredVersion:\s*['"]([^'"]+)['"]/g
 
 let match
 const errors = []
+const warnings = []
 
 while ((match = entryPattern.exec(sharedBlock)) !== null) {
   const pkg = match[1]
@@ -29,7 +30,7 @@ while ((match = entryPattern.exec(sharedBlock)) !== null) {
   const installedRange = allDeps[pkg]
 
   if (!installedRange) {
-    // Packages like @emotion/react may come as transitive deps from decentraland-ui2
+    warnings.push(`${pkg}: declared in federation shared but not found in package.json`)
     continue
   }
 
@@ -45,6 +46,10 @@ while ((match = entryPattern.exec(sharedBlock)) !== null) {
       `${pkg}: installed "${installedRange}" (min ${installedMin}) does not satisfy federation requiredVersion "${requiredVersion}"`
     )
   }
+}
+
+if (warnings.length > 0) {
+  warnings.forEach(w => console.warn(`  ⚠ ${w}`))
 }
 
 if (errors.length > 0) {
