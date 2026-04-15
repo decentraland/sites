@@ -43,7 +43,7 @@ export default defineConfig(({ command, mode }) => {
           'react-router-dom': { singleton: true, requiredVersion: '^7.9.0' },
           '@emotion/react': { singleton: true, requiredVersion: '^11.14.0' },
           '@emotion/styled': { singleton: true, requiredVersion: '^11.14.0' },
-          '@reduxjs/toolkit': { singleton: true, requiredVersion: '^2.9.0' },
+          '@reduxjs/toolkit': { singleton: true, requiredVersion: '^2.10.0' },
           'react-redux': { singleton: true, requiredVersion: '^9.2.0' },
           wagmi: { singleton: true, requiredVersion: '^2.19.0' },
           viem: { singleton: true, requiredVersion: '^2.44.0' },
