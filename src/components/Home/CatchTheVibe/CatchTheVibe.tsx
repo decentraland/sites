@@ -1,8 +1,4 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
-import 'swiper/css'
-import 'swiper/css/pagination'
-import { Pagination } from 'swiper/modules'
-import { Swiper, SwiperSlide } from 'swiper/react'
 import type { Avatar } from '@dcl/schemas'
 import { AvatarFace, DownloadModal, JumpInIcon } from 'decentraland-ui2'
 import { catchTheVibeContent } from '../../../data/static-content'
@@ -12,6 +8,7 @@ import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import { SectionViewedTrack } from '../../../modules/segment'
 import { assetUrl } from '../../../utils/assetUrl'
+import { Carousel } from '../../Carousel/Carousel'
 import { HangOutButton } from '../shared/HangOutButton.styled'
 import {
   CardImage,
@@ -219,13 +216,12 @@ const CatchTheVibe = memo(() => {
         ))}
       </CardsRow>
       <MobileCarouselContainer>
-        <Swiper modules={[Pagination]} pagination={{ clickable: true }} loop slidesPerView={1} spaceBetween={0}>
-          {catchTheVibeContent.cards.map((item, index) => (
-            <SwiperSlide key={index}>
-              <VideoCardContent item={item} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        <Carousel
+          items={catchTheVibeContent.cards}
+          renderItem={item => <VideoCardContent item={item} />}
+          keyExtractor={item => item.userName}
+          autoplayDelay={0}
+        />
       </MobileCarouselContainer>
       <HangOutButton
         variant="contained"

@@ -1,11 +1,8 @@
 import { memo, useMemo } from 'react'
-import 'swiper/css'
-import 'swiper/css/pagination'
-import { Autoplay, Pagination } from 'swiper/modules'
-import { Swiper, SwiperSlide } from 'swiper/react'
 import { AnimatedBackground } from 'decentraland-ui2'
 import { useGetExploreDataQuery } from '../../../features/events/events.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { Carousel } from '../../Carousel/Carousel'
 import { ExploreCard } from './ExploreCard'
 import { CardsGrid, ExploreContainer, MobileCarousel, SectionTitle } from './Explore.styled'
 
@@ -31,26 +28,9 @@ const Explore = memo(() => {
       <SectionTitle variant="h3">{l('page.home.explore.title')}</SectionTitle>
       <CardsGrid>{cardElements}</CardsGrid>
       <MobileCarousel>
-        <Swiper
-          modules={[Pagination, Autoplay]}
-          pagination={{ clickable: true }}
-          autoplay={{ delay: 5000, disableOnInteraction: false }}
-          loop
-          slidesPerView={1}
-          spaceBetween={16}
-        >
-          {isLoading
-            ? LOADING_PLACEHOLDERS.map(i => (
-                <SwiperSlide key={i}>
-                  <ExploreCard loading />
-                </SwiperSlide>
-              ))
-            : cards.map(card => (
-                <SwiperSlide key={card.id}>
-                  <ExploreCard card={card} />
-                </SwiperSlide>
-              ))}
-        </Swiper>
+        {!isLoading && cards.length > 0 && (
+          <Carousel items={cards} renderItem={card => <ExploreCard card={card} />} keyExtractor={card => card.id} autoplayDelay={5000} />
+        )}
       </MobileCarousel>
     </ExploreContainer>
   )
