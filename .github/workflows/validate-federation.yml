@@ -1,9 +1,6 @@
 name: Validate Federation
 
-on:
-  push:
-    branches: [master]
-  pull_request:
+on: [push]
 
 jobs:
   validate-federation:
