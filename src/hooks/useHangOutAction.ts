@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react'
-import { useWalletState } from '@dcl/core-web3/lazy'
 import { useAsyncMemo } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import type { DownloadModalProps } from 'decentraland-ui2'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
 import { ExplorerDownloads } from '../modules/explorerDownloads'
 import { formatToShorthand } from '../modules/number'
+import { useWalletAddress } from './useWalletAddress'
 
 let cachedCount: string | null = null
 
@@ -16,7 +16,7 @@ let cachedCount: string | null = null
  * - Signed in, no launcher → open DownloadModal
  */
 function useHangOutAction() {
-  const { isConnected } = useWalletState()
+  const { isConnected } = useWalletAddress()
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false)
 
   const [rawDownloads, status] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])

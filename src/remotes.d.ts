@@ -8,4 +8,9 @@ declare module 'virtual:__federation__' {
 interface Window {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   __REMOTE_URLS__?: Record<string, string>
+  ethereum?: {
+    request?: (args: { method: string; params?: unknown[] }) => Promise<unknown>
+    on?: (event: string, handler: (...args: unknown[]) => void) => void
+    removeListener?: (event: string, handler: (...args: unknown[]) => void) => void
+  }
 }

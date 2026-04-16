@@ -1,9 +1,9 @@
 import { memo, useCallback, useMemo } from 'react'
-import { useWalletState } from '@dcl/core-web3/lazy'
 import { AnimatedBackground, DownloadModal } from 'decentraland-ui2'
 import { useGetExploreDataQuery } from '../../../features/events/events.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
+import { useWalletAddress } from '../../../hooks/useWalletAddress'
 import { Carousel } from '../../Carousel/Carousel'
 import { ExploreCard } from './ExploreCard'
 import { CardsGrid, ExploreContainer, MobileCarousel, SectionTitle } from './Explore.styled'
@@ -13,7 +13,7 @@ const LOADING_PLACEHOLDERS = [0, 1, 2]
 const Explore = memo(() => {
   const l = useFormatMessage()
   const { data: cards = [], isLoading } = useGetExploreDataQuery(undefined, { pollingInterval: 60000 })
-  const { isConnected } = useWalletState()
+  const { isConnected } = useWalletAddress()
   const { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
 
   // Intercept card clicks when not signed in → show download modal instead
