@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import { useWalletState } from '@dcl/core-web3/lazy'
 import type { AuthIdentity } from '@dcl/crypto'
 import { localStorageGetIdentity } from '@dcl/single-sign-on-client'
+import { useWalletAddress } from './useWalletAddress'
 
 type UseAuthIdentityResult = {
   identity: AuthIdentity | undefined
@@ -10,7 +10,7 @@ type UseAuthIdentityResult = {
 }
 
 function useAuthIdentity(): UseAuthIdentityResult {
-  const { address } = useWalletState()
+  const { address } = useWalletAddress()
   const walletAddress = address ? (address as `0x${string}`) : undefined
 
   const identity = useMemo<AuthIdentity | undefined>(() => {
