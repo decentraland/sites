@@ -29,26 +29,19 @@ while ((match = entryPattern.exec(sharedBlock)) !== null) {
   const requiredVersion = match[2]
   const installedRange = allDeps[pkg]
 
-  if (!installedRange) {
-    // May be a transitive dep provided by another shared package (e.g. @emotion/* via decentraland-ui2)
-    try {
-      require.resolve(pkg)
-    } catch {
-      warnings.push(`${pkg}: declared in federation shared but not installed`)
-    }
+  // Get the actual installed version — works for both direct and transitive deps
+  let installedVersion
+  try {
+    const pkgJsonPath = require.resolve(pkg + '/package.json')
+    installedVersion = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8')).version
+  } catch {
+    warnings.push(`${pkg}: declared in federation shared but not installed`)
     continue
   }
 
-  // Resolve the minimum version from the installed range
-  const installedMin = semver.minVersion(installedRange)
-  if (!installedMin) {
-    errors.push(`${pkg}: could not parse installed version "${installedRange}"`)
-    continue
-  }
-
-  if (!semver.satisfies(installedMin.version, requiredVersion)) {
+  if (!semver.satisfies(installedVersion, requiredVersion)) {
     errors.push(
-      `${pkg}: installed "${installedRange}" (min ${installedMin}) does not satisfy federation requiredVersion "${requiredVersion}"`
+      `${pkg}: installed ${installedVersion} does not satisfy federation requiredVersion "${requiredVersion}"`
     )
   }
 }
