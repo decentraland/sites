@@ -248,66 +248,6 @@
       "item_4_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/2VxXeuchdLchYvXSgESGxS/d057a08c193b98e4e0dd564e58d73aee/kenji.png"
     }
   },
-  "page_invite": {
-    "social": {
-      "title": "Join Decentraland - A Virtual World Built by Its Community",
-      "description": "Customize your avatar, hang out with people around the world, and discover Decentraland. Start from your browser, then download the app to enter."
-    },
-    "hero": {
-      "title": "invited you to join Decentraland",
-      "subtitle": "A social virtual world where you can connect, create, and be yourself",
-      "button_label": "JOIN NOW"
-    },
-    "second_hero": {
-      "title": "Hang out in Decentraland",
-      "subtitle": "Meet people from around the world, attend live events, and customize your digital self -- all in a virtual world owned by its community.",
-      "button_label": "JOIN FREE"
-    },
-    "get_started": {
-      "how_to": "How to ",
-      "get_started": "Get Started",
-      "step1": "Create your Decentraland account",
-      "step2": "Download the Decentraland app for desktop",
-      "step3": "Jump into Decentraland and meet up with {referrer}!",
-      "step3_referrer_name": "the community",
-      "create_account": "CREATE ACCOUNT"
-    },
-    "faq": {
-      "item_count": "7",
-      "item_0_question": "What is Decentraland?",
-      "item_0_answer": "Decentraland is a community-driven virtual world where you can connect, explore, and create. Built on the Unity engine, Decentraland streams and renders a vast, continuous environment filled with diverse, user-generated content. As you explore this immersive landscape, you encounter new creations daily, from games and puzzles to scenes and artworks, all crafted by Decentraland's vibrant community of creators.\n\nDecentraland goes beyond traditional gaming experiences. In Decentraland, you can attend live music events, conferences, exhibitions, dance parties, and more.\n\nYour New Friends Are Waiting -- Download Decentraland today and jump in!",
-      "item_1_question": "How do I enter Decentraland?",
-      "item_1_answer": "Step 1: Download and Install the Client\nFirst you will need to install the client, go to Decentraland and click download.\n\nStep 2: Create your Account\nWhen you enter Decentraland, you can use a standard web3 wallet such as Metamask, or log in with a Social account (Google, Discord, X, or Apple).\n\nStep 3: Customize Your Avatar\nOnce you enter Decentraland you'll first be asked to customize your avatar.\n\nStep 4: Explore!\nAfter completing a quick tutorial, Decentraland is yours to explore!\n\nStep 5: Have fun!\nWalk around, talk to others via the chat box, and pop into some events!",
-      "item_2_question": "Do I need cryptocurrency or a digital wallet to use Decentraland?",
-      "item_2_answer": "You do not need to own cryptocurrency to enjoy Decentraland as it is free to use. If you decide to purchase a community-made creation from the Marketplace, there are multiple payment options available, such as credit/debit card and bank transfer in addition to various cryptocurrencies.\n\nAs for owning a digital wallet, if you don't already have one, you don't need to get one yourself. When you sign in to Decentraland for the first time, a digital wallet will be created for you behind the scenes if you choose to use a Social account.",
-      "item_3_question": "How do I become a Decentraland Creator?",
-      "item_3_answer": "Decentraland is a world created by its users, meaning you can be a creator of everything from Wearables, Emotes, entire scenes with buildings and/or landscapes, interactive experiences, and games.\n\nMost Wearable and Emote designers use Blender to design their creations. Once complete, items are submitted for publishing in the Marketplace.\n\nYou can also download the Creator Hub which combines all of the ease of use of the Web Editor with the power of writing code.",
-      "item_4_question": "What is a NAME?",
-      "item_4_answer": "Costing just 100 MANA, the currency of Decentraland, a Decentraland NAME is essentially a unique and personalized username for your avatar that represents your virtual identity within the Decentraland ecosystem. Getting a Decentraland NAME comes with the added bonus of granting the owner their own World.",
-      "item_5_question": "What is the difference between LANDs and Worlds?",
-      "item_5_answer": "Currently, Worlds can only admit up to 100 visitors at a time and scenes are limited to 100MB whereas LAND parcels have no such limitations. If you would like to build large scenes or host big events, buying or renting LAND will be a better option.\n\nScenes deployed on LANDs in Genesis City are also more easily discovered by users as they don't need to know your NAME to visit.",
-      "item_6_question": "How can I get help and contact the Support Team?",
-      "item_6_answer": "You can contact the Decentraland Support Team via live chat or you can join the official Decentraland Discord server. Please remember that Decentraland staff will never ask you for the private key (seed phrase) to your crypto wallet."
-    },
-    "social_proof": {
-      "item_count": "5",
-      "item_0_name": "Kenji",
-      "item_0_quote": "Even though I'm not good at English, I enjoy participating in events and chatting with avatars that gradually become my friends. Decentraland is my metaverse home.",
-      "item_0_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/2VxXeuchdLchYvXSgESGxS/d057a08c193b98e4e0dd564e58d73aee/kenji.png",
-      "item_1_name": "Skat Lionrock",
-      "item_1_quote": "Decentraland is a place to meet people I wouldn't have the chance to meet in the real world. It allows me to make new friends, collaborate with the community, and fully explore my potential.",
-      "item_1_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/45Agmcczmcdp09J4ztx7Ug/ac3ae46aff8cc64d677a21894c303a9b/Screen_Shot_2024-10-18_at_3.21.20_PM.png",
-      "item_2_name": "Pablo",
-      "item_2_quote": "I love Decentraland because it brings together my passions; It's a creative playground for both technical and artistic skills, all within the web3 philosophy, where I truly feel like I own a part of the future.",
-      "item_2_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/5byXkcSVoAAOy2N5uAGeaU/505f0751f6f3a6d1bbe716784e01ab35/Screen_Shot_2024-10-18_at_3.32.56_PM.png",
-      "item_3_name": "Metaryuk",
-      "item_3_quote": "What excites me about Decentraland is that it provides talented architects with a platform and the tools to recreate in a virtual world incredible structures that are either too far away to visit or have been lost to modern development.",
-      "item_3_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/6QCXcmUL2KhKFXLMvOZM3t/9d9491bb50bd4f4e9a58cc640989b210/Screen_Shot_2024-10-18_at_3.43.58_PM.png",
-      "item_4_name": "Doki",
-      "item_4_quote": "I'm forever thankful that I was welcomed with such a warm embrace, Decentraland truly changed the trajectory of a lot of things in my life and I've met amazing people thanks to it.",
-      "item_4_avatar": "https://images.ctfassets.net/ea2ybdmmn1kv/2VxXeuchdLchYvXSgESGxS/d057a08c193b98e4e0dd564e58d73aee/kenji.png"
-    }
-  },
   "index": {
     "create_my_account": "Create my account",
     "get_started": "Get Started",
@@ -515,21 +455,25 @@
           "title": "Frequently Asked Questions",
           "paragraph": "Don't see your question below? Check out our full FAQ resources",
           "cta_link": "here",
-          "item_count": "7",
-          "item_0_question": "What is Decentraland?",
-          "item_0_answer": "Decentraland is an open-source, community-driven virtual world where users can create, experience, and monetize content and applications. It runs on the Ethereum blockchain and allows users to purchase virtual land and build interactive experiences.",
-          "item_1_question": "How do I enter Decentraland?",
-          "item_1_answer": "You can enter Decentraland by visiting decentraland.org/download to get the desktop client for the best experience, or jump in directly from your browser at decentraland.org/play. Create a free avatar and start exploring right away.",
-          "item_2_question": "Do I need cryptocurrency or a digital wallet to use Decentraland?",
-          "item_2_answer": "No, you can explore Decentraland for free without cryptocurrency or a digital wallet. However, if you want to buy LAND, wearables, NAMEs, or other items, you will need a digital wallet and MANA or other supported cryptocurrencies.",
-          "item_3_question": "How do I become a Decentraland Creator?",
-          "item_3_answer": "Anyone can become a Decentraland Creator! Visit the Creator Hub at decentraland.org/create to access the Scene Editor and SDK tools. You can build interactive 3D scenes, design wearables, and publish content to the world.",
-          "item_4_question": "What is a NAME?",
-          "item_4_answer": "A NAME is a unique, human-readable identity in Decentraland represented as an NFT. Instead of being identified by a wallet address, NAMEs allow other users to easily find and recognize you in the virtual world.",
-          "item_5_question": "What is the difference between LANDs and Worlds?",
-          "item_5_answer": "LANDs are non-fungible digital assets (ERC-721) representing permanent parcels within the Decentraland map. Worlds are personal, off-map spaces where anyone can deploy scenes without owning LAND, making it easier for creators to build and share experiences.",
-          "item_6_question": "How can I get help and contact the Support Team?",
-          "item_6_answer": "You can reach the Support Team directly using the chat box on the bottom right of this page. You can also browse our FAQ resources at docs.decentraland.org or check our community channels for additional help."
+          "item_count": "9",
+          "item_0_question": "How do I enter Decentraland?",
+          "item_0_answer": "1. The first step is downloading the Decentraland app onto your computer. Go to the download page here.\n2. Once you’ve successfully installed and loaded Decentraland on your computer, you’ll be asked to log into your Decentraland account, a process that happens online, so you can expect a browser window to open.\n3. Create and sign into your Decentraland account by connecting your Google or Discord account or another social profile or a digital wallet such as MetaMask or Coinbase. Check out a tutorial for making an account with a social profile or with an external wallet like MetaMask.\n4. Once online verification is complete, open the Decentraland app window on your computer and click ‘Jump Into Decentraland’.\n5. You’re in! From here you can click on the backpack icon to customize your avatar, run around exploring Decentraland’s community-built world, or attend an event and make some friends. Have fun!",
+          "item_1_question": "Do I need crypto or a digital wallet to use Decentraland?",
+          "item_1_answer": "No, you do not need to own crypto or already have a digital wallet to use Decentraland. Decentraland is free to use, and if you’d like to purchase something from the Marketplace, you can use a credit/debit card in addition to cryptocurrency.\n\nSee a tutorial for making an account with a social profile or with an external wallet like MetaMask.\n\nIn Decentraland users truly own their digital assets, such as Wearables or NAMEs, with ownership registered on the blockchain.To enable this, every Decentraland account is linked to a unique digital wallet. However, if you don’t already have a digital wallet, you don’t need to get one yourself. If you sign into Decentraland with a social account such as Google or Discord, a digital wallet will be made for your account behind the scenes, so you don’t have to worry about anything.",
+          "item_2_question": "What hardware do I need to run Decentraland?",
+          "item_2_answer": "Currently, Decentraland is available for PC on Windows and Mac. The minimum hardware specs for Decentraland to run smoothly are listed below:\n\nFor full system requirements, visit docs.decentraland.org/faqs/decentraland-101.",
+          "item_3_question": "How do I explore and navigate Decentraland?",
+          "item_3_answer": "Decentraland consists of the open, traversable Genesis City made up of community parcels that are referenced by coordinates (e.g. Genesis Plaza, Decentraland’s central default spawn point is 0,0), as well as individual Worlds, more intimate 3D spaces in the Decentraland ecosystem that can be teleported into.\n\nTo explore Genesis City, you can run around using your arrow or WASD keys, jump to locations by clicking on them from the map, or teleport by typing the following command into the chat box and hitting ‘Enter’:\n\n• `/goto x,y` (x,y are the coordinates of a scene)\n\nTo teleport to a specific World, you’ll also use a chat command:\n\n• `/goto World’sName`",
+          "item_4_question": "How do I get Wearables, Emotes, LAND, and NAMEs in the Marketplace?",
+          "item_4_answer": "Ready to start your Decentraland shopping spree in the Marketplace? Browse through hundreds of community-made Wearables and Emotes to customize your digital identity, buy or rent Genesis City LAND parcels, or claim your unique NAME (which comes with it’s own World!).\n\nOnce you’ve found an item you’d like to buy, you can easily pay by card or with a wide variety of cryptocurrencies. If you’re buying a Wearable or Emote, the item will appear in your Backpack in a matter of minutes and you can feel happy in the knowledge that you’re supporting Decentraland creators, who keep 97.5% of sales!\n\nAnything you purchase in the Marketplace is truly owned by you, with your ownership registered on the blockchain. You can resell items whenever you wish, which will also support the original creator with 2.5% royalties.",
+          "item_5_question": "How can I meet people in Decentraland?",
+          "item_5_answer": "The best way to meet new people in Decentraland is to attend events and start chatting! Browse the event page for current and upcoming events and don’t be shy once you jump in, Decentraland’s community is known for being welcoming. 💜\n\nKeep an eye out for weekly tours and meetups, such as ABC DCL - Adventures of Decentraland, which are specifically targeted at new community members!",
+          "item_6_question": "How can I learn about in-world events?",
+          "item_6_answer": "Decentraland’s Event Page is the official place where anyone in the community can post their in-world events to invite everyone to come. To stay on top of events, check the event page regularly and you can also follow Decentraland on social channels, such as X, or subscribe to the weekly newsletter to learn about upcoming activities!",
+          "item_7_question": "How do I take pictures in-world?",
+          "item_7_answer": "If you'd like to get snapshots of your favorite moments in Decentraland, just press C on your keyboard to open the Camera. A helpful guide with camera controls can be found on the bottom right of your screen.\n\nYour Gallery has space for up to 500 photos, from there you can easily share your images with a link or download them onto your computer.",
+          "item_8_question": "How can I get involved in Decentraland governance?",
+          "item_8_answer": "Decentraland’s DAO is the heart of the community-driven world’s governance. To get started, you can read through the DAO forums to learn about current issues, see what the community consensus is, and add your own comments. Learn more on the DAO’s official page."
         },
         "center": {
           "title": "Help Center",
