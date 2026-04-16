@@ -94,8 +94,8 @@ const criticalCss = `
     background: linear-gradient(180deg, #000 0%, rgba(0,0,0,0) 100%); z-index: 1;
   }
   #hero-shell .gradient-bottom {
-    position: absolute; bottom: 0; left: 0; width: 100%; height: 50%;
-    background: linear-gradient(0deg, #39055C 0%, rgba(0,0,0,0) 100%); z-index: 1;
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 60%;
+    background: linear-gradient(0deg, rgb(57, 5, 92) 0%, rgba(0, 0, 0, 0) 100%); z-index: 1;
   }
   @media (max-width: 991px) {
     #hero-shell .gradient-bottom {
@@ -117,6 +117,7 @@ const criticalCss = `
     letter-spacing: 0.3752px;
     color: white; -webkit-font-smoothing: antialiased;
   }
+  #hero-shell .hero-title-desktop { display: none; }
   #hero-shell .hero-subtitle {
     margin: 0; font-family: Inter, sans-serif;
     font-weight: 500; font-size: 20px; line-height: 28px;
@@ -124,78 +125,92 @@ const criticalCss = `
     color: #fcfcfc; text-shadow: 0 2px 4px rgba(0,0,0,0.25);
     -webkit-font-smoothing: antialiased;
   }
-  /* Mobile: "Send Yourself the Link" button */
-  #hero-shell .hero-btn {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    width: calc(100% - 32px); max-width: 345px; height: 46px;
-    border-radius: 12px; background-color: #FF2D55; border: none;
-    font-family: Inter, sans-serif; font-weight: 700;
-    font-size: 16px; color: #fcfcfc; text-transform: uppercase;
-    cursor: pointer; box-shadow: rgba(0,0,0,0.4) 0px 2px 8px;
-    -webkit-font-smoothing: antialiased;
+  /* Mobile: download button (empty shell, React fills with App Store or Google Play) */
+  #hero-shell .hero-mobile-download {
+    width: calc(100% - 32px); max-width: 345px;
   }
-  #hero-shell .hero-btn svg { width: 20px; height: 20px; }
-  /* Coming Soon row */
-  #hero-shell .hero-coming-soon {
-    display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px;
+  #hero-shell .hero-mobile-download-btn {
+    width: 100%; height: 64px;
+    border-radius: 12px; background-color: #FF2D55;
   }
-  #hero-shell .hero-coming-soon svg { width: 24px; height: 32px; }
-  #hero-shell .hero-coming-soon span {
-    font-family: Inter, sans-serif; font-weight: 500; font-size: 18px; color: #fcfcfc;
-    letter-spacing: 0.16884px; line-height: 27px; -webkit-font-smoothing: antialiased;
-  }
-  /* Desktop HANG OUT NOW button — hidden on mobile */
+  /* Desktop CTA buttons — hidden on mobile */
   #hero-shell .hero-cta-wrapper { display: none; }
-  #hero-shell .hero-desktop-btn {
-    display: flex; align-items: center; justify-content: center;
-    appearance: none; -webkit-appearance: none;
-    width: 270px; height: 60px; gap: 24px;
+  #hero-shell .hero-buttons-row { display: flex; gap: 24px; align-items: flex-start; }
+  #hero-shell .hero-download-btn {
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+    width: 304px; height: 64px;
     background-color: #FF2D55; border: none; border-radius: 16px;
-    font-family: Inter, Helvetica, Arial, sans-serif;
-    font-size: 14px; font-weight: 600; line-height: 24px;
-    letter-spacing: 0.4px; text-transform: uppercase;
-    color: #fcfcfc; cursor: pointer; position: relative;
-    padding: 6px 16px; min-width: 64px; box-sizing: border-box;
-    white-space: nowrap; vertical-align: middle; user-select: none;
-    text-decoration: none; text-align: center;
-    -webkit-font-smoothing: antialiased;
-    -webkit-tap-highlight-color: rgba(0,0,0,0);
-  }
-  #hero-shell .hero-desktop-btn .hero-btn-icon {
-    display: flex; width: 32px; height: 32px; margin-left: 0; margin-right: -4px;
-  }
-  #hero-shell .hero-desktop-btn .hero-btn-icon svg { width: 32px; height: 32px; }
-
-  /* Already have an account — desktop only */
-  #hero-shell .hero-already-user {
-    display: none; align-items: center; gap: 4px; margin: 0;
-    font-family: Inter, Helvetica, Arial, sans-serif; font-size: 16px;
-    font-weight: 400; line-height: 28px; color: #fff;
+    font-family: Inter, sans-serif; font-weight: 600; font-size: 19.89px;
+    color: #fcfcfc; text-transform: uppercase; letter-spacing: 0.61px;
+    text-decoration: none; cursor: pointer; box-sizing: border-box;
+    white-space: nowrap;
+    outline: 3px solid transparent; outline-offset: 4px;
+    transition: outline-color 0.15s ease;
     -webkit-font-smoothing: antialiased;
   }
-  #hero-shell .hero-already-user a {
-    color: #FF2D55; text-decoration: none; text-transform: uppercase; font-weight: 600;
-    display: inline-flex; align-items: center; gap: 4px;
+  #hero-shell .hero-download-btn:hover { outline-color: white; }
+  #hero-shell .hero-download-btn .hero-os-icon {
+    display: block; width: 32px; height: 32px; flex-shrink: 0;
   }
-  #hero-shell .hero-already-user a:hover { opacity: 0.8; }
-  #hero-shell .hero-already-user a svg { width: 24px; height: 24px; }
+  #hero-shell .hero-epic-btn {
+    display: flex; align-items: center; justify-content: center; gap: 24px;
+    width: 304px; height: 64px;
+    background-color: white; border: 3px solid white; border-radius: 16px;
+    font-family: Inter, sans-serif; font-weight: 600; font-size: 19.89px;
+    color: #242129; text-transform: uppercase; letter-spacing: 0.61px;
+    text-decoration: none; cursor: pointer; box-sizing: border-box;
+    outline: 3px solid transparent; outline-offset: 4px;
+    transition: outline-color 0.15s ease;
+    -webkit-font-smoothing: antialiased;
+  }
+  #hero-shell .hero-epic-btn:hover { outline-color: white; }
+  #hero-shell .hero-epic-btn img { width: 40px; height: 40px; filter: brightness(0); }
+  /* Download info row */
+  #hero-shell .hero-download-info {
+    display: none; align-items: center; gap: 16px; justify-content: center;
+  }
+  #hero-shell .hero-download-info .hero-stats {
+    display: flex; align-items: center; gap: 12px; min-width: 210px;
+    font-family: Inter, sans-serif; font-size: 16px; font-weight: 400;
+    line-height: 1.5; letter-spacing: 0.00938em; color: white; white-space: nowrap;
+    -webkit-font-smoothing: antialiased;
+  }
+  #hero-shell .hero-download-info .hero-separator {
+    width: 1px; height: 20px; background: rgba(255,255,255,0.5);
+  }
+  #hero-shell .hero-download-info .hero-platforms {
+    display: flex; align-items: center; gap: 16px;
+  }
+  #hero-shell .hero-download-info .hero-platforms a {
+    display: flex; line-height: 0;
+  }
+  #hero-shell .hero-download-info .hero-platforms img,
+  #hero-shell .hero-download-info .hero-platforms .hero-platform-placeholder {
+    width: 24px; height: 24px; filter: brightness(0) invert(1);
+  }
+  #hero-shell .hero-download-info .hero-platforms .hero-platform-placeholder {
+    display: inline-block; filter: none; opacity: 0;
+  }
 
   /* DESKTOP overrides */
   @media (min-width: 992px) {
     #hero-shell .hero-content {
-      gap: 60px; padding: 0 0 120px; max-width: none;
+      gap: 24px; padding: 0 0 120px; max-width: none;
     }
     #hero-shell .hero-title {
       font-family: Inter, Helvetica, Arial, sans-serif;
       font-size: 60px; font-weight: 600; line-height: 1.2; letter-spacing: -0.5px;
       box-sizing: border-box; text-size-adjust: 100%;
+      margin-bottom: 36px;
     }
     #hero-shell .hero-subtitle { display: none; }
-    /* Hide mobile iOS elements, show desktop CTA */
-    #hero-shell .hero-btn:not(.hero-desktop-btn) { display: none; }
-    #hero-shell .hero-coming-soon { display: none; }
-    #hero-shell .hero-cta-wrapper { display: flex; flex-direction: column; align-items: center; gap: 24px; min-height: 112px; }
-    #hero-shell .hero-already-user { display: flex; }
+    /* Hide mobile elements, show desktop CTA */
+    #hero-shell .hero-mobile-download { display: none; }
+    #hero-shell .hero-subtitle { display: none; }
+    #hero-shell .hero-title-mobile { display: none; }
+    #hero-shell .hero-title-desktop { display: block; }
+    #hero-shell .hero-cta-wrapper { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+    #hero-shell .hero-download-info { display: flex; }
   }
 </style>`
 
@@ -217,16 +232,24 @@ const heroHtml = `<div id="hero-shell-nav">
   <div class="gradient-top"></div>
   <div class="gradient-bottom"></div>
   <div class="hero-content">
-    <h3 class="hero-title">Close the Feed. Come Hang Out.</h3>
-    <p class="hero-subtitle">Switch to desktop to download.</p>
-    <button class="hero-btn" type="button">Send Yourself the Link<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg></button>
-    <div class="hero-coming-soon">
-      <svg width="24" height="32" viewBox="-52.01 0 560.035 560.035" xmlns="http://www.w3.org/2000/svg" fill="white"><path d="M380.844 297.529c.787 84.752 74.349 112.955 75.164 113.314-.622 1.988-11.754 40.191-38.756 79.652-23.343 34.117-47.568 68.107-85.731 68.811-37.499.691-49.557-22.236-92.429-22.236-42.859 0-56.256 21.533-91.753 22.928-36.837 1.395-64.889-36.891-88.424-70.883-48.093-69.53-84.846-196.475-35.496-282.165 24.516-42.554 68.328-69.501 115.882-70.192 36.173-.69 70.315 24.336 92.429 24.336 22.1 0 63.59-30.096 107.208-25.676 18.26.76 69.517 7.376 102.429 55.552-2.652 1.644-61.159 35.704-60.523 106.559M310.369 89.418C329.926 65.745 343.089 32.79 339.498 0 311.308 1.133 277.22 18.785 257 42.445c-18.121 20.952-33.991 54.487-29.709 86.628 31.421 2.431 63.52-15.967 83.078-39.655"/></svg>
-      <span>Coming Soon</span>
-    </div>
+    <h3 class="hero-title hero-title-mobile">Hang Out From Anywhere</h3>
+    <h3 class="hero-title hero-title-desktop">Close the Feed. Come Hang Out.</h3>
+    <p class="hero-subtitle">Decentraland now on mobile.</p>
+    <div class="hero-mobile-download"><div class="hero-mobile-download-btn"></div></div>
     <div class="hero-cta-wrapper">
-      <button class="hero-btn hero-desktop-btn" type="button">HANG OUT NOW<span class="hero-btn-icon">${jumpInSvg}</span></button>
-      <p class="hero-already-user" style="visibility:hidden">Already have an account? Download</p>
+      <div class="hero-buttons-row">
+        <a class="hero-download-btn" href="/download">DOWNLOAD FOR <span class="hero-os-icon"></span></a>
+        <a class="hero-epic-btn" href="https://store.epicgames.com/en-US/p/decentraland-b692fb" target="_blank" rel="noopener noreferrer">DOWNLOAD ON <img src="./epic_icon.svg" alt="Epic Games" /></a>
+      </div>
+    </div>
+    <div class="hero-download-info">
+      <div class="hero-stats"><svg width="24" height="24" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#vc)"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.957.762L6.234 1.293a5.5 5.5 0 01-.404.275 2.5 2.5 0 01-.298.124c-.117.035-.237.053-.48.091l-.887.136c-.7.107-1.05.161-1.326.325a1.75 1.75 0 00-.595.595c-.164.278-.217.628-.325 1.326l-.136.886a7 7 0 01-.09.48 2.5 2.5 0 01-.125.298 5.5 5.5 0 01-.274.404L.762 6.957c-.419.571-.628.856-.71 1.165a1.75 1.75 0 000 .841c.08.312.29.598.71 1.165l.531.724c.145.197.218.297.274.404.05.095.091.195.124.3.035.115.053.236.091.478l.136.887c.107.7.161 1.05.325 1.325.144.246.349.451.595.596.278.163.628.217 1.326.325l.886.136c.243.037.365.056.48.091.104.031.203.073.299.124.107.057.206.128.404.275l.724.531c.57.419.856.628 1.165.71a1.75 1.75 0 00.841 0c.312-.081.598-.29 1.165-.71l.724-.531a5.5 5.5 0 01.404-.275c.095-.05.195-.091.298-.124.116-.035.237-.053.48-.091l.887-.136c.7-.107 1.05-.161 1.325-.325.246-.144.451-.349.596-.596.163-.277.217-.628.325-1.325l.136-.887c.037-.242.055-.365.091-.48.031-.103.072-.203.124-.298.057-.107.128-.206.274-.404l.531-.724c.419-.571.629-.856.71-1.165a1.75 1.75 0 000-.841c-.08-.312-.29-.598-.71-1.165l-.531-.724a5.5 5.5 0 01-.275-.404 2.5 2.5 0 01-.124-.298 7 7 0 01-.091-.48l-.136-.887c-.107-.7-.162-1.05-.325-1.326a1.75 1.75 0 00-.596-.595c-.278-.164-.628-.218-1.325-.325l-.887-.136a7 7 0 01-.48-.091 2.5 2.5 0 01-.298-.124 5.5 5.5 0 01-.404-.274L10.129.762c-.571-.419-.856-.628-1.165-.71a1.75 1.75 0 00-.841 0c-.312.081-.598.29-1.165.71zm5.697 5.783a.75.75 0 00-1.178-.925L7.938 9.96 6.047 8.506a.75.75 0 00-.963 1.137l2.48 1.935a.75.75 0 001.074-.107l4.019-4.938-.003-.01z" fill="#fff"/></g><defs><clipPath id="vc"><rect width="17.1" height="17.1" fill="#fff"/></clipPath></defs></svg> Total Downloads: +400K</div>
+      <div class="hero-separator"></div>
+      <div class="hero-platforms">
+        <a href="#"><span class="hero-platform-placeholder"></span></a>
+        <a href="#"><img src="./ios-logo.svg" alt="iOS" /></a>
+        <a href="#"><img src="./google_play_icon.svg" alt="Android" /></a>
+      </div>
     </div>
   </div>
 </div>
@@ -260,6 +283,9 @@ const finalHeroHtml = heroHtml
   .replace(/\.\/hero_tablet\.webp/g, `${cdnBase}hero_tablet.webp`)
   .replace(/\.\/hero_desktop\.webp/g, `${cdnBase}hero_desktop.webp`)
   .replace('./dcl_name.svg', `${cdnBase}dcl_name.svg`)
+  .replace('./epic_icon.svg', `${cdnBase}epic_icon.svg`)
+  .replace('./ios-logo.svg', `${cdnBase}ios-logo.svg`)
+  .replace('./google_play_icon.svg', `${cdnBase}google_play_icon.svg`)
 
 // Place the hero shell BEFORE #root, not inside it.  This is critical for LCP:
 // if the shell is inside #root, either createRoot destroys it (losing the LCP

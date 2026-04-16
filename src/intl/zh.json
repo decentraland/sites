@@ -28,6 +28,8 @@
       "not_available_subtitle": "Decentraland 支持 <span>Windows</span> 和 <span>macOS</span>。",
       "download": "下载",
       "download_for": "下载 {os_name} 版本",
+      "download_for_short": "DOWNLOAD FOR",
+      "download_on": "DOWNLOAD ON",
       "total_downloads": "总下载量：{downloads}",
       "amd64_processors_short": "Intel",
       "arm64_processors_short": "Apple Silicon",
