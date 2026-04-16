@@ -28,9 +28,11 @@ async function initRuntimeRemotes() {
 
 const remoteInitPromise = initRuntimeRemotes()
 
-const remoteCache = new Map<string, LazyExoticComponent<ComponentType>>()
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const remoteCache = new Map<string, LazyExoticComponent<ComponentType<any>>>()
 
-function getRemoteComponent(remoteName: string): LazyExoticComponent<ComponentType> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getRemoteComponent(remoteName: string): LazyExoticComponent<ComponentType<any>> {
   const cached = remoteCache.get(remoteName)
   if (cached) return cached
 
@@ -49,7 +51,8 @@ function getRemoteComponent(remoteName: string): LazyExoticComponent<ComponentTy
     // eslint-disable-next-line import/no-unresolved
     const federation = await import('virtual:__federation__')
     const remoteModule = await federation.__federation_method_getRemote(normalizedName, './App')
-    return { default: (remoteModule.default ?? remoteModule) as ComponentType }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return { default: (remoteModule.default ?? remoteModule) as ComponentType<any> }
   })
 
   remoteCache.set(remoteName, component)
@@ -81,7 +84,13 @@ class RemoteErrorBoundary extends Component<{ children: ReactNode; name: string 
   }
 }
 
-function RemoteLoader({ name }: { name: string }) {
+type RemoteLoaderProps = {
+  name: string
+  // Props forwarded to the remote component
+  [key: string]: unknown
+}
+
+function RemoteLoader({ name, ...remoteProps }: RemoteLoaderProps) {
   const Remote = useMemo(() => getRemoteComponent(name), [name])
 
   return (
@@ -93,7 +102,7 @@ function RemoteLoader({ name }: { name: string }) {
           </LoadingContainer>
         }
       >
-        <Remote />
+        <Remote {...remoteProps} />
       </Suspense>
     </RemoteErrorBoundary>
   )

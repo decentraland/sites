@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Env, getEnv } from '@dcl/ui-env'
+import { ExploreRemoteWithIdentity } from './components/ExploreRemoteWithIdentity.tsx'
 import { RemoteLoader } from './components/RemoteLoader.tsx'
 import { IndexPage } from './pages/index.tsx'
 
@@ -57,7 +58,7 @@ const App = () => {
             <Route path="/discord" element={<DiscordPage />} />
             <Route path="/press" element={<PressPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
-            <Route path="/explore/*" element={<RemoteLoader name="explore" />} />
+            <Route path="/explore/*" element={<ExploreRemoteWithIdentity />} />
             {getEnv() !== Env.PRODUCTION && (
               <>
                 <Route path="/blog/*" element={<RemoteLoader name="blog" />} />
