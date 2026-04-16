@@ -30,7 +30,12 @@ while ((match = entryPattern.exec(sharedBlock)) !== null) {
   const installedRange = allDeps[pkg]
 
   if (!installedRange) {
-    warnings.push(`${pkg}: declared in federation shared but not found in package.json`)
+    // May be a transitive dep provided by another shared package (e.g. @emotion/* via decentraland-ui2)
+    try {
+      require.resolve(pkg)
+    } catch {
+      warnings.push(`${pkg}: declared in federation shared but not installed`)
+    }
     continue
   }
 
