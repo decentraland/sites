@@ -28,8 +28,12 @@ const Explore = memo(() => {
       <SectionTitle variant="h3">{l('page.home.explore.title')}</SectionTitle>
       <CardsGrid>{cardElements}</CardsGrid>
       <MobileCarousel>
-        {!isLoading && cards.length > 0 && (
-          <Carousel items={cards} renderItem={card => <ExploreCard card={card} />} keyExtractor={card => card.id} autoplayDelay={5000} />
+        {isLoading ? (
+          <ExploreCard loading />
+        ) : (
+          cards.length > 0 && (
+            <Carousel items={cards} renderItem={card => <ExploreCard card={card} />} keyExtractor={card => card.id} autoplayDelay={5000} />
+          )
         )}
       </MobileCarousel>
     </ExploreContainer>
