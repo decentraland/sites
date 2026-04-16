@@ -13,6 +13,6 @@ jobs:
           node-version: 24.x
           cache: 'npm'
       - name: Install
-        run: npm install
+        run: npm i
       - name: Validate federation versions
         run: npm run validate:federation
