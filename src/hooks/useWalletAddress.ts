@@ -5,15 +5,17 @@ import { redirectToAuth } from '../utils/authRedirect'
 type WalletState = {
   address: string | null
   isConnected: boolean
-  isConnecting: false
   disconnect: () => void
 }
 
 // ── Shared store (singleton, outside React) ──────────────────────────
 
 let currentAddress: string | null = null
-let addressSetByMetaMask = false // true when address was set by accountsChanged
 const listeners = new Set<() => void>()
+
+/** Brief grace period after a MetaMask switch to ignore storage events
+ *  that would otherwise revert the address back to the "most recent expiration". */
+let metamaskSwitchUntil = 0
 
 function notify() {
   listeners.forEach(fn => fn())
@@ -29,10 +31,8 @@ function getSnapshot(): string | null {
 }
 
 function setSharedAddress(addr: string | null) {
-  console.log('[wallet-store] setSharedAddress called:', addr, 'current:', currentAddress, 'same?', addr === currentAddress)
   if (addr !== currentAddress) {
     currentAddress = addr
-    console.log('[wallet-store] Address changed, notifying', listeners.size, 'listeners')
     notify()
   }
 }
@@ -42,6 +42,9 @@ function setSharedAddress(addr: string | null) {
 /**
  * Scans all single-sign-on-0x* keys and picks the one with the most recent
  * expiration (= the last session the user created via auth dapp).
+ *
+ * Note: `localStorageGetIdentity` from @dcl/single-sign-on-client already
+ * validates expiration internally — it returns null for expired identities.
  */
 function getStoredAddress(): string | null {
   try {
@@ -82,33 +85,27 @@ function hasIdentityFor(address: string): boolean {
 
 currentAddress = getStoredAddress()
 
-// Cross-tab: other tab signs in/out
-// Don't override if MetaMask explicitly set the address
+// Cross-tab: other tab signs in/out.
+// Suppressed briefly after a MetaMask switch to avoid reverting the address.
 window.addEventListener('storage', () => {
-  if (!addressSetByMetaMask) {
-    setSharedAddress(getStoredAddress())
-  }
+  if (Date.now() < metamaskSwitchUntil) return
+  setSharedAddress(getStoredAddress())
 })
 
 // MetaMask account switch
 if (window.ethereum?.on) {
-  console.log('[wallet-store] Registering global accountsChanged listener')
   window.ethereum.on('accountsChanged', (...args: unknown[]) => {
-    const accounts = args[0] as string[]
-    const newAccount = accounts?.[0]?.toLowerCase()
-    console.log('[wallet-store] accountsChanged:', accounts, '→ newAccount:', newAccount)
+    const accounts = Array.isArray(args[0]) ? (args[0] as string[]) : []
+    const newAccount = accounts[0]?.toLowerCase()
     if (!newAccount) {
       setSharedAddress(null)
       return
     }
-    const has = hasIdentityFor(newAccount)
-    console.log('[wallet-store] hasIdentity for', newAccount, ':', has)
-    if (has) {
-      addressSetByMetaMask = true
+    if (hasIdentityFor(newAccount)) {
+      metamaskSwitchUntil = Date.now() + 500
       setSharedAddress(newAccount)
       return
     }
-    console.log('[wallet-store] No identity, redirecting to auth')
     redirectToAuth(window.location.pathname, { loginMethod: 'METAMASK' })
   })
 }
@@ -118,10 +115,10 @@ if (window.ethereum?.request) {
   window.ethereum
     .request({ method: 'eth_accounts' })
     .then(result => {
-      const accounts = result as string[]
-      const active = accounts?.[0]?.toLowerCase()
+      const accounts = Array.isArray(result) ? (result as string[]) : []
+      const active = accounts[0]?.toLowerCase()
       if (active && hasIdentityFor(active) && active !== currentAddress) {
-        addressSetByMetaMask = true
+        metamaskSwitchUntil = Date.now() + 500
         setSharedAddress(active)
       }
     })
@@ -163,7 +160,6 @@ function useWalletAddress(): WalletState {
     () => ({
       address,
       isConnected: address !== null,
-      isConnecting: false as const,
       disconnect
     }),
     [address, disconnect]

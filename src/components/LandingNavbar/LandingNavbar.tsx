@@ -117,7 +117,7 @@ interface NotificationsData {
 
 interface LandingNavbarProps {
   isSignedIn: boolean
-  isSigningIn: boolean
+  isSigningIn?: boolean
   isLandingPage?: boolean
   isLoadingProfile?: boolean
   address?: string
@@ -201,7 +201,7 @@ function resolveContentUrl(hash: string | undefined): string | undefined {
 
 const LandingNavbar = memo(function LandingNavbar({
   isSignedIn,
-  isSigningIn,
+  isSigningIn = false,
   isLandingPage = false,
   isLoadingProfile = false,
   address,

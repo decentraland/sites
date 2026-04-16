@@ -21,10 +21,8 @@ import { FooterFallback } from './Layout.styled'
 const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter = true }) => {
   const location = useLocation()
   const { locale } = useLocale()
-  const { address, isConnected, isConnecting, disconnect } = useWalletAddress()
-  console.log('[Layout] render — address:', address, 'isConnected:', isConnected)
+  const { address, isConnected, disconnect } = useWalletAddress()
   const { data: profile, isLoading: isLoadingProfile } = useGetProfileQuery(address ?? undefined, { skip: !address })
-  console.log('[Layout] profile query — address:', address, 'data:', profile?.avatars?.[0]?.name, 'loading:', isLoadingProfile)
   const avatar = profile?.avatars?.[0]
   const effectivelySignedIn = isConnected || !!address
   usePageTracking(location.pathname)
@@ -54,7 +52,6 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
       {withNavbar && (
         <LandingNavbar
           isSignedIn={effectivelySignedIn}
-          isSigningIn={isConnecting && !effectivelySignedIn && !!address}
           isLandingPage={location.pathname === '/'}
           isLoadingProfile={isLoadingProfile}
           address={address || undefined}
