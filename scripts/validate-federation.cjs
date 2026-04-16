@@ -1,4 +1,26 @@
 /* eslint-disable */
+
+/**
+ * Federation Shared Version Validator
+ *
+ * Validates that the `requiredVersion` ranges declared in the Module Federation
+ * shared config (vite.config.ts) are satisfied by the actual installed package
+ * versions in node_modules.
+ *
+ * Why this matters:
+ * - landing-site (host) and each remote (explore-site, blog-site, etc.) declare
+ *   shared singleton dependencies with `requiredVersion` constraints.
+ * - If these drift from the actual installed versions, federation can silently
+ *   fail at runtime: the share scope rejects the version and the remote gets
+ *   `undefined` for that module, or duplicate instances cause React hook errors.
+ * - Some shared packages (e.g. @emotion/react, @emotion/styled) are transitive
+ *   deps of other shared packages (e.g. decentraland-ui2) — they are NOT listed
+ *   in package.json but still need validation against the installed version.
+ *
+ * Run locally: npm run validate:federation
+ * Runs in CI:  .github/workflows/validate-federation.yml (on every push)
+ */
+
 const fs = require('fs')
 const path = require('path')
 const semver = require('semver')
@@ -8,7 +30,6 @@ const packageJsonPath = path.resolve(__dirname, '..', 'package.json')
 
 const viteConfig = fs.readFileSync(viteConfigPath, 'utf8')
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
-const allDeps = { ...packageJson.dependencies, ...packageJson.devDependencies }
 
 // Extract requiredVersion entries from vite.config.ts federation shared block
 const sharedBlockMatch = viteConfig.match(/shared:\s*\{([\s\S]*?)\}\s*as\s*Record/)
@@ -27,7 +48,6 @@ const warnings = []
 while ((match = entryPattern.exec(sharedBlock)) !== null) {
   const pkg = match[1]
   const requiredVersion = match[2]
-  const installedRange = allDeps[pkg]
 
   // Get the actual installed version — works for both direct and transitive deps
   let installedVersion
