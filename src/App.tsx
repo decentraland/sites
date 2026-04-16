@@ -1,8 +1,8 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Env, getEnv } from '@dcl/ui-env'
-import { ExploreRemoteWithIdentity } from './components/ExploreRemoteWithIdentity.tsx'
 import { RemoteLoader } from './components/RemoteLoader.tsx'
+import { useAuthIdentity } from './hooks/useAuthIdentity.ts'
 import { IndexPage } from './pages/index.tsx'
 
 // Layout imports Navbar from decentraland-ui2 which pulls in ~1.3MB of MUI.
@@ -34,6 +34,8 @@ const DiscordPage = lazy(() => import('./pages/discord').then(m => ({ default: m
 const PressPage = lazy(() => import('./pages/press').then(m => ({ default: m.PressPage })))
 
 const App = () => {
+  const { identity, address } = useAuthIdentity()
+
   return (
     <BrowserRouter>
       <Suspense fallback={null}>
@@ -58,10 +60,10 @@ const App = () => {
             <Route path="/discord" element={<DiscordPage />} />
             <Route path="/press" element={<PressPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
-            <Route path="/explore/*" element={<ExploreRemoteWithIdentity />} />
+            <Route path="/explore/*" element={<RemoteLoader name="explore" identity={identity} address={address} />} />
             {getEnv() !== Env.PRODUCTION && (
               <>
-                <Route path="/blog/*" element={<RemoteLoader name="blog" />} />
+                <Route path="/blog/*" element={<RemoteLoader name="blog" identity={identity} address={address} />} />
               </>
             )}
             <Route path="*" element={<Navigate to="/" replace />} />
