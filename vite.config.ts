@@ -1,31 +1,7 @@
-import { resolve } from 'path'
 import federation from '@originjs/vite-plugin-federation'
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
-import type { Plugin } from 'vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
-
-// The federation plugin resolves `<pkg>/package.json` to read the version of
-// each shared dependency. Packages whose `exports` map does not expose
-// `./package.json` cause a build error. This plugin intercepts those requests
-// and resolves them to the actual file on disk.
-function federationPackageJsonFix(): Plugin {
-  return {
-    name: 'federation-package-json-fix',
-    enforce: 'pre',
-    resolveId(source) {
-      if (source.endsWith('/package.json') && !source.startsWith('.') && !source.startsWith('/')) {
-        try {
-          const pkgDir = resolve(__dirname, 'node_modules', source.replace('/package.json', ''))
-          return resolve(pkgDir, 'package.json')
-        } catch {
-          return null
-        }
-      }
-      return null
-    }
-  }
-}
 
 // https://vitejs.dev/config/
 // eslint-disable-next-line import/no-default-export
@@ -43,7 +19,6 @@ export default defineConfig(({ command, mode }) => {
       dedupe: ['@emotion/react', '@emotion/styled', '@mui/material']
     },
     plugins: [
-      federationPackageJsonFix(),
       react(),
       nodePolyfills({
         include: ['buffer']
