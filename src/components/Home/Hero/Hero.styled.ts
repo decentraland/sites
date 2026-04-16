@@ -66,7 +66,7 @@ const HeroContent = styled(Box)(({ theme }) => ({
   flexDirection: 'column',
   alignItems: 'center',
   textAlign: 'center',
-  gap: theme.spacing(7.5),
+  gap: theme.spacing(3),
   paddingBottom: theme.spacing(15),
   [theme.breakpoints.down('sm')]: {
     gap: theme.spacing(3),
@@ -81,8 +81,10 @@ const HeroTitle = styled(Typography)(({ theme }) => ({
   lineHeight: 1.2,
   letterSpacing: -0.5,
   textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
+  marginBottom: theme.spacing(4.5),
   [theme.breakpoints.down('sm')]: {
-    fontSize: 36
+    fontSize: 36,
+    marginBottom: 0
   }
 }))
 
@@ -104,8 +106,8 @@ const DownloadButton = styled('a')({
   alignItems: 'center',
   justifyContent: 'center',
   gap: 16,
+  width: 304,
   height: 64,
-  padding: '0 80px',
   backgroundColor: '#FF2D55',
   borderRadius: 16,
   border: 'none',
@@ -136,8 +138,8 @@ const EpicButton = styled('a')({
   alignItems: 'center',
   justifyContent: 'center',
   gap: 24,
+  width: 304,
   height: 64,
-  padding: '0 40px',
   backgroundColor: 'white',
   border: '3px solid white',
   borderRadius: 16,

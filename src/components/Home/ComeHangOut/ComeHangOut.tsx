@@ -1,38 +1,32 @@
-import { memo, useState } from 'react'
+import { memo, useCallback, useState } from 'react'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { AnimatedBackground, DownloadModal, DownloadQRModal } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useAnimatedCounter } from '../../../hooks/useAnimatedCounter'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
-import { useShareAction } from '../../../hooks/useShareAction'
 import appleLogo from '../../../images/apple-logo.svg'
 import microsoftLogo from '../../../images/microsoft-logo.svg'
+import { DOWNLOAD_URLS } from '../../../modules/downloadConstants'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
 import { formatToShorthand } from '../../../modules/number'
 import { SectionViewedTrack } from '../../../modules/segment'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
+import { DownloadButton, EpicButton } from '../Hero/Hero.styled'
 import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
-import { ShareIcon } from '../shared/ShareIcon'
 import {
   AvatarsImage,
   ComeHangOutContainer,
-  ComingSoonIcon,
-  ComingSoonRow,
-  ComingSoonText,
   Content,
   DownloadCounts,
   DownloadInfo,
   DownloadSeparator,
   GooglePlayButton,
   GooglePlayImage,
-  HangOutButton,
-  MobileSubtitle,
   PlatformIcon,
   PlatformIcons,
-  SendLinkButton,
   Title
 } from './ComeHangOut.styled'
 
@@ -41,7 +35,7 @@ let cachedDownloadCounts: string | null = null
 const ComeHangOut = memo(() => {
   const l = useFormatMessage()
   const onClickHandle = useTrackClick()
-  const { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads } = useHangOutAction()
+  const { isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads } = useHangOutAction()
   const [, userAgentData] = useAdvancedUserAgentData()
   const [rawDownloads, rawDownloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
 
@@ -53,8 +47,6 @@ const ComeHangOut = memo(() => {
   const currentOs = userAgentData?.os.name
   const isMobile = !!userAgentData?.mobile
   const isMobileAndroid = isMobile && currentOs === 'Android'
-
-  const handleShareClick = useShareAction()
 
   // Mobile download modal for platform icon clicks
   const [mobileModalOs, setMobileModalOs] = useState<'ios' | 'android' | null>(null)
@@ -69,33 +61,47 @@ const ComeHangOut = memo(() => {
     }
 
     return (
-      <>
-        <MobileSubtitle>{l('page.home.hero.mobile_ios_subtitle')}</MobileSubtitle>
-        <SendLinkButton type="button" onClick={handleShareClick}>
-          {l('page.home.hero.mobile_ios_send_link')}
-          <ShareIcon />
-        </SendLinkButton>
-        <ComingSoonRow>
-          <ComingSoonIcon src={appleLogo} alt="Apple" />
-          <ComingSoonText>{l('page.home.hero.mobile_ios_coming_soon')}</ComingSoonText>
-        </ComingSoonRow>
-      </>
+      <GooglePlayButton href={DOWNLOAD_URLS.appStore} target="_blank" rel="noopener noreferrer">
+        <GooglePlayImage src={assetUrl('/download-on-the-app-store.svg')} alt="Download on the App Store" />
+      </GooglePlayButton>
     )
   }
 
+  const handleDownloadClick = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      onClickHandle(e)
+      if (userAgentData) {
+        window.location.href = `/download_success?os=${userAgentData.os.name}`
+      }
+    },
+    [onClickHandle, userAgentData]
+  )
+
+  const osImage = userAgentData
+    ? { [OperativeSystem.WINDOWS]: microsoftLogo, [OperativeSystem.MACOS]: appleLogo }[userAgentData.os.name]
+    : null
+
   const renderDesktopContent = () => (
     <>
-      <HangOutButton
-        variant="contained"
-        onClick={e => {
-          onClickHandle(e)
-          handleClick(e)
-        }}
-        data-place={SectionViewedTrack.LANDING_HERO}
-        data-event="click"
-      >
-        {l('page.home.hang_out_now')}
-      </HangOutButton>
+      <div style={{ display: 'flex', gap: 24, justifyContent: 'center' }}>
+        <DownloadButton
+          href={userAgentData ? `/download_success?os=${userAgentData.os.name}` : '/download'}
+          data-place={SectionViewedTrack.LANDING_HERO}
+          data-event="click"
+          onClick={handleDownloadClick}
+        >
+          {l('page.download.download_for_short')}
+          {osImage ? (
+            <img src={osImage} alt={userAgentData?.os.name ?? ''} style={{ filter: 'brightness(0) invert(1)' }} />
+          ) : (
+            <span style={{ display: 'block', width: 32, height: 32, flexShrink: 0 }} />
+          )}
+        </DownloadButton>
+        <EpicButton href={DOWNLOAD_URLS.epic} target="_blank" rel="noopener noreferrer">
+          {l('page.download.download_on')}
+          <img src={assetUrl('/epic_icon.svg')} alt="Epic Games" style={{ filter: 'brightness(0)' }} />
+        </EpicButton>
+      </div>
       <DownloadInfo>
         <DownloadCounts>
           <VerifiedIcon /> {l('page.download.total_downloads', { downloads: downloadCountsFormatted })}

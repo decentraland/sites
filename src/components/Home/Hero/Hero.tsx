@@ -6,7 +6,6 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useAnimatedCounter } from '../../../hooks/useAnimatedCounter'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
-import { useShareAction } from '../../../hooks/useShareAction'
 import appleLogo from '../../../images/apple-logo.svg'
 import microsoftLogo from '../../../images/microsoft-logo.svg'
 import { DOWNLOAD_URLS } from '../../../modules/downloadConstants'
@@ -17,11 +16,7 @@ import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
 import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
-import { ShareIcon } from '../shared/ShareIcon'
 import {
-  AppleIcon,
-  ComingSoonRow,
-  ComingSoonText,
   DownloadButton,
   EpicButton,
   GooglePlayButton,
@@ -40,8 +35,7 @@ import {
   HeroTitle,
   MobileHeroContent,
   MobileHeroSubtitle,
-  MobileHeroTitle,
-  SendLinkButton
+  MobileHeroTitle
 } from './Hero.styled'
 
 const heroImageDesktop = assetUrl('/hero_desktop.webp')
@@ -86,8 +80,6 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
     document.documentElement.style.setProperty('--hero-vh', `${window.innerHeight * 0.01}px`)
   }, [])
 
-  const handleShareClick = useShareAction()
-
   const handleDownloadClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
       onClickHandle(e)
@@ -131,16 +123,11 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
       {/* Mobile iOS / default */}
       {!isDesktop && !isMobileAndroid && (
         <MobileHeroContent>
-          <MobileHeroTitle>{l('page.home.hero.title')}</MobileHeroTitle>
-          <MobileHeroSubtitle>{l('page.home.hero.mobile_ios_subtitle')}</MobileHeroSubtitle>
-          <SendLinkButton type="button" onClick={handleShareClick}>
-            {l('page.home.hero.mobile_ios_send_link')}
-            <ShareIcon />
-          </SendLinkButton>
-          <ComingSoonRow>
-            <AppleIcon src={appleLogo} alt="Apple" />
-            <ComingSoonText>{l('page.home.hero.mobile_ios_coming_soon')}</ComingSoonText>
-          </ComingSoonRow>
+          <MobileHeroTitle>{l('page.home.hero.mobile_android_title')}</MobileHeroTitle>
+          <MobileHeroSubtitle>{l('page.home.hero.mobile_android_subtitle')}</MobileHeroSubtitle>
+          <GooglePlayButton href={DOWNLOAD_URLS.appStore} target="_blank" rel="noopener noreferrer">
+            <GooglePlayImage src={assetUrl('/download-on-the-app-store.svg')} alt="Download on the App Store" />
+          </GooglePlayButton>
         </MobileHeroContent>
       )}
 
