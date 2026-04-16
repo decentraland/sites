@@ -103,24 +103,23 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick, email, user
       ]
     }
 
-    const options: DownloadOptionProps[] = [
+    if (userAgentData.os.name === OperativeSystem.MACOS) {
+      return [
+        {
+          text: OperativeSystem.WINDOWS,
+          image: imageByOs[OperativeSystem.WINDOWS],
+          link: links[OperativeSystem.WINDOWS]?.x64
+        }
+      ]
+    }
+
+    return [
       {
         text: OperativeSystem.MACOS,
         image: imageByOs[OperativeSystem.MACOS],
-        link: userAgentData.os.name === OperativeSystem.MACOS ? links[OperativeSystem.MACOS]?.amd64 : links[OperativeSystem.MACOS]?.arm64,
-        arch: userAgentData.os.name === OperativeSystem.MACOS ? ('amd64' as Architecture) : undefined
+        link: links[OperativeSystem.MACOS]?.arm64
       }
     ]
-
-    if (userAgentData.os.name === OperativeSystem.MACOS) {
-      options.push({
-        text: OperativeSystem.WINDOWS,
-        image: imageByOs[OperativeSystem.WINDOWS],
-        link: links[OperativeSystem.WINDOWS]?.x64
-      })
-    }
-
-    return options
   }, [userAgentData, links])
 
   const onClickDownloadHandler = useCallback(
