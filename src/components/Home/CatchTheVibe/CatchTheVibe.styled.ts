@@ -235,31 +235,6 @@ const MobileCarouselContainer = styled(Box)(({ theme }) => ({
   zIndex: 1,
   [theme.breakpoints.down('sm')]: {
     display: 'block'
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .swiper': {
-    paddingBottom: theme.spacing(6)
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .swiper-slide': {
-    height: 300,
-    padding: '0 16px',
-    boxSizing: 'border-box'
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .swiper-pagination': {
-    bottom: '0 !important'
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .swiper-pagination-bullet': {
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    opacity: 1,
-    width: 8,
-    height: 8
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .swiper-pagination-bullet-active': {
-    backgroundColor: dclColors.neutral.white
   }
 }))
 

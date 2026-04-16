@@ -77,37 +77,6 @@ const MobileCarousel = styled(Box)(({ theme }) => ({
   zIndex: 10,
   [theme.breakpoints.down('sm')]: {
     display: 'block'
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .swiper': {
-    paddingBottom: theme.spacing(5)
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .swiper-slide': {
-    padding: `0 ${theme.spacing(2)}`,
-    boxSizing: 'border-box',
-    height: 486,
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    '& > *': {
-      minWidth: 0,
-      width: '100%',
-      height: '100%'
-    }
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .swiper-pagination': {
-    bottom: '0 !important'
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .swiper-pagination-bullet': {
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    opacity: 1,
-    width: 8,
-    height: 8
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .swiper-pagination-bullet-active': {
-    backgroundColor: dclColors.neutral.white
   }
 }))
 
