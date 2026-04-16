@@ -225,7 +225,6 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
           open
           onClose={() => setMobileModalOs(null)}
           os={mobileModalOs}
-          qrImageUrl={assetUrl(`/qr-${mobileModalOs}.svg`)}
           i18n={{ totalDownloads: `Total Downloads: ${totalDownloads}` }}
         />
       )}
