@@ -18,4 +18,4 @@ const store = configureStore({
 type RootState = ReturnType<typeof store.getState>
 type AppDispatch = typeof store.dispatch
 
-export { store, staticReducers, type RootState, type AppDispatch }
+export { store, type RootState, type AppDispatch }

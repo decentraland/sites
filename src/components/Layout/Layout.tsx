@@ -1,6 +1,5 @@
 import { Suspense, lazy, useCallback } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { useWalletState } from '@dcl/core-web3/lazy'
 import { usePageTracking } from '@dcl/hooks'
 import { DownloadModal } from 'decentraland-ui2'
 import type { NotificationLocale } from 'decentraland-ui2'
@@ -9,6 +8,7 @@ import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useHangOutAction } from '../../hooks/useHangOutAction'
 import { useManaBalances } from '../../hooks/useManaBalances'
+import { useWalletAddress } from '../../hooks/useWalletAddress'
 import { useLocale } from '../../intl/LocaleContext'
 import { redirectToAuth } from '../../utils/authRedirect'
 const LandingFooter = lazy(() => import('../LandingFooter').then(m => ({ default: m.LandingFooter })))
@@ -21,7 +21,7 @@ import { FooterFallback } from './Layout.styled'
 const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter = true }) => {
   const location = useLocation()
   const { locale } = useLocale()
-  const { address, isConnected, isConnecting, disconnect } = useWalletState()
+  const { address, isConnected, disconnect } = useWalletAddress()
   const { data: profile, isLoading: isLoadingProfile } = useGetProfileQuery(address ?? undefined, { skip: !address })
   const avatar = profile?.avatars?.[0]
   const effectivelySignedIn = isConnected || !!address
@@ -52,7 +52,6 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
       {withNavbar && (
         <LandingNavbar
           isSignedIn={effectivelySignedIn}
-          isSigningIn={isConnecting && !effectivelySignedIn && !!address}
           isLandingPage={location.pathname === '/'}
           isLoadingProfile={isLoadingProfile}
           address={address || undefined}

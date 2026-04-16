@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import { useWalletState } from '@dcl/core-web3/lazy'
+import { useWalletAddress } from '../../hooks/useWalletAddress'
 import { IntercomWidget } from './IntercomWidget'
 import type { IntercomProps, IntercomSettings } from './Intercom.types'
 
@@ -9,7 +9,7 @@ const DEFAULT_SETTINGS: IntercomSettings = { alignment: 'right' }
 // eslint-disable-next-line react/prop-types
 const Intercom: React.FC<IntercomProps> = ({ appId, data = DEFAULT_DATA, settings = DEFAULT_SETTINGS }) => {
   const widget = useMemo(() => IntercomWidget.getInstance(), [])
-  const { address } = useWalletState()
+  const { address } = useWalletAddress()
 
   useEffect(() => {
     if (!widget.appId) {
