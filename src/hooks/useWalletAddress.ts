@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useSyncExternalStore } from 'react'
+import { useMemo, useSyncExternalStore } from 'react'
 import { localStorageGetIdentity } from '@dcl/single-sign-on-client'
 import { redirectToAuth } from '../utils/authRedirect'
 
@@ -125,6 +125,28 @@ if (window.ethereum?.request) {
     .catch(() => {})
 }
 
+// ── Disconnect ──────────────────────────────────────────────────────
+
+function disconnectWallet() {
+  const keysToRemove: string[] = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (
+      key &&
+      (key.startsWith('single-sign-on-') ||
+        key.startsWith('decentraland-connect') ||
+        key.startsWith('wagmi') ||
+        key.startsWith('wc@2') ||
+        key === 'dcl_magic_user_email' ||
+        key === 'dcl_thirdweb_user_email')
+    ) {
+      keysToRemove.push(key)
+    }
+  }
+  keysToRemove.forEach(key => localStorage.removeItem(key))
+  setSharedAddress(null)
+}
+
 // ── React hook ───────────────────────────────────────────────────────
 
 /**
@@ -136,34 +158,14 @@ if (window.ethereum?.request) {
 function useWalletAddress(): WalletState {
   const address = useSyncExternalStore(subscribe, getSnapshot, () => null)
 
-  const disconnect = useCallback(() => {
-    const keysToRemove: string[] = []
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i)
-      if (
-        key &&
-        (key.startsWith('single-sign-on-') ||
-          key.startsWith('decentraland-connect') ||
-          key.startsWith('wagmi') ||
-          key.startsWith('wc@2') ||
-          key === 'dcl_magic_user_email' ||
-          key === 'dcl_thirdweb_user_email')
-      ) {
-        keysToRemove.push(key)
-      }
-    }
-    keysToRemove.forEach(key => localStorage.removeItem(key))
-    setSharedAddress(null)
-  }, [])
-
   return useMemo(
     () => ({
       address,
       isConnected: address !== null,
-      disconnect
+      disconnect: disconnectWallet
     }),
-    [address, disconnect]
+    [address]
   )
 }
 
-export { useWalletAddress }
+export { disconnectWallet, useWalletAddress }

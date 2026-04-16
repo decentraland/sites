@@ -203,9 +203,8 @@ describe('useWalletAddress', () => {
     })
   })
 
-  describe('disconnect', () => {
-    it('should clear all auth-related keys and preserve unrelated keys', () => {
-      // Set up mixed keys
+  describe('disconnectWallet', () => {
+    it('should clear all auth-related keys and preserve unrelated keys', async () => {
       localStorageMock.setItem('single-sign-on-0xuser', '{}')
       localStorageMock.setItem('decentraland-connect-storage-key', '{}')
       localStorageMock.setItem('wagmi.store', '{}')
@@ -215,19 +214,8 @@ describe('useWalletAddress', () => {
       localStorageMock.setItem('unrelated-key', 'keep-me')
       localStorageMock.setItem('another-app-data', 'also-keep')
 
-      // Import module to get access to the disconnect key-matching logic
-      // We test the same key patterns that disconnect() uses
-      const authPrefixes = ['single-sign-on-', 'decentraland-connect', 'wagmi', 'wc@2']
-      const authExactKeys = ['dcl_magic_user_email', 'dcl_thirdweb_user_email']
-
-      const keysToRemove: string[] = []
-      for (let i = 0; i < localStorageMock.length; i++) {
-        const key = localStorageMock.key(i)
-        if (key && (authPrefixes.some(p => key.startsWith(p)) || authExactKeys.includes(key))) {
-          keysToRemove.push(key)
-        }
-      }
-      keysToRemove.forEach(key => localStorageMock.removeItem(key))
+      const { disconnectWallet } = await import('./useWalletAddress')
+      disconnectWallet()
 
       // Auth keys cleared
       expect(localStorageMock.getItem('single-sign-on-0xuser')).toBeNull()
