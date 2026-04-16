@@ -1,42 +1,39 @@
-import { memo, useCallback, useEffect } from 'react'
-import { useWalletState } from '@dcl/core-web3/lazy'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
-import { DownloadModal, JumpInIcon } from 'decentraland-ui2'
+import { DownloadModal, DownloadQRModal } from 'decentraland-ui2'
 import { heroContent } from '../../../data/static-content'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
+import { useAnimatedCounter } from '../../../hooks/useAnimatedCounter'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import { useShareAction } from '../../../hooks/useShareAction'
 import appleLogo from '../../../images/apple-logo.svg'
 import microsoftLogo from '../../../images/microsoft-logo.svg'
+import { DOWNLOAD_URLS } from '../../../modules/downloadConstants'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
 import { formatToShorthand } from '../../../modules/number'
 import { SectionViewedTrack } from '../../../modules/segment'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
-import { EPIC_GAMES_URL } from '../shared/epicGames'
-import { GOOGLE_PLAY_DESKTOP_URL, GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
+import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
 import { ShareIcon } from '../shared/ShareIcon'
-import { DownloadIcon } from './DownloadIcon'
 import {
-  AlreadyUserDownloadLink,
-  AlreadyUserText,
   AppleIcon,
   ComingSoonRow,
   ComingSoonText,
+  DownloadButton,
+  EpicButton,
   GooglePlayButton,
   GooglePlayImage,
   GradientBottom,
   GradientTop,
-  HangOutButton,
   HeroBackground,
   HeroCTAWrapper,
   HeroContainer,
   HeroContent,
   HeroDownloadCounts,
   HeroDownloadInfo,
-  HeroOsIcon,
   HeroPlatformIcon,
   HeroPlatformIcons,
   HeroPlatformSeparator,
@@ -57,31 +54,32 @@ const imageByOs: Record<string, string> = {
 }
 
 // Module-level cache for download counts — survives component remounts.
-// useAdvancedUserAgentData cache is handled in @dcl/hooks directly.
 let cachedDownloadCounts: string | null = null
 
 const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
-  const { isConnected, address } = useWalletState()
-  const effectivelySignedIn = isConnected || !!address
   const [, userAgentData] = useAdvancedUserAgentData()
   const l = useFormatMessage()
   const onClickHandle = useTrackClick()
-  const { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
+  const { isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads } = useHangOutAction()
 
   const [rawDownloads, rawDownloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
 
-  const rawFormatted = !rawDownloadsStatus.loading && rawDownloadsStatus.loaded && rawDownloads ? formatToShorthand(rawDownloads) : null
-  if (rawFormatted) cachedDownloadCounts = rawFormatted
-  const downloadCountsFormatted = cachedDownloadCounts
+  const targetDownloads = !rawDownloadsStatus.loading && rawDownloadsStatus.loaded && rawDownloads ? rawDownloads : null
+  if (targetDownloads) cachedDownloadCounts = formatToShorthand(targetDownloads)
+  const animatedDownloads = useAnimatedCounter(targetDownloads)
+  const downloadCountsFormatted = useMemo(
+    () => (animatedDownloads ? formatToShorthand(animatedDownloads) : cachedDownloadCounts ?? '+400K'),
+    [animatedDownloads]
+  )
 
   const osImage = userAgentData ? imageByOs[userAgentData.os.name] : null
-
   const currentOs = userAgentData?.os.name
   const isMobileAndroid = !!userAgentData?.mobile && currentOs === 'Android'
 
+  // Mobile download modal state (for iOS and Google Play icon clicks)
+  const [mobileModalOs, setMobileModalOs] = useState<'ios' | 'android' | null>(null)
+
   // Remove the prerendered hero shell now that React's Hero has mounted.
-  // Capture the initial viewport height for mobile so the hero doesn't resize
-  // when the browser toolbar hides/shows on scroll (iOS Safari workaround).
   useEffect(() => {
     document.getElementById('hero-shell')?.remove()
     document.getElementById('hero-shell-nav')?.remove()
@@ -91,10 +89,8 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const handleShareClick = useShareAction()
 
   const handleDownloadClick = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
+    (e: React.MouseEvent<HTMLElement>) => {
       onClickHandle(e)
-      // Intentional hard navigation — /download_success triggers a real file download
-      // via the browser, which requires a full page load (not SPA navigation).
       if (userAgentData) {
         window.location.href = `/download_success?os=${userAgentData.os.name}`
       }
@@ -121,8 +117,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
       <GradientTop />
       <GradientBottom />
 
-      {/* Mobile: always show iOS-style layout to avoid jumps while UA loads.
-          Android-specific content replaces it once detected. */}
+      {/* Mobile Android */}
       {!isDesktop && isMobileAndroid && (
         <MobileHeroContent>
           <MobileHeroTitle>{l('page.home.hero.mobile_android_title')}</MobileHeroTitle>
@@ -133,6 +128,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
         </MobileHeroContent>
       )}
 
+      {/* Mobile iOS / default */}
       {!isDesktop && !isMobileAndroid && (
         <MobileHeroContent>
           <MobileHeroTitle>{l('page.home.hero.title')}</MobileHeroTitle>
@@ -148,84 +144,91 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
         </MobileHeroContent>
       )}
 
+      {/* Desktop */}
       {isDesktop && (
         <HeroContent>
-          <HeroTitle variant={isDesktop ? 'h2' : 'h3'}>{l('page.home.hero.title')}</HeroTitle>
+          <HeroTitle variant="h2">{l('page.home.hero.title')}</HeroTitle>
 
-          {effectivelySignedIn && isDesktop ? (
-            <HeroCTAWrapper>
-              <HangOutButton
-                variant="contained"
-                data-place={SectionViewedTrack.LANDING_HERO}
-                data-event="click"
-                onClick={handleDownloadClick}
-                endIcon={osImage ? <HeroOsIcon src={osImage} alt={userAgentData?.os.name ?? ''} /> : undefined}
-              >
-                {l('page.download.download')}
-              </HangOutButton>
-              {downloadCountsFormatted && userAgentData && (
-                <HeroDownloadInfo>
-                  <HeroDownloadCounts variant="body1">
-                    <VerifiedIcon /> {l('page.download.total_downloads', { downloads: downloadCountsFormatted })}
-                  </HeroDownloadCounts>
-                  <HeroPlatformSeparator />
-                  {currentOs !== OperativeSystem.WINDOWS && (
-                    <HeroPlatformIcons>
-                      <a href="/download_success?os=Windows">
-                        <HeroPlatformIcon src={microsoftLogo} alt="Windows" />
-                      </a>
-                    </HeroPlatformIcons>
-                  )}
-                  {currentOs !== OperativeSystem.MACOS && (
-                    <HeroPlatformIcons>
-                      <a href="/download_success?os=macOS">
-                        <HeroPlatformIcon src={appleLogo} alt="macOS" />
-                      </a>
-                    </HeroPlatformIcons>
-                  )}
-                  <HeroPlatformIcons>
-                    <a href={GOOGLE_PLAY_DESKTOP_URL} target="_blank" rel="noopener noreferrer">
-                      <HeroPlatformIcon src={assetUrl('/google_play_icon.svg')} alt="Android" />
-                    </a>
-                  </HeroPlatformIcons>
-                  <HeroPlatformIcons>
-                    <a href={EPIC_GAMES_URL} target="_blank" rel="noopener noreferrer">
-                      <HeroPlatformIcon src={assetUrl('/epic_icon.svg')} alt="Epic Games" />
-                    </a>
-                  </HeroPlatformIcons>
-                </HeroDownloadInfo>
+          <HeroCTAWrapper>
+            {/* Download + Epic buttons */}
+            <DownloadButton
+              href={userAgentData ? `/download_success?os=${userAgentData.os.name}` : '/download'}
+              data-place={SectionViewedTrack.LANDING_HERO}
+              data-event="click"
+              onClick={handleDownloadClick}
+            >
+              {l('page.download.download_for_short')}
+              {osImage ? (
+                <img src={osImage} alt={userAgentData?.os.name ?? ''} style={{ filter: 'brightness(0) invert(1)' }} />
+              ) : (
+                <span style={{ display: 'block', width: 32, height: 32, flexShrink: 0 }} />
               )}
-            </HeroCTAWrapper>
-          ) : (
-            <HeroCTAWrapper>
-              <HangOutButton
-                variant="contained"
-                data-place={SectionViewedTrack.LANDING_HERO}
-                data-event="click"
+            </DownloadButton>
+
+            <EpicButton href={DOWNLOAD_URLS.epic} target="_blank" rel="noopener noreferrer">
+              {l('page.download.download_on')}
+              <img src={assetUrl('/epic_icon.svg')} alt="Epic Games" style={{ filter: 'brightness(0)' }} />
+            </EpicButton>
+          </HeroCTAWrapper>
+
+          {/* Download counts + platform icons */}
+          <HeroDownloadInfo>
+            <HeroDownloadCounts variant="body1">
+              <VerifiedIcon /> {l('page.download.total_downloads', { downloads: downloadCountsFormatted })}
+            </HeroDownloadCounts>
+            <HeroPlatformSeparator />
+            <HeroPlatformIcons>
+              {currentOs === OperativeSystem.MACOS && (
+                <a href="/download_success?os=Windows">
+                  <HeroPlatformIcon src={microsoftLogo} alt="Windows" />
+                </a>
+              )}
+              {currentOs === OperativeSystem.WINDOWS && (
+                <a href="/download_success?os=macOS">
+                  <HeroPlatformIcon src={appleLogo} alt="macOS" />
+                </a>
+              )}
+              {!currentOs && <span style={{ display: 'inline-block', width: 24, height: 24 }} />}
+            </HeroPlatformIcons>
+            <HeroPlatformIcons>
+              <a
+                href="#"
                 onClick={e => {
-                  onClickHandle(e)
-                  handleClick(e)
+                  e.preventDefault()
+                  setMobileModalOs('ios')
                 }}
-                endIcon={<JumpInIcon />}
               >
-                {l('page.home.hang_out_now')}
-              </HangOutButton>
-              {isDesktop && userAgentData && (
-                <AlreadyUserText>
-                  {l('page.home.hero.already_user', {
-                    download: (
-                      <AlreadyUserDownloadLink key="download" href={`/download_success?os=${userAgentData.os.name}`}>
-                        {l('page.home.hero.download')} <DownloadIcon />
-                      </AlreadyUserDownloadLink>
-                    )
-                  })}
-                </AlreadyUserText>
-              )}
-            </HeroCTAWrapper>
-          )}
+                <HeroPlatformIcon src={assetUrl('/ios-logo.svg')} alt="iOS" />
+              </a>
+            </HeroPlatformIcons>
+            <HeroPlatformIcons>
+              <a
+                href="#"
+                onClick={e => {
+                  e.preventDefault()
+                  setMobileModalOs('android')
+                }}
+              >
+                <HeroPlatformIcon src={assetUrl('/google_play_icon.svg')} alt="Android" />
+              </a>
+            </HeroPlatformIcons>
+          </HeroDownloadInfo>
         </HeroContent>
       )}
+
+      {/* Download modal for "Hang Out Now" / "Jump In" buttons */}
       <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />
+
+      {/* QR modal for platform icon clicks (iOS/Android) */}
+      {mobileModalOs && (
+        <DownloadQRModal
+          open
+          onClose={() => setMobileModalOs(null)}
+          os={mobileModalOs}
+          qrImageUrl={assetUrl(`/qr-${mobileModalOs}.svg`)}
+          i18n={{ totalDownloads: `Total Downloads: ${totalDownloads}` }}
+        />
+      )}
     </HeroContainer>
   )
 })

@@ -28,6 +28,8 @@
       "not_available_subtitle": "Decentraland는 <span>Windows</span>와 <span>macOS</span>에서 사용 가능합니다.",
       "download": "다운로드",
       "download_for": "{os_name}용 다운로드",
+      "download_for_short": "DOWNLOAD FOR",
+      "download_on": "DOWNLOAD ON",
       "total_downloads": "총 다운로드: {downloads}",
       "amd64_processors_short": "Intel",
       "arm64_processors_short": "Apple Silicon",

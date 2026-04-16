@@ -88,18 +88,80 @@ const HeroTitle = styled(Typography)(({ theme }) => ({
 
 const HeroCTAWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
+  flexDirection: 'row',
+  alignItems: 'flex-start',
   gap: theme.spacing(3),
-  // Reserve space so the title doesn't shift when content loads async
-  // Desktop: button (60) + gap (24) + info row (~28) = 112
-  // Mobile: button (52) only
-  minHeight: 112,
-  justifyContent: 'flex-start',
+  justifyContent: 'center',
   [theme.breakpoints.down('sm')]: {
-    minHeight: 52
+    flexDirection: 'column',
+    alignItems: 'center'
   }
 }))
+
+/* eslint-disable @typescript-eslint/naming-convention */
+const DownloadButton = styled('a')({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 16,
+  height: 64,
+  padding: '0 80px',
+  backgroundColor: '#FF2D55',
+  borderRadius: 16,
+  border: 'none',
+  cursor: 'pointer',
+  textDecoration: 'none',
+  fontFamily: 'Inter, sans-serif',
+  fontWeight: 600,
+  fontSize: '19.89px',
+  color: '#FCFCFC',
+  textTransform: 'uppercase',
+  letterSpacing: '0.61px',
+  boxSizing: 'border-box',
+  outline: '3px solid transparent',
+  outlineOffset: 4,
+  transition: 'outline-color 0.15s ease',
+  '&:hover': {
+    outlineColor: 'white'
+  },
+  '& img': {
+    width: 32,
+    height: 32,
+    display: 'block'
+  }
+})
+
+const EpicButton = styled('a')({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 24,
+  height: 64,
+  padding: '0 40px',
+  backgroundColor: 'white',
+  border: '3px solid white',
+  borderRadius: 16,
+  cursor: 'pointer',
+  textDecoration: 'none',
+  fontFamily: 'Inter, sans-serif',
+  fontWeight: 600,
+  fontSize: '19.89px',
+  color: '#242129',
+  textTransform: 'uppercase',
+  letterSpacing: '0.61px',
+  boxSizing: 'border-box',
+  outline: '3px solid transparent',
+  outlineOffset: 4,
+  transition: 'outline-color 0.15s ease',
+  '&:hover': {
+    outlineColor: 'white'
+  },
+  '& img': {
+    width: 40,
+    height: 40
+  }
+})
+/* eslint-enable @typescript-eslint/naming-convention */
 
 const AlreadyUserText = styled(Typography)({
   color: dclColors.neutral.white,
@@ -144,8 +206,10 @@ const HeroDownloadCounts = styled(Typography)({
   gap: 12,
   color: dclColors.neutral.white,
   fontSize: 16,
+  fontWeight: 400,
   lineHeight: 1.5,
-  whiteSpace: 'nowrap'
+  whiteSpace: 'nowrap',
+  minWidth: 210
 })
 
 const HeroPlatformSeparator = styled(Box)({
@@ -223,6 +287,8 @@ export {
   HeroPlatformLabel,
   HeroPlatformSeparator,
   HeroTitle,
+  DownloadButton,
+  EpicButton,
   MobileHeroContent,
   MobileHeroTitle
 }

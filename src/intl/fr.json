@@ -28,6 +28,8 @@
       "not_available_subtitle": "Decentraland est disponible pour <span>Windows</span> et <span>macOS</span>.",
       "download": "Télécharger",
       "download_for": "Télécharger pour {os_name}",
+      "download_for_short": "DOWNLOAD FOR",
+      "download_on": "DOWNLOAD ON",
       "total_downloads": "Téléchargements totaux : {downloads}",
       "amd64_processors_short": "Intel",
       "arm64_processors_short": "Apple Silicon",
