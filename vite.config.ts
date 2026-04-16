@@ -47,12 +47,12 @@ export default defineConfig(({ command, mode }) => {
           'react-redux': { singleton: true, requiredVersion: '^9.2.0' },
           wagmi: { singleton: true, requiredVersion: '^2.19.0' },
           viem: { singleton: true, requiredVersion: '^2.44.0' },
-          '@dcl/core-web3': { singleton: true, requiredVersion: '^0.11.0' },
-          '@dcl/core-web3/lazy': { singleton: true, requiredVersion: '^0.11.0', version: '0.11.1' },
+          '@dcl/core-web3': { singleton: true, requiredVersion: '^0.11.2' },
+          '@dcl/core-web3/lazy': { singleton: true, requiredVersion: '^0.11.2' },
           '@dcl/hooks': { singleton: true, requiredVersion: '^1.3.0' },
           'decentraland-ui2': { singleton: true, requiredVersion: '^3.4.0' },
           '@dcl/schemas': { singleton: true, requiredVersion: '^26.1.0' }
-        } as Record<string, { singleton: boolean; requiredVersion: string; version?: string }>
+        } as Record<string, { singleton: boolean; requiredVersion: string }>
       })
       /* eslint-enable @typescript-eslint/naming-convention */
     ],

@@ -21,7 +21,7 @@
     "validate:federation": "node scripts/validate-federation.cjs"
   },
   "dependencies": {
-    "@dcl/core-web3": "^0.11.1",
+    "@dcl/core-web3": "^0.11.2",
     "@dcl/hooks": "^1.3.0",
     "@dcl/schemas": "^26.1.0",
     "@dcl/single-sign-on-client": "^0.1.0",
