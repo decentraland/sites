@@ -63,8 +63,11 @@ const CarouselSlide = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     opacity: 1,
     transform: 'scale(1)',
-    display: 'flex',
-    justifyContent: 'center',
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    '& > *': {
+      width: '100%',
+      minWidth: 0
+    },
     // eslint-disable-next-line @typescript-eslint/naming-convention
     '&.active': {
       boxShadow: 'none'

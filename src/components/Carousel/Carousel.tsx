@@ -71,8 +71,9 @@ function Carousel<T>({
   }, [])
 
   // ── Slide geometry ──────────────────────────────────────────────────
-  const slideWidth = isDesktop ? desktopSlideWidth : isMobile ? viewportWidth : viewportWidth * 0.7
-  const gap = isDesktop ? 24 : isMobile ? 0 : 16
+  const mobilePadding = 32 // 16px each side
+  const slideWidth = isDesktop ? desktopSlideWidth : isMobile ? viewportWidth - mobilePadding : viewportWidth * 0.7
+  const gap = isDesktop ? 24 : isMobile ? mobilePadding : 16
   const step = slideWidth + gap
   const translateX = viewportWidth / 2 - slideWidth / 2 - pos * step + dragOffset
   const realIndex = ((pos % total) + total) % total
