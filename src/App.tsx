@@ -1,8 +1,5 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { Env, getEnv } from '@dcl/ui-env'
-import { RemoteLoader } from './components/RemoteLoader.tsx'
-import { useAuthIdentity } from './hooks/useAuthIdentity.ts'
 import { IndexPage } from './pages/index.tsx'
 
 // Layout imports Navbar from decentraland-ui2 which pulls in ~1.3MB of MUI.
@@ -33,9 +30,23 @@ const CreatePage = lazy(() => import('./pages/create').then(m => ({ default: m.C
 const DiscordPage = lazy(() => import('./pages/discord').then(m => ({ default: m.DiscordPage })))
 const PressPage = lazy(() => import('./pages/press').then(m => ({ default: m.PressPage })))
 
-const App = () => {
-  const { identity, address } = useAuthIdentity()
+// Blog pages — loaded inside DappsShell (Redux Provider required)
+const BlogPage = lazy(() => import('./pages/blog/BlogPage').then(m => ({ default: m.BlogPage })))
+const PostPage = lazy(() => import('./pages/blog/PostPage').then(m => ({ default: m.PostPage })))
+const CategoryPage = lazy(() => import('./pages/blog/CategoryPage').then(m => ({ default: m.CategoryPage })))
+const AuthorPage = lazy(() => import('./pages/blog/AuthorPage').then(m => ({ default: m.AuthorPage })))
+const BlogSearchPage = lazy(() => import('./pages/blog/SearchPage').then(m => ({ default: m.SearchPage })))
+const PreviewPage = lazy(() => import('./pages/blog/PreviewPage').then(m => ({ default: m.PreviewPage })))
+const BlogSignInRedirect = lazy(() => import('./pages/blog/SignInRedirect').then(m => ({ default: m.SignInRedirect })))
 
+// Lazy-loaded for /explore and /blog routes only. Contains Redux Provider.
+// No Web3 providers — auth uses localStorage identity via useAuthIdentity.
+const DappsShell = lazy(() => import('./shells/DappsShell').then(m => ({ default: m.DappsShell })))
+
+const ExploreHomePage = lazy(() => import('./pages/explore/HomePage').then(m => ({ default: m.HomePage })))
+const CreateEventPage = lazy(() => import('./pages/explore/CreateEventPage').then(m => ({ default: m.CreateEventPage })))
+
+const App = () => {
   return (
     <BrowserRouter>
       <Suspense fallback={null}>
@@ -60,12 +71,22 @@ const App = () => {
             <Route path="/discord" element={<DiscordPage />} />
             <Route path="/press" element={<PressPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
-            <Route path="/explore/*" element={<RemoteLoader name="explore" identity={identity} address={address} />} />
-            {getEnv() !== Env.PRODUCTION && (
-              <>
-                <Route path="/blog/*" element={<RemoteLoader name="blog" />} />
-              </>
-            )}
+            {/* DappsShell provides Redux Provider via Outlet.
+                NOTE: /blog/* is no longer gated behind Env !== PRODUCTION as it was
+                with the federated RemoteLoader. During PR1 it serves a placeholder
+                in every environment; PR3 lands the real blog routes. If blog must
+                stay dev/stg-only at any point, reintroduce a getEnv() check here. */}
+            <Route element={<DappsShell />}>
+              <Route path="/explore" element={<ExploreHomePage />} />
+              <Route path="/explore/new-event" element={<CreateEventPage />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/preview" element={<PreviewPage />} />
+              <Route path="/blog/search" element={<BlogSearchPage />} />
+              <Route path="/blog/sign-in" element={<BlogSignInRedirect />} />
+              <Route path="/blog/author/:authorSlug" element={<AuthorPage />} />
+              <Route path="/blog/:categorySlug" element={<CategoryPage />} />
+              <Route path="/blog/:categorySlug/:postSlug" element={<PostPage />} />
+            </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

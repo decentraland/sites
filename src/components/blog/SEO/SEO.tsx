@@ -1,0 +1,82 @@
+import { Helmet } from 'react-helmet-async'
+import { useTranslation } from '@dcl/hooks'
+import { getEnv } from '../../../config/env'
+import { OGType } from './SEO.types'
+import type { OGImage, SEOProps } from './SEO.types'
+
+const DEFAULT_IMAGE_URL =
+  'https://cms-images.decentraland.org/ea2ybdmmn1kv/7tYISdowuJYIbSIDqij87H/f3524d454d8e29702792a6b674f5550d/GI_Landscape.Small.png'
+
+const SITE_NAME = 'Decentraland'
+const DEFAULT_LOCALE = 'en_US'
+
+const SEO = (props: SEOProps) => {
+  const { t } = useTranslation()
+
+  const DEFAULT_IMAGE: OGImage = {
+    url: DEFAULT_IMAGE_URL,
+    width: 1200,
+    height: 630,
+    alt: t('seo.default_image_alt'),
+    type: 'image/jpeg'
+  }
+
+  const {
+    title,
+    description,
+    image = DEFAULT_IMAGE,
+    type = OGType.WEBSITE,
+    url,
+    locale = DEFAULT_LOCALE,
+    author,
+    publishedTime,
+    modifiedTime,
+    section,
+    tags
+  } = props
+
+  const baseUrl = getEnv('BLOG_BASE_URL') || ''
+  const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME
+  const canonicalUrl = url || baseUrl
+  const imageData: OGImage = typeof image === 'string' ? { url: image } : image
+
+  return (
+    <Helmet>
+      <title>{fullTitle}</title>
+      <meta name="description" content={description} />
+      <link rel="canonical" href={canonicalUrl} />
+
+      {/* Open Graph - Basic */}
+      <meta property="og:site_name" content={SITE_NAME} />
+      <meta property="og:title" content={fullTitle} />
+      <meta property="og:description" content={description} />
+      <meta property="og:type" content={type} />
+      <meta property="og:url" content={canonicalUrl} />
+      <meta property="og:locale" content={locale} />
+
+      {/* Open Graph - Image structured properties */}
+      <meta property="og:image" content={imageData.url} />
+      {imageData.width && <meta property="og:image:width" content={String(imageData.width)} />}
+      {imageData.height && <meta property="og:image:height" content={String(imageData.height)} />}
+      {imageData.alt && <meta property="og:image:alt" content={imageData.alt} />}
+      {imageData.type && <meta property="og:image:type" content={imageData.type} />}
+
+      {/* Twitter Card */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={fullTitle} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={imageData.url} />
+      {imageData.alt && <meta name="twitter:image:alt" content={imageData.alt} />}
+
+      {/* Article specific meta tags */}
+      {type === OGType.ARTICLE && author && <meta property="article:author" content={author} />}
+      {type === OGType.ARTICLE && publishedTime && <meta property="article:published_time" content={publishedTime} />}
+      {type === OGType.ARTICLE && modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+      {type === OGType.ARTICLE && section && <meta property="article:section" content={section} />}
+      {type === OGType.ARTICLE && tags?.map(tag => <meta key={tag} property="article:tag" content={tag} />)}
+    </Helmet>
+  )
+}
+
+export { SEO }
+export { OGType } from './SEO.types'

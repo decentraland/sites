@@ -42,5 +42,10 @@ interface ExploreItem {
   isGenesisPlaza: boolean
 }
 
+interface ActiveEntity {
+  id: string
+  pointers: string[]
+}
+
 export { ExploreCardType }
-export type { EventEntry, EventsResponse, ExploreItem, HotScene }
+export type { ActiveEntity, EventEntry, EventsResponse, ExploreItem, HotScene }

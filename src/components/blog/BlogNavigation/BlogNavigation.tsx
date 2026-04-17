@@ -1,0 +1,66 @@
+import { useCallback, useMemo } from 'react'
+import { useLocation } from 'react-router-dom'
+import { useTranslation } from '@dcl/hooks'
+import { useGetBlogCategoriesQuery } from '../../../features/blog/blog.client'
+import { Search } from '../Search'
+import type { BlogNavigationProps } from './BlogNavigation.types'
+import {
+  CategoryItem,
+  CategoryLink,
+  CategoryList,
+  NavbarCategories,
+  NavbarContainer,
+  NavbarContent,
+  NavbarWrapper
+} from './BlogNavigation.styled'
+
+const BlogNavigation = ({ active, embedded }: BlogNavigationProps) => {
+  const { t } = useTranslation()
+  const location = useLocation()
+  const { data: allCategories = [] } = useGetBlogCategoriesQuery()
+
+  const categories = useMemo(() => {
+    return allCategories.filter(category => category.isShownInMenu)
+  }, [allCategories])
+
+  const isActive = useCallback(
+    (path: string) => {
+      if (active) {
+        if (active === 'all_articles' && path === '/blog') {
+          return true
+        }
+        return `/blog/${active}` === path
+      }
+      return location.pathname === path
+    },
+    [active, location.pathname]
+  )
+
+  return (
+    <NavbarContainer $embedded={embedded}>
+      <NavbarContent>
+        <NavbarWrapper>
+          <NavbarCategories>
+            <CategoryList>
+              <CategoryItem>
+                <CategoryLink to="/blog" $active={isActive('/blog') || active === 'all_articles'}>
+                  {t('blog.all_articles')}
+                </CategoryLink>
+              </CategoryItem>
+              {categories.map(category => (
+                <CategoryItem key={category.id}>
+                  <CategoryLink to={`/blog/${category.slug}`} $active={isActive(`/blog/${category.slug}`)}>
+                    {category.title}
+                  </CategoryLink>
+                </CategoryItem>
+              ))}
+            </CategoryList>
+          </NavbarCategories>
+          <Search />
+        </NavbarWrapper>
+      </NavbarContent>
+    </NavbarContainer>
+  )
+}
+
+export { BlogNavigation }

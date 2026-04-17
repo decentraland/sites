@@ -20,7 +20,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["node", "jest", "react", "react-dom"]
+    "types": ["node", "jest", "react", "react-dom", "@testing-library/jest-dom"]
   },
   "include": ["src"]
 }

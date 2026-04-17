@@ -16,5 +16,11 @@
   "DISCORD_CAPTCHA_URL": "https://discord-lambdas.decentraland.io/captcha",
   "HCAPTCHA_SITEKEY": "00c95ced-f512-4498-a5f2-7e0b0950d456",
   "ENVIRONMENT": "development",
-  "SENTRY_DSN": "https://d0ec8d688f4d9827a270acece39153b0@o4504361728212992.ingest.us.sentry.io/4508858418266112"
+  "SENTRY_DSN": "https://d0ec8d688f4d9827a270acece39153b0@o4504361728212992.ingest.us.sentry.io/4508858418266112",
+  "PLACES_API_URL": "https://places.decentraland.zone/api",
+  "ALGOLIA_APP_ID": "1H67SAMO2T",
+  "ALGOLIA_API_KEY": "d7f493e3a24525b7021451b81b1d294a",
+  "ALGOLIA_BLOG_INDEX": "blog_contentful_prd",
+  "CMS_BASE_URL": "https://cms-api.decentraland.org/spaces/ea2ybdmmn1kv/environments/master",
+  "BLOG_BASE_URL": "/blog"
 }
