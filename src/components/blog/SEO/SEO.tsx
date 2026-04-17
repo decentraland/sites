@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet'
+import { Helmet } from 'react-helmet-async'
 import { useTranslation } from '@dcl/hooks'
 import { getEnv } from '../../../config/env'
 import { OGType } from './SEO.types'

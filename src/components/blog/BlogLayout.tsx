@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { HelmetProvider } from 'react-helmet-async'
 import { BlogNavigation } from './BlogNavigation/BlogNavigation'
 import { BlogContentWrapper, BlogLayoutContainer } from './BlogLayout.styled'
 
@@ -12,12 +13,14 @@ interface BlogLayoutProps {
 
 function BlogLayout({ children, activeCategory, banner, showBlogNavigation = true, relatedPosts }: BlogLayoutProps) {
   return (
-    <BlogLayoutContainer>
-      {showBlogNavigation && <BlogNavigation active={activeCategory} />}
-      {banner}
-      <BlogContentWrapper>{children}</BlogContentWrapper>
-      {relatedPosts}
-    </BlogLayoutContainer>
+    <HelmetProvider>
+      <BlogLayoutContainer>
+        {showBlogNavigation && <BlogNavigation active={activeCategory} />}
+        {banner}
+        <BlogContentWrapper>{children}</BlogContentWrapper>
+        {relatedPosts}
+      </BlogLayoutContainer>
+    </HelmetProvider>
   )
 }
 
