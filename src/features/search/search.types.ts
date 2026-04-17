@@ -1,0 +1,57 @@
+interface AlgoliaHit {
+  objectID: string
+  id: string
+  title: string
+  description: string
+  category?: string
+  categoryId?: string
+  categoryObject?: {
+    sys?: { id?: string }
+    fields?: { id?: string; title?: string }
+  }
+  image?: string
+  imageObject?: {
+    sys?: { id?: string }
+    fields?: {
+      file?: {
+        url?: string
+      }
+    }
+  }
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  _highlightResult?: {
+    title?: {
+      value: string
+      matchLevel: string
+      matchedWords: string[]
+    }
+    description?: {
+      value: string
+      matchLevel: string
+      matchedWords: string[]
+    }
+  }
+}
+
+interface SearchBlogResult {
+  id: string
+  categoryId: string
+  url: string
+  image: string
+  highlightedTitle: string
+  highlightedDescription: string
+}
+
+interface SearchBlogPostsParams {
+  query: string
+  hitsPerPage?: number
+  page?: number
+}
+
+interface SearchBlogPostsResponse {
+  results: import('../../shared/types/blog.domain').SearchResult[]
+  total: number
+  hasMore: boolean
+}
+
+export type { AlgoliaHit, SearchBlogPostsParams, SearchBlogPostsResponse, SearchBlogResult }
