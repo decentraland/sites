@@ -1,13 +1,6 @@
+import { coordsKey } from '../events/events.helpers'
+import type { ActiveEntity, HotScene } from '../events/events.types'
 import type { EventEntry } from './events.types'
-
-interface HotScene {
-  id: string
-  name: string
-  baseCoords: [number, number]
-  usersTotalCount: number
-  parcels: Array<[number, number]>
-  thumbnail: string
-}
 
 interface LiveNowCard {
   id: string
@@ -24,10 +17,6 @@ interface LiveNowCard {
 }
 
 const DEFAULT_MIN_USERS = 5
-
-function coordsKey(x: number, y: number): string {
-  return `${x},${y}`
-}
 
 function findEventInMap(eventsByCoord: Map<string, EventEntry>, parcels: Array<[number, number]>): EventEntry | undefined {
   for (const [px, py] of parcels) {
@@ -113,11 +102,6 @@ interface PlaceResponse {
   data: { description?: string; categories?: string[] }[]
 }
 
-interface ActiveEntity {
-  id: string
-  pointers: string[]
-}
-
 interface DeploymentResponse {
   deployments: { deployedBy: string }[]
 }
@@ -127,6 +111,10 @@ interface EnrichmentConfig {
   peerUrl?: string
 }
 
+// TODO: N+1 optimization — Places API supports comma-separated `positions` param for batch lookups.
+// `entities/active` and `deployments` already support batch queries (see src/features/events/events.client.ts
+// `resolveDeployers` for the batch pattern). Collapse all place-card requests into two batch calls:
+// one POST to /content/entities/active with all coordinates, one GET /content/deployments with all entityIds.
 async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig): Promise<LiveNowCard[]> {
   const { placesUrl, peerUrl } = config
   const placeCards = cards.filter(c => c.type === 'place')
