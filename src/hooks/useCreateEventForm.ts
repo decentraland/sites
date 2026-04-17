@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { useCreateEventMutation } from '../features/explore-events'
@@ -101,6 +102,52 @@ function isValidCoordinate(value: string, min: number, max: number): boolean {
 
 type FormErrors = Partial<Record<string, string>>
 
+type ImageStateKey = 'image' | 'verticalImage'
+type ImagePreviewKey = 'imagePreviewUrl' | 'verticalImagePreviewUrl'
+type ImageErrorKey = 'imageError' | 'verticalImageError'
+
+function makeImageSelectHandler(
+  validateFn: (file: File) => string | null,
+  imageKey: ImageStateKey,
+  previewKey: ImagePreviewKey,
+  errorKey: ImageErrorKey,
+  setForm: Dispatch<SetStateAction<CreateEventFormState>>,
+  t: (key: string) => string
+) {
+  return (file: File) => {
+    const validationError = validateFn(file)
+    if (validationError) {
+      setForm(prev => {
+        const url = prev[previewKey]
+        if (url) URL.revokeObjectURL(url)
+        return { ...prev, [errorKey]: t(validationError), [imageKey]: null, [previewKey]: null }
+      })
+      return
+    }
+    const previewUrl = URL.createObjectURL(file)
+    setForm(prev => {
+      const url = prev[previewKey]
+      if (url) URL.revokeObjectURL(url)
+      return { ...prev, [imageKey]: file, [previewKey]: previewUrl, [errorKey]: null }
+    })
+  }
+}
+
+function makeImageRemoveHandler(
+  previewKey: ImagePreviewKey,
+  imageKey: ImageStateKey,
+  errorKey: ImageErrorKey,
+  setForm: Dispatch<SetStateAction<CreateEventFormState>>
+) {
+  return () => {
+    setForm(prev => {
+      const url = prev[previewKey]
+      if (url) URL.revokeObjectURL(url)
+      return { ...prev, [imageKey]: null, [previewKey]: null, [errorKey]: null }
+    })
+  }
+}
+
 /* eslint-disable @typescript-eslint/naming-convention -- keys match form select values */
 const FREQUENCY_MAP: Record<string, RecurrentFrequency> = {
   every_day: 'DAILY',
@@ -130,69 +177,16 @@ function useCreateEventForm() {
     })
   }, [])
 
-  const handleImageSelect = useCallback(
-    (file: File) => {
-      const errorKey = validateImage(file)
-      if (errorKey) {
-        setForm(prev => {
-          if (prev.imagePreviewUrl) {
-            URL.revokeObjectURL(prev.imagePreviewUrl)
-          }
-          return { ...prev, imageError: t(errorKey), image: null, imagePreviewUrl: null }
-        })
-        return
-      }
-      const previewUrl = URL.createObjectURL(file)
-      setForm(prev => {
-        if (prev.imagePreviewUrl) {
-          URL.revokeObjectURL(prev.imagePreviewUrl)
-        }
-        return { ...prev, image: file, imagePreviewUrl: previewUrl, imageError: null }
-      })
-    },
-    [t]
-  )
-
-  const handleImageRemove = useCallback(() => {
-    setForm(prev => {
-      if (prev.imagePreviewUrl) {
-        URL.revokeObjectURL(prev.imagePreviewUrl)
-      }
-      return { ...prev, image: null, imagePreviewUrl: null, imageError: null }
-    })
-  }, [])
-
+  const handleImageSelect = useCallback(makeImageSelectHandler(validateImage, 'image', 'imagePreviewUrl', 'imageError', setForm, t), [t])
+  const handleImageRemove = useCallback(makeImageRemoveHandler('imagePreviewUrl', 'image', 'imageError', setForm), [])
   const handleVerticalImageSelect = useCallback(
-    (file: File) => {
-      const errorKey = validateVerticalImage(file)
-      if (errorKey) {
-        setForm(prev => {
-          if (prev.verticalImagePreviewUrl) {
-            URL.revokeObjectURL(prev.verticalImagePreviewUrl)
-          }
-          return { ...prev, verticalImageError: t(errorKey), verticalImage: null, verticalImagePreviewUrl: null }
-        })
-        return
-      }
-      const previewUrl = URL.createObjectURL(file)
-      setForm(prev => {
-        if (prev.verticalImagePreviewUrl) {
-          URL.revokeObjectURL(prev.verticalImagePreviewUrl)
-        }
-        return { ...prev, verticalImage: file, verticalImagePreviewUrl: previewUrl, verticalImageError: null }
-      })
-    },
+    makeImageSelectHandler(validateVerticalImage, 'verticalImage', 'verticalImagePreviewUrl', 'verticalImageError', setForm, t),
     [t]
   )
-
-  const handleVerticalImageRemove = useCallback(() => {
-    setForm(prev => {
-      if (prev.verticalImagePreviewUrl) {
-        URL.revokeObjectURL(prev.verticalImagePreviewUrl)
-      }
-      return { ...prev, verticalImage: null, verticalImagePreviewUrl: null, verticalImageError: null }
-    })
-  }, [])
+  const handleVerticalImageRemove = useCallback(
+    makeImageRemoveHandler('verticalImagePreviewUrl', 'verticalImage', 'verticalImageError', setForm),
+    []
+  )
 
   const validate = useCallback((): FormErrors => {
     const newErrors: FormErrors = {}
