@@ -9,7 +9,6 @@ jest.mock('./DayColumn.styled', () => ({
       {children as React.ReactNode}
     </div>
   ),
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   CardScrollArea: forwardRef(({ children, ...props }: Record<string, unknown>, ref: React.Ref<HTMLDivElement>) => (
     <div data-testid="card-scroll-area" ref={ref} {...props}>
       {children as React.ReactNode}
@@ -38,8 +37,7 @@ describe('DayColumn', () => {
     })
 
     it('should not render event cards', () => {
-      let events: ReturnType<typeof createMockEvent>[]
-      events = [createMockEvent({ id: 'e1', name: 'Event 1' })]
+      const events = [createMockEvent({ id: 'e1', name: 'Event 1' })]
       render(<DayColumn events={events} isLoading={true} dateLabel="Today" renderCard={mockRenderCard} />)
 
       expect(screen.queryByTestId('card-e1')).not.toBeInTheDocument()

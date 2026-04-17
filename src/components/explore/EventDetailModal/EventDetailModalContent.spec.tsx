@@ -140,7 +140,7 @@ describe('EventDetailModalContent', () => {
 
   describe('when the add to calendar button is clicked', () => {
     it('should call buildCalendarUrl', () => {
-      const { buildCalendarUrl } = jest.requireMock('../../../utils/exploreUrl') as { buildCalendarUrl: jest.Mock }
+      const { buildCalendarUrl } = jest.requireMock('../../../utils/exploreUrl')
       render(<EventDetailModalContent data={createMockData()} />)
 
       fireEvent.click(screen.getByTestId('calendar-btn'))

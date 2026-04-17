@@ -38,14 +38,15 @@ jest.mock('./LiveNow.styled', () => ({
       {children}
     </button>
   ),
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  LiveNowGrid: require('react').forwardRef(
-    ({ children, fadeLeft, fadeRight, ...props }: Record<string, unknown>, ref: React.Ref<HTMLDivElement>) => (
-      <div data-testid="live-now-grid" ref={ref} {...(props as React.HTMLAttributes<HTMLDivElement>)}>
-        {children as React.ReactNode}
-      </div>
+  LiveNowGrid: jest
+    .requireActual<typeof React>('react')
+    .forwardRef(
+      ({ children, fadeLeft: _fadeLeft, fadeRight: _fadeRight, ...props }: Record<string, unknown>, ref: React.Ref<HTMLDivElement>) => (
+        <div data-testid="live-now-grid" ref={ref} {...(props as React.HTMLAttributes<HTMLDivElement>)}>
+          {children as React.ReactNode}
+        </div>
+      )
     )
-  )
 }))
 
 jest.mock('../common/PaginationDots.styled', () => ({

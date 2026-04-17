@@ -12,9 +12,13 @@ module.exports = [
       'prettier.config.cjs',
       'jest.config.ts',
       'src/__mocks__/**',
-      'src/**/*.spec.ts',
-      'src/**/*.spec.tsx',
-      'src/setupTests.ts',
     ],
+  },
+  {
+    files: ['src/**/*.spec.ts', 'src/**/*.spec.tsx', 'src/setupTests.ts'],
+    rules: {
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/naming-convention': 'off',
+    },
   },
 ]
