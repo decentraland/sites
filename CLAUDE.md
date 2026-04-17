@@ -17,7 +17,7 @@ No Redux, no Web3. Data fetched via `useSyncExternalStore` hooks.
 
 `/explore/*`, `/blog/*`.
 
-Wrapped in `src/shells/DappsShell.tsx` (lazy-loaded). Adds: Redux Provider + PersistGate.
+Wrapped in `src/shells/DappsShell.tsx` (lazy-loaded). Adds: Redux Provider.
 No Web3 providers — auth uses localStorage identity via `useAuthIdentity`. Explore and blog use `signedFetch` with that identity for authenticated API calls.
 
 **Rule: Never import anything from `src/shells/` in lightweight route code.** Doing so pulls Redux and blog dependencies into the main bundle.
