@@ -4,7 +4,8 @@ import { getEnv } from '../../../config/env'
 import type { ContentfulAsset } from '../../../shared/blog/types/blog.domain'
 import { EmbeddedImage, Hyperlink, InstagramEmbed, InternalLink, LinkedInEmbed, TwitterContainer, YouTubeEmbed } from './RichText.styled'
 
-const LazyTwitterEmbed = lazy(() => import('react-twitter-embed').then(m => ({ default: m.TwitterTweetEmbed })))
+// Lazy-loaded to keep Twitter widgets script off the initial post-page bundle.
+const LazyTwitterEmbed = lazy(() => import('./TwitterEmbed').then(m => ({ default: m.TwitterEmbed })))
 
 // Strict hostname allowlists — prevents `uri.includes()` bypasses (e.g. evil.com/youtube.com)
 const YOUTUBE_HOSTS = new Set(['www.youtube.com', 'youtube.com', 'youtu.be'])
@@ -51,7 +52,7 @@ const renderTwitterEmbed = (uri: string) => {
   return (
     <TwitterContainer>
       <Suspense>
-        <LazyTwitterEmbed tweetId={tweetId} options={{ theme: 'dark' }} />
+        <LazyTwitterEmbed tweetId={tweetId} theme="dark" />
       </Suspense>
     </TwitterContainer>
   )

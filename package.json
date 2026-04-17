@@ -40,7 +40,6 @@
     "react-intersection-observer": "10.0.0",
     "react-redux": "9.2.0",
     "react-router-dom": "7.9.6",
-    "react-twitter-embed": "4.0.4",
     "viem": "2.44.2"
   },
   "devDependencies": {
