@@ -245,3 +245,144 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
 
 - All CMS_BASE_URL across `config/env/*.json`, `api/seo.ts`, and the `vite.config.ts` dev proxy must point to the same origin (`cms-api.decentraland.org`). Shared HTTP cache and ETag revalidation depend on this.
 - The dev proxy `/api/cms` rewrite must substitute the full upstream path (`/spaces/ea2ybdmmn1kv/environments/master`), not just strip the local prefix.
+
+### 16. No module-top-level throws in shell-reachable code
+
+- NEVER throw at module top-level in files imported by `src/shells/store.ts` or any file reachable from the lazy `DappsShell` chunk boundary. One `if (!X) throw` at import-time crashes the ENTIRE lazy chunk load — not just the feature that needs `X`.
+- For env-var validation, use a lazy getter that throws only on invocation:
+  ```ts
+  const getCmsBaseUrl = (): string => {
+    const url = getEnv('CMS_BASE_URL')
+    if (!url) throw new Error('CMS_BASE_URL is required')
+    return url
+  }
+  // inside endpoint: `url: \`\${getCmsBaseUrl()}/entries?...\``
+  ```
+
+### 17. RTK Query — no direct store imports in endpoint files
+
+- RTK Query endpoint files (`features/<domain>/<domain>.client.ts`) must NOT `import { store } from '.../shells/store'` for dispatching inside `transformResponse` or `queryFn`. That creates a circular dep with `store.ts` and breaks tree-shaking guarantees.
+- Use RTK Query's `onQueryStarted` lifecycle instead:
+  ```ts
+  getBlogPosts: builder.query({
+    query: args => `posts?${args}`,
+    async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      try {
+        const { data } = await queryFulfilled
+        dispatch(postsUpserted(data.items))
+      } catch {
+        /* hook surfaces error */
+      }
+    }
+  })
+  ```
+- A single legitimate read of `store.getState()` for cache-check optimizations is tolerated (see `features/blog/blog.client.ts:getPostFromStore`) as long as the file does NOT dispatch from within RTK Query callbacks.
+
+### 18. RTK Query — no internal cache state access
+
+- NEVER reach into `state.cmsClient.queries` or similar internals via `as any` casts. The shape is undocumented and changes between `@reduxjs/toolkit` minor versions.
+- Read cached data through one of:
+  - Normalized entity-adapter selectors (preferred — `selectBlogPostById(state, id)`)
+  - `cmsClient.endpoints.getBlogPost.select(args)(state)`
+  - Generated hooks with `selectFromResult` inside components
+- If the data isn't reachable through any of the above, add an `onQueryStarted` that upserts into an entity adapter — then select from there.
+
+### 19. XSS — sanitize CMS/search HTML before React innerHTML injection
+
+- Every React innerHTML injection (`dangerouslySetInnerHTML`) whose content originates from Contentful, Algolia, or any external source MUST run through DOMPurify with a strict tag allowlist.
+- One `sanitizeX.ts` helper per source with a scoped allowlist — do NOT build a generic global sanitizer that tries to cover every case:
+  ```ts
+  // src/components/blog/Search/sanitizeHighlight.ts
+  const sanitizeHighlight = (value: string): string => DOMPurify.sanitize(value, { ALLOWED_TAGS: ['em', 'mark'], ALLOWED_ATTR: [] })
+  ```
+- Algolia's `_highlightResult` wraps matches in `<em>`, but the match TEXT came from the CMS — if an author injected a script tag into a title, unsanitized render would execute it.
+
+### 20. URL validation — parse + allowlist, never `includes()`
+
+- For embed renderers and any hostname check, NEVER use `uri.includes('youtube.com')` or `endsWith('instagram.com')`. Both are trivially bypassable (`https://evil.com/youtube.com/...`, `https://evil-instagram.com/...`).
+- Parse with `new URL()` and compare `hostname` against a `Set` allowlist. Validate any extracted ID with a regex before interpolating into iframe `src`:
+
+  ```ts
+  const YOUTUBE_HOSTS = new Set(['www.youtube.com', 'youtube.com', 'youtu.be'])
+  const YOUTUBE_ID_REGEX = /^[\w-]{1,20}$/
+
+  const parseUrl = (uri: string): URL | null => {
+    try {
+      return new URL(uri)
+    } catch {
+      return null
+    }
+  }
+
+  const getYouTubeVideoId = (uri: string): string | null => {
+    const url = parseUrl(uri)
+    if (!url || !YOUTUBE_HOSTS.has(url.hostname)) return null
+    const id = url.hostname === 'youtu.be' ? url.pathname.slice(1) : url.searchParams.get('v') ?? ''
+    return YOUTUBE_ID_REGEX.test(id) ? id : null
+  }
+  ```
+
+### 21. `package-lock.json` after rebase conflicts
+
+- NEVER use `npm install --package-lock-only` to regenerate the lock after a rebase conflict. That flag only resolves optional dependencies for the current host (macOS arm64 in most dev environments), dropping `@rollup/rollup-linux-*`, `@esbuild/linux-*`, `@unrs/resolver-binding-linux-*`, and `@napi-rs/*` bindings. CI running `npm ci` on `linux-x64` will then fail with "Missing: <pkg> from lock file".
+- Correct sequence after a lock conflict:
+  ```bash
+  rm -rf node_modules package-lock.json
+  npm install
+  git add package-lock.json
+  ```
+- The new lock will be larger (+3-5k lines typical) because it now lists all platform binaries.
+
+### 22. Immutable data in RTK Query cache
+
+- Never mutate objects that have entered RTK Query's cache (returned by `queryFn`, `transformResponse`, or fetched via `updateQueryData`). RTK Query expects immutable references — mutations cause silent corruption with structural sharing.
+- Build enrichment results as a separate `Map`, then produce NEW objects via spread:
+
+  ```ts
+  // BAD — mutates in place
+  cards.forEach(card => {
+    card.creatorAddress = deployerMap.get(card.coordinates)
+  })
+
+  // GOOD — new object per card
+  const enriched = cards.map(card => {
+    const deployedBy = deployerMap.get(card.coordinates)
+    return deployedBy && !card.creatorAddress ? { ...card, creatorAddress: deployedBy } : card
+  })
+  ```
+
+## Security checklist
+
+Before merging any PR that touches user-visible rendering, forms, or external content:
+
+- React innerHTML injection + CMS/search content → **DOMPurify with strict allowlist** (see rule 19)
+- Iframe embeds from user/CMS URLs → **`new URL()` + hostname `Set` + regex ID validation** (rule 20)
+- Server error bodies surfaced to UI → **log raw, show generic message** (rule 10)
+- CSS interpolation of URLs (`background-image: url("\${x}")`) → **validate + percent-encode quotes** via a `safeCssUrl()` helper
+- SEO worker (`api/seo.ts`) touches any new template path → ensure HTML escaping still applied to every interpolated value, origin allowlist is enforced
+- No secrets in `src/config/env/*.json` — these ship to the client. Secrets go in Vercel env vars + `process.env.*` on the server side of `api/seo.ts`
+
+## Key conventions — quick reference
+
+Aggregated from the rules above, sorted by "what could hurt you most":
+
+| Area             | Rule                                                                                                                                   |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **Architecture** | `src/shells/*` is lazy — never import from it in lightweight route code (rule 2)                                                       |
+| **Architecture** | Empty Redux store is `configureStore({ reducer: {} })`, no placeholder (rule 3)                                                        |
+| **RTK Query**    | `services/` = base clients (infra), `features/` = `injectEndpoints` (business). Keep the split                                         |
+| **RTK Query**    | Use `onQueryStarted` for dispatching, not `store.dispatch` in `transformResponse` (rule 17)                                            |
+| **RTK Query**    | No `state.xxxClient.queries as any` — use entity selectors or `endpoint.select()` (rule 18)                                            |
+| **Auth**         | localStorage-only via `useAuthIdentity` — no Web3 providers, no wagmi, no thirdweb                                                     |
+| **Bundle**       | No `module.throw` at import time in shell-reachable files (rule 16)                                                                    |
+| **Bundle**       | Run `npm run build && npm run preview` for PRs adding dynamic routes or CJS-ish deps (rule 14)                                         |
+| **Bundle**       | `decentraland-ui2` imports only; no hardcoded colors; object-syntax styled components                                                  |
+| **Security**     | `dangerouslySetInnerHTML` → DOMPurify with scoped allowlist (rule 19)                                                                  |
+| **Security**     | URL parsing with `new URL()` + hostname allowlist, never `.includes()` (rule 20)                                                       |
+| **Security**     | Never leak raw server error bodies to UI (rule 10)                                                                                     |
+| **Performance**  | Hero is prerendered; Layout is lazy; DappsShell is lazy; analytics deferred                                                            |
+| **Performance**  | Add `memo()` to list-rendered card components (rule 11)                                                                                |
+| **Performance**  | Batch HTTP calls when API supports it — no N+1 in hot paths (rule 12)                                                                  |
+| **Deps**         | `npm install`/`npm uninstall`; `@dcl/*` caret, others exact; fresh `rm -rf node_modules && npm install` after lock conflicts (rule 21) |
+| **Routing**      | Fixed navbar = 64px mobile / 92px desktop. Every new route needs `paddingTop: 64` / `md: 96` (rule 13)                                 |
+| **Config**       | Unified CMS origin across env files + api/seo.ts + vite proxy (rule 15)                                                                |
