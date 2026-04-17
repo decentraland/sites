@@ -53,6 +53,12 @@ export default defineConfig(({ command, mode }) => {
           changeOrigin: true,
           secure: false,
           ws: true
+        },
+        '/api/cms': {
+          target: 'https://cms.decentraland.zone',
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path: string) => path.replace(/^\/api\/cms/, '')
         }
       }
       /* eslint-enable @typescript-eslint/naming-convention */
