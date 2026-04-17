@@ -3,12 +3,13 @@ import { Provider } from 'react-redux'
 import { Outlet } from 'react-router-dom'
 import { CircularProgress } from 'decentraland-ui2'
 import { store } from './store'
+import { FallbackContainer } from './DappsShell.styled'
 
 function DappsShellFallback() {
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+    <FallbackContainer>
       <CircularProgress color="inherit" />
-    </div>
+    </FallbackContainer>
   )
 }
 

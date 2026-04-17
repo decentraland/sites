@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { IndexPage } from './pages/index.tsx'
+import { PlaceholderContainer } from './shells/DappsShell.styled'
 
 // Layout imports Navbar from decentraland-ui2 which pulls in ~1.3MB of MUI.
 // Lazy-loading it keeps that JS out of the critical path so the static hero
@@ -73,11 +74,7 @@ const App = () => {
 }
 
 function DappsShellPlaceholder({ name }: { name: string }) {
-  return (
-    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      {name} — coming soon (pending migration)
-    </div>
-  )
+  return <PlaceholderContainer>{name} — coming soon (pending migration)</PlaceholderContainer>
 }
 
 export { App }
