@@ -31,6 +31,15 @@ const CreatePage = lazy(() => import('./pages/create').then(m => ({ default: m.C
 const DiscordPage = lazy(() => import('./pages/discord').then(m => ({ default: m.DiscordPage })))
 const PressPage = lazy(() => import('./pages/press').then(m => ({ default: m.PressPage })))
 
+// Blog pages — loaded inside DappsShell (Redux + PersistGate required)
+const BlogPage = lazy(() => import('./pages/blog/BlogPage').then(m => ({ default: m.BlogPage })))
+const PostPage = lazy(() => import('./pages/blog/PostPage').then(m => ({ default: m.PostPage })))
+const CategoryPage = lazy(() => import('./pages/blog/CategoryPage').then(m => ({ default: m.CategoryPage })))
+const AuthorPage = lazy(() => import('./pages/blog/AuthorPage').then(m => ({ default: m.AuthorPage })))
+const BlogSearchPage = lazy(() => import('./pages/blog/SearchPage').then(m => ({ default: m.SearchPage })))
+const PreviewPage = lazy(() => import('./pages/blog/PreviewPage').then(m => ({ default: m.PreviewPage })))
+const BlogSignInRedirect = lazy(() => import('./pages/blog/SignInRedirect').then(m => ({ default: m.SignInRedirect })))
+
 // Lazy-loaded for /explore and /blog routes only. Contains Redux + PersistGate.
 // No Web3 providers — auth uses localStorage identity via useAuthIdentity.
 const DappsShell = lazy(() => import('./shells/DappsShell').then(m => ({ default: m.DappsShell })))
@@ -71,7 +80,13 @@ const App = () => {
             <Route element={<DappsShell />}>
               <Route path="/explore" element={<ExploreHomePage />} />
               <Route path="/explore/new-event" element={<CreateEventPage />} />
-              <Route path="/blog/*" element={<DappsShellPlaceholder name="blog" />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/preview" element={<PreviewPage />} />
+              <Route path="/blog/search" element={<BlogSearchPage />} />
+              <Route path="/blog/sign-in" element={<BlogSignInRedirect />} />
+              <Route path="/blog/author/:authorSlug" element={<AuthorPage />} />
+              <Route path="/blog/:categorySlug" element={<CategoryPage />} />
+              <Route path="/blog/:categorySlug/:postSlug" element={<PostPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
