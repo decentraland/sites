@@ -1,8 +1,7 @@
-/* eslint-disable */ // TODO(Task 14): fix imports
 import { BLOCKS } from '@contentful/rich-text-types'
-import { store } from '../../app/store'
-import { cmsClient } from '../../services/client'
-import type { BlogAuthor, BlogCategory, BlogPost, ContentfulAsset, PaginatedBlogPosts } from '../../shared/types/blog.domain'
+import { cmsClient } from '../../services/blogClient'
+import type { BlogAuthor, BlogCategory, BlogPost, ContentfulAsset, PaginatedBlogPosts } from '../../shared/blog/types/blog.domain'
+import { store } from '../../shells/store'
 import { getEntrySlug, resolveAssetLink, resolveAuthorLink, resolveCategoryLink } from './blog.helpers'
 import { mapBlogAuthor, mapBlogCategory, mapBlogPost, mapContentfulAsset } from './blog.mappers'
 import { postsUpserted } from './blog.slice'
@@ -20,8 +19,9 @@ import type { CMSEntry, CMSListResponse } from './cms.types'
 
 // Helper to check if a post is already in the normalized store
 const getPostFromStore = (postId: string): BlogPost | undefined => {
-  const state = store.getState()
-  return state.blog.entities[postId]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const state = store.getState() as any
+  return state.blog?.entities[postId]
 }
 
 // Helper to resolve all references (category, author, image) in a CMS entry

@@ -49,7 +49,7 @@ interface SearchBlogPostsParams {
 }
 
 interface SearchBlogPostsResponse {
-  results: import('../../shared/types/blog.domain').SearchResult[]
+  results: import('../../shared/blog/types/blog.domain').SearchResult[]
   total: number
   hasMore: boolean
 }

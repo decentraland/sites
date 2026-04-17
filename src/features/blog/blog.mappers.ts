@@ -1,9 +1,8 @@
-/* eslint-disable */ // TODO(Task 14): fix imports
 import { Document } from '@contentful/rich-text-types'
-import type { BlogAuthor, BlogCategory, BlogPost, ContentfulAsset } from '../../shared/types/blog.domain'
-import { formatUtcDate } from '../../shared/utils/date'
-import { locations } from '../../shared/utils/locations'
-import { slugify } from '../../shared/utils/string'
+import type { BlogAuthor, BlogCategory, BlogPost, ContentfulAsset } from '../../shared/blog/types/blog.domain'
+import { formatUtcDate } from '../../shared/blog/utils/date'
+import { locations } from '../../shared/blog/utils/locations'
+import { slugify } from '../../shared/blog/utils/string'
 import type { CMSEntry } from './cms.types'
 
 interface ContentfulAssetEntry {

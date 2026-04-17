@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { type Options, documentToReactComponents } from '@contentful/rich-text-react-renderer'
 import { BLOCKS, type Document, INLINES } from '@contentful/rich-text-types'
-import type { ContentfulAsset } from '../../../shared/types/blog.domain'
+import type { ContentfulAsset } from '../../../shared/blog/types/blog.domain'
 import { renderEmbeddedAsset, renderHyperlink } from './RichText.renderers'
 import {
   Blockquote,

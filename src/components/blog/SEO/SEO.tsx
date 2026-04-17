@@ -1,7 +1,6 @@
-/* eslint-disable */ // TODO(Task 14): fix imports
 import { Helmet } from 'react-helmet'
 import { useTranslation } from '@dcl/hooks'
-import { getEnv } from '../../config'
+import { getEnv } from '../../../config/env'
 import { OGType } from './SEO.types'
 import type { OGImage, SEOProps } from './SEO.types'
 
@@ -80,3 +79,4 @@ const SEO = (props: SEOProps) => {
 }
 
 export { SEO }
+export { OGType } from './SEO.types'

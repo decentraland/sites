@@ -1,5 +1,4 @@
-/* eslint-disable */ // TODO(Task 14): fix imports
-import { cmsBaseUrl } from '../../services/client'
+import { cmsBaseUrl } from '../../services/blogClient'
 import type { SlugFields } from './blog.types'
 import type { CMSEntry, CMSListResponse, CMSQueryParams, CMSReference } from './cms.types'
 

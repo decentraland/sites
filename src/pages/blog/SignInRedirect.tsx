@@ -1,6 +1,5 @@
-/* eslint-disable */ // TODO(Task 14): fix imports
 import { useEffect } from 'react'
-import { redirectToAuth } from '../utils/authRedirect'
+import { redirectToAuth } from '../../utils/blogAuthRedirect'
 
 function SignInRedirect() {
   useEffect(() => {

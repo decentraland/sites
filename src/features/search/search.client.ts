@@ -1,8 +1,7 @@
-/* eslint-disable */ // TODO(Task 14): fix imports
 import { algoliasearch } from 'algoliasearch'
-import { getEnv } from '../../config'
-import { algoliaClient } from '../../services/client'
-import type { SearchResult } from '../../shared/types/blog.domain'
+import { getEnv } from '../../config/env'
+import { algoliaClient } from '../../services/blogClient'
+import type { SearchResult } from '../../shared/blog/types/blog.domain'
 import { resolveAssetUrl, resolveEntrySlug } from '../blog/blog.helpers'
 import type { AlgoliaHit, SearchBlogPostsParams, SearchBlogPostsResponse, SearchBlogResult } from './search.types'
 

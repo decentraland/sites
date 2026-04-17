@@ -1,5 +1,5 @@
 import { createEntityAdapter, createSlice } from '@reduxjs/toolkit'
-import type { BlogPost } from '../../shared/types/blog.domain'
+import type { BlogPost } from '../../shared/blog/types/blog.domain'
 
 // Entity adapter for normalized posts storage
 const postsAdapter = createEntityAdapter<BlogPost>()

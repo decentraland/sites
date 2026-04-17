@@ -1,7 +1,7 @@
 import { Suspense, lazy } from 'react'
 import type { Block, Inline, Text } from '@contentful/rich-text-types'
-import { getEnv } from '../../../config'
-import type { ContentfulAsset } from '../../../shared/types/blog.domain'
+import { getEnv } from '../../../config/env'
+import type { ContentfulAsset } from '../../../shared/blog/types/blog.domain'
 import { EmbeddedImage, Hyperlink, InstagramEmbed, InternalLink, LinkedInEmbed, TwitterContainer, YouTubeEmbed } from './RichText.styled'
 
 const LazyTwitterEmbed = lazy(() => import('react-twitter-embed').then(m => ({ default: m.TwitterTweetEmbed })))

@@ -1,7 +1,6 @@
-/* eslint-disable */ // TODO(Task 14): fix imports
 import { memo } from 'react'
 import { useMediaQuery } from 'react-responsive'
-import type { BlogPost } from '../../../shared/types/blog.domain'
+import type { BlogPost } from '../../../shared/blog/types/blog.domain'
 import { MainPostCard } from '../MainPostCard'
 import { PostCard } from '../PostCard'
 import type { PostListProps } from './PostList.types'

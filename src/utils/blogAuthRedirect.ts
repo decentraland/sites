@@ -1,6 +1,4 @@
-/* eslint-disable */ // TODO(Task 14): fix imports
-import { clearWagmiState } from '@dcl/core-web3'
-import { getEnv } from '../config'
+import { getEnv } from '../config/env'
 
 /**
  * Gets the basename based on the current host.
@@ -81,8 +79,6 @@ function redirectToAuth(path?: string, queryParams?: Record<string, string>): vo
   const redirectPath = path ?? getRedirectPathFromCurrentUrl()
   const redirectTo = buildAuthRedirectUrl(redirectPath, queryParams)
   const authUrl = resolveAuthUrl()
-
-  clearWagmiState()
 
   window.location.replace(`${authUrl}/login?redirectTo=${encodeURIComponent(redirectTo)}`)
 }

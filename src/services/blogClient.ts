@@ -1,5 +1,5 @@
 import { createApi, fakeBaseQuery, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { getEnv } from '../config'
+import { getEnv } from '../config/env'
 
 const CMS_BASE_URL = getEnv('CMS_BASE_URL')
 if (!CMS_BASE_URL) {
