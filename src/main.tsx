@@ -1,21 +1,24 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { AnalyticsProvider } from '@dcl/hooks'
 import { DclThemeProvider, darkTheme } from 'decentraland-ui2'
 import { App } from './App'
 import { getEnv } from './config/env'
 import { LocaleProvider } from './intl/LocaleContext'
+import { DeferredAnalyticsProvider } from './modules/DeferredAnalyticsProvider'
+import { scheduleDeferredThirdParty } from './modules/deferredThirdParty'
 import './modules/sentry'
 
 const segmentWriteKey = getEnv('SEGMENT_KEY') || ''
+
+scheduleDeferredThirdParty()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <DclThemeProvider theme={darkTheme}>
       <LocaleProvider>
-        <AnalyticsProvider writeKey={segmentWriteKey}>
+        <DeferredAnalyticsProvider writeKey={segmentWriteKey}>
           <App />
-        </AnalyticsProvider>
+        </DeferredAnalyticsProvider>
       </LocaleProvider>
     </DclThemeProvider>
   </StrictMode>

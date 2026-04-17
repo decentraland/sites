@@ -22,16 +22,27 @@ const HeroBackground = styled(Box)({
   height: '100%',
   zIndex: 0,
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& > video, & > img, & > picture': {
+  '& > img.hero-image': {
     width: '100%',
     height: '100%',
-    objectFit: 'cover'
+    objectFit: 'cover',
+    display: 'block'
   },
+  // Video sits on top of the static image so the <img> remains a stable
+  // LCP element; the video simply fades in over it after load.
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& > picture > img': {
+  '& > video.hero-video-overlay': {
+    position: 'absolute',
+    top: 0,
+    left: 0,
     width: '100%',
     height: '100%',
-    objectFit: 'cover'
+    objectFit: 'cover',
+    zIndex: 1,
+    opacity: 0,
+    transition: 'opacity 400ms ease-in',
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    '&[data-ready="true"]': { opacity: 1 }
   }
 })
 
@@ -75,12 +86,21 @@ const HeroContent = styled(Box)(({ theme }) => ({
   }
 }))
 
-const HeroTitle = styled(Typography)(({ theme }) => ({
+// Rendered as a plain <h3> (not MUI Typography h2) with styles that match the
+// prerendered hero shell's h3 byte-for-byte. Matching the computed styles means
+// Chrome's LCP size calculation ties between shell and React copies, so the
+// earlier-painted shell wins and LCP stays anchored at FCP time. Do NOT add
+// textShadow, letter-spacing drift, or tag changes without re-matching the
+// shell CSS in scripts/prerender-hero.mjs — a 6% size delta was previously
+// enough to flip the LCP candidate to React.
+const HeroTitle = styled('h3')(({ theme }) => ({
   color: dclColors.neutral.white,
+  fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+  fontSize: 60,
   fontWeight: 600,
   lineHeight: 1.2,
-  letterSpacing: -0.5,
-  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
+  letterSpacing: '-0.5px',
+  margin: 0,
   marginBottom: theme.spacing(4.5),
   [theme.breakpoints.down('sm')]: {
     fontSize: 36,
