@@ -1,6 +1,5 @@
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Typography, styled } from 'decentraland-ui2'
 
-
 const HelpPageContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
