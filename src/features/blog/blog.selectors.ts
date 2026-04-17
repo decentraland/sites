@@ -6,8 +6,7 @@ import { blogReducer, postsSelectors } from './blog.slice'
 type BlogState = ReturnType<typeof blogReducer>
 
 // Base selector to get the blog state
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const selectBlogState = (state: RootState) => (state as any).blog as BlogState
+const selectBlogState = (state: RootState): BlogState => state.blog
 
 // Select all posts from normalized state
 const selectAllPosts = createSelector([selectBlogState], (blogState): BlogPost[] => postsSelectors.selectAll(blogState))

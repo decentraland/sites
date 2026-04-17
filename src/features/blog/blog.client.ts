@@ -19,9 +19,8 @@ import type { CMSEntry, CMSListResponse } from './cms.types'
 
 // Helper to check if a post is already in the normalized store
 const getPostFromStore = (postId: string): BlogPost | undefined => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const state = store.getState() as any
-  return state.blog?.entities[postId]
+  const state = store.getState()
+  return state.blog.entities[postId]
 }
 
 // Helper to resolve all references (category, author, image) in a CMS entry
