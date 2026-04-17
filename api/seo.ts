@@ -15,7 +15,8 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 // Constants
 // =============================================================================
 
-const CMS_BASE_URL = 'https://cms.decentraland.zone/spaces/ea2ybdmmn1kv/environments/master'
+// Production deployments should set CMS_BASE_URL env var; the fallback targets the staging CMS.
+const CMS_BASE_URL = process.env['CMS_BASE_URL'] ?? 'https://cms.decentraland.zone/spaces/ea2ybdmmn1kv/environments/master'
 
 const DEFAULTS = {
   title: 'Decentraland Blog | Updates, Stories, and Community Moments',
