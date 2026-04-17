@@ -1,14 +1,13 @@
-/* eslint-disable */ // TODO(Task 14): fix imports
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { Button, Typography } from 'decentraland-ui2'
-import { SearchResultCard } from '../components/Blog/SearchResultCard'
-import { PageLayout } from '../components/PageLayout'
-import { SEO } from '../components/SEO'
-import { getEnv } from '../config'
-import { useSearchBlogPostsQuery } from '../features/search/search.client'
-import type { SearchResult } from '../shared/types/blog.domain'
+import { BlogLayout } from '../../components/blog/BlogLayout'
+import { SearchResultCard } from '../../components/blog/SearchResultCard'
+import { SEO } from '../../components/blog/SEO/SEO'
+import { getEnv } from '../../config/env'
+import { useSearchBlogPostsQuery } from '../../features/search/search.client'
+import type { SearchResult } from '../../shared/blog/types/blog.domain'
 import { CenteredBox, HeaderBox, LoadMoreContainer, ResultsWrapper, SearchSubtitle } from './SearchPage.styled'
 
 const HITS_PER_PAGE = 10
@@ -61,7 +60,7 @@ export const SearchPage = () => {
   const baseUrl = getEnv('BLOG_BASE_URL') || ''
 
   return (
-    <PageLayout showBlogNavigation={true}>
+    <BlogLayout showBlogNavigation={true}>
       <SEO
         title={query ? t('search.title_with_query', { query }) : t('search.title')}
         description={searchDescription}
@@ -117,6 +116,6 @@ export const SearchPage = () => {
           </Typography>
         </CenteredBox>
       )}
-    </PageLayout>
+    </BlogLayout>
   )
 }

@@ -1,23 +1,22 @@
-/* eslint-disable */ // TODO(Task 14): fix imports
 import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
- 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import FacebookIcon from '@mui/icons-material/Facebook'
- 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import XIcon from '@mui/icons-material/X'
 import { useTranslation } from '@dcl/hooks'
 import { CircularProgress, Typography } from 'decentraland-ui2'
-import { useAppSelector } from '../app/hooks'
-import type { RootState } from '../app/store'
-import { RelatedPost } from '../components/Blog/RelatedPost'
-import { RichText } from '../components/Blog/RichText'
-import { PageLayout } from '../components/PageLayout'
-import { OGType, SEO } from '../components/SEO'
-import { getEnv } from '../config'
-import { useGetBlogPostBySlugQuery, useGetBlogPostsQuery } from '../features/blog/blog.client'
-import type { BlogPost, PaginatedBlogPosts } from '../shared/types/blog.domain'
-import { formatUtcDate } from '../shared/utils/date'
-import { locations } from '../shared/utils/locations'
+import { BlogLayout } from '../../components/blog/BlogLayout'
+import { RelatedPost } from '../../components/blog/RelatedPost'
+import { RichText } from '../../components/blog/RichText'
+import { OGType, SEO } from '../../components/blog/SEO/SEO'
+import { getEnv } from '../../config/env'
+import { useGetBlogPostBySlugQuery, useGetBlogPostsQuery } from '../../features/blog/blog.client'
+import type { BlogPost, PaginatedBlogPosts } from '../../shared/blog/types/blog.domain'
+import { formatUtcDate } from '../../shared/blog/utils/date'
+import { locations } from '../../shared/blog/utils/locations'
+import { useAppSelector } from '../../shells/store'
+import type { RootState } from '../../shells/store'
 import {
   AuthorAvatar,
   AuthorBox,
@@ -51,9 +50,13 @@ export const PostPage = () => {
   // Try to find the post in any cached getBlogPosts query
   const cachedPost = useAppSelector((state: RootState): BlogPost | null => {
     // Search through all cached getBlogPosts queries
-    for (const query of Object.values(state.cmsClient.queries)) {
-      if (query?.endpointName === 'getBlogPosts' && query.status === 'fulfilled' && query.data) {
-        const data = query.data as PaginatedBlogPosts
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const anyState = state as any
+    const queries: Record<string, unknown> = anyState.cmsClient?.queries ?? {}
+    for (const query of Object.values(queries)) {
+      const q = query as { endpointName?: string; status?: string; data?: unknown } | null
+      if (q?.endpointName === 'getBlogPosts' && q.status === 'fulfilled' && q.data) {
+        const data = q.data as PaginatedBlogPosts
         const found = data.posts.find(p => p.category.slug === categorySlug && p.slug === postSlug)
         if (found) return found
       }
@@ -106,26 +109,26 @@ export const PostPage = () => {
 
   if (isLoading && !cachedPost) {
     return (
-      <PageLayout showBlogNavigation activeCategory={categorySlug}>
+      <BlogLayout showBlogNavigation activeCategory={categorySlug}>
         <CenteredBox>
           <CircularProgress />
         </CenteredBox>
-      </PageLayout>
+      </BlogLayout>
     )
   }
 
   if (error || !displayPost) {
     return (
-      <PageLayout showBlogNavigation activeCategory={categorySlug}>
+      <BlogLayout showBlogNavigation activeCategory={categorySlug}>
         <CenteredBox>
           <Typography color="error">{t('error.load_post')}</Typography>
         </CenteredBox>
-      </PageLayout>
+      </BlogLayout>
     )
   }
 
   return (
-    <PageLayout
+    <BlogLayout
       showBlogNavigation
       activeCategory={categorySlug}
       relatedPosts={<RelatedPost posts={relatedPosts} loading={isRelatedPostsLoading} maxItems={RELATED_POSTS_COUNT} />}
@@ -196,6 +199,6 @@ export const PostPage = () => {
           <RichText document={displayPost.body} assets={displayPost.bodyAssets} />
         </BodyContainer>
       </ContentContainer>
-    </PageLayout>
+    </BlogLayout>
   )
 }

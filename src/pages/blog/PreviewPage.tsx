@@ -1,12 +1,11 @@
-/* eslint-disable */ // TODO(Task 14): fix imports
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { CircularProgress, Typography } from 'decentraland-ui2'
-import { RichText } from '../components/Blog/RichText'
-import { PageLayout } from '../components/PageLayout'
-import { useGetBlogPostPreviewQuery } from '../features/blog/blog.client'
-import { formatUtcDate } from '../shared/utils/date'
+import { BlogLayout } from '../../components/blog/BlogLayout'
+import { RichText } from '../../components/blog/RichText'
+import { useGetBlogPostPreviewQuery } from '../../features/blog/blog.client'
+import { formatUtcDate } from '../../shared/blog/utils/date'
 import {
   AuthorAvatar,
   AuthorBox,
@@ -52,36 +51,36 @@ export const PreviewPage = () => {
 
   if (!isValidParams) {
     return (
-      <PageLayout showBlogNavigation={true}>
+      <BlogLayout showBlogNavigation={true}>
         <CenteredBox>
           <Typography color="error">{t('preview.missing_params')}</Typography>
         </CenteredBox>
-      </PageLayout>
+      </BlogLayout>
     )
   }
 
   if (isLoading) {
     return (
-      <PageLayout showBlogNavigation={true}>
+      <BlogLayout showBlogNavigation={true}>
         <CenteredBox>
           <CircularProgress />
         </CenteredBox>
-      </PageLayout>
+      </BlogLayout>
     )
   }
 
   if (error || !post) {
     return (
-      <PageLayout showBlogNavigation={true}>
+      <BlogLayout showBlogNavigation={true}>
         <CenteredBox>
           <Typography color="error">{t('error.load_preview')}</Typography>
         </CenteredBox>
-      </PageLayout>
+      </BlogLayout>
     )
   }
 
   return (
-    <PageLayout showBlogNavigation={true}>
+    <BlogLayout showBlogNavigation={true}>
       <PreviewBanner>
         <Typography variant="h6">{t('preview.mode')}</Typography>
         <Typography variant="body2">{t('preview.description')}</Typography>
@@ -115,6 +114,6 @@ export const PreviewPage = () => {
           <RichText document={post.body} assets={post.bodyAssets} />
         </BodyContainer>
       </ContentContainer>
-    </PageLayout>
+    </BlogLayout>
   )
 }

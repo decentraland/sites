@@ -1,16 +1,15 @@
-/* eslint-disable */ // TODO(Task 14): fix imports
 import { useParams } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { useMobileMediaQuery } from 'decentraland-ui2/dist/components/Media'
 import { CircularProgress, Typography } from 'decentraland-ui2'
-import { CategoryHero } from '../components/Blog/CategoryHero'
-import { PostList } from '../components/Blog/PostList'
-import { PageLayout } from '../components/PageLayout'
-import { SEO } from '../components/SEO'
-import { getEnv } from '../config'
-import { useGetBlogCategoryBySlugQuery } from '../features/blog/blog.client'
-import { useInfiniteBlogPosts } from '../features/blog/useInfiniteBlogPosts'
-import type { BlogCategory } from '../shared/types/blog.domain'
+import { BlogLayout } from '../../components/blog/BlogLayout'
+import { CategoryHero } from '../../components/blog/CategoryHero'
+import { PostList } from '../../components/blog/PostList'
+import { SEO } from '../../components/blog/SEO/SEO'
+import { getEnv } from '../../config/env'
+import { useGetBlogCategoryBySlugQuery } from '../../features/blog/blog.client'
+import { useInfiniteBlogPosts } from '../../features/blog/useInfiniteBlogPosts'
+import type { BlogCategory } from '../../shared/blog/types/blog.domain'
 import { CenteredBox } from './CategoryPage.styled'
 
 const CategoryPostList = ({ category }: { category: BlogCategory }) => {
@@ -47,16 +46,16 @@ export const CategoryPage = () => {
 
   if (categoryError) {
     return (
-      <PageLayout showBlogNavigation={true} activeCategory={categorySlug}>
+      <BlogLayout showBlogNavigation={true} activeCategory={categorySlug}>
         <CenteredBox>
           <Typography color="error">{t('error.load_category')}</Typography>
         </CenteredBox>
-      </PageLayout>
+      </BlogLayout>
     )
   }
 
   return (
-    <PageLayout
+    <BlogLayout
       showBlogNavigation={true}
       activeCategory={categorySlug}
       banner={
@@ -86,6 +85,6 @@ export const CategoryPage = () => {
         // key forces remount when category changes, resetting the infinite scroll hook
         <CategoryPostList key={category.id} category={category} />
       ) : null}
-    </PageLayout>
+    </BlogLayout>
   )
 }

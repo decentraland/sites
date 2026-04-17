@@ -1,14 +1,13 @@
-/* eslint-disable */ // TODO(Task 14): fix imports
 import { useParams } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { CircularProgress, Typography } from 'decentraland-ui2'
-import { PostList } from '../components/Blog/PostList'
-import { PageLayout } from '../components/PageLayout'
-import { OGType, SEO } from '../components/SEO'
-import { getEnv } from '../config'
-import { useGetBlogAuthorBySlugQuery } from '../features/blog/blog.client'
-import { useInfiniteBlogPosts } from '../features/blog/useInfiniteBlogPosts'
-import type { BlogAuthor } from '../shared/types/blog.domain'
+import { BlogLayout } from '../../components/blog/BlogLayout'
+import { PostList } from '../../components/blog/PostList'
+import { OGType, SEO } from '../../components/blog/SEO/SEO'
+import { getEnv } from '../../config/env'
+import { useGetBlogAuthorBySlugQuery } from '../../features/blog/blog.client'
+import { useInfiniteBlogPosts } from '../../features/blog/useInfiniteBlogPosts'
+import type { BlogAuthor } from '../../shared/blog/types/blog.domain'
 import { AuthorHeaderBox, AuthorImage, CenteredBox } from './AuthorPage.styled'
 
 const AuthorPostList = ({ author }: { author: BlogAuthor }) => {
@@ -57,16 +56,16 @@ export const AuthorPage = () => {
 
   if (authorError) {
     return (
-      <PageLayout showBlogNavigation={true}>
+      <BlogLayout showBlogNavigation={true}>
         <CenteredBox>
           <Typography color="error">{t('error.load_author')}</Typography>
         </CenteredBox>
-      </PageLayout>
+      </BlogLayout>
     )
   }
 
   return (
-    <PageLayout showBlogNavigation={true}>
+    <BlogLayout showBlogNavigation={true}>
       <SEO
         title={author?.title ? t('blog.posts_by', { author: author.title }) : undefined}
         description={author?.description || t('blog.default_description')}
@@ -89,6 +88,6 @@ export const AuthorPage = () => {
         // key forces remount when author changes, resetting the infinite scroll hook
         <AuthorPostList key={author.id} author={author} />
       ) : null}
-    </PageLayout>
+    </BlogLayout>
   )
 }

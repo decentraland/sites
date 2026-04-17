@@ -1,13 +1,12 @@
-/* eslint-disable */ // TODO(Task 14): fix imports
 import { useMemo } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { useMobileMediaQuery } from 'decentraland-ui2/dist/components/Media'
 import { Typography } from 'decentraland-ui2'
-import { PostList } from '../components/Blog/PostList'
-import { PageLayout } from '../components/PageLayout'
-import { SEO } from '../components/SEO'
-import { useInfiniteBlogPosts } from '../features/blog/useInfiniteBlogPosts'
-import type { BlogPost } from '../shared/types/blog.domain'
+import { BlogLayout } from '../../components/blog/BlogLayout'
+import { PostList } from '../../components/blog/PostList'
+import { SEO } from '../../components/blog/SEO/SEO'
+import { useInfiniteBlogPosts } from '../../features/blog/useInfiniteBlogPosts'
+import type { BlogPost } from '../../shared/blog/types/blog.domain'
 import { ErrorContainer } from './BlogPage.styled'
 
 export const BlogPage = () => {
@@ -21,7 +20,7 @@ export const BlogPage = () => {
   }, [posts])
 
   return (
-    <PageLayout showBlogNavigation activeCategory="all_articles">
+    <BlogLayout showBlogNavigation activeCategory="all_articles">
       <SEO
         title={t('blog.title')}
         description={firstPost?.description || t('blog.default_description')}
@@ -43,6 +42,6 @@ export const BlogPage = () => {
       ) : (
         <PostList posts={posts} loading={isLoadingInitial} hasMainPost={!isMobile} />
       )}
-    </PageLayout>
+    </BlogLayout>
   )
 }
