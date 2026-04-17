@@ -98,6 +98,13 @@ class IntercomWidget {
     this.client('update', { ...data, app_id: this._appId })
   }
 
+  show() {
+    if (!this.client) {
+      throw new Error('Client not initialized')
+    }
+    this.client('show')
+  }
+
   unmount() {
     if (!this.client) {
       throw new Error('Client not initialized')

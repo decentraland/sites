@@ -1,5 +1,6 @@
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Typography, styled } from 'decentraland-ui2'
 
+
 const HelpPageContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
@@ -254,8 +255,117 @@ const DesktopStatusWrapper = styled(Box)(({ theme }) => ({
   }
 }))
 
+const ScrollableAccordionContainer = styled(AccordionContainer)(({ theme }) => ({
+  maxHeight: 360,
+  overflowY: 'auto',
+  paddingRight: theme.spacing(0.5),
+  scrollbarWidth: 'thin',
+  scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&::-webkit-scrollbar': {
+    width: 4
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&::-webkit-scrollbar-track': {
+    background: 'transparent'
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&::-webkit-scrollbar-thumb': {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 4
+  },
+  [theme.breakpoints.down('sm')]: {
+    maxHeight: 300
+  }
+}))
+
+const ChatCtaBanner = styled(Box)(({ theme }) => ({
+  marginTop: theme.spacing(3),
+  minWidth: 661,
+  maxWidth: 661,
+  background: 'linear-gradient(135deg, #3d1a4a 0%, #280d2b 100%)',
+  borderRadius: 27,
+  padding: theme.spacing(3, 4),
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  border: '1px solid rgba(255, 255, 255, 0.08)',
+  [theme.breakpoints.down('sm')]: {
+    minWidth: 'unset',
+    maxWidth: '100%',
+    width: '100%',
+    padding: theme.spacing(2.5, 2),
+    borderRadius: 20
+  }
+}))
+
+const ChatCtaBannerTexts = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.5),
+  [theme.breakpoints.down('sm')]: {
+    marginBottom: theme.spacing(2)
+  }
+}))
+
+const ChatCtaBannerTitle = styled(Typography)({
+  fontSize: 18,
+  fontWeight: 600,
+  lineHeight: '24px',
+  color: '#fcfcfc'
+})
+
+const ChatCtaBannerSubtitle = styled(Typography)({
+  fontSize: 13,
+  fontWeight: 400,
+  lineHeight: '20px',
+  color: 'rgba(252, 252, 252, 0.7)',
+  maxWidth: 380
+})
+
+const ChatCtaBannerContent = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  width: '100%',
+  gap: theme.spacing(3),
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    alignItems: 'flex-start'
+  }
+}))
+
+const ChatCtaButton = styled(Button)({
+  flexShrink: 0,
+  backgroundColor: '#ff2d78',
+  color: '#ffffff',
+  backgroundImage: 'none',
+  borderRadius: 12,
+  padding: '12px 24px',
+  fontSize: 14,
+  fontWeight: 600,
+  lineHeight: '16.94px',
+  whiteSpace: 'nowrap',
+  textTransform: 'none',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:hover': {
+    backgroundColor: '#e0215e',
+    backgroundImage: 'none'
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:active': {
+    transform: 'scale(0.97)'
+  }
+})
+
 export {
   AccordionContainer,
+  ChatCtaBanner,
+  ChatCtaBannerContent,
+  ChatCtaBannerSubtitle,
+  ChatCtaBannerTexts,
+  ChatCtaBannerTitle,
+  ChatCtaButton,
   DesktopStatusWrapper,
   FaqAccordion,
   FaqAccordionDetails,
@@ -273,5 +383,6 @@ export {
   HelpSidebarTitle,
   HelpTabButton,
   HelpTabButtonsContainer,
-  MobileStatusWrapper
+  MobileStatusWrapper,
+  ScrollableAccordionContainer
 }
