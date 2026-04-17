@@ -1,4 +1,4 @@
-import { createMockEvent, createMockLiveNowCard } from '../../__test-utils__/factories'
+import { createMockEvent, createMockLiveNowCard } from '../../../__test-utils__/factories'
 import { normalizeEventEntry, normalizeLiveNowCard } from './normalizers'
 
 describe('normalizeEventEntry', () => {

@@ -1,5 +1,5 @@
-import type { EventEntry, LiveNowCard } from '../../features/events'
-import { buildEventJumpInUrl, buildJumpInUrl, parseCoordinates } from '../../utils/url'
+import type { EventEntry, LiveNowCard } from '../../../features/explore-events'
+import { buildEventJumpInUrl, buildJumpInUrl, parseCoordinates } from '../../../utils/exploreUrl'
 import type { ModalEventData } from './EventDetailModal.types'
 
 function normalizeEventEntry(event: EventEntry): ModalEventData {

@@ -1,9 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { createMockEvent } from '../../__test-utils__/factories'
+import { createMockEvent } from '../../../__test-utils__/factories'
 import { FutureCard } from './FutureCard'
 
 const mockHasValidIdentity = jest.fn()
-jest.mock('../../hooks/useAuthIdentity', () => ({
+jest.mock('../../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({
     hasValidIdentity: mockHasValidIdentity(),
     identity: undefined,
@@ -27,13 +27,13 @@ jest.mock('@dcl/hooks', () => ({
   })
 }))
 
-jest.mock('../../features/profile/profile.client', () => ({
+jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: () => ({ data: null })
 }))
 
 const mockHandleCopy = jest.fn()
 const mockHandleCalendar = jest.fn()
-jest.mock('../../hooks/useCardActions', () => ({
+jest.mock('../../../hooks/useCardActions', () => ({
   useCardActions: () => ({
     eventUrl: 'https://decentraland.org/jump/event?position=10,20',
     copied: false,
@@ -43,7 +43,7 @@ jest.mock('../../hooks/useCardActions', () => ({
 }))
 
 const mockHandleRemindToggle = jest.fn()
-jest.mock('../../hooks/useRemindMe', () => ({
+jest.mock('../../../hooks/useRemindMe', () => ({
   useRemindMe: () => ({
     isReminded: false,
     isLoading: false,

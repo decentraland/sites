@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { getEnv } from '../../config'
+import { getEnv } from '../../config/env'
 import { fetchWithIdentity, fetchWithOptionalIdentity } from '../../utils/signedFetch'
 import { buildLiveNowCards, enrichPlaceCards } from './events.helpers'
 import type { HotScene, LiveNowCard } from './events.helpers'

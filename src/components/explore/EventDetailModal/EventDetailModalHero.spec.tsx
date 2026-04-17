@@ -1,16 +1,16 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { createMockModalData } from '../../__test-utils__/factories'
+import { createMockModalData } from '../../../__test-utils__/factories'
 import { EventDetailModalHero } from './EventDetailModalHero'
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
-jest.mock('../../features/profile/profile.client', () => ({
+jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: () => ({ data: undefined })
 }))
 
-jest.mock('../../utils/url', () => ({
+jest.mock('../../../utils/exploreUrl', () => ({
   buildCalendarUrl: jest.fn(() => 'https://calendar.google.com/test')
 }))
 
@@ -21,7 +21,7 @@ jest.mock('@mui/material/useMediaQuery', () => ({
 }))
 
 const mockHandleRemindToggle = jest.fn()
-jest.mock('../../hooks/useRemindMe', () => ({
+jest.mock('../../../hooks/useRemindMe', () => ({
   useRemindMe: () => ({
     isReminded: false,
     isLoading: false,

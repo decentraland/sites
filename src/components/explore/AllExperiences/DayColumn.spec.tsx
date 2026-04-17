@@ -1,6 +1,6 @@
 import { forwardRef } from 'react'
 import { render, screen } from '@testing-library/react'
-import { createMockEvent } from '../../__test-utils__/factories'
+import { createMockEvent } from '../../../__test-utils__/factories'
 import { DayColumn } from './DayColumn'
 
 jest.mock('./DayColumn.styled', () => ({

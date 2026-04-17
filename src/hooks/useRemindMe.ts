@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useToggleAttendeeMutation } from '../features/events/events.client'
+import { useToggleAttendeeMutation } from '../features/explore-events/events.client'
 import { redirectToAuth } from '../utils/authRedirect'
 import { useAuthIdentity } from './useAuthIdentity'
 
@@ -35,7 +35,7 @@ function useRemindMe(eventId: string, attending?: boolean): UseRemindMeResult {
       e.stopPropagation()
       if (isLoading) return
       if (!hasValidIdentity || !identity) {
-        redirectToAuth()
+        redirectToAuth(window.location.pathname)
         return
       }
       const newValue = !isReminded

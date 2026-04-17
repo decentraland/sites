@@ -1,12 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { createMockModalData } from '../../__test-utils__/factories'
+import { createMockModalData } from '../../../__test-utils__/factories'
 import { EventDetailModalContent } from './EventDetailModalContent'
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
-jest.mock('../../utils/url', () => ({
+jest.mock('../../../utils/exploreUrl', () => ({
   buildCalendarUrl: jest.fn(() => 'https://calendar.google.com/test')
 }))
 
@@ -140,7 +140,7 @@ describe('EventDetailModalContent', () => {
 
   describe('when the add to calendar button is clicked', () => {
     it('should call buildCalendarUrl', () => {
-      const { buildCalendarUrl } = jest.requireMock('../../utils/url') as { buildCalendarUrl: jest.Mock }
+      const { buildCalendarUrl } = jest.requireMock('../../../utils/exploreUrl') as { buildCalendarUrl: jest.Mock }
       render(<EventDetailModalContent data={createMockData()} />)
 
       fireEvent.click(screen.getByTestId('calendar-btn'))

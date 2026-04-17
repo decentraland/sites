@@ -1,8 +1,8 @@
 import { memo, useCallback } from 'react'
 import type { Avatar } from '@dcl/schemas'
 import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
-import type { EventEntry } from '../../features/events'
-import { useGetProfileQuery } from '../../features/profile/profile.client'
+import type { EventEntry } from '../../../features/explore-events'
+import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { LiveCardWrapper } from './AllExperiencesCard.styled'
 
 interface LiveCardProps {

@@ -1,7 +1,9 @@
 import { configureStore } from '@reduxjs/toolkit'
 import type { AuthIdentity } from '@dcl/crypto'
-import { getEnv } from '../../config'
+import { getEnv } from '../../config/env'
 import { eventsClient } from './events.client'
+
+jest.mock('../../config/env')
 
 const mockGetEnv = jest.mocked(getEnv)
 
@@ -167,20 +169,21 @@ describe('eventsClient', () => {
           if (key === 'PEER_URL') return 'https://peer.test'
           return undefined
         })
-        jest.spyOn(global, 'fetch').mockImplementation((url: string) => {
+        jest.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL) => {
+          const url = input.toString()
           if (url.includes('events.test')) {
             return Promise.resolve({
               ok: true,
               json: () => Promise.resolve({ data: [] })
-            })
+            } as unknown as Response)
           }
           if (url.includes('scenes.test')) {
             return Promise.resolve({
               ok: true,
               json: () => Promise.resolve([])
-            })
+            } as unknown as Response)
           }
-          return Promise.resolve({ ok: false })
+          return Promise.resolve({ ok: false } as unknown as Response)
         })
         store = createTestStore()
       })
@@ -208,14 +211,15 @@ describe('eventsClient', () => {
           if (key === 'HOT_SCENES_URL') return 'https://scenes.test/hot'
           return undefined
         })
-        jest.spyOn(global, 'fetch').mockImplementation((url: string) => {
+        jest.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL) => {
+          const url = input.toString()
           if (url.includes('events.test')) {
-            return Promise.resolve({ ok: false, status: 500 })
+            return Promise.resolve({ ok: false, status: 500 } as unknown as Response)
           }
           if (url.includes('scenes.test')) {
-            return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
+            return Promise.resolve({ ok: true, json: () => Promise.resolve([]) } as unknown as Response)
           }
-          return Promise.resolve({ ok: false })
+          return Promise.resolve({ ok: false } as unknown as Response)
         })
         store = createTestStore()
       })

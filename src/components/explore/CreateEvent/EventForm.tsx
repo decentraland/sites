@@ -6,7 +6,7 @@ import AddIcon from '@mui/icons-material/Add'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import EventIcon from '@mui/icons-material/Event'
 import { useTranslation } from '@dcl/hooks'
-import { useCreateEventForm } from '../../hooks/useCreateEventForm'
+import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
 import { ImageUpload } from './ImageUpload'
 import {
   AddCoverBold,

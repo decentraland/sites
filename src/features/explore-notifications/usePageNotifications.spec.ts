@@ -1,6 +1,8 @@
 import { renderHook } from '@testing-library/react'
 import { usePageNotifications } from './usePageNotifications'
 
+jest.mock('../../config/env')
+
 const mockHandleNotificationsOpen = jest.fn()
 const mockHandleOnBegin = jest.fn()
 const mockHandleOnChangeModalTab = jest.fn()

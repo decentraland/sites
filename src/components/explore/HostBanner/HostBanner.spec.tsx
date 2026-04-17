@@ -44,12 +44,12 @@ jest.mock('../../images/host_avatar.webp', () => 'avatar.webp')
 jest.mock('../../images/host_scene.webp', () => 'scene.webp')
 
 const mockUseAuthIdentity = jest.fn()
-jest.mock('../../hooks/useAuthIdentity', () => ({
+jest.mock('../../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => mockUseAuthIdentity()
 }))
 
 const mockRedirectToAuth = jest.fn()
-jest.mock('../../utils/authRedirect', () => ({
+jest.mock('../../../utils/authRedirect', () => ({
   redirectToAuth: (...args: unknown[]) => mockRedirectToAuth(...args)
 }))
 

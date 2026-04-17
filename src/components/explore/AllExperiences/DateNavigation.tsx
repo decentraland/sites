@@ -4,7 +4,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { useTranslation } from '@dcl/hooks'
-import { addDays, formatDayHeader, formatDayHeaderAria } from '../../utils/date'
+import { addDays, formatDayHeader, formatDayHeaderAria } from '../../../utils/exploreDate'
 import { DateLabel, NavButton, NavigationBar } from './DateNavigation.styled'
 
 interface DateNavigationProps {

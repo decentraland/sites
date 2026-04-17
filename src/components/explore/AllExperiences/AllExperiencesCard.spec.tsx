@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { createMockEvent } from '../../__test-utils__/factories'
+import { createMockEvent } from '../../../__test-utils__/factories'
 import { AllExperiencesCard } from './AllExperiencesCard'
 
 jest.mock('./LiveCard', () => ({

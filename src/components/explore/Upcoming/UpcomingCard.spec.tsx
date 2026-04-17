@@ -1,26 +1,26 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { createMockEvent } from '../../__test-utils__/factories'
+import { createMockEvent } from '../../../__test-utils__/factories'
 import { UpcomingCard } from './UpcomingCard'
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
-jest.mock('../../features/profile/profile.client', () => ({
+jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: () => ({ data: undefined })
 }))
 
-jest.mock('../../hooks/useAuthIdentity', () => ({
+jest.mock('../../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ identity: undefined, hasValidIdentity: false, address: undefined })
 }))
 
-jest.mock('../../utils/time', () => ({
+jest.mock('../../../utils/exploreTime', () => ({
   getRelativeTimeLabel: () => 'Starts in 10 mins'
 }))
 
 const mockHandleCopy = jest.fn()
 const mockHandleCalendar = jest.fn()
-jest.mock('../../hooks/useCardActions', () => ({
+jest.mock('../../../hooks/useCardActions', () => ({
   useCardActions: () => ({
     eventUrl: 'https://decentraland.org/jump/event?position=10,20',
     copied: false,
@@ -31,7 +31,7 @@ jest.mock('../../hooks/useCardActions', () => ({
 }))
 
 const mockHandleRemindToggle = jest.fn()
-jest.mock('../../hooks/useRemindMe', () => ({
+jest.mock('../../../hooks/useRemindMe', () => ({
   useRemindMe: () => ({
     isReminded: false,
     isLoading: false,

@@ -17,26 +17,4 @@ module.exports = [
       'src/setupTests.ts',
     ],
   },
-  // explore-site files copied verbatim — imports will be fixed in the next task
-  {
-    files: [
-      'src/components/explore/**/*.{ts,tsx}',
-      'src/pages/explore/**/*.{ts,tsx}',
-      'src/features/explore-events/**/*.{ts,tsx}',
-      'src/features/explore-notifications/**/*.{ts,tsx}',
-      'src/hooks/useCardActions.ts',
-      'src/hooks/useCreateEventForm.ts',
-      'src/hooks/useRemindMe.ts',
-      'src/hooks/useVisibleColumnCount.ts',
-      'src/utils/signedFetch.ts',
-      'src/utils/exploreDate.ts',
-      'src/utils/exploreTime.ts',
-      'src/utils/exploreUrl.ts',
-    ],
-    rules: {
-      'import/no-unresolved': 'off',
-    },
-  },
 ]
-
-

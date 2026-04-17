@@ -1,6 +1,7 @@
 import { createMockEvent, createMockPlaceCard, createMockScene } from '../../__test-utils__/factories'
 import { buildLiveNowCards, enrichPlaceCards } from './events.helpers'
-import type { LiveNowCard } from './events.helpers'
+import type { HotScene, LiveNowCard } from './events.helpers'
+import type { EventEntry } from './events.types'
 
 describe('buildLiveNowCards', () => {
   afterEach(() => {

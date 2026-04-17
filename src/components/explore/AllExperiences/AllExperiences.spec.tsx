@@ -1,18 +1,18 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { createMockEvent } from '../../__test-utils__/factories'
+import { createMockEvent } from '../../../__test-utils__/factories'
 import { AllExperiences } from './AllExperiences'
 
-jest.mock('../../hooks/useAuthIdentity', () => ({
+jest.mock('../../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ identity: undefined, hasValidIdentity: false, address: undefined })
 }))
 
 const mockUseGetEventsQuery = jest.fn()
-jest.mock('../../features/events', () => ({
+jest.mock('../../../features/explore-events', () => ({
   useGetEventsQuery: (...args: unknown[]) => mockUseGetEventsQuery(...args)
 }))
 
 const mockColumnCount = jest.fn()
-jest.mock('../../hooks/useVisibleColumnCount', () => ({
+jest.mock('../../../hooks/useVisibleColumnCount', () => ({
   useVisibleColumnCount: () => mockColumnCount()
 }))
 

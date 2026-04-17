@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { buildCalendarUrl, buildEventJumpInUrl } from '../utils/url'
+import { buildCalendarUrl, buildEventJumpInUrl } from '../utils/exploreUrl'
 
 interface CardActionsParams {
   name: string

@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AddIcon from '@mui/icons-material/Add'
 import { useTranslation } from '@dcl/hooks'
-import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import avatarImage from '../../images/host_avatar.webp'
-import sceneImage from '../../images/host_scene.webp'
-import { redirectToAuth } from '../../utils/authRedirect'
+import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
+import avatarImage from '../../../images/explore/images/host_avatar.webp'
+import sceneImage from '../../../images/explore/images/host_scene.webp'
+import { redirectToAuth } from '../../../utils/authRedirect'
 import {
   AvatarImage,
   BannerSection,

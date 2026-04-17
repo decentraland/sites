@@ -3,7 +3,7 @@ import type { AuthIdentity } from '@dcl/crypto'
 import { useNotifications } from '@dcl/hooks'
 import { NotificationActiveTab } from 'decentraland-ui2'
 import type { NotificationLocale, NotificationsProps } from 'decentraland-ui2'
-import { getEnv } from '../../config'
+import { getEnv } from '../../config/env'
 
 type UsePageNotificationsProps = {
   identity: AuthIdentity | undefined

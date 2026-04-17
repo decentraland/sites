@@ -135,7 +135,7 @@ const mockHandleImageRemove = jest.fn()
 const mockHandleSubmit = jest.fn()
 const mockUseCreateEventForm = jest.fn()
 
-jest.mock('../../hooks/useCreateEventForm', () => ({
+jest.mock('../../../hooks/useCreateEventForm', () => ({
   useCreateEventForm: () => mockUseCreateEventForm()
 }))
 

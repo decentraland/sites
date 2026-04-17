@@ -1,10 +1,8 @@
 import { Box, styled } from 'decentraland-ui2'
-import topBackground from '../images/top_background.webp'
+import topBackground from '../../images/explore/images/top_background.webp'
 
 /* eslint-disable @typescript-eslint/naming-convention */
-const MainContainer = styled(Box, {
-  shouldForwardProp: prop => prop !== 'standalone'
-})<{ standalone: boolean }>(({ standalone, theme }) => ({
+const MainContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   background: `url(${topBackground}) no-repeat top center, radial-gradient(61.64% 109.58% at 50% 54.49%, #A042CD 0%, #270537 100%)`,
   backgroundSize: '100% 700px, 100% auto',
@@ -34,22 +32,19 @@ const MainContainer = styled(Box, {
     '&::before': {
       display: 'none'
     }
-  },
-  ...(!standalone && { paddingTop: 0 })
+  }
 }))
 /* eslint-enable @typescript-eslint/naming-convention */
 
-const ContentWrapper = styled(Box, {
-  shouldForwardProp: prop => prop !== 'standalone'
-})<{ standalone: boolean }>(({ standalone, theme }) => ({
+const ContentWrapper = styled(Box)(({ theme }) => ({
   position: 'relative',
   zIndex: 1,
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(4),
-  paddingTop: standalone ? '66px' : '96px',
+  paddingTop: '66px',
   [theme.breakpoints.down('sm')]: {
-    paddingTop: standalone ? '56px' : '56px',
+    paddingTop: '56px',
     gap: 0
   }
 }))

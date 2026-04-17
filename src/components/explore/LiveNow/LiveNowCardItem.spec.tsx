@@ -1,9 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { createMockLiveNowCard } from '../../__test-utils__/factories'
-import type { LiveNowCard } from '../../features/events'
+import { createMockLiveNowCard } from '../../../__test-utils__/factories'
+import type { LiveNowCard } from '../../../features/explore-events'
 import { LiveNowCardItem } from './LiveNowCardItem'
 
-jest.mock('../../features/profile/profile.client', () => ({
+jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: () => ({ data: undefined })
 }))
 

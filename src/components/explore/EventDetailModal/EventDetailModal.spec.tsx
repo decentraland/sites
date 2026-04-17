@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { createMockModalData } from '../../__test-utils__/factories'
+import { createMockModalData } from '../../../__test-utils__/factories'
 import { EventDetailModal } from './EventDetailModal'
 import type { ModalEventData } from './EventDetailModal.types'
 

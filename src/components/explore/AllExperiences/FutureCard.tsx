@@ -1,12 +1,12 @@
 import { memo, useCallback } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { Tooltip } from 'decentraland-ui2'
-import type { EventEntry } from '../../features/events'
-import { useGetProfileQuery } from '../../features/profile/profile.client'
-import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { useCardActions } from '../../hooks/useCardActions'
-import { useRemindMe } from '../../hooks/useRemindMe'
-import { getRelativeTimeLabel } from '../../utils/time'
+import type { EventEntry } from '../../../features/explore-events'
+import { useGetProfileQuery } from '../../../features/profile/profile.client'
+import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
+import { useCardActions } from '../../../hooks/useCardActions'
+import { useRemindMe } from '../../../hooks/useRemindMe'
+import { getRelativeTimeLabel } from '../../../utils/exploreTime'
 import {
   ActionButton,
   ActionTextButton,

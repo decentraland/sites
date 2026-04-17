@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import { createMockLiveNowCard } from '../../__test-utils__/factories'
-import type { LiveNowCard } from '../../features/events'
+import { createMockLiveNowCard } from '../../../__test-utils__/factories'
+import type { LiveNowCard } from '../../../features/explore-events'
 import { LiveNow } from './LiveNow'
 
 jest.mock('@dcl/hooks', () => ({
@@ -9,7 +9,7 @@ jest.mock('@dcl/hooks', () => ({
 }))
 
 const mockUseGetLiveNowCardsQuery = jest.fn()
-jest.mock('../../features/events', () => ({
+jest.mock('../../../features/explore-events', () => ({
   useGetLiveNowCardsQuery: (...args: unknown[]) => mockUseGetLiveNowCardsQuery(...args)
 }))
 

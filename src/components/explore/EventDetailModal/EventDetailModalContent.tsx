@@ -2,8 +2,8 @@ import { useCallback } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import { useTranslation } from '@dcl/hooks'
-import type { RecurrentFrequency } from '../../features/events'
-import { buildCalendarUrl } from '../../utils/url'
+import type { RecurrentFrequency } from '../../../features/explore-events'
+import { buildCalendarUrl } from '../../../utils/exploreUrl'
 import type { ModalEventData } from './EventDetailModal.types'
 import {
   ContentDivider,

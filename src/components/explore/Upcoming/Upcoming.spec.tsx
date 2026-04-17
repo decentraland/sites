@@ -1,18 +1,18 @@
 import { render, screen } from '@testing-library/react'
-import { createMockEvent } from '../../__test-utils__/factories'
-import type { EventEntry } from '../../features/events'
+import { createMockEvent } from '../../../__test-utils__/factories'
+import type { EventEntry } from '../../../features/explore-events'
 import { Upcoming } from './Upcoming'
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
-jest.mock('../../hooks/useAuthIdentity', () => ({
+jest.mock('../../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ identity: undefined, hasValidIdentity: false, address: undefined })
 }))
 
 const mockUseGetUpcomingEventsQuery = jest.fn()
-jest.mock('../../features/events', () => ({
+jest.mock('../../../features/explore-events', () => ({
   useGetUpcomingEventsQuery: () => mockUseGetUpcomingEventsQuery()
 }))
 

@@ -1,4 +1,4 @@
-import type { RecurrentFrequency } from '../../features/events'
+import type { RecurrentFrequency } from '../../../features/explore-events'
 
 interface ModalEventData {
   id: string

@@ -1,9 +1,8 @@
 import { useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
-import { EventForm } from '../components/CreateEvent/EventForm'
-import { PageLayout } from '../components/PageLayout/PageLayout'
-import { useAuthIdentity } from '../hooks/useAuthIdentity'
+import { EventForm } from '../../components/explore/CreateEvent/EventForm'
+import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { BackArrowIcon, BackButton, HeaderRow, PageBackground, PageContent, PageTitle } from './CreateEventPage.styled'
 
 function CreateEventPage() {
@@ -24,7 +23,7 @@ function CreateEventPage() {
   if (!hasValidIdentity) return null
 
   return (
-    <PageLayout>
+    <>
       <PageBackground />
       <PageContent>
         <HeaderRow>
@@ -35,7 +34,7 @@ function CreateEventPage() {
         </HeaderRow>
         <EventForm onCancel={handleBack} />
       </PageContent>
-    </PageLayout>
+    </>
   )
 }
 
