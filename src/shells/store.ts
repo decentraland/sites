@@ -1,22 +1,10 @@
-import { useDispatch, useSelector } from 'react-redux'
-import type { TypedUseSelectorHook } from 'react-redux'
-import { combineReducers, configureStore } from '@reduxjs/toolkit'
+import { configureStore } from '@reduxjs/toolkit'
 
-// Placeholder root reducer — PR2/PR3 will add explore and blog reducers.
-const rootReducer = combineReducers({
-  placeholder: (state: null = null) => state
-})
-
+// PR2/PR3 will add real reducers (explore events, blog, cmsClient, algoliaClient)
+// and export typed hooks (useAppDispatch/useAppSelector) when they have consumers.
 const store = configureStore({
-  reducer: rootReducer,
+  reducer: {},
   devTools: import.meta.env.DEV
 })
 
-type RootState = ReturnType<typeof store.getState>
-type AppDispatch = typeof store.dispatch
-
-const useAppDispatch = () => useDispatch<AppDispatch>()
-const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
-
-export { store, useAppDispatch, useAppSelector }
-export type { RootState, AppDispatch }
+export { store }

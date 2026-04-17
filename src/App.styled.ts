@@ -1,10 +1,10 @@
 import { Box, styled } from 'decentraland-ui2'
 
-const FallbackContainer = styled(Box)({
+const DappsShellPlaceholderContainer = styled(Box)({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
   minHeight: '60vh'
 })
 
-export { FallbackContainer }
+export { DappsShellPlaceholderContainer }

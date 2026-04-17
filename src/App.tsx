@@ -1,7 +1,7 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { DappsShellPlaceholderContainer } from './App.styled.ts'
 import { IndexPage } from './pages/index.tsx'
-import { PlaceholderContainer } from './shells/DappsShell.styled'
 
 // Layout imports Navbar from decentraland-ui2 which pulls in ~1.3MB of MUI.
 // Lazy-loading it keeps that JS out of the critical path so the static hero
@@ -60,7 +60,11 @@ const App = () => {
             <Route path="/discord" element={<DiscordPage />} />
             <Route path="/press" element={<PressPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
-            {/* DappsShell provides Redux + PersistGate via Outlet */}
+            {/* DappsShell provides Redux + PersistGate via Outlet.
+                NOTE: /blog/* is no longer gated behind Env !== PRODUCTION as it was
+                with the federated RemoteLoader. During PR1 it serves a placeholder
+                in every environment; PR3 lands the real blog routes. If blog must
+                stay dev/stg-only at any point, reintroduce a getEnv() check here. */}
             <Route element={<DappsShell />}>
               <Route path="/explore/*" element={<DappsShellPlaceholder name="explore" />} />
               <Route path="/blog/*" element={<DappsShellPlaceholder name="blog" />} />
@@ -74,7 +78,7 @@ const App = () => {
 }
 
 function DappsShellPlaceholder({ name }: { name: string }) {
-  return <PlaceholderContainer>{name} — coming soon (pending migration)</PlaceholderContainer>
+  return <DappsShellPlaceholderContainer>{name} — coming soon (pending migration)</DappsShellPlaceholderContainer>
 }
 
 export { App }
