@@ -22,16 +22,27 @@ const HeroBackground = styled(Box)({
   height: '100%',
   zIndex: 0,
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& > video, & > img, & > picture': {
+  '& > img.hero-image': {
     width: '100%',
     height: '100%',
-    objectFit: 'cover'
+    objectFit: 'cover',
+    display: 'block'
   },
+  // Video sits on top of the static image so the <img> remains a stable
+  // LCP element; the video simply fades in over it after load.
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& > picture > img': {
+  '& > video.hero-video-overlay': {
+    position: 'absolute',
+    top: 0,
+    left: 0,
     width: '100%',
     height: '100%',
-    objectFit: 'cover'
+    objectFit: 'cover',
+    zIndex: 1,
+    opacity: 0,
+    transition: 'opacity 400ms ease-in',
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    '&[data-ready="true"]': { opacity: 1 }
   }
 })
 

@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { DownloadModal, DownloadQRModal } from 'decentraland-ui2'
 import { heroContent } from '../../../data/static-content'
@@ -32,7 +32,6 @@ import {
   HeroPlatformIcon,
   HeroPlatformIcons,
   HeroPlatformSeparator,
-  HeroTitle,
   MobileHeroContent,
   MobileHeroSubtitle,
   MobileHeroTitle
@@ -73,12 +72,63 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   // Mobile download modal state (for iOS and Google Play icon clicks)
   const [mobileModalOs, setMobileModalOs] = useState<'ios' | 'android' | null>(null)
 
-  // Remove the prerendered hero shell now that React's Hero has mounted.
+  // LCP-critical pieces of state:
+  //   - The <picture>/<img> is always rendered so Chrome's LCP observer anchors
+  //     on a stable image element from the first paint onward. Never replaced.
+  //   - The animated desktop background <video> fades in on top as an overlay
+  //     only after the page is idle, so it never competes for LCP tracking.
+  const [loadVideo, setLoadVideo] = useState(false)
+  const heroBackgroundRef = useRef<HTMLDivElement | null>(null)
+
+  // Fade out the prerendered hero shell once React's hero image is painted.
+  // We deliberately do NOT remove the shell from the DOM: removing the LCP
+  // element invalidates Chrome's LCP bookkeeping and causes re-election on a
+  // smaller later element (e.g. the <h2> below, which pushed LCP to 2.1s).
   useEffect(() => {
-    document.getElementById('hero-shell')?.remove()
-    document.getElementById('hero-shell-nav')?.remove()
     document.documentElement.style.setProperty('--hero-vh', `${window.innerHeight * 0.01}px`)
-  }, [])
+
+    const shell = document.getElementById('hero-shell')
+    const shellNav = document.getElementById('hero-shell-nav')
+
+    const hideShell = () => {
+      if (shell) {
+        shell.style.transition = 'opacity 200ms ease-out'
+        shell.style.opacity = '0'
+        shell.style.pointerEvents = 'none'
+      }
+      shellNav?.remove()
+    }
+
+    // Delay the fade so Chrome has multiple frames to register the shell image
+    // as an LCP candidate before its ancestor's opacity reaches 0 (Chrome excludes
+    // images inside opacity:0 ancestors from LCP tracking).
+    const img = heroBackgroundRef.current?.querySelector<HTMLImageElement>('img')
+    const armFade = () => {
+      window.setTimeout(hideShell, 500)
+    }
+    if (img?.complete) {
+      armFade()
+    } else if (img) {
+      img.addEventListener('load', armFade, { once: true })
+      img.addEventListener('error', armFade, { once: true })
+    }
+
+    // Load the background video only after the page is idle, and only on
+    // desktop. Delayed long enough that Chrome has committed its LCP entry on
+    // the static image before the video element joins the DOM.
+    if (!isDesktop) return
+    const useIdle = typeof window.requestIdleCallback === 'function'
+    const handle = useIdle
+      ? window.requestIdleCallback(() => setLoadVideo(true), { timeout: 4000 })
+      : window.setTimeout(() => setLoadVideo(true), 3000)
+    return () => {
+      if (useIdle && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(handle)
+      } else {
+        window.clearTimeout(handle)
+      }
+    }
+  }, [isDesktop])
 
   const handleDownloadClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
@@ -92,18 +142,31 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
 
   return (
     <HeroContainer>
-      <HeroBackground>
-        {isDesktop ? (
-          <video autoPlay loop muted playsInline poster={heroImageDesktop} preload="metadata">
+      <HeroBackground ref={heroBackgroundRef}>
+        <img
+          className="hero-image"
+          src={isDesktop ? heroImageDesktop : heroImageMobile}
+          srcSet={`${heroImageMobile} 800w, ${heroImageTablet} 1200w, ${heroImageDesktop} 1920w`}
+          sizes="100vw"
+          alt="Decentraland — a virtual world to hang out online"
+          width={1920}
+          height={1080}
+          fetchPriority="high"
+          decoding="sync"
+        />
+        {isDesktop && loadVideo && (
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            className="hero-video-overlay"
+            onCanPlay={e => e.currentTarget.setAttribute('data-ready', 'true')}
+          >
             <source src={heroContent.backgroundVideoWebm} type="video/webm" />
             <source src={heroContent.backgroundVideoMp4} type="video/mp4" />
           </video>
-        ) : (
-          <picture>
-            <source srcSet={heroImageMobile} media="(max-width: 599px)" />
-            <source srcSet={heroImageTablet} media="(min-width: 600px) and (max-width: 991px)" />
-            <img src={heroImageMobile} alt="" />
-          </picture>
         )}
       </HeroBackground>
       <GradientTop />
@@ -134,7 +197,9 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
       {/* Desktop */}
       {isDesktop && (
         <HeroContent>
-          <HeroTitle variant="h2">{l('page.home.hero.title')}</HeroTitle>
+          {/* Hero title is rendered by the prerendered shell so it is present at FCP
+              and Chrome's LCP observer anchors on that element rather than on a
+              React-rendered h2 that paints ~100ms later. */}
 
           <HeroCTAWrapper>
             {/* Download + Epic buttons */}

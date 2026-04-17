@@ -77,17 +77,8 @@ const criticalCss = `
   #hero-shell .hero-bg {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
   }
-  #hero-shell .hero-bg img,
-  #hero-shell .hero-bg picture {
-    object-fit: cover; display: block;
-  }
-  @media (max-width: 991px) {
-    #hero-shell .hero-bg, #hero-shell .hero-bg picture, #hero-shell .hero-bg img {
-      width: 100%; height: 100%;
-    }
-  }
-  @media (min-width: 992px) {
-    #hero-shell .hero-bg picture, #hero-shell .hero-bg img { width: 100%; height: 100%; }
+  #hero-shell .hero-bg img {
+    object-fit: cover; display: block; width: 100%; height: 100%;
   }
   #hero-shell .gradient-top {
     position: absolute; top: 0; left: 0; width: 100%; height: 24.3%;
@@ -222,12 +213,7 @@ const heroHtml = `<div id="hero-shell-nav">
 </div>
 <div id="hero-shell">
   <div class="hero-bg">
-    <picture>
-      <source srcset="./hero_mobile.webp" media="(max-width: 599px)" />
-      <source srcset="./hero_tablet.webp" media="(min-width: 600px) and (max-width: 991px)" />
-      <source srcset="./hero_desktop.webp" media="(min-width: 992px)" />
-      <img src="./hero_mobile.webp" alt="" />
-    </picture>
+    <img class="hero-shell-image" src="./hero_desktop.webp" srcset="./hero_mobile.webp 800w, ./hero_tablet.webp 1200w, ./hero_desktop.webp 1920w" sizes="100vw" alt="Decentraland — a virtual world to hang out online" width="1920" height="1080" fetchpriority="high" decoding="sync" />
   </div>
   <div class="gradient-top"></div>
   <div class="gradient-bottom"></div>
