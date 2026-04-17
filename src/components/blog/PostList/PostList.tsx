@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { useMediaQuery } from 'react-responsive'
+import { useMediaQuery } from 'decentraland-ui2'
 import type { BlogPost } from '../../../shared/blog/types/blog.domain'
 import { MainPostCard } from '../MainPostCard'
 import { PostCard } from '../PostCard'
@@ -13,7 +13,7 @@ const isPlaceholder = (post: { id: string; isPlaceholder?: boolean }): post is {
 
 const PostList = memo((props: PostListProps) => {
   const { posts, loading, hasMainPost = false } = props
-  const isBigScreen = useMediaQuery({ minWidth: 1096 })
+  const isBigScreen = useMediaQuery('(min-width: 1096px)')
 
   // Initial loading with no posts at all
   if (loading && posts.length === 0) {
