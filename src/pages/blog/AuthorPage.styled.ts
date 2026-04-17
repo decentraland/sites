@@ -15,10 +15,4 @@ const AuthorImage = styled('img')(() => ({
   objectFit: 'cover'
 }))
 
-const CenteredBox = styled(Box)(({ theme }) => ({
-  textAlign: 'center',
-  paddingTop: theme.spacing(8),
-  paddingBottom: theme.spacing(8)
-}))
-
-export { AuthorHeaderBox, AuthorImage, CenteredBox }
+export { AuthorHeaderBox, AuthorImage }

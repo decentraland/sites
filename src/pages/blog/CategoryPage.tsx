@@ -10,7 +10,7 @@ import { getEnv } from '../../config/env'
 import { useGetBlogCategoryBySlugQuery } from '../../features/blog/blog.client'
 import { useInfiniteBlogPosts } from '../../features/blog/useInfiniteBlogPosts'
 import type { BlogCategory } from '../../shared/blog/types/blog.domain'
-import { CenteredBox } from './CategoryPage.styled'
+import { CenteredBox } from './shared.styled'
 
 const CategoryPostList = ({ category }: { category: BlogCategory }) => {
   const { t } = useTranslation()

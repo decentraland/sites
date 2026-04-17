@@ -8,7 +8,8 @@ import { getEnv } from '../../config/env'
 import { useGetBlogAuthorBySlugQuery } from '../../features/blog/blog.client'
 import { useInfiniteBlogPosts } from '../../features/blog/useInfiniteBlogPosts'
 import type { BlogAuthor } from '../../shared/blog/types/blog.domain'
-import { AuthorHeaderBox, AuthorImage, CenteredBox } from './AuthorPage.styled'
+import { AuthorHeaderBox, AuthorImage } from './AuthorPage.styled'
+import { CenteredBox } from './shared.styled'
 
 const AuthorPostList = ({ author }: { author: BlogAuthor }) => {
   const { t } = useTranslation()

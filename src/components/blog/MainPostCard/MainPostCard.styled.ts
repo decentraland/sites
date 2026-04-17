@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Link } from 'react-router-dom'
-import { Box, Skeleton, dclColors, styled } from 'decentraland-ui2'
+import { Box, Skeleton, styled } from 'decentraland-ui2'
+import { CardImageLink, CategoryLink, DateText, MetaBox } from '../shared/PostCard.styled'
 
 const CardContainer = styled(Box)(() => ({
   width: '100%',
@@ -23,39 +24,9 @@ const CardImage = styled('img')(() => ({
   transition: 'transform 250ms ease, box-shadow 250ms ease'
 }))
 
-const CardImageLink = styled(Link)(() => ({
-  display: 'block',
-  '&:hover > img': {
-    transform: 'translate(0, -4px)',
-    boxShadow: '0 10px 20px 0 rgba(0, 0, 0, 0.12)'
-  }
-}))
-
 const CardInfo = styled(Box)({
   width: '335px'
 })
-
-const DateText = styled('span')(({ theme }) => ({
-  marginRight: '16px',
-  color: theme.palette.text.primary,
-  fontSize: '13px',
-  fontWeight: 500,
-  textDecoration: 'none',
-  textTransform: 'uppercase',
-  display: 'inline'
-}))
-
-const CategoryLink = styled(Link)(() => ({
-  color: dclColors.neutral.gray3,
-  fontSize: '13px',
-  textDecoration: 'none',
-  textTransform: 'uppercase',
-  transition: 'color 250ms ease',
-  fontWeight: 400,
-  '&:hover': {
-    color: dclColors.neutral.gray2
-  }
-}))
 
 const TitleLink = styled(Link)(({ theme }) => ({
   textDecoration: 'none',
@@ -121,8 +92,6 @@ const LoadingTextSkeletonShort = styled(Skeleton)(() => ({
 const LoadingContentBox = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(2)
 }))
-
-const MetaBox = styled(Box)(() => ({}))
 
 export {
   CardContainer,
