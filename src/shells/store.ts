@@ -1,15 +1,29 @@
-import { configureStore } from '@reduxjs/toolkit'
+import { useDispatch, useSelector } from 'react-redux'
+import type { TypedUseSelectorHook } from 'react-redux'
+import { combineReducers, configureStore } from '@reduxjs/toolkit'
+import { blogReducer } from '../features/blog/blog.slice'
 import { eventsClient } from '../features/explore-events/events.client'
+import { algoliaClient, cmsClient } from '../services/blogClient'
 
-// PR3 will add blog, cmsClient, algoliaClient reducers and redux-persist.
-// Typed hooks (useAppDispatch/useAppSelector) are not exported yet — explore
-// code consumes RTK Query auto-generated hooks which dispatch internally.
+const rootReducer = combineReducers({
+  [eventsClient.reducerPath]: eventsClient.reducer,
+  blog: blogReducer,
+  [cmsClient.reducerPath]: cmsClient.reducer,
+  [algoliaClient.reducerPath]: algoliaClient.reducer
+})
+
 const store = configureStore({
-  reducer: {
-    [eventsClient.reducerPath]: eventsClient.reducer
-  },
-  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(eventsClient.middleware),
+  reducer: rootReducer,
+  middleware: getDefaultMiddleware =>
+    getDefaultMiddleware().concat(eventsClient.middleware, cmsClient.middleware, algoliaClient.middleware),
   devTools: import.meta.env.DEV
 })
 
-export { store }
+type RootState = ReturnType<typeof store.getState>
+type AppDispatch = typeof store.dispatch
+
+const useAppDispatch = () => useDispatch<AppDispatch>()
+const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
+
+export { store, useAppDispatch, useAppSelector }
+export type { RootState, AppDispatch }

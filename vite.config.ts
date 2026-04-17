@@ -36,7 +36,7 @@ export default defineConfig(({ command, mode }) => {
             ],
             'vendor-schemas': ['ajv'],
             'vendor-crypto': ['@dcl/crypto', 'eth-connect'],
-            'vendor-intl': ['@formatjs/icu-messageformat-parser', '@formatjs/intl', 'date-fns'],
+            'vendor-intl': ['@formatjs/icu-messageformat-parser', '@formatjs/intl'],
             'vendor-ua': ['ua-parser-js'],
             'vendor-router': ['react-router']
           }
@@ -53,6 +53,12 @@ export default defineConfig(({ command, mode }) => {
           changeOrigin: true,
           secure: false,
           ws: true
+        },
+        '/api/cms': {
+          target: 'https://cms-api.decentraland.org',
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path: string) => path.replace(/^\/api\/cms/, '/spaces/ea2ybdmmn1kv/environments/master')
         }
       }
       /* eslint-enable @typescript-eslint/naming-convention */
