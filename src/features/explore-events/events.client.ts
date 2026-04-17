@@ -132,7 +132,8 @@ const eventsClient = createApi({
 
           if (!response.ok) {
             const errorBody = await response.text()
-            throw new Error(errorBody || `Events API error: ${response.status}`)
+            console.error('[Events] createEvent failed', response.status, errorBody)
+            throw new Error('Failed to create event. Please try again.')
           }
 
           const data: CreateEventResponse = await response.json()
