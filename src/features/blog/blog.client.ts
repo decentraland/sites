@@ -1,6 +1,8 @@
 import { BLOCKS } from '@contentful/rich-text-types'
-import { cmsClient } from '../../services/blogClient'
+import { cmsClient, getCmsBaseUrl } from '../../services/blogClient'
 import type { BlogAuthor, BlogCategory, BlogPost, ContentfulAsset, PaginatedBlogPosts } from '../../shared/blog/types/blog.domain'
+// NOTE: store is imported here only for getPostFromStore (normalized-cache read optimization).
+// Dispatches use onQueryStarted so transformResponse stays a pure data transformer.
 import { store } from '../../shells/store'
 import { getEntrySlug, resolveAssetLink, resolveAuthorLink, resolveCategoryLink } from './blog.helpers'
 import { mapBlogAuthor, mapBlogCategory, mapBlogPost, mapContentfulAsset } from './blog.mappers'
@@ -149,7 +151,7 @@ const blogClient = cmsClient.injectEndpoints({
         return currentArg?.skip !== previousArg?.skip && (currentArg?.skip ?? 0) > (previousArg?.skip ?? 0)
       },
       query: ({ category, author, limit = 20, skip = 0 }) => ({
-        url: '/blog/posts',
+        url: getCmsBaseUrl() + '/blog/posts',
         params: { category, author, limit, skip }
       }),
       transformResponse: async (listResponse: CMSListResponse, _meta, { skip = 0 }) => {
@@ -180,11 +182,6 @@ const blogClient = cmsClient.injectEndpoints({
 
           const validPosts = batchPosts.filter((post): post is BlogPost => post !== null)
 
-          // Upsert all valid posts to normalized store
-          if (validPosts.length > 0) {
-            store.dispatch(postsUpserted(validPosts))
-          }
-
           // Backend handles category/author filtering — total reflects the filtered set
           const nextCmsSkip = skip + listResponse.items.length
           const hasMore = listResponse.items.length === 0 ? false : nextCmsSkip < totalAvailable
@@ -202,6 +199,17 @@ const blogClient = cmsClient.injectEndpoints({
           }
         }
       },
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled
+          // Upsert fetched posts into the normalized entity store
+          if (data.posts.length > 0) {
+            dispatch(postsUpserted(data.posts))
+          }
+        } catch {
+          // query failed — nothing to upsert
+        }
+      },
       keepUnusedDataFor: 60,
       providesTags: result =>
         result
@@ -216,7 +224,7 @@ const blogClient = cmsClient.injectEndpoints({
     }),
 
     getBlogPost: build.query<BlogPost, GetBlogPostParams>({
-      query: ({ id }) => ({ url: `/entries/${id}` }),
+      query: ({ id }) => ({ url: getCmsBaseUrl() + `/entries/${id}` }),
       transformResponse: async (response: CMSEntry, _meta, { id }) => {
         try {
           // Check if post already exists in normalized store (with body assets)
@@ -240,9 +248,6 @@ const blogClient = cmsClient.injectEndpoints({
             post.bodyAssets = await resolveBodyAssets(post.body as unknown as DocumentNode)
           }
 
-          // Upsert to normalized store
-          store.dispatch(postsUpserted([post]))
-
           return post
         } catch (error) {
           throw {
@@ -251,11 +256,19 @@ const blogClient = cmsClient.injectEndpoints({
           }
         }
       },
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled
+          dispatch(postsUpserted([data]))
+        } catch {
+          // query failed — nothing to upsert
+        }
+      },
       providesTags: (result, _error, arg) => (result ? [{ type: 'BlogPost', id: arg.id }] : [])
     }),
 
     getBlogCategories: build.query<BlogCategory[], void>({
-      query: () => ({ url: '/blog/categories' }),
+      query: () => ({ url: getCmsBaseUrl() + '/blog/categories' }),
       transformResponse: async (listResponse: CMSListResponse) => {
         try {
           // Categories only have image references, resolve them in parallel
@@ -272,7 +285,7 @@ const blogClient = cmsClient.injectEndpoints({
     }),
 
     getBlogCategoryBySlug: build.query<BlogCategory, GetBlogCategoryBySlugParams>({
-      query: () => ({ url: '/blog/categories' }),
+      query: () => ({ url: getCmsBaseUrl() + '/blog/categories' }),
       transformResponse: async (listResponse: CMSListResponse, _meta, { slug }) => {
         try {
           const categoryEntry = listResponse.items.find(item => {
@@ -311,7 +324,7 @@ const blogClient = cmsClient.injectEndpoints({
 
     getBlogPostBySlug: build.query<BlogPost, GetBlogPostBySlugParams>({
       query: ({ postSlug }) => ({
-        url: '/blog/posts',
+        url: getCmsBaseUrl() + '/blog/posts',
         params: { slug: postSlug }
       }),
       transformResponse: async (listResponse: CMSListResponse, _meta, { postSlug }) => {
@@ -352,9 +365,6 @@ const blogClient = cmsClient.injectEndpoints({
             post.bodyAssets = await resolveBodyAssets(post.body as unknown as DocumentNode)
           }
 
-          // Upsert to normalized store
-          store.dispatch(postsUpserted([post]))
-
           return post
         } catch (error) {
           throw {
@@ -363,11 +373,19 @@ const blogClient = cmsClient.injectEndpoints({
           }
         }
       },
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled
+          dispatch(postsUpserted([data]))
+        } catch {
+          // query failed — nothing to upsert
+        }
+      },
       providesTags: (result, _error, arg) => (result ? [{ type: 'BlogPost', id: `${arg.categorySlug}/${arg.postSlug}` }] : [])
     }),
 
     getBlogAuthors: build.query<BlogAuthor[], void>({
-      query: () => ({ url: '/blog/authors' }),
+      query: () => ({ url: getCmsBaseUrl() + '/blog/authors' }),
       transformResponse: async (listResponse: CMSListResponse) => {
         try {
           // Authors only have image references, resolve them in parallel
@@ -384,7 +402,7 @@ const blogClient = cmsClient.injectEndpoints({
     }),
 
     getBlogAuthor: build.query<BlogAuthor, GetBlogAuthorParams>({
-      query: ({ id }) => ({ url: `/entries/${id}` }),
+      query: ({ id }) => ({ url: getCmsBaseUrl() + `/entries/${id}` }),
       transformResponse: (response: CMSEntry) => {
         const author = mapBlogAuthor(response)
 
@@ -401,7 +419,7 @@ const blogClient = cmsClient.injectEndpoints({
     }),
 
     getBlogAuthorBySlug: build.query<BlogAuthor, GetBlogAuthorBySlugParams>({
-      query: () => ({ url: '/blog/authors' }),
+      query: () => ({ url: getCmsBaseUrl() + '/blog/authors' }),
       transformResponse: async (listResponse: CMSListResponse, _meta, { slug }) => {
         try {
           const authorEntry = listResponse.items.find(item => {
