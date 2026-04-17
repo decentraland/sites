@@ -1,6 +1,6 @@
-import { combineReducers, configureStore } from '@reduxjs/toolkit'
-import type { TypedUseSelectorHook } from 'react-redux'
 import { useDispatch, useSelector } from 'react-redux'
+import type { TypedUseSelectorHook } from 'react-redux'
+import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { blogReducer } from '../features/blog/blog.slice'
 import { eventsClient } from '../features/explore-events/events.client'
 import { algoliaClient, cmsClient } from '../services/blogClient'
@@ -14,7 +14,8 @@ const rootReducer = combineReducers({
 
 const store = configureStore({
   reducer: rootReducer,
-  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(eventsClient.middleware, cmsClient.middleware, algoliaClient.middleware),
+  middleware: getDefaultMiddleware =>
+    getDefaultMiddleware().concat(eventsClient.middleware, cmsClient.middleware, algoliaClient.middleware),
   devTools: import.meta.env.DEV
 })
 
