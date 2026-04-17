@@ -14,5 +14,7 @@
   "WEARABLE_PREVIEW_URL": "https://wearable-preview.decentraland.org/",
   "SEGMENT_KEY": "f0S2L1sWumT8BPjBmIBDTN5gIWjhrRHG",
   "DISCORD_CAPTCHA_URL": "https://discord-lambdas.decentraland.io/captcha",
-  "HCAPTCHA_SITEKEY": "00c95ced-f512-4498-a5f2-7e0b0950d456"
+  "HCAPTCHA_SITEKEY": "00c95ced-f512-4498-a5f2-7e0b0950d456",
+  "ENVIRONMENT": "development",
+  "SENTRY_DSN": "https://d0ec8d688f4d9827a270acece39153b0@o4504361728212992.ingest.us.sentry.io/4508858418266112"
 }
