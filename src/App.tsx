@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { DappsShellPlaceholderContainer } from './App.styled.ts'
+import { CenteredBox } from './App.styled.ts'
 import { IndexPage } from './pages/index.tsx'
 
 // Layout imports Navbar from decentraland-ui2 which pulls in ~1.3MB of MUI.
@@ -78,7 +78,7 @@ const App = () => {
 }
 
 function DappsShellPlaceholder({ name }: { name: string }) {
-  return <DappsShellPlaceholderContainer>{name} — coming soon (pending migration)</DappsShellPlaceholderContainer>
+  return <CenteredBox>{name} — coming soon (pending migration)</CenteredBox>
 }
 
 export { App }

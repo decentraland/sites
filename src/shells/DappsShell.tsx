@@ -2,14 +2,14 @@ import { Suspense } from 'react'
 import { Provider } from 'react-redux'
 import { Outlet } from 'react-router-dom'
 import { CircularProgress } from 'decentraland-ui2'
+import { CenteredBox } from '../App.styled'
 import { store } from './store'
-import { FallbackContainer } from './DappsShell.styled'
 
 function DappsShellFallback() {
   return (
-    <FallbackContainer>
+    <CenteredBox>
       <CircularProgress color="inherit" />
-    </FallbackContainer>
+    </CenteredBox>
   )
 }
 
