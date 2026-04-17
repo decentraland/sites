@@ -82,12 +82,12 @@ describe('HostBanner', () => {
         mockUseAuthIdentity.mockReturnValue({ hasValidIdentity: true, identity: {}, address: '0x123' })
       })
 
-      it('should navigate to /new-event', () => {
+      it('should navigate to /explore/new-event', () => {
         render(<HostBanner />)
 
         fireEvent.click(screen.getByTestId('create-button'))
 
-        expect(mockNavigate).toHaveBeenCalledWith('/new-event')
+        expect(mockNavigate).toHaveBeenCalledWith('/explore/new-event')
       })
     })
 
@@ -96,12 +96,12 @@ describe('HostBanner', () => {
         mockUseAuthIdentity.mockReturnValue({ hasValidIdentity: false, identity: undefined, address: undefined })
       })
 
-      it('should redirect to auth with /new-event as return path', () => {
+      it('should redirect to auth with /explore/new-event as return path', () => {
         render(<HostBanner />)
 
         fireEvent.click(screen.getByTestId('create-button'))
 
-        expect(mockRedirectToAuth).toHaveBeenCalledWith('/new-event')
+        expect(mockRedirectToAuth).toHaveBeenCalledWith('/explore/new-event')
       })
 
       it('should not navigate', () => {
