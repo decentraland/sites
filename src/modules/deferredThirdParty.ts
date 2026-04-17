@@ -29,7 +29,7 @@ export function scheduleDeferredThirdParty(): void {
     scheduleWhenIdle(injectContentsquare, { timeout: 4000 })
   }
 
-  if (document.readyState === 'complete') {
+  if (document.readyState !== 'loading') {
     start()
   } else {
     window.addEventListener('load', start, { once: true })

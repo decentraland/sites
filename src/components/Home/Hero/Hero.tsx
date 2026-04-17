@@ -119,6 +119,9 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
     }
 
     const armFade = () => {
+      // Defensive: { once: true } on both listeners already prevents double-fire,
+      // but this guard keeps the invariant explicit against future edits.
+      if (fadeTimer !== undefined) return
       fadeTimer = window.setTimeout(hideShell, SHELL_FADE_DELAY_MS)
     }
 
@@ -180,7 +183,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
             loop
             muted
             playsInline
-            preload="metadata"
+            preload="none"
             className="hero-video-overlay"
             onCanPlay={e => e.currentTarget.setAttribute('data-ready', 'true')}
           >

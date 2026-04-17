@@ -27,7 +27,10 @@ function DeferredAnalyticsProvider({ writeKey, children }: Props) {
       idleHandle = scheduleWhenIdle(activate, { timeout: 4000 })
     }
 
-    if (document.readyState === 'complete') {
+    // Cover both 'interactive' and 'complete'. The `load` listener still handles
+    // the 'loading' case correctly because load fires after readyState becomes
+    // complete, so there's no race.
+    if (document.readyState !== 'loading') {
       schedule()
     } else {
       window.addEventListener('load', schedule, { once: true })
