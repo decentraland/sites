@@ -30,7 +30,30 @@
 <body>
   <div id="root"><!-- HERO_SHELL_START --><!-- HERO_SHELL_END --></div>
   <script type="module" src="/src/main.tsx"></script>
-  <script src="https://t.contentsquare.net/uxa/c07af53c07b18.js" async></script>
+  <script>
+    // Defer Contentsquare until after first user interaction or 5s idle,
+    // whichever comes first. This prevents it from competing with the app
+    // for main thread time during initial load.
+    (function() {
+      var loaded = false;
+      function loadCS() {
+        if (loaded) return;
+        loaded = true;
+        var s = document.createElement('script');
+        s.src = 'https://t.contentsquare.net/uxa/c07af53c07b18.js';
+        s.async = true;
+        document.body.appendChild(s);
+      }
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(loadCS, { timeout: 5000 });
+      } else {
+        setTimeout(loadCS, 5000);
+      }
+      ['click', 'scroll', 'keydown', 'touchstart'].forEach(function(e) {
+        document.addEventListener(e, loadCS, { once: true, passive: true });
+      });
+    })();
+  </script>
 </body>
 
 </html>
