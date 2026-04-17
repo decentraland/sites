@@ -1,8 +1,5 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { Env, getEnv } from '@dcl/ui-env'
-import { RemoteLoader } from './components/RemoteLoader.tsx'
-import { useAuthIdentity } from './hooks/useAuthIdentity.ts'
 import { IndexPage } from './pages/index.tsx'
 
 // Layout imports Navbar from decentraland-ui2 which pulls in ~1.3MB of MUI.
@@ -33,9 +30,11 @@ const CreatePage = lazy(() => import('./pages/create').then(m => ({ default: m.C
 const DiscordPage = lazy(() => import('./pages/discord').then(m => ({ default: m.DiscordPage })))
 const PressPage = lazy(() => import('./pages/press').then(m => ({ default: m.PressPage })))
 
-const App = () => {
-  const { identity, address } = useAuthIdentity()
+// Lazy-loaded for /explore and /blog routes only. Contains Redux + PersistGate.
+// No Web3 providers — auth uses localStorage identity via useAuthIdentity.
+const DappsShell = lazy(() => import('./shells/DappsShell').then(m => ({ default: m.DappsShell })))
 
+const App = () => {
   return (
     <BrowserRouter>
       <Suspense fallback={null}>
@@ -60,17 +59,24 @@ const App = () => {
             <Route path="/discord" element={<DiscordPage />} />
             <Route path="/press" element={<PressPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
-            <Route path="/explore/*" element={<RemoteLoader name="explore" identity={identity} address={address} />} />
-            {getEnv() !== Env.PRODUCTION && (
-              <>
-                <Route path="/blog/*" element={<RemoteLoader name="blog" />} />
-              </>
-            )}
+            {/* DappsShell provides Redux + PersistGate via Outlet */}
+            <Route element={<DappsShell />}>
+              <Route path="/explore/*" element={<DappsShellPlaceholder name="explore" />} />
+              <Route path="/blog/*" element={<DappsShellPlaceholder name="blog" />} />
+            </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
       </Suspense>
     </BrowserRouter>
+  )
+}
+
+function DappsShellPlaceholder({ name }: { name: string }) {
+  return (
+    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {name} — coming soon (pending migration)
+    </div>
   )
 }
 
