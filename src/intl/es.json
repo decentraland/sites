@@ -453,9 +453,9 @@
                     }
                 },
                 "chat_cta": {
-                    "title": "¿Aún tienes preguntas?",
-                    "subtitle": "Nuestro equipo de soporte está aquí para ayudarte. Inicia un chat en vivo y te responderemos de inmediato.",
-                    "button": "Chatear ahora"
+                    "title": "¿Necesitas ayuda?",
+                    "subtitle": "¡Nuestro equipo de soporte está aquí para responder tus preguntas!",
+                    "button": "CHATEAR AHORA"
                 }
             },
             "whats_hot": {

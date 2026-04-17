@@ -283,19 +283,20 @@ const ChatCtaBanner = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(3),
   minWidth: 661,
   maxWidth: 661,
-  background: 'linear-gradient(135deg, #3d1a4a 0%, #280d2b 100%)',
-  borderRadius: 27,
-  padding: theme.spacing(3, 4),
+  background: 'linear-gradient(135deg, #2b1339 0%, #1a0e24 60%, #1c1228 100%)',
+  borderRadius: 16,
+  padding: theme.spacing(4, 4),
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  border: '1px solid rgba(255, 255, 255, 0.08)',
+  position: 'relative',
+  overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
     minWidth: 'unset',
     maxWidth: '100%',
     width: '100%',
-    padding: theme.spacing(2.5, 2),
-    borderRadius: 20
+    padding: theme.spacing(3, 2),
+    borderRadius: 12
   }
 }))
 
@@ -309,18 +310,18 @@ const ChatCtaBannerTexts = styled(Box)(({ theme }) => ({
 }))
 
 const ChatCtaBannerTitle = styled(Typography)({
-  fontSize: 18,
-  fontWeight: 600,
-  lineHeight: '24px',
-  color: '#fcfcfc'
+  fontSize: 28,
+  fontWeight: 700,
+  lineHeight: '34px',
+  color: '#ffffff'
 })
 
 const ChatCtaBannerSubtitle = styled(Typography)({
-  fontSize: 13,
+  fontSize: 14,
   fontWeight: 400,
   lineHeight: '20px',
-  color: 'rgba(252, 252, 252, 0.7)',
-  maxWidth: 380
+  color: 'rgba(255, 255, 255, 0.75)',
+  maxWidth: 340
 })
 
 const ChatCtaBannerContent = styled(Box)(({ theme }) => ({
@@ -337,19 +338,20 @@ const ChatCtaBannerContent = styled(Box)(({ theme }) => ({
 
 const ChatCtaButton = styled(Button)({
   flexShrink: 0,
-  backgroundColor: '#ff2d78',
+  backgroundColor: '#E4515B',
   color: '#ffffff',
   backgroundImage: 'none',
-  borderRadius: 12,
-  padding: '12px 24px',
+  borderRadius: 8,
+  padding: '12px 28px',
   fontSize: 14,
-  fontWeight: 600,
+  fontWeight: 700,
+  letterSpacing: '0.5px',
   lineHeight: '16.94px',
   whiteSpace: 'nowrap',
-  textTransform: 'none',
+  textTransform: 'uppercase',
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:hover': {
-    backgroundColor: '#e0215e',
+    backgroundColor: '#d04048',
     backgroundImage: 'none'
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -503,9 +503,9 @@
                     }
                 },
                 "chat_cta": {
-                    "title": "Still have questions?",
-                    "subtitle": "Our support team is here to help. Start a live chat and we'll get back to you right away.",
-                    "button": "Chat Now"
+                    "title": "Need Help?",
+                    "subtitle": "Our support team is here to answer your questions!",
+                    "button": "CHAT NOW"
                 }
             },
             "whats_hot": {
