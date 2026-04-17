@@ -174,3 +174,18 @@ Dispatch the `pr-review-toolkit:code-reviewer` agent (or equivalent local review
 ### 12. Network requests in hot paths
 
 - If a helper makes per-item HTTP requests inside a `.map()` (N+1 pattern), check whether the underlying API supports batch queries (e.g. `POST /entities/active` with pointer arrays). Always prefer batch endpoints over sequential fetches when available.
+
+### 13. Navbar clearance (fixed-position navbar)
+
+- `LandingNavbar` is `position: fixed, top: 0` with `height: 64px` on mobile (below `theme.breakpoints.up('md')`) and `92px` on desktop.
+- Every route renders under this fixed navbar. The first visible content MUST clear the navbar. Minimum top clearance:
+  - Mobile: **64px** (navbar height, tight)
+  - Desktop: **96px** (navbar height + small buffer)
+- For new pages that don't have their own hero or top banner designed to overlap the transparent navbar on the homepage, add top padding on the layout/wrapper container:
+  ```ts
+  const PageContainer = styled(Box)(({ theme }) => ({
+    paddingTop: 64,
+    [theme.breakpoints.up('md')]: { paddingTop: 96 }
+  }))
+  ```
+- Visual verification after adding/editing a route: boot `npm run dev`, load the route, and confirm the first on-screen element's `getBoundingClientRect().top` is >= the navbar height. Use Chrome DevTools MCP for reproducible checks.
