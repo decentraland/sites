@@ -29,11 +29,4 @@ const PostListWrapper = styled(Box, { shouldForwardProp: prop => prop !== 'hasMa
   })
 )
 
-const PostListContainer = styled(Box)(() => ({
-  display: 'flex',
-  flexWrap: 'wrap',
-  width: '100%',
-  marginTop: 0
-}))
-
-export { PostListContainer, PostListWrapper }
+export { PostListWrapper }
