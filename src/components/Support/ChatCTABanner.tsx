@@ -3,6 +3,7 @@ import { useTranslation } from '@dcl/hooks'
 import {
   ChatCtaBanner,
   ChatCtaBannerContent,
+  ChatCtaBannerImage,
   ChatCtaBannerSubtitle,
   ChatCtaBannerTexts,
   ChatCtaBannerTitle,
@@ -28,9 +29,10 @@ const ChatCTABanner = () => {
         <ChatCtaBannerTexts>
           <ChatCtaBannerTitle>{t(`${CHAT_CTA_PREFIX}.title`)}</ChatCtaBannerTitle>
           <ChatCtaBannerSubtitle>{t(`${CHAT_CTA_PREFIX}.subtitle`)}</ChatCtaBannerSubtitle>
+          <ChatCtaButton onClick={handleChatNow}>{t(`${CHAT_CTA_PREFIX}.button`)}</ChatCtaButton>
         </ChatCtaBannerTexts>
-        <ChatCtaButton onClick={handleChatNow}>{t(`${CHAT_CTA_PREFIX}.button`)}</ChatCtaButton>
       </ChatCtaBannerContent>
+      <ChatCtaBannerImage src="/chat_banner.png" alt="" aria-hidden="true" />
     </ChatCtaBanner>
   )
 }

@@ -283,7 +283,7 @@ const ChatCtaBanner = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(3),
   minWidth: 661,
   maxWidth: 661,
-  background: 'linear-gradient(135deg, #2b1339 0%, #1a0e24 60%, #1c1228 100%)',
+  background: 'linear-gradient(135deg, #2b1339 0%, #3a1a5e 40%, #1a0e24 100%)',
   borderRadius: 16,
   padding: theme.spacing(4, 4),
   display: 'flex',
@@ -303,7 +303,8 @@ const ChatCtaBanner = styled(Box)(({ theme }) => ({
 const ChatCtaBannerTexts = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(0.5),
+  gap: theme.spacing(1.5),
+  zIndex: 1,
   [theme.breakpoints.down('sm')]: {
     marginBottom: theme.spacing(2)
   }
@@ -324,19 +325,30 @@ const ChatCtaBannerSubtitle = styled(Typography)({
   maxWidth: 340
 })
 
-const ChatCtaBannerContent = styled(Box)(({ theme }) => ({
+const ChatCtaBannerContent = styled(Box)({
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  width: '100%',
-  gap: theme.spacing(3),
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  zIndex: 1,
+  flex: 1
+})
+
+const ChatCtaBannerImage = styled('img')(({ theme }) => ({
+  position: 'absolute',
+  right: 0,
+  bottom: 0,
+  height: '100%',
+  width: 'auto',
+  objectFit: 'contain',
+  objectPosition: 'right bottom',
+  pointerEvents: 'none',
   [theme.breakpoints.down('sm')]: {
-    flexDirection: 'column',
-    alignItems: 'flex-start'
+    height: '80%',
+    opacity: 0.6
   }
 }))
 
-const ChatCtaButton = styled(Button)({
+const ChatCtaButton = styled(Button)(({ theme }) => ({
   flexShrink: 0,
   backgroundColor: '#E4515B',
   color: '#ffffff',
@@ -349,6 +361,7 @@ const ChatCtaButton = styled(Button)({
   lineHeight: '16.94px',
   whiteSpace: 'nowrap',
   textTransform: 'uppercase',
+  marginTop: theme.spacing(2),
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:hover': {
     backgroundColor: '#d04048',
@@ -358,12 +371,13 @@ const ChatCtaButton = styled(Button)({
   '&:active': {
     transform: 'scale(0.97)'
   }
-})
+}))
 
 export {
   AccordionContainer,
   ChatCtaBanner,
   ChatCtaBannerContent,
+  ChatCtaBannerImage,
   ChatCtaBannerSubtitle,
   ChatCtaBannerTexts,
   ChatCtaBannerTitle,
