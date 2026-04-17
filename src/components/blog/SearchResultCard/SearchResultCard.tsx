@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { sanitizeHighlight } from '../Search/sanitizeHighlight'
 import type { SearchResultCardProps } from './SearchResultCard.types'
 import {
   CardContainer,
@@ -41,10 +42,18 @@ const SearchResultCard = (props: SearchResultCardProps) => {
         <CardContentBox>
           {result.image && <CardImage src={result.image} alt="" loading="lazy" decoding="async" />}
           <CardTextBox>
-            {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
-            <CardTitle dangerouslySetInnerHTML={{ __html: result.title }} />
-            {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
-            <CardDescription dangerouslySetInnerHTML={{ __html: result.description }} />
+            {typeof result.title === 'string' ? (
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              <CardTitle dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.title) }} />
+            ) : (
+              <CardTitle>{result.title}</CardTitle>
+            )}
+            {typeof result.description === 'string' ? (
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              <CardDescription dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.description) }} />
+            ) : (
+              <CardDescription>{result.description}</CardDescription>
+            )}
           </CardTextBox>
         </CardContentBox>
       </Link>

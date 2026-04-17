@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { useSearchBlogQuery } from '../../../features/search/search.client'
+import { sanitizeHighlight } from './sanitizeHighlight'
 import type { SearchProps } from './Search.types'
 import {
   MoreResultsItem,
@@ -141,9 +142,9 @@ const Search = ({ placeholder, onClose }: SearchProps) => {
                   <SearchResultImage $image={result.image} />
                   <SearchResultText>
                     {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
-                    <SearchResultTitle dangerouslySetInnerHTML={{ __html: result.highlightedTitle }} />
+                    <SearchResultTitle dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.highlightedTitle) }} />
                     {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
-                    <SearchResultDescription dangerouslySetInnerHTML={{ __html: result.highlightedDescription }} />
+                    <SearchResultDescription dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.highlightedDescription) }} />
                   </SearchResultText>
                 </SearchResultLink>
               </SearchResultItem>
