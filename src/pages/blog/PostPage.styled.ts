@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Link } from 'react-router-dom'
-import { Box, Typography, styled } from 'decentraland-ui2'
+import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
 
 const CenteredBox = styled(Box)(({ theme }) => ({
   textAlign: 'center',
@@ -37,7 +37,7 @@ const MetaSeparator = styled('span')(({ theme }) => ({
 }))
 
 const CategoryMetaLink = styled(Link)(({ theme }) => ({
-  color: '#5c5c6e',
+  color: dclColors.neutral.gray3,
   textDecoration: 'none',
   WebkitTapHighlightColor: 'transparent',
   '&:hover': {

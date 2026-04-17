@@ -1,4 +1,4 @@
-import { Box, styled } from 'decentraland-ui2'
+import { Box, dclColors, styled } from 'decentraland-ui2'
 
 const AuthorContainer = styled(Box)(({ theme }) => ({
   display: 'inline-flex',
@@ -7,7 +7,7 @@ const AuthorContainer = styled(Box)(({ theme }) => ({
 }))
 
 const CategoryText = styled('span')(() => ({
-  color: '#5c5c6e'
+  color: dclColors.neutral.gray3
 }))
 
 const PreviewBanner = styled(Box)(({ theme }) => ({
