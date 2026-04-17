@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Box, Typography, styled } from 'decentraland-ui2'
+import { safeCssUrl } from '../utils/safeCssUrl'
 
 const HeroContainer = styled(Box)<{ imageUrl: string }>(({ theme, imageUrl }) => ({
-  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("${imageUrl}")`,
+  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("${safeCssUrl(imageUrl)}")`,
   backgroundSize: 'cover',
   backgroundPosition: 'center',
   width: '100%',

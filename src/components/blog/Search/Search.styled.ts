@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Link } from 'react-router-dom'
 import { Box, dclColors, styled } from 'decentraland-ui2'
+import { safeCssUrl } from '../utils/safeCssUrl'
 
 const SearchContainer = styled(Box, {
   shouldForwardProp: prop => prop !== '$hasResults'
@@ -127,7 +128,7 @@ const SearchResultImage = styled(Box, {
   flexShrink: 0,
   borderRadius: theme.spacing(1),
   backgroundColor: 'rgba(255, 255, 255, 0.05)',
-  backgroundImage: $image ? `url(${$image})` : 'none',
+  backgroundImage: $image ? `url("${safeCssUrl($image)}")` : 'none',
   backgroundSize: 'cover',
   backgroundPosition: 'center'
 }))
