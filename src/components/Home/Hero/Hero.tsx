@@ -14,6 +14,7 @@ import { formatToShorthand } from '../../../modules/number'
 import { SectionViewedTrack } from '../../../modules/segment'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
+import { type ScheduledHandle, cancelScheduledIdleCall, scheduleWhenIdle } from '../../../utils/scheduleWhenIdle'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
 import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
 import {
@@ -32,10 +33,18 @@ import {
   HeroPlatformIcon,
   HeroPlatformIcons,
   HeroPlatformSeparator,
+  HeroTitle,
   MobileHeroContent,
   MobileHeroSubtitle,
   MobileHeroTitle
 } from './Hero.styled'
+
+// Delay after React's hero image is ready before fading the prerendered shell.
+// Kept small (must be >0 so Chrome commits the shell's h3 as an LCP candidate
+// before its ancestor transitions to opacity:0, which excludes it from LCP
+// tracking) but not so large that users see the static image longer than
+// necessary. ~12 frames @ 60fps is ample headroom across slow CPUs.
+const SHELL_FADE_DELAY_MS = 200
 
 const heroImageDesktop = assetUrl('/hero_desktop.webp')
 const heroImageTablet = assetUrl('/hero_tablet.webp')
@@ -73,61 +82,73 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const [mobileModalOs, setMobileModalOs] = useState<'ios' | 'android' | null>(null)
 
   // LCP-critical pieces of state:
-  //   - The <picture>/<img> is always rendered so Chrome's LCP observer anchors
-  //     on a stable image element from the first paint onward. Never replaced.
+  //   - The <img> is always rendered so Chrome's LCP observer anchors on a
+  //     stable image element from the first paint onward. Never replaced.
   //   - The animated desktop background <video> fades in on top as an overlay
   //     only after the page is idle, so it never competes for LCP tracking.
   const [loadVideo, setLoadVideo] = useState(false)
   const heroBackgroundRef = useRef<HTMLDivElement | null>(null)
 
+  // Expose viewport height as a CSS custom property for the mobile hero's
+  // 100dvh fallback (iOS Safari undercounts 100vh on first paint).
+  useEffect(() => {
+    document.documentElement.style.setProperty('--hero-vh', `${window.innerHeight * 0.01}px`)
+  }, [])
+
   // Fade out the prerendered hero shell once React's hero image is painted.
   // We deliberately do NOT remove the shell from the DOM: removing the LCP
   // element invalidates Chrome's LCP bookkeeping and causes re-election on a
-  // smaller later element (e.g. the <h2> below, which pushed LCP to 2.1s).
+  // smaller, later-painted element.
   useEffect(() => {
-    document.documentElement.style.setProperty('--hero-vh', `${window.innerHeight * 0.01}px`)
-
     const shell = document.getElementById('hero-shell')
     const shellNav = document.getElementById('hero-shell-nav')
+    const img = heroBackgroundRef.current?.querySelector<HTMLImageElement>('img')
+
+    let fadeTimer: number | undefined
 
     const hideShell = () => {
       if (shell) {
         shell.style.transition = 'opacity 200ms ease-out'
         shell.style.opacity = '0'
         shell.style.pointerEvents = 'none'
+        // opacity:0 keeps the element in the accessibility tree; screen readers
+        // would otherwise announce the (now duplicated) React title and buttons.
+        shell.setAttribute('aria-hidden', 'true')
       }
       shellNav?.remove()
     }
 
-    // Delay the fade so Chrome has multiple frames to register the shell image
-    // as an LCP candidate before its ancestor's opacity reaches 0 (Chrome excludes
-    // images inside opacity:0 ancestors from LCP tracking).
-    const img = heroBackgroundRef.current?.querySelector<HTMLImageElement>('img')
     const armFade = () => {
-      window.setTimeout(hideShell, 500)
+      fadeTimer = window.setTimeout(hideShell, SHELL_FADE_DELAY_MS)
     }
+
     if (img?.complete) {
       armFade()
     } else if (img) {
       img.addEventListener('load', armFade, { once: true })
       img.addEventListener('error', armFade, { once: true })
+    } else {
+      // No image ref yet (e.g. StrictMode dry-run): fade immediately so the
+      // shell doesn't linger indefinitely.
+      armFade()
     }
 
-    // Load the background video only after the page is idle, and only on
-    // desktop. Delayed long enough that Chrome has committed its LCP entry on
-    // the static image before the video element joins the DOM.
-    if (!isDesktop) return
-    const useIdle = typeof window.requestIdleCallback === 'function'
-    const handle = useIdle
-      ? window.requestIdleCallback(() => setLoadVideo(true), { timeout: 4000 })
-      : window.setTimeout(() => setLoadVideo(true), 3000)
     return () => {
-      if (useIdle && typeof window.cancelIdleCallback === 'function') {
-        window.cancelIdleCallback(handle)
-      } else {
-        window.clearTimeout(handle)
+      if (img) {
+        img.removeEventListener('load', armFade)
+        img.removeEventListener('error', armFade)
       }
+      if (fadeTimer !== undefined) window.clearTimeout(fadeTimer)
     }
+  }, [])
+
+  // Defer loading the background video until the page is idle (desktop only).
+  // Keeping it out of the initial render ensures Chrome has committed its LCP
+  // entry on the static image before the <video> element joins the paint tree.
+  useEffect(() => {
+    if (!isDesktop) return
+    const handle: ScheduledHandle = scheduleWhenIdle(() => setLoadVideo(true), { timeout: 4000, fallbackDelayMs: 3000 })
+    return () => cancelScheduledIdleCall(handle)
   }, [isDesktop])
 
   const handleDownloadClick = useCallback(
@@ -145,14 +166,13 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
       <HeroBackground ref={heroBackgroundRef}>
         <img
           className="hero-image"
-          src={isDesktop ? heroImageDesktop : heroImageMobile}
+          src={heroImageMobile}
           srcSet={`${heroImageMobile} 800w, ${heroImageTablet} 1200w, ${heroImageDesktop} 1920w`}
           sizes="100vw"
           alt="Decentraland — a virtual world to hang out online"
           width={1920}
           height={1080}
           fetchPriority="high"
-          decoding="sync"
         />
         {isDesktop && loadVideo && (
           <video
@@ -197,9 +217,11 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
       {/* Desktop */}
       {isDesktop && (
         <HeroContent>
-          {/* Hero title is rendered by the prerendered shell so it is present at FCP
-              and Chrome's LCP observer anchors on that element rather than on a
-              React-rendered h2 that paints ~100ms later. */}
+          {/* Title is also present in the prerendered shell (same tag, same computed
+              styles). Chrome paints the shell's h3 first and keeps it as the LCP
+              candidate because React's h3 ties on size. When the shell is absent
+              (dev mode, build misconfig) this React title is the only one visible. */}
+          <HeroTitle>{l('page.home.hero.title')}</HeroTitle>
 
           <HeroCTAWrapper>
             {/* Download + Epic buttons */}

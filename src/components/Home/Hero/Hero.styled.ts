@@ -86,12 +86,21 @@ const HeroContent = styled(Box)(({ theme }) => ({
   }
 }))
 
-const HeroTitle = styled(Typography)(({ theme }) => ({
+// Rendered as a plain <h3> (not MUI Typography h2) with styles that match the
+// prerendered hero shell's h3 byte-for-byte. Matching the computed styles means
+// Chrome's LCP size calculation ties between shell and React copies, so the
+// earlier-painted shell wins and LCP stays anchored at FCP time. Do NOT add
+// textShadow, letter-spacing drift, or tag changes without re-matching the
+// shell CSS in scripts/prerender-hero.mjs — a 6% size delta was previously
+// enough to flip the LCP candidate to React.
+const HeroTitle = styled('h3')(({ theme }) => ({
   color: dclColors.neutral.white,
+  fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+  fontSize: 60,
   fontWeight: 600,
   lineHeight: 1.2,
-  letterSpacing: -0.5,
-  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
+  letterSpacing: '-0.5px',
+  margin: 0,
   marginBottom: theme.spacing(4.5),
   [theme.breakpoints.down('sm')]: {
     fontSize: 36,

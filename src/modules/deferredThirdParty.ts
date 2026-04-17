@@ -1,3 +1,5 @@
+import { scheduleWhenIdle } from '../utils/scheduleWhenIdle'
+
 // Loads third-party scripts only after the page is idle so they never enter
 // Lighthouse/Lantern's critical-path dependency graph. Each script here was
 // previously either inlined in index.html or eagerly fired via Segment during
@@ -15,14 +17,6 @@ function injectContentsquare(): void {
   document.body.appendChild(s)
 }
 
-function runWhenIdle(cb: () => void, timeout = 4000): void {
-  if (typeof window.requestIdleCallback === 'function') {
-    window.requestIdleCallback(cb, { timeout })
-  } else {
-    window.setTimeout(cb, 2000)
-  }
-}
-
 /**
  * Schedules the deferred third-party scripts to load after the page is fully
  * loaded AND the main thread is idle. Safe to call multiple times.
@@ -31,7 +25,9 @@ export function scheduleDeferredThirdParty(): void {
   if (started) return
   started = true
 
-  const start = () => runWhenIdle(injectContentsquare)
+  const start = () => {
+    scheduleWhenIdle(injectContentsquare, { timeout: 4000 })
+  }
 
   if (document.readyState === 'complete') {
     start()

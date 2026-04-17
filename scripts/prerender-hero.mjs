@@ -213,7 +213,7 @@ const heroHtml = `<div id="hero-shell-nav">
 </div>
 <div id="hero-shell">
   <div class="hero-bg">
-    <img class="hero-shell-image" src="./hero_desktop.webp" srcset="./hero_mobile.webp 800w, ./hero_tablet.webp 1200w, ./hero_desktop.webp 1920w" sizes="100vw" alt="Decentraland — a virtual world to hang out online" width="1920" height="1080" fetchpriority="high" decoding="sync" />
+    <img class="hero-shell-image" src="./hero_mobile.webp" srcset="./hero_mobile.webp 800w, ./hero_tablet.webp 1200w, ./hero_desktop.webp 1920w" sizes="100vw" alt="Decentraland — a virtual world to hang out online" width="1920" height="1080" fetchpriority="high" />
   </div>
   <div class="gradient-top"></div>
   <div class="gradient-bottom"></div>

@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useState } from 'react'
 import { AnalyticsProvider } from '@dcl/hooks'
+import { type ScheduledHandle, cancelScheduledIdleCall, scheduleWhenIdle } from '../utils/scheduleWhenIdle'
 
 interface Props {
   writeKey: string
@@ -19,17 +20,11 @@ function DeferredAnalyticsProvider({ writeKey, children }: Props) {
 
   useEffect(() => {
     if (!writeKey) return
-    let idleHandle: number | undefined
-    let timeoutHandle: number | undefined
+    let idleHandle: ScheduledHandle | undefined
 
     const activate = () => setResolvedKey(writeKey)
-
     const schedule = () => {
-      if (typeof window.requestIdleCallback === 'function') {
-        idleHandle = window.requestIdleCallback(activate, { timeout: 4000 })
-      } else {
-        timeoutHandle = window.setTimeout(activate, 2000)
-      }
+      idleHandle = scheduleWhenIdle(activate, { timeout: 4000 })
     }
 
     if (document.readyState === 'complete') {
@@ -40,12 +35,7 @@ function DeferredAnalyticsProvider({ writeKey, children }: Props) {
 
     return () => {
       window.removeEventListener('load', schedule)
-      if (idleHandle !== undefined && typeof window.cancelIdleCallback === 'function') {
-        window.cancelIdleCallback(idleHandle)
-      }
-      if (timeoutHandle !== undefined) {
-        window.clearTimeout(timeoutHandle)
-      }
+      cancelScheduledIdleCall(idleHandle)
     }
   }, [writeKey])
 
