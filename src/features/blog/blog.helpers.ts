@@ -1,6 +1,6 @@
 import { cmsBaseUrl } from '../../services/blogClient'
 import type { SlugFields } from './blog.types'
-import type { CMSEntry, CMSListResponse, CMSQueryParams, CMSReference } from './cms.types'
+import type { CMSEntry, CMSQueryParams, CMSReference } from './cms.types'
 
 // ============================================================================
 // SLUG EXTRACTION - Unified logic for getting slug from CMS entries
@@ -38,6 +38,8 @@ const fetchFromCMS = async (endpoint: string, params?: CMSQueryParams): Promise<
 // ============================================================================
 // ENTRY CACHES - For assets, categories, authors, and resolved posts
 // Prevents duplicate requests when resolving references
+// TODO: These module-level Maps are unbounded. If the blog grows to thousands of entries,
+// replace with a capped LRU cache (e.g. lru-cache or a tiny custom implementation).
 // ============================================================================
 
 const assetsCache = new Map<string, CMSEntry>()
@@ -82,71 +84,20 @@ const resolveAssetLink = async (value: unknown): Promise<unknown> => {
 }
 
 // ============================================================================
-// CATEGORY RESOLVER - Uses RTK Query cache via store
+// CATEGORY RESOLVER - Uses module-level caches for resolved entries
 // ============================================================================
 
-// Store reference will be set by initializeHelpers
-let storeRef: { getState: () => unknown; dispatch: (action: unknown) => unknown } | null = null
-
-const initializeHelpers = (store: { getState: () => unknown; dispatch: (action: unknown) => unknown }) => {
-  storeRef = store
-}
+// NOTE: initializeHelpers/storeRef were removed — the RTK cache-lookup shortcut was dead
+// code (initializeHelpers was never called, storeRef was always null). Entry resolution
+// falls through to fetchAndCacheEntry which has its own module-level dedup Map.
 
 // Local cache for resolved categories/authors with their images
 const resolvedCategoriesCache = new Map<string, CMSEntry>()
 const resolvedAuthorsCache = new Map<string, CMSEntry>()
 
-// Helper to get categories from RTK Query cache
-const getCategoriesFromCache = (): Map<string, CMSEntry> => {
-  if (!storeRef) {
-    return new Map()
-  }
-
-  const state = storeRef.getState() as { cmsClient?: { queries?: Record<string, { data?: CMSListResponse }> } }
-  const queries = state.cmsClient?.queries || {}
-
-  // Look for getBlogCategories query result
-  const categoriesQuery = Object.entries(queries).find(([key]) => key.startsWith('getBlogCategories'))
-
-  if (categoriesQuery && categoriesQuery[1]?.data) {
-    const items = categoriesQuery[1].data as unknown as CMSEntry[]
-    const map = new Map<string, CMSEntry>()
-    for (const item of items) {
-      if (item?.sys?.id) {
-        map.set(item.sys.id, item)
-      }
-    }
-    return map
-  }
-
-  return new Map()
-}
-
-// Helper to get authors from RTK Query cache
-const getAuthorsFromCache = (): Map<string, CMSEntry> => {
-  if (!storeRef) {
-    return new Map()
-  }
-
-  const state = storeRef.getState() as { cmsClient?: { queries?: Record<string, { data?: CMSListResponse }> } }
-  const queries = state.cmsClient?.queries || {}
-
-  // Look for getBlogAuthors query result
-  const authorsQuery = Object.entries(queries).find(([key]) => key.startsWith('getBlogAuthors'))
-
-  if (authorsQuery && authorsQuery[1]?.data) {
-    const items = authorsQuery[1].data as unknown as CMSEntry[]
-    const map = new Map<string, CMSEntry>()
-    for (const item of items) {
-      if (item?.sys?.id) {
-        map.set(item.sys.id, item)
-      }
-    }
-    return map
-  }
-
-  return new Map()
-}
+// TODO: Optimize — replace per-post reference resolution with Contentful `include` param
+// on the original query (resolves references server-side). Current implementation fires
+// 3 parallel requests per post; first load of 7 posts = 21+ requests.
 
 // Helper to fetch and cache an entry by ID
 const fetchAndCacheEntry = async (entryId: string): Promise<CMSEntry> => {
@@ -184,28 +135,15 @@ const resolveCategoryLink = async (value: unknown): Promise<unknown> => {
   const link = value as CMSReference
   const entry = value as CMSEntry
 
-  // If it's a Link reference, resolve from caches
+  // If it's a Link reference, resolve via module-level entry cache
   if (link?.sys?.type === 'Link' && link.sys.linkType === 'Entry') {
     const entryId = link.sys.id
 
-    // Check our local resolved cache first (already has image resolved)
+    // Check resolved cache first (already has image resolved)
     if (resolvedCategoriesCache.has(entryId)) {
       return resolvedCategoriesCache.get(entryId)!
     }
 
-    // Try RTK Query cache
-    const categoriesMap = getCategoriesFromCache()
-    const category = categoriesMap.get(entryId)
-    if (category) {
-      // Resolve image and cache the result
-      if (category.fields?.image) {
-        category.fields.image = await resolveAssetLink(category.fields.image)
-      }
-      resolvedCategoriesCache.set(entryId, category)
-      return category
-    }
-
-    // Use local cache for fetching
     try {
       const fetched = await fetchAndCacheEntry(entryId)
       resolvedCategoriesCache.set(entryId, fetched)
@@ -217,7 +155,6 @@ const resolveCategoryLink = async (value: unknown): Promise<unknown> => {
 
   // If it already has fields, it's already resolved
   if (entry?.sys?.id && entry?.fields) {
-    // Check if we already resolved this
     if (resolvedCategoriesCache.has(entry.sys.id)) {
       return resolvedCategoriesCache.get(entry.sys.id)!
     }
@@ -228,55 +165,25 @@ const resolveCategoryLink = async (value: unknown): Promise<unknown> => {
     return entry
   }
 
-  // If it has an ID but no fields, try to resolve from cache
-  if (entry?.sys?.id) {
-    if (resolvedCategoriesCache.has(entry.sys.id)) {
-      return resolvedCategoriesCache.get(entry.sys.id)!
-    }
-    const categoriesMap = getCategoriesFromCache()
-    const category = categoriesMap.get(entry.sys.id)
-    if (category) {
-      if (category.fields?.image) {
-        category.fields.image = await resolveAssetLink(category.fields.image)
-      }
-      resolvedCategoriesCache.set(entry.sys.id, category)
-      return category
-    }
-  }
-
   return value
 }
 
 // ============================================================================
-// AUTHOR RESOLVER - Uses RTK Query cache via store
+// AUTHOR RESOLVER - Uses module-level caches
 // ============================================================================
 
 const resolveAuthorLink = async (value: unknown): Promise<unknown> => {
   const link = value as CMSReference
   const entry = value as CMSEntry
 
-  // If it's a Link reference, resolve from caches
+  // If it's a Link reference, resolve via module-level entry cache
   if (link?.sys?.type === 'Link' && link.sys.linkType === 'Entry') {
     const entryId = link.sys.id
 
-    // Check our local resolved cache first (already has image resolved)
     if (resolvedAuthorsCache.has(entryId)) {
       return resolvedAuthorsCache.get(entryId)!
     }
 
-    // Try RTK Query cache
-    const authorsMap = getAuthorsFromCache()
-    const author = authorsMap.get(entryId)
-    if (author) {
-      // Resolve image and cache the result
-      if (author.fields?.image) {
-        author.fields.image = await resolveAssetLink(author.fields.image)
-      }
-      resolvedAuthorsCache.set(entryId, author)
-      return author
-    }
-
-    // Use local cache for fetching
     try {
       const fetched = await fetchAndCacheEntry(entryId)
       resolvedAuthorsCache.set(entryId, fetched)
@@ -288,7 +195,6 @@ const resolveAuthorLink = async (value: unknown): Promise<unknown> => {
 
   // If it already has fields, just resolve the image if needed
   if (entry?.sys?.id && entry?.fields) {
-    // Check if we already resolved this
     if (resolvedAuthorsCache.has(entry.sys.id)) {
       return resolvedAuthorsCache.get(entry.sys.id)!
     }
@@ -297,29 +203,6 @@ const resolveAuthorLink = async (value: unknown): Promise<unknown> => {
     }
     resolvedAuthorsCache.set(entry.sys.id, entry)
     return entry
-  }
-
-  // If it has an ID but no fields, try to resolve from cache
-  if (entry?.sys?.id) {
-    if (resolvedAuthorsCache.has(entry.sys.id)) {
-      return resolvedAuthorsCache.get(entry.sys.id)!
-    }
-    const authorsMap = getAuthorsFromCache()
-    const author = authorsMap.get(entry.sys.id)
-    if (author) {
-      if (author.fields?.image) {
-        author.fields.image = await resolveAssetLink(author.fields.image)
-      }
-      resolvedAuthorsCache.set(entry.sys.id, author)
-      return author
-    }
-    try {
-      const fetched = await fetchAndCacheEntry(entry.sys.id)
-      resolvedAuthorsCache.set(entry.sys.id, fetched)
-      return fetched
-    } catch {
-      return value
-    }
   }
 
   return value
@@ -368,13 +251,4 @@ const resolveEntrySlug = async (entryId: string): Promise<string> => {
   }
 }
 
-export {
-  fetchFromCMS,
-  getEntrySlug,
-  initializeHelpers,
-  resolveAssetLink,
-  resolveAssetUrl,
-  resolveAuthorLink,
-  resolveCategoryLink,
-  resolveEntrySlug
-}
+export { fetchFromCMS, getEntrySlug, resolveAssetLink, resolveAssetUrl, resolveAuthorLink, resolveCategoryLink, resolveEntrySlug }
