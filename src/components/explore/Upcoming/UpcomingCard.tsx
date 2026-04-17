@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { memo, useCallback } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import { useTranslation } from '@dcl/hooks'
@@ -15,7 +15,7 @@ import { RemindMeButton } from '../common/RemindMeButton'
 import { RemindMeIcon } from '../common/RemindMeIcon'
 import { MobileActionButton } from './UpcomingCard.styled'
 
-function UpcomingCard({
+const UpcomingCard = memo(function UpcomingCard({
   event,
   onClick,
   disableHover
@@ -98,7 +98,7 @@ function UpcomingCard({
       hoverActions={desktopHoverActions}
     />
   )
-}
+})
 
 UpcomingCard.displayName = 'UpcomingCard'
 
