@@ -35,21 +35,23 @@ const PostCard = (props: PostCardProps) => {
     )
   }
 
+  if (!post) return null
+
   return (
     <CardContainer elevation={0}>
-      <CardImageLink to={post!.url}>
-        <CardImage src={post!.image.url} alt={post!.title} loading="lazy" decoding="async" />
+      <CardImageLink to={post.url}>
+        <CardImage src={post.image.url} alt={post.title} loading="lazy" decoding="async" />
       </CardImageLink>
       <CardInfo>
         <MetaBox>
-          <DateText>{post!.publishedDate}</DateText>
+          <DateText>{post.publishedDate}</DateText>
           <span>
-            <CategoryLink to={post!.category.url}>{post!.category.title}</CategoryLink>
+            <CategoryLink to={post.category.url}>{post.category.title}</CategoryLink>
           </span>
         </MetaBox>
-        <TitleLink to={post!.url}>
+        <TitleLink to={post.url}>
           <Typography variant="h6" component="h2">
-            {post!.title}
+            {post.title}
           </Typography>
         </TitleLink>
       </CardInfo>
