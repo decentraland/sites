@@ -2,15 +2,10 @@ import { useSyncExternalStore } from 'react'
 import { getEnv } from '../../config/env'
 import { buildExploreCards } from './events.helpers'
 import { ExploreCardType } from './events.types'
-import type { EventsResponse, ExploreItem, HotScene } from './events.types'
+import type { ActiveEntity, EventsResponse, ExploreItem, HotScene } from './events.types'
 
 const POLL_INTERVAL_MS = 60_000
 const DEPLOYER_BATCH_TIMEOUT_MS = 5_000
-
-interface ActiveEntity {
-  id: string
-  pointers: string[]
-}
 
 interface DeploymentEntry {
   entityId: string

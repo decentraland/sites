@@ -1,9 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit'
+import { eventsClient } from '../features/explore-events/events.client'
 
-// PR2/PR3 will add real reducers (explore events, blog, cmsClient, algoliaClient)
-// and export typed hooks (useAppDispatch/useAppSelector) when they have consumers.
+// PR3 will add blog, cmsClient, algoliaClient reducers and redux-persist.
+// Typed hooks (useAppDispatch/useAppSelector) are not exported yet — explore
+// code consumes RTK Query auto-generated hooks which dispatch internally.
 const store = configureStore({
-  reducer: {},
+  reducer: {
+    [eventsClient.reducerPath]: eventsClient.reducer
+  },
+  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(eventsClient.middleware),
   devTools: import.meta.env.DEV
 })
 

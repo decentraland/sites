@@ -35,6 +35,9 @@ const PressPage = lazy(() => import('./pages/press').then(m => ({ default: m.Pre
 // No Web3 providers — auth uses localStorage identity via useAuthIdentity.
 const DappsShell = lazy(() => import('./shells/DappsShell').then(m => ({ default: m.DappsShell })))
 
+const ExploreHomePage = lazy(() => import('./pages/explore/HomePage').then(m => ({ default: m.HomePage })))
+const CreateEventPage = lazy(() => import('./pages/explore/CreateEventPage').then(m => ({ default: m.CreateEventPage })))
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -66,7 +69,8 @@ const App = () => {
                 in every environment; PR3 lands the real blog routes. If blog must
                 stay dev/stg-only at any point, reintroduce a getEnv() check here. */}
             <Route element={<DappsShell />}>
-              <Route path="/explore/*" element={<DappsShellPlaceholder name="explore" />} />
+              <Route path="/explore" element={<ExploreHomePage />} />
+              <Route path="/explore/new-event" element={<CreateEventPage />} />
               <Route path="/blog/*" element={<DappsShellPlaceholder name="blog" />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />

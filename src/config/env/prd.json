@@ -16,5 +16,6 @@
   "DISCORD_CAPTCHA_URL": "https://discord-lambdas.decentraland.io/captcha",
   "HCAPTCHA_SITEKEY": "00c95ced-f512-4498-a5f2-7e0b0950d456",
   "ENVIRONMENT": "production",
-  "SENTRY_DSN": "https://d0ec8d688f4d9827a270acece39153b0@o4504361728212992.ingest.us.sentry.io/4508858418266112"
+  "SENTRY_DSN": "https://d0ec8d688f4d9827a270acece39153b0@o4504361728212992.ingest.us.sentry.io/4508858418266112",
+  "PLACES_API_URL": "https://places.decentraland.org/api"
 }
