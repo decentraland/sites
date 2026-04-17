@@ -12,7 +12,7 @@ const LOADING_PLACEHOLDERS = [0, 1, 2]
 
 const Explore = memo(() => {
   const l = useFormatMessage()
-  const { data: cards = [], isLoading } = useGetExploreDataQuery(undefined, { pollingInterval: 60000 })
+  const { data: cards, isLoading } = useGetExploreDataQuery()
   const { isConnected } = useWalletAddress()
   const { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
 

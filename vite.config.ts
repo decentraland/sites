@@ -43,8 +43,6 @@ export default defineConfig(({ command, mode }) => {
           'react-router-dom': { singleton: true, requiredVersion: '^7.9.0' },
           '@emotion/react': { singleton: true, requiredVersion: '^11.14.0' },
           '@emotion/styled': { singleton: true, requiredVersion: '^11.14.0' },
-          '@reduxjs/toolkit': { singleton: true, requiredVersion: '^2.10.0' },
-          'react-redux': { singleton: true, requiredVersion: '^9.2.0' },
           '@dcl/hooks': { singleton: true, requiredVersion: '^1.3.0' },
           'decentraland-ui2': { singleton: true, requiredVersion: '^3.4.0' },
           '@dcl/schemas': { singleton: true, requiredVersion: '^26.1.0' }
@@ -75,7 +73,6 @@ export default defineConfig(({ command, mode }) => {
             ],
             'vendor-schemas': ['ajv'],
             'vendor-crypto': ['@dcl/crypto', 'eth-connect'],
-            'vendor-redux': ['immer', 'reselect'],
             'vendor-intl': ['@formatjs/icu-messageformat-parser', '@formatjs/intl', 'date-fns'],
             'vendor-ua': ['ua-parser-js'],
             'vendor-router': ['react-router']
