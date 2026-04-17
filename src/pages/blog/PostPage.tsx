@@ -12,11 +12,10 @@ import { RichText } from '../../components/blog/RichText'
 import { OGType, SEO } from '../../components/blog/SEO/SEO'
 import { getEnv } from '../../config/env'
 import { useGetBlogPostBySlugQuery, useGetBlogPostsQuery } from '../../features/blog/blog.client'
-import type { BlogPost, PaginatedBlogPosts } from '../../shared/blog/types/blog.domain'
+import { selectPostByCategoryAndSlug } from '../../features/blog/blog.selectors'
 import { formatUtcDate } from '../../shared/blog/utils/date'
 import { locations } from '../../shared/blog/utils/locations'
 import { useAppSelector } from '../../shells/store'
-import type { RootState } from '../../shells/store'
 import {
   AuthorAvatar,
   AuthorBox,
@@ -47,22 +46,8 @@ export const PostPage = () => {
   const { t } = useTranslation()
   const { categorySlug, postSlug } = useParams<{ categorySlug: string; postSlug: string }>()
 
-  // Try to find the post in any cached getBlogPosts query
-  const cachedPost = useAppSelector((state: RootState): BlogPost | null => {
-    // Search through all cached getBlogPosts queries
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const anyState = state as any
-    const queries: Record<string, unknown> = anyState.cmsClient?.queries ?? {}
-    for (const query of Object.values(queries)) {
-      const q = query as { endpointName?: string; status?: string; data?: unknown } | null
-      if (q?.endpointName === 'getBlogPosts' && q.status === 'fulfilled' && q.data) {
-        const data = q.data as PaginatedBlogPosts
-        const found = data.posts.find(p => p.category.slug === categorySlug && p.slug === postSlug)
-        if (found) return found
-      }
-    }
-    return null
-  })
+  // Look up the post from the normalized entity store (populated by onQueryStarted after any list fetch)
+  const cachedPost = useAppSelector(state => selectPostByCategoryAndSlug(state, categorySlug ?? '', postSlug ?? ''))
 
   // Only fetch if not in cache
   const {
