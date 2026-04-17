@@ -6,24 +6,47 @@ import { EmbeddedImage, Hyperlink, InstagramEmbed, InternalLink, LinkedInEmbed, 
 
 const LazyTwitterEmbed = lazy(() => import('react-twitter-embed').then(m => ({ default: m.TwitterTweetEmbed })))
 
-const renderYouTubeEmbed = (uri: string) => {
-  const url = new URL(uri)
-  const videoCode = url.searchParams.has('v') ? url.searchParams.get('v') : url.pathname.split('/').pop()
+// Strict hostname allowlists — prevents `uri.includes()` bypasses (e.g. evil.com/youtube.com)
+const YOUTUBE_HOSTS = new Set(['www.youtube.com', 'youtube.com', 'youtu.be'])
+const TWITTER_HOSTS = new Set(['www.twitter.com', 'twitter.com', 'www.x.com', 'x.com'])
+const INSTAGRAM_HOSTS = new Set(['www.instagram.com', 'instagram.com'])
+const LINKEDIN_HOSTS = new Set(['www.linkedin.com', 'linkedin.com'])
+// YouTube video IDs: alphanumeric, hyphens, underscores, 1-20 chars
+const YOUTUBE_ID_REGEX = /^[\w-]{1,20}$/
 
-  return (
-    <YouTubeEmbed
-      src={`https://www.youtube.com/embed/${videoCode}`}
-      title="YouTube video player"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-      allowFullScreen
-      loading="lazy"
-    />
-  )
+const parseUrl = (uri: string): URL | null => {
+  try {
+    return new URL(uri)
+  } catch {
+    return null
+  }
 }
 
+const getYouTubeVideoId = (uri: string): string | null => {
+  const url = parseUrl(uri)
+  if (!url || !YOUTUBE_HOSTS.has(url.hostname)) return null
+  const id = url.hostname === 'youtu.be' ? url.pathname.slice(1) : url.searchParams.get('v') ?? ''
+  return YOUTUBE_ID_REGEX.test(id) ? id : null
+}
+
+const renderYouTubeEmbed = (videoId: string) => (
+  <YouTubeEmbed
+    src={`https://www.youtube.com/embed/${videoId}`}
+    title="YouTube video player"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowFullScreen
+    loading="lazy"
+  />
+)
+
 const renderTwitterEmbed = (uri: string) => {
-  const twitterSplit = uri.split('/')
-  const tweetId = twitterSplit[twitterSplit.length - 1].split('?')[0]
+  const url = parseUrl(uri)
+  if (!url || !TWITTER_HOSTS.has(url.hostname)) return null
+  const segments = url.pathname.split('/').filter(Boolean)
+  // Twitter status URL: /username/status/TWEET_ID
+  const statusIndex = segments.indexOf('status')
+  const tweetId = statusIndex >= 0 ? segments[statusIndex + 1] : undefined
+  if (!tweetId || !/^\d{1,20}$/.test(tweetId)) return null
 
   return (
     <TwitterContainer>
@@ -35,12 +58,8 @@ const renderTwitterEmbed = (uri: string) => {
 }
 
 const renderInstagramEmbed = (uri: string) => {
-  let url: URL
-  try {
-    url = new URL(uri)
-  } catch {
-    return null
-  }
+  const url = parseUrl(uri)
+  if (!url || !INSTAGRAM_HOSTS.has(url.hostname)) return null
 
   const pathname = url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`
   const embedSrc = `https://www.instagram.com${pathname}embed/`
@@ -69,26 +88,22 @@ const renderHyperlink = (node: Block | Inline) => {
   const content = node.content as Text[]
   const contentValue = content[0]?.value
 
-  if ((uri.includes('youtube.com') || uri.includes('youtu.be')) && contentValue === uri) {
-    return renderYouTubeEmbed(uri)
-  }
+  // Only embed when the link text IS the URL (author-paste-embed pattern)
+  if (contentValue === uri) {
+    const youtubeId = getYouTubeVideoId(uri)
+    if (youtubeId) return renderYouTubeEmbed(youtubeId)
 
-  if ((uri.includes('twitter.com') || uri.includes('x.com')) && contentValue === uri) {
-    return renderTwitterEmbed(uri)
-  }
+    const twitterEmbed = renderTwitterEmbed(uri)
+    if (twitterEmbed) return twitterEmbed
 
-  if (uri.includes('instagram.com') && contentValue === uri) {
-    try {
-      if (new URL(uri).hostname.endsWith('instagram.com')) {
-        return renderInstagramEmbed(uri)
-      }
-    } catch {
-      // malformed URL — fall through to plain hyperlink
+    const parsedUri = parseUrl(uri)
+    if (parsedUri && INSTAGRAM_HOSTS.has(parsedUri.hostname)) {
+      return renderInstagramEmbed(uri)
     }
-  }
 
-  if (uri.includes('linkedin.com') && contentValue === uri) {
-    return <LinkedInEmbed src={uri} title="Embedded Linkedin Post" loading="lazy" />
+    if (parsedUri && LINKEDIN_HOSTS.has(parsedUri.hostname)) {
+      return <LinkedInEmbed src={uri} title="Embedded Linkedin Post" loading="lazy" />
+    }
   }
 
   // Check if this is an internal blog link (e.g. https://decentraland.org/blog/...)
