@@ -64,15 +64,31 @@ function Upcoming() {
           ))}
         </MobileCarouselTrack>
         {pages.length > 1 && (
-          <PaginationDots>
-            {pages.map((_, index) => (
-              <PaginationDot
-                key={index}
-                active={index === activePage}
-                onClick={() => handleDotClick(index)}
-                aria-label={t('pagination.go_to_page', { page: index + 1 })}
-              />
-            ))}
+          <PaginationDots role="tablist" aria-label={t('upcoming.title')}>
+            {pages.map((_, index) => {
+              const isActive = index === activePage
+              return (
+                <PaginationDot
+                  key={index}
+                  active={isActive}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-current={isActive ? 'true' : undefined}
+                  tabIndex={isActive ? 0 : -1}
+                  onClick={() => handleDotClick(index)}
+                  onKeyDown={e => {
+                    if (e.key === 'ArrowRight') {
+                      e.preventDefault()
+                      handleDotClick((index + 1) % pages.length)
+                    } else if (e.key === 'ArrowLeft') {
+                      e.preventDefault()
+                      handleDotClick((index - 1 + pages.length) % pages.length)
+                    }
+                  }}
+                  aria-label={t('pagination.go_to_page', { page: index + 1 })}
+                />
+              )
+            })}
           </PaginationDots>
         )}
       </MobileCarousel>
