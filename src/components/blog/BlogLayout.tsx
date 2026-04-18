@@ -17,7 +17,7 @@ function BlogLayout({ children, activeCategory, banner, showBlogNavigation = tru
       <BlogLayoutContainer>
         {showBlogNavigation && <BlogNavigation active={activeCategory} />}
         {banner}
-        <BlogContentWrapper>{children}</BlogContentWrapper>
+        <BlogContentWrapper component="main">{children}</BlogContentWrapper>
         {relatedPosts}
       </BlogLayoutContainer>
     </HelmetProvider>
