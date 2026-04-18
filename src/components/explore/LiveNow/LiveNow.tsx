@@ -165,15 +165,31 @@ function LiveNow() {
         </CarouselWrapper>
       </ChevronLayer>
       {pageCount > 1 && (
-        <PaginationDots>
-          {Array.from({ length: pageCount }, (_, index) => (
-            <PaginationDot
-              key={index}
-              active={index === activeIndex}
-              onClick={() => handleDotClick(index)}
-              aria-label={t('pagination.go_to_page', { page: index + 1 })}
-            />
-          ))}
+        <PaginationDots role="tablist" aria-label={t('live_now.title')}>
+          {Array.from({ length: pageCount }, (_, index) => {
+            const isActive = index === activeIndex
+            return (
+              <PaginationDot
+                key={index}
+                active={isActive}
+                role="tab"
+                aria-selected={isActive}
+                aria-current={isActive ? 'true' : undefined}
+                tabIndex={isActive ? 0 : -1}
+                onClick={() => handleDotClick(index)}
+                onKeyDown={e => {
+                  if (e.key === 'ArrowRight') {
+                    e.preventDefault()
+                    handleDotClick((index + 1) % pageCount)
+                  } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault()
+                    handleDotClick((index - 1 + pageCount) % pageCount)
+                  }
+                }}
+                aria-label={t('pagination.go_to_page', { page: index + 1 })}
+              />
+            )
+          })}
         </PaginationDots>
       )}
       <EventDetailModal open={!!modalData} onClose={handleModalClose} data={modalData} />

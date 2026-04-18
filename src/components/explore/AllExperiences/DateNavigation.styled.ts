@@ -1,4 +1,4 @@
-import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
+import { Box, dclColors, styled } from 'decentraland-ui2'
 
 const NAV_BAR_HEIGHT = 50
 const NAV_BAR_MARGIN_BOTTOM = 12
@@ -14,7 +14,12 @@ const NavigationBar = styled(Box)({
   padding: 0
 })
 
-const DateLabel = styled(Typography, { shouldForwardProp: prop => prop !== 'isToday' })<{ isToday?: boolean }>(({ isToday }) => ({
+// Rendered as `<span>` (was Typography variant="h6"). Visual output is
+// identical — fontSize/fontWeight/color are kept in the styled rules —
+// but it no longer emits a heading element, which would appear out of
+// sequence after the section <h2> above it. A11y `heading-order` fix,
+// zero design change.
+const DateLabel = styled('span', { shouldForwardProp: prop => prop !== 'isToday' })<{ isToday?: boolean }>(({ isToday }) => ({
   flex: 1,
   textAlign: 'center',
   fontWeight: 600,

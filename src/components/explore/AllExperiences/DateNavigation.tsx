@@ -38,7 +38,6 @@ const DateNavigation = memo(({ startOffset, columnCount, today, onNavigateLeft, 
       </NavButton>
       {days.map((day, i) => (
         <DateLabel
-          variant="h6"
           key={day.toISOString()}
           isToday={startOffset + i === 0}
           aria-label={formatDayHeaderAria(day)}

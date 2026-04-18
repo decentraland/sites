@@ -37,7 +37,14 @@ const SEO = (props: SEOProps) => {
 
   const baseUrl = getEnv('BLOG_BASE_URL') || ''
   const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME
-  const canonicalUrl = url || baseUrl
+
+  // Canonical must be absolute (HTML spec + Lighthouse SEO audit). If the
+  // env's BLOG_BASE_URL is relative (e.g. "/blog" in dev to mirror prod's
+  // path structure), resolve it against the current origin at render time.
+  const rawUrl = url || baseUrl
+  const canonicalUrl =
+    rawUrl && !/^https?:\/\//.test(rawUrl) && typeof window !== 'undefined' ? new URL(rawUrl, window.location.origin).toString() : rawUrl
+
   const imageData: OGImage = typeof image === 'string' ? { url: image } : image
 
   return (
