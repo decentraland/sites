@@ -34,7 +34,6 @@ function LiveNow() {
     return undefined
   }, [])
   const { data: cards = [] } = useGetLiveNowCardsQuery(queryParams, { pollingInterval: 60_000 })
-  const firstImage = cards[0]?.image
   const [activeIndex, setActiveIndex] = useState(0)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
@@ -70,19 +69,6 @@ function LiveNow() {
     observer.observe(container)
     return () => observer.disconnect()
   }, [cards.length, syncScrollState])
-
-  useEffect(() => {
-    if (!firstImage) return
-    const link = document.createElement('link')
-    link.rel = 'preload'
-    link.as = 'image'
-    link.href = firstImage
-    link.setAttribute('fetchpriority', 'high')
-    document.head.appendChild(link)
-    return () => {
-      link.remove()
-    }
-  }, [firstImage])
 
   const handleChevronClick = useCallback((direction: 'left' | 'right') => {
     const container = scrollRef.current
