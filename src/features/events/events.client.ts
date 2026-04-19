@@ -165,6 +165,7 @@ async function runFetch(): Promise<void> {
 
 function startPolling() {
   if (pollTimer) return
+  if (typeof document !== 'undefined' && document.hidden) return
   pollTimer = setInterval(() => {
     void runFetch()
   }, POLL_INTERVAL_MS)
@@ -177,18 +178,34 @@ function stopPolling() {
   }
 }
 
+function handleVisibilityChange() {
+  if (subscribers === 0) return
+  if (document.hidden) {
+    stopPolling()
+  } else {
+    void runFetch()
+    startPolling()
+  }
+}
+
 function subscribe(listener: () => void): () => void {
   listeners.add(listener)
   subscribers += 1
   if (subscribers === 1) {
     void runFetch()
     startPolling()
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', handleVisibilityChange)
+    }
   }
   return () => {
     listeners.delete(listener)
     subscribers -= 1
     if (subscribers === 0) {
       stopPolling()
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', handleVisibilityChange)
+      }
     }
   }
 }
