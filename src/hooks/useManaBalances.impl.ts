@@ -1,4 +1,4 @@
-import { type Address, createPublicClient, formatEther, http } from 'viem'
+import { createPublicClient, formatEther, getAddress, http } from 'viem'
 import { mainnet, polygon, polygonAmoy, sepolia } from 'viem/chains'
 import { Env, getEnv } from '@dcl/ui-env'
 import type { ManaBalances } from './useManaBalances.types'
@@ -7,25 +7,26 @@ import type { ManaBalances } from './useManaBalances.types'
  * MANA ERC20 contract addresses per network.
  * Hardcoded to avoid loading decentraland-transactions in the bundle.
  * Source: decentraland-transactions/src/contracts/manaToken.ts
+ * Addresses are checksummed at module load to normalize casing (EIP-55).
  */
 const MANA_CONTRACTS = {
   production: {
     ethereum: {
-      address: '0x0f5d2fb29fb7d3cfee444a200298f468908cc942' as Address,
+      address: getAddress('0x0f5d2fb29fb7d3cfee444a200298f468908cc942'),
       rpc: 'https://rpc.decentraland.org/mainnet'
     },
     polygon: {
-      address: '0xA1c57f48F0Deb89f569dFbE6E2B7f46D33606fD4' as Address,
+      address: getAddress('0xA1c57f48F0Deb89f569dFbE6E2B7f46D33606fD4'),
       rpc: 'https://rpc.decentraland.org/polygon'
     }
   },
   development: {
     ethereum: {
-      address: '0xfa04d2e2ba9aec166c93dfeeba7427b2303befa9' as Address,
+      address: getAddress('0xfa04d2e2ba9aec166c93dfeeba7427b2303befa9'),
       rpc: 'https://rpc.decentraland.org/sepolia'
     },
     polygon: {
-      address: '0x7ad72b9f944ea9793cf4055d88f81138cc2c63a0' as Address,
+      address: getAddress('0x7ad72b9f944ea9793cf4055d88f81138cc2c63a0'),
       rpc: 'https://rpc.decentraland.org/amoy'
     }
   }
@@ -66,7 +67,8 @@ function getClients() {
 }
 
 async function fetchManaBalancesFromChain(address: string): Promise<ManaBalances> {
-  const walletAddress = address as Address
+  // Throws if not a valid hex address; returns EIP-55 checksummed form.
+  const walletAddress = getAddress(address)
   const contracts = getContracts()
   const { ethClient: eth, polyClient: poly } = getClients()
 
