@@ -19,6 +19,7 @@ interface DeploymentResponse {
 async function resolveDeployers(peerUrl: string, coordinates: string[]): Promise<Map<string, string>> {
   const signal = AbortSignal.timeout(DEPLOYER_BATCH_TIMEOUT_MS)
   const result = new Map<string, string>()
+  const coordinatesSet = new Set(coordinates)
 
   const entities = await fetch(`${peerUrl}/content/entities/active`, {
     method: 'POST',
@@ -65,7 +66,7 @@ async function resolveDeployers(peerUrl: string, coordinates: string[]): Promise
     const deployedBy = deployerByEntityId.get(entity.id)
     if (deployedBy) {
       for (const pointer of entity.pointers) {
-        if (coordinates.includes(pointer)) {
+        if (coordinatesSet.has(pointer)) {
           result.set(pointer, deployedBy)
         }
       }
