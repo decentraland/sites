@@ -189,6 +189,7 @@ function handleVisibilityChange() {
 }
 
 function subscribe(listener: () => void): () => void {
+  if (listeners.has(listener)) return () => unsubscribe(listener)
   listeners.add(listener)
   subscribers += 1
   if (subscribers === 1) {
@@ -198,14 +199,17 @@ function subscribe(listener: () => void): () => void {
       document.addEventListener('visibilitychange', handleVisibilityChange)
     }
   }
-  return () => {
-    listeners.delete(listener)
-    subscribers -= 1
-    if (subscribers === 0) {
-      stopPolling()
-      if (typeof document !== 'undefined') {
-        document.removeEventListener('visibilitychange', handleVisibilityChange)
-      }
+  return () => unsubscribe(listener)
+}
+
+function unsubscribe(listener: () => void): void {
+  if (!listeners.has(listener)) return
+  listeners.delete(listener)
+  subscribers -= 1
+  if (subscribers === 0) {
+    stopPolling()
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }
 }
