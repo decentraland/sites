@@ -61,4 +61,16 @@ describe('DappsShell', () => {
     unmount()
     expect(document.head.querySelectorAll('link[rel="preconnect"]').length).toBe(0)
   })
+
+  it('should not duplicate a preconnect link that is already present in the head', () => {
+    const existing = document.createElement('link')
+    existing.rel = 'preconnect'
+    existing.href = 'https://peer.decentraland.org'
+    document.head.appendChild(existing)
+
+    renderShell()
+
+    const peerLinks = document.head.querySelectorAll('link[rel="preconnect"][href="https://peer.decentraland.org"]')
+    expect(peerLinks.length).toBe(1)
+  })
 })

@@ -31,6 +31,8 @@ function usePreconnectHints() {
     const origins = new Set([getOrigin('PEER_URL'), getOrigin('PLACES_API_URL')].filter((v): v is string => v !== null))
     const links: HTMLLinkElement[] = []
     origins.forEach(origin => {
+      // Skip if index.html (or a prior mount) already preconnected this origin.
+      if (document.head.querySelector(`link[rel="preconnect"][href="${CSS.escape(origin)}"]`)) return
       const link = document.createElement('link')
       link.rel = 'preconnect'
       link.href = origin
