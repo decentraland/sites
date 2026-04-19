@@ -13,6 +13,11 @@ jest.mock('../../../features/explore-events', () => ({
   useGetLiveNowCardsQuery: (...args: unknown[]) => mockUseGetLiveNowCardsQuery(...args)
 }))
 
+const mockUseDocumentVisible = jest.fn(() => true)
+jest.mock('../../../hooks/useDocumentVisible', () => ({
+  useDocumentVisible: () => mockUseDocumentVisible()
+}))
+
 jest.mock('../EventDetailModal', () => ({
   EventDetailModal: () => <div data-testid="event-detail-modal" />,
   normalizeLiveNowCard: jest.fn()
@@ -71,6 +76,10 @@ function createMockCard(id: string, title: string) {
 }
 
 describe('LiveNow', () => {
+  beforeEach(() => {
+    mockUseDocumentVisible.mockReturnValue(true)
+  })
+
   afterEach(() => {
     jest.resetAllMocks()
   })
@@ -84,6 +93,28 @@ describe('LiveNow', () => {
       const { container } = render(<LiveNow />)
 
       expect(container.firstChild).toBeNull()
+    })
+  })
+
+  describe('when polling interval is determined by document visibility', () => {
+    beforeEach(() => {
+      mockUseGetLiveNowCardsQuery.mockReturnValue({ data: [createMockCard('card-1', 'Event 1')] })
+    })
+
+    it('should poll every 60s when the document is visible', () => {
+      mockUseDocumentVisible.mockReturnValue(true)
+      render(<LiveNow />)
+
+      const lastCall = mockUseGetLiveNowCardsQuery.mock.calls[0]
+      expect(lastCall[1]).toEqual({ pollingInterval: 60_000 })
+    })
+
+    it('should pause polling when the document is hidden', () => {
+      mockUseDocumentVisible.mockReturnValue(false)
+      render(<LiveNow />)
+
+      const lastCall = mockUseGetLiveNowCardsQuery.mock.calls[0]
+      expect(lastCall[1]).toEqual({ pollingInterval: 0 })
     })
   })
 
