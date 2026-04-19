@@ -1,14 +1,10 @@
 import { useEffect, useState } from 'react'
+import { isDocumentVisible, subscribeVisibility } from '../utils/documentVisibility'
 
 function useDocumentVisible(): boolean {
-  const [visible, setVisible] = useState(() => (typeof document === 'undefined' ? true : !document.hidden))
+  const [visible, setVisible] = useState(isDocumentVisible)
 
-  useEffect(() => {
-    if (typeof document === 'undefined') return
-    const handle = () => setVisible(!document.hidden)
-    document.addEventListener('visibilitychange', handle)
-    return () => document.removeEventListener('visibilitychange', handle)
-  }, [])
+  useEffect(() => subscribeVisibility(setVisible), [])
 
   return visible
 }
