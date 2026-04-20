@@ -137,6 +137,15 @@ npm run lint:pkg     # package.json lint
 
 ## Coding conventions
 
+### File placement
+
+- **Hooks**: `src/hooks/use<Name>.ts` + sibling `use<Name>.spec.ts`. Never under `src/features/<domain>/`, even when the hook wraps a feature's RTK Query. Feature barrels (`src/features/<domain>/index.ts`) must not re-export hooks.
+- **Styled components**: `<Component>.styled.ts` co-located with `<Component>.tsx`. Inline `sx={...}` only for one-off micro-tweaks; conditional styling with props belongs in `.styled.ts`.
+- **Types / interfaces**: `<thing>.types.ts`. Never inline in `.client.ts`, `.helpers.ts`, or logic files.
+- **RTK Query**: base client → `src/services/<name>Client.ts` (infra only). Endpoints → `src/features/<domain>/<domain>.client.ts`. See "RTK Query split".
+- **Pages**: `src/pages/<route>/`. Heavy routes under `src/pages/{explore,blog}/`.
+- **Signal you're placing a file wrong**: `src/features/<domain>/use<X>.ts`, inline styled bigger than a single `sx`, type inside `.client.ts`. Stop and move it.
+
 ### Dependencies
 
 - `npm install`/`npm uninstall` always — never manually edit `package.json` deps.
@@ -366,23 +375,24 @@ Before merging any PR that touches user-visible rendering, forms, or external co
 
 Aggregated from the rules above, sorted by "what could hurt you most":
 
-| Area             | Rule                                                                                                                                   |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| **Architecture** | `src/shells/*` is lazy — never import from it in lightweight route code (rule 2)                                                       |
-| **Architecture** | Empty Redux store is `configureStore({ reducer: {} })`, no placeholder (rule 3)                                                        |
-| **RTK Query**    | `services/` = base clients (infra), `features/` = `injectEndpoints` (business). Keep the split                                         |
-| **RTK Query**    | Use `onQueryStarted` for dispatching, not `store.dispatch` in `transformResponse` (rule 17)                                            |
-| **RTK Query**    | No `state.xxxClient.queries as any` — use entity selectors or `endpoint.select()` (rule 18)                                            |
-| **Auth**         | localStorage-only via `useAuthIdentity` — no Web3 providers, no wagmi, no thirdweb                                                     |
-| **Bundle**       | No `module.throw` at import time in shell-reachable files (rule 16)                                                                    |
-| **Bundle**       | Run `npm run build && npm run preview` for PRs adding dynamic routes or CJS-ish deps (rule 14)                                         |
-| **Bundle**       | `decentraland-ui2` imports only; no hardcoded colors; object-syntax styled components                                                  |
-| **Security**     | `dangerouslySetInnerHTML` → DOMPurify with scoped allowlist (rule 19)                                                                  |
-| **Security**     | URL parsing with `new URL()` + hostname allowlist, never `.includes()` (rule 20)                                                       |
-| **Security**     | Never leak raw server error bodies to UI (rule 10)                                                                                     |
-| **Performance**  | Hero is prerendered; Layout is lazy; DappsShell is lazy; analytics deferred                                                            |
-| **Performance**  | Add `memo()` to list-rendered card components (rule 11)                                                                                |
-| **Performance**  | Batch HTTP calls when API supports it — no N+1 in hot paths (rule 12)                                                                  |
-| **Deps**         | `npm install`/`npm uninstall`; `@dcl/*` caret, others exact; fresh `rm -rf node_modules && npm install` after lock conflicts (rule 21) |
-| **Routing**      | Fixed navbar = 64px mobile / 92px desktop. Every new route needs `paddingTop: 64` / `md: 96` (rule 13)                                 |
-| **Config**       | Unified CMS origin across env files + api/seo.ts + vite proxy (rule 15)                                                                |
+| Area               | Rule                                                                                                                                   |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **File placement** | Hooks → `src/hooks/`; types → `*.types.ts`; styled → `*.styled.ts`; feature barrels must not re-export hooks                           |
+| **Architecture**   | `src/shells/*` is lazy — never import from it in lightweight route code (rule 2)                                                       |
+| **Architecture**   | Empty Redux store is `configureStore({ reducer: {} })`, no placeholder (rule 3)                                                        |
+| **RTK Query**      | `services/` = base clients (infra), `features/` = `injectEndpoints` (business). Keep the split                                         |
+| **RTK Query**      | Use `onQueryStarted` for dispatching, not `store.dispatch` in `transformResponse` (rule 17)                                            |
+| **RTK Query**      | No `state.xxxClient.queries as any` — use entity selectors or `endpoint.select()` (rule 18)                                            |
+| **Auth**           | localStorage-only via `useAuthIdentity` — no Web3 providers, no wagmi, no thirdweb                                                     |
+| **Bundle**         | No `module.throw` at import time in shell-reachable files (rule 16)                                                                    |
+| **Bundle**         | Run `npm run build && npm run preview` for PRs adding dynamic routes or CJS-ish deps (rule 14)                                         |
+| **Bundle**         | `decentraland-ui2` imports only; no hardcoded colors; object-syntax styled components                                                  |
+| **Security**       | `dangerouslySetInnerHTML` → DOMPurify with scoped allowlist (rule 19)                                                                  |
+| **Security**       | URL parsing with `new URL()` + hostname allowlist, never `.includes()` (rule 20)                                                       |
+| **Security**       | Never leak raw server error bodies to UI (rule 10)                                                                                     |
+| **Performance**    | Hero is prerendered; Layout is lazy; DappsShell is lazy; analytics deferred                                                            |
+| **Performance**    | Add `memo()` to list-rendered card components (rule 11)                                                                                |
+| **Performance**    | Batch HTTP calls when API supports it — no N+1 in hot paths (rule 12)                                                                  |
+| **Deps**           | `npm install`/`npm uninstall`; `@dcl/*` caret, others exact; fresh `rm -rf node_modules && npm install` after lock conflicts (rule 21) |
+| **Routing**        | Fixed navbar = 64px mobile / 92px desktop. Every new route needs `paddingTop: 64` / `md: 96` (rule 13)                                 |
+| **Config**         | Unified CMS origin across env files + api/seo.ts + vite proxy (rule 15)                                                                |
