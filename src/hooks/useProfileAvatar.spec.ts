@@ -8,8 +8,9 @@ jest.mock('../features/profile/profile.client', () => ({
 }))
 
 type ImageMock = {
-  set src(value: string)
+  src: string
   onerror: (() => void) | null
+  srcAssignments: string[]
 }
 
 const imageInstances: ImageMock[] = []
@@ -23,12 +24,14 @@ describe('useProfileAvatar', () => {
 
     class FakeImage {
       onerror: (() => void) | null = null
+      srcAssignments: string[] = []
       #src = ''
       get src(): string {
         return this.#src
       }
       set src(value: string) {
         this.#src = value
+        this.srcAssignments.push(value)
       }
       constructor() {
         imageInstances.push(this as unknown as ImageMock)
@@ -51,6 +54,7 @@ describe('useProfileAvatar', () => {
       const { result } = renderHook(() => useProfileAvatar(undefined))
 
       expect(result.current.avatar).toBeUndefined()
+      expect(result.current.avatarForCard).toBeUndefined()
       expect(result.current.avatarFace).toBeUndefined()
       expect(result.current.name).toBeUndefined()
     })
@@ -88,6 +92,12 @@ describe('useProfileAvatar', () => {
       expect(result.current.avatarFace).toBe('https://cdn.test/face-ok.png')
       await waitFor(() => expect(result.current.avatarFace).toBe('https://cdn.test/face-ok.png'))
     })
+
+    it('should expose the same avatar as avatarForCard when the URL is valid', () => {
+      const { result } = renderHook(() => useProfileAvatar('0xalice'))
+
+      expect(result.current.avatarForCard).toBe(result.current.avatar)
+    })
   })
 
   describe('when the face256 URL fails to load', () => {
@@ -114,6 +124,17 @@ describe('useProfileAvatar', () => {
       await waitFor(() => expect(result.current.avatarFace).toBeUndefined())
     })
 
+    it('should blank face256 on avatarForCard while preserving other fields', async () => {
+      const { result } = renderHook(() => useProfileAvatar('0xbob'))
+
+      act(() => {
+        imageInstances[imageInstances.length - 1]?.onerror?.()
+      })
+
+      await waitFor(() => expect(result.current.avatarForCard?.avatar?.snapshots?.face256).toBeUndefined())
+      expect(result.current.avatarForCard?.name).toBe('Bob')
+    })
+
     it('should memoize broken URLs across hook instances', async () => {
       const first = renderHook(() => useProfileAvatar('0xbob'))
 
@@ -125,6 +146,28 @@ describe('useProfileAvatar', () => {
       const second = renderHook(() => useProfileAvatar('0xbob'))
 
       expect(second.result.current.avatarFace).toBeUndefined()
+    })
+  })
+
+  describe('when the hook unmounts with an in-flight image request', () => {
+    beforeEach(() => {
+      mockUseGetProfileQuery.mockReturnValue({
+        data: {
+          avatars: [{ name: 'Charlie', avatar: { snapshots: { face256: 'https://cdn.test/in-flight.png' } } }]
+        },
+        isLoading: false
+      })
+    })
+
+    it('should abort the request by clearing Image.src', () => {
+      const { unmount } = renderHook(() => useProfileAvatar('0xcharlie'))
+      const img = imageInstances[imageInstances.length - 1]
+
+      expect(img?.srcAssignments).toEqual(['https://cdn.test/in-flight.png'])
+
+      unmount()
+
+      expect(img?.srcAssignments).toEqual(['https://cdn.test/in-flight.png', ''])
     })
   })
 })

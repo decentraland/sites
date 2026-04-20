@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from 'react'
+import { memo, useCallback } from 'react'
 import type { Avatar } from '@dcl/schemas'
 import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
 import type { EventEntry } from '../../../features/whats-on-events'
@@ -11,23 +11,18 @@ interface LiveCardProps {
 }
 
 const LiveCard = memo(({ event, onClick }: LiveCardProps) => {
-  const { avatar: fetchedAvatar, avatarFace } = useProfileAvatar(event.user, { skip: !event.user })
+  const { avatarForCard } = useProfileAvatar(event.user, { skip: !event.user })
 
   const handleClick = useCallback(() => {
     onClick(event)
   }, [onClick, event])
 
-  // Build only the fields EventCard reads (name, ethAddress, avatar.snapshots.face256).
-  // Forwarding the hook's sanitized face256 (undefined when the CDN URL is broken)
-  // makes MUI's Avatar inside EventCard fall back to its placeholder.
-  const avatar = useMemo<Avatar | undefined>(() => {
-    if (!fetchedAvatar) return undefined
-    return {
-      name: fetchedAvatar.name ?? '',
-      ethAddress: fetchedAvatar.ethAddress ?? '',
-      avatar: { snapshots: { face256: avatarFace } }
-    } as unknown as Avatar
-  }, [fetchedAvatar, avatarFace])
+  // ProfileAvatarsItem has optional fields that Avatar marks as required (userId,
+  // bodyShape, etc.). EventCard only reads name, ethAddress and snapshots.face256,
+  // which ProfileAvatarsItem provides — so the single cast is safe at this boundary.
+  // Forward the hook's pre-sanitized shape (face256 undefined when the CDN URL
+  // is broken) so MUI's Avatar inside EventCard falls back to its placeholder.
+  const avatar = avatarForCard as unknown as Avatar | undefined
 
   return (
     <LiveCardWrapper>
