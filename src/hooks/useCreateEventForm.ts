@@ -2,8 +2,8 @@ import { useCallback, useMemo, useState } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
-import { useCreateEventMutation } from '../features/explore-events'
-import type { RecurrentFrequency } from '../features/explore-events'
+import { useCreateEventMutation } from '../features/whats-on-events'
+import type { RecurrentFrequency } from '../features/whats-on-events'
 import { useAuthIdentity } from './useAuthIdentity'
 
 const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif']

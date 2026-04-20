@@ -30,7 +30,7 @@ async function resolveDeployers(peerUrl: string, coordinates: string[]): Promise
     signal
   }).then(res => {
     if (!res.ok) {
-      console.warn('[Explore] active entities batch failed', res.status)
+      console.warn('[WhatsOn] active entities batch failed', res.status)
       return [] as ActiveEntity[]
     }
     return res.json() as Promise<ActiveEntity[]>
@@ -44,13 +44,13 @@ async function resolveDeployers(peerUrl: string, coordinates: string[]): Promise
   const deploymentData = await fetch(`${peerUrl}/content/deployments/?${params}`, { signal })
     .then(res => {
       if (!res.ok) {
-        console.warn('[Explore] deployments batch failed', res.status)
+        console.warn('[WhatsOn] deployments batch failed', res.status)
         return null
       }
       return res.json() as Promise<DeploymentResponse>
     })
     .catch((err: unknown) => {
-      console.warn('[Explore] deployments batch failed', err)
+      console.warn('[WhatsOn] deployments batch failed', err)
       return null
     })
 
@@ -153,7 +153,7 @@ async function runFetch(): Promise<void> {
         const enriched = await enrichWithDeployers(cards)
         if (enriched) commit({ data: enriched, error: null, loaded: true })
       } catch (err) {
-        console.warn('[Explore] deployer enrichment failed', err)
+        console.warn('[WhatsOn] deployer enrichment failed', err)
       }
     } catch (err) {
       commit({ data: state.data, error: err instanceof Error ? err : new Error(String(err)), loaded: true })
@@ -219,8 +219,8 @@ function getSnapshot(): ExploreSnapshot {
   return snapshot
 }
 
-function useGetExploreDataQuery(): ExploreSnapshot {
+function useGetWhatsOnDataQuery(): ExploreSnapshot {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 }
 
-export { useGetExploreDataQuery }
+export { useGetWhatsOnDataQuery }
