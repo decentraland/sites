@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { getEnv } from '../../config/env'
+import { isDocumentVisible, subscribeVisibility } from '../../utils/documentVisibility'
 import { buildExploreCards } from './events.helpers'
 import { ExploreCardType } from './events.types'
 import type { ActiveEntity, EventsResponse, ExploreItem, HotScene } from './events.types'
@@ -166,6 +167,7 @@ async function runFetch(): Promise<void> {
 
 function startPolling() {
   if (pollTimer) return
+  if (!isDocumentVisible()) return
   pollTimer = setInterval(() => {
     void runFetch()
   }, POLL_INTERVAL_MS)
@@ -178,19 +180,38 @@ function stopPolling() {
   }
 }
 
+let unsubscribeVisibility: (() => void) | null = null
+
+function handleVisibility(visible: boolean) {
+  if (subscribers === 0) return
+  if (!visible) {
+    stopPolling()
+  } else {
+    void runFetch()
+    startPolling()
+  }
+}
+
 function subscribe(listener: () => void): () => void {
+  if (listeners.has(listener)) return () => unsubscribe(listener)
   listeners.add(listener)
   subscribers += 1
   if (subscribers === 1) {
     void runFetch()
     startPolling()
+    unsubscribeVisibility = subscribeVisibility(handleVisibility)
   }
-  return () => {
-    listeners.delete(listener)
-    subscribers -= 1
-    if (subscribers === 0) {
-      stopPolling()
-    }
+  return () => unsubscribe(listener)
+}
+
+function unsubscribe(listener: () => void): void {
+  if (!listeners.has(listener)) return
+  listeners.delete(listener)
+  subscribers -= 1
+  if (subscribers === 0) {
+    stopPolling()
+    unsubscribeVisibility?.()
+    unsubscribeVisibility = null
   }
 }
 

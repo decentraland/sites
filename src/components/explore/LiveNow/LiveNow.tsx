@@ -6,6 +6,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { useTranslation } from '@dcl/hooks'
 import { useGetLiveNowCardsQuery } from '../../../features/explore-events'
 import type { LiveNowCard } from '../../../features/explore-events'
+import { useDocumentVisible } from '../../../hooks/useDocumentVisible'
 import { useLiveNowQueryParams } from '../../../hooks/useLiveNowQueryParams'
 import { PaginationDot, PaginationDots } from '../common/PaginationDots.styled'
 import { EventDetailModal, normalizeLiveNowCard } from '../EventDetailModal'
@@ -27,7 +28,8 @@ const SCROLL_AMOUNT = 300
 function LiveNow() {
   const { t } = useTranslation()
   const queryParams = useLiveNowQueryParams()
-  const { data: cards = [] } = useGetLiveNowCardsQuery(queryParams, { pollingInterval: 60_000 })
+  const isVisible = useDocumentVisible()
+  const { data: cards = [] } = useGetLiveNowCardsQuery(queryParams, { pollingInterval: isVisible ? 60_000 : 0 })
   const [activeIndex, setActiveIndex] = useState(0)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
