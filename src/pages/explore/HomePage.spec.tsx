@@ -3,9 +3,11 @@ import { render, screen } from '@testing-library/react'
 import { HomePage } from './HomePage'
 
 const mockUseGetLiveNowCardsQuery = jest.fn()
+const mockUseLiveNowQueryParams = jest.fn()
 
 jest.mock('../../features/explore-events', () => ({
-  useGetLiveNowCardsQuery: (...args: unknown[]) => mockUseGetLiveNowCardsQuery(...args)
+  useGetLiveNowCardsQuery: (...args: unknown[]) => mockUseGetLiveNowCardsQuery(...args),
+  useLiveNowQueryParams: () => mockUseLiveNowQueryParams()
 }))
 
 jest.mock('../../components/explore/LiveNow', () => ({
@@ -23,8 +25,8 @@ jest.mock('../../components/explore/AllExperiences', () => ({
 jest.mock('./HomePage.styled', () => ({
   MainContainer: ({ children }: { children: React.ReactNode }) => <main data-testid="main">{children}</main>,
   ContentWrapper: ({ children }: { children: React.ReactNode }) => <div data-testid="content-wrapper">{children}</div>,
-  DeferredGroup: ({ hidden, children }: { hidden: boolean; children: React.ReactNode }) => (
-    <div data-testid="deferred-group" data-hidden={hidden ? 'true' : 'false'}>
+  DeferredGroup: ({ deferred, children }: { deferred: boolean; children: React.ReactNode }) => (
+    <div data-testid="deferred-group" data-deferred={deferred ? 'true' : 'false'}>
       {children}
     </div>
   )
@@ -33,6 +35,19 @@ jest.mock('./HomePage.styled', () => ({
 describe('when HomePage is rendered', () => {
   afterEach(() => {
     jest.resetAllMocks()
+  })
+
+  describe('and a minUsers query param is present', () => {
+    beforeEach(() => {
+      mockUseLiveNowQueryParams.mockReturnValue({ minUsers: 3 })
+      mockUseGetLiveNowCardsQuery.mockReturnValue({ isLoading: true })
+    })
+
+    it('should subscribe to live-now with the shared params so it hits the same cache entry as LiveNow', () => {
+      render(<HomePage />)
+
+      expect(mockUseGetLiveNowCardsQuery).toHaveBeenCalledWith({ minUsers: 3 })
+    })
   })
 
   describe('and LiveNow is still loading', () => {
@@ -51,7 +66,7 @@ describe('when HomePage is rendered', () => {
     it('should keep Upcoming and AllExperiences hidden to preserve section order', () => {
       render(<HomePage />)
 
-      expect(screen.getByTestId('deferred-group')).toHaveAttribute('data-hidden', 'true')
+      expect(screen.getByTestId('deferred-group')).toHaveAttribute('data-deferred', 'true')
     })
   })
 
@@ -63,7 +78,7 @@ describe('when HomePage is rendered', () => {
     it('should reveal Upcoming and AllExperiences', () => {
       render(<HomePage />)
 
-      expect(screen.getByTestId('deferred-group')).toHaveAttribute('data-hidden', 'false')
+      expect(screen.getByTestId('deferred-group')).toHaveAttribute('data-deferred', 'false')
       expect(screen.getByTestId('upcoming')).toBeInTheDocument()
       expect(screen.getByTestId('all-experiences')).toBeInTheDocument()
     })
