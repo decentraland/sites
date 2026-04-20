@@ -16,8 +16,16 @@ type QueryOptions = { skip?: boolean }
 // was never deployed (or was removed) from the profile-images bucket. The CDN
 // redirects to an S3 404 XML response which the browser blocks via ORB — the
 // browser surfaces this as a standard Image `error` event. Cache broken URLs in
-// memory so consumers fall back to the placeholder avatar consistently.
+// memory so consumers fall back to the placeholder avatar consistently. The cap
+// bounds memory and gives a recovery path: once exceeded we drop the cache so a
+// transient CDN outage doesn't permanently mark every avatar as broken.
+const BROKEN_CACHE_MAX_SIZE = 500
 const brokenFaceUrls = new Set<string>()
+
+function markFaceAsBroken(url: string): void {
+  if (brokenFaceUrls.size >= BROKEN_CACHE_MAX_SIZE) brokenFaceUrls.clear()
+  brokenFaceUrls.add(url)
+}
 
 function useProfileAvatar(address: string | undefined, options: QueryOptions = {}): UseProfileAvatarResult {
   const { data: profile } = useGetProfileQuery(address, options)
@@ -39,7 +47,7 @@ function useProfileAvatar(address: string | undefined, options: QueryOptions = {
     let cancelled = false
     img.onerror = () => {
       if (cancelled) return
-      brokenFaceUrls.add(rawFace)
+      markFaceAsBroken(rawFace)
       setBroken(true)
     }
     img.src = rawFace

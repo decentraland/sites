@@ -17,17 +17,16 @@ const LiveCard = memo(({ event, onClick }: LiveCardProps) => {
     onClick(event)
   }, [onClick, event])
 
-  // Forward the hook's sanitized face256 (undefined when the CDN URL is broken)
-  // so MUI's Avatar inside EventCard falls back to its placeholder.
+  // Build only the fields EventCard reads (name, ethAddress, avatar.snapshots.face256).
+  // Forwarding the hook's sanitized face256 (undefined when the CDN URL is broken)
+  // makes MUI's Avatar inside EventCard fall back to its placeholder.
   const avatar = useMemo<Avatar | undefined>(() => {
-    if (!fetchedAvatar?.avatar) return undefined
+    if (!fetchedAvatar) return undefined
     return {
-      ...(fetchedAvatar as unknown as Avatar),
-      avatar: {
-        ...fetchedAvatar.avatar,
-        snapshots: { ...fetchedAvatar.avatar.snapshots, face256: avatarFace }
-      }
-    } as Avatar
+      name: fetchedAvatar.name ?? '',
+      ethAddress: fetchedAvatar.ethAddress ?? '',
+      avatar: { snapshots: { face256: avatarFace } }
+    } as unknown as Avatar
   }, [fetchedAvatar, avatarFace])
 
   return (
