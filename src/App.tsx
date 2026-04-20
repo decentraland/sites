@@ -39,11 +39,11 @@ const BlogSearchPage = lazy(() => import('./pages/blog/SearchPage').then(m => ({
 const PreviewPage = lazy(() => import('./pages/blog/PreviewPage').then(m => ({ default: m.PreviewPage })))
 const BlogSignInRedirect = lazy(() => import('./pages/blog/SignInRedirect').then(m => ({ default: m.SignInRedirect })))
 
-// Lazy-loaded for /explore and /blog routes only. Contains Redux Provider.
+// Lazy-loaded for /whats-on and /blog routes only. Contains Redux Provider.
 // No Web3 providers — auth uses localStorage identity via useAuthIdentity.
 const DappsShell = lazy(() => import('./shells/DappsShell').then(m => ({ default: m.DappsShell })))
 
-const ExploreHomePage = lazy(() => import('./pages/explore/HomePage').then(m => ({ default: m.HomePage })))
+const WhatsOnHomePage = lazy(() => import('./pages/explore/HomePage').then(m => ({ default: m.HomePage })))
 const CreateEventPage = lazy(() => import('./pages/explore/CreateEventPage').then(m => ({ default: m.CreateEventPage })))
 
 const App = () => {
@@ -77,8 +77,8 @@ const App = () => {
                 in every environment; PR3 lands the real blog routes. If blog must
                 stay dev/stg-only at any point, reintroduce a getEnv() check here. */}
             <Route element={<DappsShell />}>
-              <Route path="/explore" element={<ExploreHomePage />} />
-              <Route path="/explore/new-event" element={<CreateEventPage />} />
+              <Route path="/whats-on" element={<WhatsOnHomePage />} />
+              <Route path="/whats-on/new-event" element={<CreateEventPage />} />
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/preview" element={<PreviewPage />} />
               <Route path="/blog/search" element={<BlogSearchPage />} />
