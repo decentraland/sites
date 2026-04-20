@@ -18,6 +18,10 @@ jest.mock('../../../hooks/useDocumentVisible', () => ({
   useDocumentVisible: () => mockUseDocumentVisible()
 }))
 
+jest.mock('../../../hooks/useLiveNowQueryParams', () => ({
+  useLiveNowQueryParams: () => undefined
+}))
+
 jest.mock('../EventDetailModal', () => ({
   EventDetailModal: () => <div data-testid="event-detail-modal" />,
   normalizeLiveNowCard: jest.fn()
@@ -96,21 +100,27 @@ describe('LiveNow', () => {
     })
   })
 
-  describe('when polling interval is determined by document visibility', () => {
+  describe('when there is at least one card and the document is visible', () => {
     beforeEach(() => {
       mockUseGetLiveNowCardsQuery.mockReturnValue({ data: [createMockCard('card-1', 'Event 1')] })
+      mockUseDocumentVisible.mockReturnValue(true)
     })
 
-    it('should poll every 60s when the document is visible', () => {
-      mockUseDocumentVisible.mockReturnValue(true)
+    it('should poll every 60 seconds', () => {
       render(<LiveNow />)
 
       const lastCall = mockUseGetLiveNowCardsQuery.mock.calls[0]
       expect(lastCall[1]).toEqual({ pollingInterval: 60_000 })
     })
+  })
 
-    it('should pause polling when the document is hidden', () => {
+  describe('when there is at least one card and the document is hidden', () => {
+    beforeEach(() => {
+      mockUseGetLiveNowCardsQuery.mockReturnValue({ data: [createMockCard('card-1', 'Event 1')] })
       mockUseDocumentVisible.mockReturnValue(false)
+    })
+
+    it('should pause polling by passing a 0 polling interval', () => {
       render(<LiveNow />)
 
       const lastCall = mockUseGetLiveNowCardsQuery.mock.calls[0]

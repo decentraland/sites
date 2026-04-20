@@ -1,7 +1,7 @@
 import { isDocumentVisible, subscribeVisibility } from './documentVisibility'
 
 describe('documentVisibility', () => {
-  let hiddenValue = false
+  let hiddenValue: boolean
 
   beforeEach(() => {
     hiddenValue = false
@@ -16,69 +16,126 @@ describe('documentVisibility', () => {
   })
 
   describe('isDocumentVisible', () => {
-    it('should return true when document is not hidden', () => {
-      hiddenValue = false
-      expect(isDocumentVisible()).toBe(true)
+    describe('when the document is not hidden', () => {
+      beforeEach(() => {
+        hiddenValue = false
+      })
+
+      it('should return true', () => {
+        expect(isDocumentVisible()).toBe(true)
+      })
     })
 
-    it('should return false when document is hidden', () => {
-      hiddenValue = true
-      expect(isDocumentVisible()).toBe(false)
+    describe('when the document is hidden', () => {
+      beforeEach(() => {
+        hiddenValue = true
+      })
+
+      it('should return false', () => {
+        expect(isDocumentVisible()).toBe(false)
+      })
     })
   })
 
   describe('subscribeVisibility', () => {
-    it('should invoke the listener when visibility flips', () => {
-      const listener = jest.fn()
-      const unsubscribe = subscribeVisibility(listener)
+    let listener: jest.Mock
+    let unsubscribe: () => void
 
-      hiddenValue = true
-      document.dispatchEvent(new Event('visibilitychange'))
-
-      expect(listener).toHaveBeenCalledWith(false)
-
-      hiddenValue = false
-      document.dispatchEvent(new Event('visibilitychange'))
-
-      expect(listener).toHaveBeenCalledWith(true)
-
-      unsubscribe()
+    beforeEach(() => {
+      listener = jest.fn()
     })
 
-    it('should stop invoking the listener after unsubscribe', () => {
-      const listener = jest.fn()
-      const unsubscribe = subscribeVisibility(listener)
-      unsubscribe()
+    describe('and the document transitions to hidden', () => {
+      beforeEach(() => {
+        unsubscribe = subscribeVisibility(listener)
+        hiddenValue = true
+        document.dispatchEvent(new Event('visibilitychange'))
+      })
 
-      hiddenValue = true
-      document.dispatchEvent(new Event('visibilitychange'))
+      afterEach(() => {
+        unsubscribe()
+      })
 
-      expect(listener).not.toHaveBeenCalled()
+      it('should invoke the listener with false', () => {
+        expect(listener).toHaveBeenCalledWith(false)
+      })
     })
 
-    it('should deduplicate the same listener reference', () => {
-      const listener = jest.fn()
-      const unsubscribeA = subscribeVisibility(listener)
-      const unsubscribeB = subscribeVisibility(listener)
+    describe('and the document transitions back to visible', () => {
+      beforeEach(() => {
+        hiddenValue = true
+        unsubscribe = subscribeVisibility(listener)
+        hiddenValue = false
+        document.dispatchEvent(new Event('visibilitychange'))
+      })
 
-      hiddenValue = true
-      document.dispatchEvent(new Event('visibilitychange'))
+      afterEach(() => {
+        unsubscribe()
+      })
 
-      expect(listener).toHaveBeenCalledTimes(1)
-
-      unsubscribeA()
-      unsubscribeB()
+      it('should invoke the listener with true', () => {
+        expect(listener).toHaveBeenCalledWith(true)
+      })
     })
 
-    it('should detach the underlying document listener when the last subscriber leaves', () => {
-      const addSpy = jest.spyOn(document, 'addEventListener')
-      const removeSpy = jest.spyOn(document, 'removeEventListener')
+    describe('and the subscription is released before a visibility change', () => {
+      beforeEach(() => {
+        unsubscribe = subscribeVisibility(listener)
+        unsubscribe()
+        hiddenValue = true
+        document.dispatchEvent(new Event('visibilitychange'))
+      })
 
-      const unsubscribe = subscribeVisibility(() => undefined)
-      expect(addSpy).toHaveBeenCalledWith('visibilitychange', expect.any(Function))
+      it('should not invoke the listener', () => {
+        expect(listener).not.toHaveBeenCalled()
+      })
+    })
 
-      unsubscribe()
-      expect(removeSpy).toHaveBeenCalledWith('visibilitychange', expect.any(Function))
+    describe('and the same listener reference is subscribed twice', () => {
+      let unsubscribeA: () => void
+      let unsubscribeB: () => void
+
+      beforeEach(() => {
+        unsubscribeA = subscribeVisibility(listener)
+        unsubscribeB = subscribeVisibility(listener)
+        hiddenValue = true
+        document.dispatchEvent(new Event('visibilitychange'))
+      })
+
+      afterEach(() => {
+        unsubscribeA()
+        unsubscribeB()
+      })
+
+      it('should deduplicate and invoke the listener only once', () => {
+        expect(listener).toHaveBeenCalledTimes(1)
+      })
+    })
+
+    describe('and the last subscriber leaves', () => {
+      let addSpy: jest.SpyInstance
+      let removeSpy: jest.SpyInstance
+
+      beforeEach(() => {
+        addSpy = jest.spyOn(document, 'addEventListener')
+        removeSpy = jest.spyOn(document, 'removeEventListener')
+      })
+
+      it('should attach the visibilitychange listener on subscribe', () => {
+        const release = subscribeVisibility(() => undefined)
+
+        expect(addSpy).toHaveBeenCalledWith('visibilitychange', expect.any(Function))
+
+        release()
+      })
+
+      it('should detach the visibilitychange listener on the last unsubscribe', () => {
+        const release = subscribeVisibility(() => undefined)
+
+        release()
+
+        expect(removeSpy).toHaveBeenCalledWith('visibilitychange', expect.any(Function))
+      })
     })
   })
 })

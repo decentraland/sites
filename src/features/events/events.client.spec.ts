@@ -1,5 +1,3 @@
-// Covers the subscribe/unsubscribe lifecycle of the homepage explore client,
-// including visibility pause and StrictMode double-invoke protection.
 import { renderHook } from '@testing-library/react'
 import { useGetExploreDataQuery } from './events.client'
 
@@ -36,68 +34,95 @@ function okResponse(payload: unknown): Response {
   } as unknown as Response
 }
 
-const fetchMock = jest.fn<Promise<Response>, [RequestInfo | URL, RequestInit?]>()
+describe('events.client', () => {
+  let fetchMock: jest.Mock<Promise<Response>, [RequestInfo | URL, RequestInit?]>
 
-// Note: jest hoists jest.mock() above the top `import`, so the mocks above
-// are applied before useGetExploreDataQuery resolves its transitive imports.
-// Each test leaves the module in a clean 0-subscriber state by unmounting
-// every hook it renders — we intentionally do NOT use jest.resetModules,
-// which would create a second React instance and break useSyncExternalStore.
-
-describe('events.client subscribe lifecycle', () => {
   beforeEach(() => {
     jest.useFakeTimers()
     visibility = true
     capturedVisibilityListener = null
     mockUnsubscribe.mockReset()
-    fetchMock.mockReset()
+    fetchMock = jest.fn<Promise<Response>, [RequestInfo | URL, RequestInit?]>()
     fetchMock.mockImplementation(() => Promise.resolve(okResponse({ data: [] })))
     global.fetch = fetchMock as unknown as typeof global.fetch
   })
 
   afterEach(() => {
     jest.useRealTimers()
+    jest.resetAllMocks()
   })
 
-  it('should subscribe to visibility when the first consumer mounts', () => {
-    const { unmount } = renderHook(() => useGetExploreDataQuery())
-    expect(capturedVisibilityListener).not.toBeNull()
-    unmount()
+  describe('when the first consumer mounts', () => {
+    it('should register a visibility listener', () => {
+      const { unmount } = renderHook(() => useGetExploreDataQuery())
+
+      expect(capturedVisibilityListener).not.toBeNull()
+
+      unmount()
+    })
   })
 
-  it('should unsubscribe from visibility when the last consumer unmounts', () => {
-    const { unmount } = renderHook(() => useGetExploreDataQuery())
-    expect(mockUnsubscribe).not.toHaveBeenCalled()
-    unmount()
-    expect(mockUnsubscribe).toHaveBeenCalledTimes(1)
+  describe('when the last consumer unmounts', () => {
+    it('should release the visibility subscription', () => {
+      const { unmount } = renderHook(() => useGetExploreDataQuery())
+
+      unmount()
+
+      expect(mockUnsubscribe).toHaveBeenCalledTimes(1)
+    })
   })
 
-  it('should not schedule the poll interval while the tab starts hidden', () => {
-    visibility = false
-    const { unmount } = renderHook(() => useGetExploreDataQuery())
-    expect(jest.getTimerCount()).toBe(0)
-    unmount()
+  describe('when the tab starts hidden', () => {
+    beforeEach(() => {
+      visibility = false
+    })
+
+    it('should not schedule the poll interval', () => {
+      const { unmount } = renderHook(() => useGetExploreDataQuery())
+
+      expect(jest.getTimerCount()).toBe(0)
+
+      unmount()
+    })
+
+    describe('and visibility returns', () => {
+      it('should schedule the poll interval', () => {
+        const { unmount } = renderHook(() => useGetExploreDataQuery())
+
+        visibility = true
+        capturedVisibilityListener?.(true)
+
+        expect(jest.getTimerCount()).toBeGreaterThan(0)
+
+        unmount()
+      })
+    })
   })
 
-  it('should schedule the poll interval once visibility returns', () => {
-    visibility = false
-    const { unmount } = renderHook(() => useGetExploreDataQuery())
-    expect(jest.getTimerCount()).toBe(0)
+  describe('when multiple consumers are mounted', () => {
+    describe('and only one of them unmounts', () => {
+      it('should keep the visibility subscription alive', () => {
+        const first = renderHook(() => useGetExploreDataQuery())
+        const second = renderHook(() => useGetExploreDataQuery())
 
-    visibility = true
-    capturedVisibilityListener?.(true)
-    expect(jest.getTimerCount()).toBeGreaterThan(0)
-    unmount()
-  })
+        first.unmount()
 
-  it('should keep the subscription alive as long as at least one consumer is mounted', () => {
-    const first = renderHook(() => useGetExploreDataQuery())
-    const second = renderHook(() => useGetExploreDataQuery())
+        expect(mockUnsubscribe).not.toHaveBeenCalled()
 
-    first.unmount()
-    expect(mockUnsubscribe).not.toHaveBeenCalled()
+        second.unmount()
+      })
+    })
 
-    second.unmount()
-    expect(mockUnsubscribe).toHaveBeenCalledTimes(1)
+    describe('and the last one unmounts', () => {
+      it('should release the visibility subscription', () => {
+        const first = renderHook(() => useGetExploreDataQuery())
+        const second = renderHook(() => useGetExploreDataQuery())
+
+        first.unmount()
+        second.unmount()
+
+        expect(mockUnsubscribe).toHaveBeenCalledTimes(1)
+      })
+    })
   })
 })
