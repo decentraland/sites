@@ -19,7 +19,7 @@ type MenuConfig = {
 
 const MENU_CONFIG: MenuConfig = {
   whatsOn: {
-    labelKey: 'component.landing.navbar.explore',
+    labelKey: 'component.landing.navbar.whats_on',
     url: 'https://decentraland.org/events'
   },
   shop: {

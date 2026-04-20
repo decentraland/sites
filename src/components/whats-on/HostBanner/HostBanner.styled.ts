@@ -1,6 +1,10 @@
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CheckIcon from '@mui/icons-material/Check'
-import { Box, Button, Typography, styled } from 'decentraland-ui2'
+import { Box, Button, Typography, dclColors, styled } from 'decentraland-ui2'
+
+// Figma-only values outside the decentraland-ui2 token system
+const CHECKBOX_FILL = '#3C1C4B'
+const OVERLAY_BLACK_35 = 'rgba(0, 0, 0, 0.35)'
 
 const BannerSection = styled('section')(({ theme }) => ({
   position: 'relative',
@@ -13,7 +17,7 @@ const BannerSection = styled('section')(({ theme }) => ({
   paddingLeft: 60,
   marginTop: 64,
   minHeight: 308,
-  backgroundColor: 'rgba(0, 0, 0, 0.35)',
+  backgroundColor: OVERLAY_BLACK_35,
   [theme.breakpoints.down('md')]: {
     flexDirection: 'column',
     gap: 0,
@@ -91,7 +95,7 @@ const BannerSubtitle = styled(Typography)(({ theme }) => ({
   fontSize: 20,
   fontWeight: 500,
   lineHeight: 1.6,
-  color: '#FCFCFC',
+  color: dclColors.neutral.softWhite,
   margin: 0,
   [theme.breakpoints.down('sm')]: {
     fontSize: 18
@@ -112,28 +116,28 @@ const ChecklistItem = styled(Box)({
 })
 
 const CheckBoxShape = styled(Box)(({ theme }) => ({
-  width: 23.389,
-  height: 23.389,
+  width: 24,
+  height: 24,
   flexShrink: 0,
-  borderRadius: 5.411,
-  backgroundColor: '#3C1C4B',
-  border: `1.082px solid ${theme.palette.primary.main}`,
+  borderRadius: 5,
+  backgroundColor: CHECKBOX_FILL,
+  border: `1px solid ${theme.palette.primary.main}`,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center'
 }))
 
-const CheckBoxIcon = styled(CheckIcon)({
+const CheckBoxIcon = styled(CheckIcon)(({ theme }) => ({
   fontSize: 18,
-  color: '#FFFFFF'
-})
+  color: theme.palette.common.white
+}))
 
 const CheckText = styled(Typography)(({ theme }) => ({
   fontFamily: 'Inter, Helvetica, Arial, sans-serif',
   fontSize: 20,
   fontWeight: 500,
   lineHeight: 1.6,
-  color: '#FCFCFC',
+  color: dclColors.neutral.softWhite,
   margin: 0,
   [theme.breakpoints.down('sm')]: {
     fontSize: 16
@@ -152,21 +156,7 @@ const ButtonRow = styled(Box)(({ theme }) => ({
   }
 }))
 
-const CreateButton = styled(Button)(({ theme }) => ({
-  padding: theme.spacing(1, 2.75),
-  fontSize: 15,
-  fontWeight: 600,
-  lineHeight: '24px',
-  letterSpacing: '0.46px',
-  textTransform: 'uppercase',
-  borderRadius: 6,
-  boxShadow: 'none',
-  /* eslint-disable @typescript-eslint/naming-convention */
-  '&:hover': { boxShadow: 'none' }
-  /* eslint-enable @typescript-eslint/naming-convention */
-}))
-
-const LearnMoreButton = styled(Button)(({ theme }) => ({
+const BannerButton = styled(Button)(({ theme }) => ({
   padding: theme.spacing(1, 2.75),
   fontSize: 15,
   fontWeight: 600,
@@ -181,6 +171,7 @@ const LearnMoreButton = styled(Button)(({ theme }) => ({
 
 export {
   AvatarImage,
+  BannerButton,
   BannerSection,
   BannerSubtitle,
   BannerTitle,
@@ -191,8 +182,6 @@ export {
   ChecklistItem,
   ChecklistWrapper,
   ContentArea,
-  CreateButton,
-  LearnMoreButton,
   SceneImage,
   SceneImageWrapper
 }

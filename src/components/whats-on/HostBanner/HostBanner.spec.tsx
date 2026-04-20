@@ -15,18 +15,13 @@ jest.mock('./HostBanner.styled', () => ({
   ChecklistItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   ChecklistWrapper: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   ContentArea: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  CreateButton: ({
+  BannerButton: ({
     children,
     startIcon,
     ...props
   }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode; startIcon?: React.ReactNode }) => (
     <button {...props}>
       {startIcon}
-      {children}
-    </button>
-  ),
-  LearnMoreButton: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) => (
-    <button data-testid="learn-more-button" {...props}>
       {children}
     </button>
   ),

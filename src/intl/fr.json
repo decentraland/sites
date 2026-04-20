@@ -471,7 +471,6 @@
         "download": "Télécharger"
       },
       "navbar": {
-        "explore": "Actualités",
         "shop": "Boutique",
         "create": "Créer",
         "learn": "Apprendre",
@@ -502,7 +501,8 @@
         "view_profile": "Voir le profil",
         "my_assets": "Mes actifs",
         "account_settings": "Paramètres du compte",
-        "marketplace_authorizations": "Autorisations du Marketplace"
+        "marketplace_authorizations": "Autorisations du Marketplace",
+        "whats_on": "Actualités"
       }
     }
   }

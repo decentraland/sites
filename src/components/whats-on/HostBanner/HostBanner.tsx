@@ -9,6 +9,7 @@ import sceneImage from '../../../images/whats-on/images/host_scene.webp'
 import { redirectToAuth } from '../../../utils/authRedirect'
 import {
   AvatarImage,
+  BannerButton,
   BannerSection,
   BannerSubtitle,
   BannerTitle,
@@ -19,13 +20,12 @@ import {
   ChecklistItem,
   ChecklistWrapper,
   ContentArea,
-  CreateButton,
-  LearnMoreButton,
   SceneImage,
   SceneImageWrapper
 } from './HostBanner.styled'
 
 const LEARN_MORE_URL = 'https://docs.decentraland.org/creator/events/'
+const CHECK_KEYS = ['check_1', 'check_2', 'check_3'] as const
 
 function HostBanner() {
   const { t } = useTranslation()
@@ -44,8 +44,6 @@ function HostBanner() {
     window.open(LEARN_MORE_URL, '_blank', 'noopener')
   }, [])
 
-  const checks = [t('host_banner.check_1'), t('host_banner.check_2'), t('host_banner.check_3')]
-
   return (
     <BannerSection aria-label={t('host_banner.title')}>
       <AvatarImage src={avatarImage} alt="" aria-hidden="true" />
@@ -53,17 +51,17 @@ function HostBanner() {
         <BannerTitle>{t('host_banner.title')}</BannerTitle>
         <BannerSubtitle>{t('host_banner.subtitle')}</BannerSubtitle>
         <ChecklistWrapper>
-          {checks.map(text => (
-            <ChecklistItem key={text}>
+          {CHECK_KEYS.map(key => (
+            <ChecklistItem key={key}>
               <CheckBoxShape aria-hidden="true">
                 <CheckBoxIcon />
               </CheckBoxShape>
-              <CheckText>{text}</CheckText>
+              <CheckText>{t(`host_banner.${key}`)}</CheckText>
             </ChecklistItem>
           ))}
         </ChecklistWrapper>
         <ButtonRow>
-          <CreateButton
+          <BannerButton
             data-testid="create-button"
             variant="contained"
             color="primary"
@@ -72,10 +70,17 @@ function HostBanner() {
             onClick={handleCreate}
           >
             {t('host_banner.create_event')}
-          </CreateButton>
-          <LearnMoreButton variant="contained" color="secondary" size="large" disableElevation onClick={handleLearnMore}>
+          </BannerButton>
+          <BannerButton
+            data-testid="learn-more-button"
+            variant="contained"
+            color="secondary"
+            size="large"
+            disableElevation
+            onClick={handleLearnMore}
+          >
             {t('host_banner.learn_more')}
-          </LearnMoreButton>
+          </BannerButton>
         </ButtonRow>
       </ContentArea>
       <SceneImageWrapper>
