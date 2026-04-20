@@ -49,4 +49,8 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
   }
 }))
 
-export { ContentWrapper, MainContainer }
+const DeferredGroup = styled(Box, { shouldForwardProp: prop => prop !== 'hidden' })<{ hidden: boolean }>(({ hidden }) => ({
+  display: hidden ? 'none' : 'contents'
+}))
+
+export { ContentWrapper, DeferredGroup, MainContainer }
