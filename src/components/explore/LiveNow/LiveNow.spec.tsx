@@ -13,6 +13,10 @@ jest.mock('../../../features/explore-events', () => ({
   useGetLiveNowCardsQuery: (...args: unknown[]) => mockUseGetLiveNowCardsQuery(...args)
 }))
 
+jest.mock('../../../hooks/useLiveNowQueryParams', () => ({
+  useLiveNowQueryParams: () => undefined
+}))
+
 jest.mock('../EventDetailModal', () => ({
   EventDetailModal: () => <div data-testid="event-detail-modal" />,
   normalizeLiveNowCard: jest.fn()

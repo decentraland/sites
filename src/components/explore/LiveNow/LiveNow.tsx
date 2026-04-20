@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -6,6 +6,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { useTranslation } from '@dcl/hooks'
 import { useGetLiveNowCardsQuery } from '../../../features/explore-events'
 import type { LiveNowCard } from '../../../features/explore-events'
+import { useLiveNowQueryParams } from '../../../hooks/useLiveNowQueryParams'
 import { PaginationDot, PaginationDots } from '../common/PaginationDots.styled'
 import { EventDetailModal, normalizeLiveNowCard } from '../EventDetailModal'
 import type { ModalEventData } from '../EventDetailModal'
@@ -25,14 +26,7 @@ const SCROLL_AMOUNT = 300
 
 function LiveNow() {
   const { t } = useTranslation()
-  const queryParams = useMemo(() => {
-    const params = new URLSearchParams(window.location.search)
-    const raw = params.get('minUsers')
-    if (raw !== null && !Number.isNaN(Number(raw))) {
-      return { minUsers: Number(raw) }
-    }
-    return undefined
-  }, [])
+  const queryParams = useLiveNowQueryParams()
   const { data: cards = [] } = useGetLiveNowCardsQuery(queryParams, { pollingInterval: 60_000 })
   const [activeIndex, setActiveIndex] = useState(0)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
