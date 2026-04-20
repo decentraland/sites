@@ -1,7 +1,8 @@
 import { AllExperiences } from '../../components/explore/AllExperiences'
 import { LiveNow } from '../../components/explore/LiveNow'
 import { Upcoming } from '../../components/explore/Upcoming'
-import { useGetLiveNowCardsQuery, useLiveNowQueryParams } from '../../features/explore-events'
+import { useGetLiveNowCardsQuery } from '../../features/explore-events'
+import { useLiveNowQueryParams } from '../../hooks/useLiveNowQueryParams'
 import { ContentWrapper, DeferredGroup, MainContainer } from './HomePage.styled'
 
 function HomePage() {

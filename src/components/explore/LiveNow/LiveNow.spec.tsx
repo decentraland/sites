@@ -10,7 +10,10 @@ jest.mock('@dcl/hooks', () => ({
 
 const mockUseGetLiveNowCardsQuery = jest.fn()
 jest.mock('../../../features/explore-events', () => ({
-  useGetLiveNowCardsQuery: (...args: unknown[]) => mockUseGetLiveNowCardsQuery(...args),
+  useGetLiveNowCardsQuery: (...args: unknown[]) => mockUseGetLiveNowCardsQuery(...args)
+}))
+
+jest.mock('../../../hooks/useLiveNowQueryParams', () => ({
   useLiveNowQueryParams: () => undefined
 }))
 
