@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react'
-import { useGetExploreDataQuery } from './events.client'
+import { useGetWhatsOnDataQuery } from './events.client'
 
 const mockUnsubscribe = jest.fn()
 let capturedVisibilityListener: ((visible: boolean) => void) | null = null
@@ -54,7 +54,7 @@ describe('events.client', () => {
 
   describe('when the first consumer mounts', () => {
     it('should register a visibility listener', () => {
-      const { unmount } = renderHook(() => useGetExploreDataQuery())
+      const { unmount } = renderHook(() => useGetWhatsOnDataQuery())
 
       expect(capturedVisibilityListener).not.toBeNull()
 
@@ -64,7 +64,7 @@ describe('events.client', () => {
 
   describe('when the last consumer unmounts', () => {
     it('should release the visibility subscription', () => {
-      const { unmount } = renderHook(() => useGetExploreDataQuery())
+      const { unmount } = renderHook(() => useGetWhatsOnDataQuery())
 
       unmount()
 
@@ -78,7 +78,7 @@ describe('events.client', () => {
     })
 
     it('should not schedule the poll interval', () => {
-      const { unmount } = renderHook(() => useGetExploreDataQuery())
+      const { unmount } = renderHook(() => useGetWhatsOnDataQuery())
 
       expect(jest.getTimerCount()).toBe(0)
 
@@ -87,7 +87,7 @@ describe('events.client', () => {
 
     describe('and visibility returns', () => {
       it('should schedule the poll interval', () => {
-        const { unmount } = renderHook(() => useGetExploreDataQuery())
+        const { unmount } = renderHook(() => useGetWhatsOnDataQuery())
 
         visibility = true
         capturedVisibilityListener?.(true)
@@ -102,8 +102,8 @@ describe('events.client', () => {
   describe('when multiple consumers are mounted', () => {
     describe('and only one of them unmounts', () => {
       it('should keep the visibility subscription alive', () => {
-        const first = renderHook(() => useGetExploreDataQuery())
-        const second = renderHook(() => useGetExploreDataQuery())
+        const first = renderHook(() => useGetWhatsOnDataQuery())
+        const second = renderHook(() => useGetWhatsOnDataQuery())
 
         first.unmount()
 
@@ -115,8 +115,8 @@ describe('events.client', () => {
 
     describe('and the last one unmounts', () => {
       it('should release the visibility subscription', () => {
-        const first = renderHook(() => useGetExploreDataQuery())
-        const second = renderHook(() => useGetExploreDataQuery())
+        const first = renderHook(() => useGetWhatsOnDataQuery())
+        const second = renderHook(() => useGetWhatsOnDataQuery())
 
         first.unmount()
         second.unmount()

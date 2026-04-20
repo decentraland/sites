@@ -134,7 +134,7 @@
         "trivia_thursdays": "Jueves de Trivia",
         "play_with_friends_fridays": "Viernes con Amigos"
       },
-      "explore": {
+      "whats_on": {
         "title": "Mirá lo que está pasando",
         "live": "En vivo"
       }
@@ -471,7 +471,6 @@
         "download": "Descargar"
       },
       "navbar": {
-        "explore": "Explorar",
         "shop": "Comprar",
         "create": "Crear",
         "learn": "Aprender",
@@ -502,7 +501,8 @@
         "view_profile": "Mi perfil",
         "my_assets": "Mis cosas",
         "account_settings": "Configuración",
-        "marketplace_authorizations": "Autorizaciones del Marketplace"
+        "marketplace_authorizations": "Autorizaciones del Marketplace",
+        "whats_on": "Explorar"
       }
     }
   }

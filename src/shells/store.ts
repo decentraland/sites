@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import type { TypedUseSelectorHook } from 'react-redux'
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { blogReducer } from '../features/blog/blog.slice'
-import { eventsClient } from '../features/explore-events/events.client'
+import { eventsClient } from '../features/whats-on-events/events.client'
 import { algoliaClient, cmsClient } from '../services/blogClient'
 
 const rootReducer = combineReducers({

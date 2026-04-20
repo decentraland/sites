@@ -43,8 +43,8 @@ const BlogSignInRedirect = lazy(() => import('./pages/blog/SignInRedirect').then
 // No Web3 providers — auth uses localStorage identity via useAuthIdentity.
 const DappsShell = lazy(() => import('./shells/DappsShell').then(m => ({ default: m.DappsShell })))
 
-const WhatsOnHomePage = lazy(() => import('./pages/explore/HomePage').then(m => ({ default: m.HomePage })))
-const CreateEventPage = lazy(() => import('./pages/explore/CreateEventPage').then(m => ({ default: m.CreateEventPage })))
+const WhatsOnHomePage = lazy(() => import('./pages/whats-on/HomePage').then(m => ({ default: m.HomePage })))
+const CreateEventPage = lazy(() => import('./pages/whats-on/CreateEventPage').then(m => ({ default: m.CreateEventPage })))
 
 const App = () => {
   return (

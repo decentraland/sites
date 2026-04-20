@@ -184,7 +184,7 @@
         "trivia_thursdays": "Trivia Thursdays",
         "play_with_friends_fridays": "Play with Friends Fridays"
       },
-      "explore": {
+      "whats_on": {
         "title": "Jump Into What's Happening",
         "live": "Live"
       }
@@ -581,7 +581,7 @@
         "download": "Download"
       },
       "navbar": {
-        "explore": "Explore",
+        "whats_on": "Explore",
         "shop": "Shop",
         "create": "Create",
         "learn": "Learn",

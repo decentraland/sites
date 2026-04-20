@@ -134,7 +134,7 @@
         "trivia_thursdays": "트리비아 서즈데이",
         "play_with_friends_fridays": "프렌즈 프라이데이"
       },
-      "explore": {
+      "whats_on": {
         "title": "지금 일어나고 있는 일에 뛰어들기",
         "live": "라이브"
       }
@@ -471,7 +471,6 @@
         "download": "다운로드"
       },
       "navbar": {
-        "explore": "새 소식",
         "shop": "상점",
         "create": "만들기",
         "learn": "배우기",
@@ -502,7 +501,8 @@
         "view_profile": "프로필 보기",
         "my_assets": "내 자산",
         "account_settings": "계정 설정",
-        "marketplace_authorizations": "마켓플레이스 승인"
+        "marketplace_authorizations": "마켓플레이스 승인",
+        "whats_on": "새 소식"
       }
     }
   }
