@@ -2,7 +2,7 @@
 import { useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { AnimatedBackground } from 'decentraland-ui2'
-import { ResponsiveCard } from '../../components/jump/ResponsiveCard'
+import { Card } from '../../components/jump/Card'
 import {
   DEFAULT_POSITION,
   DEFAULT_REALM,
@@ -56,7 +56,7 @@ const PlacesPage = () => {
     <JumpPageContainer>
       <AnimatedBackground variant="fixed" />
       <JumpPageContent>
-        <ResponsiveCard data={cardData} isLoading={placesQuery.isLoading} creator={creator} />
+        <Card data={cardData} isLoading={placesQuery.isLoading} creator={creator} />
       </JumpPageContent>
     </JumpPageContainer>
   )

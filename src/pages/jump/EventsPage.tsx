@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import ShareIcon from '@mui/icons-material/Share'
 import { AnimatedBackground, useMobileMediaQuery } from 'decentraland-ui2'
-import { ResponsiveCard } from '../../components/jump/ResponsiveCard'
+import { Card } from '../../components/jump/Card'
 import { CalendarAddIcon } from '../../components/whats-on/common/CalendarAddIcon'
 import { RemindMeButton as WatsonRemindMeButton } from '../../components/whats-on/common/RemindMeButton'
 import { getEnv } from '../../config/env'
@@ -163,9 +163,9 @@ const EventsPage = () => {
     <JumpPageContainer>
       <AnimatedBackground variant="fixed" />
       <JumpPageContent>
-        <ResponsiveCard data={cardData} isLoading={isLoading} creator={creator}>
+        <Card data={cardData} isLoading={isLoading} creator={creator}>
           {actions}
-        </ResponsiveCard>
+        </Card>
       </JumpPageContent>
     </JumpPageContainer>
   )

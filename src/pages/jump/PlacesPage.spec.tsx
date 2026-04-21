@@ -42,8 +42,8 @@ jest.mock('../../features/jump', () => ({
   useGetSceneMetadataQuery: jest.fn()
 }))
 
-jest.mock('../../components/jump/ResponsiveCard', () => ({
-  ResponsiveCard: ({ isLoading, data }: { isLoading: boolean; data?: { title: string } }) => (
+jest.mock('../../components/jump/Card', () => ({
+  Card: ({ isLoading, data }: { isLoading: boolean; data?: { title: string } }) => (
     <div data-testid="card" data-loading={String(isLoading)}>
       {data?.title ?? 'no-data'}
     </div>

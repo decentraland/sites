@@ -5,7 +5,7 @@ import CircleRoundedIcon from '@mui/icons-material/CircleRounded'
 import NotificationsRoundedIcon from '@mui/icons-material/NotificationsRounded'
 import PersonIcon from '@mui/icons-material/Person'
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
-import { Box, CircularProgress, Skeleton } from 'decentraland-ui2'
+import { CircularProgress, Skeleton, useMobileMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import { eventHasEnded, formatLocation } from '../../../features/jump/jump.helpers'
 import type { CardData, Creator } from '../../../features/jump/jump.types'
@@ -15,6 +15,7 @@ import cardEventsPlaceholder from '../../../images/jump/card-events-placeholder.
 import cardPlacesPlaceholder from '../../../images/jump/card-places-placeholder.webp'
 import { JumpInButton } from '../JumpInButton'
 import { LiveEventIcon } from '../LiveEventIcon'
+import { ShareLinkButton } from '../ShareLinkButton'
 import { TextWrapper } from '../TextWrapper'
 import {
   AttendeesBadge,
@@ -26,11 +27,13 @@ import {
   CardLoadingContainer,
   CardLocation,
   CardTitle,
+  ContentSection,
   CreatorAvatar,
   CreatorLabel,
-  LeftSection,
+  DescriptionText,
+  ImageSection,
   MetaRow,
-  RightSection,
+  StickyBottomContainer,
   UserProfileLink
 } from './Card.styled'
 
@@ -43,17 +46,18 @@ interface CardProps {
 
 const Card = memo(function Card({ data, isLoading = false, creator, children }: CardProps) {
   const formatMessage = useFormatMessage()
+  const isMobile = useMobileMediaQuery()
   const profileUrlBase = getEnv('PROFILE_URL') ?? 'https://decentraland.org/profile/'
 
   if (isLoading || !data) {
     return (
       <CardContainer>
-        <LeftSection>
+        <ImageSection>
           <CardLoadingContainer>
             <CircularProgress disableShrink />
           </CardLoadingContainer>
-        </LeftSection>
-        <RightSection>
+        </ImageSection>
+        <ContentSection>
           <CardContent sx={{ gap: 1.5 }}>
             <Skeleton variant="text" animation="wave" sx={{ fontSize: 28, fontWeight: 700, marginBottom: '12px' }} />
             <Skeleton variant="text" animation="wave" sx={{ fontSize: 16, marginBottom: '8px' }} />
@@ -61,7 +65,7 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
             <Skeleton variant="text" animation="wave" sx={{ fontSize: 16, marginBottom: '16px' }} />
             <Skeleton variant="rectangular" animation="wave" sx={{ height: 80 }} />
           </CardContent>
-        </RightSection>
+        </ContentSection>
       </CardContainer>
     )
   }
@@ -74,9 +78,16 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
   const imageSrc = data.image || (isEvent ? cardEventsPlaceholder : cardPlacesPlaceholder)
   const altKey = isEvent ? 'component.jump.card.accessibility.event_image' : 'component.jump.card.accessibility.place_image'
 
+  const desktopFallbackAction =
+    !isEvent || data.live ? (
+      <JumpInButton position={data.position} realm={data.realm} fullWidth size="large">
+        {formatMessage('component.jump.jump_in_button.jump_in')}
+      </JumpInButton>
+    ) : null
+
   return (
     <CardContainer>
-      <LeftSection>
+      <ImageSection>
         <CardImage src={imageSrc} alt={formatMessage(altKey, { title: data.title })} />
         {isEvent && (
           <AttendeesBadge backgroundColor={data.live ? '#FF2D55' : '#FCFCFC'} style={{ color: data.live ? '#ffffff' : '#161518' }}>
@@ -99,10 +110,10 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
             {data.user_count}
           </AttendeesBadge>
         ) : null}
-      </LeftSection>
-      <RightSection>
+      </ImageSection>
+      <ContentSection>
         <CardContent>
-          <CardTitle style={{ marginBottom: 16 }}>{data.title}</CardTitle>
+          <CardTitle>{data.title}</CardTitle>
           <CardCreator>
             <CreatorAvatar
               src={displayAvatar}
@@ -134,21 +145,13 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
               {data?.realm ?? formatLocation(data.coordinates)}
             </CardLocation>
           </MetaRow>
-          <TextWrapper maxHeight={128} gradientColor="#380A4D">
-            <Box sx={{ fontSize: 20, color: '#ffffff', lineHeight: 1.6 }}>
-              {data.description || formatMessage('component.jump.card.place.default_description')}
-            </Box>
+          <TextWrapper maxHeight={isMobile ? 250 : 128} gradientColor={isMobile ? '#2E013E' : '#380A4D'}>
+            <DescriptionText>{data.description || formatMessage('component.jump.card.place.default_description')}</DescriptionText>
           </TextWrapper>
         </CardContent>
-
-        {children}
-
-        {!children && (!isEvent || data.live) && (
-          <JumpInButton position={data.position} realm={data.realm} fullWidth size="large">
-            {formatMessage('component.jump.jump_in_button.jump_in')}
-          </JumpInButton>
-        )}
-      </RightSection>
+        {!isMobile && (children ?? desktopFallbackAction)}
+      </ContentSection>
+      {isMobile && <StickyBottomContainer>{children ?? <ShareLinkButton url={data?.url} title={data?.title} />}</StickyBottomContainer>}
     </CardContainer>
   )
 })

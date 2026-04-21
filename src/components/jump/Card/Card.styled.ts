@@ -19,20 +19,36 @@ const CardContainer = styled(Box)(({ theme }) => ({
     width: 'calc(100% - 64px)',
     minWidth: 'auto',
     margin: '0 32px'
+  },
+  [theme.breakpoints.down('xs')]: {
+    flexDirection: 'column',
+    height: 'auto',
+    width: '100%',
+    margin: 0,
+    borderRadius: 0,
+    paddingBottom: 25,
+    background: 'linear-gradient(96.05deg, #2E013E 36.2%, #7F0D59 100.69%)',
+    boxShadow: 'none'
   }
 }))
 
-const LeftSection = styled(Box)(({ theme }) => ({
+const ImageSection = styled(Box)(({ theme }) => ({
   position: 'relative',
   flexGrow: 1,
   maxWidth: 724,
   overflow: 'hidden',
   [theme.breakpoints.down('md')]: {
     height: '100%'
+  },
+  [theme.breakpoints.down('xs')]: {
+    width: '100%',
+    height: 250,
+    flexGrow: 0,
+    maxWidth: '100%'
   }
 }))
 
-const RightSection = styled(Box)(({ theme }) => ({
+const ContentSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'flex-start',
@@ -45,6 +61,11 @@ const RightSection = styled(Box)(({ theme }) => ({
   },
   [theme.breakpoints.down('sm')]: {
     padding: 16
+  },
+  [theme.breakpoints.down('xs')]: {
+    padding: '32px 24px 0 24px',
+    maxWidth: '100%',
+    backgroundColor: 'transparent'
   }
 }))
 
@@ -61,7 +82,7 @@ interface AttendeesBadgeProps {
 
 const AttendeesBadge = styled(Box, {
   shouldForwardProp: prop => prop !== 'backgroundColor'
-})<AttendeesBadgeProps>(({ backgroundColor = '#FF2D55' }) => ({
+})<AttendeesBadgeProps>(({ backgroundColor = '#FF2D55', theme }) => ({
   position: 'absolute',
   top: 16,
   left: 16,
@@ -74,7 +95,13 @@ const AttendeesBadge = styled(Box, {
   gap: 8,
   fontSize: 14,
   fontWeight: 700,
-  backdropFilter: 'blur(4px)'
+  backdropFilter: 'blur(4px)',
+  [theme.breakpoints.down('xs')]: {
+    padding: '6px 12px',
+    borderRadius: 6,
+    gap: 6,
+    fontSize: 12
+  }
 }))
 
 const CardContent = styled(Box)({
@@ -88,6 +115,7 @@ const CardTitle = styled('h2')(({ theme }) => ({
   fontSize: 48,
   fontWeight: 600,
   margin: 0,
+  marginBottom: 16,
   color: '#ffffff',
   lineHeight: 1.17,
   display: '-webkit-box',
@@ -95,18 +123,24 @@ const CardTitle = styled('h2')(({ theme }) => ({
   WebkitBoxOrient: 'vertical',
   overflow: 'hidden',
   [theme.breakpoints.down('md')]: { fontSize: 40 },
-  [theme.breakpoints.down('sm')]: { fontSize: 32 }
+  [theme.breakpoints.down('sm')]: { fontSize: 32 },
+  [theme.breakpoints.down('xs')]: { fontSize: 28, lineHeight: 1.2 }
 }))
 
-const CardCreator = styled(Box)({
+const CardCreator = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: 8,
   fontSize: 20,
   fontWeight: 500,
   color: '#FF2D55',
-  marginBottom: 24
-})
+  marginBottom: 24,
+  [theme.breakpoints.down('xs')]: {
+    gap: 6,
+    fontSize: 16,
+    marginBottom: 16
+  }
+}))
 
 const CreatorLabel = styled('span')({ color: '#ffffff' })
 
@@ -130,10 +164,11 @@ const CardDate = styled(Box, {
   borderRadius: 8,
   backdropFilter: 'blur(4px)',
   width: 'fit-content',
-  [theme.breakpoints.down('md')]: { fontSize: 14 }
+  [theme.breakpoints.down('md')]: { fontSize: 14 },
+  [theme.breakpoints.down('xs')]: { gap: 6, fontSize: 14, lineHeight: 1.5, borderRadius: 6 }
 }))
 
-const CardLocation = styled(Box)({
+const CardLocation = styled(Box)(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
   padding: '4px 8px',
@@ -145,8 +180,9 @@ const CardLocation = styled(Box)({
   backgroundColor: 'rgba(0, 0, 0, 0.4)',
   borderRadius: 8,
   backdropFilter: 'blur(4px)',
-  width: 'fit-content'
-})
+  width: 'fit-content',
+  [theme.breakpoints.down('xs')]: { gap: 6, fontSize: 14, lineHeight: 1.5, borderRadius: 6 }
+}))
 
 const CardLoadingContainer = styled(Box)({
   display: 'flex',
@@ -157,7 +193,7 @@ const CardLoadingContainer = styled(Box)({
   backgroundColor: 'rgba(56, 10, 77, 0.6)'
 })
 
-const CreatorAvatar = styled('img')({
+const CreatorAvatar = styled('img')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -168,10 +204,16 @@ const CreatorAvatar = styled('img')({
   height: 32,
   overflow: 'hidden',
   borderRadius: 34,
-  border: '2px solid #ffffff'
-})
+  border: '2px solid #ffffff',
+  [theme.breakpoints.down('xs')]: {
+    width: 24,
+    height: 24,
+    borderRadius: '50%',
+    borderWidth: 1.5
+  }
+}))
 
-const UserProfileLink = styled('a')({
+const UserProfileLink = styled('a')(({ theme }) => ({
   color: '#FF2D55',
   textDecoration: 'none',
   fontSize: 20,
@@ -185,14 +227,40 @@ const UserProfileLink = styled('a')({
     outline: '2px solid #FF2D55',
     outlineOffset: 2,
     borderRadius: 4
-  }
-})
+  },
+  [theme.breakpoints.down('xs')]: { fontSize: 16 }
+}))
 
-const MetaRow = styled(Box)({
+const MetaRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: 8,
   flexWrap: 'wrap',
-  marginBottom: 48
+  marginBottom: 48,
+  [theme.breakpoints.down('xs')]: { marginBottom: 12 }
+}))
+
+const DescriptionText = styled(Box)(({ theme }) => ({
+  fontSize: 20,
+  color: '#ffffff',
+  lineHeight: 1.6,
+  [theme.breakpoints.down('xs')]: { fontSize: 16, lineHeight: 1.5 }
+}))
+
+const StickyBottomContainer = styled(Box)({
+  position: 'fixed',
+  bottom: -1,
+  left: 0,
+  right: 0,
+  minHeight: 115,
+  padding: '32px 24px',
+  background: 'linear-gradient(100.12deg, #130119 0%, #320524 100%)',
+  borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+  zIndex: 1000,
+  display: 'flex',
+  flexDirection: 'row',
+  gap: 12,
+  backdropFilter: 'blur(8px)',
+  boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.2)'
 })
 
 export {
@@ -205,10 +273,12 @@ export {
   CardLoadingContainer,
   CardLocation,
   CardTitle,
+  ContentSection,
   CreatorAvatar,
   CreatorLabel,
-  LeftSection,
+  DescriptionText,
+  ImageSection,
   MetaRow,
-  RightSection,
+  StickyBottomContainer,
   UserProfileLink
 }
