@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -6,8 +6,11 @@ import AddIcon from '@mui/icons-material/Add'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import EventIcon from '@mui/icons-material/Event'
 import { useTranslation } from '@dcl/hooks'
+import { useGetCommunitiesQuery, useGetWorldNamesQuery } from '../../../features/whats-on-events'
+import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
 import { ImageUpload } from './ImageUpload'
+import { VerticalCoverPanel } from './VerticalCoverPanel'
 import {
   AddCoverBold,
   AddCoverLight,
@@ -21,9 +24,8 @@ import {
   DateTimeRow,
   DateTimeSection,
   DescriptionFields,
-  DescriptionHeader,
-  DescriptionLabel,
   EmailSection,
+  ErrorMessage,
   EventDetailsBlock,
   EventFormControl,
   EventInputLabel,
@@ -39,22 +41,22 @@ import {
   LocationBlock,
   LocationLabel,
   LocationRow,
-  PreviewLabel,
-  PreviewToggle,
   RepeatFields,
   RepeatLabel,
   RepeatRow,
   ReviewText,
   RightSection,
   SectionHeading,
-  SubmitButton
+  SubmitButton,
+  SubmitErrorMessage
 } from './EventForm.styled'
 
 type EventFormProps = {
   onCancel: () => void
+  onSuccess: () => void
 }
 
-function EventForm({ onCancel }: EventFormProps) {
+function EventForm({ onCancel, onSuccess }: EventFormProps) {
   const { t } = useTranslation()
   const {
     form,
@@ -67,30 +69,26 @@ function EventForm({ onCancel }: EventFormProps) {
     isFormValid,
     isSubmitting,
     handleSubmit
-  } = useCreateEventForm()
-  const [previewEnabled, setPreviewEnabled] = useState(false)
-  const verticalInputRef = useRef<HTMLInputElement>(null)
+  } = useCreateEventForm({ onSuccess })
+  const { identity } = useAuthIdentity()
+  const { data: worldNames = [] } = useGetWorldNamesQuery(undefined, { skip: form.location !== 'world' })
+  const { data: communities = [] } = useGetCommunitiesQuery({ identity }, { skip: !identity })
+  const [verticalPanelOpen, setVerticalPanelOpen] = useState(false)
+  const showVerticalPanel = verticalPanelOpen || Boolean(form.verticalImagePreviewUrl)
 
   const handleVerticalClick = useCallback(() => {
     if (form.verticalImagePreviewUrl) {
       handleVerticalImageRemove()
+      setVerticalPanelOpen(false)
     } else {
-      verticalInputRef.current?.click()
+      setVerticalPanelOpen(prev => !prev)
     }
   }, [form.verticalImagePreviewUrl, handleVerticalImageRemove])
 
-  const handleVerticalFileChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0]
-      if (file) {
-        handleVerticalImageSelect(file)
-      }
-      if (verticalInputRef.current) {
-        verticalInputRef.current.value = ''
-      }
-    },
-    [handleVerticalImageSelect]
-  )
+  const handleVerticalPanelRemove = useCallback(() => {
+    handleVerticalImageRemove()
+    setVerticalPanelOpen(false)
+  }, [handleVerticalImageRemove])
 
   return (
     <ContentContainer>
@@ -107,30 +105,23 @@ function EventForm({ onCancel }: EventFormProps) {
             <AddVerticalCoverButton type="button" onClick={handleVerticalClick}>
               <AddIcon sx={{ color: '#fcfcfc', fontSize: 24 }} />
               <AddCoverText>
-                <AddCoverBold>{form.verticalImagePreviewUrl ? 'Remove Vertical Cover' : 'Add Vertical Cover'}</AddCoverBold>
-                <AddCoverLight> (Optional)</AddCoverLight>
+                <AddCoverBold>
+                  {form.verticalImagePreviewUrl ? t('create_event.remove_vertical_cover') : t('create_event.add_vertical_cover')}
+                </AddCoverBold>
+                <AddCoverLight> {t('create_event.recommended_parenthetical')}</AddCoverLight>
               </AddCoverText>
             </AddVerticalCoverButton>
-            <input
-              ref={verticalInputRef}
-              type="file"
-              accept="image/png,image/jpeg"
-              onChange={handleVerticalFileChange}
-              style={{ display: 'none' }}
-              aria-hidden="true"
-            />
-            {form.verticalImageError && <ReviewText sx={{ color: 'error.main' }}>{form.verticalImageError}</ReviewText>}
+            {showVerticalPanel && (
+              <VerticalCoverPanel
+                previewUrl={form.verticalImagePreviewUrl}
+                onSelect={handleVerticalImageSelect}
+                onRemove={handleVerticalPanelRemove}
+              />
+            )}
+            {form.verticalImageError && <ErrorMessage>{t(form.verticalImageError)}</ErrorMessage>}
           </ImageSection>
 
           <DescriptionFields>
-            <DescriptionHeader>
-              <DescriptionLabel>Description</DescriptionLabel>
-              <PreviewToggle>
-                <PreviewLabel>PREVIEW</PreviewLabel>
-                <EventSwitch checked={previewEnabled} onChange={(_, checked) => setPreviewEnabled(checked)} size="medium" />
-              </PreviewToggle>
-            </DescriptionHeader>
-
             <EventTextField
               variant="outlined"
               label={t('create_event.event_name')}
@@ -278,36 +269,78 @@ function EventForm({ onCancel }: EventFormProps) {
                   <EventMenuItem value="world">{t('create_event.world')}</EventMenuItem>
                 </EventSelect>
               </EventFormControl>
-              <CoordinatesRow>
-                <EventTextField
-                  variant="outlined"
-                  label={t('create_event.latitude')}
-                  value={form.coordX}
-                  onChange={e => setField('coordX', e.target.value)}
-                  error={Boolean(errors.coordX)}
-                  helperText={errors.coordX}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  InputProps={{
-                    startAdornment: <CoordPrefix position="start">X</CoordPrefix>
-                  }}
-                />
-                <EventTextField
-                  variant="outlined"
-                  label={t('create_event.altitude')}
-                  value={form.coordY}
-                  onChange={e => setField('coordY', e.target.value)}
-                  error={Boolean(errors.coordY)}
-                  helperText={errors.coordY}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  InputProps={{
-                    startAdornment: <CoordPrefix position="start">Y</CoordPrefix>
-                  }}
-                />
-              </CoordinatesRow>
+              {form.location === 'world' ? (
+                <EventFormControl variant="outlined" fullWidth error={Boolean(errors.world)} sx={{ flex: 2 }}>
+                  <EventInputLabel shrink>{t('create_event.world')}</EventInputLabel>
+                  <EventSelect
+                    value={form.world}
+                    onChange={e => setField('world', e.target.value as string)}
+                    label={t('create_event.world')}
+                    notched
+                    displayEmpty
+                  >
+                    <EventMenuItem value="">{t('create_event.world_placeholder')}</EventMenuItem>
+                    {worldNames.map(name => (
+                      <EventMenuItem key={name} value={name}>
+                        {name}
+                      </EventMenuItem>
+                    ))}
+                  </EventSelect>
+                </EventFormControl>
+              ) : (
+                <CoordinatesRow>
+                  <EventTextField
+                    variant="outlined"
+                    label={t('create_event.latitude')}
+                    value={form.coordX}
+                    onChange={e => setField('coordX', e.target.value)}
+                    error={Boolean(errors.coordX)}
+                    helperText={errors.coordX}
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    InputProps={{
+                      startAdornment: <CoordPrefix position="start">X</CoordPrefix>
+                    }}
+                  />
+                  <EventTextField
+                    variant="outlined"
+                    label={t('create_event.altitude')}
+                    value={form.coordY}
+                    onChange={e => setField('coordY', e.target.value)}
+                    error={Boolean(errors.coordY)}
+                    helperText={errors.coordY}
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    InputProps={{
+                      startAdornment: <CoordPrefix position="start">Y</CoordPrefix>
+                    }}
+                  />
+                </CoordinatesRow>
+              )}
             </LocationRow>
           </LocationBlock>
+
+          {communities.length > 0 && (
+            <LocationBlock>
+              <EventFormControl variant="outlined" fullWidth>
+                <EventInputLabel shrink>{t('create_event.community')}</EventInputLabel>
+                <EventSelect
+                  value={form.communityId}
+                  onChange={e => setField('communityId', e.target.value as string)}
+                  label={t('create_event.community')}
+                  notched
+                  displayEmpty
+                >
+                  <EventMenuItem value="">{t('create_event.community_none')}</EventMenuItem>
+                  {communities.map(community => (
+                    <EventMenuItem key={community.id} value={community.id}>
+                      {community.name}
+                    </EventMenuItem>
+                  ))}
+                </EventSelect>
+              </EventFormControl>
+            </LocationBlock>
+          )}
 
           {/* Email */}
           <EmailSection>
@@ -328,7 +361,7 @@ function EventForm({ onCancel }: EventFormProps) {
         </RightSection>
       </FormColumns>
 
-      {errors.submit && <ReviewText sx={{ color: 'error.main', textAlign: 'center' }}>{errors.submit}</ReviewText>}
+      {errors.submit && <SubmitErrorMessage>{errors.submit}</SubmitErrorMessage>}
 
       <FormActions>
         <CancelButton type="button" onClick={onCancel}>
