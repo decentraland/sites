@@ -1,4 +1,24 @@
+import { keyframes } from '@emotion/react'
 import { Box, Typography, styled } from 'decentraland-ui2'
+
+const errorShake = keyframes`
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+`
+
+const errorPulse = keyframes`
+  0%, 100% {
+    border-color: #f70038;
+    box-shadow: 0 0 0 0 rgba(247, 0, 56, 0.45);
+  }
+  50% {
+    border-color: #ff6b8a;
+    box-shadow: 0 0 0 8px rgba(247, 0, 56, 0);
+  }
+`
 
 const PanelContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -10,10 +30,10 @@ const PanelContainer = styled(Box)(({ theme }) => ({
 }))
 
 const DropZone = styled(Box, {
-  shouldForwardProp: prop => prop !== '$hasImage'
-})<{ $hasImage: boolean }>(({ $hasImage, theme }) => ({
+  shouldForwardProp: prop => prop !== '$hasImage' && prop !== '$hasError'
+})<{ $hasImage: boolean; $hasError: boolean }>(({ $hasImage, $hasError, theme }) => ({
   position: 'relative',
-  border: $hasImage ? 'none' : '2px dashed rgba(255, 255, 255, 0.5)',
+  border: $hasImage ? 'none' : `2px dashed ${$hasError ? theme.palette.error.main : 'rgba(255, 255, 255, 0.5)'}`,
   borderRadius: 20,
   width: 301,
   height: 522,
@@ -26,9 +46,13 @@ const DropZone = styled(Box, {
   overflow: 'hidden',
   padding: 12,
   transition: 'border-color 0.2s ease',
+  animation: $hasError ? `${errorShake} 0.4s ease-in-out, ${errorPulse} 1.6s ease-out 0.4s infinite` : 'none',
   /* eslint-disable @typescript-eslint/naming-convention */
   '&:hover': {
     borderColor: $hasImage ? undefined : 'rgba(255, 255, 255, 0.7)'
+  },
+  '@media (prefers-reduced-motion: reduce)': {
+    animation: 'none'
   },
   [theme.breakpoints.down('md')]: {
     width: '100%',
@@ -146,14 +170,56 @@ const OverlayText = styled(Typography)({
   textTransform: 'uppercase'
 })
 
+const ErrorRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8.04,
+  marginTop: 12,
+  color: theme.palette.error.main
+}))
+
+const ErrorIcon = styled(Box)({
+  width: 16,
+  height: 16,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  /* eslint-disable @typescript-eslint/naming-convention */
+  '& svg': {
+    fontSize: 16
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
+})
+
+const ErrorText = styled(Typography)(({ theme }) => ({
+  flex: 1,
+  fontSize: 12,
+  fontWeight: 400,
+  lineHeight: 1,
+  color: theme.palette.error.main,
+  fontFamily: "'Inter', sans-serif"
+}))
+
+const OptimizeLink = styled('a')(({ theme }) => ({
+  color: theme.palette.error.main,
+  fontWeight: 700,
+  textDecoration: 'underline',
+  cursor: 'pointer'
+}))
+
 export {
   CameraIcon,
   ChooseLink,
   DropZone,
   DropZoneContent,
+  ErrorIcon,
+  ErrorRow,
+  ErrorText,
   HintGroup,
   HintText,
   IconAndTitle,
+  OptimizeLink,
   OverlayText,
   PanelContainer,
   PreviewImage,

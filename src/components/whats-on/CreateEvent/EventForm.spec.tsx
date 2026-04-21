@@ -154,14 +154,10 @@ function createFormState(overrides = {}) {
   return {
     image: null,
     imagePreviewUrl: null,
-    imageUrl: null,
     imageError: null,
-    isUploadingImage: false,
     verticalImage: null,
     verticalImagePreviewUrl: null,
-    verticalImageUrl: null,
     verticalImageError: null,
-    isUploadingVerticalImage: false,
     name: '',
     description: '',
     startDate: '',
@@ -195,6 +191,7 @@ describe('EventForm', () => {
       handleImageRemove: mockHandleImageRemove,
       handleVerticalImageSelect: jest.fn(),
       handleVerticalImageRemove: jest.fn(),
+      isFormValid: false,
       isSubmitting: false,
       handleSubmit: mockHandleSubmit
     })
@@ -254,55 +251,43 @@ describe('EventForm', () => {
     })
   })
 
-  describe('when the form has empty required fields', () => {
-    it('should still render the submit button as enabled so clicks can surface validation errors', () => {
+  describe('when the form is not valid', () => {
+    it('should render the submit button as disabled', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByTestId('submit-button')).toBeDisabled()
+    })
+  })
+
+  describe('when the form is valid', () => {
+    beforeEach(() => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({
+          name: 'Test Event',
+          description: 'Description',
+          startDate: '2026-05-01',
+          startTime: '10:00',
+          endDate: '2026-05-01',
+          endTime: '12:00',
+          coordX: '10',
+          coordY: '20'
+        }),
+        errors: {},
+        setField: mockSetField,
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: true,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
+    it('should render the submit button as enabled', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByTestId('submit-button')).not.toBeDisabled()
-    })
-  })
-
-  describe('when an image is uploading', () => {
-    beforeEach(() => {
-      mockUseCreateEventForm.mockReturnValue({
-        form: createFormState({ isUploadingImage: true }),
-        errors: {},
-        setField: mockSetField,
-        handleImageSelect: mockHandleImageSelect,
-        handleImageRemove: mockHandleImageRemove,
-        handleVerticalImageSelect: jest.fn(),
-        handleVerticalImageRemove: jest.fn(),
-        isSubmitting: false,
-        handleSubmit: mockHandleSubmit
-      })
-    })
-
-    it('should render the submit button as disabled', () => {
-      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
-
-      expect(screen.getByTestId('submit-button')).toBeDisabled()
-    })
-  })
-
-  describe('when a vertical image is uploading', () => {
-    beforeEach(() => {
-      mockUseCreateEventForm.mockReturnValue({
-        form: createFormState({ isUploadingVerticalImage: true }),
-        errors: {},
-        setField: mockSetField,
-        handleImageSelect: mockHandleImageSelect,
-        handleImageRemove: mockHandleImageRemove,
-        handleVerticalImageSelect: jest.fn(),
-        handleVerticalImageRemove: jest.fn(),
-        isSubmitting: false,
-        handleSubmit: mockHandleSubmit
-      })
-    })
-
-    it('should render the submit button as disabled', () => {
-      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
-
-      expect(screen.getByTestId('submit-button')).toBeDisabled()
     })
   })
 
@@ -351,6 +336,7 @@ describe('EventForm', () => {
         handleImageRemove: mockHandleImageRemove,
         handleVerticalImageSelect: jest.fn(),
         handleVerticalImageRemove: jest.fn(),
+        isFormValid: true,
         isSubmitting: false,
         handleSubmit: mockHandleSubmit
       })
@@ -382,6 +368,7 @@ describe('EventForm', () => {
         handleImageRemove: mockHandleImageRemove,
         handleVerticalImageSelect: jest.fn(),
         handleVerticalImageRemove: jest.fn(),
+        isFormValid: true,
         isSubmitting: true,
         handleSubmit: mockHandleSubmit
       })
@@ -410,6 +397,7 @@ describe('EventForm', () => {
         handleImageRemove: mockHandleImageRemove,
         handleVerticalImageSelect: jest.fn(),
         handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
         isSubmitting: false,
         handleSubmit: mockHandleSubmit
       })
@@ -432,6 +420,7 @@ describe('EventForm', () => {
         handleImageRemove: mockHandleImageRemove,
         handleVerticalImageSelect: jest.fn(),
         handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
         isSubmitting: false,
         handleSubmit: mockHandleSubmit
       })
@@ -462,15 +451,16 @@ describe('EventForm', () => {
         handleImageRemove: mockHandleImageRemove,
         handleVerticalImageSelect: jest.fn(),
         handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
         isSubmitting: false,
         handleSubmit: mockHandleSubmit
       })
     })
 
-    it('should render the vertical image error message', () => {
+    it('should render the VerticalCoverPanel so it can show the error with the animated red border', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
-      expect(screen.getByText('Invalid vertical image')).toBeInTheDocument()
+      expect(screen.getByTestId('vertical-cover-panel')).toBeInTheDocument()
     })
   })
 })

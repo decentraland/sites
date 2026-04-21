@@ -25,7 +25,6 @@ import {
   DateTimeSection,
   DescriptionFields,
   EmailSection,
-  ErrorMessage,
   EventDetailsBlock,
   EventFormControl,
   EventInputLabel,
@@ -66,6 +65,7 @@ function EventForm({ onCancel, onSuccess }: EventFormProps) {
     handleImageRemove,
     handleVerticalImageSelect,
     handleVerticalImageRemove,
+    isFormValid,
     isSubmitting,
     handleSubmit
   } = useCreateEventForm({ onSuccess })
@@ -110,14 +110,14 @@ function EventForm({ onCancel, onSuccess }: EventFormProps) {
                 <AddCoverLight> {t('create_event.recommended_parenthetical')}</AddCoverLight>
               </AddCoverText>
             </AddVerticalCoverButton>
-            {showVerticalPanel && (
+            {(showVerticalPanel || form.verticalImageError) && (
               <VerticalCoverPanel
                 previewUrl={form.verticalImagePreviewUrl}
+                imageError={form.verticalImageError}
                 onSelect={handleVerticalImageSelect}
                 onRemove={handleVerticalPanelRemove}
               />
             )}
-            {form.verticalImageError && <ErrorMessage>{t(form.verticalImageError)}</ErrorMessage>}
           </ImageSection>
 
           <DescriptionFields>
@@ -366,11 +366,7 @@ function EventForm({ onCancel, onSuccess }: EventFormProps) {
         <CancelButton type="button" onClick={onCancel}>
           {t('create_event.cancel')}
         </CancelButton>
-        <SubmitButton
-          type="button"
-          disabled={isSubmitting || form.isUploadingImage || form.isUploadingVerticalImage}
-          onClick={handleSubmit}
-        >
+        <SubmitButton type="button" disabled={!isFormValid || isSubmitting} onClick={handleSubmit}>
           {isSubmitting ? t('create_event.submitting') : t('create_event.submit')}
         </SubmitButton>
       </FormActions>
