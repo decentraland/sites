@@ -2,10 +2,15 @@ import { memo } from 'react'
 import type { Avatar } from '@dcl/schemas'
 import type { LiveNowCard as LiveNowCardData } from '../../../features/whats-on-events'
 import { useCreatorAvatar } from '../../../hooks/useCreatorAvatar'
+import { assetUrl } from '../../../utils/assetUrl'
 import { buildMinimalAvatar } from '../../../utils/avatar'
 import { LiveNowCard } from './LiveNowCard'
 
-const DCL_LOGO_URL = `${window.location.origin}/dcl-logo.svg`
+// `/dcl-logo.svg` lives in /public, which Vite serves from the CDN base URL in
+// prod (VITE_BASE_URL). Using `window.location.origin` here would hit
+// decentraland.zone/dcl-logo.svg — a path the SPA rewrite silently resolves to
+// index.html (content-type: text/html) → <img> renders blank.
+const DCL_LOGO_URL = assetUrl('/dcl-logo.svg')
 const DCL_FOUNDATION_NAME = 'Decentraland Foundation'
 
 const LiveNowCardItem = memo(

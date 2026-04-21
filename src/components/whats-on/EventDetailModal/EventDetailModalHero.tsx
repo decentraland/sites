@@ -8,6 +8,7 @@ import { useTranslation } from '@dcl/hooks'
 import { Tooltip, useTheme } from 'decentraland-ui2'
 import { useCreatorAvatar } from '../../../hooks/useCreatorAvatar'
 import { useRemindMe } from '../../../hooks/useRemindMe'
+import { assetUrl } from '../../../utils/assetUrl'
 import { buildCalendarUrl } from '../../../utils/whatsOnUrl'
 import { RemindMeIcon } from '../common/RemindMeIcon'
 import type { ModalEventData } from './EventDetailModal.types'
@@ -32,7 +33,9 @@ import {
   SecondaryButton
 } from './EventDetailModal.styled'
 
-const DCL_LOGO_URL = `${window.location.origin}/dcl-logo.svg`
+// Uses assetUrl so prod resolves to cdn.decentraland.org — decentraland.zone's
+// SPA rewrite serves index.html for unknown paths, which would render blank.
+const DCL_LOGO_URL = assetUrl('/dcl-logo.svg')
 
 function EventDetailModalHero({ data, onClose }: { data: ModalEventData; onClose: () => void }) {
   const { t } = useTranslation()
