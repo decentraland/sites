@@ -775,7 +775,16 @@
     "optimize_link": "optimizilla",
     "success_message": "Your event was created successfully. You'll be notified once it's approved. Track its status in “My Events”",
     "back_to_explore": "Back to Explore",
-    "my_events": "My Events"
+    "my_events": "My Events",
+    "add_vertical_cover": "Add Vertical Cover",
+    "remove_vertical_cover": "Remove Vertical Cover",
+    "recommended_parenthetical": "(recommended)",
+    "select_vertical_cover": "Select an Event Cover (Vertical - Optional)",
+    "vertical_recommended_size": "(recommended size: 716 x 1814)",
+    "vertical_modal_label": "Upload vertical event cover",
+    "world_placeholder": "Select a world",
+    "community_none": "None",
+    "close": "Close"
   },
   "host_banner": {
     "title": "Want to Host Something?",

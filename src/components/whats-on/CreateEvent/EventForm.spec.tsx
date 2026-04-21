@@ -104,6 +104,19 @@ jest.mock('./ImageUpload', () => ({
   ImageUpload: () => <div data-testid="image-upload" />
 }))
 
+jest.mock('./VerticalCoverPanel', () => ({
+  VerticalCoverPanel: () => <div data-testid="vertical-cover-panel" />
+}))
+
+jest.mock('../../../features/whats-on-events', () => ({
+  useGetWorldNamesQuery: () => ({ data: [] }),
+  useGetCommunitiesQuery: () => ({ data: [] })
+}))
+
+jest.mock('../../../hooks/useAuthIdentity', () => ({
+  useAuthIdentity: () => ({ identity: null, hasValidIdentity: false, address: null })
+}))
+
 jest.mock('@mui/icons-material/AccessTime', () => ({
   __esModule: true,
   default: () => <span data-testid="access-time-icon" />
@@ -157,7 +170,8 @@ function createFormState(overrides = {}) {
     location: 'land',
     coordX: '0',
     coordY: '0',
-    community: '',
+    world: '',
+    communityId: '',
     email: '',
     notes: '',
     ...overrides
@@ -416,7 +430,7 @@ describe('EventForm', () => {
     it('should render the remove vertical cover text', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
-      expect(screen.getByTestId('add-vertical-cover')).toHaveTextContent('Remove Vertical Cover')
+      expect(screen.getByTestId('add-vertical-cover')).toHaveTextContent('create_event.remove_vertical_cover')
     })
   })
 
@@ -424,7 +438,7 @@ describe('EventForm', () => {
     it('should render the add vertical cover text', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
-      expect(screen.getByTestId('add-vertical-cover')).toHaveTextContent('Add Vertical Cover')
+      expect(screen.getByTestId('add-vertical-cover')).toHaveTextContent('create_event.add_vertical_cover')
     })
   })
 

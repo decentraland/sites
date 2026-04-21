@@ -40,7 +40,8 @@ type CreateEventFormState = {
   location: string
   coordX: string
   coordY: string
-  community: string
+  world: string
+  communityId: string
   email: string
   notes: string
 }
@@ -68,7 +69,8 @@ const initialState: CreateEventFormState = {
   location: 'land',
   coordX: '0',
   coordY: '0',
-  community: '',
+  world: '',
+  communityId: '',
   email: '',
   notes: ''
 }
@@ -293,11 +295,15 @@ function useCreateEventForm() {
       }
     }
 
-    if (!isValidCoordinate(form.coordX, COORD_X_MIN, COORD_X_MAX)) {
-      newErrors.coordX = t('create_event.error_coord_x_range')
-    }
-    if (!isValidCoordinate(form.coordY, COORD_Y_MIN, COORD_Y_MAX)) {
-      newErrors.coordY = t('create_event.error_coord_y_range')
+    if (form.location === 'land') {
+      if (!isValidCoordinate(form.coordX, COORD_X_MIN, COORD_X_MAX)) {
+        newErrors.coordX = t('create_event.error_coord_x_range')
+      }
+      if (!isValidCoordinate(form.coordY, COORD_Y_MIN, COORD_Y_MAX)) {
+        newErrors.coordY = t('create_event.error_coord_y_range')
+      }
+    } else if (form.location === 'world' && !form.world) {
+      newErrors.world = t('create_event.error_required')
     }
 
     if (!isValidEmail(form.email)) {
@@ -325,8 +331,10 @@ function useCreateEventForm() {
 
     const hasValidLengths = form.name.length <= MAX_NAME_LENGTH && form.description.length <= MAX_DESCRIPTION_LENGTH
 
-    const hasValidCoords =
-      isValidCoordinate(form.coordX, COORD_X_MIN, COORD_X_MAX) && isValidCoordinate(form.coordY, COORD_Y_MIN, COORD_Y_MAX)
+    const hasValidLocation =
+      form.location === 'world'
+        ? form.world !== ''
+        : isValidCoordinate(form.coordX, COORD_X_MIN, COORD_X_MAX) && isValidCoordinate(form.coordY, COORD_Y_MIN, COORD_Y_MAX)
 
     let hasValidDuration = true
     if (form.startDate && form.startTime && form.endDate && form.endTime) {
@@ -343,7 +351,7 @@ function useCreateEventForm() {
     return (
       hasRequiredFields &&
       hasValidLengths &&
-      hasValidCoords &&
+      hasValidLocation &&
       hasValidDuration &&
       hasValidRepeat &&
       hasValidEmail &&
@@ -370,6 +378,7 @@ function useCreateEventForm() {
       const finishMs = new Date(finishAt).getTime()
       const duration = finishMs - startMs
 
+      const isWorld = form.location === 'world'
       /* eslint-disable @typescript-eslint/naming-convention */
       await createEvent({
         payload: {
@@ -377,12 +386,15 @@ function useCreateEventForm() {
           description: form.description.trim() || null,
           start_at: startAt,
           duration,
-          x: Number(form.coordX),
-          y: Number(form.coordY),
+          x: isWorld ? 0 : Number(form.coordX),
+          y: isWorld ? 0 : Number(form.coordY),
           image: form.imageUrl,
           image_vertical: form.verticalImageUrl,
           contact: form.email || null,
           categories: [],
+          world: isWorld || undefined,
+          server: isWorld ? form.world : null,
+          community_id: form.communityId || null,
           recurrent: form.repeatEnabled || undefined,
           recurrent_frequency: form.repeatEnabled ? FREQUENCY_MAP[form.frequency] : undefined,
           recurrent_until: form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : undefined

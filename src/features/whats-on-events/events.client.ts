@@ -5,12 +5,15 @@ import { buildLiveNowCards, enrichPlaceCards } from './events.helpers'
 import type { HotScene, LiveNowCard } from './events.helpers'
 import type {
   AuthenticatedQueryParams,
+  CommunitiesResponse,
+  CommunityAttributes,
   CreateEventParams,
   CreateEventResponse,
   EventAttendeesResponse,
   EventEntry,
   EventsQueryParams,
   EventsResponse,
+  GetCommunitiesParams,
   PosterData,
   PosterResponse,
   ToggleAttendeeParams,
@@ -148,6 +151,40 @@ const eventsClient = createApi({
       },
       invalidatesTags: ['Events']
     }),
+    getWorldNames: build.query<string[], void>({
+      queryFn: async () => {
+        try {
+          const baseUrl = getEnv('PLACES_API_URL')!
+          const response = await fetch(`${baseUrl}/world_names`)
+          if (!response.ok) {
+            throw new Error(`world_names error: ${response.status}`)
+          }
+          const envelope: { ok?: boolean; data?: string[] } = await response.json()
+          const data = Array.isArray(envelope.data) ? envelope.data : Array.isArray(envelope) ? (envelope as unknown as string[]) : []
+          return { data }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      }
+    }),
+    getCommunities: build.query<CommunityAttributes[], GetCommunitiesParams>({
+      serializeQueryArgs: ({ queryArgs: { identity } }) => ({ authenticated: Boolean(identity) }),
+      queryFn: async ({ identity }) => {
+        try {
+          const baseUrl = getEnv('SOCIAL_API_URL')!
+          const url = `${baseUrl}/v1/communities?roles=owner&roles=moderator`
+          const response = await fetchWithOptionalIdentity(url, identity)
+          if (!response.ok) {
+            throw new Error(`communities error: ${response.status}`)
+          }
+          const envelope: CommunitiesResponse = await response.json()
+          const items = envelope.data?.results ?? []
+          return { data: items.filter(item => item.active) }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      }
+    }),
     uploadPoster: build.mutation<PosterData, UploadPosterParams>({
       queryFn: async ({ file, identity }) => {
         try {
@@ -211,9 +248,11 @@ const eventsClient = createApi({
 
 const {
   useCreateEventMutation,
+  useGetCommunitiesQuery,
   useGetEventsQuery,
   useGetLiveNowCardsQuery,
   useGetUpcomingEventsQuery,
+  useGetWorldNamesQuery,
   useToggleAttendeeMutation,
   useUploadPosterMutation,
   useUploadPosterVerticalMutation
@@ -222,9 +261,11 @@ const {
 export {
   eventsClient,
   useCreateEventMutation,
+  useGetCommunitiesQuery,
   useGetEventsQuery,
   useGetLiveNowCardsQuery,
   useGetUpcomingEventsQuery,
+  useGetWorldNamesQuery,
   useToggleAttendeeMutation,
   useUploadPosterMutation,
   useUploadPosterVerticalMutation
