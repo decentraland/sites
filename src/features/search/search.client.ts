@@ -6,17 +6,29 @@ import type {
   EnrichedSearchPost,
   SearchBlogPostsParams,
   SearchBlogPostsResponse,
-  SearchBlogResult,
-  SearchPostFields
+  SearchBlogResult
 } from './search.types'
 
 // cms-server full-text search supports en-US, es and zh. Landing currently serves English only.
 const SEARCH_LOCALE = 'en-US'
 
+// Shared query builder — both search endpoints hit the same cms-server endpoint with
+// identical params; only their response shape differs, so keep the URL construction
+// in one place.
+const buildSearchQuery = ({ query, hitsPerPage = 10, page = 0 }: SearchBlogPostsParams) => ({
+  url: getCmsBaseUrl() + '/blog/posts',
+  params: {
+    q: query,
+    locale: SEARCH_LOCALE,
+    limit: hitsPerPage,
+    skip: page * hitsPerPage
+  }
+})
+
 // Resolves asset URL + category slug in parallel. Both helpers cache at module level,
 // so popular categories/images collapse to a single CMS fetch across the whole session.
 const enrichHit = async (hit: CMSSearchItem): Promise<EnrichedSearchPost> => {
-  const fields = hit.fields as SearchPostFields
+  const { fields } = hit
   const slug = fields.id || hit.sys.id
   const assetId = fields.image?.sys?.id || ''
   const categoryEntryId = fields.category?.sys?.id || ''
@@ -39,15 +51,7 @@ const enrichHit = async (hit: CMSSearchItem): Promise<EnrichedSearchPost> => {
 const searchClient = cmsClient.injectEndpoints({
   endpoints: build => ({
     searchBlogPosts: build.query<SearchBlogPostsResponse, SearchBlogPostsParams>({
-      query: ({ query, hitsPerPage = 10, page = 0 }) => ({
-        url: getCmsBaseUrl() + '/blog/posts',
-        params: {
-          q: query,
-          locale: SEARCH_LOCALE,
-          limit: hitsPerPage,
-          skip: page * hitsPerPage
-        }
-      }),
+      query: buildSearchQuery,
       transformResponse: async (response: CMSSearchResponse, _meta, { hitsPerPage = 10, page = 0 }): Promise<SearchBlogPostsResponse> => {
         const enriched = await Promise.all(response.items.map(enrichHit))
         const results = enriched.map(hit => ({
@@ -65,15 +69,7 @@ const searchClient = cmsClient.injectEndpoints({
       providesTags: (_result, _error, arg) => [{ type: 'SearchResults', id: arg.query }]
     }),
     searchBlog: build.query<SearchBlogResult[], SearchBlogPostsParams>({
-      query: ({ query, hitsPerPage = 10, page = 0 }) => ({
-        url: getCmsBaseUrl() + '/blog/posts',
-        params: {
-          q: query,
-          locale: SEARCH_LOCALE,
-          limit: hitsPerPage,
-          skip: page * hitsPerPage
-        }
-      }),
+      query: buildSearchQuery,
       transformResponse: async (response: CMSSearchResponse): Promise<SearchBlogResult[]> => {
         const enriched = await Promise.all(response.items.map(enrichHit))
         return enriched.map(hit => ({
