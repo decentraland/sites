@@ -11,7 +11,10 @@ import type {
   EventEntry,
   EventsQueryParams,
   EventsResponse,
-  ToggleAttendeeParams
+  PosterData,
+  PosterResponse,
+  ToggleAttendeeParams,
+  UploadPosterParams
 } from './events.types'
 
 function buildQueryString(params: EventsQueryParams): string {
@@ -131,9 +134,10 @@ const eventsClient = createApi({
           const response = await fetchWithIdentity(`${baseUrl}/events`, identity, 'POST', body, { 'Content-Type': 'application/json' })
 
           if (!response.ok) {
-            const errorBody = await response.text()
-            console.error('[Events] createEvent failed', response.status, errorBody)
-            throw new Error('Failed to create event. Please try again.')
+            const envelope = await response.json().catch(() => null)
+            const message = typeof envelope?.error === 'string' ? envelope.error : `Failed to create event (${response.status})`
+            console.error('[Events] createEvent failed', response.status, envelope)
+            return { error: { status: response.status, data: envelope, message } }
           }
 
           const data: CreateEventResponse = await response.json()
@@ -143,6 +147,44 @@ const eventsClient = createApi({
         }
       },
       invalidatesTags: ['Events']
+    }),
+    uploadPoster: build.mutation<PosterData, UploadPosterParams>({
+      queryFn: async ({ file, identity }) => {
+        try {
+          const baseUrl = getEnv('EVENTS_API_URL')!
+          const body = new FormData()
+          body.append('poster', file)
+          const response = await fetchWithIdentity(`${baseUrl}/poster`, identity, 'POST', body)
+          if (!response.ok) {
+            const errorBody = await response.text()
+            console.error('[Events] uploadPoster failed', response.status, errorBody)
+            throw new Error('Failed to upload image. Please try again.')
+          }
+          const envelope: PosterResponse = await response.json()
+          return { data: envelope.data }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      }
+    }),
+    uploadPosterVertical: build.mutation<PosterData, UploadPosterParams>({
+      queryFn: async ({ file, identity }) => {
+        try {
+          const baseUrl = getEnv('EVENTS_API_URL')!
+          const body = new FormData()
+          body.append('poster', file)
+          const response = await fetchWithIdentity(`${baseUrl}/poster-vertical`, identity, 'POST', body)
+          if (!response.ok) {
+            const errorBody = await response.text()
+            console.error('[Events] uploadPosterVertical failed', response.status, errorBody)
+            throw new Error('Failed to upload vertical image. Please try again.')
+          }
+          const envelope: PosterResponse = await response.json()
+          return { data: envelope.data }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      }
     }),
     toggleAttendee: build.mutation<EventAttendeesResponse, ToggleAttendeeParams>({
       queryFn: async ({ eventId, attending, identity }) => {
@@ -167,8 +209,15 @@ const eventsClient = createApi({
   })
 })
 
-const { useCreateEventMutation, useGetEventsQuery, useGetLiveNowCardsQuery, useGetUpcomingEventsQuery, useToggleAttendeeMutation } =
-  eventsClient
+const {
+  useCreateEventMutation,
+  useGetEventsQuery,
+  useGetLiveNowCardsQuery,
+  useGetUpcomingEventsQuery,
+  useToggleAttendeeMutation,
+  useUploadPosterMutation,
+  useUploadPosterVerticalMutation
+} = eventsClient
 
 export {
   eventsClient,
@@ -176,5 +225,7 @@ export {
   useGetEventsQuery,
   useGetLiveNowCardsQuery,
   useGetUpcomingEventsQuery,
-  useToggleAttendeeMutation
+  useToggleAttendeeMutation,
+  useUploadPosterMutation,
+  useUploadPosterVerticalMutation
 }

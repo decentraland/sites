@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -21,9 +21,8 @@ import {
   DateTimeRow,
   DateTimeSection,
   DescriptionFields,
-  DescriptionHeader,
-  DescriptionLabel,
   EmailSection,
+  ErrorMessage,
   EventDetailsBlock,
   EventFormControl,
   EventInputLabel,
@@ -39,22 +38,22 @@ import {
   LocationBlock,
   LocationLabel,
   LocationRow,
-  PreviewLabel,
-  PreviewToggle,
   RepeatFields,
   RepeatLabel,
   RepeatRow,
   ReviewText,
   RightSection,
   SectionHeading,
-  SubmitButton
+  SubmitButton,
+  SubmitErrorMessage
 } from './EventForm.styled'
 
 type EventFormProps = {
   onCancel: () => void
+  onSuccess: () => void
 }
 
-function EventForm({ onCancel }: EventFormProps) {
+function EventForm({ onCancel, onSuccess }: EventFormProps) {
   const { t } = useTranslation()
   const {
     form,
@@ -66,9 +65,13 @@ function EventForm({ onCancel }: EventFormProps) {
     handleVerticalImageRemove,
     isFormValid,
     isSubmitting,
+    isSubmitted,
     handleSubmit
   } = useCreateEventForm()
-  const [previewEnabled, setPreviewEnabled] = useState(false)
+
+  useEffect(() => {
+    if (isSubmitted) onSuccess()
+  }, [isSubmitted, onSuccess])
   const verticalInputRef = useRef<HTMLInputElement>(null)
 
   const handleVerticalClick = useCallback(() => {
@@ -119,18 +122,10 @@ function EventForm({ onCancel }: EventFormProps) {
               style={{ display: 'none' }}
               aria-hidden="true"
             />
-            {form.verticalImageError && <ReviewText sx={{ color: 'error.main' }}>{form.verticalImageError}</ReviewText>}
+            {form.verticalImageError && <ErrorMessage>{t(form.verticalImageError)}</ErrorMessage>}
           </ImageSection>
 
           <DescriptionFields>
-            <DescriptionHeader>
-              <DescriptionLabel>Description</DescriptionLabel>
-              <PreviewToggle>
-                <PreviewLabel>PREVIEW</PreviewLabel>
-                <EventSwitch checked={previewEnabled} onChange={(_, checked) => setPreviewEnabled(checked)} size="medium" />
-              </PreviewToggle>
-            </DescriptionHeader>
-
             <EventTextField
               variant="outlined"
               label={t('create_event.event_name')}
@@ -328,7 +323,7 @@ function EventForm({ onCancel }: EventFormProps) {
         </RightSection>
       </FormColumns>
 
-      {errors.submit && <ReviewText sx={{ color: 'error.main', textAlign: 'center' }}>{errors.submit}</ReviewText>}
+      {errors.submit && <SubmitErrorMessage>{errors.submit}</SubmitErrorMessage>}
 
       <FormActions>
         <CancelButton type="button" onClick={onCancel}>

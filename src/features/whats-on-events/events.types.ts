@@ -124,6 +124,23 @@ interface CreateEventResponse {
   data: EventEntry
 }
 
+interface PosterData {
+  filename: string
+  url: string
+  size: number
+  type: string
+}
+
+interface PosterResponse {
+  ok: boolean
+  data: PosterData
+}
+
+interface UploadPosterParams {
+  file: File
+  identity: AuthIdentity
+}
+
 export type {
   AuthenticatedQueryParams,
   CreateEventParams,
@@ -136,6 +153,9 @@ export type {
   EventOrder,
   EventsQueryParams,
   EventsResponse,
+  PosterData,
+  PosterResponse,
   RecurrentFrequency,
-  ToggleAttendeeParams
+  ToggleAttendeeParams,
+  UploadPosterParams
 }
