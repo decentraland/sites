@@ -19,7 +19,7 @@ const FooterMain = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
     padding: '32px 40px'
   },
-  [theme.breakpoints.down('xs')]: {
+  [theme.breakpoints.down('sm')]: {
     flexDirection: 'column',
     alignItems: 'center',
     gap: 32,
@@ -36,7 +36,7 @@ const LeftColumn = styled('div')(({ theme }) => ({
   gap: 40,
   padding: '40px 0',
   maxWidth: 450,
-  [theme.breakpoints.down('xs')]: {
+  [theme.breakpoints.down('sm')]: {
     padding: 0,
     width: '100%',
     alignItems: 'center',
@@ -47,7 +47,7 @@ const LeftColumn = styled('div')(({ theme }) => ({
 const Wordmark = styled('img')(({ theme }) => ({
   height: 48,
   width: 'auto',
-  [theme.breakpoints.down('xs')]: {
+  [theme.breakpoints.down('sm')]: {
     height: 40,
     maxWidth: 322
   }
@@ -57,7 +57,7 @@ const NewsletterSection = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   gap: 12,
-  [theme.breakpoints.down('xs')]: {
+  [theme.breakpoints.down('sm')]: {
     width: '100%',
     alignItems: 'center'
   }
@@ -70,7 +70,7 @@ const NewsletterTitle = styled('p')(({ theme }) => ({
   lineHeight: 1.6,
   color: '#fcfcfc',
   margin: 0,
-  [theme.breakpoints.down('xs')]: {
+  [theme.breakpoints.down('sm')]: {
     textAlign: 'center'
   }
 }))
@@ -81,7 +81,7 @@ const EmailRow = styled('form')(({ theme }) => ({
   height: 46,
   width: '100%',
   maxWidth: 450,
-  [theme.breakpoints.down('xs')]: {
+  [theme.breakpoints.down('sm')]: {
     height: 40,
     maxWidth: '100%'
   }
@@ -134,14 +134,14 @@ const ConnectSection = styled('div')(({ theme }) => ({
   gap: 16,
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&.desktop-only': {
-    [theme.breakpoints.down('xs')]: {
+    [theme.breakpoints.down('sm')]: {
       display: 'none'
     }
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&.mobile-only': {
     display: 'none',
-    [theme.breakpoints.down('xs')]: {
+    [theme.breakpoints.down('sm')]: {
       display: 'flex',
       width: '100%',
       paddingTop: 12
@@ -188,7 +188,7 @@ const RightColumn = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
     gap: 48
   },
-  [theme.breakpoints.down('xs')]: {
+  [theme.breakpoints.down('sm')]: {
     display: 'none'
   }
 }))
@@ -216,7 +216,7 @@ const FooterLink = styled('a')({
 // ── Mobile collapsible menu ──────────────────────────────────────────
 const MobileMenu = styled('div')(({ theme }) => ({
   display: 'none',
-  [theme.breakpoints.down('xs')]: {
+  [theme.breakpoints.down('sm')]: {
     display: 'flex',
     flexDirection: 'column',
     width: '100%'
@@ -296,7 +296,7 @@ const BottomBar = styled('div')(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'space-between',
   padding: '16px 24px',
-  [theme.breakpoints.down('xs')]: {
+  [theme.breakpoints.down('sm')]: {
     flexDirection: 'column',
     alignItems: 'flex-start',
     gap: 16
@@ -307,7 +307,7 @@ const BottomBarLeft = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: 16,
-  [theme.breakpoints.down('xs')]: {
+  [theme.breakpoints.down('sm')]: {
     flexDirection: 'column',
     alignItems: 'flex-start',
     gap: 16
@@ -315,7 +315,7 @@ const BottomBarLeft = styled('div')(({ theme }) => ({
 }))
 
 const BottomBarRight = styled('div')(({ theme }) => ({
-  [theme.breakpoints.down('xs')]: {
+  [theme.breakpoints.down('sm')]: {
     display: 'none'
   }
 }))
@@ -401,7 +401,7 @@ const LanguageMenu = styled('div')({
 
 const MobileLegalGrid = styled('div')(({ theme }) => ({
   display: 'none',
-  [theme.breakpoints.down('xs')]: {
+  [theme.breakpoints.down('sm')]: {
     display: 'flex',
     gap: 142,
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -417,7 +417,7 @@ const DesktopLegalLinks = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: 16,
-  [theme.breakpoints.down('xs')]: {
+  [theme.breakpoints.down('sm')]: {
     display: 'none'
   }
 }))
