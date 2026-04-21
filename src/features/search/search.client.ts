@@ -1,131 +1,89 @@
-import { algoliasearch } from 'algoliasearch'
-import { getEnv } from '../../config/env'
-import { algoliaClient } from '../../services/blogClient'
-import type { SearchResult } from '../../shared/blog/types/blog.domain'
+import { cmsClient, getCmsBaseUrl } from '../../services/blogClient'
 import { resolveAssetUrl, resolveEntrySlug } from '../blog/blog.helpers'
-import type { AlgoliaHit, SearchBlogPostsParams, SearchBlogPostsResponse, SearchBlogResult } from './search.types'
+import type {
+  CMSSearchItem,
+  CMSSearchResponse,
+  EnrichedSearchPost,
+  SearchBlogPostsParams,
+  SearchBlogPostsResponse,
+  SearchBlogResult,
+  SearchPostFields
+} from './search.types'
 
-const algoliaAppId = getEnv('ALGOLIA_APP_ID') || ''
-const algoliaApiKey = getEnv('ALGOLIA_API_KEY') || ''
-const algoliaIndex = getEnv('ALGOLIA_BLOG_INDEX') || 'decentraland-blog'
+// cms-server full-text search supports en-US, es and zh. Landing currently serves English only.
+const SEARCH_LOCALE = 'en-US'
 
-const searchClient = algoliaClient.injectEndpoints({
+// Resolves asset URL + category slug in parallel. Both helpers cache at module level,
+// so popular categories/images collapse to a single CMS fetch across the whole session.
+const enrichHit = async (hit: CMSSearchItem): Promise<EnrichedSearchPost> => {
+  const fields = hit.fields as SearchPostFields
+  const slug = fields.id || hit.sys.id
+  const assetId = fields.image?.sys?.id || ''
+  const categoryEntryId = fields.category?.sys?.id || ''
+  const plainTitle = fields.title || ''
+  const plainDescription = fields.description || ''
+
+  const [imageUrl, categorySlug] = await Promise.all([resolveAssetUrl(assetId), resolveEntrySlug(categoryEntryId)])
+
+  return {
+    id: slug,
+    categorySlug,
+    imageUrl,
+    title: plainTitle,
+    description: plainDescription,
+    highlightedTitle: hit._highlight?.title ?? plainTitle,
+    highlightedDescription: hit._highlight?.description ?? plainDescription
+  }
+}
+
+const searchClient = cmsClient.injectEndpoints({
   endpoints: build => ({
     searchBlogPosts: build.query<SearchBlogPostsResponse, SearchBlogPostsParams>({
-      queryFn: async ({ query, hitsPerPage = 10, page = 0 }) => {
-        try {
-          if (query.length < 3) {
-            return {
-              data: {
-                results: [],
-                total: 0,
-                hasMore: false
-              }
-            }
-          }
-
-          const client = algoliasearch(algoliaAppId, algoliaApiKey)
-          const searchResponse = await client.searchSingleIndex({
-            indexName: algoliaIndex,
-            searchParams: {
-              query,
-              hitsPerPage,
-              page
-            }
-          })
-
-          const hits = (searchResponse.hits || []) as AlgoliaHit[]
-
-          // Resolve all assets and categories in parallel
-          const searchResults: SearchResult[] = await Promise.all(
-            hits.map(async (hit: AlgoliaHit) => {
-              // Get asset ID from imageObject reference
-              const imgObj = hit.imageObject as { sys?: { id?: string } } | undefined
-              const assetId = imgObj?.sys?.id || ''
-
-              // Get category ID from categoryObject reference
-              const catObj = hit.categoryObject as { sys?: { id?: string } } | undefined
-              const categoryId = catObj?.sys?.id || ''
-
-              // Resolve asset URL and category slug in parallel
-              const [imageUrl, categorySlug] = await Promise.all([resolveAssetUrl(assetId), resolveEntrySlug(categoryId)])
-
-              return {
-                url: `/blog/${categorySlug}/${hit.id}`,
-                image: imageUrl,
-                title: hit._highlightResult?.title?.value || hit.title,
-                description: hit._highlightResult?.description?.value || hit.description
-              }
-            })
-          )
-
-          return {
-            data: {
-              results: searchResults,
-              total: (searchResponse.nbHits as number) || 0,
-              hasMore: (page + 1) * hitsPerPage < ((searchResponse.nbHits as number) || 0)
-            }
-          }
-        } catch (error) {
-          return {
-            error: {
-              status: 'CUSTOM_ERROR',
-              error: error instanceof Error ? error.message : 'Unknown error'
-            }
-          }
+      query: ({ query, hitsPerPage = 10, page = 0 }) => ({
+        url: getCmsBaseUrl() + '/blog/posts',
+        params: {
+          q: query,
+          locale: SEARCH_LOCALE,
+          limit: hitsPerPage,
+          skip: page * hitsPerPage
+        }
+      }),
+      transformResponse: async (response: CMSSearchResponse, _meta, { hitsPerPage = 10, page = 0 }): Promise<SearchBlogPostsResponse> => {
+        const enriched = await Promise.all(response.items.map(enrichHit))
+        const results = enriched.map(hit => ({
+          url: `/blog/${hit.categorySlug}/${hit.id}`,
+          image: hit.imageUrl,
+          title: hit.highlightedTitle,
+          description: hit.highlightedDescription
+        }))
+        return {
+          results,
+          total: response.total,
+          hasMore: (page + 1) * hitsPerPage < response.total
         }
       },
       providesTags: (_result, _error, arg) => [{ type: 'SearchResults', id: arg.query }]
     }),
     searchBlog: build.query<SearchBlogResult[], SearchBlogPostsParams>({
-      queryFn: async ({ query, hitsPerPage = 10, page = 0 }) => {
-        try {
-          if (query.length < 3) {
-            return { data: [] }
-          }
-
-          const client = algoliasearch(algoliaAppId, algoliaApiKey)
-          const searchResponse = await client.searchSingleIndex({
-            indexName: algoliaIndex,
-            searchParams: {
-              query,
-              hitsPerPage,
-              page
-            }
-          })
-
-          const hits = (searchResponse.hits || []) as AlgoliaHit[]
-
-          const searchResults: SearchBlogResult[] = await Promise.all(
-            hits.map(async (hit: AlgoliaHit) => {
-              const imgObj = hit.imageObject as { sys?: { id?: string } } | undefined
-              const assetId = imgObj?.sys?.id || ''
-
-              const catObj = hit.categoryObject as { sys?: { id?: string } } | undefined
-              const categoryId = catObj?.sys?.id || ''
-
-              const [imageUrl, categorySlug] = await Promise.all([resolveAssetUrl(assetId), resolveEntrySlug(categoryId)])
-
-              return {
-                id: hit.id,
-                categoryId: categorySlug,
-                url: `/blog/${categorySlug}/${hit.id}`,
-                image: imageUrl,
-                highlightedTitle: hit._highlightResult?.title?.value || hit.title,
-                highlightedDescription: hit._highlightResult?.description?.value || hit.description
-              }
-            })
-          )
-
-          return { data: searchResults }
-        } catch (error) {
-          return {
-            error: {
-              status: 'CUSTOM_ERROR',
-              error: error instanceof Error ? error.message : 'Unknown error'
-            }
-          }
+      query: ({ query, hitsPerPage = 10, page = 0 }) => ({
+        url: getCmsBaseUrl() + '/blog/posts',
+        params: {
+          q: query,
+          locale: SEARCH_LOCALE,
+          limit: hitsPerPage,
+          skip: page * hitsPerPage
         }
+      }),
+      transformResponse: async (response: CMSSearchResponse): Promise<SearchBlogResult[]> => {
+        const enriched = await Promise.all(response.items.map(enrichHit))
+        return enriched.map(hit => ({
+          id: hit.id,
+          categoryId: hit.categorySlug,
+          url: `/blog/${hit.categorySlug}/${hit.id}`,
+          image: hit.imageUrl,
+          highlightedTitle: hit.highlightedTitle,
+          highlightedDescription: hit.highlightedDescription
+        }))
       },
       providesTags: (_result, _error, arg) => [{ type: 'SearchResults', id: arg.query }]
     })
@@ -133,6 +91,6 @@ const searchClient = algoliaClient.injectEndpoints({
   overrideExisting: false
 })
 
-const { useLazySearchBlogPostsQuery, useSearchBlogPostsQuery, useSearchBlogQuery } = searchClient
+const { useSearchBlogPostsQuery, useSearchBlogQuery } = searchClient
 
-export { searchClient, useLazySearchBlogPostsQuery, useSearchBlogPostsQuery, useSearchBlogQuery }
+export { searchClient, useSearchBlogPostsQuery, useSearchBlogQuery }
