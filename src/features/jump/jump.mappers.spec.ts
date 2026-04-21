@@ -45,6 +45,27 @@ describe('jump.mappers', () => {
       it('should fall back to contact_name as user_name', () => {
         expect(fromPlace(place).user_name).toBe('Alice')
       })
+
+      it('should set user_avatar to the Decentraland logo for foundation-curated places', () => {
+        expect(fromPlace(place).user_avatar).toBeDefined()
+      })
+    })
+
+    describe('and the place has an on-chain owner', () => {
+      const place: JumpPlace = {
+        id: 'p4',
+        title: 'User Place',
+        image: '',
+        description: '',
+        positions: ['0,0'],
+        base_position: '0,0',
+        owner: '0xOwner',
+        contact_name: 'ignored'
+      }
+
+      it('should leave user_avatar undefined so the Catalyst avatar wins when resolved', () => {
+        expect(fromPlace(place).user_avatar).toBeUndefined()
+      })
     })
 
     describe('and both owner and contact_name are missing', () => {

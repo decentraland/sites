@@ -73,7 +73,7 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
   const isEvent = data.type === 'event'
   const displayUserName = creator?.user_name || data.user_name
   const displayUser = creator?.user || data.user
-  const displayAvatar = creator?.avatar || cardCreatorPlaceholder
+  const displayAvatar = creator?.avatar || data.user_avatar || cardCreatorPlaceholder
   const hasEnded = eventHasEnded(data)
   const imageSrc = data.image || (isEvent ? cardEventsPlaceholder : cardPlacesPlaceholder)
   const altKey = isEvent ? 'component.jump.card.accessibility.event_image' : 'component.jump.card.accessibility.place_image'

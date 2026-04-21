@@ -69,11 +69,13 @@ async function fetchPeerProfile(peerUrl: string, address: string): Promise<PeerP
   return profiles?.[0] ?? null
 }
 
-function toCreator(address: string, profile: PeerProfile | null): Creator {
+function toCreator(address: string, profile: PeerProfile | null): Creator | null {
   const avatar = profile?.avatars?.[0]
+  const userName = avatar?.name || avatar?.realName
+  if (!userName) return null
   return {
     user: address,
-    user_name: avatar?.name || avatar?.realName || 'Unknown',
+    user_name: userName,
     avatar: avatar?.avatar?.snapshots?.face256
   }
 }
@@ -138,10 +140,16 @@ const jumpClient = placesClient.injectEndpoints({
 
           const profile = await fetchPeerProfile(peerUrl, deployment.deployedBy)
           const avatar = profile?.avatars?.[0]
+          const deployerName = avatar?.name || avatar?.realName
+          // Curated scenes (e.g. Genesis Plaza) are deployed by addresses that
+          // have no Catalyst user profile. Returning null here lets the Card
+          // fall back to the Places API's contact_name instead of overriding
+          // it with a placeholder like "Unknown".
+          if (!deployerName) return { data: null }
 
           const info: SceneDeployerInfo = {
             deployerAddress: deployment.deployedBy,
-            deployerName: avatar?.name || avatar?.realName || 'Unknown',
+            deployerName,
             deployerAvatar: avatar?.avatar?.snapshots?.face256
           }
           return { data: info }
@@ -157,7 +165,6 @@ const jumpClient = placesClient.injectEndpoints({
           const peerUrl = getEnv('PEER_URL')
           if (!peerUrl) throw new Error('PEER_URL is not set')
           const profile = await fetchPeerProfile(peerUrl, address)
-          if (!profile) return { data: null }
           return { data: toCreator(address, profile) }
         } catch (error) {
           return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }

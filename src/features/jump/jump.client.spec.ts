@@ -216,5 +216,25 @@ describe('jumpClient', () => {
         expect(result.data).toBeNull()
       })
     })
+
+    describe('and the deployer has no Catalyst profile', () => {
+      beforeEach(() => {
+        mockGetEnv.mockImplementation(key => (key === 'PEER_URL' ? 'https://peer.test' : undefined))
+        fetchSpy
+          .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([{ id: 'entity-1' }]) } as unknown as Response)
+          .mockResolvedValueOnce({
+            ok: true,
+            json: () => Promise.resolve({ deployments: [{ entityId: 'entity-1', deployedBy: '0xFoundation' }] })
+          } as unknown as Response)
+          .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) } as unknown as Response)
+      })
+
+      it('should return null so the Places API contact_name is not overridden by a placeholder', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(jumpClient.endpoints.getSceneMetadata.initiate({ position: '0,0' }))
+
+        expect(result.data).toBeNull()
+      })
+    })
   })
 })

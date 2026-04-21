@@ -1,14 +1,19 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import decentralandLogo from '../../images/jump/decentraland-logo.svg'
 import type { CardData, JumpEvent, JumpPlace } from './jump.types'
 
 function fromPlace(data: JumpPlace): CardData {
   const coordinates = data.base_position.split(',').map(Number) as [number, number]
+  // Places with no on-chain owner but a curated contact_name (e.g. Genesis
+  // Plaza) are run by the foundation — show the Decentraland logo as avatar.
+  const isFoundationPlace = !data.owner && !!data.contact_name
   return {
     id: data.id,
     type: 'place',
     title: data.title,
     user_name: data.owner || data.contact_name || 'Unknown',
     user: data.owner ?? undefined,
+    user_avatar: isFoundationPlace ? decentralandLogo : undefined,
     coordinates,
     image: data.image,
     description: data.description,

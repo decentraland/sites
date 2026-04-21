@@ -88,6 +88,7 @@ interface CardData {
   title: string
   user_name: string
   user?: string
+  user_avatar?: string
   coordinates: [number, number]
   image?: string
   description?: string
