@@ -121,7 +121,11 @@ const FREQUENCY_MAP: Record<string, RecurrentFrequency> = {
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
-function useCreateEventForm() {
+type UseCreateEventFormOptions = {
+  onSuccess?: () => void
+}
+
+function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
   const { t } = useTranslation()
   const { identity } = useAuthIdentity()
   const [createEvent] = useCreateEventMutation()
@@ -129,7 +133,6 @@ function useCreateEventForm() {
   const [uploadPosterVertical] = useUploadPosterVerticalMutation()
   const [form, setForm] = useState<CreateEventFormState>(initialState)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
 
   const setField = useCallback(<TKey extends keyof CreateEventFormState>(key: TKey, value: CreateEventFormState[TKey]) => {
@@ -312,47 +315,10 @@ function useCreateEventForm() {
   }, [form, t])
 
   const isFormValid = useMemo(() => {
-    const hasRequiredFields =
-      form.name.trim() !== '' &&
-      form.description.trim() !== '' &&
-      form.startDate !== '' &&
-      form.startTime !== '' &&
-      form.endDate !== '' &&
-      form.endTime !== '' &&
-      form.location !== '' &&
-      form.coordX !== '' &&
-      form.coordY !== ''
-
-    const hasValidLengths = form.name.length <= MAX_NAME_LENGTH && form.description.length <= MAX_DESCRIPTION_LENGTH
-
-    const hasValidLocation =
-      form.location === 'world'
-        ? form.world !== ''
-        : isValidCoordinate(form.coordX, COORD_X_MIN, COORD_X_MAX) && isValidCoordinate(form.coordY, COORD_Y_MIN, COORD_Y_MAX)
-
-    let hasValidDuration = true
-    if (form.startDate && form.startTime && form.endDate && form.endTime) {
-      const startMs = new Date(`${form.startDate}T${form.startTime}`).getTime()
-      const finishMs = new Date(`${form.endDate}T${form.endTime}`).getTime()
-      hasValidDuration = finishMs > startMs && finishMs - startMs <= MAX_EVENT_DURATION_MS
-    }
-
-    const hasValidRepeat = !form.repeatEnabled || form.repeatEndDate !== ''
-    const hasValidEmail = isValidEmail(form.email)
     const hasNoImageError = form.imageError === null && form.verticalImageError === null
     const hasNoUploadInFlight = !form.isUploadingImage && !form.isUploadingVerticalImage
-
-    return (
-      hasRequiredFields &&
-      hasValidLengths &&
-      hasValidLocation &&
-      hasValidDuration &&
-      hasValidRepeat &&
-      hasValidEmail &&
-      hasNoImageError &&
-      hasNoUploadInFlight
-    )
-  }, [form])
+    return hasNoImageError && hasNoUploadInFlight && Object.keys(validate()).length === 0
+  }, [form, validate])
 
   const handleSubmit = useCallback(async () => {
     if (isSubmitting || !identity) return
@@ -397,13 +363,13 @@ function useCreateEventForm() {
       }).unwrap()
       /* eslint-enable @typescript-eslint/naming-convention */
 
-      setIsSubmitted(true)
+      onSuccess?.()
     } catch (error) {
       setErrors({ submit: extractSubmitErrorMessage(error, t) })
     } finally {
       setIsSubmitting(false)
     }
-  }, [form, identity, isSubmitting, validate, createEvent, t])
+  }, [form, identity, isSubmitting, validate, createEvent, t, onSuccess])
 
   return {
     form,
@@ -415,7 +381,6 @@ function useCreateEventForm() {
     handleVerticalImageRemove,
     isFormValid,
     isSubmitting,
-    isSubmitted,
     handleSubmit
   }
 }

@@ -193,7 +193,6 @@ describe('EventForm', () => {
       handleVerticalImageRemove: jest.fn(),
       isFormValid: false,
       isSubmitting: false,
-      isSubmitted: false,
       handleSubmit: mockHandleSubmit
     })
   })

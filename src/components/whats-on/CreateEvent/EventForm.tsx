@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -68,18 +68,13 @@ function EventForm({ onCancel, onSuccess }: EventFormProps) {
     handleVerticalImageRemove,
     isFormValid,
     isSubmitting,
-    isSubmitted,
     handleSubmit
-  } = useCreateEventForm()
+  } = useCreateEventForm({ onSuccess })
   const { identity } = useAuthIdentity()
   const { data: worldNames = [] } = useGetWorldNamesQuery(undefined, { skip: form.location !== 'world' })
   const { data: communities = [] } = useGetCommunitiesQuery({ identity }, { skip: !identity })
   const [verticalPanelOpen, setVerticalPanelOpen] = useState(false)
   const showVerticalPanel = verticalPanelOpen || Boolean(form.verticalImagePreviewUrl)
-
-  useEffect(() => {
-    if (isSubmitted) onSuccess()
-  }, [isSubmitted, onSuccess])
 
   const handleVerticalClick = useCallback(() => {
     if (form.verticalImagePreviewUrl) {
