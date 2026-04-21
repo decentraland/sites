@@ -108,12 +108,6 @@ function isValidCoordinate(value: string, min: number, max: number): boolean {
 
 function extractSubmitErrorMessage(error: unknown, t: (key: string) => string): string {
   console.error('[CreateEvent] submit failed', error)
-  if (error && typeof error === 'object') {
-    const err = error as { status?: unknown; data?: { error?: unknown; code?: unknown } }
-    if (err.status === 400 && err.data?.code === 'bad_request' && typeof err.data.error === 'string' && err.data.error.length < 200) {
-      return err.data.error
-    }
-  }
   return t('create_event.error_submit')
 }
 

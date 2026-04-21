@@ -13,6 +13,7 @@ function CreateEventSuccess() {
     navigate('/whats-on')
   }, [navigate])
 
+  // TODO: route to /whats-on/my-events once that page lands; for now defaults to /whats-on
   const handleMyEvents = useCallback(() => {
     navigate('/whats-on')
   }, [navigate])

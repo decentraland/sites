@@ -159,8 +159,8 @@ const eventsClient = createApi({
           if (!response.ok) {
             throw new Error(`world_names error: ${response.status}`)
           }
-          const envelope: { ok?: boolean; data?: string[] } = await response.json()
-          const data = Array.isArray(envelope.data) ? envelope.data : Array.isArray(envelope) ? (envelope as unknown as string[]) : []
+          const envelope: { ok?: boolean; data?: string[] } | string[] = await response.json()
+          const data = Array.isArray(envelope) ? envelope : envelope.data ?? []
           return { data }
         } catch (error) {
           return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
@@ -168,7 +168,9 @@ const eventsClient = createApi({
       }
     }),
     getCommunities: build.query<CommunityAttributes[], GetCommunitiesParams>({
-      serializeQueryArgs: ({ queryArgs: { identity } }) => ({ authenticated: Boolean(identity) }),
+      serializeQueryArgs: ({ queryArgs: { identity } }) => ({
+        address: identity?.authChain?.[0]?.payload?.toLowerCase() ?? 'anon'
+      }),
       queryFn: async ({ identity }) => {
         try {
           const baseUrl = getEnv('SOCIAL_API_URL')!
