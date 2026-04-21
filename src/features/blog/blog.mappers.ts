@@ -50,8 +50,11 @@ function mapBlogCategory(entry: CMSEntry | null | undefined): BlogCategory | nul
     return null
   }
 
-  const title = decodeField(entry.fields.title)
-  const slug = (entry.fields.id as string | undefined) || slugify(title)
+  // Slug derives from the RAW title so existing URLs stay stable — decoding
+  // would flip `slugify('Q&amp;A')` ('qampa') into `slugify('Q&A')` ('qa').
+  const rawTitle = (entry.fields.title as string | undefined) || ''
+  const title = decodeHtmlEntities(rawTitle)
+  const slug = (entry.fields.id as string | undefined) || slugify(rawTitle)
   if (!slug) {
     return null
   }
@@ -129,10 +132,12 @@ function mapBlogAuthor(entry: CMSEntry | null | undefined): BlogAuthor {
     return createDefaultAuthor(entry.sys.id)
   }
 
-  // Extract title and slug BEFORE checking image
-  const title = decodeField(entry.fields.title)
+  // Extract title and slug BEFORE checking image.
+  // Slug derives from the RAW title so existing author URLs stay stable.
+  const rawTitle = (entry.fields.title as string | undefined) || ''
+  const title = decodeHtmlEntities(rawTitle)
   const description = decodeField(entry.fields.description)
-  const slug = (entry.fields.id as string | undefined) || slugify(title) || entry.sys.id
+  const slug = (entry.fields.id as string | undefined) || slugify(rawTitle) || entry.sys.id
 
   const image = mapContentfulAsset(entry.fields.image as ContentfulAssetEntry | null | undefined)
   if (!image) {

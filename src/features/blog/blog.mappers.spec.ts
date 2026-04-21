@@ -64,6 +64,22 @@ describe('mapBlogCategory', () => {
       expect(category?.title).toBe('Community & Highlights')
     })
   })
+
+  describe('when fields.id is missing and the title contains &amp;', () => {
+    it('should slugify from the raw title to preserve URL stability', () => {
+      const entry = {
+        sys: { id: 'cat-1', type: 'Entry' },
+        fields: {
+          title: 'Community &amp; Highlights',
+          description: 'desc',
+          image: makeAsset()
+        }
+      } as unknown as CMSEntry
+      const category = mapBlogCategory(entry)
+      // slugify on the raw title drops `&amp;` → `amp` segment, matching pre-fix behaviour.
+      expect(category?.slug).toBe('community-amp-highlights')
+    })
+  })
 })
 
 describe('mapBlogAuthor', () => {

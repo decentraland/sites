@@ -49,6 +49,8 @@ const INDEX_HTML: string = (() => {
 // stored literally). Decoding BEFORE escapeHTML prevents double-encoding
 // (`Q&amp;amp;A`) in meta tags. `&amp;` is decoded last so that double-encoded
 // markup (`&amp;lt;`) resolves to `&lt;` rather than `<`, preserving safety.
+// Numeric/hex references (&#60;, &#x3C;) are intentionally NOT decoded.
+// SYNC: identical logic in src/shared/blog/utils/string.ts:decodeHtmlEntities — keep in sync.
 const decodeHTMLEntities = (value: string): string =>
   value
     .replace(/&lt;/g, '<')

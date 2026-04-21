@@ -15,6 +15,9 @@ const slugify = (str: string | undefined | null): string => {
 // HTML-attribute renders (SEO meta tags) get double-encoded as "Q&amp;amp;A".
 // Decode &amp; last so double-encoded markup (`&amp;lt;`) resolves to `&lt;`
 // rather than `<`, preserving the XSS-safety of downstream consumers.
+// Numeric/hex references (&#60;, &#x3C;) are intentionally NOT decoded — the
+// known-bad CMS entries only use named entities.
+// SYNC: identical logic in api/seo.ts:decodeHTMLEntities — keep in sync.
 const decodeHtmlEntities = (str: string): string =>
   str
     .replace(/&lt;/g, '<')
