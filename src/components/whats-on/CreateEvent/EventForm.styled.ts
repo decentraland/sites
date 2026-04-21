@@ -73,10 +73,6 @@ const EventTextArea = styled(TextField)({
   '& .MuiOutlinedInput-root': {
     ...outlinedInputOverrides['& .MuiOutlinedInput-root'],
     alignItems: 'flex-start'
-  },
-  '& .MuiOutlinedInput-input': {
-    ...outlinedInputOverrides['& .MuiOutlinedInput-input'],
-    minHeight: 56
   }
   /* eslint-enable @typescript-eslint/naming-convention */
 })
