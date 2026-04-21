@@ -305,6 +305,52 @@ describe('EventForm', () => {
     })
   })
 
+  describe('when an image error is present', () => {
+    beforeEach(() => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({ imageError: 'create_event.error_image_too_large' }),
+        errors: {},
+        setField: mockSetField,
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
+    it('should disable submit so the inline image error (with red-border animation) is what the user acts on', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByTestId('submit-button')).toBeDisabled()
+    })
+  })
+
+  describe('when a vertical image error is present', () => {
+    beforeEach(() => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({ verticalImageError: 'create_event.error_vertical_image_dimensions' }),
+        errors: {},
+        setField: mockSetField,
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
+    it('should disable submit so the vertical panel error is what the user acts on', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByTestId('submit-button')).toBeDisabled()
+    })
+  })
+
   describe('when the form is valid', () => {
     beforeEach(() => {
       mockUseCreateEventForm.mockReturnValue({

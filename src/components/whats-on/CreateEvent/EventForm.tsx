@@ -367,7 +367,13 @@ function EventForm({ onCancel, onSuccess }: EventFormProps) {
         </CancelButton>
         <SubmitButton
           type="button"
-          disabled={isSubmitting || form.isUploadingImage || form.isUploadingVerticalImage}
+          disabled={
+            isSubmitting ||
+            form.isUploadingImage ||
+            form.isUploadingVerticalImage ||
+            Boolean(form.imageError) ||
+            Boolean(form.verticalImageError)
+          }
           onClick={handleSubmit}
         >
           {isSubmitting ? t('create_event.submitting') : t('create_event.submit')}

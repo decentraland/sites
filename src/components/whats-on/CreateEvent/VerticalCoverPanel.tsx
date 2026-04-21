@@ -5,6 +5,7 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { useTranslation } from '@dcl/hooks'
+import { IMAGE_TOO_LARGE_KEY, OPTIMIZE_URL } from './shared'
 import {
   CameraIcon,
   ChooseLink,
@@ -24,9 +25,6 @@ import {
   RecommendedSize,
   SelectText
 } from './VerticalCoverPanel.styled'
-
-const OPTIMIZE_URL = 'https://imagecompressor.com/'
-const IMAGE_TOO_LARGE_KEY = 'create_event.error_image_too_large'
 
 type VerticalCoverPanelProps = {
   previewUrl: string | null
