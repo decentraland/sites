@@ -1,12 +1,12 @@
 import { act, renderHook } from '@testing-library/react'
 import type { AuthIdentity } from '@dcl/crypto'
 import { useCreateEventForm } from './useCreateEventForm'
+import type { CreateEventFormState } from './useCreateEventForm'
 
 const mockCreateEvent = jest.fn()
 const mockUploadPoster = jest.fn()
 const mockUploadPosterVertical = jest.fn()
 const mockUnwrap = jest.fn()
-const mockIdentity = { authChain: [{ payload: '0xabc' }] } as unknown as AuthIdentity
 
 let mockUseAuthIdentityReturn: { identity: AuthIdentity | undefined }
 
@@ -24,7 +24,9 @@ jest.mock('./useAuthIdentity', () => ({
   useAuthIdentity: () => mockUseAuthIdentityReturn
 }))
 
-function buildValidFormFields(overrides: Partial<Record<string, string>> = {}) {
+type FormOverrides = Partial<Record<keyof CreateEventFormState, string>>
+
+function buildValidFormFields(overrides: FormOverrides = {}) {
   const defaults = {
     name: 'Cool event',
     description: 'Something to do',
@@ -35,11 +37,11 @@ function buildValidFormFields(overrides: Partial<Record<string, string>> = {}) {
     coordX: '20',
     coordY: '10',
     email: 'host@example.com'
-  }
+  } satisfies FormOverrides
   return { ...defaults, ...overrides }
 }
 
-function fillValidForm(setField: ReturnType<typeof useCreateEventForm>['setField'], overrides: Partial<Record<string, string>> = {}) {
+function fillValidForm(setField: ReturnType<typeof useCreateEventForm>['setField'], overrides: FormOverrides = {}) {
   const values = buildValidFormFields(overrides)
   act(() => {
     setField('name', values.name)
@@ -55,30 +57,23 @@ function fillValidForm(setField: ReturnType<typeof useCreateEventForm>['setField
 }
 
 describe('useCreateEventForm', () => {
-  // eslint-disable-next-line @typescript-eslint/unbound-method
-  const originalCreateObjectURL = URL.createObjectURL
-  // eslint-disable-next-line @typescript-eslint/unbound-method
-  const originalRevokeObjectURL = URL.revokeObjectURL
-
-  beforeAll(() => {
-    Object.defineProperty(URL, 'createObjectURL', { writable: true, value: jest.fn(() => 'blob:preview') })
-    Object.defineProperty(URL, 'revokeObjectURL', { writable: true, value: jest.fn() })
-  })
-
-  afterAll(() => {
-    Object.defineProperty(URL, 'createObjectURL', { writable: true, value: originalCreateObjectURL })
-    Object.defineProperty(URL, 'revokeObjectURL', { writable: true, value: originalRevokeObjectURL })
-  })
+  let mockIdentity: AuthIdentity
 
   beforeEach(() => {
+    mockIdentity = { authChain: [{ payload: '0xabc' }] } as unknown as AuthIdentity
     mockUseAuthIdentityReturn = { identity: mockIdentity }
     mockCreateEvent.mockReturnValue({ unwrap: () => mockUnwrap() })
     mockUploadPoster.mockReturnValue({ unwrap: () => Promise.resolve({ url: 'https://cdn/test.png' }) })
     mockUploadPosterVertical.mockReturnValue({ unwrap: () => Promise.resolve({ url: 'https://cdn/vertical.png' }) })
     mockUnwrap.mockResolvedValue({ ok: true, data: { id: 'ev-1' } })
+    Object.defineProperty(URL, 'createObjectURL', { configurable: true, writable: true, value: jest.fn(() => 'blob:preview') })
+    Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, writable: true, value: jest.fn() })
   })
 
   afterEach(() => {
+    delete (URL as unknown as Record<string, unknown>).createObjectURL
+
+    delete (URL as unknown as Record<string, unknown>).revokeObjectURL
     jest.resetAllMocks()
   })
 
@@ -100,6 +95,79 @@ describe('useCreateEventForm', () => {
       })
 
       expect(result.current.form.name).toBe('My Event')
+    })
+  })
+
+  describe('when setField is called with a key that has a pre-existing error', () => {
+    it('should clear the error for that key', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField, { name: '' })
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+      expect(result.current.errors.name).toBe('create_event.error_required')
+
+      act(() => {
+        result.current.setField('name', 'New name')
+      })
+
+      expect(result.current.errors.name).toBeUndefined()
+    })
+  })
+
+  describe('when a required field is left empty', () => {
+    it('should report the required error for that field', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField, { description: '' })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.description).toBe('create_event.error_required')
+    })
+  })
+
+  describe('when the email format is invalid', () => {
+    it('should report the invalid-email error', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField, { email: 'not-an-email' })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.email).toBe('create_event.error_invalid_email')
+    })
+  })
+
+  describe('when repeat is enabled and a valid end date is provided', () => {
+    it('should include recurrent fields in the payload', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+      act(() => {
+        result.current.setField('repeatEnabled', true)
+        result.current.setField('frequency', 'every_week')
+        result.current.setField('repeatEndDate', '2030-02-01')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            recurrent: true,
+            recurrent_frequency: 'WEEKLY',
+            recurrent_until: expect.stringContaining('2030-02-01')
+          })
+        })
+      )
     })
   })
 
@@ -302,6 +370,24 @@ describe('useCreateEventForm', () => {
 
       expect(mockUploadPoster).not.toHaveBeenCalled()
       expect(result.current.form.imageError).toBe('create_event.error_upload_failed')
+    })
+  })
+
+  describe('when handleVerticalImageSelect is called without an authenticated identity', () => {
+    beforeEach(() => {
+      mockUseAuthIdentityReturn = { identity: undefined }
+    })
+
+    it('should surface the upload-failed error and skip the upload call', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+      const file = new File(['x'], 'v.png', { type: 'image/png' })
+
+      await act(async () => {
+        await result.current.handleVerticalImageSelect(file)
+      })
+
+      expect(mockUploadPosterVertical).not.toHaveBeenCalled()
+      expect(result.current.form.verticalImageError).toBe('create_event.error_upload_failed')
     })
   })
 

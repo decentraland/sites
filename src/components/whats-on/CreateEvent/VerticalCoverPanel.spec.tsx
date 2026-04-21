@@ -125,11 +125,12 @@ describe('VerticalCoverPanel', () => {
     })
 
     it('should call onSelect with the chosen file', () => {
-      render(<VerticalCoverPanel {...props} />)
+      const { container } = render(<VerticalCoverPanel {...props} />)
 
       const file = new File(['vertical'], 'vertical.png', { type: 'image/png' })
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement
-      fireEvent.change(input, { target: { files: [file] } })
+      const input = container.querySelector<HTMLInputElement>('input[type="file"]')
+      expect(input).not.toBeNull()
+      fireEvent.change(input!, { target: { files: [file] } })
 
       expect(mockOnSelect).toHaveBeenCalledWith(file)
     })

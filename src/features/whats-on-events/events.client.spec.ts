@@ -400,6 +400,20 @@ describe('eventsClient', () => {
         )
       })
     })
+
+    describe('and the fetch throws at the network layer', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test')
+        mockFetchWithIdentity.mockRejectedValue(new Error('offline'))
+      })
+
+      it('should return a FETCH_ERROR with the thrown message', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(eventsClient.endpoints.createEvent.initiate({ payload, identity: mockIdentity }))
+
+        expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR', error: 'offline' }))
+      })
+    })
   })
 
   describe('when uploadPoster mutation is called', () => {
@@ -443,53 +457,78 @@ describe('eventsClient', () => {
     const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
     const file = new File(['x'], 'v.png', { type: 'image/png' })
 
-    beforeEach(() => {
-      mockGetEnv.mockReturnValue('https://events.test')
-      mockFetchWithIdentity.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ ok: true, data: { url: 'https://cdn/v.png', filename: 'v.png', size: 45, type: 'image/png' } })
+    describe('and the response is ok', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test')
+        mockFetchWithIdentity.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve({ ok: true, data: { url: 'https://cdn/v.png', filename: 'v.png', size: 45, type: 'image/png' } })
+        })
+      })
+
+      it('should POST to /poster-vertical', async () => {
+        const store = createTestStore()
+        await store.dispatch(eventsClient.endpoints.uploadPosterVertical.initiate({ file, identity: mockIdentity }))
+
+        expect(mockFetchWithIdentity).toHaveBeenCalledWith(
+          'https://events.test/poster-vertical',
+          mockIdentity,
+          'POST',
+          expect.any(FormData)
+        )
+      })
+
+      it('should return the inner data from the envelope', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(eventsClient.endpoints.uploadPosterVertical.initiate({ file, identity: mockIdentity }))
+
+        expect(result.data).toEqual({ url: 'https://cdn/v.png', filename: 'v.png', size: 45, type: 'image/png' })
       })
     })
 
-    it('should POST to /poster-vertical', async () => {
-      const store = createTestStore()
-      await store.dispatch(eventsClient.endpoints.uploadPosterVertical.initiate({ file, identity: mockIdentity }))
+    describe('and the response is not ok', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test')
+        mockFetchWithIdentity.mockResolvedValue({ ok: false, status: 500, text: () => Promise.resolve('err') })
+      })
 
-      expect(mockFetchWithIdentity).toHaveBeenCalledWith('https://events.test/poster-vertical', mockIdentity, 'POST', expect.any(FormData))
+      it('should return a FETCH_ERROR', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(eventsClient.endpoints.uploadPosterVertical.initiate({ file, identity: mockIdentity }))
+
+        expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+      })
     })
   })
 
   describe('when getWorldNames query is called', () => {
-    const originalFetch = globalThis.fetch
-    let mockFetch: jest.Mock
+    let fetchSpy: jest.SpyInstance
 
     beforeEach(() => {
       mockGetEnv.mockReturnValue('https://places.test/api')
-      mockFetch = jest.fn()
-      globalThis.fetch = mockFetch as unknown as typeof fetch
-    })
-
-    afterEach(() => {
-      globalThis.fetch = originalFetch
+      fetchSpy = jest.spyOn(globalThis, 'fetch')
     })
 
     describe('and the response is an envelope', () => {
       beforeEach(() => {
-        mockFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({ ok: true, data: ['a.dcl.eth', 'b.dcl.eth'] }) })
+        fetchSpy.mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ ok: true, data: ['a.dcl.eth', 'b.dcl.eth'] })
+        } as Response)
       })
 
       it('should unwrap data into an array of world names', async () => {
         const store = createTestStore()
         const result = await store.dispatch(eventsClient.endpoints.getWorldNames.initiate())
 
-        expect(mockFetch).toHaveBeenCalledWith('https://places.test/api/world_names')
+        expect(fetchSpy).toHaveBeenCalledWith('https://places.test/api/world_names')
         expect(result.data).toEqual(['a.dcl.eth', 'b.dcl.eth'])
       })
     })
 
     describe('and the response is a bare array', () => {
       beforeEach(() => {
-        mockFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve(['c.dcl.eth']) })
+        fetchSpy.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(['c.dcl.eth']) } as Response)
       })
 
       it('should accept the bare array without casting', async () => {
@@ -502,7 +541,7 @@ describe('eventsClient', () => {
 
     describe('and the fetch fails', () => {
       beforeEach(() => {
-        mockFetch.mockResolvedValue({ ok: false, status: 503 })
+        fetchSpy.mockResolvedValueOnce({ ok: false, status: 503 } as Response)
       })
 
       it('should return a FETCH_ERROR', async () => {
