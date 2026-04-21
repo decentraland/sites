@@ -1,11 +1,9 @@
 import { Box, styled } from 'decentraland-ui2'
-import topBackground from '../../images/whats-on/images/top_background.webp'
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const MainContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
-  background: `url(${topBackground}) no-repeat top center, radial-gradient(61.64% 109.58% at 50% 54.49%, #A042CD 0%, #270537 100%)`,
-  backgroundSize: '100% 700px, 100% auto',
+  background: 'radial-gradient(61.64% 109.58% at 50% 54.49%, #A042CD 0%, #270537 100%)',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -14,7 +12,8 @@ const MainContainer = styled(Box)(({ theme }) => ({
     right: 0,
     bottom: 0,
     background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%)',
-    pointerEvents: 'none'
+    pointerEvents: 'none',
+    zIndex: 1
   },
   overflow: 'hidden',
   minHeight: '100vh',
@@ -27,11 +26,28 @@ const MainContainer = styled(Box)(({ theme }) => ({
   },
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(0, 0, 0, 0),
-    background: '#1A0A2E',
-    backgroundSize: 'unset',
-    '&::before': {
-      display: 'none'
-    }
+    background: '#1A0A2E'
+  }
+}))
+
+// Renders the decorative top banner as a real <img> so the browser's preload scanner
+// can discover it and apply fetchpriority=high — unlike a CSS `background-image` which
+// is invisible to LCP discovery.
+const TopBackgroundImage = styled('img')(({ theme }) => ({
+  position: 'absolute',
+  top: 0,
+  left: '50%',
+  transform: 'translateX(-50%)',
+  width: '100%',
+  maxWidth: 'none',
+  height: 700,
+  objectFit: 'cover',
+  objectPosition: 'top center',
+  pointerEvents: 'none',
+  userSelect: 'none',
+  zIndex: 0,
+  [theme.breakpoints.down('sm')]: {
+    display: 'none'
   }
 }))
 /* eslint-enable @typescript-eslint/naming-convention */
@@ -53,4 +69,4 @@ const DeferredGroup = styled(Box, { shouldForwardProp: prop => prop !== 'deferre
   display: deferred ? 'none' : 'contents'
 }))
 
-export { ContentWrapper, DeferredGroup, MainContainer }
+export { ContentWrapper, DeferredGroup, MainContainer, TopBackgroundImage }

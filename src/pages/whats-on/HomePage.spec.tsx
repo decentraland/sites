@@ -32,7 +32,8 @@ jest.mock('./HomePage.styled', () => ({
     <div data-testid="deferred-group" data-deferred={deferred ? 'true' : 'false'}>
       {children}
     </div>
-  )
+  ),
+  TopBackgroundImage: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img data-testid="top-bg" {...props} />
 }))
 
 describe('when HomePage is rendered', () => {

@@ -1,5 +1,5 @@
 import { coordsKey } from '../events/events.helpers'
-import type { ActiveEntity, HotScene } from '../events/events.types'
+import type { HotScene } from '../events/events.types'
 import type { EventEntry } from './events.types'
 
 interface LiveNowCard {
@@ -99,78 +99,40 @@ function buildLiveNowCards(liveEvents: EventEntry[], hotScenes: HotScene[], minU
 // --- Place enrichment types ---
 
 interface PlaceResponse {
-  data: { description?: string; categories?: string[] }[]
-}
-
-interface DeploymentResponse {
-  deployments: { deployedBy: string }[]
+  data: { description?: string; categories?: string[]; owner?: string }[]
 }
 
 interface EnrichmentConfig {
   placesUrl?: string
-  peerUrl?: string
 }
 
 // TODO: N+1 optimization — Places API supports comma-separated `positions` param for batch lookups.
-// `entities/active` and `deployments` already support batch queries (see src/features/events/events.client.ts
-// `resolveDeployers` for the batch pattern). Collapse all place-card requests into two batch calls:
-// one POST to /content/entities/active with all coordinates, one GET /content/deployments with all entityIds.
+// Collapse all place-card requests into one batch call to /places?positions=a,b,c.
 async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig): Promise<LiveNowCard[]> {
-  const { placesUrl, peerUrl } = config
+  const { placesUrl } = config
   const placeCards = cards.filter(c => c.type === 'place')
-  if (placeCards.length === 0) return cards
+  if (placeCards.length === 0 || !placesUrl) return cards
 
   const enrichments = new Map<string, Partial<LiveNowCard>>()
 
   await Promise.all(
     placeCards.map(async card => {
-      const patch: Partial<LiveNowCard> = {}
-
-      if (placesUrl) {
-        try {
-          const res = await fetch(`${placesUrl}/places?positions=${card.coordinates}`)
-          if (res.ok) {
-            const data = (await res.json()) as PlaceResponse
-            const place = data.data?.[0]
-            if (place) {
-              patch.description = place.description || null
-              patch.categories = place.categories || []
-            }
-          }
-        } catch (err) {
-          console.warn('[LiveNow] places lookup failed for', card.coordinates, err)
+      try {
+        const res = await fetch(`${placesUrl}/places?positions=${card.coordinates}`)
+        if (!res.ok) return
+        const data = (await res.json()) as PlaceResponse
+        const place = data.data?.[0]
+        if (!place) return
+        const patch: Partial<LiveNowCard> = {
+          description: place.description || null,
+          categories: place.categories || []
         }
-      }
-
-      if (peerUrl && !card.creatorAddress) {
-        try {
-          const entityRes = await fetch(`${peerUrl}/content/entities/active`, {
-            method: 'POST',
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pointers: [card.coordinates] })
-          })
-          if (entityRes.ok) {
-            const entities = (await entityRes.json()) as ActiveEntity[]
-            const entityId = entities[0]?.id
-            if (entityId) {
-              const depRes = await fetch(`${peerUrl}/content/deployments/?entityId=${encodeURIComponent(entityId)}`)
-              if (depRes.ok) {
-                const depData = (await depRes.json()) as DeploymentResponse
-                const deployedBy = depData.deployments?.[0]?.deployedBy
-                if (deployedBy) {
-                  patch.creatorAddress = deployedBy
-                }
-              }
-            }
-          }
-        } catch (err) {
-          console.warn('[LiveNow] deployer lookup failed for', card.coordinates, err)
+        if (place.owner && !card.creatorAddress) {
+          patch.creatorAddress = place.owner
         }
-      }
-
-      if (Object.keys(patch).length > 0) {
         enrichments.set(card.id, patch)
+      } catch (err) {
+        console.warn('[LiveNow] places lookup failed for', card.coordinates, err)
       }
     })
   )
