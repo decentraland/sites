@@ -29,10 +29,10 @@ const PlacesPage = () => {
   const sceneMetadataQuery = useGetSceneMetadataQuery({ position: parsedPosition.coordinates.join(',') })
 
   useEffect(() => {
-    if (placesQuery.isError) {
+    if (!parsedPosition.isValid || placesQuery.isError) {
       navigate('/jump/places/invalid')
     }
-  }, [placesQuery.isError, navigate])
+  }, [parsedPosition.isValid, placesQuery.isError, navigate])
 
   const cardData = useMemo(() => {
     if (!placesQuery.data) return undefined

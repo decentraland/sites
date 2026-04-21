@@ -19,8 +19,9 @@ const POSITION_SEPARATORS = /[,.]/g
 
 // Accepts "x,y" and "x.y" equivalently. The dot form is treated as a
 // separator, not a decimal: "10.20" resolves to (10, 20) — same as "10,20".
-// Returns isValid=false only when the value can't be split into two integers,
-// so pages don't redirect to /invalid purely because of separator choice.
+// Returns isValid=false only when the value can't be split into two integers;
+// the dot form stays valid so pages don't redirect to /invalid purely because
+// of separator choice.
 function parsePosition(value: string): ParsedPosition {
   const original = value
   const tokens = value.split(POSITION_SEPARATORS)
@@ -59,5 +60,18 @@ function buildDeepLinkOptions(position?: string, realm?: string): { realm?: stri
   return options
 }
 
-export { DEFAULT_POSITION, DEFAULT_REALM, buildDeepLinkOptions, eventHasEnded, formatDateForGoogleCalendar, isEns, parsePosition }
+function formatLocation(coordinates: [number, number]): string {
+  return `${coordinates[0]}, ${coordinates[1]}`
+}
+
+export {
+  DEFAULT_POSITION,
+  DEFAULT_REALM,
+  buildDeepLinkOptions,
+  eventHasEnded,
+  formatDateForGoogleCalendar,
+  formatLocation,
+  isEns,
+  parsePosition
+}
 export type { ParsedPosition }

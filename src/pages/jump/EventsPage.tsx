@@ -60,14 +60,15 @@ const EventsPage = () => {
   const creatorQuery = useGetProfileCreatorQuery({ address: event?.user ?? '' }, { skip: !event?.user })
 
   useEffect(() => {
-    if (byIdQuery.isError || byPositionQuery.isError) {
+    const isInvalidPosition = !idParam && !parsedPosition.isValid
+    if (isInvalidPosition || byIdQuery.isError || byPositionQuery.isError) {
       navigate('/jump/events/invalid')
       return
     }
     if (!isLoading && !event) {
       navigate('/jump/events/invalid')
     }
-  }, [byIdQuery.isError, byPositionQuery.isError, event, isLoading, navigate])
+  }, [idParam, parsedPosition.isValid, byIdQuery.isError, byPositionQuery.isError, event, isLoading, navigate])
 
   const cardData: CardData | undefined = useMemo(() => {
     if (!event) return undefined

@@ -7,7 +7,7 @@ import PersonIcon from '@mui/icons-material/Person'
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
 import { Box, CircularProgress, Skeleton } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
-import { eventHasEnded } from '../../../features/jump/jump.helpers'
+import { eventHasEnded, formatLocation } from '../../../features/jump/jump.helpers'
 import type { CardData, Creator } from '../../../features/jump/jump.types'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import cardCreatorPlaceholder from '../../../images/jump/card-creator-placeholder.webp'
@@ -38,10 +38,6 @@ interface MobileCardProps {
   creator?: Creator
   children?: ReactNode
   stickyContent?: ReactNode
-}
-
-function formatLocation(coordinates: [number, number]): string {
-  return `${coordinates[0]}, ${coordinates[1]}`
 }
 
 const MobileCard = memo(function MobileCard({ data, isLoading = false, creator, children, stickyContent }: MobileCardProps) {

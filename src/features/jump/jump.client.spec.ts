@@ -44,7 +44,7 @@ describe('jumpClient', () => {
         const store = createTestStore()
         const result = await store.dispatch(jumpClient.endpoints.getJumpPlaces.initiate({ position: [10, 20] }))
 
-        expect(fetchSpy).toHaveBeenCalledWith('https://places.test/api/places/?positions=10,20')
+        expect(fetchSpy).toHaveBeenCalledWith('https://places.test/api/places?positions=10,20')
         expect(result.data).toHaveLength(1)
       })
     })

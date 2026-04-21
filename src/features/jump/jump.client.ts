@@ -24,7 +24,7 @@ function buildPlacesUrl(baseUrl: string, { position, realm }: GetPlacesArgs): st
     return `${baseUrl}/worlds?names=${realm.toLowerCase()}`
   }
   if (position) {
-    return `${baseUrl}/places/?positions=${position[0]},${position[1]}`
+    return `${baseUrl}/places?positions=${position[0]},${position[1]}`
   }
   return `${baseUrl}/places`
 }

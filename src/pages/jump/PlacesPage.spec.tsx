@@ -17,7 +17,7 @@ jest.mock('../../features/jump', () => ({
   DEFAULT_REALM: 'main',
   parsePosition: (value: string) => {
     const [x, y] = value.split(',').map(Number)
-    return { original: value, coordinates: [x || 0, y || 0] as [number, number] }
+    return { original: value, coordinates: [x || 0, y || 0] as [number, number], isValid: true }
   },
   buildGenericPlace: ({ coordinates, realm }: { coordinates: [number, number]; realm?: string }) => ({
     id: 'generic',

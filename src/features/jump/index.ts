@@ -13,6 +13,7 @@ export {
   buildDeepLinkOptions,
   eventHasEnded,
   formatDateForGoogleCalendar,
+  formatLocation,
   isEns,
   parsePosition
 } from './jump.helpers'
