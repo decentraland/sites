@@ -251,7 +251,53 @@ describe('EventForm', () => {
     })
   })
 
-  describe('when the form is not valid', () => {
+  describe('when the form has empty required fields', () => {
+    it('should keep the submit button clickable so clicking surfaces the validation errors', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByTestId('submit-button')).not.toBeDisabled()
+    })
+  })
+
+  describe('when an image is uploading', () => {
+    beforeEach(() => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({ isUploadingImage: true }),
+        errors: {},
+        setField: mockSetField,
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
+    it('should render the submit button as disabled', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByTestId('submit-button')).toBeDisabled()
+    })
+  })
+
+  describe('when a vertical image is uploading', () => {
+    beforeEach(() => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({ isUploadingVerticalImage: true }),
+        errors: {},
+        setField: mockSetField,
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
     it('should render the submit button as disabled', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 

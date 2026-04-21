@@ -629,6 +629,58 @@ describe('useCreateEventForm', () => {
     })
   })
 
+  describe('when handleSubmit is invoked while an image upload is in flight', () => {
+    it('should not call createEvent so the payload does not ship with a null imageUrl', async () => {
+      let resolveUpload: ((value: { url: string }) => void) | null = null
+      mockUploadPoster.mockReturnValueOnce({
+        unwrap: () =>
+          new Promise<{ url: string }>(resolve => {
+            resolveUpload = resolve
+          })
+      })
+
+      const { result } = renderHook(() => useCreateEventForm())
+      fillValidForm(result.current.setField)
+
+      const file = new File(['x'], 'valid.png', { type: 'image/png' })
+      let pendingSelect: Promise<void> | null = null
+      act(() => {
+        pendingSelect = result.current.handleImageSelect(file)
+      })
+      expect(result.current.form.isUploadingImage).toBe(true)
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+
+      await act(async () => {
+        resolveUpload?.({ url: 'https://cdn/test.png' })
+        await pendingSelect
+      })
+    })
+  })
+
+  describe('when handleSubmit is invoked with a persistent image error', () => {
+    it('should not call createEvent so the user fixes the image first', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+      fillValidForm(result.current.setField)
+
+      const oversized = new File([new Uint8Array(600 * 1024)], 'big.png', { type: 'image/png' })
+      await act(async () => {
+        await result.current.handleImageSelect(oversized)
+      })
+      expect(result.current.form.imageError).toBe('create_event.error_image_too_large')
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+    })
+  })
+
   describe('when the location is world and a world is selected', () => {
     it('should submit with world=true, server=<name>, and coords forced to 0', async () => {
       const { result } = renderHook(() => useCreateEventForm())

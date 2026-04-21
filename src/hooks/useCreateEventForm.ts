@@ -352,6 +352,8 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
 
   const handleSubmit = useCallback(async () => {
     if (isSubmitting || !identity) return
+    if (form.isUploadingImage || form.isUploadingVerticalImage) return
+    if (form.imageError || form.verticalImageError) return
 
     const validationErrors = validate()
     if (Object.keys(validationErrors).length > 0) {
