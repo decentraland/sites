@@ -12,7 +12,7 @@ function HomePage() {
 
   return (
     <MainContainer component="main">
-      <TopBackgroundImage src={topBackground} alt="" aria-hidden="true" fetchPriority="high" decoding="sync" width={1440} height={700} />
+      <TopBackgroundImage src={topBackground} alt="" aria-hidden="true" decoding="async" width={1440} height={700} />
       <ContentWrapper>
         <LiveNow />
       </ContentWrapper>

@@ -111,14 +111,19 @@ interface EnrichmentConfig {
 async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig): Promise<LiveNowCard[]> {
   const { placesUrl } = config
   const placeCards = cards.filter(c => c.type === 'place')
-  if (placeCards.length === 0 || !placesUrl) return cards
+  if (placeCards.length === 0) return cards
+  if (!placesUrl) {
+    console.warn('[LiveNow] PLACES_API_URL missing — skipping place enrichment')
+    return cards
+  }
 
   const enrichments = new Map<string, Partial<LiveNowCard>>()
 
   await Promise.all(
     placeCards.map(async card => {
       try {
-        const res = await fetch(`${placesUrl}/places?positions=${card.coordinates}`)
+        const qs = new URLSearchParams({ positions: card.coordinates }).toString()
+        const res = await fetch(`${placesUrl}/places?${qs}`)
         if (!res.ok) return
         const data = (await res.json()) as PlaceResponse
         const place = data.data?.[0]
