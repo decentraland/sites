@@ -1,4 +1,4 @@
-import { Box, Card, CardActionArea, CardContent, Link, Typography, styled } from 'decentraland-ui2'
+import { Box, Card, CardActionArea, CardContent, Typography, styled } from 'decentraland-ui2'
 
 const JUMP_IN_BUTTON_HEIGHT = 46
 
@@ -42,7 +42,7 @@ const MediaBox = styled(Box)(({ theme }) => ({
   borderRadius: `${theme.spacing(2)} ${theme.spacing(2)} 0 0`
 }))
 
-const MediaImage = styled('img')(({ theme }) => ({
+const MediaImage = styled('img')<{ fetchpriority?: 'high' | 'low' | 'auto' }>(({ theme }) => ({
   display: 'block',
   width: '100%',
   height: '100%',
@@ -131,14 +131,6 @@ const AvatarTextContainer = styled(Box)({
   }
 })
 
-const AvatarLink = styled(Link)(({ theme }) => ({
-  textDecoration: 'none',
-  fontWeight: theme.typography.fontWeightBold,
-  ['&:hover']: {
-    textDecoration: 'none'
-  }
-}))
-
 const JumpInButtonContainer = styled(Box)(({ theme }) => ({
   position: 'absolute',
   bottom: theme.spacing(2),
@@ -191,7 +183,6 @@ const JumpInButton = styled(Box)(({ theme }) => ({
 }))
 
 export {
-  AvatarLink,
   AvatarRow,
   AvatarTextContainer,
   BadgesOverlay,

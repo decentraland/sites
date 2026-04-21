@@ -8,11 +8,12 @@ type CreatorAvatarResult = {
   avatarFace: string | undefined
 }
 
+type FaceStatus = 'pending' | 'ready' | 'broken'
+
 // Event/place creator addresses come from external sources (places/events API)
 // and frequently lack a deployed profile image. We build the face URL directly
-// (no lambdas call, which avoids 404s that fail the Lighthouse errors-in-console
-// audit) and probe it once per URL. Expiry means a transient CDN blip does not
-// permanently blacklist the URL for the rest of the session.
+// (no lambdas call) and only expose it after a fetch probe confirms it exists.
+// Expiry means a transient CDN blip does not permanently blacklist the URL.
 const BROKEN_TTL_MS = 5 * 60 * 1000
 const brokenFaceExpiries = new Map<string, number>()
 
@@ -30,36 +31,52 @@ function markFaceBroken(url: string): void {
   brokenFaceExpiries.set(url, Date.now() + BROKEN_TTL_MS)
 }
 
+function getInitialFaceStatus(rawFace: string | undefined): FaceStatus {
+  if (!rawFace || isFaceBroken(rawFace)) return 'broken'
+  return 'pending'
+}
+
 function useCreatorAvatar(address: string | undefined, name?: string): CreatorAvatarResult {
   const rawFace = address ? getProfileFaceUrl(address) : undefined
-  const [broken, setBroken] = useState<boolean>(() => (rawFace ? isFaceBroken(rawFace) : false))
+  const [faceStatus, setFaceStatus] = useState<FaceStatus>(() => getInitialFaceStatus(rawFace))
 
   useEffect(() => {
     if (!rawFace) {
-      setBroken(false)
+      setFaceStatus('broken')
       return
     }
     if (isFaceBroken(rawFace)) {
-      setBroken(true)
+      setFaceStatus('broken')
       return
     }
-    setBroken(false)
-    const img = new Image()
+
+    setFaceStatus('pending')
+    const controller = new AbortController()
     let cancelled = false
-    img.onerror = () => {
-      if (cancelled) return
-      markFaceBroken(rawFace)
-      setBroken(true)
-    }
-    img.src = rawFace
+
+    fetch(rawFace, { method: 'HEAD', cache: 'force-cache', signal: controller.signal })
+      .then(res => {
+        if (cancelled) return
+        if (res.ok) {
+          setFaceStatus('ready')
+          return
+        }
+        markFaceBroken(rawFace)
+        setFaceStatus('broken')
+      })
+      .catch(err => {
+        if (cancelled || (err instanceof DOMException && err.name === 'AbortError')) return
+        markFaceBroken(rawFace)
+        setFaceStatus('broken')
+      })
+
     return () => {
       cancelled = true
-      img.onerror = null
-      img.src = ''
+      controller.abort()
     }
   }, [rawFace])
 
-  const avatarFace = !rawFace || broken ? undefined : rawFace
+  const avatarFace = rawFace && faceStatus === 'ready' ? rawFace : undefined
 
   const avatar = useMemo<Avatar | undefined>(() => {
     if (!address) return undefined

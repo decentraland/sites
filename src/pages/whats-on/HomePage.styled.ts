@@ -30,9 +30,6 @@ const MainContainer = styled(Box)(({ theme }) => ({
   }
 }))
 
-// Renders the decorative top banner as a real <img> so the browser's preload scanner
-// can discover it and apply fetchpriority=high — unlike a CSS `background-image` which
-// is invisible to LCP discovery.
 const TopBackgroundImage = styled('img')(({ theme }) => ({
   position: 'absolute',
   top: 0,

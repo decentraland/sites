@@ -2,8 +2,8 @@ import { memo, useCallback } from 'react'
 import type { Avatar } from '@dcl/schemas'
 import { AvatarFace, BadgeGroup, JumpInIcon, LiveBadge, Typography, UserCountBadge } from 'decentraland-ui2'
 import type { LiveNowCard as LiveNowCardData } from '../../../features/whats-on-events'
+import { formatEthAddress } from '../../../utils/avatar'
 import {
-  AvatarLink,
   AvatarRow,
   AvatarTextContainer,
   BadgesOverlay,
@@ -30,6 +30,8 @@ const LiveNowCard = memo(({ card, avatar, eager = false, onClick }: LiveNowCardP
     onClick(card)
   }, [onClick, card])
 
+  const creatorLabel = avatar?.name || (avatar?.ethAddress ? formatEthAddress(avatar.ethAddress) : 'Unknown')
+
   return (
     <CardRoot>
       <LiveNowActionArea onClick={handleClick}>
@@ -46,8 +48,8 @@ const LiveNowCard = memo(({ card, avatar, eager = false, onClick }: LiveNowCardP
             width={500}
             height={329}
             loading={eager ? 'eager' : 'lazy'}
-            fetchPriority={eager ? 'high' : 'auto'}
-            decoding={eager ? 'sync' : 'async'}
+            fetchpriority={eager ? 'high' : undefined}
+            decoding="async"
           />
         </MediaBox>
         <CardBody>
@@ -60,14 +62,7 @@ const LiveNowCard = memo(({ card, avatar, eager = false, onClick }: LiveNowCardP
                 <AvatarFace size="small" avatar={avatar} />
                 <AvatarTextContainer>
                   <Typography variant="body2">
-                    by{' '}
-                    {avatar.name && avatar.ethAddress ? (
-                      <AvatarLink href={`https://decentraland.org/profile/accounts/${avatar.ethAddress}`}>{avatar.name}</AvatarLink>
-                    ) : avatar.name ? (
-                      <strong>{avatar.name}</strong>
-                    ) : (
-                      <strong>{avatar.ethAddress ? `${avatar.ethAddress.slice(0, 6)}…${avatar.ethAddress.slice(-4)}` : 'Unknown'}</strong>
-                    )}
+                    by <strong>{creatorLabel}</strong>
                   </Typography>
                 </AvatarTextContainer>
               </AvatarRow>

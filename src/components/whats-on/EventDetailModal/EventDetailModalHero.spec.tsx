@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { createMockModalData } from '../../../__test-utils__/factories'
 import { EventDetailModalHero } from './EventDetailModalHero'
 
@@ -27,6 +27,13 @@ jest.mock('../../../hooks/useRemindMe', () => ({
     isLoading: false,
     isShaking: false,
     handleToggle: mockHandleRemindToggle
+  })
+}))
+
+jest.mock('../../../hooks/useCreatorAvatar', () => ({
+  useCreatorAvatar: (address?: string, name?: string) => ({
+    avatar: address ? { name: name ?? '', ethAddress: address, avatar: { snapshots: { face256: '', body: '' } } } : undefined,
+    avatarFace: undefined
   })
 }))
 
@@ -187,6 +194,19 @@ describe('EventDetailModalHero', () => {
     })
   })
 
+  describe('when the event has a creator address but no creator name', () => {
+    it('should render an abbreviated address instead of an empty byline', () => {
+      render(
+        <EventDetailModalHero
+          data={createMockData({ creatorAddress: '0xabcdef1234567890abcdef1234567890abcdef12', creatorName: undefined })}
+          onClose={mockOnClose}
+        />
+      )
+
+      expect(screen.getByTestId('creator-name')).toHaveTextContent('0xabcd…ef12')
+    })
+  })
+
   describe('when rendered on mobile', () => {
     beforeEach(() => {
       mockIsMobile = true
@@ -233,10 +253,12 @@ describe('EventDetailModalHero', () => {
       })
     })
 
-    it('should copy the event URL to clipboard', () => {
+    it('should copy the event URL to clipboard', async () => {
       render(<EventDetailModalHero data={createMockData()} onClose={mockOnClose} />)
 
-      fireEvent.click(screen.getByTestId('copy-button'))
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('copy-button'))
+      })
 
       expect(mockWriteText).toHaveBeenCalledWith('https://decentraland.org/jump/event?position=10,20')
     })

@@ -45,12 +45,16 @@ function createMockCard(overrides: Partial<LiveNowCard> = {}) {
 
 describe('LiveNowCardItem', () => {
   let mockOnClick: jest.Mock
+  let originalFetch: typeof fetch
 
   beforeEach(() => {
     mockOnClick = jest.fn()
+    originalFetch = global.fetch
+    ;(global as unknown as { fetch: typeof fetch }).fetch = jest.fn(() => new Promise<Response>(() => undefined))
   })
 
   afterEach(() => {
+    ;(global as unknown as { fetch: typeof fetch }).fetch = originalFetch
     jest.resetAllMocks()
   })
 

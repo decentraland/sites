@@ -29,9 +29,20 @@ jest.mock('./LiveNowCard.styled', () => {
     JumpInButtonContainer: create('div', 'jump-in-container'),
     LiveNowActionArea: create('button', 'action-area'),
     MediaBox: create('div', 'media-box'),
-    MediaImage: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img data-testid="media-image" alt="" {...props} />,
+    MediaImage: (props: React.ImgHTMLAttributes<HTMLImageElement> & { fetchpriority?: string }) => (
+      <img data-testid="media-image" alt="" {...props} />
+    ),
     SceneInfo: create('div', 'scene-info'),
-    SceneTitle: create('div', 'scene-title')
+    SceneTitle: ({
+      children,
+      gutterBottom,
+      variant,
+      ...props
+    }: React.HTMLAttributes<HTMLElement> & { children?: React.ReactNode; gutterBottom?: boolean; variant?: string }) => (
+      <div data-testid="scene-title" {...props}>
+        {children}
+      </div>
+    )
   }
 })
 
@@ -52,8 +63,9 @@ describe('LiveNowCard', () => {
       render(<LiveNowCard card={createMockLiveNowCard({ image: 'https://poster.test/a.png' })} eager onClick={jest.fn()} />)
 
       const img = screen.getByTestId('media-image')
-      expect(img.getAttribute('fetchpriority')).toBe('high')
+      expect(img).toHaveAttribute('fetchpriority', 'high')
       expect(img.getAttribute('loading')).toBe('eager')
+      expect(img).toHaveAttribute('decoding', 'async')
       expect(img.getAttribute('src')).toBe('https://poster.test/a.png')
     })
   })
@@ -64,7 +76,7 @@ describe('LiveNowCard', () => {
 
       const img = screen.getByTestId('media-image')
       expect(img.getAttribute('loading')).toBe('lazy')
-      expect(img.getAttribute('fetchpriority')).toBe('auto')
+      expect(img).not.toHaveAttribute('fetchpriority')
     })
   })
 
@@ -96,12 +108,11 @@ describe('LiveNowCard', () => {
   })
 
   describe('when the avatar has a name', () => {
-    it('should render a profile link pointing to the decentraland.org profile page', () => {
+    it('should render the name as plain text so the card action has no nested link', () => {
       render(<LiveNowCard card={createMockLiveNowCard()} avatar={buildAvatar()} onClick={jest.fn()} />)
 
-      const link = screen.getByTestId('avatar-link')
-      expect(link).toHaveAttribute('href', 'https://decentraland.org/profile/accounts/0xAlice')
-      expect(link).toHaveTextContent('Alice')
+      expect(screen.queryByTestId('avatar-link')).not.toBeInTheDocument()
+      expect(screen.getByText('Alice')).toBeInTheDocument()
     })
   })
 

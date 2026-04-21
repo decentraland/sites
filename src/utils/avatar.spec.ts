@@ -1,4 +1,4 @@
-import { buildMinimalAvatar, isValidEthAddress } from './avatar'
+import { buildMinimalAvatar, formatEthAddress, isValidEthAddress } from './avatar'
 
 describe('isValidEthAddress', () => {
   describe('when the input is a well-formed 0x + 40-hex address', () => {
@@ -65,6 +65,14 @@ describe('buildMinimalAvatar', () => {
 
       expect(result.avatar.snapshots.face256).toBe('')
       expect(result.avatar.snapshots.body).toBe('')
+    })
+  })
+})
+
+describe('formatEthAddress', () => {
+  describe('when given an Ethereum address', () => {
+    it('should return the compact display form', () => {
+      expect(formatEthAddress('0xabcdef1234567890abcdef1234567890abcdef12')).toBe('0xabcd…ef12')
     })
   })
 })

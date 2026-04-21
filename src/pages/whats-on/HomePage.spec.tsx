@@ -54,6 +54,24 @@ describe('when HomePage is rendered', () => {
     })
   })
 
+  describe('and the decorative top background is rendered', () => {
+    beforeEach(() => {
+      mockUseGetLiveNowCardsQuery.mockReturnValue({ isLoading: false })
+    })
+
+    it('should make the image eagerly discoverable', () => {
+      render(<HomePage />)
+
+      expect(screen.getByTestId('top-bg')).toHaveAttribute('loading', 'eager')
+    })
+
+    it('should not compete with the LiveNow LCP card for high fetch priority', () => {
+      render(<HomePage />)
+
+      expect(screen.getByTestId('top-bg')).not.toHaveAttribute('fetchpriority')
+    })
+  })
+
   describe('and LiveNow is still loading', () => {
     beforeEach(() => {
       mockUseGetLiveNowCardsQuery.mockReturnValue({ isLoading: true })

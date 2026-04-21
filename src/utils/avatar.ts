@@ -6,6 +6,10 @@ function isValidEthAddress(address: string | undefined | null): address is strin
   return typeof address === 'string' && ETH_ADDRESS_REGEX.test(address)
 }
 
+function formatEthAddress(address: string): string {
+  return `${address.slice(0, 6)}…${address.slice(-4)}`
+}
+
 interface MinimalAvatarInput {
   name: string
   ethAddress: string
@@ -31,4 +35,4 @@ function buildMinimalAvatar(input: MinimalAvatarInput): Avatar {
   } as unknown as Avatar
 }
 
-export { buildMinimalAvatar, isValidEthAddress }
+export { buildMinimalAvatar, formatEthAddress, isValidEthAddress }

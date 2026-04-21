@@ -9,6 +9,7 @@ import { Tooltip, useTheme } from 'decentraland-ui2'
 import { useCreatorAvatar } from '../../../hooks/useCreatorAvatar'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { assetUrl } from '../../../utils/assetUrl'
+import { formatEthAddress } from '../../../utils/avatar'
 import { buildCalendarUrl } from '../../../utils/whatsOnUrl'
 import { RemindMeIcon } from '../common/RemindMeIcon'
 import type { ModalEventData } from './EventDetailModal.types'
@@ -45,9 +46,11 @@ function EventDetailModalHero({ data, onClose }: { data: ModalEventData; onClose
   const { isReminded, isLoading: isRemindLoading, isShaking, handleToggle: handleRemindToggle } = useRemindMe(data.id, data.attending)
 
   const isDclFoundation = data.creatorName?.toLowerCase() === 'decentraland foundation'
-  const { avatarFace: directFace } = useCreatorAvatar(isDclFoundation ? undefined : data.creatorAddress)
+  const { avatar, avatarFace: directFace } = useCreatorAvatar(isDclFoundation ? undefined : data.creatorAddress, data.creatorName)
   const avatarFace = isDclFoundation ? DCL_LOGO_URL : directFace
-  const creatorName = isDclFoundation ? 'Decentraland Foundation' : data.creatorName
+  const creatorName = isDclFoundation
+    ? 'Decentraland Foundation'
+    : data.creatorName || (avatar?.ethAddress ? formatEthAddress(avatar.ethAddress) : undefined)
   const hasCreator = Boolean(avatarFace || creatorName)
 
   const handleJumpIn = useCallback(() => {

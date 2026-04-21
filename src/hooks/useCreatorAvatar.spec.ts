@@ -1,34 +1,23 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { useCreatorAvatar } from './useCreatorAvatar'
 
-type ImageInstance = { onerror: ((...args: unknown[]) => void) | null; src: string }
-
 const VALID_ADDRESS_A = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 const VALID_ADDRESS_B = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
 const EXPECTED_FACE_A = `https://profile-images.decentraland.org/entities/${VALID_ADDRESS_A}/face.png`
 
 describe('useCreatorAvatar', () => {
-  let created: ImageInstance[]
-  let originalImage: typeof Image
+  let fetchMock: jest.Mock
+  let originalFetch: typeof fetch
 
   beforeEach(() => {
-    created = []
-    originalImage = global.Image
-    ;(global as unknown as { Image: unknown }).Image = class {
-      public onerror: ((...args: unknown[]) => void) | null = null
-      private _src = ''
-      get src() {
-        return this._src
-      }
-      set src(value: string) {
-        this._src = value
-        if (value) created.push(this as unknown as ImageInstance)
-      }
-    }
+    originalFetch = global.fetch
+    fetchMock = jest.fn().mockResolvedValue({ ok: true, status: 200 } as Response)
+    ;(global as unknown as { fetch: typeof fetch }).fetch = fetchMock
   })
 
   afterEach(() => {
-    ;(global as unknown as { Image: typeof Image }).Image = originalImage
+    ;(global as unknown as { fetch: typeof fetch }).fetch = originalFetch
+    jest.resetAllMocks()
   })
 
   describe('when no address is provided', () => {
@@ -44,15 +33,26 @@ describe('useCreatorAvatar', () => {
     it('should not probe the network and should keep avatarFace undefined', () => {
       const { result } = renderHook(() => useCreatorAvatar('../admin', 'Attacker'))
 
-      expect(created.length).toBe(0)
+      expect(fetchMock).not.toHaveBeenCalled()
       expect(result.current.avatarFace).toBeUndefined()
     })
   })
 
   describe('when a valid address is provided', () => {
-    it('should return an avatar with the profile-images face URL', () => {
+    it('should keep the face hidden until the probe succeeds', () => {
+      fetchMock.mockReturnValueOnce(new Promise<Response>(() => undefined))
       const { result } = renderHook(() => useCreatorAvatar(VALID_ADDRESS_A, 'Alice'))
 
+      expect(result.current.avatarFace).toBeUndefined()
+      expect((result.current.avatar as unknown as { avatar: { snapshots: { face256: string } } }).avatar.snapshots.face256).toBe('')
+    })
+
+    it('should return an avatar with the profile-images face URL after the probe succeeds', async () => {
+      const { result } = renderHook(() => useCreatorAvatar(VALID_ADDRESS_A, 'Alice'))
+
+      await waitFor(() => {
+        expect(result.current.avatarFace).toBe(EXPECTED_FACE_A)
+      })
       expect(result.current.avatarFace).toBe(EXPECTED_FACE_A)
       expect(result.current.avatar?.name).toBe('Alice')
       expect((result.current.avatar as unknown as { avatar: { snapshots: { face256: string } } }).avatar.snapshots.face256).toBe(
@@ -63,34 +63,28 @@ describe('useCreatorAvatar', () => {
 
   describe('when the face image fails to load', () => {
     it('should clear the face256 so callers can fall back to a placeholder', async () => {
+      fetchMock.mockResolvedValueOnce({ ok: false, status: 404 } as Response)
       const { result } = renderHook(() => useCreatorAvatar(VALID_ADDRESS_A, 'Broken'))
 
-      expect(created.length).toBe(1)
-
-      act(() => {
-        created[0]?.onerror?.()
-      })
-
       await waitFor(() => {
-        expect(result.current.avatarFace).toBeUndefined()
+        expect(fetchMock).toHaveBeenCalledWith(EXPECTED_FACE_A, expect.objectContaining({ method: 'HEAD' }))
       })
+      await act(async () => undefined)
       expect((result.current.avatar as unknown as { avatar: { snapshots: { face256: string } } }).avatar.snapshots.face256).toBe('')
     })
 
     it('should remember the broken URL so sibling cards skip the retry on mount', async () => {
-      const first = renderHook(() => useCreatorAvatar(VALID_ADDRESS_B))
-      act(() => {
-        created[0]?.onerror?.()
-      })
+      fetchMock.mockResolvedValueOnce({ ok: false, status: 404 } as Response)
+      renderHook(() => useCreatorAvatar(VALID_ADDRESS_B))
       await waitFor(() => {
-        expect(first.result.current.avatarFace).toBeUndefined()
+        expect(fetchMock).toHaveBeenCalledTimes(1)
       })
+      await act(async () => undefined)
 
-      const priorCount = created.length
+      const priorCount = fetchMock.mock.calls.length
       renderHook(() => useCreatorAvatar(VALID_ADDRESS_B))
 
-      // No new Image probe was started because the URL was already marked broken.
-      expect(created.length).toBe(priorCount)
+      expect(fetchMock).toHaveBeenCalledTimes(priorCount)
     })
   })
 })
