@@ -78,11 +78,19 @@ describe('useCreateEventForm', () => {
   })
 
   describe('when initialized', () => {
-    it('should expose a blank form and mark it as invalid', () => {
+    it('should expose a blank form and surface required-field errors on submit', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
       expect(result.current.form.name).toBe('')
-      expect(result.current.isFormValid).toBe(false)
+      expect(result.current.errors).toEqual({})
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+      expect(result.current.errors.name).toBe('create_event.error_required')
+      expect(result.current.errors.description).toBe('create_event.error_required')
     })
   })
 
@@ -172,12 +180,17 @@ describe('useCreateEventForm', () => {
   })
 
   describe('when all required fields are filled with valid values', () => {
-    it('should mark the form as valid', () => {
+    it('should submit without validation errors', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
       fillValidForm(result.current.setField)
 
-      expect(result.current.isFormValid).toBe(true)
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors).toEqual({})
+      expect(mockCreateEvent).toHaveBeenCalled()
     })
   })
 
