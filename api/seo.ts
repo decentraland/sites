@@ -45,8 +45,28 @@ const INDEX_HTML: string = (() => {
 // Escaping helpers
 // =============================================================================
 
+// Some CMS entries were authored with pre-encoded HTML entities (e.g. "Q&amp;A"
+// stored literally). Decoding BEFORE escapeHTML prevents double-encoding
+// (`Q&amp;amp;A`) in meta tags. `&amp;` is decoded last so that double-encoded
+// markup (`&amp;lt;`) resolves to `&lt;` rather than `<`, preserving safety.
+// Numeric/hex references (&#60;, &#x3C;) are intentionally NOT decoded.
+// SYNC: identical logic in src/shared/blog/utils/string.ts:decodeHtmlEntities — keep in sync.
+const decodeHTMLEntities = (value: string): string =>
+  value
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+
 const escapeHTML = (value: string): string =>
-  value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;')
+  decodeHTMLEntities(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
 
 // Only allow http(s) URLs; anything else (javascript:, data:, etc.) is dropped.
 const safeUrl = (value: string, fallback: string): string => {
