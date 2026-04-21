@@ -3,6 +3,10 @@ import { useCreatorAvatar } from './useCreatorAvatar'
 
 type ImageInstance = { onerror: ((...args: unknown[]) => void) | null; src: string }
 
+const VALID_ADDRESS_A = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+const VALID_ADDRESS_B = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+const EXPECTED_FACE_A = `https://profile-images.decentraland.org/entities/${VALID_ADDRESS_A}/face.png`
+
 describe('useCreatorAvatar', () => {
   let created: ImageInstance[]
   let originalImage: typeof Image
@@ -36,22 +40,30 @@ describe('useCreatorAvatar', () => {
     })
   })
 
+  describe('when the address is not a well-formed 0x + 40-hex string', () => {
+    it('should not probe the network and should keep avatarFace undefined', () => {
+      const { result } = renderHook(() => useCreatorAvatar('../admin', 'Attacker'))
+
+      expect(created.length).toBe(0)
+      expect(result.current.avatarFace).toBeUndefined()
+    })
+  })
+
   describe('when a valid address is provided', () => {
     it('should return an avatar with the profile-images face URL', () => {
-      const { result } = renderHook(() => useCreatorAvatar('0xabc', 'Alice'))
+      const { result } = renderHook(() => useCreatorAvatar(VALID_ADDRESS_A, 'Alice'))
 
-      expect(result.current.avatarFace).toBe('https://profile-images.decentraland.org/entities/0xabc/face.png')
+      expect(result.current.avatarFace).toBe(EXPECTED_FACE_A)
       expect(result.current.avatar?.name).toBe('Alice')
-      // face256 is the same URL before any error fires
       expect((result.current.avatar as unknown as { avatar: { snapshots: { face256: string } } }).avatar.snapshots.face256).toBe(
-        'https://profile-images.decentraland.org/entities/0xabc/face.png'
+        EXPECTED_FACE_A
       )
     })
   })
 
   describe('when the face image fails to load', () => {
     it('should clear the face256 so callers can fall back to a placeholder', async () => {
-      const { result } = renderHook(() => useCreatorAvatar('0xbadprofile', 'Broken'))
+      const { result } = renderHook(() => useCreatorAvatar(VALID_ADDRESS_A, 'Broken'))
 
       expect(created.length).toBe(1)
 
@@ -66,7 +78,7 @@ describe('useCreatorAvatar', () => {
     })
 
     it('should remember the broken URL so sibling cards skip the retry on mount', async () => {
-      const first = renderHook(() => useCreatorAvatar('0xsharedbroken'))
+      const first = renderHook(() => useCreatorAvatar(VALID_ADDRESS_B))
       act(() => {
         created[0]?.onerror?.()
       })
@@ -75,7 +87,7 @@ describe('useCreatorAvatar', () => {
       })
 
       const priorCount = created.length
-      renderHook(() => useCreatorAvatar('0xsharedbroken'))
+      renderHook(() => useCreatorAvatar(VALID_ADDRESS_B))
 
       // No new Image probe was started because the URL was already marked broken.
       expect(created.length).toBe(priorCount)

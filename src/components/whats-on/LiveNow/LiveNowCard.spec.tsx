@@ -105,6 +105,21 @@ describe('LiveNowCard', () => {
     })
   })
 
+  describe('when the avatar has a name but no ethAddress (e.g. Genesis Plaza after sanitization)', () => {
+    it('should render the name as plain text — never a link with an empty profile href', () => {
+      render(
+        <LiveNowCard
+          card={createMockLiveNowCard()}
+          avatar={buildAvatar({ name: 'Decentraland Foundation', ethAddress: '' })}
+          onClick={jest.fn()}
+        />
+      )
+
+      expect(screen.queryByTestId('avatar-link')).not.toBeInTheDocument()
+      expect(screen.getByText('Decentraland Foundation')).toBeInTheDocument()
+    })
+  })
+
   describe('when the card is an event', () => {
     it('should render the live badge alongside the user count', () => {
       render(<LiveNowCard card={createMockLiveNowCard({ type: 'event', users: 42 })} onClick={jest.fn()} />)

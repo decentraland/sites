@@ -61,8 +61,10 @@ const LiveNowCard = memo(({ card, avatar, eager = false, onClick }: LiveNowCardP
                 <AvatarTextContainer>
                   <Typography variant="body2">
                     by{' '}
-                    {avatar.name ? (
+                    {avatar.name && avatar.ethAddress ? (
                       <AvatarLink href={`https://decentraland.org/profile/accounts/${avatar.ethAddress}`}>{avatar.name}</AvatarLink>
+                    ) : avatar.name ? (
+                      <strong>{avatar.name}</strong>
                     ) : (
                       <strong>{avatar.ethAddress ? `${avatar.ethAddress.slice(0, 6)}…${avatar.ethAddress.slice(-4)}` : 'Unknown'}</strong>
                     )}
