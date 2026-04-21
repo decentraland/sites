@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { AnimatedBackground } from 'decentraland-ui2'
 import { ResponsiveCard } from '../../components/jump/ResponsiveCard'
 import {
   DEFAULT_POSITION,
@@ -12,7 +13,7 @@ import {
   useGetSceneMetadataQuery
 } from '../../features/jump'
 import type { Creator } from '../../features/jump/jump.types'
-import { JumpPageContainer } from './PageContainer.styled'
+import { JumpPageContainer, JumpPageContent } from './PageContainer.styled'
 
 const PlacesPage = () => {
   const [searchParams] = useSearchParams()
@@ -53,7 +54,10 @@ const PlacesPage = () => {
 
   return (
     <JumpPageContainer>
-      <ResponsiveCard data={cardData} isLoading={placesQuery.isLoading} creator={creator} />
+      <AnimatedBackground variant="fixed" />
+      <JumpPageContent>
+        <ResponsiveCard data={cardData} isLoading={placesQuery.isLoading} creator={creator} />
+      </JumpPageContent>
     </JumpPageContainer>
   )
 }

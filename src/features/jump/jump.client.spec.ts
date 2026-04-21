@@ -1,17 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit'
-import type { AuthIdentity } from '@dcl/crypto'
 import { getEnv } from '../../config/env'
 import { jumpClient } from './jump.client'
 
 jest.mock('../../config/env')
 
 const mockGetEnv = jest.mocked(getEnv)
-
-const mockFetchWithIdentity = jest.fn()
-jest.mock('../../utils/signedFetch', () => ({
-  fetchWithIdentity: (...args: unknown[]) => mockFetchWithIdentity(...args),
-  fetchWithOptionalIdentity: jest.fn()
-}))
 
 function createTestStore() {
   return configureStore({
@@ -221,48 +214,6 @@ describe('jumpClient', () => {
         const result = await store.dispatch(jumpClient.endpoints.getSceneMetadata.initiate({ position: '0,0' }))
 
         expect(result.data).toBeNull()
-      })
-    })
-  })
-
-  describe('when toggleJumpAttendee mutation is called', () => {
-    const identity = { ephemeralIdentity: {} } as unknown as AuthIdentity
-
-    describe('and attending is true', () => {
-      beforeEach(() => {
-        mockGetEnv.mockReturnValue('https://events.test/api')
-        mockFetchWithIdentity.mockResolvedValue({
-          ok: true,
-          json: () => Promise.resolve({ ok: true })
-        })
-      })
-
-      it('should call fetchWithIdentity with POST', async () => {
-        const store = createTestStore()
-        await store.dispatch(jumpClient.endpoints.toggleJumpAttendee.initiate({ eventId: 'ev-1', attending: true, identity }))
-
-        expect(mockFetchWithIdentity).toHaveBeenCalledWith('https://events.test/api/events/ev-1/attendees', identity, 'POST', undefined, {
-          'Content-Type': 'application/json'
-        })
-      })
-    })
-
-    describe('and attending is false', () => {
-      beforeEach(() => {
-        mockGetEnv.mockReturnValue('https://events.test/api')
-        mockFetchWithIdentity.mockResolvedValue({
-          ok: true,
-          json: () => Promise.resolve({ ok: true })
-        })
-      })
-
-      it('should call fetchWithIdentity with DELETE', async () => {
-        const store = createTestStore()
-        await store.dispatch(jumpClient.endpoints.toggleJumpAttendee.initiate({ eventId: 'ev-1', attending: false, identity }))
-
-        expect(mockFetchWithIdentity).toHaveBeenCalledWith('https://events.test/api/events/ev-1/attendees', identity, 'DELETE', undefined, {
-          'Content-Type': 'application/json'
-        })
       })
     })
   })

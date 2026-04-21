@@ -688,12 +688,7 @@
         }
       },
       "event": {
-        "has_ended": "Event has ended",
-        "snackbar": {
-          "added_to_my_events": "\"{eventTitle}\" added to My Events",
-          "removed_from_my_events": "\"{eventTitle}\" removed from My Events",
-          "attendance_error": "Couldn't update your reminder. Please try again."
-        }
+        "has_ended": "Event has ended"
       },
       "events_page": {
         "explore_events_button": "EXPLORE EVENTS",

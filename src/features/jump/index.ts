@@ -4,8 +4,7 @@ export {
   useGetJumpEventsQuery,
   useGetJumpPlacesQuery,
   useGetProfileCreatorQuery,
-  useGetSceneMetadataQuery,
-  useToggleJumpAttendeeMutation
+  useGetSceneMetadataQuery
 } from './jump.client'
 export { buildGenericPlace, fromEvent, fromPlace } from './jump.mappers'
 export {
@@ -24,7 +23,6 @@ export type {
   GetEventsArgs,
   GetPlacesArgs,
   GetSceneMetadataArgs,
-  JumpAttendeeResponse,
   JumpEvent,
   JumpEventResponse,
   JumpEventsResponse,

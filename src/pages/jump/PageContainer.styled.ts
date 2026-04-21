@@ -1,13 +1,16 @@
 import { Box, styled } from 'decentraland-ui2'
 
+// Wraps the UI2 AnimatedBackground as the site-wide background for /jump
+// routes. The background sits at z-index 0; the card content is layered on
+// top via a relative wrapper so it stays clickable.
 const JumpPageContainer = styled(Box)(({ theme }) => ({
+  position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: 'calc(100vh - 96px)',
+  minHeight: '100vh',
   width: '100%',
-  background: 'linear-gradient(96.05deg, #2E013E 36.2%, #7F0D59 100.69%)',
   paddingTop: 64,
   paddingBottom: 40,
   [theme.breakpoints.up('md')]: {
@@ -16,9 +19,18 @@ const JumpPageContainer = styled(Box)(({ theme }) => ({
   },
   [theme.breakpoints.down('md')]: {
     alignItems: 'stretch',
-    paddingTop: 64,
     paddingBottom: 0
   }
 }))
 
-export { JumpPageContainer }
+const JumpPageContent = styled(Box)({
+  position: 'relative',
+  zIndex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '100%'
+})
+
+export { JumpPageContainer, JumpPageContent }

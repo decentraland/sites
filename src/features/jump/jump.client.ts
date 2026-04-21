@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { AuthIdentity } from '@dcl/crypto'
 import { getEnv } from '../../config/env'
 import { placesClient } from '../../services/placesClient'
-import { fetchWithIdentity } from '../../utils/signedFetch'
 import { isEns } from './jump.helpers'
 import type {
   Creator,
@@ -10,7 +8,6 @@ import type {
   GetEventsArgs,
   GetPlacesArgs,
   GetSceneMetadataArgs,
-  JumpAttendeeResponse,
   JumpEvent,
   JumpEventResponse,
   JumpEventsResponse,
@@ -166,40 +163,16 @@ const jumpClient = placesClient.injectEndpoints({
           return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
         }
       }
-    }),
-    toggleJumpAttendee: build.mutation<JumpAttendeeResponse, { eventId: string; attending: boolean; identity: AuthIdentity }>({
-      queryFn: async ({ eventId, attending, identity }) => {
-        try {
-          const baseUrl = getEnv('EVENTS_API_URL')
-          if (!baseUrl) throw new Error('EVENTS_API_URL is not set')
-          const method = attending ? 'POST' : 'DELETE'
-          const response = await fetchWithIdentity(
-            `${baseUrl}/events/${encodeURIComponent(eventId)}/attendees`,
-            identity,
-            method,
-            undefined,
-            { 'Content-Type': 'application/json' }
-          )
-          if (!response.ok) throw new Error(`Attendee API error: ${response.status}`)
-          const data: JumpAttendeeResponse = await response.json()
-          return { data }
-        } catch (error) {
-          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
-        }
-      }
     })
   }),
   overrideExisting: false
 })
 
-const {
-  useGetJumpEventByIdQuery,
-  useGetJumpEventsQuery,
-  useGetJumpPlacesQuery,
-  useGetProfileCreatorQuery,
-  useGetSceneMetadataQuery,
-  useToggleJumpAttendeeMutation
-} = jumpClient
+// Attendee toggling reuses the `useToggleAttendeeMutation` from
+// `features/whats-on-events` via the shared `useRemindMe` hook — no jump-
+// specific mutation is needed here.
+const { useGetJumpEventByIdQuery, useGetJumpEventsQuery, useGetJumpPlacesQuery, useGetProfileCreatorQuery, useGetSceneMetadataQuery } =
+  jumpClient
 
 export {
   jumpClient,
@@ -207,6 +180,5 @@ export {
   useGetJumpEventsQuery,
   useGetJumpPlacesQuery,
   useGetProfileCreatorQuery,
-  useGetSceneMetadataQuery,
-  useToggleJumpAttendeeMutation
+  useGetSceneMetadataQuery
 }

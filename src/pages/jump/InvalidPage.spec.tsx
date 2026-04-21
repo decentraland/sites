@@ -11,6 +11,7 @@ jest.mock('decentraland-ui2', () => {
     Box,
     Button,
     Typography,
+    AnimatedBackground: () => <div data-testid="animated-background" />,
     useMobileMediaQuery: jest.fn(),
     styled: (tag: unknown) => () => tag
   }

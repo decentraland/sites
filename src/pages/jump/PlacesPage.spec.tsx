@@ -7,6 +7,7 @@ jest.mock('decentraland-ui2', () => {
   const Box = ({ children, ...rest }: { children?: React.ReactNode }) => <div {...rest}>{children}</div>
   return {
     Box,
+    AnimatedBackground: () => <div data-testid="animated-background" />,
     styled: (tag: unknown) => () => tag
   }
 })

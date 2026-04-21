@@ -9,19 +9,30 @@ function isEns(value: string | undefined): value is `${string}.eth` {
 interface ParsedPosition {
   original: string
   coordinates: [number, number]
+  isValid: boolean
 }
 
 const DEFAULT_POSITION = '0,0'
 const DEFAULT_REALM = 'main'
 
+const POSITION_SEPARATORS = /[,.]/g
+
+// Accepts "x,y" and "x.y" equivalently. The dot form is treated as a
+// separator, not a decimal: "10.20" resolves to (10, 20) — same as "10,20".
+// Returns isValid=false only when the value can't be split into two integers,
+// so pages don't redirect to /invalid purely because of separator choice.
 function parsePosition(value: string): ParsedPosition {
   const original = value
-  const normalized = value.replace('.', ',')
-  const [x, y] = normalized.split(',').map(coord => {
-    const num = Number(coord)
-    return Number.isNaN(num) ? 0 : num
-  })
-  return { original, coordinates: [x, y] }
+  const tokens = value.split(POSITION_SEPARATORS)
+  if (tokens.length !== 2) {
+    return { original, coordinates: [0, 0], isValid: false }
+  }
+  const x = Number.parseInt(tokens[0], 10)
+  const y = Number.parseInt(tokens[1], 10)
+  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    return { original, coordinates: [0, 0], isValid: false }
+  }
+  return { original, coordinates: [x, y], isValid: true }
 }
 
 function eventHasEnded(event?: CardData): boolean {

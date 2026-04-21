@@ -38,26 +38,46 @@ describe('jump.helpers', () => {
 
   describe('when parsePosition is called', () => {
     describe('and the value is a valid "x,y" string', () => {
-      it('should return coordinates as tuple', () => {
-        expect(parsePosition('10,-20').coordinates).toEqual([10, -20])
+      it('should return coordinates as a tuple with isValid=true', () => {
+        expect(parsePosition('10,-20')).toEqual({ original: '10,-20', coordinates: [10, -20], isValid: true })
       })
     })
 
     describe('and the value uses "x.y" format', () => {
-      it('should normalize the dot to a comma', () => {
-        expect(parsePosition('5.7').coordinates).toEqual([5, 7])
+      it('should be equivalent to the "x,y" form', () => {
+        expect(parsePosition('10.20').coordinates).toEqual(parsePosition('10,20').coordinates)
       })
-    })
 
-    describe('and the value contains non-numeric parts', () => {
-      it('should fall back to 0 for invalid coordinates', () => {
-        expect(parsePosition('abc,xyz').coordinates).toEqual([0, 0])
+      it('should parse negative coordinates in dot form', () => {
+        expect(parsePosition('-10.-20').coordinates).toEqual([-10, -20])
+      })
+
+      it('should flag the result as valid', () => {
+        expect(parsePosition('5.7').isValid).toBe(true)
       })
     })
 
     describe('and the value is the default position', () => {
-      it('should return [0, 0]', () => {
-        expect(parsePosition(DEFAULT_POSITION).coordinates).toEqual([0, 0])
+      it('should return [0, 0] with isValid=true', () => {
+        expect(parsePosition(DEFAULT_POSITION)).toEqual({ original: '0,0', coordinates: [0, 0], isValid: true })
+      })
+    })
+
+    describe('and the value is truly malformed', () => {
+      it('should mark non-numeric tokens invalid', () => {
+        expect(parsePosition('abc,xyz').isValid).toBe(false)
+      })
+
+      it('should mark missing tokens invalid', () => {
+        expect(parsePosition('10').isValid).toBe(false)
+      })
+
+      it('should mark extra tokens invalid', () => {
+        expect(parsePosition('10,20,30').isValid).toBe(false)
+      })
+
+      it('should mark an empty string invalid', () => {
+        expect(parsePosition('').isValid).toBe(false)
       })
     })
   })

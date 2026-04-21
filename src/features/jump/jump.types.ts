@@ -57,11 +57,6 @@ interface JumpEventResponse {
   data: JumpEvent
 }
 
-interface JumpAttendeeResponse {
-  ok: boolean
-  message?: string
-}
-
 interface PeerSceneEntity {
   id: string
 }
@@ -143,7 +138,6 @@ export type {
   GetEventsArgs,
   GetPlacesArgs,
   GetSceneMetadataArgs,
-  JumpAttendeeResponse,
   JumpEvent,
   JumpEventResponse,
   JumpEventsResponse,

@@ -1,30 +1,33 @@
 import { Box, styled } from 'decentraland-ui2'
-import eventsBackground from '../../images/jump/background-invalid-events-page.webp'
-import placesBackground from '../../images/jump/background-invalid-places-page.webp'
 
-interface ContainerProps {
-  isEventPage: boolean
-  isMobile: boolean
-}
-
-const InvalidPageContainer = styled(Box, {
-  shouldForwardProp: prop => prop !== 'isEventPage' && prop !== 'isMobile'
-})<ContainerProps>(({ isEventPage, isMobile, theme }) => ({
+const InvalidPageContainer = styled(Box)(({ theme }) => ({
+  position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: 'calc(100vh - 96px)',
+  minHeight: '100vh',
   width: '100%',
-  padding: isMobile ? '24px 16px 120px 16px' : '48px 24px',
+  padding: '48px 24px',
   paddingTop: 64,
-  [theme.breakpoints.up('md')]: { paddingTop: 96 },
-  backgroundImage: `url(${isEventPage ? eventsBackground : placesBackground})`,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
   color: '#ffffff',
-  textAlign: 'center'
+  textAlign: 'center',
+  [theme.breakpoints.up('md')]: { paddingTop: 96 },
+  [theme.breakpoints.down('md')]: {
+    padding: '24px 16px 120px 16px',
+    paddingTop: 64
+  }
 }))
+
+const InvalidPageContent = styled(Box)({
+  position: 'relative',
+  zIndex: 1,
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center'
+})
 
 const ContentBox = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -49,4 +52,4 @@ const MobileActionsContainer = styled(Box)({
   zIndex: 1000
 })
 
-export { ContentBox, InvalidPageContainer, MobileActionsContainer }
+export { ContentBox, InvalidPageContainer, InvalidPageContent, MobileActionsContainer }

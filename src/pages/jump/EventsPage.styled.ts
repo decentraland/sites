@@ -30,28 +30,6 @@ const CalendarButton = styled(Button)({
   }
 })
 
-interface RemindButtonProps {
-  attending: boolean
-}
-
-const RemindMeButton = styled(Button, {
-  shouldForwardProp: prop => prop !== 'attending'
-})<RemindButtonProps>(({ attending }) => ({
-  backgroundColor: '#FCFCFC',
-  color: attending ? '#FF2D55' : '#161518',
-  borderColor: attending ? '#FF2D55' : '#E0E0E0',
-  borderRadius: 8,
-  textTransform: 'none',
-  fontWeight: 600,
-  fontSize: 14,
-  padding: '8px 24px',
-  '&:hover': {
-    backgroundColor: '#F5F5F5',
-    borderColor: attending ? '#FF2D55' : '#CCCCCC',
-    color: attending ? '#FF2D55' : '#161518'
-  }
-}))
-
 const ShareIconButton = styled(Button)({
   backgroundColor: '#FCFCFC',
   color: '#161518',
@@ -71,4 +49,4 @@ const ExploreEventsButton = styled(Button)({
   color: '#161518'
 })
 
-export { CalendarButton, EventActions, ExploreEventsButton, RemindMeButton, ShareIconButton }
+export { CalendarButton, EventActions, ExploreEventsButton, ShareIconButton }

@@ -1,13 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import CheckIcon from '@mui/icons-material/Check'
-import DateRangeRoundedIcon from '@mui/icons-material/DateRangeRounded'
-import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded'
-import NotificationsRoundedIcon from '@mui/icons-material/NotificationsRounded'
 import ShareIcon from '@mui/icons-material/Share'
-import { Box, CircularProgress, Snackbar, Typography, useMobileMediaQuery } from 'decentraland-ui2'
+import { AnimatedBackground, useMobileMediaQuery } from 'decentraland-ui2'
 import { ResponsiveCard } from '../../components/jump/ResponsiveCard'
+import { CalendarAddIcon } from '../../components/whats-on/common/CalendarAddIcon'
+import { RemindMeButton as WatsonRemindMeButton } from '../../components/whats-on/common/RemindMeButton'
 import { getEnv } from '../../config/env'
 import {
   DEFAULT_POSITION,
@@ -19,15 +17,13 @@ import {
   useGetJumpEventByIdQuery,
   useGetJumpEventsQuery,
   useGetJumpPlacesQuery,
-  useGetProfileCreatorQuery,
-  useToggleJumpAttendeeMutation
+  useGetProfileCreatorQuery
 } from '../../features/jump'
 import type { CardData, JumpEvent } from '../../features/jump/jump.types'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
-import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { redirectToAuth } from '../../utils/authRedirect'
-import { CalendarButton, EventActions, ExploreEventsButton, RemindMeButton, ShareIconButton } from './EventsPage.styled'
-import { JumpPageContainer } from './PageContainer.styled'
+import { useRemindMe } from '../../hooks/useRemindMe'
+import { CalendarButton, EventActions, ExploreEventsButton, ShareIconButton } from './EventsPage.styled'
+import { JumpPageContainer, JumpPageContent } from './PageContainer.styled'
 
 function buildGoogleCalendarUrl(event: JumpEvent, label: string): string {
   const params = new URLSearchParams()
@@ -41,18 +37,11 @@ function buildGoogleCalendarUrl(event: JumpEvent, label: string): string {
   return `https://calendar.google.com/calendar/r/eventedit?${params.toString()}`
 }
 
-interface SnackbarState {
-  open: boolean
-  action: 'added' | 'removed' | 'error'
-  title: string
-}
-
 const EventsPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const formatMessage = useFormatMessage()
   const isMobile = useMobileMediaQuery()
-  const { identity, hasValidIdentity } = useAuthIdentity()
 
   const positionParam = searchParams.get('position') ?? DEFAULT_POSITION
   const realmParam = searchParams.get('realm') ?? DEFAULT_REALM
@@ -90,11 +79,13 @@ const EventsPage = () => {
     return mapped
   }, [event, placesQuery.data])
 
-  const [attendingOverride, setAttendingOverride] = useState<boolean | null>(null)
-  const [snackbar, setSnackbar] = useState<SnackbarState>({ open: false, action: 'added', title: '' })
-  const [toggleAttendee, { isLoading: toggleLoading }] = useToggleJumpAttendeeMutation()
-
-  const isAttending = attendingOverride ?? Boolean(cardData?.attending)
+  // Watson-style Remind Me: identity check, optimistic update, bell shake.
+  const {
+    isReminded,
+    isLoading: remindLoading,
+    isShaking,
+    handleToggle: handleRemindToggle
+  } = useRemindMe(event?.id ?? '', Boolean(cardData?.attending))
 
   const handleAddToCalendar = useCallback(() => {
     if (!event) return
@@ -122,29 +113,6 @@ const EventsPage = () => {
     }
   }, [event])
 
-  const handleToggleAttendance = useCallback(async () => {
-    if (!event) return
-    if (!hasValidIdentity || !identity) {
-      redirectToAuth(window.location.pathname, Object.fromEntries(searchParams.entries()))
-      return
-    }
-    const nextAttending = !isAttending
-    try {
-      const result = await toggleAttendee({ eventId: event.id, attending: nextAttending, identity }).unwrap()
-      if (result?.ok) {
-        setAttendingOverride(nextAttending)
-        setSnackbar({ open: true, action: nextAttending ? 'added' : 'removed', title: event.name })
-      } else {
-        setSnackbar({ open: true, action: 'error', title: event.name })
-      }
-    } catch (error) {
-      console.error('Attendance toggle failed', error)
-      setSnackbar({ open: true, action: 'error', title: event.name })
-    }
-  }, [event, hasValidIdentity, identity, isAttending, searchParams, toggleAttendee])
-
-  const handleSnackbarClose = useCallback(() => setSnackbar(prev => ({ ...prev, open: false })), [])
-
   const actions = useMemo(() => {
     if (!cardData || !cardData.start_at) return null
     const hasEnded = eventHasEnded(cardData)
@@ -164,30 +132,19 @@ const EventsPage = () => {
       <EventActions isMobile={isMobile}>
         <CalendarButton
           variant="outlined"
-          startIcon={<DateRangeRoundedIcon sx={{ fontSize: 16 }} />}
+          startIcon={<CalendarAddIcon size={16} />}
           aria-label={formatMessage('component.jump.card.accessibility.add_to_calendar_button')}
           onClick={handleAddToCalendar}
         >
           {formatMessage('component.jump.card.event.add_to_calendar')}
         </CalendarButton>
-        <RemindMeButton
-          variant="outlined"
-          attending={isAttending}
-          disabled={toggleLoading}
-          startIcon={
-            toggleLoading ? (
-              <CircularProgress size={16} sx={{ color: isAttending ? '#FF2D55' : '#161518' }} />
-            ) : isAttending ? (
-              <NotificationsRoundedIcon sx={{ fontSize: 16 }} />
-            ) : (
-              <NotificationsNoneRoundedIcon sx={{ fontSize: 16 }} />
-            )
-          }
-          aria-label={formatMessage('component.jump.card.accessibility.interested_button')}
-          onClick={handleToggleAttendance}
-        >
-          {formatMessage('component.jump.card.event.interested')}
-        </RemindMeButton>
+        <WatsonRemindMeButton
+          isReminded={isReminded}
+          isLoading={remindLoading}
+          isShaking={isShaking}
+          label={formatMessage('component.jump.card.event.interested')}
+          onClick={handleRemindToggle}
+        />
         <ShareIconButton
           variant="outlined"
           aria-label={formatMessage('component.jump.card.accessibility.share_button')}
@@ -197,48 +154,18 @@ const EventsPage = () => {
         </ShareIconButton>
       </EventActions>
     )
-  }, [cardData, isMobile, isAttending, toggleLoading, formatMessage, handleAddToCalendar, handleToggleAttendance, handleShare])
+  }, [cardData, isMobile, isReminded, remindLoading, isShaking, formatMessage, handleAddToCalendar, handleRemindToggle, handleShare])
 
   const creator = creatorQuery.data ?? undefined
 
   return (
     <JumpPageContainer>
-      <ResponsiveCard data={cardData} isLoading={isLoading} creator={creator}>
-        {actions}
-      </ResponsiveCard>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        sx={{ bottom: isMobile ? 160 : undefined }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.5,
-            backgroundColor: '#000000',
-            color: '#ffffff',
-            borderRadius: 1.5,
-            px: 2,
-            py: 1.5,
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
-          }}
-        >
-          <CheckIcon sx={{ fontSize: 20, color: '#ffffff' }} />
-          <Typography variant="body2" sx={{ fontSize: 14, fontWeight: 600 }}>
-            {formatMessage(
-              snackbar.action === 'added'
-                ? 'component.jump.event.snackbar.added_to_my_events'
-                : snackbar.action === 'removed'
-                  ? 'component.jump.event.snackbar.removed_from_my_events'
-                  : 'component.jump.event.snackbar.attendance_error',
-              { eventTitle: snackbar.title }
-            )}
-          </Typography>
-        </Box>
-      </Snackbar>
+      <AnimatedBackground variant="fixed" />
+      <JumpPageContent>
+        <ResponsiveCard data={cardData} isLoading={isLoading} creator={creator}>
+          {actions}
+        </ResponsiveCard>
+      </JumpPageContent>
     </JumpPageContainer>
   )
 }
