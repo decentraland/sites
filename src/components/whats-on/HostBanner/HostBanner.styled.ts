@@ -15,13 +15,14 @@ const BannerSection = styled('section')(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(4),
   paddingLeft: 60,
-  marginTop: 64,
+  marginTop: theme.spacing(8),
   minHeight: 308,
   backgroundColor: OVERLAY_BLACK_35,
   [theme.breakpoints.down('md')]: {
     flexDirection: 'column',
     gap: 0,
     paddingLeft: 0,
+    marginTop: theme.spacing(3),
     minHeight: 'auto'
   }
 }))
@@ -32,7 +33,8 @@ const SceneImageWrapper = styled(Box)(({ theme }) => ({
   alignSelf: 'stretch',
   minWidth: 0,
   overflow: 'hidden',
-  [theme.breakpoints.down('md')]: {
+  // Figma reference width — hide the scene image below iPad landscape
+  [theme.breakpoints.down(1024)]: {
     display: 'none'
   }
 }))
@@ -43,7 +45,7 @@ const SceneImage = styled('img')({
   width: '100%',
   height: '100%',
   objectFit: 'cover',
-  objectPosition: 'right center',
+  objectPosition: 'left center',
   display: 'block'
 })
 
@@ -165,6 +167,7 @@ const BannerButton = styled(Button)(({ theme }) => ({
   textTransform: 'uppercase',
   borderRadius: 6,
   boxShadow: 'none',
+  whiteSpace: 'nowrap',
   /* eslint-disable-next-line @typescript-eslint/naming-convention */
   '&:hover': { boxShadow: 'none' }
 }))
