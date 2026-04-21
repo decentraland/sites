@@ -1,10 +1,10 @@
 import { memo, useCallback } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { Tooltip } from 'decentraland-ui2'
-import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import type { EventEntry } from '../../../features/whats-on-events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCardActions } from '../../../hooks/useCardActions'
+import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { getRelativeTimeLabel } from '../../../utils/whatsOnTime'
 import {
@@ -34,10 +34,8 @@ interface FutureCardProps {
 const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
   const { t } = useTranslation()
   const { hasValidIdentity } = useAuthIdentity()
-  const { data: profile } = useGetProfileQuery(event.user, { skip: !event.user })
-  const avatar = profile?.avatars?.[0]
-  const avatarFace = avatar?.avatar?.snapshots?.face256
-  const creatorName = avatar?.name || event.user_name || t('all_experiences.coming_soon')
+  const { avatarFace, name: avatarName } = useProfileAvatar(event.user, { skip: !event.user })
+  const creatorName = avatarName || event.user_name || t('all_experiences.coming_soon')
   const { copied, handleCopy, handleAddToCalendar } = useCardActions({
     name: event.name,
     description: event.description,
