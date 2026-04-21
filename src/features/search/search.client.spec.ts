@@ -114,8 +114,8 @@ describe('searchClient', () => {
           {
             url: '/blog/announcements/my-post',
             image: 'https://cdn.test/asset-1.jpg',
-            title: '<em>Plain</em> Title',
-            description: '<em>Plain</em> Description'
+            highlightedTitle: '<em>Plain</em> Title',
+            highlightedDescription: '<em>Plain</em> Description'
           }
         ],
         total: 1,
@@ -154,9 +154,33 @@ describe('searchClient', () => {
       const result = await store.dispatch(searchClient.endpoints.searchBlogPosts.initiate({ query: 'plain', hitsPerPage: 10, page: 0 }))
 
       expect(result.data?.results[0]).toMatchObject({
-        title: 'No Highlight Title',
-        description: 'No Highlight Description'
+        highlightedTitle: 'No Highlight Title',
+        highlightedDescription: 'No Highlight Description'
       })
+    })
+
+    it('should short-circuit without hitting the network when the query is shorter than 3 chars', async () => {
+      const store = createTestStore()
+      const result = await store.dispatch(searchClient.endpoints.searchBlogPosts.initiate({ query: 'ab', hitsPerPage: 10, page: 0 }))
+
+      expect(mockFetch).not.toHaveBeenCalled()
+      expect(result.data).toEqual({ results: [], total: 0, hasMore: false })
+    })
+
+    it('should short-circuit for whitespace-only queries', async () => {
+      const store = createTestStore()
+      const result = await store.dispatch(searchClient.endpoints.searchBlogPosts.initiate({ query: '   ', hitsPerPage: 10, page: 0 }))
+
+      expect(mockFetch).not.toHaveBeenCalled()
+      expect(result.data).toEqual({ results: [], total: 0, hasMore: false })
+    })
+
+    it('should surface a CUSTOM_ERROR when the response shape is unexpected', async () => {
+      mockFetch.mockResolvedValue(jsonResponse({ unexpected: true }))
+      const store = createTestStore()
+      const result = await store.dispatch(searchClient.endpoints.searchBlogPosts.initiate({ query: 'plain', hitsPerPage: 10, page: 0 }))
+
+      expect(result.error).toMatchObject({ status: 'CUSTOM_ERROR' })
     })
   })
 
@@ -165,20 +189,28 @@ describe('searchClient', () => {
       mockFetch.mockResolvedValue(jsonResponse(buildResponse()))
     })
 
-    it('should map items to SearchBlogResult with id, categoryId and URL', async () => {
+    it('should map items to SearchBlogResult with id, categorySlug and URL', async () => {
       const store = createTestStore()
       const result = await store.dispatch(searchClient.endpoints.searchBlog.initiate({ query: 'plain', hitsPerPage: 5, page: 0 }))
 
       expect(result.data).toEqual([
         {
           id: 'my-post',
-          categoryId: 'announcements',
+          categorySlug: 'announcements',
           url: '/blog/announcements/my-post',
           image: 'https://cdn.test/asset-1.jpg',
           highlightedTitle: '<em>Plain</em> Title',
           highlightedDescription: '<em>Plain</em> Description'
         }
       ])
+    })
+
+    it('should short-circuit without hitting the network when the query is shorter than 3 chars', async () => {
+      const store = createTestStore()
+      const result = await store.dispatch(searchClient.endpoints.searchBlog.initiate({ query: 'ab', hitsPerPage: 5, page: 0 }))
+
+      expect(mockFetch).not.toHaveBeenCalled()
+      expect(result.data).toEqual([])
     })
   })
 })

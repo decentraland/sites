@@ -1,10 +1,11 @@
 import type { CMSEntry } from '../blog/cms.types'
 
 /**
- * `<em>`-wrapped snippets produced by the cms-server ts_headline when a search query is supplied.
- * Only populated fields (where the highlight actually matched) are present.
+ * `<em>`-wrapped snippets produced by the cms-server `ts_headline` when a search query
+ * is supplied. Fields are only present when that specific field actually matched; the
+ * whole object may also be absent for fuzzy-only hits. Every consumer MUST sanitize
+ * these values with DOMPurify before rendering — see `sanitizeHighlight.ts`.
  */
-
 interface CMSSearchHighlight {
   title?: string
   description?: string
@@ -42,20 +43,13 @@ interface CMSSearchResponse {
   limit: number
 }
 
-/** Intermediate shape after resolving asset URL + category slug; internal to search.client. */
-interface EnrichedSearchPost {
-  id: string
-  categorySlug: string
-  imageUrl: string
-  title: string
-  description: string
-  highlightedTitle: string
-  highlightedDescription: string
-}
-
+/**
+ * Navbar-autocomplete shape. `highlightedTitle`/`highlightedDescription` may contain
+ * `<em>` HTML markup — always sanitize before rendering.
+ */
 interface SearchBlogResult {
   id: string
-  categoryId: string
+  categorySlug: string
   url: string
   image: string
   highlightedTitle: string
@@ -74,12 +68,4 @@ interface SearchBlogPostsResponse {
   hasMore: boolean
 }
 
-export type {
-  CMSSearchHighlight,
-  CMSSearchItem,
-  CMSSearchResponse,
-  EnrichedSearchPost,
-  SearchBlogPostsParams,
-  SearchBlogPostsResponse,
-  SearchBlogResult
-}
+export type { CMSSearchItem, CMSSearchResponse, SearchBlogPostsParams, SearchBlogPostsResponse, SearchBlogResult }

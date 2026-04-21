@@ -78,7 +78,7 @@ const Search = ({ placeholder, onClose }: SearchProps) => {
           navigate(`/blog/search?q=${encodeURIComponent(searchValue)}`)
         } else if (selectedIndex >= 0 && searchResults[selectedIndex]) {
           const result = searchResults[selectedIndex]
-          navigate(`/blog/${result.categoryId}/${result.id}`)
+          navigate(`/blog/${result.categorySlug}/${result.id}`)
         }
         handleClose()
       } else if (e.key === 'Escape') {
@@ -138,7 +138,7 @@ const Search = ({ placeholder, onClose }: SearchProps) => {
             hasResults &&
             searchResults.slice(0, 4).map((result, index) => (
               <SearchResultItem key={result.id} $selected={index === selectedIndex} onMouseEnter={() => setSelectedIndex(index)}>
-                <SearchResultLink to={`/blog/${result.categoryId}/${result.id}`} onClick={handleClose}>
+                <SearchResultLink to={`/blog/${result.categorySlug}/${result.id}`} onClick={handleClose}>
                   <SearchResultImage $image={result.image} />
                   <SearchResultText>
                     {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
