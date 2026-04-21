@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { useCreateEventMutation, useUploadPosterMutation, useUploadPosterVerticalMutation } from '../features/whats-on-events'
 import type { RecurrentFrequency } from '../features/whats-on-events'
@@ -314,14 +314,10 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
     return newErrors
   }, [form, t])
 
-  const isFormValid = useMemo(() => {
-    const hasNoImageError = form.imageError === null && form.verticalImageError === null
-    const hasNoUploadInFlight = !form.isUploadingImage && !form.isUploadingVerticalImage
-    return hasNoImageError && hasNoUploadInFlight && Object.keys(validate()).length === 0
-  }, [form, validate])
-
   const handleSubmit = useCallback(async () => {
     if (isSubmitting || !identity) return
+    if (form.isUploadingImage || form.isUploadingVerticalImage) return
+    if (form.imageError || form.verticalImageError) return
 
     const validationErrors = validate()
     if (Object.keys(validationErrors).length > 0) {
@@ -379,7 +375,6 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
     handleImageRemove,
     handleVerticalImageSelect,
     handleVerticalImageRemove,
-    isFormValid,
     isSubmitting,
     handleSubmit
   }

@@ -66,7 +66,6 @@ function EventForm({ onCancel, onSuccess }: EventFormProps) {
     handleImageRemove,
     handleVerticalImageSelect,
     handleVerticalImageRemove,
-    isFormValid,
     isSubmitting,
     handleSubmit
   } = useCreateEventForm({ onSuccess })
@@ -367,7 +366,11 @@ function EventForm({ onCancel, onSuccess }: EventFormProps) {
         <CancelButton type="button" onClick={onCancel}>
           {t('create_event.cancel')}
         </CancelButton>
-        <SubmitButton type="button" disabled={!isFormValid || isSubmitting} onClick={handleSubmit}>
+        <SubmitButton
+          type="button"
+          disabled={isSubmitting || form.isUploadingImage || form.isUploadingVerticalImage}
+          onClick={handleSubmit}
+        >
           {isSubmitting ? t('create_event.submitting') : t('create_event.submit')}
         </SubmitButton>
       </FormActions>
