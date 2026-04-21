@@ -773,6 +773,8 @@
     "error_image_too_large": "This image is too heavy (more than 500Kb), try to optimize with",
     "error_image_dimensions": "Image must be 1340×670 pixels.",
     "error_vertical_image_dimensions": "Vertical cover must be 716×1814 pixels.",
+    "error_vertical_image_decode": "We couldn't read this image. Please try a different file.",
+    "error_not_signed_in": "Your session expired. Please sign in again to submit this event.",
     "error_upload_failed": "Failed to upload image. Please try again.",
     "optimize_link": "optimizilla",
     "success_message": "Your event was created successfully. You'll be notified once it's approved. Track its status in “My Events”",

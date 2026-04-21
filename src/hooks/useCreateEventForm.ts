@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { captureException } from '@sentry/browser'
 import { useTranslation } from '@dcl/hooks'
 import { useCreateEventMutation, useUploadPosterMutation, useUploadPosterVerticalMutation } from '../features/whats-on-events'
 import type { RecurrentFrequency } from '../features/whats-on-events'
@@ -120,8 +121,9 @@ async function validateVerticalImageDimensions(file: File): Promise<string | nul
       return 'create_event.error_vertical_image_dimensions'
     }
     return null
-  } catch {
-    return 'create_event.error_invalid_vertical_image_type'
+  } catch (error) {
+    captureException(error, { tags: { feature: 'create_event', step: 'vertical_image_decode' } })
+    return 'create_event.error_vertical_image_decode'
   }
 }
 
@@ -345,7 +347,11 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
   }, [form, t])
 
   const handleSubmit = useCallback(async () => {
-    if (isSubmitting || !identity) return
+    if (isSubmitting) return
+    if (!identity) {
+      setErrors({ submit: t('create_event.error_not_signed_in') })
+      return
+    }
     if (form.isUploadingImage || form.isUploadingVerticalImage) return
     if (form.imageError || form.verticalImageError) return
 

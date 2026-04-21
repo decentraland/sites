@@ -7,11 +7,16 @@ const mockCreateEvent = jest.fn()
 const mockUploadPoster = jest.fn()
 const mockUploadPosterVertical = jest.fn()
 const mockUnwrap = jest.fn()
+const mockCaptureException = jest.fn()
 
 let mockUseAuthIdentityReturn: { identity: AuthIdentity | undefined }
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
+}))
+
+jest.mock('@sentry/browser', () => ({
+  captureException: (...args: unknown[]) => mockCaptureException(...args)
 }))
 
 jest.mock('../features/whats-on-events', () => ({
@@ -484,7 +489,7 @@ describe('useCreateEventForm', () => {
       mockImageShouldFail = true
     })
 
-    it('should surface the invalid-type error so the user retries with a valid file', async () => {
+    it('should surface the decode error and report it to Sentry so the user retries with a different file', async () => {
       const { result } = renderHook(() => useCreateEventForm())
       const file = new File(['x'], 'v.png', { type: 'image/png' })
 
@@ -492,8 +497,12 @@ describe('useCreateEventForm', () => {
         await result.current.handleVerticalImageSelect(file)
       })
 
-      expect(result.current.form.verticalImageError).toBe('create_event.error_invalid_vertical_image_type')
+      expect(result.current.form.verticalImageError).toBe('create_event.error_vertical_image_decode')
       expect(mockUploadPosterVertical).not.toHaveBeenCalled()
+      expect(mockCaptureException).toHaveBeenCalledWith(
+        expect.any(Error),
+        expect.objectContaining({ tags: expect.objectContaining({ feature: 'create_event', step: 'vertical_image_decode' }) })
+      )
     })
   })
 
@@ -629,7 +638,7 @@ describe('useCreateEventForm', () => {
       mockUseAuthIdentityReturn = { identity: undefined }
     })
 
-    it('should not call createEvent', async () => {
+    it('should surface the not-signed-in submit error and not call createEvent', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
       fillValidForm(result.current.setField)
@@ -639,6 +648,7 @@ describe('useCreateEventForm', () => {
       })
 
       expect(mockCreateEvent).not.toHaveBeenCalled()
+      expect(result.current.errors.submit).toBe('create_event.error_not_signed_in')
     })
   })
 
