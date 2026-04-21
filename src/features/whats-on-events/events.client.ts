@@ -5,13 +5,19 @@ import { buildLiveNowCards, enrichPlaceCards } from './events.helpers'
 import type { HotScene, LiveNowCard } from './events.helpers'
 import type {
   AuthenticatedQueryParams,
+  CommunitiesResponse,
+  CommunityAttributes,
   CreateEventParams,
   CreateEventResponse,
   EventAttendeesResponse,
   EventEntry,
   EventsQueryParams,
   EventsResponse,
-  ToggleAttendeeParams
+  GetCommunitiesParams,
+  PosterData,
+  PosterResponse,
+  ToggleAttendeeParams,
+  UploadPosterParams
 } from './events.types'
 
 function buildQueryString(params: EventsQueryParams): string {
@@ -130,9 +136,10 @@ const eventsClient = createApi({
           const response = await fetchWithIdentity(`${baseUrl}/events`, identity, 'POST', body, { 'Content-Type': 'application/json' })
 
           if (!response.ok) {
-            const errorBody = await response.text()
-            console.error('[Events] createEvent failed', response.status, errorBody)
-            throw new Error('Failed to create event. Please try again.')
+            const envelope = await response.json().catch(() => null)
+            const message = typeof envelope?.error === 'string' ? envelope.error : `Failed to create event (${response.status})`
+            console.error('[Events] createEvent failed', response.status, envelope)
+            return { error: { status: response.status, data: envelope, message } }
           }
 
           const data: CreateEventResponse = await response.json()
@@ -142,6 +149,80 @@ const eventsClient = createApi({
         }
       },
       invalidatesTags: ['Events']
+    }),
+    getWorldNames: build.query<string[], void>({
+      queryFn: async () => {
+        try {
+          const baseUrl = getEnv('PLACES_API_URL')!
+          const response = await fetch(`${baseUrl}/world_names`)
+          if (!response.ok) {
+            throw new Error(`world_names error: ${response.status}`)
+          }
+          const envelope: { ok?: boolean; data?: string[] } | string[] = await response.json()
+          const data = Array.isArray(envelope) ? envelope : envelope.data ?? []
+          return { data }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      }
+    }),
+    getCommunities: build.query<CommunityAttributes[], GetCommunitiesParams>({
+      serializeQueryArgs: ({ queryArgs: { identity } }) => ({
+        address: identity?.authChain?.[0]?.payload?.toLowerCase() ?? 'anon'
+      }),
+      queryFn: async ({ identity }) => {
+        try {
+          const baseUrl = getEnv('SOCIAL_API_URL')!
+          const url = `${baseUrl}/v1/communities?roles=owner&roles=moderator`
+          const response = await fetchWithOptionalIdentity(url, identity)
+          if (!response.ok) {
+            throw new Error(`communities error: ${response.status}`)
+          }
+          const envelope: CommunitiesResponse = await response.json()
+          const items = envelope.data?.results ?? []
+          return { data: items.filter(item => item.active) }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      }
+    }),
+    uploadPoster: build.mutation<PosterData, UploadPosterParams>({
+      queryFn: async ({ file, identity }) => {
+        try {
+          const baseUrl = getEnv('EVENTS_API_URL')!
+          const body = new FormData()
+          body.append('poster', file)
+          const response = await fetchWithIdentity(`${baseUrl}/poster`, identity, 'POST', body)
+          if (!response.ok) {
+            const errorBody = await response.text()
+            console.error('[Events] uploadPoster failed', response.status, errorBody)
+            throw new Error('Failed to upload image. Please try again.')
+          }
+          const envelope: PosterResponse = await response.json()
+          return { data: envelope.data }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      }
+    }),
+    uploadPosterVertical: build.mutation<PosterData, UploadPosterParams>({
+      queryFn: async ({ file, identity }) => {
+        try {
+          const baseUrl = getEnv('EVENTS_API_URL')!
+          const body = new FormData()
+          body.append('poster', file)
+          const response = await fetchWithIdentity(`${baseUrl}/poster-vertical`, identity, 'POST', body)
+          if (!response.ok) {
+            const errorBody = await response.text()
+            console.error('[Events] uploadPosterVertical failed', response.status, errorBody)
+            throw new Error('Failed to upload vertical image. Please try again.')
+          }
+          const envelope: PosterResponse = await response.json()
+          return { data: envelope.data }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      }
     }),
     toggleAttendee: build.mutation<EventAttendeesResponse, ToggleAttendeeParams>({
       queryFn: async ({ eventId, attending, identity }) => {
@@ -166,14 +247,27 @@ const eventsClient = createApi({
   })
 })
 
-const { useCreateEventMutation, useGetEventsQuery, useGetLiveNowCardsQuery, useGetUpcomingEventsQuery, useToggleAttendeeMutation } =
-  eventsClient
+const {
+  useCreateEventMutation,
+  useGetCommunitiesQuery,
+  useGetEventsQuery,
+  useGetLiveNowCardsQuery,
+  useGetUpcomingEventsQuery,
+  useGetWorldNamesQuery,
+  useToggleAttendeeMutation,
+  useUploadPosterMutation,
+  useUploadPosterVerticalMutation
+} = eventsClient
 
 export {
   eventsClient,
   useCreateEventMutation,
+  useGetCommunitiesQuery,
   useGetEventsQuery,
   useGetLiveNowCardsQuery,
   useGetUpcomingEventsQuery,
-  useToggleAttendeeMutation
+  useGetWorldNamesQuery,
+  useToggleAttendeeMutation,
+  useUploadPosterMutation,
+  useUploadPosterVerticalMutation
 }

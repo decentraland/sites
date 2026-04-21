@@ -1,6 +1,8 @@
 import { useCallback, useRef } from 'react'
 import type { DragEvent } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
@@ -11,11 +13,14 @@ import {
   DropHintText,
   DropZone,
   DropZoneContent,
+  ErrorIcon,
+  ErrorRow,
   ErrorText,
   HelperIcon,
   HelperRow,
   HelperText,
   IconAndTitle,
+  OptimizeLink,
   OverlayText,
   PreviewImage,
   PreviewOverlay,
@@ -23,6 +28,9 @@ import {
   SelectText,
   UploadHintGroup
 } from './ImageUpload.styled'
+
+const OPTIMIZE_URL = 'https://imagecompressor.com/'
+const IMAGE_TOO_LARGE_KEY = 'create_event.error_image_too_large'
 
 type ImageUploadProps = {
   imagePreviewUrl: string | null
@@ -115,13 +123,31 @@ function ImageUpload({ imagePreviewUrl, imageError, onImageSelect, onImageRemove
           aria-hidden="true"
         />
       </DropZone>
-      <HelperRow>
-        <HelperIcon>
-          <InfoOutlinedIcon sx={{ fontSize: 'inherit', color: '#fcfcfc' }} />
-        </HelperIcon>
-        <HelperText>{t('create_event.image_helper')}</HelperText>
-      </HelperRow>
-      {imageError && <ErrorText>{imageError}</ErrorText>}
+      {imageError ? (
+        <ErrorRow>
+          <ErrorIcon>
+            <ErrorOutlineIcon />
+          </ErrorIcon>
+          <ErrorText>
+            {t(imageError)}
+            {imageError === IMAGE_TOO_LARGE_KEY && (
+              <>
+                {' '}
+                <OptimizeLink href={OPTIMIZE_URL} target="_blank" rel="noreferrer">
+                  {t('create_event.optimize_link')}
+                </OptimizeLink>
+              </>
+            )}
+          </ErrorText>
+        </ErrorRow>
+      ) : (
+        <HelperRow>
+          <HelperIcon>
+            <InfoOutlinedIcon sx={{ fontSize: 'inherit', color: '#fcfcfc' }} />
+          </HelperIcon>
+          <HelperText>{t('create_event.image_helper')}</HelperText>
+        </HelperRow>
+      )}
     </div>
   )
 }

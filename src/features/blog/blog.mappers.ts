@@ -2,8 +2,10 @@ import { Document } from '@contentful/rich-text-types'
 import type { BlogAuthor, BlogCategory, BlogPost, ContentfulAsset } from '../../shared/blog/types/blog.domain'
 import { formatUtcDate } from '../../shared/blog/utils/date'
 import { locations } from '../../shared/blog/utils/locations'
-import { slugify } from '../../shared/blog/utils/string'
+import { decodeHtmlEntities, slugify } from '../../shared/blog/utils/string'
 import type { CMSEntry } from './cms.types'
+
+const decodeField = (value: unknown): string => (typeof value === 'string' ? decodeHtmlEntities(value) : '')
 
 interface ContentfulAssetEntry {
   sys: {
@@ -48,7 +50,11 @@ function mapBlogCategory(entry: CMSEntry | null | undefined): BlogCategory | nul
     return null
   }
 
-  const slug = (entry.fields.id as string | undefined) || slugify((entry.fields.title as string | undefined) || '')
+  // Slug derives from the RAW title so existing URLs stay stable — decoding
+  // would flip `slugify('Q&amp;A')` ('qampa') into `slugify('Q&A')` ('qa').
+  const rawTitle = (entry.fields.title as string | undefined) || ''
+  const title = decodeHtmlEntities(rawTitle)
+  const slug = (entry.fields.id as string | undefined) || slugify(rawTitle)
   if (!slug) {
     return null
   }
@@ -61,8 +67,8 @@ function mapBlogCategory(entry: CMSEntry | null | undefined): BlogCategory | nul
   return {
     id: entry.sys.id,
     slug,
-    title: (entry.fields.title as string | undefined) || '',
-    description: (entry.fields.description as string | undefined) || '',
+    title,
+    description: decodeField(entry.fields.description),
     image,
     isShownInMenu: (entry.fields.isShownInMenu as boolean | undefined) ?? true,
     url: locations.category(slug)
@@ -126,9 +132,12 @@ function mapBlogAuthor(entry: CMSEntry | null | undefined): BlogAuthor {
     return createDefaultAuthor(entry.sys.id)
   }
 
-  // Extract title and slug BEFORE checking image
-  const title = (entry.fields.title as string | undefined) || ''
-  const slug = (entry.fields.id as string | undefined) || slugify(title) || entry.sys.id
+  // Extract title and slug BEFORE checking image.
+  // Slug derives from the RAW title so existing author URLs stay stable.
+  const rawTitle = (entry.fields.title as string | undefined) || ''
+  const title = decodeHtmlEntities(rawTitle)
+  const description = decodeField(entry.fields.description)
+  const slug = (entry.fields.id as string | undefined) || slugify(rawTitle) || entry.sys.id
 
   const image = mapContentfulAsset(entry.fields.image as ContentfulAssetEntry | null | undefined)
   if (!image) {
@@ -137,7 +146,7 @@ function mapBlogAuthor(entry: CMSEntry | null | undefined): BlogAuthor {
       id: entry.sys.id,
       slug,
       title: title || 'Decentraland',
-      description: (entry.fields.description as string | undefined) || '',
+      description,
       image: {
         id: 'default-avatar',
         url: 'https://decentraland.org/logos/png/color.png',
@@ -153,7 +162,7 @@ function mapBlogAuthor(entry: CMSEntry | null | undefined): BlogAuthor {
     id: entry.sys.id,
     slug,
     title,
-    description: (entry.fields.description as string | undefined) || '',
+    description,
     image,
     url: locations.author(slug)
   }
@@ -179,7 +188,7 @@ function mapBlogPost(entry: CMSEntry | null | undefined): BlogPost | null {
     image = createDefaultImage(entry.sys.id)
   }
 
-  const title = (entry.fields.title as string | undefined) || ''
+  const title = decodeField(entry.fields.title)
   const slug = entry.fields.id as string
   const publishedDate = entry.fields.publishedDate as string | undefined
   const body = entry.fields.body as Document | undefined
@@ -188,7 +197,7 @@ function mapBlogPost(entry: CMSEntry | null | undefined): BlogPost | null {
     id: entry.sys.id,
     slug,
     title,
-    description: (entry.fields.description as string | undefined) || '',
+    description: decodeField(entry.fields.description),
     publishedDate: formatUtcDate(publishedDate),
     body: body || ({} as Document),
     bodyAssets: {},
