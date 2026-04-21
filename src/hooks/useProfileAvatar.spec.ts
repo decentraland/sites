@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { useProfileAvatar } from './useProfileAvatar'
+import type { UseProfileAvatarResult } from './useProfileAvatar'
 
 const mockUseGetProfileQuery = jest.fn()
 
@@ -13,13 +14,17 @@ type ImageMock = {
   srcAssignments: string[]
 }
 
-const imageInstances: ImageMock[] = []
+type RenderedHook = {
+  result: { current: UseProfileAvatarResult }
+  unmount: () => void
+}
 
-describe('useProfileAvatar', () => {
+describe('when useProfileAvatar is called', () => {
+  let imageInstances: ImageMock[]
   let originalImage: typeof Image
 
   beforeEach(() => {
-    imageInstances.length = 0
+    imageInstances = []
     originalImage = window.Image
 
     class FakeImage {
@@ -45,129 +50,153 @@ describe('useProfileAvatar', () => {
     jest.resetAllMocks()
   })
 
-  describe('when the address is empty', () => {
+  describe('and the address is undefined', () => {
+    let rendered: RenderedHook
+
     beforeEach(() => {
       mockUseGetProfileQuery.mockReturnValue({ data: null, isLoading: false })
+      rendered = renderHook(() => useProfileAvatar(undefined)) as RenderedHook
     })
 
-    it('should return undefined avatar fields', () => {
-      const { result } = renderHook(() => useProfileAvatar(undefined))
+    it('should return an undefined avatar', () => {
+      expect(rendered.result.current.avatar).toBeUndefined()
+    })
 
-      expect(result.current.avatar).toBeUndefined()
-      expect(result.current.avatarForCard).toBeUndefined()
-      expect(result.current.avatarFace).toBeUndefined()
-      expect(result.current.name).toBeUndefined()
+    it('should return an undefined avatarForCard', () => {
+      expect(rendered.result.current.avatarForCard).toBeUndefined()
+    })
+
+    it('should return an undefined avatarFace', () => {
+      expect(rendered.result.current.avatarFace).toBeUndefined()
+    })
+
+    it('should return an undefined name', () => {
+      expect(rendered.result.current.name).toBeUndefined()
     })
   })
 
-  describe('when the profile has no avatar snapshot', () => {
+  describe('and the profile has no face256 snapshot', () => {
+    let rendered: RenderedHook
+
     beforeEach(() => {
       mockUseGetProfileQuery.mockReturnValue({
         data: { avatars: [{ name: 'SomeUser', avatar: { snapshots: {} } }] },
         isLoading: false
       })
+      rendered = renderHook(() => useProfileAvatar('0xabc')) as RenderedHook
     })
 
     it('should return an undefined avatarFace', () => {
-      const { result } = renderHook(() => useProfileAvatar('0xabc'))
+      expect(rendered.result.current.avatarFace).toBeUndefined()
+    })
 
-      expect(result.current.avatarFace).toBeUndefined()
-      expect(result.current.name).toBe('SomeUser')
+    it('should return the profile name', () => {
+      expect(rendered.result.current.name).toBe('SomeUser')
     })
   })
 
-  describe('when the face256 URL loads successfully', () => {
+  describe('and the face256 URL loads successfully', () => {
+    let okUrl: string
+    let rendered: RenderedHook
+
     beforeEach(() => {
+      okUrl = 'https://cdn.test/face-ok.png'
       mockUseGetProfileQuery.mockReturnValue({
-        data: {
-          avatars: [{ name: 'Alice', avatar: { snapshots: { face256: 'https://cdn.test/face-ok.png' } } }]
-        },
+        data: { avatars: [{ name: 'Alice', avatar: { snapshots: { face256: okUrl } } }] },
         isLoading: false
       })
+      rendered = renderHook(() => useProfileAvatar('0xalice')) as RenderedHook
     })
 
-    it('should expose the URL as avatarFace and keep it after effects flush', async () => {
-      const { result } = renderHook(() => useProfileAvatar('0xalice'))
-
-      expect(result.current.avatarFace).toBe('https://cdn.test/face-ok.png')
-      await waitFor(() => expect(result.current.avatarFace).toBe('https://cdn.test/face-ok.png'))
+    it('should expose the URL as avatarFace', () => {
+      expect(rendered.result.current.avatarFace).toBe(okUrl)
     })
 
-    it('should expose the same avatar as avatarForCard when the URL is valid', () => {
-      const { result } = renderHook(() => useProfileAvatar('0xalice'))
+    it('should keep the URL after effects flush', async () => {
+      await waitFor(() => expect(rendered.result.current.avatarFace).toBe(okUrl))
+    })
 
-      expect(result.current.avatarForCard).toBe(result.current.avatar)
+    it('should return the same reference for avatar and avatarForCard', () => {
+      expect(rendered.result.current.avatarForCard).toBe(rendered.result.current.avatar)
     })
   })
 
-  describe('when the face256 URL fails to load', () => {
-    const brokenUrl = 'https://cdn.test/face-broken.png'
+  describe('and the face256 URL fails to load', () => {
+    let brokenUrl: string
+    let rendered: RenderedHook
 
     beforeEach(() => {
+      brokenUrl = 'https://cdn.test/face-broken.png'
       mockUseGetProfileQuery.mockReturnValue({
-        data: {
-          avatars: [{ name: 'Bob', avatar: { snapshots: { face256: brokenUrl } } }]
-        },
+        data: { avatars: [{ name: 'Bob', avatar: { snapshots: { face256: brokenUrl } } }] },
         isLoading: false
       })
+      rendered = renderHook(() => useProfileAvatar('0xbob')) as RenderedHook
     })
 
-    it('should fall back to undefined after the Image onerror fires', async () => {
-      const { result } = renderHook(() => useProfileAvatar('0xbob'))
-
-      expect(result.current.avatarFace).toBe(brokenUrl)
-
-      act(() => {
-        imageInstances[imageInstances.length - 1]?.onerror?.()
+    describe('and the Image onerror handler has fired', () => {
+      beforeEach(async () => {
+        act(() => {
+          imageInstances[imageInstances.length - 1]?.onerror?.()
+        })
+        await waitFor(() => expect(rendered.result.current.avatarFace).toBeUndefined())
       })
 
-      await waitFor(() => expect(result.current.avatarFace).toBeUndefined())
+      it('should set avatarFace to undefined', () => {
+        expect(rendered.result.current.avatarFace).toBeUndefined()
+      })
+
+      it('should blank face256 on avatarForCard', () => {
+        expect(rendered.result.current.avatarForCard?.avatar?.snapshots?.face256).toBeUndefined()
+      })
+
+      it('should preserve the profile name on avatarForCard', () => {
+        expect(rendered.result.current.avatarForCard?.name).toBe('Bob')
+      })
     })
 
-    it('should blank face256 on avatarForCard while preserving other fields', async () => {
-      const { result } = renderHook(() => useProfileAvatar('0xbob'))
+    describe('and a second hook instance renders after the URL is known to be broken', () => {
+      let secondRendered: RenderedHook
 
-      act(() => {
-        imageInstances[imageInstances.length - 1]?.onerror?.()
+      beforeEach(async () => {
+        act(() => {
+          imageInstances[imageInstances.length - 1]?.onerror?.()
+        })
+        await waitFor(() => expect(rendered.result.current.avatarFace).toBeUndefined())
+        secondRendered = renderHook(() => useProfileAvatar('0xbob')) as RenderedHook
       })
 
-      await waitFor(() => expect(result.current.avatarForCard?.avatar?.snapshots?.face256).toBeUndefined())
-      expect(result.current.avatarForCard?.name).toBe('Bob')
-    })
-
-    it('should memoize broken URLs across hook instances', async () => {
-      const first = renderHook(() => useProfileAvatar('0xbob'))
-
-      act(() => {
-        imageInstances[imageInstances.length - 1]?.onerror?.()
+      it('should return undefined avatarFace without re-probing the URL', () => {
+        expect(secondRendered.result.current.avatarFace).toBeUndefined()
       })
-      await waitFor(() => expect(first.result.current.avatarFace).toBeUndefined())
-
-      const second = renderHook(() => useProfileAvatar('0xbob'))
-
-      expect(second.result.current.avatarFace).toBeUndefined()
     })
   })
 
-  describe('when the hook unmounts with an in-flight image request', () => {
+  describe('and the hook mounts with an in-flight image request', () => {
+    let inFlightUrl: string
+    let rendered: RenderedHook
+
     beforeEach(() => {
+      inFlightUrl = 'https://cdn.test/in-flight.png'
       mockUseGetProfileQuery.mockReturnValue({
-        data: {
-          avatars: [{ name: 'Charlie', avatar: { snapshots: { face256: 'https://cdn.test/in-flight.png' } } }]
-        },
+        data: { avatars: [{ name: 'Charlie', avatar: { snapshots: { face256: inFlightUrl } } }] },
         isLoading: false
       })
+      rendered = renderHook(() => useProfileAvatar('0xcharlie')) as RenderedHook
     })
 
-    it('should abort the request by clearing Image.src', () => {
-      const { unmount } = renderHook(() => useProfileAvatar('0xcharlie'))
-      const img = imageInstances[imageInstances.length - 1]
+    it('should assign the URL to Image.src', () => {
+      expect(imageInstances[imageInstances.length - 1]?.srcAssignments).toEqual([inFlightUrl])
+    })
 
-      expect(img?.srcAssignments).toEqual(['https://cdn.test/in-flight.png'])
+    describe('and the hook unmounts before the image resolves', () => {
+      beforeEach(() => {
+        rendered.unmount()
+      })
 
-      unmount()
-
-      expect(img?.srcAssignments).toEqual(['https://cdn.test/in-flight.png', ''])
+      it('should clear Image.src to abort the in-flight request', () => {
+        expect(imageInstances[imageInstances.length - 1]?.srcAssignments).toEqual([inFlightUrl, ''])
+      })
     })
   })
 })
