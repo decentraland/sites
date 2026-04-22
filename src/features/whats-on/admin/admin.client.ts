@@ -1,7 +1,9 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { getEnv } from '../../../config/env'
 import { fetchWithIdentity } from '../../../utils/signedFetch'
+import type { EventEntry } from '../../whats-on-events/events.types'
 import type {
+  AdminEventActionParams,
   AdminListEnvelope,
   AdminProfileSettings,
   AdminProfileSettingsEnvelope,
@@ -74,10 +76,95 @@ const adminClient = createApi({
         }
       },
       invalidatesTags: ['Admins', 'MyAdmin']
+    }),
+    getAdminEvents: build.query<EventEntry[], IdentityOnlyParams>({
+      queryFn: async ({ identity }) => {
+        try {
+          const baseUrl = getEnv('EVENTS_API_URL')!
+          const response = await fetchWithIdentity(`${baseUrl}/events?list=all`, identity, 'GET')
+          if (!response.ok) {
+            throw new Error(`admin events ${response.status}`)
+          }
+          const envelope: { data?: EventEntry[] } = await response.json()
+          return { data: envelope.data ?? [] }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      },
+      providesTags: ['PendingEvents']
+    }),
+    approveEvent: build.mutation<void, AdminEventActionParams>({
+      queryFn: async ({ eventId, identity }) => {
+        try {
+          const baseUrl = getEnv('EVENTS_API_URL')!
+          const body = JSON.stringify({ approved: true })
+          const response = await fetchWithIdentity(
+            `${baseUrl}/events/${encodeURIComponent(eventId)}`,
+            identity,
+            'PATCH',
+            body,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            { 'Content-Type': 'application/json' }
+          )
+          if (!response.ok) {
+            const envelope = await response.json().catch(() => null)
+            console.error('[Admin] approveEvent failed', response.status, envelope)
+            return {
+              error: { status: response.status, data: envelope, message: `Approve failed (${response.status})` }
+            }
+          }
+          return { data: undefined }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      },
+      invalidatesTags: ['PendingEvents']
+    }),
+    rejectEvent: build.mutation<void, AdminEventActionParams>({
+      queryFn: async ({ eventId, identity }) => {
+        try {
+          const baseUrl = getEnv('EVENTS_API_URL')!
+          const body = JSON.stringify({ rejected: true })
+          const response = await fetchWithIdentity(
+            `${baseUrl}/events/${encodeURIComponent(eventId)}`,
+            identity,
+            'PATCH',
+            body,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            { 'Content-Type': 'application/json' }
+          )
+          if (!response.ok) {
+            const envelope = await response.json().catch(() => null)
+            console.error('[Admin] rejectEvent failed', response.status, envelope)
+            return {
+              error: { status: response.status, data: envelope, message: `Reject failed (${response.status})` }
+            }
+          }
+          return { data: undefined }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      },
+      invalidatesTags: ['PendingEvents']
     })
   })
 })
 
-const { useGetMyProfileSettingsQuery, useListAdminsQuery, useUpdateAdminPermissionsMutation } = adminClient
+const {
+  useApproveEventMutation,
+  useGetAdminEventsQuery,
+  useGetMyProfileSettingsQuery,
+  useListAdminsQuery,
+  useRejectEventMutation,
+  useUpdateAdminPermissionsMutation
+} = adminClient
 
-export { adminClient, useGetMyProfileSettingsQuery, useListAdminsQuery, useUpdateAdminPermissionsMutation }
+export {
+  adminClient,
+  useApproveEventMutation,
+  useGetAdminEventsQuery,
+  useGetMyProfileSettingsQuery,
+  useListAdminsQuery,
+  useRejectEventMutation,
+  useUpdateAdminPermissionsMutation
+}

@@ -98,4 +98,54 @@ describe('when calling admin profile settings endpoints', () => {
       })
     })
   })
+
+  describe('and dispatching getAdminEvents', () => {
+    describe('and the API responds OK', () => {
+      beforeEach(() => {
+        mockFetchWithIdentity.mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ data: [] })
+        })
+      })
+
+      it('should GET /events with list=all using the signed identity', async () => {
+        await store.dispatch(adminClient.endpoints.getAdminEvents.initiate({ identity }))
+        expect(mockFetchWithIdentity).toHaveBeenCalledWith(expect.stringMatching(/\/events\?list=all$/), identity, 'GET')
+      })
+    })
+  })
+
+  describe('and dispatching approveEvent', () => {
+    beforeEach(() => {
+      mockFetchWithIdentity.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) })
+    })
+
+    it('should PATCH /events/:id with { approved: true } and url-encode the id', async () => {
+      await store.dispatch(adminClient.endpoints.approveEvent.initiate({ eventId: 'abc 1', identity }))
+      expect(mockFetchWithIdentity).toHaveBeenCalledWith(
+        'https://events.test/events/abc%201',
+        identity,
+        'PATCH',
+        JSON.stringify({ approved: true }),
+        { 'Content-Type': 'application/json' }
+      )
+    })
+  })
+
+  describe('and dispatching rejectEvent', () => {
+    beforeEach(() => {
+      mockFetchWithIdentity.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) })
+    })
+
+    it('should PATCH /events/:id with { rejected: true }', async () => {
+      await store.dispatch(adminClient.endpoints.rejectEvent.initiate({ eventId: 'abc', identity }))
+      expect(mockFetchWithIdentity).toHaveBeenCalledWith(
+        'https://events.test/events/abc',
+        identity,
+        'PATCH',
+        JSON.stringify({ rejected: true }),
+        { 'Content-Type': 'application/json' }
+      )
+    })
+  })
 })
