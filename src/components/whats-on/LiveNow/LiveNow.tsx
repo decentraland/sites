@@ -25,6 +25,7 @@ import {
 
 const SCROLL_AMOUNT = 300
 const SCROLL_TOLERANCE_PX = 2
+const CARD_SELECTOR = '.MuiCard-root'
 
 function LiveNow() {
   const { t } = useTranslation()
@@ -43,21 +44,24 @@ function LiveNow() {
   const syncScrollState = useCallback(() => {
     const container = scrollRef.current
     if (!container) return
-    const overflow = container.scrollWidth - container.clientWidth
-    const hasScroll = overflow > SCROLL_TOLERANCE_PX
-    const pages = hasScroll && container.clientWidth > 0 ? Math.max(1, Math.ceil(container.scrollWidth / container.clientWidth)) : 1
-    setCanScrollLeft(container.scrollLeft > SCROLL_TOLERANCE_PX)
-    setCanScrollRight(hasScroll && container.scrollLeft + container.clientWidth < container.scrollWidth - SCROLL_TOLERANCE_PX)
+    const firstCard = container.querySelector<HTMLElement>(CARD_SELECTOR)
+    const cardWidth = firstCard?.offsetWidth ?? 0
+    const cardsPerPage = cardWidth > 0 && container.clientWidth > 0 ? Math.max(1, Math.round(container.clientWidth / cardWidth)) : 1
+    const pages = Math.max(1, Math.ceil(cards.length / cardsPerPage))
+    const hasScroll = pages > 1
+
     setPageCount(pages)
+    setCanScrollLeft(hasScroll && container.scrollLeft > SCROLL_TOLERANCE_PX)
+    setCanScrollRight(hasScroll && container.scrollLeft + container.clientWidth < container.scrollWidth - SCROLL_TOLERANCE_PX)
 
     const maxScroll = container.scrollWidth - container.clientWidth
-    if (maxScroll <= 0) {
+    if (!hasScroll || maxScroll <= 0) {
       setActiveIndex(0)
     } else {
       const progress = container.scrollLeft / maxScroll
       setActiveIndex(Math.round(progress * (pages - 1)))
     }
-  }, [])
+  }, [cards.length])
 
   useEffect(() => {
     const container = scrollRef.current

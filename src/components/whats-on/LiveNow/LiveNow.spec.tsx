@@ -29,7 +29,7 @@ jest.mock('../EventDetailModal', () => ({
 
 jest.mock('./LiveNowCardItem', () => ({
   LiveNowCardItem: ({ card, onClick }: { card: LiveNowCard; onClick: (card: LiveNowCard) => void }) => (
-    <div data-testid="live-now-card" data-id={card.id} onClick={() => onClick(card)}>
+    <div data-testid="live-now-card" className="MuiCard-root" data-id={card.id} onClick={() => onClick(card)}>
       {card.title}
     </div>
   )
@@ -183,49 +183,87 @@ describe('LiveNow', () => {
     })
   })
 
-  describe('when a single card renders with a tiny phantom scroll overflow', () => {
-    let scrollWidthSpy: jest.SpyInstance
+  describe('when a single card fills a responsive viewport with a phantom scroll overflow', () => {
     let clientWidthSpy: jest.SpyInstance
+    let offsetWidthSpy: jest.SpyInstance
+    let scrollWidthSpy: jest.SpyInstance
 
     beforeEach(() => {
       mockUseGetLiveNowCardsQuery.mockReturnValue({ data: [createMockCard('card-1', 'Event 1')] })
-      scrollWidthSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(321)
-      clientWidthSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(320)
+      clientWidthSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(735)
+      offsetWidthSpy = jest.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(735)
+      scrollWidthSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(752)
     })
 
     afterEach(() => {
-      scrollWidthSpy.mockRestore()
       clientWidthSpy.mockRestore()
+      offsetWidthSpy.mockRestore()
+      scrollWidthSpy.mockRestore()
     })
 
-    it('should not render pagination dots when overflow is within the tolerance threshold', () => {
+    it('should not render pagination dots when the single card fits the viewport', () => {
       render(<LiveNow />)
 
       expect(screen.queryByTestId('pagination-dots')).not.toBeInTheDocument()
     })
   })
 
-  describe('when multiple cards overflow the viewport meaningfully', () => {
-    let scrollWidthSpy: jest.SpyInstance
+  describe('when multiple cards each take a full responsive viewport', () => {
     let clientWidthSpy: jest.SpyInstance
+    let offsetWidthSpy: jest.SpyInstance
+    let scrollWidthSpy: jest.SpyInstance
 
     beforeEach(() => {
       mockUseGetLiveNowCardsQuery.mockReturnValue({
         data: [createMockCard('card-1', 'Event 1'), createMockCard('card-2', 'Event 2'), createMockCard('card-3', 'Event 3')]
       })
-      scrollWidthSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(900)
       clientWidthSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(300)
+      offsetWidthSpy = jest.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(300)
+      scrollWidthSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(932)
     })
 
     afterEach(() => {
-      scrollWidthSpy.mockRestore()
       clientWidthSpy.mockRestore()
+      offsetWidthSpy.mockRestore()
+      scrollWidthSpy.mockRestore()
     })
 
-    it('should render pagination dots for each scrollable page', () => {
+    it('should render one pagination dot per card when each card fills the viewport', () => {
       render(<LiveNow />)
 
       expect(screen.getAllByTestId('pagination-dot')).toHaveLength(3)
+    })
+  })
+
+  describe('when four cards fit side-by-side on a desktop viewport', () => {
+    let clientWidthSpy: jest.SpyInstance
+    let offsetWidthSpy: jest.SpyInstance
+    let scrollWidthSpy: jest.SpyInstance
+
+    beforeEach(() => {
+      mockUseGetLiveNowCardsQuery.mockReturnValue({
+        data: [
+          createMockCard('card-1', 'Event 1'),
+          createMockCard('card-2', 'Event 2'),
+          createMockCard('card-3', 'Event 3'),
+          createMockCard('card-4', 'Event 4')
+        ]
+      })
+      clientWidthSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1400)
+      offsetWidthSpy = jest.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(338)
+      scrollWidthSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(1400)
+    })
+
+    afterEach(() => {
+      clientWidthSpy.mockRestore()
+      offsetWidthSpy.mockRestore()
+      scrollWidthSpy.mockRestore()
+    })
+
+    it('should not render pagination dots when all cards fit on a single page', () => {
+      render(<LiveNow />)
+
+      expect(screen.queryByTestId('pagination-dots')).not.toBeInTheDocument()
     })
   })
 })
