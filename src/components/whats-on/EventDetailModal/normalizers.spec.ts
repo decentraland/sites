@@ -1,4 +1,4 @@
-import { createMockEvent, createMockLiveNowCard } from '../../../__test-utils__/factories'
+import { createMockEvent, createMockLiveNowCard, createMockPlaceCard } from '../../../__test-utils__/factories'
 import { normalizeEventEntry, normalizeLiveNowCard } from './normalizers'
 
 describe('normalizeEventEntry', () => {
@@ -69,6 +69,10 @@ describe('normalizeEventEntry', () => {
 
     it('should build the jump-in URL from coordinates', () => {
       expect(result.url).toBe('https://decentraland.org/jump/event?position=10,20')
+    })
+
+    it('should flag the data as a real event', () => {
+      expect(result.isEvent).toBe(true)
     })
   })
 
@@ -193,6 +197,22 @@ describe('normalizeLiveNowCard', () => {
 
     it('should build the jump-in URL from parsed coordinates', () => {
       expect(result.url).toBe('https://decentraland.org/jump/event?position=10,20')
+    })
+
+    it('should flag the data as a real event when the card type is event', () => {
+      expect(result.isEvent).toBe(true)
+    })
+  })
+
+  describe('when the card is a place without a matching event', () => {
+    let result: ReturnType<typeof normalizeLiveNowCard>
+
+    beforeEach(() => {
+      result = normalizeLiveNowCard(createMockPlaceCard())
+    })
+
+    it('should flag the data as not a real event', () => {
+      expect(result.isEvent).toBe(false)
     })
   })
 

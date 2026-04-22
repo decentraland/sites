@@ -21,7 +21,8 @@ function normalizeEventEntry(event: EventEntry): ModalEventData {
     attending: event.attending,
     live: event.live,
     categories: event.categories,
-    url: buildEventJumpInUrl(event.x, event.y)
+    url: buildEventJumpInUrl(event.x, event.y),
+    isEvent: true
   }
 }
 
@@ -46,7 +47,8 @@ function normalizeLiveNowCard(card: LiveNowCard): ModalEventData {
     attending: undefined,
     live: true,
     categories: card.categories || [],
-    url
+    url,
+    isEvent: card.type === 'event'
   }
 }
 

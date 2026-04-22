@@ -179,6 +179,14 @@ describe('EventDetailModalHero', () => {
     })
   })
 
+  describe('when the modal data is a live place without a matching event', () => {
+    it('should not render the remind me button', () => {
+      render(<EventDetailModalHero data={createMockData({ isEvent: false, startAt: null })} onClose={mockOnClose} />)
+
+      expect(screen.queryByTestId('remind-me-icon')).not.toBeInTheDocument()
+    })
+  })
+
   describe('when the event has no creator', () => {
     it('should not render the creator row', () => {
       render(<EventDetailModalHero data={createMockData({ creatorAddress: undefined, creatorName: undefined })} onClose={mockOnClose} />)
