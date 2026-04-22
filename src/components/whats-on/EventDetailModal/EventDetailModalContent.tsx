@@ -2,11 +2,12 @@ import { useCallback } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import { useTranslation } from '@dcl/hooks'
-import { Box, Button } from 'decentraland-ui2'
+import { Button } from 'decentraland-ui2'
 import type { RecurrentFrequency } from '../../../features/whats-on-events'
 import { buildCalendarUrl } from '../../../utils/whatsOnUrl'
 import type { AdminActions, ModalEventData } from './EventDetailModal.types'
 import {
+  AdminActionsRow,
   ContentDivider,
   ContentSection,
   DescriptionText,
@@ -88,14 +89,14 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
         </>
       )}
       {adminActions && (
-        <Box sx={{ display: 'flex', gap: 1, marginTop: 2 }}>
+        <AdminActionsRow>
           <Button variant="contained" color="primary" disabled={adminActions.isProcessing} onClick={adminActions.onApprove}>
             {t('whats_on_admin.pending_events.approve')}
           </Button>
           <Button variant="outlined" color="secondary" disabled={adminActions.isProcessing} onClick={adminActions.onReject}>
             {t('whats_on_admin.pending_events.reject')}
           </Button>
-        </Box>
+        </AdminActionsRow>
       )}
     </ContentSection>
   )

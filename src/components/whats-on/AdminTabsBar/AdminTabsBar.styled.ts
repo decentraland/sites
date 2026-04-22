@@ -1,9 +1,9 @@
-import { Box, styled } from 'decentraland-ui2'
+import { Box, dclColors, styled } from 'decentraland-ui2'
 
 const Bar = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   backdropFilter: 'saturate(180%) blur(20px)',
-  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  backgroundColor: dclColors.blackTransparent.blurry,
   borderBottom: `1px solid ${theme.palette.divider}`,
   borderTop: `1px solid ${theme.palette.divider}`,
   display: 'flex',

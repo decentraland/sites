@@ -65,9 +65,7 @@ const adminClient = createApi({
           if (!response.ok) {
             const envelope = await response.json().catch(() => null)
             console.error('[Admin] updateAdminPermissions failed', response.status, envelope)
-            return {
-              error: { status: response.status, data: envelope, message: `Update failed (${response.status})` }
-            }
+            return { error: { status: response.status, data: null } }
           }
           const envelope: AdminProfileSettingsEnvelope = await response.json()
           return { data: envelope.data }
@@ -109,9 +107,7 @@ const adminClient = createApi({
           if (!response.ok) {
             const envelope = await response.json().catch(() => null)
             console.error('[Admin] approveEvent failed', response.status, envelope)
-            return {
-              error: { status: response.status, data: envelope, message: `Approve failed (${response.status})` }
-            }
+            return { error: { status: response.status, data: null } }
           }
           return { data: undefined }
         } catch (error) {
@@ -136,9 +132,7 @@ const adminClient = createApi({
           if (!response.ok) {
             const envelope = await response.json().catch(() => null)
             console.error('[Admin] rejectEvent failed', response.status, envelope)
-            return {
-              error: { status: response.status, data: envelope, message: `Reject failed (${response.status})` }
-            }
+            return { error: { status: response.status, data: null } }
           }
           return { data: undefined }
         } catch (error) {

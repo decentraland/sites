@@ -3,12 +3,13 @@ import { Navigate } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CheckIcon from '@mui/icons-material/Check'
 import { useTranslation } from '@dcl/hooks'
-import { Avatar, Button, Table, TableBody, TableCell, TableHead, TablePagination, TableRow, TextField, Typography } from 'decentraland-ui2'
+import { Button, Table, TableBody, TableCell, TableHead, TablePagination, TableRow, TextField, Typography } from 'decentraland-ui2'
 import { AdminPermissionsModal } from '../../components/whats-on/AdminPermissionsModal'
-import { AdminPermission, useListAdminsQuery, useUpdateAdminPermissionsMutation } from '../../features/whats-on/admin'
+import { useListAdminsQuery, useUpdateAdminPermissionsMutation } from '../../features/whats-on/admin/admin.client'
+import { AdminPermission } from '../../features/whats-on/admin/admin.types'
 import { useAdminPermissions } from '../../hooks/useAdminPermissions'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { Header, PageContainer } from './UsersAdminPage.styled'
+import { ClickableRow, Header, PageContainer, UserAvatar } from './UsersAdminPage.styled'
 
 const COLUMNS: Array<{ key: AdminPermission; labelKey: string }> = [
   { key: AdminPermission.APPROVE_OWN_EVENT, labelKey: 'whats_on_admin.users.columns.approve_own_events' },
@@ -86,14 +87,13 @@ function UsersAdminPage() {
         </TableHead>
         <TableBody>
           {paginated.map(row => (
-            <TableRow
+            <ClickableRow
               key={row.user}
               hover
               onClick={() => setModalState({ mode: 'edit', user: row.user, permissions: row.permissions })}
-              sx={{ cursor: 'pointer' }}
             >
               <TableCell>
-                <Avatar sx={{ display: 'inline-flex', marginRight: 1, verticalAlign: 'middle' }} />
+                <UserAvatar />
                 {row.user}
               </TableCell>
               {COLUMNS.map(column => (
@@ -101,7 +101,7 @@ function UsersAdminPage() {
                   {row.permissions.includes(column.key) ? <CheckIcon color="success" /> : null}
                 </TableCell>
               ))}
-            </TableRow>
+            </ClickableRow>
           ))}
           {!isFetching && paginated.length === 0 && (
             <TableRow>

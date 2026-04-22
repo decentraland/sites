@@ -15,14 +15,17 @@ jest.mock('../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ identity: undefined, hasValidIdentity: false, address: undefined })
 }))
 
-jest.mock('../../features/whats-on/admin', () => ({
+jest.mock('../../features/whats-on/admin/admin.types', () => ({
   AdminPermission: {
     APPROVE_OWN_EVENT: 'approve_own_event',
     APPROVE_ANY_EVENT: 'approve_any_event',
     EDIT_ANY_EVENT: 'edit_any_event',
     EDIT_ANY_SCHEDULE: 'edit_any_schedule',
     EDIT_ANY_PROFILE: 'edit_any_profile'
-  },
+  }
+}))
+
+jest.mock('../../features/whats-on/admin/admin.client', () => ({
   useListAdminsQuery: () => ({ data: [], isFetching: false, refetch: jest.fn() }),
   useUpdateAdminPermissionsMutation: () => [jest.fn(), { isLoading: false }]
 }))
@@ -32,8 +35,10 @@ jest.mock('../../components/whats-on/AdminPermissionsModal', () => ({
 }))
 
 jest.mock('./UsersAdminPage.styled', () => ({
+  ClickableRow: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => <tr onClick={onClick}>{children}</tr>,
   Header: ({ children }: { children: React.ReactNode }) => <header>{children}</header>,
-  PageContainer: ({ children }: { children: React.ReactNode }) => <main>{children}</main>
+  PageContainer: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
+  UserAvatar: () => <span data-testid="user-avatar" />
 }))
 
 jest.mock('@mui/icons-material/Check', () => ({
@@ -42,7 +47,6 @@ jest.mock('@mui/icons-material/Check', () => ({
 }))
 
 jest.mock('decentraland-ui2', () => ({
-  Avatar: () => <span data-testid="avatar" />,
   Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => <button onClick={onClick}>{children}</button>,
   Table: ({ children }: { children: React.ReactNode }) => <table>{children}</table>,
   TableBody: ({ children }: { children: React.ReactNode }) => <tbody>{children}</tbody>,

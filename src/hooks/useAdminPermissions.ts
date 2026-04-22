@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import { AdminPermission } from '../features/whats-on/admin'
 import { useGetMyProfileSettingsQuery } from '../features/whats-on/admin/admin.client'
 import { hasAnyAdminPermission } from '../features/whats-on/admin/admin.helpers'
+import { AdminPermission } from '../features/whats-on/admin/admin.types'
 import { useAuthIdentity } from './useAuthIdentity'
 
 type AdminPermissionsState = {

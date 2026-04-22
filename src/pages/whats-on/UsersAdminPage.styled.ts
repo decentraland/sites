@@ -1,4 +1,4 @@
-import { Box, styled } from 'decentraland-ui2'
+import { Avatar, Box, TableRow, styled } from 'decentraland-ui2'
 
 const Header = styled(Box)(({ theme }) => ({
   alignItems: 'center',
@@ -18,4 +18,14 @@ const PageContainer = styled(Box)(({ theme }) => ({
   }
 }))
 
-export { Header, PageContainer }
+const UserAvatar = styled(Avatar)(({ theme }) => ({
+  display: 'inline-flex',
+  marginRight: theme.spacing(1),
+  verticalAlign: 'middle'
+}))
+
+const ClickableRow = styled(TableRow)({
+  cursor: 'pointer'
+})
+
+export { ClickableRow, Header, PageContainer, UserAvatar }
