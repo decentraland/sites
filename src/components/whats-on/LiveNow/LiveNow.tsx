@@ -154,8 +154,8 @@ function LiveNow() {
           sx={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         >
           <LiveNowGrid>
-            {cards.map(card => (
-              <LiveNowCardItem key={card.id} card={card} onClick={handleCardClick} />
+            {cards.map((card, index) => (
+              <LiveNowCardItem key={card.id} card={card} onClick={handleCardClick} eager={index === 0} />
             ))}
           </LiveNowGrid>
         </CarouselWrapper>

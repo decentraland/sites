@@ -53,7 +53,7 @@ const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
     <FutureCardContainer onClick={handleClick}>
       {event.image && (
         <CardImageWrapper>
-          <CardImage src={event.image} alt={event.name} loading="lazy" />
+          <CardImage src={event.image} alt={event.name} loading="lazy" width={560} height={315} />
         </CardImageWrapper>
       )}
       <CardContent>

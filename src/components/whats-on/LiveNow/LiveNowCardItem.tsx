@@ -1,58 +1,38 @@
-import { memo, useCallback } from 'react'
-import type { Avatar } from '@dcl/schemas'
-import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
-import { useGetProfileQuery } from '../../../features/profile/profile.client'
-import type { LiveNowCard } from '../../../features/whats-on-events'
+import { memo } from 'react'
+import { useTranslation } from '@dcl/hooks'
+import type { LiveNowCard as LiveNowCardData } from '../../../features/whats-on-events'
+import { useCreatorAvatar } from '../../../hooks/useCreatorAvatar'
+import { assetUrl } from '../../../utils/assetUrl'
+import { formatEthAddress } from '../../../utils/avatar'
+import { LiveNowCard } from './LiveNowCard'
 
-const DCL_LOGO_URL = `${window.location.origin}/dcl-logo.svg`
+// `/dcl-logo.svg` lives in /public, which Vite serves from the CDN base URL in
+// prod (VITE_BASE_URL). Using `window.location.origin` here would hit
+// decentraland.zone/dcl-logo.svg — a path the SPA rewrite silently resolves to
+// index.html (content-type: text/html) → <img> renders blank.
+const DCL_LOGO_URL = assetUrl('/dcl-logo.svg')
+const DCL_FOUNDATION_NAME = 'Decentraland Foundation'
 
-interface CardAvatar {
-  name: string
-  ethAddress: string
-  avatar?: { snapshots?: { face256?: string; body?: string } }
+function resolveCreatorName(card: LiveNowCardData, unknownLabel: string): string {
+  if (card.creatorName) return card.creatorName
+  if (card.isGenesisPlaza) return DCL_FOUNDATION_NAME
+  if (card.creatorAddress) return formatEthAddress(card.creatorAddress)
+  return unknownLabel
 }
 
-const LiveNowCardItem = memo(({ card, onClick }: { card: LiveNowCard; onClick: (card: LiveNowCard) => void }) => {
-  const isGenesis = card.title.toLowerCase().includes('genesis plaza')
-  const { data: profile } = useGetProfileQuery(card.creatorAddress, { skip: !card.creatorAddress })
-  const fetchedAvatar = profile?.avatars?.[0]
+const LiveNowCardItem = memo(
+  ({ card, onClick, eager }: { card: LiveNowCardData; onClick: (card: LiveNowCardData) => void; eager?: boolean }) => {
+    const { t } = useTranslation()
+    // Hook must be called unconditionally; Genesis Plaza opts out of the face probe
+    // because we always paint the DCL logo for it.
+    const { avatarFace } = useCreatorAvatar(card.isGenesisPlaza ? undefined : card.creatorAddress, card.creatorName ?? undefined)
 
-  const handleClick = useCallback(() => {
-    onClick(card)
-  }, [onClick, card])
+    const creatorName = resolveCreatorName(card, t('live_now.unknown_creator'))
+    const creatorFaceUrl = card.isGenesisPlaza ? DCL_LOGO_URL : avatarFace
 
-  let cardAvatar: CardAvatar | undefined
-  if (isGenesis) {
-    cardAvatar = {
-      name: card.creatorName ?? 'Decentraland Foundation',
-      ethAddress: '',
-      avatar: { snapshots: { face256: DCL_LOGO_URL, body: '' } }
-    }
-  } else if (fetchedAvatar) {
-    cardAvatar = { name: fetchedAvatar.name ?? '', ethAddress: fetchedAvatar.ethAddress ?? '', avatar: fetchedAvatar.avatar }
-  } else if (card.creatorName) {
-    cardAvatar = { name: card.creatorName, ethAddress: '' }
+    return <LiveNowCard card={card} creatorName={creatorName} creatorFaceUrl={creatorFaceUrl} eager={eager} onClick={onClick} />
   }
-
-  return (
-    <EventCard
-      image={card.image}
-      sceneName={card.title}
-      coordinates={card.coordinates}
-      avatar={cardAvatar as Avatar | undefined}
-      onClick={handleClick}
-      hoverEffect="lift"
-      leftBadge={
-        <BadgeGroup>
-          {card.type === 'event' && <LiveBadge />}
-          <UserCountBadge count={card.users} />
-        </BadgeGroup>
-      }
-      leftBadgeTransparent
-      hideLocation
-    />
-  )
-})
+)
 
 LiveNowCardItem.displayName = 'LiveNowCardItem'
 

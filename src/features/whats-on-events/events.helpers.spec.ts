@@ -348,7 +348,7 @@ describe('enrichPlaceCards', () => {
 
     beforeEach(async () => {
       cards = [{ ...createMockPlaceCard(), type: 'event', id: 'ev-1' }]
-      result = await enrichPlaceCards(cards, { placesUrl: 'https://places.test', peerUrl: 'https://peer.test' })
+      result = await enrichPlaceCards(cards, { placesUrl: 'https://places.test' })
     })
 
     it('should return the original cards unchanged', () => {
@@ -421,83 +421,132 @@ describe('enrichPlaceCards', () => {
     })
   })
 
-  describe('when peerUrl is provided', () => {
-    describe('and the deployer is resolved', () => {
+  describe('when the places response includes a creator_address', () => {
+    describe('and the card has no creatorAddress', () => {
       let result: LiveNowCard[]
 
       beforeEach(async () => {
         mockFetchResponses({
-          '/content/entities/active': [{ id: 'entity-1', pointers: ['10,20'] }],
-          '/content/deployments': { deployments: [{ deployedBy: '0xDeployer' }] }
+          '/places': {
+            data: [{ description: 'Owned', categories: [], creator_address: '0x9E0f6f65a3E165Da6bd074BF62f2ca0A78cb7D2b' }]
+          }
         })
-        result = await enrichPlaceCards([createMockPlaceCard()], { peerUrl: 'https://peer.test' })
+        result = await enrichPlaceCards([createMockPlaceCard()], { placesUrl: 'https://places.test' })
       })
 
-      it('should enrich the card with creatorAddress', () => {
-        expect(result[0].creatorAddress).toBe('0xDeployer')
+      it('should enrich the card with creatorAddress from the Places API creator_address field', () => {
+        expect(result[0].creatorAddress).toBe('0x9E0f6f65a3E165Da6bd074BF62f2ca0A78cb7D2b')
       })
     })
 
     describe('and the card already has a creatorAddress', () => {
       let result: LiveNowCard[]
-      let fetchSpy: jest.SpyInstance
 
       beforeEach(async () => {
-        fetchSpy = jest.spyOn(global, 'fetch').mockImplementation(jest.fn())
-        fetchSpy.mockClear()
-        result = await enrichPlaceCards([createMockPlaceCard({ creatorAddress: '0xExisting' })], { peerUrl: 'https://peer.test' })
-      })
-
-      it('should not make any fetch calls', () => {
-        expect(fetchSpy).not.toHaveBeenCalled()
+        mockFetchResponses({
+          '/places': {
+            data: [{ description: 'Owned', categories: [], creator_address: '0x9E0f6f65a3E165Da6bd074BF62f2ca0A78cb7D2b' }]
+          }
+        })
+        result = await enrichPlaceCards([createMockPlaceCard({ creatorAddress: '0xExisting' })], { placesUrl: 'https://places.test' })
       })
 
       it('should keep the existing creatorAddress', () => {
         expect(result[0].creatorAddress).toBe('0xExisting')
       })
     })
-
-    describe('and the entity lookup fails', () => {
-      let cards: LiveNowCard[]
-      let result: LiveNowCard[]
-
-      beforeEach(async () => {
-        cards = [createMockPlaceCard()]
-        jest.spyOn(global, 'fetch').mockImplementation(() => Promise.reject(new Error('peer error')))
-        result = await enrichPlaceCards(cards, { peerUrl: 'https://peer.test' })
-      })
-
-      it('should return the original cards unchanged', () => {
-        expect(result).toBe(cards)
-      })
-    })
   })
 
-  describe('when both placesUrl and peerUrl are provided', () => {
+  describe('when the places response includes owner as a wallet address', () => {
     let result: LiveNowCard[]
 
     beforeEach(async () => {
       mockFetchResponses({
-        '/places': { data: [{ description: 'Great spot', categories: ['art'] }] },
-        '/content/entities/active': [{ id: 'entity-1', pointers: ['10,20'] }],
-        '/content/deployments': { deployments: [{ deployedBy: '0xArtist' }] }
+        '/places': {
+          data: [{ description: 'Owned', categories: [], owner: '0x797066a17F83425C1B4C7a8Cca52D19095520a52', contact_name: 'MetaDoge' }]
+        }
       })
-      result = await enrichPlaceCards([createMockPlaceCard()], {
-        placesUrl: 'https://places.test',
-        peerUrl: 'https://peer.test'
+      result = await enrichPlaceCards([createMockPlaceCard()], { placesUrl: 'https://places.test' })
+    })
+
+    it('should treat the wallet-shaped owner as creatorAddress', () => {
+      expect(result[0].creatorAddress).toBe('0x797066a17F83425C1B4C7a8Cca52D19095520a52')
+    })
+
+    it('should use contact_name as creatorName', () => {
+      expect(result[0].creatorName).toBe('MetaDoge')
+    })
+  })
+
+  describe('when owner is a display name rather than a wallet', () => {
+    let result: LiveNowCard[]
+
+    beforeEach(async () => {
+      mockFetchResponses({
+        '/places': {
+          data: [{ description: 'Owned', categories: [], owner: 'mgd                                       ', contact_name: null }]
+        }
       })
+      result = await enrichPlaceCards([createMockPlaceCard()], { placesUrl: 'https://places.test' })
     })
 
-    it('should enrich with description', () => {
-      expect(result[0].description).toBe('Great spot')
+    it('should not set it as creatorAddress', () => {
+      expect(result[0].creatorAddress).toBeUndefined()
     })
 
-    it('should enrich with categories', () => {
-      expect(result[0].categories).toEqual(['art'])
+    it('should fall back to the trimmed owner as creatorName', () => {
+      expect(result[0].creatorName).toBe('mgd')
+    })
+  })
+
+  describe('when contact_name is present', () => {
+    let result: LiveNowCard[]
+
+    beforeEach(async () => {
+      mockFetchResponses({
+        '/places': { data: [{ description: 'Place', categories: [], contact_name: 'Pink Oasis' }] }
+      })
+      result = await enrichPlaceCards([createMockPlaceCard()], { placesUrl: 'https://places.test' })
     })
 
-    it('should enrich with creatorAddress', () => {
-      expect(result[0].creatorAddress).toBe('0xArtist')
+    it('should set creatorName from contact_name', () => {
+      expect(result[0].creatorName).toBe('Pink Oasis')
+    })
+  })
+
+  describe('when the card already has a creatorName', () => {
+    let result: LiveNowCard[]
+
+    beforeEach(async () => {
+      mockFetchResponses({
+        '/places': { data: [{ description: 'Place', categories: [], contact_name: 'From API' }] }
+      })
+      result = await enrichPlaceCards([createMockPlaceCard({ creatorName: 'Existing' })], { placesUrl: 'https://places.test' })
+    })
+
+    it('should keep the existing creatorName', () => {
+      expect(result[0].creatorName).toBe('Existing')
+    })
+  })
+
+  describe('when placesUrl is missing', () => {
+    let cards: LiveNowCard[]
+    let result: LiveNowCard[]
+    let fetchSpy: jest.SpyInstance
+
+    beforeEach(async () => {
+      cards = [createMockPlaceCard()]
+      fetchSpy = jest.spyOn(global, 'fetch').mockImplementation(jest.fn())
+      fetchSpy.mockClear()
+      result = await enrichPlaceCards(cards, {})
+    })
+
+    it('should make no network calls', () => {
+      expect(fetchSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return the original cards unchanged', () => {
+      expect(result).toBe(cards)
     })
   })
 
