@@ -361,8 +361,15 @@ const RecurrenceText = styled(Typography)(({ theme }) => ({
   marginTop: theme.spacing(0.5)
 }))
 
+const AdminActionsRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(1),
+  marginTop: theme.spacing(2)
+}))
+
 export {
   ActionsRow,
+  AdminActionsRow,
   AvatarFallback,
   AvatarImage,
   CategoryLabel,
