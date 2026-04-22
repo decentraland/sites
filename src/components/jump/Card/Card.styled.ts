@@ -204,12 +204,10 @@ const CreatorAvatar = styled('img')(({ theme }) => ({
   height: 32,
   overflow: 'hidden',
   borderRadius: 34,
-  border: '2px solid #ffffff',
   [theme.breakpoints.down('xs')]: {
     width: 24,
     height: 24,
-    borderRadius: '50%',
-    borderWidth: 1.5
+    borderRadius: '50%'
   }
 }))
 
