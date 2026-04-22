@@ -20,16 +20,24 @@ const MAX_EVENT_DURATION_MS = 24 * 60 * 60 * 1000
 const MAX_NAME_LENGTH = 150
 const MAX_DESCRIPTION_LENGTH = 5000
 
+type ImageErrorCode =
+  | 'invalid_image_type'
+  | 'invalid_vertical_image_type'
+  | 'image_too_large'
+  | 'upload_failed'
+  | 'vertical_image_dimensions'
+  | 'vertical_image_decode'
+
 type CreateEventFormState = {
   image: File | null
   imagePreviewUrl: string | null
   imageUrl: string | null
-  imageError: string | null
+  imageError: ImageErrorCode | null
   isUploadingImage: boolean
   verticalImage: File | null
   verticalImagePreviewUrl: string | null
   verticalImageUrl: string | null
-  verticalImageError: string | null
+  verticalImageError: ImageErrorCode | null
   isUploadingVerticalImage: boolean
   name: string
   description: string
@@ -78,22 +86,22 @@ const initialState: CreateEventFormState = {
   notes: ''
 }
 
-function validateImage(file: File): string | null {
+function validateImage(file: File): ImageErrorCode | null {
   if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-    return 'create_event.error_invalid_image_type'
+    return 'invalid_image_type'
   }
   if (file.size > MAX_IMAGE_SIZE_BYTES) {
-    return 'create_event.error_image_too_large'
+    return 'image_too_large'
   }
   return null
 }
 
-function validateVerticalImage(file: File): string | null {
+function validateVerticalImage(file: File): ImageErrorCode | null {
   if (!ACCEPTED_VERTICAL_IMAGE_TYPES.includes(file.type)) {
-    return 'create_event.error_invalid_vertical_image_type'
+    return 'invalid_vertical_image_type'
   }
   if (file.size > MAX_IMAGE_SIZE_BYTES) {
-    return 'create_event.error_image_too_large'
+    return 'image_too_large'
   }
   return null
 }
@@ -114,16 +122,16 @@ function readImageDimensions(file: File): Promise<{ width: number; height: numbe
   })
 }
 
-async function validateVerticalImageDimensions(file: File): Promise<string | null> {
+async function validateVerticalImageDimensions(file: File): Promise<ImageErrorCode | null> {
   try {
     const { width, height } = await readImageDimensions(file)
     if (width !== VERTICAL_IMAGE_EXPECTED_WIDTH || height !== VERTICAL_IMAGE_EXPECTED_HEIGHT) {
-      return 'create_event.error_vertical_image_dimensions'
+      return 'vertical_image_dimensions'
     }
     return null
   } catch (error) {
     captureException(error, { tags: { feature: 'create_event', step: 'vertical_image_decode' } })
-    return 'create_event.error_vertical_image_decode'
+    return 'vertical_image_decode'
   }
 }
 
@@ -190,7 +198,7 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
         return
       }
       if (!identity) {
-        setForm(prev => ({ ...prev, imageError: 'create_event.error_upload_failed' }))
+        setForm(prev => ({ ...prev, imageError: 'upload_failed' }))
         return
       }
       const previewUrl = URL.createObjectURL(file)
@@ -212,7 +220,7 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
           return { ...prev, imageUrl: result.url, imagePreviewUrl: result.url, isUploadingImage: false }
         })
       } catch {
-        setForm(prev => ({ ...prev, isUploadingImage: false, imageError: 'create_event.error_upload_failed' }))
+        setForm(prev => ({ ...prev, isUploadingImage: false, imageError: 'upload_failed' }))
       }
     },
     [identity, uploadPoster]
@@ -243,7 +251,7 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
         return
       }
       if (!identity) {
-        setForm(prev => ({ ...prev, verticalImageError: 'create_event.error_upload_failed' }))
+        setForm(prev => ({ ...prev, verticalImageError: 'upload_failed' }))
         return
       }
       const previewUrl = URL.createObjectURL(file)
@@ -273,7 +281,7 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
         setForm(prev => ({
           ...prev,
           isUploadingVerticalImage: false,
-          verticalImageError: 'create_event.error_upload_failed'
+          verticalImageError: 'upload_failed'
         }))
       }
     },
@@ -417,4 +425,4 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
 }
 
 export { useCreateEventForm }
-export type { CreateEventFormState, FormErrors }
+export type { CreateEventFormState, FormErrors, ImageErrorCode }

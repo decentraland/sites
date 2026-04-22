@@ -164,7 +164,7 @@ describe('ImageUpload', () => {
     beforeEach(() => {
       props = {
         imagePreviewUrl: null,
-        imageError: 'create_event.error_invalid_image_type',
+        imageError: 'invalid_image_type',
         onImageSelect: jest.fn(),
         onImageRemove: jest.fn()
       }
@@ -194,7 +194,7 @@ describe('ImageUpload', () => {
     beforeEach(() => {
       props = {
         imagePreviewUrl: null,
-        imageError: 'create_event.error_image_too_large',
+        imageError: 'image_too_large',
         onImageSelect: jest.fn(),
         onImageRemove: jest.fn()
       }

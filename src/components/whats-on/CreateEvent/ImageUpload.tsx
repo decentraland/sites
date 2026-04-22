@@ -7,7 +7,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { useTranslation } from '@dcl/hooks'
-import { IMAGE_TOO_LARGE_KEY, OPTIMIZE_URL } from './shared'
+import type { ImageErrorCode } from '../../../hooks/useCreateEventForm'
 import {
   CameraIcon,
   ChooseLink,
@@ -30,9 +30,11 @@ import {
   UploadHintGroup
 } from './ImageUpload.styled'
 
+const OPTIMIZE_IMAGE_URL = 'https://imagecompressor.com/'
+
 type ImageUploadProps = {
   imagePreviewUrl: string | null
-  imageError: string | null
+  imageError: ImageErrorCode | null
   onImageSelect: (file: File) => void
   onImageRemove: () => void
 }
@@ -127,11 +129,11 @@ function ImageUpload({ imagePreviewUrl, imageError, onImageSelect, onImageRemove
             <ErrorOutlineIcon />
           </ErrorIcon>
           <ErrorText>
-            {t(imageError)}
-            {imageError === IMAGE_TOO_LARGE_KEY && (
+            {t(`create_event.error_${imageError}`)}
+            {imageError === 'image_too_large' && (
               <>
                 {' '}
-                <OptimizeLink href={OPTIMIZE_URL} target="_blank" rel="noreferrer">
+                <OptimizeLink href={OPTIMIZE_IMAGE_URL} target="_blank" rel="noreferrer">
                   {t('create_event.optimize_link')}
                 </OptimizeLink>
               </>

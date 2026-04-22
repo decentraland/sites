@@ -204,7 +204,7 @@ describe('VerticalCoverPanel', () => {
     beforeEach(() => {
       props = {
         previewUrl: null,
-        imageError: 'create_event.error_vertical_image_dimensions',
+        imageError: 'vertical_image_dimensions',
         onSelect: jest.fn(),
         onRemove: jest.fn()
       }
@@ -234,7 +234,7 @@ describe('VerticalCoverPanel', () => {
     beforeEach(() => {
       props = {
         previewUrl: null,
-        imageError: 'create_event.error_image_too_large',
+        imageError: 'image_too_large',
         onSelect: jest.fn(),
         onRemove: jest.fn()
       }
