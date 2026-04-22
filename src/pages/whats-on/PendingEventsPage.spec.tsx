@@ -34,8 +34,8 @@ jest.mock('../../components/whats-on/EventDetailModal/normalizers', () => ({
   normalizeEventEntry: jest.fn()
 }))
 
-jest.mock('../../components/whats-on/AllExperiences', () => ({
-  AllExperiencesCard: ({ event, onClick }: { event: { id: string; name: string }; onClick: () => void }) => (
+jest.mock('../../components/whats-on/PendingEventCard', () => ({
+  PendingEventCard: ({ event, onClick }: { event: { id: string; name: string }; onClick: () => void }) => (
     <button onClick={onClick}>{event.name}</button>
   )
 }))

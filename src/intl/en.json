@@ -857,7 +857,13 @@
       "empty": "No events waiting for approval",
       "approve": "Approve",
       "reject": "Reject",
-      "action_error": "Unable to update event. Please try again."
+      "action_error": "Unable to update event. Please try again.",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "in_n_days": "In {count} Days",
+      "status_pending": "Pending",
+      "status_approved": "Approved",
+      "status_rejected": "Rejected"
     },
     "users": {
       "title": "Users",

@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
-import { AllExperiencesCard } from '../../components/whats-on/AllExperiences'
 import { EventDetailModal } from '../../components/whats-on/EventDetailModal'
 import { normalizeEventEntry } from '../../components/whats-on/EventDetailModal/normalizers'
+import { PendingEventCard } from '../../components/whats-on/PendingEventCard'
 import { useApproveEventMutation, useGetAdminEventsQuery, useRejectEventMutation } from '../../features/whats-on/admin/admin.client'
 import type { EventEntry } from '../../features/whats-on-events/events.types'
 import { useAdminPermissions } from '../../hooks/useAdminPermissions'
@@ -24,7 +24,15 @@ function PendingEventsPage() {
   const [approve, { isLoading: isApproving }] = useApproveEventMutation()
   const [reject, { isLoading: isRejecting }] = useRejectEventMutation()
 
-  const pending = useMemo(() => events.filter(event => !event.approved && !event.rejected), [events])
+  const pending = useMemo(() => {
+    const now = Date.now()
+    return events.filter(event => {
+      if (event.approved || event.rejected) return false
+      const endsAt = event.finish_at ?? event.start_at
+      if (!endsAt) return true
+      return new Date(endsAt).getTime() > now
+    })
+  }, [events])
 
   const recentlyApproved = useMemo(() => {
     const cutoff = Date.now() - TWENTY_FOUR_HOURS_MS
@@ -78,7 +86,7 @@ function PendingEventsPage() {
           {pending.length === 0 ? (
             <EmptyStateText>{t('whats_on_admin.pending_events.empty')}</EmptyStateText>
           ) : (
-            pending.map(event => <AllExperiencesCard key={event.id} event={event} onClick={() => setActiveEvent(event)} />)
+            pending.map(event => <PendingEventCard key={event.id} event={event} onClick={() => setActiveEvent(event)} />)
           )}
         </CardGrid>
       </Section>
@@ -90,7 +98,7 @@ function PendingEventsPage() {
         </SectionTitle>
         <CardGrid>
           {recentlyApproved.map(event => (
-            <AllExperiencesCard key={event.id} event={event} onClick={() => setActiveEvent(event)} />
+            <PendingEventCard key={event.id} event={event} onClick={() => setActiveEvent(event)} />
           ))}
         </CardGrid>
       </Section>
