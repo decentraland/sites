@@ -5,6 +5,7 @@ import { useTranslation } from '@dcl/hooks'
 import { Box, Button, DialogContent, DialogTitle, IconButton, Switch, TextField } from 'decentraland-ui2'
 import { isValidWalletAddress } from '../../../features/whats-on/admin/admin.helpers'
 import { AdminPermission, UPDATEABLE_PERMISSIONS } from '../../../features/whats-on/admin/admin.types'
+import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
 import {
   Footer,
@@ -44,9 +45,13 @@ function AdminPermissionsModal({
   onSubmit
 }: AdminPermissionsModalProps) {
   const { t } = useTranslation()
+  const { address: currentAddress } = useAuthIdentity()
   const [address, setAddress] = useState(initialUser ?? '')
   const [permissions, setPermissions] = useState<AdminPermission[]>(initialPermissions)
   const { avatarFace, name } = useProfileAvatar(mode === 'edit' ? initialUser : undefined, { skip: mode !== 'edit' || !initialUser })
+
+  const isSelfEdit =
+    mode === 'edit' && initialUser != null && currentAddress != null && initialUser.toLowerCase() === currentAddress.toLowerCase()
 
   useEffect(() => {
     if (open) {
@@ -102,14 +107,18 @@ function AdminPermissionsModal({
           {UPDATEABLE_PERMISSIONS.map(permission => {
             const title = t(`whats_on_admin.permissions_modal.permissions.${permission}.title`)
             const description = t(`whats_on_admin.permissions_modal.permissions.${permission}.description`)
+            const isLockedSelfEdit = isSelfEdit && permission === AdminPermission.EDIT_ANY_PROFILE
             return (
               <PermissionRow key={permission}>
                 <PermissionMeta>
                   <PermissionTitle>{title}</PermissionTitle>
-                  <PermissionDescription>{description}</PermissionDescription>
+                  <PermissionDescription>
+                    {isLockedSelfEdit ? t('whats_on_admin.permissions_modal.self_edit_locked') : description}
+                  </PermissionDescription>
                 </PermissionMeta>
                 <Switch
                   checked={permissions.includes(permission)}
+                  disabled={isLockedSelfEdit}
                   onChange={() => toggle(permission)}
                   // eslint-disable-next-line @typescript-eslint/naming-convention
                   inputProps={{ 'aria-label': title }}

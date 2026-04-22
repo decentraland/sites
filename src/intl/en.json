@@ -891,6 +891,7 @@
       "save": "Save Changes",
       "save_error": "Unable to save permissions. Please try again.",
       "save_success": "Permissions updated",
+      "self_edit_locked": "You cannot remove your own admin permission",
       "permissions": {
         "approve_own_event": {
           "title": "Approve Own Events",

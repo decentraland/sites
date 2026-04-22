@@ -26,7 +26,7 @@ const PageTitle = styled(Typography)(({ theme }) => ({
   fontSize: theme.typography.h4.fontSize,
   fontWeight: 600,
   marginBottom: theme.spacing(3)
-}))
+})) as typeof Typography
 
 const Header = styled(Box)(({ theme }) => ({
   alignItems: 'center',

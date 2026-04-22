@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useGetMyProfileSettingsQuery } from '../features/whats-on/admin/admin.client'
 import { hasAnyAdminPermission } from '../features/whats-on/admin/admin.helpers'
 import { AdminPermission } from '../features/whats-on/admin/admin.types'
@@ -20,7 +21,7 @@ const EMPTY: AdminPermission[] = []
 
 function useAdminPermissions(): AdminPermissionsState {
   const { identity, hasValidIdentity } = useAuthIdentity()
-  const queryResult = useGetMyProfileSettingsQuery({ identity: identity! }, { skip: !hasValidIdentity || !identity })
+  const queryResult = useGetMyProfileSettingsQuery(hasValidIdentity && identity ? { identity } : skipToken)
 
   return useMemo(() => {
     const permissions = hasValidIdentity ? queryResult.data?.permissions ?? EMPTY : EMPTY

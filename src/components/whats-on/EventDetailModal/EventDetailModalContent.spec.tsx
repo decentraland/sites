@@ -27,7 +27,6 @@ jest.mock('@mui/icons-material/CalendarToday', () => ({
 }))
 
 jest.mock('decentraland-ui2', () => ({
-  Box: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Button: ({ children, onClick, disabled }: { children: React.ReactNode; onClick?: () => void; disabled?: boolean }) => (
     <button onClick={onClick} disabled={disabled}>
       {children}

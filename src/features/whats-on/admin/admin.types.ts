@@ -22,19 +22,9 @@ type AdminProfileSettings = {
   permissions: AdminPermission[]
 }
 
-type AdminProfileSettingsEnvelope = { ok: boolean; data: AdminProfileSettings }
-type AdminListEnvelope = { ok: boolean; data: AdminProfileSettings[] }
-
 type IdentityOnlyParams = { identity: AuthIdentity }
 type UpdateAdminPermissionsParams = IdentityOnlyParams & { address: string; permissions: AdminPermission[] }
 type AdminEventActionParams = IdentityOnlyParams & { eventId: string }
 
 export { AdminPermission, UPDATEABLE_PERMISSIONS }
-export type {
-  AdminEventActionParams,
-  AdminListEnvelope,
-  AdminProfileSettings,
-  AdminProfileSettingsEnvelope,
-  IdentityOnlyParams,
-  UpdateAdminPermissionsParams
-}
+export type { AdminEventActionParams, AdminProfileSettings, IdentityOnlyParams, UpdateAdminPermissionsParams }

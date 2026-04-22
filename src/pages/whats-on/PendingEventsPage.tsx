@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
+import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useTranslation } from '@dcl/hooks'
 import { Alert, Snackbar } from 'decentraland-ui2'
 import { EventDetailModal } from '../../components/whats-on/EventDetailModal'
@@ -22,18 +23,13 @@ function PendingEventsPage() {
   const [activeEvent, setActiveEvent] = useState<EventEntry | null>(null)
   const [feedback, setFeedback] = useState<{ message: string; severity: 'success' | 'error' } | null>(null)
 
-  const { data: events = [], refetch } = useGetAdminEventsQuery({ identity: identity! }, { skip: !identity || !allowed })
+  const { data: events = [] } = useGetAdminEventsQuery(identity && allowed ? { identity } : skipToken)
   const [approve, { isLoading: isApproving }] = useApproveEventMutation()
   const [reject, { isLoading: isRejecting }] = useRejectEventMutation()
 
   const pending = useMemo(() => {
     const now = Date.now()
-    return events.filter(event => {
-      if (event.approved || event.rejected) return false
-      const endsAt = event.finish_at ?? event.start_at
-      if (!endsAt) return true
-      return new Date(endsAt).getTime() > now
-    })
+    return events.filter(event => !event.approved && !event.rejected && new Date(event.finish_at).getTime() > now)
   }, [events])
 
   const recentlyApproved = useMemo(() => {
@@ -58,7 +54,6 @@ function PendingEventsPage() {
       await approve({ eventId: activeEvent.id, identity }).unwrap()
       setActiveEvent(null)
       setFeedback({ message: t('whats_on_admin.pending_events.approve_success'), severity: 'success' })
-      refetch()
     } catch (error) {
       console.error('[PendingEventsPage] approve failed', error)
       setFeedback({ message: t('whats_on_admin.pending_events.action_error'), severity: 'error' })
@@ -74,7 +69,6 @@ function PendingEventsPage() {
       await reject({ eventId: activeEvent.id, identity }).unwrap()
       setActiveEvent(null)
       setFeedback({ message: t('whats_on_admin.pending_events.reject_success'), severity: 'success' })
-      refetch()
     } catch (error) {
       console.error('[PendingEventsPage] reject failed', error)
       setFeedback({ message: t('whats_on_admin.pending_events.action_error'), severity: 'error' })

@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom'
 import CheckIcon from '@mui/icons-material/Check'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import SearchIcon from '@mui/icons-material/Search'
+import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useTranslation } from '@dcl/hooks'
 import {
   Alert,
@@ -65,7 +66,7 @@ function UsersAdminPage() {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
 
-  const { data = [], isFetching, refetch } = useListAdminsQuery({ identity: identity! }, { skip: !identity || !canEditAnyProfile })
+  const { data = [], isFetching } = useListAdminsQuery(identity && canEditAnyProfile ? { identity } : skipToken)
   const [updatePermissions, { isLoading: isSubmitting }] = useUpdateAdminPermissionsMutation()
 
   const filtered = useMemo(() => {
@@ -86,7 +87,6 @@ function UsersAdminPage() {
       await updatePermissions({ address, permissions, identity }).unwrap()
       setModalState(null)
       setFeedback({ message: t('whats_on_admin.permissions_modal.save_success'), severity: 'success' })
-      refetch()
     } catch (error) {
       console.error('[UsersAdminPage] updatePermissions failed', error)
       setFeedback({ message: t('whats_on_admin.permissions_modal.save_error'), severity: 'error' })
@@ -162,6 +162,7 @@ function UsersAdminPage() {
 
       {modalState && (
         <AdminPermissionsModal
+          key={modalState.user ?? 'add'}
           open
           mode={modalState.mode}
           initialUser={modalState.user}

@@ -31,7 +31,7 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   fontSize: theme.typography.h4.fontSize,
   fontWeight: 600,
   marginBottom: theme.spacing(3)
-}))
+})) as typeof Typography
 
 const SectionSubtitle = styled('span')(({ theme }) => ({
   color: theme.palette.grey[400],

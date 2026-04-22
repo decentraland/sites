@@ -19,10 +19,11 @@ function AdminTabsBar() {
   const canSeePending = canApproveAnyEvent || canApproveOwnEvent || canEditAnyEvent
   const canSeeUsers = canEditAnyProfile
 
-  const activeValue = useMemo(() => {
+  const activeValue = useMemo<string | false>(() => {
     if (pathname.startsWith(ROUTE_PENDING)) return ROUTE_PENDING
     if (pathname.startsWith(ROUTE_USERS)) return ROUTE_USERS
-    return ROUTE_WHATS_ON
+    if (pathname === ROUTE_WHATS_ON) return ROUTE_WHATS_ON
+    return false
   }, [pathname])
 
   if (!isAdmin) return null

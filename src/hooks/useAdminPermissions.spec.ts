@@ -1,3 +1,4 @@
+import { skipToken } from '@reduxjs/toolkit/query/react'
 import { AdminPermission } from '../features/whats-on/admin'
 import { useAdminPermissions } from './useAdminPermissions'
 
@@ -37,9 +38,9 @@ describe('when the user has no valid identity', () => {
     expect(result.current.hasIdentity).toBe(false)
   })
 
-  it('should skip the profile settings query', () => {
+  it('should pass skipToken to the profile settings query', () => {
     renderHook(() => useAdminPermissions())
-    expect(useGetMyProfileSettingsQuery).toHaveBeenCalledWith(expect.any(Object), expect.objectContaining({ skip: true }))
+    expect(useGetMyProfileSettingsQuery).toHaveBeenCalledWith(skipToken)
   })
 })
 

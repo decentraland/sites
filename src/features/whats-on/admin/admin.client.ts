@@ -2,14 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { getEnv } from '../../../config/env'
 import { fetchWithIdentity } from '../../../utils/signedFetch'
 import type { EventEntry } from '../../whats-on-events/events.types'
-import type {
-  AdminEventActionParams,
-  AdminListEnvelope,
-  AdminProfileSettings,
-  AdminProfileSettingsEnvelope,
-  IdentityOnlyParams,
-  UpdateAdminPermissionsParams
-} from './admin.types'
+import type { AdminEventActionParams, AdminProfileSettings, IdentityOnlyParams, UpdateAdminPermissionsParams } from './admin.types'
 
 const adminClient = createApi({
   reducerPath: 'adminClient',
@@ -25,7 +18,7 @@ const adminClient = createApi({
           if (!response.ok) {
             throw new Error(`me/settings ${response.status}`)
           }
-          const envelope: AdminProfileSettingsEnvelope = await response.json()
+          const envelope: { ok: boolean; data: AdminProfileSettings } = await response.json()
           return { data: envelope.data }
         } catch (error) {
           return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
@@ -41,7 +34,7 @@ const adminClient = createApi({
           if (!response.ok) {
             throw new Error(`profiles/settings ${response.status}`)
           }
-          const envelope: AdminListEnvelope = await response.json()
+          const envelope: { ok: boolean; data: AdminProfileSettings[] } = await response.json()
           return { data: envelope.data ?? [] }
         } catch (error) {
           return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
@@ -63,11 +56,10 @@ const adminClient = createApi({
             { 'Content-Type': 'application/json' }
           )
           if (!response.ok) {
-            const envelope = await response.json().catch(() => null)
-            console.error('[Admin] updateAdminPermissions failed', response.status, envelope)
+            console.error('[Admin] updateAdminPermissions failed', response.status)
             return { error: { status: response.status, data: null } }
           }
-          const envelope: AdminProfileSettingsEnvelope = await response.json()
+          const envelope: { ok: boolean; data: AdminProfileSettings } = await response.json()
           return { data: envelope.data }
         } catch (error) {
           return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
@@ -105,8 +97,7 @@ const adminClient = createApi({
             { 'Content-Type': 'application/json' }
           )
           if (!response.ok) {
-            const envelope = await response.json().catch(() => null)
-            console.error('[Admin] approveEvent failed', response.status, envelope)
+            console.error('[Admin] approveEvent failed', response.status)
             return { error: { status: response.status, data: null } }
           }
           return { data: undefined }
@@ -130,8 +121,7 @@ const adminClient = createApi({
             { 'Content-Type': 'application/json' }
           )
           if (!response.ok) {
-            const envelope = await response.json().catch(() => null)
-            console.error('[Admin] rejectEvent failed', response.status, envelope)
+            console.error('[Admin] rejectEvent failed', response.status)
             return { error: { status: response.status, data: null } }
           }
           return { data: undefined }

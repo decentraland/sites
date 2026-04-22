@@ -6,6 +6,10 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
+jest.mock('../../../hooks/useAuthIdentity', () => ({
+  useAuthIdentity: jest.fn()
+}))
+
 jest.mock('@mui/icons-material/Close', () => ({
   __esModule: true,
   default: () => <span>X</span>
@@ -51,8 +55,25 @@ jest.mock('decentraland-ui2', () => ({
       {children}
     </button>
   ),
-  Switch: ({ checked, onChange, inputProps }: { checked: boolean; onChange: () => void; inputProps?: { 'aria-label'?: string } }) => (
-    <input type="checkbox" role="switch" aria-label={inputProps?.['aria-label']} checked={checked} onChange={onChange} />
+  Switch: ({
+    checked,
+    disabled,
+    onChange,
+    inputProps
+  }: {
+    checked: boolean
+    disabled?: boolean
+    onChange: () => void
+    inputProps?: { 'aria-label'?: string }
+  }) => (
+    <input
+      type="checkbox"
+      role="switch"
+      aria-label={inputProps?.['aria-label']}
+      checked={checked}
+      disabled={disabled}
+      onChange={onChange}
+    />
   ),
   TextField: ({
     label,
@@ -77,6 +98,11 @@ jest.mock('decentraland-ui2', () => ({
   ),
   Typography: ({ children }: { children: React.ReactNode }) => <span>{children}</span>
 }))
+
+beforeEach(() => {
+  const { useAuthIdentity } = jest.requireMock('../../../hooks/useAuthIdentity')
+  useAuthIdentity.mockReturnValue({ address: undefined, identity: undefined, hasValidIdentity: false })
+})
 
 describe('when rendering AdminPermissionsModal in add mode', () => {
   let onClose: jest.Mock
@@ -159,5 +185,41 @@ describe('when rendering AdminPermissionsModal in edit mode', () => {
 
   it('should leave the Approve Events switch unchecked', () => {
     expect(screen.getByRole('switch', { name: 'whats_on_admin.permissions_modal.permissions.approve_any_event.title' })).not.toBeChecked()
+  })
+})
+
+describe('when the current user edits their own permissions', () => {
+  const SELF_ADDRESS = '0xabcdef0123456789abcdef0123456789abcdef01'
+
+  beforeEach(() => {
+    const { useAuthIdentity } = jest.requireMock('../../../hooks/useAuthIdentity')
+    useAuthIdentity.mockReturnValue({ address: SELF_ADDRESS, identity: undefined, hasValidIdentity: true })
+    render(
+      <AdminPermissionsModal
+        open
+        mode="edit"
+        initialUser={SELF_ADDRESS}
+        initialPermissions={[AdminPermission.EDIT_ANY_PROFILE]}
+        isSubmitting={false}
+        onClose={jest.fn()}
+        onSubmit={jest.fn()}
+      />
+    )
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should disable the Edit Users switch', () => {
+    expect(screen.getByRole('switch', { name: 'whats_on_admin.permissions_modal.permissions.edit_any_profile.title' })).toBeDisabled()
+  })
+
+  it('should show the self-edit locked description', () => {
+    expect(screen.getByText('whats_on_admin.permissions_modal.self_edit_locked')).toBeInTheDocument()
+  })
+
+  it('should leave other switches enabled', () => {
+    expect(screen.getByRole('switch', { name: 'whats_on_admin.permissions_modal.permissions.approve_any_event.title' })).toBeEnabled()
   })
 })
