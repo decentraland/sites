@@ -32,7 +32,9 @@ function AdminTabsBar() {
     <Bar>
       <BarTabs
         value={activeValue}
-        onChange={(_, next) => navigate(next as string)}
+        onChange={(_, next) => {
+          if (typeof next === 'string') navigate(next)
+        }}
         textColor="primary"
         indicatorColor="primary"
         variant="scrollable"

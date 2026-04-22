@@ -1,20 +1,50 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react'
 import { getEnv } from '../../../config/env'
 import { fetchWithIdentity } from '../../../utils/signedFetch'
 import type { EventEntry } from '../../whats-on-events/events.types'
 import type { AdminEventActionParams, AdminProfileSettings, IdentityOnlyParams, UpdateAdminPermissionsParams } from './admin.types'
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const JSON_HEADERS = { 'Content-Type': 'application/json' } as const
+
+const getEventsApiUrl = (): string => {
+  const url = getEnv('EVENTS_API_URL')
+  if (!url) throw new Error('[adminClient] EVENTS_API_URL is required')
+  return url
+}
+
+const buildEventActionQueryFn =
+  (key: 'approved' | 'rejected') =>
+  async ({ eventId, identity }: AdminEventActionParams) => {
+    try {
+      const body = JSON.stringify({ [key]: true })
+      const response = await fetchWithIdentity(
+        `${getEventsApiUrl()}/events/${encodeURIComponent(eventId)}`,
+        identity,
+        'PATCH',
+        body,
+        JSON_HEADERS
+      )
+      if (!response.ok) {
+        console.error(`[Admin] ${key}Event failed`, response.status)
+        return { error: { status: response.status, data: null } }
+      }
+      return { data: undefined as void }
+    } catch (error) {
+      return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+    }
+  }
+
 const adminClient = createApi({
   reducerPath: 'adminClient',
-  baseQuery: fetchBaseQuery({ baseUrl: '/' }),
+  baseQuery: fakeBaseQuery(),
   tagTypes: ['MyAdmin', 'Admins', 'PendingEvents'],
   keepUnusedDataFor: 60,
   endpoints: build => ({
     getMyProfileSettings: build.query<AdminProfileSettings, IdentityOnlyParams>({
       queryFn: async ({ identity }) => {
         try {
-          const baseUrl = getEnv('EVENTS_API_URL')!
-          const response = await fetchWithIdentity(`${baseUrl}/profiles/me/settings`, identity, 'GET')
+          const response = await fetchWithIdentity(`${getEventsApiUrl()}/profiles/me/settings`, identity, 'GET')
           if (!response.ok) {
             throw new Error(`me/settings ${response.status}`)
           }
@@ -29,8 +59,7 @@ const adminClient = createApi({
     listAdmins: build.query<AdminProfileSettings[], IdentityOnlyParams>({
       queryFn: async ({ identity }) => {
         try {
-          const baseUrl = getEnv('EVENTS_API_URL')!
-          const response = await fetchWithIdentity(`${baseUrl}/profiles/settings`, identity, 'GET')
+          const response = await fetchWithIdentity(`${getEventsApiUrl()}/profiles/settings`, identity, 'GET')
           if (!response.ok) {
             throw new Error(`profiles/settings ${response.status}`)
           }
@@ -45,15 +74,13 @@ const adminClient = createApi({
     updateAdminPermissions: build.mutation<AdminProfileSettings, UpdateAdminPermissionsParams>({
       queryFn: async ({ address, permissions, identity }) => {
         try {
-          const baseUrl = getEnv('EVENTS_API_URL')!
           const body = JSON.stringify({ permissions })
           const response = await fetchWithIdentity(
-            `${baseUrl}/profiles/${address.toLowerCase()}/settings`,
+            `${getEventsApiUrl()}/profiles/${address.toLowerCase()}/settings`,
             identity,
             'PATCH',
             body,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            { 'Content-Type': 'application/json' }
+            JSON_HEADERS
           )
           if (!response.ok) {
             console.error('[Admin] updateAdminPermissions failed', response.status)
@@ -70,8 +97,7 @@ const adminClient = createApi({
     getAdminEvents: build.query<EventEntry[], IdentityOnlyParams>({
       queryFn: async ({ identity }) => {
         try {
-          const baseUrl = getEnv('EVENTS_API_URL')!
-          const response = await fetchWithIdentity(`${baseUrl}/events?list=all`, identity, 'GET')
+          const response = await fetchWithIdentity(`${getEventsApiUrl()}/events?list=all`, identity, 'GET')
           if (!response.ok) {
             throw new Error(`admin events ${response.status}`)
           }
@@ -84,51 +110,11 @@ const adminClient = createApi({
       providesTags: ['PendingEvents']
     }),
     approveEvent: build.mutation<void, AdminEventActionParams>({
-      queryFn: async ({ eventId, identity }) => {
-        try {
-          const baseUrl = getEnv('EVENTS_API_URL')!
-          const body = JSON.stringify({ approved: true })
-          const response = await fetchWithIdentity(
-            `${baseUrl}/events/${encodeURIComponent(eventId)}`,
-            identity,
-            'PATCH',
-            body,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            { 'Content-Type': 'application/json' }
-          )
-          if (!response.ok) {
-            console.error('[Admin] approveEvent failed', response.status)
-            return { error: { status: response.status, data: null } }
-          }
-          return { data: undefined }
-        } catch (error) {
-          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
-        }
-      },
+      queryFn: buildEventActionQueryFn('approved'),
       invalidatesTags: ['PendingEvents']
     }),
     rejectEvent: build.mutation<void, AdminEventActionParams>({
-      queryFn: async ({ eventId, identity }) => {
-        try {
-          const baseUrl = getEnv('EVENTS_API_URL')!
-          const body = JSON.stringify({ rejected: true })
-          const response = await fetchWithIdentity(
-            `${baseUrl}/events/${encodeURIComponent(eventId)}`,
-            identity,
-            'PATCH',
-            body,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            { 'Content-Type': 'application/json' }
-          )
-          if (!response.ok) {
-            console.error('[Admin] rejectEvent failed', response.status)
-            return { error: { status: response.status, data: null } }
-          }
-          return { data: undefined }
-        } catch (error) {
-          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
-        }
-      },
+      queryFn: buildEventActionQueryFn('rejected'),
       invalidatesTags: ['PendingEvents']
     })
   })

@@ -10,7 +10,8 @@ import { useApproveEventMutation, useGetAdminEventsQuery, useRejectEventMutation
 import type { EventEntry } from '../../features/whats-on-events/events.types'
 import { useAdminPermissions } from '../../hooks/useAdminPermissions'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { CardGrid, EmptyStateText, PageContainer, Section, SectionSubtitle, SectionTitle } from './PendingEventsPage.styled'
+import { AdminPageContainer } from './AdminLayout.styled'
+import { CardGrid, EmptyStateText, Section, SectionSubtitle, SectionTitle } from './PendingEventsPage.styled'
 
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
 
@@ -45,41 +46,29 @@ function PendingEventsPage() {
 
   if (!isLoading && !allowed) return <Navigate to="/whats-on" replace />
 
-  const handleApprove = async () => {
+  const handleEventAction = async (trigger: typeof approve | typeof reject, successKey: string) => {
     if (!activeEvent || !identity) {
-      console.error('[PendingEventsPage] approve called without identity or event')
+      console.error('[PendingEventsPage] action called without identity or event')
       return
     }
     try {
-      await approve({ eventId: activeEvent.id, identity }).unwrap()
+      await trigger({ eventId: activeEvent.id, identity }).unwrap()
       setActiveEvent(null)
-      setFeedback({ message: t('whats_on_admin.pending_events.approve_success'), severity: 'success' })
+      setFeedback({ message: t(successKey), severity: 'success' })
     } catch (error) {
-      console.error('[PendingEventsPage] approve failed', error)
+      console.error('[PendingEventsPage] action failed', error)
       setFeedback({ message: t('whats_on_admin.pending_events.action_error'), severity: 'error' })
     }
   }
 
-  const handleReject = async () => {
-    if (!activeEvent || !identity) {
-      console.error('[PendingEventsPage] reject called without identity or event')
-      return
-    }
-    try {
-      await reject({ eventId: activeEvent.id, identity }).unwrap()
-      setActiveEvent(null)
-      setFeedback({ message: t('whats_on_admin.pending_events.reject_success'), severity: 'success' })
-    } catch (error) {
-      console.error('[PendingEventsPage] reject failed', error)
-      setFeedback({ message: t('whats_on_admin.pending_events.action_error'), severity: 'error' })
-    }
-  }
+  const handleApprove = () => handleEventAction(approve, 'whats_on_admin.pending_events.approve_success')
+  const handleReject = () => handleEventAction(reject, 'whats_on_admin.pending_events.reject_success')
 
   const processing = isApproving || isRejecting
   const isPendingActive = activeEvent !== null && !activeEvent.approved && !activeEvent.rejected
 
   return (
-    <PageContainer>
+    <AdminPageContainer>
       <Section>
         <SectionTitle component="h1">{t('whats_on_admin.pending_events.title')}</SectionTitle>
         <CardGrid>
@@ -124,7 +113,7 @@ function PendingEventsPage() {
           </Alert>
         ) : undefined}
       </Snackbar>
-    </PageContainer>
+    </AdminPageContainer>
   )
 }
 
