@@ -1,4 +1,4 @@
-import { coordsKey } from '../events/events.helpers'
+import { DCL_FOUNDATION_NAME, coordsKey } from '../events/events.helpers'
 import type { ActiveEntity, HotScene } from '../events/events.types'
 import type { EventEntry } from './events.types'
 
@@ -17,6 +17,16 @@ interface LiveNowCard {
 }
 
 const DEFAULT_MIN_USERS = 5
+const DCL_FOUNDATION_NAME_LOWER = DCL_FOUNDATION_NAME.toLowerCase()
+
+function isDclFoundationCreator(creatorName: string | null | undefined): boolean {
+  return creatorName?.trim().toLowerCase() === DCL_FOUNDATION_NAME_LOWER
+}
+
+// Reads `window.location.origin` lazily so this file stays safe to evaluate outside a DOM (Jest without jsdom, SSR experiments).
+function getDclFoundationLogoUrl(): string {
+  return `${window.location.origin}/dcl-logo.svg`
+}
 
 function findEventInMap(eventsByCoord: Map<string, EventEntry>, parcels: Array<[number, number]>): EventEntry | undefined {
   for (const [px, py] of parcels) {
@@ -40,7 +50,7 @@ function buildPlazaCard(hotScenes: HotScene[]): LiveNowCard {
     image: plaza?.thumbnail ?? '',
     users: plaza?.usersTotalCount ?? 0,
     coordinates: plazaCoords,
-    creatorName: 'Decentraland Foundation',
+    creatorName: DCL_FOUNDATION_NAME,
     isGenesisPlaza: true
   }
 }
@@ -84,7 +94,7 @@ function buildLiveNowCards(liveEvents: EventEntry[], hotScenes: HotScene[], minU
       image: scene.thumbnail,
       users: scene.usersTotalCount,
       coordinates: coordsKey(scene.baseCoords[0], scene.baseCoords[1]),
-      ...(genesis && { creatorName: 'Decentraland Foundation' }),
+      ...(genesis && { creatorName: DCL_FOUNDATION_NAME }),
       isGenesisPlaza: genesis
     })
   }
@@ -183,5 +193,5 @@ async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig):
   })
 }
 
-export { buildLiveNowCards, enrichPlaceCards }
+export { buildLiveNowCards, DCL_FOUNDATION_NAME, enrichPlaceCards, getDclFoundationLogoUrl, isDclFoundationCreator }
 export type { EnrichmentConfig, HotScene, LiveNowCard }

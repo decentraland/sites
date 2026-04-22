@@ -10,6 +10,12 @@ jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: () => ({ data: undefined })
 }))
 
+const mockUseProfileAvatar = jest.fn()
+const defaultProfileAvatar = { avatar: undefined, avatarForCard: undefined, avatarFace: undefined, name: undefined }
+jest.mock('../../../hooks/useProfileAvatar', () => ({
+  useProfileAvatar: (...args: unknown[]) => mockUseProfileAvatar(...(args as []))
+}))
+
 jest.mock('../../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ identity: undefined, hasValidIdentity: false, address: undefined })
 }))
@@ -106,6 +112,7 @@ describe('UpcomingCard', () => {
 
   beforeEach(() => {
     mockOnClick = jest.fn()
+    mockUseProfileAvatar.mockReturnValue(defaultProfileAvatar)
   })
 
   afterEach(() => {
@@ -175,6 +182,36 @@ describe('UpcomingCard', () => {
       fireEvent.click(calendarButton)
 
       expect(mockHandleCalendar).toHaveBeenCalled()
+    })
+  })
+
+  describe('when the event is hosted by Decentraland Foundation', () => {
+    beforeEach(() => {
+      mockUseProfileAvatar.mockReturnValue({
+        avatar: undefined,
+        avatarForCard: undefined,
+        avatarFace: 'https://example.com/baybackner.png',
+        name: 'BayBackner'
+      })
+    })
+
+    it('should render "Decentraland Foundation" even when the Catalyst profile returns a different name', () => {
+      render(<UpcomingCard event={createMockEvent({ user_name: 'Decentraland Foundation' })} onClick={mockOnClick} />)
+
+      expect(screen.getByTestId('creator-name')).toHaveTextContent('Decentraland Foundation')
+      expect(screen.queryByText('BayBackner')).not.toBeInTheDocument()
+    })
+
+    it('should skip the profile fetch for Foundation events', () => {
+      render(<UpcomingCard event={createMockEvent({ user_name: 'Decentraland Foundation' })} onClick={mockOnClick} />)
+
+      expect(mockUseProfileAvatar).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ skip: true }))
+    })
+
+    it('should match case-insensitively', () => {
+      render(<UpcomingCard event={createMockEvent({ user_name: 'decentraland foundation' })} onClick={mockOnClick} />)
+
+      expect(screen.getByTestId('creator-name')).toHaveTextContent('Decentraland Foundation')
     })
   })
 })

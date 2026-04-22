@@ -6,8 +6,10 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
+const mockUseGetProfileQuery = jest.fn()
+const defaultProfileQuery = { data: undefined }
 jest.mock('../../../features/profile/profile.client', () => ({
-  useGetProfileQuery: () => ({ data: undefined })
+  useGetProfileQuery: (...args: unknown[]) => mockUseGetProfileQuery(...(args as []))
 }))
 
 jest.mock('../../../utils/whatsOnUrl', () => ({
@@ -88,6 +90,7 @@ describe('EventDetailModalHero', () => {
   beforeEach(() => {
     mockOnClose = jest.fn()
     mockWindowOpen = jest.spyOn(window, 'open').mockImplementation(jest.fn())
+    mockUseGetProfileQuery.mockReturnValue(defaultProfileQuery)
   })
 
   afterEach(() => {
@@ -208,6 +211,33 @@ describe('EventDetailModalHero', () => {
       fireEvent.click(screen.getByTestId('close-button'))
 
       expect(mockOnClose).toHaveBeenCalled()
+    })
+  })
+
+  describe('when the event creator is Decentraland Foundation', () => {
+    beforeEach(() => {
+      mockUseGetProfileQuery.mockReturnValue({
+        data: { avatars: [{ name: 'BayBackner', avatar: { snapshots: { face256: 'https://example.com/baybackner.png' } } }] }
+      } as ReturnType<typeof mockUseGetProfileQuery>)
+    })
+
+    it('should render "Decentraland Foundation" even when the Catalyst profile returns a different name', () => {
+      render(<EventDetailModalHero data={createMockData({ creatorName: 'Decentraland Foundation' })} onClose={mockOnClose} />)
+
+      expect(screen.getByTestId('creator-name')).toHaveTextContent('Decentraland Foundation')
+      expect(screen.queryByText('BayBackner')).not.toBeInTheDocument()
+    })
+
+    it('should skip the profile fetch for Foundation events', () => {
+      render(<EventDetailModalHero data={createMockData({ creatorName: 'Decentraland Foundation' })} onClose={mockOnClose} />)
+
+      expect(mockUseGetProfileQuery).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ skip: true }))
+    })
+
+    it('should match case-insensitively', () => {
+      render(<EventDetailModalHero data={createMockData({ creatorName: 'decentraland foundation' })} onClose={mockOnClose} />)
+
+      expect(screen.getByTestId('creator-name')).toHaveTextContent('Decentraland Foundation')
     })
   })
 

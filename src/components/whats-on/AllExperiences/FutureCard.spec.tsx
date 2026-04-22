@@ -31,6 +31,12 @@ jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: () => ({ data: null })
 }))
 
+const mockUseProfileAvatar = jest.fn()
+const defaultProfileAvatar = { avatar: undefined, avatarForCard: undefined, avatarFace: undefined, name: undefined }
+jest.mock('../../../hooks/useProfileAvatar', () => ({
+  useProfileAvatar: (...args: unknown[]) => mockUseProfileAvatar(...(args as []))
+}))
+
 const mockHandleCopy = jest.fn()
 const mockHandleCalendar = jest.fn()
 jest.mock('../../../hooks/useCardActions', () => ({
@@ -112,6 +118,7 @@ describe('FutureCard', () => {
 
   beforeEach(() => {
     mockOnClick = jest.fn()
+    mockUseProfileAvatar.mockReturnValue(defaultProfileAvatar)
   })
 
   afterEach(() => {
@@ -218,6 +225,34 @@ describe('FutureCard', () => {
 
       fireEvent.click(screen.getByTestId('future-card'))
       expect(mockOnClick).toHaveBeenCalledWith(event)
+    })
+  })
+
+  describe('when the event is hosted by Decentraland Foundation', () => {
+    let event: ReturnType<typeof createMockEvent>
+
+    beforeEach(() => {
+      mockHasValidIdentity.mockReturnValue(false)
+      mockUseProfileAvatar.mockReturnValue({
+        avatar: undefined,
+        avatarForCard: undefined,
+        avatarFace: 'https://example.com/baybackner.png',
+        name: 'BayBackner'
+      })
+      event = createMockEvent({ live: false, user_name: 'Decentraland Foundation' })
+    })
+
+    it('should render "Decentraland Foundation" even when the Catalyst profile returns a different name', () => {
+      render(<FutureCard event={event} onClick={mockOnClick} />)
+
+      expect(screen.getByText('Decentraland Foundation')).toBeInTheDocument()
+      expect(screen.queryByText('BayBackner')).not.toBeInTheDocument()
+    })
+
+    it('should skip the profile fetch for Foundation events', () => {
+      render(<FutureCard event={event} onClick={mockOnClick} />)
+
+      expect(mockUseProfileAvatar).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ skip: true }))
     })
   })
 })

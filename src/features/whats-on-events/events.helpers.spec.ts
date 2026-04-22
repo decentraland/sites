@@ -1,7 +1,43 @@
 import { createMockEvent, createMockPlaceCard, createMockScene } from '../../__test-utils__/factories'
-import { buildLiveNowCards, enrichPlaceCards } from './events.helpers'
+import { buildLiveNowCards, enrichPlaceCards, isDclFoundationCreator } from './events.helpers'
 import type { HotScene, LiveNowCard } from './events.helpers'
 import type { EventEntry } from './events.types'
+
+describe('isDclFoundationCreator', () => {
+  describe('when the creator name is exactly "Decentraland Foundation"', () => {
+    it('should return true', () => {
+      expect(isDclFoundationCreator('Decentraland Foundation')).toBe(true)
+    })
+  })
+
+  describe('when the creator name matches case-insensitively', () => {
+    it('should return true', () => {
+      expect(isDclFoundationCreator('decentraland foundation')).toBe(true)
+      expect(isDclFoundationCreator('DECENTRALAND FOUNDATION')).toBe(true)
+    })
+  })
+
+  describe('when the creator name has surrounding whitespace', () => {
+    it('should return true', () => {
+      expect(isDclFoundationCreator('  Decentraland Foundation  ')).toBe(true)
+    })
+  })
+
+  describe('when the creator name is a different value', () => {
+    it('should return false', () => {
+      expect(isDclFoundationCreator('BayBackner')).toBe(false)
+      expect(isDclFoundationCreator('Foundation')).toBe(false)
+    })
+  })
+
+  describe('when the creator name is empty, null, or undefined', () => {
+    it('should return false', () => {
+      expect(isDclFoundationCreator('')).toBe(false)
+      expect(isDclFoundationCreator(null)).toBe(false)
+      expect(isDclFoundationCreator(undefined)).toBe(false)
+    })
+  })
+})
 
 describe('buildLiveNowCards', () => {
   afterEach(() => {
