@@ -91,7 +91,7 @@ function EventDetailModalHero({ data, onClose }: { data: ModalEventData; onClose
           )}
           <ActionsRow>
             <JumpInButton onClick={handleJumpIn}>{t('event_detail.jump_in')}</JumpInButton>
-            {data.isEvent && (
+            {data.isEvent && !data.live && (
               <Tooltip title={t('event_detail.remind_me')} placement="top" arrow>
                 <SecondaryButton onClick={handleRemindToggle} disabled={isRemindLoading} aria-label={t('event_detail.remind_me')}>
                   <RemindMeIcon active={isReminded} shaking={isShaking} size={20} />

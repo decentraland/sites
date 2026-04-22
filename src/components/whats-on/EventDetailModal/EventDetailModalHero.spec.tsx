@@ -160,6 +160,12 @@ describe('EventDetailModalHero', () => {
 
       expect(screen.getByTestId('category-label')).toHaveTextContent('event_detail.live_now')
     })
+
+    it('should not render the remind me button', () => {
+      render(<EventDetailModalHero data={createMockData({ live: true })} onClose={mockOnClose} />)
+
+      expect(screen.queryByTestId('remind-me-icon')).not.toBeInTheDocument()
+    })
   })
 
   describe('when the event has no categories and is not live', () => {
