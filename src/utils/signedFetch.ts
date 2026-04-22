@@ -6,7 +6,7 @@ const signedFetch = signedFetchFactory()
 function fetchWithIdentity(
   url: string,
   identity: AuthIdentity,
-  method: 'GET' | 'POST' | 'DELETE',
+  method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
   body?: BodyInit,
   headers?: Record<string, string>
 ): Promise<Response> {

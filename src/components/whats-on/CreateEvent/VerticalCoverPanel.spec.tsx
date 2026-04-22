@@ -21,9 +21,10 @@ jest.mock('./VerticalCoverPanel.styled', () => ({
   DropZone: ({
     children,
     $hasImage,
+    $hasError,
     ...rest
-  }: React.HTMLAttributes<HTMLDivElement> & { children: React.ReactNode; $hasImage: boolean }) => (
-    <div data-testid="drop-zone" data-has-image={$hasImage} {...rest}>
+  }: React.HTMLAttributes<HTMLDivElement> & { children: React.ReactNode; $hasImage: boolean; $hasError: boolean }) => (
+    <div data-testid="drop-zone" data-has-image={$hasImage} data-has-error={$hasError} {...rest}>
       {children}
     </div>
   ),
@@ -43,6 +44,10 @@ jest.mock('./VerticalCoverPanel.styled', () => ({
   SelectText: ({ children }: { children: React.ReactNode }) => <span>{children}</span>
 }))
 
+jest.mock('./ImageErrorMessage', () => ({
+  ImageErrorMessage: ({ code }: { code: string }) => <div data-testid="image-error-message" data-code={code} />
+}))
+
 describe('VerticalCoverPanel', () => {
   let props: VerticalCoverPanelProps
 
@@ -54,6 +59,7 @@ describe('VerticalCoverPanel', () => {
     beforeEach(() => {
       props = {
         previewUrl: null,
+        imageError: null,
         onSelect: jest.fn(),
         onRemove: jest.fn()
       }
@@ -88,6 +94,7 @@ describe('VerticalCoverPanel', () => {
     beforeEach(() => {
       props = {
         previewUrl: 'https://cdn.example.com/vertical.jpg',
+        imageError: null,
         onSelect: jest.fn(),
         onRemove: jest.fn()
       }
@@ -119,6 +126,7 @@ describe('VerticalCoverPanel', () => {
       mockOnSelect = jest.fn()
       props = {
         previewUrl: null,
+        imageError: null,
         onSelect: mockOnSelect,
         onRemove: jest.fn()
       }
@@ -143,6 +151,7 @@ describe('VerticalCoverPanel', () => {
       mockOnSelect = jest.fn()
       props = {
         previewUrl: null,
+        imageError: null,
         onSelect: mockOnSelect,
         onRemove: jest.fn()
       }
@@ -167,6 +176,7 @@ describe('VerticalCoverPanel', () => {
       mockOnRemove = jest.fn()
       props = {
         previewUrl: 'https://cdn.example.com/vertical.jpg',
+        imageError: null,
         onSelect: jest.fn(),
         onRemove: mockOnRemove
       }
@@ -178,6 +188,29 @@ describe('VerticalCoverPanel', () => {
       fireEvent.click(screen.getByTestId('preview-overlay'))
 
       expect(mockOnRemove).toHaveBeenCalled()
+    })
+  })
+
+  describe('when an imageError is provided', () => {
+    beforeEach(() => {
+      props = {
+        previewUrl: null,
+        imageError: 'vertical_image_dimensions',
+        onSelect: jest.fn(),
+        onRemove: jest.fn()
+      }
+    })
+
+    it('should mark the drop zone as having an error so the red-border shake animation plays', () => {
+      render(<VerticalCoverPanel {...props} />)
+
+      expect(screen.getByTestId('drop-zone')).toHaveAttribute('data-has-error', 'true')
+    })
+
+    it('should render the ImageErrorMessage with the provided code', () => {
+      render(<VerticalCoverPanel {...props} />)
+
+      expect(screen.getByTestId('image-error-message')).toHaveAttribute('data-code', 'vertical_image_dimensions')
     })
   })
 })

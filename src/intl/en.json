@@ -818,6 +818,10 @@
     "error_invalid_image_type": "Please upload a PNG, JPG, or GIF file.",
     "error_invalid_vertical_image_type": "Vertical cover must be PNG or JPG.",
     "error_image_too_large": "This image is too heavy (more than 500Kb), try to optimize with",
+    "error_image_dimensions": "Image must be 1340×670 pixels.",
+    "error_vertical_image_dimensions": "Vertical cover must be 716×1814 pixels.",
+    "error_vertical_image_decode": "We couldn't read this image. Please try a different file.",
+    "error_not_signed_in": "Your session expired. Please sign in again to submit this event.",
     "error_upload_failed": "Failed to upload image. Please try again.",
     "optimize_link": "optimizilla",
     "success_message": "Your event was created successfully. You'll be notified once it's approved. Track its status in “My Events”",
@@ -882,5 +886,81 @@
   },
   "seo": {
     "default_image_alt": "Decentraland - A virtual world owned by its users"
+  },
+  "whats_on_admin": {
+    "tabs": {
+      "whats_on": "What's On",
+      "pending_events": "Pending Events",
+      "users": "Users"
+    },
+    "cta": {
+      "create_event": "+ Create Event",
+      "add_user": "+ Add User"
+    },
+    "pending_events": {
+      "title": "Pending Events",
+      "recently_approved": "Recently Approved",
+      "recently_approved_subtitle": "(Last 24hs)",
+      "empty": "No events waiting for approval",
+      "approve": "Approve",
+      "reject": "Reject",
+      "action_error": "Unable to update event. Please try again.",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "in_n_days": "In {count} Days",
+      "status_pending": "Pending",
+      "status_approved": "Approved",
+      "status_rejected": "Rejected",
+      "approve_success": "Event approved",
+      "reject_success": "Event rejected"
+    },
+    "users": {
+      "title": "Users",
+      "search_label": "Search",
+      "search_placeholder": "Type wallet address",
+      "columns": {
+        "user": "User",
+        "approve_own_events": "Approve Own Events",
+        "approve_events": "Approve Events",
+        "edit_events": "Edit Events",
+        "edit_schedules": "Edit Schedules",
+        "edit_users": "Edit Users"
+      },
+      "empty": "No admins configured"
+    },
+    "permissions_modal": {
+      "add_title": "Add User",
+      "edit_title": "Edit User",
+      "wallet_label": "Wallet Address",
+      "wallet_placeholder": "0x…",
+      "wallet_invalid": "Enter a valid Ethereum address",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "save_error": "Unable to save permissions. Please try again.",
+      "save_success": "Permissions updated",
+      "self_edit_locked": "You cannot remove your own admin permission",
+      "permissions": {
+        "approve_own_event": {
+          "title": "Approve Own Events",
+          "description": "Allow this user to approve events they create"
+        },
+        "approve_any_event": {
+          "title": "Approve Events",
+          "description": "Allow this user to approve any event"
+        },
+        "edit_any_event": {
+          "title": "Edit Events",
+          "description": "Allow this user to edit any event"
+        },
+        "edit_any_schedule": {
+          "title": "Edit Schedules",
+          "description": "Allow this user to edit schedules"
+        },
+        "edit_any_profile": {
+          "title": "Edit Users",
+          "description": "Allow this user to manage admin permissions"
+        }
+      }
+    }
   }
 }

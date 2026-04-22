@@ -1,17 +1,22 @@
 import { act, renderHook } from '@testing-library/react'
 import type { AuthIdentity } from '@dcl/crypto'
 import { useCreateEventForm } from './useCreateEventForm'
-import type { CreateEventFormState } from './useCreateEventForm'
+import type { CreateEventFormState } from './useCreateEventForm.types'
 
 const mockCreateEvent = jest.fn()
 const mockUploadPoster = jest.fn()
 const mockUploadPosterVertical = jest.fn()
 const mockUnwrap = jest.fn()
+const mockCaptureException = jest.fn()
 
 let mockUseAuthIdentityReturn: { identity: AuthIdentity | undefined }
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
+}))
+
+jest.mock('@sentry/browser', () => ({
+  captureException: (...args: unknown[]) => mockCaptureException(...args)
 }))
 
 jest.mock('../features/whats-on-events', () => ({
@@ -56,6 +61,30 @@ function fillValidForm(setField: ReturnType<typeof useCreateEventForm>['setField
   })
 }
 
+let mockImageWidth = 716
+let mockImageHeight = 1814
+let mockImageShouldFail = false
+
+class MockImage {
+  public naturalWidth = 0
+  public naturalHeight = 0
+  public onload: (() => void) | null = null
+  public onerror: (() => void) | null = null
+  set src(_url: string) {
+    setTimeout(() => {
+      if (mockImageShouldFail) {
+        this.onerror?.()
+      } else {
+        this.naturalWidth = mockImageWidth
+        this.naturalHeight = mockImageHeight
+        this.onload?.()
+      }
+    }, 0)
+  }
+}
+
+const originalImage = global.Image
+
 describe('useCreateEventForm', () => {
   let mockIdentity: AuthIdentity
 
@@ -68,21 +97,34 @@ describe('useCreateEventForm', () => {
     mockUnwrap.mockResolvedValue({ ok: true, data: { id: 'ev-1' } })
     Object.defineProperty(URL, 'createObjectURL', { configurable: true, writable: true, value: jest.fn(() => 'blob:preview') })
     Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, writable: true, value: jest.fn() })
+    mockImageWidth = 716
+    mockImageHeight = 1814
+    mockImageShouldFail = false
+    ;(global as unknown as { Image: unknown }).Image = MockImage
   })
 
   afterEach(() => {
     delete (URL as unknown as Record<string, unknown>).createObjectURL
 
     delete (URL as unknown as Record<string, unknown>).revokeObjectURL
+    ;(global as unknown as { Image: unknown }).Image = originalImage
     jest.resetAllMocks()
   })
 
   describe('when initialized', () => {
-    it('should expose a blank form and mark it as invalid', () => {
+    it('should expose a blank form and surface required-field errors on submit', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
       expect(result.current.form.name).toBe('')
-      expect(result.current.isFormValid).toBe(false)
+      expect(result.current.errors).toEqual({})
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+      expect(result.current.errors.name).toBe('create_event.error_required')
+      expect(result.current.errors.description).toBe('create_event.error_required')
     })
   })
 
@@ -172,12 +214,17 @@ describe('useCreateEventForm', () => {
   })
 
   describe('when all required fields are filled with valid values', () => {
-    it('should mark the form as valid', () => {
+    it('should submit without validation errors', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
       fillValidForm(result.current.setField)
 
-      expect(result.current.isFormValid).toBe(true)
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors).toEqual({})
+      expect(mockCreateEvent).toHaveBeenCalled()
     })
   })
 
@@ -305,7 +352,7 @@ describe('useCreateEventForm', () => {
         await result.current.handleImageSelect(file)
       })
 
-      expect(result.current.form.imageError).toBe('create_event.error_invalid_image_type')
+      expect(result.current.form.imageError).toBe('invalid_image_type')
       expect(mockUploadPoster).not.toHaveBeenCalled()
     })
   })
@@ -319,7 +366,7 @@ describe('useCreateEventForm', () => {
         await result.current.handleImageSelect(oversized)
       })
 
-      expect(result.current.form.imageError).toBe('create_event.error_image_too_large')
+      expect(result.current.form.imageError).toBe('image_too_large')
     })
   })
 
@@ -351,7 +398,7 @@ describe('useCreateEventForm', () => {
         await result.current.handleImageSelect(file)
       })
 
-      expect(result.current.form.imageError).toBe('create_event.error_upload_failed')
+      expect(result.current.form.imageError).toBe('upload_failed')
     })
   })
 
@@ -369,7 +416,7 @@ describe('useCreateEventForm', () => {
       })
 
       expect(mockUploadPoster).not.toHaveBeenCalled()
-      expect(result.current.form.imageError).toBe('create_event.error_upload_failed')
+      expect(result.current.form.imageError).toBe('upload_failed')
     })
   })
 
@@ -387,7 +434,7 @@ describe('useCreateEventForm', () => {
       })
 
       expect(mockUploadPosterVertical).not.toHaveBeenCalled()
-      expect(result.current.form.verticalImageError).toBe('create_event.error_upload_failed')
+      expect(result.current.form.verticalImageError).toBe('upload_failed')
     })
   })
 
@@ -400,7 +447,7 @@ describe('useCreateEventForm', () => {
         await result.current.handleVerticalImageSelect(gif)
       })
 
-      expect(result.current.form.verticalImageError).toBe('create_event.error_invalid_vertical_image_type')
+      expect(result.current.form.verticalImageError).toBe('invalid_vertical_image_type')
       expect(mockUploadPosterVertical).not.toHaveBeenCalled()
     })
   })
@@ -414,7 +461,48 @@ describe('useCreateEventForm', () => {
         await result.current.handleVerticalImageSelect(oversized)
       })
 
-      expect(result.current.form.verticalImageError).toBe('create_event.error_image_too_large')
+      expect(result.current.form.verticalImageError).toBe('image_too_large')
+    })
+  })
+
+  describe('when the vertical image dimensions do not match 716x1814', () => {
+    beforeEach(() => {
+      mockImageWidth = 500
+      mockImageHeight = 500
+    })
+
+    it('should surface the vertical-dimensions error and not call uploadPosterVertical', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+      const file = new File(['x'], 'v.png', { type: 'image/png' })
+
+      await act(async () => {
+        await result.current.handleVerticalImageSelect(file)
+      })
+
+      expect(result.current.form.verticalImageError).toBe('vertical_image_dimensions')
+      expect(mockUploadPosterVertical).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when the vertical image fails to decode', () => {
+    beforeEach(() => {
+      mockImageShouldFail = true
+    })
+
+    it('should surface the decode error and report it to Sentry so the user retries with a different file', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+      const file = new File(['x'], 'v.png', { type: 'image/png' })
+
+      await act(async () => {
+        await result.current.handleVerticalImageSelect(file)
+      })
+
+      expect(result.current.form.verticalImageError).toBe('vertical_image_decode')
+      expect(mockUploadPosterVertical).not.toHaveBeenCalled()
+      expect(mockCaptureException).toHaveBeenCalledWith(
+        expect.any(Error),
+        expect.objectContaining({ tags: expect.objectContaining({ feature: 'create_event', step: 'vertical_image_decode' }) })
+      )
     })
   })
 
@@ -446,7 +534,7 @@ describe('useCreateEventForm', () => {
         await result.current.handleVerticalImageSelect(file)
       })
 
-      expect(result.current.form.verticalImageError).toBe('create_event.error_upload_failed')
+      expect(result.current.form.verticalImageError).toBe('upload_failed')
     })
   })
 
@@ -550,10 +638,117 @@ describe('useCreateEventForm', () => {
       mockUseAuthIdentityReturn = { identity: undefined }
     })
 
-    it('should not call createEvent', async () => {
+    it('should surface the not-signed-in submit error and not call createEvent', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
       fillValidForm(result.current.setField)
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+      expect(result.current.errors.submit).toBe('create_event.error_not_signed_in')
+    })
+  })
+
+  describe('when handleSubmit is invoked while an image upload is in flight', () => {
+    it('should not call createEvent so the payload does not ship with a null imageUrl', async () => {
+      let resolveUpload: ((value: { url: string }) => void) | null = null
+      mockUploadPoster.mockReturnValueOnce({
+        unwrap: () =>
+          new Promise<{ url: string }>(resolve => {
+            resolveUpload = resolve
+          })
+      })
+
+      const { result } = renderHook(() => useCreateEventForm())
+      fillValidForm(result.current.setField)
+
+      const file = new File(['x'], 'valid.png', { type: 'image/png' })
+      let pendingSelect: Promise<void> | null = null
+      act(() => {
+        pendingSelect = result.current.handleImageSelect(file)
+      })
+      expect(result.current.form.isUploadingImage).toBe(true)
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+
+      await act(async () => {
+        resolveUpload?.({ url: 'https://cdn/test.png' })
+        await pendingSelect
+      })
+    })
+  })
+
+  describe('when handleSubmit is invoked with a persistent image error', () => {
+    it('should not call createEvent so the user fixes the image first', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+      fillValidForm(result.current.setField)
+
+      const oversized = new File([new Uint8Array(600 * 1024)], 'big.png', { type: 'image/png' })
+      await act(async () => {
+        await result.current.handleImageSelect(oversized)
+      })
+      expect(result.current.form.imageError).toBe('image_too_large')
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when handleSubmit is invoked while the vertical image upload is in flight', () => {
+    it('should not call createEvent so the payload does not ship with a null verticalImageUrl', async () => {
+      let resolveUpload: ((value: { url: string }) => void) | null = null
+      mockUploadPosterVertical.mockReturnValueOnce({
+        unwrap: () =>
+          new Promise<{ url: string }>(resolve => {
+            resolveUpload = resolve
+          })
+      })
+
+      const { result } = renderHook(() => useCreateEventForm())
+      fillValidForm(result.current.setField)
+
+      const file = new File(['x'], 'v.png', { type: 'image/png' })
+      let pendingSelect: Promise<void> | null = null
+      await act(async () => {
+        pendingSelect = result.current.handleVerticalImageSelect(file)
+        // let the async dimension check resolve and the state flip to uploading
+        await new Promise(resolve => setTimeout(resolve, 0))
+      })
+      expect(result.current.form.isUploadingVerticalImage).toBe(true)
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+
+      await act(async () => {
+        resolveUpload?.({ url: 'https://cdn/vertical.png' })
+        await pendingSelect
+      })
+    })
+  })
+
+  describe('when handleSubmit is invoked with a persistent vertical image error', () => {
+    it('should not call createEvent so the user fixes the vertical cover first', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+      fillValidForm(result.current.setField)
+
+      const oversized = new File([new Uint8Array(600 * 1024)], 'big.png', { type: 'image/png' })
+      await act(async () => {
+        await result.current.handleVerticalImageSelect(oversized)
+      })
+      expect(result.current.form.verticalImageError).toBe('image_too_large')
 
       await act(async () => {
         await result.current.handleSubmit()

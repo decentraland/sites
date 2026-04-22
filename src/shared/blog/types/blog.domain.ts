@@ -56,11 +56,17 @@ interface PlaceholderPost {
 
 type PostOrPlaceholder = BlogPost | PlaceholderPost
 
+/**
+ * Search hit shape consumed by the results page and the autocomplete card. The
+ * `highlighted*` fields may carry `<em>`-wrapped HTML from the cms-server `ts_headline`
+ * — render sites MUST pass them through `sanitizeHighlight` (DOMPurify, allowlist
+ * `['em','mark']`) before injection.
+ */
 interface SearchResult {
   url: string
   image: string
-  title: string | JSX.Element[]
-  description: string | JSX.Element[]
+  highlightedTitle: string
+  highlightedDescription: string
 }
 
 export type { BlogAuthor, BlogCategory, BlogPost, ContentfulAsset, PaginatedBlogPosts, PlaceholderPost, PostOrPlaceholder, SearchResult }

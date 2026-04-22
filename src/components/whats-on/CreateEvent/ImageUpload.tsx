@@ -1,26 +1,22 @@
 import { useCallback, useRef } from 'react'
 import type { DragEvent } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { useTranslation } from '@dcl/hooks'
+import type { ImageErrorCode } from '../../../hooks/useCreateEventForm.types'
+import { ImageErrorMessage } from './ImageErrorMessage'
 import {
   CameraIcon,
   ChooseLink,
   DropHintText,
   DropZone,
   DropZoneContent,
-  ErrorIcon,
-  ErrorRow,
-  ErrorText,
   HelperIcon,
   HelperRow,
   HelperText,
   IconAndTitle,
-  OptimizeLink,
   OverlayText,
   PreviewImage,
   PreviewOverlay,
@@ -29,12 +25,9 @@ import {
   UploadHintGroup
 } from './ImageUpload.styled'
 
-const OPTIMIZE_URL = 'https://imagecompressor.com/'
-const IMAGE_TOO_LARGE_KEY = 'create_event.error_image_too_large'
-
 type ImageUploadProps = {
   imagePreviewUrl: string | null
-  imageError: string | null
+  imageError: ImageErrorCode | null
   onImageSelect: (file: File) => void
   onImageRemove: () => void
 }
@@ -124,22 +117,7 @@ function ImageUpload({ imagePreviewUrl, imageError, onImageSelect, onImageRemove
         />
       </DropZone>
       {imageError ? (
-        <ErrorRow>
-          <ErrorIcon>
-            <ErrorOutlineIcon />
-          </ErrorIcon>
-          <ErrorText>
-            {t(imageError)}
-            {imageError === IMAGE_TOO_LARGE_KEY && (
-              <>
-                {' '}
-                <OptimizeLink href={OPTIMIZE_URL} target="_blank" rel="noreferrer">
-                  {t('create_event.optimize_link')}
-                </OptimizeLink>
-              </>
-            )}
-          </ErrorText>
-        </ErrorRow>
+        <ImageErrorMessage code={imageError} />
       ) : (
         <HelperRow>
           <HelperIcon>

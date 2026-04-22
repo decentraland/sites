@@ -26,6 +26,14 @@ jest.mock('@mui/icons-material/CalendarToday', () => ({
   default: () => <span data-testid="calendar-icon" />
 }))
 
+jest.mock('decentraland-ui2', () => ({
+  Button: ({ children, onClick, disabled }: { children: React.ReactNode; onClick?: () => void; disabled?: boolean }) => (
+    <button onClick={onClick} disabled={disabled}>
+      {children}
+    </button>
+  )
+}))
+
 function createMockData(overrides: Partial<ReturnType<typeof createMockModalData>> = {}) {
   return createMockModalData({
     image: null,

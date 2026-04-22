@@ -3,6 +3,8 @@ import type { DragEvent } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { useTranslation } from '@dcl/hooks'
+import type { ImageErrorCode } from '../../../hooks/useCreateEventForm.types'
+import { ImageErrorMessage } from './ImageErrorMessage'
 import {
   CameraIcon,
   ChooseLink,
@@ -21,11 +23,12 @@ import {
 
 type VerticalCoverPanelProps = {
   previewUrl: string | null
+  imageError: ImageErrorCode | null
   onSelect: (file: File) => void
   onRemove: () => void
 }
 
-function VerticalCoverPanel({ previewUrl, onSelect, onRemove }: VerticalCoverPanelProps) {
+function VerticalCoverPanel({ previewUrl, imageError, onSelect, onRemove }: VerticalCoverPanelProps) {
   const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
   const hasImage = Boolean(previewUrl)
@@ -63,6 +66,7 @@ function VerticalCoverPanel({ previewUrl, onSelect, onRemove }: VerticalCoverPan
     <PanelContainer>
       <DropZone
         $hasImage={hasImage}
+        $hasError={Boolean(imageError)}
         onClick={handleClick}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
@@ -102,6 +106,7 @@ function VerticalCoverPanel({ previewUrl, onSelect, onRemove }: VerticalCoverPan
           aria-hidden="true"
         />
       </DropZone>
+      {imageError && <ImageErrorMessage code={imageError} />}
     </PanelContainer>
   )
 }
