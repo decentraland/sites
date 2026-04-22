@@ -63,4 +63,39 @@ describe('when calling admin profile settings endpoints', () => {
       })
     })
   })
+
+  describe('and dispatching updateAdminPermissions', () => {
+    describe('and the API accepts the request', () => {
+      let address: string
+
+      beforeEach(() => {
+        address = '0xABC'
+        mockFetchWithIdentity.mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              ok: true,
+              data: { user: address.toLowerCase(), email: null, permissions: ['approve_any_event'] }
+            })
+        })
+      })
+
+      it('should PATCH the lowercased address with the permissions body', async () => {
+        await store.dispatch(
+          adminClient.endpoints.updateAdminPermissions.initiate({
+            address,
+            permissions: ['approve_any_event' as never],
+            identity
+          })
+        )
+        expect(mockFetchWithIdentity).toHaveBeenCalledWith(
+          'https://events.test/profiles/0xabc/settings',
+          identity,
+          'PATCH',
+          JSON.stringify({ permissions: ['approve_any_event'] }),
+          { 'Content-Type': 'application/json' }
+        )
+      })
+    })
+  })
 })

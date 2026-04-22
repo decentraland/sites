@@ -1,7 +1,13 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { getEnv } from '../../../config/env'
 import { fetchWithIdentity } from '../../../utils/signedFetch'
-import type { AdminListEnvelope, AdminProfileSettings, AdminProfileSettingsEnvelope, IdentityOnlyParams } from './admin.types'
+import type {
+  AdminListEnvelope,
+  AdminProfileSettings,
+  AdminProfileSettingsEnvelope,
+  IdentityOnlyParams,
+  UpdateAdminPermissionsParams
+} from './admin.types'
 
 const adminClient = createApi({
   reducerPath: 'adminClient',
@@ -40,10 +46,38 @@ const adminClient = createApi({
         }
       },
       providesTags: ['Admins']
+    }),
+    updateAdminPermissions: build.mutation<AdminProfileSettings, UpdateAdminPermissionsParams>({
+      queryFn: async ({ address, permissions, identity }) => {
+        try {
+          const baseUrl = getEnv('EVENTS_API_URL')!
+          const body = JSON.stringify({ permissions })
+          const response = await fetchWithIdentity(
+            `${baseUrl}/profiles/${address.toLowerCase()}/settings`,
+            identity,
+            'PATCH',
+            body,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            { 'Content-Type': 'application/json' }
+          )
+          if (!response.ok) {
+            const envelope = await response.json().catch(() => null)
+            console.error('[Admin] updateAdminPermissions failed', response.status, envelope)
+            return {
+              error: { status: response.status, data: envelope, message: `Update failed (${response.status})` }
+            }
+          }
+          const envelope: AdminProfileSettingsEnvelope = await response.json()
+          return { data: envelope.data }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      },
+      invalidatesTags: ['Admins', 'MyAdmin']
     })
   })
 })
 
-const { useGetMyProfileSettingsQuery, useListAdminsQuery } = adminClient
+const { useGetMyProfileSettingsQuery, useListAdminsQuery, useUpdateAdminPermissionsMutation } = adminClient
 
-export { adminClient, useGetMyProfileSettingsQuery, useListAdminsQuery }
+export { adminClient, useGetMyProfileSettingsQuery, useListAdminsQuery, useUpdateAdminPermissionsMutation }
