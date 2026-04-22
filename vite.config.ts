@@ -18,7 +18,22 @@ export default defineConfig(({ command, mode }) => {
       react(),
       nodePolyfills({
         include: ['buffer']
-      })
+      }),
+      // @mui/icons-material@5 has no `exports` field, so subpath imports like
+      // `@mui/icons-material/ChevronLeft` resolve to the CJS file. Vite 8's
+      // pre-bundler emits `export default require_X()` for those, leaking the
+      // whole CJS exports object (`{ __esModule, default }`) instead of the
+      // icon component. Rewrite to the ESM build that ships in the same package.
+      {
+        name: 'mui-icons-esm-redirect',
+        enforce: 'pre',
+        resolveId(source) {
+          if (source.startsWith('@mui/icons-material/') && !source.startsWith('@mui/icons-material/esm/')) {
+            return this.resolve(source.replace('@mui/icons-material/', '@mui/icons-material/esm/'))
+          }
+          return null
+        }
+      }
     ],
     build: {
       target: 'esnext',
