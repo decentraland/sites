@@ -19,6 +19,8 @@ interface ModalEventData {
   live: boolean
   categories: string[]
   url: string
+  // False when the modal is opened from a live scene without a matching event — the bell (attendees API) requires a real event UUID.
+  isEvent: boolean
 }
 
 interface AdminActions {
