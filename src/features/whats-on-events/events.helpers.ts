@@ -1,6 +1,7 @@
-import { coordsKey } from '../events/events.helpers'
-import type { HotScene } from '../events/events.types'
-import type { EventEntry } from './events.types'
+import { assetUrl } from '../../utils/assetUrl'
+import { DCL_FOUNDATION_NAME, coordsKey } from '../events/events.helpers'
+import type { ActiveEntity, HotScene } from '../events/events.types'
+import type { EventEntry, RecurrentFrequency } from './events.types'
 
 interface LiveNowCard {
   id: string
@@ -14,9 +15,21 @@ interface LiveNowCard {
   isGenesisPlaza: boolean
   description?: string | null
   categories?: string[]
+  startAt?: string
+  finishAt?: string
+  recurrent?: boolean
+  recurrentFrequency?: RecurrentFrequency | null
+  recurrentDates?: string[]
+  attending?: boolean
 }
 
 const DEFAULT_MIN_USERS = 5
+const DCL_FOUNDATION_NAME_LOWER = DCL_FOUNDATION_NAME.toLowerCase()
+const DCL_FOUNDATION_LOGO_URL = assetUrl('/dcl-logo.svg')
+
+function isDclFoundationCreator(creatorName: string | null | undefined): boolean {
+  return creatorName?.trim().toLowerCase() === DCL_FOUNDATION_NAME_LOWER
+}
 
 function findEventInMap(eventsByCoord: Map<string, EventEntry>, parcels: Array<[number, number]>): EventEntry | undefined {
   for (const [px, py] of parcels) {
@@ -40,7 +53,7 @@ function buildPlazaCard(hotScenes: HotScene[]): LiveNowCard {
     image: plaza?.thumbnail ?? '',
     users: plaza?.usersTotalCount ?? 0,
     coordinates: plazaCoords,
-    creatorName: 'Decentraland Foundation',
+    creatorName: DCL_FOUNDATION_NAME,
     isGenesisPlaza: true
   }
 }
@@ -64,7 +77,15 @@ function buildLiveNowCards(liveEvents: EventEntry[], hotScenes: HotScene[], minU
         coordinates: coordsKey(matchedEvent.x, matchedEvent.y),
         creatorAddress: matchedEvent.user,
         creatorName: matchedEvent.user_name || undefined,
-        isGenesisPlaza: false
+        isGenesisPlaza: false,
+        description: matchedEvent.description,
+        categories: matchedEvent.categories,
+        startAt: matchedEvent.start_at,
+        finishAt: matchedEvent.finish_at,
+        recurrent: matchedEvent.recurrent,
+        recurrentFrequency: matchedEvent.recurrent_frequency,
+        recurrentDates: matchedEvent.recurrent_dates,
+        attending: matchedEvent.attending
       })
       usedSceneIds.add(scene.id)
       usedEventIds.add(matchedEvent.id)
@@ -84,7 +105,7 @@ function buildLiveNowCards(liveEvents: EventEntry[], hotScenes: HotScene[], minU
       image: scene.thumbnail,
       users: scene.usersTotalCount,
       coordinates: coordsKey(scene.baseCoords[0], scene.baseCoords[1]),
-      ...(genesis && { creatorName: 'Decentraland Foundation' }),
+      ...(genesis && { creatorName: DCL_FOUNDATION_NAME }),
       isGenesisPlaza: genesis
     })
   }
@@ -110,51 +131,87 @@ interface PlaceResponse {
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
+interface DeploymentResponse {
+  deployments: { deployedBy: string }[]
+}
+
 interface EnrichmentConfig {
   placesUrl?: string
+  peerUrl?: string
 }
 
 const WALLET_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/
 
 // TODO: N+1 optimization — Places API supports comma-separated `positions` param for batch lookups.
-// Collapse all place-card requests into one batch call to /places?positions=a,b,c.
+// `entities/active` and `deployments` already support batch queries (see src/features/events/events.client.ts
+// `resolveDeployers` for the batch pattern). Collapse all place-card requests into batch calls.
 async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig): Promise<LiveNowCard[]> {
-  const { placesUrl } = config
+  const { placesUrl, peerUrl } = config
   const placeCards = cards.filter(c => c.type === 'place')
   if (placeCards.length === 0) return cards
-  if (!placesUrl) {
-    console.warn('[LiveNow] PLACES_API_URL missing — skipping place enrichment')
-    return cards
-  }
+  if (!placesUrl && !peerUrl) return cards
 
   const enrichments = new Map<string, Partial<LiveNowCard>>()
 
   await Promise.all(
     placeCards.map(async card => {
-      try {
-        const qs = new URLSearchParams({ positions: card.coordinates }).toString()
-        const res = await fetch(`${placesUrl}/places?${qs}`)
-        if (!res.ok) return
-        const data = (await res.json()) as PlaceResponse
-        const place = data.data?.[0]
-        if (!place) return
-        const patch: Partial<LiveNowCard> = {
-          description: place.description || null,
-          categories: place.categories || []
+      const patch: Partial<LiveNowCard> = {}
+
+      if (placesUrl) {
+        try {
+          const qs = new URLSearchParams({ positions: card.coordinates }).toString()
+          const res = await fetch(`${placesUrl}/places?${qs}`)
+          if (res.ok) {
+            const data = (await res.json()) as PlaceResponse
+            const place = data.data?.[0]
+            if (place) {
+              patch.description = place.description || null
+              patch.categories = place.categories || []
+
+              const trimmedOwner = place.owner?.trim() || undefined
+              const ownerIsWallet = !!trimmedOwner && WALLET_ADDRESS_REGEX.test(trimmedOwner)
+              if (!card.creatorAddress) {
+                const address = place.creator_address?.trim() || (ownerIsWallet ? trimmedOwner : undefined)
+                if (address) patch.creatorAddress = address
+              }
+              if (!card.creatorName) {
+                const name = place.contact_name?.trim() || (trimmedOwner && !ownerIsWallet ? trimmedOwner : undefined)
+                if (name) patch.creatorName = name
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('[LiveNow] places lookup failed for', card.coordinates, err)
         }
-        const trimmedOwner = place.owner?.trim() || undefined
-        const ownerIsWallet = !!trimmedOwner && WALLET_ADDRESS_REGEX.test(trimmedOwner)
-        if (!card.creatorAddress) {
-          const address = place.creator_address?.trim() || (ownerIsWallet ? trimmedOwner : undefined)
-          if (address) patch.creatorAddress = address
+      }
+
+      if (peerUrl && !card.creatorAddress && !patch.creatorAddress) {
+        try {
+          const entityRes = await fetch(`${peerUrl}/content/entities/active`, {
+            method: 'POST',
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pointers: [card.coordinates] })
+          })
+          if (entityRes.ok) {
+            const entities = (await entityRes.json()) as ActiveEntity[]
+            const entityId = entities[0]?.id
+            if (entityId) {
+              const depRes = await fetch(`${peerUrl}/content/deployments/?entityId=${encodeURIComponent(entityId)}`)
+              if (depRes.ok) {
+                const depData = (await depRes.json()) as DeploymentResponse
+                const deployedBy = depData.deployments?.[0]?.deployedBy
+                if (deployedBy) patch.creatorAddress = deployedBy
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('[LiveNow] deployer lookup failed for', card.coordinates, err)
         }
-        if (!card.creatorName) {
-          const name = place.contact_name?.trim() || (trimmedOwner && !ownerIsWallet ? trimmedOwner : undefined)
-          if (name) patch.creatorName = name
-        }
+      }
+
+      if (Object.keys(patch).length > 0) {
         enrichments.set(card.id, patch)
-      } catch (err) {
-        console.warn('[LiveNow] places lookup failed for', card.coordinates, err)
       }
     })
   )
@@ -167,5 +224,5 @@ async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig):
   })
 }
 
-export { buildLiveNowCards, enrichPlaceCards }
+export { buildLiveNowCards, DCL_FOUNDATION_LOGO_URL, DCL_FOUNDATION_NAME, enrichPlaceCards, isDclFoundationCreator }
 export type { EnrichmentConfig, HotScene, LiveNowCard }

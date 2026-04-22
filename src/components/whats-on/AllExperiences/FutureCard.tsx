@@ -4,7 +4,7 @@ import { Tooltip } from 'decentraland-ui2'
 import type { EventEntry } from '../../../features/whats-on-events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCardActions } from '../../../hooks/useCardActions'
-import { useCreatorAvatar } from '../../../hooks/useCreatorAvatar'
+import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { getRelativeTimeLabel } from '../../../utils/whatsOnTime'
 import {
@@ -34,8 +34,7 @@ interface FutureCardProps {
 const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
   const { t } = useTranslation()
   const { hasValidIdentity } = useAuthIdentity()
-  const creatorName = event.user_name || t('all_experiences.coming_soon')
-  const { avatarFace } = useCreatorAvatar(event.user, creatorName)
+  const { creatorName, avatarFace } = useCreatorProfile(event.user, event.user_name, t('all_experiences.unknown_creator'))
   const { copied, handleCopy, handleAddToCalendar } = useCardActions({
     name: event.name,
     description: event.description,

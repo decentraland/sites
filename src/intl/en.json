@@ -656,6 +656,53 @@
         "are_you_creator_button": "Join the Registry",
         "are_you_creator_url": "https://docs.google.com/forms/d/e/1FAIpQLSc_KsbODUsJdC4_UTn7T91RTYwSJBAEZIWlCAxnk3rRBinFWg/viewform"
       }
+    },
+    "jump": {
+      "jump_in_button": {
+        "jump_in": "Jump In"
+      },
+      "share": {
+        "switch_to_computer": "Switch to a Computer to Use Decentraland",
+        "button_text": "SHARE LINK"
+      },
+      "card": {
+        "creator": {
+          "by": "By"
+        },
+        "event": {
+          "add_to_calendar": "ADD TO CALENDAR",
+          "interested": "REMIND ME",
+          "live": "LIVE"
+        },
+        "place": {
+          "default_description": "You're about to jump into Decentraland! Explore a virtual world built by its community and make new friends from anywhere."
+        },
+        "accessibility": {
+          "creator_avatar": "{userName} avatar",
+          "event_image": "{title} event image",
+          "place_image": "{title} place image",
+          "share_button": "Share",
+          "add_to_calendar_button": "Add to calendar",
+          "interested_button": "Mark as interested",
+          "user_profile_link": "View {userName}'s profile"
+        }
+      },
+      "event": {
+        "has_ended": "Event has ended"
+      },
+      "events_page": {
+        "explore_events_button": "EXPLORE EVENTS",
+        "jump_in_button": "Jump In",
+        "calendar_label": "Jump In"
+      },
+      "invalid_page": {
+        "title": "Oops!",
+        "message": "Looks like that link was invalid. If you still want to explore, jump into Decentraland's virtual world or browse community events.",
+        "message_mobile": "Looks like that link was invalid. If you still want to explore, browse the community's events then jump in-world from your computer.",
+        "explore_events_button": "EXPLORE EVENTS",
+        "jump_in_button": "Jump into Decentraland",
+        "go_home_button": "Go to Homepage"
+      }
     }
   },
   "live_now": {
@@ -707,7 +754,8 @@
     "remind_me": "Remind me",
     "copy_link": "Copy link",
     "copied": "Copied!",
-    "coming_soon": "Coming soon"
+    "coming_soon": "Coming soon",
+    "unknown_creator": "Unknown"
   },
   "create_event": {
     "title": "Submit an Event",
@@ -842,5 +890,81 @@
   },
   "seo": {
     "default_image_alt": "Decentraland - A virtual world owned by its users"
+  },
+  "whats_on_admin": {
+    "tabs": {
+      "whats_on": "What's On",
+      "pending_events": "Pending Events",
+      "users": "Users"
+    },
+    "cta": {
+      "create_event": "+ Create Event",
+      "add_user": "+ Add User"
+    },
+    "pending_events": {
+      "title": "Pending Events",
+      "recently_approved": "Recently Approved",
+      "recently_approved_subtitle": "(Last 24hs)",
+      "empty": "No events waiting for approval",
+      "approve": "Approve",
+      "reject": "Reject",
+      "action_error": "Unable to update event. Please try again.",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "in_n_days": "In {count} Days",
+      "status_pending": "Pending",
+      "status_approved": "Approved",
+      "status_rejected": "Rejected",
+      "approve_success": "Event approved",
+      "reject_success": "Event rejected"
+    },
+    "users": {
+      "title": "Users",
+      "search_label": "Search",
+      "search_placeholder": "Type wallet address",
+      "columns": {
+        "user": "User",
+        "approve_own_events": "Approve Own Events",
+        "approve_events": "Approve Events",
+        "edit_events": "Edit Events",
+        "edit_schedules": "Edit Schedules",
+        "edit_users": "Edit Users"
+      },
+      "empty": "No admins configured"
+    },
+    "permissions_modal": {
+      "add_title": "Add User",
+      "edit_title": "Edit User",
+      "wallet_label": "Wallet Address",
+      "wallet_placeholder": "0x…",
+      "wallet_invalid": "Enter a valid Ethereum address",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "save_error": "Unable to save permissions. Please try again.",
+      "save_success": "Permissions updated",
+      "self_edit_locked": "You cannot remove your own admin permission",
+      "permissions": {
+        "approve_own_event": {
+          "title": "Approve Own Events",
+          "description": "Allow this user to approve events they create"
+        },
+        "approve_any_event": {
+          "title": "Approve Events",
+          "description": "Allow this user to approve any event"
+        },
+        "edit_any_event": {
+          "title": "Edit Events",
+          "description": "Allow this user to edit any event"
+        },
+        "edit_any_schedule": {
+          "title": "Edit Schedules",
+          "description": "Allow this user to edit schedules"
+        },
+        "edit_any_profile": {
+          "title": "Edit Users",
+          "description": "Allow this user to manage admin permissions"
+        }
+      }
+    }
   }
 }

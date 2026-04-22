@@ -81,7 +81,8 @@ const eventsClient = createApi({
           const minUsers = params && 'minUsers' in params ? params.minUsers : undefined
           const cards = buildLiveNowCards(eventsData.data ?? [], scenesData, minUsers)
           const enrichedCards = await enrichPlaceCards(cards, {
-            placesUrl: getEnv('PLACES_API_URL')
+            placesUrl: getEnv('PLACES_API_URL'),
+            peerUrl: getEnv('PEER_URL')
           })
 
           return { data: enrichedCards }

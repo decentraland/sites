@@ -6,8 +6,10 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
-jest.mock('../../../features/profile/profile.client', () => ({
-  useGetProfileQuery: () => ({ data: undefined })
+const mockUseCreatorProfile = jest.fn()
+const defaultCreatorProfile = { isDclFoundation: false, creatorName: 'CreatorName', avatarFace: undefined }
+jest.mock('../../../hooks/useCreatorProfile', () => ({
+  useCreatorProfile: (...args: unknown[]) => mockUseCreatorProfile(...(args as []))
 }))
 
 jest.mock('../../../utils/whatsOnUrl', () => ({
@@ -95,6 +97,8 @@ describe('EventDetailModalHero', () => {
   beforeEach(() => {
     mockOnClose = jest.fn()
     mockWindowOpen = jest.spyOn(window, 'open').mockImplementation(jest.fn())
+    mockUseCreatorProfile.mockReset()
+    mockUseCreatorProfile.mockReturnValue(defaultCreatorProfile)
   })
 
   afterEach(() => {
@@ -167,6 +171,12 @@ describe('EventDetailModalHero', () => {
 
       expect(screen.getByTestId('category-label')).toHaveTextContent('event_detail.live_now')
     })
+
+    it('should not render the remind me button', () => {
+      render(<EventDetailModalHero data={createMockData({ live: true })} onClose={mockOnClose} />)
+
+      expect(screen.queryByTestId('remind-me-icon')).not.toBeInTheDocument()
+    })
   })
 
   describe('when the event has no categories and is not live', () => {
@@ -186,7 +196,19 @@ describe('EventDetailModalHero', () => {
     })
   })
 
+  describe('when the modal data is a live place without a matching event', () => {
+    it('should not render the remind me button', () => {
+      render(<EventDetailModalHero data={createMockData({ isEvent: false, startAt: null })} onClose={mockOnClose} />)
+
+      expect(screen.queryByTestId('remind-me-icon')).not.toBeInTheDocument()
+    })
+  })
+
   describe('when the event has no creator', () => {
+    beforeEach(() => {
+      mockUseCreatorProfile.mockReturnValue({ isDclFoundation: false, creatorName: undefined, avatarFace: undefined })
+    })
+
     it('should not render the creator row', () => {
       render(<EventDetailModalHero data={createMockData({ creatorAddress: undefined, creatorName: undefined })} onClose={mockOnClose} />)
 
@@ -195,6 +217,14 @@ describe('EventDetailModalHero', () => {
   })
 
   describe('when the event has a creator address but no creator name', () => {
+    beforeEach(() => {
+      mockUseCreatorProfile.mockReturnValue({
+        isDclFoundation: false,
+        creatorName: '0xabcd…ef12',
+        avatarFace: undefined
+      })
+    })
+
     it('should render an abbreviated address instead of an empty byline', () => {
       render(
         <EventDetailModalHero
@@ -228,6 +258,39 @@ describe('EventDetailModalHero', () => {
       fireEvent.click(screen.getByTestId('close-button'))
 
       expect(mockOnClose).toHaveBeenCalled()
+    })
+  })
+
+  describe('when useCreatorProfile resolves the event as Decentraland Foundation', () => {
+    beforeEach(() => {
+      mockUseCreatorProfile.mockReturnValue({
+        isDclFoundation: true,
+        creatorName: 'Decentraland Foundation',
+        avatarFace: '/dcl-logo.svg'
+      })
+    })
+
+    it('should render the Foundation name in the creator row', () => {
+      render(<EventDetailModalHero data={createMockData({ creatorName: 'Decentraland Foundation' })} onClose={mockOnClose} />)
+
+      expect(screen.getByTestId('creator-name')).toHaveTextContent('Decentraland Foundation')
+    })
+
+    it('should render the Foundation logo as the avatar', () => {
+      render(<EventDetailModalHero data={createMockData({ creatorName: 'Decentraland Foundation' })} onClose={mockOnClose} />)
+
+      expect(screen.getByTestId('avatar-image')).toHaveAttribute('src', '/dcl-logo.svg')
+    })
+
+    it('should forward the event address and name to useCreatorProfile', () => {
+      render(
+        <EventDetailModalHero
+          data={createMockData({ creatorAddress: '0xFoundation', creatorName: 'Decentraland Foundation' })}
+          onClose={mockOnClose}
+        />
+      )
+
+      expect(mockUseCreatorProfile).toHaveBeenCalledWith('0xFoundation', 'Decentraland Foundation', expect.any(String))
     })
   })
 

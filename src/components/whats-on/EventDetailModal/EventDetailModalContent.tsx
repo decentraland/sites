@@ -2,10 +2,12 @@ import { useCallback } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import { useTranslation } from '@dcl/hooks'
+import { Button } from 'decentraland-ui2'
 import type { RecurrentFrequency } from '../../../features/whats-on-events'
 import { buildCalendarUrl } from '../../../utils/whatsOnUrl'
-import type { ModalEventData } from './EventDetailModal.types'
+import type { AdminActions, ModalEventData } from './EventDetailModal.types'
 import {
+  AdminActionsRow,
   ContentDivider,
   ContentSection,
   DescriptionText,
@@ -43,7 +45,7 @@ function getRecurrenceLabel(frequency: RecurrentFrequency | null, t: (key: strin
   }
 }
 
-function EventDetailModalContent({ data }: { data: ModalEventData }) {
+function EventDetailModalContent({ data, adminActions }: { data: ModalEventData; adminActions?: AdminActions }) {
   const { t } = useTranslation()
 
   const hasDescription = Boolean(data.description)
@@ -54,7 +56,7 @@ function EventDetailModalContent({ data }: { data: ModalEventData }) {
     if (url) window.open(url, '_blank', 'noopener,noreferrer')
   }, [data])
 
-  if (!hasDescription && !hasSchedule) {
+  if (!hasDescription && !hasSchedule && !adminActions) {
     return null
   }
 
@@ -85,6 +87,16 @@ function EventDetailModalContent({ data }: { data: ModalEventData }) {
             </ScheduleIconButton>
           </ScheduleRow>
         </>
+      )}
+      {adminActions && (
+        <AdminActionsRow>
+          <Button variant="contained" color="primary" disabled={adminActions.isProcessing} onClick={adminActions.onApprove}>
+            {t('whats_on_admin.pending_events.approve')}
+          </Button>
+          <Button variant="outlined" color="secondary" disabled={adminActions.isProcessing} onClick={adminActions.onReject}>
+            {t('whats_on_admin.pending_events.reject')}
+          </Button>
+        </AdminActionsRow>
       )}
     </ContentSection>
   )

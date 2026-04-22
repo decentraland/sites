@@ -19,12 +19,21 @@ interface ModalEventData {
   live: boolean
   categories: string[]
   url: string
+  // False when the modal is opened from a live scene without a matching event — the bell (attendees API) requires a real event UUID.
+  isEvent: boolean
+}
+
+interface AdminActions {
+  onApprove: () => void
+  onReject: () => void
+  isProcessing: boolean
 }
 
 interface EventDetailModalProps {
   open: boolean
   onClose: () => void
   data: ModalEventData | null
+  adminActions?: AdminActions
 }
 
-export type { EventDetailModalProps, ModalEventData }
+export type { AdminActions, EventDetailModalProps, ModalEventData }

@@ -73,8 +73,8 @@ const MobileCarouselPage = styled(Box)(() => ({
   flex: '0 0 100%',
   scrollSnapAlign: 'start',
   '@media (max-width: 600px)': {
-    gridTemplateColumns: '1fr',
-    justifyItems: 'center',
+    gridTemplateColumns: 'minmax(0, 430px)',
+    justifyContent: 'center',
     '& > *:nth-of-type(n+3)': {
       display: 'none'
     }

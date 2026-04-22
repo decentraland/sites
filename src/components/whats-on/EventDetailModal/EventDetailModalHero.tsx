@@ -6,9 +6,8 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTranslation } from '@dcl/hooks'
 import { Tooltip, useTheme } from 'decentraland-ui2'
-import { useCreatorAvatar } from '../../../hooks/useCreatorAvatar'
+import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
-import { assetUrl } from '../../../utils/assetUrl'
 import { formatEthAddress } from '../../../utils/avatar'
 import { buildCalendarUrl } from '../../../utils/whatsOnUrl'
 import { RemindMeIcon } from '../common/RemindMeIcon'
@@ -34,10 +33,6 @@ import {
   SecondaryButton
 } from './EventDetailModal.styled'
 
-// Uses assetUrl so prod resolves to cdn.decentraland.org — decentraland.zone's
-// SPA rewrite serves index.html for unknown paths, which would render blank.
-const DCL_LOGO_URL = assetUrl('/dcl-logo.svg')
-
 function EventDetailModalHero({ data, onClose }: { data: ModalEventData; onClose: () => void }) {
   const { t } = useTranslation()
   const theme = useTheme()
@@ -45,12 +40,8 @@ function EventDetailModalHero({ data, onClose }: { data: ModalEventData; onClose
   const [copied, setCopied] = useState(false)
   const { isReminded, isLoading: isRemindLoading, isShaking, handleToggle: handleRemindToggle } = useRemindMe(data.id, data.attending)
 
-  const isDclFoundation = data.creatorName?.toLowerCase() === 'decentraland foundation'
-  const { avatar, avatarFace: directFace } = useCreatorAvatar(isDclFoundation ? undefined : data.creatorAddress, data.creatorName)
-  const avatarFace = isDclFoundation ? DCL_LOGO_URL : directFace
-  const creatorName = isDclFoundation
-    ? 'Decentraland Foundation'
-    : data.creatorName || (avatar?.ethAddress ? formatEthAddress(avatar.ethAddress) : undefined)
+  const creatorFallback = data.creatorAddress ? formatEthAddress(data.creatorAddress) : undefined
+  const { creatorName, avatarFace } = useCreatorProfile(data.creatorAddress, data.creatorName, creatorFallback)
   const hasCreator = Boolean(avatarFace || creatorName)
 
   const handleJumpIn = useCallback(() => {
@@ -96,11 +87,13 @@ function EventDetailModalHero({ data, onClose }: { data: ModalEventData; onClose
           )}
           <ActionsRow>
             <JumpInButton onClick={handleJumpIn}>{t('event_detail.jump_in')}</JumpInButton>
-            <Tooltip title={t('event_detail.remind_me')} placement="top" arrow>
-              <SecondaryButton onClick={handleRemindToggle} disabled={isRemindLoading} aria-label={t('event_detail.remind_me')}>
-                <RemindMeIcon active={isReminded} shaking={isShaking} size={20} />
-              </SecondaryButton>
-            </Tooltip>
+            {data.isEvent && !data.live && (
+              <Tooltip title={t('event_detail.remind_me')} placement="top" arrow>
+                <SecondaryButton onClick={handleRemindToggle} disabled={isRemindLoading} aria-label={t('event_detail.remind_me')}>
+                  <RemindMeIcon active={isReminded} shaking={isShaking} size={20} />
+                </SecondaryButton>
+              </Tooltip>
+            )}
             {data.startAt && (
               <Tooltip title={t('event_detail.add_to_calendar')} placement="top" arrow>
                 <SecondaryButton onClick={handleAddToCalendar} aria-label={t('event_detail.add_to_calendar')}>

@@ -21,7 +21,8 @@ function normalizeEventEntry(event: EventEntry): ModalEventData {
     attending: event.attending,
     live: event.live,
     categories: event.categories,
-    url: buildEventJumpInUrl(event.x, event.y)
+    url: buildEventJumpInUrl(event.x, event.y),
+    isEvent: true
   }
 }
 
@@ -37,16 +38,17 @@ function normalizeLiveNowCard(card: LiveNowCard): ModalEventData {
     y,
     creatorAddress: card.creatorAddress,
     creatorName: card.creatorName,
-    startAt: null,
-    finishAt: null,
-    recurrent: false,
-    recurrentFrequency: null,
-    recurrentDates: [],
+    startAt: card.startAt ?? null,
+    finishAt: card.finishAt ?? null,
+    recurrent: card.recurrent ?? false,
+    recurrentFrequency: card.recurrentFrequency ?? null,
+    recurrentDates: card.recurrentDates ?? [],
     totalAttendees: card.users,
-    attending: undefined,
+    attending: card.attending,
     live: true,
-    categories: card.categories || [],
-    url
+    categories: card.categories ?? [],
+    url,
+    isEvent: card.type === 'event'
   }
 }
 

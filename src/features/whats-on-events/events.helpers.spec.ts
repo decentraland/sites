@@ -1,7 +1,43 @@
 import { createMockEvent, createMockPlaceCard, createMockScene } from '../../__test-utils__/factories'
-import { buildLiveNowCards, enrichPlaceCards } from './events.helpers'
+import { buildLiveNowCards, enrichPlaceCards, isDclFoundationCreator } from './events.helpers'
 import type { HotScene, LiveNowCard } from './events.helpers'
 import type { EventEntry } from './events.types'
+
+describe('isDclFoundationCreator', () => {
+  describe('when the creator name is exactly "Decentraland Foundation"', () => {
+    it('should return true', () => {
+      expect(isDclFoundationCreator('Decentraland Foundation')).toBe(true)
+    })
+  })
+
+  describe('when the creator name matches case-insensitively', () => {
+    it('should return true', () => {
+      expect(isDclFoundationCreator('decentraland foundation')).toBe(true)
+      expect(isDclFoundationCreator('DECENTRALAND FOUNDATION')).toBe(true)
+    })
+  })
+
+  describe('when the creator name has surrounding whitespace', () => {
+    it('should return true', () => {
+      expect(isDclFoundationCreator('  Decentraland Foundation  ')).toBe(true)
+    })
+  })
+
+  describe('when the creator name is a different value', () => {
+    it('should return false', () => {
+      expect(isDclFoundationCreator('BayBackner')).toBe(false)
+      expect(isDclFoundationCreator('Foundation')).toBe(false)
+    })
+  })
+
+  describe('when the creator name is empty, null, or undefined', () => {
+    it('should return false', () => {
+      expect(isDclFoundationCreator('')).toBe(false)
+      expect(isDclFoundationCreator(null)).toBe(false)
+      expect(isDclFoundationCreator(undefined)).toBe(false)
+    })
+  })
+})
 
 describe('buildLiveNowCards', () => {
   afterEach(() => {
@@ -100,6 +136,51 @@ describe('buildLiveNowCards', () => {
 
       it('should include the creator name', () => {
         expect(result[0].creatorName).toBe('DJ Cool')
+      })
+    })
+
+    describe('and the matched event has description, schedule and categories', () => {
+      let result: LiveNowCard[]
+
+      beforeEach(() => {
+        const event = createMockEvent({
+          id: 'ev-1',
+          x: 10,
+          y: 20,
+          description: 'Live jam',
+          categories: ['music'],
+          start_at: '2026-04-22T17:00:00Z',
+          finish_at: '2026-04-22T18:00:00Z',
+          recurrent: true,
+          recurrent_frequency: 'WEEKLY',
+          recurrent_dates: ['2026-04-22T17:00:00Z'],
+          attending: true
+        })
+        const scene = createMockScene({ id: 'sc-1', usersTotalCount: 15, parcels: [[10, 20]] })
+        result = buildLiveNowCards([event], [scene])
+      })
+
+      it('should propagate the description', () => {
+        expect(result[0].description).toBe('Live jam')
+      })
+
+      it('should propagate the categories', () => {
+        expect(result[0].categories).toEqual(['music'])
+      })
+
+      it('should propagate the schedule', () => {
+        expect(result[0].startAt).toBe('2026-04-22T17:00:00Z')
+        expect(result[0].finishAt).toBe('2026-04-22T18:00:00Z')
+      })
+
+      it('should propagate the recurrence fields', () => {
+        expect(result[0].recurrent).toBe(true)
+        expect(result[0].recurrentFrequency).toBe('WEEKLY')
+        expect(result[0].recurrentDates).toEqual(['2026-04-22T17:00:00Z'])
+      })
+
+      it('should propagate the attending flag', () => {
+        expect(result[0].attending).toBe(true)
       })
     })
 
