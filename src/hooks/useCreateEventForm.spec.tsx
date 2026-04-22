@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import type { AuthIdentity } from '@dcl/crypto'
 import { useCreateEventForm } from './useCreateEventForm'
-import type { CreateEventFormState } from './useCreateEventForm'
+import type { CreateEventFormState } from './useCreateEventForm.types'
 
 const mockCreateEvent = jest.fn()
 const mockUploadPoster = jest.fn()

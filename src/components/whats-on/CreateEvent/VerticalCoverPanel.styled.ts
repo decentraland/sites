@@ -1,15 +1,5 @@
 import { Box, Typography, styled } from 'decentraland-ui2'
-import {
-  ErrorIcon,
-  ErrorRow,
-  ErrorText,
-  OptimizeLink,
-  OverlayText,
-  PreviewImage,
-  PreviewOverlay,
-  errorPulse,
-  errorShake
-} from './shared.styled'
+import { OverlayText, PreviewImage, PreviewOverlay, errorPulse, errorShake } from './shared.styled'
 
 const PanelContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -132,13 +122,9 @@ export {
   ChooseLink,
   DropZone,
   DropZoneContent,
-  ErrorIcon,
-  ErrorRow,
-  ErrorText,
   HintGroup,
   HintText,
   IconAndTitle,
-  OptimizeLink,
   OverlayText,
   PanelContainer,
   PreviewImage,

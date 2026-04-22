@@ -1,15 +1,5 @@
 import { Box, Typography, styled } from 'decentraland-ui2'
-import {
-  ErrorIcon,
-  ErrorRow,
-  ErrorText,
-  OptimizeLink,
-  OverlayText,
-  PreviewImage,
-  PreviewOverlay,
-  errorPulse,
-  errorShake
-} from './shared.styled'
+import { OverlayText, PreviewImage, PreviewOverlay, errorPulse, errorShake } from './shared.styled'
 
 const DropZone = styled(Box, {
   shouldForwardProp: prop => prop !== '$hasImage' && prop !== '$hasError'
@@ -156,14 +146,10 @@ export {
   DropHintText,
   DropZone,
   DropZoneContent,
-  ErrorIcon,
-  ErrorRow,
-  ErrorText,
   HelperIcon,
   HelperRow,
   HelperText,
   IconAndTitle,
-  OptimizeLink,
   OverlayText,
   PreviewImage,
   PreviewOverlay,

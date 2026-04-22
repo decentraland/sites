@@ -1,27 +1,22 @@
 import { useCallback, useRef } from 'react'
 import type { DragEvent } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { useTranslation } from '@dcl/hooks'
-import type { ImageErrorCode } from '../../../hooks/useCreateEventForm'
+import type { ImageErrorCode } from '../../../hooks/useCreateEventForm.types'
+import { ImageErrorMessage } from './ImageErrorMessage'
 import {
   CameraIcon,
   ChooseLink,
   DropHintText,
   DropZone,
   DropZoneContent,
-  ErrorIcon,
-  ErrorRow,
-  ErrorText,
   HelperIcon,
   HelperRow,
   HelperText,
   IconAndTitle,
-  OptimizeLink,
   OverlayText,
   PreviewImage,
   PreviewOverlay,
@@ -29,8 +24,6 @@ import {
   SelectText,
   UploadHintGroup
 } from './ImageUpload.styled'
-
-const OPTIMIZE_IMAGE_URL = 'https://imagecompressor.com/'
 
 type ImageUploadProps = {
   imagePreviewUrl: string | null
@@ -124,22 +117,7 @@ function ImageUpload({ imagePreviewUrl, imageError, onImageSelect, onImageRemove
         />
       </DropZone>
       {imageError ? (
-        <ErrorRow>
-          <ErrorIcon>
-            <ErrorOutlineIcon />
-          </ErrorIcon>
-          <ErrorText>
-            {t(`create_event.error_${imageError}`)}
-            {imageError === 'image_too_large' && (
-              <>
-                {' '}
-                <OptimizeLink href={OPTIMIZE_IMAGE_URL} target="_blank" rel="noreferrer">
-                  {t('create_event.optimize_link')}
-                </OptimizeLink>
-              </>
-            )}
-          </ErrorText>
-        </ErrorRow>
+        <ImageErrorMessage code={imageError} />
       ) : (
         <HelperRow>
           <HelperIcon>

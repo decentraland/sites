@@ -22,18 +22,10 @@ jest.mock('./ImageUpload.styled', () => ({
     )
   },
   DropZoneContent: ({ children }: { children: React.ReactNode }) => <div data-testid="drop-zone-content">{children}</div>,
-  ErrorIcon: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
-  ErrorRow: ({ children }: { children: React.ReactNode }) => <div data-testid="error-row">{children}</div>,
-  ErrorText: ({ children }: { children: React.ReactNode }) => <span data-testid="error-text">{children}</span>,
   HelperIcon: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   HelperRow: ({ children }: { children: React.ReactNode }) => <div data-testid="helper-row">{children}</div>,
   HelperText: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   IconAndTitle: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  OptimizeLink: ({ children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { children: React.ReactNode }) => (
-    <a data-testid="optimize-link" {...props}>
-      {children}
-    </a>
-  ),
   OverlayText: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   PreviewImage: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img data-testid="preview-image" {...props} />,
   PreviewOverlay: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement> & { children: React.ReactNode }) => (
@@ -46,9 +38,8 @@ jest.mock('./ImageUpload.styled', () => ({
   UploadHintGroup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
 }))
 
-jest.mock('@mui/icons-material/ErrorOutline', () => ({
-  __esModule: true,
-  default: () => <span data-testid="error-outline-icon" />
+jest.mock('./ImageErrorMessage', () => ({
+  ImageErrorMessage: ({ code }: { code: string }) => <div data-testid="image-error-message" data-code={code} />
 }))
 
 jest.mock('@mui/icons-material/InfoOutlined', () => ({
@@ -160,7 +151,7 @@ describe('ImageUpload', () => {
     })
   })
 
-  describe('when there is an invalid image type error', () => {
+  describe('when an image error is provided', () => {
     beforeEach(() => {
       props = {
         imagePreviewUrl: null,
@@ -170,43 +161,16 @@ describe('ImageUpload', () => {
       }
     })
 
-    it('should display the translated error message', () => {
+    it('should render the ImageErrorMessage with the provided code', () => {
       render(<ImageUpload {...props} />)
 
-      expect(screen.getByTestId('error-text')).toHaveTextContent('create_event.error_invalid_image_type')
+      expect(screen.getByTestId('image-error-message')).toHaveAttribute('data-code', 'invalid_image_type')
     })
 
-    it('should render the error row and hide the helper row', () => {
+    it('should hide the helper row', () => {
       render(<ImageUpload {...props} />)
 
-      expect(screen.getByTestId('error-row')).toBeInTheDocument()
       expect(screen.queryByTestId('helper-row')).not.toBeInTheDocument()
-    })
-
-    it('should not render the optimize link', () => {
-      render(<ImageUpload {...props} />)
-
-      expect(screen.queryByTestId('optimize-link')).not.toBeInTheDocument()
-    })
-  })
-
-  describe('when the image is too large', () => {
-    beforeEach(() => {
-      props = {
-        imagePreviewUrl: null,
-        imageError: 'image_too_large',
-        onImageSelect: jest.fn(),
-        onImageRemove: jest.fn()
-      }
-    })
-
-    it('should render the error row with the optimize link', () => {
-      render(<ImageUpload {...props} />)
-
-      const link = screen.getByTestId('optimize-link')
-      expect(link).toBeInTheDocument()
-      expect(link).toHaveAttribute('href', 'https://imagecompressor.com/')
-      expect(link).toHaveAttribute('target', '_blank')
     })
   })
 

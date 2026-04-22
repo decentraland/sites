@@ -4,6 +4,7 @@ import { useTranslation } from '@dcl/hooks'
 import { useCreateEventMutation, useUploadPosterMutation, useUploadPosterVerticalMutation } from '../features/whats-on-events'
 import type { RecurrentFrequency } from '../features/whats-on-events'
 import { useAuthIdentity } from './useAuthIdentity'
+import type { CreateEventFormState, FormErrors, ImageErrorCode } from './useCreateEventForm.types'
 
 const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif']
 const ACCEPTED_VERTICAL_IMAGE_TYPES = ['image/png', 'image/jpeg']
@@ -19,43 +20,6 @@ const COORD_Y_MAX = 158
 const MAX_EVENT_DURATION_MS = 24 * 60 * 60 * 1000
 const MAX_NAME_LENGTH = 150
 const MAX_DESCRIPTION_LENGTH = 5000
-
-type ImageErrorCode =
-  | 'invalid_image_type'
-  | 'invalid_vertical_image_type'
-  | 'image_too_large'
-  | 'upload_failed'
-  | 'vertical_image_dimensions'
-  | 'vertical_image_decode'
-
-type CreateEventFormState = {
-  image: File | null
-  imagePreviewUrl: string | null
-  imageUrl: string | null
-  imageError: ImageErrorCode | null
-  isUploadingImage: boolean
-  verticalImage: File | null
-  verticalImagePreviewUrl: string | null
-  verticalImageUrl: string | null
-  verticalImageError: ImageErrorCode | null
-  isUploadingVerticalImage: boolean
-  name: string
-  description: string
-  startDate: string
-  startTime: string
-  endDate: string
-  endTime: string
-  repeatEnabled: boolean
-  frequency: string
-  repeatEndDate: string
-  location: string
-  coordX: string
-  coordY: string
-  world: string
-  communityId: string
-  email: string
-  notes: string
-}
 
 const initialState: CreateEventFormState = {
   image: null,
@@ -150,8 +114,6 @@ function extractSubmitErrorMessage(error: unknown, t: (key: string) => string): 
   console.error('[CreateEvent] submit failed', error)
   return t('create_event.error_submit')
 }
-
-type FormErrors = Partial<Record<string, string>>
 
 /* eslint-disable @typescript-eslint/naming-convention -- keys match form select values */
 const FREQUENCY_MAP: Record<string, RecurrentFrequency> = {
@@ -425,4 +387,3 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
 }
 
 export { useCreateEventForm }
-export type { CreateEventFormState, FormErrors, ImageErrorCode }
