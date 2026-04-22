@@ -30,6 +30,11 @@ const outlinedInputOverrides = {
       color: labelColor
     }
   },
+  '& .MuiOutlinedInput-notchedOutline legend': {
+    fontWeight: 500,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.15px'
+  },
   '& .MuiOutlinedInput-input': {
     color: inputText,
     fontSize: 16,
@@ -68,10 +73,6 @@ const EventTextArea = styled(TextField)({
   '& .MuiOutlinedInput-root': {
     ...outlinedInputOverrides['& .MuiOutlinedInput-root'],
     alignItems: 'flex-start'
-  },
-  '& .MuiOutlinedInput-input': {
-    ...outlinedInputOverrides['& .MuiOutlinedInput-input'],
-    minHeight: 56
   }
   /* eslint-enable @typescript-eslint/naming-convention */
 })
@@ -205,32 +206,6 @@ const ImageSection = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2)
 }))
 
-const DescriptionHeader = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between'
-})
-
-const DescriptionLabel = styled(Typography)({
-  fontSize: 16,
-  fontWeight: 400,
-  color: inputText,
-  lineHeight: 1.75
-})
-
-const PreviewToggle = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(0.5)
-}))
-
-const PreviewLabel = styled(Typography)({
-  fontSize: 16,
-  fontWeight: 400,
-  color: '#ecebed',
-  lineHeight: 1.75
-})
-
 const DescriptionFields = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -296,10 +271,11 @@ const RepeatFields = styled(Box, {
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(2),
-  maxHeight: $visible ? 200 : 0,
+  maxHeight: $visible ? 220 : 0,
   opacity: $visible ? 1 : 0,
   overflow: 'hidden',
-  transition: 'max-height 0.3s ease, opacity 0.3s ease'
+  paddingTop: $visible ? 10 : 0,
+  transition: 'max-height 0.3s ease, opacity 0.3s ease, padding-top 0.3s ease'
 }))
 
 /* ── location section ───────────────────────────────────────────────── */
@@ -368,6 +344,14 @@ const ReviewText = styled(Typography)({
   fontFamily: "'Inter', sans-serif"
 })
 
+const ErrorMessage = styled(ReviewText)(({ theme }) => ({
+  color: theme.palette.error.main
+}))
+
+const SubmitErrorMessage = styled(ErrorMessage)({
+  textAlign: 'center'
+})
+
 /* ── CTA bar ────────────────────────────────────────────────────────── */
 
 const FormActions = styled(Box)(({ theme }) => ({
@@ -418,10 +402,10 @@ const CancelButton = styled('button')(({ theme }) => ({
 }))
 
 const SubmitButton = styled('button')(({ theme }) => ({
-  background: '#f8919d',
+  background: theme.palette.primary.main,
   border: 'none',
   borderRadius: 12,
-  color: '#fee9ec',
+  color: '#ffffff',
   fontFamily: "'Inter', sans-serif",
   fontSize: 14,
   fontWeight: 600,
@@ -431,16 +415,19 @@ const SubmitButton = styled('button')(({ theme }) => ({
   width: 200,
   height: 48,
   cursor: 'pointer',
-  transition: theme.transitions.create(['opacity', 'box-shadow'], {
+  transition: theme.transitions.create(['background-color', 'box-shadow', 'opacity'], {
     duration: theme.transitions.duration.standard
   }),
   /* eslint-disable @typescript-eslint/naming-convention */
   '&:hover': {
-    opacity: 0.9,
+    background: theme.palette.primary.dark,
     boxShadow: '0 3px 1px -2px rgba(0,0,0,0.2), 0 2px 2px rgba(0,0,0,0.14), 0 1px 5px rgba(0,0,0,0.12)'
   },
   '&:disabled': {
-    opacity: 0.5,
+    background: '#f8919d',
+    color: '#fee9ec',
+    opacity: 0.6,
+    cursor: 'not-allowed',
     pointerEvents: 'none'
   },
   '&:focus-visible': {
@@ -499,9 +486,8 @@ export {
   DateTimeRow,
   DateTimeSection,
   DescriptionFields,
-  DescriptionHeader,
-  DescriptionLabel,
   EmailSection,
+  ErrorMessage,
   EventDetailsBlock,
   EventFormControl,
   EventInputLabel,
@@ -517,13 +503,12 @@ export {
   LocationBlock,
   LocationLabel,
   LocationRow,
-  PreviewLabel,
-  PreviewToggle,
   RepeatFields,
   RepeatLabel,
   RepeatRow,
   ReviewText,
   RightSection,
   SectionHeading,
-  SubmitButton
+  SubmitButton,
+  SubmitErrorMessage
 }

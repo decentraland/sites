@@ -21,10 +21,17 @@ interface ModalEventData {
   url: string
 }
 
+interface AdminActions {
+  onApprove: () => void
+  onReject: () => void
+  isProcessing: boolean
+}
+
 interface EventDetailModalProps {
   open: boolean
   onClose: () => void
   data: ModalEventData | null
+  adminActions?: AdminActions
 }
 
-export type { EventDetailModalProps, ModalEventData }
+export type { AdminActions, EventDetailModalProps, ModalEventData }

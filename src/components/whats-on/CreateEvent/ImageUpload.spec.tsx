@@ -22,9 +22,8 @@ jest.mock('./ImageUpload.styled', () => ({
     )
   },
   DropZoneContent: ({ children }: { children: React.ReactNode }) => <div data-testid="drop-zone-content">{children}</div>,
-  ErrorText: ({ children }: { children: React.ReactNode }) => <span data-testid="error-text">{children}</span>,
   HelperIcon: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
-  HelperRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  HelperRow: ({ children }: { children: React.ReactNode }) => <div data-testid="helper-row">{children}</div>,
   HelperText: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   IconAndTitle: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   OverlayText: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
@@ -37,6 +36,10 @@ jest.mock('./ImageUpload.styled', () => ({
   RecommendedSize: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   SelectText: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   UploadHintGroup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
+}))
+
+jest.mock('./ImageErrorMessage', () => ({
+  ImageErrorMessage: ({ code }: { code: string }) => <div data-testid="image-error-message" data-code={code} />
 }))
 
 jest.mock('@mui/icons-material/InfoOutlined', () => ({
@@ -148,20 +151,26 @@ describe('ImageUpload', () => {
     })
   })
 
-  describe('when there is an error', () => {
+  describe('when an image error is provided', () => {
     beforeEach(() => {
       props = {
         imagePreviewUrl: null,
-        imageError: 'Please upload a PNG, JPG, or GIF file.',
+        imageError: 'invalid_image_type',
         onImageSelect: jest.fn(),
         onImageRemove: jest.fn()
       }
     })
 
-    it('should display the error message', () => {
+    it('should render the ImageErrorMessage with the provided code', () => {
       render(<ImageUpload {...props} />)
 
-      expect(screen.getByTestId('error-text')).toHaveTextContent('Please upload a PNG, JPG, or GIF file.')
+      expect(screen.getByTestId('image-error-message')).toHaveAttribute('data-code', 'invalid_image_type')
+    })
+
+    it('should hide the helper row', () => {
+      render(<ImageUpload {...props} />)
+
+      expect(screen.queryByTestId('helper-row')).not.toBeInTheDocument()
     })
   })
 
@@ -175,10 +184,16 @@ describe('ImageUpload', () => {
       }
     })
 
-    it('should not display the error text', () => {
+    it('should render the helper row', () => {
       render(<ImageUpload {...props} />)
 
-      expect(screen.queryByTestId('error-text')).not.toBeInTheDocument()
+      expect(screen.getByTestId('helper-row')).toBeInTheDocument()
+    })
+
+    it('should not render the error row', () => {
+      render(<ImageUpload {...props} />)
+
+      expect(screen.queryByTestId('error-row')).not.toBeInTheDocument()
     })
   })
 })

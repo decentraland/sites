@@ -45,6 +45,9 @@ const DappsShell = lazy(() => import('./shells/DappsShell').then(m => ({ default
 
 const WhatsOnHomePage = lazy(() => import('./pages/whats-on/HomePage').then(m => ({ default: m.HomePage })))
 const CreateEventPage = lazy(() => import('./pages/whats-on/CreateEventPage').then(m => ({ default: m.CreateEventPage })))
+const WhatsOnLayout = lazy(() => import('./pages/whats-on/WhatsOnLayout').then(m => ({ default: m.WhatsOnLayout })))
+const PendingEventsPage = lazy(() => import('./pages/whats-on/PendingEventsPage').then(m => ({ default: m.PendingEventsPage })))
+const UsersAdminPage = lazy(() => import('./pages/whats-on/UsersAdminPage').then(m => ({ default: m.UsersAdminPage })))
 
 const App = () => {
   return (
@@ -77,8 +80,12 @@ const App = () => {
                 in every environment; PR3 lands the real blog routes. If blog must
                 stay dev/stg-only at any point, reintroduce a getEnv() check here. */}
             <Route element={<DappsShell />}>
-              <Route path="/whats-on" element={<WhatsOnHomePage />} />
-              <Route path="/whats-on/new-event" element={<CreateEventPage />} />
+              <Route element={<WhatsOnLayout />}>
+                <Route path="/whats-on" element={<WhatsOnHomePage />} />
+                <Route path="/whats-on/new-event" element={<CreateEventPage />} />
+                <Route path="/whats-on/admin/pending-events" element={<PendingEventsPage />} />
+                <Route path="/whats-on/admin/users" element={<UsersAdminPage />} />
+              </Route>
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/preview" element={<PreviewPage />} />
               <Route path="/blog/search" element={<BlogSearchPage />} />

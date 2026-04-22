@@ -1,4 +1,5 @@
 import { Box, Typography, styled } from 'decentraland-ui2'
+import { OverlayText, PreviewImage, PreviewOverlay, errorPulse, errorShake } from './shared.styled'
 
 const DropZone = styled(Box, {
   shouldForwardProp: prop => prop !== '$hasImage' && prop !== '$hasError'
@@ -16,9 +17,13 @@ const DropZone = styled(Box, {
   overflow: 'hidden',
   padding: 12,
   transition: 'border-color 0.2s ease',
+  animation: $hasError ? `${errorShake} 0.4s ease-in-out, ${errorPulse} 1.6s ease-out 0.4s infinite` : 'none',
   /* eslint-disable @typescript-eslint/naming-convention */
   '&:hover': {
     borderColor: $hasImage ? undefined : 'rgba(255, 255, 255, 0.7)'
+  },
+  '@media (prefers-reduced-motion: reduce)': {
+    animation: 'none'
   },
   [theme.breakpoints.down('md')]: {
     height: 'auto',
@@ -135,53 +140,12 @@ const HelperText = styled(Typography)(({ theme }) => ({
   }
 }))
 
-const ErrorText = styled(Typography)(({ theme }) => ({
-  fontSize: 12,
-  color: theme.palette.error.main,
-  marginTop: 4
-}))
-
-const PreviewImage = styled('img')({
-  position: 'absolute',
-  inset: 0,
-  width: '100%',
-  height: '100%',
-  objectFit: 'cover',
-  borderRadius: 20
-})
-
-const PreviewOverlay = styled(Box)({
-  position: 'absolute',
-  inset: 0,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: 'rgba(0, 0, 0, 0.5)',
-  opacity: 0,
-  transition: 'opacity 0.2s ease',
-  borderRadius: 20,
-  cursor: 'pointer',
-  /* eslint-disable @typescript-eslint/naming-convention */
-  '&:hover': {
-    opacity: 1
-  }
-  /* eslint-enable @typescript-eslint/naming-convention */
-})
-
-const OverlayText = styled(Typography)({
-  fontSize: 14,
-  fontWeight: 600,
-  color: '#fff',
-  textTransform: 'uppercase'
-})
-
 export {
   CameraIcon,
   ChooseLink,
   DropHintText,
   DropZone,
   DropZoneContent,
-  ErrorText,
   HelperIcon,
   HelperRow,
   HelperText,

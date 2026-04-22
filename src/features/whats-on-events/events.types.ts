@@ -106,6 +106,7 @@ interface CreateEventPayload {
   categories?: string[]
   world?: boolean
   server?: string | null
+  community_id?: string | null
   recurrent?: boolean
   recurrent_frequency?: RecurrentFrequency | null
   recurrent_interval?: number
@@ -124,8 +125,43 @@ interface CreateEventResponse {
   data: EventEntry
 }
 
+interface PosterData {
+  filename: string
+  url: string
+  size: number
+  type: string
+}
+
+interface PosterResponse {
+  ok: boolean
+  data: PosterData
+}
+
+interface UploadPosterParams {
+  file: File
+  identity: AuthIdentity
+}
+
+interface CommunityAttributes {
+  id: string
+  name: string
+  ownerAddress: string
+  active: boolean
+  thumbnails?: { raw: string }
+}
+
+interface CommunitiesResponse {
+  data: { results: CommunityAttributes[] }
+}
+
+interface GetCommunitiesParams {
+  identity: AuthIdentity | undefined
+}
+
 export type {
   AuthenticatedQueryParams,
+  CommunitiesResponse,
+  CommunityAttributes,
   CreateEventParams,
   CreateEventPayload,
   CreateEventResponse,
@@ -136,6 +172,10 @@ export type {
   EventOrder,
   EventsQueryParams,
   EventsResponse,
+  GetCommunitiesParams,
+  PosterData,
+  PosterResponse,
   RecurrentFrequency,
-  ToggleAttendeeParams
+  ToggleAttendeeParams,
+  UploadPosterParams
 }

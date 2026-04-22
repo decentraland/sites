@@ -22,9 +22,8 @@ jest.mock('./EventForm.styled', () => ({
   DateTimeRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DateTimeSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DescriptionFields: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DescriptionHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DescriptionLabel: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   EmailSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  ErrorMessage: ({ children }: { children: React.ReactNode }) => <span data-testid="error-message">{children}</span>,
   EventDetailsBlock: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   EventFormControl: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   EventInputLabel: ({ children }: { children: React.ReactNode }) => <label>{children}</label>,
@@ -83,8 +82,6 @@ jest.mock('./EventForm.styled', () => ({
   LocationBlock: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   LocationLabel: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   LocationRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  PreviewLabel: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
-  PreviewToggle: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   RepeatFields: ({ children, $visible }: { children: React.ReactNode; $visible: boolean }) => (
     <div data-testid="repeat-fields" data-visible={$visible}>
       {children}
@@ -99,11 +96,25 @@ jest.mock('./EventForm.styled', () => ({
     <button data-testid="submit-button" {...props}>
       {children}
     </button>
-  )
+  ),
+  SubmitErrorMessage: ({ children }: { children: React.ReactNode }) => <span data-testid="submit-error-message">{children}</span>
 }))
 
 jest.mock('./ImageUpload', () => ({
   ImageUpload: () => <div data-testid="image-upload" />
+}))
+
+jest.mock('./VerticalCoverPanel', () => ({
+  VerticalCoverPanel: () => <div data-testid="vertical-cover-panel" />
+}))
+
+jest.mock('../../../features/whats-on-events', () => ({
+  useGetWorldNamesQuery: () => ({ data: [] }),
+  useGetCommunitiesQuery: () => ({ data: [] })
+}))
+
+jest.mock('../../../hooks/useAuthIdentity', () => ({
+  useAuthIdentity: () => ({ identity: null, hasValidIdentity: false, address: null })
 }))
 
 jest.mock('@mui/icons-material/AccessTime', () => ({
@@ -155,14 +166,12 @@ function createFormState(overrides = {}) {
     endTime: '',
     repeatEnabled: false,
     frequency: 'every_week',
-    repeatInterval: 1,
-    repeatEndType: 'count' as const,
-    repeatCount: 3,
     repeatEndDate: '',
     location: 'land',
     coordX: '0',
     coordY: '0',
-    community: '',
+    world: '',
+    communityId: '',
     email: '',
     notes: '',
     ...overrides
@@ -194,57 +203,149 @@ describe('EventForm', () => {
 
   describe('when rendered', () => {
     it('should render the image upload', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByTestId('image-upload')).toBeInTheDocument()
     })
 
     it('should render the event name input', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByLabelText('create_event.event_name')).toBeInTheDocument()
     })
 
     it('should render the description textarea', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByLabelText('create_event.event_description')).toBeInTheDocument()
     })
 
     it('should render the section heading', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByTestId('section-heading')).toHaveTextContent('create_event.event_details')
     })
 
     it('should render the email input', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByLabelText('create_event.email_label')).toBeInTheDocument()
     })
 
     it('should render the cancel button', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByTestId('cancel-button')).toHaveTextContent('create_event.cancel')
     })
 
     it('should render the submit button', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByTestId('submit-button')).toHaveTextContent('create_event.submit')
     })
 
     it('should render the add vertical cover button', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByTestId('add-vertical-cover')).toBeInTheDocument()
     })
   })
 
-  describe('when the form is not valid', () => {
+  describe('when the form has empty required fields', () => {
+    it('should keep the submit button clickable so clicking surfaces the validation errors', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByTestId('submit-button')).not.toBeDisabled()
+    })
+  })
+
+  describe('when an image is uploading', () => {
+    beforeEach(() => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({ isUploadingImage: true }),
+        errors: {},
+        setField: mockSetField,
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
     it('should render the submit button as disabled', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByTestId('submit-button')).toBeDisabled()
+    })
+  })
+
+  describe('when a vertical image is uploading', () => {
+    beforeEach(() => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({ isUploadingVerticalImage: true }),
+        errors: {},
+        setField: mockSetField,
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
+    it('should render the submit button as disabled', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByTestId('submit-button')).toBeDisabled()
+    })
+  })
+
+  describe('when an image error is present', () => {
+    beforeEach(() => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({ imageError: 'image_too_large' }),
+        errors: {},
+        setField: mockSetField,
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
+    it('should disable submit so the inline image error (with red-border animation) is what the user acts on', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByTestId('submit-button')).toBeDisabled()
+    })
+  })
+
+  describe('when a vertical image error is present', () => {
+    beforeEach(() => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({ verticalImageError: 'vertical_image_dimensions' }),
+        errors: {},
+        setField: mockSetField,
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
+    it('should disable submit so the vertical panel error is what the user acts on', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByTestId('submit-button')).toBeDisabled()
     })
@@ -276,7 +377,7 @@ describe('EventForm', () => {
     })
 
     it('should render the submit button as enabled', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByTestId('submit-button')).not.toBeDisabled()
     })
@@ -284,7 +385,7 @@ describe('EventForm', () => {
 
   describe('when cancel is clicked', () => {
     it('should call onCancel', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       fireEvent.click(screen.getByTestId('cancel-button'))
 
@@ -294,7 +395,7 @@ describe('EventForm', () => {
 
   describe('when interacting with form fields', () => {
     it('should call setField when the event name changes', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       fireEvent.change(screen.getByLabelText('create_event.event_name'), { target: { value: 'New Event' } })
 
@@ -302,7 +403,7 @@ describe('EventForm', () => {
     })
 
     it('should call setField when the description changes', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       fireEvent.change(screen.getByLabelText('create_event.event_description'), { target: { value: 'A description' } })
 
@@ -332,7 +433,7 @@ describe('EventForm', () => {
         handleSubmit: mockHandleSubmit
       })
 
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       fireEvent.click(screen.getByTestId('submit-button'))
 
@@ -366,13 +467,13 @@ describe('EventForm', () => {
     })
 
     it('should render the submit button as disabled', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByTestId('submit-button')).toBeDisabled()
     })
 
     it('should render the submitting text', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByTestId('submit-button')).toHaveTextContent('create_event.submitting')
     })
@@ -395,7 +496,7 @@ describe('EventForm', () => {
     })
 
     it('should render the submit error message', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByText('Something went wrong')).toBeInTheDocument()
     })
@@ -418,24 +519,24 @@ describe('EventForm', () => {
     })
 
     it('should render the remove vertical cover text', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
-      expect(screen.getByTestId('add-vertical-cover')).toHaveTextContent('Remove Vertical Cover')
+      expect(screen.getByTestId('add-vertical-cover')).toHaveTextContent('create_event.remove_vertical_cover')
     })
   })
 
   describe('when no vertical image preview exists', () => {
     it('should render the add vertical cover text', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
-      expect(screen.getByTestId('add-vertical-cover')).toHaveTextContent('Add Vertical Cover')
+      expect(screen.getByTestId('add-vertical-cover')).toHaveTextContent('create_event.add_vertical_cover')
     })
   })
 
   describe('when a vertical image error exists', () => {
     beforeEach(() => {
       mockUseCreateEventForm.mockReturnValue({
-        form: createFormState({ verticalImageError: 'Invalid vertical image' }),
+        form: createFormState({ verticalImageError: 'vertical_image_dimensions' }),
         errors: {},
         setField: mockSetField,
         handleImageSelect: mockHandleImageSelect,
@@ -448,10 +549,10 @@ describe('EventForm', () => {
       })
     })
 
-    it('should render the vertical image error message', () => {
-      render(<EventForm onCancel={mockOnCancel} />)
+    it('should render the VerticalCoverPanel so it can show the error with the animated red border', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
-      expect(screen.getByText('Invalid vertical image')).toBeInTheDocument()
+      expect(screen.getByTestId('vertical-cover-panel')).toBeInTheDocument()
     })
   })
 })

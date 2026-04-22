@@ -5,13 +5,14 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { useTranslation } from '@dcl/hooks'
+import type { ImageErrorCode } from '../../../hooks/useCreateEventForm.types'
+import { ImageErrorMessage } from './ImageErrorMessage'
 import {
   CameraIcon,
   ChooseLink,
   DropHintText,
   DropZone,
   DropZoneContent,
-  ErrorText,
   HelperIcon,
   HelperRow,
   HelperText,
@@ -26,7 +27,7 @@ import {
 
 type ImageUploadProps = {
   imagePreviewUrl: string | null
-  imageError: string | null
+  imageError: ImageErrorCode | null
   onImageSelect: (file: File) => void
   onImageRemove: () => void
 }
@@ -115,13 +116,16 @@ function ImageUpload({ imagePreviewUrl, imageError, onImageSelect, onImageRemove
           aria-hidden="true"
         />
       </DropZone>
-      <HelperRow>
-        <HelperIcon>
-          <InfoOutlinedIcon sx={{ fontSize: 'inherit', color: '#fcfcfc' }} />
-        </HelperIcon>
-        <HelperText>{t('create_event.image_helper')}</HelperText>
-      </HelperRow>
-      {imageError && <ErrorText>{imageError}</ErrorText>}
+      {imageError ? (
+        <ImageErrorMessage code={imageError} />
+      ) : (
+        <HelperRow>
+          <HelperIcon>
+            <InfoOutlinedIcon sx={{ fontSize: 'inherit', color: '#fcfcfc' }} />
+          </HelperIcon>
+          <HelperText>{t('create_event.image_helper')}</HelperText>
+        </HelperRow>
+      )}
     </div>
   )
 }
