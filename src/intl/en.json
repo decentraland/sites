@@ -751,7 +751,8 @@
     "remind_me": "Remind me",
     "copy_link": "Copy link",
     "copied": "Copied!",
-    "coming_soon": "Coming soon"
+    "coming_soon": "Coming soon",
+    "unknown_creator": "Unknown"
   },
   "create_event": {
     "title": "Submit an Event",

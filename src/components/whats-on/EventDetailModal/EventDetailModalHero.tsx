@@ -6,7 +6,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTranslation } from '@dcl/hooks'
 import { Tooltip, useTheme } from 'decentraland-ui2'
-import { useGetProfileQuery } from '../../../features/profile/profile.client'
+import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { buildCalendarUrl } from '../../../utils/whatsOnUrl'
 import { RemindMeIcon } from '../common/RemindMeIcon'
@@ -32,8 +32,6 @@ import {
   SecondaryButton
 } from './EventDetailModal.styled'
 
-const DCL_LOGO_URL = `${window.location.origin}/dcl-logo.svg`
-
 function EventDetailModalHero({ data, onClose }: { data: ModalEventData; onClose: () => void }) {
   const { t } = useTranslation()
   const theme = useTheme()
@@ -41,11 +39,7 @@ function EventDetailModalHero({ data, onClose }: { data: ModalEventData; onClose
   const [copied, setCopied] = useState(false)
   const { isReminded, isLoading: isRemindLoading, isShaking, handleToggle: handleRemindToggle } = useRemindMe(data.id, data.attending)
 
-  const isDclFoundation = data.creatorName?.toLowerCase() === 'decentraland foundation'
-  const { data: profile } = useGetProfileQuery(data.creatorAddress, { skip: !data.creatorAddress || isDclFoundation })
-  const avatar = profile?.avatars?.[0]
-  const avatarFace = isDclFoundation ? DCL_LOGO_URL : avatar?.avatar?.snapshots?.face256
-  const creatorName = isDclFoundation ? 'Decentraland Foundation' : avatar?.name || data.creatorName
+  const { creatorName, avatarFace } = useCreatorProfile(data.creatorAddress, data.creatorName)
   const hasCreator = Boolean(avatarFace || creatorName)
 
   const handleJumpIn = useCallback(() => {
