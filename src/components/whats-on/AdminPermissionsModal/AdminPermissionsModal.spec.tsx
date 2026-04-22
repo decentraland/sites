@@ -14,7 +14,15 @@ jest.mock('@mui/icons-material/Close', () => ({
 jest.mock('./AdminPermissionsModal.styled', () => ({
   StyledDialog: ({ children, open }: { children: React.ReactNode; open: boolean }) => (open ? <div role="dialog">{children}</div> : null),
   Footer: ({ children }: { children: React.ReactNode }) => <div data-testid="footer">{children}</div>,
-  PermissionRow: ({ children }: { children: React.ReactNode }) => <div data-testid="permission-row">{children}</div>
+  HeaderAddress: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+  HeaderAvatar: () => <span data-testid="header-avatar" />,
+  HeaderName: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+  HeaderText: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  ModalHeader: ({ children }: { children: React.ReactNode }) => <header data-testid="modal-header">{children}</header>,
+  PermissionDescription: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+  PermissionMeta: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  PermissionRow: ({ children }: { children: React.ReactNode }) => <div data-testid="permission-row">{children}</div>,
+  PermissionTitle: ({ children }: { children: React.ReactNode }) => <span>{children}</span>
 }))
 
 jest.mock('decentraland-ui2', () => ({
@@ -133,8 +141,12 @@ describe('when rendering AdminPermissionsModal in edit mode', () => {
     jest.resetAllMocks()
   })
 
-  it('should disable the wallet input', () => {
-    expect(screen.getByLabelText('whats_on_admin.permissions_modal.wallet_label')).toBeDisabled()
+  it('should NOT render the wallet input', () => {
+    expect(screen.queryByLabelText('whats_on_admin.permissions_modal.wallet_label')).not.toBeInTheDocument()
+  })
+
+  it('should render the user address in the header', () => {
+    expect(screen.getByText('0xabcdef0123456789abcdef0123456789abcdef01')).toBeInTheDocument()
   })
 
   it('should pre-check the Edit Users switch', () => {

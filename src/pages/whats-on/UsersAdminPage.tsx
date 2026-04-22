@@ -2,14 +2,16 @@ import { useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CheckIcon from '@mui/icons-material/Check'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import SearchIcon from '@mui/icons-material/Search'
 import { useTranslation } from '@dcl/hooks'
-import { Button, Table, TableBody, TableCell, TableHead, TablePagination, TableRow, TextField, Typography } from 'decentraland-ui2'
+import { Button, InputAdornment, Table, TableBody, TableCell, TableHead, TablePagination, TableRow, TextField } from 'decentraland-ui2'
 import { AdminPermissionsModal } from '../../components/whats-on/AdminPermissionsModal'
 import { useListAdminsQuery, useUpdateAdminPermissionsMutation } from '../../features/whats-on/admin/admin.client'
 import { AdminPermission } from '../../features/whats-on/admin/admin.types'
 import { useAdminPermissions } from '../../hooks/useAdminPermissions'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { ClickableRow, Header, PageContainer, UserAvatar } from './UsersAdminPage.styled'
+import { ClickableRow, Header, PageContainer, PageTitle, TableWrapper, UserAvatar } from './UsersAdminPage.styled'
 
 const COLUMNS: Array<{ key: AdminPermission; labelKey: string }> = [
   { key: AdminPermission.APPROVE_OWN_EVENT, labelKey: 'whats_on_admin.users.columns.approve_own_events' },
@@ -58,73 +60,80 @@ function UsersAdminPage() {
 
   return (
     <PageContainer>
+      <PageTitle component="h1">{t('whats_on_admin.users.title')}</PageTitle>
       <Header>
-        <Typography variant="h4" component="h1">
-          {t('whats_on_admin.users.title')}
-        </Typography>
         <TextField
           label={t('whats_on_admin.users.search_label')}
           placeholder={t('whats_on_admin.users.search_placeholder')}
           value={search}
           onChange={event => setSearch(event.target.value)}
           size="small"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" />
+              </InputAdornment>
+            )
+          }}
         />
         <Button variant="contained" color="primary" onClick={() => setModalState({ mode: 'add', permissions: [] })}>
           {t('whats_on_admin.cta.add_user')}
         </Button>
       </Header>
 
-      <Table aria-label={t('whats_on_admin.users.title')}>
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('whats_on_admin.users.columns.user')}</TableCell>
-            {COLUMNS.map(column => (
-              <TableCell key={column.key} align="center">
-                {t(column.labelKey)}
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {paginated.map(row => (
-            <ClickableRow
-              key={row.user}
-              hover
-              onClick={() => setModalState({ mode: 'edit', user: row.user, permissions: row.permissions })}
-            >
-              <TableCell>
-                <UserAvatar />
-                {row.user}
-              </TableCell>
+      <TableWrapper>
+        <Table aria-label={t('whats_on_admin.users.title')}>
+          <TableHead>
+            <TableRow>
+              <TableCell>{t('whats_on_admin.users.columns.user')}</TableCell>
               {COLUMNS.map(column => (
                 <TableCell key={column.key} align="center">
-                  {row.permissions.includes(column.key) ? <CheckIcon color="success" /> : null}
+                  {t(column.labelKey)}
                 </TableCell>
               ))}
-            </ClickableRow>
-          ))}
-          {!isFetching && paginated.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={COLUMNS.length + 1} align="center">
-                {t('whats_on_admin.users.empty')}
-              </TableCell>
             </TableRow>
-          )}
-        </TableBody>
-      </Table>
+          </TableHead>
+          <TableBody>
+            {paginated.map(row => (
+              <ClickableRow
+                key={row.user}
+                hover
+                onClick={() => setModalState({ mode: 'edit', user: row.user, permissions: row.permissions })}
+              >
+                <TableCell>
+                  <UserAvatar />
+                  {row.user}
+                </TableCell>
+                {COLUMNS.map(column => (
+                  <TableCell key={column.key} align="center">
+                    {row.permissions.includes(column.key) ? <CheckIcon color="success" /> : null}
+                  </TableCell>
+                ))}
+              </ClickableRow>
+            ))}
+            {!isFetching && paginated.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={COLUMNS.length + 1} align="center">
+                  {t('whats_on_admin.users.empty')}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
 
-      <TablePagination
-        component="div"
-        count={filtered.length}
-        page={page}
-        onPageChange={(_, next) => setPage(next)}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={event => {
-          setRowsPerPage(parseInt(event.target.value, 10))
-          setPage(0)
-        }}
-        rowsPerPageOptions={[10, 25, 50]}
-      />
+        <TablePagination
+          component="div"
+          count={filtered.length}
+          page={page}
+          onPageChange={(_, next) => setPage(next)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={event => {
+            setRowsPerPage(parseInt(event.target.value, 10))
+            setPage(0)
+          }}
+          rowsPerPageOptions={[10, 25, 50]}
+        />
+      </TableWrapper>
 
       {modalState && (
         <AdminPermissionsModal

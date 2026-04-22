@@ -1,15 +1,14 @@
 import { useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
-import { Typography } from 'decentraland-ui2'
+import { AllExperiencesCard } from '../../components/whats-on/AllExperiences'
 import { EventDetailModal } from '../../components/whats-on/EventDetailModal'
 import { normalizeEventEntry } from '../../components/whats-on/EventDetailModal/normalizers'
-import { UpcomingCard } from '../../components/whats-on/Upcoming/UpcomingCard'
 import { useApproveEventMutation, useGetAdminEventsQuery, useRejectEventMutation } from '../../features/whats-on/admin/admin.client'
 import type { EventEntry } from '../../features/whats-on-events/events.types'
 import { useAdminPermissions } from '../../hooks/useAdminPermissions'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { CardGrid, PageContainer, Section } from './PendingEventsPage.styled'
+import { CardGrid, EmptyStateText, PageContainer, Section, SectionSubtitle, SectionTitle } from './PendingEventsPage.styled'
 
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
 
@@ -74,25 +73,24 @@ function PendingEventsPage() {
   return (
     <PageContainer>
       <Section>
-        <Typography variant="h4" component="h1">
-          {t('whats_on_admin.pending_events.title')}
-        </Typography>
+        <SectionTitle component="h1">{t('whats_on_admin.pending_events.title')}</SectionTitle>
         <CardGrid>
           {pending.length === 0 ? (
-            <Typography>{t('whats_on_admin.pending_events.empty')}</Typography>
+            <EmptyStateText>{t('whats_on_admin.pending_events.empty')}</EmptyStateText>
           ) : (
-            pending.map(event => <UpcomingCard key={event.id} event={event} onClick={() => setActiveEvent(event)} />)
+            pending.map(event => <AllExperiencesCard key={event.id} event={event} onClick={() => setActiveEvent(event)} />)
           )}
         </CardGrid>
       </Section>
 
       <Section>
-        <Typography variant="h5" component="h2">
-          {t('whats_on_admin.pending_events.recently_approved')} {t('whats_on_admin.pending_events.recently_approved_subtitle')}
-        </Typography>
+        <SectionTitle component="h2">
+          {t('whats_on_admin.pending_events.recently_approved')}
+          <SectionSubtitle>{t('whats_on_admin.pending_events.recently_approved_subtitle')}</SectionSubtitle>
+        </SectionTitle>
         <CardGrid>
           {recentlyApproved.map(event => (
-            <UpcomingCard key={event.id} event={event} onClick={() => setActiveEvent(event)} />
+            <AllExperiencesCard key={event.id} event={event} onClick={() => setActiveEvent(event)} />
           ))}
         </CardGrid>
       </Section>

@@ -34,21 +34,20 @@ jest.mock('../../components/whats-on/EventDetailModal/normalizers', () => ({
   normalizeEventEntry: jest.fn()
 }))
 
-jest.mock('../../components/whats-on/Upcoming/UpcomingCard', () => ({
-  UpcomingCard: ({ event, onClick }: { event: { id: string; name: string }; onClick: () => void }) => (
+jest.mock('../../components/whats-on/AllExperiences', () => ({
+  AllExperiencesCard: ({ event, onClick }: { event: { id: string; name: string }; onClick: () => void }) => (
     <button onClick={onClick}>{event.name}</button>
   )
 }))
 
 jest.mock('./PendingEventsPage.styled', () => ({
   CardGrid: ({ children }: { children: React.ReactNode }) => <div data-testid="card-grid">{children}</div>,
+  EmptyStateText: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
   PageContainer: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
-  Section: ({ children }: { children: React.ReactNode }) => <section>{children}</section>
-}))
-
-jest.mock('decentraland-ui2', () => ({
-  Typography: ({ children, component }: { children: React.ReactNode; component?: string }) => {
-    const Tag = (component ?? 'span') as keyof JSX.IntrinsicElements
+  Section: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
+  SectionSubtitle: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+  SectionTitle: ({ children, component }: { children: React.ReactNode; component?: string }) => {
+    const Tag = (component ?? 'h2') as keyof JSX.IntrinsicElements
     return <Tag>{children}</Tag>
   }
 }))

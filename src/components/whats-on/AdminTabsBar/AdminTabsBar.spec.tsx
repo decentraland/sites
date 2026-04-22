@@ -7,22 +7,17 @@ jest.mock('@dcl/hooks', () => ({
 }))
 
 jest.mock('decentraland-ui2', () => ({
-  Tabs: ({ children }: { children: React.ReactNode }) => <div role="tablist">{children}</div>,
-  Tab: ({ label, value }: { label: string; value: string }) => (
-    <button role="tab" data-value={value}>
-      {label}
-    </button>
-  ),
-  Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => <button onClick={onClick}>{children}</button>,
-  styled:
-    () =>
-    () =>
-    ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  Box: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
+  Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => <button onClick={onClick}>{children}</button>
 }))
 
 jest.mock('./AdminTabsBar.styled', () => ({
-  Bar: ({ children }: { children: React.ReactNode }) => <nav data-testid="admin-bar">{children}</nav>
+  Bar: ({ children }: { children: React.ReactNode }) => <nav data-testid="admin-bar">{children}</nav>,
+  BarTabs: ({ children }: { children: React.ReactNode }) => <div role="tablist">{children}</div>,
+  BarTab: ({ label, value }: { label: string; value: string }) => (
+    <button role="tab" data-value={value}>
+      {label}
+    </button>
+  )
 }))
 
 jest.mock('../../../hooks/useAdminPermissions', () => ({

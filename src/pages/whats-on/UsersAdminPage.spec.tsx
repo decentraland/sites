@@ -38,6 +38,11 @@ jest.mock('./UsersAdminPage.styled', () => ({
   ClickableRow: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => <tr onClick={onClick}>{children}</tr>,
   Header: ({ children }: { children: React.ReactNode }) => <header>{children}</header>,
   PageContainer: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
+  PageTitle: ({ children, component }: { children: React.ReactNode; component?: string }) => {
+    const Tag = (component ?? 'h1') as keyof JSX.IntrinsicElements
+    return <Tag>{children}</Tag>
+  },
+  TableWrapper: ({ children }: { children: React.ReactNode }) => <div data-testid="table-wrapper">{children}</div>,
   UserAvatar: () => <span data-testid="user-avatar" />
 }))
 
@@ -46,19 +51,21 @@ jest.mock('@mui/icons-material/Check', () => ({
   default: () => <span data-testid="check-icon" />
 }))
 
+jest.mock('@mui/icons-material/Search', () => ({
+  __esModule: true,
+  default: () => <span data-testid="search-icon" />
+}))
+
 jest.mock('decentraland-ui2', () => ({
   Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => <button onClick={onClick}>{children}</button>,
+  InputAdornment: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   Table: ({ children }: { children: React.ReactNode }) => <table>{children}</table>,
   TableBody: ({ children }: { children: React.ReactNode }) => <tbody>{children}</tbody>,
   TableCell: ({ children }: { children: React.ReactNode }) => <td>{children}</td>,
   TableHead: ({ children }: { children: React.ReactNode }) => <thead>{children}</thead>,
   TablePagination: () => <div data-testid="table-pagination" />,
   TableRow: ({ children }: { children: React.ReactNode }) => <tr>{children}</tr>,
-  TextField: ({ label }: { label: string }) => <label>{label}</label>,
-  Typography: ({ children, component }: { children: React.ReactNode; component?: string }) => {
-    const Tag = (component ?? 'span') as keyof JSX.IntrinsicElements
-    return <Tag>{children}</Tag>
-  }
+  TextField: ({ label }: { label: string }) => <label>{label}</label>
 }))
 
 describe('when rendering UsersAdminPage with canEditAnyProfile', () => {
