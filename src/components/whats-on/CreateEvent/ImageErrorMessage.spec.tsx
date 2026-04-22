@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import type { ImageErrorCode } from '../../../hooks/useCreateEventForm.types'
-import { ImageErrorMessage } from './ImageErrorMessage'
+import { IMAGE_ERROR_I18N, ImageErrorMessage } from './ImageErrorMessage'
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
@@ -22,21 +22,12 @@ jest.mock('./shared.styled', () => ({
   )
 }))
 
-const I18N_KEY_BY_CODE: Record<ImageErrorCode, string> = {
-  invalid_image_type: 'create_event.error_invalid_image_type',
-  invalid_vertical_image_type: 'create_event.error_invalid_vertical_image_type',
-  image_too_large: 'create_event.error_image_too_large',
-  upload_failed: 'create_event.error_upload_failed',
-  vertical_image_dimensions: 'create_event.error_vertical_image_dimensions',
-  vertical_image_decode: 'create_event.error_vertical_image_decode'
-}
-
 describe('ImageErrorMessage', () => {
   afterEach(() => {
     jest.resetAllMocks()
   })
 
-  describe.each(Object.entries(I18N_KEY_BY_CODE) as Array<[ImageErrorCode, string]>)('when the code is %s', (code, key) => {
+  describe.each(Object.entries(IMAGE_ERROR_I18N) as Array<[ImageErrorCode, string]>)('when the code is %s', (code, key) => {
     it('should render the matching i18n key inside the error text', () => {
       render(<ImageErrorMessage code={code} />)
 

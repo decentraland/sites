@@ -44,5 +44,5 @@ function ImageErrorMessage({ code }: ImageErrorMessageProps) {
   )
 }
 
-export { ImageErrorMessage }
+export { ImageErrorMessage, IMAGE_ERROR_I18N }
 export type { ImageErrorMessageProps }
