@@ -1,9 +1,9 @@
 import { memo } from 'react'
-import type { Avatar } from '@dcl/schemas'
+import { useTranslation } from '@dcl/hooks'
 import type { LiveNowCard as LiveNowCardData } from '../../../features/whats-on-events'
 import { useCreatorAvatar } from '../../../hooks/useCreatorAvatar'
 import { assetUrl } from '../../../utils/assetUrl'
-import { buildMinimalAvatar } from '../../../utils/avatar'
+import { formatEthAddress } from '../../../utils/avatar'
 import { LiveNowCard } from './LiveNowCard'
 
 // `/dcl-logo.svg` lives in /public, which Vite serves from the CDN base URL in
@@ -13,26 +13,24 @@ import { LiveNowCard } from './LiveNowCard'
 const DCL_LOGO_URL = assetUrl('/dcl-logo.svg')
 const DCL_FOUNDATION_NAME = 'Decentraland Foundation'
 
+function resolveCreatorName(card: LiveNowCardData, unknownLabel: string): string {
+  if (card.creatorName) return card.creatorName
+  if (card.isGenesisPlaza) return DCL_FOUNDATION_NAME
+  if (card.creatorAddress) return formatEthAddress(card.creatorAddress)
+  return unknownLabel
+}
+
 const LiveNowCardItem = memo(
   ({ card, onClick, eager }: { card: LiveNowCardData; onClick: (card: LiveNowCardData) => void; eager?: boolean }) => {
+    const { t } = useTranslation()
     // Hook must be called unconditionally; Genesis Plaza opts out of the face probe
     // because we always paint the DCL logo for it.
-    const { avatar: fetchedAvatar } = useCreatorAvatar(card.isGenesisPlaza ? undefined : card.creatorAddress, card.creatorName ?? undefined)
+    const { avatarFace } = useCreatorAvatar(card.isGenesisPlaza ? undefined : card.creatorAddress, card.creatorName ?? undefined)
 
-    let cardAvatar: Avatar | undefined
-    if (card.isGenesisPlaza) {
-      cardAvatar = buildMinimalAvatar({
-        name: card.creatorName ?? DCL_FOUNDATION_NAME,
-        ethAddress: '',
-        faceUrl: DCL_LOGO_URL
-      })
-    } else if (fetchedAvatar) {
-      cardAvatar = fetchedAvatar
-    } else if (card.creatorName) {
-      cardAvatar = buildMinimalAvatar({ name: card.creatorName, ethAddress: '' })
-    }
+    const creatorName = resolveCreatorName(card, t('live_now.unknown_creator'))
+    const creatorFaceUrl = card.isGenesisPlaza ? DCL_LOGO_URL : avatarFace
 
-    return <LiveNowCard card={card} avatar={cardAvatar} eager={eager} onClick={onClick} />
+    return <LiveNowCard card={card} creatorName={creatorName} creatorFaceUrl={creatorFaceUrl} eager={eager} onClick={onClick} />
   }
 )
 

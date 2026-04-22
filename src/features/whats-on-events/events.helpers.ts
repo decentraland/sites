@@ -98,13 +98,23 @@ function buildLiveNowCards(liveEvents: EventEntry[], hotScenes: HotScene[], minU
 
 // --- Place enrichment types ---
 
+/* eslint-disable @typescript-eslint/naming-convention */
 interface PlaceResponse {
-  data: { description?: string; categories?: string[]; owner?: string }[]
+  data: {
+    description?: string
+    categories?: string[]
+    owner?: string | null
+    contact_name?: string | null
+    creator_address?: string | null
+  }[]
 }
+/* eslint-enable @typescript-eslint/naming-convention */
 
 interface EnrichmentConfig {
   placesUrl?: string
 }
+
+const WALLET_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/
 
 // TODO: N+1 optimization — Places API supports comma-separated `positions` param for batch lookups.
 // Collapse all place-card requests into one batch call to /places?positions=a,b,c.
@@ -132,8 +142,15 @@ async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig):
           description: place.description || null,
           categories: place.categories || []
         }
-        if (place.owner && !card.creatorAddress) {
-          patch.creatorAddress = place.owner
+        const trimmedOwner = place.owner?.trim() || undefined
+        const ownerIsWallet = !!trimmedOwner && WALLET_ADDRESS_REGEX.test(trimmedOwner)
+        if (!card.creatorAddress) {
+          const address = place.creator_address?.trim() || (ownerIsWallet ? trimmedOwner : undefined)
+          if (address) patch.creatorAddress = address
+        }
+        if (!card.creatorName) {
+          const name = place.contact_name?.trim() || (trimmedOwner && !ownerIsWallet ? trimmedOwner : undefined)
+          if (name) patch.creatorName = name
         }
         enrichments.set(card.id, patch)
       } catch (err) {

@@ -5,15 +5,21 @@ import { LiveNowCardItem } from './LiveNowCardItem'
 
 const VALID_ADDRESS = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 
+jest.mock('@dcl/hooks', () => ({
+  useTranslation: () => ({ t: (key: string) => key })
+}))
+
 jest.mock('./LiveNowCard', () => ({
   LiveNowCard: ({
     card,
-    avatar,
+    creatorName,
+    creatorFaceUrl,
     eager,
     onClick
   }: {
     card: { title: string; type: string; users: number }
-    avatar?: { name: string; ethAddress: string; avatar?: { snapshots?: { face256?: string } } }
+    creatorName?: string
+    creatorFaceUrl?: string
     eager?: boolean
     onClick: (card: unknown) => void
   }) => (
@@ -22,16 +28,13 @@ jest.mock('./LiveNowCard', () => ({
       data-scene={card.title}
       data-type={card.type}
       data-users={card.users}
-      data-avatar-name={avatar?.name ?? ''}
-      data-avatar-address={avatar?.ethAddress ?? ''}
-      data-avatar-face={avatar?.avatar?.snapshots?.face256 ?? ''}
+      data-creator-name={creatorName ?? ''}
+      data-creator-face={creatorFaceUrl ?? ''}
       data-eager={eager ? 'true' : 'false'}
       onClick={() => onClick(card)}
     />
   )
 }))
-
-jest.mock('@dcl/schemas', () => ({}))
 
 function createMockCard(overrides: Partial<LiveNowCard> = {}) {
   return createMockLiveNowCard({
@@ -71,12 +74,10 @@ describe('LiveNowCardItem', () => {
       expect(screen.getByTestId('live-now-card')).toHaveAttribute('data-scene', 'Test Event')
     })
 
-    it('should build the avatar from the creator address + name without hitting lambdas', () => {
+    it('should forward the creator name from the card data without hitting lambdas', () => {
       render(<LiveNowCardItem card={createMockCard()} onClick={mockOnClick} />)
 
-      const card = screen.getByTestId('live-now-card')
-      expect(card).toHaveAttribute('data-avatar-name', 'CreatorName')
-      expect(card).toHaveAttribute('data-avatar-address', VALID_ADDRESS)
+      expect(screen.getByTestId('live-now-card')).toHaveAttribute('data-creator-name', 'CreatorName')
     })
   })
 
@@ -91,8 +92,8 @@ describe('LiveNowCardItem', () => {
     })
   })
 
-  describe('when the card is a place type (no creator)', () => {
-    it('should render without an avatar', () => {
+  describe('when the card has neither creatorName nor creatorAddress', () => {
+    it('should fall back to the unknown translation key', () => {
       render(
         <LiveNowCardItem
           card={createMockCard({ type: 'place', creatorAddress: undefined, creatorName: undefined })}
@@ -101,19 +102,26 @@ describe('LiveNowCardItem', () => {
       )
 
       const card = screen.getByTestId('live-now-card')
-      expect(card).toHaveAttribute('data-avatar-name', '')
-      expect(card).toHaveAttribute('data-avatar-address', '')
+      expect(card).toHaveAttribute('data-creator-name', 'live_now.unknown_creator')
+      expect(card).toHaveAttribute('data-creator-face', '')
     })
   })
 
   describe('when the card has only a creatorName (no address)', () => {
-    it('should build an avatar with a valid snapshots stub so AvatarFace does not crash reading face256', () => {
+    it('should forward the name without requesting a profile face', () => {
       render(<LiveNowCardItem card={createMockCard({ creatorAddress: undefined, creatorName: 'NamedOnly' })} onClick={mockOnClick} />)
 
       const card = screen.getByTestId('live-now-card')
-      expect(card).toHaveAttribute('data-avatar-name', 'NamedOnly')
-      // The regression: previously this was missing the snapshots stub and threw.
-      expect(card).toHaveAttribute('data-avatar-face', '')
+      expect(card).toHaveAttribute('data-creator-name', 'NamedOnly')
+      expect(card).toHaveAttribute('data-creator-face', '')
+    })
+  })
+
+  describe('when the card has only a wallet-shaped creatorAddress', () => {
+    it('should render the shortened address as the creator name', () => {
+      render(<LiveNowCardItem card={createMockCard({ creatorName: undefined })} onClick={mockOnClick} />)
+
+      expect(screen.getByTestId('live-now-card')).toHaveAttribute('data-creator-name', '0xaaaa…aaaa')
     })
   })
 
@@ -128,13 +136,13 @@ describe('LiveNowCardItem', () => {
         />
       )
 
-      expect(screen.getByTestId('live-now-card')).toHaveAttribute('data-avatar-name', 'Decentraland Foundation')
+      expect(screen.getByTestId('live-now-card')).toHaveAttribute('data-creator-name', 'Decentraland Foundation')
     })
 
-    it('should use the DCL logo as face for the avatar', () => {
+    it('should use the DCL logo as the creator face', () => {
       render(<LiveNowCardItem card={createMockCard({ isGenesisPlaza: true, creatorName: undefined })} onClick={mockOnClick} />)
 
-      expect(screen.getByTestId('live-now-card').getAttribute('data-avatar-face')).toMatch(/\/dcl-logo\.svg$/)
+      expect(screen.getByTestId('live-now-card').getAttribute('data-creator-face')).toMatch(/\/dcl-logo\.svg$/)
     })
   })
 

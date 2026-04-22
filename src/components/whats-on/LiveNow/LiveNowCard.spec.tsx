@@ -1,11 +1,13 @@
 import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
-import type { Avatar } from '@dcl/schemas'
 import { createMockLiveNowCard } from '../../../__test-utils__/factories'
 import { LiveNowCard } from './LiveNowCard'
 
+jest.mock('@dcl/hooks', () => ({
+  useTranslation: () => ({ t: (key: string) => key })
+}))
+
 jest.mock('decentraland-ui2', () => ({
-  AvatarFace: ({ avatar }: { avatar: Avatar }) => <div data-testid="avatar-face" data-name={avatar.name} />,
   BadgeGroup: ({ children }: { children: React.ReactNode }) => <div data-testid="badge-group">{children}</div>,
   JumpInIcon: () => <span data-testid="jump-in-icon" />,
   LiveBadge: () => <span data-testid="live-badge" />,
@@ -19,7 +21,8 @@ jest.mock('./LiveNowCard.styled', () => {
   const create = (tag: string, testid: string) => (props: React.HTMLAttributes<HTMLElement> & { children?: React.ReactNode }) =>
     React.createElement(tag, { 'data-testid': testid, ...props })
   return {
-    AvatarLink: create('a', 'avatar-link'),
+    AvatarFallback: create('div', 'avatar-fallback'),
+    AvatarImage: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img data-testid="avatar-image" {...props} />,
     AvatarRow: create('div', 'avatar-row'),
     AvatarTextContainer: create('div', 'avatar-text'),
     BadgesOverlay: create('div', 'badges-overlay'),
@@ -45,17 +48,6 @@ jest.mock('./LiveNowCard.styled', () => {
     )
   }
 })
-
-jest.mock('@dcl/schemas', () => ({}))
-
-function buildAvatar(overrides: Partial<Avatar> = {}): Avatar {
-  return {
-    name: 'Alice',
-    ethAddress: '0xAlice',
-    avatar: { snapshots: { face256: 'https://example.com/alice.png', body: '' } },
-    ...overrides
-  } as unknown as Avatar
-}
 
 describe('LiveNowCard', () => {
   describe('when rendered as the eager (first) card', () => {
@@ -92,42 +84,36 @@ describe('LiveNowCard', () => {
     })
   })
 
-  describe('when the avatar has no name', () => {
-    it('should render a plain <strong> fallback instead of an empty <a> so axe link-name passes', () => {
+  describe('when a creatorFaceUrl is provided', () => {
+    it('should render the avatar as an <img> pointing at the face URL', () => {
       render(
-        <LiveNowCard
-          card={createMockLiveNowCard()}
-          avatar={buildAvatar({ name: '', ethAddress: '0xabcdef1234567890abcdef1234567890abcdef12' })}
-          onClick={jest.fn()}
-        />
+        <LiveNowCard card={createMockLiveNowCard()} creatorName="Alice" creatorFaceUrl="https://cdn.test/alice.png" onClick={jest.fn()} />
       )
 
-      expect(screen.queryByTestId('avatar-link')).not.toBeInTheDocument()
-      expect(screen.getByText(/0xabcd…ef12/)).toBeInTheDocument()
+      const img = screen.getByTestId('avatar-image')
+      expect(img.getAttribute('src')).toBe('https://cdn.test/alice.png')
+      expect(img.getAttribute('alt')).toBe('Alice')
+      expect(screen.queryByTestId('avatar-fallback')).not.toBeInTheDocument()
     })
   })
 
-  describe('when the avatar has a name', () => {
-    it('should render the name as plain text so the card action has no nested link', () => {
-      render(<LiveNowCard card={createMockLiveNowCard()} avatar={buildAvatar()} onClick={jest.fn()} />)
+  describe('when no creatorFaceUrl is provided but a creatorName is', () => {
+    it('should render the colored fallback circle instead of an empty image or a person silhouette', () => {
+      render(<LiveNowCard card={createMockLiveNowCard()} creatorName="Alice" onClick={jest.fn()} />)
 
-      expect(screen.queryByTestId('avatar-link')).not.toBeInTheDocument()
+      expect(screen.getByTestId('avatar-fallback')).toBeInTheDocument()
+      expect(screen.queryByTestId('avatar-image')).not.toBeInTheDocument()
       expect(screen.getByText('Alice')).toBeInTheDocument()
     })
   })
 
-  describe('when the avatar has a name but no ethAddress (e.g. Genesis Plaza after sanitization)', () => {
-    it('should render the name as plain text — never a link with an empty profile href', () => {
-      render(
-        <LiveNowCard
-          card={createMockLiveNowCard()}
-          avatar={buildAvatar({ name: 'Decentraland Foundation', ethAddress: '' })}
-          onClick={jest.fn()}
-        />
-      )
+  describe('when no creatorName is provided', () => {
+    it('should not render the avatar row at all', () => {
+      render(<LiveNowCard card={createMockLiveNowCard()} onClick={jest.fn()} />)
 
-      expect(screen.queryByTestId('avatar-link')).not.toBeInTheDocument()
-      expect(screen.getByText('Decentraland Foundation')).toBeInTheDocument()
+      expect(screen.queryByTestId('avatar-row')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('avatar-image')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('avatar-fallback')).not.toBeInTheDocument()
     })
   })
 

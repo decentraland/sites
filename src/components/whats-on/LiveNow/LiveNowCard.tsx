@@ -1,9 +1,10 @@
 import { memo, useCallback } from 'react'
-import type { Avatar } from '@dcl/schemas'
-import { AvatarFace, BadgeGroup, JumpInIcon, LiveBadge, Typography, UserCountBadge } from 'decentraland-ui2'
+import { useTranslation } from '@dcl/hooks'
+import { BadgeGroup, JumpInIcon, LiveBadge, Typography, UserCountBadge } from 'decentraland-ui2'
 import type { LiveNowCard as LiveNowCardData } from '../../../features/whats-on-events'
-import { formatEthAddress } from '../../../utils/avatar'
 import {
+  AvatarFallback,
+  AvatarImage,
   AvatarRow,
   AvatarTextContainer,
   BadgesOverlay,
@@ -20,17 +21,17 @@ import {
 
 interface LiveNowCardProps {
   card: LiveNowCardData
-  avatar?: Avatar
+  creatorName?: string
+  creatorFaceUrl?: string
   eager?: boolean
   onClick: (card: LiveNowCardData) => void
 }
 
-const LiveNowCard = memo(({ card, avatar, eager = false, onClick }: LiveNowCardProps) => {
+const LiveNowCard = memo(({ card, creatorName, creatorFaceUrl, eager = false, onClick }: LiveNowCardProps) => {
+  const { t } = useTranslation()
   const handleClick = useCallback(() => {
     onClick(card)
   }, [onClick, card])
-
-  const creatorLabel = avatar?.name || (avatar?.ethAddress ? formatEthAddress(avatar.ethAddress) : 'Unknown')
 
   return (
     <CardRoot>
@@ -57,12 +58,13 @@ const LiveNowCard = memo(({ card, avatar, eager = false, onClick }: LiveNowCardP
             <SceneTitle variant="h6" gutterBottom>
               {card.title}
             </SceneTitle>
-            {avatar && (
+            {creatorName && (
               <AvatarRow>
-                <AvatarFace size="small" avatar={avatar} />
+                {creatorFaceUrl ? <AvatarImage src={creatorFaceUrl} alt={creatorName} /> : <AvatarFallback />}
                 <AvatarTextContainer>
                   <Typography variant="body2">
-                    by <strong>{creatorLabel}</strong>
+                    {t('live_now.by_prefix')}
+                    <strong>{creatorName}</strong>
                   </Typography>
                 </AvatarTextContainer>
               </AvatarRow>
@@ -70,7 +72,7 @@ const LiveNowCard = memo(({ card, avatar, eager = false, onClick }: LiveNowCardP
           </SceneInfo>
           <JumpInButtonContainer>
             <JumpInButton>
-              <span>JUMP IN</span>
+              <span>{t('live_now.jump_in')}</span>
               <JumpInIcon />
             </JumpInButton>
           </JumpInButtonContainer>

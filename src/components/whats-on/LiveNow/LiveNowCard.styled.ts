@@ -131,6 +131,27 @@ const AvatarTextContainer = styled(Box)({
   }
 })
 
+const AVATAR_SIZE = 32
+
+const AvatarImage = styled('img')(({ theme }) => ({
+  width: AVATAR_SIZE,
+  height: AVATAR_SIZE,
+  borderRadius: '50%',
+  border: `1.4px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.15)'}`,
+  flexShrink: 0,
+  objectFit: 'cover',
+  backgroundColor: theme.palette.success.dark
+}))
+
+const AvatarFallback = styled(Box)(({ theme }) => ({
+  width: AVATAR_SIZE,
+  height: AVATAR_SIZE,
+  borderRadius: '50%',
+  backgroundColor: theme.palette.success.dark,
+  border: `1.4px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.15)'}`,
+  flexShrink: 0
+}))
+
 const JumpInButtonContainer = styled(Box)(({ theme }) => ({
   position: 'absolute',
   bottom: theme.spacing(2),
@@ -183,6 +204,8 @@ const JumpInButton = styled(Box)(({ theme }) => ({
 }))
 
 export {
+  AvatarFallback,
+  AvatarImage,
   AvatarRow,
   AvatarTextContainer,
   BadgesOverlay,

@@ -340,19 +340,21 @@ describe('enrichPlaceCards', () => {
     })
   })
 
-  describe('when the places response includes an owner', () => {
+  describe('when the places response includes a creator_address', () => {
     describe('and the card has no creatorAddress', () => {
       let result: LiveNowCard[]
 
       beforeEach(async () => {
         mockFetchResponses({
-          '/places': { data: [{ description: 'Owned', categories: [], owner: '0xOwner' }] }
+          '/places': {
+            data: [{ description: 'Owned', categories: [], creator_address: '0x9E0f6f65a3E165Da6bd074BF62f2ca0A78cb7D2b' }]
+          }
         })
         result = await enrichPlaceCards([createMockPlaceCard()], { placesUrl: 'https://places.test' })
       })
 
-      it('should enrich the card with creatorAddress from the Places API owner field', () => {
-        expect(result[0].creatorAddress).toBe('0xOwner')
+      it('should enrich the card with creatorAddress from the Places API creator_address field', () => {
+        expect(result[0].creatorAddress).toBe('0x9E0f6f65a3E165Da6bd074BF62f2ca0A78cb7D2b')
       })
     })
 
@@ -361,7 +363,9 @@ describe('enrichPlaceCards', () => {
 
       beforeEach(async () => {
         mockFetchResponses({
-          '/places': { data: [{ description: 'Owned', categories: [], owner: '0xNewOwner' }] }
+          '/places': {
+            data: [{ description: 'Owned', categories: [], creator_address: '0x9E0f6f65a3E165Da6bd074BF62f2ca0A78cb7D2b' }]
+          }
         })
         result = await enrichPlaceCards([createMockPlaceCard({ creatorAddress: '0xExisting' })], { placesUrl: 'https://places.test' })
       })
@@ -369,6 +373,78 @@ describe('enrichPlaceCards', () => {
       it('should keep the existing creatorAddress', () => {
         expect(result[0].creatorAddress).toBe('0xExisting')
       })
+    })
+  })
+
+  describe('when the places response includes owner as a wallet address', () => {
+    let result: LiveNowCard[]
+
+    beforeEach(async () => {
+      mockFetchResponses({
+        '/places': {
+          data: [{ description: 'Owned', categories: [], owner: '0x797066a17F83425C1B4C7a8Cca52D19095520a52', contact_name: 'MetaDoge' }]
+        }
+      })
+      result = await enrichPlaceCards([createMockPlaceCard()], { placesUrl: 'https://places.test' })
+    })
+
+    it('should treat the wallet-shaped owner as creatorAddress', () => {
+      expect(result[0].creatorAddress).toBe('0x797066a17F83425C1B4C7a8Cca52D19095520a52')
+    })
+
+    it('should use contact_name as creatorName', () => {
+      expect(result[0].creatorName).toBe('MetaDoge')
+    })
+  })
+
+  describe('when owner is a display name rather than a wallet', () => {
+    let result: LiveNowCard[]
+
+    beforeEach(async () => {
+      mockFetchResponses({
+        '/places': {
+          data: [{ description: 'Owned', categories: [], owner: 'mgd                                       ', contact_name: null }]
+        }
+      })
+      result = await enrichPlaceCards([createMockPlaceCard()], { placesUrl: 'https://places.test' })
+    })
+
+    it('should not set it as creatorAddress', () => {
+      expect(result[0].creatorAddress).toBeUndefined()
+    })
+
+    it('should fall back to the trimmed owner as creatorName', () => {
+      expect(result[0].creatorName).toBe('mgd')
+    })
+  })
+
+  describe('when contact_name is present', () => {
+    let result: LiveNowCard[]
+
+    beforeEach(async () => {
+      mockFetchResponses({
+        '/places': { data: [{ description: 'Place', categories: [], contact_name: 'Pink Oasis' }] }
+      })
+      result = await enrichPlaceCards([createMockPlaceCard()], { placesUrl: 'https://places.test' })
+    })
+
+    it('should set creatorName from contact_name', () => {
+      expect(result[0].creatorName).toBe('Pink Oasis')
+    })
+  })
+
+  describe('when the card already has a creatorName', () => {
+    let result: LiveNowCard[]
+
+    beforeEach(async () => {
+      mockFetchResponses({
+        '/places': { data: [{ description: 'Place', categories: [], contact_name: 'From API' }] }
+      })
+      result = await enrichPlaceCards([createMockPlaceCard({ creatorName: 'Existing' })], { placesUrl: 'https://places.test' })
+    })
+
+    it('should keep the existing creatorName', () => {
+      expect(result[0].creatorName).toBe('Existing')
     })
   })
 

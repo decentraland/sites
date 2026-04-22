@@ -659,7 +659,10 @@
     }
   },
   "live_now": {
-    "title": "Live Now"
+    "title": "Live Now",
+    "by_prefix": "by ",
+    "unknown_creator": "Unknown",
+    "jump_in": "JUMP IN"
   },
   "upcoming": {
     "title": "Upcoming",
