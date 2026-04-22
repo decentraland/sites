@@ -6,6 +6,11 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
+jest.mock('@mui/icons-material/ErrorOutline', () => ({
+  __esModule: true,
+  default: () => <span data-testid="error-icon-svg" />
+}))
+
 jest.mock('@mui/icons-material/PhotoCamera', () => ({
   __esModule: true,
   default: () => <span data-testid="camera-icon" />
@@ -21,16 +26,25 @@ jest.mock('./VerticalCoverPanel.styled', () => ({
   DropZone: ({
     children,
     $hasImage,
+    $hasError,
     ...rest
-  }: React.HTMLAttributes<HTMLDivElement> & { children: React.ReactNode; $hasImage: boolean }) => (
-    <div data-testid="drop-zone" data-has-image={$hasImage} {...rest}>
+  }: React.HTMLAttributes<HTMLDivElement> & { children: React.ReactNode; $hasImage: boolean; $hasError: boolean }) => (
+    <div data-testid="drop-zone" data-has-image={$hasImage} data-has-error={$hasError} {...rest}>
       {children}
     </div>
   ),
   DropZoneContent: ({ children }: { children: React.ReactNode }) => <div data-testid="drop-zone-content">{children}</div>,
+  ErrorIcon: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+  ErrorRow: ({ children }: { children: React.ReactNode }) => <div data-testid="error-row">{children}</div>,
+  ErrorText: ({ children }: { children: React.ReactNode }) => <span data-testid="error-text">{children}</span>,
   HintGroup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   HintText: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   IconAndTitle: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  OptimizeLink: ({ children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { children: React.ReactNode }) => (
+    <a data-testid="optimize-link" {...props}>
+      {children}
+    </a>
+  ),
   OverlayText: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   PanelContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   PreviewImage: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img data-testid="preview-image" {...props} />,
@@ -54,6 +68,7 @@ describe('VerticalCoverPanel', () => {
     beforeEach(() => {
       props = {
         previewUrl: null,
+        imageError: null,
         onSelect: jest.fn(),
         onRemove: jest.fn()
       }
@@ -88,6 +103,7 @@ describe('VerticalCoverPanel', () => {
     beforeEach(() => {
       props = {
         previewUrl: 'https://cdn.example.com/vertical.jpg',
+        imageError: null,
         onSelect: jest.fn(),
         onRemove: jest.fn()
       }
@@ -119,6 +135,7 @@ describe('VerticalCoverPanel', () => {
       mockOnSelect = jest.fn()
       props = {
         previewUrl: null,
+        imageError: null,
         onSelect: mockOnSelect,
         onRemove: jest.fn()
       }
@@ -143,6 +160,7 @@ describe('VerticalCoverPanel', () => {
       mockOnSelect = jest.fn()
       props = {
         previewUrl: null,
+        imageError: null,
         onSelect: mockOnSelect,
         onRemove: jest.fn()
       }
@@ -167,6 +185,7 @@ describe('VerticalCoverPanel', () => {
       mockOnRemove = jest.fn()
       props = {
         previewUrl: 'https://cdn.example.com/vertical.jpg',
+        imageError: null,
         onSelect: jest.fn(),
         onRemove: mockOnRemove
       }
@@ -178,6 +197,53 @@ describe('VerticalCoverPanel', () => {
       fireEvent.click(screen.getByTestId('preview-overlay'))
 
       expect(mockOnRemove).toHaveBeenCalled()
+    })
+  })
+
+  describe('when an imageError is provided', () => {
+    beforeEach(() => {
+      props = {
+        previewUrl: null,
+        imageError: 'create_event.error_vertical_image_dimensions',
+        onSelect: jest.fn(),
+        onRemove: jest.fn()
+      }
+    })
+
+    it('should mark the drop zone as having an error so the red-border shake animation plays', () => {
+      render(<VerticalCoverPanel {...props} />)
+
+      expect(screen.getByTestId('drop-zone')).toHaveAttribute('data-has-error', 'true')
+    })
+
+    it('should render the inline error message with the translation key', () => {
+      render(<VerticalCoverPanel {...props} />)
+
+      expect(screen.getByTestId('error-row')).toBeInTheDocument()
+      expect(screen.getByTestId('error-text')).toHaveTextContent('create_event.error_vertical_image_dimensions')
+    })
+
+    it('should not render the optimize link for non-size errors', () => {
+      render(<VerticalCoverPanel {...props} />)
+
+      expect(screen.queryByTestId('optimize-link')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the imageError is the too-large key', () => {
+    beforeEach(() => {
+      props = {
+        previewUrl: null,
+        imageError: 'create_event.error_image_too_large',
+        onSelect: jest.fn(),
+        onRemove: jest.fn()
+      }
+    })
+
+    it('should render the optimize link alongside the error text', () => {
+      render(<VerticalCoverPanel {...props} />)
+
+      expect(screen.getByTestId('optimize-link')).toHaveAttribute('href', 'https://imagecompressor.com/')
     })
   })
 })

@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
+import { captureException } from '@sentry/browser'
 import { useTranslation } from '@dcl/hooks'
 import { useCreateEventMutation, useUploadPosterMutation, useUploadPosterVerticalMutation } from '../features/whats-on-events'
 import type { RecurrentFrequency } from '../features/whats-on-events'
@@ -7,6 +8,8 @@ import { useAuthIdentity } from './useAuthIdentity'
 const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif']
 const ACCEPTED_VERTICAL_IMAGE_TYPES = ['image/png', 'image/jpeg']
 const MAX_IMAGE_SIZE_BYTES = 500 * 1024
+const VERTICAL_IMAGE_EXPECTED_WIDTH = 716
+const VERTICAL_IMAGE_EXPECTED_HEIGHT = 1814
 
 const COORD_X_MIN = -150
 const COORD_X_MAX = 163
@@ -93,6 +96,35 @@ function validateVerticalImage(file: File): string | null {
     return 'create_event.error_image_too_large'
   }
   return null
+}
+
+function readImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      resolve({ width: img.naturalWidth, height: img.naturalHeight })
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('decode_failed'))
+    }
+    img.src = url
+  })
+}
+
+async function validateVerticalImageDimensions(file: File): Promise<string | null> {
+  try {
+    const { width, height } = await readImageDimensions(file)
+    if (width !== VERTICAL_IMAGE_EXPECTED_WIDTH || height !== VERTICAL_IMAGE_EXPECTED_HEIGHT) {
+      return 'create_event.error_vertical_image_dimensions'
+    }
+    return null
+  } catch (error) {
+    captureException(error, { tags: { feature: 'create_event', step: 'vertical_image_decode' } })
+    return 'create_event.error_vertical_image_decode'
+  }
 }
 
 function isValidEmail(email: string): boolean {
@@ -195,7 +227,7 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
 
   const handleVerticalImageSelect = useCallback(
     async (file: File) => {
-      const validationError = validateVerticalImage(file)
+      const validationError = validateVerticalImage(file) ?? (await validateVerticalImageDimensions(file))
       if (validationError) {
         setForm(prev => {
           if (prev.verticalImagePreviewUrl) URL.revokeObjectURL(prev.verticalImagePreviewUrl)
@@ -314,14 +346,14 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
     return newErrors
   }, [form, t])
 
-  const isFormValid = useMemo(() => {
-    const hasNoImageError = form.imageError === null && form.verticalImageError === null
-    const hasNoUploadInFlight = !form.isUploadingImage && !form.isUploadingVerticalImage
-    return hasNoImageError && hasNoUploadInFlight && Object.keys(validate()).length === 0
-  }, [form, validate])
-
   const handleSubmit = useCallback(async () => {
-    if (isSubmitting || !identity) return
+    if (isSubmitting) return
+    if (!identity) {
+      setErrors({ submit: t('create_event.error_not_signed_in') })
+      return
+    }
+    if (form.isUploadingImage || form.isUploadingVerticalImage) return
+    if (form.imageError || form.verticalImageError) return
 
     const validationErrors = validate()
     if (Object.keys(validationErrors).length > 0) {
@@ -379,7 +411,6 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
     handleImageRemove,
     handleVerticalImageSelect,
     handleVerticalImageRemove,
-    isFormValid,
     isSubmitting,
     handleSubmit
   }
