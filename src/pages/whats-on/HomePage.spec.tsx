@@ -32,7 +32,8 @@ jest.mock('./HomePage.styled', () => ({
     <div data-testid="deferred-group" data-deferred={deferred ? 'true' : 'false'}>
       {children}
     </div>
-  )
+  ),
+  TopBackgroundImage: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img data-testid="top-bg" {...props} />
 }))
 
 describe('when HomePage is rendered', () => {
@@ -50,6 +51,24 @@ describe('when HomePage is rendered', () => {
       render(<HomePage />)
 
       expect(mockUseGetLiveNowCardsQuery).toHaveBeenCalledWith({ minUsers: 3 })
+    })
+  })
+
+  describe('and the decorative top background is rendered', () => {
+    beforeEach(() => {
+      mockUseGetLiveNowCardsQuery.mockReturnValue({ isLoading: false })
+    })
+
+    it('should make the image eagerly discoverable', () => {
+      render(<HomePage />)
+
+      expect(screen.getByTestId('top-bg')).toHaveAttribute('loading', 'eager')
+    })
+
+    it('should not compete with the LiveNow LCP card for high fetch priority', () => {
+      render(<HomePage />)
+
+      expect(screen.getByTestId('top-bg')).not.toHaveAttribute('fetchpriority')
     })
   })
 

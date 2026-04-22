@@ -1,3 +1,4 @@
+import { assetUrl } from '../../utils/assetUrl'
 import { DCL_FOUNDATION_NAME, coordsKey } from '../events/events.helpers'
 import type { ActiveEntity, HotScene } from '../events/events.types'
 import type { EventEntry, RecurrentFrequency } from './events.types'
@@ -24,7 +25,7 @@ interface LiveNowCard {
 
 const DEFAULT_MIN_USERS = 5
 const DCL_FOUNDATION_NAME_LOWER = DCL_FOUNDATION_NAME.toLowerCase()
-const DCL_FOUNDATION_LOGO_URL = '/dcl-logo.svg'
+const DCL_FOUNDATION_LOGO_URL = assetUrl('/dcl-logo.svg')
 
 function isDclFoundationCreator(creatorName: string | null | undefined): boolean {
   return creatorName?.trim().toLowerCase() === DCL_FOUNDATION_NAME_LOWER
@@ -118,9 +119,17 @@ function buildLiveNowCards(liveEvents: EventEntry[], hotScenes: HotScene[], minU
 
 // --- Place enrichment types ---
 
+/* eslint-disable @typescript-eslint/naming-convention */
 interface PlaceResponse {
-  data: { description?: string; categories?: string[] }[]
+  data: {
+    description?: string
+    categories?: string[]
+    owner?: string | null
+    contact_name?: string | null
+    creator_address?: string | null
+  }[]
 }
+/* eslint-enable @typescript-eslint/naming-convention */
 
 interface DeploymentResponse {
   deployments: { deployedBy: string }[]
@@ -131,14 +140,16 @@ interface EnrichmentConfig {
   peerUrl?: string
 }
 
+const WALLET_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/
+
 // TODO: N+1 optimization — Places API supports comma-separated `positions` param for batch lookups.
 // `entities/active` and `deployments` already support batch queries (see src/features/events/events.client.ts
-// `resolveDeployers` for the batch pattern). Collapse all place-card requests into two batch calls:
-// one POST to /content/entities/active with all coordinates, one GET /content/deployments with all entityIds.
+// `resolveDeployers` for the batch pattern). Collapse all place-card requests into batch calls.
 async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig): Promise<LiveNowCard[]> {
   const { placesUrl, peerUrl } = config
   const placeCards = cards.filter(c => c.type === 'place')
   if (placeCards.length === 0) return cards
+  if (!placesUrl && !peerUrl) return cards
 
   const enrichments = new Map<string, Partial<LiveNowCard>>()
 
@@ -148,13 +159,25 @@ async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig):
 
       if (placesUrl) {
         try {
-          const res = await fetch(`${placesUrl}/places?positions=${card.coordinates}`)
+          const qs = new URLSearchParams({ positions: card.coordinates }).toString()
+          const res = await fetch(`${placesUrl}/places?${qs}`)
           if (res.ok) {
             const data = (await res.json()) as PlaceResponse
             const place = data.data?.[0]
             if (place) {
               patch.description = place.description || null
               patch.categories = place.categories || []
+
+              const trimmedOwner = place.owner?.trim() || undefined
+              const ownerIsWallet = !!trimmedOwner && WALLET_ADDRESS_REGEX.test(trimmedOwner)
+              if (!card.creatorAddress) {
+                const address = place.creator_address?.trim() || (ownerIsWallet ? trimmedOwner : undefined)
+                if (address) patch.creatorAddress = address
+              }
+              if (!card.creatorName) {
+                const name = place.contact_name?.trim() || (trimmedOwner && !ownerIsWallet ? trimmedOwner : undefined)
+                if (name) patch.creatorName = name
+              }
             }
           }
         } catch (err) {
@@ -162,7 +185,7 @@ async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig):
         }
       }
 
-      if (peerUrl && !card.creatorAddress) {
+      if (peerUrl && !card.creatorAddress && !patch.creatorAddress) {
         try {
           const entityRes = await fetch(`${peerUrl}/content/entities/active`, {
             method: 'POST',
@@ -178,9 +201,7 @@ async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig):
               if (depRes.ok) {
                 const depData = (await depRes.json()) as DeploymentResponse
                 const deployedBy = depData.deployments?.[0]?.deployedBy
-                if (deployedBy) {
-                  patch.creatorAddress = deployedBy
-                }
+                if (deployedBy) patch.creatorAddress = deployedBy
               }
             }
           }

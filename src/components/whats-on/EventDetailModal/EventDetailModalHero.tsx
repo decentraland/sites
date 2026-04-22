@@ -8,6 +8,7 @@ import { useTranslation } from '@dcl/hooks'
 import { Tooltip, useTheme } from 'decentraland-ui2'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
+import { formatEthAddress } from '../../../utils/avatar'
 import { buildCalendarUrl } from '../../../utils/whatsOnUrl'
 import { RemindMeIcon } from '../common/RemindMeIcon'
 import type { ModalEventData } from './EventDetailModal.types'
@@ -39,7 +40,8 @@ function EventDetailModalHero({ data, onClose }: { data: ModalEventData; onClose
   const [copied, setCopied] = useState(false)
   const { isReminded, isLoading: isRemindLoading, isShaking, handleToggle: handleRemindToggle } = useRemindMe(data.id, data.attending)
 
-  const { creatorName, avatarFace } = useCreatorProfile(data.creatorAddress, data.creatorName)
+  const creatorFallback = data.creatorAddress ? formatEthAddress(data.creatorAddress) : undefined
+  const { creatorName, avatarFace } = useCreatorProfile(data.creatorAddress, data.creatorName, creatorFallback)
   const hasCreator = Boolean(avatarFace || creatorName)
 
   const handleJumpIn = useCallback(() => {
