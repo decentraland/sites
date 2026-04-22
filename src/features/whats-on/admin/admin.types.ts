@@ -12,7 +12,6 @@ const UPDATEABLE_PERMISSIONS: readonly AdminPermission[] = [
   AdminPermission.APPROVE_OWN_EVENT,
   AdminPermission.APPROVE_ANY_EVENT,
   AdminPermission.EDIT_ANY_EVENT,
-  AdminPermission.EDIT_ANY_SCHEDULE,
   AdminPermission.EDIT_ANY_PROFILE
 ] as const
 
