@@ -308,7 +308,7 @@ describe('EventForm', () => {
   describe('when an image error is present', () => {
     beforeEach(() => {
       mockUseCreateEventForm.mockReturnValue({
-        form: createFormState({ imageError: 'create_event.error_image_too_large' }),
+        form: createFormState({ imageError: 'image_too_large' }),
         errors: {},
         setField: mockSetField,
         handleImageSelect: mockHandleImageSelect,
@@ -331,7 +331,7 @@ describe('EventForm', () => {
   describe('when a vertical image error is present', () => {
     beforeEach(() => {
       mockUseCreateEventForm.mockReturnValue({
-        form: createFormState({ verticalImageError: 'create_event.error_vertical_image_dimensions' }),
+        form: createFormState({ verticalImageError: 'vertical_image_dimensions' }),
         errors: {},
         setField: mockSetField,
         handleImageSelect: mockHandleImageSelect,
@@ -536,7 +536,7 @@ describe('EventForm', () => {
   describe('when a vertical image error exists', () => {
     beforeEach(() => {
       mockUseCreateEventForm.mockReturnValue({
-        form: createFormState({ verticalImageError: 'Invalid vertical image' }),
+        form: createFormState({ verticalImageError: 'vertical_image_dimensions' }),
         errors: {},
         setField: mockSetField,
         handleImageSelect: mockHandleImageSelect,

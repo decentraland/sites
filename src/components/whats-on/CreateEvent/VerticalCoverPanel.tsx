@@ -1,23 +1,18 @@
 import { useCallback, useRef } from 'react'
 import type { DragEvent } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { useTranslation } from '@dcl/hooks'
-import { IMAGE_TOO_LARGE_KEY, OPTIMIZE_URL } from './shared'
+import type { ImageErrorCode } from '../../../hooks/useCreateEventForm.types'
+import { ImageErrorMessage } from './ImageErrorMessage'
 import {
   CameraIcon,
   ChooseLink,
   DropZone,
   DropZoneContent,
-  ErrorIcon,
-  ErrorRow,
-  ErrorText,
   HintGroup,
   HintText,
   IconAndTitle,
-  OptimizeLink,
   OverlayText,
   PanelContainer,
   PreviewImage,
@@ -28,7 +23,7 @@ import {
 
 type VerticalCoverPanelProps = {
   previewUrl: string | null
-  imageError: string | null
+  imageError: ImageErrorCode | null
   onSelect: (file: File) => void
   onRemove: () => void
 }
@@ -111,24 +106,7 @@ function VerticalCoverPanel({ previewUrl, imageError, onSelect, onRemove }: Vert
           aria-hidden="true"
         />
       </DropZone>
-      {imageError && (
-        <ErrorRow>
-          <ErrorIcon>
-            <ErrorOutlineIcon />
-          </ErrorIcon>
-          <ErrorText>
-            {t(imageError)}
-            {imageError === IMAGE_TOO_LARGE_KEY && (
-              <>
-                {' '}
-                <OptimizeLink href={OPTIMIZE_URL} target="_blank" rel="noreferrer">
-                  {t('create_event.optimize_link')}
-                </OptimizeLink>
-              </>
-            )}
-          </ErrorText>
-        </ErrorRow>
-      )}
+      {imageError && <ImageErrorMessage code={imageError} />}
     </PanelContainer>
   )
 }

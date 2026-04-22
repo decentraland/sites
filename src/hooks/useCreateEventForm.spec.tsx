@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import type { AuthIdentity } from '@dcl/crypto'
 import { useCreateEventForm } from './useCreateEventForm'
-import type { CreateEventFormState } from './useCreateEventForm'
+import type { CreateEventFormState } from './useCreateEventForm.types'
 
 const mockCreateEvent = jest.fn()
 const mockUploadPoster = jest.fn()
@@ -352,7 +352,7 @@ describe('useCreateEventForm', () => {
         await result.current.handleImageSelect(file)
       })
 
-      expect(result.current.form.imageError).toBe('create_event.error_invalid_image_type')
+      expect(result.current.form.imageError).toBe('invalid_image_type')
       expect(mockUploadPoster).not.toHaveBeenCalled()
     })
   })
@@ -366,7 +366,7 @@ describe('useCreateEventForm', () => {
         await result.current.handleImageSelect(oversized)
       })
 
-      expect(result.current.form.imageError).toBe('create_event.error_image_too_large')
+      expect(result.current.form.imageError).toBe('image_too_large')
     })
   })
 
@@ -398,7 +398,7 @@ describe('useCreateEventForm', () => {
         await result.current.handleImageSelect(file)
       })
 
-      expect(result.current.form.imageError).toBe('create_event.error_upload_failed')
+      expect(result.current.form.imageError).toBe('upload_failed')
     })
   })
 
@@ -416,7 +416,7 @@ describe('useCreateEventForm', () => {
       })
 
       expect(mockUploadPoster).not.toHaveBeenCalled()
-      expect(result.current.form.imageError).toBe('create_event.error_upload_failed')
+      expect(result.current.form.imageError).toBe('upload_failed')
     })
   })
 
@@ -434,7 +434,7 @@ describe('useCreateEventForm', () => {
       })
 
       expect(mockUploadPosterVertical).not.toHaveBeenCalled()
-      expect(result.current.form.verticalImageError).toBe('create_event.error_upload_failed')
+      expect(result.current.form.verticalImageError).toBe('upload_failed')
     })
   })
 
@@ -447,7 +447,7 @@ describe('useCreateEventForm', () => {
         await result.current.handleVerticalImageSelect(gif)
       })
 
-      expect(result.current.form.verticalImageError).toBe('create_event.error_invalid_vertical_image_type')
+      expect(result.current.form.verticalImageError).toBe('invalid_vertical_image_type')
       expect(mockUploadPosterVertical).not.toHaveBeenCalled()
     })
   })
@@ -461,7 +461,7 @@ describe('useCreateEventForm', () => {
         await result.current.handleVerticalImageSelect(oversized)
       })
 
-      expect(result.current.form.verticalImageError).toBe('create_event.error_image_too_large')
+      expect(result.current.form.verticalImageError).toBe('image_too_large')
     })
   })
 
@@ -479,7 +479,7 @@ describe('useCreateEventForm', () => {
         await result.current.handleVerticalImageSelect(file)
       })
 
-      expect(result.current.form.verticalImageError).toBe('create_event.error_vertical_image_dimensions')
+      expect(result.current.form.verticalImageError).toBe('vertical_image_dimensions')
       expect(mockUploadPosterVertical).not.toHaveBeenCalled()
     })
   })
@@ -497,7 +497,7 @@ describe('useCreateEventForm', () => {
         await result.current.handleVerticalImageSelect(file)
       })
 
-      expect(result.current.form.verticalImageError).toBe('create_event.error_vertical_image_decode')
+      expect(result.current.form.verticalImageError).toBe('vertical_image_decode')
       expect(mockUploadPosterVertical).not.toHaveBeenCalled()
       expect(mockCaptureException).toHaveBeenCalledWith(
         expect.any(Error),
@@ -534,7 +534,7 @@ describe('useCreateEventForm', () => {
         await result.current.handleVerticalImageSelect(file)
       })
 
-      expect(result.current.form.verticalImageError).toBe('create_event.error_upload_failed')
+      expect(result.current.form.verticalImageError).toBe('upload_failed')
     })
   })
 
@@ -694,7 +694,7 @@ describe('useCreateEventForm', () => {
       await act(async () => {
         await result.current.handleImageSelect(oversized)
       })
-      expect(result.current.form.imageError).toBe('create_event.error_image_too_large')
+      expect(result.current.form.imageError).toBe('image_too_large')
 
       await act(async () => {
         await result.current.handleSubmit()
@@ -748,7 +748,7 @@ describe('useCreateEventForm', () => {
       await act(async () => {
         await result.current.handleVerticalImageSelect(oversized)
       })
-      expect(result.current.form.verticalImageError).toBe('create_event.error_image_too_large')
+      expect(result.current.form.verticalImageError).toBe('image_too_large')
 
       await act(async () => {
         await result.current.handleSubmit()
