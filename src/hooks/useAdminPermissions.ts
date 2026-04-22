@@ -1,0 +1,42 @@
+import { useMemo } from 'react'
+import { AdminPermission } from '../features/whats-on/admin'
+import { useGetMyProfileSettingsQuery } from '../features/whats-on/admin/admin.client'
+import { hasAnyAdminPermission } from '../features/whats-on/admin/admin.helpers'
+import { useAuthIdentity } from './useAuthIdentity'
+
+type AdminPermissionsState = {
+  isLoading: boolean
+  hasIdentity: boolean
+  permissions: AdminPermission[]
+  canApproveOwnEvent: boolean
+  canApproveAnyEvent: boolean
+  canEditAnyEvent: boolean
+  canEditAnySchedule: boolean
+  canEditAnyProfile: boolean
+  isAdmin: boolean
+}
+
+const EMPTY: AdminPermission[] = []
+
+function useAdminPermissions(): AdminPermissionsState {
+  const { identity, hasValidIdentity } = useAuthIdentity()
+  const queryResult = useGetMyProfileSettingsQuery({ identity: identity! }, { skip: !hasValidIdentity || !identity })
+
+  return useMemo(() => {
+    const permissions = queryResult.data?.permissions ?? EMPTY
+    return {
+      isLoading: queryResult.isLoading,
+      hasIdentity: hasValidIdentity,
+      permissions,
+      canApproveOwnEvent: permissions.includes(AdminPermission.APPROVE_OWN_EVENT),
+      canApproveAnyEvent: permissions.includes(AdminPermission.APPROVE_ANY_EVENT),
+      canEditAnyEvent: permissions.includes(AdminPermission.EDIT_ANY_EVENT),
+      canEditAnySchedule: permissions.includes(AdminPermission.EDIT_ANY_SCHEDULE),
+      canEditAnyProfile: permissions.includes(AdminPermission.EDIT_ANY_PROFILE),
+      isAdmin: hasAnyAdminPermission(permissions)
+    }
+  }, [hasValidIdentity, queryResult.data, queryResult.isLoading])
+}
+
+export { useAdminPermissions }
+export type { AdminPermissionsState }
