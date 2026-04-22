@@ -7,8 +7,9 @@ const DOWNLOAD_URLS = {
   windows: 'https://decentraland.org/download',
   apple: 'https://decentraland.org/download',
   epic: 'https://store.epicgames.com/en-US/p/decentraland-b692fb',
-  googlePlay: 'https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer',
-  appStore: 'https://apps.apple.com/app/id6478403840'
+  googlePlay:
+    'https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&utm_org=dclrgl&utm_source=fdn&utm_medium=qr&utm_campaign=dclpage&utm_content=android',
+  appStore: 'https://apps.apple.com/app/apple-store/id6478403840?pt=126284288&ct=Decentraland%20Home%20iOS&mt=8'
 } as const
 
 type DownloadOS = 'apple' | 'windows' | 'android' | 'ios'
