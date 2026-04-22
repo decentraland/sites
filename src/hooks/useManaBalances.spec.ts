@@ -74,8 +74,10 @@ describe('useManaBalances', () => {
     expect(result.current.balances).toBeNull()
   })
 
-  it('should swallow fetch errors and keep the UI stable (MANA is non-critical)', async () => {
-    mockFetch.mockRejectedValueOnce(new Error('rpc down'))
+  it('should log fetch errors and keep the UI stable (MANA is non-critical)', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const error = new Error('rpc down')
+    mockFetch.mockRejectedValueOnce(error)
 
     const { result } = renderHook(() => useManaBalances('0xabc'))
     await act(async () => {
@@ -84,5 +86,8 @@ describe('useManaBalances', () => {
 
     expect(result.current.balances).toBeNull()
     expect(result.current.isLoading).toBe(false)
+    expect(consoleErrorSpy).toHaveBeenCalledWith('[useManaBalances] Failed to fetch balances:', error)
+
+    consoleErrorSpy.mockRestore()
   })
 })

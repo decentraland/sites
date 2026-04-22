@@ -54,8 +54,8 @@ function useManaBalances(address: string | undefined) {
       if (addressRef.current !== address) return
       cacheRef.current = { address, balances: result, fetchedAt: Date.now() }
       setBalances(result)
-    } catch {
-      // Silently fail — MANA balances are non-critical
+    } catch (error) {
+      console.error('[useManaBalances] Failed to fetch balances:', error)
     } finally {
       isLoadingRef.current = false
       setIsLoading(false)
