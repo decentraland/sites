@@ -40,22 +40,25 @@ jest.mock('./LiveNow.styled', () => ({
   LiveNowHeader: ({ children }: { children: React.ReactNode }) => <div data-testid="live-now-header">{children}</div>,
   LiveNowIcon: () => <span data-testid="live-now-icon" />,
   LiveNowTitle: ({ children }: { children: React.ReactNode }) => <h5 data-testid="live-now-title">{children}</h5>,
-  CarouselWrapper: ({ children }: { children: React.ReactNode }) => <div data-testid="carousel-wrapper">{children}</div>,
+  CarouselWrapper: jest
+    .requireActual<typeof React>('react')
+    .forwardRef(
+      (
+        { children, fadeLeft: _fadeLeft, fadeRight: _fadeRight, hasScroll: _hasScroll, ...props }: Record<string, unknown>,
+        ref: React.Ref<HTMLDivElement>
+      ) => (
+        <div data-testid="carousel-wrapper" ref={ref} {...(props as React.HTMLAttributes<HTMLDivElement>)}>
+          {children as React.ReactNode}
+        </div>
+      )
+    ),
   ChevronLayer: ({ children }: { children: React.ReactNode }) => <div data-testid="chevron-layer">{children}</div>,
   ChevronButton: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { side: string }) => (
     <button data-testid={`chevron-${props.side}`} {...props}>
       {children}
     </button>
   ),
-  LiveNowGrid: jest
-    .requireActual<typeof React>('react')
-    .forwardRef(
-      ({ children, fadeLeft: _fadeLeft, fadeRight: _fadeRight, ...props }: Record<string, unknown>, ref: React.Ref<HTMLDivElement>) => (
-        <div data-testid="live-now-grid" ref={ref} {...(props as React.HTMLAttributes<HTMLDivElement>)}>
-          {children as React.ReactNode}
-        </div>
-      )
-    )
+  LiveNowGrid: ({ children }: { children: React.ReactNode }) => <div data-testid="live-now-grid">{children}</div>
 }))
 
 jest.mock('../common/PaginationDots.styled', () => ({
@@ -177,6 +180,52 @@ describe('LiveNow', () => {
       const { container } = render(<LiveNow />)
 
       expect(container.firstChild).toBeNull()
+    })
+  })
+
+  describe('when a single card renders with a tiny phantom scroll overflow', () => {
+    let scrollWidthSpy: jest.SpyInstance
+    let clientWidthSpy: jest.SpyInstance
+
+    beforeEach(() => {
+      mockUseGetLiveNowCardsQuery.mockReturnValue({ data: [createMockCard('card-1', 'Event 1')] })
+      scrollWidthSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(321)
+      clientWidthSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(320)
+    })
+
+    afterEach(() => {
+      scrollWidthSpy.mockRestore()
+      clientWidthSpy.mockRestore()
+    })
+
+    it('should not render pagination dots when overflow is within the tolerance threshold', () => {
+      render(<LiveNow />)
+
+      expect(screen.queryByTestId('pagination-dots')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when multiple cards overflow the viewport meaningfully', () => {
+    let scrollWidthSpy: jest.SpyInstance
+    let clientWidthSpy: jest.SpyInstance
+
+    beforeEach(() => {
+      mockUseGetLiveNowCardsQuery.mockReturnValue({
+        data: [createMockCard('card-1', 'Event 1'), createMockCard('card-2', 'Event 2'), createMockCard('card-3', 'Event 3')]
+      })
+      scrollWidthSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(900)
+      clientWidthSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(300)
+    })
+
+    afterEach(() => {
+      scrollWidthSpy.mockRestore()
+      clientWidthSpy.mockRestore()
+    })
+
+    it('should render pagination dots for each scrollable page', () => {
+      render(<LiveNow />)
+
+      expect(screen.getAllByTestId('pagination-dot')).toHaveLength(3)
     })
   })
 })

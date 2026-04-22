@@ -24,6 +24,7 @@ import {
 } from './LiveNow.styled'
 
 const SCROLL_AMOUNT = 300
+const SCROLL_TOLERANCE_PX = 2
 
 function LiveNow() {
   const { t } = useTranslation()
@@ -42,10 +43,11 @@ function LiveNow() {
   const syncScrollState = useCallback(() => {
     const container = scrollRef.current
     if (!container) return
-    const hasScroll = container.scrollWidth > container.clientWidth
+    const overflow = container.scrollWidth - container.clientWidth
+    const hasScroll = overflow > SCROLL_TOLERANCE_PX
     const pages = hasScroll && container.clientWidth > 0 ? Math.max(1, Math.ceil(container.scrollWidth / container.clientWidth)) : 1
-    setCanScrollLeft(container.scrollLeft > 0)
-    setCanScrollRight(hasScroll && container.scrollLeft + container.clientWidth < container.scrollWidth - 1)
+    setCanScrollLeft(container.scrollLeft > SCROLL_TOLERANCE_PX)
+    setCanScrollRight(hasScroll && container.scrollLeft + container.clientWidth < container.scrollWidth - SCROLL_TOLERANCE_PX)
     setPageCount(pages)
 
     const maxScroll = container.scrollWidth - container.clientWidth
