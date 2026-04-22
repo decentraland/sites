@@ -17,7 +17,8 @@ jest.mock('./AdminTabsBar.styled', () => ({
     <button role="tab" data-value={value}>
       {label}
     </button>
-  )
+  ),
+  CreateEventButtonWrapper: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
 }))
 
 jest.mock('../../../hooks/useAdminPermissions', () => ({

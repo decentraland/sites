@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { Button } from 'decentraland-ui2'
 import { useAdminPermissions } from '../../../hooks/useAdminPermissions'
-import { Bar, BarTab, BarTabs } from './AdminTabsBar.styled'
+import { Bar, BarTab, BarTabs, CreateEventButtonWrapper } from './AdminTabsBar.styled'
 
 const ROUTE_WHATS_ON = '/whats-on'
 const ROUTE_PENDING = '/whats-on/admin/pending-events'
@@ -29,14 +29,23 @@ function AdminTabsBar() {
 
   return (
     <Bar>
-      <BarTabs value={activeValue} onChange={(_, next) => navigate(next as string)} textColor="primary" indicatorColor="primary">
+      <BarTabs
+        value={activeValue}
+        onChange={(_, next) => navigate(next as string)}
+        textColor="primary"
+        indicatorColor="primary"
+        variant="scrollable"
+        scrollButtons={false}
+      >
         <BarTab label={t('whats_on_admin.tabs.whats_on')} value={ROUTE_WHATS_ON} />
         {canSeePending && <BarTab label={t('whats_on_admin.tabs.pending_events')} value={ROUTE_PENDING} />}
         {canSeeUsers && <BarTab label={t('whats_on_admin.tabs.users')} value={ROUTE_USERS} />}
       </BarTabs>
-      <Button variant="outlined" color="secondary" onClick={() => navigate(ROUTE_CREATE_EVENT)}>
-        {t('whats_on_admin.cta.create_event')}
-      </Button>
+      <CreateEventButtonWrapper>
+        <Button variant="outlined" color="secondary" onClick={() => navigate(ROUTE_CREATE_EVENT)}>
+          {t('whats_on_admin.cta.create_event')}
+        </Button>
+      </CreateEventButtonWrapper>
     </Bar>
   )
 }

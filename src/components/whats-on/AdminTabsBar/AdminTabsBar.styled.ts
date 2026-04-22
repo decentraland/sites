@@ -7,9 +7,11 @@ const Bar = styled(Box)(({ theme }) => ({
   borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
   borderTop: '1px solid rgba(255, 255, 255, 0.08)',
   display: 'flex',
+  gap: theme.spacing(2),
   justifyContent: 'space-between',
   minHeight: 56,
-  padding: theme.spacing(0, 4),
+  overflow: 'hidden',
+  padding: theme.spacing(0, 2),
   position: 'sticky',
   top: theme.spacing(8),
   zIndex: theme.zIndex.appBar - 1,
@@ -22,12 +24,15 @@ const Bar = styled(Box)(({ theme }) => ({
 
 const BarTabs = styled(Tabs)(({ theme }) => ({
   /* eslint-disable @typescript-eslint/naming-convention */
+  flex: 1,
   minHeight: 56,
+  minWidth: 0,
   '& .MuiTabs-indicator': {
     backgroundColor: theme.palette.primary.main,
     height: 3
   },
   [theme.breakpoints.up('md')]: {
+    flex: 'none',
     minHeight: 64
   }
 }))
@@ -39,8 +44,10 @@ const BarTab = styled(Tab)(({ theme }) => ({
   fontWeight: 600,
   letterSpacing: '0.5px',
   minHeight: 56,
-  padding: theme.spacing(2, 3),
+  minWidth: 'auto',
+  padding: theme.spacing(2, 1.5),
   textTransform: 'uppercase',
+  whiteSpace: 'nowrap',
   '&.Mui-selected': {
     color: theme.palette.common.white,
     fontWeight: 700
@@ -51,4 +58,16 @@ const BarTab = styled(Tab)(({ theme }) => ({
   }
 }))
 
-export { Bar, BarTab, BarTabs }
+const CreateEventButtonWrapper = styled(Box)(({ theme }) => ({
+  flexShrink: 0,
+  [theme.breakpoints.down('sm')]: {
+    '& .MuiButton-root': {
+      fontSize: theme.typography.caption.fontSize,
+      minWidth: 'auto',
+      padding: theme.spacing(1, 1.5),
+      whiteSpace: 'nowrap'
+    }
+  }
+}))
+
+export { Bar, BarTab, BarTabs, CreateEventButtonWrapper }
