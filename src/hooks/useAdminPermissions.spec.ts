@@ -80,3 +80,27 @@ describe('when the user has a valid identity and admin permissions', () => {
     expect(result.current.canEditAnyEvent).toBe(false)
   })
 })
+
+describe('when the user signs out after having been an admin', () => {
+  beforeEach(() => {
+    useAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
+    useGetMyProfileSettingsQuery.mockReturnValue({
+      data: { user: '0xabc', email: null, permissions: [AdminPermission.EDIT_ANY_PROFILE, AdminPermission.APPROVE_ANY_EVENT] },
+      isLoading: false
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should ignore stale cached permissions and report isAdmin=false', () => {
+    const { result } = renderHook(() => useAdminPermissions())
+    expect(result.current.isAdmin).toBe(false)
+  })
+
+  it('should return an empty permissions array even if the cache still has entries', () => {
+    const { result } = renderHook(() => useAdminPermissions())
+    expect(result.current.permissions).toEqual([])
+  })
+})

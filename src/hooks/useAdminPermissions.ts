@@ -23,7 +23,7 @@ function useAdminPermissions(): AdminPermissionsState {
   const queryResult = useGetMyProfileSettingsQuery({ identity: identity! }, { skip: !hasValidIdentity || !identity })
 
   return useMemo(() => {
-    const permissions = queryResult.data?.permissions ?? EMPTY
+    const permissions = hasValidIdentity ? queryResult.data?.permissions ?? EMPTY : EMPTY
     return {
       isLoading: queryResult.isLoading,
       hasIdentity: hasValidIdentity,
