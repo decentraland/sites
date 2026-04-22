@@ -29,7 +29,7 @@ describe('jump.mappers', () => {
       })
     })
 
-    describe('and the owner is missing but contact_name is present', () => {
+    describe('and the owner is missing but contact_name is a non-foundation author', () => {
       const place: JumpPlace = {
         id: 'p2',
         title: 'Contact Place',
@@ -46,8 +46,29 @@ describe('jump.mappers', () => {
         expect(fromPlace(place).user_name).toBe('Alice')
       })
 
-      it('should set user_avatar to the Decentraland logo for foundation-curated places', () => {
+      it('should leave user_avatar undefined so the default avatar is used', () => {
+        expect(fromPlace(place).user_avatar).toBeUndefined()
+      })
+    })
+
+    describe('and the place is credited to the Decentraland Foundation', () => {
+      const place: JumpPlace = {
+        id: 'p-genesis',
+        title: 'Genesis Plaza',
+        image: '',
+        description: '',
+        positions: ['0,0'],
+        base_position: '0,0',
+        owner: null,
+        contact_name: 'Decentraland Foundation'
+      }
+
+      it('should set user_avatar to the Decentraland logo', () => {
         expect(fromPlace(place).user_avatar).toBeDefined()
+      })
+
+      it('should surface the foundation name as user_name', () => {
+        expect(fromPlace(place).user_name).toBe('Decentraland Foundation')
       })
     })
 

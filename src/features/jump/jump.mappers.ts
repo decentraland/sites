@@ -2,11 +2,14 @@
 import decentralandLogo from '../../images/jump/decentraland-logo.svg'
 import type { CardData, JumpEvent, JumpPlace } from './jump.types'
 
+const FOUNDATION_CONTACT_NAME = 'Decentraland Foundation'
+
 function fromPlace(data: JumpPlace): CardData {
   const coordinates = data.base_position.split(',').map(Number) as [number, number]
-  // Places with no on-chain owner but a curated contact_name (e.g. Genesis
-  // Plaza) are run by the foundation — show the Decentraland logo as avatar.
-  const isFoundationPlace = !data.owner && !!data.contact_name
+  // Only show the Decentraland logo for places explicitly credited to the
+  // foundation. User-deployed places can also have owner=null + a contact_name
+  // (e.g. "Pink Oasis"), and those should fall back to the generic avatar.
+  const isFoundationPlace = data.contact_name === FOUNDATION_CONTACT_NAME
   return {
     id: data.id,
     type: 'place',
