@@ -1,6 +1,6 @@
 import { coordsKey } from '../events/events.helpers'
 import type { ActiveEntity, HotScene } from '../events/events.types'
-import type { EventEntry } from './events.types'
+import type { EventEntry, RecurrentFrequency } from './events.types'
 
 interface LiveNowCard {
   id: string
@@ -14,6 +14,12 @@ interface LiveNowCard {
   isGenesisPlaza: boolean
   description?: string | null
   categories?: string[]
+  startAt?: string
+  finishAt?: string
+  recurrent?: boolean
+  recurrentFrequency?: RecurrentFrequency | null
+  recurrentDates?: string[]
+  attending?: boolean
 }
 
 const DEFAULT_MIN_USERS = 5
@@ -64,7 +70,15 @@ function buildLiveNowCards(liveEvents: EventEntry[], hotScenes: HotScene[], minU
         coordinates: coordsKey(matchedEvent.x, matchedEvent.y),
         creatorAddress: matchedEvent.user,
         creatorName: matchedEvent.user_name || undefined,
-        isGenesisPlaza: false
+        isGenesisPlaza: false,
+        description: matchedEvent.description,
+        categories: matchedEvent.categories,
+        startAt: matchedEvent.start_at,
+        finishAt: matchedEvent.finish_at,
+        recurrent: matchedEvent.recurrent,
+        recurrentFrequency: matchedEvent.recurrent_frequency,
+        recurrentDates: matchedEvent.recurrent_dates,
+        attending: matchedEvent.attending
       })
       usedSceneIds.add(scene.id)
       usedEventIds.add(matchedEvent.id)

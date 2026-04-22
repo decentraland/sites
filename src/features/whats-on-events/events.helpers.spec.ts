@@ -103,6 +103,51 @@ describe('buildLiveNowCards', () => {
       })
     })
 
+    describe('and the matched event has description, schedule and categories', () => {
+      let result: LiveNowCard[]
+
+      beforeEach(() => {
+        const event = createMockEvent({
+          id: 'ev-1',
+          x: 10,
+          y: 20,
+          description: 'Live jam',
+          categories: ['music'],
+          start_at: '2026-04-22T17:00:00Z',
+          finish_at: '2026-04-22T18:00:00Z',
+          recurrent: true,
+          recurrent_frequency: 'WEEKLY',
+          recurrent_dates: ['2026-04-22T17:00:00Z'],
+          attending: true
+        })
+        const scene = createMockScene({ id: 'sc-1', usersTotalCount: 15, parcels: [[10, 20]] })
+        result = buildLiveNowCards([event], [scene])
+      })
+
+      it('should propagate the description', () => {
+        expect(result[0].description).toBe('Live jam')
+      })
+
+      it('should propagate the categories', () => {
+        expect(result[0].categories).toEqual(['music'])
+      })
+
+      it('should propagate the schedule', () => {
+        expect(result[0].startAt).toBe('2026-04-22T17:00:00Z')
+        expect(result[0].finishAt).toBe('2026-04-22T18:00:00Z')
+      })
+
+      it('should propagate the recurrence fields', () => {
+        expect(result[0].recurrent).toBe(true)
+        expect(result[0].recurrentFrequency).toBe('WEEKLY')
+        expect(result[0].recurrentDates).toEqual(['2026-04-22T17:00:00Z'])
+      })
+
+      it('should propagate the attending flag', () => {
+        expect(result[0].attending).toBe(true)
+      })
+    })
+
     describe('and a scene has no matching event', () => {
       let result: LiveNowCard[]
       let scene: HotScene
