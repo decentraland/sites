@@ -4,6 +4,7 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { adminClient } from '../features/whats-on/admin'
 import { eventsClient } from '../features/whats-on-events/events.client'
 import { cmsClient } from '../services/blogClient'
+import { placesClient } from '../services/placesClient'
 
 jest.mock('../config/env', () => ({
   getEnv: () => undefined
@@ -32,11 +33,13 @@ describe('when building the DappsShell store', () => {
     const rootReducer = combineReducers({
       [eventsClient.reducerPath]: eventsClient.reducer,
       [adminClient.reducerPath]: adminClient.reducer,
-      [cmsClient.reducerPath]: cmsClient.reducer
+      [cmsClient.reducerPath]: cmsClient.reducer,
+      [placesClient.reducerPath]: placesClient.reducer
     })
     const store = configureStore({
       reducer: rootReducer,
-      middleware: getDefault => getDefault().concat(eventsClient.middleware, adminClient.middleware, cmsClient.middleware)
+      middleware: getDefault =>
+        getDefault().concat(eventsClient.middleware, adminClient.middleware, cmsClient.middleware, placesClient.middleware)
     })
     state = store.getState() as Record<string, unknown>
   })
@@ -47,6 +50,10 @@ describe('when building the DappsShell store', () => {
 
   it('should register the admin RTK Query reducer', () => {
     expect(state).toHaveProperty('adminClient')
+  })
+
+  it('should register the places RTK Query reducer', () => {
+    expect(state).toHaveProperty('placesClient')
   })
 })
 

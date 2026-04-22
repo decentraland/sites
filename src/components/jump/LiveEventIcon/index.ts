@@ -1,0 +1,1 @@
+export { LiveEventIcon } from './LiveEventIcon'

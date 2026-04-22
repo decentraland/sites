@@ -49,6 +49,13 @@ const WhatsOnLayout = lazy(() => import('./pages/whats-on/WhatsOnLayout').then(m
 const PendingEventsPage = lazy(() => import('./pages/whats-on/PendingEventsPage').then(m => ({ default: m.PendingEventsPage })))
 const UsersAdminPage = lazy(() => import('./pages/whats-on/UsersAdminPage').then(m => ({ default: m.UsersAdminPage })))
 
+// Jump pages — deep-link handler for decentraland:// launcher. Heavy route (Redux).
+const JumpPlacesPage = lazy(() => import('./pages/jump/PlacesPage').then(m => ({ default: m.PlacesPage })))
+const JumpEventsPage = lazy(() => import('./pages/jump/EventsPage').then(m => ({ default: m.EventsPage })))
+const JumpInvalidEventPage = lazy(() => import('./pages/jump/InvalidPage').then(m => ({ default: () => <m.InvalidPage kind="event" /> })))
+const JumpInvalidPlacePage = lazy(() => import('./pages/jump/InvalidPage').then(m => ({ default: () => <m.InvalidPage kind="place" /> })))
+const JumpLegacyEventRedirect = lazy(() => import('./pages/jump/LegacyEventRedirect').then(m => ({ default: m.LegacyEventRedirect })))
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -86,6 +93,14 @@ const App = () => {
                 <Route path="/whats-on/admin/pending-events" element={<PendingEventsPage />} />
                 <Route path="/whats-on/admin/users" element={<UsersAdminPage />} />
               </Route>
+              <Route path="/jump" element={<JumpPlacesPage />} />
+              <Route path="/jump/places" element={<JumpPlacesPage />} />
+              <Route path="/jump/places/invalid" element={<JumpInvalidPlacePage />} />
+              <Route path="/jump/events" element={<JumpEventsPage />} />
+              <Route path="/jump/events/invalid" element={<JumpInvalidEventPage />} />
+              {/* Legacy singular `/jump/event` URL — prod still uses it (e.g. /jump/event?position=0,5).
+                  Preserves query params via a tiny component that reads useLocation(). */}
+              <Route path="/jump/event" element={<JumpLegacyEventRedirect />} />
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/preview" element={<PreviewPage />} />
               <Route path="/blog/search" element={<BlogSearchPage />} />

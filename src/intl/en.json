@@ -656,6 +656,53 @@
         "are_you_creator_button": "Join the Registry",
         "are_you_creator_url": "https://docs.google.com/forms/d/e/1FAIpQLSc_KsbODUsJdC4_UTn7T91RTYwSJBAEZIWlCAxnk3rRBinFWg/viewform"
       }
+    },
+    "jump": {
+      "jump_in_button": {
+        "jump_in": "Jump In"
+      },
+      "share": {
+        "switch_to_computer": "Switch to a Computer to Use Decentraland",
+        "button_text": "SHARE LINK"
+      },
+      "card": {
+        "creator": {
+          "by": "By"
+        },
+        "event": {
+          "add_to_calendar": "ADD TO CALENDAR",
+          "interested": "REMIND ME",
+          "live": "LIVE"
+        },
+        "place": {
+          "default_description": "You're about to jump into Decentraland! Explore a virtual world built by its community and make new friends from anywhere."
+        },
+        "accessibility": {
+          "creator_avatar": "{userName} avatar",
+          "event_image": "{title} event image",
+          "place_image": "{title} place image",
+          "share_button": "Share",
+          "add_to_calendar_button": "Add to calendar",
+          "interested_button": "Mark as interested",
+          "user_profile_link": "View {userName}'s profile"
+        }
+      },
+      "event": {
+        "has_ended": "Event has ended"
+      },
+      "events_page": {
+        "explore_events_button": "EXPLORE EVENTS",
+        "jump_in_button": "Jump In",
+        "calendar_label": "Jump In"
+      },
+      "invalid_page": {
+        "title": "Oops!",
+        "message": "Looks like that link was invalid. If you still want to explore, jump into Decentraland's virtual world or browse community events.",
+        "message_mobile": "Looks like that link was invalid. If you still want to explore, browse the community's events then jump in-world from your computer.",
+        "explore_events_button": "EXPLORE EVENTS",
+        "jump_in_button": "Jump into Decentraland",
+        "go_home_button": "Go to Homepage"
+      }
     }
   },
   "live_now": {
