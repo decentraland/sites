@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { adminClient } from '../features/whats-on/admin'
 import { eventsClient } from '../features/whats-on-events/events.client'
-import { algoliaClient, cmsClient } from '../services/blogClient'
+import { cmsClient } from '../services/blogClient'
 
 jest.mock('../config/env', () => ({
   getEnv: () => undefined
@@ -22,12 +22,7 @@ jest.mock('../services/blogClient', () => {
     baseQuery: fetchBaseQuery({ baseUrl: '/' }),
     endpoints: () => ({})
   })
-  const algoliaClient = createApi({
-    reducerPath: 'algoliaClient',
-    baseQuery: fetchBaseQuery({ baseUrl: '/' }),
-    endpoints: () => ({})
-  })
-  return { cmsClient, algoliaClient }
+  return { cmsClient }
 })
 
 describe('when building the DappsShell store', () => {
@@ -37,13 +32,11 @@ describe('when building the DappsShell store', () => {
     const rootReducer = combineReducers({
       [eventsClient.reducerPath]: eventsClient.reducer,
       [adminClient.reducerPath]: adminClient.reducer,
-      [cmsClient.reducerPath]: cmsClient.reducer,
-      [algoliaClient.reducerPath]: algoliaClient.reducer
+      [cmsClient.reducerPath]: cmsClient.reducer
     })
     const store = configureStore({
       reducer: rootReducer,
-      middleware: getDefault =>
-        getDefault().concat(eventsClient.middleware, adminClient.middleware, cmsClient.middleware, algoliaClient.middleware)
+      middleware: getDefault => getDefault().concat(eventsClient.middleware, adminClient.middleware, cmsClient.middleware)
     })
     state = store.getState() as Record<string, unknown>
   })

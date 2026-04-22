@@ -42,18 +42,10 @@ const SearchResultCard = (props: SearchResultCardProps) => {
         <CardContentBox>
           {result.image && <CardImage src={result.image} alt="" loading="lazy" decoding="async" />}
           <CardTextBox>
-            {typeof result.title === 'string' ? (
-              // eslint-disable-next-line @typescript-eslint/naming-convention
-              <CardTitle dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.title) }} />
-            ) : (
-              <CardTitle>{result.title}</CardTitle>
-            )}
-            {typeof result.description === 'string' ? (
-              // eslint-disable-next-line @typescript-eslint/naming-convention
-              <CardDescription dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.description) }} />
-            ) : (
-              <CardDescription>{result.description}</CardDescription>
-            )}
+            {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
+            <CardTitle dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.highlightedTitle) }} />
+            {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
+            <CardDescription dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.highlightedDescription) }} />
           </CardTextBox>
         </CardContentBox>
       </Link>
