@@ -168,12 +168,12 @@ describe('normalizeLiveNowCard', () => {
       expect(result.creatorName).toBe('DJ Cool')
     })
 
-    it('should have null start and finish times', () => {
+    it('should default schedule to null when card has no schedule', () => {
       expect(result.startAt).toBeNull()
       expect(result.finishAt).toBeNull()
     })
 
-    it('should not be recurrent', () => {
+    it('should default recurrence fields when card is not recurrent', () => {
       expect(result.recurrent).toBe(false)
       expect(result.recurrentFrequency).toBeNull()
       expect(result.recurrentDates).toEqual([])
@@ -193,6 +193,48 @@ describe('normalizeLiveNowCard', () => {
 
     it('should build the jump-in URL from parsed coordinates', () => {
       expect(result.url).toBe('https://decentraland.org/jump/event?position=10,20')
+    })
+  })
+
+  describe('when the card carries event metadata', () => {
+    let result: ReturnType<typeof normalizeLiveNowCard>
+
+    beforeEach(() => {
+      result = normalizeLiveNowCard(
+        createMockLiveNowCard({
+          description: 'Live jam',
+          categories: ['music'],
+          startAt: '2026-04-22T17:00:00Z',
+          finishAt: '2026-04-22T18:00:00Z',
+          recurrent: true,
+          recurrentFrequency: 'WEEKLY',
+          recurrentDates: ['2026-04-22T17:00:00Z'],
+          attending: true
+        })
+      )
+    })
+
+    it('should propagate the event description', () => {
+      expect(result.description).toBe('Live jam')
+    })
+
+    it('should propagate the event categories', () => {
+      expect(result.categories).toEqual(['music'])
+    })
+
+    it('should propagate the schedule', () => {
+      expect(result.startAt).toBe('2026-04-22T17:00:00Z')
+      expect(result.finishAt).toBe('2026-04-22T18:00:00Z')
+    })
+
+    it('should propagate the recurrence fields', () => {
+      expect(result.recurrent).toBe(true)
+      expect(result.recurrentFrequency).toBe('WEEKLY')
+      expect(result.recurrentDates).toEqual(['2026-04-22T17:00:00Z'])
+    })
+
+    it('should propagate the attending flag', () => {
+      expect(result.attending).toBe(true)
     })
   })
 
