@@ -24,7 +24,7 @@ function PendingEventsPage() {
   const [activeEvent, setActiveEvent] = useState<EventEntry | null>(null)
   const [feedback, setFeedback] = useState<{ message: string; severity: 'success' | 'error' } | null>(null)
 
-  const { data: events = [] } = useGetAdminEventsQuery(identity && allowed ? { identity } : skipToken)
+  const { data: events = [] } = useGetAdminEventsQuery(identity && allowed ? { identity } : skipToken, { refetchOnMountOrArgChange: true })
   const [approve, { isLoading: isApproving }] = useApproveEventMutation()
   const [reject, { isLoading: isRejecting }] = useRejectEventMutation()
 

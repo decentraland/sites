@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { getEnv } from '../../config/env'
 import { fetchWithIdentity, fetchWithOptionalIdentity } from '../../utils/signedFetch'
+import { adminClient } from '../whats-on/admin/admin.client'
 import { buildLiveNowCards, enrichPlaceCards } from './events.helpers'
 import type { HotScene, LiveNowCard } from './events.helpers'
 import type {
@@ -147,6 +148,14 @@ const eventsClient = createApi({
           return { data }
         } catch (error) {
           return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      },
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled
+          dispatch(adminClient.util.invalidateTags(['PendingEvents']))
+        } catch {
+          /* error surfaced via the mutation's own result */
         }
       },
       invalidatesTags: ['Events']

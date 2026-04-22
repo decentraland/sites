@@ -1,5 +1,15 @@
 import { Box, Typography, styled } from 'decentraland-ui2'
 
+const SuccessOverlay = styled(Box)({
+  position: 'fixed',
+  inset: 0,
+  zIndex: 1000,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflow: 'hidden'
+})
+
 const SuccessContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -8,13 +18,10 @@ const SuccessContainer = styled(Box)(({ theme }) => ({
   gap: 48,
   width: '100%',
   maxWidth: 737,
-  margin: '0 auto',
   padding: theme.spacing(6, 3),
-  minHeight: 'calc(100vh - 200px)',
   [theme.breakpoints.down('md')]: {
     gap: 32,
-    padding: theme.spacing(4, 2),
-    minHeight: 'calc(100vh - 120px)'
+    padding: theme.spacing(4, 2)
   }
 }))
 
@@ -110,4 +117,4 @@ const PrimaryButton = styled('button')(({ theme }) => ({
   }
 }))
 
-export { ActionsRow, CheckCircle, PrimaryButton, SecondaryButton, SuccessContainer, SuccessMessage }
+export { ActionsRow, CheckCircle, PrimaryButton, SecondaryButton, SuccessContainer, SuccessMessage, SuccessOverlay }
