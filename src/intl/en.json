@@ -863,7 +863,9 @@
       "in_n_days": "In {count} Days",
       "status_pending": "Pending",
       "status_approved": "Approved",
-      "status_rejected": "Rejected"
+      "status_rejected": "Rejected",
+      "approve_success": "Event approved",
+      "reject_success": "Event rejected"
     },
     "users": {
       "title": "Users",
@@ -888,6 +890,7 @@
       "cancel": "Cancel",
       "save": "Save Changes",
       "save_error": "Unable to save permissions. Please try again.",
+      "save_success": "Permissions updated",
       "permissions": {
         "approve_own_event": {
           "title": "Approve Own Events",

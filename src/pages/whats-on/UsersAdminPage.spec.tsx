@@ -56,9 +56,15 @@ jest.mock('@mui/icons-material/Search', () => ({
   default: () => <span data-testid="search-icon" />
 }))
 
+jest.mock('../../hooks/useProfileAvatar', () => ({
+  useProfileAvatar: () => ({ avatarFace: undefined, name: undefined })
+}))
+
 jest.mock('decentraland-ui2', () => ({
+  Alert: ({ children }: { children: React.ReactNode }) => <div role="alert">{children}</div>,
   Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => <button onClick={onClick}>{children}</button>,
   InputAdornment: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+  Snackbar: ({ open, children }: { open: boolean; children: React.ReactNode }) => (open ? <div>{children}</div> : null),
   Table: ({ children }: { children: React.ReactNode }) => <table>{children}</table>,
   TableBody: ({ children }: { children: React.ReactNode }) => <tbody>{children}</tbody>,
   TableCell: ({ children }: { children: React.ReactNode }) => <td>{children}</td>,

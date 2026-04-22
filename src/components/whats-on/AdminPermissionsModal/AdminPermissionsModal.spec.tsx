@@ -11,6 +11,10 @@ jest.mock('@mui/icons-material/Close', () => ({
   default: () => <span>X</span>
 }))
 
+jest.mock('../../../hooks/useProfileAvatar', () => ({
+  useProfileAvatar: () => ({ avatarFace: undefined, name: undefined })
+}))
+
 jest.mock('./AdminPermissionsModal.styled', () => ({
   StyledDialog: ({ children, open }: { children: React.ReactNode; open: boolean }) => (open ? <div role="dialog">{children}</div> : null),
   Footer: ({ children }: { children: React.ReactNode }) => <div data-testid="footer">{children}</div>,

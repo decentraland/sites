@@ -5,6 +5,7 @@ import { useTranslation } from '@dcl/hooks'
 import { Box, Button, DialogContent, DialogTitle, IconButton, Switch, TextField } from 'decentraland-ui2'
 import { isValidWalletAddress } from '../../../features/whats-on/admin/admin.helpers'
 import { AdminPermission, UPDATEABLE_PERMISSIONS } from '../../../features/whats-on/admin/admin.types'
+import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
 import {
   Footer,
   HeaderAddress,
@@ -45,6 +46,7 @@ function AdminPermissionsModal({
   const { t } = useTranslation()
   const [address, setAddress] = useState(initialUser ?? '')
   const [permissions, setPermissions] = useState<AdminPermission[]>(initialPermissions)
+  const { avatarFace, name } = useProfileAvatar(mode === 'edit' ? initialUser : undefined, { skip: mode !== 'edit' || !initialUser })
 
   useEffect(() => {
     if (open) {
@@ -72,9 +74,9 @@ function AdminPermissionsModal({
       </DialogTitle>
       {mode === 'edit' && initialUser && (
         <ModalHeader>
-          <HeaderAvatar />
+          <HeaderAvatar src={avatarFace} />
           <HeaderText>
-            <HeaderName>{truncateAddress(initialUser)}</HeaderName>
+            <HeaderName>{name ?? truncateAddress(initialUser)}</HeaderName>
             <HeaderAddress>{initialUser}</HeaderAddress>
           </HeaderText>
         </ModalHeader>

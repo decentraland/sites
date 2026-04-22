@@ -40,6 +40,11 @@ jest.mock('../../components/whats-on/PendingEventCard', () => ({
   )
 }))
 
+jest.mock('decentraland-ui2', () => ({
+  Alert: ({ children }: { children: React.ReactNode }) => <div role="alert">{children}</div>,
+  Snackbar: ({ open, children }: { open: boolean; children: React.ReactNode }) => (open ? <div>{children}</div> : null)
+}))
+
 jest.mock('./PendingEventsPage.styled', () => ({
   CardGrid: ({ children }: { children: React.ReactNode }) => <div data-testid="card-grid">{children}</div>,
   EmptyStateText: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
+import { Alert, Snackbar } from 'decentraland-ui2'
 import { EventDetailModal } from '../../components/whats-on/EventDetailModal'
 import { normalizeEventEntry } from '../../components/whats-on/EventDetailModal/normalizers'
 import { PendingEventCard } from '../../components/whats-on/PendingEventCard'
@@ -19,6 +20,7 @@ function PendingEventsPage() {
   const allowed = canApproveAnyEvent || canApproveOwnEvent || canEditAnyEvent
 
   const [activeEvent, setActiveEvent] = useState<EventEntry | null>(null)
+  const [feedback, setFeedback] = useState<{ message: string; severity: 'success' | 'error' } | null>(null)
 
   const { data: events = [], refetch } = useGetAdminEventsQuery({ identity: identity! }, { skip: !identity || !allowed })
   const [approve, { isLoading: isApproving }] = useApproveEventMutation()
@@ -55,9 +57,11 @@ function PendingEventsPage() {
     try {
       await approve({ eventId: activeEvent.id, identity }).unwrap()
       setActiveEvent(null)
+      setFeedback({ message: t('whats_on_admin.pending_events.approve_success'), severity: 'success' })
       refetch()
     } catch (error) {
       console.error('[PendingEventsPage] approve failed', error)
+      setFeedback({ message: t('whats_on_admin.pending_events.action_error'), severity: 'error' })
     }
   }
 
@@ -69,9 +73,11 @@ function PendingEventsPage() {
     try {
       await reject({ eventId: activeEvent.id, identity }).unwrap()
       setActiveEvent(null)
+      setFeedback({ message: t('whats_on_admin.pending_events.reject_success'), severity: 'success' })
       refetch()
     } catch (error) {
       console.error('[PendingEventsPage] reject failed', error)
+      setFeedback({ message: t('whats_on_admin.pending_events.action_error'), severity: 'error' })
     }
   }
 
@@ -111,6 +117,19 @@ function PendingEventsPage() {
           adminActions={isPendingActive ? { onApprove: handleApprove, onReject: handleReject, isProcessing: processing } : undefined}
         />
       )}
+
+      <Snackbar
+        open={feedback !== null}
+        autoHideDuration={4000}
+        onClose={() => setFeedback(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        {feedback ? (
+          <Alert severity={feedback.severity} onClose={() => setFeedback(null)} variant="filled">
+            {feedback.message}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
     </PageContainer>
   )
 }

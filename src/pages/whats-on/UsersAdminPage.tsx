@@ -5,12 +5,26 @@ import CheckIcon from '@mui/icons-material/Check'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import SearchIcon from '@mui/icons-material/Search'
 import { useTranslation } from '@dcl/hooks'
-import { Button, InputAdornment, Table, TableBody, TableCell, TableHead, TablePagination, TableRow, TextField } from 'decentraland-ui2'
+import {
+  Alert,
+  Button,
+  InputAdornment,
+  Snackbar,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TablePagination,
+  TableRow,
+  TextField
+} from 'decentraland-ui2'
 import { AdminPermissionsModal } from '../../components/whats-on/AdminPermissionsModal'
 import { useListAdminsQuery, useUpdateAdminPermissionsMutation } from '../../features/whats-on/admin/admin.client'
 import { AdminPermission } from '../../features/whats-on/admin/admin.types'
+import type { AdminProfileSettings } from '../../features/whats-on/admin/admin.types'
 import { useAdminPermissions } from '../../hooks/useAdminPermissions'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+import { useProfileAvatar } from '../../hooks/useProfileAvatar'
 import { ClickableRow, Header, PageContainer, PageTitle, TableWrapper, UserAvatar } from './UsersAdminPage.styled'
 
 const COLUMNS: Array<{ key: AdminPermission; labelKey: string }> = [
@@ -23,11 +37,30 @@ const COLUMNS: Array<{ key: AdminPermission; labelKey: string }> = [
 
 type ModalState = { mode: 'add' | 'edit'; user?: string; permissions: AdminPermission[] }
 
+function UserTableRow({ row, onClick }: { row: AdminProfileSettings; onClick: () => void }) {
+  const { avatarFace, name } = useProfileAvatar(row.user)
+  return (
+    <ClickableRow hover onClick={onClick}>
+      <TableCell>
+        <UserAvatar src={avatarFace} />
+        {row.user}
+        {name ? ` (${name})` : null}
+      </TableCell>
+      {COLUMNS.map(column => (
+        <TableCell key={column.key} align="center">
+          {row.permissions.includes(column.key) ? <CheckIcon color="success" /> : null}
+        </TableCell>
+      ))}
+    </ClickableRow>
+  )
+}
+
 function UsersAdminPage() {
   const { t } = useTranslation()
   const { canEditAnyProfile, isLoading } = useAdminPermissions()
   const { identity } = useAuthIdentity()
   const [modalState, setModalState] = useState<ModalState | null>(null)
+  const [feedback, setFeedback] = useState<{ message: string; severity: 'success' | 'error' } | null>(null)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
@@ -52,9 +85,11 @@ function UsersAdminPage() {
     try {
       await updatePermissions({ address, permissions, identity }).unwrap()
       setModalState(null)
+      setFeedback({ message: t('whats_on_admin.permissions_modal.save_success'), severity: 'success' })
       refetch()
     } catch (error) {
       console.error('[UsersAdminPage] updatePermissions failed', error)
+      setFeedback({ message: t('whats_on_admin.permissions_modal.save_error'), severity: 'error' })
     }
   }
 
@@ -95,21 +130,11 @@ function UsersAdminPage() {
           </TableHead>
           <TableBody>
             {paginated.map(row => (
-              <ClickableRow
+              <UserTableRow
                 key={row.user}
-                hover
+                row={row}
                 onClick={() => setModalState({ mode: 'edit', user: row.user, permissions: row.permissions })}
-              >
-                <TableCell>
-                  <UserAvatar />
-                  {row.user}
-                </TableCell>
-                {COLUMNS.map(column => (
-                  <TableCell key={column.key} align="center">
-                    {row.permissions.includes(column.key) ? <CheckIcon color="success" /> : null}
-                  </TableCell>
-                ))}
-              </ClickableRow>
+              />
             ))}
             {!isFetching && paginated.length === 0 && (
               <TableRow>
@@ -146,6 +171,19 @@ function UsersAdminPage() {
           onSubmit={handleSubmit}
         />
       )}
+
+      <Snackbar
+        open={feedback !== null}
+        autoHideDuration={4000}
+        onClose={() => setFeedback(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        {feedback ? (
+          <Alert severity={feedback.severity} onClose={() => setFeedback(null)} variant="filled">
+            {feedback.message}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
     </PageContainer>
   )
 }
