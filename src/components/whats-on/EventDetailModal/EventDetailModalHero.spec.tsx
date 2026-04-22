@@ -160,6 +160,12 @@ describe('EventDetailModalHero', () => {
 
       expect(screen.getByTestId('category-label')).toHaveTextContent('event_detail.live_now')
     })
+
+    it('should not render the remind me button', () => {
+      render(<EventDetailModalHero data={createMockData({ live: true })} onClose={mockOnClose} />)
+
+      expect(screen.queryByTestId('remind-me-icon')).not.toBeInTheDocument()
+    })
   })
 
   describe('when the event has no categories and is not live', () => {
@@ -176,6 +182,14 @@ describe('EventDetailModalHero', () => {
 
       const buttons = screen.getAllByTestId('secondary-button')
       expect(buttons).toHaveLength(1)
+    })
+  })
+
+  describe('when the modal data is a live place without a matching event', () => {
+    it('should not render the remind me button', () => {
+      render(<EventDetailModalHero data={createMockData({ isEvent: false, startAt: null })} onClose={mockOnClose} />)
+
+      expect(screen.queryByTestId('remind-me-icon')).not.toBeInTheDocument()
     })
   })
 
