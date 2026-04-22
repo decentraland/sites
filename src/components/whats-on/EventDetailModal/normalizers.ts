@@ -46,7 +46,7 @@ function normalizeLiveNowCard(card: LiveNowCard): ModalEventData {
     totalAttendees: card.users,
     attending: card.attending,
     live: true,
-    categories: card.categories || [],
+    categories: card.categories ?? [],
     url,
     isEvent: card.type === 'event'
   }
