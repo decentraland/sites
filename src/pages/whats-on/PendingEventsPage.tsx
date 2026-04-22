@@ -1,5 +1,112 @@
+import { useMemo, useState } from 'react'
+import { Navigate } from 'react-router-dom'
+import { useTranslation } from '@dcl/hooks'
+import { Typography } from 'decentraland-ui2'
+import { EventDetailModal } from '../../components/whats-on/EventDetailModal'
+import { normalizeEventEntry } from '../../components/whats-on/EventDetailModal/normalizers'
+import { UpcomingCard } from '../../components/whats-on/Upcoming/UpcomingCard'
+import { useApproveEventMutation, useGetAdminEventsQuery, useRejectEventMutation } from '../../features/whats-on/admin/admin.client'
+import type { EventEntry } from '../../features/whats-on-events/events.types'
+import { useAdminPermissions } from '../../hooks/useAdminPermissions'
+import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+import { CardGrid, PageContainer, Section } from './PendingEventsPage.styled'
+
+const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
+
 function PendingEventsPage() {
-  return null
+  const { t } = useTranslation()
+  const { identity } = useAuthIdentity()
+  const { canApproveAnyEvent, canApproveOwnEvent, canEditAnyEvent, isLoading } = useAdminPermissions()
+  const allowed = canApproveAnyEvent || canApproveOwnEvent || canEditAnyEvent
+
+  const [activeEvent, setActiveEvent] = useState<EventEntry | null>(null)
+
+  const { data: events = [], refetch } = useGetAdminEventsQuery({ identity: identity! }, { skip: !identity || !allowed })
+  const [approve, { isLoading: isApproving }] = useApproveEventMutation()
+  const [reject, { isLoading: isRejecting }] = useRejectEventMutation()
+
+  const pending = useMemo(() => events.filter(event => !event.approved && !event.rejected), [events])
+
+  const recentlyApproved = useMemo(() => {
+    const cutoff = Date.now() - TWENTY_FOUR_HOURS_MS
+    return events.filter(event => {
+      if (!event.approved) return false
+      const updatedAt = event.updated_at ? new Date(event.updated_at).getTime() : 0
+      return updatedAt >= cutoff
+    })
+  }, [events])
+
+  const modalData = useMemo(() => (activeEvent ? normalizeEventEntry(activeEvent) : null), [activeEvent])
+
+  if (!isLoading && !allowed) return <Navigate to="/whats-on" replace />
+
+  const handleApprove = async () => {
+    if (!activeEvent || !identity) {
+      console.error('[PendingEventsPage] approve called without identity or event')
+      return
+    }
+    try {
+      await approve({ eventId: activeEvent.id, identity }).unwrap()
+      setActiveEvent(null)
+      refetch()
+    } catch (error) {
+      console.error('[PendingEventsPage] approve failed', error)
+    }
+  }
+
+  const handleReject = async () => {
+    if (!activeEvent || !identity) {
+      console.error('[PendingEventsPage] reject called without identity or event')
+      return
+    }
+    try {
+      await reject({ eventId: activeEvent.id, identity }).unwrap()
+      setActiveEvent(null)
+      refetch()
+    } catch (error) {
+      console.error('[PendingEventsPage] reject failed', error)
+    }
+  }
+
+  const processing = isApproving || isRejecting
+  const isPendingActive = activeEvent !== null && !activeEvent.approved && !activeEvent.rejected
+
+  return (
+    <PageContainer>
+      <Section>
+        <Typography variant="h4" component="h1">
+          {t('whats_on_admin.pending_events.title')}
+        </Typography>
+        <CardGrid>
+          {pending.length === 0 ? (
+            <Typography>{t('whats_on_admin.pending_events.empty')}</Typography>
+          ) : (
+            pending.map(event => <UpcomingCard key={event.id} event={event} onClick={() => setActiveEvent(event)} />)
+          )}
+        </CardGrid>
+      </Section>
+
+      <Section>
+        <Typography variant="h5" component="h2">
+          {t('whats_on_admin.pending_events.recently_approved')} {t('whats_on_admin.pending_events.recently_approved_subtitle')}
+        </Typography>
+        <CardGrid>
+          {recentlyApproved.map(event => (
+            <UpcomingCard key={event.id} event={event} onClick={() => setActiveEvent(event)} />
+          ))}
+        </CardGrid>
+      </Section>
+
+      {modalData && (
+        <EventDetailModal
+          open
+          data={modalData}
+          onClose={() => setActiveEvent(null)}
+          adminActions={isPendingActive ? { onApprove: handleApprove, onReject: handleReject, isProcessing: processing } : undefined}
+        />
+      )}
+    </PageContainer>
+  )
 }
 
 export { PendingEventsPage }
