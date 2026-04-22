@@ -4,10 +4,9 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import { useTranslation } from '@dcl/hooks'
 import { EventSmallCard, Tooltip } from 'decentraland-ui2'
 import type { EventEntry } from '../../../features/whats-on-events'
-import { DCL_FOUNDATION_NAME, getDclFoundationLogoUrl, isDclFoundationCreator } from '../../../features/whats-on-events/events.helpers'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCardActions } from '../../../hooks/useCardActions'
-import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
+import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { getRelativeTimeLabel } from '../../../utils/whatsOnTime'
 import { CalendarAddIcon } from '../common/CalendarAddIcon'
@@ -27,10 +26,7 @@ const UpcomingCard = memo(function UpcomingCard({
 }) {
   const { t } = useTranslation()
   const { hasValidIdentity } = useAuthIdentity()
-  const isDclFoundation = isDclFoundationCreator(event.user_name)
-  const { avatarFace: profileFace, name: avatarName } = useProfileAvatar(event.user, { skip: !event.user || isDclFoundation })
-  const creatorName = isDclFoundation ? DCL_FOUNDATION_NAME : avatarName || event.user_name || t('upcoming.unknown_creator')
-  const avatarFace = isDclFoundation ? getDclFoundationLogoUrl() : profileFace
+  const { creatorName, avatarFace } = useCreatorProfile(event.user, event.user_name, t('upcoming.unknown_creator'))
   const { copied, calendarAdded, handleCopy, handleAddToCalendar } = useCardActions({
     name: event.name,
     description: event.description,

@@ -27,14 +27,10 @@ jest.mock('@dcl/hooks', () => ({
   })
 }))
 
-jest.mock('../../../features/profile/profile.client', () => ({
-  useGetProfileQuery: () => ({ data: null })
-}))
-
-const mockUseProfileAvatar = jest.fn()
-const defaultProfileAvatar = { avatar: undefined, avatarForCard: undefined, avatarFace: undefined, name: undefined }
-jest.mock('../../../hooks/useProfileAvatar', () => ({
-  useProfileAvatar: (...args: unknown[]) => mockUseProfileAvatar(...(args as []))
+const mockUseCreatorProfile = jest.fn()
+const defaultCreatorProfile = { isDclFoundation: false, creatorName: 'Unknown', avatarFace: undefined }
+jest.mock('../../../hooks/useCreatorProfile', () => ({
+  useCreatorProfile: (...args: unknown[]) => mockUseCreatorProfile(...(args as []))
 }))
 
 const mockHandleCopy = jest.fn()
@@ -90,7 +86,7 @@ jest.mock('../common/CardActions.styled', () => ({
   ActionTextLabel: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   CalendarIcon: () => <span data-testid="calendar-icon" />,
   CopyIcon: () => <span data-testid="copy-icon" />,
-  AvatarImage: () => <img data-testid="avatar-image" />,
+  AvatarImage: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img data-testid="avatar-image" {...props} />,
   AvatarFallback: () => <div data-testid="avatar-fallback" />,
   CreatorName: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   CreatorNameHighlight: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
@@ -118,7 +114,7 @@ describe('FutureCard', () => {
 
   beforeEach(() => {
     mockOnClick = jest.fn()
-    mockUseProfileAvatar.mockReturnValue(defaultProfileAvatar)
+    mockUseCreatorProfile.mockReturnValue(defaultCreatorProfile)
   })
 
   afterEach(() => {
@@ -228,31 +224,35 @@ describe('FutureCard', () => {
     })
   })
 
-  describe('when the event is hosted by Decentraland Foundation', () => {
+  describe('when useCreatorProfile resolves the event as Decentraland Foundation', () => {
     let event: ReturnType<typeof createMockEvent>
 
     beforeEach(() => {
       mockHasValidIdentity.mockReturnValue(false)
-      mockUseProfileAvatar.mockReturnValue({
-        avatar: undefined,
-        avatarForCard: undefined,
-        avatarFace: 'https://example.com/baybackner.png',
-        name: 'BayBackner'
+      mockUseCreatorProfile.mockReturnValue({
+        isDclFoundation: true,
+        creatorName: 'Decentraland Foundation',
+        avatarFace: '/dcl-logo.svg'
       })
-      event = createMockEvent({ live: false, user_name: 'Decentraland Foundation' })
+      event = createMockEvent({ live: false, user: '0xFoundation', user_name: 'Decentraland Foundation' })
     })
 
-    it('should render "Decentraland Foundation" even when the Catalyst profile returns a different name', () => {
+    it('should render the Foundation name on the card', () => {
       render(<FutureCard event={event} onClick={mockOnClick} />)
 
       expect(screen.getByText('Decentraland Foundation')).toBeInTheDocument()
-      expect(screen.queryByText('BayBackner')).not.toBeInTheDocument()
     })
 
-    it('should skip the profile fetch for Foundation events', () => {
+    it('should render the Foundation logo as the avatar', () => {
       render(<FutureCard event={event} onClick={mockOnClick} />)
 
-      expect(mockUseProfileAvatar).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ skip: true }))
+      expect(screen.getByTestId('avatar-image')).toHaveAttribute('src', '/dcl-logo.svg')
+    })
+
+    it('should forward the event address and name to useCreatorProfile', () => {
+      render(<FutureCard event={event} onClick={mockOnClick} />)
+
+      expect(mockUseCreatorProfile).toHaveBeenCalledWith('0xFoundation', 'Decentraland Foundation', expect.any(String))
     })
   })
 })

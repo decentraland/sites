@@ -6,10 +6,10 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
-const mockUseGetProfileQuery = jest.fn()
-const defaultProfileQuery = { data: undefined }
-jest.mock('../../../features/profile/profile.client', () => ({
-  useGetProfileQuery: (...args: unknown[]) => mockUseGetProfileQuery(...(args as []))
+const mockUseCreatorProfile = jest.fn()
+const defaultCreatorProfile = { isDclFoundation: false, creatorName: 'CreatorName', avatarFace: undefined }
+jest.mock('../../../hooks/useCreatorProfile', () => ({
+  useCreatorProfile: (...args: unknown[]) => mockUseCreatorProfile(...(args as []))
 }))
 
 jest.mock('../../../utils/whatsOnUrl', () => ({
@@ -90,7 +90,7 @@ describe('EventDetailModalHero', () => {
   beforeEach(() => {
     mockOnClose = jest.fn()
     mockWindowOpen = jest.spyOn(window, 'open').mockImplementation(jest.fn())
-    mockUseGetProfileQuery.mockReturnValue(defaultProfileQuery)
+    mockUseCreatorProfile.mockReturnValue(defaultCreatorProfile)
   })
 
   afterEach(() => {
@@ -183,6 +183,10 @@ describe('EventDetailModalHero', () => {
   })
 
   describe('when the event has no creator', () => {
+    beforeEach(() => {
+      mockUseCreatorProfile.mockReturnValue({ isDclFoundation: false, creatorName: undefined, avatarFace: undefined })
+    })
+
     it('should not render the creator row', () => {
       render(<EventDetailModalHero data={createMockData({ creatorAddress: undefined, creatorName: undefined })} onClose={mockOnClose} />)
 
@@ -214,30 +218,36 @@ describe('EventDetailModalHero', () => {
     })
   })
 
-  describe('when the event creator is Decentraland Foundation', () => {
+  describe('when useCreatorProfile resolves the event as Decentraland Foundation', () => {
     beforeEach(() => {
-      mockUseGetProfileQuery.mockReturnValue({
-        data: { avatars: [{ name: 'BayBackner', avatar: { snapshots: { face256: 'https://example.com/baybackner.png' } } }] }
-      } as ReturnType<typeof mockUseGetProfileQuery>)
+      mockUseCreatorProfile.mockReturnValue({
+        isDclFoundation: true,
+        creatorName: 'Decentraland Foundation',
+        avatarFace: '/dcl-logo.svg'
+      })
     })
 
-    it('should render "Decentraland Foundation" even when the Catalyst profile returns a different name', () => {
+    it('should render the Foundation name in the creator row', () => {
       render(<EventDetailModalHero data={createMockData({ creatorName: 'Decentraland Foundation' })} onClose={mockOnClose} />)
 
       expect(screen.getByTestId('creator-name')).toHaveTextContent('Decentraland Foundation')
-      expect(screen.queryByText('BayBackner')).not.toBeInTheDocument()
     })
 
-    it('should skip the profile fetch for Foundation events', () => {
+    it('should render the Foundation logo as the avatar', () => {
       render(<EventDetailModalHero data={createMockData({ creatorName: 'Decentraland Foundation' })} onClose={mockOnClose} />)
 
-      expect(mockUseGetProfileQuery).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ skip: true }))
+      expect(screen.getByTestId('avatar-image')).toHaveAttribute('src', '/dcl-logo.svg')
     })
 
-    it('should match case-insensitively', () => {
-      render(<EventDetailModalHero data={createMockData({ creatorName: 'decentraland foundation' })} onClose={mockOnClose} />)
+    it('should forward the event address and name to useCreatorProfile', () => {
+      render(
+        <EventDetailModalHero
+          data={createMockData({ creatorAddress: '0xFoundation', creatorName: 'Decentraland Foundation' })}
+          onClose={mockOnClose}
+        />
+      )
 
-      expect(screen.getByTestId('creator-name')).toHaveTextContent('Decentraland Foundation')
+      expect(mockUseCreatorProfile).toHaveBeenCalledWith('0xFoundation', 'Decentraland Foundation')
     })
   })
 

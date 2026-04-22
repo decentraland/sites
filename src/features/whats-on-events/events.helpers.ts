@@ -18,14 +18,10 @@ interface LiveNowCard {
 
 const DEFAULT_MIN_USERS = 5
 const DCL_FOUNDATION_NAME_LOWER = DCL_FOUNDATION_NAME.toLowerCase()
+const DCL_FOUNDATION_LOGO_URL = '/dcl-logo.svg'
 
 function isDclFoundationCreator(creatorName: string | null | undefined): boolean {
   return creatorName?.trim().toLowerCase() === DCL_FOUNDATION_NAME_LOWER
-}
-
-// Reads `window.location.origin` lazily so this file stays safe to evaluate outside a DOM (Jest without jsdom, SSR experiments).
-function getDclFoundationLogoUrl(): string {
-  return `${window.location.origin}/dcl-logo.svg`
 }
 
 function findEventInMap(eventsByCoord: Map<string, EventEntry>, parcels: Array<[number, number]>): EventEntry | undefined {
@@ -193,5 +189,5 @@ async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig):
   })
 }
 
-export { buildLiveNowCards, DCL_FOUNDATION_NAME, enrichPlaceCards, getDclFoundationLogoUrl, isDclFoundationCreator }
+export { buildLiveNowCards, DCL_FOUNDATION_LOGO_URL, DCL_FOUNDATION_NAME, enrichPlaceCards, isDclFoundationCreator }
 export type { EnrichmentConfig, HotScene, LiveNowCard }

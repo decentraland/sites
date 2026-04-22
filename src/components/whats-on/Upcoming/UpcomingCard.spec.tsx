@@ -6,14 +6,10 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
-jest.mock('../../../features/profile/profile.client', () => ({
-  useGetProfileQuery: () => ({ data: undefined })
-}))
-
-const mockUseProfileAvatar = jest.fn()
-const defaultProfileAvatar = { avatar: undefined, avatarForCard: undefined, avatarFace: undefined, name: undefined }
-jest.mock('../../../hooks/useProfileAvatar', () => ({
-  useProfileAvatar: (...args: unknown[]) => mockUseProfileAvatar(...(args as []))
+const mockUseCreatorProfile = jest.fn()
+const defaultCreatorProfile = { isDclFoundation: false, creatorName: 'upcoming.unknown_creator', avatarFace: undefined }
+jest.mock('../../../hooks/useCreatorProfile', () => ({
+  useCreatorProfile: (...args: unknown[]) => mockUseCreatorProfile(...(args as []))
 }))
 
 jest.mock('../../../hooks/useAuthIdentity', () => ({
@@ -70,6 +66,7 @@ jest.mock('decentraland-ui2', () => ({
     image,
     title,
     creatorName,
+    creatorAvatarUrl,
     timeLabel,
     onClick,
     action,
@@ -78,6 +75,7 @@ jest.mock('decentraland-ui2', () => ({
     image?: string
     title: string
     creatorName?: string
+    creatorAvatarUrl?: string
     timeLabel?: string
     onClick?: () => void
     action?: React.ReactNode
@@ -87,6 +85,7 @@ jest.mock('decentraland-ui2', () => ({
       {image && <img data-testid="thumbnail" src={image} alt={title} />}
       <span data-testid="event-title">{title}</span>
       {creatorName && <span data-testid="creator-name">{creatorName}</span>}
+      {creatorAvatarUrl && <img data-testid="creator-avatar" src={creatorAvatarUrl} alt={creatorName ?? ''} />}
       {timeLabel && <span data-testid="time-label">{timeLabel}</span>}
       {action && <div data-testid="mobile-action-slot">{action}</div>}
       {hoverActions && <div data-testid="hover-actions-slot">{hoverActions}</div>}
@@ -112,7 +111,7 @@ describe('UpcomingCard', () => {
 
   beforeEach(() => {
     mockOnClick = jest.fn()
-    mockUseProfileAvatar.mockReturnValue(defaultProfileAvatar)
+    mockUseCreatorProfile.mockReturnValue(defaultCreatorProfile)
   })
 
   afterEach(() => {
@@ -185,33 +184,32 @@ describe('UpcomingCard', () => {
     })
   })
 
-  describe('when the event is hosted by Decentraland Foundation', () => {
+  describe('when useCreatorProfile resolves the event as Decentraland Foundation', () => {
     beforeEach(() => {
-      mockUseProfileAvatar.mockReturnValue({
-        avatar: undefined,
-        avatarForCard: undefined,
-        avatarFace: 'https://example.com/baybackner.png',
-        name: 'BayBackner'
+      mockUseCreatorProfile.mockReturnValue({
+        isDclFoundation: true,
+        creatorName: 'Decentraland Foundation',
+        avatarFace: '/dcl-logo.svg'
       })
     })
 
-    it('should render "Decentraland Foundation" even when the Catalyst profile returns a different name', () => {
+    it('should render the Foundation name on the card', () => {
       render(<UpcomingCard event={createMockEvent({ user_name: 'Decentraland Foundation' })} onClick={mockOnClick} />)
 
       expect(screen.getByTestId('creator-name')).toHaveTextContent('Decentraland Foundation')
-      expect(screen.queryByText('BayBackner')).not.toBeInTheDocument()
     })
 
-    it('should skip the profile fetch for Foundation events', () => {
+    it('should render the Foundation logo as the avatar', () => {
       render(<UpcomingCard event={createMockEvent({ user_name: 'Decentraland Foundation' })} onClick={mockOnClick} />)
 
-      expect(mockUseProfileAvatar).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ skip: true }))
+      expect(screen.getByTestId('creator-avatar')).toHaveAttribute('src', '/dcl-logo.svg')
     })
 
-    it('should match case-insensitively', () => {
-      render(<UpcomingCard event={createMockEvent({ user_name: 'decentraland foundation' })} onClick={mockOnClick} />)
+    it('should forward the event address and name to useCreatorProfile', () => {
+      const event = createMockEvent({ user: '0xFoundation', user_name: 'Decentraland Foundation' })
+      render(<UpcomingCard event={event} onClick={mockOnClick} />)
 
-      expect(screen.getByTestId('creator-name')).toHaveTextContent('Decentraland Foundation')
+      expect(mockUseCreatorProfile).toHaveBeenCalledWith('0xFoundation', 'Decentraland Foundation', expect.any(String))
     })
   })
 })
