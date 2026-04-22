@@ -25,22 +25,24 @@ export default defineConfig(({ command, mode }) => {
       sourcemap: 'hidden',
       rollupOptions: {
         output: {
-          /* eslint-disable @typescript-eslint/naming-convention */
-          manualChunks: {
-            'vendor-sentry': [
-              '@sentry/browser',
-              '@sentry/core',
-              '@sentry-internal/replay',
-              '@sentry-internal/browser-utils',
-              '@sentry-internal/feedback'
-            ],
-            'vendor-schemas': ['ajv'],
-            'vendor-crypto': ['@dcl/crypto', 'eth-connect'],
-            'vendor-intl': ['@formatjs/icu-messageformat-parser', '@formatjs/intl'],
-            'vendor-ua': ['ua-parser-js'],
-            'vendor-router': ['react-router']
+          manualChunks: (id: string) => {
+            if (
+              id.includes('node_modules/@sentry/browser') ||
+              id.includes('node_modules/@sentry/core') ||
+              id.includes('node_modules/@sentry-internal/replay') ||
+              id.includes('node_modules/@sentry-internal/browser-utils') ||
+              id.includes('node_modules/@sentry-internal/feedback')
+            ) {
+              return 'vendor-sentry'
+            }
+            if (id.includes('node_modules/ajv')) return 'vendor-schemas'
+            if (id.includes('node_modules/@dcl/crypto') || id.includes('node_modules/eth-connect')) return 'vendor-crypto'
+            if (id.includes('node_modules/@formatjs/icu-messageformat-parser') || id.includes('node_modules/@formatjs/intl'))
+              return 'vendor-intl'
+            if (id.includes('node_modules/ua-parser-js')) return 'vendor-ua'
+            if (id.includes('node_modules/react-router')) return 'vendor-router'
+            return null
           }
-          /* eslint-enable @typescript-eslint/naming-convention */
         }
       }
     },
