@@ -45,10 +45,13 @@ jest.mock('decentraland-ui2', () => ({
   Snackbar: ({ open, children }: { open: boolean; children: React.ReactNode }) => (open ? <div>{children}</div> : null)
 }))
 
+jest.mock('./AdminLayout.styled', () => ({
+  AdminPageContainer: ({ children }: { children: React.ReactNode }) => <main>{children}</main>
+}))
+
 jest.mock('./PendingEventsPage.styled', () => ({
   CardGrid: ({ children }: { children: React.ReactNode }) => <div data-testid="card-grid">{children}</div>,
   EmptyStateText: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
-  PageContainer: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
   Section: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
   SectionSubtitle: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   SectionTitle: ({ children, component }: { children: React.ReactNode; component?: string }) => {

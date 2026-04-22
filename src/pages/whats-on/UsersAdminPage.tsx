@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CheckIcon from '@mui/icons-material/Check'
@@ -26,7 +26,8 @@ import type { AdminProfileSettings } from '../../features/whats-on/admin/admin.t
 import { useAdminPermissions } from '../../hooks/useAdminPermissions'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useProfileAvatar } from '../../hooks/useProfileAvatar'
-import { ClickableRow, Header, PageContainer, PageTitle, TableWrapper, UserAvatar } from './UsersAdminPage.styled'
+import { AdminPageContainer, AdminPageTitle } from './AdminLayout.styled'
+import { ClickableRow, Header, TableWrapper, UserAvatar } from './UsersAdminPage.styled'
 
 const COLUMNS: Array<{ key: AdminPermission; labelKey: string }> = [
   { key: AdminPermission.APPROVE_OWN_EVENT, labelKey: 'whats_on_admin.users.columns.approve_own_events' },
@@ -36,9 +37,9 @@ const COLUMNS: Array<{ key: AdminPermission; labelKey: string }> = [
   { key: AdminPermission.EDIT_ANY_PROFILE, labelKey: 'whats_on_admin.users.columns.edit_users' }
 ]
 
-type ModalState = { mode: 'add' | 'edit'; user?: string; permissions: AdminPermission[] }
+type ModalState = { mode: 'add'; permissions: AdminPermission[] } | { mode: 'edit'; user: string; permissions: AdminPermission[] }
 
-function UserTableRow({ row, onClick }: { row: AdminProfileSettings; onClick: () => void }) {
+const UserTableRow = memo(function UserTableRow({ row, onClick }: { row: AdminProfileSettings; onClick: () => void }) {
   const { avatarFace, name } = useProfileAvatar(row.user)
   return (
     <ClickableRow hover onClick={onClick}>
@@ -54,7 +55,7 @@ function UserTableRow({ row, onClick }: { row: AdminProfileSettings; onClick: ()
       ))}
     </ClickableRow>
   )
-}
+})
 
 function UsersAdminPage() {
   const { t } = useTranslation()
@@ -94,8 +95,8 @@ function UsersAdminPage() {
   }
 
   return (
-    <PageContainer>
-      <PageTitle component="h1">{t('whats_on_admin.users.title')}</PageTitle>
+    <AdminPageContainer>
+      <AdminPageTitle component="h1">{t('whats_on_admin.users.title')}</AdminPageTitle>
       <Header>
         <TextField
           label={t('whats_on_admin.users.search_label')}
@@ -162,10 +163,9 @@ function UsersAdminPage() {
 
       {modalState && (
         <AdminPermissionsModal
-          key={modalState.user ?? 'add'}
+          key={modalState.mode === 'edit' ? modalState.user : 'add'}
           open
-          mode={modalState.mode}
-          initialUser={modalState.user}
+          {...(modalState.mode === 'edit' ? { mode: 'edit' as const, initialUser: modalState.user } : { mode: 'add' as const })}
           initialPermissions={modalState.permissions}
           isSubmitting={isSubmitting}
           onClose={() => setModalState(null)}
@@ -185,7 +185,7 @@ function UsersAdminPage() {
           </Alert>
         ) : undefined}
       </Snackbar>
-    </PageContainer>
+    </AdminPageContainer>
   )
 }
 

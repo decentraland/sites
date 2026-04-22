@@ -34,14 +34,17 @@ jest.mock('../../components/whats-on/AdminPermissionsModal', () => ({
   AdminPermissionsModal: () => <div data-testid="admin-permissions-modal" />
 }))
 
+jest.mock('./AdminLayout.styled', () => ({
+  AdminPageContainer: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
+  AdminPageTitle: ({ children, component }: { children: React.ReactNode; component?: string }) => {
+    const Tag = (component ?? 'h1') as keyof JSX.IntrinsicElements
+    return <Tag>{children}</Tag>
+  }
+}))
+
 jest.mock('./UsersAdminPage.styled', () => ({
   ClickableRow: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => <tr onClick={onClick}>{children}</tr>,
   Header: ({ children }: { children: React.ReactNode }) => <header>{children}</header>,
-  PageContainer: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
-  PageTitle: ({ children, component }: { children: React.ReactNode; component?: string }) => {
-    const Tag = (component ?? 'h1') as keyof JSX.IntrinsicElements
-    return <Tag>{children}</Tag>
-  },
   TableWrapper: ({ children }: { children: React.ReactNode }) => <div data-testid="table-wrapper">{children}</div>,
   UserAvatar: () => <span data-testid="user-avatar" />
 }))

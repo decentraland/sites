@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CloseIcon from '@mui/icons-material/Close'
 import { useTranslation } from '@dcl/hooks'
@@ -25,13 +25,11 @@ type SubmitPayload = { address: string; permissions: AdminPermission[] }
 
 type AdminPermissionsModalProps = {
   open: boolean
-  mode: 'add' | 'edit'
-  initialUser?: string
   initialPermissions: AdminPermission[]
   isSubmitting: boolean
   onClose: () => void
   onSubmit: (payload: SubmitPayload) => void
-}
+} & ({ mode: 'add'; initialUser?: never } | { mode: 'edit'; initialUser: string })
 
 const truncateAddress = (value: string): string => (value.length > 12 ? `${value.slice(0, 6)}…${value.slice(-4)}` : value)
 
@@ -52,13 +50,6 @@ function AdminPermissionsModal({
 
   const isSelfEdit =
     mode === 'edit' && initialUser != null && currentAddress != null && initialUser.toLowerCase() === currentAddress.toLowerCase()
-
-  useEffect(() => {
-    if (open) {
-      setAddress(initialUser ?? '')
-      setPermissions(initialPermissions)
-    }
-  }, [initialUser, initialPermissions, open])
 
   const addressIsValid = useMemo(() => isValidWalletAddress(address), [address])
   const addressHasInvalidFormat = address.length > 0 && !addressIsValid
