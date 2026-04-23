@@ -89,6 +89,8 @@ function DurationField({ value, startTime, onChange, error, label }: DurationFie
         label={label}
         notched
         displayEmpty
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        MenuProps={{ PaperProps: { sx: { maxHeight: 288 } } }}
         renderValue={selected => {
           const match = options.find(opt => opt.value === selected)
           if (match) return match.label
