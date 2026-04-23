@@ -54,7 +54,7 @@ function CreateEventPage() {
       <>
         <PageBackground />
         <PageContent>
-          <CreateEventSuccess isEdit={Boolean(initialEvent)} />
+          <CreateEventSuccess />
         </PageContent>
       </>
     )

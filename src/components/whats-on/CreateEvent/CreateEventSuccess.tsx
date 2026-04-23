@@ -13,14 +13,9 @@ import {
   SuccessOverlay
 } from './CreateEventSuccess.styled'
 
-type CreateEventSuccessProps = {
-  isEdit?: boolean
-}
-
-function CreateEventSuccess({ isEdit = false }: CreateEventSuccessProps) {
+function CreateEventSuccess() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const messageKey = isEdit ? 'create_event.success_message_edit' : 'create_event.success_message'
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
@@ -44,7 +39,7 @@ function CreateEventSuccess({ isEdit = false }: CreateEventSuccessProps) {
         <CheckCircle>
           <CheckIcon />
         </CheckCircle>
-        <SuccessMessage>{t(messageKey)}</SuccessMessage>
+        <SuccessMessage>{t('create_event.success_message')}</SuccessMessage>
         <ActionsRow>
           <SecondaryButton type="button" onClick={handleBackToExplore}>
             {t('create_event.back_to_explore')}
