@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled'
-import { EventFormControl, EventInputLabel, EventMenuItem, EventSelect, EventSelectIconAdornment } from './EventForm.styled'
+import { DURATION_MENU_MAX_HEIGHT, DurationClockIcon, DurationIconBox, DurationPlaceholder } from './DurationField.styled'
+import { EventFormControl, EventInputLabel, EventMenuItem, EventSelect } from './EventForm.styled'
 
 const STEP_MINUTES = 15
 const MAX_MINUTES = 24 * 60
@@ -90,17 +89,17 @@ function DurationField({ value, startTime, onChange, error, label }: DurationFie
         notched
         displayEmpty
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        MenuProps={{ PaperProps: { sx: { maxHeight: 288 } } }}
+        MenuProps={{ PaperProps: { sx: { maxHeight: DURATION_MENU_MAX_HEIGHT } } }}
         renderValue={selected => {
           const match = options.find(opt => opt.value === selected)
           if (match) return match.label
           if (hasUnlistedValue) return selected as string
-          return <span style={{ color: '#a09ba8' }}>hh:mm</span>
+          return <DurationPlaceholder>hh:mm</DurationPlaceholder>
         }}
         IconComponent={() => (
-          <EventSelectIconAdornment>
-            <AccessTimeFilledIcon sx={{ color: '#a09ba8', fontSize: 24, pointerEvents: 'none' }} />
-          </EventSelectIconAdornment>
+          <DurationIconBox>
+            <DurationClockIcon />
+          </DurationIconBox>
         )}
       >
         {options.map(option => (

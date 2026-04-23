@@ -230,7 +230,7 @@ function EventForm({ onCancel, onSuccess, initialEvent = null }: EventFormProps)
 
           {/* Location */}
           <LocationBlock>
-            <LocationLabel>Location</LocationLabel>
+            <LocationLabel>{t('create_event.location')}</LocationLabel>
             <LocationRow>
               <EventFormControl variant="outlined" fullWidth sx={{ flex: 1 }}>
                 <EventInputLabel shrink>{t('create_event.location_type')}</EventInputLabel>

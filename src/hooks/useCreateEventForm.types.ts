@@ -31,7 +31,6 @@ type CreateEventFormState = {
   world: string
   communityId: string
   email: string
-  notes: string
 }
 
 type FormErrors = Partial<Record<string, string>>

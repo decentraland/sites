@@ -33,8 +33,7 @@ const INITIAL_STATE: CreateEventFormState = {
   coordY: '0',
   world: '',
   communityId: '',
-  email: '',
-  notes: ''
+  email: ''
 }
 
 function splitIsoDateTime(iso: string | null | undefined): { date: string; time: string } {

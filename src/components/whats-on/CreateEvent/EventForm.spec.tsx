@@ -177,7 +177,6 @@ function createFormState(overrides = {}) {
     world: '',
     communityId: '',
     email: '',
-    notes: '',
     ...overrides
   }
 }
