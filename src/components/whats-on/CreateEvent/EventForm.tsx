@@ -1,15 +1,25 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AddIcon from '@mui/icons-material/Add'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import EventIcon from '@mui/icons-material/Event'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { useTranslation } from '@dcl/hooks'
+import { Tooltip } from 'decentraland-ui2'
 import { useGetCommunitiesQuery, useGetWorldNamesQuery } from '../../../features/whats-on-events'
 import type { EventEntry } from '../../../features/whats-on-events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
+import { FREQUENCY_MAP, parseDurationMs } from '../../../hooks/useCreateEventForm.helpers'
+import type { CreateEventFormState } from '../../../hooks/useCreateEventForm.types'
+import { buildEventJumpInUrl } from '../../../utils/whatsOnUrl'
+import { EventDetailModal } from '../EventDetailModal'
+import type { ModalEventData } from '../EventDetailModal'
 import { DurationField } from './DurationField'
 import { ImageUpload } from './ImageUpload'
 import { VerticalCoverPanel } from './VerticalCoverPanel'
@@ -41,15 +51,53 @@ import {
   LocationBlock,
   LocationLabel,
   LocationRow,
+  PreviewButton,
   RepeatFields,
   RepeatLabel,
   RepeatRow,
+  ReviewBar,
+  ReviewNotice,
   ReviewText,
   RightSection,
   SectionHeading,
   SubmitButton,
   SubmitErrorMessage
 } from './EventForm.styled'
+
+const PREVIEW_REQUIRED_FIELDS: Array<keyof CreateEventFormState> = ['name', 'startDate', 'startTime', 'duration']
+
+function buildPreviewData(form: CreateEventFormState, address: string | undefined): ModalEventData {
+  const startDate = form.startDate && form.startTime ? new Date(`${form.startDate}T${form.startTime}`) : null
+  const startAt = startDate && !Number.isNaN(startDate.getTime()) ? startDate.toISOString() : null
+  const durationMs = parseDurationMs(form.duration)
+  const finishAt = startAt && durationMs !== null ? new Date(new Date(startAt).getTime() + durationMs).toISOString() : null
+
+  const isWorld = form.location === 'world'
+  const x = isWorld ? 0 : Number(form.coordX) || 0
+  const y = isWorld ? 0 : Number(form.coordY) || 0
+
+  return {
+    id: 'preview',
+    name: form.name.trim(),
+    description: form.description.trim() || null,
+    image: form.imagePreviewUrl,
+    x,
+    y,
+    creatorAddress: address,
+    creatorName: undefined,
+    startAt,
+    finishAt,
+    recurrent: form.repeatEnabled,
+    recurrentFrequency: form.repeatEnabled ? FREQUENCY_MAP[form.frequency] ?? null : null,
+    recurrentDates: [],
+    totalAttendees: 0,
+    attending: false,
+    live: false,
+    categories: [],
+    url: buildEventJumpInUrl(x, y),
+    isEvent: false
+  }
+}
 
 type EventFormProps = {
   onCancel: () => void
@@ -64,6 +112,7 @@ function EventForm({ onCancel, onSuccess, initialEvent = null }: EventFormProps)
     errors,
     mode,
     setField,
+    markRequiredFields,
     handleImageSelect,
     handleImageRemove,
     handleVerticalImageSelect,
@@ -71,11 +120,34 @@ function EventForm({ onCancel, onSuccess, initialEvent = null }: EventFormProps)
     isSubmitting,
     handleSubmit
   } = useCreateEventForm({ onSuccess, initialEvent })
-  const { identity } = useAuthIdentity()
+  const { identity, address } = useAuthIdentity()
   const { data: worldNames = [] } = useGetWorldNamesQuery(undefined, { skip: form.location !== 'world' })
   const { data: communities = [] } = useGetCommunitiesQuery({ identity }, { skip: !identity })
   const [verticalPanelOpen, setVerticalPanelOpen] = useState(false)
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const showVerticalPanel = verticalPanelOpen || Boolean(form.verticalImagePreviewUrl)
+
+  const missingPreviewFields = useMemo(() => PREVIEW_REQUIRED_FIELDS.filter(field => !String(form[field] ?? '').trim()), [form])
+  const imageMissing = !form.imageUrl
+  const canPreview = missingPreviewFields.length === 0 && !imageMissing
+  const previewData = useMemo(() => (isPreviewOpen ? buildPreviewData(form, address) : null), [isPreviewOpen, form, address])
+
+  const handlePreviewClick = useCallback(() => {
+    if (canPreview) {
+      setIsPreviewOpen(true)
+      return
+    }
+    if (missingPreviewFields.length > 0) {
+      markRequiredFields(missingPreviewFields)
+    }
+    if (imageMissing && !form.imageError) {
+      setField('imageError', 'image_required')
+    }
+  }, [canPreview, form.imageError, imageMissing, markRequiredFields, missingPreviewFields, setField])
+
+  const handlePreviewClose = useCallback(() => {
+    setIsPreviewOpen(false)
+  }, [])
 
   const handleVerticalClick = useCallback(() => {
     if (form.verticalImagePreviewUrl) {
@@ -331,12 +403,24 @@ function EventForm({ onCancel, onSuccess, initialEvent = null }: EventFormProps)
               fullWidth
               InputLabelProps={{ shrink: true }}
             />
-            <ReviewText>{t('create_event.review_notice')}</ReviewText>
           </EmailSection>
         </RightSection>
       </FormColumns>
 
       {errors.submit && <SubmitErrorMessage>{errors.submit}</SubmitErrorMessage>}
+
+      <ReviewBar>
+        <ReviewNotice>
+          <InfoOutlinedIcon sx={{ fontSize: 16, color: '#a09ba8' }} />
+          <ReviewText>{t('create_event.review_notice')}</ReviewText>
+        </ReviewNotice>
+        <Tooltip title={canPreview ? '' : t('create_event.preview_disabled_tooltip')} arrow disableInteractive>
+          <PreviewButton type="button" $enabled={canPreview} aria-disabled={!canPreview} onClick={handlePreviewClick}>
+            {t('create_event.preview')}
+            <VisibilityOutlinedIcon sx={{ fontSize: 20 }} />
+          </PreviewButton>
+        </Tooltip>
+      </ReviewBar>
 
       <FormActions>
         <CancelButton type="button" onClick={onCancel}>
@@ -356,6 +440,8 @@ function EventForm({ onCancel, onSuccess, initialEvent = null }: EventFormProps)
           {isSubmitting ? t('create_event.submitting') : mode === 'edit' ? t('create_event.save_changes') : t('create_event.submit')}
         </SubmitButton>
       </FormActions>
+
+      <EventDetailModal open={isPreviewOpen} onClose={handlePreviewClose} data={previewData} />
     </ContentContainer>
   )
 }

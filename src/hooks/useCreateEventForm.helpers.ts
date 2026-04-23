@@ -7,7 +7,22 @@ const REVERSE_FREQUENCY_MAP: Partial<Record<RecurrentFrequency, string>> = {
   WEEKLY: 'every_week',
   MONTHLY: 'every_month'
 }
+
+const FREQUENCY_MAP: Record<string, RecurrentFrequency> = {
+  every_day: 'DAILY',
+  every_week: 'WEEKLY',
+  every_month: 'MONTHLY'
+}
 /* eslint-enable @typescript-eslint/naming-convention */
+
+const DURATION_PATTERN = /^([0-9]{1,2}):([0-5][0-9])$/
+
+function parseDurationMs(value: string): number | null {
+  const match = value.match(DURATION_PATTERN)
+  if (!match) return null
+  const totalMinutes = Number(match[1]) * 60 + Number(match[2])
+  return totalMinutes > 0 ? totalMinutes * 60 * 1000 : null
+}
 
 const INITIAL_STATE: CreateEventFormState = {
   image: null,
@@ -95,4 +110,4 @@ function eventEntryToFormState(event: EventEntry): CreateEventFormState {
   }
 }
 
-export { INITIAL_STATE, durationMsToHhMm, eventEntryToFormState }
+export { DURATION_PATTERN, FREQUENCY_MAP, INITIAL_STATE, durationMsToHhMm, eventEntryToFormState, parseDurationMs }

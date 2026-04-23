@@ -352,6 +352,68 @@ const SubmitErrorMessage = styled(ErrorMessage)({
   textAlign: 'center'
 })
 
+/* ── review notice + preview button row ─────────────────────────────── */
+
+const ReviewBar = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: theme.spacing(2),
+  width: '100%',
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: theme.spacing(1.5),
+    padding: theme.spacing(0, 2)
+  }
+}))
+
+const ReviewNotice = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  color: '#a09ba8',
+  flex: 1,
+  minWidth: 0
+}))
+
+const PreviewButton = styled('button', {
+  shouldForwardProp: prop => prop !== '$enabled'
+})<{ $enabled: boolean }>(({ $enabled, theme }) => ({
+  background: 'rgba(236, 235, 237, 0.2)',
+  border: 'none',
+  borderRadius: 12,
+  color: '#fcfcfc',
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 14,
+  fontWeight: 600,
+  letterSpacing: '0.4px',
+  textTransform: 'uppercase',
+  height: 36,
+  padding: '6px 16px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  cursor: 'pointer',
+  opacity: $enabled ? 1 : 0.5,
+  transition: theme.transitions.create(['background-color', 'opacity'], {
+    duration: theme.transitions.duration.standard
+  }),
+  /* eslint-disable @typescript-eslint/naming-convention */
+  '&:hover': {
+    background: $enabled ? 'rgba(236, 235, 237, 0.3)' : 'rgba(236, 235, 237, 0.2)'
+  },
+  '&:focus-visible': {
+    outline: '2px solid #ecebed',
+    outlineOffset: 2
+  },
+  [theme.breakpoints.down('md')]: {
+    alignSelf: 'flex-end'
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
+}))
+
 /* ── CTA bar ────────────────────────────────────────────────────────── */
 
 const FormActions = styled(Box)(({ theme }) => ({
@@ -504,9 +566,12 @@ export {
   LocationBlock,
   LocationLabel,
   LocationRow,
+  PreviewButton,
   RepeatFields,
   RepeatLabel,
   RepeatRow,
+  ReviewBar,
+  ReviewNotice,
   ReviewText,
   RightSection,
   SectionHeading,
