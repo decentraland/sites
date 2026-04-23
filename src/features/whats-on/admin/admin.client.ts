@@ -97,7 +97,7 @@ const adminClient = createApi({
     getAdminEvents: build.query<EventEntry[], IdentityOnlyParams>({
       queryFn: async ({ identity }) => {
         try {
-          const response = await fetchWithIdentity(`${getEventsApiUrl()}/events?list=all`, identity, 'GET')
+          const response = await fetchWithIdentity(`${getEventsApiUrl()}/events`, identity, 'GET')
           if (!response.ok) {
             throw new Error(`admin events ${response.status}`)
           }

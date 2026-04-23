@@ -108,9 +108,9 @@ describe('when calling admin profile settings endpoints', () => {
         })
       })
 
-      it('should GET /events with list=all using the signed identity', async () => {
+      it('should GET /events using the signed identity so the backend grants allow_pending for admins', async () => {
         await store.dispatch(adminClient.endpoints.getAdminEvents.initiate({ identity }))
-        expect(mockFetchWithIdentity).toHaveBeenCalledWith(expect.stringMatching(/\/events\?list=all$/), identity, 'GET')
+        expect(mockFetchWithIdentity).toHaveBeenCalledWith(expect.stringMatching(/\/events$/), identity, 'GET')
       })
     })
   })
