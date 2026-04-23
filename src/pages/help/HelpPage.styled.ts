@@ -280,8 +280,7 @@ const ScrollableAccordionContainer = styled(AccordionContainer)(({ theme }) => (
 
 const ChatCtaBanner = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(3),
-  minWidth: 661,
-  maxWidth: 661,
+  width: '100%',
   background: 'linear-gradient(135deg, #2b1339 0%, #3a1a5e 40%, #1a0e24 100%)',
   borderRadius: 16,
   padding: theme.spacing(4, 4),
@@ -291,9 +290,6 @@ const ChatCtaBanner = styled(Box)(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
-    minWidth: 'unset',
-    maxWidth: '100%',
-    width: '100%',
     padding: theme.spacing(3, 2),
     borderRadius: 12
   }
