@@ -139,6 +139,13 @@ const BulletList = styled('ul')(({ theme }) => ({
     fontSize: 15,
     lineHeight: '28px',
     marginBottom: theme.spacing(1)
+  },
+  ['& a']: {
+    color: theme.palette.primary.main,
+    textDecoration: 'none',
+    ['&:hover']: {
+      textDecoration: 'underline'
+    }
   }
 }))
 
