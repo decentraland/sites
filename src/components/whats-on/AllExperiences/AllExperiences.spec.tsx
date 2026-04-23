@@ -2,8 +2,10 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { createMockEvent } from '../../../__test-utils__/factories'
 import { AllExperiences } from './AllExperiences'
 
+let mockLocationState: { activeTab?: string } | null = null
 jest.mock('react-router-dom', () => ({
-  useNavigate: () => jest.fn()
+  useNavigate: () => jest.fn(),
+  useLocation: () => ({ pathname: '/whats-on', state: mockLocationState })
 }))
 
 const mockUseAuthIdentity = jest.fn()
@@ -125,6 +127,7 @@ describe('AllExperiences', () => {
   afterEach(() => {
     jest.useRealTimers()
     jest.resetAllMocks()
+    mockLocationState = null
   })
 
   describe('when signed out with 3 columns', () => {
@@ -172,7 +175,10 @@ describe('AllExperiences', () => {
     it('should query events with list=active and no creator filter', () => {
       render(<AllExperiences />)
 
-      expect(mockUseGetEventsQuery).toHaveBeenCalledWith(expect.objectContaining({ list: 'active', creator: undefined }))
+      expect(mockUseGetEventsQuery).toHaveBeenCalledWith(
+        expect.objectContaining({ list: 'active', creator: undefined }),
+        expect.any(Object)
+      )
     })
   })
 
@@ -332,6 +338,18 @@ describe('AllExperiences', () => {
       expect(screen.getByTestId('experiences-tabs')).toHaveAttribute('data-value', 'all')
     })
 
+    describe('and navigation state requests the "my" tab', () => {
+      beforeEach(() => {
+        mockLocationState = { activeTab: 'my' }
+      })
+
+      it('should open on the "my" tab instead of "all"', () => {
+        render(<AllExperiences />)
+
+        expect(screen.getByTestId('experiences-tabs')).toHaveAttribute('data-value', 'my')
+      })
+    })
+
     describe('and the user switches to the "my" tab', () => {
       beforeEach(() => {
         const events = [
@@ -362,7 +380,19 @@ describe('AllExperiences', () => {
 
         fireEvent.click(screen.getByTestId('tab-my'))
 
-        expect(mockUseGetEventsQuery).toHaveBeenLastCalledWith(expect.objectContaining({ list: 'all', creator: '0xCreator' }))
+        expect(mockUseGetEventsQuery).toHaveBeenLastCalledWith(
+          expect.objectContaining({ list: 'all', creator: '0xCreator' }),
+          expect.any(Object)
+        )
+      })
+
+      it('should force a refetch when mounting the my tab so newly created events are visible', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-my'))
+
+        const lastOptions = mockUseGetEventsQuery.mock.calls.at(-1)?.[1] as { refetchOnMountOrArgChange?: boolean }
+        expect(lastOptions.refetchOnMountOrArgChange).toBe(true)
       })
 
       it('should omit the date range so events outside the visible window still count', () => {

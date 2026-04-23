@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { useGetEventsQuery } from '../../../features/whats-on-events'
 import type { EventEntry, EventListType } from '../../../features/whats-on-events'
@@ -44,16 +45,19 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, crea
     data: allEvents = [],
     isLoading,
     isError
-  } = useGetEventsQuery({
-    list,
-    from: isCreatorScoped ? undefined : rangeStart.from,
-    to: isCreatorScoped ? undefined : rangeEnd.to,
-    order: 'asc',
-    world: false,
-    limit: 200,
-    identity,
-    creator
-  })
+  } = useGetEventsQuery(
+    {
+      list,
+      from: isCreatorScoped ? undefined : rangeStart.from,
+      to: isCreatorScoped ? undefined : rangeEnd.to,
+      order: 'asc',
+      world: false,
+      limit: 200,
+      identity,
+      creator
+    },
+    { refetchOnMountOrArgChange: isCreatorScoped }
+  )
 
   const dayData = useMemo(
     () =>
@@ -74,8 +78,17 @@ function AllExperiences() {
   const { identity, hasValidIdentity, address } = useAuthIdentity()
   const columnCount = useVisibleColumnCount()
   const [startOffset, setStartOffset] = useState(0)
-  const [activeTab, setActiveTab] = useState<TabValue>('all')
+  const location = useLocation()
+  const requestedTab = (location.state as { activeTab?: TabValue } | null)?.activeTab
+  const [activeTab, setActiveTab] = useState<TabValue>(requestedTab === 'my' ? 'my' : 'all')
+  const sectionRef = useRef<HTMLDivElement | null>(null)
   const { closeEventDetailModal, editActiveEvent, modalData, openEventDetailModal } = useEventDetailModal()
+
+  useEffect(() => {
+    if (requestedTab === 'my' && sectionRef.current) {
+      sectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [requestedTab])
 
   const [today, setToday] = useState(() => {
     const now = new Date()
@@ -166,7 +179,7 @@ function AllExperiences() {
   const showMyEmptyState = isMyTab && !isLoadingEvents && !hasAnyUpcomingMyEvent
 
   return (
-    <AllExperiencesSection aria-label={t('all_experiences.title')}>
+    <AllExperiencesSection ref={sectionRef} aria-label={t('all_experiences.title')}>
       {hasValidIdentity ? (
         <ExperiencesTabs value={activeTab} onChange={handleTabChange} panelId={MY_EXPERIENCES_PANEL_ID} />
       ) : (
