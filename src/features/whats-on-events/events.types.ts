@@ -136,11 +136,6 @@ interface GetEventByIdParams {
   identity?: AuthIdentity
 }
 
-interface GetEventByIdResponse {
-  ok: boolean
-  data: EventEntry
-}
-
 interface PosterData {
   filename: string
   url: string
@@ -190,7 +185,6 @@ export type {
   EventsResponse,
   GetCommunitiesParams,
   GetEventByIdParams,
-  GetEventByIdResponse,
   PosterData,
   PosterResponse,
   RecurrentFrequency,

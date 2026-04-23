@@ -15,7 +15,6 @@ import type {
   EventsResponse,
   GetCommunitiesParams,
   GetEventByIdParams,
-  GetEventByIdResponse,
   PosterData,
   PosterResponse,
   ToggleAttendeeParams,
@@ -140,12 +139,11 @@ const eventsClient = createApi({
 
           if (!response.ok) {
             const envelope = await response.json().catch(() => null)
-            const message = typeof envelope?.error === 'string' ? envelope.error : `Failed to fetch event (${response.status})`
             console.error('[Events] getEventById failed', response.status, envelope)
-            return { error: { status: response.status, data: envelope, message } }
+            return { error: { status: response.status, data: envelope } }
           }
 
-          const envelope: GetEventByIdResponse = await response.json()
+          const envelope: CreateEventResponse = await response.json()
           return { data: envelope.data }
         } catch (error) {
           return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
@@ -163,9 +161,8 @@ const eventsClient = createApi({
 
           if (!response.ok) {
             const envelope = await response.json().catch(() => null)
-            const message = typeof envelope?.error === 'string' ? envelope.error : `Failed to create event (${response.status})`
             console.error('[Events] createEvent failed', response.status, envelope)
-            return { error: { status: response.status, data: envelope, message } }
+            return { error: { status: response.status, data: envelope } }
           }
 
           const data: CreateEventResponse = await response.json()
@@ -192,9 +189,8 @@ const eventsClient = createApi({
 
           if (!response.ok) {
             const envelope = await response.json().catch(() => null)
-            const message = typeof envelope?.error === 'string' ? envelope.error : `Failed to update event (${response.status})`
             console.error('[Events] updateEvent failed', response.status, envelope)
-            return { error: { status: response.status, data: envelope, message } }
+            return { error: { status: response.status, data: envelope } }
           }
 
           const data: CreateEventResponse = await response.json()
