@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { skipToken } from '@reduxjs/toolkit/query'
 import { useTranslation } from '@dcl/hooks'
 import { CreateEventSuccess } from '../../components/whats-on/CreateEvent/CreateEventSuccess'
 import { EventForm } from '../../components/whats-on/CreateEvent/EventForm'
+import { useGetEventByIdQuery } from '../../features/whats-on-events'
 import type { EventEntry } from '../../features/whats-on-events'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useCanEditEvent } from '../../hooks/useCanEditEvent'
@@ -13,11 +15,20 @@ function CreateEventPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const params = useParams<{ eventId?: string }>()
-  const { hasValidIdentity } = useAuthIdentity()
+  const { hasValidIdentity, identity } = useAuthIdentity()
   const [submitted, setSubmitted] = useState(false)
 
-  const initialEvent = (location.state as { event?: EventEntry } | null)?.event ?? null
+  const eventFromState = (location.state as { event?: EventEntry } | null)?.event ?? null
   const isEditRoute = Boolean(params.eventId)
+  const shouldFetchEvent = isEditRoute && hasValidIdentity && !eventFromState
+
+  const {
+    data: fetchedEvent,
+    isFetching: isEventFetching,
+    isError: isEventError
+  } = useGetEventByIdQuery(shouldFetchEvent && params.eventId ? { eventId: params.eventId, identity } : skipToken)
+
+  const initialEvent = eventFromState ?? fetchedEvent ?? null
   const { canEdit, isLoading: isPermissionsLoading } = useCanEditEvent(initialEvent?.user)
 
   useEffect(() => {
@@ -28,6 +39,13 @@ function CreateEventPage() {
 
     if (!isEditRoute) return
 
+    if (isEventError) {
+      navigate('/whats-on', { replace: true })
+      return
+    }
+
+    if (shouldFetchEvent && isEventFetching) return
+
     if (!initialEvent || initialEvent.id !== params.eventId) {
       navigate('/whats-on', { replace: true })
       return
@@ -36,7 +54,18 @@ function CreateEventPage() {
     if (!isPermissionsLoading && !canEdit) {
       navigate('/whats-on', { replace: true })
     }
-  }, [canEdit, hasValidIdentity, initialEvent, isEditRoute, isPermissionsLoading, navigate, params.eventId])
+  }, [
+    canEdit,
+    hasValidIdentity,
+    initialEvent,
+    isEditRoute,
+    isEventError,
+    isEventFetching,
+    isPermissionsLoading,
+    navigate,
+    params.eventId,
+    shouldFetchEvent
+  ])
 
   const handleBack = useCallback(() => {
     navigate('/whats-on')
@@ -47,6 +76,7 @@ function CreateEventPage() {
   }, [])
 
   if (!hasValidIdentity) return null
+  if (isEditRoute && shouldFetchEvent && isEventFetching) return null
   if (isEditRoute && !initialEvent) return null
   if (isEditRoute && isPermissionsLoading) return null
 
