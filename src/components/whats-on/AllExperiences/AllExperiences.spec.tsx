@@ -105,10 +105,12 @@ jest.mock('./MyExperiencesEmptyState', () => ({
   MyExperiencesEmptyState: () => <div data-testid="my-experiences-empty" />
 }))
 
-jest.mock('./EventStatusOverlay', () => ({
-  EventStatusOverlay: ({ event, children }: { event: { id: string }; children: React.ReactNode }) => (
-    <div data-testid="event-status-overlay" data-id={event.id}>
-      {children}
+jest.mock('./MyExperiencesGrid', () => ({
+  MyExperiencesGrid: ({ events }: { events: { id: string }[] }) => (
+    <div data-testid="my-experiences-grid" data-count={events.length}>
+      {events.map(e => (
+        <div key={e.id} data-testid="my-exp-grid-card" data-id={e.id} />
+      ))}
     </div>
   )
 }))
@@ -332,7 +334,10 @@ describe('AllExperiences', () => {
 
     describe('and the user switches to the "my" tab', () => {
       beforeEach(() => {
-        const events = [createMockEvent({ id: 'mine-1', start_at: '2026-09-13T14:00:00Z', user: '0xCreator' })]
+        const events = [
+          createMockEvent({ id: 'mine-old', start_at: '2024-01-01T00:00:00Z', user: '0xCreator' }),
+          createMockEvent({ id: 'mine-future', start_at: '2027-09-13T14:00:00Z', user: '0xCreator' })
+        ]
         mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
       })
 
@@ -354,38 +359,40 @@ describe('AllExperiences', () => {
         expect(lastCall.to).toBeUndefined()
       })
 
-      it('should pass the event count through to DayColumn on the my tab', () => {
+      it('should render the flat MyExperiencesGrid instead of the calendar columns', () => {
         render(<AllExperiences />)
 
         fireEvent.click(screen.getByTestId('tab-my'))
 
-        expect(screen.getAllByTestId('day-column')[0]).toHaveAttribute('data-event-count', '1')
+        expect(screen.getByTestId('my-experiences-grid')).toHaveAttribute('data-count', '2')
+        expect(screen.queryByTestId('day-column')).not.toBeInTheDocument()
+        expect(screen.queryByTestId('date-navigation')).not.toBeInTheDocument()
       })
 
-      it('should reset startOffset when switching tabs', () => {
+      it('should sort the my events by newest start_at first', () => {
         render(<AllExperiences />)
 
-        fireEvent.click(screen.getByTestId('nav-right'))
-        expect(screen.getByTestId('date-navigation')).toHaveAttribute('data-start-offset', '3')
-
         fireEvent.click(screen.getByTestId('tab-my'))
-        expect(screen.getByTestId('date-navigation')).toHaveAttribute('data-start-offset', '0')
+
+        const cards = screen.getAllByTestId('my-exp-grid-card')
+        expect(cards[0]).toHaveAttribute('data-id', 'mine-future')
+        expect(cards[1]).toHaveAttribute('data-id', 'mine-old')
       })
     })
 
-    describe('and "my" tab has no events in range', () => {
+    describe('and "my" tab has no events', () => {
       beforeEach(() => {
         mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
       })
 
-      it('should render the empty state and hide the columns grid', () => {
+      it('should render the empty state and hide the grid', () => {
         render(<AllExperiences />)
 
         fireEvent.click(screen.getByTestId('tab-my'))
 
         expect(screen.getByTestId('my-experiences-empty')).toBeInTheDocument()
+        expect(screen.queryByTestId('my-experiences-grid')).not.toBeInTheDocument()
         expect(screen.queryByTestId('day-column')).not.toBeInTheDocument()
-        expect(screen.queryByTestId('date-navigation')).not.toBeInTheDocument()
       })
     })
   })

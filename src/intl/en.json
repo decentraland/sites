@@ -763,6 +763,8 @@
   "my_experiences": {
     "empty_title": "You don't have any event created",
     "empty_cta": "Create Event",
+    "hosted_by_me": "Hosted by me",
+    "status_approved": "Approved",
     "status_pending": "Pending",
     "status_rejected": "Rejected"
   },

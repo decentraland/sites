@@ -13,10 +13,10 @@ import { UpcomingCard } from '../Upcoming/UpcomingCard'
 import { AllExperiencesCard } from './AllExperiencesCard'
 import { DateNavigation } from './DateNavigation'
 import { DayColumn } from './DayColumn'
-import { EventStatusOverlay } from './EventStatusOverlay'
 import { ExperiencesTabs } from './ExperiencesTabs'
 import type { TabValue } from './ExperiencesTabs'
 import { MyExperiencesEmptyState } from './MyExperiencesEmptyState'
+import { MyExperiencesGrid } from './MyExperiencesGrid'
 import { AllExperiencesSection, ColumnsContainer, MobileEventsPage, MobileEventsTrack, SectionTitle } from './AllExperiences.styled'
 
 const MY_EXPERIENCES_PANEL_ID = 'my-experiences-panel'
@@ -66,7 +66,7 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, crea
     [days, allEvents, isLoading, isError]
   )
 
-  return { dayData, totalEvents: allEvents.length, isLoading }
+  return { allEvents, dayData, totalEvents: allEvents.length, isLoading }
 }
 
 function AllExperiences() {
@@ -106,6 +106,7 @@ function AllExperiences() {
   const isMyTab = hasValidIdentity && activeTab === 'my'
 
   const {
+    allEvents,
     dayData,
     totalEvents,
     isLoading: isLoadingEvents
@@ -118,9 +119,14 @@ function AllExperiences() {
     list: isMyTab ? 'all' : 'active'
   })
 
+  const sortedMyEvents = useMemo(
+    () => (isMyTab ? [...allEvents].sort((a, b) => new Date(b.start_at).getTime() - new Date(a.start_at).getTime()) : []),
+    [allEvents, isMyTab]
+  )
+
   const handleNavigateLeft = useCallback(() => {
-    setStartOffset(prev => (isMyTab ? prev - columnCount : Math.max(0, prev - columnCount)))
-  }, [columnCount, isMyTab])
+    setStartOffset(prev => Math.max(0, prev - columnCount))
+  }, [columnCount])
 
   const handleNavigateRight = useCallback(() => {
     setStartOffset(prev => prev + columnCount)
@@ -132,11 +138,8 @@ function AllExperiences() {
   }, [])
 
   const renderCard = useCallback(
-    (event: EventEntry) => {
-      const card = <AllExperiencesCard event={event} onClick={openEventDetailModal} />
-      return isMyTab ? <EventStatusOverlay event={event}>{card}</EventStatusOverlay> : card
-    },
-    [isMyTab, openEventDetailModal]
+    (event: EventEntry) => <AllExperiencesCard event={event} onClick={openEventDetailModal} />,
+    [openEventDetailModal]
   )
 
   const mobilePages = useMemo(
@@ -158,8 +161,12 @@ function AllExperiences() {
         <SectionTitle variant="h4">{t('all_experiences.title')}</SectionTitle>
       )}
       <div role={hasValidIdentity ? 'tabpanel' : undefined} id={hasValidIdentity ? MY_EXPERIENCES_PANEL_ID : undefined}>
-        {showMyEmptyState ? (
-          <MyExperiencesEmptyState />
+        {isMyTab ? (
+          showMyEmptyState ? (
+            <MyExperiencesEmptyState />
+          ) : (
+            <MyExperiencesGrid events={sortedMyEvents} onCardClick={openEventDetailModal} />
+          )
         ) : (
           <>
             <DateNavigation
@@ -168,21 +175,14 @@ function AllExperiences() {
               today={today}
               onNavigateLeft={handleNavigateLeft}
               onNavigateRight={handleNavigateRight}
-              allowPast={isMyTab}
             />
             {columnCount <= 1 ? (
               <MobileEventsTrack>
                 {mobilePages.map((page, i) => (
                   <MobileEventsPage key={i}>
-                    {page.map(event =>
-                      isMyTab ? (
-                        <EventStatusOverlay key={event.id} event={event}>
-                          <UpcomingCard event={event} onClick={openEventDetailModal} />
-                        </EventStatusOverlay>
-                      ) : (
-                        <UpcomingCard key={event.id} event={event} onClick={openEventDetailModal} />
-                      )
-                    )}
+                    {page.map(event => (
+                      <UpcomingCard key={event.id} event={event} onClick={openEventDetailModal} />
+                    ))}
                   </MobileEventsPage>
                 ))}
               </MobileEventsTrack>
