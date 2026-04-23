@@ -10,6 +10,7 @@ import { useGetCommunitiesQuery, useGetWorldNamesQuery } from '../../../features
 import type { EventEntry } from '../../../features/whats-on-events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
+import { DurationField } from './DurationField'
 import { ImageUpload } from './ImageUpload'
 import { VerticalCoverPanel } from './VerticalCoverPanel'
 import {
@@ -185,21 +186,12 @@ function EventForm({ onCancel, onSuccess, initialEvent = null }: EventFormProps)
                     endAdornment: <AccessTimeFilledIcon sx={{ color: '#a09ba8', fontSize: 24, pointerEvents: 'none' }} />
                   }}
                 />
-                <EventTextField
-                  variant="outlined"
-                  label={t('create_event.duration')}
-                  type="text"
-                  placeholder="hh:mm"
+                <DurationField
                   value={form.duration}
-                  onChange={e => setField('duration', e.target.value)}
-                  error={Boolean(errors.duration)}
-                  helperText={errors.duration}
-                  fullWidth
-                  inputProps={{ inputMode: 'numeric', pattern: '[0-9]{1,2}:[0-5][0-9]', maxLength: 5 }}
-                  InputLabelProps={{ shrink: true }}
-                  InputProps={{
-                    endAdornment: <AccessTimeFilledIcon sx={{ color: '#a09ba8', fontSize: 24, pointerEvents: 'none' }} />
-                  }}
+                  startTime={form.startTime}
+                  onChange={value => setField('duration', value)}
+                  error={errors.duration}
+                  label={t('create_event.duration')}
                 />
               </DateTimeRow>
 

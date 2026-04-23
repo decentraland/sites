@@ -126,6 +126,16 @@ const EventMenuItem = styled(MenuItem)({
   fontWeight: 600
 })
 
+const EventSelectIconAdornment = styled(Box)({
+  position: 'absolute',
+  right: 12,
+  top: '50%',
+  transform: 'translateY(-50%)',
+  pointerEvents: 'none',
+  display: 'flex',
+  alignItems: 'center'
+})
+
 const EventSwitch = styled(Switch)(({ theme }) => ({
   /* eslint-disable @typescript-eslint/naming-convention */
   '& .MuiSwitch-switchBase': {
@@ -492,6 +502,7 @@ export {
   EventInputLabel,
   EventMenuItem,
   EventSelect,
+  EventSelectIconAdornment,
   EventSwitch,
   EventTextArea,
   EventTextField,
