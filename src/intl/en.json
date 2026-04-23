@@ -750,6 +750,8 @@
   },
   "all_experiences": {
     "title": "All Experiences",
+    "tab_all": "All Experiences",
+    "tab_my": "My Experiences",
     "today": "Today",
     "tomorrow": "Tomorrow",
     "navigate_previous": "Navigate to previous dates",
@@ -762,6 +764,14 @@
     "copied": "Copied!",
     "coming_soon": "Coming soon",
     "unknown_creator": "Unknown"
+  },
+  "my_experiences": {
+    "empty_title": "You don't have any event created",
+    "empty_cta": "Create Event",
+    "hosted_by_me": "Hosted by me",
+    "status_approved": "Approved",
+    "status_pending": "Pending",
+    "status_rejected": "Rejected"
   },
   "create_event": {
     "title": "Submit an Event",
