@@ -1,13 +1,21 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { createMockEvent } from '../../__test-utils__/factories'
-import type { EventEntry } from '../../features/whats-on-events'
-import { CreateEventPage } from './CreateEventPage'
+import type { EventEntry } from '../../features/whats-on-events/events.types'
 
 const mockNavigate = jest.fn()
 const mockUseCanEditEvent = jest.fn()
-let mockIdentityReturn: { hasValidIdentity: boolean }
+const mockUseGetEventByIdQuery = jest.fn()
+let mockIdentityReturn: { hasValidIdentity: boolean; identity?: unknown }
 let mockLocationState: { event?: EventEntry } | null
 let mockParams: { eventId?: string }
+
+jest.mock('../../features/whats-on-events', () => ({
+  useGetEventByIdQuery: (...args: unknown[]) => mockUseGetEventByIdQuery(...args)
+}))
+
+// CreateEventPage must be imported AFTER jest.mock so the mocked barrel wins.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { CreateEventPage } = require('./CreateEventPage') as typeof import('./CreateEventPage')
 
 jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
@@ -65,10 +73,11 @@ jest.mock('../../hooks/useAuthIdentity', () => ({
 
 describe('CreateEventPage', () => {
   beforeEach(() => {
-    mockIdentityReturn = { hasValidIdentity: true }
+    mockIdentityReturn = { hasValidIdentity: true, identity: undefined }
     mockLocationState = null
     mockParams = {}
     mockUseCanEditEvent.mockReturnValue({ canEdit: false, isLoading: false })
+    mockUseGetEventByIdQuery.mockReturnValue({ data: undefined, isFetching: false, isError: false })
   })
 
   afterEach(() => {
@@ -204,16 +213,62 @@ describe('CreateEventPage', () => {
     })
   })
 
-  describe('when the edit route has no event state', () => {
+  describe('when the edit route is opened via direct link (no location state)', () => {
     beforeEach(() => {
       mockLocationState = null
       mockParams = { eventId: 'ev-42' }
     })
 
-    it('should redirect to /whats-on', () => {
-      render(<CreateEventPage />)
+    describe('and the event fetch is in flight', () => {
+      beforeEach(() => {
+        mockUseGetEventByIdQuery.mockReturnValue({ data: undefined, isFetching: true, isError: false })
+      })
 
-      expect(mockNavigate).toHaveBeenCalledWith('/whats-on', { replace: true })
+      it('should not redirect while loading', () => {
+        render(<CreateEventPage />)
+
+        expect(mockNavigate).not.toHaveBeenCalled()
+      })
+
+      it('should not render the form while loading', () => {
+        render(<CreateEventPage />)
+
+        expect(screen.queryByTestId('event-form')).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and the event fetch resolves with a matching event', () => {
+      let event: EventEntry
+
+      beforeEach(() => {
+        event = createMockEvent({ id: 'ev-42', user: '0xCreator' })
+        mockUseGetEventByIdQuery.mockReturnValue({ data: event, isFetching: false, isError: false })
+        mockUseCanEditEvent.mockReturnValue({ canEdit: true, isLoading: false })
+      })
+
+      it('should pass the fetched event to the form', () => {
+        render(<CreateEventPage />)
+
+        expect(screen.getByTestId('event-form')).toHaveAttribute('data-event-id', 'ev-42')
+      })
+
+      it('should not redirect', () => {
+        render(<CreateEventPage />)
+
+        expect(mockNavigate).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('and the event fetch errors', () => {
+      beforeEach(() => {
+        mockUseGetEventByIdQuery.mockReturnValue({ data: undefined, isFetching: false, isError: true })
+      })
+
+      it('should redirect to /whats-on', () => {
+        render(<CreateEventPage />)
+
+        expect(mockNavigate).toHaveBeenCalledWith('/whats-on', { replace: true })
+      })
     })
   })
 })
