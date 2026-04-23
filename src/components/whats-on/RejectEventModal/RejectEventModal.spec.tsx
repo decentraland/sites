@@ -13,10 +13,20 @@ jest.mock('./RejectEventModal.styled', () => ({
   ReasonsList: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   ReasonRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   ReasonLabel: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
-  NotesField: ({ label, value, onChange }: { label: string; value: string; onChange: (event: { target: { value: string } }) => void }) => (
+  NotesField: ({
+    inputProps,
+    label,
+    value,
+    onChange
+  }: {
+    inputProps?: React.TextareaHTMLAttributes<HTMLTextAreaElement>
+    label: string
+    value: string
+    onChange: (event: { target: { value: string } }) => void
+  }) => (
     <label>
       {label}
-      <textarea aria-label={label} value={value} onChange={onChange} />
+      <textarea aria-label={label} value={value} onChange={onChange} {...inputProps} />
     </label>
   ),
   ErrorText: ({ children }: { children: React.ReactNode }) => <span role="alert">{children}</span>
@@ -66,6 +76,10 @@ describe('RejectEventModal', () => {
       ).toBeInTheDocument()
       expect(screen.getByRole('checkbox', { name: 'whats_on_admin.reject_modal.reasons.invalid_duration.title' })).toBeInTheDocument()
       expect(screen.getByRole('checkbox', { name: 'whats_on_admin.reject_modal.reasons.invalid_location.title' })).toBeInTheDocument()
+    })
+
+    it('should limit notes to 2000 characters', () => {
+      expect(screen.getByLabelText('whats_on_admin.reject_modal.other_label')).toHaveAttribute('maxLength', '2000')
     })
 
     describe('and submit is clicked with no reasons selected', () => {

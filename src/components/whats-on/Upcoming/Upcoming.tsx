@@ -1,13 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { useGetUpcomingEventsQuery } from '../../../features/whats-on-events'
-import type { EventEntry } from '../../../features/whats-on-events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
+import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
 import { chunk } from '../../../utils/whatsOnChunk'
 import { PaginationDot, PaginationDots } from '../common/PaginationDots.styled'
-import { EventDetailModal, normalizeEventEntry } from '../EventDetailModal'
-import type { ModalEventData } from '../EventDetailModal'
+import { EventDetailModal } from '../EventDetailModal'
 import { UpcomingCard } from './UpcomingCard'
 import { DesktopGrid, MobileCarousel, MobileCarouselPage, MobileCarouselTrack, UpcomingSection, UpcomingTitle } from './Upcoming.styled'
 
@@ -15,12 +13,10 @@ const PAGE_SIZE = 4
 
 function Upcoming() {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const { identity } = useAuthIdentity()
   const { data: events = [] } = useGetUpcomingEventsQuery(identity ? { identity } : undefined)
-  const [modalData, setModalData] = useState<ModalEventData | null>(null)
-  const [activeEvent, setActiveEvent] = useState<EventEntry | null>(null)
   const [activePage, setActivePage] = useState(0)
+  const { closeEventDetailModal, editActiveEvent, modalData, openEventDetailModal } = useEventDetailModal()
   const trackRef = useRef<HTMLDivElement>(null)
 
   const pages = useMemo(() => chunk(events, PAGE_SIZE), [events])
@@ -38,21 +34,6 @@ function Upcoming() {
     el.scrollTo({ left: index * el.clientWidth, behavior: 'smooth' })
   }, [])
 
-  const handleCardClick = useCallback((event: EventEntry) => {
-    setActiveEvent(event)
-    setModalData(normalizeEventEntry(event))
-  }, [])
-
-  const handleModalClose = useCallback(() => {
-    setActiveEvent(null)
-    setModalData(null)
-  }, [])
-
-  const handleEdit = useCallback(() => {
-    if (!activeEvent) return
-    navigate(`/whats-on/edit-event/${activeEvent.id}`, { state: { event: activeEvent } })
-  }, [activeEvent, navigate])
-
   if (events.length === 0) return null
 
   return (
@@ -60,7 +41,7 @@ function Upcoming() {
       <UpcomingTitle variant="h5">{t('upcoming.title')}</UpcomingTitle>
       <DesktopGrid>
         {events.map(event => (
-          <UpcomingCard key={event.id} event={event} onClick={handleCardClick} />
+          <UpcomingCard key={event.id} event={event} onClick={openEventDetailModal} />
         ))}
       </DesktopGrid>
       <MobileCarousel>
@@ -68,7 +49,7 @@ function Upcoming() {
           {pages.map((page, i) => (
             <MobileCarouselPage key={i}>
               {page.map(event => (
-                <UpcomingCard key={event.id} event={event} onClick={handleCardClick} disableHover />
+                <UpcomingCard key={event.id} event={event} onClick={openEventDetailModal} disableHover />
               ))}
             </MobileCarouselPage>
           ))}
@@ -102,7 +83,7 @@ function Upcoming() {
           </PaginationDots>
         )}
       </MobileCarousel>
-      <EventDetailModal open={!!modalData} onClose={handleModalClose} data={modalData} onEdit={handleEdit} />
+      <EventDetailModal open={!!modalData} onClose={closeEventDetailModal} data={modalData} onEdit={editActiveEvent} />
     </UpcomingSection>
   )
 }

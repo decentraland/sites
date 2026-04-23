@@ -1,6 +1,4 @@
-const REJECT_REASONS = ['invalid_image', 'invalid_event_name', 'inappropriate_description', 'invalid_duration', 'invalid_location'] as const
-
-type RejectReasonCode = (typeof REJECT_REASONS)[number]
+import type { RejectReasonCode } from '../../../features/whats-on/admin/admin.types'
 
 type RejectSubmitPayload = {
   reasons: RejectReasonCode[]
@@ -14,5 +12,4 @@ type RejectEventModalProps = {
   onSubmit: (payload: RejectSubmitPayload) => void
 }
 
-export { REJECT_REASONS }
-export type { RejectEventModalProps, RejectReasonCode, RejectSubmitPayload }
+export type { RejectEventModalProps, RejectSubmitPayload }

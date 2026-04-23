@@ -1,12 +1,15 @@
 import { act, renderHook } from '@testing-library/react'
 import type { AuthIdentity } from '@dcl/crypto'
+import type { EventEntry } from '../features/whats-on-events'
 import { useCreateEventForm } from './useCreateEventForm'
 import type { CreateEventFormState } from './useCreateEventForm.types'
 
 const mockCreateEvent = jest.fn()
+const mockUpdateEvent = jest.fn()
 const mockUploadPoster = jest.fn()
 const mockUploadPosterVertical = jest.fn()
 const mockUnwrap = jest.fn()
+const mockUpdateUnwrap = jest.fn()
 const mockCaptureException = jest.fn()
 
 let mockUseAuthIdentityReturn: { identity: AuthIdentity | undefined }
@@ -19,14 +22,34 @@ jest.mock('@sentry/browser', () => ({
   captureException: (...args: unknown[]) => mockCaptureException(...args)
 }))
 
-const mockUpdateEvent = jest.fn(() => ({ unwrap: jest.fn().mockResolvedValue(undefined) }))
-
 jest.mock('../features/whats-on-events', () => ({
   useCreateEventMutation: () => [mockCreateEvent],
   useUpdateEventMutation: () => [mockUpdateEvent],
   useUploadPosterMutation: () => [mockUploadPoster],
   useUploadPosterVerticalMutation: () => [mockUploadPosterVertical]
 }))
+
+function buildInitialEvent(overrides: Partial<EventEntry> = {}): EventEntry {
+  return {
+    id: 'ev-42',
+    name: 'Existing event',
+    description: 'Existing description',
+    image: 'https://cdn/existing.png',
+    image_vertical: 'https://cdn/existing-vertical.png',
+    start_at: '2030-03-15T14:00:00.000Z',
+    finish_at: '2030-03-15T16:00:00.000Z',
+    duration: 2 * 60 * 60 * 1000,
+    x: 5,
+    y: 6,
+    world: false,
+    server: null,
+    community_id: null,
+    contact: 'owner@example.com',
+    recurrent: false,
+    user: '0xabc',
+    ...overrides
+  } as unknown as EventEntry
+}
 
 jest.mock('./useAuthIdentity', () => ({
   useAuthIdentity: () => mockUseAuthIdentityReturn
@@ -93,9 +116,11 @@ describe('useCreateEventForm', () => {
     mockIdentity = { authChain: [{ payload: '0xabc' }] } as unknown as AuthIdentity
     mockUseAuthIdentityReturn = { identity: mockIdentity }
     mockCreateEvent.mockReturnValue({ unwrap: () => mockUnwrap() })
+    mockUpdateEvent.mockReturnValue({ unwrap: () => mockUpdateUnwrap() })
     mockUploadPoster.mockReturnValue({ unwrap: () => Promise.resolve({ url: 'https://cdn/test.png' }) })
     mockUploadPosterVertical.mockReturnValue({ unwrap: () => Promise.resolve({ url: 'https://cdn/vertical.png' }) })
     mockUnwrap.mockResolvedValue({ ok: true, data: { id: 'ev-1' } })
+    mockUpdateUnwrap.mockResolvedValue({ ok: true, data: { id: 'ev-42' } })
     Object.defineProperty(URL, 'createObjectURL', { configurable: true, writable: true, value: jest.fn(() => 'blob:preview') })
     Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, writable: true, value: jest.fn() })
     mockImageWidth = 716
@@ -814,6 +839,76 @@ describe('useCreateEventForm', () => {
           payload: expect.objectContaining({ community_id: 'community-42' })
         })
       )
+    })
+  })
+
+  describe('when initialEvent is provided (edit mode)', () => {
+    it('should expose mode="edit" and hydrate form fields from the event', () => {
+      const initialEvent = buildInitialEvent()
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent }))
+
+      expect(result.current.mode).toBe('edit')
+      expect(result.current.form.name).toBe('Existing event')
+      expect(result.current.form.description).toBe('Existing description')
+      expect(result.current.form.coordX).toBe('5')
+      expect(result.current.form.coordY).toBe('6')
+      expect(result.current.form.email).toBe('owner@example.com')
+      expect(result.current.form.duration).toBe('02:00')
+    })
+
+    it('should call updateEvent (not createEvent) with the eventId and mapped payload on submit', async () => {
+      const initialEvent = buildInitialEvent()
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent }))
+
+      act(() => {
+        result.current.setField('name', 'Updated name')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+      expect(mockUpdateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventId: 'ev-42',
+          identity: mockIdentity,
+          payload: expect.objectContaining({
+            name: 'Updated name',
+            x: 5,
+            y: 6,
+            contact: 'owner@example.com',
+            duration: 2 * 60 * 60 * 1000
+          })
+        })
+      )
+    })
+
+    it('should invoke onSuccess when updateEvent resolves', async () => {
+      const initialEvent = buildInitialEvent()
+      const onSuccess = jest.fn()
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent, onSuccess }))
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(onSuccess).toHaveBeenCalledTimes(1)
+    })
+
+    it('should surface a submit error and not call onSuccess when updateEvent rejects', async () => {
+      mockUpdateUnwrap.mockRejectedValue({ status: 500, data: { error: 'boom' } })
+      const initialEvent = buildInitialEvent()
+      const onSuccess = jest.fn()
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent, onSuccess }))
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockUpdateEvent).toHaveBeenCalled()
+      expect(result.current.errors.submit).toBe('create_event.error_submit')
+      expect(onSuccess).not.toHaveBeenCalled()
     })
   })
 })

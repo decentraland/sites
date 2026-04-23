@@ -41,6 +41,7 @@ function splitIsoDateTime(iso: string | null | undefined): { date: string; time:
   const parsed = new Date(iso)
   if (Number.isNaN(parsed.getTime())) return { date: '', time: '' }
   const pad = (value: number): string => String(value).padStart(2, '0')
+  // The form collects local date/time and submits it with Date#toISOString; edit hydration mirrors that to preserve the same instant.
   const date = `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}`
   const time = `${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`
   return { date, time }

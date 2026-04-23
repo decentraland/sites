@@ -18,23 +18,25 @@ function CreateEventPage() {
 
   const initialEvent = (location.state as { event?: EventEntry } | null)?.event ?? null
   const isEditRoute = Boolean(params.eventId)
-  const canEdit = useCanEditEvent(initialEvent?.user)
+  const { canEdit, isLoading: isPermissionsLoading } = useCanEditEvent(initialEvent?.user)
 
   useEffect(() => {
     if (!hasValidIdentity) {
       navigate('/whats-on', { replace: true })
       return
     }
-    if (isEditRoute && (!initialEvent || initialEvent.id !== params.eventId)) {
-      navigate('/whats-on', { replace: true })
-    }
-  }, [hasValidIdentity, initialEvent, isEditRoute, navigate, params.eventId])
 
-  useEffect(() => {
-    if (isEditRoute && initialEvent && !canEdit) {
+    if (!isEditRoute) return
+
+    if (!initialEvent || initialEvent.id !== params.eventId) {
+      navigate('/whats-on', { replace: true })
+      return
+    }
+
+    if (!isPermissionsLoading && !canEdit) {
       navigate('/whats-on', { replace: true })
     }
-  }, [canEdit, initialEvent, isEditRoute, navigate])
+  }, [canEdit, hasValidIdentity, initialEvent, isEditRoute, isPermissionsLoading, navigate, params.eventId])
 
   const handleBack = useCallback(() => {
     navigate('/whats-on')
@@ -46,6 +48,7 @@ function CreateEventPage() {
 
   if (!hasValidIdentity) return null
   if (isEditRoute && !initialEvent) return null
+  if (isEditRoute && isPermissionsLoading) return null
 
   const titleKey = initialEvent ? 'create_event.edit_title' : 'create_event.title'
 

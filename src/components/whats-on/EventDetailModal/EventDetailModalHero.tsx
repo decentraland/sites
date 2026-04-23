@@ -47,7 +47,7 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
   const creatorFallback = data.creatorAddress ? formatEthAddress(data.creatorAddress) : undefined
   const { creatorName, avatarFace } = useCreatorProfile(data.creatorAddress, data.creatorName, creatorFallback)
   const hasCreator = Boolean(avatarFace || creatorName)
-  const canEdit = useCanEditEvent(data.creatorAddress)
+  const { canEdit } = useCanEditEvent(data.creatorAddress)
   const showEdit = canEdit && Boolean(onEdit) && data.isEvent
 
   const handleJumpIn = useCallback(() => {

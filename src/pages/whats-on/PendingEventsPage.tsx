@@ -1,10 +1,9 @@
-import { useCallback, useMemo, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useTranslation } from '@dcl/hooks'
 import { Alert, Snackbar } from 'decentraland-ui2'
 import { EventDetailModal } from '../../components/whats-on/EventDetailModal'
-import { normalizeEventEntry } from '../../components/whats-on/EventDetailModal/normalizers'
 import { PendingEventCard } from '../../components/whats-on/PendingEventCard'
 import { RejectEventModal } from '../../components/whats-on/RejectEventModal'
 import type { RejectSubmitPayload } from '../../components/whats-on/RejectEventModal'
@@ -12,6 +11,7 @@ import { useApproveEventMutation, useGetAdminEventsQuery, useRejectEventMutation
 import type { EventEntry } from '../../features/whats-on-events/events.types'
 import { useAdminPermissions } from '../../hooks/useAdminPermissions'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+import { useEventDetailModal } from '../../hooks/useEventDetailModal'
 import { AdminPageContainer } from './AdminLayout.styled'
 import { CardGrid, EmptyStateText, Section, SectionSubtitle, SectionTitle } from './PendingEventsPage.styled'
 
@@ -19,14 +19,13 @@ const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
 
 function PendingEventsPage() {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const { identity } = useAuthIdentity()
   const { canApproveAnyEvent, canApproveOwnEvent, canEditAnyEvent, isLoading } = useAdminPermissions()
   const allowed = canApproveAnyEvent || canApproveOwnEvent || canEditAnyEvent
 
-  const [activeEvent, setActiveEvent] = useState<EventEntry | null>(null)
   const [rejectingEvent, setRejectingEvent] = useState<EventEntry | null>(null)
   const [feedback, setFeedback] = useState<{ message: string; severity: 'success' | 'error' } | null>(null)
+  const { activeEvent, closeEventDetailModal, editActiveEvent, modalData, openEventDetailModal } = useEventDetailModal()
 
   const { data: events = [] } = useGetAdminEventsQuery(identity && allowed ? { identity } : skipToken, { refetchOnMountOrArgChange: true })
   const [approve, { isLoading: isApproving }] = useApproveEventMutation()
@@ -46,13 +45,6 @@ function PendingEventsPage() {
     })
   }, [events])
 
-  const modalData = useMemo(() => (activeEvent ? normalizeEventEntry(activeEvent) : null), [activeEvent])
-
-  const handleEdit = useCallback(() => {
-    if (!activeEvent) return
-    navigate(`/whats-on/edit-event/${activeEvent.id}`, { state: { event: activeEvent } })
-  }, [activeEvent, navigate])
-
   if (!isLoading && !allowed) return <Navigate to="/whats-on" replace />
 
   const handleApprove = async () => {
@@ -62,7 +54,7 @@ function PendingEventsPage() {
     }
     try {
       await approve({ eventId: activeEvent.id, identity }).unwrap()
-      setActiveEvent(null)
+      closeEventDetailModal()
       setFeedback({ message: t('whats_on_admin.pending_events.approve_success'), severity: 'success' })
     } catch (error) {
       console.error('[PendingEventsPage] approve failed', error)
@@ -83,7 +75,7 @@ function PendingEventsPage() {
     try {
       await reject({ eventId: rejectingEvent.id, identity, reasons, notes }).unwrap()
       setRejectingEvent(null)
-      setActiveEvent(null)
+      closeEventDetailModal()
       setFeedback({ message: t('whats_on_admin.pending_events.reject_success'), severity: 'success' })
     } catch (error) {
       console.error('[PendingEventsPage] reject failed', error)
@@ -102,7 +94,7 @@ function PendingEventsPage() {
           {pending.length === 0 ? (
             <EmptyStateText>{t('whats_on_admin.pending_events.empty')}</EmptyStateText>
           ) : (
-            pending.map(event => <PendingEventCard key={event.id} event={event} onClick={() => setActiveEvent(event)} />)
+            pending.map(event => <PendingEventCard key={event.id} event={event} onClick={openEventDetailModal} />)
           )}
         </CardGrid>
       </Section>
@@ -114,7 +106,7 @@ function PendingEventsPage() {
         </SectionTitle>
         <CardGrid>
           {recentlyApproved.map(event => (
-            <PendingEventCard key={event.id} event={event} onClick={() => setActiveEvent(event)} />
+            <PendingEventCard key={event.id} event={event} onClick={openEventDetailModal} />
           ))}
         </CardGrid>
       </Section>
@@ -123,9 +115,9 @@ function PendingEventsPage() {
         <EventDetailModal
           open
           data={modalData}
-          onClose={() => setActiveEvent(null)}
+          onClose={closeEventDetailModal}
           adminActions={isPendingActive ? { onApprove: handleApprove, onReject: handleRejectClick, isProcessing: processing } : undefined}
-          onEdit={handleEdit}
+          onEdit={editActiveEvent}
         />
       )}
 
