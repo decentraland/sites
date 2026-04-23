@@ -293,6 +293,7 @@ const EditButton = styled('button')(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   gap: theme.spacing(1),
+  marginLeft: 'auto',
   backgroundColor: 'rgba(255, 255, 255, 0.1)',
   color: '#FCFCFC',
   border: 'none',
