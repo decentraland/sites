@@ -107,12 +107,6 @@ jest.mock('./VerticalCoverPanel', () => ({
   VerticalCoverPanel: () => <div data-testid="vertical-cover-panel" />
 }))
 
-jest.mock('./DurationField', () => ({
-  DurationField: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
-    <input data-testid="duration-field" aria-label="create_event.duration" value={value} onChange={e => onChange(e.target.value)} />
-  )
-}))
-
 jest.mock('../../../features/whats-on-events', () => ({
   useGetWorldNamesQuery: () => ({ data: [] }),
   useGetCommunitiesQuery: () => ({ data: [] })

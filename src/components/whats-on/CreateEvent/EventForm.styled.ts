@@ -252,20 +252,6 @@ const DateTimeRow = styled(Box)(({ theme }) => ({
   }
 }))
 
-const DurationFieldBox = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(0.5),
-  flex: 1,
-  minWidth: 0
-}))
-
-const DurationRow = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  gap: theme.spacing(1),
-  minWidth: 0
-}))
-
 const RepeatRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -498,8 +484,6 @@ export {
   CoordinatesRow,
   DateTimeRow,
   DateTimeSection,
-  DurationFieldBox,
-  DurationRow,
   DescriptionFields,
   EmailSection,
   ErrorMessage,
