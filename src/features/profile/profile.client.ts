@@ -1,4 +1,4 @@
-import { useCallback, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import type { Profile } from 'dcl-catalyst-client/dist/client/specs/lambdas-client'
 import { getEnv } from '../../config/env'
 
@@ -103,4 +103,36 @@ function useGetProfileQuery(address: string | undefined, options: QueryOptions =
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 }
 
-export { useGetProfileQuery, type Profile }
+function useGetProfileNames(addresses: readonly string[]): Map<string, string | undefined> {
+  const keysSignature = useMemo(
+    () =>
+      Array.from(new Set(addresses.map(address => address.toLowerCase())))
+        .sort()
+        .join('|'),
+    [addresses]
+  )
+  const [names, setNames] = useState<Map<string, string | undefined>>(() => new Map())
+
+  useEffect(() => {
+    const keys = keysSignature ? keysSignature.split('|') : []
+    if (keys.length === 0) {
+      setNames(prev => (prev.size === 0 ? prev : new Map()))
+      return
+    }
+    const update = () => {
+      setNames(prev => {
+        const next = new Map<string, string | undefined>()
+        for (const key of keys) next.set(key, getSnapshotFor(key).data?.avatars?.[0]?.name)
+        if (next.size === prev.size && keys.every(key => next.get(key) === prev.get(key))) return prev
+        return next
+      })
+    }
+    const unsubscribers = keys.map(key => subscribeTo(key, update))
+    update()
+    return () => unsubscribers.forEach(unsubscribe => unsubscribe())
+  }, [keysSignature])
+
+  return names
+}
+
+export { useGetProfileQuery, useGetProfileNames, type Profile }
