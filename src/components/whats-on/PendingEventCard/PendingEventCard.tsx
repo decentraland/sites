@@ -23,7 +23,7 @@ const PendingEventCard = memo(function PendingEventCard({ event, onClick }: Pend
   const dateLabel = getRelativeDateLabel(referenceStart, t)
 
   return (
-    <CardFrame>
+    <CardFrame faded={status === 'pending'}>
       <ChipOverlay>
         {dateLabel ? <DateChip>{dateLabel}</DateChip> : <span />}
         <StatusChip status={status}>{t(STATUS_LABEL_KEY[status])}</StatusChip>

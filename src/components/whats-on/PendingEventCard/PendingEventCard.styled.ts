@@ -1,9 +1,10 @@
 import { Box, styled } from 'decentraland-ui2'
 
-const CardFrame = styled(Box)({
+const CardFrame = styled(Box, { shouldForwardProp: prop => prop !== 'faded' })<{ faded?: boolean }>(({ faded }) => ({
   position: 'relative',
-  width: '100%'
-})
+  width: '100%',
+  opacity: faded ? 0.5 : 1
+}))
 
 const ChipOverlay = styled(Box)(({ theme }) => ({
   alignItems: 'center',
