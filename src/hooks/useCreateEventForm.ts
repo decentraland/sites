@@ -141,6 +141,20 @@ function useCreateEventForm({ onSuccess, initialEvent = null }: UseCreateEventFo
     })
   }, [])
 
+  const markRequiredFields = useCallback(
+    (fields: Array<keyof CreateEventFormState>) => {
+      if (fields.length === 0) return
+      setErrors(prev => {
+        const next = { ...prev }
+        fields.forEach(field => {
+          next[field as string] = t('create_event.error_required')
+        })
+        return next
+      })
+    },
+    [t]
+  )
+
   const handleImageSelect = useCallback(
     async (file: File) => {
       const validationError = validateImage(file)
@@ -316,8 +330,14 @@ function useCreateEventForm({ onSuccess, initialEvent = null }: UseCreateEventFo
     if (form.imageError || form.verticalImageError) return
 
     const validationErrors = validate()
+    const imageMissing = !form.imageUrl
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors)
+    }
+    if (imageMissing) {
+      setForm(prev => ({ ...prev, imageError: 'image_required' }))
+    }
+    if (Object.keys(validationErrors).length > 0 || imageMissing) {
       return
     }
 
@@ -367,6 +387,7 @@ function useCreateEventForm({ onSuccess, initialEvent = null }: UseCreateEventFo
     errors,
     mode,
     setField,
+    markRequiredFields,
     handleImageSelect,
     handleImageRemove,
     handleVerticalImageSelect,

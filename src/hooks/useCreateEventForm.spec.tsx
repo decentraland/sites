@@ -82,6 +82,8 @@ function fillValidForm(setField: ReturnType<typeof useCreateEventForm>['setField
     setField('coordX', values.coordX)
     setField('coordY', values.coordY)
     setField('email', values.email)
+    setField('imageUrl', 'https://cdn/test.png')
+    setField('imagePreviewUrl', 'https://cdn/test.png')
   })
 }
 

@@ -5,6 +5,7 @@ type ImageErrorCode =
   | 'upload_failed'
   | 'vertical_image_dimensions'
   | 'vertical_image_decode'
+  | 'image_required'
 
 type CreateEventFormState = {
   image: File | null

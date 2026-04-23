@@ -838,6 +838,7 @@
     "error_vertical_image_decode": "We couldn't read this image. Please try a different file.",
     "error_not_signed_in": "Your session expired. Please sign in again to submit this event.",
     "error_upload_failed": "Failed to upload image. Please try again.",
+    "error_image_required": "An event cover is required.",
     "optimize_link": "optimizilla",
     "success_message": "Your event was created successfully. You'll be notified once it's approved. Track its status in “My Events”",
     "back_to_explore": "Back to Explore",
@@ -850,7 +851,9 @@
     "vertical_modal_label": "Upload vertical event cover",
     "world_placeholder": "Select a world",
     "community_none": "None",
-    "close": "Close"
+    "close": "Close",
+    "preview": "Preview",
+    "preview_disabled_tooltip": "Complete the required fields to preview the event"
   },
   "host_banner": {
     "title": "Want to Host Something?",
