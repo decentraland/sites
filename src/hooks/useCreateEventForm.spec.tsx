@@ -40,8 +40,7 @@ function buildValidFormFields(overrides: FormOverrides = {}) {
     description: 'Something to do',
     startDate: '2030-01-01',
     startTime: '10:00',
-    endDate: '2030-01-01',
-    endTime: '12:00',
+    duration: '02:00',
     coordX: '20',
     coordY: '10',
     email: 'host@example.com'
@@ -56,8 +55,7 @@ function fillValidForm(setField: ReturnType<typeof useCreateEventForm>['setField
     setField('description', values.description)
     setField('startDate', values.startDate)
     setField('startTime', values.startTime)
-    setField('endDate', values.endDate)
-    setField('endTime', values.endTime)
+    setField('duration', values.duration)
     setField('coordX', values.coordX)
     setField('coordY', values.coordY)
     setField('email', values.email)
@@ -259,41 +257,51 @@ describe('useCreateEventForm', () => {
     })
   })
 
-  describe('when the end time is before the start time', () => {
-    it('should report the end-before-start error', async () => {
+  describe('when the duration value is not a valid HH:MM string', () => {
+    it('should report the duration invalid error', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
-      fillValidForm(result.current.setField, {
-        startDate: '2030-01-01',
-        startTime: '14:00',
-        endDate: '2030-01-01',
-        endTime: '12:00'
-      })
+      fillValidForm(result.current.setField, { duration: 'abc' })
 
       await act(async () => {
         await result.current.handleSubmit()
       })
 
-      expect(result.current.errors.endDate).toBe('create_event.error_end_before_start')
+      expect(result.current.errors.duration).toBe('create_event.error_duration_invalid')
     })
   })
 
   describe('when the duration exceeds 24 hours', () => {
-    it('should report the duration error', async () => {
+    it('should report the duration-too-long error', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
-      fillValidForm(result.current.setField, {
-        startDate: '2030-01-01',
-        startTime: '10:00',
-        endDate: '2030-01-03',
-        endTime: '10:00'
-      })
+      fillValidForm(result.current.setField, { duration: '25:00' })
 
       await act(async () => {
         await result.current.handleSubmit()
       })
 
-      expect(result.current.errors.endDate).toBe('create_event.error_duration_too_long')
+      expect(result.current.errors.duration).toBe('create_event.error_duration_too_long')
+    })
+  })
+
+  describe('when a valid duration is provided', () => {
+    it('should submit with duration in milliseconds', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField, { duration: '03:30' })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            duration: (3 * 60 + 30) * 60 * 1000
+          })
+        })
+      )
     })
   })
 

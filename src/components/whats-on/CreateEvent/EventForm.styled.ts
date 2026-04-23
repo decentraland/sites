@@ -242,12 +242,6 @@ const DateTimeSection = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2)
 }))
 
-const DateTimeGrid = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(3)
-}))
-
 const DateTimeRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(1.5),
@@ -488,7 +482,6 @@ export {
   ContentContainer,
   CoordPrefix,
   CoordinatesRow,
-  DateTimeGrid,
   DateTimeRow,
   DateTimeSection,
   DescriptionFields,

@@ -27,6 +27,18 @@ const MAX_EVENT_DURATION_MS = 24 * 60 * 60 * 1000
 const MAX_NAME_LENGTH = 150
 const MAX_DESCRIPTION_LENGTH = 5000
 
+const DURATION_PATTERN = /^([0-9]{1,2}):([0-5][0-9])$/
+
+function parseDurationMs(value: string): number | null {
+  const match = value.match(DURATION_PATTERN)
+  if (!match) return null
+  const hours = Number(match[1])
+  const minutes = Number(match[2])
+  const totalMinutes = hours * 60 + minutes
+  if (totalMinutes === 0) return null
+  return totalMinutes * 60 * 1000
+}
+
 function validateImage(file: File): ImageErrorCode | null {
   if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
     return 'invalid_image_type'
@@ -261,16 +273,14 @@ function useCreateEventForm({ onSuccess, initialEvent = null }: UseCreateEventFo
 
     if (!form.startDate) newErrors.startDate = t('create_event.error_required')
     if (!form.startTime) newErrors.startTime = t('create_event.error_required')
-    if (!form.endDate) newErrors.endDate = t('create_event.error_required')
-    if (!form.endTime) newErrors.endTime = t('create_event.error_required')
-
-    if (form.startDate && form.startTime && form.endDate && form.endTime) {
-      const startMs = new Date(`${form.startDate}T${form.startTime}`).getTime()
-      const finishMs = new Date(`${form.endDate}T${form.endTime}`).getTime()
-      if (finishMs <= startMs) {
-        newErrors.endDate = t('create_event.error_end_before_start')
-      } else if (finishMs - startMs > MAX_EVENT_DURATION_MS) {
-        newErrors.endDate = t('create_event.error_duration_too_long')
+    if (!form.duration) {
+      newErrors.duration = t('create_event.error_required')
+    } else {
+      const durationMs = parseDurationMs(form.duration)
+      if (durationMs === null) {
+        newErrors.duration = t('create_event.error_duration_invalid')
+      } else if (durationMs > MAX_EVENT_DURATION_MS) {
+        newErrors.duration = t('create_event.error_duration_too_long')
       }
     }
 
@@ -314,11 +324,7 @@ function useCreateEventForm({ onSuccess, initialEvent = null }: UseCreateEventFo
     setIsSubmitting(true)
     try {
       const startAt = new Date(`${form.startDate}T${form.startTime}`).toISOString()
-      const finishAt = new Date(`${form.endDate}T${form.endTime}`).toISOString()
-
-      const startMs = new Date(startAt).getTime()
-      const finishMs = new Date(finishAt).getTime()
-      const duration = finishMs - startMs
+      const duration = parseDurationMs(form.duration) ?? 0
 
       const isWorld = form.location === 'world'
       /* eslint-disable @typescript-eslint/naming-convention */

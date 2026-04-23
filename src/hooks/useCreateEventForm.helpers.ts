@@ -24,8 +24,7 @@ const INITIAL_STATE: CreateEventFormState = {
   description: '',
   startDate: '',
   startTime: '',
-  endDate: '',
-  endTime: '',
+  duration: '',
   repeatEnabled: false,
   frequency: 'every_week',
   repeatEndDate: '',
@@ -48,11 +47,27 @@ function splitIsoDateTime(iso: string | null | undefined): { date: string; time:
   return { date, time }
 }
 
+function durationMsToHhMm(durationMs: number | null | undefined): string {
+  if (!durationMs || durationMs <= 0) return ''
+  const totalMinutes = Math.round(durationMs / 60000)
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  const pad = (value: number): string => String(value).padStart(2, '0')
+  return `${pad(hours)}:${pad(minutes)}`
+}
+
+function resolveDurationMs(event: EventEntry): number {
+  if (typeof event.duration === 'number' && event.duration > 0) return event.duration
+  if (event.start_at && event.finish_at) {
+    const diff = new Date(event.finish_at).getTime() - new Date(event.start_at).getTime()
+    return diff > 0 ? diff : 0
+  }
+  return 0
+}
+
 function eventEntryToFormState(event: EventEntry): CreateEventFormState {
   const start = splitIsoDateTime(event.start_at)
-  const finishIso =
-    event.finish_at ?? (event.start_at ? new Date(new Date(event.start_at).getTime() + (event.duration ?? 0)).toISOString() : null)
-  const end = splitIsoDateTime(finishIso)
+  const durationMs = resolveDurationMs(event)
   const lastRecurrentDate = event.recurrent_dates?.[event.recurrent_dates.length - 1] ?? null
   const repeatEnd = splitIsoDateTime(lastRecurrentDate)
   const isWorld = Boolean(event.world)
@@ -67,8 +82,7 @@ function eventEntryToFormState(event: EventEntry): CreateEventFormState {
     description: event.description ?? '',
     startDate: start.date,
     startTime: start.time,
-    endDate: end.date,
-    endTime: end.time,
+    duration: durationMsToHhMm(durationMs),
     repeatEnabled: Boolean(event.recurrent),
     frequency: (event.recurrent_frequency && REVERSE_FREQUENCY_MAP[event.recurrent_frequency]) ?? 'every_week',
     repeatEndDate: repeatEnd.date,
@@ -81,4 +95,4 @@ function eventEntryToFormState(event: EventEntry): CreateEventFormState {
   }
 }
 
-export { INITIAL_STATE, eventEntryToFormState }
+export { INITIAL_STATE, durationMsToHhMm, eventEntryToFormState }

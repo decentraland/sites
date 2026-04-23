@@ -21,8 +21,7 @@ type CreateEventFormState = {
   description: string
   startDate: string
   startTime: string
-  endDate: string
-  endTime: string
+  duration: string
   repeatEnabled: boolean
   frequency: string
   repeatEndDate: string
