@@ -2,6 +2,7 @@ export {
   eventsClient,
   useCreateEventMutation,
   useGetCommunitiesQuery,
+  useGetEventByIdQuery,
   useGetEventsQuery,
   useGetLiveNowCardsQuery,
   useGetUpcomingEventsQuery,
