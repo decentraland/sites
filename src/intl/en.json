@@ -919,8 +919,8 @@
       "status_pending": "Pending",
       "status_approved": "Approved",
       "status_rejected": "Rejected",
-      "approve_success": "Event approved",
-      "reject_success": "Event rejected"
+      "approve_success": "Event/Experience approved successfully",
+      "reject_success": "Event/Experience rejected successfully"
     },
     "users": {
       "title": "Users",
