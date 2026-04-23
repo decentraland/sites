@@ -40,6 +40,10 @@ jest.mock('../../components/whats-on/PendingEventCard', () => ({
   )
 }))
 
+jest.mock('../../components/whats-on/RejectEventModal', () => ({
+  RejectEventModal: ({ open }: { open: boolean }) => (open ? <div data-testid="reject-event-modal" /> : null)
+}))
+
 jest.mock('decentraland-ui2', () => ({
   Alert: ({ children }: { children: React.ReactNode }) => <div role="alert">{children}</div>,
   Snackbar: ({ open, children }: { open: boolean; children: React.ReactNode }) => (open ? <div>{children}</div> : null)

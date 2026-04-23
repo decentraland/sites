@@ -2,7 +2,13 @@ import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react'
 import { getEnv } from '../../../config/env'
 import { fetchWithIdentity } from '../../../utils/signedFetch'
 import type { EventEntry } from '../../whats-on-events/events.types'
-import type { AdminEventActionParams, AdminProfileSettings, IdentityOnlyParams, UpdateAdminPermissionsParams } from './admin.types'
+import type {
+  AdminEventActionParams,
+  AdminProfileSettings,
+  AdminRejectEventParams,
+  IdentityOnlyParams,
+  UpdateAdminPermissionsParams
+} from './admin.types'
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const
@@ -13,27 +19,30 @@ const getEventsApiUrl = (): string => {
   return url
 }
 
-const buildEventActionQueryFn =
-  (key: 'approved' | 'rejected') =>
-  async ({ eventId, identity }: AdminEventActionParams) => {
-    try {
-      const body = JSON.stringify({ [key]: true })
-      const response = await fetchWithIdentity(
-        `${getEventsApiUrl()}/events/${encodeURIComponent(eventId)}`,
-        identity,
-        'PATCH',
-        body,
-        JSON_HEADERS
-      )
-      if (!response.ok) {
-        console.error(`[Admin] ${key}Event failed`, response.status)
-        return { error: { status: response.status, data: null } }
-      }
-      return { data: undefined as void }
-    } catch (error) {
-      return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+const patchEvent = async (
+  eventId: string,
+  identity: AdminEventActionParams['identity'],
+  payload: Record<string, unknown>,
+  logKey: string
+) => {
+  try {
+    const body = JSON.stringify(payload)
+    const response = await fetchWithIdentity(
+      `${getEventsApiUrl()}/events/${encodeURIComponent(eventId)}`,
+      identity,
+      'PATCH',
+      body,
+      JSON_HEADERS
+    )
+    if (!response.ok) {
+      console.error(`[Admin] ${logKey} failed`, response.status)
+      return { error: { status: response.status, data: null } }
     }
+    return { data: undefined as void }
+  } catch (error) {
+    return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
   }
+}
 
 const adminClient = createApi({
   reducerPath: 'adminClient',
@@ -110,11 +119,17 @@ const adminClient = createApi({
       providesTags: ['PendingEvents']
     }),
     approveEvent: build.mutation<void, AdminEventActionParams>({
-      queryFn: buildEventActionQueryFn('approved'),
+      queryFn: ({ eventId, identity }) => patchEvent(eventId, identity, { approved: true }, 'approveEvent'),
       invalidatesTags: ['PendingEvents']
     }),
-    rejectEvent: build.mutation<void, AdminEventActionParams>({
-      queryFn: buildEventActionQueryFn('rejected'),
+    rejectEvent: build.mutation<void, AdminRejectEventParams>({
+      queryFn: ({ eventId, identity, reasons, notes }) => {
+        const payload: Record<string, unknown> = { rejected: true }
+        if (reasons && reasons.length > 0) payload.rejection_reasons = reasons
+        const trimmedNotes = notes?.trim()
+        if (trimmedNotes) payload.rejection_notes = trimmedNotes
+        return patchEvent(eventId, identity, payload, 'rejectEvent')
+      },
       invalidatesTags: ['PendingEvents']
     })
   })

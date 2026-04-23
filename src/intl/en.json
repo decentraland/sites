@@ -932,6 +932,36 @@
       },
       "empty": "No admins configured"
     },
+    "reject_modal": {
+      "title": "Reject Reason*",
+      "reasons": {
+        "invalid_image": {
+          "title": "Invalid image",
+          "description": "Does not comply with our Terms or Code of Ethics"
+        },
+        "invalid_event_name": {
+          "title": "Invalid event name",
+          "description": "Does not comply with our Terms or Code of Ethics"
+        },
+        "inappropriate_description": {
+          "title": "Inappropriate description",
+          "description": "Contains language that is not allowed"
+        },
+        "invalid_duration": {
+          "title": "Invalid duration",
+          "description": "Too short or longer than 24 hours"
+        },
+        "invalid_location": {
+          "title": "Invalid location",
+          "description": "Incorrect coordinates"
+        }
+      },
+      "other_label": "Other (optional)",
+      "other_placeholder": "User will receive a notification, be as descriptive as you can.",
+      "cancel": "Cancel",
+      "submit": "Submit",
+      "error_required": "Select at least one reason"
+    },
     "permissions_modal": {
       "add_title": "Add User",
       "edit_title": "Edit User",

@@ -24,6 +24,7 @@ type AdminProfileSettings = {
 type IdentityOnlyParams = { identity: AuthIdentity }
 type UpdateAdminPermissionsParams = IdentityOnlyParams & { address: string; permissions: AdminPermission[] }
 type AdminEventActionParams = IdentityOnlyParams & { eventId: string }
+type AdminRejectEventParams = AdminEventActionParams & { reasons?: string[]; notes?: string }
 
 export { AdminPermission, UPDATEABLE_PERMISSIONS }
-export type { AdminEventActionParams, AdminProfileSettings, IdentityOnlyParams, UpdateAdminPermissionsParams }
+export type { AdminEventActionParams, AdminProfileSettings, AdminRejectEventParams, IdentityOnlyParams, UpdateAdminPermissionsParams }

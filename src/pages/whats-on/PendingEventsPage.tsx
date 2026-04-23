@@ -6,6 +6,8 @@ import { Alert, Snackbar } from 'decentraland-ui2'
 import { EventDetailModal } from '../../components/whats-on/EventDetailModal'
 import { normalizeEventEntry } from '../../components/whats-on/EventDetailModal/normalizers'
 import { PendingEventCard } from '../../components/whats-on/PendingEventCard'
+import { RejectEventModal } from '../../components/whats-on/RejectEventModal'
+import type { RejectSubmitPayload } from '../../components/whats-on/RejectEventModal'
 import { useApproveEventMutation, useGetAdminEventsQuery, useRejectEventMutation } from '../../features/whats-on/admin/admin.client'
 import type { EventEntry } from '../../features/whats-on-events/events.types'
 import { useAdminPermissions } from '../../hooks/useAdminPermissions'
@@ -22,6 +24,7 @@ function PendingEventsPage() {
   const allowed = canApproveAnyEvent || canApproveOwnEvent || canEditAnyEvent
 
   const [activeEvent, setActiveEvent] = useState<EventEntry | null>(null)
+  const [rejectingEvent, setRejectingEvent] = useState<EventEntry | null>(null)
   const [feedback, setFeedback] = useState<{ message: string; severity: 'success' | 'error' } | null>(null)
 
   const { data: events = [] } = useGetAdminEventsQuery(identity && allowed ? { identity } : skipToken, { refetchOnMountOrArgChange: true })
@@ -46,23 +49,41 @@ function PendingEventsPage() {
 
   if (!isLoading && !allowed) return <Navigate to="/whats-on" replace />
 
-  const handleEventAction = async (trigger: typeof approve | typeof reject, successKey: string) => {
+  const handleApprove = async () => {
     if (!activeEvent || !identity) {
-      console.error('[PendingEventsPage] action called without identity or event')
+      console.error('[PendingEventsPage] approve called without identity or event')
       return
     }
     try {
-      await trigger({ eventId: activeEvent.id, identity }).unwrap()
+      await approve({ eventId: activeEvent.id, identity }).unwrap()
       setActiveEvent(null)
-      setFeedback({ message: t(successKey), severity: 'success' })
+      setFeedback({ message: t('whats_on_admin.pending_events.approve_success'), severity: 'success' })
     } catch (error) {
-      console.error('[PendingEventsPage] action failed', error)
+      console.error('[PendingEventsPage] approve failed', error)
       setFeedback({ message: t('whats_on_admin.pending_events.action_error'), severity: 'error' })
     }
   }
 
-  const handleApprove = () => handleEventAction(approve, 'whats_on_admin.pending_events.approve_success')
-  const handleReject = () => handleEventAction(reject, 'whats_on_admin.pending_events.reject_success')
+  const handleRejectClick = () => {
+    if (!activeEvent) return
+    setRejectingEvent(activeEvent)
+  }
+
+  const handleRejectSubmit = async ({ reasons, notes }: RejectSubmitPayload) => {
+    if (!rejectingEvent || !identity) {
+      console.error('[PendingEventsPage] reject called without identity or event')
+      return
+    }
+    try {
+      await reject({ eventId: rejectingEvent.id, identity, reasons, notes }).unwrap()
+      setRejectingEvent(null)
+      setActiveEvent(null)
+      setFeedback({ message: t('whats_on_admin.pending_events.reject_success'), severity: 'success' })
+    } catch (error) {
+      console.error('[PendingEventsPage] reject failed', error)
+      setFeedback({ message: t('whats_on_admin.pending_events.action_error'), severity: 'error' })
+    }
+  }
 
   const processing = isApproving || isRejecting
   const isPendingActive = activeEvent !== null && !activeEvent.approved && !activeEvent.rejected
@@ -97,9 +118,16 @@ function PendingEventsPage() {
           open
           data={modalData}
           onClose={() => setActiveEvent(null)}
-          adminActions={isPendingActive ? { onApprove: handleApprove, onReject: handleReject, isProcessing: processing } : undefined}
+          adminActions={isPendingActive ? { onApprove: handleApprove, onReject: handleRejectClick, isProcessing: processing } : undefined}
         />
       )}
+
+      <RejectEventModal
+        open={rejectingEvent !== null}
+        isSubmitting={isRejecting}
+        onClose={() => setRejectingEvent(null)}
+        onSubmit={handleRejectSubmit}
+      />
 
       <Snackbar
         open={feedback !== null}
