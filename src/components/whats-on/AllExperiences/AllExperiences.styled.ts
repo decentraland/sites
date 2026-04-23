@@ -9,6 +9,10 @@ const AllExperiencesSection = styled('section')(({ theme }) => ({
   position: 'relative',
   zIndex: 8,
   marginTop: theme.spacing(4),
+  scrollMarginTop: 96,
+  [theme.breakpoints.down('md')]: {
+    scrollMarginTop: 72
+  },
   animation: `slideUp ${SLIDE_UP_DURATION} ease-out ${SLIDE_UP_DELAY}`,
   ['@keyframes slideUp']: {
     from: { transform: 'translateY(20px)' },
