@@ -7,9 +7,9 @@ import {
   useUploadPosterMutation,
   useUploadPosterVerticalMutation
 } from '../features/whats-on-events'
-import type { EventEntry, RecurrentFrequency } from '../features/whats-on-events'
+import type { EventEntry } from '../features/whats-on-events'
 import { useAuthIdentity } from './useAuthIdentity'
-import { INITIAL_STATE, eventEntryToFormState } from './useCreateEventForm.helpers'
+import { FREQUENCY_MAP, INITIAL_STATE, eventEntryToFormState, parseDurationMs } from './useCreateEventForm.helpers'
 import type { CreateEventFormMode, CreateEventFormState, FormErrors, ImageErrorCode } from './useCreateEventForm.types'
 
 const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif']
@@ -26,18 +26,6 @@ const COORD_Y_MAX = 158
 const MAX_EVENT_DURATION_MS = 24 * 60 * 60 * 1000
 const MAX_NAME_LENGTH = 150
 const MAX_DESCRIPTION_LENGTH = 5000
-
-const DURATION_PATTERN = /^([0-9]{1,2}):([0-5][0-9])$/
-
-function parseDurationMs(value: string): number | null {
-  const match = value.match(DURATION_PATTERN)
-  if (!match) return null
-  const hours = Number(match[1])
-  const minutes = Number(match[2])
-  const totalMinutes = hours * 60 + minutes
-  if (totalMinutes === 0) return null
-  return totalMinutes * 60 * 1000
-}
 
 function validateImage(file: File): ImageErrorCode | null {
   if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
@@ -103,14 +91,6 @@ function extractSubmitErrorMessage(error: unknown, t: (key: string) => string): 
   console.error('[CreateEvent] submit failed', error)
   return t('create_event.error_submit')
 }
-
-/* eslint-disable @typescript-eslint/naming-convention -- keys match form select values */
-const FREQUENCY_MAP: Record<string, RecurrentFrequency> = {
-  every_day: 'DAILY',
-  every_week: 'WEEKLY',
-  every_month: 'MONTHLY'
-}
-/* eslint-enable @typescript-eslint/naming-convention */
 
 type UseCreateEventFormOptions = {
   onSuccess?: () => void

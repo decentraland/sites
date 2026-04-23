@@ -12,9 +12,10 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { useTranslation } from '@dcl/hooks'
 import { Tooltip } from 'decentraland-ui2'
 import { useGetCommunitiesQuery, useGetWorldNamesQuery } from '../../../features/whats-on-events'
-import type { EventEntry, RecurrentFrequency } from '../../../features/whats-on-events'
+import type { EventEntry } from '../../../features/whats-on-events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
+import { FREQUENCY_MAP, parseDurationMs } from '../../../hooks/useCreateEventForm.helpers'
 import type { CreateEventFormState } from '../../../hooks/useCreateEventForm.types'
 import { buildEventJumpInUrl } from '../../../utils/whatsOnUrl'
 import { EventDetailModal } from '../EventDetailModal'
@@ -64,23 +65,6 @@ import {
 } from './EventForm.styled'
 
 const PREVIEW_REQUIRED_FIELDS: Array<keyof CreateEventFormState> = ['name', 'startDate', 'startTime', 'duration']
-
-const DURATION_PATTERN = /^([0-9]{1,2}):([0-5][0-9])$/
-
-/* eslint-disable @typescript-eslint/naming-convention -- API enum values */
-const FREQUENCY_MAP: Record<string, RecurrentFrequency> = {
-  every_day: 'DAILY',
-  every_week: 'WEEKLY',
-  every_month: 'MONTHLY'
-}
-/* eslint-enable @typescript-eslint/naming-convention */
-
-function parseDurationMs(value: string): number | null {
-  const match = value.match(DURATION_PATTERN)
-  if (!match) return null
-  const totalMinutes = Number(match[1]) * 60 + Number(match[2])
-  return totalMinutes > 0 ? totalMinutes * 60 * 1000 : null
-}
 
 function buildPreviewData(form: CreateEventFormState, address: string | undefined): ModalEventData {
   const startDate = form.startDate && form.startTime ? new Date(`${form.startDate}T${form.startTime}`) : null
