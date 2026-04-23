@@ -3,6 +3,7 @@ import type { EventEntry, ExploreItem, HotScene } from './events.types'
 
 const MIN_USERS = 5
 const MAX_CARDS = 3
+const DCL_FOUNDATION_NAME = 'Decentraland Foundation'
 
 function isGenesisPlazaScene(scene: HotScene): boolean {
   return scene.name.toLowerCase().includes('genesis plaza')
@@ -33,7 +34,7 @@ function buildPlazaCard(scenesData: HotScene[]): ExploreItem {
     users: plaza?.usersTotalCount ?? 0,
     image: plaza?.thumbnail ?? '',
     coordinates: plazaCoords,
-    creatorName: 'Decentraland Foundation',
+    creatorName: DCL_FOUNDATION_NAME,
     isGenesisPlaza: true
   }
 }
@@ -75,7 +76,7 @@ function buildExploreCards(liveEvents: EventEntry[], hotScenes: HotScene[]): Exp
       users: scene.usersTotalCount,
       image: scene.thumbnail,
       coordinates: coordsKey(scene.baseCoords[0], scene.baseCoords[1]),
-      ...(isGenesis && { creatorName: 'Decentraland Foundation' }),
+      ...(isGenesis && { creatorName: DCL_FOUNDATION_NAME }),
       isGenesisPlaza: isGenesis
     })
   }
@@ -91,4 +92,4 @@ function buildExploreCards(liveEvents: EventEntry[], hotScenes: HotScene[]): Exp
   return cards.slice(0, MAX_CARDS)
 }
 
-export { buildExploreCards, buildPlazaCard, coordsKey, findEventAtCoords }
+export { buildExploreCards, buildPlazaCard, coordsKey, DCL_FOUNDATION_NAME, findEventAtCoords }

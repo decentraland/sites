@@ -6,7 +6,8 @@
   "PEER_URL": "https://peer.decentraland.org",
   "WALLET_CONNECT_PROJECT_ID": "61570c542c2d66c659492e5b24a41522",
   "DOWNLOAD_COUNTS_URL": "https://cdn-data.decentraland.org/public/current/explorer-alpha-downloads.json",
-  "EVENTS_API_URL": "https://events.decentraland.org/api",
+  "EVENTS_API_URL": "https://events.decentraland.zone/api",
+  "SOCIAL_API_URL": "https://social-api.decentraland.zone",
   "HOT_SCENES_URL": "https://realm-provider-ea.decentraland.org/hot-scenes",
   "JUMP_IN_URL": "https://decentraland.org/jump",
   "NOTIFICATIONS_API_URL": "https://notifications.decentraland.org",
@@ -16,5 +17,8 @@
   "DISCORD_CAPTCHA_URL": "https://discord-lambdas.decentraland.io/captcha",
   "HCAPTCHA_SITEKEY": "00c95ced-f512-4498-a5f2-7e0b0950d456",
   "ENVIRONMENT": "development",
-  "SENTRY_DSN": "https://d0ec8d688f4d9827a270acece39153b0@o4504361728212992.ingest.us.sentry.io/4508858418266112"
+  "SENTRY_DSN": "https://0c492afcd1a8331efdda7d8220237659@o4504361728212992.ingest.us.sentry.io/4505803523358720",
+  "PLACES_API_URL": "https://places.decentraland.zone/api",
+  "CMS_BASE_URL": "https://cms-api.decentraland.org/spaces/ea2ybdmmn1kv/environments/master",
+  "BLOG_BASE_URL": "/blog"
 }

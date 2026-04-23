@@ -134,7 +134,7 @@
         "trivia_thursdays": "トリビアサーズデー",
         "play_with_friends_fridays": "フレンドプレイフライデー"
       },
-      "explore": {
+      "whats_on": {
         "title": "今起きていることに飛び込もう",
         "live": "ライブ"
       }
@@ -476,7 +476,6 @@
         "download": "ダウンロード"
       },
       "navbar": {
-        "explore": "イベント情報",
         "shop": "ショップ",
         "create": "作成",
         "learn": "学ぶ",
@@ -507,7 +506,8 @@
         "view_profile": "プロフィールを表示",
         "my_assets": "マイアセット",
         "account_settings": "アカウント設定",
-        "marketplace_authorizations": "マーケットプレイス認証"
+        "marketplace_authorizations": "マーケットプレイス認証",
+        "whats_on": "イベント情報"
       }
     }
   }

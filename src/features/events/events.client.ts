@@ -1,16 +1,12 @@
 import { useSyncExternalStore } from 'react'
 import { getEnv } from '../../config/env'
+import { isDocumentVisible, subscribeVisibility } from '../../utils/documentVisibility'
 import { buildExploreCards } from './events.helpers'
 import { ExploreCardType } from './events.types'
-import type { EventsResponse, ExploreItem, HotScene } from './events.types'
+import type { ActiveEntity, EventsResponse, ExploreItem, HotScene } from './events.types'
 
 const POLL_INTERVAL_MS = 60_000
 const DEPLOYER_BATCH_TIMEOUT_MS = 5_000
-
-interface ActiveEntity {
-  id: string
-  pointers: string[]
-}
 
 interface DeploymentEntry {
   entityId: string
@@ -24,6 +20,7 @@ interface DeploymentResponse {
 async function resolveDeployers(peerUrl: string, coordinates: string[]): Promise<Map<string, string>> {
   const signal = AbortSignal.timeout(DEPLOYER_BATCH_TIMEOUT_MS)
   const result = new Map<string, string>()
+  const coordinatesSet = new Set(coordinates)
 
   const entities = await fetch(`${peerUrl}/content/entities/active`, {
     method: 'POST',
@@ -33,7 +30,7 @@ async function resolveDeployers(peerUrl: string, coordinates: string[]): Promise
     signal
   }).then(res => {
     if (!res.ok) {
-      console.warn('[Explore] active entities batch failed', res.status)
+      console.warn('[WhatsOn] active entities batch failed', res.status)
       return [] as ActiveEntity[]
     }
     return res.json() as Promise<ActiveEntity[]>
@@ -47,13 +44,13 @@ async function resolveDeployers(peerUrl: string, coordinates: string[]): Promise
   const deploymentData = await fetch(`${peerUrl}/content/deployments/?${params}`, { signal })
     .then(res => {
       if (!res.ok) {
-        console.warn('[Explore] deployments batch failed', res.status)
+        console.warn('[WhatsOn] deployments batch failed', res.status)
         return null
       }
       return res.json() as Promise<DeploymentResponse>
     })
     .catch((err: unknown) => {
-      console.warn('[Explore] deployments batch failed', err)
+      console.warn('[WhatsOn] deployments batch failed', err)
       return null
     })
 
@@ -70,7 +67,7 @@ async function resolveDeployers(peerUrl: string, coordinates: string[]): Promise
     const deployedBy = deployerByEntityId.get(entity.id)
     if (deployedBy) {
       for (const pointer of entity.pointers) {
-        if (coordinates.includes(pointer)) {
+        if (coordinatesSet.has(pointer)) {
           result.set(pointer, deployedBy)
         }
       }
@@ -156,7 +153,7 @@ async function runFetch(): Promise<void> {
         const enriched = await enrichWithDeployers(cards)
         if (enriched) commit({ data: enriched, error: null, loaded: true })
       } catch (err) {
-        console.warn('[Explore] deployer enrichment failed', err)
+        console.warn('[WhatsOn] deployer enrichment failed', err)
       }
     } catch (err) {
       commit({ data: state.data, error: err instanceof Error ? err : new Error(String(err)), loaded: true })
@@ -170,6 +167,7 @@ async function runFetch(): Promise<void> {
 
 function startPolling() {
   if (pollTimer) return
+  if (!isDocumentVisible()) return
   pollTimer = setInterval(() => {
     void runFetch()
   }, POLL_INTERVAL_MS)
@@ -182,19 +180,38 @@ function stopPolling() {
   }
 }
 
+let unsubscribeVisibility: (() => void) | null = null
+
+function handleVisibility(visible: boolean) {
+  if (subscribers === 0) return
+  if (!visible) {
+    stopPolling()
+  } else {
+    void runFetch()
+    startPolling()
+  }
+}
+
 function subscribe(listener: () => void): () => void {
+  if (listeners.has(listener)) return () => unsubscribe(listener)
   listeners.add(listener)
   subscribers += 1
   if (subscribers === 1) {
     void runFetch()
     startPolling()
+    unsubscribeVisibility = subscribeVisibility(handleVisibility)
   }
-  return () => {
-    listeners.delete(listener)
-    subscribers -= 1
-    if (subscribers === 0) {
-      stopPolling()
-    }
+  return () => unsubscribe(listener)
+}
+
+function unsubscribe(listener: () => void): void {
+  if (!listeners.has(listener)) return
+  listeners.delete(listener)
+  subscribers -= 1
+  if (subscribers === 0) {
+    stopPolling()
+    unsubscribeVisibility?.()
+    unsubscribeVisibility = null
   }
 }
 
@@ -202,8 +219,8 @@ function getSnapshot(): ExploreSnapshot {
   return snapshot
 }
 
-function useGetExploreDataQuery(): ExploreSnapshot {
+function useGetWhatsOnDataQuery(): ExploreSnapshot {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 }
 
-export { useGetExploreDataQuery }
+export { useGetWhatsOnDataQuery }

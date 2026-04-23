@@ -134,7 +134,7 @@
         "trivia_thursdays": "问答星期四",
         "play_with_friends_fridays": "好友游戏星期五"
       },
-      "explore": {
+      "whats_on": {
         "title": "进入正在发生的事",
         "live": "直播"
       }
@@ -476,7 +476,6 @@
         "download": "下载"
       },
       "navbar": {
-        "explore": "最新活动",
         "shop": "商店",
         "create": "创作",
         "learn": "学习",
@@ -507,7 +506,8 @@
         "view_profile": "查看个人资料",
         "my_assets": "我的资产",
         "account_settings": "账户设置",
-        "marketplace_authorizations": "市场授权"
+        "marketplace_authorizations": "市场授权",
+        "whats_on": "最新活动"
       }
     }
   }

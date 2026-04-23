@@ -236,7 +236,13 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
             >
               {l('page.download.download_for_short')}
               {osImage ? (
-                <img src={osImage} alt={userAgentData?.os.name ?? ''} style={{ filter: 'brightness(0) invert(1)' }} />
+                <img
+                  src={osImage}
+                  alt={userAgentData?.os.name ?? ''}
+                  width={32}
+                  height={32}
+                  style={{ filter: 'brightness(0) invert(1)' }}
+                />
               ) : (
                 <span style={{ display: 'block', width: 32, height: 32, flexShrink: 0 }} />
               )}
@@ -244,7 +250,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
 
             <EpicButton href={DOWNLOAD_URLS.epic} target="_blank" rel="noopener noreferrer">
               {l('page.download.download_on')}
-              <img src={assetUrl('/epic_icon.svg')} alt="Epic Games" style={{ filter: 'brightness(0)' }} />
+              <img src={assetUrl('/epic_icon.svg')} alt="Epic Games" width={32} height={32} style={{ filter: 'brightness(0)' }} />
             </EpicButton>
           </HeroCTAWrapper>
 
