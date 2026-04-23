@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useTranslation } from '@dcl/hooks'
+import { useGetAdminEventsQuery } from '../../../features/whats-on/admin/admin.client'
 import { useGetEventsQuery } from '../../../features/whats-on-events'
 import type { EventEntry, EventListType } from '../../../features/whats-on-events'
+import { useAdminPermissions } from '../../../hooks/useAdminPermissions'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
 import { useVisibleColumnCount } from '../../../hooks/useVisibleColumnCount'
@@ -82,13 +85,8 @@ function AllExperiences() {
   const requestedTab = (location.state as { activeTab?: TabValue } | null)?.activeTab
   const [activeTab, setActiveTab] = useState<TabValue>(requestedTab === 'my' ? 'my' : 'all')
   const sectionRef = useRef<HTMLDivElement | null>(null)
+  const hasScrolledToMyTab = useRef(false)
   const { closeEventDetailModal, editActiveEvent, modalData, openEventDetailModal } = useEventDetailModal()
-
-  useEffect(() => {
-    if (requestedTab === 'my' && sectionRef.current) {
-      sectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }, [requestedTab])
 
   const [today, setToday] = useState(() => {
     const now = new Date()
@@ -117,6 +115,7 @@ function AllExperiences() {
   }, [hasValidIdentity, activeTab])
 
   const isMyTab = hasValidIdentity && activeTab === 'my'
+  const { isAdmin } = useAdminPermissions()
 
   const {
     allEvents,
@@ -131,10 +130,21 @@ function AllExperiences() {
     list: isMyTab ? 'all' : 'active'
   })
 
+  const { data: adminEvents = [], isLoading: isLoadingAdminEvents } = useGetAdminEventsQuery(
+    isMyTab && isAdmin && identity ? { identity } : skipToken,
+    { refetchOnMountOrArgChange: true }
+  )
+
   const sortedMyEvents = useMemo(() => {
     if (!isMyTab) return []
+    const lowerAddress = address?.toLowerCase() ?? ''
+    const mergedById = new Map<string, EventEntry>()
+    for (const event of allEvents) mergedById.set(event.id, event)
+    for (const event of adminEvents) {
+      if ((event.user ?? '').toLowerCase() === lowerAddress) mergedById.set(event.id, event)
+    }
     const now = Date.now()
-    return allEvents
+    return Array.from(mergedById.values())
       .map(event => {
         if (event.recurrent && event.next_start_at && event.next_finish_at) {
           /* eslint-disable @typescript-eslint/naming-convention */
@@ -145,9 +155,16 @@ function AllExperiences() {
       })
       .filter(event => new Date(event.finish_at).getTime() >= now)
       .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
-  }, [allEvents, isMyTab])
+  }, [address, adminEvents, allEvents, isMyTab])
 
   const hasAnyUpcomingMyEvent = sortedMyEvents.length > 0
+  const isLoadingMyEvents = isLoadingEvents || (isMyTab && isAdmin && isLoadingAdminEvents)
+
+  useEffect(() => {
+    if (requestedTab !== 'my' || hasScrolledToMyTab.current || isLoadingMyEvents || !sectionRef.current) return
+    hasScrolledToMyTab.current = true
+    sectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [requestedTab, isLoadingMyEvents])
 
   const handleNavigateLeft = useCallback(() => {
     setStartOffset(prev => Math.max(0, prev - columnCount))
@@ -176,7 +193,7 @@ function AllExperiences() {
     [dayData]
   )
 
-  const showMyEmptyState = isMyTab && !isLoadingEvents && !hasAnyUpcomingMyEvent
+  const showMyEmptyState = isMyTab && !isLoadingMyEvents && !hasAnyUpcomingMyEvent
 
   return (
     <AllExperiencesSection ref={sectionRef} aria-label={t('all_experiences.title')}>

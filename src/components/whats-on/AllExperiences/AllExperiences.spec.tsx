@@ -18,6 +18,16 @@ jest.mock('../../../features/whats-on-events', () => ({
   useGetEventsQuery: (...args: unknown[]) => mockUseGetEventsQuery(...args)
 }))
 
+const mockUseGetAdminEventsQuery = jest.fn()
+jest.mock('../../../features/whats-on/admin/admin.client', () => ({
+  useGetAdminEventsQuery: (...args: unknown[]) => mockUseGetAdminEventsQuery(...args)
+}))
+
+const mockUseAdminPermissions = jest.fn()
+jest.mock('../../../hooks/useAdminPermissions', () => ({
+  useAdminPermissions: () => mockUseAdminPermissions()
+}))
+
 const mockColumnCount = jest.fn()
 jest.mock('../../../hooks/useVisibleColumnCount', () => ({
   useVisibleColumnCount: () => mockColumnCount()
@@ -122,6 +132,8 @@ describe('AllExperiences', () => {
     jest.useFakeTimers()
     jest.setSystemTime(new Date(2026, 8, 13, 10, 0, 0))
     mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
+    mockUseAdminPermissions.mockReturnValue({ isAdmin: false, hasIdentity: false, isLoading: false, permissions: [] })
+    mockUseGetAdminEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
   })
 
   afterEach(() => {
@@ -433,6 +445,53 @@ describe('AllExperiences', () => {
         const cards = screen.getAllByTestId('my-exp-grid-card')
         expect(cards[0]).toHaveAttribute('data-id', 'mine-soon')
         expect(cards[1]).toHaveAttribute('data-id', 'mine-later')
+      })
+    })
+
+    describe('and the user is an admin with rejected events in the future', () => {
+      beforeEach(() => {
+        mockUseAdminPermissions.mockReturnValue({ isAdmin: true, hasIdentity: true, isLoading: false, permissions: [] })
+        mockUseGetAdminEventsQuery.mockReturnValue({
+          data: [
+            createMockEvent({
+              id: 'mine-approved',
+              user: '0xCreator',
+              approved: true,
+              rejected: false,
+              start_at: '2026-09-20T14:00:00Z',
+              finish_at: '2026-09-20T16:00:00Z'
+            }),
+            createMockEvent({
+              id: 'mine-rejected-future',
+              user: '0xCreator',
+              approved: false,
+              rejected: true,
+              start_at: '2026-09-21T14:00:00Z',
+              finish_at: '2026-09-21T16:00:00Z'
+            }),
+            createMockEvent({
+              id: 'someone-else',
+              user: '0xOther',
+              approved: true,
+              rejected: false,
+              start_at: '2026-09-22T14:00:00Z',
+              finish_at: '2026-09-22T16:00:00Z'
+            })
+          ],
+          isLoading: false,
+          isError: false
+        })
+      })
+
+      it('should include rejected events in my experiences by sourcing them from the admin endpoint', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-my'))
+
+        const cardIds = screen.getAllByTestId('my-exp-grid-card').map(c => c.getAttribute('data-id'))
+        expect(cardIds).toContain('mine-rejected-future')
+        expect(cardIds).toContain('mine-approved')
+        expect(cardIds).not.toContain('someone-else')
       })
     })
 
