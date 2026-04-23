@@ -19,8 +19,11 @@ jest.mock('@sentry/browser', () => ({
   captureException: (...args: unknown[]) => mockCaptureException(...args)
 }))
 
+const mockUpdateEvent = jest.fn(() => ({ unwrap: jest.fn().mockResolvedValue(undefined) }))
+
 jest.mock('../features/whats-on-events', () => ({
   useCreateEventMutation: () => [mockCreateEvent],
+  useUpdateEventMutation: () => [mockUpdateEvent],
   useUploadPosterMutation: () => [mockUploadPoster],
   useUploadPosterVerticalMutation: () => [mockUploadPosterVertical]
 }))

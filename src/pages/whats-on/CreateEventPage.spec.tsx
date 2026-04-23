@@ -5,7 +5,13 @@ const mockNavigate = jest.fn()
 let mockIdentityReturn: { hasValidIdentity: boolean }
 
 jest.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate
+  useNavigate: () => mockNavigate,
+  useLocation: () => ({ state: null, pathname: '/whats-on/new-event', search: '', hash: '', key: 'default' }),
+  useParams: () => ({})
+}))
+
+jest.mock('../../hooks/useCanEditEvent', () => ({
+  useCanEditEvent: () => false
 }))
 
 jest.mock('@dcl/hooks', () => ({

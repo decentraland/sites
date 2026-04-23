@@ -1,10 +1,16 @@
 import { useCallback, useState } from 'react'
 import { captureException } from '@sentry/browser'
 import { useTranslation } from '@dcl/hooks'
-import { useCreateEventMutation, useUploadPosterMutation, useUploadPosterVerticalMutation } from '../features/whats-on-events'
-import type { RecurrentFrequency } from '../features/whats-on-events'
+import {
+  useCreateEventMutation,
+  useUpdateEventMutation,
+  useUploadPosterMutation,
+  useUploadPosterVerticalMutation
+} from '../features/whats-on-events'
+import type { EventEntry, RecurrentFrequency } from '../features/whats-on-events'
 import { useAuthIdentity } from './useAuthIdentity'
-import type { CreateEventFormState, FormErrors, ImageErrorCode } from './useCreateEventForm.types'
+import { INITIAL_STATE, eventEntryToFormState } from './useCreateEventForm.helpers'
+import type { CreateEventFormMode, CreateEventFormState, FormErrors, ImageErrorCode } from './useCreateEventForm.types'
 
 const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif']
 const ACCEPTED_VERTICAL_IMAGE_TYPES = ['image/png', 'image/jpeg']
@@ -20,35 +26,6 @@ const COORD_Y_MAX = 158
 const MAX_EVENT_DURATION_MS = 24 * 60 * 60 * 1000
 const MAX_NAME_LENGTH = 150
 const MAX_DESCRIPTION_LENGTH = 5000
-
-const initialState: CreateEventFormState = {
-  image: null,
-  imagePreviewUrl: null,
-  imageUrl: null,
-  imageError: null,
-  isUploadingImage: false,
-  verticalImage: null,
-  verticalImagePreviewUrl: null,
-  verticalImageUrl: null,
-  verticalImageError: null,
-  isUploadingVerticalImage: false,
-  name: '',
-  description: '',
-  startDate: '',
-  startTime: '',
-  endDate: '',
-  endTime: '',
-  repeatEnabled: false,
-  frequency: 'every_week',
-  repeatEndDate: '',
-  location: 'land',
-  coordX: '0',
-  coordY: '0',
-  world: '',
-  communityId: '',
-  email: '',
-  notes: ''
-}
 
 function validateImage(file: File): ImageErrorCode | null {
   if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
@@ -125,15 +102,18 @@ const FREQUENCY_MAP: Record<string, RecurrentFrequency> = {
 
 type UseCreateEventFormOptions = {
   onSuccess?: () => void
+  initialEvent?: EventEntry | null
 }
 
-function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
+function useCreateEventForm({ onSuccess, initialEvent = null }: UseCreateEventFormOptions = {}) {
   const { t } = useTranslation()
   const { identity } = useAuthIdentity()
   const [createEvent] = useCreateEventMutation()
+  const [updateEvent] = useUpdateEventMutation()
   const [uploadPoster] = useUploadPosterMutation()
   const [uploadPosterVertical] = useUploadPosterVerticalMutation()
-  const [form, setForm] = useState<CreateEventFormState>(initialState)
+  const mode: CreateEventFormMode = initialEvent ? 'edit' : 'create'
+  const [form, setForm] = useState<CreateEventFormState>(() => (initialEvent ? eventEntryToFormState(initialEvent) : INITIAL_STATE))
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
 
@@ -342,28 +322,31 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
 
       const isWorld = form.location === 'world'
       /* eslint-disable @typescript-eslint/naming-convention */
-      await createEvent({
-        payload: {
-          name: form.name.trim(),
-          description: form.description.trim() || null,
-          start_at: startAt,
-          duration,
-          x: isWorld ? 0 : Number(form.coordX),
-          y: isWorld ? 0 : Number(form.coordY),
-          image: form.imageUrl,
-          image_vertical: form.verticalImageUrl,
-          contact: form.email || null,
-          categories: [],
-          world: isWorld || undefined,
-          server: isWorld ? form.world : null,
-          community_id: form.communityId || null,
-          recurrent: form.repeatEnabled || undefined,
-          recurrent_frequency: form.repeatEnabled ? FREQUENCY_MAP[form.frequency] : undefined,
-          recurrent_until: form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : undefined
-        },
-        identity
-      }).unwrap()
+      const payload = {
+        name: form.name.trim(),
+        description: form.description.trim() || null,
+        start_at: startAt,
+        duration,
+        x: isWorld ? 0 : Number(form.coordX),
+        y: isWorld ? 0 : Number(form.coordY),
+        image: form.imageUrl,
+        image_vertical: form.verticalImageUrl,
+        contact: form.email || null,
+        categories: [],
+        world: isWorld || undefined,
+        server: isWorld ? form.world : null,
+        community_id: form.communityId || null,
+        recurrent: form.repeatEnabled || undefined,
+        recurrent_frequency: form.repeatEnabled ? FREQUENCY_MAP[form.frequency] : undefined,
+        recurrent_until: form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : undefined
+      }
       /* eslint-enable @typescript-eslint/naming-convention */
+
+      if (initialEvent) {
+        await updateEvent({ eventId: initialEvent.id, payload, identity }).unwrap()
+      } else {
+        await createEvent({ payload, identity }).unwrap()
+      }
 
       onSuccess?.()
     } catch (error) {
@@ -371,11 +354,12 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
     } finally {
       setIsSubmitting(false)
     }
-  }, [form, identity, isSubmitting, validate, createEvent, t, onSuccess])
+  }, [form, identity, isSubmitting, initialEvent, validate, createEvent, updateEvent, t, onSuccess])
 
   return {
     form,
     errors,
+    mode,
     setField,
     handleImageSelect,
     handleImageRemove,

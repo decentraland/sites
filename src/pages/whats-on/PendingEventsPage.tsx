@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { useCallback, useMemo, useState } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useTranslation } from '@dcl/hooks'
 import { Alert, Snackbar } from 'decentraland-ui2'
@@ -19,6 +19,7 @@ const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
 
 function PendingEventsPage() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { identity } = useAuthIdentity()
   const { canApproveAnyEvent, canApproveOwnEvent, canEditAnyEvent, isLoading } = useAdminPermissions()
   const allowed = canApproveAnyEvent || canApproveOwnEvent || canEditAnyEvent
@@ -46,6 +47,11 @@ function PendingEventsPage() {
   }, [events])
 
   const modalData = useMemo(() => (activeEvent ? normalizeEventEntry(activeEvent) : null), [activeEvent])
+
+  const handleEdit = useCallback(() => {
+    if (!activeEvent) return
+    navigate(`/whats-on/edit-event/${activeEvent.id}`, { state: { event: activeEvent } })
+  }, [activeEvent, navigate])
 
   if (!isLoading && !allowed) return <Navigate to="/whats-on" replace />
 
@@ -119,6 +125,7 @@ function PendingEventsPage() {
           data={modalData}
           onClose={() => setActiveEvent(null)}
           adminActions={isPendingActive ? { onApprove: handleApprove, onReject: handleRejectClick, isProcessing: processing } : undefined}
+          onEdit={handleEdit}
         />
       )}
 

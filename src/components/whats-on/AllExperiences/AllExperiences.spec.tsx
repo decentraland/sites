@@ -2,6 +2,10 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { createMockEvent } from '../../../__test-utils__/factories'
 import { AllExperiences } from './AllExperiences'
 
+jest.mock('react-router-dom', () => ({
+  useNavigate: () => jest.fn()
+}))
+
 jest.mock('../../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ identity: undefined, hasValidIdentity: false, address: undefined })
 }))

@@ -6,6 +6,10 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
+jest.mock('../../../hooks/useCanEditEvent', () => ({
+  useCanEditEvent: () => false
+}))
+
 const mockUseCreatorProfile = jest.fn()
 const defaultCreatorProfile = { isDclFoundation: false, creatorName: 'CreatorName', avatarFace: undefined }
 jest.mock('../../../hooks/useCreatorProfile', () => ({

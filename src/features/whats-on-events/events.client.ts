@@ -18,6 +18,7 @@ import type {
   PosterData,
   PosterResponse,
   ToggleAttendeeParams,
+  UpdateEventParams,
   UploadPosterParams
 } from './events.types'
 
@@ -160,6 +161,43 @@ const eventsClient = createApi({
       },
       invalidatesTags: ['Events']
     }),
+    updateEvent: build.mutation<CreateEventResponse, UpdateEventParams>({
+      queryFn: async ({ eventId, payload, identity }) => {
+        try {
+          const baseUrl = getEnv('EVENTS_API_URL')!
+          const body = JSON.stringify(payload)
+          const response = await fetchWithIdentity(
+            `${baseUrl}/events/${encodeURIComponent(eventId)}`,
+            identity,
+            'PATCH',
+            body,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            { 'Content-Type': 'application/json' }
+          )
+
+          if (!response.ok) {
+            const envelope = await response.json().catch(() => null)
+            const message = typeof envelope?.error === 'string' ? envelope.error : `Failed to update event (${response.status})`
+            console.error('[Events] updateEvent failed', response.status, envelope)
+            return { error: { status: response.status, data: envelope, message } }
+          }
+
+          const data: CreateEventResponse = await response.json()
+          return { data }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      },
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled
+          dispatch(adminClient.util.invalidateTags(['PendingEvents']))
+        } catch {
+          /* error surfaced via the mutation's own result */
+        }
+      },
+      invalidatesTags: ['Events']
+    }),
     getWorldNames: build.query<string[], void>({
       queryFn: async () => {
         try {
@@ -265,6 +303,7 @@ const {
   useGetUpcomingEventsQuery,
   useGetWorldNamesQuery,
   useToggleAttendeeMutation,
+  useUpdateEventMutation,
   useUploadPosterMutation,
   useUploadPosterVerticalMutation
 } = eventsClient
@@ -278,6 +317,7 @@ export {
   useGetUpcomingEventsQuery,
   useGetWorldNamesQuery,
   useToggleAttendeeMutation,
+  useUpdateEventMutation,
   useUploadPosterMutation,
   useUploadPosterVerticalMutation
 }

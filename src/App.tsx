@@ -90,6 +90,7 @@ const App = () => {
               <Route element={<WhatsOnLayout />}>
                 <Route path="/whats-on" element={<WhatsOnHomePage />} />
                 <Route path="/whats-on/new-event" element={<CreateEventPage />} />
+                <Route path="/whats-on/edit-event/:eventId" element={<CreateEventPage />} />
                 <Route path="/whats-on/admin/pending-events" element={<PendingEventsPage />} />
                 <Route path="/whats-on/admin/users" element={<UsersAdminPage />} />
               </Route>

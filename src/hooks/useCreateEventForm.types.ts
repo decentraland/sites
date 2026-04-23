@@ -37,4 +37,6 @@ type CreateEventFormState = {
 
 type FormErrors = Partial<Record<string, string>>
 
-export type { CreateEventFormState, FormErrors, ImageErrorCode }
+type CreateEventFormMode = 'create' | 'edit'
+
+export type { CreateEventFormMode, CreateEventFormState, FormErrors, ImageErrorCode }

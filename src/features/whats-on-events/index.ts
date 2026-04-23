@@ -7,6 +7,7 @@ export {
   useGetUpcomingEventsQuery,
   useGetWorldNamesQuery,
   useToggleAttendeeMutation,
+  useUpdateEventMutation,
   useUploadPosterMutation,
   useUploadPosterVerticalMutation
 } from './events.client'

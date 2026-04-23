@@ -288,6 +288,36 @@ const CopyIconStyled = styled(ContentCopyIcon)({
   color: '#FCFCFC'
 })
 
+const EditButton = styled('button')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: theme.spacing(1),
+  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  color: '#FCFCFC',
+  border: 'none',
+  borderRadius: theme.spacing(1.5),
+  padding: theme.spacing(1.5, 2),
+  fontSize: 14,
+  fontWeight: 600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.48px',
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  transition: theme.transitions.create('background-color', {
+    duration: theme.transitions.duration.short
+  }),
+  /* eslint-disable @typescript-eslint/naming-convention */
+  '&:hover': {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)'
+  },
+  '&:focus-visible': {
+    outline: '2px solid #FCFCFC',
+    outlineOffset: 2
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
+}))
+
 const ContentSection = styled(Box)(({ theme }) => ({
   background: 'radial-gradient(47.37% 84.21% at 42.4% 26.48%, #6E31A7 0%, #32134C 100%)',
   padding: theme.spacing(3.75, 6.25),
@@ -383,6 +413,7 @@ export {
   CreatorNameHighlight,
   CreatorRow,
   DescriptionText,
+  EditButton,
   HeroContent,
   HeroImage,
   HeroOverlay,

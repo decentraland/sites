@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { useGetEventsQuery } from '../../../features/whats-on-events'
 import type { EventEntry } from '../../../features/whats-on-events'
@@ -52,10 +53,12 @@ function useAllExperiencesData(today: Date, startOffset: number, columnCount: nu
 
 function AllExperiences() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { identity } = useAuthIdentity()
   const columnCount = useVisibleColumnCount()
   const [startOffset, setStartOffset] = useState(0)
   const [modalData, setModalData] = useState<ModalEventData | null>(null)
+  const [activeEvent, setActiveEvent] = useState<EventEntry | null>(null)
 
   const [today, setToday] = useState(() => {
     const now = new Date()
@@ -87,12 +90,19 @@ function AllExperiences() {
   }, [columnCount])
 
   const handleCardClick = useCallback((event: EventEntry) => {
+    setActiveEvent(event)
     setModalData(normalizeEventEntry(event))
   }, [])
 
   const handleModalClose = useCallback(() => {
+    setActiveEvent(null)
     setModalData(null)
   }, [])
+
+  const handleEdit = useCallback(() => {
+    if (!activeEvent) return
+    navigate(`/whats-on/edit-event/${activeEvent.id}`, { state: { event: activeEvent } })
+  }, [activeEvent, navigate])
 
   const renderCard = useCallback((event: EventEntry) => <AllExperiencesCard event={event} onClick={handleCardClick} />, [handleCardClick])
 
@@ -139,7 +149,7 @@ function AllExperiences() {
         </ColumnsContainer>
       )}
       <HostBanner />
-      <EventDetailModal open={!!modalData} onClose={handleModalClose} data={modalData} />
+      <EventDetailModal open={!!modalData} onClose={handleModalClose} data={modalData} onEdit={handleEdit} />
     </AllExperiencesSection>
   )
 }

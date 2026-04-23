@@ -7,6 +7,7 @@ import AddIcon from '@mui/icons-material/Add'
 import EventIcon from '@mui/icons-material/Event'
 import { useTranslation } from '@dcl/hooks'
 import { useGetCommunitiesQuery, useGetWorldNamesQuery } from '../../../features/whats-on-events'
+import type { EventEntry } from '../../../features/whats-on-events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
 import { ImageUpload } from './ImageUpload'
@@ -53,13 +54,15 @@ import {
 type EventFormProps = {
   onCancel: () => void
   onSuccess: () => void
+  initialEvent?: EventEntry | null
 }
 
-function EventForm({ onCancel, onSuccess }: EventFormProps) {
+function EventForm({ onCancel, onSuccess, initialEvent = null }: EventFormProps) {
   const { t } = useTranslation()
   const {
     form,
     errors,
+    mode,
     setField,
     handleImageSelect,
     handleImageRemove,
@@ -67,7 +70,7 @@ function EventForm({ onCancel, onSuccess }: EventFormProps) {
     handleVerticalImageRemove,
     isSubmitting,
     handleSubmit
-  } = useCreateEventForm({ onSuccess })
+  } = useCreateEventForm({ onSuccess, initialEvent })
   const { identity } = useAuthIdentity()
   const { data: worldNames = [] } = useGetWorldNamesQuery(undefined, { skip: form.location !== 'world' })
   const { data: communities = [] } = useGetCommunitiesQuery({ identity }, { skip: !identity })
@@ -376,7 +379,7 @@ function EventForm({ onCancel, onSuccess }: EventFormProps) {
           }
           onClick={handleSubmit}
         >
-          {isSubmitting ? t('create_event.submitting') : t('create_event.submit')}
+          {isSubmitting ? t('create_event.submitting') : mode === 'edit' ? t('create_event.save_changes') : t('create_event.submit')}
         </SubmitButton>
       </FormActions>
     </ContentContainer>
