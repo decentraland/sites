@@ -20,6 +20,7 @@ import {
   TextField
 } from 'decentraland-ui2'
 import { AdminPermissionsModal } from '../../components/whats-on/AdminPermissionsModal'
+import { useGetProfileNames } from '../../features/profile/profile.client'
 import { useListAdminsQuery, useUpdateAdminPermissionsMutation } from '../../features/whats-on/admin/admin.client'
 import { AdminPermission } from '../../features/whats-on/admin/admin.types'
 import type { AdminProfileSettings } from '../../features/whats-on/admin/admin.types'
@@ -69,10 +70,18 @@ function UsersAdminPage() {
   const { data = [], isFetching } = useListAdminsQuery(identity && canEditAnyProfile ? { identity } : skipToken)
   const [updatePermissions, { isLoading: isSubmitting }] = useUpdateAdminPermissionsMutation()
 
+  const addresses = useMemo(() => data.map(row => row.user), [data])
+  const names = useGetProfileNames(addresses)
+
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase()
-    return query ? data.filter(row => row.user.toLowerCase().includes(query)) : data
-  }, [data, search])
+    if (!query) return data
+    return data.filter(row => {
+      if (row.user.toLowerCase().includes(query)) return true
+      const name = names.get(row.user.toLowerCase())
+      return name ? name.toLowerCase().includes(query) : false
+    })
+  }, [data, names, search])
 
   const paginated = useMemo(() => filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage), [filtered, page, rowsPerPage])
 
