@@ -3,9 +3,12 @@ import { useCallback, useState } from 'react'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import EditIcon from '@mui/icons-material/Edit'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTranslation } from '@dcl/hooks'
 import { Tooltip, useTheme } from 'decentraland-ui2'
+import { useCanEditEvent } from '../../../hooks/useCanEditEvent'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { formatEthAddress } from '../../../utils/avatar'
@@ -24,6 +27,7 @@ import {
   CreatorName,
   CreatorNameHighlight,
   CreatorRow,
+  EditButton,
   HeroContent,
   HeroImage,
   HeroOverlay,
@@ -33,7 +37,7 @@ import {
   SecondaryButton
 } from './EventDetailModal.styled'
 
-function EventDetailModalHero({ data, onClose }: { data: ModalEventData; onClose: () => void }) {
+function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData; onClose: () => void; onEdit?: () => void }) {
   const { t } = useTranslation()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
@@ -43,6 +47,8 @@ function EventDetailModalHero({ data, onClose }: { data: ModalEventData; onClose
   const creatorFallback = data.creatorAddress ? formatEthAddress(data.creatorAddress) : undefined
   const { creatorName, avatarFace } = useCreatorProfile(data.creatorAddress, data.creatorName, creatorFallback)
   const hasCreator = Boolean(avatarFace || creatorName)
+  const { canEdit } = useCanEditEvent(data.creatorAddress)
+  const showEdit = canEdit && Boolean(onEdit) && data.isEvent
 
   const handleJumpIn = useCallback(() => {
     window.open(data.url, '_blank', 'noopener,noreferrer')
@@ -106,6 +112,12 @@ function EventDetailModalHero({ data, onClose }: { data: ModalEventData; onClose
                 <CopyIconStyled />
               </CopyButton>
             </Tooltip>
+            {showEdit && (
+              <EditButton onClick={onEdit} aria-label={t('event_detail.edit')}>
+                {t('event_detail.edit')}
+                <EditIcon fontSize="small" />
+              </EditButton>
+            )}
           </ActionsRow>
         </HeroContent>
       </HeroSection>

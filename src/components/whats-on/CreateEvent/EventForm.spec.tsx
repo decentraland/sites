@@ -18,7 +18,6 @@ jest.mock('./EventForm.styled', () => ({
   ContentContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CoordPrefix: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   CoordinatesRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DateTimeGrid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DateTimeRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DateTimeSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DescriptionFields: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -108,6 +107,12 @@ jest.mock('./VerticalCoverPanel', () => ({
   VerticalCoverPanel: () => <div data-testid="vertical-cover-panel" />
 }))
 
+jest.mock('./DurationField', () => ({
+  DurationField: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+    <input data-testid="duration-field" aria-label="create_event.duration" value={value} onChange={e => onChange(e.target.value)} />
+  )
+}))
+
 jest.mock('../../../features/whats-on-events', () => ({
   useGetWorldNamesQuery: () => ({ data: [] }),
   useGetCommunitiesQuery: () => ({ data: [] })
@@ -162,8 +167,7 @@ function createFormState(overrides = {}) {
     description: '',
     startDate: '',
     startTime: '',
-    endDate: '',
-    endTime: '',
+    duration: '',
     repeatEnabled: false,
     frequency: 'every_week',
     repeatEndDate: '',
@@ -173,7 +177,6 @@ function createFormState(overrides = {}) {
     world: '',
     communityId: '',
     email: '',
-    notes: '',
     ...overrides
   }
 }
@@ -359,8 +362,7 @@ describe('EventForm', () => {
           description: 'Description',
           startDate: '2026-05-01',
           startTime: '10:00',
-          endDate: '2026-05-01',
-          endTime: '12:00',
+          duration: '02:00',
           coordX: '10',
           coordY: '20'
         }),
@@ -417,8 +419,7 @@ describe('EventForm', () => {
           description: 'Desc',
           startDate: '2026-05-01',
           startTime: '10:00',
-          endDate: '2026-05-01',
-          endTime: '12:00',
+          duration: '02:00',
           coordX: '10',
           coordY: '20'
         }),
@@ -449,8 +450,7 @@ describe('EventForm', () => {
           description: 'Description',
           startDate: '2026-05-01',
           startTime: '10:00',
-          endDate: '2026-05-01',
-          endTime: '12:00',
+          duration: '02:00',
           coordX: '10',
           coordY: '20'
         }),

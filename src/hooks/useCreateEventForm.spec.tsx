@@ -1,12 +1,15 @@
 import { act, renderHook } from '@testing-library/react'
 import type { AuthIdentity } from '@dcl/crypto'
+import type { EventEntry } from '../features/whats-on-events'
 import { useCreateEventForm } from './useCreateEventForm'
 import type { CreateEventFormState } from './useCreateEventForm.types'
 
 const mockCreateEvent = jest.fn()
+const mockUpdateEvent = jest.fn()
 const mockUploadPoster = jest.fn()
 const mockUploadPosterVertical = jest.fn()
 const mockUnwrap = jest.fn()
+const mockUpdateUnwrap = jest.fn()
 const mockCaptureException = jest.fn()
 
 let mockUseAuthIdentityReturn: { identity: AuthIdentity | undefined }
@@ -21,9 +24,32 @@ jest.mock('@sentry/browser', () => ({
 
 jest.mock('../features/whats-on-events', () => ({
   useCreateEventMutation: () => [mockCreateEvent],
+  useUpdateEventMutation: () => [mockUpdateEvent],
   useUploadPosterMutation: () => [mockUploadPoster],
   useUploadPosterVerticalMutation: () => [mockUploadPosterVertical]
 }))
+
+function buildInitialEvent(overrides: Partial<EventEntry> = {}): EventEntry {
+  return {
+    id: 'ev-42',
+    name: 'Existing event',
+    description: 'Existing description',
+    image: 'https://cdn/existing.png',
+    image_vertical: 'https://cdn/existing-vertical.png',
+    start_at: '2030-03-15T14:00:00.000Z',
+    finish_at: '2030-03-15T16:00:00.000Z',
+    duration: 2 * 60 * 60 * 1000,
+    x: 5,
+    y: 6,
+    world: false,
+    server: null,
+    community_id: null,
+    contact: 'owner@example.com',
+    recurrent: false,
+    user: '0xabc',
+    ...overrides
+  } as unknown as EventEntry
+}
 
 jest.mock('./useAuthIdentity', () => ({
   useAuthIdentity: () => mockUseAuthIdentityReturn
@@ -37,8 +63,7 @@ function buildValidFormFields(overrides: FormOverrides = {}) {
     description: 'Something to do',
     startDate: '2030-01-01',
     startTime: '10:00',
-    endDate: '2030-01-01',
-    endTime: '12:00',
+    duration: '02:00',
     coordX: '20',
     coordY: '10',
     email: 'host@example.com'
@@ -53,8 +78,7 @@ function fillValidForm(setField: ReturnType<typeof useCreateEventForm>['setField
     setField('description', values.description)
     setField('startDate', values.startDate)
     setField('startTime', values.startTime)
-    setField('endDate', values.endDate)
-    setField('endTime', values.endTime)
+    setField('duration', values.duration)
     setField('coordX', values.coordX)
     setField('coordY', values.coordY)
     setField('email', values.email)
@@ -92,9 +116,11 @@ describe('useCreateEventForm', () => {
     mockIdentity = { authChain: [{ payload: '0xabc' }] } as unknown as AuthIdentity
     mockUseAuthIdentityReturn = { identity: mockIdentity }
     mockCreateEvent.mockReturnValue({ unwrap: () => mockUnwrap() })
+    mockUpdateEvent.mockReturnValue({ unwrap: () => mockUpdateUnwrap() })
     mockUploadPoster.mockReturnValue({ unwrap: () => Promise.resolve({ url: 'https://cdn/test.png' }) })
     mockUploadPosterVertical.mockReturnValue({ unwrap: () => Promise.resolve({ url: 'https://cdn/vertical.png' }) })
     mockUnwrap.mockResolvedValue({ ok: true, data: { id: 'ev-1' } })
+    mockUpdateUnwrap.mockResolvedValue({ ok: true, data: { id: 'ev-42' } })
     Object.defineProperty(URL, 'createObjectURL', { configurable: true, writable: true, value: jest.fn(() => 'blob:preview') })
     Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, writable: true, value: jest.fn() })
     mockImageWidth = 716
@@ -256,41 +282,51 @@ describe('useCreateEventForm', () => {
     })
   })
 
-  describe('when the end time is before the start time', () => {
-    it('should report the end-before-start error', async () => {
+  describe('when the duration value is not a valid HH:MM string', () => {
+    it('should report the duration invalid error', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
-      fillValidForm(result.current.setField, {
-        startDate: '2030-01-01',
-        startTime: '14:00',
-        endDate: '2030-01-01',
-        endTime: '12:00'
-      })
+      fillValidForm(result.current.setField, { duration: 'abc' })
 
       await act(async () => {
         await result.current.handleSubmit()
       })
 
-      expect(result.current.errors.endDate).toBe('create_event.error_end_before_start')
+      expect(result.current.errors.duration).toBe('create_event.error_duration_invalid')
     })
   })
 
   describe('when the duration exceeds 24 hours', () => {
-    it('should report the duration error', async () => {
+    it('should report the duration-too-long error', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
-      fillValidForm(result.current.setField, {
-        startDate: '2030-01-01',
-        startTime: '10:00',
-        endDate: '2030-01-03',
-        endTime: '10:00'
-      })
+      fillValidForm(result.current.setField, { duration: '25:00' })
 
       await act(async () => {
         await result.current.handleSubmit()
       })
 
-      expect(result.current.errors.endDate).toBe('create_event.error_duration_too_long')
+      expect(result.current.errors.duration).toBe('create_event.error_duration_too_long')
+    })
+  })
+
+  describe('when a valid duration is provided', () => {
+    it('should submit with duration in milliseconds', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField, { duration: '03:30' })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            duration: (3 * 60 + 30) * 60 * 1000
+          })
+        })
+      )
     })
   })
 
@@ -803,6 +839,76 @@ describe('useCreateEventForm', () => {
           payload: expect.objectContaining({ community_id: 'community-42' })
         })
       )
+    })
+  })
+
+  describe('when initialEvent is provided (edit mode)', () => {
+    it('should expose mode="edit" and hydrate form fields from the event', () => {
+      const initialEvent = buildInitialEvent()
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent }))
+
+      expect(result.current.mode).toBe('edit')
+      expect(result.current.form.name).toBe('Existing event')
+      expect(result.current.form.description).toBe('Existing description')
+      expect(result.current.form.coordX).toBe('5')
+      expect(result.current.form.coordY).toBe('6')
+      expect(result.current.form.email).toBe('owner@example.com')
+      expect(result.current.form.duration).toBe('02:00')
+    })
+
+    it('should call updateEvent (not createEvent) with the eventId and mapped payload on submit', async () => {
+      const initialEvent = buildInitialEvent()
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent }))
+
+      act(() => {
+        result.current.setField('name', 'Updated name')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+      expect(mockUpdateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventId: 'ev-42',
+          identity: mockIdentity,
+          payload: expect.objectContaining({
+            name: 'Updated name',
+            x: 5,
+            y: 6,
+            contact: 'owner@example.com',
+            duration: 2 * 60 * 60 * 1000
+          })
+        })
+      )
+    })
+
+    it('should invoke onSuccess when updateEvent resolves', async () => {
+      const initialEvent = buildInitialEvent()
+      const onSuccess = jest.fn()
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent, onSuccess }))
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(onSuccess).toHaveBeenCalledTimes(1)
+    })
+
+    it('should surface a submit error and not call onSuccess when updateEvent rejects', async () => {
+      mockUpdateUnwrap.mockRejectedValue({ status: 500, data: { error: 'boom' } })
+      const initialEvent = buildInitialEvent()
+      const onSuccess = jest.fn()
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent, onSuccess }))
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockUpdateEvent).toHaveBeenCalled()
+      expect(result.current.errors.submit).toBe('create_event.error_submit')
+      expect(onSuccess).not.toHaveBeenCalled()
     })
   })
 })

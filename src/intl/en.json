@@ -735,6 +735,7 @@
     "coming_soon": "Coming soon",
     "copy_link": "Copy link",
     "copied": "Copied!",
+    "edit": "Edit",
     "by_prefix": "By ",
     "unknown_creator": "Unknown",
     "live_now": "Live Now",
@@ -759,6 +760,8 @@
   },
   "create_event": {
     "title": "Submit an Event",
+    "edit_title": "Edit Event",
+    "save_changes": "Save Changes",
     "back": "Go back",
     "sign_in_message": "To create an event you will need to sign in or create an account",
     "sign_in": "Sign In",
@@ -776,12 +779,10 @@
     "event_description": "Event Description",
     "description_placeholder": "Be as descriptive as you can",
     "event_details": "Event Details",
-    "starts": "Starts",
-    "ends": "Ends",
-    "start_date": "Start date",
-    "start_time": "Start time",
-    "end_date": "End date",
-    "end_time": "End time",
+    "date": "Date",
+    "start": "Start",
+    "duration": "Duration",
+    "repeat_until": "Ends",
     "repeat_event": "Repeat Event",
     "frequency": "Frequency",
     "every_day": "Every Day",
@@ -816,7 +817,7 @@
     "error_coord_y_range": "Longitude must be between -150 and 158",
     "error_name_too_long": "Name cannot exceed 150 characters",
     "error_description_too_long": "Description cannot exceed 5000 characters",
-    "error_end_before_start": "End date must be after start date",
+    "error_duration_invalid": "Enter duration as hh:mm",
     "error_duration_too_long": "Maximum allowed duration is 24 hours",
     "error_submit": "Something went wrong. Please try again.",
     "error_invalid_image_type": "Please upload a PNG, JPG, or GIF file.",
@@ -915,8 +916,8 @@
       "status_pending": "Pending",
       "status_approved": "Approved",
       "status_rejected": "Rejected",
-      "approve_success": "Event approved",
-      "reject_success": "Event rejected"
+      "approve_success": "Event/Experience approved successfully",
+      "reject_success": "Event/Experience rejected successfully"
     },
     "users": {
       "title": "Users",
@@ -931,6 +932,36 @@
         "edit_users": "Edit Users"
       },
       "empty": "No admins configured"
+    },
+    "reject_modal": {
+      "title": "Reject Reason*",
+      "reasons": {
+        "invalid_image": {
+          "title": "Invalid image",
+          "description": "Does not comply with our Terms or Code of Ethics"
+        },
+        "invalid_event_name": {
+          "title": "Invalid event name",
+          "description": "Does not comply with our Terms or Code of Ethics"
+        },
+        "inappropriate_description": {
+          "title": "Inappropriate description",
+          "description": "Contains language that is not allowed"
+        },
+        "invalid_duration": {
+          "title": "Invalid duration",
+          "description": "Too short or longer than 24 hours"
+        },
+        "invalid_location": {
+          "title": "Invalid location",
+          "description": "Incorrect coordinates"
+        }
+      },
+      "other_label": "Other (optional)",
+      "other_placeholder": "User will receive a notification, be as descriptive as you can.",
+      "cancel": "Cancel",
+      "submit": "Submit",
+      "error_required": "Select at least one reason"
     },
     "permissions_modal": {
       "add_title": "Add User",

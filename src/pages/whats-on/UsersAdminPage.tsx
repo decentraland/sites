@@ -33,7 +33,6 @@ const COLUMNS: Array<{ key: AdminPermission; labelKey: string }> = [
   { key: AdminPermission.APPROVE_OWN_EVENT, labelKey: 'whats_on_admin.users.columns.approve_own_events' },
   { key: AdminPermission.APPROVE_ANY_EVENT, labelKey: 'whats_on_admin.users.columns.approve_events' },
   { key: AdminPermission.EDIT_ANY_EVENT, labelKey: 'whats_on_admin.users.columns.edit_events' },
-  { key: AdminPermission.EDIT_ANY_SCHEDULE, labelKey: 'whats_on_admin.users.columns.edit_schedules' },
   { key: AdminPermission.EDIT_ANY_PROFILE, labelKey: 'whats_on_admin.users.columns.edit_users' }
 ]
 

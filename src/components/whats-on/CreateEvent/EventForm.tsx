@@ -7,8 +7,10 @@ import AddIcon from '@mui/icons-material/Add'
 import EventIcon from '@mui/icons-material/Event'
 import { useTranslation } from '@dcl/hooks'
 import { useGetCommunitiesQuery, useGetWorldNamesQuery } from '../../../features/whats-on-events'
+import type { EventEntry } from '../../../features/whats-on-events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
+import { DurationField } from './DurationField'
 import { ImageUpload } from './ImageUpload'
 import { VerticalCoverPanel } from './VerticalCoverPanel'
 import {
@@ -20,7 +22,6 @@ import {
   ContentContainer,
   CoordPrefix,
   CoordinatesRow,
-  DateTimeGrid,
   DateTimeRow,
   DateTimeSection,
   DescriptionFields,
@@ -53,13 +54,15 @@ import {
 type EventFormProps = {
   onCancel: () => void
   onSuccess: () => void
+  initialEvent?: EventEntry | null
 }
 
-function EventForm({ onCancel, onSuccess }: EventFormProps) {
+function EventForm({ onCancel, onSuccess, initialEvent = null }: EventFormProps) {
   const { t } = useTranslation()
   const {
     form,
     errors,
+    mode,
     setField,
     handleImageSelect,
     handleImageRemove,
@@ -67,7 +70,7 @@ function EventForm({ onCancel, onSuccess }: EventFormProps) {
     handleVerticalImageRemove,
     isSubmitting,
     handleSubmit
-  } = useCreateEventForm({ onSuccess })
+  } = useCreateEventForm({ onSuccess, initialEvent })
   const { identity } = useAuthIdentity()
   const { data: worldNames = [] } = useGetWorldNamesQuery(undefined, { skip: form.location !== 'world' })
   const { data: communities = [] } = useGetCommunitiesQuery({ identity }, { skip: !identity })
@@ -154,69 +157,43 @@ function EventForm({ onCancel, onSuccess }: EventFormProps) {
             <SectionHeading>{t('create_event.event_details')}</SectionHeading>
 
             <DateTimeSection>
-              <DateTimeGrid>
-                {/* Starts */}
-                <DateTimeRow>
-                  <EventTextField
-                    variant="outlined"
-                    label={t('create_event.starts')}
-                    type="date"
-                    value={form.startDate}
-                    onChange={e => setField('startDate', e.target.value)}
-                    error={Boolean(errors.startDate)}
-                    helperText={errors.startDate}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      endAdornment: <EventIcon sx={{ color: '#a09ba8', fontSize: 24, pointerEvents: 'none' }} />
-                    }}
-                  />
-                  <EventTextField
-                    variant="outlined"
-                    type="time"
-                    value={form.startTime}
-                    onChange={e => setField('startTime', e.target.value)}
-                    error={Boolean(errors.startTime)}
-                    helperText={errors.startTime}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      endAdornment: <AccessTimeFilledIcon sx={{ color: '#a09ba8', fontSize: 24, pointerEvents: 'none' }} />
-                    }}
-                  />
-                </DateTimeRow>
-
-                {/* Ends */}
-                <DateTimeRow>
-                  <EventTextField
-                    variant="outlined"
-                    label={t('create_event.ends')}
-                    type="date"
-                    value={form.endDate}
-                    onChange={e => setField('endDate', e.target.value)}
-                    error={Boolean(errors.endDate)}
-                    helperText={errors.endDate}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      endAdornment: <EventIcon sx={{ color: '#a09ba8', fontSize: 24, pointerEvents: 'none' }} />
-                    }}
-                  />
-                  <EventTextField
-                    variant="outlined"
-                    type="time"
-                    value={form.endTime}
-                    onChange={e => setField('endTime', e.target.value)}
-                    error={Boolean(errors.endTime)}
-                    helperText={errors.endTime}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      endAdornment: <AccessTimeFilledIcon sx={{ color: '#a09ba8', fontSize: 24, pointerEvents: 'none' }} />
-                    }}
-                  />
-                </DateTimeRow>
-              </DateTimeGrid>
+              <DateTimeRow>
+                <EventTextField
+                  variant="outlined"
+                  label={t('create_event.date')}
+                  type="date"
+                  value={form.startDate}
+                  onChange={e => setField('startDate', e.target.value)}
+                  error={Boolean(errors.startDate)}
+                  helperText={errors.startDate}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  InputProps={{
+                    endAdornment: <EventIcon sx={{ color: '#a09ba8', fontSize: 24, pointerEvents: 'none' }} />
+                  }}
+                />
+                <EventTextField
+                  variant="outlined"
+                  label={t('create_event.start')}
+                  type="time"
+                  value={form.startTime}
+                  onChange={e => setField('startTime', e.target.value)}
+                  error={Boolean(errors.startTime)}
+                  helperText={errors.startTime}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  InputProps={{
+                    endAdornment: <AccessTimeFilledIcon sx={{ color: '#a09ba8', fontSize: 24, pointerEvents: 'none' }} />
+                  }}
+                />
+                <DurationField
+                  value={form.duration}
+                  startTime={form.startTime}
+                  onChange={value => setField('duration', value)}
+                  error={errors.duration}
+                  label={t('create_event.duration')}
+                />
+              </DateTimeRow>
 
               {/* Repeat Event */}
               <RepeatRow>
@@ -240,7 +217,7 @@ function EventForm({ onCancel, onSuccess }: EventFormProps) {
                 </EventFormControl>
                 <EventTextField
                   variant="outlined"
-                  label={t('create_event.ends')}
+                  label={t('create_event.repeat_until')}
                   type="date"
                   value={form.repeatEndDate}
                   onChange={e => setField('repeatEndDate', e.target.value)}
@@ -253,7 +230,7 @@ function EventForm({ onCancel, onSuccess }: EventFormProps) {
 
           {/* Location */}
           <LocationBlock>
-            <LocationLabel>Location</LocationLabel>
+            <LocationLabel>{t('create_event.location')}</LocationLabel>
             <LocationRow>
               <EventFormControl variant="outlined" fullWidth sx={{ flex: 1 }}>
                 <EventInputLabel shrink>{t('create_event.location_type')}</EventInputLabel>
@@ -376,7 +353,7 @@ function EventForm({ onCancel, onSuccess }: EventFormProps) {
           }
           onClick={handleSubmit}
         >
-          {isSubmitting ? t('create_event.submitting') : t('create_event.submit')}
+          {isSubmitting ? t('create_event.submitting') : mode === 'edit' ? t('create_event.save_changes') : t('create_event.submit')}
         </SubmitButton>
       </FormActions>
     </ContentContainer>

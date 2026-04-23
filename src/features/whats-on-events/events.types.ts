@@ -120,6 +120,12 @@ interface CreateEventParams {
   identity: AuthIdentity
 }
 
+interface UpdateEventParams {
+  eventId: string
+  payload: Partial<CreateEventPayload>
+  identity: AuthIdentity
+}
+
 interface CreateEventResponse {
   ok: boolean
   data: EventEntry
@@ -177,5 +183,6 @@ export type {
   PosterResponse,
   RecurrentFrequency,
   ToggleAttendeeParams,
+  UpdateEventParams,
   UploadPosterParams
 }

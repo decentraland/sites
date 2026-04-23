@@ -148,6 +148,7 @@ const EventSwitch = styled(Switch)(({ theme }) => ({
 
 const ContentContainer = styled(Box)(({ theme }) => ({
   width: '100%',
+  minWidth: 0,
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(4),
@@ -164,8 +165,12 @@ const FormColumns = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(6),
   width: '100%',
-  [theme.breakpoints.down('md')]: {
+  minWidth: 0,
+  [theme.breakpoints.down('lg')]: {
     flexDirection: 'column',
+    gap: theme.spacing(4)
+  },
+  [theme.breakpoints.down('md')]: {
     gap: 0
   }
 }))
@@ -237,19 +242,14 @@ const DateTimeSection = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2)
 }))
 
-const DateTimeGrid = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  gap: theme.spacing(4),
-  [theme.breakpoints.down('md')]: {
-    flexDirection: 'column',
-    gap: theme.spacing(3)
-  }
-}))
-
 const DateTimeRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(1.5),
-  flex: 1
+  flex: 1,
+  minWidth: 0,
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column'
+  }
 }))
 
 const RepeatRow = styled(Box)(({ theme }) => ({
@@ -482,7 +482,6 @@ export {
   ContentContainer,
   CoordPrefix,
   CoordinatesRow,
-  DateTimeGrid,
   DateTimeRow,
   DateTimeSection,
   DescriptionFields,
@@ -496,6 +495,8 @@ export {
   EventSwitch,
   EventTextArea,
   EventTextField,
+  inputText,
+  labelColor,
   FormActions,
   FormColumns,
   ImageSection,

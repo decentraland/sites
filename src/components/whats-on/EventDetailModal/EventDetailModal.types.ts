@@ -34,6 +34,7 @@ interface EventDetailModalProps {
   onClose: () => void
   data: ModalEventData | null
   adminActions?: AdminActions
+  onEdit?: () => void
 }
 
 export type { AdminActions, EventDetailModalProps, ModalEventData }

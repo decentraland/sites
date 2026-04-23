@@ -3,11 +3,11 @@ import { useTranslation } from '@dcl/hooks'
 import { useGetEventsQuery } from '../../../features/whats-on-events'
 import type { EventEntry } from '../../../features/whats-on-events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
+import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
 import { useVisibleColumnCount } from '../../../hooks/useVisibleColumnCount'
 import { chunk } from '../../../utils/whatsOnChunk'
 import { addDays, formatDayHeaderAria, getDayRange, isSameLocalDay } from '../../../utils/whatsOnDate'
-import { EventDetailModal, normalizeEventEntry } from '../EventDetailModal'
-import type { ModalEventData } from '../EventDetailModal'
+import { EventDetailModal } from '../EventDetailModal'
 import { HostBanner } from '../HostBanner/HostBanner'
 import { UpcomingCard } from '../Upcoming/UpcomingCard'
 import { AllExperiencesCard } from './AllExperiencesCard'
@@ -55,7 +55,7 @@ function AllExperiences() {
   const { identity } = useAuthIdentity()
   const columnCount = useVisibleColumnCount()
   const [startOffset, setStartOffset] = useState(0)
-  const [modalData, setModalData] = useState<ModalEventData | null>(null)
+  const { closeEventDetailModal, editActiveEvent, modalData, openEventDetailModal } = useEventDetailModal()
 
   const [today, setToday] = useState(() => {
     const now = new Date()
@@ -86,15 +86,10 @@ function AllExperiences() {
     setStartOffset(prev => prev + columnCount)
   }, [columnCount])
 
-  const handleCardClick = useCallback((event: EventEntry) => {
-    setModalData(normalizeEventEntry(event))
-  }, [])
-
-  const handleModalClose = useCallback(() => {
-    setModalData(null)
-  }, [])
-
-  const renderCard = useCallback((event: EventEntry) => <AllExperiencesCard event={event} onClick={handleCardClick} />, [handleCardClick])
+  const renderCard = useCallback(
+    (event: EventEntry) => <AllExperiencesCard event={event} onClick={openEventDetailModal} />,
+    [openEventDetailModal]
+  )
 
   const mobilePages = useMemo(
     () =>
@@ -120,7 +115,7 @@ function AllExperiences() {
           {mobilePages.map((page, i) => (
             <MobileEventsPage key={i}>
               {page.map(event => (
-                <UpcomingCard key={event.id} event={event} onClick={handleCardClick} />
+                <UpcomingCard key={event.id} event={event} onClick={openEventDetailModal} />
               ))}
             </MobileEventsPage>
           ))}
@@ -139,7 +134,7 @@ function AllExperiences() {
         </ColumnsContainer>
       )}
       <HostBanner />
-      <EventDetailModal open={!!modalData} onClose={handleModalClose} data={modalData} />
+      <EventDetailModal open={!!modalData} onClose={closeEventDetailModal} data={modalData} onEdit={editActiveEvent} />
     </AllExperiencesSection>
   )
 }

@@ -6,6 +6,10 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
+jest.mock('../../../hooks/useCanEditEvent', () => ({
+  useCanEditEvent: () => ({ canEdit: false, isLoading: false })
+}))
+
 const mockUseCreatorProfile = jest.fn()
 const defaultCreatorProfile = { isDclFoundation: false, creatorName: 'CreatorName', avatarFace: undefined }
 jest.mock('../../../hooks/useCreatorProfile', () => ({
@@ -70,7 +74,8 @@ jest.mock('./EventDetailModal.styled', () => ({
   JumpInButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="jump-in-button" {...props} />,
   SecondaryButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="secondary-button" {...props} />,
   CopyButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="copy-button" {...props} />,
-  CopyIconStyled: () => <span>Copy</span>
+  CopyIconStyled: () => <span>Copy</span>,
+  EditButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="edit-button" {...props} />
 }))
 
 jest.mock('@mui/icons-material/CalendarMonth', () => ({
