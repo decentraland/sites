@@ -335,8 +335,24 @@ describe('AllExperiences', () => {
     describe('and the user switches to the "my" tab', () => {
       beforeEach(() => {
         const events = [
-          createMockEvent({ id: 'mine-old', start_at: '2024-01-01T00:00:00Z', user: '0xCreator' }),
-          createMockEvent({ id: 'mine-future', start_at: '2027-09-13T14:00:00Z', user: '0xCreator' })
+          createMockEvent({
+            id: 'mine-past',
+            start_at: '2024-01-01T00:00:00Z',
+            finish_at: '2024-01-01T02:00:00Z',
+            user: '0xCreator'
+          }),
+          createMockEvent({
+            id: 'mine-soon',
+            start_at: '2026-09-20T14:00:00Z',
+            finish_at: '2026-09-20T16:00:00Z',
+            user: '0xCreator'
+          }),
+          createMockEvent({
+            id: 'mine-later',
+            start_at: '2027-09-13T14:00:00Z',
+            finish_at: '2027-09-13T16:00:00Z',
+            user: '0xCreator'
+          })
         ]
         mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
       })
@@ -364,19 +380,29 @@ describe('AllExperiences', () => {
 
         fireEvent.click(screen.getByTestId('tab-my'))
 
-        expect(screen.getByTestId('my-experiences-grid')).toHaveAttribute('data-count', '2')
+        expect(screen.getByTestId('my-experiences-grid')).toBeInTheDocument()
         expect(screen.queryByTestId('day-column')).not.toBeInTheDocument()
         expect(screen.queryByTestId('date-navigation')).not.toBeInTheDocument()
       })
 
-      it('should sort the my events by newest start_at first', () => {
+      it('should hide events whose finish_at is already in the past', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-my'))
+
+        expect(screen.getByTestId('my-experiences-grid')).toHaveAttribute('data-count', '2')
+        const cardIds = screen.getAllByTestId('my-exp-grid-card').map(c => c.getAttribute('data-id'))
+        expect(cardIds).not.toContain('mine-past')
+      })
+
+      it('should sort the upcoming my events by earliest start_at first', () => {
         render(<AllExperiences />)
 
         fireEvent.click(screen.getByTestId('tab-my'))
 
         const cards = screen.getAllByTestId('my-exp-grid-card')
-        expect(cards[0]).toHaveAttribute('data-id', 'mine-future')
-        expect(cards[1]).toHaveAttribute('data-id', 'mine-old')
+        expect(cards[0]).toHaveAttribute('data-id', 'mine-soon')
+        expect(cards[1]).toHaveAttribute('data-id', 'mine-later')
       })
     })
 
@@ -393,6 +419,29 @@ describe('AllExperiences', () => {
         expect(screen.getByTestId('my-experiences-empty')).toBeInTheDocument()
         expect(screen.queryByTestId('my-experiences-grid')).not.toBeInTheDocument()
         expect(screen.queryByTestId('day-column')).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and "my" tab has only past events', () => {
+      beforeEach(() => {
+        const events = [
+          createMockEvent({
+            id: 'mine-past',
+            start_at: '2024-01-01T00:00:00Z',
+            finish_at: '2024-01-01T02:00:00Z',
+            user: '0xCreator'
+          })
+        ]
+        mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
+      })
+
+      it('should render the empty state because no upcoming events remain after filtering', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-my'))
+
+        expect(screen.getByTestId('my-experiences-empty')).toBeInTheDocument()
+        expect(screen.queryByTestId('my-experiences-grid')).not.toBeInTheDocument()
       })
     })
   })

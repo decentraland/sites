@@ -66,7 +66,7 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, crea
     [days, allEvents, isLoading, isError]
   )
 
-  return { allEvents, dayData, totalEvents: allEvents.length, isLoading }
+  return { allEvents, dayData, isLoading }
 }
 
 function AllExperiences() {
@@ -108,7 +108,6 @@ function AllExperiences() {
   const {
     allEvents,
     dayData,
-    totalEvents,
     isLoading: isLoadingEvents
   } = useAllExperiencesData({
     today,
@@ -119,10 +118,23 @@ function AllExperiences() {
     list: isMyTab ? 'all' : 'active'
   })
 
-  const sortedMyEvents = useMemo(
-    () => (isMyTab ? [...allEvents].sort((a, b) => new Date(b.start_at).getTime() - new Date(a.start_at).getTime()) : []),
-    [allEvents, isMyTab]
-  )
+  const sortedMyEvents = useMemo(() => {
+    if (!isMyTab) return []
+    const now = Date.now()
+    return allEvents
+      .map(event => {
+        if (event.recurrent && event.next_start_at && event.next_finish_at) {
+          /* eslint-disable @typescript-eslint/naming-convention */
+          return { ...event, start_at: event.next_start_at, finish_at: event.next_finish_at }
+          /* eslint-enable @typescript-eslint/naming-convention */
+        }
+        return event
+      })
+      .filter(event => new Date(event.finish_at).getTime() >= now)
+      .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
+  }, [allEvents, isMyTab])
+
+  const hasAnyUpcomingMyEvent = sortedMyEvents.length > 0
 
   const handleNavigateLeft = useCallback(() => {
     setStartOffset(prev => Math.max(0, prev - columnCount))
@@ -151,7 +163,7 @@ function AllExperiences() {
     [dayData]
   )
 
-  const showMyEmptyState = isMyTab && !isLoadingEvents && totalEvents === 0
+  const showMyEmptyState = isMyTab && !isLoadingEvents && !hasAnyUpcomingMyEvent
 
   return (
     <AllExperiencesSection aria-label={t('all_experiences.title')}>
