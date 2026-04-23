@@ -119,8 +119,8 @@ function AllExperiences() {
   })
 
   const handleNavigateLeft = useCallback(() => {
-    setStartOffset(prev => Math.max(0, prev - columnCount))
-  }, [columnCount])
+    setStartOffset(prev => (isMyTab ? prev - columnCount : Math.max(0, prev - columnCount)))
+  }, [columnCount, isMyTab])
 
   const handleNavigateRight = useCallback(() => {
     setStartOffset(prev => prev + columnCount)
@@ -168,6 +168,7 @@ function AllExperiences() {
               today={today}
               onNavigateLeft={handleNavigateLeft}
               onNavigateRight={handleNavigateRight}
+              allowPast={isMyTab}
             />
             {columnCount <= 1 ? (
               <MobileEventsTrack>
