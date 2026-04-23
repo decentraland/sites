@@ -6,8 +6,9 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => jest.fn()
 }))
 
+const mockUseAuthIdentity = jest.fn()
 jest.mock('../../../hooks/useAuthIdentity', () => ({
-  useAuthIdentity: () => ({ identity: undefined, hasValidIdentity: false, address: undefined })
+  useAuthIdentity: () => mockUseAuthIdentity()
 }))
 
 const mockUseGetEventsQuery = jest.fn()
@@ -25,10 +26,14 @@ jest.mock('@dcl/hooks', () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
         'all_experiences.title': 'All Experiences',
+        'all_experiences.tab_all': 'All Experiences',
+        'all_experiences.tab_my': 'My Experiences',
         'all_experiences.today': 'Today',
         'all_experiences.tomorrow': 'Tomorrow',
         'all_experiences.navigate_previous': 'Navigate to previous dates',
-        'all_experiences.navigate_next': 'Navigate to next dates'
+        'all_experiences.navigate_next': 'Navigate to next dates',
+        'my_experiences.empty_title': "You don't have any event created",
+        'my_experiences.empty_cta': 'Create Event'
       }
       return translations[key] ?? key
     }
@@ -83,10 +88,36 @@ jest.mock('./AllExperiencesCard', () => ({
   AllExperiencesCard: () => <div data-testid="all-experiences-card" />
 }))
 
+jest.mock('./ExperiencesTabs', () => ({
+  ExperiencesTabs: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+    <div data-testid="experiences-tabs" data-value={value}>
+      <button data-testid="tab-all" onClick={() => onChange('all')}>
+        All
+      </button>
+      <button data-testid="tab-my" onClick={() => onChange('my')}>
+        My
+      </button>
+    </div>
+  )
+}))
+
+jest.mock('./MyExperiencesEmptyState', () => ({
+  MyExperiencesEmptyState: () => <div data-testid="my-experiences-empty" />
+}))
+
+jest.mock('./EventStatusOverlay', () => ({
+  EventStatusOverlay: ({ event, children }: { event: { id: string }; children: React.ReactNode }) => (
+    <div data-testid="event-status-overlay" data-id={event.id}>
+      {children}
+    </div>
+  )
+}))
+
 describe('AllExperiences', () => {
   beforeEach(() => {
     jest.useFakeTimers()
     jest.setSystemTime(new Date(2026, 8, 13, 10, 0, 0))
+    mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
   })
 
   afterEach(() => {
@@ -94,7 +125,7 @@ describe('AllExperiences', () => {
     jest.resetAllMocks()
   })
 
-  describe('when rendered with 3 columns', () => {
+  describe('when signed out with 3 columns', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(3)
       mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
@@ -104,6 +135,12 @@ describe('AllExperiences', () => {
       render(<AllExperiences />)
 
       expect(screen.getByTestId('section-title')).toHaveTextContent('All Experiences')
+    })
+
+    it('should not render the tabs switcher', () => {
+      render(<AllExperiences />)
+
+      expect(screen.queryByTestId('experiences-tabs')).not.toBeInTheDocument()
     })
 
     it('should render 3 day columns', () => {
@@ -128,6 +165,12 @@ describe('AllExperiences', () => {
       render(<AllExperiences />)
 
       expect(screen.queryByTestId('event-detail-modal')).not.toBeInTheDocument()
+    })
+
+    it('should query events with list=active and no creator filter', () => {
+      render(<AllExperiences />)
+
+      expect(mockUseGetEventsQuery).toHaveBeenCalledWith(expect.objectContaining({ list: 'active', creator: undefined }))
     })
   })
 
@@ -260,6 +303,90 @@ describe('AllExperiences', () => {
       render(<AllExperiences />)
 
       expect(mockUseGetEventsQuery).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('when signed in', () => {
+    beforeEach(() => {
+      mockColumnCount.mockReturnValue(3)
+      mockUseAuthIdentity.mockReturnValue({
+        identity: { authChain: [] },
+        hasValidIdentity: true,
+        address: '0xCreator'
+      })
+      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+    })
+
+    it('should render the tabs switcher instead of the plain title', () => {
+      render(<AllExperiences />)
+
+      expect(screen.getByTestId('experiences-tabs')).toBeInTheDocument()
+      expect(screen.queryByTestId('section-title')).not.toBeInTheDocument()
+    })
+
+    it('should default to the "all" tab', () => {
+      render(<AllExperiences />)
+
+      expect(screen.getByTestId('experiences-tabs')).toHaveAttribute('data-value', 'all')
+    })
+
+    describe('and the user switches to the "my" tab', () => {
+      beforeEach(() => {
+        const events = [createMockEvent({ id: 'mine-1', start_at: '2026-09-13T14:00:00Z', user: '0xCreator' })]
+        mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
+      })
+
+      it('should query events filtered by creator with list=all', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-my'))
+
+        expect(mockUseGetEventsQuery).toHaveBeenLastCalledWith(expect.objectContaining({ list: 'all', creator: '0xCreator' }))
+      })
+
+      it('should omit the date range so events outside the visible window still count', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-my'))
+
+        const lastCall = mockUseGetEventsQuery.mock.calls.at(-1)?.[0] as { from?: string; to?: string }
+        expect(lastCall.from).toBeUndefined()
+        expect(lastCall.to).toBeUndefined()
+      })
+
+      it('should pass the event count through to DayColumn on the my tab', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-my'))
+
+        expect(screen.getAllByTestId('day-column')[0]).toHaveAttribute('data-event-count', '1')
+      })
+
+      it('should reset startOffset when switching tabs', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('nav-right'))
+        expect(screen.getByTestId('date-navigation')).toHaveAttribute('data-start-offset', '3')
+
+        fireEvent.click(screen.getByTestId('tab-my'))
+        expect(screen.getByTestId('date-navigation')).toHaveAttribute('data-start-offset', '0')
+      })
+    })
+
+    describe('and "my" tab has no events in range', () => {
+      beforeEach(() => {
+        mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      })
+
+      it('should render the empty state and hide the columns grid', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-my'))
+
+        expect(screen.getByTestId('my-experiences-empty')).toBeInTheDocument()
+        expect(screen.queryByTestId('day-column')).not.toBeInTheDocument()
+        expect(screen.queryByTestId('date-navigation')).not.toBeInTheDocument()
+      })
     })
   })
 })
