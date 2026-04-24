@@ -195,12 +195,28 @@ const RightSection = styled(Box)(({ theme }) => ({
   minWidth: 0,
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(6),
+  justifyContent: 'space-between',
+  gap: theme.spacing(3),
   paddingTop: theme.spacing(3),
   [theme.breakpoints.down('md')]: {
-    padding: theme.spacing(3, 2),
+    padding: theme.spacing(3, 2)
+  }
+}))
+
+const RightSectionFields = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(6),
+  [theme.breakpoints.down('md')]: {
     gap: theme.spacing(4)
   }
+}))
+
+const RightSectionFooter = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1.5),
+  width: '100%'
 }))
 
 /* ── left card sections ─────────────────────────────────────────────── */
@@ -356,15 +372,14 @@ const SubmitErrorMessage = styled(ErrorMessage)({
 
 const ReviewBar = styled(Box)(({ theme }) => ({
   display: 'flex',
-  alignItems: 'center',
+  alignItems: 'flex-end',
   justifyContent: 'space-between',
   gap: theme.spacing(2),
   width: '100%',
   [theme.breakpoints.down('md')]: {
     flexDirection: 'column',
     alignItems: 'stretch',
-    gap: theme.spacing(1.5),
-    padding: theme.spacing(0, 2)
+    gap: theme.spacing(1.5)
   }
 }))
 
@@ -424,7 +439,6 @@ const FormActions = styled(Box)(({ theme }) => ({
   borderTop: '2px solid rgba(255, 255, 255, 0.2)',
   /* eslint-disable @typescript-eslint/naming-convention */
   [theme.breakpoints.down('md')]: {
-    padding: theme.spacing(4, 2, 0),
     '& > *': {
       flex: 1
     }
@@ -574,6 +588,8 @@ export {
   ReviewNotice,
   ReviewText,
   RightSection,
+  RightSectionFields,
+  RightSectionFooter,
   SectionHeading,
   SubmitButton,
   SubmitErrorMessage

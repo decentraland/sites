@@ -13,6 +13,7 @@ import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { formatEthAddress } from '../../../utils/avatar'
 import { buildCalendarUrl } from '../../../utils/whatsOnUrl'
+import { JumpInButton } from '../../jump/JumpInButton'
 import { RemindMeIcon } from '../common/RemindMeIcon'
 import type { ModalEventData } from './EventDetailModal.types'
 import {
@@ -32,7 +33,8 @@ import {
   HeroImage,
   HeroOverlay,
   HeroSection,
-  JumpInButton,
+  LiveNowIconStyled,
+  LiveNowLabel,
   ModalTitle,
   SecondaryButton
 } from './EventDetailModal.styled'
@@ -50,10 +52,6 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
   const { canEdit } = useCanEditEvent(data.creatorAddress)
   const showEdit = canEdit && Boolean(onEdit) && data.isEvent
 
-  const handleJumpIn = useCallback(() => {
-    window.open(data.url, '_blank', 'noopener,noreferrer')
-  }, [data.url])
-
   const handleCopy = useCallback(() => {
     navigator.clipboard
       ?.writeText(data.url)
@@ -69,7 +67,7 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
     if (url) window.open(url, '_blank', 'noopener,noreferrer')
   }, [data])
 
-  const subtitle = data.live ? t('event_detail.live_now') : data.categories[0] || null
+  const categorySubtitle = data.categories[0] ?? null
 
   return (
     <>
@@ -80,7 +78,14 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
           {isMobile ? <ArrowBackIosNewIcon sx={{ fontSize: 20, color: '#FCFCFC' }} /> : <CloseIconStyled />}
         </CloseButton>
         <HeroContent>
-          {subtitle && <CategoryLabel>{subtitle}</CategoryLabel>}
+          {data.live ? (
+            <LiveNowLabel data-testid="live-now-label">
+              <LiveNowIconStyled />
+              {t('event_detail.live_now')}
+            </LiveNowLabel>
+          ) : (
+            categorySubtitle && <CategoryLabel>{categorySubtitle}</CategoryLabel>
+          )}
           <ModalTitle id="event-detail-title">{data.name}</ModalTitle>
           {hasCreator && (
             <CreatorRow>
@@ -92,7 +97,9 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
             </CreatorRow>
           )}
           <ActionsRow>
-            <JumpInButton onClick={handleJumpIn}>{t('event_detail.jump_in')}</JumpInButton>
+            <JumpInButton position={`${data.x},${data.y}`} size="medium">
+              {t('event_detail.jump_in')}
+            </JumpInButton>
             {data.isEvent && !data.live && (
               <Tooltip title={t('event_detail.remind_me')} placement="top" arrow>
                 <SecondaryButton onClick={handleRemindToggle} disabled={isRemindLoading} aria-label={t('event_detail.remind_me')}>

@@ -103,6 +103,8 @@ jest.mock('./EventForm.styled', () => ({
     )
   },
   RightSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  RightSectionFields: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  RightSectionFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   SectionHeading: ({ children }: { children: React.ReactNode }) => <h2 data-testid="section-heading">{children}</h2>,
   SubmitButton: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) => (
     <button data-testid="submit-button" {...props}>
