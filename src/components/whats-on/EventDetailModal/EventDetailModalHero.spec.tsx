@@ -60,6 +60,8 @@ jest.mock('./EventDetailModal.styled', () => ({
   CloseIconStyled: () => <span>X</span>,
   HeroContent: ({ children }: { children: React.ReactNode }) => <div data-testid="hero-content">{children}</div>,
   CategoryLabel: ({ children }: { children: React.ReactNode }) => <span data-testid="category-label">{children}</span>,
+  LiveNowLabel: ({ children, ...props }: { children: React.ReactNode } & Record<string, unknown>) => <span {...props}>{children}</span>,
+  LiveNowIconStyled: () => <span data-testid="live-now-icon" />,
   ModalTitle: ({ children, ...props }: { children: React.ReactNode; id?: string }) => (
     <h2 data-testid="modal-title" {...props}>
       {children}
@@ -71,11 +73,18 @@ jest.mock('./EventDetailModal.styled', () => ({
   CreatorName: ({ children }: { children: React.ReactNode }) => <span data-testid="creator-name">{children}</span>,
   CreatorNameHighlight: ({ children }: { children: React.ReactNode }) => <strong>{children}</strong>,
   ActionsRow: ({ children }: { children: React.ReactNode }) => <div data-testid="actions-row">{children}</div>,
-  JumpInButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="jump-in-button" {...props} />,
   SecondaryButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="secondary-button" {...props} />,
   CopyButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="copy-button" {...props} />,
   CopyIconStyled: () => <span>Copy</span>,
   EditButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="edit-button" {...props} />
+}))
+
+jest.mock('../../jump/JumpInButton', () => ({
+  JumpInButton: ({ children, position, realm }: { children: React.ReactNode; position: string; realm?: string }) => (
+    <button data-testid="jump-in-button" data-position={position} data-realm={realm}>
+      {children}
+    </button>
+  )
 }))
 
 jest.mock('@mui/icons-material/CalendarMonth', () => ({
@@ -97,11 +106,10 @@ const createMockData = createMockModalData
 
 describe('EventDetailModalHero', () => {
   let mockOnClose: jest.Mock
-  let mockWindowOpen: jest.SpyInstance
 
   beforeEach(() => {
     mockOnClose = jest.fn()
-    mockWindowOpen = jest.spyOn(window, 'open').mockImplementation(jest.fn())
+    jest.spyOn(window, 'open').mockImplementation(jest.fn())
     mockUseCreatorProfile.mockReset()
     mockUseCreatorProfile.mockReturnValue(defaultCreatorProfile)
   })
@@ -152,13 +160,11 @@ describe('EventDetailModalHero', () => {
     })
   })
 
-  describe('when the jump in button is clicked', () => {
-    it('should open the event URL', () => {
+  describe('when rendering the jump in button', () => {
+    it('should pass the event position to the jump in button', () => {
       render(<EventDetailModalHero data={createMockData()} onClose={mockOnClose} />)
 
-      fireEvent.click(screen.getByTestId('jump-in-button'))
-
-      expect(mockWindowOpen).toHaveBeenCalledWith('https://decentraland.org/jump/event?position=10,20', '_blank', 'noopener,noreferrer')
+      expect(screen.getByTestId('jump-in-button')).toHaveAttribute('data-position', '10,20')
     })
   })
 
@@ -171,10 +177,17 @@ describe('EventDetailModalHero', () => {
   })
 
   describe('when the event is live', () => {
-    it('should show live_now as subtitle', () => {
+    it('should show the live now label instead of the category', () => {
       render(<EventDetailModalHero data={createMockData({ live: true })} onClose={mockOnClose} />)
 
-      expect(screen.getByTestId('category-label')).toHaveTextContent('event_detail.live_now')
+      expect(screen.getByText('event_detail.live_now')).toBeInTheDocument()
+      expect(screen.queryByTestId('category-label')).not.toBeInTheDocument()
+    })
+
+    it('should render the pulsing live icon', () => {
+      render(<EventDetailModalHero data={createMockData({ live: true })} onClose={mockOnClose} />)
+
+      expect(screen.getByTestId('live-now-icon')).toBeInTheDocument()
     })
 
     it('should not render the remind me button', () => {

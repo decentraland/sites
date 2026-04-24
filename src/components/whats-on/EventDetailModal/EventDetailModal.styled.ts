@@ -1,7 +1,10 @@
+import { keyframes } from '@emotion/react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CloseIcon from '@mui/icons-material/Close'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import SensorsRoundedIcon from '@mui/icons-material/SensorsRounded'
 import { Box, Dialog, Typography, styled } from 'decentraland-ui2'
 
 const MOBILE_NAVBAR_OFFSET = 64
@@ -142,6 +145,29 @@ const CategoryLabel = styled(Typography)({
   letterSpacing: '0.04em'
 })
 
+/* eslint-disable @typescript-eslint/naming-convention */
+const livePulse = keyframes({
+  '0%, 100%': { transform: 'scale(1)' },
+  '50%': { transform: 'scale(1.3)' }
+})
+/* eslint-enable @typescript-eslint/naming-convention */
+
+const LiveNowLabel = styled(Typography)(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  fontSize: 14,
+  fontWeight: 600,
+  color: theme.palette.error.main,
+  textTransform: 'uppercase',
+  letterSpacing: '0.04em'
+}))
+
+const LiveNowIconStyled = styled(SensorsRoundedIcon)({
+  fontSize: 16,
+  animation: `${livePulse} 1.5s ease-in-out infinite`
+})
+
 const ModalTitle = styled(Typography)({
   fontSize: 32,
   fontWeight: 600,
@@ -197,34 +223,6 @@ const ActionsRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1)
-}))
-
-const JumpInButton = styled('button')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: theme.spacing(1),
-  backgroundColor: '#FCFCFC',
-  color: '#161518',
-  border: 'none',
-  borderRadius: theme.spacing(1),
-  padding: theme.spacing(1, 2.5),
-  fontSize: 14,
-  fontWeight: 600,
-  cursor: 'pointer',
-  whiteSpace: 'nowrap',
-  transition: theme.transitions.create('background-color', {
-    duration: theme.transitions.duration.short
-  }),
-  /* eslint-disable @typescript-eslint/naming-convention */
-  '&:hover': {
-    backgroundColor: '#E0E0E0'
-  },
-  '&:focus-visible': {
-    outline: '2px solid #FCFCFC',
-    outlineOffset: 2
-  }
-  /* eslint-enable @typescript-eslint/naming-convention */
 }))
 
 const SecondaryButton = styled('button')(({ theme }) => ({
@@ -419,7 +417,8 @@ export {
   HeroImage,
   HeroOverlay,
   HeroSection,
-  JumpInButton,
+  LiveNowIconStyled,
+  LiveNowLabel,
   ModalTitle,
   RecurrenceText,
   ScheduleIconButton,
