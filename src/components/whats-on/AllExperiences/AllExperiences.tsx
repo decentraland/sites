@@ -162,8 +162,24 @@ function AllExperiences() {
 
   useEffect(() => {
     if (requestedTab !== 'my' || hasScrolledToMyTab.current || isLoadingMyEvents || !sectionRef.current) return
-    hasScrolledToMyTab.current = true
-    sectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
+    // The section can be wrapped in an ancestor that toggles display:none while
+    // sibling data loads (e.g. DeferredGroup in HomePage). scrollIntoView is a
+    // no-op on elements without a layout box, so poll on rAF until the element
+    // becomes visible, then scroll once.
+    let rafId = 0
+    const scrollWhenVisible = () => {
+      const el = sectionRef.current
+      if (!el) return
+      if (el.offsetParent === null) {
+        rafId = requestAnimationFrame(scrollWhenVisible)
+        return
+      }
+      hasScrolledToMyTab.current = true
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+    rafId = requestAnimationFrame(scrollWhenVisible)
+    return () => cancelAnimationFrame(rafId)
   }, [requestedTab, isLoadingMyEvents])
 
   const handleNavigateLeft = useCallback(() => {

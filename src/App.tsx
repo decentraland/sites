@@ -1,5 +1,6 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ScrollToTop } from './components/ScrollToTop'
 import { IndexPage } from './pages/index.tsx'
 
 // Layout imports Navbar from decentraland-ui2 which pulls in ~1.3MB of MUI.
@@ -59,6 +60,7 @@ const JumpLegacyEventRedirect = lazy(() => import('./pages/jump/LegacyEventRedir
 const App = () => {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Suspense fallback={null}>
         <Routes>
           <Route path="/download" element={<DownloadPage />} />
