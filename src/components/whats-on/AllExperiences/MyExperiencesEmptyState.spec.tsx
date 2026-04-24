@@ -23,8 +23,8 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
-        'my_experiences.empty_title': "You don't have any event created",
-        'my_experiences.empty_cta': 'Create Event'
+        'my_experiences.empty_title': "You don't have any hangout created",
+        'my_experiences.empty_cta': 'Create Hangout'
       }
       return translations[key] ?? key
     }
@@ -39,15 +39,15 @@ describe('MyExperiencesEmptyState', () => {
   it('should render the empty title and CTA label', () => {
     render(<MyExperiencesEmptyState />)
 
-    expect(screen.getByText("You don't have any event created")).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Create Event/ })).toBeInTheDocument()
+    expect(screen.getByText("You don't have any hangout created")).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Create Hangout/ })).toBeInTheDocument()
   })
 
   describe('when clicking the CTA', () => {
     it('should navigate to the new-event route', () => {
       render(<MyExperiencesEmptyState />)
 
-      fireEvent.click(screen.getByRole('button', { name: /Create Event/ }))
+      fireEvent.click(screen.getByRole('button', { name: /Create Hangout/ }))
 
       expect(mockNavigate).toHaveBeenCalledWith('/whats-on/new-event')
     })

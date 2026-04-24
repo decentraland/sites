@@ -44,8 +44,8 @@ jest.mock('@dcl/hooks', () => ({
         'all_experiences.tomorrow': 'Tomorrow',
         'all_experiences.navigate_previous': 'Navigate to previous dates',
         'all_experiences.navigate_next': 'Navigate to next dates',
-        'my_experiences.empty_title': "You don't have any event created",
-        'my_experiences.empty_cta': 'Create Event'
+        'my_experiences.empty_title': "You don't have any hangout created",
+        'my_experiences.empty_cta': 'Create Hangout'
       }
       return translations[key] ?? key
     }
