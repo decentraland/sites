@@ -131,5 +131,17 @@ describe('JumpInButton', () => {
         expect(windowOpenMock).toHaveBeenCalledWith('https://google', '_self')
       })
     })
+
+    describe('and the device reports a desktop OS (e.g. iPadOS desktop-mode)', () => {
+      beforeEach(() => {
+        mockDetectDownloadOS.mockReturnValue('apple')
+      })
+
+      it('should redirect to the Apple App Store by default', async () => {
+        render(<JumpInButton position="0,0" />)
+        await userEvent.click(screen.getByRole('button'))
+        expect(windowOpenMock).toHaveBeenCalledWith('https://apple', '_self')
+      })
+    })
   })
 })

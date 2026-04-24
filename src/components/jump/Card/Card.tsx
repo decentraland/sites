@@ -83,6 +83,7 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
         {formatMessage('component.jump.jump_in_button.jump_in')}
       </JumpInButton>
     ) : null
+  const bottomSlot = children ?? jumpInFallback
 
   return (
     <CardContainer>
@@ -148,9 +149,9 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
             <DescriptionText>{data.description || formatMessage('component.jump.card.place.default_description')}</DescriptionText>
           </TextWrapper>
         </CardContent>
-        {!isMobile && (children ?? jumpInFallback)}
+        {!isMobile && bottomSlot}
       </ContentSection>
-      {isMobile && (children ?? jumpInFallback) && <StickyBottomContainer>{children ?? jumpInFallback}</StickyBottomContainer>}
+      {isMobile && bottomSlot && <StickyBottomContainer>{bottomSlot}</StickyBottomContainer>}
     </CardContainer>
   )
 })

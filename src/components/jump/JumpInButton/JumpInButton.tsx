@@ -38,6 +38,7 @@ const JumpInButton: FC<JumpInButtonProps> = ({
   const osName = advancedUserAgent?.os?.name ?? 'unknown'
   const arch = advancedUserAgent?.cpu?.architecture?.toLowerCase() ?? 'unknown'
   const isMobile = Boolean(advancedUserAgent?.mobile)
+  const downloadOs = detectDownloadOS()
 
   const openDownloadFallback = useCallback(() => {
     if (hasValidIdentity) {
@@ -53,8 +54,7 @@ const JumpInButton: FC<JumpInButtonProps> = ({
 
   const handleJumpIn = useCallback(async () => {
     if (isMobile) {
-      const mobileOs = detectDownloadOS()
-      const storeUrl = mobileOs === 'ios' ? DOWNLOAD_URLS.appStore : DOWNLOAD_URLS.googlePlay
+      const storeUrl = downloadOs === 'android' ? DOWNLOAD_URLS.googlePlay : DOWNLOAD_URLS.appStore
       track(SegmentEvent.GO_TO_EXPLORER, { position, realm, osName, arch, target: 'mobile-store' })
       window.open(storeUrl, '_self')
       return
@@ -71,11 +71,10 @@ const JumpInButton: FC<JumpInButtonProps> = ({
     } catch {
       openDownloadFallback()
     }
-  }, [isMobile, track, position, realm, osName, arch, openDownloadFallback])
+  }, [isMobile, downloadOs, track, position, realm, osName, arch, openDownloadFallback])
 
   const closeDownloadModal = useCallback(() => setDownloadModalOpen(false), [])
 
-  const downloadOs = detectDownloadOS()
   const downloadModalProps = {
     os: downloadOs,
     downloadUrl: downloadOs === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows,
@@ -110,7 +109,7 @@ const JumpInButton: FC<JumpInButtonProps> = ({
   return (
     <>
       {renderButton()}
-      <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />
+      {!isMobile && <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />}
     </>
   )
 }
