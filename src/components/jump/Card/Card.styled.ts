@@ -184,29 +184,6 @@ const CardLocation = styled(Box)(({ theme }) => ({
   [theme.breakpoints.down('xs')]: { gap: 6, fontSize: 14, lineHeight: 1.5, borderRadius: 6 }
 }))
 
-const CardWorld = styled(Box)(({ theme }) => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  padding: '4px 8px',
-  gap: 8,
-  fontSize: 16,
-  fontWeight: 500,
-  lineHeight: 1.75,
-  color: '#ffffff',
-  backgroundColor: 'rgba(255, 45, 85, 0.25)',
-  border: '1px solid rgba(255, 45, 85, 0.6)',
-  borderRadius: 8,
-  backdropFilter: 'blur(4px)',
-  width: 'fit-content',
-  maxWidth: '100%',
-  '& > span': {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
-  },
-  [theme.breakpoints.down('xs')]: { gap: 6, fontSize: 14, lineHeight: 1.5, borderRadius: 6 }
-}))
-
 const CardLoadingContainer = styled(Box)({
   display: 'flex',
   alignItems: 'center',
@@ -294,7 +271,6 @@ export {
   CardLoadingContainer,
   CardLocation,
   CardTitle,
-  CardWorld,
   ContentSection,
   CreatorAvatar,
   CreatorLabel,

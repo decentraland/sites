@@ -27,7 +27,6 @@ import {
   CardLoadingContainer,
   CardLocation,
   CardTitle,
-  CardWorld,
   ContentSection,
   CreatorAvatar,
   CreatorLabel,
@@ -142,15 +141,13 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
                 {hasEnded ? formatMessage('component.jump.event.has_ended') : data.start_at}
               </CardDate>
             )}
-            {data.realm && (
-              <CardWorld aria-label={formatMessage('component.jump.card.accessibility.world_label', { worldName: data.realm })}>
-                <PublicIcon sx={{ fontSize: 16 }} />
-                <span>{data.realm}</span>
-              </CardWorld>
-            )}
-            <CardLocation>
-              <PlaceOutlinedIcon sx={{ fontSize: 16 }} />
-              {formatLocation(data.coordinates)}
+            <CardLocation
+              aria-label={
+                data.realm ? formatMessage('component.jump.card.accessibility.world_label', { worldName: data.realm }) : undefined
+              }
+            >
+              {data.realm ? <PublicIcon sx={{ fontSize: 16 }} /> : <PlaceOutlinedIcon sx={{ fontSize: 16 }} />}
+              {data.realm ?? formatLocation(data.coordinates)}
             </CardLocation>
           </MetaRow>
           <TextWrapper maxHeight={isMobile ? 250 : 128} gradientColor={isMobile ? '#2E013E' : '#380A4D'}>
