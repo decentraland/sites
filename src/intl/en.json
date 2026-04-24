@@ -680,7 +680,8 @@
           "share_button": "Share",
           "add_to_calendar_button": "Add to calendar",
           "interested_button": "Mark as interested",
-          "user_profile_link": "View {userName}'s profile"
+          "user_profile_link": "View {userName}'s profile",
+          "world_label": "World: {worldName}"
         }
       },
       "event": {

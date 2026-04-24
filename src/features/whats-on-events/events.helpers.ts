@@ -21,6 +21,8 @@ interface LiveNowCard {
   recurrentFrequency?: RecurrentFrequency | null
   recurrentDates?: string[]
   attending?: boolean
+  world?: boolean
+  server?: string | null
 }
 
 const DEFAULT_MIN_USERS = 5
@@ -85,7 +87,9 @@ function buildLiveNowCards(liveEvents: EventEntry[], hotScenes: HotScene[], minU
         recurrent: matchedEvent.recurrent,
         recurrentFrequency: matchedEvent.recurrent_frequency,
         recurrentDates: matchedEvent.recurrent_dates,
-        attending: matchedEvent.attending
+        attending: matchedEvent.attending,
+        world: matchedEvent.world,
+        server: matchedEvent.server
       })
       usedSceneIds.add(scene.id)
       usedEventIds.add(matchedEvent.id)
