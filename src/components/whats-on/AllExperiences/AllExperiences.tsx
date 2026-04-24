@@ -166,12 +166,17 @@ function AllExperiences() {
     // The section can be wrapped in an ancestor that toggles display:none while
     // sibling data loads (e.g. DeferredGroup in HomePage). scrollIntoView is a
     // no-op on elements without a layout box, so poll on rAF until the element
-    // becomes visible, then scroll once.
+    // becomes visible, then scroll once. offsetParent === null here specifically
+    // covers the display:none ancestor case; if DeferredGroup ever switches to
+    // a position:fixed wrapper this heuristic will need to change.
+    const MAX_ATTEMPTS = 120
     let rafId = 0
+    let attempts = 0
     const scrollWhenVisible = () => {
       const el = sectionRef.current
-      if (!el) return
+      if (!el || attempts >= MAX_ATTEMPTS) return
       if (el.offsetParent === null) {
+        attempts++
         rafId = requestAnimationFrame(scrollWhenVisible)
         return
       }

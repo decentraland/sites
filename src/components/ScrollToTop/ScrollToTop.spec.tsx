@@ -3,11 +3,20 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ScrollToTop } from './ScrollToTop'
 
-function NavigateButton({ to, state }: { to: string; state?: unknown }) {
+function NavigateButton({ label, to, state, delta }: { label: string; to?: string; state?: unknown; delta?: number }) {
   const navigate = useNavigate()
+  const handleClick = () => {
+    if (typeof delta === 'number') {
+      navigate(delta)
+      return
+    }
+    if (to !== undefined) {
+      navigate(to, state ? { state } : undefined)
+    }
+  }
   return (
-    <button type="button" onClick={() => navigate(to, state ? { state } : undefined)}>
-      go
+    <button type="button" onClick={handleClick}>
+      {label}
     </button>
   )
 }
@@ -17,9 +26,25 @@ function renderWithRouter(initialEntries: Array<string | { pathname: string; sta
     <MemoryRouter initialEntries={initialEntries}>
       <ScrollToTop />
       <Routes>
-        <Route path="/" element={<NavigateButton to="/other" />} />
-        <Route path="/other" element={<NavigateButton to="/with-state" state={{ activeTab: 'my' }} />} />
-        <Route path="/with-state" element={<span>with state</span>} />
+        <Route
+          path="/"
+          element={
+            <>
+              <NavigateButton label="go" to="/other" />
+              <NavigateButton label="forward" delta={1} />
+            </>
+          }
+        />
+        <Route
+          path="/other"
+          element={
+            <>
+              <NavigateButton label="go" to="/with-state" state={{ activeTab: 'my' }} />
+              <NavigateButton label="back" delta={-1} />
+            </>
+          }
+        />
+        <Route path="/with-state" element={<NavigateButton label="back" delta={-1} />} />
       </Routes>
     </MemoryRouter>
   )
@@ -37,10 +62,10 @@ describe('ScrollToTop', () => {
   })
 
   describe('when the app mounts', () => {
-    it('should scroll to the top of the window', () => {
+    it('should not scroll so the browser can restore a hash or prior position', () => {
       renderWithRouter()
 
-      expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, left: 0 })
+      expect(scrollToSpy).not.toHaveBeenCalled()
     })
   })
 
@@ -69,6 +94,24 @@ describe('ScrollToTop', () => {
       })
 
       expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, left: 0 })
+    })
+  })
+
+  describe('when the user navigates back via the browser (POP)', () => {
+    it('should not scroll so the browser can restore the previous position', async () => {
+      const user = userEvent.setup()
+      renderWithRouter()
+
+      await act(async () => {
+        await user.click(screen.getByRole('button', { name: 'go' }))
+      })
+      scrollToSpy.mockClear()
+
+      await act(async () => {
+        await user.click(screen.getByRole('button', { name: 'back' }))
+      })
+
+      expect(scrollToSpy).not.toHaveBeenCalled()
     })
   })
 
