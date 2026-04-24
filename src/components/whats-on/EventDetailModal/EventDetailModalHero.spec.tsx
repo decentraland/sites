@@ -48,6 +48,7 @@ jest.mock('../common/RemindMeIcon', () => ({
 }))
 
 jest.mock('decentraland-ui2', () => ({
+  LiveBadge: () => <span data-testid="live-badge">LIVE</span>,
   Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   useTheme: () => ({ breakpoints: { down: () => '(max-width:600px)' } })
 }))
@@ -60,8 +61,7 @@ jest.mock('./EventDetailModal.styled', () => ({
   CloseIconStyled: () => <span>X</span>,
   HeroContent: ({ children }: { children: React.ReactNode }) => <div data-testid="hero-content">{children}</div>,
   CategoryLabel: ({ children }: { children: React.ReactNode }) => <span data-testid="category-label">{children}</span>,
-  LiveNowLabel: ({ children, ...props }: { children: React.ReactNode } & Record<string, unknown>) => <span {...props}>{children}</span>,
-  LiveNowIconStyled: () => <span data-testid="live-now-icon" />,
+  LiveBadgeWrapper: ({ children, ...props }: { children: React.ReactNode } & Record<string, unknown>) => <span {...props}>{children}</span>,
   ModalTitle: ({ children, ...props }: { children: React.ReactNode; id?: string }) => (
     <h2 data-testid="modal-title" {...props}>
       {children}
@@ -177,17 +177,11 @@ describe('EventDetailModalHero', () => {
   })
 
   describe('when the event is live', () => {
-    it('should show the live now label instead of the category', () => {
+    it('should show the live badge instead of the category', () => {
       render(<EventDetailModalHero data={createMockData({ live: true })} onClose={mockOnClose} />)
 
-      expect(screen.getByText('event_detail.live_now')).toBeInTheDocument()
+      expect(screen.getByTestId('live-badge')).toBeInTheDocument()
       expect(screen.queryByTestId('category-label')).not.toBeInTheDocument()
-    })
-
-    it('should render the pulsing live icon', () => {
-      render(<EventDetailModalHero data={createMockData({ live: true })} onClose={mockOnClose} />)
-
-      expect(screen.getByTestId('live-now-icon')).toBeInTheDocument()
     })
 
     it('should not render the remind me button', () => {
