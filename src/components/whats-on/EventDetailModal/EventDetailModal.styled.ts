@@ -1,10 +1,7 @@
-import { keyframes } from '@emotion/react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CloseIcon from '@mui/icons-material/Close'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import SensorsRoundedIcon from '@mui/icons-material/SensorsRounded'
 import { Box, Dialog, Typography, styled } from 'decentraland-ui2'
 
 const MOBILE_NAVBAR_OFFSET = 64
@@ -145,27 +142,8 @@ const CategoryLabel = styled(Typography)({
   letterSpacing: '0.04em'
 })
 
-/* eslint-disable @typescript-eslint/naming-convention */
-const livePulse = keyframes({
-  '0%, 100%': { transform: 'scale(1)' },
-  '50%': { transform: 'scale(1.3)' }
-})
-/* eslint-enable @typescript-eslint/naming-convention */
-
-const LiveNowLabel = styled(Typography)(({ theme }) => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: theme.spacing(0.5),
-  fontSize: 14,
-  fontWeight: 600,
-  color: theme.palette.error.main,
-  textTransform: 'uppercase',
-  letterSpacing: '0.04em'
-}))
-
-const LiveNowIconStyled = styled(SensorsRoundedIcon)({
-  fontSize: 16,
-  animation: `${livePulse} 1.5s ease-in-out infinite`
+const LiveBadgeWrapper = styled(Box)({
+  alignSelf: 'flex-start'
 })
 
 const ModalTitle = styled(Typography)({
@@ -417,8 +395,7 @@ export {
   HeroImage,
   HeroOverlay,
   HeroSection,
-  LiveNowIconStyled,
-  LiveNowLabel,
+  LiveBadgeWrapper,
   ModalTitle,
   RecurrenceText,
   ScheduleIconButton,

@@ -7,7 +7,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import EditIcon from '@mui/icons-material/Edit'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTranslation } from '@dcl/hooks'
-import { Tooltip, useTheme } from 'decentraland-ui2'
+import { LiveBadge, Tooltip, useTheme } from 'decentraland-ui2'
 import { useCanEditEvent } from '../../../hooks/useCanEditEvent'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
@@ -33,8 +33,7 @@ import {
   HeroImage,
   HeroOverlay,
   HeroSection,
-  LiveNowIconStyled,
-  LiveNowLabel,
+  LiveBadgeWrapper,
   ModalTitle,
   SecondaryButton
 } from './EventDetailModal.styled'
@@ -79,10 +78,9 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
         </CloseButton>
         <HeroContent>
           {data.live ? (
-            <LiveNowLabel data-testid="live-now-label">
-              <LiveNowIconStyled />
-              {t('event_detail.live_now')}
-            </LiveNowLabel>
+            <LiveBadgeWrapper>
+              <LiveBadge />
+            </LiveBadgeWrapper>
           ) : (
             categorySubtitle && <CategoryLabel>{categorySubtitle}</CategoryLabel>
           )}
