@@ -24,6 +24,20 @@ enum SegmentEvent {
   DOWNLOAD_FAILED = 'download_failed'
 }
 
+enum DownloadPlace {
+  LANDING_HERO = 'landing-hero',
+  LANDING_HERO_PLATFORM_SWITCH = 'landing-hero-platform-switch',
+  COME_HANG_OUT = 'come-hang-out',
+  JUMP_IN_ALREADY_USER = 'jump-in-already-user',
+  DOWNLOAD_PAGE = 'download-page',
+  UNKNOWN = 'unknown'
+}
+
+const KNOWN_DOWNLOAD_PLACES = new Set<string>(Object.values(DownloadPlace))
+
+const resolveDownloadPlace = (value: string | null | undefined): DownloadPlace =>
+  value && KNOWN_DOWNLOAD_PLACES.has(value) ? (value as DownloadPlace) : DownloadPlace.UNKNOWN
+
 enum SectionViewedTrack {
   CREATORS_CONNECT = 'Creators Connect',
   CREATORS_CREATE = 'Creators Create',
@@ -57,4 +71,4 @@ enum SectionViewedTrack {
   LANDING_NAVBAR = 'Landing Navbar'
 }
 
-export { SegmentEvent, SectionViewedTrack }
+export { DownloadPlace, SegmentEvent, SectionViewedTrack, resolveDownloadPlace }
