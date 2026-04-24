@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
+import { detectDownloadOS } from '../../../modules/downloadConstants'
 import { JumpInButton } from './JumpInButton'
 
 jest.mock('@dcl/hooks', () => ({
@@ -49,7 +51,7 @@ jest.mock('../../../modules/downloadConstants', () => ({
     googlePlay: 'https://google',
     appStore: 'https://apple'
   },
-  detectDownloadOS: () => 'apple'
+  detectDownloadOS: jest.fn(() => 'apple')
 }))
 jest.mock('../../../modules/segment', () => ({
   SegmentEvent: { GO_TO_EXPLORER: 'Go To Explorer', CLICK: 'Click' }
@@ -61,6 +63,7 @@ jest.mock('../../../features/jump/jump.helpers', () => ({
 const mockUseAuthIdentity = jest.mocked(useAuthIdentity)
 const mockUseAdvancedUserAgentData = jest.mocked(useAdvancedUserAgentData)
 const mockUseAnalytics = jest.mocked(useAnalytics)
+const mockDetectDownloadOS = jest.mocked(detectDownloadOS)
 
 describe('JumpInButton', () => {
   beforeEach(() => {
@@ -87,6 +90,46 @@ describe('JumpInButton', () => {
     it('should fall back to the i18n label', () => {
       render(<JumpInButton position="0,0" />)
       expect(screen.getByText('component.jump.jump_in_button.jump_in')).toBeInTheDocument()
+    })
+  })
+
+  describe('when it is clicked on a mobile device', () => {
+    const windowOpenMock = jest.fn()
+
+    beforeEach(() => {
+      mockUseAdvancedUserAgentData.mockReturnValue([
+        true,
+        { os: { name: 'iOS' }, cpu: { architecture: 'arm64' }, mobile: true }
+      ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+      Object.defineProperty(window, 'open', { configurable: true, value: windowOpenMock })
+    })
+
+    afterEach(() => {
+      windowOpenMock.mockReset()
+    })
+
+    describe('and the device is iOS', () => {
+      beforeEach(() => {
+        mockDetectDownloadOS.mockReturnValue('ios')
+      })
+
+      it('should redirect to the Apple App Store', async () => {
+        render(<JumpInButton position="0,0" />)
+        await userEvent.click(screen.getByRole('button'))
+        expect(windowOpenMock).toHaveBeenCalledWith('https://apple', '_self')
+      })
+    })
+
+    describe('and the device is Android', () => {
+      beforeEach(() => {
+        mockDetectDownloadOS.mockReturnValue('android')
+      })
+
+      it('should redirect to Google Play', async () => {
+        render(<JumpInButton position="0,0" />)
+        await userEvent.click(screen.getByRole('button'))
+        expect(windowOpenMock).toHaveBeenCalledWith('https://google', '_self')
+      })
     })
   })
 })

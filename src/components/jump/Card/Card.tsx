@@ -15,7 +15,6 @@ import cardEventsPlaceholder from '../../../images/jump/card-events-placeholder.
 import cardPlacesPlaceholder from '../../../images/jump/card-places-placeholder.webp'
 import { JumpInButton } from '../JumpInButton'
 import { LiveEventIcon } from '../LiveEventIcon'
-import { ShareLinkButton } from '../ShareLinkButton'
 import { TextWrapper } from '../TextWrapper'
 import {
   AttendeesBadge,
@@ -78,7 +77,7 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
   const imageSrc = data.image || (isEvent ? cardEventsPlaceholder : cardPlacesPlaceholder)
   const altKey = isEvent ? 'component.jump.card.accessibility.event_image' : 'component.jump.card.accessibility.place_image'
 
-  const desktopFallbackAction =
+  const jumpInFallback =
     !isEvent || data.live ? (
       <JumpInButton position={data.position} realm={data.realm} fullWidth size="large">
         {formatMessage('component.jump.jump_in_button.jump_in')}
@@ -149,9 +148,9 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
             <DescriptionText>{data.description || formatMessage('component.jump.card.place.default_description')}</DescriptionText>
           </TextWrapper>
         </CardContent>
-        {!isMobile && (children ?? desktopFallbackAction)}
+        {!isMobile && (children ?? jumpInFallback)}
       </ContentSection>
-      {isMobile && <StickyBottomContainer>{children ?? <ShareLinkButton url={data?.url} title={data?.title} />}</StickyBottomContainer>}
+      {isMobile && (children ?? jumpInFallback) && <StickyBottomContainer>{children ?? jumpInFallback}</StickyBottomContainer>}
     </CardContainer>
   )
 })

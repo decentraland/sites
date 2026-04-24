@@ -661,10 +661,6 @@
       "jump_in_button": {
         "jump_in": "Jump In"
       },
-      "share": {
-        "switch_to_computer": "Switch to a Computer to Use Decentraland",
-        "button_text": "SHARE LINK"
-      },
       "card": {
         "creator": {
           "by": "By"

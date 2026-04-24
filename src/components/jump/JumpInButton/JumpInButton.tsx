@@ -53,8 +53,10 @@ const JumpInButton: FC<JumpInButtonProps> = ({
 
   const handleJumpIn = useCallback(async () => {
     if (isMobile) {
-      track(SegmentEvent.CLICK, { event: 'Jump In Mobile Blocked', osName, arch })
-      setDownloadModalOpen(true)
+      const mobileOs = detectDownloadOS()
+      const storeUrl = mobileOs === 'ios' ? DOWNLOAD_URLS.appStore : DOWNLOAD_URLS.googlePlay
+      track(SegmentEvent.GO_TO_EXPLORER, { position, realm, osName, arch, target: 'mobile-store' })
+      window.open(storeUrl, '_self')
       return
     }
 
