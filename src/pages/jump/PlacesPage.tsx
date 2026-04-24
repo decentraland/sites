@@ -20,7 +20,7 @@ const PlacesPage = () => {
   const navigate = useNavigate()
 
   const positionParam = searchParams.get('position') ?? DEFAULT_POSITION
-  const realmParam = searchParams.get('realm') ?? DEFAULT_REALM
+  const realmParam = searchParams.get('realm') ?? searchParams.get('world') ?? DEFAULT_REALM
   const parsedPosition = useMemo(() => parsePosition(positionParam), [positionParam])
 
   const realm = realmParam === DEFAULT_REALM ? undefined : realmParam

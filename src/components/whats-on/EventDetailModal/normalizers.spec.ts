@@ -104,6 +104,38 @@ describe('normalizeEventEntry', () => {
     })
   })
 
+  describe('when the event happens in a world', () => {
+    let result: ReturnType<typeof normalizeEventEntry>
+
+    beforeEach(() => {
+      result = normalizeEventEntry(createMockEvent({ world: true, server: 'my-world.dcl.eth' }))
+    })
+
+    it('should expose the world name as realm', () => {
+      expect(result.realm).toBe('my-world.dcl.eth')
+    })
+
+    it('should append the realm to the jump-in URL', () => {
+      expect(result.url).toBe('https://decentraland.org/jump/event?position=10,20&realm=my-world.dcl.eth')
+    })
+  })
+
+  describe('when world is true but server is missing', () => {
+    let result: ReturnType<typeof normalizeEventEntry>
+
+    beforeEach(() => {
+      result = normalizeEventEntry(createMockEvent({ world: true, server: null }))
+    })
+
+    it('should leave realm undefined', () => {
+      expect(result.realm).toBeUndefined()
+    })
+
+    it('should build the plain jump-in URL', () => {
+      expect(result.url).toBe('https://decentraland.org/jump/event?position=10,20')
+    })
+  })
+
   describe('when the event is recurrent', () => {
     let result: ReturnType<typeof normalizeEventEntry>
 
@@ -201,6 +233,22 @@ describe('normalizeLiveNowCard', () => {
 
     it('should flag the data as a real event when the card type is event', () => {
       expect(result.isEvent).toBe(true)
+    })
+  })
+
+  describe('when the card represents a world event', () => {
+    let result: ReturnType<typeof normalizeLiveNowCard>
+
+    beforeEach(() => {
+      result = normalizeLiveNowCard(createMockLiveNowCard({ world: true, server: 'my-world.dcl.eth' }))
+    })
+
+    it('should expose the world name as realm', () => {
+      expect(result.realm).toBe('my-world.dcl.eth')
+    })
+
+    it('should append the realm to the jump-in URL', () => {
+      expect(result.url).toBe('https://decentraland.org/jump/event?position=10,20&realm=my-world.dcl.eth')
     })
   })
 

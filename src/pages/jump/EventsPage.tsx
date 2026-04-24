@@ -22,13 +22,19 @@ import {
 import type { CardData, JumpEvent } from '../../features/jump/jump.types'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useRemindMe } from '../../hooks/useRemindMe'
+import { appendRealmParam, resolveEventRealm } from '../../utils/whatsOnUrl'
 import { CalendarButton, EventActions, ExploreEventsButton, ShareIconButton } from './EventsPage.styled'
 import { JumpPageContainer, JumpPageContent } from './PageContainer.styled'
+
+function buildJumpEventShareUrl(event: JumpEvent): string {
+  const base = `${getEnv('JUMP_IN_URL') ?? 'https://decentraland.org/jump'}/events?position=${event.x ?? 0},${event.y ?? 0}`
+  return appendRealmParam(base, resolveEventRealm(event.world, event.server))
+}
 
 function buildGoogleCalendarUrl(event: JumpEvent, label: string): string {
   const params = new URLSearchParams()
   params.set('text', event.name)
-  const jumpInUrl = `${getEnv('JUMP_IN_URL') ?? 'https://decentraland.org/jump'}/events?position=${event.x ?? 0},${event.y ?? 0}`
+  const jumpInUrl = buildJumpEventShareUrl(event)
   const details = event.description ? `${event.description}\n\n${label}: ${jumpInUrl}` : `${label}: ${jumpInUrl}`
   params.set('details', details)
   const start = formatDateForGoogleCalendar(new Date(event.start_at))
@@ -44,7 +50,7 @@ const EventsPage = () => {
   const isMobile = useMobileMediaQuery()
 
   const positionParam = searchParams.get('position') ?? DEFAULT_POSITION
-  const realmParam = searchParams.get('realm') ?? DEFAULT_REALM
+  const realmParam = searchParams.get('realm') ?? searchParams.get('world') ?? DEFAULT_REALM
   const idParam = searchParams.get('id')
 
   const parsedPosition = useMemo(() => parsePosition(positionParam), [positionParam])
@@ -98,7 +104,7 @@ const EventsPage = () => {
     if (!event) return
     const title = event.name
     const text = event.description
-    const url = `${getEnv('JUMP_IN_URL') ?? 'https://decentraland.org/jump'}/events?position=${event.x ?? 0},${event.y ?? 0}`
+    const url = buildJumpEventShareUrl(event)
     if (typeof navigator.share === 'function') {
       try {
         await navigator.share({ title, text, url })
