@@ -1,6 +1,7 @@
 function appendRealmParam(url: string, realm?: string | null): string {
   if (!realm) return url
-  return `${url}&realm=${encodeURIComponent(realm)}`
+  const separator = url.includes('?') ? '&' : '?'
+  return `${url}${separator}realm=${encodeURIComponent(realm)}`
 }
 
 function resolveEventRealm(world: boolean | undefined, server: string | null | undefined): string | undefined {

@@ -252,6 +252,22 @@ describe('normalizeLiveNowCard', () => {
     })
   })
 
+  describe('when the card has world flagged but no server', () => {
+    let result: ReturnType<typeof normalizeLiveNowCard>
+
+    beforeEach(() => {
+      result = normalizeLiveNowCard(createMockLiveNowCard({ world: true, server: null }))
+    })
+
+    it('should leave realm undefined', () => {
+      expect(result.realm).toBeUndefined()
+    })
+
+    it('should build the plain jump-in URL', () => {
+      expect(result.url).toBe('https://decentraland.org/jump/event?position=10,20')
+    })
+  })
+
   describe('when the card is a place without a matching event', () => {
     let result: ReturnType<typeof normalizeLiveNowCard>
 

@@ -27,7 +27,7 @@ import { CalendarButton, EventActions, ExploreEventsButton, ShareIconButton } fr
 import { JumpPageContainer, JumpPageContent } from './PageContainer.styled'
 
 function buildJumpEventShareUrl(event: JumpEvent): string {
-  const base = `${getEnv('JUMP_IN_URL') ?? 'https://decentraland.org/jump'}/events?position=${event.x ?? 0},${event.y ?? 0}`
+  const base = `${getEnv('JUMP_IN_URL') ?? 'https://decentraland.org/jump'}/events?position=${event.x},${event.y}`
   return appendRealmParam(base, resolveEventRealm(event.world, event.server))
 }
 
@@ -50,6 +50,8 @@ const EventsPage = () => {
   const isMobile = useMobileMediaQuery()
 
   const positionParam = searchParams.get('position') ?? DEFAULT_POSITION
+  // Accept `?world=` as an alias of `?realm=` so legacy share links emitted by
+  // older clients keep resolving to the same world.
   const realmParam = searchParams.get('realm') ?? searchParams.get('world') ?? DEFAULT_REALM
   const idParam = searchParams.get('id')
 
