@@ -10,6 +10,11 @@ jest.mock('../../../hooks/useCanEditEvent', () => ({
   useCanEditEvent: () => ({ canEdit: false, isLoading: false })
 }))
 
+const mockUseAuthIdentity = jest.fn()
+jest.mock('../../../hooks/useAuthIdentity', () => ({
+  useAuthIdentity: () => mockUseAuthIdentity()
+}))
+
 const mockUseCreatorProfile = jest.fn()
 const defaultCreatorProfile = { isDclFoundation: false, creatorName: 'CreatorName', avatarFace: undefined }
 jest.mock('../../../hooks/useCreatorProfile', () => ({
@@ -50,6 +55,22 @@ jest.mock('../common/RemindMeIcon', () => ({
 }))
 
 jest.mock('decentraland-ui2', () => ({
+  Button: ({
+    children,
+    onClick,
+    disabled,
+    startIcon
+  }: {
+    children: React.ReactNode
+    onClick?: () => void
+    disabled?: boolean
+    startIcon?: React.ReactNode
+  }) => (
+    <button data-testid="primary-action-button" onClick={onClick} disabled={disabled}>
+      {startIcon}
+      {children}
+    </button>
+  ),
   LiveBadge: () => <span data-testid="live-badge">LIVE</span>,
   Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   useTheme: () => ({ breakpoints: { down: () => '(max-width:600px)' } })
@@ -114,6 +135,8 @@ describe('EventDetailModalHero', () => {
     jest.spyOn(window, 'open').mockImplementation(jest.fn())
     mockUseCreatorProfile.mockReset()
     mockUseCreatorProfile.mockReturnValue(defaultCreatorProfile)
+    mockUseAuthIdentity.mockReset()
+    mockUseAuthIdentity.mockReturnValue({ hasValidIdentity: false, identity: undefined, address: undefined })
   })
 
   afterEach(() => {
@@ -199,12 +222,41 @@ describe('EventDetailModalHero', () => {
     })
   })
 
-  describe('when the event is not live and is a real event', () => {
-    it('should hide the jump in button so users only see the remind me / calendar actions', () => {
+  describe('when the event is a future event and the user is signed in', () => {
+    beforeEach(() => {
+      mockUseAuthIdentity.mockReturnValue({ hasValidIdentity: true, identity: {}, address: '0xUser' })
+    })
+
+    it('should hide the jump in button and render remind-me as the primary labeled CTA', () => {
       render(<EventDetailModalHero data={createMockData({ live: false, isEvent: true })} onClose={mockOnClose} />)
 
       expect(screen.queryByTestId('jump-in-button')).not.toBeInTheDocument()
-      expect(screen.getByTestId('remind-me-icon')).toBeInTheDocument()
+      const primary = screen.getByTestId('primary-action-button')
+      expect(primary).toHaveTextContent('event_detail.remind_me')
+      expect(primary.querySelector('[data-testid="remind-me-icon"]')).not.toBeNull()
+    })
+  })
+
+  describe('when the event is a future event and the user is signed out', () => {
+    describe('and the event has a start date', () => {
+      it('should render add-to-calendar as the primary labeled CTA in place of remind-me', () => {
+        render(<EventDetailModalHero data={createMockData({ live: false, isEvent: true })} onClose={mockOnClose} />)
+
+        expect(screen.queryByTestId('jump-in-button')).not.toBeInTheDocument()
+        expect(screen.queryByTestId('remind-me-icon')).not.toBeInTheDocument()
+        const primary = screen.getByTestId('primary-action-button')
+        expect(primary).toHaveTextContent('event_detail.add_to_calendar')
+        expect(primary.querySelector('[data-testid="calendar-icon"]')).not.toBeNull()
+      })
+    })
+
+    describe('and the event has no start date', () => {
+      it('should not render any primary action so only copy/edit remain', () => {
+        render(<EventDetailModalHero data={createMockData({ live: false, isEvent: true, startAt: null })} onClose={mockOnClose} />)
+
+        expect(screen.queryByTestId('primary-action-button')).not.toBeInTheDocument()
+        expect(screen.queryByTestId('remind-me-icon')).not.toBeInTheDocument()
+      })
     })
   })
 
@@ -217,11 +269,10 @@ describe('EventDetailModalHero', () => {
   })
 
   describe('when the event has no startAt', () => {
-    it('should not render the calendar button', () => {
+    it('should not render the calendar button in either primary or secondary slots', () => {
       render(<EventDetailModalHero data={createMockData({ startAt: null })} onClose={mockOnClose} />)
 
-      const buttons = screen.getAllByTestId('secondary-button')
-      expect(buttons).toHaveLength(1)
+      expect(screen.queryByTestId('calendar-icon')).not.toBeInTheDocument()
     })
   })
 
