@@ -25,12 +25,12 @@ const DateNavigation = memo(({ startOffset, columnCount, today, onNavigateLeft, 
   )
 
   return (
-    <NavigationBar role="navigation" aria-label={t('all_experiences.title')}>
+    <NavigationBar role="navigation" aria-label={t('all_hangouts.title')}>
       <NavButton
         side="left"
         onClick={onNavigateLeft}
         disabled={!canGoBack}
-        aria-label={t('all_experiences.navigate_previous')}
+        aria-label={t('all_hangouts.navigate_previous')}
         aria-disabled={!canGoBack}
         tabIndex={canGoBack ? 0 : -1}
       >
@@ -46,7 +46,7 @@ const DateNavigation = memo(({ startOffset, columnCount, today, onNavigateLeft, 
           {formatDayHeader(day, t, today)}
         </DateLabel>
       ))}
-      <NavButton side="right" onClick={onNavigateRight} aria-label={t('all_experiences.navigate_next')}>
+      <NavButton side="right" onClick={onNavigateRight} aria-label={t('all_hangouts.navigate_next')}>
         <ChevronRightIcon sx={{ fontSize: 20 }} />
       </NavButton>
     </NavigationBar>

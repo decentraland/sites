@@ -37,15 +37,15 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
-        'all_experiences.title': 'All Experiences',
-        'all_experiences.tab_all': 'All Experiences',
-        'all_experiences.tab_my': 'My Experiences',
-        'all_experiences.today': 'Today',
-        'all_experiences.tomorrow': 'Tomorrow',
-        'all_experiences.navigate_previous': 'Navigate to previous dates',
-        'all_experiences.navigate_next': 'Navigate to next dates',
-        'my_experiences.empty_title': "You don't have any hangout created",
-        'my_experiences.empty_cta': 'Create Hangout'
+        'all_hangouts.title': 'All Hangouts',
+        'all_hangouts.tab_all': 'All Hangouts',
+        'all_hangouts.tab_my': 'My Hangouts',
+        'all_hangouts.today': 'Today',
+        'all_hangouts.tomorrow': 'Tomorrow',
+        'all_hangouts.navigate_previous': 'Navigate to previous dates',
+        'all_hangouts.navigate_next': 'Navigate to next dates',
+        'my_hangouts.empty_title': "You don't have any hangout created",
+        'my_hangouts.empty_cta': 'Create Hangout'
       }
       return translations[key] ?? key
     }
@@ -151,7 +151,7 @@ describe('AllExperiences', () => {
     it('should render the section title', () => {
       render(<AllExperiences />)
 
-      expect(screen.getByTestId('section-title')).toHaveTextContent('All Experiences')
+      expect(screen.getByTestId('section-title')).toHaveTextContent('All Hangouts')
     })
 
     it('should not render the tabs switcher', () => {
@@ -169,7 +169,7 @@ describe('AllExperiences', () => {
     it('should set aria-label on the section', () => {
       render(<AllExperiences />)
 
-      expect(screen.getByTestId('all-experiences-section')).toHaveAttribute('aria-label', 'All Experiences')
+      expect(screen.getByTestId('all-experiences-section')).toHaveAttribute('aria-label', 'All Hangouts')
     })
 
     it('should pass startOffset=0 to DateNavigation initially', () => {

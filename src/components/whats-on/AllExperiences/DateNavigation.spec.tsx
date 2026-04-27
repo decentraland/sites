@@ -5,10 +5,10 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
-        'all_experiences.today': 'Today',
-        'all_experiences.tomorrow': 'Tomorrow',
-        'all_experiences.navigate_previous': 'Navigate to previous dates',
-        'all_experiences.navigate_next': 'Navigate to next dates'
+        'all_hangouts.today': 'Today',
+        'all_hangouts.tomorrow': 'Tomorrow',
+        'all_hangouts.navigate_previous': 'Navigate to previous dates',
+        'all_hangouts.navigate_next': 'Navigate to next dates'
       }
       return translations[key] ?? key
     }

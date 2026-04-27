@@ -31,12 +31,12 @@ function isSameLocalDay(a: Date, b: Date): boolean {
 
 function formatDayHeader(date: Date, t: TranslateFn, today: Date = new Date()): string {
   if (isSameLocalDay(date, today)) {
-    return t('all_experiences.today')
+    return t('all_hangouts.today')
   }
 
   const tomorrow = addDays(today, 1)
   if (isSameLocalDay(date, tomorrow)) {
-    return t('all_experiences.tomorrow')
+    return t('all_hangouts.tomorrow')
   }
 
   const weekday = date.toLocaleDateString(undefined, { weekday: 'short' })

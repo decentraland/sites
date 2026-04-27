@@ -23,8 +23,8 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
-        'my_experiences.empty_title': "You don't have any hangout created",
-        'my_experiences.empty_cta': 'Create Hangout'
+        'my_hangouts.empty_title': "You don't have any hangout created",
+        'my_hangouts.empty_cta': 'Create Hangout'
       }
       return translations[key] ?? key
     }
