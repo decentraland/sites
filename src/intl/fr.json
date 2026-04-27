@@ -136,7 +136,8 @@
       },
       "whats_on": {
         "title": "Plongez dans ce qui se passe",
-        "live": "En direct"
+        "live": "En direct",
+        "view_all": "Voir tout"
       }
     }
   },
