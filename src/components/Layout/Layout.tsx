@@ -1,6 +1,6 @@
-import { Suspense, lazy, useCallback } from 'react'
+import { Suspense, lazy, useCallback, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { usePageTracking } from '@dcl/hooks'
+import { useAnalytics } from '@dcl/hooks'
 import { DownloadModal } from 'decentraland-ui2'
 import type { NotificationLocale } from 'decentraland-ui2'
 import { usePageNotifications } from '../../features/notifications/usePageNotifications'
@@ -25,7 +25,18 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
   const { data: profile, isLoading: isLoadingProfile } = useGetProfileQuery(address ?? undefined, { skip: !address })
   const avatar = profile?.avatars?.[0]
   const effectivelySignedIn = isConnected || !!address
-  usePageTracking(location.pathname)
+  // /blog/* pages own their `page()` call (via useBlogPageTracking) so the event
+  // fires after the post/category title is resolved — without this guard the
+  // route-level call here would race the resolved <title> and report stale
+  // titles for SPA navigations into a post. Also gates on isInitialized to
+  // avoid no-op calls while the deferred Segment loader is still pending.
+  const { isInitialized: isAnalyticsInitialized, page } = useAnalytics()
+  useEffect(() => {
+    if (!isAnalyticsInitialized) return
+    const isBlogRoute = location.pathname === '/blog' || location.pathname.startsWith('/blog/')
+    if (isBlogRoute) return
+    page(location.pathname)
+  }, [isAnalyticsInitialized, location.pathname, page])
 
   const { balances: manaBalances, isLoading: isManaLoading, fetchBalances: fetchManaBalances } = useManaBalances(address || undefined)
   const { identity } = useAuthIdentity()

@@ -7,6 +7,7 @@ import { SearchResultCard } from '../../components/blog/SearchResultCard'
 import { SEO } from '../../components/blog/SEO/SEO'
 import { getEnv } from '../../config/env'
 import { useSearchBlogPostsQuery } from '../../features/search/search.client'
+import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
 import type { SearchResult } from '../../shared/blog/types/blog.domain'
 import { CenteredBox, HeaderBox, LoadMoreContainer, ResultsWrapper, SearchSubtitle } from './SearchPage.styled'
 
@@ -58,6 +59,12 @@ export const SearchPage = () => {
 
   const searchDescription = query ? t('search.description_with_query', { query }) : t('search.description')
   const baseUrl = getEnv('BLOG_BASE_URL') || ''
+
+  const searchTitle = query ? t('search.title_with_query', { query }) : t('search.title')
+  useBlogPageTracking({
+    name: searchTitle,
+    properties: { title: searchTitle, query }
+  })
 
   return (
     <BlogLayout showBlogNavigation={true}>

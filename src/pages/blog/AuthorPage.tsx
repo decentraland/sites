@@ -7,6 +7,7 @@ import { OGType, SEO } from '../../components/blog/SEO/SEO'
 import { getEnv } from '../../config/env'
 import { useGetBlogAuthorBySlugQuery } from '../../features/blog/blog.client'
 import { useInfiniteBlogPosts } from '../../features/blog/useInfiniteBlogPosts'
+import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
 import type { BlogAuthor } from '../../shared/blog/types/blog.domain'
 import { AuthorHeaderBox, AuthorImage } from './AuthorPage.styled'
 import { CenteredBox } from './shared.styled'
@@ -54,6 +55,18 @@ export const AuthorPage = () => {
   })
 
   const baseUrl = getEnv('BLOG_BASE_URL') || ''
+
+  const trackingTitle = author?.title ? t('blog.posts_by', { author: author.title }) : undefined
+  useBlogPageTracking({
+    name: trackingTitle,
+    properties: author
+      ? {
+          title: trackingTitle,
+          author: author.title,
+          authorSlug: author.slug
+        }
+      : undefined
+  })
 
   if (authorError) {
     return (
