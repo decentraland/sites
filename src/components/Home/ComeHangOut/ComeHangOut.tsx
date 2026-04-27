@@ -10,7 +10,7 @@ import microsoftLogo from '../../../images/microsoft-logo.svg'
 import { DOWNLOAD_URLS } from '../../../modules/downloadConstants'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
 import { formatToShorthand } from '../../../modules/number'
-import { SectionViewedTrack } from '../../../modules/segment'
+import { DownloadPlace, SectionViewedTrack } from '../../../modules/segment'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
@@ -71,7 +71,7 @@ const ComeHangOut = memo(() => {
     (e: React.MouseEvent<HTMLElement>) => {
       onClickHandle(e)
       if (userAgentData) {
-        window.location.href = `/download_success?os=${userAgentData.os.name}`
+        window.location.href = `/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.COME_HANG_OUT}`
       }
     },
     [onClickHandle, userAgentData]
@@ -85,7 +85,7 @@ const ComeHangOut = memo(() => {
     <>
       <div style={{ display: 'flex', gap: 24, justifyContent: 'center' }}>
         <DownloadButton
-          href={userAgentData ? `/download_success?os=${userAgentData.os.name}` : '/download'}
+          href={userAgentData ? `/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.COME_HANG_OUT}` : '/download'}
           data-place={SectionViewedTrack.LANDING_HERO}
           data-event="click"
           onClick={handleDownloadClick}
@@ -109,12 +109,12 @@ const ComeHangOut = memo(() => {
         <DownloadSeparator />
         <PlatformIcons>
           {currentOs === OperativeSystem.MACOS && (
-            <a href="/download_success?os=Windows">
+            <a href={`/download_success?os=Windows&place=${DownloadPlace.COME_HANG_OUT}`}>
               <PlatformIcon src={microsoftLogo} alt="Windows" />
             </a>
           )}
           {currentOs === OperativeSystem.WINDOWS && (
-            <a href="/download_success?os=macOS">
+            <a href={`/download_success?os=macOS&place=${DownloadPlace.COME_HANG_OUT}`}>
               <PlatformIcon src={appleLogo} alt="macOS" />
             </a>
           )}
