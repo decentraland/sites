@@ -129,7 +129,11 @@ describe('HostBanner', () => {
 
       fireEvent.click(screen.getByTestId('learn-more-button'))
 
-      expect(mockOpen).toHaveBeenCalledWith('https://docs.decentraland.org/creator/events/', '_blank', 'noopener')
+      expect(mockOpen).toHaveBeenCalledWith(
+        'https://decentraland.org/blog/about-decentraland/how-to-make-and-run-an-event-in-decentraland',
+        '_blank',
+        'noopener'
+      )
 
       mockOpen.mockRestore()
     })

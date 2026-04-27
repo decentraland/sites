@@ -1,7 +1,15 @@
 import { MemoryRouter } from 'react-router-dom'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 /* eslint-disable-next-line @typescript-eslint/no-require-imports */
 const { UsersAdminPage } = require('./UsersAdminPage')
+
+const ADMIN_ALICE = '0x1111111111111111111111111111111111111111'
+const ADMIN_BOB = '0x2222222222222222222222222222222222222222'
+const NAME_BY_ADDRESS: Record<string, string> = {
+  [ADMIN_ALICE.toLowerCase()]: 'Alice',
+  [ADMIN_BOB.toLowerCase()]: 'Bob'
+}
+let mockAdmins: Array<{ user: string; email: string | null; permissions: string[] }> = []
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
@@ -26,8 +34,13 @@ jest.mock('../../features/whats-on/admin/admin.types', () => ({
 }))
 
 jest.mock('../../features/whats-on/admin/admin.client', () => ({
-  useListAdminsQuery: () => ({ data: [], isFetching: false, refetch: jest.fn() }),
+  useListAdminsQuery: () => ({ data: mockAdmins, isFetching: false, refetch: jest.fn() }),
   useUpdateAdminPermissionsMutation: () => [jest.fn(), { isLoading: false }]
+}))
+
+jest.mock('../../features/profile/profile.client', () => ({
+  useGetProfileNames: (addresses: readonly string[]) =>
+    new Map(addresses.map(address => [address.toLowerCase(), NAME_BY_ADDRESS[address.toLowerCase()]]))
 }))
 
 jest.mock('../../components/whats-on/AdminPermissionsModal', () => ({
@@ -60,7 +73,10 @@ jest.mock('@mui/icons-material/Search', () => ({
 }))
 
 jest.mock('../../hooks/useProfileAvatar', () => ({
-  useProfileAvatar: () => ({ avatarFace: undefined, name: undefined })
+  useProfileAvatar: (address: string | undefined) => ({
+    avatarFace: undefined,
+    name: address ? NAME_BY_ADDRESS[address.toLowerCase()] : undefined
+  })
 }))
 
 jest.mock('decentraland-ui2', () => ({
@@ -74,10 +90,19 @@ jest.mock('decentraland-ui2', () => ({
   TableHead: ({ children }: { children: React.ReactNode }) => <thead>{children}</thead>,
   TablePagination: () => <div data-testid="table-pagination" />,
   TableRow: ({ children }: { children: React.ReactNode }) => <tr>{children}</tr>,
-  TextField: ({ label }: { label: string }) => <label>{label}</label>
+  TextField: ({ label, value, onChange }: { label: string; value: string; onChange: (e: { target: { value: string } }) => void }) => (
+    <label>
+      {label}
+      <input aria-label={label} value={value} onChange={onChange} />
+    </label>
+  )
 }))
 
 describe('when rendering UsersAdminPage with canEditAnyProfile', () => {
+  beforeEach(() => {
+    mockAdmins = []
+  })
+
   afterEach(() => {
     jest.resetAllMocks()
   })
@@ -98,5 +123,34 @@ describe('when rendering UsersAdminPage with canEditAnyProfile', () => {
       </MemoryRouter>
     )
     expect(screen.getByRole('button', { name: 'whats_on_admin.cta.add_user' })).toBeInTheDocument()
+  })
+})
+
+describe('when searching admins by profile name', () => {
+  beforeEach(() => {
+    mockAdmins = [
+      { user: ADMIN_ALICE, email: null, permissions: [] },
+      { user: ADMIN_BOB, email: null, permissions: [] }
+    ]
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should keep only rows whose profile name matches the query', () => {
+    render(
+      <MemoryRouter>
+        <UsersAdminPage />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByText(new RegExp(ADMIN_ALICE, 'i'))).toBeInTheDocument()
+    expect(screen.getByText(new RegExp(ADMIN_BOB, 'i'))).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('whats_on_admin.users.search_label'), { target: { value: 'alice' } })
+
+    expect(screen.getByText(new RegExp(ADMIN_ALICE, 'i'))).toBeInTheDocument()
+    expect(screen.queryByText(new RegExp(ADMIN_BOB, 'i'))).not.toBeInTheDocument()
   })
 })

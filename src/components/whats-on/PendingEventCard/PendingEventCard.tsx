@@ -19,10 +19,13 @@ const STATUS_LABEL_KEY: Record<'pending' | 'approved' | 'rejected', string> = {
 const PendingEventCard = memo(function PendingEventCard({ event, onClick }: PendingEventCardProps) {
   const { t } = useTranslation()
   const status = getEventStatus(event)
-  const dateLabel = getRelativeDateLabel(event.start_at, t)
+  const referenceStart = event.recurrent && event.next_start_at ? event.next_start_at : event.start_at
+  const dateLabel = getRelativeDateLabel(referenceStart, t)
+
+  const isPending = status === 'pending'
 
   return (
-    <CardFrame>
+    <CardFrame faded={isPending} aria-disabled={isPending}>
       <ChipOverlay>
         {dateLabel ? <DateChip>{dateLabel}</DateChip> : <span />}
         <StatusChip status={status}>{t(STATUS_LABEL_KEY[status])}</StatusChip>

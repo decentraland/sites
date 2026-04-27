@@ -3,11 +3,12 @@ import { Box, Typography, styled } from 'decentraland-ui2'
 const SuccessOverlay = styled(Box)({
   position: 'fixed',
   inset: 0,
-  zIndex: 1000,
+  zIndex: 1400,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  overflow: 'hidden'
+  overflow: 'hidden',
+  background: 'radial-gradient(52.86% 115.71% at 9.01% 25.79%, #7434B1 0%, #481C6C 37.11%, #2B1040 100%)'
 })
 
 const SuccessContainer = styled(Box)(({ theme }) => ({

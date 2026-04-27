@@ -3,5 +3,15 @@
     { "source": "/blog/:path*", "destination": "/api/seo?path=/blog/:path*" },
     { "source": "/blog", "destination": "/api/seo?path=/blog" },
     { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/whitepaper.pdf",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/whitepaper2.pdf",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }
   ]
 }

@@ -11,7 +11,7 @@ import { getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
 import { ExplorerDownloads } from '../../modules/explorerDownloads'
 import { formatToShorthand } from '../../modules/number'
 import { trackCheckpoint } from '../../modules/onboardingCheckpoint'
-import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
+import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { addQueryParamsToUrlString, sanitizeCDNReleaseLinks, updateUrlWithLastValue } from '../../modules/url'
 import { Architecture, DownloadOptionProps, OperativeSystem } from '../../types/download.types'
 import { assetUrl } from '../../utils/assetUrl'
@@ -142,7 +142,11 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
 
       const redirectPath = '/download_success'
       const redirectUrl = updateUrlWithLastValue(new URL(redirectPath, window.location.origin).toString(), 'os', option.text)
-      const finalUrl = addQueryParamsToUrlString(redirectUrl, { arch: option.arch, [ANON_USER_ID_PARAM]: anonUserId })
+      const finalUrl = addQueryParamsToUrlString(redirectUrl, {
+        arch: option.arch,
+        place: DownloadPlace.DOWNLOAD_PAGE,
+        [ANON_USER_ID_PARAM]: anonUserId
+      })
       setTimeout(
         () => {
           window.location.href = finalUrl

@@ -15,7 +15,7 @@ import windowsSetup from '../../images/download/windows_setup.webp'
 import microsoftLogo from '../../images/microsoft-logo.svg'
 import { calculateDownloadUrl, getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
 import { triggerFileDownload } from '../../modules/file'
-import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
+import { SectionViewedTrack, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
 import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
 import { DownloadSuccessLayout } from './DownloadSuccessLayout'
@@ -62,6 +62,7 @@ const DownloadSuccess = memo(() => {
   const defaultArch = clientOS === OperativeSystem.WINDOWS ? 'amd64' : 'arm64'
   const rawArch = searchParams.get('arch') || defaultArch
   const clientArch = (VALID_ARCHS.has(rawArch) ? rawArch : defaultArch) as Architecture
+  const place = resolveDownloadPlace(searchParams.get('place'))
 
   const osIcon = clientOS === OperativeSystem.WINDOWS ? microsoftLogo : appleLogo
   const osLink =
@@ -141,7 +142,7 @@ const DownloadSuccess = memo(() => {
       setIsFileSaved(false)
 
       if (isInitializedRef.current) {
-        trackRef.current(SegmentEvent.DOWNLOAD_STARTED)
+        trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place, href: osLink })
       }
 
       const { url, filename } = await calculateDownloadUrl({
@@ -173,7 +174,7 @@ const DownloadSuccess = memo(() => {
       setIsFileSaved(true)
 
       if (isInitializedRef.current) {
-        trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { filename })
+        trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place, href: url, filename })
       }
     }
 
@@ -183,7 +184,7 @@ const DownloadSuccess = memo(() => {
         console.error('Download error:', error)
         setDownloadError(error instanceof Error ? error.message : 'Download failed')
         if (isInitializedRef.current) {
-          trackRef.current(SegmentEvent.DOWNLOAD_FAILED)
+          trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place, href: osLink })
         }
       })
       .finally(() => {
@@ -195,7 +196,7 @@ const DownloadSuccess = memo(() => {
     return () => {
       cancelled = true
     }
-  }, [clientOS, clientArch])
+  }, [clientOS, clientArch, osLink, place])
 
   const handleDownloadClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {

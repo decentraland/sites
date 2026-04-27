@@ -142,6 +142,10 @@ const CategoryLabel = styled(Typography)({
   letterSpacing: '0.04em'
 })
 
+const LiveBadgeWrapper = styled(Box)({
+  alignSelf: 'flex-start'
+})
+
 const ModalTitle = styled(Typography)({
   fontSize: 32,
   fontWeight: 600,
@@ -197,34 +201,6 @@ const ActionsRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1)
-}))
-
-const JumpInButton = styled('button')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: theme.spacing(1),
-  backgroundColor: '#FCFCFC',
-  color: '#161518',
-  border: 'none',
-  borderRadius: theme.spacing(1),
-  padding: theme.spacing(1, 2.5),
-  fontSize: 14,
-  fontWeight: 600,
-  cursor: 'pointer',
-  whiteSpace: 'nowrap',
-  transition: theme.transitions.create('background-color', {
-    duration: theme.transitions.duration.short
-  }),
-  /* eslint-disable @typescript-eslint/naming-convention */
-  '&:hover': {
-    backgroundColor: '#E0E0E0'
-  },
-  '&:focus-visible': {
-    outline: '2px solid #FCFCFC',
-    outlineOffset: 2
-  }
-  /* eslint-enable @typescript-eslint/naming-convention */
 }))
 
 const SecondaryButton = styled('button')(({ theme }) => ({
@@ -419,7 +395,7 @@ export {
   HeroImage,
   HeroOverlay,
   HeroSection,
-  JumpInButton,
+  LiveBadgeWrapper,
   ModalTitle,
   RecurrenceText,
   ScheduleIconButton,

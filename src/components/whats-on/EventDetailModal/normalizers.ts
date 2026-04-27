@@ -1,8 +1,9 @@
 import type { EventEntry, LiveNowCard } from '../../../features/whats-on-events'
-import { buildEventJumpInUrl, buildJumpInUrl, parseCoordinates } from '../../../utils/whatsOnUrl'
+import { buildEventJumpInUrl, buildJumpInUrl, parseCoordinates, resolveEventRealm } from '../../../utils/whatsOnUrl'
 import type { ModalEventData } from './EventDetailModal.types'
 
 function normalizeEventEntry(event: EventEntry): ModalEventData {
+  const realm = resolveEventRealm(event.world, event.server)
   return {
     id: event.id,
     name: event.name,
@@ -21,14 +22,16 @@ function normalizeEventEntry(event: EventEntry): ModalEventData {
     attending: event.attending,
     live: event.live,
     categories: event.categories,
-    url: buildEventJumpInUrl(event.x, event.y),
+    url: buildEventJumpInUrl(event.x, event.y, realm),
+    realm,
     isEvent: true
   }
 }
 
 function normalizeLiveNowCard(card: LiveNowCard): ModalEventData {
   const [x, y] = parseCoordinates(card.coordinates)
-  const url = card.type === 'event' ? buildEventJumpInUrl(x, y) : buildJumpInUrl(x, y)
+  const realm = resolveEventRealm(card.world, card.server)
+  const url = card.type === 'event' ? buildEventJumpInUrl(x, y, realm) : buildJumpInUrl(x, y, realm)
   return {
     id: card.id,
     name: card.title,
@@ -48,6 +51,7 @@ function normalizeLiveNowCard(card: LiveNowCard): ModalEventData {
     live: true,
     categories: card.categories ?? [],
     url,
+    realm,
     isEvent: card.type === 'event'
   }
 }

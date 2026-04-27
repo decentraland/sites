@@ -83,12 +83,12 @@ describe('CreateEventSuccess', () => {
   })
 
   describe('when the my-events button is clicked', () => {
-    it('should navigate to /whats-on', () => {
+    it('should navigate to /whats-on with the my tab activated', () => {
       render(<CreateEventSuccess />)
 
       fireEvent.click(screen.getByTestId('primary-button'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/whats-on')
+      expect(mockNavigate).toHaveBeenCalledWith('/whats-on', { state: { activeTab: 'my' } })
     })
   })
 

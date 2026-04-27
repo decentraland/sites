@@ -13,7 +13,8 @@ const IMAGE_ERROR_I18N = {
   image_too_large: 'create_event.error_image_too_large',
   upload_failed: 'create_event.error_upload_failed',
   vertical_image_dimensions: 'create_event.error_vertical_image_dimensions',
-  vertical_image_decode: 'create_event.error_vertical_image_decode'
+  vertical_image_decode: 'create_event.error_vertical_image_decode',
+  image_required: 'create_event.error_image_required'
 } as const satisfies Record<ImageErrorCode, string>
 /* eslint-enable @typescript-eslint/naming-convention */
 
