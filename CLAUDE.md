@@ -48,7 +48,7 @@ These render as `<Outlet />` children of `src/shells/DappsShell.tsx`. The shell 
 | `src/services/blogClient.ts`    | RTK Query base clients (`cmsClient`, `algoliaClient`) — infrastructure only, empty endpoints. Endpoints are injected from `features/blog/` and `features/search/`. See "RTK Query split" below. |
 | `src/hooks/`                    | `useAuthIdentity`, `useWalletAddress`, `useManaBalances`, etc. All localStorage-based — no Redux dependency.                                                                                    |
 | `src/config/env/`               | Per-environment JSON (`dev.json`, `stg.json`, `prd.json`). Access via `getEnv('KEY')` from `src/config/env.ts`.                                                                                 |
-| `src/intl/`                     | Single `en.json` with all translations merged (landing + whats-on + blog namespaces). `LocaleContext.tsx` wraps `@dcl/hooks`'s `TranslationProvider`.                                           |
+| `src/intl/`                     | Six locale files — `en.json`, `es.json`, `fr.json`, `ja.json`, `ko.json`, `zh.json` — each with all translations merged (landing + whats-on + blog namespaces). When adding a key to `en.json`, add it to ALL five other locales in the same commit. `LocaleContext.tsx` wraps `@dcl/hooks`'s `TranslationProvider`. |
 | `src/modules/`                  | Side-effect wiring: Sentry (`sentry.ts`), Segment/Contentsquare (`DeferredAnalyticsProvider`, `deferredThirdParty.ts`).                                                                         |
 | `src/shared/blog/`              | Domain types and utilities (dates, slugs, locations) for blog content.                                                                                                                          |
 | `src/utils/signedFetch.ts`      | Shared identity-signed fetch. Used by whats-on mutations.                                                                                                                                       |
@@ -215,11 +215,15 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
 
 - NEVER add blanket ignores (e.g. `src/**/*.spec.ts(x)` to top-level `ignores`). Use a scoped `overrides` entry that disables ONLY the specific rules that differ.
 
-### 9. JSON merges
+### 9. JSON merges + i18n parity
 
 - When merging two JSON files (e.g. `intl/en.json`), verify no duplicate top-level keys:
   ```bash
   node -e 'const j=require("./src/intl/en.json");const k=Object.keys(j);if(new Set(k).size!==k.length)throw new Error("dupe keys")'
+  ```
+- Adding a translation key to `en.json` MUST add it to all five sibling locales (`es`, `fr`, `ja`, `ko`, `zh`) in the same commit. Missing locales fall back to the raw key, which the Jarvis review bot will flag as P2. Verify with:
+  ```bash
+  for f in en es fr ja ko zh; do node -e "const j=require('./src/intl/${f}.json'); const v=j.path?.to?.your_key; if(!v) throw new Error('${f}: missing'); console.log('${f}:', v)"; done
   ```
 
 ### 10. Error handling
