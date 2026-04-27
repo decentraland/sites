@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
 
 const WhatsOnContainer = styled(Box)(({ theme }) => ({
@@ -108,4 +109,39 @@ const CardWrapper = styled('div')({
   /* eslint-enable @typescript-eslint/naming-convention */
 })
 
-export { CardWrapper, CardsGrid, WhatsOnContainer, MobileCarousel, SectionTitle }
+const ViewAllButton = styled(Link)(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: theme.spacing(1.5),
+  padding: '9px 32px',
+  border: `2px solid ${dclColors.neutral.white}`,
+  borderRadius: 10,
+  color: dclColors.neutral.white,
+  fontWeight: 700,
+  fontSize: 16,
+  lineHeight: '16px',
+  textTransform: 'uppercase',
+  textDecoration: 'none',
+  whiteSpace: 'nowrap',
+  position: 'relative',
+  zIndex: 10,
+  transition: 'background-color 0.2s ease, transform 0.2s ease',
+  cursor: 'pointer',
+  /* eslint-disable @typescript-eslint/naming-convention */
+  '&:hover': {
+    backgroundColor: 'rgba(252, 252, 252, 0.1)'
+  },
+  '&:focus-visible': {
+    outline: `2px solid ${dclColors.neutral.white}`,
+    outlineOffset: 2
+  },
+  '&:active': {
+    transform: 'scale(0.98)'
+  },
+  '& svg': {
+    fontSize: 20
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
+}))
+
+export { CardWrapper, CardsGrid, WhatsOnContainer, MobileCarousel, SectionTitle, ViewAllButton }

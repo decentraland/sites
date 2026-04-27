@@ -186,7 +186,8 @@
       },
       "whats_on": {
         "title": "Jump Into What's Happening",
-        "live": "Live"
+        "live": "Live",
+        "view_all": "View All"
       }
     }
   },
