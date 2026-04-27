@@ -18,16 +18,6 @@ jest.mock('../../../features/whats-on-events', () => ({
   useGetEventsQuery: (...args: unknown[]) => mockUseGetEventsQuery(...args)
 }))
 
-const mockUseGetAdminEventsQuery = jest.fn()
-jest.mock('../../../features/whats-on/admin/admin.client', () => ({
-  useGetAdminEventsQuery: (...args: unknown[]) => mockUseGetAdminEventsQuery(...args)
-}))
-
-const mockUseAdminPermissions = jest.fn()
-jest.mock('../../../hooks/useAdminPermissions', () => ({
-  useAdminPermissions: () => mockUseAdminPermissions()
-}))
-
 const mockColumnCount = jest.fn()
 jest.mock('../../../hooks/useVisibleColumnCount', () => ({
   useVisibleColumnCount: () => mockColumnCount()
@@ -132,8 +122,6 @@ describe('AllExperiences', () => {
     jest.useFakeTimers()
     jest.setSystemTime(new Date(2026, 8, 13, 10, 0, 0))
     mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
-    mockUseAdminPermissions.mockReturnValue({ isAdmin: false, hasIdentity: false, isLoading: false, permissions: [] })
-    mockUseGetAdminEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
   })
 
   afterEach(() => {
@@ -184,11 +172,11 @@ describe('AllExperiences', () => {
       expect(screen.queryByTestId('event-detail-modal')).not.toBeInTheDocument()
     })
 
-    it('should query events with list=active and no creator filter', () => {
+    it('should query events with list=active without identity', () => {
       render(<AllExperiences />)
 
       expect(mockUseGetEventsQuery).toHaveBeenCalledWith(
-        expect.objectContaining({ list: 'active', creator: undefined }),
+        expect.objectContaining({ list: 'active', identity: undefined }),
         expect.any(Object)
       )
     })
@@ -387,15 +375,15 @@ describe('AllExperiences', () => {
         mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
       })
 
-      it('should query events filtered by creator with list=all', () => {
+      it('should query events with list=mine and rely on the identity to scope by creator', () => {
         render(<AllExperiences />)
 
         fireEvent.click(screen.getByTestId('tab-my'))
 
-        expect(mockUseGetEventsQuery).toHaveBeenLastCalledWith(
-          expect.objectContaining({ list: 'all', creator: '0xCreator' }),
-          expect.any(Object)
-        )
+        const lastCall = mockUseGetEventsQuery.mock.calls.at(-1)?.[0] as { list?: string; creator?: unknown; identity?: unknown }
+        expect(lastCall.list).toBe('mine')
+        expect(lastCall.creator).toBeUndefined()
+        expect(lastCall.identity).toBeDefined()
       })
 
       it('should force a refetch when mounting the my tab so newly created events are visible', () => {
@@ -448,10 +436,9 @@ describe('AllExperiences', () => {
       })
     })
 
-    describe('and the user is an admin with rejected events in the future', () => {
+    describe('and the caller has rejected events of their own in the future', () => {
       beforeEach(() => {
-        mockUseAdminPermissions.mockReturnValue({ isAdmin: true, hasIdentity: true, isLoading: false, permissions: [] })
-        mockUseGetAdminEventsQuery.mockReturnValue({
+        mockUseGetEventsQuery.mockReturnValue({
           data: [
             createMockEvent({
               id: 'mine-approved',
@@ -468,14 +455,6 @@ describe('AllExperiences', () => {
               rejected: true,
               start_at: '2026-09-21T14:00:00Z',
               finish_at: '2026-09-21T16:00:00Z'
-            }),
-            createMockEvent({
-              id: 'someone-else',
-              user: '0xOther',
-              approved: true,
-              rejected: false,
-              start_at: '2026-09-22T14:00:00Z',
-              finish_at: '2026-09-22T16:00:00Z'
             })
           ],
           isLoading: false,
@@ -483,15 +462,17 @@ describe('AllExperiences', () => {
         })
       })
 
-      it('should include rejected events in my experiences by sourcing them from the admin endpoint', () => {
+      it('should render rejected events alongside approved ones from the list=mine response', () => {
         render(<AllExperiences />)
 
         fireEvent.click(screen.getByTestId('tab-my'))
 
+        const lastCall = mockUseGetEventsQuery.mock.calls.at(-1)?.[0] as { list?: string }
+        expect(lastCall.list).toBe('mine')
+
         const cardIds = screen.getAllByTestId('my-exp-grid-card').map(c => c.getAttribute('data-id'))
         expect(cardIds).toContain('mine-rejected-future')
         expect(cardIds).toContain('mine-approved')
-        expect(cardIds).not.toContain('someone-else')
       })
     })
 
