@@ -47,14 +47,7 @@ export const CategoryPage = () => {
 
   useBlogPageTracking({
     name: category?.title,
-    properties: category
-      ? {
-          title: category.title,
-          slug: category.slug,
-          category: category.title,
-          categorySlug: category.slug
-        }
-      : undefined
+    properties: category ? { title: category.title, categorySlug: category.slug } : undefined
   })
 
   if (categoryError) {

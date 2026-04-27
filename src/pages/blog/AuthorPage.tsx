@@ -56,12 +56,12 @@ export const AuthorPage = () => {
 
   const baseUrl = getEnv('BLOG_BASE_URL') || ''
 
-  const trackingTitle = author?.title ? t('blog.posts_by', { author: author.title }) : undefined
+  const pageTitle = author?.title ? t('blog.posts_by', { author: author.title }) : undefined
   useBlogPageTracking({
-    name: trackingTitle,
+    name: pageTitle,
     properties: author
       ? {
-          title: trackingTitle,
+          title: pageTitle,
           author: author.title,
           authorSlug: author.slug
         }
@@ -81,7 +81,7 @@ export const AuthorPage = () => {
   return (
     <BlogLayout showBlogNavigation={true}>
       <SEO
-        title={author?.title ? t('blog.posts_by', { author: author.title }) : undefined}
+        title={pageTitle}
         description={author?.description || t('blog.default_description')}
         url={`${baseUrl}/author/${authorSlug}`}
         type={OGType.PROFILE}

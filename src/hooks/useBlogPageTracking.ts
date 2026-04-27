@@ -13,6 +13,10 @@ interface UseBlogPageTrackingArgs {
 export function useBlogPageTracking({ name, properties }: UseBlogPageTrackingArgs) {
   const { isInitialized, page } = useAnalytics()
 
+  // `propertiesKey` (not `properties`) is the dep so identical-shape rerenders
+  // don't re-fire `page()`. Do NOT add `properties` to the dep array — its
+  // reference changes every parent render, which would cause a spurious `page()`
+  // event on every rerender.
   const propertiesKey = useMemo(() => (properties ? JSON.stringify(properties) : ''), [properties])
 
   useEffect(() => {

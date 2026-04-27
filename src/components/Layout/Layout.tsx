@@ -30,6 +30,7 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
   // route-level call here would race the resolved <title> and report stale
   // titles for SPA navigations into a post. Also gates on isInitialized to
   // avoid no-op calls while the deferred Segment loader is still pending.
+  // /blog/preview is intentionally untracked (Contentful editor-only view).
   const { isInitialized: isAnalyticsInitialized, page } = useAnalytics()
   useEffect(() => {
     if (!isAnalyticsInitialized) return

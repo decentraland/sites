@@ -60,16 +60,17 @@ export const SearchPage = () => {
   const searchDescription = query ? t('search.description_with_query', { query }) : t('search.description')
   const baseUrl = getEnv('BLOG_BASE_URL') || ''
 
-  const searchTitle = query ? t('search.title_with_query', { query }) : t('search.title')
+  const pageTitle = query ? t('search.title_with_query', { query }) : t('search.title')
+  // Avoid forwarding the raw user query to Segment — send privacy-safe signals instead.
   useBlogPageTracking({
-    name: searchTitle,
-    properties: { title: searchTitle, query }
+    name: query ? 'Blog Search Results' : 'Blog Search',
+    properties: { title: pageTitle, hasQuery: query.length > 0, queryLength: query.length }
   })
 
   return (
     <BlogLayout showBlogNavigation={true}>
       <SEO
-        title={query ? t('search.title_with_query', { query }) : t('search.title')}
+        title={pageTitle}
         description={searchDescription}
         url={query ? `${baseUrl}/search?q=${encodeURIComponent(query)}` : `${baseUrl}/search`}
       />
