@@ -16,8 +16,10 @@ jest.mock('../../../hooks/useCreatorProfile', () => ({
   useCreatorProfile: (...args: unknown[]) => mockUseCreatorProfile(...(args as []))
 }))
 
+const mockBuildEventShareUrl = jest.fn()
 jest.mock('../../../utils/whatsOnUrl', () => ({
-  buildCalendarUrl: jest.fn(() => 'https://calendar.google.com/test')
+  buildCalendarUrl: jest.fn(() => 'https://calendar.google.com/test'),
+  buildEventShareUrl: (...args: unknown[]) => mockBuildEventShareUrl(...args)
 }))
 
 let mockIsMobile = false
@@ -143,10 +145,10 @@ describe('EventDetailModalHero', () => {
       expect(screen.getByTestId('close-button')).toBeInTheDocument()
     })
 
-    it('should render the jump in button', () => {
+    it('should not render the jump in button when the event is not live', () => {
       render(<EventDetailModalHero data={createMockData()} onClose={mockOnClose} />)
 
-      expect(screen.getByTestId('jump-in-button')).toBeInTheDocument()
+      expect(screen.queryByTestId('jump-in-button')).not.toBeInTheDocument()
     })
   })
 
@@ -160,9 +162,9 @@ describe('EventDetailModalHero', () => {
     })
   })
 
-  describe('when rendering the jump in button', () => {
-    it('should pass the event position to the jump in button', () => {
-      render(<EventDetailModalHero data={createMockData()} onClose={mockOnClose} />)
+  describe('when rendering a live event', () => {
+    it('should render the jump in button with the event position', () => {
+      render(<EventDetailModalHero data={createMockData({ live: true })} onClose={mockOnClose} />)
 
       expect(screen.getByTestId('jump-in-button')).toHaveAttribute('data-position', '10,20')
     })
@@ -188,6 +190,21 @@ describe('EventDetailModalHero', () => {
       render(<EventDetailModalHero data={createMockData({ live: true })} onClose={mockOnClose} />)
 
       expect(screen.queryByTestId('remind-me-icon')).not.toBeInTheDocument()
+    })
+
+    it('should render the jump in button as the primary CTA', () => {
+      render(<EventDetailModalHero data={createMockData({ live: true })} onClose={mockOnClose} />)
+
+      expect(screen.getByTestId('jump-in-button')).toBeInTheDocument()
+    })
+  })
+
+  describe('when the event is not live and is a real event', () => {
+    it('should hide the jump in button so users only see the remind me / calendar actions', () => {
+      render(<EventDetailModalHero data={createMockData({ live: false, isEvent: true })} onClose={mockOnClose} />)
+
+      expect(screen.queryByTestId('jump-in-button')).not.toBeInTheDocument()
+      expect(screen.getByTestId('remind-me-icon')).toBeInTheDocument()
     })
   })
 
@@ -311,8 +328,9 @@ describe('EventDetailModalHero', () => {
     let originalClipboard: Clipboard
 
     beforeEach(() => {
+      mockBuildEventShareUrl.mockReset()
       originalClipboard = navigator.clipboard
-      mockWriteText = jest.fn().mockResolvedValueOnce(undefined)
+      mockWriteText = jest.fn().mockResolvedValue(undefined)
       Object.defineProperty(navigator, 'clipboard', {
         value: { writeText: mockWriteText },
         writable: true,
@@ -328,14 +346,51 @@ describe('EventDetailModalHero', () => {
       })
     })
 
-    it('should copy the event URL to clipboard', async () => {
-      render(<EventDetailModalHero data={createMockData()} onClose={mockOnClose} />)
-
-      await act(async () => {
-        fireEvent.click(screen.getByTestId('copy-button'))
+    describe('and the modal data is a future event', () => {
+      beforeEach(() => {
+        mockBuildEventShareUrl.mockReturnValue('http://localhost/whats-on?id=event-1')
       })
 
-      expect(mockWriteText).toHaveBeenCalledWith('https://decentraland.org/jump/event?position=10,20')
+      it('should copy the deep link back into the whats-on modal', async () => {
+        render(<EventDetailModalHero data={createMockData({ live: false, isEvent: true, id: 'event-1' })} onClose={mockOnClose} />)
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('copy-button'))
+        })
+
+        expect(mockBuildEventShareUrl).toHaveBeenCalledWith('event-1', false)
+        expect(mockWriteText).toHaveBeenCalledWith('http://localhost/whats-on?id=event-1')
+      })
+    })
+
+    describe('and the modal data is a live event', () => {
+      beforeEach(() => {
+        mockBuildEventShareUrl.mockReturnValue('http://localhost/jump/events?id=event-1')
+      })
+
+      it('should copy the jump-events deep link so the destination opens the launcher flow', async () => {
+        render(<EventDetailModalHero data={createMockData({ live: true, isEvent: true, id: 'event-1' })} onClose={mockOnClose} />)
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('copy-button'))
+        })
+
+        expect(mockBuildEventShareUrl).toHaveBeenCalledWith('event-1', true)
+        expect(mockWriteText).toHaveBeenCalledWith('http://localhost/jump/events?id=event-1')
+      })
+    })
+
+    describe('and the modal data is a live place without a matching event', () => {
+      it('should fall back to the place jump url because there is no event id to deep link', async () => {
+        render(<EventDetailModalHero data={createMockData({ isEvent: false })} onClose={mockOnClose} />)
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('copy-button'))
+        })
+
+        expect(mockBuildEventShareUrl).not.toHaveBeenCalled()
+        expect(mockWriteText).toHaveBeenCalledWith('https://decentraland.org/jump/event?position=10,20')
+      })
     })
   })
 })

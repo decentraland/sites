@@ -1,4 +1,11 @@
-import { appendRealmParam, buildEventJumpInUrl, buildJumpInUrl, parseCoordinates, resolveEventRealm } from './whatsOnUrl'
+import {
+  appendRealmParam,
+  buildEventJumpInUrl,
+  buildEventShareUrl,
+  buildJumpInUrl,
+  parseCoordinates,
+  resolveEventRealm
+} from './whatsOnUrl'
 
 describe('appendRealmParam', () => {
   afterEach(() => {
@@ -120,6 +127,52 @@ describe('buildEventJumpInUrl', () => {
   describe('when a realm is provided', () => {
     it('should append the realm as a query param', () => {
       expect(buildEventJumpInUrl(10, 20, 'foo.dcl.eth')).toBe('https://decentraland.org/jump/event?position=10,20&realm=foo.dcl.eth')
+    })
+  })
+})
+
+describe('buildEventShareUrl', () => {
+  const originalLocation = window.location
+
+  function setLocation(href: string) {
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      writable: true,
+      value: new URL(href)
+    })
+  }
+
+  afterEach(() => {
+    Object.defineProperty(window, 'location', { configurable: true, writable: true, value: originalLocation })
+  })
+
+  describe('when the event is not live', () => {
+    it('should produce a /whats-on deep link with the id param so the destination opens this modal again', () => {
+      setLocation('http://localhost:5173/whats-on?env=prod')
+
+      expect(buildEventShareUrl('uuid-1', false)).toBe('http://localhost:5173/whats-on?env=prod&id=uuid-1')
+    })
+
+    it('should overwrite an existing id param instead of duplicating it', () => {
+      setLocation('http://localhost:5173/whats-on?env=prod&id=stale')
+
+      expect(buildEventShareUrl('uuid-1', false)).toBe('http://localhost:5173/whats-on?env=prod&id=uuid-1')
+    })
+  })
+
+  describe('when the event is live', () => {
+    it('should produce a /jump/events deep link so the destination opens the launcher flow', () => {
+      setLocation('http://localhost:5173/whats-on?env=prod')
+
+      expect(buildEventShareUrl('uuid-1', true)).toBe('http://localhost:5173/jump/events?env=prod&id=uuid-1')
+    })
+  })
+
+  describe('when the current URL has a hash fragment', () => {
+    it('should drop the hash so it does not leak into the share link', () => {
+      setLocation('http://localhost:5173/whats-on?env=prod#section')
+
+      expect(buildEventShareUrl('uuid-1', false)).toBe('http://localhost:5173/whats-on?env=prod&id=uuid-1')
     })
   })
 })

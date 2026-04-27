@@ -12,7 +12,7 @@ import { useCanEditEvent } from '../../../hooks/useCanEditEvent'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { formatEthAddress } from '../../../utils/avatar'
-import { buildCalendarUrl } from '../../../utils/whatsOnUrl'
+import { buildCalendarUrl, buildEventShareUrl } from '../../../utils/whatsOnUrl'
 import { JumpInButton } from '../../jump/JumpInButton'
 import { RemindMeIcon } from '../common/RemindMeIcon'
 import type { ModalEventData } from './EventDetailModal.types'
@@ -52,14 +52,15 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
   const showEdit = canEdit && Boolean(onEdit) && data.isEvent
 
   const handleCopy = useCallback(() => {
+    const shareUrl = data.isEvent ? buildEventShareUrl(data.id, data.live) : data.url
     navigator.clipboard
-      ?.writeText(data.url)
+      ?.writeText(shareUrl)
       ?.then(() => {
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
       })
       .catch(err => console.warn('[EventDetailModal] Failed to copy:', err))
-  }, [data.url])
+  }, [data.id, data.isEvent, data.live, data.url])
 
   const handleAddToCalendar = useCallback(() => {
     const url = buildCalendarUrl(data)
@@ -95,9 +96,11 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
             </CreatorRow>
           )}
           <ActionsRow>
-            <JumpInButton position={`${data.x},${data.y}`} size="medium">
-              {t('event_detail.jump_in')}
-            </JumpInButton>
+            {data.live && (
+              <JumpInButton position={`${data.x},${data.y}`} size="medium">
+                {t('event_detail.jump_in')}
+              </JumpInButton>
+            )}
             {data.isEvent && !data.live && (
               <Tooltip title={t('event_detail.remind_me')} placement="top" arrow>
                 <SecondaryButton onClick={handleRemindToggle} disabled={isRemindLoading} aria-label={t('event_detail.remind_me')}>
