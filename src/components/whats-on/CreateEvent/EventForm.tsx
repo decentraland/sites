@@ -52,6 +52,7 @@ import {
   LocationLabel,
   LocationRow,
   PreviewButton,
+  RejectionAlert,
   RepeatFields,
   RepeatLabel,
   RepeatRow,
@@ -228,6 +229,13 @@ function EventForm({ onCancel, onSuccess, initialEvent = null }: EventFormProps)
         {/* Right Column — Event Details */}
         <RightSection>
           <RightSectionFields>
+            {initialEvent?.rejected && (
+              <RejectionAlert severity="error" variant="standard">
+                {initialEvent.rejection_reason
+                  ? t('create_event.rejected_alert', { reason: initialEvent.rejection_reason })
+                  : t('create_event.rejected_alert_no_reason')}
+              </RejectionAlert>
+            )}
             <EventDetailsBlock>
               <SectionHeading>{t('create_event.event_details')}</SectionHeading>
 

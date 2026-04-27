@@ -7,11 +7,12 @@ import { EventDetailModal } from '../../components/whats-on/EventDetailModal'
 import { PendingEventCard } from '../../components/whats-on/PendingEventCard'
 import { RejectEventModal } from '../../components/whats-on/RejectEventModal'
 import type { RejectSubmitPayload } from '../../components/whats-on/RejectEventModal'
-import { useApproveEventMutation, useGetAdminEventsQuery, useRejectEventMutation } from '../../features/whats-on/admin/admin.client'
+import { useApproveEventMutation, useGetAdminEventsQuery, useRejectEventMutation } from '../../features/whats-on/admin'
 import type { EventEntry } from '../../features/whats-on-events/events.types'
 import { useAdminPermissions } from '../../hooks/useAdminPermissions'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../hooks/useEventDetailModal'
+import { buildRejectionReason } from './PendingEventsPage.helpers'
 import { AdminPageContainer } from './AdminLayout.styled'
 import { CardGrid, EmptyStateText, Section, SectionSubtitle, SectionTitle } from './PendingEventsPage.styled'
 
@@ -72,8 +73,9 @@ function PendingEventsPage() {
       console.error('[PendingEventsPage] reject called without identity or event')
       return
     }
+    const reason = buildRejectionReason(reasons, notes, t)
     try {
-      await reject({ eventId: rejectingEvent.id, identity, reasons, notes }).unwrap()
+      await reject({ eventId: rejectingEvent.id, identity, reason }).unwrap()
       setRejectingEvent(null)
       closeEventDetailModal()
       setFeedback({ message: t('whats_on_admin.pending_events.reject_success'), severity: 'success' })

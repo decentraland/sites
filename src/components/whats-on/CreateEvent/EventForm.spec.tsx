@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import { createMockEvent } from '../../../__test-utils__/factories'
 import { EventForm } from './EventForm'
 
 jest.mock('./EventForm.styled', () => ({
@@ -102,6 +103,11 @@ jest.mock('./EventForm.styled', () => ({
       </button>
     )
   },
+  RejectionAlert: ({ children, severity }: { children: React.ReactNode; severity?: string }) => (
+    <div role="alert" data-severity={severity}>
+      {children}
+    </div>
+  ),
   RightSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   RightSectionFields: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   RightSectionFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -172,7 +178,9 @@ jest.mock('decentraland-ui2', () => ({
 }))
 
 jest.mock('@dcl/hooks', () => ({
-  useTranslation: () => ({ t: (key: string) => key })
+  useTranslation: () => ({
+    t: (key: string, values?: Record<string, string | number>) => (values ? `${key} ${JSON.stringify(values)}` : key)
+  })
 }))
 
 const mockSetField = jest.fn()
@@ -290,6 +298,40 @@ describe('EventForm', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByTestId('submit-button')).not.toBeDisabled()
+    })
+  })
+
+  describe('when editing an event that has been rejected with a reason', () => {
+    const rejectedEvent = createMockEvent({ id: 'evt-rejected', rejected: true, rejection_reason: 'Invalid image. extra notes' })
+
+    it('should render the rejection alert and pass the reason to the translation', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={rejectedEvent} />)
+
+      const alert = screen.getByRole('alert')
+      expect(alert).toHaveAttribute('data-severity', 'error')
+      expect(alert).toHaveTextContent('create_event.rejected_alert')
+      expect(alert).toHaveTextContent('"reason":"Invalid image. extra notes"')
+    })
+  })
+
+  describe('when editing an event that has been rejected without a reason', () => {
+    const rejectedEvent = createMockEvent({ id: 'evt-rejected', rejected: true, rejection_reason: null })
+
+    it('should render the fallback rejection alert without reason interpolation', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={rejectedEvent} />)
+
+      const alert = screen.getByRole('alert')
+      expect(alert).toHaveTextContent('create_event.rejected_alert_no_reason')
+    })
+  })
+
+  describe('when editing an event that is not rejected', () => {
+    const approvedEvent = createMockEvent({ id: 'evt-ok', rejected: false, rejection_reason: null })
+
+    it('should not render the rejection alert', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={approvedEvent} />)
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
   })
 
