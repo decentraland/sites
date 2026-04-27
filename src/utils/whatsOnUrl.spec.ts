@@ -132,47 +132,45 @@ describe('buildEventJumpInUrl', () => {
 })
 
 describe('buildEventShareUrl', () => {
-  const originalLocation = window.location
-
-  function setLocation(href: string) {
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      writable: true,
-      value: new URL(href)
-    })
-  }
-
-  afterEach(() => {
-    Object.defineProperty(window, 'location', { configurable: true, writable: true, value: originalLocation })
-  })
-
   describe('when the event is not live', () => {
-    it('should produce a /whats-on deep link with the id param so the destination opens this modal again', () => {
-      setLocation('http://localhost:5173/whats-on?env=prod')
-
-      expect(buildEventShareUrl('uuid-1', false)).toBe('http://localhost:5173/whats-on?env=prod&id=uuid-1')
+    it('should produce a /whats-on deep link that preserves the env override and adds the id', () => {
+      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/whats-on?env=prod')).toBe(
+        'http://localhost:5173/whats-on?env=prod&id=uuid-1'
+      )
     })
 
-    it('should overwrite an existing id param instead of duplicating it', () => {
-      setLocation('http://localhost:5173/whats-on?env=prod&id=stale')
+    it('should not carry filter, pagination or other ambient query params into the share link', () => {
+      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/whats-on?category=music&page=3&debug=true')).toBe(
+        'http://localhost:5173/whats-on?id=uuid-1'
+      )
+    })
 
-      expect(buildEventShareUrl('uuid-1', false)).toBe('http://localhost:5173/whats-on?env=prod&id=uuid-1')
+    it('should drop a stale id from the source URL instead of duplicating it', () => {
+      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/whats-on?env=prod&id=stale')).toBe(
+        'http://localhost:5173/whats-on?env=prod&id=uuid-1'
+      )
     })
   })
 
   describe('when the event is live', () => {
     it('should produce a /jump/events deep link so the destination opens the launcher flow', () => {
-      setLocation('http://localhost:5173/whats-on?env=prod')
-
-      expect(buildEventShareUrl('uuid-1', true)).toBe('http://localhost:5173/jump/events?env=prod&id=uuid-1')
+      expect(buildEventShareUrl('uuid-1', true, 'http://localhost:5173/whats-on?env=prod')).toBe(
+        'http://localhost:5173/jump/events?env=prod&id=uuid-1'
+      )
     })
   })
 
-  describe('when the current URL has a hash fragment', () => {
+  describe('when the source URL has a hash fragment', () => {
     it('should drop the hash so it does not leak into the share link', () => {
-      setLocation('http://localhost:5173/whats-on?env=prod#section')
+      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/whats-on?env=prod#section')).toBe(
+        'http://localhost:5173/whats-on?env=prod&id=uuid-1'
+      )
+    })
+  })
 
-      expect(buildEventShareUrl('uuid-1', false)).toBe('http://localhost:5173/whats-on?env=prod&id=uuid-1')
+  describe('when called with no explicit href', () => {
+    it('should fall back to window.location.href as the default source', () => {
+      expect(buildEventShareUrl('uuid-1', false)).toContain('id=uuid-1')
     })
   })
 })
