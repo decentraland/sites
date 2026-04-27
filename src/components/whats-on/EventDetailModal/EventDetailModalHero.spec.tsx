@@ -55,22 +55,6 @@ jest.mock('../common/RemindMeIcon', () => ({
 }))
 
 jest.mock('decentraland-ui2', () => ({
-  Button: ({
-    children,
-    onClick,
-    disabled,
-    startIcon
-  }: {
-    children: React.ReactNode
-    onClick?: () => void
-    disabled?: boolean
-    startIcon?: React.ReactNode
-  }) => (
-    <button data-testid="primary-action-button" onClick={onClick} disabled={disabled}>
-      {startIcon}
-      {children}
-    </button>
-  ),
   LiveBadge: () => <span data-testid="live-badge">LIVE</span>,
   Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   useTheme: () => ({ breakpoints: { down: () => '(max-width:600px)' } })
@@ -96,6 +80,7 @@ jest.mock('./EventDetailModal.styled', () => ({
   CreatorName: ({ children }: { children: React.ReactNode }) => <span data-testid="creator-name">{children}</span>,
   CreatorNameHighlight: ({ children }: { children: React.ReactNode }) => <strong>{children}</strong>,
   ActionsRow: ({ children }: { children: React.ReactNode }) => <div data-testid="actions-row">{children}</div>,
+  PrimaryActionButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="primary-action-button" {...props} />,
   SecondaryButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="secondary-button" {...props} />,
   CopyButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="copy-button" {...props} />,
   CopyIconStyled: () => <span>Copy</span>,
@@ -239,23 +224,25 @@ describe('EventDetailModalHero', () => {
 
   describe('when the event is a future event and the user is signed out', () => {
     describe('and the event has a start date', () => {
-      it('should render add-to-calendar as the primary labeled CTA in place of remind-me', () => {
+      it('should render add-to-calendar as the primary labeled CTA and keep remind-me as a secondary icon to trigger the auth redirect', () => {
         render(<EventDetailModalHero data={createMockData({ live: false, isEvent: true })} onClose={mockOnClose} />)
 
         expect(screen.queryByTestId('jump-in-button')).not.toBeInTheDocument()
-        expect(screen.queryByTestId('remind-me-icon')).not.toBeInTheDocument()
         const primary = screen.getByTestId('primary-action-button')
         expect(primary).toHaveTextContent('event_detail.add_to_calendar')
         expect(primary.querySelector('[data-testid="calendar-icon"]')).not.toBeNull()
+        const secondaryButtons = screen.getAllByTestId('secondary-button')
+        expect(secondaryButtons.some(btn => btn.querySelector('[data-testid="remind-me-icon"]'))).toBe(true)
       })
     })
 
     describe('and the event has no start date', () => {
-      it('should not render any primary action so only copy/edit remain', () => {
+      it('should not render any primary action and keep remind-me as a secondary icon', () => {
         render(<EventDetailModalHero data={createMockData({ live: false, isEvent: true, startAt: null })} onClose={mockOnClose} />)
 
         expect(screen.queryByTestId('primary-action-button')).not.toBeInTheDocument()
-        expect(screen.queryByTestId('remind-me-icon')).not.toBeInTheDocument()
+        const secondaryButtons = screen.getAllByTestId('secondary-button')
+        expect(secondaryButtons.some(btn => btn.querySelector('[data-testid="remind-me-icon"]'))).toBe(true)
       })
     })
   })
