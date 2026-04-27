@@ -912,5 +912,29 @@ describe('useCreateEventForm', () => {
       expect(result.current.errors.submit).toBe('create_event.error_submit')
       expect(onSuccess).not.toHaveBeenCalled()
     })
+
+    it('should send rejected=false when editing an event that was previously rejected so it returns to pending', async () => {
+      const initialEvent = buildInitialEvent({ rejected: true })
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent }))
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      const lastCall = mockUpdateEvent.mock.calls.at(-1)?.[0] as { payload: Record<string, unknown> }
+      expect(lastCall.payload).toEqual(expect.objectContaining({ rejected: false }))
+    })
+
+    it('should not include rejected when editing an event that was not rejected', async () => {
+      const initialEvent = buildInitialEvent({ rejected: false })
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent }))
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      const lastCall = mockUpdateEvent.mock.calls.at(-1)?.[0] as { payload: Record<string, unknown> }
+      expect(lastCall.payload).not.toHaveProperty('rejected')
+    })
   })
 })

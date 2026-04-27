@@ -30,6 +30,7 @@ interface EventEntry {
   scene_name: string | null
   approved: boolean
   rejected: boolean
+  rejection_reason: string | null
   highlighted: boolean
   trending: boolean
   recurrent: boolean
@@ -68,6 +69,7 @@ interface EventsQueryParams {
   position?: string
   creator?: string
   schedule?: string
+  owner?: boolean
 }
 
 interface AuthenticatedQueryParams {

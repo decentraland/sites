@@ -10,7 +10,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import { useTranslation } from '@dcl/hooks'
-import { Tooltip } from 'decentraland-ui2'
+import { Alert, Tooltip } from 'decentraland-ui2'
 import { useGetCommunitiesQuery, useGetWorldNamesQuery } from '../../../features/whats-on-events'
 import type { EventEntry } from '../../../features/whats-on-events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
@@ -228,6 +228,23 @@ function EventForm({ onCancel, onSuccess, initialEvent = null }: EventFormProps)
         {/* Right Column — Event Details */}
         <RightSection>
           <RightSectionFields>
+            {initialEvent?.rejected && (
+              <Alert
+                severity="error"
+                variant="standard"
+                sx={{
+                  width: '100%',
+                  backgroundColor: '#ffcdd4',
+                  color: '#ec303a',
+                  // eslint-disable-next-line @typescript-eslint/naming-convention
+                  '& .MuiAlert-icon': { color: '#ec303a' }
+                }}
+              >
+                {initialEvent.rejection_reason
+                  ? t('create_event.rejected_alert', { reason: initialEvent.rejection_reason })
+                  : t('create_event.rejected_alert_no_reason')}
+              </Alert>
+            )}
             <EventDetailsBlock>
               <SectionHeading>{t('create_event.event_details')}</SectionHeading>
 

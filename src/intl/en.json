@@ -784,6 +784,8 @@
     "name_placeholder": "Be as descriptive as you can",
     "event_description": "Hangout Description",
     "description_placeholder": "Be as descriptive as you can",
+    "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
+    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "event_details": "Hangout Details",
     "date": "Date",
     "start": "Start",
