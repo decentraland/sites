@@ -10,14 +10,21 @@ jest.mock('../../../hooks/useCanEditEvent', () => ({
   useCanEditEvent: () => ({ canEdit: false, isLoading: false })
 }))
 
+const mockUseAuthIdentity = jest.fn()
+jest.mock('../../../hooks/useAuthIdentity', () => ({
+  useAuthIdentity: () => mockUseAuthIdentity()
+}))
+
 const mockUseCreatorProfile = jest.fn()
 const defaultCreatorProfile = { isDclFoundation: false, creatorName: 'CreatorName', avatarFace: undefined }
 jest.mock('../../../hooks/useCreatorProfile', () => ({
   useCreatorProfile: (...args: unknown[]) => mockUseCreatorProfile(...(args as []))
 }))
 
+const mockBuildEventShareUrl = jest.fn()
 jest.mock('../../../utils/whatsOnUrl', () => ({
-  buildCalendarUrl: jest.fn(() => 'https://calendar.google.com/test')
+  buildCalendarUrl: jest.fn(() => 'https://calendar.google.com/test'),
+  buildEventShareUrl: (...args: unknown[]) => mockBuildEventShareUrl(...args)
 }))
 
 let mockIsMobile = false
@@ -73,6 +80,7 @@ jest.mock('./EventDetailModal.styled', () => ({
   CreatorName: ({ children }: { children: React.ReactNode }) => <span data-testid="creator-name">{children}</span>,
   CreatorNameHighlight: ({ children }: { children: React.ReactNode }) => <strong>{children}</strong>,
   ActionsRow: ({ children }: { children: React.ReactNode }) => <div data-testid="actions-row">{children}</div>,
+  PrimaryActionButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="primary-action-button" {...props} />,
   SecondaryButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="secondary-button" {...props} />,
   CopyButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="copy-button" {...props} />,
   CopyIconStyled: () => <span>Copy</span>,
@@ -112,6 +120,8 @@ describe('EventDetailModalHero', () => {
     jest.spyOn(window, 'open').mockImplementation(jest.fn())
     mockUseCreatorProfile.mockReset()
     mockUseCreatorProfile.mockReturnValue(defaultCreatorProfile)
+    mockUseAuthIdentity.mockReset()
+    mockUseAuthIdentity.mockReturnValue({ hasValidIdentity: false, identity: undefined, address: undefined })
   })
 
   afterEach(() => {
@@ -143,10 +153,10 @@ describe('EventDetailModalHero', () => {
       expect(screen.getByTestId('close-button')).toBeInTheDocument()
     })
 
-    it('should render the jump in button', () => {
+    it('should not render the jump in button when the event is not live', () => {
       render(<EventDetailModalHero data={createMockData()} onClose={mockOnClose} />)
 
-      expect(screen.getByTestId('jump-in-button')).toBeInTheDocument()
+      expect(screen.queryByTestId('jump-in-button')).not.toBeInTheDocument()
     })
   })
 
@@ -160,9 +170,9 @@ describe('EventDetailModalHero', () => {
     })
   })
 
-  describe('when rendering the jump in button', () => {
-    it('should pass the event position to the jump in button', () => {
-      render(<EventDetailModalHero data={createMockData()} onClose={mockOnClose} />)
+  describe('when rendering a live event', () => {
+    it('should render the jump in button with the event position', () => {
+      render(<EventDetailModalHero data={createMockData({ live: true })} onClose={mockOnClose} />)
 
       expect(screen.getByTestId('jump-in-button')).toHaveAttribute('data-position', '10,20')
     })
@@ -189,6 +199,52 @@ describe('EventDetailModalHero', () => {
 
       expect(screen.queryByTestId('remind-me-icon')).not.toBeInTheDocument()
     })
+
+    it('should render the jump in button as the primary CTA', () => {
+      render(<EventDetailModalHero data={createMockData({ live: true })} onClose={mockOnClose} />)
+
+      expect(screen.getByTestId('jump-in-button')).toBeInTheDocument()
+    })
+  })
+
+  describe('when the event is a future event and the user is signed in', () => {
+    beforeEach(() => {
+      mockUseAuthIdentity.mockReturnValue({ hasValidIdentity: true, identity: {}, address: '0xUser' })
+    })
+
+    it('should hide the jump in button and render remind-me as the primary labeled CTA', () => {
+      render(<EventDetailModalHero data={createMockData({ live: false, isEvent: true })} onClose={mockOnClose} />)
+
+      expect(screen.queryByTestId('jump-in-button')).not.toBeInTheDocument()
+      const primary = screen.getByTestId('primary-action-button')
+      expect(primary).toHaveTextContent('event_detail.remind_me')
+      expect(primary.querySelector('[data-testid="remind-me-icon"]')).not.toBeNull()
+    })
+  })
+
+  describe('when the event is a future event and the user is signed out', () => {
+    describe('and the event has a start date', () => {
+      it('should render add-to-calendar as the primary labeled CTA and keep remind-me as a secondary icon to trigger the auth redirect', () => {
+        render(<EventDetailModalHero data={createMockData({ live: false, isEvent: true })} onClose={mockOnClose} />)
+
+        expect(screen.queryByTestId('jump-in-button')).not.toBeInTheDocument()
+        const primary = screen.getByTestId('primary-action-button')
+        expect(primary).toHaveTextContent('event_detail.add_to_calendar')
+        expect(primary.querySelector('[data-testid="calendar-icon"]')).not.toBeNull()
+        const secondaryButtons = screen.getAllByTestId('secondary-button')
+        expect(secondaryButtons.some(btn => btn.querySelector('[data-testid="remind-me-icon"]'))).toBe(true)
+      })
+    })
+
+    describe('and the event has no start date', () => {
+      it('should not render any primary action and keep remind-me as a secondary icon', () => {
+        render(<EventDetailModalHero data={createMockData({ live: false, isEvent: true, startAt: null })} onClose={mockOnClose} />)
+
+        expect(screen.queryByTestId('primary-action-button')).not.toBeInTheDocument()
+        const secondaryButtons = screen.getAllByTestId('secondary-button')
+        expect(secondaryButtons.some(btn => btn.querySelector('[data-testid="remind-me-icon"]'))).toBe(true)
+      })
+    })
   })
 
   describe('when the event has no categories and is not live', () => {
@@ -200,11 +256,10 @@ describe('EventDetailModalHero', () => {
   })
 
   describe('when the event has no startAt', () => {
-    it('should not render the calendar button', () => {
+    it('should not render the calendar button in either primary or secondary slots', () => {
       render(<EventDetailModalHero data={createMockData({ startAt: null })} onClose={mockOnClose} />)
 
-      const buttons = screen.getAllByTestId('secondary-button')
-      expect(buttons).toHaveLength(1)
+      expect(screen.queryByTestId('calendar-icon')).not.toBeInTheDocument()
     })
   })
 
@@ -311,8 +366,9 @@ describe('EventDetailModalHero', () => {
     let originalClipboard: Clipboard
 
     beforeEach(() => {
+      mockBuildEventShareUrl.mockReset()
       originalClipboard = navigator.clipboard
-      mockWriteText = jest.fn().mockResolvedValueOnce(undefined)
+      mockWriteText = jest.fn().mockResolvedValue(undefined)
       Object.defineProperty(navigator, 'clipboard', {
         value: { writeText: mockWriteText },
         writable: true,
@@ -328,14 +384,51 @@ describe('EventDetailModalHero', () => {
       })
     })
 
-    it('should copy the event URL to clipboard', async () => {
-      render(<EventDetailModalHero data={createMockData()} onClose={mockOnClose} />)
-
-      await act(async () => {
-        fireEvent.click(screen.getByTestId('copy-button'))
+    describe('and the modal data is a future event', () => {
+      beforeEach(() => {
+        mockBuildEventShareUrl.mockReturnValue('http://localhost/whats-on?id=event-1')
       })
 
-      expect(mockWriteText).toHaveBeenCalledWith('https://decentraland.org/jump/event?position=10,20')
+      it('should copy the deep link back into the whats-on modal', async () => {
+        render(<EventDetailModalHero data={createMockData({ live: false, isEvent: true, id: 'event-1' })} onClose={mockOnClose} />)
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('copy-button'))
+        })
+
+        expect(mockBuildEventShareUrl).toHaveBeenCalledWith('event-1', false)
+        expect(mockWriteText).toHaveBeenCalledWith('http://localhost/whats-on?id=event-1')
+      })
+    })
+
+    describe('and the modal data is a live event', () => {
+      beforeEach(() => {
+        mockBuildEventShareUrl.mockReturnValue('http://localhost/jump/events?id=event-1')
+      })
+
+      it('should copy the jump-events deep link so the destination opens the launcher flow', async () => {
+        render(<EventDetailModalHero data={createMockData({ live: true, isEvent: true, id: 'event-1' })} onClose={mockOnClose} />)
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('copy-button'))
+        })
+
+        expect(mockBuildEventShareUrl).toHaveBeenCalledWith('event-1', true)
+        expect(mockWriteText).toHaveBeenCalledWith('http://localhost/jump/events?id=event-1')
+      })
+    })
+
+    describe('and the modal data is a live place without a matching event', () => {
+      it('should fall back to the place jump url because there is no event id to deep link', async () => {
+        render(<EventDetailModalHero data={createMockData({ isEvent: false })} onClose={mockOnClose} />)
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('copy-button'))
+        })
+
+        expect(mockBuildEventShareUrl).not.toHaveBeenCalled()
+        expect(mockWriteText).toHaveBeenCalledWith('https://decentraland.org/jump/event?position=10,20')
+      })
     })
   })
 })

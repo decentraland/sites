@@ -1,4 +1,11 @@
-import { appendRealmParam, buildEventJumpInUrl, buildJumpInUrl, parseCoordinates, resolveEventRealm } from './whatsOnUrl'
+import {
+  appendRealmParam,
+  buildEventJumpInUrl,
+  buildEventShareUrl,
+  buildJumpInUrl,
+  parseCoordinates,
+  resolveEventRealm
+} from './whatsOnUrl'
 
 describe('appendRealmParam', () => {
   afterEach(() => {
@@ -120,6 +127,50 @@ describe('buildEventJumpInUrl', () => {
   describe('when a realm is provided', () => {
     it('should append the realm as a query param', () => {
       expect(buildEventJumpInUrl(10, 20, 'foo.dcl.eth')).toBe('https://decentraland.org/jump/event?position=10,20&realm=foo.dcl.eth')
+    })
+  })
+})
+
+describe('buildEventShareUrl', () => {
+  describe('when the event is not live', () => {
+    it('should produce a /whats-on deep link that preserves the env override and adds the id', () => {
+      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/whats-on?env=prod')).toBe(
+        'http://localhost:5173/whats-on?env=prod&id=uuid-1'
+      )
+    })
+
+    it('should not carry filter, pagination or other ambient query params into the share link', () => {
+      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/whats-on?category=music&page=3&debug=true')).toBe(
+        'http://localhost:5173/whats-on?id=uuid-1'
+      )
+    })
+
+    it('should drop a stale id from the source URL instead of duplicating it', () => {
+      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/whats-on?env=prod&id=stale')).toBe(
+        'http://localhost:5173/whats-on?env=prod&id=uuid-1'
+      )
+    })
+  })
+
+  describe('when the event is live', () => {
+    it('should produce a /jump/events deep link so the destination opens the launcher flow', () => {
+      expect(buildEventShareUrl('uuid-1', true, 'http://localhost:5173/whats-on?env=prod')).toBe(
+        'http://localhost:5173/jump/events?env=prod&id=uuid-1'
+      )
+    })
+  })
+
+  describe('when the source URL has a hash fragment', () => {
+    it('should drop the hash so it does not leak into the share link', () => {
+      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/whats-on?env=prod#section')).toBe(
+        'http://localhost:5173/whats-on?env=prod&id=uuid-1'
+      )
+    })
+  })
+
+  describe('when called with no explicit href', () => {
+    it('should fall back to window.location.href as the default source', () => {
+      expect(buildEventShareUrl('uuid-1', false)).toContain('id=uuid-1')
     })
   })
 })

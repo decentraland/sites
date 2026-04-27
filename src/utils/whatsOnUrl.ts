@@ -16,6 +16,17 @@ function buildEventJumpInUrl(x: number, y: number, realm?: string | null): strin
   return appendRealmParam(`https://decentraland.org/jump/event?position=${x},${y}`, realm)
 }
 
+const EVENT_ID_PARAM = 'id'
+
+function buildEventShareUrl(eventId: string, isLive: boolean, href: string = window.location.href): string {
+  const current = new URL(href)
+  const url = new URL(isLive ? '/jump/events' : '/whats-on', current.origin)
+  const env = current.searchParams.get('env')
+  if (env) url.searchParams.set('env', env)
+  url.searchParams.set(EVENT_ID_PARAM, eventId)
+  return url.toString()
+}
+
 function parseCoordinates(coordinates: string): [number, number] {
   const [x, y] = coordinates.split(',').map(Number)
   if (Number.isNaN(x) || Number.isNaN(y)) {
@@ -53,4 +64,13 @@ function buildCalendarUrl(event: CalendarEventParams): string | null {
   return `https://calendar.google.com/calendar/render?${params.toString()}`
 }
 
-export { appendRealmParam, buildCalendarUrl, buildEventJumpInUrl, buildJumpInUrl, parseCoordinates, resolveEventRealm }
+export {
+  EVENT_ID_PARAM,
+  appendRealmParam,
+  buildCalendarUrl,
+  buildEventJumpInUrl,
+  buildEventShareUrl,
+  buildJumpInUrl,
+  parseCoordinates,
+  resolveEventRealm
+}

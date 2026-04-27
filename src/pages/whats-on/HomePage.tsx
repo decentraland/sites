@@ -1,7 +1,9 @@
 import { AllExperiences } from '../../components/whats-on/AllExperiences'
+import { EventDetailModal } from '../../components/whats-on/EventDetailModal'
 import { LiveNow } from '../../components/whats-on/LiveNow'
 import { Upcoming } from '../../components/whats-on/Upcoming'
 import { useGetLiveNowCardsQuery } from '../../features/whats-on-events'
+import { useEventDeepLink } from '../../hooks/useEventDeepLink'
 import { useLiveNowQueryParams } from '../../hooks/useLiveNowQueryParams'
 import topBackground from '../../images/whats-on/images/top_background.webp'
 import { ContentWrapper, DeferredGroup, MainContainer, TopBackgroundImage } from './HomePage.styled'
@@ -9,6 +11,7 @@ import { ContentWrapper, DeferredGroup, MainContainer, TopBackgroundImage } from
 function HomePage() {
   const queryParams = useLiveNowQueryParams()
   const { isLoading: isLiveNowLoading } = useGetLiveNowCardsQuery(queryParams)
+  const { isOpen, modalData, closeDeepLink } = useEventDeepLink()
 
   return (
     <MainContainer component="main">
@@ -20,6 +23,7 @@ function HomePage() {
         <Upcoming />
         <AllExperiences />
       </DeferredGroup>
+      <EventDetailModal open={isOpen} onClose={closeDeepLink} data={modalData} />
     </MainContainer>
   )
 }
