@@ -13,6 +13,7 @@ import { OGType, SEO } from '../../components/blog/SEO/SEO'
 import { getEnv } from '../../config/env'
 import { useGetBlogPostBySlugQuery, useGetBlogPostsQuery } from '../../features/blog/blog.client'
 import { selectPostByCategoryAndSlug } from '../../features/blog/blog.selectors'
+import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
 import { formatUtcDate } from '../../shared/blog/utils/date'
 import { locations } from '../../shared/blog/utils/locations'
 import { useAppSelector } from '../../shells/store'
@@ -91,6 +92,21 @@ export const PostPage = () => {
   const showAuthor = !!author && !!author.title
 
   const baseUrl = getEnv('BLOG_BASE_URL') || ''
+
+  useBlogPageTracking({
+    name: displayPost?.title,
+    properties: displayPost
+      ? {
+          title: displayPost.title,
+          slug: displayPost.slug,
+          category: displayPost.category.title,
+          categorySlug: displayPost.category.slug,
+          author: displayPost.author?.title,
+          authorSlug: displayPost.author?.slug,
+          publishedDate: displayPost.publishedDate
+        }
+      : undefined
+  })
 
   if (isLoading && !cachedPost) {
     return (

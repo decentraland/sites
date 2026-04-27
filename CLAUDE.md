@@ -134,6 +134,7 @@ npm run lint:pkg     # package.json lint
 3. Place the `<Route>` INSIDE `<Route element={<DappsShell />}>`.
 4. If you need Redux state, either inject endpoints into an existing RTK Query client or add a new base client in `src/services/` and a new reducer in `src/shells/store.ts`.
 5. Never import your feature from lightweight route code.
+6. If the page sets `<title>` via Helmet + async data (Contentful, RTK Query, etc.) — call `useBlogPageTracking` from `src/hooks/useBlogPageTracking.ts` and add the route to `Layout`'s page-tracking skip list. See rule 23.
 
 ## Coding conventions
 
@@ -364,6 +365,19 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
   })
   ```
 
+### 23. Page tracking — never call `usePageTracking(pathname)` for routes whose `<title>` is set by Helmet
+
+- `usePageTracking(pathname)` from `@dcl/hooks` fires `analytics.page(pathname)` synchronously on route change. Segment auto-fills `properties.title` from `document.title` at that exact moment. For SPA navigations into a `/blog/*` (or any route that resolves its title async via Helmet + RTK Query), the title race lands the _previous_ route's title in the event — Metabase charts that filter by title silently drop the visit.
+- `Layout` skips its route-level `page()` call when `pathname === '/blog' || pathname.startsWith('/blog/')` for that reason. New blog routes MUST call `useBlogPageTracking({ name, properties })` from `src/hooks/useBlogPageTracking.ts`, gated on the resolved title:
+  ```ts
+  useBlogPageTracking({
+    name: post?.title,
+    properties: post ? { title: post.title, slug: post.slug, category: post.category.title } : undefined
+  })
+  ```
+- The hook is initialized-aware (skips while `useAnalytics().isInitialized` is false, i.e. while `DeferredAnalyticsProvider` waits for idle) and only fires once per (name, properties) tuple.
+- If you add a non-blog route that ALSO sets its title via Helmet + async data, follow the same pattern: extend `Layout`'s skip list and call `useBlogPageTracking` (or a sibling hook) from the page so the event fires after the title resolves.
+
 ## Security checklist
 
 Before merging any PR that touches user-visible rendering, forms, or external content:
@@ -379,24 +393,25 @@ Before merging any PR that touches user-visible rendering, forms, or external co
 
 Aggregated from the rules above, sorted by "what could hurt you most":
 
-| Area               | Rule                                                                                                                                   |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| **File placement** | Hooks → `src/hooks/`; types → `*.types.ts`; styled → `*.styled.ts`; feature barrels must not re-export hooks                           |
-| **Architecture**   | `src/shells/*` is lazy — never import from it in lightweight route code (rule 2)                                                       |
-| **Architecture**   | Empty Redux store is `configureStore({ reducer: {} })`, no placeholder (rule 3)                                                        |
-| **RTK Query**      | `services/` = base clients (infra), `features/` = `injectEndpoints` (business). Keep the split                                         |
-| **RTK Query**      | Use `onQueryStarted` for dispatching, not `store.dispatch` in `transformResponse` (rule 17)                                            |
-| **RTK Query**      | No `state.xxxClient.queries as any` — use entity selectors or `endpoint.select()` (rule 18)                                            |
-| **Auth**           | localStorage-only via `useAuthIdentity` — no Web3 providers, no wagmi, no thirdweb                                                     |
-| **Bundle**         | No `module.throw` at import time in shell-reachable files (rule 16)                                                                    |
-| **Bundle**         | Run `npm run build && npm run preview` for PRs adding dynamic routes or CJS-ish deps (rule 14)                                         |
-| **Bundle**         | `decentraland-ui2` imports only; no hardcoded colors; object-syntax styled components                                                  |
-| **Security**       | `dangerouslySetInnerHTML` → DOMPurify with scoped allowlist (rule 19)                                                                  |
-| **Security**       | URL parsing with `new URL()` + hostname allowlist, never `.includes()` (rule 20)                                                       |
-| **Security**       | Never leak raw server error bodies to UI (rule 10)                                                                                     |
-| **Performance**    | Hero is prerendered; Layout is lazy; DappsShell is lazy; analytics deferred                                                            |
-| **Performance**    | Add `memo()` to list-rendered card components (rule 11)                                                                                |
-| **Performance**    | Batch HTTP calls when API supports it — no N+1 in hot paths (rule 12)                                                                  |
-| **Deps**           | `npm install`/`npm uninstall`; `@dcl/*` caret, others exact; fresh `rm -rf node_modules && npm install` after lock conflicts (rule 21) |
-| **Routing**        | Fixed navbar = 64px mobile / 92px desktop. Every new route needs `paddingTop: 64` / `md: 96` (rule 13)                                 |
-| **Config**         | Unified CMS origin across env files + api/seo.ts + vite proxy (rule 15)                                                                |
+| Area               | Rule                                                                                                                                    |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **File placement** | Hooks → `src/hooks/`; types → `*.types.ts`; styled → `*.styled.ts`; feature barrels must not re-export hooks                            |
+| **Architecture**   | `src/shells/*` is lazy — never import from it in lightweight route code (rule 2)                                                        |
+| **Architecture**   | Empty Redux store is `configureStore({ reducer: {} })`, no placeholder (rule 3)                                                         |
+| **RTK Query**      | `services/` = base clients (infra), `features/` = `injectEndpoints` (business). Keep the split                                          |
+| **RTK Query**      | Use `onQueryStarted` for dispatching, not `store.dispatch` in `transformResponse` (rule 17)                                             |
+| **RTK Query**      | No `state.xxxClient.queries as any` — use entity selectors or `endpoint.select()` (rule 18)                                             |
+| **Auth**           | localStorage-only via `useAuthIdentity` — no Web3 providers, no wagmi, no thirdweb                                                      |
+| **Bundle**         | No `module.throw` at import time in shell-reachable files (rule 16)                                                                     |
+| **Bundle**         | Run `npm run build && npm run preview` for PRs adding dynamic routes or CJS-ish deps (rule 14)                                          |
+| **Bundle**         | `decentraland-ui2` imports only; no hardcoded colors; object-syntax styled components                                                   |
+| **Security**       | `dangerouslySetInnerHTML` → DOMPurify with scoped allowlist (rule 19)                                                                   |
+| **Security**       | URL parsing with `new URL()` + hostname allowlist, never `.includes()` (rule 20)                                                        |
+| **Security**       | Never leak raw server error bodies to UI (rule 10)                                                                                      |
+| **Performance**    | Hero is prerendered; Layout is lazy; DappsShell is lazy; analytics deferred                                                             |
+| **Performance**    | Add `memo()` to list-rendered card components (rule 11)                                                                                 |
+| **Tracking**       | Helmet-titled routes use `useBlogPageTracking` (resolves title before `page()`); Layout skips them. No bare `usePageTracking` (rule 23) |
+| **Performance**    | Batch HTTP calls when API supports it — no N+1 in hot paths (rule 12)                                                                   |
+| **Deps**           | `npm install`/`npm uninstall`; `@dcl/*` caret, others exact; fresh `rm -rf node_modules && npm install` after lock conflicts (rule 21)  |
+| **Routing**        | Fixed navbar = 64px mobile / 92px desktop. Every new route needs `paddingTop: 64` / `md: 96` (rule 13)                                  |
+| **Config**         | Unified CMS origin across env files + api/seo.ts + vite proxy (rule 15)                                                                 |
