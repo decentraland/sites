@@ -2,6 +2,7 @@ import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react'
 import { getEnv } from '../../../config/env'
 import { fetchWithIdentity } from '../../../utils/signedFetch'
 import type { EventEntry } from '../../whats-on-events/events.types'
+import { REJECTION_REASON_MAX_LENGTH } from './admin.types'
 import type {
   AdminEventActionParams,
   AdminProfileSettings,
@@ -125,7 +126,7 @@ const adminClient = createApi({
     rejectEvent: build.mutation<void, AdminRejectEventParams>({
       queryFn: ({ eventId, identity, reason }) => {
         const payload: Record<string, unknown> = { rejected: true }
-        const trimmed = reason?.trim()
+        const trimmed = reason?.trim().slice(0, REJECTION_REASON_MAX_LENGTH)
         if (trimmed) payload.rejection_reason = trimmed
         return patchEvent(eventId, identity, payload, 'rejectEvent')
       },

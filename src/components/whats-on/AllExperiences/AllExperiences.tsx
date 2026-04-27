@@ -200,7 +200,7 @@ function AllExperiences() {
     [dayData]
   )
 
-  const showMyEmptyState = isMyTab && !isLoadingEvents && !hasAnyUpcomingMyEvent
+  const showMyEmptyState = isMyTab && Boolean(address) && !isLoadingEvents && !hasAnyUpcomingMyEvent
 
   return (
     <AllExperiencesSection ref={sectionRef} aria-label={t('all_experiences.title')}>

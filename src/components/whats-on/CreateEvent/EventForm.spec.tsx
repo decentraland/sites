@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import { createMockEvent } from '../../../__test-utils__/factories'
 import { EventForm } from './EventForm'
 
 jest.mock('./EventForm.styled', () => ({
@@ -102,6 +103,11 @@ jest.mock('./EventForm.styled', () => ({
       </button>
     )
   },
+  RejectionAlert: ({ children, severity }: { children: React.ReactNode; severity?: string }) => (
+    <div role="alert" data-severity={severity}>
+      {children}
+    </div>
+  ),
   RightSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   RightSectionFields: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   RightSectionFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -167,11 +173,6 @@ jest.mock('@mui/icons-material/VisibilityOutlined', () => ({
 }))
 
 jest.mock('decentraland-ui2', () => ({
-  Alert: ({ children, severity }: { children: React.ReactNode; severity?: string }) => (
-    <div role="alert" data-severity={severity}>
-      {children}
-    </div>
-  ),
   InputAdornment: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   Tooltip: ({ children }: { children: React.ReactNode; title?: React.ReactNode }) => <>{children}</>
 }))
@@ -301,11 +302,7 @@ describe('EventForm', () => {
   })
 
   describe('when editing an event that has been rejected with a reason', () => {
-    const rejectedEvent = {
-      id: 'evt-rejected',
-      rejected: true,
-      rejection_reason: 'Invalid image. extra notes'
-    } as never
+    const rejectedEvent = createMockEvent({ id: 'evt-rejected', rejected: true, rejection_reason: 'Invalid image. extra notes' })
 
     it('should render the rejection alert and pass the reason to the translation', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={rejectedEvent} />)
@@ -318,11 +315,7 @@ describe('EventForm', () => {
   })
 
   describe('when editing an event that has been rejected without a reason', () => {
-    const rejectedEvent = {
-      id: 'evt-rejected',
-      rejected: true,
-      rejection_reason: null
-    } as never
+    const rejectedEvent = createMockEvent({ id: 'evt-rejected', rejected: true, rejection_reason: null })
 
     it('should render the fallback rejection alert without reason interpolation', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={rejectedEvent} />)
@@ -333,11 +326,7 @@ describe('EventForm', () => {
   })
 
   describe('when editing an event that is not rejected', () => {
-    const approvedEvent = {
-      id: 'evt-ok',
-      rejected: false,
-      rejection_reason: null
-    } as never
+    const approvedEvent = createMockEvent({ id: 'evt-ok', rejected: false, rejection_reason: null })
 
     it('should not render the rejection alert', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={approvedEvent} />)

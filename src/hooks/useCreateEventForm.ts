@@ -351,7 +351,7 @@ function useCreateEventForm({ onSuccess, initialEvent = null }: UseCreateEventFo
       if (initialEvent) {
         // NOTE: clearing rejected on edit moves the event back to pending so a moderator can re-evaluate.
         // The backend keeps the prior value when the body omits the field.
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         const updatePayload = initialEvent.rejected ? { ...payload, rejected: false } : payload
         await updateEvent({ eventId: initialEvent.id, payload: updatePayload, identity }).unwrap()
       } else {

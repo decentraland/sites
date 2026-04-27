@@ -122,9 +122,13 @@ interface CreateEventParams {
   identity: AuthIdentity
 }
 
+interface UpdateEventPayload extends Partial<CreateEventPayload> {
+  rejected?: boolean
+}
+
 interface UpdateEventParams {
   eventId: string
-  payload: Partial<CreateEventPayload>
+  payload: UpdateEventPayload
   identity: AuthIdentity
 }
 
@@ -192,5 +196,6 @@ export type {
   RecurrentFrequency,
   ToggleAttendeeParams,
   UpdateEventParams,
+  UpdateEventPayload,
   UploadPosterParams
 }

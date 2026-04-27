@@ -1,4 +1,16 @@
-import { Box, FormControl, InputAdornment, InputLabel, MenuItem, Select, Switch, TextField, Typography, styled } from 'decentraland-ui2'
+import {
+  Alert,
+  Box,
+  FormControl,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
+  Switch,
+  TextField,
+  Typography,
+  styled
+} from 'decentraland-ui2'
 
 /* ── shared input theme ─────────────────────────────────────────────── */
 
@@ -549,6 +561,18 @@ const AddCoverLight = styled('span')({
   fontWeight: 400
 })
 
+// Figma tokens system/error/red-light-2 (#ffcdd4) and red-dark-1 (#ec303a) — not exposed by decentraland-ui2 theme yet.
+const rejectionAlertBg = '#ffcdd4'
+const rejectionAlertText = '#ec303a'
+
+const RejectionAlert = styled(Alert)({
+  width: '100%',
+  backgroundColor: rejectionAlertBg,
+  color: rejectionAlertText,
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& .MuiAlert-icon': { color: rejectionAlertText }
+})
+
 export {
   AddCoverBold,
   AddCoverLight,
@@ -581,6 +605,7 @@ export {
   LocationLabel,
   LocationRow,
   PreviewButton,
+  RejectionAlert,
   RepeatFields,
   RepeatLabel,
   RepeatRow,
