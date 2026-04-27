@@ -60,10 +60,35 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  rollout:
+  rollout-non-prod:
+    if: inputs.environment != 'org'
     needs: publish
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment == 'org' && 'production' || '' }}
+
+    steps:
+      - uses: hmarr/debug-action@v2
+
+      - name: Set Rollout
+        uses: decentraland/set-rollout-action@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+          ref: ${{ github.ref }}
+          sha: ${{ github.sha }}
+
+          packageName: '@dcl/landing-site'
+          packageVersion: ${{ needs.publish.outputs.package_version }}
+
+          deploymentPath: 'landing-site'
+          deploymentEnvironment: ${{ inputs.environment }}
+          deploymentName: '_site'
+          percentage: 100
+
+  rollout-prod:
+    if: inputs.environment == 'org'
+    needs: publish
+    runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - uses: hmarr/debug-action@v2
