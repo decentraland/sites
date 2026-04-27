@@ -1,0 +1,85 @@
+name: Release from PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: 'Deployment environment'
+        required: true
+        default: 'zone'
+        options:
+          - zone
+          - today
+          - org
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    outputs:
+      package_version: ${{ steps.publish.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@main
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v4.0.1
+        with:
+          node-version: 24.x
+
+      - name: Set package.json version
+        uses: decentraland/oddish-action@master
+        with:
+          deterministic-snapshot: true
+          only-update-versions: true
+
+      - name: Install
+        run: npm install
+        env:
+          HUSKY: 0
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish
+        id: publish
+        uses: decentraland/oddish-action@master
+        with:
+          cwd: './dist'
+          deterministic-snapshot: true
+          provenance: false
+          registry-url: 'https://registry.npmjs.org'
+          access: public
+          gitlab-token: ${{ secrets.GITLAB_CDN_DEPLOYER_TOKEN }}
+          gitlab-pipeline-url: ${{ secrets.GITLAB_CDN_DEPLOYER_URL }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  rollout:
+    needs: publish
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment == 'org' && 'production' || '' }}
+
+    steps:
+      - uses: hmarr/debug-action@v2
+
+      - name: Set Rollout
+        uses: decentraland/set-rollout-action@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+          ref: ${{ github.ref }}
+          sha: ${{ github.sha }}
+
+          packageName: '@dcl/landing-site'
+          packageVersion: ${{ needs.publish.outputs.package_version }}
+
+          deploymentPath: 'landing-site'
+          deploymentEnvironment: ${{ inputs.environment }}
+          deploymentName: '_site'
+          percentage: 100
