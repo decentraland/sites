@@ -217,11 +217,11 @@ function AllExperiences() {
   const showMyEmptyState = isMyTab && !isLoadingMyEvents && !hasAnyUpcomingMyEvent
 
   return (
-    <AllExperiencesSection ref={sectionRef} aria-label={t('all_experiences.title')}>
+    <AllExperiencesSection ref={sectionRef} aria-label={t('all_hangouts.title')}>
       {hasValidIdentity ? (
         <ExperiencesTabs value={activeTab} onChange={handleTabChange} panelId={MY_EXPERIENCES_PANEL_ID} />
       ) : (
-        <SectionTitle variant="h4">{t('all_experiences.title')}</SectionTitle>
+        <SectionTitle variant="h4">{t('all_hangouts.title')}</SectionTitle>
       )}
       <div role={hasValidIdentity ? 'tabpanel' : undefined} id={hasValidIdentity ? MY_EXPERIENCES_PANEL_ID : undefined}>
         {isMyTab ? (

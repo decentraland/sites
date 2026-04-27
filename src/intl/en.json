@@ -739,10 +739,10 @@
     "recurrent_daily": "Repeats daily",
     "recurrent_monthly": "Repeats monthly"
   },
-  "all_experiences": {
-    "title": "All Experiences",
-    "tab_all": "All Experiences",
-    "tab_my": "My Experiences",
+  "all_hangouts": {
+    "title": "All Hangouts",
+    "tab_all": "All Hangouts",
+    "tab_my": "My Hangouts",
     "today": "Today",
     "tomorrow": "Tomorrow",
     "navigate_previous": "Navigate to previous dates",
@@ -756,7 +756,7 @@
     "coming_soon": "Coming soon",
     "unknown_creator": "Unknown"
   },
-  "my_experiences": {
+  "my_hangouts": {
     "empty_title": "You don't have any hangout created",
     "empty_cta": "Create Hangout",
     "hosted_by_me": "Hosted by me",
@@ -836,7 +836,7 @@
     "error_upload_failed": "Failed to upload image. Please try again.",
     "error_image_required": "A hangout cover is required.",
     "optimize_link": "optimizilla",
-    "success_message": "Your hangout was created successfully. You'll be notified once it's approved. Track its status in “My Hangouts”",
+    "success_message": "Your hangout was created successfully. You’ll be notified once it’s approved. Track its status in “My Hangouts”",
     "back_to_explore": "Back to Explore",
     "my_events": "My Hangouts",
     "add_vertical_cover": "Add Vertical Cover",
@@ -852,11 +852,11 @@
     "preview_disabled_tooltip": "Complete the required fields to preview the hangout"
   },
   "host_banner": {
-    "title": "Want to Host Something?",
-    "subtitle": "Bring people together in minutes.",
-    "check_1": "Start something people can drop into.",
-    "check_2": "Shape the space to match your vibe.",
-    "check_3": "Go live and see who shows up.",
+    "title": "Host a Hangout",
+    "subtitle": "Bring people together, your way.",
+    "check_1": "Choose a vibe people can drop into.",
+    "check_2": "Add the hangout details.",
+    "check_3": "Publish it and send the invites.",
     "create_event": "Create a Hangout",
     "learn_more": "Learn More"
   },

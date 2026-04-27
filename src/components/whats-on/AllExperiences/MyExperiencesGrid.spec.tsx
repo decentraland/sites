@@ -18,7 +18,7 @@ jest.mock('../PendingEventCard', () => ({
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
-    t: (key: string) => (key === 'my_experiences.hosted_by_me' ? 'Hosted by me' : key)
+    t: (key: string) => (key === 'my_hangouts.hosted_by_me' ? 'Hosted by me' : key)
   })
 }))
 

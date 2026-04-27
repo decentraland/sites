@@ -35,7 +35,7 @@ interface FutureCardProps {
 const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
   const { t } = useTranslation()
   const { hasValidIdentity } = useAuthIdentity()
-  const { creatorName, avatarFace } = useCreatorProfile(event.user, event.user_name, t('all_experiences.unknown_creator'))
+  const { creatorName, avatarFace } = useCreatorProfile(event.user, event.user_name, t('all_hangouts.unknown_creator'))
   const { copied, handleCopy, handleAddToCalendar } = useCardActions({
     name: event.name,
     description: event.description,
@@ -77,23 +77,23 @@ const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
               isReminded={isReminded}
               isLoading={isRemindLoading}
               isShaking={isShaking}
-              label={t('all_experiences.remind_me')}
+              label={t('all_hangouts.remind_me')}
               onClick={handleRemindToggle}
             />
           ) : (
             <ActionTextButton onClick={handleAddToCalendar}>
               <CalendarIcon />
-              <ActionTextLabel>{t('all_experiences.add_to_calendar')}</ActionTextLabel>
+              <ActionTextLabel>{t('all_hangouts.add_to_calendar')}</ActionTextLabel>
             </ActionTextButton>
           )}
           {hasValidIdentity && (
-            <Tooltip title={t('all_experiences.add_to_calendar')} placement="top" arrow>
+            <Tooltip title={t('all_hangouts.add_to_calendar')} placement="top" arrow>
               <ActionButton onClick={handleAddToCalendar}>
                 <CalendarIcon />
               </ActionButton>
             </Tooltip>
           )}
-          <Tooltip title={copied ? t('all_experiences.copied') : t('all_experiences.copy_link')} placement="top" arrow>
+          <Tooltip title={copied ? t('all_hangouts.copied') : t('all_hangouts.copy_link')} placement="top" arrow>
             <ActionButton onClick={handleCopy}>
               <CopyIcon />
             </ActionButton>

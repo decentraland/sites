@@ -15,9 +15,9 @@ function MyExperiencesEmptyState() {
 
   return (
     <EmptyPanel role="status">
-      <EmptyTitle>{t('my_experiences.empty_title')}</EmptyTitle>
+      <EmptyTitle>{t('my_hangouts.empty_title')}</EmptyTitle>
       <EmptyButton variant="outlined" startIcon={<AddIcon />} onClick={handleCreate}>
-        {t('my_experiences.empty_cta')}
+        {t('my_hangouts.empty_cta')}
       </EmptyButton>
     </EmptyPanel>
   )
