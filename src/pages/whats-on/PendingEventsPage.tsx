@@ -8,6 +8,7 @@ import { PendingEventCard } from '../../components/whats-on/PendingEventCard'
 import { RejectEventModal } from '../../components/whats-on/RejectEventModal'
 import type { RejectSubmitPayload } from '../../components/whats-on/RejectEventModal'
 import { useApproveEventMutation, useGetAdminEventsQuery, useRejectEventMutation } from '../../features/whats-on/admin/admin.client'
+import { REJECTION_REASON_MAX_LENGTH } from '../../features/whats-on/admin/admin.types'
 import type { EventEntry } from '../../features/whats-on-events/events.types'
 import { useAdminPermissions } from '../../hooks/useAdminPermissions'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
@@ -72,8 +73,11 @@ function PendingEventsPage() {
       console.error('[PendingEventsPage] reject called without identity or event')
       return
     }
+    const titles = reasons.map(reason => t(`whats_on_admin.reject_modal.reasons.${reason}.title`)).join(', ')
+    const trimmedNotes = notes.trim()
+    const reason = [titles, trimmedNotes].filter(Boolean).join('. ').slice(0, REJECTION_REASON_MAX_LENGTH)
     try {
-      await reject({ eventId: rejectingEvent.id, identity, reasons, notes }).unwrap()
+      await reject({ eventId: rejectingEvent.id, identity, reason }).unwrap()
       setRejectingEvent(null)
       closeEventDetailModal()
       setFeedback({ message: t('whats_on_admin.pending_events.reject_success'), severity: 'success' })

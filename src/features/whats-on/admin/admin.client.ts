@@ -123,11 +123,10 @@ const adminClient = createApi({
       invalidatesTags: ['PendingEvents']
     }),
     rejectEvent: build.mutation<void, AdminRejectEventParams>({
-      queryFn: ({ eventId, identity, reasons, notes }) => {
+      queryFn: ({ eventId, identity, reason }) => {
         const payload: Record<string, unknown> = { rejected: true }
-        if (reasons && reasons.length > 0) payload.rejection_reasons = reasons
-        const trimmedNotes = notes?.trim()
-        if (trimmedNotes) payload.rejection_notes = trimmedNotes
+        const trimmed = reason?.trim()
+        if (trimmed) payload.rejection_reason = trimmed
         return patchEvent(eventId, identity, payload, 'rejectEvent')
       },
       invalidatesTags: ['PendingEvents']
