@@ -12,7 +12,12 @@ function readFromCookie(): string | undefined {
   const match = document.cookie.match(/(?:^|;\s*)ajs_anonymous_id=([^;]+)/)
   if (!match) return undefined
   // The cookie value is URL-encoded and may be wrapped in quotes (depending on
-  // which Segment SDK wrote it). Normalise both.
+  // which Segment SDK wrote it).
+  // Normal path: decodeURIComponent succeeds and we strip literal quotes ("…").
+  // Fallback path: decodeURIComponent throws on malformed percent-encoding
+  // (rare). In that case we keep the raw value and the regex still handles the
+  // URL-encoded quote form (%22…%22). The combined regex `^%22|%22$|^"|"$`
+  // covers both branches with a single replace.
   let value: string
   try {
     value = decodeURIComponent(match[1])

@@ -61,6 +61,24 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
   const anonUserId = useAnonUserId()
 
+  // Strip PII (and the now-captured anon_user_id) from the URL so it doesn't
+  // leak via the Referer header to external resources (e.g. the WearablePreview
+  // iframe). Decoupled from CP1 tracking so it runs even when no anonUserId is
+  // resolvable.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const hasEmail = params.has('email')
+    const hasUser = params.has('user')
+    const hasAnon = params.has('anon_user_id')
+    if (!hasEmail && !hasUser && !hasAnon) return
+
+    const cleanUrl = new URL(window.location.href)
+    if (hasEmail) cleanUrl.searchParams.delete('email')
+    if (hasUser) cleanUrl.searchParams.delete('user')
+    if (hasAnon) cleanUrl.searchParams.delete('anon_user_id')
+    window.history.replaceState(null, '', cleanUrl.toString())
+  }, [email, user])
+
   // CP1 reached: download page viewed (fire once, ref guard prevents re-fires)
   const hasFiredCp1 = useRef(false)
   useEffect(() => {
@@ -71,16 +89,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
       action: 'reached',
       anonUserId
     })
-
-    // Strip PII from URL so it doesn't leak via Referer header to external resources
-    // (e.g. WearablePreview iframe). We already captured the values above.
-    if (email || user) {
-      const cleanUrl = new URL(window.location.href)
-      cleanUrl.searchParams.delete('email')
-      cleanUrl.searchParams.delete('user')
-      window.history.replaceState(null, '', cleanUrl.toString())
-    }
-  }, [track, anonUserId, email, user])
+  }, [track, anonUserId])
 
   const profileAddress = user || address
   const { data: profile } = useGetProfileQuery(profileAddress ?? undefined, { skip: !profileAddress })
