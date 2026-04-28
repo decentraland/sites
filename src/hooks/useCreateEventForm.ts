@@ -95,9 +95,10 @@ function extractSubmitErrorMessage(error: unknown, t: (key: string) => string): 
 type UseCreateEventFormOptions = {
   onSuccess?: () => void
   initialEvent?: EventEntry | null
+  initialCommunityId?: string | null
 }
 
-function useCreateEventForm({ onSuccess, initialEvent = null }: UseCreateEventFormOptions = {}) {
+function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId = null }: UseCreateEventFormOptions = {}) {
   const { t } = useTranslation()
   const { identity } = useAuthIdentity()
   const [createEvent] = useCreateEventMutation()
@@ -105,7 +106,10 @@ function useCreateEventForm({ onSuccess, initialEvent = null }: UseCreateEventFo
   const [uploadPoster] = useUploadPosterMutation()
   const [uploadPosterVertical] = useUploadPosterVerticalMutation()
   const mode: CreateEventFormMode = initialEvent ? 'edit' : 'create'
-  const [form, setForm] = useState<CreateEventFormState>(() => (initialEvent ? eventEntryToFormState(initialEvent) : INITIAL_STATE))
+  const [form, setForm] = useState<CreateEventFormState>(() => {
+    if (initialEvent) return eventEntryToFormState(initialEvent)
+    return initialCommunityId ? { ...INITIAL_STATE, communityId: initialCommunityId } : INITIAL_STATE
+  })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
 

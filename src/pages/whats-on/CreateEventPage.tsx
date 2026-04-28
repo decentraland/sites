@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { skipToken } from '@reduxjs/toolkit/query'
 import { useTranslation } from '@dcl/hooks'
 import { CreateEventSuccess } from '../../components/whats-on/CreateEvent/CreateEventSuccess'
@@ -15,11 +15,13 @@ function CreateEventPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const params = useParams<{ eventId?: string }>()
+  const [searchParams] = useSearchParams()
   const { hasValidIdentity, identity } = useAuthIdentity()
   const [submitted, setSubmitted] = useState(false)
 
   const eventFromState = (location.state as { event?: EventEntry } | null)?.event ?? null
   const isEditRoute = Boolean(params.eventId)
+  const initialCommunityId = isEditRoute ? null : searchParams.get('community_id')?.trim() || null
   const shouldFetchEvent = isEditRoute && hasValidIdentity && !eventFromState
 
   const {
@@ -103,7 +105,7 @@ function CreateEventPage() {
           </BackButton>
           <PageTitle>{t(titleKey)}</PageTitle>
         </HeaderRow>
-        <EventForm onCancel={handleBack} onSuccess={handleSuccess} initialEvent={initialEvent} />
+        <EventForm onCancel={handleBack} onSuccess={handleSuccess} initialEvent={initialEvent} initialCommunityId={initialCommunityId} />
       </PageContent>
     </>
   )

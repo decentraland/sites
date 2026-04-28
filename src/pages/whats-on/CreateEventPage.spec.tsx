@@ -8,6 +8,7 @@ const mockUseGetEventByIdQuery = jest.fn()
 let mockIdentityReturn: { hasValidIdentity: boolean; identity?: unknown }
 let mockLocationState: { event?: EventEntry } | null
 let mockParams: { eventId?: string }
+let mockSearch = ''
 
 jest.mock('../../features/whats-on-events', () => ({
   useGetEventByIdQuery: (...args: unknown[]) => mockUseGetEventByIdQuery(...args)
@@ -22,11 +23,12 @@ jest.mock('react-router-dom', () => ({
   useLocation: () => ({
     state: mockLocationState,
     pathname: mockParams.eventId ? `/whats-on/edit-event/${mockParams.eventId}` : '/whats-on/new-event',
-    search: '',
+    search: mockSearch,
     hash: '',
     key: 'default'
   }),
-  useParams: () => mockParams
+  useParams: () => mockParams,
+  useSearchParams: () => [new URLSearchParams(mockSearch), jest.fn()]
 }))
 
 jest.mock('../../hooks/useCanEditEvent', () => ({
@@ -51,8 +53,18 @@ jest.mock('./CreateEventPage.styled', () => ({
 }))
 
 jest.mock('../../components/whats-on/CreateEvent/EventForm', () => ({
-  EventForm: ({ initialEvent, onCancel, onSuccess }: { initialEvent?: EventEntry | null; onCancel: () => void; onSuccess: () => void }) => (
-    <div data-testid="event-form" data-event-id={initialEvent?.id ?? ''}>
+  EventForm: ({
+    initialEvent,
+    initialCommunityId,
+    onCancel,
+    onSuccess
+  }: {
+    initialEvent?: EventEntry | null
+    initialCommunityId?: string | null
+    onCancel: () => void
+    onSuccess: () => void
+  }) => (
+    <div data-testid="event-form" data-event-id={initialEvent?.id ?? ''} data-community-id={initialCommunityId ?? ''}>
       <button data-testid="form-cancel" onClick={onCancel}>
         cancel
       </button>
@@ -76,6 +88,7 @@ describe('CreateEventPage', () => {
     mockIdentityReturn = { hasValidIdentity: true, identity: undefined }
     mockLocationState = null
     mockParams = {}
+    mockSearch = ''
     mockUseCanEditEvent.mockReturnValue({ canEdit: false, isLoading: false })
     mockUseGetEventByIdQuery.mockReturnValue({ data: undefined, isFetching: false, isError: false })
   })
@@ -130,6 +143,48 @@ describe('CreateEventPage', () => {
       fireEvent.click(screen.getByTestId('form-cancel'))
 
       expect(mockNavigate).toHaveBeenCalledWith('/whats-on')
+    })
+  })
+
+  describe('when the create route is opened with a community_id query param', () => {
+    beforeEach(() => {
+      mockSearch = '?community_id=community-from-explorer&utm_source=explorer'
+    })
+
+    it('should forward the community id to the event form so the community is pre-selected', () => {
+      render(<CreateEventPage />)
+
+      expect(screen.getByTestId('event-form')).toHaveAttribute('data-community-id', 'community-from-explorer')
+    })
+  })
+
+  describe('when the create route is opened with an empty community_id query param', () => {
+    beforeEach(() => {
+      mockSearch = '?community_id=%20%20'
+    })
+
+    it('should treat the param as absent and forward null to the event form', () => {
+      render(<CreateEventPage />)
+
+      expect(screen.getByTestId('event-form')).toHaveAttribute('data-community-id', '')
+    })
+  })
+
+  describe('when the edit route includes a community_id query param', () => {
+    let event: EventEntry
+
+    beforeEach(() => {
+      event = createMockEvent({ id: 'ev-42', user: '0xCreator' })
+      mockLocationState = { event }
+      mockParams = { eventId: 'ev-42' }
+      mockSearch = '?community_id=stale-deeplink'
+      mockUseCanEditEvent.mockReturnValue({ canEdit: true, isLoading: false })
+    })
+
+    it('should ignore the query param so the event keeps its persisted community', () => {
+      render(<CreateEventPage />)
+
+      expect(screen.getByTestId('event-form')).toHaveAttribute('data-community-id', '')
     })
   })
 
