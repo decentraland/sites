@@ -844,6 +844,37 @@ describe('useCreateEventForm', () => {
     })
   })
 
+  describe('when initialCommunityId is provided in create mode', () => {
+    it('should pre-fill communityId in the form state', () => {
+      const { result } = renderHook(() => useCreateEventForm({ initialCommunityId: 'community-from-url' }))
+
+      expect(result.current.form.communityId).toBe('community-from-url')
+    })
+
+    it('should ship the pre-filled community_id in the create payload', async () => {
+      const { result } = renderHook(() => useCreateEventForm({ initialCommunityId: 'community-from-url' }))
+
+      fillValidForm(result.current.setField)
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({ community_id: 'community-from-url' })
+        })
+      )
+    })
+
+    it('should be ignored when initialEvent is also provided so edit mode keeps the event community', () => {
+      const initialEvent = buildInitialEvent({ community_id: 'event-community' })
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent, initialCommunityId: 'url-community' }))
+
+      expect(result.current.form.communityId).toBe('event-community')
+    })
+  })
+
   describe('when initialEvent is provided (edit mode)', () => {
     it('should expose mode="edit" and hydrate form fields from the event', () => {
       const initialEvent = buildInitialEvent()
