@@ -106,9 +106,10 @@ type EventFormProps = {
   onCancel: () => void
   onSuccess: () => void
   initialEvent?: EventEntry | null
+  initialCommunityId?: string | null
 }
 
-function EventForm({ onCancel, onSuccess, initialEvent = null }: EventFormProps) {
+function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityId = null }: EventFormProps) {
   const { t } = useTranslation()
   const {
     form,
@@ -122,7 +123,7 @@ function EventForm({ onCancel, onSuccess, initialEvent = null }: EventFormProps)
     handleVerticalImageRemove,
     isSubmitting,
     handleSubmit
-  } = useCreateEventForm({ onSuccess, initialEvent })
+  } = useCreateEventForm({ onSuccess, initialEvent, initialCommunityId })
   const { identity, address } = useAuthIdentity()
   const { data: worldNames = [] } = useGetWorldNamesQuery(undefined, { skip: form.location !== 'world' })
   const { data: communities = [] } = useGetCommunitiesQuery({ identity }, { skip: !identity })
