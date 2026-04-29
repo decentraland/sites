@@ -62,7 +62,9 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, list
     () =>
       days.map(day => ({
         date: day,
-        events: expandedEvents.filter(event => isSameLocalDay(new Date(event.start_at), day)),
+        events: expandedEvents
+          .filter(event => isSameLocalDay(new Date(event.start_at), day))
+          .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime()),
         isLoading,
         isError
       })),

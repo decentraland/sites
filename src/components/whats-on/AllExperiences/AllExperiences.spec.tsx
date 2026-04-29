@@ -86,7 +86,13 @@ jest.mock('./DateNavigation', () => ({
 
 jest.mock('./DayColumn', () => ({
   DayColumn: ({ dateLabel, isLoading, events }: Record<string, unknown>) => (
-    <div data-testid="day-column" data-date-label={dateLabel} data-loading={isLoading} data-event-count={(events as unknown[]).length} />
+    <div
+      data-testid="day-column"
+      data-date-label={dateLabel}
+      data-loading={isLoading}
+      data-event-count={(events as unknown[]).length}
+      data-event-ids={(events as { id: string }[]).map(e => e.id).join(',')}
+    />
   )
 }))
 
@@ -288,6 +294,35 @@ describe('AllExperiences', () => {
       expect(columns[0]).toHaveAttribute('data-event-count', '1')
       expect(columns[1]).toHaveAttribute('data-event-count', '0')
       expect(columns[2]).toHaveAttribute('data-event-count', '0')
+    })
+
+    it('should sort same-day events by start time ascending regardless of API order', () => {
+      const events = [
+        createMockEvent({
+          id: 'recurrent-late',
+
+          start_at: '2026-04-29T18:00:00Z',
+          finish_at: '2026-04-29T19:00:00Z',
+          duration: 3600000,
+          recurrent: true,
+          recurrent_dates: ['2026-04-29T18:00:00Z']
+        }),
+        createMockEvent({
+          id: 'recurrent-early',
+
+          start_at: '2026-04-29T09:00:00Z',
+          finish_at: '2026-04-29T10:00:00Z',
+          duration: 3600000,
+          recurrent: true,
+          recurrent_dates: ['2026-04-29T09:00:00Z']
+        })
+      ]
+      mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
+
+      render(<AllExperiences />)
+
+      const columns = screen.getAllByTestId('day-column')
+      expect(columns[0]).toHaveAttribute('data-event-ids', 'recurrent-early,recurrent-late')
     })
 
     it('should display the event on a later occurrence after navigating forward', () => {
