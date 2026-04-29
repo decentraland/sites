@@ -353,10 +353,17 @@ const ChatCtaButton = styled(Button)(({ theme }) => ({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:hover': {
     backgroundColor: '#d04048',
-    backgroundImage: 'none'
+    backgroundImage: 'none',
+    color: '#ffffff'
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:focus-visible': {
+    backgroundColor: '#d04048',
+    color: '#ffffff'
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:active': {
+    color: '#ffffff',
     transform: 'scale(0.97)'
   }
 }))
