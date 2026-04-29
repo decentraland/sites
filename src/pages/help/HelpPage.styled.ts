@@ -263,30 +263,6 @@ const DesktopStatusWrapper = styled(Box)(({ theme }) => ({
   }
 }))
 
-const ScrollableAccordionContainer = styled(AccordionContainer)(({ theme }) => ({
-  maxHeight: 360,
-  overflowY: 'auto',
-  paddingRight: theme.spacing(0.5),
-  scrollbarWidth: 'thin',
-  scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent',
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '&::-webkit-scrollbar': {
-    width: 4
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '&::-webkit-scrollbar-track': {
-    background: 'transparent'
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '&::-webkit-scrollbar-thumb': {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 4
-  },
-  [theme.breakpoints.down('sm')]: {
-    maxHeight: 300
-  }
-}))
-
 const ChatCtaBanner = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(6),
   marginLeft: 'auto',
@@ -412,6 +388,5 @@ export {
   HelpSidebarTitle,
   HelpTabButton,
   HelpTabButtonsContainer,
-  MobileStatusWrapper,
-  ScrollableAccordionContainer
+  MobileStatusWrapper
 }

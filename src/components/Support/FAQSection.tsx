@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import {
+  AccordionContainer,
   FaqAccordion,
   FaqAccordionDetails,
   FaqAccordionSummary,
   FaqQuestion,
   HelpSectionDescription,
   HelpSectionTexts,
-  HelpSectionTitle,
-  ScrollableAccordionContainer
+  HelpSectionTitle
 } from '../../pages/help/HelpPage.styled'
 import { CircleAndArrowIcon } from '../Icons'
 
@@ -40,7 +40,7 @@ const FAQSection = ({ isActive }: FAQSectionProps) => {
           {t(`${FAQ_PREFIX}.paragraph`)} <a href="https://docs.decentraland.org/faqs/decentraland-101">{t(`${FAQ_PREFIX}.cta_link`)}.</a>
         </HelpSectionDescription>
       </HelpSectionTexts>
-      <ScrollableAccordionContainer>
+      <AccordionContainer>
         {items.map((faq, index) => (
           <FaqAccordion key={index} expanded={expanded === index} onChange={(_, isExpanded) => setExpanded(isExpanded ? index : false)}>
             <FaqAccordionSummary>
@@ -50,7 +50,7 @@ const FAQSection = ({ isActive }: FAQSectionProps) => {
             <FaqAccordionDetails>{faq.answer}</FaqAccordionDetails>
           </FaqAccordion>
         ))}
-      </ScrollableAccordionContainer>
+      </AccordionContainer>
     </div>
   )
 }
