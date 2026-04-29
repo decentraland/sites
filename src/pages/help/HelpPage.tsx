@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Intercom } from '../../components/Intercom'
-import { FAQSection, HelpCenterSection, HelpTab, StatusDropdown, SupportUpdatesSection } from '../../components/Support'
-import { DesktopStatusWrapper, HelpContentArea, HelpPageContainer } from './HelpPage.styled'
+import { ChatCTABanner, FAQSection, HelpCenterSection, HelpTab, StatusDropdown, SupportUpdatesSection } from '../../components/Support'
+import { DesktopStatusWrapper, HelpContentArea, HelpPageContainer, HelpPageWrapper } from './HelpPage.styled'
 
 const INTERCOM_APP_ID = 'z0h94kay'
 const INTERCOM_SETTINGS = { alignment: 'right' } as const
@@ -27,16 +27,19 @@ const HelpPage = () => {
 
   return (
     <>
-      <HelpPageContainer>
-        <HelpCenterSection activeTab={activeTab} setTab={setActiveTab} serviceList={SERVICES} />
-        <HelpContentArea>
-          <FAQSection isActive={activeTab === HelpTab.FAQ} />
-          <SupportUpdatesSection isActive={activeTab === HelpTab.SUPPORT_UPDATES} />
-        </HelpContentArea>
-        <DesktopStatusWrapper>
-          <StatusDropdown serviceList={SERVICES} />
-        </DesktopStatusWrapper>
-      </HelpPageContainer>
+      <HelpPageWrapper>
+        <HelpPageContainer>
+          <HelpCenterSection activeTab={activeTab} setTab={setActiveTab} serviceList={SERVICES} />
+          <HelpContentArea>
+            <FAQSection isActive={activeTab === HelpTab.FAQ} />
+            <SupportUpdatesSection isActive={activeTab === HelpTab.SUPPORT_UPDATES} />
+          </HelpContentArea>
+          <DesktopStatusWrapper>
+            <StatusDropdown serviceList={SERVICES} />
+          </DesktopStatusWrapper>
+        </HelpPageContainer>
+        <ChatCTABanner />
+      </HelpPageWrapper>
       <Intercom appId={INTERCOM_APP_ID} settings={INTERCOM_SETTINGS} />
     </>
   )

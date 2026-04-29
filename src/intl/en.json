@@ -562,6 +562,11 @@
             "shutdown": "Services Shutdown",
             "warning": "Experiencing Problems"
           }
+        },
+        "chat_cta": {
+          "title": "Need Help?",
+          "subtitle": "Our support team is here to answer your questions!",
+          "button": "CHAT NOW"
         }
       },
       "whats_hot": {

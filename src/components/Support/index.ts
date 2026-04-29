@@ -1,3 +1,4 @@
+export { ChatCTABanner } from './ChatCTABanner'
 export { FAQSection } from './FAQSection'
 export { HelpCenterSection, HelpTab } from './HelpCenterSection'
 export { StatusDropdown } from './StatusDropdown'

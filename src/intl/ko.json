@@ -452,6 +452,11 @@
             "shutdown": "서비스 중단",
             "warning": "문제 발생 중"
           }
+        },
+        "chat_cta": {
+          "title": "Need Help?",
+          "subtitle": "Our support team is here to answer your questions!",
+          "button": "CHAT NOW"
         }
       },
       "whats_hot": {

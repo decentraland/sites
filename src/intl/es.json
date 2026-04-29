@@ -452,6 +452,11 @@
             "shutdown": "Servicios Inactivos",
             "warning": "Experimentando Problemas"
           }
+        },
+        "chat_cta": {
+          "title": "¿Necesitas ayuda?",
+          "subtitle": "¡Nuestro equipo de soporte está aquí para responder tus preguntas!",
+          "button": "CHATEAR AHORA"
         }
       },
       "whats_hot": {
