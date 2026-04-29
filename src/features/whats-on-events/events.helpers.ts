@@ -1,4 +1,5 @@
 import { assetUrl } from '../../utils/assetUrl'
+import { isSameLocalDay } from '../../utils/whatsOnDate'
 import { DCL_FOUNDATION_NAME, coordsKey } from '../events/events.helpers'
 import type { ActiveEntity, HotScene } from '../events/events.types'
 import type { EventEntry, RecurrentFrequency } from './events.types'
@@ -31,6 +32,30 @@ const DCL_FOUNDATION_LOGO_URL = assetUrl('/dcl-logo.svg')
 
 function isDclFoundationCreator(creatorName: string | null | undefined): boolean {
   return creatorName?.trim().toLowerCase() === DCL_FOUNDATION_NAME_LOWER
+}
+
+// For recurrent events, `start_at` is the FIRST occurrence (often months in the past). The API returns
+// every occurrence in `recurrent_dates`. This expands a recurrent event into one virtual entry per
+// occurrence that falls on any of `days`, with `start_at`/`finish_at`/`live` overridden to the
+// occurrence. Non-recurrent events pass through unchanged.
+function expandEventOccurrences(event: EventEntry, days: Date[], now: number = Date.now()): EventEntry[] {
+  if (!event.recurrent || !event.recurrent_dates || event.recurrent_dates.length === 0) {
+    return [event]
+  }
+  return event.recurrent_dates.reduce<EventEntry[]>((acc, dateStr) => {
+    const start = new Date(dateStr)
+    if (!days.some(day => isSameLocalDay(start, day))) return acc
+    const finish = new Date(start.getTime() + event.duration)
+    /* eslint-disable @typescript-eslint/naming-convention */
+    acc.push({
+      ...event,
+      start_at: start.toISOString(),
+      finish_at: finish.toISOString(),
+      live: start.getTime() <= now && now <= finish.getTime()
+    })
+    /* eslint-enable @typescript-eslint/naming-convention */
+    return acc
+  }, [])
 }
 
 function findEventInMap(eventsByCoord: Map<string, EventEntry>, parcels: Array<[number, number]>): EventEntry | undefined {
@@ -228,5 +253,5 @@ async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig):
   })
 }
 
-export { buildLiveNowCards, DCL_FOUNDATION_LOGO_URL, DCL_FOUNDATION_NAME, enrichPlaceCards, isDclFoundationCreator }
+export { buildLiveNowCards, DCL_FOUNDATION_LOGO_URL, DCL_FOUNDATION_NAME, enrichPlaceCards, expandEventOccurrences, isDclFoundationCreator }
 export type { EnrichmentConfig, HotScene, LiveNowCard }

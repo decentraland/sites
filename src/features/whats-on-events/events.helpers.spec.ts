@@ -1,5 +1,5 @@
 import { createMockEvent, createMockPlaceCard, createMockScene } from '../../__test-utils__/factories'
-import { buildLiveNowCards, enrichPlaceCards, isDclFoundationCreator } from './events.helpers'
+import { buildLiveNowCards, enrichPlaceCards, expandEventOccurrences, isDclFoundationCreator } from './events.helpers'
 import type { HotScene, LiveNowCard } from './events.helpers'
 import type { EventEntry } from './events.types'
 
@@ -572,6 +572,80 @@ describe('enrichPlaceCards', () => {
 
     it('should return a new card object', () => {
       expect(result[0]).not.toBe(cards[0])
+    })
+  })
+})
+
+describe('expandEventOccurrences', () => {
+  // Build days from local-date constructor so isSameLocalDay matches recurrent_dates regardless of test TZ.
+  const days = [new Date(2026, 3, 29), new Date(2026, 4, 6), new Date(2026, 4, 13)]
+
+  describe('when the event is not recurrent', () => {
+    it('should return the original event unchanged', () => {
+      const event = createMockEvent({ recurrent: false, recurrent_dates: [] })
+
+      const result = expandEventOccurrences(event, days)
+
+      expect(result).toEqual([event])
+      expect(result[0]).toBe(event)
+    })
+  })
+
+  describe('when the event is recurrent but has no recurrent_dates', () => {
+    it('should return the original event unchanged', () => {
+      const event = createMockEvent({ recurrent: true, recurrent_dates: [] })
+
+      const result = expandEventOccurrences(event, days)
+
+      expect(result).toEqual([event])
+    })
+  })
+
+  describe('when a recurrent event has occurrences inside and outside the visible days', () => {
+    it('should emit one virtual entry per occurrence that falls on a visible day', () => {
+      const event = createMockEvent({
+        recurrent: true,
+        duration: 5400000,
+        start_at: '2026-01-28T14:00:00Z',
+        finish_at: '2026-01-28T15:30:00Z',
+        recurrent_dates: [
+          '2026-01-28T14:00:00Z',
+          '2026-04-29T14:00:00Z',
+          '2026-05-06T14:00:00Z',
+          '2026-05-13T14:00:00Z',
+          '2026-05-20T14:00:00Z'
+        ]
+      })
+
+      const result = expandEventOccurrences(event, days, new Date('2026-04-29T12:00:00Z').getTime())
+
+      expect(result).toHaveLength(3)
+      expect(result.map(e => e.start_at)).toEqual(['2026-04-29T14:00:00.000Z', '2026-05-06T14:00:00.000Z', '2026-05-13T14:00:00.000Z'])
+    })
+
+    it('should override finish_at to start + duration on each virtual entry', () => {
+      const event = createMockEvent({
+        recurrent: true,
+        duration: 5400000,
+        recurrent_dates: ['2026-04-29T14:00:00Z']
+      })
+
+      const result = expandEventOccurrences(event, days, new Date('2026-04-29T12:00:00Z').getTime())
+
+      expect(result[0].finish_at).toBe('2026-04-29T15:30:00.000Z')
+    })
+
+    it('should mark live=true only when the occurrence overlaps now', () => {
+      const event = createMockEvent({
+        recurrent: true,
+        duration: 5400000,
+        recurrent_dates: ['2026-04-29T14:00:00Z', '2026-05-06T14:00:00Z']
+      })
+
+      const result = expandEventOccurrences(event, days, new Date('2026-04-29T14:30:00Z').getTime())
+
+      expect(result[0].live).toBe(true)
+      expect(result[1].live).toBe(false)
     })
   })
 })

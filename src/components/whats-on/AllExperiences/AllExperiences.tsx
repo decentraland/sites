@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
-import { useGetEventsQuery } from '../../../features/whats-on-events'
+import { expandEventOccurrences, useGetEventsQuery } from '../../../features/whats-on-events'
 import type { EventEntry, EventListType } from '../../../features/whats-on-events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
 import { useVisibleColumnCount } from '../../../hooks/useVisibleColumnCount'
 import { chunk } from '../../../utils/whatsOnChunk'
-import { addDays, formatDayHeaderAria, getDayRange, isSameLocalDay } from '../../../utils/whatsOnDate'
+import { addDays, formatDayHeaderAria, isSameLocalDay } from '../../../utils/whatsOnDate'
 import { EventDetailModal } from '../EventDetailModal'
 import { HostBanner } from '../HostBanner/HostBanner'
 import { UpcomingCard } from '../Upcoming/UpcomingCard'
@@ -37,9 +37,9 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, list
     [today, startOffset, columnCount]
   )
 
-  const rangeStart = useMemo(() => getDayRange(days[0]), [days])
-  const rangeEnd = useMemo(() => getDayRange(days[days.length - 1]), [days])
-
+  // The API filters by `next_start_at`, so a recurrent event only appears in the response when the
+  // upcoming occurrence falls inside `from`/`to`. To make every occurrence in `recurrent_dates`
+  // visible across the calendar, drop the date range and filter on the client via expandEventOccurrences.
   const {
     data: allEvents = [],
     isLoading,
@@ -47,8 +47,6 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, list
   } = useGetEventsQuery(
     {
       list,
-      from: ownerOnly ? undefined : rangeStart.from,
-      to: ownerOnly ? undefined : rangeEnd.to,
       order: 'asc',
       world: false,
       limit: 200,
@@ -58,15 +56,17 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, list
     { refetchOnMountOrArgChange: ownerOnly }
   )
 
+  const expandedEvents = useMemo(() => allEvents.flatMap(event => expandEventOccurrences(event, days)), [allEvents, days])
+
   const dayData = useMemo(
     () =>
       days.map(day => ({
         date: day,
-        events: allEvents.filter(event => isSameLocalDay(new Date(event.start_at), day)),
+        events: expandedEvents.filter(event => isSameLocalDay(new Date(event.start_at), day)),
         isLoading,
         isError
       })),
-    [days, allEvents, isLoading, isError]
+    [days, expandedEvents, isLoading, isError]
   )
 
   return { allEvents, dayData, isLoading }
@@ -230,7 +230,7 @@ function AllExperiences() {
                 {mobilePages.map((page, i) => (
                   <MobileEventsPage key={i}>
                     {page.map(event => (
-                      <UpcomingCard key={event.id} event={event} onClick={openEventDetailModal} />
+                      <UpcomingCard key={`${event.id}-${event.start_at}`} event={event} onClick={openEventDetailModal} />
                     ))}
                   </MobileEventsPage>
                 ))}

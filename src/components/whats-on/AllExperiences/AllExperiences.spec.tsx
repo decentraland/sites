@@ -14,9 +14,13 @@ jest.mock('../../../hooks/useAuthIdentity', () => ({
 }))
 
 const mockUseGetEventsQuery = jest.fn()
-jest.mock('../../../features/whats-on-events', () => ({
-  useGetEventsQuery: (...args: unknown[]) => mockUseGetEventsQuery(...args)
-}))
+jest.mock('../../../features/whats-on-events', () => {
+  const helpers = jest.requireActual('../../../features/whats-on-events/events.helpers')
+  return {
+    useGetEventsQuery: (...args: unknown[]) => mockUseGetEventsQuery(...args),
+    expandEventOccurrences: helpers.expandEventOccurrences
+  }
+})
 
 const mockColumnCount = jest.fn()
 jest.mock('../../../hooks/useVisibleColumnCount', () => ({
@@ -252,6 +256,51 @@ describe('AllExperiences', () => {
 
       expect(screen.queryByTestId('day-column')).not.toBeInTheDocument()
       expect(screen.getAllByTestId('mobile-event-card')).toHaveLength(2)
+    })
+  })
+
+  describe('when a recurrent event has its first occurrence in the past', () => {
+    beforeEach(() => {
+      jest.setSystemTime(new Date(2026, 3, 29, 10, 0, 0))
+      mockColumnCount.mockReturnValue(3)
+      const events = [
+        createMockEvent({
+          id: 'recurrent-wed',
+
+          start_at: '2026-01-28T14:00:00Z',
+          finish_at: '2026-01-28T15:30:00Z',
+          next_start_at: '2026-05-06T14:00:00Z',
+          next_finish_at: '2026-05-06T15:30:00Z',
+          duration: 5400000,
+          recurrent: true,
+          recurrent_frequency: 'WEEKLY',
+          recurrent_dates: ['2026-01-28T14:00:00Z', '2026-04-29T14:00:00Z', '2026-05-06T14:00:00Z', '2026-05-13T14:00:00Z']
+        })
+      ]
+      mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
+    })
+
+    it('should display the event on its upcoming occurrence column, not on the original start_at column', () => {
+      render(<AllExperiences />)
+
+      const columns = screen.getAllByTestId('day-column')
+      // visible columns: Apr 29, 30, May 1 — only Apr 29 has a recurrent_dates match
+      expect(columns[0]).toHaveAttribute('data-event-count', '1')
+      expect(columns[1]).toHaveAttribute('data-event-count', '0')
+      expect(columns[2]).toHaveAttribute('data-event-count', '0')
+    })
+
+    it('should display the event on a later occurrence after navigating forward', () => {
+      render(<AllExperiences />)
+
+      // navigate two pages forward — startOffset 6 → visible columns May 5, 6, 7
+      fireEvent.click(screen.getByTestId('nav-right'))
+      fireEvent.click(screen.getByTestId('nav-right'))
+
+      const columns = screen.getAllByTestId('day-column')
+      expect(columns[0]).toHaveAttribute('data-event-count', '0')
+      expect(columns[1]).toHaveAttribute('data-event-count', '1') // May 6 Wednesday
+      expect(columns[2]).toHaveAttribute('data-event-count', '0')
     })
   })
 
