@@ -2,11 +2,13 @@ export {
   eventsClient,
   useCreateEventMutation,
   useGetCommunitiesQuery,
+  useGetEventByIdQuery,
   useGetEventsQuery,
   useGetLiveNowCardsQuery,
   useGetUpcomingEventsQuery,
   useGetWorldNamesQuery,
   useToggleAttendeeMutation,
+  useUpdateEventMutation,
   useUploadPosterMutation,
   useUploadPosterVerticalMutation
 } from './events.client'

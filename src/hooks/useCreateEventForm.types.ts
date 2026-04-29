@@ -5,6 +5,7 @@ type ImageErrorCode =
   | 'upload_failed'
   | 'vertical_image_dimensions'
   | 'vertical_image_decode'
+  | 'image_required'
 
 type CreateEventFormState = {
   image: File | null
@@ -21,8 +22,7 @@ type CreateEventFormState = {
   description: string
   startDate: string
   startTime: string
-  endDate: string
-  endTime: string
+  duration: string
   repeatEnabled: boolean
   frequency: string
   repeatEndDate: string
@@ -32,9 +32,10 @@ type CreateEventFormState = {
   world: string
   communityId: string
   email: string
-  notes: string
 }
 
 type FormErrors = Partial<Record<string, string>>
 
-export type { CreateEventFormState, FormErrors, ImageErrorCode }
+type CreateEventFormMode = 'create' | 'edit'
+
+export type { CreateEventFormMode, CreateEventFormState, FormErrors, ImageErrorCode }

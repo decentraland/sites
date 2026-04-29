@@ -9,6 +9,7 @@ import { useCardActions } from '../../../hooks/useCardActions'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { getRelativeTimeLabel } from '../../../utils/whatsOnTime'
+import { resolveEventRealm } from '../../../utils/whatsOnUrl'
 import { CalendarAddIcon } from '../common/CalendarAddIcon'
 import { ActionButton, ActionTextButton, ActionTextLabel, CalendarIcon, CopyIcon } from '../common/CardActions.styled'
 import { RemindMeButton } from '../common/RemindMeButton'
@@ -33,7 +34,8 @@ const UpcomingCard = memo(function UpcomingCard({
     startAt: event.start_at,
     finishAt: event.finish_at,
     x: event.x,
-    y: event.y
+    y: event.y,
+    realm: resolveEventRealm(event.world, event.server)
   })
   const { isReminded, isLoading: isRemindLoading, isShaking, handleToggle: handleRemindToggle } = useRemindMe(event.id, event.attending)
 

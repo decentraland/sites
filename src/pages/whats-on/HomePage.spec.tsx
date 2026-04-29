@@ -4,6 +4,8 @@ import { HomePage } from './HomePage'
 
 const mockUseGetLiveNowCardsQuery = jest.fn()
 const mockUseLiveNowQueryParams = jest.fn()
+const mockUseEventDeepLink = jest.fn()
+const mockEventDetailModal = jest.fn()
 
 jest.mock('../../features/whats-on-events', () => ({
   useGetLiveNowCardsQuery: (...args: unknown[]) => mockUseGetLiveNowCardsQuery(...args)
@@ -11,6 +13,17 @@ jest.mock('../../features/whats-on-events', () => ({
 
 jest.mock('../../hooks/useLiveNowQueryParams', () => ({
   useLiveNowQueryParams: () => mockUseLiveNowQueryParams()
+}))
+
+jest.mock('../../hooks/useEventDeepLink', () => ({
+  useEventDeepLink: () => mockUseEventDeepLink()
+}))
+
+jest.mock('../../components/whats-on/EventDetailModal', () => ({
+  EventDetailModal: (props: { open: boolean }) => {
+    mockEventDetailModal(props)
+    return <div data-testid="event-detail-modal" data-open={props.open ? 'true' : 'false'} />
+  }
 }))
 
 jest.mock('../../components/whats-on/LiveNow', () => ({
@@ -37,6 +50,10 @@ jest.mock('./HomePage.styled', () => ({
 }))
 
 describe('when HomePage is rendered', () => {
+  beforeEach(() => {
+    mockUseEventDeepLink.mockReturnValue({ isOpen: false, modalData: null, closeDeepLink: jest.fn() })
+  })
+
   afterEach(() => {
     jest.resetAllMocks()
   })
@@ -103,6 +120,29 @@ describe('when HomePage is rendered', () => {
       expect(screen.getByTestId('deferred-group')).toHaveAttribute('data-deferred', 'false')
       expect(screen.getByTestId('upcoming')).toBeInTheDocument()
       expect(screen.getByTestId('all-experiences')).toBeInTheDocument()
+    })
+  })
+
+  describe('and a deep-linked event is open', () => {
+    let closeDeepLink: jest.Mock
+
+    beforeEach(() => {
+      closeDeepLink = jest.fn()
+      mockUseGetLiveNowCardsQuery.mockReturnValue({ isLoading: false })
+      mockUseEventDeepLink.mockReturnValue({
+        isOpen: true,
+        modalData: { id: 'ev-42' },
+        closeDeepLink
+      })
+    })
+
+    it('should mount the EventDetailModal in its open state with the deep-link data', () => {
+      render(<HomePage />)
+
+      expect(screen.getByTestId('event-detail-modal')).toHaveAttribute('data-open', 'true')
+      expect(mockEventDetailModal).toHaveBeenCalledWith(
+        expect.objectContaining({ open: true, data: { id: 'ev-42' }, onClose: closeDeepLink })
+      )
     })
   })
 })

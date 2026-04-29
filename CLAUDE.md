@@ -48,7 +48,7 @@ These render as `<Outlet />` children of `src/shells/DappsShell.tsx`. The shell 
 | `src/services/blogClient.ts`    | RTK Query base clients (`cmsClient`, `algoliaClient`) — infrastructure only, empty endpoints. Endpoints are injected from `features/blog/` and `features/search/`. See "RTK Query split" below. |
 | `src/hooks/`                    | `useAuthIdentity`, `useWalletAddress`, `useManaBalances`, etc. All localStorage-based — no Redux dependency.                                                                                    |
 | `src/config/env/`               | Per-environment JSON (`dev.json`, `stg.json`, `prd.json`). Access via `getEnv('KEY')` from `src/config/env.ts`.                                                                                 |
-| `src/intl/`                     | Single `en.json` with all translations merged (landing + whats-on + blog namespaces). `LocaleContext.tsx` wraps `@dcl/hooks`'s `TranslationProvider`.                                           |
+| `src/intl/`                     | Six locale files — `en.json`, `es.json`, `fr.json`, `ja.json`, `ko.json`, `zh.json` — each with all translations merged (landing + whats-on + blog namespaces). When adding a key to `en.json`, add it to ALL five other locales in the same commit. `LocaleContext.tsx` wraps `@dcl/hooks`'s `TranslationProvider`. |
 | `src/modules/`                  | Side-effect wiring: Sentry (`sentry.ts`), Segment/Contentsquare (`DeferredAnalyticsProvider`, `deferredThirdParty.ts`).                                                                         |
 | `src/shared/blog/`              | Domain types and utilities (dates, slugs, locations) for blog content.                                                                                                                          |
 | `src/utils/signedFetch.ts`      | Shared identity-signed fetch. Used by whats-on mutations.                                                                                                                                       |
@@ -134,6 +134,7 @@ npm run lint:pkg     # package.json lint
 3. Place the `<Route>` INSIDE `<Route element={<DappsShell />}>`.
 4. If you need Redux state, either inject endpoints into an existing RTK Query client or add a new base client in `src/services/` and a new reducer in `src/shells/store.ts`.
 5. Never import your feature from lightweight route code.
+6. If the page sets `<title>` via Helmet + async data (Contentful, RTK Query, etc.) — call `useBlogPageTracking` from `src/hooks/useBlogPageTracking.ts` and add the route to `Layout`'s page-tracking skip list. See rule 23.
 
 ## Coding conventions
 
@@ -215,11 +216,15 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
 
 - NEVER add blanket ignores (e.g. `src/**/*.spec.ts(x)` to top-level `ignores`). Use a scoped `overrides` entry that disables ONLY the specific rules that differ.
 
-### 9. JSON merges
+### 9. JSON merges + i18n parity
 
 - When merging two JSON files (e.g. `intl/en.json`), verify no duplicate top-level keys:
   ```bash
   node -e 'const j=require("./src/intl/en.json");const k=Object.keys(j);if(new Set(k).size!==k.length)throw new Error("dupe keys")'
+  ```
+- Adding a translation key to `en.json` MUST add it to all five sibling locales (`es`, `fr`, `ja`, `ko`, `zh`) in the same commit. Missing locales fall back to the raw key, which the Jarvis review bot will flag as P2. Verify with:
+  ```bash
+  for f in en es fr ja ko zh; do node -e "const j=require('./src/intl/${f}.json'); const v=j.path?.to?.your_key; if(!v) throw new Error('${f}: missing'); console.log('${f}:', v)"; done
   ```
 
 ### 10. Error handling
@@ -360,6 +365,19 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
   })
   ```
 
+### 23. Page tracking — never call `usePageTracking(pathname)` for routes whose `<title>` is set by Helmet
+
+- `usePageTracking(pathname)` from `@dcl/hooks` fires `analytics.page(pathname)` synchronously on route change. Segment auto-fills `properties.title` from `document.title` at that exact moment. For SPA navigations into a `/blog/*` (or any route that resolves its title async via Helmet + RTK Query), the title race lands the _previous_ route's title in the event — Metabase charts that filter by title silently drop the visit.
+- `Layout` skips its route-level `page()` call when `pathname === '/blog' || pathname.startsWith('/blog/')` for that reason. New blog routes MUST call `useBlogPageTracking({ name, properties })` from `src/hooks/useBlogPageTracking.ts`, gated on the resolved title:
+  ```ts
+  useBlogPageTracking({
+    name: post?.title,
+    properties: post ? { title: post.title, slug: post.slug, category: post.category.title } : undefined
+  })
+  ```
+- The hook is initialized-aware (skips while `useAnalytics().isInitialized` is false, i.e. while `DeferredAnalyticsProvider` waits for idle) and only fires once per (name, properties) tuple.
+- If you add a non-blog route that ALSO sets its title via Helmet + async data, follow the same pattern: extend `Layout`'s skip list and call `useBlogPageTracking` (or a sibling hook) from the page so the event fires after the title resolves.
+
 ## Security checklist
 
 Before merging any PR that touches user-visible rendering, forms, or external content:
@@ -375,24 +393,25 @@ Before merging any PR that touches user-visible rendering, forms, or external co
 
 Aggregated from the rules above, sorted by "what could hurt you most":
 
-| Area               | Rule                                                                                                                                   |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| **File placement** | Hooks → `src/hooks/`; types → `*.types.ts`; styled → `*.styled.ts`; feature barrels must not re-export hooks                           |
-| **Architecture**   | `src/shells/*` is lazy — never import from it in lightweight route code (rule 2)                                                       |
-| **Architecture**   | Empty Redux store is `configureStore({ reducer: {} })`, no placeholder (rule 3)                                                        |
-| **RTK Query**      | `services/` = base clients (infra), `features/` = `injectEndpoints` (business). Keep the split                                         |
-| **RTK Query**      | Use `onQueryStarted` for dispatching, not `store.dispatch` in `transformResponse` (rule 17)                                            |
-| **RTK Query**      | No `state.xxxClient.queries as any` — use entity selectors or `endpoint.select()` (rule 18)                                            |
-| **Auth**           | localStorage-only via `useAuthIdentity` — no Web3 providers, no wagmi, no thirdweb                                                     |
-| **Bundle**         | No `module.throw` at import time in shell-reachable files (rule 16)                                                                    |
-| **Bundle**         | Run `npm run build && npm run preview` for PRs adding dynamic routes or CJS-ish deps (rule 14)                                         |
-| **Bundle**         | `decentraland-ui2` imports only; no hardcoded colors; object-syntax styled components                                                  |
-| **Security**       | `dangerouslySetInnerHTML` → DOMPurify with scoped allowlist (rule 19)                                                                  |
-| **Security**       | URL parsing with `new URL()` + hostname allowlist, never `.includes()` (rule 20)                                                       |
-| **Security**       | Never leak raw server error bodies to UI (rule 10)                                                                                     |
-| **Performance**    | Hero is prerendered; Layout is lazy; DappsShell is lazy; analytics deferred                                                            |
-| **Performance**    | Add `memo()` to list-rendered card components (rule 11)                                                                                |
-| **Performance**    | Batch HTTP calls when API supports it — no N+1 in hot paths (rule 12)                                                                  |
-| **Deps**           | `npm install`/`npm uninstall`; `@dcl/*` caret, others exact; fresh `rm -rf node_modules && npm install` after lock conflicts (rule 21) |
-| **Routing**        | Fixed navbar = 64px mobile / 92px desktop. Every new route needs `paddingTop: 64` / `md: 96` (rule 13)                                 |
-| **Config**         | Unified CMS origin across env files + api/seo.ts + vite proxy (rule 15)                                                                |
+| Area               | Rule                                                                                                                                    |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **File placement** | Hooks → `src/hooks/`; types → `*.types.ts`; styled → `*.styled.ts`; feature barrels must not re-export hooks                            |
+| **Architecture**   | `src/shells/*` is lazy — never import from it in lightweight route code (rule 2)                                                        |
+| **Architecture**   | Empty Redux store is `configureStore({ reducer: {} })`, no placeholder (rule 3)                                                         |
+| **RTK Query**      | `services/` = base clients (infra), `features/` = `injectEndpoints` (business). Keep the split                                          |
+| **RTK Query**      | Use `onQueryStarted` for dispatching, not `store.dispatch` in `transformResponse` (rule 17)                                             |
+| **RTK Query**      | No `state.xxxClient.queries as any` — use entity selectors or `endpoint.select()` (rule 18)                                             |
+| **Auth**           | localStorage-only via `useAuthIdentity` — no Web3 providers, no wagmi, no thirdweb                                                      |
+| **Bundle**         | No `module.throw` at import time in shell-reachable files (rule 16)                                                                     |
+| **Bundle**         | Run `npm run build && npm run preview` for PRs adding dynamic routes or CJS-ish deps (rule 14)                                          |
+| **Bundle**         | `decentraland-ui2` imports only; no hardcoded colors; object-syntax styled components                                                   |
+| **Security**       | `dangerouslySetInnerHTML` → DOMPurify with scoped allowlist (rule 19)                                                                   |
+| **Security**       | URL parsing with `new URL()` + hostname allowlist, never `.includes()` (rule 20)                                                        |
+| **Security**       | Never leak raw server error bodies to UI (rule 10)                                                                                      |
+| **Performance**    | Hero is prerendered; Layout is lazy; DappsShell is lazy; analytics deferred                                                             |
+| **Performance**    | Add `memo()` to list-rendered card components (rule 11)                                                                                 |
+| **Tracking**       | Helmet-titled routes use `useBlogPageTracking` (resolves title before `page()`); Layout skips them. No bare `usePageTracking` (rule 23) |
+| **Performance**    | Batch HTTP calls when API supports it — no N+1 in hot paths (rule 12)                                                                   |
+| **Deps**           | `npm install`/`npm uninstall`; `@dcl/*` caret, others exact; fresh `rm -rf node_modules && npm install` after lock conflicts (rule 21)  |
+| **Routing**        | Fixed navbar = 64px mobile / 92px desktop. Every new route needs `paddingTop: 64` / `md: 96` (rule 13)                                  |
+| **Config**         | Unified CMS origin across env files + api/seo.ts + vite proxy (rule 15)                                                                 |

@@ -1,4 +1,16 @@
-import { Box, FormControl, InputAdornment, InputLabel, MenuItem, Select, Switch, TextField, Typography, styled } from 'decentraland-ui2'
+import {
+  Alert,
+  Box,
+  FormControl,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
+  Switch,
+  TextField,
+  Typography,
+  styled
+} from 'decentraland-ui2'
 
 /* ── shared input theme ─────────────────────────────────────────────── */
 
@@ -148,6 +160,7 @@ const EventSwitch = styled(Switch)(({ theme }) => ({
 
 const ContentContainer = styled(Box)(({ theme }) => ({
   width: '100%',
+  minWidth: 0,
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(4),
@@ -164,8 +177,12 @@ const FormColumns = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(6),
   width: '100%',
-  [theme.breakpoints.down('md')]: {
+  minWidth: 0,
+  [theme.breakpoints.down('lg')]: {
     flexDirection: 'column',
+    gap: theme.spacing(4)
+  },
+  [theme.breakpoints.down('md')]: {
     gap: 0
   }
 }))
@@ -190,12 +207,28 @@ const RightSection = styled(Box)(({ theme }) => ({
   minWidth: 0,
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(6),
+  justifyContent: 'space-between',
+  gap: theme.spacing(3),
   paddingTop: theme.spacing(3),
   [theme.breakpoints.down('md')]: {
-    padding: theme.spacing(3, 2),
+    padding: theme.spacing(3, 2)
+  }
+}))
+
+const RightSectionFields = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(6),
+  [theme.breakpoints.down('md')]: {
     gap: theme.spacing(4)
   }
+}))
+
+const RightSectionFooter = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1.5),
+  width: '100%'
 }))
 
 /* ── left card sections ─────────────────────────────────────────────── */
@@ -237,19 +270,14 @@ const DateTimeSection = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2)
 }))
 
-const DateTimeGrid = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  gap: theme.spacing(4),
-  [theme.breakpoints.down('md')]: {
-    flexDirection: 'column',
-    gap: theme.spacing(3)
-  }
-}))
-
 const DateTimeRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(1.5),
-  flex: 1
+  flex: 1,
+  minWidth: 0,
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column'
+  }
 }))
 
 const RepeatRow = styled(Box)(({ theme }) => ({
@@ -352,6 +380,67 @@ const SubmitErrorMessage = styled(ErrorMessage)({
   textAlign: 'center'
 })
 
+/* ── review notice + preview button row ─────────────────────────────── */
+
+const ReviewBar = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'flex-end',
+  justifyContent: 'space-between',
+  gap: theme.spacing(2),
+  width: '100%',
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: theme.spacing(1.5)
+  }
+}))
+
+const ReviewNotice = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  color: '#a09ba8',
+  flex: 1,
+  minWidth: 0
+}))
+
+const PreviewButton = styled('button', {
+  shouldForwardProp: prop => prop !== '$enabled'
+})<{ $enabled: boolean }>(({ $enabled, theme }) => ({
+  background: 'rgba(236, 235, 237, 0.2)',
+  border: 'none',
+  borderRadius: 12,
+  color: '#fcfcfc',
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 14,
+  fontWeight: 600,
+  letterSpacing: '0.4px',
+  textTransform: 'uppercase',
+  height: 36,
+  padding: '6px 16px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  cursor: 'pointer',
+  opacity: $enabled ? 1 : 0.5,
+  transition: theme.transitions.create(['background-color', 'opacity'], {
+    duration: theme.transitions.duration.standard
+  }),
+  /* eslint-disable @typescript-eslint/naming-convention */
+  '&:hover': {
+    background: $enabled ? 'rgba(236, 235, 237, 0.3)' : 'rgba(236, 235, 237, 0.2)'
+  },
+  '&:focus-visible': {
+    outline: '2px solid #ecebed',
+    outlineOffset: 2
+  },
+  [theme.breakpoints.down('md')]: {
+    alignSelf: 'flex-end'
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
+}))
+
 /* ── CTA bar ────────────────────────────────────────────────────────── */
 
 const FormActions = styled(Box)(({ theme }) => ({
@@ -362,7 +451,6 @@ const FormActions = styled(Box)(({ theme }) => ({
   borderTop: '2px solid rgba(255, 255, 255, 0.2)',
   /* eslint-disable @typescript-eslint/naming-convention */
   [theme.breakpoints.down('md')]: {
-    padding: theme.spacing(4, 2, 0),
     '& > *': {
       flex: 1
     }
@@ -473,6 +561,18 @@ const AddCoverLight = styled('span')({
   fontWeight: 400
 })
 
+// Figma tokens system/error/red-light-2 (#ffcdd4) and red-dark-1 (#ec303a) — not exposed by decentraland-ui2 theme yet.
+const rejectionAlertBg = '#ffcdd4'
+const rejectionAlertText = '#ec303a'
+
+const RejectionAlert = styled(Alert)({
+  width: '100%',
+  backgroundColor: rejectionAlertBg,
+  color: rejectionAlertText,
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& .MuiAlert-icon': { color: rejectionAlertText }
+})
+
 export {
   AddCoverBold,
   AddCoverLight,
@@ -482,7 +582,6 @@ export {
   ContentContainer,
   CoordPrefix,
   CoordinatesRow,
-  DateTimeGrid,
   DateTimeRow,
   DateTimeSection,
   DescriptionFields,
@@ -496,6 +595,8 @@ export {
   EventSwitch,
   EventTextArea,
   EventTextField,
+  inputText,
+  labelColor,
   FormActions,
   FormColumns,
   ImageSection,
@@ -503,11 +604,17 @@ export {
   LocationBlock,
   LocationLabel,
   LocationRow,
+  PreviewButton,
+  RejectionAlert,
   RepeatFields,
   RepeatLabel,
   RepeatRow,
+  ReviewBar,
+  ReviewNotice,
   ReviewText,
   RightSection,
+  RightSectionFields,
+  RightSectionFooter,
   SectionHeading,
   SubmitButton,
   SubmitErrorMessage

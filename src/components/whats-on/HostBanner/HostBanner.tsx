@@ -24,7 +24,7 @@ import {
   SceneImageWrapper
 } from './HostBanner.styled'
 
-const LEARN_MORE_URL = 'https://docs.decentraland.org/creator/events/'
+const LEARN_MORE_URL = 'https://decentraland.org/blog/about-decentraland/how-to-make-and-run-an-event-in-decentraland'
 const CHECK_KEYS = ['check_1', 'check_2', 'check_3'] as const
 
 function HostBanner() {

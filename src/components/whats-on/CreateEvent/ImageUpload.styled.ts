@@ -7,7 +7,8 @@ const DropZone = styled(Box, {
   position: 'relative',
   border: $hasImage ? 'none' : `2px dashed ${$hasError ? theme.palette.error.main : 'rgba(255, 255, 255, 0.5)'}`,
   borderRadius: 20,
-  height: 380,
+  width: '100%',
+  aspectRatio: '16 / 9',
   background: $hasImage ? 'transparent' : 'rgba(255, 255, 255, 0.1)',
   display: 'flex',
   flexDirection: 'column',
@@ -26,8 +27,9 @@ const DropZone = styled(Box, {
     animation: 'none'
   },
   [theme.breakpoints.down('md')]: {
-    height: 'auto',
-    padding: '48px 12px'
+    aspectRatio: $hasImage ? '16 / 9' : 'auto',
+    minHeight: $hasImage ? 0 : 240,
+    padding: $hasImage ? 0 : '48px 12px'
   }
   /* eslint-enable @typescript-eslint/naming-convention */
 }))

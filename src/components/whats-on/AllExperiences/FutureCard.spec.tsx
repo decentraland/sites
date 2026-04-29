@@ -15,11 +15,11 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
-        'all_experiences.coming_soon': 'Coming soon',
-        'all_experiences.remind_me': 'Remind me',
-        'all_experiences.add_to_calendar': 'Add to calendar',
-        'all_experiences.copy_link': 'Copy link',
-        'all_experiences.copied': 'Copied!',
+        'all_hangouts.coming_soon': 'Coming soon',
+        'all_hangouts.remind_me': 'Remind me',
+        'all_hangouts.add_to_calendar': 'Add to calendar',
+        'all_hangouts.copy_link': 'Copy link',
+        'all_hangouts.copied': 'Copied!',
         'upcoming.by_prefix': 'By '
       }
       return translations[key] ?? key

@@ -11,7 +11,7 @@ import microsoftLogo from '../../../images/microsoft-logo.svg'
 import { DOWNLOAD_URLS } from '../../../modules/downloadConstants'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
 import { formatToShorthand } from '../../../modules/number'
-import { SectionViewedTrack } from '../../../modules/segment'
+import { DownloadPlace, SectionViewedTrack } from '../../../modules/segment'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { type ScheduledHandle, cancelScheduledIdleCall, scheduleWhenIdle } from '../../../utils/scheduleWhenIdle'
@@ -158,7 +158,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
     (e: React.MouseEvent<HTMLElement>) => {
       onClickHandle(e)
       if (userAgentData) {
-        window.location.href = `/download_success?os=${userAgentData.os.name}`
+        window.location.href = `/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.LANDING_HERO}`
       }
     },
     [onClickHandle, userAgentData]
@@ -229,7 +229,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
           <HeroCTAWrapper>
             {/* Download + Epic buttons */}
             <DownloadButton
-              href={userAgentData ? `/download_success?os=${userAgentData.os.name}` : '/download'}
+              href={userAgentData ? `/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.LANDING_HERO}` : '/download'}
               data-place={SectionViewedTrack.LANDING_HERO}
               data-event="click"
               onClick={handleDownloadClick}
@@ -262,12 +262,12 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
             <HeroPlatformSeparator />
             <HeroPlatformIcons>
               {currentOs === OperativeSystem.MACOS && (
-                <a href="/download_success?os=Windows">
+                <a href={`/download_success?os=Windows&place=${DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}`}>
                   <HeroPlatformIcon src={microsoftLogo} alt="Windows" />
                 </a>
               )}
               {currentOs === OperativeSystem.WINDOWS && (
-                <a href="/download_success?os=macOS">
+                <a href={`/download_success?os=macOS&place=${DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}`}>
                   <HeroPlatformIcon src={appleLogo} alt="macOS" />
                 </a>
               )}

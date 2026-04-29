@@ -1,10 +1,16 @@
 import { useCallback, useState } from 'react'
 import { captureException } from '@sentry/browser'
 import { useTranslation } from '@dcl/hooks'
-import { useCreateEventMutation, useUploadPosterMutation, useUploadPosterVerticalMutation } from '../features/whats-on-events'
-import type { RecurrentFrequency } from '../features/whats-on-events'
+import {
+  useCreateEventMutation,
+  useUpdateEventMutation,
+  useUploadPosterMutation,
+  useUploadPosterVerticalMutation
+} from '../features/whats-on-events'
+import type { EventEntry } from '../features/whats-on-events'
 import { useAuthIdentity } from './useAuthIdentity'
-import type { CreateEventFormState, FormErrors, ImageErrorCode } from './useCreateEventForm.types'
+import { FREQUENCY_MAP, INITIAL_STATE, eventEntryToFormState, parseDurationMs } from './useCreateEventForm.helpers'
+import type { CreateEventFormMode, CreateEventFormState, FormErrors, ImageErrorCode } from './useCreateEventForm.types'
 
 const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif']
 const ACCEPTED_VERTICAL_IMAGE_TYPES = ['image/png', 'image/jpeg']
@@ -20,35 +26,6 @@ const COORD_Y_MAX = 158
 const MAX_EVENT_DURATION_MS = 24 * 60 * 60 * 1000
 const MAX_NAME_LENGTH = 150
 const MAX_DESCRIPTION_LENGTH = 5000
-
-const initialState: CreateEventFormState = {
-  image: null,
-  imagePreviewUrl: null,
-  imageUrl: null,
-  imageError: null,
-  isUploadingImage: false,
-  verticalImage: null,
-  verticalImagePreviewUrl: null,
-  verticalImageUrl: null,
-  verticalImageError: null,
-  isUploadingVerticalImage: false,
-  name: '',
-  description: '',
-  startDate: '',
-  startTime: '',
-  endDate: '',
-  endTime: '',
-  repeatEnabled: false,
-  frequency: 'every_week',
-  repeatEndDate: '',
-  location: 'land',
-  coordX: '0',
-  coordY: '0',
-  world: '',
-  communityId: '',
-  email: '',
-  notes: ''
-}
 
 function validateImage(file: File): ImageErrorCode | null {
   if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
@@ -115,25 +92,24 @@ function extractSubmitErrorMessage(error: unknown, t: (key: string) => string): 
   return t('create_event.error_submit')
 }
 
-/* eslint-disable @typescript-eslint/naming-convention -- keys match form select values */
-const FREQUENCY_MAP: Record<string, RecurrentFrequency> = {
-  every_day: 'DAILY',
-  every_week: 'WEEKLY',
-  every_month: 'MONTHLY'
-}
-/* eslint-enable @typescript-eslint/naming-convention */
-
 type UseCreateEventFormOptions = {
   onSuccess?: () => void
+  initialEvent?: EventEntry | null
+  initialCommunityId?: string | null
 }
 
-function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
+function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId = null }: UseCreateEventFormOptions = {}) {
   const { t } = useTranslation()
   const { identity } = useAuthIdentity()
   const [createEvent] = useCreateEventMutation()
+  const [updateEvent] = useUpdateEventMutation()
   const [uploadPoster] = useUploadPosterMutation()
   const [uploadPosterVertical] = useUploadPosterVerticalMutation()
-  const [form, setForm] = useState<CreateEventFormState>(initialState)
+  const mode: CreateEventFormMode = initialEvent ? 'edit' : 'create'
+  const [form, setForm] = useState<CreateEventFormState>(() => {
+    if (initialEvent) return eventEntryToFormState(initialEvent)
+    return initialCommunityId ? { ...INITIAL_STATE, communityId: initialCommunityId } : INITIAL_STATE
+  })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
 
@@ -148,6 +124,20 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
       return prev
     })
   }, [])
+
+  const markRequiredFields = useCallback(
+    (fields: Array<keyof CreateEventFormState>) => {
+      if (fields.length === 0) return
+      setErrors(prev => {
+        const next = { ...prev }
+        fields.forEach(field => {
+          next[field as string] = t('create_event.error_required')
+        })
+        return next
+      })
+    },
+    [t]
+  )
 
   const handleImageSelect = useCallback(
     async (file: File) => {
@@ -281,16 +271,14 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
 
     if (!form.startDate) newErrors.startDate = t('create_event.error_required')
     if (!form.startTime) newErrors.startTime = t('create_event.error_required')
-    if (!form.endDate) newErrors.endDate = t('create_event.error_required')
-    if (!form.endTime) newErrors.endTime = t('create_event.error_required')
-
-    if (form.startDate && form.startTime && form.endDate && form.endTime) {
-      const startMs = new Date(`${form.startDate}T${form.startTime}`).getTime()
-      const finishMs = new Date(`${form.endDate}T${form.endTime}`).getTime()
-      if (finishMs <= startMs) {
-        newErrors.endDate = t('create_event.error_end_before_start')
-      } else if (finishMs - startMs > MAX_EVENT_DURATION_MS) {
-        newErrors.endDate = t('create_event.error_duration_too_long')
+    if (!form.duration) {
+      newErrors.duration = t('create_event.error_required')
+    } else {
+      const durationMs = parseDurationMs(form.duration)
+      if (durationMs === null) {
+        newErrors.duration = t('create_event.error_duration_invalid')
+      } else if (durationMs > MAX_EVENT_DURATION_MS) {
+        newErrors.duration = t('create_event.error_duration_too_long')
       }
     }
 
@@ -326,44 +314,53 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
     if (form.imageError || form.verticalImageError) return
 
     const validationErrors = validate()
+    const imageMissing = !form.imageUrl
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors)
+    }
+    if (imageMissing) {
+      setForm(prev => ({ ...prev, imageError: 'image_required' }))
+    }
+    if (Object.keys(validationErrors).length > 0 || imageMissing) {
       return
     }
 
     setIsSubmitting(true)
     try {
       const startAt = new Date(`${form.startDate}T${form.startTime}`).toISOString()
-      const finishAt = new Date(`${form.endDate}T${form.endTime}`).toISOString()
-
-      const startMs = new Date(startAt).getTime()
-      const finishMs = new Date(finishAt).getTime()
-      const duration = finishMs - startMs
+      const duration = parseDurationMs(form.duration) ?? 0
 
       const isWorld = form.location === 'world'
       /* eslint-disable @typescript-eslint/naming-convention */
-      await createEvent({
-        payload: {
-          name: form.name.trim(),
-          description: form.description.trim() || null,
-          start_at: startAt,
-          duration,
-          x: isWorld ? 0 : Number(form.coordX),
-          y: isWorld ? 0 : Number(form.coordY),
-          image: form.imageUrl,
-          image_vertical: form.verticalImageUrl,
-          contact: form.email || null,
-          categories: [],
-          world: isWorld || undefined,
-          server: isWorld ? form.world : null,
-          community_id: form.communityId || null,
-          recurrent: form.repeatEnabled || undefined,
-          recurrent_frequency: form.repeatEnabled ? FREQUENCY_MAP[form.frequency] : undefined,
-          recurrent_until: form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : undefined
-        },
-        identity
-      }).unwrap()
+      const payload = {
+        name: form.name.trim(),
+        description: form.description.trim() || null,
+        start_at: startAt,
+        duration,
+        x: isWorld ? 0 : Number(form.coordX),
+        y: isWorld ? 0 : Number(form.coordY),
+        image: form.imageUrl,
+        image_vertical: form.verticalImageUrl,
+        contact: form.email || null,
+        categories: [],
+        world: isWorld || undefined,
+        server: isWorld ? form.world : null,
+        community_id: form.communityId || null,
+        recurrent: form.repeatEnabled || undefined,
+        recurrent_frequency: form.repeatEnabled ? FREQUENCY_MAP[form.frequency] : undefined,
+        recurrent_until: form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : undefined
+      }
       /* eslint-enable @typescript-eslint/naming-convention */
+
+      if (initialEvent) {
+        // NOTE: clearing rejected on edit moves the event back to pending so a moderator can re-evaluate.
+        // The backend keeps the prior value when the body omits the field.
+
+        const updatePayload = initialEvent.rejected ? { ...payload, rejected: false } : payload
+        await updateEvent({ eventId: initialEvent.id, payload: updatePayload, identity }).unwrap()
+      } else {
+        await createEvent({ payload, identity }).unwrap()
+      }
 
       onSuccess?.()
     } catch (error) {
@@ -371,12 +368,14 @@ function useCreateEventForm({ onSuccess }: UseCreateEventFormOptions = {}) {
     } finally {
       setIsSubmitting(false)
     }
-  }, [form, identity, isSubmitting, validate, createEvent, t, onSuccess])
+  }, [form, identity, isSubmitting, initialEvent, validate, createEvent, updateEvent, t, onSuccess])
 
   return {
     form,
     errors,
+    mode,
     setField,
+    markRequiredFields,
     handleImageSelect,
     handleImageRemove,
     handleVerticalImageSelect,

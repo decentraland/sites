@@ -3,6 +3,10 @@ import { createMockEvent } from '../../../__test-utils__/factories'
 import type { EventEntry } from '../../../features/whats-on-events'
 import { Upcoming } from './Upcoming'
 
+jest.mock('react-router-dom', () => ({
+  useNavigate: () => jest.fn()
+}))
+
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))

@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import { createMockEvent } from '../../../__test-utils__/factories'
 import { EventForm } from './EventForm'
 
 jest.mock('./EventForm.styled', () => ({
@@ -18,7 +19,6 @@ jest.mock('./EventForm.styled', () => ({
   ContentContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CoordPrefix: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   CoordinatesRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DateTimeGrid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DateTimeRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DateTimeSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DescriptionFields: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -90,7 +90,27 @@ jest.mock('./EventForm.styled', () => ({
   RepeatLabel: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   RepeatRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   ReviewText: ({ children, ...props }: { children: React.ReactNode } & Record<string, unknown>) => <span {...props}>{children}</span>,
+  ReviewBar: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  ReviewNotice: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  PreviewButton: ({
+    children,
+    ...props
+  }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode; $enabled?: boolean }) => {
+    const { $enabled, ...rest } = props as React.ButtonHTMLAttributes<HTMLButtonElement> & { $enabled?: boolean }
+    return (
+      <button data-testid="preview-button" {...rest}>
+        {children}
+      </button>
+    )
+  },
+  RejectionAlert: ({ children, severity }: { children: React.ReactNode; severity?: string }) => (
+    <div role="alert" data-severity={severity}>
+      {children}
+    </div>
+  ),
   RightSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  RightSectionFields: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  RightSectionFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   SectionHeading: ({ children }: { children: React.ReactNode }) => <h2 data-testid="section-heading">{children}</h2>,
   SubmitButton: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) => (
     <button data-testid="submit-button" {...props}>
@@ -100,12 +120,22 @@ jest.mock('./EventForm.styled', () => ({
   SubmitErrorMessage: ({ children }: { children: React.ReactNode }) => <span data-testid="submit-error-message">{children}</span>
 }))
 
+jest.mock('../EventDetailModal', () => ({
+  EventDetailModal: ({ open, data }: { open: boolean; data: unknown }) => (open && data ? <div data-testid="event-detail-modal" /> : null)
+}))
+
 jest.mock('./ImageUpload', () => ({
   ImageUpload: () => <div data-testid="image-upload" />
 }))
 
 jest.mock('./VerticalCoverPanel', () => ({
   VerticalCoverPanel: () => <div data-testid="vertical-cover-panel" />
+}))
+
+jest.mock('./DurationField', () => ({
+  DurationField: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+    <input data-testid="duration-field" aria-label="create_event.duration" value={value} onChange={e => onChange(e.target.value)} />
+  )
 }))
 
 jest.mock('../../../features/whats-on-events', () => ({
@@ -132,12 +162,25 @@ jest.mock('@mui/icons-material/Event', () => ({
   default: () => <span data-testid="event-icon" />
 }))
 
+jest.mock('@mui/icons-material/InfoOutlined', () => ({
+  __esModule: true,
+  default: () => <span data-testid="info-outlined-icon" />
+}))
+
+jest.mock('@mui/icons-material/VisibilityOutlined', () => ({
+  __esModule: true,
+  default: () => <span data-testid="visibility-outlined-icon" />
+}))
+
 jest.mock('decentraland-ui2', () => ({
-  InputAdornment: ({ children }: { children: React.ReactNode }) => <span>{children}</span>
+  InputAdornment: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+  Tooltip: ({ children }: { children: React.ReactNode; title?: React.ReactNode }) => <>{children}</>
 }))
 
 jest.mock('@dcl/hooks', () => ({
-  useTranslation: () => ({ t: (key: string) => key })
+  useTranslation: () => ({
+    t: (key: string, values?: Record<string, string | number>) => (values ? `${key} ${JSON.stringify(values)}` : key)
+  })
 }))
 
 const mockSetField = jest.fn()
@@ -162,8 +205,7 @@ function createFormState(overrides = {}) {
     description: '',
     startDate: '',
     startTime: '',
-    endDate: '',
-    endTime: '',
+    duration: '',
     repeatEnabled: false,
     frequency: 'every_week',
     repeatEndDate: '',
@@ -173,7 +215,6 @@ function createFormState(overrides = {}) {
     world: '',
     communityId: '',
     email: '',
-    notes: '',
     ...overrides
   }
 }
@@ -187,6 +228,7 @@ describe('EventForm', () => {
       form: createFormState(),
       errors: {},
       setField: mockSetField,
+      markRequiredFields: jest.fn(),
       handleImageSelect: mockHandleImageSelect,
       handleImageRemove: mockHandleImageRemove,
       handleVerticalImageSelect: jest.fn(),
@@ -256,6 +298,40 @@ describe('EventForm', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByTestId('submit-button')).not.toBeDisabled()
+    })
+  })
+
+  describe('when editing an event that has been rejected with a reason', () => {
+    const rejectedEvent = createMockEvent({ id: 'evt-rejected', rejected: true, rejection_reason: 'Invalid image. extra notes' })
+
+    it('should render the rejection alert and pass the reason to the translation', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={rejectedEvent} />)
+
+      const alert = screen.getByRole('alert')
+      expect(alert).toHaveAttribute('data-severity', 'error')
+      expect(alert).toHaveTextContent('create_event.rejected_alert')
+      expect(alert).toHaveTextContent('"reason":"Invalid image. extra notes"')
+    })
+  })
+
+  describe('when editing an event that has been rejected without a reason', () => {
+    const rejectedEvent = createMockEvent({ id: 'evt-rejected', rejected: true, rejection_reason: null })
+
+    it('should render the fallback rejection alert without reason interpolation', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={rejectedEvent} />)
+
+      const alert = screen.getByRole('alert')
+      expect(alert).toHaveTextContent('create_event.rejected_alert_no_reason')
+    })
+  })
+
+  describe('when editing an event that is not rejected', () => {
+    const approvedEvent = createMockEvent({ id: 'evt-ok', rejected: false, rejection_reason: null })
+
+    it('should not render the rejection alert', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={approvedEvent} />)
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
   })
 
@@ -359,8 +435,7 @@ describe('EventForm', () => {
           description: 'Description',
           startDate: '2026-05-01',
           startTime: '10:00',
-          endDate: '2026-05-01',
-          endTime: '12:00',
+          duration: '02:00',
           coordX: '10',
           coordY: '20'
         }),
@@ -417,8 +492,7 @@ describe('EventForm', () => {
           description: 'Desc',
           startDate: '2026-05-01',
           startTime: '10:00',
-          endDate: '2026-05-01',
-          endTime: '12:00',
+          duration: '02:00',
           coordX: '10',
           coordY: '20'
         }),
@@ -449,8 +523,7 @@ describe('EventForm', () => {
           description: 'Description',
           startDate: '2026-05-01',
           startTime: '10:00',
-          endDate: '2026-05-01',
-          endTime: '12:00',
+          duration: '02:00',
           coordX: '10',
           coordY: '20'
         }),

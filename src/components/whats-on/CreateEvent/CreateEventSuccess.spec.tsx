@@ -30,12 +30,14 @@ jest.mock('./CreateEventSuccess.styled', () => ({
     </button>
   ),
   SuccessContainer: ({ children }: { children: React.ReactNode }) => <section data-testid="success-container">{children}</section>,
-  SuccessMessage: ({ children }: { children: React.ReactNode }) => <p data-testid="success-message">{children}</p>
+  SuccessMessage: ({ children }: { children: React.ReactNode }) => <p data-testid="success-message">{children}</p>,
+  SuccessOverlay: ({ children }: { children: React.ReactNode }) => <div data-testid="success-overlay">{children}</div>
 }))
 
 describe('CreateEventSuccess', () => {
   afterEach(() => {
     jest.resetAllMocks()
+    document.body.style.overflow = ''
   })
 
   describe('when rendered', () => {
@@ -81,12 +83,24 @@ describe('CreateEventSuccess', () => {
   })
 
   describe('when the my-events button is clicked', () => {
-    it('should navigate to /whats-on', () => {
+    it('should navigate to /whats-on with the my tab activated', () => {
       render(<CreateEventSuccess />)
 
       fireEvent.click(screen.getByTestId('primary-button'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/whats-on')
+      expect(mockNavigate).toHaveBeenCalledWith('/whats-on', { state: { activeTab: 'my' } })
+    })
+  })
+
+  describe('when mounted', () => {
+    it('should lock body scroll on mount and clear it on unmount', () => {
+      const { unmount } = render(<CreateEventSuccess />)
+
+      expect(document.body.style.overflow).toBe('hidden')
+
+      unmount()
+
+      expect(document.body.style.overflow).toBe('')
     })
   })
 })

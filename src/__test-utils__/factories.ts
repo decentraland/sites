@@ -29,6 +29,7 @@ function createMockEvent(overrides: Partial<EventEntry> = {}): EventEntry {
     scene_name: null,
     approved: true,
     rejected: false,
+    rejection_reason: null,
     highlighted: false,
     trending: false,
     recurrent: false,

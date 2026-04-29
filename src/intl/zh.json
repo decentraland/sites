@@ -136,7 +136,8 @@
       },
       "whats_on": {
         "title": "进入正在发生的事",
-        "live": "直播"
+        "live": "直播",
+        "view_all": "查看全部"
       }
     }
   },
@@ -505,5 +506,9 @@
         "whats_on": "最新活动"
       }
     }
+  },
+  "create_event": {
+    "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
+    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
   }
 }

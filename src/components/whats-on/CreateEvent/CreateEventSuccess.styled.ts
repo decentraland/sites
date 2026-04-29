@@ -1,5 +1,25 @@
 import { Box, Typography, styled } from 'decentraland-ui2'
 
+// NOTE: top offsets mirror LandingNavbar fixed heights (64px mobile, 92px desktop)
+// per CLAUDE.md rule 13. Keep in sync if navbar height changes so the overlay
+// keeps the navbar reachable underneath.
+const SuccessOverlay = styled(Box)(({ theme }) => ({
+  position: 'fixed',
+  top: 64,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: theme.zIndex.appBar - 1,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflow: 'hidden',
+  background: 'radial-gradient(52.86% 115.71% at 9.01% 25.79%, #7434B1 0%, #481C6C 37.11%, #2B1040 100%)',
+  [theme.breakpoints.up('md')]: {
+    top: 92
+  }
+}))
+
 const SuccessContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -8,13 +28,10 @@ const SuccessContainer = styled(Box)(({ theme }) => ({
   gap: 48,
   width: '100%',
   maxWidth: 737,
-  margin: '0 auto',
   padding: theme.spacing(6, 3),
-  minHeight: 'calc(100vh - 200px)',
   [theme.breakpoints.down('md')]: {
     gap: 32,
-    padding: theme.spacing(4, 2),
-    minHeight: 'calc(100vh - 120px)'
+    padding: theme.spacing(4, 2)
   }
 }))
 
@@ -110,4 +127,4 @@ const PrimaryButton = styled('button')(({ theme }) => ({
   }
 }))
 
-export { ActionsRow, CheckCircle, PrimaryButton, SecondaryButton, SuccessContainer, SuccessMessage }
+export { ActionsRow, CheckCircle, PrimaryButton, SecondaryButton, SuccessContainer, SuccessMessage, SuccessOverlay }
