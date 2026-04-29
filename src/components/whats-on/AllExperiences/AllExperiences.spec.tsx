@@ -18,7 +18,7 @@ jest.mock('../../../features/whats-on-events', () => {
   const helpers = jest.requireActual('../../../features/whats-on-events/events.helpers')
   return {
     useGetEventsQuery: (...args: unknown[]) => mockUseGetEventsQuery(...args),
-    expandEventOccurrences: helpers.expandEventOccurrences
+    bucketEventsByDay: helpers.bucketEventsByDay
   }
 })
 

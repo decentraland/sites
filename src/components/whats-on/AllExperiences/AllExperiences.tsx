@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
-import { expandEventOccurrences, useGetEventsQuery } from '../../../features/whats-on-events'
+import { bucketEventsByDay, useGetEventsQuery } from '../../../features/whats-on-events'
 import type { EventEntry, EventListType } from '../../../features/whats-on-events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
 import { useVisibleColumnCount } from '../../../hooks/useVisibleColumnCount'
 import { chunk } from '../../../utils/whatsOnChunk'
-import { addDays, formatDayHeaderAria, isSameLocalDay } from '../../../utils/whatsOnDate'
+import { addDays, formatDayHeaderAria } from '../../../utils/whatsOnDate'
 import { EventDetailModal } from '../EventDetailModal'
 import { HostBanner } from '../HostBanner/HostBanner'
 import { UpcomingCard } from '../Upcoming/UpcomingCard'
@@ -39,7 +39,7 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, list
 
   // The API filters by `next_start_at`, so a recurrent event only appears in the response when the
   // upcoming occurrence falls inside `from`/`to`. To make every occurrence in `recurrent_dates`
-  // visible across the calendar, drop the date range and filter on the client via expandEventOccurrences.
+  // visible across the calendar, drop the date range and bucket on the client via bucketEventsByDay.
   const {
     data: allEvents = [],
     isLoading,
@@ -56,20 +56,10 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, list
     { refetchOnMountOrArgChange: ownerOnly }
   )
 
-  const expandedEvents = useMemo(() => allEvents.flatMap(event => expandEventOccurrences(event, days)), [allEvents, days])
-
-  const dayData = useMemo(
-    () =>
-      days.map(day => ({
-        date: day,
-        events: expandedEvents
-          .filter(event => isSameLocalDay(new Date(event.start_at), day))
-          .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime()),
-        isLoading,
-        isError
-      })),
-    [days, expandedEvents, isLoading, isError]
-  )
+  const dayData = useMemo(() => {
+    const buckets = bucketEventsByDay(allEvents, days)
+    return days.map((day, i) => ({ date: day, events: buckets[i], isLoading, isError }))
+  }, [days, allEvents, isLoading, isError])
 
   return { allEvents, dayData, isLoading }
 }

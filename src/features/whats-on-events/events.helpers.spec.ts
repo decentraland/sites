@@ -1,5 +1,5 @@
 import { createMockEvent, createMockPlaceCard, createMockScene } from '../../__test-utils__/factories'
-import { buildLiveNowCards, enrichPlaceCards, expandEventOccurrences, isDclFoundationCreator } from './events.helpers'
+import { bucketEventsByDay, buildLiveNowCards, enrichPlaceCards, isDclFoundationCreator } from './events.helpers'
 import type { HotScene, LiveNowCard } from './events.helpers'
 import type { EventEntry } from './events.types'
 
@@ -576,33 +576,51 @@ describe('enrichPlaceCards', () => {
   })
 })
 
-describe('expandEventOccurrences', () => {
+describe('bucketEventsByDay', () => {
   // Build days from local-date constructor so isSameLocalDay matches recurrent_dates regardless of test TZ.
   const days = [new Date(2026, 3, 29), new Date(2026, 4, 6), new Date(2026, 4, 13)]
 
-  describe('when the event is not recurrent', () => {
-    it('should return the original event unchanged', () => {
-      const event = createMockEvent({ recurrent: false, recurrent_dates: [] })
+  describe('when a non-recurrent event falls on a visible day', () => {
+    it('should bucket the event into its matching day', () => {
+      const event = createMockEvent({
+        recurrent: false,
+        recurrent_dates: [],
+        start_at: '2026-04-29T10:00:00Z',
+        finish_at: '2026-04-29T11:00:00Z'
+      })
 
-      const result = expandEventOccurrences(event, days)
+      const buckets = bucketEventsByDay([event], days)
 
-      expect(result).toEqual([event])
-      expect(result[0]).toBe(event)
+      expect(buckets[0]).toHaveLength(1)
+      expect(buckets[0][0]).toBe(event)
+      expect(buckets[1]).toHaveLength(0)
+      expect(buckets[2]).toHaveLength(0)
     })
   })
 
-  describe('when the event is recurrent but has no recurrent_dates', () => {
-    it('should return the original event unchanged', () => {
-      const event = createMockEvent({ recurrent: true, recurrent_dates: [] })
+  describe('when a non-recurrent event falls outside every visible day', () => {
+    it('should leave every bucket empty', () => {
+      const event = createMockEvent({ recurrent: false, recurrent_dates: [], start_at: '2026-08-01T10:00:00Z' })
 
-      const result = expandEventOccurrences(event, days)
+      const buckets = bucketEventsByDay([event], days)
 
-      expect(result).toEqual([event])
+      expect(buckets.every(b => b.length === 0)).toBe(true)
+    })
+  })
+
+  describe('when a recurrent event has empty recurrent_dates', () => {
+    it('should fall back to start_at for bucketing', () => {
+      const event = createMockEvent({ recurrent: true, recurrent_dates: [], start_at: '2026-04-29T10:00:00Z' })
+
+      const buckets = bucketEventsByDay([event], days)
+
+      expect(buckets[0]).toHaveLength(1)
+      expect(buckets[0][0]).toBe(event)
     })
   })
 
   describe('when a recurrent event has occurrences inside and outside the visible days', () => {
-    it('should emit one virtual entry per occurrence that falls on a visible day', () => {
+    it('should emit one virtual entry in each matching day bucket', () => {
       const event = createMockEvent({
         recurrent: true,
         duration: 5400000,
@@ -617,22 +635,19 @@ describe('expandEventOccurrences', () => {
         ]
       })
 
-      const result = expandEventOccurrences(event, days, new Date('2026-04-29T12:00:00Z').getTime())
+      const buckets = bucketEventsByDay([event], days, new Date('2026-04-29T12:00:00Z').getTime())
 
-      expect(result).toHaveLength(3)
-      expect(result.map(e => e.start_at)).toEqual(['2026-04-29T14:00:00.000Z', '2026-05-06T14:00:00.000Z', '2026-05-13T14:00:00.000Z'])
+      expect(buckets[0][0].start_at).toBe('2026-04-29T14:00:00.000Z')
+      expect(buckets[1][0].start_at).toBe('2026-05-06T14:00:00.000Z')
+      expect(buckets[2][0].start_at).toBe('2026-05-13T14:00:00.000Z')
     })
 
     it('should override finish_at to start + duration on each virtual entry', () => {
-      const event = createMockEvent({
-        recurrent: true,
-        duration: 5400000,
-        recurrent_dates: ['2026-04-29T14:00:00Z']
-      })
+      const event = createMockEvent({ recurrent: true, duration: 5400000, recurrent_dates: ['2026-04-29T14:00:00Z'] })
 
-      const result = expandEventOccurrences(event, days, new Date('2026-04-29T12:00:00Z').getTime())
+      const buckets = bucketEventsByDay([event], days, new Date('2026-04-29T12:00:00Z').getTime())
 
-      expect(result[0].finish_at).toBe('2026-04-29T15:30:00.000Z')
+      expect(buckets[0][0].finish_at).toBe('2026-04-29T15:30:00.000Z')
     })
 
     it('should mark live=true only when the occurrence overlaps now', () => {
@@ -642,10 +657,21 @@ describe('expandEventOccurrences', () => {
         recurrent_dates: ['2026-04-29T14:00:00Z', '2026-05-06T14:00:00Z']
       })
 
-      const result = expandEventOccurrences(event, days, new Date('2026-04-29T14:30:00Z').getTime())
+      const buckets = bucketEventsByDay([event], days, new Date('2026-04-29T14:30:00Z').getTime())
 
-      expect(result[0].live).toBe(true)
-      expect(result[1].live).toBe(false)
+      expect(buckets[0][0].live).toBe(true)
+      expect(buckets[1][0].live).toBe(false)
+    })
+  })
+
+  describe('when several events fall on the same day in arbitrary API order', () => {
+    it('should sort each day bucket ascending by start time', () => {
+      const late = createMockEvent({ id: 'late', start_at: '2026-04-29T18:00:00Z', recurrent: false, recurrent_dates: [] })
+      const early = createMockEvent({ id: 'early', start_at: '2026-04-29T09:00:00Z', recurrent: false, recurrent_dates: [] })
+
+      const buckets = bucketEventsByDay([late, early], days)
+
+      expect(buckets[0].map(e => e.id)).toEqual(['early', 'late'])
     })
   })
 })
