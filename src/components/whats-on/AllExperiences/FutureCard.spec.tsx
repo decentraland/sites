@@ -86,8 +86,12 @@ jest.mock('../common/CardActions.styled', () => ({
   ActionTextLabel: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   CalendarIcon: () => <span data-testid="calendar-icon" />,
   CopyIcon: () => <span data-testid="copy-icon" />,
-  AvatarImage: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img data-testid="avatar-image" {...props} />,
-  AvatarFallback: () => <div data-testid="avatar-fallback" />,
+  AvatarImage: ({ fallbackColor, ...props }: React.ImgHTMLAttributes<HTMLImageElement> & { fallbackColor?: string }) => (
+    <img data-testid="avatar-image" data-fallback-color={fallbackColor ?? ''} {...props} />
+  ),
+  AvatarFallback: ({ fallbackColor }: { fallbackColor?: string }) => (
+    <div data-testid="avatar-fallback" data-fallback-color={fallbackColor ?? ''} />
+  ),
   CreatorName: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   CreatorNameHighlight: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   CreatorRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -163,6 +167,12 @@ describe('FutureCard', () => {
       render(<FutureCard event={event} onClick={mockOnClick} />)
 
       expect(screen.getByTestId('copy-icon')).toBeInTheDocument()
+    })
+
+    it('should derive the avatar fallback color from the creator address so it matches the modal surface', () => {
+      render(<FutureCard event={createMockEvent({ user: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' })} onClick={mockOnClick} />)
+
+      expect(screen.getByTestId('avatar-fallback').getAttribute('data-fallback-color')).toMatch(/^hsl\(\d{1,3} 45% 40%\)$/)
     })
   })
 

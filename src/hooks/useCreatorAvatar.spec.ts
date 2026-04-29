@@ -1,26 +1,30 @@
-import { act, renderHook, waitFor } from '@testing-library/react'
+import { renderHook } from '@testing-library/react'
 import { useCreatorAvatar } from './useCreatorAvatar'
+import { useProfileAvatar } from './useProfileAvatar'
 
-const VALID_ADDRESS_A = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-const VALID_ADDRESS_B = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-const EXPECTED_FACE_A = `https://profile-images.decentraland.org/entities/${VALID_ADDRESS_A}/face.png`
+jest.mock('./useProfileAvatar', () => ({ useProfileAvatar: jest.fn() }))
+
+const mockedUseProfileAvatar = useProfileAvatar as jest.MockedFunction<typeof useProfileAvatar>
+
+const VALID_ADDRESS = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+const REAL_FACE_URL =
+  'https://profile-images.decentraland.org/entities/bafkreigo2n27ju2hxlfjye2xty7trqy4zbznvmquxfu4nmrvvwvgvm4y7u/face.png'
 
 describe('useCreatorAvatar', () => {
-  let fetchMock: jest.Mock
-  let originalFetch: typeof fetch
-
-  beforeEach(() => {
-    originalFetch = global.fetch
-    fetchMock = jest.fn().mockResolvedValue({ ok: true, status: 200 } as Response)
-    ;(global as unknown as { fetch: typeof fetch }).fetch = fetchMock
-  })
-
   afterEach(() => {
-    ;(global as unknown as { fetch: typeof fetch }).fetch = originalFetch
     jest.resetAllMocks()
   })
 
   describe('when no address is provided', () => {
+    beforeEach(() => {
+      mockedUseProfileAvatar.mockReturnValue({
+        avatar: undefined,
+        avatarForCard: undefined,
+        avatarFace: undefined,
+        name: undefined
+      })
+    })
+
     it('should return undefined avatar and face', () => {
       const { result } = renderHook(() => useCreatorAvatar(undefined))
 
@@ -29,62 +33,53 @@ describe('useCreatorAvatar', () => {
     })
   })
 
-  describe('when the address is not a well-formed 0x + 40-hex string', () => {
-    it('should not probe the network and should keep avatarFace undefined', () => {
-      const { result } = renderHook(() => useCreatorAvatar('../admin', 'Attacker'))
-
-      expect(fetchMock).not.toHaveBeenCalled()
-      expect(result.current.avatarFace).toBeUndefined()
-    })
-  })
-
-  describe('when a valid address is provided', () => {
-    it('should keep the face hidden until the probe succeeds', () => {
-      fetchMock.mockReturnValueOnce(new Promise<Response>(() => undefined))
-      const { result } = renderHook(() => useCreatorAvatar(VALID_ADDRESS_A, 'Alice'))
-
-      expect(result.current.avatarFace).toBeUndefined()
-      expect((result.current.avatar as unknown as { avatar: { snapshots: { face256: string } } }).avatar.snapshots.face256).toBe('')
-    })
-
-    it('should return an avatar with the profile-images face URL after the probe succeeds', async () => {
-      const { result } = renderHook(() => useCreatorAvatar(VALID_ADDRESS_A, 'Alice'))
-
-      await waitFor(() => {
-        expect(result.current.avatarFace).toBe(EXPECTED_FACE_A)
+  describe('when the catalyst profile resolves to a deployed face', () => {
+    beforeEach(() => {
+      mockedUseProfileAvatar.mockReturnValue({
+        avatar: undefined,
+        avatarForCard: undefined,
+        avatarFace: REAL_FACE_URL,
+        name: 'CatalystName'
       })
-      expect(result.current.avatarFace).toBe(EXPECTED_FACE_A)
-      expect(result.current.avatar?.name).toBe('Alice')
+    })
+
+    it('should expose the catalyst-resolved face url', () => {
+      const { result } = renderHook(() => useCreatorAvatar(VALID_ADDRESS, 'Fallback'))
+
+      expect(result.current.avatarFace).toBe(REAL_FACE_URL)
+    })
+
+    it('should prefer the catalyst name over the caller-provided fallback when building the avatar', () => {
+      const { result } = renderHook(() => useCreatorAvatar(VALID_ADDRESS, 'Fallback'))
+
+      expect(result.current.avatar?.name).toBe('CatalystName')
       expect((result.current.avatar as unknown as { avatar: { snapshots: { face256: string } } }).avatar.snapshots.face256).toBe(
-        EXPECTED_FACE_A
+        REAL_FACE_URL
       )
     })
   })
 
-  describe('when the face image fails to load', () => {
-    it('should clear the face256 so callers can fall back to a placeholder', async () => {
-      fetchMock.mockResolvedValueOnce({ ok: false, status: 404 } as Response)
-      const { result } = renderHook(() => useCreatorAvatar(VALID_ADDRESS_A, 'Broken'))
-
-      await waitFor(() => {
-        expect(fetchMock).toHaveBeenCalledWith(EXPECTED_FACE_A, expect.objectContaining({ method: 'HEAD' }))
+  describe('when the catalyst profile has no deployed face', () => {
+    beforeEach(() => {
+      mockedUseProfileAvatar.mockReturnValue({
+        avatar: undefined,
+        avatarForCard: undefined,
+        avatarFace: undefined,
+        name: undefined
       })
-      await act(async () => undefined)
-      expect((result.current.avatar as unknown as { avatar: { snapshots: { face256: string } } }).avatar.snapshots.face256).toBe('')
     })
 
-    it('should remember the broken URL so sibling cards skip the retry on mount', async () => {
-      fetchMock.mockResolvedValueOnce({ ok: false, status: 404 } as Response)
-      renderHook(() => useCreatorAvatar(VALID_ADDRESS_B))
-      await waitFor(() => {
-        expect(fetchMock).toHaveBeenCalledTimes(1)
-      })
-      await act(async () => undefined)
+    it('should leave avatarFace undefined so callers can fall back to a placeholder', () => {
+      const { result } = renderHook(() => useCreatorAvatar(VALID_ADDRESS, 'Fallback'))
 
-      const priorCount = fetchMock.mock.calls.length
-      renderHook(() => useCreatorAvatar(VALID_ADDRESS_B))
+      expect(result.current.avatarFace).toBeUndefined()
+    })
 
-      expect(fetchMock).toHaveBeenCalledTimes(priorCount)
+    it('should still build an avatar shell using the caller-provided name', () => {
+      const { result } = renderHook(() => useCreatorAvatar(VALID_ADDRESS, 'Fallback'))
+
+      expect(result.current.avatar?.name).toBe('Fallback')
+      expect((result.current.avatar as unknown as { avatar: { snapshots: { face256: string } } }).avatar.snapshots.face256).toBe('')
     })
   })
 })

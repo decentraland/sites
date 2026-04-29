@@ -19,13 +19,8 @@ interface MinimalAvatarInput {
 // `decentraland-ui2`'s AvatarFace only reads `name`, `ethAddress`, and
 // `avatar.snapshots.face256`; the rest of @dcl/schemas' Avatar (userId,
 // bodyShape, wearables, emotes, ...) is not needed at this boundary.
-// Confining the structural cast to one factory keeps call-sites honest and
-// guarantees every consumer receives a fully-shaped object — missing
-// `snapshots` on the returned object throws at render time.
-//
 // Addresses that don't match `0x` + 40 hex are sanitized to '' so a
-// compromised upstream cannot path-traverse through `getProfileFaceUrl`
-// or the profile deep-link.
+// compromised upstream cannot path-traverse through profile deep-links.
 function buildMinimalAvatar(input: MinimalAvatarInput): Avatar {
   const safeEthAddress = isValidEthAddress(input.ethAddress) ? input.ethAddress : ''
   return {
