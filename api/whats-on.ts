@@ -40,6 +40,13 @@ const ALLOWED_IMAGE_HOSTS = new Set([
   'cdn.decentraland.org'
 ])
 
+// Width passed to Vercel's image optimizer (`/_vercel/image`) for the LCP
+// poster. Live Now cards render at 380×176 CSS pixels; 750 covers 2× DPR
+// without overshooting. Must stay in sync with `LiveNowCard.tsx` so the
+// preload URL matches the `<img src>` byte-for-byte.
+const LCP_IMAGE_WIDTH = 750
+const LCP_IMAGE_QUALITY = 75
+
 // Subset of the Live Now data shape we touch in this function. Keep aligned
 // with `src/features/whats-on-events/events.types.ts` and the events.helpers
 // module, but intentionally minimal so this serverless function doesn't pull
@@ -149,9 +156,11 @@ function buildInjectedHead(options: InjectionOptions): string {
   const lines: string[] = []
 
   if (options.lcpImageUrl && isSafeImageUrl(options.lcpImageUrl)) {
-    lines.push(
-      `<link rel="preload" as="image" href="${escapeHtmlAttr(options.lcpImageUrl)}" fetchpriority="high" crossorigin="anonymous" />`
-    )
+    // Match the URL that LiveNowCard will render (`/_vercel/image?...`) so the
+    // preload, the `<img>` src, and the HTTP cache entry collide on the same
+    // resource — anything else means a duplicate ~1 MB fetch.
+    const optimizedHref = `/_vercel/image?url=${encodeURIComponent(options.lcpImageUrl)}&w=${LCP_IMAGE_WIDTH}&q=${LCP_IMAGE_QUALITY}`
+    lines.push(`<link rel="preload" as="image" href="${escapeHtmlAttr(optimizedHref)}" fetchpriority="high" />`)
   }
 
   for (const chunk of [ASSET_CHUNKS.dappsShell, ASSET_CHUNKS.whatsOnLayout, ASSET_CHUNKS.whatsOnHomePage]) {
