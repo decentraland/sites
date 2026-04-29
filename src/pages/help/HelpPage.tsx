@@ -9,7 +9,6 @@ const INTERCOM_SETTINGS = { alignment: 'right' } as const
 const SERVICES = [
   { name: 'Catalyst EC1', url: 'https://peer-ec1.decentraland.org/about' },
   { name: 'Catalyst Interconnected', url: 'https://interconnected.online/about' },
-  { name: 'Catalyst Decentral', url: 'https://peer.decentral.io/about' },
   { name: 'Catalyst Melonwave', url: 'https://peer.melonwave.com/about' },
   { name: 'Catalyst Kyllian', url: 'https://peer.kyllian.me/about' },
   { name: 'Catalyst UADevops', url: 'https://peer.uadevops.com/about' },
@@ -17,7 +16,7 @@ const SERVICES = [
   { name: 'Catalyst AP1', url: 'https://peer-ap1.decentraland.org/about' },
   { name: 'Catalyst EU1', url: 'https://peer-eu1.decentraland.org/about' },
   { name: 'Marketplace', url: 'https://marketplace-api.decentraland.org/ping' },
-  { name: 'Chat', url: 'https://peer-wc1.decentraland.org/about' },
+  { name: 'Chat', url: 'https://peer-ec2.decentraland.org/about' },
   { name: 'Builder', url: 'https://builder-api.decentraland.org/v1/info' },
   { name: 'Places', url: 'https://places.decentraland.org/api/status' },
   { name: 'Events', url: 'https://events.decentraland.org/api/status' }
