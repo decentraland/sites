@@ -106,8 +106,8 @@ class IntercomWidget {
   }
 
   unmount() {
-    if (!this.client) {
-      throw new Error('Client not initialized')
+    if (!this.client || !isInjected()) {
+      return
     }
     this.client('shutdown')
   }
