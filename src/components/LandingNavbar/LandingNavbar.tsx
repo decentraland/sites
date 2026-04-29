@@ -65,6 +65,7 @@ import {
   NavBarRight,
   NavBarRightGroup,
   NavBarRoot,
+  NavJumpInButton,
   NotificationBadge,
   NotificationDot,
   NotificationEmpty,
@@ -116,7 +117,7 @@ interface NotificationsData {
 
 interface LandingNavbarProps {
   isSignedIn: boolean
-  isSigningIn: boolean
+  isSigningIn?: boolean
   isLandingPage?: boolean
   isLoadingProfile?: boolean
   address?: string
@@ -126,6 +127,7 @@ interface LandingNavbarProps {
   notifications?: NotificationsData
   onClickSignIn: () => void
   onClickSignOut: () => void
+  onClickJumpIn?: (e: React.MouseEvent) => void
   onOpenUserCard?: () => void
 }
 
@@ -199,7 +201,7 @@ function resolveContentUrl(hash: string | undefined): string | undefined {
 
 const LandingNavbar = memo(function LandingNavbar({
   isSignedIn,
-  isSigningIn,
+  isSigningIn = false,
   isLandingPage = false,
   isLoadingProfile = false,
   address,
@@ -209,6 +211,7 @@ const LandingNavbar = memo(function LandingNavbar({
   notifications,
   onClickSignIn,
   onClickSignOut,
+  onClickJumpIn,
   onOpenUserCard
 }: LandingNavbarProps) {
   // On the landing page (/), show a minimal transparent navbar initially.
@@ -417,7 +420,7 @@ const LandingNavbar = memo(function LandingNavbar({
     return (
       <>
         <MobileMenuItem>
-          <MobileMenuLink href={MENU_CONFIG.explore.url}>{l(MENU_CONFIG.explore.labelKey)}</MobileMenuLink>
+          <MobileMenuLink href={MENU_CONFIG.whatsOn.url}>{l(MENU_CONFIG.whatsOn.labelKey)}</MobileMenuLink>
         </MobileMenuItem>
 
         {DROPDOWN_SECTIONS.map(section => {
@@ -476,15 +479,33 @@ const LandingNavbar = memo(function LandingNavbar({
           />
         </NavBarLeft>
         <NavBarRight>
-          <SignInButton
-            onClick={() => {
-              trackNavbar('sign_in')
-              onClickSignIn()
-            }}
-            disabled={isSigningIn}
-          >
-            {isSigningIn ? l('component.landing.navbar.signing_in') : l('component.landing.navbar.sign_in')}
-          </SignInButton>
+          {scrolled && onClickJumpIn ? (
+            <NavJumpInButton
+              onClick={e => {
+                trackNavbar('jump_in')
+                onClickJumpIn(e)
+              }}
+            >
+              {l('component.landing.navbar.jump_in')}
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0.75" y="0.75" width="22.5" height="22.5" rx="5.25" stroke="#FCFCFC" strokeOpacity="0.3" strokeWidth="1.5" />
+                <path
+                  d="M18.7111 11.065L14.034 6.39027C13.2002 5.55695 11.7971 6.14637 11.7971 7.32523V8.86994C11.7564 8.86994 11.7361 8.86994 11.6954 8.86994H7.25895C6.50654 8.86994 5.89648 9.45936 5.89648 10.2114V13.7683C5.89648 14.5203 6.50654 15.1301 7.25895 15.1301H11.6751C11.7158 15.1301 11.7361 15.1301 11.7768 15.1301V16.6748C11.7768 17.8536 13.2002 18.4431 14.0137 17.6097L18.6908 12.935C19.2195 12.4065 19.2195 11.5732 18.7111 11.065Z"
+                  fill="#FCFCFC"
+                />
+              </svg>
+            </NavJumpInButton>
+          ) : (
+            <SignInButton
+              onClick={() => {
+                trackNavbar('sign_in')
+                onClickSignIn()
+              }}
+              disabled={isSigningIn}
+            >
+              {isSigningIn ? l('component.landing.navbar.signing_in') : l('component.landing.navbar.sign_in')}
+            </SignInButton>
+          )}
         </NavBarRight>
       </NavBarRoot>
     )
@@ -499,7 +520,7 @@ const LandingNavbar = memo(function LandingNavbar({
           </LogoLink>
 
           <DesktopTabList>
-            <DesktopTabLink href={MENU_CONFIG.explore.url}>{l(MENU_CONFIG.explore.labelKey)}</DesktopTabLink>
+            <DesktopTabLink href={MENU_CONFIG.whatsOn.url}>{l(MENU_CONFIG.whatsOn.labelKey)}</DesktopTabLink>
 
             {DROPDOWN_SECTIONS.map(section => (
               <DesktopDropdownWrapper

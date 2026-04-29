@@ -76,7 +76,11 @@ const DownloadCounts = styled('span')({
   alignItems: 'center',
   gap: 12,
   color: '#fff',
-  fontSize: 16
+  fontSize: 16,
+  fontWeight: 400,
+  lineHeight: 1.5,
+  whiteSpace: 'nowrap',
+  minWidth: 210
 })
 
 const DownloadSeparator = styled('span')({

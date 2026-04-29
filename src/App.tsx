@@ -1,7 +1,6 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { Env, getEnv } from '@dcl/ui-env'
-import { RemoteLoader } from './components/RemoteLoader.tsx'
+import { ScrollToTop } from './components/ScrollToTop'
 import { IndexPage } from './pages/index.tsx'
 
 // Layout imports Navbar from decentraland-ui2 which pulls in ~1.3MB of MUI.
@@ -32,9 +31,36 @@ const CreatePage = lazy(() => import('./pages/create').then(m => ({ default: m.C
 const DiscordPage = lazy(() => import('./pages/discord').then(m => ({ default: m.DiscordPage })))
 const PressPage = lazy(() => import('./pages/press').then(m => ({ default: m.PressPage })))
 
+// Blog pages — loaded inside DappsShell (Redux Provider required)
+const BlogPage = lazy(() => import('./pages/blog/BlogPage').then(m => ({ default: m.BlogPage })))
+const PostPage = lazy(() => import('./pages/blog/PostPage').then(m => ({ default: m.PostPage })))
+const CategoryPage = lazy(() => import('./pages/blog/CategoryPage').then(m => ({ default: m.CategoryPage })))
+const AuthorPage = lazy(() => import('./pages/blog/AuthorPage').then(m => ({ default: m.AuthorPage })))
+const BlogSearchPage = lazy(() => import('./pages/blog/SearchPage').then(m => ({ default: m.SearchPage })))
+const PreviewPage = lazy(() => import('./pages/blog/PreviewPage').then(m => ({ default: m.PreviewPage })))
+const BlogSignInRedirect = lazy(() => import('./pages/blog/SignInRedirect').then(m => ({ default: m.SignInRedirect })))
+
+// Lazy-loaded for /whats-on and /blog routes only. Contains Redux Provider.
+// No Web3 providers — auth uses localStorage identity via useAuthIdentity.
+const DappsShell = lazy(() => import('./shells/DappsShell').then(m => ({ default: m.DappsShell })))
+
+const WhatsOnHomePage = lazy(() => import('./pages/whats-on/HomePage').then(m => ({ default: m.HomePage })))
+const CreateEventPage = lazy(() => import('./pages/whats-on/CreateEventPage').then(m => ({ default: m.CreateEventPage })))
+const WhatsOnLayout = lazy(() => import('./pages/whats-on/WhatsOnLayout').then(m => ({ default: m.WhatsOnLayout })))
+const PendingEventsPage = lazy(() => import('./pages/whats-on/PendingEventsPage').then(m => ({ default: m.PendingEventsPage })))
+const UsersAdminPage = lazy(() => import('./pages/whats-on/UsersAdminPage').then(m => ({ default: m.UsersAdminPage })))
+
+// Jump pages — deep-link handler for decentraland:// launcher. Heavy route (Redux).
+const JumpPlacesPage = lazy(() => import('./pages/jump/PlacesPage').then(m => ({ default: m.PlacesPage })))
+const JumpEventsPage = lazy(() => import('./pages/jump/EventsPage').then(m => ({ default: m.EventsPage })))
+const JumpInvalidEventPage = lazy(() => import('./pages/jump/InvalidPage').then(m => ({ default: () => <m.InvalidPage kind="event" /> })))
+const JumpInvalidPlacePage = lazy(() => import('./pages/jump/InvalidPage').then(m => ({ default: () => <m.InvalidPage kind="place" /> })))
+const JumpLegacyEventRedirect = lazy(() => import('./pages/jump/LegacyEventRedirect').then(m => ({ default: m.LegacyEventRedirect })))
+
 const App = () => {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Suspense fallback={null}>
         <Routes>
           <Route path="/download" element={<DownloadPage />} />
@@ -57,12 +83,35 @@ const App = () => {
             <Route path="/discord" element={<DiscordPage />} />
             <Route path="/press" element={<PressPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
-            <Route path="/explore/*" element={<RemoteLoader name="explore" />} />
-            {getEnv() !== Env.PRODUCTION && (
-              <>
-                <Route path="/blog/*" element={<RemoteLoader name="blog" />} />
-              </>
-            )}
+            {/* DappsShell provides Redux Provider via Outlet.
+                NOTE: /blog/* is no longer gated behind Env !== PRODUCTION as it was
+                with the federated RemoteLoader. During PR1 it serves a placeholder
+                in every environment; PR3 lands the real blog routes. If blog must
+                stay dev/stg-only at any point, reintroduce a getEnv() check here. */}
+            <Route element={<DappsShell />}>
+              <Route element={<WhatsOnLayout />}>
+                <Route path="/whats-on" element={<WhatsOnHomePage />} />
+                <Route path="/whats-on/new-event" element={<CreateEventPage />} />
+                <Route path="/whats-on/edit-event/:eventId" element={<CreateEventPage />} />
+                <Route path="/whats-on/admin/pending-events" element={<PendingEventsPage />} />
+                <Route path="/whats-on/admin/users" element={<UsersAdminPage />} />
+              </Route>
+              <Route path="/jump" element={<JumpPlacesPage />} />
+              <Route path="/jump/places" element={<JumpPlacesPage />} />
+              <Route path="/jump/places/invalid" element={<JumpInvalidPlacePage />} />
+              <Route path="/jump/events" element={<JumpEventsPage />} />
+              <Route path="/jump/events/invalid" element={<JumpInvalidEventPage />} />
+              {/* Legacy singular `/jump/event` URL — prod still uses it (e.g. /jump/event?position=0,5).
+                  Preserves query params via a tiny component that reads useLocation(). */}
+              <Route path="/jump/event" element={<JumpLegacyEventRedirect />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/preview" element={<PreviewPage />} />
+              <Route path="/blog/search" element={<BlogSearchPage />} />
+              <Route path="/blog/sign-in" element={<BlogSignInRedirect />} />
+              <Route path="/blog/author/:authorSlug" element={<AuthorPage />} />
+              <Route path="/blog/:categorySlug" element={<CategoryPage />} />
+              <Route path="/blog/:categorySlug/:postSlug" element={<PostPage />} />
+            </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

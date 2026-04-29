@@ -1,31 +1,25 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Provider } from 'react-redux'
-import { WalletStateProvider } from '@dcl/core-web3/lazy'
-import { AnalyticsProvider } from '@dcl/hooks'
 import { DclThemeProvider, darkTheme } from 'decentraland-ui2'
 import { App } from './App'
-import { store } from './app/store'
 import { getEnv } from './config/env'
-import { LazyWeb3 } from './features/web3/LazyWeb3'
 import { LocaleProvider } from './intl/LocaleContext'
+import { DeferredAnalyticsProvider } from './modules/DeferredAnalyticsProvider'
+import { scheduleDeferredThirdParty } from './modules/deferredThirdParty'
+import './modules/sentry'
 
 const segmentWriteKey = getEnv('SEGMENT_KEY') || ''
 
+scheduleDeferredThirdParty()
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Provider store={store}>
-      <WalletStateProvider>
-        <LazyWeb3>
-          <DclThemeProvider theme={darkTheme}>
-            <LocaleProvider>
-              <AnalyticsProvider writeKey={segmentWriteKey}>
-                <App />
-              </AnalyticsProvider>
-            </LocaleProvider>
-          </DclThemeProvider>
-        </LazyWeb3>
-      </WalletStateProvider>
-    </Provider>
+    <DclThemeProvider theme={darkTheme}>
+      <LocaleProvider>
+        <DeferredAnalyticsProvider writeKey={segmentWriteKey}>
+          <App />
+        </DeferredAnalyticsProvider>
+      </LocaleProvider>
+    </DclThemeProvider>
   </StrictMode>
 )

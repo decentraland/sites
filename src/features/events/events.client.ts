@@ -1,13 +1,12 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { useSyncExternalStore } from 'react'
 import { getEnv } from '../../config/env'
+import { isDocumentVisible, subscribeVisibility } from '../../utils/documentVisibility'
 import { buildExploreCards } from './events.helpers'
 import { ExploreCardType } from './events.types'
-import type { EventsResponse, ExploreItem, HotScene } from './events.types'
+import type { ActiveEntity, EventsResponse, ExploreItem, HotScene } from './events.types'
 
-interface ActiveEntity {
-  id: string
-  pointers: string[]
-}
+const POLL_INTERVAL_MS = 60_000
+const DEPLOYER_BATCH_TIMEOUT_MS = 5_000
 
 interface DeploymentEntry {
   entityId: string
@@ -19,8 +18,9 @@ interface DeploymentResponse {
 }
 
 async function resolveDeployers(peerUrl: string, coordinates: string[]): Promise<Map<string, string>> {
-  const signal = AbortSignal.timeout(5000)
+  const signal = AbortSignal.timeout(DEPLOYER_BATCH_TIMEOUT_MS)
   const result = new Map<string, string>()
+  const coordinatesSet = new Set(coordinates)
 
   const entities = await fetch(`${peerUrl}/content/entities/active`, {
     method: 'POST',
@@ -30,7 +30,7 @@ async function resolveDeployers(peerUrl: string, coordinates: string[]): Promise
     signal
   }).then(res => {
     if (!res.ok) {
-      console.warn('[Explore] active entities batch failed', res.status)
+      console.warn('[WhatsOn] active entities batch failed', res.status)
       return [] as ActiveEntity[]
     }
     return res.json() as Promise<ActiveEntity[]>
@@ -44,13 +44,13 @@ async function resolveDeployers(peerUrl: string, coordinates: string[]): Promise
   const deploymentData = await fetch(`${peerUrl}/content/deployments/?${params}`, { signal })
     .then(res => {
       if (!res.ok) {
-        console.warn('[Explore] deployments batch failed', res.status)
+        console.warn('[WhatsOn] deployments batch failed', res.status)
         return null
       }
       return res.json() as Promise<DeploymentResponse>
     })
     .catch((err: unknown) => {
-      console.warn('[Explore] deployments batch failed', err)
+      console.warn('[WhatsOn] deployments batch failed', err)
       return null
     })
 
@@ -67,7 +67,7 @@ async function resolveDeployers(peerUrl: string, coordinates: string[]): Promise
     const deployedBy = deployerByEntityId.get(entity.id)
     if (deployedBy) {
       for (const pointer of entity.pointers) {
-        if (coordinates.includes(pointer)) {
+        if (coordinatesSet.has(pointer)) {
           result.set(pointer, deployedBy)
         }
       }
@@ -90,63 +90,137 @@ async function extractJson<T>(result: PromiseSettledResult<Response>): Promise<T
   return result.value.json()
 }
 
-const eventsClient = createApi({
-  reducerPath: 'eventsClient',
-  baseQuery: fetchBaseQuery({ baseUrl: '/' }),
-  tagTypes: ['Explore'],
-  keepUnusedDataFor: 60,
-  endpoints: build => ({
-    getExploreData: build.query<ExploreItem[], void>({
-      queryFn: async () => {
-        try {
-          const eventsApiUrl = getEnv('EVENTS_API_URL') || 'https://events.decentraland.org/api'
-          const hotScenesUrl = getEnv('HOT_SCENES_URL') || 'https://realm-provider-ea.decentraland.org/hot-scenes'
+async function fetchExploreCards(): Promise<ExploreItem[]> {
+  const eventsApiUrl = getEnv('EVENTS_API_URL') || 'https://events.decentraland.org/api'
+  const hotScenesUrl = getEnv('HOT_SCENES_URL') || 'https://realm-provider-ea.decentraland.org/hot-scenes'
 
-          const [eventsResult, scenesResult] = await Promise.allSettled([
-            fetch(`${eventsApiUrl}/events?list=live&limit=20&order=asc&world=false`),
-            fetch(hotScenesUrl)
-          ])
+  const [eventsResult, scenesResult] = await Promise.allSettled([
+    fetch(`${eventsApiUrl}/events?list=live&limit=20&order=asc&world=false`),
+    fetch(hotScenesUrl)
+  ])
 
-          const eventsData = await extractJson<EventsResponse>(eventsResult)
-          const liveEvents = eventsData?.data ?? []
-          const hotScenes = (await extractJson<HotScene[]>(scenesResult)) ?? []
+  const eventsData = await extractJson<EventsResponse>(eventsResult)
+  const liveEvents = eventsData?.data ?? []
+  const hotScenes = (await extractJson<HotScene[]>(scenesResult)) ?? []
 
-          return { data: buildExploreCards(liveEvents, hotScenes) }
-        } catch (error) {
-          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
-        }
-      },
-      providesTags: ['Explore'],
-      async onQueryStarted(_, { dispatch, queryFulfilled }) {
-        try {
-          const { data: cards } = await queryFulfilled
-          const peerUrl = getEnv('PEER_URL')
-          if (!peerUrl) return
+  return buildExploreCards(liveEvents, hotScenes)
+}
 
-          const placeCoords = cards.filter(c => c.type === ExploreCardType.PLACE && !c.creatorAddress).map(c => c.coordinates)
-          if (placeCoords.length === 0) return
+async function enrichWithDeployers(cards: ExploreItem[]): Promise<ExploreItem[] | null> {
+  const peerUrl = getEnv('PEER_URL')
+  if (!peerUrl) return null
 
-          const deployerMap = await resolveDeployers(peerUrl, placeCoords)
-          if (deployerMap.size === 0) return
+  const placeCoords = cards.filter(c => c.type === ExploreCardType.PLACE && !c.creatorAddress).map(c => c.coordinates)
+  if (placeCoords.length === 0) return null
 
-          dispatch(
-            eventsClient.util.updateQueryData('getExploreData', undefined, draft => {
-              for (const card of draft) {
-                const deployedBy = deployerMap.get(card.coordinates)
-                if (deployedBy && !card.creatorAddress) {
-                  card.creatorAddress = deployedBy
-                }
-              }
-            })
-          )
-        } catch (err) {
-          console.warn('[Explore] deployer enrichment failed', err)
-        }
-      }
-    })
+  const deployerMap = await resolveDeployers(peerUrl, placeCoords)
+  if (deployerMap.size === 0) return null
+
+  return cards.map(card => {
+    const deployedBy = deployerMap.get(card.coordinates)
+    return deployedBy && !card.creatorAddress ? { ...card, creatorAddress: deployedBy } : card
   })
-})
+}
 
-const { useGetExploreDataQuery } = eventsClient
+type ExploreState = {
+  data: ExploreItem[]
+  error: Error | null
+  loaded: boolean
+}
 
-export { eventsClient, useGetExploreDataQuery }
+type ExploreSnapshot = { data: ExploreItem[]; isLoading: boolean }
+
+let state: ExploreState = { data: [], error: null, loaded: false }
+let snapshot: ExploreSnapshot = { data: state.data, isLoading: true }
+const listeners = new Set<() => void>()
+let subscribers = 0
+let pollTimer: ReturnType<typeof setInterval> | null = null
+let activeFetch: Promise<void> | null = null
+
+function commit(next: ExploreState) {
+  state = next
+  snapshot = { data: state.data, isLoading: !state.loaded }
+  listeners.forEach(fn => fn())
+}
+
+async function runFetch(): Promise<void> {
+  if (activeFetch) return activeFetch
+  const promise = (async () => {
+    try {
+      const cards = await fetchExploreCards()
+      commit({ data: cards, error: null, loaded: true })
+      try {
+        const enriched = await enrichWithDeployers(cards)
+        if (enriched) commit({ data: enriched, error: null, loaded: true })
+      } catch (err) {
+        console.warn('[WhatsOn] deployer enrichment failed', err)
+      }
+    } catch (err) {
+      commit({ data: state.data, error: err instanceof Error ? err : new Error(String(err)), loaded: true })
+    } finally {
+      activeFetch = null
+    }
+  })()
+  activeFetch = promise
+  return promise
+}
+
+function startPolling() {
+  if (pollTimer) return
+  if (!isDocumentVisible()) return
+  pollTimer = setInterval(() => {
+    void runFetch()
+  }, POLL_INTERVAL_MS)
+}
+
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+let unsubscribeVisibility: (() => void) | null = null
+
+function handleVisibility(visible: boolean) {
+  if (subscribers === 0) return
+  if (!visible) {
+    stopPolling()
+  } else {
+    void runFetch()
+    startPolling()
+  }
+}
+
+function subscribe(listener: () => void): () => void {
+  if (listeners.has(listener)) return () => unsubscribe(listener)
+  listeners.add(listener)
+  subscribers += 1
+  if (subscribers === 1) {
+    void runFetch()
+    startPolling()
+    unsubscribeVisibility = subscribeVisibility(handleVisibility)
+  }
+  return () => unsubscribe(listener)
+}
+
+function unsubscribe(listener: () => void): void {
+  if (!listeners.has(listener)) return
+  listeners.delete(listener)
+  subscribers -= 1
+  if (subscribers === 0) {
+    stopPolling()
+    unsubscribeVisibility?.()
+    unsubscribeVisibility = null
+  }
+}
+
+function getSnapshot(): ExploreSnapshot {
+  return snapshot
+}
+
+function useGetWhatsOnDataQuery(): ExploreSnapshot {
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+}
+
+export { useGetWhatsOnDataQuery }

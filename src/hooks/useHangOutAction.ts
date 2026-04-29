@@ -1,33 +1,34 @@
 import { useCallback, useState } from 'react'
-import { useWalletState } from '@dcl/core-web3/lazy'
+import { useAsyncMemo } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import type { DownloadModalProps } from 'decentraland-ui2'
-import { getEnv } from '../config/env'
-import { redirectToAuth } from '../utils/authRedirect'
+import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
+import { ExplorerDownloads } from '../modules/explorerDownloads'
+import { formatToShorthand } from '../modules/number'
+import { useWalletAddress } from './useWalletAddress'
 
-const DOWNLOAD_MODAL_PROPS = {
-  title: 'Download Decentraland',
-  description: 'Get the desktop app to explore Decentraland.',
-  buttonLabel: 'Download'
-} as const
+let cachedCount: string | null = null
 
 /**
- * Hook that implements the "Hang Out Now" button flow:
- * - Not signed in → redirect to auth/sign-in page
- * - Signed in, no launcher → open download modal
- * - Signed in, has launcher → open the game directly
+ * Hook that implements the "Hang Out Now" / "Jump In" button flow:
+ * - Not signed in → open DownloadModal directly
+ * - Signed in, has launcher → open the game
+ * - Signed in, no launcher → open DownloadModal
  */
 function useHangOutAction() {
-  const { isConnected } = useWalletState()
+  const { isConnected } = useWalletAddress()
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false)
-  const downloadUrl = getEnv('DOWNLOAD_URL') ?? 'https://decentraland.org/download'
+
+  const [rawDownloads, status] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
+  if (!status.loading && status.loaded && rawDownloads) cachedCount = formatToShorthand(rawDownloads)
+  const totalDownloads = cachedCount ?? '+400K'
 
   const handleClick = useCallback(
     async (e: React.MouseEvent) => {
       e.preventDefault()
 
       if (!isConnected) {
-        redirectToAuth(window.location.pathname)
+        setIsDownloadModalOpen(true)
         return
       }
 
@@ -45,17 +46,18 @@ function useHangOutAction() {
 
   const closeDownloadModal = useCallback(() => setIsDownloadModalOpen(false), [])
 
-  const handleDownloadClick = useCallback(() => {
-    window.open(downloadUrl, '_blank')
-    setIsDownloadModalOpen(false)
-  }, [downloadUrl])
+  const os = detectDownloadOS()
 
   const downloadModalProps: Omit<DownloadModalProps, 'open' | 'onClose'> = {
-    ...DOWNLOAD_MODAL_PROPS,
-    onDownloadClick: handleDownloadClick
+    os,
+    downloadUrl: os === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows,
+    epicUrl: DOWNLOAD_URLS.epic,
+    googlePlayUrl: DOWNLOAD_URLS.googlePlay,
+    appStoreUrl: DOWNLOAD_URLS.appStore,
+    i18n: { totalDownloads: `Total Downloads: ${totalDownloads}` }
   }
 
-  return { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps }
+  return { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads }
 }
 
 export { useHangOutAction }

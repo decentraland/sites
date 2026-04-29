@@ -642,6 +642,61 @@ const SignInButton = styled('button')({
   }
 })
 
+/* eslint-disable @typescript-eslint/naming-convention */
+const NavJumpInButton = styled('button')({
+  all: 'unset',
+  boxSizing: 'border-box',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 12,
+  height: 40,
+  padding: '0 16px',
+  backgroundColor: '#FF2D55',
+  borderRadius: 12,
+  fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+  fontWeight: 600,
+  fontSize: 15,
+  lineHeight: '24px',
+  letterSpacing: 0.46,
+  textTransform: 'uppercase' as const,
+  color: '#FCFCFC',
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  outline: '2px solid transparent',
+  outlineOffset: 2,
+  transition: 'outline-color 0.15s ease',
+  '&:hover': {
+    outlineColor: 'white'
+  },
+  '&:focus-visible': {
+    outlineColor: 'white'
+  }
+})
+/* eslint-enable @typescript-eslint/naming-convention */
+
+const NavJumpInArrow = styled('span')({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 24,
+  height: 24,
+  borderRadius: '50%',
+  border: '1.5px solid rgba(252, 252, 252, 0.3)',
+  boxSizing: 'border-box',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&::after': {
+    content: '""',
+    display: 'block',
+    width: 0,
+    height: 0,
+    borderStyle: 'solid',
+    borderWidth: '4px 0 4px 7px',
+    borderColor: 'transparent transparent transparent #FCFCFC',
+    marginLeft: 2
+  }
+})
+
 const MobileMenuOverlay = styled('div')<{ open: boolean }>(({ open }) => ({
   position: 'fixed',
   top: 64,
@@ -1112,6 +1167,8 @@ export {
   NotificationPanel,
   NotificationTitle,
   NotificationWrapper,
+  NavJumpInArrow,
+  NavJumpInButton,
   SignInButton,
   UserCard,
   UserCardAddress,

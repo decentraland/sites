@@ -22,16 +22,27 @@ const HeroBackground = styled(Box)({
   height: '100%',
   zIndex: 0,
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& > video, & > img, & > picture': {
+  '& > img.hero-image': {
     width: '100%',
     height: '100%',
-    objectFit: 'cover'
+    objectFit: 'cover',
+    display: 'block'
   },
+  // Video sits on top of the static image so the <img> remains a stable
+  // LCP element; the video simply fades in over it after load.
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& > picture > img': {
+  '& > video.hero-video-overlay': {
+    position: 'absolute',
+    top: 0,
+    left: 0,
     width: '100%',
     height: '100%',
-    objectFit: 'cover'
+    objectFit: 'cover',
+    zIndex: 1,
+    opacity: 0,
+    transition: 'opacity 400ms ease-in',
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    '&[data-ready="true"]': { opacity: 1 }
   }
 })
 
@@ -66,7 +77,7 @@ const HeroContent = styled(Box)(({ theme }) => ({
   flexDirection: 'column',
   alignItems: 'center',
   textAlign: 'center',
-  gap: theme.spacing(7.5),
+  gap: theme.spacing(3),
   paddingBottom: theme.spacing(15),
   [theme.breakpoints.down('sm')]: {
     gap: theme.spacing(3),
@@ -75,31 +86,104 @@ const HeroContent = styled(Box)(({ theme }) => ({
   }
 }))
 
-const HeroTitle = styled(Typography)(({ theme }) => ({
+// Rendered as a plain <h3> (not MUI Typography h2) with styles that match the
+// prerendered hero shell's h3 byte-for-byte. Matching the computed styles means
+// Chrome's LCP size calculation ties between shell and React copies, so the
+// earlier-painted shell wins and LCP stays anchored at FCP time. Do NOT add
+// textShadow, letter-spacing drift, or tag changes without re-matching the
+// shell CSS in scripts/prerender-hero.mjs — a 6% size delta was previously
+// enough to flip the LCP candidate to React.
+const HeroTitle = styled('h3')(({ theme }) => ({
   color: dclColors.neutral.white,
+  fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+  fontSize: 60,
   fontWeight: 600,
   lineHeight: 1.2,
-  letterSpacing: -0.5,
-  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
+  letterSpacing: '-0.5px',
+  margin: 0,
+  marginBottom: theme.spacing(4.5),
   [theme.breakpoints.down('sm')]: {
-    fontSize: 36
+    fontSize: 36,
+    marginBottom: 0
   }
 }))
 
 const HeroCTAWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
+  flexDirection: 'row',
+  alignItems: 'flex-start',
   gap: theme.spacing(3),
-  // Reserve space so the title doesn't shift when content loads async
-  // Desktop: button (60) + gap (24) + info row (~28) = 112
-  // Mobile: button (52) only
-  minHeight: 112,
-  justifyContent: 'flex-start',
+  justifyContent: 'center',
   [theme.breakpoints.down('sm')]: {
-    minHeight: 52
+    flexDirection: 'column',
+    alignItems: 'center'
   }
 }))
+
+/* eslint-disable @typescript-eslint/naming-convention */
+const DownloadButton = styled('a')({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 16,
+  width: 304,
+  height: 64,
+  backgroundColor: '#FF2D55',
+  borderRadius: 16,
+  border: 'none',
+  cursor: 'pointer',
+  textDecoration: 'none',
+  fontFamily: 'Inter, sans-serif',
+  fontWeight: 600,
+  fontSize: '19.89px',
+  color: '#FCFCFC',
+  textTransform: 'uppercase',
+  letterSpacing: '0.61px',
+  boxSizing: 'border-box',
+  outline: '3px solid transparent',
+  outlineOffset: 4,
+  transition: 'outline-color 0.15s ease',
+  '&:hover': {
+    outlineColor: 'white'
+  },
+  '& img': {
+    width: 32,
+    height: 32,
+    display: 'block'
+  }
+})
+
+const EpicButton = styled('a')({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 24,
+  width: 304,
+  height: 64,
+  backgroundColor: 'white',
+  border: '3px solid white',
+  borderRadius: 16,
+  cursor: 'pointer',
+  textDecoration: 'none',
+  fontFamily: 'Inter, sans-serif',
+  fontWeight: 600,
+  fontSize: '19.89px',
+  color: '#242129',
+  textTransform: 'uppercase',
+  letterSpacing: '0.61px',
+  boxSizing: 'border-box',
+  outline: '3px solid transparent',
+  outlineOffset: 4,
+  transition: 'outline-color 0.15s ease',
+  '&:hover': {
+    outlineColor: 'white'
+  },
+  '& img': {
+    width: 40,
+    height: 40
+  }
+})
+/* eslint-enable @typescript-eslint/naming-convention */
 
 const AlreadyUserText = styled(Typography)({
   color: dclColors.neutral.white,
@@ -144,8 +228,10 @@ const HeroDownloadCounts = styled(Typography)({
   gap: 12,
   color: dclColors.neutral.white,
   fontSize: 16,
+  fontWeight: 400,
   lineHeight: 1.5,
-  whiteSpace: 'nowrap'
+  whiteSpace: 'nowrap',
+  minWidth: 210
 })
 
 const HeroPlatformSeparator = styled(Box)({
@@ -223,6 +309,8 @@ export {
   HeroPlatformLabel,
   HeroPlatformSeparator,
   HeroTitle,
+  DownloadButton,
+  EpicButton,
   MobileHeroContent,
   MobileHeroTitle
 }

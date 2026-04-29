@@ -11,7 +11,7 @@ import { getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
 import { ExplorerDownloads } from '../../modules/explorerDownloads'
 import { formatToShorthand } from '../../modules/number'
 import { trackCheckpoint } from '../../modules/onboardingCheckpoint'
-import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
+import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { addQueryParamsToUrlString, sanitizeCDNReleaseLinks, updateUrlWithLastValue } from '../../modules/url'
 import { Architecture, DownloadOptionProps, OperativeSystem } from '../../types/download.types'
 import { assetUrl } from '../../utils/assetUrl'
@@ -103,24 +103,23 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick, email, user
       ]
     }
 
-    const options: DownloadOptionProps[] = [
+    if (userAgentData.os.name === OperativeSystem.MACOS) {
+      return [
+        {
+          text: OperativeSystem.WINDOWS,
+          image: imageByOs[OperativeSystem.WINDOWS],
+          link: links[OperativeSystem.WINDOWS]?.x64
+        }
+      ]
+    }
+
+    return [
       {
         text: OperativeSystem.MACOS,
         image: imageByOs[OperativeSystem.MACOS],
-        link: userAgentData.os.name === OperativeSystem.MACOS ? links[OperativeSystem.MACOS]?.amd64 : links[OperativeSystem.MACOS]?.arm64,
-        arch: userAgentData.os.name === OperativeSystem.MACOS ? ('amd64' as Architecture) : undefined
+        link: links[OperativeSystem.MACOS]?.arm64
       }
     ]
-
-    if (userAgentData.os.name === OperativeSystem.MACOS) {
-      options.push({
-        text: OperativeSystem.WINDOWS,
-        image: imageByOs[OperativeSystem.WINDOWS],
-        link: links[OperativeSystem.WINDOWS]?.x64
-      })
-    }
-
-    return options
   }, [userAgentData, links])
 
   const onClickDownloadHandler = useCallback(
@@ -152,7 +151,11 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick, email, user
 
       const redirectPath = '/download_success'
       const redirectUrl = updateUrlWithLastValue(new URL(redirectPath, window.location.origin).toString(), 'os', option.text)
-      const finalUrl = addQueryParamsToUrlString(redirectUrl, { arch: option.arch, [ANON_USER_ID_PARAM]: anonUserId })
+      const finalUrl = addQueryParamsToUrlString(redirectUrl, {
+        arch: option.arch,
+        place: DownloadPlace.DOWNLOAD_PAGE,
+        [ANON_USER_ID_PARAM]: anonUserId
+      })
       setTimeout(
         () => {
           window.location.href = finalUrl

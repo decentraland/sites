@@ -6,7 +6,7 @@ import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
 import { ExplorerDownloads } from '../../modules/explorerDownloads'
 import { formatToShorthand } from '../../modules/number'
-import { SectionViewedTrack } from '../../modules/segment'
+import { DownloadPlace, SectionViewedTrack } from '../../modules/segment'
 import { CTAButton } from '../Buttons/CTAButton'
 import { VerifiedIcon } from '../Icon/VerifiedIcon'
 import { AlreadyUserContainer, AlreadyUserLink, JumpInButtonWrapper, JumpInContainer, JumpInDownloadCounts } from './JumpIn.styled'
@@ -55,7 +55,7 @@ const JumpIn = memo(({ isDesktop, isLoading, hideAlreadyUser, hideDownloadCounts
         <AlreadyUserContainer>
           {l('page.home.hero.already_user', {
             download: (
-              <AlreadyUserLink href={`/download_success?os=${userAgentData.os.name}`}>
+              <AlreadyUserLink href={`/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.JUMP_IN_ALREADY_USER}`}>
                 {l('page.home.hero.download')} <img src="/JumpIn.svg" alt="" width={24} height={24} />
               </AlreadyUserLink>
             )

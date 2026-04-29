@@ -1,0 +1,69 @@
+enum SegmentEvent {
+  DOWNLOAD = 'Download',
+  EXPLORE_ON_WEB = 'Explore on web',
+  OPEN_SEND_TO_DESKTOP = 'Open Send To Desktop',
+  MICROSOFT_STORE = 'Go to Microsoft Store',
+  APP_STORE = 'Go to AppStore',
+  SUBSCRIBE_TO_MOBILE = 'Subscribe To Mobile',
+  GO_TO_EXPLORER = 'Go To Explorer',
+  SEE_FESTIVAL_EVENTS = 'See Festival Events Schedule',
+  GO_TO_EXPLORER_MVMF_LIVE_EVENT = 'Go To Explorer MVMF Live Event',
+  WATCH_MORE = 'Watch More',
+  YOUR_TUTORIAL = 'Your Tutorial',
+  BROWSER_CREATORS = 'Browser Creators',
+  ARE_YOU_CREATOR = 'Are You A Creator',
+  CREATORS_CONNECT_CARD = 'Creators Connect Card',
+  CREATE_YOUR_AVATAR = 'Create Your Avatar',
+  MISSIONS_EXPERIENCE = 'experience',
+  MISSIONS_CREATE = 'create',
+  MISSIONS_INFLUENCE = 'influence',
+  INVITE_HERO = 'Invite Hero',
+  CLICK = 'Click',
+  DOWNLOAD_STARTED = 'download_started',
+  DOWNLOAD_SUCCESS = 'download_success',
+  DOWNLOAD_FAILED = 'download_failed'
+}
+
+enum DownloadPlace {
+  LANDING_HERO = 'landing-hero',
+  LANDING_HERO_PLATFORM_SWITCH = 'landing-hero-platform-switch',
+  COME_HANG_OUT = 'come-hang-out',
+  JUMP_IN_ALREADY_USER = 'jump-in-already-user',
+  DOWNLOAD_PAGE = 'download-page',
+  UNKNOWN = 'unknown'
+}
+
+enum SectionViewedTrack {
+  CREATORS_CONNECT = 'Creators Connect',
+  CREATORS_CREATE = 'Creators Create',
+  CREATORS_EARN = 'Creators Earn',
+  CREATORS_HERO = 'Creators Hero',
+  CREATORS_JUMP_IN = 'Creators Jump In',
+  CREATORS_LEARN = 'Creators Learn',
+  CREATORS_WHY = 'Creators Why',
+  CREATORS_FAQS = 'Creators Faqs',
+  LANDING_HERO = 'Landing Hero',
+  LANDING_EVENTS_PLACES_FEED = 'Landing Events Places Feed',
+  LANDING_BLOG_FEED = 'Landing Blog Feed',
+  LANDING_ABOUT = 'Landing About',
+  LANDING_MISSIONS = 'Landing Missions',
+  LANDING_MARKETPLACE = 'Landing Marketplace',
+  LANDING_TRENDING = 'Landing Trending',
+  LANDING_WORLDS = 'Landing Worlds',
+  LANDING_FAQS = 'Landing Faqs',
+  LANDING_FOOTER = 'Landing Footer',
+  DOWNLOAD = 'Download',
+  INVITE_FIRST_HERO = 'Referrer Invite First Hero',
+  INVITE_SECOND_HERO = 'Referrer Invite Second Hero',
+  INVITE_THIRD_HERO = 'Referrer Invite Third Hero',
+  INVITE_FAQS = 'Referrer Invite Faqs',
+  LANDING_CATCH_THE_VIBE = 'Landing Catch The Vibe',
+  LANDING_WEEKLY_RITUALS = 'Landing Weekly Rituals',
+  LANDING_EXPLORE = 'Landing Explore',
+  LANDING_FOOTER_SOCIAL = 'Landing Footer Social',
+  LANDING_FOOTER_SUBSCRIBE = 'Landing Footer Subscribe',
+  LANDING_FOOTER_LINK = 'Landing Footer Link',
+  LANDING_NAVBAR = 'Landing Navbar'
+}
+
+export { DownloadPlace, SectionViewedTrack, SegmentEvent }
