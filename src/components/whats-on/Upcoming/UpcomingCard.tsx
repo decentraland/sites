@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import { useTranslation } from '@dcl/hooks'
@@ -8,6 +8,7 @@ import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCardActions } from '../../../hooks/useCardActions'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
+import { optimizedImageUrl } from '../../../utils/imageUrl'
 import { getRelativeTimeLabel } from '../../../utils/whatsOnTime'
 import { resolveEventRealm } from '../../../utils/whatsOnUrl'
 import { CalendarAddIcon } from '../common/CalendarAddIcon'
@@ -42,6 +43,8 @@ const UpcomingCard = memo(function UpcomingCard({
   const handleClick = useCallback(() => {
     onClick(event)
   }, [onClick, event])
+
+  const optimizedImage = useMemo(() => (event.image ? optimizedImageUrl(event.image, { width: 640 }) : undefined), [event.image])
 
   const mobileAction = hasValidIdentity ? (
     <MobileActionButton onClick={handleRemindToggle} disabled={isRemindLoading} aria-label={t('upcoming.remind_me')}>
@@ -86,7 +89,7 @@ const UpcomingCard = memo(function UpcomingCard({
 
   return (
     <EventSmallCard
-      image={event.image ?? undefined}
+      image={optimizedImage}
       title={event.name}
       creatorName={creatorName}
       creatorAvatarUrl={avatarFace}

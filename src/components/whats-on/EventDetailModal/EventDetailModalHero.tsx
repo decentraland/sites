@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -14,6 +14,7 @@ import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { formatEthAddress } from '../../../utils/avatar'
 import { getCreatorColor } from '../../../utils/creatorColor'
+import { optimizedImageUrl } from '../../../utils/imageUrl'
 import { buildCalendarUrl, buildEventShareUrl } from '../../../utils/whatsOnUrl'
 import { JumpInButton } from '../../jump/JumpInButton'
 import { RemindMeIcon } from '../common/RemindMeIcon'
@@ -79,11 +80,14 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
   }, [data])
 
   const categorySubtitle = data.categories[0] ?? null
+  // Hero spans the modal — full-width on mobile, ~720 px on desktop. 1500
+  // covers DPR=2 with margin so the upscaled poster stays sharp.
+  const optimizedImage = useMemo(() => (data.image ? optimizedImageUrl(data.image, { width: 1500 }) : ''), [data.image])
 
   return (
     <>
       <HeroSection>
-        {data.image && <HeroImage src={data.image} alt={data.name} />}
+        {data.image && <HeroImage src={optimizedImage} alt={data.name} />}
         <HeroOverlay />
         <CloseButton onClick={onClose} aria-label={t('event_detail.close')}>
           {isMobile ? <ArrowBackIosNewIcon sx={{ fontSize: 20, color: '#FCFCFC' }} /> : <CloseIconStyled />}

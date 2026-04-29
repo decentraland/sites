@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { Tooltip } from 'decentraland-ui2'
 import type { EventEntry } from '../../../features/whats-on-events'
@@ -7,6 +7,7 @@ import { useCardActions } from '../../../hooks/useCardActions'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { getCreatorColor } from '../../../utils/creatorColor'
+import { optimizedImageUrl } from '../../../utils/imageUrl'
 import { getRelativeTimeLabel } from '../../../utils/whatsOnTime'
 import { resolveEventRealm } from '../../../utils/whatsOnUrl'
 import {
@@ -53,11 +54,15 @@ const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
     onClick(event)
   }, [onClick, event])
 
+  // 560×315 CSS pixels at 2× DPR ≈ 1120 — keeps the rendered tile crisp while
+  // letting the optimizer recompress raw posters into ~80 KB WebP.
+  const optimizedSrc = useMemo(() => (event.image ? optimizedImageUrl(event.image, { width: 1120 }) : ''), [event.image])
+
   return (
     <FutureCardContainer onClick={handleClick}>
       {event.image && (
         <CardImageWrapper>
-          <CardImage src={event.image} alt={event.name} loading="lazy" width={560} height={315} />
+          <CardImage src={optimizedSrc} alt={event.name} loading="lazy" width={560} height={315} />
         </CardImageWrapper>
       )}
       <CardContent>

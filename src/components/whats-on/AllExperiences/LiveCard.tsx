@@ -1,7 +1,8 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
 import type { EventEntry } from '../../../features/whats-on-events'
 import { useCreatorAvatar } from '../../../hooks/useCreatorAvatar'
+import { optimizedImageUrl } from '../../../utils/imageUrl'
 import { LiveCardWrapper } from './AllExperiencesCard.styled'
 
 interface LiveCardProps {
@@ -16,10 +17,12 @@ const LiveCard = memo(({ event, onClick }: LiveCardProps) => {
     onClick(event)
   }, [onClick, event])
 
+  const optimizedImage = useMemo(() => (event.image ? optimizedImageUrl(event.image, { width: 1120 }) : ''), [event.image])
+
   return (
     <LiveCardWrapper>
       <EventCard
-        image={event.image ?? ''}
+        image={optimizedImage}
         sceneName={event.name}
         coordinates={`${event.x},${event.y}`}
         avatar={avatar}
