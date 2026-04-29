@@ -22,7 +22,7 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
   useLocation: () => ({
     state: mockLocationState,
-    pathname: mockParams.eventId ? `/whats-on/edit-event/${mockParams.eventId}` : '/whats-on/new-event',
+    pathname: mockParams.eventId ? `/whats-on/edit-hangout/${mockParams.eventId}` : '/whats-on/new-hangout',
     search: mockSearch,
     hash: '',
     key: 'default'
@@ -56,15 +56,22 @@ jest.mock('../../components/whats-on/CreateEvent/EventForm', () => ({
   EventForm: ({
     initialEvent,
     initialCommunityId,
+    initialOpenPreview,
     onCancel,
     onSuccess
   }: {
     initialEvent?: EventEntry | null
     initialCommunityId?: string | null
+    initialOpenPreview?: boolean
     onCancel: () => void
     onSuccess: () => void
   }) => (
-    <div data-testid="event-form" data-event-id={initialEvent?.id ?? ''} data-community-id={initialCommunityId ?? ''}>
+    <div
+      data-testid="event-form"
+      data-event-id={initialEvent?.id ?? ''}
+      data-community-id={initialCommunityId ?? ''}
+      data-open-preview={String(Boolean(initialOpenPreview))}
+    >
       <button data-testid="form-cancel" onClick={onCancel}>
         cancel
       </button>
@@ -265,6 +272,53 @@ describe('CreateEventPage', () => {
       render(<CreateEventPage />)
 
       expect(mockNavigate).toHaveBeenCalledWith('/whats-on', { replace: true })
+    })
+  })
+
+  describe('when the edit route is opened with the openPreview query param', () => {
+    let event: EventEntry
+
+    beforeEach(() => {
+      event = createMockEvent({ id: 'ev-42', user: '0xCreator' })
+      mockLocationState = { event }
+      mockParams = { eventId: 'ev-42' }
+      mockSearch = '?openPreview'
+      mockUseCanEditEvent.mockReturnValue({ canEdit: true, isLoading: false })
+    })
+
+    it('should forward initialOpenPreview=true to the event form', () => {
+      render(<CreateEventPage />)
+
+      expect(screen.getByTestId('event-form')).toHaveAttribute('data-open-preview', 'true')
+    })
+  })
+
+  describe('when the edit route does not include the openPreview query param', () => {
+    let event: EventEntry
+
+    beforeEach(() => {
+      event = createMockEvent({ id: 'ev-42', user: '0xCreator' })
+      mockLocationState = { event }
+      mockParams = { eventId: 'ev-42' }
+      mockUseCanEditEvent.mockReturnValue({ canEdit: true, isLoading: false })
+    })
+
+    it('should forward initialOpenPreview=false to the event form', () => {
+      render(<CreateEventPage />)
+
+      expect(screen.getByTestId('event-form')).toHaveAttribute('data-open-preview', 'false')
+    })
+  })
+
+  describe('when the new route is opened with the openPreview query param', () => {
+    beforeEach(() => {
+      mockSearch = '?openPreview'
+    })
+
+    it('should ignore the param and forward initialOpenPreview=false', () => {
+      render(<CreateEventPage />)
+
+      expect(screen.getByTestId('event-form')).toHaveAttribute('data-open-preview', 'false')
     })
   })
 

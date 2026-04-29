@@ -49,6 +49,7 @@ const CreateEventPage = lazy(() => import('./pages/whats-on/CreateEventPage').th
 const WhatsOnLayout = lazy(() => import('./pages/whats-on/WhatsOnLayout').then(m => ({ default: m.WhatsOnLayout })))
 const PendingEventsPage = lazy(() => import('./pages/whats-on/PendingEventsPage').then(m => ({ default: m.PendingEventsPage })))
 const UsersAdminPage = lazy(() => import('./pages/whats-on/UsersAdminPage').then(m => ({ default: m.UsersAdminPage })))
+const LegacyHangoutRedirect = lazy(() => import('./pages/whats-on/LegacyHangoutRedirect').then(m => ({ default: m.LegacyHangoutRedirect })))
 
 // Jump pages — deep-link handler for decentraland:// launcher. Heavy route (Redux).
 const JumpPlacesPage = lazy(() => import('./pages/jump/PlacesPage').then(m => ({ default: m.PlacesPage })))
@@ -91,8 +92,11 @@ const App = () => {
             <Route element={<DappsShell />}>
               <Route element={<WhatsOnLayout />}>
                 <Route path="/whats-on" element={<WhatsOnHomePage />} />
-                <Route path="/whats-on/new-event" element={<CreateEventPage />} />
-                <Route path="/whats-on/edit-event/:eventId" element={<CreateEventPage />} />
+                <Route path="/whats-on/new-hangout" element={<CreateEventPage />} />
+                <Route path="/whats-on/edit-hangout/:eventId" element={<CreateEventPage />} />
+                {/* Legacy aliases — preserve query string + location state. */}
+                <Route path="/whats-on/new-event" element={<LegacyHangoutRedirect />} />
+                <Route path="/whats-on/edit-event/:eventId" element={<LegacyHangoutRedirect />} />
                 <Route path="/whats-on/admin/pending-events" element={<PendingEventsPage />} />
                 <Route path="/whats-on/admin/users" element={<UsersAdminPage />} />
               </Route>

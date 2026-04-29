@@ -22,6 +22,7 @@ function CreateEventPage() {
   const eventFromState = (location.state as { event?: EventEntry } | null)?.event ?? null
   const isEditRoute = Boolean(params.eventId)
   const initialCommunityId = isEditRoute ? null : searchParams.get('community_id')?.trim() || null
+  const initialOpenPreview = isEditRoute && searchParams.has('openPreview')
   const shouldFetchEvent = isEditRoute && hasValidIdentity && !eventFromState
 
   const {
@@ -105,7 +106,13 @@ function CreateEventPage() {
           </BackButton>
           <PageTitle>{t(titleKey)}</PageTitle>
         </HeaderRow>
-        <EventForm onCancel={handleBack} onSuccess={handleSuccess} initialEvent={initialEvent} initialCommunityId={initialCommunityId} />
+        <EventForm
+          onCancel={handleBack}
+          onSuccess={handleSuccess}
+          initialEvent={initialEvent}
+          initialCommunityId={initialCommunityId}
+          initialOpenPreview={initialOpenPreview}
+        />
       </PageContent>
     </>
   )
