@@ -1,5 +1,7 @@
 import { useCallback } from 'react'
 import { useTranslation } from '@dcl/hooks'
+import { AnimatedBackground } from 'decentraland-ui2'
+import helpGirl from '../../images/help_girl.png'
 import {
   ChatCtaBanner,
   ChatCtaBannerContent,
@@ -25,6 +27,7 @@ const ChatCTABanner = () => {
 
   return (
     <ChatCtaBanner>
+      <AnimatedBackground variant="absolute" />
       <ChatCtaBannerContent>
         <ChatCtaBannerTexts>
           <ChatCtaBannerTitle>{t(`${CHAT_CTA_PREFIX}.title`)}</ChatCtaBannerTitle>
@@ -32,7 +35,7 @@ const ChatCTABanner = () => {
           <ChatCtaButton onClick={handleChatNow}>{t(`${CHAT_CTA_PREFIX}.button`)}</ChatCtaButton>
         </ChatCtaBannerTexts>
       </ChatCtaBannerContent>
-      <ChatCtaBannerImage src="/chat_banner.png" alt="" aria-hidden="true" />
+      <ChatCtaBannerImage src={helpGirl} alt="" aria-hidden="true" />
     </ChatCtaBanner>
   )
 }

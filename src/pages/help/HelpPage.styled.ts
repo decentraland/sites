@@ -289,8 +289,12 @@ const ScrollableAccordionContainer = styled(AccordionContainer)(({ theme }) => (
 
 const ChatCtaBanner = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(6),
+  marginLeft: 'auto',
+  marginRight: 'auto',
   width: '100%',
-  background: 'linear-gradient(135deg, #2b1339 0%, #3a1a5e 40%, #1a0e24 100%)',
+  maxWidth: 900,
+  minHeight: 220,
+  backgroundColor: '#2b1339',
   borderRadius: 16,
   padding: theme.spacing(4, 4),
   display: 'flex',
@@ -301,7 +305,8 @@ const ChatCtaBanner = styled(Box)(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     marginTop: theme.spacing(4),
     padding: theme.spacing(3, 2),
-    borderRadius: 12
+    borderRadius: 12,
+    minHeight: 'auto'
   }
 }))
 
@@ -340,15 +345,17 @@ const ChatCtaBannerContent = styled(Box)({
 
 const ChatCtaBannerImage = styled('img')(({ theme }) => ({
   position: 'absolute',
-  right: 0,
+  right: theme.spacing(2),
   bottom: 0,
-  height: '100%',
+  height: '110%',
   width: 'auto',
   objectFit: 'contain',
   objectPosition: 'right bottom',
   pointerEvents: 'none',
+  zIndex: 1,
   [theme.breakpoints.down('sm')]: {
-    height: '80%',
+    right: 0,
+    height: '90%',
     opacity: 0.6
   }
 }))
