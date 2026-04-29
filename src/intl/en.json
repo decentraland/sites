@@ -543,8 +543,8 @@
         "support_updates_section": {
           "title": "Support Updates",
           "item_count": "5",
-          "item_0_question": "Explorer Release - v0.135.0 (26/3/2026)",
-          "item_0_answer": "Client:\n\nFeatures:\n- Expanded settings\n- Ghosts (avatars will appear as ghosts when loading)\n\nFixes:\n- Promote to speaker sets as muted by default\n- Fixed deploy of avatar outfits/customization\n- Avoid showing the black event counter on no live events on the Navigation Bar",
+          "item_0_question": "Explorer Release - v0.141.0 (22/4/2026)",
+          "item_0_answer": "Client:\n\nFeatures:\n- Disable \"switch account\" button for new users\n- Extend AVPro to support YouTube and public Google Drive videos (v2)\n- Lens flare for sun and moon\n\nFixes:\n- Enable only the current scene stream setting\n- Error when removing members from a community\n- Multiple LSD and asset load issues\n- Overlapping login screen on new account\n- Remove the mic button when outgoing call\n\nFor more details, please check the PR.",
           "item_1_question": "New Creator Hub (v0.35.0) Release",
           "item_1_answer": "Features:\n- Spawn Areas: You can now see a visual representation of spawn areas directly in the scene editor, and adjust spawn areas visually, including random offset ranges.\n- Dynamic Asset Catalog with SDK Compatibility: The asset catalog now loads the latest version from the CDN at runtime, so new assets appear automatically without waiting for a full app update.\n- World Access Permissions: The \"Access\" tab is now available in Worlds settings, letting you manage who can enter your world directly from the Creator Hub.\n\nFixes:\n- Scene Layout in Advanced Mode: The scene layout now updates correctly when editing in advanced mode.\n- Duplicated Ground in Scenes: Opening a scene no longer renders a duplicated ground plane.\n- Fetch Managed Projects: Fixed a failure when loading managed projects.\n- Windows Code Signing: The Windows build pipeline now properly fails on code-signing errors instead of silently producing unsigned executables.\n- Removed Legacy Dependency: Replaced the deprecated decentraland-connect library with a lighter vendored implementation using viem, reducing bundle size.\n\nImprovements:\n- UI Polish: Updated colors, component styles, transform alignment, entity inspector header, entity renaming, and asset tab styling for a better editing experience.\n- Collaborators Tab Copy: Updated the text in the collaborators tab with clearer guidance.",
           "item_2_question": "Attention Creators: Backface Culling Updates",
@@ -562,6 +562,11 @@
             "shutdown": "Services Shutdown",
             "warning": "Experiencing Problems"
           }
+        },
+        "chat_cta": {
+          "title": "Need Help?",
+          "subtitle": "Our support team is here to answer your questions!",
+          "button": "CHAT NOW"
         }
       },
       "whats_hot": {

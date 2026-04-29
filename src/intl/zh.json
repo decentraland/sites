@@ -433,8 +433,8 @@
         "support_updates_section": {
           "title": "支持更新",
           "item_count": "5",
-          "item_0_question": "Explorer 发布 - v0.135.0 (26/3/2026)",
-          "item_0_answer": "客户端：\n\n新功能：\n- 扩展设置\n- 幽灵（加载时头像将以幽灵形式显示）\n\n修复：\n- 提升为发言者时默认设置为静音\n- 修复了头像装扮/自定义的部署问题\n- 避免在导航栏上没有直播活动时显示黑色活动计数器",
+          "item_0_question": "Explorer 发布 - v0.141.0 (22/4/2026)",
+          "item_0_answer": "客户端：\n\n新功能：\n- 为新用户禁用“切换账户”按钮\n- 扩展 AVPro 以支持 YouTube 和公开的 Google Drive 视频 (v2)\n- 太阳和月亮的镜头光晕\n\n修复：\n- 仅启用当前场景的流设置\n- 从社区中移除成员时出错\n- 多个 LSD 和资源加载问题\n- 新账户上的登录屏幕重叠\n- 在拨出通话时移除麦克风按钮\n\n更多详细信息，请查看 PR。",
           "item_1_question": "全新 Creator Hub (v0.35.0) 发布",
           "item_1_answer": "新功能：\n- Spawn Areas：现在你可以直接在场景编辑器中看到出生区域的可视化表示，并可视化地调整出生区域，包括随机偏移范围。\n- 动态资产目录与 SDK 兼容性：资产目录现在在运行时从 CDN 加载最新版本，因此新资产会自动出现，无需等待完整的应用更新。\n- World 访问权限：\"访问\"选项卡现在可在 Worlds 设置中使用，让你可以直接从 Creator Hub 管理谁可以进入你的 world。\n\n修复：\n- 高级模式下的场景布局：在高级模式下编辑时，场景布局现在可以正确更新。\n- 场景中的重复地面：打开场景不再渲染重复的地面平面。\n- 获取托管项目：修复了加载托管项目时的失败问题。\n- Windows 代码签名：Windows 构建管道现在会在代码签名错误时正确失败，而不是静默生成未签名的可执行文件。\n- 移除旧版依赖：用基于 viem 的更轻量的 vendored 实现替换了已弃用的 decentraland-connect 库，减小了 bundle 大小。\n\n改进：\n- UI 优化：更新了颜色、组件样式、变换对齐、实体检查器标题、实体重命名和资产选项卡样式，以获得更好的编辑体验。\n- 协作者选项卡文案：更新了协作者选项卡中的文字，提供更清晰的指导。",
           "item_2_question": "创作者注意：Backface Culling 更新",
@@ -452,6 +452,11 @@
             "shutdown": "服务停止",
             "warning": "遇到问题"
           }
+        },
+        "chat_cta": {
+          "title": "Need Help?",
+          "subtitle": "Our support team is here to answer your questions!",
+          "button": "CHAT NOW"
         }
       },
       "whats_hot": {
