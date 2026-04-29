@@ -277,6 +277,7 @@ const ChatCtaBanner = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'space-between',
   position: 'relative',
+  isolation: 'isolate',
   overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
     marginTop: theme.spacing(4),
@@ -351,18 +352,22 @@ const ChatCtaButton = styled(Button)(({ theme }) => ({
   textTransform: 'uppercase',
   marginTop: theme.spacing(2),
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  '&:hover': {
+  '&&': {
+    color: '#ffffff'
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&&:hover': {
     backgroundColor: '#d04048',
     backgroundImage: 'none',
     color: '#ffffff'
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  '&:focus-visible': {
+  '&&:focus-visible': {
     backgroundColor: '#d04048',
     color: '#ffffff'
   },
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  '&:active': {
+  '&&:active': {
     color: '#ffffff',
     transform: 'scale(0.97)'
   }
