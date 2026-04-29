@@ -7,6 +7,7 @@ import { useCardActions } from '../../../hooks/useCardActions'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { getRelativeTimeLabel } from '../../../utils/whatsOnTime'
+import { resolveEventRealm } from '../../../utils/whatsOnUrl'
 import {
   ActionButton,
   ActionTextButton,
@@ -34,14 +35,15 @@ interface FutureCardProps {
 const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
   const { t } = useTranslation()
   const { hasValidIdentity } = useAuthIdentity()
-  const { creatorName, avatarFace } = useCreatorProfile(event.user, event.user_name, t('all_experiences.unknown_creator'))
+  const { creatorName, avatarFace } = useCreatorProfile(event.user, event.user_name, t('all_hangouts.unknown_creator'))
   const { copied, handleCopy, handleAddToCalendar } = useCardActions({
     name: event.name,
     description: event.description,
     startAt: event.start_at,
     finishAt: event.finish_at,
     x: event.x,
-    y: event.y
+    y: event.y,
+    realm: resolveEventRealm(event.world, event.server)
   })
   const { isReminded, isLoading: isRemindLoading, isShaking, handleToggle: handleRemindToggle } = useRemindMe(event.id, event.attending)
 
@@ -75,23 +77,23 @@ const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
               isReminded={isReminded}
               isLoading={isRemindLoading}
               isShaking={isShaking}
-              label={t('all_experiences.remind_me')}
+              label={t('all_hangouts.remind_me')}
               onClick={handleRemindToggle}
             />
           ) : (
             <ActionTextButton onClick={handleAddToCalendar}>
               <CalendarIcon />
-              <ActionTextLabel>{t('all_experiences.add_to_calendar')}</ActionTextLabel>
+              <ActionTextLabel>{t('all_hangouts.add_to_calendar')}</ActionTextLabel>
             </ActionTextButton>
           )}
           {hasValidIdentity && (
-            <Tooltip title={t('all_experiences.add_to_calendar')} placement="top" arrow>
+            <Tooltip title={t('all_hangouts.add_to_calendar')} placement="top" arrow>
               <ActionButton onClick={handleAddToCalendar}>
                 <CalendarIcon />
               </ActionButton>
             </Tooltip>
           )}
-          <Tooltip title={copied ? t('all_experiences.copied') : t('all_experiences.copy_link')} placement="top" arrow>
+          <Tooltip title={copied ? t('all_hangouts.copied') : t('all_hangouts.copy_link')} placement="top" arrow>
             <ActionButton onClick={handleCopy}>
               <CopyIcon />
             </ActionButton>

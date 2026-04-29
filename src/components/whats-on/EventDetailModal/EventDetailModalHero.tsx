@@ -7,12 +7,14 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import EditIcon from '@mui/icons-material/Edit'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTranslation } from '@dcl/hooks'
-import { Tooltip, useTheme } from 'decentraland-ui2'
+import { LiveBadge, Tooltip, useTheme } from 'decentraland-ui2'
+import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCanEditEvent } from '../../../hooks/useCanEditEvent'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { formatEthAddress } from '../../../utils/avatar'
-import { buildCalendarUrl } from '../../../utils/whatsOnUrl'
+import { buildCalendarUrl, buildEventShareUrl } from '../../../utils/whatsOnUrl'
+import { JumpInButton } from '../../jump/JumpInButton'
 import { RemindMeIcon } from '../common/RemindMeIcon'
 import type { ModalEventData } from './EventDetailModal.types'
 import {
@@ -32,8 +34,9 @@ import {
   HeroImage,
   HeroOverlay,
   HeroSection,
-  JumpInButton,
+  LiveBadgeWrapper,
   ModalTitle,
+  PrimaryActionButton,
   SecondaryButton
 } from './EventDetailModal.styled'
 
@@ -43,6 +46,7 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const [copied, setCopied] = useState(false)
   const { isReminded, isLoading: isRemindLoading, isShaking, handleToggle: handleRemindToggle } = useRemindMe(data.id, data.attending)
+  const { hasValidIdentity } = useAuthIdentity()
 
   const creatorFallback = data.creatorAddress ? formatEthAddress(data.creatorAddress) : undefined
   const { creatorName, avatarFace } = useCreatorProfile(data.creatorAddress, data.creatorName, creatorFallback)
@@ -50,26 +54,29 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
   const { canEdit } = useCanEditEvent(data.creatorAddress)
   const showEdit = canEdit && Boolean(onEdit) && data.isEvent
 
-  const handleJumpIn = useCallback(() => {
-    window.open(data.url, '_blank', 'noopener,noreferrer')
-  }, [data.url])
+  const isFutureEvent = data.isEvent && !data.live
+  const showRemindMePrimary = isFutureEvent && hasValidIdentity
+  const showCalendarPrimary = isFutureEvent && !hasValidIdentity && Boolean(data.startAt)
+  const showRemindMeSecondary = isFutureEvent && !hasValidIdentity
+  const showCalendarSecondary = !showCalendarPrimary && Boolean(data.startAt)
 
   const handleCopy = useCallback(() => {
+    const shareUrl = data.isEvent ? buildEventShareUrl(data.id, data.live) : data.url
     navigator.clipboard
-      ?.writeText(data.url)
+      ?.writeText(shareUrl)
       ?.then(() => {
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
       })
       .catch(err => console.warn('[EventDetailModal] Failed to copy:', err))
-  }, [data.url])
+  }, [data.id, data.isEvent, data.live, data.url])
 
   const handleAddToCalendar = useCallback(() => {
     const url = buildCalendarUrl(data)
     if (url) window.open(url, '_blank', 'noopener,noreferrer')
   }, [data])
 
-  const subtitle = data.live ? t('event_detail.live_now') : data.categories[0] || null
+  const categorySubtitle = data.categories[0] ?? null
 
   return (
     <>
@@ -80,7 +87,13 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
           {isMobile ? <ArrowBackIosNewIcon sx={{ fontSize: 20, color: '#FCFCFC' }} /> : <CloseIconStyled />}
         </CloseButton>
         <HeroContent>
-          {subtitle && <CategoryLabel>{subtitle}</CategoryLabel>}
+          {data.live ? (
+            <LiveBadgeWrapper>
+              <LiveBadge />
+            </LiveBadgeWrapper>
+          ) : (
+            categorySubtitle && <CategoryLabel>{categorySubtitle}</CategoryLabel>
+          )}
           <ModalTitle id="event-detail-title">{data.name}</ModalTitle>
           {hasCreator && (
             <CreatorRow>
@@ -92,15 +105,31 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
             </CreatorRow>
           )}
           <ActionsRow>
-            <JumpInButton onClick={handleJumpIn}>{t('event_detail.jump_in')}</JumpInButton>
-            {data.isEvent && !data.live && (
+            {data.live && (
+              <JumpInButton position={`${data.x},${data.y}`} size="medium">
+                {t('event_detail.jump_in')}
+              </JumpInButton>
+            )}
+            {showRemindMePrimary && (
+              <PrimaryActionButton onClick={handleRemindToggle} disabled={isRemindLoading} aria-label={t('event_detail.remind_me')}>
+                <RemindMeIcon active={isReminded} shaking={isShaking} size={20} />
+                {t('event_detail.remind_me')}
+              </PrimaryActionButton>
+            )}
+            {showCalendarPrimary && (
+              <PrimaryActionButton onClick={handleAddToCalendar} aria-label={t('event_detail.add_to_calendar')}>
+                <CalendarMonthIcon fontSize="small" />
+                {t('event_detail.add_to_calendar')}
+              </PrimaryActionButton>
+            )}
+            {showRemindMeSecondary && (
               <Tooltip title={t('event_detail.remind_me')} placement="top" arrow>
                 <SecondaryButton onClick={handleRemindToggle} disabled={isRemindLoading} aria-label={t('event_detail.remind_me')}>
                   <RemindMeIcon active={isReminded} shaking={isShaking} size={20} />
                 </SecondaryButton>
               </Tooltip>
             )}
-            {data.startAt && (
+            {showCalendarSecondary && (
               <Tooltip title={t('event_detail.add_to_calendar')} placement="top" arrow>
                 <SecondaryButton onClick={handleAddToCalendar} aria-label={t('event_detail.add_to_calendar')}>
                   <CalendarMonthIcon fontSize="small" />

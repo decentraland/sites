@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import decentralandLogo from '../../images/jump/decentraland-logo.svg'
+import { resolveEventRealm } from '../../utils/whatsOnUrl'
 import type { CardData, JumpEvent, JumpPlace } from './jump.types'
 
 const FOUNDATION_CONTACT_NAME = 'Decentraland Foundation'
@@ -60,7 +61,7 @@ function fromEvent(data: JumpEvent): CardData {
     scene_name: data.scene_name,
     url: data.url,
     position: data.coordinates.join(','),
-    realm: data.world && data.server ? data.server : undefined
+    realm: resolveEventRealm(data.world, data.server)
   }
 }
 

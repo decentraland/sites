@@ -14,6 +14,7 @@ import type {
   EventsQueryParams,
   EventsResponse,
   GetCommunitiesParams,
+  GetEventByIdParams,
   PosterData,
   PosterResponse,
   ToggleAttendeeParams,
@@ -129,6 +130,27 @@ const eventsClient = createApi({
       },
       providesTags: ['Events']
     }),
+    getEventById: build.query<EventEntry, GetEventByIdParams>({
+      serializeQueryArgs: ({ queryArgs: { eventId, identity } }) => ({ eventId, authenticated: Boolean(identity) }),
+      queryFn: async ({ eventId, identity }) => {
+        try {
+          const baseUrl = getEnv('EVENTS_API_URL')!
+          const response = await fetchWithOptionalIdentity(`${baseUrl}/events/${encodeURIComponent(eventId)}`, identity)
+
+          if (!response.ok) {
+            const envelope = await response.json().catch(() => null)
+            console.error('[Events] getEventById failed', response.status, envelope)
+            return { error: { status: response.status, data: envelope } }
+          }
+
+          const envelope: CreateEventResponse = await response.json()
+          return { data: envelope.data }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      },
+      providesTags: (_result, _error, { eventId }) => [{ type: 'Events', id: eventId }]
+    }),
     createEvent: build.mutation<CreateEventResponse, CreateEventParams>({
       queryFn: async ({ payload, identity }) => {
         try {
@@ -139,9 +161,8 @@ const eventsClient = createApi({
 
           if (!response.ok) {
             const envelope = await response.json().catch(() => null)
-            const message = typeof envelope?.error === 'string' ? envelope.error : `Failed to create event (${response.status})`
             console.error('[Events] createEvent failed', response.status, envelope)
-            return { error: { status: response.status, data: envelope, message } }
+            return { error: { status: response.status, data: envelope } }
           }
 
           const data: CreateEventResponse = await response.json()
@@ -168,9 +189,8 @@ const eventsClient = createApi({
 
           if (!response.ok) {
             const envelope = await response.json().catch(() => null)
-            const message = typeof envelope?.error === 'string' ? envelope.error : `Failed to update event (${response.status})`
             console.error('[Events] updateEvent failed', response.status, envelope)
-            return { error: { status: response.status, data: envelope, message } }
+            return { error: { status: response.status, data: envelope } }
           }
 
           const data: CreateEventResponse = await response.json()
@@ -281,6 +301,7 @@ const eventsClient = createApi({
 const {
   useCreateEventMutation,
   useGetCommunitiesQuery,
+  useGetEventByIdQuery,
   useGetEventsQuery,
   useGetLiveNowCardsQuery,
   useGetUpcomingEventsQuery,
@@ -295,6 +316,7 @@ export {
   eventsClient,
   useCreateEventMutation,
   useGetCommunitiesQuery,
+  useGetEventByIdQuery,
   useGetEventsQuery,
   useGetLiveNowCardsQuery,
   useGetUpcomingEventsQuery,

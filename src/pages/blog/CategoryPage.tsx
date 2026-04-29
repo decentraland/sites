@@ -9,6 +9,7 @@ import { SEO } from '../../components/blog/SEO/SEO'
 import { getEnv } from '../../config/env'
 import { useGetBlogCategoryBySlugQuery } from '../../features/blog/blog.client'
 import { useInfiniteBlogPosts } from '../../features/blog/useInfiniteBlogPosts'
+import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
 import type { BlogCategory } from '../../shared/blog/types/blog.domain'
 import { CenteredBox } from './shared.styled'
 
@@ -43,6 +44,11 @@ export const CategoryPage = () => {
   })
 
   const baseUrl = getEnv('BLOG_BASE_URL') || ''
+
+  useBlogPageTracking({
+    name: category?.title,
+    properties: category ? { title: category.title, categorySlug: category.slug } : undefined
+  })
 
   if (categoryError) {
     return (

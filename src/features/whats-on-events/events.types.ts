@@ -30,6 +30,7 @@ interface EventEntry {
   scene_name: string | null
   approved: boolean
   rejected: boolean
+  rejection_reason: string | null
   highlighted: boolean
   trending: boolean
   recurrent: boolean
@@ -68,6 +69,7 @@ interface EventsQueryParams {
   position?: string
   creator?: string
   schedule?: string
+  owner?: boolean
 }
 
 interface AuthenticatedQueryParams {
@@ -120,15 +122,24 @@ interface CreateEventParams {
   identity: AuthIdentity
 }
 
+interface UpdateEventPayload extends Partial<CreateEventPayload> {
+  rejected?: boolean
+}
+
 interface UpdateEventParams {
   eventId: string
-  payload: Partial<CreateEventPayload>
+  payload: UpdateEventPayload
   identity: AuthIdentity
 }
 
 interface CreateEventResponse {
   ok: boolean
   data: EventEntry
+}
+
+interface GetEventByIdParams {
+  eventId: string
+  identity?: AuthIdentity
 }
 
 interface PosterData {
@@ -179,10 +190,12 @@ export type {
   EventsQueryParams,
   EventsResponse,
   GetCommunitiesParams,
+  GetEventByIdParams,
   PosterData,
   PosterResponse,
   RecurrentFrequency,
   ToggleAttendeeParams,
   UpdateEventParams,
+  UpdateEventPayload,
   UploadPosterParams
 }

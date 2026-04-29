@@ -18,16 +18,6 @@ jest.mock('../../../features/whats-on-events', () => ({
   useGetEventsQuery: (...args: unknown[]) => mockUseGetEventsQuery(...args)
 }))
 
-const mockUseGetAdminEventsQuery = jest.fn()
-jest.mock('../../../features/whats-on/admin/admin.client', () => ({
-  useGetAdminEventsQuery: (...args: unknown[]) => mockUseGetAdminEventsQuery(...args)
-}))
-
-const mockUseAdminPermissions = jest.fn()
-jest.mock('../../../hooks/useAdminPermissions', () => ({
-  useAdminPermissions: () => mockUseAdminPermissions()
-}))
-
 const mockColumnCount = jest.fn()
 jest.mock('../../../hooks/useVisibleColumnCount', () => ({
   useVisibleColumnCount: () => mockColumnCount()
@@ -37,15 +27,15 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
-        'all_experiences.title': 'All Experiences',
-        'all_experiences.tab_all': 'All Experiences',
-        'all_experiences.tab_my': 'My Experiences',
-        'all_experiences.today': 'Today',
-        'all_experiences.tomorrow': 'Tomorrow',
-        'all_experiences.navigate_previous': 'Navigate to previous dates',
-        'all_experiences.navigate_next': 'Navigate to next dates',
-        'my_experiences.empty_title': "You don't have any event created",
-        'my_experiences.empty_cta': 'Create Event'
+        'all_hangouts.title': 'All Hangouts',
+        'all_hangouts.tab_all': 'All Hangouts',
+        'all_hangouts.tab_my': 'My Hangouts',
+        'all_hangouts.today': 'Today',
+        'all_hangouts.tomorrow': 'Tomorrow',
+        'all_hangouts.navigate_previous': 'Navigate to previous dates',
+        'all_hangouts.navigate_next': 'Navigate to next dates',
+        'my_hangouts.empty_title': "You don't have any hangout created",
+        'my_hangouts.empty_cta': 'Create Hangout'
       }
       return translations[key] ?? key
     }
@@ -132,8 +122,6 @@ describe('AllExperiences', () => {
     jest.useFakeTimers()
     jest.setSystemTime(new Date(2026, 8, 13, 10, 0, 0))
     mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
-    mockUseAdminPermissions.mockReturnValue({ isAdmin: false, hasIdentity: false, isLoading: false, permissions: [] })
-    mockUseGetAdminEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
   })
 
   afterEach(() => {
@@ -151,7 +139,7 @@ describe('AllExperiences', () => {
     it('should render the section title', () => {
       render(<AllExperiences />)
 
-      expect(screen.getByTestId('section-title')).toHaveTextContent('All Experiences')
+      expect(screen.getByTestId('section-title')).toHaveTextContent('All Hangouts')
     })
 
     it('should not render the tabs switcher', () => {
@@ -169,7 +157,7 @@ describe('AllExperiences', () => {
     it('should set aria-label on the section', () => {
       render(<AllExperiences />)
 
-      expect(screen.getByTestId('all-experiences-section')).toHaveAttribute('aria-label', 'All Experiences')
+      expect(screen.getByTestId('all-experiences-section')).toHaveAttribute('aria-label', 'All Hangouts')
     })
 
     it('should pass startOffset=0 to DateNavigation initially', () => {
@@ -184,13 +172,10 @@ describe('AllExperiences', () => {
       expect(screen.queryByTestId('event-detail-modal')).not.toBeInTheDocument()
     })
 
-    it('should query events with list=active and no creator filter', () => {
+    it('should query events with list=active without owner flag', () => {
       render(<AllExperiences />)
 
-      expect(mockUseGetEventsQuery).toHaveBeenCalledWith(
-        expect.objectContaining({ list: 'active', creator: undefined }),
-        expect.any(Object)
-      )
+      expect(mockUseGetEventsQuery).toHaveBeenCalledWith(expect.objectContaining({ list: 'active', owner: undefined }), expect.any(Object))
     })
   })
 
@@ -387,15 +372,21 @@ describe('AllExperiences', () => {
         mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
       })
 
-      it('should query events filtered by creator with list=all', () => {
+      it('should query events with owner=true and identity, no creator param', () => {
         render(<AllExperiences />)
 
         fireEvent.click(screen.getByTestId('tab-my'))
 
-        expect(mockUseGetEventsQuery).toHaveBeenLastCalledWith(
-          expect.objectContaining({ list: 'all', creator: '0xCreator' }),
-          expect.any(Object)
-        )
+        const lastCall = mockUseGetEventsQuery.mock.calls.at(-1)?.[0] as {
+          list?: string
+          owner?: boolean
+          creator?: unknown
+          identity?: unknown
+        }
+        expect(lastCall.list).toBe('all')
+        expect(lastCall.owner).toBe(true)
+        expect(lastCall.creator).toBeUndefined()
+        expect(lastCall.identity).toBeDefined()
       })
 
       it('should force a refetch when mounting the my tab so newly created events are visible', () => {
@@ -448,10 +439,9 @@ describe('AllExperiences', () => {
       })
     })
 
-    describe('and the user is an admin with rejected events in the future', () => {
+    describe("and the owner=true response includes the caller's rejected events", () => {
       beforeEach(() => {
-        mockUseAdminPermissions.mockReturnValue({ isAdmin: true, hasIdentity: true, isLoading: false, permissions: [] })
-        mockUseGetAdminEventsQuery.mockReturnValue({
+        mockUseGetEventsQuery.mockReturnValue({
           data: [
             createMockEvent({
               id: 'mine-approved',
@@ -483,10 +473,13 @@ describe('AllExperiences', () => {
         })
       })
 
-      it('should include rejected events in my experiences by sourcing them from the admin endpoint', () => {
+      it('should render rejected events alongside approved ones and drop foreign creators as a defensive guard', () => {
         render(<AllExperiences />)
 
         fireEvent.click(screen.getByTestId('tab-my'))
+
+        const lastCall = mockUseGetEventsQuery.mock.calls.at(-1)?.[0] as { owner?: boolean }
+        expect(lastCall.owner).toBe(true)
 
         const cardIds = screen.getAllByTestId('my-exp-grid-card').map(c => c.getAttribute('data-id'))
         expect(cardIds).toContain('mine-rejected-future')

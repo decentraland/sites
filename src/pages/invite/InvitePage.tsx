@@ -23,10 +23,10 @@ async function resolveReferrerProfile(referrer: string): Promise<Profile | null>
     address = referrer
   } else {
     try {
-      const response = await fetch(`${peerUrl}/lambdas/users/${encodeURIComponent(referrer)}/names`, { signal })
+      const response = await fetch(`${peerUrl}/lambdas/names/${encodeURIComponent(referrer)}/owner`, { signal })
       const data = await response.json()
-      if (data?.[0]?.owner) {
-        address = data[0].owner
+      if (data?.owner) {
+        address = data.owner
       }
     } catch {
       // Name resolution failed

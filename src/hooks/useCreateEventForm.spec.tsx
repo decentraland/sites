@@ -82,6 +82,8 @@ function fillValidForm(setField: ReturnType<typeof useCreateEventForm>['setField
     setField('coordX', values.coordX)
     setField('coordY', values.coordY)
     setField('email', values.email)
+    setField('imageUrl', 'https://cdn/test.png')
+    setField('imagePreviewUrl', 'https://cdn/test.png')
   })
 }
 
@@ -842,6 +844,37 @@ describe('useCreateEventForm', () => {
     })
   })
 
+  describe('when initialCommunityId is provided in create mode', () => {
+    it('should pre-fill communityId in the form state', () => {
+      const { result } = renderHook(() => useCreateEventForm({ initialCommunityId: 'community-from-url' }))
+
+      expect(result.current.form.communityId).toBe('community-from-url')
+    })
+
+    it('should ship the pre-filled community_id in the create payload', async () => {
+      const { result } = renderHook(() => useCreateEventForm({ initialCommunityId: 'community-from-url' }))
+
+      fillValidForm(result.current.setField)
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({ community_id: 'community-from-url' })
+        })
+      )
+    })
+
+    it('should be ignored when initialEvent is also provided so edit mode keeps the event community', () => {
+      const initialEvent = buildInitialEvent({ community_id: 'event-community' })
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent, initialCommunityId: 'url-community' }))
+
+      expect(result.current.form.communityId).toBe('event-community')
+    })
+  })
+
   describe('when initialEvent is provided (edit mode)', () => {
     it('should expose mode="edit" and hydrate form fields from the event', () => {
       const initialEvent = buildInitialEvent()
@@ -909,6 +942,30 @@ describe('useCreateEventForm', () => {
       expect(mockUpdateEvent).toHaveBeenCalled()
       expect(result.current.errors.submit).toBe('create_event.error_submit')
       expect(onSuccess).not.toHaveBeenCalled()
+    })
+
+    it('should send rejected=false when editing an event that was previously rejected so it returns to pending', async () => {
+      const initialEvent = buildInitialEvent({ rejected: true })
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent }))
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      const lastCall = mockUpdateEvent.mock.calls.at(-1)?.[0] as { payload: Record<string, unknown> }
+      expect(lastCall.payload).toEqual(expect.objectContaining({ rejected: false }))
+    })
+
+    it('should not include rejected when editing an event that was not rejected', async () => {
+      const initialEvent = buildInitialEvent({ rejected: false })
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent }))
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      const lastCall = mockUpdateEvent.mock.calls.at(-1)?.[0] as { payload: Record<string, unknown> }
+      expect(lastCall.payload).not.toHaveProperty('rejected')
     })
   })
 })

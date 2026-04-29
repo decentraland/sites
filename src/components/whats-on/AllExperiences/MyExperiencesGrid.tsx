@@ -14,7 +14,7 @@ const MyExperiencesGrid = memo(function MyExperiencesGrid({ events, onCardClick 
 
   return (
     <GridPanel>
-      <GridTitle variant="h6">{t('my_experiences.hosted_by_me')}</GridTitle>
+      <GridTitle variant="h6">{t('my_hangouts.hosted_by_me')}</GridTitle>
       <CardGrid>
         {events.map(event => (
           <PendingEventCard key={event.id} event={event} onClick={onCardClick} />

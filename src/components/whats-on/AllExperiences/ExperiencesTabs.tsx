@@ -33,7 +33,7 @@ const ExperiencesTabs = memo(({ value, onChange, panelId }: ExperiencesTabsProps
   )
 
   return (
-    <TabsRow ref={listRef} role="tablist" aria-label={t('all_experiences.title')}>
+    <TabsRow ref={listRef} role="tablist" aria-label={t('all_hangouts.title')}>
       {TAB_ORDER.map(tab => {
         const isActive = tab === value
         return (
@@ -49,7 +49,7 @@ const ExperiencesTabs = memo(({ value, onChange, panelId }: ExperiencesTabsProps
             onClick={handleTabClick(tab)}
             onKeyDown={handleKeyDown}
           >
-            {t(tab === 'all' ? 'all_experiences.tab_all' : 'all_experiences.tab_my')}
+            {t(tab === 'all' ? 'all_hangouts.tab_all' : 'all_hangouts.tab_my')}
           </TabButton>
         )
       })}

@@ -136,7 +136,8 @@
       },
       "whats_on": {
         "title": "Mirá lo que está pasando",
-        "live": "En vivo"
+        "live": "En vivo",
+        "view_all": "Ver todo"
       }
     }
   },
@@ -510,5 +511,9 @@
         "whats_on": "Explorar"
       }
     }
+  },
+  "create_event": {
+    "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
+    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
   }
 }

@@ -5,65 +5,128 @@ const TermsOfUseContent = memo(() => (
   <>
     <Section id="acceptance-of-terms">
       <SectionTitle>1. Acceptance of Terms</SectionTitle>
+
+      <SubsectionTitle id="section-1-1">1.1 Introduction</SubsectionTitle>
       <Paragraph>
-        The Decentraland Foundation (the &quot;Foundation&quot;), acting for the benefit of the Decentraland community as a whole, holds the
-        intellectual property rights over, and makes available, (a) the DCL Client, the Desktop Client, the SDK 5.0, the Marketplace (
-        <a href="https://market.decentraland.org" target="_blank" rel="noopener noreferrer">
-          https://market.decentraland.org
-        </a>
-        ), the Builder, the Blog, Events, Agora, Forum, the Land Manager, the Command Line Interface, DAO, the Developers&apos; Hub, the
-        Rewards tool which, with any other features, tools and/or materials made available from time to time by the Foundation, are referred
-        to herein as the &quot;Tools&quot; and (b) the website{' '}
-        <a href="https://decentraland.org" target="_blank" rel="noopener noreferrer">
-          https://decentraland.org
-        </a>{' '}
-        (the &quot;Site&quot;). Please read these Terms of Use (the &quot;Terms&quot; or &quot;Terms of Use&quot;) carefully before using
-        the Tools and the Site. By using or otherwise accessing the Tools and the Site, you: (1) accept and agree to be bound by these
-        Terms; (2) accept that the Tools are still in testing phase and that you use at your own risk, as further explained in Section 2
-        below; (3) represent that you are old enough to use the Tools and the Site pursuant to Sections 3 and 9 below; (4) consent to the
-        collection, use, disclosure and other handling of information as described in the Privacy Policy, available here{' '}
-        <a href="https://decentraland.org/privacy" target="_blank" rel="noopener noreferrer">
-          https://decentraland.org/privacy
-        </a>
-        ; (5) accept and agree (5.1.) the Content Policy approved by the DAO, available here{' '}
-        <a href="https://decentraland.org/content" target="_blank" rel="noopener noreferrer">
-          https://decentraland.org/content
-        </a>
-        , and (5.2.) any additional terms and conditions of participation issued by the Foundation from time to time. If you do not agree to
-        the Terms, then you must not access or use the Tools or the Site.
+        The Decentraland Platform (&quot;Decentraland Platform&quot;) is a community-driven virtual space supported by Decentraland
+        Foundation (the &quot;Foundation&quot;) and guided by its users through transparent governance.
       </Paragraph>
       <Paragraph>
-        As per the endowment received, the Foundation makes available the Tools and the Site free of charge in order to allow different
-        interactions with the Decentraland platform (&quot;Decentraland&quot;), a decentralized virtual world. The Foundation does not own
-        or control Decentraland, as ownership and governance is decentralized in the community through the DAO.
+        The Foundation does not own or control Decentraland platform. Ownership and governance are decentralized and rest with the community
+        through a decentralized autonomous organization (the &quot;DAO&quot;).
       </Paragraph>
       <Paragraph>
-        Decentraland is governed by a decentralized autonomous organization (the &quot;DAO&quot;). For further information please see{' '}
+        For more information about the DAO, please visit{' '}
         <a href="https://dao.decentraland.org" target="_blank" rel="noopener noreferrer">
           https://dao.decentraland.org
         </a>
         .
       </Paragraph>
       <Paragraph>
-        The Foundation has no continuing obligation to operate the Tools and the Site and may cease to operate one or more of the Tools in
-        the future, at its exclusive discretion, with no liability whatsoever in connection thereto.
+        The Foundation, the DAO and any other entity related to each of the above shall be referred herein jointly as
+        &quot;Decentraland&quot;.
+      </Paragraph>
+
+      <SubsectionTitle id="section-1-2">1.2 Services</SubsectionTitle>
+      <Paragraph>
+        The Foundation, acting for the benefit of the Decentraland community as a whole, holds the intellectual property rights over, and
+        makes available, the following:
       </Paragraph>
       <Paragraph>
-        With respect to the source code of the software of the Tools that has been released under an open source license, such software code
-        must be used in accordance with the applicable open source license terms and conditions as described in Section 13 below. Other
-        similar tools might be developed in the future by the community or third parties.
+        (a) <strong>Clients</strong>, -the software applications through which users access Decentraland, including:
+      </Paragraph>
+      <BulletList>
+        <li>the DCL Client (original Web Client) and Desktop Client;</li>
+        <li>
+          The SDK 7.0, together with versions distributed through third party stores (such as the Epic Game Store, Google Play Store, Apple
+          App Store, among others);
+        </li>
+        <li>
+          The Bevy Client (*) accessible via browser at{' '}
+          <a href="https://decentraland.zone/bevy-web" target="_blank" rel="noopener noreferrer">
+            decentraland.zone/bevy-web
+          </a>
+          ;
+        </li>
+        <li>the Mobile Android Client (*) available via Google Play Store;</li>
+        <li>the Mobile iOS Client (*), available via Apple App Store, and,</li>
+        <li>any future Client or update developed by Decentraland.</li>
+      </BulletList>
+      <Paragraph>All of the above, individually and collectively, are referred as the &quot;Clients&quot;.</Paragraph>
+      <Paragraph>
+        (b) <strong>Tools</strong>, -additional features and services made available by Decentraland, including the Marketplace (
+        <a href="https://market.decentraland.org" target="_blank" rel="noopener noreferrer">
+          https://market.decentraland.org
+        </a>
+        ), the Builder, the Blog, Events, Agora, Forum, the Land Manager, the Command Line Interface, the DAO interface, the
+        Developers&apos; Hub, the Rewards tool, and any other features, tools and/or materials made available from time to time. These are
+        collectively referred as the &quot;Tools&quot;.
+      </Paragraph>
+      <Paragraph>
+        (c) <strong>the Site</strong>, the website located at{' '}
+        <a href="https://decentraland.org" target="_blank" rel="noopener noreferrer">
+          https://decentraland.org
+        </a>{' '}
+        (the &quot;Site&quot;).
+      </Paragraph>
+      <Paragraph>The Clients, the Tools and the Site are collectively referred as the &quot;Services&quot;.</Paragraph>
+
+      <SubsectionTitle id="section-1-3">1.3 Agreement to these Terms</SubsectionTitle>
+      <Paragraph>
+        Please read these Terms of Use (the &quot;Terms&quot; or &quot;Terms of Use&quot;) carefully before using the Services.
+      </Paragraph>
+      <Paragraph>By accessing or using any of the Services, you confirm that you:</Paragraph>
+      <Paragraph>1. Accept and agree to be bound by these Terms;</Paragraph>
+      <Paragraph>
+        2. Acknowledge that the Clients and the Tools are still in testing phase and that you use at your own risk, as further explained in
+        Section 2 below;
+      </Paragraph>
+      <Paragraph>
+        3. Represent that you are old enough to use the Clients, the Tools and the Site pursuant to Sections 3 and 8 below;
+      </Paragraph>
+      <Paragraph>
+        4. Consent to the collection, use, disclosure, handling of information as described in the Privacy Policy, available here{' '}
+        <a href="https://decentraland.org/privacy" target="_blank" rel="noopener noreferrer">
+          https://decentraland.org/privacy
+        </a>
+        ;
+      </Paragraph>
+      <Paragraph>
+        5. Accept and agree, the Content Policy, available here{' '}
+        <a href="https://decentraland.org/content" target="_blank" rel="noopener noreferrer">
+          https://decentraland.org/content
+        </a>
+        , and any additional terms and conditions of participation issued by the Foundation from time to time.
+      </Paragraph>
+      <Paragraph>If you do not agree to the Terms, then you must not access or use the Services.</Paragraph>
+
+      <SubsectionTitle id="section-1-4">1.4 Free access</SubsectionTitle>
+      <Paragraph>
+        Funded through its endowment, the Foundation makes available the Services free of charge to enable interactions with the
+        Decentraland platform.
+      </Paragraph>
+      <Paragraph>
+        Decentraland has no continuing obligation to operate the Services and may cease to operate one or more of the Clients, the Tools
+        and/or the Site in the future, at its exclusive discretion, with no liability whatsoever in connection thereto.
+      </Paragraph>
+
+      <SubsectionTitle id="section-1-5">1.5 Open Source Software</SubsectionTitle>
+      <Paragraph>
+        With respect to the source code of the software of the Clients and the Tools that has been released under an open source license,
+        such software code must be used in accordance with the applicable open source license terms and conditions as described in Section
+        13 below. Other similar tools might be developed in the future by the community or third parties.
       </Paragraph>
     </Section>
 
     <Section id="disclaimer-and-modification">
       <SectionTitle>2. Disclaimer and Modification of Terms of Use</SectionTitle>
       <Paragraph>
-        The Tools are provided on an &quot;as is&quot; and &quot;as available&quot; basis and may contain defects and software bugs. You are
-        advised to safeguard important data, property and content, to use caution, and not to rely in any way on the correct or secure
+        The Services are provided on an &quot;as is&quot; and &quot;as available&quot; basis and may contain defects and software bugs. You
+        are advised to safeguard important data, property and content, to use caution, and not to rely in any way on the correct or secure
         functionality or performance of the Tools.
       </Paragraph>
       <Paragraph>
-        Except for Section 17, providing for binding arbitration and waiver of class action rights, as detailed in Section 7, the Foundation
+        Except for Section 18, providing for binding arbitration and waiver of class action rights, as detailed in Section 7, the Foundation
         reserves the right, at the sole discretion of the DAO, to modify or replace the Terms of Use at any time. The most current version
         of these Terms will be posted on the Site. You shall be responsible for reviewing and becoming familiar with any such modifications.
         Use of the Tools by you after any modification to the Terms constitutes your acceptance of the Terms of Use as modified.
@@ -74,12 +137,12 @@ const TermsOfUseContent = memo(() => (
       <SectionTitle>3. Eligibility</SectionTitle>
       <Paragraph>
         You hereby represent and warrant that you are fully able and competent to enter into the terms, conditions, obligations,
-        affirmations, representations and warranties set forth in these Terms and to abide by and comply with these Terms. Decentraland is a
-        global platform and by accessing the Content, the Site or Tools, you are representing and warranting that you are of the legal age
-        of majority in your jurisdiction as is required to access such Tools and Content and enter into arrangements as provided by the
-        Tools. You further represent that you are otherwise legally permitted to use the Tools in your jurisdiction including owning
-        cryptographic tokens, and interacting with the Site, Tools or Content in any way. You further represent that you are responsible for
-        ensuring compliance with the laws of your jurisdiction and acknowledge that the Foundation is not liable for your compliance or
+        affirmations, representations and warranties set forth in these Terms and to abide by and comply with these Terms. Decentraland
+        Platform is a global platform and by accessing the Services, you are representing and warranting that you are of the legal age of
+        majority in your jurisdiction as is required to access such Services and Content and enter into arrangements as provided by the
+        Tools. You further represent that you are otherwise legally permitted to use the Services in your jurisdiction including owning
+        cryptographic tokens, and interacting with the Services or Content in any way. You further represent that you are responsible for
+        ensuring compliance with the laws of your jurisdiction and acknowledge that Decentraland is not liable for your compliance or
         failure to comply with such laws. You further represent and warrant that all funds or assets used by you have been lawfully obtained
         by you in compliance with all applicable laws.
       </Paragraph>
@@ -88,39 +151,39 @@ const TermsOfUseContent = memo(() => (
     <Section id="account-access-and-security">
       <SectionTitle>4. Account Access and Security</SectionTitle>
       <Paragraph>
-        Access to the Tools is provided via a third party private key manager selected by you (e.g., a Web3 Provider, Metamask, a USB
-        interface for Ledger Wallet, the Mist browser, or other). Security and secure access to each account in the Tools is provided solely
-        by the third party private key manager you select to administer your private key. You and the third party private key manager you
-        select are entirely responsible for security related to access of the Tools and all information provided by you to such third party
-        provider (including without limitation, email or phone number). The DAO and/or the Foundation bear no responsibility for any breach
-        of security or unauthorized access to your account (the &quot;Account&quot;). You are advised to: (a) avoid any use of the same
-        password with your selected third party private key manager that you have ever used outside of the third party private key manager;
-        and (b) keep your password and any related secret information secure and confidential and do not share them with anyone else.
+        Access to the Services is provided via a third party private key manager selected by you (e.g., a Web3 Provider, Metamask, a USB
+        interface for Ledger Wallet, the Mist browser, or other). Security and secure access to each account in the Services is provided
+        solely by the third party private key manager you select to administer your private key. You and the third party private key manager
+        you select are entirely responsible for security related to access of the Services and all information provided by you to such third
+        party provider (including without limitation, email or phone number). Decentraland bear no responsibility for any breach of security
+        or unauthorized access to your account (the &quot;Account&quot;). You are advised to: (a) avoid any use of the same password with
+        your selected third party private key manager that you have ever used outside of the third party private key manager; and (b) keep
+        your password and any related secret information secure and confidential and do not share them with anyone else.
       </Paragraph>
       <Paragraph>
         You are solely responsible for all activities conducted through your Account whether or not you authorize the activity. In the event
         that fraud, illegality or other conduct that violates this Agreement is discovered or reported (whether by you or someone else) that
-        is connected with your Account, the DAO may suspend or block your Account (or Accounts) as described in Section 15.
+        is connected with your Account, Decentraland may suspend or block your Account (or Accounts) as described in Section 15.
       </Paragraph>
       <Paragraph>
         You are solely responsible for maintaining the confidentiality of your password and for restricting access to your devices. You are
         solely responsible for any harm resulting from your disclosure, or authorization of the disclosure, of your password or from any
         person&apos;s use of your password to gain access to your Account. You acknowledge that in the event of any unauthorized use of or
-        access to your Account, password or other breach of security, you accept that due to the nature of the Tools and the platform
-        itself, the DAO and/or the Foundation will be unable to remedy any issues that arise.
+        access to your Account, password or other breach of security, you accept that due to the nature of the Services and the platform
+        itself, Decentraland will be unable to remedy any issues that arise.
       </Paragraph>
       <Paragraph>
-        The DAO and/or the Foundation will not be liable for any loss or damage (of any kind and under any legal theory) to you or any third
-        party arising from your inability or failure for any reason to comply with any of the foregoing obligations, or for any reason
-        whatsoever, except fraud on our part.
+        Decentraland will not be liable for any loss or damage (of any kind and under any legal theory) to you or any third party arising
+        from your inability or failure for any reason to comply with any of the foregoing obligations, or for any reason whatsoever, except
+        fraud on our part.
       </Paragraph>
       <Paragraph>
-        The DAO and/or the Foundation cannot and will not be liable for any loss or damage arising from your sharing or other loss of your
-        private key or related information, or any other damage or loss arising from unauthorized access to your Account.
+        Decentraland cannot and will not be liable for any loss or damage arising from your sharing or other loss of your private key or
+        related information, or any other damage or loss arising from unauthorized access to your Account.
       </Paragraph>
       <Paragraph>
         Transactions that take place using the Tools are confirmed and managed via the Ethereum blockchain. You understand that your
-        Ethereum public address will be made publicly visible whenever you engage in a transaction using the Tools.
+        Ethereum public address will be made publicly visible whenever you engage in a transaction using the Services.
       </Paragraph>
       <Paragraph>
         If you reside in a jurisdiction where online gambling is banned (such as the United States of America, China and South Korea) you
@@ -133,22 +196,21 @@ const TermsOfUseContent = memo(() => (
 
       <SubsectionTitle id="section-5-1">5.1 Disclaimer</SubsectionTitle>
       <Paragraph>
-        You acknowledge and agree that your use of the Tools and the Site is at your sole risk. The Tools and the Site are provided on an
-        &quot;AS IS&quot; and &quot;AS AVAILABLE&quot; basis, without warranties of any kind, either express or implied, including, without
-        limitation, implied warranties of merchantability, fitness for a particular purpose or non-infringement. You acknowledge and agree
-        that the DAO and/or the Foundation has no obligation to take any action regarding: which users gain access to or use the Tools; what
-        effects the Tools may have on you; the LAND you own; how you may interpret or use the Tools; or what actions you may take or fail to
-        take as a result of having been exposed to the Tools. You release the DAO and/or the Foundation from all liability for your
-        inability to access to the Site, Tools or any Content therein. The DAO and/or the Foundation is not and cannot be responsible for
-        and makes no representations, warranties or covenants concerning any Content contained in or accessed through the Site, Tools, and
-        the DAO and/or the Foundation will not be responsible or liable for the accuracy, copyright compliance, legality or decency of
-        material contained in or accessed through the Tools. The Content Policy over Decentraland is established and enforced exclusively by
-        the Decentraland community through the DAO.
+        You acknowledge and agree that your use of the Services is at your sole risk. The Services are provided on an &quot;AS IS&quot; and
+        &quot;AS AVAILABLE&quot; basis, without warranties of any kind, either express or implied, including, without limitation, implied
+        warranties of merchantability, fitness for a particular purpose or non-infringement. You acknowledge and agree that Decentraland has
+        no obligation to take any action regarding: which users gain access to or use the Services; what effects the Services may have on
+        you; the LAND you own; how you may interpret or use the Tools; or what actions you may take or fail to take as a result of having
+        been exposed to the Tools. You release Decentraland from all liability for your inability to access to the Services or any Content
+        therein. Decentraland is not and cannot be responsible for and makes no representations, warranties or covenants concerning any
+        Content contained in or accessed through the Services, and Decentraland will not be responsible or liable for the accuracy,
+        copyright compliance, legality or decency of material contained in or accessed through the Tools. The Content Policy over
+        Decentraland is established and enforced exclusively by the Decentraland community through the DAO.
       </Paragraph>
 
       <SubsectionTitle id="section-5-2">5.2 Sophistication and Risk of Cryptographic Systems</SubsectionTitle>
       <Paragraph>
-        By utilizing the Tools, the Site or interacting with the Tools or platform or anything contained or provided therein in any way, you
+        By utilizing the Services or interacting with the Tools or platform or anything contained or provided therein in any way, you
         represent that you understand the inherent risks associated with cryptographic systems; and warrant that you have an understanding
         of the usage, risks, potential bugs based on novel technology (where applicable), and intricacies of native cryptographic tokens,
         like Ether (ETH) and Bitcoin (BTC), smart contract based tokens such as those that follow the Ethereum Token Standard (
@@ -183,7 +245,7 @@ const TermsOfUseContent = memo(() => (
         Ethereum blockchain. The Foundation does not invite or make any offer to acquire, purchase, sell, transfer or otherwise deal in any
         crypto asset. Third parties may provide services involving the acquisition, purchase, sale, transfer or exchange of crypto-assets;
         the Foundation does not provide any such service and does not undertake any liability in connection thereto. You acknowledge and
-        agree these risks and represent that the Foundation cannot be held liable for changes and fluctuations in value or increased costs.
+        agree these risks and represent that Decentraland cannot be held liable for changes and fluctuations in value or increased costs.
       </Paragraph>
       <Paragraph>
         There are risks associated with using an Internet-based currency, including, but not limited to, the risk of hardware, software and
@@ -195,22 +257,22 @@ const TermsOfUseContent = memo(() => (
 
       <SubsectionTitle id="section-5-6">5.6 Application Security</SubsectionTitle>
       <Paragraph>
-        You acknowledge and agree that the Site, the Tools and related applications are software code and are subject to flaws and
-        acknowledge that you are solely responsible for evaluating any smart contract, code provided by the Site, Tools or Content and the
-        trustworthiness of any third-party websites, products, smart-contracts, or Content you access or use through the Tools. You further
-        expressly acknowledge and agree that Ethereum applications can be written maliciously or negligently, that the Foundation cannot be
-        held liable for your interaction with such applications and that such applications may cause the loss of property or even identity.
-        This warning and others later provided by the Foundation in no way evidence or represent an on-going duty to alert you to all of the
-        potential risks of utilizing the Tools or the Site.
+        You acknowledge and agree that the Services and related applications are software code and are subject to flaws and acknowledge that
+        you are solely responsible for evaluating any smart contract, code provided by the Services or Content and the trustworthiness of
+        any third-party websites, products, smart-contracts, or Content you access or use through the Tools. You further expressly
+        acknowledge and agree that Ethereum applications can be written maliciously or negligently, that Decentraland cannot be held liable
+        for your interaction with such applications and that such applications may cause the loss of property or even identity. This warning
+        and others later provided by Decentraland in no way evidence or represent an on-going duty to alert you to all of the potential
+        risks of utilizing the Tools or the Site.
       </Paragraph>
 
       <SubsectionTitle id="section-5-7">5.7 Third Party Providers</SubsectionTitle>
       <Paragraph>
-        The Foundation and/or the DAO, neither own nor control MetaMask, Ledger Wallet, the Mist browser, Google Chrome, the Ethereum
-        network, any Web3 Provider or any other third party site, product, or service that you might access, visit, or use for the purpose
-        of enabling you to use the various features of the Tools. The Foundation and/or the DAO shall not be liable for the acts or
-        omissions of any such third parties, nor shall the Foundation and/or the DAO be liable for any damage that you may suffer as a
-        result of your transactions or any other interaction with any such third parties.
+        Decentraland, neither own nor control MetaMask, Ledger Wallet, the Mist browser, Google Chrome, the Ethereum network, any Web3
+        Provider or any other third party site, product, or service that you might access, visit, or use for the purpose of enabling you to
+        use the various features of the Services. Decentraland shall not be liable for the acts or omissions of any such third parties, nor
+        shall Decentraland be liable for any damage that you may suffer as a result of your transactions or any other interaction with any
+        such third parties.
       </Paragraph>
 
       <SubsectionTitle id="section-5-8">5.8 Taxes</SubsectionTitle>
@@ -249,8 +311,8 @@ const TermsOfUseContent = memo(() => (
       <Paragraph>
         6.1 If you elect to purchase, trade, or sell a LAND parcel, Avatar, wearable or other non-fungible token (&quot;NFT&quot;) with or
         from other users via the Tools, any financial transaction that you engage in will be conducted solely through the Ethereum network,
-        Layer 2 solutions or other sidechains via Web3 providers. The Foundation will have no insight into or control over these payments or
-        transactions, nor does it have the ability to reverse any transactions. With that in mind, the Foundation will have no liability to
+        Layer 2 solutions or other sidechains via Web3 providers. Decentraland will have no insight into or control over these payments or
+        transactions, nor does it have the ability to reverse any transactions. With that in mind, Decentraland will have no liability to
         you or to any third party for any claims or damages that may arise as a result of any transactions that you engage in via the Tools,
         or any other transactions that you conduct via the Ethereum network, and other networks, sidechains, Layer 2 solutions or Web3
         providers.
@@ -286,88 +348,112 @@ const TermsOfUseContent = memo(() => (
     <Section id="changes">
       <SectionTitle>7. Changes</SectionTitle>
       <Paragraph>
-        The DAO may approve changes to the Terms from time to time. When the DAO approves changes, the Foundation will make available the
-        updated Terms through the Site and update the &quot;Last Updated&quot; date at the beginning of these Terms accordingly. Please
-        check these Terms periodically for changes. Any changes to the Terms will apply on the date that they are made, and your continued
-        access to or use of the Tools or the Site after the Terms have been updated will constitute your binding acceptance of the updates.
-        If you do not agree to any revised Terms, you must not access or use the Tools or the Site.
+        The Foundation and/or the DAO may approve changes to the Terms from time to time. When the Foundation and/or the DAO approves
+        changes, the Foundation will make available the updated Terms through the Site and update the &quot;Last Updated&quot; date at the
+        beginning of these Terms accordingly. Please check these Terms periodically for changes. Any changes to the Terms will apply on the
+        date that they are made, and your continued access to or use of the Services after the Terms have been updated will constitute your
+        binding acceptance of the updates. If you do not agree to any revised Terms, you must not access or use the Services.
       </Paragraph>
     </Section>
 
     <Section id="children">
-      <SectionTitle>8. Children</SectionTitle>
+      <SectionTitle>8. Age Eligibility</SectionTitle>
       <Paragraph>
-        You affirm that you are over the age of 13, as the Tools are not intended for children under 13. IF YOU ARE 13 OR OLDER BUT UNDER
-        THE AGE OF 18, OR THE LEGAL AGE OF MAJORITY WHERE YOU RESIDE IF THAT JURISDICTION HAS AN OLDER AGE OF MAJORITY, THEN YOU AGREE TO
-        REVIEW THESE TERMS WITH YOUR PARENT OR GUARDIAN TO MAKE SURE THAT BOTH YOU AND YOUR PARENT OR GUARDIAN UNDERSTAND AND AGREE TO THESE
-        TERMS. YOU AGREE TO HAVE YOUR PARENT OR GUARDIAN REVIEW AND ACCEPT THESE TERMS ON YOUR BEHALF. IF YOU ARE A PARENT OR GUARDIAN
-        AGREEING TO THE TERMS FOR THE BENEFIT OF A CHILD OVER 13, THEN YOU AGREE TO AND ACCEPT FULL RESPONSIBILITY FOR THAT CHILD&apos;S USE
-        OF THE TOOLS OR THE SITE, INCLUDING ALL FINANCIAL CHARGES AND LEGAL LIABILITY THAT HE OR SHE MAY INCUR.
+        You represent and warrant that you are at least eighteen 18 years of age or the age of legal majority in your jurisdiction,
+        whichever is greater. The Services and any related services are not intended for, directed to, or permitted to be used by
+        individuals under the age of 18. IF YOU ARE UNDER 18 YEARS OF AGE, YOU ARE STRICTLY PROHIBITED FROM ACCESSING OR USING THE SERVICES
+        OR ANY RELATED SERVICES, UNDER ANY CIRCUMSTANCES.
       </Paragraph>
-      <Paragraph>TO ACCESS CERTAIN CONTENTS, YOU WILL NEED TO HAVE A MINIMUM AGE AS DETAILED IN THE CONTENT POLICY.</Paragraph>
+      <Paragraph>By accessing, registering for, or using the Services, you expressly represent and warrant that:</Paragraph>
+      <BulletList>
+        <li>(i) you are at least 18 years old,</li>
+        <li>(ii) you have the legal capacity to enter into and comply with these Terms; and,</li>
+        <li>(iii) all information you provide regarding your age and eligibility is accurate and truthful.</li>
+      </BulletList>
       <Paragraph>
-        IN ALL CASES INVOLVING ONLINE GAMBLING YOU MUST BE OLDER THAN 18 YEARS (OR THE MINIMUM LEGAL AGE IN YOUR PLACE OF RESIDENCE).
+        We do not knowingly collect information from, allow access to, or permit the use of the Services by individuals under the age of 18.
+        If we become aware that a person under 18 has accessed or used the Services or any related services, we may immediately terminate
+        access, cancel any associated accounts, and remove any related data, without liability.
+      </Paragraph>
+      <Paragraph>
+        You further agree that any misrepresentation regarding your age constitutes a material breach of these Terms, and you shall be
+        solely responsible for any consequences arising from such misrepresentation, including any damage, losses, liabilities, or expenses
+        incurred by Decentraland as a result.
+      </Paragraph>
+      <Paragraph>
+        Certain features, content, or services (including, without limitation, gaming, wagering, or similar activities) may be subject to
+        additional eligibility requirements or age restrictions under applicable law. You agree that you are solely responsible for ensuring
+        that your use of the Services comply with all applicable laws and regulations in your jurisdiction.
+      </Paragraph>
+      <Paragraph>
+        <strong>Parental Liability Waiver.</strong> If a minor accesses or uses the Services or any associated services in violation of
+        these Terms, the parent or legal guardian of such minor shall be solely responsible for the minor&apos;s actions, including any
+        transactions executed through blockchain networks, use of digital wallets, interaction with smart contracts, or acquisition,
+        transfer, or loss of digital assets. By allowing a minor to access devices, wallets, or credentials that enable interaction with the
+        Services, the parent or legal guardian assumes full responsibility for the minor&apos;s conduct and any resulting financial, legal,
+        or technological consequences, and agrees that Decentraland shall not be liable for any damages, losses, or claims arising from such
+        unauthorized use.
       </Paragraph>
     </Section>
 
     <Section id="indemnity">
       <SectionTitle>9. Indemnity</SectionTitle>
       <Paragraph>
-        You shall release and indemnify, defend and hold harmless the Foundation, the DAO, and its officers, directors, employees and
-        representatives from and against any and all losses, liabilities, expenses, damages, costs (including attorneys&apos; fees and court
-        costs) claims or actions of any kind whatsoever arising or resulting from your use of the Tools or the Site, your violation of these
-        Terms of Use, and any of your acts or omissions. The Foundation reserves the right, at its own expense, to assume exclusive defense
-        and control of any matter otherwise subject to indemnification by you and, in such case, you agree to cooperate with the Foundation
-        in the defense of such matter.
+        You shall release and indemnify, defend and hold harmless Decentraland, and its officers, directors, employees and representatives
+        from and against any and all losses, liabilities, expenses, damages, costs (including attorneys&apos; fees and court costs) claims
+        or actions of any kind whatsoever arising or resulting from your use of the Services, your violation of these Terms of Use, and any
+        of your acts or omissions. The Foundation reserves the right, at its own expense, to assume exclusive defense and control of any
+        matter otherwise subject to indemnification by you and, in such case, you agree to cooperate with the Foundation in the defense of
+        such matter.
       </Paragraph>
     </Section>
 
     <Section id="disclaimers">
       <SectionTitle>10. Disclaimers</SectionTitle>
       <Paragraph>
-        10.1 YOU ACKNOWLEDGE AND AGREE THAT YOU ASSUME FULL RESPONSIBILITY FOR YOUR USE OF THE SITE AND TOOLS. YOU ACKNOWLEDGE AND AGREE
-        THAT ANY INFORMATION YOU SEND OR RECEIVE DURING YOUR USE OF THE SITE AND TOOLS MAY NOT BE SECURE AND MAY BE INTERCEPTED OR LATER
-        ACQUIRED BY UNAUTHORIZED PARTIES. YOU ACKNOWLEDGE AND AGREE THAT YOUR USE OF THE SITE AND TOOLS IS AT YOUR OWN RISK. YOU ACKNOWLEDGE
-        AND AGREE THAT THE TOOLS ARE PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS
-        OR IMPLIED. RECOGNIZING SUCH, YOU ACKNOWLEDGE AND AGREE THAT, TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, NEITHER THE
-        FOUNDATION, ITS DIRECTORS, OFFICERS AND EMPLOYEES, THE DAO, NOR ITS SUPPLIERS OR LICENSORS WILL BE LIABLE TO YOU FOR ANY DIRECT,
-        INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, PUNITIVE, EXEMPLARY OR OTHER DAMAGES OF ANY KIND, INCLUDING WITHOUT LIMITATION DAMAGES
-        FOR LOSS OF PROFITS, GOODWILL, USE, DATA OR OTHER TANGIBLE OR INTANGIBLE LOSSES OR ANY OTHER DAMAGES BASED ON CONTRACT, TORT, STRICT
+        10.1 YOU ACKNOWLEDGE AND AGREE THAT YOU ASSUME FULL RESPONSIBILITY FOR YOUR USE OF THE SERVICES. YOU ACKNOWLEDGE AND AGREE THAT ANY
+        INFORMATION YOU SEND OR RECEIVE DURING YOUR USE OF THE SERVICES MAY NOT BE SECURE AND MAY BE INTERCEPTED OR LATER ACQUIRED BY
+        UNAUTHORIZED PARTIES. YOU ACKNOWLEDGE AND AGREE THAT YOUR USE OF THE SERVICES IS AT YOUR OWN RISK. YOU ACKNOWLEDGE AND AGREE THAT
+        THE SERVICES ARE PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED.
+        RECOGNIZING SUCH, YOU ACKNOWLEDGE AND AGREE THAT, TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, NEITHER DECENTRALAND, ITS
+        DIRECTORS, OFFICERS AND EMPLOYEES, THE DAO, NOR ITS SUPPLIERS OR LICENSORS WILL BE LIABLE TO YOU FOR ANY DIRECT, INDIRECT,
+        INCIDENTAL, SPECIAL, CONSEQUENTIAL, PUNITIVE, EXEMPLARY OR OTHER DAMAGES OF ANY KIND, INCLUDING WITHOUT LIMITATION DAMAGES FOR LOSS
+        OF PROFITS, GOODWILL, USE, DATA OR OTHER TANGIBLE OR INTANGIBLE LOSSES OR ANY OTHER DAMAGES BASED ON CONTRACT, TORT, STRICT
         LIABILITY, INFRINGEMENT OF INTELLECTUAL PROPERTY OR THEFT OR MISAPPROPRIATION OF PROPERTY OR ANY OTHER THEORY (EVEN IF THE
-        FOUNDATION HAD BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES), RESULTING FROM THE SITE OR TOOLS; THE USE OR THE INABILITY TO USE
-        THE SITE OR TOOLS; UNAUTHORIZED ACCESS TO OR ALTERATION OF YOUR TRANSMISSIONS OR DATA; STATEMENTS, CONTENT OR CONDUCT OF ANY THIRD
-        PARTY ON THE SITE OR TOOLS; ANY ACTIONS THE FOUNDATION TAKES OR FAILS TO TAKE AS A RESULT OF COMMUNICATIONS YOU SEND; HUMAN ERRORS;
-        TECHNICAL MALFUNCTIONS; FAILURES, INCLUDING PUBLIC UTILITY OR TELEPHONE OUTAGES; OMISSIONS, INTERRUPTIONS, LATENCY, DELETIONS OR
-        DEFECTS OF ANY DEVICE OR NETWORK, PROVIDERS, OR SOFTWARE (INCLUDING, BUT NOT LIMITED TO, THOSE THAT DO NOT PERMIT PARTICIPATION IN
-        THE TOOLS); ANY INJURY OR DAMAGE TO COMPUTER EQUIPMENT; INABILITY TO FULLY ACCESS THE SITE OR TOOLS OR ANY OTHER WEBSITE; THEFT,
-        TAMPERING, DESTRUCTION, OR UNAUTHORIZED ACCESS TO, IMAGES OR OTHER CONTENT OF ANY KIND; DATA THAT IS PROCESSED LATE OR INCORRECTLY
-        OR IS INCOMPLETE OR LOST; TYPOGRAPHICAL, PRINTING OR OTHER ERRORS, OR ANY COMBINATION THEREOF; OR ANY OTHER MATTER RELATING TO THE
-        SITE OR TOOLS. SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF CERTAIN WARRANTIES OR THE LIMITATION OR EXCLUSION OF LIABILITY FOR
+        FOUNDATION HAD BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES), RESULTING FROM THE SERVICES; THE USE OR THE INABILITY TO USE THE
+        SERVICES; UNAUTHORIZED ACCESS TO OR ALTERATION OF YOUR TRANSMISSIONS OR DATA; STATEMENTS, CONTENT OR CONDUCT OF ANY THIRD PARTY ON
+        THE SERVICES; ANY ACTIONS THE FOUNDATION TAKES OR FAILS TO TAKE AS A RESULT OF COMMUNICATIONS YOU SEND; HUMAN ERRORS; TECHNICAL
+        MALFUNCTIONS; FAILURES, INCLUDING PUBLIC UTILITY OR TELEPHONE OUTAGES; OMISSIONS, INTERRUPTIONS, LATENCY, DELETIONS OR DEFECTS OF
+        ANY DEVICE OR NETWORK, PROVIDERS, OR SOFTWARE (INCLUDING, BUT NOT LIMITED TO, THOSE THAT DO NOT PERMIT PARTICIPATION IN THE TOOLS);
+        ANY INJURY OR DAMAGE TO COMPUTER EQUIPMENT; INABILITY TO FULLY ACCESS THE SERVICES OR ANY OTHER WEBSITE; THEFT, TAMPERING,
+        DESTRUCTION, OR UNAUTHORIZED ACCESS TO, IMAGES OR OTHER CONTENT OF ANY KIND; DATA THAT IS PROCESSED LATE OR INCORRECTLY OR IS
+        INCOMPLETE OR LOST; TYPOGRAPHICAL, PRINTING OR OTHER ERRORS, OR ANY COMBINATION THEREOF; OR ANY OTHER MATTER RELATING TO THE SITE OR
+        TOOLS. SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF CERTAIN WARRANTIES OR THE LIMITATION OR EXCLUSION OF LIABILITY FOR
         INCIDENTAL OR CONSEQUENTIAL DAMAGES. ACCORDINGLY, SOME OF THE ABOVE LIMITATIONS MAY NOT APPLY TO YOU.
       </Paragraph>
       <Paragraph>
-        10.2 THE FOUNDATION HEREBY EXPRESSLY DISCLAIMS, WAIVES, RELEASES AND RENOUNCES ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING,
-        WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, OR NON INFRINGEMENT.
+        10.2 DECENTRALAND HEREBY EXPRESSLY DISCLAIMS, WAIVES, RELEASES AND RENOUNCES ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING, WITHOUT
+        LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, OR NON INFRINGEMENT.
       </Paragraph>
       <Paragraph>
-        10.3 WITHOUT LIMITING THE GENERALITY OF THE FOREGOING, THE FOUNDATION, ITS DIRECTORS, OFFICERS, EMPLOYEES AND LICENSORS DO NOT
-        REPRESENT OR WARRANT TO YOU THAT: (I) YOUR ACCESS TO OR USE OF THE TOOLS WILL MEET YOUR REQUIREMENTS, (II) YOUR ACCESS TO OR USE OF
-        THE TOOLS WILL BE UNINTERRUPTED, TIMELY, SECURE OR FREE FROM ERROR, (III) USAGE DATA PROVIDED THROUGH THE TOOLS WILL BE ACCURATE,
-        (III) THE TOOLS OR ANY CONTENT, SERVICES, OR FEATURES MADE AVAILABLE ON OR THROUGH THE TOOLS ARE FREE OF VIRUSES OR OTHER HARMFUL
-        COMPONENTS, OR (IV) THAT ANY DATA THAT YOU DISCLOSE WHEN YOU USE THE TOOLS WILL BE SECURE.
+        10.3 WITHOUT LIMITING THE GENERALITY OF THE FOREGOING, DECENTRALAND, ITS DIRECTORS, OFFICERS, EMPLOYEES AND LICENSORS DO NOT
+        REPRESENT OR WARRANT TO YOU THAT: (I) YOUR ACCESS TO OR USE OF THE SERVICES WILL MEET YOUR REQUIREMENTS, (II) YOUR ACCESS TO OR USE
+        OF THE SERVICES WILL BE UNINTERRUPTED, TIMELY, SECURE OR FREE FROM ERROR, (III) USAGE DATA PROVIDED THROUGH THE SERVICES WILL BE
+        ACCURATE, (III) THE SERVICES OR ANY CONTENT, SERVICES, OR FEATURES MADE AVAILABLE ON OR THROUGH THE TOOLS ARE FREE OF VIRUSES OR
+        OTHER HARMFUL COMPONENTS, OR (IV) THAT ANY DATA THAT YOU DISCLOSE WHEN YOU USE THE SERVICES WILL BE SECURE.
       </Paragraph>
       <Paragraph>
-        10.4 YOU ACCEPT THE INHERENT SECURITY RISKS OF PROVIDING INFORMATION AND DEALING ONLINE OVER THE INTERNET, AND AGREE THAT THE
-        FOUNDATION, ITS DIRECTORS, OFFICERS AND EMPLOYEES AND THE DAO HAVE NO LIABILITY OR RESPONSIBILITY FOR ANY BREACH OF SECURITY UNLESS
-        IT IS DUE TO ITS GROSS NEGLIGENCE.
+        10.4 YOU ACCEPT THE INHERENT SECURITY RISKS OF PROVIDING INFORMATION AND DEALING ONLINE OVER THE INTERNET, AND AGREE THAT
+        DECENTRALAND, ITS DIRECTORS, OFFICERS AND EMPLOYEES HAVE NO LIABILITY OR RESPONSIBILITY FOR ANY BREACH OF SECURITY UNLESS IT IS DUE
+        TO ITS GROSS NEGLIGENCE.
       </Paragraph>
       <Paragraph>
-        10.5 THE FOUNDATION, ITS DIRECTORS, OFFICERS AND EMPLOYEES AND THE DAO WILL NOT BE RESPONSIBLE OR LIABLE TO YOU FOR ANY LOSSES YOU
-        INCUR AS THE RESULT OF YOUR USE OF THE ETHEREUM NETWORK OR THE METAMASK OR ANY OTHER ELECTRONIC WALLET, INCLUDING BUT NOT LIMITED TO
-        ANY LOSSES, DAMAGES OR CLAIMS ARISING FROM: (A) USER ERROR, SUCH AS FORGOTTEN PASSWORDS OR INCORRECTLY CONSTRUED SMART CONTRACTS OR
-        OTHER TRANSACTIONS; (B) SERVER FAILURE OR DATA LOSS; (C) CORRUPTED WALLET FILES; (D) INTELLECTUAL PROPERTY INFRINGEMENT BY THE
-        USERS; (E) UNAUTHORIZED ACCESS OR ACTIVITIES BY THIRD PARTIES, INCLUDING BUT NOT LIMITED TO THE USE OF VIRUSES, PHISHING,
-        BRUTEFORCING OR OTHER MEANS OF ATTACK AGAINST THE TOOLS, ETHEREUM NETWORK, OR THE METAMASK OR OTHER ELECTRONIC WALLET.
+        10.5 DECENTRALAND, ITS DIRECTORS, OFFICERS AND EMPLOYEES WILL NOT BE RESPONSIBLE OR LIABLE TO YOU FOR ANY LOSSES YOU INCUR AS THE
+        RESULT OF YOUR USE OF THE ETHEREUM NETWORK OR THE METAMASK OR ANY OTHER ELECTRONIC WALLET, INCLUDING BUT NOT LIMITED TO ANY LOSSES,
+        DAMAGES OR CLAIMS ARISING FROM: (A) USER ERROR, SUCH AS FORGOTTEN PASSWORDS OR INCORRECTLY CONSTRUED SMART CONTRACTS OR OTHER
+        TRANSACTIONS; (B) SERVER FAILURE OR DATA LOSS; (C) CORRUPTED WALLET FILES; (D) INTELLECTUAL PROPERTY INFRINGEMENT BY THE USERS; (E)
+        UNAUTHORIZED ACCESS OR ACTIVITIES BY THIRD PARTIES, INCLUDING BUT NOT LIMITED TO THE USE OF VIRUSES, PHISHING, BRUTEFORCING OR OTHER
+        MEANS OF ATTACK AGAINST THE TOOLS, ETHEREUM NETWORK, OR THE METAMASK OR OTHER ELECTRONIC WALLET.
       </Paragraph>
       <Paragraph>
         10.6 LAND PARCELS, WEARABLES AND ANY AND ALL ERC-721 TOKENS ARE INTANGIBLE DIGITAL ASSETS THAT EXIST ONLY BY VIRTUE OF THE OWNERSHIP
@@ -382,41 +468,41 @@ const TermsOfUseContent = memo(() => (
         INVITATION TO ACQUIRE, PURCHASE, TRANSFER, SELL OR OTHERWISE DEAL IN MANA.
       </Paragraph>
       <Paragraph>
-        10.8. THE FOUNDATION IS NOT RESPONSIBLE FOR LOSSES DUE TO BLOCKCHAIN OR ANY OTHER FEATURES OF THE ETHEREUM NETWORK OR THE METAMASK
-        OR OTHER ELECTRONIC WALLET, INCLUDING BUT NOT LIMITED TO LATE REPORT BY DEVELOPERS OR REPRESENTATIVES (OR NO REPORT AT ALL) OF ANY
+        10.8. DECENTRALAND IS NOT RESPONSIBLE FOR LOSSES DUE TO BLOCKCHAIN OR ANY OTHER FEATURES OF THE ETHEREUM NETWORK OR THE METAMASK OR
+        OTHER ELECTRONIC WALLET, INCLUDING BUT NOT LIMITED TO LATE REPORT BY DEVELOPERS OR REPRESENTATIVES (OR NO REPORT AT ALL) OF ANY
         ISSUES WITH THE BLOCKCHAIN SUPPORTING THE ETHEREUM NETWORK, INCLUDING FORKS, TECHNICAL NODE ISSUES, OR ANY OTHER ISSUES HAVING FUND
         LOSSES AS A RESULT.
       </Paragraph>
       <Paragraph>
-        10.9. SOME TOOLS, AS THE DESKTOP CLIENT PROVIDES YOU WITH FASTER ACCESS AND INTERACTION WITH DECENTRALAND. THE DOWNLOAD AND USE OF
-        THE DESKTOP CLIENT MAY INCLUDE THE DOWNLOAD OF THE CONTENT CREATED BY THE USERS AND AVAILABLE AT DECENTRALAND TO YOUR DEVICE, WHICH
-        MAY BE ILLEGAL IN YOUR COUNTRY OR OFFENSIVE. THE DAO AND THE FOUNDATION ARE NOT LIABLE FOR SUCH CONTENT. CONTENT AVAILABLE IN
-        DECENTRALAND MAY REDIRECT YOU TO THIRD-PARTY LINKS FOR WHICH THE DAO AND/OR THE FOUNDATION ARE NOT RESPONSIBLE. YOU ARE SOLELY
-        RESPONSIBLE FOR ALL DOWNLOADS OF THIRD-PARTY CONTENT AND DATA, AND FOR ALL THIRD-PARTY LINKS CLICKED ON. PLEASE NOTE THAT BY
-        CREATING A USER ON THE APP YOU RELEASE THE DAO AND THE FOUNDATION FROM ANY AND ALL LIABILITY REGARDING THE ABOVE-MENTIONED CONTENT,
-        DATA OR LINKS AND ASSUME THE RISKS DESCRIBED ABOVE.
+        10.9. SOME TOOLS, AS THE CLIENTS PROVIDES YOU WITH FASTER ACCESS AND INTERACTION WITH DECENTRALAND PLATFORM. THE DOWNLOAD AND USE OF
+        THE CLIENTS MAY INCLUDE THE DOWNLOAD OF THE CONTENT CREATED BY THE USERS AND AVAILABLE AT DECENTRALAND PLATFORM TO YOUR DEVICE,
+        WHICH MAY BE ILLEGAL IN YOUR COUNTRY OR OFFENSIVE. DECENTRALAND IS NOT LIABLE FOR SUCH CONTENT. CONTENT AVAILABLE IN DECENTRALAND
+        PLATFORM MAY REDIRECT YOU TO THIRD-PARTY LINKS FOR WHICH DECENTRALAND IS NOT RESPONSIBLE. YOU ARE SOLELY RESPONSIBLE FOR ALL
+        DOWNLOADS OF THIRD-PARTY CONTENT AND DATA, AND FOR ALL THIRD-PARTY LINKS CLICKED ON. PLEASE NOTE THAT BY CREATING A USER ON THE APP
+        YOU RELEASE DECENTRALAND FROM ANY AND ALL LIABILITY REGARDING THE ABOVE-MENTIONED CONTENT, DATA OR LINKS AND ASSUME THE RISKS
+        DESCRIBED ABOVE.
       </Paragraph>
     </Section>
 
     <Section id="limitation-on-liability">
       <SectionTitle>11. Limitation on Liability</SectionTitle>
       <Paragraph>
-        11.1 YOU UNDERSTAND AND AGREE THAT THE FOUNDATION, ITS OFFICERS, EMPLOYEES, DIRECTORS, THE DAO, AND LICENSORS WILL NOT BE LIABLE TO
+        11.1 YOU UNDERSTAND AND AGREE THAT DECENTRALAND, ITS OFFICERS, EMPLOYEES, DIRECTORS, THE DAO, AND LICENSORS WILL NOT BE LIABLE TO
         YOU OR TO ANY THIRD PARTY FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR EXEMPLARY DAMAGES WHICH YOU MAY INCUR,
         HOWSOEVER CAUSED AND UNDER ANY THEORY OF LIABILITY, INCLUDING, WITHOUT LIMITATION, ANY LOSS OF PROFITS (WHETHER INCURRED DIRECTLY OR
         INDIRECTLY), LOSS OF GOODWILL OR BUSINESS REPUTATION, LOSS OF DATA, COST OF PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES, OR ANY
         OTHER INTANGIBLE LOSS, EVEN IF THE FOUNDATION HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
       </Paragraph>
       <Paragraph>
-        11.2 YOU AGREE THAT THE FOUNDATION&apos;S TOTAL, AGGREGATE LIABILITY TO YOU FOR ANY AND ALL CLAIMS ARISING OUT OF OR RELATING TO
-        THESE TERMS OR YOUR ACCESS TO OR USE OF (OR YOUR INABILITY TO ACCESS OR USE) ANY PORTION OF THE TOOLS, WHETHER IN CONTRACT, TORT,
-        STRICT LIABILITY, OR ANY OTHER LEGAL THEORY, IS LIMITED TO THE GREATER OF (A) THE AMOUNTS ACTUALLY PAID BY YOU TO THE FOUNDATION
-        UNDER THESE TERMS IN THE 12 MONTH PERIOD PRECEDING THE DATE THE CLAIM AROSE, OR (B) $100.
+        11.2 YOU AGREE THAT DECENTRALAND&apos;S TOTAL, AGGREGATE LIABILITY TO YOU FOR ANY AND ALL CLAIMS ARISING OUT OF OR RELATING TO THESE
+        TERMS OR YOUR ACCESS TO OR USE OF (OR YOUR INABILITY TO ACCESS OR USE) ANY PORTION OF THE TOOLS, WHETHER IN CONTRACT, TORT, STRICT
+        LIABILITY, OR ANY OTHER LEGAL THEORY, IS LIMITED TO THE GREATER OF (A) THE AMOUNTS ACTUALLY PAID BY YOU TO THE FOUNDATION UNDER
+        THESE TERMS IN THE 12 MONTH PERIOD PRECEDING THE DATE THE CLAIM AROSE, OR (B) $100.
       </Paragraph>
       <Paragraph>
-        11.3 YOU ACKNOWLEDGE AND AGREE THAT THE FOUNDATION HAS MADE THE TOOLS AVAILABLE TO YOU AND ENTERED INTO THESE TERMS IN RELIANCE UPON
-        THE WARRANTY DISCLAIMERS AND LIMITATIONS OF LIABILITY SET FORTH HEREIN, WHICH REFLECT A REASONABLE AND FAIR ALLOCATION OF RISK
-        BETWEEN THE PARTIES AND FORM AN ESSENTIAL BASIS OF THE BARGAIN BETWEEN US. THE FOUNDATION WOULD NOT BE ABLE TO PROVIDE THE TOOLS TO
+        11.3 YOU ACKNOWLEDGE AND AGREE THAT DECENTRALAND HAS MADE THE SERVICES AVAILABLE TO YOU AND ENTERED INTO THESE TERMS IN RELIANCE
+        UPON THE WARRANTY DISCLAIMERS AND LIMITATIONS OF LIABILITY SET FORTH HEREIN, WHICH REFLECT A REASONABLE AND FAIR ALLOCATION OF RISK
+        BETWEEN THE PARTIES AND FORM AN ESSENTIAL BASIS OF THE BARGAIN BETWEEN US. DECENTRALAND WOULD NOT BE ABLE TO PROVIDE THE TOOLS TO
         YOU WITHOUT THESE LIMITATIONS.
       </Paragraph>
       <Paragraph>
@@ -424,68 +510,73 @@ const TermsOfUseContent = memo(() => (
         LIMIT DISCLAIMERS OR LIMITATIONS OF LIABILITY FOR PERSONAL INJURY FROM CONSUMER PRODUCTS, SO THE ABOVE LIMITATIONS MAY NOT APPLY TO
         PERSONAL INJURY CLAIMS.
       </Paragraph>
+      <Paragraph>
+        11.5 YOU ACKNOWLEDGE AND AGREE THAT EACH OF THE FOUNDATION, THE DAO AND DCL REGENESIS LABS FOUNDATION ARE INDEPENDENT ENTITIES, EACH
+        ACTING ON ITS OWN BEHALF, AND SHALL BE SEVERALLY AND NOT JOINTLY LIABLE FOR ANY CLAIM. ACCORDINGLY, EACH SUCH ENTITY SHALL BE LIABLE
+        ONLY FOR ITS OWN ACTS AND OMISSIONS. FOR THE AVOIDANCE OF DOUBT, NO ENTITY SHALL BE RESPONSIBLE FOR THE OBLIGATIONS, LIABILITIES, OR
+        PERFORMANCE OF ANY OTHER ENTITY UNDER THESE TERMS.
+      </Paragraph>
     </Section>
 
     <Section id="proprietary-rights">
       <SectionTitle>12. Proprietary Rights</SectionTitle>
       <Paragraph>
-        12.1 All title, ownership and Intellectual Property Rights in and to the Site and the Tools are owned exclusively by the Foundation
-        or its licensors. The Foundation holds these Intellectual Property Rights for the benefit of the Decentraland community as a whole.
-        You acknowledge and agree that the Site and Tools contains proprietary and confidential information that is protected by applicable
+        12.1 All title, ownership and Intellectual Property Rights in and to the Services are owned exclusively by Decentraland or its
+        licensors. The Foundation holds these Intellectual Property Rights for the benefit of the Decentraland community as a whole. You
+        acknowledge and agree that the Site and Tools contains proprietary and confidential information that is protected by applicable
         intellectual property and other laws. Except as expressly authorized in Section 13, you agree not to copy, modify, rent, lease,
         loan, sell, distribute, perform, display or create Derivative Works based on the Site and the Tools, in whole or in part. The
-        Foundation&apos;s exclusive ownership shall include all elements of the Site and Tools, and all Intellectual Property Rights
-        therein. The visual interfaces, graphics (including, without limitation, all art and drawings associated with Tools), design,
-        systems, methods, information, computer code, software, &quot;look and feel&quot;, organization, compilation of the content, code,
-        data, and all other elements of the Site and the Tools (but excluding the Content submitted by Users) (collectively, the
-        &quot;Foundation Materials&quot;) are owned by the Foundation, and are protected by copyright, trade dress, patent, and trademark
-        laws, international conventions, other relevant intellectual property and proprietary rights, and applicable laws. All the
-        Foundation Materials are the copyrighted property of the Foundation or its licensors, and all trademarks, logos, service marks, and
-        trade names contained in the Foundation Materials are proprietary to the Foundation or its licensors. Except as expressly set forth
-        herein, your use of the Site and the Tools does not grant you ownership of or any other rights with respect to any content, code,
-        data, or other materials that you may access on or through the Site and the Tools. The Foundation reserves all rights in and to the
-        Foundation Materials not expressly granted to you in the Terms. For the sake of clarity, you understand and agree: (i) that any
-        &quot;purchase&quot; of LAND, whether via the Tools or otherwise, does not give you any rights or licenses in or to the Foundation
-        Materials (including, without limitation, the Foundation&apos;s copyright in and to the art and drawings associated with the Tools
-        and content therein) other than those expressly contained in these Terms; and (ii) that you do not have the right to reproduce,
-        distribute, or otherwise commercialize any elements of the Foundation Materials (including, without limitation, the
-        Foundation&apos;s copyright in and to the art and drawings associated with the Tools and content therein) in any way without the
-        Foundation&apos;s prior written consent in each case, which consent the Foundation may withhold in its sole and absolute discretion.
+        Foundation&apos;s exclusive ownership shall include all elements of the Services, and all Intellectual Property Rights therein. The
+        visual interfaces, graphics (including, without limitation, all art and drawings associated with Tools), design, systems, methods,
+        information, computer code, software, &quot;look and feel&quot;, organization, compilation of the content, code, data, and all other
+        elements of the Services (but excluding the Content submitted by Users) (collectively, the &quot;Decentraland Materials&quot;) are
+        owned by Decentraland, and are protected by copyright, trade dress, patent, and trademark laws, international conventions, other
+        relevant intellectual property and proprietary rights, and applicable laws. All the Decentraland Materials are the copyrighted
+        property of the Foundation or its licensors, and all trademarks, logos, service marks, and trade names contained in the Decentraland
+        Materials are proprietary to the Foundation or its licensors. Except as expressly set forth herein, your use of the Services does
+        not grant you ownership of or any other rights with respect to any content, code, data, or other materials that you may access on or
+        through the Services. The Foundation reserves all rights in and to the Foundation Materials not expressly granted to you in the
+        Terms. For the sake of clarity, you understand and agree: (i) that any &quot;purchase&quot; of LAND, whether via the Tools or
+        otherwise, does not give you any rights or licenses in or to the Decentraland Materials (including, without limitation, the
+        Foundation&apos;s copyright in and to the art and drawings associated with the Services and content therein) other than those
+        expressly contained in these Terms; and (ii) that you do not have the right to reproduce, distribute, or otherwise commercialize any
+        elements of the Decentraland Materials (including, without limitation, the Foundation&apos;s copyright in and to the art and
+        drawings associated with the Services and content therein) in any way without the Foundation&apos;s prior written consent in each
+        case, which consent the Foundation may withhold in its sole and absolute discretion.
       </Paragraph>
       <Paragraph>
-        12.2 You may choose to submit comments, bug reports, ideas or other feedback about the Site or the Tools, including without
-        limitation about how to improve the Tools (collectively, &quot;Feedback&quot;). By submitting any Feedback, you agree that the
-        Foundation is free to use such Feedback at the Foundation&apos;s discretion and without additional compensation to you, and to
-        disclose such Feedback to third parties (whether on a non-confidential basis, or otherwise), including the DAO. You hereby grant the
-        Foundation and the DAO a perpetual, irrevocable, nonexclusive, worldwide license under all rights necessary for the Foundation and
-        the DAO to incorporate and use your Feedback for any purpose.
+        12.2 You may choose to submit comments, bug reports, ideas or other feedback about the Services, including without limitation about
+        how to improve the Tools (collectively, &quot;Feedback&quot;). By submitting any Feedback, you agree that the Foundation is free to
+        use such Feedback at the Foundation&apos;s discretion and without additional compensation to you, and to disclose such Feedback to
+        third parties (whether on a non-confidential basis, or otherwise), including the DAO. You hereby grant the Foundation and the DAO a
+        perpetual, irrevocable, nonexclusive, worldwide license under all rights necessary for the Foundation and the DAO to incorporate and
+        use your Feedback for any purpose.
       </Paragraph>
       <Paragraph>
-        12.3 You acknowledge and agree that you are responsible for your own conduct while accessing or using the Site and the Tools, and
-        for any consequences thereof. You agree to use the Site and the Tools only for purposes that are legal, proper and in accordance
-        with these Terms and any applicable laws or regulations. By way of example, and not as a limitation, you may not, and may not allow
-        any third party to: (i) send, post, upload, transmit, distribute, disseminate or otherwise make available any Content in violation
-        of the Content Policy approved by the DAO, including without limitation, Content that infringes the Intellectual Property Rights of
-        any party and any Content that contains any hate-related or violent content or contains any other material or products that violate
-        or encourage conduct that would violate any criminal laws, any other applicable laws, or any third party rights; (ii) distribute
-        viruses, worms, defects, Trojan horses, spyware, time bombs, cancelbots, corrupted files, hoaxes, or any other items of a
-        destructive or deceptive nature, or that may harvest or collect any data or information about other users without their consent;
-        (iii) impersonate another person (via the use of an email address or otherwise); (iv) use the Site or the Tools to violate the legal
-        rights (such as rights of privacy and publicity) of others; (v) engage in, promote, or encourage illegal activity (including,
-        without limitation, money laundering); (vi) interfere with other users&apos; enjoyment of the Site or the Tools; (vii) exploit the
-        Site or the Tools for any unauthorized commercial purpose; (viii) post or transmit unsolicited or unauthorized advertising, or
-        promotional materials, that are in the nature of &quot;junk mail,&quot; &quot;spam,&quot; &quot;chain letters,&quot; &quot;pyramid
-        schemes,&quot; or any other similar form of solicitation; (ix) modify, adapt, translate, or reverse engineer any portion of the
-        Tools; (x) remove any copyright, trademark or other proprietary rights notices contained in or on the Site or the Tools or any part
-        of it; (xi) reformat or frame any portion of the Site or the Tools; (xii) stalk, harass, or engage in any sexual, suggestive, lewd,
-        lascivious, or otherwise inappropriate conduct with minors on the Site or the Tools; (xiii) use any robot, spider, site
-        search/retrieval application, or other device to retrieve or index any portion of the Site, the Tools or the Content posted on the
-        Tools, or to collect information about its users for any unauthorized purpose; (xiv) use any cheats, hacks, or any other
-        unauthorized techniques or unauthorized third-party software to cheat in any competition or game that may be offered on the Tools by
-        other Users, or to otherwise disrupt or modify the Tools or the experience of any users on the Tools; (xv) create user accounts by
-        automated means or under false or fraudulent pretenses; (xvi) attempt to gain unauthorized access to any other user&apos;s Account,
-        password or Content; or (xvii) access or use the Tools for the purpose of creating a product or service that is competitive with the
-        Tools.
+        12.3 You acknowledge and agree that you are responsible for your own conduct while accessing or using the Services, and for any
+        consequences thereof. You agree to use the Services only for purposes that are legal, proper and in accordance with these Terms and
+        any applicable laws or regulations. By way of example, and not as a limitation, you may not, and may not allow any third party to:
+        (i) send, post, upload, transmit, distribute, disseminate or otherwise make available any Content in violation of the Content Policy
+        approved by the DAO, including without limitation, Content that infringes the Intellectual Property Rights of any party and any
+        Content that contains any hate-related or violent content or contains any other material or products that violate or encourage
+        conduct that would violate any criminal laws, any other applicable laws, or any third party rights; (ii) distribute viruses, worms,
+        defects, Trojan horses, spyware, time bombs, cancelbots, corrupted files, hoaxes, or any other items of a destructive or deceptive
+        nature, or that may harvest or collect any data or information about other users without their consent; (iii) impersonate another
+        person (via the use of an email address or otherwise); (iv) use the Services to violate the legal rights (such as rights of privacy
+        and publicity) of others; (v) engage in, promote, or encourage illegal activity (including, without limitation, money laundering);
+        (vi) interfere with other users&apos; enjoyment of the Services; (vii) exploit the Services for any unauthorized commercial purpose;
+        (viii) post or transmit unsolicited or unauthorized advertising, or promotional materials, that are in the nature of &quot;junk
+        mail,&quot; &quot;spam,&quot; &quot;chain letters,&quot; &quot;pyramid schemes,&quot; or any other similar form of solicitation;
+        (ix) modify, adapt, translate, or reverse engineer any portion of the Tools; (x) remove any copyright, trademark or other
+        proprietary rights notices contained in or on the Site or the Tools or any part of it; (xi) reformat or frame any portion of the
+        Services; (xii) stalk, harass, or engage in any sexual, suggestive, lewd, lascivious, or otherwise inappropriate conduct with minors
+        on the Services; (xiii) use any robot, spider, site search/retrieval application, or other device to retrieve or index any portion
+        of the Services or the Content posted on the Tools, or to collect information about its users for any unauthorized purpose; (xiv)
+        use any cheats, hacks, or any other unauthorized techniques or unauthorized third-party software to cheat in any competition or game
+        that may be offered on the Tools by other Users, or to otherwise disrupt or modify the Tools or the experience of any users on the
+        Tools; (xv) create user accounts by automated means or under false or fraudulent pretenses; (xvi) attempt to gain unauthorized
+        access to any other user&apos;s Account, password or Content; or (xvii) access or use the Services for the purpose of creating a
+        product or service that is competitive with the Tools.
       </Paragraph>
       <Paragraph>12.4 Ownership and management of LAND, Non-fungible tokens (NFTs) and Content created by users:</Paragraph>
       <Paragraph>
@@ -584,11 +675,11 @@ const TermsOfUseContent = memo(() => (
 
       <SubsectionTitle id="section-13-6">13.6 Disclaimer of Warranty</SubsectionTitle>
       <Paragraph>
-        Unless required by applicable law or agreed to in writing, the Foundation and/or its licensors provide the Work (and each
-        Contributor provides its Contributions) on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-        or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR
-        A PARTICULAR PURPOSE. You are solely responsible for determining the appropriateness of using or redistributing the Work and assume
-        any risks associated with your exercise of permissions under this License.
+        Unless required by applicable law or agreed to in writing, Decentraland and/or its licensors provide the Work (and each Contributor
+        provides its Contributions) on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+        including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR
+        PURPOSE. You are solely responsible for determining the appropriateness of using or redistributing the Work and assume any risks
+        associated with your exercise of permissions under this License.
       </Paragraph>
 
       <SubsectionTitle id="section-13-7">13.7 Limitation of Liability</SubsectionTitle>
@@ -614,26 +705,26 @@ const TermsOfUseContent = memo(() => (
     <Section id="links">
       <SectionTitle>14. Links</SectionTitle>
       <Paragraph>
-        The Site and the Tools provide, or third parties may provide, links to other World Wide Web or accessible sites, applications or
-        resources. Because the Foundation has no control over such sites, applications and resources, you acknowledge and agree that the
-        Foundation, its officers, employees and the DAO are not responsible for the availability of such external sites, applications or
-        resources, and do not endorse and are not responsible or liable for any content, advertising, products or other materials on or
-        available from such sites or resources. You further acknowledge and agree that the Foundation, its officers, employees and the DAO,
-        shall not be responsible or liable, directly or indirectly, for any damage or loss caused or alleged to be caused by or in
-        connection with use of or reliance on any such content, goods or services available on or through any such site or resource.
+        The Services provide, or third parties may provide, links to other World Wide Web or accessible sites, applications or resources.
+        Because Decentraland has no control over such sites, applications and resources, you acknowledge and agree that Decentraland, its
+        officers, employees and the DAO are not responsible for the availability of such external sites, applications or resources, and do
+        not endorse and are not responsible or liable for any content, advertising, products or other materials on or available from such
+        sites or resources. You further acknowledge and agree that Decentraland, its officers, employees and the DAO, shall not be
+        responsible or liable, directly or indirectly, for any damage or loss caused or alleged to be caused by or in connection with use of
+        or reliance on any such content, goods or services available on or through any such site or resource.
       </Paragraph>
     </Section>
 
     <Section id="termination-and-suspension">
       <SectionTitle>15. Termination and Suspension</SectionTitle>
       <Paragraph>
-        You shall have a right to terminate your Account at any time by canceling and discontinuing your access to and use of the Tools. The
-        DAO may decide to terminate or suspend all or part of the Site and the Tools and your access to the Site and the Tools immediately,
-        without prior notice or liability. You will not receive any refunds if you cancel your Account, or if these Terms are otherwise
-        terminated. You agree that the DAO, in its sole discretion and for any or no reason, may terminate these Terms and suspend your
-        Account(s) for the Tools. You agree that any suspension of your access to the Site or the Tools may be without prior notice, and
-        that the DAO and/or the Foundation (and its officers and employees) will not be liable to you or to any third party for any such
-        suspension.
+        You shall have a right to terminate your Account at any time by canceling and discontinuing your access to and use of the Services.
+        The Foundation and/or the DAO may decide to terminate or suspend all or part of the Services and your access to the Services
+        immediately, without prior notice or liability. You will not receive any refunds if you cancel your Account, or if these Terms are
+        otherwise terminated. You agree that the Foundation and/or the DAO, in its sole discretion and for any or no reason, may terminate
+        these Terms and suspend your Account(s) for the Services. You agree that any suspension of your access to the Services may be
+        without prior notice, and that Decentraland (and its officers and employees) will not be liable to you or to any third party for any
+        such suspension.
       </Paragraph>
       <Paragraph>
         In the event of your breach of these Terms or any suspected fraudulent, abusive, or illegal activity, the DAO and/or the Foundation
@@ -641,10 +732,10 @@ const TermsOfUseContent = memo(() => (
         future breaches, in addition to any other remedies the DAO and/or the Foundation and/or any User may have at law or in equity.
       </Paragraph>
       <Paragraph>
-        Upon any termination or suspension of your Account, you may no longer have access to information that you have posted on the Tools
-        or that is related to your Account, and you acknowledge that the DAO and/or the Foundation will have no obligation to maintain any
-        such information in the relevant databases or to forward any such information to you or to any third party. Upon termination of your
-        Account, your right to use the Tools will immediately cease. The following provisions of these Terms survive any termination of
+        Upon any termination or suspension of your Account, you may no longer have access to information that you have posted on the
+        Services or that is related to your Account, and you acknowledge that Decentraland will have no obligation to maintain any such
+        information in the relevant databases or to forward any such information to you or to any third party. Upon termination of your
+        Account, your right to use the Services will immediately cease. The following provisions of these Terms survive any termination of
         these Terms: REPRESENTATIONS AND RISKS; TRANSACTION AND FEES; INDEMNITY; DISCLAIMERS; LIMITATION ON LIABILITY; PROPRIETARY RIGHTS;
         LINKS; TERMINATION AND SUSPENSION; NO THIRD-PARTY BENEFICIARIES; BINDING ARBITRATION AND CLASS ACTION WAIVER; GENERAL INFORMATION.
       </Paragraph>
@@ -760,14 +851,22 @@ const TermsOfUseContent = memo(() => (
         You have the right to opt-out and not be bound by the arbitration and class action waiver provisions set forth above by sending
         written notice of your decision to opt-out to the following email address:{' '}
         <a href="mailto:legal@decentraland.org">legal@decentraland.org</a>. Your notice must be sent within 30 days of your first use of the
-        Tools, otherwise you shall be bound to arbitrate disputes in accordance with the terms of those paragraphs. If you opt-out of these
-        arbitration provisions, the Foundation also will not be bound by them.
+        Services, otherwise you shall be bound to arbitrate disputes in accordance with the terms of those paragraphs. If you opt-out of
+        these arbitration provisions, the Foundation also will not be bound by them.
       </Paragraph>
 
       <SubsectionTitle id="section-18-6">18.6 Changes to this Section</SubsectionTitle>
       <Paragraph>
-        The Foundation will provide 60-days&apos; notice of any changes to this section. Changes will become effective on the 60th day, and
-        will apply prospectively only to any claims arising after the 60th day.
+        We reserve the right to modify, amend, or update these Terms at any time, at our sole discretion. Any such changes will become
+        effective upon posting the revised Terms on the Platform, unless otherwise indicated.
+      </Paragraph>
+      <Paragraph>
+        Where appropriate, we may provide notice of material changes through the Platform or other reasonable means; however, it remains
+        your responsibility to review the Terms periodically.
+      </Paragraph>
+      <Paragraph>
+        Your continued access to or use of the Services after the updated Terms are posted constitutes your acknowledgment and acceptance of
+        the revised Terms. If you do not agree with the changes, you must cease using the Services.
       </Paragraph>
       <Paragraph>
         These Terms and the relationship between you and the Foundation shall be governed by the laws of Panama, without regard to conflict
@@ -785,10 +884,10 @@ const TermsOfUseContent = memo(() => (
 
       <SubsectionTitle id="section-19-1">19.1 Entire Agreement</SubsectionTitle>
       <Paragraph>
-        These Terms (and any additional terms, rules and conditions of participation that the Foundation or the DAO may post on the Site or
-        on the Tools) constitute the entire agreement between you and the Foundation with respect to the Tools and supersedes any prior
-        agreements, oral or written, between you and the Foundation. In the event of a conflict between these Terms and the additional
-        terms, rules and conditions of participation, the latter will prevail over the Terms to the extent of the conflict.
+        These Terms (and any additional terms, rules and conditions of participation that Decentraland may post on the Services) constitute
+        the entire agreement between you and the Foundation with respect to the Services and supersedes any prior agreements, oral or
+        written, between you and Decentraland. In the event of a conflict between these Terms and the additional terms, rules and conditions
+        of participation, the latter will prevail over the Terms to the extent of the conflict.
       </Paragraph>
 
       <SubsectionTitle id="section-19-2">19.2 Waiver and Severability of Terms</SubsectionTitle>
@@ -802,8 +901,7 @@ const TermsOfUseContent = memo(() => (
       <SubsectionTitle id="section-19-3">19.3 Statute of Limitations</SubsectionTitle>
       <Paragraph>
         You agree that regardless of any statute or law to the contrary, any claim or cause of action arising out of or related to the use
-        of the Site, the Tools or the Terms must be filed within one (1) year after such claim or cause of action arose or be forever
-        barred.
+        of the Services or the Terms must be filed within one (1) year after such claim or cause of action arose or be forever barred.
       </Paragraph>
 
       <SubsectionTitle id="section-19-4">19.4 Section Titles</SubsectionTitle>
@@ -811,8 +909,8 @@ const TermsOfUseContent = memo(() => (
 
       <SubsectionTitle id="section-19-5">19.5 Communications</SubsectionTitle>
       <Paragraph>
-        Users with questions, complaints or claims with respect to the Site or the Tools may contact us using the relevant contact
-        information set forth above and at <a href="mailto:legal@decentraland.org">legal@decentraland.org</a>.
+        Users with questions, complaints or claims with respect to the Services may contact us using the relevant contact information set
+        forth above and at <a href="mailto:legal@decentraland.org">legal@decentraland.org</a>.
       </Paragraph>
     </Section>
 
@@ -864,6 +962,7 @@ const TermsOfUseContent = memo(() => (
         &quot;Work&quot; shall mean the work of authorship of the Tools, made available under the License, as indicated by a copyright
         notice that is included in or attached to the Work.
       </Paragraph>
+      <Paragraph>(*) Developed and operated by DCL Regenesis Labs Foundation</Paragraph>
     </Section>
   </>
 ))

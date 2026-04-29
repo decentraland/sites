@@ -27,9 +27,10 @@ type IdentityOnlyParams = { identity: AuthIdentity }
 type UpdateAdminPermissionsParams = IdentityOnlyParams & { address: string; permissions: AdminPermission[] }
 type AdminEventActionParams = IdentityOnlyParams & { eventId: string }
 type RejectReasonCode = (typeof REJECT_REASONS)[number]
-type AdminRejectEventParams = AdminEventActionParams & { reasons?: RejectReasonCode[]; notes?: string }
+type AdminRejectEventParams = AdminEventActionParams & { reason?: string }
+const REJECTION_REASON_MAX_LENGTH = 500
 
-export { AdminPermission, REJECT_REASONS, UPDATEABLE_PERMISSIONS }
+export { AdminPermission, REJECT_REASONS, REJECTION_REASON_MAX_LENGTH, UPDATEABLE_PERMISSIONS }
 export type {
   AdminEventActionParams,
   AdminProfileSettings,

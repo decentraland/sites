@@ -8,10 +8,11 @@ interface CardActionsParams {
   finishAt: string
   x: number
   y: number
+  realm?: string
 }
 
 function useCardActions(event: CardActionsParams) {
-  const eventUrl = buildEventJumpInUrl(event.x, event.y)
+  const eventUrl = buildEventJumpInUrl(event.x, event.y, event.realm)
   const [copied, setCopied] = useState(false)
   const [calendarAdded, setCalendarAdded] = useState(false)
   const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null)

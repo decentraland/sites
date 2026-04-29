@@ -5,6 +5,11 @@ import { TermsOfUseContent } from './TermsOfUseContent'
 
 const TABLE_OF_CONTENTS: TOCEntry[] = [
   { id: 'acceptance-of-terms', label: '1. Acceptance of Terms' },
+  { id: 'section-1-1', label: '1.1 Introduction', depth: 1 },
+  { id: 'section-1-2', label: '1.2 Services', depth: 1 },
+  { id: 'section-1-3', label: '1.3 Agreement to these Terms', depth: 1 },
+  { id: 'section-1-4', label: '1.4 Free access', depth: 1 },
+  { id: 'section-1-5', label: '1.5 Open Source Software', depth: 1 },
   { id: 'disclaimer-and-modification', label: '2. Disclaimer and Modification of Terms of Use' },
   { id: 'eligibility', label: '3. Eligibility' },
   { id: 'account-access-and-security', label: '4. Account Access and Security' },
@@ -22,7 +27,7 @@ const TABLE_OF_CONTENTS: TOCEntry[] = [
   { id: 'section-5-11', label: '5.11 Wearables Curation Committee', depth: 1 },
   { id: 'transactions-and-fees', label: '6. Transactions and Fees' },
   { id: 'changes', label: '7. Changes' },
-  { id: 'children', label: '8. Children' },
+  { id: 'children', label: '8. Age Eligibility' },
   { id: 'indemnity', label: '9. Indemnity' },
   { id: 'disclaimers', label: '10. Disclaimers' },
   { id: 'limitation-on-liability', label: '11. Limitation on Liability' },

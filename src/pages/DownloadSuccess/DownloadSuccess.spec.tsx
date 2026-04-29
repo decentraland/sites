@@ -1,0 +1,179 @@
+import React from 'react'
+import { render, waitFor } from '@testing-library/react'
+import { DownloadSuccess } from './DownloadSuccess'
+
+const mockTrack = jest.fn()
+const mockCalculateDownloadUrl = jest.fn()
+const mockTriggerFileDownload = jest.fn()
+let searchParamsInstance = new URLSearchParams()
+
+jest.mock('decentraland-ui2', () => ({
+  Logo: () => null,
+  Typography: ({ children }: { children: React.ReactNode }) => <span>{children}</span>
+}))
+
+jest.mock('@dcl/hooks', () => ({
+  useAnalytics: () => ({ isInitialized: true, track: mockTrack }),
+  useTranslation: () => ({
+    intl: { formatMessage: ({ id }: { id: string }) => id }
+  })
+}))
+
+jest.mock('react-router-dom', () => ({
+  useSearchParams: () => [searchParamsInstance, jest.fn()]
+}))
+
+jest.mock('../../hooks/useAnonUserId', () => ({
+  ANON_USER_ID_PARAM: 'anonUserId',
+  useAnonUserId: () => 'anon-123'
+}))
+
+jest.mock('../../hooks/useGetIdentityId', () => ({
+  useGetIdentityId: () => () => Promise.resolve('id-xyz')
+}))
+
+jest.mock('../../modules/downloadWithIdentity', () => ({
+  calculateDownloadUrl: (...args: unknown[]) => mockCalculateDownloadUrl(...args),
+  getDownloadLinkWithIdentity: jest.fn()
+}))
+
+jest.mock('../../modules/file', () => ({
+  triggerFileDownload: (...args: unknown[]) => mockTriggerFileDownload(...args)
+}))
+
+jest.mock('../../modules/url', () => ({
+  FALLBACK_CDN_RELEASE_LINKS: {
+    Windows: { amd64: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe' },
+    macOS: { arm64: 'https://cdn.decentraland.org/launcher/Decentraland-arm64.dmg' }
+  },
+  addQueryParamsToUrlString: (url: string) => url
+}))
+
+jest.mock('./DownloadSuccessLayout', () => ({
+  DownloadSuccessLayout: () => <div data-testid="layout" />
+}))
+
+jest.mock('./DownloadSuccess.styled', () => ({
+  DownloadBackdropContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DownloadBackdropText: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+  DownloadDetailContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DownloadProgressBar: () => <div />,
+  DownloadProgressContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  HighlightAnimation: () => <div />
+}))
+
+jest.mock('../../components/LandingFooter', () => ({
+  LandingFooter: () => <div data-testid="footer" />
+}))
+
+describe('when DownloadSuccess mounts with os, place, and a successful url resolution', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=landing-hero')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should fire download_started with place and the fallback href', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('download_started', {
+        place: 'landing-hero',
+        href: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe'
+      })
+    })
+  })
+
+  it('should fire download_success with place, the resolved href, and filename', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('download_success', {
+        place: 'landing-hero',
+        href: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+        filename: 'Install-Decentraland.exe'
+      })
+    })
+  })
+})
+
+describe('when DownloadSuccess mounts without a place query param', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=macOS&arch=arm64')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=macOS&arch=arm64')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Decentraland.dmg?sig=abc',
+      filename: 'Decentraland.dmg'
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should fire download_started with place set to unknown', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('download_started', expect.objectContaining({ place: 'unknown' }))
+    })
+  })
+})
+
+describe('when DownloadSuccess mounts with a place query param that is not in the DownloadPlace enum', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=macOS&arch=arm64&place=attacker-crafted')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=macOS&arch=arm64&place=attacker-crafted')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Decentraland.dmg?sig=abc',
+      filename: 'Decentraland.dmg'
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should coerce place to unknown so analytics cardinality stays bounded', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('download_started', expect.objectContaining({ place: 'unknown' }))
+    })
+  })
+})
+
+describe('when DownloadSuccess mounts and the url resolution rejects', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=download-page')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=download-page')
+    mockCalculateDownloadUrl.mockRejectedValue(new Error('No download link available'))
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should fire download_failed with place and the fallback href', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('download_failed', {
+        place: 'download-page',
+        href: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe'
+      })
+    })
+  })
+})

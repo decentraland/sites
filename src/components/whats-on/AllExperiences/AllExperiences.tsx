@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useTranslation } from '@dcl/hooks'
-import { useGetAdminEventsQuery } from '../../../features/whats-on/admin/admin.client'
 import { useGetEventsQuery } from '../../../features/whats-on-events'
 import type { EventEntry, EventListType } from '../../../features/whats-on-events'
-import { useAdminPermissions } from '../../../hooks/useAdminPermissions'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
 import { useVisibleColumnCount } from '../../../hooks/useVisibleColumnCount'
@@ -30,11 +27,11 @@ interface UseAllExperiencesDataArgs {
   startOffset: number
   columnCount: number
   identity?: import('@dcl/crypto').AuthIdentity
-  creator?: string
   list: EventListType
+  ownerOnly?: boolean
 }
 
-function useAllExperiencesData({ today, startOffset, columnCount, identity, creator, list }: UseAllExperiencesDataArgs) {
+function useAllExperiencesData({ today, startOffset, columnCount, identity, list, ownerOnly }: UseAllExperiencesDataArgs) {
   const days = useMemo(
     () => Array.from({ length: columnCount }, (_, i) => addDays(today, startOffset + i)),
     [today, startOffset, columnCount]
@@ -43,7 +40,6 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, crea
   const rangeStart = useMemo(() => getDayRange(days[0]), [days])
   const rangeEnd = useMemo(() => getDayRange(days[days.length - 1]), [days])
 
-  const isCreatorScoped = Boolean(creator)
   const {
     data: allEvents = [],
     isLoading,
@@ -51,15 +47,15 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, crea
   } = useGetEventsQuery(
     {
       list,
-      from: isCreatorScoped ? undefined : rangeStart.from,
-      to: isCreatorScoped ? undefined : rangeEnd.to,
+      from: ownerOnly ? undefined : rangeStart.from,
+      to: ownerOnly ? undefined : rangeEnd.to,
       order: 'asc',
       world: false,
       limit: 200,
       identity,
-      creator
+      owner: ownerOnly ? true : undefined
     },
-    { refetchOnMountOrArgChange: isCreatorScoped }
+    { refetchOnMountOrArgChange: ownerOnly }
   )
 
   const dayData = useMemo(
@@ -115,7 +111,6 @@ function AllExperiences() {
   }, [hasValidIdentity, activeTab])
 
   const isMyTab = hasValidIdentity && activeTab === 'my'
-  const { isAdmin } = useAdminPermissions()
 
   const {
     allEvents,
@@ -126,25 +121,17 @@ function AllExperiences() {
     startOffset,
     columnCount,
     identity,
-    creator: isMyTab ? address : undefined,
-    list: isMyTab ? 'all' : 'active'
+    list: isMyTab ? 'all' : 'active',
+    ownerOnly: isMyTab
   })
-
-  const { data: adminEvents = [], isLoading: isLoadingAdminEvents } = useGetAdminEventsQuery(
-    isMyTab && isAdmin && identity ? { identity } : skipToken,
-    { refetchOnMountOrArgChange: true }
-  )
 
   const sortedMyEvents = useMemo(() => {
     if (!isMyTab) return []
     const lowerAddress = address?.toLowerCase() ?? ''
-    const mergedById = new Map<string, EventEntry>()
-    for (const event of allEvents) mergedById.set(event.id, event)
-    for (const event of adminEvents) {
-      if ((event.user ?? '').toLowerCase() === lowerAddress) mergedById.set(event.id, event)
-    }
+    if (!lowerAddress) return []
     const now = Date.now()
-    return Array.from(mergedById.values())
+    return allEvents
+      .filter(event => (event.user ?? '').toLowerCase() === lowerAddress)
       .map(event => {
         if (event.recurrent && event.next_start_at && event.next_finish_at) {
           /* eslint-disable @typescript-eslint/naming-convention */
@@ -155,16 +142,36 @@ function AllExperiences() {
       })
       .filter(event => new Date(event.finish_at).getTime() >= now)
       .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
-  }, [address, adminEvents, allEvents, isMyTab])
+  }, [address, allEvents, isMyTab])
 
   const hasAnyUpcomingMyEvent = sortedMyEvents.length > 0
-  const isLoadingMyEvents = isLoadingEvents || (isMyTab && isAdmin && isLoadingAdminEvents)
 
   useEffect(() => {
-    if (requestedTab !== 'my' || hasScrolledToMyTab.current || isLoadingMyEvents || !sectionRef.current) return
-    hasScrolledToMyTab.current = true
-    sectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [requestedTab, isLoadingMyEvents])
+    if (requestedTab !== 'my' || hasScrolledToMyTab.current || isLoadingEvents || !sectionRef.current) return
+
+    // The section can be wrapped in an ancestor that toggles display:none while
+    // sibling data loads (e.g. DeferredGroup in HomePage). scrollIntoView is a
+    // no-op on elements without a layout box, so poll on rAF until the element
+    // becomes visible, then scroll once. offsetParent === null here specifically
+    // covers the display:none ancestor case; if DeferredGroup ever switches to
+    // a position:fixed wrapper this heuristic will need to change.
+    const MAX_ATTEMPTS = 120
+    let rafId = 0
+    let attempts = 0
+    const scrollWhenVisible = () => {
+      const el = sectionRef.current
+      if (!el || attempts >= MAX_ATTEMPTS) return
+      if (el.offsetParent === null) {
+        attempts++
+        rafId = requestAnimationFrame(scrollWhenVisible)
+        return
+      }
+      hasScrolledToMyTab.current = true
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+    rafId = requestAnimationFrame(scrollWhenVisible)
+    return () => cancelAnimationFrame(rafId)
+  }, [requestedTab, isLoadingEvents])
 
   const handleNavigateLeft = useCallback(() => {
     setStartOffset(prev => Math.max(0, prev - columnCount))
@@ -193,14 +200,14 @@ function AllExperiences() {
     [dayData]
   )
 
-  const showMyEmptyState = isMyTab && !isLoadingMyEvents && !hasAnyUpcomingMyEvent
+  const showMyEmptyState = isMyTab && Boolean(address) && !isLoadingEvents && !hasAnyUpcomingMyEvent
 
   return (
-    <AllExperiencesSection ref={sectionRef} aria-label={t('all_experiences.title')}>
+    <AllExperiencesSection ref={sectionRef} aria-label={t('all_hangouts.title')}>
       {hasValidIdentity ? (
         <ExperiencesTabs value={activeTab} onChange={handleTabChange} panelId={MY_EXPERIENCES_PANEL_ID} />
       ) : (
-        <SectionTitle variant="h4">{t('all_experiences.title')}</SectionTitle>
+        <SectionTitle variant="h4">{t('all_hangouts.title')}</SectionTitle>
       )}
       <div role={hasValidIdentity ? 'tabpanel' : undefined} id={hasValidIdentity ? MY_EXPERIENCES_PANEL_ID : undefined}>
         {isMyTab ? (

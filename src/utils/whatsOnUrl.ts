@@ -1,9 +1,30 @@
-function buildJumpInUrl(x: number, y: number): string {
-  return `https://decentraland.org/jump?position=${x},${y}`
+function appendRealmParam(url: string, realm?: string | null): string {
+  if (!realm) return url
+  const separator = url.includes('?') ? '&' : '?'
+  return `${url}${separator}realm=${encodeURIComponent(realm)}`
 }
 
-function buildEventJumpInUrl(x: number, y: number): string {
-  return `https://decentraland.org/jump/event?position=${x},${y}`
+function resolveEventRealm(world: boolean | undefined, server: string | null | undefined): string | undefined {
+  return world && server ? server : undefined
+}
+
+function buildJumpInUrl(x: number, y: number, realm?: string | null): string {
+  return appendRealmParam(`https://decentraland.org/jump?position=${x},${y}`, realm)
+}
+
+function buildEventJumpInUrl(x: number, y: number, realm?: string | null): string {
+  return appendRealmParam(`https://decentraland.org/jump/event?position=${x},${y}`, realm)
+}
+
+const EVENT_ID_PARAM = 'id'
+
+function buildEventShareUrl(eventId: string, isLive: boolean, href: string = window.location.href): string {
+  const current = new URL(href)
+  const url = new URL(isLive ? '/jump/events' : '/whats-on', current.origin)
+  const env = current.searchParams.get('env')
+  if (env) url.searchParams.set('env', env)
+  url.searchParams.set(EVENT_ID_PARAM, eventId)
+  return url.toString()
 }
 
 function parseCoordinates(coordinates: string): [number, number] {
@@ -43,4 +64,13 @@ function buildCalendarUrl(event: CalendarEventParams): string | null {
   return `https://calendar.google.com/calendar/render?${params.toString()}`
 }
 
-export { buildCalendarUrl, buildEventJumpInUrl, buildJumpInUrl, parseCoordinates }
+export {
+  EVENT_ID_PARAM,
+  appendRealmParam,
+  buildCalendarUrl,
+  buildEventJumpInUrl,
+  buildEventShareUrl,
+  buildJumpInUrl,
+  parseCoordinates,
+  resolveEventRealm
+}

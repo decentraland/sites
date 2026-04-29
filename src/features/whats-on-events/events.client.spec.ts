@@ -342,6 +342,72 @@ describe('eventsClient', () => {
     })
   })
 
+  describe('when getEventById query is called', () => {
+    const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
+
+    describe('and the fetch succeeds', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test')
+        mockFetchWithOptionalIdentity.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve({ ok: true, data: { id: 'ev-42', name: 'Test' } })
+        })
+      })
+
+      it('should GET the event by id and unwrap the data envelope', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(eventsClient.endpoints.getEventById.initiate({ eventId: 'ev-42', identity: mockIdentity }))
+
+        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith('https://events.test/events/ev-42', mockIdentity)
+        expect(result.data).toEqual({ id: 'ev-42', name: 'Test' })
+      })
+
+      it('should percent-encode the event id in the URL', async () => {
+        const store = createTestStore()
+        await store.dispatch(eventsClient.endpoints.getEventById.initiate({ eventId: 'ev 42/slash', identity: mockIdentity }))
+
+        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith('https://events.test/events/ev%2042%2Fslash', mockIdentity)
+      })
+    })
+
+    describe('and the fetch returns not ok', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test')
+        mockFetchWithOptionalIdentity.mockResolvedValue({
+          ok: false,
+          status: 404,
+          json: () => Promise.resolve({ ok: false, error: 'not found' })
+        })
+      })
+
+      it('should surface the envelope as the query error', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(eventsClient.endpoints.getEventById.initiate({ eventId: 'ev-42', identity: mockIdentity }))
+
+        expect(result.error).toEqual(
+          expect.objectContaining({
+            status: 404,
+            data: expect.objectContaining({ error: 'not found' })
+          })
+        )
+      })
+    })
+
+    describe('and the fetch throws', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test')
+        mockFetchWithOptionalIdentity.mockRejectedValue(new Error('offline'))
+      })
+
+      it('should return a FETCH_ERROR', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(eventsClient.endpoints.getEventById.initiate({ eventId: 'ev-42', identity: mockIdentity }))
+
+        expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR', error: 'offline' }))
+      })
+    })
+  })
+
   describe('when createEvent mutation is called', () => {
     const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
 

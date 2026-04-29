@@ -142,6 +142,10 @@ const CategoryLabel = styled(Typography)({
   letterSpacing: '0.04em'
 })
 
+const LiveBadgeWrapper = styled(Box)({
+  alignSelf: 'flex-start'
+})
+
 const ModalTitle = styled(Typography)({
   fontSize: 32,
   fontWeight: 600,
@@ -199,26 +203,33 @@ const ActionsRow = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1)
 }))
 
-const JumpInButton = styled('button')(({ theme }) => ({
+const PrimaryActionButton = styled('button')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   gap: theme.spacing(1),
+  height: 46,
   backgroundColor: '#FCFCFC',
   color: '#161518',
   border: 'none',
-  borderRadius: theme.spacing(1),
-  padding: theme.spacing(1, 2.5),
+  borderRadius: theme.spacing(1.5),
+  padding: theme.spacing(0, 2.5),
   fontSize: 14,
   fontWeight: 600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.04em',
   cursor: 'pointer',
   whiteSpace: 'nowrap',
   transition: theme.transitions.create('background-color', {
     duration: theme.transitions.duration.short
   }),
   /* eslint-disable @typescript-eslint/naming-convention */
-  '&:hover': {
-    backgroundColor: '#E0E0E0'
+  '&:disabled': {
+    opacity: 0.5,
+    cursor: 'default'
+  },
+  '&:hover:not(:disabled)': {
+    backgroundColor: 'rgba(252, 252, 252, 0.85)'
   },
   '&:focus-visible': {
     outline: '2px solid #FCFCFC',
@@ -419,8 +430,9 @@ export {
   HeroImage,
   HeroOverlay,
   HeroSection,
-  JumpInButton,
+  LiveBadgeWrapper,
   ModalTitle,
+  PrimaryActionButton,
   RecurrenceText,
   ScheduleIconButton,
   ScheduleRow,

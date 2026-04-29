@@ -16,9 +16,9 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
-        'all_experiences.title': 'All Experiences',
-        'all_experiences.tab_all': 'All Experiences',
-        'all_experiences.tab_my': 'My Experiences'
+        'all_hangouts.title': 'All Hangouts',
+        'all_hangouts.tab_all': 'All Hangouts',
+        'all_hangouts.tab_my': 'My Hangouts'
       }
       return translations[key] ?? key
     }
@@ -59,7 +59,7 @@ describe('ExperiencesTabs', () => {
       const onChange = jest.fn()
       render(<ExperiencesTabs value="all" onChange={onChange} />)
 
-      fireEvent.click(screen.getByRole('tab', { name: 'My Experiences' }))
+      fireEvent.click(screen.getByRole('tab', { name: 'My Hangouts' }))
 
       expect(onChange).toHaveBeenCalledWith('my')
     })
@@ -70,7 +70,7 @@ describe('ExperiencesTabs', () => {
       const onChange = jest.fn()
       render(<ExperiencesTabs value="my" onChange={onChange} />)
 
-      fireEvent.click(screen.getByRole('tab', { name: 'All Experiences' }))
+      fireEvent.click(screen.getByRole('tab', { name: 'All Hangouts' }))
 
       expect(onChange).toHaveBeenCalledWith('all')
     })
@@ -81,7 +81,7 @@ describe('ExperiencesTabs', () => {
       const onChange = jest.fn()
       render(<ExperiencesTabs value="all" onChange={onChange} />)
 
-      fireEvent.keyDown(screen.getByRole('tab', { name: 'All Experiences' }), { key: 'ArrowRight' })
+      fireEvent.keyDown(screen.getByRole('tab', { name: 'All Hangouts' }), { key: 'ArrowRight' })
 
       expect(onChange).toHaveBeenCalledWith('my')
     })
@@ -92,7 +92,7 @@ describe('ExperiencesTabs', () => {
       const onChange = jest.fn()
       render(<ExperiencesTabs value="my" onChange={onChange} />)
 
-      fireEvent.keyDown(screen.getByRole('tab', { name: 'My Experiences' }), { key: 'ArrowLeft' })
+      fireEvent.keyDown(screen.getByRole('tab', { name: 'My Hangouts' }), { key: 'ArrowLeft' })
 
       expect(onChange).toHaveBeenCalledWith('all')
     })

@@ -136,7 +136,8 @@
       },
       "whats_on": {
         "title": "지금 일어나고 있는 일에 뛰어들기",
-        "live": "라이브"
+        "live": "라이브",
+        "view_all": "모두 보기"
       }
     }
   },
@@ -510,5 +511,9 @@
         "whats_on": "새 소식"
       }
     }
+  },
+  "create_event": {
+    "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
+    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
   }
 }

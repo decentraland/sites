@@ -137,8 +137,30 @@ describe('when calling admin profile settings endpoints', () => {
       mockFetchWithIdentity.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) })
     })
 
-    it('should PATCH /events/:id with { rejected: true }', async () => {
+    it('should PATCH /events/:id with { rejected: true } when no reason is provided', async () => {
       await store.dispatch(adminClient.endpoints.rejectEvent.initiate({ eventId: 'abc', identity }))
+      expect(mockFetchWithIdentity).toHaveBeenCalledWith(
+        'https://events.test/events/abc',
+        identity,
+        'PATCH',
+        JSON.stringify({ rejected: true }),
+        { 'Content-Type': 'application/json' }
+      )
+    })
+
+    it('should PATCH with rejection_reason trimmed when reason is provided', async () => {
+      await store.dispatch(adminClient.endpoints.rejectEvent.initiate({ eventId: 'abc', identity, reason: '  Invalid image. extra  ' }))
+      expect(mockFetchWithIdentity).toHaveBeenCalledWith(
+        'https://events.test/events/abc',
+        identity,
+        'PATCH',
+        JSON.stringify({ rejected: true, rejection_reason: 'Invalid image. extra' }),
+        { 'Content-Type': 'application/json' }
+      )
+    })
+
+    it('should omit rejection_reason when reason is whitespace only', async () => {
+      await store.dispatch(adminClient.endpoints.rejectEvent.initiate({ eventId: 'abc', identity, reason: '   ' }))
       expect(mockFetchWithIdentity).toHaveBeenCalledWith(
         'https://events.test/events/abc',
         identity,
