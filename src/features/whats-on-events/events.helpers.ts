@@ -1,7 +1,8 @@
 import { assetUrl } from '../../utils/assetUrl'
+import { resolveDeployers } from '../../utils/peerDeployers'
 import { isSameLocalDay } from '../../utils/whatsOnDate'
 import { DCL_FOUNDATION_NAME, coordsKey } from '../events/events.helpers'
-import type { ActiveEntity, HotScene } from '../events/events.types'
+import type { HotScene } from '../events/events.types'
 import type { EventEntry, RecurrentFrequency } from './events.types'
 
 interface LiveNowCard {
@@ -175,10 +176,6 @@ interface PlaceResponse {
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
-interface DeploymentResponse {
-  deployments: { deployedBy: string }[]
-}
-
 interface EnrichmentConfig {
   placesUrl?: string
   peerUrl?: string
@@ -186,85 +183,86 @@ interface EnrichmentConfig {
 
 const WALLET_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/
 
-// TODO: N+1 optimization — Places API supports comma-separated `positions` param for batch lookups.
-// `entities/active` and `deployments` already support batch queries (see src/features/events/events.client.ts
-// `resolveDeployers` for the batch pattern). Collapse all place-card requests into batch calls.
+async function fetchPlacePatch(placesUrl: string, card: LiveNowCard): Promise<Partial<LiveNowCard>> {
+  const patch: Partial<LiveNowCard> = {}
+  try {
+    const qs = new URLSearchParams({ positions: card.coordinates }).toString()
+    const res = await fetch(`${placesUrl}/places?${qs}`)
+    if (!res.ok) return patch
+    const data = (await res.json()) as PlaceResponse
+    const place = data.data?.[0]
+    if (!place) return patch
+
+    patch.description = place.description || null
+    patch.categories = place.categories || []
+
+    const trimmedOwner = place.owner?.trim() || undefined
+    const ownerIsWallet = !!trimmedOwner && WALLET_ADDRESS_REGEX.test(trimmedOwner)
+    if (!card.creatorAddress) {
+      const address = place.creator_address?.trim() || (ownerIsWallet ? trimmedOwner : undefined)
+      if (address) patch.creatorAddress = address
+    }
+    if (!card.creatorName) {
+      const name = place.contact_name?.trim() || (trimmedOwner && !ownerIsWallet ? trimmedOwner : undefined)
+      if (name) patch.creatorName = name
+    }
+  } catch (err) {
+    console.warn('[LiveNow] places lookup failed for', card.coordinates, err)
+  }
+  return patch
+}
+
+// Enriches place cards with metadata from the Places API and deployer addresses from the peer
+// content service. Place metadata (description, categories, owner) still uses one HTTP request
+// per card because the Places API's batch contract isn't documented here, but every card-level
+// request runs in parallel. Deployer lookups, on the other hand, collapse into a single batched
+// `entities/active` + `deployments` pair via the shared `resolveDeployers` helper — without
+// this, ~10–20 place cards meant 20–40 sequential roundtrips on every Live Now refresh.
 async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig): Promise<LiveNowCard[]> {
   const { placesUrl, peerUrl } = config
   const placeCards = cards.filter(c => c.type === 'place')
   if (placeCards.length === 0) return cards
   if (!placesUrl && !peerUrl) return cards
 
-  const enrichments = new Map<string, Partial<LiveNowCard>>()
+  const placePatchByCardId = new Map<string, Partial<LiveNowCard>>()
 
-  await Promise.all(
-    placeCards.map(async card => {
-      const patch: Partial<LiveNowCard> = {}
+  const placeFetches: Promise<void> = placesUrl
+    ? Promise.all(
+        placeCards.map(async card => {
+          const patch = await fetchPlacePatch(placesUrl, card)
+          if (Object.keys(patch).length > 0) placePatchByCardId.set(card.id, patch)
+        })
+      ).then(() => undefined)
+    : Promise.resolve()
 
-      if (placesUrl) {
-        try {
-          const qs = new URLSearchParams({ positions: card.coordinates }).toString()
-          const res = await fetch(`${placesUrl}/places?${qs}`)
-          if (res.ok) {
-            const data = (await res.json()) as PlaceResponse
-            const place = data.data?.[0]
-            if (place) {
-              patch.description = place.description || null
-              patch.categories = place.categories || []
+  await placeFetches
 
-              const trimmedOwner = place.owner?.trim() || undefined
-              const ownerIsWallet = !!trimmedOwner && WALLET_ADDRESS_REGEX.test(trimmedOwner)
-              if (!card.creatorAddress) {
-                const address = place.creator_address?.trim() || (ownerIsWallet ? trimmedOwner : undefined)
-                if (address) patch.creatorAddress = address
-              }
-              if (!card.creatorName) {
-                const name = place.contact_name?.trim() || (trimmedOwner && !ownerIsWallet ? trimmedOwner : undefined)
-                if (name) patch.creatorName = name
-              }
-            }
-          }
-        } catch (err) {
-          console.warn('[LiveNow] places lookup failed for', card.coordinates, err)
-        }
-      }
-
-      if (peerUrl && !card.creatorAddress && !patch.creatorAddress) {
-        try {
-          const entityRes = await fetch(`${peerUrl}/content/entities/active`, {
-            method: 'POST',
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pointers: [card.coordinates] })
-          })
-          if (entityRes.ok) {
-            const entities = (await entityRes.json()) as ActiveEntity[]
-            const entityId = entities[0]?.id
-            if (entityId) {
-              const depRes = await fetch(`${peerUrl}/content/deployments/?entityId=${encodeURIComponent(entityId)}`)
-              if (depRes.ok) {
-                const depData = (await depRes.json()) as DeploymentResponse
-                const deployedBy = depData.deployments?.[0]?.deployedBy
-                if (deployedBy) patch.creatorAddress = deployedBy
-              }
-            }
-          }
-        } catch (err) {
-          console.warn('[LiveNow] deployer lookup failed for', card.coordinates, err)
-        }
-      }
-
-      if (Object.keys(patch).length > 0) {
-        enrichments.set(card.id, patch)
-      }
+  let deployerMap: Map<string, string> = new Map()
+  if (peerUrl) {
+    const cardsNeedingDeployer = placeCards.filter(card => {
+      if (card.creatorAddress) return false
+      const patch = placePatchByCardId.get(card.id)
+      return !patch?.creatorAddress
     })
-  )
+    const coordinates = cardsNeedingDeployer.map(card => card.coordinates)
+    if (coordinates.length > 0) {
+      try {
+        deployerMap = await resolveDeployers(peerUrl, coordinates)
+      } catch (err) {
+        console.warn('[LiveNow] deployer lookup failed', err)
+      }
+    }
+  }
 
-  if (enrichments.size === 0) return cards
+  if (placePatchByCardId.size === 0 && deployerMap.size === 0) return cards
 
   return cards.map(card => {
-    const patch = enrichments.get(card.id)
-    return patch ? { ...card, ...patch } : card
+    const patch = placePatchByCardId.get(card.id)
+    const deployedBy = !card.creatorAddress && !patch?.creatorAddress ? deployerMap.get(card.coordinates) : undefined
+    if (!patch && !deployedBy) return card
+    const merged: LiveNowCard = patch ? { ...card, ...patch } : { ...card }
+    if (deployedBy) merged.creatorAddress = deployedBy
+    return merged
   })
 }
 

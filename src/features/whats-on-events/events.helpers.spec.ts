@@ -574,6 +574,104 @@ describe('enrichPlaceCards', () => {
       expect(result[0]).not.toBe(cards[0])
     })
   })
+
+  describe('when peerUrl is provided and a place card has no creator', () => {
+    let cards: LiveNowCard[]
+    let result: LiveNowCard[]
+    let fetchSpy: jest.SpyInstance
+
+    beforeEach(async () => {
+      cards = [createMockPlaceCard({ id: 'card-1', coordinates: '10,20', creatorAddress: undefined, creatorName: undefined })]
+      fetchSpy = jest.spyOn(global, 'fetch').mockImplementation((url: string | URL | Request) => {
+        const urlStr = typeof url === 'string' ? url : url.toString()
+        if (urlStr.includes('/content/entities/active')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([{ id: 'ent-1', pointers: ['10,20'] }])
+          } as Response)
+        }
+        if (urlStr.includes('/content/deployments')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ deployments: [{ entityId: 'ent-1', deployedBy: '0xDeployer' }] })
+          } as Response)
+        }
+        return Promise.resolve({ ok: false, json: () => Promise.resolve(null) } as Response)
+      })
+      fetchSpy.mockClear()
+      result = await enrichPlaceCards(cards, { peerUrl: 'https://peer.test' })
+    })
+
+    it('should batch the deployer lookup into a single entities/active call regardless of card count', () => {
+      const entityCalls = fetchSpy.mock.calls.filter(call => String(call[0]).includes('/content/entities/active'))
+      expect(entityCalls.length).toBe(1)
+    })
+
+    it('should batch the deployments lookup into a single call', () => {
+      const deploymentCalls = fetchSpy.mock.calls.filter(call => String(call[0]).includes('/content/deployments'))
+      expect(deploymentCalls.length).toBe(1)
+    })
+
+    it('should attach the resolved deployer as creatorAddress', () => {
+      expect(result[0].creatorAddress).toBe('0xDeployer')
+    })
+  })
+
+  describe('when multiple place cards need deployer resolution', () => {
+    let cards: LiveNowCard[]
+    let result: LiveNowCard[]
+    let fetchSpy: jest.SpyInstance
+
+    beforeEach(async () => {
+      cards = [
+        createMockPlaceCard({ id: 'card-1', coordinates: '10,20', creatorAddress: undefined, creatorName: undefined }),
+        createMockPlaceCard({ id: 'card-2', coordinates: '30,40', creatorAddress: undefined, creatorName: undefined })
+      ]
+      fetchSpy = jest.spyOn(global, 'fetch').mockImplementation((url: string | URL | Request) => {
+        const urlStr = typeof url === 'string' ? url : url.toString()
+        if (urlStr.includes('/content/entities/active')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve([
+                { id: 'ent-a', pointers: ['10,20'] },
+                { id: 'ent-b', pointers: ['30,40'] }
+              ])
+          } as Response)
+        }
+        if (urlStr.includes('/content/deployments')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                deployments: [
+                  { entityId: 'ent-a', deployedBy: '0xAlice' },
+                  { entityId: 'ent-b', deployedBy: '0xBob' }
+                ]
+              })
+          } as Response)
+        }
+        return Promise.resolve({ ok: false, json: () => Promise.resolve(null) } as Response)
+      })
+      fetchSpy.mockClear()
+      result = await enrichPlaceCards(cards, { peerUrl: 'https://peer.test' })
+    })
+
+    it('should still issue exactly one entities/active call', () => {
+      const entityCalls = fetchSpy.mock.calls.filter(call => String(call[0]).includes('/content/entities/active'))
+      expect(entityCalls.length).toBe(1)
+    })
+
+    it('should still issue exactly one deployments call', () => {
+      const deploymentCalls = fetchSpy.mock.calls.filter(call => String(call[0]).includes('/content/deployments'))
+      expect(deploymentCalls.length).toBe(1)
+    })
+
+    it('should map each card to its own deployer', () => {
+      expect(result[0].creatorAddress).toBe('0xAlice')
+      expect(result[1].creatorAddress).toBe('0xBob')
+    })
+  })
 })
 
 describe('bucketEventsByDay', () => {
