@@ -31,6 +31,12 @@ describe('useCreatorAvatar', () => {
       expect(result.current.avatar).toBeUndefined()
       expect(result.current.avatarFace).toBeUndefined()
     })
+
+    it('should forward the undefined address to useProfileAvatar so the underlying query is skipped', () => {
+      renderHook(() => useCreatorAvatar(undefined))
+
+      expect(mockedUseProfileAvatar).toHaveBeenCalledWith(undefined)
+    })
   })
 
   describe('when the catalyst profile resolves to a deployed face', () => {
@@ -47,6 +53,12 @@ describe('useCreatorAvatar', () => {
       const { result } = renderHook(() => useCreatorAvatar(VALID_ADDRESS, 'Fallback'))
 
       expect(result.current.avatarFace).toBe(REAL_FACE_URL)
+    })
+
+    it('should forward the address to useProfileAvatar so the catalyst lookup is keyed to the creator', () => {
+      renderHook(() => useCreatorAvatar(VALID_ADDRESS, 'Fallback'))
+
+      expect(mockedUseProfileAvatar).toHaveBeenCalledWith(VALID_ADDRESS)
     })
 
     it('should prefer the catalyst name over the caller-provided fallback when building the avatar', () => {
