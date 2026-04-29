@@ -61,7 +61,7 @@ const DayColumn = memo(({ events, isLoading, dateLabel, renderCard }: DayColumnP
         )}
         {!isLoading &&
           events.map(event => (
-            <div key={event.id} role="listitem">
+            <div key={`${event.id}-${event.start_at}`} role="listitem">
               {renderCard(event)}
             </div>
           ))}
