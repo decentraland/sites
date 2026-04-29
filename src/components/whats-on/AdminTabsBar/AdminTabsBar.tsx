@@ -8,7 +8,7 @@ import { Bar, BarTab, BarTabs, CreateEventButtonWrapper } from './AdminTabsBar.s
 const ROUTE_WHATS_ON = '/whats-on'
 const ROUTE_PENDING = '/whats-on/admin/pending-events'
 const ROUTE_USERS = '/whats-on/admin/users'
-const ROUTE_CREATE_EVENT = '/whats-on/new-event'
+const ROUTE_CREATE_EVENT = '/whats-on/new-hangout'
 
 function AdminTabsBar() {
   const { isAdmin, canApproveAnyEvent, canApproveOwnEvent, canEditAnyEvent, canEditAnyProfile } = useAdminPermissions()

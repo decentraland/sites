@@ -46,7 +46,7 @@ describe('useEventDetailModal', () => {
       })
 
       it('should navigate to the edit route with the original event in location state', () => {
-        expect(mockNavigate).toHaveBeenCalledWith('/whats-on/edit-event/ev-42', { state: { event } })
+        expect(mockNavigate).toHaveBeenCalledWith('/whats-on/edit-hangout/ev-42', { state: { event } })
       })
     })
 
