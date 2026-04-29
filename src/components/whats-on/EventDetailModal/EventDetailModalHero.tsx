@@ -13,6 +13,7 @@ import { useCanEditEvent } from '../../../hooks/useCanEditEvent'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { formatEthAddress } from '../../../utils/avatar'
+import { getCreatorColor } from '../../../utils/creatorColor'
 import { buildCalendarUrl, buildEventShareUrl } from '../../../utils/whatsOnUrl'
 import { JumpInButton } from '../../jump/JumpInButton'
 import { RemindMeIcon } from '../common/RemindMeIcon'
@@ -51,6 +52,7 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
   const creatorFallback = data.creatorAddress ? formatEthAddress(data.creatorAddress) : undefined
   const { creatorName, avatarFace } = useCreatorProfile(data.creatorAddress, data.creatorName, creatorFallback)
   const hasCreator = Boolean(avatarFace || creatorName)
+  const fallbackColor = getCreatorColor(data.creatorAddress)
   const { canEdit } = useCanEditEvent(data.creatorAddress)
   const showEdit = canEdit && Boolean(onEdit) && data.isEvent
 
@@ -97,7 +99,11 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
           <ModalTitle id="event-detail-title">{data.name}</ModalTitle>
           {hasCreator && (
             <CreatorRow>
-              {avatarFace ? <AvatarImage src={avatarFace} alt={creatorName ?? ''} /> : <AvatarFallback />}
+              {avatarFace ? (
+                <AvatarImage src={avatarFace} alt={creatorName ?? ''} fallbackColor={fallbackColor} />
+              ) : (
+                <AvatarFallback fallbackColor={fallbackColor} />
+              )}
               <CreatorName>
                 {t('event_detail.by_prefix')}
                 <CreatorNameHighlight>{creatorName}</CreatorNameHighlight>

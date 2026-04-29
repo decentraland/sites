@@ -9,6 +9,10 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
+jest.mock('../../../features/profile/profile.client', () => ({
+  useGetProfileQuery: () => ({ data: null, isLoading: true })
+}))
+
 jest.mock('./LiveNowCard', () => ({
   LiveNowCard: ({
     card,
@@ -74,7 +78,7 @@ describe('LiveNowCardItem', () => {
       expect(screen.getByTestId('live-now-card')).toHaveAttribute('data-scene', 'Test Event')
     })
 
-    it('should forward the creator name from the card data without hitting lambdas', () => {
+    it('should forward the creator name from the card data while the catalyst profile is still loading', () => {
       render(<LiveNowCardItem card={createMockCard()} onClick={mockOnClick} />)
 
       expect(screen.getByTestId('live-now-card')).toHaveAttribute('data-creator-name', 'CreatorName')

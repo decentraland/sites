@@ -6,6 +6,7 @@ import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCardActions } from '../../../hooks/useCardActions'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
+import { getCreatorColor } from '../../../utils/creatorColor'
 import { getRelativeTimeLabel } from '../../../utils/whatsOnTime'
 import { resolveEventRealm } from '../../../utils/whatsOnUrl'
 import {
@@ -36,6 +37,7 @@ const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
   const { t } = useTranslation()
   const { hasValidIdentity } = useAuthIdentity()
   const { creatorName, avatarFace } = useCreatorProfile(event.user, event.user_name, t('all_hangouts.unknown_creator'))
+  const fallbackColor = getCreatorColor(event.user)
   const { copied, handleCopy, handleAddToCalendar } = useCardActions({
     name: event.name,
     description: event.description,
@@ -61,7 +63,11 @@ const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
       <CardContent>
         <CardTitle>{event.name}</CardTitle>
         <CreatorRow data-role="creator-row">
-          {avatarFace ? <AvatarImage src={avatarFace} alt={creatorName} /> : <AvatarFallback />}
+          {avatarFace ? (
+            <AvatarImage src={avatarFace} alt={creatorName} fallbackColor={fallbackColor} />
+          ) : (
+            <AvatarFallback fallbackColor={fallbackColor} />
+          )}
           <CreatorName>
             {t('upcoming.by_prefix')}
             <CreatorNameHighlight>{creatorName}</CreatorNameHighlight>

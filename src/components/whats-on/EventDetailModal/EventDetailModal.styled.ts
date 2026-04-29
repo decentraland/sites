@@ -166,23 +166,28 @@ const CreatorRow = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1)
 }))
 
-const AvatarImage = styled('img')(({ theme }) => ({
-  width: theme.spacing(3),
-  height: theme.spacing(3),
-  borderRadius: '50%',
-  border: '1.5px solid rgba(255, 255, 255, 0.5)',
-  flexShrink: 0,
-  objectFit: 'cover'
-}))
+const AvatarImage = styled('img', { shouldForwardProp: prop => prop !== 'fallbackColor' })<{ fallbackColor: string }>(
+  ({ theme, fallbackColor }) => ({
+    width: theme.spacing(3),
+    height: theme.spacing(3),
+    borderRadius: '50%',
+    border: '1.5px solid rgba(255, 255, 255, 0.5)',
+    flexShrink: 0,
+    objectFit: 'cover',
+    backgroundColor: fallbackColor
+  })
+)
 
-const AvatarFallback = styled(Box)(({ theme }) => ({
-  width: theme.spacing(3),
-  height: theme.spacing(3),
-  borderRadius: '50%',
-  backgroundColor: '#00B453',
-  border: '1.5px solid rgba(255, 255, 255, 0.5)',
-  flexShrink: 0
-}))
+const AvatarFallback = styled(Box, { shouldForwardProp: prop => prop !== 'fallbackColor' })<{ fallbackColor: string }>(
+  ({ theme, fallbackColor }) => ({
+    width: theme.spacing(3),
+    height: theme.spacing(3),
+    borderRadius: '50%',
+    backgroundColor: fallbackColor,
+    border: '1.5px solid rgba(255, 255, 255, 0.5)',
+    flexShrink: 0
+  })
+)
 
 const CreatorName = styled(Typography)({
   fontSize: 14,

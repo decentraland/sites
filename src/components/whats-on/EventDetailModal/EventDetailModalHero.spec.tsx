@@ -43,13 +43,6 @@ jest.mock('../../../hooks/useRemindMe', () => ({
   })
 }))
 
-jest.mock('../../../hooks/useCreatorAvatar', () => ({
-  useCreatorAvatar: (address?: string, name?: string) => ({
-    avatar: address ? { name: name ?? '', ethAddress: address, avatar: { snapshots: { face256: '', body: '' } } } : undefined,
-    avatarFace: undefined
-  })
-}))
-
 jest.mock('../common/RemindMeIcon', () => ({
   RemindMeIcon: ({ active }: { active: boolean }) => <span data-testid="remind-me-icon" data-active={active} />
 }))
@@ -75,8 +68,12 @@ jest.mock('./EventDetailModal.styled', () => ({
     </h2>
   ),
   CreatorRow: ({ children }: { children: React.ReactNode }) => <div data-testid="creator-row">{children}</div>,
-  AvatarImage: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img data-testid="avatar-image" {...props} />,
-  AvatarFallback: () => <div data-testid="avatar-fallback" />,
+  AvatarImage: ({ fallbackColor, ...props }: React.ImgHTMLAttributes<HTMLImageElement> & { fallbackColor?: string }) => (
+    <img data-testid="avatar-image" data-fallback-color={fallbackColor ?? ''} {...props} />
+  ),
+  AvatarFallback: ({ fallbackColor }: { fallbackColor?: string }) => (
+    <div data-testid="avatar-fallback" data-fallback-color={fallbackColor ?? ''} />
+  ),
   CreatorName: ({ children }: { children: React.ReactNode }) => <span data-testid="creator-name">{children}</span>,
   CreatorNameHighlight: ({ children }: { children: React.ReactNode }) => <strong>{children}</strong>,
   ActionsRow: ({ children }: { children: React.ReactNode }) => <div data-testid="actions-row">{children}</div>,
@@ -301,6 +298,17 @@ describe('EventDetailModalHero', () => {
       )
 
       expect(screen.getByTestId('creator-name')).toHaveTextContent('0xabcd…ef12')
+    })
+
+    it('should derive the avatar fallback color from the creator address so it matches the card surface', () => {
+      render(
+        <EventDetailModalHero
+          data={createMockData({ creatorAddress: '0xabcdef1234567890abcdef1234567890abcdef12', creatorName: undefined })}
+          onClose={mockOnClose}
+        />
+      )
+
+      expect(screen.getByTestId('avatar-fallback').getAttribute('data-fallback-color')).toMatch(/^hsl\(\d{1,3} 45% 40%\)$/)
     })
   })
 
