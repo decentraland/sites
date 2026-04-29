@@ -1,16 +1,25 @@
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Typography, styled } from 'decentraland-ui2'
 
+const HelpPageWrapper = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  minHeight: '100vh',
+  padding: theme.spacing(15, 2.5, 2.5),
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(10, 2, 4)
+  }
+}))
+
 const HelpPageContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'flex-start',
   position: 'relative',
-  minHeight: '100vh',
-  padding: theme.spacing(15, 2.5, 2.5),
+  flex: '1 0 auto',
+  width: '100%',
   [theme.breakpoints.down('sm')]: {
     flexDirection: 'column',
-    alignItems: 'center',
-    padding: theme.spacing(10, 0, 0)
+    alignItems: 'center'
   }
 }))
 
@@ -279,7 +288,7 @@ const ScrollableAccordionContainer = styled(AccordionContainer)(({ theme }) => (
 }))
 
 const ChatCtaBanner = styled(Box)(({ theme }) => ({
-  marginTop: theme.spacing(3),
+  marginTop: theme.spacing(6),
   width: '100%',
   background: 'linear-gradient(135deg, #2b1339 0%, #3a1a5e 40%, #1a0e24 100%)',
   borderRadius: 16,
@@ -290,6 +299,7 @@ const ChatCtaBanner = styled(Box)(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
+    marginTop: theme.spacing(4),
     padding: theme.spacing(3, 2),
     borderRadius: 12
   }
@@ -385,6 +395,7 @@ export {
   HelpContentArea,
   HelpMobileHeader,
   HelpPageContainer,
+  HelpPageWrapper,
   HelpSectionDescription,
   HelpSectionTexts,
   HelpSectionTitle,

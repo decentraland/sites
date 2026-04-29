@@ -11,7 +11,6 @@ import {
   ScrollableAccordionContainer
 } from '../../pages/help/HelpPage.styled'
 import { CircleAndArrowIcon } from '../Icons'
-import { ChatCTABanner } from './ChatCTABanner'
 
 type FAQSectionProps = {
   isActive: boolean
@@ -52,7 +51,6 @@ const FAQSection = ({ isActive }: FAQSectionProps) => {
           </FaqAccordion>
         ))}
       </ScrollableAccordionContainer>
-      <ChatCTABanner />
     </div>
   )
 }
