@@ -5,17 +5,12 @@ import { normalizeJumpPlace } from '../components/whats-on/PlaceDetailModal'
 import type { ModalPlaceData } from '../components/whats-on/PlaceDetailModal'
 import { isEns, parsePosition, useGetJumpPlacesQuery } from '../features/jump'
 import { PLACE_POSITION_PARAM, PLACE_WORLD_PARAM } from '../utils/whatsOnUrl'
+import { isClientError } from './deepLinkErrors'
 
 interface UsePlaceDeepLinkResult {
   modalData: ModalPlaceData | null
   isOpen: boolean
   closeDeepLink: () => void
-}
-
-function isClientError(error: unknown): boolean {
-  if (!error || typeof error !== 'object') return false
-  const status = (error as { status?: unknown }).status
-  return typeof status === 'number' && status >= 400 && status < 500
 }
 
 // Bare names like `brai` are expanded to `brai.dcl.eth` so legacy
