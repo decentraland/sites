@@ -1,7 +1,7 @@
+import { StyledDialog } from '../DetailModal/DetailModal.styled'
 import { EventDetailModalContent } from './EventDetailModalContent'
 import { EventDetailModalHero } from './EventDetailModalHero'
 import type { EventDetailModalProps } from './EventDetailModal.types'
-import { StyledDialog } from './EventDetailModal.styled'
 
 function EventDetailModal({ open, onClose, data, adminActions, onEdit }: EventDetailModalProps) {
   return (

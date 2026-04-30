@@ -177,6 +177,20 @@ describe('usePlaceDeepLink', () => {
     })
   })
 
+  describe('when a world query param has mixed casing', () => {
+    beforeEach(() => {
+      mockUseSearchParams.mockReturnValue([new URLSearchParams('world=Brai.DCL.eth'), mockSetSearchParams])
+      mockUseGetJumpPlacesQuery.mockReturnValue({ data: [{ id: 'world-1' }] })
+      mockNormalizeJumpPlace.mockReturnValue({ id: 'world-1', title: 'Brai World' })
+    })
+
+    it('should normalize to lowercase so two casings hit the same RTK Query cache entry', () => {
+      renderHook(() => usePlaceDeepLink())
+
+      expect(mockUseGetJumpPlacesQuery).toHaveBeenCalledWith({ realm: 'brai.dcl.eth' })
+    })
+  })
+
   describe('when a world query param is not a valid bare name', () => {
     beforeEach(() => {
       mockUseSearchParams.mockReturnValue([new URLSearchParams('world=not%20a%20name%21'), mockSetSearchParams])

@@ -1,4 +1,4 @@
-import { StyledDialog } from '../EventDetailModal/EventDetailModal.styled'
+import { StyledDialog } from '../DetailModal/DetailModal.styled'
 import { PlaceDetailModalContent } from './PlaceDetailModalContent'
 import { PlaceDetailModalHero } from './PlaceDetailModalHero'
 import type { PlaceDetailModalProps } from './PlaceDetailModal.types'

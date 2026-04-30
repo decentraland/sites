@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { PlaceDetailModal } from './PlaceDetailModal'
 import type { ModalPlaceData } from './PlaceDetailModal.types'
 
-jest.mock('../EventDetailModal/EventDetailModal.styled', () => ({
+jest.mock('../DetailModal/DetailModal.styled', () => ({
   StyledDialog: ({ children, open, ...props }: { children: React.ReactNode; open: boolean; 'aria-labelledby'?: string }) =>
     open ? (
       <div data-testid="dialog" aria-labelledby={props['aria-labelledby']}>

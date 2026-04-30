@@ -14,9 +14,12 @@ interface UsePlaceDeepLinkResult {
 }
 
 // Bare names like `brai` are expanded to `brai.dcl.eth` so legacy
-// share links (`?world=brai`) keep resolving against the worlds endpoint.
+// share links (`?world=brai`) keep resolving. Lowercased so `Brai` and
+// `brai` produce the same RTK Query cache key (the API treats them
+// equivalently and lowercases internally).
 function expandWorldParam(value: string): string | null {
-  const expanded = value.toLowerCase().endsWith('.eth') ? value : `${value}.dcl.eth`
+  const lower = value.toLowerCase()
+  const expanded = lower.endsWith('.eth') ? lower : `${lower}.dcl.eth`
   return isEns(expanded) ? expanded : null
 }
 

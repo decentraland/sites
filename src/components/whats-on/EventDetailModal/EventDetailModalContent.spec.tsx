@@ -10,11 +10,15 @@ jest.mock('../../../utils/whatsOnUrl', () => ({
   buildCalendarUrl: jest.fn(() => 'https://calendar.google.com/test')
 }))
 
-jest.mock('./EventDetailModal.styled', () => ({
+jest.mock('../DetailModal/DetailModal.styled', () => ({
   ContentSection: ({ children }: { children: React.ReactNode }) => <div data-testid="content-section">{children}</div>,
   SectionLabel: ({ children }: { children: React.ReactNode }) => <div data-testid="section-label">{children}</div>,
   DescriptionText: ({ children }: { children: React.ReactNode }) => <p data-testid="description">{children}</p>,
-  ContentDivider: () => <hr data-testid="divider" />,
+  ContentDivider: () => <hr data-testid="divider" />
+}))
+
+jest.mock('./EventDetailModal.styled', () => ({
+  AdminActionsRow: ({ children }: { children: React.ReactNode }) => <div data-testid="admin-actions">{children}</div>,
   ScheduleRow: ({ children }: { children: React.ReactNode }) => <div data-testid="schedule-row">{children}</div>,
   ScheduleText: ({ children }: { children: React.ReactNode }) => <span data-testid="schedule-text">{children}</span>,
   ScheduleIconButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="calendar-btn" {...props} />,

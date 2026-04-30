@@ -3,7 +3,7 @@ import { createMockModalData } from '../../../__test-utils__/factories'
 import { EventDetailModal } from './EventDetailModal'
 import type { ModalEventData } from './EventDetailModal.types'
 
-jest.mock('./EventDetailModal.styled', () => ({
+jest.mock('../DetailModal/DetailModal.styled', () => ({
   StyledDialog: ({ children, open, ...props }: { children: React.ReactNode; open: boolean; 'aria-labelledby'?: string }) =>
     open ? (
       <div data-testid="dialog" aria-labelledby={props['aria-labelledby']}>
