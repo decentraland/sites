@@ -21,8 +21,12 @@ jest.mock('./LiveNowCard.styled', () => {
   const create = (tag: string, testid: string) => (props: React.HTMLAttributes<HTMLElement> & { children?: React.ReactNode }) =>
     React.createElement(tag, { 'data-testid': testid, ...props })
   return {
-    AvatarFallback: create('div', 'avatar-fallback'),
-    AvatarImage: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img data-testid="avatar-image" {...props} />,
+    AvatarFallback: ({ fallbackColor }: { fallbackColor?: string }) => (
+      <div data-testid="avatar-fallback" data-fallback-color={fallbackColor ?? ''} />
+    ),
+    AvatarImage: ({ fallbackColor, ...props }: React.ImgHTMLAttributes<HTMLImageElement> & { fallbackColor?: string }) => (
+      <img data-testid="avatar-image" data-fallback-color={fallbackColor ?? ''} {...props} />
+    ),
     AvatarRow: create('div', 'avatar-row'),
     AvatarTextContainer: create('div', 'avatar-text'),
     BadgesOverlay: create('div', 'badges-overlay'),
@@ -104,6 +108,18 @@ describe('LiveNowCard', () => {
       expect(screen.getByTestId('avatar-fallback')).toBeInTheDocument()
       expect(screen.queryByTestId('avatar-image')).not.toBeInTheDocument()
       expect(screen.getByText('Alice')).toBeInTheDocument()
+    })
+
+    it('should derive the fallback color from the creator address so it stays stable across surfaces', () => {
+      render(
+        <LiveNowCard
+          card={createMockLiveNowCard({ creatorAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' })}
+          creatorName="Alice"
+          onClick={jest.fn()}
+        />
+      )
+
+      expect(screen.getByTestId('avatar-fallback').getAttribute('data-fallback-color')).toMatch(/^hsl\(\d{1,3} 45% 40%\)$/)
     })
   })
 

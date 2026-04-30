@@ -12,6 +12,6 @@ export {
   useUploadPosterMutation,
   useUploadPosterVerticalMutation
 } from './events.client'
-export { DCL_FOUNDATION_LOGO_URL, DCL_FOUNDATION_NAME, isDclFoundationCreator } from './events.helpers'
+export { bucketEventsByDay, DCL_FOUNDATION_LOGO_URL, DCL_FOUNDATION_NAME, isDclFoundationCreator } from './events.helpers'
 export type { EnrichmentConfig, LiveNowCard } from './events.helpers'
 export type { CommunityAttributes, EventEntry, EventListType, EventsQueryParams, EventsResponse, RecurrentFrequency } from './events.types'

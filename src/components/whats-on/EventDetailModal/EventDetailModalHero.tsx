@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -10,47 +10,35 @@ import { useTranslation } from '@dcl/hooks'
 import { LiveBadge, Tooltip, useTheme } from 'decentraland-ui2'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCanEditEvent } from '../../../hooks/useCanEditEvent'
-import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
+import { useCopyShareLink } from '../../../hooks/useCopyShareLink'
 import { useRemindMe } from '../../../hooks/useRemindMe'
-import { formatEthAddress } from '../../../utils/avatar'
 import { buildCalendarUrl, buildEventShareUrl } from '../../../utils/whatsOnUrl'
 import { JumpInButton } from '../../jump/JumpInButton'
 import { RemindMeIcon } from '../common/RemindMeIcon'
-import type { ModalEventData } from './EventDetailModal.types'
+import { DetailModalCreator } from '../DetailModal'
 import {
   ActionsRow,
-  AvatarFallback,
-  AvatarImage,
-  CategoryLabel,
   CloseButton,
   CloseIconStyled,
   CopyButton,
   CopyIconStyled,
-  CreatorName,
-  CreatorNameHighlight,
-  CreatorRow,
-  EditButton,
   HeroContent,
   HeroImage,
   HeroOverlay,
   HeroSection,
-  LiveBadgeWrapper,
   ModalTitle,
   PrimaryActionButton,
   SecondaryButton
-} from './EventDetailModal.styled'
+} from '../DetailModal/DetailModal.styled'
+import type { ModalEventData } from './EventDetailModal.types'
+import { CategoryLabel, EditButton, LiveBadgeWrapper } from './EventDetailModal.styled'
 
 function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData; onClose: () => void; onEdit?: () => void }) {
   const { t } = useTranslation()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
-  const [copied, setCopied] = useState(false)
   const { isReminded, isLoading: isRemindLoading, isShaking, handleToggle: handleRemindToggle } = useRemindMe(data.id, data.attending)
   const { hasValidIdentity } = useAuthIdentity()
-
-  const creatorFallback = data.creatorAddress ? formatEthAddress(data.creatorAddress) : undefined
-  const { creatorName, avatarFace } = useCreatorProfile(data.creatorAddress, data.creatorName, creatorFallback)
-  const hasCreator = Boolean(avatarFace || creatorName)
   const { canEdit } = useCanEditEvent(data.creatorAddress)
   const showEdit = canEdit && Boolean(onEdit) && data.isEvent
 
@@ -60,16 +48,11 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
   const showRemindMeSecondary = isFutureEvent && !hasValidIdentity
   const showCalendarSecondary = !showCalendarPrimary && Boolean(data.startAt)
 
-  const handleCopy = useCallback(() => {
-    const shareUrl = data.isEvent ? buildEventShareUrl(data.id, data.live) : data.url
-    navigator.clipboard
-      ?.writeText(shareUrl)
-      ?.then(() => {
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
-      })
-      .catch(err => console.warn('[EventDetailModal] Failed to copy:', err))
-  }, [data.id, data.isEvent, data.live, data.url])
+  const shareUrl = useMemo(
+    () => (data.isEvent ? buildEventShareUrl(data.id, data.live) : data.url),
+    [data.id, data.isEvent, data.live, data.url]
+  )
+  const { copied, handleCopy } = useCopyShareLink(shareUrl)
 
   const handleAddToCalendar = useCallback(() => {
     const url = buildCalendarUrl(data)
@@ -95,15 +78,7 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
             categorySubtitle && <CategoryLabel>{categorySubtitle}</CategoryLabel>
           )}
           <ModalTitle id="event-detail-title">{data.name}</ModalTitle>
-          {hasCreator && (
-            <CreatorRow>
-              {avatarFace ? <AvatarImage src={avatarFace} alt={creatorName ?? ''} /> : <AvatarFallback />}
-              <CreatorName>
-                {t('event_detail.by_prefix')}
-                <CreatorNameHighlight>{creatorName}</CreatorNameHighlight>
-              </CreatorName>
-            </CreatorRow>
-          )}
+          <DetailModalCreator address={data.creatorAddress} name={data.creatorName} prefixLabel={t('event_detail.by_prefix')} />
           <ActionsRow>
             {data.live && (
               <JumpInButton position={`${data.x},${data.y}`} size="medium">

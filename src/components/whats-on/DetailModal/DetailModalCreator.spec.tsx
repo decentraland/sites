@@ -1,0 +1,106 @@
+import { render, screen } from '@testing-library/react'
+import { DetailModalCreator } from './DetailModalCreator'
+
+const mockUseCreatorProfile = jest.fn()
+jest.mock('../../../hooks/useCreatorProfile', () => ({
+  useCreatorProfile: (...args: unknown[]) => mockUseCreatorProfile(...(args as []))
+}))
+
+jest.mock('./DetailModal.styled', () => ({
+  CreatorRow: ({ children }: { children: React.ReactNode }) => <div data-testid="creator-row">{children}</div>,
+  AvatarImage: ({ fallbackColor, ...props }: React.ImgHTMLAttributes<HTMLImageElement> & { fallbackColor?: string }) => (
+    <img data-testid="avatar-image" data-fallback-color={fallbackColor ?? ''} {...props} />
+  ),
+  AvatarFallback: ({ fallbackColor }: { fallbackColor?: string }) => (
+    <div data-testid="avatar-fallback" data-fallback-color={fallbackColor ?? ''} />
+  ),
+  CreatorName: ({ children }: { children: React.ReactNode }) => <span data-testid="creator-name">{children}</span>,
+  CreatorNameHighlight: ({ children }: { children: React.ReactNode }) => <strong>{children}</strong>
+}))
+
+describe('DetailModalCreator', () => {
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  describe('when the creator profile resolves with both name and avatar', () => {
+    beforeEach(() => {
+      mockUseCreatorProfile.mockReturnValue({
+        isDclFoundation: false,
+        creatorName: 'CreatorName',
+        avatarFace: 'https://example.com/face.png'
+      })
+    })
+
+    it('should render the creator row with the avatar image and name', () => {
+      render(<DetailModalCreator address="0xCreator" name="CreatorName" prefixLabel="By " />)
+
+      expect(screen.getByTestId('creator-row')).toBeInTheDocument()
+      expect(screen.getByTestId('creator-name')).toHaveTextContent('By CreatorName')
+      expect(screen.getByTestId('avatar-image')).toHaveAttribute('src', 'https://example.com/face.png')
+    })
+  })
+
+  describe('when the creator profile resolves only the name', () => {
+    beforeEach(() => {
+      mockUseCreatorProfile.mockReturnValue({ isDclFoundation: false, creatorName: '0xabcd…ef12', avatarFace: undefined })
+    })
+
+    it('should render the abbreviated address as the name', () => {
+      render(<DetailModalCreator address="0xabcdef1234567890abcdef1234567890abcdef12" name={undefined} prefixLabel="By " />)
+
+      expect(screen.getByTestId('creator-name')).toHaveTextContent('0xabcd…ef12')
+    })
+
+    it('should render the avatar fallback derived from the address', () => {
+      render(<DetailModalCreator address="0xabcdef1234567890abcdef1234567890abcdef12" name={undefined} prefixLabel="By " />)
+
+      expect(screen.getByTestId('avatar-fallback').getAttribute('data-fallback-color')).toMatch(/^hsl\(\d{1,3} 45% 40%\)$/)
+    })
+  })
+
+  describe('when the creator profile resolves to nothing', () => {
+    beforeEach(() => {
+      mockUseCreatorProfile.mockReturnValue({ isDclFoundation: false, creatorName: undefined, avatarFace: undefined })
+    })
+
+    it('should not render the creator row', () => {
+      render(<DetailModalCreator address={undefined} name={undefined} prefixLabel="By " />)
+
+      expect(screen.queryByTestId('creator-row')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the creator profile resolves the Decentraland Foundation', () => {
+    beforeEach(() => {
+      mockUseCreatorProfile.mockReturnValue({
+        isDclFoundation: true,
+        creatorName: 'Decentraland Foundation',
+        avatarFace: '/dcl-logo.svg'
+      })
+    })
+
+    it('should render the Foundation name', () => {
+      render(<DetailModalCreator address="0xFoundation" name="Decentraland Foundation" prefixLabel="By " />)
+
+      expect(screen.getByTestId('creator-name')).toHaveTextContent('Decentraland Foundation')
+    })
+
+    it('should render the Foundation logo as the avatar', () => {
+      render(<DetailModalCreator address="0xFoundation" name="Decentraland Foundation" prefixLabel="By " />)
+
+      expect(screen.getByTestId('avatar-image')).toHaveAttribute('src', '/dcl-logo.svg')
+    })
+
+    it('should forward the address and name to useCreatorProfile so the foundation match runs upstream', () => {
+      mockUseCreatorProfile.mockReturnValue({
+        isDclFoundation: true,
+        creatorName: 'Decentraland Foundation',
+        avatarFace: '/dcl-logo.svg'
+      })
+      render(<DetailModalCreator address="0xFoundation" name="Decentraland Foundation" prefixLabel="By " />)
+
+      expect(mockUseCreatorProfile).toHaveBeenCalledWith('0xFoundation', 'Decentraland Foundation', expect.any(String))
+    })
+  })
+})

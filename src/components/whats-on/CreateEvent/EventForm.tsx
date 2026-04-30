@@ -107,9 +107,10 @@ type EventFormProps = {
   onSuccess: () => void
   initialEvent?: EventEntry | null
   initialCommunityId?: string | null
+  initialOpenPreview?: boolean
 }
 
-function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityId = null }: EventFormProps) {
+function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityId = null, initialOpenPreview = false }: EventFormProps) {
   const { t } = useTranslation()
   const {
     form,
@@ -128,7 +129,7 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
   const { data: worldNames = [] } = useGetWorldNamesQuery(undefined, { skip: form.location !== 'world' })
   const { data: communities = [] } = useGetCommunitiesQuery({ identity }, { skip: !identity })
   const [verticalPanelOpen, setVerticalPanelOpen] = useState(false)
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [isPreviewOpen, setIsPreviewOpen] = useState(initialOpenPreview)
   const showVerticalPanel = verticalPanelOpen || Boolean(form.verticalImagePreviewUrl)
 
   const missingPreviewFields = useMemo(() => PREVIEW_REQUIRED_FIELDS.filter(field => !String(form[field] ?? '').trim()), [form])

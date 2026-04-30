@@ -8,9 +8,6 @@ import { CalendarAddIcon as CalendarIcon } from './CalendarAddIcon'
 // No dclColors token for this hover shade — between gray5 (#ECEBED) and gray4
 const ACTION_BUTTON_HOVER_BG = '#D9D8DB'
 
-// No dclColors token — design-system success green used for avatar fallback
-const AVATAR_FALLBACK_GREEN = '#00B453'
-
 const ActionButton = styled('button')(() => ({
   display: 'flex',
   alignItems: 'center',
@@ -119,23 +116,28 @@ const CopyIcon = styled(ContentCopyIcon)({
   color: 'inherit'
 })
 
-const AvatarImage = styled('img')({
-  width: 19,
-  height: 19,
-  borderRadius: '50%',
-  border: `1.4px solid ${dclColors.whiteTransparent.blurry}`,
-  flexShrink: 0,
-  objectFit: 'cover'
-})
+const AvatarImage = styled('img', { shouldForwardProp: prop => prop !== 'fallbackColor' })<{ fallbackColor: string }>(
+  ({ fallbackColor }) => ({
+    width: 19,
+    height: 19,
+    borderRadius: '50%',
+    border: `1.4px solid ${dclColors.whiteTransparent.blurry}`,
+    flexShrink: 0,
+    objectFit: 'cover',
+    backgroundColor: fallbackColor
+  })
+)
 
-const AvatarFallback = styled(Box)({
-  width: 19,
-  height: 19,
-  borderRadius: '50%',
-  backgroundColor: AVATAR_FALLBACK_GREEN,
-  border: `1.4px solid ${dclColors.whiteTransparent.blurry}`,
-  flexShrink: 0
-})
+const AvatarFallback = styled(Box, { shouldForwardProp: prop => prop !== 'fallbackColor' })<{ fallbackColor: string }>(
+  ({ fallbackColor }) => ({
+    width: 19,
+    height: 19,
+    borderRadius: '50%',
+    backgroundColor: fallbackColor,
+    border: `1.4px solid ${dclColors.whiteTransparent.blurry}`,
+    flexShrink: 0
+  })
+)
 
 const CreatorName = styled(Typography)({
   fontSize: 12,

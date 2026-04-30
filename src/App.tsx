@@ -49,6 +49,9 @@ const CreateEventPage = lazy(() => import('./pages/whats-on/CreateEventPage').th
 const WhatsOnLayout = lazy(() => import('./pages/whats-on/WhatsOnLayout').then(m => ({ default: m.WhatsOnLayout })))
 const PendingEventsPage = lazy(() => import('./pages/whats-on/PendingEventsPage').then(m => ({ default: m.PendingEventsPage })))
 const UsersAdminPage = lazy(() => import('./pages/whats-on/UsersAdminPage').then(m => ({ default: m.UsersAdminPage })))
+const LegacyHangoutRedirect = lazy(() => import('./pages/whats-on/LegacyHangoutRedirect').then(m => ({ default: m.LegacyHangoutRedirect })))
+const LegacyWhatsOnRedirect = lazy(() => import('./pages/whats-on/LegacyWhatsOnRedirect').then(m => ({ default: m.LegacyWhatsOnRedirect })))
+const LegacyWorldRedirect = lazy(() => import('./pages/whats-on/LegacyWorldRedirect').then(m => ({ default: m.LegacyWorldRedirect })))
 
 // Jump pages — deep-link handler for decentraland:// launcher. Heavy route (Redux).
 const JumpPlacesPage = lazy(() => import('./pages/jump/PlacesPage').then(m => ({ default: m.PlacesPage })))
@@ -83,6 +86,11 @@ const App = () => {
             <Route path="/discord" element={<DiscordPage />} />
             <Route path="/press" element={<PressPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
+            {/* Retro-compat for the standalone events/places sites — redirect into /whats-on
+                with the deep-link params (id / position / world) it already consumes. */}
+            <Route path="/events/event" element={<LegacyWhatsOnRedirect />} />
+            <Route path="/places/place" element={<LegacyWhatsOnRedirect />} />
+            <Route path="/places/world" element={<LegacyWorldRedirect />} />
             {/* DappsShell provides Redux Provider via Outlet.
                 NOTE: /blog/* is no longer gated behind Env !== PRODUCTION as it was
                 with the federated RemoteLoader. During PR1 it serves a placeholder
@@ -91,8 +99,11 @@ const App = () => {
             <Route element={<DappsShell />}>
               <Route element={<WhatsOnLayout />}>
                 <Route path="/whats-on" element={<WhatsOnHomePage />} />
-                <Route path="/whats-on/new-event" element={<CreateEventPage />} />
-                <Route path="/whats-on/edit-event/:eventId" element={<CreateEventPage />} />
+                <Route path="/whats-on/new-hangout" element={<CreateEventPage />} />
+                <Route path="/whats-on/edit-hangout/:eventId" element={<CreateEventPage />} />
+                {/* Legacy aliases — preserve query string + location state. */}
+                <Route path="/whats-on/new-event" element={<LegacyHangoutRedirect />} />
+                <Route path="/whats-on/edit-event/:eventId" element={<LegacyHangoutRedirect />} />
                 <Route path="/whats-on/admin/pending-events" element={<PendingEventsPage />} />
                 <Route path="/whats-on/admin/users" element={<UsersAdminPage />} />
               </Route>
