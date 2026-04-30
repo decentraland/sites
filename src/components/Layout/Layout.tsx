@@ -14,6 +14,7 @@ import { redirectToAuth } from '../../utils/authRedirect'
 const LandingFooter = lazy(() => import('../LandingFooter').then(m => ({ default: m.LandingFooter })))
 import { LandingNavbar } from '../LandingNavbar'
 import type { LandingNavbarProps } from '../LandingNavbar'
+import { isPageTrackingExempt } from './Layout.helpers'
 import type { LayoutProps } from './Layout.types'
 import { FooterFallback } from './Layout.styled'
 
@@ -25,17 +26,10 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
   const { data: profile, isLoading: isLoadingProfile } = useGetProfileQuery(address ?? undefined, { skip: !address })
   const avatar = profile?.avatars?.[0]
   const effectivelySignedIn = isConnected || !!address
-  // /blog/* pages own their `page()` call (via useBlogPageTracking) so the event
-  // fires after the post/category title is resolved — without this guard the
-  // route-level call here would race the resolved <title> and report stale
-  // titles for SPA navigations into a post. Also gates on isInitialized to
-  // avoid no-op calls while the deferred Segment loader is still pending.
-  // /blog/preview is intentionally untracked (Contentful editor-only view).
   const { isInitialized: isAnalyticsInitialized, page } = useAnalytics()
   useEffect(() => {
     if (!isAnalyticsInitialized) return
-    const isBlogRoute = location.pathname === '/blog' || location.pathname.startsWith('/blog/')
-    if (isBlogRoute) return
+    if (isPageTrackingExempt(location.pathname)) return
     page(location.pathname)
   }, [isAnalyticsInitialized, location.pathname, page])
 

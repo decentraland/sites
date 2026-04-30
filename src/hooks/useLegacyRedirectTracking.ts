@@ -29,15 +29,25 @@ function useLegacyRedirectTracking({ origin, source, destination, preservedParam
   const [ready, setReady] = useState(false)
   const fired = useRef(false)
 
+  // Snapshot the legacy URL at mount. <Navigate> drives location.search to the
+  // new path before this component unmounts, so a deps-based effect would
+  // re-run with source='/whats-on' and either fire the track late with the
+  // wrong source, or — if the timer branch released ready without setting
+  // fired — emit a duplicate event for the destination instead of the origin.
+  const argsRef = useRef({ origin, source, destination, preservedParams })
+  const trackRef = useRef(track)
+  trackRef.current = track
+
   useEffect(() => {
     if (fired.current) return
     if (isInitialized) {
+      const args = argsRef.current
       try {
-        track(EVENT_BY_ORIGIN[origin], {
-          source,
-          destination,
-          origin,
-          preservedParams,
+        trackRef.current(EVENT_BY_ORIGIN[args.origin], {
+          source: args.source,
+          destination: args.destination,
+          origin: args.origin,
+          preservedParams: args.preservedParams,
           timestamp: new Date().toISOString()
         })
       } catch {
@@ -48,9 +58,12 @@ function useLegacyRedirectTracking({ origin, source, destination, preservedParam
       setReady(true)
       return
     }
-    const timer = setTimeout(() => setReady(true), REDIRECT_TIMEOUT_MS)
+    const timer = setTimeout(() => {
+      fired.current = true
+      setReady(true)
+    }, REDIRECT_TIMEOUT_MS)
     return () => clearTimeout(timer)
-  }, [isInitialized, origin, source, destination, preservedParams, track])
+  }, [isInitialized])
 
   return ready
 }

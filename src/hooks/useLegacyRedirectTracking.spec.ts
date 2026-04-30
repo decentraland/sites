@@ -120,6 +120,28 @@ describe('useLegacyRedirectTracking', () => {
       expect(result.current).toBe(true)
     })
 
+    it('should not fire after the timeout if analytics initializes post-redirect', () => {
+      jest.useFakeTimers()
+      const { result, rerender } = renderHook(() => useLegacyRedirectTracking(baseArgs))
+
+      act(() => {
+        jest.advanceTimersByTime(800)
+      })
+
+      expect(result.current).toBe(true)
+      expect(trackMock).not.toHaveBeenCalled()
+
+      useAnalyticsMock.mockReturnValue({
+        isInitialized: true,
+        page: jest.fn(),
+        track: trackMock,
+        identify: jest.fn()
+      })
+      rerender()
+
+      expect(trackMock).not.toHaveBeenCalled()
+    })
+
     it('should fire track and release ready when analytics becomes initialized', () => {
       const { result, rerender } = renderHook(() => useLegacyRedirectTracking(baseArgs))
 
