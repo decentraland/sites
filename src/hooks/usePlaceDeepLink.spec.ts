@@ -163,9 +163,23 @@ describe('usePlaceDeepLink', () => {
     })
   })
 
-  describe('when a world query param is present but is not a valid ENS', () => {
+  describe('when a world query param is a bare name', () => {
     beforeEach(() => {
-      mockUseSearchParams.mockReturnValue([new URLSearchParams('world=garbage'), mockSetSearchParams])
+      mockUseSearchParams.mockReturnValue([new URLSearchParams('world=brai'), mockSetSearchParams])
+      mockUseGetJumpPlacesQuery.mockReturnValue({ data: [{ id: 'world-1' }] })
+      mockNormalizeJumpPlace.mockReturnValue({ id: 'world-1', title: 'Brai World' })
+    })
+
+    it('should expand the bare name to a .dcl.eth ENS so legacy share links resolve', () => {
+      renderHook(() => usePlaceDeepLink())
+
+      expect(mockUseGetJumpPlacesQuery).toHaveBeenCalledWith({ realm: 'brai.dcl.eth' })
+    })
+  })
+
+  describe('when a world query param is not a valid bare name', () => {
+    beforeEach(() => {
+      mockUseSearchParams.mockReturnValue([new URLSearchParams('world=not%20a%20name%21'), mockSetSearchParams])
       mockUseGetJumpPlacesQuery.mockReturnValue({ data: undefined })
     })
 

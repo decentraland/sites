@@ -18,13 +18,23 @@ function isClientError(error: unknown): boolean {
   return typeof status === 'number' && status >= 400 && status < 500
 }
 
+// Bare names like `brai` are expanded to `brai.dcl.eth` so legacy
+// share links (`?world=brai`) keep resolving against the worlds endpoint.
+function expandWorldParam(value: string): string | null {
+  const expanded = value.toLowerCase().endsWith('.eth') ? value : `${value}.dcl.eth`
+  return isEns(expanded) ? expanded : null
+}
+
 function usePlaceDeepLink(): UsePlaceDeepLinkResult {
   const [searchParams, setSearchParams] = useSearchParams()
   const positionParam = searchParams.get(PLACE_POSITION_PARAM)
   const worldParam = searchParams.get(PLACE_WORLD_PARAM)
 
   const queryArg = useMemo(() => {
-    if (worldParam && isEns(worldParam)) return { realm: worldParam }
+    if (worldParam) {
+      const realm = expandWorldParam(worldParam)
+      if (realm) return { realm }
+    }
     if (positionParam) {
       const parsed = parsePosition(positionParam)
       if (parsed.isValid) return { position: parsed.coordinates }
