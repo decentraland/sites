@@ -102,4 +102,12 @@ describe('normalizeJumpPlace', () => {
       expect(result.description).toBeNull()
     })
   })
+
+  describe('when base_position is malformed', () => {
+    it('should fall back to 0,0 instead of NaN', () => {
+      const result = normalizeJumpPlace(createMockJumpPlace({ base_position: 'not-a-coord' }))
+
+      expect(result.coordinates).toEqual([0, 0])
+    })
+  })
 })

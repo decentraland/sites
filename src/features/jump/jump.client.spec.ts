@@ -161,6 +161,24 @@ describe('jumpClient', () => {
         expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('world_names%5B%5D=cool.dcl.eth'))
       })
     })
+
+    describe('and the API returns a 5xx', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test/api')
+        fetchSpy.mockResolvedValueOnce({
+          ok: false,
+          status: 503,
+          text: () => Promise.resolve('Service unavailable')
+        } as unknown as Response)
+      })
+
+      it('should surface the numeric HTTP status', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(jumpClient.endpoints.getJumpEvents.initiate({ position: [0, 0] }))
+
+        expect(result.error).toEqual(expect.objectContaining({ status: 503 }))
+      })
+    })
   })
 
   describe('when getJumpEventById endpoint is called', () => {
@@ -192,6 +210,24 @@ describe('jumpClient', () => {
         const result = await store.dispatch(jumpClient.endpoints.getJumpEventById.initiate({ id: 'missing' }))
 
         expect(result.data).toBeNull()
+      })
+    })
+
+    describe('and the API returns a non-404 error', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test/api')
+        fetchSpy.mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          text: () => Promise.resolve('Server error')
+        } as unknown as Response)
+      })
+
+      it('should surface the numeric HTTP status so transient errors are distinguishable from 4xx', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(jumpClient.endpoints.getJumpEventById.initiate({ id: 'ev-1' }))
+
+        expect(result.error).toEqual(expect.objectContaining({ status: 500 }))
       })
     })
   })

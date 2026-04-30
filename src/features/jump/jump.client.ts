@@ -105,7 +105,9 @@ const jumpClient = placesClient.injectEndpoints({
           const baseUrl = getEnv('EVENTS_API_URL')
           if (!baseUrl) throw new Error('EVENTS_API_URL is not set')
           const response = await fetch(buildEventsUrl(baseUrl, args))
-          if (!response.ok) throw new Error(`Events API error: ${response.status}`)
+          if (!response.ok) {
+            return { error: { status: response.status, data: await response.text().catch(() => null) } }
+          }
           const envelope: JumpEventsResponse = await response.json()
           return { data: envelope.data ?? [] }
         } catch (error) {
@@ -120,7 +122,9 @@ const jumpClient = placesClient.injectEndpoints({
           if (!baseUrl) throw new Error('EVENTS_API_URL is not set')
           const response = await fetch(`${baseUrl}/events/${encodeURIComponent(id)}`)
           if (response.status === 404) return { data: null }
-          if (!response.ok) throw new Error(`Event API error: ${response.status}`)
+          if (!response.ok) {
+            return { error: { status: response.status, data: await response.text().catch(() => null) } }
+          }
           const envelope: JumpEventResponse = await response.json()
           return { data: envelope.ok ? envelope.data : null }
         } catch (error) {
