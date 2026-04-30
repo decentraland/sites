@@ -26,10 +26,12 @@ enum SegmentEvent {
 
 enum DownloadPlace {
   LANDING_HERO = 'landing-hero',
+  LANDING_HERO_EPIC = 'landing-hero-epic',
   LANDING_HERO_PLATFORM_SWITCH = 'landing-hero-platform-switch',
   COME_HANG_OUT = 'come-hang-out',
   JUMP_IN_ALREADY_USER = 'jump-in-already-user',
   DOWNLOAD_PAGE = 'download-page',
+  DOWNLOAD_SUCCESS_FOOTER = 'download-success-footer',
   UNKNOWN = 'unknown'
 }
 
