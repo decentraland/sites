@@ -745,6 +745,19 @@
     "recurrent_daily": "Repeats daily",
     "recurrent_monthly": "Repeats monthly"
   },
+  "place_detail": {
+    "close": "Close",
+    "jump_in": "Jump In",
+    "about": "About this place",
+    "copy_link": "Copy link",
+    "copied": "Copied!",
+    "by_prefix": "By ",
+    "unknown_owner": "Unknown",
+    "location": "Location",
+    "world_label": "World",
+    "favorites": "{count, plural, one {# favorite} other {# favorites}}",
+    "people_now": "{count, plural, one {# person here now} other {# people here now}}"
+  },
   "all_hangouts": {
     "title": "All Hangouts",
     "tab_all": "All Hangouts",

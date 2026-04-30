@@ -88,7 +88,9 @@ const jumpClient = placesClient.injectEndpoints({
           const baseUrl = getEnv('PLACES_API_URL')
           if (!baseUrl) throw new Error('PLACES_API_URL is not set')
           const response = await fetch(buildPlacesUrl(baseUrl, args))
-          if (!response.ok) throw new Error(`Places API error: ${response.status}`)
+          if (!response.ok) {
+            return { error: { status: response.status, data: await response.text().catch(() => null) } }
+          }
           const envelope: JumpPlacesResponse = await response.json()
           return { data: envelope.data ?? [] }
         } catch (error) {

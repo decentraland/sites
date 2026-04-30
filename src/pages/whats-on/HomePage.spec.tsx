@@ -5,7 +5,9 @@ import { HomePage } from './HomePage'
 const mockUseGetLiveNowCardsQuery = jest.fn()
 const mockUseLiveNowQueryParams = jest.fn()
 const mockUseEventDeepLink = jest.fn()
+const mockUsePlaceDeepLink = jest.fn()
 const mockEventDetailModal = jest.fn()
+const mockPlaceDetailModal = jest.fn()
 
 jest.mock('../../features/whats-on-events', () => ({
   useGetLiveNowCardsQuery: (...args: unknown[]) => mockUseGetLiveNowCardsQuery(...args)
@@ -19,10 +21,21 @@ jest.mock('../../hooks/useEventDeepLink', () => ({
   useEventDeepLink: () => mockUseEventDeepLink()
 }))
 
+jest.mock('../../hooks/usePlaceDeepLink', () => ({
+  usePlaceDeepLink: () => mockUsePlaceDeepLink()
+}))
+
 jest.mock('../../components/whats-on/EventDetailModal', () => ({
   EventDetailModal: (props: { open: boolean }) => {
     mockEventDetailModal(props)
     return <div data-testid="event-detail-modal" data-open={props.open ? 'true' : 'false'} />
+  }
+}))
+
+jest.mock('../../components/whats-on/PlaceDetailModal', () => ({
+  PlaceDetailModal: (props: { open: boolean }) => {
+    mockPlaceDetailModal(props)
+    return <div data-testid="place-detail-modal" data-open={props.open ? 'true' : 'false'} />
   }
 }))
 
@@ -52,6 +65,7 @@ jest.mock('./HomePage.styled', () => ({
 describe('when HomePage is rendered', () => {
   beforeEach(() => {
     mockUseEventDeepLink.mockReturnValue({ isOpen: false, modalData: null, closeDeepLink: jest.fn() })
+    mockUsePlaceDeepLink.mockReturnValue({ isOpen: false, modalData: null, closeDeepLink: jest.fn() })
   })
 
   afterEach(() => {
@@ -142,6 +156,29 @@ describe('when HomePage is rendered', () => {
       expect(screen.getByTestId('event-detail-modal')).toHaveAttribute('data-open', 'true')
       expect(mockEventDetailModal).toHaveBeenCalledWith(
         expect.objectContaining({ open: true, data: { id: 'ev-42' }, onClose: closeDeepLink })
+      )
+    })
+  })
+
+  describe('and a deep-linked place is open', () => {
+    let closeDeepLink: jest.Mock
+
+    beforeEach(() => {
+      closeDeepLink = jest.fn()
+      mockUseGetLiveNowCardsQuery.mockReturnValue({ isLoading: false })
+      mockUsePlaceDeepLink.mockReturnValue({
+        isOpen: true,
+        modalData: { id: 'place-42' },
+        closeDeepLink
+      })
+    })
+
+    it('should mount the PlaceDetailModal in its open state with the deep-link data', () => {
+      render(<HomePage />)
+
+      expect(screen.getByTestId('place-detail-modal')).toHaveAttribute('data-open', 'true')
+      expect(mockPlaceDetailModal).toHaveBeenCalledWith(
+        expect.objectContaining({ open: true, data: { id: 'place-42' }, onClose: closeDeepLink })
       )
     })
   })
