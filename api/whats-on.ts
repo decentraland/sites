@@ -83,19 +83,48 @@ const INDEX_HTML: string = (() => {
 // Vite content-hashes every chunk filename. Discover the chunks we want to
 // modulepreload at cold start by scanning `dist/assets/`. Stable substrings
 // keep the lookup robust across Vite's hashing.
-const ASSET_CHUNKS: { dappsShell?: string; whatsOnLayout?: string; whatsOnHomePage?: string } = (() => {
+const SUPPORTED_LOCALES = ['es', 'fr', 'ja', 'ko', 'zh'] as const
+type LocaleChunk = (typeof SUPPORTED_LOCALES)[number]
+
+const ASSET_CHUNKS: {
+  dappsShell?: string
+  whatsOnLayout?: string
+  whatsOnHomePage?: string
+  locales: Partial<Record<LocaleChunk, string>>
+} = (() => {
   try {
     const files = readdirSync(join(process.cwd(), 'dist', 'assets'))
     const find = (prefix: string): string | undefined => files.find(file => file.startsWith(prefix) && file.endsWith('.js'))
+    const locales: Partial<Record<LocaleChunk, string>> = {}
+    for (const locale of SUPPORTED_LOCALES) {
+      const chunk = find(`${locale}-`)
+      if (chunk) locales[locale] = chunk
+    }
     return {
       dappsShell: find('DappsShell-'),
       whatsOnLayout: find('WhatsOnLayout-'),
-      whatsOnHomePage: find('HomePage-')
+      whatsOnHomePage: find('HomePage-'),
+      locales
     }
   } catch {
-    return {}
+    return { locales: {} }
   }
 })()
+
+// Inspect the visitor's `Accept-Language` header so we can modulepreload the
+// locale chunk they will actually use. Falls through to undefined for `en`
+// (already bundled into the entry chunk) and unknown locales.
+function pickPreferredLocale(acceptLanguage: string | undefined): LocaleChunk | undefined {
+  if (!acceptLanguage) return undefined
+  const tags = acceptLanguage
+    .split(',')
+    .map(part => part.trim().split(';')[0].toLowerCase().split('-')[0])
+    .filter(Boolean)
+  for (const tag of tags) {
+    if ((SUPPORTED_LOCALES as ReadonlyArray<string>).includes(tag)) return tag as LocaleChunk
+  }
+  return undefined
+}
 
 function fetchJson<T>(url: string): Promise<T | null> {
   return fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
@@ -150,6 +179,7 @@ interface InjectionOptions {
   eventsData: EventsResponse | null
   scenesData: HotScene[] | null
   assetBaseUrl: string
+  preferredLocale: LocaleChunk | undefined
 }
 
 function buildInjectedHead(options: InjectionOptions): string {
@@ -163,7 +193,12 @@ function buildInjectedHead(options: InjectionOptions): string {
     lines.push(`<link rel="preload" as="image" href="${escapeHtmlAttr(optimizedHref)}" fetchpriority="high" />`)
   }
 
-  for (const chunk of [ASSET_CHUNKS.dappsShell, ASSET_CHUNKS.whatsOnLayout, ASSET_CHUNKS.whatsOnHomePage]) {
+  const moduleChunks = [ASSET_CHUNKS.dappsShell, ASSET_CHUNKS.whatsOnLayout, ASSET_CHUNKS.whatsOnHomePage]
+  if (options.preferredLocale) {
+    const localeChunk = ASSET_CHUNKS.locales[options.preferredLocale]
+    if (localeChunk) moduleChunks.push(localeChunk)
+  }
+  for (const chunk of moduleChunks) {
     if (!chunk) continue
     lines.push(`<link rel="modulepreload" href="${escapeHtmlAttr(`${options.assetBaseUrl}assets/${chunk}`)}" crossorigin />`)
   }
@@ -232,16 +267,27 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   const eventsUrl = `${apiHosts.eventsApi}${EVENTS_LIST_PATH}`
   const scenesUrl = apiHosts.hotScenes
 
+  const acceptLanguage = Array.isArray(req.headers['accept-language']) ? req.headers['accept-language'][0] : req.headers['accept-language']
+  const preferredLocale = pickPreferredLocale(acceptLanguage)
+
   try {
     const [eventsData, scenesData] = await Promise.all([fetchJson<EventsResponse>(eventsUrl), fetchJson<HotScene[]>(scenesUrl)])
 
     const lcpImageUrl = resolveLcpImage(eventsData, scenesData)
     const assetBaseUrl = resolveAssetBaseUrl(INDEX_HTML)
-    const html = inject(INDEX_HTML, { lcpImageUrl, eventsUrl, scenesUrl, eventsData, scenesData, assetBaseUrl })
+    const html = inject(INDEX_HTML, {
+      lcpImageUrl,
+      eventsUrl,
+      scenesUrl,
+      eventsData,
+      scenesData,
+      assetBaseUrl,
+      preferredLocale
+    })
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=300')
-    res.setHeader('Vary', 'Accept-Encoding')
+    res.setHeader('Vary', 'Accept-Encoding, Accept-Language')
     res.setHeader('X-WhatsOn-SSR', lcpImageUrl ? 'hit' : 'miss')
     res.status(200).send(html)
   } catch (error) {
