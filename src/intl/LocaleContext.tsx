@@ -1,35 +1,43 @@
-import { type ReactNode, useCallback } from 'react'
+import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import { TranslationProvider, useTranslation } from '@dcl/hooks'
 import type { LanguageTranslations } from '@dcl/hooks/esm/hooks/useTranslation/useTranslation.type'
 import en from './en.json'
-import es from './es.json'
-import fr from './fr.json'
-import ja from './ja.json'
-import ko from './ko.json'
-import zh from './zh.json'
 
 type SupportedLocale = 'en' | 'es' | 'fr' | 'zh' | 'ko' | 'ja'
 
 const LOCALE_STORAGE_KEY = 'dcl-locale'
 
-const translations: LanguageTranslations = { en, es, fr, zh, ko, ja }
+const SUPPORTED_LOCALES: ReadonlyArray<SupportedLocale> = ['en', 'es', 'fr', 'zh', 'ko', 'ja']
+
+type Translations = LanguageTranslations[keyof LanguageTranslations]
+
+// Each non-English locale ships ~30–55 KB of JSON. Eagerly importing all six
+// adds ~70 KB gzip to the main bundle even though the visitor only ever uses
+// one. We keep `en` static (always needed as the fallback locale) and load
+// the rest on demand once the visitor's preferred locale is known.
+const localeLoaders: Record<Exclude<SupportedLocale, 'en'>, () => Promise<{ default: Translations }>> = {
+  es: () => import('./es.json') as Promise<{ default: Translations }>,
+  fr: () => import('./fr.json') as Promise<{ default: Translations }>,
+  ja: () => import('./ja.json') as Promise<{ default: Translations }>,
+  ko: () => import('./ko.json') as Promise<{ default: Translations }>,
+  zh: () => import('./zh.json') as Promise<{ default: Translations }>
+}
+
+function isSupportedLocale(value: string): value is SupportedLocale {
+  return (SUPPORTED_LOCALES as ReadonlyArray<string>).includes(value)
+}
 
 function getInitialLocale(): SupportedLocale {
   try {
     const stored = localStorage.getItem(LOCALE_STORAGE_KEY)
-    if (stored && stored in translations) {
-      return stored as SupportedLocale
-    }
+    if (stored && isSupportedLocale(stored)) return stored
   } catch {
     // localStorage unavailable
   }
 
-  // Check browser language preference
   try {
     const browserLang = navigator.language?.split('-')[0]
-    if (browserLang && browserLang in translations) {
-      return browserLang as SupportedLocale
-    }
+    if (browserLang && isSupportedLocale(browserLang)) return browserLang
   } catch {
     // navigator unavailable (e.g. SSR)
   }
@@ -38,11 +46,68 @@ function getInitialLocale(): SupportedLocale {
 }
 
 function LocaleProvider({ children }: { children: ReactNode }) {
+  const initialLocale = getInitialLocale()
+  // First paint always uses `en` so the LCP card and navbar copy don't block on
+  // a JSON roundtrip. Visitors with a non-English preference see English for a
+  // few hundred ms before their locale takes over.
+  const [translations, setTranslations] = useState<LanguageTranslations>({ en })
+  const [locale, setLocale] = useState<SupportedLocale>(initialLocale === 'en' ? 'en' : 'en')
+
+  useEffect(() => {
+    if (initialLocale === 'en') return
+    let cancelled = false
+    localeLoaders[initialLocale]()
+      .then(mod => {
+        if (cancelled) return
+        setTranslations(prev => ({ ...prev, [initialLocale]: mod.default }))
+        setLocale(initialLocale)
+      })
+      .catch(() => {
+        // Network blip or chunk-load error: stay on English.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [initialLocale])
+
+  // Re-key on locale so TranslationProvider re-derives its memoized strings
+  // when the lazy locale finishes loading.
   return (
-    <TranslationProvider locale={getInitialLocale()} translations={translations} fallbackLocale="en">
-      {children}
+    <TranslationProvider key={locale} locale={locale} translations={translations} fallbackLocale="en">
+      <LocaleLoader translations={translations} setTranslations={setTranslations}>
+        {children}
+      </LocaleLoader>
     </TranslationProvider>
   )
+}
+
+interface LocaleLoaderProps {
+  translations: LanguageTranslations
+  setTranslations: (updater: (prev: LanguageTranslations) => LanguageTranslations) => void
+  children: ReactNode
+}
+
+// Receives the imperative locale switch from `useLocale().setLocale` (via the
+// `TranslationProvider` context) and lazy-loads the chunk on first switch.
+function LocaleLoader({ translations, setTranslations, children }: LocaleLoaderProps) {
+  const { locale } = useTranslation()
+
+  useEffect(() => {
+    if (!locale || locale === 'en' || locale in translations) return
+    if (!isSupportedLocale(locale) || locale === 'en') return
+    let cancelled = false
+    localeLoaders[locale]()
+      .then(mod => {
+        if (cancelled) return
+        setTranslations(prev => ({ ...prev, [locale]: mod.default }))
+      })
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+    }
+  }, [locale, translations, setTranslations])
+
+  return <>{children}</>
 }
 
 function useLocale() {
