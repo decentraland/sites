@@ -15,7 +15,7 @@ import windowsSetup from '../../images/download/windows_setup.webp'
 import microsoftLogo from '../../images/microsoft-logo.svg'
 import { calculateDownloadUrl, getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
 import { triggerFileDownload } from '../../modules/file'
-import { SectionViewedTrack, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
+import { DownloadPlace, SectionViewedTrack, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
 import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
 import { DownloadSuccessLayout } from './DownloadSuccessLayout'
@@ -205,23 +205,36 @@ const DownloadSuccess = memo(() => {
       downloadingRef.current = true
       setIsDownloading(true)
 
+      const footerPlace = DownloadPlace.DOWNLOAD_SUCCESS_FOOTER
+      // Re-download from the footer link is its own funnel event so analytics
+      // can distinguish it from the auto-download that fires on page mount.
+      if (isInitializedRef.current) {
+        trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place: footerPlace, href: osLink })
+      }
+
       try {
-        await getDownloadLinkWithIdentity({
+        const url = await getDownloadLinkWithIdentity({
           os: clientOS,
           arch: clientArch,
           fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
           queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
           getIdentityId
         })
+        if (isInitializedRef.current) {
+          trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place: footerPlace, href: url ?? osLink })
+        }
       } catch (error) {
         console.error('Download error:', error)
         setDownloadError(error instanceof Error ? error.message : 'Download failed')
+        if (isInitializedRef.current) {
+          trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place: footerPlace, href: osLink })
+        }
       } finally {
         downloadingRef.current = false
         setIsDownloading(false)
       }
     },
-    [clientOS, clientArch, anonUserId, getIdentityId]
+    [clientOS, clientArch, anonUserId, getIdentityId, osLink]
   )
 
   const showBackdrop = isDownloading || (!downloadError && !isFileSaved)
