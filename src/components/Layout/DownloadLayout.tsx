@@ -11,6 +11,7 @@ import { Button, Typography, launchDesktopApp, useDesktopMediaQuery } from 'dece
 import { getEnv } from '../../config/env'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { useAnonUserId } from '../../hooks/useAnonUserId'
 import { useWalletAddress } from '../../hooks/useWalletAddress'
 import { trackCheckpoint } from '../../modules/onboardingCheckpoint'
 import { DownloadOptions } from '../DownloadOptions'
@@ -58,27 +59,37 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
     return [params.get('email') || undefined, params.get('user') || undefined]
   }, [])
 
-  // CP5 reached: download page viewed (fire once, ref guard prevents re-fires)
-  const hasFiredCp5 = useRef(false)
-  useEffect(() => {
-    if (hasFiredCp5.current) return
-    hasFiredCp5.current = true
-    trackCheckpoint(track, {
-      checkpointId: 5,
-      action: 'reached',
-      email,
-      wallet: user
-    })
+  const anonUserId = useAnonUserId()
 
-    // Strip PII from URL so it doesn't leak via Referer header to external resources
-    // (e.g. WearablePreview iframe). We already captured the values above.
-    if (email || user) {
-      const cleanUrl = new URL(window.location.href)
-      cleanUrl.searchParams.delete('email')
-      cleanUrl.searchParams.delete('user')
-      window.history.replaceState(null, '', cleanUrl.toString())
-    }
-  }, [track, email, user])
+  // Strip PII (and the now-captured anon_user_id) from the URL so it doesn't
+  // leak via the Referer header to external resources (e.g. the WearablePreview
+  // iframe). Decoupled from CP1 tracking so it runs even when no anonUserId is
+  // resolvable.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const hasEmail = params.has('email')
+    const hasUser = params.has('user')
+    const hasAnon = params.has('anon_user_id')
+    if (!hasEmail && !hasUser && !hasAnon) return
+
+    const cleanUrl = new URL(window.location.href)
+    if (hasEmail) cleanUrl.searchParams.delete('email')
+    if (hasUser) cleanUrl.searchParams.delete('user')
+    if (hasAnon) cleanUrl.searchParams.delete('anon_user_id')
+    window.history.replaceState(null, '', cleanUrl.toString())
+  }, [email, user])
+
+  // CP1 reached: download page viewed (fire once, ref guard prevents re-fires)
+  const hasFiredCp1 = useRef(false)
+  useEffect(() => {
+    if (hasFiredCp1.current || !anonUserId) return
+    hasFiredCp1.current = true
+    trackCheckpoint(track, {
+      checkpointId: 1,
+      action: 'reached',
+      anonUserId
+    })
+  }, [track, anonUserId])
 
   const profileAddress = user || address
   const { data: profile } = useGetProfileQuery(profileAddress ?? undefined, { skip: !profileAddress })
@@ -188,7 +199,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
                 <DownloadTitle variant="h2">
                   <WrapDecentralandText text={title} />
                 </DownloadTitle>
-                <DownloadOptions email={email} user={user} />
+                <DownloadOptions />
               </DownloadOptionsContainer>
             </>
           )}

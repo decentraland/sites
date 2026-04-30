@@ -34,8 +34,6 @@ import {
 interface DownloadOptionsProps {
   hideDownloadCounts?: boolean
   downloadOnClick?: boolean
-  email?: string
-  user?: string
 }
 
 const imageByOs: Record<string, string> = {
@@ -43,7 +41,7 @@ const imageByOs: Record<string, string> = {
   [OperativeSystem.MACOS]: appleLogo
 }
 
-const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick, email, user }: DownloadOptionsProps) => {
+const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadOptionsProps) => {
   const [isLoadingUserAgentData, userAgentData] = useAdvancedUserAgentData()
   const getIdentityId = useGetIdentityId()
   const anonUserId = useAnonUserId()
@@ -124,18 +122,11 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick, email, user
 
   const onClickDownloadHandler = useCallback(
     async (option: DownloadOptionProps) => {
-      // CP5 completed + CP6 reached: user clicked download
+      // CP1 completed: user clicked download
       trackCheckpoint(track, {
-        checkpointId: 5,
+        checkpointId: 1,
         action: 'completed',
-        email,
-        wallet: user
-      })
-      trackCheckpoint(track, {
-        checkpointId: 6,
-        action: 'reached',
-        email,
-        wallet: user,
+        anonUserId,
         metadata: { os: option.text, arch: option.arch }
       })
 
@@ -163,7 +154,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick, email, user
         downloadOnClick ? 3000 : 0
       )
     },
-    [downloadOnClick, getIdentityId, anonUserId, links, track, email, user]
+    [downloadOnClick, getIdentityId, anonUserId, links, track]
   )
 
   const downloadCountsFormatted = !downloadsStatus.loading && downloadsStatus.loaded && downloads ? formatToShorthand(downloads) : null

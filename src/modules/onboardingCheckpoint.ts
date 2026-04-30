@@ -1,33 +1,26 @@
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const WALLET_RE = /^0x[0-9a-f]{40}$/i
-
 type CheckpointParams = {
-  checkpointId: 5 | 6
+  checkpointId: 1
   action?: 'reached' | 'completed'
-  email?: string
-  wallet?: string
+  anonUserId?: string
   metadata?: Record<string, unknown>
 }
 
-function resolveIdentifier(email?: string, wallet?: string) {
-  if (email && EMAIL_RE.test(email)) return { userIdentifier: email, identifierType: 'email' as const }
-  if (wallet && WALLET_RE.test(wallet)) return { userIdentifier: wallet, identifierType: 'wallet' as const }
-  return { userIdentifier: undefined, identifierType: undefined }
-}
-
+/**
+ * Sends a CP1 (`downloaded`) checkpoint to Segment. The anonymous id ties the
+ * row to CP2/CP3 later: landing and auth share the `decentraland.org` Segment
+ * cookie, and the launcher propagates the same id to Explorer.
+ *
+ * Skips the call if no `anonUserId` is available — the auth-server can't link
+ * the row to the rest of the funnel without it.
+ */
 export function trackCheckpoint(track: (event: string, data?: Record<string, unknown>) => void, params: CheckpointParams): void {
-  const { userIdentifier, identifierType } = resolveIdentifier(params.email, params.wallet)
-
-  // Don't send checkpoints without an identifier — they cause 400s on the backend
-  // and we can't send nudge emails without knowing who the user is
-  if (!userIdentifier || !identifierType) return
+  if (!params.anonUserId) return
 
   track('Onboarding Checkpoint', {
     checkpointId: params.checkpointId,
     action: params.action ?? 'reached',
-    userIdentifier,
-    identifierType,
-    email: identifierType === 'email' ? userIdentifier : undefined,
+    userIdentifier: params.anonUserId,
+    identifierType: 'anon',
     source: 'landing',
     metadata: params.metadata
   })

@@ -14,6 +14,20 @@ const store: Record<string, string> = {}
   }
 }
 
+// jsdom provides `document.cookie`. Each `setCookie` call appends a single
+// `name=value` pair (jsdom's cookie jar handles aggregation). `clearCookies`
+// expires every cookie currently in the jar so tests are isolated.
+function setCookie(nameAndValue: string): void {
+  document.cookie = nameAndValue
+}
+function clearCookies(): void {
+  for (const cookie of document.cookie.split(';')) {
+    const name = cookie.split('=')[0]?.trim()
+    if (!name) continue
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
+  }
+}
+
 import { useAnonUserId } from './useAnonUserId'
 
 // Mock react-router-dom's useSearchParams
@@ -35,6 +49,7 @@ const VALID_UUID_3 = '11111111-2222-3333-4444-555555555555'
 describe('useAnonUserId', () => {
   afterEach(() => {
     localStorage.clear()
+    clearCookies()
     jest.restoreAllMocks()
   })
 
@@ -65,7 +80,80 @@ describe('useAnonUserId', () => {
   })
 
   describe('when anon_user_id is absent from URL search params', () => {
-    describe('and Segment anonymous ID is in localStorage', () => {
+    describe('and Segment anonymous ID is in the cookie', () => {
+      let result: string | undefined
+
+      beforeEach(() => {
+        mockSearchParams = new URLSearchParams('')
+        setCookie(`ajs_anonymous_id=${VALID_UUID_2}`)
+        result = useAnonUserId()
+      })
+
+      it('should return the cookie value', () => {
+        expect(result).toBe(VALID_UUID_2)
+      })
+    })
+
+    describe('and the cookie value is URL-encoded with quotes (analytics-next format)', () => {
+      let result: string | undefined
+
+      beforeEach(() => {
+        mockSearchParams = new URLSearchParams('')
+        setCookie(`ajs_anonymous_id=%22${VALID_UUID_2}%22`)
+        result = useAnonUserId()
+      })
+
+      it('should decode and strip quotes', () => {
+        expect(result).toBe(VALID_UUID_2)
+      })
+    })
+
+    describe('and the cookie value is wrapped in literal quotes (no encoding)', () => {
+      let result: string | undefined
+
+      beforeEach(() => {
+        mockSearchParams = new URLSearchParams('')
+        setCookie(`ajs_anonymous_id="${VALID_UUID_2}"`)
+        result = useAnonUserId()
+      })
+
+      it('should strip literal quotes', () => {
+        expect(result).toBe(VALID_UUID_2)
+      })
+    })
+
+    describe('and the cookie value has malformed percent-encoding', () => {
+      let result: string | undefined
+
+      beforeEach(() => {
+        mockSearchParams = new URLSearchParams('')
+        // %ZZ is invalid percent-encoding → decodeURIComponent throws
+        setCookie(`ajs_anonymous_id=%ZZ${VALID_UUID_2}`)
+        result = useAnonUserId()
+      })
+
+      it('should fall through to undefined without throwing', () => {
+        expect(result).toBeUndefined()
+      })
+    })
+
+    describe('and the cookie value coexists with other cookies', () => {
+      let result: string | undefined
+
+      beforeEach(() => {
+        mockSearchParams = new URLSearchParams('')
+        setCookie('other_cookie=foo')
+        setCookie(`ajs_anonymous_id=${VALID_UUID_2}`)
+        setCookie('another=bar')
+        result = useAnonUserId()
+      })
+
+      it('should isolate and return the ajs_anonymous_id value', () => {
+        expect(result).toBe(VALID_UUID_2)
+      })
+    })
+
+    describe('and Segment anonymous ID is only in localStorage (no cookie)', () => {
       let result: string | undefined
 
       beforeEach(() => {
@@ -74,7 +162,7 @@ describe('useAnonUserId', () => {
         result = useAnonUserId()
       })
 
-      it('should return the Segment anonymous ID', () => {
+      it('should fall back to localStorage', () => {
         expect(result).toBe(VALID_UUID_2)
       })
     })
@@ -107,7 +195,7 @@ describe('useAnonUserId', () => {
       })
     })
 
-    describe('and localStorage does not have the Segment key', () => {
+    describe('and neither cookie nor localStorage have the Segment key', () => {
       let result: string | undefined
 
       beforeEach(() => {
@@ -121,17 +209,33 @@ describe('useAnonUserId', () => {
     })
   })
 
-  describe('when both URL param and localStorage have valid UUIDs', () => {
+  describe('when URL param, cookie, and localStorage all have valid UUIDs', () => {
     let result: string | undefined
 
     beforeEach(() => {
       mockSearchParams = new URLSearchParams(`?anon_user_id=${VALID_UUID_3}`)
+      setCookie(`ajs_anonymous_id=${VALID_UUID_1}`)
       localStorage.setItem('ajs_anonymous_id', VALID_UUID_2)
       result = useAnonUserId()
     })
 
-    it('should return the URL param value taking priority over localStorage', () => {
+    it('should return the URL param value taking top priority', () => {
       expect(result).toBe(VALID_UUID_3)
+    })
+  })
+
+  describe('when only cookie and localStorage have valid UUIDs (no URL param)', () => {
+    let result: string | undefined
+
+    beforeEach(() => {
+      mockSearchParams = new URLSearchParams('')
+      setCookie(`ajs_anonymous_id=${VALID_UUID_1}`)
+      localStorage.setItem('ajs_anonymous_id', VALID_UUID_2)
+      result = useAnonUserId()
+    })
+
+    it('should return the cookie value taking priority over localStorage', () => {
+      expect(result).toBe(VALID_UUID_1)
     })
   })
 })
