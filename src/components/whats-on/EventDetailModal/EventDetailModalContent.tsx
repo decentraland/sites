@@ -5,18 +5,9 @@ import { useTranslation } from '@dcl/hooks'
 import { Button } from 'decentraland-ui2'
 import type { RecurrentFrequency } from '../../../features/whats-on-events'
 import { buildCalendarUrl } from '../../../utils/whatsOnUrl'
+import { ContentDivider, ContentSection, DescriptionText, SectionLabel } from '../DetailModal/DetailModal.styled'
 import type { AdminActions, ModalEventData } from './EventDetailModal.types'
-import {
-  AdminActionsRow,
-  ContentDivider,
-  ContentSection,
-  DescriptionText,
-  RecurrenceText,
-  ScheduleIconButton,
-  ScheduleRow,
-  ScheduleText,
-  SectionLabel
-} from './EventDetailModal.styled'
+import { AdminActionsRow, RecurrenceText, ScheduleIconButton, ScheduleRow, ScheduleText } from './EventDetailModal.styled'
 
 function formatScheduleDate(isoString: string): string {
   const date = new Date(isoString)

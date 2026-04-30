@@ -17,6 +17,8 @@ function buildEventJumpInUrl(x: number, y: number, realm?: string | null): strin
 }
 
 const EVENT_ID_PARAM = 'id'
+const PLACE_POSITION_PARAM = 'position'
+const PLACE_WORLD_PARAM = 'world'
 
 function buildEventShareUrl(eventId: string, isLive: boolean, href: string = window.location.href): string {
   const current = new URL(href)
@@ -24,6 +26,21 @@ function buildEventShareUrl(eventId: string, isLive: boolean, href: string = win
   const env = current.searchParams.get('env')
   if (env) url.searchParams.set('env', env)
   url.searchParams.set(EVENT_ID_PARAM, eventId)
+  return url.toString()
+}
+
+interface PlaceShareUrlArgs {
+  position: string | null
+  world: string | null
+}
+
+function buildPlaceShareUrl({ position, world }: PlaceShareUrlArgs, href: string = window.location.href): string {
+  const current = new URL(href)
+  const url = new URL('/whats-on', current.origin)
+  const env = current.searchParams.get('env')
+  if (env) url.searchParams.set('env', env)
+  if (world) url.searchParams.set(PLACE_WORLD_PARAM, world)
+  else if (position) url.searchParams.set(PLACE_POSITION_PARAM, position)
   return url.toString()
 }
 
@@ -66,11 +83,14 @@ function buildCalendarUrl(event: CalendarEventParams): string | null {
 
 export {
   EVENT_ID_PARAM,
+  PLACE_POSITION_PARAM,
+  PLACE_WORLD_PARAM,
   appendRealmParam,
   buildCalendarUrl,
   buildEventJumpInUrl,
   buildEventShareUrl,
   buildJumpInUrl,
+  buildPlaceShareUrl,
   parseCoordinates,
   resolveEventRealm
 }

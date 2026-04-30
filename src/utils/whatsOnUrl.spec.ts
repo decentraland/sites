@@ -3,6 +3,7 @@ import {
   buildEventJumpInUrl,
   buildEventShareUrl,
   buildJumpInUrl,
+  buildPlaceShareUrl,
   parseCoordinates,
   resolveEventRealm
 } from './whatsOnUrl'
@@ -171,6 +172,48 @@ describe('buildEventShareUrl', () => {
   describe('when called with no explicit href', () => {
     it('should fall back to window.location.href as the default source', () => {
       expect(buildEventShareUrl('uuid-1', false)).toContain('id=uuid-1')
+    })
+  })
+})
+
+describe('buildPlaceShareUrl', () => {
+  describe('when only a position is provided', () => {
+    it('should produce a /whats-on deep link with the position param', () => {
+      expect(buildPlaceShareUrl({ position: '10,20', world: null }, 'http://localhost:5173/whats-on')).toBe(
+        'http://localhost:5173/whats-on?position=10%2C20'
+      )
+    })
+  })
+
+  describe('when a world is provided', () => {
+    it('should produce a /whats-on deep link with the world param and ignore position', () => {
+      expect(buildPlaceShareUrl({ position: '10,20', world: 'foo.dcl.eth' }, 'http://localhost:5173/whats-on')).toBe(
+        'http://localhost:5173/whats-on?world=foo.dcl.eth'
+      )
+    })
+  })
+
+  describe('when the source URL has env override', () => {
+    it('should preserve env in the share link', () => {
+      expect(buildPlaceShareUrl({ position: '10,20', world: null }, 'http://localhost:5173/whats-on?env=prod')).toBe(
+        'http://localhost:5173/whats-on?env=prod&position=10%2C20'
+      )
+    })
+  })
+
+  describe('when ambient query params are present', () => {
+    it('should drop them from the share link', () => {
+      expect(
+        buildPlaceShareUrl({ position: '10,20', world: null }, 'http://localhost:5173/whats-on?category=music&page=3&debug=true')
+      ).toBe('http://localhost:5173/whats-on?position=10%2C20')
+    })
+  })
+
+  describe('when both position and world are null', () => {
+    it('should produce a bare /whats-on URL', () => {
+      expect(buildPlaceShareUrl({ position: null, world: null }, 'http://localhost:5173/whats-on?env=prod')).toBe(
+        'http://localhost:5173/whats-on?env=prod'
+      )
     })
   })
 })
