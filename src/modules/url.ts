@@ -50,19 +50,23 @@ const sanitizeCDNReleaseLinks = (
 /**
  * Builds the gateway URL map for the anonymous Download First flow.
  *
- * The gateway exposes `/anonymous/decentraland.<ext>?anon_user_id=<UUID>` for
- * users who haven't authenticated yet. The wrapper installer embeds the
- * `anon_user_id` so the launcher can read it after install and propagate it
- * to the Explorer for cross-funnel attribution.
+ * The gateway exposes `/anonymous/decentraland.<ext>` for users who haven't
+ * authenticated yet. The `anon_user_id` query param is required by the gateway
+ * to produce a wrapper installer with the campaign id embedded — but it is NOT
+ * appended here. Callers already pass it via `addQueryParamsToUrlString` /
+ * `getDownloadLinkWithIdentity({ queryParams })` the same way they do for
+ * `AUTO_SIGNING` URLs. Embedding it here would yield duplicate query params on
+ * every anonymous download.
  *
- * Without an `anonUserId`, fall back to the static CDN map — there's no
- * value in pegging the gateway when we can't attribute the install.
+ * Without an `anonUserId` we return null so the caller falls back to the
+ * static CDN map — pegging the gateway without it is pointless (the route
+ * would return 400) and there's nothing to attribute anyway.
  */
 const buildAnonymousGatewayLinks = (anonUserId: string): Record<string, Record<string, string>> | null => {
   const baseUrl = config.get('AUTO_SIGNING_BASE_URL')
-  if (!baseUrl) return null
+  if (!baseUrl || !anonUserId) return null
 
-  const buildUrl = (ext: 'exe' | 'dmg') => `${baseUrl}/anonymous/decentraland.${ext}?anon_user_id=${encodeURIComponent(anonUserId)}`
+  const buildUrl = (ext: 'exe' | 'dmg') => `${baseUrl}/anonymous/decentraland.${ext}`
 
   // Mirror the OS/arch shape produced by getCDNRelease for downstream consumers.
   // The keys here intentionally use the same casing (`Windows`, `macOS`) that
@@ -76,16 +80,18 @@ const buildAnonymousGatewayLinks = (anonUserId: string): Record<string, Record<s
   /* eslint-enable @typescript-eslint/naming-convention */
 }
 
+/** Returns anonymous gateway links if we have an anon_user_id, otherwise null. */
+const tryAnonymousGateway = (anonUserId: string | undefined): Record<string, Record<string, string>> | null =>
+  anonUserId ? buildAnonymousGatewayLinks(anonUserId) : null
+
 const calculateCDNReleaseLinksWithIdentity = async (
   getIdentityId?: () => Promise<string | undefined>,
   fallbackLinks?: Record<string, Record<string, string>> | null,
   anonUserId?: string
 ): Promise<Record<string, Record<string, string>> | null> => {
   if (!getIdentityId) {
-    if (anonUserId) {
-      const anonLinks = buildAnonymousGatewayLinks(anonUserId)
-      if (anonLinks) return anonLinks
-    }
+    const anonLinks = tryAnonymousGateway(anonUserId)
+    if (anonLinks) return anonLinks
     const launcherLinks = getCDNRelease(CDNSource.LAUNCHER)
     return fallbackLinks || sanitizeCDNReleaseLinks(launcherLinks)
   }
@@ -99,19 +105,15 @@ const calculateCDNReleaseLinksWithIdentity = async (
 
     // No identity but we DO have an anon_user_id → use the anonymous gateway
     // route so the installer carries the campaign id end-to-end.
-    if (anonUserId) {
-      const anonLinks = buildAnonymousGatewayLinks(anonUserId)
-      if (anonLinks) return anonLinks
-    }
+    const anonLinks = tryAnonymousGateway(anonUserId)
+    if (anonLinks) return anonLinks
 
     const launcherLinks = getCDNRelease(CDNSource.LAUNCHER)
     return sanitizeCDNReleaseLinks(launcherLinks) || fallbackLinks || null
   } catch (error) {
     console.error('Failed to generate identityId:', error)
-    if (anonUserId) {
-      const anonLinks = buildAnonymousGatewayLinks(anonUserId)
-      if (anonLinks) return anonLinks
-    }
+    const anonLinks = tryAnonymousGateway(anonUserId)
+    if (anonLinks) return anonLinks
     const launcherLinks = getCDNRelease(CDNSource.LAUNCHER)
     return sanitizeCDNReleaseLinks(launcherLinks) || fallbackLinks || null
   }

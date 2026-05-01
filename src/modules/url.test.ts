@@ -373,16 +373,25 @@ describe('calculateCDNReleaseLinksWithIdentity', () => {
         result = await calculateCDNReleaseLinksWithIdentity(undefined, null, ANON_ID)
       })
 
-      it('should return the gateway anonymous URL embedding the anon_user_id', () => {
+      it('should return the bare gateway anonymous URL (no anon_user_id query param)', () => {
+        // The query param is appended by callsites via addQueryParamsToUrlString /
+        // queryParams the same way it's appended to AUTO_SIGNING URLs. Embedding
+        // it here would yield ?anon_user_id=X&anon_user_id=X downstream.
         expect(result).toEqual({
-          Windows: {
-            amd64: `https://download-gateway.decentraland.zone/anonymous/decentraland.exe?anon_user_id=${ANON_ID}`
-          },
+          Windows: { amd64: 'https://download-gateway.decentraland.zone/anonymous/decentraland.exe' },
           macOS: {
-            arm64: `https://download-gateway.decentraland.zone/anonymous/decentraland.dmg?anon_user_id=${ANON_ID}`,
-            amd64: `https://download-gateway.decentraland.zone/anonymous/decentraland.dmg?anon_user_id=${ANON_ID}`
+            arm64: 'https://download-gateway.decentraland.zone/anonymous/decentraland.dmg',
+            amd64: 'https://download-gateway.decentraland.zone/anonymous/decentraland.dmg'
           }
         })
+      })
+
+      it('should not embed anon_user_id in the URL (deduplication contract)', () => {
+        for (const osLinks of Object.values(result || {})) {
+          for (const url of Object.values(osLinks)) {
+            expect(url).not.toContain('anon_user_id=')
+          }
+        }
       })
     })
 
@@ -392,7 +401,34 @@ describe('calculateCDNReleaseLinksWithIdentity', () => {
       })
 
       it('should still route through the gateway anonymous URL', () => {
-        expect(result?.Windows.amd64).toBe(`https://download-gateway.decentraland.zone/anonymous/decentraland.exe?anon_user_id=${ANON_ID}`)
+        expect(result?.Windows.amd64).toBe('https://download-gateway.decentraland.zone/anonymous/decentraland.exe')
+      })
+    })
+
+    describe('and getIdentityId throws', () => {
+      let consoleErrorSpy: jest.SpyInstance
+
+      beforeEach(async () => {
+        consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+        result = await calculateCDNReleaseLinksWithIdentity(
+          async () => {
+            throw new Error('identity API down')
+          },
+          null,
+          ANON_ID
+        )
+      })
+
+      afterEach(() => {
+        consoleErrorSpy.mockRestore()
+      })
+
+      it('should still return the gateway anonymous URL instead of falling back to the static CDN', () => {
+        // When identity creation fails but we DO have an anon_user_id, we still
+        // want the wrapper installer with attribution — falling back to direct
+        // CDN here would silently drop the campaign id even though we had it.
+        expect(result?.Windows.amd64).toBe('https://download-gateway.decentraland.zone/anonymous/decentraland.exe')
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to generate identityId:', expect.any(Error))
       })
     })
 
