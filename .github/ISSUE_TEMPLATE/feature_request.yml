@@ -1,7 +1,13 @@
 name: Feature Request
 description: Suggest a new feature or improvement
+title: '[Feature]: <briefly describe the request>'
 labels: ['enhancement']
 body:
+  - type: markdown
+    attributes:
+      value: |
+        **Title:** replace the `<briefly describe the request>` placeholder with a one-line summary (e.g. `[Feature]: dark mode for blog posts`). Issues with placeholder titles will be sent back.
+
   - type: textarea
     id: summary
     attributes:

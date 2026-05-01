@@ -1,11 +1,14 @@
 name: Bug Report
 description: Report a bug or unexpected behavior
+title: '[Bug]: <briefly describe what is broken>'
 labels: ['bug']
 body:
   - type: markdown
     attributes:
       value: |
         Thanks for taking the time to file a bug report. Please fill in as many fields as possible — the more context, the faster we can reproduce and fix it.
+
+        **Title:** replace the `<briefly describe what is broken>` placeholder with a one-line summary (e.g. `[Bug]: blog post page crashes on iOS Safari`). Issues with placeholder titles will be sent back.
 
         **Privacy:** do not paste full wallet addresses, signed messages, JWTs, or session tokens. Redact them as `0x1234…abcd` if needed.
 
