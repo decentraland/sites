@@ -1,4 +1,4 @@
-import { Box, Button, styled } from 'decentraland-ui2'
+import { Box, styled } from 'decentraland-ui2'
 import type { Rarity } from '../../../features/reels'
 
 const RARITY_COLORS: Record<Rarity, string> = {
@@ -25,37 +25,35 @@ const sharedContainerStyle = {
 const WearableStaticContainer = styled(Box)(sharedContainerStyle)
 
 /* eslint-disable @typescript-eslint/naming-convention */
-const WearableContainer = styled('a')({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  marginBottom: 10,
-  borderRadius: 12,
-  background: 'rgba(255, 255, 255, 0.1)',
-  padding: 6,
+const WearableContainer = styled('a')(({ theme }) => ({
+  ...sharedContainerStyle,
   transition: 'background 0.35s',
-  textDecoration: 'none',
+  cursor: 'pointer',
   '&:hover': {
     background: '#716b7c'
   },
-  '&:hover .reels-wearable-buy': {
-    opacity: 1
-  },
-  '&:hover .reels-wearable-wrapper': {
-    width: 'calc(100% - 69px)',
-    minWidth: 'calc(100% - 69px)'
-  },
-  '@media (max-width: 991px)': {
-    '&:hover .reels-wearable-buy': { opacity: 0 },
-    '&:hover .reels-wearable-wrapper': { width: '100%', minWidth: '100%' }
+  [theme.breakpoints.down('lg')]: {
+    cursor: 'default'
   }
-})
+}))
 
-const WearableWrapper = styled(Box)({
+interface WearableWrapperProps {
+  hovered: boolean
+}
+
+const WearableWrapper = styled(Box, {
+  shouldForwardProp: prop => prop !== 'hovered'
+})<WearableWrapperProps>(({ hovered, theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  width: '100%'
-})
+  width: hovered ? 'calc(100% - 69px)' : '100%',
+  minWidth: hovered ? 'calc(100% - 69px)' : '100%',
+  transition: 'width 0.2s',
+  [theme.breakpoints.down('lg')]: {
+    width: '100%',
+    minWidth: '100%'
+  }
+}))
 
 interface WearableImageProps {
   rarity: Rarity
@@ -84,14 +82,33 @@ const WearableName = styled('span')({
   whiteSpace: 'nowrap'
 })
 
-const BuyButton = styled(Button)({
+interface BuyButtonProps {
+  visible: boolean
+}
+
+const BuyButton = styled('button', {
+  shouldForwardProp: prop => prop !== 'visible'
+})<BuyButtonProps>(({ visible, theme }) => ({
   width: 'auto',
   maxWidth: 'none',
   minWidth: 59,
   padding: '8px 16.5px',
   marginRight: 36,
-  opacity: 0,
-  transition: 'opacity 0.35s'
-})
+  border: 'none',
+  borderRadius: 6,
+  background: theme.palette.primary.main,
+  color: theme.palette.primary.contrastText,
+  fontWeight: 600,
+  fontSize: 14,
+  textTransform: 'uppercase',
+  cursor: 'pointer',
+  opacity: visible ? 1 : 0,
+  transition: 'opacity 0.35s',
+  pointerEvents: visible ? 'auto' : 'none',
+  [theme.breakpoints.down('lg')]: {
+    opacity: 0,
+    pointerEvents: 'none'
+  }
+}))
 
 export { BuyButton, WearableContainer, WearableImage, WearableName, WearableStaticContainer, WearableWrapper }
