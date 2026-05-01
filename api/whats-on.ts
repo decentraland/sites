@@ -264,6 +264,25 @@ function inject(html: string, options: InjectionOptions): string {
   return withoutInlineScript.replace('</head>', `${head}\n</head>`)
 }
 
+function buildEarlyHintLinks(options: { assetBaseUrl: string; preferredLocale: LocaleChunk | undefined }): string[] {
+  const links: string[] = []
+  if (ASSET_CHUNKS.topBackground) {
+    const rawHref = `${options.assetBaseUrl}assets/${ASSET_CHUNKS.topBackground}`
+    const optimizedHref = `/_vercel/image?url=${encodeURIComponent(rawHref)}&w=1920&q=75`
+    links.push(`<${optimizedHref}>; rel=preload; as=image; media="(min-width: 600px)"; fetchpriority=high`)
+  }
+  const moduleChunks = [ASSET_CHUNKS.dappsShell, ASSET_CHUNKS.whatsOnLayout, ASSET_CHUNKS.whatsOnHomePage]
+  if (options.preferredLocale) {
+    const localeChunk = ASSET_CHUNKS.locales[options.preferredLocale]
+    if (localeChunk) moduleChunks.push(localeChunk)
+  }
+  for (const chunk of moduleChunks) {
+    if (!chunk) continue
+    links.push(`<${options.assetBaseUrl}assets/${chunk}>; rel=modulepreload`)
+  }
+  return links
+}
+
 function resolveAssetBaseUrl(html: string): string {
   // Vite emits `<script type="module" src="<base>/assets/index-XXX.js">` so we
   // can derive the deployed CDN base from the existing markup. Falls back to
@@ -297,12 +316,26 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
 
   const acceptLanguage = Array.isArray(req.headers['accept-language']) ? req.headers['accept-language'][0] : req.headers['accept-language']
   const preferredLocale = pickPreferredLocale(acceptLanguage)
+  const assetBaseUrl = resolveAssetBaseUrl(INDEX_HTML)
+
+  // 103 Early Hints: tell the browser to start fetching the static chunks and
+  // the desktop top_background WHILE we're still fetching the events API.
+  // Saves roughly the API roundtrip time off the LCP / FCP critical path on
+  // cache misses. The LCP image preload still ships with the 200 response
+  // since we don't know the URL until events resolves.
+  const earlyHints = buildEarlyHintLinks({ assetBaseUrl, preferredLocale })
+  if (earlyHints.length > 0 && typeof res.writeEarlyHints === 'function') {
+    try {
+      res.writeEarlyHints({ link: earlyHints })
+    } catch (err) {
+      console.warn('[WhatsOn SSR] writeEarlyHints failed', err)
+    }
+  }
 
   try {
     const [eventsData, scenesData] = await Promise.all([fetchJson<EventsResponse>(eventsUrl), fetchJson<HotScene[]>(scenesUrl)])
 
     const lcpImageUrl = resolveLcpImage(eventsData, scenesData)
-    const assetBaseUrl = resolveAssetBaseUrl(INDEX_HTML)
     const html = inject(INDEX_HTML, {
       lcpImageUrl,
       eventsUrl,
