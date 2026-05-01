@@ -151,7 +151,8 @@ const DownloadSuccess = memo(() => {
         os: clientOS,
         arch: clientArch,
         fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
-        getIdentityId: getIdentityIdRef.current
+        getIdentityId: getIdentityIdRef.current,
+        anonUserId: anonUserIdRef.current
       })
 
       if (cancelled) return
@@ -224,7 +225,8 @@ const DownloadSuccess = memo(() => {
           arch: clientArch,
           fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
           queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
-          getIdentityId
+          getIdentityId,
+          anonUserId
         })
         if (isInitializedRef.current) {
           trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place: footerPlace, href: url ?? osLink })
