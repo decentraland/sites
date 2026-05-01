@@ -55,8 +55,9 @@ const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
   }, [onClick, event])
 
   // 560×315 CSS pixels at 2× DPR ≈ 1120 — keeps the rendered tile crisp while
-  // letting the optimizer recompress raw posters into ~80 KB WebP.
-  const optimizedSrc = useMemo(() => (event.image ? optimizedImageUrl(event.image, { width: 1120 }) : ''), [event.image])
+  // letting the optimizer recompress raw posters into ~80 KB WebP. The helper
+  // already short-circuits on falsy input, so no extra guard here.
+  const optimizedSrc = useMemo(() => optimizedImageUrl(event.image, { width: 1120 }), [event.image])
 
   return (
     <FutureCardContainer onClick={handleClick}>

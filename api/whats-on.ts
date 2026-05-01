@@ -100,12 +100,22 @@ const ASSET_CHUNKS: {
       const chunk = find(`${locale}-`)
       if (chunk) locales[locale] = chunk
     }
-    return {
+    const result = {
       dappsShell: find('DappsShell-'),
       whatsOnLayout: find('WhatsOnLayout-'),
       whatsOnHomePage: find('HomePage-'),
       locales
     }
+    // Surface chunk-discovery misses at cold-start so a future Vite/rollup
+    // rename doesn't silently drop the modulepreload hints we rely on.
+    for (const [key, value] of [
+      ['DappsShell', result.dappsShell],
+      ['WhatsOnLayout', result.whatsOnLayout],
+      ['HomePage', result.whatsOnHomePage]
+    ] as const) {
+      if (!value) console.warn(`[WhatsOn SSR] could not find ${key} chunk in dist/assets/`)
+    }
+    return result
   } catch {
     return { locales: {} }
   }
@@ -229,10 +239,10 @@ function inject(html: string, options: InjectionOptions): string {
   if (!head) return html
   // Replace the existing client-side prefetch script in index.html — the server
   // already did the work, so the inline `fetch()` chain is redundant and would
-  // race with the prefetch we just injected. The replacement also drops the
-  // <link rel="preconnect"> for the LCP image since modulepreload + preload
-  // cover that origin already.
-  const withoutInlineScript = html.replace(/<script>\s*\/\/ Whats-on early data prefetch[\s\S]*?<\/script>\s*/, '')
+  // race with the prefetch we just injected. Match the script via a stable
+  // `data-whats-on-prefetch` attribute instead of a comment to avoid breakage
+  // if Vite or rollup ever strips inline-script comments.
+  const withoutInlineScript = html.replace(/<script[^>]*data-whats-on-prefetch[^>]*>[\s\S]*?<\/script>\s*/, '')
   return withoutInlineScript.replace('</head>', `${head}\n</head>`)
 }
 

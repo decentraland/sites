@@ -63,7 +63,7 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
   const categorySubtitle = data.categories[0] ?? null
   // Hero spans the modal — full-width on mobile, ~720 px on desktop. 1500
   // covers DPR=2 with margin so the upscaled poster stays sharp.
-  const optimizedImage = useMemo(() => (data.image ? optimizedImageUrl(data.image, { width: 1500 }) : ''), [data.image])
+  const optimizedImage = useMemo(() => optimizedImageUrl(data.image, { width: 1500 }), [data.image])
 
   return (
     <>

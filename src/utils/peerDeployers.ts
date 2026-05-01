@@ -19,8 +19,16 @@ interface ResolveDeployersOptions {
 // site avoids the N+1 of one `entities/active` + one `deployments` request
 // per coordinate. Returns a Map keyed by the input coordinate string ("x,y").
 function buildTimeoutSignal(timeoutMs: number): AbortSignal | undefined {
-  if (typeof AbortSignal === 'undefined' || typeof AbortSignal.timeout !== 'function') return undefined
-  return AbortSignal.timeout(timeoutMs)
+  if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') {
+    return AbortSignal.timeout(timeoutMs)
+  }
+  // jsdom and older Safari/WebView builds don't ship AbortSignal.timeout. Fall
+  // back to a manual AbortController + setTimeout so the fetch can never hang
+  // forever — either signal is consumed before unload, or the timer fires.
+  if (typeof AbortController === 'undefined') return undefined
+  const controller = new AbortController()
+  setTimeout(() => controller.abort(), timeoutMs)
+  return controller.signal
 }
 
 async function resolveDeployers(

@@ -12,13 +12,14 @@ const segmentWriteKey = getEnv('SEGMENT_KEY') || ''
 
 // Sentry adds ~110 KB to the critical JS. Defer the init to idle time so the
 // vendor-sentry chunk doesn't compete with the LCP image and the lazy
-// DappsShell chunk on slower networks. Errors thrown before init still bubble
-// to the browser console; we only lose the brief pre-idle window for capture.
+// DappsShell chunk on slower networks. The 2 s timeout caps the no-capture
+// window — most errors thrown during boot still surface in the browser
+// console even before Sentry initializes.
 scheduleWhenIdle(
   () => {
     void import('./modules/sentry')
   },
-  { timeout: 4000 }
+  { timeout: 2000 }
 )
 
 scheduleDeferredThirdParty()

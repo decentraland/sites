@@ -18,15 +18,13 @@
   <link rel="preload" as="image" href="/hero_mobile.webp" media="(max-width: 599px)" fetchpriority="high" />
   <link rel="preload" as="image" href="/hero_tablet.webp" media="(min-width: 600px) and (max-width: 991px)" fetchpriority="high" />
   <link rel="preload" as="image" href="/hero_desktop.webp" media="(min-width: 992px)" fetchpriority="high" />
-  <script>
-    // Whats-on early data prefetch. Fires Live Now API calls before the JS
-    // bundle and the lazy DappsShell chunk are even parsed, so the response
-    // is in flight while React is still booting. RTK Query's queryFn checks
-    // for a matching prefetch and adopts it instead of opening a new request.
-    // Without this, the LCP image URL (first Live Now card) only becomes
-    // discoverable after a chain of HTML → main JS → DappsShell lazy →
-    // WhatsOnLayout lazy → HomePage lazy → fetch, which Lighthouse measured
-    // as 3.1s of "Resource load delay" on mobile.
+  <script data-whats-on-prefetch>
+    // Whats-on early data prefetch fallback. On Vercel deployments the
+    // `api/whats-on.ts` SSR function strips this `<script>` (matched via the
+    // `data-whats-on-prefetch` attribute) and injects a pre-resolved version.
+    // This block is what runs in `vite dev` and on any non-Vercel host so the
+    // Live Now API calls still fire before the main bundle parses, keeping
+    // the LCP image URL discoverable as early as possible.
     (function () {
       var path = location.pathname
       if (path !== '/whats-on' && path.indexOf('/whats-on/') !== 0) return
@@ -51,10 +49,15 @@
         events: eventsPromise,
         scenes: scenesPromise
       }
-      // Mirrors the join in buildLiveNowCards: pick the highest-user scene that
-      // has a matching live event. If found, that event's image is the LCP
-      // candidate. Preloading it here lets the browser start the ~1 MB image
-      // fetch before React parses the lazy DappsShell + WhatsOnLayout chunks.
+      // Mirrors `optimizedImageUrl` in src/utils/imageUrl.ts. We route through
+      // /_vercel/image when running on Vercel so the preload URL matches the
+      // one LiveNowCard renders (otherwise the browser would fetch the raw
+      // 1 MB poster here and a separate optimized version when React mounts).
+      var LOCALHOSTS = { localhost: 1, '127.0.0.1': 1, '0.0.0.0': 1 }
+      var preloadHref = function (raw) {
+        if (LOCALHOSTS[host]) return raw
+        return '/_vercel/image?url=' + encodeURIComponent(raw) + '&w=750&q=75'
+      }
       Promise.all([eventsPromise, scenesPromise]).then(function (results) {
         var eventsData = results[0]
         var scenesData = results[1]
@@ -77,9 +80,8 @@
         var link = document.createElement('link')
         link.rel = 'preload'
         link.as = 'image'
-        link.href = lcpUrl
+        link.href = preloadHref(lcpUrl)
         link.setAttribute('fetchpriority', 'high')
-        link.crossOrigin = 'anonymous'
         document.head.appendChild(link)
       })
     })()

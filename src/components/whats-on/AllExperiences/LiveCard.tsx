@@ -17,7 +17,7 @@ const LiveCard = memo(({ event, onClick }: LiveCardProps) => {
     onClick(event)
   }, [onClick, event])
 
-  const optimizedImage = useMemo(() => (event.image ? optimizedImageUrl(event.image, { width: 1120 }) : ''), [event.image])
+  const optimizedImage = useMemo(() => optimizedImageUrl(event.image, { width: 1120 }), [event.image])
 
   return (
     <LiveCardWrapper>

@@ -44,7 +44,10 @@ const UpcomingCard = memo(function UpcomingCard({
     onClick(event)
   }, [onClick, event])
 
-  const optimizedImage = useMemo(() => (event.image ? optimizedImageUrl(event.image, { width: 640 }) : undefined), [event.image])
+  const optimizedImage = useMemo(() => {
+    const url = optimizedImageUrl(event.image, { width: 640 })
+    return url || undefined
+  }, [event.image])
 
   const mobileAction = hasValidIdentity ? (
     <MobileActionButton onClick={handleRemindToggle} disabled={isRemindLoading} aria-label={t('upcoming.remind_me')}>

@@ -46,12 +46,13 @@ function getInitialLocale(): SupportedLocale {
 }
 
 function LocaleProvider({ children }: { children: ReactNode }) {
-  const initialLocale = getInitialLocale()
+  // Lazy-init reads localStorage once per mount instead of on every render.
+  const [initialLocale] = useState<SupportedLocale>(() => getInitialLocale())
   // First paint always uses `en` so the LCP card and navbar copy don't block on
   // a JSON roundtrip. Visitors with a non-English preference see English for a
   // few hundred ms before their locale takes over.
   const [translations, setTranslations] = useState<LanguageTranslations>({ en })
-  const [locale, setLocale] = useState<SupportedLocale>(initialLocale === 'en' ? 'en' : 'en')
+  const [locale, setLocale] = useState<SupportedLocale>('en')
 
   useEffect(() => {
     if (initialLocale === 'en') return
