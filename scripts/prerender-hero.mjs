@@ -288,6 +288,15 @@ html = html.replace(
 )
 html = html.replace('</head>', `${fontPreload}\n${criticalCss}\n</head>`)
 
+// Inline the English locale into the HTML response so the main JS bundle
+// doesn't have to ship 56 KB / 17 KB gzip of static JSON. JSON.parse is ~5×
+// faster than JS object-literal parse for payloads this size, so even with
+// the same byte cost the visitor gets a faster TBT.
+const enJson = readFileSync(resolve(__dirname, '..', 'src', 'intl', 'en.json'), 'utf8')
+const enLiteral = JSON.stringify(enJson) // escapes the JSON string for embedding
+const enScript = `<script data-dcl-en>window.__dclEn=JSON.parse(${enLiteral.replace(/<\/(script|!--)/gi, m => `\\u003c\\u002f${m.slice(2)}`)})</script>`
+html = html.replace('</head>', `${enScript}\n</head>`)
+
 // Rewrite favicon href to CDN so it doesn't 404 on decentraland.zone
 // (the zone server's catch-all returns HTML for /favicon.ico)
 html = html.replace('href="/favicon.ico"', `href="${cdnBase}favicon.ico"`)
@@ -297,3 +306,4 @@ writeFileSync(distPath, html)
 console.log('✅ Hero shell prerendered into dist/index.html')
 console.log(`   HTML: ${(heroHtml.length / 1024).toFixed(1)} KB`)
 console.log(`   CSS:  ${(criticalCss.length / 1024).toFixed(1)} KB`)
+console.log(`   en.json inlined: ${(enJson.length / 1024).toFixed(1)} KB`)

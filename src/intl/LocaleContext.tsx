@@ -1,20 +1,34 @@
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import { TranslationProvider, useTranslation } from '@dcl/hooks'
 import type { LanguageTranslations } from '@dcl/hooks/esm/hooks/useTranslation/useTranslation.type'
-import en from './en.json'
 
 type SupportedLocale = 'en' | 'es' | 'fr' | 'zh' | 'ko' | 'ja'
+type Translations = LanguageTranslations[keyof LanguageTranslations]
+
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    __dclEn?: Translations
+  }
+}
 
 const LOCALE_STORAGE_KEY = 'dcl-locale'
 
 const SUPPORTED_LOCALES: ReadonlyArray<SupportedLocale> = ['en', 'es', 'fr', 'zh', 'ko', 'ja']
 
-type Translations = LanguageTranslations[keyof LanguageTranslations]
+// `prerender-hero.mjs` inlines `src/intl/en.json` into the HTML response as
+// `window.__dclEn`. JSON.parse decodes that payload ~5× faster than the JS
+// parser would handle the equivalent ESM module, and removing the static
+// import drops ~56 KB raw / ~17 KB gzip from the main bundle. We dynamic-
+// import as a fallback for `vite dev` and any host where the prerender step
+// didn't run (CI smoke tests, partial deploys, etc).
+const inlineEn = typeof window !== 'undefined' ? window.__dclEn : undefined
+const loadEnglish = (): Promise<Translations> =>
+  inlineEn ? Promise.resolve(inlineEn) : import('./en.json').then(m => m.default as unknown as Translations)
 
 // Each non-English locale ships ~30–55 KB of JSON. Eagerly importing all six
 // adds ~70 KB gzip to the main bundle even though the visitor only ever uses
-// one. We keep `en` static (always needed as the fallback locale) and load
-// the rest on demand once the visitor's preferred locale is known.
+// one. Each language is loaded on demand once we know what the visitor wants.
 const localeLoaders: Record<Exclude<SupportedLocale, 'en'>, () => Promise<{ default: Translations }>> = {
   es: () => import('./es.json') as Promise<{ default: Translations }>,
   fr: () => import('./fr.json') as Promise<{ default: Translations }>,
@@ -51,25 +65,37 @@ function LocaleProvider({ children }: { children: ReactNode }) {
   // First paint always uses `en` so the LCP card and navbar copy don't block on
   // a JSON roundtrip. Visitors with a non-English preference see English for a
   // few hundred ms before their locale takes over.
-  const [translations, setTranslations] = useState<LanguageTranslations>({ en })
+  const [translations, setTranslations] = useState<LanguageTranslations | null>(() => (inlineEn ? { en: inlineEn } : null))
   const [locale, setLocale] = useState<SupportedLocale>('en')
 
   useEffect(() => {
-    if (initialLocale === 'en') return
     let cancelled = false
-    localeLoaders[initialLocale]()
-      .then(mod => {
-        if (cancelled) return
-        setTranslations(prev => ({ ...prev, [initialLocale]: mod.default }))
+    const enReady = inlineEn ? Promise.resolve(inlineEn) : loadEnglish()
+    const otherReady: Promise<Translations | undefined> =
+      initialLocale === 'en'
+        ? Promise.resolve(undefined)
+        : localeLoaders[initialLocale]()
+            .then(m => m.default)
+            .catch(() => undefined)
+    Promise.all([enReady, otherReady]).then(([enValue, otherValue]) => {
+      if (cancelled) return
+      const next: LanguageTranslations = { en: enValue }
+      if (otherValue) {
+        next[initialLocale] = otherValue
         setLocale(initialLocale)
-      })
-      .catch(() => {
-        // Network blip or chunk-load error: stay on English.
-      })
+      }
+      setTranslations(next)
+    })
     return () => {
       cancelled = true
     }
   }, [initialLocale])
+
+  // Block the first paint until at least the English fallback is ready.
+  // `inlineEn` makes this synchronous on Vercel-deployed routes; in `vite
+  // dev` and other non-prerendered hosts the dynamic import fires once and
+  // resolves within the same tick the bundle is parsed.
+  if (!translations) return null
 
   // Re-key on locale so TranslationProvider re-derives its memoized strings
   // when the lazy locale finishes loading.
@@ -84,7 +110,7 @@ function LocaleProvider({ children }: { children: ReactNode }) {
 
 interface LocaleLoaderProps {
   translations: LanguageTranslations
-  setTranslations: (updater: (prev: LanguageTranslations) => LanguageTranslations) => void
+  setTranslations: (updater: (prev: LanguageTranslations | null) => LanguageTranslations) => void
   children: ReactNode
 }
 
@@ -100,7 +126,7 @@ function LocaleLoader({ translations, setTranslations, children }: LocaleLoaderP
     localeLoaders[locale]()
       .then(mod => {
         if (cancelled) return
-        setTranslations(prev => ({ ...prev, [locale]: mod.default }))
+        setTranslations(prev => (prev ? { ...prev, [locale]: mod.default } : { [locale]: mod.default }))
       })
       .catch(() => undefined)
     return () => {
