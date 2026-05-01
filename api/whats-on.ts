@@ -202,10 +202,12 @@ function buildInjectedHead(options: InjectionOptions): string {
   // The desktop top_background is the single largest painted element on the
   // /whats-on hero, so Lighthouse picks it as LCP regardless of the Live Now
   // card. It's hidden on mobile via CSS, hence the media-gated preload — phone
-  // visitors don't pay the ~250 KB cost.
+  // visitors don't pay the cost. Routed through `/_vercel/image` so the raw
+  // 1920×1080 WebP collapses from ~250 KB to ~80 KB.
   if (ASSET_CHUNKS.topBackground) {
-    const href = `${options.assetBaseUrl}assets/${ASSET_CHUNKS.topBackground}`
-    lines.push(`<link rel="preload" as="image" href="${escapeHtmlAttr(href)}" media="(min-width: 600px)" fetchpriority="high" />`)
+    const rawHref = `${options.assetBaseUrl}assets/${ASSET_CHUNKS.topBackground}`
+    const optimizedHref = `/_vercel/image?url=${encodeURIComponent(rawHref)}&w=1920&q=75`
+    lines.push(`<link rel="preload" as="image" href="${escapeHtmlAttr(optimizedHref)}" media="(min-width: 600px)" fetchpriority="high" />`)
   }
 
   if (options.lcpImageUrl && isSafeImageUrl(options.lcpImageUrl)) {
@@ -250,12 +252,15 @@ function buildInjectedHead(options: InjectionOptions): string {
 function inject(html: string, options: InjectionOptions): string {
   const head = buildInjectedHead(options)
   if (!head) return html
+  // Drop the homepage hero preloads — they're for `/`, not `/whats-on`, and
+  // would otherwise compete with the LCP image we're about to preload.
+  const withoutHomepageHero = html.replace(/<link rel="preload" as="image" href="\/hero_(mobile|tablet|desktop)\.webp"[^>]*\/>\s*/g, '')
   // Replace the existing client-side prefetch script in index.html — the server
   // already did the work, so the inline `fetch()` chain is redundant and would
   // race with the prefetch we just injected. Match the script via a stable
   // `data-whats-on-prefetch` attribute instead of a comment to avoid breakage
   // if Vite or rollup ever strips inline-script comments.
-  const withoutInlineScript = html.replace(/<script[^>]*data-whats-on-prefetch[^>]*>[\s\S]*?<\/script>\s*/, '')
+  const withoutInlineScript = withoutHomepageHero.replace(/<script[^>]*data-whats-on-prefetch[^>]*>[\s\S]*?<\/script>\s*/, '')
   return withoutInlineScript.replace('</head>', `${head}\n</head>`)
 }
 

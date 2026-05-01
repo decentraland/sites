@@ -14,7 +14,12 @@ interface OptimizedImageOptions {
   quality?: number
 }
 
-function isOptimizableUrl(value: string): boolean {
+function isOptimizableUrl(value: unknown): value is string {
+  if (typeof value !== 'string' || value.length === 0) return false
+  // Same-origin asset paths (e.g. Vite-emitted `/assets/foo.webp`) are valid
+  // for `/_vercel/image`, so accept any string that starts with `/` (but not
+  // protocol-relative `//host`).
+  if (value.startsWith('/') && !value.startsWith('//')) return true
   try {
     const parsed = new URL(value)
     return parsed.protocol === 'https:' || parsed.protocol === 'http:'
