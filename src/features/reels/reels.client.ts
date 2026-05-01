@@ -38,6 +38,16 @@ const isMaticUrn = (urn: string): boolean => {
   return MATIC_NETWORK_TOKENS.some(token => lower.includes(`:${token}:`))
 }
 
+// camera-reel-service emits URNs that include the per-NFT tokenId (last segment), but the
+// subgraph indexes items at the asset URN (no tokenId). For 8-segment matic URNs whose last
+// segment is purely numeric, drop it so the item lookup hits.
+const stripTokenId = (urn: string): string => {
+  const parts = urn.split(':')
+  if (parts.length < 7) return urn
+  const last = parts[parts.length - 1]
+  return /^\d+$/.test(last) ? parts.slice(0, -1).join(':') : urn
+}
+
 interface GraphQLItem {
   id: string
   collection: { id: string }
@@ -85,31 +95,35 @@ async function enrichWearables(users: ImageUser[], signal?: AbortSignal): Promis
   const allUrns = users.flatMap(user => user.wearables ?? [])
   if (allUrns.length === 0) return users
 
-  const ethUrns: string[] = []
-  const maticUrns: string[] = []
-  for (const urn of allUrns) {
-    if (isMaticUrn(urn)) maticUrns.push(urn)
-    else ethUrns.push(urn)
+  const originalToAsset = new Map<string, string>()
+  for (const urn of allUrns) originalToAsset.set(urn, stripTokenId(urn))
+
+  const ethAssetUrns = new Set<string>()
+  const maticAssetUrns = new Set<string>()
+  for (const [original, asset] of originalToAsset) {
+    if (isMaticUrn(original)) maticAssetUrns.add(asset)
+    else ethAssetUrns.add(asset)
   }
 
   const [ethItems, maticItems] = await Promise.all([
-    fetchGraph(getEnv('THE_GRAPH_API_ETH_URL'), ethUrns, signal),
-    fetchGraph(getEnv('THE_GRAPH_API_MATIC_URL'), maticUrns, signal)
+    fetchGraph(getEnv('THE_GRAPH_API_ETH_URL'), [...ethAssetUrns], signal),
+    fetchGraph(getEnv('THE_GRAPH_API_MATIC_URL'), [...maticAssetUrns], signal)
   ])
 
-  const itemByUrn = new Map<string, GraphQLItem>()
-  for (const item of [...ethItems, ...maticItems]) itemByUrn.set(item.urn, item)
+  const itemByAssetUrn = new Map<string, GraphQLItem>()
+  for (const item of [...ethItems, ...maticItems]) itemByAssetUrn.set(item.urn, item)
 
   return users.map(user => ({
     ...user,
     wearablesParsed: (user.wearables ?? [])
-      .map(urn => itemByUrn.get(urn))
-      .filter((item): item is GraphQLItem => Boolean(item))
-      .map(item => {
+      .map(originalUrn => {
+        const assetUrn = originalToAsset.get(originalUrn)
+        const item = assetUrn ? itemByAssetUrn.get(assetUrn) : undefined
+        if (!item) return undefined
         const meta = item.metadata.wearable ?? item.metadata.emote
         return {
           id: item.id,
-          urn: item.urn,
+          urn: originalUrn,
           name: meta?.name ?? '',
           image: item.image,
           rarity: (meta?.rarity ?? 'common') as Rarity,
@@ -117,6 +131,7 @@ async function enrichWearables(users: ImageUser[], signal?: AbortSignal): Promis
           blockchainId: item.blockchainId
         } satisfies WearableParsed
       })
+      .filter((item): item is NonNullable<typeof item> => Boolean(item))
   }))
 }
 

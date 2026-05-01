@@ -141,7 +141,7 @@ const Metadata = memo(({ metadata, loading, visible }: MetadataProps) => {
                 key={user.userAddress || index}
                 user={user}
                 isFirst={index === 0}
-                initialWearableVisibility={index === 0 && (user.wearablesParsed ?? []).length > 0}
+                initialWearableVisibility={index === 0 && (user.wearables?.length ?? 0) > 0}
               />
             ))}
       </PeopleContainer>

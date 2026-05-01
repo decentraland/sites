@@ -8,7 +8,7 @@ import { useReelImageById } from '../../hooks/useReelImageById'
 const ReelsImagePage = memo(() => {
   const { imageId } = useParams<{ imageId: string }>()
   const { image, isLoading, error } = useReelImageById(imageId)
-  const [metadataVisible, setMetadataVisible] = useState(false)
+  const [metadataVisible, setMetadataVisible] = useState(true)
 
   useEffect(() => {
     const previous = document.title
