@@ -2,6 +2,7 @@
   "rewrites": [
     { "source": "/blog/:path*", "destination": "/api/seo?path=/blog/:path*" },
     { "source": "/blog", "destination": "/api/seo?path=/blog" },
+    { "source": "/reels/:imageId", "destination": "/api/seo?path=/reels/:imageId" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
