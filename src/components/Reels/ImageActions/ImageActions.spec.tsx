@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { ImageActions } from './ImageActions'
 
 const trackMock = jest.fn()
-const buildTwitterShareUrlMock = jest.fn(() => 'https://twitter.com/intent/tweet?fake=1')
+const buildTwitterShareUrlMock = jest.fn((_description: string, _url: string) => 'https://twitter.com/intent/tweet?fake=1')
 
 jest.mock('@dcl/hooks', () => ({
   useAnalytics: () => ({ track: trackMock, isInitialized: true })
