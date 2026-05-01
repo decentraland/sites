@@ -1,7 +1,7 @@
 import { type MouseEvent, memo, useCallback, useEffect, useState } from 'react'
 import { LocationOnOutlined } from '@mui/icons-material'
 import { useAnalytics } from '@dcl/hooks'
-import { buildJumpInUrl, buildPlaceUrl, buildProfileUrl, formatPhotoDate } from '../../../features/reels'
+import { buildAvatarUrl, buildJumpInUrl, buildPlaceUrl, buildProfileUrl, formatPhotoDate } from '../../../features/reels'
 import type { ImageMetadata } from '../../../features/reels'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { SegmentEvent } from '../../../modules/segment'
@@ -32,8 +32,6 @@ interface MetadataProps {
   loading: boolean
   visible: boolean
 }
-
-const buildAvatarUrl = (address: string): string => `https://peer.decentraland.org/lambdas/profiles/${address}/face`
 
 const Metadata = memo(({ metadata, loading, visible }: MetadataProps) => {
   const l = useFormatMessage()

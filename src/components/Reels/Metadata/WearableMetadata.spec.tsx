@@ -56,9 +56,10 @@ describe('WearableMetadata', () => {
     expect(trackMock).toHaveBeenCalledWith('Reels Click Wearable', { wearableUrn: wearable.urn })
   })
 
-  it('should fall back to "#" href when collection or blockchain id is missing', () => {
+  it('should render a non-interactive container when collection or blockchain id is missing', () => {
     const partial = { ...wearable, collectionId: undefined }
     render(<WearableMetadata wearable={partial} />)
-    expect(screen.getByRole('link')).toHaveAttribute('href', '#')
+    expect(screen.queryByRole('link')).toBeNull()
+    expect(screen.getByText('Cool Hat')).toBeInTheDocument()
   })
 })

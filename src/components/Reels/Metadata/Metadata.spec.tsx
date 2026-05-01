@@ -40,6 +40,7 @@ jest.mock('./UserMetadata', () => ({
 }))
 
 jest.mock('../../../features/reels', () => ({
+  buildAvatarUrl: (address: string) => `https://avatar/${address}`,
   buildJumpInUrl: () => 'https://jump',
   buildPlaceUrl: (...args: [string, string, AbortSignal?]) => buildPlaceUrlMock(...args),
   buildProfileUrl: (address: string) => `https://profile/${address}`,

@@ -1,5 +1,6 @@
-export { clearImageCache, enrichWearables, fetchImageById, fetchImagesByUser, isMaticUrn } from './reels.client'
+export { enrichWearables, fetchImageById, fetchImagesByUser } from './reels.client'
 export {
+  buildAvatarUrl,
   buildJumpInUrl,
   buildMarketplaceWearableUrl,
   buildPlaceUrl,

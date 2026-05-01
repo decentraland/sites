@@ -4,7 +4,14 @@ import { buildMarketplaceWearableUrl } from '../../../features/reels'
 import type { WearableParsed } from '../../../features/reels'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { SegmentEvent } from '../../../modules/segment'
-import { BuyButton, WearableContainer, WearableImage, WearableName, WearableWrapper } from './WearableMetadata.styled'
+import {
+  BuyButton,
+  WearableContainer,
+  WearableImage,
+  WearableName,
+  WearableStaticContainer,
+  WearableWrapper
+} from './WearableMetadata.styled'
 
 interface WearableMetadataProps {
   wearable: WearableParsed
@@ -15,7 +22,7 @@ const WearableMetadata = memo(({ wearable }: WearableMetadataProps) => {
   const { track } = useAnalytics()
 
   const marketplaceUrl =
-    wearable.collectionId && wearable.blockchainId ? buildMarketplaceWearableUrl(wearable.collectionId, wearable.blockchainId) : '#'
+    wearable.collectionId && wearable.blockchainId ? buildMarketplaceWearableUrl(wearable.collectionId, wearable.blockchainId) : null
 
   const handleClick = useCallback(
     (_event: MouseEvent<HTMLAnchorElement>) => {
@@ -24,17 +31,29 @@ const WearableMetadata = memo(({ wearable }: WearableMetadataProps) => {
     [track, wearable.urn]
   )
 
-  return (
-    <WearableContainer href={marketplaceUrl} target="_blank" rel="noopener noreferrer" onClick={handleClick}>
+  const body = (
+    <>
       <WearableWrapper className="reels-wearable-wrapper">
         <WearableImage rarity={wearable.rarity}>
           <img src={wearable.image} alt={wearable.name} />
         </WearableImage>
         <WearableName>{wearable.name}</WearableName>
       </WearableWrapper>
-      <BuyButton className="reels-wearable-buy" variant="contained" color="primary">
-        {l('component.reels.wearable.buy')}
-      </BuyButton>
+      {marketplaceUrl && (
+        <BuyButton className="reels-wearable-buy" variant="contained" color="primary">
+          {l('component.reels.wearable.buy')}
+        </BuyButton>
+      )}
+    </>
+  )
+
+  if (!marketplaceUrl) {
+    return <WearableStaticContainer>{body}</WearableStaticContainer>
+  }
+
+  return (
+    <WearableContainer href={marketplaceUrl} target="_blank" rel="noopener noreferrer" onClick={handleClick}>
+      {body}
     </WearableContainer>
   )
 })

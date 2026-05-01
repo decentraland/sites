@@ -11,6 +11,19 @@ const RARITY_COLORS: Record<Rarity, string> = {
   unique: '#FFC75A'
 }
 
+const sharedContainerStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginBottom: 10,
+  borderRadius: 12,
+  background: 'rgba(255, 255, 255, 0.1)',
+  padding: 6,
+  textDecoration: 'none'
+}
+
+const WearableStaticContainer = styled(Box)(sharedContainerStyle)
+
 /* eslint-disable @typescript-eslint/naming-convention */
 const WearableContainer = styled('a')({
   display: 'flex',
@@ -81,4 +94,4 @@ const BuyButton = styled(Button)({
   transition: 'opacity 0.35s'
 })
 
-export { BuyButton, WearableContainer, WearableImage, WearableName, WearableWrapper }
+export { BuyButton, WearableContainer, WearableImage, WearableName, WearableStaticContainer, WearableWrapper }

@@ -1,7 +1,7 @@
 import { type MouseEvent, memo, useCallback, useMemo, useState } from 'react'
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material'
 import { useAnalytics } from '@dcl/hooks'
-import { buildProfileUrl } from '../../../features/reels'
+import { buildAvatarUrl, buildProfileUrl } from '../../../features/reels'
 import type { ImageUser } from '../../../features/reels'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import wearableShirtSrc from '../../../images/reels/wearable-shirt.svg'
@@ -27,8 +27,6 @@ interface UserMetadataProps {
   isFirst: boolean
   initialWearableVisibility?: boolean
 }
-
-const buildAvatarUrl = (address: string): string => `https://peer.decentraland.org/lambdas/profiles/${address}/face`
 
 const UserMetadata = memo(({ user, isFirst, initialWearableVisibility = false }: UserMetadataProps) => {
   const l = useFormatMessage()

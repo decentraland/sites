@@ -32,6 +32,7 @@ jest.mock('./WearableMetadata', () => ({
 }))
 
 jest.mock('../../../features/reels', () => ({
+  buildAvatarUrl: (address: string) => `https://avatar/${address}`,
   buildProfileUrl: (address: string) => `https://profile/${address}`
 }))
 
