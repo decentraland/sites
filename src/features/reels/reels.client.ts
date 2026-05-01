@@ -1,0 +1,127 @@
+import { getEnv } from '../../config/env'
+import type { FetchListOptions, FetchListResult, Image, ImageUser, Rarity, WearableParsed } from './reels.types'
+
+const FETCH_TIMEOUT_MS = 5000
+const MATIC_NETWORK_TOKENS = ['matic', 'amoy']
+
+const imageCache = new Map<string, Image>()
+
+const getReelServiceUrl = (): string => {
+  const url = getEnv('REEL_SERVICE_URL')
+  if (!url) throw new Error('REEL_SERVICE_URL is required to fetch reel images')
+  return url
+}
+
+async function fetchImageById(id: string, signal?: AbortSignal): Promise<Image> {
+  const cached = imageCache.get(id)
+  if (cached) return cached
+  const response = await fetch(`${getReelServiceUrl()}/api/images/${id}/metadata`, {
+    signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS)
+  })
+  if (!response.ok) throw new Error(`Image ${id} not found`)
+  const image = (await response.json()) as Image
+  imageCache.set(id, image)
+  return image
+}
+
+async function fetchImagesByUser(address: string, options: FetchListOptions, signal?: AbortSignal): Promise<FetchListResult> {
+  const params = new URLSearchParams({ limit: String(options.limit), offset: String(options.offset) })
+  const response = await fetch(`${getReelServiceUrl()}/api/users/${address}/images?${params.toString()}`, {
+    signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS)
+  })
+  if (!response.ok) throw new Error(`Cannot fetch images for ${address}`)
+  return (await response.json()) as FetchListResult
+}
+
+const isMaticUrn = (urn: string): boolean => {
+  const lower = urn.toLowerCase()
+  return MATIC_NETWORK_TOKENS.some(token => lower.includes(`:${token}:`))
+}
+
+interface GraphQLItem {
+  id: string
+  collection: { id: string }
+  blockchainId: string
+  image: string
+  urn: string
+  metadata: {
+    wearable?: { name: string; rarity: string }
+    emote?: { name: string; rarity: string }
+  }
+}
+
+const WEARABLE_QUERY = `
+  query Items($urns: [String!]) {
+    items(where: { urn_in: $urns }) {
+      id
+      blockchainId
+      image
+      urn
+      collection { id }
+      metadata { wearable { name rarity } emote { name rarity } }
+    }
+  }
+`
+
+async function fetchGraph(url: string | undefined, urns: string[], signal?: AbortSignal): Promise<GraphQLItem[]> {
+  if (!url || urns.length === 0) return []
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: WEARABLE_QUERY, variables: { urns } }),
+      signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS)
+    })
+    if (!response.ok) return []
+    const json = (await response.json()) as { data?: { items?: GraphQLItem[] } }
+    return json.data?.items ?? []
+  } catch {
+    return []
+  }
+}
+
+async function enrichWearables(users: ImageUser[], signal?: AbortSignal): Promise<ImageUser[]> {
+  const allUrns = users.flatMap(user => user.wearables ?? [])
+  if (allUrns.length === 0) return users
+
+  const ethUrns: string[] = []
+  const maticUrns: string[] = []
+  for (const urn of allUrns) {
+    if (isMaticUrn(urn)) maticUrns.push(urn)
+    else ethUrns.push(urn)
+  }
+
+  const [ethItems, maticItems] = await Promise.all([
+    fetchGraph(getEnv('THE_GRAPH_API_ETH_URL'), ethUrns, signal),
+    fetchGraph(getEnv('THE_GRAPH_API_MATIC_URL'), maticUrns, signal)
+  ])
+
+  const itemByUrn = new Map<string, GraphQLItem>()
+  for (const item of [...ethItems, ...maticItems]) itemByUrn.set(item.urn, item)
+
+  return users.map(user => ({
+    ...user,
+    wearablesParsed: (user.wearables ?? [])
+      .map(urn => itemByUrn.get(urn))
+      .filter((item): item is GraphQLItem => Boolean(item))
+      .map(item => {
+        const meta = item.metadata.wearable ?? item.metadata.emote
+        return {
+          id: item.id,
+          urn: item.urn,
+          name: meta?.name ?? '',
+          image: item.image,
+          rarity: (meta?.rarity ?? 'common') as Rarity,
+          collectionId: item.collection.id,
+          blockchainId: item.blockchainId
+        } satisfies WearableParsed
+      })
+  }))
+}
+
+function clearImageCache(): void {
+  imageCache.clear()
+}
+
+export { clearImageCache, enrichWearables, fetchImageById, fetchImagesByUser, isMaticUrn }
