@@ -87,10 +87,18 @@ const App = () => {
             <Route path="/press" element={<PressPage />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
             {/* Retro-compat for the standalone events/places sites — redirect into /whats-on
-                with the deep-link params (id / position / world) it already consumes. */}
-            <Route path="/events/event" element={<LegacyWhatsOnRedirect />} />
-            <Route path="/places/place" element={<LegacyWhatsOnRedirect />} />
+                with the deep-link params (id / position / world) it already consumes.
+                The wildcard fallbacks below catch any unknown legacy subpath (e.g. /events/listing)
+                so external shares keep landing on /whats-on instead of falling through to the SPA
+                catchall and bouncing to /. Each redirect fires a Segment event so we can sunset
+                these routes when the traffic dries up. */}
+            <Route path="/events/event" element={<LegacyWhatsOnRedirect origin="events" />} />
+            <Route path="/events" element={<LegacyWhatsOnRedirect origin="events" />} />
+            <Route path="/events/*" element={<LegacyWhatsOnRedirect origin="events" />} />
             <Route path="/places/world" element={<LegacyWorldRedirect />} />
+            <Route path="/places/place" element={<LegacyWhatsOnRedirect origin="places" />} />
+            <Route path="/places" element={<LegacyWhatsOnRedirect origin="places" />} />
+            <Route path="/places/*" element={<LegacyWhatsOnRedirect origin="places" />} />
             {/* DappsShell provides Redux Provider via Outlet.
                 NOTE: /blog/* is no longer gated behind Env !== PRODUCTION as it was
                 with the federated RemoteLoader. During PR1 it serves a placeholder

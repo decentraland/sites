@@ -1,6 +1,14 @@
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
+import { useAnalytics } from '@dcl/hooks'
+import { SegmentEvent } from '../../modules/segment'
 import { LegacyWorldRedirect } from './LegacyWorldRedirect'
+
+jest.mock('@dcl/hooks', () => ({
+  useAnalytics: jest.fn()
+}))
+
+const useAnalyticsMock = useAnalytics as jest.MockedFunction<typeof useAnalytics>
 
 function LocationProbe() {
   const location = useLocation()
@@ -25,6 +33,22 @@ function renderAt(initialEntry: { pathname: string; search?: string; state?: unk
 }
 
 describe('LegacyWorldRedirect', () => {
+  let trackMock: jest.Mock
+
+  beforeEach(() => {
+    trackMock = jest.fn()
+    useAnalyticsMock.mockReturnValue({
+      isInitialized: true,
+      page: jest.fn(),
+      track: trackMock,
+      identify: jest.fn()
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
   describe('when entering /places/world with a name param', () => {
     it('should redirect to /whats-on renaming name to world', () => {
       renderAt({ pathname: '/places/world', search: '?name=fairyland.dcl.eth' })
@@ -43,6 +67,20 @@ describe('LegacyWorldRedirect', () => {
       expect(params.get('world')).toBe('fairyland.dcl.eth')
       expect(params.get('utm_source')).toBe('twitter')
       expect(params.has('name')).toBe(false)
+    })
+
+    it('should fire Legacy Places Redirected with world (not name) in preservedParams', () => {
+      renderAt({ pathname: '/places/world', search: '?name=fairyland.dcl.eth&utm_source=twitter' })
+
+      expect(trackMock).toHaveBeenCalledWith(
+        SegmentEvent.LEGACY_PLACES_REDIRECTED,
+        expect.objectContaining({
+          source: '/places/world?name=fairyland.dcl.eth&utm_source=twitter',
+          destination: '/whats-on?utm_source=twitter&world=fairyland.dcl.eth',
+          origin: 'places',
+          preservedParams: { utm_source: 'twitter', world: 'fairyland.dcl.eth' }
+        })
+      )
     })
   })
 
@@ -72,6 +110,15 @@ describe('LegacyWorldRedirect', () => {
       expect(params.has('world')).toBe(false)
       expect(params.get('utm_source')).toBe('newsletter')
     })
+
+    it('should fire Legacy Places Redirected without a world param in preservedParams', () => {
+      renderAt({ pathname: '/places/world' })
+
+      expect(trackMock).toHaveBeenCalledWith(
+        SegmentEvent.LEGACY_PLACES_REDIRECTED,
+        expect.objectContaining({ origin: 'places', preservedParams: {} })
+      )
+    })
   })
 
   describe('when name carries URL-encoded characters', () => {
@@ -100,6 +147,24 @@ describe('LegacyWorldRedirect', () => {
       renderAt({ pathname: '/places/world', search: '?name=fairyland.dcl.eth', state })
 
       expect(screen.getByTestId('state')).toHaveTextContent(JSON.stringify(state))
+    })
+  })
+
+  describe('when analytics is not initialized on mount', () => {
+    beforeEach(() => {
+      useAnalyticsMock.mockReturnValue({
+        isInitialized: false,
+        page: jest.fn(),
+        track: trackMock,
+        identify: jest.fn()
+      })
+    })
+
+    it('should not navigate while waiting for analytics', () => {
+      renderAt({ pathname: '/places/world', search: '?name=fairyland.dcl.eth' })
+
+      expect(screen.queryByTestId('pathname')).not.toBeInTheDocument()
+      expect(trackMock).not.toHaveBeenCalled()
     })
   })
 })
