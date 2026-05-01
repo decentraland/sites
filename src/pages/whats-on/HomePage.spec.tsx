@@ -90,20 +90,20 @@ describe('when HomePage is rendered', () => {
       mockUseGetLiveNowCardsQuery.mockReturnValue({ isLoading: false })
     })
 
-    it('should defer the decorative background so it never competes with the LCP image', () => {
+    it('should mark the decorative background as eager so desktop visitors hit LCP fast', () => {
       render(<HomePage />)
 
-      // top_background is hidden on mobile via display:none. Marking it as
-      // lazy lets the browser skip the ~250 KB fetch when the image is
-      // offscreen or hidden, and on desktop the IntersectionObserver still
-      // resolves immediately so the visual is preserved.
-      expect(screen.getByTestId('top-bg')).toHaveAttribute('loading', 'lazy')
+      // top_background is the largest painted element on desktop, so eager +
+      // fetchpriority="high" ensures the browser starts the fetch during HTML
+      // parse. Mobile picks the transparent fallback inside the parent
+      // <picture> instead, so phones don't pay the ~250 KB cost.
+      expect(screen.getByTestId('top-bg')).toHaveAttribute('loading', 'eager')
     })
 
-    it('should not compete with the LiveNow LCP card for high fetch priority', () => {
+    it('should opt into high fetch priority for the desktop LCP element', () => {
       render(<HomePage />)
 
-      expect(screen.getByTestId('top-bg')).not.toHaveAttribute('fetchpriority')
+      expect(screen.getByTestId('top-bg')).toHaveAttribute('fetchpriority', 'high')
     })
   })
 

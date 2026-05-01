@@ -90,20 +90,23 @@ const ASSET_CHUNKS: {
   dappsShell?: string
   whatsOnLayout?: string
   whatsOnHomePage?: string
+  topBackground?: string
   locales: Partial<Record<LocaleChunk, string>>
 } = (() => {
   try {
     const files = readdirSync(join(process.cwd(), 'dist', 'assets'))
-    const find = (prefix: string): string | undefined => files.find(file => file.startsWith(prefix) && file.endsWith('.js'))
+    const findJs = (prefix: string): string | undefined => files.find(file => file.startsWith(prefix) && file.endsWith('.js'))
+    const findAsset = (prefix: string, ext: string): string | undefined => files.find(file => file.startsWith(prefix) && file.endsWith(ext))
     const locales: Partial<Record<LocaleChunk, string>> = {}
     for (const locale of SUPPORTED_LOCALES) {
-      const chunk = find(`${locale}-`)
+      const chunk = findJs(`${locale}-`)
       if (chunk) locales[locale] = chunk
     }
     const result = {
-      dappsShell: find('DappsShell-'),
-      whatsOnLayout: find('WhatsOnLayout-'),
-      whatsOnHomePage: find('HomePage-'),
+      dappsShell: findJs('DappsShell-'),
+      whatsOnLayout: findJs('WhatsOnLayout-'),
+      whatsOnHomePage: findJs('HomePage-'),
+      topBackground: findAsset('top_background-', '.webp'),
       locales
     }
     // Surface chunk-discovery misses at cold-start so a future Vite/rollup
@@ -111,9 +114,10 @@ const ASSET_CHUNKS: {
     for (const [key, value] of [
       ['DappsShell', result.dappsShell],
       ['WhatsOnLayout', result.whatsOnLayout],
-      ['HomePage', result.whatsOnHomePage]
+      ['HomePage', result.whatsOnHomePage],
+      ['top_background', result.topBackground]
     ] as const) {
-      if (!value) console.warn(`[WhatsOn SSR] could not find ${key} chunk in dist/assets/`)
+      if (!value) console.warn(`[WhatsOn SSR] could not find ${key} asset in dist/assets/`)
     }
     return result
   } catch {
@@ -194,6 +198,15 @@ interface InjectionOptions {
 
 function buildInjectedHead(options: InjectionOptions): string {
   const lines: string[] = []
+
+  // The desktop top_background is the single largest painted element on the
+  // /whats-on hero, so Lighthouse picks it as LCP regardless of the Live Now
+  // card. It's hidden on mobile via CSS, hence the media-gated preload — phone
+  // visitors don't pay the ~250 KB cost.
+  if (ASSET_CHUNKS.topBackground) {
+    const href = `${options.assetBaseUrl}assets/${ASSET_CHUNKS.topBackground}`
+    lines.push(`<link rel="preload" as="image" href="${escapeHtmlAttr(href)}" media="(min-width: 600px)" fetchpriority="high" />`)
+  }
 
   if (options.lcpImageUrl && isSafeImageUrl(options.lcpImageUrl)) {
     // Match the URL that LiveNowCard will render (`/_vercel/image?...`) so the

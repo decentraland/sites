@@ -10,6 +10,10 @@ import { usePlaceDeepLink } from '../../hooks/usePlaceDeepLink'
 import topBackground from '../../images/whats-on/images/top_background.webp'
 import { ContentWrapper, DeferredGroup, MainContainer, TopBackgroundImage } from './HomePage.styled'
 
+// 1×1 transparent SVG fallback. Mobile renders this (size:0) so the browser
+// never fetches the 250 KB top_background.webp on phones where it's hidden.
+const TRANSPARENT_FALLBACK = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/>"
+
 function HomePage() {
   const queryParams = useLiveNowQueryParams()
   const { isLoading: isLiveNowLoading } = useGetLiveNowCardsQuery(queryParams)
@@ -18,7 +22,19 @@ function HomePage() {
 
   return (
     <MainContainer component="main">
-      <TopBackgroundImage src={topBackground} alt="" aria-hidden="true" loading="lazy" decoding="async" width={1440} height={700} />
+      <picture>
+        <source srcSet={topBackground} media="(min-width: 600px)" />
+        <TopBackgroundImage
+          src={TRANSPARENT_FALLBACK}
+          alt=""
+          aria-hidden="true"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+          width={1440}
+          height={700}
+        />
+      </picture>
       <ContentWrapper>
         <LiveNow />
       </ContentWrapper>
