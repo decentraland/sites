@@ -11,7 +11,7 @@ const IndexPage = lazy(() => import('./pages/index.tsx').then(m => ({ default: m
 // Layout imports Navbar from decentraland-ui2 which pulls in ~1.3MB of MUI.
 // Lazy-loading it keeps that JS out of the critical path so the static hero
 // shell can paint as LCP without main-thread blocking.
-const Layout = lazy(() => import('./components/Layout').then(m => ({ default: m.Layout })))
+const Layout = lazy(() => import('./components/Layout/Layout').then(m => ({ default: m.Layout })))
 
 // Route-based code splitting: legal/utility pages are lazy-loaded so they don't
 // bloat the main bundle for the landing page (saves ~560 KB of unused JS).

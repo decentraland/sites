@@ -87,6 +87,7 @@ const SUPPORTED_LOCALES = ['es', 'fr', 'ja', 'ko', 'zh'] as const
 type LocaleChunk = (typeof SUPPORTED_LOCALES)[number]
 
 const ASSET_CHUNKS: {
+  layout?: string
   dappsShell?: string
   whatsOnLayout?: string
   whatsOnHomePage?: string
@@ -103,6 +104,7 @@ const ASSET_CHUNKS: {
       if (chunk) locales[locale] = chunk
     }
     const result = {
+      layout: findJs('Layout-'),
       dappsShell: findJs('DappsShell-'),
       whatsOnLayout: findJs('WhatsOnLayout-'),
       whatsOnHomePage: findJs('HomePage-'),
@@ -112,6 +114,7 @@ const ASSET_CHUNKS: {
     // Surface chunk-discovery misses at cold-start so a future Vite/rollup
     // rename doesn't silently drop the modulepreload hints we rely on.
     for (const [key, value] of [
+      ['Layout', result.layout],
       ['DappsShell', result.dappsShell],
       ['WhatsOnLayout', result.whatsOnLayout],
       ['HomePage', result.whatsOnHomePage],
@@ -218,7 +221,7 @@ function buildInjectedHead(options: InjectionOptions): string {
     lines.push(`<link rel="preload" as="image" href="${escapeHtmlAttr(optimizedHref)}" fetchpriority="high" />`)
   }
 
-  const moduleChunks = [ASSET_CHUNKS.dappsShell, ASSET_CHUNKS.whatsOnLayout, ASSET_CHUNKS.whatsOnHomePage]
+  const moduleChunks = [ASSET_CHUNKS.layout, ASSET_CHUNKS.dappsShell, ASSET_CHUNKS.whatsOnLayout, ASSET_CHUNKS.whatsOnHomePage]
   if (options.preferredLocale) {
     const localeChunk = ASSET_CHUNKS.locales[options.preferredLocale]
     if (localeChunk) moduleChunks.push(localeChunk)
@@ -271,7 +274,7 @@ function buildEarlyHintLinks(options: { assetBaseUrl: string; preferredLocale: L
     const optimizedHref = `/_vercel/image?url=${encodeURIComponent(rawHref)}&w=1920&q=75`
     links.push(`<${optimizedHref}>; rel=preload; as=image; media="(min-width: 600px)"; fetchpriority=high`)
   }
-  const moduleChunks = [ASSET_CHUNKS.dappsShell, ASSET_CHUNKS.whatsOnLayout, ASSET_CHUNKS.whatsOnHomePage]
+  const moduleChunks = [ASSET_CHUNKS.layout, ASSET_CHUNKS.dappsShell, ASSET_CHUNKS.whatsOnLayout, ASSET_CHUNKS.whatsOnHomePage]
   if (options.preferredLocale) {
     const localeChunk = ASSET_CHUNKS.locales[options.preferredLocale]
     if (localeChunk) moduleChunks.push(localeChunk)
