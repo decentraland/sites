@@ -15,12 +15,6 @@ jest.mock('../../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => mockUseAuthIdentity()
 }))
 
-const mockUseCreatorProfile = jest.fn()
-const defaultCreatorProfile = { isDclFoundation: false, creatorName: 'CreatorName', avatarFace: undefined }
-jest.mock('../../../hooks/useCreatorProfile', () => ({
-  useCreatorProfile: (...args: unknown[]) => mockUseCreatorProfile(...(args as []))
-}))
-
 const mockBuildEventShareUrl = jest.fn()
 jest.mock('../../../utils/whatsOnUrl', () => ({
   buildCalendarUrl: jest.fn(() => 'https://calendar.google.com/test'),
@@ -53,34 +47,42 @@ jest.mock('decentraland-ui2', () => ({
   useTheme: () => ({ breakpoints: { down: () => '(max-width:600px)' } })
 }))
 
-jest.mock('./EventDetailModal.styled', () => ({
+jest.mock('../DetailModal', () => ({
+  DetailModalCreator: ({ address, name, prefixLabel }: { address?: string; name?: string; prefixLabel: string }) => {
+    if (!address && !name) return null
+    return (
+      <div data-testid="creator-row">
+        <span data-testid="creator-name">
+          {prefixLabel}
+          <strong>{name}</strong>
+        </span>
+      </div>
+    )
+  }
+}))
+
+jest.mock('../DetailModal/DetailModal.styled', () => ({
   HeroSection: ({ children }: { children: React.ReactNode }) => <div data-testid="hero-section">{children}</div>,
   HeroImage: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img data-testid="hero-image" {...props} />,
   HeroOverlay: () => <div data-testid="hero-overlay" />,
   CloseButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="close-button" {...props} />,
   CloseIconStyled: () => <span>X</span>,
   HeroContent: ({ children }: { children: React.ReactNode }) => <div data-testid="hero-content">{children}</div>,
-  CategoryLabel: ({ children }: { children: React.ReactNode }) => <span data-testid="category-label">{children}</span>,
-  LiveBadgeWrapper: ({ children, ...props }: { children: React.ReactNode } & Record<string, unknown>) => <span {...props}>{children}</span>,
   ModalTitle: ({ children, ...props }: { children: React.ReactNode; id?: string }) => (
     <h2 data-testid="modal-title" {...props}>
       {children}
     </h2>
   ),
-  CreatorRow: ({ children }: { children: React.ReactNode }) => <div data-testid="creator-row">{children}</div>,
-  AvatarImage: ({ fallbackColor, ...props }: React.ImgHTMLAttributes<HTMLImageElement> & { fallbackColor?: string }) => (
-    <img data-testid="avatar-image" data-fallback-color={fallbackColor ?? ''} {...props} />
-  ),
-  AvatarFallback: ({ fallbackColor }: { fallbackColor?: string }) => (
-    <div data-testid="avatar-fallback" data-fallback-color={fallbackColor ?? ''} />
-  ),
-  CreatorName: ({ children }: { children: React.ReactNode }) => <span data-testid="creator-name">{children}</span>,
-  CreatorNameHighlight: ({ children }: { children: React.ReactNode }) => <strong>{children}</strong>,
   ActionsRow: ({ children }: { children: React.ReactNode }) => <div data-testid="actions-row">{children}</div>,
   PrimaryActionButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="primary-action-button" {...props} />,
   SecondaryButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="secondary-button" {...props} />,
   CopyButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="copy-button" {...props} />,
-  CopyIconStyled: () => <span>Copy</span>,
+  CopyIconStyled: () => <span>Copy</span>
+}))
+
+jest.mock('./EventDetailModal.styled', () => ({
+  CategoryLabel: ({ children }: { children: React.ReactNode }) => <span data-testid="category-label">{children}</span>,
+  LiveBadgeWrapper: ({ children, ...props }: { children: React.ReactNode } & Record<string, unknown>) => <span {...props}>{children}</span>,
   EditButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="edit-button" {...props} />
 }))
 
@@ -115,8 +117,6 @@ describe('EventDetailModalHero', () => {
   beforeEach(() => {
     mockOnClose = jest.fn()
     jest.spyOn(window, 'open').mockImplementation(jest.fn())
-    mockUseCreatorProfile.mockReset()
-    mockUseCreatorProfile.mockReturnValue(defaultCreatorProfile)
     mockUseAuthIdentity.mockReset()
     mockUseAuthIdentity.mockReturnValue({ hasValidIdentity: false, identity: undefined, address: undefined })
   })
@@ -269,46 +269,10 @@ describe('EventDetailModalHero', () => {
   })
 
   describe('when the event has no creator', () => {
-    beforeEach(() => {
-      mockUseCreatorProfile.mockReturnValue({ isDclFoundation: false, creatorName: undefined, avatarFace: undefined })
-    })
-
     it('should not render the creator row', () => {
       render(<EventDetailModalHero data={createMockData({ creatorAddress: undefined, creatorName: undefined })} onClose={mockOnClose} />)
 
       expect(screen.queryByTestId('creator-row')).not.toBeInTheDocument()
-    })
-  })
-
-  describe('when the event has a creator address but no creator name', () => {
-    beforeEach(() => {
-      mockUseCreatorProfile.mockReturnValue({
-        isDclFoundation: false,
-        creatorName: '0xabcd…ef12',
-        avatarFace: undefined
-      })
-    })
-
-    it('should render an abbreviated address instead of an empty byline', () => {
-      render(
-        <EventDetailModalHero
-          data={createMockData({ creatorAddress: '0xabcdef1234567890abcdef1234567890abcdef12', creatorName: undefined })}
-          onClose={mockOnClose}
-        />
-      )
-
-      expect(screen.getByTestId('creator-name')).toHaveTextContent('0xabcd…ef12')
-    })
-
-    it('should derive the avatar fallback color from the creator address so it matches the card surface', () => {
-      render(
-        <EventDetailModalHero
-          data={createMockData({ creatorAddress: '0xabcdef1234567890abcdef1234567890abcdef12', creatorName: undefined })}
-          onClose={mockOnClose}
-        />
-      )
-
-      expect(screen.getByTestId('avatar-fallback').getAttribute('data-fallback-color')).toMatch(/^hsl\(\d{1,3} 45% 40%\)$/)
     })
   })
 
@@ -333,39 +297,6 @@ describe('EventDetailModalHero', () => {
       fireEvent.click(screen.getByTestId('close-button'))
 
       expect(mockOnClose).toHaveBeenCalled()
-    })
-  })
-
-  describe('when useCreatorProfile resolves the event as Decentraland Foundation', () => {
-    beforeEach(() => {
-      mockUseCreatorProfile.mockReturnValue({
-        isDclFoundation: true,
-        creatorName: 'Decentraland Foundation',
-        avatarFace: '/dcl-logo.svg'
-      })
-    })
-
-    it('should render the Foundation name in the creator row', () => {
-      render(<EventDetailModalHero data={createMockData({ creatorName: 'Decentraland Foundation' })} onClose={mockOnClose} />)
-
-      expect(screen.getByTestId('creator-name')).toHaveTextContent('Decentraland Foundation')
-    })
-
-    it('should render the Foundation logo as the avatar', () => {
-      render(<EventDetailModalHero data={createMockData({ creatorName: 'Decentraland Foundation' })} onClose={mockOnClose} />)
-
-      expect(screen.getByTestId('avatar-image')).toHaveAttribute('src', '/dcl-logo.svg')
-    })
-
-    it('should forward the event address and name to useCreatorProfile', () => {
-      render(
-        <EventDetailModalHero
-          data={createMockData({ creatorAddress: '0xFoundation', creatorName: 'Decentraland Foundation' })}
-          onClose={mockOnClose}
-        />
-      )
-
-      expect(mockUseCreatorProfile).toHaveBeenCalledWith('0xFoundation', 'Decentraland Foundation', expect.any(String))
     })
   })
 

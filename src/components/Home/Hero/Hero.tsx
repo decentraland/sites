@@ -11,7 +11,7 @@ import microsoftLogo from '../../../images/microsoft-logo.svg'
 import { DOWNLOAD_URLS } from '../../../modules/downloadConstants'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
 import { formatToShorthand } from '../../../modules/number'
-import { DownloadPlace, SectionViewedTrack } from '../../../modules/segment'
+import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { type ScheduledHandle, cancelScheduledIdleCall, scheduleWhenIdle } from '../../../utils/scheduleWhenIdle'
@@ -231,7 +231,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
             <DownloadButton
               href={userAgentData ? `/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.LANDING_HERO}` : '/download'}
               data-place={SectionViewedTrack.LANDING_HERO}
-              data-event="click"
+              data-event={SegmentEvent.DOWNLOAD}
               onClick={handleDownloadClick}
             >
               {l('page.download.download_for_short')}
@@ -248,7 +248,14 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
               )}
             </DownloadButton>
 
-            <EpicButton href={DOWNLOAD_URLS.epic} target="_blank" rel="noopener noreferrer">
+            <EpicButton
+              href={DOWNLOAD_URLS.epic}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-place={DownloadPlace.LANDING_HERO_EPIC}
+              data-event={SegmentEvent.DOWNLOAD}
+              onClick={onClickHandle}
+            >
               {l('page.download.download_on')}
               <img src={assetUrl('/epic_icon.svg')} alt="Epic Games" width={32} height={32} style={{ filter: 'brightness(0)' }} />
             </EpicButton>

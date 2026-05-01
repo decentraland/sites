@@ -10,7 +10,7 @@ function MyExperiencesEmptyState() {
   const navigate = useNavigate()
 
   const handleCreate = useCallback(() => {
-    navigate('/whats-on/new-event')
+    navigate('/whats-on/new-hangout')
   }, [navigate])
 
   return (

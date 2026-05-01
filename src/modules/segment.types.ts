@@ -21,15 +21,19 @@ enum SegmentEvent {
   CLICK = 'Click',
   DOWNLOAD_STARTED = 'download_started',
   DOWNLOAD_SUCCESS = 'download_success',
-  DOWNLOAD_FAILED = 'download_failed'
+  DOWNLOAD_FAILED = 'download_failed',
+  LEGACY_EVENTS_REDIRECTED = 'Legacy Events Redirected',
+  LEGACY_PLACES_REDIRECTED = 'Legacy Places Redirected'
 }
 
 enum DownloadPlace {
   LANDING_HERO = 'landing-hero',
+  LANDING_HERO_EPIC = 'landing-hero-epic',
   LANDING_HERO_PLATFORM_SWITCH = 'landing-hero-platform-switch',
   COME_HANG_OUT = 'come-hang-out',
   JUMP_IN_ALREADY_USER = 'jump-in-already-user',
   DOWNLOAD_PAGE = 'download-page',
+  DOWNLOAD_SUCCESS_FOOTER = 'download-success-footer',
   UNKNOWN = 'unknown'
 }
 
