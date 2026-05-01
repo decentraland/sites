@@ -41,11 +41,6 @@ const buildTwitterShareUrl = (description: string, url: string): string => {
   return `https://twitter.com/intent/tweet?${params.toString()}`
 }
 
-const buildAvatarUrl = (address: string): string => {
-  const peerUrl = getEnv('PEER_URL') ?? 'https://peer.decentraland.org'
-  return `${peerUrl}/lambdas/profiles/${address}/face`
-}
-
 // camera-reel-service returns dateTime as a Unix epoch string in seconds (e.g. "1776199944").
 // Some legacy entries may surface as ISO; accept both.
 const formatPhotoDate = (dateTime: string): string => {
@@ -55,12 +50,4 @@ const formatPhotoDate = (dateTime: string): string => {
   return date.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' })
 }
 
-export {
-  buildAvatarUrl,
-  buildJumpInUrl,
-  buildMarketplaceWearableUrl,
-  buildPlaceUrl,
-  buildProfileUrl,
-  buildTwitterShareUrl,
-  formatPhotoDate
-}
+export { buildJumpInUrl, buildMarketplaceWearableUrl, buildPlaceUrl, buildProfileUrl, buildTwitterShareUrl, formatPhotoDate }

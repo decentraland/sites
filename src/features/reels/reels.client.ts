@@ -135,8 +135,48 @@ async function enrichWearables(users: ImageUser[], signal?: AbortSignal): Promis
   }))
 }
 
+interface ProfileResponse {
+  avatars?: Array<{
+    userId?: string
+    ethAddress?: string
+    avatar?: {
+      snapshots?: { face256?: string; face?: string }
+    }
+  }>
+}
+
+async function fetchProfileFaces(addresses: string[], signal?: AbortSignal): Promise<Map<string, string>> {
+  const result = new Map<string, string>()
+  const uniqueIds = Array.from(new Set(addresses.filter(Boolean).map(addr => addr.toLowerCase())))
+  if (uniqueIds.length === 0) return result
+
+  const peerUrl = getEnv('PEER_URL')
+  if (!peerUrl) return result
+
+  try {
+    const response = await fetch(`${peerUrl}/lambdas/profiles`, {
+      method: 'POST',
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: uniqueIds }),
+      signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS)
+    })
+    if (!response.ok) return result
+    const profiles = (await response.json()) as ProfileResponse[]
+    for (const profile of profiles) {
+      const avatar = profile.avatars?.[0]
+      const id = (avatar?.userId ?? avatar?.ethAddress ?? '').toLowerCase()
+      const face = avatar?.avatar?.snapshots?.face256 ?? avatar?.avatar?.snapshots?.face
+      if (id && face) result.set(id, face)
+    }
+  } catch {
+    // Ignore — fall back to no faces.
+  }
+  return result
+}
+
 function clearImageCache(): void {
   imageCache.clear()
 }
 
-export { clearImageCache, enrichWearables, fetchImageById, fetchImagesByUser, isMaticUrn }
+export { clearImageCache, enrichWearables, fetchImageById, fetchImagesByUser, fetchProfileFaces, isMaticUrn }

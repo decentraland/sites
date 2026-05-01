@@ -16,6 +16,7 @@ interface ImageUser {
   isGuest: boolean
   wearables: string[]
   wearablesParsed?: WearableParsed[]
+  faceUrl?: string
 }
 
 interface ImageMetadata {

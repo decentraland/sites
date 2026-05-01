@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { enrichWearables, fetchImageById } from '../features/reels'
+import { enrichWearables, fetchImageById, fetchProfileFaces } from '../features/reels'
 import type { Image } from '../features/reels'
 
 interface ReelImageState {
@@ -28,10 +28,18 @@ const useReelImageById = (id: string | undefined): ReelImageState => {
       try {
         const image = await fetchImageById(id, controller.signal)
         if (controller.signal.aborted) return
-        const enrichedUsers = await enrichWearables(image.metadata.visiblePeople, controller.signal)
+        const addresses = image.metadata.visiblePeople.map(person => person.userAddress).filter(Boolean)
+        const [enrichedUsers, faceByAddress] = await Promise.all([
+          enrichWearables(image.metadata.visiblePeople, controller.signal),
+          fetchProfileFaces(addresses, controller.signal)
+        ])
         if (controller.signal.aborted) return
+        const visiblePeople = enrichedUsers.map(person => ({
+          ...person,
+          faceUrl: faceByAddress.get(person.userAddress.toLowerCase())
+        }))
         setState({
-          image: { ...image, metadata: { ...image.metadata, visiblePeople: enrichedUsers } },
+          image: { ...image, metadata: { ...image.metadata, visiblePeople } },
           isLoading: false,
           error: null
         })

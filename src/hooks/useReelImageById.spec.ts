@@ -3,7 +3,8 @@ import { useReelImageById } from './useReelImageById'
 
 jest.mock('../features/reels', () => ({
   fetchImageById: jest.fn(),
-  enrichWearables: jest.fn(async (users: unknown) => users)
+  enrichWearables: jest.fn(async (users: unknown) => users),
+  fetchProfileFaces: jest.fn(async () => new Map<string, string>())
 }))
 
 const reelsMock = jest.requireMock('../features/reels')

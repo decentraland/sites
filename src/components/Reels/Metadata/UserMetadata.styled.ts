@@ -45,7 +45,17 @@ const UserAvatar = styled('img')({
   width: 46,
   height: 46,
   borderRadius: '50%',
-  flexShrink: 0
+  flexShrink: 0,
+  objectFit: 'cover',
+  background: '#716b7c'
+})
+
+const UserAvatarFallback = styled(Box)({
+  width: 46,
+  height: 46,
+  borderRadius: '50%',
+  flexShrink: 0,
+  background: 'linear-gradient(243.96deg, #FF2D55 -11.67%, #FFBC5B 88.23%)'
 })
 
 const UserName = styled('a')({
@@ -141,6 +151,7 @@ export {
   NoWearablesBox,
   NoWearablesText,
   UserAvatar,
+  UserAvatarFallback,
   UserMetadataContainer,
   UserMetadataRow,
   UserMetadataWrapper,

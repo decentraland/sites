@@ -1,7 +1,7 @@
 import { type MouseEvent, memo, useCallback, useMemo, useState } from 'react'
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material'
 import { useAnalytics } from '@dcl/hooks'
-import { buildAvatarUrl, buildProfileUrl } from '../../../features/reels'
+import { buildProfileUrl } from '../../../features/reels'
 import type { ImageUser } from '../../../features/reels'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import wearableShirtSrc from '../../../images/reels/wearable-shirt.svg'
@@ -13,6 +13,7 @@ import {
   NoWearablesBox,
   NoWearablesText,
   UserAvatar,
+  UserAvatarFallback,
   UserMetadataContainer,
   UserMetadataRow,
   UserMetadataWrapper,
@@ -58,7 +59,7 @@ const UserMetadata = memo(({ user, isFirst, initialWearableVisibility = false }:
     <UserMetadataContainer isFirst={isFirst}>
       <UserMetadataRow>
         <UserMetadataWrapper>
-          <UserAvatar src={buildAvatarUrl(user.userAddress)} alt="" loading="lazy" />
+          {user.faceUrl ? <UserAvatar src={user.faceUrl} alt="" loading="lazy" /> : <UserAvatarFallback aria-hidden="true" />}
           {profileUrl ? (
             <UserName href={profileUrl} target="_blank" rel="noopener noreferrer" onClick={handleProfileClick}>
               {user.userName}

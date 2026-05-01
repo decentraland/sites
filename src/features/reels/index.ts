@@ -1,6 +1,5 @@
-export { enrichWearables, fetchImageById, fetchImagesByUser } from './reels.client'
+export { enrichWearables, fetchImageById, fetchImagesByUser, fetchProfileFaces } from './reels.client'
 export {
-  buildAvatarUrl,
   buildJumpInUrl,
   buildMarketplaceWearableUrl,
   buildPlaceUrl,
