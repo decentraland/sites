@@ -1,8 +1,24 @@
 name: Bug Report
 description: Report a bug or unexpected behavior
-title: "[BUG] "
-labels: ["bug"]
+labels: ['bug']
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report. Please fill in as many fields as possible — the more context, the faster we can reproduce and fix it.
+
+        **Privacy:** do not paste full wallet addresses, signed messages, JWTs, or session tokens. Redact them as `0x1234…abcd` if needed.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Pre-flight checklist
+      options:
+        - label: I searched existing issues and didn't find a duplicate.
+          required: true
+        - label: I tried a hard reload (Cmd/Ctrl + Shift + R) and the bug persists.
+        - label: I tried in an incognito/private window and the bug persists.
+
   - type: dropdown
     id: bug-type
     attributes:
@@ -13,8 +29,88 @@ body:
         - Performance (slow load, lag, high memory)
         - Wallet / Auth (connection, signing, session)
         - Navigation / Routing (broken links, 404s)
-        - Data (wrong content, missing data, stale content)
+        - Data / Content (wrong content, missing data, stale content)
+        - SEO / Meta tags (Open Graph, canonical, title)
+        - Tracking / Analytics (Segment events, page views)
+        - i18n / Translation (missing or wrong translation)
         - Accessibility (screen reader, keyboard, contrast)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How badly does this affect users?
+      options:
+        - Critical — site down, data loss, security
+        - High — core flow broken (download, sign-in, payments)
+        - Medium — feature partially broken, workaround exists
+        - Low — minor visual or copy issue
+    validations:
+      required: true
+
+  - type: dropdown
+    id: page
+    attributes:
+      label: Page / Area
+      description: Where in the site does the bug occur?
+      options:
+        - Homepage (/)
+        - Create / Creators (/create)
+        - Download — Main (/download)
+        - Download — Success (/download_success)
+        - Download — Creator Hub (/download/creator-hub)
+        - Download — Creator Hub Success (/download/creator-hub-success)
+        - Invite (/invite/:referrer)
+        - Sign In (/sign-in)
+        - What's On — Home (/whats-on)
+        - What's On — New / Edit Hangout
+        - What's On — Admin: Pending Events
+        - What's On — Admin: Users
+        - Jump — Places (/jump, /jump/places)
+        - Jump — Events (/jump/events)
+        - Blog — Home (/blog)
+        - Blog — Search (/blog/search)
+        - Blog — Category (/blog/:categorySlug)
+        - Blog — Post (/blog/:categorySlug/:postSlug)
+        - Blog — Author (/blog/author/:authorSlug)
+        - Blog — Preview / Sign-in
+        - Legal — Terms (/terms)
+        - Legal — Privacy (/privacy)
+        - Legal — Content Policy (/content)
+        - Legal — Code of Ethics (/ethics)
+        - Legal — Brand (/brand)
+        - Legal — Security (/security)
+        - Legal — Rewards Terms (/rewards-terms)
+        - Legal — Referral Terms (/referral-terms)
+        - Press (/press)
+        - Help (/help)
+        - Discord redirect (/discord)
+        - Legacy redirects (/events/*, /places/*)
+        - Navbar / Footer (cross-page)
+        - Other / Not listed
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: URL
+      description: Full URL where the bug occurred (include query params like `?env=stg`).
+      placeholder: https://decentraland.org/...
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      description: Visible via the `?env=` query param. Default is production.
+      options:
+        - Production (prd)
+        - Staging (stg)
+        - Development (dev)
+        - Unknown
     validations:
       required: true
 
@@ -26,68 +122,37 @@ body:
     validations:
       required: true
 
-  - type: input
-    id: url
-    attributes:
-      label: URL
-      description: The page URL where the bug occurred.
-      placeholder: https://decentraland.org/...
-
   - type: dropdown
-    id: browser
+    id: frequency
     attributes:
-      label: Browser
+      label: Frequency
       options:
-        - Chrome
-        - Firefox
-        - Safari
-        - Edge
-        - Brave
-        - Other
+        - Always (100%)
+        - Often (>50%)
+        - Sometimes (<50%)
+        - Once
+        - Unknown
     validations:
       required: true
 
   - type: dropdown
-    id: device
+    id: regression
     attributes:
-      label: Device
+      label: Regression?
+      description: Was this working before?
       options:
-        - Desktop
-        - Mobile (iOS)
-        - Mobile (Android)
-        - Tablet
-    validations:
-      required: true
-
-  - type: dropdown
-    id: auth-method
-    attributes:
-      label: Authentication Method
-      options:
-        - OTP (email code)
-        - Google
-        - Wallet Provider (MetaMask, Rabby, etc.)
-        - Not connected
-        - Other
+        - 'No — never worked / new feature'
+        - 'Yes — used to work, now broken'
+        - 'Unknown'
     validations:
       required: true
 
   - type: input
-    id: auth-details
+    id: regression-when
     attributes:
-      label: Auth Details
-      description: If you selected "Wallet Provider" or "Other", please specify.
-      placeholder: e.g. Rabby, Coinbase Wallet...
-
-  - type: dropdown
-    id: network
-    attributes:
-      label: Network
-      options:
-        - Mainnet
-        - Polygon
-        - Sepolia
-        - N/A
+      label: Last known working version / date
+      description: If this is a regression, when did it last work?
+      placeholder: e.g. last week, before the 2026-04-30 release
 
   - type: textarea
     id: steps
@@ -116,21 +181,129 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Brave
+        - Arc
+        - Opera
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: browser-version
+    attributes:
+      label: Browser version
+      description: Visible at `chrome://version`, `about:support`, or in About menu.
+      placeholder: e.g. 132.0.6834.84
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - macOS
+        - Windows
+        - Linux
+        - iOS
+        - Android
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS version
+      placeholder: e.g. macOS 15.2, Windows 11 23H2, iOS 18.2
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device type
+      options:
+        - Desktop
+        - Mobile
+        - Tablet
+    validations:
+      required: true
+
+  - type: dropdown
+    id: locale
+    attributes:
+      label: Site language
+      description: Language the site was rendered in when the bug appeared.
+      options:
+        - English (en)
+        - Español (es)
+        - Français (fr)
+        - 日本語 (ja)
+        - 한국어 (ko)
+        - 中文 (zh)
+        - Other / Not sure
+
+  - type: dropdown
+    id: auth-method
+    attributes:
+      label: Authentication Method
+      options:
+        - Not connected
+        - OTP (email code)
+        - Google
+        - Wallet Provider (MetaMask, Rabby, etc.)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: auth-details
+    attributes:
+      label: Auth Details
+      description: If "Wallet Provider" or "Other", specify which wallet, extension version, connected chain, etc.
+      placeholder: e.g. Rabby 0.92.78, connected to Polygon mainnet
+
+  - type: dropdown
+    id: network
+    attributes:
+      label: Blockchain Network
+      description: Only if the bug involves on-chain interactions (signing, transactions, balance).
+      options:
+        - Not applicable
+        - Ethereum Mainnet
+        - Ethereum Sepolia (testnet)
+        - Polygon Mainnet
+        - Polygon Amoy (testnet)
+        - Unknown
+
   - type: textarea
     id: screenshots
     attributes:
       label: Screenshots / Screen Recording
-      description: If applicable, drag and drop screenshots or a recording.
+      description: Drag and drop screenshots or a recording. For video bugs, a short screen recording is hugely helpful.
 
   - type: textarea
     id: console
     attributes:
       label: Console Errors
-      description: Paste any relevant console errors.
+      description: Open DevTools → Console, paste any red errors. Redact wallet addresses and tokens.
+      render: shell
+
+  - type: textarea
+    id: network-requests
+    attributes:
+      label: Failed Network Requests
+      description: DevTools → Network. For failed/slow requests, include URL, status code, and response body. Redact tokens.
       render: shell
 
   - type: textarea
     id: context
     attributes:
       label: Additional Context
-      description: "Any other context (e.g. only on mobile, only when wallet is disconnected, etc.)"
+      description: Anything else (extensions installed, VPN, ad blocker, only after navigating from X, etc.).
