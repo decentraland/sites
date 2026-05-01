@@ -1,8 +1,13 @@
 name: Feature Request
 description: Suggest a new feature or improvement
-title: "[FEATURE] "
-labels: ["enhancement"]
+title: '[Feature]: <briefly describe the request>'
+labels: ['enhancement']
 body:
+  - type: markdown
+    attributes:
+      value: |
+        **Title:** replace the `<briefly describe the request>` placeholder with a one-line summary (e.g. `[Feature]: dark mode for blog posts`). Issues with placeholder titles will be sent back.
+
   - type: textarea
     id: summary
     attributes:
@@ -15,10 +20,56 @@ body:
     id: motivation
     attributes:
       label: Problem / Motivation
-      description: "What problem does this solve? Why is it needed?"
+      description: 'What problem does this solve? Why is it needed?'
       placeholder: "As a user, I can't do X which makes Y frustrating..."
     validations:
       required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - High — blocks an important flow or initiative
+        - Medium — meaningful improvement, not blocking
+        - Low — nice to have
+    validations:
+      required: true
+
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Target audience
+      description: Who benefits from this feature?
+      options:
+        - Visitors (not signed in)
+        - Authenticated users
+        - Creators
+        - Admins / Moderators
+        - All users
+        - Internal team
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the site does this affect?
+      options:
+        - Homepage
+        - Create / Creators
+        - Download flow
+        - What's On
+        - Jump
+        - Blog
+        - Sign In / Auth
+        - Legal / Static pages
+        - Navbar / Footer
+        - Tracking / Analytics
+        - SEO
+        - i18n
+        - Other / Cross-cutting
 
   - type: textarea
     id: solution
@@ -52,6 +103,12 @@ body:
         - [ ] Criterion 1
         - [ ] Criterion 2
         - [ ] Criterion 3
+
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: Anything explicitly NOT covered by this request, to avoid scope creep.
 
   - type: textarea
     id: context
