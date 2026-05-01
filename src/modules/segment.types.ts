@@ -23,7 +23,21 @@ enum SegmentEvent {
   DOWNLOAD_SUCCESS = 'download_success',
   DOWNLOAD_FAILED = 'download_failed',
   LEGACY_EVENTS_REDIRECTED = 'Legacy Events Redirected',
-  LEGACY_PLACES_REDIRECTED = 'Legacy Places Redirected'
+  LEGACY_PLACES_REDIRECTED = 'Legacy Places Redirected',
+  REELS_SHARE = 'Reels Share',
+  REELS_COPY_LINK = 'Reels Copy Link',
+  REELS_DOWNLOAD = 'Reels Download',
+  REELS_JUMP_IN = 'Reels Jump In',
+  REELS_SHOW_METADATA = 'Reels Show Metadata',
+  REELS_HIDE_METADATA = 'Reels Hide Metadata',
+  REELS_SHOW_WEARABLES = 'Reels Show Wearables',
+  REELS_HIDE_WEARABLES = 'Reels Hide Wearables',
+  REELS_IMAGE_NOT_FOUND = 'Reels Image Not Found',
+  REELS_CLICK_WEARABLE = 'Reels Click Wearable',
+  REELS_CLICK_PROFILE = 'Reels Click Profile',
+  REELS_CLICK_PLACE = 'Reels Click Place',
+  REELS_CLICK_DCL_LOGO = 'Reels Click Decentraland Logo',
+  REELS_CLICK_THUMBNAIL = 'Reels Click Thumbnail'
 }
 
 enum DownloadPlace {
@@ -67,7 +81,10 @@ enum SectionViewedTrack {
   LANDING_FOOTER_SOCIAL = 'Landing Footer Social',
   LANDING_FOOTER_SUBSCRIBE = 'Landing Footer Subscribe',
   LANDING_FOOTER_LINK = 'Landing Footer Link',
-  LANDING_NAVBAR = 'Landing Navbar'
+  LANDING_NAVBAR = 'Landing Navbar',
+  REELS_IMAGE = 'Reels Image',
+  REELS_LIST = 'Reels List',
+  REELS_NOT_FOUND = 'Reels Not Found'
 }
 
 export { DownloadPlace, SectionViewedTrack, SegmentEvent }
