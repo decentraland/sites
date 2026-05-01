@@ -74,9 +74,13 @@ describe('calculateDownloadUrl', () => {
     })
 
     it('should pass the fallback links to calculateCDNReleaseLinksWithIdentity', () => {
-      expect(mockCalculateCDNReleaseLinksWithIdentity).toHaveBeenCalledWith(undefined, {
-        Windows: { amd64: 'https://fallback.example.com/launcher-setup.exe' }
-      })
+      expect(mockCalculateCDNReleaseLinksWithIdentity).toHaveBeenCalledWith(
+        undefined,
+        {
+          Windows: { amd64: 'https://fallback.example.com/launcher-setup.exe' }
+        },
+        undefined
+      )
     })
   })
 
@@ -124,7 +128,7 @@ describe('calculateDownloadUrl', () => {
     })
 
     it('should pass null as fallbackLinks to calculateCDNReleaseLinksWithIdentity', () => {
-      expect(mockCalculateCDNReleaseLinksWithIdentity).toHaveBeenCalledWith(undefined, null)
+      expect(mockCalculateCDNReleaseLinksWithIdentity).toHaveBeenCalledWith(undefined, null, undefined)
     })
   })
 })

@@ -145,7 +145,8 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick, email, user
           arch: option.arch,
           fallbackLinks: links,
           queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
-          getIdentityId
+          getIdentityId,
+          anonUserId
         })
       }
 

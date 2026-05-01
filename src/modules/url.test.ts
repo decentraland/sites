@@ -4,6 +4,10 @@ jest.mock('decentraland-ui2/dist/modules/cdnReleases', () => ({
   getCDNRelease: jest.fn().mockReturnValue(null)
 }))
 
+jest.mock('decentraland-ui2/dist/config', () => ({
+  config: { get: jest.fn().mockReturnValue('https://download-gateway.decentraland.zone') }
+}))
+
 import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
 import {
   addQueryParamsToUrlString,
@@ -356,6 +360,55 @@ describe('calculateCDNReleaseLinksWithIdentity', () => {
     it('should return fallback links', () => {
       expect(result).toEqual({
         Windows: { amd64: 'https://fallback.example.com/win.exe' }
+      })
+    })
+  })
+
+  describe('when there is no identity but an anon_user_id is provided', () => {
+    const ANON_ID = '391a85da-a3bb-49e2-a45e-96c740c38424'
+    let result: Record<string, Record<string, string>> | null
+
+    describe('and getIdentityId is not passed', () => {
+      beforeEach(async () => {
+        result = await calculateCDNReleaseLinksWithIdentity(undefined, null, ANON_ID)
+      })
+
+      it('should return the gateway anonymous URL embedding the anon_user_id', () => {
+        expect(result).toEqual({
+          Windows: {
+            amd64: `https://download-gateway.decentraland.zone/anonymous/decentraland.exe?anon_user_id=${ANON_ID}`
+          },
+          macOS: {
+            arm64: `https://download-gateway.decentraland.zone/anonymous/decentraland.dmg?anon_user_id=${ANON_ID}`,
+            amd64: `https://download-gateway.decentraland.zone/anonymous/decentraland.dmg?anon_user_id=${ANON_ID}`
+          }
+        })
+      })
+    })
+
+    describe('and getIdentityId returns undefined', () => {
+      beforeEach(async () => {
+        result = await calculateCDNReleaseLinksWithIdentity(async () => undefined, null, ANON_ID)
+      })
+
+      it('should still route through the gateway anonymous URL', () => {
+        expect(result?.Windows.amd64).toBe(`https://download-gateway.decentraland.zone/anonymous/decentraland.exe?anon_user_id=${ANON_ID}`)
+      })
+    })
+
+    describe('and getIdentityId returns an identity', () => {
+      beforeEach(async () => {
+        mockGetCDNRelease.mockReturnValue({
+          Windows: { amd64: 'https://cdn.example.com/identity-win.exe' }
+        })
+        result = await calculateCDNReleaseLinksWithIdentity(async () => 'test-id', null, ANON_ID)
+      })
+
+      it('should prefer AUTO_SIGNING over the anonymous route', () => {
+        expect(mockGetCDNRelease).toHaveBeenCalledWith(CDNSource.AUTO_SIGNING, 'test-id')
+        expect(result).toEqual({
+          Windows: { amd64: 'https://cdn.example.com/identity-win.exe' }
+        })
       })
     })
   })
