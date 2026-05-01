@@ -54,6 +54,7 @@ body:
     validations:
       required: true
 
+  # Keep options in sync with the routes defined in src/App.tsx.
   - type: dropdown
     id: page
     attributes:
@@ -108,14 +109,12 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: Visible via the `?env=` query param. Default is production.
+      description: Visible via the `?env=` query param. Leave blank if you're on production.
       options:
         - Production (prd)
         - Staging (stg)
         - Development (dev)
         - Unknown
-    validations:
-      required: true
 
   - type: textarea
     id: description
@@ -135,8 +134,6 @@ body:
         - Sometimes (<50%)
         - Once
         - Unknown
-    validations:
-      required: true
 
   - type: dropdown
     id: regression
@@ -256,14 +253,13 @@ body:
     id: auth-method
     attributes:
       label: Authentication Method
+      description: Leave blank if you weren't signed in.
       options:
         - Not connected
         - OTP (email code)
         - Google
         - Wallet Provider (MetaMask, Rabby, etc.)
         - Other
-    validations:
-      required: true
 
   - type: textarea
     id: auth-details
