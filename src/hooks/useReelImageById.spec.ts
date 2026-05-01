@@ -11,7 +11,7 @@ const reelsMock = jest.requireMock('../features/reels')
 describe('useReelImageById', () => {
   beforeEach(() => {
     reelsMock.fetchImageById.mockReset()
-    reelsMock.enrichWearables.mockImplementation(async users => users)
+    reelsMock.enrichWearables.mockImplementation(async (users: unknown) => users)
   })
 
   describe('when id is undefined', () => {
