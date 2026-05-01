@@ -1,7 +1,15 @@
 {
+  "images": {
+    "domains": ["peer.decentraland.org", "peer.decentraland.zone", "events-assets-099ac00.decentraland.org", "cdn.decentraland.org"],
+    "sizes": [256, 384, 500, 640, 750, 828, 1080, 1200],
+    "formats": ["image/webp"],
+    "minimumCacheTTL": 86400
+  },
   "rewrites": [
     { "source": "/blog/:path*", "destination": "/api/seo?path=/blog/:path*" },
     { "source": "/blog", "destination": "/api/seo?path=/blog" },
+    { "source": "/whats-on", "destination": "/api/whats-on" },
+    { "source": "/whats-on/:path*", "destination": "/api/whats-on?path=/whats-on/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react'
-import { captureException } from '@sentry/browser'
 import { useTranslation } from '@dcl/hooks'
 import {
   useCreateEventMutation,
@@ -71,7 +70,11 @@ async function validateVerticalImageDimensions(file: File): Promise<ImageErrorCo
     }
     return null
   } catch (error) {
-    captureException(error, { tags: { feature: 'create_event', step: 'vertical_image_decode' } })
+    // Lazy-import keeps `@sentry/browser` (~120 KB gzip) off the critical path
+    // until the user actually uploads a malformed vertical poster.
+    void import('@sentry/browser').then(({ captureException }) => {
+      captureException(error, { tags: { feature: 'create_event', step: 'vertical_image_decode' } })
+    })
     return 'vertical_image_decode'
   }
 }

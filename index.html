@@ -10,12 +10,80 @@
   <link rel="preconnect" href="https://cdn.decentraland.org" crossorigin />
   <link rel="preconnect" href="https://realm-provider-ea.decentraland.org" />
   <link rel="preconnect" href="https://events.decentraland.org" />
+  <link rel="preconnect" href="https://peer.decentraland.org" />
+  <link rel="preconnect" href="https://places.decentraland.org" />
   <link rel="preconnect" href="https://cms-api.decentraland.org" crossorigin />
   <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
   <meta name="theme-color" content="#000000" />
   <link rel="preload" as="image" href="/hero_mobile.webp" media="(max-width: 599px)" fetchpriority="high" />
   <link rel="preload" as="image" href="/hero_tablet.webp" media="(min-width: 600px) and (max-width: 991px)" fetchpriority="high" />
   <link rel="preload" as="image" href="/hero_desktop.webp" media="(min-width: 992px)" fetchpriority="high" />
+  <script>
+    // Whats-on early data prefetch. Fires Live Now API calls before the JS
+    // bundle and the lazy DappsShell chunk are even parsed, so the response
+    // is in flight while React is still booting. RTK Query's queryFn checks
+    // for a matching prefetch and adopts it instead of opening a new request.
+    // Without this, the LCP image URL (first Live Now card) only becomes
+    // discoverable after a chain of HTML → main JS → DappsShell lazy →
+    // WhatsOnLayout lazy → HomePage lazy → fetch, which Lighthouse measured
+    // as 3.1s of "Resource load delay" on mobile.
+    (function () {
+      var path = location.pathname
+      if (path !== '/whats-on' && path.indexOf('/whats-on/') !== 0) return
+      var host = location.hostname
+      var apiHosts
+      if (host.indexOf('decentraland.zone') !== -1) {
+        apiHosts = { events: 'https://events.decentraland.zone/api', scenes: 'https://realm-provider-ea.decentraland.org' }
+      } else if (host.indexOf('decentraland.today') !== -1) {
+        apiHosts = { events: 'https://events.decentraland.zone/api', scenes: 'https://realm-provider-ea.decentraland.org' }
+      } else {
+        apiHosts = { events: 'https://events.decentraland.org/api', scenes: 'https://realm-provider-ea.decentraland.org' }
+      }
+      var eventsUrl = apiHosts.events + '/events?list=live&limit=20&order=asc&world=false'
+      var scenesUrl = apiHosts.scenes + '/hot-scenes'
+      var asJson = function (r) { return r && r.ok ? r.json() : null }
+      var swallow = function () { return null }
+      var eventsPromise = fetch(eventsUrl).then(asJson).catch(swallow)
+      var scenesPromise = fetch(scenesUrl).then(asJson).catch(swallow)
+      window.__dclWhatsOnPrefetch = {
+        eventsUrl: eventsUrl,
+        scenesUrl: scenesUrl,
+        events: eventsPromise,
+        scenes: scenesPromise
+      }
+      // Mirrors the join in buildLiveNowCards: pick the highest-user scene that
+      // has a matching live event. If found, that event's image is the LCP
+      // candidate. Preloading it here lets the browser start the ~1 MB image
+      // fetch before React parses the lazy DappsShell + WhatsOnLayout chunks.
+      Promise.all([eventsPromise, scenesPromise]).then(function (results) {
+        var eventsData = results[0]
+        var scenesData = results[1]
+        if (!scenesData || !Array.isArray(scenesData) || scenesData.length === 0) return
+        var sorted = scenesData.slice().sort(function (a, b) { return (b.usersTotalCount || 0) - (a.usersTotalCount || 0) })
+        var live = (eventsData && eventsData.data) || []
+        var lcpUrl = null
+        for (var i = 0; i < sorted.length && !lcpUrl; i++) {
+          var scene = sorted[i]
+          var parcels = scene.parcels || []
+          for (var j = 0; j < parcels.length && !lcpUrl; j++) {
+            var px = parcels[j][0], py = parcels[j][1]
+            for (var k = 0; k < live.length; k++) {
+              if (live[k].x === px && live[k].y === py && live[k].image) { lcpUrl = live[k].image; break }
+            }
+          }
+          if (!lcpUrl && scene.thumbnail) lcpUrl = scene.thumbnail
+        }
+        if (!lcpUrl) return
+        var link = document.createElement('link')
+        link.rel = 'preload'
+        link.as = 'image'
+        link.href = lcpUrl
+        link.setAttribute('fetchpriority', 'high')
+        link.crossOrigin = 'anonymous'
+        document.head.appendChild(link)
+      })
+    })()
+  </script>
   <title>Decentraland</title>
   <meta name="description" content="Decentraland is where you hang out online. Join movie screenings, live music, trivia, and other community events. Show up anytime and see who's around." />
   <meta property="og:title" content="Decentraland — Come Hang Out">

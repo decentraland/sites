@@ -23,6 +23,15 @@ export default defineConfig(({ command, mode }) => {
     build: {
       target: 'esnext',
       sourcemap: 'hidden',
+      // Vite preloads every chunk transitively reachable from the entry,
+      // including dynamic imports. The vendors below are only consumed inside
+      // already-lazy chunks (Sentry/crypto on form submit, ajv inside RTK
+      // schema validation, ua-parser inside analytics). Stripping them from
+      // the modulepreload list keeps the homepage and /whats-on critical path
+      // free of ~250 KB of gzipped JS that would otherwise be eagerly fetched.
+      modulePreload: {
+        resolveDependencies: (_filename, deps) => deps.filter(dep => !/vendor-(sentry|crypto|schemas|ua)/.test(dep))
+      },
       rollupOptions: {
         output: {
           /* eslint-disable @typescript-eslint/naming-convention */
