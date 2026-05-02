@@ -252,6 +252,28 @@ function buildInjectedHead(options: InjectionOptions): string {
   return lines.join('\n  ')
 }
 
+function buildLcpShell(options: InjectionOptions): string {
+  // Static shell rendered BEFORE `<div id="root">`. Its `<img>` paints during
+  // HTML parse (way before React mounts) and Chrome locks it as the LCP
+  // candidate. HomePage's `useEffect` fades it out once React's own image is
+  // ready — we never *remove* it from the DOM because doing so resets LCP
+  // bookkeeping. Mobile gets `display:none` because top_background is hidden
+  // by CSS in the React tree too.
+  if (!ASSET_CHUNKS.topBackground) return ''
+  const rawHref = `${options.assetBaseUrl}assets/${ASSET_CHUNKS.topBackground}`
+  const optimizedHref = `/_vercel/image?url=${encodeURIComponent(rawHref)}&w=1920&q=75`
+  return [
+    '<style>',
+    '#dcl-whats-on-shell{display:none;position:fixed;top:0;left:0;right:0;height:700px;z-index:1000;pointer-events:none;transition:opacity 200ms ease-out;contain:layout paint;}',
+    '@media (min-width:600px){#dcl-whats-on-shell{display:block;}}',
+    '#dcl-whats-on-shell img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block;}',
+    '</style>',
+    '<div id="dcl-whats-on-shell" aria-hidden="true">',
+    `<img src="${escapeHtmlAttr(optimizedHref)}" alt="" loading="eager" fetchpriority="high" decoding="async" width="1920" height="700" />`,
+    '</div>'
+  ].join('')
+}
+
 function inject(html: string, options: InjectionOptions): string {
   const head = buildInjectedHead(options)
   if (!head) return html
@@ -264,7 +286,14 @@ function inject(html: string, options: InjectionOptions): string {
   // `data-whats-on-prefetch` attribute instead of a comment to avoid breakage
   // if Vite or rollup ever strips inline-script comments.
   const withoutInlineScript = withoutHomepageHero.replace(/<script[^>]*data-whats-on-prefetch[^>]*>[\s\S]*?<\/script>\s*/, '')
-  return withoutInlineScript.replace('</head>', `${head}\n</head>`)
+  // Drop the prerendered homepage hero shell — ~6 KB of CSS + markup that
+  // `/whats-on` never paints (the inline cleanup script removes the nodes on
+  // non-`/` paths anyway). Stripping it server-side saves the bytes and the
+  // synchronous removal work.
+  const withoutHomepageHeroShell = withoutInlineScript.replace(/<style data-hero-shell>[\s\S]*?<\/script>(?=\s*<div id="root">)/, '')
+  const lcpShell = buildLcpShell(options)
+  const withShell = lcpShell ? withoutHomepageHeroShell.replace('<div id="root">', `${lcpShell}<div id="root">`) : withoutHomepageHeroShell
+  return withShell.replace('</head>', `${head}\n</head>`)
 }
 
 function buildEarlyHintLinks(options: { assetBaseUrl: string; preferredLocale: LocaleChunk | undefined }): string[] {

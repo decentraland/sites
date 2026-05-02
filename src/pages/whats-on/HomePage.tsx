@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { AllExperiences } from '../../components/whats-on/AllExperiences'
 import { EventDetailModal } from '../../components/whats-on/EventDetailModal'
 import { LiveNow } from '../../components/whats-on/LiveNow'
@@ -10,6 +11,8 @@ import { usePlaceDeepLink } from '../../hooks/usePlaceDeepLink'
 import topBackground from '../../images/whats-on/images/top_background.webp'
 import { optimizedImageUrl } from '../../utils/imageUrl'
 import { ContentWrapper, DeferredGroup, MainContainer, TopBackgroundImage } from './HomePage.styled'
+
+const LCP_SHELL_ID = 'dcl-whats-on-shell'
 
 // 1×1 transparent SVG fallback. Mobile renders this (size:0) so the browser
 // never fetches the 250 KB top_background.webp on phones where it's hidden.
@@ -25,6 +28,21 @@ function HomePage() {
   const { isLoading: isLiveNowLoading } = useGetLiveNowCardsQuery(queryParams)
   const event = useEventDeepLink()
   const place = usePlaceDeepLink()
+
+  // Fade the SSR-injected LCP shell once React's own background is mounted.
+  // We deliberately do NOT remove the node — keeping it in the DOM (with
+  // `opacity:0`) preserves Chrome's LCP candidate so the metric stays anchored
+  // to the early HTML-parse paint instead of re-electing on the React render.
+  useEffect(() => {
+    const shell = document.getElementById(LCP_SHELL_ID)
+    if (!shell) return
+    const raf = requestAnimationFrame(() => {
+      shell.style.transition = 'opacity 200ms ease-out'
+      shell.style.opacity = '0'
+      shell.style.pointerEvents = 'none'
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [])
 
   return (
     <MainContainer component="main">
