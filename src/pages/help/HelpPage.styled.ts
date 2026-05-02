@@ -243,7 +243,32 @@ const FaqQuestion = styled(Typography)({
 })
 
 const AccordionContainer = styled(Box)(({ theme }) => ({
-  marginTop: theme.spacing(2)
+  marginTop: theme.spacing(2),
+  maxHeight: 380,
+  overflowY: 'auto',
+  paddingRight: theme.spacing(1),
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&::-webkit-scrollbar': {
+    width: 6
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&::-webkit-scrollbar-track': {
+    background: 'transparent'
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&::-webkit-scrollbar-thumb': {
+    background: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 3
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&::-webkit-scrollbar-thumb:hover': {
+    background: 'rgba(255, 255, 255, 0.35)'
+  },
+  scrollbarWidth: 'thin',
+  scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent',
+  [theme.breakpoints.down('sm')]: {
+    maxHeight: 340
+  }
 }))
 
 const MobileStatusWrapper = styled(Box)(({ theme }) => ({
@@ -276,14 +301,17 @@ const ChatCtaBanner = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  position: 'relative',
+  position: 'sticky',
+  bottom: theme.spacing(2.5),
+  zIndex: 10,
   isolation: 'isolate',
   overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
     marginTop: theme.spacing(4),
     padding: theme.spacing(3, 2),
     borderRadius: 12,
-    minHeight: 'auto'
+    minHeight: 'auto',
+    bottom: theme.spacing(2)
   }
 }))
 
