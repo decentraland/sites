@@ -14,13 +14,35 @@ describe('consumeWhatsOnPrefetch', () => {
     })
   })
 
-  describe('when the prefetch URLs do not match', () => {
+  describe('when the eventsUrl does not match', () => {
     let result: ReturnType<typeof consumeWhatsOnPrefetch>
 
     beforeEach(() => {
       window.__dclWhatsOnPrefetch = {
         eventsUrl: 'https://other.test/events',
         scenesUrl: SCENES_URL,
+        events: Promise.resolve(null),
+        scenes: Promise.resolve(null)
+      }
+      result = consumeWhatsOnPrefetch(EVENTS_URL, SCENES_URL)
+    })
+
+    it('should return null', () => {
+      expect(result).toBeNull()
+    })
+
+    it('should leave the prefetch on the window', () => {
+      expect(window.__dclWhatsOnPrefetch).toBeDefined()
+    })
+  })
+
+  describe('when the scenesUrl does not match', () => {
+    let result: ReturnType<typeof consumeWhatsOnPrefetch>
+
+    beforeEach(() => {
+      window.__dclWhatsOnPrefetch = {
+        eventsUrl: EVENTS_URL,
+        scenesUrl: 'https://other.test/scenes',
         events: Promise.resolve(null),
         scenes: Promise.resolve(null)
       }

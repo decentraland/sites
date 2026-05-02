@@ -54,6 +54,21 @@
       // one LiveNowCard renders (otherwise the browser would fetch the raw
       // 1 MB poster here and a separate optimized version when React mounts).
       var LOCALHOSTS = { localhost: 1, '127.0.0.1': 1, '0.0.0.0': 1 }
+      // Allowlist mirrors `ALLOWED_IMAGE_HOSTS` in api/whats-on.ts. Defense in
+      // depth so a compromised events API can't push a `<link rel="preload">`
+      // pointing at an attacker-controlled origin.
+      var ALLOWED_HOSTS = {
+        'peer.decentraland.org': 1,
+        'peer.decentraland.zone': 1,
+        'events-assets-099ac00.decentraland.org': 1,
+        'cdn.decentraland.org': 1
+      }
+      var isAllowedImageHost = function (raw) {
+        try {
+          var u = new URL(raw)
+          return (u.protocol === 'https:' || u.protocol === 'http:') && ALLOWED_HOSTS[u.hostname] === 1
+        } catch (e) { return false }
+      }
       var preloadHref = function (raw) {
         if (LOCALHOSTS[host]) return raw
         return '/_vercel/image?url=' + encodeURIComponent(raw) + '&w=750&q=75'
@@ -76,7 +91,7 @@
           }
           if (!lcpUrl && scene.thumbnail) lcpUrl = scene.thumbnail
         }
-        if (!lcpUrl) return
+        if (!lcpUrl || !isAllowedImageHost(lcpUrl)) return
         var link = document.createElement('link')
         link.rel = 'preload'
         link.as = 'image'

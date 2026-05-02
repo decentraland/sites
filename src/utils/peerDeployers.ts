@@ -15,20 +15,28 @@ interface ResolveDeployersOptions {
   timeoutMs?: number
 }
 
+interface TimeoutGuard {
+  signal: AbortSignal | undefined
+  cancel: () => void
+}
+
+const NOOP = (): void => undefined
+
 // Batches the deployer lookup for a list of parcel coordinates so the call
 // site avoids the N+1 of one `entities/active` + one `deployments` request
 // per coordinate. Returns a Map keyed by the input coordinate string ("x,y").
-function buildTimeoutSignal(timeoutMs: number): AbortSignal | undefined {
+function buildTimeoutSignal(timeoutMs: number): TimeoutGuard {
   if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') {
-    return AbortSignal.timeout(timeoutMs)
+    return { signal: AbortSignal.timeout(timeoutMs), cancel: NOOP }
   }
   // jsdom and older Safari/WebView builds don't ship AbortSignal.timeout. Fall
-  // back to a manual AbortController + setTimeout so the fetch can never hang
-  // forever — either signal is consumed before unload, or the timer fires.
-  if (typeof AbortController === 'undefined') return undefined
+  // back to a manual AbortController + setTimeout — and expose a cancel hook
+  // so successful completion can clear the timer instead of letting it fire
+  // unconditionally after the request resolves.
+  if (typeof AbortController === 'undefined') return { signal: undefined, cancel: NOOP }
   const controller = new AbortController()
-  setTimeout(() => controller.abort(), timeoutMs)
-  return controller.signal
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  return { signal: controller.signal, cancel: () => clearTimeout(timer) }
 }
 
 async function resolveDeployers(
@@ -39,66 +47,71 @@ async function resolveDeployers(
   const result = new Map<string, string>()
   if (coordinates.length === 0) return result
 
-  const signal = buildTimeoutSignal(options.timeoutMs ?? DEFAULT_BATCH_TIMEOUT_MS)
+  const guard = buildTimeoutSignal(options.timeoutMs ?? DEFAULT_BATCH_TIMEOUT_MS)
+  const signal = guard.signal
   const coordinatesSet = new Set(coordinates)
 
-  const entities = await fetch(`${peerUrl}/content/entities/active`, {
-    method: 'POST',
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ pointers: coordinates }),
-    signal
-  })
-    .then(res => {
-      if (!res.ok) {
-        console.warn('[peer] active entities batch failed', res.status)
+  try {
+    const entities = await fetch(`${peerUrl}/content/entities/active`, {
+      method: 'POST',
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pointers: coordinates }),
+      signal
+    })
+      .then(res => {
+        if (!res.ok) {
+          console.warn('[peer] active entities batch failed', res.status)
+          return [] as ActiveEntity[]
+        }
+        return res.json() as Promise<ActiveEntity[]>
+      })
+      .catch((err: unknown) => {
+        console.warn('[peer] active entities batch failed', err)
         return [] as ActiveEntity[]
-      }
-      return res.json() as Promise<ActiveEntity[]>
-    })
-    .catch((err: unknown) => {
-      console.warn('[peer] active entities batch failed', err)
-      return [] as ActiveEntity[]
-    })
+      })
 
-  if (entities.length === 0) return result
+    if (entities.length === 0) return result
 
-  const params = new URLSearchParams()
-  for (const entity of entities) params.append('entityId', entity.id)
+    const params = new URLSearchParams()
+    for (const entity of entities) params.append('entityId', entity.id)
 
-  const deploymentData = await fetch(`${peerUrl}/content/deployments/?${params}`, { signal })
-    .then(res => {
-      if (!res.ok) {
-        console.warn('[peer] deployments batch failed', res.status)
+    const deploymentData = await fetch(`${peerUrl}/content/deployments/?${params}`, { signal })
+      .then(res => {
+        if (!res.ok) {
+          console.warn('[peer] deployments batch failed', res.status)
+          return null
+        }
+        return res.json() as Promise<DeploymentResponse>
+      })
+      .catch((err: unknown) => {
+        console.warn('[peer] deployments batch failed', err)
         return null
-      }
-      return res.json() as Promise<DeploymentResponse>
-    })
-    .catch((err: unknown) => {
-      console.warn('[peer] deployments batch failed', err)
-      return null
-    })
+      })
 
-  if (!deploymentData) return result
+    if (!deploymentData) return result
 
-  const deployerByEntityId = new Map<string, string>()
-  for (const deployment of deploymentData.deployments) {
-    if (deployment.deployedBy && deployment.entityId) {
-      deployerByEntityId.set(deployment.entityId, deployment.deployedBy)
-    }
-  }
-
-  for (const entity of entities) {
-    const deployedBy = deployerByEntityId.get(entity.id)
-    if (!deployedBy) continue
-    for (const pointer of entity.pointers) {
-      if (coordinatesSet.has(pointer)) {
-        result.set(pointer, deployedBy)
+    const deployerByEntityId = new Map<string, string>()
+    for (const deployment of deploymentData.deployments) {
+      if (deployment.deployedBy && deployment.entityId) {
+        deployerByEntityId.set(deployment.entityId, deployment.deployedBy)
       }
     }
-  }
 
-  return result
+    for (const entity of entities) {
+      const deployedBy = deployerByEntityId.get(entity.id)
+      if (!deployedBy) continue
+      for (const pointer of entity.pointers) {
+        if (coordinatesSet.has(pointer)) {
+          result.set(pointer, deployedBy)
+        }
+      }
+    }
+
+    return result
+  } finally {
+    guard.cancel()
+  }
 }
 
 export { resolveDeployers }

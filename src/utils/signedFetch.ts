@@ -10,10 +10,17 @@ let signedFetchLoader: Promise<ReturnType<typeof import('decentraland-crypto-fet
 function getSignedFetch(): Promise<ReturnType<typeof import('decentraland-crypto-fetch').signedFetchFactory>> {
   if (signedFetchPromise) return Promise.resolve(signedFetchPromise)
   if (!signedFetchLoader) {
-    signedFetchLoader = import('decentraland-crypto-fetch').then(({ signedFetchFactory }) => {
-      signedFetchPromise = signedFetchFactory()
-      return signedFetchPromise
-    })
+    // Clear the cached loader on rejection so a transient chunk-load failure
+    // doesn't permanently break wallet sign-in for the rest of the session.
+    signedFetchLoader = import('decentraland-crypto-fetch')
+      .then(({ signedFetchFactory }) => {
+        signedFetchPromise = signedFetchFactory()
+        return signedFetchPromise
+      })
+      .catch(err => {
+        signedFetchLoader = undefined
+        throw err
+      })
   }
   return signedFetchLoader
 }

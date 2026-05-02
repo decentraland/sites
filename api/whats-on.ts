@@ -47,6 +47,12 @@ const ALLOWED_IMAGE_HOSTS = new Set([
 const LCP_IMAGE_WIDTH = 750
 const LCP_IMAGE_QUALITY = 75
 
+// Mirrors `DEFAULT_MIN_USERS` in features/whats-on-events/events.helpers.ts.
+// The client filters scenes below this threshold, so the SSR-side LCP picker
+// has to apply the same floor — otherwise we preload an image for a card the
+// React tree never renders.
+const LIVE_NOW_MIN_USERS = 5
+
 // Subset of the Live Now data shape we touch in this function. Keep aligned
 // with `src/features/whats-on-events/events.types.ts` and the events.helpers
 // module, but intentionally minimal so this serverless function doesn't pull
@@ -158,7 +164,9 @@ function resolveApiHosts(host: string | undefined): { eventsApi: string; hotScen
 
 function resolveLcpImage(eventsData: EventsResponse | null, hotScenes: HotScene[] | null): string | null {
   if (!hotScenes || hotScenes.length === 0) return null
-  const sorted = [...hotScenes].sort((a, b) => (b.usersTotalCount ?? 0) - (a.usersTotalCount ?? 0))
+  const sorted = hotScenes
+    .filter(s => (s.usersTotalCount ?? 0) >= LIVE_NOW_MIN_USERS)
+    .sort((a, b) => (b.usersTotalCount ?? 0) - (a.usersTotalCount ?? 0))
   const liveEvents = eventsData?.data ?? []
   for (const scene of sorted) {
     for (const [px, py] of scene.parcels) {
@@ -183,9 +191,9 @@ function isSafeImageUrl(value: string): value is string {
 const escapeHtmlAttr = (value: string): string =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;')
 
-// Embed JSON inside `<script>` requires escaping `</` so the parser can't be
-// tricked into closing the tag early. `<!--` and `<script` get the same
-// treatment for defense in depth.
+// Embed JSON inside `<script>` requires escaping `</script>` so a string in
+// the payload can't terminate the script block early. `</!--` is escaped on
+// the same pass for legacy HTML-comment parsing edge cases.
 const safeJsonForScript = (value: unknown): string =>
   JSON.stringify(value).replace(/<\/(script|!--)/gi, match => `\\u003c\\u002f${match.slice(2)}`)
 
