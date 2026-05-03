@@ -5,7 +5,7 @@ description: Use when adding, editing, or removing a translation key in src/intl
 
 # add-i18n-key
 
-Repo has **6 locale files** in `src/intl/`: `en.json` (source of truth), `es.json`, `fr.json`, `ja.json`, `ko.json`, `zh.json`. Every key must exist in all six. Missing locales fall back to the raw key, which Jarvis flags as **P2**.
+Repo has **6 locale files** in `src/intl/`: `en.json` (source of truth), `es.json`, `fr.json`, `ja.json`, `ko.json`, `zh.json`. Every key must exist in all six. Missing locales fall back to the raw key, which the review-bot CI flags as **P2**.
 
 ## When to use
 
@@ -50,6 +50,6 @@ Use the `i18n-auditor` agent when adding many keys or before a release.
 
 ## Pitfalls
 
-- Editing only `en.json` and pushing — Jarvis P2.
+- Editing only `en.json` and pushing — review-bot flags it P2.
 - Adding the key as a duplicate top-level entry instead of nesting — `node -e` check above catches it.
 - Forgetting `npm run format` — Prettier reorders JSON; CI fails.

@@ -4,6 +4,15 @@
 # Exit 2 -> blocks tool call, stderr surfaces to Claude.
 set -u
 
+if ! command -v jq >/dev/null 2>&1; then
+  marker="${TMPDIR:-/tmp}/.claude-landing-site-jq-warned-$PPID"
+  if [ ! -f "$marker" ]; then
+    echo "WARNING: jq not found — .claude/hooks/* operate in fail-open mode (no guards). Install with 'brew install jq'." >&2
+    : > "$marker" 2>/dev/null
+  fi
+  exit 0
+fi
+
 input=$(cat)
 command=$(printf '%s' "$input" | jq -r '.tool_input.command // empty' 2>/dev/null)
 [ -z "$command" ] && exit 0
@@ -48,7 +57,7 @@ if printf '%s' "$command" | grep -Eq 'git[[:space:]]+commit[[:space:]]+(.*[[:spa
 fi
 
 # 6. Force push to origin master (squash-merge target per ADR-6).
-if printf '%s' "$command" | grep -Eq 'git[[:space:]]+push[[:space:]]+(.*[[:space:]])?(--force|--force-with-lease|-f[[:space:]])'; then
+if printf '%s' "$command" | grep -Eq 'git[[:space:]]+push[[:space:]]+(.*[[:space:]])?(--force(-with-lease)?|-f([[:space:]]|$))'; then
   if printf '%s' "$command" | grep -Eq 'origin[[:space:]]+(master|main)\b|HEAD:?(master|main)\b'; then
     block "force-pushing to origin master is forbidden — master is the squash-merge target" \
           "open a PR or push to your feature branch"

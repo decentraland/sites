@@ -4,6 +4,15 @@
 #  - src/config/env/*.json             -> these ship to the client; secrets must NOT live here
 set -u
 
+if ! command -v jq >/dev/null 2>&1; then
+  marker="${TMPDIR:-/tmp}/.claude-landing-site-jq-warned-$PPID"
+  if [ ! -f "$marker" ]; then
+    echo "WARNING: jq not found — .claude/hooks/* operate in fail-open mode (no guards). Install with 'brew install jq'." >&2
+    : > "$marker" 2>/dev/null
+  fi
+  exit 0
+fi
+
 input=$(cat)
 file_path=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
 [ -z "$file_path" ] && exit 0

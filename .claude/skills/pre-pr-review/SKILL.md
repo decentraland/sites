@@ -60,10 +60,14 @@ Beyond the agent, manually verify these high-risk patterns if your diff touches 
 
 ## Step 9 — push + post-push
 
+If running inside Orca (`$ORCA_ATTRIBUTION_SHIM_DIR` set), call the real binaries by absolute path so the shim does not inject `Co-authored-by: Orca` (commits) or `Made with Orca` (PR body) — both violate ADR-6:
+
 ```bash
-/opt/homebrew/bin/git push    # bypass Orca shim if active (CLAUDE.md > Orca attribution shim)
-/opt/homebrew/bin/gh pr create --title "..." --body "..."
+/opt/homebrew/bin/git push                                  # macOS / Homebrew
+/opt/homebrew/bin/gh pr create --title "..." --body "..."   # macOS / Homebrew
 ```
+
+Outside Orca (or on Linux where Homebrew lives elsewhere), plain `git` / `gh` are equivalent. Use `command -v -p git` / `command -v -p gh` if you need a portable host-aware path.
 
 Immediately after `gh pr create`:
 

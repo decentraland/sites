@@ -63,7 +63,6 @@ Lightweight | Heavy — one-sentence reason.
 - src/shells/* (lightweight tier — boundary violation, rule 2)
 - src/services/* (lightweight tier)
 - wagmi, magic-sdk, thirdweb, core-web3 (any tier — auth is localStorage-only)
-- yarn / pnpm anywhere
 
 ### Mandatory follow-ups
 - Navbar clearance: paddingTop 64 / md 96 (rule 13).
