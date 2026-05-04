@@ -8,6 +8,8 @@ const mockTriggerFileDownload = jest.fn()
 let searchParamsInstance = new URLSearchParams()
 // Mutable so individual tests can flip the auth state used by the component.
 let mockHasValidIdentity = false
+// Mutable so tests can simulate Segment finishing its lazy init mid-flight.
+let analyticsIsInitialized = true
 
 jest.mock('decentraland-ui2', () => ({
   Logo: () => null,
@@ -15,7 +17,7 @@ jest.mock('decentraland-ui2', () => ({
 }))
 
 jest.mock('@dcl/hooks', () => ({
-  useAnalytics: () => ({ isInitialized: true, track: mockTrack }),
+  useAnalytics: () => ({ isInitialized: analyticsIsInitialized, track: mockTrack }),
   useTranslation: () => ({
     intl: { formatMessage: ({ id }: { id: string }) => id }
   })
@@ -173,6 +175,49 @@ describe('when DownloadSuccess mounts with a place query param that is not in th
     await waitFor(() => {
       expect(mockTrack).toHaveBeenCalledWith('download_started', expect.objectContaining({ place: 'unknown' }))
     })
+  })
+})
+
+describe('when Segment has not finished lazy-loading at mount (race condition)', () => {
+  // Regression guard for the bug surfaced by the anonymous Download First flow:
+  // calculateDownloadUrl resolves in ~1ms for unauthenticated users (no
+  // /identities API call), so the previous race-fix that relied on the await
+  // as an implicit Segment-load barrier no longer works. The component must
+  // explicitly wait for analytics readiness before tracking, otherwise
+  // download_started and download_success silently drop into the void.
+  //
+  // Asserting the "no fire while uninitialized" half here. The "fires once
+  // Segment is ready" half is implicitly covered by every other test in
+  // this file (they all run with analyticsIsInitialized = true).
+
+  beforeEach(() => {
+    analyticsIsInitialized = false
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=landing-hero')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    analyticsIsInitialized = true
+  })
+
+  it('should trigger the download immediately but hold the analytics events while Segment is loading', async () => {
+    render(<DownloadSuccess />)
+
+    // The download itself is triggered without waiting for Segment — UX must
+    // not be gated on third-party script load.
+    await waitFor(() => {
+      expect(mockTriggerFileDownload).toHaveBeenCalled()
+    })
+
+    // While analytics is still loading, neither event has fired.
+    expect(mockTrack).not.toHaveBeenCalledWith('download_started', expect.anything())
+    expect(mockTrack).not.toHaveBeenCalledWith('download_success', expect.anything())
   })
 })
 
