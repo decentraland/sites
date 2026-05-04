@@ -1,4 +1,5 @@
 import { type MouseEvent, memo } from 'react'
+import { Logo as DclLogo } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import dclTextSrc from '../../../images/reels/dcl-text.svg'
@@ -15,7 +16,7 @@ const Logo = memo(() => {
       data-event={SegmentEvent.REELS_CLICK_DCL_LOGO}
       onClick={(event: MouseEvent<HTMLAnchorElement>) => trackClick(event)}
     >
-      <img className="reels-logo-image" src="/dcl-logo.svg" alt="Decentraland" />
+      <DclLogo className="reels-logo-image" titleAccess="Decentraland" />
       <img className="reels-logo-text" src={dclTextSrc} alt="" />
     </LogoContainer>
   )

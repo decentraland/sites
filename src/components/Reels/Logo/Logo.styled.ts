@@ -10,7 +10,6 @@ const LogoContainer = styled('a')(({ theme }) => ({
   '& .reels-logo-image': {
     width: 30,
     height: 30,
-    color: '#fcfcfc',
     marginLeft: 25
   },
   '& .reels-logo-text': {
