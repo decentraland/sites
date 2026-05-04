@@ -5,6 +5,7 @@ import { DownloadSuccess } from './DownloadSuccess'
 const mockTrack = jest.fn()
 const mockCalculateDownloadUrl = jest.fn()
 const mockTriggerFileDownload = jest.fn()
+const mockDownloadFileWithProgress = jest.fn()
 let searchParamsInstance = new URLSearchParams()
 // Mutable so individual tests can flip the auth state used by the component.
 let mockHasValidIdentity = false
@@ -41,12 +42,12 @@ jest.mock('../../hooks/useAuthIdentity', () => ({
 }))
 
 jest.mock('../../modules/downloadWithIdentity', () => ({
-  calculateDownloadUrl: (...args: unknown[]) => mockCalculateDownloadUrl(...args),
-  getDownloadLinkWithIdentity: jest.fn()
+  calculateDownloadUrl: (...args: unknown[]) => mockCalculateDownloadUrl(...args)
 }))
 
 jest.mock('../../modules/file', () => ({
-  triggerFileDownload: (...args: unknown[]) => mockTriggerFileDownload(...args)
+  triggerFileDownload: (...args: unknown[]) => mockTriggerFileDownload(...args),
+  downloadFileWithProgress: (...args: unknown[]) => mockDownloadFileWithProgress(...args)
 }))
 
 jest.mock('../../modules/url', () => ({
@@ -83,6 +84,7 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
       url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
       filename: 'Install-Decentraland.exe'
     })
+    mockDownloadFileWithProgress.mockResolvedValue(undefined)
   })
 
   afterEach(() => {
@@ -127,6 +129,56 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
     } finally {
       mockHasValidIdentity = false
     }
+  })
+})
+
+describe('when DownloadSuccess re-mounts (refresh) within the rate-limit window', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=landing-hero')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockDownloadFileWithProgress.mockResolvedValue(undefined)
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should not re-hit the gateway when an in-flight lock is still fresh', async () => {
+    // Simulate a previous mount that acquired the lock and left without releasing it
+    // (e.g. tab killed by refresh while the streaming fetch was still in flight).
+    sessionStorage.setItem('downloadSuccess:triggered:Windows:amd64', String(Date.now()))
+
+    render(<DownloadSuccess />)
+    // Give the effect time to run; if the lock works, downloadFileWithProgress never fires.
+    await new Promise(resolve => setTimeout(resolve, 50))
+
+    expect(mockDownloadFileWithProgress).not.toHaveBeenCalled()
+  })
+
+  it('should re-download once the lock is older than the rate-limit ttl', async () => {
+    // Pretend the previous attempt happened ~31 s ago — older than the 30 s TTL.
+    sessionStorage.setItem('downloadSuccess:triggered:Windows:amd64', String(Date.now() - 31_000))
+
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockDownloadFileWithProgress).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  it('should release the lock after a successful download so refresh re-downloads', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything())
+    })
+
+    expect(sessionStorage.getItem('downloadSuccess:triggered:Windows:amd64')).toBeNull()
   })
 })
 
@@ -199,6 +251,7 @@ describe('when Segment has not finished lazy-loading at mount (race condition)',
       url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
       filename: 'Install-Decentraland.exe'
     })
+    mockDownloadFileWithProgress.mockResolvedValue(undefined)
   })
 
   afterEach(() => {
@@ -212,12 +265,55 @@ describe('when Segment has not finished lazy-loading at mount (race condition)',
     // The download itself is triggered without waiting for Segment — UX must
     // not be gated on third-party script load.
     await waitFor(() => {
-      expect(mockTriggerFileDownload).toHaveBeenCalled()
+      expect(mockDownloadFileWithProgress).toHaveBeenCalled()
     })
 
     // While analytics is still loading, neither event has fired.
     expect(mockTrack).not.toHaveBeenCalledWith('download_started', expect.anything())
     expect(mockTrack).not.toHaveBeenCalledWith('download_success', expect.anything())
+  })
+})
+
+describe('when the streamed download fails (e.g. CORS not configured on the gateway)', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=landing-hero')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockDownloadFileWithProgress.mockRejectedValue(new TypeError('Failed to fetch'))
+    jest.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should fall back to triggerFileDownload so the file still downloads', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockTriggerFileDownload).toHaveBeenCalledWith(
+        'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+        'Install-Decentraland.exe'
+      )
+    })
+  })
+
+  it('should still fire download_success after the fallback', async () => {
+    render(<DownloadSuccess />)
+
+    // The fallback path holds the loader visible with a 4 s grace window so
+    // CORS-blocked previews still feel responsive while the gateway processes
+    // the native-anchor download. Allow waitFor to span that window.
+    await waitFor(
+      () => {
+        expect(mockTrack).toHaveBeenCalledWith('download_success', expect.objectContaining({ place: 'landing-hero' }))
+      },
+      { timeout: 6000 }
+    )
   })
 })
 
