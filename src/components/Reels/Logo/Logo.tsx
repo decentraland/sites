@@ -3,7 +3,7 @@ import { getEnv } from '../../../config/env'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import dclTextSrc from '../../../images/reels/dcl-text.svg'
 import { SegmentEvent } from '../../../modules/segment'
-import { LogoContainer } from './Logo.styled'
+import { LogoContainer, LogoImage, LogoText } from './Logo.styled'
 
 const Logo = memo(() => {
   const trackClick = useTrackClick()
@@ -15,8 +15,8 @@ const Logo = memo(() => {
       data-event={SegmentEvent.REELS_CLICK_DCL_LOGO}
       onClick={(event: MouseEvent<HTMLAnchorElement>) => trackClick(event)}
     >
-      <img className="reels-logo-image" src="/dcl-logo.svg" alt="Decentraland" />
-      <img className="reels-logo-text" src={dclTextSrc} alt="" />
+      <LogoImage src="/dcl-logo.svg" alt="Decentraland" />
+      <LogoText src={dclTextSrc} alt="" />
     </LogoContainer>
   )
 })
