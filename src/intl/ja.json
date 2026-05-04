@@ -514,6 +514,36 @@
         "marketplace_authorizations": "マーケットプレイス認証",
         "whats_on": "イベント情報"
       }
+    },
+    "reels": {
+      "image_actions": {
+        "share": "Twitterで共有",
+        "copy_link": "リンクをコピー",
+        "copied": "コピーしました!",
+        "download": "写真をダウンロード",
+        "info": "情報を切り替え",
+        "share_text": "Decentralandで今やっていることをチェックして、一緒に参加しよう!"
+      },
+      "metadata": {
+        "title": "情報",
+        "place": "場所",
+        "people": "人々",
+        "wearable": "コレクティブルウェアラブル",
+        "jump_in": "ジャンプイン",
+        "no_wearable": "この人はまだウェアラブルを装備していません。",
+        "photo_taken_by": "撮影者",
+        "guest": "ゲスト"
+      },
+      "wearable": {
+        "buy": "購入"
+      },
+      "no_photo": {
+        "title": "写真が見つかりません",
+        "subtitle": "おっと! アクセスしようとしている写真は存在しないか、もう利用できません。"
+      },
+      "list": {
+        "title": "ユーザー: {userName}"
+      }
     }
   },
   "create_event": {

@@ -514,6 +514,36 @@
         "marketplace_authorizations": "市场授权",
         "whats_on": "最新活动"
       }
+    },
+    "reels": {
+      "image_actions": {
+        "share": "分享到 Twitter",
+        "copy_link": "复制链接",
+        "copied": "已复制!",
+        "download": "下载照片",
+        "info": "切换信息",
+        "share_text": "看看我现在在 Decentraland 做什么并加入我吧!"
+      },
+      "metadata": {
+        "title": "信息",
+        "place": "地点",
+        "people": "人物",
+        "wearable": "可收藏穿戴物",
+        "jump_in": "进入",
+        "no_wearable": "此用户还没有装备任何穿戴物。",
+        "photo_taken_by": "照片由",
+        "guest": "访客"
+      },
+      "wearable": {
+        "buy": "购买"
+      },
+      "no_photo": {
+        "title": "未找到照片",
+        "subtitle": "哎呀!您正在尝试访问的照片不存在或不再可用。"
+      },
+      "list": {
+        "title": "用户: {userName}"
+      }
     }
   },
   "create_event": {
