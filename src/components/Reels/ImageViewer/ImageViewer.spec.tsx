@@ -4,6 +4,7 @@ import { ImageViewer } from './ImageViewer'
 jest.mock('decentraland-ui2', () => ({
   Box: ({ children, ...props }: { children?: React.ReactNode } & Record<string, unknown>) => <div {...(props as object)}>{children}</div>,
   CircularProgress: () => <div data-testid="reels-loader" />,
+  useMediaQuery: () => false,
   styled: () => () => (props: { children?: React.ReactNode } & Record<string, unknown>) => {
     const { children, ...rest } = props
     return <div {...(rest as object)}>{children}</div>
