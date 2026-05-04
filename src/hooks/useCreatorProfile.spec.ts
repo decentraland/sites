@@ -2,7 +2,13 @@ import { renderHook } from '@testing-library/react'
 import { useCreatorProfile } from './useCreatorProfile'
 
 const mockUseProfileAvatar = jest.fn()
-const defaultProfileAvatar = { avatar: undefined, avatarForCard: undefined, avatarFace: undefined, name: undefined }
+const defaultProfileAvatar = {
+  avatar: undefined,
+  avatarForCard: undefined,
+  avatarFace: undefined,
+  name: undefined,
+  backgroundColor: '#ffffff'
+}
 jest.mock('./useProfileAvatar', () => ({
   useProfileAvatar: (...args: unknown[]) => mockUseProfileAvatar(...(args as []))
 }))
@@ -22,7 +28,8 @@ describe('useCreatorProfile', () => {
         avatar: undefined,
         avatarForCard: undefined,
         avatarFace: 'https://example.com/baybackner.png',
-        name: 'BayBackner'
+        name: 'BayBackner',
+        backgroundColor: '#cafe00'
       })
     })
 
@@ -44,6 +51,12 @@ describe('useCreatorProfile', () => {
       expect(result.current.avatarFace).toBe('/dcl-logo.svg')
     })
 
+    it('should override the background color with the Foundation brand color', () => {
+      const { result } = renderHook(() => useCreatorProfile('0xAddress', 'Decentraland Foundation'))
+
+      expect(result.current.backgroundColor).toBe('#9d76e3')
+    })
+
     it('should skip the profile fetch', () => {
       renderHook(() => useCreatorProfile('0xAddress', 'Decentraland Foundation'))
 
@@ -63,7 +76,8 @@ describe('useCreatorProfile', () => {
         avatar: undefined,
         avatarForCard: undefined,
         avatarFace: 'https://example.com/avatar.png',
-        name: 'CatalystName'
+        name: 'CatalystName',
+        backgroundColor: '#123456'
       })
     })
 
@@ -83,6 +97,12 @@ describe('useCreatorProfile', () => {
       const { result } = renderHook(() => useCreatorProfile('0xUser', 'RawName'))
 
       expect(result.current.isDclFoundation).toBe(false)
+    })
+
+    it('should propagate the catalyst-derived background color', () => {
+      const { result } = renderHook(() => useCreatorProfile('0xUser', 'RawName'))
+
+      expect(result.current.backgroundColor).toBe('#123456')
     })
   })
 

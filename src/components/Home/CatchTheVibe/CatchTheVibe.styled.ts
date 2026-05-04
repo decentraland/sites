@@ -116,11 +116,25 @@ const VideoCardFooter = styled(Box)(({ theme }) => ({
   flexShrink: 0
 }))
 
-const UserInfo = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1)
-}))
+interface UserInfoProps {
+  $avatarBackgroundColor?: string
+}
+
+// `decentraland-ui2`'s AvatarFace doesn't expose an `sx` or background prop, so we override the
+// MUI Avatar background here with double specificity to win over the themed default.
+const UserInfo = styled(Box, { shouldForwardProp: prop => prop !== '$avatarBackgroundColor' })<UserInfoProps>(
+  ({ theme, $avatarBackgroundColor }) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    ...($avatarBackgroundColor && {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      '&& .MuiAvatar-root': {
+        backgroundColor: $avatarBackgroundColor
+      }
+    })
+  })
+)
 
 const UserName = styled(Typography)({
   color: dclColors.neutral.white,

@@ -46,7 +46,9 @@ function AdminPermissionsModal({
   const { address: currentAddress } = useAuthIdentity()
   const [address, setAddress] = useState(initialUser ?? '')
   const [permissions, setPermissions] = useState<AdminPermission[]>(initialPermissions)
-  const { avatarFace, name } = useProfileAvatar(mode === 'edit' ? initialUser : undefined, { skip: mode !== 'edit' || !initialUser })
+  const { avatarFace, name, backgroundColor } = useProfileAvatar(mode === 'edit' ? initialUser : undefined, {
+    skip: mode !== 'edit' || !initialUser
+  })
 
   const isSelfEdit =
     mode === 'edit' && initialUser != null && currentAddress != null && initialUser.toLowerCase() === currentAddress.toLowerCase()
@@ -70,7 +72,7 @@ function AdminPermissionsModal({
       </DialogTitle>
       {mode === 'edit' && initialUser && (
         <ModalHeader>
-          <HeaderAvatar src={avatarFace} />
+          <HeaderAvatar src={avatarFace} sx={{ backgroundColor }} />
           <HeaderText>
             <HeaderName>{name ?? truncateAddress(initialUser)}</HeaderName>
             <HeaderAddress>{initialUser}</HeaderAddress>

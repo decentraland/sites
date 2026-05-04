@@ -18,12 +18,14 @@ jest.mock('./LiveNowCard', () => ({
     card,
     creatorName,
     creatorFaceUrl,
+    creatorBackgroundColor,
     eager,
     onClick
   }: {
     card: { title: string; type: string; users: number }
     creatorName?: string
     creatorFaceUrl?: string
+    creatorBackgroundColor?: string
     eager?: boolean
     onClick: (card: unknown) => void
   }) => (
@@ -34,6 +36,7 @@ jest.mock('./LiveNowCard', () => ({
       data-users={card.users}
       data-creator-name={creatorName ?? ''}
       data-creator-face={creatorFaceUrl ?? ''}
+      data-creator-background={creatorBackgroundColor ?? ''}
       data-eager={eager ? 'true' : 'false'}
       onClick={() => onClick(card)}
     />
@@ -130,6 +133,12 @@ describe('LiveNowCardItem', () => {
   })
 
   describe('when the card is Genesis Plaza', () => {
+    it('should mark the background color as the Foundation brand violet so the DCL logo reads as official', () => {
+      render(<LiveNowCardItem card={createMockCard({ isGenesisPlaza: true, creatorName: undefined })} onClick={mockOnClick} />)
+
+      expect(screen.getByTestId('live-now-card')).toHaveAttribute('data-creator-background', '#9d76e3')
+    })
+
     it('should label the avatar as Decentraland Foundation based on the isGenesisPlaza flag, not the title', () => {
       // The card carries isGenesisPlaza=true from buildLiveNowCards; title changes
       // should not alter the logo-override behavior.

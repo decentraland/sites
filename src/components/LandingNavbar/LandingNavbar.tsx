@@ -1,10 +1,11 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAnalytics } from '@dcl/hooks'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { MIN_DISPLAY_BALANCE } from '../../hooks/useManaBalances'
 import { useLocale } from '../../intl/LocaleContext'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { assetUrl } from '../../utils/assetUrl'
+import { getAvatarBackgroundColor, getDisplayName } from '../../utils/avatarColor'
 // Module-level cache for notification type→component map from ui2.
 // Lazy-loaded on first bell click so it doesn't affect initial bundle.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -121,7 +122,12 @@ interface LandingNavbarProps {
   isLandingPage?: boolean
   isLoadingProfile?: boolean
   address?: string
-  avatar?: { name?: string; avatar?: { snapshots?: { face256?: string; body?: string } } }
+  avatar?: {
+    name?: string
+    hasClaimedName?: boolean
+    ethAddress?: string
+    avatar?: { snapshots?: { face256?: string; body?: string } }
+  }
   manaBalances?: { ethereum: number; polygon: number } | null
   isManaLoading?: boolean
   notifications?: NotificationsData
@@ -274,6 +280,22 @@ const LandingNavbar = memo(function LandingNavbar({
   const faceLoaded = loadedUrl === faceUrl
   const bodyUrl = resolveContentUrl(avatar?.avatar?.snapshots?.body)
   const userName = avatar?.name || (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '')
+  // Skip the deterministic color until the catalyst profile resolves a name — otherwise the
+  // computed `#ffffff` would clobber the magenta shimmer the loading state relies on.
+  const avatarBackgroundColor = useMemo(
+    () =>
+      avatar?.name
+        ? getAvatarBackgroundColor(
+            getDisplayName({
+              name: avatar.name,
+              hasClaimedName: avatar.hasClaimedName,
+              ethAddress: avatar.ethAddress ?? address
+            })
+          )
+        : undefined,
+    [avatar?.name, avatar?.hasClaimedName, avatar?.ethAddress, address]
+  )
+  const avatarStyle = avatarBackgroundColor ? { backgroundColor: avatarBackgroundColor } : undefined
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''
 
   const [addressCopied, setAddressCopied] = useState(false)
@@ -645,6 +667,7 @@ const LandingNavbar = memo(function LandingNavbar({
                   aria-expanded={userCardOpen}
                   aria-haspopup="true"
                   className={isLoadingProfile ? 'loading' : undefined}
+                  style={avatarStyle}
                 >
                   {!isLoadingProfile && renderAvatar()}
                 </AvatarButton>
@@ -718,7 +741,7 @@ const LandingNavbar = memo(function LandingNavbar({
       {isSignedIn && userCardOpen && (
         <MobileUserCard data-mobile-user-card onClick={e => e.stopPropagation()}>
           <MobileUserCardTop>
-            <MobileUserCardAvatar className={isLoadingProfile ? 'loading' : undefined}>
+            <MobileUserCardAvatar className={isLoadingProfile ? 'loading' : undefined} style={avatarStyle}>
               {!isLoadingProfile && (
                 <MobileUserCardAvatarImage
                   src={faceUrl}

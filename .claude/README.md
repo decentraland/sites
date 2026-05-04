@@ -16,6 +16,7 @@ Project-level configuration for Claude Code working in this repo. Every hook, sk
 
 - `add-i18n-key` — adding/editing translation keys with 6-locale parity (rule 9).
 - `add-route` — placing a new route on the correct shell (lightweight vs `DappsShell`).
+- `avatar-background-color` — applying ADR-292's deterministic background color on every avatar surface.
 - `pre-pr-review` — runs the full pre-PR gate before `gh pr create`.
 
 ## Agents
