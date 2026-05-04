@@ -1,26 +1,12 @@
 type DownloadProgress = { loaded: number; total: number }
 type DownloadProgressCallback = (progress: DownloadProgress) => void
 
-const triggerFileDownload = (link: string, filename = ''): void => {
+const clickAnchor = (href: string, downloadValue: string | null): void => {
   const a = document.createElement('a')
-  a.href = link
-
-  // The `download` attribute is only honored on same-origin URLs (and on
-  // cross-origin URLs whose response includes Content-Disposition). Setting it
-  // on a cross-origin URL without that header silently drops the download on
-  // macOS .dmg files served straight from the LAUNCHER CDN, even though
-  // Windows .exe still downloads thanks to special-case browser handling.
-  try {
-    const url = new URL(link, window.location.href)
-    if (url.origin === window.location.origin && filename) {
-      a.setAttribute('download', filename)
-    } else if (url.origin === window.location.origin) {
-      a.setAttribute('download', '')
-    }
-  } catch {
-    // invalid URL — skip the attribute and let the browser navigate
+  a.href = href
+  if (downloadValue !== null) {
+    a.setAttribute('download', downloadValue)
   }
-
   document.body.appendChild(a)
   a.click()
   // Defer removal so the navigation/download has been queued by the browser.
@@ -29,22 +15,31 @@ const triggerFileDownload = (link: string, filename = ''): void => {
   })
 }
 
+const triggerFileDownload = (link: string, filename = ''): void => {
+  // The `download` attribute is only honored on same-origin URLs (and on
+  // cross-origin URLs whose response includes Content-Disposition). Setting it
+  // on a cross-origin URL without that header silently drops the download on
+  // macOS .dmg files served straight from the LAUNCHER CDN, even though
+  // Windows .exe still downloads thanks to special-case browser handling.
+  let downloadValue: string | null = null
+  try {
+    const url = new URL(link, window.location.href)
+    if (url.origin === window.location.origin) {
+      downloadValue = filename || ''
+    }
+  } catch {
+    // invalid URL — skip the attribute and let the browser navigate
+  }
+  clickAnchor(link, downloadValue)
+}
+
 const triggerBlobDownload = (blob: Blob, filename: string): void => {
   const blobUrl = URL.createObjectURL(blob)
-  try {
-    const a = document.createElement('a')
-    a.href = blobUrl
-    a.setAttribute('download', filename)
-    document.body.appendChild(a)
-    a.click()
-    requestAnimationFrame(() => {
-      a.remove()
-    })
-  } finally {
-    // Revoke after the click is dispatched. The browser has already started
-    // saving the file by then; revoking earlier would race the download.
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
-  }
+  clickAnchor(blobUrl, filename)
+  // Hold the blob URL alive long enough for the browser to finish writing the
+  // file to disk on slow devices — a 200 MB installer can take well over a
+  // second to flush. Revoking too early aborts the save with no error.
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000)
 }
 
 /**
@@ -54,6 +49,11 @@ const triggerBlobDownload = (blob: Blob, filename: string): void => {
  * gateway had even started responding — on Windows the gateway can take
  * several seconds to wrap the installer with the campaign id, leaving the
  * user staring at the steps page with no feedback.
+ *
+ * Memory: the response is piped through a `TransformStream` so progress can
+ * be reported per chunk without buffering the whole installer in JS heap.
+ * `new Response(stream).blob()` lets the browser manage the assembled bytes
+ * natively, which keeps peak memory bounded on low-RAM Windows laptops.
  *
  * Throws on network or HTTP errors so the caller can fall back to a native
  * `triggerFileDownload` (which still works when CORS isn't configured but
@@ -83,31 +83,17 @@ async function downloadFileWithProgress(
 
   const contentLength = response.headers.get('content-length')
   const total = contentLength ? parseInt(contentLength, 10) : 0
-  const reader = response.body.getReader()
-  const chunks: BlobPart[] = []
   let loaded = 0
 
-  try {
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      if (!value) continue
-      chunks.push(value)
-      loaded += value.length
+  const progressStream = new TransformStream<Uint8Array, Uint8Array>({
+    transform(chunk, controller) {
+      loaded += chunk.byteLength
       onProgress?.({ loaded, total })
+      controller.enqueue(chunk)
     }
-  } catch (error) {
-    // Cancel the underlying connection so the browser doesn't keep buffering
-    // a fetch we have already abandoned.
-    try {
-      await reader.cancel()
-    } catch {
-      // ignore
-    }
-    throw error
-  }
+  })
 
-  const blob = new Blob(chunks)
+  const blob = await new Response(response.body.pipeThrough(progressStream)).blob()
   triggerBlobDownload(blob, filename)
 }
 

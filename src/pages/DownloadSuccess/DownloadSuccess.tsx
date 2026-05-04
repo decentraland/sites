@@ -34,6 +34,41 @@ const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
 const AUTO_DOWNLOAD_HISTORY_STATE_KEY = 'downloadSuccess:autoDownloadKey'
 const AUTO_DOWNLOAD_SESSION_KEY = 'downloadSuccess:triggered'
 
+// When the streamed fetch path is blocked (e.g. CORS not configured for the
+// current origin — true for Vercel preview deploys, where the download
+// gateway only allows known prod/staging hosts) we fall back to the native
+// `<a>.click()`. That returns synchronously, which would re-introduce the
+// "loader vanishes before the download starts" bug. Hold the backdrop up
+// for a brief grace period so the user still gets feedback while the gateway
+// processes the request.
+const FALLBACK_LOADER_HOLD_MS = 4000
+
+type StreamOrFallbackArgs = {
+  url: string
+  filename: string
+  signal: AbortSignal
+  onProgress: (progress: number) => void
+}
+
+const streamOrFallback = async ({ url, filename, signal, onProgress }: StreamOrFallbackArgs): Promise<void> => {
+  try {
+    await downloadFileWithProgress(
+      url,
+      filename,
+      ({ loaded, total }) => {
+        if (signal.aborted || total <= 0) return
+        onProgress(Math.min(99, Math.floor((loaded / total) * 100)))
+      },
+      signal
+    )
+  } catch (error) {
+    if (signal.aborted) throw error
+    console.warn('Streamed download failed, falling back to native anchor', { name: error instanceof Error ? error.name : 'unknown' })
+    triggerFileDownload(url, filename)
+    await new Promise(resolve => setTimeout(resolve, FALLBACK_LOADER_HOLD_MS))
+  }
+}
+
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
   const { intl } = useTranslation()
@@ -130,8 +165,8 @@ const DownloadSuccess = memo(() => {
   const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
 
   useEffect(() => {
-    let cancelled = false
     const abortController = new AbortController()
+    const { signal } = abortController
     const autoDownloadKey = `${clientOS}:${clientArch}`
 
     const getHistoryState = (): Record<string, unknown> =>
@@ -146,7 +181,7 @@ const DownloadSuccess = memo(() => {
     // Poll until Segment is ready (or time out so we don't block forever).
     const waitForAnalytics = async (timeoutMs = 5000): Promise<void> => {
       const start = Date.now()
-      while (!isInitializedRef.current && !cancelled && Date.now() - start < timeoutMs) {
+      while (!isInitializedRef.current && !signal.aborted && Date.now() - start < timeoutMs) {
         await new Promise(resolve => setTimeout(resolve, 50))
       }
     }
@@ -178,7 +213,7 @@ const DownloadSuccess = memo(() => {
         anonUserId: anonUserIdRef.current
       })
 
-      if (cancelled) return
+      if (signal.aborted) return
 
       const latestHistoryState = getHistoryState()
       if (latestHistoryState[AUTO_DOWNLOAD_HISTORY_STATE_KEY] !== autoDownloadKey) {
@@ -192,7 +227,7 @@ const DownloadSuccess = memo(() => {
         )
       }
 
-      if (cancelled) return
+      if (signal.aborted) return
 
       sessionStorage.setItem(sessionKey, '1')
       const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserIdRef.current })
@@ -204,25 +239,14 @@ const DownloadSuccess = memo(() => {
       // multi-second window where the user sees the steps page with no
       // download in flight. Fall back to the native anchor when fetch fails
       // (e.g. CORS not configured) so the download still happens.
-      try {
-        await downloadFileWithProgress(
-          downloadUrl,
-          filename,
-          ({ loaded, total }) => {
-            if (cancelled) return
-            if (total > 0) {
-              setDownloadProgress(Math.min(99, Math.floor((loaded / total) * 100)))
-            }
-          },
-          abortController.signal
-        )
-      } catch (error) {
-        if (cancelled) return
-        console.warn('Streamed download failed, falling back to native anchor', { name: error instanceof Error ? error.name : 'unknown' })
-        triggerFileDownload(downloadUrl, filename)
-      }
+      await streamOrFallback({
+        url: downloadUrl,
+        filename,
+        signal,
+        onProgress: setDownloadProgress
+      })
 
-      if (cancelled) return
+      if (signal.aborted) return
       setDownloadProgress(100)
       setIsFileSaved(true)
 
@@ -230,7 +254,7 @@ const DownloadSuccess = memo(() => {
       // initializes within the timeout the events drop silently — same as
       // the pre-fix behavior, but at least we tried.
       await waitForAnalytics()
-      if (cancelled || !isInitializedRef.current) return
+      if (signal.aborted || !isInitializedRef.current) return
       // eslint-disable-next-line @typescript-eslint/naming-convention
       trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place, href: osLink, auth_state: authStateRef.current })
       // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -239,22 +263,21 @@ const DownloadSuccess = memo(() => {
 
     startDownload()
       .catch(async error => {
-        if (cancelled) return
+        if (signal.aborted) return
         console.error('Download error:', error)
         setDownloadError(error instanceof Error ? error.message : 'Download failed')
         await waitForAnalytics()
-        if (cancelled || !isInitializedRef.current) return
+        if (signal.aborted || !isInitializedRef.current) return
         // eslint-disable-next-line @typescript-eslint/naming-convention
         trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place, href: osLink, auth_state: authStateRef.current })
       })
       .finally(() => {
-        if (!cancelled) {
+        if (!signal.aborted) {
           setIsDownloading(false)
         }
       })
 
     return () => {
-      cancelled = true
       abortController.abort()
     }
   }, [clientOS, clientArch, osLink, place])
@@ -298,23 +321,12 @@ const DownloadSuccess = memo(() => {
           anonUserId
         })
         const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserId })
-        try {
-          await downloadFileWithProgress(
-            downloadUrl,
-            filename,
-            ({ loaded, total }) => {
-              if (abortController.signal.aborted) return
-              if (total > 0) {
-                setDownloadProgress(Math.min(99, Math.floor((loaded / total) * 100)))
-              }
-            },
-            abortController.signal
-          )
-        } catch (error) {
-          if (abortController.signal.aborted) return
-          console.warn('Streamed download failed, falling back to native anchor', { name: error instanceof Error ? error.name : 'unknown' })
-          triggerFileDownload(downloadUrl, filename)
-        }
+        await streamOrFallback({
+          url: downloadUrl,
+          filename,
+          signal: abortController.signal,
+          onProgress: setDownloadProgress
+        })
         if (abortController.signal.aborted) return
         setDownloadProgress(100)
         if (isInitializedRef.current) {

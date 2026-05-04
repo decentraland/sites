@@ -255,9 +255,15 @@ describe('when the streamed download fails (e.g. CORS not configured on the gate
   it('should still fire download_success after the fallback', async () => {
     render(<DownloadSuccess />)
 
-    await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_success', expect.objectContaining({ place: 'landing-hero' }))
-    })
+    // The fallback path holds the loader visible with a 4 s grace window so
+    // CORS-blocked previews still feel responsive while the gateway processes
+    // the native-anchor download. Allow waitFor to span that window.
+    await waitFor(
+      () => {
+        expect(mockTrack).toHaveBeenCalledWith('download_success', expect.objectContaining({ place: 'landing-hero' }))
+      },
+      { timeout: 6000 }
+    )
   })
 })
 
