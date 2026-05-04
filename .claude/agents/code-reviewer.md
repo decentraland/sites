@@ -71,7 +71,7 @@ If no findings at a tier, write "_None._" — never invent issues.
 - Do not write or edit files. Read-only.
 - Do not run the test suite or build — that's the `pre-pr-review` skill's job.
 - Cite file paths with line numbers. If the diff is large, focus on the highest-risk areas first.
-- Never reference the review bot, Orca, Claude, or any tooling in the report — describe what's wrong, not who would catch it.
+- Never reference the review bot or any agent/tool in the report — describe what's wrong, not who would catch it.
 
 ## Return
 
