@@ -123,6 +123,20 @@ const DownloadSuccess = memo(() => {
     const getHistoryState = (): Record<string, unknown> =>
       window.history.state && typeof window.history.state === 'object' ? (window.history.state as Record<string, unknown>) : {}
 
+    // Segment loads lazily via DeferredAnalyticsProvider, so on first paint
+    // `isInitializedRef.current` is false and any track call would no-op.
+    // The previous race-fix relied on `await calculateDownloadUrl(...)` taking
+    // 100–500 ms (network call to /identities) as an implicit barrier — but
+    // for the anonymous Download First flow `getIdentityId()` short-circuits
+    // synchronously, so the await resolves in ~1 ms and we miss the events.
+    // Poll until Segment is ready (or time out so we don't block forever).
+    const waitForAnalytics = async (timeoutMs = 5000): Promise<void> => {
+      const start = Date.now()
+      while (!isInitializedRef.current && !cancelled && Date.now() - start < timeoutMs) {
+        await new Promise(resolve => setTimeout(resolve, 50))
+      }
+    }
+
     const startDownload = async () => {
       const sessionKey = `${AUTO_DOWNLOAD_SESSION_KEY}:${autoDownloadKey}`
       if (sessionStorage.getItem(sessionKey)) {
@@ -141,12 +155,6 @@ const DownloadSuccess = memo(() => {
       setDownloadError(null)
       setIsFileSaved(false)
 
-      // NOTE: download_started is fired AFTER calculateDownloadUrl (not before)
-      // because Segment loads lazily via DeferredAnalyticsProvider — at page
-      // mount `isInitialized` is still false and the track call would no-op.
-      // The await gives Segment ~50–300 ms to finish loading, so by the time
-      // we get here `isInitializedRef.current` is true and both started/success
-      // events go through.
       const { url, filename } = await calculateDownloadUrl({
         os: clientOS,
         arch: clientArch,
@@ -171,28 +179,30 @@ const DownloadSuccess = memo(() => {
 
       if (cancelled) return
 
-      if (isInitializedRef.current) {
-        trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place, href: osLink })
-      }
-
+      // Trigger the download immediately — don't block it on Segment loading,
+      // which can take seconds in the worst case (load event + idle callback).
       sessionStorage.setItem(sessionKey, '1')
       const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserIdRef.current })
       triggerFileDownload(downloadUrl)
       setIsFileSaved(true)
 
-      if (isInitializedRef.current) {
-        trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place, href: url, filename })
-      }
+      // Now wait for Segment to be ready and fire both events. If it never
+      // initializes within the timeout the events drop silently — same as
+      // the pre-fix behavior, but at least we tried.
+      await waitForAnalytics()
+      if (cancelled || !isInitializedRef.current) return
+      trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place, href: osLink })
+      trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place, href: url, filename })
     }
 
     startDownload()
-      .catch(error => {
+      .catch(async error => {
         if (cancelled) return
         console.error('Download error:', error)
         setDownloadError(error instanceof Error ? error.message : 'Download failed')
-        if (isInitializedRef.current) {
-          trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place, href: osLink })
-        }
+        await waitForAnalytics()
+        if (cancelled || !isInitializedRef.current) return
+        trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place, href: osLink })
       })
       .finally(() => {
         if (!cancelled) {
