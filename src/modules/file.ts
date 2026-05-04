@@ -35,10 +35,10 @@ const triggerFileDownload = (link: string, filename = ''): void => {
 const triggerBlobDownload = (blob: Blob, filename: string): void => {
   const blobUrl = URL.createObjectURL(blob)
   clickAnchor(blobUrl, filename)
-  // Hold the blob URL alive long enough for the browser to finish writing the
-  // file to disk on slow devices — a 200 MB installer can take well over a
-  // second to flush. Revoking too early aborts the save with no error.
-  setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000)
+  // The browser takes its own internal reference to the blob once the click
+  // dispatches the download, so revoking on the next frame frees the URL
+  // without aborting the save. Aligned with the rAF anchor removal above.
+  requestAnimationFrame(() => URL.revokeObjectURL(blobUrl))
 }
 
 /**
