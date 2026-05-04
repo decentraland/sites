@@ -57,4 +57,14 @@ const LoaderOverlay = styled(Box)({
   zIndex: 2
 })
 
-export { Gradient, ImageWrapper, LoaderOverlay, ViewerContainer }
+const InlineLogo = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  zIndex: 2,
+  [theme.breakpoints.up('lg')]: {
+    display: 'none'
+  }
+}))
+
+export { Gradient, ImageWrapper, InlineLogo, LoaderOverlay, ViewerContainer }

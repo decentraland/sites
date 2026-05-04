@@ -10,11 +10,16 @@ jest.mock('@dcl/hooks', () => ({
 
 jest.mock('decentraland-ui2', () => ({
   Box: ({ children, ...props }: { children?: React.ReactNode } & Record<string, unknown>) => <div {...(props as object)}>{children}</div>,
-  styled: () => () => (props: { children?: React.ReactNode } & Record<string, unknown>) => {
-    const { children, ...rest } = props
-    return <div {...(rest as object)}>{children}</div>
+  styled: (tag: string) => () => (props: { children?: React.ReactNode } & Record<string, unknown>) => {
+    const Component = (tag || 'div') as keyof JSX.IntrinsicElements
+    return <Component {...(props as object)}>{props.children}</Component>
   }
 }))
+
+jest.mock('@mui/icons-material/X', () => {
+  const Mock = () => <span data-testid="reels-x-icon" />
+  return { __esModule: true, default: Mock }
+})
 
 jest.mock('../../../features/reels', () => ({
   buildTwitterShareUrl: (description: string, url: string) => buildTwitterShareUrlMock(description, url)
@@ -68,7 +73,7 @@ describe('ImageActions', () => {
   describe('when the share button is clicked', () => {
     it('should open the Twitter intent and track the event', () => {
       render(<ImageActions image={fakeImage} metadataVisible={false} onToggleMetadata={jest.fn()} />)
-      fireEvent.click(screen.getByAltText('component.reels.image_actions.share'))
+      fireEvent.click(screen.getByRole('button', { name: 'component.reels.image_actions.share' }))
       expect(window.open).toHaveBeenCalledWith('https://twitter.com/intent/tweet?fake=1', '_blank', 'noopener,noreferrer')
       expect(trackMock).toHaveBeenCalledWith('Reels Share', { imageId: 'img-1' })
     })

@@ -3,7 +3,7 @@ import { CircularProgress } from 'decentraland-ui2'
 import type { Image } from '../../../features/reels'
 import { ImageActions } from '../ImageActions'
 import { Logo } from '../Logo'
-import { Gradient, ImageWrapper, LoaderOverlay, ViewerContainer } from './ImageViewer.styled'
+import { Gradient, ImageWrapper, InlineLogo, LoaderOverlay, ViewerContainer } from './ImageViewer.styled'
 
 interface ImageViewerProps {
   image: Image
@@ -15,7 +15,9 @@ interface ImageViewerProps {
 const ImageViewer = memo(({ image, metadataVisible, onToggleMetadata, loading }: ImageViewerProps) => (
   <ViewerContainer metadataVisible={metadataVisible}>
     <Gradient />
-    <Logo />
+    <InlineLogo>
+      <Logo />
+    </InlineLogo>
     <ImageActions image={image} metadataVisible={metadataVisible} onToggleMetadata={onToggleMetadata} />
     <ImageWrapper>
       {loading ? (

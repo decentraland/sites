@@ -1,4 +1,6 @@
 import { memo, useCallback, useState } from 'react'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import XIcon from '@mui/icons-material/X'
 import { useAnalytics } from '@dcl/hooks'
 import { Box } from 'decentraland-ui2'
 import { buildTwitterShareUrl } from '../../../features/reels'
@@ -7,9 +9,8 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import downloadIcon from '../../../images/reels/download-icon.svg'
 import infoIcon from '../../../images/reels/info-icon.svg'
 import linkIcon from '../../../images/reels/link-icon.svg'
-import twitterIcon from '../../../images/reels/twitter-icon.svg'
 import { SegmentEvent } from '../../../modules/segment'
-import { ActionsContainer, CopyLinkBadge, CopyLinkWrapper, Spacer } from './ImageActions.styled'
+import { ActionsContainer, CopyLinkBadge, CopyLinkWrapper, ShareButton, Spacer } from './ImageActions.styled'
 
 const COPY_BADGE_TIMEOUT_MS = 2000
 
@@ -67,14 +68,14 @@ const ImageActions = memo(({ image, metadataVisible, onToggleMetadata }: ImageAc
 
   return (
     <ActionsContainer metadataVisible={metadataVisible}>
-      <img
-        src={twitterIcon}
-        alt={l('component.reels.image_actions.share')}
-        role="button"
-        tabIndex={0}
+      <ShareButton
+        type="button"
+        aria-label={l('component.reels.image_actions.share')}
         onClick={handleShare}
         onKeyDown={event => event.key === 'Enter' && handleShare()}
-      />
+      >
+        <XIcon />
+      </ShareButton>
       <CopyLinkWrapper>
         <img
           src={linkIcon}

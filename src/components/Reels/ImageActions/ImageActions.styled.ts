@@ -44,6 +44,28 @@ const ActionsContainer = styled(Box, {
 }))
 /* eslint-enable @typescript-eslint/naming-convention */
 
+const ShareButton = styled('button')({
+  appearance: 'none',
+  border: 'none',
+  background: 'transparent',
+  padding: 0,
+  marginLeft: 10,
+  marginRight: 10,
+  cursor: 'pointer',
+  color: '#FCFCFC',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& svg': {
+    width: 22,
+    height: 22,
+    transition: 'opacity 0.35s'
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:hover svg': { opacity: 0.8 }
+})
+
 const Spacer = styled(Box)({
   width: 1,
   height: 21,
@@ -75,4 +97,4 @@ const CopyLinkBadge = styled(Box, {
   pointerEvents: 'none'
 }))
 
-export { ActionsContainer, CopyLinkBadge, CopyLinkWrapper, Spacer }
+export { ActionsContainer, CopyLinkBadge, CopyLinkWrapper, ShareButton, Spacer }
