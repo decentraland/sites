@@ -6,6 +6,8 @@ const mockTrack = jest.fn()
 const mockCalculateDownloadUrl = jest.fn()
 const mockTriggerFileDownload = jest.fn()
 let searchParamsInstance = new URLSearchParams()
+// Mutable so individual tests can flip the auth state used by the component.
+let mockHasValidIdentity = false
 
 jest.mock('decentraland-ui2', () => ({
   Logo: () => null,
@@ -30,6 +32,10 @@ jest.mock('../../hooks/useAnonUserId', () => ({
 
 jest.mock('../../hooks/useGetIdentityId', () => ({
   useGetIdentityId: () => () => Promise.resolve('id-xyz')
+}))
+
+jest.mock('../../hooks/useAuthIdentity', () => ({
+  useAuthIdentity: () => ({ identity: undefined, hasValidIdentity: mockHasValidIdentity, address: undefined })
 }))
 
 jest.mock('../../modules/downloadWithIdentity', () => ({
@@ -87,7 +93,9 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
     await waitFor(() => {
       expect(mockTrack).toHaveBeenCalledWith('download_started', {
         place: 'landing-hero',
-        href: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe'
+        href: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe',
+
+        auth_state: 'anonymous'
       })
     })
   })
@@ -99,9 +107,24 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
       expect(mockTrack).toHaveBeenCalledWith('download_success', {
         place: 'landing-hero',
         href: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
-        filename: 'Install-Decentraland.exe'
+        filename: 'Install-Decentraland.exe',
+
+        auth_state: 'anonymous'
       })
     })
+  })
+
+  it('should report auth_state="authenticated" when there is a valid identity in localStorage', async () => {
+    mockHasValidIdentity = true
+    try {
+      render(<DownloadSuccess />)
+      await waitFor(() => {
+        expect(mockTrack).toHaveBeenCalledWith('download_started', expect.objectContaining({ auth_state: 'authenticated' }))
+        expect(mockTrack).toHaveBeenCalledWith('download_success', expect.objectContaining({ auth_state: 'authenticated' }))
+      })
+    } finally {
+      mockHasValidIdentity = false
+    }
   })
 })
 
@@ -172,7 +195,9 @@ describe('when DownloadSuccess mounts and the url resolution rejects', () => {
     await waitFor(() => {
       expect(mockTrack).toHaveBeenCalledWith('download_failed', {
         place: 'download-page',
-        href: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe'
+        href: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe',
+
+        auth_state: 'anonymous'
       })
     })
   })
