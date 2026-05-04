@@ -31,6 +31,13 @@ const CreatePage = lazy(() => import('./pages/create').then(m => ({ default: m.C
 const DiscordPage = lazy(() => import('./pages/discord').then(m => ({ default: m.DiscordPage })))
 const PressPage = lazy(() => import('./pages/press').then(m => ({ default: m.PressPage })))
 
+// Reels — fullscreen viewer for in-game camera screenshots. Migrated from the standalone
+// reels.decentraland.org Gatsby app. Lightweight (no Redux, no Web3) and intentionally
+// rendered OUTSIDE the shared <Layout> so the original immersive UX is preserved.
+const ReelsEmptyPage = lazy(() => import('./pages/reels').then(m => ({ default: m.ReelsEmptyPage })))
+const ReelsImagePage = lazy(() => import('./pages/reels').then(m => ({ default: m.ReelsImagePage })))
+const ReelsListPage = lazy(() => import('./pages/reels').then(m => ({ default: m.ReelsListPage })))
+
 // Blog pages — loaded inside DappsShell (Redux Provider required)
 const BlogPage = lazy(() => import('./pages/blog/BlogPage').then(m => ({ default: m.BlogPage })))
 const PostPage = lazy(() => import('./pages/blog/PostPage').then(m => ({ default: m.PostPage })))
@@ -69,6 +76,12 @@ const App = () => {
           <Route path="/download" element={<DownloadPage />} />
           <Route path="/download_success" element={<DownloadSuccessPage />} />
           <Route path="/invite/:referrer" element={<InvitePage />} />
+          {/* Reels routes are fullscreen and bypass Layout/Navbar/Footer.
+              ORDER MATTERS: /reels/list/:address must precede /reels/:imageId
+              so 'list' is not interpreted as an imageId. */}
+          <Route path="/reels" element={<ReelsEmptyPage />} />
+          <Route path="/reels/list/:address" element={<ReelsListPage />} />
+          <Route path="/reels/:imageId" element={<ReelsImagePage />} />
           <Route element={<Layout />}>
             <Route path="/" element={<IndexPage />} />
             <Route path="/brand" element={<BrandTerms />} />

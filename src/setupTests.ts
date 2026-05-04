@@ -13,6 +13,15 @@ if (typeof globalThis.fetch === 'undefined') {
   globalThis.fetch = jest.fn() as unknown as typeof fetch
 }
 
+// Polyfill AbortSignal.timeout (jsdom omits this static method)
+if (typeof AbortSignal !== 'undefined' && typeof (AbortSignal as { timeout?: unknown }).timeout !== 'function') {
+  ;(AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout = (ms: number): AbortSignal => {
+    const controller = new AbortController()
+    setTimeout(() => controller.abort(new DOMException('TimeoutError', 'TimeoutError')), ms)
+    return controller.signal
+  }
+}
+
 // Polyfill ResizeObserver for jsdom
 if (typeof globalThis.ResizeObserver === 'undefined') {
   globalThis.ResizeObserver = class ResizeObserver {

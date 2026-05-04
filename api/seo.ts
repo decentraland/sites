@@ -18,6 +18,9 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 // Production deployments should set CMS_BASE_URL env var; the fallback targets the staging CMS.
 const CMS_BASE_URL = process.env['CMS_BASE_URL'] ?? 'https://cms-api.decentraland.org/spaces/ea2ybdmmn1kv/environments/master'
 
+// camera-reel-service hosts metadata for /reels/:imageId. Falls back to prod for local dev.
+const REEL_SERVICE_URL = process.env['REEL_SERVICE_URL'] ?? 'https://camera-reel-service.decentraland.org'
+
 const DEFAULTS = {
   title: 'Decentraland Blog | Updates, Stories, and Community Moments',
   description: 'Updates from across Decentraland. Announcements, events, community moments, and everything in between.',
@@ -95,10 +98,11 @@ interface SEOData {
 }
 
 interface RouteInfo {
-  type: 'blog' | 'post' | 'category' | 'author' | 'search' | 'unknown'
+  type: 'blog' | 'post' | 'category' | 'author' | 'search' | 'reels' | 'unknown'
   categorySlug?: string
   postSlug?: string
   authorSlug?: string
+  imageId?: string
 }
 
 interface CMSLink {
@@ -216,6 +220,32 @@ const fetchDefaultSEO = async (): Promise<SEOData | null> => {
   }
 }
 
+interface ReelMetadataResponse {
+  url: string
+  thumbnailUrl: string
+  metadata: {
+    visiblePeople: Array<{ userName: string }>
+    scene: { name: string }
+  }
+}
+
+// Image IDs from camera-reel-service are short alphanumeric tokens. Constrain to that
+// charset before interpolating into the upstream URL to avoid SSRF / path traversal.
+const REEL_IMAGE_ID_REGEX = /^[A-Za-z0-9_-]{1,64}$/
+
+const fetchReelImageSEO = async (imageId: string): Promise<SEOData | null> => {
+  if (!REEL_IMAGE_ID_REGEX.test(imageId)) return null
+  const data = await fetchJSON<ReelMetadataResponse>(`${REEL_SERVICE_URL}/api/images/${imageId}/metadata`)
+  if (!data) return null
+  const userName = data.metadata.visiblePeople[0]?.userName ?? 'Someone'
+  const sceneName = data.metadata.scene.name || 'Decentraland'
+  return {
+    title: `${userName} took this photo in ${sceneName}`,
+    description: `A photo taken in Decentraland by ${userName} at ${sceneName}.`,
+    imageUrl: data.url
+  }
+}
+
 // =============================================================================
 // Route Parsing
 // =============================================================================
@@ -225,7 +255,8 @@ const ROUTE_PATTERNS: Array<{ pattern: RegExp; handler: (match: RegExpMatchArray
   { pattern: /^\/blog\/search$/, handler: () => ({ type: 'search' }) },
   { pattern: /^\/blog\/([^/]+)\/([^/]+)$/, handler: m => ({ type: 'post', categorySlug: m[1], postSlug: m[2] }) },
   { pattern: /^\/blog\/([^/]+)$/, handler: m => ({ type: 'category', categorySlug: m[1] }) },
-  { pattern: /^\/blog\/?$/, handler: () => ({ type: 'blog' }) }
+  { pattern: /^\/blog\/?$/, handler: () => ({ type: 'blog' }) },
+  { pattern: /^\/reels\/([^/]+)$/, handler: m => ({ type: 'reels', imageId: m[1] }) }
 ]
 
 const parseRoute = (pathname: string): RouteInfo => {
@@ -236,6 +267,8 @@ const parseRoute = (pathname: string): RouteInfo => {
   }
   return { type: 'unknown' }
 }
+
+const ALLOWED_ROOT_PATHS = ['/blog', '/reels'] as const
 
 // =============================================================================
 // SEO Data Resolution
@@ -257,6 +290,8 @@ const fetchSEOData = async (pathname: string, searchQuery: string | null): Promi
         description: searchQuery ? `Search results for "${searchQuery}" in Decentraland Blog` : 'Search the Decentraland Blog',
         imageUrl: DEFAULTS.image
       }
+    case 'reels':
+      return fetchReelImageSEO(route.imageId!)
     default:
       return fetchDefaultSEO()
   }
@@ -334,16 +369,16 @@ const generateHTML = (data: SEOData | null, originalHTML: string, url: string): 
 // Request Handler
 // =============================================================================
 
-// Only accept paths that start with `/blog` and contain no path traversal or protocol separators.
-// This prevents `?path=//evil.com` style open redirect payloads and garbage input.
-const sanitizeBlogPath = (raw: unknown): string => {
+// Only accept paths under one of the allowed roots (currently /blog or /reels) and reject
+// any traversal or protocol separators. Prevents `?path=//evil.com` style open redirects.
+const sanitizePath = (raw: unknown): string => {
   const value = Array.isArray(raw) ? raw[0] : raw
   if (typeof value !== 'string') return '/blog'
-  // Parse to strip query strings, fragments, and normalise the path.
   try {
     const parsed = new URL(value, 'https://localhost')
     const pathname = parsed.pathname
-    if (!pathname.startsWith('/blog')) return '/blog'
+    const isAllowed = ALLOWED_ROOT_PATHS.some(root => pathname === root || pathname.startsWith(`${root}/`))
+    if (!isAllowed) return '/blog'
     if (pathname.includes('..') || pathname.includes('//') || pathname.includes('\\')) return '/blog'
     return pathname
   } catch {
@@ -365,11 +400,11 @@ const resolveOrigin = (req: VercelRequest): string => {
 }
 
 async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
-  const blogPath = sanitizeBlogPath(req.query.path)
+  const requestPath = sanitizePath(req.query.path)
   const searchQuery = firstQueryValue(req.query.q)
 
   const origin = resolveOrigin(req)
-  const actualUrl = `${origin}${blogPath}`
+  const actualUrl = `${origin}${requestPath}`
 
   // Security headers applied regardless of the response path.
   res.setHeader('X-Content-Type-Options', 'nosniff')
@@ -388,7 +423,7 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   }
 
   try {
-    const seoData = await fetchSEOData(blogPath, searchQuery)
+    const seoData = await fetchSEOData(requestPath, searchQuery)
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     // Shorter stale window: timely blog announcements should not be served up to 24h stale.

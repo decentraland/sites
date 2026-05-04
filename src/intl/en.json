@@ -706,6 +706,36 @@
         "jump_in_button": "Jump into Decentraland",
         "go_home_button": "Go to Homepage"
       }
+    },
+    "reels": {
+      "image_actions": {
+        "share": "Share to Twitter",
+        "copy_link": "Copy link",
+        "copied": "Copied!",
+        "download": "Download photo",
+        "info": "Toggle info",
+        "share_text": "Check out what I'm doing in Decentraland right now and join me!"
+      },
+      "metadata": {
+        "title": "information",
+        "place": "place",
+        "people": "people",
+        "wearable": "collectible wearables",
+        "jump_in": "jump in",
+        "no_wearable": "This person doesn't have any equipped collectibles yet.",
+        "photo_taken_by": "Photo taken by",
+        "guest": "guest"
+      },
+      "wearable": {
+        "buy": "BUY"
+      },
+      "no_photo": {
+        "title": "Photo not found",
+        "subtitle": "Whoops! The photo you are trying to access does not exist or is no longer available."
+      },
+      "list": {
+        "title": "User: {userName}"
+      }
     }
   },
   "live_now": {
