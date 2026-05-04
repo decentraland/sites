@@ -15,7 +15,7 @@ const Logo = memo(() => {
       data-event={SegmentEvent.REELS_CLICK_DCL_LOGO}
       onClick={(event: MouseEvent<HTMLAnchorElement>) => trackClick(event)}
     >
-      <LogoImage src="/dcl-logo.svg" alt="Decentraland" />
+      <LogoImage titleAccess="Decentraland" />
       <LogoText src={dclTextSrc} alt="" />
     </LogoContainer>
   )

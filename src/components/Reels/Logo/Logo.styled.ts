@@ -1,4 +1,4 @@
-import { styled } from 'decentraland-ui2'
+import { Logo as DclLogo, styled } from 'decentraland-ui2'
 
 const LogoContainer = styled('a')({
   height: 56,
@@ -8,10 +8,9 @@ const LogoContainer = styled('a')({
   textDecoration: 'none'
 })
 
-const LogoImage = styled('img')({
+const LogoImage = styled(DclLogo)({
   width: 30,
   height: 30,
-  color: '#fcfcfc',
   marginLeft: 25
 })
 
