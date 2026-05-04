@@ -76,7 +76,7 @@ const eventsClient = createApi({
           // LCP discoverable as early as possible.
           const prefetch = consumeWhatsOnPrefetch(prefetchedUrl, hotScenesUrl)
 
-          let eventsData: EventsResponse | null
+          let eventsData: { data?: EventEntry[] } | null
           let scenesData: HotScene[] | null
 
           if (prefetch) {
@@ -88,7 +88,7 @@ const eventsClient = createApi({
               throw new Error('Failed to fetch live events or hot scenes')
             }
 
-            ;[eventsData, scenesData] = await Promise.all([eventsRes.json(), scenesRes.json()])
+            ;[eventsData, scenesData] = (await Promise.all([eventsRes.json(), scenesRes.json()])) as [EventsResponse, HotScene[]]
           }
 
           if (!eventsData || !scenesData) {

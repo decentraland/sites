@@ -29,13 +29,14 @@
       var path = location.pathname
       if (path !== '/whats-on' && path.indexOf('/whats-on/') !== 0) return
       var host = location.hostname
-      var apiHosts
-      if (host.indexOf('decentraland.zone') !== -1) {
-        apiHosts = { events: 'https://events.decentraland.zone/api', scenes: 'https://realm-provider-ea.decentraland.org' }
-      } else if (host.indexOf('decentraland.today') !== -1) {
-        apiHosts = { events: 'https://events.decentraland.zone/api', scenes: 'https://realm-provider-ea.decentraland.org' }
-      } else {
-        apiHosts = { events: 'https://events.decentraland.org/api', scenes: 'https://realm-provider-ea.decentraland.org' }
+      // Mirror `resolveApiHosts` in api/whats-on.ts: dev (.zone) and staging
+      // (.today) point at the zone events API; everything else (prod, preview,
+      // localhost) hits prod. Use endsWith to avoid matching a subdomain
+      // attacker like `decentraland.zone.evil.com`.
+      var isStagingOrDev = host.endsWith('decentraland.zone') || host.endsWith('decentraland.today')
+      var apiHosts = {
+        events: isStagingOrDev ? 'https://events.decentraland.zone/api' : 'https://events.decentraland.org/api',
+        scenes: 'https://realm-provider-ea.decentraland.org'
       }
       var eventsUrl = apiHosts.events + '/events?list=live&limit=20&order=asc&world=false'
       var scenesUrl = apiHosts.scenes + '/hot-scenes'

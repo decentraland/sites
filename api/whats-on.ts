@@ -205,6 +205,11 @@ interface InjectionOptions {
   scenesData: HotScene[] | null
   assetBaseUrl: string
   preferredLocale: LocaleChunk | undefined
+  // True only for the bare `/whats-on` HomePage. Subroutes
+  // (`/whats-on/new-event`, admin pages, jump deep-links) never render
+  // `LiveNow` or `top_background`, so the LCP-shell, LCP-image preload,
+  // top_background preload, and prefetch payload are all wasted bytes there.
+  isWhatsOnHomePage: boolean
 }
 
 function buildInjectedHead(options: InjectionOptions): string {
@@ -214,14 +219,16 @@ function buildInjectedHead(options: InjectionOptions): string {
   // /whats-on hero, so Lighthouse picks it as LCP regardless of the Live Now
   // card. It's hidden on mobile via CSS, hence the media-gated preload — phone
   // visitors don't pay the cost. Routed through `/_vercel/image` so the raw
-  // 1920×1080 WebP collapses from ~250 KB to ~80 KB.
-  if (ASSET_CHUNKS.topBackground) {
+  // 1920×1080 WebP collapses from ~250 KB to ~80 KB. Width must stay in sync
+  // with `OPTIMIZED_TOP_BG` in `src/pages/whats-on/HomePage.tsx` so the preload
+  // and the React `<source>` collide on the same HTTP cache entry.
+  if (options.isWhatsOnHomePage && ASSET_CHUNKS.topBackground) {
     const rawHref = `${options.assetBaseUrl}assets/${ASSET_CHUNKS.topBackground}`
     const optimizedHref = `/_vercel/image?url=${encodeURIComponent(rawHref)}&w=1920&q=75`
     lines.push(`<link rel="preload" as="image" href="${escapeHtmlAttr(optimizedHref)}" media="(min-width: 600px)" fetchpriority="high" />`)
   }
 
-  if (options.lcpImageUrl && isSafeImageUrl(options.lcpImageUrl)) {
+  if (options.isWhatsOnHomePage && options.lcpImageUrl && isSafeImageUrl(options.lcpImageUrl)) {
     // Match the URL that LiveNowCard will render (`/_vercel/image?...`) so the
     // preload, the `<img>` src, and the HTTP cache entry collide on the same
     // resource — anything else means a duplicate ~1 MB fetch.
@@ -229,7 +236,8 @@ function buildInjectedHead(options: InjectionOptions): string {
     lines.push(`<link rel="preload" as="image" href="${escapeHtmlAttr(optimizedHref)}" fetchpriority="high" />`)
   }
 
-  const moduleChunks = [ASSET_CHUNKS.layout, ASSET_CHUNKS.dappsShell, ASSET_CHUNKS.whatsOnLayout, ASSET_CHUNKS.whatsOnHomePage]
+  const moduleChunks = [ASSET_CHUNKS.layout, ASSET_CHUNKS.dappsShell, ASSET_CHUNKS.whatsOnLayout]
+  if (options.isWhatsOnHomePage) moduleChunks.push(ASSET_CHUNKS.whatsOnHomePage)
   if (options.preferredLocale) {
     const localeChunk = ASSET_CHUNKS.locales[options.preferredLocale]
     if (localeChunk) moduleChunks.push(localeChunk)
@@ -242,20 +250,23 @@ function buildInjectedHead(options: InjectionOptions): string {
   // Embedding the resolved data directly side-steps the inline fetch fallback in
   // index.html — RTK Query's queryFn awaits these promises without dispatching
   // a fresh request, which is what makes the LCP image the only meaningful
-  // network on the path.
-  const payload = {
-    eventsUrl: options.eventsUrl,
-    scenesUrl: options.scenesUrl,
-    events: options.eventsData,
-    scenes: options.scenesData
+  // network on the path. Only the bare `/whats-on` consumes this; subroutes
+  // never call `useGetLiveNowCardsQuery`.
+  if (options.isWhatsOnHomePage) {
+    const payload = {
+      eventsUrl: options.eventsUrl,
+      scenesUrl: options.scenesUrl,
+      events: options.eventsData,
+      scenes: options.scenesData
+    }
+    lines.push(
+      `<script>window.__dclWhatsOnPrefetchInline=${safeJsonForScript(payload)};` +
+        '(function(p){if(!p)return;var resolved={eventsUrl:p.eventsUrl,scenesUrl:p.scenesUrl,' +
+        'events:Promise.resolve(p.events),scenes:Promise.resolve(p.scenes)};' +
+        'window.__dclWhatsOnPrefetch=resolved;})(window.__dclWhatsOnPrefetchInline);' +
+        'delete window.__dclWhatsOnPrefetchInline;</script>'
+    )
   }
-  lines.push(
-    `<script>window.__dclWhatsOnPrefetchInline=${safeJsonForScript(payload)};` +
-      '(function(p){if(!p)return;var resolved={eventsUrl:p.eventsUrl,scenesUrl:p.scenesUrl,' +
-      'events:Promise.resolve(p.events),scenes:Promise.resolve(p.scenes)};' +
-      'window.__dclWhatsOnPrefetch=resolved;})(window.__dclWhatsOnPrefetchInline);' +
-      'delete window.__dclWhatsOnPrefetchInline;</script>'
-  )
 
   return lines.join('\n  ')
 }
@@ -299,19 +310,27 @@ function inject(html: string, options: InjectionOptions): string {
   // non-`/` paths anyway). Stripping it server-side saves the bytes and the
   // synchronous removal work.
   const withoutHomepageHeroShell = withoutInlineScript.replace(/<style data-hero-shell>[\s\S]*?<\/script>(?=\s*<div id="root">)/, '')
-  const lcpShell = buildLcpShell(options)
+  // The static LCP shell is only meaningful for the bare `/whats-on` HomePage
+  // — every subroute (admin, new event, etc.) would otherwise inherit a fixed
+  // `z-index:1000` overlay that nothing fades out, hiding the page forever.
+  const lcpShell = options.isWhatsOnHomePage ? buildLcpShell(options) : ''
   const withShell = lcpShell ? withoutHomepageHeroShell.replace('<div id="root">', `${lcpShell}<div id="root">`) : withoutHomepageHeroShell
   return withShell.replace('</head>', `${head}\n</head>`)
 }
 
-function buildEarlyHintLinks(options: { assetBaseUrl: string; preferredLocale: LocaleChunk | undefined }): string[] {
+function buildEarlyHintLinks(options: {
+  assetBaseUrl: string
+  preferredLocale: LocaleChunk | undefined
+  isWhatsOnHomePage: boolean
+}): string[] {
   const links: string[] = []
-  if (ASSET_CHUNKS.topBackground) {
+  if (options.isWhatsOnHomePage && ASSET_CHUNKS.topBackground) {
     const rawHref = `${options.assetBaseUrl}assets/${ASSET_CHUNKS.topBackground}`
     const optimizedHref = `/_vercel/image?url=${encodeURIComponent(rawHref)}&w=1920&q=75`
     links.push(`<${optimizedHref}>; rel=preload; as=image; media="(min-width: 600px)"; fetchpriority=high`)
   }
-  const moduleChunks = [ASSET_CHUNKS.layout, ASSET_CHUNKS.dappsShell, ASSET_CHUNKS.whatsOnLayout, ASSET_CHUNKS.whatsOnHomePage]
+  const moduleChunks = [ASSET_CHUNKS.layout, ASSET_CHUNKS.dappsShell, ASSET_CHUNKS.whatsOnLayout]
+  if (options.isWhatsOnHomePage) moduleChunks.push(ASSET_CHUNKS.whatsOnHomePage)
   if (options.preferredLocale) {
     const localeChunk = ASSET_CHUNKS.locales[options.preferredLocale]
     if (localeChunk) moduleChunks.push(localeChunk)
@@ -357,13 +376,18 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   const acceptLanguage = Array.isArray(req.headers['accept-language']) ? req.headers['accept-language'][0] : req.headers['accept-language']
   const preferredLocale = pickPreferredLocale(acceptLanguage)
   const assetBaseUrl = resolveAssetBaseUrl(INDEX_HTML)
+  // `vercel.json` rewrites `/whats-on` (no trailing path) to `/api/whats-on`
+  // and `/whats-on/:path*` to `/api/whats-on?path=/whats-on/:path*`. The
+  // presence of `req.query.path` is the only reliable signal that we're
+  // serving a subroute — `req.url` already shows the rewritten function URL.
+  const isWhatsOnHomePage = !req.query.path
 
   // 103 Early Hints: tell the browser to start fetching the static chunks and
   // the desktop top_background WHILE we're still fetching the events API.
   // Saves roughly the API roundtrip time off the LCP / FCP critical path on
   // cache misses. The LCP image preload still ships with the 200 response
   // since we don't know the URL until events resolves.
-  const earlyHints = buildEarlyHintLinks({ assetBaseUrl, preferredLocale })
+  const earlyHints = buildEarlyHintLinks({ assetBaseUrl, preferredLocale, isWhatsOnHomePage })
   if (earlyHints.length > 0 && typeof res.writeEarlyHints === 'function') {
     try {
       res.writeEarlyHints({ link: earlyHints })
@@ -373,9 +397,14 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   }
 
   try {
-    const [eventsData, scenesData] = await Promise.all([fetchJson<EventsResponse>(eventsUrl), fetchJson<HotScene[]>(scenesUrl)])
+    // Subroutes never call `useGetLiveNowCardsQuery`, so skip the API fetch
+    // entirely there — saves ~200 ms of edge cold-start latency on a path
+    // that wouldn't consume the data anyway.
+    const [eventsData, scenesData] = isWhatsOnHomePage
+      ? await Promise.all([fetchJson<EventsResponse>(eventsUrl), fetchJson<HotScene[]>(scenesUrl)])
+      : [null, null]
 
-    const lcpImageUrl = resolveLcpImage(eventsData, scenesData)
+    const lcpImageUrl = isWhatsOnHomePage ? resolveLcpImage(eventsData, scenesData) : null
     const html = inject(INDEX_HTML, {
       lcpImageUrl,
       eventsUrl,
@@ -383,7 +412,8 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
       eventsData,
       scenesData,
       assetBaseUrl,
-      preferredLocale
+      preferredLocale,
+      isWhatsOnHomePage
     })
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8')

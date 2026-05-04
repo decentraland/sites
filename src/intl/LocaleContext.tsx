@@ -97,10 +97,12 @@ function LocaleProvider({ children }: { children: ReactNode }) {
   // resolves within the same tick the bundle is parsed.
   if (!translations) return null
 
-  // Re-key on locale so TranslationProvider re-derives its memoized strings
-  // when the lazy locale finishes loading.
+  // No `key` on the provider: keying on `locale` would unmount the entire
+  // `<App />` subtree (router state, RTK Query cache, in-flight forms) every
+  // time the lazy locale chunk resolves. We rely on the provider re-deriving
+  // its memoized strings from the new `translations` reference instead.
   return (
-    <TranslationProvider key={locale} locale={locale} translations={translations} fallbackLocale="en">
+    <TranslationProvider locale={locale} translations={translations} fallbackLocale="en">
       <LocaleLoader translations={translations} setTranslations={setTranslations}>
         {children}
       </LocaleLoader>

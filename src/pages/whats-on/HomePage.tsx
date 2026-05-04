@@ -21,6 +21,9 @@ const TRANSPARENT_FALLBACK = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.
 // Route the desktop background through Vercel's image optimizer so the raw
 // 1920×1080 WebP (~250 KB) collapses to ~80 KB. The same URL is preloaded by
 // `api/whats-on.ts`, so the `<source>` fetch hits HTTP cache.
+// IMPORTANT: width must stay in sync with the `&w=1920` baked into the
+// `<link rel="preload">` and `<link>` in `api/whats-on.ts`. A mismatch turns
+// the preload into a wasted fetch.
 const OPTIMIZED_TOP_BG = optimizedImageUrl(topBackground, { width: 1920 })
 
 function HomePage() {

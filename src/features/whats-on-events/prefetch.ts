@@ -1,10 +1,17 @@
 import type { HotScene } from './events.helpers'
-import type { EventsResponse } from './events.types'
+import type { EventEntry } from './events.types'
+
+// Only `data` is consumed by `eventsClient.queryFn`, and the SSR-side type
+// in `api/whats-on.ts` (`{ data?: LiveEvent[] }`) is intentionally narrower
+// than the full `EventsResponse` envelope. Declaring the prefetch with the
+// minimum shared shape avoids lying about `ok` / `total` being available
+// when the SSR happens to emit them — only `data` is contractually safe.
+type LiveNowEvents = { data?: EventEntry[] }
 
 interface WhatsOnPrefetch {
   eventsUrl: string
   scenesUrl: string
-  events: Promise<EventsResponse | null>
+  events: Promise<LiveNowEvents | null>
   scenes: Promise<HotScene[] | null>
 }
 
