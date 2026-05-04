@@ -48,10 +48,8 @@ interface FetchListOptions {
 
 interface FetchListResult {
   images: Image[]
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  current_images: number
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  max_images: number
+  currentImages: number
+  maxImages: number
 }
 
 export type { Rarity, WearableParsed, ImageUser, ImageMetadata, Image, FetchListOptions, FetchListResult }

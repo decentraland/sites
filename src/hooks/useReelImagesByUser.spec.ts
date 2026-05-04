@@ -25,10 +25,8 @@ describe('useReelImagesByUser', () => {
       const fakeImages = [{ id: '1' }, { id: '2' }]
       reelsMock.fetchImagesByUser.mockResolvedValue({
         images: fakeImages,
-
-        current_images: 2,
-
-        max_images: 50
+        currentImages: 2,
+        maxImages: 50
       })
       const { result } = renderHook(() => useReelImagesByUser('0xabc', { limit: 24, offset: 0 }))
       await waitFor(() => expect(result.current.isLoading).toBe(false))

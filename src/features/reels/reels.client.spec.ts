@@ -51,7 +51,7 @@ describe('reels.client', () => {
       fetchMock.mockResolvedValue({
         ok: true,
 
-        json: async () => ({ images: [], current_images: 0, max_images: 0 })
+        json: async () => ({ images: [], currentImages: 0, maxImages: 0 })
       })
       await fetchImagesByUser('0xabc', { limit: 24, offset: 0 })
       expect(fetchMock).toHaveBeenCalledWith('https://reels-test.local/api/users/0xabc/images?limit=24&offset=0', expect.any(Object))
