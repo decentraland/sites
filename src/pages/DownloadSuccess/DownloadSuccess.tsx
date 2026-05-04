@@ -4,6 +4,7 @@ import { useAnalytics, useTranslation } from '@dcl/hooks'
 import { Logo, Typography } from 'decentraland-ui2'
 import { LandingFooter } from '../../components/LandingFooter'
 import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
+import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsLauncher from '../../images/download/macos_launcher.webp'
@@ -39,6 +40,14 @@ const DownloadSuccess = memo(() => {
   const { isInitialized, track } = useAnalytics()
   const getIdentityId = useGetIdentityId()
   const anonUserId = useAnonUserId()
+  const { hasValidIdentity } = useAuthIdentity()
+  // 'authenticated' = the visitor has an auth identity in localStorage at the
+  // moment the download is triggered (i.e. they had previously logged in).
+  // 'anonymous' = no identity, the campaign attribution chain relies entirely
+  // on anon_user_id. Useful for breaking down the funnel by login state and
+  // for catching regressions where authenticated users fall back to the
+  // anonymous gateway path.
+  const authState: 'authenticated' | 'anonymous' = hasValidIdentity ? 'authenticated' : 'anonymous'
 
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
@@ -48,10 +57,12 @@ const DownloadSuccess = memo(() => {
   const anonUserIdRef = useRef(anonUserId)
   const isInitializedRef = useRef(isInitialized)
   const trackRef = useRef(track)
+  const authStateRef = useRef(authState)
   getIdentityIdRef.current = getIdentityId
   anonUserIdRef.current = anonUserId
   isInitializedRef.current = isInitialized
   trackRef.current = track
+  authStateRef.current = authState
 
   const rawOs = searchParams.get('os') || ''
   const osMap: Record<string, OperativeSystem> = {
@@ -191,8 +202,10 @@ const DownloadSuccess = memo(() => {
       // the pre-fix behavior, but at least we tried.
       await waitForAnalytics()
       if (cancelled || !isInitializedRef.current) return
-      trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place, href: osLink })
-      trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place, href: url, filename })
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place, href: osLink, auth_state: authStateRef.current })
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place, href: url, filename, auth_state: authStateRef.current })
     }
 
     startDownload()
@@ -202,7 +215,8 @@ const DownloadSuccess = memo(() => {
         setDownloadError(error instanceof Error ? error.message : 'Download failed')
         await waitForAnalytics()
         if (cancelled || !isInitializedRef.current) return
-        trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place, href: osLink })
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place, href: osLink, auth_state: authStateRef.current })
       })
       .finally(() => {
         if (!cancelled) {
@@ -226,7 +240,8 @@ const DownloadSuccess = memo(() => {
       // Re-download from the footer link is its own funnel event so analytics
       // can distinguish it from the auto-download that fires on page mount.
       if (isInitializedRef.current) {
-        trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place: footerPlace, href: osLink })
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place: footerPlace, href: osLink, auth_state: authState })
       }
 
       try {
@@ -239,20 +254,22 @@ const DownloadSuccess = memo(() => {
           anonUserId
         })
         if (isInitializedRef.current) {
-          trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place: footerPlace, href: url ?? osLink })
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place: footerPlace, href: url ?? osLink, auth_state: authState })
         }
       } catch (error) {
         console.error('Download error:', error)
         setDownloadError(error instanceof Error ? error.message : 'Download failed')
         if (isInitializedRef.current) {
-          trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place: footerPlace, href: osLink })
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place: footerPlace, href: osLink, auth_state: authState })
         }
       } finally {
         downloadingRef.current = false
         setIsDownloading(false)
       }
     },
-    [clientOS, clientArch, anonUserId, getIdentityId, osLink]
+    [clientOS, clientArch, anonUserId, getIdentityId, osLink, authState]
   )
 
   const showBackdrop = isDownloading || (!downloadError && !isFileSaved)
