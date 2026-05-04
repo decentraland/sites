@@ -510,6 +510,36 @@
         "marketplace_authorizations": "마켓플레이스 승인",
         "whats_on": "새 소식"
       }
+    },
+    "reels": {
+      "image_actions": {
+        "share": "Twitter에 공유",
+        "copy_link": "링크 복사",
+        "copied": "복사됨!",
+        "download": "사진 다운로드",
+        "info": "정보 전환",
+        "share_text": "지금 Decentraland에서 무엇을 하고 있는지 확인하고 함께 참여하세요!"
+      },
+      "metadata": {
+        "title": "정보",
+        "place": "장소",
+        "people": "사람",
+        "wearable": "컬렉티블 웨어러블",
+        "jump_in": "들어가기",
+        "no_wearable": "이 사람은 아직 웨어러블을 착용하지 않았습니다.",
+        "photo_taken_by": "촬영자",
+        "guest": "게스트"
+      },
+      "wearable": {
+        "buy": "구매"
+      },
+      "no_photo": {
+        "title": "사진을 찾을 수 없음",
+        "subtitle": "이런! 액세스하려는 사진이 존재하지 않거나 더 이상 사용할 수 없습니다."
+      },
+      "list": {
+        "title": "사용자: {userName}"
+      }
     }
   },
   "create_event": {

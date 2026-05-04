@@ -20,5 +20,11 @@
   "SENTRY_DSN": "https://0c492afcd1a8331efdda7d8220237659@o4504361728212992.ingest.us.sentry.io/4505803523358720",
   "PLACES_API_URL": "https://places.decentraland.org/api",
   "CMS_BASE_URL": "https://cms-api.decentraland.org/spaces/ea2ybdmmn1kv/environments/master",
-  "BLOG_BASE_URL": "https://decentraland.org/blog"
+  "BLOG_BASE_URL": "https://decentraland.org/blog",
+  "REEL_SERVICE_URL": "https://camera-reel-service.decentraland.org",
+  "THE_GRAPH_API_ETH_URL": "https://subgraph.decentraland.org/collections-ethereum-mainnet",
+  "THE_GRAPH_API_MATIC_URL": "https://subgraph.decentraland.org/collections-matic-mainnet",
+  "MARKETPLACE_URL": "https://market.decentraland.org",
+  "PROFILE_URL": "https://profile.decentraland.org",
+  "DECENTRALAND_HOMEPAGE_URL": "https://decentraland.org"
 }

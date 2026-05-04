@@ -505,6 +505,36 @@
         "marketplace_authorizations": "Autorisations du Marketplace",
         "whats_on": "Actualités"
       }
+    },
+    "reels": {
+      "image_actions": {
+        "share": "Partager sur Twitter",
+        "copy_link": "Copier le lien",
+        "copied": "Copié !",
+        "download": "Télécharger la photo",
+        "info": "Afficher les infos",
+        "share_text": "Regardez ce que je fais dans Decentraland et rejoignez-moi !"
+      },
+      "metadata": {
+        "title": "informations",
+        "place": "lieu",
+        "people": "personnes",
+        "wearable": "wearables collectibles",
+        "jump_in": "entrer",
+        "no_wearable": "Cette personne n'a pas encore de wearables équipés.",
+        "photo_taken_by": "Photo prise par",
+        "guest": "invité"
+      },
+      "wearable": {
+        "buy": "ACHETER"
+      },
+      "no_photo": {
+        "title": "Photo introuvable",
+        "subtitle": "Oups ! La photo que vous essayez d'afficher n'existe pas ou n'est plus disponible."
+      },
+      "list": {
+        "title": "Utilisateur : {userName}"
+      }
     }
   },
   "create_event": {
