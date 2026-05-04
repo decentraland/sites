@@ -1,5 +1,4 @@
-type DownloadProgress = { loaded: number; total: number }
-type DownloadProgressCallback = (progress: DownloadProgress) => void
+import type { DownloadProgressCallback } from './file.types'
 
 const clickAnchor = (href: string, downloadValue: string | null): void => {
   const a = document.createElement('a')
@@ -98,4 +97,3 @@ async function downloadFileWithProgress(
 }
 
 export { triggerFileDownload, downloadFileWithProgress }
-export type { DownloadProgress, DownloadProgressCallback }
