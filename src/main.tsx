@@ -6,9 +6,21 @@ import { getEnv } from './config/env'
 import { LocaleProvider } from './intl/LocaleContext'
 import { DeferredAnalyticsProvider } from './modules/DeferredAnalyticsProvider'
 import { scheduleDeferredThirdParty } from './modules/deferredThirdParty'
-import './modules/sentry'
+import { scheduleWhenIdle } from './utils/scheduleWhenIdle'
 
 const segmentWriteKey = getEnv('SEGMENT_KEY') || ''
+
+// Sentry adds ~110 KB to the critical JS. Defer the init to idle time so the
+// vendor-sentry chunk doesn't compete with the LCP image and the lazy
+// DappsShell chunk on slower networks. The 2 s timeout caps the no-capture
+// window — most errors thrown during boot still surface in the browser
+// console even before Sentry initializes.
+scheduleWhenIdle(
+  () => {
+    void import('./modules/sentry')
+  },
+  { timeout: 2000 }
+)
 
 scheduleDeferredThirdParty()
 

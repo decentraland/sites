@@ -12,6 +12,7 @@ import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCanEditEvent } from '../../../hooks/useCanEditEvent'
 import { useCopyShareLink } from '../../../hooks/useCopyShareLink'
 import { useRemindMe } from '../../../hooks/useRemindMe'
+import { optimizedImageUrl } from '../../../utils/imageUrl'
 import { buildCalendarUrl, buildEventShareUrl } from '../../../utils/whatsOnUrl'
 import { JumpInButton } from '../../jump/JumpInButton'
 import { RemindMeIcon } from '../common/RemindMeIcon'
@@ -60,11 +61,14 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
   }, [data])
 
   const categorySubtitle = data.categories[0] ?? null
+  // Hero spans the modal — full-width on mobile, ~720 px on desktop. 1500
+  // covers DPR=2 with margin so the upscaled poster stays sharp.
+  const optimizedImage = useMemo(() => optimizedImageUrl(data.image, { width: 1500 }), [data.image])
 
   return (
     <>
       <HeroSection>
-        {data.image && <HeroImage src={data.image} alt={data.name} />}
+        {data.image && <HeroImage src={optimizedImage} alt={data.name} />}
         <HeroOverlay />
         <CloseButton onClick={onClose} aria-label={t('event_detail.close')}>
           {isMobile ? <ArrowBackIosNewIcon sx={{ fontSize: 20, color: '#FCFCFC' }} /> : <CloseIconStyled />}

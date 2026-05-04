@@ -1,8 +1,9 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { BadgeGroup, JumpInIcon, LiveBadge, Typography, UserCountBadge } from 'decentraland-ui2'
 import type { LiveNowCard as LiveNowCardData } from '../../../features/whats-on-events'
 import { getCreatorColor } from '../../../utils/creatorColor'
+import { optimizedImageUrl } from '../../../utils/imageUrl'
 import {
   AvatarFallback,
   AvatarImage,
@@ -31,6 +32,9 @@ interface LiveNowCardProps {
 const LiveNowCard = memo(({ card, creatorName, creatorFaceUrl, eager = false, onClick }: LiveNowCardProps) => {
   const { t } = useTranslation()
   const fallbackColor = getCreatorColor(card.creatorAddress)
+  // Card images are 380×176 CSS pixels; serve at 750 px to cover 2× DPR and let
+  // Vercel's image optimizer recompress the 1+ MB raw poster into ~80 KB WebP.
+  const optimizedSrc = useMemo(() => optimizedImageUrl(card.image, { width: 750 }), [card.image])
   const handleClick = useCallback(() => {
     onClick(card)
   }, [onClick, card])
@@ -46,7 +50,7 @@ const LiveNowCard = memo(({ card, creatorName, creatorFaceUrl, eager = false, on
         </BadgesOverlay>
         <MediaBox className="MuiCardMedia-root" role="img" aria-label={card.title}>
           <MediaImage
-            src={card.image}
+            src={optimizedSrc}
             alt=""
             width={500}
             height={329}

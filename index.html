@@ -10,12 +10,98 @@
   <link rel="preconnect" href="https://cdn.decentraland.org" crossorigin />
   <link rel="preconnect" href="https://realm-provider-ea.decentraland.org" />
   <link rel="preconnect" href="https://events.decentraland.org" />
+  <link rel="preconnect" href="https://peer.decentraland.org" />
+  <link rel="preconnect" href="https://places.decentraland.org" />
   <link rel="preconnect" href="https://cms-api.decentraland.org" crossorigin />
   <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
   <meta name="theme-color" content="#000000" />
   <link rel="preload" as="image" href="/hero_mobile.webp" media="(max-width: 599px)" fetchpriority="high" />
   <link rel="preload" as="image" href="/hero_tablet.webp" media="(min-width: 600px) and (max-width: 991px)" fetchpriority="high" />
   <link rel="preload" as="image" href="/hero_desktop.webp" media="(min-width: 992px)" fetchpriority="high" />
+  <script data-whats-on-prefetch>
+    // Whats-on early data prefetch fallback. On Vercel deployments the
+    // `api/whats-on.ts` SSR function strips this `<script>` (matched via the
+    // `data-whats-on-prefetch` attribute) and injects a pre-resolved version.
+    // This block is what runs in `vite dev` and on any non-Vercel host so the
+    // Live Now API calls still fire before the main bundle parses, keeping
+    // the LCP image URL discoverable as early as possible.
+    (function () {
+      var path = location.pathname
+      if (path !== '/whats-on' && path.indexOf('/whats-on/') !== 0) return
+      var host = location.hostname
+      // Mirror `resolveApiHosts` in api/whats-on.ts: dev (.zone) and staging
+      // (.today) point at the zone events API; everything else (prod, preview,
+      // localhost) hits prod. Use endsWith to avoid matching a subdomain
+      // attacker like `decentraland.zone.evil.com`.
+      var isStagingOrDev = host.endsWith('decentraland.zone') || host.endsWith('decentraland.today')
+      var apiHosts = {
+        events: isStagingOrDev ? 'https://events.decentraland.zone/api' : 'https://events.decentraland.org/api',
+        scenes: 'https://realm-provider-ea.decentraland.org'
+      }
+      var eventsUrl = apiHosts.events + '/events?list=live&limit=20&order=asc&world=false'
+      var scenesUrl = apiHosts.scenes + '/hot-scenes'
+      var asJson = function (r) { return r && r.ok ? r.json() : null }
+      var swallow = function () { return null }
+      var eventsPromise = fetch(eventsUrl).then(asJson).catch(swallow)
+      var scenesPromise = fetch(scenesUrl).then(asJson).catch(swallow)
+      window.__dclWhatsOnPrefetch = {
+        eventsUrl: eventsUrl,
+        scenesUrl: scenesUrl,
+        events: eventsPromise,
+        scenes: scenesPromise
+      }
+      // Mirrors `optimizedImageUrl` in src/utils/imageUrl.ts. We route through
+      // /_vercel/image when running on Vercel so the preload URL matches the
+      // one LiveNowCard renders (otherwise the browser would fetch the raw
+      // 1 MB poster here and a separate optimized version when React mounts).
+      var LOCALHOSTS = { localhost: 1, '127.0.0.1': 1, '0.0.0.0': 1 }
+      // Allowlist mirrors `ALLOWED_IMAGE_HOSTS` in api/whats-on.ts. Defense in
+      // depth so a compromised events API can't push a `<link rel="preload">`
+      // pointing at an attacker-controlled origin.
+      var ALLOWED_HOSTS = {
+        'peer.decentraland.org': 1,
+        'peer.decentraland.zone': 1,
+        'events-assets-099ac00.decentraland.org': 1,
+        'cdn.decentraland.org': 1
+      }
+      var isAllowedImageHost = function (raw) {
+        try {
+          var u = new URL(raw)
+          return (u.protocol === 'https:' || u.protocol === 'http:') && ALLOWED_HOSTS[u.hostname] === 1
+        } catch (e) { return false }
+      }
+      var preloadHref = function (raw) {
+        if (LOCALHOSTS[host]) return raw
+        return '/_vercel/image?url=' + encodeURIComponent(raw) + '&w=750&q=75'
+      }
+      Promise.all([eventsPromise, scenesPromise]).then(function (results) {
+        var eventsData = results[0]
+        var scenesData = results[1]
+        if (!scenesData || !Array.isArray(scenesData) || scenesData.length === 0) return
+        var sorted = scenesData.slice().sort(function (a, b) { return (b.usersTotalCount || 0) - (a.usersTotalCount || 0) })
+        var live = (eventsData && eventsData.data) || []
+        var lcpUrl = null
+        for (var i = 0; i < sorted.length && !lcpUrl; i++) {
+          var scene = sorted[i]
+          var parcels = scene.parcels || []
+          for (var j = 0; j < parcels.length && !lcpUrl; j++) {
+            var px = parcels[j][0], py = parcels[j][1]
+            for (var k = 0; k < live.length; k++) {
+              if (live[k].x === px && live[k].y === py && live[k].image) { lcpUrl = live[k].image; break }
+            }
+          }
+          if (!lcpUrl && scene.thumbnail) lcpUrl = scene.thumbnail
+        }
+        if (!lcpUrl || !isAllowedImageHost(lcpUrl)) return
+        var link = document.createElement('link')
+        link.rel = 'preload'
+        link.as = 'image'
+        link.href = preloadHref(lcpUrl)
+        link.setAttribute('fetchpriority', 'high')
+        document.head.appendChild(link)
+      })
+    })()
+  </script>
   <title>Decentraland</title>
   <meta name="description" content="Decentraland is where you hang out online. Join movie screenings, live music, trivia, and other community events. Show up anytime and see who's around." />
   <meta property="og:title" content="Decentraland — Come Hang Out">

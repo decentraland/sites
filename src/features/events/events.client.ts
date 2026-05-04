@@ -1,81 +1,12 @@
 import { useSyncExternalStore } from 'react'
 import { getEnv } from '../../config/env'
 import { isDocumentVisible, subscribeVisibility } from '../../utils/documentVisibility'
+import { resolveDeployers } from '../../utils/peerDeployers'
 import { buildExploreCards } from './events.helpers'
 import { ExploreCardType } from './events.types'
-import type { ActiveEntity, EventsResponse, ExploreItem, HotScene } from './events.types'
+import type { EventsResponse, ExploreItem, HotScene } from './events.types'
 
 const POLL_INTERVAL_MS = 60_000
-const DEPLOYER_BATCH_TIMEOUT_MS = 5_000
-
-interface DeploymentEntry {
-  entityId: string
-  deployedBy: string
-}
-
-interface DeploymentResponse {
-  deployments: DeploymentEntry[]
-}
-
-async function resolveDeployers(peerUrl: string, coordinates: string[]): Promise<Map<string, string>> {
-  const signal = AbortSignal.timeout(DEPLOYER_BATCH_TIMEOUT_MS)
-  const result = new Map<string, string>()
-  const coordinatesSet = new Set(coordinates)
-
-  const entities = await fetch(`${peerUrl}/content/entities/active`, {
-    method: 'POST',
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ pointers: coordinates }),
-    signal
-  }).then(res => {
-    if (!res.ok) {
-      console.warn('[WhatsOn] active entities batch failed', res.status)
-      return [] as ActiveEntity[]
-    }
-    return res.json() as Promise<ActiveEntity[]>
-  })
-
-  if (entities.length === 0) return result
-
-  const params = new URLSearchParams()
-  for (const entity of entities) params.append('entityId', entity.id)
-
-  const deploymentData = await fetch(`${peerUrl}/content/deployments/?${params}`, { signal })
-    .then(res => {
-      if (!res.ok) {
-        console.warn('[WhatsOn] deployments batch failed', res.status)
-        return null
-      }
-      return res.json() as Promise<DeploymentResponse>
-    })
-    .catch((err: unknown) => {
-      console.warn('[WhatsOn] deployments batch failed', err)
-      return null
-    })
-
-  if (!deploymentData) return result
-
-  const deployerByEntityId = new Map<string, string>()
-  for (const deployment of deploymentData.deployments) {
-    if (deployment.deployedBy && deployment.entityId) {
-      deployerByEntityId.set(deployment.entityId, deployment.deployedBy)
-    }
-  }
-
-  for (const entity of entities) {
-    const deployedBy = deployerByEntityId.get(entity.id)
-    if (deployedBy) {
-      for (const pointer of entity.pointers) {
-        if (coordinatesSet.has(pointer)) {
-          result.set(pointer, deployedBy)
-        }
-      }
-    }
-  }
-
-  return result
-}
 
 async function extractJson<T>(result: PromiseSettledResult<Response>): Promise<T | null> {
   if (result.status !== 'fulfilled' || !result.value.ok) {

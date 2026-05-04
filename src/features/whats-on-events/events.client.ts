@@ -3,6 +3,7 @@ import { getEnv } from '../../config/env'
 import { fetchWithIdentity, fetchWithOptionalIdentity } from '../../utils/signedFetch'
 import { buildLiveNowCards, enrichPlaceCards } from './events.helpers'
 import type { HotScene, LiveNowCard } from './events.helpers'
+import { consumeWhatsOnPrefetch } from './prefetch'
 import type {
   AuthenticatedQueryParams,
   CommunitiesResponse,
@@ -68,17 +69,31 @@ const eventsClient = createApi({
         try {
           const eventsUrl = getEnv('EVENTS_API_URL')!
           const hotScenesUrl = getEnv('HOT_SCENES_URL')!
+          const prefetchedUrl = `${eventsUrl}/events?list=live&limit=20&order=asc&world=false`
 
-          const [eventsRes, scenesRes] = await Promise.all([
-            fetch(`${eventsUrl}/events?list=live&limit=20&order=asc&world=false`),
-            fetch(hotScenesUrl)
-          ])
+          // The inline prefetch in index.html may already have these fetches in
+          // flight — consume those first to avoid duplicate roundtrips and keep
+          // LCP discoverable as early as possible.
+          const prefetch = consumeWhatsOnPrefetch(prefetchedUrl, hotScenesUrl)
 
-          if (!eventsRes.ok || !scenesRes.ok) {
-            throw new Error('Failed to fetch live events or hot scenes')
+          let eventsData: { data?: EventEntry[] } | null
+          let scenesData: HotScene[] | null
+
+          if (prefetch) {
+            ;[eventsData, scenesData] = await Promise.all([prefetch.events, prefetch.scenes])
+          } else {
+            const [eventsRes, scenesRes] = await Promise.all([fetch(prefetchedUrl), fetch(hotScenesUrl)])
+
+            if (!eventsRes.ok || !scenesRes.ok) {
+              throw new Error('Failed to fetch live events or hot scenes')
+            }
+
+            ;[eventsData, scenesData] = (await Promise.all([eventsRes.json(), scenesRes.json()])) as [EventsResponse, HotScene[]]
           }
 
-          const [eventsData, scenesData]: [EventsResponse, HotScene[]] = await Promise.all([eventsRes.json(), scenesRes.json()])
+          if (!eventsData || !scenesData) {
+            throw new Error('Failed to fetch live events or hot scenes')
+          }
 
           const minUsers = params && 'minUsers' in params ? params.minUsers : undefined
           const cards = buildLiveNowCards(eventsData.data ?? [], scenesData, minUsers)

@@ -90,16 +90,20 @@ describe('when HomePage is rendered', () => {
       mockUseGetLiveNowCardsQuery.mockReturnValue({ isLoading: false })
     })
 
-    it('should make the image eagerly discoverable', () => {
+    it('should mark the decorative background as eager so desktop visitors hit LCP fast', () => {
       render(<HomePage />)
 
+      // top_background is the largest painted element on desktop, so eager +
+      // fetchpriority="high" ensures the browser starts the fetch during HTML
+      // parse. Mobile picks the transparent fallback inside the parent
+      // <picture> instead, so phones don't pay the ~250 KB cost.
       expect(screen.getByTestId('top-bg')).toHaveAttribute('loading', 'eager')
     })
 
-    it('should not compete with the LiveNow LCP card for high fetch priority', () => {
+    it('should opt into high fetch priority for the desktop LCP element', () => {
       render(<HomePage />)
 
-      expect(screen.getByTestId('top-bg')).not.toHaveAttribute('fetchpriority')
+      expect(screen.getByTestId('top-bg')).toHaveAttribute('fetchpriority', 'high')
     })
   })
 
