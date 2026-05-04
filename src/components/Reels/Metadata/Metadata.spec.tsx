@@ -23,6 +23,7 @@ jest.mock('decentraland-ui2', () => ({
   Typography: ({ children, ...props }: { children?: React.ReactNode } & Record<string, unknown>) => (
     <p {...(props as object)}>{children}</p>
   ),
+  useMediaQuery: () => true,
   styled: (tag: string) => () => (props: { children?: React.ReactNode } & Record<string, unknown>) => {
     const Component = (tag || 'div') as keyof JSX.IntrinsicElements
     return <Component {...(props as object)}>{props.children}</Component>

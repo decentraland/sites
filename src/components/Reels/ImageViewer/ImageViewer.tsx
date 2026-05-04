@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { CircularProgress } from 'decentraland-ui2'
+import { CircularProgress, useMediaQuery } from 'decentraland-ui2'
 import type { Image } from '../../../features/reels'
 import { ImageActions } from '../ImageActions'
 import { Logo } from '../Logo'
@@ -12,23 +12,28 @@ interface ImageViewerProps {
   loading: boolean
 }
 
-const ImageViewer = memo(({ image, metadataVisible, onToggleMetadata, loading }: ImageViewerProps) => (
-  <ViewerContainer metadataVisible={metadataVisible}>
-    <Gradient />
-    <InlineLogo>
-      <Logo />
-    </InlineLogo>
-    <ImageActions image={image} metadataVisible={metadataVisible} onToggleMetadata={onToggleMetadata} />
-    <ImageWrapper>
-      {loading ? (
-        <LoaderOverlay>
-          <CircularProgress size={56} sx={{ color: '#fff' }} />
-        </LoaderOverlay>
-      ) : (
-        <img src={image.url} alt={image.metadata.scene.name} />
+const ImageViewer = memo(({ image, metadataVisible, onToggleMetadata, loading }: ImageViewerProps) => {
+  const isDesktop = useMediaQuery('(min-width: 1200px)')
+  return (
+    <ViewerContainer metadataVisible={metadataVisible}>
+      <Gradient />
+      {!isDesktop && (
+        <InlineLogo>
+          <Logo />
+        </InlineLogo>
       )}
-    </ImageWrapper>
-  </ViewerContainer>
-))
+      <ImageActions image={image} metadataVisible={metadataVisible} onToggleMetadata={onToggleMetadata} />
+      <ImageWrapper>
+        {loading ? (
+          <LoaderOverlay>
+            <CircularProgress size={56} sx={{ color: '#fff' }} />
+          </LoaderOverlay>
+        ) : (
+          <img src={image.url} alt={image.metadata.scene.name} />
+        )}
+      </ImageWrapper>
+    </ViewerContainer>
+  )
+})
 
 export { ImageViewer }
