@@ -1,6 +1,7 @@
 import { type MouseEvent, memo, useCallback, useEffect, useState } from 'react'
 import { LocationOnOutlined } from '@mui/icons-material'
 import { useAnalytics } from '@dcl/hooks'
+import { useMediaQuery } from 'decentraland-ui2'
 import { buildJumpInUrl, buildPlaceUrl, buildProfileUrl, formatPhotoDate } from '../../../features/reels'
 import type { ImageMetadata } from '../../../features/reels'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
@@ -36,6 +37,7 @@ interface MetadataProps {
 const Metadata = memo(({ metadata, loading, visible }: MetadataProps) => {
   const l = useFormatMessage()
   const { track } = useAnalytics()
+  const isDesktop = useMediaQuery('(min-width: 1200px)')
   const [placeUrl, setPlaceUrl] = useState<string | null>(null)
 
   const x = metadata.scene.location.x
@@ -81,9 +83,11 @@ const Metadata = memo(({ metadata, loading, visible }: MetadataProps) => {
             }
       }
     >
-      <LogoHeader>
-        <Logo />
-      </LogoHeader>
+      {isDesktop && (
+        <LogoHeader>
+          <Logo />
+        </LogoHeader>
+      )}
       <ContentWrapper>
         <SectionTitle variant="h1">{l('component.reels.metadata.title')}</SectionTitle>
         {loading ? (
