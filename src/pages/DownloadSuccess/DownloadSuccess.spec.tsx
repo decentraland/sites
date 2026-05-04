@@ -132,6 +132,56 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
   })
 })
 
+describe('when DownloadSuccess re-mounts (refresh) within the rate-limit window', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=landing-hero')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockDownloadFileWithProgress.mockResolvedValue(undefined)
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should not re-hit the gateway when an in-flight lock is still fresh', async () => {
+    // Simulate a previous mount that acquired the lock and left without releasing it
+    // (e.g. tab killed by refresh while the streaming fetch was still in flight).
+    sessionStorage.setItem('downloadSuccess:triggered:Windows:amd64', String(Date.now()))
+
+    render(<DownloadSuccess />)
+    // Give the effect time to run; if the lock works, downloadFileWithProgress never fires.
+    await new Promise(resolve => setTimeout(resolve, 50))
+
+    expect(mockDownloadFileWithProgress).not.toHaveBeenCalled()
+  })
+
+  it('should re-download once the lock is older than the rate-limit ttl', async () => {
+    // Pretend the previous attempt happened ~31 s ago — older than the 30 s TTL.
+    sessionStorage.setItem('downloadSuccess:triggered:Windows:amd64', String(Date.now() - 31_000))
+
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockDownloadFileWithProgress).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  it('should release the lock after a successful download so refresh re-downloads', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything())
+    })
+
+    expect(sessionStorage.getItem('downloadSuccess:triggered:Windows:amd64')).toBeNull()
+  })
+})
+
 describe('when DownloadSuccess mounts without a place query param', () => {
   beforeEach(() => {
     searchParamsInstance = new URLSearchParams('os=macOS&arch=arm64')

@@ -31,8 +31,35 @@ import {
 } from './DownloadSuccess.styled'
 
 const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
-const AUTO_DOWNLOAD_HISTORY_STATE_KEY = 'downloadSuccess:autoDownloadKey'
 const AUTO_DOWNLOAD_SESSION_KEY = 'downloadSuccess:triggered'
+
+// The download gateway rate-limits per-IP. If the user lands on
+// /download_success, the gateway request is in flight, and they refresh, we
+// don't want the second mount to fire a parallel gateway hit and trip the
+// limit. Stamp sessionStorage with the start time and treat any future mount
+// inside this window as already-in-flight. Cleared on completion so a
+// deliberate refresh AFTER the file has been saved triggers a fresh download.
+// The TTL is a safety net: if the previous tab was killed mid-flight (refresh,
+// crash) the lock would otherwise pin forever.
+const AUTO_DOWNLOAD_LOCK_TTL_MS = 30_000
+
+const lockKey = (autoDownloadKey: string): string => `${AUTO_DOWNLOAD_SESSION_KEY}:${autoDownloadKey}`
+
+const isAutoDownloadLocked = (autoDownloadKey: string): boolean => {
+  const raw = sessionStorage.getItem(lockKey(autoDownloadKey))
+  if (!raw) return false
+  const startedAt = Number.parseInt(raw, 10)
+  if (!Number.isFinite(startedAt)) return false
+  return Date.now() - startedAt < AUTO_DOWNLOAD_LOCK_TTL_MS
+}
+
+const acquireAutoDownloadLock = (autoDownloadKey: string): void => {
+  sessionStorage.setItem(lockKey(autoDownloadKey), String(Date.now()))
+}
+
+const releaseAutoDownloadLock = (autoDownloadKey: string): void => {
+  sessionStorage.removeItem(lockKey(autoDownloadKey))
+}
 
 // When the streamed fetch path is blocked (e.g. CORS not configured for the
 // current origin — true for Vercel preview deploys, where the download
@@ -169,9 +196,6 @@ const DownloadSuccess = memo(() => {
     const { signal } = abortController
     const autoDownloadKey = `${clientOS}:${clientArch}`
 
-    const getHistoryState = (): Record<string, unknown> =>
-      window.history.state && typeof window.history.state === 'object' ? (window.history.state as Record<string, unknown>) : {}
-
     // Segment loads lazily via DeferredAnalyticsProvider, so on first paint
     // `isInitializedRef.current` is false and any track call would no-op.
     // The previous race-fix relied on `await calculateDownloadUrl(...)` taking
@@ -187,15 +211,10 @@ const DownloadSuccess = memo(() => {
     }
 
     const startDownload = async () => {
-      const sessionKey = `${AUTO_DOWNLOAD_SESSION_KEY}:${autoDownloadKey}`
-      if (sessionStorage.getItem(sessionKey)) {
-        setIsFileSaved(true)
-        return
-      }
-
-      const historyState = getHistoryState()
-
-      if (historyState[AUTO_DOWNLOAD_HISTORY_STATE_KEY] === autoDownloadKey) {
+      if (isAutoDownloadLocked(autoDownloadKey)) {
+        // A previous mount is still streaming from the gateway (or finished
+        // within the rate-limit window). Showing the steps page without a new
+        // gateway hit avoids tripping the per-IP rate limit on burst refresh.
         setIsFileSaved(true)
         return
       }
@@ -215,36 +234,29 @@ const DownloadSuccess = memo(() => {
 
       if (signal.aborted) return
 
-      const latestHistoryState = getHistoryState()
-      if (latestHistoryState[AUTO_DOWNLOAD_HISTORY_STATE_KEY] !== autoDownloadKey) {
-        window.history.replaceState(
-          {
-            ...latestHistoryState,
-            [AUTO_DOWNLOAD_HISTORY_STATE_KEY]: autoDownloadKey
-          },
-          '',
-          window.location.href
-        )
-      }
-
-      if (signal.aborted) return
-
-      sessionStorage.setItem(sessionKey, '1')
+      acquireAutoDownloadLock(autoDownloadKey)
       const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserIdRef.current })
 
-      // Stream the file via fetch so the loader stays visible until the
-      // gateway has actually produced and started serving the installer.
-      // The previous `<a>.click()`-only path returned synchronously and hid
-      // the loader before the gateway responded — on Windows this leaves a
-      // multi-second window where the user sees the steps page with no
-      // download in flight. Fall back to the native anchor when fetch fails
-      // (e.g. CORS not configured) so the download still happens.
-      await streamOrFallback({
-        url: downloadUrl,
-        filename,
-        signal,
-        onProgress: setDownloadProgress
-      })
+      try {
+        // Stream the file via fetch so the loader stays visible until the
+        // gateway has actually produced and started serving the installer.
+        // The previous `<a>.click()`-only path returned synchronously and hid
+        // the loader before the gateway responded — on Windows this leaves a
+        // multi-second window where the user sees the steps page with no
+        // download in flight. Fall back to the native anchor when fetch fails
+        // (e.g. CORS not configured) so the download still happens.
+        await streamOrFallback({
+          url: downloadUrl,
+          filename,
+          signal,
+          onProgress: setDownloadProgress
+        })
+      } finally {
+        // Release the lock as soon as the gateway has finished serving (or
+        // the fetch errored). A deliberate refresh after this point should
+        // re-download the file.
+        releaseAutoDownloadLock(autoDownloadKey)
+      }
 
       if (signal.aborted) return
       setDownloadProgress(100)
@@ -296,6 +308,10 @@ const DownloadSuccess = memo(() => {
     async (event: React.MouseEvent<HTMLAnchorElement>) => {
       event.preventDefault()
       if (downloadingRef.current) return
+      const autoDownloadKey = `${clientOS}:${clientArch}`
+      // Same rate-limit guard as the auto-download path: if a previous attempt
+      // is still in the gateway's processing window, drop the click.
+      if (isAutoDownloadLocked(autoDownloadKey)) return
       downloadingRef.current = true
       setIsDownloading(true)
       setDownloadProgress(null)
@@ -303,6 +319,7 @@ const DownloadSuccess = memo(() => {
       footerAbortRef.current?.abort()
       const abortController = new AbortController()
       footerAbortRef.current = abortController
+      acquireAutoDownloadLock(autoDownloadKey)
 
       const footerPlace = DownloadPlace.DOWNLOAD_SUCCESS_FOOTER
       // Re-download from the footer link is its own funnel event so analytics
@@ -342,6 +359,7 @@ const DownloadSuccess = memo(() => {
           trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place: footerPlace, href: osLink, auth_state: authState })
         }
       } finally {
+        releaseAutoDownloadLock(autoDownloadKey)
         downloadingRef.current = false
         if (!abortController.signal.aborted) {
           setIsDownloading(false)
