@@ -143,9 +143,10 @@ npm run lint:pkg     # package.json lint
 - **Hooks**: `src/hooks/use<Name>.ts` + sibling `use<Name>.spec.ts`. Never under `src/features/<domain>/`, even when the hook wraps a feature's RTK Query. Feature barrels (`src/features/<domain>/index.ts`) must not re-export hooks.
 - **Styled components**: `<Component>.styled.ts` co-located with `<Component>.tsx`. Inline `sx={...}` only for one-off micro-tweaks; conditional styling with props belongs in `.styled.ts`.
 - **Types / interfaces**: `<thing>.types.ts`. Never inline in `.client.ts`, `.helpers.ts`, or logic files.
+- **Helpers / constants / module-scope functions**: pure functions, top-level constants, and orchestration helpers must NEVER live at the top of a `*.tsx` component file. Move domain logic to `src/modules/<thing>.ts` (e.g. `downloadSessionLock.ts`, `streamOrFallback.ts`) and generic utilities to `src/utils/<thing>.ts`. The component file imports them. If the constant/helper is consumed only by a single component, that's still a module file — co-locate next to siblings, not inside the JSX file.
 - **RTK Query**: base client → `src/services/<name>Client.ts` (infra only). Endpoints → `src/features/<domain>/<domain>.client.ts`. See "RTK Query split".
 - **Pages**: `src/pages/<route>/`. Heavy routes under `src/pages/{whats-on,blog}/`.
-- **Signal you're placing a file wrong**: `src/features/<domain>/use<X>.ts`, inline styled bigger than a single `sx`, type inside `.client.ts`. Stop and move it.
+- **Signal you're placing a file wrong**: `src/features/<domain>/use<X>.ts`, inline styled bigger than a single `sx`, type inside `.client.ts`, helper/constant declared at the top of a `.tsx` file. Stop and move it.
 
 ### Dependencies
 

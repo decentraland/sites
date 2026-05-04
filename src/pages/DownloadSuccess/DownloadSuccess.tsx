@@ -14,9 +14,10 @@ import windowsDownloadsFolder from '../../images/download/windows_downloads_fold
 import windowsLaunchingDecentraland from '../../images/download/windows_launching_decentraland.webp'
 import windowsSetup from '../../images/download/windows_setup.webp'
 import microsoftLogo from '../../images/microsoft-logo.svg'
+import { acquireAutoDownloadLock, isAutoDownloadLocked, releaseAutoDownloadLock } from '../../modules/downloadSessionLock'
 import { calculateDownloadUrl } from '../../modules/downloadWithIdentity'
-import { downloadFileWithProgress, triggerFileDownload } from '../../modules/file'
 import { DownloadPlace, SectionViewedTrack, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
+import { streamOrFallback } from '../../modules/streamOrFallback'
 import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
 import { DownloadSuccessLayout } from './DownloadSuccessLayout'
@@ -31,70 +32,6 @@ import {
 } from './DownloadSuccess.styled'
 
 const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
-const AUTO_DOWNLOAD_SESSION_KEY = 'downloadSuccess:triggered'
-
-// The download gateway rate-limits per-IP. If the user lands on
-// /download_success, the gateway request is in flight, and they refresh, we
-// don't want the second mount to fire a parallel gateway hit and trip the
-// limit. Stamp sessionStorage with the start time and treat any future mount
-// inside this window as already-in-flight. Cleared on completion so a
-// deliberate refresh AFTER the file has been saved triggers a fresh download.
-// The TTL is a safety net: if the previous tab was killed mid-flight (refresh,
-// crash) the lock would otherwise pin forever.
-const AUTO_DOWNLOAD_LOCK_TTL_MS = 30_000
-
-const lockKey = (autoDownloadKey: string): string => `${AUTO_DOWNLOAD_SESSION_KEY}:${autoDownloadKey}`
-
-const isAutoDownloadLocked = (autoDownloadKey: string): boolean => {
-  const raw = sessionStorage.getItem(lockKey(autoDownloadKey))
-  if (!raw) return false
-  const startedAt = Number.parseInt(raw, 10)
-  if (!Number.isFinite(startedAt)) return false
-  return Date.now() - startedAt < AUTO_DOWNLOAD_LOCK_TTL_MS
-}
-
-const acquireAutoDownloadLock = (autoDownloadKey: string): void => {
-  sessionStorage.setItem(lockKey(autoDownloadKey), String(Date.now()))
-}
-
-const releaseAutoDownloadLock = (autoDownloadKey: string): void => {
-  sessionStorage.removeItem(lockKey(autoDownloadKey))
-}
-
-// When the streamed fetch path is blocked (e.g. CORS not configured for the
-// current origin — true for Vercel preview deploys, where the download
-// gateway only allows known prod/staging hosts) we fall back to the native
-// `<a>.click()`. That returns synchronously, which would re-introduce the
-// "loader vanishes before the download starts" bug. Hold the backdrop up
-// for a brief grace period so the user still gets feedback while the gateway
-// processes the request.
-const FALLBACK_LOADER_HOLD_MS = 4000
-
-type StreamOrFallbackArgs = {
-  url: string
-  filename: string
-  signal: AbortSignal
-  onProgress: (progress: number) => void
-}
-
-const streamOrFallback = async ({ url, filename, signal, onProgress }: StreamOrFallbackArgs): Promise<void> => {
-  try {
-    await downloadFileWithProgress(
-      url,
-      filename,
-      ({ loaded, total }) => {
-        if (signal.aborted || total <= 0) return
-        onProgress(Math.min(99, Math.floor((loaded / total) * 100)))
-      },
-      signal
-    )
-  } catch (error) {
-    if (signal.aborted) throw error
-    console.warn('Streamed download failed, falling back to native anchor', { name: error instanceof Error ? error.name : 'unknown' })
-    triggerFileDownload(url, filename)
-    await new Promise(resolve => setTimeout(resolve, FALLBACK_LOADER_HOLD_MS))
-  }
-}
 
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
