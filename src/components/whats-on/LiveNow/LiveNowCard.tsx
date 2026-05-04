@@ -2,7 +2,6 @@ import { memo, useCallback } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { BadgeGroup, JumpInIcon, LiveBadge, Typography, UserCountBadge } from 'decentraland-ui2'
 import type { LiveNowCard as LiveNowCardData } from '../../../features/whats-on-events'
-import { getCreatorColor } from '../../../utils/creatorColor'
 import {
   AvatarFallback,
   AvatarImage,
@@ -24,13 +23,13 @@ interface LiveNowCardProps {
   card: LiveNowCardData
   creatorName?: string
   creatorFaceUrl?: string
+  creatorBackgroundColor: string
   eager?: boolean
   onClick: (card: LiveNowCardData) => void
 }
 
-const LiveNowCard = memo(({ card, creatorName, creatorFaceUrl, eager = false, onClick }: LiveNowCardProps) => {
+const LiveNowCard = memo(({ card, creatorName, creatorFaceUrl, creatorBackgroundColor, eager = false, onClick }: LiveNowCardProps) => {
   const { t } = useTranslation()
-  const fallbackColor = getCreatorColor(card.creatorAddress)
   const handleClick = useCallback(() => {
     onClick(card)
   }, [onClick, card])
@@ -63,9 +62,9 @@ const LiveNowCard = memo(({ card, creatorName, creatorFaceUrl, eager = false, on
             {creatorName && (
               <AvatarRow>
                 {creatorFaceUrl ? (
-                  <AvatarImage src={creatorFaceUrl} alt={creatorName} fallbackColor={fallbackColor} />
+                  <AvatarImage src={creatorFaceUrl} alt={creatorName} fallbackColor={creatorBackgroundColor} />
                 ) : (
-                  <AvatarFallback fallbackColor={fallbackColor} />
+                  <AvatarFallback fallbackColor={creatorBackgroundColor} />
                 )}
                 <AvatarTextContainer>
                   <Typography variant="body2">

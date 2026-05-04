@@ -4,6 +4,7 @@ import type { LiveNowCard as LiveNowCardData } from '../../../features/whats-on-
 import { useCreatorAvatar } from '../../../hooks/useCreatorAvatar'
 import { assetUrl } from '../../../utils/assetUrl'
 import { formatEthAddress } from '../../../utils/avatar'
+import { DCL_FOUNDATION_BACKGROUND_COLOR } from '../../../utils/avatarColor'
 import { LiveNowCard } from './LiveNowCard'
 
 // `/dcl-logo.svg` lives in /public, which Vite serves from the CDN base URL in
@@ -25,12 +26,25 @@ const LiveNowCardItem = memo(
     const { t } = useTranslation()
     // Hook must be called unconditionally; Genesis Plaza opts out of the face probe
     // because we always paint the DCL logo for it.
-    const { avatarFace } = useCreatorAvatar(card.isGenesisPlaza ? undefined : card.creatorAddress, card.creatorName ?? undefined)
+    const { avatarFace, backgroundColor } = useCreatorAvatar(
+      card.isGenesisPlaza ? undefined : card.creatorAddress,
+      card.creatorName ?? undefined
+    )
 
     const creatorName = resolveCreatorName(card, t('live_now.unknown_creator'))
     const creatorFaceUrl = card.isGenesisPlaza ? DCL_LOGO_URL : avatarFace
+    const avatarBackgroundColor = card.isGenesisPlaza ? DCL_FOUNDATION_BACKGROUND_COLOR : backgroundColor
 
-    return <LiveNowCard card={card} creatorName={creatorName} creatorFaceUrl={creatorFaceUrl} eager={eager} onClick={onClick} />
+    return (
+      <LiveNowCard
+        card={card}
+        creatorName={creatorName}
+        creatorFaceUrl={creatorFaceUrl}
+        creatorBackgroundColor={avatarBackgroundColor}
+        eager={eager}
+        onClick={onClick}
+      />
+    )
   }
 )
 

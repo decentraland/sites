@@ -21,7 +21,8 @@ describe('useCreatorAvatar', () => {
         avatar: undefined,
         avatarForCard: undefined,
         avatarFace: undefined,
-        name: undefined
+        name: undefined,
+        backgroundColor: '#ffffff'
       })
     })
 
@@ -45,7 +46,8 @@ describe('useCreatorAvatar', () => {
         avatar: undefined,
         avatarForCard: undefined,
         avatarFace: REAL_FACE_URL,
-        name: 'CatalystName'
+        name: 'CatalystName',
+        backgroundColor: '#abcdef'
       })
     })
 
@@ -69,6 +71,12 @@ describe('useCreatorAvatar', () => {
         REAL_FACE_URL
       )
     })
+
+    it('should propagate the catalyst-derived background color to consumers', () => {
+      const { result } = renderHook(() => useCreatorAvatar(VALID_ADDRESS, 'Fallback'))
+
+      expect(result.current.backgroundColor).toBe('#abcdef')
+    })
   })
 
   describe('when the catalyst profile has no deployed face', () => {
@@ -77,8 +85,15 @@ describe('useCreatorAvatar', () => {
         avatar: undefined,
         avatarForCard: undefined,
         avatarFace: undefined,
-        name: undefined
+        name: undefined,
+        backgroundColor: '#ffffff'
       })
+    })
+
+    it('should fall back to white when no profile name is known', () => {
+      const { result } = renderHook(() => useCreatorAvatar(VALID_ADDRESS, 'Fallback'))
+
+      expect(result.current.backgroundColor).toBe('#ffffff')
     })
 
     it('should leave avatarFace undefined so callers can fall back to a placeholder', () => {

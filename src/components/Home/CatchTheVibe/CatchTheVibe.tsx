@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Avatar } from '@dcl/schemas'
 import { AvatarFace, DownloadModal, JumpInIcon } from 'decentraland-ui2'
 import { catchTheVibeContent } from '../../../data/static-content'
@@ -8,6 +8,7 @@ import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import { SectionViewedTrack } from '../../../modules/segment'
 import { assetUrl } from '../../../utils/assetUrl'
+import { getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import { Carousel } from '../../Carousel/Carousel'
 import { HangOutButton } from '../shared/HangOutButton.styled'
 import {
@@ -64,6 +65,18 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
         ethAddress: item.userAddress ?? '',
         avatar: { snapshots: { face256: fallbackFace, body: '' } }
       } as Avatar)
+
+  const avatarBackgroundColor = useMemo(
+    () =>
+      getAvatarBackgroundColor(
+        getDisplayName({
+          name: fetchedAvatar?.name ?? item.userName,
+          hasClaimedName: fetchedAvatar?.hasClaimedName,
+          ethAddress: fetchedAvatar?.ethAddress ?? item.userAddress
+        })
+      ),
+    [fetchedAvatar?.name, fetchedAvatar?.hasClaimedName, fetchedAvatar?.ethAddress, item.userName, item.userAddress]
+  )
 
   useEffect(() => {
     const video = videoRef.current
@@ -177,7 +190,7 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
         )}
       </MediaContainer>
       <VideoCardFooter>
-        <UserInfo>
+        <UserInfo $avatarBackgroundColor={avatarBackgroundColor}>
           <AvatarFace size="small" avatar={avatar} />
           <UserName>{item.userName}</UserName>
         </UserInfo>
