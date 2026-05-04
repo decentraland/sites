@@ -5,6 +5,7 @@ import { heroContent } from '../../../data/static-content'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useAnimatedCounter } from '../../../hooks/useAnimatedCounter'
+import { ANON_USER_ID_PARAM, useAnonUserId } from '../../../hooks/useAnonUserId'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import appleLogo from '../../../images/apple-logo.svg'
 import microsoftLogo from '../../../images/microsoft-logo.svg'
@@ -62,7 +63,24 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const [, userAgentData] = useAdvancedUserAgentData()
   const l = useFormatMessage()
   const onClickHandle = useTrackClick()
+  const anonUserId = useAnonUserId()
   const { isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads } = useHangOutAction()
+
+  // Build the /download_success URL with the campaign anon_user_id baked in.
+  // Without this query param, /download_success falls back to a direct CDN
+  // download (bypassing the gateway), the wrapper installer never runs, and
+  // campaign attribution is lost end-to-end. The Hero is the home page's
+  // primary download CTA so this is critical.
+  const buildDownloadSuccessHref = useCallback(
+    (os: string, place: string) => {
+      const params = new URLSearchParams({ os, place })
+      if (anonUserId) {
+        params.set(ANON_USER_ID_PARAM, anonUserId)
+      }
+      return `/download_success?${params.toString()}`
+    },
+    [anonUserId]
+  )
 
   const [rawDownloads, rawDownloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
 
@@ -158,10 +176,10 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
     (e: React.MouseEvent<HTMLElement>) => {
       onClickHandle(e)
       if (userAgentData) {
-        window.location.href = `/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.LANDING_HERO}`
+        window.location.href = buildDownloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO)
       }
     },
-    [onClickHandle, userAgentData]
+    [onClickHandle, userAgentData, buildDownloadSuccessHref]
   )
 
   return (
@@ -229,7 +247,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
           <HeroCTAWrapper>
             {/* Download + Epic buttons */}
             <DownloadButton
-              href={userAgentData ? `/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.LANDING_HERO}` : '/download'}
+              href={userAgentData ? buildDownloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO) : '/download'}
               data-place={SectionViewedTrack.LANDING_HERO}
               data-event={SegmentEvent.DOWNLOAD}
               onClick={handleDownloadClick}
@@ -269,12 +287,12 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
             <HeroPlatformSeparator />
             <HeroPlatformIcons>
               {currentOs === OperativeSystem.MACOS && (
-                <a href={`/download_success?os=Windows&place=${DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}`}>
+                <a href={buildDownloadSuccessHref('Windows', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)}>
                   <HeroPlatformIcon src={microsoftLogo} alt="Windows" />
                 </a>
               )}
               {currentOs === OperativeSystem.WINDOWS && (
-                <a href={`/download_success?os=macOS&place=${DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}`}>
+                <a href={buildDownloadSuccessHref('macOS', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)}>
                   <HeroPlatformIcon src={appleLogo} alt="macOS" />
                 </a>
               )}

@@ -8,6 +8,13 @@ type DownloadWithIdentityParams = {
   fallbackLinks?: Record<string, Record<string, string>> | null
   queryParams?: Record<string, string | undefined | null>
   getIdentityId?: () => Promise<string | undefined>
+  /**
+   * Segment anonymous user ID. When the user is not yet authenticated we route
+   * through the gateway's `/anonymous/` endpoint so the installer still carries
+   * the campaign attribution. Without this, the flow falls back to direct CDN
+   * links and the cross-funnel join (landing → launcher → Explorer) breaks.
+   */
+  anonUserId?: string
 }
 
 /**
@@ -60,11 +67,11 @@ function extractFilenameFromUrl(url: string): string {
  * @returns The download URL and filename, or throws an error if no link is available
  */
 async function calculateDownloadUrl(params: DownloadWithIdentityParams): Promise<{ url: string; filename: string }> {
-  const { os, arch, fallbackLinks, getIdentityId } = params
+  const { os, arch, fallbackLinks, getIdentityId, anonUserId } = params
 
   const fallbackLink = extractFallbackLink(os, arch, fallbackLinks)
 
-  const currentLinks = await calculateCDNReleaseLinksWithIdentity(getIdentityId, fallbackLinks || null)
+  const currentLinks = await calculateCDNReleaseLinksWithIdentity(getIdentityId, fallbackLinks || null, anonUserId)
 
   const downloadLink = extractDownloadLinkFromCDNReleaseOption(os, arch, fallbackLink, currentLinks)
 
@@ -86,11 +93,11 @@ async function calculateDownloadUrl(params: DownloadWithIdentityParams): Promise
  * @returns The download link that was used, or undefined if no link was available
  */
 async function getDownloadLinkWithIdentity(params: DownloadWithIdentityParams): Promise<string | undefined> {
-  const { os, arch, fallbackLinks, queryParams, getIdentityId } = params
+  const { os, arch, fallbackLinks, queryParams, getIdentityId, anonUserId } = params
 
   const fallbackLink = extractFallbackLink(os, arch, fallbackLinks)
 
-  const currentLinks = await calculateCDNReleaseLinksWithIdentity(getIdentityId, fallbackLinks || null)
+  const currentLinks = await calculateCDNReleaseLinksWithIdentity(getIdentityId, fallbackLinks || null, anonUserId)
 
   const downloadLink = extractDownloadLinkFromCDNReleaseOption(os, arch, fallbackLink, currentLinks)
 
