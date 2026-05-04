@@ -22,7 +22,7 @@ High-leverage areas to always check:
 
 1. **Architectural boundary** — `src/shells/*` must not be imported outside `src/App.tsx`'s `lazy()` and `src/shells/` itself (rule 2).
 2. **YAGNI** — exported helpers with zero consumers in this PR; placeholder reducers; props no caller uses (rule 3).
-3. **DRY** — duplicate styled components, copy-paste from old `landing` repo, near-duplicates of existing `features/`.
+3. **DRY** — duplicate styled components, near-duplicates of existing `features/`, helpers that re-implement something already in `decentraland-ui2` or `src/components/`.
 4. **i18n parity** — every new key in `en.json` mirrored in es/fr/ja/ko/zh (rule 9).
 5. **RTK Query split** — endpoint files must NOT import `store` for dispatch; use `onQueryStarted` (rule 17). No `as any` into `state.xxxClient.queries` (rule 18).
 6. **Module-top-level throws** in shell-reachable code — use lazy getters (rule 16).
