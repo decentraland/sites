@@ -6,6 +6,7 @@ import { EVENT_ID_PARAM } from '../utils/whatsOnUrl'
 interface UseAdminEventDeepLinkParams {
   events: EventEntry[]
   isLoaded: boolean
+  /** Callback fired once when the deep-linked event is found. Should be stable across renders (wrap in `useCallback`); a fresh reference re-runs the effect, but the per-mount consumed-id ref still prevents double-firing. */
   onMatch: (event: EventEntry) => void
 }
 
