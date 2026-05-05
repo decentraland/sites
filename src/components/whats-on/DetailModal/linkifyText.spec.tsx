@@ -57,6 +57,35 @@ describe('linkifyText', () => {
     })
   })
 
+  describe('when a URL contains balanced parentheses', () => {
+    it('should preserve the closing paren', () => {
+      render(<div>{linkifyText('Read https://en.wikipedia.org/wiki/Foo_(bar) here')}</div>)
+      const link = screen.getByRole('link')
+      expect(link).toHaveAttribute('href', 'https://en.wikipedia.org/wiki/Foo_(bar)')
+    })
+  })
+
+  describe('when a URL is wrapped in parentheses', () => {
+    it('should not include the closing paren in the href', () => {
+      render(<div>{linkifyText('Reference (https://decentraland.org) included')}</div>)
+      const link = screen.getByRole('link')
+      expect(link).toHaveAttribute('href', 'https://decentraland.org')
+    })
+  })
+
+  describe('when invoked twice', () => {
+    it('should not leak regex state between calls', () => {
+      const text = 'Visit https://decentraland.org now'
+      render(
+        <div>
+          <div data-testid="first">{linkifyText(text)}</div>
+          <div data-testid="second">{linkifyText(text)}</div>
+        </div>
+      )
+      expect(screen.getAllByRole('link')).toHaveLength(2)
+    })
+  })
+
   describe('when two URLs are pasted back-to-back without whitespace', () => {
     beforeEach(() => {
       render(<div>{linkifyText('Visit https://a.example.com)https://b.example.com.')}</div>)

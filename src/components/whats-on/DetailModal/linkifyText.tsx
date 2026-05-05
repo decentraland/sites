@@ -1,9 +1,11 @@
 import { Fragment } from 'react'
 import type { ReactNode } from 'react'
 
-const URL_REGEX = /https?:\/\/[^\s<>"]+/gi
-const TRAILING_PUNCT_REGEX = /[\s<>"'.,;:!?)]+$/
+const URL_PATTERN = 'https?:\\/\\/[^\\s<>"]+'
+const TRAILING_PUNCT_REGEX = /[\s<>"'.,;:!?]+$/
 const EMBEDDED_PROTOCOL_REGEX = /https?:\/\//i
+const OPEN_PAREN_REGEX = /\(/g
+const CLOSE_PAREN_REGEX = /\)/g
 const ALLOWED_PROTOCOLS = new Set(['http:', 'https:'])
 
 const isSafeUrl = (raw: string): boolean => {
@@ -20,21 +22,30 @@ const splitEmbeddedUrl = (raw: string): string => {
   return innerStart >= 0 ? raw.slice(0, innerStart + 1) : raw
 }
 
-const trimTrailingPunctuation = (raw: string): string => raw.replace(TRAILING_PUNCT_REGEX, '')
+const trimUrlTail = (raw: string): string => {
+  let result = raw.replace(TRAILING_PUNCT_REGEX, '')
+  while (result.endsWith(')')) {
+    const opens = (result.match(OPEN_PAREN_REGEX) ?? []).length
+    const closes = (result.match(CLOSE_PAREN_REGEX) ?? []).length
+    if (closes <= opens) break
+    result = result.slice(0, -1).replace(TRAILING_PUNCT_REGEX, '')
+  }
+  return result
+}
 
 const linkifyText = (text: string): ReactNode => {
+  const urlRegex = new RegExp(URL_PATTERN, 'gi')
   const segments: ReactNode[] = []
   let lastIndex = 0
   let linkCount = 0
   let match: RegExpExecArray | null
-  URL_REGEX.lastIndex = 0
-  while ((match = URL_REGEX.exec(text)) !== null) {
+  while ((match = urlRegex.exec(text)) !== null) {
     const rawFull = match[0]
     const start = match.index
-    const url = trimTrailingPunctuation(splitEmbeddedUrl(rawFull))
+    const url = trimUrlTail(splitEmbeddedUrl(rawFull))
     const advanceTo = start + Math.max(url.length, 1)
     if (!url || !isSafeUrl(url)) {
-      URL_REGEX.lastIndex = advanceTo
+      urlRegex.lastIndex = advanceTo
       continue
     }
     if (start > lastIndex) {
@@ -46,7 +57,7 @@ const linkifyText = (text: string): ReactNode => {
       </a>
     )
     lastIndex = start + url.length
-    URL_REGEX.lastIndex = lastIndex
+    urlRegex.lastIndex = lastIndex
     linkCount += 1
   }
   if (linkCount === 0) return text
