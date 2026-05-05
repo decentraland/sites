@@ -57,6 +57,32 @@ describe('linkifyText', () => {
     })
   })
 
+  describe('when two URLs are pasted back-to-back without whitespace', () => {
+    beforeEach(() => {
+      render(<div>{linkifyText('Visit https://a.example.com)https://b.example.com.')}</div>)
+    })
+
+    it('should render each URL as its own link', () => {
+      expect(screen.getAllByRole('link')).toHaveLength(2)
+    })
+
+    it('should keep each href limited to its own domain', () => {
+      const links = screen.getAllByRole('link')
+      expect(links[0]).toHaveAttribute('href', 'https://a.example.com')
+      expect(links[1]).toHaveAttribute('href', 'https://b.example.com')
+    })
+  })
+
+  describe('when a URL is followed by another protocol after a dot', () => {
+    it('should split the two URLs', () => {
+      render(<div>{linkifyText('https://a.example.com.https://b.example.com')}</div>)
+      const links = screen.getAllByRole('link')
+      expect(links).toHaveLength(2)
+      expect(links[0]).toHaveAttribute('href', 'https://a.example.com')
+      expect(links[1]).toHaveAttribute('href', 'https://b.example.com')
+    })
+  })
+
   describe('when text contains a bare domain without protocol', () => {
     it('should not render it as a link', () => {
       render(<div>{linkifyText('Go to decentraland.org/builder')}</div>)

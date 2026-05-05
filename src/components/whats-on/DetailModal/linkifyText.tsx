@@ -1,7 +1,9 @@
 import { Fragment } from 'react'
 import type { ReactNode } from 'react'
 
-const URL_REGEX = /https?:\/\/[^\s<>"]+[^\s<>"'.,;:!?)]/gi
+const URL_REGEX = /https?:\/\/[^\s<>"]+/gi
+const TRAILING_PUNCT_REGEX = /[\s<>"'.,;:!?)]+$/
+const EMBEDDED_PROTOCOL_REGEX = /https?:\/\//i
 const ALLOWED_PROTOCOLS = new Set(['http:', 'https:'])
 
 const isSafeUrl = (raw: string): boolean => {
@@ -13,6 +15,13 @@ const isSafeUrl = (raw: string): boolean => {
   }
 }
 
+const splitEmbeddedUrl = (raw: string): string => {
+  const innerStart = raw.slice(1).search(EMBEDDED_PROTOCOL_REGEX)
+  return innerStart >= 0 ? raw.slice(0, innerStart + 1) : raw
+}
+
+const trimTrailingPunctuation = (raw: string): string => raw.replace(TRAILING_PUNCT_REGEX, '')
+
 const linkifyText = (text: string): ReactNode => {
   const segments: ReactNode[] = []
   let lastIndex = 0
@@ -20,18 +29,24 @@ const linkifyText = (text: string): ReactNode => {
   let match: RegExpExecArray | null
   URL_REGEX.lastIndex = 0
   while ((match = URL_REGEX.exec(text)) !== null) {
-    const [raw] = match
+    const rawFull = match[0]
     const start = match.index
-    if (!isSafeUrl(raw)) continue
+    const url = trimTrailingPunctuation(splitEmbeddedUrl(rawFull))
+    const advanceTo = start + Math.max(url.length, 1)
+    if (!url || !isSafeUrl(url)) {
+      URL_REGEX.lastIndex = advanceTo
+      continue
+    }
     if (start > lastIndex) {
       segments.push(<Fragment key={`t-${lastIndex}`}>{text.slice(lastIndex, start)}</Fragment>)
     }
     segments.push(
-      <a key={`l-${start}`} href={raw} target="_blank" rel="noopener noreferrer">
-        {raw}
+      <a key={`l-${start}`} href={url} target="_blank" rel="noopener noreferrer">
+        {url}
       </a>
     )
-    lastIndex = start + raw.length
+    lastIndex = start + url.length
+    URL_REGEX.lastIndex = lastIndex
     linkCount += 1
   }
   if (linkCount === 0) return text
