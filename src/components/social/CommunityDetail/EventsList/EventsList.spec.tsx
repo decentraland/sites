@@ -17,10 +17,10 @@ jest.mock('../../../../hooks/useInfiniteScrollSentinel', () => ({
   useInfiniteScrollSentinel: () => ({ current: null })
 }))
 
-jest.mock('../../../whats-on/LiveNow/LiveNowCardItem', () => ({
-  LiveNowCardItem: ({ card, onClick }: { card: { id: string; title: string }; onClick: (card: { id: string; title: string }) => void }) => (
-    <button data-testid={`live-now-card-${card.id}`} onClick={() => onClick(card)}>
-      {card.title}
+jest.mock('../../../whats-on/Upcoming/UpcomingCard', () => ({
+  UpcomingCard: ({ event, onClick }: { event: { id: string; name: string }; onClick: (event: { id: string; name: string }) => void }) => (
+    <button data-testid={`upcoming-card-${event.id}`} onClick={() => onClick(event)}>
+      {event.name}
     </button>
   )
 }))
@@ -83,10 +83,10 @@ describe('EventsList', () => {
   })
 
   describe('when rendering events', () => {
-    it('should show cards using the whats-on live now card', () => {
+    it('should show cards using the whats-on upcoming card', () => {
       renderEventsList({ events, onEventClick: mockOnEventClick, onLoadMore: mockOnLoadMore })
 
-      expect(screen.getByTestId('live-now-card-event-1')).toHaveTextContent('First Event')
+      expect(screen.getByTestId('upcoming-card-event-1')).toHaveTextContent('First Event')
     })
   })
 
@@ -94,7 +94,7 @@ describe('EventsList', () => {
     it('should call onEventClick with the event', () => {
       renderEventsList({ events, onEventClick: mockOnEventClick, onLoadMore: mockOnLoadMore })
 
-      fireEvent.click(screen.getByTestId('live-now-card-event-1'))
+      fireEvent.click(screen.getByTestId('upcoming-card-event-1'))
 
       expect(mockOnEventClick).toHaveBeenCalledWith(events[0])
     })
