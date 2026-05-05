@@ -139,6 +139,10 @@
         "live": "En vivo",
         "view_all": "Ver todo"
       }
+    },
+    "report": {
+      "title": "Reportar a un jugador – Decentraland",
+      "success_title": "Reporte enviado – Decentraland"
     }
   },
   "page_invite": {
@@ -543,6 +547,61 @@
       },
       "list": {
         "title": "Usuario: {userName}"
+      }
+    },
+    "report": {
+      "form": {
+        "title": "Reportar usuario",
+        "wallet_mismatch": "La wallet conectada no coincide con la dirección del jugador. Conéctate con la wallet correcta para enviar este reporte.",
+        "your_wallet_label": "Tu dirección de wallet",
+        "your_wallet_helper": "Los reportes están vinculados a tu wallet para prevenir abusos. Tu identidad no se compartirá públicamente.",
+        "your_wallet_placeholder": "Escribe o pega tu dirección aquí...",
+        "sign_in_alert": "Inicia sesión con tu wallet para enviar un reporte.",
+        "sign_in_cta": "Iniciar sesión",
+        "reported_label": "Wallet del usuario reportado",
+        "reported_helper": "Esta es la dirección de la wallet del usuario que estás reportando.",
+        "reported_placeholder": "Escribe o pega una dirección aquí...",
+        "reason_label": "Motivo del reporte",
+        "reason_helper": "Selecciona la opción que mejor describa el problema.",
+        "reason_placeholder": "Elige un motivo",
+        "reason_options": {
+          "scam_phishing": "Estafa/Phishing",
+          "illegal_content": "Contenido ilegal",
+          "harassment": "Acoso",
+          "cheating": "Trampas",
+          "impersonation": "Suplantación de identidad"
+        },
+        "description_label": "Descripción",
+        "description_helper": "Describe lo ocurrido. Incluye cuándo y dónde sucedió el incidente, si es posible.",
+        "description_placeholder": "Escribe tu descripción aquí...",
+        "description_hint": "Cuanto más detalle aportes, más fácil será para los moderadores revisar tu reporte.",
+        "evidence_label": "Evidencia",
+        "evidence_helper": "Sube hasta 5 capturas de pantalla, videos o enlaces que respalden tu reporte.",
+        "evidence_add": "Añadir archivo",
+        "evidence_oversized": "{names} supera el límite de 5MB",
+        "additional_label": "Comentarios adicionales",
+        "additional_helper": "Aporta cualquier información extra que pueda ayudar a la investigación.",
+        "additional_placeholder": "Escribe tus comentarios aquí...",
+        "confirmation_label": "Confirmo que este reporte es preciso.",
+        "submit": "Enviar reporte",
+        "submit_in_progress": "Enviando...",
+        "errors": {
+          "invalid_address": "Introduce una dirección de wallet válida",
+          "missing_reason": "Elige un motivo",
+          "missing_description": "Incluye una descripción de tu reporte",
+          "missing_evidence": "Sube la evidencia de tu reporte",
+          "missing_confirmation": "Debes confirmar que esta información es precisa",
+          "submit_failed": "No pudimos enviar tu reporte. Por favor, inténtalo de nuevo."
+        },
+        "footer_lead": "¿Necesitas ayuda?",
+        "footer_help_prefix": "Para problemas urgentes o cuestiones de seguridad, por favor",
+        "footer_help_link": "contacta al equipo de soporte",
+        "footer_help_suffix": "."
+      },
+      "success": {
+        "title": "Reporte enviado",
+        "body": "Hemos recibido tu reporte y será revisado en breve.",
+        "dismiss": "Ya puedes cerrar esta ventana."
       }
     }
   },

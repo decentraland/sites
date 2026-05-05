@@ -139,6 +139,10 @@
         "live": "直播",
         "view_all": "查看全部"
       }
+    },
+    "report": {
+      "title": "举报玩家 – Decentraland",
+      "success_title": "举报已提交 – Decentraland"
     }
   },
   "page_invite": {
@@ -543,6 +547,61 @@
       },
       "list": {
         "title": "用户: {userName}"
+      }
+    },
+    "report": {
+      "form": {
+        "title": "举报用户",
+        "wallet_mismatch": "当前连接的钱包与玩家地址不匹配。请使用正确的钱包连接后再提交此举报。",
+        "your_wallet_label": "你的钱包地址",
+        "your_wallet_helper": "为防止滥用,举报会与你的钱包绑定。你的身份不会被公开。",
+        "your_wallet_placeholder": "在此输入或粘贴你的地址...",
+        "sign_in_alert": "请先使用钱包登录后再提交举报。",
+        "sign_in_cta": "登录",
+        "reported_label": "被举报用户的钱包",
+        "reported_helper": "这是你要举报的用户的钱包地址。",
+        "reported_placeholder": "在此输入或粘贴地址...",
+        "reason_label": "举报原因",
+        "reason_helper": "选择最能描述问题的选项。",
+        "reason_placeholder": "选择原因",
+        "reason_options": {
+          "scam_phishing": "诈骗/钓鱼",
+          "illegal_content": "违法内容",
+          "harassment": "骚扰",
+          "cheating": "作弊",
+          "impersonation": "冒充他人"
+        },
+        "description_label": "描述",
+        "description_helper": "描述发生的情况,如果可能,请说明事发时间和地点。",
+        "description_placeholder": "在此填写你的描述...",
+        "description_hint": "描述越详细,审核人员越容易处理你的举报。",
+        "evidence_label": "证据",
+        "evidence_helper": "最多上传 5 个截图、视频或链接以支持你的举报。",
+        "evidence_add": "添加文件",
+        "evidence_oversized": "{names} 超过了 5MB 的限制",
+        "additional_label": "附加说明",
+        "additional_helper": "提供任何可能帮助审核人员调查的额外信息。",
+        "additional_placeholder": "在此填写你的说明...",
+        "confirmation_label": "我确认此举报内容真实准确。",
+        "submit": "提交举报",
+        "submit_in_progress": "提交中...",
+        "errors": {
+          "invalid_address": "请输入有效的钱包地址",
+          "missing_reason": "请选择一个原因",
+          "missing_description": "请填写举报描述",
+          "missing_evidence": "请上传举报相关的证据",
+          "missing_confirmation": "你必须确认信息真实准确",
+          "submit_failed": "举报提交失败,请重试。"
+        },
+        "footer_lead": "需要帮助?",
+        "footer_help_prefix": "如有紧急问题或安全顾虑,请",
+        "footer_help_link": "联系支持团队",
+        "footer_help_suffix": "。"
+      },
+      "success": {
+        "title": "举报已提交",
+        "body": "我们已收到你的举报,会尽快进行审核。",
+        "dismiss": "你现在可以关闭此窗口。"
       }
     }
   },
