@@ -7,8 +7,8 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PublicIcon from '@mui/icons-material/Public'
 import { useTranslation } from '@dcl/hooks'
+import { linkifyText } from '../../../utils/linkifyText'
 import { ContentDivider, ContentSection, DescriptionText, MetaRow, MetaText, SectionLabel } from '../DetailModal/DetailModal.styled'
-import { linkifyText } from '../DetailModal/linkifyText'
 import type { ModalPlaceData } from './PlaceDetailModal.types'
 
 const ICON_FONT_SIZE = 18
