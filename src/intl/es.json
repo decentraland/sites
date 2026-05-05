@@ -549,5 +549,53 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+  },
+  "community": {
+    "global": {
+      "loading": "Cargando..."
+    },
+    "info": {
+      "jump_in_modal": {
+        "title": "Descargar Decentraland",
+        "description": "Para entrar a esta comunidad, necesitas descargar Decentraland.",
+        "button_label": "Descargar"
+      },
+      "decentraland_community": "Comunidad de Decentraland",
+      "members": "Miembros",
+      "by": "Por",
+      "unknown": "Desconocido",
+      "joined": "UNIDO",
+      "sign_in_to_join": "INICIA SESIÓN PARA UNIRTE",
+      "request_to_join": "SOLICITAR UNIRSE",
+      "cancel_request": "CANCELAR SOLICITUD",
+      "jump_in": "ENTRAR",
+      "join": "UNIRSE"
+    },
+    "detail": {
+      "failed_to_join": "Error al unirse a la comunidad",
+      "not_found": "Comunidad no encontrada",
+      "not_found_description": "La comunidad que buscas no existe."
+    },
+    "events": {
+      "upcoming_events": "PRÓXIMOS EVENTOS",
+      "no_upcoming_events": "Sin eventos próximos",
+      "live": "en vivo"
+    },
+    "members_list": {
+      "title": "MIEMBROS",
+      "no_members_found": "No se encontraron miembros"
+    },
+    "private_message": {
+      "title": "Esta es una comunidad privada",
+      "description": "Debes ser miembro de esta comunidad para ver su perfil."
+    },
+    "not_found": {
+      "title": "Página no encontrada",
+      "description": "La página que buscas no existe."
+    },
+    "tabs": {
+      "members": "Miembros",
+      "upcoming_events": "Próximos eventos"
+    }
   }
 }

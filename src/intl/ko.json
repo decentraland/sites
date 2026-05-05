@@ -549,5 +549,53 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+  },
+  "community": {
+    "global": {
+      "loading": "로딩 중..."
+    },
+    "info": {
+      "jump_in_modal": {
+        "title": "Decentraland 다운로드",
+        "description": "이 커뮤니티에 참여하려면 Decentraland를 다운로드해야 합니다.",
+        "button_label": "다운로드"
+      },
+      "decentraland_community": "Decentraland 커뮤니티",
+      "members": "멤버",
+      "by": "생성자",
+      "unknown": "알 수 없음",
+      "joined": "참여 중",
+      "sign_in_to_join": "로그인하여 참여",
+      "request_to_join": "참여 요청",
+      "cancel_request": "요청 취소",
+      "jump_in": "입장",
+      "join": "참여"
+    },
+    "detail": {
+      "failed_to_join": "커뮤니티 참여에 실패했습니다",
+      "not_found": "커뮤니티를 찾을 수 없음",
+      "not_found_description": "찾으시는 커뮤니티가 존재하지 않습니다."
+    },
+    "events": {
+      "upcoming_events": "다가오는 이벤트",
+      "no_upcoming_events": "다가오는 이벤트가 없습니다",
+      "live": "라이브"
+    },
+    "members_list": {
+      "title": "멤버",
+      "no_members_found": "멤버를 찾을 수 없습니다"
+    },
+    "private_message": {
+      "title": "비공개 커뮤니티입니다",
+      "description": "이 커뮤니티의 프로필을 보려면 멤버여야 합니다."
+    },
+    "not_found": {
+      "title": "페이지를 찾을 수 없음",
+      "description": "찾으시는 페이지가 존재하지 않습니다."
+    },
+    "tabs": {
+      "members": "멤버",
+      "upcoming_events": "다가오는 이벤트"
+    }
   }
 }

@@ -1,0 +1,1 @@
+export { PrivateMessage } from './PrivateMessage'

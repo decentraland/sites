@@ -5,11 +5,12 @@ const JUMP_IN_BUTTON_HEIGHT = 46
 const CardRoot = styled(Card)(({ theme }) => ({
   borderRadius: theme.spacing(2),
   boxSizing: 'border-box',
-  minWidth: 400,
+  minWidth: 0,
   maxWidth: 850,
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
+  width: '100%',
   height: '100%',
   backgroundColor: 'transparent',
   position: 'relative',
@@ -37,6 +38,7 @@ const LiveNowActionArea = styled(CardActionArea)(({ theme }) => ({
 const MediaBox = styled(Box)(({ theme }) => ({
   position: 'relative',
   width: '100%',
+  aspectRatio: '500 / 329',
   overflow: 'hidden',
   backgroundColor: theme.palette.mode === 'dark' ? '#2a2435' : '#e8e8e8',
   borderRadius: `${theme.spacing(2)} ${theme.spacing(2)} 0 0`
