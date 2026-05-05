@@ -6,6 +6,7 @@ import { Button } from 'decentraland-ui2'
 import type { RecurrentFrequency } from '../../../features/whats-on-events'
 import { buildCalendarUrl } from '../../../utils/whatsOnUrl'
 import { ContentDivider, ContentSection, DescriptionText, SectionLabel } from '../DetailModal/DetailModal.styled'
+import { linkifyText } from '../DetailModal/linkifyText'
 import type { AdminActions, ModalEventData } from './EventDetailModal.types'
 import { AdminActionsRow, RecurrenceText, ScheduleIconButton, ScheduleRow, ScheduleText } from './EventDetailModal.styled'
 
@@ -58,7 +59,7 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
       {hasDescription && (
         <>
           <SectionLabel>{t('event_detail.what_to_expect')}</SectionLabel>
-          <DescriptionText>{data.description}</DescriptionText>
+          <DescriptionText>{linkifyText(data.description ?? '')}</DescriptionText>
         </>
       )}
       {hasDescription && hasSchedule && <ContentDivider />}

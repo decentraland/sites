@@ -313,7 +313,15 @@ const SectionLabel = styled(Typography)(({ theme }) => ({
 const DescriptionText = styled(Typography)({
   fontSize: 14,
   lineHeight: 1.6,
-  color: '#FCFCFC'
+  color: '#FCFCFC',
+  whiteSpace: 'pre-wrap',
+  wordBreak: 'break-word',
+  ['& a']: {
+    color: '#FF2D55',
+    textDecoration: 'underline',
+    ['&:hover']: { color: '#FF6B8A' },
+    ['&:focus-visible']: { outline: '2px solid #FF2D55', outlineOffset: 2, borderRadius: 2 }
+  }
 })
 
 const ContentDivider = styled(Box)(({ theme }) => ({

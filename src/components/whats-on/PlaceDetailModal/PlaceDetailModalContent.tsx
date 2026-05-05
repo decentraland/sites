@@ -8,6 +8,7 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
 import PublicIcon from '@mui/icons-material/Public'
 import { useTranslation } from '@dcl/hooks'
 import { ContentDivider, ContentSection, DescriptionText, MetaRow, MetaText, SectionLabel } from '../DetailModal/DetailModal.styled'
+import { linkifyText } from '../DetailModal/linkifyText'
 import type { ModalPlaceData } from './PlaceDetailModal.types'
 
 const ICON_FONT_SIZE = 18
@@ -25,7 +26,7 @@ function PlaceDetailModalContent({ data }: { data: ModalPlaceData }) {
       {hasDescription && (
         <>
           <SectionLabel>{t('place_detail.about')}</SectionLabel>
-          <DescriptionText>{data.description}</DescriptionText>
+          <DescriptionText>{linkifyText(data.description ?? '')}</DescriptionText>
           <ContentDivider />
         </>
       )}
