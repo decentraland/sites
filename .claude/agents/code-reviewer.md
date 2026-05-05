@@ -1,10 +1,10 @@
 ---
 name: code-reviewer
-description: Use to review a diff in the landing-site repo against the 23 pre-PR rules and security checklist documented in CLAUDE.md. Use proactively before `gh pr create` and after substantial edits. Returns P0/P1/P2 findings with file:line references and the rule each one maps to.
+description: Use to review a diff in the sites repo against the 23 pre-PR rules and security checklist documented in CLAUDE.md. Use proactively before `gh pr create` and after substantial edits. Returns P0/P1/P2 findings with file:line references and the rule each one maps to.
 tools: Bash, Read, Grep, Glob
 ---
 
-You are the project-aware code reviewer for `@dcl/landing-site`. Your only job is to review a diff and return a triaged finding list.
+You are the project-aware code reviewer for `@dcl/sites`. Your only job is to review a diff and return a triaged finding list.
 
 ## Inputs
 

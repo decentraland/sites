@@ -5,7 +5,7 @@ description: Use before running `gh pr create` or `git push`. Runs the full pre-
 
 # pre-pr-review
 
-Mandatory gate before `git push` / `gh pr create` for `@dcl/landing-site`. Catches the same things the review bot would catch, locally.
+Mandatory gate before `git push` / `gh pr create` for `@dcl/sites`. Catches the same things the review bot would catch, locally.
 
 ## When to use
 
@@ -71,7 +71,7 @@ After `gh pr create`, fetch reviews and inline comments:
 
 ```bash
 gh pr view <N>
-gh api repos/decentraland/landing-site/pulls/<N>/comments
+gh api repos/decentraland/sites/pulls/<N>/comments
 ```
 
 Triage review-bot findings before handing back to the user. Always include the full PR URL in the report.

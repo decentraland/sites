@@ -1,4 +1,4 @@
-# Landing Site
+# Sites
 
 Decentraland's main website. Single Vite SPA hosting the homepage, legal pages, download flow, `/whats-on/*` (events), and `/blog/*` (CMS posts). Module Federation was removed — what's on and blog are now native lazy-loaded route groups inside this repo.
 
@@ -197,7 +197,7 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
 ### 4. DRY check
 
 - Before creating a new styled component, grep for identical/near-identical ones.
-- Before copying a file from a source repo, check whether landing-site already has an equivalent. Examples: `features/notifications/` already exists — do NOT copy a duplicate.
+- Before copying a file from a source repo, check whether sites already has an equivalent. Examples: `features/notifications/` already exists — do NOT copy a duplicate.
 - Shared utilities that appear in multiple `features/` must be extracted to a canonical location.
 
 ### 5. Behavior changes

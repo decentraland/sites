@@ -1,4 +1,4 @@
-# Agent Development Kit — landing-site
+# Agent Development Kit — sites
 
 Project-level configuration for Claude Code working in this repo. Every hook, skill and agent here ties to a concrete rule in `CLAUDE.md`, a concrete path in this codebase, or a concrete workflow this repo follows. No generic Node-project boilerplate.
 
@@ -45,7 +45,7 @@ If you need to bypass a hook locally without changing the team config, create `.
 
 ## Bundling later
 
-If the team wants to install this kit into another repo (e.g. `marketplace`, `account`, `auth-dapp`), wrap `skills/`, `agents/`, `hooks/` and a copy of `settings.json` under `.claude/plugins/landing-agent-kit/` with a `plugin.json` manifest. Until then, this stays repo-local.
+If the team wants to install this kit into another repo (e.g. `marketplace`, `account`, `auth-dapp`), wrap `skills/`, `agents/`, `hooks/` and a copy of `settings.json` under `.claude/plugins/sites-agent-kit/` with a `plugin.json` manifest. Until then, this stays repo-local.
 
 ## Source of truth
 
