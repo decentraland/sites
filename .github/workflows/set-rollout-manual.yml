@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       packageVersion:
-        description: 'NPM Version of the release (@dcl/landing-site)'
+        description: 'NPM Version of the release (@dcl/sites)'
         required: true
         default: ''
       deploymentEnvironment:
@@ -36,11 +36,11 @@ jobs:
           sha: ${{ github.sha }}
 
           # CDN information
-          packageName: '@dcl/landing-site'
+          packageName: '@dcl/sites'
           packageVersion: ${{ github.event.inputs.packageVersion }}
 
           # Rollout information
-          deploymentPath: 'landing-site'
+          deploymentPath: 'sites'
           deploymentEnvironment: ${{ github.event.inputs.deploymentEnvironment }}
           deploymentName: '_site'
           percentage: ${{ github.event.inputs.rolloutPercentage }}

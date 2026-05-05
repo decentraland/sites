@@ -8,7 +8,7 @@ branch=$(git branch --show-current 2>/dev/null)
 upstream=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || echo "(none)")
 
 cat <<EOF
-landing-site session — quick reminders:
+sites session — quick reminders:
   branch: ${branch:-unknown}  upstream: ${upstream}
   pm: npm only (Dependencies section in CLAUDE.md)
   i18n: 6 locales, en is source (rule 9)

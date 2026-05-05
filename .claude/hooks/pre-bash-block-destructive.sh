@@ -1,11 +1,11 @@
 #!/bin/bash
 # Block commands that CLAUDE.md explicitly prohibits or that would destroy
-# repo-critical paths. Specific to landing-site — not a generic Node guard.
+# repo-critical paths. Specific to sites — not a generic Node guard.
 # Exit 2 -> blocks tool call, stderr surfaces to Claude.
 set -u
 
 if ! command -v jq >/dev/null 2>&1; then
-  marker="${TMPDIR:-/tmp}/.claude-landing-site-jq-warned-$PPID"
+  marker="${TMPDIR:-/tmp}/.claude-sites-jq-warned-$PPID"
   if [ ! -f "$marker" ]; then
     echo "WARNING: jq not found — .claude/hooks/* operate in fail-open mode (no guards). Install with 'brew install jq'." >&2
     : > "$marker" 2>/dev/null

@@ -1,6 +1,6 @@
-# Decentraland Landing Site
+# Decentraland Sites
 
-[![Coverage Status](https://coveralls.io/repos/github/decentraland/landing-site/badge.svg?branch=master)](https://coveralls.io/github/decentraland/landing-site?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/decentraland/sites/badge.svg?branch=master)](https://coveralls.io/github/decentraland/sites?branch=master)
 
 A modern Vite-based Decentraland landing page serving a dynamic, API-driven homepage with sections for hero content, missions/features, trending news, social proof, FAQ, and banner CTAs — all content managed via a backend landing API.
 

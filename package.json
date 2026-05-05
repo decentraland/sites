@@ -1,5 +1,5 @@
 {
-  "name": "@dcl/landing-site",
+  "name": "@dcl/sites",
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
@@ -80,7 +80,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/decentraland/landing-site.git"
+    "url": "git+ssh://git@github.com/decentraland/sites.git"
   },
   "keywords": [
     "decentraland",
@@ -90,7 +90,7 @@
   "author": "Decentraland",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/decentraland/landing-site/issues"
+    "url": "https://github.com/decentraland/sites/issues"
   },
   "homepage": "",
   "engines": {
