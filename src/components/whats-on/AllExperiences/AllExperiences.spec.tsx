@@ -187,6 +187,12 @@ describe('AllExperiences', () => {
 
       expect(mockUseGetEventsQuery).toHaveBeenCalledWith(expect.objectContaining({ list: 'active', owner: undefined }), expect.any(Object))
     })
+
+    it('should exclude world events on the all tab so the spatial calendar only shows Genesis City', () => {
+      render(<AllExperiences />)
+
+      expect(mockUseGetEventsQuery).toHaveBeenCalledWith(expect.objectContaining({ world: false }), expect.any(Object))
+    })
   })
 
   describe('when rendered with 5 columns', () => {
@@ -471,6 +477,15 @@ describe('AllExperiences', () => {
         expect(lastCall.owner).toBe(true)
         expect(lastCall.creator).toBeUndefined()
         expect(lastCall.identity).toBeDefined()
+      })
+
+      it('should not filter by world so the owner sees both Genesis City and Worlds events', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-my'))
+
+        const lastCall = mockUseGetEventsQuery.mock.calls.at(-1)?.[0] as { world?: boolean }
+        expect(lastCall.world).toBeUndefined()
       })
 
       it('should force a refetch when mounting the my tab so newly created events are visible', () => {
