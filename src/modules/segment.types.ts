@@ -37,7 +37,27 @@ enum SegmentEvent {
   REELS_CLICK_PROFILE = 'Reels Click Profile',
   REELS_CLICK_PLACE = 'Reels Click Place',
   REELS_CLICK_DCL_LOGO = 'Reels Click Decentraland Logo',
-  REELS_CLICK_THUMBNAIL = 'Reels Click Thumbnail'
+  REELS_CLICK_THUMBNAIL = 'Reels Click Thumbnail',
+  STORAGE_ENV_SET_SUCCESS = 'Storage Env Set Success',
+  STORAGE_ENV_SET_FAILURE = 'Storage Env Set Failure',
+  STORAGE_ENV_DELETE_SUCCESS = 'Storage Env Delete Success',
+  STORAGE_ENV_DELETE_FAILURE = 'Storage Env Delete Failure',
+  STORAGE_ENV_CLEAR_SUCCESS = 'Storage Env Clear Success',
+  STORAGE_ENV_CLEAR_FAILURE = 'Storage Env Clear Failure',
+  STORAGE_SCENE_SET_SUCCESS = 'Storage Scene Set Success',
+  STORAGE_SCENE_SET_FAILURE = 'Storage Scene Set Failure',
+  STORAGE_SCENE_DELETE_SUCCESS = 'Storage Scene Delete Success',
+  STORAGE_SCENE_DELETE_FAILURE = 'Storage Scene Delete Failure',
+  STORAGE_SCENE_CLEAR_SUCCESS = 'Storage Scene Clear Success',
+  STORAGE_SCENE_CLEAR_FAILURE = 'Storage Scene Clear Failure',
+  STORAGE_PLAYER_SET_SUCCESS = 'Storage Player Set Success',
+  STORAGE_PLAYER_SET_FAILURE = 'Storage Player Set Failure',
+  STORAGE_PLAYER_DELETE_SUCCESS = 'Storage Player Delete Success',
+  STORAGE_PLAYER_DELETE_FAILURE = 'Storage Player Delete Failure',
+  STORAGE_PLAYER_CLEAR_SUCCESS = 'Storage Player Clear Success',
+  STORAGE_PLAYER_CLEAR_FAILURE = 'Storage Player Clear Failure',
+  STORAGE_PLAYER_CLEAR_ALL_SUCCESS = 'Storage Player Clear All Success',
+  STORAGE_PLAYER_CLEAR_ALL_FAILURE = 'Storage Player Clear All Failure'
 }
 
 enum DownloadPlace {
