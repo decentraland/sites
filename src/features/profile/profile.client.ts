@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import type { Profile } from 'dcl-catalyst-client/dist/client/specs/lambdas-client'
 import { getEnv } from '../../config/env'
 
@@ -104,6 +104,17 @@ function useGetProfileQuery(address: string | undefined, options: QueryOptions =
 }
 
 function useGetProfileNames(addresses: readonly string[]): Map<string, string | undefined> {
+  return useBatchProfileField(addresses, profile => profile?.avatars?.[0]?.name)
+}
+
+function useGetProfilePictures(addresses: readonly string[]): Map<string, string | undefined> {
+  return useBatchProfileField(addresses, profile => profile?.avatars?.[0]?.avatar?.snapshots?.face256)
+}
+
+function useBatchProfileField<T>(
+  addresses: readonly string[],
+  extract: (profile: Profile | null) => T | undefined
+): Map<string, T | undefined> {
   const keysSignature = useMemo(
     () =>
       Array.from(new Set(addresses.map(address => address.toLowerCase())))
@@ -111,18 +122,20 @@ function useGetProfileNames(addresses: readonly string[]): Map<string, string | 
         .join('|'),
     [addresses]
   )
-  const [names, setNames] = useState<Map<string, string | undefined>>(() => new Map())
+  const [values, setValues] = useState<Map<string, T | undefined>>(() => new Map())
+  const extractRef = useRef(extract)
+  extractRef.current = extract
 
   useEffect(() => {
     const keys = keysSignature ? keysSignature.split('|') : []
     if (keys.length === 0) {
-      setNames(prev => (prev.size === 0 ? prev : new Map()))
+      setValues(prev => (prev.size === 0 ? prev : new Map()))
       return
     }
     const update = () => {
-      setNames(prev => {
-        const next = new Map<string, string | undefined>()
-        for (const key of keys) next.set(key, getSnapshotFor(key).data?.avatars?.[0]?.name)
+      setValues(prev => {
+        const next = new Map<string, T | undefined>()
+        for (const key of keys) next.set(key, extractRef.current(getSnapshotFor(key).data))
         if (next.size === prev.size && keys.every(key => next.get(key) === prev.get(key))) return prev
         return next
       })
@@ -132,7 +145,7 @@ function useGetProfileNames(addresses: readonly string[]): Map<string, string | 
     return () => unsubscribers.forEach(unsubscribe => unsubscribe())
   }, [keysSignature])
 
-  return names
+  return values
 }
 
-export { useGetProfileQuery, useGetProfileNames, type Profile }
+export { useGetProfileQuery, useGetProfileNames, useGetProfilePictures, type Profile }
