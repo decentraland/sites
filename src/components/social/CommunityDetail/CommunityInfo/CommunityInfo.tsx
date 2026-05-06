@@ -3,7 +3,7 @@ import checkIcon from '@mui/icons-material/Check'
 import { useAnalytics } from '@dcl/hooks'
 import { useTabletAndBelowMediaQuery, useTabletMediaQuery, useTheme } from 'decentraland-ui2'
 import { getRarityColor, getThumbnailUrl } from '../../../../features/communities/communities.helpers'
-import { type Community, Privacy } from '../../../../features/communities/communities.types'
+import { Privacy } from '../../../../features/communities/communities.types'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import { useProfilePicture } from '../../../../hooks/useProfilePicture'
 import { SegmentEvent } from '../../../../modules/segment.types'
@@ -11,6 +11,7 @@ import { redirectToAuth } from '../../../../utils/authRedirect'
 import { AllowedAction } from '../CommunityDetail.types'
 import { CommunityJumpInButton } from './CommunityJumpInButton'
 import { PrivacyIcon } from './PrivacyIcon'
+import type { CommunityInfoProps } from './CommunityInfo.types'
 import {
   ActionButtons,
   CTAButton,
@@ -37,20 +38,6 @@ import {
   TitleHeader,
   TopRow
 } from './CommunityInfo.styled'
-
-type CommunityInfoProps = {
-  community: Community
-  isLoggedIn: boolean
-  address?: string
-  isPerformingCommunityAction: boolean
-  isMember: boolean
-  canViewContent: boolean
-  hasPendingRequest?: boolean
-  isLoadingMemberRequests?: boolean
-  onJoin: (communityId: string) => Promise<void>
-  onRequestToJoin?: (communityId: string) => Promise<void>
-  onCancelRequest?: (communityId: string) => Promise<void>
-}
 
 function CommunityInfoComponent({
   community,

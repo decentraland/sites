@@ -1,5 +1,5 @@
+import { hexToRgba } from 'decentraland-ui2/dist/utils/colors'
 import { Avatar, Box, Typography, dclColors, styled } from 'decentraland-ui2'
-import { hexToRgba } from '../../../../utils/colors'
 
 // `caff73` (lime green) is the source dapp's brand accent for member names; not in
 // dclColors. Named here so consumers know it's intentional, not a forgotten hex.

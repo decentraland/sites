@@ -8,7 +8,7 @@ import {
   useJoinCommunityMutation
 } from '../../../features/communities/communities.client'
 import { isMember as checkIsMember } from '../../../features/communities/communities.helpers'
-import { type Community, type CommunityEvent, Privacy, RequestStatus, RequestType } from '../../../features/communities/communities.types'
+import { type CommunityEvent, Privacy, RequestStatus, RequestType } from '../../../features/communities/communities.types'
 import type { EventEntry } from '../../../features/whats-on-events'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
@@ -18,17 +18,11 @@ import { EventDetailModal } from '../../whats-on/EventDetailModal'
 import { CommunityInfo } from './CommunityInfo'
 import { describeError } from './errorUtils'
 import { EventsList } from './EventsList'
-import { MemberCardProps, MembersList } from './MembersList'
+import { type MemberCardProps, MembersList } from './MembersList'
 import { PrivateMessage } from './PrivateMessage'
 import { type TabType, Tabs } from './Tabs'
-import { AllowedAction } from './CommunityDetail.types'
+import { AllowedAction, type CommunityDetailProps } from './CommunityDetail.types'
 import { BottomSection, ContentContainer, EventsColumn, HiddenStatus, MembersColumn } from './CommunityDetail.styled'
-
-type CommunityDetailProps = {
-  community: Community
-  isLoggedIn: boolean
-  address?: string
-}
 
 function getCommunityEventCoordinates(event: CommunityEvent): [number, number] {
   return [event.coordinates?.[0] ?? event.position?.[0] ?? event.x ?? 0, event.coordinates?.[1] ?? event.position?.[1] ?? event.y ?? 0]

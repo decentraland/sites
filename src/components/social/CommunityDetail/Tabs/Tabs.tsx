@@ -1,12 +1,6 @@
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
+import type { TabsProps } from './Tabs.types'
 import { Tab, TabButton, TabText, TabsContainer } from './Tabs.styled'
-
-type TabType = 'members' | 'events'
-
-type TabsProps = {
-  activeTab: TabType
-  onTabChange: (tab: TabType) => void
-}
 
 function Tabs({ activeTab, onTabChange }: TabsProps) {
   const t = useFormatMessage()
@@ -27,4 +21,3 @@ function Tabs({ activeTab, onTabChange }: TabsProps) {
 }
 
 export { Tabs }
-export type { TabType }

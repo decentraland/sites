@@ -1,5 +1,12 @@
 import { getEnv } from '../../config/env'
 import type { CommunityEventsResponse } from './communities.types'
+import type { EventsApiResponse } from './events.helpers.types'
+
+// TODO(post-prod): the snake_case → camelCase mapping below duplicates the
+// shape conversions already performed in `src/features/whats-on-events/events.helpers.ts`.
+// Once the social migration ships, extract the shared event-shape mapper into a single
+// helper consumed by both the whats-on and the communities event clients. Today they're
+// kept separate to scope the migration; the duplication is intentional but temporary.
 
 // Lazy getter — throws only when the events query actually runs. Keeps the
 // socialClient module import-safe inside the lazy DappsShell chunk.
@@ -7,22 +14,6 @@ function getEventsApiBaseUrl(): string {
   const url = getEnv('EVENTS_API_URL')
   if (!url) throw new Error('EVENTS_API_URL environment variable is not set')
   return url
-}
-
-type EventsApiEvent = {
-  id: string
-  name: string
-  approved: boolean
-  rejected: boolean
-  [key: string]: unknown
-}
-
-type EventsApiResponse = {
-  ok: boolean
-  data: {
-    events: EventsApiEvent[]
-    total: number
-  }
 }
 
 function mapEventsApiResponse(response: EventsApiResponse): CommunityEventsResponse {
@@ -81,4 +72,3 @@ function mapEventsApiResponse(response: EventsApiResponse): CommunityEventsRespo
 }
 
 export { getEventsApiBaseUrl, mapEventsApiResponse }
-export type { EventsApiEvent, EventsApiResponse }

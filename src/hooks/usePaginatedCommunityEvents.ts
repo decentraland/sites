@@ -1,21 +1,14 @@
 import { useGetCommunityEventsQuery } from '../features/communities/communities.client'
 import type { CommunityEvent, CommunityEventsResponse } from '../features/communities/communities.types'
 import { usePaginatedQuery } from './usePaginatedQuery'
+import type { UsePaginatedCommunityEventsOptions, UsePaginatedCommunityEventsResult } from './usePaginatedCommunityEvents.types'
 
 const DEFAULT_LIMIT = 12
 
-type Options = { communityId: string; enabled?: boolean }
-
-type Result = {
-  events: CommunityEvent[]
-  isLoading: boolean
-  isFetchingMore: boolean
-  hasMore: boolean
-  loadMore: () => void
-  total: number
-}
-
-function usePaginatedCommunityEvents({ communityId, enabled = true }: Options): Result {
+function usePaginatedCommunityEvents({
+  communityId,
+  enabled = true
+}: UsePaginatedCommunityEventsOptions): UsePaginatedCommunityEventsResult {
   const result = usePaginatedQuery<{ communityId: string; limit?: number; offset?: number }, CommunityEventsResponse, CommunityEvent[]>({
     queryHook: useGetCommunityEventsQuery,
     queryArg: { communityId },

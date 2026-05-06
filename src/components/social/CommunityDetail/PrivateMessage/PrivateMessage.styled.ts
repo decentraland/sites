@@ -1,5 +1,5 @@
+import { hexToRgba } from 'decentraland-ui2/dist/utils/colors'
 import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
-import { hexToRgba } from '../../../../utils/colors'
 
 const PrivateMessageContainer = styled(Box)(({ theme }) => ({
   display: 'flex',

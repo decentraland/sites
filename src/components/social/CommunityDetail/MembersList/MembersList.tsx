@@ -1,7 +1,8 @@
 import { CircularProgress, Typography } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import { useInfiniteScrollSentinel } from '../../../../hooks/useInfiniteScrollSentinel'
-import { MemberCard, type MemberCardProps } from './MemberCard'
+import { MemberCard } from './MemberCard'
+import type { MembersListProps } from './MembersList.types'
 import {
   EmptyState,
   InitialLoader,
@@ -11,17 +12,6 @@ import {
   SectionTitle,
   SentinelLoader
 } from './MembersList.styled'
-
-type MembersListProps = {
-  members: MemberCardProps[]
-  isLoading?: boolean
-  isFetchingMore?: boolean
-  hasMore?: boolean
-  onLoadMore: () => void
-  hideTitle?: boolean
-  total?: number
-  showCount?: boolean
-}
 
 function MembersList({
   members,
@@ -81,4 +71,3 @@ function MembersList({
 }
 
 export { MembersList }
-export type { MembersListProps }

@@ -1,21 +1,14 @@
 import { useGetCommunityMembersQuery } from '../features/communities/communities.client'
 import type { CommunityMember, CommunityMembersResponse } from '../features/communities/communities.types'
 import { usePaginatedQuery } from './usePaginatedQuery'
+import type { UsePaginatedCommunityMembersOptions, UsePaginatedCommunityMembersResult } from './usePaginatedCommunityMembers.types'
 
 const DEFAULT_LIMIT = 10
 
-type Options = { communityId: string; enabled?: boolean }
-
-type Result = {
-  members: CommunityMember[]
-  isLoading: boolean
-  isFetchingMore: boolean
-  hasMore: boolean
-  loadMore: () => void
-  total: number
-}
-
-function usePaginatedCommunityMembers({ communityId, enabled = true }: Options): Result {
+function usePaginatedCommunityMembers({
+  communityId,
+  enabled = true
+}: UsePaginatedCommunityMembersOptions): UsePaginatedCommunityMembersResult {
   const result = usePaginatedQuery<{ id: string; limit?: number; offset?: number }, CommunityMembersResponse, CommunityMember[]>({
     queryHook: useGetCommunityMembersQuery,
     queryArg: { id: communityId },

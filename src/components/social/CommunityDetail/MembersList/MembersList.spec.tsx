@@ -1,8 +1,8 @@
 import * as mockReact from 'react'
 import { render, screen } from '@testing-library/react'
 import { Role } from '../../../../features/communities/communities.types'
-import type { MemberCardProps } from './MemberCard'
 import { MembersList } from './MembersList'
+import type { MemberCardProps } from './MemberCard.types'
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })

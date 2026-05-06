@@ -1,7 +1,8 @@
 import * as mockReact from 'react'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { type TabType, Tabs } from './Tabs'
+import { Tabs } from './Tabs'
+import type { TabType } from './Tabs.types'
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })

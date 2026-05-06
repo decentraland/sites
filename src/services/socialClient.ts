@@ -15,12 +15,11 @@ const getSocialApiUrl = (): string => {
 
 const signedFetch = signedFetchFactory()
 
-// Mirrors the SSO scan in `src/hooks/useWalletAddress.ts` (`getStoredAddress`):
-// both walk every `single-sign-on-0x*` key and pick the most recent expiration.
-// Kept duplicated for now because `useWalletAddress` exposes only the address (it
-// runs as a hook with module-level side effects on init), and this base query
-// needs the full identity object. A future refactor can lift both into a shared
-// util — touching `useWalletAddress` is out of scope for this PR.
+// TODO(post-prod): once the social migration ships and stabilizes, lift this
+// SSO scan and the address-only `getStoredAddress` in `src/hooks/useWalletAddress.ts`
+// into a shared util in `src/utils/`. They walk the same `single-sign-on-0x*` keys
+// and pick the most recent expiration; the only difference is that this base
+// query needs the full `AuthIdentity` while the hook exposes just the address.
 function getStoredIdentity(): AuthIdentity | undefined {
   try {
     let bestIdentity: AuthIdentity | undefined

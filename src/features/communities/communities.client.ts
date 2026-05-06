@@ -1,5 +1,5 @@
 import { socialClient } from '../../services/socialClient'
-import { type EventsApiResponse, getEventsApiBaseUrl, mapEventsApiResponse } from './events.helpers'
+import { getEventsApiBaseUrl, mapEventsApiResponse } from './events.helpers'
 import {
   type CommunityEventsResponse,
   type CommunityMembersResponse,
@@ -12,6 +12,7 @@ import {
   RequestType,
   Role
 } from './communities.types'
+import type { EventsApiResponse } from './events.helpers.types'
 
 const communitiesApi = socialClient.injectEndpoints({
   endpoints: builder => ({
@@ -48,6 +49,12 @@ const communitiesApi = socialClient.injectEndpoints({
       providesTags: (result, _error, { id }) => (result ? [{ type: 'Members' as const, id: `${id}-members` }, 'Members'] : ['Members'])
     }),
 
+    // TODO(post-prod): unify this endpoint with `src/features/whats-on-events/events.client.ts`.
+    // Both clients hit the same EVENTS_API_URL, but each lives in its own RTK Query base
+    // (`socialClient` here, `eventsClient` there) so they can't share cache entries or tag
+    // invalidations — joining a community here does not invalidate the matching event card
+    // on /whats-on. After the social rollout stabilizes, fold these into a single events
+    // client (or one per backend) and inject community-scoped endpoints from this feature.
     getCommunityEvents: builder.query<CommunityEventsResponse, { communityId: string; limit?: number; offset?: number }>({
       query: ({ communityId, limit, offset }) => {
         const params = new URLSearchParams()

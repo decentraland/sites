@@ -1,6 +1,5 @@
 import { memo } from 'react'
-
-type ClaimedNameIconProps = React.SVGProps<SVGSVGElement>
+import type { ClaimedNameIconProps } from './ClaimedNameIcon.types'
 
 const ClaimedNameIcon = memo(function ClaimedNameIcon(props: ClaimedNameIconProps) {
   return (
@@ -27,4 +26,3 @@ const ClaimedNameIcon = memo(function ClaimedNameIcon(props: ClaimedNameIconProp
 })
 
 export { ClaimedNameIcon }
-export type { ClaimedNameIconProps }

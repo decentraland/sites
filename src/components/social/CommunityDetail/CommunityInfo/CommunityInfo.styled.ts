@@ -1,5 +1,5 @@
+import { hexToRgba } from 'decentraland-ui2/dist/utils/colors'
 import { Avatar, Box, Button, Typography, dclColors, styled } from 'decentraland-ui2'
-import { hexToRgba } from '../../../../utils/colors'
 
 const InfoSection = styled(Box)(({ theme }) => ({
   display: 'flex',

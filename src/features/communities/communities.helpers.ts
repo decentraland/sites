@@ -1,5 +1,6 @@
 import type { Theme } from 'decentraland-ui2'
 import { getEnv } from '../../config/env'
+import type { RarityPalette } from './communities.helpers.types'
 import { Role } from './communities.types'
 
 function getThumbnailUrl(communityId?: string): string | undefined {
@@ -24,8 +25,6 @@ function hashString(input: string): number {
   }
   return hash >>> 0
 }
-
-type RarityPalette = Partial<Record<string, string | undefined>>
 
 function getRarityColor(theme: Theme, seed: string): string {
   const palette = theme.palette as Theme['palette'] & {

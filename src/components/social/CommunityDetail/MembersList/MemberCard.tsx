@@ -2,15 +2,8 @@ import { memo } from 'react'
 import { useTheme } from 'decentraland-ui2'
 import { getRarityColor } from '../../../../features/communities/communities.helpers'
 import { ClaimedNameIcon } from './ClaimedNameIcon'
+import type { MemberCardProps } from './MemberCard.types'
 import { MemberAvatar, MemberAvatarContainer, MemberInfo, MemberItem, MemberName, MemberNameRow, MemberRole } from './MembersList.styled'
-
-type MemberCardProps = {
-  memberAddress: string
-  name: string
-  role: string
-  profilePictureUrl: string
-  hasClaimedName?: boolean
-}
 
 function MemberCardComponent({ memberAddress, name, role, profilePictureUrl, hasClaimedName }: MemberCardProps) {
   const theme = useTheme()
@@ -35,4 +28,3 @@ function MemberCardComponent({ memberAddress, name, role, profilePictureUrl, has
 const MemberCard = memo(MemberCardComponent)
 
 export { MemberCard }
-export type { MemberCardProps }

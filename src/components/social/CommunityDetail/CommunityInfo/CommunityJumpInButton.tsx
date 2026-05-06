@@ -5,11 +5,7 @@ import { getEnv } from '../../../../config/env'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../../hooks/useAuthIdentity'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../../../../modules/downloadConstants'
-
-type CommunityJumpInButtonProps = {
-  communityId: string
-  onTrack?: (data: { type: string }) => void
-}
+import type { CommunityJumpInButtonProps } from './CommunityJumpInButton.types'
 
 function CommunityJumpInButton({ communityId, onTrack }: CommunityJumpInButtonProps) {
   const t = useFormatMessage()

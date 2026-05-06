@@ -2,7 +2,8 @@ jest.mock('../../config/env', () => ({
   getEnv: () => 'https://events-api.test'
 }))
 
-import { type EventsApiResponse, mapEventsApiResponse } from './events.helpers'
+import { mapEventsApiResponse } from './events.helpers'
+import type { EventsApiResponse } from './events.helpers.types'
 
 describe('mapEventsApiResponse', () => {
   describe('when the upstream response carries snake_case event fields', () => {
