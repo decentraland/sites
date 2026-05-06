@@ -127,4 +127,56 @@ describe('linkifyText', () => {
       expect(screen.getByText(/line three/)).toBeInTheDocument()
     })
   })
+
+  describe('when text contains a markdown-style link', () => {
+    beforeEach(() => {
+      render(<div>{linkifyText('[Visit the blog](https://decentraland.org/blog) for details')}</div>)
+    })
+
+    it('should render the label as the link text, not the URL', () => {
+      const link = screen.getByRole('link', { name: 'Visit the blog' })
+      expect(link).toHaveAttribute('href', 'https://decentraland.org/blog')
+    })
+
+    it('should not render the surrounding brackets or parentheses', () => {
+      expect(screen.queryByText(/\[Visit/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/\)/)).not.toBeInTheDocument()
+    })
+
+    it('should preserve text after the link', () => {
+      expect(screen.getByText(/for details/)).toBeInTheDocument()
+    })
+  })
+
+  describe('when text contains a markdown link with an unsafe protocol', () => {
+    it('should leave the literal markdown text in place', () => {
+      render(<div>{linkifyText('[click](javascript:alert(1)) ignore')}</div>)
+      expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when text contains an emoji shortcode', () => {
+    it('should replace the shortcode with the matching emoji', () => {
+      render(<div>{linkifyText(':popcorn: movie night :tada:')}</div>)
+      expect(screen.getByText('🍿 movie night 🎉')).toBeInTheDocument()
+    })
+
+    it('should leave unknown shortcodes untouched', () => {
+      render(<div>{linkifyText(':not_a_real_emoji: still here')}</div>)
+      expect(screen.getByText(':not_a_real_emoji: still here')).toBeInTheDocument()
+    })
+
+    it('should resolve shortcodes inside markdown link labels', () => {
+      render(<div>{linkifyText('[:popcorn: blog](https://decentraland.org/blog)')}</div>)
+      const link = screen.getByRole('link')
+      expect(link).toHaveTextContent('🍿 blog')
+    })
+
+    it('should resolve shortcodes alongside plain URLs', () => {
+      render(<div>{linkifyText(':popcorn: see https://decentraland.org for more')}</div>)
+      expect(screen.getByText(/🍿 see/)).toBeInTheDocument()
+      expect(screen.getByRole('link')).toHaveAttribute('href', 'https://decentraland.org')
+      expect(screen.getByText(/for more/)).toBeInTheDocument()
+    })
+  })
 })
