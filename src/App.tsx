@@ -62,6 +62,11 @@ const LegacyHangoutRedirect = lazy(() => import('./pages/whats-on/LegacyHangoutR
 const LegacyWhatsOnRedirect = lazy(() => import('./pages/whats-on/LegacyWhatsOnRedirect').then(m => ({ default: m.LegacyWhatsOnRedirect })))
 const LegacyWorldRedirect = lazy(() => import('./pages/whats-on/LegacyWorldRedirect').then(m => ({ default: m.LegacyWorldRedirect })))
 
+// Social pages — community detail. Heavy route (Redux + RTK Query). Auth via
+// localStorage identity (no Web3 providers); CTAs gated on useAuthIdentity.
+const CommunityDetailPage = lazy(() => import('./pages/social/CommunityDetailPage').then(m => ({ default: m.CommunityDetailPage })))
+const SocialNotFoundPage = lazy(() => import('./pages/social/SocialNotFoundPage').then(m => ({ default: m.SocialNotFoundPage })))
+
 // Jump pages — deep-link handler for decentraland:// launcher. Heavy route (Redux).
 const JumpPlacesPage = lazy(() => import('./pages/jump/PlacesPage').then(m => ({ default: m.PlacesPage })))
 const JumpEventsPage = lazy(() => import('./pages/jump/EventsPage').then(m => ({ default: m.EventsPage })))
@@ -148,6 +153,8 @@ const App = () => {
               <Route path="/blog/author/:authorSlug" element={<AuthorPage />} />
               <Route path="/blog/:categorySlug" element={<CategoryPage />} />
               <Route path="/blog/:categorySlug/:postSlug" element={<PostPage />} />
+              <Route path="/social/communities/:id" element={<CommunityDetailPage />} />
+              <Route path="/social/*" element={<SocialNotFoundPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

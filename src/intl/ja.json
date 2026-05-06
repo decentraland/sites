@@ -609,5 +609,53 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+  },
+  "community": {
+    "global": {
+      "loading": "読み込み中..."
+    },
+    "info": {
+      "jump_in_modal": {
+        "title": "Decentraland をダウンロード",
+        "description": "このコミュニティに参加するには、Decentraland をダウンロードする必要があります。",
+        "button_label": "ダウンロード"
+      },
+      "decentraland_community": "Decentraland コミュニティ",
+      "members": "メンバー",
+      "by": "作成者:",
+      "unknown": "不明",
+      "joined": "参加済み",
+      "sign_in_to_join": "サインインして参加",
+      "request_to_join": "参加をリクエスト",
+      "cancel_request": "リクエストをキャンセル",
+      "jump_in": "入る",
+      "join": "参加する"
+    },
+    "detail": {
+      "failed_to_join": "コミュニティへの参加に失敗しました",
+      "not_found": "コミュニティが見つかりません",
+      "not_found_description": "お探しのコミュニティは存在しません。"
+    },
+    "events": {
+      "upcoming_events": "今後のイベント",
+      "no_upcoming_events": "今後のイベントはありません",
+      "live": "ライブ"
+    },
+    "members_list": {
+      "title": "メンバー",
+      "no_members_found": "メンバーが見つかりません"
+    },
+    "private_message": {
+      "title": "これはプライベートコミュニティです",
+      "description": "このコミュニティのプロフィールを見るには、メンバーである必要があります。"
+    },
+    "not_found": {
+      "title": "ページが見つかりません",
+      "description": "お探しのページは存在しません。"
+    },
+    "tabs": {
+      "members": "メンバー",
+      "upcoming_events": "今後のイベント"
+    }
   }
 }

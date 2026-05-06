@@ -1061,5 +1061,53 @@
         }
       }
     }
+  },
+  "community": {
+    "global": {
+      "loading": "Loading..."
+    },
+    "info": {
+      "jump_in_modal": {
+        "title": "Download Decentraland",
+        "description": "To jump into this community, you need to download Decentraland.",
+        "button_label": "Download"
+      },
+      "decentraland_community": "Decentraland Community",
+      "members": "Members",
+      "by": "By",
+      "unknown": "Unknown",
+      "joined": "JOINED",
+      "sign_in_to_join": "SIGN IN TO JOIN",
+      "request_to_join": "REQUEST TO JOIN",
+      "cancel_request": "CANCEL REQUEST",
+      "jump_in": "JUMP IN",
+      "join": "JOIN"
+    },
+    "detail": {
+      "failed_to_join": "Failed to join community",
+      "not_found": "Community not found",
+      "not_found_description": "The community you are looking for does not exist."
+    },
+    "events": {
+      "upcoming_events": "UPCOMING EVENTS",
+      "no_upcoming_events": "No Upcoming Events",
+      "live": "live"
+    },
+    "members_list": {
+      "title": "MEMBERS",
+      "no_members_found": "No members found"
+    },
+    "private_message": {
+      "title": "This is a Private Community",
+      "description": "You must be a member of this Community to see its profile."
+    },
+    "not_found": {
+      "title": "Page not found",
+      "description": "The page you are looking for does not exist."
+    },
+    "tabs": {
+      "members": "Members",
+      "upcoming_events": "Upcoming Events"
+    }
   }
 }

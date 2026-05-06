@@ -609,5 +609,53 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+  },
+  "community": {
+    "global": {
+      "loading": "加载中..."
+    },
+    "info": {
+      "jump_in_modal": {
+        "title": "下载 Decentraland",
+        "description": "要进入此社区，您需要下载 Decentraland。",
+        "button_label": "下载"
+      },
+      "decentraland_community": "Decentraland 社区",
+      "members": "成员",
+      "by": "创建者",
+      "unknown": "未知",
+      "joined": "已加入",
+      "sign_in_to_join": "登录以加入",
+      "request_to_join": "申请加入",
+      "cancel_request": "取消申请",
+      "jump_in": "进入",
+      "join": "加入"
+    },
+    "detail": {
+      "failed_to_join": "加入社区失败",
+      "not_found": "未找到社区",
+      "not_found_description": "您要查找的社区不存在。"
+    },
+    "events": {
+      "upcoming_events": "即将举行的活动",
+      "no_upcoming_events": "暂无即将举行的活动",
+      "live": "直播中"
+    },
+    "members_list": {
+      "title": "成员",
+      "no_members_found": "未找到成员"
+    },
+    "private_message": {
+      "title": "这是一个私人社区",
+      "description": "您必须是此社区的成员才能查看其资料。"
+    },
+    "not_found": {
+      "title": "页面未找到",
+      "description": "您要查找的页面不存在。"
+    },
+    "tabs": {
+      "members": "成员",
+      "upcoming_events": "即将举行的活动"
+    }
   }
 }

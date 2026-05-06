@@ -1,4 +1,5 @@
 import { Suspense, useEffect } from 'react'
+import { HelmetProvider } from 'react-helmet-async'
 import { Provider } from 'react-redux'
 import { Outlet } from 'react-router-dom'
 import { CircularProgress } from 'decentraland-ui2'
@@ -50,11 +51,13 @@ function DappsShell() {
   usePreconnectHints()
 
   return (
-    <Provider store={store}>
-      <Suspense fallback={<DappsShellFallback />}>
-        <Outlet />
-      </Suspense>
-    </Provider>
+    <HelmetProvider>
+      <Provider store={store}>
+        <Suspense fallback={<DappsShellFallback />}>
+          <Outlet />
+        </Suspense>
+      </Provider>
+    </HelmetProvider>
   )
 }
 

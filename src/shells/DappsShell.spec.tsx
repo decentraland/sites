@@ -1,5 +1,6 @@
 import React from 'react'
-import { MemoryRouter } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { render } from '@testing-library/react'
 import { DappsShell } from './DappsShell'
 
@@ -33,6 +34,25 @@ function renderShell() {
   )
 }
 
+function renderShellRouteWithHelmet() {
+  return render(
+    <MemoryRouter initialEntries={['/with-helmet']}>
+      <Routes>
+        <Route element={<DappsShell />}>
+          <Route
+            path="/with-helmet"
+            element={
+              <Helmet>
+                <title>Shell Child</title>
+              </Helmet>
+            }
+          />
+        </Route>
+      </Routes>
+    </MemoryRouter>
+  )
+}
+
 describe('DappsShell', () => {
   afterEach(() => {
     document.head.querySelectorAll('link[rel="preconnect"]').forEach(link => link.remove())
@@ -40,6 +60,10 @@ describe('DappsShell', () => {
 
   it('should render without throwing', () => {
     expect(() => renderShell()).not.toThrow()
+  })
+
+  it('should provide Helmet context to nested routes', () => {
+    expect(() => renderShellRouteWithHelmet()).not.toThrow()
   })
 
   it('should inject a preconnect link for PEER_URL', () => {

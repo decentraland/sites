@@ -604,5 +604,53 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+  },
+  "community": {
+    "global": {
+      "loading": "Chargement..."
+    },
+    "info": {
+      "jump_in_modal": {
+        "title": "Télécharger Decentraland",
+        "description": "Pour rejoindre cette communauté, vous devez télécharger Decentraland.",
+        "button_label": "Télécharger"
+      },
+      "decentraland_community": "Communauté Decentraland",
+      "members": "Membres",
+      "by": "Par",
+      "unknown": "Inconnu",
+      "joined": "REJOINT",
+      "sign_in_to_join": "CONNECTEZ-VOUS POUR REJOINDRE",
+      "request_to_join": "DEMANDER À REJOINDRE",
+      "cancel_request": "ANNULER LA DEMANDE",
+      "jump_in": "ENTRER",
+      "join": "REJOINDRE"
+    },
+    "detail": {
+      "failed_to_join": "Échec de l’adhésion à la communauté",
+      "not_found": "Communauté introuvable",
+      "not_found_description": "La communauté que vous recherchez n’existe pas."
+    },
+    "events": {
+      "upcoming_events": "ÉVÉNEMENTS À VENIR",
+      "no_upcoming_events": "Aucun événement à venir",
+      "live": "en direct"
+    },
+    "members_list": {
+      "title": "MEMBRES",
+      "no_members_found": "Aucun membre trouvé"
+    },
+    "private_message": {
+      "title": "Communauté privée",
+      "description": "Vous devez être membre de cette communauté pour voir son profil."
+    },
+    "not_found": {
+      "title": "Page introuvable",
+      "description": "La page que vous recherchez n’existe pas."
+    },
+    "tabs": {
+      "members": "Membres",
+      "upcoming_events": "Événements à venir"
+    }
   }
 }

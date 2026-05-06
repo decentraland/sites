@@ -38,6 +38,11 @@ enum SegmentEvent {
   REELS_CLICK_PLACE = 'Reels Click Place',
   REELS_CLICK_DCL_LOGO = 'Reels Click Decentraland Logo',
   REELS_CLICK_THUMBNAIL = 'Reels Click Thumbnail',
+  COMMUNITY_CLICK_JOIN = 'Click on Join',
+  COMMUNITY_CLICK_REQUEST_TO_JOIN = 'Click on Request to Join',
+  COMMUNITY_CLICK_CANCEL_REQUEST = 'Click on Cancel Request',
+  COMMUNITY_CLICK_JUMP_IN = 'Click on Jump In',
+  COMMUNITY_CLICK_SIGN_IN_TO_JOIN = 'Click on Sign In to Join',
   REPORT_PLAYER_SUBMIT_STARTED = 'Report Player Submit Started',
   REPORT_PLAYER_SUBMITTED = 'Report Player Submitted',
   REPORT_PLAYER_SUBMIT_FAILED = 'Report Player Submit Failed'
