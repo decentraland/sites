@@ -140,6 +140,26 @@
         "view_all": "모두 보기"
       }
     },
+    "storage": {
+      "select": {
+        "title": "Storage · 자산 선택"
+      },
+      "env": {
+        "title": "Storage · 환경 변수"
+      },
+      "scene": {
+        "title": "Storage · 씬 값"
+      },
+      "players": {
+        "title": "Storage · 플레이어"
+      },
+      "player_detail": {
+        "title": "Storage · 플레이어 {address}"
+      },
+      "not_found": {
+        "title": "Storage · 페이지를 찾을 수 없음"
+      }
+    },
     "report": {
       "title": "플레이어 신고 – Decentraland",
       "success_title": "신고가 전송되었습니다 – Decentraland"
@@ -547,6 +567,166 @@
       },
       "list": {
         "title": "사용자: {userName}"
+      }
+    },
+    "storage": {
+      "common": {
+        "save": "저장",
+        "cancel": "취소",
+        "confirm": "확인",
+        "delete": "삭제",
+        "close": "닫기",
+        "loading": "로딩 중",
+        "actions": "작업",
+        "key": "키",
+        "add": "추가",
+        "owner": "소유자",
+        "collaborator": "협업자"
+      },
+      "role": {
+        "owner": "소유자",
+        "operator": "운영자",
+        "tenant": "임차인",
+        "lessor": "임대인",
+        "unknown": "알 수 없음"
+      },
+      "value_field": {
+        "json_error": "잘못된 JSON"
+      },
+      "sidebar": {
+        "environment": "환경",
+        "scene": "씬",
+        "player": "플레이어",
+        "storages": "저장소",
+        "back": "뒤로",
+        "collapse": "사이드바 접기",
+        "expand": "사이드바 펼치기",
+        "realm": "렐름",
+        "position": "위치"
+      },
+      "select_page": {
+        "title": "관리할 자산 선택",
+        "subtitle": "저장소를 관리할 월드 또는 랜드 파셀을 선택하세요.",
+        "worlds": "월드",
+        "lands": "랜드",
+        "no_worlds": "월드를 찾을 수 없습니다",
+        "no_lands": "랜드를 찾을 수 없습니다",
+        "loading": "자산을 불러오는 중",
+        "select_world": "{name} 선택",
+        "select_land": "{name} 선택",
+        "parcel": "파셀",
+        "estate": "에스테이트",
+        "at_position": "{position} 위치",
+        "parcels_count": "({size} 파셀)",
+        "search_worlds": "월드 검색…",
+        "search_lands": "랜드 검색…",
+        "no_search_results": "\"{query}\"에 대한 결과가 없습니다",
+        "clear_search": "검색 지우기",
+        "showing_results": "{total}개 중 {start}–{end} 표시",
+        "scenes_count": "{count}개의 씬",
+        "scene_count_one": "1개의 씬",
+        "edit": "편집",
+        "edit_scenes": "씬 편집",
+        "select_scene": "씬 선택"
+      },
+      "env_page": {
+        "title": "환경 변수",
+        "add": "추가",
+        "clear_all": "모두 지우기",
+        "no_keys": "환경 변수를 찾을 수 없습니다",
+        "add_dialog": {
+          "title": "환경 변수 추가",
+          "key_label": "키",
+          "value_label": "값"
+        },
+        "edit_dialog": {
+          "title": "환경 변수 편집",
+          "key_label": "키",
+          "value_label": "값",
+          "helper_text": "storage 서비스는 기존 값을 반환하지 않으므로 새 값을 입력하여 덮어쓰세요."
+        },
+        "delete_dialog": {
+          "title": "환경 변수 삭제",
+          "message": "환경 변수 \"{key}\"를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        },
+        "clear_dialog": {
+          "title": "모든 환경 변수 삭제",
+          "message": "모든 환경 변수를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        }
+      },
+      "scene_page": {
+        "title": "씬 저장소",
+        "add": "추가",
+        "clear_all": "모두 지우기",
+        "no_keys": "씬 값을 찾을 수 없습니다",
+        "add_dialog": {
+          "title": "씬 값 추가",
+          "key_label": "키",
+          "value_label": "값",
+          "value_placeholder": "일반 텍스트 또는 JSON: {value}"
+        },
+        "edit_dialog": {
+          "title": "값 편집: {key}",
+          "value_label": "값"
+        },
+        "delete_dialog": {
+          "title": "씬 값 삭제",
+          "message": "씬 값 \"{key}\"를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        },
+        "clear_dialog": {
+          "title": "모든 씬 값 삭제",
+          "message": "모든 씬 값을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        }
+      },
+      "player_page": {
+        "title": "플레이어 저장소",
+        "add": "추가",
+        "clear_all_players": "모든 플레이어 지우기",
+        "description": "저장된 데이터가 있는 플레이어를 탐색하거나 이름 또는 주소로 검색하세요.",
+        "search_players": "이름 또는 주소로 검색…",
+        "no_players": "플레이어를 찾을 수 없습니다",
+        "no_search_results": "\"{query}\"에 대한 결과가 없습니다",
+        "showing_results": "{total}개 중 {start}–{end} 표시",
+        "back_to_players": "플레이어 목록으로 돌아가기",
+        "loading_players": "플레이어를 불러오는 중",
+        "select_player": "{address}의 저장소 보기",
+        "address_label": "플레이어 주소",
+        "address_placeholder": "0x…",
+        "load_keys": "키 불러오기",
+        "keys_for": "{address}의 키",
+        "clear_this_player": "이 플레이어 지우기",
+        "no_keys": "이 플레이어의 키를 찾을 수 없습니다",
+        "loading_keys": "플레이어 키를 불러오는 중",
+        "add_dialog": {
+          "title": "플레이어 값 추가",
+          "address_label": "플레이어 주소",
+          "key_label": "키",
+          "value_label": "값",
+          "value_placeholder": "일반 텍스트 또는 JSON: {value}"
+        },
+        "edit_dialog": {
+          "title": "값 편집: {key}",
+          "subtitle": "플레이어: {address}",
+          "value_label": "값"
+        },
+        "delete_dialog": {
+          "title": "플레이어 값 삭제",
+          "message": "플레이어 \"{address}\"의 값 \"{key}\"를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        },
+        "clear_player_dialog": {
+          "title": "플레이어 저장소 지우기",
+          "message": "플레이어 \"{address}\"의 모든 값을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        },
+        "clear_all_dialog": {
+          "title": "모든 플레이어 저장소 지우기",
+          "message": "모든 플레이어 저장소 데이터를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        }
+      },
+      "not_found_page": {
+        "code": "404",
+        "title": "페이지를 찾을 수 없습니다",
+        "subtitle": "찾으시는 페이지가 존재하지 않습니다.",
+        "go_home": "홈으로"
       }
     },
     "report": {

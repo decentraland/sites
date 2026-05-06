@@ -140,6 +140,26 @@
         "view_all": "Ver todo"
       }
     },
+    "storage": {
+      "select": {
+        "title": "Storage · Seleccionar activo"
+      },
+      "env": {
+        "title": "Storage · Variables de entorno"
+      },
+      "scene": {
+        "title": "Storage · Valores de escena"
+      },
+      "players": {
+        "title": "Storage · Jugadores"
+      },
+      "player_detail": {
+        "title": "Storage · Jugador {address}"
+      },
+      "not_found": {
+        "title": "Storage · Página no encontrada"
+      }
+    },
     "report": {
       "title": "Reportar a un jugador – Decentraland",
       "success_title": "Reporte enviado – Decentraland"
@@ -547,6 +567,166 @@
       },
       "list": {
         "title": "Usuario: {userName}"
+      }
+    },
+    "storage": {
+      "common": {
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "confirm": "Confirmar",
+        "delete": "Eliminar",
+        "close": "Cerrar",
+        "loading": "Cargando",
+        "actions": "Acciones",
+        "key": "Clave",
+        "add": "Agregar",
+        "owner": "Propietario",
+        "collaborator": "Colaborador"
+      },
+      "role": {
+        "owner": "Propietario",
+        "operator": "Operador",
+        "tenant": "Inquilino",
+        "lessor": "Arrendador",
+        "unknown": "Desconocido"
+      },
+      "value_field": {
+        "json_error": "JSON inválido"
+      },
+      "sidebar": {
+        "environment": "Entorno",
+        "scene": "Escena",
+        "player": "Jugador",
+        "storages": "Almacenamientos",
+        "back": "Atrás",
+        "collapse": "Contraer barra lateral",
+        "expand": "Expandir barra lateral",
+        "realm": "Reino",
+        "position": "Posición"
+      },
+      "select_page": {
+        "title": "Selecciona el activo a gestionar",
+        "subtitle": "Elige un mundo o parcela para administrar su almacenamiento.",
+        "worlds": "Mundos",
+        "lands": "Tierras",
+        "no_worlds": "No se encontraron mundos",
+        "no_lands": "No se encontraron tierras",
+        "loading": "Cargando activos",
+        "select_world": "Seleccionar {name}",
+        "select_land": "Seleccionar {name}",
+        "parcel": "Parcela",
+        "estate": "Estate",
+        "at_position": "en {position}",
+        "parcels_count": "({size} parcelas)",
+        "search_worlds": "Buscar mundos…",
+        "search_lands": "Buscar tierras…",
+        "no_search_results": "Sin resultados para \"{query}\"",
+        "clear_search": "Limpiar búsqueda",
+        "showing_results": "Mostrando {start}–{end} de {total}",
+        "scenes_count": "{count} escenas",
+        "scene_count_one": "1 escena",
+        "edit": "Editar",
+        "edit_scenes": "Editar escenas",
+        "select_scene": "Seleccionar escena"
+      },
+      "env_page": {
+        "title": "Variables de entorno",
+        "add": "Agregar",
+        "clear_all": "Borrar todo",
+        "no_keys": "No se encontraron variables de entorno",
+        "add_dialog": {
+          "title": "Agregar variable de entorno",
+          "key_label": "Clave",
+          "value_label": "Valor"
+        },
+        "edit_dialog": {
+          "title": "Editar variable de entorno",
+          "key_label": "Clave",
+          "value_label": "Valor",
+          "helper_text": "El storage service no devuelve valores existentes, así que ingresá el nuevo valor para sobrescribir."
+        },
+        "delete_dialog": {
+          "title": "Eliminar variable de entorno",
+          "message": "¿Seguro que querés eliminar la variable de entorno \"{key}\"? Esta acción no se puede deshacer."
+        },
+        "clear_dialog": {
+          "title": "Borrar todas las variables de entorno",
+          "message": "¿Seguro que querés eliminar TODAS las variables de entorno? Esta acción no se puede deshacer."
+        }
+      },
+      "scene_page": {
+        "title": "Almacenamiento de escena",
+        "add": "Agregar",
+        "clear_all": "Borrar todo",
+        "no_keys": "No se encontraron valores de escena",
+        "add_dialog": {
+          "title": "Agregar valor de escena",
+          "key_label": "Clave",
+          "value_label": "Valor",
+          "value_placeholder": "Texto plano o JSON: {value}"
+        },
+        "edit_dialog": {
+          "title": "Editar valor: {key}",
+          "value_label": "Valor"
+        },
+        "delete_dialog": {
+          "title": "Eliminar valor de escena",
+          "message": "¿Seguro que querés eliminar el valor \"{key}\"? Esta acción no se puede deshacer."
+        },
+        "clear_dialog": {
+          "title": "Borrar todos los valores de escena",
+          "message": "¿Seguro que querés eliminar TODOS los valores de escena? Esta acción no se puede deshacer."
+        }
+      },
+      "player_page": {
+        "title": "Almacenamiento de jugador",
+        "add": "Agregar",
+        "clear_all_players": "Borrar todos los jugadores",
+        "description": "Explorá los jugadores con datos guardados o buscalos por nombre o dirección.",
+        "search_players": "Buscar por nombre o dirección…",
+        "no_players": "No se encontraron jugadores",
+        "no_search_results": "Sin resultados para \"{query}\"",
+        "showing_results": "Mostrando {start}–{end} de {total}",
+        "back_to_players": "Volver a jugadores",
+        "loading_players": "Cargando jugadores",
+        "select_player": "Ver almacenamiento de {address}",
+        "address_label": "Dirección del jugador",
+        "address_placeholder": "0x…",
+        "load_keys": "Cargar claves",
+        "keys_for": "Claves de {address}",
+        "clear_this_player": "Borrar este jugador",
+        "no_keys": "No se encontraron claves para este jugador",
+        "loading_keys": "Cargando claves del jugador",
+        "add_dialog": {
+          "title": "Agregar valor de jugador",
+          "address_label": "Dirección del jugador",
+          "key_label": "Clave",
+          "value_label": "Valor",
+          "value_placeholder": "Texto plano o JSON: {value}"
+        },
+        "edit_dialog": {
+          "title": "Editar valor: {key}",
+          "subtitle": "Jugador: {address}",
+          "value_label": "Valor"
+        },
+        "delete_dialog": {
+          "title": "Eliminar valor de jugador",
+          "message": "¿Seguro que querés eliminar el valor \"{key}\" del jugador \"{address}\"? Esta acción no se puede deshacer."
+        },
+        "clear_player_dialog": {
+          "title": "Borrar almacenamiento del jugador",
+          "message": "¿Seguro que querés eliminar TODOS los valores del jugador \"{address}\"? Esta acción no se puede deshacer."
+        },
+        "clear_all_dialog": {
+          "title": "Borrar todo el almacenamiento de jugadores",
+          "message": "¿Seguro que querés eliminar TODOS los datos de almacenamiento de jugadores? Esta acción no se puede deshacer."
+        }
+      },
+      "not_found_page": {
+        "code": "404",
+        "title": "Página no encontrada",
+        "subtitle": "La página que estás buscando no existe.",
+        "go_home": "Ir al inicio"
       }
     },
     "report": {

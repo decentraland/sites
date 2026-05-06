@@ -140,6 +140,26 @@
         "view_all": "Voir tout"
       }
     },
+    "storage": {
+      "select": {
+        "title": "Storage · Sélectionner un actif"
+      },
+      "env": {
+        "title": "Storage · Variables d’environnement"
+      },
+      "scene": {
+        "title": "Storage · Valeurs de scène"
+      },
+      "players": {
+        "title": "Storage · Joueurs"
+      },
+      "player_detail": {
+        "title": "Storage · Joueur {address}"
+      },
+      "not_found": {
+        "title": "Storage · Page introuvable"
+      }
+    },
     "report": {
       "title": "Signaler un joueur – Decentraland",
       "success_title": "Signalement envoyé – Decentraland"
@@ -542,6 +562,166 @@
       },
       "list": {
         "title": "Utilisateur : {userName}"
+      }
+    },
+    "storage": {
+      "common": {
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "confirm": "Confirmer",
+        "delete": "Supprimer",
+        "close": "Fermer",
+        "loading": "Chargement",
+        "actions": "Actions",
+        "key": "Clé",
+        "add": "Ajouter",
+        "owner": "Propriétaire",
+        "collaborator": "Collaborateur"
+      },
+      "role": {
+        "owner": "Propriétaire",
+        "operator": "Opérateur",
+        "tenant": "Locataire",
+        "lessor": "Bailleur",
+        "unknown": "Inconnu"
+      },
+      "value_field": {
+        "json_error": "JSON invalide"
+      },
+      "sidebar": {
+        "environment": "Environnement",
+        "scene": "Scène",
+        "player": "Joueur",
+        "storages": "Stockages",
+        "back": "Retour",
+        "collapse": "Réduire la barre latérale",
+        "expand": "Étendre la barre latérale",
+        "realm": "Royaume",
+        "position": "Position"
+      },
+      "select_page": {
+        "title": "Sélectionner un actif à gérer",
+        "subtitle": "Choisissez un monde ou une parcelle pour gérer son stockage.",
+        "worlds": "Mondes",
+        "lands": "Terrains",
+        "no_worlds": "Aucun monde trouvé",
+        "no_lands": "Aucun terrain trouvé",
+        "loading": "Chargement des actifs",
+        "select_world": "Sélectionner {name}",
+        "select_land": "Sélectionner {name}",
+        "parcel": "Parcelle",
+        "estate": "Domaine",
+        "at_position": "à {position}",
+        "parcels_count": "({size} parcelles)",
+        "search_worlds": "Rechercher des mondes…",
+        "search_lands": "Rechercher des terrains…",
+        "no_search_results": "Aucun résultat pour \"{query}\"",
+        "clear_search": "Effacer la recherche",
+        "showing_results": "Affichage de {start}–{end} sur {total}",
+        "scenes_count": "{count} scènes",
+        "scene_count_one": "1 scène",
+        "edit": "Modifier",
+        "edit_scenes": "Modifier les scènes",
+        "select_scene": "Sélectionner une scène"
+      },
+      "env_page": {
+        "title": "Variables d’environnement",
+        "add": "Ajouter",
+        "clear_all": "Tout effacer",
+        "no_keys": "Aucune variable d’environnement trouvée",
+        "add_dialog": {
+          "title": "Ajouter une variable d’environnement",
+          "key_label": "Clé",
+          "value_label": "Valeur"
+        },
+        "edit_dialog": {
+          "title": "Modifier la variable d’environnement",
+          "key_label": "Clé",
+          "value_label": "Valeur",
+          "helper_text": "Le service de stockage ne renvoie pas les valeurs existantes ; saisissez la nouvelle valeur pour la remplacer."
+        },
+        "delete_dialog": {
+          "title": "Supprimer la variable d’environnement",
+          "message": "Voulez-vous vraiment supprimer la variable d’environnement \"{key}\" ? Cette action est irréversible."
+        },
+        "clear_dialog": {
+          "title": "Effacer toutes les variables d’environnement",
+          "message": "Voulez-vous vraiment supprimer TOUTES les variables d’environnement ? Cette action est irréversible."
+        }
+      },
+      "scene_page": {
+        "title": "Stockage de scène",
+        "add": "Ajouter",
+        "clear_all": "Tout effacer",
+        "no_keys": "Aucune valeur de scène trouvée",
+        "add_dialog": {
+          "title": "Ajouter une valeur de scène",
+          "key_label": "Clé",
+          "value_label": "Valeur",
+          "value_placeholder": "Texte brut ou JSON : {value}"
+        },
+        "edit_dialog": {
+          "title": "Modifier la valeur : {key}",
+          "value_label": "Valeur"
+        },
+        "delete_dialog": {
+          "title": "Supprimer la valeur de scène",
+          "message": "Voulez-vous vraiment supprimer la valeur \"{key}\" ? Cette action est irréversible."
+        },
+        "clear_dialog": {
+          "title": "Effacer toutes les valeurs de scène",
+          "message": "Voulez-vous vraiment supprimer TOUTES les valeurs de scène ? Cette action est irréversible."
+        }
+      },
+      "player_page": {
+        "title": "Stockage de joueur",
+        "add": "Ajouter",
+        "clear_all_players": "Effacer tous les joueurs",
+        "description": "Parcourez les joueurs avec des données stockées, ou recherchez par nom ou adresse.",
+        "search_players": "Rechercher par nom ou adresse…",
+        "no_players": "Aucun joueur trouvé",
+        "no_search_results": "Aucun résultat pour \"{query}\"",
+        "showing_results": "Affichage de {start}–{end} sur {total}",
+        "back_to_players": "Retour aux joueurs",
+        "loading_players": "Chargement des joueurs",
+        "select_player": "Voir le stockage de {address}",
+        "address_label": "Adresse du joueur",
+        "address_placeholder": "0x…",
+        "load_keys": "Charger les clés",
+        "keys_for": "Clés de {address}",
+        "clear_this_player": "Effacer ce joueur",
+        "no_keys": "Aucune clé trouvée pour ce joueur",
+        "loading_keys": "Chargement des clés du joueur",
+        "add_dialog": {
+          "title": "Ajouter une valeur de joueur",
+          "address_label": "Adresse du joueur",
+          "key_label": "Clé",
+          "value_label": "Valeur",
+          "value_placeholder": "Texte brut ou JSON : {value}"
+        },
+        "edit_dialog": {
+          "title": "Modifier la valeur : {key}",
+          "subtitle": "Joueur : {address}",
+          "value_label": "Valeur"
+        },
+        "delete_dialog": {
+          "title": "Supprimer la valeur du joueur",
+          "message": "Voulez-vous vraiment supprimer la valeur \"{key}\" du joueur \"{address}\" ? Cette action est irréversible."
+        },
+        "clear_player_dialog": {
+          "title": "Effacer le stockage du joueur",
+          "message": "Voulez-vous vraiment supprimer TOUTES les valeurs du joueur \"{address}\" ? Cette action est irréversible."
+        },
+        "clear_all_dialog": {
+          "title": "Effacer tout le stockage des joueurs",
+          "message": "Voulez-vous vraiment supprimer TOUTES les données de stockage des joueurs ? Cette action est irréversible."
+        }
+      },
+      "not_found_page": {
+        "code": "404",
+        "title": "Page introuvable",
+        "subtitle": "La page que vous recherchez n’existe pas.",
+        "go_home": "Retour à l’accueil"
       }
     },
     "report": {

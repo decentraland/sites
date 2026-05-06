@@ -140,6 +140,26 @@
         "view_all": "すべて見る"
       }
     },
+    "storage": {
+      "select": {
+        "title": "Storage · アセットを選択"
+      },
+      "env": {
+        "title": "Storage · 環境変数"
+      },
+      "scene": {
+        "title": "Storage · シーン値"
+      },
+      "players": {
+        "title": "Storage · プレイヤー"
+      },
+      "player_detail": {
+        "title": "Storage · プレイヤー {address}"
+      },
+      "not_found": {
+        "title": "Storage · ページが見つかりません"
+      }
+    },
     "report": {
       "title": "プレイヤーを報告する – Decentraland",
       "success_title": "報告が送信されました – Decentraland"
@@ -547,6 +567,166 @@
       },
       "list": {
         "title": "ユーザー: {userName}"
+      }
+    },
+    "storage": {
+      "common": {
+        "save": "保存",
+        "cancel": "キャンセル",
+        "confirm": "確認",
+        "delete": "削除",
+        "close": "閉じる",
+        "loading": "読み込み中",
+        "actions": "アクション",
+        "key": "キー",
+        "add": "追加",
+        "owner": "オーナー",
+        "collaborator": "コラボレーター"
+      },
+      "role": {
+        "owner": "オーナー",
+        "operator": "オペレーター",
+        "tenant": "テナント",
+        "lessor": "貸主",
+        "unknown": "不明"
+      },
+      "value_field": {
+        "json_error": "無効な JSON"
+      },
+      "sidebar": {
+        "environment": "環境",
+        "scene": "シーン",
+        "player": "プレイヤー",
+        "storages": "ストレージ",
+        "back": "戻る",
+        "collapse": "サイドバーを折りたたむ",
+        "expand": "サイドバーを展開",
+        "realm": "レルム",
+        "position": "位置"
+      },
+      "select_page": {
+        "title": "管理するアセットを選択",
+        "subtitle": "ストレージを管理するワールドまたはランドパーセルを選んでください。",
+        "worlds": "ワールド",
+        "lands": "ランド",
+        "no_worlds": "ワールドが見つかりません",
+        "no_lands": "ランドが見つかりません",
+        "loading": "アセットを読み込み中",
+        "select_world": "{name} を選択",
+        "select_land": "{name} を選択",
+        "parcel": "パーセル",
+        "estate": "エステート",
+        "at_position": "{position} の位置",
+        "parcels_count": "({size} パーセル)",
+        "search_worlds": "ワールドを検索…",
+        "search_lands": "ランドを検索…",
+        "no_search_results": "\"{query}\" の結果はありません",
+        "clear_search": "検索をクリア",
+        "showing_results": "{total} 件中 {start}–{end} 件を表示",
+        "scenes_count": "{count} 個のシーン",
+        "scene_count_one": "1 個のシーン",
+        "edit": "編集",
+        "edit_scenes": "シーンを編集",
+        "select_scene": "シーンを選択"
+      },
+      "env_page": {
+        "title": "環境変数",
+        "add": "追加",
+        "clear_all": "すべてクリア",
+        "no_keys": "環境変数が見つかりません",
+        "add_dialog": {
+          "title": "環境変数を追加",
+          "key_label": "キー",
+          "value_label": "値"
+        },
+        "edit_dialog": {
+          "title": "環境変数を編集",
+          "key_label": "キー",
+          "value_label": "値",
+          "helper_text": "storage サービスは既存の値を返さないため、新しい値を入力して上書きしてください。"
+        },
+        "delete_dialog": {
+          "title": "環境変数を削除",
+          "message": "環境変数 \"{key}\" を削除しますか? この操作は元に戻せません。"
+        },
+        "clear_dialog": {
+          "title": "すべての環境変数を削除",
+          "message": "すべての環境変数を削除しますか? この操作は元に戻せません。"
+        }
+      },
+      "scene_page": {
+        "title": "シーンストレージ",
+        "add": "追加",
+        "clear_all": "すべてクリア",
+        "no_keys": "シーン値が見つかりません",
+        "add_dialog": {
+          "title": "シーン値を追加",
+          "key_label": "キー",
+          "value_label": "値",
+          "value_placeholder": "プレーンテキストまたは JSON: {value}"
+        },
+        "edit_dialog": {
+          "title": "値を編集: {key}",
+          "value_label": "値"
+        },
+        "delete_dialog": {
+          "title": "シーン値を削除",
+          "message": "シーン値 \"{key}\" を削除しますか? この操作は元に戻せません。"
+        },
+        "clear_dialog": {
+          "title": "すべてのシーン値を削除",
+          "message": "すべてのシーン値を削除しますか? この操作は元に戻せません。"
+        }
+      },
+      "player_page": {
+        "title": "プレイヤーストレージ",
+        "add": "追加",
+        "clear_all_players": "すべてのプレイヤーを削除",
+        "description": "保存データのあるプレイヤーを閲覧するか、名前やアドレスで検索できます。",
+        "search_players": "名前またはアドレスで検索…",
+        "no_players": "プレイヤーが見つかりません",
+        "no_search_results": "\"{query}\" の結果はありません",
+        "showing_results": "{total} 件中 {start}–{end} 件を表示",
+        "back_to_players": "プレイヤー一覧へ戻る",
+        "loading_players": "プレイヤーを読み込み中",
+        "select_player": "{address} のストレージを表示",
+        "address_label": "プレイヤーのアドレス",
+        "address_placeholder": "0x…",
+        "load_keys": "キーを読み込む",
+        "keys_for": "{address} のキー",
+        "clear_this_player": "このプレイヤーを削除",
+        "no_keys": "このプレイヤーのキーは見つかりません",
+        "loading_keys": "プレイヤーのキーを読み込み中",
+        "add_dialog": {
+          "title": "プレイヤー値を追加",
+          "address_label": "プレイヤーのアドレス",
+          "key_label": "キー",
+          "value_label": "値",
+          "value_placeholder": "プレーンテキストまたは JSON: {value}"
+        },
+        "edit_dialog": {
+          "title": "値を編集: {key}",
+          "subtitle": "プレイヤー: {address}",
+          "value_label": "値"
+        },
+        "delete_dialog": {
+          "title": "プレイヤー値を削除",
+          "message": "プレイヤー \"{address}\" の値 \"{key}\" を削除しますか? この操作は元に戻せません。"
+        },
+        "clear_player_dialog": {
+          "title": "プレイヤーストレージをクリア",
+          "message": "プレイヤー \"{address}\" のすべての値を削除しますか? この操作は元に戻せません。"
+        },
+        "clear_all_dialog": {
+          "title": "すべてのプレイヤーストレージをクリア",
+          "message": "すべてのプレイヤーストレージデータを削除しますか? この操作は元に戻せません。"
+        }
+      },
+      "not_found_page": {
+        "code": "404",
+        "title": "ページが見つかりません",
+        "subtitle": "お探しのページは存在しません。",
+        "go_home": "ホームへ戻る"
       }
     },
     "report": {

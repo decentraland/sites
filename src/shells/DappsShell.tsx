@@ -29,7 +29,11 @@ function usePreconnectHints() {
   useEffect(() => {
     // Origins that differ per env (zone/today/org). Injected at runtime so
     // the correct host is hit without wasting TCP/TLS on homepage visitors.
-    const origins = new Set([getOrigin('PEER_URL'), getOrigin('PLACES_API_URL')].filter((v): v is string => v !== null))
+    const origins = new Set(
+      [getOrigin('PEER_URL'), getOrigin('PLACES_API_URL'), getOrigin('STORAGE_API_URL'), getOrigin('WORLDS_CONTENT_SERVER_URL')].filter(
+        (v): v is string => v !== null
+      )
+    )
     const links: HTMLLinkElement[] = []
     origins.forEach(origin => {
       // Skip if index.html (or a prior mount) already preconnected this origin.

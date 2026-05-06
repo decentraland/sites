@@ -74,6 +74,15 @@ const JumpInvalidEventPage = lazy(() => import('./pages/jump/InvalidPage').then(
 const JumpInvalidPlacePage = lazy(() => import('./pages/jump/InvalidPage').then(m => ({ default: () => <m.InvalidPage kind="place" /> })))
 const JumpLegacyEventRedirect = lazy(() => import('./pages/jump/LegacyEventRedirect').then(m => ({ default: m.LegacyEventRedirect })))
 
+// Storage pages — heavy DappsShell route. Migrated from the standalone storage-service-site.
+const StorageRedirectPage = lazy(() => import('./pages/storage/StorageRedirectPage').then(m => ({ default: m.StorageRedirectPage })))
+const StorageSelectPage = lazy(() => import('./pages/storage/SelectPage').then(m => ({ default: m.SelectPage })))
+const StorageEnvPage = lazy(() => import('./pages/storage/EnvPage').then(m => ({ default: m.EnvPage })))
+const StorageScenePage = lazy(() => import('./pages/storage/ScenePage').then(m => ({ default: m.ScenePage })))
+const StoragePlayersPage = lazy(() => import('./pages/storage/PlayersPage').then(m => ({ default: m.PlayersPage })))
+const StoragePlayerDetailPage = lazy(() => import('./pages/storage/PlayerDetailPage').then(m => ({ default: m.PlayerDetailPage })))
+const StorageNotFoundPage = lazy(() => import('./pages/storage/StorageNotFoundPage').then(m => ({ default: m.StorageNotFoundPage })))
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -153,6 +162,13 @@ const App = () => {
               <Route path="/blog/author/:authorSlug" element={<AuthorPage />} />
               <Route path="/blog/:categorySlug" element={<CategoryPage />} />
               <Route path="/blog/:categorySlug/:postSlug" element={<PostPage />} />
+              <Route path="/storage" element={<StorageRedirectPage />} />
+              <Route path="/storage/select" element={<StorageSelectPage />} />
+              <Route path="/storage/env" element={<StorageEnvPage />} />
+              <Route path="/storage/scene" element={<StorageScenePage />} />
+              <Route path="/storage/players" element={<StoragePlayersPage />} />
+              <Route path="/storage/players/:address" element={<StoragePlayerDetailPage />} />
+              <Route path="/storage/*" element={<StorageNotFoundPage />} />
               <Route path="/social/communities/:id" element={<CommunityDetailPage />} />
               <Route path="/social/*" element={<SocialNotFoundPage />} />
             </Route>

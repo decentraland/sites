@@ -28,5 +28,12 @@
   "MARKETPLACE_URL": "https://market.decentraland.zone",
   "PROFILE_URL": "https://profile.decentraland.zone",
   "REPORT_API_URL": "https://report-user.decentraland.today",
-  "DECENTRALAND_HOMEPAGE_URL": "https://decentraland.today"
+  "DECENTRALAND_HOMEPAGE_URL": "https://decentraland.today",
+  "STORAGE_API_URL": "https://storage.decentraland.zone",
+  "WORLDS_CONTENT_SERVER_URL": "https://worlds-content-server.decentraland.zone",
+  "LAND_MANAGER_SUBGRAPH": "https://subgraph.decentraland.org/land-manager-sepolia",
+  "MARKETPLACE_SUBGRAPH": "https://subgraph.decentraland.org/marketplace-sepolia",
+  "RENTALS_SUBGRAPH": "https://subgraph.decentraland.org/rentals-ethereum-sepolia",
+  "LAND_REGISTRY_ADDRESS": "0x42f4ba48791e2de32f5fbf553441c2672864bb33",
+  "ESTATE_REGISTRY_ADDRESS": "0x369a7fbe718c870c79f99fb423882e8dd8b20486"
 }
