@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
-import logoImage from '../../../assets/images/cast/logo.png'
+import { Logo } from 'decentraland-ui2'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { AudioOutputSelector } from './AudioOutputSelector'
 import { WatcherOnboardingProps } from './WatcherOnboarding.types'
@@ -10,11 +10,9 @@ import {
   JoinButton,
   JoiningContainer,
   JoiningLogo,
-  JoiningLogoImage,
   JoiningSpinner,
   JoiningText,
   LogoContainer,
-  LogoImage,
   OnboardingContainer,
   OnboardingModal,
   Title,
@@ -46,7 +44,7 @@ export function WatcherOnboarding({ streamName = 'Stream', onJoin, isJoining }: 
       <OnboardingContainer>
         <JoiningContainer>
           <JoiningLogo>
-            <JoiningLogoImage src={logoImage} alt="Decentraland Logo" />
+            <Logo size="huge" />
           </JoiningLogo>
           <JoiningSpinner />
           <JoiningText>{t('onboarding.joining')}</JoiningText>
@@ -59,7 +57,7 @@ export function WatcherOnboarding({ streamName = 'Stream', onJoin, isJoining }: 
     <OnboardingContainer>
       <OnboardingModal onKeyDown={handleKeyDown}>
         <LogoContainer>
-          <LogoImage src={logoImage} alt="Decentraland Logo" />
+          <Logo size="huge" />
         </LogoContainer>
 
         <Title>{t('onboarding.viewer_title', { streamName })}</Title>

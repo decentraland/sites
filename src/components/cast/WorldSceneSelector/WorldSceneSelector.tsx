@@ -1,15 +1,8 @@
 import { useState } from 'react'
-import logoImage from '../../../assets/images/cast/logo.png'
+import { Logo } from 'decentraland-ui2'
 import type { WorldScene } from '../../../features/cast2/cast2.types'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
-import {
-  JoinButton,
-  LogoContainer,
-  LogoImage,
-  OnboardingContainer,
-  OnboardingModal,
-  Title
-} from '../WatcherOnboarding/WatcherOnboarding.styled'
+import { JoinButton, LogoContainer, OnboardingContainer, OnboardingModal, Title } from '../WatcherOnboarding/WatcherOnboarding.styled'
 import { WorldSceneSelectorProps } from './WorldSceneSelector.types'
 import { SceneSelect, WorldName } from './WorldSceneSelector.styled'
 
@@ -41,7 +34,7 @@ export function WorldSceneSelector({ scenes, worldName, onSelect }: WorldSceneSe
     <OnboardingContainer>
       <OnboardingModal onKeyDown={handleKeyDown}>
         <LogoContainer>
-          <LogoImage src={logoImage} alt="Decentraland Logo" />
+          <Logo size="huge" />
         </LogoContainer>
 
         <Title>{t('scene_selector.title')}</Title>

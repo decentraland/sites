@@ -1,32 +1,29 @@
 import { keyframes } from '@emotion/react'
-import { Box, TextField, Typography, styled } from 'decentraland-ui2'
-import backgroundImage from '../../../assets/images/cast/background.png'
+import { Box, TextField, Typography, dclColors, styled } from 'decentraland-ui2'
 
 const spin = keyframes({
   '0%': { transform: 'rotate(0deg)' },
   '100%': { transform: 'rotate(360deg)' }
 })
 
+// AnimatedBackground (rendered as a sibling) sits in the background layer with
+// `variant="absolute"`. The container only paints a tint overlay on top of it
+// so the modal contrasts well; no PNG fallback needed.
 const OnboardingContainer = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
   minHeight: '100dvh',
-  backgroundImage: `url(${backgroundImage})`,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
   position: 'relative',
+  isolation: 'isolate',
   '&::before': {
     content: '""',
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    inset: 0,
     background: 'linear-gradient(135deg, rgba(216, 0, 41, 0.3) 0%, rgba(22, 33, 62, 0.5) 50%, rgba(13, 17, 23, 0.7) 100%)',
-    zIndex: 0
+    zIndex: 0,
+    pointerEvents: 'none'
   }
 })
 
@@ -62,18 +59,10 @@ const LogoContainer = styled(Box)({
   padding: '4px'
 })
 
-const LogoImage = styled('img')({
-  width: '100%',
-  height: '100%',
-  borderRadius: '50%',
-  objectFit: 'cover',
-  background: 'white'
-})
-
 const Title = styled(Typography)(({ theme }) => ({
   ...theme.typography.h5,
   fontWeight: 700,
-  color: '#1a1a1a',
+  color: dclColors.neutral.softBlack1,
   textAlign: 'center',
   marginTop: theme.spacing(1),
   maxWidth: '100%',
@@ -228,7 +217,7 @@ const JoinButton = styled('button')(({ theme }) => ({
   borderRadius: theme.spacing(1),
   border: 'none',
   background: 'linear-gradient(90deg, #FF2D55 0%, #FF6B82 100%)',
-  color: 'white',
+  color: dclColors.neutral.white,
   fontSize: '16px',
   fontWeight: 600,
   cursor: 'pointer',
@@ -271,16 +260,8 @@ const JoiningLogo = styled(Box)({
   boxShadow: '0 8px 24px rgba(255, 45, 85, 0.4)'
 })
 
-const JoiningLogoImage = styled('img')({
-  width: '100%',
-  height: '100%',
-  borderRadius: '50%',
-  objectFit: 'cover',
-  background: 'white'
-})
-
 const JoiningText = styled(Typography)({
-  color: 'white',
+  color: dclColors.neutral.white,
   fontSize: '24px',
   fontWeight: 500
 })
@@ -302,11 +283,9 @@ export {
   JoinButton,
   JoiningContainer,
   JoiningLogo,
-  JoiningLogoImage,
   JoiningSpinner,
   JoiningText,
   LogoContainer,
-  LogoImage,
   OnboardingContainer,
   OnboardingModal,
   ParticipantLabel,

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import MicIcon from '@mui/icons-material/Mic'
 import VideocamIcon from '@mui/icons-material/Videocam'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
-import logoImage from '../../../assets/images/cast/logo.png'
+import { AnimatedBackground, Logo } from 'decentraland-ui2'
 import { getDeviceSettings, saveDeviceSettings } from '../../../features/cast2/cast2.utils'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { AudioOutputSelector } from './AudioOutputSelector'
@@ -15,11 +15,9 @@ import {
   JoinButton,
   JoiningContainer,
   JoiningLogo,
-  JoiningLogoImage,
   JoiningSpinner,
   JoiningText,
   LogoContainer,
-  LogoImage,
   OnboardingContainer,
   OnboardingModal,
   ParticipantLabel,
@@ -38,7 +36,6 @@ export function StreamerOnboarding({ streamName = 'Stream', onJoin, isJoining }:
   useEffect(() => {
     const savedSettings = getDeviceSettings()
     if (savedSettings) {
-      console.log('[StreamerOnboarding] Loading saved device settings:', savedSettings)
       if (savedSettings.audioInputId) setAudioInputId(savedSettings.audioInputId)
       if (savedSettings.audioOutputId) setAudioOutputId(savedSettings.audioOutputId)
       if (savedSettings.videoDeviceId) setVideoDeviceId(savedSettings.videoDeviceId)
@@ -74,9 +71,10 @@ export function StreamerOnboarding({ streamName = 'Stream', onJoin, isJoining }:
   if (isJoining) {
     return (
       <OnboardingContainer>
+        <AnimatedBackground variant="absolute" />
         <JoiningContainer>
           <JoiningLogo>
-            <JoiningLogoImage src={logoImage} alt="Decentraland" />
+            <Logo size="huge" />
           </JoiningLogo>
           <JoiningText>{t('onboarding.joining')}</JoiningText>
           <JoiningSpinner />
@@ -87,9 +85,10 @@ export function StreamerOnboarding({ streamName = 'Stream', onJoin, isJoining }:
 
   return (
     <OnboardingContainer>
+      <AnimatedBackground variant="absolute" />
       <OnboardingModal onKeyDown={handleKeyDown}>
         <LogoContainer>
-          <LogoImage src={logoImage} alt="Decentraland" />
+          <Logo size="huge" />
         </LogoContainer>
 
         <Title>{t('onboarding.speaker_title', { streamName })}</Title>

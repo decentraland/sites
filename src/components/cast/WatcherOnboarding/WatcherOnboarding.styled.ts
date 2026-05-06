@@ -1,6 +1,6 @@
 import { keyframes } from '@emotion/react'
-import { Box, Typography, styled } from 'decentraland-ui2'
-import backgroundWatcherImage from '../../../assets/images/cast/background_watcher.png'
+import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
+import backgroundWatcherImage from '../../../assets/images/cast/background_watcher.webp'
 
 const spin = keyframes({
   '0%': { transform: 'rotate(0deg)' },
@@ -62,18 +62,10 @@ const LogoContainer = styled(Box)({
   padding: '4px'
 })
 
-const LogoImage = styled('img')({
-  width: '100%',
-  height: '100%',
-  borderRadius: '50%',
-  objectFit: 'cover',
-  background: 'white'
-})
-
 const Title = styled(Typography)(({ theme }) => ({
   ...theme.typography.h5,
   fontWeight: 700,
-  color: '#1a1a1a',
+  color: dclColors.neutral.softBlack1,
   textAlign: 'center',
   marginTop: theme.spacing(1),
   maxWidth: '100%',
@@ -204,7 +196,7 @@ const JoinButton = styled('button')(({ theme }) => ({
   borderRadius: theme.spacing(1),
   border: 'none',
   background: 'linear-gradient(90deg, #FF2D55 0%, #FF6B82 100%)',
-  color: 'white',
+  color: dclColors.neutral.white,
   fontSize: '16px',
   fontWeight: 600,
   cursor: 'pointer',
@@ -247,16 +239,8 @@ const JoiningLogo = styled(Box)({
   boxShadow: '0 8px 24px rgba(255, 45, 85, 0.4)'
 })
 
-const JoiningLogoImage = styled('img')({
-  width: '100%',
-  height: '100%',
-  borderRadius: '50%',
-  objectFit: 'cover',
-  background: 'white'
-})
-
 const JoiningText = styled(Typography)({
-  color: 'white',
+  color: dclColors.neutral.white,
   fontSize: '24px',
   fontWeight: 500
 })
@@ -278,11 +262,9 @@ export {
   JoinButton,
   JoiningContainer,
   JoiningLogo,
-  JoiningLogoImage,
   JoiningSpinner,
   JoiningText,
   LogoContainer,
-  LogoImage,
   OnboardingContainer,
   OnboardingModal,
   SelectorButton,
