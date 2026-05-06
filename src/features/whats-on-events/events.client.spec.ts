@@ -138,6 +138,14 @@ describe('eventsClient', () => {
 
         expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(expect.stringContaining('list=upcoming'), undefined)
       })
+
+      it('should not filter out world events so the upcoming list includes Worlds', async () => {
+        await store.dispatch(eventsClient.endpoints.getUpcomingEvents.initiate())
+
+        const calledUrl = mockFetchWithOptionalIdentity.mock.calls.at(-1)?.[0] as string
+        expect(calledUrl).toContain('list=upcoming')
+        expect(calledUrl).not.toMatch(/[?&]world=/)
+      })
     })
 
     describe('and the fetch fails', () => {
@@ -199,6 +207,15 @@ describe('eventsClient', () => {
             creatorName: 'Decentraland Foundation'
           })
         )
+      })
+
+      it('should not filter out world events so the live now list includes Worlds', async () => {
+        await store.dispatch(eventsClient.endpoints.getLiveNowCards.initiate())
+
+        const fetchSpy = global.fetch as jest.Mock
+        const eventsCall = fetchSpy.mock.calls.find(call => call[0].toString().includes('/events?'))
+        expect(eventsCall?.[0] as string).toContain('list=live')
+        expect(eventsCall?.[0] as string).not.toMatch(/[?&]world=/)
       })
     })
 
