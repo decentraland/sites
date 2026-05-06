@@ -139,6 +139,10 @@
         "live": "라이브",
         "view_all": "모두 보기"
       }
+    },
+    "report": {
+      "title": "플레이어 신고 – Decentraland",
+      "success_title": "신고가 전송되었습니다 – Decentraland"
     }
   },
   "page_invite": {
@@ -543,6 +547,62 @@
       },
       "list": {
         "title": "사용자: {userName}"
+      }
+    },
+    "report": {
+      "form": {
+        "title": "사용자 신고",
+        "wallet_mismatch": "연결된 지갑이 플레이어 주소와 일치하지 않습니다. 올바른 지갑으로 연결한 뒤 신고를 제출해 주세요.",
+        "your_wallet_label": "내 지갑 주소",
+        "your_wallet_helper": "악용을 방지하기 위해 신고는 지갑과 연결됩니다. 신원은 공개되지 않습니다.",
+        "your_wallet_placeholder": "주소를 입력하거나 붙여 넣으세요...",
+        "sign_in_alert": "신고를 제출하려면 지갑으로 로그인해 주세요.",
+        "sign_in_cta": "로그인",
+        "reported_label": "신고 대상 지갑",
+        "reported_helper": "신고하려는 사용자의 지갑 주소입니다.",
+        "reported_placeholder": "주소를 입력하거나 붙여 넣으세요...",
+        "reason_label": "신고 사유",
+        "reason_helper": "문제와 가장 가까운 항목을 선택하세요.",
+        "reason_placeholder": "사유 선택",
+        "reason_options": {
+          "scam_phishing": "사기/피싱",
+          "illegal_content": "불법 콘텐츠",
+          "harassment": "괴롭힘",
+          "cheating": "치팅",
+          "impersonation": "사칭"
+        },
+        "description_label": "설명",
+        "description_helper": "무슨 일이 있었는지 설명해 주세요. 가능하다면 발생 시점과 위치도 적어 주세요.",
+        "description_placeholder": "여기에 설명을 입력하세요...",
+        "description_hint": "더 많은 세부 정보를 제공할수록 모더레이터가 검토하기 쉬워집니다.",
+        "evidence_label": "증거",
+        "evidence_helper": "스크린샷, 동영상 또는 링크를 최대 5개까지 업로드하세요.",
+        "evidence_add": "파일 추가",
+        "evidence_oversized": "{names} 파일이 5MB 제한을 초과했습니다",
+        "evidence_invalid_type": "{names} 파일은 지원되지 않는 형식입니다",
+        "additional_label": "추가 의견",
+        "additional_helper": "모더레이터의 조사에 도움이 될 만한 추가 정보를 적어 주세요.",
+        "additional_placeholder": "여기에 의견을 입력하세요...",
+        "confirmation_label": "이 신고가 정확함을 확인합니다.",
+        "submit": "신고 제출",
+        "submit_in_progress": "제출 중...",
+        "errors": {
+          "invalid_address": "유효한 지갑 주소를 입력해 주세요",
+          "missing_reason": "사유를 선택해 주세요",
+          "missing_description": "신고에 대한 설명을 입력해 주세요",
+          "missing_evidence": "신고에 대한 증거를 업로드해 주세요",
+          "missing_confirmation": "내용이 정확함을 확인해야 합니다",
+          "submit_failed": "신고를 전송하지 못했습니다. 다시 시도해 주세요."
+        },
+        "footer_lead": "도움이 필요하신가요?",
+        "footer_help_prefix": "긴급 문제나 보안 관련 문의는",
+        "footer_help_link": "지원 팀에 문의해 주세요",
+        "footer_help_suffix": "."
+      },
+      "success": {
+        "title": "신고가 접수되었습니다",
+        "body": "신고를 접수했습니다. 곧 검토할 예정입니다.",
+        "dismiss": "이제 이 창을 닫으셔도 됩니다."
       }
     }
   },

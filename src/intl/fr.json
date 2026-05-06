@@ -139,6 +139,10 @@
         "live": "En direct",
         "view_all": "Voir tout"
       }
+    },
+    "report": {
+      "title": "Signaler un joueur – Decentraland",
+      "success_title": "Signalement envoyé – Decentraland"
     }
   },
   "page_invite": {
@@ -538,6 +542,62 @@
       },
       "list": {
         "title": "Utilisateur : {userName}"
+      }
+    },
+    "report": {
+      "form": {
+        "title": "Signaler un utilisateur",
+        "wallet_mismatch": "Le wallet connecté ne correspond pas à l'adresse du joueur. Connectez-vous avec le wallet correct pour envoyer ce signalement.",
+        "your_wallet_label": "Votre adresse de wallet",
+        "your_wallet_helper": "Les signalements sont liés à votre wallet pour prévenir les abus. Votre identité ne sera pas partagée publiquement.",
+        "your_wallet_placeholder": "Saisissez ou collez votre adresse ici...",
+        "sign_in_alert": "Veuillez vous connecter avec votre wallet pour envoyer un signalement.",
+        "sign_in_cta": "Se connecter",
+        "reported_label": "Wallet de l’utilisateur signalé",
+        "reported_helper": "Il s’agit de l’adresse du wallet de l’utilisateur que vous signalez.",
+        "reported_placeholder": "Saisissez ou collez une adresse ici...",
+        "reason_label": "Motif du signalement",
+        "reason_helper": "Sélectionnez l’option qui décrit le mieux le problème.",
+        "reason_placeholder": "Choisir un motif",
+        "reason_options": {
+          "scam_phishing": "Arnaque/Phishing",
+          "illegal_content": "Contenu illégal",
+          "harassment": "Harcèlement",
+          "cheating": "Triche",
+          "impersonation": "Usurpation d’identité"
+        },
+        "description_label": "Description",
+        "description_helper": "Décrivez ce qui s’est passé. Indiquez quand et où l’incident s’est produit, si possible.",
+        "description_placeholder": "Saisissez votre description ici...",
+        "description_hint": "Plus vous fournissez de détails, plus il est facile pour les modérateurs d’examiner votre signalement.",
+        "evidence_label": "Preuves",
+        "evidence_helper": "Téléversez jusqu’à 5 captures d’écran, vidéos ou liens pour appuyer votre signalement.",
+        "evidence_add": "Ajouter un fichier",
+        "evidence_oversized": "{names} dépasse la limite de 5 Mo",
+        "evidence_invalid_type": "{names} n’est pas un type de fichier pris en charge",
+        "additional_label": "Commentaires supplémentaires",
+        "additional_helper": "Fournissez toute information complémentaire qui pourrait aider l’enquête des modérateurs.",
+        "additional_placeholder": "Saisissez vos commentaires ici...",
+        "confirmation_label": "Je confirme que ce signalement est exact.",
+        "submit": "Envoyer le signalement",
+        "submit_in_progress": "Envoi en cours...",
+        "errors": {
+          "invalid_address": "Veuillez saisir une adresse de wallet valide",
+          "missing_reason": "Veuillez choisir un motif",
+          "missing_description": "Veuillez inclure une description de votre signalement",
+          "missing_evidence": "Veuillez téléverser les preuves de votre signalement",
+          "missing_confirmation": "Vous devez confirmer que ces informations sont exactes",
+          "submit_failed": "Nous n’avons pas pu envoyer votre signalement. Veuillez réessayer."
+        },
+        "footer_lead": "Besoin d’aide ?",
+        "footer_help_prefix": "Pour les problèmes urgents ou les questions de sécurité, veuillez",
+        "footer_help_link": "contacter l’équipe de support",
+        "footer_help_suffix": "."
+      },
+      "success": {
+        "title": "Signalement envoyé",
+        "body": "Votre signalement a bien été reçu et sera examiné rapidement.",
+        "dismiss": "Vous pouvez maintenant fermer cette fenêtre."
       }
     }
   },

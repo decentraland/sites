@@ -30,6 +30,8 @@ const InvitePage = lazy(() => import('./pages/invite/InvitePage').then(m => ({ d
 const CreatePage = lazy(() => import('./pages/create').then(m => ({ default: m.CreatePage })))
 const DiscordPage = lazy(() => import('./pages/discord').then(m => ({ default: m.DiscordPage })))
 const PressPage = lazy(() => import('./pages/press').then(m => ({ default: m.PressPage })))
+const ReportPage = lazy(() => import('./pages/report').then(m => ({ default: m.ReportPage })))
+const ReportSuccessPage = lazy(() => import('./pages/report/success').then(m => ({ default: m.ReportSuccessPage })))
 
 // Reels — fullscreen viewer for in-game camera screenshots. Migrated from the standalone
 // reels.decentraland.org Gatsby app. Lightweight (no Redux, no Web3) and intentionally
@@ -103,6 +105,9 @@ const App = () => {
             <Route path="/download/creator-hub-success" element={<CreatorHubDownloadSuccessPage />} />
             <Route path="/discord" element={<DiscordPage />} />
             <Route path="/press" element={<PressPage />} />
+            <Route path="/report" element={<ReportPage />} />
+            <Route path="/report/success" element={<ReportSuccessPage />} />
+            <Route path="/report/players" element={<Navigate to="/report" replace />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
             {/* Retro-compat for the standalone events/places sites — redirect into /whats-on
                 with the deep-link params (id / position / world) it already consumes.

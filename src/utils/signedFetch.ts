@@ -8,9 +8,10 @@ function fetchWithIdentity(
   identity: AuthIdentity,
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
   body?: BodyInit,
-  headers?: Record<string, string>
+  headers?: Record<string, string>,
+  signal?: AbortSignal
 ): Promise<Response> {
-  return signedFetch(url, { method, identity, body, headers })
+  return signedFetch(url, { method, identity, body, headers, signal })
 }
 
 function fetchWithOptionalIdentity(url: string, identity: AuthIdentity | undefined): Promise<Response> {

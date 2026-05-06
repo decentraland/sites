@@ -27,5 +27,6 @@
   "THE_GRAPH_API_MATIC_URL": "https://subgraph.decentraland.org/collections-matic-amoy",
   "MARKETPLACE_URL": "https://market.decentraland.zone",
   "PROFILE_URL": "https://profile.decentraland.zone",
+  "REPORT_API_URL": "https://report-user.decentraland.zone",
   "DECENTRALAND_HOMEPAGE_URL": "https://decentraland.zone"
 }
