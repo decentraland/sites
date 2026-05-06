@@ -152,6 +152,10 @@ const App = () => {
               <Route path="/blog/:categorySlug" element={<CategoryPage />} />
               <Route path="/blog/:categorySlug/:postSlug" element={<PostPage />} />
               <Route path="/cast" element={<CastLayout />}>
+                {/* `/cast` (no trailing path) is not a deep link from gatekeeper, so
+                    treat it as not-found rather than a landing. The catch-all below
+                    only matches non-empty children, so we need an explicit index. */}
+                <Route index element={<CastNotFoundPage />} />
                 <Route path="s/:token" element={<StreamerPage />} />
                 <Route path="s/streaming" element={<StreamerPage />} />
                 <Route path="w/:worldName/parcel/:parcel" element={<WatcherPage />} />
