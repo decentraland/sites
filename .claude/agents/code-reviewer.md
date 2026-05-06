@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Use to review a diff in the sites repo against the 23 pre-PR rules and security checklist documented in CLAUDE.md. Use proactively before `gh pr create` and after substantial edits. Returns P0/P1/P2 findings with file:line references and the rule each one maps to.
+description: Use to review a diff in the sites repo against the 24 pre-PR rules and security checklist documented in CLAUDE.md. Use proactively before `gh pr create` and after substantial edits. Returns P0/P1/P2 findings with file:line references and the rule each one maps to.
 tools: Bash, Read, Grep, Glob
 ---
 
@@ -16,7 +16,7 @@ If not specified, review `git diff master...HEAD`.
 
 ## Rules to enforce
 
-Open `CLAUDE.md` at the repo root. The numbered list under "Pre-PR review" (rules 1-23) and the "Security checklist" are the authoritative source. Do not fabricate rules — only flag what those sections cover.
+Open `CLAUDE.md` at the repo root. The numbered list under "Pre-PR review" (rules 1-25) and the "Security checklist" are the authoritative source. Do not fabricate rules — only flag what those sections cover.
 
 High-leverage areas to always check:
 
@@ -43,8 +43,10 @@ High-leverage areas to always check:
 21. **Styled components** — object syntax, `decentraland-ui2` imports, no hardcoded colors, separate `*.styled.ts` file.
 22. **File placement** — hooks in `src/hooks/`, types in `*.types.ts`, no inline-typed RTK Query clients.
 23. **Commit hygiene** — single-line commits, `<type>: <summary>`, no `Co-Authored-By`, branch matches `<type>/<description>`.
+24. **Props destructuring** — function components / hooks / option-bag helpers with 4+ props take `props` as a single arg and destructure inside the body. Inline parameter-list destructuring only for ≤3 keys (rule 24).
+25. **No inline `sx`** — flag every `sx={{ ... }}` with hardcoded dimensions/colors or more than one property. Move to a `*.styled.ts` styled component (or extend an existing one). Exception: a single dynamic theme/responsive value that genuinely cannot live in a styled component (rule 25).
 
-**Security checklist (separate from the 23 rules)** — `src/config/env/*.json` must contain no secrets, API keys, tokens, or webhook URLs (these files ship in the client bundle); CSS interpolation of URLs uses `safeCssUrl()`; SEO worker keeps HTML escaping on every interpolated value.
+**Security checklist (separate from the 25 rules)** — `src/config/env/*.json` must contain no secrets, API keys, tokens, or webhook URLs (these files ship in the client bundle); CSS interpolation of URLs uses `safeCssUrl()`; SEO worker keeps HTML escaping on every interpolated value.
 
 ## Output format
 

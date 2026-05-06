@@ -14,7 +14,7 @@ sites session — quick reminders:
   i18n: 6 locales, en is source (rule 9)
   shells: lightweight routes MUST NOT import src/shells/* (rule 2)
   pre-PR: format -> lint:fix -> lint:pkg -> build -> test -> code-reviewer agent
-  see CLAUDE.md "Pre-PR review" rules 1-23 and "Security checklist"
+  see CLAUDE.md "Pre-PR review" rules 1-25 and "Security checklist"
 EOF
 
 exit 0
