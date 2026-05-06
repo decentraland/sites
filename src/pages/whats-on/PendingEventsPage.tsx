@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useTranslation } from '@dcl/hooks'
@@ -9,6 +9,7 @@ import { RejectEventModal } from '../../components/whats-on/RejectEventModal'
 import type { RejectSubmitPayload } from '../../components/whats-on/RejectEventModal'
 import { useApproveEventMutation, useGetAdminEventsQuery, useRejectEventMutation } from '../../features/whats-on/admin'
 import type { EventEntry } from '../../features/whats-on-events/events.types'
+import { useAdminEventDeepLink } from '../../hooks/useAdminEventDeepLink'
 import { useAdminPermissions } from '../../hooks/useAdminPermissions'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../hooks/useEventDetailModal'
@@ -28,9 +29,18 @@ function PendingEventsPage() {
   const [feedback, setFeedback] = useState<{ message: string; severity: 'success' | 'error' } | null>(null)
   const { activeEvent, closeEventDetailModal, editActiveEvent, modalData, openEventDetailModal } = useEventDetailModal()
 
-  const { data: events = [] } = useGetAdminEventsQuery(identity && allowed ? { identity } : skipToken, { refetchOnMountOrArgChange: true })
+  const { data: events = [], isSuccess: areEventsLoaded } = useGetAdminEventsQuery(identity && allowed ? { identity } : skipToken, {
+    refetchOnMountOrArgChange: true
+  })
   const [approve, { isLoading: isApproving }] = useApproveEventMutation()
   const [reject, { isLoading: isRejecting }] = useRejectEventMutation()
+
+  const { closeDeepLink } = useAdminEventDeepLink({ events, isLoaded: areEventsLoaded, onMatch: openEventDetailModal })
+
+  const handleCloseModal = useCallback(() => {
+    closeEventDetailModal()
+    closeDeepLink()
+  }, [closeEventDetailModal, closeDeepLink])
 
   const pending = useMemo(() => {
     const now = Date.now()
@@ -55,7 +65,7 @@ function PendingEventsPage() {
     }
     try {
       await approve({ eventId: activeEvent.id, identity }).unwrap()
-      closeEventDetailModal()
+      handleCloseModal()
       setFeedback({ message: t('whats_on_admin.pending_events.approve_success'), severity: 'success' })
     } catch (error) {
       console.error('[PendingEventsPage] approve failed', error)
@@ -77,7 +87,7 @@ function PendingEventsPage() {
     try {
       await reject({ eventId: rejectingEvent.id, identity, reason }).unwrap()
       setRejectingEvent(null)
-      closeEventDetailModal()
+      handleCloseModal()
       setFeedback({ message: t('whats_on_admin.pending_events.reject_success'), severity: 'success' })
     } catch (error) {
       console.error('[PendingEventsPage] reject failed', error)
@@ -117,7 +127,7 @@ function PendingEventsPage() {
         <EventDetailModal
           open
           data={modalData}
-          onClose={closeEventDetailModal}
+          onClose={handleCloseModal}
           adminActions={isPendingActive ? { onApprove: handleApprove, onReject: handleRejectClick, isProcessing: processing } : undefined}
           onEdit={editActiveEvent}
         />
