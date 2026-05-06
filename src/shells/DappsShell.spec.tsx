@@ -11,7 +11,9 @@ jest.mock('../config/env', () => ({
   getEnv: (key: string) => {
     const values: Record<string, string> = {
       PEER_URL: 'https://peer.decentraland.org',
-      PLACES_API_URL: 'https://places.decentraland.org/api'
+      PLACES_API_URL: 'https://places.decentraland.org/api',
+      GATEKEEPER_URL: 'https://comms-gatekeeper.decentraland.org',
+      WORLDS_CONTENT_URL: 'https://worlds-content-server.decentraland.org'
     }
     return values[key]
   }
@@ -52,6 +54,18 @@ describe('DappsShell', () => {
   it('should inject a preconnect link for PLACES_API_URL origin', () => {
     renderShell()
     const link = document.head.querySelector('link[rel="preconnect"][href="https://places.decentraland.org"]')
+    expect(link).not.toBeNull()
+  })
+
+  it('should inject a preconnect link for GATEKEEPER_URL origin', () => {
+    renderShell()
+    const link = document.head.querySelector('link[rel="preconnect"][href="https://comms-gatekeeper.decentraland.org"]')
+    expect(link).not.toBeNull()
+  })
+
+  it('should inject a preconnect link for WORLDS_CONTENT_URL origin', () => {
+    renderShell()
+    const link = document.head.querySelector('link[rel="preconnect"][href="https://worlds-content-server.decentraland.org"]')
     expect(link).not.toBeNull()
   })
 

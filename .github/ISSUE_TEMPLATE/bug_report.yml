@@ -75,6 +75,8 @@ body:
         - What's On — Admin: Users
         - Jump — Places (/jump, /jump/places)
         - Jump — Events (/jump/events)
+        - Cast — Streamer (/cast/s)
+        - Cast — Watcher (/cast/w)
         - Blog — Home (/blog)
         - Blog — Search (/blog/search)
         - Blog — Category (/blog/:categorySlug)

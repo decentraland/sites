@@ -37,7 +37,13 @@ enum SegmentEvent {
   REELS_CLICK_PROFILE = 'Reels Click Profile',
   REELS_CLICK_PLACE = 'Reels Click Place',
   REELS_CLICK_DCL_LOGO = 'Reels Click Decentraland Logo',
-  REELS_CLICK_THUMBNAIL = 'Reels Click Thumbnail'
+  REELS_CLICK_THUMBNAIL = 'Reels Click Thumbnail',
+  CAST_STREAMER_JOINED = 'Cast Streamer Joined',
+  CAST_WATCHER_JOINED = 'Cast Watcher Joined',
+  CAST_STREAM_STARTED = 'Cast Stream Started',
+  CAST_STREAM_ENDED = 'Cast Stream Ended',
+  CAST_PRESENTATION_SHARED = 'Cast Presentation Shared',
+  CAST_DEVICE_CHANGED = 'Cast Device Changed'
 }
 
 enum DownloadPlace {

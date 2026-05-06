@@ -139,6 +139,198 @@
         "live": "直播",
         "view_all": "查看全部"
       }
+    },
+    "cast": {
+      "app": {
+        "title": "Decentraland Cast 2.0",
+        "subtitle": "浏览器原生流媒体，亚秒级延迟",
+        "invalid_route": "无效路由。流媒体链接由Decentraland场景中的Admin Smart Item生成。",
+        "auth_demo": "身份验证演示：",
+        "view_docs": "查看文档"
+      },
+      "not_found": {
+        "title": "404 - 页面未找到",
+        "description": "此Cast 2.0流媒体不存在。流媒体链接由Decentraland场景中的Admin Smart Item按需生成。如果您点击了有效链接仍看到此错误，流媒体可能已结束。",
+        "go_home": "返回首页",
+        "page_title": "未找到 Cast"
+      },
+      "streamer": {
+        "title": "直播中",
+        "page_title": "在 Decentraland Cast 上直播",
+        "share_link": "分享链接",
+        "share_link_tooltip": "复制观看链接以分享您的直播",
+        "link_copied": "链接已复制！",
+        "starting_stream": "正在启动直播...",
+        "connecting": "正在连接房间...",
+        "error_invalid_token": "无效或过期的流媒体令牌。请从Admin Smart Item生成新链接。",
+        "error_no_token": "未找到流媒体令牌。请使用Admin Smart Item的链接。",
+        "error_initialize_streaming": "初始化直播失败。",
+        "error_connection": "连接流媒体房间失败",
+        "connect_wallet_prompt": "连接您的Decentraland钱包以聊天和互动"
+      },
+      "watcher": {
+        "title": "观看直播",
+        "page_title": "在 Decentraland Cast 观看",
+        "back_to_decentraland": "返回Decentraland",
+        "connecting": "正在连接直播...",
+        "error_connection": "连接直播失败",
+        "connect_wallet_prompt": "连接您的Decentraland钱包以发送消息"
+      },
+      "streaming_controls": {
+        "mute_mic": "静音麦克风",
+        "unmute_mic": "取消静音",
+        "stop_cam": "停止摄像头",
+        "start_cam": "启动摄像头",
+        "stop_share": "停止共享",
+        "share_screen": "共享屏幕",
+        "screen_share_mobile_not_supported": "移动设备不支持屏幕共享",
+        "leave_stream": "离开直播",
+        "leave": "离开",
+        "reconnect": "重新连接",
+        "disconnected": "已断开",
+        "connecting": "连接中...",
+        "connected": "已连接",
+        "mute_cast": "在世界中时静音此Cast音频",
+        "unmute_cast": "取消静音Cast音频",
+        "share_presentation": "共享演示文稿",
+        "stop_presentation": "停止演示",
+        "uploading_presentation": "正在上传演示文稿...",
+        "paste_presentation_url": "粘贴您的演示文稿URL",
+        "share": "共享",
+        "or": "或",
+        "browse_local_files": "浏览本地文件",
+        "supported_formats": "支持的格式：PDF, PPTX。",
+        "initializing_video": "正在初始化视频...",
+        "presentation": "演示文稿",
+        "url_invalid": "请输入有效的URL",
+        "url_https_required": "URL必须使用https://",
+        "file_too_large": "文件过大。最大大小为{maxMb}MB。",
+        "file_invalid_type": "不支持的文件类型。请上传 PDF 或 PPTX 文件。"
+      },
+      "device_selector": {
+        "audio_input": "音频输入",
+        "video_input": "视频输入",
+        "loading": "正在加载{type}设备...",
+        "no_devices": "未找到{type}设备",
+        "select_device": "选择{type}设备"
+      },
+      "chat": {
+        "title": "游戏内聊天",
+        "messages_count": "{count}条消息",
+        "messages_count_plural": "{count}条消息",
+        "no_messages": "还没有消息。{action}",
+        "no_messages_yet": "暂无消息",
+        "start_conversation": "开始对话！",
+        "sign_in_to_participate": "登录以参与。",
+        "type_message": "输入消息...",
+        "sign_in_prompt": "登录以在聊天中发送消息",
+        "connect_wallet_prompt": "连接您的Decentraland钱包以发送消息",
+        "footer_text": "进入Decentraland中的{sceneName}参与聊天。"
+      },
+      "people": {
+        "title": "参与者",
+        "speakers": "主播",
+        "viewers": "观众",
+        "in_world_participants": "游戏内参与者",
+        "no_speakers": "暂无主播",
+        "no_viewers": "暂无观众",
+        "no_in_world": "暂无游戏内参与者",
+        "speaker_status": "说话中",
+        "viewer_status": "观看中",
+        "in_world_status": "在游戏中"
+      },
+      "live_counter": {
+        "live": "直播中",
+        "participant_streaming": "人正在直播",
+        "participants_streaming": "人正在直播",
+        "you": "你"
+      },
+      "room_stats": {
+        "title": "直播统计",
+        "people": "人数",
+        "viewers": "观众",
+        "connection": "连接",
+        "quality": "质量",
+        "unknown": "未知",
+        "poor": "差",
+        "good": "良好",
+        "excellent": "优秀",
+        "disconnected": "已断开",
+        "connecting": "连接中...",
+        "connected": "已连接"
+      },
+      "empty_state": {
+        "streamer_title": "准备直播",
+        "streamer_message": "打开您的摄像头或共享屏幕，以便观众看到您的内容",
+        "streamer_action": "点击下方的摄像头或共享屏幕开始分享",
+        "streamer_disconnected": "您已断开连接。点击下方的重新连接以再次开始直播",
+        "camera_initializing": "摄像头初始化中... 请稍候",
+        "watcher_title": "目前没有人在此链接直播...",
+        "watcher_message": "此Decentraland Cast可能即将开始或已经结束。",
+        "no_video_streams": "无视频流",
+        "waiting_participants": "等待参与者..."
+      },
+      "auth": {
+        "connect_wallet": "连接钱包",
+        "connecting": "连接中...",
+        "disconnect": "断开连接",
+        "sign_in": "登录",
+        "sign_out": "退出",
+        "join_conversation": "加入对话",
+        "connect_prompt": "连接您的钱包以在聊天中发送消息并参与讨论。",
+        "no_wallet": "请安装MetaMask以登录。",
+        "no_accounts": "未找到账户。请连接您的钱包。",
+        "auth_failed": "身份验证失败",
+        "privacy_note": "我们永远不会存储您的私钥。此签名仅用于验证您的身份。"
+      },
+      "status": {
+        "muted": "已静音",
+        "speaking": "说话中",
+        "not_speaking": "未说话"
+      },
+      "loading": {
+        "title": "加载Cast 2.0",
+        "message": "正在准备您的直播体验..."
+      },
+      "onboarding": {
+        "speaker_title": "正在向{streamName}直播，Decentraland",
+        "speaker_tag": "主播",
+        "viewer_title": "来自{streamName}的Decentraland Cast",
+        "viewer_tag": "观众",
+        "name_placeholder": "输入您的名字（可选）",
+        "join_now": "立即加入",
+        "joining": "加入中..."
+      },
+      "participant_grid": {
+        "more_participants": "更多"
+      },
+      "error_modal": {
+        "title": "重新加入Cast失败",
+        "message": "请使用此Cast的链接重新加入。"
+      },
+      "scene_selector": {
+        "title": "选择场景",
+        "placeholder": "选择要观看的场景",
+        "watch": "观看",
+        "back": "返回",
+        "no_scenes": "此世界中未找到场景",
+        "loading": "加载世界场景中..."
+      },
+      "watcher_error_modal": {
+        "title": "连接直播室失败",
+        "message": "请使用从Admin Smart Item发送的链接重新加入直播。"
+      },
+      "notifications": {
+        "presentation_download_failed": {
+          "title": "无法加载演示文稿",
+          "default_message": "无法下载该URL。请确保该URL可公开访问后重试。"
+        },
+        "video_playback_failed": {
+          "title": "视频无法播放"
+        },
+        "retry": "重试",
+        "dismiss": "关闭"
+      }
     }
   },
   "page_invite": {

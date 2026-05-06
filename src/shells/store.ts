@@ -5,6 +5,7 @@ import { blogReducer } from '../features/blog/blog.slice'
 import { adminClient } from '../features/whats-on/admin'
 import { eventsClient } from '../features/whats-on-events/events.client'
 import { cmsClient } from '../services/blogClient'
+import { cast2Client } from '../services/cast2Client'
 import { placesClient } from '../services/placesClient'
 import { createWhatsOnAdminListenerMiddleware } from './whatsOnAdmin.listeners'
 
@@ -13,7 +14,8 @@ const rootReducer = combineReducers({
   [adminClient.reducerPath]: adminClient.reducer,
   blog: blogReducer,
   [cmsClient.reducerPath]: cmsClient.reducer,
-  [placesClient.reducerPath]: placesClient.reducer
+  [placesClient.reducerPath]: placesClient.reducer,
+  [cast2Client.reducerPath]: cast2Client.reducer
 })
 
 const store = configureStore({
@@ -21,7 +23,7 @@ const store = configureStore({
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware()
       .prepend(createWhatsOnAdminListenerMiddleware().middleware)
-      .concat(eventsClient.middleware, adminClient.middleware, cmsClient.middleware, placesClient.middleware),
+      .concat(eventsClient.middleware, adminClient.middleware, cmsClient.middleware, placesClient.middleware, cast2Client.middleware),
   devTools: import.meta.env.DEV
 })
 
