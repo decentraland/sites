@@ -1,6 +1,37 @@
-import fs from 'fs'
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import handler from './seo'
+
+// Mock the dist/index.html the SEO worker reads at module load. Lets `npm test` run in CI
+// without `npm run build`. The fixture mirrors index.html with placeholders for every meta
+// tag the worker substitutes, so the assertions below exercise real substitution.
+// jest.mock() is hoisted by babel-jest above all imports, so the seo module sees the mocked fs.
+jest.mock('fs', () => {
+  const actual = jest.requireActual('fs')
+  const FIXTURE_INDEX_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Decentraland</title>
+  <meta name="description" content="Decentraland is where you hang out online." />
+  <meta property="og:title" content="Decentraland — Come Hang Out">
+  <meta property="og:description" content="Decentraland is where you hang out online.">
+  <meta property="og:image" content="https://decentraland.org/images/decentraland.png">
+  <meta name="twitter:title" content="Decentraland — Come Hang Out">
+  <meta name="twitter:description" content="Decentraland is where you hang out online.">
+  <meta name="twitter:image" content="https://decentraland.org/images/decentraland.png">
+  <link rel="canonical" href="https://decentraland.org/">
+  <meta property="og:url" content="https://decentraland.org/">
+  <meta property="og:type" content="website">
+</head>
+<body><div id="root"></div></body>
+</html>`
+  return {
+    ...actual,
+    readFileSync: jest.fn((p: unknown, opts?: unknown) => {
+      if (typeof p === 'string' && p.includes('dist/index.html')) return FIXTURE_INDEX_HTML
+      return actual.readFileSync(p, opts)
+    })
+  }
+})
 
 interface MockResponse {
   headers: Record<string, string>
@@ -67,10 +98,6 @@ describe('seo handler', () => {
   const realFetch = global.fetch
 
   beforeAll(() => {
-    if (!fs.existsSync(`${process.cwd()}/dist/index.html`)) {
-      throw new Error('dist/index.html missing — run `npm run build` before `npm test`')
-    }
-
     global.fetch = (async (input: RequestInfo | URL): Promise<Response> => {
       const url = typeof input === 'string' ? input : input.toString()
       if (url.includes('/events/11974ff3-675c-46fd-802a-618d4b40e3be')) {
