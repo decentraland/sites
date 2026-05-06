@@ -159,6 +159,10 @@
       "not_found": {
         "title": "Storage · 페이지를 찾을 수 없음"
       }
+    },
+    "report": {
+      "title": "플레이어 신고 – Decentraland",
+      "success_title": "신고가 전송되었습니다 – Decentraland"
     }
   },
   "page_invite": {
@@ -724,10 +728,114 @@
         "subtitle": "찾으시는 페이지가 존재하지 않습니다.",
         "go_home": "홈으로"
       }
+    },
+    "report": {
+      "form": {
+        "title": "사용자 신고",
+        "wallet_mismatch": "연결된 지갑이 플레이어 주소와 일치하지 않습니다. 올바른 지갑으로 연결한 뒤 신고를 제출해 주세요.",
+        "your_wallet_label": "내 지갑 주소",
+        "your_wallet_helper": "악용을 방지하기 위해 신고는 지갑과 연결됩니다. 신원은 공개되지 않습니다.",
+        "your_wallet_placeholder": "주소를 입력하거나 붙여 넣으세요...",
+        "sign_in_alert": "신고를 제출하려면 지갑으로 로그인해 주세요.",
+        "sign_in_cta": "로그인",
+        "reported_label": "신고 대상 지갑",
+        "reported_helper": "신고하려는 사용자의 지갑 주소입니다.",
+        "reported_placeholder": "주소를 입력하거나 붙여 넣으세요...",
+        "reason_label": "신고 사유",
+        "reason_helper": "문제와 가장 가까운 항목을 선택하세요.",
+        "reason_placeholder": "사유 선택",
+        "reason_options": {
+          "scam_phishing": "사기/피싱",
+          "illegal_content": "불법 콘텐츠",
+          "harassment": "괴롭힘",
+          "cheating": "치팅",
+          "impersonation": "사칭"
+        },
+        "description_label": "설명",
+        "description_helper": "무슨 일이 있었는지 설명해 주세요. 가능하다면 발생 시점과 위치도 적어 주세요.",
+        "description_placeholder": "여기에 설명을 입력하세요...",
+        "description_hint": "더 많은 세부 정보를 제공할수록 모더레이터가 검토하기 쉬워집니다.",
+        "evidence_label": "증거",
+        "evidence_helper": "스크린샷, 동영상 또는 링크를 최대 5개까지 업로드하세요.",
+        "evidence_add": "파일 추가",
+        "evidence_oversized": "{names} 파일이 5MB 제한을 초과했습니다",
+        "evidence_invalid_type": "{names} 파일은 지원되지 않는 형식입니다",
+        "additional_label": "추가 의견",
+        "additional_helper": "모더레이터의 조사에 도움이 될 만한 추가 정보를 적어 주세요.",
+        "additional_placeholder": "여기에 의견을 입력하세요...",
+        "confirmation_label": "이 신고가 정확함을 확인합니다.",
+        "submit": "신고 제출",
+        "submit_in_progress": "제출 중...",
+        "errors": {
+          "invalid_address": "유효한 지갑 주소를 입력해 주세요",
+          "missing_reason": "사유를 선택해 주세요",
+          "missing_description": "신고에 대한 설명을 입력해 주세요",
+          "missing_evidence": "신고에 대한 증거를 업로드해 주세요",
+          "missing_confirmation": "내용이 정확함을 확인해야 합니다",
+          "submit_failed": "신고를 전송하지 못했습니다. 다시 시도해 주세요."
+        },
+        "footer_lead": "도움이 필요하신가요?",
+        "footer_help_prefix": "긴급 문제나 보안 관련 문의는",
+        "footer_help_link": "지원 팀에 문의해 주세요",
+        "footer_help_suffix": "."
+      },
+      "success": {
+        "title": "신고가 접수되었습니다",
+        "body": "신고를 접수했습니다. 곧 검토할 예정입니다.",
+        "dismiss": "이제 이 창을 닫으셔도 됩니다."
+      }
     }
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+  },
+  "community": {
+    "global": {
+      "loading": "로딩 중..."
+    },
+    "info": {
+      "jump_in_modal": {
+        "title": "Decentraland 다운로드",
+        "description": "이 커뮤니티에 참여하려면 Decentraland를 다운로드해야 합니다.",
+        "button_label": "다운로드"
+      },
+      "decentraland_community": "Decentraland 커뮤니티",
+      "members": "멤버",
+      "by": "생성자",
+      "unknown": "알 수 없음",
+      "joined": "참여 중",
+      "sign_in_to_join": "로그인하여 참여",
+      "request_to_join": "참여 요청",
+      "cancel_request": "요청 취소",
+      "jump_in": "입장",
+      "join": "참여"
+    },
+    "detail": {
+      "failed_to_join": "커뮤니티 참여에 실패했습니다",
+      "not_found": "커뮤니티를 찾을 수 없음",
+      "not_found_description": "찾으시는 커뮤니티가 존재하지 않습니다."
+    },
+    "events": {
+      "upcoming_events": "다가오는 이벤트",
+      "no_upcoming_events": "다가오는 이벤트가 없습니다",
+      "live": "라이브"
+    },
+    "members_list": {
+      "title": "멤버",
+      "no_members_found": "멤버를 찾을 수 없습니다"
+    },
+    "private_message": {
+      "title": "비공개 커뮤니티입니다",
+      "description": "이 커뮤니티의 프로필을 보려면 멤버여야 합니다."
+    },
+    "not_found": {
+      "title": "페이지를 찾을 수 없음",
+      "description": "찾으시는 페이지가 존재하지 않습니다."
+    },
+    "tabs": {
+      "members": "멤버",
+      "upcoming_events": "다가오는 이벤트"
+    }
   }
 }

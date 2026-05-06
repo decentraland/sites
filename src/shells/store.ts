@@ -6,6 +6,7 @@ import { adminClient } from '../features/whats-on/admin'
 import { eventsClient } from '../features/whats-on-events/events.client'
 import { cmsClient } from '../services/blogClient'
 import { placesClient } from '../services/placesClient'
+import { socialClient } from '../services/socialClient'
 import { storageClient } from '../services/storageClient'
 import { subgraphClient } from '../services/subgraphClient'
 import { createWhatsOnAdminListenerMiddleware } from './whatsOnAdmin.listeners'
@@ -16,6 +17,7 @@ const rootReducer = combineReducers({
   blog: blogReducer,
   [cmsClient.reducerPath]: cmsClient.reducer,
   [placesClient.reducerPath]: placesClient.reducer,
+  [socialClient.reducerPath]: socialClient.reducer,
   [storageClient.reducerPath]: storageClient.reducer,
   [subgraphClient.reducerPath]: subgraphClient.reducer
 })
@@ -30,6 +32,7 @@ const store = configureStore({
         adminClient.middleware,
         cmsClient.middleware,
         placesClient.middleware,
+        socialClient.middleware,
         storageClient.middleware,
         subgraphClient.middleware
       ),

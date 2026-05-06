@@ -30,6 +30,8 @@ const InvitePage = lazy(() => import('./pages/invite/InvitePage').then(m => ({ d
 const CreatePage = lazy(() => import('./pages/create').then(m => ({ default: m.CreatePage })))
 const DiscordPage = lazy(() => import('./pages/discord').then(m => ({ default: m.DiscordPage })))
 const PressPage = lazy(() => import('./pages/press').then(m => ({ default: m.PressPage })))
+const ReportPage = lazy(() => import('./pages/report').then(m => ({ default: m.ReportPage })))
+const ReportSuccessPage = lazy(() => import('./pages/report/success').then(m => ({ default: m.ReportSuccessPage })))
 
 // Reels — fullscreen viewer for in-game camera screenshots. Migrated from the standalone
 // reels.decentraland.org Gatsby app. Lightweight (no Redux, no Web3) and intentionally
@@ -59,6 +61,11 @@ const UsersAdminPage = lazy(() => import('./pages/whats-on/UsersAdminPage').then
 const LegacyHangoutRedirect = lazy(() => import('./pages/whats-on/LegacyHangoutRedirect').then(m => ({ default: m.LegacyHangoutRedirect })))
 const LegacyWhatsOnRedirect = lazy(() => import('./pages/whats-on/LegacyWhatsOnRedirect').then(m => ({ default: m.LegacyWhatsOnRedirect })))
 const LegacyWorldRedirect = lazy(() => import('./pages/whats-on/LegacyWorldRedirect').then(m => ({ default: m.LegacyWorldRedirect })))
+
+// Social pages — community detail. Heavy route (Redux + RTK Query). Auth via
+// localStorage identity (no Web3 providers); CTAs gated on useAuthIdentity.
+const CommunityDetailPage = lazy(() => import('./pages/social/CommunityDetailPage').then(m => ({ default: m.CommunityDetailPage })))
+const SocialNotFoundPage = lazy(() => import('./pages/social/SocialNotFoundPage').then(m => ({ default: m.SocialNotFoundPage })))
 
 // Jump pages — deep-link handler for decentraland:// launcher. Heavy route (Redux).
 const JumpPlacesPage = lazy(() => import('./pages/jump/PlacesPage').then(m => ({ default: m.PlacesPage })))
@@ -107,6 +114,9 @@ const App = () => {
             <Route path="/download/creator-hub-success" element={<CreatorHubDownloadSuccessPage />} />
             <Route path="/discord" element={<DiscordPage />} />
             <Route path="/press" element={<PressPage />} />
+            <Route path="/report" element={<ReportPage />} />
+            <Route path="/report/success" element={<ReportSuccessPage />} />
+            <Route path="/report/players" element={<Navigate to="/report" replace />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
             {/* Retro-compat for the standalone events/places sites — redirect into /whats-on
                 with the deep-link params (id / position / world) it already consumes.
@@ -159,6 +169,8 @@ const App = () => {
               <Route path="/storage/players" element={<StoragePlayersPage />} />
               <Route path="/storage/players/:address" element={<StoragePlayerDetailPage />} />
               <Route path="/storage/*" element={<StorageNotFoundPage />} />
+              <Route path="/social/communities/:id" element={<CommunityDetailPage />} />
+              <Route path="/social/*" element={<SocialNotFoundPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

@@ -69,7 +69,7 @@ import {
 
 const PREVIEW_REQUIRED_FIELDS: Array<keyof CreateEventFormState> = ['name', 'startDate', 'startTime', 'duration']
 
-function buildPreviewData(form: CreateEventFormState, address: string | undefined): ModalEventData {
+function buildPreviewData(form: CreateEventFormState, address: string | undefined, initialEvent: EventEntry | null): ModalEventData {
   const startDate = form.startDate && form.startTime ? new Date(`${form.startDate}T${form.startTime}`) : null
   const startAt = startDate && !Number.isNaN(startDate.getTime()) ? startDate.toISOString() : null
   const durationMs = parseDurationMs(form.duration)
@@ -79,6 +79,9 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
   const x = isWorld ? 0 : Number(form.coordX) || 0
   const y = isWorld ? 0 : Number(form.coordY) || 0
 
+  const creatorAddress = initialEvent?.user || address
+  const creatorName = initialEvent?.user_name || undefined
+
   return {
     id: 'preview',
     name: form.name.trim(),
@@ -86,8 +89,8 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
     image: form.imagePreviewUrl,
     x,
     y,
-    creatorAddress: address,
-    creatorName: undefined,
+    creatorAddress,
+    creatorName,
     startAt,
     finishAt,
     recurrent: form.repeatEnabled,
@@ -135,7 +138,10 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
   const missingPreviewFields = useMemo(() => PREVIEW_REQUIRED_FIELDS.filter(field => !String(form[field] ?? '').trim()), [form])
   const imageMissing = !form.imageUrl
   const canPreview = missingPreviewFields.length === 0 && !imageMissing
-  const previewData = useMemo(() => (isPreviewOpen ? buildPreviewData(form, address) : null), [isPreviewOpen, form, address])
+  const previewData = useMemo(
+    () => (isPreviewOpen ? buildPreviewData(form, address, initialEvent) : null),
+    [isPreviewOpen, form, address, initialEvent]
+  )
 
   const handlePreviewClick = useCallback(() => {
     if (canPreview) {

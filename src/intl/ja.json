@@ -159,6 +159,10 @@
       "not_found": {
         "title": "Storage · ページが見つかりません"
       }
+    },
+    "report": {
+      "title": "プレイヤーを報告する – Decentraland",
+      "success_title": "報告が送信されました – Decentraland"
     }
   },
   "page_invite": {
@@ -724,10 +728,114 @@
         "subtitle": "お探しのページは存在しません。",
         "go_home": "ホームへ戻る"
       }
+    },
+    "report": {
+      "form": {
+        "title": "ユーザーを報告",
+        "wallet_mismatch": "接続中のウォレットがプレイヤーのアドレスと一致しません。正しいウォレットで接続してから送信してください。",
+        "your_wallet_label": "あなたのウォレットアドレス",
+        "your_wallet_helper": "不正利用を防ぐため、報告はウォレットに紐づけられます。あなたの個人情報が公開されることはありません。",
+        "your_wallet_placeholder": "アドレスを入力または貼り付けてください...",
+        "sign_in_alert": "報告を送信するには、ウォレットでサインインしてください。",
+        "sign_in_cta": "サインイン",
+        "reported_label": "報告対象のウォレット",
+        "reported_helper": "報告したいユーザーのウォレットアドレスです。",
+        "reported_placeholder": "アドレスを入力または貼り付けてください...",
+        "reason_label": "報告理由",
+        "reason_helper": "問題に最も近い項目を選択してください。",
+        "reason_placeholder": "理由を選択",
+        "reason_options": {
+          "scam_phishing": "詐欺／フィッシング",
+          "illegal_content": "違法なコンテンツ",
+          "harassment": "嫌がらせ",
+          "cheating": "チート行為",
+          "impersonation": "なりすまし"
+        },
+        "description_label": "説明",
+        "description_helper": "何が起きたかを説明してください。可能であれば、いつどこで発生したかも記載してください。",
+        "description_placeholder": "ここに説明を入力してください...",
+        "description_hint": "詳しく書くほど、モデレーターによる確認がスムーズになります。",
+        "evidence_label": "証拠",
+        "evidence_helper": "スクリーンショット、動画、リンクを最大5件までアップロードしてください。",
+        "evidence_add": "ファイルを追加",
+        "evidence_oversized": "{names} は 5MB の上限を超えています",
+        "evidence_invalid_type": "{names} は対応していないファイル形式です",
+        "additional_label": "追加コメント",
+        "additional_helper": "モデレーターの調査に役立つ追加情報があれば記入してください。",
+        "additional_placeholder": "ここにコメントを入力してください...",
+        "confirmation_label": "この報告内容に誤りがないことを確認しました。",
+        "submit": "報告を送信",
+        "submit_in_progress": "送信中...",
+        "errors": {
+          "invalid_address": "有効なウォレットアドレスを入力してください",
+          "missing_reason": "理由を選択してください",
+          "missing_description": "報告の説明を入力してください",
+          "missing_evidence": "報告に関する証拠をアップロードしてください",
+          "missing_confirmation": "内容に誤りがないことを確認してください",
+          "submit_failed": "報告を送信できませんでした。もう一度お試しください。"
+        },
+        "footer_lead": "ヘルプが必要ですか？",
+        "footer_help_prefix": "緊急のお問い合わせやセキュリティに関するご相談は",
+        "footer_help_link": "サポートチームまでご連絡ください",
+        "footer_help_suffix": "。"
+      },
+      "success": {
+        "title": "報告を受け付けました",
+        "body": "報告を受け付けました。内容は順次確認します。",
+        "dismiss": "このウィンドウを閉じても問題ありません。"
+      }
     }
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+  },
+  "community": {
+    "global": {
+      "loading": "読み込み中..."
+    },
+    "info": {
+      "jump_in_modal": {
+        "title": "Decentraland をダウンロード",
+        "description": "このコミュニティに参加するには、Decentraland をダウンロードする必要があります。",
+        "button_label": "ダウンロード"
+      },
+      "decentraland_community": "Decentraland コミュニティ",
+      "members": "メンバー",
+      "by": "作成者:",
+      "unknown": "不明",
+      "joined": "参加済み",
+      "sign_in_to_join": "サインインして参加",
+      "request_to_join": "参加をリクエスト",
+      "cancel_request": "リクエストをキャンセル",
+      "jump_in": "入る",
+      "join": "参加する"
+    },
+    "detail": {
+      "failed_to_join": "コミュニティへの参加に失敗しました",
+      "not_found": "コミュニティが見つかりません",
+      "not_found_description": "お探しのコミュニティは存在しません。"
+    },
+    "events": {
+      "upcoming_events": "今後のイベント",
+      "no_upcoming_events": "今後のイベントはありません",
+      "live": "ライブ"
+    },
+    "members_list": {
+      "title": "メンバー",
+      "no_members_found": "メンバーが見つかりません"
+    },
+    "private_message": {
+      "title": "これはプライベートコミュニティです",
+      "description": "このコミュニティのプロフィールを見るには、メンバーである必要があります。"
+    },
+    "not_found": {
+      "title": "ページが見つかりません",
+      "description": "お探しのページは存在しません。"
+    },
+    "tabs": {
+      "members": "メンバー",
+      "upcoming_events": "今後のイベント"
+    }
   }
 }

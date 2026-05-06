@@ -55,13 +55,13 @@ function DappsShell() {
   usePreconnectHints()
 
   return (
-    <Provider store={store}>
-      <HelmetProvider>
+    <HelmetProvider>
+      <Provider store={store}>
         <Suspense fallback={<DappsShellFallback />}>
           <Outlet />
         </Suspense>
-      </HelmetProvider>
-    </Provider>
+      </Provider>
+    </HelmetProvider>
   )
 }
 

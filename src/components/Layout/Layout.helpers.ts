@@ -7,6 +7,7 @@ function isPageTrackingExempt(pathname: string): boolean {
   if (pathname === '/events' || pathname.startsWith('/events/')) return true
   if (pathname === '/places' || pathname.startsWith('/places/')) return true
   if (pathname === '/storage' || pathname.startsWith('/storage/')) return true
+  if (pathname === '/social' || pathname.startsWith('/social/')) return true
   return false
 }
 

@@ -159,6 +159,10 @@
       "not_found": {
         "title": "Storage · 页面未找到"
       }
+    },
+    "report": {
+      "title": "举报玩家 – Decentraland",
+      "success_title": "举报已提交 – Decentraland"
     }
   },
   "page_invite": {
@@ -724,10 +728,114 @@
         "subtitle": "您正在寻找的页面不存在。",
         "go_home": "返回首页"
       }
+    },
+    "report": {
+      "form": {
+        "title": "举报用户",
+        "wallet_mismatch": "当前连接的钱包与玩家地址不匹配。请使用正确的钱包连接后再提交此举报。",
+        "your_wallet_label": "你的钱包地址",
+        "your_wallet_helper": "为防止滥用,举报会与你的钱包绑定。你的身份不会被公开。",
+        "your_wallet_placeholder": "在此输入或粘贴你的地址...",
+        "sign_in_alert": "请先使用钱包登录后再提交举报。",
+        "sign_in_cta": "登录",
+        "reported_label": "被举报用户的钱包",
+        "reported_helper": "这是你要举报的用户的钱包地址。",
+        "reported_placeholder": "在此输入或粘贴地址...",
+        "reason_label": "举报原因",
+        "reason_helper": "选择最能描述问题的选项。",
+        "reason_placeholder": "选择原因",
+        "reason_options": {
+          "scam_phishing": "诈骗/钓鱼",
+          "illegal_content": "违法内容",
+          "harassment": "骚扰",
+          "cheating": "作弊",
+          "impersonation": "冒充他人"
+        },
+        "description_label": "描述",
+        "description_helper": "描述发生的情况,如果可能,请说明事发时间和地点。",
+        "description_placeholder": "在此填写你的描述...",
+        "description_hint": "描述越详细,审核人员越容易处理你的举报。",
+        "evidence_label": "证据",
+        "evidence_helper": "最多上传 5 个截图、视频或链接以支持你的举报。",
+        "evidence_add": "添加文件",
+        "evidence_oversized": "{names} 超过了 5MB 的限制",
+        "evidence_invalid_type": "{names} 不是支持的文件类型",
+        "additional_label": "附加说明",
+        "additional_helper": "提供任何可能帮助审核人员调查的额外信息。",
+        "additional_placeholder": "在此填写你的说明...",
+        "confirmation_label": "我确认此举报内容真实准确。",
+        "submit": "提交举报",
+        "submit_in_progress": "提交中...",
+        "errors": {
+          "invalid_address": "请输入有效的钱包地址",
+          "missing_reason": "请选择一个原因",
+          "missing_description": "请填写举报描述",
+          "missing_evidence": "请上传举报相关的证据",
+          "missing_confirmation": "你必须确认信息真实准确",
+          "submit_failed": "举报提交失败,请重试。"
+        },
+        "footer_lead": "需要帮助?",
+        "footer_help_prefix": "如有紧急问题或安全顾虑,请",
+        "footer_help_link": "联系支持团队",
+        "footer_help_suffix": "。"
+      },
+      "success": {
+        "title": "举报已提交",
+        "body": "我们已收到你的举报,会尽快进行审核。",
+        "dismiss": "你现在可以关闭此窗口。"
+      }
     }
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+  },
+  "community": {
+    "global": {
+      "loading": "加载中..."
+    },
+    "info": {
+      "jump_in_modal": {
+        "title": "下载 Decentraland",
+        "description": "要进入此社区，您需要下载 Decentraland。",
+        "button_label": "下载"
+      },
+      "decentraland_community": "Decentraland 社区",
+      "members": "成员",
+      "by": "创建者",
+      "unknown": "未知",
+      "joined": "已加入",
+      "sign_in_to_join": "登录以加入",
+      "request_to_join": "申请加入",
+      "cancel_request": "取消申请",
+      "jump_in": "进入",
+      "join": "加入"
+    },
+    "detail": {
+      "failed_to_join": "加入社区失败",
+      "not_found": "未找到社区",
+      "not_found_description": "您要查找的社区不存在。"
+    },
+    "events": {
+      "upcoming_events": "即将举行的活动",
+      "no_upcoming_events": "暂无即将举行的活动",
+      "live": "直播中"
+    },
+    "members_list": {
+      "title": "成员",
+      "no_members_found": "未找到成员"
+    },
+    "private_message": {
+      "title": "这是一个私人社区",
+      "description": "您必须是此社区的成员才能查看其资料。"
+    },
+    "not_found": {
+      "title": "页面未找到",
+      "description": "您要查找的页面不存在。"
+    },
+    "tabs": {
+      "members": "成员",
+      "upcoming_events": "即将举行的活动"
+    }
   }
 }
