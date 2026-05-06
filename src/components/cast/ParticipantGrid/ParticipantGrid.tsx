@@ -3,9 +3,9 @@ import { TrackReferenceOrPlaceholder, VideoTrack, useIsSpeaking, useTracks } fro
 import MicOffIcon from '@mui/icons-material/MicOff'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import { Track } from 'livekit-client'
-import avatarImage from '../../../assets/images/cast/avatar.png'
 import { getDisplayName, isPresentationBot } from '../../../features/cast2/cast2.utils'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
+import { Avatar } from '../Avatar/Avatar'
 import { SpeakingIndicator } from '../LiveKitEnhancements/SpeakingIndicator'
 import { ParticipantGridProps } from './ParticipantGrid.types'
 import {
@@ -80,6 +80,7 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
   }, [hasOverflow, finalTracks])
 
   const overflowCount = finalTracks.length - displayTracks.length
+  const overflowAvatars = finalTracks.slice(displayTracks.length, displayTracks.length + 2)
 
   const handleTileClick = useCallback(
     (trackSid: string) => {
@@ -123,6 +124,7 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
     const hasThumbnailOverflow = hasEnoughForOverflow
     const visibleThumbnails = hasThumbnailOverflow ? otherTracks.slice(0, MAX_THUMBNAILS) : otherTracks
     const thumbnailOverflowCount = otherTracks.length - visibleThumbnails.length
+    const thumbnailOverflowAvatars = otherTracks.slice(visibleThumbnails.length, visibleThumbnails.length + 2)
 
     return (
       <ParticipantGridContainer $participantCount={participantCount} $expandedView={true}>
@@ -158,8 +160,14 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
             {hasThumbnailOverflow && (
               <ThumbnailOverflowCard onClick={handleShowAll}>
                 <OverflowAvatarStack>
-                  <img src={avatarImage} alt="" />
-                  <img src={avatarImage} alt="" />
+                  {thumbnailOverflowAvatars.map(track => (
+                    <Avatar
+                      key={track.participant.sid + track.source}
+                      name={getDisplayName(track.participant)}
+                      ethAddress={track.participant.identity}
+                      size={50}
+                    />
+                  ))}
                 </OverflowAvatarStack>
                 <OverflowCount>+{thumbnailOverflowCount}</OverflowCount>
               </ThumbnailOverflowCard>
@@ -186,8 +194,14 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
       {hasOverflow && (
         <OverflowCard onClick={handleShowAll}>
           <OverflowAvatarStack>
-            <img src={avatarImage} alt="" />
-            <img src={avatarImage} alt="" />
+            {overflowAvatars.map(track => (
+              <Avatar
+                key={track.participant.sid + track.source}
+                name={getDisplayName(track.participant)}
+                ethAddress={track.participant.identity}
+                size={50}
+              />
+            ))}
           </OverflowAvatarStack>
           <OverflowCount>+{overflowCount}</OverflowCount>
         </OverflowCard>
@@ -266,7 +280,7 @@ function ParticipantTile({
         <VideoTrack trackRef={trackRef} />
       ) : (
         <AvatarFallback>
-          <img src={avatarImage} alt="Avatar" />
+          <Avatar name={displayName} ethAddress={participant.identity} size={120} />
         </AvatarFallback>
       )}
 

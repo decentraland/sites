@@ -259,6 +259,9 @@ const OverflowCard = styled('div')({
   }
 })
 
+// Targets any direct child (img or styled Avatar div) so the layered
+// positioning works whether the slot renders the user's avatar image or the
+// deterministic NameColorHelper-coloured fallback circle.
 const OverflowAvatarStack = styled('div')({
   position: 'relative',
   display: 'flex',
@@ -268,20 +271,19 @@ const OverflowAvatarStack = styled('div')({
   height: 60,
   marginTop: 16,
   zIndex: 1,
-  '& img': {
+  '& > *': {
     position: 'absolute',
     width: 50,
     height: 50,
-    objectFit: 'contain',
-    opacity: 0.8,
-    '&:first-of-type': {
-      left: 15,
-      zIndex: 1
-    },
-    '&:last-of-type': {
-      right: 15,
-      zIndex: 2
-    }
+    opacity: 0.85
+  },
+  '& > *:first-of-type': {
+    left: 15,
+    zIndex: 1
+  },
+  '& > *:last-of-type': {
+    right: 15,
+    zIndex: 2
   }
 })
 

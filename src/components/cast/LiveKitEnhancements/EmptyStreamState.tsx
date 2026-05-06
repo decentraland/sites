@@ -1,12 +1,12 @@
 import { TrackReferenceOrPlaceholder, useIsSpeaking, useTracks } from '@livekit/components-react'
 import TvIcon from '@mui/icons-material/Tv'
 import { LocalAudioTrack, Participant, RemoteAudioTrack, Track } from 'livekit-client'
-import avatarImage from '../../../assets/images/cast/avatar.png'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
+import { Avatar } from '../Avatar/Avatar'
 import { SpeakingIndicator } from './SpeakingIndicator'
 import { EmptyStreamStateProps } from './EmptyStreamState.types'
 import {
-  AvatarImage,
+  AvatarPulse,
   EmptyContainer,
   EmptyIconWrapper,
   EmptySubtitle,
@@ -15,6 +15,8 @@ import {
   SpeakingIndicatorWrapper,
   StreamerEmptyContainer
 } from './EmptyStreamState.styled'
+
+const PARTICIPANT_AVATAR_SIZE = 100
 
 // Wrapper component that safely uses useIsSpeaking
 function StreamerEmptyWithSpeaking({
@@ -30,7 +32,9 @@ function StreamerEmptyWithSpeaking({
 
   return (
     <StreamerEmptyContainer $isSpeaking={isSpeaking}>
-      <AvatarImage src={avatarImage} alt="Default Avatar" />
+      <AvatarPulse>
+        <Avatar name={participantName} ethAddress={participant.identity} size={PARTICIPANT_AVATAR_SIZE} />
+      </AvatarPulse>
       {participantName && <ParticipantNameOverlay>{participantName}</ParticipantNameOverlay>}
       <SpeakingIndicatorWrapper>
         <SpeakingIndicator participant={participant} trackRef={audioTrack} />
@@ -60,7 +64,9 @@ export function EmptyStreamState({ type, message, participantName, participant }
     // Otherwise, show basic empty state
     return (
       <StreamerEmptyContainer>
-        <AvatarImage src={avatarImage} alt="Default Avatar" />
+        <AvatarPulse>
+          <Avatar name={participantName} ethAddress={participant?.identity} size={PARTICIPANT_AVATAR_SIZE} />
+        </AvatarPulse>
         {participantName && <ParticipantNameOverlay>{participantName}</ParticipantNameOverlay>}
       </StreamerEmptyContainer>
     )

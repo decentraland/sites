@@ -37,11 +37,7 @@ const StreamerEmptyContainer = styled('div', {
   transition: 'border 0.3s ease'
 }))
 
-const AvatarImage = styled('img')({
-  width: 100,
-  height: 100,
-  borderRadius: '50%',
-  objectFit: 'cover',
+const AvatarPulse = styled('div')({
   animation: `${fadeInOut} 2s ease-in-out infinite`
 })
 
@@ -95,7 +91,7 @@ const SpeakingIndicatorWrapper = styled('div')({
 })
 
 export {
-  AvatarImage,
+  AvatarPulse,
   EmptyContainer,
   EmptyIconWrapper,
   EmptySubtitle,
