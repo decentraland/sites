@@ -48,7 +48,10 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, list
     {
       list,
       order: 'asc',
-      world: false,
+      // NOTE: only filter out world events on the "All" tab (calendar/day-column view is
+      // spatial and only makes sense for Genesis City). On the "My" tab the owner must
+      // see ALL of their events, including those hosted in Worlds.
+      world: ownerOnly ? undefined : false,
       limit: 200,
       identity,
       owner: ownerOnly ? true : undefined
