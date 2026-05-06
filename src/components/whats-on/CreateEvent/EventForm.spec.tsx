@@ -121,7 +121,10 @@ jest.mock('./EventForm.styled', () => ({
 }))
 
 jest.mock('../EventDetailModal', () => ({
-  EventDetailModal: ({ open, data }: { open: boolean; data: unknown }) => (open && data ? <div data-testid="event-detail-modal" /> : null)
+  EventDetailModal: ({ open, data }: { open: boolean; data: { creatorAddress?: string; creatorName?: string } | null }) =>
+    open && data ? (
+      <div data-testid="event-detail-modal" data-creator-address={data.creatorAddress ?? ''} data-creator-name={data.creatorName ?? ''} />
+    ) : null
 }))
 
 jest.mock('./ImageUpload', () => ({
@@ -143,8 +146,10 @@ jest.mock('../../../features/whats-on-events', () => ({
   useGetCommunitiesQuery: () => ({ data: [] })
 }))
 
+const mockUseAuthIdentity = jest.fn(() => ({ identity: null, hasValidIdentity: false, address: null as string | null }))
+
 jest.mock('../../../hooks/useAuthIdentity', () => ({
-  useAuthIdentity: () => ({ identity: null, hasValidIdentity: false, address: null })
+  useAuthIdentity: () => mockUseAuthIdentity()
 }))
 
 jest.mock('@mui/icons-material/AccessTime', () => ({
@@ -224,6 +229,7 @@ describe('EventForm', () => {
 
   beforeEach(() => {
     mockOnCancel = jest.fn()
+    mockUseAuthIdentity.mockReturnValue({ identity: null, hasValidIdentity: false, address: null })
     mockUseCreateEventForm.mockReturnValue({
       form: createFormState(),
       errors: {},
@@ -332,6 +338,48 @@ describe('EventForm', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={approvedEvent} />)
 
       expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the preview opens in edit mode for an event submitted by another user', () => {
+    const submittedEvent = createMockEvent({ id: 'evt-other', user: '0xActualCreator', user_name: 'Actual Creator' })
+
+    beforeEach(() => {
+      mockUseAuthIdentity.mockReturnValue({ identity: null, hasValidIdentity: true, address: '0xLoggedInViewer' })
+    })
+
+    it('should show the original event creator address, not the logged-in viewer address', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={submittedEvent} initialOpenPreview />)
+
+      const modal = screen.getByTestId('event-detail-modal')
+      expect(modal).toHaveAttribute('data-creator-address', '0xActualCreator')
+    })
+
+    it('should show the original event creator name, not undefined', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={submittedEvent} initialOpenPreview />)
+
+      const modal = screen.getByTestId('event-detail-modal')
+      expect(modal).toHaveAttribute('data-creator-name', 'Actual Creator')
+    })
+  })
+
+  describe('when the preview opens for a brand new event being created', () => {
+    beforeEach(() => {
+      mockUseAuthIdentity.mockReturnValue({ identity: null, hasValidIdentity: true, address: '0xLoggedInCreator' })
+    })
+
+    it('should fall back to the logged-in user address as the creator', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialOpenPreview />)
+
+      const modal = screen.getByTestId('event-detail-modal')
+      expect(modal).toHaveAttribute('data-creator-address', '0xLoggedInCreator')
+    })
+
+    it('should not include a creator name (the logged-in user has none here)', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialOpenPreview />)
+
+      const modal = screen.getByTestId('event-detail-modal')
+      expect(modal).toHaveAttribute('data-creator-name', '')
     })
   })
 
