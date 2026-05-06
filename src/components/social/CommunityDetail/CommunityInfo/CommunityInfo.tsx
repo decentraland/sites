@@ -1,5 +1,6 @@
-import { createElement, memo, useCallback, useMemo } from 'react'
-import checkIcon from '@mui/icons-material/Check'
+import { memo, useCallback, useMemo } from 'react'
+// eslint-disable-next-line @typescript-eslint/naming-convention -- React component default export, matches MUI icon convention
+import CheckIcon from '@mui/icons-material/Check'
 import { useAnalytics } from '@dcl/hooks'
 import { useTabletAndBelowMediaQuery, useTabletMediaQuery, useTheme } from 'decentraland-ui2'
 import { getRarityColor, getThumbnailUrl } from '../../../../features/communities/communities.helpers'
@@ -103,7 +104,7 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
   const renderActionButton = () => {
     if (isMember) {
       return (
-        <CTAButton variant="outlined" color="secondary" disabled startIcon={createElement(checkIcon, { fontSize: 'small' })}>
+        <CTAButton variant="outlined" color="secondary" disabled startIcon={<CheckIcon fontSize="small" />}>
           {t('community.info.joined')}
         </CTAButton>
       )

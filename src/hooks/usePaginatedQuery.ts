@@ -33,6 +33,7 @@ function usePaginatedQuery<TQueryArg extends { limit?: number; offset?: number }
   const extractTotalRef = useRef(extractTotal)
   const getHasMoreRef = useRef(getHasMore)
 
+  // Intentionally no deps — keeps callback refs fresh on every render.
   useEffect(() => {
     extractItemsRef.current = extractItems
     extractTotalRef.current = extractTotal

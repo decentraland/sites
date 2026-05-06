@@ -1,5 +1,6 @@
 import { getEnv } from '../../config/env'
-import type { CommunityEventsResponse } from './communities.types'
+import type { EventEntry } from '../whats-on-events'
+import type { CommunityEvent, CommunityEventsResponse } from './communities.types'
 import type { EventsApiResponse } from './events.helpers.types'
 
 // TODO(post-prod): the snake_case → camelCase mapping below duplicates the
@@ -71,4 +72,67 @@ function mapEventsApiResponse(response: EventsApiResponse): CommunityEventsRespo
   }
 }
 
-export { getEventsApiBaseUrl, mapEventsApiResponse }
+function getCommunityEventCoordinates(event: CommunityEvent): [number, number] {
+  return [event.coordinates?.[0] ?? event.position?.[0] ?? event.x ?? 0, event.coordinates?.[1] ?? event.position?.[1] ?? event.y ?? 0]
+}
+
+function getCommunityEventDuration(event: CommunityEvent): number {
+  if (event.duration !== undefined) return event.duration
+  const start = new Date(event.startAt).getTime()
+  const finish = new Date(event.finishAt).getTime()
+  if (!Number.isFinite(start) || !Number.isFinite(finish)) return 0
+  return Math.max(0, Math.floor((finish - start) / 1000))
+}
+
+/* eslint-disable @typescript-eslint/naming-convention */
+function mapCommunityEventToEventEntry(event: CommunityEvent): EventEntry {
+  const coordinates = getCommunityEventCoordinates(event)
+  return {
+    id: event.id,
+    name: event.name,
+    description: event.description ?? null,
+    image: event.image ?? null,
+    image_vertical: event.imageVertical ?? null,
+    start_at: event.startAt,
+    finish_at: event.finishAt,
+    next_start_at: event.nextStartAt ?? event.startAt,
+    next_finish_at: event.nextFinishAt ?? event.finishAt,
+    duration: getCommunityEventDuration(event),
+    all_day: event.allDay ?? false,
+    x: coordinates[0],
+    y: coordinates[1],
+    coordinates,
+    position: event.position ?? coordinates,
+    server: event.server ?? null,
+    url: event.url ?? '',
+    user: event.user ?? '',
+    user_name: event.userName ?? null,
+    estate_id: event.estateId ?? null,
+    estate_name: event.estateName ?? null,
+    scene_name: event.sceneName ?? null,
+    approved: event.approved,
+    rejected: event.rejected,
+    rejection_reason: event.rejectionReason ?? null,
+    highlighted: event.highlighted ?? false,
+    trending: event.trending ?? false,
+    recurrent: event.recurrent ?? false,
+    recurrent_frequency: (event.recurrentFrequency ?? null) as EventEntry['recurrent_frequency'],
+    recurrent_dates: event.recurrentDates ?? [],
+    contact: event.contact ?? null,
+    details: event.details ?? null,
+    categories: event.categories ?? [],
+    schedules: event.schedules ?? [],
+    world: event.world ?? false,
+    place_id: event.placeId ?? null,
+    community_id: event.communityId ?? null,
+    total_attendees: event.totalAttendees,
+    latest_attendees: event.latestAttendees,
+    attending: event.attending,
+    live: event.live ?? false,
+    created_at: event.createdAt ?? '',
+    updated_at: event.updatedAt ?? ''
+  }
+}
+/* eslint-enable @typescript-eslint/naming-convention */
+
+export { getCommunityEventCoordinates, getCommunityEventDuration, getEventsApiBaseUrl, mapCommunityEventToEventEntry, mapEventsApiResponse }
