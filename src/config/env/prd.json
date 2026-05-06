@@ -26,5 +26,6 @@
   "THE_GRAPH_API_MATIC_URL": "https://subgraph.decentraland.org/collections-matic-mainnet",
   "MARKETPLACE_URL": "https://market.decentraland.org",
   "PROFILE_URL": "https://profile.decentraland.org",
+  "REPORT_API_URL": "https://report-user.decentraland.org",
   "DECENTRALAND_HOMEPAGE_URL": "https://decentraland.org"
 }

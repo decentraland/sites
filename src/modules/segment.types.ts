@@ -37,7 +37,10 @@ enum SegmentEvent {
   REELS_CLICK_PROFILE = 'Reels Click Profile',
   REELS_CLICK_PLACE = 'Reels Click Place',
   REELS_CLICK_DCL_LOGO = 'Reels Click Decentraland Logo',
-  REELS_CLICK_THUMBNAIL = 'Reels Click Thumbnail'
+  REELS_CLICK_THUMBNAIL = 'Reels Click Thumbnail',
+  REPORT_PLAYER_SUBMIT_STARTED = 'Report Player Submit Started',
+  REPORT_PLAYER_SUBMITTED = 'Report Player Submitted',
+  REPORT_PLAYER_SUBMIT_FAILED = 'Report Player Submit Failed'
 }
 
 enum DownloadPlace {
