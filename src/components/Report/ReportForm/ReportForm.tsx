@@ -3,13 +3,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { SelectChangeEvent } from '@mui/material/Select'
 import { useAnalytics } from '@dcl/hooks'
 import { EthAddress } from '@dcl/schemas'
-import { Button, FormControl, InputLabel, MenuItem, Select, TextField } from 'decentraland-ui2'
+import { AnimatedBackground, Button, FormControl, InputLabel, MenuItem, Select, TextField } from 'decentraland-ui2'
 import { ReportReason } from '../../../features/report/report.types'
 import type { ReportFormErrors, ReportFormState, UploadedFile } from '../../../features/report/report.types'
-import { useSubmitReport } from '../../../features/report/useSubmitReport'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useReportFormDraft } from '../../../hooks/useReportFormDraft'
+import { useSubmitReport } from '../../../hooks/useSubmitReport'
 import { useWalletAddress } from '../../../hooks/useWalletAddress'
 import { SegmentEvent } from '../../../modules/segment'
 import { redirectToAuth } from '../../../utils/authRedirect'
@@ -24,6 +24,7 @@ import {
   FooterText,
   FormBackground,
   FormCard,
+  FormContent,
   FormLogo,
   FormTitle,
   LogoWrapper,
@@ -159,171 +160,174 @@ function ReportForm() {
 
   return (
     <FormBackground>
-      <FormCard>
-        <LogoWrapper>
-          <FormLogo size="large" />
-          <FormTitle variant="h3">{formatMessage('component.report.form.title')}</FormTitle>
-        </LogoWrapper>
+      <AnimatedBackground variant="fixed" />
+      <FormContent>
+        <FormCard>
+          <LogoWrapper>
+            <FormLogo size="large" />
+            <FormTitle variant="h3">{formatMessage('component.report.form.title')}</FormTitle>
+          </LogoWrapper>
 
-        {walletMismatch && <WalletMismatchAlert>{formatMessage('component.report.form.wallet_mismatch')}</WalletMismatchAlert>}
+          {walletMismatch && <WalletMismatchAlert>{formatMessage('component.report.form.wallet_mismatch')}</WalletMismatchAlert>}
 
-        <FormField
-          number={1}
-          label={formatMessage('component.report.form.your_wallet_label')}
-          required
-          helper={formatMessage('component.report.form.your_wallet_helper')}
-          error={submitted ? errors.playerAddress : undefined}
-        >
-          <TextField
-            fullWidth
-            size="small"
-            placeholder={formatMessage('component.report.form.your_wallet_placeholder')}
-            value={formState.playerAddress}
-            disabled
-          />
-        </FormField>
-
-        {!hasValidIdentity && (
-          <SignInAlert>
-            {formatMessage('component.report.form.sign_in_alert')}
-            <Button variant="text" color="warning" size="small" onClick={handleSignInClick}>
-              {formatMessage('component.report.form.sign_in_cta')}
-            </Button>
-          </SignInAlert>
-        )}
-
-        <FormField
-          number={2}
-          label={formatMessage('component.report.form.reported_label')}
-          required
-          helper={formatMessage('component.report.form.reported_helper')}
-          error={submitted ? errors.reportedAddress : undefined}
-        >
-          <TextField
-            fullWidth
-            size="small"
-            placeholder={formatMessage('component.report.form.reported_placeholder')}
-            value={formState.reportedAddress}
-            onChange={event => handleFieldChange('reportedAddress', event.target.value)}
-            disabled={!!reportedAddressParam}
-          />
-        </FormField>
-
-        <FormField
-          number={3}
-          label={formatMessage('component.report.form.reason_label')}
-          required
-          helper={formatMessage('component.report.form.reason_helper')}
-          error={submitted ? errors.reason : undefined}
-        >
-          <FormControl fullWidth size="small" error={submitted && !!errors.reason}>
-            {!formState.reason && <InputLabel shrink={false}>{formatMessage('component.report.form.reason_placeholder')}</InputLabel>}
-            <Select
-              value={formState.reason}
-              onChange={(event: SelectChangeEvent<ReportReason | ''>) => handleFieldChange('reason', event.target.value as ReportReason)}
-              displayEmpty
-            >
-              {Object.values(ReportReason).map(value => (
-                <MenuItem key={value} value={value}>
-                  {formatMessage(REASON_LABEL_KEYS[value])}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </FormField>
-
-        <FormField
-          number={4}
-          label={formatMessage('component.report.form.description_label')}
-          required
-          helper={formatMessage('component.report.form.description_helper')}
-          error={submitted ? errors.description : undefined}
-        >
-          <FieldInputGroup>
+          <FormField
+            number={1}
+            label={formatMessage('component.report.form.your_wallet_label')}
+            required
+            helper={formatMessage('component.report.form.your_wallet_helper')}
+            error={submitted ? errors.playerAddress : undefined}
+          >
             <TextField
               fullWidth
               size="small"
-              multiline
-              rows={4}
-              placeholder={formatMessage('component.report.form.description_placeholder')}
-              value={formState.description}
-              onChange={event => handleFieldChange('description', event.target.value.slice(0, DESCRIPTION_MAX))}
+              placeholder={formatMessage('component.report.form.your_wallet_placeholder')}
+              value={formState.playerAddress}
+              disabled
             />
-            <CharacterCounter>{`${formState.description.length} / ${DESCRIPTION_MAX}`}</CharacterCounter>
-            <FieldInputHint>{formatMessage('component.report.form.description_hint')}</FieldInputHint>
-          </FieldInputGroup>
-        </FormField>
+          </FormField>
 
-        <FormField
-          number={5}
-          label={formatMessage('component.report.form.evidence_label')}
-          required
-          helper={formatMessage('component.report.form.evidence_helper')}
-          error={submitted ? errors.evidence : undefined}
-        >
-          <FileUpload
-            files={formState.evidence}
-            onFilesChange={handleEvidenceChange}
-            addFileLabel={formatMessage('component.report.form.evidence_add')}
-            oversizedLabel={names => formatMessage('component.report.form.evidence_oversized', { names })}
-          />
-        </FormField>
+          {!hasValidIdentity && (
+            <SignInAlert>
+              {formatMessage('component.report.form.sign_in_alert')}
+              <Button variant="text" color="warning" size="small" onClick={handleSignInClick}>
+                {formatMessage('component.report.form.sign_in_cta')}
+              </Button>
+            </SignInAlert>
+          )}
 
-        <FormField
-          number={6}
-          label={formatMessage('component.report.form.additional_label')}
-          optional
-          helper={formatMessage('component.report.form.additional_helper')}
-        >
-          <FieldInputGroup>
+          <FormField
+            number={2}
+            label={formatMessage('component.report.form.reported_label')}
+            required
+            helper={formatMessage('component.report.form.reported_helper')}
+            error={submitted ? errors.reportedAddress : undefined}
+          >
             <TextField
               fullWidth
               size="small"
-              multiline
-              rows={3}
-              placeholder={formatMessage('component.report.form.additional_placeholder')}
-              value={formState.additionalComments}
-              onChange={event => handleFieldChange('additionalComments', event.target.value.slice(0, COMMENTS_MAX))}
+              placeholder={formatMessage('component.report.form.reported_placeholder')}
+              value={formState.reportedAddress}
+              onChange={event => handleFieldChange('reportedAddress', event.target.value)}
+              disabled={!!reportedAddressParam}
             />
-            <CharacterCounter>{`${formState.additionalComments.length} / ${COMMENTS_MAX}`}</CharacterCounter>
-          </FieldInputGroup>
-        </FormField>
+          </FormField>
 
-        <FieldWrapper>
-          <ConfirmLabel
-            control={
-              <ConfirmCheckbox
-                checked={formState.confirmAccuracy}
-                onChange={event => handleFieldChange('confirmAccuracy', event.target.checked)}
-                showError={submitted && !!errors.confirmAccuracy}
+          <FormField
+            number={3}
+            label={formatMessage('component.report.form.reason_label')}
+            required
+            helper={formatMessage('component.report.form.reason_helper')}
+            error={submitted ? errors.reason : undefined}
+          >
+            <FormControl fullWidth size="small" error={submitted && !!errors.reason}>
+              {!formState.reason && <InputLabel shrink={false}>{formatMessage('component.report.form.reason_placeholder')}</InputLabel>}
+              <Select
+                value={formState.reason}
+                onChange={(event: SelectChangeEvent<ReportReason | ''>) => handleFieldChange('reason', event.target.value as ReportReason)}
+                displayEmpty
+              >
+                {Object.values(ReportReason).map(value => (
+                  <MenuItem key={value} value={value}>
+                    {formatMessage(REASON_LABEL_KEYS[value])}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </FormField>
+
+          <FormField
+            number={4}
+            label={formatMessage('component.report.form.description_label')}
+            required
+            helper={formatMessage('component.report.form.description_helper')}
+            error={submitted ? errors.description : undefined}
+          >
+            <FieldInputGroup>
+              <TextField
+                fullWidth
+                size="small"
+                multiline
+                rows={4}
+                placeholder={formatMessage('component.report.form.description_placeholder')}
+                value={formState.description}
+                onChange={event => handleFieldChange('description', event.target.value.slice(0, DESCRIPTION_MAX))}
               />
-            }
-            label={formatMessage('component.report.form.confirmation_label')}
-          />
-          {submitted && errors.confirmAccuracy && <ConfirmError>{errors.confirmAccuracy}</ConfirmError>}
-        </FieldWrapper>
+              <CharacterCounter>{`${formState.description.length} / ${DESCRIPTION_MAX}`}</CharacterCounter>
+              <FieldInputHint>{formatMessage('component.report.form.description_hint')}</FieldInputHint>
+            </FieldInputGroup>
+          </FormField>
 
-        {submitError && <SubmitError>{formatMessage('component.report.form.errors.submit_failed')}</SubmitError>}
+          <FormField
+            number={5}
+            label={formatMessage('component.report.form.evidence_label')}
+            required
+            helper={formatMessage('component.report.form.evidence_helper')}
+            error={submitted ? errors.evidence : undefined}
+          >
+            <FileUpload
+              files={formState.evidence}
+              onFilesChange={handleEvidenceChange}
+              addFileLabel={formatMessage('component.report.form.evidence_add')}
+              oversizedLabel={names => formatMessage('component.report.form.evidence_oversized', { names })}
+            />
+          </FormField>
 
-        <SubmitButton
-          onClick={handleSubmit}
-          variant="contained"
-          color="primary"
-          disabled={walletMismatch || !hasValidIdentity || !formState.confirmAccuracy || isSubmitting}
-        >
-          {isSubmitting ? formatMessage('component.report.form.submit_in_progress') : formatMessage('component.report.form.submit')}
-        </SubmitButton>
-      </FormCard>
+          <FormField
+            number={6}
+            label={formatMessage('component.report.form.additional_label')}
+            optional
+            helper={formatMessage('component.report.form.additional_helper')}
+          >
+            <FieldInputGroup>
+              <TextField
+                fullWidth
+                size="small"
+                multiline
+                rows={3}
+                placeholder={formatMessage('component.report.form.additional_placeholder')}
+                value={formState.additionalComments}
+                onChange={event => handleFieldChange('additionalComments', event.target.value.slice(0, COMMENTS_MAX))}
+              />
+              <CharacterCounter>{`${formState.additionalComments.length} / ${COMMENTS_MAX}`}</CharacterCounter>
+            </FieldInputGroup>
+          </FormField>
 
-      <FooterText>
-        {formatMessage('component.report.form.footer_lead')}
-        <br />
-        {formatMessage('component.report.form.footer_help_prefix')}{' '}
-        <FooterLink href="https://decentraland.org/help" target="_blank" rel="noopener noreferrer">
-          {formatMessage('component.report.form.footer_help_link')}
-        </FooterLink>
-        {formatMessage('component.report.form.footer_help_suffix')}
-      </FooterText>
+          <FieldWrapper>
+            <ConfirmLabel
+              control={
+                <ConfirmCheckbox
+                  checked={formState.confirmAccuracy}
+                  onChange={event => handleFieldChange('confirmAccuracy', event.target.checked)}
+                  showError={submitted && !!errors.confirmAccuracy}
+                />
+              }
+              label={formatMessage('component.report.form.confirmation_label')}
+            />
+            {submitted && errors.confirmAccuracy && <ConfirmError>{errors.confirmAccuracy}</ConfirmError>}
+          </FieldWrapper>
+
+          {submitError && <SubmitError>{formatMessage('component.report.form.errors.submit_failed')}</SubmitError>}
+
+          <SubmitButton
+            onClick={handleSubmit}
+            variant="contained"
+            color="primary"
+            disabled={walletMismatch || !hasValidIdentity || !formState.confirmAccuracy || isSubmitting}
+          >
+            {isSubmitting ? formatMessage('component.report.form.submit_in_progress') : formatMessage('component.report.form.submit')}
+          </SubmitButton>
+        </FormCard>
+
+        <FooterText>
+          {formatMessage('component.report.form.footer_lead')}
+          <br />
+          {formatMessage('component.report.form.footer_help_prefix')}{' '}
+          <FooterLink href="https://decentraland.org/help" target="_blank" rel="noopener noreferrer">
+            {formatMessage('component.report.form.footer_help_link')}
+          </FooterLink>
+          {formatMessage('component.report.form.footer_help_suffix')}
+        </FooterText>
+      </FormContent>
     </FormBackground>
   )
 }

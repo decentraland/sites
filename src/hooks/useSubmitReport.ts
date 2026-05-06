@@ -1,20 +1,10 @@
 import { useCallback, useState } from 'react'
-import type { AuthIdentity } from '@dcl/crypto'
-import { fetchWithIdentity } from '../../utils/signedFetch'
-import { buildPresignFiles, buildSubmitPayload, getReportApiUrl } from './report.helpers'
-import type { PresignResponse, ReportFormState } from './report.types'
+import { buildPresignFiles, buildSubmitPayload, getReportApiUrl } from '../features/report/report.helpers'
+import type { PresignResponse, ReportFormState } from '../features/report/report.types'
+import { fetchWithIdentity } from '../utils/signedFetch'
+import type { UseSubmitReportOptions, UseSubmitReportResult } from './useSubmitReport.types'
 
 const JSON_HEADERS = { ['Content-Type']: 'application/json' }
-
-interface UseSubmitReportResult {
-  submitReport: (formState: ReportFormState) => Promise<boolean>
-  isSubmitting: boolean
-  error: string | null
-}
-
-interface UseSubmitReportOptions {
-  identity: AuthIdentity | undefined
-}
 
 function useSubmitReport({ identity }: UseSubmitReportOptions): UseSubmitReportResult {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -97,4 +87,3 @@ function useSubmitReport({ identity }: UseSubmitReportOptions): UseSubmitReportR
 }
 
 export { useSubmitReport }
-export type { UseSubmitReportOptions, UseSubmitReportResult }

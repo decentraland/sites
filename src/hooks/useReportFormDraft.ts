@@ -1,31 +1,9 @@
 import { useCallback } from 'react'
 import { ReportReason } from '../features/report/report.types'
+import type { ReportFormDraft, ReportFormDraftInput, UseReportFormDraftResult } from './useReportFormDraft.types'
 
 const DRAFT_KEY = 'report_form_draft'
 const DRAFT_TTL_MS = 15 * 60 * 1000
-
-interface ReportFormDraft {
-  searchParams: string
-  reportedAddress: string
-  reason: ReportReason | ''
-  description: string
-  additionalComments: string
-  savedAt: number
-}
-
-interface DraftInput {
-  searchParams: string
-  reportedAddress: string
-  reason: ReportReason | ''
-  description: string
-  additionalComments: string
-}
-
-interface UseReportFormDraftResult {
-  saveDraft: (draft: DraftInput) => void
-  restoreDraft: () => ReportFormDraft | null
-  clearDraft: () => void
-}
 
 const VALID_REASONS = new Set<string>(Object.values(ReportReason))
 
@@ -43,7 +21,7 @@ function isValidDraft(value: unknown): value is ReportFormDraft {
 }
 
 function useReportFormDraft(): UseReportFormDraftResult {
-  const saveDraft = useCallback((input: DraftInput) => {
+  const saveDraft = useCallback((input: ReportFormDraftInput) => {
     try {
       const draft: ReportFormDraft = { ...input, savedAt: Date.now() }
       sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
@@ -78,4 +56,3 @@ function useReportFormDraft(): UseReportFormDraftResult {
 }
 
 export { useReportFormDraft }
-export type { ReportFormDraft, UseReportFormDraftResult }

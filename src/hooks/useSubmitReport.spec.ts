@@ -1,15 +1,15 @@
 import { act, renderHook } from '@testing-library/react'
 import type { AuthIdentity } from '@dcl/crypto'
-import { fetchWithIdentity } from '../../utils/signedFetch'
+import { ReportReason } from '../features/report/report.types'
+import type { ReportFormState, UploadedFile } from '../features/report/report.types'
+import { fetchWithIdentity } from '../utils/signedFetch'
 import { useSubmitReport } from './useSubmitReport'
-import { ReportReason } from './report.types'
-import type { ReportFormState, UploadedFile } from './report.types'
 
-jest.mock('../../config/env', () => ({
+jest.mock('../config/env', () => ({
   getEnv: () => 'https://report-user.example.com'
 }))
 
-jest.mock('../../utils/signedFetch', () => ({
+jest.mock('../utils/signedFetch', () => ({
   fetchWithIdentity: jest.fn()
 }))
 

@@ -1,15 +1,12 @@
 import { Box, Button, Checkbox, FormControlLabel, Logo, Typography, styled } from 'decentraland-ui2'
 
 const FormBackground = styled(Box)(({ theme }) => ({
+  position: 'relative',
   width: '100%',
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  backgroundImage: 'url(/report_background.webp)',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
   paddingTop: `calc(64px + ${theme.spacing(4)})`,
   paddingBottom: theme.spacing(8),
   paddingLeft: theme.spacing(4),
@@ -19,6 +16,15 @@ const FormBackground = styled(Box)(({ theme }) => ({
     paddingBottom: theme.spacing(12)
   }
 }))
+
+const FormContent = styled(Box)({
+  position: 'relative',
+  zIndex: 1,
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center'
+})
 
 const FormCard = styled(Box)(({ theme }) => ({
   backgroundColor: 'rgba(22, 7, 35, 0.92)',
@@ -146,6 +152,7 @@ export {
   FooterText,
   FormBackground,
   FormCard,
+  FormContent,
   FormLogo,
   FormTitle,
   LogoWrapper,

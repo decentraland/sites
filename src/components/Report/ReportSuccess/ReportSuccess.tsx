@@ -1,19 +1,17 @@
 import { Navigate, useLocation } from 'react-router-dom'
-import { Typography } from 'decentraland-ui2'
+import { AnimatedBackground, Typography } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import type { ReportSuccessLocationState } from './ReportSuccess.types'
 import {
   SuccessBackground,
   SuccessCard,
+  SuccessContent,
   SuccessLogo,
   SuccessLogoWrapper,
   SuccessSecondary,
   SuccessTextGroup,
   SuccessTitle
 } from './ReportSuccess.styled'
-
-interface ReportSuccessLocationState {
-  submitted?: boolean
-}
 
 function ReportSuccess() {
   const formatMessage = useFormatMessage()
@@ -26,17 +24,20 @@ function ReportSuccess() {
 
   return (
     <SuccessBackground>
-      <SuccessCard>
-        <SuccessLogoWrapper>
-          <SuccessLogo size="large" />
-          <SuccessTitle variant="h3">{formatMessage('component.report.success.title')}</SuccessTitle>
-        </SuccessLogoWrapper>
+      <AnimatedBackground variant="fixed" />
+      <SuccessContent>
+        <SuccessCard>
+          <SuccessLogoWrapper>
+            <SuccessLogo size="large" />
+            <SuccessTitle variant="h3">{formatMessage('component.report.success.title')}</SuccessTitle>
+          </SuccessLogoWrapper>
 
-        <SuccessTextGroup>
-          <Typography variant="body1">{formatMessage('component.report.success.body')}</Typography>
-          <SuccessSecondary>{formatMessage('component.report.success.dismiss')}</SuccessSecondary>
-        </SuccessTextGroup>
-      </SuccessCard>
+          <SuccessTextGroup>
+            <Typography variant="body1">{formatMessage('component.report.success.body')}</Typography>
+            <SuccessSecondary>{formatMessage('component.report.success.dismiss')}</SuccessSecondary>
+          </SuccessTextGroup>
+        </SuccessCard>
+      </SuccessContent>
     </SuccessBackground>
   )
 }

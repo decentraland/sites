@@ -1,16 +1,13 @@
 import { Box, Logo, Typography, styled } from 'decentraland-ui2'
 
 const SuccessBackground = styled(Box)(({ theme }) => ({
+  position: 'relative',
   width: '100%',
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundImage: 'url(/report_background.webp)',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
   paddingTop: `calc(64px + ${theme.spacing(4)})`,
   paddingBottom: theme.spacing(8),
   paddingLeft: theme.spacing(4),
@@ -20,6 +17,16 @@ const SuccessBackground = styled(Box)(({ theme }) => ({
     paddingBottom: theme.spacing(12)
   }
 }))
+
+const SuccessContent = styled(Box)({
+  position: 'relative',
+  zIndex: 1,
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center'
+})
 
 const SuccessCard = styled(Box)(({ theme }) => ({
   backgroundColor: 'rgba(22, 7, 35, 0.92)',
@@ -65,4 +72,4 @@ const SuccessSecondary = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.secondary
 }))
 
-export { SuccessBackground, SuccessCard, SuccessLogo, SuccessLogoWrapper, SuccessSecondary, SuccessTextGroup, SuccessTitle }
+export { SuccessBackground, SuccessCard, SuccessContent, SuccessLogo, SuccessLogoWrapper, SuccessSecondary, SuccessTextGroup, SuccessTitle }
