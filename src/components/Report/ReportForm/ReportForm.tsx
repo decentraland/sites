@@ -160,7 +160,7 @@ function ReportForm() {
 
   return (
     <FormBackground>
-      <AnimatedBackground variant="fixed" />
+      <AnimatedBackground variant="absolute" />
       <FormContent>
         <FormCard>
           <LogoWrapper>

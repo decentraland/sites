@@ -3,7 +3,7 @@ import { Box, Button, Checkbox, FormControlLabel, Logo, Typography, styled } fro
 const FormBackground = styled(Box)(({ theme }) => ({
   position: 'relative',
   width: '100%',
-  flex: 1,
+  minHeight: '100vh',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',

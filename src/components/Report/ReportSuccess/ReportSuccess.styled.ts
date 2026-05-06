@@ -3,7 +3,7 @@ import { Box, Logo, Typography, styled } from 'decentraland-ui2'
 const SuccessBackground = styled(Box)(({ theme }) => ({
   position: 'relative',
   width: '100%',
-  flex: 1,
+  minHeight: '100vh',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',

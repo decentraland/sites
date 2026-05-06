@@ -24,7 +24,7 @@ function ReportSuccess() {
 
   return (
     <SuccessBackground>
-      <AnimatedBackground variant="fixed" />
+      <AnimatedBackground variant="absolute" />
       <SuccessContent>
         <SuccessCard>
           <SuccessLogoWrapper>
