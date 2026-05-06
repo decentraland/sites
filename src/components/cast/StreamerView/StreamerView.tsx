@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
 import { useGetStreamerTokenMutation, useLazyGetStreamInfoQuery } from '../../../features/cast2/cast2.client'
+import { getCastErrorKey } from '../../../features/cast2/cast2.errors'
 import {
   clearStreamerToken,
   generateRandomName,
@@ -108,7 +109,8 @@ export function StreamerView() {
         setError(null)
         setOnboardingComplete(true)
       } catch (err) {
-        setError(err instanceof Error ? err.message : t('streamer.error_initialize_streaming'))
+        console.error('[StreamerView] streamer-token failed:', err)
+        setError(t(getCastErrorKey(err, 'streamer_token')))
         setIsJoining(false)
         // Clear invalid token
         clearStreamerToken()

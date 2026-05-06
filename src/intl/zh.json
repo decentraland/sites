@@ -166,6 +166,8 @@
         "error_no_token": "未找到流媒体令牌。请使用Admin Smart Item的链接。",
         "error_initialize_streaming": "初始化直播失败。",
         "error_connection": "连接流媒体房间失败",
+        "error_unauthorized": "您无权在此位置直播。请确认您的钱包是该场景的管理员。",
+        "error_network": "无法连接到直播服务器。请检查网络连接后重试。",
         "connect_wallet_prompt": "连接您的Decentraland钱包以聊天和互动"
       },
       "watcher": {
@@ -174,6 +176,11 @@
         "back_to_decentraland": "返回Decentraland",
         "connecting": "正在连接直播...",
         "error_connection": "连接直播失败",
+        "error_no_active_stream": "当前没有人在此链接直播。直播可能已结束、尚未开始，或链接不正确。请稍后重试，或从Admin Smart Item获取新链接。",
+        "error_unauthorized": "此直播不可访问。请确认使用的是Admin Smart Item提供的有效链接。",
+        "error_invalid_location": "我们无法识别该位置。请确认世界名称或地块坐标后重试。",
+        "error_world_not_found": "我们找不到该世界。请确认世界名称后重试。",
+        "error_network": "无法连接到直播服务器。请检查网络连接后重试。",
         "connect_wallet_prompt": "连接您的Decentraland钱包以发送消息"
       },
       "streaming_controls": {

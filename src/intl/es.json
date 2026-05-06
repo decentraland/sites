@@ -166,6 +166,8 @@
         "error_no_token": "No se encontró token de transmisión. Por favor usa el enlace del Admin Smart Item.",
         "error_initialize_streaming": "Error al inicializar la transmisión.",
         "error_connection": "Error al conectar a la sala de transmisión",
+        "error_unauthorized": "No tenés permiso para transmitir en esta ubicación. Asegurate de que tu billetera sea admin de la escena.",
+        "error_network": "No pudimos contactar al servidor de transmisión. Verificá tu conexión e intentá de nuevo.",
         "connect_wallet_prompt": "Conecta tu billetera de Decentraland para chatear e interactuar"
       },
       "watcher": {
@@ -174,6 +176,11 @@
         "back_to_decentraland": "Volver a Decentraland",
         "connecting": "Conectando a la transmisión...",
         "error_connection": "Error al conectar a la transmisión",
+        "error_no_active_stream": "Nadie está transmitiendo en este enlace. La transmisión puede haber terminado, no haber comenzado aún, o el enlace puede ser incorrecto. Intentá de nuevo en un momento, o conseguí un enlace nuevo desde el Admin Smart Item.",
+        "error_unauthorized": "Esta transmisión no está accesible. Asegurate de usar un enlace válido del Admin Smart Item.",
+        "error_invalid_location": "No reconocemos esa ubicación. Verificá el nombre del mundo o las coordenadas del parcel y volvé a intentar.",
+        "error_world_not_found": "No encontramos ese mundo. Verificá el nombre del mundo y volvé a intentar.",
+        "error_network": "No pudimos contactar al servidor de transmisión. Verificá tu conexión e intentá de nuevo.",
         "connect_wallet_prompt": "Conecta tu billetera de Decentraland para enviar mensajes"
       },
       "streaming_controls": {

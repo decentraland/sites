@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
 import { useGetWatcherTokenMutation, useLazyGetWorldScenesQuery } from '../../../features/cast2/cast2.client'
+import { getCastErrorKey } from '../../../features/cast2/cast2.errors'
 import type { LiveKitCredentials, WorldScene } from '../../../features/cast2/cast2.types'
 import { generateRandomName } from '../../../features/cast2/cast2.utils'
 import { ChatProvider } from '../../../features/cast2/contexts/ChatProvider'
@@ -63,7 +64,8 @@ export function WatcherView() {
           setSceneSelectionDone(true)
         }
       } catch (err) {
-        setScenesError(err instanceof Error ? err.message : t('watcher.error_connection'))
+        console.error('[WatcherView] world-scenes failed:', err)
+        setScenesError(t(getCastErrorKey(err, 'world_scenes')))
       } finally {
         setIsLoadingScenes(false)
       }
@@ -97,7 +99,8 @@ export function WatcherView() {
           isWorld
         })
       } catch (err) {
-        setError(err instanceof Error ? err.message : t('watcher.error_connection'))
+        console.error('[WatcherView] watcher-token failed:', err)
+        setError(t(getCastErrorKey(err, 'watcher_token')))
       } finally {
         setIsLoadingCredentials(false)
       }

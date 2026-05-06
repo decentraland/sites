@@ -216,6 +216,8 @@
         "error_no_token": "No streaming token found. Please use the link from the Admin Smart Item.",
         "error_initialize_streaming": "Failed to initialize streaming.",
         "error_connection": "Failed to connect to streaming room",
+        "error_unauthorized": "You don't have permission to cast to this location. Make sure your wallet is the scene admin.",
+        "error_network": "Couldn't reach the streaming server. Check your connection and try again.",
         "connect_wallet_prompt": "Connect your Decentraland wallet to chat and interact"
       },
       "watcher": {
@@ -224,6 +226,11 @@
         "back_to_decentraland": "Back to Decentraland",
         "connecting": "Connecting to stream...",
         "error_connection": "Failed to connect to stream",
+        "error_no_active_stream": "No one is currently casting to this link. The cast may have ended, hasn't started yet, or the link may be incorrect. Try again in a moment, or get a fresh link from the Admin Smart Item.",
+        "error_unauthorized": "This stream isn't accessible. Make sure you're using a valid link from the Admin Smart Item.",
+        "error_invalid_location": "We couldn't recognize that location. Verify the world or parcel coordinates and try again.",
+        "error_world_not_found": "We couldn't find that world. Verify the world name and try again.",
+        "error_network": "Couldn't reach the streaming server. Check your connection and try again.",
         "connect_wallet_prompt": "Connect your Decentraland wallet to send messages"
       },
       "streaming_controls": {

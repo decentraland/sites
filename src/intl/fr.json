@@ -166,6 +166,8 @@
         "error_no_token": "Aucun jeton de diffusion trouvé. Veuillez utiliser le lien fourni par l'Admin Smart Item.",
         "error_initialize_streaming": "Échec de l'initialisation de la diffusion.",
         "error_connection": "Impossible de se connecter à la salle de diffusion",
+        "error_unauthorized": "Vous n'avez pas la permission de diffuser à cet emplacement. Assurez-vous que votre portefeuille est admin de la scène.",
+        "error_network": "Impossible de joindre le serveur de diffusion. Vérifiez votre connexion et réessayez.",
         "connect_wallet_prompt": "Connectez votre portefeuille Decentraland pour discuter et interagir"
       },
       "watcher": {
@@ -174,6 +176,11 @@
         "back_to_decentraland": "Retour à Decentraland",
         "connecting": "Connexion au flux...",
         "error_connection": "Impossible de se connecter au flux",
+        "error_no_active_stream": "Personne ne diffuse sur ce lien. La diffusion est peut-être terminée, n'a pas encore commencé ou le lien est incorrect. Réessayez dans un instant ou récupérez un nouveau lien depuis l'Admin Smart Item.",
+        "error_unauthorized": "Cette diffusion n'est pas accessible. Assurez-vous d'utiliser un lien valide de l'Admin Smart Item.",
+        "error_invalid_location": "Nous n'avons pas reconnu ce lieu. Vérifiez le nom du monde ou les coordonnées de la parcelle et réessayez.",
+        "error_world_not_found": "Nous n'avons pas trouvé ce monde. Vérifiez le nom du monde et réessayez.",
+        "error_network": "Impossible de joindre le serveur de diffusion. Vérifiez votre connexion et réessayez.",
         "connect_wallet_prompt": "Connectez votre portefeuille Decentraland pour envoyer des messages"
       },
       "streaming_controls": {

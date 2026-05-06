@@ -166,6 +166,8 @@
         "error_no_token": "스트리밍 토큰을 찾을 수 없습니다. Admin Smart Item의 링크를 사용해 주세요.",
         "error_initialize_streaming": "스트리밍 초기화에 실패했습니다.",
         "error_connection": "스트리밍 룸에 연결할 수 없습니다",
+        "error_unauthorized": "이 위치로 방송할 권한이 없습니다. 지갑이 씬의 관리자인지 확인하세요.",
+        "error_network": "방송 서버에 연결할 수 없습니다. 연결을 확인하고 다시 시도하세요.",
         "connect_wallet_prompt": "채팅과 상호작용을 위해 Decentraland 지갑을 연결하세요"
       },
       "watcher": {
@@ -174,6 +176,11 @@
         "back_to_decentraland": "Decentraland로 돌아가기",
         "connecting": "스트림에 연결 중...",
         "error_connection": "스트림에 연결할 수 없습니다",
+        "error_no_active_stream": "이 링크로 방송 중인 사람이 없습니다. 방송이 종료되었거나 아직 시작되지 않았거나 링크가 잘못되었을 수 있습니다. 잠시 후 다시 시도하거나 Admin Smart Item에서 새 링크를 받으세요.",
+        "error_unauthorized": "이 방송은 접근할 수 없습니다. Admin Smart Item에서 발급된 유효한 링크인지 확인하세요.",
+        "error_invalid_location": "해당 위치를 인식할 수 없습니다. 월드 이름 또는 파셀 좌표를 확인하고 다시 시도하세요.",
+        "error_world_not_found": "해당 월드를 찾을 수 없습니다. 월드 이름을 확인하고 다시 시도하세요.",
+        "error_network": "방송 서버에 연결할 수 없습니다. 연결을 확인하고 다시 시도하세요.",
         "connect_wallet_prompt": "메시지를 보내려면 Decentraland 지갑을 연결하세요"
       },
       "streaming_controls": {

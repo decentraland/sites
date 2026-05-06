@@ -166,6 +166,8 @@
         "error_no_token": "配信トークンが見つかりません。Admin Smart Itemのリンクを使用してください。",
         "error_initialize_streaming": "配信の初期化に失敗しました。",
         "error_connection": "配信ルームへの接続に失敗しました",
+        "error_unauthorized": "この場所への配信権限がありません。あなたのウォレットがシーンの管理者であることを確認してください。",
+        "error_network": "配信サーバーに到達できませんでした。接続を確認して再試行してください。",
         "connect_wallet_prompt": "チャットや交流のためにDecentralandウォレットを接続してください"
       },
       "watcher": {
@@ -174,6 +176,11 @@
         "back_to_decentraland": "Decentralandへ戻る",
         "connecting": "配信に接続中...",
         "error_connection": "配信への接続に失敗しました",
+        "error_no_active_stream": "このリンクで現在配信している人がいません。配信が終了しているか、まだ開始されていないか、リンクが間違っている可能性があります。少し待ってから再試行するか、Admin Smart Itemから新しいリンクを取得してください。",
+        "error_unauthorized": "この配信にはアクセスできません。Admin Smart Itemの有効なリンクを使用していることを確認してください。",
+        "error_invalid_location": "その場所を認識できませんでした。ワールド名またはパーセル座標を確認して再試行してください。",
+        "error_world_not_found": "そのワールドが見つかりませんでした。ワールド名を確認して再試行してください。",
+        "error_network": "配信サーバーに到達できませんでした。接続を確認して再試行してください。",
         "connect_wallet_prompt": "メッセージを送るにはDecentralandウォレットを接続してください"
       },
       "streaming_controls": {
