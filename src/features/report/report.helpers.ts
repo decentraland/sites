@@ -54,5 +54,5 @@ interface SubmitFormState {
   confirmAccuracy: boolean
 }
 
-export { REASON_API_LABEL, buildPresignFiles, buildSubmitPayload, getReportApiUrl, sanitizeFilename }
+export { REASON_API_LABEL, buildPresignFiles, buildSubmitPayload, getReportApiUrl }
 export type { SubmitFormState }
