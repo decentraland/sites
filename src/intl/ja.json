@@ -191,6 +191,8 @@
         "stop_share": "共有を停止",
         "share_screen": "画面を共有",
         "screen_share_mobile_not_supported": "モバイルでは画面共有はご利用いただけません",
+        "screen_share_not_supported": "このデバイスまたはブラウザでは画面共有はサポートされていません。",
+        "screen_share_permission_denied": "アクセスが拒否されました。画面共有を許可して続行してください。",
         "leave_stream": "配信から退出",
         "leave": "退出",
         "reconnect": "再接続",
@@ -334,6 +336,10 @@
         },
         "video_playback_failed": {
           "title": "動画を再生できませんでした"
+        },
+        "screen_share_failed": {
+          "title": "画面共有に失敗しました",
+          "default_message": "画面共有を開始できませんでした。もう一度お試しください。"
         },
         "retry": "再試行",
         "dismiss": "閉じる"

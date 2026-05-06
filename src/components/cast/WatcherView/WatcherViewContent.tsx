@@ -50,7 +50,6 @@ export function WatcherViewContent() {
       return false
     }
   })
-  console.log('streamerParticipant', streamerParticipant)
 
   // Always show LiveStreamCounter and grid when there are streamers
   return (

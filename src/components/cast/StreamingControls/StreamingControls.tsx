@@ -16,6 +16,7 @@ import VolumeOffIcon from '@mui/icons-material/VolumeOff'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import { ConnectionState, LocalAudioTrack, LocalVideoTrack, Track } from 'livekit-client'
 import { useLiveKitCredentials } from '../../../features/cast2/contexts/LiveKitContext'
+import { useNotifications } from '../../../features/cast2/contexts/NotificationContext'
 import { usePresentationOptional } from '../../../features/cast2/contexts/PresentationContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { SharePresentationModal } from '../SharePresentationModal/SharePresentationModal'
@@ -51,6 +52,7 @@ export function StreamingControls({
   onToggleTabMute
 }: StreamingControlsProps) {
   const { t } = useCastTranslation()
+  const notifications = useNotifications()
   const room = useRoomContext()
   const { localParticipant } = useLocalParticipant()
   const remoteParticipants = useRemoteParticipants()
@@ -226,13 +228,13 @@ export function StreamingControls({
         const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
         if (isMobileDevice) {
-          alert(t('streaming_controls.screen_share_mobile_not_supported'))
+          notifications.show('ScreenShareFailed', { message: t('streaming_controls.screen_share_mobile_not_supported') })
           return
         }
 
         if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
           console.error('[StreamingControls] Screen share not supported on this device/browser')
-          alert('Screen sharing is not supported on this device or browser')
+          notifications.show('ScreenShareFailed', { message: t('streaming_controls.screen_share_not_supported') })
           return
         }
 
@@ -242,12 +244,13 @@ export function StreamingControls({
         console.error('[StreamingControls] Error enabling screen share:', error)
         setIsScreenSharing(false)
 
-        // Show user-friendly error message
+        // Surface a user-friendly error via the toast stack instead of
+        // blocking the main thread with `alert()`.
         if (error instanceof Error) {
           if (error.name === 'NotAllowedError') {
-            alert('Permission denied. Please allow screen sharing to continue.')
+            notifications.show('ScreenShareFailed', { message: t('streaming_controls.screen_share_permission_denied') })
           } else if (error.name === 'NotSupportedError') {
-            alert('Screen sharing is not supported on this device')
+            notifications.show('ScreenShareFailed', { message: t('streaming_controls.screen_share_not_supported') })
           }
         }
       }

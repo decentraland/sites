@@ -43,7 +43,10 @@ const useProfiles = (addresses: string[]): UseProfilesResult => {
     return () => {
       cancelled = true
     }
-  }, [key, addresses])
+    // `key` captures the address list contents — depending on `addresses`
+    // would re-fire on every freshly-built array reference with identical
+    // contents.
+  }, [key])
 
   return { profiles, isLoading, error }
 }

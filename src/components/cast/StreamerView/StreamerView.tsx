@@ -133,7 +133,7 @@ export function StreamerView() {
   }, [setCredentials])
 
   if (error) {
-    return <ErrorModal title={t('error_modal.title')} message={t('error_modal.message')} showExitButton={false} />
+    return <ErrorModal title={t('error_modal.title')} message={error} showExitButton={false} />
   }
 
   if (loadingPlaceInfo) {

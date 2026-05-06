@@ -191,6 +191,8 @@
         "stop_share": "공유 중지",
         "share_screen": "화면 공유",
         "screen_share_mobile_not_supported": "모바일에서는 화면 공유를 사용할 수 없습니다",
+        "screen_share_not_supported": "이 기기 또는 브라우저에서는 화면 공유가 지원되지 않습니다.",
+        "screen_share_permission_denied": "권한이 거부되었습니다. 계속하려면 화면 공유를 허용해 주세요.",
         "leave_stream": "스트림 떠나기",
         "leave": "떠나기",
         "reconnect": "재연결",
@@ -334,6 +336,10 @@
         },
         "video_playback_failed": {
           "title": "비디오를 재생할 수 없습니다"
+        },
+        "screen_share_failed": {
+          "title": "화면 공유 실패",
+          "default_message": "화면 공유를 시작할 수 없습니다. 다시 시도해 주세요."
         },
         "retry": "재시도",
         "dismiss": "닫기"

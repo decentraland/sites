@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
@@ -89,7 +89,6 @@ export function WatcherView() {
         setError(null)
 
         const identity = generateRandomName()
-        console.log('[WatcherView] Using identity:', identity)
         const liveKitCredentials = await fetchWatcherToken({ location: effectiveLocation, identity, parcel: selectedParcel }).unwrap()
         setCredentials(liveKitCredentials)
 
@@ -121,9 +120,24 @@ export function WatcherView() {
     setError(null)
   }, [])
 
+  // Track join-handshake timer so we can cancel it if the component unmounts
+  // before it fires (avoids React's "state update on unmounted component" warn).
+  const joinTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(
+    () => () => {
+      if (joinTimerRef.current) {
+        clearTimeout(joinTimerRef.current)
+        joinTimerRef.current = null
+      }
+    },
+    []
+  )
+
   const handleJoinRoom = useCallback(() => {
     setIsJoining(true)
-    setTimeout(() => {
+    if (joinTimerRef.current) clearTimeout(joinTimerRef.current)
+    joinTimerRef.current = setTimeout(() => {
+      joinTimerRef.current = null
       setOnboardingComplete(true)
       setIsJoining(false)
     }, 500)
@@ -132,7 +146,6 @@ export function WatcherView() {
   const handleRoomConnect = useCallback(() => {}, [])
 
   const handleLeaveRoom = useCallback(() => {
-    console.log('[WatcherView] Leaving room, returning to onboarding...')
     setOnboardingComplete(false)
   }, [])
 

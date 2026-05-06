@@ -191,6 +191,8 @@
         "stop_share": "停止共享",
         "share_screen": "共享屏幕",
         "screen_share_mobile_not_supported": "移动设备不支持屏幕共享",
+        "screen_share_not_supported": "此设备或浏览器不支持屏幕共享。",
+        "screen_share_permission_denied": "权限被拒绝。请允许屏幕共享后继续。",
         "leave_stream": "离开直播",
         "leave": "离开",
         "reconnect": "重新连接",
@@ -334,6 +336,10 @@
         },
         "video_playback_failed": {
           "title": "视频无法播放"
+        },
+        "screen_share_failed": {
+          "title": "屏幕共享失败",
+          "default_message": "无法开始屏幕共享。请重试。"
         },
         "retry": "重试",
         "dismiss": "关闭"

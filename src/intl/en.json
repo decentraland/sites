@@ -385,6 +385,10 @@
         "video_playback_failed": {
           "title": "Video couldn't play"
         },
+        "screen_share_failed": {
+          "title": "Screen sharing failed",
+          "default_message": "We couldn't start screen sharing. Please try again."
+        },
         "retry": "Retry",
         "dismiss": "Dismiss"
       }

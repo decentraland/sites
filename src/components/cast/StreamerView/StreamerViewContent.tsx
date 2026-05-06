@@ -44,13 +44,6 @@ export function StreamerViewContent() {
   // Show initializing state while connecting or camera is starting up
   // (prevents showing "disconnected" message during initial connection)
   if ((isConnecting || isDisconnected || (isConnected && isInitializing)) && !hasAnyVideo && isInitializing) {
-    console.log('[StreamerViewContent] Showing camera initializing state', {
-      isConnecting,
-      isDisconnected,
-      isConnected,
-      isInitializing,
-      hasAnyVideo
-    })
     return (
       <ContentWrapper>
         <EmptyStreamState type="streamer" message={t('empty_state.camera_initializing')} />
@@ -60,7 +53,6 @@ export function StreamerViewContent() {
 
   // If disconnected (but not during initialization), show reconnection message
   if (isDisconnected && !isInitializing) {
-    console.log('[StreamerViewContent] Showing disconnected state')
     return (
       <ContentWrapper>
         <EmptyStreamState type="watcher" message={t('empty_state.streamer_disconnected')} />
