@@ -579,6 +579,7 @@
         "evidence_helper": "スクリーンショット、動画、リンクを最大5件までアップロードしてください。",
         "evidence_add": "ファイルを追加",
         "evidence_oversized": "{names} は 5MB の上限を超えています",
+        "evidence_invalid_type": "{names} は対応していないファイル形式です",
         "additional_label": "追加コメント",
         "additional_helper": "モデレーターの調査に役立つ追加情報があれば記入してください。",
         "additional_placeholder": "ここにコメントを入力してください...",

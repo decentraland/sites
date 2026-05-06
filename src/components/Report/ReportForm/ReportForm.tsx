@@ -85,6 +85,7 @@ function ReportForm() {
       description: draft.description,
       additionalComments: draft.additionalComments
     }))
+    // NOTE: intentional empty deps. Restore the draft once on mount; later searchParams changes are handled by sibling effects.
   }, [])
 
   useEffect(() => {
@@ -125,6 +126,16 @@ function ReportForm() {
       handleFieldChange('evidence', files)
     },
     [handleFieldChange]
+  )
+
+  const formatOversizedLabel = useCallback(
+    (names: string) => formatMessage('component.report.form.evidence_oversized', { names }),
+    [formatMessage]
+  )
+
+  const formatInvalidTypeLabel = useCallback(
+    (names: string) => formatMessage('component.report.form.evidence_invalid_type', { names }),
+    [formatMessage]
   )
 
   const handleSignInClick = useCallback(() => {
@@ -268,7 +279,8 @@ function ReportForm() {
               files={formState.evidence}
               onFilesChange={handleEvidenceChange}
               addFileLabel={formatMessage('component.report.form.evidence_add')}
-              oversizedLabel={names => formatMessage('component.report.form.evidence_oversized', { names })}
+              oversizedLabel={formatOversizedLabel}
+              invalidTypeLabel={formatInvalidTypeLabel}
             />
           </FormField>
 

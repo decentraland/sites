@@ -101,7 +101,8 @@ describe('useSubmitReport', () => {
         fakeIdentity,
         'POST',
         expect.any(String),
-        { 'Content-Type': 'application/json' }
+        { 'Content-Type': 'application/json' },
+        expect.any(AbortSignal)
       )
       expect(fetchMock).toHaveBeenCalledWith('https://s3.example.com/upload', expect.objectContaining({ method: 'PUT' }))
       expect(fetchWithIdentityMock).toHaveBeenNthCalledWith(
@@ -110,8 +111,86 @@ describe('useSubmitReport', () => {
         fakeIdentity,
         'POST',
         expect.stringContaining('"evidenceKeys":["reports/report-123/screenshot.png"]'),
-        { 'Content-Type': 'application/json' }
+        { 'Content-Type': 'application/json' },
+        expect.any(AbortSignal)
       )
+    })
+  })
+
+  describe('when the presign response reorders files', () => {
+    it('should match each upload to the right file by sanitized filename, not by index', async () => {
+      const fileA = new File(['aaa'], 'alpha.png', { type: 'image/png' })
+      const fileB = new File(['bbb'], 'beta.jpg', { type: 'image/jpeg' })
+      const formState: ReportFormState = {
+        ...buildFormState(),
+        evidence: [
+          { id: 'a', file: fileA, name: 'alpha.png', size: 3 },
+          { id: 'b', file: fileB, name: 'beta.jpg', size: 3 }
+        ]
+      }
+      fetchWithIdentityMock
+        .mockResolvedValueOnce(
+          okJsonResponse({
+            reportId: 'report-xyz',
+            files: [
+              {
+                uploadUrl: 'https://s3.example.com/beta',
+                key: 'reports/report-xyz/beta.jpg',
+                publicUrl: 'https://s3.example.com/public/beta'
+              },
+              {
+                uploadUrl: 'https://s3.example.com/alpha',
+                key: 'reports/report-xyz/alpha.png',
+                publicUrl: 'https://s3.example.com/public/alpha'
+              }
+            ]
+          })
+        )
+        .mockResolvedValueOnce(okEmptyResponse())
+
+      const { result } = renderHook(() => useSubmitReport({ identity: fakeIdentity }))
+
+      await act(async () => {
+        await result.current.submitReport(formState)
+      })
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://s3.example.com/beta',
+        expect.objectContaining({ headers: expect.objectContaining({ 'Content-Type': 'image/jpeg' }) })
+      )
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://s3.example.com/alpha',
+        expect.objectContaining({ headers: expect.objectContaining({ 'Content-Type': 'image/png' }) })
+      )
+    })
+  })
+
+  describe('when the hook unmounts mid-submission', () => {
+    it('should abort the controller', async () => {
+      let presignResolve: ((response: Response) => void) | undefined
+      fetchWithIdentityMock.mockImplementationOnce(
+        () =>
+          new Promise<Response>(resolve => {
+            presignResolve = resolve
+          })
+      )
+
+      const { result, unmount } = renderHook(() => useSubmitReport({ identity: fakeIdentity }))
+
+      let pending: Promise<boolean> | undefined
+      act(() => {
+        pending = result.current.submitReport(buildFormState())
+      })
+
+      unmount()
+
+      const signal = fetchWithIdentityMock.mock.calls[0]?.[5] ?? undefined
+      expect(signal?.aborted).toBe(true)
+
+      presignResolve?.(failingResponse(0))
+      await act(async () => {
+        await pending
+      })
     })
   })
 

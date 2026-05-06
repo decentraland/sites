@@ -574,6 +574,7 @@
         "evidence_helper": "Téléversez jusqu’à 5 captures d’écran, vidéos ou liens pour appuyer votre signalement.",
         "evidence_add": "Ajouter un fichier",
         "evidence_oversized": "{names} dépasse la limite de 5 Mo",
+        "evidence_invalid_type": "{names} n’est pas un type de fichier pris en charge",
         "additional_label": "Commentaires supplémentaires",
         "additional_helper": "Fournissez toute information complémentaire qui pourrait aider l’enquête des modérateurs.",
         "additional_placeholder": "Saisissez vos commentaires ici...",

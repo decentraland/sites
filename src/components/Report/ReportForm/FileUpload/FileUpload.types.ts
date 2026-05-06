@@ -6,6 +6,7 @@ interface FileUploadProps {
   error?: string
   addFileLabel: string
   oversizedLabel: (names: string) => string
+  invalidTypeLabel: (names: string) => string
 }
 
 export type { FileUploadProps }

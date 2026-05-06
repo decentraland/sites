@@ -14,11 +14,18 @@ import {
 
 const MAX_FILES = 5
 const MAX_FILE_SIZE = 5 * 1024 * 1024
-const ACCEPTED_TYPES = 'image/png,image/jpeg,image/gif,image/webp,video/mp4,video/webm,application/pdf'
+const ACCEPTED_TYPE_LIST = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'application/pdf'] as const
+type AcceptedType = (typeof ACCEPTED_TYPE_LIST)[number]
+const ACCEPTED_TYPE_SET: ReadonlySet<AcceptedType> = new Set(ACCEPTED_TYPE_LIST)
+const ACCEPTED_TYPES = ACCEPTED_TYPE_LIST.join(',')
 
-function FileUpload({ files, onFilesChange, error, addFileLabel, oversizedLabel }: FileUploadProps) {
+function isAcceptedType(value: string): value is AcceptedType {
+  return (ACCEPTED_TYPE_SET as ReadonlySet<string>).has(value)
+}
+
+function FileUpload({ files, onFilesChange, error, addFileLabel, oversizedLabel, invalidTypeLabel }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null)
-  const [sizeError, setSizeError] = useState<string | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   const handleClick = useCallback(() => {
     inputRef.current?.click()
@@ -29,18 +36,22 @@ function FileUpload({ files, onFilesChange, error, addFileLabel, oversizedLabel 
       const selectedFiles = event.target.files
       if (!selectedFiles) return
 
-      setSizeError(null)
+      setValidationError(null)
 
       const remaining = MAX_FILES - files.length
       const selected = Array.from(selectedFiles).slice(0, remaining)
 
-      const oversized = selected.filter(f => f.size > MAX_FILE_SIZE)
-      if (oversized.length > 0) {
-        setSizeError(oversizedLabel(oversized.map(f => f.name).join(', ')))
+      const invalidType = selected.filter(f => !isAcceptedType(f.type))
+      const oversized = selected.filter(f => isAcceptedType(f.type) && f.size > MAX_FILE_SIZE)
+
+      if (invalidType.length > 0) {
+        setValidationError(invalidTypeLabel(invalidType.map(f => f.name).join(', ')))
+      } else if (oversized.length > 0) {
+        setValidationError(oversizedLabel(oversized.map(f => f.name).join(', ')))
       }
 
       const newFiles: UploadedFile[] = selected
-        .filter(f => f.size <= MAX_FILE_SIZE)
+        .filter(f => isAcceptedType(f.type) && f.size <= MAX_FILE_SIZE)
         .map(file => ({
           id: crypto.randomUUID(),
           file,
@@ -56,7 +67,7 @@ function FileUpload({ files, onFilesChange, error, addFileLabel, oversizedLabel 
         inputRef.current.value = ''
       }
     },
-    [files, onFilesChange, oversizedLabel]
+    [files, onFilesChange, oversizedLabel, invalidTypeLabel]
   )
 
   const handleRemove = useCallback(
@@ -84,7 +95,7 @@ function FileUpload({ files, onFilesChange, error, addFileLabel, oversizedLabel 
       <AddFileButton variant="contained" color="secondary" size="medium" onClick={handleClick} disabled={files.length >= MAX_FILES}>
         {addFileLabel}
       </AddFileButton>
-      {sizeError && <ErrorText>{sizeError}</ErrorText>}
+      {validationError && <ErrorText>{validationError}</ErrorText>}
       {error && <ErrorText>{error}</ErrorText>}
     </FileUploadContainer>
   )

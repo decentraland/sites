@@ -715,6 +715,7 @@
         "evidence_helper": "Upload up to 5 screenshots, videos, or links to support your report.",
         "evidence_add": "Add File",
         "evidence_oversized": "{names} exceeded the 5MB limit",
+        "evidence_invalid_type": "{names} is not a supported file type",
         "additional_label": "Additional Comments",
         "additional_helper": "Provide any extra information that might help moderators investigate.",
         "additional_placeholder": "Write your comments here...",

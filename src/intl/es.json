@@ -579,6 +579,7 @@
         "evidence_helper": "Sube hasta 5 capturas de pantalla, videos o enlaces que respalden tu reporte.",
         "evidence_add": "Añadir archivo",
         "evidence_oversized": "{names} supera el límite de 5MB",
+        "evidence_invalid_type": "{names} no es un tipo de archivo admitido",
         "additional_label": "Comentarios adicionales",
         "additional_helper": "Aporta cualquier información extra que pueda ayudar a la investigación.",
         "additional_placeholder": "Escribe tus comentarios aquí...",

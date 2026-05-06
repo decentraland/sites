@@ -579,6 +579,7 @@
         "evidence_helper": "最多上传 5 个截图、视频或链接以支持你的举报。",
         "evidence_add": "添加文件",
         "evidence_oversized": "{names} 超过了 5MB 的限制",
+        "evidence_invalid_type": "{names} 不是支持的文件类型",
         "additional_label": "附加说明",
         "additional_helper": "提供任何可能帮助审核人员调查的额外信息。",
         "additional_placeholder": "在此填写你的说明...",
