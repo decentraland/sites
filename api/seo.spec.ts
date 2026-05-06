@@ -49,7 +49,12 @@ interface MockAssetResponse {
   fields: { file: { url: string } }
 }
 
-type MockResponseBody = MockEventResponse | MockBlogPostsResponse | MockAssetResponse | Record<string, never>
+interface MockPlaceResponse {
+  ok: true
+  data: Array<{ title: string; description: string; image: string }>
+}
+
+type MockResponseBody = MockEventResponse | MockBlogPostsResponse | MockAssetResponse | MockPlaceResponse | Record<string, never>
 
 function jsonResponse<T extends MockResponseBody>(ok: boolean, body: T): Response {
   return {
@@ -78,6 +83,14 @@ describe('seo handler', () => {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             scene_name: 'Decentraland Theatre'
           }
+        })
+      }
+      if (url.includes('/places?positions=0%2C0')) {
+        return jsonResponse<MockPlaceResponse>(true, {
+          ok: true,
+          data: [
+            { title: 'Genesis Plaza', description: 'Decentraland spawn point', image: 'https://peer.decentraland.org/content/contents/abc' }
+          ]
         })
       }
       if (url.includes('/blog/posts')) {
@@ -118,10 +131,26 @@ describe('seo handler', () => {
     )
   })
 
-  it('serves position-aware metadata for /whats-on?position=0,0', async () => {
+  it('serves place-aware metadata for /whats-on?position=0,0 via places API', async () => {
     const { body } = await run({ path: '/whats-on', position: '0,0' })
-    expect(body).toContain('<title>Explore (0,0) in Decentraland | Decentraland</title>')
+    expect(body).toContain('<title>Genesis Plaza | Decentraland</title>')
+    expect(body).toMatch(/<meta property="og:description" content="Decentraland spawn point">/)
+    expect(body).toMatch(/<meta property="og:image" content="https:\/\/peer\.decentraland\.org\/content\/contents\/abc">/)
     expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on\?position=0%2C0">/)
+  })
+
+  it('serves event metadata for /jump/events?id=<uuid> (same handler as /whats-on)', async () => {
+    const { body, headers } = await run({ path: '/jump/events', id: '11974ff3-675c-46fd-802a-618d4b40e3be' })
+    expect(headers['X-SEO-Function']).toBe('active')
+    expect(body).toContain('<title>Build Your Career at Decentraland Theatre | Decentraland</title>')
+    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/jump\/events\?id=11974ff3-675c-46fd-802a-618d4b40e3be">/)
+  })
+
+  it('serves place metadata for /jump/places?position=0,0', async () => {
+    const { body, headers } = await run({ path: '/jump/places', position: '0,0' })
+    expect(headers['X-SEO-Function']).toBe('active')
+    expect(body).toContain('<title>Genesis Plaza | Decentraland</title>')
+    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/jump\/places\?position=0%2C0">/)
   })
 
   it('serves generic whats-on metadata when no params', async () => {

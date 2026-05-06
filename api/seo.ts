@@ -24,6 +24,9 @@ const REEL_SERVICE_URL = process.env['REEL_SERVICE_URL'] ?? 'https://camera-reel
 // events-api hosts metadata for /whats-on?id=<eventId>. Falls back to prod for local dev.
 const EVENTS_API_URL = process.env['EVENTS_API_URL'] ?? 'https://events.decentraland.org/api'
 
+// places-api hosts metadata for /whats-on?position=x,y and /jump/places. Falls back to prod for local dev.
+const PLACES_API_URL = process.env['PLACES_API_URL'] ?? 'https://places.decentraland.org/api'
+
 const DEFAULTS = {
   title: 'Decentraland Blog | Updates, Stories, and Community Moments',
   description: 'Updates from across Decentraland. Announcements, events, community moments, and everything in between.',
@@ -267,16 +270,42 @@ const fetchEventSEO = async (eventId: string): Promise<SEOData | null> => {
   }
 }
 
+interface PlaceApiEntry {
+  title?: string | null
+  description?: string | null
+  image?: string | null
+}
+
+interface PlaceApiResponse {
+  ok: boolean
+  data?: PlaceApiEntry[]
+}
+
+const fetchPlaceSEO = async (position: string): Promise<SEOData | null> => {
+  if (!POSITION_REGEX.test(position)) return null
+  const data = await fetchJSON<PlaceApiResponse>(`${PLACES_API_URL}/places?positions=${encodeURIComponent(position)}`)
+  const entry = data?.ok ? data.data?.[0] : null
+  if (!entry) return null
+  const title = entry.title?.trim() || `Explore (${position}) in Decentraland`
+  const description = entry.description?.trim() || `Discover what's happening at coordinates ${position} in Decentraland.`
+  const imageUrl = entry.image && /^https?:\/\//.test(entry.image) ? entry.image : WHATS_ON_DEFAULTS.image
+  return { title, description, imageUrl }
+}
+
 const fetchWhatsOnSEO = async (eventId: string | null, position: string | null): Promise<SEOData> => {
   if (eventId) {
     const event = await fetchEventSEO(eventId)
     if (event) return event
   }
-  if (position && POSITION_REGEX.test(position)) {
-    return {
-      title: `Explore (${position}) in Decentraland`,
-      description: `Discover what's happening at coordinates ${position} in Decentraland.`,
-      imageUrl: WHATS_ON_DEFAULTS.image
+  if (position) {
+    const place = await fetchPlaceSEO(position)
+    if (place) return place
+    if (POSITION_REGEX.test(position)) {
+      return {
+        title: `Explore (${position}) in Decentraland`,
+        description: `Discover what's happening at coordinates ${position} in Decentraland.`,
+        imageUrl: WHATS_ON_DEFAULTS.image
+      }
     }
   }
   return {
@@ -323,9 +352,12 @@ const ROUTE_PATTERNS: Array<{ pattern: RegExp; handler: (match: RegExpMatchArray
   { pattern: /^\/blog\/([^/]+)$/, handler: m => ({ type: 'category', categorySlug: m[1] }) },
   { pattern: /^\/blog\/?$/, handler: () => ({ type: 'blog' }) },
   { pattern: /^\/reels\/([^/]+)$/, handler: m => ({ type: 'reels', imageId: m[1] }) },
-  // /whats-on routes deep-link via query params (?id=, ?position=) rather than
-  // path segments, so a single pattern covers /whats-on plus its admin/edit subpaths.
-  { pattern: /^\/whats-on(\/.*)?$/, handler: () => ({ type: 'whats-on' }) }
+  // /whats-on, /jump/events and /jump/places all deep-link via query params (?id=, ?position=)
+  // rather than path segments. A single 'whats-on' route type handles all three by dispatching
+  // on the query params; the path patterns just gate which paths reach the handler.
+  { pattern: /^\/whats-on(\/.*)?$/, handler: () => ({ type: 'whats-on' }) },
+  { pattern: /^\/jump\/events(\/.*)?$/, handler: () => ({ type: 'whats-on' }) },
+  { pattern: /^\/jump\/places(\/.*)?$/, handler: () => ({ type: 'whats-on' }) }
 ]
 
 const parseRoute = (pathname: string): RouteInfo => {
@@ -337,7 +369,7 @@ const parseRoute = (pathname: string): RouteInfo => {
   return { type: 'unknown' }
 }
 
-const ALLOWED_ROOT_PATHS = ['/blog', '/reels', '/whats-on'] as const
+const ALLOWED_ROOT_PATHS = ['/blog', '/reels', '/whats-on', '/jump'] as const
 
 // =============================================================================
 // SEO Data Resolution
@@ -487,9 +519,10 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   const origin = resolveOrigin(req)
   // Preserve id / position in the canonical URL so social cards and search
   // engines link back to the deep-linked event/parcel rather than the
-  // generic listing page.
+  // generic listing page. Applies to /whats-on and /jump/{events,places}.
   const canonicalQuery = new URLSearchParams()
-  if (requestPath.startsWith('/whats-on')) {
+  const preservesQuery = requestPath.startsWith('/whats-on') || requestPath.startsWith('/jump/')
+  if (preservesQuery) {
     if (eventId && EVENT_ID_REGEX.test(eventId)) canonicalQuery.set('id', eventId)
     else if (position && POSITION_REGEX.test(position)) canonicalQuery.set('position', position)
   }
