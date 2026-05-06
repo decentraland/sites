@@ -35,7 +35,7 @@ Dispatch the project's `code-reviewer` agent on the diff:
 
 > Use the `code-reviewer` subagent on `git diff master...HEAD`. Treat any P0 or P1 finding as a blocker. Surface P2 to me.
 
-The agent enforces rules 1-23 from `CLAUDE.md` and the security checklist.
+The agent enforces rules 1-25 from `CLAUDE.md` and the security checklist.
 
 ## Step 7 — barrier-specific spot checks
 

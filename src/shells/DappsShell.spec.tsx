@@ -1,5 +1,6 @@
 import React from 'react'
-import { MemoryRouter } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { render } from '@testing-library/react'
 import { DappsShell } from './DappsShell'
 
@@ -13,7 +14,7 @@ jest.mock('../config/env', () => ({
       PEER_URL: 'https://peer.decentraland.org',
       PLACES_API_URL: 'https://places.decentraland.org/api',
       GATEKEEPER_URL: 'https://comms-gatekeeper.decentraland.org',
-      WORLDS_CONTENT_URL: 'https://worlds-content-server.decentraland.org'
+      WORLDS_CONTENT_SERVER_URL: 'https://worlds-content-server.decentraland.org'
     }
     return values[key]
   }
@@ -35,6 +36,25 @@ function renderShell() {
   )
 }
 
+function renderShellRouteWithHelmet() {
+  return render(
+    <MemoryRouter initialEntries={['/with-helmet']}>
+      <Routes>
+        <Route element={<DappsShell />}>
+          <Route
+            path="/with-helmet"
+            element={
+              <Helmet>
+                <title>Shell Child</title>
+              </Helmet>
+            }
+          />
+        </Route>
+      </Routes>
+    </MemoryRouter>
+  )
+}
+
 describe('DappsShell', () => {
   afterEach(() => {
     document.head.querySelectorAll('link[rel="preconnect"]').forEach(link => link.remove())
@@ -42,6 +62,10 @@ describe('DappsShell', () => {
 
   it('should render without throwing', () => {
     expect(() => renderShell()).not.toThrow()
+  })
+
+  it('should provide Helmet context to nested routes', () => {
+    expect(() => renderShellRouteWithHelmet()).not.toThrow()
   })
 
   it('should inject a preconnect link for PEER_URL', () => {
@@ -63,7 +87,7 @@ describe('DappsShell', () => {
     expect(link).not.toBeNull()
   })
 
-  it('should inject a preconnect link for WORLDS_CONTENT_URL origin', () => {
+  it('should inject a preconnect link for WORLDS_CONTENT_SERVER_URL origin', () => {
     renderShell()
     const link = document.head.querySelector('link[rel="preconnect"][href="https://worlds-content-server.decentraland.org"]')
     expect(link).not.toBeNull()

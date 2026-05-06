@@ -6,7 +6,7 @@ Project-level configuration for Claude Code working in this repo. Every hook, sk
 
 | Layer           | Where                                      | What                                                                                                               |
 | --------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| 1. Memory       | `CLAUDE.md` (repo root)                    | Always-loaded constitution. Architecture, conventions, pre-PR rules (1-23), security checklist. **Authoritative**. |
+| 1. Memory       | `CLAUDE.md` (repo root)                    | Always-loaded constitution. Architecture, conventions, pre-PR rules (1-25), security checklist. **Authoritative**. |
 | 2. Knowledge    | `.claude/skills/`                          | On-demand workflows (auto-invoked by description match).                                                           |
 | 3. Guardrails   | `.claude/hooks/` + `.claude/settings.json` | Deterministic shell scripts on tool events.                                                                        |
 | 4. Delegation   | `.claude/agents/`                          | Subagents with isolated context.                                                                                   |
@@ -21,7 +21,7 @@ Project-level configuration for Claude Code working in this repo. Every hook, sk
 
 ## Agents
 
-- `code-reviewer` — repo-aware diff review against rules 1-23 + security checklist.
+- `code-reviewer` — repo-aware diff review against rules 1-25 + security checklist.
 - `i18n-auditor` — verifies locale parity and detects duplicate keys.
 - `route-architect` — designs new routes respecting the dual-shell boundary.
 

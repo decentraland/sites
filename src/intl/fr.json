@@ -338,6 +338,30 @@
         "retry": "Réessayer",
         "dismiss": "Fermer"
       }
+    },
+    "storage": {
+      "select": {
+        "title": "Storage · Sélectionner un actif"
+      },
+      "env": {
+        "title": "Storage · Variables d’environnement"
+      },
+      "scene": {
+        "title": "Storage · Valeurs de scène"
+      },
+      "players": {
+        "title": "Storage · Joueurs"
+      },
+      "player_detail": {
+        "title": "Storage · Joueur {address}"
+      },
+      "not_found": {
+        "title": "Storage · Page introuvable"
+      }
+    },
+    "report": {
+      "title": "Signaler un joueur – Decentraland",
+      "success_title": "Signalement envoyé – Decentraland"
     }
   },
   "page_invite": {
@@ -738,10 +762,274 @@
       "list": {
         "title": "Utilisateur : {userName}"
       }
+    },
+    "storage": {
+      "common": {
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "confirm": "Confirmer",
+        "delete": "Supprimer",
+        "close": "Fermer",
+        "loading": "Chargement",
+        "actions": "Actions",
+        "key": "Clé",
+        "add": "Ajouter",
+        "owner": "Propriétaire",
+        "collaborator": "Collaborateur"
+      },
+      "role": {
+        "owner": "Propriétaire",
+        "operator": "Opérateur",
+        "tenant": "Locataire",
+        "lessor": "Bailleur",
+        "unknown": "Inconnu"
+      },
+      "value_field": {
+        "json_error": "JSON invalide"
+      },
+      "sidebar": {
+        "environment": "Environnement",
+        "scene": "Scène",
+        "player": "Joueur",
+        "storages": "Stockages",
+        "back": "Retour",
+        "collapse": "Réduire la barre latérale",
+        "expand": "Étendre la barre latérale",
+        "realm": "Royaume",
+        "position": "Position"
+      },
+      "select_page": {
+        "title": "Sélectionner un actif à gérer",
+        "subtitle": "Choisissez un monde ou une parcelle pour gérer son stockage.",
+        "worlds": "Mondes",
+        "lands": "Terrains",
+        "no_worlds": "Aucun monde trouvé",
+        "no_lands": "Aucun terrain trouvé",
+        "loading": "Chargement des actifs",
+        "select_world": "Sélectionner {name}",
+        "select_land": "Sélectionner {name}",
+        "parcel": "Parcelle",
+        "estate": "Domaine",
+        "at_position": "à {position}",
+        "parcels_count": "({size} parcelles)",
+        "search_worlds": "Rechercher des mondes…",
+        "search_lands": "Rechercher des terrains…",
+        "no_search_results": "Aucun résultat pour \"{query}\"",
+        "clear_search": "Effacer la recherche",
+        "showing_results": "Affichage de {start}–{end} sur {total}",
+        "scenes_count": "{count} scènes",
+        "scene_count_one": "1 scène",
+        "edit": "Modifier",
+        "edit_scenes": "Modifier les scènes",
+        "select_scene": "Sélectionner une scène"
+      },
+      "env_page": {
+        "title": "Variables d’environnement",
+        "add": "Ajouter",
+        "clear_all": "Tout effacer",
+        "no_keys": "Aucune variable d’environnement trouvée",
+        "add_dialog": {
+          "title": "Ajouter une variable d’environnement",
+          "key_label": "Clé",
+          "value_label": "Valeur"
+        },
+        "edit_dialog": {
+          "title": "Modifier la variable d’environnement",
+          "key_label": "Clé",
+          "value_label": "Valeur",
+          "helper_text": "Le service de stockage ne renvoie pas les valeurs existantes ; saisissez la nouvelle valeur pour la remplacer."
+        },
+        "delete_dialog": {
+          "title": "Supprimer la variable d’environnement",
+          "message": "Voulez-vous vraiment supprimer la variable d’environnement \"{key}\" ? Cette action est irréversible."
+        },
+        "clear_dialog": {
+          "title": "Effacer toutes les variables d’environnement",
+          "message": "Voulez-vous vraiment supprimer TOUTES les variables d’environnement ? Cette action est irréversible."
+        }
+      },
+      "scene_page": {
+        "title": "Stockage de scène",
+        "add": "Ajouter",
+        "clear_all": "Tout effacer",
+        "no_keys": "Aucune valeur de scène trouvée",
+        "add_dialog": {
+          "title": "Ajouter une valeur de scène",
+          "key_label": "Clé",
+          "value_label": "Valeur",
+          "value_placeholder": "Texte brut ou JSON : {value}"
+        },
+        "edit_dialog": {
+          "title": "Modifier la valeur : {key}",
+          "value_label": "Valeur"
+        },
+        "delete_dialog": {
+          "title": "Supprimer la valeur de scène",
+          "message": "Voulez-vous vraiment supprimer la valeur \"{key}\" ? Cette action est irréversible."
+        },
+        "clear_dialog": {
+          "title": "Effacer toutes les valeurs de scène",
+          "message": "Voulez-vous vraiment supprimer TOUTES les valeurs de scène ? Cette action est irréversible."
+        }
+      },
+      "player_page": {
+        "title": "Stockage de joueur",
+        "add": "Ajouter",
+        "clear_all_players": "Effacer tous les joueurs",
+        "description": "Parcourez les joueurs avec des données stockées, ou recherchez par nom ou adresse.",
+        "search_players": "Rechercher par nom ou adresse…",
+        "no_players": "Aucun joueur trouvé",
+        "no_search_results": "Aucun résultat pour \"{query}\"",
+        "showing_results": "Affichage de {start}–{end} sur {total}",
+        "back_to_players": "Retour aux joueurs",
+        "loading_players": "Chargement des joueurs",
+        "select_player": "Voir le stockage de {address}",
+        "address_label": "Adresse du joueur",
+        "address_placeholder": "0x…",
+        "load_keys": "Charger les clés",
+        "keys_for": "Clés de {address}",
+        "clear_this_player": "Effacer ce joueur",
+        "no_keys": "Aucune clé trouvée pour ce joueur",
+        "loading_keys": "Chargement des clés du joueur",
+        "add_dialog": {
+          "title": "Ajouter une valeur de joueur",
+          "address_label": "Adresse du joueur",
+          "key_label": "Clé",
+          "value_label": "Valeur",
+          "value_placeholder": "Texte brut ou JSON : {value}"
+        },
+        "edit_dialog": {
+          "title": "Modifier la valeur : {key}",
+          "subtitle": "Joueur : {address}",
+          "value_label": "Valeur"
+        },
+        "delete_dialog": {
+          "title": "Supprimer la valeur du joueur",
+          "message": "Voulez-vous vraiment supprimer la valeur \"{key}\" du joueur \"{address}\" ? Cette action est irréversible."
+        },
+        "clear_player_dialog": {
+          "title": "Effacer le stockage du joueur",
+          "message": "Voulez-vous vraiment supprimer TOUTES les valeurs du joueur \"{address}\" ? Cette action est irréversible."
+        },
+        "clear_all_dialog": {
+          "title": "Effacer tout le stockage des joueurs",
+          "message": "Voulez-vous vraiment supprimer TOUTES les données de stockage des joueurs ? Cette action est irréversible."
+        }
+      },
+      "not_found_page": {
+        "code": "404",
+        "title": "Page introuvable",
+        "subtitle": "La page que vous recherchez n’existe pas.",
+        "go_home": "Retour à l’accueil"
+      }
+    },
+    "report": {
+      "form": {
+        "title": "Signaler un utilisateur",
+        "wallet_mismatch": "Le wallet connecté ne correspond pas à l'adresse du joueur. Connectez-vous avec le wallet correct pour envoyer ce signalement.",
+        "your_wallet_label": "Votre adresse de wallet",
+        "your_wallet_helper": "Les signalements sont liés à votre wallet pour prévenir les abus. Votre identité ne sera pas partagée publiquement.",
+        "your_wallet_placeholder": "Saisissez ou collez votre adresse ici...",
+        "sign_in_alert": "Veuillez vous connecter avec votre wallet pour envoyer un signalement.",
+        "sign_in_cta": "Se connecter",
+        "reported_label": "Wallet de l’utilisateur signalé",
+        "reported_helper": "Il s’agit de l’adresse du wallet de l’utilisateur que vous signalez.",
+        "reported_placeholder": "Saisissez ou collez une adresse ici...",
+        "reason_label": "Motif du signalement",
+        "reason_helper": "Sélectionnez l’option qui décrit le mieux le problème.",
+        "reason_placeholder": "Choisir un motif",
+        "reason_options": {
+          "scam_phishing": "Arnaque/Phishing",
+          "illegal_content": "Contenu illégal",
+          "harassment": "Harcèlement",
+          "cheating": "Triche",
+          "impersonation": "Usurpation d’identité"
+        },
+        "description_label": "Description",
+        "description_helper": "Décrivez ce qui s’est passé. Indiquez quand et où l’incident s’est produit, si possible.",
+        "description_placeholder": "Saisissez votre description ici...",
+        "description_hint": "Plus vous fournissez de détails, plus il est facile pour les modérateurs d’examiner votre signalement.",
+        "evidence_label": "Preuves",
+        "evidence_helper": "Téléversez jusqu’à 5 captures d’écran, vidéos ou liens pour appuyer votre signalement.",
+        "evidence_add": "Ajouter un fichier",
+        "evidence_oversized": "{names} dépasse la limite de 5 Mo",
+        "evidence_invalid_type": "{names} n’est pas un type de fichier pris en charge",
+        "additional_label": "Commentaires supplémentaires",
+        "additional_helper": "Fournissez toute information complémentaire qui pourrait aider l’enquête des modérateurs.",
+        "additional_placeholder": "Saisissez vos commentaires ici...",
+        "confirmation_label": "Je confirme que ce signalement est exact.",
+        "submit": "Envoyer le signalement",
+        "submit_in_progress": "Envoi en cours...",
+        "errors": {
+          "invalid_address": "Veuillez saisir une adresse de wallet valide",
+          "missing_reason": "Veuillez choisir un motif",
+          "missing_description": "Veuillez inclure une description de votre signalement",
+          "missing_evidence": "Veuillez téléverser les preuves de votre signalement",
+          "missing_confirmation": "Vous devez confirmer que ces informations sont exactes",
+          "submit_failed": "Nous n’avons pas pu envoyer votre signalement. Veuillez réessayer."
+        },
+        "footer_lead": "Besoin d’aide ?",
+        "footer_help_prefix": "Pour les problèmes urgents ou les questions de sécurité, veuillez",
+        "footer_help_link": "contacter l’équipe de support",
+        "footer_help_suffix": "."
+      },
+      "success": {
+        "title": "Signalement envoyé",
+        "body": "Votre signalement a bien été reçu et sera examiné rapidement.",
+        "dismiss": "Vous pouvez maintenant fermer cette fenêtre."
+      }
     }
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+  },
+  "community": {
+    "global": {
+      "loading": "Chargement..."
+    },
+    "info": {
+      "jump_in_modal": {
+        "title": "Télécharger Decentraland",
+        "description": "Pour rejoindre cette communauté, vous devez télécharger Decentraland.",
+        "button_label": "Télécharger"
+      },
+      "decentraland_community": "Communauté Decentraland",
+      "members": "Membres",
+      "by": "Par",
+      "unknown": "Inconnu",
+      "joined": "REJOINT",
+      "sign_in_to_join": "CONNECTEZ-VOUS POUR REJOINDRE",
+      "request_to_join": "DEMANDER À REJOINDRE",
+      "cancel_request": "ANNULER LA DEMANDE",
+      "jump_in": "ENTRER",
+      "join": "REJOINDRE"
+    },
+    "detail": {
+      "failed_to_join": "Échec de l’adhésion à la communauté",
+      "not_found": "Communauté introuvable",
+      "not_found_description": "La communauté que vous recherchez n’existe pas."
+    },
+    "events": {
+      "upcoming_events": "ÉVÉNEMENTS À VENIR",
+      "no_upcoming_events": "Aucun événement à venir",
+      "live": "en direct"
+    },
+    "members_list": {
+      "title": "MEMBRES",
+      "no_members_found": "Aucun membre trouvé"
+    },
+    "private_message": {
+      "title": "Communauté privée",
+      "description": "Vous devez être membre de cette communauté pour voir son profil."
+    },
+    "not_found": {
+      "title": "Page introuvable",
+      "description": "La page que vous recherchez n’existe pas."
+    },
+    "tabs": {
+      "members": "Membres",
+      "upcoming_events": "Événements à venir"
+    }
   }
 }

@@ -338,6 +338,30 @@
         "retry": "再試行",
         "dismiss": "閉じる"
       }
+    },
+    "storage": {
+      "select": {
+        "title": "Storage · アセットを選択"
+      },
+      "env": {
+        "title": "Storage · 環境変数"
+      },
+      "scene": {
+        "title": "Storage · シーン値"
+      },
+      "players": {
+        "title": "Storage · プレイヤー"
+      },
+      "player_detail": {
+        "title": "Storage · プレイヤー {address}"
+      },
+      "not_found": {
+        "title": "Storage · ページが見つかりません"
+      }
+    },
+    "report": {
+      "title": "プレイヤーを報告する – Decentraland",
+      "success_title": "報告が送信されました – Decentraland"
     }
   },
   "page_invite": {
@@ -743,10 +767,274 @@
       "list": {
         "title": "ユーザー: {userName}"
       }
+    },
+    "storage": {
+      "common": {
+        "save": "保存",
+        "cancel": "キャンセル",
+        "confirm": "確認",
+        "delete": "削除",
+        "close": "閉じる",
+        "loading": "読み込み中",
+        "actions": "アクション",
+        "key": "キー",
+        "add": "追加",
+        "owner": "オーナー",
+        "collaborator": "コラボレーター"
+      },
+      "role": {
+        "owner": "オーナー",
+        "operator": "オペレーター",
+        "tenant": "テナント",
+        "lessor": "貸主",
+        "unknown": "不明"
+      },
+      "value_field": {
+        "json_error": "無効な JSON"
+      },
+      "sidebar": {
+        "environment": "環境",
+        "scene": "シーン",
+        "player": "プレイヤー",
+        "storages": "ストレージ",
+        "back": "戻る",
+        "collapse": "サイドバーを折りたたむ",
+        "expand": "サイドバーを展開",
+        "realm": "レルム",
+        "position": "位置"
+      },
+      "select_page": {
+        "title": "管理するアセットを選択",
+        "subtitle": "ストレージを管理するワールドまたはランドパーセルを選んでください。",
+        "worlds": "ワールド",
+        "lands": "ランド",
+        "no_worlds": "ワールドが見つかりません",
+        "no_lands": "ランドが見つかりません",
+        "loading": "アセットを読み込み中",
+        "select_world": "{name} を選択",
+        "select_land": "{name} を選択",
+        "parcel": "パーセル",
+        "estate": "エステート",
+        "at_position": "{position} の位置",
+        "parcels_count": "({size} パーセル)",
+        "search_worlds": "ワールドを検索…",
+        "search_lands": "ランドを検索…",
+        "no_search_results": "\"{query}\" の結果はありません",
+        "clear_search": "検索をクリア",
+        "showing_results": "{total} 件中 {start}–{end} 件を表示",
+        "scenes_count": "{count} 個のシーン",
+        "scene_count_one": "1 個のシーン",
+        "edit": "編集",
+        "edit_scenes": "シーンを編集",
+        "select_scene": "シーンを選択"
+      },
+      "env_page": {
+        "title": "環境変数",
+        "add": "追加",
+        "clear_all": "すべてクリア",
+        "no_keys": "環境変数が見つかりません",
+        "add_dialog": {
+          "title": "環境変数を追加",
+          "key_label": "キー",
+          "value_label": "値"
+        },
+        "edit_dialog": {
+          "title": "環境変数を編集",
+          "key_label": "キー",
+          "value_label": "値",
+          "helper_text": "storage サービスは既存の値を返さないため、新しい値を入力して上書きしてください。"
+        },
+        "delete_dialog": {
+          "title": "環境変数を削除",
+          "message": "環境変数 \"{key}\" を削除しますか? この操作は元に戻せません。"
+        },
+        "clear_dialog": {
+          "title": "すべての環境変数を削除",
+          "message": "すべての環境変数を削除しますか? この操作は元に戻せません。"
+        }
+      },
+      "scene_page": {
+        "title": "シーンストレージ",
+        "add": "追加",
+        "clear_all": "すべてクリア",
+        "no_keys": "シーン値が見つかりません",
+        "add_dialog": {
+          "title": "シーン値を追加",
+          "key_label": "キー",
+          "value_label": "値",
+          "value_placeholder": "プレーンテキストまたは JSON: {value}"
+        },
+        "edit_dialog": {
+          "title": "値を編集: {key}",
+          "value_label": "値"
+        },
+        "delete_dialog": {
+          "title": "シーン値を削除",
+          "message": "シーン値 \"{key}\" を削除しますか? この操作は元に戻せません。"
+        },
+        "clear_dialog": {
+          "title": "すべてのシーン値を削除",
+          "message": "すべてのシーン値を削除しますか? この操作は元に戻せません。"
+        }
+      },
+      "player_page": {
+        "title": "プレイヤーストレージ",
+        "add": "追加",
+        "clear_all_players": "すべてのプレイヤーを削除",
+        "description": "保存データのあるプレイヤーを閲覧するか、名前やアドレスで検索できます。",
+        "search_players": "名前またはアドレスで検索…",
+        "no_players": "プレイヤーが見つかりません",
+        "no_search_results": "\"{query}\" の結果はありません",
+        "showing_results": "{total} 件中 {start}–{end} 件を表示",
+        "back_to_players": "プレイヤー一覧へ戻る",
+        "loading_players": "プレイヤーを読み込み中",
+        "select_player": "{address} のストレージを表示",
+        "address_label": "プレイヤーのアドレス",
+        "address_placeholder": "0x…",
+        "load_keys": "キーを読み込む",
+        "keys_for": "{address} のキー",
+        "clear_this_player": "このプレイヤーを削除",
+        "no_keys": "このプレイヤーのキーは見つかりません",
+        "loading_keys": "プレイヤーのキーを読み込み中",
+        "add_dialog": {
+          "title": "プレイヤー値を追加",
+          "address_label": "プレイヤーのアドレス",
+          "key_label": "キー",
+          "value_label": "値",
+          "value_placeholder": "プレーンテキストまたは JSON: {value}"
+        },
+        "edit_dialog": {
+          "title": "値を編集: {key}",
+          "subtitle": "プレイヤー: {address}",
+          "value_label": "値"
+        },
+        "delete_dialog": {
+          "title": "プレイヤー値を削除",
+          "message": "プレイヤー \"{address}\" の値 \"{key}\" を削除しますか? この操作は元に戻せません。"
+        },
+        "clear_player_dialog": {
+          "title": "プレイヤーストレージをクリア",
+          "message": "プレイヤー \"{address}\" のすべての値を削除しますか? この操作は元に戻せません。"
+        },
+        "clear_all_dialog": {
+          "title": "すべてのプレイヤーストレージをクリア",
+          "message": "すべてのプレイヤーストレージデータを削除しますか? この操作は元に戻せません。"
+        }
+      },
+      "not_found_page": {
+        "code": "404",
+        "title": "ページが見つかりません",
+        "subtitle": "お探しのページは存在しません。",
+        "go_home": "ホームへ戻る"
+      }
+    },
+    "report": {
+      "form": {
+        "title": "ユーザーを報告",
+        "wallet_mismatch": "接続中のウォレットがプレイヤーのアドレスと一致しません。正しいウォレットで接続してから送信してください。",
+        "your_wallet_label": "あなたのウォレットアドレス",
+        "your_wallet_helper": "不正利用を防ぐため、報告はウォレットに紐づけられます。あなたの個人情報が公開されることはありません。",
+        "your_wallet_placeholder": "アドレスを入力または貼り付けてください...",
+        "sign_in_alert": "報告を送信するには、ウォレットでサインインしてください。",
+        "sign_in_cta": "サインイン",
+        "reported_label": "報告対象のウォレット",
+        "reported_helper": "報告したいユーザーのウォレットアドレスです。",
+        "reported_placeholder": "アドレスを入力または貼り付けてください...",
+        "reason_label": "報告理由",
+        "reason_helper": "問題に最も近い項目を選択してください。",
+        "reason_placeholder": "理由を選択",
+        "reason_options": {
+          "scam_phishing": "詐欺／フィッシング",
+          "illegal_content": "違法なコンテンツ",
+          "harassment": "嫌がらせ",
+          "cheating": "チート行為",
+          "impersonation": "なりすまし"
+        },
+        "description_label": "説明",
+        "description_helper": "何が起きたかを説明してください。可能であれば、いつどこで発生したかも記載してください。",
+        "description_placeholder": "ここに説明を入力してください...",
+        "description_hint": "詳しく書くほど、モデレーターによる確認がスムーズになります。",
+        "evidence_label": "証拠",
+        "evidence_helper": "スクリーンショット、動画、リンクを最大5件までアップロードしてください。",
+        "evidence_add": "ファイルを追加",
+        "evidence_oversized": "{names} は 5MB の上限を超えています",
+        "evidence_invalid_type": "{names} は対応していないファイル形式です",
+        "additional_label": "追加コメント",
+        "additional_helper": "モデレーターの調査に役立つ追加情報があれば記入してください。",
+        "additional_placeholder": "ここにコメントを入力してください...",
+        "confirmation_label": "この報告内容に誤りがないことを確認しました。",
+        "submit": "報告を送信",
+        "submit_in_progress": "送信中...",
+        "errors": {
+          "invalid_address": "有効なウォレットアドレスを入力してください",
+          "missing_reason": "理由を選択してください",
+          "missing_description": "報告の説明を入力してください",
+          "missing_evidence": "報告に関する証拠をアップロードしてください",
+          "missing_confirmation": "内容に誤りがないことを確認してください",
+          "submit_failed": "報告を送信できませんでした。もう一度お試しください。"
+        },
+        "footer_lead": "ヘルプが必要ですか？",
+        "footer_help_prefix": "緊急のお問い合わせやセキュリティに関するご相談は",
+        "footer_help_link": "サポートチームまでご連絡ください",
+        "footer_help_suffix": "。"
+      },
+      "success": {
+        "title": "報告を受け付けました",
+        "body": "報告を受け付けました。内容は順次確認します。",
+        "dismiss": "このウィンドウを閉じても問題ありません。"
+      }
     }
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+  },
+  "community": {
+    "global": {
+      "loading": "読み込み中..."
+    },
+    "info": {
+      "jump_in_modal": {
+        "title": "Decentraland をダウンロード",
+        "description": "このコミュニティに参加するには、Decentraland をダウンロードする必要があります。",
+        "button_label": "ダウンロード"
+      },
+      "decentraland_community": "Decentraland コミュニティ",
+      "members": "メンバー",
+      "by": "作成者:",
+      "unknown": "不明",
+      "joined": "参加済み",
+      "sign_in_to_join": "サインインして参加",
+      "request_to_join": "参加をリクエスト",
+      "cancel_request": "リクエストをキャンセル",
+      "jump_in": "入る",
+      "join": "参加する"
+    },
+    "detail": {
+      "failed_to_join": "コミュニティへの参加に失敗しました",
+      "not_found": "コミュニティが見つかりません",
+      "not_found_description": "お探しのコミュニティは存在しません。"
+    },
+    "events": {
+      "upcoming_events": "今後のイベント",
+      "no_upcoming_events": "今後のイベントはありません",
+      "live": "ライブ"
+    },
+    "members_list": {
+      "title": "メンバー",
+      "no_members_found": "メンバーが見つかりません"
+    },
+    "private_message": {
+      "title": "これはプライベートコミュニティです",
+      "description": "このコミュニティのプロフィールを見るには、メンバーである必要があります。"
+    },
+    "not_found": {
+      "title": "ページが見つかりません",
+      "description": "お探しのページは存在しません。"
+    },
+    "tabs": {
+      "members": "メンバー",
+      "upcoming_events": "今後のイベント"
+    }
   }
 }

@@ -10,8 +10,8 @@ const getGatekeeperUrl = (): string => {
 }
 
 const getWorldsContentUrl = (): string => {
-  const url = getEnv('WORLDS_CONTENT_URL')
-  if (!url) throw new Error('WORLDS_CONTENT_URL environment variable is not set')
+  const url = getEnv('WORLDS_CONTENT_SERVER_URL')
+  if (!url) throw new Error('WORLDS_CONTENT_SERVER_URL environment variable is not set')
   return url
 }
 

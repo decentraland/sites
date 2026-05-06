@@ -135,6 +135,7 @@ npm run lint:pkg     # package.json lint
 4. If you need Redux state, either inject endpoints into an existing RTK Query client or add a new base client in `src/services/` and a new reducer in `src/shells/store.ts`.
 5. Never import your feature from lightweight route code.
 6. If the page sets `<title>` via Helmet + async data (Contentful, RTK Query, etc.) — call `useBlogPageTracking` from `src/hooks/useBlogPageTracking.ts` and add the route to `Layout`'s page-tracking skip list. See rule 23.
+7. **Add the route to the GitHub issue templates.** `.github/ISSUE_TEMPLATE/bug_report.yml` has a `Page / Area` dropdown that explicitly says `Keep options in sync with the routes defined in src/App.tsx`. `.github/ISSUE_TEMPLATE/feature_request.yml` has a sibling `Area` dropdown. Adding a route without updating these means bug reporters can't categorize their issue against the new page.
 
 ## Coding conventions
 
@@ -378,6 +379,79 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
   ```
 - The hook is initialized-aware (skips while `useAnalytics().isInitialized` is false, i.e. while `DeferredAnalyticsProvider` waits for idle) and only fires once per (name, properties) tuple.
 - If you add a non-blog route that ALSO sets its title via Helmet + async data, follow the same pattern: extend `Layout`'s skip list and call `useBlogPageTracking` (or a sibling hook) from the page so the event fires after the title resolves.
+
+### 24. React component props — destructure inside the body when there are more than 3 props
+
+- Up to 3 props: parameter-list destructuring is fine and reads well.
+- 4 or more props: take `props` as a single argument and destructure inside the body. Keeps the function signature scannable, makes diffs cleaner when adding/removing props, and avoids the multi-line parameter block that grows every time a prop is added.
+
+  ```tsx
+  // BAD — long inline destructuring in the parameter list
+  function CommunityInfoComponent({
+    community,
+    isLoggedIn,
+    address,
+    isPerformingCommunityAction,
+    isMember,
+    canViewContent,
+    hasPendingRequest = false,
+    isLoadingMemberRequests = false,
+    onJoin,
+    onRequestToJoin,
+    onCancelRequest
+  }: CommunityInfoProps) {
+    // ...
+  }
+
+  // GOOD — single-arg signature, destructure inside the body
+  function CommunityInfoComponent(props: CommunityInfoProps) {
+    const {
+      community,
+      isLoggedIn,
+      address,
+      isPerformingCommunityAction,
+      isMember,
+      canViewContent,
+      hasPendingRequest = false,
+      isLoadingMemberRequests = false,
+      onJoin,
+      onRequestToJoin,
+      onCancelRequest
+    } = props
+    // ...
+  }
+  ```
+
+- Same rule applies to hooks, helpers, and any function that takes a single options object: ≤3 keys → inline destructure; ≥4 → destructure in the body.
+- Defaults (`hasPendingRequest = false`) move with their key into the body destructure — do not split defaults between the signature and the body.
+
+### 25. No inline `sx` with hardcoded values — move styles to `*.styled.ts`
+
+- Inline `sx={{ ... }}` is only allowed for a SINGLE dynamic value that genuinely depends on runtime state (e.g. `sx={{ display: isOpen ? 'block' : 'none' }}` when the styled component cannot accept the prop). Even then, prefer extending the styled component with a forwarded prop.
+- Hardcoded dimensions, colors, spacing, or layout values inside `sx` are a bug — they bypass the design system, the theme, and the `*.styled.ts` co-location convention. They also make diffs noisy and grep-resistant.
+
+  ```tsx
+  // BAD — three hardcoded values inline
+  <Button sx={{ maxWidth: '175px', minWidth: 'auto', height: '40px' }}>Join</Button>
+
+  // BAD — hardcoded color in sx
+  <Box sx={{ backgroundColor: '#1f1e22', padding: '12px 16px' }}>...</Box>
+
+  // GOOD — co-located styled component using theme tokens
+  // Component.styled.ts
+  export const JoinButton = styled(Button)(({ theme }) => ({
+    maxWidth: 175,
+    minWidth: 'auto',
+    height: 40,
+    padding: theme.spacing(1.5, 2)
+  }))
+
+  // Component.tsx
+  <JoinButton>Join</JoinButton>
+  ```
+
+- A styled component already exists for this surface? Extend it with a `shouldForwardProp`-protected prop instead of bolting on `sx`. Two callsites with two different `sx` blobs is the start of drift — fold both into a variant prop.
+- The `<Box sx={{...}}>` shape is the most common offender because `Box` exists primarily to host `sx`. Prefer `styled(Box)(...)` with a meaningful name (`Container`, `Row`, `EmptyState`) so the component reads as intent, not as a div with inline CSS.
 
 ## Security checklist
 

@@ -388,6 +388,30 @@
         "retry": "Retry",
         "dismiss": "Dismiss"
       }
+    },
+    "storage": {
+      "select": {
+        "title": "Storage · Select asset"
+      },
+      "env": {
+        "title": "Storage · Environment variables"
+      },
+      "scene": {
+        "title": "Storage · Scene values"
+      },
+      "players": {
+        "title": "Storage · Players"
+      },
+      "player_detail": {
+        "title": "Storage · Player {address}"
+      },
+      "not_found": {
+        "title": "Storage · Page not found"
+      }
+    },
+    "report": {
+      "title": "Report a player – Decentraland",
+      "success_title": "Report submitted – Decentraland"
     }
   },
   "page_invite": {
@@ -879,6 +903,222 @@
       "list": {
         "title": "User: {userName}"
       }
+    },
+    "storage": {
+      "common": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "delete": "Delete",
+        "close": "Close",
+        "loading": "Loading",
+        "actions": "Actions",
+        "key": "Key",
+        "add": "Add",
+        "owner": "Owner",
+        "collaborator": "Collaborator"
+      },
+      "role": {
+        "owner": "Owner",
+        "operator": "Operator",
+        "tenant": "Tenant",
+        "lessor": "Lessor",
+        "unknown": "Unknown"
+      },
+      "value_field": {
+        "json_error": "Invalid JSON"
+      },
+      "sidebar": {
+        "environment": "Environment",
+        "scene": "Scene",
+        "player": "Player",
+        "storages": "Storages",
+        "back": "Back",
+        "collapse": "Collapse sidebar",
+        "expand": "Expand sidebar",
+        "realm": "Realm",
+        "position": "Position"
+      },
+      "select_page": {
+        "title": "Select Asset to Manage",
+        "subtitle": "Choose a world or land parcel to manage its storage.",
+        "worlds": "Worlds",
+        "lands": "Lands",
+        "no_worlds": "No worlds found",
+        "no_lands": "No lands found",
+        "loading": "Loading assets",
+        "select_world": "Select {name}",
+        "select_land": "Select {name}",
+        "parcel": "Parcel",
+        "estate": "Estate",
+        "at_position": "at {position}",
+        "parcels_count": "({size} parcels)",
+        "search_worlds": "Search worlds…",
+        "search_lands": "Search lands…",
+        "no_search_results": "No results for \"{query}\"",
+        "clear_search": "Clear search",
+        "showing_results": "Showing {start}–{end} of {total}",
+        "scenes_count": "{count} scenes",
+        "scene_count_one": "1 scene",
+        "edit": "Edit",
+        "edit_scenes": "Edit Scenes",
+        "select_scene": "Select scene"
+      },
+      "env_page": {
+        "title": "Environment Variables",
+        "add": "Add",
+        "clear_all": "Clear All",
+        "no_keys": "No environment variables found",
+        "add_dialog": {
+          "title": "Add Environment Variable",
+          "key_label": "Key",
+          "value_label": "Value"
+        },
+        "edit_dialog": {
+          "title": "Edit Environment Variable",
+          "key_label": "Key",
+          "value_label": "Value",
+          "helper_text": "The storage service does not return existing env values, so type the new value to overwrite it."
+        },
+        "delete_dialog": {
+          "title": "Delete Environment Variable",
+          "message": "Are you sure you want to delete the environment variable \"{key}\"? This action cannot be undone."
+        },
+        "clear_dialog": {
+          "title": "Clear All Environment Variables",
+          "message": "Are you sure you want to delete ALL environment variables? This action cannot be undone."
+        }
+      },
+      "scene_page": {
+        "title": "Scene Storage",
+        "add": "Add",
+        "clear_all": "Clear All",
+        "no_keys": "No scene values found",
+        "add_dialog": {
+          "title": "Add Scene Value",
+          "key_label": "Key",
+          "value_label": "Value",
+          "value_placeholder": "Plain text or JSON: {value}"
+        },
+        "edit_dialog": {
+          "title": "Edit Value: {key}",
+          "value_label": "Value"
+        },
+        "delete_dialog": {
+          "title": "Delete Scene Value",
+          "message": "Are you sure you want to delete the scene value \"{key}\"? This action cannot be undone."
+        },
+        "clear_dialog": {
+          "title": "Clear All Scene Values",
+          "message": "Are you sure you want to delete ALL scene values? This action cannot be undone."
+        }
+      },
+      "player_page": {
+        "title": "Player Storage",
+        "add": "Add",
+        "clear_all_players": "Clear All Players",
+        "description": "Browse players with stored data, or search by name or address.",
+        "search_players": "Search by name or address…",
+        "no_players": "No players found",
+        "no_search_results": "No results for \"{query}\"",
+        "showing_results": "Showing {start}–{end} of {total}",
+        "back_to_players": "Back to players",
+        "loading_players": "Loading players",
+        "select_player": "View storage for {address}",
+        "address_label": "Player address",
+        "address_placeholder": "0x…",
+        "load_keys": "Load keys",
+        "keys_for": "Keys for {address}",
+        "clear_this_player": "Clear this player",
+        "no_keys": "No keys found for this player",
+        "loading_keys": "Loading player keys",
+        "add_dialog": {
+          "title": "Add Player Value",
+          "address_label": "Player Address",
+          "key_label": "Key",
+          "value_label": "Value",
+          "value_placeholder": "Plain text or JSON: {value}"
+        },
+        "edit_dialog": {
+          "title": "Edit Value: {key}",
+          "subtitle": "Player: {address}",
+          "value_label": "Value"
+        },
+        "delete_dialog": {
+          "title": "Delete Player Value",
+          "message": "Are you sure you want to delete the value \"{key}\" for player \"{address}\"? This action cannot be undone."
+        },
+        "clear_player_dialog": {
+          "title": "Clear Player Storage",
+          "message": "Are you sure you want to delete ALL values for player \"{address}\"? This action cannot be undone."
+        },
+        "clear_all_dialog": {
+          "title": "Clear All Player Storage",
+          "message": "Are you sure you want to delete ALL player storage data? This action cannot be undone."
+        }
+      },
+      "not_found_page": {
+        "code": "404",
+        "title": "Page Not Found",
+        "subtitle": "The page you are looking for does not exist.",
+        "go_home": "Go Home"
+      }
+    },
+    "report": {
+      "form": {
+        "title": "Report User",
+        "wallet_mismatch": "The connected wallet does not match the player address. Please connect with the correct wallet to submit this report.",
+        "your_wallet_label": "Your Wallet Address",
+        "your_wallet_helper": "Reports are tied to your wallet to prevent abuse. Your identity will not be publicly shared.",
+        "your_wallet_placeholder": "Write or paste your address here...",
+        "sign_in_alert": "Please sign in with your wallet to submit a report.",
+        "sign_in_cta": "Sign In",
+        "reported_label": "Reported User Wallet",
+        "reported_helper": "This is the wallet address of the user you are reporting.",
+        "reported_placeholder": "Write or paste an address here...",
+        "reason_label": "Reason for Report",
+        "reason_helper": "Select the option that best describes the issue.",
+        "reason_placeholder": "Choose a reason",
+        "reason_options": {
+          "scam_phishing": "Scam/Phishing",
+          "illegal_content": "Illegal Content",
+          "harassment": "Harassment",
+          "cheating": "Cheating",
+          "impersonation": "Impersonation"
+        },
+        "description_label": "Description",
+        "description_helper": "Describe what happened. Include when and where the incident occurred if possible.",
+        "description_placeholder": "Write your description here...",
+        "description_hint": "The more detail you provide, the easier it is for moderators to review your report.",
+        "evidence_label": "Evidence",
+        "evidence_helper": "Upload up to 5 screenshots, videos, or links to support your report.",
+        "evidence_add": "Add File",
+        "evidence_oversized": "{names} exceeded the 5MB limit",
+        "evidence_invalid_type": "{names} is not a supported file type",
+        "additional_label": "Additional Comments",
+        "additional_helper": "Provide any extra information that might help moderators investigate.",
+        "additional_placeholder": "Write your comments here...",
+        "confirmation_label": "I confirm this report is accurate.",
+        "submit": "Submit Report",
+        "submit_in_progress": "Submitting...",
+        "errors": {
+          "invalid_address": "Please enter a valid wallet address",
+          "missing_reason": "Please choose a reason",
+          "missing_description": "Please include a description of your report",
+          "missing_evidence": "Please upload the evidence of your issue",
+          "missing_confirmation": "You must confirm this information is accurate",
+          "submit_failed": "We couldn't submit your report. Please try again."
+        },
+        "footer_lead": "Need help instead?",
+        "footer_help_prefix": "For urgent issues or security concerns, please",
+        "footer_help_link": "contact the Support team",
+        "footer_help_suffix": "."
+      },
+      "success": {
+        "title": "Report Submitted",
+        "body": "Your report has been received and will be reviewed shortly.",
+        "dismiss": "You can close this window now."
+      }
     }
   },
   "live_now": {
@@ -1199,6 +1439,54 @@
           "description": "Allow this user to manage admin permissions"
         }
       }
+    }
+  },
+  "community": {
+    "global": {
+      "loading": "Loading..."
+    },
+    "info": {
+      "jump_in_modal": {
+        "title": "Download Decentraland",
+        "description": "To jump into this community, you need to download Decentraland.",
+        "button_label": "Download"
+      },
+      "decentraland_community": "Decentraland Community",
+      "members": "Members",
+      "by": "By",
+      "unknown": "Unknown",
+      "joined": "JOINED",
+      "sign_in_to_join": "SIGN IN TO JOIN",
+      "request_to_join": "REQUEST TO JOIN",
+      "cancel_request": "CANCEL REQUEST",
+      "jump_in": "JUMP IN",
+      "join": "JOIN"
+    },
+    "detail": {
+      "failed_to_join": "Failed to join community",
+      "not_found": "Community not found",
+      "not_found_description": "The community you are looking for does not exist."
+    },
+    "events": {
+      "upcoming_events": "UPCOMING EVENTS",
+      "no_upcoming_events": "No Upcoming Events",
+      "live": "live"
+    },
+    "members_list": {
+      "title": "MEMBERS",
+      "no_members_found": "No members found"
+    },
+    "private_message": {
+      "title": "This is a Private Community",
+      "description": "You must be a member of this Community to see its profile."
+    },
+    "not_found": {
+      "title": "Page not found",
+      "description": "The page you are looking for does not exist."
+    },
+    "tabs": {
+      "members": "Members",
+      "upcoming_events": "Upcoming Events"
     }
   }
 }

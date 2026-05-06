@@ -30,6 +30,8 @@ const InvitePage = lazy(() => import('./pages/invite/InvitePage').then(m => ({ d
 const CreatePage = lazy(() => import('./pages/create').then(m => ({ default: m.CreatePage })))
 const DiscordPage = lazy(() => import('./pages/discord').then(m => ({ default: m.DiscordPage })))
 const PressPage = lazy(() => import('./pages/press').then(m => ({ default: m.PressPage })))
+const ReportPage = lazy(() => import('./pages/report').then(m => ({ default: m.ReportPage })))
+const ReportSuccessPage = lazy(() => import('./pages/report/success').then(m => ({ default: m.ReportSuccessPage })))
 
 // Reels — fullscreen viewer for in-game camera screenshots. Migrated from the standalone
 // reels.decentraland.org Gatsby app. Lightweight (no Redux, no Web3) and intentionally
@@ -60,6 +62,11 @@ const LegacyHangoutRedirect = lazy(() => import('./pages/whats-on/LegacyHangoutR
 const LegacyWhatsOnRedirect = lazy(() => import('./pages/whats-on/LegacyWhatsOnRedirect').then(m => ({ default: m.LegacyWhatsOnRedirect })))
 const LegacyWorldRedirect = lazy(() => import('./pages/whats-on/LegacyWorldRedirect').then(m => ({ default: m.LegacyWorldRedirect })))
 
+// Social pages — community detail. Heavy route (Redux + RTK Query). Auth via
+// localStorage identity (no Web3 providers); CTAs gated on useAuthIdentity.
+const CommunityDetailPage = lazy(() => import('./pages/social/CommunityDetailPage').then(m => ({ default: m.CommunityDetailPage })))
+const SocialNotFoundPage = lazy(() => import('./pages/social/SocialNotFoundPage').then(m => ({ default: m.SocialNotFoundPage })))
+
 // Jump pages — deep-link handler for decentraland:// launcher. Heavy route (Redux).
 const JumpPlacesPage = lazy(() => import('./pages/jump/PlacesPage').then(m => ({ default: m.PlacesPage })))
 const JumpEventsPage = lazy(() => import('./pages/jump/EventsPage').then(m => ({ default: m.EventsPage })))
@@ -74,6 +81,15 @@ const CastLayout = lazy(() => import('./pages/cast/CastLayout').then(m => ({ def
 const StreamerPage = lazy(() => import('./pages/cast/StreamerPage').then(m => ({ default: m.StreamerPage })))
 const WatcherPage = lazy(() => import('./pages/cast/WatcherPage').then(m => ({ default: m.WatcherPage })))
 const CastNotFoundPage = lazy(() => import('./pages/cast/CastNotFoundPage').then(m => ({ default: m.CastNotFoundPage })))
+
+// Storage pages — heavy DappsShell route. Migrated from the standalone storage-service-site.
+const StorageRedirectPage = lazy(() => import('./pages/storage/StorageRedirectPage').then(m => ({ default: m.StorageRedirectPage })))
+const StorageSelectPage = lazy(() => import('./pages/storage/SelectPage').then(m => ({ default: m.SelectPage })))
+const StorageEnvPage = lazy(() => import('./pages/storage/EnvPage').then(m => ({ default: m.EnvPage })))
+const StorageScenePage = lazy(() => import('./pages/storage/ScenePage').then(m => ({ default: m.ScenePage })))
+const StoragePlayersPage = lazy(() => import('./pages/storage/PlayersPage').then(m => ({ default: m.PlayersPage })))
+const StoragePlayerDetailPage = lazy(() => import('./pages/storage/PlayerDetailPage').then(m => ({ default: m.PlayerDetailPage })))
+const StorageNotFoundPage = lazy(() => import('./pages/storage/StorageNotFoundPage').then(m => ({ default: m.StorageNotFoundPage })))
 
 const App = () => {
   return (
@@ -106,6 +122,9 @@ const App = () => {
             <Route path="/download/creator-hub-success" element={<CreatorHubDownloadSuccessPage />} />
             <Route path="/discord" element={<DiscordPage />} />
             <Route path="/press" element={<PressPage />} />
+            <Route path="/report" element={<ReportPage />} />
+            <Route path="/report/success" element={<ReportSuccessPage />} />
+            <Route path="/report/players" element={<Navigate to="/report" replace />} />
             <Route path="/sign-in" element={<SignInRedirect />} />
             {/* Retro-compat for the standalone events/places sites — redirect into /whats-on
                 with the deep-link params (id / position / world) it already consumes.
@@ -162,6 +181,15 @@ const App = () => {
                 <Route path="w/:location" element={<WatcherPage />} />
                 <Route path="*" element={<CastNotFoundPage />} />
               </Route>
+              <Route path="/storage" element={<StorageRedirectPage />} />
+              <Route path="/storage/select" element={<StorageSelectPage />} />
+              <Route path="/storage/env" element={<StorageEnvPage />} />
+              <Route path="/storage/scene" element={<StorageScenePage />} />
+              <Route path="/storage/players" element={<StoragePlayersPage />} />
+              <Route path="/storage/players/:address" element={<StoragePlayerDetailPage />} />
+              <Route path="/storage/*" element={<StorageNotFoundPage />} />
+              <Route path="/social/communities/:id" element={<CommunityDetailPage />} />
+              <Route path="/social/*" element={<SocialNotFoundPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
