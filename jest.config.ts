@@ -4,7 +4,7 @@ const jestConfig: Config = {
   testEnvironment: 'jsdom',
   watchman: false,
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  testMatch: ['<rootDir>/src/**/*.test.ts', '<rootDir>/src/**/*.spec.ts', '<rootDir>/src/**/*.spec.tsx'],
+  testMatch: ['<rootDir>/src/**/*.test.ts', '<rootDir>/src/**/*.spec.ts', '<rootDir>/src/**/*.spec.tsx', '<rootDir>/api/**/*.spec.ts'],
   transform: {
     ['^.+\\.tsx?$']: [
       'ts-jest',

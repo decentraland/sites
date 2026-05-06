@@ -3,6 +3,8 @@
     { "source": "/blog/:path*", "destination": "/api/seo?path=/blog/:path*" },
     { "source": "/blog", "destination": "/api/seo?path=/blog" },
     { "source": "/reels/:imageId", "destination": "/api/seo?path=/reels/:imageId" },
+    { "source": "/whats-on/:path*", "destination": "/api/seo?path=/whats-on/:path*" },
+    { "source": "/whats-on", "destination": "/api/seo?path=/whats-on" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

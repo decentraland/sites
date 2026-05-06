@@ -21,11 +21,20 @@ const CMS_BASE_URL = process.env['CMS_BASE_URL'] ?? 'https://cms-api.decentralan
 // camera-reel-service hosts metadata for /reels/:imageId. Falls back to prod for local dev.
 const REEL_SERVICE_URL = process.env['REEL_SERVICE_URL'] ?? 'https://camera-reel-service.decentraland.org'
 
+// events-api hosts metadata for /whats-on?id=<eventId>. Falls back to prod for local dev.
+const EVENTS_API_URL = process.env['EVENTS_API_URL'] ?? 'https://events.decentraland.org/api'
+
 const DEFAULTS = {
   title: 'Decentraland Blog | Updates, Stories, and Community Moments',
   description: 'Updates from across Decentraland. Announcements, events, community moments, and everything in between.',
   image: 'https://cms-images.decentraland.org/ea2ybdmmn1kv/7tYISdowuJYIbSIDqij87H/f3524d454d8e29702792a6b674f5550d/GI_Landscape.Small.png',
   siteName: 'Decentraland'
+} as const
+
+const WHATS_ON_DEFAULTS = {
+  title: "What's On in Decentraland",
+  description: 'Live events, hangouts, and places happening right now in Decentraland.',
+  image: 'https://decentraland.org/images/decentraland.png'
 } as const
 
 // Allowlist of canonical origins used to build the returned absolute URLs (canonical, og:url).
@@ -98,7 +107,7 @@ interface SEOData {
 }
 
 interface RouteInfo {
-  type: 'blog' | 'post' | 'category' | 'author' | 'search' | 'reels' | 'unknown'
+  type: 'blog' | 'post' | 'category' | 'author' | 'search' | 'reels' | 'whats-on' | 'unknown'
   categorySlug?: string
   postSlug?: string
   authorSlug?: string
@@ -220,6 +229,63 @@ const fetchDefaultSEO = async (): Promise<SEOData | null> => {
   }
 }
 
+// Event IDs are UUIDs from events.decentraland.org. Constrain to that
+// charset before interpolating into the upstream URL to prevent SSRF / path traversal.
+const EVENT_ID_REGEX = /^[a-fA-F0-9-]{8,64}$/
+
+// Position is "x,y" with optional negative signs (e.g. "0,0", "-12,150").
+const POSITION_REGEX = /^(-?\d{1,4}),(-?\d{1,4})$/
+
+interface EventApiEntry {
+  name?: string
+  description?: string | null
+  image?: string | null
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  scene_name?: string | null
+}
+
+interface EventApiResponse {
+  ok: boolean
+  data?: EventApiEntry
+}
+
+const fetchEventSEO = async (eventId: string): Promise<SEOData | null> => {
+  if (!EVENT_ID_REGEX.test(eventId)) return null
+  const data = await fetchJSON<EventApiResponse>(`${EVENTS_API_URL}/events/${encodeURIComponent(eventId)}`)
+  if (!data?.ok || !data.data) return null
+  const { name, description, image } = data.data
+  const sceneName = data.data.scene_name
+  const title = name?.trim() || WHATS_ON_DEFAULTS.title
+  const sceneSuffix = sceneName?.trim() ? ` at ${sceneName.trim()}` : ''
+  // Validate image URL here so the per-route fallback (whats-on, not blog) is preserved.
+  // generateHTML's safeUrl uses DEFAULTS.image as last resort, which is the blog landscape.
+  const imageUrl = image && /^https?:\/\//.test(image) ? image : WHATS_ON_DEFAULTS.image
+  return {
+    title: `${title}${sceneSuffix}`,
+    description: description?.trim() || WHATS_ON_DEFAULTS.description,
+    imageUrl
+  }
+}
+
+const fetchWhatsOnSEO = async (eventId: string | null, position: string | null): Promise<SEOData> => {
+  if (eventId) {
+    const event = await fetchEventSEO(eventId)
+    if (event) return event
+  }
+  if (position && POSITION_REGEX.test(position)) {
+    return {
+      title: `Explore (${position}) in Decentraland`,
+      description: `Discover what's happening at coordinates ${position} in Decentraland.`,
+      imageUrl: WHATS_ON_DEFAULTS.image
+    }
+  }
+  return {
+    title: WHATS_ON_DEFAULTS.title,
+    description: WHATS_ON_DEFAULTS.description,
+    imageUrl: WHATS_ON_DEFAULTS.image
+  }
+}
+
 interface ReelMetadataResponse {
   url: string
   thumbnailUrl: string
@@ -256,7 +322,10 @@ const ROUTE_PATTERNS: Array<{ pattern: RegExp; handler: (match: RegExpMatchArray
   { pattern: /^\/blog\/([^/]+)\/([^/]+)$/, handler: m => ({ type: 'post', categorySlug: m[1], postSlug: m[2] }) },
   { pattern: /^\/blog\/([^/]+)$/, handler: m => ({ type: 'category', categorySlug: m[1] }) },
   { pattern: /^\/blog\/?$/, handler: () => ({ type: 'blog' }) },
-  { pattern: /^\/reels\/([^/]+)$/, handler: m => ({ type: 'reels', imageId: m[1] }) }
+  { pattern: /^\/reels\/([^/]+)$/, handler: m => ({ type: 'reels', imageId: m[1] }) },
+  // /whats-on routes deep-link via query params (?id=, ?position=) rather than
+  // path segments, so a single pattern covers /whats-on plus its admin/edit subpaths.
+  { pattern: /^\/whats-on(\/.*)?$/, handler: () => ({ type: 'whats-on' }) }
 ]
 
 const parseRoute = (pathname: string): RouteInfo => {
@@ -268,13 +337,19 @@ const parseRoute = (pathname: string): RouteInfo => {
   return { type: 'unknown' }
 }
 
-const ALLOWED_ROOT_PATHS = ['/blog', '/reels'] as const
+const ALLOWED_ROOT_PATHS = ['/blog', '/reels', '/whats-on'] as const
 
 // =============================================================================
 // SEO Data Resolution
 // =============================================================================
 
-const fetchSEOData = async (pathname: string, searchQuery: string | null): Promise<SEOData | null> => {
+interface SEOQueryParams {
+  searchQuery: string | null
+  eventId: string | null
+  position: string | null
+}
+
+const fetchSEOData = async (pathname: string, params: SEOQueryParams): Promise<SEOData | null> => {
   const route = parseRoute(pathname)
 
   switch (route.type) {
@@ -286,12 +361,16 @@ const fetchSEOData = async (pathname: string, searchQuery: string | null): Promi
       return fetchAuthor(route.authorSlug!)
     case 'search':
       return {
-        title: searchQuery ? `Search: ${searchQuery}` : 'Search',
-        description: searchQuery ? `Search results for "${searchQuery}" in Decentraland Blog` : 'Search the Decentraland Blog',
+        title: params.searchQuery ? `Search: ${params.searchQuery}` : 'Search',
+        description: params.searchQuery
+          ? `Search results for "${params.searchQuery}" in Decentraland Blog`
+          : 'Search the Decentraland Blog',
         imageUrl: DEFAULTS.image
       }
     case 'reels':
       return fetchReelImageSEO(route.imageId!)
+    case 'whats-on':
+      return fetchWhatsOnSEO(params.eventId, params.position)
     default:
       return fetchDefaultSEO()
   }
@@ -402,9 +481,20 @@ const resolveOrigin = (req: VercelRequest): string => {
 async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   const requestPath = sanitizePath(req.query.path)
   const searchQuery = firstQueryValue(req.query.q)
+  const eventId = firstQueryValue(req.query.id)
+  const position = firstQueryValue(req.query.position)
 
   const origin = resolveOrigin(req)
-  const actualUrl = `${origin}${requestPath}`
+  // Preserve id / position in the canonical URL so social cards and search
+  // engines link back to the deep-linked event/parcel rather than the
+  // generic listing page.
+  const canonicalQuery = new URLSearchParams()
+  if (requestPath.startsWith('/whats-on')) {
+    if (eventId && EVENT_ID_REGEX.test(eventId)) canonicalQuery.set('id', eventId)
+    else if (position && POSITION_REGEX.test(position)) canonicalQuery.set('position', position)
+  }
+  const queryString = canonicalQuery.toString()
+  const actualUrl = `${origin}${requestPath}${queryString ? `?${queryString}` : ''}`
 
   // Security headers applied regardless of the response path.
   res.setHeader('X-Content-Type-Options', 'nosniff')
@@ -423,7 +513,7 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   }
 
   try {
-    const seoData = await fetchSEOData(requestPath, searchQuery)
+    const seoData = await fetchSEOData(requestPath, { searchQuery, eventId, position })
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     // Shorter stale window: timely blog announcements should not be served up to 24h stale.
