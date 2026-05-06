@@ -5,7 +5,8 @@ import { ClaimedNameIcon } from './ClaimedNameIcon'
 import type { MemberCardProps } from './MemberCard.types'
 import { MemberAvatar, MemberAvatarContainer, MemberInfo, MemberItem, MemberName, MemberNameRow, MemberRole } from './MembersList.styled'
 
-function MemberCardComponent({ memberAddress, name, role, profilePictureUrl, hasClaimedName }: MemberCardProps) {
+function MemberCardComponent(props: MemberCardProps) {
+  const { memberAddress, name, role, profilePictureUrl, hasClaimedName } = props
   const theme = useTheme()
   const backgroundColor = getRarityColor(theme, memberAddress)
 

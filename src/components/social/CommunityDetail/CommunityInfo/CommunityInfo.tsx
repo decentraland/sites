@@ -39,19 +39,20 @@ import {
   TopRow
 } from './CommunityInfo.styled'
 
-function CommunityInfoComponent({
-  community,
-  isLoggedIn,
-  address,
-  isPerformingCommunityAction,
-  isMember,
-  canViewContent,
-  hasPendingRequest = false,
-  isLoadingMemberRequests = false,
-  onJoin,
-  onRequestToJoin,
-  onCancelRequest
-}: CommunityInfoProps) {
+function CommunityInfoComponent(props: CommunityInfoProps) {
+  const {
+    community,
+    isLoggedIn,
+    address,
+    isPerformingCommunityAction,
+    isMember,
+    canViewContent,
+    hasPendingRequest = false,
+    isLoadingMemberRequests = false,
+    onJoin,
+    onRequestToJoin,
+    onCancelRequest
+  } = props
   const t = useFormatMessage()
   const theme = useTheme()
   const { track } = useAnalytics()

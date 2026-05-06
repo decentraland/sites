@@ -15,15 +15,8 @@ import {
   SentinelLoader
 } from './EventsList.styled'
 
-function EventsList({
-  events,
-  isLoading = false,
-  isFetchingMore = false,
-  hasMore = false,
-  onLoadMore,
-  onEventClick,
-  hideTitle = false
-}: EventsListProps) {
+function EventsList(props: EventsListProps) {
+  const { events, isLoading = false, isFetchingMore = false, hasMore = false, onLoadMore, onEventClick, hideTitle = false } = props
   const t = useFormatMessage()
   const sentinelRef = useInfiniteScrollSentinel({ hasMore, isLoading: isFetchingMore, onLoadMore })
 

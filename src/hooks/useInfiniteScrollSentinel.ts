@@ -12,7 +12,8 @@ type Options = {
 // `overflow: auto` container — the consumer attaches the returned ref to a
 // trailing element and onLoadMore fires when that element intersects the
 // viewport (or its scroll root, depending on rootMargin).
-function useInfiniteScrollSentinel({ hasMore, isLoading, onLoadMore, threshold = 0.1, rootMargin = '100px' }: Options) {
+function useInfiniteScrollSentinel(options: Options) {
+  const { hasMore, isLoading, onLoadMore, threshold = 0.1, rootMargin = '100px' } = options
   const sentinelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

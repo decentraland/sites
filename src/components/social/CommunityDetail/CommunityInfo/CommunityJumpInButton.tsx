@@ -1,11 +1,12 @@
 import { useCallback, useState } from 'react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
-import { Button, DownloadModal, JumpInIcon, launchDesktopApp } from 'decentraland-ui2'
+import { DownloadModal, JumpInIcon, launchDesktopApp } from 'decentraland-ui2'
 import { getEnv } from '../../../../config/env'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../../hooks/useAuthIdentity'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../../../../modules/downloadConstants'
 import type { CommunityJumpInButtonProps } from './CommunityJumpInButton.types'
+import { JumpInButton } from './CommunityJumpInButton.styled'
 
 function CommunityJumpInButton({ communityId, onTrack }: CommunityJumpInButtonProps) {
   const t = useFormatMessage()
@@ -55,14 +56,9 @@ function CommunityJumpInButton({ communityId, onTrack }: CommunityJumpInButtonPr
 
   return (
     <>
-      <Button
-        variant="contained"
-        endIcon={<JumpInIcon />}
-        onClick={handleClick}
-        sx={{ maxWidth: '175px', minWidth: 'auto', height: '40px' }}
-      >
+      <JumpInButton variant="contained" endIcon={<JumpInIcon />} onClick={handleClick}>
         {t('community.info.jump_in')}
-      </Button>
+      </JumpInButton>
       {!isMobile && <DownloadModal open={isDownloadModalOpen} onClose={() => setDownloadModalOpen(false)} {...downloadModalProps} />}
     </>
   )

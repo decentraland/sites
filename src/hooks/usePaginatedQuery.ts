@@ -20,16 +20,10 @@ type UsePaginatedQueryOptions<TQueryArg extends { limit?: number; offset?: numbe
   resetDependency?: unknown
 }
 
-function usePaginatedQuery<TQueryArg extends { limit?: number; offset?: number }, TData, TItems extends unknown[]>({
-  queryHook,
-  queryArg,
-  enabled = true,
-  defaultLimit = 10,
-  extractItems,
-  extractTotal,
-  getHasMore,
-  resetDependency
-}: UsePaginatedQueryOptions<TQueryArg, TData, TItems>) {
+function usePaginatedQuery<TQueryArg extends { limit?: number; offset?: number }, TData, TItems extends unknown[]>(
+  options: UsePaginatedQueryOptions<TQueryArg, TData, TItems>
+) {
+  const { queryHook, queryArg, enabled = true, defaultLimit = 10, extractItems, extractTotal, getHasMore, resetDependency } = options
   const [limit] = useState(defaultLimit)
   const [currentOffset, setCurrentOffset] = useState(0)
   const dataRef = useRef<TData | null>(null)

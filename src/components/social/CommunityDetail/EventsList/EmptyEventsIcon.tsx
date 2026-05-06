@@ -1,8 +1,8 @@
-import { SvgIcon } from 'decentraland-ui2'
+import { EmptyEventsIconRoot } from './EmptyEventsIcon.styled'
 
 function EmptyEventsIcon() {
   return (
-    <SvgIcon sx={{ width: '100px', height: '100px', fill: 'none' }} viewBox="0 0 100 100">
+    <EmptyEventsIconRoot viewBox="0 0 100 100">
       <path
         d="M37.2773 18.9824V31.2046M61.7218 18.9824V31.2046"
         stroke="white"
@@ -22,7 +22,7 @@ function EmptyEventsIcon() {
         strokeLinejoin="round"
       />
       <path d="M22 43.4268H77" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </SvgIcon>
+    </EmptyEventsIconRoot>
   )
 }
 

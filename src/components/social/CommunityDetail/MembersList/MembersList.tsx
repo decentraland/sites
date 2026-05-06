@@ -13,16 +13,17 @@ import {
   SentinelLoader
 } from './MembersList.styled'
 
-function MembersList({
-  members,
-  isLoading = false,
-  isFetchingMore = false,
-  hasMore = false,
-  onLoadMore,
-  hideTitle = false,
-  total,
-  showCount = true
-}: MembersListProps) {
+function MembersList(props: MembersListProps) {
+  const {
+    members,
+    isLoading = false,
+    isFetchingMore = false,
+    hasMore = false,
+    onLoadMore,
+    hideTitle = false,
+    total,
+    showCount = true
+  } = props
   const t = useFormatMessage()
   const sentinelRef = useInfiniteScrollSentinel({ hasMore, isLoading: isFetchingMore, onLoadMore })
 

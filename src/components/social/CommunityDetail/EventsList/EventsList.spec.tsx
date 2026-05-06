@@ -6,7 +6,12 @@ import { EventsList } from './EventsList'
 
 jest.mock('decentraland-ui2', () => ({
   CircularProgress: () => <div role="progressbar" />,
-  SvgIcon: ({ children }: { children: React.ReactNode }) => <svg>{children}</svg>
+  SvgIcon: ({ children }: { children: React.ReactNode }) => <svg>{children}</svg>,
+  styled: () => () => 'div'
+}))
+
+jest.mock('./EmptyEventsIcon', () => ({
+  EmptyEventsIcon: () => <svg data-testid="empty-events-icon" />
 }))
 
 jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({
