@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { ComponentType } from 'react'
 
 type MediaDeviceType = 'microphone' | 'camera' | 'audioOutput'

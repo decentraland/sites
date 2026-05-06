@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { useCallback, useMemo } from 'react'
 import { useLocalParticipant, useRemoteParticipants } from '@livekit/components-react'
 import CloseIcon from '@mui/icons-material/Close'

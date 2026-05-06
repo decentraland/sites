@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Typography, styled } from 'decentraland-ui2'
 
 const SidebarContainer = styled('div')({

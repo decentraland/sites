@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { keyframes } from '@emotion/react'
 import { styled } from 'decentraland-ui2'
 

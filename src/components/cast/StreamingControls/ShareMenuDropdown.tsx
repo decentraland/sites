@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import ScreenShareIcon from '@mui/icons-material/ScreenShare'
 import SlideshowIcon from '@mui/icons-material/Slideshow'
 import StopIcon from '@mui/icons-material/Stop'

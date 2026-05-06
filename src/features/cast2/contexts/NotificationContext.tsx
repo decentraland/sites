@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { type ReactNode, createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 type NotificationVariant = 'PresentationDownloadFailed' | 'VideoPlaybackFailed'

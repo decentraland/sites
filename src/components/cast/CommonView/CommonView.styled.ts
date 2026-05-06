@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Card, styled } from 'decentraland-ui2'
 
 // Heights subtract sites' fixed navbar (64px mobile, 92px desktop) so the

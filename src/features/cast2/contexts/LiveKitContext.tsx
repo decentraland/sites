@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { type ReactNode, createContext, useContext, useState } from 'react'
 import type { LiveKitCredentials } from '../cast2.types'
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Button, Input, Typography, styled } from 'decentraland-ui2'
 
 const ChatContainer = styled('div')({

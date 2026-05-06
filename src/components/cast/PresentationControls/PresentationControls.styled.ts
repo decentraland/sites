@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { styled } from 'decentraland-ui2'
 
 const PresentationControlsOverlay = styled('div')({

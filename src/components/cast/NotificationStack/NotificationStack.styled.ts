@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Button, styled } from 'decentraland-ui2'
 
 const StackRoot = styled('div')({

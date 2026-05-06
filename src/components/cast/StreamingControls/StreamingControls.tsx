@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { useCallback, useEffect, useState } from 'react'
 import { useConnectionState, useLocalParticipant, useRemoteParticipants, useRoomContext, useTrackToggle } from '@livekit/components-react'
 import CallEndIcon from '@mui/icons-material/CallEnd'

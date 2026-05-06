@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { FormControl, MenuItem, Typography, styled } from 'decentraland-ui2'
 
 const SelectorContainer = styled('div')({

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { TrackReferenceOrPlaceholder, useIsSpeaking, useTracks } from '@livekit/components-react'
 import TvIcon from '@mui/icons-material/Tv'
 import { LocalAudioTrack, Participant, RemoteAudioTrack, Track } from 'livekit-client'

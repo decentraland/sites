@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { type ReactNode, createContext, useCallback, useContext, useMemo, useState } from 'react'
 import { useChat } from '../../../hooks/useChat'
 import type { ReceivedChatMessage } from '../../../hooks/useChat'

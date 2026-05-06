@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { useMemo } from 'react'
 import { useLocalParticipant } from '@livekit/components-react'
 import MicOffIcon from '@mui/icons-material/MicOff'

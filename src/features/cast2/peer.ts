@@ -19,6 +19,7 @@ const fetchProfilesFromApi = async (peerUrl: string, addresses: string[]): Promi
   try {
     const response = await fetch(`${peerUrl}/lambdas/profiles`, {
       method: 'POST',
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids: addresses })
     })

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { TrackReferenceOrPlaceholder, VideoTrack, useIsSpeaking, useTracks } from '@livekit/components-react'
 import MicOffIcon from '@mui/icons-material/MicOff'

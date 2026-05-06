@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { useState } from 'react'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import { Logo } from 'decentraland-ui2'
