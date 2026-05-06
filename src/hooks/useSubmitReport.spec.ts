@@ -117,15 +117,15 @@ describe('useSubmitReport', () => {
     })
   })
 
-  describe('when the presign response reorders files', () => {
-    it('should match each upload to the right file by sanitized filename, not by index', async () => {
-      const fileA = new File(['aaa'], 'alpha.png', { type: 'image/png' })
-      const fileB = new File(['bbb'], 'beta.jpg', { type: 'image/jpeg' })
+  describe('when the server appends a -index suffix to evidence keys', () => {
+    it('should upload each file by request order, not by filename match', async () => {
+      const fileA = new File(['aaa'], 'Image from iOS.jpg', { type: 'image/jpeg' })
+      const fileB = new File(['bbb'], 'Image from iOS.jpg', { type: 'image/jpeg' })
       const formState: ReportFormState = {
         ...buildFormState(),
         evidence: [
-          { id: 'a', file: fileA, name: 'alpha.png', size: 3 },
-          { id: 'b', file: fileB, name: 'beta.jpg', size: 3 }
+          { id: 'a', file: fileA, name: 'Image from iOS.jpg', size: 3 },
+          { id: 'b', file: fileB, name: 'Image from iOS.jpg', size: 3 }
         ]
       }
       fetchWithIdentityMock
@@ -134,14 +134,14 @@ describe('useSubmitReport', () => {
             reportId: 'report-xyz',
             files: [
               {
-                uploadUrl: 'https://s3.example.com/beta',
-                key: 'reports/report-xyz/beta.jpg',
-                publicUrl: 'https://s3.example.com/public/beta'
+                uploadUrl: 'https://s3.example.com/upload-0',
+                key: 'reports/report-xyz/Image-from-iOS-0.jpg',
+                publicUrl: 'https://s3.example.com/public/0'
               },
               {
-                uploadUrl: 'https://s3.example.com/alpha',
-                key: 'reports/report-xyz/alpha.png',
-                publicUrl: 'https://s3.example.com/public/alpha'
+                uploadUrl: 'https://s3.example.com/upload-1',
+                key: 'reports/report-xyz/Image-from-iOS-1.jpg',
+                publicUrl: 'https://s3.example.com/public/1'
               }
             ]
           })
@@ -150,18 +150,48 @@ describe('useSubmitReport', () => {
 
       const { result } = renderHook(() => useSubmitReport({ identity: fakeIdentity }))
 
+      let outcome = false
       await act(async () => {
-        await result.current.submitReport(formState)
+        outcome = await result.current.submitReport(formState)
       })
 
-      expect(fetchMock).toHaveBeenCalledWith(
-        'https://s3.example.com/beta',
-        expect.objectContaining({ headers: expect.objectContaining({ 'Content-Type': 'image/jpeg' }) })
+      expect(outcome).toBe(true)
+      expect(fetchMock).toHaveBeenCalledWith('https://s3.example.com/upload-0', expect.objectContaining({ body: fileA }))
+      expect(fetchMock).toHaveBeenCalledWith('https://s3.example.com/upload-1', expect.objectContaining({ body: fileB }))
+      expect(fetchWithIdentityMock).toHaveBeenNthCalledWith(
+        2,
+        'https://report-user.example.com/api/reports/players',
+        fakeIdentity,
+        'POST',
+        expect.stringContaining('"evidenceKeys":["reports/report-xyz/Image-from-iOS-0.jpg","reports/report-xyz/Image-from-iOS-1.jpg"]'),
+        { 'Content-Type': 'application/json' },
+        expect.any(AbortSignal)
       )
-      expect(fetchMock).toHaveBeenCalledWith(
-        'https://s3.example.com/alpha',
-        expect.objectContaining({ headers: expect.objectContaining({ 'Content-Type': 'image/png' }) })
+    })
+  })
+
+  describe('when the server returns a different number of presign files than requested', () => {
+    beforeEach(() => {
+      fetchWithIdentityMock.mockResolvedValueOnce(
+        okJsonResponse({
+          reportId: 'report-mismatch',
+          files: []
+        })
       )
+    })
+
+    it('should not upload or finalize, and surface a generic error', async () => {
+      const { result } = renderHook(() => useSubmitReport({ identity: fakeIdentity }))
+
+      let outcome = true
+      await act(async () => {
+        outcome = await result.current.submitReport(buildFormState())
+      })
+
+      expect(outcome).toBe(false)
+      expect(result.current.error).toBe('submit_failed')
+      expect(fetchMock).not.toHaveBeenCalled()
+      expect(fetchWithIdentityMock).toHaveBeenCalledTimes(1)
     })
   })
 
