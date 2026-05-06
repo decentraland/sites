@@ -38,7 +38,8 @@ export default defineConfig(({ command, mode }) => {
             'vendor-crypto': ['@dcl/crypto', 'eth-connect'],
             'vendor-intl': ['@formatjs/icu-messageformat-parser', '@formatjs/intl'],
             'vendor-ua': ['ua-parser-js'],
-            'vendor-router': ['react-router']
+            'vendor-router': ['react-router'],
+            'vendor-livekit': ['livekit-client', '@livekit/components-react', '@livekit/components-styles']
           }
           /* eslint-enable @typescript-eslint/naming-convention */
         }

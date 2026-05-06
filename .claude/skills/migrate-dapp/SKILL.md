@@ -5,7 +5,7 @@ description: Use when absorbing a standalone Decentraland dapp (jump, blog, what
 
 # migrate-dapp
 
-Playbook for absorbing a standalone Decentraland dapp into this SPA. Mirrors how `whats-on`, `blog`, `jump`, and `social` were brought in. **Heavy tier only** — every dapp ported so far needs Redux + RTK Query.
+Playbook for absorbing a standalone Decentraland dapp into this SPA. Mirrors how `whats-on`, `blog`, `jump`, `social`, and `cast` were brought in. **Heavy tier only** — every dapp ported so far needs Redux + RTK Query.
 
 ## Overview
 
@@ -15,8 +15,8 @@ The migration is mechanical once decisions are made. It's never "copy code 1:1" 
 
 Don't guess these — they shape the code.
 
-1. **Path**: source uses some basename (`/social`, `/jump`, `/blog`). What public path do we mount under in sites? Singular vs plural matters (`/community/:id` vs `/communities/:id`). Verify against the production sitemap, not just the source router. If the source has sub-paths/tabs, ask whether they should be URL-driven or internal state.
-2. **Auth**: the source almost certainly imports `wagmi`, `magic-sdk`, `thirdweb`, `decentraland-connect`. Sites **drops Web3** — `useAuthIdentity` (localStorage SSO) + `signedFetch` only. Confirm this is the chosen approach (it's the only one consistent with blog/whats-on/jump). Unauthenticated CTAs redirect to the global SSO via `redirectToAuth(path, queryParams)`.
+1. **Path**: source uses some basename (`/social`, `/jump`, `/blog`, `/cast`). What public path do we mount under in sites? Singular vs plural matters (`/community/:id` vs `/communities/:id`). Verify against the production sitemap, not just the source router. If the source has sub-paths/tabs, ask whether they should be URL-driven or internal state.
+2. **Auth**: the source almost certainly imports `wagmi`, `magic-sdk`, `thirdweb`, `decentraland-connect` (or in cast2's case, an anonymous + token‑in‑URL flow). Sites **drops Web3** — `useAuthIdentity` (localStorage SSO) + `signedFetch` for signed mutations, OR keep the source's anonymous flow if that's how the backend already works. Confirm with the user. Unauthenticated CTAs that need identity redirect to the global SSO via `redirectToAuth(path, queryParams)`.
 3. **Sign-in callback**: reuse the global `/sign-in` lightweight page (already exists in `src/App.tsx`). Don't port the source's own `SignInRedirect`.
 4. **i18n locales**: source typically ships en/es/zh. Sites needs all 6 (en, es, fr, ja, ko, zh) per rule 9. Ask: hand-translate fr/ja/ko now, copy English placeholders, or block the PR on localization team.
 5. **Navbar item**: ask explicitly — don't add `LandingNavbar` entries unprompted.
@@ -62,9 +62,22 @@ Then read the actual files (not just agent summaries) for: source `*.client.ts`,
 | `.github/ISSUE_TEMPLATE/bug_report.yml`      | Add the new route to the `Page / Area` dropdown — the template explicitly says "Keep options in sync with the routes defined in src/App.tsx". Format: `<Dapp> — <Page> (/<path>)`. |
 | `.github/ISSUE_TEMPLATE/feature_request.yml` | Add a matching entry to the `Area` dropdown.                                                                                                                                       |
 
+## Design system — use `decentraland-ui2`, NOT custom assets/deps (paid in blood, cast2 PR #403)
+
+Every cast2 source dependency below was a wasted install + extra cleanup commit when porting. Hit the design-system primitives FIRST, drop the source assets:
+
+- **No `@emotion/react` or `@emotion/styled` direct deps**. Sites resolves both transitively through `decentraland-ui2` → `@mui/material` → `@emotion/*`. Importing `keyframes` from `@emotion/react` works without a direct entry in `package.json`. **NEVER `npm install @emotion/react @emotion/styled`** — `npm uninstall` immediately if you see the source dapp pinning them.
+- **No `classnames` dep**. Sites uses styled-components everywhere; conditional styling goes in `styled('div', { shouldForwardProp })<{ $variant: ... }>(({ $variant }) => ({ ... }))`. If the source uses `classnames`, refactor to styled props during the port — don't carry the dep.
+- **Replace static `logo.png` (or any DCL wordmark/brand image) with `<Logo size="huge" />`** from `decentraland-ui2`. Sizes: `'normal' | 'large' | 'huge' | 'massive'`. Used by `PressPage`, `DownloadSuccess`, etc.
+- **Replace static onboarding/landing backgrounds with `<AnimatedBackground variant="absolute" />`** from `decentraland-ui2`. Render it as a sibling of your content inside a `position: relative; isolation: isolate` container — no PNG fallback. Existing usages: `Home/WhatsOn`, `Home/ComeHangOut`, `Invite/InviteHero`, `Support/ChatCTABanner`, `Report/ReportSuccess`.
+- **Replace hardcoded colours with `dclColors.*`** from `decentraland-ui2` whenever the match is direct: `'white'` → `dclColors.neutral.white`, `'#1a1a1a'` → `dclColors.neutral.softBlack1`, `'#000'` → `dclColors.neutral.black`. The palette also exposes `base.primary*`, `brand.{ruby,violet,...}`, `neutral.gray0..gray5`. Brand-specific gradients (`#210A35`, `#FF2D55`-into-`#FF6B82`) and rgba overlays stay verbatim.
+- **Static avatar fallback PNG (`avatar.png`) → deterministic seeded background via `getAvatarBackgroundColor` + `getDisplayName` from `src/utils/avatarColor.ts`** (ADR-292 NameColorHelper). The cast `Avatar` component already does this — call sites pass `name`, `imageUrl?`, `ethAddress?` and the component picks the seeded colour + initial when there's no image. Same pattern as the in-world client, hue stays consistent across surfaces.
+- **Compress any source PNG > 500 KB to WebP** before importing. `cwebp -q 70 input.png -o output.webp` typically gives 95–98% reduction (`background_watcher.png` 2.5 MB → `.webp` 88 KB on cast2). Update the import extension and delete the PNG.
+
 ## Gotchas (paid in blood)
 
 - **`decentraland-ui2` does NOT export `muiIcons` or a JumpIn `modalProps.title/description/buttonLabel` API** in v3.7+. Source dapps using these will need rewrites: `import CheckIcon from '@mui/icons-material/Check'` and a custom `<CommunityJumpInButton />` (or equivalent) that calls `launchDesktopApp({ communityId })` with `DownloadModal` fallback. Pattern in `src/components/jump/JumpInButton/JumpInButton.tsx`.
+- **react-router v7 quirk**: a child `<Route path="*" />` does NOT match the parent's empty trailing path. If `/cast` (with no children) renders blank but `/cast/anything` shows the catch-all, add `<Route index element={<NotFoundPage />} />` alongside the wildcard inside the parent route block (cast2 PR #403, commit 306600c).
 - **Reuse existing components first**. Check `LiveNowCardItem` (whats-on event card), `EventDetailModal`, `useEventDetailModal` before writing your own. Source dapps often render their own card — DRY by mapping the dapp's event shape into `EventEntry` and reusing the whats-on card. The social migration ended up doing exactly this.
 - **`decentraland-ui2` is ESM-only and Jest can't transform it**. UI specs MUST `jest.mock('decentraland-ui2', ...)` AND `jest.mock('./<Component>.styled', ...)`. See `src/components/social/CommunityDetail/MembersList/MembersList.spec.tsx` for the forwardRef-with-prop-filtering pattern. Don't try to make ts-jest transform `decentraland-ui2` — that's the wrong layer.
 - **`import.meta.env` in `src/config/index.ts`** doesn't compile under ts-jest. Specs that touch `getEnv()` transitively MUST `jest.mock('../../config/env', () => ({ getEnv: () => 'https://...' }))`.
@@ -75,6 +88,8 @@ Then read the actual files (not just agent summaries) for: source `*.client.ts`,
 - **`?action=...` auto-execute pattern**: when the CTA redirects unauthenticated users to SSO, append `?action=join|requestToJoin`. After auth, the page re-renders with identity AND the action param, runs the mutation once via `useEffect` + `executedActionRef`, then strips the param via `navigate({ search: '' }, { replace: true })`. See `CommunityDetail.tsx`.
 - **`HelmetProvider` must wrap the lazy heavy chunk**. The DappsShell already does this post-social migration. New heavy pages don't need their own provider.
 - **Source dapps use `getRandomRarityColor(theme)` (Math.random per render)** — do NOT port this directly. Make it deterministic by seed (e.g. address) so avatars don't flicker on rerender. See `getRarityColor(theme, seed)` in `src/features/communities/communities.helpers.ts`.
+- **Map RTK Query errors to i18n keys, not raw server strings** (rule 10). When the dapp surfaces error UX (e.g. "no active stream", "not authorized"), build a small helper that switches on `err.status` (number for HTTP, `'FETCH_ERROR'`/`'TIMEOUT_ERROR'`/`'PARSING_ERROR'` for transport) and returns a stable i18n key. `console.error(err)` for debugging, `setError(t(getCastErrorKey(err, ctx)))` for the UI. See `src/features/cast2/cast2.errors.ts`.
+- **Watch out for env-key renames during merge with master.** While you're working in a long-lived branch, parallel dapp PRs can land env keys that collide with yours (cast2 had `WORLDS_CONTENT_URL`, social/storage already merged `WORLDS_CONTENT_SERVER_URL`). After every `git merge origin/master`, grep for any `getEnv('FOO')` that no longer exists in `src/config/env/*.json` and rename. The DappsShell preconnect spec is a fast canary — it asserts the actual key.
 
 ## Verification (in order — no skipping)
 
@@ -103,4 +118,5 @@ Then read the actual files (not just agent summaries) for: source `*.client.ts`,
 - `whats-on` — events flow + admin
 - `blog` — Contentful + Algolia
 - `jump` — deep-link handler
-- `social` — communities (most recent; `feat/migrate-social-dapps` branch is the canonical example)
+- `social` — communities (`feat/migrate-social-dapps` branch — canonical for the standard auth+RTK shape)
+- `cast` — LiveKit streaming (PR #403 — canonical for: anonymous + token-in-URL auth, `<AnimatedBackground>` + `<Logo>` swap, `dclColors`/WebP cleanup, react-router v7 index-route fix, RTK Query error → i18n mapping)

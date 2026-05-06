@@ -140,6 +140,211 @@
         "view_all": "すべて見る"
       }
     },
+    "cast": {
+      "app": {
+        "title": "Decentraland Cast 2.0",
+        "subtitle": "ブラウザネイティブのサブ秒レイテンシストリーミング",
+        "invalid_route": "無効なルートです。配信リンクはDecentralandシーン内のAdmin Smart Itemで生成されます。",
+        "auth_demo": "認証デモ：",
+        "view_docs": "ドキュメントを表示"
+      },
+      "not_found": {
+        "title": "404 - ページが見つかりません",
+        "description": "このCast 2.0配信は存在しません。配信リンクはDecentralandシーン内のAdmin Smart Itemによってオンデマンドで生成されます。有効なリンクをたどってもこのエラーが表示される場合は、配信が終了している可能性があります。",
+        "go_home": "ホームへ戻る",
+        "page_title": "Castが見つかりません"
+      },
+      "streamer": {
+        "title": "ライブ配信",
+        "page_title": "Decentraland Castで配信中",
+        "share_link": "リンクを共有",
+        "share_link_tooltip": "視聴者用リンクをコピーして配信を共有",
+        "link_copied": "リンクをコピーしました！",
+        "starting_stream": "配信を開始しています...",
+        "connecting": "ルームに接続中...",
+        "error_invalid_token": "配信トークンが無効または期限切れです。Admin Smart Itemから新しいリンクを生成してください。",
+        "error_no_token": "配信トークンが見つかりません。Admin Smart Itemのリンクを使用してください。",
+        "error_initialize_streaming": "配信の初期化に失敗しました。",
+        "error_connection": "配信ルームへの接続に失敗しました",
+        "error_unauthorized": "この場所への配信権限がありません。あなたのウォレットがシーンの管理者であることを確認してください。",
+        "error_network": "配信サーバーに到達できませんでした。接続を確認して再試行してください。",
+        "connect_wallet_prompt": "チャットや交流のためにDecentralandウォレットを接続してください"
+      },
+      "watcher": {
+        "title": "ライブ配信を視聴中",
+        "page_title": "Decentraland Castで視聴中",
+        "back_to_decentraland": "Decentralandへ戻る",
+        "connecting": "配信に接続中...",
+        "error_connection": "配信への接続に失敗しました",
+        "error_no_active_stream": "このリンクで現在配信している人がいません。配信が終了しているか、まだ開始されていないか、リンクが間違っている可能性があります。少し待ってから再試行するか、Admin Smart Itemから新しいリンクを取得してください。",
+        "error_unauthorized": "この配信にはアクセスできません。Admin Smart Itemの有効なリンクを使用していることを確認してください。",
+        "error_invalid_location": "その場所を認識できませんでした。ワールド名またはパーセル座標を確認して再試行してください。",
+        "error_world_not_found": "そのワールドが見つかりませんでした。ワールド名を確認して再試行してください。",
+        "error_network": "配信サーバーに到達できませんでした。接続を確認して再試行してください。",
+        "connect_wallet_prompt": "メッセージを送るにはDecentralandウォレットを接続してください"
+      },
+      "streaming_controls": {
+        "mute_mic": "マイクをミュート",
+        "unmute_mic": "マイクをオン",
+        "stop_cam": "カメラを停止",
+        "start_cam": "カメラを開始",
+        "stop_share": "共有を停止",
+        "share_screen": "画面を共有",
+        "screen_share_mobile_not_supported": "モバイルでは画面共有はご利用いただけません",
+        "screen_share_not_supported": "このデバイスまたはブラウザでは画面共有はサポートされていません。",
+        "screen_share_permission_denied": "アクセスが拒否されました。画面共有を許可して続行してください。",
+        "leave_stream": "配信から退出",
+        "leave": "退出",
+        "reconnect": "再接続",
+        "disconnected": "切断されました",
+        "connecting": "接続中...",
+        "connected": "接続済み",
+        "mute_cast": "ワールドにいる間、Castの音声をミュート",
+        "unmute_cast": "Castの音声をオン",
+        "share_presentation": "プレゼンを共有",
+        "stop_presentation": "プレゼンを停止",
+        "uploading_presentation": "プレゼンをアップロード中...",
+        "paste_presentation_url": "プレゼンのURLを貼り付け",
+        "share": "共有",
+        "or": "または",
+        "browse_local_files": "ローカルファイルを参照",
+        "supported_formats": "対応フォーマット: PDF、PPTX。",
+        "initializing_video": "動画を初期化中...",
+        "presentation": "プレゼン",
+        "url_invalid": "有効なURLを入力してください",
+        "url_https_required": "URLはhttps://を使用してください",
+        "file_too_large": "ファイルが大きすぎます。最大{maxMb}MBまでです。",
+        "file_invalid_type": "サポートされていないファイル形式です。PDFまたはPPTXファイルをアップロードしてください。"
+      },
+      "device_selector": {
+        "audio_input": "オーディオ入力",
+        "video_input": "ビデオ入力",
+        "loading": "{type}デバイスを読み込み中...",
+        "no_devices": "{type}デバイスが見つかりません",
+        "select_device": "{type}デバイスを選択"
+      },
+      "chat": {
+        "title": "ワールド内チャット",
+        "messages_count": "{count}件のメッセージ",
+        "messages_count_plural": "{count}件のメッセージ",
+        "no_messages": "まだメッセージはありません。{action}",
+        "no_messages_yet": "まだメッセージはありません",
+        "start_conversation": "会話を始めましょう！",
+        "sign_in_to_participate": "参加するにはサインインしてください。",
+        "type_message": "メッセージを入力...",
+        "sign_in_prompt": "チャットにメッセージを送るにはサインインしてください",
+        "connect_wallet_prompt": "メッセージを送るにはDecentralandウォレットを接続してください",
+        "footer_text": "チャットに参加するにはDecentralandの{sceneName}に入ってください。"
+      },
+      "people": {
+        "title": "参加者",
+        "speakers": "スピーカー",
+        "viewers": "視聴者",
+        "in_world_participants": "ワールド内参加者",
+        "no_speakers": "まだスピーカーはいません",
+        "no_viewers": "まだ視聴者はいません",
+        "no_in_world": "まだワールド内参加者はいません",
+        "speaker_status": "発言中",
+        "viewer_status": "視聴中",
+        "in_world_status": "ワールド内"
+      },
+      "live_counter": {
+        "live": "ライブ",
+        "participant_streaming": "人が配信中",
+        "participants_streaming": "人が配信中",
+        "you": "あなた"
+      },
+      "room_stats": {
+        "title": "配信統計",
+        "people": "人数",
+        "viewers": "視聴者",
+        "connection": "接続",
+        "quality": "品質",
+        "unknown": "不明",
+        "poor": "低い",
+        "good": "良好",
+        "excellent": "優秀",
+        "disconnected": "切断",
+        "connecting": "接続中...",
+        "connected": "接続済み"
+      },
+      "empty_state": {
+        "streamer_title": "配信の準備完了",
+        "streamer_message": "視聴者にコンテンツを見せるために、カメラをオンにするか画面を共有してください",
+        "streamer_action": "下の「カメラ」または「画面共有」をクリックして共有を開始",
+        "streamer_disconnected": "切断されました。下の「再接続」をクリックして配信を再開してください",
+        "camera_initializing": "カメラを初期化中... しばらくお待ちください",
+        "watcher_title": "現在このリンクで配信している人はいません...",
+        "watcher_message": "このDecentraland Castはまもなく開始されるか、すでに終了している可能性があります。",
+        "no_video_streams": "動画ストリームなし",
+        "waiting_participants": "参加者を待っています..."
+      },
+      "auth": {
+        "connect_wallet": "ウォレットを接続",
+        "connecting": "接続中...",
+        "disconnect": "切断",
+        "sign_in": "サインイン",
+        "sign_out": "サインアウト",
+        "join_conversation": "会話に参加",
+        "connect_prompt": "チャットにメッセージを送り議論に参加するにはウォレットを接続してください。",
+        "no_wallet": "サインインするにはMetaMaskをインストールしてください。",
+        "no_accounts": "アカウントが見つかりません。ウォレットを接続してください。",
+        "auth_failed": "認証に失敗しました",
+        "privacy_note": "秘密鍵は保存されません。この署名は本人確認のためにのみ使用されます。"
+      },
+      "status": {
+        "muted": "ミュート",
+        "speaking": "発言中",
+        "not_speaking": "発言なし"
+      },
+      "loading": {
+        "title": "Cast 2.0を読み込み中",
+        "message": "配信体験を準備しています..."
+      },
+      "onboarding": {
+        "speaker_title": "{streamName}（Decentraland）に配信中",
+        "speaker_tag": "スピーカー",
+        "viewer_title": "{streamName}からのDecentraland Cast",
+        "viewer_tag": "視聴者",
+        "name_placeholder": "名前を入力（任意）",
+        "join_now": "今すぐ参加",
+        "joining": "参加中..."
+      },
+      "participant_grid": {
+        "more_participants": "もっと"
+      },
+      "error_modal": {
+        "title": "Castへの再参加に失敗しました",
+        "message": "このCastのリンクを使用して再参加してください。"
+      },
+      "scene_selector": {
+        "title": "シーンを選択",
+        "placeholder": "視聴するシーンを選択",
+        "watch": "視聴",
+        "back": "戻る",
+        "no_scenes": "このワールドにシーンがありません",
+        "loading": "ワールドのシーンを読み込み中..."
+      },
+      "watcher_error_modal": {
+        "title": "配信ルームへの接続に失敗しました",
+        "message": "Admin Smart Itemから送られたリンクを使用して配信に再参加してください。"
+      },
+      "notifications": {
+        "presentation_download_failed": {
+          "title": "プレゼンを読み込めませんでした",
+          "default_message": "そのURLをダウンロードできませんでした。公開されているか確認して再試行してください。"
+        },
+        "video_playback_failed": {
+          "title": "動画を再生できませんでした"
+        },
+        "screen_share_failed": {
+          "title": "画面共有に失敗しました",
+          "default_message": "画面共有を開始できませんでした。もう一度お試しください。"
+        },
+        "retry": "再試行",
+        "dismiss": "閉じる"
+      }
+    },
     "storage": {
       "select": {
         "title": "Storage · アセットを選択"

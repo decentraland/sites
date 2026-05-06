@@ -140,6 +140,211 @@
         "view_all": "Ver todo"
       }
     },
+    "cast": {
+      "app": {
+        "title": "Decentraland Cast 2.0",
+        "subtitle": "Transmisión nativa del navegador con latencia submilisegundos",
+        "invalid_route": "Ruta inválida. Los enlaces de transmisión son generados por el Admin Smart Item en las escenas de Decentraland.",
+        "auth_demo": "Demo de Autenticación:",
+        "view_docs": "Ver Documentación"
+      },
+      "not_found": {
+        "title": "404 - Página No Encontrada",
+        "description": "Esta transmisión de Cast 2.0 no existe. Los enlaces de transmisión se generan bajo demanda por el Admin Smart Item en las escenas de Decentraland. Si seguiste un enlace válido y aún ves este error, es posible que la transmisión haya finalizado.",
+        "go_home": "Ir al Inicio",
+        "page_title": "Cast no encontrado"
+      },
+      "streamer": {
+        "title": "Transmisión en Vivo",
+        "page_title": "Transmitiendo en Decentraland Cast",
+        "share_link": "Compartir Enlace",
+        "share_link_tooltip": "Copia el enlace de visualización para compartir tu transmisión",
+        "link_copied": "¡Enlace Copiado!",
+        "starting_stream": "Iniciando transmisión...",
+        "connecting": "Conectando a la sala...",
+        "error_invalid_token": "Token de transmisión inválido o expirado. Por favor genera un nuevo enlace desde el Admin Smart Item.",
+        "error_no_token": "No se encontró token de transmisión. Por favor usa el enlace del Admin Smart Item.",
+        "error_initialize_streaming": "Error al inicializar la transmisión.",
+        "error_connection": "Error al conectar a la sala de transmisión",
+        "error_unauthorized": "No tenés permiso para transmitir en esta ubicación. Asegurate de que tu billetera sea admin de la escena.",
+        "error_network": "No pudimos contactar al servidor de transmisión. Verificá tu conexión e intentá de nuevo.",
+        "connect_wallet_prompt": "Conecta tu billetera de Decentraland para chatear e interactuar"
+      },
+      "watcher": {
+        "title": "Viendo Transmisión en Vivo",
+        "page_title": "Viendo en Decentraland Cast",
+        "back_to_decentraland": "Volver a Decentraland",
+        "connecting": "Conectando a la transmisión...",
+        "error_connection": "Error al conectar a la transmisión",
+        "error_no_active_stream": "Nadie está transmitiendo en este enlace. La transmisión puede haber terminado, no haber comenzado aún, o el enlace puede ser incorrecto. Intentá de nuevo en un momento, o conseguí un enlace nuevo desde el Admin Smart Item.",
+        "error_unauthorized": "Esta transmisión no está accesible. Asegurate de usar un enlace válido del Admin Smart Item.",
+        "error_invalid_location": "No reconocemos esa ubicación. Verificá el nombre del mundo o las coordenadas del parcel y volvé a intentar.",
+        "error_world_not_found": "No encontramos ese mundo. Verificá el nombre del mundo y volvé a intentar.",
+        "error_network": "No pudimos contactar al servidor de transmisión. Verificá tu conexión e intentá de nuevo.",
+        "connect_wallet_prompt": "Conecta tu billetera de Decentraland para enviar mensajes"
+      },
+      "streaming_controls": {
+        "mute_mic": "Silenciar Micrófono",
+        "unmute_mic": "Activar Micrófono",
+        "stop_cam": "Detener Cámara",
+        "start_cam": "Iniciar Cámara",
+        "stop_share": "Detener Compartir",
+        "share_screen": "Compartir Pantalla",
+        "screen_share_mobile_not_supported": "Compartir pantalla no está disponible en móvil",
+        "screen_share_not_supported": "Compartir pantalla no está soportado en este dispositivo o navegador.",
+        "screen_share_permission_denied": "Permiso denegado. Habilitá compartir pantalla para continuar.",
+        "leave_stream": "Salir del Stream",
+        "leave": "Salir",
+        "reconnect": "Reconectar",
+        "disconnected": "Desconectado",
+        "connecting": "Conectando...",
+        "connected": "Conectado",
+        "mute_cast": "Silenciar el audio de este Cast mientras estás en el Mundo",
+        "unmute_cast": "Activar audio del Cast",
+        "share_presentation": "Compartir Presentación",
+        "stop_presentation": "Detener Presentación",
+        "uploading_presentation": "Subiendo presentación...",
+        "paste_presentation_url": "Pega la URL de tu presentación",
+        "share": "Compartir",
+        "or": "o",
+        "browse_local_files": "Busca en tus archivos locales",
+        "supported_formats": "Formatos admitidos: PDF, PPTX.",
+        "initializing_video": "Inicializando video...",
+        "presentation": "Presentación",
+        "url_invalid": "Por favor ingresa una URL válida",
+        "url_https_required": "La URL debe usar https://",
+        "file_too_large": "El archivo es demasiado grande. Tamaño máximo {maxMb}MB.",
+        "file_invalid_type": "Tipo de archivo no compatible. Sube un archivo PDF o PPTX."
+      },
+      "device_selector": {
+        "audio_input": "Entrada de Audio",
+        "video_input": "Entrada de Video",
+        "loading": "Cargando dispositivos de {type}...",
+        "no_devices": "No se encontraron dispositivos de {type}",
+        "select_device": "Seleccionar Dispositivo de {type}"
+      },
+      "chat": {
+        "title": "Chat In-World",
+        "messages_count": "{count} mensaje",
+        "messages_count_plural": "{count} mensajes",
+        "no_messages": "Sin mensajes aún. {action}",
+        "no_messages_yet": "Aún no hay mensajes",
+        "start_conversation": "¡Inicia la conversación!",
+        "sign_in_to_participate": "Inicia sesión para participar.",
+        "type_message": "Escribe un mensaje...",
+        "sign_in_prompt": "Inicia sesión para enviar mensajes en el chat",
+        "connect_wallet_prompt": "Conecta tu billetera de Decentraland para enviar mensajes",
+        "footer_text": "Ingresa a {sceneName} en Decentraland para participar en el chat."
+      },
+      "people": {
+        "title": "Participantes",
+        "speakers": "Oradores",
+        "viewers": "Espectadores",
+        "in_world_participants": "Participantes In-World",
+        "no_speakers": "Aún no hay oradores",
+        "no_viewers": "Aún no hay espectadores",
+        "no_in_world": "Aún no hay participantes in-world",
+        "speaker_status": "Hablando",
+        "viewer_status": "Viendo",
+        "in_world_status": "En el Mundo"
+      },
+      "live_counter": {
+        "live": "EN VIVO",
+        "participant_streaming": "Persona transmitiendo",
+        "participants_streaming": "Personas transmitiendo",
+        "you": "Tú"
+      },
+      "room_stats": {
+        "title": "Estadísticas de Transmisión",
+        "people": "Personas",
+        "viewers": "Espectadores",
+        "connection": "Conexión",
+        "quality": "Calidad",
+        "unknown": "Desconocido",
+        "poor": "Pobre",
+        "good": "Buena",
+        "excellent": "Excelente",
+        "disconnected": "Desconectado",
+        "connecting": "Conectando...",
+        "connected": "Conectado"
+      },
+      "empty_state": {
+        "streamer_title": "Listo para Transmitir",
+        "streamer_message": "Activa tu cámara o comparte tu pantalla para que los espectadores puedan ver tu contenido",
+        "streamer_action": "Comienza a compartir haciendo clic en Cámara o Compartir Pantalla abajo",
+        "streamer_disconnected": "Te has desconectado. Haz clic en 'Reconectar' abajo para volver a transmitir",
+        "camera_initializing": "Iniciando cámara... Por favor espera",
+        "watcher_title": "Nadie está transmitiendo a este enlace...",
+        "watcher_message": "Este Cast de Decentraland puede estar comenzando pronto o ya ha finalizado.",
+        "no_video_streams": "Sin transmisiones de video",
+        "waiting_participants": "Esperando participantes..."
+      },
+      "auth": {
+        "connect_wallet": "Conectar Billetera",
+        "connecting": "Conectando...",
+        "disconnect": "Desconectar",
+        "sign_in": "Iniciar Sesión",
+        "sign_out": "Cerrar Sesión",
+        "join_conversation": "Únete a la Conversación",
+        "connect_prompt": "Conecta tu billetera para enviar mensajes en el chat y participar en la discusión.",
+        "no_wallet": "Por favor instala MetaMask para iniciar sesión.",
+        "no_accounts": "No se encontraron cuentas. Por favor conecta tu billetera.",
+        "auth_failed": "Falló la autenticación",
+        "privacy_note": "Nunca almacenaremos tus claves privadas. Esta firma solo se usa para verificar tu identidad."
+      },
+      "status": {
+        "muted": "Silenciado",
+        "speaking": "Hablando",
+        "not_speaking": "No está hablando"
+      },
+      "loading": {
+        "title": "Cargando Cast 2.0",
+        "message": "Preparando tu experiencia de transmisión..."
+      },
+      "onboarding": {
+        "speaker_title": "Transmitiendo a {streamName}, Decentraland",
+        "speaker_tag": "Orador",
+        "viewer_title": "Cast de Decentraland desde {streamName}",
+        "viewer_tag": "Espectador",
+        "name_placeholder": "Inserta Tu Nombre (Opcional)",
+        "join_now": "UNIRSE AHORA",
+        "joining": "Uniéndose..."
+      },
+      "participant_grid": {
+        "more_participants": "Más"
+      },
+      "error_modal": {
+        "title": "Error al reingresar al cast",
+        "message": "Por favor usa el enlace de este Cast para reingresar."
+      },
+      "scene_selector": {
+        "title": "Seleccionar una Escena",
+        "placeholder": "Elige una escena para ver",
+        "watch": "VER",
+        "back": "VOLVER",
+        "no_scenes": "No se encontraron escenas en este mundo",
+        "loading": "Cargando escenas del mundo..."
+      },
+      "watcher_error_modal": {
+        "title": "Error al conectarse a la sala de transmisión",
+        "message": "Por favor usa el enlace enviado desde el Admin Smart Item para reingresar a la transmisión."
+      },
+      "notifications": {
+        "presentation_download_failed": {
+          "title": "No se pudo cargar la presentación",
+          "default_message": "No pudimos descargar esa URL. Asegúrate de que sea de acceso público e inténtalo de nuevo."
+        },
+        "video_playback_failed": {
+          "title": "El video no se pudo reproducir"
+        },
+        "screen_share_failed": {
+          "title": "Falló al compartir pantalla",
+          "default_message": "No pudimos iniciar el compartir pantalla. Volvé a intentar."
+        },
+        "retry": "Reintentar",
+        "dismiss": "Cerrar"
+      }
+    },
     "storage": {
       "select": {
         "title": "Storage · Seleccionar activo"

@@ -74,6 +74,14 @@ const JumpInvalidEventPage = lazy(() => import('./pages/jump/InvalidPage').then(
 const JumpInvalidPlacePage = lazy(() => import('./pages/jump/InvalidPage').then(m => ({ default: () => <m.InvalidPage kind="place" /> })))
 const JumpLegacyEventRedirect = lazy(() => import('./pages/jump/LegacyEventRedirect').then(m => ({ default: m.LegacyEventRedirect })))
 
+// Cast pages — LiveKit-based browser streaming (absorbed from decentraland/cast2).
+// Heavy tier: lives inside DappsShell + a CastLayout that provides the
+// LiveKit + Notification contexts and renders the toast stack.
+const CastLayout = lazy(() => import('./pages/cast/CastLayout').then(m => ({ default: m.CastLayout })))
+const StreamerPage = lazy(() => import('./pages/cast/StreamerPage').then(m => ({ default: m.StreamerPage })))
+const WatcherPage = lazy(() => import('./pages/cast/WatcherPage').then(m => ({ default: m.WatcherPage })))
+const CastNotFoundPage = lazy(() => import('./pages/cast/CastNotFoundPage').then(m => ({ default: m.CastNotFoundPage })))
+
 // Storage pages — heavy DappsShell route. Migrated from the standalone storage-service-site.
 const StorageRedirectPage = lazy(() => import('./pages/storage/StorageRedirectPage').then(m => ({ default: m.StorageRedirectPage })))
 const StorageSelectPage = lazy(() => import('./pages/storage/SelectPage').then(m => ({ default: m.SelectPage })))
@@ -162,6 +170,17 @@ const App = () => {
               <Route path="/blog/author/:authorSlug" element={<AuthorPage />} />
               <Route path="/blog/:categorySlug" element={<CategoryPage />} />
               <Route path="/blog/:categorySlug/:postSlug" element={<PostPage />} />
+              <Route path="/cast" element={<CastLayout />}>
+                {/* `/cast` (no trailing path) is not a deep link from gatekeeper, so
+                    treat it as not-found rather than a landing. The catch-all below
+                    only matches non-empty children, so we need an explicit index. */}
+                <Route index element={<CastNotFoundPage />} />
+                <Route path="s/:token" element={<StreamerPage />} />
+                <Route path="s/streaming" element={<StreamerPage />} />
+                <Route path="w/:worldName/parcel/:parcel" element={<WatcherPage />} />
+                <Route path="w/:location" element={<WatcherPage />} />
+                <Route path="*" element={<CastNotFoundPage />} />
+              </Route>
               <Route path="/storage" element={<StorageRedirectPage />} />
               <Route path="/storage/select" element={<StorageSelectPage />} />
               <Route path="/storage/env" element={<StorageEnvPage />} />

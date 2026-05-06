@@ -140,6 +140,211 @@
         "view_all": "Voir tout"
       }
     },
+    "cast": {
+      "app": {
+        "title": "Decentraland Cast 2.0",
+        "subtitle": "Diffusion native du navigateur avec une latence inférieure à la seconde",
+        "invalid_route": "Route invalide. Les liens de diffusion sont générés par l'Admin Smart Item dans les scènes Decentraland.",
+        "auth_demo": "Démo d'authentification :",
+        "view_docs": "Voir la documentation"
+      },
+      "not_found": {
+        "title": "404 - Page introuvable",
+        "description": "Ce flux Cast 2.0 n'existe pas. Les liens de diffusion sont générés à la demande par l'Admin Smart Item dans les scènes Decentraland. Si vous avez suivi un lien valide et voyez encore cette erreur, le flux est peut-être terminé.",
+        "go_home": "Retour à l'accueil",
+        "page_title": "Cast introuvable"
+      },
+      "streamer": {
+        "title": "Diffusion en direct",
+        "page_title": "Diffusion sur Decentraland Cast",
+        "share_link": "Partager le lien",
+        "share_link_tooltip": "Copiez le lien spectateur pour partager votre diffusion",
+        "link_copied": "Lien copié !",
+        "starting_stream": "Démarrage de la diffusion...",
+        "connecting": "Connexion à la salle...",
+        "error_invalid_token": "Jeton de diffusion invalide ou expiré. Veuillez générer un nouveau lien depuis l'Admin Smart Item.",
+        "error_no_token": "Aucun jeton de diffusion trouvé. Veuillez utiliser le lien fourni par l'Admin Smart Item.",
+        "error_initialize_streaming": "Échec de l'initialisation de la diffusion.",
+        "error_connection": "Impossible de se connecter à la salle de diffusion",
+        "error_unauthorized": "Vous n'avez pas la permission de diffuser à cet emplacement. Assurez-vous que votre portefeuille est admin de la scène.",
+        "error_network": "Impossible de joindre le serveur de diffusion. Vérifiez votre connexion et réessayez.",
+        "connect_wallet_prompt": "Connectez votre portefeuille Decentraland pour discuter et interagir"
+      },
+      "watcher": {
+        "title": "Visionnage en direct",
+        "page_title": "En direct sur Decentraland Cast",
+        "back_to_decentraland": "Retour à Decentraland",
+        "connecting": "Connexion au flux...",
+        "error_connection": "Impossible de se connecter au flux",
+        "error_no_active_stream": "Personne ne diffuse sur ce lien. La diffusion est peut-être terminée, n'a pas encore commencé ou le lien est incorrect. Réessayez dans un instant ou récupérez un nouveau lien depuis l'Admin Smart Item.",
+        "error_unauthorized": "Cette diffusion n'est pas accessible. Assurez-vous d'utiliser un lien valide de l'Admin Smart Item.",
+        "error_invalid_location": "Nous n'avons pas reconnu ce lieu. Vérifiez le nom du monde ou les coordonnées de la parcelle et réessayez.",
+        "error_world_not_found": "Nous n'avons pas trouvé ce monde. Vérifiez le nom du monde et réessayez.",
+        "error_network": "Impossible de joindre le serveur de diffusion. Vérifiez votre connexion et réessayez.",
+        "connect_wallet_prompt": "Connectez votre portefeuille Decentraland pour envoyer des messages"
+      },
+      "streaming_controls": {
+        "mute_mic": "Couper le micro",
+        "unmute_mic": "Activer le micro",
+        "stop_cam": "Arrêter la caméra",
+        "start_cam": "Démarrer la caméra",
+        "stop_share": "Arrêter le partage",
+        "share_screen": "Partager l'écran",
+        "screen_share_mobile_not_supported": "Le partage d'écran n'est pas disponible sur mobile",
+        "screen_share_not_supported": "Le partage d'écran n'est pas pris en charge sur cet appareil ou ce navigateur.",
+        "screen_share_permission_denied": "Permission refusée. Autorisez le partage d'écran pour continuer.",
+        "leave_stream": "Quitter la diffusion",
+        "leave": "Quitter",
+        "reconnect": "Se reconnecter",
+        "disconnected": "Déconnecté",
+        "connecting": "Connexion...",
+        "connected": "Connecté",
+        "mute_cast": "Couper le son du Cast pendant que vous êtes dans le monde",
+        "unmute_cast": "Réactiver le son du Cast",
+        "share_presentation": "Partager une présentation",
+        "stop_presentation": "Arrêter la présentation",
+        "uploading_presentation": "Téléversement de la présentation...",
+        "paste_presentation_url": "Collez l'URL de votre présentation",
+        "share": "Partager",
+        "or": "ou",
+        "browse_local_files": "Parcourir vos fichiers locaux",
+        "supported_formats": "Formats pris en charge : PDF, PPTX.",
+        "initializing_video": "Initialisation de la vidéo...",
+        "presentation": "Présentation",
+        "url_invalid": "Veuillez saisir une URL valide",
+        "url_https_required": "L'URL doit utiliser https://",
+        "file_too_large": "Fichier trop volumineux. Taille maximale : {maxMb} Mo.",
+        "file_invalid_type": "Type de fichier non pris en charge. Veuillez téléverser un fichier PDF ou PPTX."
+      },
+      "device_selector": {
+        "audio_input": "Entrée audio",
+        "video_input": "Entrée vidéo",
+        "loading": "Chargement des périphériques {type}...",
+        "no_devices": "Aucun périphérique {type} trouvé",
+        "select_device": "Sélectionner un périphérique {type}"
+      },
+      "chat": {
+        "title": "Chat dans le monde",
+        "messages_count": "{count} message",
+        "messages_count_plural": "{count} messages",
+        "no_messages": "Aucun message pour le moment. {action}",
+        "no_messages_yet": "Aucun message pour le moment",
+        "start_conversation": "Lancez la conversation !",
+        "sign_in_to_participate": "Connectez-vous pour participer.",
+        "type_message": "Écrivez un message...",
+        "sign_in_prompt": "Connectez-vous pour envoyer des messages dans le chat",
+        "connect_wallet_prompt": "Connectez votre portefeuille Decentraland pour envoyer des messages",
+        "footer_text": "Rendez-vous dans {sceneName} sur Decentraland pour participer au chat."
+      },
+      "people": {
+        "title": "Participants",
+        "speakers": "Intervenants",
+        "viewers": "Spectateurs",
+        "in_world_participants": "Participants dans le monde",
+        "no_speakers": "Aucun intervenant pour l'instant",
+        "no_viewers": "Aucun spectateur pour l'instant",
+        "no_in_world": "Aucun participant dans le monde pour l'instant",
+        "speaker_status": "Parle",
+        "viewer_status": "Regarde",
+        "in_world_status": "Dans le monde"
+      },
+      "live_counter": {
+        "live": "EN DIRECT",
+        "participant_streaming": "Personne en direct",
+        "participants_streaming": "Personnes en direct",
+        "you": "Vous"
+      },
+      "room_stats": {
+        "title": "Statistiques de la diffusion",
+        "people": "Personnes",
+        "viewers": "Spectateurs",
+        "connection": "Connexion",
+        "quality": "Qualité",
+        "unknown": "Inconnu",
+        "poor": "Faible",
+        "good": "Bonne",
+        "excellent": "Excellente",
+        "disconnected": "Déconnecté",
+        "connecting": "Connexion...",
+        "connected": "Connecté"
+      },
+      "empty_state": {
+        "streamer_title": "Prêt à diffuser",
+        "streamer_message": "Activez votre caméra ou partagez votre écran pour que les spectateurs puissent voir votre contenu",
+        "streamer_action": "Cliquez sur Caméra ou Partage écran ci-dessous pour commencer",
+        "streamer_disconnected": "Vous avez été déconnecté. Cliquez sur « Se reconnecter » ci-dessous pour reprendre la diffusion",
+        "camera_initializing": "Initialisation de la caméra... Veuillez patienter",
+        "watcher_title": "Personne ne diffuse actuellement sur ce lien...",
+        "watcher_message": "Ce Cast Decentraland va peut-être commencer bientôt ou est déjà terminé.",
+        "no_video_streams": "Aucun flux vidéo",
+        "waiting_participants": "En attente de participants..."
+      },
+      "auth": {
+        "connect_wallet": "Connecter le portefeuille",
+        "connecting": "Connexion...",
+        "disconnect": "Déconnecter",
+        "sign_in": "Se connecter",
+        "sign_out": "Se déconnecter",
+        "join_conversation": "Rejoindre la conversation",
+        "connect_prompt": "Connectez votre portefeuille pour envoyer des messages dans le chat et participer à la discussion.",
+        "no_wallet": "Veuillez installer MetaMask pour vous connecter.",
+        "no_accounts": "Aucun compte trouvé. Veuillez connecter votre portefeuille.",
+        "auth_failed": "Échec de l'authentification",
+        "privacy_note": "Nous ne stockons jamais vos clés privées. Cette signature sert uniquement à vérifier votre identité."
+      },
+      "status": {
+        "muted": "Muet",
+        "speaking": "Parle",
+        "not_speaking": "Ne parle pas"
+      },
+      "loading": {
+        "title": "Chargement de Cast 2.0",
+        "message": "Préparation de votre expérience de diffusion..."
+      },
+      "onboarding": {
+        "speaker_title": "Diffusion vers {streamName}, Decentraland",
+        "speaker_tag": "Intervenant",
+        "viewer_title": "Cast Decentraland depuis {streamName}",
+        "viewer_tag": "Spectateur",
+        "name_placeholder": "Saisissez votre nom (optionnel)",
+        "join_now": "REJOINDRE",
+        "joining": "En cours..."
+      },
+      "participant_grid": {
+        "more_participants": "Plus"
+      },
+      "error_modal": {
+        "title": "Impossible de rejoindre le cast",
+        "message": "Veuillez utiliser le lien de ce Cast pour rejoindre."
+      },
+      "scene_selector": {
+        "title": "Sélectionner une scène",
+        "placeholder": "Choisissez une scène à regarder",
+        "watch": "REGARDER",
+        "back": "RETOUR",
+        "no_scenes": "Aucune scène trouvée dans ce monde",
+        "loading": "Chargement des scènes du monde..."
+      },
+      "watcher_error_modal": {
+        "title": "Impossible de se connecter à la salle de diffusion",
+        "message": "Veuillez utiliser le lien envoyé par l'Admin Smart Item pour rejoindre la diffusion."
+      },
+      "notifications": {
+        "presentation_download_failed": {
+          "title": "Impossible de charger la présentation",
+          "default_message": "Impossible de télécharger cette URL. Vérifiez qu'elle est accessible publiquement et réessayez."
+        },
+        "video_playback_failed": {
+          "title": "La vidéo ne peut pas être lue"
+        },
+        "screen_share_failed": {
+          "title": "Échec du partage d'écran",
+          "default_message": "Impossible de démarrer le partage d'écran. Veuillez réessayer."
+        },
+        "retry": "Réessayer",
+        "dismiss": "Fermer"
+      }
+    },
     "storage": {
       "select": {
         "title": "Storage · Sélectionner un actif"
