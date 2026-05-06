@@ -6,7 +6,14 @@ import { useGetCommunityByIdQuery } from '../../features/communities/communities
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
-import { InitialLoader, NotFoundContainer, NotFoundDescription, NotFoundTitle, PageContainer } from './CommunityDetailPage.styled'
+import {
+  InitialLoader,
+  NotFoundContainer,
+  NotFoundDescription,
+  NotFoundIcon,
+  NotFoundTitle,
+  PageContainer
+} from './CommunityDetailPage.styled'
 
 function CommunityDetailPage() {
   const t = useFormatMessage()
@@ -40,6 +47,7 @@ function CommunityDetailPage() {
           <title>{t('community.detail.not_found')}</title>
         </Helmet>
         <NotFoundContainer>
+          <NotFoundIcon />
           <NotFoundTitle>{t('community.detail.not_found')}</NotFoundTitle>
           <NotFoundDescription>{t('community.detail.not_found_description')}</NotFoundDescription>
         </NotFoundContainer>

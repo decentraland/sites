@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
 import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
 
 // Page-specific brand gradient — these violet shades are not part of dclColors
@@ -46,4 +48,9 @@ const NotFoundDescription = styled(Typography)(({ theme }) => ({
   textAlign: 'center'
 }))
 
-export { InitialLoader, NotFoundContainer, NotFoundDescription, NotFoundTitle, PageContainer }
+const NotFoundIcon = styled(ErrorOutlineIcon)(({ theme }) => ({
+  fontSize: theme.spacing(9),
+  color: dclColors.neutral.softWhite
+}))
+
+export { InitialLoader, NotFoundContainer, NotFoundDescription, NotFoundIcon, NotFoundTitle, PageContainer }

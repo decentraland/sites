@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
-import { NotFoundContainer, NotFoundDescription, NotFoundTitle, PageContainer } from './CommunityDetailPage.styled'
+import { NotFoundContainer, NotFoundDescription, NotFoundIcon, NotFoundTitle, PageContainer } from './CommunityDetailPage.styled'
 
 function SocialNotFoundPage() {
   const t = useFormatMessage()
@@ -10,6 +10,7 @@ function SocialNotFoundPage() {
         <title>{t('community.not_found.title')}</title>
       </Helmet>
       <NotFoundContainer>
+        <NotFoundIcon />
         <NotFoundTitle>{t('community.not_found.title')}</NotFoundTitle>
         <NotFoundDescription>{t('community.not_found.description')}</NotFoundDescription>
       </NotFoundContainer>

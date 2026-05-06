@@ -12,7 +12,7 @@ function CalendarAddIcon({ size = 18, style, className }: CalendarAddIconProps) 
       viewBox="0 0 25 25"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      style={{ flexShrink: 0, ...style }}
+      style={{ width: size, height: size, flexShrink: 0, ...style }}
       className={className}
     >
       <path

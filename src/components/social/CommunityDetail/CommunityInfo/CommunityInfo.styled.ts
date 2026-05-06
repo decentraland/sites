@@ -145,7 +145,7 @@ const OwnerText = styled(Box)(({ theme }) => ({
 }))
 
 const OwnerName = styled('span')(({ theme }) => ({
-  color: theme.palette.secondary.main,
+  color: theme.palette.primary.main,
   marginLeft: theme.spacing(0.5)
 }))
 
