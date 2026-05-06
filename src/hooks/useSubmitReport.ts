@@ -1,22 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { buildPresignFiles, buildSubmitPayload, getReportApiUrl, sanitizeFilename } from '../features/report/report.helpers'
-import type { PresignResponse, ReportFormState, UploadedFile } from '../features/report/report.types'
+import { buildPresignFiles, buildSubmitPayload, getReportApiUrl } from '../features/report/report.helpers'
+import type { PresignResponse, ReportFormState } from '../features/report/report.types'
 import { fetchWithIdentity } from '../utils/signedFetch'
 import type { UseSubmitReportOptions, UseSubmitReportResult } from './useSubmitReport.types'
 
 const JSON_HEADERS = { ['Content-Type']: 'application/json' }
-
-function basename(path: string): string {
-  return path.split('/').pop() ?? ''
-}
-
-function buildEvidenceLookup(evidence: UploadedFile[]): Map<string, UploadedFile> {
-  const lookup = new Map<string, UploadedFile>()
-  evidence.forEach(item => {
-    lookup.set(sanitizeFilename(item.name), item)
-  })
-  return lookup
-}
 
 function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === 'AbortError'
@@ -65,14 +53,14 @@ function useSubmitReport({ identity }: UseSubmitReportOptions): UseSubmitReportR
         }
 
         const presignData = (await presignResponse.json()) as PresignResponse
-        const evidenceLookup = buildEvidenceLookup(formState.evidence)
+
+        if (presignData.files.length !== formState.evidence.length) {
+          throw new Error(`Presign file count mismatch (got ${presignData.files.length}, expected ${formState.evidence.length})`)
+        }
 
         await Promise.all(
-          presignData.files.map(presignedFile => {
-            const evidence = evidenceLookup.get(basename(presignedFile.key))
-            if (!evidence) {
-              throw new Error(`Unmatched presign file: ${presignedFile.key}`)
-            }
+          presignData.files.map((presignedFile, index) => {
+            const evidence = formState.evidence[index]
             return fetch(presignedFile.uploadUrl, {
               method: 'PUT',
               headers: { ['Content-Type']: evidence.file.type },
