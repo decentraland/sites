@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { AuthIdentity } from '@dcl/crypto'
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from 'decentraland-ui2'
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from 'decentraland-ui2'
 import { useSetEnvMutation } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 
@@ -106,6 +106,9 @@ const EnvEditDialog = ({ open, keyName, onClose, onSuccess, onError, identity, r
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{t('component.storage.env_page.edit_dialog.title')}</DialogTitle>
       <DialogContent>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          {t('component.storage.env_page.edit_dialog.helper_text')}
+        </Alert>
         <TextField
           margin="dense"
           label={t('component.storage.env_page.edit_dialog.key_label')}

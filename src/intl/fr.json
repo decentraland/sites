@@ -633,7 +633,8 @@
         "edit_dialog": {
           "title": "Modifier la variable d’environnement",
           "key_label": "Clé",
-          "value_label": "Valeur"
+          "value_label": "Valeur",
+          "helper_text": "Le service de stockage ne renvoie pas les valeurs existantes ; saisissez la nouvelle valeur pour la remplacer."
         },
         "delete_dialog": {
           "title": "Supprimer la variable d’environnement",

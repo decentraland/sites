@@ -638,7 +638,8 @@
         "edit_dialog": {
           "title": "환경 변수 편집",
           "key_label": "키",
-          "value_label": "값"
+          "value_label": "값",
+          "helper_text": "storage 서비스는 기존 값을 반환하지 않으므로 새 값을 입력하여 덮어쓰세요."
         },
         "delete_dialog": {
           "title": "환경 변수 삭제",

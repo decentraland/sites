@@ -140,10 +140,12 @@ const mergeLandsIntoMap = (landsMap: Map<string, Land>, parcels: SubgraphParcel[
 const transformLandQueryResult = (data: LandQueryResult): Land[] => {
   const landsMap = new Map<string, Land>()
   for (const parcel of data.ownerParcels) {
-    landsMap.set(parcelToLand(parcel, RoleType.OWNER).id, parcelToLand(parcel, RoleType.OWNER))
+    const land = parcelToLand(parcel, RoleType.OWNER)
+    landsMap.set(land.id, land)
   }
   for (const estate of data.ownerEstates) {
-    landsMap.set(estateToLand(estate, RoleType.OWNER).id, estateToLand(estate, RoleType.OWNER))
+    const land = estateToLand(estate, RoleType.OWNER)
+    landsMap.set(land.id, land)
   }
   mergeLandsIntoMap(landsMap, data.updateOperatorParcels, data.updateOperatorEstates, RoleType.OPERATOR)
   mergeLandsIntoMap(landsMap, data.tenantParcels, data.tenantEstates, RoleType.TENANT)

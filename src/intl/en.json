@@ -774,7 +774,8 @@
         "edit_dialog": {
           "title": "Edit Environment Variable",
           "key_label": "Key",
-          "value_label": "Value"
+          "value_label": "Value",
+          "helper_text": "The storage service does not return existing env values, so type the new value to overwrite it."
         },
         "delete_dialog": {
           "title": "Delete Environment Variable",

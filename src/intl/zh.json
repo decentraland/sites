@@ -638,7 +638,8 @@
         "edit_dialog": {
           "title": "编辑环境变量",
           "key_label": "键",
-          "value_label": "值"
+          "value_label": "值",
+          "helper_text": "存储服务不返回现有值,请输入新值以覆盖。"
         },
         "delete_dialog": {
           "title": "删除环境变量",

@@ -638,7 +638,8 @@
         "edit_dialog": {
           "title": "Editar variable de entorno",
           "key_label": "Clave",
-          "value_label": "Valor"
+          "value_label": "Valor",
+          "helper_text": "El storage service no devuelve valores existentes, así que ingresá el nuevo valor para sobrescribir."
         },
         "delete_dialog": {
           "title": "Eliminar variable de entorno",

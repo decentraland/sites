@@ -638,7 +638,8 @@
         "edit_dialog": {
           "title": "環境変数を編集",
           "key_label": "キー",
-          "value_label": "値"
+          "value_label": "値",
+          "helper_text": "storage サービスは既存の値を返さないため、新しい値を入力して上書きしてください。"
         },
         "delete_dialog": {
           "title": "環境変数を削除",
