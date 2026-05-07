@@ -4,7 +4,7 @@ import { DownloadSuccess } from './DownloadSuccess'
 
 const mockTrack = jest.fn()
 const mockCalculateDownloadUrl = jest.fn()
-const mockTriggerFileDownload = jest.fn()
+const mockStreamOrFallback = jest.fn()
 let searchParamsInstance = new URLSearchParams()
 // Mutable so individual tests can flip the auth state used by the component.
 let mockHasValidIdentity = false
@@ -45,8 +45,8 @@ jest.mock('../../modules/downloadWithIdentity', () => ({
   getDownloadLinkWithIdentity: jest.fn()
 }))
 
-jest.mock('../../modules/file', () => ({
-  triggerFileDownload: (...args: unknown[]) => mockTriggerFileDownload(...args)
+jest.mock('../../modules/streamOrFallback', () => ({
+  streamOrFallback: (...args: unknown[]) => mockStreamOrFallback(...args)
 }))
 
 jest.mock('../../modules/url', () => ({
@@ -206,13 +206,13 @@ describe('when Segment has not finished lazy-loading at mount (race condition)',
     analyticsIsInitialized = true
   })
 
-  it('should trigger the download immediately but hold the analytics events while Segment is loading', async () => {
+  it('should still attempt the download while Segment is loading and skip both analytics events', async () => {
     render(<DownloadSuccess />)
 
-    // The download itself is triggered without waiting for Segment — UX must
-    // not be gated on third-party script load.
+    // The download itself is attempted regardless of Segment readiness — UX
+    // must not be gated on third-party script load.
     await waitFor(() => {
-      expect(mockTriggerFileDownload).toHaveBeenCalled()
+      expect(mockStreamOrFallback).toHaveBeenCalled()
     })
 
     // While analytics is still loading, neither event has fired.
