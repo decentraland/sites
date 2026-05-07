@@ -103,6 +103,7 @@ jest.mock('../common/CardActions.styled', () => ({
 }))
 
 jest.mock('./UpcomingCard.styled', () => ({
+  EventSmallCardWrapper: ({ children }: { children: React.ReactNode }) => <div data-testid="event-small-card-wrapper">{children}</div>,
   MobileActionButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="mobile-action" {...props} />
 }))
 
