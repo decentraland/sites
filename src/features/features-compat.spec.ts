@@ -114,4 +114,26 @@ describe('feature domain refactor compatibility', () => {
     expect(targetReport.buildSubmitPayload).toBe(legacyReport.buildSubmitPayload)
     expect(targetNotifications.usePageNotifications).toBe(legacyNotifications.usePageNotifications)
   })
+
+  it.each([
+    ['discovery', legacyDiscoveryClient, targetDiscoveryClient],
+    ['events', legacyEvents, targetEvents],
+    ['admin', legacyAdmin, targetAdmin],
+    ['jump', legacyJump, targetJump],
+    ['storage', legacyStorage, targetStorage],
+    ['blog client', legacyBlog, targetBlog],
+    ['blog slice', legacyBlogSlice, targetBlogSlice],
+    ['search', legacySearch, targetSearch],
+    ['profile', legacyProfile, targetProfile],
+    ['communities', legacyCommunities, targetCommunities],
+    ['cast', legacyCast, targetCast],
+    ['reels', legacyReels, targetReels],
+    ['report', legacyReport, targetReport],
+    ['notifications', legacyNotifications, targetNotifications]
+  ])('keeps every public export of %s shimmed by name', (_name, legacy, target) => {
+    expect(Object.keys(target).sort()).toEqual(Object.keys(legacy).sort())
+    for (const key of Object.keys(legacy)) {
+      expect((target as Record<string, unknown>)[key]).toBe((legacy as Record<string, unknown>)[key])
+    }
+  })
 })

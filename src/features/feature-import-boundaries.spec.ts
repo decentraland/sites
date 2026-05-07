@@ -29,14 +29,23 @@ function walk(dir: string): string[] {
   })
 }
 
+// Match each legacy segment only when it appears as an actual module specifier
+// (after `from '...'`, `jest.mock('...')`, `jest.requireActual('...')`, etc.) so
+// JSDoc, comments, and unrelated string literals can't false-positive.
+const moduleSpecifierContext = /(?:from\s+|require\(\s*|jest\.\w+\(\s*)['"]([^'"]+)['"]/g
+
 function getOffenders(): string[] {
   const offenders: string[] = []
   for (const root of scanRoots) {
     for (const file of walk(path.join(repoRoot, root)).filter(item => /\.(ts|tsx)$/.test(item))) {
       const content = fs.readFileSync(file, 'utf8')
-      for (const segment of legacySegments) {
-        if (content.includes(segment)) {
-          offenders.push(`${path.relative(repoRoot, file)} imports ${segment}`)
+      for (const match of content.matchAll(moduleSpecifierContext)) {
+        const specifier = match[1]
+        for (const segment of legacySegments) {
+          if (specifier === segment || specifier.endsWith(`/${segment}`) || specifier.includes(`${segment}/`)) {
+            offenders.push(`${path.relative(repoRoot, file)} imports ${specifier}`)
+            break
+          }
         }
       }
     }

@@ -22,7 +22,7 @@
 
 App code should import from grouped paths such as `features/experiences/events`, `features/social/communities`, or `features/world/storage`.
 
-Legacy paths under `features/events`, `features/whats-on-events`, `features/whats-on/admin`, `features/jump`, `features/blog`, `features/search`, `features/communities`, `features/profile`, `features/cast2`, `features/reels`, `features/storage`, `features/report`, and `features/notifications` are compatibility shims only.
+Legacy paths under `features/events`, `features/whats-on-events`, `features/whats-on/admin`, `features/jump`, `features/blog`, `features/search`, `features/communities`, `features/profile`, `features/cast2`, `features/reels`, `features/storage`, `features/report`, and `features/notifications` are transitional re-export shims. They exist so external consumers (and any in-flight branches) keep building. Plan to remove them once no in-tree consumer references them — the boundary spec at `src/features/feature-import-boundaries.spec.ts` already prevents new in-tree usage; once the next external consumer migrates, delete the shim folders and the spec.
 
 Do not place new implementation code in legacy shim folders.
 
