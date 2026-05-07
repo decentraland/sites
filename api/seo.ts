@@ -27,17 +27,21 @@ const EVENTS_API_URL = process.env['EVENTS_API_URL'] ?? 'https://events.decentra
 // places-api hosts metadata for /whats-on?position=x,y and /jump/places. Falls back to prod for local dev.
 const PLACES_API_URL = process.env['PLACES_API_URL'] ?? 'https://places.decentraland.org/api'
 
+// Brand share-card lives next to the static shell so it ships from the same origin/CDN as the site.
+const SHARE_IMAGE_URL = 'https://decentraland.org/decentraland-background.webp'
+
 const DEFAULTS = {
   title: 'Decentraland Blog | Updates, Stories, and Community Moments',
   description: 'Updates from across Decentraland. Announcements, events, community moments, and everything in between.',
-  image: 'https://cms-images.decentraland.org/ea2ybdmmn1kv/7tYISdowuJYIbSIDqij87H/f3524d454d8e29702792a6b674f5550d/GI_Landscape.Small.png',
-  siteName: 'Decentraland'
+  image: SHARE_IMAGE_URL,
+  siteName: 'Decentraland',
+  twitterHandle: '@decentraland'
 } as const
 
 const WHATS_ON_DEFAULTS = {
   title: "What's On in Decentraland",
   description: 'Live events, hangouts, and places happening right now in Decentraland.',
-  image: 'https://decentraland.org/images/decentraland.png'
+  image: SHARE_IMAGE_URL
 } as const
 
 // Allowlist of canonical origins used to build the returned absolute URLs (canonical, og:url).
@@ -425,6 +429,11 @@ const generateHTML = (data: SEOData | null, originalHTML: string, url: string): 
   const imageUrl = escapeHTML(rawImageUrl)
   const safeCanonicalUrl = escapeHTML(url)
   const ogType = data?.author ? 'article' : 'website'
+  // Large card whenever a route resolved data (we always carry an image — CMS, events, places, or
+  // the brand fallback). Drop to summary for the unknown-route case so the brand icon doesn't crop.
+  const twitterCard = data ? 'summary_large_image' : 'summary'
+  const siteName = escapeHTML(DEFAULTS.siteName)
+  const twitterHandle = escapeHTML(DEFAULTS.twitterHandle)
 
   let html = originalHTML
 
@@ -443,6 +452,11 @@ const generateHTML = (data: SEOData | null, originalHTML: string, url: string): 
   html = replaceMetaTag(html, /<meta property="og:image" content="[^"]*"[^>]*>/i, `<meta property="og:image" content="${imageUrl}">`)
   html = replaceMetaTag(html, /<meta property="og:url" content="[^"]*"[^>]*>/i, `<meta property="og:url" content="${safeCanonicalUrl}">`)
   html = replaceMetaTag(html, /<meta property="og:type" content="[^"]*"[^>]*>/i, `<meta property="og:type" content="${ogType}">`)
+  html = replaceMetaTag(
+    html,
+    /<meta property="og:site_name" content="[^"]*"[^>]*>/i,
+    `<meta property="og:site_name" content="${siteName}">`
+  )
 
   // Twitter Card
   html = replaceMetaTag(html, /<meta name="twitter:title" content="[^"]*"[^>]*>/i, `<meta name="twitter:title" content="${title}">`)
@@ -452,6 +466,13 @@ const generateHTML = (data: SEOData | null, originalHTML: string, url: string): 
     `<meta name="twitter:description" content="${description}">`
   )
   html = replaceMetaTag(html, /<meta name="twitter:image" content="[^"]*"[^>]*>/i, `<meta name="twitter:image" content="${imageUrl}">`)
+  html = replaceMetaTag(html, /<meta name="twitter:card" content="[^"]*"[^>]*>/i, `<meta name="twitter:card" content="${twitterCard}">`)
+  html = replaceMetaTag(html, /<meta name="twitter:site" content="[^"]*"[^>]*>/i, `<meta name="twitter:site" content="${twitterHandle}">`)
+  html = replaceMetaTag(
+    html,
+    /<meta name="twitter:creator" content="[^"]*"[^>]*>/i,
+    `<meta name="twitter:creator" content="${twitterHandle}">`
+  )
 
   // Article meta (for posts)
   if (data?.author && data?.publishedDate) {

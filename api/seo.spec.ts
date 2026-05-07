@@ -14,10 +14,14 @@ jest.mock('fs', () => {
   <meta name="description" content="Decentraland is where you hang out online." />
   <meta property="og:title" content="Decentraland — Come Hang Out">
   <meta property="og:description" content="Decentraland is where you hang out online.">
-  <meta property="og:image" content="https://decentraland.org/images/decentraland.png">
+  <meta property="og:image" content="https://decentraland.org/decentraland-background.webp">
+  <meta property="og:site_name" content="Decentraland">
   <meta name="twitter:title" content="Decentraland — Come Hang Out">
   <meta name="twitter:description" content="Decentraland is where you hang out online.">
-  <meta name="twitter:image" content="https://decentraland.org/images/decentraland.png">
+  <meta name="twitter:image" content="https://decentraland.org/decentraland-background.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@decentraland">
+  <meta name="twitter:creator" content="@decentraland">
   <link rel="canonical" href="https://decentraland.org/">
   <meta property="og:url" content="https://decentraland.org/">
   <meta property="og:type" content="website">
@@ -156,6 +160,14 @@ describe('seo handler', () => {
     expect(body).toMatch(
       /<meta property="og:url" content="https:\/\/decentraland\.org\/whats-on\?id=11974ff3-675c-46fd-802a-618d4b40e3be">/
     )
+    // Twitter card + handles + og:site_name (parity with the legacy events frontend Helmet)
+    expect(body).toMatch(/<meta name="twitter:card" content="summary_large_image">/)
+    expect(body).toMatch(/<meta name="twitter:site" content="@decentraland">/)
+    expect(body).toMatch(/<meta name="twitter:creator" content="@decentraland">/)
+    expect(body).toMatch(/<meta property="og:site_name" content="Decentraland">/)
+    // Twitter title and description should match the resolved event copy, not the homepage default
+    expect(body).toMatch(/<meta name="twitter:title" content="Build Your Career at Decentraland Theatre \| Decentraland">/)
+    expect(body).toMatch(/<meta name="twitter:description" content="Career workshop">/)
   })
 
   it('serves place-aware metadata for /whats-on?position=0,0 via places API', async () => {
@@ -164,6 +176,13 @@ describe('seo handler', () => {
     expect(body).toMatch(/<meta property="og:description" content="Decentraland spawn point">/)
     expect(body).toMatch(/<meta property="og:image" content="https:\/\/peer\.decentraland\.org\/content\/contents\/abc">/)
     expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on\?position=0%2C0">/)
+    // Twitter card + handles + og:site_name (parity with the legacy places frontend Helmet)
+    expect(body).toMatch(/<meta name="twitter:card" content="summary_large_image">/)
+    expect(body).toMatch(/<meta name="twitter:site" content="@decentraland">/)
+    expect(body).toMatch(/<meta name="twitter:creator" content="@decentraland">/)
+    expect(body).toMatch(/<meta property="og:site_name" content="Decentraland">/)
+    expect(body).toMatch(/<meta name="twitter:title" content="Genesis Plaza \| Decentraland">/)
+    expect(body).toMatch(/<meta name="twitter:description" content="Decentraland spawn point">/)
   })
 
   it('serves event metadata for /jump/events?id=<uuid> (same handler as /whats-on)', async () => {
