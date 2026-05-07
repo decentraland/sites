@@ -4,13 +4,13 @@ Companion to `CLAUDE.md` "Pre-PR review". Each rule below has a one-liner in `CL
 
 ## 19. XSS — sanitize CMS/search HTML before React innerHTML injection
 
-- Every React innerHTML injection (the `dangerously` + `SetInnerHTML` prop) whose content originates from Contentful, Algolia, or any external source MUST run through DOMPurify with a strict tag allowlist.
+- Every React innerHTML injection (the `dangerously` + `SetInnerHTML` prop) whose content originates from Contentful, the cms-server full-text search response, or any external/user-supplied source MUST run through DOMPurify with a strict tag allowlist.
 - One `sanitizeX.ts` helper per source with a scoped allowlist — do NOT build a generic global sanitizer that tries to cover every case:
   ```ts
   // src/components/blog/Search/sanitizeHighlight.ts
   const sanitizeHighlight = (value: string): string => DOMPurify.sanitize(value, { ALLOWED_TAGS: ['em', 'mark'], ALLOWED_ATTR: [] })
   ```
-- Algolia's `_highlightResult` wraps matches in `<em>`, but the match TEXT came from the CMS — if an author injected a script tag into a title, unsanitized render would execute it.
+- The cms-server search response wraps matches in `<em>` (the `highlightedTitle` / `highlightedDescription` fields exposed by `features/search/search.client.ts`), but the match TEXT came from the CMS — if an author injected a script tag into a title, unsanitized render would execute it.
 
 ## 20. URL validation — parse + allowlist, never `includes()`
 
@@ -32,7 +32,7 @@ Companion to `CLAUDE.md` "Pre-PR review". Each rule below has a one-liner in `CL
   const getYouTubeVideoId = (uri: string): string | null => {
     const url = parseUrl(uri)
     if (!url || !YOUTUBE_HOSTS.has(url.hostname)) return null
-    const id = url.hostname === 'youtu.be' ? url.pathname.slice(1) : url.searchParams.get('v') ?? ''
+    const id = url.hostname === 'youtu.be' ? url.pathname.slice(1) : (url.searchParams.get('v') ?? '')
     return YOUTUBE_ID_REGEX.test(id) ? id : null
   }
   ```
