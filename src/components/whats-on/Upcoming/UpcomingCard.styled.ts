@@ -1,4 +1,4 @@
-import { styled } from 'decentraland-ui2'
+import { Box, styled } from 'decentraland-ui2'
 
 const MobileActionButton = styled('button')(({ theme }) => ({
   display: 'none',
@@ -21,4 +21,17 @@ const MobileActionButton = styled('button')(({ theme }) => ({
   }
 }))
 
-export { MobileActionButton }
+// Wraps decentraland-ui2's EventSmallCard. On mobile, vertically center the
+// card's text block (the second flex child of the card root). EventSmallCard's
+// TextBlock defaults to `space-between`, which leaves the title pinned to the
+// top when the body is short — visually misaligned with the thumbnail.
+const EventSmallCardWrapper = styled(Box)(({ theme }) => ({
+  width: '100%',
+  [theme.breakpoints.down('md')]: {
+    ['& > * > *:nth-of-type(2)']: {
+      justifyContent: 'center'
+    }
+  }
+}))
+
+export { EventSmallCardWrapper, MobileActionButton }

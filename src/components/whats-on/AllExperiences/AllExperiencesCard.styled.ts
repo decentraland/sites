@@ -64,10 +64,27 @@ const CardTitle = styled(Typography)({
 
 // Overrides for decentraland-ui2 EventCard internals.
 // Coupled to MUI class names — verify on decentraland-ui2 upgrades.
-const LiveCardWrapper = styled(Box)({
+const LIVE_ACCENT_WIDTH = 5
+const LIVE_MEDIA_HEIGHT = 'min(62.5cqw, 200px)'
+const LIVE_MEDIA_HEIGHT_HOVER = 'min(78cqw, 260px)'
+
+const LiveCardWrapper = styled(Box)(({ theme }) => ({
   width: '100%',
   minWidth: 0,
+  position: 'relative',
+  borderRadius: theme.spacing(1.5),
   overflow: 'hidden',
+  ['&::before']: {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: LIVE_ACCENT_WIDTH,
+    background: dclColors.brand.ruby,
+    zIndex: 2,
+    pointerEvents: 'none'
+  },
   ['& .MuiCard-root']: {
     maxWidth: '100%',
     minWidth: 0,
@@ -81,11 +98,13 @@ const LiveCardWrapper = styled(Box)({
     backgroundColor: dclColors.blackTransparent.backdrop
   },
   ['& .MuiCardMedia-root']: {
-    height: 'min(62.5cqw, 200px)',
+    height: LIVE_MEDIA_HEIGHT,
     pointerEvents: 'none',
-    userSelect: 'none'
+    userSelect: 'none',
+    transition: 'height 0.25s ease'
   },
-  // Disable all hover transitions and transforms on the card
+  // Hover effect: only the media grows in height. Block scale/transform on the
+  // CardActionArea so the card never widens or lifts.
   ['& .MuiCardActionArea-root']: {
     transition: 'none',
     transform: 'none'
@@ -98,7 +117,7 @@ const LiveCardWrapper = styled(Box)({
     boxShadow: 'none'
   },
   ['&& .MuiCardActionArea-root:hover .MuiCardMedia-root']: {
-    height: 'min(62.5cqw, 200px)',
+    height: LIVE_MEDIA_HEIGHT_HOVER,
     transform: 'none'
   },
   // Hide avatar/by row — EventCard DOM: CardContent > SceneInfoContainer > AvatarAndLocationRow > AvatarContainer(.MuiAvatar-root)
@@ -113,6 +132,6 @@ const LiveCardWrapper = styled(Box)({
     WebkitLineClamp: 'unset', // eslint-disable-line @typescript-eslint/naming-convention
     WebkitBoxOrient: 'unset' // eslint-disable-line @typescript-eslint/naming-convention
   }
-})
+}))
 
 export { CardContent, CardImage, CardImageWrapper, CardTitle, FutureCardContainer, LiveCardWrapper }
