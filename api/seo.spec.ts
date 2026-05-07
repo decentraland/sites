@@ -89,7 +89,19 @@ interface MockPlaceResponse {
   data: Array<{ title: string; description: string; image: string }>
 }
 
-type MockResponseBody = MockEventResponse | MockBlogPostsResponse | MockAssetResponse | MockPlaceResponse | Record<string, never>
+interface MockWorldResponse {
+  ok: true
+  data: Array<{ title: string; description: string; image: string }>
+  total: number
+}
+
+type MockResponseBody =
+  | MockEventResponse
+  | MockBlogPostsResponse
+  | MockAssetResponse
+  | MockPlaceResponse
+  | MockWorldResponse
+  | Record<string, never>
 
 function jsonResponse<T extends MockResponseBody>(ok: boolean, body: T): Response {
   return {
@@ -122,6 +134,29 @@ describe('seo handler', () => {
           data: [
             { title: 'Genesis Plaza', description: 'Decentraland spawn point', image: 'https://peer.decentraland.org/content/contents/abc' }
           ]
+        })
+      }
+      if (url.includes('/worlds?names=common.dcl.eth')) {
+        return jsonResponse<MockWorldResponse>(true, {
+          ok: true,
+          total: 1,
+          data: [
+            {
+              title: 'Common World',
+              description: 'A community-curated Decentraland world',
+              image: 'https://peer.decentraland.org/content/contents/world-img'
+            }
+          ]
+        })
+      }
+      if (url.includes('/worlds?names=missing.dcl.eth')) {
+        return jsonResponse<MockWorldResponse>(true, { ok: true, total: 0, data: [] })
+      }
+      if (url.includes('/worlds?names=untitled.dcl.eth')) {
+        return jsonResponse<MockWorldResponse>(true, {
+          ok: true,
+          total: 1,
+          data: [{ title: '', description: '', image: '' }]
         })
       }
       if (url.includes('/blog/posts')) {
@@ -197,6 +232,34 @@ describe('seo handler', () => {
     expect(headers['X-SEO-Function']).toBe('active')
     expect(body).toContain('<title>Genesis Plaza | Decentraland</title>')
     expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/jump\/places\?position=0%2C0">/)
+  })
+
+  it('serves world metadata for /whats-on?world=<name> via places API /worlds endpoint', async () => {
+    const { body, headers } = await run({ path: '/whats-on', world: 'common.dcl.eth' })
+    expect(headers['X-SEO-Function']).toBe('active')
+    expect(body).toContain('<title>Common World | Decentraland</title>')
+    expect(body).toMatch(/<meta property="og:description" content="A community-curated Decentraland world">/)
+    expect(body).toMatch(/<meta property="og:image" content="https:\/\/peer\.decentraland\.org\/content\/contents\/world-img">/)
+    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on\?world=common\.dcl\.eth">/)
+    expect(body).toMatch(/<meta name="twitter:title" content="Common World \| Decentraland">/)
+  })
+
+  it('rejects malformed world name and falls back to defaults', async () => {
+    const { body } = await run({ path: '/whats-on', world: 'not<a>world' })
+    expect(body).toContain('<title>What&#x27;s On in Decentraland | Decentraland</title>')
+    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on">/)
+  })
+
+  it('falls back to a world-aware default when the API returns no entry', async () => {
+    const { body } = await run({ path: '/whats-on', world: 'missing.dcl.eth' })
+    expect(body).toContain('<title>Visit missing.dcl.eth in Decentraland | Decentraland</title>')
+    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on\?world=missing\.dcl\.eth">/)
+  })
+
+  it('falls back to a world-aware default when the entry has no title', async () => {
+    const { body } = await run({ path: '/whats-on', world: 'untitled.dcl.eth' })
+    expect(body).toContain('<title>Visit untitled.dcl.eth in Decentraland | Decentraland</title>')
+    expect(body).toMatch(/<meta property="og:description" content="Discover untitled\.dcl\.eth — a Decentraland world\.">/)
   })
 
   it('serves generic whats-on metadata when no params', async () => {

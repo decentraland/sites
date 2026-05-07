@@ -243,6 +243,11 @@ const EVENT_ID_REGEX = /^[a-fA-F0-9-]{8,64}$/
 // Position is "x,y" with optional negative signs (e.g. "0,0", "-12,150").
 const POSITION_REGEX = /^(-?\d{1,4}),(-?\d{1,4})$/
 
+// World names are ENS / DCL Names (e.g. "common.dcl.eth", "myworld.eth"). Lowercase
+// alphanumerics, hyphens and dots, ending in ".eth". Bound length to keep upstream
+// URLs sane and reject ambient junk before encodeURIComponent.
+const WORLD_NAME_REGEX = /^[a-z0-9-]+(?:\.[a-z0-9-]+){1,4}\.eth$/i
+
 interface EventApiEntry {
   name?: string
   description?: string | null
@@ -296,7 +301,18 @@ const fetchPlaceSEO = async (position: string): Promise<SEOData | null> => {
   return { title, description, imageUrl }
 }
 
-const fetchWhatsOnSEO = async (eventId: string | null, position: string | null): Promise<SEOData> => {
+const fetchWorldSEO = async (worldName: string): Promise<SEOData | null> => {
+  if (!WORLD_NAME_REGEX.test(worldName)) return null
+  const data = await fetchJSON<PlaceApiResponse>(`${PLACES_API_URL}/worlds?names=${encodeURIComponent(worldName)}&offset=0&limit=1`)
+  const entry = data?.ok ? data.data?.[0] : null
+  if (!entry) return null
+  const title = entry.title?.trim() || `Visit ${worldName} in Decentraland`
+  const description = entry.description?.trim() || `Discover ${worldName} — a Decentraland world.`
+  const imageUrl = entry.image && /^https?:\/\//.test(entry.image) ? entry.image : WHATS_ON_DEFAULTS.image
+  return { title, description, imageUrl }
+}
+
+const fetchWhatsOnSEO = async (eventId: string | null, position: string | null, worldName: string | null): Promise<SEOData> => {
   if (eventId) {
     const event = await fetchEventSEO(eventId)
     if (event) return event
@@ -312,6 +328,17 @@ const fetchWhatsOnSEO = async (eventId: string | null, position: string | null):
       }
     }
   }
+  if (worldName) {
+    const world = await fetchWorldSEO(worldName)
+    if (world) return world
+    if (WORLD_NAME_REGEX.test(worldName)) {
+      return {
+        title: `Visit ${worldName} in Decentraland`,
+        description: `Discover ${worldName} — a Decentraland world.`,
+        imageUrl: WHATS_ON_DEFAULTS.image
+      }
+    }
+  }
   return {
     title: WHATS_ON_DEFAULTS.title,
     description: WHATS_ON_DEFAULTS.description,
@@ -321,10 +348,11 @@ const fetchWhatsOnSEO = async (eventId: string | null, position: string | null):
 
 interface ReelMetadataResponse {
   url: string
-  thumbnailUrl: string
-  metadata: {
-    visiblePeople: Array<{ userName: string }>
-    scene: { name: string }
+  thumbnailUrl?: string
+  metadata?: {
+    userName?: string
+    userAddress?: string
+    scene?: { name?: string }
   }
 }
 
@@ -335,12 +363,15 @@ const REEL_IMAGE_ID_REGEX = /^[A-Za-z0-9_-]{1,64}$/
 const fetchReelImageSEO = async (imageId: string): Promise<SEOData | null> => {
   if (!REEL_IMAGE_ID_REGEX.test(imageId)) return null
   const data = await fetchJSON<ReelMetadataResponse>(`${REEL_SERVICE_URL}/api/images/${imageId}/metadata`)
-  if (!data) return null
-  const userName = data.metadata.visiblePeople[0]?.userName ?? 'Someone'
-  const sceneName = data.metadata.scene.name || 'Decentraland'
+  if (!data?.url) return null
+  // Photographer is metadata.userName; visiblePeople is who appears IN the photo and may be empty.
+  const userName = data.metadata?.userName?.trim()
+  const sceneName = data.metadata?.scene?.name?.trim() || 'Decentraland'
   return {
-    title: `${userName} took this photo in ${sceneName}`,
-    description: `A photo taken in Decentraland by ${userName} at ${sceneName}.`,
+    title: userName ? `${userName}'s Decentraland snapshot` : 'A Decentraland snapshot',
+    description: userName
+      ? `Check out ${userName}'s photo taken in ${sceneName}, Decentraland—comment on who was there and what they were wearing or even jump to the spot directly so you don't miss out!`
+      : `A photo taken in ${sceneName}, Decentraland.`,
     imageUrl: data.url
   }
 }
@@ -383,6 +414,7 @@ interface SEOQueryParams {
   searchQuery: string | null
   eventId: string | null
   position: string | null
+  worldName: string | null
 }
 
 const fetchSEOData = async (pathname: string, params: SEOQueryParams): Promise<SEOData | null> => {
@@ -406,7 +438,7 @@ const fetchSEOData = async (pathname: string, params: SEOQueryParams): Promise<S
     case 'reels':
       return fetchReelImageSEO(route.imageId!)
     case 'whats-on':
-      return fetchWhatsOnSEO(params.eventId, params.position)
+      return fetchWhatsOnSEO(params.eventId, params.position, params.worldName)
     default:
       return fetchDefaultSEO()
   }
@@ -536,16 +568,18 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   const searchQuery = firstQueryValue(req.query.q)
   const eventId = firstQueryValue(req.query.id)
   const position = firstQueryValue(req.query.position)
+  const worldName = firstQueryValue(req.query.world)
 
   const origin = resolveOrigin(req)
-  // Preserve id / position in the canonical URL so social cards and search
-  // engines link back to the deep-linked event/parcel rather than the
+  // Preserve id / position / world in the canonical URL so social cards and search
+  // engines link back to the deep-linked event/parcel/world rather than the
   // generic listing page. Applies to /whats-on and /jump/{events,places}.
   const canonicalQuery = new URLSearchParams()
   const preservesQuery = requestPath.startsWith('/whats-on') || requestPath.startsWith('/jump/')
   if (preservesQuery) {
     if (eventId && EVENT_ID_REGEX.test(eventId)) canonicalQuery.set('id', eventId)
     else if (position && POSITION_REGEX.test(position)) canonicalQuery.set('position', position)
+    else if (worldName && WORLD_NAME_REGEX.test(worldName)) canonicalQuery.set('world', worldName)
   }
   const queryString = canonicalQuery.toString()
   const actualUrl = `${origin}${requestPath}${queryString ? `?${queryString}` : ''}`
@@ -567,7 +601,7 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   }
 
   try {
-    const seoData = await fetchSEOData(requestPath, { searchQuery, eventId, position })
+    const seoData = await fetchSEOData(requestPath, { searchQuery, eventId, position, worldName })
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     // Shorter stale window: timely blog announcements should not be served up to 24h stale.
