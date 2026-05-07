@@ -20,7 +20,7 @@ A modern Vite-based Decentraland landing page serving a dynamic, API-driven home
 
 - User authentication (auth site)
 - Event listings (events site)
-- Blog content (blog-site)
+- Blog content (now served by this repo at `/blog`)
 - Governance (governance-ui)
 - Profile management (profile site)
 - Place discovery (places)

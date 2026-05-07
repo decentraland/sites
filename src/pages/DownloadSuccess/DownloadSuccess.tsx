@@ -14,9 +14,9 @@ import windowsDownloadsFolder from '../../images/download/windows_downloads_fold
 import windowsLaunchingDecentraland from '../../images/download/windows_launching_decentraland.webp'
 import windowsSetup from '../../images/download/windows_setup.webp'
 import microsoftLogo from '../../images/microsoft-logo.svg'
-import { calculateDownloadUrl, getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
-import { triggerFileDownload } from '../../modules/file'
+import { calculateDownloadUrl } from '../../modules/downloadWithIdentity'
 import { DownloadPlace, SectionViewedTrack, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
+import { streamOrFallback } from '../../modules/streamOrFallback'
 import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
 import { DownloadSuccessLayout } from './DownloadSuccessLayout'
@@ -52,7 +52,9 @@ const DownloadSuccess = memo(() => {
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [isFileSaved, setIsFileSaved] = useState(false)
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(null)
   const downloadingRef = useRef(false)
+  const footerAbortRef = useRef<AbortController | null>(null)
   const getIdentityIdRef = useRef(getIdentityId)
   const anonUserIdRef = useRef(anonUserId)
   const isInitializedRef = useRef(isInitialized)
@@ -128,7 +130,8 @@ const DownloadSuccess = memo(() => {
   const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
 
   useEffect(() => {
-    let cancelled = false
+    const abortController = new AbortController()
+    const { signal } = abortController
     const autoDownloadKey = `${clientOS}:${clientArch}`
 
     const getHistoryState = (): Record<string, unknown> =>
@@ -136,14 +139,12 @@ const DownloadSuccess = memo(() => {
 
     // Segment loads lazily via DeferredAnalyticsProvider, so on first paint
     // `isInitializedRef.current` is false and any track call would no-op.
-    // The previous race-fix relied on `await calculateDownloadUrl(...)` taking
-    // 100–500 ms (network call to /identities) as an implicit barrier — but
-    // for the anonymous Download First flow `getIdentityId()` short-circuits
-    // synchronously, so the await resolves in ~1 ms and we miss the events.
-    // Poll until Segment is ready (or time out so we don't block forever).
+    // For the anonymous Download First flow `getIdentityId()` short-circuits
+    // synchronously, so we can't rely on the URL-resolution await as an
+    // implicit barrier — explicitly poll for analytics readiness instead.
     const waitForAnalytics = async (timeoutMs = 5000): Promise<void> => {
       const start = Date.now()
-      while (!isInitializedRef.current && !cancelled && Date.now() - start < timeoutMs) {
+      while (!isInitializedRef.current && !signal.aborted && Date.now() - start < timeoutMs) {
         await new Promise(resolve => setTimeout(resolve, 50))
       }
     }
@@ -165,6 +166,7 @@ const DownloadSuccess = memo(() => {
       setIsDownloading(true)
       setDownloadError(null)
       setIsFileSaved(false)
+      setDownloadProgress(null)
 
       const { url, filename } = await calculateDownloadUrl({
         os: clientOS,
@@ -174,7 +176,7 @@ const DownloadSuccess = memo(() => {
         anonUserId: anonUserIdRef.current
       })
 
-      if (cancelled) return
+      if (signal.aborted) return
 
       const latestHistoryState = getHistoryState()
       if (latestHistoryState[AUTO_DOWNLOAD_HISTORY_STATE_KEY] !== autoDownloadKey) {
@@ -188,20 +190,39 @@ const DownloadSuccess = memo(() => {
         )
       }
 
-      if (cancelled) return
+      if (signal.aborted) return
 
-      // Trigger the download immediately — don't block it on Segment loading,
-      // which can take seconds in the worst case (load event + idle callback).
       sessionStorage.setItem(sessionKey, '1')
       const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserIdRef.current })
-      triggerFileDownload(downloadUrl)
+
+      // Stream the file via fetch on Windows so the "Downloading..." backdrop
+      // stays in sync with the actual transfer (the gateway's per-request
+      // NSIS+sign step can run 5-30s and the synchronous `<a>.click()` would
+      // hide the backdrop the instant the click is queued, leaving the user
+      // staring at the steps page while the gateway is still working).
+      // macOS goes through the native anchor to preserve the
+      // kMDItemWhereFroms xattr the launcher reads for attribution.
+      // The download itself never blocks on Segment — we'll wait for
+      // analytics readiness afterwards, before firing the funnel events.
+      await streamOrFallback({
+        url: downloadUrl,
+        filename,
+        os: clientOS,
+        signal,
+        onProgress: setDownloadProgress
+      })
+
+      if (signal.aborted) return
+      setDownloadProgress(100)
       setIsFileSaved(true)
 
-      // Now wait for Segment to be ready and fire both events. If it never
-      // initializes within the timeout the events drop silently — same as
-      // the pre-fix behavior, but at least we tried.
+      // Both events fire only when the stream has effectively landed (or
+      // the fallback hold elapsed) — DOWNLOAD_SUCCESS now genuinely means
+      // "the file finished downloading" rather than "the user clicked".
+      // If the transfer fails the .catch() below fires DOWNLOAD_FAILED
+      // instead, so success/failed are mutually exclusive.
       await waitForAnalytics()
-      if (cancelled || !isInitializedRef.current) return
+      if (signal.aborted || !isInitializedRef.current) return
       // eslint-disable-next-line @typescript-eslint/naming-convention
       trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place, href: osLink, auth_state: authStateRef.current })
       // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -210,22 +231,22 @@ const DownloadSuccess = memo(() => {
 
     startDownload()
       .catch(async error => {
-        if (cancelled) return
+        if (signal.aborted) return
         console.error('Download error:', error)
         setDownloadError(error instanceof Error ? error.message : 'Download failed')
         await waitForAnalytics()
-        if (cancelled || !isInitializedRef.current) return
+        if (signal.aborted || !isInitializedRef.current) return
         // eslint-disable-next-line @typescript-eslint/naming-convention
         trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place, href: osLink, auth_state: authStateRef.current })
       })
       .finally(() => {
-        if (!cancelled) {
+        if (!signal.aborted) {
           setIsDownloading(false)
         }
       })
 
     return () => {
-      cancelled = true
+      abortController.abort()
     }
   }, [clientOS, clientArch, osLink, place])
 
@@ -235,6 +256,13 @@ const DownloadSuccess = memo(() => {
       if (downloadingRef.current) return
       downloadingRef.current = true
       setIsDownloading(true)
+      setDownloadProgress(null)
+
+      // Footer re-download has its own AbortController so unmounts and
+      // page navigations cancel the in-flight stream cleanly.
+      const abortController = new AbortController()
+      footerAbortRef.current = abortController
+      const { signal } = abortController
 
       const footerPlace = DownloadPlace.DOWNLOAD_SUCCESS_FOOTER
       // Re-download from the footer link is its own funnel event so analytics
@@ -245,19 +273,35 @@ const DownloadSuccess = memo(() => {
       }
 
       try {
-        const url = await getDownloadLinkWithIdentity({
+        const { url, filename } = await calculateDownloadUrl({
           os: clientOS,
           arch: clientArch,
           fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
-          queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
           getIdentityId,
           anonUserId
         })
+        const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserId })
+
+        await streamOrFallback({
+          url: downloadUrl,
+          filename,
+          os: clientOS,
+          signal,
+          onProgress: setDownloadProgress
+        })
+
+        if (signal.aborted) return
+        setDownloadProgress(100)
+
         if (isInitializedRef.current) {
+          // DOWNLOAD_SUCCESS only fires after streamOrFallback has resolved,
+          // i.e. the bytes have effectively landed (Windows) or the
+          // fallback hold elapsed (macOS / Windows fetch failure).
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place: footerPlace, href: url ?? osLink, auth_state: authState })
+          trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place: footerPlace, href: downloadUrl, filename, auth_state: authState })
         }
       } catch (error) {
+        if (signal.aborted) return
         console.error('Download error:', error)
         setDownloadError(error instanceof Error ? error.message : 'Download failed')
         if (isInitializedRef.current) {
@@ -266,10 +310,25 @@ const DownloadSuccess = memo(() => {
         }
       } finally {
         downloadingRef.current = false
-        setIsDownloading(false)
+        if (!signal.aborted) {
+          setIsDownloading(false)
+        }
+        if (footerAbortRef.current === abortController) {
+          footerAbortRef.current = null
+        }
       }
     },
     [clientOS, clientArch, anonUserId, getIdentityId, osLink, authState]
+  )
+
+  // Cancel any in-flight footer-initiated stream when the page unmounts so
+  // we don't leak the connection (and per-chunk setState calls) into a
+  // destroyed component tree.
+  useEffect(
+    () => () => {
+      footerAbortRef.current?.abort()
+    },
+    []
   )
 
   const showBackdrop = isDownloading || (!downloadError && !isFileSaved)
@@ -280,7 +339,7 @@ const DownloadSuccess = memo(() => {
       <DownloadDetailContainer>
         <DownloadBackdropText variant="h6">{l('page.download.downloading')}</DownloadBackdropText>
         <DownloadProgressContainer>
-          <DownloadProgressBar />
+          {downloadProgress !== null ? <DownloadProgressBar variant="determinate" value={downloadProgress} /> : <DownloadProgressBar />}
         </DownloadProgressContainer>
       </DownloadDetailContainer>
     </DownloadBackdropContent>
