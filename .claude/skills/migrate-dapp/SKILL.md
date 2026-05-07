@@ -1,6 +1,6 @@
 ---
 name: migrate-dapp
-description: Use when absorbing a standalone Decentraland dapp (jump, blog, whats-on, social) into the sites SPA as a heavy DappsShell route. Triggers on "migrate dapp", "absorb <dapp> into sites", "port <dapp>". Captures path/auth/i18n/sign-in decisions, files to touch, the Web3-drop pattern, and the Jest/ts-jest gotchas you'd otherwise re-discover by trial.
+description: Use when absorbing a standalone Decentraland dapp (whats-on, blog, jump, social, cast, storage, reels, report) into the sites SPA as a heavy DappsShell route (or, for reels, a Layout-less lightweight route). Triggers on "migrate dapp", "absorb <dapp> into sites", "port <dapp>". Captures path/auth/i18n/sign-in decisions, files to touch, the Web3-drop pattern, and the Jest/ts-jest gotchas you'd otherwise re-discover by trial.
 ---
 
 # migrate-dapp
@@ -116,7 +116,10 @@ Every cast2 source dependency below was a wasted install + extra cleanup commit 
 ## Reference: prior migrations
 
 - `whats-on` — events flow + admin
-- `blog` — Contentful + Algolia
-- `jump` — deep-link handler
+- `blog` — Contentful + cms-server full-text search
+- `jump` — launcher deep-link handler (places + events + worlds)
 - `social` — communities (`feat/migrate-social-dapps` branch — canonical for the standard auth+RTK shape)
 - `cast` — LiveKit streaming (PR #403 — canonical for: anonymous + token-in-URL auth, `<AnimatedBackground>` + `<Logo>` swap, `dclColors`/WebP cleanup, react-router v7 index-route fix, RTK Query error → i18n mapping)
+- `storage` — storage-service-site (subgraph ownership lookups, scene/players queries; uses `storageClient` + `subgraphClient` base APIs)
+- `reels` — in-game camera screenshots. **Layout-less lightweight tier** (the only absorbed dapp not under `DappsShell`) — fullscreen UX is the whole point, so reels routes are placed BEFORE the `<Layout />` block in `src/App.tsx` and use a `useSyncExternalStore`-style client (no Redux)
+- `report` — community report flow. Lightweight (no RTK Query, no Redux); helpers + types only under `src/features/report/`

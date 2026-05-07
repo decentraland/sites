@@ -15,8 +15,9 @@ Project-level configuration for Claude Code working in this repo. Every hook, sk
 ## Skills
 
 - `add-i18n-key` — adding/editing translation keys with 6-locale parity (rule 9).
-- `add-route` — placing a new route on the correct shell (lightweight vs `DappsShell`).
+- `add-route` — placing a new route on the correct tier (Layout-less, lightweight, or `DappsShell`).
 - `avatar-background-color` — applying ADR-292's deterministic background color on every avatar surface.
+- `migrate-dapp` — playbook for absorbing a standalone Decentraland dapp (whats-on, blog, jump, social, cast, storage, reels) into this SPA as a heavy `DappsShell` route.
 - `pre-pr-review` — runs the full pre-PR gate before `gh pr create`.
 
 ## Agents

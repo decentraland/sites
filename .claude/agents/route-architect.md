@@ -10,8 +10,9 @@ You design new routes for `@dcl/sites`'s dual-shell architecture. You do not wri
 
 - Route path (e.g. `/partners`).
 - Page purpose in one sentence.
-- Data sources (Contentful? Catalyst? Algolia? Static? Form POSTs?).
+- Data sources (Contentful? Catalyst? cms-server search? Subgraph? Static? Form POSTs?).
 - Whether the page sets `<title>` via Helmet + async data.
+- Whether the page is fullscreen and should bypass navbar + footer (Layout-less).
 
 If any of these is missing, ask — once, in a single block — before producing the plan.
 
@@ -20,17 +21,22 @@ If any of these is missing, ask — once, in a single block — before producing
 **Lightweight** if all of:
 
 - No Redux/RTK Query needed (data fits in a `useSyncExternalStore` client).
-- No Contentful rich-text rendering, Algolia, or dompurify.
+- No Contentful rich-text rendering, no LiveKit, no dompurify.
 - No Web3 provider needed.
 
 **Heavy** (`DappsShell`) if any of:
 
 - Needs Redux/RTK Query.
 - Heavy CMS rendering (`@contentful/rich-text-react-renderer`).
-- Algolia search.
+- Full-text search via the cms-server endpoint (where blog search injects).
+- LiveKit / `@livekit/components-react` (used by `/cast/*`).
 - Authenticated mutations via `signedFetch`.
 
-When in doubt → lightweight.
+Existing heavy areas to mirror: `src/pages/{whats-on,blog,jump,social,cast,storage}/`.
+
+**Layout-less** (a third small group): fullscreen UX that bypasses navbar+footer. Currently `/reels/*`, `/download`, `/download_success`, `/invite/:referrer`. Same lightweight rules (no Redux, no Web3) but the `<Route>` is placed BEFORE the `<Route element={<Layout />}>` block in `src/App.tsx`. Pick this only when the immersive UX is the whole point of the page.
+
+When in doubt → lightweight (with Layout).
 
 ## Output
 
@@ -40,7 +46,7 @@ Return ONLY this structure:
 ## Plan: <route>
 
 ### Tier
-Lightweight | Heavy — one-sentence reason.
+Lightweight | Heavy | Layout-less — one-sentence reason.
 
 ### Files to create
 - src/pages/<...>.tsx
@@ -56,8 +62,8 @@ Lightweight | Heavy — one-sentence reason.
 - decentraland-ui2 (Box, Typography, styled, theme tokens)
 - src/hooks/* (useFormatMessage, useTrackClick, useAuthIdentity, useWalletAddress)
 - src/components/* (top-level shared components)
-- (lightweight only) `useSyncExternalStore` clients under src/features/<lightweight-domain>/
-- (heavy only) RTK Query hooks from src/features/{blog,search,whats-on-events}/
+- (lightweight / Layout-less only) `useSyncExternalStore` clients under src/features/{events,profile,reels}/
+- (heavy only) RTK Query hooks from src/features/{blog,search,whats-on,whats-on-events,jump,communities,cast2,storage}/
 
 ### Imports forbidden
 - src/shells/* (lightweight tier — boundary violation, rule 2)

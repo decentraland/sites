@@ -27,7 +27,7 @@ High-leverage areas to always check:
 5. **RTK Query split** — endpoint files must NOT import `store` for dispatch; use `onQueryStarted` (rule 17). No `as any` into `state.xxxClient.queries` (rule 18).
 6. **Module-top-level throws** in shell-reachable code — use lazy getters (rule 16).
 7. **Immutable RTK cache** — no mutation of objects in `transformResponse` / `queryFn` results (rule 22).
-8. **XSS** — React's HTML-injection prop (`dangerously-set-inner-html`) sourced from CMS/Algolia must run through DOMPurify with a scoped allowlist (rule 19).
+8. **XSS** — React's HTML-injection prop (`dangerously-set-inner-html`) sourced from CMS, search, or any external/user-supplied content must run through DOMPurify with a scoped allowlist (rule 19).
 9. **URL validation** — embed renderers and hostname checks use `new URL()` + `Set` + regex, never `.includes()` / `.endsWith()` (rule 20).
 10. **Error handling** — no raw server error bodies bubbled to UI (rule 10).
 11. **Memoization** — list-rendered cards wrapped in `memo()` (rule 11).
