@@ -1,5 +1,5 @@
-import { useGetCommunityMembersQuery } from '../features/communities/communities.client'
-import type { CommunityMember, CommunityMembersResponse } from '../features/communities/communities.types'
+import { useGetCommunityMembersQuery } from '../features/social/communities/communities.client'
+import type { CommunityMember, CommunityMembersResponse } from '../features/social/communities/communities.types'
 import { usePaginatedQuery } from './usePaginatedQuery'
 import type { UsePaginatedCommunityMembersOptions, UsePaginatedCommunityMembersResult } from './usePaginatedCommunityMembers.types'
 

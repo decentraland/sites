@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
-import type { EventEntry } from '../../../features/whats-on-events'
+import type { EventEntry } from '../../../features/experiences/events'
 import { CardScrollArea, ColumnFiller, DayColumnContainer, SkeletonCard } from './DayColumn.styled'
 
 interface DayColumnProps {

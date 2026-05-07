@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { AuthIdentity } from '@dcl/crypto'
 import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from 'decentraland-ui2'
-import { useSetEnvMutation } from '../../../features/storage'
+import { useSetEnvMutation } from '../../../features/world/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 
 interface EnvAddDialogProps {

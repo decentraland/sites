@@ -1,4 +1,4 @@
-import type { EventEntry } from '../../../../features/whats-on-events'
+import type { EventEntry } from '../../../../features/experiences/events'
 
 type EventsListProps = {
   events: EventEntry[]

@@ -6,8 +6,8 @@ import {
   useUpdateEventMutation,
   useUploadPosterMutation,
   useUploadPosterVerticalMutation
-} from '../features/whats-on-events'
-import type { EventEntry } from '../features/whats-on-events'
+} from '../features/experiences/events'
+import type { EventEntry } from '../features/experiences/events'
 import { useAuthIdentity } from './useAuthIdentity'
 import { FREQUENCY_MAP, INITIAL_STATE, eventEntryToFormState, parseDurationMs } from './useCreateEventForm.helpers'
 import type { CreateEventFormMode, CreateEventFormState, FormErrors, ImageErrorCode } from './useCreateEventForm.types'

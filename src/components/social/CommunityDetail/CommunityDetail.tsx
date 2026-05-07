@@ -6,10 +6,10 @@ import {
   useCreateCommunityRequestMutation,
   useGetMemberRequestsQuery,
   useJoinCommunityMutation
-} from '../../../features/communities/communities.client'
-import { isMember as checkIsMember } from '../../../features/communities/communities.helpers'
-import { Privacy, RequestStatus, RequestType } from '../../../features/communities/communities.types'
-import { mapCommunityEventToEventEntry } from '../../../features/communities/events.helpers'
+} from '../../../features/social/communities/communities.client'
+import { isMember as checkIsMember } from '../../../features/social/communities/communities.helpers'
+import { Privacy, RequestStatus, RequestType } from '../../../features/social/communities/communities.types'
+import { mapCommunityEventToEventEntry } from '../../../features/social/communities/events.helpers'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
 import { usePaginatedCommunityEvents } from '../../../hooks/usePaginatedCommunityEvents'

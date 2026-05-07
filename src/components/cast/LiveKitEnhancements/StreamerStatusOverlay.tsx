@@ -2,7 +2,7 @@
 import { useMemo } from 'react'
 import { useLocalParticipant } from '@livekit/components-react'
 import MicOffIcon from '@mui/icons-material/MicOff'
-import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
+import { useCastTranslation } from '../../../features/media/cast/useCastTranslation'
 import { IconWrapper, OverlayContainer, StatusBadge } from './StreamerStatusOverlay.styled'
 
 export function StreamerStatusOverlay() {

@@ -1,4 +1,4 @@
-import type { ReportReason } from '../features/report/report.types'
+import type { ReportReason } from '../features/safety/report/report.types'
 
 interface ReportFormDraftInput {
   searchParams: string

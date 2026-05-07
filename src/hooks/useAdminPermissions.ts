@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { skipToken } from '@reduxjs/toolkit/query/react'
-import { useGetMyProfileSettingsQuery } from '../features/whats-on/admin/admin.client'
-import { hasAnyAdminPermission } from '../features/whats-on/admin/admin.helpers'
-import { AdminPermission } from '../features/whats-on/admin/admin.types'
+import { useGetMyProfileSettingsQuery } from '../features/experiences/events/admin/admin.client'
+import { hasAnyAdminPermission } from '../features/experiences/events/admin/admin.helpers'
+import { AdminPermission } from '../features/experiences/events/admin/admin.types'
 import { useAuthIdentity } from './useAuthIdentity'
 
 type AdminPermissionsState = {

@@ -1,4 +1,4 @@
-import { Notification, useNotifications } from '../../../features/cast2/contexts/NotificationContext'
+import { Notification, useNotifications } from '../../../features/media/cast/contexts/NotificationContext'
 import { PresentationDownloadFailedToast } from './PresentationDownloadFailedToast'
 import { ScreenShareFailedToast } from './ScreenShareFailedToast'
 import { VideoPlaybackFailedToast } from './VideoPlaybackFailedToast'

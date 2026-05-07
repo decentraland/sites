@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { ModalEventData } from '../components/whats-on/EventDetailModal'
 import { normalizeEventEntry } from '../components/whats-on/EventDetailModal/normalizers'
-import type { EventEntry } from '../features/whats-on-events'
+import type { EventEntry } from '../features/experiences/events'
 
 function useEventDetailModal() {
   const navigate = useNavigate()

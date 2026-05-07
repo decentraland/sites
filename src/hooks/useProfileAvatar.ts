@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useGetProfileQuery } from '../features/profile/profile.client'
-import type { Profile } from '../features/profile/profile.client'
+import { useGetProfileQuery } from '../features/social/profile/profile.client'
+import type { Profile } from '../features/social/profile/profile.client'
 import { getAvatarBackgroundColor, getDisplayName } from '../utils/avatarColor'
 
 type ProfileAvatarsItem = NonNullable<Profile['avatars']>[number]

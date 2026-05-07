@@ -1,4 +1,4 @@
-import type { JumpPlace } from '../../../features/jump'
+import type { JumpPlace } from '../../../features/experiences/jump'
 import { normalizeJumpPlace } from './normalizers'
 
 function createMockJumpPlace(overrides: Partial<JumpPlace> = {}): JumpPlace {

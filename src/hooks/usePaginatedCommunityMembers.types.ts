@@ -1,4 +1,4 @@
-import type { CommunityMember } from '../features/communities/communities.types'
+import type { CommunityMember } from '../features/social/communities/communities.types'
 
 type UsePaginatedCommunityMembersOptions = {
   communityId: string

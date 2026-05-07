@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { WatcherView } from '../../components/cast/WatcherView/WatcherView'
-import { useLiveKitCredentials } from '../../features/cast2/contexts/LiveKitContext'
+import { useLiveKitCredentials } from '../../features/media/cast/contexts/LiveKitContext'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
 import { WatcherPageRoot } from './WatcherPage.styled'

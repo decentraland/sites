@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import HomeIcon from '@mui/icons-material/Home'
 import MenuBookIcon from '@mui/icons-material/MenuBook'
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports'
-import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
+import { useCastTranslation } from '../../../features/media/cast/useCastTranslation'
 import {
   ButtonWrapper,
   NotFoundButton,

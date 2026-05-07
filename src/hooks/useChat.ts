@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useRoomContext } from '@livekit/components-react'
 import { Participant, RoomEvent } from 'livekit-client'
 import { Packet } from '@dcl/protocol/out-js/decentraland/kernel/comms/rfc4/comms.gen'
-import { getDisplayName } from '../features/cast2/cast2.utils'
+import { getDisplayName } from '../features/media/cast/cast2.utils'
 
 interface ReceivedChatMessage {
   from: Participant | undefined

@@ -12,8 +12,8 @@ import {
   useGetUserDCLNamesQuery,
   useGetUserLandsQuery,
   useGetUserRentalsQuery
-} from '../../features/storage'
-import type { Land, World } from '../../features/storage'
+} from '../../features/world/storage'
+import type { Land, World } from '../../features/world/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'

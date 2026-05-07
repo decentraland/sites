@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useConnectionState, useLocalParticipant } from '@livekit/components-react'
 import { ConnectionState } from 'livekit-client'
-import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
+import { useCastTranslation } from '../../../features/media/cast/useCastTranslation'
 import { useLocalVideoTracks } from '../../../hooks/useLocalVideoTracks'
 import { EmptyStreamState } from '../LiveKitEnhancements/EmptyStreamState'
 import { LiveStreamCounter } from '../LiveStreamCounter/LiveStreamCounter'

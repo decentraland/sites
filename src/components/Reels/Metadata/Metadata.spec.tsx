@@ -40,7 +40,7 @@ jest.mock('./UserMetadata', () => ({
   UserMetadata: ({ user }: { user: { userName: string } }) => <div data-testid="reels-user">{user.userName}</div>
 }))
 
-jest.mock('../../../features/reels', () => ({
+jest.mock('../../../features/media/reels', () => ({
   buildJumpInUrl: () => 'https://jump',
   buildPlaceUrl: (...args: [string, string, AbortSignal?]) => buildPlaceUrlMock(...args),
   buildProfileUrl: (address: string) => `https://profile/${address}`,

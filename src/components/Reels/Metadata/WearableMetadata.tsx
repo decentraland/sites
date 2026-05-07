@@ -1,7 +1,7 @@
 import { type MouseEvent, memo, useCallback, useState } from 'react'
 import { useAnalytics } from '@dcl/hooks'
-import { buildMarketplaceWearableUrl } from '../../../features/reels'
-import type { WearableParsed } from '../../../features/reels'
+import { buildMarketplaceWearableUrl } from '../../../features/media/reels'
+import type { WearableParsed } from '../../../features/media/reels'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { SegmentEvent } from '../../../modules/segment'
 import {

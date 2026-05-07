@@ -56,7 +56,7 @@ jest.mock('../../../modules/downloadConstants', () => ({
 jest.mock('../../../modules/segment', () => ({
   SegmentEvent: { GO_TO_EXPLORER: 'Go To Explorer', CLICK: 'Click' }
 }))
-jest.mock('../../../features/jump/jump.helpers', () => ({
+jest.mock('../../../features/experiences/jump/jump.helpers', () => ({
   buildDeepLinkOptions: (position: string, realm?: string) => ({ position, realm })
 }))
 

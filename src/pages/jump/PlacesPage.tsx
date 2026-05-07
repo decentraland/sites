@@ -11,8 +11,8 @@ import {
   parsePosition,
   useGetJumpPlacesQuery,
   useGetSceneMetadataQuery
-} from '../../features/jump'
-import type { Creator } from '../../features/jump/jump.types'
+} from '../../features/experiences/jump'
+import type { Creator } from '../../features/experiences/jump/jump.types'
 import { JumpPageContainer, JumpPageContent } from './PageContainer.styled'
 
 const PlacesPage = () => {

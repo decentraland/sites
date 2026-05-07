@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import type { FC } from 'react'
 import { Card, CardActionArea, CardContent, Typography } from 'decentraland-ui2'
-import { truncateAddress } from '../../../features/storage'
+import { truncateAddress } from '../../../features/world/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 
 interface PlayerCardProps {

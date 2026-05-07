@@ -2,7 +2,7 @@
 import { TrackReferenceOrPlaceholder, useIsSpeaking, useTracks } from '@livekit/components-react'
 import TvIcon from '@mui/icons-material/Tv'
 import { LocalAudioTrack, Participant, RemoteAudioTrack, Track } from 'livekit-client'
-import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
+import { useCastTranslation } from '../../../features/media/cast/useCastTranslation'
 import { Avatar } from '../Avatar/Avatar'
 import { SpeakingIndicator } from './SpeakingIndicator'
 import { EmptyStreamStateProps } from './EmptyStreamState.types'

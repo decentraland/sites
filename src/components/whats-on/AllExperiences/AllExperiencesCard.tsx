@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import type { EventEntry } from '../../../features/whats-on-events'
+import type { EventEntry } from '../../../features/experiences/events'
 import { FutureCard } from './FutureCard'
 import { LiveCard } from './LiveCard'
 

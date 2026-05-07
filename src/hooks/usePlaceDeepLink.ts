@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { normalizeJumpPlace } from '../components/whats-on/PlaceDetailModal'
 import type { ModalPlaceData } from '../components/whats-on/PlaceDetailModal'
-import { isEns, parsePosition, useGetJumpPlacesQuery } from '../features/jump'
+import { isEns, parsePosition, useGetJumpPlacesQuery } from '../features/experiences/jump'
 import { PLACE_POSITION_PARAM, PLACE_WORLD_PARAM } from '../utils/whatsOnUrl'
 import { isClientError } from './deepLinkErrors'
 

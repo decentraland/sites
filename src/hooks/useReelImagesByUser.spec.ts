@@ -1,11 +1,11 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { useReelImagesByUser } from './useReelImagesByUser'
 
-jest.mock('../features/reels', () => ({
+jest.mock('../features/media/reels', () => ({
   fetchImagesByUser: jest.fn()
 }))
 
-const reelsMock = jest.requireMock('../features/reels')
+const reelsMock = jest.requireMock('../features/media/reels')
 
 describe('useReelImagesByUser', () => {
   beforeEach(() => {

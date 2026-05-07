@@ -18,8 +18,8 @@ import {
   useGetJumpEventsQuery,
   useGetJumpPlacesQuery,
   useGetProfileCreatorQuery
-} from '../../features/jump'
-import type { CardData, JumpEvent } from '../../features/jump/jump.types'
+} from '../../features/experiences/jump'
+import type { CardData, JumpEvent } from '../../features/experiences/jump/jump.types'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useRemindMe } from '../../hooks/useRemindMe'
 import { appendRealmParam, resolveEventRealm } from '../../utils/whatsOnUrl'

@@ -1,6 +1,6 @@
 import { MemoryRouter } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
-import { useGetJumpPlacesQuery, useGetSceneMetadataQuery } from '../../features/jump'
+import { useGetJumpPlacesQuery, useGetSceneMetadataQuery } from '../../features/experiences/jump'
 import { PlacesPage } from './PlacesPage'
 
 jest.mock('decentraland-ui2', () => {
@@ -12,7 +12,7 @@ jest.mock('decentraland-ui2', () => {
   }
 })
 
-jest.mock('../../features/jump', () => ({
+jest.mock('../../features/experiences/jump', () => ({
   DEFAULT_POSITION: '0,0',
   DEFAULT_REALM: 'main',
   parsePosition: (value: string) => {

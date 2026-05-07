@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { ModalEventData } from '../components/whats-on/EventDetailModal/EventDetailModal.types'
-import type { HotScene, LiveNowCard } from '../features/whats-on-events/events.helpers'
-import type { EventEntry } from '../features/whats-on-events/events.types'
+import type { HotScene, LiveNowCard } from '../features/experiences/events/events.helpers'
+import type { EventEntry } from '../features/experiences/events/events.types'
 
 function createMockEvent(overrides: Partial<EventEntry> = {}): EventEntry {
   return {

@@ -4,7 +4,7 @@ import type { UseProfileAvatarResult } from './useProfileAvatar'
 
 const mockUseGetProfileQuery = jest.fn()
 
-jest.mock('../features/profile/profile.client', () => ({
+jest.mock('../features/social/profile/profile.client', () => ({
   useGetProfileQuery: (address: string | undefined, options?: { skip?: boolean }) => mockUseGetProfileQuery(address, options)
 }))
 

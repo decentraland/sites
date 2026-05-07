@@ -21,7 +21,7 @@ jest.mock('@mui/icons-material/X', () => {
   return { __esModule: true, default: Mock }
 })
 
-jest.mock('../../../features/reels', () => ({
+jest.mock('../../../features/media/reels', () => ({
   buildTwitterShareUrl: (description: string, url: string) => buildTwitterShareUrlMock(description, url)
 }))
 

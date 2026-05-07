@@ -2,7 +2,7 @@
 import ScreenShareIcon from '@mui/icons-material/ScreenShare'
 import SlideshowIcon from '@mui/icons-material/Slideshow'
 import StopIcon from '@mui/icons-material/Stop'
-import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
+import { useCastTranslation } from '../../../features/media/cast/useCastTranslation'
 import { ShareMenu, ShareMenuItem } from './StreamingControls.styled'
 
 interface ShareMenuDropdownProps {

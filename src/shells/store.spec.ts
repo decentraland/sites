@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
-import { adminClient } from '../features/whats-on/admin'
-import { eventsClient } from '../features/whats-on-events/events.client'
+import { adminClient } from '../features/experiences/events/admin'
+import { eventsClient } from '../features/experiences/events/events.client'
 import { cmsClient } from '../services/blogClient'
 import { cast2Client } from '../services/cast2Client'
 import { placesClient } from '../services/placesClient'
@@ -77,7 +77,7 @@ describe('when inspecting the store source file', () => {
   })
 
   it('should import the admin client', () => {
-    expect(source).toMatch(/from '\.\.\/features\/whats-on\/admin'/)
+    expect(source).toMatch(/from '\.\.\/features\/experiences\/events\/admin'/)
   })
 
   it('should register adminClient.reducer in the reducer map', () => {

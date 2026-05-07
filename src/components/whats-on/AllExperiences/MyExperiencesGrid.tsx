@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { useTranslation } from '@dcl/hooks'
-import type { EventEntry } from '../../../features/whats-on-events'
+import type { EventEntry } from '../../../features/experiences/events'
 import { PendingEventCard } from '../PendingEventCard'
 import { CardGrid, GridPanel, GridTitle } from './MyExperiencesGrid.styled'
 

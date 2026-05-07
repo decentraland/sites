@@ -1,4 +1,4 @@
-import type { RejectReasonCode } from '../../../features/whats-on/admin/admin.types'
+import type { RejectReasonCode } from '../../../features/experiences/events/admin/admin.types'
 
 type RejectSubmitPayload = {
   reasons: RejectReasonCode[]

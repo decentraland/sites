@@ -1,18 +1,18 @@
 import { skipToken } from '@reduxjs/toolkit/query/react'
-import { AdminPermission } from '../features/whats-on/admin'
+import { AdminPermission } from '../features/experiences/events/admin'
 import { useAdminPermissions } from './useAdminPermissions'
 
 jest.mock('./useAuthIdentity', () => ({
   useAuthIdentity: jest.fn()
 }))
-jest.mock('../features/whats-on/admin/admin.client', () => ({
+jest.mock('../features/experiences/events/admin/admin.client', () => ({
   useGetMyProfileSettingsQuery: jest.fn()
 }))
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { useAuthIdentity } = require('./useAuthIdentity') as { useAuthIdentity: jest.Mock }
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { useGetMyProfileSettingsQuery } = require('../features/whats-on/admin/admin.client') as {
+const { useGetMyProfileSettingsQuery } = require('../features/experiences/events/admin/admin.client') as {
   useGetMyProfileSettingsQuery: jest.Mock
 }
 // eslint-disable-next-line @typescript-eslint/no-require-imports

@@ -1,4 +1,4 @@
-import type { EventEntry, RecurrentFrequency } from '../features/whats-on-events'
+import type { EventEntry, RecurrentFrequency } from '../features/experiences/events'
 import type { CreateEventFormState } from './useCreateEventForm.types'
 
 /* eslint-disable @typescript-eslint/naming-convention -- keys are API enum values */

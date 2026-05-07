@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import type { AuthIdentity } from '@dcl/crypto'
-import { ReportReason } from '../features/report/report.types'
-import type { ReportFormState, UploadedFile } from '../features/report/report.types'
+import { ReportReason } from '../features/safety/report/report.types'
+import type { ReportFormState, UploadedFile } from '../features/safety/report/report.types'
 import { fetchWithIdentity } from '../utils/signedFetch'
 import { useSubmitReport } from './useSubmitReport'
 

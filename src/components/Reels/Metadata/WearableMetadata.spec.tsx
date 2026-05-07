@@ -18,7 +18,7 @@ jest.mock('decentraland-ui2', () => ({
   }
 }))
 
-jest.mock('../../../features/reels', () => ({
+jest.mock('../../../features/media/reels', () => ({
   buildMarketplaceWearableUrl: (cid: string, bid: string) => `https://market/${cid}/${bid}`
 }))
 

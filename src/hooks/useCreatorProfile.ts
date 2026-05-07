@@ -1,4 +1,4 @@
-import { DCL_FOUNDATION_LOGO_URL, DCL_FOUNDATION_NAME, isDclFoundationCreator } from '../features/whats-on-events/events.helpers'
+import { DCL_FOUNDATION_LOGO_URL, DCL_FOUNDATION_NAME, isDclFoundationCreator } from '../features/experiences/events/events.helpers'
 import { DCL_FOUNDATION_BACKGROUND_COLOR, getAvatarBackgroundColor, getDisplayName } from '../utils/avatarColor'
 import { useProfileAvatar } from './useProfileAvatar'
 

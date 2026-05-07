@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { fetchImagesByUser } from '../features/reels'
-import type { FetchListOptions, Image } from '../features/reels'
+import { fetchImagesByUser } from '../features/media/reels'
+import type { FetchListOptions, Image } from '../features/media/reels'
 
 interface ReelImagesState {
   images: Image[]

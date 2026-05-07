@@ -1,4 +1,4 @@
-import type { WorldScene } from '../../../features/cast2/cast2.types'
+import type { WorldScene } from '../../../features/media/cast/cast2.types'
 
 interface WorldSceneSelectorProps {
   scenes: WorldScene[]

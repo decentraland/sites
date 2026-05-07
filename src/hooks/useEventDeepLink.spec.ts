@@ -12,7 +12,7 @@ jest.mock('react-router-dom', () => ({
   useSearchParams: () => mockUseSearchParams()
 }))
 
-jest.mock('../features/whats-on-events', () => ({
+jest.mock('../features/experiences/events', () => ({
   useGetEventByIdQuery: (...args: unknown[]) => mockUseGetEventByIdQuery(...args)
 }))
 
