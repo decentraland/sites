@@ -1,0 +1,51 @@
+import fs from 'node:fs'
+import path from 'node:path'
+
+const repoRoot = path.resolve(__dirname, '../..')
+
+const scanRoots = ['src/components', 'src/hooks', 'src/pages', 'src/shells', 'src/__test-utils__']
+
+const legacySegments = [
+  'features/events',
+  'features/whats-on-events',
+  'features/whats-on/admin',
+  'features/jump',
+  'features/blog',
+  'features/search',
+  'features/communities',
+  'features/profile',
+  'features/cast2',
+  'features/reels',
+  'features/storage',
+  'features/report',
+  'features/notifications'
+]
+
+function walk(dir: string): string[] {
+  if (!fs.existsSync(dir)) return []
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const fullPath = path.join(dir, entry.name)
+    return entry.isDirectory() ? walk(fullPath) : [fullPath]
+  })
+}
+
+function getOffenders(): string[] {
+  const offenders: string[] = []
+  for (const root of scanRoots) {
+    for (const file of walk(path.join(repoRoot, root)).filter(item => /\.(ts|tsx)$/.test(item))) {
+      const content = fs.readFileSync(file, 'utf8')
+      for (const segment of legacySegments) {
+        if (content.includes(segment)) {
+          offenders.push(`${path.relative(repoRoot, file)} imports ${segment}`)
+        }
+      }
+    }
+  }
+  return offenders.sort()
+}
+
+describe('feature import boundaries', () => {
+  it('keeps app consumers on grouped feature paths instead of legacy feature paths', () => {
+    expect(getOffenders()).toEqual([])
+  })
+})
