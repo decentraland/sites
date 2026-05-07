@@ -28,7 +28,7 @@ const EVENTS_API_URL = process.env['EVENTS_API_URL'] ?? 'https://events.decentra
 const PLACES_API_URL = process.env['PLACES_API_URL'] ?? 'https://places.decentraland.org/api'
 
 // Brand share-card hosted on the marketing CDN so it stays editable without a sites redeploy.
-const SHARE_IMAGE_URL = 'https://marketing-files.decentraland.org/uploads/1778180121903_decentraland-background.png'
+const SHARE_IMAGE_URL = 'https://marketing-files.decentraland.org/uploads/1778186218133_decentraland-background.webp'
 
 const DEFAULTS = {
   title: 'Decentraland Blog | Updates, Stories, and Community Moments',
