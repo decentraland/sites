@@ -1,5 +1,11 @@
 import { OperativeSystem } from '../types/download.types'
-import { FALLBACK_LOADER_HOLD_MS, streamOrFallback } from './streamOrFallback'
+import {
+  ESTIMATE_MAX_HOLD_MS,
+  ESTIMATE_MIN_HOLD_MS,
+  FALLBACK_LOADER_HOLD_MS,
+  estimateDownloadHoldMs,
+  streamOrFallback
+} from './streamOrFallback'
 
 const mockTriggerFileDownload = jest.fn()
 const mockDownloadFileWithProgress = jest.fn()
@@ -9,20 +15,123 @@ jest.mock('./file', () => ({
   downloadFileWithProgress: (...args: unknown[]) => mockDownloadFileWithProgress(...args)
 }))
 
+const buildHeadResponse = (contentLength: string | null, ok = true): Response =>
+  ({
+    ok,
+    headers: { get: (name: string) => (name.toLowerCase() === 'content-length' ? contentLength : null) }
+  }) as unknown as Response
+
+const setNavigatorConnection = (downlink: number | undefined): void => {
+  Object.defineProperty(window.navigator, 'connection', {
+    configurable: true,
+    value: downlink !== undefined ? { downlink } : undefined
+  })
+}
+
+const clearNavigatorConnection = (): void => {
+  Object.defineProperty(window.navigator, 'connection', { configurable: true, value: undefined })
+}
+
+describe('estimateDownloadHoldMs', () => {
+  let mockFetch: jest.Mock
+
+  beforeEach(() => {
+    mockFetch = jest.fn()
+    global.fetch = mockFetch as unknown as typeof fetch
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    clearNavigatorConnection()
+  })
+
+  describe('when the HEAD request returns a Content-Length and the browser exposes downlink', () => {
+    beforeEach(() => {
+      // 80 MB in bytes — the macOS DMG ballpark.
+      mockFetch.mockResolvedValue(buildHeadResponse(String(80 * 1024 * 1024)))
+    })
+
+    it('should compute a hold proportional to size / downlink with the safety margin applied', async () => {
+      // 100 Mbps → 80MB ≈ 6.4s pure transfer + safety margin (~1.5s) → ~7.9s.
+      setNavigatorConnection(100)
+      const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
+      expect(ms).toBeGreaterThanOrEqual(7000)
+      expect(ms).toBeLessThanOrEqual(9000)
+    })
+
+    it('should produce a longer hold for a slower connection at the same size', async () => {
+      // 5 Mbps → 80MB ≈ 128s pure transfer, capped at ESTIMATE_MAX_HOLD_MS.
+      setNavigatorConnection(5)
+      const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
+      expect(ms).toBe(ESTIMATE_MAX_HOLD_MS)
+    })
+  })
+
+  describe('when the HEAD request fails', () => {
+    it('should return the minimum hold instead of guessing', async () => {
+      mockFetch.mockRejectedValue(new TypeError('CORS blocked'))
+      setNavigatorConnection(50)
+
+      const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
+
+      expect(ms).toBe(ESTIMATE_MIN_HOLD_MS)
+    })
+  })
+
+  describe('when the HEAD response omits Content-Length', () => {
+    it('should return the minimum hold', async () => {
+      mockFetch.mockResolvedValue(buildHeadResponse(null))
+      setNavigatorConnection(50)
+
+      const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
+
+      expect(ms).toBe(ESTIMATE_MIN_HOLD_MS)
+    })
+  })
+
+  describe('when the browser does not expose navigator.connection (Safari, Firefox)', () => {
+    it('should fall back to the default downlink and still produce an adaptive hold', async () => {
+      // 80 MB at the default 25 Mbps ≈ 25.6s + safety margin.
+      mockFetch.mockResolvedValue(buildHeadResponse(String(80 * 1024 * 1024)))
+      clearNavigatorConnection()
+
+      const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
+
+      expect(ms).toBeGreaterThan(20000)
+      expect(ms).toBeLessThan(35000)
+    })
+  })
+
+  describe('when the file is tiny', () => {
+    it('should clamp to the minimum hold so the modal does not vanish instantly', async () => {
+      mockFetch.mockResolvedValue(buildHeadResponse('512')) // 512 bytes
+      setNavigatorConnection(100)
+
+      const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
+
+      expect(ms).toBe(ESTIMATE_MIN_HOLD_MS)
+    })
+  })
+})
+
 describe('streamOrFallback', () => {
   let abortController: AbortController
   let onProgress: jest.Mock
+  let mockFetch: jest.Mock
 
   beforeEach(() => {
-    jest.useFakeTimers()
+    jest.useFakeTimers({ doNotFake: ['performance', 'Date'] })
     abortController = new AbortController()
     onProgress = jest.fn()
+    mockFetch = jest.fn().mockResolvedValue(buildHeadResponse(null))
+    global.fetch = mockFetch as unknown as typeof fetch
   })
 
   afterEach(() => {
     jest.runOnlyPendingTimers()
     jest.useRealTimers()
     jest.resetAllMocks()
+    clearNavigatorConnection()
   })
 
   describe('when the OS is macOS', () => {
@@ -35,14 +144,32 @@ describe('streamOrFallback', () => {
         onProgress
       })
 
-      jest.advanceTimersByTime(FALLBACK_LOADER_HOLD_MS)
+      // Drain the HEAD round-trip and the timer.
+      await jest.advanceTimersByTimeAsync(ESTIMATE_MAX_HOLD_MS)
       await promise
 
       expect(mockTriggerFileDownload).toHaveBeenCalledWith('https://example.com/file.dmg', 'Decentraland-Installer.dmg')
       expect(mockDownloadFileWithProgress).not.toHaveBeenCalled()
     })
 
-    it('should hold the backdrop for FALLBACK_LOADER_HOLD_MS before resolving', async () => {
+    it('should HEAD the URL to get Content-Length for the adaptive estimate', async () => {
+      const promise = streamOrFallback({
+        url: 'https://example.com/file.dmg',
+        filename: 'Decentraland-Installer.dmg',
+        os: OperativeSystem.MACOS,
+        signal: abortController.signal,
+        onProgress
+      })
+
+      await jest.advanceTimersByTimeAsync(ESTIMATE_MAX_HOLD_MS)
+      await promise
+
+      expect(mockFetch).toHaveBeenCalledWith('https://example.com/file.dmg', expect.objectContaining({ method: 'HEAD' }))
+    })
+
+    it('should hold for at least ESTIMATE_MIN_HOLD_MS when HEAD provides no size signal', async () => {
+      mockFetch.mockResolvedValue(buildHeadResponse(null))
+
       let resolved = false
       streamOrFallback({
         url: 'https://example.com/file.dmg',
@@ -54,12 +181,10 @@ describe('streamOrFallback', () => {
         resolved = true
       })
 
-      // Drain the microtask that schedules the timer, then advance just
-      // below the threshold — the hold should still be pending.
-      await jest.advanceTimersByTimeAsync(FALLBACK_LOADER_HOLD_MS - 1)
+      await jest.advanceTimersByTimeAsync(ESTIMATE_MIN_HOLD_MS - 1)
       expect(resolved).toBe(false)
 
-      await jest.advanceTimersByTimeAsync(1)
+      await jest.advanceTimersByTimeAsync(2)
       expect(resolved).toBe(true)
     })
   })
@@ -158,10 +283,7 @@ describe('streamOrFallback', () => {
           onProgress
         })
 
-        // Drain the rejected fetch promise, then advance through the hold.
-        await Promise.resolve()
-        await Promise.resolve()
-        jest.advanceTimersByTime(FALLBACK_LOADER_HOLD_MS)
+        await jest.advanceTimersByTimeAsync(FALLBACK_LOADER_HOLD_MS)
         await promise
 
         expect(mockTriggerFileDownload).toHaveBeenCalledWith('https://example.com/file.exe', 'Decentraland-Installer.exe')
