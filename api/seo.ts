@@ -360,15 +360,17 @@ interface ReelMetadataResponse {
 // charset before interpolating into the upstream URL to avoid SSRF / path traversal.
 const REEL_IMAGE_ID_REGEX = /^[A-Za-z0-9_-]{1,64}$/
 
+const REELS_DEFAULT_TITLE = 'Photos from Decentraland'
+
 const fetchReelImageSEO = async (imageId: string): Promise<SEOData | null> => {
   if (!REEL_IMAGE_ID_REGEX.test(imageId)) return null
-  const data = await fetchJSON<ReelMetadataResponse>(`${REEL_SERVICE_URL}/api/images/${imageId}/metadata`)
+  const data = await fetchJSON<ReelMetadataResponse>(`${REEL_SERVICE_URL}/api/images/${encodeURIComponent(imageId)}/metadata`)
   if (!data?.url) return null
   // Photographer is metadata.userName; visiblePeople is who appears IN the photo and may be empty.
   const userName = data.metadata?.userName?.trim()
   const sceneName = data.metadata?.scene?.name?.trim() || 'Decentraland'
   return {
-    title: userName ? `${userName}'s Decentraland snapshot` : 'A Decentraland snapshot',
+    title: userName ? `${userName}'s Decentraland snapshot` : REELS_DEFAULT_TITLE,
     description: userName
       ? `Check out ${userName}'s photo taken in ${sceneName}, Decentraland. Comment on who was there and what they were wearing, or jump to the spot directly so you don't miss out!`
       : `A photo taken in ${sceneName}, Decentraland.`,
@@ -386,7 +388,9 @@ const ROUTE_PATTERNS: Array<{ pattern: RegExp; handler: (match: RegExpMatchArray
   { pattern: /^\/blog\/([^/]+)\/([^/]+)$/, handler: m => ({ type: 'post', categorySlug: m[1], postSlug: m[2] }) },
   { pattern: /^\/blog\/([^/]+)$/, handler: m => ({ type: 'category', categorySlug: m[1] }) },
   { pattern: /^\/blog\/?$/, handler: () => ({ type: 'blog' }) },
-  { pattern: /^\/reels\/([^/]+)$/, handler: m => ({ type: 'reels', imageId: m[1] }) },
+  // Skip /reels/list — it's a list page, not an image deep-link. The CF Worker has
+  // the same exclusion in OpenGraphReelsRoute.test().
+  { pattern: /^\/reels\/(?!list(?:\/|$))([^/]+)$/, handler: m => ({ type: 'reels', imageId: m[1] }) },
   // /whats-on, /jump/events and /jump/places all deep-link via query params (?id=, ?position=)
   // rather than path segments. A single 'whats-on' route type handles all three by dispatching
   // on the query params; the path patterns just gate which paths reach the handler.
@@ -448,7 +452,10 @@ const fetchSEOData = async (pathname: string, params: SEOQueryParams): Promise<S
 // HTML Generation
 // =============================================================================
 
-const replaceMetaTag = (html: string, pattern: RegExp, replacement: string): string => html.replace(pattern, replacement)
+// Use a function replacement so `$&`, `$1`, `$$` etc. inside an API-returned title
+// don't get expanded into the matched substring — that would break out of the
+// `content="..."` attribute boundary even after escapeHTML.
+const replaceMetaTag = (html: string, pattern: RegExp, replacement: string): string => html.replace(pattern, () => replacement)
 
 const generateHTML = (data: SEOData | null, originalHTML: string, url: string): string => {
   // Escape every interpolated value to prevent reflected/stored XSS via CMS fields or query strings.

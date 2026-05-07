@@ -95,12 +95,23 @@ interface MockWorldResponse {
   total: number
 }
 
+interface MockReelResponse {
+  url: string
+  thumbnailUrl?: string
+  metadata?: {
+    userName?: string
+    userAddress?: string
+    scene?: { name?: string }
+  }
+}
+
 type MockResponseBody =
   | MockEventResponse
   | MockBlogPostsResponse
   | MockAssetResponse
   | MockPlaceResponse
   | MockWorldResponse
+  | MockReelResponse
   | Record<string, never>
 
 function jsonResponse<T extends MockResponseBody>(ok: boolean, body: T): Response {
@@ -158,6 +169,24 @@ describe('seo handler', () => {
           total: 1,
           data: [{ title: '', description: '', image: '' }]
         })
+      }
+      if (url.includes('/api/images/reel-with-photographer/metadata')) {
+        return jsonResponse<MockReelResponse>(true, {
+          url: 'https://camera-reel-storage.decentraland.org/reels/reel-with-photographer.jpg',
+          metadata: {
+            userName: 'Alice',
+            userAddress: '0xabc',
+            scene: { name: 'Genesis Plaza' }
+          }
+        })
+      }
+      if (url.includes('/api/images/reel-without-photographer/metadata')) {
+        return jsonResponse<MockReelResponse>(true, {
+          url: 'https://camera-reel-storage.decentraland.org/reels/reel-without-photographer.jpg'
+        })
+      }
+      if (url.includes('/api/images/reel-network-error/metadata')) {
+        throw new Error('network failure')
       }
       if (url.includes('/blog/posts')) {
         return jsonResponse<MockBlogPostsResponse>(true, {
@@ -284,6 +313,34 @@ describe('seo handler', () => {
   it('rejects unknown roots via sanitizePath', async () => {
     const { body } = await run({ path: '/social/communities/foo' })
     // Sanitized to /blog default
+    expect(body).toContain('Decentraland Blog')
+  })
+
+  it('serves reel metadata for /reels/<imageId> with photographer attribution', async () => {
+    const { body, headers } = await run({ path: '/reels/reel-with-photographer' })
+    expect(headers['X-SEO-Function']).toBe('active')
+    expect(body).toContain('<title>Alice&#x27;s Decentraland snapshot | Decentraland</title>')
+    expect(body).toMatch(/<meta property="og:description" content="Check out Alice&#x27;s photo taken in Genesis Plaza, Decentraland\./)
+    expect(body).toMatch(
+      /<meta property="og:image" content="https:\/\/camera-reel-storage\.decentraland\.org\/reels\/reel-with-photographer\.jpg">/
+    )
+    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/reels\/reel-with-photographer">/)
+  })
+
+  it('falls back to anonymous reel copy when metadata.userName is missing', async () => {
+    const { body } = await run({ path: '/reels/reel-without-photographer' })
+    expect(body).toContain('<title>Photos from Decentraland | Decentraland</title>')
+    expect(body).toMatch(/<meta property="og:description" content="A photo taken in Decentraland, Decentraland\.">/)
+  })
+
+  it('skips the /reels/list page (CF parity) and serves blog defaults', async () => {
+    const { body } = await run({ path: '/reels/list' })
+    // /reels/list is excluded from the reels handler — no upstream fetch, blog default copy.
+    expect(body).toContain('Decentraland Blog')
+  })
+
+  it('falls back to defaults when the upstream reel API throws', async () => {
+    const { body } = await run({ path: '/reels/reel-network-error' })
     expect(body).toContain('Decentraland Blog')
   })
 })
