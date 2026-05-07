@@ -3,6 +3,12 @@
     { "source": "/blog/:path*", "destination": "/api/seo?path=/blog/:path*" },
     { "source": "/blog", "destination": "/api/seo?path=/blog" },
     { "source": "/reels/:imageId", "destination": "/api/seo?path=/reels/:imageId" },
+    { "source": "/whats-on/:path*", "destination": "/api/seo?path=/whats-on/:path*" },
+    { "source": "/whats-on", "destination": "/api/seo?path=/whats-on" },
+    { "source": "/jump/events/:path*", "destination": "/api/seo?path=/jump/events/:path*" },
+    { "source": "/jump/events", "destination": "/api/seo?path=/jump/events" },
+    { "source": "/jump/places/:path*", "destination": "/api/seo?path=/jump/places/:path*" },
+    { "source": "/jump/places", "destination": "/api/seo?path=/jump/places" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
