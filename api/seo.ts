@@ -370,7 +370,7 @@ const fetchReelImageSEO = async (imageId: string): Promise<SEOData | null> => {
   return {
     title: userName ? `${userName}'s Decentraland snapshot` : 'A Decentraland snapshot',
     description: userName
-      ? `Check out ${userName}'s photo taken in ${sceneName}, Decentraland—comment on who was there and what they were wearing or even jump to the spot directly so you don't miss out!`
+      ? `Check out ${userName}'s photo taken in ${sceneName}, Decentraland. Comment on who was there and what they were wearing, or jump to the spot directly so you don't miss out!`
       : `A photo taken in ${sceneName}, Decentraland.`,
     imageUrl: data.url
   }
