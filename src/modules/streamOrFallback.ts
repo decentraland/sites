@@ -26,21 +26,35 @@ const ESTIMATE_SAFETY_MARGIN_MS = 1500
 // on cache hits / instant downloads.
 const ESTIMATE_MIN_HOLD_MS = 2000
 
-// Never hang the modal beyond this; if the actual transfer takes longer the
-// browser's download manager remains available as the user-facing signal.
-const ESTIMATE_MAX_HOLD_MS = 90000
-
-const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
+// Never hang a static (no progress bar) modal beyond this. Past this point
+// the browser's own download manager already shows as the user-facing
+// progress signal — keeping our modal up longer would just look stuck.
+const ESTIMATE_MAX_HOLD_MS = 20000
 
 interface NavigatorConnectionLike {
   downlink?: number
 }
 
-const getDownlinkMbps = (): number => {
-  if (typeof navigator === 'undefined') return DEFAULT_DOWNLINK_MBPS
-  const connection = (navigator as Navigator & { connection?: NavigatorConnectionLike }).connection
-  return connection?.downlink && connection.downlink > 0 ? connection.downlink : DEFAULT_DOWNLINK_MBPS
-}
+/**
+ * Sleeps for `ms` milliseconds, resolving early if `signal` aborts. Resolves
+ * (rather than rejecting) on abort so callers can decide whether the caller
+ * was already past the point of caring — e.g. the download has already been
+ * dispatched to the OS, so an aborted hold just means "stop waiting and go
+ * tear down the UI".
+ */
+const sleep = (ms: number, signal?: AbortSignal): Promise<void> =>
+  new Promise(resolve => {
+    if (signal?.aborted) return resolve()
+    const id = setTimeout(resolve, ms)
+    signal?.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(id)
+        resolve()
+      },
+      { once: true }
+    )
+  })
 
 const fetchContentLength = async (url: string, signal?: AbortSignal): Promise<number | null> => {
   try {
@@ -77,18 +91,14 @@ const estimateDownloadHoldMs = async (url: string, signal?: AbortSignal): Promis
   const sizeBytes = await fetchContentLength(url, signal)
   if (sizeBytes === null) return ESTIMATE_MIN_HOLD_MS
 
-  const downlinkBytesPerSec = (getDownlinkMbps() * 1024 * 1024) / 8
+  const connection =
+    typeof navigator !== 'undefined' ? (navigator as Navigator & { connection?: NavigatorConnectionLike }).connection : undefined
+  const downlinkMbps = connection?.downlink && connection.downlink > 0 ? connection.downlink : DEFAULT_DOWNLINK_MBPS
+
+  const downlinkBytesPerSec = (downlinkMbps * 1024 * 1024) / 8
   const transferMs = (sizeBytes / downlinkBytesPerSec) * 1000
   const total = transferMs + ESTIMATE_SAFETY_MARGIN_MS
   return Math.min(ESTIMATE_MAX_HOLD_MS, Math.max(ESTIMATE_MIN_HOLD_MS, total))
-}
-
-const adaptiveHold = async (url: string, signal: AbortSignal, startedAt: number): Promise<void> => {
-  const holdMs = await estimateDownloadHoldMs(url, signal)
-  if (signal.aborted) return
-  const elapsed = Date.now() - startedAt
-  const remaining = Math.max(0, holdMs - elapsed)
-  await sleep(remaining)
 }
 
 /**
@@ -115,7 +125,10 @@ const streamOrFallback = async ({ url, filename, os, signal, onProgress }: Strea
   if (os === OperativeSystem.MACOS) {
     const startedAt = Date.now()
     triggerFileDownload(url, filename)
-    await adaptiveHold(url, signal, startedAt)
+    const holdMs = await estimateDownloadHoldMs(url, signal)
+    if (signal.aborted) return
+    const remaining = Math.max(0, holdMs - (Date.now() - startedAt))
+    await sleep(remaining, signal)
     return
   }
 
@@ -138,7 +151,7 @@ const streamOrFallback = async ({ url, filename, os, signal, onProgress }: Strea
       name: error instanceof Error ? error.name : 'unknown'
     })
     triggerFileDownload(url, filename)
-    await sleep(FALLBACK_LOADER_HOLD_MS)
+    await sleep(FALLBACK_LOADER_HOLD_MS, signal)
   }
 }
 

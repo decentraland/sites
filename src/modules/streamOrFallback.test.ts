@@ -60,7 +60,7 @@ describe('estimateDownloadHoldMs', () => {
     })
 
     it('should produce a longer hold for a slower connection at the same size', async () => {
-      // 5 Mbps → 80MB ≈ 128s pure transfer, capped at ESTIMATE_MAX_HOLD_MS.
+      // 5 Mbps → 80MB ≈ 128s pure transfer, way over ESTIMATE_MAX_HOLD_MS.
       setNavigatorConnection(5)
       const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
       expect(ms).toBe(ESTIMATE_MAX_HOLD_MS)
@@ -70,6 +70,17 @@ describe('estimateDownloadHoldMs', () => {
   describe('when the HEAD request fails', () => {
     it('should return the minimum hold instead of guessing', async () => {
       mockFetch.mockRejectedValue(new TypeError('CORS blocked'))
+      setNavigatorConnection(50)
+
+      const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
+
+      expect(ms).toBe(ESTIMATE_MIN_HOLD_MS)
+    })
+  })
+
+  describe('when the HEAD response is non-2xx (403, 405, etc.)', () => {
+    it('should treat it like a missing Content-Length and return the minimum hold', async () => {
+      mockFetch.mockResolvedValue(buildHeadResponse(String(80 * 1024 * 1024), false))
       setNavigatorConnection(50)
 
       const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
@@ -91,14 +102,16 @@ describe('estimateDownloadHoldMs', () => {
 
   describe('when the browser does not expose navigator.connection (Safari, Firefox)', () => {
     it('should fall back to the default downlink and still produce an adaptive hold', async () => {
-      // 80 MB at the default 25 Mbps ≈ 25.6s + safety margin.
-      mockFetch.mockResolvedValue(buildHeadResponse(String(80 * 1024 * 1024)))
+      // 10 MB at the default 25 Mbps ≈ 3.2s pure transfer + safety margin.
+      // Sized to land between MIN and MAX so the assertion exercises the
+      // adaptive arithmetic rather than the clamps.
+      mockFetch.mockResolvedValue(buildHeadResponse(String(10 * 1024 * 1024)))
       clearNavigatorConnection()
 
       const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
 
-      expect(ms).toBeGreaterThan(20000)
-      expect(ms).toBeLessThan(35000)
+      expect(ms).toBeGreaterThan(ESTIMATE_MIN_HOLD_MS)
+      expect(ms).toBeLessThan(ESTIMATE_MAX_HOLD_MS)
     })
   })
 
@@ -185,6 +198,37 @@ describe('streamOrFallback', () => {
       expect(resolved).toBe(false)
 
       await jest.advanceTimersByTimeAsync(2)
+      expect(resolved).toBe(true)
+    })
+
+    it('should resolve promptly when the signal aborts mid-hold', async () => {
+      // Long estimated hold so the test exercises a real wait window:
+      // 80 MB at 5 Mbps caps at MAX_HOLD_MS.
+      mockFetch.mockResolvedValue(buildHeadResponse(String(80 * 1024 * 1024)))
+      setNavigatorConnection(5)
+
+      let resolved = false
+      streamOrFallback({
+        url: 'https://example.com/file.dmg',
+        filename: 'Decentraland-Installer.dmg',
+        os: OperativeSystem.MACOS,
+        signal: abortController.signal,
+        onProgress
+      }).then(() => {
+        resolved = true
+      })
+
+      // Let the HEAD resolve and the sleep get scheduled, then verify we are
+      // mid-hold (not yet resolved).
+      await jest.advanceTimersByTimeAsync(ESTIMATE_MIN_HOLD_MS)
+      expect(resolved).toBe(false)
+
+      // Abort while still inside the hold.
+      abortController.abort()
+      await jest.advanceTimersByTimeAsync(0)
+
+      // Should resolve now without needing to advance through the rest of
+      // the long hold.
       expect(resolved).toBe(true)
     })
   })
