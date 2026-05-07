@@ -14,11 +14,11 @@ jest.mock('fs', () => {
   <meta name="description" content="Decentraland is where you hang out online." />
   <meta property="og:title" content="Decentraland — Come Hang Out">
   <meta property="og:description" content="Decentraland is where you hang out online.">
-  <meta property="og:image" content="https://decentraland.org/decentraland-background.webp">
+  <meta property="og:image" content="https://marketing-files.decentraland.org/uploads/1778180121903_decentraland-background.png">
   <meta property="og:site_name" content="Decentraland">
   <meta name="twitter:title" content="Decentraland — Come Hang Out">
   <meta name="twitter:description" content="Decentraland is where you hang out online.">
-  <meta name="twitter:image" content="https://decentraland.org/decentraland-background.webp">
+  <meta name="twitter:image" content="https://marketing-files.decentraland.org/uploads/1778180121903_decentraland-background.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@decentraland">
   <meta name="twitter:creator" content="@decentraland">
