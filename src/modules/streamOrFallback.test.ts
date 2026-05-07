@@ -46,24 +46,37 @@ describe('estimateDownloadHoldMs', () => {
   })
 
   describe('when the HEAD request returns a Content-Length and the browser exposes downlink', () => {
+    // ~4.4 MB DMG — the actual size of the current Decentraland macOS
+    // installer, verified via curl HEAD on the gateway. Tauri reuses the
+    // system WebView so the bundle stays small.
+    const DMG_SIZE_BYTES = 4_618_782
+
     beforeEach(() => {
-      // 80 MB in bytes — the macOS DMG ballpark.
-      mockFetch.mockResolvedValue(buildHeadResponse(String(80 * 1024 * 1024)))
+      mockFetch.mockResolvedValue(buildHeadResponse(String(DMG_SIZE_BYTES)))
     })
 
-    it('should compute a hold proportional to size / downlink with the safety margin applied', async () => {
-      // 100 Mbps → 80MB ≈ 6.4s pure transfer + safety margin (~1.5s) → ~7.9s.
+    it('should compute a sub-second hold for fiber-class connections on the real DMG size', async () => {
+      // 4.4 MB at 100 Mbps ≈ 350ms transfer + 500ms safety margin → ~850ms,
+      // which clears the 800ms minimum so the math result is what we expect.
       setNavigatorConnection(100)
       const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
-      expect(ms).toBeGreaterThanOrEqual(7000)
-      expect(ms).toBeLessThanOrEqual(9000)
+      expect(ms).toBeGreaterThanOrEqual(800)
+      expect(ms).toBeLessThanOrEqual(1100)
     })
 
-    it('should produce a longer hold for a slower connection at the same size', async () => {
-      // 5 Mbps → 80MB ≈ 128s pure transfer, way over ESTIMATE_MAX_HOLD_MS.
-      setNavigatorConnection(5)
+    it('should produce a longer hold on a slow connection but never beyond MAX', async () => {
+      // 4.4 MB at 1 Mbps ≈ 35s pure transfer, way over ESTIMATE_MAX_HOLD_MS.
+      setNavigatorConnection(1)
       const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
       expect(ms).toBe(ESTIMATE_MAX_HOLD_MS)
+    })
+
+    it('should produce a mid-range hold on typical broadband', async () => {
+      // 4.4 MB at 25 Mbps ≈ 1.4s + 500ms margin → ~1.9s. Well within MIN/MAX.
+      setNavigatorConnection(25)
+      const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
+      expect(ms).toBeGreaterThanOrEqual(1500)
+      expect(ms).toBeLessThanOrEqual(2500)
     })
   })
 
@@ -102,10 +115,10 @@ describe('estimateDownloadHoldMs', () => {
 
   describe('when the browser does not expose navigator.connection (Safari, Firefox)', () => {
     it('should fall back to the default downlink and still produce an adaptive hold', async () => {
-      // 10 MB at the default 25 Mbps ≈ 3.2s pure transfer + safety margin.
-      // Sized to land between MIN and MAX so the assertion exercises the
-      // adaptive arithmetic rather than the clamps.
-      mockFetch.mockResolvedValue(buildHeadResponse(String(10 * 1024 * 1024)))
+      // 4.4 MB DMG at the default 50 Mbps ≈ 700ms + 500ms margin ≈ 1.2s.
+      // Lands between MIN and MAX so the assertion exercises the adaptive
+      // arithmetic rather than the clamps.
+      mockFetch.mockResolvedValue(buildHeadResponse(String(4_618_782)))
       clearNavigatorConnection()
 
       const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')

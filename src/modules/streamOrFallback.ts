@@ -11,25 +11,25 @@ import type { StreamOrFallbackArgs } from './streamOrFallback.types'
 const FALLBACK_LOADER_HOLD_MS = 4000
 
 // Bandwidth assumption when the browser doesn't expose `navigator.connection`
-// (Safari, Firefox). Conservative middle of "typical broadband" so fast users
-// see the modal close a bit late and slow users see it close a bit early —
-// the alternative (no signal at all) is worse than an imperfect estimate.
-const DEFAULT_DOWNLINK_MBPS = 25
+// (Safari, Firefox). Tuned to modern broadband — the alternative for fast
+// users is the modal hanging long after the file actually landed. Slow users
+// fall through to the browser's own download bar as the real progress signal.
+const DEFAULT_DOWNLINK_MBPS = 50
 
 // Wall-clock margin added on top of the pure transfer estimate to absorb
-// connection setup, HTTP/TLS handshake, server-side processing, and the
-// browser's write-to-disk after the bytes arrive. Picked empirically from
-// typical Mac DMG downloads.
-const ESTIMATE_SAFETY_MARGIN_MS = 1500
+// connection setup, server-side TTFB, and the browser's write-to-disk after
+// the bytes arrive. Sized for the current ~4.4 MB DMG — a flat 1.5s margin
+// dominates total hold time on a small file.
+const ESTIMATE_SAFETY_MARGIN_MS = 500
 
 // Always hold for at least this long so the modal doesn't blink-and-vanish
-// on cache hits / instant downloads.
-const ESTIMATE_MIN_HOLD_MS = 2000
+// on a cache hit / sub-second transfer.
+const ESTIMATE_MIN_HOLD_MS = 800
 
 // Never hang a static (no progress bar) modal beyond this. Past this point
 // the browser's own download manager already shows as the user-facing
 // progress signal — keeping our modal up longer would just look stuck.
-const ESTIMATE_MAX_HOLD_MS = 20000
+const ESTIMATE_MAX_HOLD_MS = 10000
 
 interface NavigatorConnectionLike {
   downlink?: number
