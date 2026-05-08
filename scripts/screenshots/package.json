@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@dcl/crypto": "^3.6.0",
-    "ethers": "6.13.4",
     "playwright": "1.49.1"
   }
 }
