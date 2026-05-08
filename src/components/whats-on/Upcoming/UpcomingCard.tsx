@@ -14,7 +14,7 @@ import { CalendarAddIcon } from '../common/CalendarAddIcon'
 import { ActionButton, ActionTextButton, ActionTextLabel, CalendarIcon, CopyIcon } from '../common/CardActions.styled'
 import { RemindMeButton } from '../common/RemindMeButton'
 import { RemindMeIcon } from '../common/RemindMeIcon'
-import { MobileActionButton } from './UpcomingCard.styled'
+import { EventSmallCardWrapper, MobileActionButton } from './UpcomingCard.styled'
 
 const UpcomingCard = memo(function UpcomingCard({
   event,
@@ -85,17 +85,19 @@ const UpcomingCard = memo(function UpcomingCard({
   )
 
   return (
-    <EventSmallCard
-      image={event.image ?? undefined}
-      title={event.name}
-      creatorName={creatorName}
-      creatorAvatarUrl={avatarFace}
-      timeLabel={getRelativeTimeLabel(event.start_at, t)}
-      onClick={handleClick}
-      disableHover={disableHover}
-      action={mobileAction}
-      hoverActions={desktopHoverActions}
-    />
+    <EventSmallCardWrapper>
+      <EventSmallCard
+        image={event.image ?? undefined}
+        title={event.name}
+        creatorName={creatorName}
+        creatorAvatarUrl={avatarFace}
+        timeLabel={getRelativeTimeLabel(event.start_at, t)}
+        onClick={handleClick}
+        disableHover={disableHover}
+        action={mobileAction}
+        hoverActions={desktopHoverActions}
+      />
+    </EventSmallCardWrapper>
   )
 })
 
