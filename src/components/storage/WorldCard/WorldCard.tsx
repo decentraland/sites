@@ -17,8 +17,8 @@ import {
   MenuItem,
   Typography
 } from 'decentraland-ui2'
-import { useGetWorldScenesQuery } from '../../../features/world/storage'
-import type { World } from '../../../features/world/storage'
+import { useGetWorldScenesQuery } from '../../../features/storage'
+import type { World } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { CardLabel, MenuDivider } from './WorldCard.styled'
 

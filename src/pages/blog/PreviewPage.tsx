@@ -4,7 +4,7 @@ import { useTranslation } from '@dcl/hooks'
 import { CircularProgress, Typography } from 'decentraland-ui2'
 import { BlogLayout } from '../../components/blog/BlogLayout'
 import { RichText } from '../../components/blog/RichText'
-import { useGetBlogPostPreviewQuery } from '../../features/content/blog/blog.client'
+import { useGetBlogPostPreviewQuery } from '../../features/cms/cms.client'
 import { formatUtcDate } from '../../shared/blog/utils/date'
 import {
   AuthorAvatar,

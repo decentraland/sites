@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AuthIdentity } from '@dcl/crypto'
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from 'decentraland-ui2'
-import { useGetSceneValueQuery, useSetSceneValueMutation } from '../../../features/world/storage'
+import { useGetSceneValueQuery, useSetSceneValueMutation } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { StorageValueField, type StorageValueFieldRef } from '../StorageValueField'
 

@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import type { FC } from 'react'
 import { Card, CardActionArea, CardContent, Chip, Typography } from 'decentraland-ui2'
-import { type Land, RoleType, getRoleLabelKey } from '../../../features/world/storage'
+import { type Land, RoleType, getRoleLabelKey } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 
 interface LandCardProps {

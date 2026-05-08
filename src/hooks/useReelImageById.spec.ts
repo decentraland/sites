@@ -1,13 +1,13 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { useReelImageById } from './useReelImageById'
 
-jest.mock('../features/media/reels', () => ({
+jest.mock('../features/reels', () => ({
   fetchImageById: jest.fn(),
   enrichWearables: jest.fn(async (users: unknown) => users),
   fetchProfileFaces: jest.fn(async () => new Map<string, string>())
 }))
 
-const reelsMock = jest.requireMock('../features/media/reels')
+const reelsMock = jest.requireMock('../features/reels')
 
 describe('useReelImageById', () => {
   beforeEach(() => {

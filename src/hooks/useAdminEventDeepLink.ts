@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import type { EventEntry } from '../features/experiences/events/events.types'
+import type { EventEntry } from '../features/events/events.types'
 import { EVENT_ID_PARAM } from '../utils/whatsOnUrl'
 
 interface UseAdminEventDeepLinkParams {

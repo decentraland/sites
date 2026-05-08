@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { InputLabel, Select } from 'decentraland-ui2'
-import { useCastTranslation } from '../../../features/media/cast/useCastTranslation'
+import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { VideoDevice, VideoDeviceSelectorProps } from './VideoDeviceSelector.types'
 import { LoadingText, NoDevicesText, SelectorContainer, StyledFormControl, StyledMenuItem } from './VideoDeviceSelector.styled'
 

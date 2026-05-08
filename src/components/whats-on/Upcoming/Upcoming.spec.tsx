@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { createMockEvent } from '../../../__test-utils__/factories'
-import type { EventEntry } from '../../../features/experiences/events'
+import type { EventEntry } from '../../../features/events'
 import { Upcoming } from './Upcoming'
 
 jest.mock('react-router-dom', () => ({
@@ -16,7 +16,7 @@ jest.mock('../../../hooks/useAuthIdentity', () => ({
 }))
 
 const mockUseGetUpcomingEventsQuery = jest.fn()
-jest.mock('../../../features/experiences/events', () => ({
+jest.mock('../../../features/events', () => ({
   useGetUpcomingEventsQuery: () => mockUseGetUpcomingEventsQuery()
 }))
 

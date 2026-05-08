@@ -2,7 +2,7 @@ import { memo, useCallback, useMemo } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { AnimatedBackground, DownloadModal } from 'decentraland-ui2'
-import { useGetWhatsOnDataQuery } from '../../../features/experiences/discovery/events.client'
+import { useGetWhatsOnDataQuery } from '../../../features/events/events.discovery'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'

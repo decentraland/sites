@@ -1,5 +1,5 @@
 import { useAudioWaveform, useIsSpeaking } from '@livekit/components-react'
-import { useCastTranslation } from '../../../features/media/cast/useCastTranslation'
+import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { SpeakingIndicatorProps } from './SpeakingIndicator.types'
 import { SpeakingCircle } from './SpeakingIndicator.styled'
 

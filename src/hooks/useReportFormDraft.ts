@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { ReportReason } from '../features/safety/report/report.types'
+import { ReportReason } from '../features/report/report.types'
 import type { ReportFormDraft, ReportFormDraftInput, UseReportFormDraftResult } from './useReportFormDraft.types'
 
 const DRAFT_KEY = 'report_form_draft'

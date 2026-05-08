@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { enrichWearables, fetchImageById, fetchProfileFaces } from '../features/media/reels'
-import type { Image } from '../features/media/reels'
+import { enrichWearables, fetchImageById, fetchProfileFaces } from '../features/reels'
+import type { Image } from '../features/reels'
 
 interface ReelImageState {
   image: Image | null

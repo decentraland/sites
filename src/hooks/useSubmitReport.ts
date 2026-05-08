@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { buildPresignFiles, buildSubmitPayload, getReportApiUrl } from '../features/safety/report/report.helpers'
-import type { PresignResponse, ReportFormState } from '../features/safety/report/report.types'
+import { buildPresignFiles, buildSubmitPayload, getReportApiUrl } from '../features/report/report.helpers'
+import type { PresignResponse, ReportFormState } from '../features/report/report.types'
 import { fetchWithIdentity } from '../utils/signedFetch'
 import type { UseSubmitReportOptions, UseSubmitReportResult } from './useSubmitReport.types'
 

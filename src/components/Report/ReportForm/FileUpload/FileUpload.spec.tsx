@@ -1,6 +1,6 @@
 import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
-import type { UploadedFile } from '../../../../features/safety/report/report.types'
+import type { UploadedFile } from '../../../../features/report/report.types'
 
 jest.mock('decentraland-ui2', () => ({
   Box: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div {...props}>{children}</div>,

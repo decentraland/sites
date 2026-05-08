@@ -2,17 +2,17 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
-import { useGetStreamerTokenMutation, useLazyGetStreamInfoQuery } from '../../../features/media/cast/cast2.client'
-import { getCastErrorKey } from '../../../features/media/cast/cast2.errors'
+import { useGetStreamerTokenMutation, useLazyGetStreamInfoQuery } from '../../../features/cast2/cast2.client'
+import { getCastErrorKey } from '../../../features/cast2/cast2.errors'
 import {
   clearStreamerToken,
   generateRandomName,
   getStreamerToken as getStoredToken,
   saveStreamerToken
-} from '../../../features/media/cast/cast2.utils'
-import { ChatProvider } from '../../../features/media/cast/contexts/ChatProvider'
-import { useLiveKitCredentials } from '../../../features/media/cast/contexts/LiveKitContext'
-import { useCastTranslation } from '../../../features/media/cast/useCastTranslation'
+} from '../../../features/cast2/cast2.utils'
+import { ChatProvider } from '../../../features/cast2/contexts/ChatProvider'
+import { useLiveKitCredentials } from '../../../features/cast2/contexts/LiveKitContext'
+import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { ViewContainer as StreamerContainer } from '../CommonView/CommonView.styled'
 import { ErrorModal } from '../ErrorModal'
 import { LoadingScreen } from '../LoadingScreen/LoadingScreen'

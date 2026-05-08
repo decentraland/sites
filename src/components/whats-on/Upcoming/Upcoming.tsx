@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from '@dcl/hooks'
-import { useGetUpcomingEventsQuery } from '../../../features/experiences/events'
+import { useGetUpcomingEventsQuery } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
 import { chunk } from '../../../utils/whatsOnChunk'

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { createMockEvent } from '../../__test-utils__/factories'
-import type { EventEntry } from '../../features/experiences/events/events.types'
+import type { EventEntry } from '../../features/events/events.types'
 
 const mockNavigate = jest.fn()
 const mockUseCanEditEvent = jest.fn()
@@ -10,7 +10,7 @@ let mockLocationState: { event?: EventEntry } | null
 let mockParams: { eventId?: string }
 let mockSearch = ''
 
-jest.mock('../../features/experiences/events', () => ({
+jest.mock('../../features/events', () => ({
   useGetEventByIdQuery: (...args: unknown[]) => mockUseGetEventByIdQuery(...args)
 }))
 

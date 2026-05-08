@@ -1,6 +1,6 @@
 import * as mockReact from 'react'
 import { render, screen } from '@testing-library/react'
-import { Role } from '../../../../features/social/communities/communities.types'
+import { Role } from '../../../../features/communities/communities.types'
 import { MembersList } from './MembersList'
 import type { MemberCardProps } from './MemberCard.types'
 

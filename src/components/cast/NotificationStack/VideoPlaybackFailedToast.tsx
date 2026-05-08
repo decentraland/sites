@@ -1,5 +1,5 @@
-import { Notification } from '../../../features/media/cast/contexts/NotificationContext'
-import { useCastTranslation } from '../../../features/media/cast/useCastTranslation'
+import { Notification } from '../../../features/cast2/contexts/NotificationContext'
+import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { Toast } from './Toast'
 
 interface VideoPlaybackFailedToastProps {

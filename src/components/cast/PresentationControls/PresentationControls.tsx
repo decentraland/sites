@@ -6,8 +6,8 @@ import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty'
 import PauseIcon from '@mui/icons-material/Pause'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import StopIcon from '@mui/icons-material/Stop'
-import { usePresentation } from '../../../features/media/cast/contexts/PresentationContext'
-import { useCastTranslation } from '../../../features/media/cast/useCastTranslation'
+import { usePresentation } from '../../../features/cast2/contexts/PresentationContext'
+import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { Divider, NavButton, PresentationControlsOverlay, SlideInfo, UploadingOverlay, VideoButton } from './PresentationControls.styled'
 
 export function PresentationControls() {

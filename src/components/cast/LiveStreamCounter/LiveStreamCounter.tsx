@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
-import { useCastTranslation } from '../../../features/media/cast/useCastTranslation'
+import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { CounterContainer, LivePill } from './LiveStreamCounter.styled'
 
 export function LiveStreamCounter() {

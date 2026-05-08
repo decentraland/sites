@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { CircularProgress, useMediaQuery } from 'decentraland-ui2'
-import type { Image } from '../../../features/media/reels'
+import type { Image } from '../../../features/reels'
 import { ImageActions } from '../ImageActions'
 import { Logo } from '../Logo'
 import { Gradient, ImageWrapper, InlineLogo, LoaderOverlay, ViewerContainer } from './ImageViewer.styled'

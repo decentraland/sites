@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import { Logo } from 'decentraland-ui2'
-import { useCastTranslation } from '../../../features/media/cast/useCastTranslation'
+import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { AudioOutputSelector } from './AudioOutputSelector'
 import { WatcherOnboardingProps } from './WatcherOnboarding.types'
 import {

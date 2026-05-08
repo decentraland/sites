@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { createMockLiveNowCard } from '../../../__test-utils__/factories'
-import type { LiveNowCard } from '../../../features/experiences/events'
+import type { LiveNowCard } from '../../../features/events'
 import { LiveNowCardItem } from './LiveNowCardItem'
 
 const VALID_ADDRESS = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
@@ -9,7 +9,7 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
-jest.mock('../../../features/social/profile/profile.client', () => ({
+jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: () => ({ data: null, isLoading: true })
 }))
 

@@ -1,5 +1,5 @@
-import { useGetCommunityEventsQuery } from '../features/social/communities/communities.client'
-import type { CommunityEvent, CommunityEventsResponse } from '../features/social/communities/communities.types'
+import { useGetCommunityEventsQuery } from '../features/communities/communities.client'
+import type { CommunityEvent, CommunityEventsResponse } from '../features/communities/communities.types'
 import { usePaginatedQuery } from './usePaginatedQuery'
 import type { UsePaginatedCommunityEventsOptions, UsePaginatedCommunityEventsResult } from './usePaginatedCommunityEvents.types'
 

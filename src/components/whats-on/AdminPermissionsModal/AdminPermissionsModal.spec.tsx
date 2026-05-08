@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { AdminPermission } from '../../../features/experiences/events/admin/admin.types'
+import { AdminPermission } from '../../../features/events/events.admin.types'
 import { AdminPermissionsModal } from './AdminPermissionsModal'
 
 jest.mock('@dcl/hooks', () => ({

@@ -1,4 +1,4 @@
-import type { CommunityEvent } from '../features/social/communities/communities.types'
+import type { CommunityEvent } from '../features/communities/communities.types'
 
 type UsePaginatedCommunityEventsOptions = {
   communityId: string

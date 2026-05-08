@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { ReactNode, createContext, useContext } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
-import { useCastTranslation } from '../../../features/media/cast/useCastTranslation'
+import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { ActionButton, CloseButton, Message, TextBlock, Title, Toast as ToastBox, TopRow } from './NotificationStack.styled'
 
 interface ToastContextValue {

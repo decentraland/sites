@@ -31,7 +31,7 @@ jest.mock('./WearableMetadata', () => ({
   WearableMetadata: ({ wearable }: { wearable: { name: string } }) => <div data-testid="reels-wearable">{wearable.name}</div>
 }))
 
-jest.mock('../../../features/media/reels', () => ({
+jest.mock('../../../features/reels', () => ({
   buildProfileUrl: (address: string) => `https://profile/${address}`
 }))
 

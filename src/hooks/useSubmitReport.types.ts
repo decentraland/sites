@@ -1,5 +1,5 @@
 import type { AuthIdentity } from '@dcl/crypto'
-import type { ReportFormState } from '../features/safety/report/report.types'
+import type { ReportFormState } from '../features/report/report.types'
 
 interface UseSubmitReportOptions {
   identity: AuthIdentity | undefined

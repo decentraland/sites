@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
-import type { UploadedFile } from '../../../../features/safety/report/report.types'
+import type { UploadedFile } from '../../../../features/report/report.types'
 import type { FileUploadProps } from './FileUpload.types'
 import {
   AddFileButton,

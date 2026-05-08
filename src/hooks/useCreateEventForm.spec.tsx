@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 import type { AuthIdentity } from '@dcl/crypto'
-import type { EventEntry } from '../features/experiences/events'
+import type { EventEntry } from '../features/events'
 import { useCreateEventForm } from './useCreateEventForm'
 import type { CreateEventFormState } from './useCreateEventForm.types'
 
@@ -22,7 +22,7 @@ jest.mock('@sentry/browser', () => ({
   captureException: (...args: unknown[]) => mockCaptureException(...args)
 }))
 
-jest.mock('../features/experiences/events', () => ({
+jest.mock('../features/events', () => ({
   useCreateEventMutation: () => [mockCreateEvent],
   useUpdateEventMutation: () => [mockUpdateEvent],
   useUploadPosterMutation: () => [mockUploadPoster],

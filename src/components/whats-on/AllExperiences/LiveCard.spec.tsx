@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { createMockEvent } from '../../../__test-utils__/factories'
 import { LiveCard } from './LiveCard'
 
-jest.mock('../../../features/social/profile/profile.client', () => ({
+jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: () => ({ data: null })
 }))
 

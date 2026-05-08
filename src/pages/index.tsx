@@ -2,7 +2,7 @@ import { Suspense, lazy } from 'react'
 import { useInView } from 'react-intersection-observer'
 import { useDesktopMediaQuery } from 'decentraland-ui2'
 import { Hero } from '../components/Home/Hero'
-import { useGetWhatsOnDataQuery } from '../features/experiences/discovery/events.client'
+import { useGetWhatsOnDataQuery } from '../features/events/events.discovery'
 import { BelowFoldContent, SuspenseFallback } from './index.styled'
 
 const WhatsOn = lazy(() => import('../components/Home/WhatsOn').then(m => ({ default: m.WhatsOn })))

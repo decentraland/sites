@@ -1,4 +1,4 @@
-import type { UploadedFile } from '../../../../features/safety/report/report.types'
+import type { UploadedFile } from '../../../../features/report/report.types'
 
 interface FileUploadProps {
   files: UploadedFile[]

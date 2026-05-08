@@ -1,4 +1,4 @@
-import { useGetProfileQuery } from '../features/social/profile/profile.client'
+import { useGetProfileQuery } from '../features/profile/profile.client'
 
 function useProfilePicture(address: string | undefined): string {
   const { data: profile } = useGetProfileQuery(address, { skip: !address })

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Profile } from '../../../features/media/cast/peer'
+import type { Profile } from '../../../features/cast2/peer'
 import { getAvatarBackgroundColor, getDisplayName as getValidatedDisplayName } from '../../../utils/avatarColor'
 import { AvatarContainer, AvatarFallbackCircle, AvatarImage, AvatarInitial } from './Avatar.styled'
 

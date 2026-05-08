@@ -1,6 +1,6 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
-import { adminClient } from '../features/experiences/events/admin'
-import { eventsClient } from '../features/experiences/events/events.client'
+import { adminClient } from '../features/events'
+import { eventsClient } from '../features/events/events.client'
 
 function createWhatsOnAdminListenerMiddleware() {
   const listenerMiddleware = createListenerMiddleware()

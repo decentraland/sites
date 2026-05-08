@@ -9,7 +9,7 @@ const mockUsePlaceDeepLink = jest.fn()
 const mockEventDetailModal = jest.fn()
 const mockPlaceDetailModal = jest.fn()
 
-jest.mock('../../features/experiences/events', () => ({
+jest.mock('../../features/events', () => ({
   useGetLiveNowCardsQuery: (...args: unknown[]) => mockUseGetLiveNowCardsQuery(...args)
 }))
 

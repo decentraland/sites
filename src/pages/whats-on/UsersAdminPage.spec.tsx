@@ -23,7 +23,7 @@ jest.mock('../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ identity: undefined, hasValidIdentity: false, address: undefined })
 }))
 
-jest.mock('../../features/experiences/events/admin/admin.types', () => ({
+jest.mock('../../features/events/events.admin.types', () => ({
   AdminPermission: {
     APPROVE_OWN_EVENT: 'approve_own_event',
     APPROVE_ANY_EVENT: 'approve_any_event',
@@ -33,12 +33,12 @@ jest.mock('../../features/experiences/events/admin/admin.types', () => ({
   }
 }))
 
-jest.mock('../../features/experiences/events/admin/admin.client', () => ({
+jest.mock('../../features/events/events.admin.client', () => ({
   useListAdminsQuery: () => ({ data: mockAdmins, isFetching: false, refetch: jest.fn() }),
   useUpdateAdminPermissionsMutation: () => [jest.fn(), { isLoading: false }]
 }))
 
-jest.mock('../../features/social/profile/profile.client', () => ({
+jest.mock('../../features/profile/profile.client', () => ({
   useGetProfileNames: (addresses: readonly string[]) =>
     new Map(addresses.map(address => [address.toLowerCase(), NAME_BY_ADDRESS[address.toLowerCase()]]))
 }))

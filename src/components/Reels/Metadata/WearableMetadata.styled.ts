@@ -1,5 +1,5 @@
 import { Box, styled } from 'decentraland-ui2'
-import type { Rarity } from '../../../features/media/reels'
+import type { Rarity } from '../../../features/reels'
 
 const RARITY_COLORS: Record<Rarity, string> = {
   common: '#A4A4A4',

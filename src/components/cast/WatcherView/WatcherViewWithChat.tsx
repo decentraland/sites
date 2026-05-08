@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
-import { useChatContext } from '../../../features/media/cast/contexts/ChatProvider'
-import { PresentationProvider } from '../../../features/media/cast/contexts/PresentationContext'
+import { useChatContext } from '../../../features/cast2/contexts/ChatProvider'
+import { PresentationProvider } from '../../../features/cast2/contexts/PresentationContext'
 import { ChatPanel } from '../ChatPanel/ChatPanel'
 import { ControlsArea, MainContent, Sidebar, VideoArea, VideoContainer, ViewLayout as WatcherLayout } from '../CommonView/CommonView.styled'
 import { PeopleSidebar } from '../PeopleSidebar/PeopleSidebar'

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { useRef, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
-import { useCastTranslation } from '../../../features/media/cast/useCastTranslation'
+import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import {
   BrowseButton,
   CloseButton,

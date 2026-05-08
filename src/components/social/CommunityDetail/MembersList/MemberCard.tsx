@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { useTheme } from 'decentraland-ui2'
-import { getRarityColor } from '../../../../features/social/communities/communities.helpers'
+import { getRarityColor } from '../../../../features/communities/communities.helpers'
 import { ClaimedNameIcon } from './ClaimedNameIcon'
 import type { MemberCardProps } from './MemberCard.types'
 import { MemberAvatar, MemberAvatarContainer, MemberInfo, MemberItem, MemberName, MemberNameRow, MemberRole } from './MembersList.styled'

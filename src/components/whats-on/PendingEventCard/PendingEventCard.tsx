@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { useTranslation } from '@dcl/hooks'
-import type { EventEntry } from '../../../features/experiences/events'
+import type { EventEntry } from '../../../features/events'
 import { FutureCard } from '../AllExperiences/FutureCard'
 import { getEventStatus, getRelativeDateLabel } from './PendingEventCard.helpers'
 import { CardFrame, ChipOverlay, DateChip, StatusChip } from './PendingEventCard.styled'

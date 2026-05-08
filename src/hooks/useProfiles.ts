@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { fetchProfiles } from '../features/media/cast/peer'
-import type { Profile } from '../features/media/cast/peer'
+import { fetchProfiles } from '../features/cast2/peer'
+import type { Profile } from '../features/cast2/peer'
 
 interface UseProfilesResult {
   profiles: Map<string, Profile>

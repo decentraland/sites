@@ -1,4 +1,4 @@
-import type { Community } from '../../../../features/social/communities/communities.types'
+import type { Community } from '../../../../features/communities/communities.types'
 
 type CommunityInfoProps = {
   community: Community
