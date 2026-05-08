@@ -48,6 +48,7 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
   const showRemindMeSecondary = isFutureEvent && !hasValidIdentity
   const showCalendarSecondary = !showCalendarPrimary && Boolean(data.startAt)
 
+  const isPreview = data.id === 'preview'
   const shareUrl = useMemo(
     () => (data.isEvent ? buildEventShareUrl(data.id, data.live) : data.url),
     [data.id, data.isEvent, data.live, data.url]
@@ -111,11 +112,13 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
                 </SecondaryButton>
               </Tooltip>
             )}
-            <Tooltip title={copied ? t('event_detail.copied') : t('event_detail.copy_link')} placement="top" arrow>
-              <CopyButton onClick={handleCopy} aria-label={t('event_detail.copy_link')}>
-                <CopyIconStyled />
-              </CopyButton>
-            </Tooltip>
+            {!isPreview && (
+              <Tooltip title={copied ? t('event_detail.copied') : t('event_detail.copy_link')} placement="top" arrow>
+                <CopyButton onClick={handleCopy} aria-label={t('event_detail.copy_link')}>
+                  <CopyIconStyled />
+                </CopyButton>
+              </Tooltip>
+            )}
             {showEdit && (
               <EditButton onClick={onEdit} aria-label={t('event_detail.edit')}>
                 {t('event_detail.edit')}
