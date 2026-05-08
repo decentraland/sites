@@ -120,10 +120,6 @@ const LiveCardWrapper = styled(Box)(({ theme }) => ({
     height: LIVE_MEDIA_HEIGHT_HOVER,
     transform: 'none'
   },
-  // Hide avatar/by row — EventCard DOM: CardContent > SceneInfoContainer > AvatarAndLocationRow > AvatarContainer(.MuiAvatar-root)
-  ['& .MuiCardContent-root .MuiBox-root .MuiBox-root:has(.MuiAvatar-root)']: {
-    display: 'none'
-  },
   ['& .MuiCardContent-root .MuiTypography-h6']: {
     display: 'block',
     overflow: 'hidden',
