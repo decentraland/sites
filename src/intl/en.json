@@ -1287,7 +1287,8 @@
     "community_none": "None",
     "close": "Close",
     "preview": "Preview",
-    "preview_disabled_tooltip": "Complete the required fields to preview the hangout"
+    "preview_disabled_tooltip": "Complete the required fields to preview the hangout",
+    "time_local_timezone": "Your local timezone"
   },
   "host_banner": {
     "title": "Host a Hangout",

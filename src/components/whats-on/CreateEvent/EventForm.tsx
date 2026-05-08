@@ -270,7 +270,7 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
                     value={form.startTime}
                     onChange={e => setField('startTime', e.target.value)}
                     error={Boolean(errors.startTime)}
-                    helperText={errors.startTime}
+                    helperText={errors.startTime || t('create_event.time_local_timezone')}
                     fullWidth
                     InputLabelProps={{ shrink: true }}
                     InputProps={{
