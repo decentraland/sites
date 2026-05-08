@@ -1,7 +1,7 @@
 import { assetUrl } from '../../utils/assetUrl'
 import { isSameLocalDay } from '../../utils/whatsOnDate'
 import { DCL_FOUNDATION_NAME, coordsKey } from './events.discovery.helpers'
-import type { ActiveEntity, HotScene } from './events.discovery.types'
+import type { ActiveEntity, DeploymentResponse, HotScene } from './events.discovery.types'
 import type { EventEntry, RecurrentFrequency } from './events.types'
 
 interface LiveNowCard {
@@ -174,10 +174,6 @@ interface PlaceResponse {
   }[]
 }
 /* eslint-enable @typescript-eslint/naming-convention */
-
-interface DeploymentResponse {
-  deployments: { deployedBy: string }[]
-}
 
 interface EnrichmentConfig {
   placesUrl?: string

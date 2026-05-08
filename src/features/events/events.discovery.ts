@@ -3,19 +3,10 @@ import { getEnv } from '../../config/env'
 import { isDocumentVisible, subscribeVisibility } from '../../utils/documentVisibility'
 import { buildExploreCards } from './events.discovery.helpers'
 import { ExploreCardType } from './events.discovery.types'
-import type { ActiveEntity, EventsResponse, ExploreItem, HotScene } from './events.discovery.types'
+import type { ActiveEntity, DeploymentResponse, EventsResponse, ExploreItem, HotScene } from './events.discovery.types'
 
 const POLL_INTERVAL_MS = 60_000
 const DEPLOYER_BATCH_TIMEOUT_MS = 5_000
-
-interface DeploymentEntry {
-  entityId: string
-  deployedBy: string
-}
-
-interface DeploymentResponse {
-  deployments: DeploymentEntry[]
-}
 
 async function resolveDeployers(peerUrl: string, coordinates: string[]): Promise<Map<string, string>> {
   const signal = AbortSignal.timeout(DEPLOYER_BATCH_TIMEOUT_MS)

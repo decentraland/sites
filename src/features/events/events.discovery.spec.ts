@@ -34,7 +34,7 @@ function okResponse(payload: unknown): Response {
   } as unknown as Response
 }
 
-describe('events.client', () => {
+describe('events.discovery', () => {
   let fetchMock: jest.Mock<Promise<Response>, [RequestInfo | URL, RequestInit?]>
 
   beforeEach(() => {

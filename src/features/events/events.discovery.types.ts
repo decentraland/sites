@@ -47,5 +47,14 @@ interface ActiveEntity {
   pointers: string[]
 }
 
+interface DeploymentEntry {
+  entityId: string
+  deployedBy: string
+}
+
+interface DeploymentResponse {
+  deployments: DeploymentEntry[]
+}
+
 export { ExploreCardType }
-export type { ActiveEntity, EventEntry, EventsResponse, ExploreItem, HotScene }
+export type { ActiveEntity, DeploymentEntry, DeploymentResponse, EventEntry, EventsResponse, ExploreItem, HotScene }
