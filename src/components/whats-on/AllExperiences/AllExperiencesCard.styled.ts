@@ -120,11 +120,6 @@ const LiveCardWrapper = styled(Box)(({ theme }) => ({
     height: LIVE_MEDIA_HEIGHT_HOVER,
     transform: 'none'
   },
-  // Hide only the "by <name>" text — keep the avatar visible.
-  // EventCard DOM: AvatarContainer(.MuiBox-root with .MuiAvatar-root child) > AvatarTextContainer(.MuiBox-root)
-  ['& .MuiCardContent-root .MuiBox-root:has(> .MuiAvatar-root) > .MuiBox-root']: {
-    display: 'none'
-  },
   ['& .MuiCardContent-root .MuiTypography-h6']: {
     display: 'block',
     overflow: 'hidden',
