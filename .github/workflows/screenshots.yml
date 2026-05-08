@@ -34,7 +34,7 @@ jobs:
 
       - name: Install Playwright runner
         working-directory: scripts/screenshots
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Install Chromium
         working-directory: scripts/screenshots

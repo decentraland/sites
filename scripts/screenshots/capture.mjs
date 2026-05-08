@@ -22,9 +22,19 @@ try {
 }
 
 const OUTPUT_DIR = resolve(process.env.OUTPUT_DIR || join(__dirname, '../../screenshots'))
-const NAV_TIMEOUT_MS = Number(process.env.NAV_TIMEOUT_MS || 30000)
-const SETTLE_MS = Number(process.env.SETTLE_MS || 1500)
-const CONCURRENCY = Math.max(1, Number(process.env.CONCURRENCY || 4))
+function parsePositiveInt(name, fallback) {
+  const raw = process.env[name]
+  if (raw == null || raw === '') return fallback
+  const n = Number(raw)
+  if (!Number.isFinite(n) || n <= 0) {
+    throw new Error(`${name} must be a positive number, got: ${JSON.stringify(raw)}`)
+  }
+  return n
+}
+
+const NAV_TIMEOUT_MS = parsePositiveInt('NAV_TIMEOUT_MS', 30000)
+const SETTLE_MS = parsePositiveInt('SETTLE_MS', 1500)
+const CONCURRENCY = Math.max(1, Math.floor(parsePositiveInt('CONCURRENCY', 4)))
 
 const { routes } = JSON.parse(readFileSync(join(__dirname, 'routes.json'), 'utf8'))
 
@@ -38,7 +48,6 @@ async function captureOne(context, route, viewportName) {
   const page = await context.newPage()
   const url = `${BASE_URL}${route.path}`
   const outPath = join(OUTPUT_DIR, viewportName, `${route.name}.png`)
-  mkdirSync(dirname(outPath), { recursive: true })
 
   try {
     // 'load' waits for window.load (DOM + sub-resources) without requiring the
@@ -51,11 +60,14 @@ async function captureOne(context, route, viewportName) {
     await page.screenshot({ path: outPath, fullPage: true })
     return { ok: true, route: route.path, viewport: viewportName, status, file: outPath }
   } catch (err) {
-    // Fallback: try to grab whatever rendered before the timeout.
+    // Fallback: try to grab whatever rendered before the timeout. A second
+    // failure here usually means "the page never rendered anything paintable"
+    // (expected — the nav already failed), but it can also mean disk/permission
+    // issues we want to know about, so we log instead of swallowing silently.
     try {
       await page.screenshot({ path: outPath, fullPage: true })
-    } catch {
-      // Page never rendered — leave no artifact for this slot.
+    } catch (innerErr) {
+      console.warn(`    fallback screenshot failed: ${innerErr?.message ?? innerErr}`)
     }
     return { ok: false, route: route.path, viewport: viewportName, error: err?.message ?? String(err), file: outPath }
   } finally {
@@ -99,6 +111,7 @@ async function main() {
   try {
     for (const vp of VIEWPORTS) {
       console.log(`\n→ ${vp.name}`)
+      mkdirSync(join(OUTPUT_DIR, vp.name), { recursive: true })
       const context = await browser.newContext({
         viewport: vp.viewport,
         deviceScaleFactor: vp.deviceScaleFactor,
