@@ -22,6 +22,7 @@
   "dependencies": {
     "@contentful/rich-text-react-renderer": "16.1.6",
     "@contentful/rich-text-types": "17.2.5",
+    "@dcl/crypto": "^3.6.0",
     "@dcl/hooks": "^1.3.0",
     "@dcl/protocol": "^1.0.0-5810343446.commit-4ee6d08",
     "@dcl/schemas": "^26.1.0",
