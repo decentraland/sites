@@ -38,15 +38,31 @@ const CONCURRENCY = Math.max(1, Math.floor(parsePositiveInt('CONCURRENCY', 4)))
 
 const { routes } = JSON.parse(readFileSync(join(__dirname, 'routes.json'), 'utf8'))
 
+// Address used for {address} when no identity is configured. Lowest non-zero
+// secp256k1 key — guaranteed to never collide with a real user, so the page
+// renders its "unknown user" empty state.
+const ANON_PLACEHOLDER_ADDRESS = '0x0000000000000000000000000000000000000001'
+
+function resolvePath(path, placeholders) {
+  return path.replace(/\{(\w+)\}/g, (_, key) => {
+    const value = placeholders[key]
+    if (value == null) {
+      throw new Error(`Unknown placeholder {${key}} in route ${path}`)
+    }
+    return value
+  })
+}
+
 const VIEWPORTS = [
   { name: 'desktop', viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, isMobile: false, hasTouch: false },
   // iPhone 13 device descriptor: realistic UA + dpr=3 so mobile-only CSS branches render.
   { name: 'mobile', ...devices['iPhone 13'] }
 ]
 
-async function captureOne(context, route, viewportName) {
+async function captureOne(context, route, viewportName, placeholders) {
   const page = await context.newPage()
-  const url = `${BASE_URL}${route.path}`
+  const resolvedPath = resolvePath(route.path, placeholders)
+  const url = `${BASE_URL}${resolvedPath}`
   const outPath = join(OUTPUT_DIR, viewportName, `${route.name}.png`)
 
   try {
@@ -58,7 +74,7 @@ async function captureOne(context, route, viewportName) {
     const status = response?.status() ?? 0
     await page.waitForTimeout(SETTLE_MS)
     await page.screenshot({ path: outPath, fullPage: true })
-    return { ok: true, route: route.path, viewport: viewportName, status, file: outPath }
+    return { ok: true, route: resolvedPath, viewport: viewportName, status, file: outPath }
   } catch (err) {
     // Fallback: try to grab whatever rendered before the timeout. A second
     // failure here usually means "the page never rendered anything paintable"
@@ -69,20 +85,20 @@ async function captureOne(context, route, viewportName) {
     } catch (innerErr) {
       console.warn(`    fallback screenshot failed: ${innerErr?.message ?? innerErr}`)
     }
-    return { ok: false, route: route.path, viewport: viewportName, error: err?.message ?? String(err), file: outPath }
+    return { ok: false, route: resolvedPath, viewport: viewportName, error: err?.message ?? String(err), file: outPath }
   } finally {
     await page.close().catch(() => {})
   }
 }
 
-async function runQueue(context, viewportName) {
+async function runQueue(context, viewportName, placeholders) {
   const queue = [...routes]
   const results = []
   const workers = Array.from({ length: CONCURRENCY }, async () => {
     while (queue.length > 0) {
       const route = queue.shift()
       if (!route) break
-      const r = await captureOne(context, route, viewportName)
+      const r = await captureOne(context, route, viewportName, placeholders)
       const tag = r.ok ? 'OK ' : 'ERR'
       const detail = r.ok ? `(${r.status})` : `— ${r.error}`
       console.log(`  ${tag} [${viewportName}] ${r.route} ${detail}`)
@@ -95,11 +111,14 @@ async function runQueue(context, viewportName) {
 
 async function main() {
   const identity = await buildIdentityFromEnv()
+  const placeholders = {
+    address: identity?.address ?? ANON_PLACEHOLDER_ADDRESS
+  }
   if (identity) {
     const masked = `${identity.address.slice(0, 6)}…${identity.address.slice(-4)}`
-    console.log(`Auth: signed in as ${masked}`)
+    console.log(`Auth: signed in as ${masked} (also drives {address} placeholders)`)
   } else {
-    console.log('Auth: anonymous (no DCL_TEST_PRIVATE_KEY)')
+    console.log(`Auth: anonymous (no DCL_TEST_PRIVATE_KEY); {address} routes use ${ANON_PLACEHOLDER_ADDRESS}`)
   }
 
   console.log(`Capturing ${routes.length} routes × ${VIEWPORTS.length} viewports against ${BASE_URL}`)
@@ -137,7 +156,7 @@ async function main() {
           { key: `single-sign-on-${identity.address}`, value: identity.identityJson }
         )
       }
-      const results = await runQueue(context, vp.name)
+      const results = await runQueue(context, vp.name, placeholders)
       allResults.push(...results)
       await context.close()
     }
