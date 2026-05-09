@@ -72,6 +72,54 @@ async function captureOne(context, route, viewportName, placeholders) {
     // can keep XHRs alive — where 'networkidle' would always hit NAV_TIMEOUT_MS.
     const response = await page.goto(url, { waitUntil: 'load', timeout: NAV_TIMEOUT_MS })
     const status = response?.status() ?? 0
+
+    // Wait for web fonts so text doesn't render in the fallback face.
+    await page.evaluate(() => document.fonts?.ready).catch(() => {})
+
+    // Scroll the full page in chunks to trigger IntersectionObserver-driven
+    // lazy components — events carousel, blog cards, image loading="lazy",
+    // etc. Without this, the homepage screenshot is ~1400px tall (hero +
+    // footer) instead of the ~5000px the real page renders.
+    await page
+      .evaluate(async () => {
+        const step = Math.max(200, Math.floor(window.innerHeight * 0.8))
+        let last = -1
+        while (window.scrollY + window.innerHeight < document.body.scrollHeight && window.scrollY !== last) {
+          last = window.scrollY
+          window.scrollBy(0, step)
+          await new Promise(r => setTimeout(r, 150))
+        }
+        window.scrollTo(0, document.body.scrollHeight)
+        await new Promise(r => setTimeout(r, 200))
+        window.scrollTo(0, 0)
+      })
+      .catch(() => {})
+
+    // Best-effort wait for the network requests fired by lazy components to
+    // finish. Bounded — pages that never go idle (cast websockets) fall through.
+    await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {})
+
+    // Force any remaining loading="lazy" images to load eagerly, then wait for
+    // them to settle. Cards rendered above-the-fold via scroll-triggered React
+    // updates frequently still sit on placeholder thumbnails when we screenshot.
+    await page
+      .evaluate(async () => {
+        document.querySelectorAll('img[loading="lazy"]').forEach(img => img.removeAttribute('loading'))
+        const imgs = Array.from(document.images).filter(img => !img.complete)
+        await Promise.all(
+          imgs.map(
+            img =>
+              new Promise(resolve => {
+                const done = () => resolve()
+                img.addEventListener('load', done, { once: true })
+                img.addEventListener('error', done, { once: true })
+                setTimeout(done, 5000)
+              })
+          )
+        )
+      })
+      .catch(() => {})
+
     await page.waitForTimeout(SETTLE_MS)
     await page.screenshot({ path: outPath, fullPage: true })
     return { ok: true, route: resolvedPath, viewport: viewportName, status, file: outPath }
@@ -138,7 +186,10 @@ async function main() {
         hasTouch: vp.hasTouch,
         userAgent: vp.userAgent,
         locale: 'en-US',
-        timezoneId: 'UTC'
+        timezoneId: 'UTC',
+        // Freezes CSS animations / transitions so screenshots don't catch them
+        // mid-frame, and disables auto-playing carousels that respect the pref.
+        reducedMotion: 'reduce'
       })
       // Seed @dcl/single-sign-on-client's localStorage entry before any page script
       // runs so useAuthIdentity / useWalletAddress see a signed-in session on first
