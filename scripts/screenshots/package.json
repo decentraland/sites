@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "@dcl/crypto": "^3.6.0",
-    "playwright": "1.49.1"
+    "pixelmatch": "7.1.0",
+    "playwright": "1.49.1",
+    "pngjs": "7.0.0"
   }
 }
