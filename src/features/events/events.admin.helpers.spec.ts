@@ -1,5 +1,5 @@
-import { hasAnyAdminPermission, isValidWalletAddress } from './admin.helpers'
-import { AdminPermission } from './admin.types'
+import { hasAnyAdminPermission, isValidWalletAddress } from './events.admin.helpers'
+import { AdminPermission } from './events.admin.types'
 
 describe('when checking if a user has admin permissions', () => {
   describe('and the permissions list is empty', () => {

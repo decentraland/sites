@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { getEnv } from '../../config/env'
-import { jumpClient } from './jump.client'
+import { placesEndpoints } from './places.client'
 
 jest.mock('../../config/env')
 
@@ -9,13 +9,13 @@ const mockGetEnv = jest.mocked(getEnv)
 function createTestStore() {
   return configureStore({
     reducer: {
-      [jumpClient.reducerPath]: jumpClient.reducer
+      [placesEndpoints.reducerPath]: placesEndpoints.reducer
     },
-    middleware: getDefaultMiddleware => getDefaultMiddleware().concat(jumpClient.middleware)
+    middleware: getDefaultMiddleware => getDefaultMiddleware().concat(placesEndpoints.middleware)
   })
 }
 
-describe('jumpClient', () => {
+describe('placesEndpoints', () => {
   let fetchSpy: jest.SpyInstance
 
   beforeEach(() => {
@@ -42,7 +42,7 @@ describe('jumpClient', () => {
 
       it('should call the places endpoint with position query', async () => {
         const store = createTestStore()
-        const result = await store.dispatch(jumpClient.endpoints.getJumpPlaces.initiate({ position: [10, 20] }))
+        const result = await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ position: [10, 20] }))
 
         expect(fetchSpy).toHaveBeenCalledWith('https://places.test/api/places?positions=10,20')
         expect(result.data).toHaveLength(1)
@@ -60,7 +60,7 @@ describe('jumpClient', () => {
 
       it('should call the worlds endpoint with lowercased name', async () => {
         const store = createTestStore()
-        await store.dispatch(jumpClient.endpoints.getJumpPlaces.initiate({ realm: 'Cool.DCL.eth' }))
+        await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'Cool.DCL.eth' }))
 
         expect(fetchSpy).toHaveBeenCalledWith('https://places.test/api/worlds?names=cool.dcl.eth')
       })
@@ -78,7 +78,7 @@ describe('jumpClient', () => {
 
       it('should surface the numeric HTTP status so transient errors are distinguishable from 4xx', async () => {
         const store = createTestStore()
-        const result = await store.dispatch(jumpClient.endpoints.getJumpPlaces.initiate({ position: [0, 0] }))
+        const result = await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ position: [0, 0] }))
 
         expect(result.error).toEqual(expect.objectContaining({ status: 502 }))
       })
@@ -96,7 +96,7 @@ describe('jumpClient', () => {
 
       it('should surface 404 as numeric status so deep-link consumers can drop the broken URL', async () => {
         const store = createTestStore()
-        const result = await store.dispatch(jumpClient.endpoints.getJumpPlaces.initiate({ position: [0, 0] }))
+        const result = await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ position: [0, 0] }))
 
         expect(result.error).toEqual(expect.objectContaining({ status: 404 }))
       })
@@ -110,7 +110,7 @@ describe('jumpClient', () => {
 
       it('should surface FETCH_ERROR so a transient blip does not look like a 4xx', async () => {
         const store = createTestStore()
-        const result = await store.dispatch(jumpClient.endpoints.getJumpPlaces.initiate({ position: [0, 0] }))
+        const result = await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ position: [0, 0] }))
 
         expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
       })
@@ -123,7 +123,7 @@ describe('jumpClient', () => {
 
       it('should return an error without crashing the store', async () => {
         const store = createTestStore()
-        const result = await store.dispatch(jumpClient.endpoints.getJumpPlaces.initiate({ position: [0, 0] }))
+        const result = await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ position: [0, 0] }))
 
         expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
       })
@@ -142,7 +142,7 @@ describe('jumpClient', () => {
 
       it('should call the events endpoint with position query', async () => {
         const store = createTestStore()
-        await store.dispatch(jumpClient.endpoints.getJumpEvents.initiate({ position: [5, 5] }))
+        await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [5, 5] }))
 
         expect(fetchSpy).toHaveBeenCalledWith('https://events.test/api/events?position=5%2C5')
       })
@@ -156,7 +156,7 @@ describe('jumpClient', () => {
 
       it('should append world_names[] to the query string', async () => {
         const store = createTestStore()
-        await store.dispatch(jumpClient.endpoints.getJumpEvents.initiate({ realm: 'cool.dcl.eth' }))
+        await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ realm: 'cool.dcl.eth' }))
 
         expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('world_names%5B%5D=cool.dcl.eth'))
       })
@@ -174,7 +174,7 @@ describe('jumpClient', () => {
 
       it('should surface the numeric HTTP status', async () => {
         const store = createTestStore()
-        const result = await store.dispatch(jumpClient.endpoints.getJumpEvents.initiate({ position: [0, 0] }))
+        const result = await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [0, 0] }))
 
         expect(result.error).toEqual(expect.objectContaining({ status: 503 }))
       })
@@ -193,7 +193,7 @@ describe('jumpClient', () => {
 
       it('should return the event payload', async () => {
         const store = createTestStore()
-        const result = await store.dispatch(jumpClient.endpoints.getJumpEventById.initiate({ id: 'ev-1' }))
+        const result = await store.dispatch(placesEndpoints.endpoints.getJumpEventById.initiate({ id: 'ev-1' }))
 
         expect(result.data).toEqual({ id: 'ev-1' })
       })
@@ -207,7 +207,7 @@ describe('jumpClient', () => {
 
       it('should return null instead of an error', async () => {
         const store = createTestStore()
-        const result = await store.dispatch(jumpClient.endpoints.getJumpEventById.initiate({ id: 'missing' }))
+        const result = await store.dispatch(placesEndpoints.endpoints.getJumpEventById.initiate({ id: 'missing' }))
 
         expect(result.data).toBeNull()
       })
@@ -225,7 +225,7 @@ describe('jumpClient', () => {
 
       it('should surface the numeric HTTP status so transient errors are distinguishable from 4xx', async () => {
         const store = createTestStore()
-        const result = await store.dispatch(jumpClient.endpoints.getJumpEventById.initiate({ id: 'ev-1' }))
+        const result = await store.dispatch(placesEndpoints.endpoints.getJumpEventById.initiate({ id: 'ev-1' }))
 
         expect(result.error).toEqual(expect.objectContaining({ status: 500 }))
       })
@@ -265,7 +265,7 @@ describe('jumpClient', () => {
 
       it('should return the aggregated deployer info', async () => {
         const store = createTestStore()
-        const result = await store.dispatch(jumpClient.endpoints.getSceneMetadata.initiate({ position: '10,20' }))
+        const result = await store.dispatch(placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '10,20' }))
 
         expect(result.data).toEqual({
           deployerAddress: '0xDeployer',
@@ -283,7 +283,7 @@ describe('jumpClient', () => {
 
       it('should return null without error', async () => {
         const store = createTestStore()
-        const result = await store.dispatch(jumpClient.endpoints.getSceneMetadata.initiate({ position: '0,0' }))
+        const result = await store.dispatch(placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0' }))
 
         expect(result.data).toBeNull()
       })
@@ -303,7 +303,7 @@ describe('jumpClient', () => {
 
       it('should return null so the Places API contact_name is not overridden by a placeholder', async () => {
         const store = createTestStore()
-        const result = await store.dispatch(jumpClient.endpoints.getSceneMetadata.initiate({ position: '0,0' }))
+        const result = await store.dispatch(placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0' }))
 
         expect(result.data).toBeNull()
       })

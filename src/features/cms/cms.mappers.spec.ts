@@ -1,4 +1,4 @@
-import { mapBlogAuthor, mapBlogCategory, mapBlogPost } from './blog.mappers'
+import { mapBlogAuthor, mapBlogCategory, mapBlogPost } from './cms.mappers'
 import type { CMSEntry } from './cms.types'
 
 const makeAsset = () => ({

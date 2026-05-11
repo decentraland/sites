@@ -23,7 +23,7 @@ jest.mock('../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ identity: undefined, hasValidIdentity: false, address: undefined })
 }))
 
-jest.mock('../../features/whats-on/admin/admin.types', () => ({
+jest.mock('../../features/events/events.admin.types', () => ({
   AdminPermission: {
     APPROVE_OWN_EVENT: 'approve_own_event',
     APPROVE_ANY_EVENT: 'approve_any_event',
@@ -33,7 +33,7 @@ jest.mock('../../features/whats-on/admin/admin.types', () => ({
   }
 }))
 
-jest.mock('../../features/whats-on/admin/admin.client', () => ({
+jest.mock('../../features/events/events.admin.client', () => ({
   useListAdminsQuery: () => ({ data: mockAdmins, isFetching: false, refetch: jest.fn() }),
   useUpdateAdminPermissionsMutation: () => [jest.fn(), { isLoading: false }]
 }))

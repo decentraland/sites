@@ -1,5 +1,5 @@
-import { coordsKey, findEventAtCoords } from './events.helpers'
-import type { EventEntry } from './events.types'
+import { coordsKey, findEventAtCoords } from './events.discovery.helpers'
+import type { EventEntry } from './events.discovery.types'
 
 describe('coordsKey', () => {
   describe('when called with positive and negative coordinates', () => {

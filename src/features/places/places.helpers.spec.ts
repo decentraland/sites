@@ -6,8 +6,8 @@ import {
   formatDateForGoogleCalendar,
   isEns,
   parsePosition
-} from './jump.helpers'
-import type { CardData } from './jump.types'
+} from './places.helpers'
+import type { CardData } from './places.types'
 
 describe('jump.helpers', () => {
   describe('when isEns is called', () => {

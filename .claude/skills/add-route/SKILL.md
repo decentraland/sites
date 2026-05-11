@@ -12,7 +12,7 @@ This SPA has a **dual shell with a third Layout-less group**. Routes go in one o
 **Lightweight** (default — no Redux, no RTK Query, no Web3, no heavy CMS / LiveKit deps):
 
 - Marketing pages, legal pages, sign-in landing, brand, content, ethics, help, press, discord, report, etc.
-- Data via `useSyncExternalStore`-based clients (see `src/features/events/events.client.ts`, `src/features/profile/profile.client.ts`, `src/features/reels/reels.client.ts`).
+- Data via `useSyncExternalStore`-based clients (see `src/features/events/events.discovery.ts`, `src/features/profile/profile.client.ts`, `src/features/reels/reels.client.ts`).
 
 **Heavy** (mounted under `<DappsShell />`):
 
@@ -33,7 +33,7 @@ If unsure, default to **lightweight (with Layout)**.
 1. Create page at `src/pages/<route>/<Route>.tsx` (or `src/pages/<route>.tsx` for a single file).
 2. In `src/App.tsx`, add `const MyPage = lazy(() => import('./pages/<route>'))`.
 3. Place `<Route>` **inside** `<Route element={<Layout />}>` block, **outside** `<Route element={<DappsShell />}>`.
-4. Data access: co-locate a `useSyncExternalStore` client under `src/features/<domain>/` mimicking `features/events/`, `features/profile/`, or `features/reels/`. **Do NOT** import from `src/shells/*`, `src/services/*`, or any heavy-tier feature directory: `features/{blog,search,whats-on,whats-on-events,jump,communities,cast2,storage}/*`.
+4. Data access: co-locate a `useSyncExternalStore` client under `src/features/<api>/` mimicking `features/events/events.discovery.ts`, `features/profile/`, or `features/reels/`. **Do NOT** import from `src/shells/*`, `src/services/*`, or any heavy-tier feature directory: `features/{cms,places,communities,cast2,storage}/*`, nor the RTK Query files in `features/events/` (`events.client.ts`, `events.admin.client.ts`) — only `events.discovery.ts` is lightweight.
 5. Add navbar clearance to the page's outer container (rule 13):
    ```ts
    const Container = styled(Box)(({ theme }) => ({

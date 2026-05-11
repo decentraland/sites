@@ -1,12 +1,12 @@
 export {
-  jumpClient,
+  placesEndpoints,
   useGetJumpEventByIdQuery,
   useGetJumpEventsQuery,
   useGetJumpPlacesQuery,
   useGetProfileCreatorQuery,
   useGetSceneMetadataQuery
-} from './jump.client'
-export { buildGenericPlace, fromEvent, fromPlace } from './jump.mappers'
+} from './places.client'
+export { buildGenericPlace, fromEvent, fromPlace } from './places.mappers'
 export {
   DEFAULT_POSITION,
   DEFAULT_REALM,
@@ -16,7 +16,7 @@ export {
   formatLocation,
   isEns,
   parsePosition
-} from './jump.helpers'
+} from './places.helpers'
 export type {
   CardData,
   Creator,
@@ -30,4 +30,4 @@ export type {
   JumpPlace,
   JumpPlacesResponse,
   SceneDeployerInfo
-} from './jump.types'
+} from './places.types'

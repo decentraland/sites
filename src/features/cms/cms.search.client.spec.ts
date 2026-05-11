@@ -3,13 +3,13 @@
  */
 import { configureStore } from '@reduxjs/toolkit'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { cmsClient } from '../../services/blogClient'
-import { searchClient } from './search.client'
-import type { CMSSearchResponse } from './search.types'
+import { cmsClient } from '../../services/cmsClient'
+import { searchEndpoints } from './cms.search.client'
+import type { CMSSearchResponse } from './cms.search.types'
 
-// `services/blogClient.ts` uses `import.meta.env.DEV`, which ts-jest can't parse in CJS mode.
+// `services/cmsClient.ts` uses `import.meta.env.DEV`, which ts-jest can't parse in CJS mode.
 // Swap the whole module for a minimal stand-in so the spec can exercise the real injectEndpoints flow.
-jest.mock('../../services/blogClient', () => {
+jest.mock('../../services/cmsClient', () => {
   const mockCmsClient = createApi({
     reducerPath: 'cmsClient',
     baseQuery: fetchBaseQuery({ baseUrl: '' }),
@@ -23,12 +23,12 @@ jest.mock('../../services/blogClient', () => {
   }
 })
 
-jest.mock('../blog/blog.helpers', () => ({
+jest.mock('./cms.helpers', () => ({
   resolveAssetUrl: jest.fn(),
   resolveEntrySlug: jest.fn()
 }))
 
-const { resolveAssetUrl: mockResolveAssetUrl, resolveEntrySlug: mockResolveEntrySlug } = jest.requireMock('../blog/blog.helpers')
+const { resolveAssetUrl: mockResolveAssetUrl, resolveEntrySlug: mockResolveEntrySlug } = jest.requireMock('./cms.helpers')
 
 function createTestStore() {
   return configureStore({
@@ -65,7 +65,7 @@ function buildResponse(overrides: Partial<CMSSearchResponse> = {}): CMSSearchRes
   }
 }
 
-describe('searchClient', () => {
+describe('searchEndpoints', () => {
   const mockFetch = jest.fn()
   const originalFetch = global.fetch
 
@@ -93,7 +93,7 @@ describe('searchClient', () => {
 
     it('should build a /blog/posts URL with q, locale, limit and skip params', async () => {
       const store = createTestStore()
-      await store.dispatch(searchClient.endpoints.searchBlogPosts.initiate({ query: 'plain', hitsPerPage: 10, page: 2 }))
+      await store.dispatch(searchEndpoints.endpoints.searchBlogPosts.initiate({ query: 'plain', hitsPerPage: 10, page: 2 }))
 
       const fetchedUrl = mockFetch.mock.calls[0][0] as Request | string
       const urlString = typeof fetchedUrl === 'string' ? fetchedUrl : fetchedUrl.url
@@ -107,7 +107,7 @@ describe('searchClient', () => {
 
     it('should map items to SearchResult with highlight markup preserved', async () => {
       const store = createTestStore()
-      const result = await store.dispatch(searchClient.endpoints.searchBlogPosts.initiate({ query: 'plain', hitsPerPage: 10, page: 0 }))
+      const result = await store.dispatch(searchEndpoints.endpoints.searchBlogPosts.initiate({ query: 'plain', hitsPerPage: 10, page: 0 }))
 
       expect(result.data).toEqual({
         results: [
@@ -126,7 +126,7 @@ describe('searchClient', () => {
     it('should compute hasMore from the current page and total', async () => {
       mockFetch.mockResolvedValue(jsonResponse(buildResponse({ total: 42 })))
       const store = createTestStore()
-      const result = await store.dispatch(searchClient.endpoints.searchBlogPosts.initiate({ query: 'plain', hitsPerPage: 10, page: 0 }))
+      const result = await store.dispatch(searchEndpoints.endpoints.searchBlogPosts.initiate({ query: 'plain', hitsPerPage: 10, page: 0 }))
 
       expect(result.data?.hasMore).toBe(true)
     })
@@ -151,7 +151,7 @@ describe('searchClient', () => {
         )
       )
       const store = createTestStore()
-      const result = await store.dispatch(searchClient.endpoints.searchBlogPosts.initiate({ query: 'plain', hitsPerPage: 10, page: 0 }))
+      const result = await store.dispatch(searchEndpoints.endpoints.searchBlogPosts.initiate({ query: 'plain', hitsPerPage: 10, page: 0 }))
 
       expect(result.data?.results[0]).toMatchObject({
         highlightedTitle: 'No Highlight Title',
@@ -161,7 +161,7 @@ describe('searchClient', () => {
 
     it('should short-circuit without hitting the network when the query is shorter than 3 chars', async () => {
       const store = createTestStore()
-      const result = await store.dispatch(searchClient.endpoints.searchBlogPosts.initiate({ query: 'ab', hitsPerPage: 10, page: 0 }))
+      const result = await store.dispatch(searchEndpoints.endpoints.searchBlogPosts.initiate({ query: 'ab', hitsPerPage: 10, page: 0 }))
 
       expect(mockFetch).not.toHaveBeenCalled()
       expect(result.data).toEqual({ results: [], total: 0, hasMore: false })
@@ -169,7 +169,7 @@ describe('searchClient', () => {
 
     it('should short-circuit for whitespace-only queries', async () => {
       const store = createTestStore()
-      const result = await store.dispatch(searchClient.endpoints.searchBlogPosts.initiate({ query: '   ', hitsPerPage: 10, page: 0 }))
+      const result = await store.dispatch(searchEndpoints.endpoints.searchBlogPosts.initiate({ query: '   ', hitsPerPage: 10, page: 0 }))
 
       expect(mockFetch).not.toHaveBeenCalled()
       expect(result.data).toEqual({ results: [], total: 0, hasMore: false })
@@ -178,7 +178,7 @@ describe('searchClient', () => {
     it('should surface a CUSTOM_ERROR when the response shape is unexpected', async () => {
       mockFetch.mockResolvedValue(jsonResponse({ unexpected: true }))
       const store = createTestStore()
-      const result = await store.dispatch(searchClient.endpoints.searchBlogPosts.initiate({ query: 'plain', hitsPerPage: 10, page: 0 }))
+      const result = await store.dispatch(searchEndpoints.endpoints.searchBlogPosts.initiate({ query: 'plain', hitsPerPage: 10, page: 0 }))
 
       expect(result.error).toMatchObject({ status: 'CUSTOM_ERROR' })
     })
@@ -191,7 +191,7 @@ describe('searchClient', () => {
 
     it('should map items to SearchBlogResult with id, categorySlug and URL', async () => {
       const store = createTestStore()
-      const result = await store.dispatch(searchClient.endpoints.searchBlog.initiate({ query: 'plain', hitsPerPage: 5, page: 0 }))
+      const result = await store.dispatch(searchEndpoints.endpoints.searchBlog.initiate({ query: 'plain', hitsPerPage: 5, page: 0 }))
 
       expect(result.data).toEqual([
         {
@@ -207,7 +207,7 @@ describe('searchClient', () => {
 
     it('should short-circuit without hitting the network when the query is shorter than 3 chars', async () => {
       const store = createTestStore()
-      const result = await store.dispatch(searchClient.endpoints.searchBlog.initiate({ query: 'ab', hitsPerPage: 5, page: 0 }))
+      const result = await store.dispatch(searchEndpoints.endpoints.searchBlog.initiate({ query: 'ab', hitsPerPage: 5, page: 0 }))
 
       expect(mockFetch).not.toHaveBeenCalled()
       expect(result.data).toEqual([])

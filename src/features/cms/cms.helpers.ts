@@ -1,5 +1,5 @@
-import { cmsBaseUrl } from '../../services/blogClient'
-import type { SlugFields } from './blog.types'
+import { cmsBaseUrl } from '../../services/cmsClient'
+import type { SlugFields } from './cms.blog.types'
 import type { CMSEntry, CMSQueryParams, CMSReference } from './cms.types'
 
 // ============================================================================

@@ -1,5 +1,5 @@
-import { buildGenericPlace, fromEvent, fromPlace } from './jump.mappers'
-import type { JumpEvent, JumpPlace } from './jump.types'
+import { buildGenericPlace, fromEvent, fromPlace } from './places.mappers'
+import type { JumpEvent, JumpPlace } from './places.types'
 
 describe('jump.mappers', () => {
   describe('when fromPlace is called', () => {

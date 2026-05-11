@@ -1,4 +1,4 @@
-import type { CardData } from './jump.types'
+import type { CardData } from './places.types'
 
 const ENS_REGEX = /^[a-zA-Z0-9.]+\.eth$/
 

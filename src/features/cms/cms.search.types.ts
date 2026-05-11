@@ -1,4 +1,4 @@
-import type { CMSEntry } from '../blog/cms.types'
+import type { CMSEntry } from './cms.types'
 
 /**
  * `<em>`-wrapped snippets produced by the cms-server `ts_headline` when a search query

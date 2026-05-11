@@ -1,4 +1,4 @@
-import { AdminPermission } from './admin.types'
+import { AdminPermission } from './events.admin.types'
 
 const ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/
 

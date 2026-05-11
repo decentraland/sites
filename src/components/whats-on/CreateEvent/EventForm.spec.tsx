@@ -141,7 +141,7 @@ jest.mock('./DurationField', () => ({
   )
 }))
 
-jest.mock('../../../features/whats-on-events', () => ({
+jest.mock('../../../features/events', () => ({
   useGetWorldNamesQuery: () => ({ data: [] }),
   useGetCommunitiesQuery: () => ({ data: [] })
 }))

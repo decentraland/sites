@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import decentralandLogo from '../../images/jump/decentraland-logo.svg'
 import { resolveEventRealm } from '../../utils/whatsOnUrl'
-import type { CardData, JumpEvent, JumpPlace } from './jump.types'
+import type { CardData, JumpEvent, JumpPlace } from './places.types'
 
 const FOUNDATION_CONTACT_NAME = 'Decentraland Foundation'
 

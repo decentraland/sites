@@ -1,6 +1,6 @@
-import { cmsClient, getCmsBaseUrl } from '../../services/blogClient'
-import { resolveAssetUrl, resolveEntrySlug } from '../blog/blog.helpers'
-import type { CMSSearchItem, CMSSearchResponse, SearchBlogPostsParams, SearchBlogPostsResponse, SearchBlogResult } from './search.types'
+import { cmsClient, getCmsBaseUrl } from '../../services/cmsClient'
+import { resolveAssetUrl, resolveEntrySlug } from './cms.helpers'
+import type { CMSSearchItem, CMSSearchResponse, SearchBlogPostsParams, SearchBlogPostsResponse, SearchBlogResult } from './cms.search.types'
 
 /**
  * Intermediate shape after resolving asset URL + category slug; internal to this module.
@@ -60,7 +60,7 @@ const enrichHit = async (hit: CMSSearchItem): Promise<EnrichedSearchPost> => {
   }
 }
 
-const searchClient = cmsClient.injectEndpoints({
+const searchEndpoints = cmsClient.injectEndpoints({
   endpoints: build => ({
     searchBlogPosts: build.query<SearchBlogPostsResponse, SearchBlogPostsParams>({
       queryFn: async (args, _api, _extra, baseQuery) => {
@@ -117,6 +117,6 @@ const searchClient = cmsClient.injectEndpoints({
   overrideExisting: false
 })
 
-const { useSearchBlogPostsQuery, useSearchBlogQuery } = searchClient
+const { useSearchBlogPostsQuery, useSearchBlogQuery } = searchEndpoints
 
-export { searchClient, useSearchBlogPostsQuery, useSearchBlogQuery }
+export { searchEndpoints, useSearchBlogPostsQuery, useSearchBlogQuery }

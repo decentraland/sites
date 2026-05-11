@@ -1,7 +1,7 @@
 import { memo, useCallback } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { Tooltip } from 'decentraland-ui2'
-import type { EventEntry } from '../../../features/whats-on-events'
+import type { EventEntry } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCardActions } from '../../../hooks/useCardActions'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'

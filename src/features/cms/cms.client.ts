@@ -1,12 +1,12 @@
 import { BLOCKS } from '@contentful/rich-text-types'
-import { cmsClient, getCmsBaseUrl } from '../../services/blogClient'
+import { cmsClient, getCmsBaseUrl } from '../../services/cmsClient'
 import type { BlogAuthor, BlogCategory, BlogPost, ContentfulAsset, PaginatedBlogPosts } from '../../shared/blog/types/blog.domain'
 // NOTE: store is imported here only for getPostFromStore (normalized-cache read optimization).
 // Dispatches use onQueryStarted so transformResponse stays a pure data transformer.
 import { store } from '../../shells/store'
-import { getEntrySlug, resolveAssetLink, resolveAuthorLink, resolveCategoryLink } from './blog.helpers'
-import { mapBlogAuthor, mapBlogCategory, mapBlogPost, mapContentfulAsset } from './blog.mappers'
-import { postsUpserted } from './blog.slice'
+import { getEntrySlug, resolveAssetLink, resolveAuthorLink, resolveCategoryLink } from './cms.helpers'
+import { mapBlogAuthor, mapBlogCategory, mapBlogPost, mapContentfulAsset } from './cms.mappers'
+import { postsUpserted } from './cms.slice'
 import type {
   GetBlogAuthorBySlugParams,
   GetBlogAuthorParams,
@@ -16,7 +16,7 @@ import type {
   GetBlogPostPreviewParams,
   GetBlogPostsParams,
   SlugFields
-} from './blog.types'
+} from './cms.blog.types'
 import type { CMSEntry, CMSListResponse } from './cms.types'
 
 // Helper to check if a post is already in the normalized store
@@ -117,7 +117,7 @@ const resolveBodyAssets = async (body: DocumentNode): Promise<Record<string, Con
   return assetsMap
 }
 
-const blogClient = cmsClient.injectEndpoints({
+const blogEndpoints = cmsClient.injectEndpoints({
   endpoints: build => ({
     getBlogPosts: build.query<PaginatedBlogPosts, GetBlogPostsParams>({
       serializeQueryArgs: ({ queryArgs }) => {
@@ -504,10 +504,10 @@ const {
   useGetBlogAuthorQuery,
   useGetBlogAuthorBySlugQuery,
   useGetBlogPostPreviewQuery
-} = blogClient
+} = blogEndpoints
 
 export {
-  blogClient,
+  blogEndpoints,
   useGetBlogAuthorBySlugQuery,
   useGetBlogAuthorQuery,
   useGetBlogAuthorsQuery,

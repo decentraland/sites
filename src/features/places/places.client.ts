@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { getEnv } from '../../config/env'
 import { placesClient } from '../../services/placesClient'
-import { isEns } from './jump.helpers'
+import { isEns } from './places.helpers'
 import type {
   Creator,
   GetEventByIdArgs,
@@ -17,7 +17,7 @@ import type {
   PeerProfile,
   PeerSceneEntity,
   SceneDeployerInfo
-} from './jump.types'
+} from './places.types'
 
 function buildPlacesUrl(baseUrl: string, { position, realm }: GetPlacesArgs): string {
   if (realm && isEns(realm)) {
@@ -80,7 +80,7 @@ function toCreator(address: string, profile: PeerProfile | null): Creator | null
   }
 }
 
-const jumpClient = placesClient.injectEndpoints({
+const placesEndpoints = placesClient.injectEndpoints({
   endpoints: build => ({
     getJumpPlaces: build.query<JumpPlace[], GetPlacesArgs>({
       queryFn: async args => {
@@ -181,14 +181,13 @@ const jumpClient = placesClient.injectEndpoints({
   overrideExisting: false
 })
 
-// Attendee toggling reuses the `useToggleAttendeeMutation` from
-// `features/whats-on-events` via the shared `useRemindMe` hook — no jump-
-// specific mutation is needed here.
+// Attendee toggling reuses `useToggleAttendeeMutation` from `features/events`
+// via the shared `useRemindMe` hook — no places-specific mutation is needed here.
 const { useGetJumpEventByIdQuery, useGetJumpEventsQuery, useGetJumpPlacesQuery, useGetProfileCreatorQuery, useGetSceneMetadataQuery } =
-  jumpClient
+  placesEndpoints
 
 export {
-  jumpClient,
+  placesEndpoints,
   useGetJumpEventByIdQuery,
   useGetJumpEventsQuery,
   useGetJumpPlacesQuery,

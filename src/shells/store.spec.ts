@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
-import { adminClient } from '../features/whats-on/admin'
-import { eventsClient } from '../features/whats-on-events/events.client'
-import { cmsClient } from '../services/blogClient'
+import { adminClient } from '../features/events/events.admin.client'
+import { eventsClient } from '../features/events/events.client'
 import { cast2Client } from '../services/cast2Client'
+import { cmsClient } from '../services/cmsClient'
 import { placesClient } from '../services/placesClient'
 
 jest.mock('../config/env', () => ({
@@ -16,7 +16,7 @@ jest.mock('../utils/signedFetch', () => ({
   fetchWithOptionalIdentity: jest.fn()
 }))
 
-jest.mock('../services/blogClient', () => {
+jest.mock('../services/cmsClient', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { createApi, fetchBaseQuery } = require('@reduxjs/toolkit/query/react')
   const cmsClient = createApi({
@@ -77,7 +77,7 @@ describe('when inspecting the store source file', () => {
   })
 
   it('should import the admin client', () => {
-    expect(source).toMatch(/from '\.\.\/features\/whats-on\/admin'/)
+    expect(source).toMatch(/from '\.\.\/features\/events\/events\.admin\.client'/)
   })
 
   it('should register adminClient.reducer in the reducer map', () => {
