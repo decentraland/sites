@@ -29,7 +29,7 @@ function CreateEventSuccess() {
   }, [navigate])
 
   const handleMyEvents = useCallback(() => {
-    navigate('/whats-on', { state: { activeTab: 'my' } })
+    navigate('/whats-on?tab=my')
   }, [navigate])
 
   return (

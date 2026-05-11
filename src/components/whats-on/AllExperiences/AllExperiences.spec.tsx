@@ -2,10 +2,16 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { createMockEvent } from '../../../__test-utils__/factories'
 import { AllExperiences } from './AllExperiences'
 
-let mockLocationState: { activeTab?: string } | null = null
+let mockSearchParams = new URLSearchParams()
+const mockSetSearchParams = jest.fn()
 jest.mock('react-router-dom', () => ({
   useNavigate: () => jest.fn(),
-  useLocation: () => ({ pathname: '/whats-on', state: mockLocationState })
+  useSearchParams: () => [mockSearchParams, mockSetSearchParams]
+}))
+
+const mockRedirectToAuth = jest.fn()
+jest.mock('../../../utils/authRedirect', () => ({
+  redirectToAuth: (...args: unknown[]) => mockRedirectToAuth(...args)
 }))
 
 const mockUseAuthIdentity = jest.fn()
@@ -132,12 +138,30 @@ describe('AllExperiences', () => {
     jest.useFakeTimers()
     jest.setSystemTime(new Date(2026, 8, 13, 10, 0, 0))
     mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
+    mockSetSearchParams.mockImplementation((updater: URLSearchParams | ((prev: URLSearchParams) => URLSearchParams)) => {
+      const next = typeof updater === 'function' ? updater(mockSearchParams) : updater
+      mockSearchParams = next
+    })
   })
 
   afterEach(() => {
     jest.useRealTimers()
     jest.resetAllMocks()
-    mockLocationState = null
+    mockSearchParams = new URLSearchParams()
+  })
+
+  describe('when landing on ?tab=my without a valid identity', () => {
+    beforeEach(() => {
+      mockColumnCount.mockReturnValue(3)
+      mockSearchParams = new URLSearchParams('tab=my')
+      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+    })
+
+    it('should redirect to auth preserving tab=my so the user lands back on My Hangouts after sign-in', () => {
+      render(<AllExperiences />)
+
+      expect(mockRedirectToAuth).toHaveBeenCalledWith('/whats-on', { tab: 'my' })
+    })
   })
 
   describe('when signed out with 3 columns', () => {
@@ -425,15 +449,45 @@ describe('AllExperiences', () => {
       expect(screen.getByTestId('experiences-tabs')).toHaveAttribute('data-value', 'all')
     })
 
-    describe('and navigation state requests the "my" tab', () => {
+    describe('and the URL carries ?tab=my', () => {
       beforeEach(() => {
-        mockLocationState = { activeTab: 'my' }
+        mockSearchParams = new URLSearchParams('tab=my')
       })
 
       it('should open on the "my" tab instead of "all"', () => {
         render(<AllExperiences />)
 
         expect(screen.getByTestId('experiences-tabs')).toHaveAttribute('data-value', 'my')
+      })
+    })
+
+    describe('and the user clicks the "my" tab', () => {
+      beforeEach(() => {
+        mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      })
+
+      it('should write ?tab=my into the URL via replace so back navigation is unaffected', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-my'))
+
+        expect(mockSetSearchParams).toHaveBeenCalledWith(expect.any(Function), { replace: true })
+        expect(mockSearchParams.get('tab')).toBe('my')
+      })
+    })
+
+    describe('and the user clicks the "all" tab after landing on ?tab=my', () => {
+      beforeEach(() => {
+        mockSearchParams = new URLSearchParams('tab=my')
+        mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      })
+
+      it('should remove the tab param from the URL instead of writing tab=all', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-all'))
+
+        expect(mockSearchParams.has('tab')).toBe(false)
       })
     })
 
@@ -623,6 +677,25 @@ describe('AllExperiences', () => {
 
         expect(screen.getByTestId('my-experiences-empty')).toBeInTheDocument()
         expect(screen.queryByTestId('my-experiences-grid')).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and the user signs out while ?tab=my is active', () => {
+      beforeEach(() => {
+        mockSearchParams = new URLSearchParams('tab=my')
+        mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      })
+
+      it('should strip the tab param instead of redirecting to auth, so the user falls back to All gracefully', () => {
+        const { rerender } = render(<AllExperiences />)
+
+        expect(mockRedirectToAuth).not.toHaveBeenCalled()
+
+        mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
+        rerender(<AllExperiences />)
+
+        expect(mockRedirectToAuth).not.toHaveBeenCalled()
+        expect(mockSearchParams.has('tab')).toBe(false)
       })
     })
   })
