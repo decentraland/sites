@@ -7,8 +7,17 @@ on:
   workflow_dispatch:
     inputs:
       url:
-        description: 'Base URL to capture (Vercel preview, staging, prod, etc). No trailing slash.'
+        description: 'Target URL to capture (Vercel preview, staging, prod, etc). No trailing slash.'
         required: true
+        type: string
+      baseline_url:
+        description: 'Optional baseline URL — when set, diff against target and only export routes whose pixel-difference exceeds the threshold (saves ~80% artifact size).'
+        required: false
+        type: string
+      diff_threshold:
+        description: 'Percent of pixels that must differ for a route to count as regressed (default 0.5).'
+        required: false
+        default: '0.5'
         type: string
       concurrency:
         description: 'Pages captured in parallel per viewport.'
@@ -40,25 +49,35 @@ jobs:
         working-directory: scripts/screenshots
         run: npx playwright install --with-deps chromium
 
-      - name: Sanity-check BASE_URL is reachable
+      - name: Sanity-check URLs are reachable
         env:
           BASE_URL: ${{ inputs.url }}
+          BASELINE_URL: ${{ inputs.baseline_url }}
         run: |
-          echo "Checking ${BASE_URL} ..."
           # Vercel previews can return non-2xx for unauthenticated requests, but they should
           # at least respond. Anything else (DNS failure, connection refused) means the URL
           # is wrong and we should fail fast instead of running 50+ navigations against it.
+          echo "Checking ${BASE_URL} ..."
           curl -sS -o /dev/null --connect-timeout 10 --max-time 20 -- "$BASE_URL" || {
             echo "::error::BASE_URL is not reachable"
             exit 1
           }
+          if [ -n "$BASELINE_URL" ]; then
+            echo "Checking ${BASELINE_URL} ..."
+            curl -sS -o /dev/null --connect-timeout 10 --max-time 20 -- "$BASELINE_URL" || {
+              echo "::error::BASELINE_URL is not reachable"
+              exit 1
+            }
+          fi
 
       - name: Capture screenshots
         working-directory: scripts/screenshots
         env:
           BASE_URL: ${{ inputs.url }}
+          BASELINE_URL: ${{ inputs.baseline_url }}
           OUTPUT_DIR: ${{ github.workspace }}/screenshots
           CONCURRENCY: ${{ inputs.concurrency }}
+          DIFF_THRESHOLD_PERCENT: ${{ inputs.diff_threshold }}
           # When the secret is unset (forks, missing config), the runner falls back to
           # anonymous captures. The secret value is masked in logs by GitHub Actions.
           DCL_TEST_PRIVATE_KEY: ${{ secrets.DCL_TEST_PRIVATE_KEY }}
