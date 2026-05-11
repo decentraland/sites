@@ -62,8 +62,8 @@ Lightweight | Heavy | Layout-less — one-sentence reason.
 - decentraland-ui2 (Box, Typography, styled, theme tokens)
 - src/hooks/* (useFormatMessage, useTrackClick, useAuthIdentity, useWalletAddress)
 - src/components/* (top-level shared components)
-- (lightweight / Layout-less only) `useSyncExternalStore` clients under src/features/{events,profile,reels}/
-- (heavy only) RTK Query hooks from src/features/{blog,search,whats-on,whats-on-events,jump,communities,cast2,storage}/
+- (lightweight / Layout-less only) `useSyncExternalStore` clients: `src/features/events/events.discovery.ts`, `src/features/profile/`, `src/features/reels/`
+- (heavy only) RTK Query hooks from `src/features/{cms,events,places,communities,cast2,storage}/` (note `events` mixes heavy RTK Query files with the lightweight `events.discovery.ts`)
 
 ### Imports forbidden
 - src/shells/* (lightweight tier — boundary violation, rule 2)

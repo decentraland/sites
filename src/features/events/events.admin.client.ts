@@ -1,15 +1,15 @@
 import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react'
-import { getEnv } from '../../../config/env'
-import { fetchWithIdentity } from '../../../utils/signedFetch'
-import type { EventEntry } from '../../whats-on-events/events.types'
-import { REJECTION_REASON_MAX_LENGTH } from './admin.types'
+import { getEnv } from '../../config/env'
+import { fetchWithIdentity } from '../../utils/signedFetch'
+import { REJECTION_REASON_MAX_LENGTH } from './events.admin.types'
 import type {
   AdminEventActionParams,
   AdminProfileSettings,
   AdminRejectEventParams,
   IdentityOnlyParams,
   UpdateAdminPermissionsParams
-} from './admin.types'
+} from './events.admin.types'
+import type { EventEntry } from './events.types'
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const

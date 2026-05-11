@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { useTranslation } from '@dcl/hooks'
-import type { LiveNowCard as LiveNowCardData } from '../../../features/whats-on-events'
+import type { LiveNowCard as LiveNowCardData } from '../../../features/events'
 import { useCreatorAvatar } from '../../../hooks/useCreatorAvatar'
 import { assetUrl } from '../../../utils/assetUrl'
 import { formatEthAddress } from '../../../utils/avatar'

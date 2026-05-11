@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
-import { useGetBlogCategoriesQuery } from '../../../features/blog/blog.client'
+import { useGetBlogCategoriesQuery } from '../../../features/cms/cms.client'
 import { Search } from '../Search'
 import type { BlogNavigationProps } from './BlogNavigation.types'
 import {

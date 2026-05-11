@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 import { createMockEvent } from '../__test-utils__/factories'
-import type { EventEntry } from '../features/whats-on-events/events.types'
+import type { EventEntry } from '../features/events/events.types'
 import { useAdminEventDeepLink } from './useAdminEventDeepLink'
 
 const mockSetSearchParams = jest.fn()

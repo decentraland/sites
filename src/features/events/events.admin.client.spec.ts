@@ -1,14 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit'
 import type { AuthIdentity } from '@dcl/crypto'
-import { getEnv } from '../../../config/env'
-import { adminClient } from './admin.client'
+import { getEnv } from '../../config/env'
+import { adminClient } from './events.admin.client'
 
-jest.mock('../../../config/env')
+jest.mock('../../config/env')
 
 const mockGetEnv = jest.mocked(getEnv)
 
 const mockFetchWithIdentity = jest.fn()
-jest.mock('../../../utils/signedFetch', () => ({
+jest.mock('../../utils/signedFetch', () => ({
   fetchWithIdentity: (...args: unknown[]) => mockFetchWithIdentity(...args)
 }))
 

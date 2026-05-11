@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMockEvent } from '../../__test-utils__/factories'
 import type { EventDetailModalProps } from '../../components/whats-on/EventDetailModal/EventDetailModal.types'
-import type { EventEntry } from '../../features/whats-on-events/events.types'
+import type { EventEntry } from '../../features/events/events.types'
 /* eslint-disable-next-line @typescript-eslint/no-require-imports */
 const { PendingEventsPage } = require('./PendingEventsPage')
 
@@ -26,7 +26,7 @@ jest.mock('../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ identity: { authChain: [] }, hasValidIdentity: true, address: '0xadmin' })
 }))
 
-jest.mock('../../features/whats-on/admin/admin.client', () => ({
+jest.mock('../../features/events/events.admin.client', () => ({
   useGetAdminEventsQuery: (...args: unknown[]) => mockUseGetAdminEventsQuery(...args),
   useApproveEventMutation: () => [jest.fn(), { isLoading: false }],
   useRejectEventMutation: () => [jest.fn(), { isLoading: false }]

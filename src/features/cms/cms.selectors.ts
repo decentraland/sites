@@ -1,7 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit'
 import type { BlogPost } from '../../shared/blog/types/blog.domain'
 import type { RootState } from '../../shells/store'
-import { blogReducer, postsSelectors } from './blog.slice'
+import { blogReducer, postsSelectors } from './cms.slice'
 
 type BlogState = ReturnType<typeof blogReducer>
 
