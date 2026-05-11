@@ -1,5 +1,5 @@
 {
-  "$comment": "Keep in sync with src/App.tsx. Pure redirect routes (/events/*, /places/*, /jump/event, /whats-on/new-event, /whats-on/edit-event/:eventId, /report/players) are intentionally omitted — they only redirect and the destination is already captured. Dynamic params use stable sample values; routes with no real backing data render their empty/not-found state, which is the intended snapshot when capturing without sign-in.",
+  "$comment": "Keep in sync with src/App.tsx. Pure redirect routes (/events/*, /places/*, /jump/event, /whats-on/new-event, /whats-on/edit-event/:eventId, /report/players) are intentionally omitted — they only redirect and the destination is already captured. Dynamic params use stable sample values; routes with no real backing data render their empty/not-found state, which is the intended snapshot when capturing without sign-in. The {address} placeholder is substituted at runtime with the signed-in wallet address (or a low-bit placeholder when running anonymously) so user-keyed routes capture real data instead of an empty state.",
   "routes": [
     { "path": "/", "name": "root" },
     { "path": "/brand", "name": "brand" },
@@ -21,9 +21,9 @@
     { "path": "/download_success", "name": "download_success" },
     { "path": "/download/creator-hub", "name": "download__creator-hub" },
     { "path": "/download/creator-hub-success", "name": "download__creator-hub-success" },
-    { "path": "/invite/0x0000000000000000000000000000000000000001", "name": "invite__sample-referrer" },
+    { "path": "/invite/{address}", "name": "invite" },
     { "path": "/reels", "name": "reels" },
-    { "path": "/reels/list/0x0000000000000000000000000000000000000001", "name": "reels__list__sample-address" },
+    { "path": "/reels/list/{address}", "name": "reels__list" },
     { "path": "/reels/sample-image-id", "name": "reels__sample-image" },
     { "path": "/whats-on", "name": "whats-on" },
     { "path": "/whats-on/new-hangout", "name": "whats-on__new-hangout" },
@@ -53,7 +53,7 @@
     { "path": "/storage/env", "name": "storage__env" },
     { "path": "/storage/scene", "name": "storage__scene" },
     { "path": "/storage/players", "name": "storage__players" },
-    { "path": "/storage/players/0x0000000000000000000000000000000000000001", "name": "storage__players__sample-address" },
+    { "path": "/storage/players/{address}", "name": "storage__players__self" },
     { "path": "/storage/not-found-route", "name": "storage__not-found" },
     { "path": "/social/communities/sample-community-id", "name": "social__community__sample" },
     { "path": "/social/not-found-route", "name": "social__not-found" }
