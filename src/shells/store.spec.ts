@@ -4,6 +4,7 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { adminClient } from '../features/whats-on/admin'
 import { eventsClient } from '../features/whats-on-events/events.client'
 import { cmsClient } from '../services/blogClient'
+import { cast2Client } from '../services/cast2Client'
 import { placesClient } from '../services/placesClient'
 
 jest.mock('../config/env', () => ({
@@ -34,12 +35,19 @@ describe('when building the DappsShell store', () => {
       [eventsClient.reducerPath]: eventsClient.reducer,
       [adminClient.reducerPath]: adminClient.reducer,
       [cmsClient.reducerPath]: cmsClient.reducer,
-      [placesClient.reducerPath]: placesClient.reducer
+      [placesClient.reducerPath]: placesClient.reducer,
+      [cast2Client.reducerPath]: cast2Client.reducer
     })
     const store = configureStore({
       reducer: rootReducer,
       middleware: getDefault =>
-        getDefault().concat(eventsClient.middleware, adminClient.middleware, cmsClient.middleware, placesClient.middleware)
+        getDefault().concat(
+          eventsClient.middleware,
+          adminClient.middleware,
+          cmsClient.middleware,
+          placesClient.middleware,
+          cast2Client.middleware
+        )
     })
     state = store.getState() as Record<string, unknown>
   })
@@ -54,6 +62,10 @@ describe('when building the DappsShell store', () => {
 
   it('should register the places RTK Query reducer', () => {
     expect(state).toHaveProperty('placesClient')
+  })
+
+  it('should register the cast2 RTK Query reducer', () => {
+    expect(state).toHaveProperty('cast2Client')
   })
 })
 
@@ -74,5 +86,17 @@ describe('when inspecting the store source file', () => {
 
   it('should concatenate adminClient.middleware in the middleware chain', () => {
     expect(source).toContain('adminClient.middleware')
+  })
+
+  it('should import the cast2 client', () => {
+    expect(source).toMatch(/from '\.\.\/services\/cast2Client'/)
+  })
+
+  it('should register cast2Client.reducer in the reducer map', () => {
+    expect(source).toContain('[cast2Client.reducerPath]: cast2Client.reducer')
+  })
+
+  it('should concatenate cast2Client.middleware in the middleware chain', () => {
+    expect(source).toContain('cast2Client.middleware')
   })
 })

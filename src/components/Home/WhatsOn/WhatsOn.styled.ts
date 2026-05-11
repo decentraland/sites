@@ -81,7 +81,14 @@ const MobileCarousel = styled(Box)(({ theme }) => ({
   }
 }))
 
-const CardWrapper = styled('div')({
+interface CardWrapperProps {
+  $avatarBackgroundColor?: string
+}
+
+// EventCard renders the AvatarFace from decentraland-ui2 internally — there's no prop to override
+// its background color. Targeting `.MuiAvatar-root` here paints the per-creator color computed from
+// ADR-292's NameColorHelper. `&&` doubles specificity so it wins over ui2's themed default.
+const CardWrapper = styled('div', { shouldForwardProp: prop => prop !== '$avatarBackgroundColor' })<CardWrapperProps>(props => ({
   borderRadius: 16,
   overflow: 'hidden',
   display: 'flex',
@@ -105,9 +112,14 @@ const CardWrapper = styled('div')({
     whiteSpace: 'nowrap',
     WebkitLineClamp: 'unset',
     WebkitBoxOrient: 'unset'
-  }
+  },
+  ...(props.$avatarBackgroundColor && {
+    '&& .MuiAvatar-root': {
+      backgroundColor: props.$avatarBackgroundColor
+    }
+  })
   /* eslint-enable @typescript-eslint/naming-convention */
-})
+}))
 
 const ViewAllButton = styled(Link)(({ theme }) => ({
   display: 'inline-flex',

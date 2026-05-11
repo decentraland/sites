@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import type { Avatar } from '@dcl/schemas'
 import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
 import type { ExploreItem } from '../../../features/events/events.types'
@@ -6,6 +6,7 @@ import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { SectionViewedTrack } from '../../../modules/segment'
 import { assetUrl } from '../../../utils/assetUrl'
+import { DCL_FOUNDATION_BACKGROUND_COLOR, getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import { CardWrapper } from './WhatsOn.styled'
 
 // AvatarFace only passes through URLs starting with https://, otherwise it
@@ -29,8 +30,32 @@ const WhatsOnCard = memo(({ card, loading }: { card?: ExploreItem; loading?: boo
     } as Avatar
   }
 
+  const avatarBackgroundColor = useMemo(() => {
+    if (card?.isGenesisPlaza) return DCL_FOUNDATION_BACKGROUND_COLOR
+    return getAvatarBackgroundColor(
+      getDisplayName({
+        name: fetchedAvatar?.name ?? card?.creatorName,
+        hasClaimedName: fetchedAvatar?.hasClaimedName,
+        ethAddress: fetchedAvatar?.ethAddress ?? card?.creatorAddress
+      })
+    )
+  }, [
+    card?.isGenesisPlaza,
+    card?.creatorName,
+    card?.creatorAddress,
+    fetchedAvatar?.name,
+    fetchedAvatar?.hasClaimedName,
+    fetchedAvatar?.ethAddress
+  ])
+
   return (
-    <CardWrapper data-place={SectionViewedTrack.LANDING_EXPLORE} data-event="click" data-card={card?.title} onClick={onClickHandle}>
+    <CardWrapper
+      $avatarBackgroundColor={avatarBackgroundColor}
+      data-place={SectionViewedTrack.LANDING_EXPLORE}
+      data-event="click"
+      data-card={card?.title}
+      onClick={onClickHandle}
+    >
       <EventCard
         loading={loading}
         image={card?.image ?? ''}

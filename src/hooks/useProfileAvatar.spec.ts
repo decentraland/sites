@@ -73,6 +73,45 @@ describe('when useProfileAvatar is called', () => {
     it('should return an undefined name', () => {
       expect(rendered.result.current.name).toBeUndefined()
     })
+
+    it('should fall back to white when there is no profile to derive the display name from', () => {
+      expect(rendered.result.current.backgroundColor).toBe('#ffffff')
+    })
+  })
+
+  describe('and the profile resolves with a claimed name', () => {
+    let rendered: RenderedHook
+
+    beforeEach(() => {
+      mockUseGetProfileQuery.mockReturnValue({
+        data: { avatars: [{ name: 'Alice', hasClaimedName: true, ethAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdef1234' }] },
+        isLoading: false
+      })
+      rendered = renderHook(() => useProfileAvatar('0xabcdefabcdefabcdefabcdefabcdefabcdef1234')) as RenderedHook
+    })
+
+    it('should derive the deterministic background color from the claimed name only', () => {
+      // Claimed → DisplayName === ValidatedName === "Alice"; FNV-1a + HSV(hue, 0.75, 1) → #f5ff40.
+      expect(rendered.result.current.backgroundColor).toBe('#f5ff40')
+    })
+  })
+
+  describe('and the profile resolves without a claimed name', () => {
+    let rendered: RenderedHook
+
+    beforeEach(() => {
+      mockUseGetProfileQuery.mockReturnValue({
+        data: { avatars: [{ name: 'Alice', hasClaimedName: false, ethAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdef1234' }] },
+        isLoading: false
+      })
+      rendered = renderHook(() => useProfileAvatar('0xabcdefabcdefabcdefabcdefabcdefabcdef1234')) as RenderedHook
+    })
+
+    it('should append the wallet suffix before hashing so the color diverges from the claimed-name case', () => {
+      // Unclaimed → DisplayName === "Alice#1234"; the algorithm would silently match the claimed
+      // case if the suffix branch regressed.
+      expect(rendered.result.current.backgroundColor).toBe('#ff4047')
+    })
   })
 
   describe('and the profile has no face256 snapshot', () => {

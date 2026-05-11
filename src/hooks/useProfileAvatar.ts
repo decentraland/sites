@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useGetProfileQuery } from '../features/profile/profile.client'
 import type { Profile } from '../features/profile/profile.client'
+import { getAvatarBackgroundColor, getDisplayName } from '../utils/avatarColor'
 
 type ProfileAvatarsItem = NonNullable<Profile['avatars']>[number]
 
@@ -9,6 +10,7 @@ type UseProfileAvatarResult = {
   avatarForCard: ProfileAvatarsItem | undefined
   avatarFace: string | undefined
   name: string | undefined
+  backgroundColor: string
 }
 
 type QueryOptions = { skip?: boolean }
@@ -34,6 +36,9 @@ function markFaceAsBroken(url: string): void {
 function useProfileAvatar(address: string | undefined, options: QueryOptions = {}): UseProfileAvatarResult {
   const { data: profile } = useGetProfileQuery(address, options)
   const avatar = profile?.avatars?.[0]
+  const profileName = avatar?.name
+  const profileEthAddress = avatar?.ethAddress ?? address
+  const profileHasClaimedName = avatar?.hasClaimedName
   const rawFace = avatar?.avatar?.snapshots?.face256
   const [broken, setBroken] = useState<boolean>(() => (rawFace ? brokenFaceUrls.has(rawFace) : false))
 
@@ -79,11 +84,18 @@ function useProfileAvatar(address: string | undefined, options: QueryOptions = {
     }
   }, [avatar, avatarFace])
 
+  const backgroundColor = useMemo(
+    () =>
+      getAvatarBackgroundColor(getDisplayName({ name: profileName, hasClaimedName: profileHasClaimedName, ethAddress: profileEthAddress })),
+    [profileName, profileHasClaimedName, profileEthAddress]
+  )
+
   return {
     avatar,
     avatarForCard,
     avatarFace,
-    name: avatar?.name
+    name: profileName,
+    backgroundColor
   }
 }
 

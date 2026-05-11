@@ -2,7 +2,7 @@
 import CloseIcon from '@mui/icons-material/Close'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
-import { Box, Dialog, Typography, styled } from 'decentraland-ui2'
+import { Box, Dialog, Typography, dclColors, styled } from 'decentraland-ui2'
 
 const MOBILE_NAVBAR_OFFSET = 64
 
@@ -313,7 +313,15 @@ const SectionLabel = styled(Typography)(({ theme }) => ({
 const DescriptionText = styled(Typography)({
   fontSize: 14,
   lineHeight: 1.6,
-  color: '#FCFCFC'
+  color: dclColors.neutral.softWhite,
+  whiteSpace: 'pre-wrap',
+  wordBreak: 'break-word',
+  ['& a']: {
+    color: dclColors.base.primary,
+    textDecoration: 'underline',
+    ['&:hover']: { color: dclColors.base.primaryLight1 },
+    ['&:focus-visible']: { outline: `2px solid ${dclColors.base.primary}`, outlineOffset: 2, borderRadius: 2 }
+  }
 })
 
 const ContentDivider = styled(Box)(({ theme }) => ({

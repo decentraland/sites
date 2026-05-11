@@ -1,10 +1,12 @@
 import { DCL_FOUNDATION_LOGO_URL, DCL_FOUNDATION_NAME, isDclFoundationCreator } from '../features/whats-on-events/events.helpers'
+import { DCL_FOUNDATION_BACKGROUND_COLOR, getAvatarBackgroundColor, getDisplayName } from '../utils/avatarColor'
 import { useProfileAvatar } from './useProfileAvatar'
 
 interface UseCreatorProfileResult {
   isDclFoundation: boolean
   creatorName: string | undefined
   avatarFace: string | undefined
+  backgroundColor: string
 }
 
 function useCreatorProfile(
@@ -13,10 +15,20 @@ function useCreatorProfile(
   fallbackName?: string
 ): UseCreatorProfileResult {
   const isDclFoundation = isDclFoundationCreator(userName)
-  const { avatarFace: profileFace, name: avatarName } = useProfileAvatar(address, { skip: !address || isDclFoundation })
+  const {
+    avatarFace: profileFace,
+    name: avatarName,
+    backgroundColor: profileBackgroundColor
+  } = useProfileAvatar(address, {
+    skip: !address || isDclFoundation
+  })
   const creatorName = isDclFoundation ? DCL_FOUNDATION_NAME : avatarName || userName || fallbackName
   const avatarFace = isDclFoundation ? DCL_FOUNDATION_LOGO_URL : profileFace
-  return { isDclFoundation, creatorName, avatarFace }
+  const fallbackBackgroundColor = creatorName
+    ? getAvatarBackgroundColor(getDisplayName({ name: creatorName, hasClaimedName: false, ethAddress: address }))
+    : profileBackgroundColor
+  const backgroundColor = isDclFoundation ? DCL_FOUNDATION_BACKGROUND_COLOR : avatarName ? profileBackgroundColor : fallbackBackgroundColor
+  return { isDclFoundation, creatorName, avatarFace, backgroundColor }
 }
 
 export { useCreatorProfile }

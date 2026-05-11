@@ -28,7 +28,8 @@ describe('DetailModalCreator', () => {
       mockUseCreatorProfile.mockReturnValue({
         isDclFoundation: false,
         creatorName: 'CreatorName',
-        avatarFace: 'https://example.com/face.png'
+        avatarFace: 'https://example.com/face.png',
+        backgroundColor: '#abcdef'
       })
     })
 
@@ -43,7 +44,12 @@ describe('DetailModalCreator', () => {
 
   describe('when the creator profile resolves only the name', () => {
     beforeEach(() => {
-      mockUseCreatorProfile.mockReturnValue({ isDclFoundation: false, creatorName: '0xabcd…ef12', avatarFace: undefined })
+      mockUseCreatorProfile.mockReturnValue({
+        isDclFoundation: false,
+        creatorName: '0xabcd…ef12',
+        avatarFace: undefined,
+        backgroundColor: '#abcdef'
+      })
     })
 
     it('should render the abbreviated address as the name', () => {
@@ -52,16 +58,21 @@ describe('DetailModalCreator', () => {
       expect(screen.getByTestId('creator-name')).toHaveTextContent('0xabcd…ef12')
     })
 
-    it('should render the avatar fallback derived from the address', () => {
+    it('should forward the hook-provided background color to the fallback so it stays consistent across surfaces', () => {
       render(<DetailModalCreator address="0xabcdef1234567890abcdef1234567890abcdef12" name={undefined} prefixLabel="By " />)
 
-      expect(screen.getByTestId('avatar-fallback').getAttribute('data-fallback-color')).toMatch(/^hsl\(\d{1,3} 45% 40%\)$/)
+      expect(screen.getByTestId('avatar-fallback').getAttribute('data-fallback-color')).toBe('#abcdef')
     })
   })
 
   describe('when the creator profile resolves to nothing', () => {
     beforeEach(() => {
-      mockUseCreatorProfile.mockReturnValue({ isDclFoundation: false, creatorName: undefined, avatarFace: undefined })
+      mockUseCreatorProfile.mockReturnValue({
+        isDclFoundation: false,
+        creatorName: undefined,
+        avatarFace: undefined,
+        backgroundColor: '#ffffff'
+      })
     })
 
     it('should not render the creator row', () => {
@@ -76,7 +87,8 @@ describe('DetailModalCreator', () => {
       mockUseCreatorProfile.mockReturnValue({
         isDclFoundation: true,
         creatorName: 'Decentraland Foundation',
-        avatarFace: '/dcl-logo.svg'
+        avatarFace: '/dcl-logo.svg',
+        backgroundColor: '#9d76e3'
       })
     })
 
@@ -96,7 +108,8 @@ describe('DetailModalCreator', () => {
       mockUseCreatorProfile.mockReturnValue({
         isDclFoundation: true,
         creatorName: 'Decentraland Foundation',
-        avatarFace: '/dcl-logo.svg'
+        avatarFace: '/dcl-logo.svg',
+        backgroundColor: '#9d76e3'
       })
       render(<DetailModalCreator address="0xFoundation" name="Decentraland Foundation" prefixLabel="By " />)
 

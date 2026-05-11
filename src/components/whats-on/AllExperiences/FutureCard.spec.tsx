@@ -28,7 +28,7 @@ jest.mock('@dcl/hooks', () => ({
 }))
 
 const mockUseCreatorProfile = jest.fn()
-const defaultCreatorProfile = { isDclFoundation: false, creatorName: 'Unknown', avatarFace: undefined }
+const defaultCreatorProfile = { isDclFoundation: false, creatorName: 'Unknown', avatarFace: undefined, backgroundColor: '#abcdef' }
 jest.mock('../../../hooks/useCreatorProfile', () => ({
   useCreatorProfile: (...args: unknown[]) => mockUseCreatorProfile(...(args as []))
 }))
@@ -169,10 +169,10 @@ describe('FutureCard', () => {
       expect(screen.getByTestId('copy-icon')).toBeInTheDocument()
     })
 
-    it('should derive the avatar fallback color from the creator address so it matches the modal surface', () => {
+    it('should forward the hook-provided background color to the fallback so it matches the modal surface', () => {
       render(<FutureCard event={createMockEvent({ user: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' })} onClick={mockOnClick} />)
 
-      expect(screen.getByTestId('avatar-fallback').getAttribute('data-fallback-color')).toMatch(/^hsl\(\d{1,3} 45% 40%\)$/)
+      expect(screen.getByTestId('avatar-fallback').getAttribute('data-fallback-color')).toBe('#abcdef')
     })
   })
 
@@ -242,7 +242,8 @@ describe('FutureCard', () => {
       mockUseCreatorProfile.mockReturnValue({
         isDclFoundation: true,
         creatorName: 'Decentraland Foundation',
-        avatarFace: '/dcl-logo.svg'
+        avatarFace: '/dcl-logo.svg',
+        backgroundColor: '#9d76e3'
       })
       event = createMockEvent({ live: false, user: '0xFoundation', user_name: 'Decentraland Foundation' })
     })

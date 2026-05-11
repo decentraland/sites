@@ -7,6 +7,7 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PublicIcon from '@mui/icons-material/Public'
 import { useTranslation } from '@dcl/hooks'
+import { linkifyText } from '../../../utils/linkifyText'
 import { ContentDivider, ContentSection, DescriptionText, MetaRow, MetaText, SectionLabel } from '../DetailModal/DetailModal.styled'
 import type { ModalPlaceData } from './PlaceDetailModal.types'
 
@@ -25,7 +26,7 @@ function PlaceDetailModalContent({ data }: { data: ModalPlaceData }) {
       {hasDescription && (
         <>
           <SectionLabel>{t('place_detail.about')}</SectionLabel>
-          <DescriptionText>{data.description}</DescriptionText>
+          <DescriptionText>{linkifyText(data.description ?? '')}</DescriptionText>
           <ContentDivider />
         </>
       )}

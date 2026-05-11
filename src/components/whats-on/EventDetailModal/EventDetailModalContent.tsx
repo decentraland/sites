@@ -4,6 +4,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import { useTranslation } from '@dcl/hooks'
 import { Button } from 'decentraland-ui2'
 import type { RecurrentFrequency } from '../../../features/whats-on-events'
+import { linkifyText } from '../../../utils/linkifyText'
 import { buildCalendarUrl } from '../../../utils/whatsOnUrl'
 import { ContentDivider, ContentSection, DescriptionText, SectionLabel } from '../DetailModal/DetailModal.styled'
 import type { AdminActions, ModalEventData } from './EventDetailModal.types'
@@ -58,7 +59,7 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
       {hasDescription && (
         <>
           <SectionLabel>{t('event_detail.what_to_expect')}</SectionLabel>
-          <DescriptionText>{data.description}</DescriptionText>
+          <DescriptionText>{linkifyText(data.description ?? '')}</DescriptionText>
         </>
       )}
       {hasDescription && hasSchedule && <ContentDivider />}

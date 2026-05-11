@@ -2,7 +2,7 @@
 
 **Service Purpose:**
 
-`landing-site` (`@dcl/landing-site`) is a Vite/React SPA that serves as the new Decentraland main landing page. It replaces the Gatsby-based `landing` app with a faster, more maintainable architecture. All marketing content (hero, missions, FAQ, banners, social proof, marquee, trending news) is fetched at runtime from Contentful CMS via RTK Query, using per-section Contentful entry IDs stored in configuration.
+`sites` (`@dcl/sites`) is a Vite/React SPA that serves as the new Decentraland main landing page. It replaces the Gatsby-based `landing` app with a faster, more maintainable architecture. All marketing content (hero, missions, FAQ, banners, social proof, marquee, trending news) is fetched at runtime from Contentful CMS via RTK Query, using per-section Contentful entry IDs stored in configuration.
 
 **Key Capabilities:**
 
@@ -69,11 +69,11 @@
 
 **Out of Scope:**
 
-- No blog, marketplace, DAO, or community features
+- No marketplace, DAO, or community features (blog is now served by this repo at `/blog`)
 - No event creation, place management, or world browsing
 - No server-side rendering (Gatsby/Next.js is not used)
 - No image uploads or CMS content authoring
-- Jump-in deep-link launch is not handled here (that is `jump-site`)
+- Jump-in deep-link launch is now handled here at `/jump`
 
 **Project Structure:**
 

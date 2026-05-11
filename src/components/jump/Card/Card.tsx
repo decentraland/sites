@@ -11,6 +11,7 @@ import { getEnv } from '../../../config/env'
 import { eventHasEnded, formatLocation } from '../../../features/jump/jump.helpers'
 import type { CardData, Creator } from '../../../features/jump/jump.types'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
 import cardCreatorPlaceholder from '../../../images/jump/card-creator-placeholder.webp'
 import cardEventsPlaceholder from '../../../images/jump/card-events-placeholder.webp'
 import cardPlacesPlaceholder from '../../../images/jump/card-places-placeholder.webp'
@@ -47,7 +48,9 @@ interface CardProps {
 const Card = memo(function Card({ data, isLoading = false, creator, children }: CardProps) {
   const formatMessage = useFormatMessage()
   const isMobile = useMobileMediaQuery()
-  const profileUrlBase = getEnv('PROFILE_URL') ?? 'https://decentraland.org/profile/'
+  const profileUrlBase = (getEnv('PROFILE_URL') ?? 'https://decentraland.org/profile/').replace(/\/$/, '')
+  const creatorAddress = creator?.user || data?.user
+  const { backgroundColor: creatorBackgroundColor } = useProfileAvatar(creatorAddress, { skip: !creatorAddress })
 
   if (isLoading || !data) {
     return (
@@ -119,11 +122,12 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
             <CreatorAvatar
               src={displayAvatar}
               alt={formatMessage('component.jump.card.accessibility.creator_avatar', { userName: displayUserName })}
+              avatarBackgroundColor={creatorBackgroundColor}
             />
             <CreatorLabel>{formatMessage('component.jump.card.creator.by')} </CreatorLabel>
             {displayUser ? (
               <UserProfileLink
-                href={`${profileUrlBase}accounts/${displayUser}`}
+                href={`${profileUrlBase}/accounts/${displayUser}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={formatMessage('component.jump.card.accessibility.user_profile_link', { userName: displayUserName })}

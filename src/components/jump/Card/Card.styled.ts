@@ -193,23 +193,25 @@ const CardLoadingContainer = styled(Box)({
   backgroundColor: 'rgba(56, 10, 77, 0.6)'
 })
 
-const CreatorAvatar = styled('img')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: '#f0f0f0',
-  flexShrink: 0,
-  objectFit: 'cover',
-  width: 32,
-  height: 32,
-  overflow: 'hidden',
-  borderRadius: 34,
-  [theme.breakpoints.down('xs')]: {
-    width: 24,
-    height: 24,
-    borderRadius: '50%'
-  }
-}))
+const CreatorAvatar = styled('img', { shouldForwardProp: prop => prop !== 'avatarBackgroundColor' })<{ avatarBackgroundColor?: string }>(
+  ({ theme, avatarBackgroundColor }) => ({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: avatarBackgroundColor ?? '#f0f0f0',
+    flexShrink: 0,
+    objectFit: 'cover',
+    width: 32,
+    height: 32,
+    overflow: 'hidden',
+    borderRadius: 34,
+    [theme.breakpoints.down('xs')]: {
+      width: 24,
+      height: 24,
+      borderRadius: '50%'
+    }
+  })
+)
 
 const UserProfileLink = styled('a')(({ theme }) => ({
   color: '#FF2D55',

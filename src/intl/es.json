@@ -139,6 +139,235 @@
         "live": "En vivo",
         "view_all": "Ver todo"
       }
+    },
+    "cast": {
+      "app": {
+        "title": "Decentraland Cast 2.0",
+        "subtitle": "Transmisión nativa del navegador con latencia submilisegundos",
+        "invalid_route": "Ruta inválida. Los enlaces de transmisión son generados por el Admin Smart Item en las escenas de Decentraland.",
+        "auth_demo": "Demo de Autenticación:",
+        "view_docs": "Ver Documentación"
+      },
+      "not_found": {
+        "title": "404 - Página No Encontrada",
+        "description": "Esta transmisión de Cast 2.0 no existe. Los enlaces de transmisión se generan bajo demanda por el Admin Smart Item en las escenas de Decentraland. Si seguiste un enlace válido y aún ves este error, es posible que la transmisión haya finalizado.",
+        "go_home": "Ir al Inicio",
+        "page_title": "Cast no encontrado"
+      },
+      "streamer": {
+        "title": "Transmisión en Vivo",
+        "page_title": "Transmitiendo en Decentraland Cast",
+        "share_link": "Compartir Enlace",
+        "share_link_tooltip": "Copia el enlace de visualización para compartir tu transmisión",
+        "link_copied": "¡Enlace Copiado!",
+        "starting_stream": "Iniciando transmisión...",
+        "connecting": "Conectando a la sala...",
+        "error_invalid_token": "Token de transmisión inválido o expirado. Por favor genera un nuevo enlace desde el Admin Smart Item.",
+        "error_no_token": "No se encontró token de transmisión. Por favor usa el enlace del Admin Smart Item.",
+        "error_initialize_streaming": "Error al inicializar la transmisión.",
+        "error_connection": "Error al conectar a la sala de transmisión",
+        "error_unauthorized": "No tenés permiso para transmitir en esta ubicación. Asegurate de que tu billetera sea admin de la escena.",
+        "error_network": "No pudimos contactar al servidor de transmisión. Verificá tu conexión e intentá de nuevo.",
+        "connect_wallet_prompt": "Conecta tu billetera de Decentraland para chatear e interactuar"
+      },
+      "watcher": {
+        "title": "Viendo Transmisión en Vivo",
+        "page_title": "Viendo en Decentraland Cast",
+        "back_to_decentraland": "Volver a Decentraland",
+        "connecting": "Conectando a la transmisión...",
+        "error_connection": "Error al conectar a la transmisión",
+        "error_no_active_stream": "Nadie está transmitiendo en este enlace. La transmisión puede haber terminado, no haber comenzado aún, o el enlace puede ser incorrecto. Intentá de nuevo en un momento, o conseguí un enlace nuevo desde el Admin Smart Item.",
+        "error_unauthorized": "Esta transmisión no está accesible. Asegurate de usar un enlace válido del Admin Smart Item.",
+        "error_invalid_location": "No reconocemos esa ubicación. Verificá el nombre del mundo o las coordenadas del parcel y volvé a intentar.",
+        "error_world_not_found": "No encontramos ese mundo. Verificá el nombre del mundo y volvé a intentar.",
+        "error_network": "No pudimos contactar al servidor de transmisión. Verificá tu conexión e intentá de nuevo.",
+        "connect_wallet_prompt": "Conecta tu billetera de Decentraland para enviar mensajes"
+      },
+      "streaming_controls": {
+        "mute_mic": "Silenciar Micrófono",
+        "unmute_mic": "Activar Micrófono",
+        "stop_cam": "Detener Cámara",
+        "start_cam": "Iniciar Cámara",
+        "stop_share": "Detener Compartir",
+        "share_screen": "Compartir Pantalla",
+        "screen_share_mobile_not_supported": "Compartir pantalla no está disponible en móvil",
+        "screen_share_not_supported": "Compartir pantalla no está soportado en este dispositivo o navegador.",
+        "screen_share_permission_denied": "Permiso denegado. Habilitá compartir pantalla para continuar.",
+        "leave_stream": "Salir del Stream",
+        "leave": "Salir",
+        "reconnect": "Reconectar",
+        "disconnected": "Desconectado",
+        "connecting": "Conectando...",
+        "connected": "Conectado",
+        "mute_cast": "Silenciar el audio de este Cast mientras estás en el Mundo",
+        "unmute_cast": "Activar audio del Cast",
+        "share_presentation": "Compartir Presentación",
+        "stop_presentation": "Detener Presentación",
+        "uploading_presentation": "Subiendo presentación...",
+        "paste_presentation_url": "Pega la URL de tu presentación",
+        "share": "Compartir",
+        "or": "o",
+        "browse_local_files": "Busca en tus archivos locales",
+        "supported_formats": "Formatos admitidos: PDF, PPTX.",
+        "initializing_video": "Inicializando video...",
+        "presentation": "Presentación",
+        "url_invalid": "Por favor ingresa una URL válida",
+        "url_https_required": "La URL debe usar https://",
+        "file_too_large": "El archivo es demasiado grande. Tamaño máximo {maxMb}MB.",
+        "file_invalid_type": "Tipo de archivo no compatible. Sube un archivo PDF o PPTX."
+      },
+      "device_selector": {
+        "audio_input": "Entrada de Audio",
+        "video_input": "Entrada de Video",
+        "loading": "Cargando dispositivos de {type}...",
+        "no_devices": "No se encontraron dispositivos de {type}",
+        "select_device": "Seleccionar Dispositivo de {type}"
+      },
+      "chat": {
+        "title": "Chat In-World",
+        "messages_count": "{count} mensaje",
+        "messages_count_plural": "{count} mensajes",
+        "no_messages": "Sin mensajes aún. {action}",
+        "no_messages_yet": "Aún no hay mensajes",
+        "start_conversation": "¡Inicia la conversación!",
+        "sign_in_to_participate": "Inicia sesión para participar.",
+        "type_message": "Escribe un mensaje...",
+        "sign_in_prompt": "Inicia sesión para enviar mensajes en el chat",
+        "connect_wallet_prompt": "Conecta tu billetera de Decentraland para enviar mensajes",
+        "footer_text": "Ingresa a {sceneName} en Decentraland para participar en el chat."
+      },
+      "people": {
+        "title": "Participantes",
+        "speakers": "Oradores",
+        "viewers": "Espectadores",
+        "in_world_participants": "Participantes In-World",
+        "no_speakers": "Aún no hay oradores",
+        "no_viewers": "Aún no hay espectadores",
+        "no_in_world": "Aún no hay participantes in-world",
+        "speaker_status": "Hablando",
+        "viewer_status": "Viendo",
+        "in_world_status": "En el Mundo"
+      },
+      "live_counter": {
+        "live": "EN VIVO",
+        "participant_streaming": "Persona transmitiendo",
+        "participants_streaming": "Personas transmitiendo",
+        "you": "Tú"
+      },
+      "room_stats": {
+        "title": "Estadísticas de Transmisión",
+        "people": "Personas",
+        "viewers": "Espectadores",
+        "connection": "Conexión",
+        "quality": "Calidad",
+        "unknown": "Desconocido",
+        "poor": "Pobre",
+        "good": "Buena",
+        "excellent": "Excelente",
+        "disconnected": "Desconectado",
+        "connecting": "Conectando...",
+        "connected": "Conectado"
+      },
+      "empty_state": {
+        "streamer_title": "Listo para Transmitir",
+        "streamer_message": "Activa tu cámara o comparte tu pantalla para que los espectadores puedan ver tu contenido",
+        "streamer_action": "Comienza a compartir haciendo clic en Cámara o Compartir Pantalla abajo",
+        "streamer_disconnected": "Te has desconectado. Haz clic en 'Reconectar' abajo para volver a transmitir",
+        "camera_initializing": "Iniciando cámara... Por favor espera",
+        "watcher_title": "Nadie está transmitiendo a este enlace...",
+        "watcher_message": "Este Cast de Decentraland puede estar comenzando pronto o ya ha finalizado.",
+        "no_video_streams": "Sin transmisiones de video",
+        "waiting_participants": "Esperando participantes..."
+      },
+      "auth": {
+        "connect_wallet": "Conectar Billetera",
+        "connecting": "Conectando...",
+        "disconnect": "Desconectar",
+        "sign_in": "Iniciar Sesión",
+        "sign_out": "Cerrar Sesión",
+        "join_conversation": "Únete a la Conversación",
+        "connect_prompt": "Conecta tu billetera para enviar mensajes en el chat y participar en la discusión.",
+        "no_wallet": "Por favor instala MetaMask para iniciar sesión.",
+        "no_accounts": "No se encontraron cuentas. Por favor conecta tu billetera.",
+        "auth_failed": "Falló la autenticación",
+        "privacy_note": "Nunca almacenaremos tus claves privadas. Esta firma solo se usa para verificar tu identidad."
+      },
+      "status": {
+        "muted": "Silenciado",
+        "speaking": "Hablando",
+        "not_speaking": "No está hablando"
+      },
+      "loading": {
+        "title": "Cargando Cast 2.0",
+        "message": "Preparando tu experiencia de transmisión..."
+      },
+      "onboarding": {
+        "speaker_title": "Transmitiendo a {streamName}, Decentraland",
+        "speaker_tag": "Orador",
+        "viewer_title": "Cast de Decentraland desde {streamName}",
+        "viewer_tag": "Espectador",
+        "name_placeholder": "Inserta Tu Nombre (Opcional)",
+        "join_now": "UNIRSE AHORA",
+        "joining": "Uniéndose..."
+      },
+      "participant_grid": {
+        "more_participants": "Más"
+      },
+      "error_modal": {
+        "title": "Error al reingresar al cast",
+        "message": "Por favor usa el enlace de este Cast para reingresar."
+      },
+      "scene_selector": {
+        "title": "Seleccionar una Escena",
+        "placeholder": "Elige una escena para ver",
+        "watch": "VER",
+        "back": "VOLVER",
+        "no_scenes": "No se encontraron escenas en este mundo",
+        "loading": "Cargando escenas del mundo..."
+      },
+      "watcher_error_modal": {
+        "title": "Error al conectarse a la sala de transmisión",
+        "message": "Por favor usa el enlace enviado desde el Admin Smart Item para reingresar a la transmisión."
+      },
+      "notifications": {
+        "presentation_download_failed": {
+          "title": "No se pudo cargar la presentación",
+          "default_message": "No pudimos descargar esa URL. Asegúrate de que sea de acceso público e inténtalo de nuevo."
+        },
+        "video_playback_failed": {
+          "title": "El video no se pudo reproducir"
+        },
+        "screen_share_failed": {
+          "title": "Falló al compartir pantalla",
+          "default_message": "No pudimos iniciar el compartir pantalla. Volvé a intentar."
+        },
+        "retry": "Reintentar",
+        "dismiss": "Cerrar"
+      }
+    },
+    "storage": {
+      "select": {
+        "title": "Storage · Seleccionar activo"
+      },
+      "env": {
+        "title": "Storage · Variables de entorno"
+      },
+      "scene": {
+        "title": "Storage · Valores de escena"
+      },
+      "players": {
+        "title": "Storage · Jugadores"
+      },
+      "player_detail": {
+        "title": "Storage · Jugador {address}"
+      },
+      "not_found": {
+        "title": "Storage · Página no encontrada"
+      }
+    },
+    "report": {
+      "title": "Reportar a un jugador – Decentraland",
+      "success_title": "Reporte enviado – Decentraland"
     }
   },
   "page_invite": {
@@ -408,21 +637,25 @@
           "title": "Preguntas Frecuentes",
           "paragraph": "¿No encuentras tu pregunta abajo? Consulta nuestros recursos completos de FAQ",
           "cta_link": "aquí",
-          "item_count": "7",
-          "item_0_question": "¿Qué es Decentraland?",
-          "item_0_answer": "Decentraland es un mundo virtual de código abierto, impulsado por la comunidad, donde los usuarios pueden crear, experimentar y monetizar contenido y aplicaciones. Funciona en la blockchain de Ethereum y permite a los usuarios comprar terrenos virtuales y construir experiencias interactivas.",
-          "item_1_question": "¿Cómo entro a Decentraland?",
-          "item_1_answer": "Puedes entrar a Decentraland visitando decentraland.org/download para obtener el cliente de escritorio con la mejor experiencia, o entrar directamente desde tu navegador en decentraland.org/play. Crea un avatar gratuito y comienza a explorar de inmediato.",
-          "item_2_question": "¿Necesito criptomonedas o una billetera digital para usar Decentraland?",
-          "item_2_answer": "No, puedes explorar Decentraland gratis sin criptomonedas ni billetera digital. Sin embargo, si quieres comprar LAND, wearables, NAMEs u otros artículos, necesitarás una billetera digital y MANA u otras criptomonedas compatibles.",
-          "item_3_question": "¿Cómo me convierto en Creador de Decentraland?",
-          "item_3_answer": "¡Cualquiera puede convertirse en Creador de Decentraland! Visita el Creator Hub en decentraland.org/create para acceder al Editor de Escenas y herramientas del SDK. Puedes construir escenas 3D interactivas, diseñar wearables y publicar contenido en el mundo.",
-          "item_4_question": "¿Qué es un NAME?",
-          "item_4_answer": "Un NAME es una identidad única y legible en Decentraland representada como un NFT. En lugar de ser identificado por una dirección de billetera, los NAMEs permiten que otros usuarios te encuentren y reconozcan fácilmente en el mundo virtual.",
-          "item_5_question": "¿Cuál es la diferencia entre LANDs y Worlds?",
-          "item_5_answer": "Los LANDs son activos digitales no fungibles (ERC-721) que representan parcelas permanentes dentro del mapa de Decentraland. Los Worlds son espacios personales fuera del mapa donde cualquiera puede desplegar escenas sin poseer LAND, facilitando a los creadores construir y compartir experiencias.",
-          "item_6_question": "¿Cómo puedo obtener ayuda y contactar al Equipo de Soporte?",
-          "item_6_answer": "Puedes contactar al Equipo de Soporte directamente usando el chat en la esquina inferior derecha de esta página. También puedes consultar nuestros recursos de FAQ en docs.decentraland.org o revisar nuestros canales comunitarios para ayuda adicional."
+          "item_count": "9",
+          "item_0_question": "How do I enter Decentraland?",
+          "item_0_answer": "The first step is downloading the Decentraland app onto your computer at decentraland.org/download. Once installed, log into your Decentraland account by connecting your Google, Discord, or another social profile, or a digital wallet such as MetaMask or Coinbase. Once online verification is complete, open the Decentraland app and click 'Jump Into Decentraland'. From here you can customize your avatar, explore the community-built world, or attend an event and make some friends!",
+          "item_1_question": "Do I need crypto or a digital wallet to use Decentraland?",
+          "item_1_answer": "No, you do not need to own crypto or already have a digital wallet to use Decentraland. Decentraland is free to use, and if you'd like to purchase something from the Marketplace, you can use a credit/debit card in addition to cryptocurrency. If you sign into Decentraland with a social account such as Google or Discord, a digital wallet will be made for your account behind the scenes, so you don't have to worry about anything.",
+          "item_2_question": "What hardware do I need to run Decentraland?",
+          "item_2_answer": "Currently, Decentraland is available for PC on Windows and Mac. For Windows, you'll need at least Windows 10 64-bit, an Intel i5 7th gen or AMD Ryzen 5 CPU, an Nvidia RTX 20 Series or AMD Radeon RX 5000 Series GPU, 6 GB VRAM, 16 GB RAM, and 8 GB storage. For Mac, you'll need at least macOS 11 Big Sur with an Apple M1 chip, 16 GB RAM, and 8 GB storage. Decentraland currently does not run on mobile devices. For full hardware specs, visit docs.decentraland.org/faqs/decentraland-101.",
+          "item_3_question": "How do I explore and navigate Decentraland?",
+          "item_3_answer": "Decentraland consists of Genesis City, an open traversable world made up of community parcels referenced by coordinates, as well as individual Worlds, more intimate 3D spaces that can be teleported into. To explore Genesis City, use your arrow or WASD keys to move around, jump to locations from the map, or type '/goto x,y' in the chat to teleport to specific coordinates. To visit a World, type '/goto WorldName' in the chat.",
+          "item_4_question": "How do I get Wearables, Emotes, LAND, and NAMEs in the Marketplace?",
+          "item_4_answer": "Browse the Marketplace at decentraland.org/marketplace for hundreds of community-made Wearables and Emotes to customize your digital identity, buy or rent Genesis City LAND parcels, or claim your unique NAME which comes with its own World. You can pay by card or with a variety of cryptocurrencies. Anything you purchase is truly owned by you, with ownership registered on the blockchain. You can resell items whenever you wish.",
+          "item_5_question": "How can I meet people in Decentraland?",
+          "item_5_answer": "The best way to meet new people in Decentraland is to attend events and start chatting! Browse the event page at decentraland.org/events for current and upcoming events and don't be shy — Decentraland's community is known for being welcoming. Keep an eye out for weekly tours and meetups, such as ABC DCL - Adventures of Decentraland, which are specifically targeted at new community members!",
+          "item_6_question": "How can I learn about in-world events?",
+          "item_6_answer": "Decentraland's Event Page at decentraland.org/events is the official place where anyone in the community can post their in-world events. To stay on top of events, check the event page regularly, follow Decentraland on social channels such as X, or subscribe to the weekly newsletter at decentraland.beehiiv.com to learn about upcoming activities!",
+          "item_7_question": "How do I take pictures in-world?",
+          "item_7_answer": "Press C on your keyboard to open the Camera. A helpful guide with camera controls will appear on the bottom right of your screen. Your Gallery has space for up to 500 photos, from which you can easily share your images with a link or download them onto your computer. You can feature your favorite photos on your Decentraland Profile by toggling the 'Set as Public' option.",
+          "item_8_question": "How can I get involved in Decentraland governance?",
+          "item_8_answer": "Decentraland's DAO is the heart of the community-driven world's governance. To get started, read through the DAO forums at decentraland.org/governance to learn about current issues, see what the community consensus is, and add your own comments. Learn more on the DAO's official page at decentraland.org/dao."
         },
         "center": {
           "title": "Centro de Ayuda",
@@ -510,10 +743,304 @@
         "marketplace_authorizations": "Autorizaciones del Marketplace",
         "whats_on": "Explorar"
       }
+    },
+    "reels": {
+      "image_actions": {
+        "share": "Compartir en Twitter",
+        "copy_link": "Copiar enlace",
+        "copied": "¡Copiado!",
+        "download": "Descargar foto",
+        "info": "Mostrar información",
+        "share_text": "¡Mira lo que estoy haciendo en Decentraland y únete!"
+      },
+      "metadata": {
+        "title": "información",
+        "place": "lugar",
+        "people": "personas",
+        "wearable": "wearables coleccionables",
+        "jump_in": "entrar",
+        "no_wearable": "Esta persona aún no tiene wearables equipados.",
+        "photo_taken_by": "Foto tomada por",
+        "guest": "invitado"
+      },
+      "wearable": {
+        "buy": "COMPRAR"
+      },
+      "no_photo": {
+        "title": "Foto no encontrada",
+        "subtitle": "¡Ups! La foto que intentas ver no existe o ya no está disponible."
+      },
+      "list": {
+        "title": "Usuario: {userName}"
+      }
+    },
+    "storage": {
+      "common": {
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "confirm": "Confirmar",
+        "delete": "Eliminar",
+        "close": "Cerrar",
+        "loading": "Cargando",
+        "actions": "Acciones",
+        "key": "Clave",
+        "add": "Agregar",
+        "owner": "Propietario",
+        "collaborator": "Colaborador"
+      },
+      "role": {
+        "owner": "Propietario",
+        "operator": "Operador",
+        "tenant": "Inquilino",
+        "lessor": "Arrendador",
+        "unknown": "Desconocido"
+      },
+      "value_field": {
+        "json_error": "JSON inválido"
+      },
+      "sidebar": {
+        "environment": "Entorno",
+        "scene": "Escena",
+        "player": "Jugador",
+        "storages": "Almacenamientos",
+        "back": "Atrás",
+        "collapse": "Contraer barra lateral",
+        "expand": "Expandir barra lateral",
+        "realm": "Reino",
+        "position": "Posición"
+      },
+      "select_page": {
+        "title": "Selecciona el activo a gestionar",
+        "subtitle": "Elige un mundo o parcela para administrar su almacenamiento.",
+        "worlds": "Mundos",
+        "lands": "Tierras",
+        "no_worlds": "No se encontraron mundos",
+        "no_lands": "No se encontraron tierras",
+        "loading": "Cargando activos",
+        "select_world": "Seleccionar {name}",
+        "select_land": "Seleccionar {name}",
+        "parcel": "Parcela",
+        "estate": "Estate",
+        "at_position": "en {position}",
+        "parcels_count": "({size} parcelas)",
+        "search_worlds": "Buscar mundos…",
+        "search_lands": "Buscar tierras…",
+        "no_search_results": "Sin resultados para \"{query}\"",
+        "clear_search": "Limpiar búsqueda",
+        "showing_results": "Mostrando {start}–{end} de {total}",
+        "scenes_count": "{count} escenas",
+        "scene_count_one": "1 escena",
+        "edit": "Editar",
+        "edit_scenes": "Editar escenas",
+        "select_scene": "Seleccionar escena"
+      },
+      "env_page": {
+        "title": "Variables de entorno",
+        "add": "Agregar",
+        "clear_all": "Borrar todo",
+        "no_keys": "No se encontraron variables de entorno",
+        "add_dialog": {
+          "title": "Agregar variable de entorno",
+          "key_label": "Clave",
+          "value_label": "Valor"
+        },
+        "edit_dialog": {
+          "title": "Editar variable de entorno",
+          "key_label": "Clave",
+          "value_label": "Valor",
+          "helper_text": "El storage service no devuelve valores existentes, así que ingresá el nuevo valor para sobrescribir."
+        },
+        "delete_dialog": {
+          "title": "Eliminar variable de entorno",
+          "message": "¿Seguro que querés eliminar la variable de entorno \"{key}\"? Esta acción no se puede deshacer."
+        },
+        "clear_dialog": {
+          "title": "Borrar todas las variables de entorno",
+          "message": "¿Seguro que querés eliminar TODAS las variables de entorno? Esta acción no se puede deshacer."
+        }
+      },
+      "scene_page": {
+        "title": "Almacenamiento de escena",
+        "add": "Agregar",
+        "clear_all": "Borrar todo",
+        "no_keys": "No se encontraron valores de escena",
+        "add_dialog": {
+          "title": "Agregar valor de escena",
+          "key_label": "Clave",
+          "value_label": "Valor",
+          "value_placeholder": "Texto plano o JSON: {value}"
+        },
+        "edit_dialog": {
+          "title": "Editar valor: {key}",
+          "value_label": "Valor"
+        },
+        "delete_dialog": {
+          "title": "Eliminar valor de escena",
+          "message": "¿Seguro que querés eliminar el valor \"{key}\"? Esta acción no se puede deshacer."
+        },
+        "clear_dialog": {
+          "title": "Borrar todos los valores de escena",
+          "message": "¿Seguro que querés eliminar TODOS los valores de escena? Esta acción no se puede deshacer."
+        }
+      },
+      "player_page": {
+        "title": "Almacenamiento de jugador",
+        "add": "Agregar",
+        "clear_all_players": "Borrar todos los jugadores",
+        "description": "Explorá los jugadores con datos guardados o buscalos por nombre o dirección.",
+        "search_players": "Buscar por nombre o dirección…",
+        "no_players": "No se encontraron jugadores",
+        "no_search_results": "Sin resultados para \"{query}\"",
+        "showing_results": "Mostrando {start}–{end} de {total}",
+        "back_to_players": "Volver a jugadores",
+        "loading_players": "Cargando jugadores",
+        "select_player": "Ver almacenamiento de {address}",
+        "address_label": "Dirección del jugador",
+        "address_placeholder": "0x…",
+        "load_keys": "Cargar claves",
+        "keys_for": "Claves de {address}",
+        "clear_this_player": "Borrar este jugador",
+        "no_keys": "No se encontraron claves para este jugador",
+        "loading_keys": "Cargando claves del jugador",
+        "add_dialog": {
+          "title": "Agregar valor de jugador",
+          "address_label": "Dirección del jugador",
+          "key_label": "Clave",
+          "value_label": "Valor",
+          "value_placeholder": "Texto plano o JSON: {value}"
+        },
+        "edit_dialog": {
+          "title": "Editar valor: {key}",
+          "subtitle": "Jugador: {address}",
+          "value_label": "Valor"
+        },
+        "delete_dialog": {
+          "title": "Eliminar valor de jugador",
+          "message": "¿Seguro que querés eliminar el valor \"{key}\" del jugador \"{address}\"? Esta acción no se puede deshacer."
+        },
+        "clear_player_dialog": {
+          "title": "Borrar almacenamiento del jugador",
+          "message": "¿Seguro que querés eliminar TODOS los valores del jugador \"{address}\"? Esta acción no se puede deshacer."
+        },
+        "clear_all_dialog": {
+          "title": "Borrar todo el almacenamiento de jugadores",
+          "message": "¿Seguro que querés eliminar TODOS los datos de almacenamiento de jugadores? Esta acción no se puede deshacer."
+        }
+      },
+      "not_found_page": {
+        "code": "404",
+        "title": "Página no encontrada",
+        "subtitle": "La página que estás buscando no existe.",
+        "go_home": "Ir al inicio"
+      }
+    },
+    "report": {
+      "form": {
+        "title": "Reportar usuario",
+        "wallet_mismatch": "La wallet conectada no coincide con la dirección del jugador. Conéctate con la wallet correcta para enviar este reporte.",
+        "your_wallet_label": "Tu dirección de wallet",
+        "your_wallet_helper": "Los reportes están vinculados a tu wallet para prevenir abusos. Tu identidad no se compartirá públicamente.",
+        "your_wallet_placeholder": "Escribe o pega tu dirección aquí...",
+        "sign_in_alert": "Inicia sesión con tu wallet para enviar un reporte.",
+        "sign_in_cta": "Iniciar sesión",
+        "reported_label": "Wallet del usuario reportado",
+        "reported_helper": "Esta es la dirección de la wallet del usuario que estás reportando.",
+        "reported_placeholder": "Escribe o pega una dirección aquí...",
+        "reason_label": "Motivo del reporte",
+        "reason_helper": "Selecciona la opción que mejor describa el problema.",
+        "reason_placeholder": "Elige un motivo",
+        "reason_options": {
+          "scam_phishing": "Estafa/Phishing",
+          "illegal_content": "Contenido ilegal",
+          "harassment": "Acoso",
+          "cheating": "Trampas",
+          "impersonation": "Suplantación de identidad"
+        },
+        "description_label": "Descripción",
+        "description_helper": "Describe lo ocurrido. Incluye cuándo y dónde sucedió el incidente, si es posible.",
+        "description_placeholder": "Escribe tu descripción aquí...",
+        "description_hint": "Cuanto más detalle aportes, más fácil será para los moderadores revisar tu reporte.",
+        "evidence_label": "Evidencia",
+        "evidence_helper": "Sube hasta 5 capturas de pantalla, videos o enlaces que respalden tu reporte.",
+        "evidence_add": "Añadir archivo",
+        "evidence_oversized": "{names} supera el límite de 5MB",
+        "evidence_invalid_type": "{names} no es un tipo de archivo admitido",
+        "additional_label": "Comentarios adicionales",
+        "additional_helper": "Aporta cualquier información extra que pueda ayudar a la investigación.",
+        "additional_placeholder": "Escribe tus comentarios aquí...",
+        "confirmation_label": "Confirmo que este reporte es preciso.",
+        "submit": "Enviar reporte",
+        "submit_in_progress": "Enviando...",
+        "errors": {
+          "invalid_address": "Introduce una dirección de wallet válida",
+          "missing_reason": "Elige un motivo",
+          "missing_description": "Incluye una descripción de tu reporte",
+          "missing_evidence": "Sube la evidencia de tu reporte",
+          "missing_confirmation": "Debes confirmar que esta información es precisa",
+          "submit_failed": "No pudimos enviar tu reporte. Por favor, inténtalo de nuevo."
+        },
+        "footer_lead": "¿Necesitas ayuda?",
+        "footer_help_prefix": "Para problemas urgentes o cuestiones de seguridad, por favor",
+        "footer_help_link": "contacta al equipo de soporte",
+        "footer_help_suffix": "."
+      },
+      "success": {
+        "title": "Reporte enviado",
+        "body": "Hemos recibido tu reporte y será revisado en breve.",
+        "dismiss": "Ya puedes cerrar esta ventana."
+      }
     }
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+  },
+  "community": {
+    "global": {
+      "loading": "Cargando..."
+    },
+    "info": {
+      "jump_in_modal": {
+        "title": "Descargar Decentraland",
+        "description": "Para entrar a esta comunidad, necesitas descargar Decentraland.",
+        "button_label": "Descargar"
+      },
+      "decentraland_community": "Comunidad de Decentraland",
+      "members": "Miembros",
+      "by": "Por",
+      "unknown": "Desconocido",
+      "joined": "UNIDO",
+      "sign_in_to_join": "INICIA SESIÓN PARA UNIRTE",
+      "request_to_join": "SOLICITAR UNIRSE",
+      "cancel_request": "CANCELAR SOLICITUD",
+      "jump_in": "ENTRAR",
+      "join": "UNIRSE"
+    },
+    "detail": {
+      "failed_to_join": "Error al unirse a la comunidad",
+      "not_found": "Comunidad no encontrada",
+      "not_found_description": "La comunidad que buscas no existe."
+    },
+    "events": {
+      "upcoming_events": "PRÓXIMOS EVENTOS",
+      "no_upcoming_events": "Sin eventos próximos",
+      "live": "en vivo"
+    },
+    "members_list": {
+      "title": "MIEMBROS",
+      "no_members_found": "No se encontraron miembros"
+    },
+    "private_message": {
+      "title": "Esta es una comunidad privada",
+      "description": "Debes ser miembro de esta comunidad para ver su perfil."
+    },
+    "not_found": {
+      "title": "Página no encontrada",
+      "description": "La página que buscas no existe."
+    },
+    "tabs": {
+      "members": "Miembros",
+      "upcoming_events": "Próximos eventos"
+    }
   }
 }

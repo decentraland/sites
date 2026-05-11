@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Local output of scripts/screenshots/capture.mjs
+/screenshots/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -28,5 +31,6 @@ dist-ssr
 .__mf__temp/
 .mf/
 
-# Claude
-.claude
+# Claude — versioned ADK lives in .claude/. Keep per-user overrides + caches local.
+.claude/settings.local.json
+.claude/cache/

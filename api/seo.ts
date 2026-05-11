@@ -18,11 +18,30 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 // Production deployments should set CMS_BASE_URL env var; the fallback targets the staging CMS.
 const CMS_BASE_URL = process.env['CMS_BASE_URL'] ?? 'https://cms-api.decentraland.org/spaces/ea2ybdmmn1kv/environments/master'
 
+// camera-reel-service hosts metadata for /reels/:imageId. Falls back to prod for local dev.
+const REEL_SERVICE_URL = process.env['REEL_SERVICE_URL'] ?? 'https://camera-reel-service.decentraland.org'
+
+// events-api hosts metadata for /whats-on?id=<eventId>. Falls back to prod for local dev.
+const EVENTS_API_URL = process.env['EVENTS_API_URL'] ?? 'https://events.decentraland.org/api'
+
+// places-api hosts metadata for /whats-on?position=x,y and /jump/places. Falls back to prod for local dev.
+const PLACES_API_URL = process.env['PLACES_API_URL'] ?? 'https://places.decentraland.org/api'
+
+// Brand share-card hosted on the marketing CDN so it stays editable without a sites redeploy.
+const SHARE_IMAGE_URL = 'https://marketing-files.decentraland.org/uploads/1778186218133_decentraland-background.webp'
+
 const DEFAULTS = {
   title: 'Decentraland Blog | Updates, Stories, and Community Moments',
   description: 'Updates from across Decentraland. Announcements, events, community moments, and everything in between.',
-  image: 'https://cms-images.decentraland.org/ea2ybdmmn1kv/7tYISdowuJYIbSIDqij87H/f3524d454d8e29702792a6b674f5550d/GI_Landscape.Small.png',
-  siteName: 'Decentraland'
+  image: SHARE_IMAGE_URL,
+  siteName: 'Decentraland',
+  twitterHandle: '@decentraland'
+} as const
+
+const WHATS_ON_DEFAULTS = {
+  title: "What's On in Decentraland",
+  description: 'Live events, hangouts, and places happening right now in Decentraland.',
+  image: SHARE_IMAGE_URL
 } as const
 
 // Allowlist of canonical origins used to build the returned absolute URLs (canonical, og:url).
@@ -68,6 +87,17 @@ const escapeHTML = (value: string): string =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#x27;')
 
+// Escape ONLY what's required inside element text content (RCDATA for <title>):
+// `<` and `&`. Apostrophes and quotes need no escaping here because we're not inside
+// an attribute value. Using the full `escapeHTML` for <title> turned "What's On" into
+// `<title>What&#x27;s On…</title>` which then got double-encoded somewhere in our
+// edge pipeline (the live response carried `<title>What&amp;#39;s On…</title>` —
+// browsers parse <title> in RCDATA mode where character refs are decoded once, so
+// the user saw the literal text `What&#39;s On…` in the browser tab). Producing a
+// literal apostrophe here removes the entity entirely and makes the title robust
+// against any downstream re-encoding.
+const escapeHTMLTextContent = (value: string): string => decodeHTMLEntities(value).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+
 // Only allow http(s) URLs; anything else (javascript:, data:, etc.) is dropped.
 const safeUrl = (value: string, fallback: string): string => {
   try {
@@ -95,10 +125,11 @@ interface SEOData {
 }
 
 interface RouteInfo {
-  type: 'blog' | 'post' | 'category' | 'author' | 'search' | 'unknown'
+  type: 'blog' | 'post' | 'category' | 'author' | 'search' | 'reels' | 'whats-on' | 'unknown'
   categorySlug?: string
   postSlug?: string
   authorSlug?: string
+  imageId?: string
 }
 
 interface CMSLink {
@@ -216,6 +247,148 @@ const fetchDefaultSEO = async (): Promise<SEOData | null> => {
   }
 }
 
+// Event IDs are UUIDs from events.decentraland.org. Constrain to that
+// charset before interpolating into the upstream URL to prevent SSRF / path traversal.
+const EVENT_ID_REGEX = /^[a-fA-F0-9-]{8,64}$/
+
+// Position is "x,y" with optional negative signs (e.g. "0,0", "-12,150").
+const POSITION_REGEX = /^(-?\d{1,4}),(-?\d{1,4})$/
+
+// World names are ENS / DCL Names (e.g. "common.dcl.eth", "myworld.eth"). Lowercase
+// alphanumerics, hyphens and dots, ending in ".eth". Bound length to keep upstream
+// URLs sane and reject ambient junk before encodeURIComponent.
+const WORLD_NAME_REGEX = /^[a-z0-9-]+(?:\.[a-z0-9-]+){1,4}\.eth$/i
+
+interface EventApiEntry {
+  name?: string
+  description?: string | null
+  image?: string | null
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  scene_name?: string | null
+}
+
+interface EventApiResponse {
+  ok: boolean
+  data?: EventApiEntry
+}
+
+const fetchEventSEO = async (eventId: string): Promise<SEOData | null> => {
+  if (!EVENT_ID_REGEX.test(eventId)) return null
+  const data = await fetchJSON<EventApiResponse>(`${EVENTS_API_URL}/events/${encodeURIComponent(eventId)}`)
+  if (!data?.ok || !data.data) return null
+  const { name, description, image } = data.data
+  const sceneName = data.data.scene_name
+  const title = name?.trim() || WHATS_ON_DEFAULTS.title
+  const sceneSuffix = sceneName?.trim() ? ` at ${sceneName.trim()}` : ''
+  // Validate image URL here so the per-route fallback (whats-on, not blog) is preserved.
+  // generateHTML's safeUrl uses DEFAULTS.image as last resort, which is the blog landscape.
+  const imageUrl = image && /^https?:\/\//.test(image) ? image : WHATS_ON_DEFAULTS.image
+  return {
+    title: `${title}${sceneSuffix}`,
+    description: description?.trim() || WHATS_ON_DEFAULTS.description,
+    imageUrl
+  }
+}
+
+interface PlaceApiEntry {
+  title?: string | null
+  description?: string | null
+  image?: string | null
+}
+
+interface PlaceApiResponse {
+  ok: boolean
+  data?: PlaceApiEntry[]
+}
+
+const fetchPlaceSEO = async (position: string): Promise<SEOData | null> => {
+  if (!POSITION_REGEX.test(position)) return null
+  const data = await fetchJSON<PlaceApiResponse>(`${PLACES_API_URL}/places?positions=${encodeURIComponent(position)}`)
+  const entry = data?.ok ? data.data?.[0] : null
+  if (!entry) return null
+  const title = entry.title?.trim() || `Explore (${position}) in Decentraland`
+  const description = entry.description?.trim() || `Discover what's happening at coordinates ${position} in Decentraland.`
+  const imageUrl = entry.image && /^https?:\/\//.test(entry.image) ? entry.image : WHATS_ON_DEFAULTS.image
+  return { title, description, imageUrl }
+}
+
+const fetchWorldSEO = async (worldName: string): Promise<SEOData | null> => {
+  if (!WORLD_NAME_REGEX.test(worldName)) return null
+  const data = await fetchJSON<PlaceApiResponse>(`${PLACES_API_URL}/worlds?names=${encodeURIComponent(worldName)}&offset=0&limit=1`)
+  const entry = data?.ok ? data.data?.[0] : null
+  if (!entry) return null
+  const title = entry.title?.trim() || `Visit ${worldName} in Decentraland`
+  const description = entry.description?.trim() || `Discover ${worldName} — a Decentraland world.`
+  const imageUrl = entry.image && /^https?:\/\//.test(entry.image) ? entry.image : WHATS_ON_DEFAULTS.image
+  return { title, description, imageUrl }
+}
+
+const fetchWhatsOnSEO = async (eventId: string | null, position: string | null, worldName: string | null): Promise<SEOData> => {
+  if (eventId) {
+    const event = await fetchEventSEO(eventId)
+    if (event) return event
+  }
+  if (position) {
+    const place = await fetchPlaceSEO(position)
+    if (place) return place
+    if (POSITION_REGEX.test(position)) {
+      return {
+        title: `Explore (${position}) in Decentraland`,
+        description: `Discover what's happening at coordinates ${position} in Decentraland.`,
+        imageUrl: WHATS_ON_DEFAULTS.image
+      }
+    }
+  }
+  if (worldName) {
+    const world = await fetchWorldSEO(worldName)
+    if (world) return world
+    if (WORLD_NAME_REGEX.test(worldName)) {
+      return {
+        title: `Visit ${worldName} in Decentraland`,
+        description: `Discover ${worldName} — a Decentraland world.`,
+        imageUrl: WHATS_ON_DEFAULTS.image
+      }
+    }
+  }
+  return {
+    title: WHATS_ON_DEFAULTS.title,
+    description: WHATS_ON_DEFAULTS.description,
+    imageUrl: WHATS_ON_DEFAULTS.image
+  }
+}
+
+interface ReelMetadataResponse {
+  url: string
+  thumbnailUrl?: string
+  metadata?: {
+    userName?: string
+    userAddress?: string
+    scene?: { name?: string }
+  }
+}
+
+// Image IDs from camera-reel-service are short alphanumeric tokens. Constrain to that
+// charset before interpolating into the upstream URL to avoid SSRF / path traversal.
+const REEL_IMAGE_ID_REGEX = /^[A-Za-z0-9_-]{1,64}$/
+
+const REELS_DEFAULT_TITLE = 'Photos from Decentraland'
+
+const fetchReelImageSEO = async (imageId: string): Promise<SEOData | null> => {
+  if (!REEL_IMAGE_ID_REGEX.test(imageId)) return null
+  const data = await fetchJSON<ReelMetadataResponse>(`${REEL_SERVICE_URL}/api/images/${encodeURIComponent(imageId)}/metadata`)
+  if (!data?.url) return null
+  // Photographer is metadata.userName; visiblePeople is who appears IN the photo and may be empty.
+  const userName = data.metadata?.userName?.trim()
+  const sceneName = data.metadata?.scene?.name?.trim() || 'Decentraland'
+  return {
+    title: userName ? `${userName}'s Decentraland snapshot` : REELS_DEFAULT_TITLE,
+    description: userName
+      ? `Check out ${userName}'s photo taken in ${sceneName}, Decentraland. Comment on who was there and what they were wearing, or jump to the spot directly so you don't miss out!`
+      : `A photo taken in ${sceneName}, Decentraland.`,
+    imageUrl: data.url
+  }
+}
+
 // =============================================================================
 // Route Parsing
 // =============================================================================
@@ -225,7 +398,16 @@ const ROUTE_PATTERNS: Array<{ pattern: RegExp; handler: (match: RegExpMatchArray
   { pattern: /^\/blog\/search$/, handler: () => ({ type: 'search' }) },
   { pattern: /^\/blog\/([^/]+)\/([^/]+)$/, handler: m => ({ type: 'post', categorySlug: m[1], postSlug: m[2] }) },
   { pattern: /^\/blog\/([^/]+)$/, handler: m => ({ type: 'category', categorySlug: m[1] }) },
-  { pattern: /^\/blog\/?$/, handler: () => ({ type: 'blog' }) }
+  { pattern: /^\/blog\/?$/, handler: () => ({ type: 'blog' }) },
+  // Skip /reels/list — it's a list page, not an image deep-link. The CF Worker has
+  // the same exclusion in OpenGraphReelsRoute.test().
+  { pattern: /^\/reels\/(?!list(?:\/|$))([^/]+)$/, handler: m => ({ type: 'reels', imageId: m[1] }) },
+  // /whats-on, /jump/events and /jump/places all deep-link via query params (?id=, ?position=)
+  // rather than path segments. A single 'whats-on' route type handles all three by dispatching
+  // on the query params; the path patterns just gate which paths reach the handler.
+  { pattern: /^\/whats-on(\/.*)?$/, handler: () => ({ type: 'whats-on' }) },
+  { pattern: /^\/jump\/events(\/.*)?$/, handler: () => ({ type: 'whats-on' }) },
+  { pattern: /^\/jump\/places(\/.*)?$/, handler: () => ({ type: 'whats-on' }) }
 ]
 
 const parseRoute = (pathname: string): RouteInfo => {
@@ -237,11 +419,20 @@ const parseRoute = (pathname: string): RouteInfo => {
   return { type: 'unknown' }
 }
 
+const ALLOWED_ROOT_PATHS = ['/blog', '/reels', '/whats-on', '/jump'] as const
+
 // =============================================================================
 // SEO Data Resolution
 // =============================================================================
 
-const fetchSEOData = async (pathname: string, searchQuery: string | null): Promise<SEOData | null> => {
+interface SEOQueryParams {
+  searchQuery: string | null
+  eventId: string | null
+  position: string | null
+  worldName: string | null
+}
+
+const fetchSEOData = async (pathname: string, params: SEOQueryParams): Promise<SEOData | null> => {
   const route = parseRoute(pathname)
 
   switch (route.type) {
@@ -253,10 +444,16 @@ const fetchSEOData = async (pathname: string, searchQuery: string | null): Promi
       return fetchAuthor(route.authorSlug!)
     case 'search':
       return {
-        title: searchQuery ? `Search: ${searchQuery}` : 'Search',
-        description: searchQuery ? `Search results for "${searchQuery}" in Decentraland Blog` : 'Search the Decentraland Blog',
+        title: params.searchQuery ? `Search: ${params.searchQuery}` : 'Search',
+        description: params.searchQuery
+          ? `Search results for "${params.searchQuery}" in Decentraland Blog`
+          : 'Search the Decentraland Blog',
         imageUrl: DEFAULTS.image
       }
+    case 'reels':
+      return fetchReelImageSEO(route.imageId!)
+    case 'whats-on':
+      return fetchWhatsOnSEO(params.eventId, params.position, params.worldName)
     default:
       return fetchDefaultSEO()
   }
@@ -266,7 +463,10 @@ const fetchSEOData = async (pathname: string, searchQuery: string | null): Promi
 // HTML Generation
 // =============================================================================
 
-const replaceMetaTag = (html: string, pattern: RegExp, replacement: string): string => html.replace(pattern, replacement)
+// Use a function replacement so `$&`, `$1`, `$$` etc. inside an API-returned title
+// don't get expanded into the matched substring — that would break out of the
+// `content="..."` attribute boundary even after escapeHTML.
+const replaceMetaTag = (html: string, pattern: RegExp, replacement: string): string => html.replace(pattern, () => replacement)
 
 const generateHTML = (data: SEOData | null, originalHTML: string, url: string): string => {
   // Escape every interpolated value to prevent reflected/stored XSS via CMS fields or query strings.
@@ -275,15 +475,21 @@ const generateHTML = (data: SEOData | null, originalHTML: string, url: string): 
   const rawImageUrl = safeUrl(data?.imageUrl || DEFAULTS.image, DEFAULTS.image)
 
   const title = escapeHTML(rawTitle)
+  const titleTextContent = escapeHTMLTextContent(rawTitle)
   const description = escapeHTML(rawDescription)
   const imageUrl = escapeHTML(rawImageUrl)
   const safeCanonicalUrl = escapeHTML(url)
   const ogType = data?.author ? 'article' : 'website'
+  // Large card whenever a route resolved data (we always carry an image — CMS, events, places, or
+  // the brand fallback). Drop to summary for the unknown-route case so the brand icon doesn't crop.
+  const twitterCard = data ? 'summary_large_image' : 'summary'
+  const siteName = escapeHTML(DEFAULTS.siteName)
+  const twitterHandle = escapeHTML(DEFAULTS.twitterHandle)
 
   let html = originalHTML
 
   // Basic meta tags
-  html = replaceMetaTag(html, /<title>.*?<\/title>/i, `<title>${title}</title>`)
+  html = replaceMetaTag(html, /<title>.*?<\/title>/i, `<title>${titleTextContent}</title>`)
   html = replaceMetaTag(html, /<meta name="description" content="[^"]*"[^>]*>/i, `<meta name="description" content="${description}">`)
   html = replaceMetaTag(html, /<link rel="canonical" href="[^"]*"[^>]*>/i, `<link rel="canonical" href="${safeCanonicalUrl}">`)
 
@@ -297,6 +503,11 @@ const generateHTML = (data: SEOData | null, originalHTML: string, url: string): 
   html = replaceMetaTag(html, /<meta property="og:image" content="[^"]*"[^>]*>/i, `<meta property="og:image" content="${imageUrl}">`)
   html = replaceMetaTag(html, /<meta property="og:url" content="[^"]*"[^>]*>/i, `<meta property="og:url" content="${safeCanonicalUrl}">`)
   html = replaceMetaTag(html, /<meta property="og:type" content="[^"]*"[^>]*>/i, `<meta property="og:type" content="${ogType}">`)
+  html = replaceMetaTag(
+    html,
+    /<meta property="og:site_name" content="[^"]*"[^>]*>/i,
+    `<meta property="og:site_name" content="${siteName}">`
+  )
 
   // Twitter Card
   html = replaceMetaTag(html, /<meta name="twitter:title" content="[^"]*"[^>]*>/i, `<meta name="twitter:title" content="${title}">`)
@@ -306,6 +517,13 @@ const generateHTML = (data: SEOData | null, originalHTML: string, url: string): 
     `<meta name="twitter:description" content="${description}">`
   )
   html = replaceMetaTag(html, /<meta name="twitter:image" content="[^"]*"[^>]*>/i, `<meta name="twitter:image" content="${imageUrl}">`)
+  html = replaceMetaTag(html, /<meta name="twitter:card" content="[^"]*"[^>]*>/i, `<meta name="twitter:card" content="${twitterCard}">`)
+  html = replaceMetaTag(html, /<meta name="twitter:site" content="[^"]*"[^>]*>/i, `<meta name="twitter:site" content="${twitterHandle}">`)
+  html = replaceMetaTag(
+    html,
+    /<meta name="twitter:creator" content="[^"]*"[^>]*>/i,
+    `<meta name="twitter:creator" content="${twitterHandle}">`
+  )
 
   // Article meta (for posts)
   if (data?.author && data?.publishedDate) {
@@ -334,16 +552,16 @@ const generateHTML = (data: SEOData | null, originalHTML: string, url: string): 
 // Request Handler
 // =============================================================================
 
-// Only accept paths that start with `/blog` and contain no path traversal or protocol separators.
-// This prevents `?path=//evil.com` style open redirect payloads and garbage input.
-const sanitizeBlogPath = (raw: unknown): string => {
+// Only accept paths under one of the allowed roots (currently /blog or /reels) and reject
+// any traversal or protocol separators. Prevents `?path=//evil.com` style open redirects.
+const sanitizePath = (raw: unknown): string => {
   const value = Array.isArray(raw) ? raw[0] : raw
   if (typeof value !== 'string') return '/blog'
-  // Parse to strip query strings, fragments, and normalise the path.
   try {
     const parsed = new URL(value, 'https://localhost')
     const pathname = parsed.pathname
-    if (!pathname.startsWith('/blog')) return '/blog'
+    const isAllowed = ALLOWED_ROOT_PATHS.some(root => pathname === root || pathname.startsWith(`${root}/`))
+    if (!isAllowed) return '/blog'
     if (pathname.includes('..') || pathname.includes('//') || pathname.includes('\\')) return '/blog'
     return pathname
   } catch {
@@ -365,11 +583,25 @@ const resolveOrigin = (req: VercelRequest): string => {
 }
 
 async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
-  const blogPath = sanitizeBlogPath(req.query.path)
+  const requestPath = sanitizePath(req.query.path)
   const searchQuery = firstQueryValue(req.query.q)
+  const eventId = firstQueryValue(req.query.id)
+  const position = firstQueryValue(req.query.position)
+  const worldName = firstQueryValue(req.query.world)
 
   const origin = resolveOrigin(req)
-  const actualUrl = `${origin}${blogPath}`
+  // Preserve id / position / world in the canonical URL so social cards and search
+  // engines link back to the deep-linked event/parcel/world rather than the
+  // generic listing page. Applies to /whats-on and /jump/{events,places}.
+  const canonicalQuery = new URLSearchParams()
+  const preservesQuery = requestPath.startsWith('/whats-on') || requestPath.startsWith('/jump/')
+  if (preservesQuery) {
+    if (eventId && EVENT_ID_REGEX.test(eventId)) canonicalQuery.set('id', eventId)
+    else if (position && POSITION_REGEX.test(position)) canonicalQuery.set('position', position)
+    else if (worldName && WORLD_NAME_REGEX.test(worldName)) canonicalQuery.set('world', worldName)
+  }
+  const queryString = canonicalQuery.toString()
+  const actualUrl = `${origin}${requestPath}${queryString ? `?${queryString}` : ''}`
 
   // Security headers applied regardless of the response path.
   res.setHeader('X-Content-Type-Options', 'nosniff')
@@ -388,7 +620,7 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   }
 
   try {
-    const seoData = await fetchSEOData(blogPath, searchQuery)
+    const seoData = await fetchSEOData(requestPath, { searchQuery, eventId, position, worldName })
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     // Shorter stale window: timely blog announcements should not be served up to 24h stale.

@@ -69,10 +69,9 @@ const eventsClient = createApi({
           const eventsUrl = getEnv('EVENTS_API_URL')!
           const hotScenesUrl = getEnv('HOT_SCENES_URL')!
 
-          const [eventsRes, scenesRes] = await Promise.all([
-            fetch(`${eventsUrl}/events?list=live&limit=20&order=asc&world=false`),
-            fetch(hotScenesUrl)
-          ])
+          // NOTE: do not pass `world=false`. Live Now must include both Genesis City and Worlds events.
+          // The All-tab calendar in AllExperiences keeps its filter because that view is spatial.
+          const [eventsRes, scenesRes] = await Promise.all([fetch(`${eventsUrl}/events?list=live&limit=20&order=asc`), fetch(hotScenesUrl)])
 
           if (!eventsRes.ok || !scenesRes.ok) {
             throw new Error('Failed to fetch live events or hot scenes')
@@ -108,11 +107,11 @@ const eventsClient = createApi({
           const baseUrl = getEnv('EVENTS_API_URL')!
           const now = new Date()
           const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+          // NOTE: do not pass `world: false`. Upcoming must include both Genesis City and Worlds events.
           const query = buildQueryString({
             list: 'upcoming',
             limit: 10,
             order: 'asc',
-            world: false,
             from: now.toISOString(),
             to: in24h.toISOString()
           })

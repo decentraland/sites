@@ -56,6 +56,13 @@ export default defineConfig(({ command, mode }) => {
               return 'vendor-intl'
             if (id.includes('node_modules/ua-parser-js')) return 'vendor-ua'
             if (id.includes('node_modules/react-router')) return 'vendor-router'
+            if (
+              id.includes('node_modules/livekit-client') ||
+              id.includes('node_modules/@livekit/components-react') ||
+              id.includes('node_modules/@livekit/components-styles')
+            ) {
+              return 'vendor-livekit'
+            }
             return null
           }
         }

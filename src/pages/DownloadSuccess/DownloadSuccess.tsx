@@ -4,6 +4,7 @@ import { useAnalytics, useTranslation } from '@dcl/hooks'
 import { Logo, Typography } from 'decentraland-ui2'
 import { LandingFooter } from '../../components/LandingFooter'
 import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
+import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsLauncher from '../../images/download/macos_launcher.webp'
@@ -13,9 +14,10 @@ import windowsDownloadsFolder from '../../images/download/windows_downloads_fold
 import windowsLaunchingDecentraland from '../../images/download/windows_launching_decentraland.webp'
 import windowsSetup from '../../images/download/windows_setup.webp'
 import microsoftLogo from '../../images/microsoft-logo.svg'
-import { calculateDownloadUrl, getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
-import { triggerFileDownload } from '../../modules/file'
+import { calculateDownloadUrl } from '../../modules/downloadWithIdentity'
+import { collectClientFingerprint } from '../../modules/fingerprint'
 import { DownloadPlace, SectionViewedTrack, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
+import { streamOrFallback } from '../../modules/streamOrFallback'
 import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
 import { DownloadSuccessLayout } from './DownloadSuccessLayout'
@@ -39,19 +41,31 @@ const DownloadSuccess = memo(() => {
   const { isInitialized, track } = useAnalytics()
   const getIdentityId = useGetIdentityId()
   const anonUserId = useAnonUserId()
+  const { hasValidIdentity } = useAuthIdentity()
+  // 'authenticated' = the visitor has an auth identity in localStorage at the
+  // moment the download is triggered (i.e. they had previously logged in).
+  // 'anonymous' = no identity, the campaign attribution chain relies entirely
+  // on anon_user_id. Useful for breaking down the funnel by login state and
+  // for catching regressions where authenticated users fall back to the
+  // anonymous gateway path.
+  const authState: 'authenticated' | 'anonymous' = hasValidIdentity ? 'authenticated' : 'anonymous'
 
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [isFileSaved, setIsFileSaved] = useState(false)
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(null)
   const downloadingRef = useRef(false)
+  const footerAbortRef = useRef<AbortController | null>(null)
   const getIdentityIdRef = useRef(getIdentityId)
   const anonUserIdRef = useRef(anonUserId)
   const isInitializedRef = useRef(isInitialized)
   const trackRef = useRef(track)
+  const authStateRef = useRef(authState)
   getIdentityIdRef.current = getIdentityId
   anonUserIdRef.current = anonUserId
   isInitializedRef.current = isInitialized
   trackRef.current = track
+  authStateRef.current = authState
 
   const rawOs = searchParams.get('os') || ''
   const osMap: Record<string, OperativeSystem> = {
@@ -117,11 +131,24 @@ const DownloadSuccess = memo(() => {
   const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
 
   useEffect(() => {
-    let cancelled = false
+    const abortController = new AbortController()
+    const { signal } = abortController
     const autoDownloadKey = `${clientOS}:${clientArch}`
 
     const getHistoryState = (): Record<string, unknown> =>
       window.history.state && typeof window.history.state === 'object' ? (window.history.state as Record<string, unknown>) : {}
+
+    // Segment loads lazily via DeferredAnalyticsProvider, so on first paint
+    // `isInitializedRef.current` is false and any track call would no-op.
+    // For the anonymous Download First flow `getIdentityId()` short-circuits
+    // synchronously, so we can't rely on the URL-resolution await as an
+    // implicit barrier — explicitly poll for analytics readiness instead.
+    const waitForAnalytics = async (timeoutMs = 5000): Promise<void> => {
+      const start = Date.now()
+      while (!isInitializedRef.current && !signal.aborted && Date.now() - start < timeoutMs) {
+        await new Promise(resolve => setTimeout(resolve, 50))
+      }
+    }
 
     const startDownload = async () => {
       const sessionKey = `${AUTO_DOWNLOAD_SESSION_KEY}:${autoDownloadKey}`
@@ -140,21 +167,17 @@ const DownloadSuccess = memo(() => {
       setIsDownloading(true)
       setDownloadError(null)
       setIsFileSaved(false)
+      setDownloadProgress(null)
 
-      // NOTE: download_started is fired AFTER calculateDownloadUrl (not before)
-      // because Segment loads lazily via DeferredAnalyticsProvider — at page
-      // mount `isInitialized` is still false and the track call would no-op.
-      // The await gives Segment ~50–300 ms to finish loading, so by the time
-      // we get here `isInitializedRef.current` is true and both started/success
-      // events go through.
       const { url, filename } = await calculateDownloadUrl({
         os: clientOS,
         arch: clientArch,
         fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
-        getIdentityId: getIdentityIdRef.current
+        getIdentityId: getIdentityIdRef.current,
+        anonUserId: anonUserIdRef.current
       })
 
-      if (cancelled) return
+      if (signal.aborted) return
 
       const latestHistoryState = getHistoryState()
       if (latestHistoryState[AUTO_DOWNLOAD_HISTORY_STATE_KEY] !== autoDownloadKey) {
@@ -168,39 +191,70 @@ const DownloadSuccess = memo(() => {
         )
       }
 
-      if (cancelled) return
-
-      if (isInitializedRef.current) {
-        trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place, href: osLink })
-      }
+      if (signal.aborted) return
 
       sessionStorage.setItem(sessionKey, '1')
       const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserIdRef.current })
-      triggerFileDownload(downloadUrl)
+
+      // Stream the file via fetch on Windows so the "Downloading..." backdrop
+      // stays in sync with the actual transfer (the gateway's per-request
+      // NSIS+sign step can run 5-30s and the synchronous `<a>.click()` would
+      // hide the backdrop the instant the click is queued, leaving the user
+      // staring at the steps page while the gateway is still working).
+      // macOS goes through the native anchor to preserve the
+      // kMDItemWhereFroms xattr the launcher reads for attribution.
+      // The download itself never blocks on Segment — we'll wait for
+      // analytics readiness afterwards, before firing the funnel events.
+      await streamOrFallback({
+        url: downloadUrl,
+        filename,
+        os: clientOS,
+        signal,
+        onProgress: setDownloadProgress
+      })
+
+      if (signal.aborted) return
+      setDownloadProgress(100)
       setIsFileSaved(true)
 
-      if (isInitializedRef.current) {
-        trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place, href: url, filename })
-      }
+      // Both events fire only when the stream has effectively landed (or
+      // the fallback hold elapsed) — DOWNLOAD_SUCCESS now genuinely means
+      // "the file finished downloading" rather than "the user clicked".
+      // If the transfer fails the .catch() below fires DOWNLOAD_FAILED
+      // instead, so success/failed are mutually exclusive.
+      //
+      // The `fingerprint` payload below is what the data team's server-side
+      // join uses to match this download with the launcher's first-run
+      // event from the same machine — see the IP + heuristic fingerprint
+      // attribution doc.
+      const fingerprint = collectClientFingerprint()
+      await waitForAnalytics()
+      if (signal.aborted || !isInitializedRef.current) return
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place, href: osLink, auth_state: authStateRef.current, ...fingerprint })
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place, href: url, filename, auth_state: authStateRef.current, ...fingerprint })
     }
 
     startDownload()
-      .catch(error => {
-        if (cancelled) return
+      .catch(async error => {
+        if (signal.aborted) return
         console.error('Download error:', error)
         setDownloadError(error instanceof Error ? error.message : 'Download failed')
-        if (isInitializedRef.current) {
-          trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place, href: osLink })
-        }
+        const fingerprint = collectClientFingerprint()
+        await waitForAnalytics()
+        if (signal.aborted || !isInitializedRef.current) return
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place, href: osLink, auth_state: authStateRef.current, ...fingerprint })
       })
       .finally(() => {
-        if (!cancelled) {
+        if (!signal.aborted) {
           setIsDownloading(false)
         }
       })
 
     return () => {
-      cancelled = true
+      abortController.abort()
     }
   }, [clientOS, clientArch, osLink, place])
 
@@ -210,37 +264,87 @@ const DownloadSuccess = memo(() => {
       if (downloadingRef.current) return
       downloadingRef.current = true
       setIsDownloading(true)
+      setDownloadProgress(null)
+
+      // Footer re-download has its own AbortController so unmounts and
+      // page navigations cancel the in-flight stream cleanly.
+      const abortController = new AbortController()
+      footerAbortRef.current = abortController
+      const { signal } = abortController
 
       const footerPlace = DownloadPlace.DOWNLOAD_SUCCESS_FOOTER
       // Re-download from the footer link is its own funnel event so analytics
       // can distinguish it from the auto-download that fires on page mount.
+      const fingerprint = collectClientFingerprint()
       if (isInitializedRef.current) {
-        trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place: footerPlace, href: osLink })
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place: footerPlace, href: osLink, auth_state: authState, ...fingerprint })
       }
 
       try {
-        const url = await getDownloadLinkWithIdentity({
+        const { url, filename } = await calculateDownloadUrl({
           os: clientOS,
           arch: clientArch,
           fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
-          queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
-          getIdentityId
+          getIdentityId,
+          anonUserId
         })
+        const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserId })
+
+        await streamOrFallback({
+          url: downloadUrl,
+          filename,
+          os: clientOS,
+          signal,
+          onProgress: setDownloadProgress
+        })
+
+        if (signal.aborted) return
+        setDownloadProgress(100)
+
         if (isInitializedRef.current) {
-          trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place: footerPlace, href: url ?? osLink })
+          // DOWNLOAD_SUCCESS only fires after streamOrFallback has resolved,
+          // i.e. the bytes have effectively landed (Windows) or the
+          // fallback hold elapsed (macOS / Windows fetch failure).
+
+          trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, {
+            place: footerPlace,
+            href: downloadUrl,
+            filename,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            auth_state: authState,
+            ...fingerprint
+          })
         }
       } catch (error) {
+        if (signal.aborted) return
         console.error('Download error:', error)
         setDownloadError(error instanceof Error ? error.message : 'Download failed')
         if (isInitializedRef.current) {
-          trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place: footerPlace, href: osLink })
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place: footerPlace, href: osLink, auth_state: authState, ...fingerprint })
         }
       } finally {
         downloadingRef.current = false
-        setIsDownloading(false)
+        if (!signal.aborted) {
+          setIsDownloading(false)
+        }
+        if (footerAbortRef.current === abortController) {
+          footerAbortRef.current = null
+        }
       }
     },
-    [clientOS, clientArch, anonUserId, getIdentityId, osLink]
+    [clientOS, clientArch, anonUserId, getIdentityId, osLink, authState]
+  )
+
+  // Cancel any in-flight footer-initiated stream when the page unmounts so
+  // we don't leak the connection (and per-chunk setState calls) into a
+  // destroyed component tree.
+  useEffect(
+    () => () => {
+      footerAbortRef.current?.abort()
+    },
+    []
   )
 
   const showBackdrop = isDownloading || (!downloadError && !isFileSaved)
@@ -251,7 +355,7 @@ const DownloadSuccess = memo(() => {
       <DownloadDetailContainer>
         <DownloadBackdropText variant="h6">{l('page.download.downloading')}</DownloadBackdropText>
         <DownloadProgressContainer>
-          <DownloadProgressBar />
+          {downloadProgress !== null ? <DownloadProgressBar variant="determinate" value={downloadProgress} /> : <DownloadProgressBar />}
         </DownloadProgressContainer>
       </DownloadDetailContainer>
     </DownloadBackdropContent>
