@@ -1,6 +1,12 @@
 import pixelmatch from 'pixelmatch'
 import { PNG } from 'pngjs'
 
+// Defense-in-depth cap on image dimensions. Playwright-generated screenshots
+// today max out around ~4320×8000 (mobile dpr=3 on tall pages), well below
+// this limit — but a maliciously large PNG could otherwise OOM the runner
+// (each RGBA buffer is width × height × 4 bytes; 16384² ≈ 1GB).
+const MAX_DIM = 16384
+
 // Pad a decoded PNG to a target width/height with white pixels. Pixelmatch
 // requires both inputs to be the same size; pages of different heights (the
 // preview added or removed sections) would otherwise be unable to compare.
@@ -30,6 +36,9 @@ export function diffPngBuffers(bufA, bufB, options = {}) {
   const b = PNG.sync.read(bufB)
   const width = Math.max(a.width, b.width)
   const height = Math.max(a.height, b.height)
+  if (width > MAX_DIM || height > MAX_DIM) {
+    throw new Error(`Image dimensions ${width}×${height} exceed safety limit of ${MAX_DIM}px`)
+  }
   const paddedA = padToSize(a, width, height)
   const paddedB = padToSize(b, width, height)
   const diff = new PNG({ width, height })

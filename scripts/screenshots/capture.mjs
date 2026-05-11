@@ -55,7 +55,7 @@ const NAV_TIMEOUT_MS = parsePositiveInt('NAV_TIMEOUT_MS', 30000)
 const SETTLE_MS = parsePositiveInt('SETTLE_MS', 1500)
 const CONCURRENCY = Math.max(1, Math.floor(parsePositiveInt('CONCURRENCY', 4)))
 // In diff mode, only persist routes whose pixel-difference exceeds this percent.
-// 0.5% (~1700px on a 1440x230 viewport) filters out antialiasing/font-hinting
+// 0.5% (~6500px on a 1440×900 viewport) filters out antialiasing/font-hinting
 // noise while catching anything visually meaningful.
 const DIFF_THRESHOLD_PERCENT = parsePercent('DIFF_THRESHOLD_PERCENT', 0.5)
 
@@ -88,7 +88,14 @@ async function capturePageBuffer(context, url) {
     const response = await page.goto(url, { waitUntil: 'load', timeout: NAV_TIMEOUT_MS })
     const status = response?.status() ?? 0
 
-    await page.evaluate(() => document.fonts?.ready).catch(() => {})
+    // Errors below are swallowed by design — a partial capture beats failing the
+    // route entirely — but we log a warning so capture-quality regressions are
+    // diagnosable from CI logs without bumping the failure rate.
+    await page
+      .evaluate(() => document.fonts?.ready)
+      .catch(err => {
+        console.warn(`    fonts.ready failed for ${url}: ${err?.message ?? err}`)
+      })
 
     await page
       .evaluate(async () => {
@@ -103,7 +110,9 @@ async function capturePageBuffer(context, url) {
         await new Promise(r => setTimeout(r, 200))
         window.scrollTo(0, 0)
       })
-      .catch(() => {})
+      .catch(err => {
+        console.warn(`    scroll phase failed for ${url}: ${err?.message ?? err}`)
+      })
 
     await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {})
 
@@ -123,7 +132,9 @@ async function capturePageBuffer(context, url) {
           )
         )
       })
-      .catch(() => {})
+      .catch(err => {
+        console.warn(`    image-load phase failed for ${url}: ${err?.message ?? err}`)
+      })
 
     await page.waitForTimeout(SETTLE_MS)
     const buffer = await page.screenshot({ fullPage: true, type: 'png' })
