@@ -1,10 +1,10 @@
 import { getEnv } from '../../config/env'
-import type { EventEntry } from '../whats-on-events'
+import type { EventEntry } from '../events'
 import type { CommunityEvent, CommunityEventsResponse } from './communities.types'
 import type { EventsApiResponse } from './events.helpers.types'
 
 // TODO(post-prod): the snake_case → camelCase mapping below duplicates the
-// shape conversions already performed in `src/features/whats-on-events/events.helpers.ts`.
+// shape conversions already performed in `src/features/events/events.helpers.ts`.
 // Once the social migration ships, extract the shared event-shape mapper into a single
 // helper consumed by both the whats-on and the communities event clients. Today they're
 // kept separate to scope the migration; the duplication is intentional but temporary.

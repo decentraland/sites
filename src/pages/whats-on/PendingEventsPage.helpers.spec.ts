@@ -1,4 +1,4 @@
-import { REJECTION_REASON_MAX_LENGTH } from '../../features/whats-on/admin/admin.types'
+import { REJECTION_REASON_MAX_LENGTH } from '../../features/events/events.admin.types'
 import { buildRejectionReason } from './PendingEventsPage.helpers'
 
 const t = (key: string) => key

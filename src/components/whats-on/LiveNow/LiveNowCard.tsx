@@ -1,7 +1,7 @@
 import { memo, useCallback } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { BadgeGroup, JumpInIcon, LiveBadge, Typography, UserCountBadge } from 'decentraland-ui2'
-import type { LiveNowCard as LiveNowCardData } from '../../../features/whats-on-events'
+import type { LiveNowCard as LiveNowCardData } from '../../../features/events'
 import {
   AvatarFallback,
   AvatarImage,

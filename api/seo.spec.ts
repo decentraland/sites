@@ -275,7 +275,7 @@ describe('seo handler', () => {
 
   it('rejects malformed world name and falls back to defaults', async () => {
     const { body } = await run({ path: '/whats-on', world: 'not<a>world' })
-    expect(body).toContain('<title>What&#x27;s On in Decentraland | Decentraland</title>')
+    expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
     expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on">/)
   })
 
@@ -293,13 +293,24 @@ describe('seo handler', () => {
 
   it('serves generic whats-on metadata when no params', async () => {
     const { body } = await run({ path: '/whats-on' })
-    expect(body).toContain('<title>What&#x27;s On in Decentraland | Decentraland</title>')
+    expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
     expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on">/)
+  })
+
+  it('keeps the apostrophe in the <title> element as a literal character, not an HTML entity, so a downstream re-encode cannot double-encode it', async () => {
+    const { body } = await run({ path: '/whats-on' })
+    const titleMatch = body.match(/<title>([^<]*)<\/title>/)
+    expect(titleMatch).not.toBeNull()
+    expect(titleMatch![1]).not.toMatch(/&#?x?\d*'?;/i)
+    expect(titleMatch![1]).toBe("What's On in Decentraland | Decentraland")
+    // Attribute-bound titles (twitter:title, og:title) still escape the apostrophe defensively
+    // because the value is wrapped in double-quoted attributes.
+    expect(body).toMatch(/<meta name="twitter:title" content="What&#x27;s On in Decentraland \| Decentraland">/)
   })
 
   it('rejects malformed event id and falls back to defaults', async () => {
     const { body } = await run({ path: '/whats-on', id: 'not<a>uuid' })
-    expect(body).toContain('<title>What&#x27;s On in Decentraland | Decentraland</title>')
+    expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
     // Canonical should NOT include the bad id
     expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on">/)
   })
@@ -319,7 +330,7 @@ describe('seo handler', () => {
   it('serves reel metadata for /reels/<imageId> with photographer attribution', async () => {
     const { body, headers } = await run({ path: '/reels/reel-with-photographer' })
     expect(headers['X-SEO-Function']).toBe('active')
-    expect(body).toContain('<title>Alice&#x27;s Decentraland snapshot | Decentraland</title>')
+    expect(body).toContain("<title>Alice's Decentraland snapshot | Decentraland</title>")
     expect(body).toMatch(/<meta property="og:description" content="Check out Alice&#x27;s photo taken in Genesis Plaza, Decentraland\./)
     expect(body).toMatch(
       /<meta property="og:image" content="https:\/\/camera-reel-storage\.decentraland\.org\/reels\/reel-with-photographer\.jpg">/

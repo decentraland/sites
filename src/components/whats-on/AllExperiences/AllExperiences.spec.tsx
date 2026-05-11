@@ -14,8 +14,8 @@ jest.mock('../../../hooks/useAuthIdentity', () => ({
 }))
 
 const mockUseGetEventsQuery = jest.fn()
-jest.mock('../../../features/whats-on-events', () => {
-  const helpers = jest.requireActual('../../../features/whats-on-events/events.helpers')
+jest.mock('../../../features/events', () => {
+  const helpers = jest.requireActual('../../../features/events/events.helpers')
   return {
     useGetEventsQuery: (...args: unknown[]) => mockUseGetEventsQuery(...args),
     bucketEventsByDay: helpers.bucketEventsByDay
