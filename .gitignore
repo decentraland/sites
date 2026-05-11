@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Local output of scripts/screenshots/capture.mjs
+/screenshots/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -93,12 +93,14 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_started', {
-        place: 'landing-hero',
-        href: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe',
-
-        auth_state: 'anonymous'
-      })
+      expect(mockTrack).toHaveBeenCalledWith(
+        'download_started',
+        expect.objectContaining({
+          place: 'landing-hero',
+          href: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe',
+          auth_state: 'anonymous'
+        })
+      )
     })
   })
 
@@ -106,13 +108,38 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_success', {
-        place: 'landing-hero',
-        href: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
-        filename: 'Install-Decentraland.exe',
+      expect(mockTrack).toHaveBeenCalledWith(
+        'download_success',
+        expect.objectContaining({
+          place: 'landing-hero',
+          href: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+          filename: 'Install-Decentraland.exe',
+          auth_state: 'anonymous'
+        })
+      )
+    })
+  })
 
-        auth_state: 'anonymous'
-      })
+  it('should include the client fingerprint fields on download_success for server-side attribution', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith(
+        'download_success',
+        expect.objectContaining({
+          screen_width: expect.any(Number),
+
+          screen_height: expect.any(Number),
+
+          device_pixel_ratio: expect.any(Number),
+
+          color_depth: expect.any(Number),
+
+          hardware_concurrency: expect.any(Number),
+
+          timezone_offset_minutes: expect.any(Number)
+        })
+      )
     })
   })
 
@@ -238,12 +265,14 @@ describe('when DownloadSuccess mounts and the url resolution rejects', () => {
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_failed', {
-        place: 'download-page',
-        href: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe',
-
-        auth_state: 'anonymous'
-      })
+      expect(mockTrack).toHaveBeenCalledWith(
+        'download_failed',
+        expect.objectContaining({
+          place: 'download-page',
+          href: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe',
+          auth_state: 'anonymous'
+        })
+      )
     })
   })
 })

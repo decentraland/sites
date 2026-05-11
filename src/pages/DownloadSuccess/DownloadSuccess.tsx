@@ -15,6 +15,7 @@ import windowsLaunchingDecentraland from '../../images/download/windows_launchin
 import windowsSetup from '../../images/download/windows_setup.webp'
 import microsoftLogo from '../../images/microsoft-logo.svg'
 import { calculateDownloadUrl } from '../../modules/downloadWithIdentity'
+import { collectClientFingerprint } from '../../modules/fingerprint'
 import { DownloadPlace, SectionViewedTrack, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
 import { streamOrFallback } from '../../modules/streamOrFallback'
 import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
@@ -221,12 +222,18 @@ const DownloadSuccess = memo(() => {
       // "the file finished downloading" rather than "the user clicked".
       // If the transfer fails the .catch() below fires DOWNLOAD_FAILED
       // instead, so success/failed are mutually exclusive.
+      //
+      // The `fingerprint` payload below is what the data team's server-side
+      // join uses to match this download with the launcher's first-run
+      // event from the same machine — see the IP + heuristic fingerprint
+      // attribution doc.
+      const fingerprint = collectClientFingerprint()
       await waitForAnalytics()
       if (signal.aborted || !isInitializedRef.current) return
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place, href: osLink, auth_state: authStateRef.current })
+      trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place, href: osLink, auth_state: authStateRef.current, ...fingerprint })
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place, href: url, filename, auth_state: authStateRef.current })
+      trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place, href: url, filename, auth_state: authStateRef.current, ...fingerprint })
     }
 
     startDownload()
@@ -234,10 +241,11 @@ const DownloadSuccess = memo(() => {
         if (signal.aborted) return
         console.error('Download error:', error)
         setDownloadError(error instanceof Error ? error.message : 'Download failed')
+        const fingerprint = collectClientFingerprint()
         await waitForAnalytics()
         if (signal.aborted || !isInitializedRef.current) return
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place, href: osLink, auth_state: authStateRef.current })
+        trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place, href: osLink, auth_state: authStateRef.current, ...fingerprint })
       })
       .finally(() => {
         if (!signal.aborted) {
@@ -267,9 +275,10 @@ const DownloadSuccess = memo(() => {
       const footerPlace = DownloadPlace.DOWNLOAD_SUCCESS_FOOTER
       // Re-download from the footer link is its own funnel event so analytics
       // can distinguish it from the auto-download that fires on page mount.
+      const fingerprint = collectClientFingerprint()
       if (isInitializedRef.current) {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place: footerPlace, href: osLink, auth_state: authState })
+        trackRef.current(SegmentEvent.DOWNLOAD_STARTED, { place: footerPlace, href: osLink, auth_state: authState, ...fingerprint })
       }
 
       try {
@@ -297,8 +306,15 @@ const DownloadSuccess = memo(() => {
           // DOWNLOAD_SUCCESS only fires after streamOrFallback has resolved,
           // i.e. the bytes have effectively landed (Windows) or the
           // fallback hold elapsed (macOS / Windows fetch failure).
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, { place: footerPlace, href: downloadUrl, filename, auth_state: authState })
+
+          trackRef.current(SegmentEvent.DOWNLOAD_SUCCESS, {
+            place: footerPlace,
+            href: downloadUrl,
+            filename,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            auth_state: authState,
+            ...fingerprint
+          })
         }
       } catch (error) {
         if (signal.aborted) return
@@ -306,7 +322,7 @@ const DownloadSuccess = memo(() => {
         setDownloadError(error instanceof Error ? error.message : 'Download failed')
         if (isInitializedRef.current) {
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place: footerPlace, href: osLink, auth_state: authState })
+          trackRef.current(SegmentEvent.DOWNLOAD_FAILED, { place: footerPlace, href: osLink, auth_state: authState, ...fingerprint })
         }
       } finally {
         downloadingRef.current = false
