@@ -87,6 +87,17 @@ const escapeHTML = (value: string): string =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#x27;')
 
+// Escape ONLY what's required inside element text content (RCDATA for <title>):
+// `<` and `&`. Apostrophes and quotes need no escaping here because we're not inside
+// an attribute value. Using the full `escapeHTML` for <title> turned "What's On" into
+// `<title>What&#x27;s On…</title>` which then got double-encoded somewhere in our
+// edge pipeline (the live response carried `<title>What&amp;#39;s On…</title>` —
+// browsers parse <title> in RCDATA mode where character refs are decoded once, so
+// the user saw the literal text `What&#39;s On…` in the browser tab). Producing a
+// literal apostrophe here removes the entity entirely and makes the title robust
+// against any downstream re-encoding.
+const escapeHTMLTextContent = (value: string): string => decodeHTMLEntities(value).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+
 // Only allow http(s) URLs; anything else (javascript:, data:, etc.) is dropped.
 const safeUrl = (value: string, fallback: string): string => {
   try {
@@ -464,6 +475,7 @@ const generateHTML = (data: SEOData | null, originalHTML: string, url: string): 
   const rawImageUrl = safeUrl(data?.imageUrl || DEFAULTS.image, DEFAULTS.image)
 
   const title = escapeHTML(rawTitle)
+  const titleTextContent = escapeHTMLTextContent(rawTitle)
   const description = escapeHTML(rawDescription)
   const imageUrl = escapeHTML(rawImageUrl)
   const safeCanonicalUrl = escapeHTML(url)
@@ -477,7 +489,7 @@ const generateHTML = (data: SEOData | null, originalHTML: string, url: string): 
   let html = originalHTML
 
   // Basic meta tags
-  html = replaceMetaTag(html, /<title>.*?<\/title>/i, `<title>${title}</title>`)
+  html = replaceMetaTag(html, /<title>.*?<\/title>/i, `<title>${titleTextContent}</title>`)
   html = replaceMetaTag(html, /<meta name="description" content="[^"]*"[^>]*>/i, `<meta name="description" content="${description}">`)
   html = replaceMetaTag(html, /<link rel="canonical" href="[^"]*"[^>]*>/i, `<link rel="canonical" href="${safeCanonicalUrl}">`)
 
