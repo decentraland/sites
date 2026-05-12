@@ -1,4 +1,4 @@
-import type { EventEntry, LiveNowCard } from '../../../features/whats-on-events'
+import type { EventEntry, LiveNowCard } from '../../../features/events'
 import { buildEventJumpInUrl, buildJumpInUrl, parseCoordinates, resolveEventRealm } from '../../../utils/whatsOnUrl'
 import type { ModalEventData } from './EventDetailModal.types'
 

@@ -32,7 +32,7 @@ Companion to `CLAUDE.md` "Pre-PR review". Each rule below has a one-liner in `CL
   const getYouTubeVideoId = (uri: string): string | null => {
     const url = parseUrl(uri)
     if (!url || !YOUTUBE_HOSTS.has(url.hostname)) return null
-    const id = url.hostname === 'youtu.be' ? url.pathname.slice(1) : (url.searchParams.get('v') ?? '')
+    const id = url.hostname === 'youtu.be' ? url.pathname.slice(1) : url.searchParams.get('v') ?? ''
     return YOUTUBE_ID_REGEX.test(id) ? id : null
   }
   ```

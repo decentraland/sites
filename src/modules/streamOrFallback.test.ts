@@ -146,7 +146,7 @@ describe('streamOrFallback', () => {
   let mockFetch: jest.Mock
 
   beforeEach(() => {
-    jest.useFakeTimers({ doNotFake: ['performance', 'Date'] })
+    jest.useFakeTimers({ doNotFake: ['performance'] })
     abortController = new AbortController()
     onProgress = jest.fn()
     mockFetch = jest.fn().mockResolvedValue(buildHeadResponse(null))

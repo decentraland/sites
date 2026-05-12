@@ -1,0 +1,16 @@
+{
+  "name": "@sites/screenshots",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Isolated Playwright runner for the screenshots workflow. Kept out of the root package.json so CI's npm ci doesn't pull Playwright into every job.",
+  "type": "module",
+  "scripts": {
+    "capture": "node capture.mjs"
+  },
+  "dependencies": {
+    "@dcl/crypto": "^3.6.0",
+    "pixelmatch": "7.1.0",
+    "playwright": "1.49.1",
+    "pngjs": "7.0.0"
+  }
+}
