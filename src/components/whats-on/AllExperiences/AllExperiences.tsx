@@ -76,16 +76,17 @@ function AllExperiences() {
   const columnCount = useVisibleColumnCount()
   const [startOffset, setStartOffset] = useState(0)
   const [searchParams, setSearchParams] = useSearchParams()
-  const requestedTab: TabValue = searchParams.get(TAB_QUERY_PARAM) === MY_TAB_PARAM_VALUE ? 'my' : 'all'
-  const [activeTab, setActiveTab] = useState<TabValue>(requestedTab)
+  const activeTab: TabValue = searchParams.get(TAB_QUERY_PARAM) === MY_TAB_PARAM_VALUE ? 'my' : 'all'
   const sectionRef = useRef<HTMLDivElement | null>(null)
   const hasScrolledToMyTab = useRef(false)
   const wasSignedInRef = useRef(false)
   const { closeEventDetailModal, editActiveEvent, modalData, openEventDetailModal } = useEventDetailModal()
 
+  // Reset the day-window paging whenever the active tab changes — covers both click-driven
+  // changes and URL-driven ones (back/forward, programmatic same-route navigation).
   useEffect(() => {
-    setActiveTab(requestedTab)
-  }, [requestedTab])
+    setStartOffset(0)
+  }, [activeTab])
 
   const [today, setToday] = useState(() => {
     const now = new Date()
@@ -116,7 +117,7 @@ function AllExperiences() {
       wasSignedInRef.current = true
       return
     }
-    if (requestedTab !== 'my') return
+    if (activeTab !== 'my') return
     if (wasSignedInRef.current) {
       setSearchParams(
         prev => {
@@ -129,7 +130,7 @@ function AllExperiences() {
       return
     }
     redirectToAuth('/whats-on', { [TAB_QUERY_PARAM]: MY_TAB_PARAM_VALUE })
-  }, [hasValidIdentity, requestedTab, setSearchParams])
+  }, [hasValidIdentity, activeTab, setSearchParams])
 
   const isMyTab = hasValidIdentity && activeTab === 'my'
 
@@ -168,7 +169,7 @@ function AllExperiences() {
   const hasAnyUpcomingMyEvent = sortedMyEvents.length > 0
 
   useEffect(() => {
-    if (requestedTab !== 'my' || hasScrolledToMyTab.current || isLoadingEvents || !sectionRef.current) return
+    if (activeTab !== 'my' || hasScrolledToMyTab.current || isLoadingEvents || !sectionRef.current) return
 
     // The section can be wrapped in an ancestor that toggles display:none while
     // sibling data loads (e.g. DeferredGroup in HomePage). scrollIntoView is a
@@ -192,7 +193,7 @@ function AllExperiences() {
     }
     rafId = requestAnimationFrame(scrollWhenVisible)
     return () => cancelAnimationFrame(rafId)
-  }, [requestedTab, isLoadingEvents])
+  }, [activeTab, isLoadingEvents])
 
   const handleNavigateLeft = useCallback(() => {
     setStartOffset(prev => Math.max(0, prev - columnCount))
@@ -204,8 +205,6 @@ function AllExperiences() {
 
   const handleTabChange = useCallback(
     (next: TabValue) => {
-      setActiveTab(next)
-      setStartOffset(0)
       setSearchParams(
         prev => {
           const nextParams = new URLSearchParams(prev)

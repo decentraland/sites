@@ -3,11 +3,26 @@ import { createMockEvent } from '../../../__test-utils__/factories'
 import { AllExperiences } from './AllExperiences'
 
 let mockSearchParams = new URLSearchParams()
+const mockSearchParamsListeners = new Set<() => void>()
 const mockSetSearchParams = jest.fn()
-jest.mock('react-router-dom', () => ({
-  useNavigate: () => jest.fn(),
-  useSearchParams: () => [mockSearchParams, mockSetSearchParams]
-}))
+jest.mock('react-router-dom', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require('react')
+  return {
+    useNavigate: () => jest.fn(),
+    useSearchParams: () => {
+      const snapshot = React.useSyncExternalStore(
+        (listener: () => void) => {
+          mockSearchParamsListeners.add(listener)
+          return () => mockSearchParamsListeners.delete(listener)
+        },
+        () => mockSearchParams,
+        () => mockSearchParams
+      )
+      return [snapshot, mockSetSearchParams]
+    }
+  }
+})
 
 const mockRedirectToAuth = jest.fn()
 jest.mock('../../../utils/authRedirect', () => ({
@@ -141,6 +156,7 @@ describe('AllExperiences', () => {
     mockSetSearchParams.mockImplementation((updater: URLSearchParams | ((prev: URLSearchParams) => URLSearchParams)) => {
       const next = typeof updater === 'function' ? updater(mockSearchParams) : updater
       mockSearchParams = next
+      mockSearchParamsListeners.forEach(listener => listener())
     })
   })
 
