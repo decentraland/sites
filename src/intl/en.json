@@ -1577,7 +1577,9 @@
       "filter_emotes": "Emotes",
       "filter_names": "Names",
       "filter_lands": "Lands",
-      "filter_estates": "Estates"
+      "filter_estates": "Estates",
+      "count": "{count} assets",
+      "view": "View"
     },
     "communities": {
       "empty_title": "No communities yet",

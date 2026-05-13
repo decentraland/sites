@@ -1127,7 +1127,9 @@
       "filter_emotes": "이모트",
       "filter_names": "네임",
       "filter_lands": "랜드",
-      "filter_estates": "에스테이트"
+      "filter_estates": "에스테이트",
+      "count": "{count}개 에셋",
+      "view": "보기"
     },
     "communities": {
       "empty_title": "아직 커뮤니티가 없습니다",

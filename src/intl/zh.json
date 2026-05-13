@@ -1127,7 +1127,9 @@
       "filter_emotes": "动作表情",
       "filter_names": "名称",
       "filter_lands": "土地",
-      "filter_estates": "地产"
+      "filter_estates": "地产",
+      "count": "{count} 件资产",
+      "view": "查看"
     },
     "communities": {
       "empty_title": "暂无社区",

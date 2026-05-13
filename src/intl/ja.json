@@ -1127,7 +1127,9 @@
       "filter_emotes": "エモート",
       "filter_names": "ネーム",
       "filter_lands": "ランド",
-      "filter_estates": "エステート"
+      "filter_estates": "エステート",
+      "count": "{count} アセット",
+      "view": "表示"
     },
     "communities": {
       "empty_title": "コミュニティはまだありません",
