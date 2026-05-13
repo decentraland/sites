@@ -1562,7 +1562,9 @@
     "creations": {
       "empty_title": "No creations yet",
       "empty_owner": "Items you create will appear here.",
-      "empty_member": "This account has not created anything yet."
+      "empty_member": "This account has not created anything yet.",
+      "count": "{count} items",
+      "load_more": "Load more"
     },
     "assets": {
       "empty_title": "No assets yet",

@@ -1107,7 +1107,9 @@
     "creations": {
       "empty_title": "Pas encore de créations",
       "empty_owner": "Vos créations apparaîtront ici.",
-      "empty_member": "Ce compte n'a encore rien créé."
+      "empty_member": "Ce compte n'a encore rien créé.",
+      "count": "{count} éléments",
+      "load_more": "Charger plus"
     },
     "assets": {
       "empty_title": "Pas encore d'actifs",

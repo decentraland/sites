@@ -1112,7 +1112,9 @@
     "creations": {
       "empty_title": "作品はまだありません",
       "empty_owner": "作成したアイテムがここに表示されます。",
-      "empty_member": "このアカウントはまだ何も作成していません。"
+      "empty_member": "このアカウントはまだ何も作成していません。",
+      "count": "{count} アイテム",
+      "load_more": "もっと見る"
     },
     "assets": {
       "empty_title": "アセットはまだありません",

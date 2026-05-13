@@ -1112,7 +1112,9 @@
     "creations": {
       "empty_title": "아직 창작물이 없습니다",
       "empty_owner": "만든 아이템이 여기에 표시됩니다.",
-      "empty_member": "이 계정은 아직 아무것도 만들지 않았습니다."
+      "empty_member": "이 계정은 아직 아무것도 만들지 않았습니다.",
+      "count": "{count}개 아이템",
+      "load_more": "더 보기"
     },
     "assets": {
       "empty_title": "아직 에셋이 없습니다",

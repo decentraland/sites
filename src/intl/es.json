@@ -1112,7 +1112,9 @@
     "creations": {
       "empty_title": "Todavía no hay creaciones",
       "empty_owner": "Los items que crees aparecerán acá.",
-      "empty_member": "Esta cuenta todavía no creó nada."
+      "empty_member": "Esta cuenta todavía no creó nada.",
+      "count": "{count} items",
+      "load_more": "Cargar más"
     },
     "assets": {
       "empty_title": "Todavía no hay activos",

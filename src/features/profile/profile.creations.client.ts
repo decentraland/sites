@@ -1,25 +1,39 @@
 import { marketplaceClient } from '../../services/marketplaceClient'
 
-type ItemCategory = 'wearable' | 'emote' | 'name' | 'land' | 'estate'
+interface CreationWearableData {
+  category?: string
+  bodyShapes?: string[]
+  isSmart?: boolean
+}
 
-interface ProfileItem {
+interface CreationItem {
   id: string
+  urn: string
   name: string
   thumbnail: string
-  category: ItemCategory
-  price?: string
+  /** Relative marketplace path (e.g. `/contracts/0x.../items/N`). */
+  url: string
+  /** Top-level `wearable` / `emote` / `ens` — the meaningful sub-category sits under `data.<top>.category`. */
+  category: 'wearable' | 'emote' | string
+  contractAddress: string
+  itemId: string
   rarity?: string
-  createdAt: number
+  network: 'MATIC' | 'ETHEREUM'
+  creator: string
+  price?: string
+  isOnSale?: boolean
+  data?: {
+    wearable?: CreationWearableData
+    emote?: CreationWearableData
+  }
 }
 
-interface ItemsResponse {
-  data: ProfileItem[]
+interface CreationsResponse {
+  data: CreationItem[]
   total: number
-  page: number
-  pages: number
 }
 
-type ItemsQuery = {
+interface CreationsQuery {
   address: string
   limit?: number
   offset?: number
@@ -27,9 +41,9 @@ type ItemsQuery = {
 
 const profileCreationsApi = marketplaceClient.injectEndpoints({
   endpoints: builder => ({
-    getProfileCreations: builder.query<ItemsResponse, ItemsQuery>({
+    getProfileCreations: builder.query<CreationsResponse, CreationsQuery>({
       query: ({ address, limit = 24, offset = 0 }) =>
-        `/items?creator=${encodeURIComponent(address.toLowerCase())}&first=${limit}&skip=${offset}&sortBy=newest`,
+        `/v1/items?creator=${encodeURIComponent(address.toLowerCase())}&first=${limit}&skip=${offset}&sortBy=newest`,
       providesTags: (_result, _error, { address }) => [{ type: 'Items', id: `creator-${address.toLowerCase()}` }, 'Items']
     })
   })
@@ -38,4 +52,4 @@ const profileCreationsApi = marketplaceClient.injectEndpoints({
 const { useGetProfileCreationsQuery } = profileCreationsApi
 
 export { profileCreationsApi, useGetProfileCreationsQuery }
-export type { ItemCategory, ItemsQuery, ItemsResponse, ProfileItem }
+export type { CreationItem, CreationsQuery, CreationsResponse, CreationWearableData }
