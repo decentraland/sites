@@ -1140,7 +1140,8 @@
     "places": {
       "empty_title": "Pas encore de lieux",
       "empty_owner": "Vos lieux apparaîtront ici.",
-      "empty_member": "Ce membre n'a enregistré aucun lieu."
+      "empty_member": "Ce membre n'a enregistré aucun lieu.",
+      "count": "{count} lieux"
     },
     "photos": {
       "empty_title": "Pas encore de photos",

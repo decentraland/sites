@@ -1145,7 +1145,8 @@
     "places": {
       "empty_title": "プレイスはまだありません",
       "empty_owner": "所有しているプレイスがここに表示されます。",
-      "empty_member": "このメンバーはまだプレイスを登録していません。"
+      "empty_member": "このメンバーはまだプレイスを登録していません。",
+      "count": "{count} プレイス"
     },
     "photos": {
       "empty_title": "写真はまだありません",

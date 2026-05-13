@@ -1145,7 +1145,8 @@
     "places": {
       "empty_title": "Todavía no hay lugares",
       "empty_owner": "Los lugares que tengas aparecerán acá.",
-      "empty_member": "Este miembro todavía no registró lugares."
+      "empty_member": "Este miembro todavía no registró lugares.",
+      "count": "{count} lugares"
     },
     "photos": {
       "empty_title": "Todavía no hay fotos",
