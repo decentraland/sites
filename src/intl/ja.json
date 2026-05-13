@@ -1151,7 +1151,8 @@
     "photos": {
       "empty_title": "写真はまだありません",
       "empty_owner": "ワールド内のスナップショットがここに表示されます。",
-      "empty_member": "このメンバーはまだ写真を撮影していません。"
+      "empty_member": "このメンバーはまだ写真を撮影していません。",
+      "count": "{count} 枚の写真"
     },
     "referral_rewards": {
       "anonymous": "サインインして友達を招待し、報酬を獲得しましょう。",

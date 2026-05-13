@@ -1151,7 +1151,8 @@
     "photos": {
       "empty_title": "暂无照片",
       "empty_owner": "世界内快照将显示在这里。",
-      "empty_member": "该成员尚未拍摄任何照片。"
+      "empty_member": "该成员尚未拍摄任何照片。",
+      "count": "{count} 张照片"
     },
     "referral_rewards": {
       "anonymous": "登录以邀请好友并解锁奖励。",

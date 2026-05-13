@@ -1151,7 +1151,8 @@
     "photos": {
       "empty_title": "아직 사진이 없습니다",
       "empty_owner": "월드 내 스냅샷이 여기에 표시됩니다.",
-      "empty_member": "이 회원은 아직 사진을 찍지 않았습니다."
+      "empty_member": "이 회원은 아직 사진을 찍지 않았습니다.",
+      "count": "{count}장의 사진"
     },
     "referral_rewards": {
       "anonymous": "로그인하여 친구를 초대하고 보상을 잠금 해제하세요.",

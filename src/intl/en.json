@@ -1601,7 +1601,8 @@
     "photos": {
       "empty_title": "No photos yet",
       "empty_owner": "In-world snapshots will appear here.",
-      "empty_member": "This member has not taken any photos yet."
+      "empty_member": "This member has not taken any photos yet.",
+      "count": "{count} photos"
     },
     "referral_rewards": {
       "anonymous": "Sign in to invite friends and unlock rewards.",

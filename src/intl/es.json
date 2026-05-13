@@ -1151,7 +1151,8 @@
     "photos": {
       "empty_title": "Todavía no hay fotos",
       "empty_owner": "Las capturas del mundo aparecerán acá.",
-      "empty_member": "Este miembro todavía no sacó fotos."
+      "empty_member": "Este miembro todavía no sacó fotos.",
+      "count": "{count} fotos"
     },
     "referral_rewards": {
       "anonymous": "Iniciá sesión para invitar amigos y desbloquear recompensas.",
