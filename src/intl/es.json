@@ -1166,7 +1166,12 @@
       "your_rewards": "Tus recompensas",
       "no_rewards": "Todavía no hay recompensas. Seguí invitando para desbloquear niveles.",
       "claimed": "Reclamado",
-      "unlocked": "Desbloqueado"
+      "unlocked": "Desbloqueado",
+      "locked": "Bloqueado",
+      "tiers_unlocked": "Niveles desbloqueados",
+      "next_tier_at": "para el próximo nivel ({count} invitados)",
+      "tier_label": "Nivel {tier}",
+      "tier_invites": "{count} invitados"
     }
   }
 }

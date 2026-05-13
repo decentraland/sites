@@ -1166,7 +1166,12 @@
       "your_rewards": "あなたの報酬",
       "no_rewards": "まだ報酬はありません。招待を続けてティアを解除しましょう。",
       "claimed": "受取済み",
-      "unlocked": "解除済み"
+      "unlocked": "解除済み",
+      "locked": "未解除",
+      "tiers_unlocked": "解除済みティア",
+      "next_tier_at": "次のティアまで ({count} 招待)",
+      "tier_label": "ティア {tier}",
+      "tier_invites": "{count} 招待"
     }
   }
 }

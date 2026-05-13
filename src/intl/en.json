@@ -1616,7 +1616,12 @@
       "your_rewards": "Your rewards",
       "no_rewards": "No rewards yet. Keep inviting to unlock tiers.",
       "claimed": "Claimed",
-      "unlocked": "Unlocked"
+      "unlocked": "Unlocked",
+      "locked": "Locked",
+      "tiers_unlocked": "Tiers unlocked",
+      "next_tier_at": "until next tier ({count} invites)",
+      "tier_label": "Tier {tier}",
+      "tier_invites": "{count} invites"
     }
   }
 }

@@ -1166,7 +1166,12 @@
       "your_rewards": "您的奖励",
       "no_rewards": "暂无奖励。继续邀请以解锁层级。",
       "claimed": "已领取",
-      "unlocked": "已解锁"
+      "unlocked": "已解锁",
+      "locked": "已锁定",
+      "tiers_unlocked": "已解锁层级",
+      "next_tier_at": "距离下一层级 ({count} 邀请)",
+      "tier_label": "层级 {tier}",
+      "tier_invites": "{count} 邀请"
     }
   }
 }

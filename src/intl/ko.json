@@ -1166,7 +1166,12 @@
       "your_rewards": "내 보상",
       "no_rewards": "아직 보상이 없습니다. 계속 초대하여 등급을 잠금 해제하세요.",
       "claimed": "수령함",
-      "unlocked": "잠금 해제됨"
+      "unlocked": "잠금 해제됨",
+      "locked": "잠김",
+      "tiers_unlocked": "잠금 해제된 등급",
+      "next_tier_at": "다음 등급까지 ({count}명 초대)",
+      "tier_label": "등급 {tier}",
+      "tier_invites": "{count}명 초대"
     }
   }
 }

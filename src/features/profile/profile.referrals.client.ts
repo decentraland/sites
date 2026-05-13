@@ -1,45 +1,31 @@
 import { referralClient } from '../../services/referralClient'
 
-type ReferralTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND'
-
-interface ReferralReward {
-  id: string
-  tier: ReferralTier
-  description: string
-  imageUrl?: string
-  claimed: boolean
-  unlockedAt?: number
+interface ReferralRewardImage {
+  tier: number
+  url: string
 }
 
-interface ReferralStateResponse {
-  data: {
-    address: string
-    inviteCode: string
-    inviteUrl: string
-    invitedCount: number
-    confirmedCount: number
-    nextTier?: ReferralTier
-    rewards: ReferralReward[]
-  }
+interface ReferralProgressResponse {
+  /** Total invitees who have accepted (used to compute the current tier). */
+  invitedUsersAccepted: number
+  /** Invitees the user has already viewed in the UI (not used here yet). */
+  invitedUsersAcceptedViewed: number
+  rewardImages: ReferralRewardImage[]
 }
 
 const profileReferralsApi = referralClient.injectEndpoints({
   endpoints: builder => ({
-    getReferralState: builder.query<ReferralStateResponse, { address: string }>({
-      query: ({ address }) => `/referrals/${encodeURIComponent(address.toLowerCase())}/state`,
-      providesTags: (_result, _error, { address }) => [{ type: 'ReferralState', id: address.toLowerCase() }, 'ReferralState']
-    }),
-    claimReferralReward: builder.mutation<ReferralStateResponse, { address: string; rewardId: string }>({
-      query: ({ address, rewardId }) => ({
-        url: `/referrals/${encodeURIComponent(address.toLowerCase())}/rewards/${encodeURIComponent(rewardId)}/claim`,
-        method: 'POST'
-      }),
-      invalidatesTags: (_result, _error, { address }) => [{ type: 'ReferralState', id: address.toLowerCase() }]
+    // The endpoint is identity-scoped — the signed fetch attaches the auth
+    // chain and the server returns the caller's own progress. There is no
+    // `:address` parameter, so this only renders for own profile.
+    getReferralProgress: builder.query<ReferralProgressResponse, void>({
+      query: () => '/v1/referral-progress',
+      providesTags: ['ReferralState']
     })
   })
 })
 
-const { useGetReferralStateQuery, useClaimReferralRewardMutation } = profileReferralsApi
+const { useGetReferralProgressQuery } = profileReferralsApi
 
-export { profileReferralsApi, useClaimReferralRewardMutation, useGetReferralStateQuery }
-export type { ReferralReward, ReferralStateResponse, ReferralTier }
+export { profileReferralsApi, useGetReferralProgressQuery }
+export type { ReferralProgressResponse, ReferralRewardImage }
