@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { getEnv } from '../../config/env'
 import { placesClient } from '../../services/placesClient'
+import { fetchWithOptionalIdentity } from '../../utils/signedFetch'
 import { isEns } from './places.helpers'
 import type {
   Creator,
@@ -100,11 +101,15 @@ const placesEndpoints = placesClient.injectEndpoints({
       providesTags: (_result, _err, args) => [{ type: 'Place', id: args.realm ?? args.position?.join(',') ?? 'root' }]
     }),
     getJumpEvents: build.query<JumpEvent[], GetEventsArgs>({
+      // Identity-bound responses must not share a cache slot with the anonymous
+      // ones — the server fills `attending` and `total_attendees` based on who
+      // is signing the request.
+      serializeQueryArgs: ({ queryArgs: { identity, ...rest } }) => ({ ...rest, authenticated: Boolean(identity) }),
       queryFn: async args => {
         try {
           const baseUrl = getEnv('EVENTS_API_URL')
           if (!baseUrl) throw new Error('EVENTS_API_URL is not set')
-          const response = await fetch(buildEventsUrl(baseUrl, args))
+          const response = await fetchWithOptionalIdentity(buildEventsUrl(baseUrl, args), args.identity)
           if (!response.ok) {
             return { error: { status: response.status, data: await response.text().catch(() => null) } }
           }
@@ -113,14 +118,16 @@ const placesEndpoints = placesClient.injectEndpoints({
         } catch (error) {
           return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
         }
-      }
+      },
+      providesTags: ['JumpEvent']
     }),
     getJumpEventById: build.query<JumpEvent | null, GetEventByIdArgs>({
-      queryFn: async ({ id }) => {
+      serializeQueryArgs: ({ queryArgs: { id, identity } }) => ({ id, authenticated: Boolean(identity) }),
+      queryFn: async ({ id, identity }) => {
         try {
           const baseUrl = getEnv('EVENTS_API_URL')
           if (!baseUrl) throw new Error('EVENTS_API_URL is not set')
-          const response = await fetch(`${baseUrl}/events/${encodeURIComponent(id)}`)
+          const response = await fetchWithOptionalIdentity(`${baseUrl}/events/${encodeURIComponent(id)}`, identity)
           if (response.status === 404) return { data: null }
           if (!response.ok) {
             return { error: { status: response.status, data: await response.text().catch(() => null) } }
@@ -130,7 +137,8 @@ const placesEndpoints = placesClient.injectEndpoints({
         } catch (error) {
           return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
         }
-      }
+      },
+      providesTags: (_result, _error, { id }) => [{ type: 'JumpEvent', id }]
     }),
     getSceneMetadata: build.query<SceneDeployerInfo | null, GetSceneMetadataArgs>({
       queryFn: async ({ position }) => {

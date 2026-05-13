@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import type { AuthIdentity } from '@dcl/crypto'
 
 interface JumpEvent {
   id: string
@@ -117,10 +118,12 @@ interface Creator {
 interface GetEventsArgs {
   position?: [number, number]
   realm?: string
+  identity?: AuthIdentity
 }
 
 interface GetEventByIdArgs {
   id: string
+  identity?: AuthIdentity
 }
 
 interface GetPlacesArgs {

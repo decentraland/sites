@@ -1,10 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit'
+import type { AuthIdentity } from '@dcl/crypto'
 import { getEnv } from '../../config/env'
 import { placesEndpoints } from './places.client'
 
 jest.mock('../../config/env')
 
 const mockGetEnv = jest.mocked(getEnv)
+
+const mockFetchWithOptionalIdentity = jest.fn()
+jest.mock('../../utils/signedFetch', () => ({
+  fetchWithOptionalIdentity: (...args: unknown[]) => mockFetchWithOptionalIdentity(...args)
+}))
 
 function createTestStore() {
   return configureStore({
@@ -20,6 +26,7 @@ describe('placesEndpoints', () => {
 
   beforeEach(() => {
     fetchSpy = jest.spyOn(global, 'fetch')
+    mockFetchWithOptionalIdentity.mockReset()
   })
 
   afterEach(() => {
@@ -131,41 +138,63 @@ describe('placesEndpoints', () => {
   })
 
   describe('when getJumpEvents endpoint is called', () => {
-    describe('and a position is provided', () => {
+    describe('and a position is provided without identity', () => {
       beforeEach(() => {
         mockGetEnv.mockImplementation(key => (key === 'EVENTS_API_URL' ? 'https://events.test/api' : undefined))
-        fetchSpy.mockResolvedValueOnce({
+        mockFetchWithOptionalIdentity.mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({ ok: true, data: [] })
         } as unknown as Response)
       })
 
-      it('should call the events endpoint with position query', async () => {
+      it('should call the events endpoint anonymously with position query', async () => {
         const store = createTestStore()
         await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [5, 5] }))
 
-        expect(fetchSpy).toHaveBeenCalledWith('https://events.test/api/events?position=5%2C5')
+        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith('https://events.test/api/events?position=5%2C5', undefined)
       })
     })
 
     describe('and a realm is provided', () => {
       beforeEach(() => {
         mockGetEnv.mockReturnValue('https://events.test/api')
-        fetchSpy.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ ok: true, data: [] }) } as unknown as Response)
+        mockFetchWithOptionalIdentity.mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ ok: true, data: [] })
+        } as unknown as Response)
       })
 
       it('should append world_names[] to the query string', async () => {
         const store = createTestStore()
         await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ realm: 'cool.dcl.eth' }))
 
-        expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('world_names%5B%5D=cool.dcl.eth'))
+        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(expect.stringContaining('world_names%5B%5D=cool.dcl.eth'), undefined)
+      })
+    })
+
+    describe('and an identity is provided', () => {
+      const identity = { authChain: [], expiration: new Date(), ephemeralIdentity: {} } as unknown as AuthIdentity
+
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test/api')
+        mockFetchWithOptionalIdentity.mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ ok: true, data: [{ id: 'ev-1', attending: true, total_attendees: 3 }] })
+        } as unknown as Response)
+      })
+
+      it('should forward the identity to fetchWithOptionalIdentity so the server can return per-user attendance state', async () => {
+        const store = createTestStore()
+        await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [0, 0], identity }))
+
+        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(expect.stringContaining('events?position=0%2C0'), identity)
       })
     })
 
     describe('and the API returns a 5xx', () => {
       beforeEach(() => {
         mockGetEnv.mockReturnValue('https://events.test/api')
-        fetchSpy.mockResolvedValueOnce({
+        mockFetchWithOptionalIdentity.mockResolvedValueOnce({
           ok: false,
           status: 503,
           text: () => Promise.resolve('Service unavailable')
@@ -185,7 +214,7 @@ describe('placesEndpoints', () => {
     describe('and the event exists', () => {
       beforeEach(() => {
         mockGetEnv.mockReturnValue('https://events.test/api')
-        fetchSpy.mockResolvedValueOnce({
+        mockFetchWithOptionalIdentity.mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({ ok: true, data: { id: 'ev-1' } })
         } as unknown as Response)
@@ -199,10 +228,29 @@ describe('placesEndpoints', () => {
       })
     })
 
+    describe('and an identity is provided', () => {
+      const identity = { authChain: [], expiration: new Date(), ephemeralIdentity: {} } as unknown as AuthIdentity
+
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test/api')
+        mockFetchWithOptionalIdentity.mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ ok: true, data: { id: 'ev-1', attending: true } })
+        } as unknown as Response)
+      })
+
+      it('should forward the identity so `attending` survives a page refresh after the user toggled remind-me', async () => {
+        const store = createTestStore()
+        await store.dispatch(placesEndpoints.endpoints.getJumpEventById.initiate({ id: 'ev-1', identity }))
+
+        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith('https://events.test/api/events/ev-1', identity)
+      })
+    })
+
     describe('and the event is not found', () => {
       beforeEach(() => {
         mockGetEnv.mockReturnValue('https://events.test/api')
-        fetchSpy.mockResolvedValueOnce({ ok: false, status: 404 } as unknown as Response)
+        mockFetchWithOptionalIdentity.mockResolvedValueOnce({ ok: false, status: 404 } as unknown as Response)
       })
 
       it('should return null instead of an error', async () => {
@@ -216,7 +264,7 @@ describe('placesEndpoints', () => {
     describe('and the API returns a non-404 error', () => {
       beforeEach(() => {
         mockGetEnv.mockReturnValue('https://events.test/api')
-        fetchSpy.mockResolvedValueOnce({
+        mockFetchWithOptionalIdentity.mockResolvedValueOnce({
           ok: false,
           status: 500,
           text: () => Promise.resolve('Server error')
@@ -229,6 +277,56 @@ describe('placesEndpoints', () => {
 
         expect(result.error).toEqual(expect.objectContaining({ status: 500 }))
       })
+    })
+  })
+
+  describe('when the JumpEvent tag is invalidated after a remind-me toggle', () => {
+    const identity = { authChain: [], expiration: new Date(), ephemeralIdentity: {} } as unknown as AuthIdentity
+
+    beforeEach(() => {
+      mockGetEnv.mockReturnValue('https://events.test/api')
+    })
+
+    it('should refetch getJumpEvents so the bell-badge total_attendees reflects the toggle', async () => {
+      mockFetchWithOptionalIdentity
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ ok: true, data: [{ id: 'ev-1', attending: false, total_attendees: 4 }] })
+        } as unknown as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ ok: true, data: [{ id: 'ev-1', attending: true, total_attendees: 5 }] })
+        } as unknown as Response)
+
+      const store = createTestStore()
+      const subscription = store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [0, 0], identity }))
+      await subscription
+      store.dispatch(placesEndpoints.util.invalidateTags(['JumpEvent']))
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      expect(mockFetchWithOptionalIdentity).toHaveBeenCalledTimes(2)
+      subscription.unsubscribe()
+    })
+
+    it('should refetch getJumpEventById so `attending` reflects the toggle', async () => {
+      mockFetchWithOptionalIdentity
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ ok: true, data: { id: 'ev-1', attending: false } })
+        } as unknown as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ ok: true, data: { id: 'ev-1', attending: true } })
+        } as unknown as Response)
+
+      const store = createTestStore()
+      const subscription = store.dispatch(placesEndpoints.endpoints.getJumpEventById.initiate({ id: 'ev-1', identity }))
+      await subscription
+      store.dispatch(placesEndpoints.util.invalidateTags([{ type: 'JumpEvent', id: 'ev-1' }]))
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      expect(mockFetchWithOptionalIdentity).toHaveBeenCalledTimes(2)
+      subscription.unsubscribe()
     })
   })
 

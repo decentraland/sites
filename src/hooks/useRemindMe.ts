@@ -10,12 +10,17 @@ type UseRemindMeResult = {
   handleToggle: (e: React.MouseEvent) => void
 }
 
-function useRemindMe(eventId: string, attending?: boolean): UseRemindMeResult {
+function useRemindMe(eventId: string, attending?: boolean, onSuccess?: (newValue: boolean) => void): UseRemindMeResult {
   const { identity, hasValidIdentity } = useAuthIdentity()
   const [toggleAttendee, { isLoading }] = useToggleAttendeeMutation({ fixedCacheKey: `remind-${eventId}` })
   const [isShaking, setIsShaking] = useState(false)
   const [optimistic, setOptimistic] = useState<boolean | null>(null)
   const shakeTimer = useRef<ReturnType<typeof setTimeout>>()
+  const onSuccessRef = useRef(onSuccess)
+
+  useEffect(() => {
+    onSuccessRef.current = onSuccess
+  }, [onSuccess])
 
   const serverValue = Boolean(attending)
   const isReminded = optimistic !== null ? optimistic : serverValue
@@ -45,6 +50,7 @@ function useRemindMe(eventId: string, attending?: boolean): UseRemindMeResult {
       shakeTimer.current = setTimeout(() => setIsShaking(false), 600)
       toggleAttendee({ eventId, attending: newValue, identity })
         .unwrap()
+        .then(() => onSuccessRef.current?.(newValue))
         .catch(() => setOptimistic(null))
     },
     [eventId, isReminded, hasValidIdentity, identity, isLoading, toggleAttendee]
