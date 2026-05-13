@@ -195,6 +195,18 @@ const EquippedGrid = styled(Box)(({ theme }) => ({
   '& > div .MuiCard-root:hover .MuiCardContent-root > div:has([data-role="catalog-card-rarity"])': {
     opacity: 0,
     transition: 'opacity 0.2s ease-in-out'
+  },
+  // ui2 expands CatalogItemInformationContainer / ExtraInformationContainer on
+  // hover to reveal `action` / `extraInformation`. We always pass `null` for
+  // those, so the expansion produces empty rows (~34px from an empty <p>) that
+  // push the price line into the BUY button. Keep them collapsed on hover.
+  // `!important` is required because ui2 ships the hover rule with the same
+  // specificity tier (single emotion target class) and the cascade order is
+  // not deterministic across HMR — without `!important` the auto-height rule
+  // can win when the styled file is hot-reloaded.
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& > div .MuiCard-root:hover .CatalogItemInformationContainer, & > div .MuiCard-root:hover .ExtraInformationContainer': {
+    display: 'none'
   }
 }))
 
