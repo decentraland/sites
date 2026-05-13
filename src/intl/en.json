@@ -1492,5 +1492,107 @@
       "members": "Members",
       "upcoming_events": "Upcoming Events"
     }
+  },
+  "profile": {
+    "not_found": {
+      "title": "Profile not found",
+      "description": "The address \"{address}\" is not a valid Ethereum address."
+    },
+    "header": {
+      "edit_profile": "Edit profile",
+      "add_friend": "Add friend",
+      "request_sent": "Request sent",
+      "friends": "Friends",
+      "remove_friend": "Unfriend",
+      "unblock": "Unblock",
+      "block": "Block",
+      "copy_address": "Copy address",
+      "close_profile": "Close profile",
+      "get_a_name": "Get a name",
+      "invite_friends": "Invite friends",
+      "friends_count": "{count} Friends",
+      "mutual_count": "{count} Mutual",
+      "edit": "Edit",
+      "back": "Back"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "assets": "Assets",
+      "creations": "Creations",
+      "communities": "Communities",
+      "places": "Places",
+      "photos": "Photos",
+      "referral_rewards": "Referral Rewards",
+      "my_assets": "My Assets",
+      "my_communities": "My Communities",
+      "my_places": "My Places",
+      "my_photos": "My Photos"
+    },
+    "overview": {
+      "about": "About",
+      "no_bio_owner": "Add a bio to tell people about yourself.",
+      "no_bio_member": "This member has not added a bio yet.",
+      "equipped_wearables": "Equipped wearables",
+      "no_wearables": "No wearables equipped.",
+      "badges": "Badges",
+      "links": "Links",
+      "equipped_items": "Equipped items",
+      "country": "Country",
+      "language": "Language",
+      "pronouns": "Pronouns",
+      "relationship_status": "Relationship status",
+      "gender": "Gender",
+      "profession": "Profession",
+      "birth_date": "Birth date",
+      "real_name": "Real name",
+      "favorite_hobby": "Favorite hobby",
+      "no_badges_yet": "No badges yet. Jump in world and start collecting badges!",
+      "badge_unlocked_on": "Unlocked on {date}",
+      "by_creator": "By {name}",
+      "buy": "Buy"
+    },
+    "creations": {
+      "empty_title": "No creations yet",
+      "empty_owner": "Items you create will appear here.",
+      "empty_member": "This account has not created anything yet."
+    },
+    "assets": {
+      "empty_title": "No assets yet",
+      "empty_description": "Wearables, names and lands you own will appear here.",
+      "filter_all": "All",
+      "filter_wearables": "Wearables",
+      "filter_emotes": "Emotes",
+      "filter_names": "Names",
+      "filter_lands": "Lands",
+      "filter_estates": "Estates"
+    },
+    "communities": {
+      "empty_title": "No communities yet",
+      "empty_owner": "Join a community to see it here.",
+      "empty_member": "This member has not joined any communities yet."
+    },
+    "places": {
+      "empty_title": "No places yet",
+      "empty_owner": "Places you own will appear here.",
+      "empty_member": "This member has not registered any places yet."
+    },
+    "photos": {
+      "empty_title": "No photos yet",
+      "empty_owner": "In-world snapshots will appear here.",
+      "empty_member": "This member has not taken any photos yet."
+    },
+    "referral_rewards": {
+      "anonymous": "Sign in to invite friends and unlock rewards.",
+      "invite_title": "Invite friends & get rewards",
+      "invite_subtitle": "Share your code. When friends join Decentraland you unlock exclusive wearables and badges.",
+      "copy_invite_link": "Copy invite link",
+      "copied": "Copied!",
+      "invited": "Invited",
+      "confirmed": "Confirmed",
+      "your_rewards": "Your rewards",
+      "no_rewards": "No rewards yet. Keep inviting to unlock tiers.",
+      "claimed": "Claimed",
+      "unlocked": "Unlocked"
+    }
   }
 }

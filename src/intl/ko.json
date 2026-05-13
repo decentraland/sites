@@ -1042,5 +1042,107 @@
       "members": "멤버",
       "upcoming_events": "다가오는 이벤트"
     }
+  },
+  "profile": {
+    "not_found": {
+      "title": "프로필을 찾을 수 없습니다",
+      "description": "주소 \"{address}\"는 유효한 이더리움 주소가 아닙니다."
+    },
+    "header": {
+      "edit_profile": "프로필 편집",
+      "add_friend": "친구 추가",
+      "request_sent": "요청 보냄",
+      "friends": "친구",
+      "remove_friend": "친구 삭제",
+      "unblock": "차단 해제",
+      "block": "차단",
+      "copy_address": "주소 복사",
+      "close_profile": "프로필 닫기",
+      "get_a_name": "이름 받기",
+      "invite_friends": "친구 초대",
+      "friends_count": "친구 {count} 명",
+      "mutual_count": "공통 {count} 명",
+      "edit": "편집",
+      "back": "뒤로"
+    },
+    "tabs": {
+      "overview": "개요",
+      "assets": "에셋",
+      "creations": "창작물",
+      "communities": "커뮤니티",
+      "places": "장소",
+      "photos": "사진",
+      "referral_rewards": "추천 보상",
+      "my_assets": "내 에셋",
+      "my_communities": "내 커뮤니티",
+      "my_places": "내 장소",
+      "my_photos": "내 사진"
+    },
+    "overview": {
+      "about": "소개",
+      "no_bio_owner": "자기소개를 추가해 보세요.",
+      "no_bio_member": "이 회원은 아직 자기소개를 추가하지 않았습니다.",
+      "equipped_wearables": "착용 중인 웨어러블",
+      "no_wearables": "착용 중인 웨어러블이 없습니다.",
+      "badges": "배지",
+      "links": "링크",
+      "equipped_items": "착용한 아이템",
+      "country": "국가",
+      "language": "언어",
+      "pronouns": "대명사",
+      "relationship_status": "관계 상태",
+      "gender": "성별",
+      "profession": "직업",
+      "birth_date": "생년월일",
+      "real_name": "실명",
+      "favorite_hobby": "취미",
+      "no_badges_yet": "아직 배지가 없습니다. 월드에 입장하여 배지를 모아보세요!",
+      "badge_unlocked_on": "{date}에 획득",
+      "by_creator": "제작자 {name}",
+      "buy": "구매"
+    },
+    "creations": {
+      "empty_title": "아직 창작물이 없습니다",
+      "empty_owner": "만든 아이템이 여기에 표시됩니다.",
+      "empty_member": "이 계정은 아직 아무것도 만들지 않았습니다."
+    },
+    "assets": {
+      "empty_title": "아직 에셋이 없습니다",
+      "empty_description": "보유한 웨어러블, 네임, 랜드가 여기에 표시됩니다.",
+      "filter_all": "전체",
+      "filter_wearables": "웨어러블",
+      "filter_emotes": "이모트",
+      "filter_names": "네임",
+      "filter_lands": "랜드",
+      "filter_estates": "에스테이트"
+    },
+    "communities": {
+      "empty_title": "아직 커뮤니티가 없습니다",
+      "empty_owner": "커뮤니티에 가입하면 여기에 표시됩니다.",
+      "empty_member": "이 회원은 아직 커뮤니티에 가입하지 않았습니다."
+    },
+    "places": {
+      "empty_title": "아직 장소가 없습니다",
+      "empty_owner": "보유한 장소가 여기에 표시됩니다.",
+      "empty_member": "이 회원은 아직 장소를 등록하지 않았습니다."
+    },
+    "photos": {
+      "empty_title": "아직 사진이 없습니다",
+      "empty_owner": "월드 내 스냅샷이 여기에 표시됩니다.",
+      "empty_member": "이 회원은 아직 사진을 찍지 않았습니다."
+    },
+    "referral_rewards": {
+      "anonymous": "로그인하여 친구를 초대하고 보상을 잠금 해제하세요.",
+      "invite_title": "친구 초대하고 보상 받기",
+      "invite_subtitle": "코드를 공유하세요. 친구가 Decentraland에 가입하면 독점 웨어러블과 배지를 잠금 해제할 수 있습니다.",
+      "copy_invite_link": "초대 링크 복사",
+      "copied": "복사됨!",
+      "invited": "초대됨",
+      "confirmed": "확인됨",
+      "your_rewards": "내 보상",
+      "no_rewards": "아직 보상이 없습니다. 계속 초대하여 등급을 잠금 해제하세요.",
+      "claimed": "수령함",
+      "unlocked": "잠금 해제됨"
+    }
   }
 }

@@ -1042,5 +1042,107 @@
       "members": "メンバー",
       "upcoming_events": "今後のイベント"
     }
+  },
+  "profile": {
+    "not_found": {
+      "title": "プロフィールが見つかりません",
+      "description": "アドレス「{address}」は有効なEthereumアドレスではありません。"
+    },
+    "header": {
+      "edit_profile": "プロフィールを編集",
+      "add_friend": "友達を追加",
+      "request_sent": "リクエスト送信済み",
+      "friends": "友達",
+      "remove_friend": "友達解除",
+      "unblock": "ブロック解除",
+      "block": "ブロック",
+      "copy_address": "アドレスをコピー",
+      "close_profile": "プロフィールを閉じる",
+      "get_a_name": "名前を取得",
+      "invite_friends": "友達を招待",
+      "friends_count": "{count} 人の友達",
+      "mutual_count": "{count} 人の共通",
+      "edit": "編集",
+      "back": "戻る"
+    },
+    "tabs": {
+      "overview": "概要",
+      "assets": "アセット",
+      "creations": "作品",
+      "communities": "コミュニティ",
+      "places": "プレイス",
+      "photos": "写真",
+      "referral_rewards": "リファラル報酬",
+      "my_assets": "マイアセット",
+      "my_communities": "マイコミュニティ",
+      "my_places": "マイプレイス",
+      "my_photos": "マイ写真"
+    },
+    "overview": {
+      "about": "概要",
+      "no_bio_owner": "自己紹介を追加しましょう。",
+      "no_bio_member": "このメンバーはまだ自己紹介を追加していません。",
+      "equipped_wearables": "装備中のウェアラブル",
+      "no_wearables": "装備中のウェアラブルはありません。",
+      "badges": "バッジ",
+      "links": "リンク",
+      "equipped_items": "装備中のアイテム",
+      "country": "国",
+      "language": "言語",
+      "pronouns": "代名詞",
+      "relationship_status": "交際状況",
+      "gender": "性別",
+      "profession": "職業",
+      "birth_date": "誕生日",
+      "real_name": "本名",
+      "favorite_hobby": "趣味",
+      "no_badges_yet": "まだバッジがありません。ワールドに入ってバッジを集めましょう！",
+      "badge_unlocked_on": "{date}に獲得",
+      "by_creator": "作成者: {name}",
+      "buy": "購入"
+    },
+    "creations": {
+      "empty_title": "作品はまだありません",
+      "empty_owner": "作成したアイテムがここに表示されます。",
+      "empty_member": "このアカウントはまだ何も作成していません。"
+    },
+    "assets": {
+      "empty_title": "アセットはまだありません",
+      "empty_description": "所有しているウェアラブル、ネーム、ランドがここに表示されます。",
+      "filter_all": "すべて",
+      "filter_wearables": "ウェアラブル",
+      "filter_emotes": "エモート",
+      "filter_names": "ネーム",
+      "filter_lands": "ランド",
+      "filter_estates": "エステート"
+    },
+    "communities": {
+      "empty_title": "コミュニティはまだありません",
+      "empty_owner": "コミュニティに参加するとここに表示されます。",
+      "empty_member": "このメンバーはまだコミュニティに参加していません。"
+    },
+    "places": {
+      "empty_title": "プレイスはまだありません",
+      "empty_owner": "所有しているプレイスがここに表示されます。",
+      "empty_member": "このメンバーはまだプレイスを登録していません。"
+    },
+    "photos": {
+      "empty_title": "写真はまだありません",
+      "empty_owner": "ワールド内のスナップショットがここに表示されます。",
+      "empty_member": "このメンバーはまだ写真を撮影していません。"
+    },
+    "referral_rewards": {
+      "anonymous": "サインインして友達を招待し、報酬を獲得しましょう。",
+      "invite_title": "友達を招待して報酬をゲット",
+      "invite_subtitle": "コードを共有しましょう。友達がDecentralandに参加すると、限定ウェアラブルやバッジを獲得できます。",
+      "copy_invite_link": "招待リンクをコピー",
+      "copied": "コピーしました！",
+      "invited": "招待済み",
+      "confirmed": "確認済み",
+      "your_rewards": "あなたの報酬",
+      "no_rewards": "まだ報酬はありません。招待を続けてティアを解除しましょう。",
+      "claimed": "受取済み",
+      "unlocked": "解除済み"
+    }
   }
 }
