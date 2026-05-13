@@ -2,8 +2,6 @@ import { Network, Rarity } from '@dcl/schemas'
 import type { CollectibleDetail } from '../../../features/profile/profile.wearables.client'
 import type { AvatarSnapshot } from './OverviewTab.types'
 
-const MAX_BADGES = 5
-
 const RARITY_SET = new Set<string>([
   Rarity.UNIQUE,
   Rarity.MYTHIC,
@@ -45,13 +43,30 @@ function readField(avatar: AvatarSnapshot | undefined, key: string): string | un
   return typeof raw === 'string' && raw.length > 0 ? raw : undefined
 }
 
-function formatBadgeDate(timestamp: number | undefined): string | undefined {
-  if (!timestamp) return undefined
+function formatBadgeDate(timestamp: string | number | null | undefined): string | undefined {
+  if (timestamp === undefined || timestamp === null || timestamp === '') return undefined
+  const ms = typeof timestamp === 'string' ? Number(timestamp) : timestamp
+  if (!Number.isFinite(ms)) return undefined
   try {
-    return new Date(timestamp).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+    return new Date(ms).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
   } catch {
     return undefined
   }
+}
+
+// Tiered badges concatenate the per-tier blurbs in `description` separated by
+// `;` (e.g. "Bronze: 50 scenes;Silver: 250 scenes;..."). Surface only the blurb
+// that matches the user's currently achieved tier so the tooltip stays focused.
+function extractAchievedTierDescription(description: string | undefined, tierName: string | undefined): string | undefined {
+  if (!description) return undefined
+  if (!tierName) return description
+  const target = tierName.toLowerCase()
+  const chunk = description
+    .split(';')
+    .map(part => part.trim())
+    .find(part => part.toLowerCase().startsWith(`${target}:`))
+  if (!chunk) return description
+  return chunk.replace(/^[^:]+:\s*/, '').trim() || description
 }
 
 function detectLinkProvider(url: string): string {
@@ -86,8 +101,8 @@ function formatPriceMana(wei: string | undefined): string | undefined {
 }
 
 export {
-  MAX_BADGES,
   detectLinkProvider,
+  extractAchievedTierDescription,
   formatBadgeDate,
   formatPriceMana,
   getEquippedWearables,

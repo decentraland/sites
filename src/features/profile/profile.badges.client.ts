@@ -1,22 +1,43 @@
 import { useEffect, useState } from 'react'
 import { getEnv } from '../../config/env'
 
+interface BadgeProgress {
+  stepsDone: number
+  nextStepsTarget: number | null
+  totalStepsTarget: number
+  lastCompletedTierAt: string | null
+  lastCompletedTierName: string | null
+  lastCompletedTierImage: string | null
+}
+
 interface BadgeEntity {
   id: string
   name: string
-  description?: string
+  description: string
+  category: string
+  isTier: boolean
+  /** Unix timestamp in ms as a string (badges-api ships it stringified). `null` for not-yet-achieved badges. */
+  completedAt: string | null
+  /** Resolved icon URL — picked from `progress.lastCompletedTierImage` for tiered badges, otherwise `assets["2d"].normal`. */
   imageUrl?: string
-  category?: string
-  tier?: string
-  completedAt?: number
-  isTier?: boolean
-  completedTier?: { tierId: string; tierName: string; completedAt: number; assetUrl?: string }
+  /** Display name of the tier the user has reached (only set when `isTier`). */
+  tierName?: string
+  progress: BadgeProgress
 }
+
+/* eslint-disable @typescript-eslint/naming-convention -- badges-api response keeps the "2d"/"3d" keys as asset variant identifiers */
+interface RawBadge extends Omit<BadgeEntity, 'imageUrl' | 'tierName'> {
+  assets?: {
+    '2d'?: { normal?: string }
+    '3d'?: { normal?: string; hrm?: string; basecolor?: string }
+  }
+}
+/* eslint-enable @typescript-eslint/naming-convention */
 
 interface BadgesResponse {
   data: {
-    achieved?: BadgeEntity[]
-    notAchieved?: BadgeEntity[]
+    achieved?: RawBadge[]
+    notAchieved?: RawBadge[]
   }
 }
 
@@ -33,26 +54,22 @@ const getBadgesApiUrl = (): string => {
   return url.replace(/\/+$/, '')
 }
 
-/* eslint-disable @typescript-eslint/naming-convention -- badges-api response keeps the "2d"/"3d" keys as the asset variant identifiers */
-interface RawBadge extends BadgeEntity {
-  assets?: { '2d'?: { normal?: string; hd?: string }; '3d'?: { normal?: string; hd?: string } }
-}
-
 function normalizeBadge(raw: RawBadge): BadgeEntity {
-  // Badges API exposes the icon under `assets["2d"].normal` / `.hd`. Fall back
-  // to `imageUrl` for older payload shapes and to `completedTier.assetUrl` when
-  // the badge is tiered.
-  const imageUrl = raw.imageUrl ?? raw.assets?.['2d']?.hd ?? raw.assets?.['2d']?.normal ?? raw.completedTier?.assetUrl
-  return { ...raw, imageUrl }
+  // For tiered badges the API stores the achieved tier's icon under
+  // `progress.lastCompletedTierImage`; non-tiered badges expose the static icon
+  // under `assets["2d"].normal`. Fall back gracefully so the UI still renders
+  // even when one of the two paths is missing.
+  const imageUrl = raw.progress?.lastCompletedTierImage ?? raw.assets?.['2d']?.normal ?? undefined
+  const tierName = raw.progress?.lastCompletedTierName ?? undefined
+  return { ...raw, imageUrl, tierName }
 }
-/* eslint-enable @typescript-eslint/naming-convention */
 
 async function fetchProfileBadges(address: string, signal?: AbortSignal): Promise<BadgeEntity[]> {
   const url = `${getBadgesApiUrl()}/users/${encodeURIComponent(address.toLowerCase())}/badges`
   const response = await fetch(url, { signal })
   if (!response.ok) throw new Error(`Failed to fetch badges (${response.status})`)
   const body = (await response.json()) as BadgesResponse
-  const achieved = (body.data?.achieved ?? []) as RawBadge[]
+  const achieved = body.data?.achieved ?? []
   return achieved.map(normalizeBadge)
 }
 

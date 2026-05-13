@@ -10,8 +10,8 @@ import { useEquippedCollectibles } from '../../../features/profile/profile.weara
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { CreatorByLine } from './OverviewTab.creator'
 import {
-  MAX_BADGES,
   detectLinkProvider,
+  extractAchievedTierDescription,
   formatBadgeDate,
   formatPriceMana,
   getEquippedWearables,
@@ -50,7 +50,7 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
   const wearables = useMemo(() => getEquippedWearables(avatar), [avatar])
   const { collectibles, isLoading: isLoadingCollectibles } = useEquippedCollectibles(wearables)
   const { badges, isLoading: isLoadingBadges } = useProfileBadges(address)
-  const visibleBadges = badges.slice(0, MAX_BADGES)
+  const visibleBadges = badges
 
   const infoFields: InfoField[] = [
     { labelKey: 'profile.overview.country', value: readField(avatar, 'country') },
@@ -97,8 +97,9 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
           ) : visibleBadges.length > 0 ? (
             <BadgesRow>
               {visibleBadges.map(badge => {
-                const tierName = badge.completedTier?.tierName ?? badge.tier
-                const completedAt = formatBadgeDate(badge.completedTier?.completedAt ?? badge.completedAt)
+                const tierName = badge.tierName
+                const description = extractAchievedTierDescription(badge.description, tierName)
+                const completedAt = formatBadgeDate(badge.progress?.lastCompletedTierAt ?? badge.completedAt)
                 return (
                   <Tooltip
                     key={badge.id}
@@ -109,14 +110,14 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
                         <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                           {badge.name}
                         </Typography>
-                        {badge.description ? (
-                          <Typography variant="caption" sx={{ opacity: 0.85 }}>
-                            {badge.description}
-                          </Typography>
-                        ) : null}
                         {tierName ? (
                           <Typography variant="caption" sx={{ opacity: 0.7, textTransform: 'uppercase', letterSpacing: 1 }}>
                             {tierName}
+                          </Typography>
+                        ) : null}
+                        {description ? (
+                          <Typography variant="caption" sx={{ opacity: 0.85 }}>
+                            {description}
                           </Typography>
                         ) : null}
                         {completedAt ? (
