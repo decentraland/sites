@@ -6,10 +6,13 @@ const RenderRoot = styled(Box)({
   justifyContent: 'center',
   alignItems: 'center',
   position: 'relative',
-  width: 389,
+  width: 500,
   maxWidth: '100%',
   height: 706.442,
-  overflow: 'hidden'
+  // Some avatars (wings, tall hats, oversized props) overflow the natural
+  // bounding box. We allow the preview to spill into the adjacent column and
+  // sit behind the info cards (their semi-opaque bg covers the overlap).
+  overflow: 'visible'
 })
 
 const FallbackLayer = styled(Box)({

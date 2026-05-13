@@ -35,15 +35,17 @@ const TabsArea = styled(Box)({
 const BodySplit = styled(Box, {
   shouldForwardProp: prop => prop !== '$hasAside' && prop !== '$showAside'
 })<{ $hasAside: boolean; $showAside: boolean }>(({ theme, $hasAside, $showAside }) => {
-  // Figma 290:41669 caps the avatar/wearable-preview column at 390px wide.
-  // When `hasAside` is false (My Profile route) there's no aside child at all,
-  // so a single-column grid keeps BodyArea using the whole width. When the
-  // aside exists but the active tab hides it (e.g. anything but Overview), we
-  // animate from a 2-col grid into `'0px 1fr'` so BodyArea slides over what
-  // was the aside — modern browsers transition `grid-template-columns`.
+  // Figma 290:41669 caps the avatar/wearable-preview column at ~390px, but
+  // some avatars (wings, oversized props) need more room — we give the aside
+  // up to 500px and let `AsideArea` overflow visible so anything wider spills
+  // into the body area and sits behind the InfoSurface cards (which carry a
+  // semi-opaque bg). When `hasAside` is false (My Profile w/o overview) there
+  // is no aside child, so a single-column grid keeps BodyArea full-width. On
+  // non-overview tabs the 2-col grid animates to `'0px 1fr'` so BodyArea
+  // slides over the hidden aside slot.
   let gridTemplateColumns = '1fr'
   if ($hasAside) {
-    gridTemplateColumns = $showAside ? 'minmax(280px, 390px) 1fr' : '0px 1fr'
+    gridTemplateColumns = $showAside ? 'minmax(280px, 500px) 1fr' : '0px 1fr'
   }
   return {
     display: 'grid',
@@ -64,9 +66,12 @@ const AsideArea = styled(Box, {
 })<{ $showAside: boolean }>(({ theme, $showAside }) => ({
   position: 'relative',
   width: '100%',
-  maxWidth: 390,
+  maxWidth: 500,
   minHeight: 480,
-  overflow: 'hidden',
+  // Visible overflow lets oversized avatars (wings, hats) spill past the
+  // column boundary; BodyArea sits next in DOM order so its InfoSurface cards
+  // paint on top.
+  overflow: 'visible',
   opacity: $showAside ? 1 : 0,
   transition: 'opacity 240ms cubic-bezier(0.4, 0, 0.2, 1)',
   [theme.breakpoints.down('md')]: {
