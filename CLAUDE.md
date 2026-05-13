@@ -342,9 +342,12 @@ Full spec, status, learnings, and workflows in **`docs/profile-migration.md`**. 
 TL;DR for everywhere else:
 
 - Opening a profile from any heavy route: `useOpenProfileModal()(address)`. Auto-delegates to a parent modal when called inside a `ModalProfileNavigationProvider`; otherwise sets `?profile=<addr>` and `ProfileModalHost` opens a standalone dialog.
-- `ProfileSurface` accepts `embedded?: boolean` — strip the outer chrome when mounted inside another dialog.
+- `ProfileSurface` accepts `embedded?: boolean` — strip the outer chrome when mounted inside another dialog. `ProfileModal` passes it so the dialog Paper's brand gradient doesn't get repainted by `ProfileLayout`.
 - Always resolve `address → name` via `useCreatorProfile(address)` (same hook used by whats-on).
-- `decentraland-ui2` is patched locally for CatalogCard props. Update flow: `cd ui2 && npm run build && npm pack`, then `cd sites && npm install --no-save ../ui2/decentraland-ui2-<ver>.tgz`. **Never `npm link`** ui2 — breaks the transitive hoist of `radash`/`date-fns`. The `emotion-ui2-styled-transform` Vite plugin (in `vite.config.ts`) is required as long as ui2 ships Emotion component selectors; prefer `data-role` attribute selectors in any new ui2 styles.
+- Friendship / mutual friends / friends list / block live in `features/profile/profile.social.rpc.ts` (WebSocket via `@dcl/social-rpc-client`). HTTP only covers communities (`/v1/members/:address/communities`, signed, own-profile only) and referrals (`/v1/referral-progress`, signed, identity-scoped — no `:address` parameter).
+- `decentraland-ui2` is patched locally for CatalogCard props (`infoBadges`, `disableInfoExpansion`, `bottomAction`, `creatorSlot`, `hoverShadow`, `hideRarityOnHover`). Update flow: `cd ui2 && npm run build && npm pack`, then `cd sites && npm install --no-save ../ui2/decentraland-ui2-<ver>.tgz`. **Never `npm link`** ui2 — breaks the transitive hoist of `radash`/`date-fns`. The `emotion-ui2-styled-transform` Vite plugin (in `vite.config.ts`) is required as long as ui2 ships Emotion component selectors; prefer `data-role` attribute selectors in any new ui2 styles.
+- After `npm install --no-save <tgz>` the **dev server must restart** for Vite's `optimizeDeps` to re-prebundle. `rm -rf node_modules/.vite` alone is not enough while the server is running. If a CatalogCard prop change doesn't show up in the browser after reinstall, the prebundled `node_modules/.vite/deps/decentraland-ui2.js` is stale.
+- ui2 PR for new CatalogCard props lives upstream — once merged, drop the override CSS in `pages/profile/tabs/OverviewTab.styled.ts:EquippedGrid` that compensates for the local tgz lag.
 
 ## Security checklist
 
