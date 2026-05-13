@@ -1,10 +1,12 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import CheckIcon from '@mui/icons-material/Check'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CloseIcon from '@mui/icons-material/Close'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -13,8 +15,14 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import PersonRemoveIcon from '@mui/icons-material/PersonRemove'
 import { Button } from 'decentraland-ui2'
+import { getEnv } from '../../../config/env'
+import { useFriendsCount, useFriendshipStatus, useUpsertFriendship } from '../../../features/profile/profile.social.rpc'
+import type { FriendshipAction, FriendshipStatus } from '../../../features/profile/profile.social.rpc'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
 import { ProfileAvatar } from '../ProfileAvatar'
 import {
@@ -45,8 +53,6 @@ interface ProfileHeaderProps {
   onClose?: () => void
   /** When set, a back chevron renders before the avatar. Used when the profile modal opens on top of another modal. */
   onBack?: () => void
-  /** Friends count visible only on My Profile. */
-  friendsCount?: number
   /** Mutual friends (up to 3 avatars + total) visible only on Member Profile when viewer authed. */
   mutualFriends?: { count: number; avatarColors: readonly string[] }
 }
@@ -56,9 +62,31 @@ function truncateAddress(value: string): string {
   return `${value.slice(0, 4)}...${value.slice(-4)}`
 }
 
-function ProfileHeader({ address, isOwnProfile, onClose, onBack, friendsCount, mutualFriends }: ProfileHeaderProps) {
+interface FriendButtonConfig {
+  labelKey: string
+  icon: React.ReactNode
+  action: FriendshipAction
+}
+
+function getFriendButtonConfig(status: FriendshipStatus | undefined): FriendButtonConfig {
+  switch (status) {
+    case 'request_sent':
+      return { labelKey: 'profile.header.request_sent', icon: <CheckIcon />, action: 'cancel' }
+    case 'request_received':
+      return { labelKey: 'profile.header.add_friend', icon: <PersonAddIcon />, action: 'accept' }
+    case 'accepted':
+      return { labelKey: 'profile.header.remove_friend', icon: <PersonRemoveIcon />, action: 'remove' }
+    case 'blocked':
+    case 'none':
+    default:
+      return { labelKey: 'profile.header.add_friend', icon: <PersonAddIcon />, action: 'request' }
+  }
+}
+
+function ProfileHeader({ address, isOwnProfile, onClose, onBack, mutualFriends }: ProfileHeaderProps) {
   const t = useFormatMessage()
   const { name, avatar, backgroundColor } = useProfileAvatar(address)
+  const { hasValidIdentity } = useAuthIdentity()
 
   const hasClaimedName = avatar?.hasClaimedName ?? false
   const discriminator = !hasClaimedName && avatar?.userId ? `#${avatar.userId.slice(-4)}` : ''
@@ -68,10 +96,39 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, friendsCount, m
   // every other avatar render in the site and the unity-explorer.
   const nameColor = backgroundColor
 
+  const canQueryFriendship = !isOwnProfile && hasValidIdentity
+  const { status: friendshipStatus, isLoading: isLoadingFriendship } = useFriendshipStatus(canQueryFriendship ? address : undefined)
+  const { upsert: upsertFriendship, isLoading: isUpdatingFriendship } = useUpsertFriendship()
+  const friendButton = getFriendButtonConfig(friendshipStatus)
+  const { count: friendsCount } = useFriendsCount()
+  const [hasCopiedInvite, setHasCopiedInvite] = useState(false)
+
   const handleCopyAddress = useCallback(() => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       void navigator.clipboard.writeText(address)
     }
+  }, [address])
+
+  const handleFriendAction = useCallback(() => {
+    if (!canQueryFriendship) return
+    void upsertFriendship({ address, action: friendButton.action }).catch(() => {
+      /* error surfaced via the hook's `error` state */
+    })
+  }, [address, canQueryFriendship, friendButton.action, upsertFriendship])
+
+  const handleGetAName = useCallback(() => {
+    const builderUrl = getEnv('BUILDER_URL')
+    if (!builderUrl) return
+    window.open(`${builderUrl.replace(/\/+$/, '')}/names`, '_blank', 'noopener,noreferrer')
+  }, [])
+
+  const handleInviteFriends = useCallback(() => {
+    if (typeof navigator === 'undefined' || !navigator.clipboard || typeof window === 'undefined') return
+    const inviteUrl = `${window.location.origin}/invite/${address}`
+    void navigator.clipboard.writeText(inviteUrl).then(() => {
+      setHasCopiedInvite(true)
+      setTimeout(() => setHasCopiedInvite(false), 2000)
+    })
   }, [address])
 
   return (
@@ -107,18 +164,18 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, friendsCount, m
       <ActionsBlock>
         {isOwnProfile ? (
           <>
-            {!hasClaimedName ? (
-              <Button variant="contained" color="primary" startIcon={<BadgeOutlinedIcon />} disabled>
-                {t('profile.header.get_a_name')}
-              </Button>
-            ) : null}
             {typeof friendsCount === 'number' ? (
-              <Button variant="outlined" color="inherit" startIcon={<PeopleAltOutlinedIcon />} disabled>
+              <Button variant="outlined" color="inherit" startIcon={<PeopleAltOutlinedIcon />}>
                 {t('profile.header.friends_count', { count: friendsCount })}
               </Button>
             ) : null}
-            <Button variant="outlined" color="inherit" startIcon={<PersonAddIcon />} disabled>
-              {t('profile.header.invite_friends')}
+            {!hasClaimedName ? (
+              <Button variant="contained" color="primary" startIcon={<BadgeOutlinedIcon />} onClick={handleGetAName}>
+                {t('profile.header.get_a_name')}
+              </Button>
+            ) : null}
+            <Button variant="outlined" color="inherit" startIcon={<PersonAddIcon />} onClick={handleInviteFriends}>
+              {t(hasCopiedInvite ? 'profile.header.invite_copied' : 'profile.header.invite_friends')}
             </Button>
           </>
         ) : (
@@ -135,10 +192,14 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, friendsCount, m
                 </MutualText>
               </MutualFriendsRow>
             ) : null}
-            {/* Friendship status comes from social-service via @dcl/social-rpc-client (WebSocket RPC),
-                not HTTP. Until that client is wired in, the button is a non-functional placeholder. */}
-            <Button variant="contained" color="primary" startIcon={<PersonAddIcon />} disabled>
-              {t('profile.header.add_friend')}
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={friendButton.icon}
+              onClick={handleFriendAction}
+              disabled={!canQueryFriendship || isLoadingFriendship || isUpdatingFriendship}
+            >
+              {t(friendButton.labelKey)}
             </Button>
           </>
         )}

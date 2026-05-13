@@ -1060,6 +1060,7 @@
       "close_profile": "프로필 닫기",
       "get_a_name": "이름 받기",
       "invite_friends": "친구 초대",
+      "invite_copied": "복사됨!",
       "friends_count": "친구 {count} 명",
       "mutual_count": "공통 {count} 명",
       "edit": "편집",

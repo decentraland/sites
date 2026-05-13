@@ -1060,6 +1060,7 @@
       "close_profile": "关闭个人资料",
       "get_a_name": "获取名称",
       "invite_friends": "邀请好友",
+      "invite_copied": "已复制!",
       "friends_count": "{count} 位好友",
       "mutual_count": "{count} 位共同好友",
       "edit": "编辑",

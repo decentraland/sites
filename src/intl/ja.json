@@ -1060,6 +1060,7 @@
       "close_profile": "プロフィールを閉じる",
       "get_a_name": "名前を取得",
       "invite_friends": "友達を招待",
+      "invite_copied": "コピーしました",
       "friends_count": "{count} 人の友達",
       "mutual_count": "{count} 人の共通",
       "edit": "編集",

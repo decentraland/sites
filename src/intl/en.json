@@ -1510,6 +1510,7 @@
       "close_profile": "Close profile",
       "get_a_name": "Get a name",
       "invite_friends": "Invite friends",
+      "invite_copied": "Copied!",
       "friends_count": "{count} Friends",
       "mutual_count": "{count} Mutual",
       "edit": "Edit",
