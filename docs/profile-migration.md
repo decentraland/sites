@@ -132,30 +132,31 @@ URLs in the env JSONs were patched: `BADGES_API_URL`, `MARKETPLACE_API_URL`, `RE
 ## What's done (master plan phase tracking)
 
 - ✅ Phase 1 — Routing + lazy mount inside DappsShell
-- ✅ Phase 2 — ProfileLayout + ProfileHeader + ProfileAvatar (76px with ADR-292 ring) + AvatarRender (WearablePreview 389×706.442)
+- ✅ Phase 2 — ProfileLayout + ProfileHeader + ProfileAvatar (76px with ADR-292 ring) + AvatarRender (WearablePreview 500×706, overflow visible so wings spill behind the info column)
 - ✅ Phase 3 — ProfileTabs + URL sync + animated aside collapse on non-overview tabs
-- ✅ Phase 4 — OverviewTab (bio, info grid, links, badges with tooltip, equipped items with `CatalogCard` extended via the 4 new ui2 props)
-- ✅ Profile-as-modal: `ProfileModal`, `ProfileModalHost`, `useOpenProfileModal`, `ModalProfileNavigation` context
-- ✅ Event modal swap-in-modal: clicking `DetailModalCreator` swaps content inside `EventDetailModal` (no double-dialog); back chevron returns to event; Paper gradient + maxWidth grows in profile mode
-- ✅ Tooltip on badges (name + description + tier + unlocked date)
-- ✅ i18n parity in 6 locales for the `profile.*` namespace
+- ✅ Phase 4 — OverviewTab (bio, info grid, links, badges with achieved-tier tooltip, equipped items with `CatalogCard` + wearable category / body-shape badges)
+- ✅ Phase 5 — Creations tab (`/v2/catalog?creator=:address` with `minListingPrice` fallback) — CatalogCard grid, Wearables/Emotes chip filters, "View all" link to `marketplace/accounts/:address`, Load-more pagination, BUY action overlays badge row on hover
+- ✅ Phase 6 — Assets tab (My only) (`/v1/nfts?owner=:address`) — All/Wearables/Emotes/Names/Lands/Estates chip filters, on-sale price from `order.price`, marketplace token-page link
+- ✅ Phase 7 — Communities tab (`/v1/members/:address/communities`, signed) — own-profile only (endpoint enforces auth === address); member view shows "private" empty state; thumbnails + member count + role chip
+- ✅ Phase 8 — Places tab (`places-api /api/places?owner=:address`) — thumbnail / title / location / likes / online count, click → `/jump/places?position=X,Y`
+- ✅ Phase 9 — Photos tab (`camera-reel-service`, env `REEL_SERVICE_URL`) — square photo grid, click → `/reels/:id`
+- ✅ Phase 10 — Referral Rewards (My only) — `/v1/referral-progress` signed; tier thresholds copied from profile-dapp, invite URL share, locked/unlocked tier images
+- ✅ Phase 11 — Friendship & Block CTAs via `@dcl/social-rpc-client` (WebSocket). Live `getFriendshipStatus`, `requestFriendship`/`cancel`/`accept`/`removeFriendship`. Block / unblock kebab menu next to friendship button. Mutual friends preview (3 avatar dots + count) via `getMutualFriends`. Friends count + Friends modal for own profile via `getFriends`.
+- ✅ Profile-as-modal: `ProfileModal` (wide dialog mirroring whats-on chrome), `ProfileModalHost`, `useOpenProfileModal`, `ModalProfileNavigationProvider`
+- ✅ Event modal swap-in-modal: clicking `DetailModalCreator` swaps `EventDetailModal` content for the profile surface; back chevron returns to event
+- ✅ Jump cards (places + events): avatar + creator name open the standalone `ProfileModal` via `useOpenProfileModal()`
+- ✅ Tooltip on badges (name + achieved tier name + tier-specific description + completion date)
+- ✅ i18n parity in 6 locales for the `profile.*` namespace (en/es/fr/ja/ko/zh)
+- ✅ Vite dev defaults to `?env=prod` via `.env.development` (`VITE_REACT_APP_DCL_DEFAULT_ENV=prod`)
 
 ## What's left
 
-- Phase 5 — **Creations tab** (`/v1/items?creator=:address`) with NFT grid + pagination
-- Phase 6 — **Assets tab** (My only) (`/v1/nfts?owner=:address`) with filters + categories dropdown
-- Phase 7 — **Communities tab** (social-service-ea `GetCommunities`)
-- Phase 8 — **Places tab** (places-api `?owner=:address`)
-- Phase 9 — **Photos tab** (camera-reel-service) — pending env var `REELS_API_URL`
-- Phase 10 — **Referral Rewards** (My only): `InviteFriendsCard`, `YourRewardsCard`, claim action (needs signature)
-- Phase 11 — Wire **Friendship & Block CTAs** end-to-end (currently stub buttons in `ProfileHeader`); optimistic updates with `selectFromResult`
-- Phase 12 — **Mobile breakpoint** (`MobileMenu` drawer per Figma `167:85610`, `322:49246`); modal full-screen on mobile
-- Phase 13 — E2E + Chrome DevTools MCP smoke run + Lighthouse audit
-- **Sort by Latest** dropdown in Badges section (Figma)
-- Confirm `?env=prd` query param actually toggles `@dcl/ui-env` — current testing observed equipped items returning `price=0` in `.zone` which is expected, but env switch wasn't fully verified
-- ui2 fork: open upstream PR with the CatalogCard prop additions (or convert all remaining `${X}` Emotion component selectors to `data-role` so the babel-plugin transform can be removed entirely)
-- Tests: more coverage on `OverviewTab`, `ProfileModal`, `ModalProfileNavigation`, `EventDetailModal` profile swap
-- Bundle-size diff vs master before declaring done (heavy chunk should grow modestly)
+- Phase 12 — Polish mobile breakpoint per Figma (`MobileMenu` drawer node `167:85610`, `322:49246`). Current state: ProfileLayout collapses to single column on `breakpoints.down('md')`, ProfileModal goes full-screen on `breakpoints.down('sm')`, ProfileTabs scrolls horizontally. Drawer-specific designs not implemented.
+- Phase 13 — Automated E2E + Lighthouse audit + bundle-size diff vs master.
+- **Sort by Latest** dropdown in Badges section (Figma).
+- ui2 PR #440 (`feat/catalog-card-info-badges`) — open upstream. When merged, drop the local `--no-save` tgz install and bump `decentraland-ui2` in `package.json`. Until then, sites carries override CSS in `OverviewTab.styled.ts:EquippedGrid` (image shrink + info-container collapse on hover) — remove that override when the published ui2 version ships `disableInfoExpansion`.
+- Tests: more coverage on `OverviewTab`, `ProfileModal`, `ModalProfileNavigation`, `EventDetailModal` profile swap, `FriendsModal`, `CreationsTab`/`AssetsTab` pagination.
+- Web3-free verification: confirm `wagmi`/`magic-sdk`/`thirdweb` are not pulled in by the DappsShell chunk (manual `npm run build` chunk listing).
 
 ## Hard-earned learnings — keep them in mind
 
