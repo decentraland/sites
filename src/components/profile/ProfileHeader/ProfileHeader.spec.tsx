@@ -17,10 +17,22 @@ jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (key: string) => key
 }))
 
-const upsertFriendshipMock = jest.fn()
-jest.mock('../../../features/profile/profile.social.client', () => ({
-  useGetFriendshipStatusQuery: () => ({ data: undefined }),
-  useUpsertFriendshipMutation: () => [upsertFriendshipMock, { isLoading: false }]
+// `import.meta.env` is not available in Jest's CommonJS runtime; mock the env
+// module so we don't reach into `src/config/index.ts` from this test.
+jest.mock('../../../config/env', () => ({
+  getEnv: () => undefined
+}))
+
+jest.mock('../../../features/profile/profile.social.rpc', () => ({
+  useFriendshipStatus: () => ({ status: 'none', isLoading: false, error: null }),
+  useFriendsCount: () => ({ count: undefined, isLoading: false, error: null }),
+  useUpsertFriendship: () => ({ upsert: jest.fn(), isLoading: false, error: null }),
+  useMutualFriends: () => ({ count: 0, friends: [], isLoading: false, error: null }),
+  useBlockUser: () => ({ setBlocked: jest.fn(), isLoading: false, error: null })
+}))
+
+jest.mock('../FriendsModal', () => ({
+  FriendsModal: () => null
 }))
 
 jest.mock('../ProfileAvatar', () => ({
@@ -31,7 +43,14 @@ jest.mock('decentraland-ui2', () => {
   const Button = mockReact.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & { startIcon?: React.ReactNode }>(
     ({ startIcon, children, ...props }, ref) => mockReact.createElement('button', { ref, ...props }, startIcon, children)
   )
-  return { Button }
+  const IconButton = mockReact.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(({ children, ...props }, ref) =>
+    mockReact.createElement('button', { ref, ...props }, children)
+  )
+  const Menu = ({ open, children }: { open: boolean; children: React.ReactNode }) =>
+    open ? mockReact.createElement('div', { role: 'menu' }, children) : null
+  const MenuItem = ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) =>
+    mockReact.createElement('div', { role: 'menuitem', onClick }, children)
+  return { Button, IconButton, Menu, MenuItem }
 })
 
 jest.mock('./ProfileHeader.styled', () => {
@@ -43,10 +62,10 @@ jest.mock('./ProfileHeader.styled', () => {
     ActionsBlock: make('actions-block'),
     AddressRow: make('address-row'),
     AddressText: make('address-text'),
+    BackIconButton: make('back-icon-button', 'button'),
     CloseIconButton: make('close-icon-button', 'button'),
     CopyButton: make('copy-button', 'button'),
     Discriminator: make('discriminator', 'span'),
-    Divider: make('divider', 'span'),
     HeaderRoot: make('header-root'),
     IdentityBlock: make('identity-block'),
     MutualFriendsRow: make('mutual-friends-row'),
