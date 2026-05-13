@@ -30,7 +30,7 @@ function ProfileModal({ address, open, onClose, onBack, initialTab = 'overview' 
   const isOwnProfile = Boolean(viewerAddress && normalizedAddress === viewerAddress.toLowerCase())
 
   return (
-    <ProfileDialog open={open} onClose={onClose} fullWidth maxWidth={false} scroll="body">
+    <ProfileDialog open={open} onClose={onClose} fullWidth maxWidth={false} scroll="paper">
       <ProfileSurface
         address={normalizedAddress}
         isOwnProfile={isOwnProfile}
@@ -38,6 +38,7 @@ function ProfileModal({ address, open, onClose, onBack, initialTab = 'overview' 
         onTabChange={setActiveTab}
         onClose={onClose}
         onBack={onBack}
+        embedded
       />
     </ProfileDialog>
   )
