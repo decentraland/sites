@@ -213,12 +213,19 @@ const CreatorAvatar = styled('img', { shouldForwardProp: prop => prop !== 'avata
   })
 )
 
+// Renders as either `<a>` (legacy external link) or `<button>` (in-app modal
+// opener) via the `as` prop. Reset native button chrome so both look identical.
 const UserProfileLink = styled('a')(({ theme }) => ({
   color: '#FF2D55',
   textDecoration: 'none',
   fontSize: 20,
   fontWeight: 500,
   transition: 'color 0.2s ease, text-decoration 0.2s ease',
+  background: 'transparent',
+  border: 'none',
+  padding: 0,
+  font: 'inherit',
+  cursor: 'pointer',
   '&:hover': {
     color: '#FF4D75',
     textDecoration: 'underline'
