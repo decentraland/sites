@@ -5,10 +5,16 @@ import { adminClient } from '../features/events/events.admin.client'
 import { eventsClient } from '../features/events/events.client'
 import { cast2Client } from '../services/cast2Client'
 import { cmsClient } from '../services/cmsClient'
+import { marketplaceClient } from '../services/marketplaceClient'
 import { placesClient } from '../services/placesClient'
+import { referralClient } from '../services/referralClient'
 
 jest.mock('../config/env', () => ({
   getEnv: () => undefined
+}))
+
+jest.mock('decentraland-crypto-fetch', () => ({
+  signedFetchFactory: () => async () => new Response('{}', { status: 200 })
 }))
 
 jest.mock('../utils/signedFetch', () => ({
@@ -36,7 +42,9 @@ describe('when building the DappsShell store', () => {
       [adminClient.reducerPath]: adminClient.reducer,
       [cmsClient.reducerPath]: cmsClient.reducer,
       [placesClient.reducerPath]: placesClient.reducer,
-      [cast2Client.reducerPath]: cast2Client.reducer
+      [cast2Client.reducerPath]: cast2Client.reducer,
+      [marketplaceClient.reducerPath]: marketplaceClient.reducer,
+      [referralClient.reducerPath]: referralClient.reducer
     })
     const store = configureStore({
       reducer: rootReducer,
@@ -46,7 +54,9 @@ describe('when building the DappsShell store', () => {
           adminClient.middleware,
           cmsClient.middleware,
           placesClient.middleware,
-          cast2Client.middleware
+          cast2Client.middleware,
+          marketplaceClient.middleware,
+          referralClient.middleware
         )
     })
     state = store.getState() as Record<string, unknown>
@@ -66,6 +76,14 @@ describe('when building the DappsShell store', () => {
 
   it('should register the cast2 RTK Query reducer', () => {
     expect(state).toHaveProperty('cast2Client')
+  })
+
+  it('should register the marketplace RTK Query reducer', () => {
+    expect(state).toHaveProperty('marketplaceClient')
+  })
+
+  it('should register the referral RTK Query reducer', () => {
+    expect(state).toHaveProperty('referralClient')
   })
 })
 
@@ -98,5 +116,29 @@ describe('when inspecting the store source file', () => {
 
   it('should concatenate cast2Client.middleware in the middleware chain', () => {
     expect(source).toContain('cast2Client.middleware')
+  })
+
+  it('should import the marketplace client', () => {
+    expect(source).toMatch(/from '\.\.\/services\/marketplaceClient'/)
+  })
+
+  it('should register marketplaceClient.reducer in the reducer map', () => {
+    expect(source).toContain('[marketplaceClient.reducerPath]: marketplaceClient.reducer')
+  })
+
+  it('should concatenate marketplaceClient.middleware in the middleware chain', () => {
+    expect(source).toContain('marketplaceClient.middleware')
+  })
+
+  it('should import the referral client', () => {
+    expect(source).toMatch(/from '\.\.\/services\/referralClient'/)
+  })
+
+  it('should register referralClient.reducer in the reducer map', () => {
+    expect(source).toContain('[referralClient.reducerPath]: referralClient.reducer')
+  })
+
+  it('should concatenate referralClient.middleware in the middleware chain', () => {
+    expect(source).toContain('referralClient.middleware')
   })
 })
