@@ -23,7 +23,6 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
 })) as typeof Tabs
 
 const StyledTab = styled(Tab)(({ theme }) => ({
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 500,
   fontSize: 14,
   textTransform: 'none',

@@ -14,7 +14,6 @@ const StubRoot = styled(Box)(({ theme }) => ({
 
 const StubTitle = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.primary,
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 500
 }))
 

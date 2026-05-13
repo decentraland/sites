@@ -42,7 +42,6 @@ const NameRow = styled(Box)(({ theme }) => ({
 const NameText = styled(Typography, {
   shouldForwardProp: prop => prop !== '$nameColor'
 })<{ $nameColor: string }>(({ $nameColor }) => ({
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 500,
   fontSize: 24,
   lineHeight: 1.334,
@@ -54,7 +53,6 @@ const NameText = styled(Typography, {
 }))
 
 const Discriminator = styled('span')(({ theme }) => ({
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 500,
   fontSize: 24,
   lineHeight: 1.334,
@@ -92,7 +90,6 @@ const AddressRow = styled(Box)(({ theme }) => ({
 }))
 
 const AddressText = styled(Typography)(({ theme }) => ({
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 400,
   fontSize: 14,
   lineHeight: 1.75,
@@ -140,7 +137,6 @@ const MutualPic = styled('span', {
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const MutualText = styled(Typography)(({ theme }) => ({
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 400,
   fontSize: 16,
   color: theme.palette.text.primary,

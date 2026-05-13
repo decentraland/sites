@@ -34,7 +34,6 @@ const SectionHeader = styled(Box)(({ theme }) => ({
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.secondary,
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 600,
   fontSize: 12,
   letterSpacing: 1.5,
@@ -76,13 +75,11 @@ const BadgeFallback = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   color: theme.palette.text.secondary,
   fontWeight: 600,
-  fontSize: 14,
-  fontFamily: 'Inter, sans-serif'
+  fontSize: 14
 }))
 
 const BioText = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.primary,
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 400,
   fontSize: 15,
   lineHeight: 1.6,
@@ -92,7 +89,6 @@ const BioText = styled(Typography)(({ theme }) => ({
 
 const EmptyBio = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.disabled,
-  fontFamily: 'Inter, sans-serif',
   fontStyle: 'italic'
 }))
 
@@ -114,7 +110,6 @@ const InfoLabel = styled(Typography)(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(0.5),
   color: theme.palette.text.secondary,
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 400,
   fontSize: 11,
   textTransform: 'uppercase',
@@ -123,7 +118,6 @@ const InfoLabel = styled(Typography)(({ theme }) => ({
 
 const InfoValue = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.primary,
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 500,
   fontSize: 14
 }))
@@ -239,7 +233,6 @@ const EditIconButton = styled('button')(({ theme }) => ({
   padding: theme.spacing(0.5, 1.5),
   background: 'rgba(255, 255, 255, 0.04)',
   color: theme.palette.text.secondary,
-  fontFamily: 'Inter, sans-serif',
   fontSize: 12,
   fontWeight: 500,
   cursor: 'pointer',

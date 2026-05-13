@@ -45,8 +45,7 @@ const AvatarInitial = styled('span', {
 })<InitialProps>(({ $size }) => ({
   fontSize: Math.round($size * 0.45),
   lineHeight: 1,
-  textTransform: 'uppercase',
-  fontFamily: 'Inter, sans-serif'
+  textTransform: 'uppercase'
 }))
 
 export { AvatarContainer, AvatarFallback, AvatarImage, AvatarInitial }

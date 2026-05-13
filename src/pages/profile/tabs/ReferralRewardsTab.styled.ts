@@ -28,7 +28,6 @@ const CodeRow = styled(Box)(({ theme }) => ({
 }))
 
 const CodePill = styled(Box)(({ theme }) => ({
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 600,
   fontSize: 18,
   letterSpacing: 0.5,
@@ -52,14 +51,12 @@ const StatItem = styled(Box)(({ theme }) => ({
 }))
 
 const StatNumber = styled(Typography)({
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 600,
   fontSize: 28,
   lineHeight: 1.2
 })
 
 const StatLabel = styled(Typography)(({ theme }) => ({
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 400,
   fontSize: 13,
   color: theme.palette.text.secondary,
@@ -101,7 +98,6 @@ const RewardImage = styled('img')({
 })
 
 const RewardTier = styled(Typography)(({ theme }) => ({
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 600,
   fontSize: 12,
   letterSpacing: 1,
@@ -110,7 +106,6 @@ const RewardTier = styled(Typography)(({ theme }) => ({
 }))
 
 const RewardTitle = styled(Typography)({
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 500,
   fontSize: 14
 })

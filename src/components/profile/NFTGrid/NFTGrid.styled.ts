@@ -73,7 +73,6 @@ const Meta = styled(Box)(({ theme }) => ({
 }))
 
 const Title = styled(Typography)({
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 500,
   fontSize: 14,
   lineHeight: 1.4,
@@ -83,7 +82,6 @@ const Title = styled(Typography)({
 })
 
 const Subtitle = styled(Typography)(({ theme }) => ({
-  fontFamily: 'Inter, sans-serif',
   fontWeight: 400,
   fontSize: 12,
   color: theme.palette.text.secondary,
