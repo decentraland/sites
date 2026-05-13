@@ -1066,6 +1066,13 @@
       "edit": "編集",
       "back": "戻る"
     },
+    "friends_modal": {
+      "title": "友達 ({count})",
+      "close": "友達リストを閉じる",
+      "search_placeholder": "友達を検索",
+      "empty": "まだ友達がいません。",
+      "no_results": "該当する友達が見つかりません。"
+    },
     "tabs": {
       "overview": "概要",
       "assets": "アセット",

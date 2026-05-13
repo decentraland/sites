@@ -1066,6 +1066,13 @@
       "edit": "편집",
       "back": "뒤로"
     },
+    "friends_modal": {
+      "title": "친구 ({count})",
+      "close": "친구 목록 닫기",
+      "search_placeholder": "친구 검색",
+      "empty": "아직 친구가 없습니다.",
+      "no_results": "일치하는 친구가 없습니다."
+    },
     "tabs": {
       "overview": "개요",
       "assets": "에셋",

@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -24,6 +25,7 @@ import type { FriendshipAction, FriendshipStatus } from '../../../features/profi
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
+import { FriendsModal } from '../FriendsModal'
 import { ProfileAvatar } from '../ProfileAvatar'
 import {
   ActionsBlock,
@@ -102,6 +104,8 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, mutualFriends }
   const friendButton = getFriendButtonConfig(friendshipStatus)
   const { count: friendsCount } = useFriendsCount()
   const [hasCopiedInvite, setHasCopiedInvite] = useState(false)
+  const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false)
+  const navigate = useNavigate()
 
   const handleCopyAddress = useCallback(() => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -165,7 +169,7 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, mutualFriends }
         {isOwnProfile ? (
           <>
             {typeof friendsCount === 'number' ? (
-              <Button variant="outlined" color="inherit" startIcon={<PeopleAltOutlinedIcon />}>
+              <Button variant="outlined" color="inherit" startIcon={<PeopleAltOutlinedIcon />} onClick={() => setIsFriendsModalOpen(true)}>
                 {t('profile.header.friends_count', { count: friendsCount })}
               </Button>
             ) : null}
@@ -212,6 +216,16 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, mutualFriends }
           </>
         ) : null}
       </ActionsBlock>
+      {isOwnProfile ? (
+        <FriendsModal
+          open={isFriendsModalOpen}
+          onClose={() => setIsFriendsModalOpen(false)}
+          onSelect={friend => {
+            setIsFriendsModalOpen(false)
+            navigate(`/profile/${friend.address.toLowerCase()}`)
+          }}
+        />
+      ) : null}
     </HeaderRoot>
   )
 }

@@ -1066,6 +1066,13 @@
       "edit": "编辑",
       "back": "返回"
     },
+    "friends_modal": {
+      "title": "好友 ({count})",
+      "close": "关闭好友列表",
+      "search_placeholder": "搜索好友",
+      "empty": "你还没有好友。",
+      "no_results": "没有匹配的好友。"
+    },
     "tabs": {
       "overview": "概览",
       "assets": "资产",

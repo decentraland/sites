@@ -1061,6 +1061,13 @@
       "edit": "Modifier",
       "back": "Retour"
     },
+    "friends_modal": {
+      "title": "Amis ({count})",
+      "close": "Fermer la liste d'amis",
+      "search_placeholder": "Rechercher des amis",
+      "empty": "Vous n'avez pas encore d'amis.",
+      "no_results": "Aucun résultat."
+    },
     "tabs": {
       "overview": "Aperçu",
       "assets": "Actifs",

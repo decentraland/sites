@@ -1516,6 +1516,13 @@
       "edit": "Edit",
       "back": "Back"
     },
+    "friends_modal": {
+      "title": "Friends ({count})",
+      "close": "Close friends list",
+      "search_placeholder": "Search friends",
+      "empty": "You have no friends yet.",
+      "no_results": "No matching friends."
+    },
     "tabs": {
       "overview": "Overview",
       "assets": "Assets",

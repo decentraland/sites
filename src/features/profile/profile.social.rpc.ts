@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { AuthIdentity } from '@dcl/crypto'
 import { createSocialClientV2 } from '@dcl/social-rpc-client'
 import { FriendshipStatus as RpcFriendshipStatus } from '@dcl/social-rpc-client/dist/protobuff-types/decentraland/social_service/v2/social_service_v2.gen'
+import type { FriendProfile } from '@dcl/social-rpc-client/dist/protobuff-types/decentraland/social_service/v2/social_service_v2.gen'
 import { getEnv } from '../../config/env'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 
@@ -243,6 +244,66 @@ function useFriendsCount(): UseFriendsCountResult {
   return { count, isLoading, error }
 }
 
+interface UseFriendsListResult {
+  friends: FriendProfile[]
+  total: number | undefined
+  isLoading: boolean
+  error: Error | null
+}
+
+const FRIENDS_PAGE_SIZE = 200
+
+function useFriendsList(enabled: boolean = true): UseFriendsListResult {
+  const { identity } = useAuthIdentity()
+  const [friends, setFriends] = useState<FriendProfile[]>([])
+  const [total, setTotal] = useState<number | undefined>(undefined)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    if (!enabled || !identity) {
+      setFriends([])
+      setTotal(undefined)
+      setIsLoading(false)
+      setError(null)
+      return undefined
+    }
+    let cancelled = false
+    setIsLoading(true)
+    setError(null)
+    void (async () => {
+      try {
+        const c = await getClient(identity)
+        // Eager-load every friend in one pass — typical user counts are well
+        // below the page size; if we ever cross it, swap to incremental loads.
+        const all: FriendProfile[] = []
+        let offset = 0
+        let totalCount: number | undefined
+        while (!cancelled) {
+          const response = await c.getFriends({ limit: FRIENDS_PAGE_SIZE, offset })
+          if (cancelled) return
+          all.push(...response.friends)
+          totalCount = response.paginationData?.total ?? totalCount
+          if (response.friends.length < FRIENDS_PAGE_SIZE) break
+          offset += FRIENDS_PAGE_SIZE
+        }
+        if (cancelled) return
+        setFriends(all)
+        setTotal(totalCount ?? all.length)
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)))
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [enabled, identity])
+
+  return { friends, total, isLoading, error }
+}
+
 interface UseUpsertFriendshipResult {
   upsert: (args: { address: string; action: FriendshipAction }) => Promise<void>
   isLoading: boolean
@@ -275,5 +336,13 @@ function useUpsertFriendship(): UseUpsertFriendshipResult {
   return { upsert, isLoading, error }
 }
 
-export { useFriendsCount, useFriendshipStatus, useUpsertFriendship }
-export type { FriendshipAction, FriendshipStatus, UseFriendsCountResult, UseFriendshipStatusResult, UseUpsertFriendshipResult }
+export { useFriendsCount, useFriendsList, useFriendshipStatus, useUpsertFriendship }
+export type {
+  FriendProfile,
+  FriendshipAction,
+  FriendshipStatus,
+  UseFriendsCountResult,
+  UseFriendsListResult,
+  UseFriendshipStatusResult,
+  UseUpsertFriendshipResult
+}
