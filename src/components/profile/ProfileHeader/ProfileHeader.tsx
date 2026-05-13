@@ -7,20 +7,30 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import BlockIcon from '@mui/icons-material/Block'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import CheckIcon from '@mui/icons-material/Check'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CloseIcon from '@mui/icons-material/Close'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove'
-import { Button } from 'decentraland-ui2'
+import { Button, IconButton, Menu, MenuItem } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
-import { useFriendsCount, useFriendshipStatus, useMutualFriends, useUpsertFriendship } from '../../../features/profile/profile.social.rpc'
+import {
+  useBlockUser,
+  useFriendsCount,
+  useFriendshipStatus,
+  useMutualFriends,
+  useUpsertFriendship
+} from '../../../features/profile/profile.social.rpc'
 import type { FriendshipAction, FriendshipStatus } from '../../../features/profile/profile.social.rpc'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
@@ -101,6 +111,8 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack }: ProfileHeader
   const { upsert: upsertFriendship, isLoading: isUpdatingFriendship } = useUpsertFriendship()
   const friendButton = getFriendButtonConfig(friendshipStatus)
   const { count: friendsCount } = useFriendsCount()
+  const { setBlocked, isLoading: isUpdatingBlock } = useBlockUser()
+  const [blockMenuAnchor, setBlockMenuAnchor] = useState<HTMLElement | null>(null)
   const { count: mutualCount, friends: mutualFriendsPreview } = useMutualFriends(canQueryFriendship ? address : undefined)
   const mutualAvatarColors = mutualFriendsPreview.slice(0, 3).map(friend => {
     const displayName = getDisplayName({ name: friend.name, hasClaimedName: friend.hasClaimedName, ethAddress: friend.address })
@@ -122,6 +134,14 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack }: ProfileHeader
       /* error surfaced via the hook's `error` state */
     })
   }, [address, canQueryFriendship, friendButton.action, upsertFriendship])
+
+  const handleToggleBlock = useCallback(() => {
+    setBlockMenuAnchor(null)
+    if (!canQueryFriendship) return
+    void setBlocked({ address, blocked: friendshipStatus !== 'blocked' }).catch(() => {
+      /* error surfaced via the hook's `error` state */
+    })
+  }, [address, canQueryFriendship, friendshipStatus, setBlocked])
 
   const handleGetAName = useCallback(() => {
     const builderUrl = getEnv('BUILDER_URL')
@@ -204,10 +224,24 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack }: ProfileHeader
               color="primary"
               startIcon={friendButton.icon}
               onClick={handleFriendAction}
-              disabled={!canQueryFriendship || isLoadingFriendship || isUpdatingFriendship}
+              disabled={!canQueryFriendship || isLoadingFriendship || isUpdatingFriendship || friendshipStatus === 'blocked'}
             >
               {t(friendButton.labelKey)}
             </Button>
+            <IconButton
+              aria-label={t('profile.header.more_actions')}
+              onClick={event => setBlockMenuAnchor(event.currentTarget)}
+              disabled={!canQueryFriendship || isUpdatingBlock}
+              sx={{ color: 'common.white' }}
+            >
+              <MoreVertIcon />
+            </IconButton>
+            <Menu anchorEl={blockMenuAnchor} open={Boolean(blockMenuAnchor)} onClose={() => setBlockMenuAnchor(null)}>
+              <MenuItem onClick={handleToggleBlock}>
+                <BlockIcon fontSize="small" sx={{ mr: 1 }} />
+                {t(friendshipStatus === 'blocked' ? 'profile.header.unblock' : 'profile.header.block')}
+              </MenuItem>
+            </Menu>
           </>
         )}
         {onClose ? (

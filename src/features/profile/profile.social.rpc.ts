@@ -129,6 +129,14 @@ async function applyAction(identity: AuthIdentity, address: string, action: Frie
   return fetchStatus(identity, address)
 }
 
+async function applyBlock(identity: AuthIdentity, address: string, block: boolean): Promise<FriendshipStatus> {
+  const key = address.toLowerCase()
+  const c = await getClient(identity)
+  if (block) await c.blockUser(key)
+  else await c.unblockUser(key)
+  return fetchStatus(identity, address)
+}
+
 interface UseFriendshipStatusResult {
   status: FriendshipStatus | undefined
   isLoading: boolean
@@ -412,11 +420,44 @@ function useUpsertFriendship(): UseUpsertFriendshipResult {
   return { upsert, isLoading, error }
 }
 
-export { useFriendsCount, useFriendsList, useFriendshipStatus, useMutualFriends, useUpsertFriendship }
+interface UseBlockUserResult {
+  setBlocked: (args: { address: string; blocked: boolean }) => Promise<void>
+  isLoading: boolean
+  error: Error | null
+}
+
+function useBlockUser(): UseBlockUserResult {
+  const { identity } = useAuthIdentity()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  const setBlocked = useCallback(
+    async ({ address, blocked }: { address: string; blocked: boolean }) => {
+      if (!identity) throw new Error('Authentication required')
+      setIsLoading(true)
+      setError(null)
+      try {
+        await applyBlock(identity, address, blocked)
+      } catch (err) {
+        const wrapped = err instanceof Error ? err : new Error(String(err))
+        setError(wrapped)
+        throw wrapped
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [identity]
+  )
+
+  return { setBlocked, isLoading, error }
+}
+
+export { useBlockUser, useFriendsCount, useFriendsList, useFriendshipStatus, useMutualFriends, useUpsertFriendship }
 export type {
   FriendProfile,
   FriendshipAction,
   FriendshipStatus,
+  UseBlockUserResult,
   UseFriendsCountResult,
   UseFriendsListResult,
   UseFriendshipStatusResult,
