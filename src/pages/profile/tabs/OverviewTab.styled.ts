@@ -135,31 +135,30 @@ const LinksRow = styled(Box)(({ theme }) => ({
 }))
 
 /* eslint-disable @typescript-eslint/naming-convention */
-const LinkPill = styled('a')(({ theme }) => ({
-  display: 'inline-flex',
+const LinkPill = styled('a')({
+  display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1),
-  padding: theme.spacing(1.5, 2.5),
-  borderRadius: 999,
-  color: '#7AC4FF',
+  gap: 6,
+  padding: '7px 10px',
+  borderRadius: 12,
+  background: 'rgba(0, 0, 0, 0.20)',
+  color: '#57C2FF',
   fontFamily: 'Inter, sans-serif',
-  fontWeight: 500,
-  fontSize: 18,
+  fontSize: 16,
+  fontWeight: 600,
+  lineHeight: 'normal',
   textDecoration: 'none',
-  background: 'rgba(15, 15, 20, 0.85)',
-  border: '1px solid transparent',
-  transition: 'background 150ms ease, border-color 150ms ease',
+  transition: 'background 150ms ease',
   '&:hover': {
-    background: 'rgba(20, 20, 28, 0.95)',
-    borderColor: 'rgba(122, 196, 255, 0.35)'
+    background: 'rgba(0, 0, 0, 0.30)'
   }
-}))
+})
 /* eslint-enable @typescript-eslint/naming-convention */
 
 const LinkPillIcon = styled('span')({
   display: 'inline-flex',
   alignItems: 'center',
-  color: '#7AC4FF'
+  color: '#57C2FF'
 })
 
 const EquippedGrid = styled(Box)(({ theme }) => ({
