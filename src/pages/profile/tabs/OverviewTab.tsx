@@ -190,7 +190,6 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
                     notForSale={!price}
                     withShadow={false}
                     hoverShadow="glow"
-                    hideRarityOnHover={!isOwnProfile}
                     disableInfoExpansion={isOwnProfile}
                     creatorSlot={<CreatorByLine address={item.creator} />}
                     infoBadges={<WearableInfoBadges category={item.wearableCategory} bodyShapes={item.bodyShapes} isSmart={item.isSmart} />}

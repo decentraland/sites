@@ -1114,7 +1114,10 @@
       "empty_owner": "Los items que crees aparecerán acá.",
       "empty_member": "Esta cuenta todavía no creó nada.",
       "count": "{count} items",
-      "load_more": "Cargar más"
+      "load_more": "Cargar más",
+      "filter_wearables": "Wearables",
+      "filter_emotes": "Emotes",
+      "view_all": "Ver todo"
     },
     "assets": {
       "empty_title": "Todavía no hay activos",

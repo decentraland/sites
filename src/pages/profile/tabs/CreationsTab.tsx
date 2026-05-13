@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Button, CatalogCard, CircularProgress, Typography } from 'decentraland-ui2'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import { Box, Button, CatalogCard, Chip, CircularProgress } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import { useGetProfileCreationsQuery } from '../../../features/profile/profile.creations.client'
-import type { CreationItem } from '../../../features/profile/profile.creations.client'
+import type { CreationItem, CreationsCategory } from '../../../features/profile/profile.creations.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { CreatorByLine } from './OverviewTab.creator'
 import { formatPriceMana, toItemNetwork, toRarity } from './OverviewTab.helpers'
 import { WearableInfoBadges } from './OverviewTab.icons'
-import { EmptyBio, EquippedCardLink, EquippedGrid, LoadingRow } from './OverviewTab.styled'
+import { CreationsFilters, CreationsHeader, EmptyBio, EquippedGrid, LoadingRow, ViewAllLink } from './OverviewTab.styled'
 
 interface CreationsTabProps {
   address: string
@@ -19,6 +21,11 @@ const PAGE_SIZE = 24
 function buildMarketplaceUrl(item: CreationItem): string {
   const base = (getEnv('MARKETPLACE_URL') ?? 'https://decentraland.org/marketplace').replace(/\/+$/, '')
   return `${base}${item.url ?? `/contracts/${item.contractAddress}/items/${item.itemId}`}`
+}
+
+function buildAccountUrl(address: string): string {
+  const base = (getEnv('MARKETPLACE_URL') ?? 'https://decentraland.org/marketplace').replace(/\/+$/, '')
+  return `${base}/accounts/${address.toLowerCase()}`
 }
 
 function toCatalogAsset(item: CreationItem) {
@@ -34,20 +41,21 @@ function toCatalogAsset(item: CreationItem) {
 
 function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
   const t = useFormatMessage()
+  const [category, setCategory] = useState<CreationsCategory>('wearable')
   const [accumulated, setAccumulated] = useState<CreationItem[]>([])
   const [offset, setOffset] = useState(0)
-  const [resetKey, setResetKey] = useState(address.toLowerCase())
+  const cacheKey = `${address.toLowerCase()}|${category}`
+  const [activeKey, setActiveKey] = useState(cacheKey)
 
   useEffect(() => {
-    const key = address.toLowerCase()
-    if (key !== resetKey) {
+    if (cacheKey !== activeKey) {
       setAccumulated([])
       setOffset(0)
-      setResetKey(key)
+      setActiveKey(cacheKey)
     }
-  }, [address, resetKey])
+  }, [cacheKey, activeKey])
 
-  const { data, isFetching, isLoading } = useGetProfileCreationsQuery({ address, limit: PAGE_SIZE, offset })
+  const { data, isFetching, isLoading } = useGetProfileCreationsQuery({ address, category, limit: PAGE_SIZE, offset })
 
   useEffect(() => {
     if (!data?.data) return
@@ -61,31 +69,62 @@ function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
   const items = useMemo(() => (offset === 0 && !data ? [] : accumulated), [accumulated, data, offset])
   const total = data?.total ?? 0
   const canLoadMore = items.length < total && !isFetching
+  const accountUrl = buildAccountUrl(address)
+
+  const header = (
+    <CreationsHeader>
+      <CreationsFilters>
+        <Chip
+          label={t('profile.creations.filter_wearables')}
+          color={category === 'wearable' ? 'primary' : 'default'}
+          onClick={() => setCategory('wearable')}
+          clickable
+        />
+        <Chip
+          label={t('profile.creations.filter_emotes')}
+          color={category === 'emote' ? 'primary' : 'default'}
+          onClick={() => setCategory('emote')}
+          clickable
+        />
+      </CreationsFilters>
+      <ViewAllLink href={accountUrl} target="_blank" rel="noopener noreferrer">
+        {t('profile.creations.view_all')}
+        <ChevronRightIcon fontSize="small" />
+      </ViewAllLink>
+    </CreationsHeader>
+  )
 
   if (isLoading && items.length === 0) {
     return (
-      <LoadingRow>
-        <CircularProgress size={28} />
-      </LoadingRow>
+      <>
+        {header}
+        <LoadingRow>
+          <CircularProgress size={28} />
+        </LoadingRow>
+      </>
     )
   }
 
   if (!isLoading && items.length === 0) {
-    return <EmptyBio sx={{ mt: 1 }}>{t(isOwnProfile ? 'profile.creations.empty_owner' : 'profile.creations.empty_member')}</EmptyBio>
+    return (
+      <>
+        {header}
+        <EmptyBio sx={{ mt: 1 }}>{t(isOwnProfile ? 'profile.creations.empty_owner' : 'profile.creations.empty_member')}</EmptyBio>
+      </>
+    )
   }
 
   return (
     <>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        {t('profile.creations.count', { count: total })}
-      </Typography>
+      {header}
       <EquippedGrid sx={{ mt: 0 }}>
         {items.map(item => {
           const marketplaceUrl = buildMarketplaceUrl(item)
-          const price = formatPriceMana(item.price)
+          const rawPrice = item.price && item.price !== '0' ? item.price : item.minListingPrice
+          const price = formatPriceMana(rawPrice)
           const wearableData = item.data?.wearable ?? item.data?.emote
           return (
-            <EquippedCardLink key={item.id} href={marketplaceUrl} target="_blank" rel="noopener noreferrer" aria-label={item.name}>
+            <Box key={item.id}>
               <CatalogCard
                 asset={toCatalogAsset(item)}
                 imageSrc={item.thumbnail}
@@ -95,7 +134,6 @@ function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
                 notForSale={!price}
                 withShadow={false}
                 hoverShadow="glow"
-                disableInfoExpansion
                 creatorSlot={<CreatorByLine address={item.creator} />}
                 infoBadges={
                   <WearableInfoBadges
@@ -104,8 +142,13 @@ function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
                     isSmart={wearableData?.isSmart}
                   />
                 }
+                bottomAction={
+                  <Button fullWidth variant="contained" color="primary" href={marketplaceUrl} target="_blank" rel="noopener noreferrer">
+                    {t('profile.overview.buy')}
+                  </Button>
+                }
               />
-            </EquippedCardLink>
+            </Box>
           )
         })}
       </EquippedGrid>

@@ -1109,7 +1109,10 @@
       "empty_owner": "Vos créations apparaîtront ici.",
       "empty_member": "Ce compte n'a encore rien créé.",
       "count": "{count} éléments",
-      "load_more": "Charger plus"
+      "load_more": "Charger plus",
+      "filter_wearables": "Wearables",
+      "filter_emotes": "Emotes",
+      "view_all": "Tout voir"
     },
     "assets": {
       "empty_title": "Pas encore d'actifs",

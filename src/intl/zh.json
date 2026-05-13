@@ -1114,7 +1114,10 @@
       "empty_owner": "您创建的物品将显示在这里。",
       "empty_member": "该账户尚未创建任何内容。",
       "count": "{count} 件物品",
-      "load_more": "加载更多"
+      "load_more": "加载更多",
+      "filter_wearables": "穿戴品",
+      "filter_emotes": "表情动作",
+      "view_all": "查看全部"
     },
     "assets": {
       "empty_title": "暂无资产",

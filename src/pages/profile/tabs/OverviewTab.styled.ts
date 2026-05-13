@@ -183,15 +183,6 @@ const EquippedGrid = styled(Box)(({ theme }) => ({
     height: theme.spacing(20),
     transition: 'height 0.1s ease-in-out'
   },
-  // ui2 only fades the RarityBadgeSlot via `hideRarityOnHover`, but our
-  // BadgeRow groups rarity + the new category/body-shape `infoBadges`. Fade
-  // the whole row on hover so the BUY button doesn't visually overlap any
-  // surviving icons.
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& > div .MuiCard-root:hover .MuiCardContent-root > div:has([data-role="catalog-card-rarity"])': {
-    opacity: 0,
-    transition: 'opacity 0.2s ease-in-out'
-  },
   // ui2 expands CatalogItemInformationContainer / ExtraInformationContainer on
   // hover to reveal `action` / `extraInformation`. We always pass `null` for
   // those, so the expansion produces empty rows (~34px from an empty <p>) that
@@ -211,6 +202,37 @@ const LoadingRow = styled(Box)({
   justifyContent: 'flex-start',
   padding: '24px 0'
 })
+
+const CreationsHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: theme.spacing(2),
+  marginBottom: theme.spacing(2),
+  flexWrap: 'wrap'
+}))
+
+const CreationsFilters = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(1),
+  flexWrap: 'wrap'
+}))
+
+/* eslint-disable @typescript-eslint/naming-convention */
+const ViewAllLink = styled('a')({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  color: '#57C2FF',
+  fontSize: 14,
+  fontWeight: 600,
+  textDecoration: 'none',
+  cursor: 'pointer',
+  '&:hover': {
+    textDecoration: 'underline'
+  }
+})
+/* eslint-enable @typescript-eslint/naming-convention */
 
 // On the user's own profile every equipped item is a navigation target (open
 // marketplace in a new tab), so we wrap the CatalogCard in a transparent
@@ -257,8 +279,11 @@ export {
   BioText,
   EditIconButton,
   EmptyBio,
+  CreationsFilters,
+  CreationsHeader,
   EquippedCardLink,
   EquippedGrid,
+  ViewAllLink,
   InfoGrid,
   InfoItem,
   InfoLabel,

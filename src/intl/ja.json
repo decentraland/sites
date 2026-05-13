@@ -1114,7 +1114,10 @@
       "empty_owner": "作成したアイテムがここに表示されます。",
       "empty_member": "このアカウントはまだ何も作成していません。",
       "count": "{count} アイテム",
-      "load_more": "もっと見る"
+      "load_more": "もっと見る",
+      "filter_wearables": "ウェアラブル",
+      "filter_emotes": "エモート",
+      "view_all": "すべて表示"
     },
     "assets": {
       "empty_title": "アセットはまだありません",

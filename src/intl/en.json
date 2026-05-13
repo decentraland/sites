@@ -1564,7 +1564,10 @@
       "empty_owner": "Items you create will appear here.",
       "empty_member": "This account has not created anything yet.",
       "count": "{count} items",
-      "load_more": "Load more"
+      "load_more": "Load more",
+      "filter_wearables": "Wearables",
+      "filter_emotes": "Emotes",
+      "view_all": "View all"
     },
     "assets": {
       "empty_title": "No assets yet",
