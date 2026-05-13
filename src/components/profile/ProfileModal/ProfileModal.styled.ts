@@ -7,11 +7,12 @@ const MOBILE_NAVBAR_OFFSET = 64
 // shadow, brand radial gradient) so the standalone modal and the in-event
 // swap render with a consistent surface. ProfileSurface is mounted with
 // `embedded` here so its LayoutRoot does NOT paint a second gradient on top.
-/* eslint-disable @typescript-eslint/naming-convention */
 const ProfileDialog = styled(Dialog)(({ theme }) => ({
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .MuiBackdrop-root': {
     backgroundColor: 'rgba(0, 0, 0, 0.8)'
   },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .MuiDialog-paper': {
     borderRadius: theme.spacing(2),
     maxWidth: 1650,
@@ -27,10 +28,12 @@ const ProfileDialog = styled(Dialog)(({ theme }) => ({
     scrollbarWidth: 'none',
     transition: 'max-width 280ms cubic-bezier(0.4, 0, 0.2, 1), max-height 280ms cubic-bezier(0.4, 0, 0.2, 1)'
   },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .MuiDialog-paper::-webkit-scrollbar': {
     display: 'none'
   },
   [theme.breakpoints.down('sm')]: {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     '& .MuiDialog-paper': {
       borderRadius: 0,
       maxWidth: '100%',
@@ -42,6 +45,5 @@ const ProfileDialog = styled(Dialog)(({ theme }) => ({
     }
   }
 })) as typeof Dialog
-/* eslint-enable @typescript-eslint/naming-convention */
 
 export { ProfileDialog }

@@ -128,7 +128,6 @@ const LinksRow = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1)
 }))
 
-/* eslint-disable @typescript-eslint/naming-convention */
 // `#57C2FF` is a Figma-only blue — not present in `dclColors` (closest match
 // is `rarity.epic: #438FFF`, intentionally different). Kept hardcoded with
 // this comment so a future palette pass can promote it if the design system
@@ -146,11 +145,11 @@ const LinkPill = styled('a')({
   lineHeight: 'normal',
   textDecoration: 'none',
   transition: 'background 150ms ease',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:hover': {
     background: 'rgba(0, 0, 0, 0.30)'
   }
 })
-/* eslint-enable @typescript-eslint/naming-convention */
 
 const LinkPillIcon = styled('span')({
   display: 'inline-flex',
@@ -218,7 +217,6 @@ const CreationsFilters = styled(Box)(({ theme }) => ({
   flexWrap: 'wrap'
 }))
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const ViewAllLink = styled('a')({
   display: 'inline-flex',
   alignItems: 'center',
@@ -228,11 +226,11 @@ const ViewAllLink = styled('a')({
   fontWeight: 600,
   textDecoration: 'none',
   cursor: 'pointer',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:hover': {
     textDecoration: 'underline'
   }
 })
-/* eslint-enable @typescript-eslint/naming-convention */
 
 // On the user's own profile every equipped item is a navigation target (open
 // marketplace in a new tab), so we wrap the CatalogCard in a transparent
@@ -245,7 +243,6 @@ const EquippedCardLink = styled('a')({
   color: 'inherit'
 })
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const EditIconButton = styled('button')(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
@@ -260,16 +257,17 @@ const EditIconButton = styled('button')(({ theme }) => ({
   cursor: 'pointer',
   textTransform: 'uppercase',
   letterSpacing: 1,
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:hover:not(:disabled)': {
     color: theme.palette.text.primary,
     borderColor: 'rgba(255, 255, 255, 0.25)'
   },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:disabled': {
     cursor: 'not-allowed',
     opacity: 0.6
   }
 }))
-/* eslint-enable @typescript-eslint/naming-convention */
 
 export {
   BadgeFallback,
