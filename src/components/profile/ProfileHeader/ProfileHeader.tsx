@@ -20,11 +20,12 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd'
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove'
 import { Button } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
-import { useFriendsCount, useFriendshipStatus, useUpsertFriendship } from '../../../features/profile/profile.social.rpc'
+import { useFriendsCount, useFriendshipStatus, useMutualFriends, useUpsertFriendship } from '../../../features/profile/profile.social.rpc'
 import type { FriendshipAction, FriendshipStatus } from '../../../features/profile/profile.social.rpc'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
+import { getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import { FriendsModal } from '../FriendsModal'
 import { ProfileAvatar } from '../ProfileAvatar'
 import {
@@ -54,8 +55,6 @@ interface ProfileHeaderProps {
   onClose?: () => void
   /** When set, a back chevron renders before the avatar. Used when the profile modal opens on top of another modal. */
   onBack?: () => void
-  /** Mutual friends (up to 3 avatars + total) visible only on Member Profile when viewer authed. */
-  mutualFriends?: { count: number; avatarColors: readonly string[] }
 }
 
 function truncateAddress(value: string): string {
@@ -84,7 +83,7 @@ function getFriendButtonConfig(status: FriendshipStatus | undefined): FriendButt
   }
 }
 
-function ProfileHeader({ address, isOwnProfile, onClose, onBack, mutualFriends }: ProfileHeaderProps) {
+function ProfileHeader({ address, isOwnProfile, onClose, onBack }: ProfileHeaderProps) {
   const t = useFormatMessage()
   const { name, avatar, backgroundColor } = useProfileAvatar(address)
   const { hasValidIdentity } = useAuthIdentity()
@@ -102,6 +101,11 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, mutualFriends }
   const { upsert: upsertFriendship, isLoading: isUpdatingFriendship } = useUpsertFriendship()
   const friendButton = getFriendButtonConfig(friendshipStatus)
   const { count: friendsCount } = useFriendsCount()
+  const { count: mutualCount, friends: mutualFriendsPreview } = useMutualFriends(canQueryFriendship ? address : undefined)
+  const mutualAvatarColors = mutualFriendsPreview.slice(0, 3).map(friend => {
+    const displayName = getDisplayName({ name: friend.name, hasClaimedName: friend.hasClaimedName, ethAddress: friend.address })
+    return getAvatarBackgroundColor(displayName || friend.address)
+  })
   const [hasCopiedInvite, setHasCopiedInvite] = useState(false)
   const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false)
   const navigate = useNavigate()
@@ -183,15 +187,15 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, mutualFriends }
           </>
         ) : (
           <>
-            {mutualFriends && mutualFriends.count > 0 ? (
+            {mutualCount > 0 ? (
               <MutualFriendsRow>
                 <MutualStack>
-                  {mutualFriends.avatarColors.slice(0, 3).map((color, idx) => (
+                  {mutualAvatarColors.map((color, idx) => (
                     <MutualPic key={`${color}-${idx}`} $bg={color} $offset={idx} aria-hidden />
                   ))}
                 </MutualStack>
                 <MutualText>
-                  <strong>{mutualFriends.count}</strong> {t('profile.header.mutual_count', { count: '' }).replace('{count}', '').trim()}
+                  <strong>{mutualCount}</strong> {t('profile.header.mutual_count', { count: '' }).replace('{count}', '').trim()}
                 </MutualText>
               </MutualFriendsRow>
             ) : null}

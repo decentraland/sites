@@ -304,6 +304,82 @@ function useFriendsList(enabled: boolean = true): UseFriendsListResult {
   return { friends, total, isLoading, error }
 }
 
+const mutualCache = new Map<string, { count: number; friends: FriendProfile[] }>()
+const mutualSubscribers = new Map<string, Set<() => void>>()
+
+function notifyMutual(key: string) {
+  mutualSubscribers.get(key)?.forEach(cb => cb())
+}
+
+const MUTUAL_PREVIEW_LIMIT = 3
+
+async function fetchMutual(identity: AuthIdentity, address: string): Promise<{ count: number; friends: FriendProfile[] }> {
+  const key = `${identityKey(identity)}|${address.toLowerCase()}`
+  const c = await getClient(identity)
+  const response = await c.getMutualFriends(address.toLowerCase(), { limit: MUTUAL_PREVIEW_LIMIT, offset: 0 })
+  const result = {
+    count: response.paginationData?.total ?? response.friends.length,
+    friends: response.friends
+  }
+  mutualCache.set(key, result)
+  notifyMutual(key)
+  return result
+}
+
+interface UseMutualFriendsResult {
+  count: number
+  friends: FriendProfile[]
+  isLoading: boolean
+  error: Error | null
+}
+
+function useMutualFriends(address: string | undefined): UseMutualFriendsResult {
+  const { identity } = useAuthIdentity()
+  const [, setTick] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    if (!address || !identity) {
+      setIsLoading(false)
+      setError(null)
+      return undefined
+    }
+    const key = `${identityKey(identity)}|${address.toLowerCase()}`
+    let set = mutualSubscribers.get(key)
+    if (!set) {
+      set = new Set()
+      mutualSubscribers.set(key, set)
+    }
+    const listener = () => setTick(t => t + 1)
+    set.add(listener)
+    const unsubscribe = () => {
+      set.delete(listener)
+      if (set.size === 0) mutualSubscribers.delete(key)
+    }
+    if (!mutualCache.has(key)) {
+      setIsLoading(true)
+      setError(null)
+      let cancelled = false
+      void fetchMutual(identity, address)
+        .catch(err => {
+          if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)))
+        })
+        .finally(() => {
+          if (!cancelled) setIsLoading(false)
+        })
+      return () => {
+        cancelled = true
+        unsubscribe()
+      }
+    }
+    return unsubscribe
+  }, [address, identity])
+
+  const cached = address && identity ? mutualCache.get(`${identityKey(identity)}|${address.toLowerCase()}`) : undefined
+  return { count: cached?.count ?? 0, friends: cached?.friends ?? [], isLoading, error }
+}
+
 interface UseUpsertFriendshipResult {
   upsert: (args: { address: string; action: FriendshipAction }) => Promise<void>
   isLoading: boolean
@@ -336,7 +412,7 @@ function useUpsertFriendship(): UseUpsertFriendshipResult {
   return { upsert, isLoading, error }
 }
 
-export { useFriendsCount, useFriendsList, useFriendshipStatus, useUpsertFriendship }
+export { useFriendsCount, useFriendsList, useFriendshipStatus, useMutualFriends, useUpsertFriendship }
 export type {
   FriendProfile,
   FriendshipAction,
@@ -344,5 +420,6 @@ export type {
   UseFriendsCountResult,
   UseFriendsListResult,
   UseFriendshipStatusResult,
+  UseMutualFriendsResult,
   UseUpsertFriendshipResult
 }
