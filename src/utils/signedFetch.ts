@@ -14,11 +14,11 @@ function fetchWithIdentity(
   return signedFetch(url, { method, identity, body, headers, signal })
 }
 
-function fetchWithOptionalIdentity(url: string, identity: AuthIdentity | undefined): Promise<Response> {
+function fetchWithOptionalIdentity(url: string, identity: AuthIdentity | undefined, signal?: AbortSignal): Promise<Response> {
   if (identity) {
-    return signedFetch(url, { method: 'GET', identity })
+    return signedFetch(url, { method: 'GET', identity, signal })
   }
-  return fetch(url)
+  return fetch(url, { signal })
 }
 
 export { fetchWithIdentity, fetchWithOptionalIdentity }

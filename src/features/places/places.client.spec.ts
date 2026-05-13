@@ -151,7 +151,11 @@ describe('placesEndpoints', () => {
         const store = createTestStore()
         await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [5, 5] }))
 
-        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith('https://events.test/api/events?position=5%2C5', undefined)
+        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(
+          'https://events.test/api/events?position=5%2C5',
+          undefined,
+          expect.any(AbortSignal)
+        )
       })
     })
 
@@ -168,7 +172,11 @@ describe('placesEndpoints', () => {
         const store = createTestStore()
         await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ realm: 'cool.dcl.eth' }))
 
-        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(expect.stringContaining('world_names%5B%5D=cool.dcl.eth'), undefined)
+        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(
+          expect.stringContaining('world_names%5B%5D=cool.dcl.eth'),
+          undefined,
+          expect.any(AbortSignal)
+        )
       })
     })
 
@@ -187,7 +195,11 @@ describe('placesEndpoints', () => {
         const store = createTestStore()
         await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [0, 0], identity }))
 
-        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(expect.stringContaining('events?position=0%2C0'), identity)
+        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(
+          expect.stringContaining('events?position=0%2C0'),
+          identity,
+          expect.any(AbortSignal)
+        )
       })
     })
 
@@ -243,7 +255,7 @@ describe('placesEndpoints', () => {
         const store = createTestStore()
         await store.dispatch(placesEndpoints.endpoints.getJumpEventById.initiate({ id: 'ev-1', identity }))
 
-        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith('https://events.test/api/events/ev-1', identity)
+        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith('https://events.test/api/events/ev-1', identity, expect.any(AbortSignal))
       })
     })
 
@@ -322,7 +334,8 @@ describe('placesEndpoints', () => {
       const store = createTestStore()
       const subscription = store.dispatch(placesEndpoints.endpoints.getJumpEventById.initiate({ id: 'ev-1', identity }))
       await subscription
-      store.dispatch(placesEndpoints.util.invalidateTags([{ type: 'JumpEvent', id: 'ev-1' }]))
+      // Mirrors EventsPage.tsx, which invalidates by tag type (not by id).
+      store.dispatch(placesEndpoints.util.invalidateTags(['JumpEvent']))
       await new Promise(resolve => setTimeout(resolve, 50))
 
       expect(mockFetchWithOptionalIdentity).toHaveBeenCalledTimes(2)

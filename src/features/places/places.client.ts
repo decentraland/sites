@@ -103,13 +103,18 @@ const placesEndpoints = placesClient.injectEndpoints({
     getJumpEvents: build.query<JumpEvent[], GetEventsArgs>({
       // Identity-bound responses must not share a cache slot with the anonymous
       // ones — the server fills `attending` and `total_attendees` based on who
-      // is signing the request.
-      serializeQueryArgs: ({ queryArgs: { identity, ...rest } }) => ({ ...rest, authenticated: Boolean(identity) }),
-      queryFn: async args => {
+      // is signing the request. Use an explicit allowlist so future fields on
+      // GetEventsArgs never leak into the cache key.
+      serializeQueryArgs: ({ queryArgs: { position, realm, identity } }) => ({
+        position,
+        realm,
+        authenticated: Boolean(identity)
+      }),
+      queryFn: async (args, { signal }) => {
         try {
           const baseUrl = getEnv('EVENTS_API_URL')
           if (!baseUrl) throw new Error('EVENTS_API_URL is not set')
-          const response = await fetchWithOptionalIdentity(buildEventsUrl(baseUrl, args), args.identity)
+          const response = await fetchWithOptionalIdentity(buildEventsUrl(baseUrl, args), args.identity, signal)
           if (!response.ok) {
             return { error: { status: response.status, data: await response.text().catch(() => null) } }
           }
@@ -123,11 +128,11 @@ const placesEndpoints = placesClient.injectEndpoints({
     }),
     getJumpEventById: build.query<JumpEvent | null, GetEventByIdArgs>({
       serializeQueryArgs: ({ queryArgs: { id, identity } }) => ({ id, authenticated: Boolean(identity) }),
-      queryFn: async ({ id, identity }) => {
+      queryFn: async ({ id, identity }, { signal }) => {
         try {
           const baseUrl = getEnv('EVENTS_API_URL')
           if (!baseUrl) throw new Error('EVENTS_API_URL is not set')
-          const response = await fetchWithOptionalIdentity(`${baseUrl}/events/${encodeURIComponent(id)}`, identity)
+          const response = await fetchWithOptionalIdentity(`${baseUrl}/events/${encodeURIComponent(id)}`, identity, signal)
           if (response.status === 404) return { data: null }
           if (!response.ok) {
             return { error: { status: response.status, data: await response.text().catch(() => null) } }
