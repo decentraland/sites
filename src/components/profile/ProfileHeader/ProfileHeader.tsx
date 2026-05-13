@@ -35,7 +35,6 @@ import {
   CloseIconButton,
   CopyButton,
   Discriminator,
-  Divider,
   HeaderRoot,
   IdentityBlock,
   MutualFriendsRow,
@@ -208,12 +207,9 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, mutualFriends }
           </>
         )}
         {onClose ? (
-          <>
-            <CloseIconButton aria-label={t('profile.header.close_profile')} onClick={onClose}>
-              <CloseIcon />
-            </CloseIconButton>
-            <Divider aria-hidden />
-          </>
+          <CloseIconButton aria-label={t('profile.header.close_profile')} onClick={onClose}>
+            <CloseIcon />
+          </CloseIconButton>
         ) : null}
       </ActionsBlock>
       {isOwnProfile ? (
