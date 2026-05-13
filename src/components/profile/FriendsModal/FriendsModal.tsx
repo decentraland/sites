@@ -58,14 +58,12 @@ function FriendsModal({ open, onClose, onSelect }: FriendsModalProps) {
         value={query}
         onChange={event => setQuery(event.target.value)}
         size="small"
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: 18 }} />
-              </InputAdornment>
-            )
-          }
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: 18 }} />
+            </InputAdornment>
+          )
         }}
       />
       {isLoading && friends.length === 0 ? (
