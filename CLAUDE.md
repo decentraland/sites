@@ -27,6 +27,7 @@ Data access on lightweight routes uses `useSyncExternalStore`-based clients (see
 - **Social** (communities): `/social/communities/:id`, `/social/*` (catch-all not-found).
 - **Cast** (LiveKit streaming, absorbed from `decentraland/cast2`): `/cast/s/:token`, `/cast/s/streaming`, `/cast/w/:worldName/parcel/:parcel`, `/cast/w/:location`, plus `/cast` index and `/cast/*` catch-all rendering `CastNotFoundPage`. Cast adds an extra `<CastLayout />` that provides LiveKit + Notification contexts and renders the toast stack.
 - **Storage** (storage-service-site): `/storage`, `/storage/select`, `/storage/env`, `/storage/scene`, `/storage/players`, `/storage/players/:address`, plus `/storage/*` not-found.
+- **Profile** (rebuild absorbing `profile.decentraland.org` + `account.decentraland.org`): `/profile`, `/profile/me`, `/profile/:address`, `/profile/:address/:tab` plus the `/profile` index. `/profile/me` redirects to the logged-in address via `useAuthIdentity`. The same `ProfileSurface` component renders the standalone page and the in-modal swap. See `docs/profile-migration.md` for the full spec and in-progress phase tracker.
 
 These render as `<Outlet />` children of `src/shells/DappsShell.tsx`. The shell chunk is lazy-imported in `src/App.tsx` via `lazy(() => import('./shells/DappsShell'))` and boots the Redux store, the RTK Query middleware, and the heaviest deps (contentful rich-text renderer, dompurify, `livekit-client` + `@livekit/components-react` for cast) only when one of these routes is navigated to.
 
@@ -55,7 +56,8 @@ These render as `<Outlet />` children of `src/shells/DappsShell.tsx`. The shell 
 | `src/features/cast2/`            | Everything that hits the Cast API. LiveKit streaming endpoints, contexts, comms protocol, peer wrapper, and error→i18n mapping for `/cast/*`. Defines `cast2Client`.                                                                                                                                                                   |
 | `src/features/storage/`          | Everything that hits the Storage API + the storage subgraph. Scene/players/assets queries (`storage.client.ts` → `storageClient`) and on-chain ownership lookups (`assets.client.ts` → `subgraphClient`).                                                                                                                              |
 | `src/features/reels/`            | Reels camera-screenshot client + helpers. Uses `useSyncExternalStore`-style hooks; reels routes bypass `DappsShell` entirely.                                                                                                                                                                                                          |
-| `src/features/profile/`          | Lightweight Catalyst profile client (useSyncExternalStore).                                                                                                                                                                                                                                                                            |
+| `src/features/profile/`          | Catalyst profile + marketplace catalog + badges + friendship clients. `profile.client.ts` is the lightweight `useSyncExternalStore` lookup used across the site (avatar/name/colour). `profile.wearables.client.ts`, `profile.badges.client.ts`, `profile.social.client.ts` are heavy clients used by the `/profile/*` route group.    |
+| `src/components/profile/`        | Profile UI: `ProfileSurface`, `ProfileLayout`, `ProfileHeader`, `ProfileAvatar`, `AvatarRender` (WearablePreview wrapper), `ProfileTabs`, `ProfileModal/*` (modal + host + `useOpenProfileModal` + `ModalProfileNavigationProvider`), `EquippedItemCard`/`NFTGrid`. ProfileSurface accepts an `embedded` prop for in-modal mounts.     |
 | `src/features/notifications/`    | `usePageNotifications` hook used by `Layout` (navbar notifications).                                                                                                                                                                                                                                                                   |
 | `src/features/report/`           | Helpers + types for `/report` form. Lightweight (no RTK Query).                                                                                                                                                                                                                                                                        |
 | `src/services/cmsClient.ts`      | RTK Query base — `cmsClient` (Contentful + cms-server search). Empty endpoints; injected from `features/cms/`. See "RTK Query split" below.                                                                                                                                                                                            |
@@ -332,6 +334,17 @@ The following rules ship with code patterns that live in `docs/pre-pr-rules-deta
 - **23. Page tracking + Helmet titles.** `usePageTracking(pathname)` races Helmet's async title write — Segment grabs the previous title. Helmet-titled routes (currently `/blog/*`) MUST use `useBlogPageTracking({ name, properties })` and be added to `Layout`'s skip list.
 - **24. Props destructuring threshold.** ≤3 props → destructure in the parameter list. ≥4 → take `props` as one arg and destructure in the body. Same for hook/helper option objects. Defaults move with their key into the body.
 - **25. No inline `sx` with hardcoded values.** `sx` is allowed only for a single runtime-dynamic value the styled component can't accept as a prop. Hardcoded dimensions/colors/spacing belong in a co-located `*.styled.ts` using theme tokens.
+
+## Profile route group + ui2 local fork
+
+Full spec, status, learnings, and workflows in **`docs/profile-migration.md`**. Read first if you touch anything under `/profile/*`, `src/components/profile/*`, `src/features/profile/*`, or the ui2 submodule.
+
+TL;DR for everywhere else:
+
+- Opening a profile from any heavy route: `useOpenProfileModal()(address)`. Auto-delegates to a parent modal when called inside a `ModalProfileNavigationProvider`; otherwise sets `?profile=<addr>` and `ProfileModalHost` opens a standalone dialog.
+- `ProfileSurface` accepts `embedded?: boolean` — strip the outer chrome when mounted inside another dialog.
+- Always resolve `address → name` via `useCreatorProfile(address)` (same hook used by whats-on).
+- `decentraland-ui2` is patched locally for CatalogCard props. Update flow: `cd ui2 && npm run build && npm pack`, then `cd sites && npm install --no-save ../ui2/decentraland-ui2-<ver>.tgz`. **Never `npm link`** ui2 — breaks the transitive hoist of `radash`/`date-fns`. The `emotion-ui2-styled-transform` Vite plugin (in `vite.config.ts`) is required as long as ui2 ships Emotion component selectors; prefer `data-role` attribute selectors in any new ui2 styles.
 
 ## Security checklist
 

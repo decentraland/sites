@@ -65,6 +65,7 @@ body:
         - Cast
         - Blog
         - Social / Communities
+        - Profile (member + my profile, tabs, friendship)
         - Sign In / Auth
         - Legal / Static pages
         - Navbar / Footer
