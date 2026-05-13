@@ -1,12 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getEnv } from '../../config/env'
 
+interface WearableData {
+  category?: string
+  bodyShapes?: string[]
+  isSmart?: boolean
+}
+
 interface CatalogItem {
   id: string
   urn?: string
   name?: string
   thumbnail?: string
   rarity?: string
+  /** Top-level category is "wearable" / "emote"; the meaningful sub-category lives under `data.wearable.category` or `data.emote.category`. */
   category?: string
   contractAddress?: string
   itemId?: string
@@ -14,11 +21,9 @@ interface CatalogItem {
   price?: string
   isOnSale?: boolean
   creator?: string
-  // marketplace-api nests bodyShapes inside `data.representations[]`. Each
-  // representation maps one bodyShape URN (BaseMale / BaseFemale) — items with
-  // both representations are unisex.
   data?: {
-    representations?: Array<{ bodyShapes?: string[] }>
+    wearable?: WearableData
+    emote?: WearableData
   }
 }
 
@@ -32,7 +37,12 @@ interface CollectibleDetail {
   name: string
   thumbnail: string
   rarity?: string
-  category?: string
+  /** Wearable sub-category (`upper_body`, `hat`, `eyes`, ...). For emotes this is the emote category. */
+  wearableCategory?: string
+  /** Short bodyShape labels (e.g. `["BaseMale", "BaseFemale"]`). Both present = unisex. */
+  bodyShapes?: string[]
+  /** Whether the wearable ships custom logic (smart wearable). */
+  isSmart?: boolean
   contractAddress: string
   itemId: string
   network: 'MATIC' | 'ETHEREUM'
@@ -120,12 +130,15 @@ async function fetchCollectibleDetails(urns: readonly string[], signal?: AbortSi
     const parsed = parseCollectibleUrn(urn)
     const contractAddress = parsed?.contractAddress ?? item.contractAddress ?? ''
     const itemId = parsed?.itemId ?? item.itemId ?? ''
+    const wearableData = item.data?.wearable ?? item.data?.emote
     return {
       urn,
       name: item.name ?? urn,
       thumbnail: item.thumbnail ?? '',
       rarity: item.rarity,
-      category: item.category,
+      wearableCategory: wearableData?.category,
+      bodyShapes: wearableData?.bodyShapes,
+      isSmart: wearableData?.isSmart ?? false,
       contractAddress,
       itemId,
       network: item.network ?? networkFromUrn(urn),

@@ -1,7 +1,5 @@
 import { useMemo } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import InsertLinkIcon from '@mui/icons-material/InsertLink'
 import { Box, Button, CatalogCard, CircularProgress, Tooltip, Typography } from 'decentraland-ui2'
 import { useProfileBadges } from '../../../features/profile/profile.badges.client'
@@ -18,6 +16,7 @@ import {
   readField,
   toCatalogAsset
 } from './OverviewTab.helpers'
+import { WearableInfoBadges } from './OverviewTab.icons'
 import type { InfoField, OverviewTabProps, ProfileLink } from './OverviewTab.types'
 import {
   BadgeFallback,
@@ -25,7 +24,6 @@ import {
   BadgeSlot,
   BadgesRow,
   BioText,
-  EditIconButton,
   EmptyBio,
   EquippedGrid,
   InfoGrid,
@@ -83,12 +81,6 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
         <section style={{ width: '100%' }}>
           <SectionHeader>
             <SectionTitle>{t('profile.overview.badges')}</SectionTitle>
-            {isOwnProfile ? (
-              <EditIconButton type="button" disabled>
-                <EditOutlinedIcon sx={{ fontSize: 14 }} />
-                {t('profile.header.edit')}
-              </EditIconButton>
-            ) : null}
           </SectionHeader>
           {isLoadingBadges ? (
             <LoadingRow>
@@ -200,6 +192,7 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
                     hoverShadow="glow"
                     hideRarityOnHover
                     creatorSlot={<CreatorByLine address={item.creator} />}
+                    infoBadges={<WearableInfoBadges category={item.wearableCategory} bodyShapes={item.bodyShapes} isSmart={item.isSmart} />}
                     bottomAction={
                       <Button
                         fullWidth
