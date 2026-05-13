@@ -1132,7 +1132,13 @@
     "communities": {
       "empty_title": "コミュニティはまだありません",
       "empty_owner": "コミュニティに参加するとここに表示されます。",
-      "empty_member": "このメンバーはまだコミュニティに参加していません。"
+      "empty_member": "このメンバーはまだコミュニティに参加していません。",
+      "private": "このメンバーのコミュニティは非公開です。",
+      "count": "{count} コミュニティ",
+      "member": "メンバー",
+      "members_count": "{count}人のメンバー",
+      "role_owner": "オーナー",
+      "role_admin": "管理者"
     },
     "places": {
       "empty_title": "プレイスはまだありません",

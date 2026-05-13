@@ -1,39 +1,83 @@
 import { useMemo } from 'react'
-import { NFTGrid } from '../../../components/profile/NFTGrid'
-import type { NFTGridItem } from '../../../components/profile/NFTGrid'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
+import { Chip, CircularProgress, Typography } from 'decentraland-ui2'
 import { useGetProfileCommunitiesQuery } from '../../../features/profile/profile.social.client'
 import type { ProfileCommunity } from '../../../features/profile/profile.social.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import {
+  CommunityCard,
+  CommunityCardBody,
+  CommunityFallback,
+  CommunityMembers,
+  CommunityName,
+  CommunityRow,
+  CommunityThumb,
+  CommunityThumbImage,
+  EmptyBio,
+  LoadingRow
+} from './CommunitiesTab.styled'
 
 interface CommunitiesTabProps {
   address: string
   isOwnProfile: boolean
 }
 
-function toGridItem(community: ProfileCommunity): NFTGridItem {
-  const role = community.role ? ` · ${community.role}` : ''
-  const members = typeof community.membersCount === 'number' ? `${community.membersCount} members` : ''
-  return {
-    id: community.id,
-    name: community.name,
-    image: community.thumbnail ?? '',
-    subtitle: `${members}${role}`.trim(),
-    href: `/social/communities/${community.id}`
-  }
-}
-
 function CommunitiesTab({ address, isOwnProfile }: CommunitiesTabProps) {
   const t = useFormatMessage()
-  const { data, isLoading } = useGetProfileCommunitiesQuery({ address })
-  const items = useMemo<NFTGridItem[]>(() => (data?.data?.results ?? []).map(toGridItem), [data])
+  // The HTTP endpoint enforces `auth === :address` — skip the call entirely on
+  // member profiles to avoid a guaranteed 401.
+  const { data, isLoading } = useGetProfileCommunitiesQuery({ address }, { skip: !isOwnProfile })
+  const communities = useMemo<ProfileCommunity[]>(() => data?.data?.results ?? [], [data])
+
+  if (!isOwnProfile) {
+    return <EmptyBio sx={{ mt: 1 }}>{t('profile.communities.private')}</EmptyBio>
+  }
+
+  if (isLoading) {
+    return (
+      <LoadingRow>
+        <CircularProgress size={28} />
+      </LoadingRow>
+    )
+  }
+
+  if (communities.length === 0) {
+    return <EmptyBio sx={{ mt: 1 }}>{t(isOwnProfile ? 'profile.communities.empty_owner' : 'profile.communities.empty_member')}</EmptyBio>
+  }
 
   return (
-    <NFTGrid
-      items={items}
-      isLoading={isLoading}
-      emptyTitle={t('profile.communities.empty_title')}
-      emptyDescription={t(isOwnProfile ? 'profile.communities.empty_owner' : 'profile.communities.empty_member')}
-    />
+    <>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        {t('profile.communities.count', { count: communities.length })}
+      </Typography>
+      <CommunityRow>
+        {communities.map(community => (
+          <CommunityCard key={community.id} href={`/social/communities/${community.id}`}>
+            <CommunityThumb>
+              {community.thumbnail ? (
+                <CommunityThumbImage src={community.thumbnail} alt={community.name} loading="lazy" />
+              ) : (
+                <CommunityFallback>
+                  <GroupsOutlinedIcon sx={{ fontSize: 28 }} />
+                </CommunityFallback>
+              )}
+            </CommunityThumb>
+            <CommunityCardBody>
+              <CommunityName>{community.name}</CommunityName>
+              <CommunityMembers>
+                {typeof community.membersCount === 'number'
+                  ? t('profile.communities.members_count', { count: community.membersCount })
+                  : t('profile.communities.member')}
+              </CommunityMembers>
+            </CommunityCardBody>
+            {community.role && community.role !== 'member' ? (
+              <Chip label={t(`profile.communities.role_${community.role}`)} size="small" color="primary" />
+            ) : null}
+          </CommunityCard>
+        ))}
+      </CommunityRow>
+    </>
   )
 }
 

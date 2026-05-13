@@ -1132,7 +1132,13 @@
     "communities": {
       "empty_title": "아직 커뮤니티가 없습니다",
       "empty_owner": "커뮤니티에 가입하면 여기에 표시됩니다.",
-      "empty_member": "이 회원은 아직 커뮤니티에 가입하지 않았습니다."
+      "empty_member": "이 회원은 아직 커뮤니티에 가입하지 않았습니다.",
+      "private": "이 회원의 커뮤니티는 비공개입니다.",
+      "count": "{count}개 커뮤니티",
+      "member": "회원",
+      "members_count": "{count}명의 회원",
+      "role_owner": "소유자",
+      "role_admin": "관리자"
     },
     "places": {
       "empty_title": "아직 장소가 없습니다",

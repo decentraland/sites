@@ -1132,7 +1132,13 @@
     "communities": {
       "empty_title": "Todavía no hay comunidades",
       "empty_owner": "Unite a una comunidad para verla acá.",
-      "empty_member": "Este miembro todavía no se unió a ninguna comunidad."
+      "empty_member": "Este miembro todavía no se unió a ninguna comunidad.",
+      "private": "Las comunidades de este miembro son privadas.",
+      "count": "{count} comunidades",
+      "member": "Miembro",
+      "members_count": "{count} miembros",
+      "role_owner": "Owner",
+      "role_admin": "Admin"
     },
     "places": {
       "empty_title": "Todavía no hay lugares",

@@ -1132,7 +1132,13 @@
     "communities": {
       "empty_title": "暂无社区",
       "empty_owner": "加入社区后将在此显示。",
-      "empty_member": "该成员尚未加入任何社区。"
+      "empty_member": "该成员尚未加入任何社区。",
+      "private": "该成员的社区是私密的。",
+      "count": "{count} 个社区",
+      "member": "成员",
+      "members_count": "{count} 位成员",
+      "role_owner": "所有者",
+      "role_admin": "管理员"
     },
     "places": {
       "empty_title": "暂无场所",
