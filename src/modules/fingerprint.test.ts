@@ -1,4 +1,4 @@
-// Asserts the snake_case analytics field names produced by the module.
+// Asserts the snake_case `fp_*` analytics field names produced by the module.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { collectClientFingerprint } from './fingerprint'
 
@@ -42,27 +42,20 @@ describe('collectClientFingerprint', () => {
 
       expect(fp).not.toBeNull()
       expect(fp).toMatchObject({
-        screen_width: 1920,
-        screen_height: 1080,
-        device_pixel_ratio: 2,
-        color_depth: 24,
-        hardware_concurrency: 8,
-        language: 'en-US',
-        platform: 'MacIntel'
+        fp_screen_width: 1920,
+        fp_screen_height: 1080,
+        fp_device_pixel_ratio: 2,
+        fp_hardware_concurrency: 8,
+        fp_language: 'en-US',
+        fp_platform: 'MacIntel'
       })
     })
 
     it('should include the IANA timezone when Intl exposes it', () => {
       const fp = collectClientFingerprint()
       // jsdom resolves to a real timezone (host's). We just assert it's a string.
-      expect(typeof fp?.timezone).toBe('string')
-      expect(fp?.timezone?.length ?? 0).toBeGreaterThan(0)
-    })
-
-    it('should report the timezone offset as a number', () => {
-      const fp = collectClientFingerprint()
-      expect(typeof fp?.timezone_offset_minutes).toBe('number')
-      expect(Number.isFinite(fp?.timezone_offset_minutes)).toBe(true)
+      expect(typeof fp?.fp_timezone).toBe('string')
+      expect(fp?.fp_timezone?.length ?? 0).toBeGreaterThan(0)
     })
   })
 
@@ -77,13 +70,12 @@ describe('collectClientFingerprint', () => {
       const fp = collectClientFingerprint()
 
       expect(fp).toMatchObject({
-        screen_width: 0,
-        screen_height: 0,
-        device_pixel_ratio: 1,
-        color_depth: 0,
-        hardware_concurrency: 0,
-        language: null,
-        platform: null
+        fp_screen_width: 0,
+        fp_screen_height: 0,
+        fp_device_pixel_ratio: 1,
+        fp_hardware_concurrency: null,
+        fp_language: null,
+        fp_platform: null
       })
     })
   })

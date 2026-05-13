@@ -1,8 +1,10 @@
-// Field names are deliberately snake_case to match the analytics event
-// contract used end-to-end (Segment events, data warehouse columns, the
-// Rust launcher's emitter). The `naming-convention` rule is camelCase by
-// default in this repo; opt out for this module so we don't keep adding
-// per-line eslint-disable comments.
+// Field names are deliberately snake_case with an `fp_` prefix to match the
+// analytics event contract used end-to-end (Segment events, data warehouse
+// columns, the Rust launcher's emitter). The prefix avoids collisions with
+// caller-supplied event properties when the fingerprint is spread into a
+// Segment payload. The `naming-convention` rule is camelCase by default in
+// this repo; opt out for this module so we don't keep adding per-line
+// eslint-disable comments.
 /* eslint-disable @typescript-eslint/naming-convention */
 
 /**
@@ -16,33 +18,31 @@
  * matching window to a manageable set of candidates. The actual scoring
  * lives in the data team's Segment Functions / SQL join.
  *
- * Field names use snake_case to match the convention used by the launcher
- * Segment client (Rust / `analytics_queue.db`), so the join columns line
- * up without renaming.
+ * Field names and shapes must stay in lock-step with the Rust launcher
+ * fingerprint emitter:
+ *   https://github.com/decentraland/launcher-rust/blob/main/core/src/analytics/fingerprint.rs
  */
 interface ClientFingerprint {
   /** Primary monitor width in CSS pixels. */
-  screen_width: number
+  fp_screen_width: number
   /** Primary monitor height in CSS pixels. */
-  screen_height: number
+  fp_screen_height: number
   /** Device pixel ratio (e.g. `2` on Retina, `1` on standard). */
-  device_pixel_ratio: number
-  /** Bits per pixel for the primary display. */
-  color_depth: number
-  /** Logical CPU cores reported by the browser, capped at 8 by some browsers. */
-  hardware_concurrency: number
+  fp_device_pixel_ratio: number
+  /** Logical CPU cores reported by the browser; `null` when the browser hides the value. */
+  fp_hardware_concurrency: number | null
   /** IANA timezone name when available (e.g. `America/Argentina/Buenos_Aires`). */
-  timezone: string | null
-  /** Minutes offset from UTC at the moment of the call (negative for east of UTC). */
-  timezone_offset_minutes: number
+  fp_timezone: string | null
   /** Primary `navigator.language` (e.g. `en-US`). */
-  language: string | null
+  fp_language: string | null
   /**
    * `navigator.platform` value. Deprecated and increasingly browser-locked,
    * but still a useful low-cardinality signal (`Win32`, `MacIntel`, `Linux x86_64`).
-   * Fall back to `null` if unavailable.
+   * Note the launcher reports this as `<os>/<arch>` (e.g. `windows/x86_64`);
+   * the data warehouse join is expected to normalize across the two shapes.
+   * Falls back to `null` if unavailable.
    */
-  platform: string | null
+  fp_platform: string | null
 }
 
 /**
@@ -57,23 +57,21 @@ function collectClientFingerprint(): ClientFingerprint | null {
     return null
   }
 
-  let timezone: string | null = null
+  let fp_timezone: string | null = null
   try {
-    timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || null
+    fp_timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || null
   } catch {
     // Old browsers / locked-down environments may throw — falls back to null.
   }
 
   return {
-    screen_width: window.screen?.width ?? 0,
-    screen_height: window.screen?.height ?? 0,
-    device_pixel_ratio: window.devicePixelRatio ?? 1,
-    color_depth: window.screen?.colorDepth ?? 0,
-    hardware_concurrency: navigator.hardwareConcurrency ?? 0,
-    timezone,
-    timezone_offset_minutes: new Date().getTimezoneOffset(),
-    language: navigator.language ?? null,
-    platform: navigator.platform ?? null
+    fp_screen_width: window.screen?.width ?? 0,
+    fp_screen_height: window.screen?.height ?? 0,
+    fp_device_pixel_ratio: window.devicePixelRatio ?? 1,
+    fp_hardware_concurrency: navigator.hardwareConcurrency ?? null,
+    fp_timezone,
+    fp_language: navigator.language ?? null,
+    fp_platform: navigator.platform ?? null
   }
 }
 
