@@ -135,6 +135,10 @@ const LinksRow = styled(Box)(({ theme }) => ({
 }))
 
 /* eslint-disable @typescript-eslint/naming-convention */
+// `#57C2FF` is a Figma-only blue — not present in `dclColors` (closest match
+// is `rarity.epic: #438FFF`, intentionally different). Kept hardcoded with
+// this comment so a future palette pass can promote it if the design system
+// adopts it. Theme font (Inter) is inherited from Typography defaults.
 const LinkPill = styled('a')({
   display: 'flex',
   alignItems: 'center',
@@ -143,7 +147,6 @@ const LinkPill = styled('a')({
   borderRadius: 12,
   background: 'rgba(0, 0, 0, 0.20)',
   color: '#57C2FF',
-  fontFamily: 'Inter, sans-serif',
   fontSize: 16,
   fontWeight: 600,
   lineHeight: 'normal',
