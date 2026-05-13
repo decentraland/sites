@@ -141,7 +141,6 @@ function AssetsTab({ address }: AssetsTabProps) {
                 price={price}
                 notForSale={!price}
                 withShadow={false}
-                hoverShadow="glow"
                 infoBadges={
                   <WearableInfoBadges
                     category={wearableData?.category}

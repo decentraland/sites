@@ -133,7 +133,6 @@ function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
                 price={price}
                 notForSale={!price}
                 withShadow={false}
-                hoverShadow="glow"
                 creatorSlot={<CreatorByLine address={item.creator} />}
                 infoBadges={
                   <WearableInfoBadges
