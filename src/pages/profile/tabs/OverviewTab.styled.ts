@@ -186,6 +186,17 @@ const LoadingRow = styled(Box)({
   padding: '24px 0'
 })
 
+// On the user's own profile every equipped item is a navigation target (open
+// marketplace in a new tab), so we wrap the CatalogCard in a transparent
+// anchor. EditIconButton is the only other display:block target — this one is
+// inline so the grid laid-out card sizes correctly.
+const EquippedCardLink = styled('a')({
+  display: 'block',
+  width: '100%',
+  textDecoration: 'none',
+  color: 'inherit'
+})
+
 /* eslint-disable @typescript-eslint/naming-convention */
 const EditIconButton = styled('button')(({ theme }) => ({
   display: 'inline-flex',
@@ -221,6 +232,7 @@ export {
   BioText,
   EditIconButton,
   EmptyBio,
+  EquippedCardLink,
   EquippedGrid,
   InfoGrid,
   InfoItem,

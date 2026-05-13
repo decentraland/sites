@@ -21,6 +21,8 @@ interface CatalogItem {
   price?: string
   isOnSale?: boolean
   creator?: string
+  /** Relative marketplace path (e.g. `/contracts/0x.../items/0`). Concatenate with `MARKETPLACE_URL` to build the full link. */
+  url?: string
   data?: {
     wearable?: WearableData
     emote?: WearableData
@@ -131,6 +133,10 @@ async function fetchCollectibleDetails(urns: readonly string[], signal?: AbortSi
     const contractAddress = parsed?.contractAddress ?? item.contractAddress ?? ''
     const itemId = parsed?.itemId ?? item.itemId ?? ''
     const wearableData = item.data?.wearable ?? item.data?.emote
+    // Prefer the relative path the API ships (`/contracts/.../items/N`) so we
+    // stay aligned with the marketplace's canonical URL; only synthesise it as
+    // a fallback when the field is missing.
+    const itemPath = item.url ?? `/contracts/${contractAddress}/items/${itemId}`
     return {
       urn,
       name: item.name ?? urn,
@@ -142,7 +148,7 @@ async function fetchCollectibleDetails(urns: readonly string[], signal?: AbortSi
       contractAddress,
       itemId,
       network: item.network ?? networkFromUrn(urn),
-      marketplaceUrl: `${marketplaceUrl}/contracts/${contractAddress}/items/${itemId}`,
+      marketplaceUrl: `${marketplaceUrl}${itemPath}`,
       creator: item.creator ?? '',
       price: item.price,
       isOnSale: Boolean(item.isOnSale)

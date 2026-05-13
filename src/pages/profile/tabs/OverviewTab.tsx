@@ -25,6 +25,7 @@ import {
   BadgesRow,
   BioText,
   EmptyBio,
+  EquippedCardLink,
   EquippedGrid,
   InfoGrid,
   InfoItem,
@@ -179,9 +180,8 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
             <EquippedGrid sx={{ mt: 2 }}>
               {collectibles.map(item => {
                 const price = formatPriceMana(item.price)
-                return (
+                const card = (
                   <CatalogCard
-                    key={item.urn}
                     asset={toCatalogAsset(item)}
                     imageSrc={item.thumbnail}
                     action={null}
@@ -190,22 +190,38 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
                     notForSale={!price}
                     withShadow={false}
                     hoverShadow="glow"
-                    hideRarityOnHover
+                    hideRarityOnHover={!isOwnProfile}
+                    disableInfoExpansion={isOwnProfile}
                     creatorSlot={<CreatorByLine address={item.creator} />}
                     infoBadges={<WearableInfoBadges category={item.wearableCategory} bodyShapes={item.bodyShapes} isSmart={item.isSmart} />}
                     bottomAction={
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        href={item.marketplaceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {t('profile.overview.buy')}
-                      </Button>
+                      isOwnProfile ? undefined : (
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          color="primary"
+                          href={item.marketplaceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {t('profile.overview.buy')}
+                        </Button>
+                      )
                     }
                   />
+                )
+                return isOwnProfile ? (
+                  <EquippedCardLink
+                    key={item.urn}
+                    href={item.marketplaceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={item.name}
+                  >
+                    {card}
+                  </EquippedCardLink>
+                ) : (
+                  <Box key={item.urn}>{card}</Box>
                 )
               })}
             </EquippedGrid>
