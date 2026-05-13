@@ -177,6 +177,24 @@ const EquippedGrid = styled(Box)(({ theme }) => ({
   '& .MuiCard-root, & .MuiCard-root:hover': {
     width: '100%',
     height: theme.spacing(45)
+  },
+  // Shrink the wearable thumbnail on hover for other-profile cards so the BUY
+  // button doesn't end up overlapping the badge row underneath. Own-profile
+  // cards are wrapped in `EquippedCardLink` (an <a>), so the `div >` selector
+  // scopes this to the non-own case only.
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& > div .MuiCard-root:hover .AssetImageContainer': {
+    height: theme.spacing(20),
+    transition: 'height 0.1s ease-in-out'
+  },
+  // ui2 only fades the RarityBadgeSlot via `hideRarityOnHover`, but our
+  // BadgeRow groups rarity + the new category/body-shape `infoBadges`. Fade
+  // the whole row on hover so the BUY button doesn't visually overlap any
+  // surviving icons.
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& > div .MuiCard-root:hover .MuiCardContent-root > div:has([data-role="catalog-card-rarity"])': {
+    opacity: 0,
+    transition: 'opacity 0.2s ease-in-out'
   }
 }))
 
