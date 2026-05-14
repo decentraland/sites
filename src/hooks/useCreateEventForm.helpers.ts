@@ -24,6 +24,16 @@ function parseDurationMs(value: string): number | null {
   return totalMinutes > 0 ? totalMinutes * 60 * 1000 : null
 }
 
+const MAX_RECURRENT_INTERVAL = 365
+
+function parseRecurrentInterval(value: string): number | null {
+  if (!value.trim()) return null
+  const num = Number(value)
+  if (!Number.isFinite(num) || !Number.isInteger(num)) return null
+  if (num < 1 || num > MAX_RECURRENT_INTERVAL) return null
+  return num
+}
+
 const INITIAL_STATE: CreateEventFormState = {
   image: null,
   imagePreviewUrl: null,
@@ -120,4 +130,13 @@ function eventEntryToFormState(event: EventEntry): CreateEventFormState {
   }
 }
 
-export { DURATION_PATTERN, FREQUENCY_MAP, INITIAL_STATE, durationMsToHhMm, eventEntryToFormState, parseDurationMs }
+export {
+  DURATION_PATTERN,
+  FREQUENCY_MAP,
+  INITIAL_STATE,
+  MAX_RECURRENT_INTERVAL,
+  durationMsToHhMm,
+  eventEntryToFormState,
+  parseDurationMs,
+  parseRecurrentInterval
+}

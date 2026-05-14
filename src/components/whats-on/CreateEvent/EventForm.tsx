@@ -15,7 +15,7 @@ import { useGetCommunitiesQuery, useGetWorldNamesQuery } from '../../../features
 import type { EventEntry } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
-import { FREQUENCY_MAP, parseDurationMs } from '../../../hooks/useCreateEventForm.helpers'
+import { FREQUENCY_MAP, parseDurationMs, parseRecurrentInterval } from '../../../hooks/useCreateEventForm.helpers'
 import type { CreateEventFormState } from '../../../hooks/useCreateEventForm.types'
 import { buildEventJumpInUrl } from '../../../utils/whatsOnUrl'
 import { EventDetailModal } from '../EventDetailModal'
@@ -82,8 +82,7 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
   const creatorAddress = initialEvent?.user || address
   const creatorName = initialEvent?.user_name || undefined
 
-  const parsedInterval = Number(form.repeatInterval)
-  const previewInterval = form.repeatEnabled && Number.isInteger(parsedInterval) && parsedInterval > 0 ? parsedInterval : null
+  const previewInterval = form.repeatEnabled ? parseRecurrentInterval(form.repeatInterval) : null
   const previewUntil = form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : null
 
   return {

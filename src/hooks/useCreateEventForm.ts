@@ -9,7 +9,7 @@ import {
 } from '../features/events'
 import type { EventEntry } from '../features/events'
 import { useAuthIdentity } from './useAuthIdentity'
-import { FREQUENCY_MAP, INITIAL_STATE, eventEntryToFormState, parseDurationMs } from './useCreateEventForm.helpers'
+import { FREQUENCY_MAP, INITIAL_STATE, eventEntryToFormState, parseDurationMs, parseRecurrentInterval } from './useCreateEventForm.helpers'
 import type { CreateEventFormMode, CreateEventFormState, FormErrors, ImageErrorCode } from './useCreateEventForm.types'
 
 const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif']
@@ -26,15 +26,6 @@ const COORD_Y_MAX = 158
 const MAX_EVENT_DURATION_MS = 24 * 60 * 60 * 1000
 const MAX_NAME_LENGTH = 150
 const MAX_DESCRIPTION_LENGTH = 5000
-const MAX_RECURRENT_INTERVAL = 365
-
-function parseRecurrentInterval(value: string): number | null {
-  if (!value.trim()) return null
-  const num = Number(value)
-  if (!Number.isFinite(num) || !Number.isInteger(num)) return null
-  if (num < 1 || num > MAX_RECURRENT_INTERVAL) return null
-  return num
-}
 
 function validateImage(file: File): ImageErrorCode | null {
   if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
