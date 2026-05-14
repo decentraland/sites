@@ -1,3 +1,4 @@
+import { normalizeDayIndices } from '../hooks/useCreateEventForm.helpers'
 import type { RecurrentFrequency } from '../types/recurrence.types'
 
 function appendRealmParam(url: string, realm?: string | null): string {
@@ -91,12 +92,9 @@ interface RecurrenceRuleParams {
 const RFC5545_DAY_CODES = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'] as const
 
 function formatByDay(days: number[]): string | null {
-  const codes = [...new Set(days)]
-    .filter(d => d >= 0 && d <= 6)
-    .sort((a, b) => a - b)
-    .map(d => RFC5545_DAY_CODES[d])
-  if (codes.length === 0 || codes.length === 7) return null
-  return codes.join(',')
+  const sorted = normalizeDayIndices(days)
+  if (sorted.length === 0 || sorted.length === 7) return null
+  return sorted.map(d => RFC5545_DAY_CODES[d]).join(',')
 }
 
 function buildRecurrenceRule({ frequency, interval, count, until, byDay }: RecurrenceRuleParams): string | null {

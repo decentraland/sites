@@ -998,7 +998,7 @@
     "repeat_on": "繰り返す曜日",
     "interval_chip_week_singular": "1週間",
     "interval_chip_week_plural": "{count}週間",
-    "error_repeat_interval_invalid": "繰り返し間隔は1から3までの整数で入力してください",
+    "error_repeat_interval_invalid": "繰り返し間隔は1から4までの整数で入力してください",
     "error_repeat_days_required": "少なくとも1つの曜日を選択してください",
     "error_start_date_not_in_repeat_days": "開始日の曜日は選択した曜日のいずれかである必要があります"
   },

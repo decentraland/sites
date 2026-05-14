@@ -48,6 +48,22 @@ const WEEKDAYS: ReadonlyArray<{ index: number; short: string; full: string }> = 
 
 const ALL_WEEKDAYS = WEEKDAYS.map(d => d.index)
 
+function normalizeDayIndices(days: number[]): number[] {
+  return [...new Set(days)].filter(d => d >= 0 && d <= 6).sort((a, b) => a - b)
+}
+
+// Reference Sunday (UTC) — `1970-01-04` was a Sunday. Adding `dayIndex * 86_400_000` ms yields a
+// UTC date that falls on the requested weekday so Intl.DateTimeFormat({ weekday, timeZone: 'UTC' })
+// returns the localized short label. The `timeZone: 'UTC'` is critical — without it the local
+// timezone offset can shift the formatter onto the previous/next day.
+const SUNDAY_EPOCH_MS = Date.UTC(1970, 0, 4)
+const ONE_DAY_MS = 24 * 60 * 60 * 1000
+
+function localizedWeekdayShort(dayIndex: number, locale?: string): string {
+  const formatter = new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' })
+  return formatter.format(new Date(SUNDAY_EPOCH_MS + dayIndex * ONE_DAY_MS))
+}
+
 function parseStartWeekday(startDate: string): number | null {
   if (!startDate) return null
   const date = new Date(`${startDate}T00:00:00`)
@@ -175,6 +191,8 @@ export {
   dayIndicesToWeekdayMask,
   durationMsToHhMm,
   eventEntryToFormState,
+  localizedWeekdayShort,
+  normalizeDayIndices,
   parseDurationMs,
   parseRecurrentInterval,
   parseStartWeekday,

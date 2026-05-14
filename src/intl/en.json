@@ -1275,7 +1275,7 @@
     "error_description_too_long": "Description cannot exceed 5000 characters",
     "error_duration_invalid": "Enter duration as hh:mm",
     "error_duration_too_long": "Maximum allowed duration is 24 hours",
-    "error_repeat_interval_invalid": "Repeat interval must be a whole number between 1 and 3",
+    "error_repeat_interval_invalid": "Repeat interval must be a whole number between 1 and 4",
     "error_repeat_days_required": "Select at least one day",
     "error_start_date_not_in_repeat_days": "The start date's weekday must be one of the selected days",
     "error_submit": "Something went wrong. Please try again.",
