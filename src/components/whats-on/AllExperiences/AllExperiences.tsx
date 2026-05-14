@@ -51,10 +51,12 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, list
     {
       list,
       order: 'asc',
-      // NOTE: only filter out world events on the "All" tab (calendar/day-column view is
-      // spatial and only makes sense for Genesis City). On the "My" tab the owner must
-      // see ALL of their events, including those hosted in Worlds.
-      world: ownerOnly ? undefined : false,
+      // Include both Genesis City and Worlds events on BOTH tabs. Earlier this branch
+      // filtered worlds out of the "All" tab because the day-column view was framed as
+      // spatial (Genesis City coords). Product wants worlds visible everywhere now —
+      // users were reporting "no veo mis hangouts en What's On" because their world
+      // events were silently dropped.
+      world: undefined,
       limit: 200,
       identity,
       owner: ownerOnly ? true : undefined
