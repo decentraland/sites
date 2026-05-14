@@ -1,3 +1,5 @@
+import type { RecurrentFrequency } from '../types/recurrence.types'
+
 function appendRealmParam(url: string, realm?: string | null): string {
   if (!realm) return url
   const separator = url.includes('?') ? '&' : '?'
@@ -52,20 +54,15 @@ function parseCoordinates(coordinates: string): [number, number] {
   return [x, y]
 }
 
-// Mirrors RecurrentFrequency in src/features/events/events.types.ts. Duplicated here
-// because src/features/* may not import from src/utils/* (circular dep), and several
-// features depend on this util.
-type RecurrentFrequencyValue = 'YEARLY' | 'MONTHLY' | 'WEEKLY' | 'DAILY' | 'HOURLY' | 'MINUTELY' | 'SECONDLY'
-
 interface NormalizedRecurrence {
-  frequency: RecurrentFrequencyValue | null
+  frequency: RecurrentFrequency | null
   interval: number
 }
 
 // Legacy events stored coarser recurrences as DAILY × N. Re-express DAILY intervals
 // that are clean multiples of 365 as years, and multiples of 7 as weeks. Side effect:
 // an intentional DAILY × 28 becomes WEEKLY × 4 — accepted tradeoff.
-function normalizeRecurrence(frequency: RecurrentFrequencyValue | null, interval: number | null | undefined): NormalizedRecurrence {
+function normalizeRecurrence(frequency: RecurrentFrequency | null, interval: number | null | undefined): NormalizedRecurrence {
   const count = interval && interval > 1 ? interval : 1
   if (frequency === 'DAILY' && count > 1) {
     if (count % 365 === 0) return { frequency: 'YEARLY', interval: count / 365 }
@@ -84,7 +81,7 @@ function formatRecurrenceUntil(iso: string): string | null {
 }
 
 interface RecurrenceRuleParams {
-  frequency: RecurrentFrequencyValue | null
+  frequency: RecurrentFrequency | null
   interval: number
   count: number | null
   until: string | null
@@ -114,7 +111,7 @@ interface CalendarEventParams {
   y: number
   url: string
   recurrent?: boolean
-  recurrentFrequency?: RecurrentFrequencyValue | null
+  recurrentFrequency?: RecurrentFrequency | null
   recurrentInterval?: number | null
   recurrentCount?: number | null
   recurrentUntil?: string | null

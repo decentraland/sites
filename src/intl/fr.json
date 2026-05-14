@@ -1039,6 +1039,9 @@
     }
   },
   "event_detail": {
+    "recurrent_daily": "Se répète tous les jours",
+    "recurrent_weekly": "Se répète chaque semaine",
+    "recurrent_monthly": "Se répète chaque mois",
     "recurrent_yearly": "Se répète chaque année",
     "recurrent_every_n_days": "Tous les {count} jours",
     "recurrent_every_n_weeks": "Toutes les {count} semaines",

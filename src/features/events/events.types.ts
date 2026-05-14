@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { AuthIdentity } from '@dcl/crypto'
+import type { RecurrentFrequency } from '../../types/recurrence.types'
 
 type EventListType = 'all' | 'active' | 'live' | 'upcoming'
 type EventOrder = 'asc' | 'desc'
-type RecurrentFrequency = 'YEARLY' | 'MONTHLY' | 'WEEKLY' | 'DAILY' | 'HOURLY' | 'MINUTELY' | 'SECONDLY'
 
 interface EventEntry {
   id: string

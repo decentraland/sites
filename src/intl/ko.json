@@ -1044,6 +1044,9 @@
     }
   },
   "event_detail": {
+    "recurrent_daily": "매일 반복",
+    "recurrent_weekly": "매주 반복",
+    "recurrent_monthly": "매월 반복",
     "recurrent_yearly": "매년 반복",
     "recurrent_every_n_days": "{count}일마다",
     "recurrent_every_n_weeks": "{count}주마다",

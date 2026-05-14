@@ -1044,6 +1044,9 @@
     }
   },
   "event_detail": {
+    "recurrent_daily": "Se repite diariamente",
+    "recurrent_weekly": "Se repite semanalmente",
+    "recurrent_monthly": "Se repite mensualmente",
     "recurrent_yearly": "Se repite anualmente",
     "recurrent_every_n_days": "Cada {count} días",
     "recurrent_every_n_weeks": "Cada {count} semanas",
