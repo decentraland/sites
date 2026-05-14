@@ -5,6 +5,10 @@ on:
   push:
     branches: [master]
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   e2e:
     runs-on: ubuntu-latest
@@ -45,10 +49,63 @@ jobs:
       - name: Run Playwright tests
         run: npm run e2e
 
-      - name: Upload Playwright report
+      - name: Upload Playwright report artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+      - name: Publish Playwright report to GitHub Pages
+        if: always() && github.event.pull_request.number
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./playwright-report
+          destination_dir: pr-${{ github.event.pull_request.number }}
+          keep_files: true
+          commit_message: "chore: publish playwright report for PR #${{ github.event.pull_request.number }} (${{ github.event.pull_request.head.sha }})"
+
+      - name: Comment Playwright report link on PR
+        if: always() && github.event.pull_request.number
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          JOB_CONCLUSION: ${{ job.status }}
+        with:
+          script: |
+            const marker = '<!-- playwright-report-link -->'
+            const pr = Number(process.env.PR_NUMBER)
+            const sha = process.env.HEAD_SHA.slice(0, 7)
+            const conclusion = process.env.JOB_CONCLUSION
+            const emoji = conclusion === 'success' ? '✅' : conclusion === 'failure' ? '❌' : '⚠️'
+            const url = `https://decentraland.github.io/sites/pr-${pr}/`
+            const body = [
+              marker,
+              `${emoji} **Playwright report**: ${url}`,
+              ``,
+              `Last update: \`${sha}\` · job status: \`${conclusion}\` · 1–5 min cache delay applies.`
+            ].join('\n')
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr
+            })
+            const existing = comments.find(c => c.body && c.body.startsWith(marker))
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body
+              })
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr,
+                body
+              })
+            }

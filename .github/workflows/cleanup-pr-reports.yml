@@ -1,0 +1,80 @@
+name: cleanup-pr-reports
+
+on:
+  pull_request:
+    types: [closed]
+  schedule:
+    # Mondays at 06:00 UTC — sweep orphaned report dirs whose PR is closed.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  cleanup-on-close:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Remove report directory for closed PR
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          DIR="pr-${PR_NUMBER}"
+          if [ -d "$DIR" ]; then
+            rm -rf "$DIR"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore: cleanup playwright report for closed PR #${PR_NUMBER}"
+            git push
+          else
+            echo "No report directory for PR #${PR_NUMBER}; nothing to clean."
+          fi
+
+  cleanup-scheduled:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Sweep orphan report directories
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          REMOVED=0
+          for dir in $(ls -d pr-* 2>/dev/null || true); do
+            NUM="${dir#pr-}"
+            STATE=$(gh pr view "$NUM" --repo "$REPO" --json state --jq '.state' 2>/dev/null || echo "MISSING")
+            case "$STATE" in
+              CLOSED|MERGED|MISSING)
+                rm -rf "$dir"
+                REMOVED=$((REMOVED + 1))
+                echo "Removed $dir (state=$STATE)"
+                ;;
+              *)
+                echo "Keeping $dir (state=$STATE)"
+                ;;
+            esac
+          done
+          if [ "$REMOVED" -gt 0 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore: cleanup playwright reports for ${REMOVED} closed/missing PRs"
+            git push
+          else
+            echo "No orphan report dirs to clean."
+          fi
