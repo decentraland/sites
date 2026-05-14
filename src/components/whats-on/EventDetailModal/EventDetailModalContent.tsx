@@ -5,6 +5,7 @@ import { useTranslation } from '@dcl/hooks'
 import { Button } from 'decentraland-ui2'
 import type { RecurrentFrequency } from '../../../features/events'
 import { linkifyText } from '../../../utils/linkifyText'
+import { localizedWeekdayShort, normalizeDayIndices } from '../../../utils/recurrence'
 import { buildCalendarUrl, normalizeRecurrence } from '../../../utils/whatsOnUrl'
 import { ContentDivider, ContentSection, DescriptionText, SectionLabel } from '../DetailModal/DetailModal.styled'
 import type { AdminActions, ModalEventData } from './EventDetailModal.types'
@@ -24,12 +25,28 @@ function formatScheduleTime(isoString: string): string {
   return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 
+function formatRecurrentDays(days: number[], locale: string): string {
+  return normalizeDayIndices(days)
+    .map(i => localizedWeekdayShort(i, locale))
+    .join(', ')
+}
+
 function getRecurrenceLabel(
   frequency: RecurrentFrequency | null,
   interval: number | null,
-  t: (key: string, values?: Record<string, string | number>) => string
+  byDay: number[] | undefined,
+  t: (key: string, values?: Record<string, string | number>) => string,
+  locale: string
 ): string | null {
   const { frequency: normalizedFrequency, interval: count } = normalizeRecurrence(frequency, interval)
+  // Day-picker selection wins when present and partial — full week falls through to the frequency label.
+  if (byDay && byDay.length > 0 && byDay.length < 7) {
+    const days = formatRecurrentDays(byDay, locale)
+    if (count > 1) {
+      return t('event_detail.recurrent_on_days_every_n_weeks', { count, days })
+    }
+    return t('event_detail.recurrent_on_days', { days })
+  }
   switch (normalizedFrequency) {
     case 'DAILY':
       return count === 1 ? t('event_detail.recurrent_daily') : t('event_detail.recurrent_every_n_days', { count })
@@ -45,7 +62,7 @@ function getRecurrenceLabel(
 }
 
 function EventDetailModalContent({ data, adminActions }: { data: ModalEventData; adminActions?: AdminActions }) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
 
   const hasDescription = Boolean(data.description)
   const hasSchedule = Boolean(data.startAt)
@@ -59,7 +76,14 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
     return null
   }
 
-  const recurrenceLabel = data.recurrent ? getRecurrenceLabel(data.recurrentFrequency, data.recurrentInterval, t) : null
+  const recurrenceLabel = data.recurrent
+    ? getRecurrenceLabel(data.recurrentFrequency, data.recurrentInterval, data.recurrentByDay, t, locale)
+    : null
+
+  const scheduleRange = data.startAt
+    ? `${formatScheduleDate(data.startAt)} · ${formatScheduleTime(data.startAt)}${data.finishAt ? ` – ${formatScheduleTime(data.finishAt)}` : ''}`
+    : ''
+  const scheduleText = data.recurrent && scheduleRange ? t('event_detail.schedule_starting', { schedule: scheduleRange }) : scheduleRange
 
   return (
     <ContentSection>
@@ -75,10 +99,7 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
           <SectionLabel>{t('event_detail.schedule')}</SectionLabel>
           <ScheduleRow>
             <div>
-              <ScheduleText>
-                {formatScheduleDate(data.startAt)} · {formatScheduleTime(data.startAt)}
-                {data.finishAt && ` – ${formatScheduleTime(data.finishAt)}`}
-              </ScheduleText>
+              <ScheduleText>{scheduleText}</ScheduleText>
               {recurrenceLabel && <RecurrenceText>{recurrenceLabel}</RecurrenceText>}
             </div>
             <ScheduleIconButton onClick={handleAddToCalendar} aria-label={t('event_detail.add_to_calendar')}>

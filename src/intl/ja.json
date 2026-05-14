@@ -993,7 +993,14 @@
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
-    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "repeat_interval": "繰り返し間隔",
+    "repeat_on": "繰り返す曜日",
+    "interval_chip_week_singular": "1週間",
+    "interval_chip_week_plural": "{count}週間",
+    "error_repeat_interval_invalid": "繰り返し間隔は1から4までの整数で入力してください",
+    "error_repeat_days_required": "少なくとも1つの曜日を選択してください",
+    "error_start_date_not_in_repeat_days": "開始日の曜日は選択した曜日のいずれかである必要があります"
   },
   "community": {
     "global": {
@@ -1051,6 +1058,9 @@
     "recurrent_every_n_days": "{count}日ごと",
     "recurrent_every_n_weeks": "{count}週間ごと",
     "recurrent_every_n_months": "{count}ヶ月ごと",
-    "recurrent_every_n_years": "{count}年ごと"
+    "recurrent_every_n_years": "{count}年ごと",
+    "recurrent_on_days": "{days}に繰り返し",
+    "recurrent_on_days_every_n_weeks": "{count}週ごとに{days}",
+    "schedule_starting": "{schedule} から"
   }
 }

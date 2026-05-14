@@ -16,6 +16,9 @@ interface ModalEventData {
   recurrentInterval: number | null
   recurrentCount: number | null
   recurrentUntil: string | null
+  // Preview-only: weekday picker selection from the create form (0=Sun .. 6=Sat).
+  // The events API has no BYDAY field today, so this is never set for events fetched from the server.
+  recurrentByDay?: number[]
   recurrentDates: string[]
   totalAttendees: number
   attending?: boolean

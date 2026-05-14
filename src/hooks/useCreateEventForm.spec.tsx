@@ -214,8 +214,8 @@ describe('useCreateEventForm', () => {
     })
   })
 
-  describe('when repeat is enabled and a valid end date is provided', () => {
-    it('should include recurrent fields in the payload', async () => {
+  describe('when repeat is enabled on every_week with the default day selection (all 7) and a valid end date', () => {
+    it('should include the recurrent fields and the all-week weekday mask in the payload', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
       fillValidForm(result.current.setField)
@@ -234,7 +234,204 @@ describe('useCreateEventForm', () => {
           payload: expect.objectContaining({
             recurrent: true,
             recurrent_frequency: 'WEEKLY',
+            recurrent_interval: 1,
+            recurrent_weekday_mask: 127,
             recurrent_until: expect.stringContaining('2030-02-01')
+          })
+        })
+      )
+    })
+  })
+
+  describe('when repeat is enabled on every_week with Tuesday only and interval 2 (every other Tuesday)', () => {
+    it('should send WEEKLY, interval=2, mask=TUESDAY(4)', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+      act(() => {
+        result.current.setField('repeatEnabled', true)
+        result.current.setField('frequency', 'every_week')
+        result.current.setField('repeatInterval', '2')
+        result.current.setField('repeatDays', [2]) // Tue — matches default startDate '2030-01-01'
+        result.current.setField('repeatEndDate', '2030-02-01')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            recurrent_frequency: 'WEEKLY',
+            recurrent_interval: 2,
+            recurrent_weekday_mask: 4
+          })
+        })
+      )
+    })
+  })
+
+  describe('when repeat is enabled with a non-integer interval', () => {
+    it('should report the interval invalid error', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+      act(() => {
+        result.current.setField('repeatEnabled', true)
+        result.current.setField('frequency', 'every_week')
+        result.current.setField('repeatInterval', '1.5')
+        result.current.setField('repeatEndDate', '2030-02-01')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.repeatInterval).toBe('create_event.error_repeat_interval_invalid')
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when repeat is enabled with an out-of-range interval', () => {
+    it('should report the interval invalid error', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+      act(() => {
+        result.current.setField('repeatEnabled', true)
+        result.current.setField('frequency', 'every_week')
+        result.current.setField('repeatInterval', '5')
+        result.current.setField('repeatEndDate', '2030-02-01')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.repeatInterval).toBe('create_event.error_repeat_interval_invalid')
+    })
+  })
+
+  describe('when repeat is enabled on every_week with all days deselected', () => {
+    it('should report the repeatDays required error', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+      act(() => {
+        result.current.setField('repeatEnabled', true)
+        result.current.setField('frequency', 'every_week')
+        result.current.setField('repeatDays', [])
+        result.current.setField('repeatEndDate', '2030-02-01')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.repeatDays).toBe('create_event.error_repeat_days_required')
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when repeat is enabled on every_week with days that exclude the start weekday', () => {
+    it('should report the start-date weekday mismatch error', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+      act(() => {
+        result.current.setField('repeatEnabled', true)
+        result.current.setField('frequency', 'every_week')
+        result.current.setField('repeatDays', [1, 3]) // Mon + Wed; 2030-01-01 is Tue (2)
+        result.current.setField('repeatEndDate', '2030-02-01')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.repeatDays).toBe('create_event.error_start_date_not_in_repeat_days')
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when repeat is enabled on every_week with Tuesday + Friday (start day in selection)', () => {
+    it('should send WEEKLY with weekday_mask=TUE|FRI', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+      act(() => {
+        result.current.setField('repeatEnabled', true)
+        result.current.setField('frequency', 'every_week')
+        result.current.setField('repeatDays', [2, 5]) // Tue(4) + Fri(32) = 36
+        result.current.setField('repeatEndDate', '2030-02-01')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            recurrent_frequency: 'WEEKLY',
+            recurrent_interval: 1,
+            recurrent_weekday_mask: 36
+          })
+        })
+      )
+    })
+  })
+
+  describe('when repeat is enabled on every_day', () => {
+    it('should send DAILY, interval=1 and weekday_mask=0 (no filter)', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+      act(() => {
+        result.current.setField('repeatEnabled', true)
+        result.current.setField('frequency', 'every_day')
+        result.current.setField('repeatEndDate', '2030-02-01')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            recurrent_frequency: 'DAILY',
+            recurrent_interval: 1,
+            recurrent_weekday_mask: undefined
+          })
+        })
+      )
+    })
+  })
+
+  describe('when repeat is enabled on every_month', () => {
+    it('should send MONTHLY, interval=1 and weekday_mask=0', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+      act(() => {
+        result.current.setField('repeatEnabled', true)
+        result.current.setField('frequency', 'every_month')
+        result.current.setField('repeatInterval', '3')
+        result.current.setField('repeatEndDate', '2030-06-01')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            recurrent_frequency: 'MONTHLY',
+            recurrent_interval: 1,
+            recurrent_weekday_mask: undefined
           })
         })
       )
@@ -371,6 +568,7 @@ describe('useCreateEventForm', () => {
       fillValidForm(result.current.setField)
       act(() => {
         result.current.setField('repeatEnabled', true)
+        result.current.setField('frequency', 'every_week')
       })
 
       await act(async () => {
