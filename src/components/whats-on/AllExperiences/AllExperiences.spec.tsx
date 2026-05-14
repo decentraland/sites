@@ -80,17 +80,22 @@ jest.mock('../EventDetailModal', () => ({
   normalizeEventEntry: (event: { id: string }) => ({ ...event, normalized: true })
 }))
 
-jest.mock('./AllExperiences.styled', () => ({
-  AllExperiencesSection: ({ children, ...props }: Record<string, unknown>) => (
-    <section data-testid="all-experiences-section" aria-label={props['aria-label'] as string}>
-      {children as React.ReactNode}
-    </section>
-  ),
-  ColumnsContainer: ({ children }: { children: React.ReactNode }) => <div data-testid="columns-container">{children}</div>,
-  MobileEventsTrack: ({ children }: { children: React.ReactNode }) => <div data-testid="mobile-events-track">{children}</div>,
-  MobileEventsPage: ({ children }: { children: React.ReactNode }) => <div data-testid="mobile-events-page">{children}</div>,
-  SectionTitle: ({ children }: { children: React.ReactNode }) => <h4 data-testid="section-title">{children}</h4>
-}))
+jest.mock('./AllExperiences.styled', () => {
+  const react: typeof import('react') = jest.requireActual('react')
+  return {
+    AllExperiencesSection: react.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement> & { 'aria-label'?: string }>(
+      ({ children, ...props }, ref) => (
+        <section data-testid="all-experiences-section" aria-label={props['aria-label']} ref={ref}>
+          {children}
+        </section>
+      )
+    ),
+    ColumnsContainer: ({ children }: { children: React.ReactNode }) => <div data-testid="columns-container">{children}</div>,
+    MobileEventsList: ({ children }: { children: React.ReactNode }) => <div data-testid="mobile-events-list">{children}</div>,
+    MobileEventCardSlot: ({ children }: { children: React.ReactNode }) => <div data-testid="mobile-event-slot">{children}</div>,
+    SectionTitle: ({ children }: { children: React.ReactNode }) => <h4 data-testid="section-title">{children}</h4>
+  }
+})
 
 jest.mock('./DateNavigation', () => ({
   DateNavigation: ({ startOffset, columnCount, onNavigateLeft, onNavigateRight }: Record<string, unknown>) => (
@@ -261,11 +266,11 @@ describe('AllExperiences', () => {
       mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
     })
 
-    it('should render mobile track instead of day columns', () => {
+    it('should render the mobile vertical list instead of day columns', () => {
       render(<AllExperiences />)
 
       expect(screen.queryByTestId('day-column')).not.toBeInTheDocument()
-      expect(screen.getByTestId('mobile-events-track')).toBeInTheDocument()
+      expect(screen.getByTestId('mobile-events-list')).toBeInTheDocument()
     })
   })
 
@@ -305,16 +310,20 @@ describe('AllExperiences', () => {
       mockColumnCount.mockReturnValue(1)
       const events = [
         createMockEvent({ id: 'e1', start_at: '2026-09-13T14:00:00Z' }),
-        createMockEvent({ id: 'e2', start_at: '2026-09-13T16:00:00Z' })
+        createMockEvent({ id: 'e2', start_at: '2026-09-13T16:00:00Z' }),
+        createMockEvent({ id: 'e3', start_at: '2026-09-13T18:00:00Z' })
       ]
       mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
     })
 
-    it('should render mobile event cards instead of day columns', () => {
+    it('should render every event for the day as a vertical list so nothing is hidden behind a swipe', () => {
       render(<AllExperiences />)
 
       expect(screen.queryByTestId('day-column')).not.toBeInTheDocument()
-      expect(screen.getAllByTestId('mobile-event-card')).toHaveLength(2)
+      const list = screen.getByTestId('mobile-events-list')
+      const cards = screen.getAllByTestId('mobile-event-card')
+      expect(cards).toHaveLength(3)
+      cards.forEach(card => expect(list).toContainElement(card))
     })
   })
 
