@@ -9,6 +9,12 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    # Force the preview build to use relative asset paths (no CDN rewrite).
+    # See scripts/prebuild.cjs:getPublicUrls — without GEN_STATIC_LOCAL, CI
+    # rewrites VITE_BASE_URL to https://cdn.decentraland.org/@dcl/sites/<v>,
+    # which has no assets for unreleased SHAs and breaks the bundle.
+    env:
+      GEN_STATIC_LOCAL: "true"
     steps:
       - uses: actions/checkout@v4
 
