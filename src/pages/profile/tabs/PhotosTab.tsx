@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { CircularProgress, Typography } from 'decentraland-ui2'
 import { PhotoModal } from '../../../components/profile/PhotoModal'
+import { useOpenPhotoModal } from '../../../components/profile/ProfileModal/useOpenPhotoModal'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useReelImagesByUser } from '../../../hooks/useReelImagesByUser'
@@ -19,16 +20,15 @@ function PhotosTab({ address, isOwnProfile }: PhotosTabProps) {
   const { identity } = useAuthIdentity()
   const { images, isLoading } = useReelImagesByUser(address, PAGE_OPTIONS, isOwnProfile ? identity : undefined)
   const photos = useMemo(() => images, [images])
-  const [openImageId, setOpenImageId] = useState<string | null>(null)
+  const { openImageId, open: openPhoto, close: closePhoto } = useOpenPhotoModal()
 
   const handleOpen = useCallback(
     (id: string) => (event: React.MouseEvent<HTMLButtonElement>) => {
       event.preventDefault()
-      setOpenImageId(id)
+      openPhoto(id)
     },
-    []
+    [openPhoto]
   )
-  const handleClose = useCallback(() => setOpenImageId(null), [])
 
   if (isLoading) {
     return (
@@ -57,7 +57,7 @@ function PhotosTab({ address, isOwnProfile }: PhotosTabProps) {
           </PhotoCard>
         ))}
       </PhotosGrid>
-      <PhotoModal imageId={openImageId} onClose={handleClose} />
+      <PhotoModal imageId={openImageId} onClose={closePhoto} />
     </>
   )
 }

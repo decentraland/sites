@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
+import { PhotoSurface } from '../PhotoModal/PhotoSurface'
 import { ProfileSurface } from '../ProfileSurface'
 import type { ProfileTab } from '../ProfileTabs'
+import { ModalProfileNavigationProvider } from './ModalProfileNavigation'
 import { ProfileDialog } from './ProfileModal.styled'
 
 interface ProfileModalProps {
@@ -22,24 +24,43 @@ function isValidAddress(value: string | undefined): value is `0x${string}` {
 function ProfileModal({ address, open, onClose, onBack, initialTab = 'overview' }: ProfileModalProps) {
   const { address: viewerAddress } = useAuthIdentity()
   const [activeTab, setActiveTab] = useState<ProfileTab>(initialTab)
+  // Photos opened from inside this modal swap in-place (rule: never stack a modal on a modal).
+  // The back chevron returns to the profile while `onClose` still dismisses the whole dialog.
+  const [viewingPhotoId, setViewingPhotoId] = useState<string | null>(null)
+  // Address swapping while staying in the same dialog — mirrors the event modal pattern so
+  // jumping between profiles never opens nested dialogs.
+  const [shownAddress, setShownAddress] = useState(address.toLowerCase())
 
-  if (!isValidAddress(address)) {
+  const handleOpenProfile = useCallback((nextAddress: string) => {
+    setViewingPhotoId(null)
+    setShownAddress(nextAddress.toLowerCase())
+    setActiveTab('overview')
+  }, [])
+  const handleOpenPhoto = useCallback((imageId: string) => setViewingPhotoId(imageId), [])
+  const handleBackFromPhoto = useCallback(() => setViewingPhotoId(null), [])
+
+  if (!isValidAddress(shownAddress)) {
     return null
   }
-  const normalizedAddress = address.toLowerCase()
-  const isOwnProfile = Boolean(viewerAddress && normalizedAddress === viewerAddress.toLowerCase())
+  const isOwnProfile = Boolean(viewerAddress && shownAddress === viewerAddress.toLowerCase())
 
   return (
     <ProfileDialog open={open} onClose={onClose} fullWidth maxWidth={false} scroll="paper">
-      <ProfileSurface
-        address={normalizedAddress}
-        isOwnProfile={isOwnProfile}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        onClose={onClose}
-        onBack={onBack}
-        embedded
-      />
+      <ModalProfileNavigationProvider onOpenProfile={handleOpenProfile} onOpenPhoto={handleOpenPhoto}>
+        {viewingPhotoId ? (
+          <PhotoSurface imageId={viewingPhotoId} onBack={handleBackFromPhoto} onClose={onClose} />
+        ) : (
+          <ProfileSurface
+            address={shownAddress}
+            isOwnProfile={isOwnProfile}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onClose={onClose}
+            onBack={onBack}
+            embedded
+          />
+        )}
+      </ModalProfileNavigationProvider>
     </ProfileDialog>
   )
 }
