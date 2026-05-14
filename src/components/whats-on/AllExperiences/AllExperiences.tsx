@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { bucketEventsByDay, useGetEventsQuery } from '../../../features/events'
 import type { EventEntry, EventListType } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
 import { useVisibleColumnCount } from '../../../hooks/useVisibleColumnCount'
+import { redirectToAuth } from '../../../utils/authRedirect'
 import { chunk } from '../../../utils/whatsOnChunk'
 import { addDays, formatDayHeaderAria } from '../../../utils/whatsOnDate'
 import { EventDetailModal } from '../EventDetailModal'
@@ -21,6 +22,8 @@ import { MyExperiencesGrid } from './MyExperiencesGrid'
 import { AllExperiencesSection, ColumnsContainer, MobileEventsPage, MobileEventsTrack, SectionTitle } from './AllExperiences.styled'
 
 const MY_EXPERIENCES_PANEL_ID = 'my-experiences-panel'
+const TAB_QUERY_PARAM = 'tab'
+const MY_TAB_PARAM_VALUE = 'my'
 
 interface UseAllExperiencesDataArgs {
   today: Date
@@ -48,10 +51,12 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, list
     {
       list,
       order: 'asc',
-      // NOTE: only filter out world events on the "All" tab (calendar/day-column view is
-      // spatial and only makes sense for Genesis City). On the "My" tab the owner must
-      // see ALL of their events, including those hosted in Worlds.
-      world: ownerOnly ? undefined : false,
+      // Include both Genesis City and Worlds events on BOTH tabs. Earlier this branch
+      // filtered worlds out of the "All" tab because the day-column view was framed as
+      // spatial (Genesis City coords). Product wants worlds visible everywhere now —
+      // users were reporting "no veo mis hangouts en What's On" because their world
+      // events were silently dropped.
+      world: undefined,
       limit: 200,
       identity,
       owner: ownerOnly ? true : undefined
@@ -72,12 +77,18 @@ function AllExperiences() {
   const { identity, hasValidIdentity, address } = useAuthIdentity()
   const columnCount = useVisibleColumnCount()
   const [startOffset, setStartOffset] = useState(0)
-  const location = useLocation()
-  const requestedTab = (location.state as { activeTab?: TabValue } | null)?.activeTab
-  const [activeTab, setActiveTab] = useState<TabValue>(requestedTab === 'my' ? 'my' : 'all')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const activeTab: TabValue = searchParams.get(TAB_QUERY_PARAM) === MY_TAB_PARAM_VALUE ? 'my' : 'all'
   const sectionRef = useRef<HTMLDivElement | null>(null)
   const hasScrolledToMyTab = useRef(false)
+  const wasSignedInRef = useRef(false)
   const { closeEventDetailModal, editActiveEvent, modalData, openEventDetailModal } = useEventDetailModal()
+
+  // Reset the day-window paging whenever the active tab changes — covers both click-driven
+  // changes and URL-driven ones (back/forward, programmatic same-route navigation).
+  useEffect(() => {
+    setStartOffset(0)
+  }, [activeTab])
 
   const [today, setToday] = useState(() => {
     const now = new Date()
@@ -98,12 +109,30 @@ function AllExperiences() {
     return () => document.removeEventListener('visibilitychange', checkMidnight)
   }, [today])
 
+  // NOTE: when the URL carries ?tab=my we behave differently depending on whether the user
+  // ever held a valid identity during this session. A first-paint visit from an anonymous
+  // user redirects to SSO so they land back on My after sign-in. A signed-in user who later
+  // signs out gets the param stripped (graceful fall-back to All) — bouncing them to SSO
+  // mid-session would be hostile UX.
   useEffect(() => {
-    if (!hasValidIdentity && activeTab === 'my') {
-      setActiveTab('all')
-      setStartOffset(0)
+    if (hasValidIdentity) {
+      wasSignedInRef.current = true
+      return
     }
-  }, [hasValidIdentity, activeTab])
+    if (activeTab !== 'my') return
+    if (wasSignedInRef.current) {
+      setSearchParams(
+        prev => {
+          const next = new URLSearchParams(prev)
+          next.delete(TAB_QUERY_PARAM)
+          return next
+        },
+        { replace: true }
+      )
+      return
+    }
+    redirectToAuth('/whats-on', { [TAB_QUERY_PARAM]: MY_TAB_PARAM_VALUE })
+  }, [hasValidIdentity, activeTab, setSearchParams])
 
   const isMyTab = hasValidIdentity && activeTab === 'my'
 
@@ -142,7 +171,7 @@ function AllExperiences() {
   const hasAnyUpcomingMyEvent = sortedMyEvents.length > 0
 
   useEffect(() => {
-    if (requestedTab !== 'my' || hasScrolledToMyTab.current || isLoadingEvents || !sectionRef.current) return
+    if (activeTab !== 'my' || hasScrolledToMyTab.current || isLoadingEvents || !sectionRef.current) return
 
     // The section can be wrapped in an ancestor that toggles display:none while
     // sibling data loads (e.g. DeferredGroup in HomePage). scrollIntoView is a
@@ -166,7 +195,7 @@ function AllExperiences() {
     }
     rafId = requestAnimationFrame(scrollWhenVisible)
     return () => cancelAnimationFrame(rafId)
-  }, [requestedTab, isLoadingEvents])
+  }, [activeTab, isLoadingEvents])
 
   const handleNavigateLeft = useCallback(() => {
     setStartOffset(prev => Math.max(0, prev - columnCount))
@@ -176,10 +205,20 @@ function AllExperiences() {
     setStartOffset(prev => prev + columnCount)
   }, [columnCount])
 
-  const handleTabChange = useCallback((next: TabValue) => {
-    setActiveTab(next)
-    setStartOffset(0)
-  }, [])
+  const handleTabChange = useCallback(
+    (next: TabValue) => {
+      setSearchParams(
+        prev => {
+          const nextParams = new URLSearchParams(prev)
+          if (next === 'my') nextParams.set(TAB_QUERY_PARAM, MY_TAB_PARAM_VALUE)
+          else nextParams.delete(TAB_QUERY_PARAM)
+          return nextParams
+        },
+        { replace: true }
+      )
+    },
+    [setSearchParams]
+  )
 
   const renderCard = useCallback(
     (event: EventEntry) => <AllExperiencesCard event={event} onClick={openEventDetailModal} />,
