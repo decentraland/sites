@@ -385,6 +385,8 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
                     type="date"
                     value={form.repeatEndDate}
                     onChange={e => setField('repeatEndDate', e.target.value)}
+                    error={Boolean(errors.repeatEndDate)}
+                    helperText={errors.repeatEndDate}
                     fullWidth
                     InputLabelProps={{ shrink: true }}
                   />
