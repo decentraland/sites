@@ -403,7 +403,7 @@ describe('useCreateEventForm', () => {
           payload: expect.objectContaining({
             recurrent_frequency: 'DAILY',
             recurrent_interval: 1,
-            recurrent_weekday_mask: 0
+            recurrent_weekday_mask: undefined
           })
         })
       )
@@ -431,7 +431,7 @@ describe('useCreateEventForm', () => {
           payload: expect.objectContaining({
             recurrent_frequency: 'MONTHLY',
             recurrent_interval: 1,
-            recurrent_weekday_mask: 0
+            recurrent_weekday_mask: undefined
           })
         })
       )

@@ -381,9 +381,10 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
             ? parseRecurrentInterval(form.repeatInterval) ?? 1
             : 1
           : undefined,
-        // Mask is only meaningful for WEEKLY — the events server's RRule defaults to start_at's weekday
-        // when the mask is 0, which is exactly what DAILY/MONTHLY want.
-        recurrent_weekday_mask: form.repeatEnabled && form.frequency === 'every_week' ? dayIndicesToWeekdayMask(form.repeatDays) : 0,
+        // Mask only goes on the wire for WEEKLY — for DAILY/MONTHLY (and non-recurrent events) we omit
+        // it so the server's schema default (0) takes effect and the RRule defaults to start_at's weekday.
+        recurrent_weekday_mask:
+          form.repeatEnabled && form.frequency === 'every_week' ? dayIndicesToWeekdayMask(form.repeatDays) : undefined,
         recurrent_until: form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : undefined
       }
       /* eslint-enable @typescript-eslint/naming-convention */
