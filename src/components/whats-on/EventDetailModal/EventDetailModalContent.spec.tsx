@@ -142,10 +142,10 @@ describe('EventDetailModalContent', () => {
     })
 
     describe('and the interval is greater than 1', () => {
-      it('should render the every-N-days label for DAILY frequency', () => {
-        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'DAILY', recurrentInterval: 14 })} />)
+      it('should render the every-N-days label for DAILY frequency when interval is not a multiple of 7', () => {
+        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'DAILY', recurrentInterval: 3 })} />)
 
-        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_every_n_days:{"count":14}')
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_every_n_days:{"count":3}')
       })
 
       it('should render the every-N-weeks label for WEEKLY frequency', () => {
@@ -158,6 +158,26 @@ describe('EventDetailModalContent', () => {
         render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'MONTHLY', recurrentInterval: 3 })} />)
 
         expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_every_n_months:{"count":3}')
+      })
+    })
+
+    describe('and the legacy data stores weeks as DAILY with an interval multiple of 7', () => {
+      it('should render the weekly label for DAILY frequency with interval 7', () => {
+        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'DAILY', recurrentInterval: 7 })} />)
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_weekly')
+      })
+
+      it('should render the every-N-weeks label for DAILY frequency with interval 14 (bi-weekly)', () => {
+        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'DAILY', recurrentInterval: 14 })} />)
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_every_n_weeks:{"count":2}')
+      })
+
+      it('should render the every-N-weeks label for DAILY frequency with interval 21', () => {
+        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'DAILY', recurrentInterval: 21 })} />)
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_every_n_weeks:{"count":3}')
       })
     })
 

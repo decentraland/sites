@@ -30,6 +30,12 @@ function getRecurrenceLabel(
   t: (key: string, values?: Record<string, string | number>) => string
 ): string | null {
   const count = interval && interval > 1 ? interval : 1
+  // Legacy events stored bi-weekly recurrence as DAILY × 14 instead of WEEKLY × 2.
+  // Re-express DAILY intervals that are a clean multiple of 7 as weekly.
+  if (frequency === 'DAILY' && count > 1 && count % 7 === 0) {
+    const weeks = count / 7
+    return weeks === 1 ? t('event_detail.recurrent_weekly') : t('event_detail.recurrent_every_n_weeks', { count: weeks })
+  }
   switch (frequency) {
     case 'DAILY':
       return count === 1 ? t('event_detail.recurrent_daily') : t('event_detail.recurrent_every_n_days', { count })
