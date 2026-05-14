@@ -135,6 +135,12 @@ const MutualPic = styled('span', {
   display: 'inline-block'
 }))
 
+const MutualAvatarSlot = styled('span', { shouldForwardProp: prop => prop !== '$offset' })<{ $offset: number }>(({ $offset }) => ({
+  marginLeft: $offset ? -8 : 0,
+  flexShrink: 0,
+  display: 'inline-flex'
+}))
+
 /* eslint-disable @typescript-eslint/naming-convention */
 const MutualText = styled(Typography)(({ theme }) => ({
   fontWeight: 400,
@@ -174,6 +180,7 @@ export {
   Divider,
   HeaderRoot,
   IdentityBlock,
+  MutualAvatarSlot,
   MutualFriendsRow,
   MutualPic,
   MutualStack,

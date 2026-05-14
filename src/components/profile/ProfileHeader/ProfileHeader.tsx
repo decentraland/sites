@@ -48,6 +48,7 @@ import {
   Discriminator,
   HeaderRoot,
   IdentityBlock,
+  MutualAvatarSlot,
   MutualFriendsRow,
   MutualPic,
   MutualStack,
@@ -114,18 +115,18 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack }: ProfileHeader
   const { setBlocked, isLoading: isUpdatingBlock } = useBlockUser()
   const [blockMenuAnchor, setBlockMenuAnchor] = useState<HTMLElement | null>(null)
   const { count: mutualCount, friends: mutualFriendsPreview } = useMutualFriends(canQueryFriendship ? address : undefined)
-  // Always paint 3 dots when there is at least one mutual friend — the RPC sometimes
-  // returns only `paginationData.total` without populating the friends preview, but the
-  // visual count + 3-avatar cluster is what the design expects. Fill any empty slot
-  // with a deterministic colour seeded off the profile address so the dot still uses
-  // `getAvatarBackgroundColor` (same hash function as everywhere else).
-  const mutualAvatarColors = Array.from({ length: Math.min(3, mutualCount) }, (_, idx) => {
+  // Build up to 3 slots when at least one mutual friend exists. If the RPC populated the
+  // preview list we render real `ProfileAvatar`s (which resolve the face image and fall back
+  // to a deterministic colour + initial). Otherwise we emit a colour-only dot so the cluster
+  // still mirrors the count even before the preview lands.
+  const mutualSlots = Array.from({ length: Math.min(3, mutualCount) }, (_, idx) => {
     const friend = mutualFriendsPreview[idx]
-    if (friend) {
-      const displayName = getDisplayName({ name: friend.name, hasClaimedName: friend.hasClaimedName, ethAddress: friend.address })
-      return getAvatarBackgroundColor(displayName || friend.address)
-    }
-    return getAvatarBackgroundColor(`${address}-${idx}`)
+    if (friend?.address) return { kind: 'avatar' as const, address: friend.address }
+    const displayName = friend
+      ? getDisplayName({ name: friend.name, hasClaimedName: friend.hasClaimedName, ethAddress: friend.address })
+      : ''
+    const color = getAvatarBackgroundColor(displayName || `${address}-${idx}`)
+    return { kind: 'dot' as const, color }
   })
   const [hasCopiedInvite, setHasCopiedInvite] = useState(false)
   const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false)
@@ -219,9 +220,15 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack }: ProfileHeader
             {mutualCount > 0 ? (
               <MutualFriendsRow>
                 <MutualStack>
-                  {mutualAvatarColors.map((color, idx) => (
-                    <MutualPic key={`${color}-${idx}`} $bg={color} $offset={idx} aria-hidden />
-                  ))}
+                  {mutualSlots.map((slot, idx) =>
+                    slot.kind === 'avatar' ? (
+                      <MutualAvatarSlot key={`avatar-${slot.address}-${idx}`} $offset={idx}>
+                        <ProfileAvatar address={slot.address} size={28} borderColor="rgba(255, 255, 255, 0.5)" />
+                      </MutualAvatarSlot>
+                    ) : (
+                      <MutualPic key={`dot-${idx}-${slot.color}`} $bg={slot.color} $offset={idx} aria-hidden />
+                    )
+                  )}
                 </MutualStack>
                 <MutualText>
                   <strong>{mutualCount}</strong> {t('profile.header.mutual_count', { count: '' }).replace('{count}', '').trim()}

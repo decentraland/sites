@@ -27,10 +27,12 @@ const WearableStaticContainer = styled(Box)(sharedContainerStyle)
 /* eslint-disable @typescript-eslint/naming-convention */
 const WearableContainer = styled('a')(({ theme }) => ({
   ...sharedContainerStyle,
-  transition: 'background 0.35s',
+  transition: 'box-shadow 0.35s, transform 0.2s',
   cursor: 'pointer',
   '&:hover': {
-    background: '#716b7c'
+    // Match the rest of the profile cards (ProfileDialog / hover-shadow pattern): keep the
+    // base background and lift the row with a glow shadow instead of fading to gray.
+    boxShadow: '0px 4px 25px 0px rgba(255, 255, 255, 0.25)'
   },
   [theme.breakpoints.down('lg')]: {
     cursor: 'default'
