@@ -339,7 +339,7 @@ const IntervalChip = styled('button', {
 })<{ $active: boolean }>(({ $active, theme }) => ({
   minWidth: 44,
   height: 28,
-  padding: `0 ${theme.spacing(1)}`,
+  padding: `0 ${theme.spacing(1.5)}`,
   borderRadius: 14,
   border: `1px solid ${$active ? theme.palette.primary.main : inputBorder}`,
   background: $active ? theme.palette.primary.main : 'transparent',

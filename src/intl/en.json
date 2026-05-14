@@ -1236,6 +1236,8 @@
     "repeat_event": "Repeat Hangout",
     "repeat_interval": "Repeat every",
     "repeat_on": "Repeat on",
+    "interval_chip_week_singular": "1 Week",
+    "interval_chip_week_plural": "{count} Weeks",
     "frequency": "Frequency",
     "every_day": "Every Day",
     "every_week": "Every Week",

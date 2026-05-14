@@ -991,6 +991,8 @@
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "repeat_interval": "Répéter tous les",
     "repeat_on": "Répéter le",
+    "interval_chip_week_singular": "1 Semaine",
+    "interval_chip_week_plural": "{count} Semaines",
     "error_repeat_interval_invalid": "L'intervalle de répétition doit être un nombre entier entre 1 et 3",
     "error_repeat_days_required": "Sélectionnez au moins un jour",
     "error_start_date_not_in_repeat_days": "Le jour de la semaine de la date de début doit faire partie des jours sélectionnés"

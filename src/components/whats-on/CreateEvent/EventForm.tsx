@@ -359,6 +359,10 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
                       <IntervalChipRow>
                         {RECURRENT_INTERVAL_OPTIONS.map(value => {
                           const isActive = parseRecurrentInterval(form.repeatInterval) === value
+                          const chipLabel =
+                            value === 1
+                              ? t('create_event.interval_chip_week_singular')
+                              : t('create_event.interval_chip_week_plural', { count: value })
                           return (
                             <IntervalChip
                               key={value}
@@ -368,7 +372,7 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
                               $active={isActive}
                               onClick={() => setField('repeatInterval', String(value))}
                             >
-                              {value}
+                              {chipLabel}
                             </IntervalChip>
                           )
                         })}
