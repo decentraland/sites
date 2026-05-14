@@ -3,10 +3,11 @@ import { memo, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined'
-import { Box, CircularProgress } from 'decentraland-ui2'
-import { buildJumpInUrl, buildProfileUrl, formatPhotoDate } from '../../../features/reels'
+import { CircularProgress } from 'decentraland-ui2'
+import { buildProfileUrl, formatPhotoDate } from '../../../features/reels'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useReelImageById } from '../../../hooks/useReelImageById'
+import { JumpInButton } from '../../jump/JumpInButton'
 import { ImageActions } from '../../Reels/ImageActions'
 import { UserMetadata } from '../../Reels/Metadata/UserMetadata'
 import {
@@ -14,7 +15,6 @@ import {
   DateLine,
   DialogBody,
   ImagePanel,
-  JumpInLink,
   LocationLink,
   LocationRow,
   MetadataHeader,
@@ -22,7 +22,10 @@ import {
   PeopleSection,
   Photo,
   PhotoDialog,
-  SectionTitle
+  PhotoTakenByLine,
+  PhotoTakenByLink,
+  SectionTitle,
+  SectionTitleRow
 } from './PhotoModal.styled'
 
 interface PhotoModalProps {
@@ -32,7 +35,7 @@ interface PhotoModalProps {
 
 const PhotoModal = memo(({ imageId, onClose }: PhotoModalProps) => {
   const t = useFormatMessage()
-  const { image, isLoading } = useReelImageById(imageId ?? undefined)
+  const { image } = useReelImageById(imageId ?? undefined)
   // `ImageActions` already toggles the metadata visibility flag via its `i` button —
   // we surface the state so users can collapse the right panel and expand the image.
   const [metadataVisible, setMetadataVisible] = useState(true)
@@ -59,20 +62,15 @@ const PhotoModal = memo(({ imageId, onClose }: PhotoModalProps) => {
               <SectionTitle id="photo-modal-title">{t('component.reels.metadata.title')}</SectionTitle>
               <DateLine>{formatPhotoDate(image.metadata.dateTime)}</DateLine>
               {image.metadata.userName ? (
-                <Box sx={{ color: '#fcfcfc', fontSize: 14, mt: 0.5 }}>
+                <PhotoTakenByLine>
                   {t('component.reels.metadata.photo_taken_by')}{' '}
-                  <a
-                    href={buildProfileUrl(image.metadata.userAddress)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: '#57C2FF', textDecoration: 'none', marginLeft: 4 }}
-                  >
+                  <PhotoTakenByLink href={buildProfileUrl(image.metadata.userAddress)} target="_blank" rel="noopener noreferrer">
                     {image.metadata.userName}
-                  </a>
-                </Box>
+                  </PhotoTakenByLink>
+                </PhotoTakenByLine>
               ) : null}
             </MetadataHeader>
-            <SectionTitle>{t('component.reels.metadata.place')}</SectionTitle>
+            <SectionTitleRow>{t('component.reels.metadata.place')}</SectionTitleRow>
             <LocationRow>
               <LocationLink>
                 <LocationOnOutlinedIcon fontSize="small" />
@@ -80,21 +78,15 @@ const PhotoModal = memo(({ imageId, onClose }: PhotoModalProps) => {
                   {image.metadata.scene.name} {image.metadata.scene.location.x},{image.metadata.scene.location.y}
                 </span>
               </LocationLink>
-              <JumpInLink
-                href={buildJumpInUrl(
-                  Number(image.metadata.scene.location.x),
-                  Number(image.metadata.scene.location.y),
-                  image.metadata.realm
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {t('component.reels.metadata.jump_in')}
-              </JumpInLink>
+              <JumpInButton
+                position={`${image.metadata.scene.location.x},${image.metadata.scene.location.y}`}
+                realm={image.metadata.realm}
+                size="small"
+              />
             </LocationRow>
             {image.metadata.visiblePeople.length > 0 ? (
               <PeopleSection>
-                <SectionTitle>{t('component.reels.metadata.people')}</SectionTitle>
+                <SectionTitleRow>{t('component.reels.metadata.people')}</SectionTitleRow>
                 {image.metadata.visiblePeople.map((user, index) => (
                   <UserMetadata
                     key={user.userAddress || index}
@@ -108,7 +100,6 @@ const PhotoModal = memo(({ imageId, onClose }: PhotoModalProps) => {
           </MetadataPanel>
         ) : null}
       </DialogBody>
-      {isLoading && image ? null : null}
     </PhotoDialog>
   )
 })

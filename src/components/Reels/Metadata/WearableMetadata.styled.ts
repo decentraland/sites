@@ -103,10 +103,15 @@ const BuyButton = styled('button', {
   textTransform: 'uppercase',
   cursor: 'pointer',
   opacity: visible ? 1 : 0,
-  transition: 'opacity 0.35s',
+  // Slide the button off to the right while it fades — without the translate the
+  // wrapper finishes its `calc(100% - 69px) → 100%` expansion before the opacity
+  // hits zero, so a thin sliver of the BUY button keeps painting through the gap.
+  transform: visible ? 'translateX(0)' : 'translateX(120%)',
+  transition: 'opacity 0.15s, transform 0.2s',
   pointerEvents: visible ? 'auto' : 'none',
   [theme.breakpoints.down('lg')]: {
     opacity: 0,
+    transform: 'translateX(120%)',
     pointerEvents: 'none'
   }
 }))
