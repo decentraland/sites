@@ -228,10 +228,17 @@ describe('AllExperiences', () => {
       expect(mockUseGetEventsQuery).toHaveBeenCalledWith(expect.objectContaining({ list: 'active', owner: undefined }), expect.any(Object))
     })
 
-    it('should exclude world events on the all tab so the spatial calendar only shows Genesis City', () => {
+    it('should not filter by world on the all tab so Genesis City and Worlds events both appear', () => {
       render(<AllExperiences />)
 
-      expect(mockUseGetEventsQuery).toHaveBeenCalledWith(expect.objectContaining({ world: false }), expect.any(Object))
+      const lastCall = mockUseGetEventsQuery.mock.calls.at(-1)?.[0] as { world?: boolean }
+      expect(lastCall.world).toBeUndefined()
+    })
+
+    it('should never pass world=false to the events query (regression: worlds were being silently dropped)', () => {
+      render(<AllExperiences />)
+
+      expect(mockUseGetEventsQuery).not.toHaveBeenCalledWith(expect.objectContaining({ world: false }), expect.any(Object))
     })
   })
 
