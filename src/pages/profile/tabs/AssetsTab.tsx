@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Box, Button, CatalogCard, Chip, CircularProgress, Typography } from 'decentraland-ui2'
+import { Box, Button, Chip, CircularProgress, Typography } from 'decentraland-ui2'
+import { CatalogCard } from '../../../components/profile/CatalogCard'
 import { getEnv } from '../../../config/env'
 import { useGetProfileAssetsQuery } from '../../../features/profile/profile.assets.client'
 import type { AssetCategory, AssetEntry } from '../../../features/profile/profile.assets.client'

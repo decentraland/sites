@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import InsertLinkIcon from '@mui/icons-material/InsertLink'
-import { Box, Button, CatalogCard, CircularProgress, Tooltip, Typography } from 'decentraland-ui2'
+import { Box, Button, CircularProgress, Tooltip, Typography } from 'decentraland-ui2'
+import { CatalogCard } from '../../../components/profile/CatalogCard'
 import { useProfileBadges } from '../../../features/profile/profile.badges.client'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { useEquippedCollectibles } from '../../../features/profile/profile.wearables.client'

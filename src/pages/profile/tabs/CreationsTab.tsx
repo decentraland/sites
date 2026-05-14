@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import { Box, Button, CatalogCard, Chip, CircularProgress } from 'decentraland-ui2'
+import { Box, Button, Chip, CircularProgress } from 'decentraland-ui2'
+import { CatalogCard } from '../../../components/profile/CatalogCard'
 import { getEnv } from '../../../config/env'
 import { useGetProfileCreationsQuery } from '../../../features/profile/profile.creations.client'
 import type { CreationItem, CreationsCategory } from '../../../features/profile/profile.creations.client'
