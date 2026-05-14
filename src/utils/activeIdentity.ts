@@ -2,8 +2,37 @@ import type { AuthIdentity } from '@dcl/crypto'
 import { localStorageGetIdentity } from '@dcl/single-sign-on-client'
 
 const ACTIVE_ADDRESS_KEY = 'dcl:active-address'
+const SIGN_IN_PENDING_KEY = 'dcl:sign-in-pending'
+const SIGN_IN_PENDING_TTL_MS = 10 * 60 * 1000
 const SSO_KEY_PREFIX = 'single-sign-on-'
 const SSO_ADDRESS_PREFIX = 'single-sign-on-0x'
+
+/**
+ * Records that the user has just left for the auth dapp. Read on return so the
+ * freshly signed-in identity wins over any pre-existing pointer (which would
+ * otherwise stick the user on the wallet they had before the redirect).
+ */
+function markSignInPending(): void {
+  try {
+    localStorage.setItem(SIGN_IN_PENDING_KEY, String(Date.now()))
+  } catch {
+    // Non-fatal: without the flag, fresh sign-ins fall back to the standard
+    // resolution path (pointer → auto-promote → max-expiration heuristic).
+  }
+}
+
+function consumePendingSignIn(): boolean {
+  try {
+    const value = localStorage.getItem(SIGN_IN_PENDING_KEY)
+    if (!value) return false
+    localStorage.removeItem(SIGN_IN_PENDING_KEY)
+    const ts = Number(value)
+    if (!Number.isFinite(ts)) return false
+    return Date.now() - ts < SIGN_IN_PENDING_TTL_MS
+  } catch {
+    return false
+  }
+}
 
 function readActivePointer(): string | null {
   try {
@@ -76,10 +105,24 @@ function scanValidIdentities(): ScanResult {
  * then falling back to the heuristic scan. Auto-promotes the pointer when
  * exactly one valid identity exists and clears stale pointers on read.
  *
+ * If a sign-in is pending (the user just returned from the auth dapp), the
+ * latest-expiration identity is treated as authoritative — that's the one
+ * the auth dapp just wrote — and gets promoted to the pointer.
+ *
  * Shared by `resolveActiveAddress` (returns address) and `resolveActiveIdentity`
  * (returns identity) so the two stay in sync.
  */
 function resolveActive(): ActiveSelection {
+  if (consumePendingSignIn()) {
+    const fresh = scanValidIdentities()
+    if (fresh.bestAddress) {
+      writeActivePointer(fresh.bestAddress)
+      return { bestAddress: fresh.bestAddress, bestIdentity: fresh.bestIdentity }
+    }
+    // Pending but no identity present — auth probably failed mid-flow. Fall
+    // through to the standard resolution path so the user isn't left blank.
+  }
+
   const pointer = readActivePointer()
   if (pointer) {
     const identity = localStorageGetIdentity(pointer)
@@ -126,8 +169,10 @@ function isRelevantStorageKey(key: string | null): boolean {
 
 export {
   ACTIVE_ADDRESS_KEY,
+  SIGN_IN_PENDING_KEY,
   hasValidIdentityFor,
   isRelevantStorageKey,
+  markSignInPending,
   readActivePointer,
   resolveActiveAddress,
   resolveActiveIdentity,

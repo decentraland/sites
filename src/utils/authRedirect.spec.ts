@@ -74,11 +74,22 @@ describe('redirectToAuth', () => {
       writable: true,
       value: { ...originalLocation, origin: 'https://decentraland.org', hostname: 'decentraland.org', replace: replaceMock }
     })
+    localStorage.removeItem('dcl:sign-in-pending')
   })
 
   afterEach(() => {
     Object.defineProperty(window, 'location', { writable: true, value: originalLocation })
     jest.clearAllMocks()
+  })
+
+  describe('sign-in pending flag', () => {
+    it('should mark a sign-in as pending before redirecting', () => {
+      redirectToAuth('/whats-on')
+
+      const written = localStorage.getItem('dcl:sign-in-pending')
+      expect(written).not.toBeNull()
+      expect(Number(written)).toBeGreaterThan(0)
+    })
   })
 
   describe('when called from a same-origin page', () => {

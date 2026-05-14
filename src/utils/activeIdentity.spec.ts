@@ -1,7 +1,9 @@
 import {
   ACTIVE_ADDRESS_KEY,
+  SIGN_IN_PENDING_KEY,
   hasValidIdentityFor,
   isRelevantStorageKey,
+  markSignInPending,
   readActivePointer,
   resolveActiveAddress,
   resolveActiveIdentity,
@@ -148,6 +150,66 @@ describe('activeIdentity', () => {
       it('should resolve case-insensitively', () => {
         expect(resolveActiveAddress()).toBe('0xabc')
       })
+    })
+
+    describe('when a sign-in is pending', () => {
+      beforeEach(() => {
+        setIdentity('0xprevious', '2026-06-03T13:56:58.962Z')
+        setIdentity('0xfresh', '2026-07-01T00:00:00.000Z')
+        writeActivePointer('0xprevious')
+        markSignInPending()
+      })
+
+      it('should promote the latest-expiration identity over the stale pointer', () => {
+        expect(resolveActiveAddress()).toBe('0xfresh')
+        expect(store[ACTIVE_ADDRESS_KEY]).toBe('0xfresh')
+      })
+
+      it('should clear the pending flag after consuming it', () => {
+        resolveActiveAddress()
+        expect(store[SIGN_IN_PENDING_KEY]).toBeUndefined()
+      })
+    })
+
+    describe('when a sign-in is pending but expired', () => {
+      beforeEach(() => {
+        setIdentity('0xprevious', '2026-06-03T13:56:58.962Z')
+        setIdentity('0xfresh', '2026-07-01T00:00:00.000Z')
+        writeActivePointer('0xprevious')
+        store[SIGN_IN_PENDING_KEY] = String(Date.now() - 60 * 60 * 1000)
+      })
+
+      it('should ignore the expired flag and honor the existing pointer', () => {
+        expect(resolveActiveAddress()).toBe('0xprevious')
+      })
+
+      it('should still consume the stale flag so it does not leak into future resolutions', () => {
+        resolveActiveAddress()
+        expect(store[SIGN_IN_PENDING_KEY]).toBeUndefined()
+      })
+    })
+
+    describe('when a sign-in is pending but no identity was written', () => {
+      beforeEach(() => {
+        setIdentity('0xprevious', '2030-01-01T00:00:00Z')
+        writeActivePointer('0xprevious')
+        markSignInPending()
+        // Auth failed mid-flow: pending flag set, but no new identity appears.
+      })
+
+      it('should fall back to the existing pointer instead of clearing the user', () => {
+        expect(resolveActiveAddress()).toBe('0xprevious')
+      })
+    })
+  })
+
+  describe('markSignInPending', () => {
+    it('should write a recent timestamp to the pending key', () => {
+      const before = Date.now()
+      markSignInPending()
+      const written = Number(store[SIGN_IN_PENDING_KEY])
+      expect(written).toBeGreaterThanOrEqual(before)
+      expect(written).toBeLessThanOrEqual(Date.now())
     })
   })
 

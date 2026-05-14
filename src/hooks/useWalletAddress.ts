@@ -1,11 +1,5 @@
 import { useMemo, useSyncExternalStore } from 'react'
-import {
-  hasValidIdentityFor,
-  isRelevantStorageKey,
-  readActivePointer,
-  resolveActiveAddress,
-  writeActivePointer
-} from '../utils/activeIdentity'
+import { hasValidIdentityFor, isRelevantStorageKey, resolveActiveAddress, writeActivePointer } from '../utils/activeIdentity'
 import { redirectToAuth } from '../utils/authRedirect'
 
 type WalletState = {
@@ -80,30 +74,13 @@ if (window.ethereum?.on) {
   })
 }
 
-// One-time reconciliation on load: only used to SEED the pointer when it
-// is missing. It must never overrule an existing pointer — that would let
-// MetaMask's idea of "active account" steamroll a Magic/OTP selection or
-// a previous explicit switch.
-//
-// NOTE: replaces the previous 500ms `metamaskSwitchUntil` grace window. That
-// band-aid only suppressed `storage` events for half a second after a
-// MetaMask switch; the persistent pointer makes it unnecessary because
-// `resolveActiveAddress` always honors the user's explicit selection.
-if (window.ethereum?.request) {
-  window.ethereum
-    .request({ method: 'eth_accounts' })
-    .then(result => {
-      const accounts = Array.isArray(result) ? (result as string[]) : []
-      const active = accounts[0]?.toLowerCase()
-      if (!active || !hasValidIdentityFor(active)) return
-      if (readActivePointer()) return
-      setActiveAddress(active)
-    })
-    .catch(error => {
-      const message = error instanceof Error ? error.message : 'unknown error'
-      console.warn('[useWalletAddress] eth_accounts probe failed:', message)
-    })
-}
+// NOTE: a previous version of this file probed `eth_accounts` on load to seed
+// the pointer with MetaMask's active account. Removed because it pushes OTP /
+// Magic users onto MetaMask's wallet when both providers are present, and
+// because `accountsChanged` already covers explicit user switches. Also drops
+// the 500ms `metamaskSwitchUntil` grace window — obsolete with a persistent
+// pointer. Resolution now relies on: the sign-in-pending flag (fresh logins),
+// `dcl:active-address` (explicit selection), and the heuristic scan as fallback.
 
 // ── Disconnect ──────────────────────────────────────────────────────
 

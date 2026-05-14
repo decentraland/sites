@@ -75,6 +75,7 @@ Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock })
 // ── Helpers ──────────────────────────────────────────────────────────
 
 const ACTIVE_ADDRESS_KEY = 'dcl:active-address'
+const SIGN_IN_PENDING_KEY = 'dcl:sign-in-pending'
 
 function fakeIdentity(address: string, expirationDate: string) {
   return {
@@ -213,39 +214,19 @@ describe('useWalletAddress', () => {
     })
   })
 
-  describe('eth_accounts reconciliation on load', () => {
-    it('should seed the pointer when it is missing', async () => {
+  describe('sign-in pending flag', () => {
+    it('should promote the latest identity over a stale pointer on return from auth', async () => {
       setStoredIdentities({
-        '0xstored': '2030-01-01T00:00:00Z',
-        '0xactive': '2029-01-01T00:00:00Z'
+        '0xprevious': '2026-06-03T13:56:58.962Z',
+        '0xfresh': '2026-07-01T00:00:00.000Z'
       })
-      mockEthereumAccounts = ['0xactive']
+      localStorageMock.setItem(ACTIVE_ADDRESS_KEY, '0xprevious')
+      localStorageMock.setItem(SIGN_IN_PENDING_KEY, String(Date.now()))
+
       await import('./useWalletAddress')
-      await new Promise(r => setTimeout(r, 50))
 
-      expect(localStorageMock.getItem(ACTIVE_ADDRESS_KEY)).toBe('0xactive')
-    })
-
-    it('should NOT override an existing pointer', async () => {
-      setStoredIdentities({
-        '0xmagic': '2030-01-01T00:00:00Z',
-        '0xmetamask': '2029-01-01T00:00:00Z'
-      })
-      localStorageMock.setItem(ACTIVE_ADDRESS_KEY, '0xmagic')
-      mockEthereumAccounts = ['0xmetamask']
-      await import('./useWalletAddress')
-      await new Promise(r => setTimeout(r, 50))
-
-      expect(localStorageMock.getItem(ACTIVE_ADDRESS_KEY)).toBe('0xmagic')
-    })
-
-    it('should ignore the MetaMask account when it has no stored identity', async () => {
-      setStoredIdentities({ '0xstored': '2030-01-01T00:00:00Z' })
-      mockEthereumAccounts = ['0xunknown']
-      await import('./useWalletAddress')
-      await new Promise(r => setTimeout(r, 50))
-
-      expect(localStorageMock.getItem(ACTIVE_ADDRESS_KEY)).toBe('0xstored')
+      expect(localStorageMock.getItem(ACTIVE_ADDRESS_KEY)).toBe('0xfresh')
+      expect(localStorageMock.getItem(SIGN_IN_PENDING_KEY)).toBeNull()
     })
   })
 
