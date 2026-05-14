@@ -224,8 +224,14 @@ describe('activeIdentity', () => {
       expect(isRelevantStorageKey(ACTIVE_ADDRESS_KEY)).toBe(true)
     })
 
-    it('should return true for single-sign-on-* keys', () => {
+    it('should return true for address-shaped single-sign-on keys', () => {
       expect(isRelevantStorageKey('single-sign-on-0xabc')).toBe(true)
+    })
+
+    it('should return false for non-address single-sign-on keys', () => {
+      // The scanner only processes `single-sign-on-0x*` entries, so reacting to
+      // other shapes (e.g. `single-sign-on-meta`) would trigger no-op re-resolves.
+      expect(isRelevantStorageKey('single-sign-on-meta')).toBe(false)
     })
 
     it('should return false for unrelated keys', () => {

@@ -34,9 +34,12 @@ function hasValidIdentityFor(address: string): boolean {
   }
 }
 
-type ScanResult = {
+type ActiveSelection = {
   bestAddress: string | null
   bestIdentity: AuthIdentity | null
+}
+
+type ScanResult = ActiveSelection & {
   validCount: number
 }
 
@@ -76,18 +79,18 @@ function scanValidIdentities(): ScanResult {
  * Shared by `resolveActiveAddress` (returns address) and `resolveActiveIdentity`
  * (returns identity) so the two stay in sync.
  */
-function resolveActive(): ScanResult {
+function resolveActive(): ActiveSelection {
   const pointer = readActivePointer()
   if (pointer) {
     const identity = localStorageGetIdentity(pointer)
-    if (identity) return { bestAddress: pointer, bestIdentity: identity, validCount: 1 }
+    if (identity) return { bestAddress: pointer, bestIdentity: identity }
     writeActivePointer(null)
   }
-  const scan = scanValidIdentities()
-  if (scan.validCount === 1 && scan.bestAddress) {
-    writeActivePointer(scan.bestAddress)
+  const { bestAddress, bestIdentity, validCount } = scanValidIdentities()
+  if (validCount === 1 && bestAddress) {
+    writeActivePointer(bestAddress)
   }
-  return scan
+  return { bestAddress, bestIdentity }
 }
 
 /**
@@ -107,13 +110,17 @@ function resolveActiveAddress(): string | null {
 }
 
 function resolveActiveIdentity(): AuthIdentity | undefined {
+  // Coerce internal `null` sentinel to `undefined` to match the optional-identity
+  // shape consumers expect (see `useAuthIdentity`, `signedFetchFactory`).
   return resolveActive().bestIdentity ?? undefined
 }
 
 function isRelevantStorageKey(key: string | null): boolean {
   if (key === null) return true
   if (key === ACTIVE_ADDRESS_KEY) return true
-  if (key.startsWith(SSO_KEY_PREFIX)) return true
+  // Match the same prefix the scanner uses so non-address SSO writes don't
+  // trigger pointless re-resolutions.
+  if (key.startsWith(SSO_ADDRESS_PREFIX)) return true
   return false
 }
 
