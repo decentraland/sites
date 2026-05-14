@@ -1,10 +1,12 @@
 import { buildAuthRedirectUrl, redirectToAuth } from './authRedirect'
 
+const mockGetEnv = jest.fn<string | undefined, [string]>((key: string) => {
+  if (key === 'AUTH_URL') return 'https://decentraland.org/auth'
+  return undefined
+})
+
 jest.mock('../config/env', () => ({
-  getEnv: jest.fn((key: string) => {
-    if (key === 'AUTH_URL') return 'https://decentraland.org/auth'
-    return undefined
-  })
+  getEnv: (key: string) => mockGetEnv(key)
 }))
 
 describe('buildAuthRedirectUrl', () => {
@@ -66,6 +68,7 @@ describe('redirectToAuth', () => {
   const originalLocation = window.location
 
   beforeEach(() => {
+    mockGetEnv.mockImplementation((key: string) => (key === 'AUTH_URL' ? 'https://decentraland.org/auth' : undefined))
     replaceMock = jest.fn()
     Object.defineProperty(window, 'location', {
       writable: true,
@@ -88,6 +91,55 @@ describe('redirectToAuth', () => {
       const redirectTo = url.searchParams.get('redirectTo')
       expect(redirectTo).toBe('/whats-on?loginMethod=METAMASK')
       expect(redirectTo).not.toContain('cdn.decentraland.org')
+    })
+  })
+
+  describe('when AUTH_URL is relative on a Vercel preview deploy', () => {
+    beforeEach(() => {
+      mockGetEnv.mockImplementation((key: string) => (key === 'AUTH_URL' ? '/auth' : undefined))
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        value: {
+          ...originalLocation,
+          origin: 'https://nautilus-preview.vercel.app',
+          hostname: 'nautilus-preview.vercel.app',
+          replace: replaceMock
+        }
+      })
+    })
+
+    it('should target the preview origin so the Vercel rewrite proxies /auth same-origin', () => {
+      redirectToAuth('/whats-on')
+
+      expect(replaceMock).toHaveBeenCalledTimes(1)
+      const [calledWith] = replaceMock.mock.calls[0] as [string]
+      const url = new URL(calledWith)
+      expect(url.origin).toBe('https://nautilus-preview.vercel.app')
+      expect(url.pathname).toBe('/auth/login')
+      expect(url.searchParams.get('redirectTo')).toBe('/whats-on')
+    })
+  })
+
+  describe('when AUTH_URL is relative on localhost', () => {
+    beforeEach(() => {
+      mockGetEnv.mockImplementation((key: string) => (key === 'AUTH_URL' ? '/auth' : undefined))
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        value: {
+          ...originalLocation,
+          origin: 'http://localhost:5173',
+          hostname: 'localhost',
+          replace: replaceMock
+        }
+      })
+    })
+
+    it('should use the relative /auth path so the Vite proxy handles the request', () => {
+      redirectToAuth('/whats-on')
+
+      expect(replaceMock).toHaveBeenCalledTimes(1)
+      const [calledWith] = replaceMock.mock.calls[0] as [string]
+      expect(calledWith.startsWith('/auth/login?')).toBe(true)
     })
   })
 })
