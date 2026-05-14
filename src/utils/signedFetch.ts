@@ -14,7 +14,9 @@ function fetchWithIdentity(
   return signedFetch(url, { method, identity, body, headers, signal })
 }
 
-function fetchWithOptionalIdentity(url: string, identity: AuthIdentity | undefined, signal?: AbortSignal): Promise<Response> {
+// `signal` is required (not optional) so callers cannot forget to thread it
+// through. Pass `undefined` explicitly if cancellation isn't applicable.
+function fetchWithOptionalIdentity(url: string, identity: AuthIdentity | undefined, signal: AbortSignal | undefined): Promise<Response> {
   if (identity) {
     return signedFetch(url, { method: 'GET', identity, signal })
   }

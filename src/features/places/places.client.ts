@@ -29,7 +29,10 @@ function resolveIdentity(address: string | undefined) {
   try {
     return localStorageGetIdentity(address.toLowerCase()) ?? undefined
   } catch (error) {
-    console.error('[placesClient] Failed to resolve identity from localStorage', error)
+    // Log only the message — never the raw error object — so internal stack
+    // traces don't surface to browser devtools in production.
+    const message = error instanceof Error ? error.message : 'unknown error'
+    console.error('[placesClient] Failed to resolve identity from localStorage:', message)
     return undefined
   }
 }

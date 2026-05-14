@@ -10,17 +10,12 @@ type UseRemindMeResult = {
   handleToggle: (e: React.MouseEvent) => void
 }
 
-function useRemindMe(eventId: string, attending?: boolean, onSuccess?: (newValue: boolean) => void): UseRemindMeResult {
+function useRemindMe(eventId: string, attending?: boolean): UseRemindMeResult {
   const { identity, hasValidIdentity } = useAuthIdentity()
   const [toggleAttendee, { isLoading }] = useToggleAttendeeMutation({ fixedCacheKey: `remind-${eventId}` })
   const [isShaking, setIsShaking] = useState(false)
   const [optimistic, setOptimistic] = useState<boolean | null>(null)
   const shakeTimer = useRef<ReturnType<typeof setTimeout>>()
-  const onSuccessRef = useRef(onSuccess)
-
-  useEffect(() => {
-    onSuccessRef.current = onSuccess
-  }, [onSuccess])
 
   const serverValue = Boolean(attending)
   const isReminded = optimistic !== null ? optimistic : serverValue
@@ -50,16 +45,6 @@ function useRemindMe(eventId: string, attending?: boolean, onSuccess?: (newValue
       shakeTimer.current = setTimeout(() => setIsShaking(false), 600)
       toggleAttendee({ eventId, attending: newValue, identity })
         .unwrap()
-        .then(() => {
-          // Guard the callback so a synchronous throw doesn't trip the catch
-          // branch below and roll back an optimistic update for a request that
-          // actually succeeded.
-          try {
-            onSuccessRef.current?.(newValue)
-          } catch (error) {
-            console.error('[useRemindMe] onSuccess callback threw', error)
-          }
-        })
         .catch(() => setOptimistic(null))
     },
     [eventId, isReminded, hasValidIdentity, identity, isLoading, toggleAttendee]

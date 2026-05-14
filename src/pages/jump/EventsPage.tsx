@@ -23,8 +23,6 @@ import type { CardData, JumpEvent } from '../../features/places/places.types'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useRemindMe } from '../../hooks/useRemindMe'
-import { placesClient } from '../../services/placesClient'
-import { useAppDispatch } from '../../shells/store'
 import { appendRealmParam, resolveEventRealm } from '../../utils/whatsOnUrl'
 import { CalendarButton, EventActions, ExploreEventsButton, ShareIconButton } from './EventsPage.styled'
 import { JumpPageContainer, JumpPageContent } from './PageContainer.styled'
@@ -51,7 +49,6 @@ const EventsPage = () => {
   const navigate = useNavigate()
   const formatMessage = useFormatMessage()
   const isMobile = useMobileMediaQuery()
-  const dispatch = useAppDispatch()
   const { address } = useAuthIdentity()
 
   const positionParam = searchParams.get('position') ?? DEFAULT_POSITION
@@ -94,19 +91,15 @@ const EventsPage = () => {
   }, [event, placesQuery.data])
 
   // Watson-style Remind Me: identity check, optimistic update, bell shake.
-  // toggleAttendee invalidates `Events` in `eventsClient`, but the jump card
-  // reads from `placesClient.getJumpEvent(s)` — a different RTK Query API.
-  // Cross-client invalidation isn't automatic, so refetch the jump queries on
-  // success to refresh `total_attendees` (the bell badge) and `attending`.
-  const invalidateJumpEventCache = useCallback(() => {
-    dispatch(placesClient.util.invalidateTags(['JumpEvent']))
-  }, [dispatch])
+  // Cross-API cache invalidation (eventsClient → placesClient JumpEvent tag)
+  // is handled by `createJumpEventsListenerMiddleware`, so the card refreshes
+  // automatically when `toggleAttendee` fulfils.
   const {
     isReminded,
     isLoading: remindLoading,
     isShaking,
     handleToggle: handleRemindToggle
-  } = useRemindMe(event?.id ?? '', Boolean(cardData?.attending), invalidateJumpEventCache)
+  } = useRemindMe(event?.id ?? '', Boolean(cardData?.attending))
 
   const handleAddToCalendar = useCallback(() => {
     if (!event) return

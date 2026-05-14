@@ -44,12 +44,12 @@ const eventsClient = createApi({
   endpoints: build => ({
     getEvents: build.query<EventEntry[], GetEventsParams>({
       serializeQueryArgs: ({ queryArgs: { identity, ...rest } }) => ({ ...rest, authenticated: Boolean(identity) }),
-      queryFn: async params => {
+      queryFn: async (params, { signal }) => {
         try {
           const { identity, ...queryParams } = params
           const baseUrl = getEnv('EVENTS_API_URL')!
           const query = buildQueryString(queryParams)
-          const response = await fetchWithOptionalIdentity(`${baseUrl}/events?${query}`, identity)
+          const response = await fetchWithOptionalIdentity(`${baseUrl}/events?${query}`, identity, signal)
 
           if (!response.ok) {
             throw new Error(`Events API error: ${response.status}`)
@@ -101,7 +101,7 @@ const eventsClient = createApi({
         }
         return { authenticated: false }
       },
-      queryFn: async params => {
+      queryFn: async (params, { signal }) => {
         try {
           const identity = params && 'identity' in params ? params.identity : undefined
           const baseUrl = getEnv('EVENTS_API_URL')!
@@ -115,7 +115,7 @@ const eventsClient = createApi({
             from: now.toISOString(),
             to: in24h.toISOString()
           })
-          const response = await fetchWithOptionalIdentity(`${baseUrl}/events?${query}`, identity)
+          const response = await fetchWithOptionalIdentity(`${baseUrl}/events?${query}`, identity, signal)
 
           if (!response.ok) {
             throw new Error(`Events API error: ${response.status}`)
@@ -131,10 +131,10 @@ const eventsClient = createApi({
     }),
     getEventById: build.query<EventEntry, GetEventByIdParams>({
       serializeQueryArgs: ({ queryArgs: { eventId, identity } }) => ({ eventId, authenticated: Boolean(identity) }),
-      queryFn: async ({ eventId, identity }) => {
+      queryFn: async ({ eventId, identity }, { signal }) => {
         try {
           const baseUrl = getEnv('EVENTS_API_URL')!
-          const response = await fetchWithOptionalIdentity(`${baseUrl}/events/${encodeURIComponent(eventId)}`, identity)
+          const response = await fetchWithOptionalIdentity(`${baseUrl}/events/${encodeURIComponent(eventId)}`, identity, signal)
 
           if (!response.ok) {
             const envelope = await response.json().catch(() => null)
@@ -220,11 +220,11 @@ const eventsClient = createApi({
       serializeQueryArgs: ({ queryArgs: { identity } }) => ({
         address: identity?.authChain?.[0]?.payload?.toLowerCase() ?? 'anon'
       }),
-      queryFn: async ({ identity }) => {
+      queryFn: async ({ identity }, { signal }) => {
         try {
           const baseUrl = getEnv('SOCIAL_API_URL')!
           const url = `${baseUrl}/v1/communities?roles=owner&roles=moderator`
-          const response = await fetchWithOptionalIdentity(url, identity)
+          const response = await fetchWithOptionalIdentity(url, identity, signal)
           if (!response.ok) {
             throw new Error(`communities error: ${response.status}`)
           }
