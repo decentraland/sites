@@ -345,7 +345,7 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
                                 setField('repeatDays', next)
                               }}
                             >
-                              {day.narrow}
+                              {day.short}
                             </IntervalChip>
                           )
                         })}

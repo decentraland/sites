@@ -36,14 +36,14 @@ function parseRecurrentInterval(value: string): number | null {
   return num
 }
 
-const WEEKDAYS: ReadonlyArray<{ index: number; narrow: string; full: string }> = [
-  { index: 0, narrow: 'S', full: 'Sunday' },
-  { index: 1, narrow: 'M', full: 'Monday' },
-  { index: 2, narrow: 'T', full: 'Tuesday' },
-  { index: 3, narrow: 'W', full: 'Wednesday' },
-  { index: 4, narrow: 'T', full: 'Thursday' },
-  { index: 5, narrow: 'F', full: 'Friday' },
-  { index: 6, narrow: 'S', full: 'Saturday' }
+const WEEKDAYS: ReadonlyArray<{ index: number; short: string; full: string }> = [
+  { index: 0, short: 'Sun', full: 'Sunday' },
+  { index: 1, short: 'Mon', full: 'Monday' },
+  { index: 2, short: 'Tue', full: 'Tuesday' },
+  { index: 3, short: 'Wed', full: 'Wednesday' },
+  { index: 4, short: 'Thu', full: 'Thursday' },
+  { index: 5, short: 'Fri', full: 'Friday' },
+  { index: 6, short: 'Sat', full: 'Saturday' }
 ]
 
 function parseStartWeekday(startDate: string): number | null {
@@ -70,7 +70,7 @@ const INITIAL_STATE: CreateEventFormState = {
   startTime: '',
   duration: '',
   repeatEnabled: false,
-  frequency: 'every_week',
+  frequency: 'every_day',
   repeatInterval: '1',
   repeatDays: [],
   repeatEndDate: '',
@@ -138,7 +138,7 @@ function eventEntryToFormState(event: EventEntry): CreateEventFormState {
     startTime: start.time,
     duration: durationMsToHhMm(durationMs),
     repeatEnabled: Boolean(event.recurrent),
-    frequency: (event.recurrent_frequency && REVERSE_FREQUENCY_MAP[event.recurrent_frequency]) ?? 'every_week',
+    frequency: (event.recurrent_frequency && REVERSE_FREQUENCY_MAP[event.recurrent_frequency]) ?? 'every_day',
     repeatInterval: String(parseRecurrentInterval(String(event.recurrent_interval ?? '')) ?? 1),
     repeatDays: [],
     repeatEndDate: repeatEnd.date,

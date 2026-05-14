@@ -337,10 +337,10 @@ const IntervalChipRow = styled(Box)(({ theme }) => ({
 const IntervalChip = styled('button', {
   shouldForwardProp: prop => prop !== '$active'
 })<{ $active: boolean }>(({ $active, theme }) => ({
-  width: 28,
+  minWidth: 44,
   height: 28,
-  padding: 0,
-  borderRadius: '50%',
+  padding: `0 ${theme.spacing(1)}`,
+  borderRadius: 14,
   border: `1px solid ${$active ? theme.palette.primary.main : inputBorder}`,
   background: $active ? theme.palette.primary.main : 'transparent',
   color: $active ? '#fff' : inputText,

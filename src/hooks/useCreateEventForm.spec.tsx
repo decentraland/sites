@@ -276,6 +276,7 @@ describe('useCreateEventForm', () => {
       fillValidForm(result.current.setField)
       act(() => {
         result.current.setField('repeatEnabled', true)
+        result.current.setField('frequency', 'every_week')
         result.current.setField('repeatInterval', '1.5')
         result.current.setField('repeatEndDate', '2030-02-01')
       })
@@ -296,6 +297,7 @@ describe('useCreateEventForm', () => {
       fillValidForm(result.current.setField)
       act(() => {
         result.current.setField('repeatEnabled', true)
+        result.current.setField('frequency', 'every_week')
         result.current.setField('repeatInterval', '5')
         result.current.setField('repeatEndDate', '2030-02-01')
       })
@@ -533,6 +535,7 @@ describe('useCreateEventForm', () => {
       fillValidForm(result.current.setField)
       act(() => {
         result.current.setField('repeatEnabled', true)
+        result.current.setField('frequency', 'every_week')
       })
 
       await act(async () => {
