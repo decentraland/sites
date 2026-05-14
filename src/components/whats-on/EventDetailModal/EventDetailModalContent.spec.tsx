@@ -230,6 +230,23 @@ describe('EventDetailModalContent', () => {
         expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_on_days:{"days":"Mon, Fri"}')
       })
 
+      it('should combine days with the interval when WEEKLY interval > 1', () => {
+        render(
+          <EventDetailModalContent
+            data={createMockData({
+              recurrent: true,
+              recurrentFrequency: 'WEEKLY',
+              recurrentInterval: 2,
+              recurrentByDay: [0, 5, 6]
+            })}
+          />
+        )
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent(
+          'event_detail.recurrent_on_days_every_n_weeks:{"count":2,"days":"Sun, Fri, Sat"}'
+        )
+      })
+
       it('should fall through to the daily label when all 7 weekdays are selected', () => {
         render(
           <EventDetailModalContent

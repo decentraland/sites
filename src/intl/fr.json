@@ -1054,6 +1054,7 @@
     "recurrent_every_n_weeks": "Toutes les {count} semaines",
     "recurrent_every_n_months": "Tous les {count} mois",
     "recurrent_every_n_years": "Tous les {count} ans",
-    "recurrent_on_days": "Se répète les {days}"
+    "recurrent_on_days": "Se répète les {days}",
+    "recurrent_on_days_every_n_weeks": "Toutes les {count} semaines les {days}"
   }
 }

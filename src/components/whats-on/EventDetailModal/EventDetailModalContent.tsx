@@ -37,11 +37,15 @@ function getRecurrenceLabel(
   byDay: number[] | undefined,
   t: (key: string, values?: Record<string, string | number>) => string
 ): string | null {
-  // Day-picker selection wins when present and partial — full week falls through to "daily".
-  if (byDay && byDay.length > 0 && byDay.length < 7) {
-    return t('event_detail.recurrent_on_days', { days: formatRecurrentDays(byDay) })
-  }
   const { frequency: normalizedFrequency, interval: count } = normalizeRecurrence(frequency, interval)
+  // Day-picker selection wins when present and partial — full week falls through to the frequency label.
+  if (byDay && byDay.length > 0 && byDay.length < 7) {
+    const days = formatRecurrentDays(byDay)
+    if (count > 1) {
+      return t('event_detail.recurrent_on_days_every_n_weeks', { count, days })
+    }
+    return t('event_detail.recurrent_on_days', { days })
+  }
   switch (normalizedFrequency) {
     case 'DAILY':
       return count === 1 ? t('event_detail.recurrent_daily') : t('event_detail.recurrent_every_n_days', { count })

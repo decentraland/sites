@@ -85,14 +85,30 @@ interface RecurrenceRuleParams {
   interval: number
   count: number | null
   until: string | null
+  byDay?: number[]
 }
 
-function buildRecurrenceRule({ frequency, interval, count, until }: RecurrenceRuleParams): string | null {
+const RFC5545_DAY_CODES = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'] as const
+
+function formatByDay(days: number[]): string | null {
+  const codes = [...new Set(days)]
+    .filter(d => d >= 0 && d <= 6)
+    .sort((a, b) => a - b)
+    .map(d => RFC5545_DAY_CODES[d])
+  if (codes.length === 0 || codes.length === 7) return null
+  return codes.join(',')
+}
+
+function buildRecurrenceRule({ frequency, interval, count, until, byDay }: RecurrenceRuleParams): string | null {
   if (!frequency) return null
   // Sub-daily frequencies aren't surfaced in the UI; skip them in the calendar too for consistency.
   if (frequency === 'HOURLY' || frequency === 'MINUTELY' || frequency === 'SECONDLY') return null
   const parts = [`FREQ=${frequency}`]
   if (interval > 1) parts.push(`INTERVAL=${interval}`)
+  if (byDay) {
+    const formattedDays = formatByDay(byDay)
+    if (formattedDays) parts.push(`BYDAY=${formattedDays}`)
+  }
   if (until) {
     const formatted = formatRecurrenceUntil(until)
     if (formatted) parts.push(`UNTIL=${formatted}`)
@@ -115,6 +131,7 @@ interface CalendarEventParams {
   recurrentInterval?: number | null
   recurrentCount?: number | null
   recurrentUntil?: string | null
+  recurrentByDay?: number[]
 }
 
 function buildCalendarUrl(event: CalendarEventParams): string | null {
@@ -139,7 +156,8 @@ function buildCalendarUrl(event: CalendarEventParams): string | null {
       frequency: normalized.frequency,
       interval: normalized.interval,
       count: event.recurrentCount ?? null,
-      until: event.recurrentUntil ?? null
+      until: event.recurrentUntil ?? null,
+      byDay: event.recurrentByDay
     })
     if (rrule) params.set('recur', rrule)
   }

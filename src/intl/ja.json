@@ -1059,6 +1059,7 @@
     "recurrent_every_n_weeks": "{count}週間ごと",
     "recurrent_every_n_months": "{count}ヶ月ごと",
     "recurrent_every_n_years": "{count}年ごと",
-    "recurrent_on_days": "{days}に繰り返し"
+    "recurrent_on_days": "{days}に繰り返し",
+    "recurrent_on_days_every_n_weeks": "{count}週ごとに{days}"
   }
 }
