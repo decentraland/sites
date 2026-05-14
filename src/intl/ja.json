@@ -1172,6 +1172,32 @@
       "next_tier_at": "次のティアまで ({count} 招待)",
       "tier_label": "ティア {tier}",
       "tier_invites": "{count} 招待"
+    },
+    "referral_hero_section": {
+      "title": "Decentraland is Better With Friends",
+      "subtitle": "Invite yours and get rewards!",
+      "tooltip_text": "Invitees must be new to Decentraland and must jump in-world on 3 separate days to count toward reward goals. See ",
+      "tooltip_link_label": "Terms & Conditions",
+      "step_1": "Invite friends to hang out in-world by sharing your referral link.",
+      "step_2": "Your friends download Decentraland and jump in on 3 separate days.",
+      "step_3": "You earn exclusive rewards for helping grow our community!",
+      "how_it_works": "How it works",
+      "share": "SHARE",
+      "copy_link": "Copy Link",
+      "copied_to_clipboard": "Link copied successfully",
+      "share_on_x": "Share on X",
+      "share_on_x_title": "Wanna hang out in Decentraland? Use my referral link to make your account and download Decentraland so we can explore together! #DCL #Decentraland"
+    },
+    "referral_reward_card": {
+      "swag": "IRL SWAG PACK",
+      "claim": "CLAIM",
+      "image_alt": "Reward Image"
+    },
+    "referral_journey": {
+      "title": "Your Reward Journey",
+      "invites_accepted": "{count} Friends Joined",
+      "tooltip_title": "{count} Friends Joined",
+      "tooltip_subtitle": "{count} More friends for your next Reward!"
     }
   }
 }

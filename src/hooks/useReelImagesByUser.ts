@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { AuthIdentity } from '@dcl/crypto'
 import { fetchImagesByUser } from '../features/reels'
 import type { FetchListOptions, Image } from '../features/reels'
 
@@ -9,7 +10,7 @@ interface ReelImagesState {
   error: Error | null
 }
 
-const useReelImagesByUser = (address: string | undefined, options: FetchListOptions): ReelImagesState => {
+const useReelImagesByUser = (address: string | undefined, options: FetchListOptions, identity?: AuthIdentity): ReelImagesState => {
   const [state, setState] = useState<ReelImagesState>({
     images: [],
     total: 0,
@@ -28,7 +29,7 @@ const useReelImagesByUser = (address: string | undefined, options: FetchListOpti
 
     void (async () => {
       try {
-        const result = await fetchImagesByUser(address, options, controller.signal)
+        const result = await fetchImagesByUser(address, options, controller.signal, identity)
         if (controller.signal.aborted) return
         setState({
           images: result.images,
@@ -43,7 +44,7 @@ const useReelImagesByUser = (address: string | undefined, options: FetchListOpti
     })()
 
     return () => controller.abort()
-  }, [address, options.limit, options.offset])
+  }, [address, options.limit, options.offset, identity])
 
   return state
 }

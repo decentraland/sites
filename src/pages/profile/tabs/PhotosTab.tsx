@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { CircularProgress, Typography } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useReelImagesByUser } from '../../../hooks/useReelImagesByUser'
 import { EmptyBio, LoadingRow } from './OverviewTab.styled'
 import { PhotoCard, PhotoImage, PhotosGrid } from './PhotosTab.styled'
@@ -14,7 +15,8 @@ interface PhotosTabProps {
 
 function PhotosTab({ address, isOwnProfile }: PhotosTabProps) {
   const t = useFormatMessage()
-  const { images, isLoading, total } = useReelImagesByUser(address, PAGE_OPTIONS)
+  const { identity } = useAuthIdentity()
+  const { images, isLoading, total } = useReelImagesByUser(address, PAGE_OPTIONS, isOwnProfile ? identity : undefined)
   const photos = useMemo(() => images, [images])
 
   if (isLoading) {
