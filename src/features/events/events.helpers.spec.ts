@@ -153,6 +153,7 @@ describe('buildLiveNowCards', () => {
           finish_at: '2026-04-22T18:00:00Z',
           recurrent: true,
           recurrent_frequency: 'WEEKLY',
+          recurrent_interval: 2,
           recurrent_dates: ['2026-04-22T17:00:00Z'],
           attending: true
         })
@@ -176,6 +177,7 @@ describe('buildLiveNowCards', () => {
       it('should propagate the recurrence fields', () => {
         expect(result[0].recurrent).toBe(true)
         expect(result[0].recurrentFrequency).toBe('WEEKLY')
+        expect(result[0].recurrentInterval).toBe(2)
         expect(result[0].recurrentDates).toEqual(['2026-04-22T17:00:00Z'])
       })
 

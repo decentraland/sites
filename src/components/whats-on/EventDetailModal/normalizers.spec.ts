@@ -52,6 +52,7 @@ describe('normalizeEventEntry', () => {
     it('should map the recurrence fields', () => {
       expect(result.recurrent).toBe(false)
       expect(result.recurrentFrequency).toBeNull()
+      expect(result.recurrentInterval).toBeNull()
       expect(result.recurrentDates).toEqual([])
     })
 
@@ -144,6 +145,7 @@ describe('normalizeEventEntry', () => {
         createMockEvent({
           recurrent: true,
           recurrent_frequency: 'WEEKLY',
+          recurrent_interval: 2,
           recurrent_dates: ['2026-04-07', '2026-04-14']
         })
       )
@@ -155,6 +157,10 @@ describe('normalizeEventEntry', () => {
 
     it('should map the recurrent frequency', () => {
       expect(result.recurrentFrequency).toBe('WEEKLY')
+    })
+
+    it('should map the recurrent interval', () => {
+      expect(result.recurrentInterval).toBe(2)
     })
 
     it('should map the recurrent dates', () => {
@@ -212,6 +218,7 @@ describe('normalizeLiveNowCard', () => {
     it('should default recurrence fields when card is not recurrent', () => {
       expect(result.recurrent).toBe(false)
       expect(result.recurrentFrequency).toBeNull()
+      expect(result.recurrentInterval).toBeNull()
       expect(result.recurrentDates).toEqual([])
     })
 
@@ -292,6 +299,7 @@ describe('normalizeLiveNowCard', () => {
           finishAt: '2026-04-22T18:00:00Z',
           recurrent: true,
           recurrentFrequency: 'WEEKLY',
+          recurrentInterval: 3,
           recurrentDates: ['2026-04-22T17:00:00Z'],
           attending: true
         })
@@ -314,6 +322,7 @@ describe('normalizeLiveNowCard', () => {
     it('should propagate the recurrence fields', () => {
       expect(result.recurrent).toBe(true)
       expect(result.recurrentFrequency).toBe('WEEKLY')
+      expect(result.recurrentInterval).toBe(3)
       expect(result.recurrentDates).toEqual(['2026-04-22T17:00:00Z'])
     })
 

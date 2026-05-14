@@ -1042,5 +1042,15 @@
       "members": "成员",
       "upcoming_events": "即将举行的活动"
     }
+  },
+  "event_detail": {
+    "recurrent_daily": "每天重复",
+    "recurrent_weekly": "每周重复",
+    "recurrent_monthly": "每月重复",
+    "recurrent_yearly": "每年重复",
+    "recurrent_every_n_days": "每{count}天",
+    "recurrent_every_n_weeks": "每{count}周",
+    "recurrent_every_n_months": "每{count}个月",
+    "recurrent_every_n_years": "每{count}年"
   }
 }
