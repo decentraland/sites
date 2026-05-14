@@ -370,4 +370,12 @@ describe('EventDetailModalHero', () => {
       })
     })
   })
+
+  describe('when the modal data is an unsaved event preview', () => {
+    it('should not render the copy link button because there is no event page to link to yet', () => {
+      render(<EventDetailModalHero data={createMockData({ id: 'preview', isEvent: false })} onClose={mockOnClose} />)
+
+      expect(screen.queryByTestId('copy-button')).not.toBeInTheDocument()
+    })
+  })
 })
