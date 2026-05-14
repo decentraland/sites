@@ -5,7 +5,7 @@ import { useTranslation } from '@dcl/hooks'
 import { Button } from 'decentraland-ui2'
 import type { RecurrentFrequency } from '../../../features/events'
 import { linkifyText } from '../../../utils/linkifyText'
-import { buildCalendarUrl } from '../../../utils/whatsOnUrl'
+import { buildCalendarUrl, normalizeRecurrence } from '../../../utils/whatsOnUrl'
 import { ContentDivider, ContentSection, DescriptionText, SectionLabel } from '../DetailModal/DetailModal.styled'
 import type { AdminActions, ModalEventData } from './EventDetailModal.types'
 import { AdminActionsRow, RecurrenceText, ScheduleIconButton, ScheduleRow, ScheduleText } from './EventDetailModal.styled'
@@ -24,14 +24,21 @@ function formatScheduleTime(isoString: string): string {
   return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 
-function getRecurrenceLabel(frequency: RecurrentFrequency | null, t: (key: string) => string): string | null {
-  switch (frequency) {
+function getRecurrenceLabel(
+  frequency: RecurrentFrequency | null,
+  interval: number | null,
+  t: (key: string, values?: Record<string, string | number>) => string
+): string | null {
+  const { frequency: normalizedFrequency, interval: count } = normalizeRecurrence(frequency, interval)
+  switch (normalizedFrequency) {
     case 'DAILY':
-      return t('event_detail.recurrent_daily')
+      return count === 1 ? t('event_detail.recurrent_daily') : t('event_detail.recurrent_every_n_days', { count })
     case 'WEEKLY':
-      return t('event_detail.recurrent_weekly')
+      return count === 1 ? t('event_detail.recurrent_weekly') : t('event_detail.recurrent_every_n_weeks', { count })
     case 'MONTHLY':
-      return t('event_detail.recurrent_monthly')
+      return count === 1 ? t('event_detail.recurrent_monthly') : t('event_detail.recurrent_every_n_months', { count })
+    case 'YEARLY':
+      return count === 1 ? t('event_detail.recurrent_yearly') : t('event_detail.recurrent_every_n_years', { count })
     default:
       return null
   }
@@ -52,7 +59,7 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
     return null
   }
 
-  const recurrenceLabel = data.recurrent ? getRecurrenceLabel(data.recurrentFrequency, t) : null
+  const recurrenceLabel = data.recurrent ? getRecurrenceLabel(data.recurrentFrequency, data.recurrentInterval, t) : null
 
   return (
     <ContentSection>
