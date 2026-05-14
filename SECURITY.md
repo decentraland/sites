@@ -1,6 +1,6 @@
 # Security Policy
 
-_Last updated: 2026-05-14 · Version: 1.1_
+_Last updated: 2026-05-14_
 
 ## Reporting a Vulnerability
 
@@ -75,9 +75,7 @@ qualify as a vulnerability:
 
 ## Safe Harbor
 
-We will not pursue legal action — and we will actively support requests for
-authorization with hosting providers, app stores, or law enforcement — against
-researchers who:
+We will not pursue legal action against researchers who:
 
 - Make a good-faith effort to comply with this policy.
 - Limit testing to accounts, content, and data that you own or have explicit
@@ -89,10 +87,16 @@ researchers who:
 - Give us reasonable time to remediate before any public disclosure.
 
 This policy is intended to be consistent with the principles set out in
-[disclose.io](https://disclose.io). Research conducted under this policy is
-authorized under the U.S. Computer Fraud and Abuse Act (CFAA) and analogous
-laws to the extent permitted, and we will defend that good-faith
-authorization if a researcher's activity is later challenged by a third party.
+[disclose.io](https://disclose.io). To the extent we are able to grant such
+authorization, we consider good-faith research conducted under this policy to
+be authorized for the purposes of computer-misuse statutes such as the U.S.
+Computer Fraud and Abuse Act (CFAA). We cannot waive claims brought by third
+parties, nor guarantee that other jurisdictions will recognize this
+authorization. If a hosting provider, registrar, or other third party
+challenges your testing despite this policy, contact us at
+[security@decentraland.org](mailto:security@decentraland.org) and — where
+reasonably possible — we will confirm in writing that your activity was
+authorized under this policy.
 
 ## Supported Versions
 
@@ -102,16 +106,9 @@ forks do not receive security updates from this repository.
 
 ## Recognition
 
-We maintain a public list of researchers who have responsibly reported
-vulnerabilities at
-[github.com/decentraland/sites/security/advisories](https://github.com/decentraland/sites/security/advisories)
-(once an advisory has been published with the reporter's consent). Decentraland
-does not currently run a paid bug bounty program; recognition is by attribution
-and, where applicable, swag.
-
-## Revision History
-
-- **1.1 (2026-05-14):** add GitHub private advisory channel, clarify
-  disclosure timeline, expand out-of-scope list, link to disclose.io,
-  add CFAA safe-harbor language, document published-artifact scope.
-- **1.0:** initial policy.
+Reporters who consent to attribution will be credited in the published GitHub
+Security Advisory for their finding and, where applicable, in release notes.
+Published advisories are visible under the repository's
+[Security tab](https://github.com/decentraland/sites/security/advisories?state=published).
+Decentraland does not currently run a paid bug bounty program; recognition is
+by attribution and, where applicable, swag.

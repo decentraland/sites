@@ -1,6 +1,6 @@
 # Trademark Policy
 
-_Last updated: 2026-05-14 · Version: 1.1_
+_Last updated: 2026-05-14_
 
 The source code in this repository is licensed under the
 [Apache License, Version 2.0](./LICENSE). The Apache License grants broad
@@ -44,11 +44,9 @@ applicable trademark, fair-use, or consumer-protection law already grants.
 - **Impersonate an official client.** Operate a fork of this codebase, or any
   derivative deployment, in a way that could lead a reasonable user to
   believe it is the official Decentraland website, an official Decentraland
-  product, or an official Decentraland service. In particular, do not
-  authenticate users against the official Decentraland single-sign-on (SSO)
-  endpoints, route transactions through official wallet flows, or otherwise
-  call the official `*.decentraland.org` APIs from a fork in a way that
-  could be mistaken for an official client.
+  product, or an official Decentraland service. This is about user-facing
+  presentation (branding, copy, domains, UI) — not about which APIs or
+  infrastructure your fork talks to.
 - **Disparage or defame** the Decentraland Foundation, the Decentraland DAO,
   or their communities while using the Decentraland Marks.
 
@@ -68,13 +66,13 @@ deployment, you must:
    deployed site that the project is an independent fork and is **not
    affiliated with, endorsed by, or sponsored by** the Decentraland
    Foundation or the Decentraland DAO.
-4. **Do not call official services on behalf of users.** Remove or replace
-   any links, endpoints, or credentials that direct users to authenticate
-   against, transact with, or otherwise interact with the official
-   Decentraland SSO, Catalysts, wallet flows, or related back-end services
-   in a way that could be mistaken for an official client. If your fork
-   needs equivalent functionality, run your own infrastructure or use an
-   API that explicitly permits third-party use.
+
+Forks and derivative projects may use publicly available Decentraland
+infrastructure — including public APIs, Catalyst nodes, wallet flows, and
+other publicly documented services — in accordance with their applicable
+terms and technical limits. This policy does not restrict that use; it only
+restricts presenting your project in a way that could mislead users about
+affiliation, endorsement, or sponsorship.
 
 ## Reporting misuse
 
@@ -91,15 +89,6 @@ For any use of the Decentraland Marks not explicitly permitted above, please
 request written permission from
 [legal@decentraland.org](mailto:legal@decentraland.org) before using the
 marks. Please include the intended use, the audience, and the duration.
-
-## Revision History
-
-- **1.1 (2026-05-14):** add policy version and revision history, clarify
-  nominative-fair-use scope, list concrete examples of look-alike
-  identifiers, replace ambiguous "interact with official services" wording
-  with explicit guidance on SSO/Catalysts/wallet flows, expand the
-  brand-asset replacement checklist for forks.
-- **1.0:** initial policy.
 
 ---
 
