@@ -13,6 +13,8 @@ interface ProfileTabsProps {
   activeTab: ProfileTab
   isOwnProfile: boolean
   onTabSelect: (tab: ProfileTab) => void
+  /** Tabs to omit from the nav (e.g. dynamically hidden when the underlying data is empty). */
+  hiddenTabs?: Set<ProfileTab>
 }
 
 // Tabs differ Member vs My (per Figma 167:77288 + 322:49164):

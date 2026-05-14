@@ -4,9 +4,13 @@ import { getVisibleTabs } from './ProfileTabs.types'
 import type { ProfileTab, ProfileTabsProps } from './ProfileTabs.types'
 import { StyledTab, StyledTabs } from './ProfileTabs.styled'
 
-function ProfileTabs({ activeTab, isOwnProfile, onTabSelect }: ProfileTabsProps) {
+function ProfileTabs({ activeTab, isOwnProfile, onTabSelect, hiddenTabs }: ProfileTabsProps) {
   const t = useFormatMessage()
-  const tabs = useMemo(() => getVisibleTabs(isOwnProfile), [isOwnProfile])
+  const tabs = useMemo(() => {
+    const all = getVisibleTabs(isOwnProfile)
+    if (!hiddenTabs || hiddenTabs.size === 0) return all
+    return all.filter(tab => !hiddenTabs.has(tab.id))
+  }, [isOwnProfile, hiddenTabs])
 
   const handleChange = useCallback(
     (_event: React.SyntheticEvent, value: ProfileTab) => {

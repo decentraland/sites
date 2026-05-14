@@ -1,10 +1,11 @@
+import { useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { AssetsTab, CommunitiesTab, CreationsTab, OverviewTab, PhotosTab, PlacesTab, ReferralRewardsTab } from '../../../pages/profile/tabs'
 import { AvatarRender } from '../AvatarRender'
 import { ProfileHeader } from '../ProfileHeader'
 import { ProfileLayout } from '../ProfileLayout'
-import { ProfileTabs, isTabAvailable } from '../ProfileTabs'
+import { ProfileTabs, isTabAvailable, useProfileTabAvailability } from '../ProfileTabs'
 import type { ProfileTab } from '../ProfileTabs'
 
 interface ProfileSurfaceProps {
@@ -53,7 +54,15 @@ function ProfileSurface({
   embedded
 }: ProfileSurfaceProps) {
   const t = useFormatMessage()
-  const resolvedTab: ProfileTab = isTabAvailable(activeTab, isOwnProfile) ? activeTab : 'overview'
+  const { hidden } = useProfileTabAvailability(address, isOwnProfile)
+  const visibleTab: ProfileTab = isTabAvailable(activeTab, isOwnProfile) ? activeTab : 'overview'
+  const resolvedTab: ProfileTab = hidden.has(visibleTab) ? 'overview' : visibleTab
+
+  // Direct URL hits on a now-empty tab should rewrite the location, not just swap content.
+  useEffect(() => {
+    if (resolvedTab !== activeTab) onTabChange(resolvedTab)
+  }, [resolvedTab, activeTab, onTabChange])
+
   // Wearable preview is anchored to Overview only; on other tabs the right
   // column slides over the aside (animated in ProfileLayout.styled).
   const aside = <AvatarRender address={address} />
@@ -62,7 +71,7 @@ function ProfileSurface({
   return (
     <ProfileLayout
       header={<ProfileHeader address={address} isOwnProfile={isOwnProfile} onClose={onClose} onBack={onBack} />}
-      tabs={<ProfileTabs activeTab={resolvedTab} isOwnProfile={isOwnProfile} onTabSelect={onTabChange} />}
+      tabs={<ProfileTabs activeTab={resolvedTab} isOwnProfile={isOwnProfile} onTabSelect={onTabChange} hiddenTabs={hidden} />}
       aside={aside}
       showAside={showAside}
       embedded={embedded}

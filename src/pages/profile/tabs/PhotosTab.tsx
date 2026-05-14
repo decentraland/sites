@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { CircularProgress, Typography } from 'decentraland-ui2'
+import { PhotoModal } from '../../../components/profile/PhotoModal'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useReelImagesByUser } from '../../../hooks/useReelImagesByUser'
@@ -16,8 +17,18 @@ interface PhotosTabProps {
 function PhotosTab({ address, isOwnProfile }: PhotosTabProps) {
   const t = useFormatMessage()
   const { identity } = useAuthIdentity()
-  const { images, isLoading, total } = useReelImagesByUser(address, PAGE_OPTIONS, isOwnProfile ? identity : undefined)
+  const { images, isLoading } = useReelImagesByUser(address, PAGE_OPTIONS, isOwnProfile ? identity : undefined)
   const photos = useMemo(() => images, [images])
+  const [openImageId, setOpenImageId] = useState<string | null>(null)
+
+  const handleOpen = useCallback(
+    (id: string) => (event: React.MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault()
+      setOpenImageId(id)
+    },
+    []
+  )
+  const handleClose = useCallback(() => setOpenImageId(null), [])
 
   if (isLoading) {
     return (
@@ -31,18 +42,22 @@ function PhotosTab({ address, isOwnProfile }: PhotosTabProps) {
     return <EmptyBio sx={{ mt: 1 }}>{t(isOwnProfile ? 'profile.photos.empty_owner' : 'profile.photos.empty_member')}</EmptyBio>
   }
 
+  // Show the rendered count, not the service-side `currentImages` total — the
+  // unsigned listing filters out private snapshots so the server count can wildly
+  // diverge from what the user actually sees on the page.
   return (
     <>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        {t('profile.photos.count', { count: total || photos.length })}
+        {t('profile.photos.count', { count: photos.length })}
       </Typography>
       <PhotosGrid>
         {photos.map(image => (
-          <PhotoCard key={image.id} href={`/reels/${image.id}`}>
+          <PhotoCard key={image.id} type="button" onClick={handleOpen(image.id)}>
             <PhotoImage src={image.thumbnailUrl || image.url} alt={image.metadata?.scene?.name ?? 'Snapshot'} loading="lazy" />
           </PhotoCard>
         ))}
       </PhotosGrid>
+      <PhotoModal imageId={openImageId} onClose={handleClose} />
     </>
   )
 }

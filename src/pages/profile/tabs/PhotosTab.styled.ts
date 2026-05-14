@@ -15,10 +15,14 @@ const PhotosGrid = styled(Box)(({ theme }) => ({
   }
 }))
 
-const PhotoCard = styled('a')({
+const PhotoCard = styled('button')({
   position: 'relative',
   display: 'block',
+  width: '100%',
   height: '264.972px',
+  padding: 0,
+  border: 'none',
+  background: 'transparent',
   borderRadius: 16,
   overflow: 'hidden',
   textDecoration: 'none',
@@ -28,6 +32,11 @@ const PhotoCard = styled('a')({
   '&:hover': {
     transform: 'translateY(-2px)',
     boxShadow: '0 8px 20px rgba(0, 0, 0, 0.35)'
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:focus-visible': {
+    outline: '2px solid rgba(255, 255, 255, 0.6)',
+    outlineOffset: 2
   }
 })
 
