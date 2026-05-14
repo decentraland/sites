@@ -24,11 +24,23 @@ function formatScheduleTime(isoString: string): string {
   return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 
+const SHORT_WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+function formatRecurrentDays(days: number[]): string {
+  const sorted = [...new Set(days)].filter(d => d >= 0 && d <= 6).sort((a, b) => a - b)
+  return sorted.map(i => SHORT_WEEKDAY_NAMES[i]).join(', ')
+}
+
 function getRecurrenceLabel(
   frequency: RecurrentFrequency | null,
   interval: number | null,
+  byDay: number[] | undefined,
   t: (key: string, values?: Record<string, string | number>) => string
 ): string | null {
+  // Day-picker selection wins when present and partial — full week falls through to "daily".
+  if (byDay && byDay.length > 0 && byDay.length < 7) {
+    return t('event_detail.recurrent_on_days', { days: formatRecurrentDays(byDay) })
+  }
   const { frequency: normalizedFrequency, interval: count } = normalizeRecurrence(frequency, interval)
   switch (normalizedFrequency) {
     case 'DAILY':
@@ -59,7 +71,9 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
     return null
   }
 
-  const recurrenceLabel = data.recurrent ? getRecurrenceLabel(data.recurrentFrequency, data.recurrentInterval, t) : null
+  const recurrenceLabel = data.recurrent
+    ? getRecurrenceLabel(data.recurrentFrequency, data.recurrentInterval, data.recurrentByDay, t)
+    : null
 
   return (
     <ContentSection>

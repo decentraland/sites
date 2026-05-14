@@ -112,6 +112,7 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
     recurrentInterval: previewInterval,
     recurrentCount: null,
     recurrentUntil: previewUntil,
+    recurrentByDay: form.repeatEnabled && form.frequency === 'every_day' && form.repeatDays.length > 0 ? form.repeatDays : undefined,
     recurrentDates: [],
     totalAttendees: 0,
     attending: false,

@@ -1165,7 +1165,8 @@
     "recurrent_every_n_days": "Every {count} days",
     "recurrent_every_n_weeks": "Every {count} weeks",
     "recurrent_every_n_months": "Every {count} months",
-    "recurrent_every_n_years": "Every {count} years"
+    "recurrent_every_n_years": "Every {count} years",
+    "recurrent_on_days": "Repeats {days}"
   },
   "place_detail": {
     "close": "Close",

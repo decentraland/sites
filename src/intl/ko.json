@@ -1056,6 +1056,7 @@
     "recurrent_every_n_days": "{count}일마다",
     "recurrent_every_n_weeks": "{count}주마다",
     "recurrent_every_n_months": "{count}개월마다",
-    "recurrent_every_n_years": "{count}년마다"
+    "recurrent_every_n_years": "{count}년마다",
+    "recurrent_on_days": "{days}에 반복"
   }
 }
