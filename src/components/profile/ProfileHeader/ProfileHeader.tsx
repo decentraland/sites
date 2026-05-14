@@ -114,9 +114,18 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack }: ProfileHeader
   const { setBlocked, isLoading: isUpdatingBlock } = useBlockUser()
   const [blockMenuAnchor, setBlockMenuAnchor] = useState<HTMLElement | null>(null)
   const { count: mutualCount, friends: mutualFriendsPreview } = useMutualFriends(canQueryFriendship ? address : undefined)
-  const mutualAvatarColors = mutualFriendsPreview.slice(0, 3).map(friend => {
-    const displayName = getDisplayName({ name: friend.name, hasClaimedName: friend.hasClaimedName, ethAddress: friend.address })
-    return getAvatarBackgroundColor(displayName || friend.address)
+  // Always paint 3 dots when there is at least one mutual friend — the RPC sometimes
+  // returns only `paginationData.total` without populating the friends preview, but the
+  // visual count + 3-avatar cluster is what the design expects. Fill any empty slot
+  // with a deterministic colour seeded off the profile address so the dot still uses
+  // `getAvatarBackgroundColor` (same hash function as everywhere else).
+  const mutualAvatarColors = Array.from({ length: Math.min(3, mutualCount) }, (_, idx) => {
+    const friend = mutualFriendsPreview[idx]
+    if (friend) {
+      const displayName = getDisplayName({ name: friend.name, hasClaimedName: friend.hasClaimedName, ethAddress: friend.address })
+      return getAvatarBackgroundColor(displayName || friend.address)
+    }
+    return getAvatarBackgroundColor(`${address}-${idx}`)
   })
   const [hasCopiedInvite, setHasCopiedInvite] = useState(false)
   const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false)

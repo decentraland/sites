@@ -8,11 +8,11 @@ const PhotoDialog = styled(Dialog)(({ theme }) => ({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .MuiDialog-paper': {
     borderRadius: theme.spacing(2),
-    maxWidth: 1280,
+    maxWidth: 1440,
     width: '100%',
-    maxHeight: '90vh',
+    maxHeight: '92vh',
     margin: 0,
-    background: '#0E0518',
+    background: '#161518',
     boxShadow: '0px 4px 25px 0px rgba(255, 255, 255, 0.25)',
     overflow: 'hidden'
   },
@@ -28,15 +28,19 @@ const PhotoDialog = styled(Dialog)(({ theme }) => ({
   }
 })) as typeof Dialog
 
-const DialogBody = styled(Box)(({ theme }) => ({
-  display: 'grid',
-  gridTemplateColumns: '1fr 360px',
-  height: 'min(720px, 90vh)',
-  [theme.breakpoints.down('md')]: {
-    gridTemplateColumns: '1fr',
-    height: '100%'
-  }
-}))
+const DialogBody = styled(Box, { shouldForwardProp: prop => prop !== '$metadataVisible' })<{ $metadataVisible: boolean }>(
+  ({ theme, $metadataVisible }) => ({
+    display: 'grid',
+    gridTemplateColumns: $metadataVisible ? '1fr 420px' : '1fr',
+    height: 'min(820px, 92vh)',
+    transition: 'grid-template-columns 0.35s',
+    [theme.breakpoints.down('md')]: {
+      gridTemplateColumns: '1fr',
+      gridTemplateRows: $metadataVisible ? '1fr auto' : '1fr',
+      height: '100%'
+    }
+  })
+)
 
 const ImagePanel = styled(Box)({
   position: 'relative',
@@ -62,8 +66,15 @@ const MetadataPanel = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(2),
-  background: '#1A0A2E'
+  background: '#43404a',
+  color: '#fcfcfc'
 }))
+
+const MetadataHeader = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 6
+})
 
 const SectionTitle = styled(Typography)({
   fontSize: 12,
@@ -79,44 +90,54 @@ const SceneTitle = styled(Typography)({
   color: '#fff'
 })
 
-const InfoRow = styled(Box)({
+const DateLine = styled(Typography)({
+  fontSize: 14,
+  fontWeight: 500,
+  color: '#fcfcfc'
+})
+
+const LocationRow = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  gap: 8,
-  color: 'rgba(255, 255, 255, 0.7)',
+  justifyContent: 'space-between',
+  gap: 12
+})
+
+const LocationLink = styled(Box)({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  color: '#fcfcfc',
   fontSize: 14
 })
 
-const PeopleList = styled(Box)({
+const JumpInLink = styled('a')(({ theme }) => ({
+  padding: theme.spacing(0.75, 2),
+  borderRadius: 999,
+  background: 'linear-gradient(90deg, #FF2D55 0%, #FFBC5B 100%)',
+  color: '#fff',
+  fontWeight: 600,
+  fontSize: 13,
+  textDecoration: 'none',
+  textTransform: 'uppercase',
+  letterSpacing: '0.04em',
+  whiteSpace: 'nowrap',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:hover': {
+    filter: 'brightness(1.05)'
+  }
+}))
+
+const PeopleSection = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
   gap: 12
 })
 
-const PersonRow = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-  gap: 12
-})
-
-const PersonAvatar = styled('img')({
-  width: 36,
-  height: 36,
-  borderRadius: '50%',
-  objectFit: 'cover',
-  background: 'rgba(255, 255, 255, 0.1)'
-})
-
-const PersonName = styled(Typography)({
-  fontSize: 14,
-  fontWeight: 500,
-  color: '#fff'
-})
-
 const CloseButton = styled(IconButton)(({ theme }) => ({
   position: 'absolute',
   top: theme.spacing(1.5),
-  right: theme.spacing(1.5),
+  left: theme.spacing(1.5),
   zIndex: 10,
   color: '#fff',
   background: 'rgba(0, 0, 0, 0.45)',
@@ -128,14 +149,15 @@ const CloseButton = styled(IconButton)(({ theme }) => ({
 
 export {
   CloseButton,
+  DateLine,
   DialogBody,
   ImagePanel,
-  InfoRow,
+  JumpInLink,
+  LocationLink,
+  LocationRow,
+  MetadataHeader,
   MetadataPanel,
-  PeopleList,
-  PersonAvatar,
-  PersonName,
-  PersonRow,
+  PeopleSection,
   Photo,
   PhotoDialog,
   SceneTitle,
