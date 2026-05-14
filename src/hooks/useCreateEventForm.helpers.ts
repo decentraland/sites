@@ -71,18 +71,31 @@ function durationMsToHhMm(durationMs: number | null | undefined): string {
   return `${pad(hours)}:${pad(minutes)}`
 }
 
-function resolveDurationMs(event: EventEntry): number {
+function resolveDurationMs(event: EventEntry, referenceStartAt: string): number {
   if (typeof event.duration === 'number' && event.duration > 0) return event.duration
-  if (event.start_at && event.finish_at) {
-    const diff = new Date(event.finish_at).getTime() - new Date(event.start_at).getTime()
+  if (referenceStartAt && event.finish_at) {
+    const diff = new Date(event.finish_at).getTime() - new Date(referenceStartAt).getTime()
     return diff > 0 ? diff : 0
   }
   return 0
 }
 
-function eventEntryToFormState(event: EventEntry): CreateEventFormState {
-  const start = splitIsoDateTime(event.start_at)
-  const durationMs = resolveDurationMs(event)
+// For recurrent events the API keeps `start_at` pointing at the first occurrence ever — which can
+// sit months in the past — while `next_start_at` tracks the upcoming one. Hydrating the edit form
+// from `start_at` (the default) leaves owners staring at a stale anchor date and asking "where did
+// my saved time go?" — issue #474. When `start_at` is clearly historical, prefer `next_start_at`
+// so the form shows the date the user is about to re-schedule.
+function resolveFormReferenceStartAt(event: EventEntry, now: number): string {
+  if (!event.recurrent || !event.next_start_at) return event.start_at
+  const startMs = new Date(event.start_at).getTime()
+  if (!Number.isFinite(startMs) || startMs >= now) return event.start_at
+  return event.next_start_at
+}
+
+function eventEntryToFormState(event: EventEntry, now: number = Date.now()): CreateEventFormState {
+  const referenceStartAt = resolveFormReferenceStartAt(event, now)
+  const start = splitIsoDateTime(referenceStartAt)
+  const durationMs = resolveDurationMs(event, referenceStartAt)
   const lastRecurrentDate = event.recurrent_dates?.[event.recurrent_dates.length - 1] ?? null
   const repeatEnd = splitIsoDateTime(lastRecurrentDate)
   // Treat events whose `world: true` flag isn't backed by a non-empty `server`

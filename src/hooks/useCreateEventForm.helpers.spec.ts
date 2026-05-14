@@ -100,4 +100,113 @@ describe('eventEntryToFormState', () => {
       expect(formState.coordY).toBe('5')
     })
   })
+
+  describe('when the event is recurrent and `start_at` already lies in the past (issue #474)', () => {
+    // The API anchors `start_at` on the first occurrence ever and tracks the upcoming one in
+    // `next_start_at`. For long-running series the anchor is months behind "now", so hydrating
+    // the form from `start_at` left owners seeing a stale date and reporting "saved time was lost".
+    const now = new Date('2026-05-14T12:00:00.000Z').getTime()
+    let formState: ReturnType<typeof eventEntryToFormState>
+
+    beforeEach(() => {
+      formState = eventEntryToFormState(
+        buildEvent({
+          recurrent: true,
+          start_at: '2026-01-09T00:01:00.000Z',
+          next_start_at: '2026-05-15T00:01:00.000Z',
+          finish_at: '2026-05-15T01:01:00.000Z'
+        }),
+        now
+      )
+    })
+
+    it('should hydrate the date from `next_start_at` so the form reflects the upcoming occurrence', () => {
+      const expected = (() => {
+        const d = new Date('2026-05-15T00:01:00.000Z')
+        const pad = (v: number): string => String(v).padStart(2, '0')
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+      })()
+      expect(formState.startDate).toBe(expected)
+    })
+  })
+
+  describe('when the event is recurrent and `start_at` is still upcoming', () => {
+    // A user could have clicked a specific occurrence in the calendar grid — `bucketEventsByDay`
+    // hands the form a virtual entry whose `start_at` already points at the chosen future date.
+    // Respect that intent instead of jumping to a different `next_start_at`.
+    const now = new Date('2026-05-14T12:00:00.000Z').getTime()
+    let formState: ReturnType<typeof eventEntryToFormState>
+
+    beforeEach(() => {
+      formState = eventEntryToFormState(
+        buildEvent({
+          recurrent: true,
+          start_at: '2026-05-21T18:00:00.000Z',
+          next_start_at: '2026-05-15T18:00:00.000Z'
+        }),
+        now
+      )
+    })
+
+    it('should keep the future `start_at` the caller already pinned', () => {
+      const expected = (() => {
+        const d = new Date('2026-05-21T18:00:00.000Z')
+        const pad = (v: number): string => String(v).padStart(2, '0')
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+      })()
+      expect(formState.startDate).toBe(expected)
+    })
+  })
+
+  describe('when a recurrent event omits `duration` and the form pivots to `next_start_at`', () => {
+    // Defensive: if the API ever returns an event without an explicit `duration`, the helper
+    // falls back to `finish_at - start_at`. With the pivot to `next_start_at`, the duration must
+    // be computed against the same reference — otherwise it spans months (issue #474 follow-up).
+    const now = new Date('2026-05-14T12:00:00.000Z').getTime()
+    let formState: ReturnType<typeof eventEntryToFormState>
+
+    beforeEach(() => {
+      formState = eventEntryToFormState(
+        buildEvent({
+          recurrent: true,
+          duration: 0,
+          start_at: '2026-01-09T00:01:00.000Z',
+          next_start_at: '2026-05-15T00:01:00.000Z',
+          finish_at: '2026-05-15T01:01:00.000Z'
+        }),
+        now
+      )
+    })
+
+    it('should derive duration from `next_start_at` → `finish_at` instead of the stale anchor', () => {
+      expect(formState.duration).toBe('01:00')
+    })
+  })
+
+  describe('when the event is NOT recurrent with a past `start_at`', () => {
+    // Non-recurrent events have no future occurrences to pivot to — keep the original anchor so
+    // owners editing a one-off event still see what they saved.
+    const now = new Date('2026-05-14T12:00:00.000Z').getTime()
+    let formState: ReturnType<typeof eventEntryToFormState>
+
+    beforeEach(() => {
+      formState = eventEntryToFormState(
+        buildEvent({
+          recurrent: false,
+          start_at: '2026-01-09T00:01:00.000Z',
+          next_start_at: '2026-05-15T00:01:00.000Z'
+        }),
+        now
+      )
+    })
+
+    it('should hydrate from `start_at` without falling back to `next_start_at`', () => {
+      const expected = (() => {
+        const d = new Date('2026-01-09T00:01:00.000Z')
+        const pad = (v: number): string => String(v).padStart(2, '0')
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+      })()
+      expect(formState.startDate).toBe(expected)
+    })
+  })
 })
