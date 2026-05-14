@@ -33,7 +33,7 @@ const useReelImagesByUser = (address: string | undefined, options: FetchListOpti
         if (controller.signal.aborted) return
         setState({
           images: result.images,
-          total: result.maxImages ?? result.images.length,
+          total: result.currentImages ?? result.images.length,
           isLoading: false,
           error: null
         })
