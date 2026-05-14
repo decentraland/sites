@@ -61,6 +61,17 @@ If unsure, default to **lightweight (with Layout)**.
 4. Same data + import restrictions as the lightweight tier.
 5. Helmet titles still follow rule 23 if the title resolves async.
 
+## Keep README in sync
+
+The route table under "What lives here" in `README.md` is curated by hand — there is no codegen. Any time you **add, remove, or rename** a route in `src/App.tsx`, update the matching row in `README.md` **in the same PR**:
+
+- Route column: every public-facing path (including legacy aliases worth advertising).
+- Notes column: 404 catch-alls (`/area/*`), legacy redirects, and tier-specific quirks (`fullscreen`, `Heavy DappsShell route`, etc.).
+
+If the change is purely internal (component rename, lazy-import path, comment) and no public path changes, the README is fine as is.
+
+A `PostToolUse` hook fires on every edit to `src/App.tsx` to surface this reminder.
+
 ## Verification
 
 ```bash
