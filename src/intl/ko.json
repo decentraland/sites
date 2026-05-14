@@ -993,7 +993,9 @@
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
-    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "repeat_interval": "반복 간격 (1 = 매번)",
+    "error_repeat_interval_invalid": "반복 간격은 1에서 365 사이의 정수여야 합니다"
   },
   "community": {
     "global": {

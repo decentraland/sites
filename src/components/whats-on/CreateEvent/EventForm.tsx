@@ -82,6 +82,10 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
   const creatorAddress = initialEvent?.user || address
   const creatorName = initialEvent?.user_name || undefined
 
+  const parsedInterval = Number(form.repeatInterval)
+  const previewInterval = form.repeatEnabled && Number.isInteger(parsedInterval) && parsedInterval > 0 ? parsedInterval : null
+  const previewUntil = form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : null
+
   return {
     id: 'preview',
     name: form.name.trim(),
@@ -95,9 +99,9 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
     finishAt,
     recurrent: form.repeatEnabled,
     recurrentFrequency: form.repeatEnabled ? FREQUENCY_MAP[form.frequency] ?? null : null,
-    recurrentInterval: null,
+    recurrentInterval: previewInterval,
     recurrentCount: null,
-    recurrentUntil: null,
+    recurrentUntil: previewUntil,
     recurrentDates: [],
     totalAttendees: 0,
     attending: false,
@@ -309,6 +313,18 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
                       <EventMenuItem value="every_month">{t('create_event.every_month')}</EventMenuItem>
                     </EventSelect>
                   </EventFormControl>
+                  <EventTextField
+                    variant="outlined"
+                    label={t('create_event.repeat_interval')}
+                    type="number"
+                    value={form.repeatInterval}
+                    onChange={e => setField('repeatInterval', e.target.value)}
+                    error={Boolean(errors.repeatInterval)}
+                    helperText={errors.repeatInterval}
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{ min: 1, max: 365, step: 1, inputMode: 'numeric' }}
+                  />
                   <EventTextField
                     variant="outlined"
                     label={t('create_event.repeat_until')}

@@ -100,4 +100,24 @@ describe('eventEntryToFormState', () => {
       expect(formState.coordY).toBe('5')
     })
   })
+
+  describe('when hydrating recurrent_interval from a stored event', () => {
+    it('should preserve a custom interval as a string', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_interval: 2 }))
+
+      expect(formState.repeatInterval).toBe('2')
+    })
+
+    it('should default to "1" when the event has no interval', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_interval: null }))
+
+      expect(formState.repeatInterval).toBe('1')
+    })
+
+    it('should default to "1" when the event has a non-positive interval', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_interval: 0 }))
+
+      expect(formState.repeatInterval).toBe('1')
+    })
+  })
 })

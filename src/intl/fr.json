@@ -988,7 +988,9 @@
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
-    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "repeat_interval": "Répéter tous les (1 = sans saut)",
+    "error_repeat_interval_invalid": "L'intervalle de répétition doit être un nombre entier entre 1 et 365"
   },
   "community": {
     "global": {

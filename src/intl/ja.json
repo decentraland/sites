@@ -993,7 +993,9 @@
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
-    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "repeat_interval": "繰り返し間隔（1 = 毎回）",
+    "error_repeat_interval_invalid": "繰り返し間隔は1から365までの整数で入力してください"
   },
   "community": {
     "global": {

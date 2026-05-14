@@ -26,6 +26,15 @@ const COORD_Y_MAX = 158
 const MAX_EVENT_DURATION_MS = 24 * 60 * 60 * 1000
 const MAX_NAME_LENGTH = 150
 const MAX_DESCRIPTION_LENGTH = 5000
+const MAX_RECURRENT_INTERVAL = 365
+
+function parseRecurrentInterval(value: string): number | null {
+  if (!value.trim()) return null
+  const num = Number(value)
+  if (!Number.isFinite(num) || !Number.isInteger(num)) return null
+  if (num < 1 || num > MAX_RECURRENT_INTERVAL) return null
+  return num
+}
 
 function validateImage(file: File): ImageErrorCode | null {
   if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
@@ -297,8 +306,13 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
       newErrors.email = t('create_event.error_invalid_email')
     }
 
-    if (form.repeatEnabled && !form.repeatEndDate) {
-      newErrors.repeatEndDate = t('create_event.error_required')
+    if (form.repeatEnabled) {
+      if (!form.repeatEndDate) {
+        newErrors.repeatEndDate = t('create_event.error_required')
+      }
+      if (parseRecurrentInterval(form.repeatInterval) === null) {
+        newErrors.repeatInterval = t('create_event.error_repeat_interval_invalid')
+      }
     }
 
     return newErrors
@@ -353,6 +367,7 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         community_id: form.communityId || null,
         recurrent: form.repeatEnabled || undefined,
         recurrent_frequency: form.repeatEnabled ? FREQUENCY_MAP[form.frequency] : undefined,
+        recurrent_interval: form.repeatEnabled ? parseRecurrentInterval(form.repeatInterval) ?? 1 : undefined,
         recurrent_until: form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : undefined
       }
       /* eslint-enable @typescript-eslint/naming-convention */

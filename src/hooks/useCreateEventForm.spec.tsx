@@ -234,10 +234,77 @@ describe('useCreateEventForm', () => {
           payload: expect.objectContaining({
             recurrent: true,
             recurrent_frequency: 'WEEKLY',
+            recurrent_interval: 1,
             recurrent_until: expect.stringContaining('2030-02-01')
           })
         })
       )
+    })
+  })
+
+  describe('when repeat is enabled and a custom interval is provided', () => {
+    it('should include the interval in the payload', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+      act(() => {
+        result.current.setField('repeatEnabled', true)
+        result.current.setField('frequency', 'every_week')
+        result.current.setField('repeatInterval', '2')
+        result.current.setField('repeatEndDate', '2030-02-01')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            recurrent_frequency: 'WEEKLY',
+            recurrent_interval: 2
+          })
+        })
+      )
+    })
+  })
+
+  describe('when repeat is enabled with a non-integer interval', () => {
+    it('should report the interval invalid error', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+      act(() => {
+        result.current.setField('repeatEnabled', true)
+        result.current.setField('repeatInterval', '1.5')
+        result.current.setField('repeatEndDate', '2030-02-01')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.repeatInterval).toBe('create_event.error_repeat_interval_invalid')
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when repeat is enabled with an out-of-range interval', () => {
+    it('should report the interval invalid error', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+      act(() => {
+        result.current.setField('repeatEnabled', true)
+        result.current.setField('repeatInterval', '999')
+        result.current.setField('repeatEndDate', '2030-02-01')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.repeatInterval).toBe('create_event.error_repeat_interval_invalid')
     })
   })
 
