@@ -31,7 +31,8 @@ function getRecurrenceLabel(
 ): string | null {
   const count = interval && interval > 1 ? interval : 1
   // Legacy events stored coarser recurrences as DAILY × N. Re-express DAILY intervals
-  // that are clean multiples of 365 as years, and multiples of 7 as weeks.
+  // that are clean multiples of 365 as years, and multiples of 7 as weeks. Side effect:
+  // an intentional DAILY × 28 renders as "Every 4 weeks" — accepted tradeoff.
   if (frequency === 'DAILY' && count > 1) {
     if (count % 365 === 0) {
       const years = count / 365

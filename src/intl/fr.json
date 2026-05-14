@@ -1037,5 +1037,12 @@
       "members": "Membres",
       "upcoming_events": "Événements à venir"
     }
+  },
+  "event_detail": {
+    "recurrent_yearly": "Se répète chaque année",
+    "recurrent_every_n_days": "Tous les {count} jours",
+    "recurrent_every_n_weeks": "Toutes les {count} semaines",
+    "recurrent_every_n_months": "Tous les {count} mois",
+    "recurrent_every_n_years": "Tous les {count} ans"
   }
 }
