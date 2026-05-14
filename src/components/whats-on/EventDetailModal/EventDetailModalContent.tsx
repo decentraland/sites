@@ -24,14 +24,19 @@ function formatScheduleTime(isoString: string): string {
   return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 
-function getRecurrenceLabel(frequency: RecurrentFrequency | null, t: (key: string) => string): string | null {
+function getRecurrenceLabel(
+  frequency: RecurrentFrequency | null,
+  interval: number | null,
+  t: (key: string, values?: Record<string, string | number>) => string
+): string | null {
+  const count = interval && interval > 1 ? interval : 1
   switch (frequency) {
     case 'DAILY':
-      return t('event_detail.recurrent_daily')
+      return count === 1 ? t('event_detail.recurrent_daily') : t('event_detail.recurrent_every_n_days', { count })
     case 'WEEKLY':
-      return t('event_detail.recurrent_weekly')
+      return count === 1 ? t('event_detail.recurrent_weekly') : t('event_detail.recurrent_every_n_weeks', { count })
     case 'MONTHLY':
-      return t('event_detail.recurrent_monthly')
+      return count === 1 ? t('event_detail.recurrent_monthly') : t('event_detail.recurrent_every_n_months', { count })
     default:
       return null
   }
@@ -52,7 +57,7 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
     return null
   }
 
-  const recurrenceLabel = data.recurrent ? getRecurrenceLabel(data.recurrentFrequency, t) : null
+  const recurrenceLabel = data.recurrent ? getRecurrenceLabel(data.recurrentFrequency, data.recurrentInterval, t) : null
 
   return (
     <ContentSection>

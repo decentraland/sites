@@ -35,6 +35,7 @@ interface EventEntry {
   trending: boolean
   recurrent: boolean
   recurrent_frequency: RecurrentFrequency | null
+  recurrent_interval: number | null
   recurrent_dates: string[]
   contact: string | null
   details: string | null

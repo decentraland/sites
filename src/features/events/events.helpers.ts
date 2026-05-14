@@ -20,6 +20,7 @@ interface LiveNowCard {
   finishAt?: string
   recurrent?: boolean
   recurrentFrequency?: RecurrentFrequency | null
+  recurrentInterval?: number | null
   recurrentDates?: string[]
   attending?: boolean
   world?: boolean
@@ -126,6 +127,7 @@ function buildLiveNowCards(liveEvents: EventEntry[], hotScenes: HotScene[], minU
         finishAt: matchedEvent.finish_at,
         recurrent: matchedEvent.recurrent,
         recurrentFrequency: matchedEvent.recurrent_frequency,
+        recurrentInterval: matchedEvent.recurrent_interval,
         recurrentDates: matchedEvent.recurrent_dates,
         attending: matchedEvent.attending,
         world: matchedEvent.world,

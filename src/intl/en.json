@@ -1160,7 +1160,10 @@
     "unknown_creator": "Unknown",
     "recurrent_weekly": "Repeats weekly",
     "recurrent_daily": "Repeats daily",
-    "recurrent_monthly": "Repeats monthly"
+    "recurrent_monthly": "Repeats monthly",
+    "recurrent_every_n_days": "Every {count} days",
+    "recurrent_every_n_weeks": "Every {count} weeks",
+    "recurrent_every_n_months": "Every {count} months"
   },
   "place_detail": {
     "close": "Close",

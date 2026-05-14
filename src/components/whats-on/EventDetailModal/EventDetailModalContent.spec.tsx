@@ -3,7 +3,9 @@ import { createMockModalData } from '../../../__test-utils__/factories'
 import { EventDetailModalContent } from './EventDetailModalContent'
 
 jest.mock('@dcl/hooks', () => ({
-  useTranslation: () => ({ t: (key: string) => key })
+  useTranslation: () => ({
+    t: (key: string, values?: Record<string, string | number>) => (values ? `${key}:${JSON.stringify(values)}` : key)
+  })
 }))
 
 jest.mock('../../../utils/whatsOnUrl', () => ({
@@ -117,32 +119,50 @@ describe('EventDetailModalContent', () => {
   })
 
   describe('when the event is recurrent', () => {
-    describe('and frequency is DAILY', () => {
-      it('should show the recurrence label', () => {
-        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'DAILY' })} />)
+    describe('and the interval is 1 (or null)', () => {
+      it('should render the daily label for DAILY frequency', () => {
+        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'DAILY', recurrentInterval: 1 })} />)
 
-        expect(screen.getByTestId('recurrence')).toBeInTheDocument()
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_daily')
+      })
+
+      it('should render the weekly label for WEEKLY frequency', () => {
+        render(
+          <EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'WEEKLY', recurrentInterval: null })} />
+        )
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_weekly')
+      })
+
+      it('should render the monthly label for MONTHLY frequency', () => {
+        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'MONTHLY', recurrentInterval: 1 })} />)
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_monthly')
       })
     })
 
-    describe('and frequency is WEEKLY', () => {
-      it('should show the recurrence label', () => {
-        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'WEEKLY' })} />)
+    describe('and the interval is greater than 1', () => {
+      it('should render the every-N-days label for DAILY frequency', () => {
+        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'DAILY', recurrentInterval: 14 })} />)
 
-        expect(screen.getByTestId('recurrence')).toBeInTheDocument()
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_every_n_days:{"count":14}')
       })
-    })
 
-    describe('and frequency is MONTHLY', () => {
-      it('should show the recurrence label', () => {
-        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'MONTHLY' })} />)
+      it('should render the every-N-weeks label for WEEKLY frequency', () => {
+        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'WEEKLY', recurrentInterval: 2 })} />)
 
-        expect(screen.getByTestId('recurrence')).toBeInTheDocument()
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_every_n_weeks:{"count":2}')
+      })
+
+      it('should render the every-N-months label for MONTHLY frequency', () => {
+        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'MONTHLY', recurrentInterval: 3 })} />)
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_every_n_months:{"count":3}')
       })
     })
 
     describe('and frequency is unsupported', () => {
-      it('should not show the recurrence label', () => {
+      it('should not render the recurrence label', () => {
         render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'YEARLY' })} />)
 
         expect(screen.queryByTestId('recurrence')).not.toBeInTheDocument()
