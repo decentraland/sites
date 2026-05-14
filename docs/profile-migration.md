@@ -139,8 +139,8 @@ URLs in the env JSONs were patched: `BADGES_API_URL`, `MARKETPLACE_API_URL`, `RE
 - ✅ Phase 6 — Assets tab (My only) (`/v1/nfts?owner=:address`) — All/Wearables/Emotes/Names/Lands/Estates chip filters, on-sale price from `order.price`, marketplace token-page link
 - ✅ Phase 7 — Communities tab (`/v1/members/:address/communities`, signed) — own-profile only (endpoint enforces auth === address); member view shows "private" empty state; thumbnails + member count + role chip
 - ✅ Phase 8 — Places tab (`places-api /api/places?owner=:address`) — thumbnail / title / location / likes / online count, click → `/jump/places?position=X,Y`
-- ✅ Phase 9 — Photos tab (`camera-reel-service`, env `REEL_SERVICE_URL`) — square photo grid, click → `/reels/:id`
-- ✅ Phase 10 — Referral Rewards (My only) — `/v1/referral-progress` signed; tier thresholds copied from profile-dapp, invite URL share, locked/unlocked tier images
+- ✅ Phase 9 — Photos tab (`camera-reel-service`, env `REEL_SERVICE_URL`) — 4-col grid spec from Figma (`264.972px` card height / `16.885px` padding / `12.989px` gap), card uses `currentImages` from server total. Signed-fetch when viewing own profile (private photos surface). Click opens a `PhotoModal` in-place via `useOpenPhotoModal()`; modal reuses `ImageActions` (share to X / copy link / download / toggle info), `UserMetadata` (people row + collapsible wearables panel with BUY-on-hover from ui2), `JumpInButton` (sites' ui2 wrapper). When mounted **inside** another modal (e.g. `ProfileModal`), the click is intercepted by `ModalProfileNavigationProvider.onOpenPhoto` and the host swaps its content to `PhotoSurface` with a back chevron — never stacks a dialog on a dialog (see learning #19).
+- ✅ Phase 10 — Referral Rewards (My only) — full port of profile-dapp's `Referrals/Hero/Journey/RewardCard` (envelope hero, share-to-X menu, expandable "How it works" steps, 9-tier animated stepper with shake/splash animations, rarity-tinted reward cards). Assets shipped under `public/images/referrals/` (envelope, logo-with-pointer, sports-medal, tier_1..9, reach-\*-background). i18n keys (`profile.referral_hero_section`, `profile.referral_journey`, `profile.referral_reward_card`) mirrored across 6 locales. Endpoint lives at `${SOCIAL_API_URL}/v1/referral-progress` — `REFERRAL_API_URL` env was pointing at a dead host originally; fixed to `social-api.decentraland.{zone,org}`.
 - ✅ Phase 11 — Friendship & Block CTAs via `@dcl/social-rpc-client` (WebSocket). Live `getFriendshipStatus`, `requestFriendship`/`cancel`/`accept`/`removeFriendship`. Block / unblock kebab menu next to friendship button. Mutual friends preview (3 avatar dots + count) via `getMutualFriends`. Friends count + Friends modal for own profile via `getFriends`.
 - ✅ Profile-as-modal: `ProfileModal` (wide dialog mirroring whats-on chrome), `ProfileModalHost`, `useOpenProfileModal`, `ModalProfileNavigationProvider`
 - ✅ Event modal swap-in-modal: clicking `DetailModalCreator` swaps `EventDetailModal` content for the profile surface; back chevron returns to event
@@ -148,6 +148,12 @@ URLs in the env JSONs were patched: `BADGES_API_URL`, `MARKETPLACE_API_URL`, `RE
 - ✅ Tooltip on badges (name + achieved tier name + tier-specific description + completion date)
 - ✅ i18n parity in 6 locales for the `profile.*` namespace (en/es/fr/ja/ko/zh)
 - ✅ Vite dev defaults to `?env=prod` via `.env.development` (`VITE_REACT_APP_DCL_DEFAULT_ENV=prod`)
+- ✅ Tabs reveal-on-data (`useProfileTabAvailability`) — every data-driven tab (`places/photos/creations/assets/communities`) starts hidden and reveals only after its probe query (`limit:1`) confirms `total > 0`. `overview` always visible. `referral-rewards` (own only) always visible. `communities` on member view always hidden (the endpoint requires `auth === :address`, so there is nothing to render). Direct URL hits on a hidden tab redirect to overview via `onTabChange('overview')` from `ProfileSurface`.
+- ✅ Mutual friends avatars — render up to 3 slots when `mutualCount > 0`. Slot with a friend in the RPC preview renders a real `<ProfileAvatar>` (face image with fallback to initial + deterministic colour). Slots without preview data render a colour-only `<MutualPic>` seeded by `${address}-${idx}` through the same `getAvatarBackgroundColor` hash. RPC sometimes returns `paginationData.total` without populating `friends`; previously this collapsed the cluster — now the visual count always matches.
+- ✅ Photo-in-modal flow — `PhotoSurface` extracted from `PhotoModal` accepts `onBack?`; when present, the top-left chevron is a back button (returns to profile content); otherwise a close. `ProfileModal` wraps children in `ModalProfileNavigationProvider({ onOpenProfile, onOpenPhoto })` and toggles between `<ProfileSurface>` and `<PhotoSurface>` based on internal `viewingPhotoId` state. `useOpenPhotoModal()` delegates to the host when inside the provider, else owns a local open-state.
+- ✅ Equipped wearables prefer `minListingPrice` over `price` (`profile.wearables.client.ts:nonZeroPrice`) — primary-market `price` is `"0"` for sold-out items, while `minListingPrice` is the secondary-market floor. Without this, equipped CatalogCards rendered inconsistent BUY prices.
+- ✅ CatalogCard compat shim (`src/components/profile/CatalogCard/`) — declares the ui2 PR #440 props (`infoBadges`, `creatorSlot`, `bottomAction`, `disableInfoExpansion`, `hideRarityOnHover`, `hoverShadow`) on top of `decentraland-ui2@3.8.0` so sites can pass them through TS without the published ui2 component yet implementing them. Drop the shim and `import { CatalogCard } from 'decentraland-ui2'` directly once ui2 ships a version with the slots.
+- ✅ Wearable hover in PhotoModal uses the profile-card glow `boxShadow: '0px 4px 25px 0px rgba(255, 255, 255, 0.25)'` instead of the legacy `background: #716b7c` (which clashed with the radial-purple panel).
 
 ## What's left
 
@@ -201,6 +207,20 @@ URLs in the env JSONs were patched: `BADGES_API_URL`, `MARKETPLACE_API_URL`, `RE
 17. **Scoped `// eslint-disable-next-line` over block disables.** User preference: never use `/* eslint-disable */ ... /* eslint-enable */` block pairs. The block pattern is hard to track and tends to drift; single-line disables are more honest.
 
 18. **No `Co-Authored-By:` in commits.** Decentraland-wide rule (ADR-6).
+
+19. **Never stack a modal on another modal.** Two patterns coexist in the codebase:
+
+    - `useOpenProfileModal()` first checks `useModalProfileNavigation()` (context). Inside a provider → delegate to the host; outside → set `?profile=<addr>` and let `ProfileModalHost` open a standalone modal.
+    - `useOpenPhotoModal()` mirrors the same shape for photos via `useModalPhotoNavigation()`.
+      `ProfileModal` itself supplies both `onOpenProfile` and `onOpenPhoto` so any child (PhotosTab, CreatorByLine, jump cards, etc.) can request opening a profile or photo and the host swaps content in-place with a back chevron. New cross-modal navigation should follow the same provider+hook pattern, never `Dialog` inside `Dialog`.
+
+20. **`camera-reel-service` `currentImages` is server total, not page count.** With `limit:24`, you get 24 images per page but `currentImages` reports the entire user's snapshot count (often hundreds). Display `images.length` to match what the UI actually paints, or implement pagination first.
+
+21. **Marketplace `minListingPrice` vs `price`.** `/v2/catalog` returns `price` = primary-market price (zero/empty when supply is sold out) and `minListingPrice` = floor of active secondary-market listings. Equipped/owned wearables typically circulate via resales, so the displayed BUY price has to fall back: `nonZeroPrice(minListingPrice) ?? nonZeroPrice(price)`. Don't gate UI affordances on `price > 0` alone.
+
+22. **ui2 published version drifts behind the local fork.** During iteration we run sites against a `npm pack`-ed ui2 tarball with new CatalogCard slots; the npm registry version doesn't have them. Vercel fails TS on the unpublished props. Workaround until the upstream PR publishes: a local `<CatalogCard>` shim (`components/profile/CatalogCard/`) that widens the type to declare the props sites uses. The shim's `as unknown as ComponentType<>` cast means published ui2 silently ignores the props at runtime instead of crashing TS.
+
+23. **Project-scoped instinct hashing follows the git remote, not the path.** This branch lives at `/Users/braianmellor/orca/workspaces/core-workspace/profile-migration/sites` — an Orca worktree under the `core-workspace` meta-workspace. The continuous-learning hook detects the project via `git -C <cwd> remote get-url origin`, so observations made inside `sites/` land under the `sites` project (`b4b6ea69cd98`) and NOT under `core-workspace` (`436c73927bc2`). Submodules in a meta-workspace stay isolated from each other and from the wrapper.
 
 ## Quick fixture commands
 
