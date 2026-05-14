@@ -993,7 +993,14 @@
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
-    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "repeat_interval": "Repetir cada",
+    "repeat_on": "Repetir los",
+    "interval_chip_week_singular": "1 Semana",
+    "interval_chip_week_plural": "{count} Semanas",
+    "error_repeat_interval_invalid": "El intervalo de repetición debe ser un número entero entre 1 y 4",
+    "error_repeat_days_required": "Seleccioná al menos un día",
+    "error_start_date_not_in_repeat_days": "El día de la semana de la fecha de inicio debe estar entre los seleccionados"
   },
   "community": {
     "global": {
@@ -1051,6 +1058,9 @@
     "recurrent_every_n_days": "Cada {count} días",
     "recurrent_every_n_weeks": "Cada {count} semanas",
     "recurrent_every_n_months": "Cada {count} meses",
-    "recurrent_every_n_years": "Cada {count} años"
+    "recurrent_every_n_years": "Cada {count} años",
+    "recurrent_on_days": "Se repite los {days}",
+    "recurrent_on_days_every_n_weeks": "Cada {count} semanas los {days}",
+    "schedule_starting": "Empieza el {schedule}"
   }
 }

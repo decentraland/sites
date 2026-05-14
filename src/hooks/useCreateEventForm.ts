@@ -8,8 +8,9 @@ import {
   useUploadPosterVerticalMutation
 } from '../features/events'
 import type { EventEntry } from '../features/events'
+import { dayIndicesToWeekdayMask, parseStartWeekday } from '../utils/recurrence'
 import { useAuthIdentity } from './useAuthIdentity'
-import { FREQUENCY_MAP, INITIAL_STATE, eventEntryToFormState, parseDurationMs } from './useCreateEventForm.helpers'
+import { FREQUENCY_MAP, INITIAL_STATE, eventEntryToFormState, parseDurationMs, parseRecurrentInterval } from './useCreateEventForm.helpers'
 import type { CreateEventFormMode, CreateEventFormState, FormErrors, ImageErrorCode } from './useCreateEventForm.types'
 
 const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif']
@@ -297,8 +298,23 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
       newErrors.email = t('create_event.error_invalid_email')
     }
 
-    if (form.repeatEnabled && !form.repeatEndDate) {
-      newErrors.repeatEndDate = t('create_event.error_required')
+    if (form.repeatEnabled) {
+      if (!form.repeatEndDate) {
+        newErrors.repeatEndDate = t('create_event.error_required')
+      }
+      if (form.frequency === 'every_week') {
+        if (parseRecurrentInterval(form.repeatInterval) === null) {
+          newErrors.repeatInterval = t('create_event.error_repeat_interval_invalid')
+        }
+        if (form.repeatDays.length === 0) {
+          newErrors.repeatDays = t('create_event.error_repeat_days_required')
+        } else {
+          const startWeekday = parseStartWeekday(form.startDate)
+          if (startWeekday !== null && !form.repeatDays.includes(startWeekday)) {
+            newErrors.repeatDays = t('create_event.error_start_date_not_in_repeat_days')
+          }
+        }
+      }
     }
 
     return newErrors
@@ -353,6 +369,15 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         community_id: form.communityId || null,
         recurrent: form.repeatEnabled || undefined,
         recurrent_frequency: form.repeatEnabled ? FREQUENCY_MAP[form.frequency] : undefined,
+        recurrent_interval: form.repeatEnabled
+          ? form.frequency === 'every_week'
+            ? parseRecurrentInterval(form.repeatInterval) ?? 1
+            : 1
+          : undefined,
+        // Mask only goes on the wire for WEEKLY — for DAILY/MONTHLY (and non-recurrent events) we omit
+        // it so the server's schema default (0) takes effect and the RRule defaults to start_at's weekday.
+        recurrent_weekday_mask:
+          form.repeatEnabled && form.frequency === 'every_week' ? dayIndicesToWeekdayMask(form.repeatDays) : undefined,
         recurrent_until: form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : undefined
       }
       /* eslint-enable @typescript-eslint/naming-convention */

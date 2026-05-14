@@ -112,6 +112,52 @@ describe('eventEntryToFormState', () => {
     })
   })
 
+  describe('when hydrating recurrent_interval from a stored event', () => {
+    it('should preserve a chip-compatible interval as a string', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_interval: 2 }))
+
+      expect(formState.repeatInterval).toBe('2')
+    })
+
+    it('should default to "1" when the event has no interval', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_interval: null }))
+
+      expect(formState.repeatInterval).toBe('1')
+    })
+
+    it('should default to "1" when the event has a non-positive interval', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_interval: 0 }))
+
+      expect(formState.repeatInterval).toBe('1')
+    })
+
+    it('should default to "1" for legacy intervals that fall outside the chip range', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'DAILY', recurrent_interval: 14 }))
+
+      expect(formState.repeatInterval).toBe('1')
+    })
+  })
+
+  describe('when hydrating recurrent_weekday_mask from a stored event', () => {
+    it('should default to all 7 weekdays when the mask is missing or 0', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_weekday_mask: null }))
+
+      expect(formState.repeatDays).toEqual([0, 1, 2, 3, 4, 5, 6])
+    })
+
+    it('should decode Tuesday + Friday (mask 36) into [2, 5]', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_weekday_mask: 36 }))
+
+      expect(formState.repeatDays).toEqual([2, 5])
+    })
+
+    it('should decode the full week (mask 127) into [0..6]', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_weekday_mask: 127 }))
+
+      expect(formState.repeatDays).toEqual([0, 1, 2, 3, 4, 5, 6])
+    })
+  })
+
   describe('when the event is recurrent and `start_at` already lies in the past (issue #474)', () => {
     // The API anchors `start_at` on the first occurrence ever and tracks the upcoming one in
     // `next_start_at`. For long-running series the anchor is months behind "now", so hydrating

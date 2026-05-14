@@ -35,6 +35,7 @@ function createMockEvent(overrides: Partial<EventEntry> = {}): EventEntry {
     recurrent: false,
     recurrent_frequency: null,
     recurrent_interval: null,
+    recurrent_weekday_mask: null,
     recurrent_count: null,
     recurrent_until: null,
     recurrent_dates: [],

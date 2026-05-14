@@ -1,4 +1,5 @@
 import type { EventEntry, RecurrentFrequency } from '../features/events'
+import { ALL_WEEKDAYS, weekdayMaskToDayIndices } from '../utils/recurrence'
 import type { CreateEventFormState } from './useCreateEventForm.types'
 
 /* eslint-disable @typescript-eslint/naming-convention -- keys are API enum values */
@@ -24,6 +25,18 @@ function parseDurationMs(value: string): number | null {
   return totalMinutes > 0 ? totalMinutes * 60 * 1000 : null
 }
 
+const RECURRENT_INTERVAL_OPTIONS = [1, 2, 3, 4] as const
+const MIN_RECURRENT_INTERVAL = RECURRENT_INTERVAL_OPTIONS[0]
+const MAX_RECURRENT_INTERVAL = RECURRENT_INTERVAL_OPTIONS[RECURRENT_INTERVAL_OPTIONS.length - 1]
+
+function parseRecurrentInterval(value: string): number | null {
+  if (!value.trim()) return null
+  const num = Number(value)
+  if (!Number.isFinite(num) || !Number.isInteger(num)) return null
+  if (num < MIN_RECURRENT_INTERVAL || num > MAX_RECURRENT_INTERVAL) return null
+  return num
+}
+
 const INITIAL_STATE: CreateEventFormState = {
   image: null,
   imagePreviewUrl: null,
@@ -41,7 +54,9 @@ const INITIAL_STATE: CreateEventFormState = {
   startTime: '',
   duration: '',
   repeatEnabled: false,
-  frequency: 'every_week',
+  frequency: 'every_day',
+  repeatInterval: '1',
+  repeatDays: [...ALL_WEEKDAYS],
   repeatEndDate: '',
   location: 'land',
   coordX: '0',
@@ -122,7 +137,9 @@ function eventEntryToFormState(event: EventEntry, now: number = Date.now()): Cre
     startTime: start.time,
     duration: durationMsToHhMm(durationMs),
     repeatEnabled: Boolean(event.recurrent),
-    frequency: (event.recurrent_frequency && REVERSE_FREQUENCY_MAP[event.recurrent_frequency]) ?? 'every_week',
+    frequency: (event.recurrent_frequency && REVERSE_FREQUENCY_MAP[event.recurrent_frequency]) ?? 'every_day',
+    repeatInterval: String(parseRecurrentInterval(String(event.recurrent_interval ?? '')) ?? 1),
+    repeatDays: weekdayMaskToDayIndices(event.recurrent_weekday_mask),
     repeatEndDate: repeatEnd.date,
     location: isWorld ? 'world' : 'land',
     coordX: isWorld ? '0' : String(event.x ?? 0),
@@ -133,4 +150,15 @@ function eventEntryToFormState(event: EventEntry, now: number = Date.now()): Cre
   }
 }
 
-export { DURATION_PATTERN, FREQUENCY_MAP, INITIAL_STATE, durationMsToHhMm, eventEntryToFormState, parseDurationMs }
+export {
+  DURATION_PATTERN,
+  FREQUENCY_MAP,
+  INITIAL_STATE,
+  MAX_RECURRENT_INTERVAL,
+  MIN_RECURRENT_INTERVAL,
+  RECURRENT_INTERVAL_OPTIONS,
+  durationMsToHhMm,
+  eventEntryToFormState,
+  parseDurationMs,
+  parseRecurrentInterval
+}

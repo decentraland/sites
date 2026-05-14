@@ -209,6 +209,60 @@ describe('EventDetailModalContent', () => {
       })
     })
 
+    describe('and the preview supplies a partial weekday selection', () => {
+      it('should render the day list when recurrentByDay is a subset of the week', () => {
+        render(
+          <EventDetailModalContent
+            data={createMockData({ recurrent: true, recurrentFrequency: 'DAILY', recurrentInterval: 1, recurrentByDay: [1, 2, 4, 5] })}
+          />
+        )
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_on_days:{"days":"Mon, Tue, Thu, Fri"}')
+      })
+
+      it('should sort and dedupe the day list', () => {
+        render(
+          <EventDetailModalContent
+            data={createMockData({ recurrent: true, recurrentFrequency: 'DAILY', recurrentInterval: 1, recurrentByDay: [5, 1, 5] })}
+          />
+        )
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_on_days:{"days":"Mon, Fri"}')
+      })
+
+      it('should combine days with the interval when WEEKLY interval > 1', () => {
+        render(
+          <EventDetailModalContent
+            data={createMockData({
+              recurrent: true,
+              recurrentFrequency: 'WEEKLY',
+              recurrentInterval: 2,
+              recurrentByDay: [0, 5, 6]
+            })}
+          />
+        )
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent(
+          'event_detail.recurrent_on_days_every_n_weeks:{"count":2,"days":"Sun, Fri, Sat"}'
+        )
+      })
+
+      it('should fall through to the daily label when all 7 weekdays are selected', () => {
+        render(
+          <EventDetailModalContent
+            data={createMockData({
+              recurrent: true,
+              recurrentFrequency: 'DAILY',
+              recurrentInterval: 1,
+              recurrentByDay: [0, 1, 2, 3, 4, 5, 6]
+            })}
+          />
+        )
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_daily')
+      })
+    })
+
     describe('and frequency is sub-daily', () => {
       it('should not render the recurrence label for HOURLY frequency', () => {
         render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'HOURLY' })} />)

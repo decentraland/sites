@@ -993,7 +993,14 @@
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
-    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "repeat_interval": "重复间隔",
+    "repeat_on": "重复在",
+    "interval_chip_week_singular": "1 周",
+    "interval_chip_week_plural": "{count} 周",
+    "error_repeat_interval_invalid": "重复间隔必须是 1 到 4 之间的整数",
+    "error_repeat_days_required": "请至少选择一天",
+    "error_start_date_not_in_repeat_days": "开始日期的星期必须是所选日期之一"
   },
   "community": {
     "global": {
@@ -1051,6 +1058,9 @@
     "recurrent_every_n_days": "每{count}天",
     "recurrent_every_n_weeks": "每{count}周",
     "recurrent_every_n_months": "每{count}个月",
-    "recurrent_every_n_years": "每{count}年"
+    "recurrent_every_n_years": "每{count}年",
+    "recurrent_on_days": "每{days}重复",
+    "recurrent_on_days_every_n_weeks": "每{count}周的{days}",
+    "schedule_starting": "从 {schedule} 开始"
   }
 }
