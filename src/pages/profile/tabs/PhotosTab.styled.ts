@@ -2,23 +2,36 @@ import { Box, styled } from 'decentraland-ui2'
 
 const PhotosGrid = styled(Box)(({ theme }) => ({
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-  gap: theme.spacing(1.5)
+  gridTemplateColumns: 'repeat(4, 1fr)',
+  gap: '12.989px',
+  [theme.breakpoints.down('lg')]: {
+    gridTemplateColumns: 'repeat(3, 1fr)'
+  },
+  [theme.breakpoints.down('md')]: {
+    gridTemplateColumns: 'repeat(2, 1fr)'
+  },
+  [theme.breakpoints.down('sm')]: {
+    gridTemplateColumns: '1fr'
+  }
 }))
 
 const PhotoCard = styled('a')({
-  position: 'relative',
-  display: 'block',
-  aspectRatio: '4 / 3',
-  borderRadius: 12,
-  overflow: 'hidden',
-  background: 'rgba(255, 255, 255, 0.04)',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'stretch',
+  height: '264.972px',
+  padding: '16.885px',
+  gap: '12.989px',
+  borderRadius: 16,
+  background: 'rgba(0, 0, 0, 0.30)',
   textDecoration: 'none',
   cursor: 'pointer',
-  transition: 'transform 200ms ease, box-shadow 200ms ease',
+  overflow: 'hidden',
+  transition: 'transform 200ms ease, box-shadow 200ms ease, background 200ms ease',
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:hover': {
     transform: 'translateY(-2px)',
+    background: 'rgba(0, 0, 0, 0.45)',
     boxShadow: '0 8px 20px rgba(0, 0, 0, 0.35)'
   }
 })
@@ -26,8 +39,10 @@ const PhotoCard = styled('a')({
 const PhotoImage = styled('img')({
   width: '100%',
   height: '100%',
+  flex: '1 0 0',
   objectFit: 'cover',
-  display: 'block'
+  display: 'block',
+  borderRadius: 8
 })
 
 export { PhotoCard, PhotoImage, PhotosGrid }

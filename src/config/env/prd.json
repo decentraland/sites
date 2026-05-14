@@ -30,7 +30,7 @@
   "BUILDER_URL": "https://decentraland.org/builder",
   "MARKETPLACE_API_URL": "https://marketplace-api.decentraland.org",
   "BADGES_API_URL": "https://badges.decentraland.org",
-  "REFERRAL_API_URL": "https://referral-api.decentraland.org",
+  "REFERRAL_API_URL": "https://social-api.decentraland.org",
   "PROFILE_URL": "https://profile.decentraland.org",
   "REPORT_API_URL": "https://report-user.decentraland.org",
   "DECENTRALAND_HOMEPAGE_URL": "https://decentraland.org",
