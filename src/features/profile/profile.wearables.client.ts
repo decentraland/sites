@@ -19,6 +19,8 @@ interface CatalogItem {
   itemId?: string
   network?: 'MATIC' | 'ETHEREUM'
   price?: string
+  /** Lowest active secondary-market listing price in wei. Most owned wearables in a profile reach this via resales, not primary sale. */
+  minListingPrice?: string
   isOnSale?: boolean
   creator?: string
   /** Relative marketplace path (e.g. `/contracts/0x.../items/0`). Concatenate with `MARKETPLACE_URL` to build the full link. */
@@ -78,6 +80,17 @@ function isCollectibleUrn(urn: string): boolean {
 
 function networkFromUrn(urn: string): 'MATIC' | 'ETHEREUM' {
   return urn.startsWith('urn:decentraland:ethereum') ? 'ETHEREUM' : 'MATIC'
+}
+
+// Marketplace returns `"0"` (or omits the field) when an item has no live primary sale
+// or no secondary listings — both mean "no price to show".
+function nonZeroPrice(wei: string | undefined): string | undefined {
+  if (!wei) return undefined
+  try {
+    return BigInt(wei) === 0n ? undefined : wei
+  } catch {
+    return undefined
+  }
 }
 
 function parseCollectibleUrn(urn: string): { contractAddress: string; itemId: string } | null {
@@ -150,7 +163,9 @@ async function fetchCollectibleDetails(urns: readonly string[], signal?: AbortSi
       network: item.network ?? networkFromUrn(urn),
       marketplaceUrl: `${marketplaceUrl}${itemPath}`,
       creator: item.creator ?? '',
-      price: item.price,
+      // Prefer the secondary-market floor (`minListingPrice`) because equipped wearables
+      // on a profile usually circulate via resales — primary `price` is zero/empty by then.
+      price: nonZeroPrice(item.minListingPrice) ?? nonZeroPrice(item.price),
       isOnSale: Boolean(item.isOnSale)
     }
   })
