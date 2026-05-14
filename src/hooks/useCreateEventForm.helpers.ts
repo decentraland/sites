@@ -86,6 +86,8 @@ function resolveDurationMs(event: EventEntry, referenceStartAt: string): number 
 // my saved time go?" — issue #474. When `start_at` is clearly historical, prefer `next_start_at`
 // so the form shows the date the user is about to re-schedule.
 function resolveFormReferenceStartAt(event: EventEntry, now: number): string {
+  // `next_start_at` is typed as `string`, but every consumer that pivots on it guards defensively
+  // (see `PendingEventCard.tsx`), so mirror that pattern rather than trusting the declaration alone.
   if (!event.recurrent || !event.next_start_at) return event.start_at
   const startMs = new Date(event.start_at).getTime()
   if (!Number.isFinite(startMs) || startMs >= now) return event.start_at

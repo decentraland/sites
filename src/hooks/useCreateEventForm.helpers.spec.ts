@@ -1,6 +1,17 @@
 import type { EventEntry } from '../features/events'
 import { eventEntryToFormState } from './useCreateEventForm.helpers'
 
+// Format an ISO timestamp into the same `YYYY-MM-DD` / `HH:MM` shape the form fields use, so the
+// tests below don't have to duplicate the local-timezone arithmetic the helper performs internally.
+function asLocalFormFields(iso: string): { date: string; time: string } {
+  const d = new Date(iso)
+  const pad = (v: number): string => String(v).padStart(2, '0')
+  return {
+    date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+    time: `${pad(d.getHours())}:${pad(d.getMinutes())}`
+  }
+}
+
 function buildEvent(overrides: Partial<EventEntry> = {}): EventEntry {
   return {
     id: 'ev-1',
@@ -120,13 +131,10 @@ describe('eventEntryToFormState', () => {
       )
     })
 
-    it('should hydrate the date from `next_start_at` so the form reflects the upcoming occurrence', () => {
-      const expected = (() => {
-        const d = new Date('2026-05-15T00:01:00.000Z')
-        const pad = (v: number): string => String(v).padStart(2, '0')
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-      })()
-      expect(formState.startDate).toBe(expected)
+    it('should hydrate both the date and time from `next_start_at` so the form reflects the upcoming occurrence', () => {
+      const expected = asLocalFormFields('2026-05-15T00:01:00.000Z')
+      expect(formState.startDate).toBe(expected.date)
+      expect(formState.startTime).toBe(expected.time)
     })
   })
 
@@ -148,13 +156,10 @@ describe('eventEntryToFormState', () => {
       )
     })
 
-    it('should keep the future `start_at` the caller already pinned', () => {
-      const expected = (() => {
-        const d = new Date('2026-05-21T18:00:00.000Z')
-        const pad = (v: number): string => String(v).padStart(2, '0')
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-      })()
-      expect(formState.startDate).toBe(expected)
+    it('should keep both the date and time from the future `start_at` the caller already pinned', () => {
+      const expected = asLocalFormFields('2026-05-21T18:00:00.000Z')
+      expect(formState.startDate).toBe(expected.date)
+      expect(formState.startTime).toBe(expected.time)
     })
   })
 
@@ -200,13 +205,10 @@ describe('eventEntryToFormState', () => {
       )
     })
 
-    it('should hydrate from `start_at` without falling back to `next_start_at`', () => {
-      const expected = (() => {
-        const d = new Date('2026-01-09T00:01:00.000Z')
-        const pad = (v: number): string => String(v).padStart(2, '0')
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-      })()
-      expect(formState.startDate).toBe(expected)
+    it('should hydrate the date and time from `start_at` without falling back to `next_start_at`', () => {
+      const expected = asLocalFormFields('2026-01-09T00:01:00.000Z')
+      expect(formState.startDate).toBe(expected.date)
+      expect(formState.startTime).toBe(expected.time)
     })
   })
 })
