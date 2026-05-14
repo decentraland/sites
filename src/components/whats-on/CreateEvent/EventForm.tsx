@@ -93,7 +93,6 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
   const creatorAddress = initialEvent?.user || address
   const creatorName = initialEvent?.user_name || undefined
 
-  const previewInterval = form.repeatEnabled ? parseRecurrentInterval(form.repeatInterval) : null
   const previewUntil = form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : null
 
   return {
@@ -109,10 +108,10 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
     finishAt,
     recurrent: form.repeatEnabled,
     recurrentFrequency: form.repeatEnabled ? FREQUENCY_MAP[form.frequency] ?? null : null,
-    recurrentInterval: previewInterval,
+    recurrentInterval: form.repeatEnabled ? (form.frequency === 'every_week' ? parseRecurrentInterval(form.repeatInterval) : 1) : null,
     recurrentCount: null,
     recurrentUntil: previewUntil,
-    recurrentByDay: form.repeatEnabled && form.frequency === 'every_day' && form.repeatDays.length > 0 ? form.repeatDays : undefined,
+    recurrentByDay: form.repeatEnabled && form.frequency === 'every_week' ? form.repeatDays : undefined,
     recurrentDates: [],
     totalAttendees: 0,
     attending: false,
@@ -324,61 +323,61 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
                       <EventMenuItem value="every_month">{t('create_event.every_month')}</EventMenuItem>
                     </EventSelect>
                   </EventFormControl>
-                  {form.frequency === 'every_day' && (
-                    <IntervalChipGroup role="group" aria-label={t('create_event.repeat_on')}>
-                      <IntervalChipLabel>{t('create_event.repeat_on')}</IntervalChipLabel>
-                      <IntervalChipRow>
-                        {WEEKDAYS.map(day => {
-                          const isActive = form.repeatDays.includes(day.index)
-                          return (
-                            <IntervalChip
-                              key={day.index}
-                              type="button"
-                              role="checkbox"
-                              aria-checked={isActive}
-                              aria-label={day.full}
-                              $active={isActive}
-                              onClick={() => {
-                                const next = isActive
-                                  ? form.repeatDays.filter(d => d !== day.index)
-                                  : [...form.repeatDays, day.index].sort((a, b) => a - b)
-                                setField('repeatDays', next)
-                              }}
-                            >
-                              {day.short}
-                            </IntervalChip>
-                          )
-                        })}
-                      </IntervalChipRow>
-                      {errors.repeatDays && <ChipErrorText>{errors.repeatDays}</ChipErrorText>}
-                    </IntervalChipGroup>
-                  )}
                   {form.frequency === 'every_week' && (
-                    <IntervalChipGroup role="radiogroup" aria-label={t('create_event.repeat_interval')}>
-                      <IntervalChipLabel>{t('create_event.repeat_interval')}</IntervalChipLabel>
-                      <IntervalChipRow>
-                        {RECURRENT_INTERVAL_OPTIONS.map(value => {
-                          const isActive = parseRecurrentInterval(form.repeatInterval) === value
-                          const chipLabel =
-                            value === 1
-                              ? t('create_event.interval_chip_week_singular')
-                              : t('create_event.interval_chip_week_plural', { count: value })
-                          return (
-                            <IntervalChip
-                              key={value}
-                              type="button"
-                              role="radio"
-                              aria-checked={isActive}
-                              $active={isActive}
-                              onClick={() => setField('repeatInterval', String(value))}
-                            >
-                              {chipLabel}
-                            </IntervalChip>
-                          )
-                        })}
-                      </IntervalChipRow>
-                      {errors.repeatInterval && <ChipErrorText>{errors.repeatInterval}</ChipErrorText>}
-                    </IntervalChipGroup>
+                    <>
+                      <IntervalChipGroup role="group" aria-label={t('create_event.repeat_on')}>
+                        <IntervalChipLabel>{t('create_event.repeat_on')}</IntervalChipLabel>
+                        <IntervalChipRow>
+                          {WEEKDAYS.map(day => {
+                            const isActive = form.repeatDays.includes(day.index)
+                            return (
+                              <IntervalChip
+                                key={day.index}
+                                type="button"
+                                role="checkbox"
+                                aria-checked={isActive}
+                                aria-label={day.full}
+                                $active={isActive}
+                                onClick={() => {
+                                  const next = isActive
+                                    ? form.repeatDays.filter(d => d !== day.index)
+                                    : [...form.repeatDays, day.index].sort((a, b) => a - b)
+                                  setField('repeatDays', next)
+                                }}
+                              >
+                                {day.short}
+                              </IntervalChip>
+                            )
+                          })}
+                        </IntervalChipRow>
+                        {errors.repeatDays && <ChipErrorText>{errors.repeatDays}</ChipErrorText>}
+                      </IntervalChipGroup>
+                      <IntervalChipGroup role="radiogroup" aria-label={t('create_event.repeat_interval')}>
+                        <IntervalChipLabel>{t('create_event.repeat_interval')}</IntervalChipLabel>
+                        <IntervalChipRow>
+                          {RECURRENT_INTERVAL_OPTIONS.map(value => {
+                            const isActive = parseRecurrentInterval(form.repeatInterval) === value
+                            const chipLabel =
+                              value === 1
+                                ? t('create_event.interval_chip_week_singular')
+                                : t('create_event.interval_chip_week_plural', { count: value })
+                            return (
+                              <IntervalChip
+                                key={value}
+                                type="button"
+                                role="radio"
+                                aria-checked={isActive}
+                                $active={isActive}
+                                onClick={() => setField('repeatInterval', String(value))}
+                              >
+                                {chipLabel}
+                              </IntervalChip>
+                            )
+                          })}
+                        </IntervalChipRow>
+                        {errors.repeatInterval && <ChipErrorText>{errors.repeatInterval}</ChipErrorText>}
+                      </IntervalChipGroup>
+                    </>
                   )}
                   <EventTextField
                     variant="outlined"

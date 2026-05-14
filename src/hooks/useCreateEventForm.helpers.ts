@@ -24,7 +24,7 @@ function parseDurationMs(value: string): number | null {
   return totalMinutes > 0 ? totalMinutes * 60 * 1000 : null
 }
 
-const RECURRENT_INTERVAL_OPTIONS = [1, 2, 3] as const
+const RECURRENT_INTERVAL_OPTIONS = [1, 2, 3, 4] as const
 const MIN_RECURRENT_INTERVAL = RECURRENT_INTERVAL_OPTIONS[0]
 const MAX_RECURRENT_INTERVAL = RECURRENT_INTERVAL_OPTIONS[RECURRENT_INTERVAL_OPTIONS.length - 1]
 
@@ -46,11 +46,23 @@ const WEEKDAYS: ReadonlyArray<{ index: number; short: string; full: string }> = 
   { index: 6, short: 'Sat', full: 'Saturday' }
 ]
 
+const ALL_WEEKDAYS = WEEKDAYS.map(d => d.index)
+
 function parseStartWeekday(startDate: string): number | null {
   if (!startDate) return null
   const date = new Date(`${startDate}T00:00:00`)
   if (Number.isNaN(date.getTime())) return null
   return date.getDay()
+}
+
+// Mirrors `WeekdayMask` in events/src/entities/Event/types.ts: SUNDAY=1, MONDAY=2, ... SATURDAY=64.
+function dayIndicesToWeekdayMask(days: number[]): number {
+  return days.reduce((mask, day) => (day >= 0 && day <= 6 ? mask | (1 << day) : mask), 0)
+}
+
+function weekdayMaskToDayIndices(mask: number | null | undefined): number[] {
+  if (mask === null || mask === undefined || mask === 0) return [...ALL_WEEKDAYS]
+  return ALL_WEEKDAYS.filter(day => (mask & (1 << day)) !== 0)
 }
 
 const INITIAL_STATE: CreateEventFormState = {
@@ -72,7 +84,7 @@ const INITIAL_STATE: CreateEventFormState = {
   repeatEnabled: false,
   frequency: 'every_day',
   repeatInterval: '1',
-  repeatDays: [],
+  repeatDays: [...ALL_WEEKDAYS],
   repeatEndDate: '',
   location: 'land',
   coordX: '0',
@@ -140,7 +152,7 @@ function eventEntryToFormState(event: EventEntry): CreateEventFormState {
     repeatEnabled: Boolean(event.recurrent),
     frequency: (event.recurrent_frequency && REVERSE_FREQUENCY_MAP[event.recurrent_frequency]) ?? 'every_day',
     repeatInterval: String(parseRecurrentInterval(String(event.recurrent_interval ?? '')) ?? 1),
-    repeatDays: [],
+    repeatDays: weekdayMaskToDayIndices(event.recurrent_weekday_mask),
     repeatEndDate: repeatEnd.date,
     location: isWorld ? 'world' : 'land',
     coordX: isWorld ? '0' : String(event.x ?? 0),
@@ -152,6 +164,7 @@ function eventEntryToFormState(event: EventEntry): CreateEventFormState {
 }
 
 export {
+  ALL_WEEKDAYS,
   DURATION_PATTERN,
   FREQUENCY_MAP,
   INITIAL_STATE,
@@ -159,9 +172,11 @@ export {
   MIN_RECURRENT_INTERVAL,
   RECURRENT_INTERVAL_OPTIONS,
   WEEKDAYS,
+  dayIndicesToWeekdayMask,
   durationMsToHhMm,
   eventEntryToFormState,
   parseDurationMs,
   parseRecurrentInterval,
-  parseStartWeekday
+  parseStartWeekday,
+  weekdayMaskToDayIndices
 }

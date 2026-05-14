@@ -12,6 +12,7 @@ import { useAuthIdentity } from './useAuthIdentity'
 import {
   FREQUENCY_MAP,
   INITIAL_STATE,
+  dayIndicesToWeekdayMask,
   eventEntryToFormState,
   parseDurationMs,
   parseRecurrentInterval,
@@ -308,7 +309,10 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
       if (!form.repeatEndDate) {
         newErrors.repeatEndDate = t('create_event.error_required')
       }
-      if (form.frequency === 'every_day') {
+      if (form.frequency === 'every_week') {
+        if (parseRecurrentInterval(form.repeatInterval) === null) {
+          newErrors.repeatInterval = t('create_event.error_repeat_interval_invalid')
+        }
         if (form.repeatDays.length === 0) {
           newErrors.repeatDays = t('create_event.error_repeat_days_required')
         } else {
@@ -316,10 +320,6 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
           if (startWeekday !== null && !form.repeatDays.includes(startWeekday)) {
             newErrors.repeatDays = t('create_event.error_start_date_not_in_repeat_days')
           }
-        }
-      } else if (form.frequency === 'every_week') {
-        if (parseRecurrentInterval(form.repeatInterval) === null) {
-          newErrors.repeatInterval = t('create_event.error_repeat_interval_invalid')
         }
       }
     }
@@ -376,14 +376,14 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         community_id: form.communityId || null,
         recurrent: form.repeatEnabled || undefined,
         recurrent_frequency: form.repeatEnabled ? FREQUENCY_MAP[form.frequency] : undefined,
-        // Only WEEKLY exposes a user-pickable interval (chips 1-3).
-        // DAILY day-chips and MONTHLY are interval=1 — the day chips don't reach the backend
-        // (no BYDAY support in events API today; validated on the client only).
         recurrent_interval: form.repeatEnabled
           ? form.frequency === 'every_week'
             ? parseRecurrentInterval(form.repeatInterval) ?? 1
             : 1
           : undefined,
+        // Mask is only meaningful for WEEKLY — the events server's RRule defaults to start_at's weekday
+        // when the mask is 0, which is exactly what DAILY/MONTHLY want.
+        recurrent_weekday_mask: form.repeatEnabled && form.frequency === 'every_week' ? dayIndicesToWeekdayMask(form.repeatDays) : 0,
         recurrent_until: form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : undefined
       }
       /* eslint-enable @typescript-eslint/naming-convention */

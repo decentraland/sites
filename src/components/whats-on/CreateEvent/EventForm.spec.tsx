@@ -231,7 +231,7 @@ function createFormState(overrides = {}) {
     repeatEnabled: false,
     frequency: 'every_day',
     repeatInterval: '1',
-    repeatDays: [],
+    repeatDays: [0, 1, 2, 3, 4, 5, 6],
     repeatEndDate: '',
     location: 'land',
     coordX: '0',

@@ -126,4 +126,24 @@ describe('eventEntryToFormState', () => {
       expect(formState.repeatInterval).toBe('1')
     })
   })
+
+  describe('when hydrating recurrent_weekday_mask from a stored event', () => {
+    it('should default to all 7 weekdays when the mask is missing or 0', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_weekday_mask: null }))
+
+      expect(formState.repeatDays).toEqual([0, 1, 2, 3, 4, 5, 6])
+    })
+
+    it('should decode Tuesday + Friday (mask 36) into [2, 5]', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_weekday_mask: 36 }))
+
+      expect(formState.repeatDays).toEqual([2, 5])
+    })
+
+    it('should decode the full week (mask 127) into [0..6]', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_weekday_mask: 127 }))
+
+      expect(formState.repeatDays).toEqual([0, 1, 2, 3, 4, 5, 6])
+    })
+  })
 })

@@ -299,7 +299,7 @@ const RepeatFields = styled(Box, {
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(2),
-  maxHeight: $visible ? 320 : 0,
+  maxHeight: $visible ? 480 : 0,
   opacity: $visible ? 1 : 0,
   overflow: 'hidden',
   paddingTop: $visible ? 10 : 0,
