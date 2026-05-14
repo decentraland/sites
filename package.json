@@ -17,7 +17,12 @@
     "format": "prettier --write '**/*.{ts,tsx,js,jsx,json,md,mdx,css}'",
     "lint": "eslint ./src",
     "lint:fix": "npm run lint -- --fix",
-    "lint:pkg": "npmPkgJsonLint ."
+    "lint:pkg": "npmPkgJsonLint .",
+    "preview:e2e": "npm run build && vite preview --port 4173 --strictPort",
+    "e2e": "playwright test -c e2e/playwright.config.ts",
+    "e2e:ui": "playwright test -c e2e/playwright.config.ts --ui",
+    "e2e:install": "playwright install --with-deps chromium",
+    "e2e:check-fixtures": "tsc --noEmit -p e2e/tsconfig.json && node --import tsx scripts/check-e2e-fixtures.ts"
   },
   "dependencies": {
     "@contentful/rich-text-react-renderer": "16.1.6",
@@ -49,6 +54,7 @@
   "devDependencies": {
     "@babel/core": "7.28.6",
     "@dcl/eslint-config": "^3.0.0",
+    "@playwright/test": "1.60.0",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.2",
     "@testing-library/user-event": "14.6.1",
@@ -78,6 +84,7 @@
     "prettier": "3.3.2",
     "ts-jest": "29.1.5",
     "ts-node": "10.9.2",
+    "tsx": "4.22.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.59.2",
     "vite": "8.0.9",
