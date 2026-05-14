@@ -96,6 +96,8 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
     recurrent: form.repeatEnabled,
     recurrentFrequency: form.repeatEnabled ? FREQUENCY_MAP[form.frequency] ?? null : null,
     recurrentInterval: null,
+    recurrentCount: null,
+    recurrentUntil: null,
     recurrentDates: [],
     totalAttendees: 0,
     attending: false,

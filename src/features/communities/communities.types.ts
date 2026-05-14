@@ -118,6 +118,8 @@ type CommunityEvent = {
   recurrent?: boolean
   recurrentFrequency?: string | null
   recurrentInterval?: number | null
+  recurrentCount?: number | null
+  recurrentUntil?: string | null
   recurrentDates?: string[]
   contact?: string | null
   details?: string | null

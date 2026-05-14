@@ -52,6 +52,59 @@ function parseCoordinates(coordinates: string): [number, number] {
   return [x, y]
 }
 
+// Mirrors RecurrentFrequency in src/features/events/events.types.ts. Duplicated here
+// because src/features/* may not import from src/utils/* (circular dep), and several
+// features depend on this util.
+type RecurrentFrequencyValue = 'YEARLY' | 'MONTHLY' | 'WEEKLY' | 'DAILY' | 'HOURLY' | 'MINUTELY' | 'SECONDLY'
+
+interface NormalizedRecurrence {
+  frequency: RecurrentFrequencyValue | null
+  interval: number
+}
+
+// Legacy events stored coarser recurrences as DAILY × N. Re-express DAILY intervals
+// that are clean multiples of 365 as years, and multiples of 7 as weeks. Side effect:
+// an intentional DAILY × 28 becomes WEEKLY × 4 — accepted tradeoff.
+function normalizeRecurrence(frequency: RecurrentFrequencyValue | null, interval: number | null | undefined): NormalizedRecurrence {
+  const count = interval && interval > 1 ? interval : 1
+  if (frequency === 'DAILY' && count > 1) {
+    if (count % 365 === 0) return { frequency: 'YEARLY', interval: count / 365 }
+    if (count % 7 === 0) return { frequency: 'WEEKLY', interval: count / 7 }
+  }
+  return { frequency, interval: count }
+}
+
+function formatRecurrenceUntil(iso: string): string | null {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return null
+  return d
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}/, '')
+}
+
+interface RecurrenceRuleParams {
+  frequency: RecurrentFrequencyValue | null
+  interval: number
+  count: number | null
+  until: string | null
+}
+
+function buildRecurrenceRule({ frequency, interval, count, until }: RecurrenceRuleParams): string | null {
+  if (!frequency) return null
+  // Sub-daily frequencies aren't surfaced in the UI; skip them in the calendar too for consistency.
+  if (frequency === 'HOURLY' || frequency === 'MINUTELY' || frequency === 'SECONDLY') return null
+  const parts = [`FREQ=${frequency}`]
+  if (interval > 1) parts.push(`INTERVAL=${interval}`)
+  if (until) {
+    const formatted = formatRecurrenceUntil(until)
+    if (formatted) parts.push(`UNTIL=${formatted}`)
+  } else if (count && count > 0) {
+    parts.push(`COUNT=${count}`)
+  }
+  return `RRULE:${parts.join(';')}`
+}
+
 interface CalendarEventParams {
   name: string
   description?: string | null
@@ -60,6 +113,11 @@ interface CalendarEventParams {
   x: number
   y: number
   url: string
+  recurrent?: boolean
+  recurrentFrequency?: RecurrentFrequencyValue | null
+  recurrentInterval?: number | null
+  recurrentCount?: number | null
+  recurrentUntil?: string | null
 }
 
 function buildCalendarUrl(event: CalendarEventParams): string | null {
@@ -78,6 +136,16 @@ function buildCalendarUrl(event: CalendarEventParams): string | null {
     details: `${event.description || ''}\n\n${event.url}`,
     location: `Decentraland ${event.x},${event.y}`
   })
+  if (event.recurrent && event.recurrentFrequency) {
+    const normalized = normalizeRecurrence(event.recurrentFrequency, event.recurrentInterval)
+    const rrule = buildRecurrenceRule({
+      frequency: normalized.frequency,
+      interval: normalized.interval,
+      count: event.recurrentCount ?? null,
+      until: event.recurrentUntil ?? null
+    })
+    if (rrule) params.set('recur', rrule)
+  }
   return `https://calendar.google.com/calendar/render?${params.toString()}`
 }
 
@@ -91,6 +159,7 @@ export {
   buildEventShareUrl,
   buildJumpInUrl,
   buildPlaceShareUrl,
+  normalizeRecurrence,
   parseCoordinates,
   resolveEventRealm
 }

@@ -5,7 +5,7 @@ import { useTranslation } from '@dcl/hooks'
 import { Button } from 'decentraland-ui2'
 import type { RecurrentFrequency } from '../../../features/events'
 import { linkifyText } from '../../../utils/linkifyText'
-import { buildCalendarUrl } from '../../../utils/whatsOnUrl'
+import { buildCalendarUrl, normalizeRecurrence } from '../../../utils/whatsOnUrl'
 import { ContentDivider, ContentSection, DescriptionText, SectionLabel } from '../DetailModal/DetailModal.styled'
 import type { AdminActions, ModalEventData } from './EventDetailModal.types'
 import { AdminActionsRow, RecurrenceText, ScheduleIconButton, ScheduleRow, ScheduleText } from './EventDetailModal.styled'
@@ -29,21 +29,8 @@ function getRecurrenceLabel(
   interval: number | null,
   t: (key: string, values?: Record<string, string | number>) => string
 ): string | null {
-  const count = interval && interval > 1 ? interval : 1
-  // Legacy events stored coarser recurrences as DAILY × N. Re-express DAILY intervals
-  // that are clean multiples of 365 as years, and multiples of 7 as weeks. Side effect:
-  // an intentional DAILY × 28 renders as "Every 4 weeks" — accepted tradeoff.
-  if (frequency === 'DAILY' && count > 1) {
-    if (count % 365 === 0) {
-      const years = count / 365
-      return years === 1 ? t('event_detail.recurrent_yearly') : t('event_detail.recurrent_every_n_years', { count: years })
-    }
-    if (count % 7 === 0) {
-      const weeks = count / 7
-      return weeks === 1 ? t('event_detail.recurrent_weekly') : t('event_detail.recurrent_every_n_weeks', { count: weeks })
-    }
-  }
-  switch (frequency) {
+  const { frequency: normalizedFrequency, interval: count } = normalizeRecurrence(frequency, interval)
+  switch (normalizedFrequency) {
     case 'DAILY':
       return count === 1 ? t('event_detail.recurrent_daily') : t('event_detail.recurrent_every_n_days', { count })
     case 'WEEKLY':

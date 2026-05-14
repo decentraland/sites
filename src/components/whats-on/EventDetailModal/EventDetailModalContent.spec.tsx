@@ -8,9 +8,13 @@ jest.mock('@dcl/hooks', () => ({
   })
 }))
 
-jest.mock('../../../utils/whatsOnUrl', () => ({
-  buildCalendarUrl: jest.fn(() => 'https://calendar.google.com/test')
-}))
+jest.mock('../../../utils/whatsOnUrl', () => {
+  const actual = jest.requireActual('../../../utils/whatsOnUrl')
+  return {
+    ...actual,
+    buildCalendarUrl: jest.fn(() => 'https://calendar.google.com/test')
+  }
+})
 
 jest.mock('../DetailModal/DetailModal.styled', () => ({
   ContentSection: ({ children }: { children: React.ReactNode }) => <div data-testid="content-section">{children}</div>,

@@ -14,6 +14,8 @@ interface ModalEventData {
   recurrent: boolean
   recurrentFrequency: RecurrentFrequency | null
   recurrentInterval: number | null
+  recurrentCount: number | null
+  recurrentUntil: string | null
   recurrentDates: string[]
   totalAttendees: number
   attending?: boolean
