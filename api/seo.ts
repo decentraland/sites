@@ -605,6 +605,8 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
 
   // Preview pages accept an unauthenticated token in the query string; treat them
   // as private content: no edge cache, no Referer leak, no search indexing.
+  // Exact match is safe — Vercel normalizes trailing slashes (`/blog/preview/`) upstream
+  // of this function, so `requestPath` is always the canonical form.
   const isPreviewPath = requestPath === '/blog/preview'
 
   // Security headers applied regardless of the response path.
