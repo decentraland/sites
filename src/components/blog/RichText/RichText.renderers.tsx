@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 import type { Block, Inline, Text } from '@contentful/rich-text-types'
 import { getEnv } from '../../../config/env'
 import type { ContentfulAsset } from '../../../shared/blog/types/blog.domain'
+import { isSafeHyperlinkUri, parseUrl } from './RichText.helpers'
 import { EmbeddedImage, Hyperlink, InstagramEmbed, InternalLink, LinkedInEmbed, TwitterContainer, YouTubeEmbed } from './RichText.styled'
 
 // Lazy-loaded to keep Twitter widgets script off the initial post-page bundle.
@@ -14,14 +15,6 @@ const INSTAGRAM_HOSTS = new Set(['www.instagram.com', 'instagram.com'])
 const LINKEDIN_HOSTS = new Set(['www.linkedin.com', 'linkedin.com'])
 // YouTube video IDs: alphanumeric, hyphens, underscores, 1-20 chars
 const YOUTUBE_ID_REGEX = /^[\w-]{1,20}$/
-
-const parseUrl = (uri: string): URL | null => {
-  try {
-    return new URL(uri)
-  } catch {
-    return null
-  }
-}
 
 const getYouTubeVideoId = (uri: string): string | null => {
   const url = parseUrl(uri)
@@ -109,7 +102,7 @@ const renderHyperlink = (node: Block | Inline) => {
 
   // Check if this is an internal blog link (e.g. https://decentraland.org/blog/...)
   const blogBaseUrl = getEnv('BLOG_BASE_URL') || ''
-  const isInternalBlogLink = uri.startsWith(blogBaseUrl)
+  const isInternalBlogLink = blogBaseUrl.length > 0 && uri.startsWith(blogBaseUrl)
   const isAnchorLink = uri.startsWith('#')
 
   if (isInternalBlogLink) {
@@ -124,6 +117,12 @@ const renderHyperlink = (node: Block | Inline) => {
         {contentValue}
       </Hyperlink>
     )
+  }
+
+  // Strict scheme allowlist — prevents CMS-authored javascript:/data:/vbscript: links from
+  // producing an exploitable <a href>. Unsafe URIs render the link text as inert content.
+  if (!isSafeHyperlinkUri(uri)) {
+    return <>{contentValue}</>
   }
 
   return (
