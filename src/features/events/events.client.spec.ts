@@ -50,7 +50,11 @@ describe('eventsClient', () => {
       it('should call fetchWithOptionalIdentity with the correct URL', async () => {
         await store.dispatch(eventsClient.endpoints.getEvents.initiate({ list: 'live', limit: 5 }))
 
-        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(expect.stringContaining('https://events.test/events?'), undefined)
+        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(
+          expect.stringContaining('https://events.test/events?'),
+          undefined,
+          expect.any(AbortSignal)
+        )
       })
     })
 
@@ -136,7 +140,11 @@ describe('eventsClient', () => {
       it('should call fetchWithOptionalIdentity with correct URL params', async () => {
         await store.dispatch(eventsClient.endpoints.getUpcomingEvents.initiate())
 
-        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(expect.stringContaining('list=upcoming'), undefined)
+        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(
+          expect.stringContaining('list=upcoming'),
+          undefined,
+          expect.any(AbortSignal)
+        )
       })
 
       it('should not filter out world events so the upcoming list includes Worlds', async () => {
@@ -375,7 +383,11 @@ describe('eventsClient', () => {
         const store = createTestStore()
         const result = await store.dispatch(eventsClient.endpoints.getEventById.initiate({ eventId: 'ev-42', identity: mockIdentity }))
 
-        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith('https://events.test/events/ev-42', mockIdentity)
+        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(
+          'https://events.test/events/ev-42',
+          mockIdentity,
+          expect.any(AbortSignal)
+        )
         expect(result.data).toEqual({ id: 'ev-42', name: 'Test' })
       })
 
@@ -383,7 +395,11 @@ describe('eventsClient', () => {
         const store = createTestStore()
         await store.dispatch(eventsClient.endpoints.getEventById.initiate({ eventId: 'ev 42/slash', identity: mockIdentity }))
 
-        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith('https://events.test/events/ev%2042%2Fslash', mockIdentity)
+        expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(
+          'https://events.test/events/ev%2042%2Fslash',
+          mockIdentity,
+          expect.any(AbortSignal)
+        )
       })
     })
 
@@ -662,7 +678,8 @@ describe('eventsClient', () => {
 
         expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(
           'https://social.test/v1/communities?roles=owner&roles=moderator',
-          mockIdentity
+          mockIdentity,
+          expect.any(AbortSignal)
         )
         expect(result.data).toEqual([{ id: 'c-1', name: 'Active', ownerAddress: '0xA', active: true }])
       })
