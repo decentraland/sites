@@ -19,6 +19,16 @@
     {
       "source": "/whitepaper2.pdf",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        {
+          "key": "Permissions-Policy",
+          "value": "accelerometer=(self \"https://www.youtube.com\"), autoplay=(self \"https://www.youtube.com\"), camera=(self), clipboard-write=(self), display-capture=(self), encrypted-media=(self \"https://www.youtube.com\"), fullscreen=*, geolocation=(), gyroscope=(self \"https://www.youtube.com\"), interest-cohort=(), microphone=(self), payment=(), usb=(), xr-spatial-tracking=()"
+        }
+      ]
     }
   ]
 }
