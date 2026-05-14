@@ -1,19 +1,19 @@
 import { getEnv } from '../config/env'
 
 /**
- * Returns the base path the app is served from (Vite BASE_URL without trailing slash).
- */
-function getBasePath(): string {
-  const base = (import.meta as unknown as { env?: { ['BASE_URL']?: string } })?.env?.BASE_URL ?? '/'
-  const normalized = base.endsWith('/') ? base.slice(0, -1) : base
-  return normalized === '' ? '' : normalized
-}
-
-/**
- * Builds a redirect path for after authentication, preserving query params.
+ * Builds a same-origin redirect path for after authentication, preserving query params.
+ *
+ * IMPORTANT: returns ONLY pathname + search (e.g. `/whats-on?foo=bar`) — never an
+ * absolute URL. In production the JS bundle is served from `cdn.decentraland.org/@dcl/sites/<version>/`
+ * (Vite's `base` / `import.meta.env.BASE_URL` points there so asset URLs resolve correctly),
+ * but the USER is browsing `decentraland.org/...`. Mixing those two — e.g. prefixing the
+ * CDN base onto a navigation path — produces a `redirectTo` like
+ * `https://cdn.decentraland.org/@dcl/sites/0.18.0/whats-on`, which sends the user to the
+ * raw bundle host after auth instead of back to the app. The auth dapp resolves the
+ * relative `redirectTo` against the user's origin via the request referer, so a same-origin
+ * path is exactly what we want here.
  */
 function buildAuthRedirectUrl(path: string, queryParams?: Record<string, string>): string {
-  const basePath = getBasePath()
   const url = new URL(path, window.location.origin)
 
   if (queryParams) {
@@ -22,15 +22,19 @@ function buildAuthRedirectUrl(path: string, queryParams?: Record<string, string>
     })
   }
 
-  const pathWithQuery = url.pathname + url.search
-  return `${basePath}${pathWithQuery}`
+  return url.pathname + url.search
 }
 
 /**
  * Resolves auth URL:
- * - If AUTH_URL is absolute (http/https), use it directly
- * - If AUTH_URL is relative and we're on localhost, use relative path (for Vite proxy)
- * - If AUTH_URL is relative and we're NOT on localhost (e.g. preview deploy), use staging auth
+ * - If AUTH_URL is absolute (http/https), use it directly (prod/staging).
+ * - If AUTH_URL is relative and we're on localhost, return as-is (Vite proxy handles `/auth`).
+ * - If AUTH_URL is relative on any other host (e.g. a Vercel preview deploy), return a
+ *   same-origin URL so the Vercel rewrite `/auth/* -> decentraland.zone/auth/*` (vercel.json)
+ *   keeps the entire auth flow inside the preview origin. The SSO identity is written to
+ *   `localStorage` of whichever origin executes `/auth`; sending the user directly to
+ *   `decentraland.zone/auth` would strand the identity there and leave the preview origin
+ *   signed out.
  */
 function resolveAuthUrl(): string {
   const authUrl = getEnv('AUTH_URL') ?? '/auth'
@@ -44,7 +48,7 @@ function resolveAuthUrl(): string {
     return authUrl
   }
 
-  return 'https://decentraland.zone/auth'
+  return new URL(authUrl, window.location.origin).toString().replace(/\/+$/, '')
 }
 
 function redirectToAuth(path: string, queryParams?: Record<string, string>): void {

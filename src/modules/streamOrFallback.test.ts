@@ -21,6 +21,9 @@ const buildHeadResponse = (contentLength: string | null, ok = true): Response =>
     headers: { get: (name: string) => (name.toLowerCase() === 'content-length' ? contentLength : null) }
   }) as unknown as Response
 
+// We expose this helper to prove the new implementation *ignores* the API
+// even when Chrome reports a value. Pre-fix, this dial drove the estimate;
+// post-fix, it must have zero effect on the result.
 const setNavigatorConnection = (downlink: number | undefined): void => {
   Object.defineProperty(window.navigator, 'connection', {
     configurable: true,
@@ -45,45 +48,63 @@ describe('estimateDownloadHoldMs', () => {
     clearNavigatorConnection()
   })
 
-  describe('when the HEAD request returns a Content-Length and the browser exposes downlink', () => {
+  describe('when the HEAD request returns a Content-Length', () => {
     // ~4.4 MB DMG — the actual size of the current Decentraland macOS
     // installer, verified via curl HEAD on the gateway. Tauri reuses the
     // system WebView so the bundle stays small.
     const DMG_SIZE_BYTES = 4_618_782
 
-    beforeEach(() => {
-      mockFetch.mockResolvedValue(buildHeadResponse(String(DMG_SIZE_BYTES)))
-    })
-
-    it('should compute a sub-second hold for fiber-class connections on the real DMG size', async () => {
+    it('should land between MIN and MAX for the real DMG size at the assumed broadband rate', async () => {
       // 4.4 MB at 100 Mbps ≈ 350ms transfer + 500ms safety margin → ~850ms,
-      // which clears the 800ms minimum so the math result is what we expect.
-      setNavigatorConnection(100)
+      // just above the 800ms minimum.
+      mockFetch.mockResolvedValue(buildHeadResponse(String(DMG_SIZE_BYTES)))
+
       const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
-      expect(ms).toBeGreaterThanOrEqual(800)
+
+      expect(ms).toBeGreaterThanOrEqual(ESTIMATE_MIN_HOLD_MS)
       expect(ms).toBeLessThanOrEqual(1100)
     })
 
-    it('should produce a longer hold on a slow connection but never beyond MAX', async () => {
-      // 4.4 MB at 1 Mbps ≈ 35s pure transfer, way over ESTIMATE_MAX_HOLD_MS.
-      setNavigatorConnection(1)
+    it('should clamp to MAX for files large enough that the pure transfer exceeds the cap', async () => {
+      // 200 MB at 100 Mbps ≈ 16s of pure transfer — well past MAX.
+      mockFetch.mockResolvedValue(buildHeadResponse(String(200 * 1024 * 1024)))
+
       const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
+
       expect(ms).toBe(ESTIMATE_MAX_HOLD_MS)
     })
 
-    it('should produce a mid-range hold on typical broadband', async () => {
-      // 4.4 MB at 25 Mbps ≈ 1.4s + 500ms margin → ~1.9s. Well within MIN/MAX.
-      setNavigatorConnection(25)
+    it('should clamp to MIN for tiny files so the modal does not blink and vanish', async () => {
+      mockFetch.mockResolvedValue(buildHeadResponse('512')) // 512 bytes
+
       const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
-      expect(ms).toBeGreaterThanOrEqual(1500)
-      expect(ms).toBeLessThanOrEqual(2500)
+
+      expect(ms).toBe(ESTIMATE_MIN_HOLD_MS)
+    })
+
+    it('should ignore navigator.connection.downlink (Chrome caps it at ~10 Mbps, breaking the estimate)', async () => {
+      // Pre-fix this would have driven the estimate up to MAX. Post-fix it
+      // must have zero effect: the result for a fixed file size is identical
+      // regardless of what the (mis)reported downlink claims.
+      mockFetch.mockResolvedValue(buildHeadResponse(String(DMG_SIZE_BYTES)))
+
+      setNavigatorConnection(1)
+      const slow = await estimateDownloadHoldMs('https://example.com/file.dmg')
+
+      setNavigatorConnection(100)
+      const fast = await estimateDownloadHoldMs('https://example.com/file.dmg')
+
+      clearNavigatorConnection()
+      const missing = await estimateDownloadHoldMs('https://example.com/file.dmg')
+
+      expect(slow).toBe(fast)
+      expect(fast).toBe(missing)
     })
   })
 
   describe('when the HEAD request fails', () => {
     it('should return the minimum hold instead of guessing', async () => {
       mockFetch.mockRejectedValue(new TypeError('CORS blocked'))
-      setNavigatorConnection(50)
 
       const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
 
@@ -94,7 +115,6 @@ describe('estimateDownloadHoldMs', () => {
   describe('when the HEAD response is non-2xx (403, 405, etc.)', () => {
     it('should treat it like a missing Content-Length and return the minimum hold', async () => {
       mockFetch.mockResolvedValue(buildHeadResponse(String(80 * 1024 * 1024), false))
-      setNavigatorConnection(50)
 
       const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
 
@@ -105,33 +125,6 @@ describe('estimateDownloadHoldMs', () => {
   describe('when the HEAD response omits Content-Length', () => {
     it('should return the minimum hold', async () => {
       mockFetch.mockResolvedValue(buildHeadResponse(null))
-      setNavigatorConnection(50)
-
-      const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
-
-      expect(ms).toBe(ESTIMATE_MIN_HOLD_MS)
-    })
-  })
-
-  describe('when the browser does not expose navigator.connection (Safari, Firefox)', () => {
-    it('should fall back to the default downlink and still produce an adaptive hold', async () => {
-      // 4.4 MB DMG at the default 50 Mbps ≈ 700ms + 500ms margin ≈ 1.2s.
-      // Lands between MIN and MAX so the assertion exercises the adaptive
-      // arithmetic rather than the clamps.
-      mockFetch.mockResolvedValue(buildHeadResponse(String(4_618_782)))
-      clearNavigatorConnection()
-
-      const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
-
-      expect(ms).toBeGreaterThan(ESTIMATE_MIN_HOLD_MS)
-      expect(ms).toBeLessThan(ESTIMATE_MAX_HOLD_MS)
-    })
-  })
-
-  describe('when the file is tiny', () => {
-    it('should clamp to the minimum hold so the modal does not vanish instantly', async () => {
-      mockFetch.mockResolvedValue(buildHeadResponse('512')) // 512 bytes
-      setNavigatorConnection(100)
 
       const ms = await estimateDownloadHoldMs('https://example.com/file.dmg')
 
@@ -216,9 +209,8 @@ describe('streamOrFallback', () => {
 
     it('should resolve promptly when the signal aborts mid-hold', async () => {
       // Long estimated hold so the test exercises a real wait window:
-      // 80 MB at 5 Mbps caps at MAX_HOLD_MS.
-      mockFetch.mockResolvedValue(buildHeadResponse(String(80 * 1024 * 1024)))
-      setNavigatorConnection(5)
+      // 200 MB at the assumed 100 Mbps caps at MAX_HOLD_MS.
+      mockFetch.mockResolvedValue(buildHeadResponse(String(200 * 1024 * 1024)))
 
       let resolved = false
       streamOrFallback({

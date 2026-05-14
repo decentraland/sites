@@ -343,7 +343,12 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         image_vertical: form.verticalImageUrl,
         contact: form.email || null,
         categories: [],
-        world: isWorld || undefined,
+        // Always send the explicit boolean. Earlier this was `isWorld || undefined`,
+        // which omits the field on PATCH and lets the backend keep its previous
+        // value — that's how events with `world: true` (set wrongly in an earlier
+        // edit) survived a switch back to Land: the user picked Land, saved, but
+        // the PATCH never carried `world: false` to clear the stale flag.
+        world: isWorld,
         server: isWorld ? form.world : null,
         community_id: form.communityId || null,
         recurrent: form.repeatEnabled || undefined,

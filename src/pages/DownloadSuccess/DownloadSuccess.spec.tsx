@@ -127,17 +127,13 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
       expect(mockTrack).toHaveBeenCalledWith(
         'download_success',
         expect.objectContaining({
-          screen_width: expect.any(Number),
-
-          screen_height: expect.any(Number),
-
-          device_pixel_ratio: expect.any(Number),
-
-          color_depth: expect.any(Number),
-
-          hardware_concurrency: expect.any(Number),
-
-          timezone_offset_minutes: expect.any(Number)
+          fp_screen_width: expect.any(Number),
+          fp_screen_height: expect.any(Number),
+          fp_device_pixel_ratio: expect.any(Number),
+          fp_hardware_concurrency: expect.any(Number),
+          fp_timezone: expect.any(String),
+          fp_language: expect.any(String),
+          fp_platform: expect.any(String)
         })
       )
     })

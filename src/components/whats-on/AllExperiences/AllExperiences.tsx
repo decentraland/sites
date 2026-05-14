@@ -7,7 +7,6 @@ import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
 import { useVisibleColumnCount } from '../../../hooks/useVisibleColumnCount'
 import { redirectToAuth } from '../../../utils/authRedirect'
-import { chunk } from '../../../utils/whatsOnChunk'
 import { addDays, formatDayHeaderAria } from '../../../utils/whatsOnDate'
 import { EventDetailModal } from '../EventDetailModal'
 import { HostBanner } from '../HostBanner/HostBanner'
@@ -19,7 +18,7 @@ import { ExperiencesTabs } from './ExperiencesTabs'
 import type { TabValue } from './ExperiencesTabs'
 import { MyExperiencesEmptyState } from './MyExperiencesEmptyState'
 import { MyExperiencesGrid } from './MyExperiencesGrid'
-import { AllExperiencesSection, ColumnsContainer, MobileEventsPage, MobileEventsTrack, SectionTitle } from './AllExperiences.styled'
+import { AllExperiencesSection, ColumnsContainer, MobileEventCardSlot, MobileEventsList, SectionTitle } from './AllExperiences.styled'
 
 const MY_EXPERIENCES_PANEL_ID = 'my-experiences-panel'
 const TAB_QUERY_PARAM = 'tab'
@@ -51,10 +50,12 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, list
     {
       list,
       order: 'asc',
-      // NOTE: only filter out world events on the "All" tab (calendar/day-column view is
-      // spatial and only makes sense for Genesis City). On the "My" tab the owner must
-      // see ALL of their events, including those hosted in Worlds.
-      world: ownerOnly ? undefined : false,
+      // Include both Genesis City and Worlds events on BOTH tabs. Earlier this branch
+      // filtered worlds out of the "All" tab because the day-column view was framed as
+      // spatial (Genesis City coords). Product wants worlds visible everywhere now —
+      // users were reporting "no veo mis hangouts en What's On" because their world
+      // events were silently dropped.
+      world: undefined,
       limit: 200,
       identity,
       owner: ownerOnly ? true : undefined
@@ -223,15 +224,6 @@ function AllExperiences() {
     [openEventDetailModal]
   )
 
-  const mobilePages = useMemo(
-    () =>
-      chunk(
-        dayData.flatMap(d => d.events),
-        2
-      ),
-    [dayData]
-  )
-
   const showMyEmptyState = isMyTab && Boolean(address) && !isLoadingEvents && !hasAnyUpcomingMyEvent
 
   return (
@@ -258,15 +250,15 @@ function AllExperiences() {
               onNavigateRight={handleNavigateRight}
             />
             {columnCount <= 1 ? (
-              <MobileEventsTrack>
-                {mobilePages.map((page, i) => (
-                  <MobileEventsPage key={i}>
-                    {page.map(event => (
-                      <UpcomingCard key={`${event.id}-${event.start_at}`} event={event} onClick={openEventDetailModal} />
-                    ))}
-                  </MobileEventsPage>
-                ))}
-              </MobileEventsTrack>
+              <MobileEventsList>
+                {dayData
+                  .flatMap(d => d.events)
+                  .map(event => (
+                    <MobileEventCardSlot key={`${event.id}-${event.start_at}`}>
+                      <UpcomingCard event={event} onClick={openEventDetailModal} />
+                    </MobileEventCardSlot>
+                  ))}
+              </MobileEventsList>
             ) : (
               <ColumnsContainer sx={{ gridTemplateColumns: `repeat(${columnCount}, 1fr)` }}>
                 {dayData.map(({ date, events, isLoading }) => (

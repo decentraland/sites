@@ -1199,5 +1199,15 @@
       "tooltip_title": "{count} Friends Joined",
       "tooltip_subtitle": "{count} More friends for your next Reward!"
     }
+  },
+  "event_detail": {
+    "recurrent_daily": "毎日繰り返し",
+    "recurrent_weekly": "毎週繰り返し",
+    "recurrent_monthly": "毎月繰り返し",
+    "recurrent_yearly": "毎年繰り返し",
+    "recurrent_every_n_days": "{count}日ごと",
+    "recurrent_every_n_weeks": "{count}週間ごと",
+    "recurrent_every_n_months": "{count}ヶ月ごと",
+    "recurrent_every_n_years": "{count}年ごと"
   }
 }

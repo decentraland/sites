@@ -55,36 +55,20 @@ const ColumnsContainer = styled(Box)({
   gap: COLUMNS_GAP
 })
 
-/* eslint-disable @typescript-eslint/naming-convention */
-const MobileEventsTrack = styled(Box)({
-  display: 'flex',
-  gap: 12,
-  overflowX: 'auto',
-  scrollSnapType: 'x mandatory',
-  scrollBehavior: 'smooth',
-  scrollbarWidth: 'none',
-  '&::-webkit-scrollbar': {
-    display: 'none'
-  }
-})
-/* eslint-enable @typescript-eslint/naming-convention */
-
 // Matches decentraland-ui2 EventSmallCard's intrinsic maxWidth so the centered
 // stack on mobile mirrors the card's natural max width on tablet/desktop.
 const MOBILE_CARD_MAX_WIDTH = 430
 
-const MobileEventsPage = styled(Box)({
+const MobileEventsList = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'center',
   alignItems: 'center',
-  gap: 12,
-  flex: '0 0 100%',
-  scrollSnapAlign: 'start',
-  ['& > *']: {
-    width: '100%',
-    maxWidth: MOBILE_CARD_MAX_WIDTH
-  }
+  gap: 12
 })
 
-export { AllExperiencesSection, ColumnsContainer, MobileEventsPage, MobileEventsTrack, SectionTitle }
+const MobileEventCardSlot = styled('div')({
+  width: '100%',
+  maxWidth: MOBILE_CARD_MAX_WIDTH
+})
+
+export { AllExperiencesSection, ColumnsContainer, MobileEventCardSlot, MobileEventsList, SectionTitle }

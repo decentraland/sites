@@ -1199,5 +1199,15 @@
       "tooltip_title": "{count} Friends Joined",
       "tooltip_subtitle": "{count} More friends for your next Reward!"
     }
+  },
+  "event_detail": {
+    "recurrent_daily": "Se repite diariamente",
+    "recurrent_weekly": "Se repite semanalmente",
+    "recurrent_monthly": "Se repite mensualmente",
+    "recurrent_yearly": "Se repite anualmente",
+    "recurrent_every_n_days": "Cada {count} días",
+    "recurrent_every_n_weeks": "Cada {count} semanas",
+    "recurrent_every_n_months": "Cada {count} meses",
+    "recurrent_every_n_years": "Cada {count} años"
   }
 }

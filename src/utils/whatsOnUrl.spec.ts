@@ -1,9 +1,11 @@
 import {
   appendRealmParam,
+  buildCalendarUrl,
   buildEventJumpInUrl,
   buildEventShareUrl,
   buildJumpInUrl,
   buildPlaceShareUrl,
+  normalizeRecurrence,
   parseCoordinates,
   resolveEventRealm
 } from './whatsOnUrl'
@@ -238,6 +240,162 @@ describe('parseCoordinates', () => {
   describe('when the input is not a valid coordinate string', () => {
     it('should fall back to 0,0', () => {
       expect(parseCoordinates('invalid')).toEqual([0, 0])
+    })
+  })
+})
+
+describe('normalizeRecurrence', () => {
+  describe('when the interval is null or 1', () => {
+    it('should preserve the frequency and default the interval to 1', () => {
+      expect(normalizeRecurrence('WEEKLY', null)).toEqual({ frequency: 'WEEKLY', interval: 1 })
+      expect(normalizeRecurrence('MONTHLY', 1)).toEqual({ frequency: 'MONTHLY', interval: 1 })
+    })
+  })
+
+  describe('when DAILY has an interval that is a clean multiple of 365', () => {
+    it('should re-express the recurrence as YEARLY', () => {
+      expect(normalizeRecurrence('DAILY', 365)).toEqual({ frequency: 'YEARLY', interval: 1 })
+      expect(normalizeRecurrence('DAILY', 730)).toEqual({ frequency: 'YEARLY', interval: 2 })
+    })
+  })
+
+  describe('when DAILY has an interval that is a clean multiple of 7', () => {
+    it('should re-express the recurrence as WEEKLY', () => {
+      expect(normalizeRecurrence('DAILY', 7)).toEqual({ frequency: 'WEEKLY', interval: 1 })
+      expect(normalizeRecurrence('DAILY', 14)).toEqual({ frequency: 'WEEKLY', interval: 2 })
+      expect(normalizeRecurrence('DAILY', 28)).toEqual({ frequency: 'WEEKLY', interval: 4 })
+    })
+  })
+
+  describe('when DAILY has an interval that is not a clean multiple of 7 or 365', () => {
+    it('should preserve the DAILY frequency and the interval', () => {
+      expect(normalizeRecurrence('DAILY', 3)).toEqual({ frequency: 'DAILY', interval: 3 })
+      expect(normalizeRecurrence('DAILY', 10)).toEqual({ frequency: 'DAILY', interval: 10 })
+    })
+  })
+
+  describe('when the frequency is not DAILY', () => {
+    it('should not apply any normalization', () => {
+      expect(normalizeRecurrence('WEEKLY', 4)).toEqual({ frequency: 'WEEKLY', interval: 4 })
+      expect(normalizeRecurrence('MONTHLY', 12)).toEqual({ frequency: 'MONTHLY', interval: 12 })
+    })
+  })
+})
+
+describe('buildCalendarUrl', () => {
+  function baseEvent() {
+    return {
+      name: 'Test Event',
+      description: 'A great event',
+      startAt: '2026-05-19T22:30:00.000Z',
+      finishAt: '2026-05-19T23:59:00.000Z',
+      x: 10,
+      y: 20,
+      url: 'https://decentraland.org/jump/event?position=10,20'
+    }
+  }
+
+  describe('when the event has no start date', () => {
+    it('should return null', () => {
+      expect(buildCalendarUrl({ ...baseEvent(), startAt: null })).toBeNull()
+    })
+  })
+
+  describe('when the event is not recurrent', () => {
+    it('should not include a recur param', () => {
+      const url = buildCalendarUrl(baseEvent())
+      expect(url).not.toContain('recur=')
+    })
+  })
+
+  describe('when the event is recurrent', () => {
+    describe('and the frequency + interval map directly to RRULE', () => {
+      it('should emit a recur param with FREQ and INTERVAL for WEEKLY × 2', () => {
+        const url = buildCalendarUrl({
+          ...baseEvent(),
+          recurrent: true,
+          recurrentFrequency: 'WEEKLY',
+          recurrentInterval: 2
+        })
+        expect(url).toContain('recur=RRULE%3AFREQ%3DWEEKLY%3BINTERVAL%3D2')
+      })
+
+      it('should omit INTERVAL when the interval is 1', () => {
+        const url = buildCalendarUrl({
+          ...baseEvent(),
+          recurrent: true,
+          recurrentFrequency: 'WEEKLY',
+          recurrentInterval: 1
+        })
+        expect(url).toContain('recur=RRULE%3AFREQ%3DWEEKLY')
+        expect(url).not.toContain('INTERVAL')
+      })
+    })
+
+    describe('and the legacy data stores weeks as DAILY × 14', () => {
+      it('should normalize the recurrence to WEEKLY × 2 in the RRULE', () => {
+        const url = buildCalendarUrl({
+          ...baseEvent(),
+          recurrent: true,
+          recurrentFrequency: 'DAILY',
+          recurrentInterval: 14
+        })
+        expect(url).toContain('recur=RRULE%3AFREQ%3DWEEKLY%3BINTERVAL%3D2')
+        expect(url).not.toContain('FREQ%3DDAILY')
+      })
+    })
+
+    describe('and the event has a recurrent_until date', () => {
+      it('should include UNTIL formatted as YYYYMMDDTHHMMSSZ', () => {
+        const url = buildCalendarUrl({
+          ...baseEvent(),
+          recurrent: true,
+          recurrentFrequency: 'WEEKLY',
+          recurrentInterval: 2,
+          recurrentUntil: '2026-06-30T22:00:00.000Z'
+        })
+        expect(url).toContain('UNTIL%3D20260630T220000Z')
+      })
+    })
+
+    describe('and the event has a recurrent_count but no recurrent_until', () => {
+      it('should include COUNT', () => {
+        const url = buildCalendarUrl({
+          ...baseEvent(),
+          recurrent: true,
+          recurrentFrequency: 'WEEKLY',
+          recurrentInterval: 2,
+          recurrentCount: 10
+        })
+        expect(url).toContain('COUNT%3D10')
+      })
+    })
+
+    describe('and the event has both recurrent_until and recurrent_count', () => {
+      it('should prefer UNTIL over COUNT', () => {
+        const url = buildCalendarUrl({
+          ...baseEvent(),
+          recurrent: true,
+          recurrentFrequency: 'WEEKLY',
+          recurrentInterval: 2,
+          recurrentCount: 10,
+          recurrentUntil: '2026-06-30T22:00:00.000Z'
+        })
+        expect(url).toContain('UNTIL%3D20260630T220000Z')
+        expect(url).not.toContain('COUNT%3D10')
+      })
+    })
+
+    describe('and the frequency is sub-daily (HOURLY)', () => {
+      it('should omit the recur param to stay consistent with the UI label', () => {
+        const url = buildCalendarUrl({
+          ...baseEvent(),
+          recurrent: true,
+          recurrentFrequency: 'HOURLY',
+          recurrentInterval: 1
+        })
+        expect(url).not.toContain('recur=')
+      })
     })
   })
 })
