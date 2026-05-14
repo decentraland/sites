@@ -27,9 +27,14 @@ function buildAuthRedirectUrl(path: string, queryParams?: Record<string, string>
 
 /**
  * Resolves auth URL:
- * - If AUTH_URL is absolute (http/https), use it directly
- * - If AUTH_URL is relative and we're on localhost, use relative path (for Vite proxy)
- * - If AUTH_URL is relative and we're NOT on localhost (e.g. preview deploy), use staging auth
+ * - If AUTH_URL is absolute (http/https), use it directly (prod/staging).
+ * - If AUTH_URL is relative and we're on localhost, return as-is (Vite proxy handles `/auth`).
+ * - If AUTH_URL is relative on any other host (e.g. a Vercel preview deploy), return a
+ *   same-origin URL so the Vercel rewrite `/auth/* -> decentraland.zone/auth/*` (vercel.json)
+ *   keeps the entire auth flow inside the preview origin. The SSO identity is written to
+ *   `localStorage` of whichever origin executes `/auth`; sending the user directly to
+ *   `decentraland.zone/auth` would strand the identity there and leave the preview origin
+ *   signed out.
  */
 function resolveAuthUrl(): string {
   const authUrl = getEnv('AUTH_URL') ?? '/auth'
@@ -43,7 +48,7 @@ function resolveAuthUrl(): string {
     return authUrl
   }
 
-  return 'https://decentraland.zone/auth'
+  return new URL(authUrl, window.location.origin).toString().replace(/\/+$/, '')
 }
 
 function redirectToAuth(path: string, queryParams?: Record<string, string>): void {

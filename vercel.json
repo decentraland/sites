@@ -9,6 +9,8 @@
     { "source": "/jump/events", "destination": "/api/seo?path=/jump/events" },
     { "source": "/jump/places/:path*", "destination": "/api/seo?path=/jump/places/:path*" },
     { "source": "/jump/places", "destination": "/api/seo?path=/jump/places" },
+    { "source": "/auth", "destination": "https://decentraland.zone/auth" },
+    { "source": "/auth/:path*", "destination": "https://decentraland.zone/auth/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

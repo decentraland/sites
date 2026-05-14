@@ -7,7 +7,7 @@ describe('placesClient', () => {
       expect(placesClient.reducerPath).toBe('placesClient')
     })
 
-    it('should register the Place, World, and SceneMetadata tag types', () => {
+    it('should register the Place, World, SceneMetadata, and JumpEvent tag types', () => {
       const store = configureStore({
         reducer: { [placesClient.reducerPath]: placesClient.reducer },
         middleware: getDefaultMiddleware => getDefaultMiddleware().concat(placesClient.middleware)

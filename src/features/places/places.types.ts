@@ -117,10 +117,14 @@ interface Creator {
 interface GetEventsArgs {
   position?: [number, number]
   realm?: string
+  // Pass the wallet address (public) — the queryFn resolves the AuthIdentity
+  // from localStorage so the ephemeral key material never lands in Redux state.
+  address?: string
 }
 
 interface GetEventByIdArgs {
   id: string
+  address?: string
 }
 
 interface GetPlacesArgs {

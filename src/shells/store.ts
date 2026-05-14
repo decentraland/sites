@@ -10,6 +10,7 @@ import { placesClient } from '../services/placesClient'
 import { socialClient } from '../services/socialClient'
 import { storageClient } from '../services/storageClient'
 import { subgraphClient } from '../services/subgraphClient'
+import { createJumpEventsListenerMiddleware } from './jumpEvents.listeners'
 import { createWhatsOnAdminListenerMiddleware } from './whatsOnAdmin.listeners'
 
 const rootReducer = combineReducers({
@@ -28,7 +29,7 @@ const store = configureStore({
   reducer: rootReducer,
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware()
-      .prepend(createWhatsOnAdminListenerMiddleware().middleware)
+      .prepend(createWhatsOnAdminListenerMiddleware().middleware, createJumpEventsListenerMiddleware().middleware)
       .concat(
         eventsClient.middleware,
         adminClient.middleware,

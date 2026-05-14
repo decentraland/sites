@@ -21,6 +21,7 @@ import {
 } from '../../features/places'
 import type { CardData, JumpEvent } from '../../features/places/places.types'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useRemindMe } from '../../hooks/useRemindMe'
 import { appendRealmParam, resolveEventRealm } from '../../utils/whatsOnUrl'
 import { CalendarButton, EventActions, ExploreEventsButton, ShareIconButton } from './EventsPage.styled'
@@ -48,6 +49,7 @@ const EventsPage = () => {
   const navigate = useNavigate()
   const formatMessage = useFormatMessage()
   const isMobile = useMobileMediaQuery()
+  const { address } = useAuthIdentity()
 
   const positionParam = searchParams.get('position') ?? DEFAULT_POSITION
   // Accept `?world=` as an alias of `?realm=` so legacy share links emitted by
@@ -58,8 +60,8 @@ const EventsPage = () => {
   const parsedPosition = useMemo(() => parsePosition(positionParam), [positionParam])
   const realm = realmParam === DEFAULT_REALM ? undefined : realmParam
 
-  const byIdQuery = useGetJumpEventByIdQuery({ id: idParam ?? '' }, { skip: !idParam })
-  const byPositionQuery = useGetJumpEventsQuery({ position: parsedPosition.coordinates, realm }, { skip: Boolean(idParam) })
+  const byIdQuery = useGetJumpEventByIdQuery({ id: idParam ?? '', address }, { skip: !idParam })
+  const byPositionQuery = useGetJumpEventsQuery({ position: parsedPosition.coordinates, realm, address }, { skip: Boolean(idParam) })
   const placesQuery = useGetJumpPlacesQuery({ position: parsedPosition.coordinates, realm })
 
   const isLoading = byIdQuery.isLoading || byPositionQuery.isLoading
@@ -89,6 +91,9 @@ const EventsPage = () => {
   }, [event, placesQuery.data])
 
   // Watson-style Remind Me: identity check, optimistic update, bell shake.
+  // Cross-API cache invalidation (eventsClient → placesClient JumpEvent tag)
+  // is handled by `createJumpEventsListenerMiddleware`, so the card refreshes
+  // automatically when `toggleAttendee` fulfils.
   const {
     isReminded,
     isLoading: remindLoading,
