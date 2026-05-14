@@ -85,7 +85,15 @@ function eventEntryToFormState(event: EventEntry): CreateEventFormState {
   const durationMs = resolveDurationMs(event)
   const lastRecurrentDate = event.recurrent_dates?.[event.recurrent_dates.length - 1] ?? null
   const repeatEnd = splitIsoDateTime(lastRecurrentDate)
-  const isWorld = Boolean(event.world)
+  // Treat events whose `world: true` flag isn't backed by a non-empty `server`
+  // name as Land. The combination is an upstream-data symptom: the events API
+  // has been observed returning `world: true` for events created with valid
+  // Genesis City coords (server stays null). Loading them as 'world' here
+  // trapped owners in an empty world-selector with their original x/y silently
+  // zeroed out. The string-length guard handles both `null` and `''` so a
+  // backend returning an empty server string can't sneak past the check.
+  const hasWorldName = typeof event.server === 'string' && event.server.length > 0
+  const isWorld = Boolean(event.world) && hasWorldName
 
   return {
     ...INITIAL_STATE,

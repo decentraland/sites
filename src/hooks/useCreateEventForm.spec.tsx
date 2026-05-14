@@ -651,6 +651,78 @@ describe('useCreateEventForm', () => {
     })
   })
 
+  describe('when handleSubmit succeeds with location land', () => {
+    it('should send an explicit `world: false` so PATCHing an existing world-flagged event clears the stale flag', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      const [createCall] = mockCreateEvent.mock.calls
+      const payload = (createCall[0] as { payload: Record<string, unknown> }).payload
+
+      expect(payload.world).toBe(false)
+      expect(payload.server).toBeNull()
+    })
+  })
+
+  describe('when handleSubmit succeeds with location world', () => {
+    it('should send `world: true` and the chosen server name as the world value', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+      act(() => {
+        result.current.setField('location', 'world')
+        result.current.setField('world', 'foo.dcl.eth')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      const [createCall] = mockCreateEvent.mock.calls
+      const payload = (createCall[0] as { payload: Record<string, unknown> }).payload
+
+      expect(payload.world).toBe(true)
+      expect(payload.server).toBe('foo.dcl.eth')
+    })
+  })
+
+  describe('when editing an existing event with stale `world: true` and switching back to land', () => {
+    let initialEvent: EventEntry
+
+    beforeEach(() => {
+      initialEvent = buildInitialEvent({ world: true, server: null, x: -77, y: 77 })
+    })
+
+    it('should load the form as land so the owner can save without re-entering coords', () => {
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent }))
+
+      expect(result.current.form.location).toBe('land')
+      expect(result.current.form.coordX).toBe('-77')
+      expect(result.current.form.coordY).toBe('77')
+    })
+
+    it('should PATCH with an explicit `world: false` so the backend clears the stale flag', async () => {
+      const { result } = renderHook(() => useCreateEventForm({ initialEvent }))
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      const [updateCall] = mockUpdateEvent.mock.calls
+      const payload = (updateCall[0] as { payload: Record<string, unknown> }).payload
+
+      expect(payload.world).toBe(false)
+      expect(payload.server).toBeNull()
+      expect(payload.x).toBe(-77)
+      expect(payload.y).toBe(77)
+    })
+  })
+
   describe('when handleSubmit hits a server error', () => {
     beforeEach(() => {
       mockUnwrap.mockRejectedValue({ status: 400, data: { error: 'too long', code: 'bad_request' } })
