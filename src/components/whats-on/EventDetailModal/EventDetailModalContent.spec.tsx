@@ -139,6 +139,12 @@ describe('EventDetailModalContent', () => {
 
         expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_monthly')
       })
+
+      it('should render the yearly label for YEARLY frequency', () => {
+        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'YEARLY', recurrentInterval: 1 })} />)
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_yearly')
+      })
     })
 
     describe('and the interval is greater than 1', () => {
@@ -158,6 +164,12 @@ describe('EventDetailModalContent', () => {
         render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'MONTHLY', recurrentInterval: 3 })} />)
 
         expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_every_n_months:{"count":3}')
+      })
+
+      it('should render the every-N-years label for YEARLY frequency', () => {
+        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'YEARLY', recurrentInterval: 2 })} />)
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_every_n_years:{"count":2}')
       })
     })
 
@@ -179,11 +191,23 @@ describe('EventDetailModalContent', () => {
 
         expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_every_n_weeks:{"count":3}')
       })
+
+      it('should render the yearly label for DAILY frequency with interval 365', () => {
+        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'DAILY', recurrentInterval: 365 })} />)
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_yearly')
+      })
+
+      it('should render the every-N-years label for DAILY frequency with interval 730', () => {
+        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'DAILY', recurrentInterval: 730 })} />)
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_every_n_years:{"count":2}')
+      })
     })
 
-    describe('and frequency is unsupported', () => {
-      it('should not render the recurrence label', () => {
-        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'YEARLY' })} />)
+    describe('and frequency is sub-daily', () => {
+      it('should not render the recurrence label for HOURLY frequency', () => {
+        render(<EventDetailModalContent data={createMockData({ recurrent: true, recurrentFrequency: 'HOURLY' })} />)
 
         expect(screen.queryByTestId('recurrence')).not.toBeInTheDocument()
       })

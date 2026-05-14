@@ -30,11 +30,17 @@ function getRecurrenceLabel(
   t: (key: string, values?: Record<string, string | number>) => string
 ): string | null {
   const count = interval && interval > 1 ? interval : 1
-  // Legacy events stored bi-weekly recurrence as DAILY × 14 instead of WEEKLY × 2.
-  // Re-express DAILY intervals that are a clean multiple of 7 as weekly.
-  if (frequency === 'DAILY' && count > 1 && count % 7 === 0) {
-    const weeks = count / 7
-    return weeks === 1 ? t('event_detail.recurrent_weekly') : t('event_detail.recurrent_every_n_weeks', { count: weeks })
+  // Legacy events stored coarser recurrences as DAILY × N. Re-express DAILY intervals
+  // that are clean multiples of 365 as years, and multiples of 7 as weeks.
+  if (frequency === 'DAILY' && count > 1) {
+    if (count % 365 === 0) {
+      const years = count / 365
+      return years === 1 ? t('event_detail.recurrent_yearly') : t('event_detail.recurrent_every_n_years', { count: years })
+    }
+    if (count % 7 === 0) {
+      const weeks = count / 7
+      return weeks === 1 ? t('event_detail.recurrent_weekly') : t('event_detail.recurrent_every_n_weeks', { count: weeks })
+    }
   }
   switch (frequency) {
     case 'DAILY':
@@ -43,6 +49,8 @@ function getRecurrenceLabel(
       return count === 1 ? t('event_detail.recurrent_weekly') : t('event_detail.recurrent_every_n_weeks', { count })
     case 'MONTHLY':
       return count === 1 ? t('event_detail.recurrent_monthly') : t('event_detail.recurrent_every_n_months', { count })
+    case 'YEARLY':
+      return count === 1 ? t('event_detail.recurrent_yearly') : t('event_detail.recurrent_every_n_years', { count })
     default:
       return null
   }
