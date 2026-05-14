@@ -1,5 +1,5 @@
 import type { EventEntry, LiveNowCard } from '../../../features/events'
-import { weekdayMaskToDayIndices } from '../../../hooks/useCreateEventForm.helpers'
+import { weekdayMaskToDayIndices } from '../../../utils/recurrence'
 import { buildEventJumpInUrl, buildJumpInUrl, parseCoordinates, resolveEventRealm } from '../../../utils/whatsOnUrl'
 import type { ModalEventData } from './EventDetailModal.types'
 

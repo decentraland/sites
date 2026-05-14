@@ -1,5 +1,5 @@
-import { normalizeDayIndices } from '../hooks/useCreateEventForm.helpers'
 import type { RecurrentFrequency } from '../types/recurrence.types'
+import { normalizeDayIndices } from './recurrence'
 
 function appendRealmParam(url: string, realm?: string | null): string {
   if (!realm) return url

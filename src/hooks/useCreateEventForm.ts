@@ -8,16 +8,9 @@ import {
   useUploadPosterVerticalMutation
 } from '../features/events'
 import type { EventEntry } from '../features/events'
+import { dayIndicesToWeekdayMask, parseStartWeekday } from '../utils/recurrence'
 import { useAuthIdentity } from './useAuthIdentity'
-import {
-  FREQUENCY_MAP,
-  INITIAL_STATE,
-  dayIndicesToWeekdayMask,
-  eventEntryToFormState,
-  parseDurationMs,
-  parseRecurrentInterval,
-  parseStartWeekday
-} from './useCreateEventForm.helpers'
+import { FREQUENCY_MAP, INITIAL_STATE, eventEntryToFormState, parseDurationMs, parseRecurrentInterval } from './useCreateEventForm.helpers'
 import type { CreateEventFormMode, CreateEventFormState, FormErrors, ImageErrorCode } from './useCreateEventForm.types'
 
 const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif']

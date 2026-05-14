@@ -1,4 +1,5 @@
 import type { EventEntry, RecurrentFrequency } from '../features/events'
+import { ALL_WEEKDAYS, weekdayMaskToDayIndices } from '../utils/recurrence'
 import type { CreateEventFormState } from './useCreateEventForm.types'
 
 /* eslint-disable @typescript-eslint/naming-convention -- keys are API enum values */
@@ -34,51 +35,6 @@ function parseRecurrentInterval(value: string): number | null {
   if (!Number.isFinite(num) || !Number.isInteger(num)) return null
   if (num < MIN_RECURRENT_INTERVAL || num > MAX_RECURRENT_INTERVAL) return null
   return num
-}
-
-const WEEKDAYS: ReadonlyArray<{ index: number; short: string; full: string }> = [
-  { index: 0, short: 'Sun', full: 'Sunday' },
-  { index: 1, short: 'Mon', full: 'Monday' },
-  { index: 2, short: 'Tue', full: 'Tuesday' },
-  { index: 3, short: 'Wed', full: 'Wednesday' },
-  { index: 4, short: 'Thu', full: 'Thursday' },
-  { index: 5, short: 'Fri', full: 'Friday' },
-  { index: 6, short: 'Sat', full: 'Saturday' }
-]
-
-const ALL_WEEKDAYS = WEEKDAYS.map(d => d.index)
-
-function normalizeDayIndices(days: number[]): number[] {
-  return [...new Set(days)].filter(d => d >= 0 && d <= 6).sort((a, b) => a - b)
-}
-
-// Reference Sunday (UTC) — `1970-01-04` was a Sunday. Adding `dayIndex * 86_400_000` ms yields a
-// UTC date that falls on the requested weekday so Intl.DateTimeFormat({ weekday, timeZone: 'UTC' })
-// returns the localized short label. The `timeZone: 'UTC'` is critical — without it the local
-// timezone offset can shift the formatter onto the previous/next day.
-const SUNDAY_EPOCH_MS = Date.UTC(1970, 0, 4)
-const ONE_DAY_MS = 24 * 60 * 60 * 1000
-
-function localizedWeekdayShort(dayIndex: number, locale?: string): string {
-  const formatter = new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' })
-  return formatter.format(new Date(SUNDAY_EPOCH_MS + dayIndex * ONE_DAY_MS))
-}
-
-function parseStartWeekday(startDate: string): number | null {
-  if (!startDate) return null
-  const date = new Date(`${startDate}T00:00:00`)
-  if (Number.isNaN(date.getTime())) return null
-  return date.getDay()
-}
-
-// Mirrors `WeekdayMask` in events/src/entities/Event/types.ts: SUNDAY=1, MONDAY=2, ... SATURDAY=64.
-function dayIndicesToWeekdayMask(days: number[]): number {
-  return days.reduce((mask, day) => (day >= 0 && day <= 6 ? mask | (1 << day) : mask), 0)
-}
-
-function weekdayMaskToDayIndices(mask: number | null | undefined): number[] {
-  if (mask === null || mask === undefined || mask === 0) return [...ALL_WEEKDAYS]
-  return ALL_WEEKDAYS.filter(day => (mask & (1 << day)) !== 0)
 }
 
 const INITIAL_STATE: CreateEventFormState = {
@@ -180,21 +136,14 @@ function eventEntryToFormState(event: EventEntry): CreateEventFormState {
 }
 
 export {
-  ALL_WEEKDAYS,
   DURATION_PATTERN,
   FREQUENCY_MAP,
   INITIAL_STATE,
   MAX_RECURRENT_INTERVAL,
   MIN_RECURRENT_INTERVAL,
   RECURRENT_INTERVAL_OPTIONS,
-  WEEKDAYS,
-  dayIndicesToWeekdayMask,
   durationMsToHhMm,
   eventEntryToFormState,
-  localizedWeekdayShort,
-  normalizeDayIndices,
   parseDurationMs,
-  parseRecurrentInterval,
-  parseStartWeekday,
-  weekdayMaskToDayIndices
+  parseRecurrentInterval
 }

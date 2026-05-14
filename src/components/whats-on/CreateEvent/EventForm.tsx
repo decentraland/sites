@@ -18,11 +18,11 @@ import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
 import {
   FREQUENCY_MAP,
   RECURRENT_INTERVAL_OPTIONS,
-  WEEKDAYS,
   parseDurationMs,
   parseRecurrentInterval
 } from '../../../hooks/useCreateEventForm.helpers'
 import type { CreateEventFormState } from '../../../hooks/useCreateEventForm.types'
+import { WEEKDAY_INDICES, localizedWeekdayLong, localizedWeekdayShort } from '../../../utils/recurrence'
 import { buildEventJumpInUrl } from '../../../utils/whatsOnUrl'
 import { EventDetailModal } from '../EventDetailModal'
 import type { ModalEventData } from '../EventDetailModal'
@@ -131,7 +131,7 @@ type EventFormProps = {
 }
 
 function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityId = null, initialOpenPreview = false }: EventFormProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const {
     form,
     errors,
@@ -328,24 +328,24 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
                       <IntervalChipGroup role="group" aria-label={t('create_event.repeat_on')}>
                         <IntervalChipLabel>{t('create_event.repeat_on')}</IntervalChipLabel>
                         <IntervalChipRow>
-                          {WEEKDAYS.map(day => {
-                            const isActive = form.repeatDays.includes(day.index)
+                          {WEEKDAY_INDICES.map(dayIndex => {
+                            const isActive = form.repeatDays.includes(dayIndex)
                             return (
                               <IntervalChip
-                                key={day.index}
+                                key={dayIndex}
                                 type="button"
                                 role="checkbox"
                                 aria-checked={isActive}
-                                aria-label={day.full}
+                                aria-label={localizedWeekdayLong(dayIndex, locale)}
                                 $active={isActive}
                                 onClick={() => {
                                   const next = isActive
-                                    ? form.repeatDays.filter(d => d !== day.index)
-                                    : [...form.repeatDays, day.index].sort((a, b) => a - b)
+                                    ? form.repeatDays.filter(d => d !== dayIndex)
+                                    : [...form.repeatDays, dayIndex].sort((a, b) => a - b)
                                   setField('repeatDays', next)
                                 }}
                               >
-                                {day.short}
+                                {localizedWeekdayShort(dayIndex, locale)}
                               </IntervalChip>
                             )
                           })}
