@@ -1060,6 +1060,7 @@
     "recurrent_every_n_months": "{count}개월마다",
     "recurrent_every_n_years": "{count}년마다",
     "recurrent_on_days": "{days}에 반복",
-    "recurrent_on_days_every_n_weeks": "{count}주마다 {days}"
+    "recurrent_on_days_every_n_weeks": "{count}주마다 {days}",
+    "schedule_starting": "{schedule} 부터 시작"
   }
 }

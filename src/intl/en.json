@@ -1167,7 +1167,8 @@
     "recurrent_every_n_months": "Every {count} months",
     "recurrent_every_n_years": "Every {count} years",
     "recurrent_on_days": "Repeats {days}",
-    "recurrent_on_days_every_n_weeks": "Every {count} weeks on {days}"
+    "recurrent_on_days_every_n_weeks": "Every {count} weeks on {days}",
+    "schedule_starting": "Starting {schedule}"
   },
   "place_detail": {
     "close": "Close",

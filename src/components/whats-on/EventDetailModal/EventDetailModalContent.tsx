@@ -94,8 +94,12 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
           <ScheduleRow>
             <div>
               <ScheduleText>
-                {formatScheduleDate(data.startAt)} · {formatScheduleTime(data.startAt)}
-                {data.finishAt && ` – ${formatScheduleTime(data.finishAt)}`}
+                {(() => {
+                  const range = `${formatScheduleDate(data.startAt)} · ${formatScheduleTime(data.startAt)}${
+                    data.finishAt ? ` – ${formatScheduleTime(data.finishAt)}` : ''
+                  }`
+                  return data.recurrent ? t('event_detail.schedule_starting', { schedule: range }) : range
+                })()}
               </ScheduleText>
               {recurrenceLabel && <RecurrenceText>{recurrenceLabel}</RecurrenceText>}
             </div>

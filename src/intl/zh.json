@@ -1060,6 +1060,7 @@
     "recurrent_every_n_months": "每{count}个月",
     "recurrent_every_n_years": "每{count}年",
     "recurrent_on_days": "每{days}重复",
-    "recurrent_on_days_every_n_weeks": "每{count}周的{days}"
+    "recurrent_on_days_every_n_weeks": "每{count}周的{days}",
+    "schedule_starting": "从 {schedule} 开始"
   }
 }
