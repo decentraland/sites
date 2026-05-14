@@ -16,6 +16,7 @@ jest.mock('./EventForm.styled', () => ({
       {children}
     </button>
   ),
+  ChipErrorText: ({ children }: { children: React.ReactNode }) => <span data-testid="chip-error-text">{children}</span>,
   ContentContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CoordPrefix: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   CoordinatesRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -230,6 +231,7 @@ function createFormState(overrides = {}) {
     repeatEnabled: false,
     frequency: 'every_week',
     repeatInterval: '1',
+    repeatDays: [],
     repeatEndDate: '',
     location: 'land',
     coordX: '0',

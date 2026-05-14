@@ -24,7 +24,7 @@ function parseDurationMs(value: string): number | null {
   return totalMinutes > 0 ? totalMinutes * 60 * 1000 : null
 }
 
-const RECURRENT_INTERVAL_OPTIONS = [1, 2, 3, 4] as const
+const RECURRENT_INTERVAL_OPTIONS = [1, 2, 3] as const
 const MIN_RECURRENT_INTERVAL = RECURRENT_INTERVAL_OPTIONS[0]
 const MAX_RECURRENT_INTERVAL = RECURRENT_INTERVAL_OPTIONS[RECURRENT_INTERVAL_OPTIONS.length - 1]
 
@@ -34,6 +34,23 @@ function parseRecurrentInterval(value: string): number | null {
   if (!Number.isFinite(num) || !Number.isInteger(num)) return null
   if (num < MIN_RECURRENT_INTERVAL || num > MAX_RECURRENT_INTERVAL) return null
   return num
+}
+
+const WEEKDAYS: ReadonlyArray<{ index: number; narrow: string; full: string }> = [
+  { index: 0, narrow: 'S', full: 'Sunday' },
+  { index: 1, narrow: 'M', full: 'Monday' },
+  { index: 2, narrow: 'T', full: 'Tuesday' },
+  { index: 3, narrow: 'W', full: 'Wednesday' },
+  { index: 4, narrow: 'T', full: 'Thursday' },
+  { index: 5, narrow: 'F', full: 'Friday' },
+  { index: 6, narrow: 'S', full: 'Saturday' }
+]
+
+function parseStartWeekday(startDate: string): number | null {
+  if (!startDate) return null
+  const date = new Date(`${startDate}T00:00:00`)
+  if (Number.isNaN(date.getTime())) return null
+  return date.getDay()
 }
 
 const INITIAL_STATE: CreateEventFormState = {
@@ -55,6 +72,7 @@ const INITIAL_STATE: CreateEventFormState = {
   repeatEnabled: false,
   frequency: 'every_week',
   repeatInterval: '1',
+  repeatDays: [],
   repeatEndDate: '',
   location: 'land',
   coordX: '0',
@@ -122,6 +140,7 @@ function eventEntryToFormState(event: EventEntry): CreateEventFormState {
     repeatEnabled: Boolean(event.recurrent),
     frequency: (event.recurrent_frequency && REVERSE_FREQUENCY_MAP[event.recurrent_frequency]) ?? 'every_week',
     repeatInterval: String(parseRecurrentInterval(String(event.recurrent_interval ?? '')) ?? 1),
+    repeatDays: [],
     repeatEndDate: repeatEnd.date,
     location: isWorld ? 'world' : 'land',
     coordX: isWorld ? '0' : String(event.x ?? 0),
@@ -139,8 +158,10 @@ export {
   MAX_RECURRENT_INTERVAL,
   MIN_RECURRENT_INTERVAL,
   RECURRENT_INTERVAL_OPTIONS,
+  WEEKDAYS,
   durationMsToHhMm,
   eventEntryToFormState,
   parseDurationMs,
-  parseRecurrentInterval
+  parseRecurrentInterval,
+  parseStartWeekday
 }

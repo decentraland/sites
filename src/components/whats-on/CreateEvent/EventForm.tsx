@@ -18,6 +18,7 @@ import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
 import {
   FREQUENCY_MAP,
   RECURRENT_INTERVAL_OPTIONS,
+  WEEKDAYS,
   parseDurationMs,
   parseRecurrentInterval
 } from '../../../hooks/useCreateEventForm.helpers'
@@ -34,6 +35,7 @@ import {
   AddCoverText,
   AddVerticalCoverButton,
   CancelButton,
+  ChipErrorText,
   ContentContainer,
   CoordPrefix,
   CoordinatesRow,
@@ -321,26 +323,58 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
                       <EventMenuItem value="every_month">{t('create_event.every_month')}</EventMenuItem>
                     </EventSelect>
                   </EventFormControl>
-                  <IntervalChipGroup role="radiogroup" aria-label={t('create_event.repeat_interval')}>
-                    <IntervalChipLabel>{t('create_event.repeat_interval')}</IntervalChipLabel>
-                    <IntervalChipRow>
-                      {RECURRENT_INTERVAL_OPTIONS.map(value => {
-                        const isActive = parseRecurrentInterval(form.repeatInterval) === value
-                        return (
-                          <IntervalChip
-                            key={value}
-                            type="button"
-                            role="radio"
-                            aria-checked={isActive}
-                            $active={isActive}
-                            onClick={() => setField('repeatInterval', String(value))}
-                          >
-                            {value}
-                          </IntervalChip>
-                        )
-                      })}
-                    </IntervalChipRow>
-                  </IntervalChipGroup>
+                  {form.frequency === 'every_day' && (
+                    <IntervalChipGroup role="group" aria-label={t('create_event.repeat_on')}>
+                      <IntervalChipLabel>{t('create_event.repeat_on')}</IntervalChipLabel>
+                      <IntervalChipRow>
+                        {WEEKDAYS.map(day => {
+                          const isActive = form.repeatDays.includes(day.index)
+                          return (
+                            <IntervalChip
+                              key={day.index}
+                              type="button"
+                              role="checkbox"
+                              aria-checked={isActive}
+                              aria-label={day.full}
+                              $active={isActive}
+                              onClick={() => {
+                                const next = isActive
+                                  ? form.repeatDays.filter(d => d !== day.index)
+                                  : [...form.repeatDays, day.index].sort((a, b) => a - b)
+                                setField('repeatDays', next)
+                              }}
+                            >
+                              {day.narrow}
+                            </IntervalChip>
+                          )
+                        })}
+                      </IntervalChipRow>
+                      {errors.repeatDays && <ChipErrorText>{errors.repeatDays}</ChipErrorText>}
+                    </IntervalChipGroup>
+                  )}
+                  {form.frequency === 'every_week' && (
+                    <IntervalChipGroup role="radiogroup" aria-label={t('create_event.repeat_interval')}>
+                      <IntervalChipLabel>{t('create_event.repeat_interval')}</IntervalChipLabel>
+                      <IntervalChipRow>
+                        {RECURRENT_INTERVAL_OPTIONS.map(value => {
+                          const isActive = parseRecurrentInterval(form.repeatInterval) === value
+                          return (
+                            <IntervalChip
+                              key={value}
+                              type="button"
+                              role="radio"
+                              aria-checked={isActive}
+                              $active={isActive}
+                              onClick={() => setField('repeatInterval', String(value))}
+                            >
+                              {value}
+                            </IntervalChip>
+                          )
+                        })}
+                      </IntervalChipRow>
+                      {errors.repeatInterval && <ChipErrorText>{errors.repeatInterval}</ChipErrorText>}
+                    </IntervalChipGroup>
+                  )}
                   <EventTextField
                     variant="outlined"
                     label={t('create_event.repeat_until')}

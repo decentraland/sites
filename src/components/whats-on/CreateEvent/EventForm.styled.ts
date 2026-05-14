@@ -312,6 +312,14 @@ const IntervalChipGroup = styled(Box)(({ theme }) => ({
   gap: theme.spacing(0.75)
 }))
 
+const ChipErrorText = styled(Typography)(({ theme }) => ({
+  fontSize: 12,
+  fontWeight: 400,
+  color: theme.palette.error.main,
+  lineHeight: 1.5,
+  letterSpacing: '0.15px'
+}))
+
 const IntervalChipLabel = styled(Typography)({
   fontSize: 12,
   fontWeight: 400,
@@ -655,6 +663,7 @@ export {
   LocationRow,
   PreviewButton,
   RejectionAlert,
+  ChipErrorText,
   IntervalChip,
   IntervalChipGroup,
   IntervalChipLabel,

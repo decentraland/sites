@@ -995,7 +995,10 @@
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "repeat_interval": "繰り返し間隔",
-    "error_repeat_interval_invalid": "繰り返し間隔は1から4までの整数で入力してください"
+    "repeat_on": "繰り返す曜日",
+    "error_repeat_interval_invalid": "繰り返し間隔は1から3までの整数で入力してください",
+    "error_repeat_days_required": "少なくとも1つの曜日を選択してください",
+    "error_start_date_not_in_repeat_days": "開始日の曜日は選択した曜日のいずれかである必要があります"
   },
   "community": {
     "global": {

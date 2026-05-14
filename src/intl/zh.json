@@ -995,7 +995,10 @@
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "repeat_interval": "重复间隔",
-    "error_repeat_interval_invalid": "重复间隔必须是 1 到 4 之间的整数"
+    "repeat_on": "重复在",
+    "error_repeat_interval_invalid": "重复间隔必须是 1 到 3 之间的整数",
+    "error_repeat_days_required": "请至少选择一天",
+    "error_start_date_not_in_repeat_days": "开始日期的星期必须是所选日期之一"
   },
   "community": {
     "global": {
