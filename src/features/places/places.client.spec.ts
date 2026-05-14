@@ -12,6 +12,23 @@ jest.mock('../../utils/signedFetch', () => ({
   fetchWithOptionalIdentity: (...args: unknown[]) => mockFetchWithOptionalIdentity(...args)
 }))
 
+const mockLocalStorageGetIdentity = jest.fn()
+jest.mock('@dcl/single-sign-on-client', () => ({
+  localStorageGetIdentity: (...args: unknown[]) => mockLocalStorageGetIdentity(...args)
+}))
+
+// Poll a condition instead of waiting for a fixed delay, so the test doesn't
+// flake on slow CI.
+async function waitForCondition(check: () => boolean, timeoutMs = 1000): Promise<void> {
+  const startedAt = Date.now()
+  while (!check()) {
+    if (Date.now() - startedAt > timeoutMs) {
+      throw new Error(`waitForCondition timed out after ${timeoutMs}ms`)
+    }
+    await new Promise(resolve => setTimeout(resolve, 5))
+  }
+}
+
 function createTestStore() {
   return configureStore({
     reducer: {
@@ -27,6 +44,7 @@ describe('placesEndpoints', () => {
   beforeEach(() => {
     fetchSpy = jest.spyOn(global, 'fetch')
     mockFetchWithOptionalIdentity.mockReset()
+    mockLocalStorageGetIdentity.mockReset()
   })
 
   afterEach(() => {
@@ -180,26 +198,38 @@ describe('placesEndpoints', () => {
       })
     })
 
-    describe('and an identity is provided', () => {
+    describe('and an address is provided', () => {
       const identity = { authChain: [], expiration: new Date(), ephemeralIdentity: {} } as unknown as AuthIdentity
+      const address = '0xABCDEF0123456789ABCDEF0123456789ABCDEF01'
 
       beforeEach(() => {
         mockGetEnv.mockReturnValue('https://events.test/api')
+        mockLocalStorageGetIdentity.mockReturnValue(identity)
         mockFetchWithOptionalIdentity.mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({ ok: true, data: [{ id: 'ev-1', attending: true, total_attendees: 3 }] })
         } as unknown as Response)
       })
 
-      it('should forward the identity to fetchWithOptionalIdentity so the server can return per-user attendance state', async () => {
+      it('should resolve the identity from localStorage with the lowercased address and forward it to fetchWithOptionalIdentity', async () => {
         const store = createTestStore()
-        await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [0, 0], identity }))
+        await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [0, 0], address }))
 
+        expect(mockLocalStorageGetIdentity).toHaveBeenCalledWith(address.toLowerCase())
         expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(
           expect.stringContaining('events?position=0%2C0'),
           identity,
           expect.any(AbortSignal)
         )
+      })
+
+      it('should keep the resolved identity out of the stored query args', async () => {
+        const store = createTestStore()
+        await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [0, 0], address }))
+
+        const state = store.getState() as { placesClient: { queries: Record<string, { originalArgs: unknown }> } }
+        const stored = Object.values(state.placesClient.queries)[0]?.originalArgs
+        expect(stored).toEqual({ position: [0, 0], address })
       })
     })
 
@@ -240,21 +270,24 @@ describe('placesEndpoints', () => {
       })
     })
 
-    describe('and an identity is provided', () => {
+    describe('and an address is provided', () => {
       const identity = { authChain: [], expiration: new Date(), ephemeralIdentity: {} } as unknown as AuthIdentity
+      const address = '0xABCDEF0123456789ABCDEF0123456789ABCDEF01'
 
       beforeEach(() => {
         mockGetEnv.mockReturnValue('https://events.test/api')
+        mockLocalStorageGetIdentity.mockReturnValue(identity)
         mockFetchWithOptionalIdentity.mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({ ok: true, data: { id: 'ev-1', attending: true } })
         } as unknown as Response)
       })
 
-      it('should forward the identity so `attending` survives a page refresh after the user toggled remind-me', async () => {
+      it('should resolve the identity from localStorage and forward it so `attending` survives a page refresh after the user toggled remind-me', async () => {
         const store = createTestStore()
-        await store.dispatch(placesEndpoints.endpoints.getJumpEventById.initiate({ id: 'ev-1', identity }))
+        await store.dispatch(placesEndpoints.endpoints.getJumpEventById.initiate({ id: 'ev-1', address }))
 
+        expect(mockLocalStorageGetIdentity).toHaveBeenCalledWith(address.toLowerCase())
         expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith('https://events.test/api/events/ev-1', identity, expect.any(AbortSignal))
       })
     })
@@ -294,9 +327,11 @@ describe('placesEndpoints', () => {
 
   describe('when the JumpEvent tag is invalidated after a remind-me toggle', () => {
     const identity = { authChain: [], expiration: new Date(), ephemeralIdentity: {} } as unknown as AuthIdentity
+    const address = '0xABCDEF0123456789ABCDEF0123456789ABCDEF01'
 
     beforeEach(() => {
       mockGetEnv.mockReturnValue('https://events.test/api')
+      mockLocalStorageGetIdentity.mockReturnValue(identity)
     })
 
     it('should refetch getJumpEvents so the bell-badge total_attendees reflects the toggle', async () => {
@@ -311,10 +346,10 @@ describe('placesEndpoints', () => {
         } as unknown as Response)
 
       const store = createTestStore()
-      const subscription = store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [0, 0], identity }))
+      const subscription = store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [0, 0], address }))
       await subscription
       store.dispatch(placesEndpoints.util.invalidateTags(['JumpEvent']))
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await waitForCondition(() => mockFetchWithOptionalIdentity.mock.calls.length >= 2)
 
       expect(mockFetchWithOptionalIdentity).toHaveBeenCalledTimes(2)
       subscription.unsubscribe()
@@ -332,11 +367,11 @@ describe('placesEndpoints', () => {
         } as unknown as Response)
 
       const store = createTestStore()
-      const subscription = store.dispatch(placesEndpoints.endpoints.getJumpEventById.initiate({ id: 'ev-1', identity }))
+      const subscription = store.dispatch(placesEndpoints.endpoints.getJumpEventById.initiate({ id: 'ev-1', address }))
       await subscription
       // Mirrors EventsPage.tsx, which invalidates by tag type (not by id).
       store.dispatch(placesEndpoints.util.invalidateTags(['JumpEvent']))
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await waitForCondition(() => mockFetchWithOptionalIdentity.mock.calls.length >= 2)
 
       expect(mockFetchWithOptionalIdentity).toHaveBeenCalledTimes(2)
       subscription.unsubscribe()

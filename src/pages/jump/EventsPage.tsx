@@ -52,7 +52,7 @@ const EventsPage = () => {
   const formatMessage = useFormatMessage()
   const isMobile = useMobileMediaQuery()
   const dispatch = useAppDispatch()
-  const { identity } = useAuthIdentity()
+  const { address } = useAuthIdentity()
 
   const positionParam = searchParams.get('position') ?? DEFAULT_POSITION
   // Accept `?world=` as an alias of `?realm=` so legacy share links emitted by
@@ -63,8 +63,8 @@ const EventsPage = () => {
   const parsedPosition = useMemo(() => parsePosition(positionParam), [positionParam])
   const realm = realmParam === DEFAULT_REALM ? undefined : realmParam
 
-  const byIdQuery = useGetJumpEventByIdQuery({ id: idParam ?? '', identity }, { skip: !idParam })
-  const byPositionQuery = useGetJumpEventsQuery({ position: parsedPosition.coordinates, realm, identity }, { skip: Boolean(idParam) })
+  const byIdQuery = useGetJumpEventByIdQuery({ id: idParam ?? '', address }, { skip: !idParam })
+  const byPositionQuery = useGetJumpEventsQuery({ position: parsedPosition.coordinates, realm, address }, { skip: Boolean(idParam) })
   const placesQuery = useGetJumpPlacesQuery({ position: parsedPosition.coordinates, realm })
 
   const isLoading = byIdQuery.isLoading || byPositionQuery.isLoading

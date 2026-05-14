@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { AuthIdentity } from '@dcl/crypto'
 
 interface JumpEvent {
   id: string
@@ -118,12 +117,14 @@ interface Creator {
 interface GetEventsArgs {
   position?: [number, number]
   realm?: string
-  identity?: AuthIdentity
+  // Pass the wallet address (public) — the queryFn resolves the AuthIdentity
+  // from localStorage so the ephemeral key material never lands in Redux state.
+  address?: string
 }
 
 interface GetEventByIdArgs {
   id: string
-  identity?: AuthIdentity
+  address?: string
 }
 
 interface GetPlacesArgs {

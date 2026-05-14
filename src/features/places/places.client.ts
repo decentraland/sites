@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import { localStorageGetIdentity } from '@dcl/single-sign-on-client'
 import { getEnv } from '../../config/env'
 import { placesClient } from '../../services/placesClient'
 import { fetchWithOptionalIdentity } from '../../utils/signedFetch'
@@ -19,6 +20,19 @@ import type {
   PeerSceneEntity,
   SceneDeployerInfo
 } from './places.types'
+
+function resolveIdentity(address: string | undefined) {
+  // Resolving the identity inside queryFn (instead of accepting it as a query
+  // arg) keeps the ephemeral key material out of `state.placesClient.queries.*.
+  // originalArgs` — only the public wallet address ever lands in Redux.
+  if (!address) return undefined
+  try {
+    return localStorageGetIdentity(address.toLowerCase()) ?? undefined
+  } catch (error) {
+    console.error('[placesClient] Failed to resolve identity from localStorage', error)
+    return undefined
+  }
+}
 
 function buildPlacesUrl(baseUrl: string, { position, realm }: GetPlacesArgs): string {
   if (realm && isEns(realm)) {
@@ -101,20 +115,21 @@ const placesEndpoints = placesClient.injectEndpoints({
       providesTags: (_result, _err, args) => [{ type: 'Place', id: args.realm ?? args.position?.join(',') ?? 'root' }]
     }),
     getJumpEvents: build.query<JumpEvent[], GetEventsArgs>({
-      // Identity-bound responses must not share a cache slot with the anonymous
-      // ones — the server fills `attending` and `total_attendees` based on who
-      // is signing the request. Use an explicit allowlist so future fields on
-      // GetEventsArgs never leak into the cache key.
-      serializeQueryArgs: ({ queryArgs: { position, realm, identity } }) => ({
+      // Identity-bound responses must not share a cache slot across wallets —
+      // the server fills `attending` and `total_attendees` per-user. Key by
+      // address (lowercased) so each wallet gets its own slot, and use an
+      // explicit allowlist so future fields on GetEventsArgs never leak in.
+      serializeQueryArgs: ({ queryArgs: { position, realm, address } }) => ({
         position,
         realm,
-        authenticated: Boolean(identity)
+        address: address?.toLowerCase() ?? null
       }),
       queryFn: async (args, { signal }) => {
         try {
           const baseUrl = getEnv('EVENTS_API_URL')
           if (!baseUrl) throw new Error('EVENTS_API_URL is not set')
-          const response = await fetchWithOptionalIdentity(buildEventsUrl(baseUrl, args), args.identity, signal)
+          const identity = resolveIdentity(args.address)
+          const response = await fetchWithOptionalIdentity(buildEventsUrl(baseUrl, args), identity, signal)
           if (!response.ok) {
             return { error: { status: response.status, data: await response.text().catch(() => null) } }
           }
@@ -127,11 +142,12 @@ const placesEndpoints = placesClient.injectEndpoints({
       providesTags: ['JumpEvent']
     }),
     getJumpEventById: build.query<JumpEvent | null, GetEventByIdArgs>({
-      serializeQueryArgs: ({ queryArgs: { id, identity } }) => ({ id, authenticated: Boolean(identity) }),
-      queryFn: async ({ id, identity }, { signal }) => {
+      serializeQueryArgs: ({ queryArgs: { id, address } }) => ({ id, address: address?.toLowerCase() ?? null }),
+      queryFn: async ({ id, address }, { signal }) => {
         try {
           const baseUrl = getEnv('EVENTS_API_URL')
           if (!baseUrl) throw new Error('EVENTS_API_URL is not set')
+          const identity = resolveIdentity(address)
           const response = await fetchWithOptionalIdentity(`${baseUrl}/events/${encodeURIComponent(id)}`, identity, signal)
           if (response.status === 404) return { data: null }
           if (!response.ok) {

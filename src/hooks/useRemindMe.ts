@@ -50,7 +50,16 @@ function useRemindMe(eventId: string, attending?: boolean, onSuccess?: (newValue
       shakeTimer.current = setTimeout(() => setIsShaking(false), 600)
       toggleAttendee({ eventId, attending: newValue, identity })
         .unwrap()
-        .then(() => onSuccessRef.current?.(newValue))
+        .then(() => {
+          // Guard the callback so a synchronous throw doesn't trip the catch
+          // branch below and roll back an optimistic update for a request that
+          // actually succeeded.
+          try {
+            onSuccessRef.current?.(newValue)
+          } catch (error) {
+            console.error('[useRemindMe] onSuccess callback threw', error)
+          }
+        })
         .catch(() => setOptimistic(null))
     },
     [eventId, isReminded, hasValidIdentity, identity, isLoading, toggleAttendee]
