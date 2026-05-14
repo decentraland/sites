@@ -296,7 +296,7 @@ describe('useCreateEventForm', () => {
       fillValidForm(result.current.setField)
       act(() => {
         result.current.setField('repeatEnabled', true)
-        result.current.setField('repeatInterval', '999')
+        result.current.setField('repeatInterval', '5')
         result.current.setField('repeatEndDate', '2030-02-01')
       })
 

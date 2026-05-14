@@ -78,6 +78,22 @@ jest.mock('./EventForm.styled', () => ({
   FormActions: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   FormColumns: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   ImageSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  IntervalChip: ({
+    children,
+    $active,
+    ...props
+  }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode; $active: boolean }) => (
+    <button data-testid="interval-chip" data-active={$active} {...props}>
+      {children}
+    </button>
+  ),
+  IntervalChipGroup: ({ children, ...props }: { children: React.ReactNode } & Record<string, unknown>) => (
+    <div data-testid="interval-chip-group" {...props}>
+      {children}
+    </div>
+  ),
+  IntervalChipLabel: ({ children }: { children: React.ReactNode }) => <span data-testid="interval-chip-label">{children}</span>,
+  IntervalChipRow: ({ children }: { children: React.ReactNode }) => <div data-testid="interval-chip-row">{children}</div>,
   LeftCard: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   LocationBlock: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   LocationLabel: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
@@ -213,6 +229,7 @@ function createFormState(overrides = {}) {
     duration: '',
     repeatEnabled: false,
     frequency: 'every_week',
+    repeatInterval: '1',
     repeatEndDate: '',
     location: 'land',
     coordX: '0',

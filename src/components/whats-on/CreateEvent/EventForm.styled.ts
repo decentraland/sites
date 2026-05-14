@@ -306,6 +306,55 @@ const RepeatFields = styled(Box, {
   transition: 'max-height 0.3s ease, opacity 0.3s ease, padding-top 0.3s ease'
 }))
 
+const IntervalChipGroup = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.75)
+}))
+
+const IntervalChipLabel = styled(Typography)({
+  fontSize: 12,
+  fontWeight: 400,
+  color: labelColor,
+  letterSpacing: '0.15px',
+  lineHeight: 1.5
+})
+
+const IntervalChipRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(1)
+}))
+
+/* eslint-disable @typescript-eslint/naming-convention -- pseudo-class selectors */
+const IntervalChip = styled('button', {
+  shouldForwardProp: prop => prop !== '$active'
+})<{ $active: boolean }>(({ $active, theme }) => ({
+  width: 28,
+  height: 28,
+  padding: 0,
+  borderRadius: '50%',
+  border: `1px solid ${$active ? theme.palette.primary.main : inputBorder}`,
+  background: $active ? theme.palette.primary.main : 'transparent',
+  color: $active ? '#fff' : inputText,
+  fontSize: 13,
+  fontWeight: 600,
+  fontFamily: 'inherit',
+  cursor: 'pointer',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'background 0.15s ease, border-color 0.15s ease, color 0.15s ease',
+  '&:hover': {
+    borderColor: theme.palette.primary.main,
+    background: $active ? theme.palette.primary.dark : 'rgba(255, 255, 255, 0.04)'
+  },
+  '&:focus-visible': {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: 2
+  }
+}))
+/* eslint-enable @typescript-eslint/naming-convention */
+
 /* ── location section ───────────────────────────────────────────────── */
 
 const LocationBlock = styled(Box)(({ theme }) => ({
@@ -606,6 +655,10 @@ export {
   LocationRow,
   PreviewButton,
   RejectionAlert,
+  IntervalChip,
+  IntervalChipGroup,
+  IntervalChipLabel,
+  IntervalChipRow,
   RepeatFields,
   RepeatLabel,
   RepeatRow,

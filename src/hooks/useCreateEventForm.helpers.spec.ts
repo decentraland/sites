@@ -102,7 +102,7 @@ describe('eventEntryToFormState', () => {
   })
 
   describe('when hydrating recurrent_interval from a stored event', () => {
-    it('should preserve a custom interval as a string', () => {
+    it('should preserve a chip-compatible interval as a string', () => {
       const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_interval: 2 }))
 
       expect(formState.repeatInterval).toBe('2')
@@ -116,6 +116,12 @@ describe('eventEntryToFormState', () => {
 
     it('should default to "1" when the event has a non-positive interval', () => {
       const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_interval: 0 }))
+
+      expect(formState.repeatInterval).toBe('1')
+    })
+
+    it('should default to "1" for legacy intervals that fall outside the chip range', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'DAILY', recurrent_interval: 14 }))
 
       expect(formState.repeatInterval).toBe('1')
     })

@@ -15,7 +15,12 @@ import { useGetCommunitiesQuery, useGetWorldNamesQuery } from '../../../features
 import type { EventEntry } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
-import { FREQUENCY_MAP, parseDurationMs, parseRecurrentInterval } from '../../../hooks/useCreateEventForm.helpers'
+import {
+  FREQUENCY_MAP,
+  RECURRENT_INTERVAL_OPTIONS,
+  parseDurationMs,
+  parseRecurrentInterval
+} from '../../../hooks/useCreateEventForm.helpers'
 import type { CreateEventFormState } from '../../../hooks/useCreateEventForm.types'
 import { buildEventJumpInUrl } from '../../../utils/whatsOnUrl'
 import { EventDetailModal } from '../EventDetailModal'
@@ -47,6 +52,10 @@ import {
   FormActions,
   FormColumns,
   ImageSection,
+  IntervalChip,
+  IntervalChipGroup,
+  IntervalChipLabel,
+  IntervalChipRow,
   LeftCard,
   LocationBlock,
   LocationLabel,
@@ -312,18 +321,26 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
                       <EventMenuItem value="every_month">{t('create_event.every_month')}</EventMenuItem>
                     </EventSelect>
                   </EventFormControl>
-                  <EventTextField
-                    variant="outlined"
-                    label={t('create_event.repeat_interval')}
-                    type="number"
-                    value={form.repeatInterval}
-                    onChange={e => setField('repeatInterval', e.target.value)}
-                    error={Boolean(errors.repeatInterval)}
-                    helperText={errors.repeatInterval}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    inputProps={{ min: 1, max: 365, step: 1, inputMode: 'numeric' }}
-                  />
+                  <IntervalChipGroup role="radiogroup" aria-label={t('create_event.repeat_interval')}>
+                    <IntervalChipLabel>{t('create_event.repeat_interval')}</IntervalChipLabel>
+                    <IntervalChipRow>
+                      {RECURRENT_INTERVAL_OPTIONS.map(value => {
+                        const isActive = parseRecurrentInterval(form.repeatInterval) === value
+                        return (
+                          <IntervalChip
+                            key={value}
+                            type="button"
+                            role="radio"
+                            aria-checked={isActive}
+                            $active={isActive}
+                            onClick={() => setField('repeatInterval', String(value))}
+                          >
+                            {value}
+                          </IntervalChip>
+                        )
+                      })}
+                    </IntervalChipRow>
+                  </IntervalChipGroup>
                   <EventTextField
                     variant="outlined"
                     label={t('create_event.repeat_until')}

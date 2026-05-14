@@ -24,13 +24,15 @@ function parseDurationMs(value: string): number | null {
   return totalMinutes > 0 ? totalMinutes * 60 * 1000 : null
 }
 
-const MAX_RECURRENT_INTERVAL = 365
+const RECURRENT_INTERVAL_OPTIONS = [1, 2, 3, 4] as const
+const MIN_RECURRENT_INTERVAL = RECURRENT_INTERVAL_OPTIONS[0]
+const MAX_RECURRENT_INTERVAL = RECURRENT_INTERVAL_OPTIONS[RECURRENT_INTERVAL_OPTIONS.length - 1]
 
 function parseRecurrentInterval(value: string): number | null {
   if (!value.trim()) return null
   const num = Number(value)
   if (!Number.isFinite(num) || !Number.isInteger(num)) return null
-  if (num < 1 || num > MAX_RECURRENT_INTERVAL) return null
+  if (num < MIN_RECURRENT_INTERVAL || num > MAX_RECURRENT_INTERVAL) return null
   return num
 }
 
@@ -119,7 +121,7 @@ function eventEntryToFormState(event: EventEntry): CreateEventFormState {
     duration: durationMsToHhMm(durationMs),
     repeatEnabled: Boolean(event.recurrent),
     frequency: (event.recurrent_frequency && REVERSE_FREQUENCY_MAP[event.recurrent_frequency]) ?? 'every_week',
-    repeatInterval: event.recurrent_interval && event.recurrent_interval > 0 ? String(event.recurrent_interval) : '1',
+    repeatInterval: String(parseRecurrentInterval(String(event.recurrent_interval ?? '')) ?? 1),
     repeatEndDate: repeatEnd.date,
     location: isWorld ? 'world' : 'land',
     coordX: isWorld ? '0' : String(event.x ?? 0),
@@ -135,6 +137,8 @@ export {
   FREQUENCY_MAP,
   INITIAL_STATE,
   MAX_RECURRENT_INTERVAL,
+  MIN_RECURRENT_INTERVAL,
+  RECURRENT_INTERVAL_OPTIONS,
   durationMsToHhMm,
   eventEntryToFormState,
   parseDurationMs,
