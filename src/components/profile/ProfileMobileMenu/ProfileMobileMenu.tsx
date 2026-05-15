@@ -18,6 +18,7 @@ import { useFriendsCount, useFriendshipStatus, useMutualFriends, useUpsertFriend
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useWalletAddress } from '../../../hooks/useWalletAddress'
+import { redirectToAuth } from '../../../utils/authRedirect'
 import { getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import { FriendsModal } from '../FriendsModal'
 import { ProfileAvatar } from '../ProfileAvatar'
@@ -112,11 +113,17 @@ const ProfileMobileMenu = memo(
     const friendButton = useMemo(() => getFriendButtonConfig(friendshipStatus), [friendshipStatus])
 
     const handleFriendAction = useCallback(() => {
+      // Anonymous viewers: route to /sign-in, post-auth return brings them back to this profile.
+      if (!isOwnProfile && !hasValidIdentity) {
+        const here = typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : '/'
+        redirectToAuth(here)
+        return
+      }
       if (!canQueryFriendship) return
       void upsertFriendship({ address, action: friendButton.action }).catch(() => {
         /* error surfaced via the hook's `error` state */
       })
-    }, [address, canQueryFriendship, friendButton.action, upsertFriendship])
+    }, [address, canQueryFriendship, friendButton.action, hasValidIdentity, isOwnProfile, upsertFriendship])
 
     const handleShareProfile = useCallback(() => {
       if (typeof navigator === 'undefined' || !navigator.clipboard || typeof window === 'undefined') return
@@ -196,7 +203,7 @@ const ProfileMobileMenu = memo(
                 color="primary"
                 startIcon={friendButton.icon}
                 onClick={handleFriendAction}
-                disabled={!canQueryFriendship || isLoadingFriendship || isUpdatingFriendship || friendshipStatus === 'blocked'}
+                disabled={isOwnProfile || isLoadingFriendship || isUpdatingFriendship || friendshipStatus === 'blocked'}
               >
                 {t(friendButton.labelKey)}
               </DrawerCta>

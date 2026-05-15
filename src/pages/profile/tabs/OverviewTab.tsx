@@ -15,6 +15,7 @@ import {
   formatPriceMana,
   getEquippedWearables,
   readField,
+  safeLinkUrl,
   toCatalogAsset
 } from './OverviewTab.helpers'
 import { WearableInfoBadges } from './OverviewTab.icons'
@@ -157,21 +158,30 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
           ) : null}
         </section>
 
-        {links.length > 0 ? (
-          <section style={{ width: '100%' }}>
-            <SectionTitle>{t('profile.overview.links')}</SectionTitle>
-            <LinksRow sx={{ mt: 1 }}>
-              {links.map(link => (
-                <LinkPill key={`${link.url}-${link.title ?? ''}`} href={link.url} target="_blank" rel="noopener noreferrer">
-                  <LinkPillIcon>
-                    <InsertLinkIcon fontSize="medium" />
-                  </LinkPillIcon>
-                  {link.title || detectLinkProvider(link.url)}
-                </LinkPill>
-              ))}
-            </LinksRow>
-          </section>
-        ) : null}
+        {(() => {
+          // User-editable catalyst metadata: validate the URL (`http:` / `https:` only) before
+          // it ever reaches the DOM. `javascript:` / `data:` payloads return null and are
+          // dropped — guards the XSS regression that already burned this surface once.
+          const safeLinks = links
+            .map(link => ({ ...link, safeUrl: safeLinkUrl(link.url) }))
+            .filter((link): link is ProfileLink & { safeUrl: string } => link.safeUrl !== null)
+          if (safeLinks.length === 0) return null
+          return (
+            <section style={{ width: '100%' }}>
+              <SectionTitle>{t('profile.overview.links')}</SectionTitle>
+              <LinksRow sx={{ mt: 1 }}>
+                {safeLinks.map(link => (
+                  <LinkPill key={`${link.safeUrl}-${link.title ?? ''}`} href={link.safeUrl} target="_blank" rel="noopener noreferrer">
+                    <LinkPillIcon>
+                      <InsertLinkIcon fontSize="medium" />
+                    </LinkPillIcon>
+                    {link.title || detectLinkProvider(link.safeUrl)}
+                  </LinkPill>
+                ))}
+              </LinksRow>
+            </section>
+          )
+        })()}
       </InfoSurface>
 
       <InfoSurface>

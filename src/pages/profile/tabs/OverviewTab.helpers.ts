@@ -79,6 +79,22 @@ function detectLinkProvider(url: string): string {
   }
 }
 
+/**
+ * Profile links come from user-editable catalyst metadata, so an attacker can craft a
+ * `javascript:alert(1)` / `data:text/html,...` href that would fire when the LinkPill is
+ * clicked (the dapps already paid this XSS bill once — keep the guard tight). Allowlist
+ * only `http:` and `https:`; anything else falls back to `null` (LinkPill drops the row).
+ */
+function safeLinkUrl(value: string | undefined | null): string | null {
+  if (!value || typeof value !== 'string') return null
+  try {
+    const parsed = new URL(value)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.toString() : null
+  } catch {
+    return null
+  }
+}
+
 const MANA_DECIMALS = 18n
 
 // El marketplace API devuelve `price` en wei (string entero, p.ej. "5000000000000000000").
@@ -107,6 +123,7 @@ export {
   formatPriceMana,
   getEquippedWearables,
   readField,
+  safeLinkUrl,
   toCatalogAsset,
   toItemNetwork,
   toRarity

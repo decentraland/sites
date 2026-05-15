@@ -32,6 +32,7 @@ import {
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
+import { redirectToAuth } from '../../../utils/authRedirect'
 import { getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import { FriendsModal } from '../FriendsModal'
 import { ProfileAvatar } from '../ProfileAvatar'
@@ -127,11 +128,19 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu }: P
   }, [address])
 
   const handleFriendAction = useCallback(() => {
+    // Anonymous viewers see the CTA enabled (per Figma) — clicking redirects to sign-in and
+    // sends them back to this profile so the action can complete after auth. The `!isOwnProfile`
+    // guard remains because there's no scenario where you "Add Friend" to your own profile.
+    if (!isOwnProfile && !hasValidIdentity) {
+      const here = typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : '/'
+      redirectToAuth(here)
+      return
+    }
     if (!canQueryFriendship) return
     void upsertFriendship({ address, action: friendButton.action }).catch(() => {
       /* error surfaced via the hook's `error` state */
     })
-  }, [address, canQueryFriendship, friendButton.action, upsertFriendship])
+  }, [address, canQueryFriendship, friendButton.action, hasValidIdentity, isOwnProfile, upsertFriendship])
 
   const handleToggleBlock = useCallback(() => {
     setBlockMenuAnchor(null)
@@ -251,7 +260,7 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu }: P
               size={isMobile ? 'small' : 'medium'}
               startIcon={friendButton.icon}
               onClick={handleFriendAction}
-              disabled={!canQueryFriendship || isLoadingFriendship || isUpdatingFriendship || friendshipStatus === 'blocked'}
+              disabled={isOwnProfile || isLoadingFriendship || isUpdatingFriendship || friendshipStatus === 'blocked'}
             >
               {t(friendButton.labelKey)}
             </Button>
