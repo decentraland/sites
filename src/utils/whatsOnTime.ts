@@ -41,7 +41,9 @@ function formatUtcDate(isoString: string, locale?: string): string {
 
 // Whole-day shift between the local calendar date and the UTC calendar date for `isoString`. Values
 // are clamped to -1, 0, +1 because timezone offsets max out at ±14h, so UTC and local can never differ
-// by more than one calendar day.
+// by more than one calendar day. The packed-int comparison is on calendar dates only (no time
+// component), so non-integer-hour offsets (India +05:30, Newfoundland −03:30, Chatham +12:45) are
+// handled the same as integer-hour ones — the delta is still ±1 day at most.
 function getUtcDayDelta(isoString: string): -1 | 0 | 1 {
   const date = new Date(isoString)
   if (Number.isNaN(date.getTime())) return 0

@@ -174,7 +174,8 @@ describe('EventDetailModalHero', () => {
     it('should render the schedule subtitle with the local start date and time', () => {
       render(<EventDetailModalHero data={createMockData()} onClose={mockOnClose} />)
 
-      expect(screen.getByTestId('schedule-subtitle')).toHaveTextContent('Tue, Apr 7 - 10:00 AM')
+      // Loose regex so the test survives CLDR/ICU bumps that tweak separators or AM/PM casing.
+      expect(screen.getByTestId('schedule-subtitle')).toHaveTextContent(/Tue,?\s+Apr\s+7\s*-\s*10:00\s*AM/i)
     })
 
     it('should wrap the schedule subtitle in the LocalDateTimeTooltip with start and finish', () => {
@@ -335,7 +336,9 @@ describe('EventDetailModalHero', () => {
         />
       )
 
-      expect(screen.getByTestId('schedule-subtitle')).toHaveTextContent('event_detail.hero_every_weekday:weekday=Tuesday - 10:00 AM')
+      expect(screen.getByTestId('schedule-subtitle')).toHaveTextContent(
+        /event_detail\.hero_every_weekday:weekday=Tuesday\s*-\s*10:00\s*AM/i
+      )
     })
   })
 
