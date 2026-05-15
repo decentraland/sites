@@ -6,30 +6,12 @@ import { Button } from 'decentraland-ui2'
 import type { RecurrentFrequency } from '../../../features/events'
 import { linkifyText } from '../../../utils/linkifyText'
 import { localizedWeekdayShort, normalizeDayIndices } from '../../../utils/recurrence'
+import { formatLocalDate, formatLocalTime } from '../../../utils/whatsOnTime'
 import { buildCalendarUrl, normalizeRecurrence } from '../../../utils/whatsOnUrl'
+import { LocalDateTimeTooltip } from '../common/LocalDateTimeTooltip'
 import { ContentDivider, ContentSection, DescriptionText, SectionLabel } from '../DetailModal/DetailModal.styled'
 import type { AdminActions, ModalEventData } from './EventDetailModal.types'
 import { AdminActionsRow, RecurrenceText, ScheduleIconButton, ScheduleRow, ScheduleText } from './EventDetailModal.styled'
-
-function formatScheduleDate(isoString: string, locale: string): string {
-  const date = new Date(isoString)
-  return new Intl.DateTimeFormat(locale, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    timeZone: 'UTC'
-  }).format(date)
-}
-
-function formatScheduleTime(isoString: string, locale: string): string {
-  const date = new Date(isoString)
-  return new Intl.DateTimeFormat(locale, {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: 'UTC'
-  }).format(date)
-}
 
 function formatRecurrentDays(days: number[], locale: string): string {
   return normalizeDayIndices(days)
@@ -87,7 +69,7 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
     : null
 
   const scheduleRange = data.startAt
-    ? `${formatScheduleDate(data.startAt, locale)} · ${formatScheduleTime(data.startAt, locale)}${data.finishAt ? ` – ${formatScheduleTime(data.finishAt, locale)}` : ''} (UTC)`
+    ? `${formatLocalDate(data.startAt, locale)} · ${formatLocalTime(data.startAt, locale)}${data.finishAt ? ` – ${formatLocalTime(data.finishAt, locale)}` : ''}`
     : ''
   const scheduleText = data.recurrent && scheduleRange ? t('event_detail.schedule_starting', { schedule: scheduleRange }) : scheduleRange
 
@@ -105,7 +87,9 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
           <SectionLabel>{t('event_detail.schedule')}</SectionLabel>
           <ScheduleRow>
             <div>
-              <ScheduleText>{scheduleText}</ScheduleText>
+              <LocalDateTimeTooltip startIso={data.startAt} finishIso={data.finishAt}>
+                <ScheduleText>{scheduleText}</ScheduleText>
+              </LocalDateTimeTooltip>
               {recurrenceLabel && <RecurrenceText>{recurrenceLabel}</RecurrenceText>}
             </div>
             <ScheduleIconButton onClick={handleAddToCalendar} aria-label={t('event_detail.add_to_calendar')}>

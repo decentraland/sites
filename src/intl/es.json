@@ -1069,5 +1069,15 @@
     "location_with_coords": "{place} ({x},{y})",
     "location_coords": "({x},{y})",
     "schedule_starting": "Empieza el {schedule}"
+  },
+  "event_time": {
+    "utc_same_day": "{time} UTC",
+    "utc_next_day": "{time} UTC (+1 día)",
+    "utc_previous_day": "{time} UTC (-1 día)",
+    "utc_range_same_day": "{start} – {end} UTC",
+    "utc_range_with_dates": "{startDate}, {start} – {endDate}, {end} UTC",
+    "form_utc_preview": "{time} UTC",
+    "form_utc_preview_next_day": "{time} UTC (+1 día)",
+    "form_utc_preview_previous_day": "{time} UTC (-1 día)"
   }
 }

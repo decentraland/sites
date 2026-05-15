@@ -53,6 +53,14 @@ jest.mock('../common/RemindMeIcon', () => ({
   RemindMeIcon: ({ active }: { active: boolean }) => <span data-testid="remind-me-icon" data-active={active} />
 }))
 
+jest.mock('../common/LocalDateTimeTooltip', () => ({
+  LocalDateTimeTooltip: ({ children, startIso, finishIso }: { children: React.ReactNode; startIso: string; finishIso?: string | null }) => (
+    <span data-testid="local-datetime-tooltip" data-start={startIso} data-finish={finishIso ?? ''}>
+      {children}
+    </span>
+  )
+}))
+
 jest.mock('decentraland-ui2', () => ({
   LiveBadge: () => <span data-testid="live-badge">LIVE</span>,
   Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -163,10 +171,18 @@ describe('EventDetailModalHero', () => {
       expect(screen.getByTestId('hero-image')).toHaveAttribute('src', 'https://example.com/event.png')
     })
 
-    it('should render the schedule subtitle with the UTC start date and time', () => {
+    it('should render the schedule subtitle with the local start date and time', () => {
       render(<EventDetailModalHero data={createMockData()} onClose={mockOnClose} />)
 
-      expect(screen.getByTestId('schedule-subtitle')).toHaveTextContent('Tue, Apr 7 - 10:00 AM (UTC)')
+      expect(screen.getByTestId('schedule-subtitle')).toHaveTextContent('Tue, Apr 7 - 10:00 AM')
+    })
+
+    it('should wrap the schedule subtitle in the LocalDateTimeTooltip with start and finish', () => {
+      render(<EventDetailModalHero data={createMockData()} onClose={mockOnClose} />)
+
+      const tooltip = screen.getByTestId('local-datetime-tooltip')
+      expect(tooltip).toHaveAttribute('data-start', '2026-04-07T10:00:00Z')
+      expect(tooltip).toHaveAttribute('data-finish', '2026-04-07T12:00:00Z')
     })
 
     it('should render the close button', () => {
@@ -311,7 +327,7 @@ describe('EventDetailModalHero', () => {
   })
 
   describe('when the event is weekly recurrent', () => {
-    it('should render an "every weekday" schedule subtitle in UTC', () => {
+    it('should render an "every weekday" schedule subtitle derived from local time', () => {
       render(
         <EventDetailModalHero
           data={createMockData({ recurrent: true, recurrentFrequency: 'WEEKLY', recurrentInterval: 1 })}
@@ -319,7 +335,7 @@ describe('EventDetailModalHero', () => {
         />
       )
 
-      expect(screen.getByTestId('schedule-subtitle')).toHaveTextContent('event_detail.hero_every_weekday:weekday=Tuesday - 10:00 AM (UTC)')
+      expect(screen.getByTestId('schedule-subtitle')).toHaveTextContent('event_detail.hero_every_weekday:weekday=Tuesday - 10:00 AM')
     })
   })
 

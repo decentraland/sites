@@ -18,8 +18,10 @@ import { useCanEditEvent } from '../../../hooks/useCanEditEvent'
 import { useCopyShareLink } from '../../../hooks/useCopyShareLink'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { localizedWeekdayLong, normalizeDayIndices } from '../../../utils/recurrence'
+import { formatLocalDate, formatLocalTime } from '../../../utils/whatsOnTime'
 import { buildCalendarUrl, buildEventShareUrl, normalizeRecurrence } from '../../../utils/whatsOnUrl'
 import { JumpInButton } from '../../jump/JumpInButton'
+import { LocalDateTimeTooltip } from '../common/LocalDateTimeTooltip'
 import { RemindMeIcon } from '../common/RemindMeIcon'
 import { DetailModalCreator } from '../DetailModal'
 import {
@@ -38,26 +40,6 @@ import {
 } from '../DetailModal/DetailModal.styled'
 import type { ModalEventData } from './EventDetailModal.types'
 import { CreatorLocationRow, EditButton, LiveBadgeWrapper, LocationRow, LocationText, ScheduleSubtitle } from './EventDetailModal.styled'
-
-function formatHeroTimeUtc(isoString: string, locale: string): string {
-  const date = new Date(isoString)
-  return new Intl.DateTimeFormat(locale, {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: 'UTC'
-  }).format(date)
-}
-
-function formatHeroDateUtc(isoString: string, locale: string): string {
-  const date = new Date(isoString)
-  return new Intl.DateTimeFormat(locale, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    timeZone: 'UTC'
-  }).format(date)
-}
 
 function getHeroRecurrenceLabel(
   startAt: string,
@@ -79,7 +61,8 @@ function getHeroRecurrenceLabel(
       return count === 1 ? t('event_detail.hero_every_day') : t('event_detail.recurrent_every_n_days', { count })
     case 'WEEKLY': {
       if (count > 1) return t('event_detail.recurrent_every_n_weeks', { count })
-      const weekday = new Intl.DateTimeFormat(locale, { weekday: 'long', timeZone: 'UTC' }).format(new Date(startAt))
+      // Derive the weekday from the local-time `startAt` — keeps the recurrence label aligned with the user's calendar.
+      const weekday = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(new Date(startAt))
       return t('event_detail.hero_every_weekday', { weekday })
     }
     case 'MONTHLY':
@@ -99,14 +82,14 @@ function buildHeroSubtitle(
   if (!data.startAt) return null
   const start = new Date(data.startAt)
   if (Number.isNaN(start.getTime())) return null
-  const time = formatHeroTimeUtc(data.startAt, locale)
+  const time = formatLocalTime(data.startAt, locale)
   if (!data.recurrent) {
-    const date = formatHeroDateUtc(data.startAt, locale)
-    return `${date} - ${time} (UTC)`
+    const date = formatLocalDate(data.startAt, locale)
+    return `${date} - ${time}`
   }
   const recurrence = getHeroRecurrenceLabel(data.startAt, data.recurrentFrequency, data.recurrentInterval, data.recurrentByDay, t, locale)
   if (!recurrence) return null
-  return `${recurrence} - ${time} (UTC)`
+  return `${recurrence} - ${time}`
 }
 
 function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData; onClose: () => void; onEdit?: () => void }) {
@@ -152,7 +135,12 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
               <LiveBadge />
             </LiveBadgeWrapper>
           ) : (
-            scheduleSubtitle && <ScheduleSubtitle>{scheduleSubtitle}</ScheduleSubtitle>
+            scheduleSubtitle &&
+            data.startAt && (
+              <LocalDateTimeTooltip startIso={data.startAt} finishIso={data.finishAt}>
+                <ScheduleSubtitle>{scheduleSubtitle}</ScheduleSubtitle>
+              </LocalDateTimeTooltip>
+            )
           )}
           <ModalTitle id="event-detail-title">{data.name}</ModalTitle>
           <CreatorLocationRow>

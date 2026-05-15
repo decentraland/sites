@@ -20,6 +20,7 @@ const jestConfig: Config = {
   moduleNameMapper: {
     '\\.(webp|png|jpg|jpeg|gif|svg)$': '<rootDir>/src/__mocks__/fileMock.js'
   },
+  globalSetup: '<rootDir>/src/__test-utils__/jestGlobalSetup.ts',
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
   testEnvironmentOptions: {}
 }

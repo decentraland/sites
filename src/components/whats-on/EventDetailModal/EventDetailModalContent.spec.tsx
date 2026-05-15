@@ -44,6 +44,14 @@ jest.mock('decentraland-ui2', () => ({
   )
 }))
 
+jest.mock('../common/LocalDateTimeTooltip', () => ({
+  LocalDateTimeTooltip: ({ children, startIso, finishIso }: { children: React.ReactNode; startIso: string; finishIso?: string | null }) => (
+    <span data-testid="local-datetime-tooltip" data-start={startIso} data-finish={finishIso ?? ''}>
+      {children}
+    </span>
+  )
+}))
+
 function createMockData(overrides: Partial<ReturnType<typeof createMockModalData>> = {}) {
   return createMockModalData({
     image: null,
