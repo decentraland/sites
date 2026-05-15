@@ -41,7 +41,7 @@ const NameRow = styled(Box)(({ theme }) => ({
 
 const NameText = styled(Typography, {
   shouldForwardProp: prop => prop !== '$nameColor'
-})<{ $nameColor: string }>(({ $nameColor }) => ({
+})<{ $nameColor: string }>(({ $nameColor, theme }) => ({
   fontWeight: 500,
   fontSize: 24,
   lineHeight: 1.334,
@@ -49,14 +49,20 @@ const NameText = styled(Typography, {
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
-  maxWidth: '20ch'
+  maxWidth: '20ch',
+  [theme.breakpoints.down('md')]: {
+    fontSize: 18
+  }
 }))
 
 const Discriminator = styled('span')(({ theme }) => ({
   fontWeight: 500,
   fontSize: 24,
   lineHeight: 1.334,
-  color: theme.palette.text.secondary
+  color: theme.palette.text.secondary,
+  [theme.breakpoints.down('md')]: {
+    fontSize: 18
+  }
 }))
 
 const VerifiedBadge = styled('span', {

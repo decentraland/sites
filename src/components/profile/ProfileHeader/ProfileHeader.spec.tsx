@@ -50,7 +50,8 @@ jest.mock('decentraland-ui2', () => {
     open ? mockReact.createElement('div', { role: 'menu' }, children) : null
   const MenuItem = ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) =>
     mockReact.createElement('div', { role: 'menuitem', onClick }, children)
-  return { Button, IconButton, Menu, MenuItem }
+  const useTabletAndBelowMediaQuery = () => false
+  return { Button, IconButton, Menu, MenuItem, useTabletAndBelowMediaQuery }
 })
 
 jest.mock('./ProfileHeader.styled', () => {

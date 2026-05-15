@@ -90,6 +90,9 @@ const BodyArea = styled(Box)(({ theme }) => ({
   overflow: 'auto',
   [theme.breakpoints.up('md')]: {
     padding: theme.spacing(4)
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(2)
   }
 }))
 

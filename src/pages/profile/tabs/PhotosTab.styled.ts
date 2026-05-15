@@ -7,11 +7,10 @@ const PhotosGrid = styled(Box)(({ theme }) => ({
   [theme.breakpoints.down('lg')]: {
     gridTemplateColumns: 'repeat(3, 1fr)'
   },
+  // Mobile spec keeps two thumbnails per row so the grid stays tight at narrow widths
+  // and matches the Figma mobile photos node.
   [theme.breakpoints.down('md')]: {
     gridTemplateColumns: 'repeat(2, 1fr)'
-  },
-  [theme.breakpoints.down('sm')]: {
-    gridTemplateColumns: '1fr'
   }
 }))
 

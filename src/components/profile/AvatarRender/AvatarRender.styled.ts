@@ -1,6 +1,6 @@
 import { Box, styled } from 'decentraland-ui2'
 
-const RenderRoot = styled(Box)({
+const RenderRoot = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
@@ -12,8 +12,14 @@ const RenderRoot = styled(Box)({
   // Some avatars (wings, tall hats, oversized props) overflow the natural
   // bounding box. We allow the preview to spill into the adjacent column and
   // sit behind the info cards (their semi-opaque bg covers the overlap).
-  overflow: 'visible'
-})
+  overflow: 'visible',
+  // Mobile: shrink the preview so it fits above the body content instead of
+  // dominating the viewport (Figma mobile spec keeps the avatar to ~360px tall).
+  [theme.breakpoints.down('md')]: {
+    height: 360,
+    width: '100%'
+  }
+}))
 
 const FallbackLayer = styled(Box)({
   position: 'absolute',

@@ -160,11 +160,17 @@ const LinkPillIcon = styled('span')({
 const EquippedGrid = styled(Box)(({ theme }) => ({
   display: 'grid',
   // auto-fill + 250px floor → 4 cards a partir de ~1050px de ancho de grid,
-  // 3/2/1 a medida que la pantalla se achica. Mantiene los CatalogCards
+  // 3/2 a medida que la pantalla se achica. Mantiene los CatalogCards
   // siempre con un piso de 250px sin necesidad de breakpoints manuales.
   gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
   gap: theme.spacing(2),
   alignItems: 'stretch',
+  // Mobile spec keeps two cards per row even when the viewport is too narrow for the
+  // 250px floor — the cards shrink instead of collapsing to a single column.
+  [theme.breakpoints.down('md')]: {
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: theme.spacing(1.5)
+  },
   // CatalogCard de ui2 trae ancho fijo (theme.spacing(36) ≈ 288px) y crece en
   // hover. Forzamos width: 100% al ancho del grid cell y bloqueamos el growth
   // de altura en ambos estados.

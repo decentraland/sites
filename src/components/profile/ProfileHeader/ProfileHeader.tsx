@@ -24,7 +24,7 @@ import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove'
-import { Button, IconButton, Menu, MenuItem } from 'decentraland-ui2'
+import { Button, IconButton, Menu, MenuItem, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import {
   useBlockUser,
@@ -101,6 +101,7 @@ function getFriendButtonConfig(status: FriendshipStatus | undefined): FriendButt
 
 function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu }: ProfileHeaderProps) {
   const t = useFormatMessage()
+  const isMobile = useTabletAndBelowMediaQuery()
   const { name, avatar, backgroundColor } = useProfileAvatar(address)
   const { hasValidIdentity } = useAuthIdentity()
 
@@ -181,7 +182,7 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu }: P
             <ArrowBackIosNewIcon />
           </BackIconButton>
         ) : null}
-        <ProfileAvatar address={address} size={76} borderColor="rgba(255, 255, 255, 0.5)" />
+        <ProfileAvatar address={address} size={isMobile ? 48 : 76} borderColor="rgba(255, 255, 255, 0.5)" />
         <NameAddressBlock>
           <NameRow>
             <NameText variant="h5" $nameColor={nameColor}>
