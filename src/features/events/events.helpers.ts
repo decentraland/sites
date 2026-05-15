@@ -21,6 +21,7 @@ interface LiveNowCard {
   recurrent?: boolean
   recurrentFrequency?: RecurrentFrequency | null
   recurrentInterval?: number | null
+  recurrentWeekdayMask?: number | null
   recurrentCount?: number | null
   recurrentUntil?: string | null
   recurrentDates?: string[]
@@ -130,6 +131,7 @@ function buildLiveNowCards(liveEvents: EventEntry[], hotScenes: HotScene[], minU
         recurrent: matchedEvent.recurrent,
         recurrentFrequency: matchedEvent.recurrent_frequency,
         recurrentInterval: matchedEvent.recurrent_interval,
+        recurrentWeekdayMask: matchedEvent.recurrent_weekday_mask,
         recurrentCount: matchedEvent.recurrent_count,
         recurrentUntil: matchedEvent.recurrent_until,
         recurrentDates: matchedEvent.recurrent_dates,

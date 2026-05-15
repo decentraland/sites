@@ -1,4 +1,5 @@
 import type { EventEntry, RecurrentFrequency } from '../features/events'
+import { ALL_WEEKDAYS, weekdayMaskToDayIndices } from '../utils/recurrence'
 import type { CreateEventFormState } from './useCreateEventForm.types'
 
 /* eslint-disable @typescript-eslint/naming-convention -- keys are API enum values */
@@ -24,6 +25,18 @@ function parseDurationMs(value: string): number | null {
   return totalMinutes > 0 ? totalMinutes * 60 * 1000 : null
 }
 
+const RECURRENT_INTERVAL_OPTIONS = [1, 2, 3, 4] as const
+const MIN_RECURRENT_INTERVAL = RECURRENT_INTERVAL_OPTIONS[0]
+const MAX_RECURRENT_INTERVAL = RECURRENT_INTERVAL_OPTIONS[RECURRENT_INTERVAL_OPTIONS.length - 1]
+
+function parseRecurrentInterval(value: string): number | null {
+  if (!value.trim()) return null
+  const num = Number(value)
+  if (!Number.isFinite(num) || !Number.isInteger(num)) return null
+  if (num < MIN_RECURRENT_INTERVAL || num > MAX_RECURRENT_INTERVAL) return null
+  return num
+}
+
 const INITIAL_STATE: CreateEventFormState = {
   image: null,
   imagePreviewUrl: null,
@@ -41,7 +54,9 @@ const INITIAL_STATE: CreateEventFormState = {
   startTime: '',
   duration: '',
   repeatEnabled: false,
-  frequency: 'every_week',
+  frequency: 'every_day',
+  repeatInterval: '1',
+  repeatDays: [...ALL_WEEKDAYS],
   repeatEndDate: '',
   location: 'land',
   coordX: '0',
@@ -71,18 +86,33 @@ function durationMsToHhMm(durationMs: number | null | undefined): string {
   return `${pad(hours)}:${pad(minutes)}`
 }
 
-function resolveDurationMs(event: EventEntry): number {
+function resolveDurationMs(event: EventEntry, referenceStartAt: string): number {
   if (typeof event.duration === 'number' && event.duration > 0) return event.duration
-  if (event.start_at && event.finish_at) {
-    const diff = new Date(event.finish_at).getTime() - new Date(event.start_at).getTime()
+  if (referenceStartAt && event.finish_at) {
+    const diff = new Date(event.finish_at).getTime() - new Date(referenceStartAt).getTime()
     return diff > 0 ? diff : 0
   }
   return 0
 }
 
-function eventEntryToFormState(event: EventEntry): CreateEventFormState {
-  const start = splitIsoDateTime(event.start_at)
-  const durationMs = resolveDurationMs(event)
+// For recurrent events the API keeps `start_at` pointing at the first occurrence ever — which can
+// sit months in the past — while `next_start_at` tracks the upcoming one. Hydrating the edit form
+// from `start_at` (the default) leaves owners staring at a stale anchor date and asking "where did
+// my saved time go?" — issue #474. When `start_at` is clearly historical, prefer `next_start_at`
+// so the form shows the date the user is about to re-schedule.
+function resolveFormReferenceStartAt(event: EventEntry, now: number): string {
+  // `next_start_at` is typed as `string`, but every consumer that pivots on it guards defensively
+  // (see `PendingEventCard.tsx`), so mirror that pattern rather than trusting the declaration alone.
+  if (!event.recurrent || !event.next_start_at) return event.start_at
+  const startMs = new Date(event.start_at).getTime()
+  if (!Number.isFinite(startMs) || startMs >= now) return event.start_at
+  return event.next_start_at
+}
+
+function eventEntryToFormState(event: EventEntry, now: number = Date.now()): CreateEventFormState {
+  const referenceStartAt = resolveFormReferenceStartAt(event, now)
+  const start = splitIsoDateTime(referenceStartAt)
+  const durationMs = resolveDurationMs(event, referenceStartAt)
   const lastRecurrentDate = event.recurrent_dates?.[event.recurrent_dates.length - 1] ?? null
   const repeatEnd = splitIsoDateTime(lastRecurrentDate)
   // Treat events whose `world: true` flag isn't backed by a non-empty `server`
@@ -107,7 +137,9 @@ function eventEntryToFormState(event: EventEntry): CreateEventFormState {
     startTime: start.time,
     duration: durationMsToHhMm(durationMs),
     repeatEnabled: Boolean(event.recurrent),
-    frequency: (event.recurrent_frequency && REVERSE_FREQUENCY_MAP[event.recurrent_frequency]) ?? 'every_week',
+    frequency: (event.recurrent_frequency && REVERSE_FREQUENCY_MAP[event.recurrent_frequency]) ?? 'every_day',
+    repeatInterval: String(parseRecurrentInterval(String(event.recurrent_interval ?? '')) ?? 1),
+    repeatDays: weekdayMaskToDayIndices(event.recurrent_weekday_mask),
     repeatEndDate: repeatEnd.date,
     location: isWorld ? 'world' : 'land',
     coordX: isWorld ? '0' : String(event.x ?? 0),
@@ -118,4 +150,15 @@ function eventEntryToFormState(event: EventEntry): CreateEventFormState {
   }
 }
 
-export { DURATION_PATTERN, FREQUENCY_MAP, INITIAL_STATE, durationMsToHhMm, eventEntryToFormState, parseDurationMs }
+export {
+  DURATION_PATTERN,
+  FREQUENCY_MAP,
+  INITIAL_STATE,
+  MAX_RECURRENT_INTERVAL,
+  MIN_RECURRENT_INTERVAL,
+  RECURRENT_INTERVAL_OPTIONS,
+  durationMsToHhMm,
+  eventEntryToFormState,
+  parseDurationMs,
+  parseRecurrentInterval
+}

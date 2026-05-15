@@ -603,10 +603,19 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   const queryString = canonicalQuery.toString()
   const actualUrl = `${origin}${requestPath}${queryString ? `?${queryString}` : ''}`
 
+  // Preview pages accept an unauthenticated token in the query string; treat them
+  // as private content: no edge cache, no Referer leak, no search indexing.
+  // Exact match is safe — Vercel normalizes trailing slashes (`/blog/preview/`) upstream
+  // of this function, so `requestPath` is always the canonical form.
+  const isPreviewPath = requestPath === '/blog/preview'
+
   // Security headers applied regardless of the response path.
   res.setHeader('X-Content-Type-Options', 'nosniff')
   res.setHeader('X-Frame-Options', 'SAMEORIGIN')
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.setHeader('Referrer-Policy', isPreviewPath ? 'no-referrer' : 'strict-origin-when-cross-origin')
+  if (isPreviewPath) {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive')
+  }
 
   if (!INDEX_HTML) {
     // Build output unavailable. Cannot redirect to actualUrl because vercel.json rewrites
@@ -624,7 +633,7 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     // Shorter stale window: timely blog announcements should not be served up to 24h stale.
-    res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=14400')
+    res.setHeader('Cache-Control', isPreviewPath ? 'no-store' : 'public, max-age=3600, stale-while-revalidate=14400')
     res.setHeader('Vary', 'Accept-Encoding')
     res.setHeader('X-SEO-Function', 'active')
     res.status(200).send(generateHTML(seoData, INDEX_HTML, actualUrl))
@@ -633,7 +642,7 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
     // to actualUrl (which would loop back to this function via vercel.json rewrite).
     console.error('[SEO Function] Error:', error)
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
-    res.setHeader('Cache-Control', 'public, max-age=60')
+    res.setHeader('Cache-Control', isPreviewPath ? 'no-store' : 'public, max-age=60')
     res.status(200).send(generateHTML(null, INDEX_HTML, actualUrl))
   }
 }

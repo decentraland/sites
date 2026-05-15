@@ -988,7 +988,14 @@
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
-    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "repeat_interval": "Répéter tous les",
+    "repeat_on": "Répéter le",
+    "interval_chip_week_singular": "1 Semaine",
+    "interval_chip_week_plural": "{count} Semaines",
+    "error_repeat_interval_invalid": "L'intervalle de répétition doit être un nombre entier entre 1 et 4",
+    "error_repeat_days_required": "Sélectionnez au moins un jour",
+    "error_start_date_not_in_repeat_days": "Le jour de la semaine de la date de début doit faire partie des jours sélectionnés"
   },
   "community": {
     "global": {
@@ -1205,6 +1212,26 @@
     "recurrent_every_n_days": "Tous les {count} jours",
     "recurrent_every_n_weeks": "Toutes les {count} semaines",
     "recurrent_every_n_months": "Tous les {count} mois",
-    "recurrent_every_n_years": "Tous les {count} ans"
+    "recurrent_every_n_years": "Tous les {count} ans",
+    "recurrent_on_days": "Se répète les {days}",
+    "recurrent_on_days_every_n_weeks": "Toutes les {count} semaines les {days}",
+    "hero_every_day": "Tous les jours",
+    "hero_every_weekday": "Tous les {weekday}",
+    "hero_every_month": "Tous les mois",
+    "hero_every_year": "Tous les ans",
+    "hero_every_days": "Tous les {days}",
+    "location_with_coords": "{place} ({x},{y})",
+    "location_coords": "({x},{y})",
+    "schedule_starting": "À partir du {schedule}"
+  },
+  "event_time": {
+    "utc_same_day": "{time} UTC",
+    "utc_next_day": "{time} UTC (+1 jour)",
+    "utc_previous_day": "{time} UTC (-1 jour)",
+    "utc_range_same_day": "{start} – {end} UTC",
+    "utc_range_with_dates": "{startDate}, {start} – {endDate}, {end} UTC",
+    "form_utc_preview": "{time} UTC",
+    "form_utc_preview_next_day": "{time} UTC (+1 jour)",
+    "form_utc_preview_previous_day": "{time} UTC (-1 jour)"
   }
 }

@@ -36,6 +36,7 @@ interface EventEntry {
   recurrent: boolean
   recurrent_frequency: RecurrentFrequency | null
   recurrent_interval: number | null
+  recurrent_weekday_mask: number | null
   recurrent_count: number | null
   recurrent_until: string | null
   recurrent_dates: string[]
@@ -115,6 +116,7 @@ interface CreateEventPayload {
   recurrent?: boolean
   recurrent_frequency?: RecurrentFrequency | null
   recurrent_interval?: number
+  recurrent_weekday_mask?: number
   recurrent_count?: number | null
   recurrent_until?: string | null
 }
