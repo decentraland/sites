@@ -33,9 +33,11 @@ const SectionHeader = styled(Box)(({ theme }) => ({
 }))
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
+  fontFamily: '"Inter", sans-serif',
   color: theme.palette.text.secondary,
   fontWeight: 600,
-  fontSize: 12,
+  fontSize: 14,
+  lineHeight: 1.5,
   letterSpacing: 1.5,
   textTransform: 'uppercase'
 }))
@@ -79,15 +81,20 @@ const BadgeFallback = styled(Box)(({ theme }) => ({
 }))
 
 const BioText = styled(Typography)(({ theme }) => ({
+  fontFamily: '"Inter", sans-serif',
   color: theme.palette.text.primary,
   fontWeight: 400,
-  fontSize: 15,
+  fontSize: 16,
   lineHeight: 1.6,
   whiteSpace: 'pre-wrap',
   wordBreak: 'break-word'
 }))
 
 const EmptyBio = styled(Typography)(({ theme }) => ({
+  fontFamily: '"Inter", sans-serif',
+  fontWeight: 400,
+  fontSize: 14,
+  lineHeight: 1.5,
   color: theme.palette.text.disabled,
   fontStyle: 'italic'
 }))
@@ -106,20 +113,24 @@ const InfoItem = styled(Box)(({ theme }) => ({
 }))
 
 const InfoLabel = styled(Typography)(({ theme }) => ({
+  fontFamily: '"Inter", sans-serif',
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(0.5),
   color: theme.palette.text.secondary,
   fontWeight: 400,
-  fontSize: 11,
+  fontSize: 12,
+  lineHeight: 1.5,
   textTransform: 'uppercase',
   letterSpacing: 1
 }))
 
 const InfoValue = styled(Typography)(({ theme }) => ({
+  fontFamily: '"Inter", sans-serif',
   color: theme.palette.text.primary,
   fontWeight: 500,
-  fontSize: 14
+  fontSize: 16,
+  lineHeight: 1.5
 }))
 
 const LinksRow = styled(Box)(({ theme }) => ({

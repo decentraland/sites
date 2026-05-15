@@ -42,9 +42,10 @@ const NameRow = styled(Box)(({ theme }) => ({
 const NameText = styled(Typography, {
   shouldForwardProp: prop => prop !== '$nameColor'
 })<{ $nameColor: string }>(({ $nameColor, theme }) => ({
-  fontWeight: 500,
-  fontSize: 24,
-  lineHeight: 1.334,
+  fontFamily: '"Inter", sans-serif',
+  fontWeight: 600,
+  fontSize: 28,
+  lineHeight: 1.21,
   color: $nameColor,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
@@ -56,9 +57,10 @@ const NameText = styled(Typography, {
 }))
 
 const Discriminator = styled('span')(({ theme }) => ({
-  fontWeight: 500,
-  fontSize: 24,
-  lineHeight: 1.334,
+  fontFamily: '"Inter", sans-serif',
+  fontWeight: 600,
+  fontSize: 28,
+  lineHeight: 1.21,
   color: theme.palette.text.secondary,
   [theme.breakpoints.down('md')]: {
     fontSize: 18
@@ -96,6 +98,7 @@ const AddressRow = styled(Box)(({ theme }) => ({
 }))
 
 const AddressText = styled(Typography)(({ theme }) => ({
+  fontFamily: '"Inter", sans-serif',
   fontWeight: 400,
   fontSize: 14,
   lineHeight: 1.75,
@@ -149,8 +152,10 @@ const MutualAvatarSlot = styled('span', { shouldForwardProp: prop => prop !== '$
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const MutualText = styled(Typography)(({ theme }) => ({
+  fontFamily: '"Inter", sans-serif',
   fontWeight: 400,
-  fontSize: 16,
+  fontSize: 14,
+  lineHeight: 1.5,
   color: theme.palette.text.primary,
   '& strong': { fontWeight: 600 }
 }))
