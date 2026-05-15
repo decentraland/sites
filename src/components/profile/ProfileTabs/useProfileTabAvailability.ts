@@ -27,11 +27,13 @@ function useProfileTabAvailability(address: string, isOwnProfile: boolean): TabA
   const photos = useReelImagesByUser(address, PROBE_OPTIONS, isOwnProfile ? identity : undefined)
 
   return useMemo(() => {
-    // Reveal-on-data model: every data-driven tab starts hidden and only appears once its probe
-    // confirms count > 0. Overview is always visible; referral-rewards (own-profile only) is
-    // intrinsically useful at zero invites so we keep it visible by default too.
-    const hidden = new Set<ProfileTab>(['places', 'photos', 'creations', 'assets', 'communities'])
-    if (places.isSuccess) {
+    // Reveal-on-data model: on a MEMBER profile every data-driven tab starts hidden and only
+    // appears once its probe confirms count > 0 (Figma 167:89148 use cases). On OWN profile every
+    // tab is shown regardless of count because the empty state itself teaches the user what to do
+    // (Figma 322:49163 / 346:33999 — "My Assets / My Photos / My Places" are always visible).
+    const hidden = isOwnProfile ? new Set<ProfileTab>() : new Set<ProfileTab>(['places', 'photos', 'creations', 'assets', 'communities'])
+
+    if (!isOwnProfile && places.isSuccess) {
       const total = places.data?.total ?? places.data?.data?.length ?? 0
       if (total > 0) hidden.delete('places')
     }
@@ -40,19 +42,13 @@ function useProfileTabAvailability(address: string, isOwnProfile: boolean): TabA
       const emoteTotal = emotes.data?.total ?? emotes.data?.data?.length ?? 0
       if (wearableTotal > 0 || emoteTotal > 0) hidden.delete('creations')
     }
-    if (isOwnProfile && assets.isSuccess) {
-      const total = assets.data?.total ?? assets.data?.data?.length ?? 0
-      if (total > 0) hidden.delete('assets')
-    }
-    if (isOwnProfile && communities.isSuccess) {
-      // `/v1/members/:addr/communities` is signed-fetch + same-user-only; member visitors stay hidden.
-      const total = communities.data?.data?.total ?? communities.data?.data?.results?.length ?? 0
-      if (total > 0) hidden.delete('communities')
-    }
-    if (!photos.isLoading && photos.error === null) {
+    if (!isOwnProfile && !photos.isLoading && photos.error === null) {
       const total = photos.images.length > 0 ? photos.images.length : photos.total ?? 0
       if (total > 0) hidden.delete('photos')
     }
+    // `assets` and `communities` are only visible for own profile (see `ProfileTabs.types`), and on
+    // own profile they always stay visible regardless of count. So we skip the count probes for
+    // these on member view — the visibility filter takes care of hiding them.
 
     const probesReady =
       !places.isLoading &&
