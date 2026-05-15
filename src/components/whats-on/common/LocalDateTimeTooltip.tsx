@@ -17,7 +17,7 @@ function LocalDateTimeTooltip({ startIso, finishIso, children }: LocalDateTimeTo
     [startIso, finishIso, locale, t]
   )
   return (
-    <Tooltip title={body} arrow placement="top">
+    <Tooltip title={body} arrow placement="top" followCursor>
       <LocalTimeTrigger tabIndex={0}>{children}</LocalTimeTrigger>
     </Tooltip>
   )
