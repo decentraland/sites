@@ -6,24 +6,12 @@ import { Button } from 'decentraland-ui2'
 import type { RecurrentFrequency } from '../../../features/events'
 import { linkifyText } from '../../../utils/linkifyText'
 import { localizedWeekdayShort, normalizeDayIndices } from '../../../utils/recurrence'
+import { formatLocalDate, formatLocalTime } from '../../../utils/whatsOnTime'
 import { buildCalendarUrl, normalizeRecurrence } from '../../../utils/whatsOnUrl'
+import { LocalDateTimeTooltip } from '../common/LocalDateTimeTooltip'
 import { ContentDivider, ContentSection, DescriptionText, SectionLabel } from '../DetailModal/DetailModal.styled'
 import type { AdminActions, ModalEventData } from './EventDetailModal.types'
 import { AdminActionsRow, RecurrenceText, ScheduleIconButton, ScheduleRow, ScheduleText } from './EventDetailModal.styled'
-
-function formatScheduleDate(isoString: string): string {
-  const date = new Date(isoString)
-  return date.toLocaleDateString(undefined, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
-function formatScheduleTime(isoString: string): string {
-  const date = new Date(isoString)
-  return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true })
-}
 
 function formatRecurrentDays(days: number[], locale: string): string {
   return normalizeDayIndices(days)
@@ -81,7 +69,7 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
     : null
 
   const scheduleRange = data.startAt
-    ? `${formatScheduleDate(data.startAt)} · ${formatScheduleTime(data.startAt)}${data.finishAt ? ` – ${formatScheduleTime(data.finishAt)}` : ''}`
+    ? `${formatLocalDate(data.startAt, locale)} · ${formatLocalTime(data.startAt, locale)}${data.finishAt ? ` – ${formatLocalTime(data.finishAt, locale)}` : ''}`
     : ''
   const scheduleText = data.recurrent && scheduleRange ? t('event_detail.schedule_starting', { schedule: scheduleRange }) : scheduleRange
 
@@ -99,7 +87,9 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
           <SectionLabel>{t('event_detail.schedule')}</SectionLabel>
           <ScheduleRow>
             <div>
-              <ScheduleText>{scheduleText}</ScheduleText>
+              <LocalDateTimeTooltip startIso={data.startAt} finishIso={data.finishAt}>
+                <ScheduleText>{scheduleText}</ScheduleText>
+              </LocalDateTimeTooltip>
               {recurrenceLabel && <RecurrenceText>{recurrenceLabel}</RecurrenceText>}
             </div>
             <ScheduleIconButton onClick={handleAddToCalendar} aria-label={t('event_detail.add_to_calendar')}>

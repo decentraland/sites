@@ -1056,6 +1056,23 @@
     "recurrent_every_n_years": "Tous les {count} ans",
     "recurrent_on_days": "Se répète les {days}",
     "recurrent_on_days_every_n_weeks": "Toutes les {count} semaines les {days}",
+    "hero_every_day": "Tous les jours",
+    "hero_every_weekday": "Tous les {weekday}",
+    "hero_every_month": "Tous les mois",
+    "hero_every_year": "Tous les ans",
+    "hero_every_days": "Tous les {days}",
+    "location_with_coords": "{place} ({x},{y})",
+    "location_coords": "({x},{y})",
     "schedule_starting": "À partir du {schedule}"
+  },
+  "event_time": {
+    "utc_same_day": "{time} UTC",
+    "utc_next_day": "{time} UTC (+1 jour)",
+    "utc_previous_day": "{time} UTC (-1 jour)",
+    "utc_range_same_day": "{start} – {end} UTC",
+    "utc_range_with_dates": "{startDate}, {start} – {endDate}, {end} UTC",
+    "form_utc_preview": "{time} UTC",
+    "form_utc_preview_next_day": "{time} UTC (+1 jour)",
+    "form_utc_preview_previous_day": "{time} UTC (-1 jour)"
   }
 }

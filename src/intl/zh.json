@@ -1061,6 +1061,23 @@
     "recurrent_every_n_years": "每{count}年",
     "recurrent_on_days": "每{days}重复",
     "recurrent_on_days_every_n_weeks": "每{count}周的{days}",
+    "hero_every_day": "每天",
+    "hero_every_weekday": "每{weekday}",
+    "hero_every_month": "每月",
+    "hero_every_year": "每年",
+    "hero_every_days": "每{days}",
+    "location_with_coords": "{place} ({x},{y})",
+    "location_coords": "({x},{y})",
     "schedule_starting": "从 {schedule} 开始"
+  },
+  "event_time": {
+    "utc_same_day": "{time} UTC",
+    "utc_next_day": "{time} UTC（+1天）",
+    "utc_previous_day": "{time} UTC（-1天）",
+    "utc_range_same_day": "{start} – {end} UTC",
+    "utc_range_with_dates": "{startDate}, {start} – {endDate}, {end} UTC",
+    "form_utc_preview": "{time} UTC",
+    "form_utc_preview_next_day": "{time} UTC（+1天）",
+    "form_utc_preview_previous_day": "{time} UTC（-1天）"
   }
 }

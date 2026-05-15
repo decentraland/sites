@@ -1168,7 +1168,24 @@
     "recurrent_every_n_years": "Every {count} years",
     "recurrent_on_days": "Repeats {days}",
     "recurrent_on_days_every_n_weeks": "Every {count} weeks on {days}",
+    "hero_every_day": "Every day",
+    "hero_every_weekday": "Every {weekday}",
+    "hero_every_month": "Every month",
+    "hero_every_year": "Every year",
+    "hero_every_days": "Every {days}",
+    "location_with_coords": "{place} ({x},{y})",
+    "location_coords": "({x},{y})",
     "schedule_starting": "Starting {schedule}"
+  },
+  "event_time": {
+    "utc_same_day": "{time} UTC",
+    "utc_next_day": "{time} UTC (+1 day)",
+    "utc_previous_day": "{time} UTC (-1 day)",
+    "utc_range_same_day": "{start} – {end} UTC",
+    "utc_range_with_dates": "{startDate}, {start} – {endDate}, {end} UTC",
+    "form_utc_preview": "{time} UTC",
+    "form_utc_preview_next_day": "{time} UTC (+1 day)",
+    "form_utc_preview_previous_day": "{time} UTC (-1 day)"
   },
   "place_detail": {
     "close": "Close",

@@ -1061,6 +1061,23 @@
     "recurrent_every_n_years": "{count}년마다",
     "recurrent_on_days": "{days}에 반복",
     "recurrent_on_days_every_n_weeks": "{count}주마다 {days}",
+    "hero_every_day": "매일",
+    "hero_every_weekday": "매주 {weekday}",
+    "hero_every_month": "매월",
+    "hero_every_year": "매년",
+    "hero_every_days": "매 {days}",
+    "location_with_coords": "{place} ({x},{y})",
+    "location_coords": "({x},{y})",
     "schedule_starting": "{schedule} 부터 시작"
+  },
+  "event_time": {
+    "utc_same_day": "{time} UTC",
+    "utc_next_day": "{time} UTC (+1일)",
+    "utc_previous_day": "{time} UTC (-1일)",
+    "utc_range_same_day": "{start} – {end} UTC",
+    "utc_range_with_dates": "{startDate}, {start} – {endDate}, {end} UTC",
+    "form_utc_preview": "{time} UTC",
+    "form_utc_preview_next_day": "{time} UTC (+1일)",
+    "form_utc_preview_previous_day": "{time} UTC (-1일)"
   }
 }
