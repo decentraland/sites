@@ -159,6 +159,10 @@ URLs in the env JSONs were patched: `BADGES_API_URL`, `MARKETPLACE_API_URL`, `RE
 ## What's left
 
 - Phase 13 — Automated E2E + Lighthouse audit + bundle-size diff vs master.
+- **Design audit queue (next round, against Chrome MCP + Figma side-by-side):**
+  - `My Profile` desktop frame — Figma node [`322:49163`](https://www.figma.com/design/yJKdWwOvajSa3R95RAEMkq/Profile-Account?node-id=322-49163). Verify every section + CTA placement matches the latest spec.
+  - **Member use cases** — Figma node [`167:89148`](https://www.figma.com/design/yJKdWwOvajSa3R95RAEMkq/Profile-Account?node-id=167-89148). Each state in the flow (no badges / no bio / private communities / no places / no photos / no friend / pending request / friend / blocked) needs visual parity.
+  - **My profile use cases** — Figma node [`346:33999`](https://www.figma.com/design/yJKdWwOvajSa3R95RAEMkq/Profile-Account?node-id=346-33999). Same drill for the own-profile flow (empty equipped, no-name claim CTA, referral progress, friends modal entry points, logout).
 - **Sort by Latest** dropdown in Badges section (Figma).
 - ui2 PR #440 (`feat/catalog-card-info-badges`) — open upstream. When merged, drop the local `--no-save` tgz install and bump `decentraland-ui2` in `package.json`. Until then, sites carries override CSS in `OverviewTab.styled.ts:EquippedGrid` (image shrink + info-container collapse on hover) — remove that override when the published ui2 version ships `disableInfoExpansion`.
 - Tests: more coverage on `OverviewTab`, `ProfileModal`, `ModalProfileNavigation`, `EventDetailModal` profile swap, `FriendsModal`, `CreationsTab`/`AssetsTab` pagination.

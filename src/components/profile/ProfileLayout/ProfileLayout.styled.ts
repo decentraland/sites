@@ -13,13 +13,25 @@ const LayoutRoot = styled(Box)(({ theme }) => ({
   }
 }))
 
-const ContentArea = styled(Box)({
+const ContentArea = styled(Box)(({ theme }) => ({
   position: 'relative',
   zIndex: 1,
   width: '100%',
+  // Cap the card frame at the Figma desktop spec (`ProfileCard0 = 1650 × 930`) so wide
+  // viewports (1920 / 2560 / 4K) centre the surface instead of stretching the body grid
+  // to the full window width.
+  maxWidth: 1650,
+  marginLeft: 'auto',
+  marginRight: 'auto',
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
   display: 'flex',
-  flexDirection: 'column'
-})
+  flexDirection: 'column',
+  [theme.breakpoints.up('md')]: {
+    paddingLeft: theme.spacing(4),
+    paddingRight: theme.spacing(4)
+  }
+}))
 
 const ProfileCard = styled(Box)({
   position: 'relative',
