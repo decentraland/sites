@@ -5,12 +5,21 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CloseIcon from '@mui/icons-material/Close'
-import { IconButton } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { ProfileAvatar } from '../ProfileAvatar'
 import { getVisibleTabs } from '../ProfileTabs'
 import type { ProfileTab } from '../ProfileTabs'
-import { DrawerHeader, MobileDrawer, TabChevron, TabItem, TabList, UserAddress, UserBlock, UserName } from './ProfileMobileMenu.styled'
+import {
+  DrawerHeader,
+  DrawerIconButton,
+  MobileDrawer,
+  TabChevron,
+  TabItem,
+  TabList,
+  UserAddress,
+  UserBlock,
+  UserName
+} from './ProfileMobileMenu.styled'
 
 interface ProfileMobileMenuProps {
   open: boolean
@@ -41,12 +50,12 @@ const ProfileMobileMenu = memo(
     return (
       <MobileDrawer anchor="left" open={open} onClose={onClose}>
         <DrawerHeader>
-          <IconButton aria-label="Back" onClick={onClose} sx={{ color: 'common.white' }}>
+          <DrawerIconButton aria-label="Back" onClick={onClose}>
             <ArrowBackIosNewIcon fontSize="small" />
-          </IconButton>
-          <IconButton aria-label="Close" onClick={onClose} sx={{ color: 'common.white' }}>
+          </DrawerIconButton>
+          <DrawerIconButton aria-label="Close" onClick={onClose}>
             <CloseIcon />
-          </IconButton>
+          </DrawerIconButton>
         </DrawerHeader>
         <UserBlock>
           <ProfileAvatar address={address} size={64} />

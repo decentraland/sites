@@ -24,7 +24,7 @@ import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove'
-import { Button, IconButton, Menu, MenuItem, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
+import { Button, Menu, MenuItem, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import {
   useBlockUser,
@@ -45,12 +45,15 @@ import {
   AddressRow,
   AddressText,
   BackIconButton,
+  BlockMenuItemIcon,
   CloseIconButton,
   CopyButton,
+  CopyButtonIcon,
   Discriminator,
   HeaderRoot,
   IdentityBlock,
   MobileMenuIconButton,
+  MoreActionsButton,
   MutualAvatarSlot,
   MutualFriendsRow,
   MutualPic,
@@ -59,7 +62,8 @@ import {
   NameAddressBlock,
   NameRow,
   NameText,
-  VerifiedBadge
+  VerifiedBadge,
+  WalletIcon
 } from './ProfileHeader.styled'
 
 interface ProfileHeaderProps {
@@ -196,10 +200,14 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu }: P
             ) : null}
           </NameRow>
           <AddressRow>
-            <AccountBalanceWalletOutlinedIcon sx={{ fontSize: 18 }} />
+            <WalletIcon>
+              <AccountBalanceWalletOutlinedIcon />
+            </WalletIcon>
             <AddressText>{truncateAddress(address)}</AddressText>
             <CopyButton aria-label={t('profile.header.copy_address')} size="small" onClick={handleCopyAddress}>
-              <ContentCopyIcon sx={{ fontSize: 14 }} />
+              <CopyButtonIcon>
+                <ContentCopyIcon />
+              </CopyButtonIcon>
             </CopyButton>
           </AddressRow>
         </NameAddressBlock>
@@ -208,16 +216,34 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu }: P
         {isOwnProfile ? (
           <>
             {typeof friendsCount === 'number' ? (
-              <Button variant="outlined" color="inherit" startIcon={<PeopleAltOutlinedIcon />} onClick={() => setIsFriendsModalOpen(true)}>
+              <Button
+                variant="outlined"
+                color="inherit"
+                size={isMobile ? 'small' : 'medium'}
+                startIcon={<PeopleAltOutlinedIcon />}
+                onClick={() => setIsFriendsModalOpen(true)}
+              >
                 {t('profile.header.friends_count', { count: friendsCount })}
               </Button>
             ) : null}
             {!hasClaimedName ? (
-              <Button variant="contained" color="primary" startIcon={<BadgeOutlinedIcon />} onClick={handleGetAName}>
+              <Button
+                variant="contained"
+                color="primary"
+                size={isMobile ? 'small' : 'medium'}
+                startIcon={<BadgeOutlinedIcon />}
+                onClick={handleGetAName}
+              >
                 {t('profile.header.get_a_name')}
               </Button>
             ) : null}
-            <Button variant="outlined" color="inherit" startIcon={<PersonAddIcon />} onClick={handleInviteFriends}>
+            <Button
+              variant="outlined"
+              color="inherit"
+              size={isMobile ? 'small' : 'medium'}
+              startIcon={<PersonAddIcon />}
+              onClick={handleInviteFriends}
+            >
               {t(hasCopiedInvite ? 'profile.header.invite_copied' : 'profile.header.invite_friends')}
             </Button>
           </>
@@ -244,23 +270,25 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu }: P
             <Button
               variant="contained"
               color="primary"
+              size={isMobile ? 'small' : 'medium'}
               startIcon={friendButton.icon}
               onClick={handleFriendAction}
               disabled={!canQueryFriendship || isLoadingFriendship || isUpdatingFriendship || friendshipStatus === 'blocked'}
             >
               {t(friendButton.labelKey)}
             </Button>
-            <IconButton
+            <MoreActionsButton
               aria-label={t('profile.header.more_actions')}
               onClick={event => setBlockMenuAnchor(event.currentTarget)}
               disabled={!canQueryFriendship || isUpdatingBlock}
-              sx={{ color: 'common.white' }}
             >
               <MoreVertIcon />
-            </IconButton>
+            </MoreActionsButton>
             <Menu anchorEl={blockMenuAnchor} open={Boolean(blockMenuAnchor)} onClose={() => setBlockMenuAnchor(null)}>
               <MenuItem onClick={handleToggleBlock}>
-                <BlockIcon fontSize="small" sx={{ mr: 1 }} />
+                <BlockMenuItemIcon>
+                  <BlockIcon fontSize="small" />
+                </BlockMenuItemIcon>
                 {t(friendshipStatus === 'blocked' ? 'profile.header.unblock' : 'profile.header.block')}
               </MenuItem>
             </Menu>

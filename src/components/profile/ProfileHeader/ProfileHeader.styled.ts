@@ -185,18 +185,46 @@ const CopyButton = styled(IconButton)(({ theme }) => ({
   color: theme.palette.text.secondary
 }))
 
+const WalletIcon = styled(Box)({
+  display: 'inline-flex',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& .MuiSvgIcon-root': {
+    fontSize: 18
+  }
+})
+
+const CopyButtonIcon = styled(Box)({
+  display: 'inline-flex',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& .MuiSvgIcon-root': {
+    fontSize: 14
+  }
+})
+
+const MoreActionsButton = styled(IconButton)(({ theme }) => ({
+  color: theme.palette.common.white
+}))
+
+const BlockMenuItemIcon = styled(Box)(({ theme }) => ({
+  display: 'inline-flex',
+  marginRight: theme.spacing(1)
+}))
+
 export {
   ActionsBlock,
   AddressRow,
   AddressText,
   BackIconButton,
+  BlockMenuItemIcon,
   CloseIconButton,
   CopyButton,
+  CopyButtonIcon,
   Discriminator,
   Divider,
   HeaderRoot,
   IdentityBlock,
   MobileMenuIconButton,
+  MoreActionsButton,
   MutualAvatarSlot,
   MutualFriendsRow,
   MutualPic,
@@ -205,5 +233,6 @@ export {
   NameAddressBlock,
   NameRow,
   NameText,
-  VerifiedBadge
+  VerifiedBadge,
+  WalletIcon
 }

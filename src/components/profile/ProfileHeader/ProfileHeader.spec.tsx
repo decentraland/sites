@@ -64,12 +64,15 @@ jest.mock('./ProfileHeader.styled', () => {
     AddressRow: make('address-row'),
     AddressText: make('address-text'),
     BackIconButton: make('back-icon-button', 'button'),
+    BlockMenuItemIcon: make('block-menu-item-icon', 'span'),
     CloseIconButton: make('close-icon-button', 'button'),
     CopyButton: make('copy-button', 'button'),
+    CopyButtonIcon: make('copy-button-icon', 'span'),
     Discriminator: make('discriminator', 'span'),
     HeaderRoot: make('header-root'),
     IdentityBlock: make('identity-block'),
     MobileMenuIconButton: make('mobile-menu-icon-button', 'button'),
+    MoreActionsButton: make('more-actions-button', 'button'),
     MutualFriendsRow: make('mutual-friends-row'),
     MutualPic: make('mutual-pic', 'span'),
     MutualStack: make('mutual-stack'),
@@ -77,7 +80,8 @@ jest.mock('./ProfileHeader.styled', () => {
     NameAddressBlock: make('name-address-block'),
     NameRow: make('name-row'),
     NameText: make('name-text'),
-    VerifiedBadge: make('verified-badge', 'span')
+    VerifiedBadge: make('verified-badge', 'span'),
+    WalletIcon: make('wallet-icon', 'span')
   }
 })
 

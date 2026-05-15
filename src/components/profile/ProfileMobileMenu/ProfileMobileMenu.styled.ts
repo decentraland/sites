@@ -1,4 +1,4 @@
-import { Box, Drawer, Typography, styled } from 'decentraland-ui2'
+import { Box, Drawer, IconButton, Typography, styled } from 'decentraland-ui2'
 
 const MobileDrawer = styled(Drawer)(({ theme }) => ({
   // Sits above the Dialog backdrop (Dialog z-index = 1300) so the drawer also works inside `ProfileModal`.
@@ -25,6 +25,10 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'space-between',
   paddingBottom: theme.spacing(1)
+}))
+
+const DrawerIconButton = styled(IconButton)(({ theme }) => ({
+  color: theme.palette.common.white
 }))
 
 const UserBlock = styled(Box)(({ theme }) => ({
@@ -90,4 +94,4 @@ const TabChevron = styled('span')({
   color: 'rgba(255, 255, 255, 0.5)'
 })
 
-export { DrawerHeader, MobileDrawer, TabChevron, TabItem, TabList, UserAddress, UserBlock, UserName }
+export { DrawerHeader, DrawerIconButton, MobileDrawer, TabChevron, TabItem, TabList, UserAddress, UserBlock, UserName }
