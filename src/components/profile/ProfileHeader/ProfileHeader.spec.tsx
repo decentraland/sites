@@ -68,6 +68,7 @@ jest.mock('./ProfileHeader.styled', () => {
     Discriminator: make('discriminator', 'span'),
     HeaderRoot: make('header-root'),
     IdentityBlock: make('identity-block'),
+    MobileMenuIconButton: make('mobile-menu-icon-button', 'button'),
     MutualFriendsRow: make('mutual-friends-row'),
     MutualPic: make('mutual-pic', 'span'),
     MutualStack: make('mutual-stack'),

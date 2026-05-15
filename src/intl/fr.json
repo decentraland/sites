@@ -1060,7 +1060,8 @@
       "friends_count": "{count} amis",
       "mutual_count": "{count} en commun",
       "edit": "Modifier",
-      "back": "Retour"
+      "back": "Retour",
+      "open_menu": "Ouvrir le menu"
     },
     "friends_modal": {
       "title": "Amis ({count})",

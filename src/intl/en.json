@@ -1520,7 +1520,8 @@
       "friends_count": "{count} Friends",
       "mutual_count": "{count} Mutual",
       "edit": "Edit",
-      "back": "Back"
+      "back": "Back",
+      "open_menu": "Open menu"
     },
     "friends_modal": {
       "title": "Friends ({count})",

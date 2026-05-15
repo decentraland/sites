@@ -156,6 +156,16 @@ const CloseIconButton = styled(IconButton)(({ theme }) => ({
   color: theme.palette.text.primary
 }))
 
+const MobileMenuIconButton = styled(IconButton)(({ theme }) => ({
+  width: 40,
+  height: 40,
+  color: theme.palette.text.primary,
+  display: 'none',
+  [theme.breakpoints.down('md')]: {
+    display: 'inline-flex'
+  }
+}))
+
 const BackIconButton = styled(IconButton)(({ theme }) => ({
   width: 40,
   height: 40,
@@ -180,6 +190,7 @@ export {
   Divider,
   HeaderRoot,
   IdentityBlock,
+  MobileMenuIconButton,
   MutualAvatarSlot,
   MutualFriendsRow,
   MutualPic,

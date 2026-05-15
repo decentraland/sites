@@ -1065,7 +1065,8 @@
       "friends_count": "{count} Amigos",
       "mutual_count": "{count} en común",
       "edit": "Editar",
-      "back": "Volver"
+      "back": "Volver",
+      "open_menu": "Abrir menú"
     },
     "friends_modal": {
       "title": "Amigos ({count})",

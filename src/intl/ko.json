@@ -1065,7 +1065,8 @@
       "friends_count": "친구 {count} 명",
       "mutual_count": "공통 {count} 명",
       "edit": "편집",
-      "back": "뒤로"
+      "back": "뒤로",
+      "open_menu": "메뉴 열기"
     },
     "friends_modal": {
       "title": "친구 ({count})",

@@ -1,10 +1,12 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
 import { AssetsTab, CommunitiesTab, CreationsTab, OverviewTab, PhotosTab, PlacesTab, ReferralRewardsTab } from '../../../pages/profile/tabs'
 import { AvatarRender } from '../AvatarRender'
 import { ProfileHeader } from '../ProfileHeader'
 import { ProfileLayout } from '../ProfileLayout'
+import { ProfileMobileMenu } from '../ProfileMobileMenu'
 import { ProfileTabs, isTabAvailable, useProfileTabAvailability } from '../ProfileTabs'
 import type { ProfileTab } from '../ProfileTabs'
 
@@ -55,8 +57,12 @@ function ProfileSurface({
 }: ProfileSurfaceProps) {
   const t = useFormatMessage()
   const { hidden } = useProfileTabAvailability(address, isOwnProfile)
+  const { name: avatarName } = useProfileAvatar(address)
   const visibleTab: ProfileTab = isTabAvailable(activeTab, isOwnProfile) ? activeTab : 'overview'
   const resolvedTab: ProfileTab = hidden.has(visibleTab) ? 'overview' : visibleTab
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const openMobileMenu = useCallback(() => setMobileMenuOpen(true), [])
+  const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), [])
 
   // Direct URL hits on a now-empty tab should rewrite the location, not just swap content.
   useEffect(() => {
@@ -69,20 +75,34 @@ function ProfileSurface({
   const showAside = resolvedTab === 'overview'
 
   return (
-    <ProfileLayout
-      header={<ProfileHeader address={address} isOwnProfile={isOwnProfile} onClose={onClose} onBack={onBack} />}
-      tabs={<ProfileTabs activeTab={resolvedTab} isOwnProfile={isOwnProfile} onTabSelect={onTabChange} hiddenTabs={hidden} />}
-      aside={aside}
-      showAside={showAside}
-      embedded={embedded}
-    >
-      {manageDocumentTitle ? (
-        <Helmet>
-          <title>{`${t('profile.tabs.overview')} | Decentraland`}</title>
-        </Helmet>
-      ) : null}
-      {renderTabContent(resolvedTab, address, isOwnProfile)}
-    </ProfileLayout>
+    <>
+      <ProfileLayout
+        header={
+          <ProfileHeader address={address} isOwnProfile={isOwnProfile} onClose={onClose} onBack={onBack} onOpenMenu={openMobileMenu} />
+        }
+        tabs={<ProfileTabs activeTab={resolvedTab} isOwnProfile={isOwnProfile} onTabSelect={onTabChange} hiddenTabs={hidden} />}
+        aside={aside}
+        showAside={showAside}
+        embedded={embedded}
+      >
+        {manageDocumentTitle ? (
+          <Helmet>
+            <title>{`${t('profile.tabs.overview')} | Decentraland`}</title>
+          </Helmet>
+        ) : null}
+        {renderTabContent(resolvedTab, address, isOwnProfile)}
+      </ProfileLayout>
+      <ProfileMobileMenu
+        open={isMobileMenuOpen}
+        onClose={closeMobileMenu}
+        address={address}
+        displayName={avatarName || address}
+        isOwnProfile={isOwnProfile}
+        activeTab={resolvedTab}
+        onTabSelect={onTabChange}
+        hiddenTabs={hidden}
+      />
+    </>
   )
 }
 

@@ -14,6 +14,11 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
     paddingRight: theme.spacing(2),
     gap: theme.spacing(1)
   },
+  // Mobile uses the side drawer (ProfileMobileMenu) — hide the horizontal nav so users
+  // navigate via the hamburger instead.
+  [theme.breakpoints.down('md')]: {
+    display: 'none'
+  },
   [theme.breakpoints.up('md')]: {
     '& .MuiTabs-flexContainer': {
       paddingLeft: theme.spacing(4),

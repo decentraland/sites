@@ -15,6 +15,8 @@ import CloseIcon from '@mui/icons-material/Close'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import MenuIcon from '@mui/icons-material/Menu'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
@@ -48,6 +50,7 @@ import {
   Discriminator,
   HeaderRoot,
   IdentityBlock,
+  MobileMenuIconButton,
   MutualAvatarSlot,
   MutualFriendsRow,
   MutualPic,
@@ -66,6 +69,8 @@ interface ProfileHeaderProps {
   onClose?: () => void
   /** When set, a back chevron renders before the avatar. Used when the profile modal opens on top of another modal. */
   onBack?: () => void
+  /** When set, renders the mobile hamburger (visible only `<md`) — clicking it opens the tabs drawer. */
+  onOpenMenu?: () => void
 }
 
 function truncateAddress(value: string): string {
@@ -94,7 +99,7 @@ function getFriendButtonConfig(status: FriendshipStatus | undefined): FriendButt
   }
 }
 
-function ProfileHeader({ address, isOwnProfile, onClose, onBack }: ProfileHeaderProps) {
+function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu }: ProfileHeaderProps) {
   const t = useFormatMessage()
   const { name, avatar, backgroundColor } = useProfileAvatar(address)
   const { hasValidIdentity } = useAuthIdentity()
@@ -260,6 +265,11 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack }: ProfileHeader
             </Menu>
           </>
         )}
+        {onOpenMenu ? (
+          <MobileMenuIconButton aria-label={t('profile.header.open_menu')} onClick={onOpenMenu}>
+            <MenuIcon />
+          </MobileMenuIconButton>
+        ) : null}
         {onClose ? (
           <CloseIconButton aria-label={t('profile.header.close_profile')} onClick={onClose}>
             <CloseIcon />
