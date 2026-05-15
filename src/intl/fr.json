@@ -1061,7 +1061,8 @@
       "mutual_count": "{count} en commun",
       "edit": "Modifier",
       "back": "Retour",
-      "open_menu": "Ouvrir le menu"
+      "open_menu": "Ouvrir le menu",
+      "logout": "Déconnexion"
     },
     "friends_modal": {
       "title": "Amis ({count})",

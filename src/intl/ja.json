@@ -1066,7 +1066,8 @@
       "mutual_count": "{count} 人の共通",
       "edit": "編集",
       "back": "戻る",
-      "open_menu": "メニューを開く"
+      "open_menu": "メニューを開く",
+      "logout": "ログアウト"
     },
     "friends_modal": {
       "title": "友達 ({count})",

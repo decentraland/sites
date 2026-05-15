@@ -9,8 +9,6 @@ import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import BlockIcon from '@mui/icons-material/Block'
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import CheckIcon from '@mui/icons-material/Check'
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import CloseIcon from '@mui/icons-material/Close'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -22,8 +20,6 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import PersonRemoveIcon from '@mui/icons-material/PersonRemove'
 import { Button, Menu, MenuItem, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import {
@@ -33,13 +29,13 @@ import {
   useMutualFriends,
   useUpsertFriendship
 } from '../../../features/profile/profile.social.rpc'
-import type { FriendshipAction, FriendshipStatus } from '../../../features/profile/profile.social.rpc'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
 import { getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import { FriendsModal } from '../FriendsModal'
 import { ProfileAvatar } from '../ProfileAvatar'
+import { getFriendButtonConfig } from './ProfileHeader.helpers'
 import {
   ActionsBlock,
   AddressRow,
@@ -82,26 +78,8 @@ function truncateAddress(value: string): string {
   return `${value.slice(0, 4)}...${value.slice(-4)}`
 }
 
-interface FriendButtonConfig {
-  labelKey: string
-  icon: React.ReactNode
-  action: FriendshipAction
-}
-
-function getFriendButtonConfig(status: FriendshipStatus | undefined): FriendButtonConfig {
-  switch (status) {
-    case 'request_sent':
-      return { labelKey: 'profile.header.request_sent', icon: <CheckIcon />, action: 'cancel' }
-    case 'request_received':
-      return { labelKey: 'profile.header.add_friend', icon: <PersonAddIcon />, action: 'accept' }
-    case 'accepted':
-      return { labelKey: 'profile.header.remove_friend', icon: <PersonRemoveIcon />, action: 'remove' }
-    case 'blocked':
-    case 'none':
-    default:
-      return { labelKey: 'profile.header.add_friend', icon: <PersonAddIcon />, action: 'request' }
-  }
-}
+// `getFriendButtonConfig` lives in `./ProfileHeader.helpers` so `ProfileMobileMenu` can reuse the
+// same logic without duplicating the friendship-status switch.
 
 function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu }: ProfileHeaderProps) {
   const t = useFormatMessage()
