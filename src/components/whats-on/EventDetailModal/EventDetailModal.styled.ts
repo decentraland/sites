@@ -16,18 +16,24 @@ const CreatorLocationRow = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   flexWrap: 'wrap',
   columnGap: theme.spacing(3),
-  rowGap: theme.spacing(0.5)
+  rowGap: theme.spacing(0.5),
+  // Matches the 16px Figma gap between the creator/location row and the action buttons below.
+  // HeroContent itself contributes 8px via its flex gap; this margin adds the remaining 8px.
+  marginBottom: theme.spacing(1)
 }))
 
 const LocationRow = styled(Box)(({ theme }) => ({
-  display: 'flex',
+  display: 'inline-flex',
   alignItems: 'center',
   gap: theme.spacing(0.75),
   color: '#FCFCFC',
+  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  padding: theme.spacing(0.5, 1.25),
+  borderRadius: theme.spacing(1),
   /* eslint-disable @typescript-eslint/naming-convention */
   '& .MuiSvgIcon-root': {
     fontSize: 18,
-    color: '#A09BA8'
+    color: '#FCFCFC'
   }
   /* eslint-enable @typescript-eslint/naming-convention */
 }))
