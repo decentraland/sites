@@ -118,6 +118,9 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
     live: false,
     categories: [],
     url: buildEventJumpInUrl(x, y),
+    realm: isWorld ? form.world.trim() || undefined : undefined,
+    isWorld,
+    placeName: null,
     isEvent: false
   }
 }

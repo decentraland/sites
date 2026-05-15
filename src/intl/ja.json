@@ -1061,6 +1061,13 @@
     "recurrent_every_n_years": "{count}年ごと",
     "recurrent_on_days": "{days}に繰り返し",
     "recurrent_on_days_every_n_weeks": "{count}週ごとに{days}",
+    "hero_every_day": "毎日",
+    "hero_every_weekday": "毎週{weekday}",
+    "hero_every_month": "毎月",
+    "hero_every_year": "毎年",
+    "hero_every_days": "毎{days}",
+    "location_with_coords": "{place} ({x},{y})",
+    "location_coords": "({x},{y})",
     "schedule_starting": "{schedule} から"
   }
 }

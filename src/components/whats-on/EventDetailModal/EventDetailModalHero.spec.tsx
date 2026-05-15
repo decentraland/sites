@@ -3,7 +3,15 @@ import { createMockModalData } from '../../../__test-utils__/factories'
 import { EventDetailModalHero } from './EventDetailModalHero'
 
 jest.mock('@dcl/hooks', () => ({
-  useTranslation: () => ({ t: (key: string) => key })
+  useTranslation: () => ({
+    t: (key: string, values?: Record<string, string | number>) => {
+      if (!values) return key
+      return `${key}:${Object.entries(values)
+        .map(([k, v]) => `${k}=${v}`)
+        .join(',')}`
+    },
+    locale: 'en-US'
+  })
 }))
 
 jest.mock('../../../hooks/useCanEditEvent', () => ({
@@ -18,7 +26,11 @@ jest.mock('../../../hooks/useAuthIdentity', () => ({
 const mockBuildEventShareUrl = jest.fn()
 jest.mock('../../../utils/whatsOnUrl', () => ({
   buildCalendarUrl: jest.fn(() => 'https://calendar.google.com/test'),
-  buildEventShareUrl: (...args: unknown[]) => mockBuildEventShareUrl(...args)
+  buildEventShareUrl: (...args: unknown[]) => mockBuildEventShareUrl(...args),
+  normalizeRecurrence: (frequency: string | null, interval: number | null) => ({
+    frequency: frequency ?? 'WEEKLY',
+    interval: interval ?? 1
+  })
 }))
 
 let mockIsMobile = false
@@ -81,9 +93,12 @@ jest.mock('../DetailModal/DetailModal.styled', () => ({
 }))
 
 jest.mock('./EventDetailModal.styled', () => ({
-  CategoryLabel: ({ children }: { children: React.ReactNode }) => <span data-testid="category-label">{children}</span>,
+  ScheduleSubtitle: ({ children }: { children: React.ReactNode }) => <span data-testid="schedule-subtitle">{children}</span>,
   LiveBadgeWrapper: ({ children, ...props }: { children: React.ReactNode } & Record<string, unknown>) => <span {...props}>{children}</span>,
-  EditButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="edit-button" {...props} />
+  EditButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="edit-button" {...props} />,
+  CreatorLocationRow: ({ children }: { children: React.ReactNode }) => <div data-testid="creator-location-row">{children}</div>,
+  LocationRow: ({ children }: { children: React.ReactNode }) => <div data-testid="location-row">{children}</div>,
+  LocationText: ({ children }: { children: React.ReactNode }) => <span data-testid="location-text">{children}</span>
 }))
 
 jest.mock('../../jump/JumpInButton', () => ({
@@ -107,6 +122,16 @@ jest.mock('@mui/icons-material/NotificationsNone', () => ({
 jest.mock('@mui/icons-material/ArrowBackIosNew', () => ({
   __esModule: true,
   default: () => <span data-testid="back-arrow-icon" />
+}))
+
+jest.mock('@mui/icons-material/LocationOnOutlined', () => ({
+  __esModule: true,
+  default: () => <span data-testid="location-icon" />
+}))
+
+jest.mock('@mui/icons-material/PublicRounded', () => ({
+  __esModule: true,
+  default: () => <span data-testid="world-icon" />
 }))
 
 const createMockData = createMockModalData
@@ -138,10 +163,10 @@ describe('EventDetailModalHero', () => {
       expect(screen.getByTestId('hero-image')).toHaveAttribute('src', 'https://example.com/event.png')
     })
 
-    it('should render the category label', () => {
+    it('should render the schedule subtitle with the UTC start date and time', () => {
       render(<EventDetailModalHero data={createMockData()} onClose={mockOnClose} />)
 
-      expect(screen.getByTestId('category-label')).toHaveTextContent('music')
+      expect(screen.getByTestId('schedule-subtitle')).toHaveTextContent('Tue, Apr 7 - 10:00 AM (UTC)')
     })
 
     it('should render the close button', () => {
@@ -184,11 +209,11 @@ describe('EventDetailModalHero', () => {
   })
 
   describe('when the event is live', () => {
-    it('should show the live badge instead of the category', () => {
+    it('should show the live badge instead of the schedule subtitle', () => {
       render(<EventDetailModalHero data={createMockData({ live: true })} onClose={mockOnClose} />)
 
       expect(screen.getByTestId('live-badge')).toBeInTheDocument()
-      expect(screen.queryByTestId('category-label')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('schedule-subtitle')).not.toBeInTheDocument()
     })
 
     it('should not render the remind me button', () => {
@@ -244,11 +269,57 @@ describe('EventDetailModalHero', () => {
     })
   })
 
-  describe('when the event has no categories and is not live', () => {
-    it('should not render the category label', () => {
-      render(<EventDetailModalHero data={createMockData({ categories: [], live: false })} onClose={mockOnClose} />)
+  describe('when the event has no startAt and is not live', () => {
+    it('should not render the schedule subtitle', () => {
+      render(<EventDetailModalHero data={createMockData({ startAt: null, live: false })} onClose={mockOnClose} />)
 
-      expect(screen.queryByTestId('category-label')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('schedule-subtitle')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the event is hosted in Genesis City', () => {
+    it('should render the location icon with place name and coordinates', () => {
+      render(
+        <EventDetailModalHero data={createMockData({ isWorld: false, placeName: 'Liberty Square', x: 10, y: 20 })} onClose={mockOnClose} />
+      )
+
+      expect(screen.getByTestId('location-icon')).toBeInTheDocument()
+      expect(screen.getByTestId('location-text')).toHaveTextContent('event_detail.location_with_coords:place=Liberty Square,x=10,y=20')
+    })
+
+    it('should fall back to coordinates only when the place name is missing', () => {
+      render(<EventDetailModalHero data={createMockData({ isWorld: false, placeName: null, x: 5, y: -7 })} onClose={mockOnClose} />)
+
+      expect(screen.getByTestId('location-icon')).toBeInTheDocument()
+      expect(screen.getByTestId('location-text')).toHaveTextContent('event_detail.location_coords:x=5,y=-7')
+    })
+  })
+
+  describe('when the event is hosted in a world', () => {
+    it('should render the world icon with the realm name', () => {
+      render(<EventDetailModalHero data={createMockData({ isWorld: true, realm: 'myworld.dcl.eth' })} onClose={mockOnClose} />)
+
+      expect(screen.getByTestId('world-icon')).toBeInTheDocument()
+      expect(screen.getByTestId('location-text')).toHaveTextContent('myworld.dcl.eth')
+    })
+
+    it('should not render the location row when the realm is missing', () => {
+      render(<EventDetailModalHero data={createMockData({ isWorld: true, realm: undefined })} onClose={mockOnClose} />)
+
+      expect(screen.queryByTestId('location-row')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the event is weekly recurrent', () => {
+    it('should render an "every weekday" schedule subtitle in UTC', () => {
+      render(
+        <EventDetailModalHero
+          data={createMockData({ recurrent: true, recurrentFrequency: 'WEEKLY', recurrentInterval: 1 })}
+          onClose={mockOnClose}
+        />
+      )
+
+      expect(screen.getByTestId('schedule-subtitle')).toHaveTextContent('event_detail.hero_every_weekday:weekday=Tuesday - 10:00 AM (UTC)')
     })
   })
 

@@ -1061,6 +1061,13 @@
     "recurrent_every_n_years": "每{count}年",
     "recurrent_on_days": "每{days}重复",
     "recurrent_on_days_every_n_weeks": "每{count}周的{days}",
+    "hero_every_day": "每天",
+    "hero_every_weekday": "每{weekday}",
+    "hero_every_month": "每月",
+    "hero_every_year": "每年",
+    "hero_every_days": "每{days}",
+    "location_with_coords": "{place} ({x},{y})",
+    "location_coords": "({x},{y})",
     "schedule_starting": "从 {schedule} 开始"
   }
 }

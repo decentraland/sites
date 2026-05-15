@@ -11,18 +11,24 @@ import { ContentDivider, ContentSection, DescriptionText, SectionLabel } from '.
 import type { AdminActions, ModalEventData } from './EventDetailModal.types'
 import { AdminActionsRow, RecurrenceText, ScheduleIconButton, ScheduleRow, ScheduleText } from './EventDetailModal.styled'
 
-function formatScheduleDate(isoString: string): string {
+function formatScheduleDate(isoString: string, locale: string): string {
   const date = new Date(isoString)
-  return date.toLocaleDateString(undefined, {
+  return new Intl.DateTimeFormat(locale, {
     weekday: 'short',
     month: 'short',
-    day: 'numeric'
-  })
+    day: 'numeric',
+    timeZone: 'UTC'
+  }).format(date)
 }
 
-function formatScheduleTime(isoString: string): string {
+function formatScheduleTime(isoString: string, locale: string): string {
   const date = new Date(isoString)
-  return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true })
+  return new Intl.DateTimeFormat(locale, {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'UTC'
+  }).format(date)
 }
 
 function formatRecurrentDays(days: number[], locale: string): string {
@@ -81,7 +87,7 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
     : null
 
   const scheduleRange = data.startAt
-    ? `${formatScheduleDate(data.startAt)} · ${formatScheduleTime(data.startAt)}${data.finishAt ? ` – ${formatScheduleTime(data.finishAt)}` : ''}`
+    ? `${formatScheduleDate(data.startAt, locale)} · ${formatScheduleTime(data.startAt, locale)}${data.finishAt ? ` – ${formatScheduleTime(data.finishAt, locale)}` : ''} (UTC)`
     : ''
   const scheduleText = data.recurrent && scheduleRange ? t('event_detail.schedule_starting', { schedule: scheduleRange }) : scheduleRange
 

@@ -1056,6 +1056,13 @@
     "recurrent_every_n_years": "Tous les {count} ans",
     "recurrent_on_days": "Se répète les {days}",
     "recurrent_on_days_every_n_weeks": "Toutes les {count} semaines les {days}",
+    "hero_every_day": "Tous les jours",
+    "hero_every_weekday": "Tous les {weekday}",
+    "hero_every_month": "Tous les mois",
+    "hero_every_year": "Tous les ans",
+    "hero_every_days": "Tous les {days}",
+    "location_with_coords": "{place} ({x},{y})",
+    "location_coords": "({x},{y})",
     "schedule_starting": "À partir du {schedule}"
   }
 }
