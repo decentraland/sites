@@ -1045,6 +1045,165 @@
       "upcoming_events": "Événements à venir"
     }
   },
+  "profile": {
+    "not_found": {
+      "title": "Profil introuvable",
+      "description": "L'adresse « {address} » n'est pas une adresse Ethereum valide."
+    },
+    "header": {
+      "edit_profile": "Modifier le profil",
+      "add_friend": "Ajouter un ami",
+      "request_sent": "Demande envoyée",
+      "friends": "Amis",
+      "remove_friend": "Retirer",
+      "unblock": "Débloquer",
+      "block": "Bloquer",
+      "more_actions": "Plus d'actions",
+      "copy_address": "Copier l'adresse",
+      "close_profile": "Fermer le profil",
+      "get_a_name": "Obtenir un nom",
+      "invite_friends": "Inviter des amis",
+      "invite_copied": "Copié !",
+      "friends_count": "{count} amis",
+      "mutual_count": "{count} en commun",
+      "edit": "Modifier",
+      "back": "Retour",
+      "open_menu": "Ouvrir le menu du profil",
+      "logout": "Déconnexion"
+    },
+    "friends_modal": {
+      "title": "Amis ({count})",
+      "close": "Fermer la liste d'amis",
+      "search_placeholder": "Rechercher des amis",
+      "empty": "Vous n'avez pas encore d'amis.",
+      "no_results": "Aucun résultat."
+    },
+    "tabs": {
+      "overview": "Aperçu",
+      "assets": "Actifs",
+      "creations": "Créations",
+      "communities": "Communautés",
+      "places": "Lieux",
+      "photos": "Photos",
+      "referral_rewards": "Récompenses de parrainage",
+      "my_assets": "Mes Actifs",
+      "my_communities": "Mes Communautés",
+      "my_places": "Mes Lieux",
+      "my_photos": "Mes Photos"
+    },
+    "overview": {
+      "about": "À propos",
+      "no_bio_owner": "Ajoutez une bio pour parler de vous.",
+      "no_bio_member": "Ce membre n'a pas encore ajouté de bio.",
+      "equipped_wearables": "Wearables équipés",
+      "no_wearables": "Aucun wearable équipé.",
+      "badges": "Badges",
+      "links": "Liens",
+      "equipped_items": "Items équipés",
+      "country": "Pays",
+      "language": "Langue",
+      "pronouns": "Pronoms",
+      "relationship_status": "Situation amoureuse",
+      "gender": "Genre",
+      "profession": "Profession",
+      "birth_date": "Date de naissance",
+      "real_name": "Nom réel",
+      "favorite_hobby": "Hobby favori",
+      "no_badges_yet": "Pas encore de badges. Entrez dans le monde et commencez à en collecter !",
+      "badge_unlocked_on": "Débloqué le {date}",
+      "by_creator": "Par {name}",
+      "buy": "Acheter"
+    },
+    "creations": {
+      "empty_title": "Pas encore de créations",
+      "empty_owner": "Vos créations apparaîtront ici.",
+      "empty_member": "Ce compte n'a encore rien créé.",
+      "count": "{count} éléments",
+      "load_more": "Charger plus",
+      "filter_wearables": "Wearables",
+      "filter_emotes": "Emotes",
+      "view_all": "Tout voir"
+    },
+    "assets": {
+      "empty_title": "Pas encore d'actifs",
+      "empty_description": "Vos wearables, names et lands apparaîtront ici.",
+      "filter_all": "Tous",
+      "filter_wearables": "Wearables",
+      "filter_emotes": "Emotes",
+      "filter_names": "Names",
+      "filter_lands": "Lands",
+      "filter_estates": "Estates",
+      "count": "{count} actifs",
+      "view": "Voir"
+    },
+    "communities": {
+      "empty_title": "Pas encore de communautés",
+      "empty_owner": "Rejoignez une communauté pour la voir ici.",
+      "empty_member": "Ce membre n'a rejoint aucune communauté.",
+      "private": "Les communautés de ce membre sont privées.",
+      "count": "{count} communautés",
+      "member": "Membre",
+      "members_count": "{count} membres",
+      "role_owner": "Propriétaire",
+      "role_admin": "Admin"
+    },
+    "places": {
+      "empty_title": "Pas encore de lieux",
+      "empty_owner": "Vos lieux apparaîtront ici.",
+      "empty_member": "Ce membre n'a enregistré aucun lieu.",
+      "count": "{count} lieux"
+    },
+    "photos": {
+      "empty_title": "Pas encore de photos",
+      "empty_owner": "Les captures en monde apparaîtront ici.",
+      "empty_member": "Ce membre n'a pris aucune photo.",
+      "count": "{count} photos"
+    },
+    "referral_rewards": {
+      "anonymous": "Connectez-vous pour inviter des amis et débloquer des récompenses.",
+      "invite_title": "Invitez des amis et obtenez des récompenses",
+      "invite_subtitle": "Partagez votre code. Quand vos amis rejoignent Decentraland, vous débloquez des wearables et badges exclusifs.",
+      "copy_invite_link": "Copier le lien d'invitation",
+      "copied": "Copié !",
+      "invited": "Invités",
+      "confirmed": "Confirmés",
+      "your_rewards": "Vos récompenses",
+      "no_rewards": "Pas encore de récompenses. Continuez à inviter pour débloquer des niveaux.",
+      "claimed": "Réclamé",
+      "unlocked": "Débloqué",
+      "locked": "Verrouillé",
+      "tiers_unlocked": "Niveaux débloqués",
+      "next_tier_at": "jusqu'au prochain niveau ({count} invités)",
+      "tier_label": "Niveau {tier}",
+      "tier_invites": "{count} invités"
+    },
+    "referral_hero_section": {
+      "title": "Decentraland is Better With Friends",
+      "subtitle": "Invite yours and get rewards!",
+      "tooltip_text": "Invitees must be new to Decentraland and must jump in-world on 3 separate days to count toward reward goals. See ",
+      "tooltip_link_label": "Terms & Conditions",
+      "step_1": "Invite friends to hang out in-world by sharing your referral link.",
+      "step_2": "Your friends download Decentraland and jump in on 3 separate days.",
+      "step_3": "You earn exclusive rewards for helping grow our community!",
+      "how_it_works": "How it works",
+      "share": "SHARE",
+      "copy_link": "Copy Link",
+      "copied_to_clipboard": "Link copied successfully",
+      "share_on_x": "Share on X",
+      "share_on_x_title": "Wanna hang out in Decentraland? Use my referral link to make your account and download Decentraland so we can explore together! #DCL #Decentraland"
+    },
+    "referral_reward_card": {
+      "swag": "IRL SWAG PACK",
+      "claim": "CLAIM",
+      "image_alt": "Reward Image"
+    },
+    "referral_journey": {
+      "title": "Your Reward Journey",
+      "invites_accepted": "{count} Friends Joined",
+      "tooltip_title": "{count} Friends Joined",
+      "tooltip_subtitle": "{count} More friends for your next Reward!"
+    }
+  },
   "event_detail": {
     "recurrent_daily": "Se répète tous les jours",
     "recurrent_weekly": "Se répète chaque semaine",

@@ -1,3 +1,8 @@
+jest.mock('../../utils/signedFetch', () => ({
+  fetchWithIdentity: jest.fn(),
+  fetchWithOptionalIdentity: jest.fn()
+}))
+
 import { clearImageCache, enrichWearables, fetchImageById, fetchImagesByUser, isMaticUrn } from './reels.client'
 
 jest.mock('../../config/env', () => ({

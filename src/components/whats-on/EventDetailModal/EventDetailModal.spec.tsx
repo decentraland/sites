@@ -26,6 +26,18 @@ jest.mock('./EventDetailModalContent', () => ({
   EventDetailModalContent: ({ data }: { data: ModalEventData }) => <div data-testid="content" data-name={data.name} />
 }))
 
+jest.mock('../../../hooks/useAuthIdentity', () => ({
+  useAuthIdentity: () => ({ address: undefined, identity: null, hasValidIdentity: false })
+}))
+
+jest.mock('../../profile/ProfileSurface', () => ({
+  ProfileSurface: ({ address }: { address: string }) => <div data-testid="profile-surface" data-address={address} />
+}))
+
+jest.mock('../../profile/ProfileModal', () => ({
+  ModalProfileNavigationProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>
+}))
+
 describe('EventDetailModal', () => {
   let mockOnClose: jest.Mock
 

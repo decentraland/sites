@@ -1,4 +1,6 @@
+import type { AuthIdentity } from '@dcl/crypto'
 import { getEnv } from '../../config/env'
+import { fetchWithIdentity } from '../../utils/signedFetch'
 import type { FetchListOptions, FetchListResult, Image, ImageUser, Rarity, WearableParsed } from './reels.types'
 
 const FETCH_TIMEOUT_MS = 5000
@@ -24,11 +26,17 @@ async function fetchImageById(id: string, signal?: AbortSignal): Promise<Image> 
   return image
 }
 
-async function fetchImagesByUser(address: string, options: FetchListOptions, signal?: AbortSignal): Promise<FetchListResult> {
+async function fetchImagesByUser(
+  address: string,
+  options: FetchListOptions,
+  signal?: AbortSignal,
+  identity?: AuthIdentity
+): Promise<FetchListResult> {
   const params = new URLSearchParams({ limit: String(options.limit), offset: String(options.offset) })
-  const response = await fetch(`${getReelServiceUrl()}/api/users/${address}/images?${params.toString()}`, {
-    signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS)
-  })
+  const url = `${getReelServiceUrl()}/api/users/${address}/images?${params.toString()}`
+  const response = identity
+    ? await fetchWithIdentity(url, identity, 'GET', undefined, undefined, signal)
+    : await fetch(url, { signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS) })
   if (!response.ok) throw new Error(`Cannot fetch images for ${address}`)
   return (await response.json()) as FetchListResult
 }

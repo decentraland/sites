@@ -27,10 +27,12 @@ const WearableStaticContainer = styled(Box)(sharedContainerStyle)
 /* eslint-disable @typescript-eslint/naming-convention */
 const WearableContainer = styled('a')(({ theme }) => ({
   ...sharedContainerStyle,
-  transition: 'background 0.35s',
+  transition: 'box-shadow 0.35s, transform 0.2s',
   cursor: 'pointer',
   '&:hover': {
-    background: '#716b7c'
+    // Match the rest of the profile cards (ProfileDialog / hover-shadow pattern): keep the
+    // base background and lift the row with a glow shadow instead of fading to gray.
+    boxShadow: '0px 4px 25px 0px rgba(255, 255, 255, 0.25)'
   },
   [theme.breakpoints.down('lg')]: {
     cursor: 'default'
@@ -103,10 +105,15 @@ const BuyButton = styled('button', {
   textTransform: 'uppercase',
   cursor: 'pointer',
   opacity: visible ? 1 : 0,
-  transition: 'opacity 0.35s',
+  // Slide the button off to the right while it fades — without the translate the
+  // wrapper finishes its `calc(100% - 69px) → 100%` expansion before the opacity
+  // hits zero, so a thin sliver of the BUY button keeps painting through the gap.
+  transform: visible ? 'translateX(0)' : 'translateX(120%)',
+  transition: 'opacity 0.15s, transform 0.2s',
   pointerEvents: visible ? 'auto' : 'none',
   [theme.breakpoints.down('lg')]: {
     opacity: 0,
+    transform: 'translateX(120%)',
     pointerEvents: 'none'
   }
 }))

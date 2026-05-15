@@ -4,6 +4,7 @@ import { Provider } from 'react-redux'
 import { Outlet } from 'react-router-dom'
 import { CircularProgress } from 'decentraland-ui2'
 import { CenteredBox } from '../App.styled'
+import { ProfileModalHost } from '../components/profile/ProfileModal'
 import { getEnv } from '../config/env'
 import { store } from './store'
 
@@ -63,6 +64,12 @@ function DappsShell() {
       <Provider store={store}>
         <Suspense fallback={<DappsShellFallback />}>
           <Outlet />
+          {/* ProfileModalHost listens to `?profile=<address>` and renders the
+              full profile experience as an overlay on top of whats-on, blog,
+              social, jump, cast, storage and profile pages. Mounting it at
+              shell level means any link or button in those pages can open the
+              modal via useOpenProfileModal — see ProfileModalHost. */}
+          <ProfileModalHost />
         </Suspense>
       </Provider>
     </HelmetProvider>

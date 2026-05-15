@@ -1,6 +1,8 @@
+import { useCallback } from 'react'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { formatEthAddress } from '../../../utils/avatar'
-import { AvatarFallback, AvatarImage, CreatorName, CreatorNameHighlight, CreatorRow } from './DetailModal.styled'
+import { useOpenProfileModal } from '../../profile/ProfileModal/useOpenProfileModal'
+import { AvatarFallback, AvatarImage, CreatorButton, CreatorName, CreatorNameHighlight, CreatorRow } from './DetailModal.styled'
 
 interface DetailModalCreatorProps {
   address: string | undefined
@@ -10,12 +12,18 @@ interface DetailModalCreatorProps {
 
 function DetailModalCreator({ address, name, prefixLabel }: DetailModalCreatorProps) {
   const fallback = address ? formatEthAddress(address) : undefined
-  const { creatorName, avatarFace, backgroundColor } = useCreatorProfile(address, name, fallback)
+  const { creatorName, avatarFace, backgroundColor, isDclFoundation } = useCreatorProfile(address, name, fallback)
+  const openProfile = useOpenProfileModal()
+
+  const handleClick = useCallback(() => {
+    if (!address) return
+    openProfile(address)
+  }, [address, openProfile])
 
   if (!avatarFace && !creatorName) return null
 
-  return (
-    <CreatorRow>
+  const content = (
+    <>
       {avatarFace ? (
         <AvatarImage src={avatarFace} alt={creatorName ?? ''} fallbackColor={backgroundColor} />
       ) : (
@@ -25,7 +33,18 @@ function DetailModalCreator({ address, name, prefixLabel }: DetailModalCreatorPr
         {prefixLabel}
         <CreatorNameHighlight>{creatorName}</CreatorNameHighlight>
       </CreatorName>
-    </CreatorRow>
+    </>
+  )
+
+  // DCL Foundation has no on-chain profile to open; keep it as a static row.
+  if (!address || isDclFoundation) {
+    return <CreatorRow>{content}</CreatorRow>
+  }
+
+  return (
+    <CreatorButton type="button" onClick={handleClick} aria-label={creatorName ?? address}>
+      {content}
+    </CreatorButton>
   )
 }
 

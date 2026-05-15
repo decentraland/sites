@@ -82,6 +82,12 @@ const StreamerPage = lazy(() => import('./pages/cast/StreamerPage').then(m => ({
 const WatcherPage = lazy(() => import('./pages/cast/WatcherPage').then(m => ({ default: m.WatcherPage })))
 const CastNotFoundPage = lazy(() => import('./pages/cast/CastNotFoundPage').then(m => ({ default: m.CastNotFoundPage })))
 
+// Profile pages — absorbed from the standalone profile + account dapps. Heavy route
+// (Redux + RTK Query). Auth via localStorage identity (no Web3 providers); CTAs gated
+// on useAuthIdentity. Signed mutations use signedFetch.
+const ProfilePage = lazy(() => import('./pages/profile').then(m => ({ default: m.ProfilePage })))
+const ProfileMeRedirect = lazy(() => import('./pages/profile').then(m => ({ default: m.ProfileMeRedirect })))
+
 // Storage pages — heavy DappsShell route. Migrated from the standalone storage-service-site.
 const StorageRedirectPage = lazy(() => import('./pages/storage/StorageRedirectPage').then(m => ({ default: m.StorageRedirectPage })))
 const StorageSelectPage = lazy(() => import('./pages/storage/SelectPage').then(m => ({ default: m.SelectPage })))
@@ -190,6 +196,15 @@ const App = () => {
               <Route path="/storage/*" element={<StorageNotFoundPage />} />
               <Route path="/social/communities/:id" element={<CommunityDetailPage />} />
               <Route path="/social/*" element={<SocialNotFoundPage />} />
+              {/* Profile routes — absorbed from decentraland/profile + decentraland/account dapps.
+                  ORDER MATTERS in react-router v7: literal `me` segment comes before the `:address`
+                  param so /profile/me hits the redirect, not the page. /profile (no params) and
+                  /profile/me both bounce to /profile/<connectedAddress> via ProfileMeRedirect. */}
+              <Route path="/profile" element={<ProfileMeRedirect />} />
+              <Route path="/profile/me" element={<ProfileMeRedirect />} />
+              <Route path="/profile/me/:tab" element={<ProfileMeRedirect />} />
+              <Route path="/profile/:address" element={<ProfilePage />} />
+              <Route path="/profile/:address/:tab" element={<ProfilePage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

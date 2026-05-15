@@ -1,8 +1,28 @@
+import { transformAsync } from '@babel/core'
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
-import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
-// https://vitejs.dev/config/
+// decentraland-ui2 ships compiled `.styled.js` files that use Emotion component
+// selectors (e.g. `[`${StyledX}`]: { ... }`) but were NOT compiled with
+// `@emotion/babel-plugin`, so the runtime call to `String(styledComponent)`
+// returns `'NO_COMPONENT_SELECTOR'` and Emotion throws at first render. This
+// project's React plugin is oxc-based (no babel), so we run `@emotion/babel-plugin`
+// surgically on those files via a Vite transform hook that fires in both
+// dev (Rolldown prebundle) and build (Rollup).
+const emotionUi2StyledRegex = /decentraland-ui2[/\\]dist[/\\].+\.styled\.js$/
+
+async function transformEmotionStyled(code: string, filename: string): Promise<{ code: string; map: unknown } | null> {
+  const result = await transformAsync(code, {
+    filename,
+    plugins: ['@emotion/babel-plugin'],
+    babelrc: false,
+    configFile: false,
+    sourceMaps: true
+  })
+  if (!result?.code) return null
+  return { code: result.code, map: result.map ?? null }
+}
+
 // eslint-disable-next-line import/no-default-export
 export default defineConfig(({ command, mode }) => {
   const envVariables = loadEnv(mode, process.cwd())
@@ -16,9 +36,6 @@ export default defineConfig(({ command, mode }) => {
     },
     plugins: [
       react(),
-      nodePolyfills({
-        include: ['buffer']
-      }),
       // @mui/icons-material@5 has no `exports` field, so subpath imports like
       // `@mui/icons-material/ChevronLeft` resolve to the CJS file. Vite 8's
       // pre-bundler emits `export default require_X()` for those, leaking the
@@ -33,8 +50,33 @@ export default defineConfig(({ command, mode }) => {
           }
           return null
         }
+      },
+      {
+        name: 'emotion-ui2-styled-transform',
+        enforce: 'pre',
+        async transform(code, id) {
+          if (!emotionUi2StyledRegex.test(id)) return null
+          return transformEmotionStyled(code, id)
+        }
       }
     ],
+    // Vite 8 prebundles deps with Rolldown — top-level plugins do not run on
+    // that pipeline. We register the same Emotion babel-plugin transform here
+    // so the styled files inside ui2 also get the `target` identifiers needed
+    // for component selectors at runtime.
+    optimizeDeps: {
+      rolldownOptions: {
+        plugins: [
+          {
+            name: 'emotion-ui2-styled-prebundle',
+            async transform(code: string, id: string) {
+              if (!emotionUi2StyledRegex.test(id)) return null
+              return transformEmotionStyled(code, id)
+            }
+          }
+        ]
+      }
+    },
     build: {
       target: 'esnext',
       sourcemap: 'hidden',

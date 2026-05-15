@@ -6,24 +6,30 @@ import { Box, Dialog, Typography, dclColors, styled } from 'decentraland-ui2'
 
 const MOBILE_NAVBAR_OFFSET = 64
 
-const StyledDialog = styled(Dialog)(({ theme }) => ({
+const StyledDialog = styled(Dialog, {
+  shouldForwardProp: prop => prop !== '$wide'
+})<{ $wide?: boolean }>(({ theme, $wide }) => ({
   /* eslint-disable @typescript-eslint/naming-convention */
   '& .MuiBackdrop-root': {
     backgroundColor: 'rgba(0, 0, 0, 0.8)'
   },
   '& .MuiDialog-paper': {
     borderRadius: theme.spacing(2),
-    maxWidth: 880,
+    maxWidth: $wide ? 1650 : 880,
     width: '100%',
-    maxHeight: '80vh',
+    maxHeight: $wide ? 'min(930px, 90vh)' : '80vh',
     margin: 0,
     overflowY: 'auto',
     overflowX: 'hidden',
-    backgroundColor: 'transparent',
+    // The profile-view swap uses the brand radial gradient defined in ui2 so
+    // the background matches the standalone /profile route. Event mode keeps
+    // its transparent Paper since the Hero image fills the top.
+    background: $wide ? 'radial-gradient(123.58% 82% at 9.01% 25.79%, #7434B1 0%, #481C6C 37.11%, #2B1040 100%)' : 'transparent',
     boxShadow: '0px 4px 25px 0px #FFFFFF40',
     display: 'flex',
     flexDirection: 'column',
-    scrollbarWidth: 'none'
+    scrollbarWidth: 'none',
+    transition: 'max-width 280ms cubic-bezier(0.4, 0, 0.2, 1), max-height 280ms cubic-bezier(0.4, 0, 0.2, 1), background 280ms ease'
   },
   '& .MuiDialog-paper::-webkit-scrollbar': {
     display: 'none'
@@ -153,6 +159,30 @@ const CreatorRow = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(1)
 }))
+
+/* eslint-disable @typescript-eslint/naming-convention */
+const CreatorButton = styled('button')(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  padding: 0,
+  margin: 0,
+  background: 'transparent',
+  border: 'none',
+  color: 'inherit',
+  cursor: 'pointer',
+  font: 'inherit',
+  borderRadius: theme.spacing(1),
+  transition: 'opacity 150ms ease',
+  '&:hover': {
+    opacity: 0.85
+  },
+  '&:focus-visible': {
+    outline: `2px solid ${dclColors.base.primary}`,
+    outlineOffset: 2
+  }
+}))
+/* eslint-enable @typescript-eslint/naming-convention */
 
 const AvatarImage = styled('img', { shouldForwardProp: prop => prop !== 'fallbackColor' })<{ fallbackColor: string }>(
   ({ theme, fallbackColor }) => ({
@@ -356,6 +386,7 @@ export {
   ContentSection,
   CopyButton,
   CopyIconStyled,
+  CreatorButton,
   CreatorName,
   CreatorNameHighlight,
   CreatorRow,

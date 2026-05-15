@@ -31,10 +31,20 @@ function setEntry(key: string, next: Entry) {
   notify(key)
 }
 
-async function fetchProfile(address: string): Promise<Profile | null> {
+// Cache key encodes the peer URL so an `?env=prd` switch on the same address
+// doesn't return the previously-cached zone payload (and vice versa). The
+// public `useGetProfileQuery(address)` API stays unchanged; the env scope is
+// resolved internally each time a new subscriber attaches.
+function buildCacheKey(address: string): string {
+  const peerUrl = getEnv('PEER_URL') ?? ''
+  return `${peerUrl}|${address.toLowerCase()}`
+}
+
+async function fetchProfile(cacheKey: string): Promise<Profile | null> {
   try {
-    const peerUrl = getEnv('PEER_URL')
-    const response = await fetch(`${peerUrl}/lambdas/profiles/${address.toLowerCase()}`)
+    const [peerUrl, address] = cacheKey.split('|', 2)
+    if (!peerUrl || !address) return null
+    const response = await fetch(`${peerUrl}/lambdas/profiles/${address}`)
     const data = await response.json()
     return data ?? null
   } catch {
@@ -85,7 +95,7 @@ function getSnapshotFor(key: string): Snapshot {
 type QueryOptions = { skip?: boolean }
 
 function useGetProfileQuery(address: string | undefined, options: QueryOptions = {}): Snapshot {
-  const key = options.skip || !address ? '' : address.toLowerCase()
+  const key = options.skip || !address ? '' : buildCacheKey(address)
 
   const subscribe = useCallback(
     (listener: () => void) => {
@@ -117,9 +127,9 @@ function useBatchProfileField<T>(
 ): Map<string, T | undefined> {
   const keysSignature = useMemo(
     () =>
-      Array.from(new Set(addresses.map(address => address.toLowerCase())))
+      Array.from(new Set(addresses.map(address => buildCacheKey(address))))
         .sort()
-        .join('|'),
+        .join('\n'),
     [addresses]
   )
   const [values, setValues] = useState<Map<string, T | undefined>>(() => new Map())
@@ -127,7 +137,7 @@ function useBatchProfileField<T>(
   extractRef.current = extract
 
   useEffect(() => {
-    const keys = keysSignature ? keysSignature.split('|') : []
+    const keys = keysSignature ? keysSignature.split('\n') : []
     if (keys.length === 0) {
       setValues(prev => (prev.size === 0 ? prev : new Map()))
       return
@@ -135,8 +145,11 @@ function useBatchProfileField<T>(
     const update = () => {
       setValues(prev => {
         const next = new Map<string, T | undefined>()
-        for (const key of keys) next.set(key, extractRef.current(getSnapshotFor(key).data))
-        if (next.size === prev.size && keys.every(key => next.get(key) === prev.get(key))) return prev
+        for (const key of keys) {
+          const address = key.split('|', 2)[1] ?? key
+          next.set(address, extractRef.current(getSnapshotFor(key).data))
+        }
+        if (next.size === prev.size && Array.from(next.keys()).every(addr => next.get(addr) === prev.get(addr))) return prev
         return next
       })
     }
