@@ -1,4 +1,5 @@
 import { getEnv } from '../config/env'
+import { markSignInPending } from './activeIdentity'
 
 /**
  * Builds a same-origin redirect path for after authentication, preserving query params.
@@ -54,6 +55,10 @@ function resolveAuthUrl(): string {
 function redirectToAuth(path: string, queryParams?: Record<string, string>): void {
   const redirectTo = buildAuthRedirectUrl(path, queryParams)
   const authUrl = resolveAuthUrl()
+
+  // Flag the round-trip so the identity the auth dapp writes during this
+  // redirect becomes authoritative on return, even if a stale pointer exists.
+  markSignInPending()
 
   window.location.replace(`${authUrl}/login?redirectTo=${encodeURIComponent(redirectTo)}`)
 }
