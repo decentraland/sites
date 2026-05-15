@@ -25,7 +25,7 @@ const MainPostCard = (props: MainPostCardProps) => {
 
   if (loading) {
     return (
-      <CardContainer>
+      <CardContainer data-testid="main-post-card-skeleton">
         <LoadingImage variant="rectangular" />
         <CardInfo>
           <LoadingHeader>
@@ -48,7 +48,7 @@ const MainPostCard = (props: MainPostCardProps) => {
   if (!post) return null
 
   return (
-    <CardContainer>
+    <CardContainer data-testid="main-post-card">
       <CardImageLink to={post.url}>
         <CardImage src={post.image.url} alt={post.title} width={697} height={349} fetchPriority="high" decoding="async" />
       </CardImageLink>

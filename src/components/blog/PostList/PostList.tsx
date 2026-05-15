@@ -20,7 +20,7 @@ const PostList = memo((props: PostListProps) => {
     const count = hasMainPost ? 7 : 6
 
     return (
-      <PostListWrapper hasMainPost={hasMainPost}>
+      <PostListWrapper hasMainPost={hasMainPost} data-testid="post-list-skeleton">
         {hasMainPost && <MainPostCard loading />}
         {Array.from(Array(count), (_, index) => {
           if (hasMainPost && index === 0) {
@@ -40,7 +40,7 @@ const PostList = memo((props: PostListProps) => {
   const firstRealPost = posts.find(p => !isPlaceholder(p)) as BlogPost | undefined
 
   return (
-    <PostListWrapper hasMainPost={hasMainPost}>
+    <PostListWrapper hasMainPost={hasMainPost} data-testid="post-list">
       {hasMainPost && isBigScreen && firstRealPost && <MainPostCard post={firstRealPost} />}
       {posts.map(post => {
         // Skip the first real post if we're showing it as MainPostCard

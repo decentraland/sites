@@ -121,7 +121,7 @@ export const PostPage = () => {
   if (error || !displayPost) {
     return (
       <BlogLayout showBlogNavigation activeCategory={categorySlug}>
-        <CenteredBox>
+        <CenteredBox data-testid="blog-error">
           <Typography color="error">{t('error.load_post')}</Typography>
         </CenteredBox>
       </BlogLayout>
