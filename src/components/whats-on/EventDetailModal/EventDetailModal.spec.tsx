@@ -38,6 +38,20 @@ jest.mock('../../profile/ProfileModal', () => ({
   ModalProfileNavigationProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>
 }))
 
+jest.mock('../../profile/PhotoModal/PhotoSurface', () => ({
+  PhotoSurface: ({ imageId }: { imageId: string }) => <div data-testid="photo-surface" data-image-id={imageId} />
+}))
+
+jest.mock('../../profile/PlaceDetailModal/PlaceDetailSurface', () => ({
+  PlaceDetailSurface: ({ place }: { place: { id: string } }) => <div data-testid="place-detail-surface" data-place-id={place.id} />
+}))
+
+jest.mock('../../profile/CommunityDetailModal', () => ({
+  CommunityDetailSurface: ({ communityId }: { communityId: string }) => (
+    <div data-testid="community-detail-surface" data-community-id={communityId} />
+  )
+}))
+
 describe('EventDetailModal', () => {
   let mockOnClose: jest.Mock
 
