@@ -32,26 +32,28 @@ const SectionHeader = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(1.5)
 }))
 
-const SectionTitle = styled(Typography)(({ theme }) => ({
+// Figma I322:49174;288:27828 / 288:27824 — section titles (ABOUT, BADGES, EQUIPPED…): Inter SemiBold 16, color #fcfcfc, uppercase, line normal
+const SectionTitle = styled(Typography)({
   fontFamily: '"Inter", sans-serif',
-  color: theme.palette.text.secondary,
+  color: '#FCFCFC',
   fontWeight: 600,
-  fontSize: 14,
-  lineHeight: 1.5,
-  letterSpacing: 1.5,
+  fontSize: 16,
+  lineHeight: 'normal',
   textTransform: 'uppercase'
-}))
+})
 
-const BadgesRow = styled(Box)(({ theme }) => ({
+// Figma I322:49174;288:27826 — badges grid: flex row, gap 30
+const BadgesRow = styled(Box)({
   display: 'flex',
   flexWrap: 'wrap',
-  gap: theme.spacing(2),
+  gap: 30,
   alignItems: 'center'
-}))
+})
 
+// Figma `Badges` component — 86×86 slot
 const BadgeSlot = styled(Box)({
-  width: 64,
-  height: 64,
+  width: 86,
+  height: 86,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -80,15 +82,16 @@ const BadgeFallback = styled(Box)(({ theme }) => ({
   fontSize: 14
 }))
 
-const BioText = styled(Typography)(({ theme }) => ({
+// Figma I322:49174;288:27829 — bio paragraph: Inter Regular 16 #fcfcfc, line normal
+const BioText = styled(Typography)({
   fontFamily: '"Inter", sans-serif',
-  color: theme.palette.text.primary,
+  color: '#FCFCFC',
   fontWeight: 400,
   fontSize: 16,
-  lineHeight: 1.6,
+  lineHeight: 'normal',
   whiteSpace: 'pre-wrap',
   wordBreak: 'break-word'
-}))
+})
 
 const EmptyBio = styled(Typography)(({ theme }) => ({
   fontFamily: '"Inter", sans-serif',
@@ -99,45 +102,53 @@ const EmptyBio = styled(Typography)(({ theme }) => ({
   fontStyle: 'italic'
 }))
 
+// Figma I322:49174;288:27830 — AdditionalInfo: flex-wrap, gap 16, each cell 200×50 column
 const InfoGrid = styled(Box)(({ theme }) => ({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))',
-  gap: theme.spacing(2.5),
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: 16,
+  alignItems: 'flex-start',
   marginTop: theme.spacing(2)
 }))
 
-const InfoItem = styled(Box)(({ theme }) => ({
+// Figma I322:49174;288:27831 — AdditionalAttribute cell: 200 wide, gap 4, column
+const InfoItem = styled(Box)({
+  width: 200,
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(0.25)
-}))
+  gap: 4,
+  justifyContent: 'center'
+})
 
-const InfoLabel = styled(Typography)(({ theme }) => ({
+// Figma I322:49174;288:27834 — info label: Inter SemiBold 14, #cfcdd4, uppercase, with 20×20 icon
+const InfoLabel = styled(Typography)({
   fontFamily: '"Inter", sans-serif',
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(0.5),
-  color: theme.palette.text.secondary,
-  fontWeight: 400,
-  fontSize: 12,
-  lineHeight: 1.5,
-  textTransform: 'uppercase',
-  letterSpacing: 1
-}))
+  gap: 8,
+  color: '#CFCDD4',
+  fontWeight: 600,
+  fontSize: 14,
+  lineHeight: 'normal',
+  textTransform: 'uppercase'
+})
 
-const InfoValue = styled(Typography)(({ theme }) => ({
+// Figma I322:49174;288:27835 — info value: Inter Regular 16, #fcfcfc, line 1.5
+const InfoValue = styled(Typography)({
   fontFamily: '"Inter", sans-serif',
-  color: theme.palette.text.primary,
-  fontWeight: 500,
+  color: '#FCFCFC',
+  fontWeight: 400,
   fontSize: 16,
-  lineHeight: 1.5
-}))
+  lineHeight: 1.5,
+  wordBreak: 'break-word'
+})
 
-const LinksRow = styled(Box)(({ theme }) => ({
+// Figma I322:49174;288:27884 — pill row, gap 14
+const LinksRow = styled(Box)({
   display: 'flex',
   flexWrap: 'wrap',
-  gap: theme.spacing(1)
-}))
+  gap: 14
+})
 
 // `#57C2FF` is a Figma-only blue — not present in `dclColors` (closest match
 // is `rarity.epic: #438FFF`, intentionally different). Kept hardcoded with
@@ -162,10 +173,13 @@ const LinkPill = styled('a')({
   }
 })
 
+// Figma `SocialMediaIcns` — 22×22 cyan icon
 const LinkPillIcon = styled('span')({
   display: 'inline-flex',
   alignItems: 'center',
-  color: '#57C2FF'
+  color: '#57C2FF',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& .MuiSvgIcon-root': { fontSize: 22 }
 })
 
 const EquippedGrid = styled(Box)(({ theme }) => ({
@@ -174,13 +188,16 @@ const EquippedGrid = styled(Box)(({ theme }) => ({
   // 3/2 a medida que la pantalla se achica. Mantiene los CatalogCards
   // siempre con un piso de 250px sin necesidad de breakpoints manuales.
   gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-  gap: theme.spacing(2),
+  // Figma I322:49174;281:26202 — row-gap 28, column-gap 16
+  rowGap: 28,
+  columnGap: 16,
   alignItems: 'stretch',
   // Mobile spec keeps two cards per row even when the viewport is too narrow for the
   // 250px floor — the cards shrink instead of collapsing to a single column.
   [theme.breakpoints.down('md')]: {
     gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: theme.spacing(1.5)
+    rowGap: 16,
+    columnGap: 12
   },
   // CatalogCard de ui2 trae ancho fijo (theme.spacing(36) ≈ 288px) y crece en
   // hover. Forzamos width: 100% al ancho del grid cell y bloqueamos el growth

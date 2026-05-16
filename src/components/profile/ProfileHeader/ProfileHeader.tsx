@@ -47,6 +47,7 @@ import {
   CopyButton,
   CopyButtonIcon,
   Discriminator,
+  FriendCtaButton,
   HeaderRoot,
   IdentityBlock,
   MobileMenuIconButton,
@@ -254,7 +255,7 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu }: P
                 </MutualText>
               </MutualFriendsRow>
             ) : null}
-            <Button
+            <FriendCtaButton
               variant="contained"
               color="primary"
               size={isMobile ? 'small' : 'medium'}
@@ -263,7 +264,7 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu }: P
               disabled={isOwnProfile || isLoadingFriendship || isUpdatingFriendship || friendshipStatus === 'blocked'}
             >
               {t(friendButton.labelKey)}
-            </Button>
+            </FriendCtaButton>
             <MoreActionsButton
               aria-label={t('profile.header.more_actions')}
               onClick={event => setBlockMenuAnchor(event.currentTarget)}

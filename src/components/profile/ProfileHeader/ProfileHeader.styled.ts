@@ -1,4 +1,4 @@
-import { Box, IconButton, Typography, styled } from 'decentraland-ui2'
+import { Box, Button, IconButton, Typography, styled } from 'decentraland-ui2'
 
 const HeaderRoot = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -39,13 +39,14 @@ const NameRow = styled(Box)(({ theme }) => ({
   gap: theme.spacing(0.5)
 }))
 
+// Figma 248:57059 — name typography: Inter Medium 500, 24px, line-height 1.334
 const NameText = styled(Typography, {
   shouldForwardProp: prop => prop !== '$nameColor'
 })<{ $nameColor: string }>(({ $nameColor, theme }) => ({
   fontFamily: '"Inter", sans-serif',
-  fontWeight: 600,
-  fontSize: 28,
-  lineHeight: 1.21,
+  fontWeight: 500,
+  fontSize: 24,
+  lineHeight: 1.334,
   color: $nameColor,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
@@ -58,9 +59,9 @@ const NameText = styled(Typography, {
 
 const Discriminator = styled('span')(({ theme }) => ({
   fontFamily: '"Inter", sans-serif',
-  fontWeight: 600,
-  fontSize: 28,
-  lineHeight: 1.21,
+  fontWeight: 500,
+  fontSize: 24,
+  lineHeight: 1.334,
   color: theme.palette.text.secondary,
   [theme.breakpoints.down('md')]: {
     fontSize: 18
@@ -97,10 +98,11 @@ const AddressRow = styled(Box)(({ theme }) => ({
   color: theme.palette.text.secondary
 }))
 
+// Figma 248:57090 — address: Inter Regular 16, line-height 1.75
 const AddressText = styled(Typography)(({ theme }) => ({
   fontFamily: '"Inter", sans-serif',
   fontWeight: 400,
-  fontSize: 14,
+  fontSize: 16,
   lineHeight: 1.75,
   color: theme.palette.text.primary
 }))
@@ -151,11 +153,12 @@ const MutualAvatarSlot = styled('span', { shouldForwardProp: prop => prop !== '$
 }))
 
 /* eslint-disable @typescript-eslint/naming-convention */
+// Figma 248:57036 — mutual: Inter Regular 16, count uses SemiBold 600, line-height 1
 const MutualText = styled(Typography)(({ theme }) => ({
   fontFamily: '"Inter", sans-serif',
   fontWeight: 400,
-  fontSize: 14,
-  lineHeight: 1.5,
+  fontSize: 16,
+  lineHeight: 1,
   color: theme.palette.text.primary,
   '& strong': { fontWeight: 600 }
 }))
@@ -200,14 +203,33 @@ const WalletIcon = styled(Box)({
 
 const CopyButtonIcon = styled(Box)({
   display: 'inline-flex',
+  // Figma 254:59241 — copy icon glyph 16×16
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .MuiSvgIcon-root': {
-    fontSize: 14
+    fontSize: 16
   }
 })
 
 const MoreActionsButton = styled(IconButton)(({ theme }) => ({
   color: theme.palette.common.white
+}))
+
+// Figma FriendCta 248:57656 — 180×40, padding 9/35, radius 10, bg #ff2d55, label Inter SemiBold 14 / tracking 0.4 / line 24 / uppercase
+const FriendCtaButton = styled(Button)(({ theme }) => ({
+  width: 180,
+  height: 40,
+  padding: '9px 35px',
+  borderRadius: 10,
+  fontFamily: '"Inter", sans-serif',
+  fontWeight: 600,
+  fontSize: 14,
+  letterSpacing: '0.4px',
+  lineHeight: '24px',
+  textTransform: 'uppercase',
+  [theme.breakpoints.down('md')]: {
+    width: 'auto',
+    minWidth: 140
+  }
 }))
 
 const BlockMenuItemIcon = styled(Box)(({ theme }) => ({
@@ -226,6 +248,7 @@ export {
   CopyButtonIcon,
   Discriminator,
   Divider,
+  FriendCtaButton,
   HeaderRoot,
   IdentityBlock,
   MobileMenuIconButton,
