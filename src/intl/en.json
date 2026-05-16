@@ -1631,7 +1631,8 @@
       "empty_title": "No places yet",
       "empty_owner": "Places you own will appear here.",
       "empty_member": "This member has not registered any places yet.",
-      "count": "{count} places"
+      "count": "{count} places",
+      "jump_in": "Jump in"
     },
     "photos": {
       "empty_title": "No photos yet",

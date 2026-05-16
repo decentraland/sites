@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import { Chip, CircularProgress, Typography } from 'decentraland-ui2'
+import { CommunityDetailModal, useOpenCommunityModal } from '../../../components/profile/CommunityDetailModal'
 import { useGetProfileCommunitiesQuery } from '../../../features/profile/profile.social.client'
 import type { ProfileCommunity } from '../../../features/profile/profile.social.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
@@ -29,6 +30,14 @@ function CommunitiesTab({ address, isOwnProfile }: CommunitiesTabProps) {
   // member profiles to avoid a guaranteed 401.
   const { data, isLoading } = useGetProfileCommunitiesQuery({ address }, { skip: !isOwnProfile })
   const communities = useMemo<ProfileCommunity[]>(() => data?.data?.results ?? [], [data])
+  const { openCommunityId, open: openCommunity, close: closeCommunity } = useOpenCommunityModal()
+  const handleOpenCommunity = useCallback(
+    (id: string) => (event: React.MouseEvent<HTMLAnchorElement>) => {
+      event.preventDefault()
+      openCommunity(id)
+    },
+    [openCommunity]
+  )
 
   if (!isOwnProfile) {
     return <EmptyBio sx={{ mt: 1 }}>{t('profile.communities.private')}</EmptyBio>
@@ -53,13 +62,13 @@ function CommunitiesTab({ address, isOwnProfile }: CommunitiesTabProps) {
       </Typography>
       <CommunityRow>
         {communities.map(community => (
-          <CommunityCard key={community.id} href={`/social/communities/${community.id}`}>
+          <CommunityCard key={community.id} href={`/social/communities/${community.id}`} onClick={handleOpenCommunity(community.id)}>
             <CommunityThumb>
               {community.thumbnail ? (
                 <CommunityThumbImage src={community.thumbnail} alt={community.name} loading="lazy" />
               ) : (
                 <CommunityFallback>
-                  <GroupsOutlinedIcon sx={{ fontSize: 28 }} />
+                  <GroupsOutlinedIcon />
                 </CommunityFallback>
               )}
             </CommunityThumb>
@@ -77,6 +86,7 @@ function CommunitiesTab({ address, isOwnProfile }: CommunitiesTabProps) {
           </CommunityCard>
         ))}
       </CommunityRow>
+      <CommunityDetailModal communityId={openCommunityId} onClose={closeCommunity} />
     </>
   )
 }

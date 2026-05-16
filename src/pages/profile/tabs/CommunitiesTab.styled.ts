@@ -47,7 +47,9 @@ const CommunityFallback = styled(Box)(({ theme }) => ({
   color: theme.palette.text.secondary,
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center'
+  justifyContent: 'center',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& .MuiSvgIcon-root': { fontSize: 28 }
 }))
 
 const CommunityCardBody = styled(Box)({

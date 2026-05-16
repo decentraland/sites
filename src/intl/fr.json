@@ -1151,7 +1151,8 @@
       "empty_title": "Pas encore de lieux",
       "empty_owner": "Vos lieux apparaîtront ici.",
       "empty_member": "Ce membre n'a enregistré aucun lieu.",
-      "count": "{count} lieux"
+      "count": "{count} lieux",
+      "jump_in": "Rejoindre"
     },
     "photos": {
       "empty_title": "Pas encore de photos",
