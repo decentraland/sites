@@ -1,11 +1,14 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
 import { CircularProgress, Typography } from 'decentraland-ui2'
+import { PlaceDetailModal, useOpenPlaceModal } from '../../../components/profile/PlaceDetailModal'
 import { useGetProfilePlacesQuery } from '../../../features/profile/profile.places.client'
 import type { ProfilePlace } from '../../../features/profile/profile.places.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
@@ -17,16 +20,21 @@ interface PlacesTabProps {
   isOwnProfile: boolean
 }
 
-function buildJumpHref(place: ProfilePlace): string | undefined {
-  const position = place.base_position ?? place.positions?.[0]
-  if (!position) return undefined
-  return `/jump/places?position=${encodeURIComponent(position)}`
-}
-
 function PlacesTab({ address, isOwnProfile }: PlacesTabProps) {
   const t = useFormatMessage()
   const { data, isLoading } = useGetProfilePlacesQuery({ address })
   const places = useMemo<ProfilePlace[]>(() => data?.data ?? [], [data])
+  // Place click opens a place-detail surface. Inside a profile/event modal context the
+  // hook delegates so the same dialog swaps content (no modal-on-modal); standalone it
+  // opens a local PlaceDetailModal below.
+  const { openPlace, open: openPlaceModal, close: closePlaceModal } = useOpenPlaceModal()
+  const handleOpen = useCallback(
+    (place: ProfilePlace) => (event: React.MouseEvent<HTMLAnchorElement>) => {
+      event.preventDefault()
+      openPlaceModal(place)
+    },
+    [openPlaceModal]
+  )
 
   if (isLoading) {
     return (
@@ -46,38 +54,41 @@ function PlacesTab({ address, isOwnProfile }: PlacesTabProps) {
         {t('profile.places.count', { count: places.length })}
       </Typography>
       <PlacesGrid>
-        {places.map(place => {
-          const href = buildJumpHref(place)
-          return (
-            <PlaceCard key={place.id} href={href ?? '#'}>
-              <PlaceImage style={place.image ? { backgroundImage: `url("${place.image}")` } : undefined} />
-              <PlaceBody>
-                <PlaceTitle>{place.title}</PlaceTitle>
-                <PlaceMeta>
-                  {place.base_position ? (
-                    <PlaceMetaItem>
-                      <PlaceOutlinedIcon sx={{ fontSize: 16 }} />
-                      {place.base_position}
-                    </PlaceMetaItem>
-                  ) : null}
-                  {typeof place.likes === 'number' ? (
-                    <PlaceMetaItem>
-                      <FavoriteBorderIcon sx={{ fontSize: 16 }} />
-                      {place.likes}
-                    </PlaceMetaItem>
-                  ) : null}
-                  {typeof place.user_count === 'number' && place.user_count > 0 ? (
-                    <PlaceMetaItem>
-                      <PersonOutlineIcon sx={{ fontSize: 16 }} />
-                      {place.user_count}
-                    </PlaceMetaItem>
-                  ) : null}
-                </PlaceMeta>
-              </PlaceBody>
-            </PlaceCard>
-          )
-        })}
+        {places.map(place => (
+          <PlaceCard key={place.id} href="#" onClick={handleOpen(place)}>
+            <PlaceImage style={place.image ? { backgroundImage: `url("${place.image}")` } : undefined} />
+            <PlaceBody>
+              <PlaceTitle>{place.title}</PlaceTitle>
+              <PlaceMeta>
+                {place.world && place.world_name ? (
+                  <PlaceMetaItem>
+                    <LanguageOutlinedIcon sx={{ fontSize: 16 }} />
+                    {place.world_name}
+                  </PlaceMetaItem>
+                ) : place.base_position ? (
+                  <PlaceMetaItem>
+                    <PlaceOutlinedIcon sx={{ fontSize: 16 }} />
+                    {place.base_position}
+                  </PlaceMetaItem>
+                ) : null}
+                {typeof place.likes === 'number' ? (
+                  <PlaceMetaItem>
+                    <FavoriteBorderIcon sx={{ fontSize: 16 }} />
+                    {place.likes}
+                  </PlaceMetaItem>
+                ) : null}
+                {typeof place.user_count === 'number' && place.user_count > 0 ? (
+                  <PlaceMetaItem>
+                    <PersonOutlineIcon sx={{ fontSize: 16 }} />
+                    {place.user_count}
+                  </PlaceMetaItem>
+                ) : null}
+              </PlaceMeta>
+            </PlaceBody>
+          </PlaceCard>
+        ))}
       </PlacesGrid>
+      <PlaceDetailModal place={openPlace} onClose={closePlaceModal} />
     </>
   )
 }
