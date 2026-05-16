@@ -150,7 +150,7 @@ const ProfileMobileMenu = memo(
           </DrawerIconButton>
         </DrawerHeader>
         <UserBlock>
-          <ProfileAvatar address={address} size={56} />
+          <ProfileAvatar address={address} size={76} />
           <UserNameColumn>
             <UserName>{displayName}</UserName>
             <UserAddressRow>

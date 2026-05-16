@@ -46,10 +46,13 @@ const UserNameColumn = styled(Box)({
   flex: '1 1 auto'
 })
 
+// Figma 35:26031 — mobile drawer name: Inter SemiBold 24, line 1.6, #fcfcfc
 const UserName = styled(Typography)({
   fontFamily: '"Inter", sans-serif',
   fontWeight: 600,
-  fontSize: 18,
+  fontSize: 24,
+  lineHeight: 1.6,
+  color: '#FCFCFC',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis'
@@ -58,37 +61,58 @@ const UserName = styled(Typography)({
 const UserAddressRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(0.5),
-  color: 'rgba(255, 255, 255, 0.7)'
+  gap: theme.spacing(1),
+  color: '#FCFCFC'
 }))
 
+// Figma 35:26034 — mobile drawer addr: Inter Regular 16, line 1.75, #fcfcfc
 const UserAddressText = styled(Typography)({
   fontFamily: '"Inter", sans-serif',
   fontWeight: 400,
-  fontSize: 12
+  fontSize: 16,
+  lineHeight: 1.75,
+  color: '#FCFCFC'
 })
 
+// Figma 35:26035 — copy icon 16×16
 const AddressCopyButton = styled(IconButton)({
-  width: 20,
-  height: 20,
-  color: 'rgba(255, 255, 255, 0.7)',
+  width: 16,
+  height: 16,
+  color: '#FCFCFC',
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .MuiSvgIcon-root': {
-    fontSize: 12
+    fontSize: 16
   }
 })
 
+// Figma 35:26092 — CTAs row: gap 12, full width
 const CtaRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
-  gap: theme.spacing(1),
+  gap: 12,
+  width: '100%',
   paddingTop: theme.spacing(1),
   paddingBottom: theme.spacing(1)
 }))
 
+// Figma 35:26072 — drawer pill CTA: h40, bg rgba(0,0,0,0.4), radius 12, px12, Inter Regular 16 line 1.75
 const DrawerCta = styled(Button)({
   flex: '1 1 0',
-  whiteSpace: 'nowrap'
+  height: 40,
+  padding: '0 12px',
+  borderRadius: 12,
+  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  color: '#FCFCFC',
+  fontFamily: '"Inter", sans-serif',
+  fontWeight: 400,
+  fontSize: 16,
+  lineHeight: 1.75,
+  textTransform: 'none',
+  whiteSpace: 'nowrap',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:hover': {
+    backgroundColor: 'rgba(0, 0, 0, 0.55)'
+  }
 })
 
 const MutualRow = styled(Box)(({ theme }) => ({
@@ -138,21 +162,25 @@ const TabList = styled(Box)(({ theme }) => ({
   flex: '1 1 auto'
 }))
 
-const TabItem = styled('button', { shouldForwardProp: prop => prop !== '$active' })<{ $active: boolean }>(({ theme, $active }) => ({
+// Figma I322:49249;34:25838;33:25239 — drawer tab item: h44, py8, gap8, radius 12
+// Label: Inter Regular 400, 16, line 1.5, #cfcdd4 (NOT uppercase, NOT semibold)
+const TabItem = styled('button', { shouldForwardProp: prop => prop !== '$active' })<{ $active: boolean }>(({ $active }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1.5),
+  gap: 8,
   width: '100%',
-  padding: theme.spacing(1.5, 2),
+  height: 44,
+  padding: '8px 0',
   border: 'none',
   background: $active ? 'rgba(255, 255, 255, 0.10)' : 'transparent',
-  color: theme.palette.text.primary,
+  color: '#CFCDD4',
   fontFamily: '"Inter", sans-serif',
-  fontWeight: 600,
+  fontWeight: 400,
   fontSize: 16,
-  textTransform: 'uppercase',
+  lineHeight: 1.5,
+  textTransform: 'none',
   textAlign: 'left',
-  borderRadius: 8,
+  borderRadius: 12,
   cursor: 'pointer',
   transition: 'background 0.2s ease',
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -182,28 +210,30 @@ const TabChevron = styled('span')({
   color: 'rgba(255, 255, 255, 0.5)'
 })
 
-const LogoutButton = styled('button')(({ theme }) => ({
+// Figma I322:49249;34:25851 — logout button: px16 py8, gap12, radius 12, Inter Regular 16 line 1.75 #cfcdd4
+const LogoutButton = styled('button')({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1.5),
+  gap: 12,
   width: '100%',
-  padding: theme.spacing(1.5, 2),
+  padding: '8px 16px',
   border: 'none',
   background: 'transparent',
-  color: theme.palette.text.primary,
+  color: '#CFCDD4',
   fontFamily: '"Inter", sans-serif',
-  fontWeight: 600,
-  fontSize: 14,
-  textTransform: 'uppercase',
+  fontWeight: 400,
+  fontSize: 16,
+  lineHeight: 1.75,
+  textTransform: 'none',
   textAlign: 'left',
-  borderRadius: 8,
+  borderRadius: 12,
   cursor: 'pointer',
   marginTop: 'auto',
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:hover': {
     background: 'rgba(255, 255, 255, 0.06)'
   }
-}))
+})
 
 export {
   AddressCopyButton,
