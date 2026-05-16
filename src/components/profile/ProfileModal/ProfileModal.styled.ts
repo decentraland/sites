@@ -21,6 +21,15 @@ const ProfileDialog = styled(Dialog)(({ theme }) => ({
     margin: 0,
     overflowY: 'auto',
     overflowX: 'hidden',
+    // Embedded ProfileSurface skips ContentArea, so the Paper itself must reproduce its
+    // gutters (theme.spacing(2) mobile, theme.spacing(4) ≥ md) so the back chevron + avatar
+    // don't hug the dialog edge.
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    [theme.breakpoints.up('md')]: {
+      paddingLeft: theme.spacing(4),
+      paddingRight: theme.spacing(4)
+    },
     background: 'radial-gradient(123.58% 82% at 9.01% 25.79%, #7434B1 0%, #481C6C 37.11%, #2B1040 100%)',
     boxShadow: '0px 4px 25px 0px #FFFFFF40',
     display: 'flex',
