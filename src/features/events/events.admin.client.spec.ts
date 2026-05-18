@@ -225,5 +225,22 @@ describe('when calling admin profile settings endpoints', () => {
       const result = await store.dispatch(adminClient.endpoints.approveEvent.initiate({ eventId: 'abc', identity }))
       expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
     })
+
+    it.each([
+      ['getMyProfileSettings', () => adminClient.endpoints.getMyProfileSettings.initiate({ identity })],
+      ['listAdmins', () => adminClient.endpoints.listAdmins.initiate({ identity })],
+      [
+        'updateAdminPermissions',
+        () => adminClient.endpoints.updateAdminPermissions.initiate({ address: '0xabc', permissions: [], identity })
+      ],
+      ['getAdminEvents', () => adminClient.endpoints.getAdminEvents.initiate({ identity })],
+      ['approveEvent', () => adminClient.endpoints.approveEvent.initiate({ eventId: 'abc', identity })],
+      ['rejectEvent', () => adminClient.endpoints.rejectEvent.initiate({ eventId: 'abc', identity })]
+    ] as const)('should surface "Unknown error" for %s on non-Error rejection', async (_name, dispatch) => {
+      mockFetchWithIdentity.mockRejectedValueOnce('non-error-rejection')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result: any = await store.dispatch(dispatch() as never)
+      expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR', error: 'Unknown error' }))
+    })
   })
 })
