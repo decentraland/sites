@@ -123,11 +123,12 @@ function LocaleLoader({ translations, setTranslations, children }: LocaleLoaderP
   useEffect(() => {
     if (!locale || locale === 'en' || locale in translations) return
     if (!isSupportedLocale(locale)) return
+    const nonEnglish = locale as Exclude<SupportedLocale, 'en'>
     let cancelled = false
-    localeLoaders[locale]()
+    localeLoaders[nonEnglish]()
       .then(mod => {
         if (cancelled) return
-        setTranslations(prev => (prev ? { ...prev, [locale]: mod.default } : { [locale]: mod.default }))
+        setTranslations(prev => (prev ? { ...prev, [nonEnglish]: mod.default } : { [nonEnglish]: mod.default }))
       })
       .catch(() => undefined)
     return () => {
