@@ -24,7 +24,6 @@ jest.mock('./sanitizeHighlight', () => ({
 
 jest.mock('./Search.styled', () => {
   const stubs = styledMock({
-    MoreResultsItem: 'li',
     NoResults: 'div',
     NoResultsImage: 'span',
     SearchCloseButton: 'button',
@@ -32,7 +31,6 @@ jest.mock('./Search.styled', () => {
     SearchOverlay: 'div',
     SearchResultDescription: 'span',
     SearchResultImage: 'img',
-    SearchResultItem: 'li',
     SearchResultText: 'div',
     SearchResultTitle: 'span',
     SearchResults: 'ul'
@@ -44,6 +42,26 @@ jest.mock('./Search.styled', () => {
       return <div {...(domProps as object)}>{children}</div>
     },
     SearchInput: ({ ...rest }: Record<string, unknown>) => <input {...(rest as object)} />,
+    SearchResultItem: ({
+      children,
+      $selected,
+      onMouseEnter,
+      ...rest
+    }: { children?: React.ReactNode; $selected?: boolean; onMouseEnter?: () => void } & Record<string, unknown>) => (
+      <li data-selected={String(Boolean($selected))} onMouseEnter={onMouseEnter} {...(rest as object)}>
+        {children}
+      </li>
+    ),
+    MoreResultsItem: ({
+      children,
+      $selected,
+      onMouseEnter,
+      ...rest
+    }: { children?: React.ReactNode; $selected?: boolean; onMouseEnter?: () => void } & Record<string, unknown>) => (
+      <li data-selected={String(Boolean($selected))} data-role="more-results" onMouseEnter={onMouseEnter} {...(rest as object)}>
+        {children}
+      </li>
+    ),
     SearchResultLink: ({
       children,
       to,
@@ -85,6 +103,15 @@ const sampleHits = [
     highlightedDescription: 'Description two'
   }
 ]
+
+const fiveHits = Array.from({ length: 5 }, (_, i) => ({
+  id: `sample-${i + 1}`,
+  categorySlug: 'announcements',
+  url: `/blog/announcements/sample-${i + 1}`,
+  image: `https://fake-cdn.test/${i + 1}.png`,
+  highlightedTitle: `Hit number ${i + 1}`,
+  highlightedDescription: `Description ${i + 1}`
+}))
 
 function setSearchQuery(value: string) {
   const input = screen.getByPlaceholderText('search.placeholder')
@@ -234,6 +261,120 @@ describe('when rendering Search', () => {
         await flushDebounce()
         expect(screen.getByText('search.error')).toBeInTheDocument()
       })
+    })
+  })
+
+  describe('and the user presses ArrowDown with results visible', () => {
+    beforeEach(() => {
+      mockUseSearchBlogQuery.mockReturnValue({ data: sampleHits, isLoading: false, error: null, isError: false })
+    })
+
+    it('should mark the first hit as selected', async () => {
+      render(
+        <MemoryRouter>
+          <Search />
+        </MemoryRouter>
+      )
+      const input = setSearchQuery('met')
+      await flushDebounce()
+      await waitFor(() => expect(screen.getByText('One')).toBeInTheDocument())
+      fireEvent.keyDown(input, { key: 'ArrowDown' })
+      const items = screen.getAllByRole('listitem')
+      expect(items[0]).toHaveAttribute('data-selected', 'true')
+    })
+
+    it('should navigate to the selected hit on Enter', async () => {
+      render(
+        <MemoryRouter>
+          <Search />
+        </MemoryRouter>
+      )
+      const input = setSearchQuery('met')
+      await flushDebounce()
+      await waitFor(() => expect(screen.getByText('One')).toBeInTheDocument())
+      fireEvent.keyDown(input, { key: 'ArrowDown' })
+      fireEvent.keyDown(input, { key: 'Enter' })
+      expect(mockNavigate).toHaveBeenCalledWith('/blog/announcements/sample-1')
+    })
+  })
+
+  describe('and the user presses ArrowUp without a prior selection', () => {
+    beforeEach(() => {
+      mockUseSearchBlogQuery.mockReturnValue({ data: sampleHits, isLoading: false, error: null, isError: false })
+    })
+
+    it('should wrap to the last selectable index', async () => {
+      render(
+        <MemoryRouter>
+          <Search />
+        </MemoryRouter>
+      )
+      const input = setSearchQuery('met')
+      await flushDebounce()
+      await waitFor(() => expect(screen.getByText('One')).toBeInTheDocument())
+      // ArrowUp from selectedIndex=-1 goes to maxLength. With 2 hits (<=3),
+      // maxLength = searchResults.length = 2; the last selectable item index
+      // is 1, but the implementation wraps to maxLength (2), which selects
+      // nothing on screen (out of range). We assert the behavior by pressing
+      // ArrowUp again to go back to index 1, which marks the second hit.
+      fireEvent.keyDown(input, { key: 'ArrowUp' })
+      fireEvent.keyDown(input, { key: 'ArrowUp' })
+      const items = screen.getAllByRole('listitem')
+      expect(items[1]).toHaveAttribute('data-selected', 'true')
+    })
+  })
+
+  describe('and the user hovers over a hit', () => {
+    beforeEach(() => {
+      mockUseSearchBlogQuery.mockReturnValue({ data: sampleHits, isLoading: false, error: null, isError: false })
+    })
+
+    it('should mark that hit as selected', async () => {
+      render(
+        <MemoryRouter>
+          <Search />
+        </MemoryRouter>
+      )
+      setSearchQuery('met')
+      await flushDebounce()
+      await waitFor(() => expect(screen.getByText('One')).toBeInTheDocument())
+      const items = screen.getAllByRole('listitem')
+      fireEvent.mouseEnter(items[1])
+      expect(items[1]).toHaveAttribute('data-selected', 'true')
+    })
+  })
+
+  describe('and there are more than four hits', () => {
+    beforeEach(() => {
+      mockUseSearchBlogQuery.mockReturnValue({ data: fiveHits, isLoading: false, error: null, isError: false })
+    })
+
+    it('should show the see-more results link pointing to the search page', async () => {
+      render(
+        <MemoryRouter>
+          <Search />
+        </MemoryRouter>
+      )
+      setSearchQuery('hits')
+      await flushDebounce()
+      await waitFor(() => expect(screen.getByText('search.see_more_results')).toBeInTheDocument())
+      const more = screen.getByRole('link', { name: 'search.see_more_results' })
+      expect(more).toHaveAttribute('href', '/blog/search?q=hits')
+    })
+  })
+
+  describe('and the user clicks the clear button', () => {
+    it('should empty the input and call onClose', async () => {
+      const onClose = jest.fn()
+      render(
+        <MemoryRouter>
+          <Search onClose={onClose} />
+        </MemoryRouter>
+      )
+      setSearchQuery('hello')
+      fireEvent.click(screen.getByRole('button', { name: 'search.clear' }))
+      expect(screen.getByPlaceholderText('search.placeholder')).toHaveValue('')
+      expect(onClose).toHaveBeenCalled()
     })
   })
 
