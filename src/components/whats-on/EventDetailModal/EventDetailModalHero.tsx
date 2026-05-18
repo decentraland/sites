@@ -17,6 +17,7 @@ import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCanEditEvent } from '../../../hooks/useCanEditEvent'
 import { useCopyShareLink } from '../../../hooks/useCopyShareLink'
 import { useRemindMe } from '../../../hooks/useRemindMe'
+import { optimizedImageUrl } from '../../../utils/imageUrl'
 import { localizedWeekdayLong, normalizeDayIndices } from '../../../utils/recurrence'
 import { formatLocalDate, formatLocalTime } from '../../../utils/whatsOnTime'
 import { buildCalendarUrl, buildEventShareUrl, normalizeRecurrence } from '../../../utils/whatsOnUrl'
@@ -124,10 +125,14 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
 
   const scheduleSubtitle = useMemo(() => buildHeroSubtitle(data, t, locale), [data, t, locale])
 
+  // Hero renders at ~960 CSS px max-width; serve at 1600 to cover 2× DPR and
+  // let Vercel's image optimizer downscale + WebP encode the raw poster.
+  const optimizedHeroSrc = useMemo(() => optimizedImageUrl(data.image, { width: 1600 }), [data.image])
+
   return (
     <>
       <HeroSection>
-        {data.image && <HeroImage src={data.image} alt={data.name} />}
+        {data.image && <HeroImage src={optimizedHeroSrc} alt={data.name} />}
         <HeroOverlay />
         <CloseButton onClick={onClose} aria-label={t('event_detail.close')}>
           {isMobile ? <ArrowBackIosNewIcon sx={{ fontSize: 20, color: '#FCFCFC' }} /> : <CloseIconStyled />}

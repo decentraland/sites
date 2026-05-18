@@ -1,7 +1,8 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { BadgeGroup, JumpInIcon, LiveBadge, Typography, UserCountBadge } from 'decentraland-ui2'
 import type { LiveNowCard as LiveNowCardData } from '../../../features/events'
+import { optimizedImageUrl } from '../../../utils/imageUrl'
 import {
   AvatarFallback,
   AvatarImage,
@@ -30,6 +31,10 @@ interface LiveNowCardProps {
 
 const LiveNowCard = memo(({ card, creatorName, creatorFaceUrl, creatorBackgroundColor, eager = false, onClick }: LiveNowCardProps) => {
   const { t } = useTranslation()
+  // Card images render at 380×176 CSS pixels. Serving at 750 px covers 2× DPR
+  // and lets Vercel's image optimizer recompress the 1+ MB raw poster into
+  // ~80 KB WebP — the LCP bottleneck on slow mobile.
+  const optimizedSrc = useMemo(() => optimizedImageUrl(card.image, { width: 750 }), [card.image])
   const handleClick = useCallback(() => {
     onClick(card)
   }, [onClick, card])
@@ -45,7 +50,7 @@ const LiveNowCard = memo(({ card, creatorName, creatorFaceUrl, creatorBackground
         </BadgesOverlay>
         <MediaBox className="MuiCardMedia-root" role="img" aria-label={card.title}>
           <MediaImage
-            src={card.image}
+            src={optimizedSrc}
             alt=""
             width={500}
             height={329}
