@@ -10,7 +10,7 @@ jest.mock('react-router-dom', () => ({
   useSearchParams: () => mockUseSearchParams()
 }))
 
-jest.mock('../features/jump', () => {
+jest.mock('../features/places', () => {
   const ENS_REGEX = /^[a-zA-Z0-9.]+\.eth$/
   return {
     useGetJumpPlacesQuery: (...args: unknown[]) => mockUseGetJumpPlacesQuery(...args),

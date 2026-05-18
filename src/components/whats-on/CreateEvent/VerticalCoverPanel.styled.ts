@@ -17,7 +17,7 @@ const DropZone = styled(Box, {
   border: $hasImage ? 'none' : `2px dashed ${$hasError ? theme.palette.error.main : 'rgba(255, 255, 255, 0.5)'}`,
   borderRadius: 20,
   width: 301,
-  height: 522,
+  height: 762,
   background: $hasImage ? 'transparent' : 'rgba(255, 255, 255, 0.1)',
   display: 'flex',
   flexDirection: 'column',

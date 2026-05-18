@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { withMockFetch } from '../src/__test-utils__/withMockFetch'
 import handler from './seo'
 
 // Mock the dist/index.html the SEO worker reads at module load. Lets `npm test` run in CI
@@ -31,7 +32,11 @@ jest.mock('fs', () => {
   return {
     ...actual,
     readFileSync: jest.fn((p: unknown, opts?: unknown) => {
-      if (typeof p === 'string' && p.includes('dist/index.html')) return FIXTURE_INDEX_HTML
+      if (typeof p === 'string' && p.includes('dist/index.html')) {
+        const flag = (globalThis as Record<string, unknown>).__seoReadFileSyncShouldFail
+        if (flag === true) throw new Error('missing dist/index.html')
+        return FIXTURE_INDEX_HTML
+      }
       return actual.readFileSync(p, opts)
     })
   }
@@ -275,7 +280,7 @@ describe('seo handler', () => {
 
   it('rejects malformed world name and falls back to defaults', async () => {
     const { body } = await run({ path: '/whats-on', world: 'not<a>world' })
-    expect(body).toContain('<title>What&#x27;s On in Decentraland | Decentraland</title>')
+    expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
     expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on">/)
   })
 
@@ -293,13 +298,24 @@ describe('seo handler', () => {
 
   it('serves generic whats-on metadata when no params', async () => {
     const { body } = await run({ path: '/whats-on' })
-    expect(body).toContain('<title>What&#x27;s On in Decentraland | Decentraland</title>')
+    expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
     expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on">/)
+  })
+
+  it('keeps the apostrophe in the <title> element as a literal character, not an HTML entity, so a downstream re-encode cannot double-encode it', async () => {
+    const { body } = await run({ path: '/whats-on' })
+    const titleMatch = body.match(/<title>([^<]*)<\/title>/)
+    expect(titleMatch).not.toBeNull()
+    expect(titleMatch![1]).not.toMatch(/&#?x?\d*'?;/i)
+    expect(titleMatch![1]).toBe("What's On in Decentraland | Decentraland")
+    // Attribute-bound titles (twitter:title, og:title) still escape the apostrophe defensively
+    // because the value is wrapped in double-quoted attributes.
+    expect(body).toMatch(/<meta name="twitter:title" content="What&#x27;s On in Decentraland \| Decentraland">/)
   })
 
   it('rejects malformed event id and falls back to defaults', async () => {
     const { body } = await run({ path: '/whats-on', id: 'not<a>uuid' })
-    expect(body).toContain('<title>What&#x27;s On in Decentraland | Decentraland</title>')
+    expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
     // Canonical should NOT include the bad id
     expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on">/)
   })
@@ -319,7 +335,7 @@ describe('seo handler', () => {
   it('serves reel metadata for /reels/<imageId> with photographer attribution', async () => {
     const { body, headers } = await run({ path: '/reels/reel-with-photographer' })
     expect(headers['X-SEO-Function']).toBe('active')
-    expect(body).toContain('<title>Alice&#x27;s Decentraland snapshot | Decentraland</title>')
+    expect(body).toContain("<title>Alice's Decentraland snapshot | Decentraland</title>")
     expect(body).toMatch(/<meta property="og:description" content="Check out Alice&#x27;s photo taken in Genesis Plaza, Decentraland\./)
     expect(body).toMatch(
       /<meta property="og:image" content="https:\/\/camera-reel-storage\.decentraland\.org\/reels\/reel-with-photographer\.jpg">/
@@ -342,5 +358,605 @@ describe('seo handler', () => {
   it('falls back to defaults when the upstream reel API throws', async () => {
     const { body } = await run({ path: '/reels/reel-network-error' })
     expect(body).toContain('Decentraland Blog')
+  })
+
+  it('serves blog post metadata for /blog/<category>/<post>', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/posts?fields.slug=announcing-x')) {
+          return jsonResponse(true, {
+            items: [
+              {
+                fields: {
+                  title: 'Announcing X',
+                  description: 'Big news',
+                  image: { sys: { id: 'asset-1' } },
+                  author: { sys: { id: 'author-1' } },
+                  category: { sys: { id: 'category-1' } },
+                  publishedDate: '2026-01-01T00:00:00Z'
+                }
+              }
+            ]
+          } as unknown as MockBlogPostsResponse)
+        }
+        if (url.includes('/assets/asset-1')) {
+          return jsonResponse(true, { fields: { file: { url: '//cdn.test/poster.png' } } } as unknown as MockAssetResponse)
+        }
+        if (url.includes('/entries/author-1')) {
+          return jsonResponse(true, {
+            sys: { id: 'author-1', type: 'Entry' },
+            fields: { title: 'Jane Doe' }
+          } as unknown as MockReelResponse)
+        }
+        if (url.includes('/entries/category-1')) {
+          return jsonResponse(true, {
+            sys: { id: 'category-1', type: 'Entry' },
+            fields: { title: 'Announcements' }
+          } as unknown as MockReelResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog/announcements/announcing-x' })
+        expect(body).toContain('<title>Announcing X | Decentraland</title>')
+        expect(body).toMatch(/<meta property="og:image" content="https:\/\/cdn\.test\/poster\.png">/)
+        expect(body).toMatch(/<meta property="article:author" content="Jane Doe">/)
+        expect(body).toMatch(/<meta property="article:published_time" content="2026-01-01T00:00:00Z">/)
+        expect(body).toMatch(/<meta property="article:section" content="Announcements">/)
+        expect(body).toMatch(/<meta property="og:type" content="article">/)
+      }
+    )
+  })
+
+  it('falls back to defaults when a blog post entry has no fields', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/posts?fields.slug=missing')) return jsonResponse(true, { items: [] } as unknown as MockBlogPostsResponse)
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog/cat/missing' })
+        expect(body).toContain('Decentraland Blog')
+      }
+    )
+  })
+
+  it('serves category metadata for /blog/<category>', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/categories?fields.slug=announcements')) {
+          return jsonResponse(true, {
+            items: [{ fields: { title: 'Announcements', description: 'Big drops', image: { sys: { id: 'cat-img' } } } }]
+          } as unknown as MockBlogPostsResponse)
+        }
+        if (url.includes('/assets/cat-img')) {
+          return jsonResponse(true, { fields: { file: { url: 'https://cdn.test/cat.png' } } } as unknown as MockAssetResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog/announcements' })
+        expect(body).toContain('<title>Announcements | Decentraland</title>')
+      }
+    )
+  })
+
+  it('falls back when the category lookup has no entry', async () => {
+    await withMockFetch(
+      async () => jsonResponse(true, { items: [] } as unknown as MockBlogPostsResponse),
+      async () => {
+        const { body } = await run({ path: '/blog/unknown-category' })
+        expect(body).toContain('Decentraland Blog')
+      }
+    )
+  })
+
+  it('serves author metadata for /blog/author/<slug>', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/authors?fields.slug=jane')) {
+          return jsonResponse(true, {
+            items: [{ fields: { title: 'Jane Doe', description: 'Decentraland contributor', image: { sys: { id: 'author-img' } } } }]
+          } as unknown as MockBlogPostsResponse)
+        }
+        if (url.includes('/assets/author-img')) {
+          return jsonResponse(true, { fields: { file: { url: 'https://cdn.test/jane.png' } } } as unknown as MockAssetResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog/author/jane' })
+        expect(body).toContain('<title>Posts by Jane Doe | Decentraland</title>')
+      }
+    )
+  })
+
+  it('falls back to defaults when the author entry has no title', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/authors?fields.slug=anon')) {
+          return jsonResponse(true, { items: [{ fields: { description: 'no name' } }] } as unknown as MockBlogPostsResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog/author/anon' })
+        expect(body).toContain('Decentraland Blog | Updates')
+      }
+    )
+  })
+
+  it('handles /blog/search with a query string', async () => {
+    const { body } = await run({ path: '/blog/search', q: 'wearables' })
+    expect(body).toContain('<title>Search: wearables | Decentraland</title>')
+  })
+
+  it('handles /blog/search without a query string', async () => {
+    const { body } = await run({ path: '/blog/search' })
+    expect(body).toContain('<title>Search | Decentraland</title>')
+  })
+
+  it('marks /blog/preview as no-index with no-store cache headers', async () => {
+    const { headers } = await run({ path: '/blog/preview' })
+    expect(headers['Cache-Control']).toBe('no-store')
+    expect(headers['Referrer-Policy']).toBe('no-referrer')
+    expect(headers['X-Robots-Tag']).toBe('noindex, nofollow, noarchive')
+  })
+
+  it('falls back to defaults when the position is valid but the places API returns no entry', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/places?positions=-50%2C-50')) {
+          return jsonResponse(true, { ok: true, data: [] } as unknown as MockPlaceResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/whats-on', position: '-50,-50' })
+        expect(body).toContain('<title>Explore (-50,-50) in Decentraland | Decentraland</title>')
+      }
+    )
+  })
+
+  it('rejects a malformed position and falls back to whats-on defaults', async () => {
+    const { body } = await run({ path: '/whats-on', position: 'bogus' })
+    expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
+  })
+
+  it('returns 200 with a client-side redirect HTML when dist/index.html is unavailable', async () => {
+    ;(globalThis as Record<string, unknown>).__seoReadFileSyncShouldFail = true
+    let freshHandler: typeof handler | null = null
+    try {
+      jest.isolateModules(() => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        freshHandler = require('./seo').default
+      })
+    } finally {
+      ;(globalThis as Record<string, unknown>).__seoReadFileSyncShouldFail = false
+    }
+    const req = { query: { path: '/blog' }, headers: { host: 'decentraland.org' } } as unknown as VercelRequest
+    const res = makeRes()
+    await freshHandler!(req, res as unknown as VercelResponse)
+    expect(res.statusCode).toBe(200)
+    expect(res.body).toContain('location.replace("/")')
+  })
+
+  it('falls back to the blog defaults when the response cannot be sent (catch path)', async () => {
+    const req = { query: { path: '/blog' }, headers: { host: 'decentraland.org' } } as unknown as VercelRequest
+    const res: MockResponse & { sendCalls: number } = {
+      ...makeRes(),
+      sendCalls: 0,
+      send(body) {
+        this.sendCalls++
+        if (this.sendCalls === 1) throw new Error('send fail')
+        this.body = body
+      }
+    }
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    await handler(req, res as unknown as VercelResponse)
+    expect(res.headers['Cache-Control']).toBe('public, max-age=60')
+    expect(res.body).toContain('Decentraland')
+    expect(errorSpy).toHaveBeenCalled()
+    errorSpy.mockRestore()
+  })
+
+  it('uses no-store cache on the catch path when /blog/preview is being rendered', async () => {
+    const req = { query: { path: '/blog/preview' }, headers: { host: 'decentraland.org' } } as unknown as VercelRequest
+    const res: MockResponse & { sendCalls: number } = {
+      ...makeRes(),
+      sendCalls: 0,
+      send(body) {
+        this.sendCalls++
+        if (this.sendCalls === 1) throw new Error('send fail')
+        this.body = body
+      }
+    }
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    await handler(req, res as unknown as VercelResponse)
+    expect(res.headers['Cache-Control']).toBe('no-store')
+    errorSpy.mockRestore()
+  })
+
+  it('falls back to defaults when an unsafe image URL is supplied', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/posts')) {
+          return jsonResponse(true, {
+            items: [{ fields: { description: 'd', image: { sys: { id: 'broken' } } } }]
+          } as unknown as MockBlogPostsResponse)
+        }
+        if (url.includes('/assets/broken')) {
+          return jsonResponse(true, { fields: { file: {} } } as unknown as MockAssetResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog' })
+        expect(body).toContain('Decentraland Blog')
+      }
+    )
+  })
+
+  it('uses DEFAULT_ORIGIN when an unrecognised host header is forwarded', async () => {
+    const req = { query: { path: '/blog' }, headers: { host: 'attacker.example' } } as unknown as VercelRequest
+    const res = makeRes()
+    await handler(req, res as unknown as VercelResponse)
+    expect(res.body).toContain('decentraland.org')
+  })
+
+  it('uses the first x-forwarded-host when provided as an array', async () => {
+    const req = {
+      query: { path: '/blog' },
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      headers: { 'x-forwarded-host': ['decentraland.zone', 'attacker.example'], host: 'decentraland.zone' }
+    } as unknown as VercelRequest
+    const res = makeRes()
+    await handler(req, res as unknown as VercelResponse)
+    expect(res.body).toMatch(/decentraland\.zone\/blog/)
+  })
+
+  it('falls back to DEFAULT_ORIGIN when no host headers are set', async () => {
+    const req = { query: { path: '/blog' }, headers: {} } as unknown as VercelRequest
+    const res = makeRes()
+    await handler(req, res as unknown as VercelResponse)
+    expect(res.body).toContain('decentraland.org')
+  })
+
+  it('strips path-traversal attempts via sanitizePath', async () => {
+    const { body } = await run({ path: '/blog/../etc/passwd' })
+    expect(body).toContain('Decentraland Blog')
+  })
+
+  it('drops the canonical query when an invalid sanitizePath input is supplied', async () => {
+    const req = { query: { path: 12345 as unknown as string }, headers: { host: 'decentraland.org' } } as unknown as VercelRequest
+    const res = makeRes()
+    await handler(req, res as unknown as VercelResponse)
+    expect(res.body).toContain('Decentraland Blog')
+  })
+
+  it('rejects URL parse failures inside sanitizePath via a safe fallback', async () => {
+    // An unclosed IPv6 literal forces `new URL()` to throw, exercising the catch in sanitizePath.
+    const { body } = await run({ path: 'http://[invalid' })
+    expect(body).toContain('Decentraland Blog')
+  })
+
+  it('falls back to the default share image when an unsafe CMS asset URL is supplied', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/posts?fields.slug=js-asset')) {
+          return jsonResponse(true, {
+            items: [{ fields: { title: 'JS', description: 'd', image: { sys: { id: 'js-asset' } } } }]
+          } as unknown as MockBlogPostsResponse)
+        }
+        if (url.includes('/assets/js-asset')) {
+          return jsonResponse(true, { fields: { file: { url: 'javascript:alert(1)' } } } as unknown as MockAssetResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog/cat/js-asset' })
+        expect(body).toMatch(
+          /<meta property="og:image" content="https:\/\/marketing-files\.decentraland\.org\/uploads\/1778186218133_decentraland-background\.webp">/
+        )
+      }
+    )
+  })
+
+  it('falls back to the WhatsOn image when the events API returns a non-http image', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/events/aaaaaaaaaaaa1111')) {
+          return jsonResponse(true, {
+            ok: true,
+            data: {
+              name: 'Event',
+              description: '',
+              image: 'javascript:alert(1)',
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              scene_name: ''
+            }
+          } as unknown as MockEventResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/whats-on', id: 'aaaaaaaaaaaa1111' })
+        expect(body).toMatch(
+          /<meta property="og:image" content="https:\/\/marketing-files\.decentraland\.org\/uploads\/1778186218133_decentraland-background\.webp">/
+        )
+      }
+    )
+  })
+
+  it('falls back to defaults when the events API returns ok:false', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/events/aaaaaaaaaaaa2222')) {
+          return jsonResponse(true, { ok: false } as unknown as MockEventResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/whats-on', id: 'aaaaaaaaaaaa2222' })
+        expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
+      }
+    )
+  })
+
+  it('falls back to defaults when the events API entry has empty fields', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/events/aaaaaaaaaaaa3333')) {
+          return jsonResponse(true, {
+            ok: true,
+            data: {
+              name: '   ',
+              description: '   ',
+              image: '',
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              scene_name: '   '
+            }
+          } as unknown as MockEventResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/whats-on', id: 'aaaaaaaaaaaa3333' })
+        expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
+      }
+    )
+  })
+
+  it('falls back to defaults when the places API returns ok:false', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/places?positions=1%2C1')) {
+          return jsonResponse(true, { ok: false } as unknown as MockPlaceResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/whats-on', position: '1,1' })
+        expect(body).toContain('<title>Explore (1,1) in Decentraland | Decentraland</title>')
+      }
+    )
+  })
+
+  it('falls back to defaults when the places API entry has empty title/description/image', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/places?positions=2%2C2')) {
+          return jsonResponse(true, {
+            ok: true,
+            data: [{ title: '   ', description: '   ', image: 'data:bad' }]
+          } as unknown as MockPlaceResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/whats-on', position: '2,2' })
+        expect(body).toContain('<title>Explore (2,2) in Decentraland | Decentraland</title>')
+      }
+    )
+  })
+
+  it('falls back to defaults when the worlds API entry has empty title/description/image', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/worlds?names=blank.dcl.eth')) {
+          return jsonResponse(true, {
+            ok: true,
+            total: 1,
+            data: [{ title: '   ', description: '   ', image: 'data:bad' }]
+          } as unknown as MockWorldResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/whats-on', world: 'blank.dcl.eth' })
+        expect(body).toContain('<title>Visit blank.dcl.eth in Decentraland | Decentraland</title>')
+      }
+    )
+  })
+
+  it('falls back to defaults when the worlds API returns ok:false', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/worlds?names=fail.dcl.eth')) {
+          return jsonResponse(true, { ok: false } as unknown as MockWorldResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/whats-on', world: 'fail.dcl.eth' })
+        expect(body).toContain('<title>Visit fail.dcl.eth in Decentraland | Decentraland</title>')
+      }
+    )
+  })
+
+  it('falls back to default share image when a CMS asset has no file.url', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/posts?fields.slug=no-asset')) {
+          return jsonResponse(true, {
+            items: [{ fields: { title: 'Has Image', description: 'd', image: { sys: { id: 'asset-empty' } } } }]
+          } as unknown as MockBlogPostsResponse)
+        }
+        if (url.includes('/assets/asset-empty')) {
+          return jsonResponse(true, { fields: { file: {} } } as unknown as MockAssetResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog/cat/no-asset' })
+        expect(body).toMatch(/<meta property="og:image" content="https:\/\/marketing-files\.decentraland\.org/)
+      }
+    )
+  })
+
+  it('omits the category article meta when the blog post has no category', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/posts?fields.slug=no-cat')) {
+          return jsonResponse(true, {
+            items: [
+              {
+                fields: {
+                  title: 'No Cat Post',
+                  description: 'd',
+                  image: { sys: { id: 'asset-x' } },
+                  author: { sys: { id: 'author-x' } },
+                  publishedDate: '2026-01-01T00:00:00Z'
+                }
+              }
+            ]
+          } as unknown as MockBlogPostsResponse)
+        }
+        if (url.includes('/assets/asset-x')) {
+          return jsonResponse(true, { fields: { file: { url: 'https://cdn.test/x.png' } } } as unknown as MockAssetResponse)
+        }
+        if (url.includes('/entries/author-x')) {
+          return jsonResponse(true, { sys: { id: 'author-x', type: 'Entry' }, fields: { title: 'Jane' } } as unknown as MockReelResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog/cat/no-cat' })
+        expect(body).toMatch(/<meta property="article:author" content="Jane">/)
+        expect(body).not.toMatch(/<meta property="article:section"/)
+      }
+    )
+  })
+
+  it('falls back to defaults when blog post title and description are empty strings', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/posts?fields.slug=empties')) {
+          return jsonResponse(true, {
+            items: [{ fields: { title: '', description: '', image: { sys: { id: 'asset-y' } } } }]
+          } as unknown as MockBlogPostsResponse)
+        }
+        if (url.includes('/assets/asset-y')) {
+          return jsonResponse(true, { fields: { file: { url: 'https://cdn.test/y.png' } } } as unknown as MockAssetResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog/cat/empties' })
+        expect(body).toContain('Decentraland Blog')
+      }
+    )
+  })
+
+  it('uses the no-scene description path when the reel metadata has no scene name', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/api/images/reel-no-scene/metadata')) {
+          return jsonResponse(true, {
+            url: 'https://camera-reel-storage.decentraland.org/reels/reel-no-scene.jpg',
+            metadata: { userName: 'Bob' }
+          } as unknown as MockReelResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/reels/reel-no-scene' })
+        expect(body).toMatch(/<meta property="og:description" content="Check out Bob&#x27;s photo taken in Decentraland, Decentraland\./)
+      }
+    )
+  })
+
+  it('falls back to defaults when the reel API returns data without url', async () => {
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/api/images/reel-no-url/metadata')) {
+          return jsonResponse(true, { metadata: { userName: 'Bob' } } as unknown as MockReelResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/reels/reel-no-url' })
+        expect(body).toContain('Decentraland Blog')
+      }
+    )
+  })
+
+  it('falls back to defaults when a reel image id contains forbidden characters', async () => {
+    const { body } = await run({ path: '/reels/illegal id!' })
+    expect(body).toContain('Decentraland Blog')
+  })
+
+  it('treats a path-with-double-slash as invalid via sanitizePath', async () => {
+    const req = { query: { path: '/blog//etc' }, headers: { host: 'decentraland.org' } } as unknown as VercelRequest
+    const res = makeRes()
+    await handler(req, res as unknown as VercelResponse)
+    expect(res.body).toContain('Decentraland Blog')
+  })
+
+  it('reads the first item when sanitizePath input is an array', async () => {
+    const req = { query: { path: ['/blog/x', '/blog/y'] }, headers: { host: 'decentraland.org' } } as unknown as VercelRequest
+    const res = makeRes()
+    await handler(req, res as unknown as VercelResponse)
+    expect(res.body).toContain('Decentraland')
+  })
+
+  it('reads the first query value when a search query is an array', async () => {
+    const req = {
+      query: { path: '/blog/search', q: ['wearables', 'extra'] },
+      headers: { host: 'decentraland.org' }
+    } as unknown as VercelRequest
+    const res = makeRes()
+    await handler(req, res as unknown as VercelResponse)
+    expect(res.body).toContain('<title>Search: wearables | Decentraland</title>')
+  })
+
+  it('drops a non-string first query value to null', async () => {
+    const req = {
+      query: { path: '/blog/search', q: [{ malformed: true }] },
+      headers: { host: 'decentraland.org' }
+    } as unknown as VercelRequest
+    const res = makeRes()
+    await handler(req, res as unknown as VercelResponse)
+    expect(res.body).toContain('<title>Search | Decentraland</title>')
   })
 })

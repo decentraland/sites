@@ -1,3 +1,6 @@
+import type { RecurrentFrequency } from '../types/recurrence.types'
+import { normalizeDayIndices } from './recurrence'
+
 function appendRealmParam(url: string, realm?: string | null): string {
   if (!realm) return url
   const separator = url.includes('?') ? '&' : '?'
@@ -52,6 +55,67 @@ function parseCoordinates(coordinates: string): [number, number] {
   return [x, y]
 }
 
+interface NormalizedRecurrence {
+  frequency: RecurrentFrequency | null
+  interval: number
+}
+
+// Legacy events stored coarser recurrences as DAILY × N. Re-express DAILY intervals
+// that are clean multiples of 365 as years, and multiples of 7 as weeks. Side effect:
+// an intentional DAILY × 28 becomes WEEKLY × 4 — accepted tradeoff.
+function normalizeRecurrence(frequency: RecurrentFrequency | null, interval: number | null | undefined): NormalizedRecurrence {
+  const count = interval && interval > 1 ? interval : 1
+  if (frequency === 'DAILY' && count > 1) {
+    if (count % 365 === 0) return { frequency: 'YEARLY', interval: count / 365 }
+    if (count % 7 === 0) return { frequency: 'WEEKLY', interval: count / 7 }
+  }
+  return { frequency, interval: count }
+}
+
+function formatRecurrenceUntil(iso: string): string | null {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return null
+  return d
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}/, '')
+}
+
+interface RecurrenceRuleParams {
+  frequency: RecurrentFrequency | null
+  interval: number
+  count: number | null
+  until: string | null
+  byDay?: number[]
+}
+
+const RFC5545_DAY_CODES = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'] as const
+
+function formatByDay(days: number[]): string | null {
+  const sorted = normalizeDayIndices(days)
+  if (sorted.length === 0 || sorted.length === 7) return null
+  return sorted.map(d => RFC5545_DAY_CODES[d]).join(',')
+}
+
+function buildRecurrenceRule({ frequency, interval, count, until, byDay }: RecurrenceRuleParams): string | null {
+  if (!frequency) return null
+  // Sub-daily frequencies aren't surfaced in the UI; skip them in the calendar too for consistency.
+  if (frequency === 'HOURLY' || frequency === 'MINUTELY' || frequency === 'SECONDLY') return null
+  const parts = [`FREQ=${frequency}`]
+  if (interval > 1) parts.push(`INTERVAL=${interval}`)
+  if (byDay) {
+    const formattedDays = formatByDay(byDay)
+    if (formattedDays) parts.push(`BYDAY=${formattedDays}`)
+  }
+  if (until) {
+    const formatted = formatRecurrenceUntil(until)
+    if (formatted) parts.push(`UNTIL=${formatted}`)
+  } else if (count && count > 0) {
+    parts.push(`COUNT=${count}`)
+  }
+  return `RRULE:${parts.join(';')}`
+}
+
 interface CalendarEventParams {
   name: string
   description?: string | null
@@ -60,6 +124,12 @@ interface CalendarEventParams {
   x: number
   y: number
   url: string
+  recurrent?: boolean
+  recurrentFrequency?: RecurrentFrequency | null
+  recurrentInterval?: number | null
+  recurrentCount?: number | null
+  recurrentUntil?: string | null
+  recurrentByDay?: number[]
 }
 
 function buildCalendarUrl(event: CalendarEventParams): string | null {
@@ -78,6 +148,17 @@ function buildCalendarUrl(event: CalendarEventParams): string | null {
     details: `${event.description || ''}\n\n${event.url}`,
     location: `Decentraland ${event.x},${event.y}`
   })
+  if (event.recurrent && event.recurrentFrequency) {
+    const normalized = normalizeRecurrence(event.recurrentFrequency, event.recurrentInterval)
+    const rrule = buildRecurrenceRule({
+      frequency: normalized.frequency,
+      interval: normalized.interval,
+      count: event.recurrentCount ?? null,
+      until: event.recurrentUntil ?? null,
+      byDay: event.recurrentByDay
+    })
+    if (rrule) params.set('recur', rrule)
+  }
   return `https://calendar.google.com/calendar/render?${params.toString()}`
 }
 
@@ -91,6 +172,7 @@ export {
   buildEventShareUrl,
   buildJumpInUrl,
   buildPlaceShareUrl,
+  normalizeRecurrence,
   parseCoordinates,
   resolveEventRealm
 }

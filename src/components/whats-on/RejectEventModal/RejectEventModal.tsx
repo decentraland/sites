@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { Button, Checkbox } from 'decentraland-ui2'
-import { REJECT_REASONS } from '../../../features/whats-on/admin/admin.types'
-import type { RejectReasonCode } from '../../../features/whats-on/admin/admin.types'
+import { REJECT_REASONS } from '../../../features/events/events.admin.types'
+import type { RejectReasonCode } from '../../../features/events/events.admin.types'
 import type { RejectEventModalProps } from './RejectEventModal.types'
 import {
   ErrorText,

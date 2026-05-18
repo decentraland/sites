@@ -6,19 +6,19 @@ Decentraland's main website. A single Vite SPA that consolidates the homepage an
 
 ## What lives here
 
-| Section                    | Routes                                                                                                                                        | Notes                                                                                                               |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Landing & marketing        | `/`, `/create`, `/discord`, `/press`, `/help`                                                                                                 | API-driven homepage (hero, missions/features, trending news, social proof, FAQ, banner CTAs).                       |
-| Legal                      | `/brand`, `/content`, `/ethics`, `/privacy`, `/referral-terms`, `/rewards-terms`, `/security`, `/terms`                                       | Static legal pages.                                                                                                 |
-| Download                   | `/download`, `/download_success`, `/download/creator-hub`, `/download/creator-hub-success`                                                    | Desktop / Creator Hub installer flow. `/download` and `/download_success` are fullscreen (no shared navbar+footer). |
-| Onboarding                 | `/invite/:referrer`, `/sign-in`, `/report`, `/report/success`                                                                                 | Referral invite hero, SSO redirect bridge, in-world report form.                                                    |
-| Reels                      | `/reels`, `/reels/list/:address`, `/reels/:imageId`                                                                                           | Fullscreen viewer for in-game camera screenshots — migrated from `reels.decentraland.org`.                          |
-| What's on (events)         | `/whats-on`, `/whats-on/new-hangout`, `/whats-on/edit-hangout/:eventId`, `/whats-on/admin/pending-events`, `/whats-on/admin/users`            | Heavy DappsShell route. Legacy `/events/*` and `/places/*` paths redirect here with deep-link params.               |
-| Blog                       | `/blog`, `/blog/preview`, `/blog/search`, `/blog/sign-in`, `/blog/author/:authorSlug`, `/blog/:categorySlug`, `/blog/:categorySlug/:postSlug` | Contentful-backed CMS. Server-rendered Open Graph meta via `api/seo.ts`.                                            |
-| Jump (launcher deep-links) | `/jump`, `/jump/places`, `/jump/places/invalid`, `/jump/events`, `/jump/events/invalid`                                                       | Deep-link handler for the desktop launcher (`decentraland://`).                                                     |
-| Social (communities)       | `/social/communities/:id`                                                                                                                     | Community detail page, signed-fetch mutations.                                                                      |
-| Cast (browser streaming)   | `/cast/s/:token`, `/cast/s/streaming`, `/cast/w/:worldName/parcel/:parcel`, `/cast/w/:location`                                               | LiveKit-based streaming — migrated from `decentraland/cast2`.                                                       |
-| Storage service            | `/storage`, `/storage/select`, `/storage/env`, `/storage/scene`, `/storage/players`, `/storage/players/:address`                              | Migrated from the standalone storage-service-site.                                                                  |
+| Section                    | Routes                                                                                                                                        | Notes                                                                                                                                                                                           |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Landing & marketing        | `/`, `/create`, `/discord`, `/press`, `/help`                                                                                                 | API-driven homepage (hero, missions/features, trending news, social proof, FAQ, banner CTAs).                                                                                                   |
+| Legal                      | `/brand`, `/content`, `/ethics`, `/privacy`, `/referral-terms`, `/rewards-terms`, `/security`, `/terms`                                       | Static legal pages.                                                                                                                                                                             |
+| Download                   | `/download`, `/download_success`, `/download/creator-hub`, `/download/creator-hub-success`                                                    | Desktop / Creator Hub installer flow. `/download` and `/download_success` are fullscreen (no shared navbar+footer).                                                                             |
+| Onboarding                 | `/invite/:referrer`, `/sign-in`, `/report`, `/report/success`                                                                                 | Referral invite hero, SSO redirect bridge, in-world report form. `/report/players` redirects to `/report`.                                                                                      |
+| Reels                      | `/reels`, `/reels/list/:address`, `/reels/:imageId`                                                                                           | Fullscreen viewer for in-game camera screenshots — migrated from `reels.decentraland.org`.                                                                                                      |
+| What's on (events)         | `/whats-on`, `/whats-on/new-hangout`, `/whats-on/edit-hangout/:eventId`, `/whats-on/admin/pending-events`, `/whats-on/admin/users`            | Heavy DappsShell route. Legacy `/whats-on/new-event` and `/whats-on/edit-event/:eventId` redirect into the hangout flow; `/events/*` and `/places/*` paths redirect here with deep-link params. |
+| Blog                       | `/blog`, `/blog/preview`, `/blog/search`, `/blog/sign-in`, `/blog/author/:authorSlug`, `/blog/:categorySlug`, `/blog/:categorySlug/:postSlug` | Contentful-backed CMS. Server-rendered Open Graph meta via `api/seo.ts`.                                                                                                                        |
+| Jump (launcher deep-links) | `/jump`, `/jump/places`, `/jump/places/invalid`, `/jump/events`, `/jump/events/invalid`                                                       | Deep-link handler for the desktop launcher (`decentraland://`). Legacy `/jump/event` (singular) preserved for prod links.                                                                       |
+| Social (communities)       | `/social/communities/:id`, `/social/*` (404)                                                                                                  | Community detail page, signed-fetch mutations.                                                                                                                                                  |
+| Cast (browser streaming)   | `/cast/s/:token`, `/cast/s/streaming`, `/cast/w/:worldName/parcel/:parcel`, `/cast/w/:location`, `/cast` + `/cast/*` (404)                    | LiveKit-based streaming — migrated from `decentraland/cast2`.                                                                                                                                   |
+| Storage service            | `/storage`, `/storage/select`, `/storage/env`, `/storage/scene`, `/storage/players`, `/storage/players/:address`, `/storage/*` (404)          | Migrated from the standalone storage-service-site.                                                                                                                                              |
 
 The full route map and tier rules (Layout-less / lightweight / heavy DappsShell) live in `CLAUDE.md`.
 
@@ -38,8 +38,8 @@ Read `CLAUDE.md` before adding routes, RTK Query clients, i18n keys, or styled c
 
 ### Prerequisites
 
-- Node 20.x
-- npm 10.x
+- Node `^20.19.0 || >=22.12.0`
+- npm `>=10`
 
 ### Install + run
 
@@ -61,13 +61,14 @@ For build-time variables `scripts/prebuild.cjs` writes a generated `.env` from `
 ## Common commands
 
 ```bash
-npm run dev        # Vite dev server (+ /api/cms + /auth proxies)
-npm run build      # prebuild + tsc -b + vite build + hero prerender
-npm run preview    # Serve dist/ — required to validate prod-only failures (CLAUDE.md rule 14)
-npm test           # Jest, co-located *.spec.ts(x) suites
-npm run format     # Prettier
-npm run lint:fix   # ESLint
-npm run lint:pkg   # package.json lint
+npm run dev            # Vite dev server (+ /api/cms + /auth proxies)
+npm run build          # prebuild + tsc -b + vite build + hero prerender
+npm run preview        # Serve dist/ — required to validate prod-only failures (CLAUDE.md rule 14)
+npm test               # Jest, co-located *.spec.ts(x) suites
+npm run test:coverage  # Jest with coverage report
+npm run format         # Prettier
+npm run lint:fix       # ESLint
+npm run lint:pkg       # package.json lint
 ```
 
 ## Testing

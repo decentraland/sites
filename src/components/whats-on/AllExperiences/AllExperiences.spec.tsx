@@ -2,10 +2,31 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { createMockEvent } from '../../../__test-utils__/factories'
 import { AllExperiences } from './AllExperiences'
 
-let mockLocationState: { activeTab?: string } | null = null
-jest.mock('react-router-dom', () => ({
-  useNavigate: () => jest.fn(),
-  useLocation: () => ({ pathname: '/whats-on', state: mockLocationState })
+let mockSearchParams = new URLSearchParams()
+const mockSearchParamsListeners = new Set<() => void>()
+const mockSetSearchParams = jest.fn()
+jest.mock('react-router-dom', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require('react')
+  return {
+    useNavigate: () => jest.fn(),
+    useSearchParams: () => {
+      const snapshot = React.useSyncExternalStore(
+        (listener: () => void) => {
+          mockSearchParamsListeners.add(listener)
+          return () => mockSearchParamsListeners.delete(listener)
+        },
+        () => mockSearchParams,
+        () => mockSearchParams
+      )
+      return [snapshot, mockSetSearchParams]
+    }
+  }
+})
+
+const mockRedirectToAuth = jest.fn()
+jest.mock('../../../utils/authRedirect', () => ({
+  redirectToAuth: (...args: unknown[]) => mockRedirectToAuth(...args)
 }))
 
 const mockUseAuthIdentity = jest.fn()
@@ -14,11 +35,12 @@ jest.mock('../../../hooks/useAuthIdentity', () => ({
 }))
 
 const mockUseGetEventsQuery = jest.fn()
-jest.mock('../../../features/whats-on-events', () => {
-  const helpers = jest.requireActual('../../../features/whats-on-events/events.helpers')
+jest.mock('../../../features/events', () => {
+  const helpers = jest.requireActual('../../../features/events/events.helpers')
   return {
     useGetEventsQuery: (...args: unknown[]) => mockUseGetEventsQuery(...args),
-    bucketEventsByDay: helpers.bucketEventsByDay
+    bucketEventsByDay: helpers.bucketEventsByDay,
+    isPubliclyVisibleEvent: helpers.isPubliclyVisibleEvent
   }
 })
 
@@ -59,17 +81,22 @@ jest.mock('../EventDetailModal', () => ({
   normalizeEventEntry: (event: { id: string }) => ({ ...event, normalized: true })
 }))
 
-jest.mock('./AllExperiences.styled', () => ({
-  AllExperiencesSection: ({ children, ...props }: Record<string, unknown>) => (
-    <section data-testid="all-experiences-section" aria-label={props['aria-label'] as string}>
-      {children as React.ReactNode}
-    </section>
-  ),
-  ColumnsContainer: ({ children }: { children: React.ReactNode }) => <div data-testid="columns-container">{children}</div>,
-  MobileEventsTrack: ({ children }: { children: React.ReactNode }) => <div data-testid="mobile-events-track">{children}</div>,
-  MobileEventsPage: ({ children }: { children: React.ReactNode }) => <div data-testid="mobile-events-page">{children}</div>,
-  SectionTitle: ({ children }: { children: React.ReactNode }) => <h4 data-testid="section-title">{children}</h4>
-}))
+jest.mock('./AllExperiences.styled', () => {
+  const react: typeof import('react') = jest.requireActual('react')
+  return {
+    AllExperiencesSection: react.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement> & { 'aria-label'?: string }>(
+      ({ children, ...props }, ref) => (
+        <section data-testid="all-experiences-section" aria-label={props['aria-label']} ref={ref}>
+          {children}
+        </section>
+      )
+    ),
+    ColumnsContainer: ({ children }: { children: React.ReactNode }) => <div data-testid="columns-container">{children}</div>,
+    MobileEventsList: ({ children }: { children: React.ReactNode }) => <div data-testid="mobile-events-list">{children}</div>,
+    MobileEventCardSlot: ({ children }: { children: React.ReactNode }) => <div data-testid="mobile-event-slot">{children}</div>,
+    SectionTitle: ({ children }: { children: React.ReactNode }) => <h4 data-testid="section-title">{children}</h4>
+  }
+})
 
 jest.mock('./DateNavigation', () => ({
   DateNavigation: ({ startOffset, columnCount, onNavigateLeft, onNavigateRight }: Record<string, unknown>) => (
@@ -132,12 +159,31 @@ describe('AllExperiences', () => {
     jest.useFakeTimers()
     jest.setSystemTime(new Date(2026, 8, 13, 10, 0, 0))
     mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
+    mockSetSearchParams.mockImplementation((updater: URLSearchParams | ((prev: URLSearchParams) => URLSearchParams)) => {
+      const next = typeof updater === 'function' ? updater(mockSearchParams) : updater
+      mockSearchParams = next
+      mockSearchParamsListeners.forEach(listener => listener())
+    })
   })
 
   afterEach(() => {
     jest.useRealTimers()
     jest.resetAllMocks()
-    mockLocationState = null
+    mockSearchParams = new URLSearchParams()
+  })
+
+  describe('when landing on ?tab=my without a valid identity', () => {
+    beforeEach(() => {
+      mockColumnCount.mockReturnValue(3)
+      mockSearchParams = new URLSearchParams('tab=my')
+      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+    })
+
+    it('should redirect to auth preserving tab=my so the user lands back on My Hangouts after sign-in', () => {
+      render(<AllExperiences />)
+
+      expect(mockRedirectToAuth).toHaveBeenCalledWith('/whats-on', { tab: 'my' })
+    })
   })
 
   describe('when signed out with 3 columns', () => {
@@ -188,10 +234,17 @@ describe('AllExperiences', () => {
       expect(mockUseGetEventsQuery).toHaveBeenCalledWith(expect.objectContaining({ list: 'active', owner: undefined }), expect.any(Object))
     })
 
-    it('should exclude world events on the all tab so the spatial calendar only shows Genesis City', () => {
+    it('should not filter by world on the all tab so Genesis City and Worlds events both appear', () => {
       render(<AllExperiences />)
 
-      expect(mockUseGetEventsQuery).toHaveBeenCalledWith(expect.objectContaining({ world: false }), expect.any(Object))
+      const lastCall = mockUseGetEventsQuery.mock.calls.at(-1)?.[0] as { world?: boolean }
+      expect(lastCall.world).toBeUndefined()
+    })
+
+    it('should never pass world=false to the events query (regression: worlds were being silently dropped)', () => {
+      render(<AllExperiences />)
+
+      expect(mockUseGetEventsQuery).not.toHaveBeenCalledWith(expect.objectContaining({ world: false }), expect.any(Object))
     })
   })
 
@@ -214,11 +267,11 @@ describe('AllExperiences', () => {
       mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
     })
 
-    it('should render mobile track instead of day columns', () => {
+    it('should render the mobile vertical list instead of day columns', () => {
       render(<AllExperiences />)
 
       expect(screen.queryByTestId('day-column')).not.toBeInTheDocument()
-      expect(screen.getByTestId('mobile-events-track')).toBeInTheDocument()
+      expect(screen.getByTestId('mobile-events-list')).toBeInTheDocument()
     })
   })
 
@@ -253,21 +306,71 @@ describe('AllExperiences', () => {
     })
   })
 
+  describe("when the response includes the caller's pending or rejected events on the All tab", () => {
+    beforeEach(() => {
+      mockColumnCount.mockReturnValue(3)
+      // Issue #482: events API includes the caller's own non-approved events when authenticated.
+      // The public All tab must hide them; only the My tab is allowed to surface drafts.
+      mockUseGetEventsQuery.mockReturnValue({
+        data: [
+          createMockEvent({ id: 'approved', approved: true, rejected: false, start_at: '2026-09-13T14:00:00Z' }),
+          createMockEvent({ id: 'pending', approved: false, rejected: false, start_at: '2026-09-13T15:00:00Z' }),
+          createMockEvent({ id: 'rejected', approved: false, rejected: true, start_at: '2026-09-13T16:00:00Z' })
+        ],
+        isLoading: false,
+        isError: false
+      })
+    })
+
+    it('should only bucket approved events into the day columns', () => {
+      render(<AllExperiences />)
+
+      const ids = screen.getAllByTestId('day-column')[0]?.getAttribute('data-event-ids') ?? ''
+      expect(ids.split(',').filter(Boolean)).toEqual(['approved'])
+    })
+  })
+
+  describe('when every event in the response is pending or rejected on the All tab', () => {
+    beforeEach(() => {
+      mockColumnCount.mockReturnValue(3)
+      mockUseGetEventsQuery.mockReturnValue({
+        data: [
+          createMockEvent({ id: 'pending-1', approved: false, rejected: false, start_at: '2026-09-13T14:00:00Z' }),
+          createMockEvent({ id: 'pending-2', approved: false, rejected: false, start_at: '2026-09-14T15:00:00Z' }),
+          createMockEvent({ id: 'rejected-1', approved: false, rejected: true, start_at: '2026-09-15T16:00:00Z' })
+        ],
+        isLoading: false,
+        isError: false
+      })
+    })
+
+    it('should render empty day columns instead of leaking drafts', () => {
+      render(<AllExperiences />)
+
+      const counts = screen.getAllByTestId('day-column').map(col => col.getAttribute('data-event-count'))
+      expect(counts).toEqual(['0', '0', '0'])
+    })
+  })
+
   describe('when data has loaded with events on mobile', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(1)
       const events = [
         createMockEvent({ id: 'e1', start_at: '2026-09-13T14:00:00Z' }),
-        createMockEvent({ id: 'e2', start_at: '2026-09-13T16:00:00Z' })
+        createMockEvent({ id: 'e2', start_at: '2026-09-13T16:00:00Z' }),
+        createMockEvent({ id: 'e3', start_at: '2026-09-13T18:00:00Z' })
       ]
       mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
     })
 
-    it('should render mobile event cards instead of day columns', () => {
+    it('should render every event for the day as a vertical list so nothing is hidden behind a swipe', () => {
       render(<AllExperiences />)
 
       expect(screen.queryByTestId('day-column')).not.toBeInTheDocument()
-      expect(screen.getAllByTestId('mobile-event-card')).toHaveLength(2)
+      const list = screen.getByTestId('mobile-events-list')
+      const cards = screen.getAllByTestId('mobile-event-card')
+      expect(cards).toHaveLength(3)
+      cards.forEach(card => expect(list).toContainElement(card))
     })
   })
 
@@ -425,15 +528,45 @@ describe('AllExperiences', () => {
       expect(screen.getByTestId('experiences-tabs')).toHaveAttribute('data-value', 'all')
     })
 
-    describe('and navigation state requests the "my" tab', () => {
+    describe('and the URL carries ?tab=my', () => {
       beforeEach(() => {
-        mockLocationState = { activeTab: 'my' }
+        mockSearchParams = new URLSearchParams('tab=my')
       })
 
       it('should open on the "my" tab instead of "all"', () => {
         render(<AllExperiences />)
 
         expect(screen.getByTestId('experiences-tabs')).toHaveAttribute('data-value', 'my')
+      })
+    })
+
+    describe('and the user clicks the "my" tab', () => {
+      beforeEach(() => {
+        mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      })
+
+      it('should write ?tab=my into the URL via replace so back navigation is unaffected', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-my'))
+
+        expect(mockSetSearchParams).toHaveBeenCalledWith(expect.any(Function), { replace: true })
+        expect(mockSearchParams.get('tab')).toBe('my')
+      })
+    })
+
+    describe('and the user clicks the "all" tab after landing on ?tab=my', () => {
+      beforeEach(() => {
+        mockSearchParams = new URLSearchParams('tab=my')
+        mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      })
+
+      it('should remove the tab param from the URL instead of writing tab=all', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-all'))
+
+        expect(mockSearchParams.has('tab')).toBe(false)
       })
     })
 
@@ -587,6 +720,53 @@ describe('AllExperiences', () => {
       })
     })
 
+    // Issue #482 invariant: the All-tab approval filter must not bleed into the My tab. Pending
+    // drafts and rejections are the whole point of My Hangouts (the PendingEventCard status
+    // overlay lives there), so they must reach MyExperiencesGrid unfiltered.
+    describe('and the owner=true response contains both pending and rejected drafts', () => {
+      beforeEach(() => {
+        mockUseGetEventsQuery.mockReturnValue({
+          data: [
+            createMockEvent({
+              id: 'mine-pending',
+              user: '0xCreator',
+              approved: false,
+              rejected: false,
+              start_at: '2026-09-20T14:00:00Z',
+              finish_at: '2026-09-20T16:00:00Z'
+            }),
+            createMockEvent({
+              id: 'mine-rejected',
+              user: '0xCreator',
+              approved: false,
+              rejected: true,
+              start_at: '2026-09-21T14:00:00Z',
+              finish_at: '2026-09-21T16:00:00Z'
+            }),
+            createMockEvent({
+              id: 'mine-approved',
+              user: '0xCreator',
+              approved: true,
+              rejected: false,
+              start_at: '2026-09-22T14:00:00Z',
+              finish_at: '2026-09-22T16:00:00Z'
+            })
+          ],
+          isLoading: false,
+          isError: false
+        })
+      })
+
+      it('should still surface pending and rejected drafts in the My tab grid', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-my'))
+
+        const cardIds = screen.getAllByTestId('my-exp-grid-card').map(c => c.getAttribute('data-id'))
+        expect(cardIds).toEqual(expect.arrayContaining(['mine-pending', 'mine-rejected', 'mine-approved']))
+      })
+    })
+
     describe('and "my" tab has no events', () => {
       beforeEach(() => {
         mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
@@ -623,6 +803,25 @@ describe('AllExperiences', () => {
 
         expect(screen.getByTestId('my-experiences-empty')).toBeInTheDocument()
         expect(screen.queryByTestId('my-experiences-grid')).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and the user signs out while ?tab=my is active', () => {
+      beforeEach(() => {
+        mockSearchParams = new URLSearchParams('tab=my')
+        mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      })
+
+      it('should strip the tab param instead of redirecting to auth, so the user falls back to All gracefully', () => {
+        const { rerender } = render(<AllExperiences />)
+
+        expect(mockRedirectToAuth).not.toHaveBeenCalled()
+
+        mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
+        rerender(<AllExperiences />)
+
+        expect(mockRedirectToAuth).not.toHaveBeenCalled()
+        expect(mockSearchParams.has('tab')).toBe(false)
       })
     })
   })

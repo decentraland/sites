@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react'
 import type { Avatar } from '@dcl/schemas'
 import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
-import type { ExploreItem } from '../../../features/events/events.types'
+import type { ExploreItem } from '../../../features/events/events.discovery.types'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { SectionViewedTrack } from '../../../modules/segment'

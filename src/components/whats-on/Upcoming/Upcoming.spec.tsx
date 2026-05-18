@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { createMockEvent } from '../../../__test-utils__/factories'
-import type { EventEntry } from '../../../features/whats-on-events'
+import type { EventEntry } from '../../../features/events'
 import { Upcoming } from './Upcoming'
 
 jest.mock('react-router-dom', () => ({
@@ -16,9 +16,13 @@ jest.mock('../../../hooks/useAuthIdentity', () => ({
 }))
 
 const mockUseGetUpcomingEventsQuery = jest.fn()
-jest.mock('../../../features/whats-on-events', () => ({
-  useGetUpcomingEventsQuery: () => mockUseGetUpcomingEventsQuery()
-}))
+jest.mock('../../../features/events', () => {
+  const helpers = jest.requireActual('../../../features/events/events.helpers')
+  return {
+    useGetUpcomingEventsQuery: () => mockUseGetUpcomingEventsQuery(),
+    isPubliclyVisibleEvent: helpers.isPubliclyVisibleEvent
+  }
+})
 
 jest.mock('../EventDetailModal', () => ({
   EventDetailModal: () => <div data-testid="event-detail-modal" />,
@@ -38,11 +42,13 @@ jest.mock('./Upcoming.styled', () => ({
   UpcomingTitle: ({ children }: { children: React.ReactNode }) => <h5 data-testid="upcoming-title">{children}</h5>,
   DesktopGrid: ({ children }: { children: React.ReactNode }) => <div data-testid="desktop-grid">{children}</div>,
   MobileCarousel: ({ children }: { children: React.ReactNode }) => <div data-testid="mobile-carousel">{children}</div>,
-  MobileCarouselTrack: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-    <div data-testid="mobile-track" {...props}>
-      {children}
-    </div>
-  ),
+  MobileCarouselTrack: jest
+    .requireActual<typeof import('react')>('react')
+    .forwardRef(({ children, ...props }: React.HTMLAttributes<HTMLDivElement>, ref: React.Ref<HTMLDivElement>) => (
+      <div data-testid="mobile-track" ref={ref} {...props}>
+        {children}
+      </div>
+    )),
   MobileCarouselPage: ({ children }: { children: React.ReactNode }) => <div data-testid="mobile-page">{children}</div>
 }))
 
@@ -126,6 +132,109 @@ describe('Upcoming', () => {
       const { container } = render(<Upcoming />)
 
       expect(container.firstChild).toBeNull()
+    })
+  })
+
+  describe('when the response includes pending and rejected events', () => {
+    beforeEach(() => {
+      // The events API returns the caller's own non-approved events when authenticated. Issue #482:
+      // those pending/rejected drafts must NOT leak into the public Upcoming carousel.
+      mockUseGetUpcomingEventsQuery.mockReturnValue({
+        data: [
+          createMockEvent({ id: 'approved', name: 'Approved', approved: true, rejected: false }),
+          createMockEvent({ id: 'pending', name: 'Pending', approved: false, rejected: false }),
+          createMockEvent({ id: 'rejected', name: 'Rejected', approved: false, rejected: true })
+        ]
+      })
+    })
+
+    it('should render only the approved event', () => {
+      render(<Upcoming />)
+
+      const ids = screen.getAllByTestId('upcoming-card').map(card => card.getAttribute('data-id'))
+      expect(ids).toEqual(expect.arrayContaining(['approved']))
+      expect(ids).not.toEqual(expect.arrayContaining(['pending']))
+      expect(ids).not.toEqual(expect.arrayContaining(['rejected']))
+    })
+  })
+
+  describe('when every event is pending or rejected', () => {
+    beforeEach(() => {
+      mockUseGetUpcomingEventsQuery.mockReturnValue({
+        data: [
+          createMockEvent({ id: 'pending', name: 'Pending', approved: false, rejected: false }),
+          createMockEvent({ id: 'rejected', name: 'Rejected', approved: false, rejected: true })
+        ]
+      })
+    })
+
+    it('should return null because nothing is visible', () => {
+      const { container } = render(<Upcoming />)
+
+      expect(container.firstChild).toBeNull()
+    })
+  })
+
+  describe('when an event card is clicked', () => {
+    it('should open the event detail modal', () => {
+      mockUseGetUpcomingEventsQuery.mockReturnValue({ data: [createMockEvent({ id: 'ev-1', name: 'Event 1' })] })
+      render(<Upcoming />)
+      fireEvent.click(screen.getAllByTestId('upcoming-card')[0])
+      expect(screen.getByTestId('event-detail-modal')).toBeInTheDocument()
+    })
+  })
+
+  describe('when the user paginates the mobile carousel', () => {
+    let clientWidthSpy: jest.SpyInstance
+    let scrollLeftSpy: jest.SpyInstance
+    let scrollToMock: jest.Mock
+
+    beforeEach(() => {
+      const events = Array.from({ length: 10 }, (_, i) => createMockEvent({ id: `ev-${i}`, name: `Event ${i}` }))
+      mockUseGetUpcomingEventsQuery.mockReturnValue({ data: events })
+      clientWidthSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(300)
+      scrollLeftSpy = jest.spyOn(HTMLElement.prototype, 'scrollLeft', 'get').mockReturnValue(300)
+      scrollToMock = jest.fn()
+      HTMLElement.prototype.scrollTo = scrollToMock as unknown as HTMLElement['scrollTo']
+    })
+
+    afterEach(() => {
+      clientWidthSpy.mockRestore()
+      scrollLeftSpy.mockRestore()
+    })
+
+    it('should call scrollTo when a dot is clicked', () => {
+      render(<Upcoming />)
+      const dots = screen.getAllByTestId('pagination-dot')
+      fireEvent.click(dots[1])
+      expect(scrollToMock).toHaveBeenCalled()
+    })
+
+    it('should navigate via ArrowRight and ArrowLeft', () => {
+      render(<Upcoming />)
+      const dots = screen.getAllByTestId('pagination-dot')
+      fireEvent.keyDown(dots[0], { key: 'ArrowRight' })
+      fireEvent.keyDown(dots[0], { key: 'ArrowLeft' })
+      fireEvent.keyDown(dots[0], { key: 'Enter' })
+      expect(scrollToMock).toHaveBeenCalled()
+    })
+
+    it('should update the active page on scroll', () => {
+      render(<Upcoming />)
+      const track = screen.getByTestId('mobile-track')
+      fireEvent.scroll(track)
+      // Default active is 0; after scroll with clientWidth=300 and scrollLeft=300, index becomes 1
+      const dots = screen.getAllByTestId('pagination-dot')
+      expect(dots[1]).toHaveAttribute('data-active', 'true')
+    })
+
+    it('should bail when track clientWidth is zero so the first pagination dot stays active', () => {
+      clientWidthSpy.mockReturnValue(0)
+      render(<Upcoming />)
+      const track = screen.getByTestId('mobile-track')
+      fireEvent.scroll(track)
+      const dots = screen.getAllByTestId('pagination-dot')
+      expect(dots[0]).toHaveAttribute('data-active', 'true')
     })
   })
 })

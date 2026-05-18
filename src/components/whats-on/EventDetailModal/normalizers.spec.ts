@@ -52,6 +52,7 @@ describe('normalizeEventEntry', () => {
     it('should map the recurrence fields', () => {
       expect(result.recurrent).toBe(false)
       expect(result.recurrentFrequency).toBeNull()
+      expect(result.recurrentInterval).toBeNull()
       expect(result.recurrentDates).toEqual([])
     })
 
@@ -73,6 +74,37 @@ describe('normalizeEventEntry', () => {
 
     it('should flag the data as a real event', () => {
       expect(result.isEvent).toBe(true)
+    })
+
+    it('should default isWorld to false and placeName to null when neither scene nor estate metadata is provided', () => {
+      expect(result.isWorld).toBe(false)
+      expect(result.placeName).toBeNull()
+    })
+  })
+
+  describe('when the event has a scene name', () => {
+    it('should expose the scene name as placeName', () => {
+      const result = normalizeEventEntry(createMockEvent({ scene_name: 'Liberty Square' }))
+
+      expect(result.placeName).toBe('Liberty Square')
+      expect(result.isWorld).toBe(false)
+    })
+  })
+
+  describe('when the event has only an estate name', () => {
+    it('should fall back to the estate name as placeName', () => {
+      const result = normalizeEventEntry(createMockEvent({ scene_name: null, estate_name: 'The Estate' }))
+
+      expect(result.placeName).toBe('The Estate')
+    })
+  })
+
+  describe('when the event is hosted in a world', () => {
+    it('should flag isWorld and expose the world server as realm', () => {
+      const result = normalizeEventEntry(createMockEvent({ world: true, server: 'myworld.dcl.eth' }))
+
+      expect(result.isWorld).toBe(true)
+      expect(result.realm).toBe('myworld.dcl.eth')
     })
   })
 
@@ -144,6 +176,7 @@ describe('normalizeEventEntry', () => {
         createMockEvent({
           recurrent: true,
           recurrent_frequency: 'WEEKLY',
+          recurrent_interval: 2,
           recurrent_dates: ['2026-04-07', '2026-04-14']
         })
       )
@@ -155,6 +188,10 @@ describe('normalizeEventEntry', () => {
 
     it('should map the recurrent frequency', () => {
       expect(result.recurrentFrequency).toBe('WEEKLY')
+    })
+
+    it('should map the recurrent interval', () => {
+      expect(result.recurrentInterval).toBe(2)
     })
 
     it('should map the recurrent dates', () => {
@@ -212,6 +249,7 @@ describe('normalizeLiveNowCard', () => {
     it('should default recurrence fields when card is not recurrent', () => {
       expect(result.recurrent).toBe(false)
       expect(result.recurrentFrequency).toBeNull()
+      expect(result.recurrentInterval).toBeNull()
       expect(result.recurrentDates).toEqual([])
     })
 
@@ -234,6 +272,11 @@ describe('normalizeLiveNowCard', () => {
     it('should flag the data as a real event when the card type is event', () => {
       expect(result.isEvent).toBe(true)
     })
+
+    it('should default isWorld to false and leave placeName null for live event cards', () => {
+      expect(result.isWorld).toBe(false)
+      expect(result.placeName).toBeNull()
+    })
   })
 
   describe('when the card represents a world event', () => {
@@ -245,6 +288,10 @@ describe('normalizeLiveNowCard', () => {
 
     it('should expose the world name as realm', () => {
       expect(result.realm).toBe('my-world.dcl.eth')
+    })
+
+    it('should flag isWorld', () => {
+      expect(result.isWorld).toBe(true)
     })
 
     it('should append the realm to the jump-in URL', () => {
@@ -278,6 +325,10 @@ describe('normalizeLiveNowCard', () => {
     it('should flag the data as not a real event', () => {
       expect(result.isEvent).toBe(false)
     })
+
+    it('should expose the place title as placeName for non-event place cards', () => {
+      expect(result.placeName).toBe('Test Place')
+    })
   })
 
   describe('when the card carries event metadata', () => {
@@ -292,6 +343,7 @@ describe('normalizeLiveNowCard', () => {
           finishAt: '2026-04-22T18:00:00Z',
           recurrent: true,
           recurrentFrequency: 'WEEKLY',
+          recurrentInterval: 3,
           recurrentDates: ['2026-04-22T17:00:00Z'],
           attending: true
         })
@@ -314,6 +366,7 @@ describe('normalizeLiveNowCard', () => {
     it('should propagate the recurrence fields', () => {
       expect(result.recurrent).toBe(true)
       expect(result.recurrentFrequency).toBe('WEEKLY')
+      expect(result.recurrentInterval).toBe(3)
       expect(result.recurrentDates).toEqual(['2026-04-22T17:00:00Z'])
     })
 

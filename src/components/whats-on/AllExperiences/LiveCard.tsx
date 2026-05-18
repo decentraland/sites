@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react'
 import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
-import type { EventEntry } from '../../../features/whats-on-events'
+import type { EventEntry } from '../../../features/events'
 import { useCreatorAvatar } from '../../../hooks/useCreatorAvatar'
 import { LiveCardWrapper } from './AllExperiencesCard.styled'
 

@@ -1,7 +1,7 @@
 import * as mockReact from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { createMockEvent } from '../../../../__test-utils__/factories'
-import type { EventEntry } from '../../../../features/whats-on-events'
+import type { EventEntry } from '../../../../features/events'
 import { EventsList } from './EventsList'
 
 jest.mock('decentraland-ui2', () => ({

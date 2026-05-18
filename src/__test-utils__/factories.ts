@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { ModalEventData } from '../components/whats-on/EventDetailModal/EventDetailModal.types'
-import type { HotScene, LiveNowCard } from '../features/whats-on-events/events.helpers'
-import type { EventEntry } from '../features/whats-on-events/events.types'
+import type { HotScene, LiveNowCard } from '../features/events/events.helpers'
+import type { EventEntry } from '../features/events/events.types'
 
 function createMockEvent(overrides: Partial<EventEntry> = {}): EventEntry {
   return {
@@ -34,6 +34,10 @@ function createMockEvent(overrides: Partial<EventEntry> = {}): EventEntry {
     trending: false,
     recurrent: false,
     recurrent_frequency: null,
+    recurrent_interval: null,
+    recurrent_weekday_mask: null,
+    recurrent_count: null,
+    recurrent_until: null,
     recurrent_dates: [],
     contact: null,
     details: null,
@@ -106,12 +110,17 @@ function createMockModalData(overrides: Partial<ModalEventData> = {}): ModalEven
     finishAt: '2026-04-07T12:00:00Z',
     recurrent: false,
     recurrentFrequency: null,
+    recurrentInterval: null,
+    recurrentCount: null,
+    recurrentUntil: null,
     recurrentDates: [],
     totalAttendees: 42,
     attending: false,
     live: false,
     categories: ['music'],
     url: 'https://decentraland.org/jump/event?position=10,20',
+    isWorld: false,
+    placeName: 'Test Scene',
     isEvent: true,
     ...overrides
   }

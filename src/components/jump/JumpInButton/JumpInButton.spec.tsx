@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
+import { launchDesktopApp } from 'decentraland-ui2'
+import { getEnv } from '../../../config/env'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { detectDownloadOS } from '../../../modules/downloadConstants'
 import { JumpInButton } from './JumpInButton'
@@ -40,9 +42,7 @@ jest.mock('../../../hooks/useAuthIdentity', () => ({
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))
-jest.mock('../../../config/env', () => ({
-  getEnv: (key: string) => (key === 'DOWNLOAD_URL' ? 'https://dl.test' : 'https://onboarding.test')
-}))
+jest.mock('../../../config/env')
 jest.mock('../../../modules/downloadConstants', () => ({
   DOWNLOAD_URLS: {
     apple: 'https://dl.test',
@@ -56,7 +56,7 @@ jest.mock('../../../modules/downloadConstants', () => ({
 jest.mock('../../../modules/segment', () => ({
   SegmentEvent: { GO_TO_EXPLORER: 'Go To Explorer', CLICK: 'Click' }
 }))
-jest.mock('../../../features/jump/jump.helpers', () => ({
+jest.mock('../../../features/places/places.helpers', () => ({
   buildDeepLinkOptions: (position: string, realm?: string) => ({ position, realm })
 }))
 
@@ -64,6 +64,8 @@ const mockUseAuthIdentity = jest.mocked(useAuthIdentity)
 const mockUseAdvancedUserAgentData = jest.mocked(useAdvancedUserAgentData)
 const mockUseAnalytics = jest.mocked(useAnalytics)
 const mockDetectDownloadOS = jest.mocked(detectDownloadOS)
+const mockLaunchDesktopApp = jest.mocked(launchDesktopApp)
+const mockGetEnv = jest.mocked(getEnv)
 
 describe('JumpInButton', () => {
   beforeEach(() => {
@@ -73,6 +75,9 @@ describe('JumpInButton', () => {
       true,
       { os: { name: 'macOS' }, cpu: { architecture: 'arm64' }, mobile: false }
     ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+    mockGetEnv.mockImplementation((key: string) =>
+      key === 'DOWNLOAD_URL' ? 'https://dl.test' : key === 'ONBOARDING_URL' ? 'https://onboarding.test' : undefined
+    )
   })
 
   afterEach(() => {
@@ -142,6 +147,68 @@ describe('JumpInButton', () => {
         await userEvent.click(screen.getByRole('button'))
         expect(windowOpenMock).toHaveBeenCalledWith('https://apple', '_self')
       })
+    })
+  })
+
+  describe('when running on desktop', () => {
+    const windowOpenMock = jest.fn()
+
+    beforeEach(() => {
+      Object.defineProperty(window, 'open', { configurable: true, value: windowOpenMock })
+      windowOpenMock.mockReset()
+      mockLaunchDesktopApp.mockReset()
+    })
+
+    describe('and the launcher is already installed', () => {
+      it('should not open any fallback', async () => {
+        mockLaunchDesktopApp.mockResolvedValue(true)
+        render(<JumpInButton position="0,0" />)
+        await userEvent.click(screen.getByRole('button'))
+        expect(windowOpenMock).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('and the launcher is missing and the user has a valid identity', () => {
+      it('should open the download URL', async () => {
+        mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: true, address: '0xabc' })
+        mockLaunchDesktopApp.mockResolvedValue(false)
+        render(<JumpInButton position="0,0" />)
+        await userEvent.click(screen.getByRole('button'))
+        expect(windowOpenMock).toHaveBeenCalledWith('https://dl.test', '_self')
+      })
+    })
+
+    describe('and the launcher is missing and the user is anonymous', () => {
+      it('should open the onboarding URL when ONBOARDING_URL is set', async () => {
+        mockLaunchDesktopApp.mockResolvedValue(false)
+        render(<JumpInButton position="0,0" />)
+        await userEvent.click(screen.getByRole('button'))
+        expect(windowOpenMock).toHaveBeenCalledWith('https://onboarding.test', '_self')
+      })
+
+      it('should open the download modal when no ONBOARDING_URL is configured', async () => {
+        mockGetEnv.mockImplementation((key: string) => (key === 'DOWNLOAD_URL' ? 'https://dl.test' : undefined))
+        mockLaunchDesktopApp.mockResolvedValue(false)
+        render(<JumpInButton position="0,0" />)
+        await userEvent.click(screen.getByRole('button'))
+        expect(screen.getByTestId('download-modal')).toBeInTheDocument()
+      })
+    })
+
+    describe('and launchDesktopApp throws', () => {
+      it('should fall through to the download fallback path', async () => {
+        mockLaunchDesktopApp.mockRejectedValue(new Error('protocol blocked'))
+        render(<JumpInButton position="0,0" />)
+        await userEvent.click(screen.getByRole('button'))
+        expect(windowOpenMock).toHaveBeenCalledWith('https://onboarding.test', '_self')
+      })
+    })
+  })
+
+  describe('when rendered with onlyIcon', () => {
+    it('should render the icon-only variant', async () => {
+      render(<JumpInButton position="0,0" onlyIcon />)
+      expect(screen.getByLabelText('component.jump.jump_in_button.jump_in')).toBeInTheDocument()
     })
   })
 })

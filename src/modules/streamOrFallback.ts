@@ -10,16 +10,24 @@ import type { StreamOrFallbackArgs } from './streamOrFallback.types'
 // progress signal.
 const FALLBACK_LOADER_HOLD_MS = 4000
 
-// Bandwidth assumption when the browser doesn't expose `navigator.connection`
-// (Safari, Firefox). Tuned to modern broadband — the alternative for fast
-// users is the modal hanging long after the file actually landed. Slow users
-// fall through to the browser's own download bar as the real progress signal.
-const DEFAULT_DOWNLINK_MBPS = 50
+// Static bandwidth assumption used as the basis for the modal hold estimate.
+//
+// We intentionally do NOT read `navigator.connection.downlink`: per the
+// Network Information API W3C spec, Chrome caps `downlink` at ~10 Mbps for
+// privacy, regardless of the user's real bandwidth (verified empirically —
+// a user on 100 Mbps reads `downlink === 9.3`). Trusting that value
+// produces a wildly pessimistic estimate that clamps to the max hold for
+// every user, making the modal hang ~10 s on near-instant downloads.
+// Safari and Firefox don't expose the API at all.
+//
+// A static assumption of modern broadband is more accurate in practice than
+// the API value, and lets us reason about the worst-case hold time
+// deterministically.
+const ASSUMED_DOWNLINK_MBPS = 100
 
 // Wall-clock margin added on top of the pure transfer estimate to absorb
 // connection setup, server-side TTFB, and the browser's write-to-disk after
-// the bytes arrive. Sized for the current ~4.4 MB DMG — a flat 1.5s margin
-// dominates total hold time on a small file.
+// the bytes arrive.
 const ESTIMATE_SAFETY_MARGIN_MS = 500
 
 // Always hold for at least this long so the modal doesn't blink-and-vanish
@@ -29,11 +37,7 @@ const ESTIMATE_MIN_HOLD_MS = 800
 // Never hang a static (no progress bar) modal beyond this. Past this point
 // the browser's own download manager already shows as the user-facing
 // progress signal — keeping our modal up longer would just look stuck.
-const ESTIMATE_MAX_HOLD_MS = 10000
-
-interface NavigatorConnectionLike {
-  downlink?: number
-}
+const ESTIMATE_MAX_HOLD_MS = 4000
 
 /**
  * Sleeps for `ms` milliseconds, resolving early if `signal` aborts. Resolves
@@ -76,14 +80,12 @@ const fetchContentLength = async (url: string, signal?: AbortSignal): Promise<nu
 }
 
 /**
- * Estimates how long the modal should stay open given the file size and
- * the browser's reported connection speed. Adaptive per-user instead of a
- * single hardcoded constant. Returns the clamped hold in milliseconds.
+ * Estimates how long the modal should stay open given the file size and a
+ * static broadband assumption. Returns the clamped hold in milliseconds.
  *
  * - Reads `Content-Length` from a HEAD request to the gateway.
- * - Reads `navigator.connection.downlink` (Mbps) when available; falls back
- *   to a conservative default on Safari and Firefox where the API doesn't
- *   exist.
+ * - Uses `ASSUMED_DOWNLINK_MBPS` (NOT `navigator.connection.downlink`, which
+ *   Chrome caps and Safari/Firefox don't expose — see constant docs above).
  * - Adds a margin for handshake / write-to-disk variance and clamps the
  *   result so the modal can't disappear instantly nor hang forever.
  */
@@ -91,11 +93,7 @@ const estimateDownloadHoldMs = async (url: string, signal?: AbortSignal): Promis
   const sizeBytes = await fetchContentLength(url, signal)
   if (sizeBytes === null) return ESTIMATE_MIN_HOLD_MS
 
-  const connection =
-    typeof navigator !== 'undefined' ? (navigator as Navigator & { connection?: NavigatorConnectionLike }).connection : undefined
-  const downlinkMbps = connection?.downlink && connection.downlink > 0 ? connection.downlink : DEFAULT_DOWNLINK_MBPS
-
-  const downlinkBytesPerSec = (downlinkMbps * 1024 * 1024) / 8
+  const downlinkBytesPerSec = (ASSUMED_DOWNLINK_MBPS * 1024 * 1024) / 8
   const transferMs = (sizeBytes / downlinkBytesPerSec) * 1000
   const total = transferMs + ESTIMATE_SAFETY_MARGIN_MS
   return Math.min(ESTIMATE_MAX_HOLD_MS, Math.max(ESTIMATE_MIN_HOLD_MS, total))

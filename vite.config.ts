@@ -18,30 +18,53 @@ export default defineConfig(({ command, mode }) => {
       react(),
       nodePolyfills({
         include: ['buffer']
-      })
+      }),
+      // @mui/icons-material@5 has no `exports` field, so subpath imports like
+      // `@mui/icons-material/ChevronLeft` resolve to the CJS file. Vite 8's
+      // pre-bundler emits `export default require_X()` for those, leaking the
+      // whole CJS exports object (`{ __esModule, default }`) instead of the
+      // icon component. Rewrite to the ESM build that ships in the same package.
+      {
+        name: 'mui-icons-esm-redirect',
+        enforce: 'pre',
+        resolveId(source) {
+          if (source.startsWith('@mui/icons-material/') && !source.startsWith('@mui/icons-material/esm/')) {
+            return this.resolve(source.replace('@mui/icons-material/', '@mui/icons-material/esm/'))
+          }
+          return null
+        }
+      }
     ],
     build: {
       target: 'esnext',
       sourcemap: 'hidden',
       rollupOptions: {
         output: {
-          /* eslint-disable @typescript-eslint/naming-convention */
-          manualChunks: {
-            'vendor-sentry': [
-              '@sentry/browser',
-              '@sentry/core',
-              '@sentry-internal/replay',
-              '@sentry-internal/browser-utils',
-              '@sentry-internal/feedback'
-            ],
-            'vendor-schemas': ['ajv'],
-            'vendor-crypto': ['@dcl/crypto', 'eth-connect'],
-            'vendor-intl': ['@formatjs/icu-messageformat-parser', '@formatjs/intl'],
-            'vendor-ua': ['ua-parser-js'],
-            'vendor-router': ['react-router'],
-            'vendor-livekit': ['livekit-client', '@livekit/components-react', '@livekit/components-styles']
+          manualChunks: (id: string) => {
+            if (
+              id.includes('node_modules/@sentry/browser') ||
+              id.includes('node_modules/@sentry/core') ||
+              id.includes('node_modules/@sentry-internal/replay') ||
+              id.includes('node_modules/@sentry-internal/browser-utils') ||
+              id.includes('node_modules/@sentry-internal/feedback')
+            ) {
+              return 'vendor-sentry'
+            }
+            if (id.includes('node_modules/ajv')) return 'vendor-schemas'
+            if (id.includes('node_modules/@dcl/crypto') || id.includes('node_modules/eth-connect')) return 'vendor-crypto'
+            if (id.includes('node_modules/@formatjs/icu-messageformat-parser') || id.includes('node_modules/@formatjs/intl'))
+              return 'vendor-intl'
+            if (id.includes('node_modules/ua-parser-js')) return 'vendor-ua'
+            if (id.includes('node_modules/react-router')) return 'vendor-router'
+            if (
+              id.includes('node_modules/livekit-client') ||
+              id.includes('node_modules/@livekit/components-react') ||
+              id.includes('node_modules/@livekit/components-styles')
+            ) {
+              return 'vendor-livekit'
+            }
+            return null
           }
-          /* eslint-enable @typescript-eslint/naming-convention */
         }
       }
     },

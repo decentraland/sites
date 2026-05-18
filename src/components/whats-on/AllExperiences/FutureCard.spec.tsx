@@ -64,6 +64,14 @@ jest.mock('decentraland-ui2', () => ({
   Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>
 }))
 
+jest.mock('../common/LocalDateTimeTooltip', () => ({
+  LocalDateTimeTooltip: ({ children, startIso, finishIso }: { children: React.ReactNode; startIso: string; finishIso?: string | null }) => (
+    <span data-testid="local-datetime-tooltip" data-start={startIso} data-finish={finishIso ?? ''}>
+      {children}
+    </span>
+  )
+}))
+
 jest.mock('../common/CardActions.styled', () => ({
   ActionButton: ({ children, onClick }: { children: React.ReactNode; onClick?: React.MouseEventHandler }) => (
     <button data-testid="action-button" onClick={onClick}>

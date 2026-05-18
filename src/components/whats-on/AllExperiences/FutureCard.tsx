@@ -1,7 +1,7 @@
 import { memo, useCallback } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { Tooltip } from 'decentraland-ui2'
-import type { EventEntry } from '../../../features/whats-on-events'
+import type { EventEntry } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCardActions } from '../../../hooks/useCardActions'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
@@ -24,6 +24,7 @@ import {
   TimeLabel,
   TimePill
 } from '../common/CardActions.styled'
+import { LocalDateTimeTooltip } from '../common/LocalDateTimeTooltip'
 import { RemindMeButton } from '../common/RemindMeButton'
 import { CardContent, CardImage, CardImageWrapper, CardTitle, FutureCardContainer } from './AllExperiencesCard.styled'
 
@@ -71,10 +72,12 @@ const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
             <CreatorNameHighlight>{creatorName}</CreatorNameHighlight>
           </CreatorName>
         </CreatorRow>
-        <TimePill data-role="time-pill">
-          <TimeIcon />
-          <TimeLabel>{getRelativeTimeLabel(event.start_at, t)}</TimeLabel>
-        </TimePill>
+        <LocalDateTimeTooltip startIso={event.start_at} finishIso={event.finish_at}>
+          <TimePill data-role="time-pill">
+            <TimeIcon />
+            <TimeLabel>{getRelativeTimeLabel(event.start_at, t)}</TimeLabel>
+          </TimePill>
+        </LocalDateTimeTooltip>
         <HoverActions data-role="hover-actions">
           {hasValidIdentity ? (
             <RemindMeButton

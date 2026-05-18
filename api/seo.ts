@@ -87,6 +87,17 @@ const escapeHTML = (value: string): string =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#x27;')
 
+// Escape ONLY what's required inside element text content (RCDATA for <title>):
+// `<` and `&`. Apostrophes and quotes need no escaping here because we're not inside
+// an attribute value. Using the full `escapeHTML` for <title> turned "What's On" into
+// `<title>What&#x27;s On…</title>` which then got double-encoded somewhere in our
+// edge pipeline (the live response carried `<title>What&amp;#39;s On…</title>` —
+// browsers parse <title> in RCDATA mode where character refs are decoded once, so
+// the user saw the literal text `What&#39;s On…` in the browser tab). Producing a
+// literal apostrophe here removes the entity entirely and makes the title robust
+// against any downstream re-encoding.
+const escapeHTMLTextContent = (value: string): string => decodeHTMLEntities(value).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+
 // Only allow http(s) URLs; anything else (javascript:, data:, etc.) is dropped.
 const safeUrl = (value: string, fallback: string): string => {
   try {
@@ -464,6 +475,7 @@ const generateHTML = (data: SEOData | null, originalHTML: string, url: string): 
   const rawImageUrl = safeUrl(data?.imageUrl || DEFAULTS.image, DEFAULTS.image)
 
   const title = escapeHTML(rawTitle)
+  const titleTextContent = escapeHTMLTextContent(rawTitle)
   const description = escapeHTML(rawDescription)
   const imageUrl = escapeHTML(rawImageUrl)
   const safeCanonicalUrl = escapeHTML(url)
@@ -477,7 +489,7 @@ const generateHTML = (data: SEOData | null, originalHTML: string, url: string): 
   let html = originalHTML
 
   // Basic meta tags
-  html = replaceMetaTag(html, /<title>.*?<\/title>/i, `<title>${title}</title>`)
+  html = replaceMetaTag(html, /<title>.*?<\/title>/i, `<title>${titleTextContent}</title>`)
   html = replaceMetaTag(html, /<meta name="description" content="[^"]*"[^>]*>/i, `<meta name="description" content="${description}">`)
   html = replaceMetaTag(html, /<link rel="canonical" href="[^"]*"[^>]*>/i, `<link rel="canonical" href="${safeCanonicalUrl}">`)
 
@@ -591,10 +603,19 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   const queryString = canonicalQuery.toString()
   const actualUrl = `${origin}${requestPath}${queryString ? `?${queryString}` : ''}`
 
+  // Preview pages accept an unauthenticated token in the query string; treat them
+  // as private content: no edge cache, no Referer leak, no search indexing.
+  // Exact match is safe — Vercel normalizes trailing slashes (`/blog/preview/`) upstream
+  // of this function, so `requestPath` is always the canonical form.
+  const isPreviewPath = requestPath === '/blog/preview'
+
   // Security headers applied regardless of the response path.
   res.setHeader('X-Content-Type-Options', 'nosniff')
   res.setHeader('X-Frame-Options', 'SAMEORIGIN')
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.setHeader('Referrer-Policy', isPreviewPath ? 'no-referrer' : 'strict-origin-when-cross-origin')
+  if (isPreviewPath) {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive')
+  }
 
   if (!INDEX_HTML) {
     // Build output unavailable. Cannot redirect to actualUrl because vercel.json rewrites
@@ -612,7 +633,7 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     // Shorter stale window: timely blog announcements should not be served up to 24h stale.
-    res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=14400')
+    res.setHeader('Cache-Control', isPreviewPath ? 'no-store' : 'public, max-age=3600, stale-while-revalidate=14400')
     res.setHeader('Vary', 'Accept-Encoding')
     res.setHeader('X-SEO-Function', 'active')
     res.status(200).send(generateHTML(seoData, INDEX_HTML, actualUrl))
@@ -621,7 +642,7 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
     // to actualUrl (which would loop back to this function via vercel.json rewrite).
     console.error('[SEO Function] Error:', error)
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
-    res.setHeader('Cache-Control', 'public, max-age=60')
+    res.setHeader('Cache-Control', isPreviewPath ? 'no-store' : 'public, max-age=60')
     res.status(200).send(generateHTML(null, INDEX_HTML, actualUrl))
   }
 }
