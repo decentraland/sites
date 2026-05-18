@@ -22,10 +22,10 @@ import {
   technologyCategory
 } from '../fixtures/blog/categories'
 import { createCmsListResponse } from '../fixtures/blog/cms-entry.factory'
-import { detailListResponse, detailNotFoundResponse, detailPost } from '../fixtures/blog/post-detail'
+import { detailNotFoundResponse, detailPost } from '../fixtures/blog/post-detail'
 import { allPostsPage1, postsPage1Response } from '../fixtures/blog/posts-page-1'
-import { postsPage2Response } from '../fixtures/blog/posts-page-2'
-import { searchEmptyResponse, searchHappyResponse } from '../fixtures/blog/search'
+import { postsPage2, postsPage2Response } from '../fixtures/blog/posts-page-2'
+import { searchEmptyResponse, searchHappyResponse, searchHits } from '../fixtures/blog/search'
 import { SENTINEL_STATUS } from './shared'
 import type { BlogScenario } from './types'
 
@@ -58,9 +58,15 @@ const ENTRIES_BY_ID = new Map<string, CMSEntry>(
     lindaAuthor,
     decentralandTeamAuthor,
     detailPost,
-    ...allPostsPage1
+    ...allPostsPage1,
+    ...postsPage2
   ].map(e => [e.sys.id, e])
 )
+
+// All posts the fixture set knows about. Used by handlePostsBySlug so user
+// journeys can navigate by clicking real cards or search hits (any visible
+// slug resolves to a CMSEntry).
+const ALL_KNOWN_POSTS: CMSEntry[] = [...allPostsPage1, ...postsPage2, detailPost, ...searchHits]
 
 function jsonResponse(route: Route, body: unknown, status = 200) {
   return route.fulfill({
@@ -90,11 +96,15 @@ function delay(ms: number): Promise<void> {
 
 function handlePostsBySlug(route: Route, slug: string, scenario: BlogScenario) {
   switch (scenario.postBySlug ?? 'happy') {
-    case 'happy':
-      // Only respond with detail if the slug matches the detail fixture.
-      // Other slugs fall back to empty (lets us simulate "not found" for arbitrary urls).
-      if (slug === detailPost.fields.id) return jsonResponse(route, detailListResponse)
+    case 'happy': {
+      // Match against every known post (page 1, page 2, detail). User journeys
+      // navigate by clicking real cards so the requested slug rotates over the
+      // whole fixture set; restricting this to a single slug forced earlier
+      // specs to dodge navigation.
+      const known = ALL_KNOWN_POSTS.find(p => p.fields.id === slug)
+      if (known) return jsonResponse(route, createCmsListResponse([known], 1))
       return jsonResponse(route, detailNotFoundResponse)
+    }
     case 'not-found':
       return jsonResponse(route, detailNotFoundResponse)
     case 'error':
@@ -116,7 +126,7 @@ function handlePostsSearch(route: Route, scenario: BlogScenario) {
 function handlePostsByCategory(route: Route, categorySlug: string, scenario: BlogScenario) {
   switch (scenario.postsByCategory ?? 'happy') {
     case 'happy': {
-      const matching = allPostsPage1.filter(post => {
+      const matching = ALL_KNOWN_POSTS.filter(post => {
         const cat = post.fields.category as CMSEntry | undefined
         return cat?.fields.id === categorySlug
       })
@@ -132,7 +142,7 @@ function handlePostsByCategory(route: Route, categorySlug: string, scenario: Blo
 function handlePostsByAuthor(route: Route, authorSlug: string, scenario: BlogScenario) {
   switch (scenario.postsByAuthor ?? 'happy') {
     case 'happy': {
-      const matching = allPostsPage1.filter(post => {
+      const matching = ALL_KNOWN_POSTS.filter(post => {
         const author = post.fields.author as CMSEntry | undefined
         return author?.fields.id === authorSlug
       })

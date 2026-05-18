@@ -37,7 +37,7 @@ const BlogNavigation = ({ active, embedded }: BlogNavigationProps) => {
   )
 
   return (
-    <NavbarContainer $embedded={embedded}>
+    <NavbarContainer $embedded={embedded} data-testid="blog-navbar">
       <NavbarContent>
         <NavbarWrapper>
           <NavbarCategories>

@@ -1,11 +1,11 @@
 ---
 name: e2e-author
-description: Use when adding or editing a Playwright E2E spec under e2e/specs/blog/. Triggers on "add e2e test", "new e2e spec", "escribir test e2e", "playwright spec", or edits to files in e2e/specs/. Establishes the mockBlogApi-before-goto pattern, semantic locator priority, and the unmocked-CMS-fails contract. Narrow scope: blog suite only — extend the skill before authoring specs for other features.
+description: Use when adding or editing a Playwright E2E spec under e2e/specs/blog/. Triggers on "add e2e test", "new e2e spec", "escribir test e2e", "playwright spec", or edits to files in e2e/specs/. Establishes the user-journey pattern, mockBlogApi-before-goto contract, semantic locator priority, and the unmocked-CMS-fails contract. Narrow scope: blog suite only — extend the skill before authoring specs for other features.
 ---
 
 # e2e-author
 
-Playbook for authoring a new spec inside the existing E2E suite. Follow these rules to avoid the flakiness modes that motivated the suite.
+Playbook for authoring a new spec inside the existing E2E suite. The suite is organised by **user journey**, not by endpoint — each spec walks a real flow click-by-click. Follow these rules to avoid the flakiness modes that motivated the suite.
 
 ## The contract
 
@@ -29,6 +29,10 @@ Existing `data-testid` whitelist (do not invent new ones without justification):
 - `blog-error` — generic CMS error UI across Blog/Post/Category/Author pages.
 - `post-list` — real post grid (PostList non-loading branch).
 - `post-list-skeleton` — loading skeleton (PostList loading branch). Counting only `post-list` excludes skeletons.
+- `post-card`, `post-card-skeleton` — PostCard root in real / loading branches.
+- `main-post-card`, `main-post-card-skeleton` — MainPostCard root in real / loading branches.
+- `blog-navbar` — BlogNavigation root. Scope navbar links here so they don't collide with category meta links rendered inside cards or post headers.
+- `search-hit` — single `<SearchResultItem>` in the navbar search dropdown. Distinguishes hit `<li>`s from CategoryItem `<li>`s.
 
 ## Adding a scenario
 
@@ -39,9 +43,10 @@ Existing `data-testid` whitelist (do not invent new ones without justification):
 
 ## Spec naming and shape
 
-- File: `e2e/specs/<feature>/<aspect>.spec.ts`.
-- Top-level `test.describe('<page route>')` block.
-- One `test(...)` per scenario; group happy and bad paths together.
+- File: `e2e/specs/<feature>/journey-<flow>.spec.ts`. Each file walks **one** user journey end-to-end (multiple page transitions, real clicks).
+- Top-level `test.describe('User journey: <flow>')` block.
+- The happy path is a single long `test(...)` that walks every step. Bad paths (error states, not-found, etc.) are separate short tests within the same file.
+- Avoid `page.goto` after the initial landing — every subsequent navigation should be a real click, scroll, or keyboard interaction. Tests that only `goto`-and-assert duplicate the unit specs.
 - Pre-test: `unmocked = watchUnmockedCmsRequests(page)`.
 - Post-test: `expect(unmocked.errors, 'Unmocked CMS requests detected').toEqual([])`.
 
