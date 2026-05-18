@@ -35,7 +35,7 @@ const JumpInButton: FC<JumpInButtonProps> = ({
   const { hasValidIdentity } = useAuthIdentity()
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false)
 
-  const dclenv = searchParams.get('dclenv') ?? undefined
+  const dclenv = searchParams.get('dclenv') ?? searchParams.get('env') ?? undefined
 
   const onboardingUrl = getEnv('ONBOARDING_URL') ?? ''
   const downloadUrl = getEnv('DOWNLOAD_URL') ?? DOWNLOAD_URLS.windows
