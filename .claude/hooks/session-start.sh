@@ -13,6 +13,7 @@ sites session — quick reminders:
   pm: npm only (Dependencies section in CLAUDE.md)
   i18n: 6 locales, en is source (rule 9)
   shells: lightweight routes MUST NOT import src/shells/* (rule 2)
+  coverage floor: 95% stmts/lines/funcs (rule 6) — Stop hook blocks below the floor
   pre-PR: format -> lint:fix -> lint:pkg -> build -> test -> code-reviewer agent
   see CLAUDE.md "Pre-PR review" rules 1-25 and "Security checklist"
 EOF

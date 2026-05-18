@@ -515,6 +515,100 @@ describe('eventsClient', () => {
     })
   })
 
+  describe('when updateEvent mutation is called', () => {
+    const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
+    const payload = { name: 'Updated', description: 'desc' } as unknown as Parameters<
+      typeof eventsClient.endpoints.updateEvent.initiate
+    >[0]['payload']
+
+    describe('and the response is ok', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test')
+        mockFetchWithIdentity.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve({ ok: true, data: { id: 'ev 1' } })
+        })
+      })
+
+      it('should PATCH the event by id with the JSON payload', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(
+          eventsClient.endpoints.updateEvent.initiate({ eventId: 'ev 1', payload, identity: mockIdentity })
+        )
+        expect(mockFetchWithIdentity).toHaveBeenCalledWith(
+          'https://events.test/events/ev%201',
+          mockIdentity,
+          'PATCH',
+          JSON.stringify(payload),
+          expect.objectContaining({ 'Content-Type': 'application/json' })
+        )
+        expect(result.data).toEqual({ ok: true, data: { id: 'ev 1' } })
+      })
+    })
+
+    describe('and the response is not ok', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test')
+        mockFetchWithIdentity.mockResolvedValue({
+          ok: false,
+          status: 422,
+          json: () => Promise.resolve({ ok: false, error: 'bad' })
+        })
+        jest.spyOn(console, 'error').mockImplementation(() => undefined)
+      })
+
+      it('should surface the envelope as the mutation error', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(
+          eventsClient.endpoints.updateEvent.initiate({ eventId: 'ev-1', payload, identity: mockIdentity })
+        )
+        expect(result.error).toEqual(expect.objectContaining({ status: 422 }))
+      })
+    })
+
+    describe('and fetch throws', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test')
+        mockFetchWithIdentity.mockRejectedValue(new Error('offline'))
+      })
+
+      it('should return FETCH_ERROR', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(
+          eventsClient.endpoints.updateEvent.initiate({ eventId: 'ev-1', payload, identity: mockIdentity })
+        )
+        expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+      })
+    })
+  })
+
+  describe('when getUpcomingEvents is dispatched twice with the same identity', () => {
+    const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
+
+    beforeEach(() => {
+      mockFetchWithOptionalIdentity.mockClear()
+      mockGetEnv.mockReturnValue('https://events.test')
+      mockFetchWithOptionalIdentity.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ data: [] })
+      })
+    })
+
+    it('should hit the cache and avoid a duplicate network call (serializeQueryArgs cache key)', async () => {
+      const store = createTestStore()
+      await store.dispatch(eventsClient.endpoints.getUpcomingEvents.initiate({ identity: mockIdentity }))
+      await store.dispatch(eventsClient.endpoints.getUpcomingEvents.initiate({ identity: mockIdentity }))
+      expect(mockFetchWithOptionalIdentity).toHaveBeenCalledTimes(1)
+    })
+
+    it('should refetch when toggling between authenticated and anonymous (cache key changes)', async () => {
+      const store = createTestStore()
+      await store.dispatch(eventsClient.endpoints.getUpcomingEvents.initiate({ identity: mockIdentity }))
+      await store.dispatch(eventsClient.endpoints.getUpcomingEvents.initiate())
+      expect(mockFetchWithOptionalIdentity).toHaveBeenCalledTimes(2)
+    })
+  })
+
   describe('when uploadPoster mutation is called', () => {
     const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
     const file = new File(['x'], 'cover.png', { type: 'image/png' })
@@ -711,6 +805,79 @@ describe('eventsClient', () => {
 
         expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
       })
+    })
+  })
+
+  describe('non-Error rejection branch (`Unknown error` fallback)', () => {
+    const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
+
+    beforeEach(() => {
+      mockGetEnv.mockReturnValue('https://events.test')
+      mockFetchWithOptionalIdentity.mockClear()
+      mockFetchWithIdentity.mockClear()
+    })
+
+    it.each([
+      ['getEvents', () => eventsClient.endpoints.getEvents.initiate({})],
+      ['getUpcomingEvents', () => eventsClient.endpoints.getUpcomingEvents.initiate()],
+      ['getEventById', () => eventsClient.endpoints.getEventById.initiate({ eventId: 'e1' })],
+      ['createEvent', () => eventsClient.endpoints.createEvent.initiate({ payload: {} as never, identity: mockIdentity })],
+      ['updateEvent', () => eventsClient.endpoints.updateEvent.initiate({ eventId: 'e', payload: {} as never, identity: mockIdentity })],
+      ['toggleAttendee', () => eventsClient.endpoints.toggleAttendee.initiate({ eventId: 'e', attending: true, identity: mockIdentity })],
+      ['uploadPoster', () => eventsClient.endpoints.uploadPoster.initiate({ file: new File([], 'p'), identity: mockIdentity })],
+      [
+        'uploadPosterVertical',
+        () => eventsClient.endpoints.uploadPosterVertical.initiate({ file: new File([], 'p'), identity: mockIdentity })
+      ],
+      ['getCommunities', () => eventsClient.endpoints.getCommunities.initiate({ identity: mockIdentity })]
+    ] as const)('should surface "Unknown error" for %s when fetch rejects with a non-Error value', async (_name, dispatch) => {
+      mockFetchWithOptionalIdentity.mockRejectedValue('plain-string-rejection')
+      mockFetchWithIdentity.mockRejectedValue('plain-string-rejection')
+      const originalFetch = global.fetch
+      global.fetch = jest.fn().mockRejectedValue('plain-string-rejection') as unknown as typeof fetch
+      try {
+        const store = createTestStore()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result: any = await store.dispatch(dispatch() as never)
+        expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR', error: 'Unknown error' }))
+      } finally {
+        global.fetch = originalFetch
+      }
+    })
+
+    it('should hit the bare-array branch in getWorldNames when the response is already an array', async () => {
+      const fetchMock = jest.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve(['name-a.dcl.eth']) })
+      const originalFetch = global.fetch
+      global.fetch = fetchMock as unknown as typeof fetch
+      try {
+        const store = createTestStore()
+        const result = await store.dispatch(eventsClient.endpoints.getWorldNames.initiate())
+        expect(result.data).toEqual(['name-a.dcl.eth'])
+      } finally {
+        global.fetch = originalFetch
+      }
+    })
+
+    it('should serialize getCommunities cache key to "anon" when no identity is supplied', async () => {
+      mockFetchWithOptionalIdentity.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ data: { results: [] } })
+      })
+      const store = createTestStore()
+      const result = await store.dispatch(
+        eventsClient.endpoints.getCommunities.initiate({ identity: undefined as unknown as AuthIdentity })
+      )
+      expect(result.data).toEqual([])
+    })
+
+    it('should default getCommunities results to [] when envelope.data is missing', async () => {
+      mockFetchWithOptionalIdentity.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({})
+      })
+      const store = createTestStore()
+      const result = await store.dispatch(eventsClient.endpoints.getCommunities.initiate({ identity: mockIdentity }))
+      expect(result.data).toEqual([])
     })
   })
 })

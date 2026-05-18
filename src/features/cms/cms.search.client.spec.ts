@@ -212,5 +212,53 @@ describe('searchEndpoints', () => {
       expect(mockFetch).not.toHaveBeenCalled()
       expect(result.data).toEqual([])
     })
+
+    it('should surface a CUSTOM_ERROR when the response shape is unexpected', async () => {
+      mockFetch.mockResolvedValueOnce(
+        new Response(JSON.stringify({ not: 'a-search-response' }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+      )
+      const store = createTestStore()
+      const result = await store.dispatch(searchEndpoints.endpoints.searchBlog.initiate({ query: 'longenough', hitsPerPage: 5, page: 0 }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 'CUSTOM_ERROR' }))
+    })
+
+    it('should bubble up baseQuery errors without invoking enrichment', async () => {
+      mockFetch.mockResolvedValueOnce(new Response('boom', { status: 500 }))
+      const store = createTestStore()
+      const result = await store.dispatch(searchEndpoints.endpoints.searchBlog.initiate({ query: 'longenough', hitsPerPage: 5, page: 0 }))
+      expect(result.error).toBeDefined()
+    })
+  })
+
+  describe('searchBlogPosts baseQuery error path', () => {
+    it('should bubble up baseQuery errors', async () => {
+      mockFetch.mockResolvedValueOnce(new Response('boom', { status: 500 }))
+      const store = createTestStore()
+      const result = await store.dispatch(
+        searchEndpoints.endpoints.searchBlogPosts.initiate({ query: 'longenough', hitsPerPage: 5, page: 0 })
+      )
+      expect(result.error).toBeDefined()
+    })
+
+    it('should fall back to empty slug + image when fields.id is missing and there is no asset/category id', async () => {
+      mockResolveAssetUrl.mockResolvedValue('')
+      mockResolveEntrySlug.mockResolvedValue('')
+      mockFetch.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            items: [{ sys: { id: 'entry-99', type: 'Entry' }, fields: { title: 'P', description: 'D' }, _rank: 0 }],
+            total: 1,
+            skip: 0,
+            limit: 10
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        )
+      )
+      const store = createTestStore()
+      const result = await store.dispatch(
+        searchEndpoints.endpoints.searchBlogPosts.initiate({ query: 'longenough', hitsPerPage: 5, page: 0 })
+      )
+      expect(result.data?.results[0].url).toBe('/blog//entry-99')
+    })
   })
 })

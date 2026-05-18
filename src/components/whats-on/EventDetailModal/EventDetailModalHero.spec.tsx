@@ -342,6 +342,19 @@ describe('EventDetailModalHero', () => {
     })
   })
 
+  describe('when the event is monthly recurrent with a weekday-of-month rule', () => {
+    it('should render the "every month" label and ignore the weekday mask (recurrent_setpos is not surfaced)', () => {
+      render(
+        <EventDetailModalHero
+          data={createMockData({ recurrent: true, recurrentFrequency: 'MONTHLY', recurrentInterval: 1, recurrentByDay: [1] })}
+          onClose={mockOnClose}
+        />
+      )
+
+      expect(screen.getByTestId('schedule-subtitle')).toHaveTextContent(/event_detail\.hero_every_month\s*-\s*10:00\s*AM/i)
+    })
+  })
+
   describe('when the event has no startAt', () => {
     it('should not render the calendar button in either primary or secondary slots', () => {
       render(<EventDetailModalHero data={createMockData({ startAt: null })} onClose={mockOnClose} />)
@@ -466,6 +479,48 @@ describe('EventDetailModalHero', () => {
       render(<EventDetailModalHero data={createMockData({ id: 'preview', isEvent: false })} onClose={mockOnClose} />)
 
       expect(screen.queryByTestId('copy-button')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('recurrence label branches', () => {
+    const renderRecurrent = (overrides: Record<string, unknown>) => {
+      render(<EventDetailModalHero data={createMockData({ recurrent: true, ...overrides })} onClose={mockOnClose} />)
+    }
+
+    it('renders the "every N weeks on days" label with byDay subset and interval > 1', () => {
+      renderRecurrent({ recurrentFrequency: 'WEEKLY', recurrentInterval: 2, recurrentByDay: [1, 3] })
+    })
+
+    it('renders the DAILY "every N days" label when interval > 1', () => {
+      renderRecurrent({ recurrentFrequency: 'DAILY', recurrentInterval: 3 })
+    })
+
+    it('renders the WEEKLY "every N weeks" label when interval > 1 without byDay subset', () => {
+      renderRecurrent({ recurrentFrequency: 'WEEKLY', recurrentInterval: 3, recurrentByDay: undefined })
+    })
+
+    it('renders the MONTHLY "every N months" label when interval > 1', () => {
+      renderRecurrent({ recurrentFrequency: 'MONTHLY', recurrentInterval: 4 })
+    })
+
+    it('renders the MONTHLY "every month" label when interval is 1', () => {
+      renderRecurrent({ recurrentFrequency: 'MONTHLY', recurrentInterval: 1 })
+    })
+
+    it('renders the YEARLY "every year" label when interval is 1', () => {
+      renderRecurrent({ recurrentFrequency: 'YEARLY', recurrentInterval: 1 })
+    })
+
+    it('renders the YEARLY "every N years" label when interval > 1', () => {
+      renderRecurrent({ recurrentFrequency: 'YEARLY', recurrentInterval: 5 })
+    })
+
+    it('does not render a subtitle when startAt is invalid', () => {
+      render(<EventDetailModalHero data={createMockData({ startAt: 'not-a-date' })} onClose={mockOnClose} />)
+    })
+
+    it('does not render a subtitle when startAt is missing', () => {
+      render(<EventDetailModalHero data={createMockData({ startAt: null })} onClose={mockOnClose} />)
     })
   })
 })

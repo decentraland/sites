@@ -38,6 +38,167 @@ function isDclFoundationCreator(creatorName: string | null | undefined): boolean
   return creatorName?.trim().toLowerCase() === DCL_FOUNDATION_NAME_LOWER
 }
 
+// The events API returns the caller's own pending and rejected events when authenticated so the
+// My Hangouts tab can surface drafts with their status overlay. Any surface that lists events
+// publicly (Upcoming carousel, All Experiences day-grid, etc.) must filter through this predicate
+// to avoid leaking unapproved drafts to the rest of the audience.
+function isPubliclyVisibleEvent(event: Pick<EventEntry, 'approved' | 'rejected'>): boolean {
+  return event.approved && !event.rejected
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000
+const HOUR_MS = 60 * 60 * 1000
+const MAX_EXPANSION = 1000
+
+// The events API caps `recurrent_dates` at the next ~10 occurrences (see
+// MAX_EVENT_RECURRENT in decentraland/events). The cron slides that window
+// forward as each occurrence ends, but a user navigating the calendar more
+// than a few weeks ahead sees the edge of the materialized window before the
+// cron catches up. We extend recurrent_dates on the client up to the last
+// visible day (or recurrent_until, whichever is sooner) using the recurrence
+// rule fields. Defense-in-depth alongside the server-side fix; once every
+// event has been re-materialized with a larger cap this helper becomes a
+// no-op in practice.
+function expandRecurrentDates(event: EventEntry, untilDate: Date): string[] {
+  const materialized = event.recurrent_dates
+  if (!event.recurrent || !materialized || materialized.length === 0) {
+    return materialized ?? []
+  }
+  // Honor explicit count — that's the creator's intent, don't synthesize past it.
+  if (event.recurrent_count != null) {
+    return materialized
+  }
+
+  const lastMaterializedTs = new Date(materialized[materialized.length - 1]).getTime()
+  const untilDateTs = untilDate.getTime()
+  const recurrentUntilTs = event.recurrent_until ? new Date(event.recurrent_until).getTime() : null
+  // Recurrence rule already ended, or already covers the visible range.
+  if (lastMaterializedTs >= untilDateTs) return materialized
+  if (recurrentUntilTs != null && recurrentUntilTs <= lastMaterializedTs) return materialized
+
+  const cap = recurrentUntilTs != null ? Math.min(recurrentUntilTs, untilDateTs) : untilDateTs
+  const interval = Math.max(event.recurrent_interval ?? 1, 1)
+  const next = pickNextDateGenerator(event.recurrent_frequency, interval, materialized)
+  if (!next) return materialized
+
+  const expanded = [...materialized]
+  let current = new Date(lastMaterializedTs)
+  for (let i = 0; i < MAX_EXPANSION; i++) {
+    const candidate = next(current)
+    if (candidate.getTime() > cap) break
+    expanded.push(candidate.toISOString())
+    current = candidate
+  }
+  return expanded
+}
+
+// Returns a function that, given the previous occurrence, produces the next one
+// per the recurrence rule. WEEKLY needs cycle detection because multi-weekday
+// rules (e.g. MWF) have non-uniform deltas summing to 7 days × interval. The
+// other frequencies are uniform or use calendar math.
+function pickNextDateGenerator(
+  frequency: RecurrentFrequency | null,
+  interval: number,
+  materialized: string[]
+): ((current: Date) => Date) | null {
+  switch (frequency) {
+    case 'WEEKLY': {
+      const cycle = detectWeeklyCycle(materialized, interval)
+      if (cycle.length === 0) return null
+      // We don't know where in the cycle the last materialized date sits when
+      // dates were truncated to the last N entries. Use the cycle's offsets
+      // sequentially starting from index 0 — for single-day weekly the cycle
+      // has length 1 so this is correct; for multi-day weekly the cycle length
+      // equals the number of weekdays per week, and replaying from the start
+      // produces correct dates because each cycle sums to exactly one week.
+      let idx = 0
+      return current => {
+        const stepMs = cycle[idx]
+        idx = (idx + 1) % cycle.length
+        return new Date(current.getTime() + stepMs)
+      }
+    }
+    case 'DAILY':
+      return current => new Date(current.getTime() + interval * DAY_MS)
+    case 'HOURLY':
+      return current => new Date(current.getTime() + interval * HOUR_MS)
+    case 'MONTHLY': {
+      // Anchor on the original day-of-month from the first materialized entry
+      // (= start_at). Each step targets `current.month + interval` and clamps
+      // the day if the anchor doesn't exist in that month (e.g. Jan 31 + 1mo →
+      // Feb 28/29 rather than JS's silent overflow to Mar 3). Mirrors the
+      // server's RRule semantics so synthesized dates align with what the
+      // backend would have produced.
+      const anchorDay = new Date(materialized[0]).getUTCDate()
+      return current => clampedCalendarStep(current, current.getUTCMonth() + interval, anchorDay)
+    }
+    case 'YEARLY': {
+      // Same anchor-and-clamp pattern. Feb 29 + 1 year on a non-leap year
+      // resolves to Feb 28 instead of JS's default rollover to Mar 1.
+      const anchorMonth = new Date(materialized[0]).getUTCMonth()
+      const anchorDay = new Date(materialized[0]).getUTCDate()
+      return current => clampedCalendarStep(current, anchorMonth, anchorDay, current.getUTCFullYear() + interval)
+    }
+    default:
+      return null
+  }
+}
+
+// Builds a Date at (year, monthOffset, anchorDay), clamping the day to the
+// target month's last day when the anchor overshoots (e.g. Feb 31 → Feb 28).
+// monthOffset can be > 11 or negative; Date.UTC normalizes into year offsets.
+function clampedCalendarStep(current: Date, monthOffset: number, anchorDay: number, year?: number): Date {
+  const targetYear = year ?? current.getUTCFullYear()
+  // Construct at day 1 of the target month so the constructor never overflows.
+  const next = new Date(
+    Date.UTC(
+      targetYear,
+      monthOffset,
+      1,
+      current.getUTCHours(),
+      current.getUTCMinutes(),
+      current.getUTCSeconds(),
+      current.getUTCMilliseconds()
+    )
+  )
+  // Last day of the resolved month: day 0 of the NEXT month.
+  const lastDay = new Date(Date.UTC(next.getUTCFullYear(), next.getUTCMonth() + 1, 0)).getUTCDate()
+  next.setUTCDate(Math.min(anchorDay, lastDay))
+  return next
+}
+
+// Walks the deltas between consecutive materialized dates backwards from the end,
+// accumulating until they sum to ~7 days × interval (= one weekly cycle). For
+// single-weekday rules that's the most recent delta; for MWF-style multi-day
+// rules it's the last 2-3 deltas covering one full week.
+function detectWeeklyCycle(materialized: string[], interval: number): number[] {
+  const weekMs = interval * 7 * DAY_MS
+  if (materialized.length < 2) return [weekMs]
+
+  const dates = materialized.map(d => new Date(d).getTime())
+  const deltas: number[] = []
+  for (let i = dates.length - 1; i > 0; i--) {
+    deltas.unshift(dates[i] - dates[i - 1])
+  }
+
+  let accumulated = 0
+  const cycle: number[] = []
+  for (let i = deltas.length - 1; i >= 0; i--) {
+    cycle.unshift(deltas[i])
+    accumulated += deltas[i]
+    // Tolerance of one day to absorb DST shifts that move occurrences by an hour.
+    if (Math.abs(accumulated - weekMs) <= DAY_MS) return cycle
+    if (accumulated > weekMs + DAY_MS) {
+      // Single delta overshoots a week (e.g. recurrent_dates starts with start_at
+      // far in the past followed by a future window). Fall back to the most
+      // recent delta and trust the materialized cadence.
+      return [deltas[deltas.length - 1]]
+    }
+  }
+  // Materialized dates don't span a full week yet. Use whatever cycle we collected.
+  return cycle.length > 0 ? cycle : [weekMs]
+}
+
 // Buckets events into one array per visible day, expanding recurrent events into one virtual entry
 // per occurrence in `recurrent_dates` that falls on a visible day, and sorts each bucket ascending
 // by start_at. For recurrent events `start_at` is the FIRST occurrence (often months in the past),
@@ -45,10 +206,14 @@ function isDclFoundationCreator(creatorName: string | null | undefined): boolean
 // own start_at. Tagged tuples cache the parsed start timestamp so the sort comparator skips re-parsing.
 function bucketEventsByDay(events: EventEntry[], days: Date[], now: number = Date.now()): EventEntry[][] {
   const tagged: Array<[number, EventEntry]>[] = days.map(() => [])
+  // The expansion cap is the END of the last visible day, not its start — otherwise
+  // an event whose occurrence falls late on the last visible day would be excluded.
+  const lastVisibleDay = days[days.length - 1]
+  const expansionCap = lastVisibleDay ? new Date(lastVisibleDay.getTime() + DAY_MS - 1) : null
 
   for (const event of events) {
     const hasRecurrence = event.recurrent && event.recurrent_dates && event.recurrent_dates.length > 0
-    const dates = hasRecurrence ? event.recurrent_dates : [event.start_at]
+    const dates = hasRecurrence && expansionCap ? expandRecurrentDates(event, expansionCap) : [event.start_at]
 
     for (const dateStr of dates) {
       const start = new Date(dateStr)
@@ -272,5 +437,14 @@ async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig):
   })
 }
 
-export { bucketEventsByDay, buildLiveNowCards, DCL_FOUNDATION_LOGO_URL, DCL_FOUNDATION_NAME, enrichPlaceCards, isDclFoundationCreator }
+export {
+  bucketEventsByDay,
+  buildLiveNowCards,
+  DCL_FOUNDATION_LOGO_URL,
+  DCL_FOUNDATION_NAME,
+  enrichPlaceCards,
+  expandRecurrentDates,
+  isDclFoundationCreator,
+  isPubliclyVisibleEvent
+}
 export type { EnrichmentConfig, HotScene, LiveNowCard }

@@ -50,7 +50,10 @@ function getHeroRecurrenceLabel(
   locale: string
 ): string | null {
   const { frequency: normalizedFrequency, interval: count } = normalizeRecurrence(frequency, interval)
-  if (byDay && byDay.length > 0 && byDay.length < 7) {
+  // See note in EventDetailModalContent.getRecurrenceLabel — the byDay branch is weekly-only;
+  // MONTHLY/YEARLY events carry a weekday mask alongside `recurrent_setpos` we don't render.
+  const isWeeklyCadence = normalizedFrequency === 'WEEKLY' || normalizedFrequency === 'DAILY'
+  if (isWeeklyCadence && byDay && byDay.length > 0 && byDay.length < 7) {
     const days = normalizeDayIndices(byDay)
       .map(i => localizedWeekdayLong(i, locale))
       .join(', ')
