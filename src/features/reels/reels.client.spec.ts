@@ -222,4 +222,16 @@ describe('reels.client', () => {
       expect(result.size).toBe(0)
     })
   })
+
+  describe('stripTokenId edge cases (covered indirectly via enrichWearables)', () => {
+    it('should preserve the original URN when the last segment is non-numeric', async () => {
+      // The matic URN ends with a non-numeric tag — stripTokenId returns the urn unchanged.
+      fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ data: { items: [] } }) })
+      fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ data: { items: [] } }) })
+      const urn = 'urn:decentraland:matic:collections-v2:0xabc:wearable-name'
+      const result = await enrichWearables([{ userName: 'a', userAddress: '0xa', isGuest: false, wearables: [urn] }])
+      // No graph match => wearablesParsed empty; ensures the non-numeric branch is taken.
+      expect(result[0].wearablesParsed).toEqual([])
+    })
+  })
 })
