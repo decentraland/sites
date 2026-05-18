@@ -1,5 +1,12 @@
 import { createMockEvent, createMockPlaceCard, createMockScene } from '../../__test-utils__/factories'
-import { bucketEventsByDay, buildLiveNowCards, enrichPlaceCards, expandRecurrentDates, isDclFoundationCreator } from './events.helpers'
+import {
+  bucketEventsByDay,
+  buildLiveNowCards,
+  enrichPlaceCards,
+  expandRecurrentDates,
+  isDclFoundationCreator,
+  isPubliclyVisibleEvent
+} from './events.helpers'
 import type { HotScene, LiveNowCard } from './events.helpers'
 import type { EventEntry } from './events.types'
 
@@ -35,6 +42,27 @@ describe('isDclFoundationCreator', () => {
       expect(isDclFoundationCreator('')).toBe(false)
       expect(isDclFoundationCreator(null)).toBe(false)
       expect(isDclFoundationCreator(undefined)).toBe(false)
+    })
+  })
+})
+
+describe('isPubliclyVisibleEvent', () => {
+  describe('when the event is approved and not rejected', () => {
+    it('should return true', () => {
+      expect(isPubliclyVisibleEvent({ approved: true, rejected: false })).toBe(true)
+    })
+  })
+
+  describe('when the event is pending approval', () => {
+    it('should return false', () => {
+      expect(isPubliclyVisibleEvent({ approved: false, rejected: false })).toBe(false)
+    })
+  })
+
+  describe('when the event has been rejected', () => {
+    it('should return false even if approved is somehow also true', () => {
+      expect(isPubliclyVisibleEvent({ approved: false, rejected: true })).toBe(false)
+      expect(isPubliclyVisibleEvent({ approved: true, rejected: true })).toBe(false)
     })
   })
 })

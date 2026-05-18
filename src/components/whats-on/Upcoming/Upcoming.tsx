@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from '@dcl/hooks'
-import { useGetUpcomingEventsQuery } from '../../../features/events'
+import { isPubliclyVisibleEvent, useGetUpcomingEventsQuery } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
 import { chunk } from '../../../utils/whatsOnChunk'
@@ -19,7 +19,9 @@ function Upcoming() {
   const { closeEventDetailModal, editActiveEvent, modalData, openEventDetailModal } = useEventDetailModal()
   const trackRef = useRef<HTMLDivElement>(null)
 
-  const pages = useMemo(() => chunk(events, PAGE_SIZE), [events])
+  const visibleEvents = useMemo(() => events.filter(isPubliclyVisibleEvent), [events])
+
+  const pages = useMemo(() => chunk(visibleEvents, PAGE_SIZE), [visibleEvents])
 
   const handleScroll = useCallback(() => {
     const el = trackRef.current
@@ -34,13 +36,13 @@ function Upcoming() {
     el.scrollTo({ left: index * el.clientWidth, behavior: 'smooth' })
   }, [])
 
-  if (events.length === 0) return null
+  if (visibleEvents.length === 0) return null
 
   return (
     <UpcomingSection>
       <UpcomingTitle variant="h5">{t('upcoming.title')}</UpcomingTitle>
       <DesktopGrid>
-        {events.map(event => (
+        {visibleEvents.map(event => (
           <UpcomingCard key={event.id} event={event} onClick={openEventDetailModal} />
         ))}
       </DesktopGrid>
