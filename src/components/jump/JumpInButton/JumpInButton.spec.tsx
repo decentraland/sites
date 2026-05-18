@@ -1,9 +1,16 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useSearchParams } from 'react-router-dom'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
+import { launchDesktopApp } from 'decentraland-ui2'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { detectDownloadOS } from '../../../modules/downloadConstants'
 import { JumpInButton } from './JumpInButton'
+
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useSearchParams: jest.fn()
+}))
 
 jest.mock('@dcl/hooks', () => ({
   useAdvancedUserAgentData: jest.fn(),
@@ -57,16 +64,19 @@ jest.mock('../../../modules/segment', () => ({
   SegmentEvent: { GO_TO_EXPLORER: 'Go To Explorer', CLICK: 'Click' }
 }))
 jest.mock('../../../features/places/places.helpers', () => ({
-  buildDeepLinkOptions: (position: string, realm?: string) => ({ position, realm })
+  buildDeepLinkOptions: (position: string, realm?: string, dclenv?: string) => ({ position, realm, dclenv })
 }))
 
+const mockUseSearchParams = jest.mocked(useSearchParams)
 const mockUseAuthIdentity = jest.mocked(useAuthIdentity)
 const mockUseAdvancedUserAgentData = jest.mocked(useAdvancedUserAgentData)
 const mockUseAnalytics = jest.mocked(useAnalytics)
 const mockDetectDownloadOS = jest.mocked(detectDownloadOS)
+const mockLaunchDesktopApp = jest.mocked(launchDesktopApp)
 
 describe('JumpInButton', () => {
   beforeEach(() => {
+    mockUseSearchParams.mockReturnValue([new URLSearchParams(''), jest.fn()] as unknown as ReturnType<typeof useSearchParams>)
     mockUseAnalytics.mockReturnValue({ track: jest.fn() } as unknown as ReturnType<typeof useAnalytics>)
     mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
     mockUseAdvancedUserAgentData.mockReturnValue([
@@ -90,6 +100,35 @@ describe('JumpInButton', () => {
     it('should fall back to the i18n label', () => {
       render(<JumpInButton position="0,0" />)
       expect(screen.getByText('component.jump.jump_in_button.jump_in')).toBeInTheDocument()
+    })
+  })
+
+  describe('when the URL contains dclenv', () => {
+    beforeEach(() => {
+      mockUseSearchParams.mockReturnValue([new URLSearchParams('dclenv=zone'), jest.fn()] as unknown as ReturnType<typeof useSearchParams>)
+      mockLaunchDesktopApp.mockResolvedValue(true)
+    })
+
+    it('should forward dclenv to launchDesktopApp', async () => {
+      render(<JumpInButton position="75,-9" realm="sdk7testscenes.dcl.eth" />)
+      await userEvent.click(screen.getByRole('button'))
+      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(
+        expect.objectContaining({ dclenv: 'zone' })
+      )
+    })
+  })
+
+  describe('when the URL does not contain dclenv', () => {
+    beforeEach(() => {
+      mockLaunchDesktopApp.mockResolvedValue(true)
+    })
+
+    it('should not include dclenv in launchDesktopApp options', async () => {
+      render(<JumpInButton position="75,-9" realm="sdk7testscenes.dcl.eth" />)
+      await userEvent.click(screen.getByRole('button'))
+      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(
+        expect.not.objectContaining({ dclenv: expect.anything() })
+      )
     })
   })
 

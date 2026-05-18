@@ -1,4 +1,5 @@
 import { type FC, type ReactNode, useCallback, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { type ButtonProps, DownloadModal, JumpInIcon, launchDesktopApp } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
@@ -27,11 +28,14 @@ const JumpInButton: FC<JumpInButtonProps> = ({
   color = 'primary',
   variant = 'contained'
 }) => {
+  const [searchParams] = useSearchParams()
   const [, advancedUserAgent] = useAdvancedUserAgentData()
   const { track } = useAnalytics()
   const formatMessage = useFormatMessage()
   const { hasValidIdentity } = useAuthIdentity()
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false)
+
+  const dclenv = searchParams.get('dclenv') ?? undefined
 
   const onboardingUrl = getEnv('ONBOARDING_URL') ?? ''
   const downloadUrl = getEnv('DOWNLOAD_URL') ?? DOWNLOAD_URLS.windows
@@ -63,7 +67,7 @@ const JumpInButton: FC<JumpInButtonProps> = ({
     track(SegmentEvent.GO_TO_EXPLORER, { position, realm, osName, arch })
 
     try {
-      const launched = await launchDesktopApp(buildDeepLinkOptions(position, realm))
+      const launched = await launchDesktopApp(buildDeepLinkOptions(position, realm, dclenv))
       if (!launched) {
         track(SegmentEvent.CLICK, { event: 'Client not installed', osName, arch })
         openDownloadFallback()
@@ -71,7 +75,7 @@ const JumpInButton: FC<JumpInButtonProps> = ({
     } catch {
       openDownloadFallback()
     }
-  }, [isMobile, downloadOs, track, position, realm, osName, arch, openDownloadFallback])
+  }, [isMobile, downloadOs, track, position, realm, dclenv, osName, arch, openDownloadFallback])
 
   const closeDownloadModal = useCallback(() => setDownloadModalOpen(false), [])
 
