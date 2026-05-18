@@ -63,7 +63,7 @@ jest.mock('../../../modules/segment', () => ({
   SegmentEvent: { GO_TO_EXPLORER: 'Go To Explorer', CLICK: 'Click' }
 }))
 jest.mock('../../../features/places/places.helpers', () => ({
-  buildDeepLinkOptions: (position: string, realm?: string, dclenv?: string) => ({ position, realm, dclenv })
+  buildDeepLinkOptions: (position: string, realm?: string, explorerEnv?: string) => ({ position, realm, dclenv: explorerEnv })
 }))
 
 const mockUseSearchParams = jest.mocked(useSearchParams)

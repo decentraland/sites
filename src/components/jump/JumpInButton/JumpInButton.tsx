@@ -10,7 +10,7 @@ import { DOWNLOAD_URLS, detectDownloadOS } from '../../../modules/downloadConsta
 import { SegmentEvent } from '../../../modules/segment'
 import { JumpInIconButton, StyledJumpInButton } from './JumpInButton.styled'
 
-const ENV_TO_DCLENV: Record<string, string> = {
+const ENV_TO_EXPLORER_ENV: Record<string, string> = {
   dev: 'zone',
   stg: 'today',
   prd: 'org',
@@ -43,7 +43,7 @@ const JumpInButton: FC<JumpInButtonProps> = ({
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false)
 
   const env = searchParams.get('env')
-  const dclenv = searchParams.get('dclenv') ?? (env ? ENV_TO_DCLENV[env] : undefined)
+  const explorerEnv = searchParams.get('dclenv') ?? (env ? ENV_TO_EXPLORER_ENV[env] : undefined)
 
   const onboardingUrl = getEnv('ONBOARDING_URL') ?? ''
   const downloadUrl = getEnv('DOWNLOAD_URL') ?? DOWNLOAD_URLS.windows
@@ -75,7 +75,7 @@ const JumpInButton: FC<JumpInButtonProps> = ({
     track(SegmentEvent.GO_TO_EXPLORER, { position, realm, osName, arch })
 
     try {
-      const launched = await launchDesktopApp(buildDeepLinkOptions(position, realm, dclenv))
+      const launched = await launchDesktopApp(buildDeepLinkOptions(position, realm, explorerEnv))
       if (!launched) {
         track(SegmentEvent.CLICK, { event: 'Client not installed', osName, arch })
         openDownloadFallback()
@@ -83,7 +83,7 @@ const JumpInButton: FC<JumpInButtonProps> = ({
     } catch {
       openDownloadFallback()
     }
-  }, [isMobile, downloadOs, track, position, realm, dclenv, osName, arch, openDownloadFallback])
+  }, [isMobile, downloadOs, track, position, realm, explorerEnv, osName, arch, openDownloadFallback])
 
   const closeDownloadModal = useCallback(() => setDownloadModalOpen(false), [])
 

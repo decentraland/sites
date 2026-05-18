@@ -53,11 +53,15 @@ function formatDateForGoogleCalendar(date: Date): string {
   return `${year}${month}${day}T${hours}${minutes}${seconds}Z`
 }
 
-function buildDeepLinkOptions(position?: string, realm?: string, dclenv?: string): { realm?: string; position?: string; dclenv?: string } {
+function buildDeepLinkOptions(
+  position?: string,
+  realm?: string,
+  explorerEnv?: string
+): { realm?: string; position?: string; dclenv?: string } {
   const options: { realm?: string; position?: string; dclenv?: string } = {}
   if (realm && realm !== DEFAULT_REALM) options.realm = realm
   if (position && position !== DEFAULT_POSITION) options.position = position
-  if (dclenv) options.dclenv = dclenv
+  if (explorerEnv) options.dclenv = explorerEnv
   return options
 }
 
