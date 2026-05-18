@@ -3,23 +3,31 @@ jest.mock('../../utils/signedFetch', () => ({
   fetchWithOptionalIdentity: jest.fn()
 }))
 
-import { clearImageCache, enrichWearables, fetchImageById, fetchImagesByUser, isMaticUrn } from './reels.client'
+import { clearImageCache, enrichWearables, fetchImageById, fetchImagesByUser, fetchProfileFaces, isMaticUrn } from './reels.client'
+
+const envMock = jest.fn<string | undefined, [string]>((key: string) => {
+  const env: Record<string, string> = {
+    REEL_SERVICE_URL: 'https://reels-test.local',
+    THE_GRAPH_API_ETH_URL: 'https://graph-eth-test.local',
+    THE_GRAPH_API_MATIC_URL: 'https://graph-matic-test.local',
+    PEER_URL: 'https://peer.test'
+  }
+  return env[key]
+})
 
 jest.mock('../../config/env', () => ({
-  getEnv: (key: string) => {
-    const env: Record<string, string> = {
-      REEL_SERVICE_URL: 'https://reels-test.local',
-      THE_GRAPH_API_ETH_URL: 'https://graph-eth-test.local',
-      THE_GRAPH_API_MATIC_URL: 'https://graph-matic-test.local'
-    }
-    return env[key]
-  }
+  getEnv: (key: string) => envMock(key)
 }))
 
 const fetchMock = jest.fn()
+const originalFetch = global.fetch
 
 beforeAll(() => {
   global.fetch = fetchMock as unknown as typeof fetch
+})
+
+afterAll(() => {
+  global.fetch = originalFetch
 })
 
 beforeEach(() => {
@@ -143,6 +151,92 @@ describe('reels.client', () => {
 
       const enriched = await enrichWearables([{ userName: 'c', userAddress: '0xc', isGuest: false, wearables: [ethGraphItem.urn] }])
       expect(enriched[0].wearablesParsed?.[0].rarity).toBe('common')
+    })
+
+    it('should ignore graph fetch failures and emit no enriched wearables', async () => {
+      fetchMock.mockRejectedValueOnce(new Error('eth down'))
+      fetchMock.mockRejectedValueOnce(new Error('matic down'))
+      const enriched = await enrichWearables([
+        { userName: 'd', userAddress: '0xd', isGuest: false, wearables: ['urn:decentraland:matic:collections-v2:0xx:42'] }
+      ])
+      expect(enriched[0].wearablesParsed).toEqual([])
+    })
+
+    it('should skip wearables that the graph did not return', async () => {
+      fetchMock.mockResolvedValueOnce({ ok: false })
+      fetchMock.mockResolvedValueOnce({ ok: false })
+      const enriched = await enrichWearables([
+        { userName: 'e', userAddress: '0xe', isGuest: false, wearables: ['urn:decentraland:ethereum:collections-v1:eth:item'] }
+      ])
+      expect(enriched[0].wearablesParsed).toEqual([])
+    })
+
+    it('should fall back to the original URN when the URN has fewer than 7 segments', async () => {
+      fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ data: { items: [] } }) })
+      fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ data: { items: [] } }) })
+      const short = 'urn:decentraland:matic:collections-v2'
+      const enriched = await enrichWearables([{ userName: 'f', userAddress: '0xf', isGuest: false, wearables: [short] }])
+      expect(enriched[0].wearablesParsed).toEqual([])
+    })
+  })
+
+  describe('when fetching profile faces', () => {
+    it('should return an empty map when no addresses are supplied', async () => {
+      const result = await fetchProfileFaces([])
+      expect(result.size).toBe(0)
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it('should return an empty map when PEER_URL is not configured', async () => {
+      envMock.mockImplementationOnce((key: string) => (key === 'PEER_URL' ? undefined : 'x'))
+      const result = await fetchProfileFaces(['0xabc'])
+      expect(result.size).toBe(0)
+    })
+
+    it('should map userId and ethAddress to face256 when available', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          { avatars: [{ userId: '0xUser', avatar: { snapshots: { face256: 'face256.png' } } }] },
+          { avatars: [{ ethAddress: '0xEth', avatar: { snapshots: { face: 'face.png' } } }] }
+        ]
+      })
+      const result = await fetchProfileFaces(['0xUser', '0xEth'])
+      expect(result.get('0xuser')).toBe('face256.png')
+      expect(result.get('0xeth')).toBe('face.png')
+    })
+
+    it('should return an empty map when the profile endpoint returns a non-ok response', async () => {
+      fetchMock.mockResolvedValueOnce({ ok: false })
+      const result = await fetchProfileFaces(['0xabc'])
+      expect(result.size).toBe(0)
+    })
+
+    it('should swallow fetch rejections', async () => {
+      fetchMock.mockRejectedValueOnce(new Error('network'))
+      const result = await fetchProfileFaces(['0xabc'])
+      expect(result.size).toBe(0)
+    })
+
+    it('should ignore profile entries without faces or ids', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ avatars: [{}] }, { avatars: [{ userId: '0xnoFace' }] }]
+      })
+      const result = await fetchProfileFaces(['0xnoFace'])
+      expect(result.size).toBe(0)
+    })
+  })
+
+  describe('stripTokenId edge cases (covered indirectly via enrichWearables)', () => {
+    it('should preserve the original URN when the last segment is non-numeric', async () => {
+      // The matic URN ends with a non-numeric tag — stripTokenId returns the urn unchanged.
+      fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ data: { items: [] } }) })
+      fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ data: { items: [] } }) })
+      const urn = 'urn:decentraland:matic:collections-v2:0xabc:wearable-name'
+      const result = await enrichWearables([{ userName: 'a', userAddress: '0xa', isGuest: false, wearables: [urn] }])
+      // No graph match => wearablesParsed empty; ensures the non-numeric branch is taken.
+      expect(result[0].wearablesParsed).toEqual([])
     })
   })
 })

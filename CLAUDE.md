@@ -230,6 +230,7 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
 
 - New providers/shells/layouts in `src/shells/` or `src/components/Layout/` MUST have at least a smoke test.
 - New reducers/RTK Query clients MUST have a test asserting the store builds with the expected `reducerPath` keys.
+- **Coverage floor: 95% on statements, lines, and functions.** Branches stay informational (current floor ~85%). The Stop hook (`.claude/hooks/stop-coverage-guard.sh`) blocks the agent from finishing when any of the three metrics drops below 95% after `src/**` or `api/**` edits. Use the `/coverage-guard` skill on demand and the `coverage-keeper` agent to write missing specs. Reuse `src/__test-utils__/styledMock.ts` for `*.styled.ts` files instead of bypassing the styled engine.
 
 ### 7. Barrel exports
 

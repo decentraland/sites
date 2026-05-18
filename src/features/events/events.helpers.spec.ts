@@ -1,5 +1,12 @@
 import { createMockEvent, createMockPlaceCard, createMockScene } from '../../__test-utils__/factories'
-import { bucketEventsByDay, buildLiveNowCards, enrichPlaceCards, isDclFoundationCreator, isPubliclyVisibleEvent } from './events.helpers'
+import {
+  bucketEventsByDay,
+  buildLiveNowCards,
+  enrichPlaceCards,
+  expandRecurrentDates,
+  isDclFoundationCreator,
+  isPubliclyVisibleEvent
+} from './events.helpers'
 import type { HotScene, LiveNowCard } from './events.helpers'
 import type { EventEntry } from './events.types'
 
@@ -695,6 +702,294 @@ describe('bucketEventsByDay', () => {
       const buckets = bucketEventsByDay([late, early], days)
 
       expect(buckets[0].map(e => e.id)).toEqual(['early', 'late'])
+    })
+  })
+
+  describe('when the visible range extends past the last materialized recurrent_dates entry', () => {
+    // Regression for the issue reported as "recurring hangouts disappear after late July": the
+    // events API materializes only ~10 future occurrences into recurrent_dates, so a weekly
+    // event with recurrent_until a year out had nothing to bucket past mid-July.
+    // bucketEventsByDay now extrapolates via expandRecurrentDates before bucketing.
+    it('should synthesize occurrences from the rule and bucket them into far-future days', () => {
+      const event = createMockEvent({
+        recurrent: true,
+        recurrent_frequency: 'WEEKLY',
+        recurrent_interval: 1,
+        recurrent_until: '2027-01-01T00:00:00Z',
+        duration: 5400000,
+        start_at: '2026-04-29T14:00:00Z',
+        recurrent_dates: ['2026-04-29T14:00:00Z', '2026-05-06T14:00:00Z', '2026-05-13T14:00:00Z']
+      })
+      const farFutureDays = [new Date(2026, 6, 15), new Date(2026, 6, 22), new Date(2026, 6, 29)]
+
+      const buckets = bucketEventsByDay([event], farFutureDays, new Date('2026-04-29T12:00:00Z').getTime())
+
+      expect(buckets[0]).toHaveLength(1)
+      expect(buckets[1]).toHaveLength(1)
+      expect(buckets[2]).toHaveLength(1)
+    })
+  })
+})
+
+describe('expandRecurrentDates', () => {
+  const baseRecurrent = {
+    recurrent: true,
+    recurrent_interval: 1,
+    recurrent_count: null,
+    recurrent_until: null as string | null
+  }
+
+  describe('when the event is not recurrent', () => {
+    it('should return its recurrent_dates untouched', () => {
+      const event = createMockEvent({ recurrent: false, recurrent_dates: ['2026-04-29T10:00:00Z'] })
+      const result = expandRecurrentDates(event, new Date('2027-01-01'))
+      expect(result).toEqual(['2026-04-29T10:00:00Z'])
+    })
+  })
+
+  describe('when recurrent_dates is empty', () => {
+    it('should return an empty array without attempting extrapolation', () => {
+      const event = createMockEvent({ recurrent: true, recurrent_dates: [] })
+      const result = expandRecurrentDates(event, new Date('2027-01-01'))
+      expect(result).toEqual([])
+    })
+  })
+
+  describe('when recurrent_count is set to an explicit value', () => {
+    it('should honor the creator-set count and not synthesize beyond it', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'WEEKLY',
+        recurrent_count: 10,
+        recurrent_dates: ['2026-04-29T14:00:00Z', '2026-05-06T14:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2027-01-01'))
+      expect(result).toEqual(['2026-04-29T14:00:00Z', '2026-05-06T14:00:00Z'])
+    })
+  })
+
+  describe('when the materialized window already covers the visible range', () => {
+    it('should return the existing recurrent_dates unchanged', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'WEEKLY',
+        recurrent_until: '2027-01-01T00:00:00Z',
+        recurrent_dates: ['2026-04-29T14:00:00Z', '2026-05-06T14:00:00Z', '2026-05-13T14:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2026-05-10'))
+      expect(result).toEqual(['2026-04-29T14:00:00Z', '2026-05-06T14:00:00Z', '2026-05-13T14:00:00Z'])
+    })
+  })
+
+  describe('when recurrent_until has already passed the last materialized entry', () => {
+    it('should not synthesize beyond the rule', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'WEEKLY',
+        recurrent_until: '2026-05-01T00:00:00Z',
+        recurrent_dates: ['2026-04-22T14:00:00Z', '2026-04-29T14:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2027-01-01'))
+      expect(result).toEqual(['2026-04-22T14:00:00Z', '2026-04-29T14:00:00Z'])
+    })
+  })
+
+  describe('when the recurrence is WEEKLY on a single weekday', () => {
+    it('should extend by 7-day steps up to the visible date', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'WEEKLY',
+        recurrent_until: '2027-01-01T00:00:00Z',
+        recurrent_dates: ['2026-04-29T14:00:00Z', '2026-05-06T14:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2026-06-10T00:00:00Z'))
+      expect(result).toEqual([
+        '2026-04-29T14:00:00Z',
+        '2026-05-06T14:00:00Z',
+        '2026-05-13T14:00:00.000Z',
+        '2026-05-20T14:00:00.000Z',
+        '2026-05-27T14:00:00.000Z',
+        '2026-06-03T14:00:00.000Z'
+      ])
+    })
+  })
+
+  describe('when the recurrence is WEEKLY across multiple weekdays (MWF pattern)', () => {
+    it('should detect the 3-entry cycle and replicate it', () => {
+      // Mondays/Wednesdays/Fridays: deltas of 2d, 2d, 3d repeating.
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'WEEKLY',
+        recurrent_until: '2027-01-01T00:00:00Z',
+        recurrent_dates: [
+          '2026-04-27T14:00:00Z', // Mon
+          '2026-04-29T14:00:00Z', // Wed
+          '2026-05-01T14:00:00Z', // Fri
+          '2026-05-04T14:00:00Z', // Mon
+          '2026-05-06T14:00:00Z', // Wed
+          '2026-05-08T14:00:00Z' // Fri
+        ]
+      })
+      const result = expandRecurrentDates(event, new Date('2026-05-15T23:59:59Z'))
+      // Next week should continue Mon/Wed/Fri at May 11/13/15.
+      expect(result.slice(-3)).toEqual(['2026-05-11T14:00:00.000Z', '2026-05-13T14:00:00.000Z', '2026-05-15T14:00:00.000Z'])
+    })
+  })
+
+  describe('when the recurrence is WEEKLY with an interval greater than 1', () => {
+    it('should extend by interval × 7 days per step', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'WEEKLY',
+        recurrent_interval: 2,
+        recurrent_until: '2027-01-01T00:00:00Z',
+        recurrent_dates: ['2026-04-29T14:00:00Z', '2026-05-13T14:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2026-06-30T00:00:00Z'))
+      expect(result.slice(-3)).toEqual(['2026-05-27T14:00:00.000Z', '2026-06-10T14:00:00.000Z', '2026-06-24T14:00:00.000Z'])
+    })
+  })
+
+  describe('when the recurrence is DAILY', () => {
+    it('should extend by 1 day per step', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'DAILY',
+        recurrent_until: '2027-01-01T00:00:00Z',
+        recurrent_dates: ['2026-04-29T10:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2026-05-03T00:00:00Z'))
+      expect(result).toEqual(['2026-04-29T10:00:00Z', '2026-04-30T10:00:00.000Z', '2026-05-01T10:00:00.000Z', '2026-05-02T10:00:00.000Z'])
+    })
+  })
+
+  describe('when the recurrence is MONTHLY', () => {
+    it('should extend by calendar months', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'MONTHLY',
+        recurrent_until: '2027-12-01T00:00:00Z',
+        recurrent_dates: ['2026-01-15T10:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2026-05-01T00:00:00Z'))
+      expect(result).toEqual(['2026-01-15T10:00:00Z', '2026-02-15T10:00:00.000Z', '2026-03-15T10:00:00.000Z', '2026-04-15T10:00:00.000Z'])
+    })
+
+    // Regression: setUTCMonth on Jan 31 silently overflows to Mar 3 because
+    // Feb 31 doesn't exist. The anchor-and-clamp logic should land on Feb 28/29
+    // instead, matching what RRule produces on the server.
+    it('should clamp the anchor day when the target month is shorter', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'MONTHLY',
+        recurrent_until: '2027-12-01T00:00:00Z',
+        recurrent_dates: ['2026-01-31T10:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2026-06-01T00:00:00Z'))
+      expect(result).toEqual([
+        '2026-01-31T10:00:00Z',
+        '2026-02-28T10:00:00.000Z',
+        '2026-03-31T10:00:00.000Z',
+        '2026-04-30T10:00:00.000Z',
+        '2026-05-31T10:00:00.000Z'
+      ])
+    })
+  })
+
+  describe('when the recurrence is YEARLY', () => {
+    it('should extend by calendar years', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'YEARLY',
+        recurrent_until: '2030-01-01T00:00:00Z',
+        recurrent_dates: ['2024-06-15T10:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2027-07-01T00:00:00Z'))
+      expect(result).toEqual(['2024-06-15T10:00:00Z', '2025-06-15T10:00:00.000Z', '2026-06-15T10:00:00.000Z', '2027-06-15T10:00:00.000Z'])
+    })
+
+    // Regression: setUTCFullYear on Feb 29 2024 silently overflows to Mar 1
+    // 2025 because Feb 29 doesn't exist outside leap years. The clamp lands
+    // on Feb 28 of non-leap years and returns to Feb 29 when leap years come
+    // back around — same behavior the server's RRule produces.
+    it('should clamp the anchor day on non-leap years for a leap-day series', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'YEARLY',
+        recurrent_until: '2030-01-01T00:00:00Z',
+        recurrent_dates: ['2024-02-29T10:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2029-01-01T00:00:00Z'))
+      expect(result).toEqual([
+        '2024-02-29T10:00:00Z',
+        '2025-02-28T10:00:00.000Z',
+        '2026-02-28T10:00:00.000Z',
+        '2027-02-28T10:00:00.000Z',
+        '2028-02-29T10:00:00.000Z'
+      ])
+    })
+  })
+
+  describe('when the recurrence is HOURLY', () => {
+    it('should extend by 1 hour per step', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'HOURLY',
+        recurrent_until: '2027-01-01T00:00:00Z',
+        recurrent_dates: ['2026-04-29T10:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2026-04-29T14:00:00Z'))
+      expect(result).toEqual([
+        '2026-04-29T10:00:00Z',
+        '2026-04-29T11:00:00.000Z',
+        '2026-04-29T12:00:00.000Z',
+        '2026-04-29T13:00:00.000Z',
+        '2026-04-29T14:00:00.000Z'
+      ])
+    })
+  })
+
+  describe('when the recurrence is capped by recurrent_until earlier than the visible day', () => {
+    it('should stop synthesizing at recurrent_until', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'WEEKLY',
+        recurrent_until: '2026-05-15T00:00:00Z',
+        recurrent_dates: ['2026-04-29T14:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2027-01-01T00:00:00Z'))
+      expect(result).toEqual(['2026-04-29T14:00:00Z', '2026-05-06T14:00:00.000Z', '2026-05-13T14:00:00.000Z'])
+    })
+  })
+
+  describe('when recurrent_frequency is null (incomplete rule)', () => {
+    it('should return materialized dates unchanged', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: null,
+        recurrent_until: '2027-01-01T00:00:00Z',
+        recurrent_dates: ['2026-04-29T14:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2026-06-01T00:00:00Z'))
+      expect(result).toEqual(['2026-04-29T14:00:00Z'])
+    })
+  })
+
+  describe('when recurrent_dates starts with start_at far in the past followed by a future window', () => {
+    // The events API server prepends start_at to recurrent_dates in its response.
+    // For an event running for months, recurrent_dates looks like
+    // [start_at_in_january, future_date_1, future_date_2, ...]. The first delta
+    // is a huge gap; the subsequent ones are the real cadence. Cycle detection
+    // walks backwards so the leading gap is ignored.
+    it('should ignore the leading gap and use the recent cadence', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'WEEKLY',
+        recurrent_until: '2027-01-01T00:00:00Z',
+        recurrent_dates: ['2026-01-15T14:00:00Z', '2026-04-29T14:00:00Z', '2026-05-06T14:00:00Z', '2026-05-13T14:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2026-06-05T00:00:00Z'))
+      expect(result.slice(-3)).toEqual(['2026-05-20T14:00:00.000Z', '2026-05-27T14:00:00.000Z', '2026-06-03T14:00:00.000Z'])
     })
   })
 })

@@ -159,9 +159,12 @@ jest.mock('./DurationField', () => ({
   )
 }))
 
+const mockUseGetWorldNamesQuery = jest.fn(() => ({ data: [] as string[] }))
+const mockUseGetCommunitiesQuery = jest.fn(() => ({ data: [] as Array<{ id: string; name: string }> }))
+
 jest.mock('../../../features/events', () => ({
-  useGetWorldNamesQuery: () => ({ data: [] }),
-  useGetCommunitiesQuery: () => ({ data: [] })
+  useGetWorldNamesQuery: () => mockUseGetWorldNamesQuery(),
+  useGetCommunitiesQuery: () => mockUseGetCommunitiesQuery()
 }))
 
 const mockUseAuthIdentity = jest.fn(() => ({ identity: null, hasValidIdentity: false, address: null as string | null }))
@@ -250,6 +253,8 @@ describe('EventForm', () => {
   beforeEach(() => {
     mockOnCancel = jest.fn()
     mockUseAuthIdentity.mockReturnValue({ identity: null, hasValidIdentity: false, address: null })
+    mockUseGetWorldNamesQuery.mockReturnValue({ data: [] })
+    mockUseGetCommunitiesQuery.mockReturnValue({ data: [] })
     mockUseCreateEventForm.mockReturnValue({
       form: createFormState(),
       errors: {},
@@ -537,6 +542,48 @@ describe('EventForm', () => {
   })
 
   describe('when interacting with form fields', () => {
+    it('should call setField when the start date changes', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      fireEvent.change(screen.getByLabelText('create_event.date'), { target: { value: '2026-05-10' } })
+      expect(mockSetField).toHaveBeenCalledWith('startDate', '2026-05-10')
+    })
+
+    it('should call setField when the start time changes', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      fireEvent.change(screen.getByLabelText('create_event.start'), { target: { value: '12:30' } })
+      expect(mockSetField).toHaveBeenCalledWith('startTime', '12:30')
+    })
+
+    it('should call setField when the duration changes', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      fireEvent.change(screen.getByLabelText('create_event.duration'), { target: { value: '01:30' } })
+      expect(mockSetField).toHaveBeenCalledWith('duration', '01:30')
+    })
+
+    it('should call setField when the email changes', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      fireEvent.change(screen.getByLabelText('create_event.email_label'), { target: { value: 'a@b.test' } })
+      expect(mockSetField).toHaveBeenCalledWith('email', 'a@b.test')
+    })
+
+    it('should toggle the repeat switch', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      fireEvent.click(screen.getByTestId('event-switch'))
+      expect(mockSetField).toHaveBeenCalledWith('repeatEnabled', true)
+    })
+
+    it('should call setField when the latitude changes', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      fireEvent.change(screen.getByLabelText('create_event.latitude'), { target: { value: '12' } })
+      expect(mockSetField).toHaveBeenCalledWith('coordX', '12')
+    })
+
+    it('should call setField when the longitude changes', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      fireEvent.change(screen.getByLabelText('create_event.altitude'), { target: { value: '34' } })
+      expect(mockSetField).toHaveBeenCalledWith('coordY', '34')
+    })
+
     it('should call setField when the event name changes', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
@@ -748,6 +795,281 @@ describe('EventForm', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByTestId('vertical-cover-panel')).toBeInTheDocument()
+    })
+  })
+
+  describe('when repeatEnabled is true and frequency is every_week', () => {
+    const markRequiredFields = jest.fn()
+    beforeEach(() => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({
+          repeatEnabled: true,
+          frequency: 'every_week',
+          repeatDays: [1, 3],
+          repeatInterval: '2',
+          repeatEndDate: '2026-12-31'
+        }),
+        errors: { repeatDays: 'Pick at least one day', repeatInterval: 'Pick an interval' },
+        mode: 'create',
+        setField: mockSetField,
+        markRequiredFields,
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: true,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
+    it('should render weekday chips and interval radio chips with their respective error texts', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0)
+      expect(screen.getAllByRole('radio').length).toBeGreaterThan(0)
+      expect(screen.getAllByTestId('chip-error-text').length).toBeGreaterThan(0)
+    })
+
+    it('should toggle a weekday and an interval chip on click', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      const dayChips = screen.getAllByRole('checkbox')
+      fireEvent.click(dayChips[0])
+      fireEvent.click(dayChips[1])
+      expect(mockSetField).toHaveBeenCalledWith('repeatDays', expect.any(Array))
+
+      const intervalChips = screen.getAllByRole('radio')
+      fireEvent.click(intervalChips[0])
+      expect(mockSetField).toHaveBeenCalledWith('repeatInterval', expect.any(String))
+    })
+  })
+
+  describe('when the location is world', () => {
+    beforeEach(() => {
+      mockUseGetWorldNamesQuery.mockReturnValue({ data: ['alpha.dcl.eth', 'beta.dcl.eth'] })
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({ location: 'world', world: 'alpha.dcl.eth' }),
+        errors: { world: 'world required' },
+        mode: 'create',
+        setField: mockSetField,
+        markRequiredFields: jest.fn(),
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: true,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
+    afterEach(() => {
+      mockUseGetWorldNamesQuery.mockReturnValue({ data: [] })
+    })
+
+    it('should render the world select with the returned world names', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      expect(screen.getByText('alpha.dcl.eth')).toBeInTheDocument()
+      expect(screen.getByText('beta.dcl.eth')).toBeInTheDocument()
+    })
+  })
+
+  describe('when the user has communities available', () => {
+    beforeEach(() => {
+      mockUseAuthIdentity.mockReturnValue({
+        identity: { authChain: [] } as unknown as ReturnType<typeof mockUseAuthIdentity>['identity'],
+        hasValidIdentity: true,
+        address: '0xabc'
+      })
+      mockUseGetCommunitiesQuery.mockReturnValue({ data: [{ id: 'c1', name: 'My Community' }] })
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({ communityId: 'c1' }),
+        errors: {},
+        mode: 'create',
+        setField: mockSetField,
+        markRequiredFields: jest.fn(),
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: true,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
+    afterEach(() => {
+      mockUseGetCommunitiesQuery.mockReturnValue({ data: [] })
+    })
+
+    it('should render the communities select with the community name', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      expect(screen.getByText('My Community')).toBeInTheDocument()
+    })
+  })
+
+  describe('when the preview button is clicked', () => {
+    it('should open the modal when canPreview is true', () => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({
+          name: 'name',
+          startDate: '2026-05-01',
+          startTime: '10:00',
+          duration: '01:00',
+          imageUrl: 'https://cdn/img.png',
+          imagePreviewUrl: 'https://cdn/img.png'
+        }),
+        errors: {},
+        mode: 'create',
+        setField: mockSetField,
+        markRequiredFields: jest.fn(),
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: true,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      fireEvent.click(screen.getByTestId('preview-button'))
+      expect(screen.getByTestId('event-detail-modal')).toBeInTheDocument()
+    })
+
+    it('should mark required fields when fields are missing and set image error when image missing', () => {
+      const markRequiredFields = jest.fn()
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState(),
+        errors: {},
+        mode: 'create',
+        setField: mockSetField,
+        markRequiredFields,
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      fireEvent.click(screen.getByTestId('preview-button'))
+      expect(markRequiredFields).toHaveBeenCalled()
+      expect(mockSetField).toHaveBeenCalledWith('imageError', 'image_required')
+    })
+  })
+
+  describe('when the vertical cover button is clicked', () => {
+    it('should remove the vertical image when a preview is present', () => {
+      const handleVerticalImageRemove = jest.fn()
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({ verticalImagePreviewUrl: 'blob:http://localhost/v' }),
+        errors: {},
+        mode: 'create',
+        setField: mockSetField,
+        markRequiredFields: jest.fn(),
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove,
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      fireEvent.click(screen.getByTestId('add-vertical-cover'))
+      expect(handleVerticalImageRemove).toHaveBeenCalled()
+    })
+
+    it('should toggle the panel open when no preview is present', () => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState(),
+        errors: {},
+        mode: 'create',
+        setField: mockSetField,
+        markRequiredFields: jest.fn(),
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      fireEvent.click(screen.getByTestId('add-vertical-cover'))
+      expect(screen.getByTestId('vertical-cover-panel')).toBeInTheDocument()
+    })
+  })
+
+  describe('when editing an existing event', () => {
+    it('should label the submit button as "save changes"', () => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({
+          name: 'edit',
+          description: 'd',
+          startDate: '2026-05-01',
+          startTime: '10:00',
+          duration: '02:00',
+          imageUrl: 'https://cdn/img.png'
+        }),
+        errors: {},
+        mode: 'edit',
+        setField: mockSetField,
+        markRequiredFields: jest.fn(),
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: true,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      expect(screen.getByTestId('submit-button')).toHaveTextContent('create_event.save_changes')
+    })
+  })
+
+  describe('when the form has an existing image error but the user clicks preview', () => {
+    it('should not overwrite the image error', () => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({ imageError: 'existing_error' }),
+        errors: {},
+        mode: 'create',
+        setField: mockSetField,
+        markRequiredFields: jest.fn(),
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      fireEvent.click(screen.getByTestId('preview-button'))
+      expect(mockSetField).not.toHaveBeenCalledWith('imageError', 'image_required')
+    })
+  })
+
+  describe('when an invalid startDate+startTime combination is supplied', () => {
+    it('should leave the UTC helper text empty', () => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({ startDate: 'not-a-date', startTime: 'not-a-time' }),
+        errors: {},
+        mode: 'create',
+        setField: mockSetField,
+        markRequiredFields: jest.fn(),
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      expect(screen.getByLabelText('create_event.start')).toHaveAttribute('data-helper-text', '')
     })
   })
 })

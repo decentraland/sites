@@ -149,6 +149,47 @@ describe('ImageUpload', () => {
 
       expect(mockOnImageSelect).toHaveBeenCalledWith(file)
     })
+
+    it('should not call onImageSelect when the user cancels the file picker', () => {
+      render(<ImageUpload {...props} />)
+
+      const input = document.querySelector('input[type="file"]') as HTMLInputElement
+      fireEvent.change(input, { target: { files: [] } })
+
+      expect(mockOnImageSelect).not.toHaveBeenCalled()
+    })
+
+    it('should open the native file picker when the drop zone is clicked', () => {
+      render(<ImageUpload {...props} />)
+      const input = document.querySelector('input[type="file"]') as HTMLInputElement
+      const clickSpy = jest.spyOn(input, 'click')
+      const dropZone = screen.getByRole('button', { name: 'create_event.image_upload_label' })
+      fireEvent.click(dropZone)
+      expect(clickSpy).toHaveBeenCalled()
+    })
+
+    it('should call onImageSelect when a file is dropped on the zone', () => {
+      render(<ImageUpload {...props} />)
+      const file = new File(['x'], 'a.png', { type: 'image/png' })
+      const dropZone = screen.getByRole('button', { name: 'create_event.image_upload_label' })
+      fireEvent.drop(dropZone, { dataTransfer: { files: [file] } })
+      expect(mockOnImageSelect).toHaveBeenCalledWith(file)
+    })
+
+    it('should prevent default on dragOver', () => {
+      render(<ImageUpload {...props} />)
+      const dropZone = screen.getByRole('button', { name: 'create_event.image_upload_label' })
+      const event = new Event('dragover', { bubbles: true, cancelable: true })
+      const result = dropZone.dispatchEvent(event)
+      expect(result).toBe(false)
+    })
+
+    it('should ignore drops without files', () => {
+      render(<ImageUpload {...props} />)
+      const dropZone = screen.getByRole('button', { name: 'create_event.image_upload_label' })
+      fireEvent.drop(dropZone, { dataTransfer: { files: [] } })
+      expect(mockOnImageSelect).not.toHaveBeenCalled()
+    })
   })
 
   describe('when an image error is provided', () => {

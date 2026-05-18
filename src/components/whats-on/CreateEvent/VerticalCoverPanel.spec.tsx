@@ -88,6 +88,12 @@ describe('VerticalCoverPanel', () => {
 
       expect(screen.getByTestId('drop-zone')).toHaveAttribute('data-has-image', 'false')
     })
+
+    it('should render the usage-context hint so creators know where the image is shown', () => {
+      render(<VerticalCoverPanel {...props} />)
+
+      expect(screen.getByText('create_event.vertical_image_usage')).toBeInTheDocument()
+    })
   })
 
   describe('when a preview url is provided', () => {

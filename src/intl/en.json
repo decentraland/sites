@@ -1314,13 +1314,15 @@
     "remove_vertical_cover": "Remove Vertical Cover",
     "recommended_parenthetical": "(recommended)",
     "select_vertical_cover": "Select a Hangout Cover (Vertical - Optional)",
-    "vertical_recommended_size": "(recommended size: 716 x 1814)",
+    "vertical_recommended_size": "Recommended size: 716 × 1814 px",
     "vertical_modal_label": "Upload vertical hangout cover",
     "world_placeholder": "Select a world",
     "community_none": "None",
     "close": "Close",
     "preview": "Preview",
-    "preview_disabled_tooltip": "Complete the required fields to preview the hangout"
+    "preview_disabled_tooltip": "Complete the required fields to preview the hangout",
+    "vertical_file_hint": "PNG or JPG, max 500 KB",
+    "vertical_image_usage": "Used for featured events in-world"
   },
   "host_banner": {
     "title": "Host a Hangout",
