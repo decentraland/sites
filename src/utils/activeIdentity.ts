@@ -3,34 +3,75 @@ import { localStorageGetIdentity } from '@dcl/single-sign-on-client'
 
 const ACTIVE_ADDRESS_KEY = 'dcl:active-address'
 const SIGN_IN_PENDING_KEY = 'dcl:sign-in-pending'
+const SIGN_IN_PENDING_SNAPSHOT_KEY = 'dcl:sign-in-pending-snapshot'
 const SIGN_IN_PENDING_TTL_MS = 10 * 60 * 1000
 const SSO_KEY_PREFIX = 'single-sign-on-'
 const SSO_ADDRESS_PREFIX = 'single-sign-on-0x'
 
+function listKnownAddresses(): string[] {
+  const addresses: string[] = []
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (!key?.startsWith(SSO_ADDRESS_PREFIX)) continue
+      addresses.push(key.slice(SSO_KEY_PREFIX.length).toLowerCase())
+    }
+  } catch {
+    return []
+  }
+  return addresses
+}
+
 /**
- * Records that the user has just left for the auth dapp. Read on return so the
- * freshly signed-in identity wins over any pre-existing pointer (which would
- * otherwise stick the user on the wallet they had before the redirect).
+ * Records that the user has just left for the auth dapp, along with a snapshot
+ * of the addresses we already had identities for. On return, the address that
+ * was NOT in the snapshot is the one the auth dapp just wrote — and wins over
+ * any pre-existing identity regardless of expiration ordering.
+ *
+ * Storing only a timestamp is not enough: Magic/OTP ephemerals may have a
+ * shorter TTL than a pre-existing MetaMask identity, so a max-expiration
+ * heuristic would keep the user on the previous wallet.
  */
 function markSignInPending(): void {
   try {
     localStorage.setItem(SIGN_IN_PENDING_KEY, String(Date.now()))
+    localStorage.setItem(SIGN_IN_PENDING_SNAPSHOT_KEY, JSON.stringify(listKnownAddresses()))
   } catch {
     // Non-fatal: without the flag, fresh sign-ins fall back to the standard
     // resolution path (pointer → auto-promote → max-expiration heuristic).
   }
 }
 
-function consumePendingSignIn(): boolean {
+type PendingSignIn = {
+  active: boolean
+  snapshot: Set<string>
+}
+
+function consumePendingSignIn(): PendingSignIn {
+  const empty: PendingSignIn = { active: false, snapshot: new Set() }
   try {
     const value = localStorage.getItem(SIGN_IN_PENDING_KEY)
-    if (!value) return false
+    const snapshotRaw = localStorage.getItem(SIGN_IN_PENDING_SNAPSHOT_KEY)
+    if (!value) {
+      if (snapshotRaw !== null) localStorage.removeItem(SIGN_IN_PENDING_SNAPSHOT_KEY)
+      return empty
+    }
     localStorage.removeItem(SIGN_IN_PENDING_KEY)
+    localStorage.removeItem(SIGN_IN_PENDING_SNAPSHOT_KEY)
     const ts = Number(value)
-    if (!Number.isFinite(ts)) return false
-    return Date.now() - ts < SIGN_IN_PENDING_TTL_MS
+    if (!Number.isFinite(ts) || Date.now() - ts >= SIGN_IN_PENDING_TTL_MS) return empty
+    let parsed: unknown = []
+    if (snapshotRaw) {
+      try {
+        parsed = JSON.parse(snapshotRaw)
+      } catch {
+        // Malformed snapshot — treat as empty so any current identity is a newcomer.
+      }
+    }
+    const addresses = Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string').map(s => s.toLowerCase()) : []
+    return { active: true, snapshot: new Set(addresses) }
   } catch {
-    return false
+    return empty
   }
 }
 
@@ -68,36 +109,41 @@ type ActiveSelection = {
   bestIdentity: AuthIdentity | null
 }
 
-type ScanResult = ActiveSelection & {
-  validCount: number
+type IdentityRecord = {
+  address: string
+  identity: AuthIdentity
+  expiration: number
 }
 
-function scanValidIdentities(): ScanResult {
-  let bestAddress: string | null = null
-  let bestIdentity: AuthIdentity | null = null
-  let bestExpiration = 0
-  let validCount = 0
+function listValidIdentities(): IdentityRecord[] {
+  const records: IdentityRecord[] = []
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i)
       if (!key?.startsWith(SSO_ADDRESS_PREFIX)) continue
-      const address = key.slice(SSO_KEY_PREFIX.length)
+      const address = key.slice(SSO_KEY_PREFIX.length).toLowerCase()
       const identity = localStorageGetIdentity(address)
       if (!identity) continue
-      validCount++
       const payload = identity.authChain?.[1]?.payload
       const match = payload ? String(payload).match(/Expiration: ([^\n]+)/) : null
       const expiration = match ? new Date(match[1]).getTime() : 0
-      if (expiration > bestExpiration) {
-        bestExpiration = expiration
-        bestAddress = address
-        bestIdentity = identity
-      }
+      records.push({ address, identity, expiration })
     }
   } catch {
-    return { bestAddress: null, bestIdentity: null, validCount: 0 }
+    return []
   }
-  return { bestAddress, bestIdentity, validCount }
+  return records
+}
+
+function pickByLatestExpiration(records: IdentityRecord[]): ActiveSelection {
+  let best: IdentityRecord | null = null
+  for (const rec of records) {
+    if (!best || rec.expiration > best.expiration) best = rec
+  }
+  return {
+    bestAddress: best?.address ?? null,
+    bestIdentity: best?.identity ?? null
+  }
 }
 
 /**
@@ -106,21 +152,28 @@ function scanValidIdentities(): ScanResult {
  * exactly one valid identity exists and clears stale pointers on read.
  *
  * If a sign-in is pending (the user just returned from the auth dapp), the
- * latest-expiration identity is treated as authoritative — that's the one
- * the auth dapp just wrote — and gets promoted to the pointer.
+ * address that wasn't present pre-redirect is treated as authoritative —
+ * that's the one the auth dapp just wrote — and gets promoted to the pointer.
  *
  * Shared by `resolveActiveAddress` (returns address) and `resolveActiveIdentity`
  * (returns identity) so the two stay in sync.
  */
 function resolveActive(): ActiveSelection {
-  if (consumePendingSignIn()) {
-    const fresh = scanValidIdentities()
-    if (fresh.bestAddress) {
-      writeActivePointer(fresh.bestAddress)
-      return { bestAddress: fresh.bestAddress, bestIdentity: fresh.bestIdentity }
+  const pending = consumePendingSignIn()
+  if (pending.active) {
+    const records = listValidIdentities()
+    const newcomers = records.filter(rec => !pending.snapshot.has(rec.address))
+    if (newcomers.length > 0) {
+      // If the auth dapp wrote more than one identity (rare — concurrent flows),
+      // tie-break on latest expiration so we still pick a deterministic winner.
+      const fresh = pickByLatestExpiration(newcomers)
+      if (fresh.bestAddress) {
+        writeActivePointer(fresh.bestAddress)
+        return fresh
+      }
     }
-    // Pending but no identity present — auth probably failed mid-flow. Fall
-    // through to the standard resolution path so the user isn't left blank.
+    // No newcomer (auth canceled, or user re-signed-in with the same wallet):
+    // fall through to the standard resolution path so we don't leave the user blank.
   }
 
   const pointer = readActivePointer()
@@ -129,20 +182,22 @@ function resolveActive(): ActiveSelection {
     if (identity) return { bestAddress: pointer, bestIdentity: identity }
     writeActivePointer(null)
   }
-  const { bestAddress, bestIdentity, validCount } = scanValidIdentities()
-  if (validCount === 1 && bestAddress) {
-    writeActivePointer(bestAddress)
+  const records = listValidIdentities()
+  if (records.length === 1) {
+    writeActivePointer(records[0].address)
+    return { bestAddress: records[0].address, bestIdentity: records[0].identity }
   }
-  return { bestAddress, bestIdentity }
+  return pickByLatestExpiration(records)
 }
 
 /**
  * Returns the address of the wallet the user is currently signed in as.
  *
  * Order of precedence:
- * 1. The persistent `dcl:active-address` pointer when its identity is still valid.
- * 2. The single valid identity when exactly one exists — auto-promoted to the pointer.
- * 3. The valid identity with the latest expiration (legacy heuristic). The pointer
+ * 1. The newcomer identity written during a pending sign-in (auth dapp round-trip).
+ * 2. The persistent `dcl:active-address` pointer when its identity is still valid.
+ * 3. The single valid identity when exactly one exists — auto-promoted to the pointer.
+ * 4. The valid identity with the latest expiration (legacy heuristic). The pointer
  *    is left untouched so an authoritative signal (explicit switch, `accountsChanged`,
  *    sign-in completion) still gets the chance to set it.
  *
@@ -170,6 +225,7 @@ function isRelevantStorageKey(key: string | null): boolean {
 export {
   ACTIVE_ADDRESS_KEY,
   SIGN_IN_PENDING_KEY,
+  SIGN_IN_PENDING_SNAPSHOT_KEY,
   hasValidIdentityFor,
   isRelevantStorageKey,
   markSignInPending,

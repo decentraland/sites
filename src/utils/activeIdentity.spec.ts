@@ -1,6 +1,7 @@
 import {
   ACTIVE_ADDRESS_KEY,
   SIGN_IN_PENDING_KEY,
+  SIGN_IN_PENDING_SNAPSHOT_KEY,
   hasValidIdentityFor,
   isRelevantStorageKey,
   markSignInPending,
@@ -152,40 +153,76 @@ describe('activeIdentity', () => {
       })
     })
 
-    describe('when a sign-in is pending', () => {
+    describe('when a sign-in is pending and a newcomer identity appears', () => {
       beforeEach(() => {
         setIdentity('0xprevious', '2026-06-03T13:56:58.962Z')
-        setIdentity('0xfresh', '2026-07-01T00:00:00.000Z')
         writeActivePointer('0xprevious')
         markSignInPending()
+        // Auth dapp writes the freshly signed-in identity AFTER the snapshot.
+        setIdentity('0xfresh', '2026-07-01T00:00:00.000Z')
       })
 
-      it('should promote the latest-expiration identity over the stale pointer', () => {
+      it('should promote the newcomer over the stale pointer', () => {
         expect(resolveActiveAddress()).toBe('0xfresh')
         expect(store[ACTIVE_ADDRESS_KEY]).toBe('0xfresh')
       })
 
-      it('should clear the pending flag after consuming it', () => {
+      it('should clear the pending flag and snapshot after consuming them', () => {
         resolveActiveAddress()
         expect(store[SIGN_IN_PENDING_KEY]).toBeUndefined()
+        expect(store[SIGN_IN_PENDING_SNAPSHOT_KEY]).toBeUndefined()
+      })
+    })
+
+    describe('when a sign-in is pending and the newcomer has a SHORTER expiration than the previous identity', () => {
+      // Regression: Magic/OTP ephemerals can have a shorter TTL than a pre-existing
+      // MetaMask identity. The previous max-expiration heuristic kept the user on
+      // MetaMask. The snapshot-based newcomer selection fixes this.
+      beforeEach(() => {
+        setIdentity('0xmetamask', '2026-12-01T00:00:00.000Z') // longer TTL, pre-existing
+        writeActivePointer('0xmetamask')
+        markSignInPending()
+        setIdentity('0xmagic', '2026-06-15T00:00:00.000Z') // shorter TTL, freshly written
+      })
+
+      it('should promote the newcomer even when its expiration is earlier', () => {
+        expect(resolveActiveAddress()).toBe('0xmagic')
+        expect(store[ACTIVE_ADDRESS_KEY]).toBe('0xmagic')
+      })
+    })
+
+    describe('when a sign-in is pending with multiple newcomers', () => {
+      beforeEach(() => {
+        setIdentity('0xprevious', '2026-06-01T00:00:00.000Z')
+        writeActivePointer('0xprevious')
+        markSignInPending()
+        setIdentity('0xnewa', '2026-06-15T00:00:00.000Z')
+        setIdentity('0xnewb', '2026-07-15T00:00:00.000Z')
+      })
+
+      it('should tie-break newcomers on latest expiration', () => {
+        expect(resolveActiveAddress()).toBe('0xnewb')
+        expect(store[ACTIVE_ADDRESS_KEY]).toBe('0xnewb')
       })
     })
 
     describe('when a sign-in is pending but expired', () => {
       beforeEach(() => {
         setIdentity('0xprevious', '2026-06-03T13:56:58.962Z')
-        setIdentity('0xfresh', '2026-07-01T00:00:00.000Z')
         writeActivePointer('0xprevious')
         store[SIGN_IN_PENDING_KEY] = String(Date.now() - 60 * 60 * 1000)
+        store[SIGN_IN_PENDING_SNAPSHOT_KEY] = JSON.stringify(['0xprevious'])
+        setIdentity('0xfresh', '2026-07-01T00:00:00.000Z')
       })
 
       it('should ignore the expired flag and honor the existing pointer', () => {
         expect(resolveActiveAddress()).toBe('0xprevious')
       })
 
-      it('should still consume the stale flag so it does not leak into future resolutions', () => {
+      it('should still consume the stale flag and snapshot so they do not leak', () => {
         resolveActiveAddress()
         expect(store[SIGN_IN_PENDING_KEY]).toBeUndefined()
+        expect(store[SIGN_IN_PENDING_SNAPSHOT_KEY]).toBeUndefined()
       })
     })
 
@@ -201,6 +238,37 @@ describe('activeIdentity', () => {
         expect(resolveActiveAddress()).toBe('0xprevious')
       })
     })
+
+    describe('when a sign-in is pending and the user re-signed-in with the same wallet', () => {
+      beforeEach(() => {
+        setIdentity('0xsame', '2026-06-01T00:00:00.000Z')
+        writeActivePointer('0xsame')
+        markSignInPending()
+        // No newcomer — only the previously-known address still has an identity.
+        setIdentity('0xsame', '2026-09-01T00:00:00.000Z')
+      })
+
+      it('should keep the existing pointer when no newcomer appears', () => {
+        expect(resolveActiveAddress()).toBe('0xsame')
+        expect(store[ACTIVE_ADDRESS_KEY]).toBe('0xsame')
+      })
+    })
+
+    describe('when the pending snapshot is missing or malformed', () => {
+      beforeEach(() => {
+        setIdentity('0xprevious', '2026-06-01T00:00:00.000Z')
+        writeActivePointer('0xprevious')
+        store[SIGN_IN_PENDING_KEY] = String(Date.now())
+        store[SIGN_IN_PENDING_SNAPSHOT_KEY] = '{not json'
+        setIdentity('0xfresh', '2026-07-01T00:00:00.000Z')
+      })
+
+      it('should treat every current identity as a potential newcomer and tie-break on expiration', () => {
+        // With an empty snapshot, both addresses are newcomers — fall back to
+        // max-expiration among them so we still pick a fresh-looking identity.
+        expect(resolveActiveAddress()).toBe('0xfresh')
+      })
+    })
   })
 
   describe('markSignInPending', () => {
@@ -210,6 +278,20 @@ describe('activeIdentity', () => {
       const written = Number(store[SIGN_IN_PENDING_KEY])
       expect(written).toBeGreaterThanOrEqual(before)
       expect(written).toBeLessThanOrEqual(Date.now())
+    })
+
+    it('should snapshot the addresses with valid identities at the time of the call', () => {
+      setIdentity('0xa', '2030-01-01T00:00:00Z')
+      setIdentity('0xb', '2030-01-01T00:00:00Z')
+      markSignInPending()
+      const snapshot = JSON.parse(store[SIGN_IN_PENDING_SNAPSHOT_KEY] ?? '[]')
+      expect(snapshot).toEqual(expect.arrayContaining(['0xa', '0xb']))
+      expect(snapshot).toHaveLength(2)
+    })
+
+    it('should snapshot an empty array when no identities exist yet', () => {
+      markSignInPending()
+      expect(JSON.parse(store[SIGN_IN_PENDING_SNAPSHOT_KEY] ?? '[]')).toEqual([])
     })
   })
 

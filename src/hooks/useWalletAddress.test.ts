@@ -76,6 +76,7 @@ Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock })
 
 const ACTIVE_ADDRESS_KEY = 'dcl:active-address'
 const SIGN_IN_PENDING_KEY = 'dcl:sign-in-pending'
+const SIGN_IN_PENDING_SNAPSHOT_KEY = 'dcl:sign-in-pending-snapshot'
 
 function fakeIdentity(address: string, expirationDate: string) {
   return {
@@ -215,18 +216,38 @@ describe('useWalletAddress', () => {
   })
 
   describe('sign-in pending flag', () => {
-    it('should promote the latest identity over a stale pointer on return from auth', async () => {
+    it('should promote the newcomer identity over a stale pointer on return from auth', async () => {
       setStoredIdentities({
         '0xprevious': '2026-06-03T13:56:58.962Z',
         '0xfresh': '2026-07-01T00:00:00.000Z'
       })
       localStorageMock.setItem(ACTIVE_ADDRESS_KEY, '0xprevious')
       localStorageMock.setItem(SIGN_IN_PENDING_KEY, String(Date.now()))
+      // Snapshot only included the previously known wallet; `0xfresh` is the newcomer.
+      localStorageMock.setItem(SIGN_IN_PENDING_SNAPSHOT_KEY, JSON.stringify(['0xprevious']))
 
       await import('./useWalletAddress')
 
       expect(localStorageMock.getItem(ACTIVE_ADDRESS_KEY)).toBe('0xfresh')
       expect(localStorageMock.getItem(SIGN_IN_PENDING_KEY)).toBeNull()
+      expect(localStorageMock.getItem(SIGN_IN_PENDING_SNAPSHOT_KEY)).toBeNull()
+    })
+
+    it('should honor a Magic/OTP newcomer even when its expiration is earlier than MetaMask', async () => {
+      // Regression: pre-existing MetaMask identity had a longer TTL than the
+      // freshly-written Magic identity. The previous max-expiration heuristic
+      // kept the user on MetaMask after signing in with Magic/OTP.
+      setStoredIdentities({
+        '0xmetamask': '2026-12-01T00:00:00.000Z',
+        '0xmagic': '2026-06-15T00:00:00.000Z'
+      })
+      localStorageMock.setItem(ACTIVE_ADDRESS_KEY, '0xmetamask')
+      localStorageMock.setItem(SIGN_IN_PENDING_KEY, String(Date.now()))
+      localStorageMock.setItem(SIGN_IN_PENDING_SNAPSHOT_KEY, JSON.stringify(['0xmetamask']))
+
+      await import('./useWalletAddress')
+
+      expect(localStorageMock.getItem(ACTIVE_ADDRESS_KEY)).toBe('0xmagic')
     })
   })
 
