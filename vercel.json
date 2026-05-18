@@ -6,7 +6,7 @@
       { "protocol": "https", "hostname": "events-assets-099ac00.decentraland.org" },
       { "protocol": "https", "hostname": "cdn.decentraland.org" }
     ],
-    "sizes": [256, 384, 500, 640, 750, 828, 1080, 1200, 1600, 1920],
+    "sizes": [384, 640, 750, 828, 1080, 1200, 1600, 1920],
     "formats": ["image/webp"],
     "minimumCacheTTL": 86400
   },
