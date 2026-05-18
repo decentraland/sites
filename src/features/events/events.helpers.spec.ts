@@ -846,6 +846,60 @@ describe('expandRecurrentDates', () => {
       const result = expandRecurrentDates(event, new Date('2026-05-01T00:00:00Z'))
       expect(result).toEqual(['2026-01-15T10:00:00Z', '2026-02-15T10:00:00.000Z', '2026-03-15T10:00:00.000Z', '2026-04-15T10:00:00.000Z'])
     })
+
+    // Regression: setUTCMonth on Jan 31 silently overflows to Mar 3 because
+    // Feb 31 doesn't exist. The anchor-and-clamp logic should land on Feb 28/29
+    // instead, matching what RRule produces on the server.
+    it('should clamp the anchor day when the target month is shorter', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'MONTHLY',
+        recurrent_until: '2027-12-01T00:00:00Z',
+        recurrent_dates: ['2026-01-31T10:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2026-06-01T00:00:00Z'))
+      expect(result).toEqual([
+        '2026-01-31T10:00:00Z',
+        '2026-02-28T10:00:00.000Z',
+        '2026-03-31T10:00:00.000Z',
+        '2026-04-30T10:00:00.000Z',
+        '2026-05-31T10:00:00.000Z'
+      ])
+    })
+  })
+
+  describe('when the recurrence is YEARLY', () => {
+    it('should extend by calendar years', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'YEARLY',
+        recurrent_until: '2030-01-01T00:00:00Z',
+        recurrent_dates: ['2024-06-15T10:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2027-07-01T00:00:00Z'))
+      expect(result).toEqual(['2024-06-15T10:00:00Z', '2025-06-15T10:00:00.000Z', '2026-06-15T10:00:00.000Z', '2027-06-15T10:00:00.000Z'])
+    })
+
+    // Regression: setUTCFullYear on Feb 29 2024 silently overflows to Mar 1
+    // 2025 because Feb 29 doesn't exist outside leap years. The clamp lands
+    // on Feb 28 of non-leap years and returns to Feb 29 when leap years come
+    // back around — same behavior the server's RRule produces.
+    it('should clamp the anchor day on non-leap years for a leap-day series', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'YEARLY',
+        recurrent_until: '2030-01-01T00:00:00Z',
+        recurrent_dates: ['2024-02-29T10:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2029-01-01T00:00:00Z'))
+      expect(result).toEqual([
+        '2024-02-29T10:00:00Z',
+        '2025-02-28T10:00:00.000Z',
+        '2026-02-28T10:00:00.000Z',
+        '2027-02-28T10:00:00.000Z',
+        '2028-02-29T10:00:00.000Z'
+      ])
+    })
   })
 
   describe('when the recurrence is HOURLY', () => {

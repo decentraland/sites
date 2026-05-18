@@ -114,21 +114,49 @@ function pickNextDateGenerator(
       return current => new Date(current.getTime() + interval * DAY_MS)
     case 'HOURLY':
       return current => new Date(current.getTime() + interval * HOUR_MS)
-    case 'MONTHLY':
-      return current => {
-        const next = new Date(current)
-        next.setUTCMonth(next.getUTCMonth() + interval)
-        return next
-      }
-    case 'YEARLY':
-      return current => {
-        const next = new Date(current)
-        next.setUTCFullYear(next.getUTCFullYear() + interval)
-        return next
-      }
+    case 'MONTHLY': {
+      // Anchor on the original day-of-month from the first materialized entry
+      // (= start_at). Each step targets `current.month + interval` and clamps
+      // the day if the anchor doesn't exist in that month (e.g. Jan 31 + 1mo →
+      // Feb 28/29 rather than JS's silent overflow to Mar 3). Mirrors the
+      // server's RRule semantics so synthesized dates align with what the
+      // backend would have produced.
+      const anchorDay = new Date(materialized[0]).getUTCDate()
+      return current => clampedCalendarStep(current, current.getUTCMonth() + interval, anchorDay)
+    }
+    case 'YEARLY': {
+      // Same anchor-and-clamp pattern. Feb 29 + 1 year on a non-leap year
+      // resolves to Feb 28 instead of JS's default rollover to Mar 1.
+      const anchorMonth = new Date(materialized[0]).getUTCMonth()
+      const anchorDay = new Date(materialized[0]).getUTCDate()
+      return current => clampedCalendarStep(current, anchorMonth, anchorDay, current.getUTCFullYear() + interval)
+    }
     default:
       return null
   }
+}
+
+// Builds a Date at (year, monthOffset, anchorDay), clamping the day to the
+// target month's last day when the anchor overshoots (e.g. Feb 31 → Feb 28).
+// monthOffset can be > 11 or negative; Date.UTC normalizes into year offsets.
+function clampedCalendarStep(current: Date, monthOffset: number, anchorDay: number, year?: number): Date {
+  const targetYear = year ?? current.getUTCFullYear()
+  // Construct at day 1 of the target month so the constructor never overflows.
+  const next = new Date(
+    Date.UTC(
+      targetYear,
+      monthOffset,
+      1,
+      current.getUTCHours(),
+      current.getUTCMinutes(),
+      current.getUTCSeconds(),
+      current.getUTCMilliseconds()
+    )
+  )
+  // Last day of the resolved month: day 0 of the NEXT month.
+  const lastDay = new Date(Date.UTC(next.getUTCFullYear(), next.getUTCMonth() + 1, 0)).getUTCDate()
+  next.setUTCDate(Math.min(anchorDay, lastDay))
+  return next
 }
 
 // Walks the deltas between consecutive materialized dates backwards from the end,
