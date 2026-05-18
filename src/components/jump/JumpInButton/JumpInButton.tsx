@@ -10,6 +10,13 @@ import { DOWNLOAD_URLS, detectDownloadOS } from '../../../modules/downloadConsta
 import { SegmentEvent } from '../../../modules/segment'
 import { JumpInIconButton, StyledJumpInButton } from './JumpInButton.styled'
 
+const ENV_TO_DCLENV: Record<string, string> = {
+  dev: 'zone',
+  stg: 'today',
+  prd: 'org',
+  prod: 'org'
+}
+
 interface JumpInButtonProps extends Omit<ButtonProps, 'onClick' | 'children'> {
   position: string
   realm?: string
@@ -35,7 +42,8 @@ const JumpInButton: FC<JumpInButtonProps> = ({
   const { hasValidIdentity } = useAuthIdentity()
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false)
 
-  const dclenv = searchParams.get('dclenv') ?? searchParams.get('env') ?? undefined
+  const env = searchParams.get('env')
+  const dclenv = searchParams.get('dclenv') ?? (env ? ENV_TO_DCLENV[env] : undefined)
 
   const onboardingUrl = getEnv('ONBOARDING_URL') ?? ''
   const downloadUrl = getEnv('DOWNLOAD_URL') ?? DOWNLOAD_URLS.windows
