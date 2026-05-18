@@ -62,9 +62,13 @@ jest.mock('../../../modules/downloadConstants', () => ({
 jest.mock('../../../modules/segment', () => ({
   SegmentEvent: { GO_TO_EXPLORER: 'Go To Explorer', CLICK: 'Click' }
 }))
-jest.mock('../../../features/places/places.helpers', () => ({
-  buildDeepLinkOptions: (position: string, realm?: string, env?: string) => ({ position, realm, dclenv: env })
-}))
+jest.mock('../../../features/places/places.helpers', () => {
+  const ENV_TO_DCLENV: Record<string, string> = { dev: 'zone', stg: 'today', prd: 'org', prod: 'org' }
+  return {
+    buildDeepLinkOptions: (position: string, realm?: string, env?: string) => ({ position, realm, dclenv: env }),
+    mapEnvToDclenv: (env: string | null | undefined) => (env ? ENV_TO_DCLENV[env] : undefined)
+  }
+})
 
 const mockUseSearchParams = jest.mocked(useSearchParams)
 const mockUseAuthIdentity = jest.mocked(useAuthIdentity)

@@ -3,19 +3,12 @@ import { useSearchParams } from 'react-router-dom'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { type ButtonProps, DownloadModal, JumpInIcon, launchDesktopApp } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
-import { buildDeepLinkOptions } from '../../../features/places/places.helpers'
+import { buildDeepLinkOptions, mapEnvToDclenv } from '../../../features/places/places.helpers'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../../../modules/downloadConstants'
 import { SegmentEvent } from '../../../modules/segment'
 import { JumpInIconButton, StyledJumpInButton } from './JumpInButton.styled'
-
-const ENV_TO_EXPLORER_ENV: Record<string, string> = {
-  dev: 'zone',
-  stg: 'today',
-  prd: 'org',
-  prod: 'org'
-}
 
 interface JumpInButtonProps extends Omit<ButtonProps, 'onClick' | 'children'> {
   position: string
@@ -42,8 +35,7 @@ const JumpInButton: FC<JumpInButtonProps> = ({
   const { hasValidIdentity } = useAuthIdentity()
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false)
 
-  const env = searchParams.get('env')
-  const explorerEnv = searchParams.get('dclenv') ?? (env ? ENV_TO_EXPLORER_ENV[env] : undefined)
+  const explorerEnv = searchParams.get('dclenv') ?? mapEnvToDclenv(searchParams.get('env'))
 
   const onboardingUrl = getEnv('ONBOARDING_URL') ?? ''
   const downloadUrl = getEnv('DOWNLOAD_URL') ?? DOWNLOAD_URLS.windows
