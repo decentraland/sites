@@ -15,9 +15,14 @@ jest.mock('../../config/env', () => ({
 }))
 
 const fetchMock = jest.fn()
+const originalFetch = global.fetch
 
 beforeAll(() => {
   global.fetch = fetchMock as unknown as typeof fetch
+})
+
+afterAll(() => {
+  global.fetch = originalFetch
 })
 
 beforeEach(() => {

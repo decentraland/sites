@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { withMockFetch } from '../src/__test-utils__/withMockFetch'
 import handler from './seo'
 
 // Mock the dist/index.html the SEO worker reads at module load. Lets `npm test` run in CI
@@ -360,121 +361,134 @@ describe('seo handler', () => {
   })
 
   it('serves blog post metadata for /blog/<category>/<post>', async () => {
-    const originalFetch = global.fetch
-    global.fetch = (async (input: RequestInfo | URL): Promise<Response> => {
-      const url = typeof input === 'string' ? input : input.toString()
-      if (url.includes('/blog/posts?fields.slug=announcing-x')) {
-        return jsonResponse(true, {
-          items: [
-            {
-              fields: {
-                title: 'Announcing X',
-                description: 'Big news',
-                image: { sys: { id: 'asset-1' } },
-                author: { sys: { id: 'author-1' } },
-                category: { sys: { id: 'category-1' } },
-                publishedDate: '2026-01-01T00:00:00Z'
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/posts?fields.slug=announcing-x')) {
+          return jsonResponse(true, {
+            items: [
+              {
+                fields: {
+                  title: 'Announcing X',
+                  description: 'Big news',
+                  image: { sys: { id: 'asset-1' } },
+                  author: { sys: { id: 'author-1' } },
+                  category: { sys: { id: 'category-1' } },
+                  publishedDate: '2026-01-01T00:00:00Z'
+                }
               }
-            }
-          ]
-        } as unknown as MockBlogPostsResponse)
+            ]
+          } as unknown as MockBlogPostsResponse)
+        }
+        if (url.includes('/assets/asset-1')) {
+          return jsonResponse(true, { fields: { file: { url: '//cdn.test/poster.png' } } } as unknown as MockAssetResponse)
+        }
+        if (url.includes('/entries/author-1')) {
+          return jsonResponse(true, {
+            sys: { id: 'author-1', type: 'Entry' },
+            fields: { title: 'Jane Doe' }
+          } as unknown as MockReelResponse)
+        }
+        if (url.includes('/entries/category-1')) {
+          return jsonResponse(true, {
+            sys: { id: 'category-1', type: 'Entry' },
+            fields: { title: 'Announcements' }
+          } as unknown as MockReelResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog/announcements/announcing-x' })
+        expect(body).toContain('<title>Announcing X | Decentraland</title>')
+        expect(body).toMatch(/<meta property="og:image" content="https:\/\/cdn\.test\/poster\.png">/)
+        expect(body).toMatch(/<meta property="article:author" content="Jane Doe">/)
+        expect(body).toMatch(/<meta property="article:published_time" content="2026-01-01T00:00:00Z">/)
+        expect(body).toMatch(/<meta property="article:section" content="Announcements">/)
+        expect(body).toMatch(/<meta property="og:type" content="article">/)
       }
-      if (url.includes('/assets/asset-1')) {
-        return jsonResponse(true, { fields: { file: { url: '//cdn.test/poster.png' } } } as unknown as MockAssetResponse)
-      }
-      if (url.includes('/entries/author-1')) {
-        return jsonResponse(true, { sys: { id: 'author-1', type: 'Entry' }, fields: { title: 'Jane Doe' } } as unknown as MockReelResponse)
-      }
-      if (url.includes('/entries/category-1')) {
-        return jsonResponse(true, {
-          sys: { id: 'category-1', type: 'Entry' },
-          fields: { title: 'Announcements' }
-        } as unknown as MockReelResponse)
-      }
-      return jsonResponse(false, {})
-    }) as typeof fetch
-
-    const { body } = await run({ path: '/blog/announcements/announcing-x' })
-    expect(body).toContain('<title>Announcing X | Decentraland</title>')
-    expect(body).toMatch(/<meta property="og:image" content="https:\/\/cdn\.test\/poster\.png">/)
-    expect(body).toMatch(/<meta property="article:author" content="Jane Doe">/)
-    expect(body).toMatch(/<meta property="article:published_time" content="2026-01-01T00:00:00Z">/)
-    expect(body).toMatch(/<meta property="article:section" content="Announcements">/)
-    expect(body).toMatch(/<meta property="og:type" content="article">/)
-
-    global.fetch = originalFetch
+    )
   })
 
   it('falls back to defaults when a blog post entry has no fields', async () => {
-    const originalFetch = global.fetch
-    global.fetch = (async (input: RequestInfo | URL): Promise<Response> => {
-      const url = typeof input === 'string' ? input : input.toString()
-      if (url.includes('/blog/posts?fields.slug=missing')) return jsonResponse(true, { items: [] } as unknown as MockBlogPostsResponse)
-      return jsonResponse(false, {})
-    }) as typeof fetch
-    const { body } = await run({ path: '/blog/cat/missing' })
-    expect(body).toContain('Decentraland Blog')
-    global.fetch = originalFetch
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/posts?fields.slug=missing')) return jsonResponse(true, { items: [] } as unknown as MockBlogPostsResponse)
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog/cat/missing' })
+        expect(body).toContain('Decentraland Blog')
+      }
+    )
   })
 
   it('serves category metadata for /blog/<category>', async () => {
-    const originalFetch = global.fetch
-    global.fetch = (async (input: RequestInfo | URL): Promise<Response> => {
-      const url = typeof input === 'string' ? input : input.toString()
-      if (url.includes('/blog/categories?fields.slug=announcements')) {
-        return jsonResponse(true, {
-          items: [{ fields: { title: 'Announcements', description: 'Big drops', image: { sys: { id: 'cat-img' } } } }]
-        } as unknown as MockBlogPostsResponse)
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/categories?fields.slug=announcements')) {
+          return jsonResponse(true, {
+            items: [{ fields: { title: 'Announcements', description: 'Big drops', image: { sys: { id: 'cat-img' } } } }]
+          } as unknown as MockBlogPostsResponse)
+        }
+        if (url.includes('/assets/cat-img')) {
+          return jsonResponse(true, { fields: { file: { url: 'https://cdn.test/cat.png' } } } as unknown as MockAssetResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog/announcements' })
+        expect(body).toContain('<title>Announcements | Decentraland</title>')
       }
-      if (url.includes('/assets/cat-img')) {
-        return jsonResponse(true, { fields: { file: { url: 'https://cdn.test/cat.png' } } } as unknown as MockAssetResponse)
-      }
-      return jsonResponse(false, {})
-    }) as typeof fetch
-    const { body } = await run({ path: '/blog/announcements' })
-    expect(body).toContain('<title>Announcements | Decentraland</title>')
-    global.fetch = originalFetch
+    )
   })
 
   it('falls back when the category lookup has no entry', async () => {
-    const originalFetch = global.fetch
-    global.fetch = (async () => jsonResponse(true, { items: [] } as unknown as MockBlogPostsResponse)) as typeof fetch
-    const { body } = await run({ path: '/blog/unknown-category' })
-    expect(body).toContain('Decentraland Blog')
-    global.fetch = originalFetch
+    await withMockFetch(
+      async () => jsonResponse(true, { items: [] } as unknown as MockBlogPostsResponse),
+      async () => {
+        const { body } = await run({ path: '/blog/unknown-category' })
+        expect(body).toContain('Decentraland Blog')
+      }
+    )
   })
 
   it('serves author metadata for /blog/author/<slug>', async () => {
-    const originalFetch = global.fetch
-    global.fetch = (async (input: RequestInfo | URL): Promise<Response> => {
-      const url = typeof input === 'string' ? input : input.toString()
-      if (url.includes('/blog/authors?fields.slug=jane')) {
-        return jsonResponse(true, {
-          items: [{ fields: { title: 'Jane Doe', description: 'Decentraland contributor', image: { sys: { id: 'author-img' } } } }]
-        } as unknown as MockBlogPostsResponse)
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/authors?fields.slug=jane')) {
+          return jsonResponse(true, {
+            items: [{ fields: { title: 'Jane Doe', description: 'Decentraland contributor', image: { sys: { id: 'author-img' } } } }]
+          } as unknown as MockBlogPostsResponse)
+        }
+        if (url.includes('/assets/author-img')) {
+          return jsonResponse(true, { fields: { file: { url: 'https://cdn.test/jane.png' } } } as unknown as MockAssetResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog/author/jane' })
+        expect(body).toContain('<title>Posts by Jane Doe | Decentraland</title>')
       }
-      if (url.includes('/assets/author-img')) {
-        return jsonResponse(true, { fields: { file: { url: 'https://cdn.test/jane.png' } } } as unknown as MockAssetResponse)
-      }
-      return jsonResponse(false, {})
-    }) as typeof fetch
-    const { body } = await run({ path: '/blog/author/jane' })
-    expect(body).toContain('<title>Posts by Jane Doe | Decentraland</title>')
-    global.fetch = originalFetch
+    )
   })
 
   it('falls back to defaults when the author entry has no title', async () => {
-    const originalFetch = global.fetch
-    global.fetch = (async (input: RequestInfo | URL): Promise<Response> => {
-      const url = typeof input === 'string' ? input : input.toString()
-      if (url.includes('/blog/authors?fields.slug=anon')) {
-        return jsonResponse(true, { items: [{ fields: { description: 'no name' } }] } as unknown as MockBlogPostsResponse)
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/authors?fields.slug=anon')) {
+          return jsonResponse(true, { items: [{ fields: { description: 'no name' } }] } as unknown as MockBlogPostsResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog/author/anon' })
+        expect(body).toContain('Decentraland Blog | Updates')
       }
-      return jsonResponse(false, {})
-    }) as typeof fetch
-    const { body } = await run({ path: '/blog/author/anon' })
-    expect(body).toContain('Decentraland Blog | Updates')
-    global.fetch = originalFetch
+    )
   })
 
   it('handles /blog/search with a query string', async () => {
@@ -495,17 +509,19 @@ describe('seo handler', () => {
   })
 
   it('falls back to defaults when the position is valid but the places API returns no entry', async () => {
-    const originalFetch = global.fetch
-    global.fetch = (async (input: RequestInfo | URL): Promise<Response> => {
-      const url = typeof input === 'string' ? input : input.toString()
-      if (url.includes('/places?positions=-50%2C-50')) {
-        return jsonResponse(true, { ok: true, data: [] } as unknown as MockPlaceResponse)
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/places?positions=-50%2C-50')) {
+          return jsonResponse(true, { ok: true, data: [] } as unknown as MockPlaceResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/whats-on', position: '-50,-50' })
+        expect(body).toContain('<title>Explore (-50,-50) in Decentraland | Decentraland</title>')
       }
-      return jsonResponse(false, {})
-    }) as typeof fetch
-    const { body } = await run({ path: '/whats-on', position: '-50,-50' })
-    expect(body).toContain('<title>Explore (-50,-50) in Decentraland | Decentraland</title>')
-    global.fetch = originalFetch
+    )
   })
 
   it('rejects a malformed position and falls back to whats-on defaults', async () => {
@@ -568,22 +584,24 @@ describe('seo handler', () => {
   })
 
   it('falls back to defaults when an unsafe image URL is supplied', async () => {
-    const originalFetch = global.fetch
-    global.fetch = (async (input: RequestInfo | URL): Promise<Response> => {
-      const url = typeof input === 'string' ? input : input.toString()
-      if (url.includes('/blog/posts')) {
-        return jsonResponse(true, {
-          items: [{ fields: { description: 'd', image: { sys: { id: 'broken' } } } }]
-        } as unknown as MockBlogPostsResponse)
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/posts')) {
+          return jsonResponse(true, {
+            items: [{ fields: { description: 'd', image: { sys: { id: 'broken' } } } }]
+          } as unknown as MockBlogPostsResponse)
+        }
+        if (url.includes('/assets/broken')) {
+          return jsonResponse(true, { fields: { file: {} } } as unknown as MockAssetResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog' })
+        expect(body).toContain('Decentraland Blog')
       }
-      if (url.includes('/assets/broken')) {
-        return jsonResponse(true, { fields: { file: {} } } as unknown as MockAssetResponse)
-      }
-      return jsonResponse(false, {})
-    }) as typeof fetch
-    const { body } = await run({ path: '/blog' })
-    expect(body).toContain('Decentraland Blog')
-    global.fetch = originalFetch
+    )
   })
 
   it('uses DEFAULT_ORIGIN when an unrecognised host header is forwarded', async () => {
@@ -630,48 +648,52 @@ describe('seo handler', () => {
   })
 
   it('falls back to the default share image when an unsafe CMS asset URL is supplied', async () => {
-    const originalFetch = global.fetch
-    global.fetch = (async (input: RequestInfo | URL): Promise<Response> => {
-      const url = typeof input === 'string' ? input : input.toString()
-      if (url.includes('/blog/posts?fields.slug=js-asset')) {
-        return jsonResponse(true, {
-          items: [{ fields: { title: 'JS', description: 'd', image: { sys: { id: 'js-asset' } } } }]
-        } as unknown as MockBlogPostsResponse)
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/blog/posts?fields.slug=js-asset')) {
+          return jsonResponse(true, {
+            items: [{ fields: { title: 'JS', description: 'd', image: { sys: { id: 'js-asset' } } } }]
+          } as unknown as MockBlogPostsResponse)
+        }
+        if (url.includes('/assets/js-asset')) {
+          return jsonResponse(true, { fields: { file: { url: 'javascript:alert(1)' } } } as unknown as MockAssetResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/blog/cat/js-asset' })
+        expect(body).toMatch(
+          /<meta property="og:image" content="https:\/\/marketing-files\.decentraland\.org\/uploads\/1778186218133_decentraland-background\.webp">/
+        )
       }
-      if (url.includes('/assets/js-asset')) {
-        return jsonResponse(true, { fields: { file: { url: 'javascript:alert(1)' } } } as unknown as MockAssetResponse)
-      }
-      return jsonResponse(false, {})
-    }) as typeof fetch
-    const { body } = await run({ path: '/blog/cat/js-asset' })
-    expect(body).toMatch(
-      /<meta property="og:image" content="https:\/\/marketing-files\.decentraland\.org\/uploads\/1778186218133_decentraland-background\.webp">/
     )
-    global.fetch = originalFetch
   })
 
   it('falls back to the WhatsOn image when the events API returns a non-http image', async () => {
-    const originalFetch = global.fetch
-    global.fetch = (async (input: RequestInfo | URL): Promise<Response> => {
-      const url = typeof input === 'string' ? input : input.toString()
-      if (url.includes('/events/aaaaaaaaaaaa1111')) {
-        return jsonResponse(true, {
-          ok: true,
-          data: {
-            name: 'Event',
-            description: '',
-            image: 'javascript:alert(1)',
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            scene_name: ''
-          }
-        } as unknown as MockEventResponse)
+    await withMockFetch(
+      async (input: RequestInfo | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url.includes('/events/aaaaaaaaaaaa1111')) {
+          return jsonResponse(true, {
+            ok: true,
+            data: {
+              name: 'Event',
+              description: '',
+              image: 'javascript:alert(1)',
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              scene_name: ''
+            }
+          } as unknown as MockEventResponse)
+        }
+        return jsonResponse(false, {})
+      },
+      async () => {
+        const { body } = await run({ path: '/whats-on', id: 'aaaaaaaaaaaa1111' })
+        expect(body).toMatch(
+          /<meta property="og:image" content="https:\/\/marketing-files\.decentraland\.org\/uploads\/1778186218133_decentraland-background\.webp">/
+        )
       }
-      return jsonResponse(false, {})
-    }) as typeof fetch
-    const { body } = await run({ path: '/whats-on', id: 'aaaaaaaaaaaa1111' })
-    expect(body).toMatch(
-      /<meta property="og:image" content="https:\/\/marketing-files\.decentraland\.org\/uploads\/1778186218133_decentraland-background\.webp">/
     )
-    global.fetch = originalFetch
   })
 })

@@ -72,6 +72,17 @@ const referrerProfile = {
   avatars: [{ ethAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd', name: 'SirTesla' }]
 }
 
+// Save and restore the original `global.fetch` once per file. The previous
+// per-describe `global.fetch = mockFetch` assignments did not restore, so a
+// throw in any test would leak the stub into the next file.
+const originalFetch = global.fetch
+beforeAll(() => {
+  global.fetch = mockFetch as unknown as typeof fetch
+})
+afterAll(() => {
+  global.fetch = originalFetch
+})
+
 describe('when the referrer param is a Decentraland name', () => {
   beforeEach(() => {
     mockUseParams.mockReturnValue({ referrer: 'Brai' })
@@ -84,7 +95,6 @@ describe('when the referrer param is a Decentraland name', () => {
       }
       return Promise.reject(new Error(`unexpected fetch: ${url}`))
     })
-    global.fetch = mockFetch as unknown as typeof fetch
   })
 
   afterEach(() => {
@@ -127,7 +137,6 @@ describe('when the referrer param is already an Ethereum address', () => {
       }
       return Promise.reject(new Error(`unexpected fetch: ${url}`))
     })
-    global.fetch = mockFetch as unknown as typeof fetch
   })
 
   afterEach(() => {
@@ -152,7 +161,6 @@ describe('when the name lookup fails', () => {
   beforeEach(() => {
     mockUseParams.mockReturnValue({ referrer: 'Unknown' })
     mockFetch.mockRejectedValue(new Error('network'))
-    global.fetch = mockFetch as unknown as typeof fetch
   })
 
   afterEach(() => {
@@ -175,7 +183,6 @@ describe('when the profile fetch fails after a successful name resolution', () =
       }
       return Promise.reject(new Error('profile down'))
     })
-    global.fetch = mockFetch as unknown as typeof fetch
   })
 
   afterEach(() => {
@@ -195,7 +202,6 @@ describe('when the profile fetch fails after a successful name resolution', () =
 describe('when the referrer is empty', () => {
   beforeEach(() => {
     mockUseParams.mockReturnValue({ referrer: '' })
-    global.fetch = mockFetch as unknown as typeof fetch
   })
 
   afterEach(() => {

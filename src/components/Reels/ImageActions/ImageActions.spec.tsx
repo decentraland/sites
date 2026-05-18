@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { withMockFetch } from '../../../__test-utils__/withMockFetch'
 import { ImageActions } from './ImageActions'
 
 const trackMock = jest.fn()
@@ -92,8 +93,6 @@ describe('ImageActions', () => {
     it('should trigger share, copy, download, and info actions on Enter', async () => {
       const onToggle = jest.fn()
       const fetchMock = jest.fn().mockResolvedValue({ blob: async () => new Blob(['x']) })
-      const originalFetch = global.fetch
-      global.fetch = fetchMock as unknown as typeof fetch
       // eslint-disable-next-line @typescript-eslint/unbound-method
       const originalCreate = URL.createObjectURL
       // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -101,26 +100,27 @@ describe('ImageActions', () => {
       URL.createObjectURL = jest.fn(() => 'blob:fake')
       URL.revokeObjectURL = jest.fn()
       try {
-        render(<ImageActions image={fakeImage} metadataVisible={false} onToggleMetadata={onToggle} />)
+        await withMockFetch(fetchMock, async () => {
+          render(<ImageActions image={fakeImage} metadataVisible={false} onToggleMetadata={onToggle} />)
 
-        fireEvent.keyDown(screen.getByRole('button', { name: 'component.reels.image_actions.share' }), { key: 'Enter' })
-        expect(window.open).toHaveBeenCalled()
+          fireEvent.keyDown(screen.getByRole('button', { name: 'component.reels.image_actions.share' }), { key: 'Enter' })
+          expect(window.open).toHaveBeenCalled()
 
-        fireEvent.keyDown(screen.getByAltText('component.reels.image_actions.copy_link'), { key: 'Enter' })
-        await waitFor(() => expect(writeTextMock).toHaveBeenCalled())
+          fireEvent.keyDown(screen.getByAltText('component.reels.image_actions.copy_link'), { key: 'Enter' })
+          await waitFor(() => expect(writeTextMock).toHaveBeenCalled())
 
-        fireEvent.keyDown(screen.getByAltText('component.reels.image_actions.download'), { key: 'Enter' })
-        await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+          fireEvent.keyDown(screen.getByAltText('component.reels.image_actions.download'), { key: 'Enter' })
+          await waitFor(() => expect(fetchMock).toHaveBeenCalled())
 
-        fireEvent.keyDown(screen.getByAltText('component.reels.image_actions.info'), { key: 'Enter' })
-        expect(onToggle).toHaveBeenCalled()
+          fireEvent.keyDown(screen.getByAltText('component.reels.image_actions.info'), { key: 'Enter' })
+          expect(onToggle).toHaveBeenCalled()
 
-        // Non-Enter keys should not re-trigger handlers.
-        const callsBefore = (window.open as jest.Mock).mock.calls.length
-        fireEvent.keyDown(screen.getByRole('button', { name: 'component.reels.image_actions.share' }), { key: 'Space' })
-        expect((window.open as jest.Mock).mock.calls.length).toBe(callsBefore)
+          // Non-Enter keys should not re-trigger handlers.
+          const callsBefore = (window.open as jest.Mock).mock.calls.length
+          fireEvent.keyDown(screen.getByRole('button', { name: 'component.reels.image_actions.share' }), { key: 'Space' })
+          expect((window.open as jest.Mock).mock.calls.length).toBe(callsBefore)
+        })
       } finally {
-        global.fetch = originalFetch
         URL.createObjectURL = originalCreate
         URL.revokeObjectURL = originalRevoke
       }
@@ -130,8 +130,6 @@ describe('ImageActions', () => {
   describe('when the download action runs', () => {
     it('should fetch the image, build an anchor element, and revoke the object URL', async () => {
       const fetchMock = jest.fn().mockResolvedValue({ blob: async () => new Blob(['x']) })
-      const originalFetch = global.fetch
-      global.fetch = fetchMock as unknown as typeof fetch
       // eslint-disable-next-line @typescript-eslint/unbound-method
       const originalCreate = URL.createObjectURL
       // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -139,16 +137,17 @@ describe('ImageActions', () => {
       URL.createObjectURL = jest.fn(() => 'blob:fake')
       URL.revokeObjectURL = jest.fn()
       try {
-        render(<ImageActions image={fakeImage} metadataVisible={false} onToggleMetadata={jest.fn()} />)
-        fireEvent.click(screen.getByAltText('component.reels.image_actions.download'))
-        await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(fakeImage.url))
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(URL.createObjectURL).toHaveBeenCalled()
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(URL.revokeObjectURL).toHaveBeenCalled()
-        expect(trackMock).toHaveBeenCalledWith('Reels Download', { imageId: 'img-1' })
+        await withMockFetch(fetchMock, async () => {
+          render(<ImageActions image={fakeImage} metadataVisible={false} onToggleMetadata={jest.fn()} />)
+          fireEvent.click(screen.getByAltText('component.reels.image_actions.download'))
+          await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(fakeImage.url))
+          // eslint-disable-next-line @typescript-eslint/unbound-method
+          expect(URL.createObjectURL).toHaveBeenCalled()
+          // eslint-disable-next-line @typescript-eslint/unbound-method
+          expect(URL.revokeObjectURL).toHaveBeenCalled()
+          expect(trackMock).toHaveBeenCalledWith('Reels Download', { imageId: 'img-1' })
+        })
       } finally {
-        global.fetch = originalFetch
         URL.createObjectURL = originalCreate
         URL.revokeObjectURL = originalRevoke
       }
@@ -156,8 +155,6 @@ describe('ImageActions', () => {
 
     it('should fall back to the literal "photo" filename when no visible person is recorded', async () => {
       const fetchMock = jest.fn().mockResolvedValue({ blob: async () => new Blob(['x']) })
-      const originalFetch = global.fetch
-      global.fetch = fetchMock as unknown as typeof fetch
       // eslint-disable-next-line @typescript-eslint/unbound-method
       const originalCreate = URL.createObjectURL
       // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -172,15 +169,16 @@ describe('ImageActions', () => {
         return el
       })
       try {
-        const imageWithoutPeople = {
-          ...fakeImage,
-          metadata: { ...fakeImage.metadata, visiblePeople: [] }
-        }
-        render(<ImageActions image={imageWithoutPeople} metadataVisible={false} onToggleMetadata={jest.fn()} />)
-        fireEvent.click(screen.getByAltText('component.reels.image_actions.download'))
-        await waitFor(() => expect(anchorClick).toHaveBeenCalled())
+        await withMockFetch(fetchMock, async () => {
+          const imageWithoutPeople = {
+            ...fakeImage,
+            metadata: { ...fakeImage.metadata, visiblePeople: [] }
+          }
+          render(<ImageActions image={imageWithoutPeople} metadataVisible={false} onToggleMetadata={jest.fn()} />)
+          fireEvent.click(screen.getByAltText('component.reels.image_actions.download'))
+          await waitFor(() => expect(anchorClick).toHaveBeenCalled())
+        })
       } finally {
-        global.fetch = originalFetch
         URL.createObjectURL = originalCreate
         URL.revokeObjectURL = originalRevoke
         ;(document.createElement as jest.Mock).mockRestore?.()
@@ -188,15 +186,14 @@ describe('ImageActions', () => {
     })
 
     it('should swallow fetch failures', async () => {
-      const originalFetch = global.fetch
-      global.fetch = jest.fn().mockRejectedValue(new Error('net')) as unknown as typeof fetch
       const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
       try {
-        render(<ImageActions image={fakeImage} metadataVisible={false} onToggleMetadata={jest.fn()} />)
-        fireEvent.click(screen.getByAltText('component.reels.image_actions.download'))
-        await waitFor(() => expect(warn).toHaveBeenCalled())
+        await withMockFetch(jest.fn().mockRejectedValue(new Error('net')), async () => {
+          render(<ImageActions image={fakeImage} metadataVisible={false} onToggleMetadata={jest.fn()} />)
+          fireEvent.click(screen.getByAltText('component.reels.image_actions.download'))
+          await waitFor(() => expect(warn).toHaveBeenCalled())
+        })
       } finally {
-        global.fetch = originalFetch
         warn.mockRestore()
       }
     })
