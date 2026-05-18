@@ -39,7 +39,8 @@ jest.mock('../../../features/events', () => {
   const helpers = jest.requireActual('../../../features/events/events.helpers')
   return {
     useGetEventsQuery: (...args: unknown[]) => mockUseGetEventsQuery(...args),
-    bucketEventsByDay: helpers.bucketEventsByDay
+    bucketEventsByDay: helpers.bucketEventsByDay,
+    isPubliclyVisibleEvent: helpers.isPubliclyVisibleEvent
   }
 })
 
@@ -302,6 +303,52 @@ describe('AllExperiences', () => {
       render(<AllExperiences />)
 
       expect(screen.getAllByTestId('day-column')[0]).toHaveAttribute('data-event-count', '2')
+    })
+  })
+
+  describe("when the response includes the caller's pending or rejected events on the All tab", () => {
+    beforeEach(() => {
+      mockColumnCount.mockReturnValue(3)
+      // Issue #482: events API includes the caller's own non-approved events when authenticated.
+      // The public All tab must hide them; only the My tab is allowed to surface drafts.
+      mockUseGetEventsQuery.mockReturnValue({
+        data: [
+          createMockEvent({ id: 'approved', approved: true, rejected: false, start_at: '2026-09-13T14:00:00Z' }),
+          createMockEvent({ id: 'pending', approved: false, rejected: false, start_at: '2026-09-13T15:00:00Z' }),
+          createMockEvent({ id: 'rejected', approved: false, rejected: true, start_at: '2026-09-13T16:00:00Z' })
+        ],
+        isLoading: false,
+        isError: false
+      })
+    })
+
+    it('should only bucket approved events into the day columns', () => {
+      render(<AllExperiences />)
+
+      const ids = screen.getAllByTestId('day-column')[0]?.getAttribute('data-event-ids') ?? ''
+      expect(ids.split(',').filter(Boolean)).toEqual(['approved'])
+    })
+  })
+
+  describe('when every event in the response is pending or rejected on the All tab', () => {
+    beforeEach(() => {
+      mockColumnCount.mockReturnValue(3)
+      mockUseGetEventsQuery.mockReturnValue({
+        data: [
+          createMockEvent({ id: 'pending-1', approved: false, rejected: false, start_at: '2026-09-13T14:00:00Z' }),
+          createMockEvent({ id: 'pending-2', approved: false, rejected: false, start_at: '2026-09-14T15:00:00Z' }),
+          createMockEvent({ id: 'rejected-1', approved: false, rejected: true, start_at: '2026-09-15T16:00:00Z' })
+        ],
+        isLoading: false,
+        isError: false
+      })
+    })
+
+    it('should render empty day columns instead of leaking drafts', () => {
+      render(<AllExperiences />)
+
+      const counts = screen.getAllByTestId('day-column').map(col => col.getAttribute('data-event-count'))
+      expect(counts).toEqual(['0', '0', '0'])
     })
   })
 
@@ -670,6 +717,53 @@ describe('AllExperiences', () => {
         expect(cardIds).toContain('mine-rejected-future')
         expect(cardIds).toContain('mine-approved')
         expect(cardIds).not.toContain('someone-else')
+      })
+    })
+
+    // Issue #482 invariant: the All-tab approval filter must not bleed into the My tab. Pending
+    // drafts and rejections are the whole point of My Hangouts (the PendingEventCard status
+    // overlay lives there), so they must reach MyExperiencesGrid unfiltered.
+    describe('and the owner=true response contains both pending and rejected drafts', () => {
+      beforeEach(() => {
+        mockUseGetEventsQuery.mockReturnValue({
+          data: [
+            createMockEvent({
+              id: 'mine-pending',
+              user: '0xCreator',
+              approved: false,
+              rejected: false,
+              start_at: '2026-09-20T14:00:00Z',
+              finish_at: '2026-09-20T16:00:00Z'
+            }),
+            createMockEvent({
+              id: 'mine-rejected',
+              user: '0xCreator',
+              approved: false,
+              rejected: true,
+              start_at: '2026-09-21T14:00:00Z',
+              finish_at: '2026-09-21T16:00:00Z'
+            }),
+            createMockEvent({
+              id: 'mine-approved',
+              user: '0xCreator',
+              approved: true,
+              rejected: false,
+              start_at: '2026-09-22T14:00:00Z',
+              finish_at: '2026-09-22T16:00:00Z'
+            })
+          ],
+          isLoading: false,
+          isError: false
+        })
+      })
+
+      it('should still surface pending and rejected drafts in the My tab grid', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-my'))
+
+        const cardIds = screen.getAllByTestId('my-exp-grid-card').map(c => c.getAttribute('data-id'))
+        expect(cardIds).toEqual(expect.arrayContaining(['mine-pending', 'mine-rejected', 'mine-approved']))
       })
     })
 

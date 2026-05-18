@@ -1,7 +1,12 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ScrollToTop } from './components/ScrollToTop'
-import { IndexPage } from './pages/index.tsx'
+
+// IndexPage is the homepage hero + below-fold sections. Keeping it lazy means
+// /whats-on, /blog/*, and every legal page never download the homepage bundle.
+// On `/` the prerendered hero shell paints as LCP before this chunk arrives,
+// so the lazy split is invisible to users hitting the homepage cold.
+const IndexPage = lazy(() => import('./pages/index.tsx').then(m => ({ default: m.IndexPage })))
 
 // Layout imports Navbar from decentraland-ui2 which pulls in ~1.3MB of MUI.
 // Lazy-loading it keeps that JS out of the critical path so the static hero

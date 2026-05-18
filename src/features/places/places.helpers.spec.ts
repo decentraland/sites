@@ -137,6 +137,18 @@ describe('jump.helpers', () => {
         expect(buildDeepLinkOptions('1,2', 'foo.eth')).toEqual({ position: '1,2', realm: 'foo.eth' })
       })
     })
+
+    describe('and env is provided', () => {
+      it('should include it in the options as dclenv', () => {
+        expect(buildDeepLinkOptions('1,2', 'foo.eth', 'zone')).toEqual({ position: '1,2', realm: 'foo.eth', dclenv: 'zone' })
+      })
+    })
+
+    describe('and env is not provided', () => {
+      it('should omit dclenv from the options', () => {
+        expect(buildDeepLinkOptions('1,2', 'foo.eth', undefined)).toEqual({ position: '1,2', realm: 'foo.eth' })
+      })
+    })
   })
 
   describe('when formatDateForGoogleCalendar is called', () => {

@@ -1000,7 +1000,8 @@
     "interval_chip_week_plural": "{count} 周",
     "error_repeat_interval_invalid": "重复间隔必须是 1 到 4 之间的整数",
     "error_repeat_days_required": "请至少选择一天",
-    "error_start_date_not_in_repeat_days": "开始日期的星期必须是所选日期之一"
+    "error_start_date_not_in_repeat_days": "开始日期的星期必须是所选日期之一",
+    "vertical_recommended_size": "建议尺寸：716 × 1814 px"
   },
   "community": {
     "global": {

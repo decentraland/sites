@@ -1,4 +1,13 @@
-import { formatLocalDate, formatLocalTime, formatUtcRangeTooltip, formatUtcTooltip, getUtcDayDelta } from './whatsOnTime'
+import {
+  formatLocalDate,
+  formatLocalTime,
+  formatUtcDate,
+  formatUtcRangeTooltip,
+  formatUtcTime,
+  formatUtcTooltip,
+  getRelativeTimeLabel,
+  getUtcDayDelta
+} from './whatsOnTime'
 
 const t = (key: string, values?: Record<string, string | number>) => (values ? `${key}:${JSON.stringify(values)}` : key)
 
@@ -50,6 +59,48 @@ describe('whatsOnTime helpers', () => {
       it('should fall back to the single tooltip', () => {
         expect(formatUtcRangeTooltip('2026-04-07T10:00:00Z', null, 'en-US', t)).toBe('event_time.utc_same_day:{"time":"10:00 AM"}')
       })
+    })
+  })
+
+  describe('formatUtcTime', () => {
+    it('should format a UTC timestamp in UTC tz', () => {
+      expect(formatUtcTime('2026-04-07T10:00:00Z', 'en-US')).toBe('10:00 AM')
+    })
+  })
+
+  describe('formatUtcDate', () => {
+    it('should format a UTC timestamp as a short weekday/month/day', () => {
+      expect(formatUtcDate('2026-04-07T10:00:00Z', 'en-US')).toBe('Tue, Apr 7')
+    })
+  })
+
+  describe('getRelativeTimeLabel', () => {
+    const now = new Date('2026-04-07T12:00:00Z').getTime()
+    beforeEach(() => {
+      jest.spyOn(Date, 'now').mockReturnValue(now)
+    })
+    afterEach(() => {
+      jest.restoreAllMocks()
+    })
+
+    it('should return the local time when the event already started', () => {
+      const past = '2026-04-07T11:00:00Z'
+      expect(getRelativeTimeLabel(past, t)).toBe(formatLocalTime(past))
+    })
+
+    it('should return "starts_in_mins" when less than an hour away', () => {
+      const soon = '2026-04-07T12:30:00Z'
+      expect(getRelativeTimeLabel(soon, t)).toContain('upcoming.starts_in_mins')
+    })
+
+    it('should return "starts_in_hours" when less than a day away', () => {
+      const later = '2026-04-07T20:00:00Z'
+      expect(getRelativeTimeLabel(later, t)).toContain('upcoming.starts_in_hours')
+    })
+
+    it('should return the local time for events more than a day away', () => {
+      const farFuture = '2026-04-10T10:00:00Z'
+      expect(getRelativeTimeLabel(farFuture, t)).toBe(formatLocalTime(farFuture))
     })
   })
 })

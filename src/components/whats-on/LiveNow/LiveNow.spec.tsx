@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { createMockLiveNowCard } from '../../../__test-utils__/factories'
 import type { LiveNowCard } from '../../../features/events'
 import { LiveNow } from './LiveNow'
@@ -264,6 +264,111 @@ describe('LiveNow', () => {
       render(<LiveNow />)
 
       expect(screen.queryByTestId('pagination-dots')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when a card is clicked', () => {
+    it('should open the EventDetailModal with the normalized card', () => {
+      const cards = [createMockCard('card-1', 'Event 1')]
+      mockUseGetLiveNowCardsQuery.mockReturnValue({ data: cards })
+      render(<LiveNow />)
+      fireEvent.click(screen.getAllByTestId('live-now-card')[0])
+      expect(screen.getByTestId('event-detail-modal')).toBeInTheDocument()
+    })
+  })
+
+  describe('when the user drags the carousel', () => {
+    it('should update scrollLeft on every mouseMove after mouseDown', () => {
+      mockUseGetLiveNowCardsQuery.mockReturnValue({
+        data: [createMockCard('card-1', 'Event 1'), createMockCard('card-2', 'Event 2')]
+      })
+      const setSpy = jest.spyOn(HTMLElement.prototype, 'scrollLeft', 'set')
+      try {
+        render(<LiveNow />)
+        const wrapper = screen.getByTestId('carousel-wrapper')
+        const callsBefore = setSpy.mock.calls.length
+        fireEvent.mouseDown(wrapper, { pageX: 100 })
+        fireEvent.mouseMove(wrapper, { pageX: 200 })
+        fireEvent.mouseMove(wrapper, { pageX: 50 })
+        fireEvent.mouseUp(wrapper)
+        // mouseMove should have written to scrollLeft twice during the active drag.
+        expect(setSpy.mock.calls.length - callsBefore).toBe(2)
+      } finally {
+        setSpy.mockRestore()
+      }
+    })
+
+    it('should not update scrollLeft when mouseMove fires without a prior mouseDown', () => {
+      mockUseGetLiveNowCardsQuery.mockReturnValue({ data: [createMockCard('card-1', 'Event 1')] })
+      const setSpy = jest.spyOn(HTMLElement.prototype, 'scrollLeft', 'set')
+      try {
+        render(<LiveNow />)
+        const wrapper = screen.getByTestId('carousel-wrapper')
+        const callsBefore = setSpy.mock.calls.length
+        fireEvent.mouseMove(wrapper, { pageX: 100 })
+        expect(setSpy.mock.calls.length).toBe(callsBefore)
+      } finally {
+        setSpy.mockRestore()
+      }
+    })
+  })
+
+  describe('when chevrons are visible', () => {
+    let scrollByMock: jest.Mock
+    let scrollToMock: jest.Mock
+    let clientWidthSpy: jest.SpyInstance
+    let offsetWidthSpy: jest.SpyInstance
+    let scrollWidthSpy: jest.SpyInstance
+    let scrollLeftSpy: jest.SpyInstance
+
+    beforeEach(() => {
+      scrollByMock = jest.fn()
+      scrollToMock = jest.fn()
+      // Need both left and right chevrons visible.
+      clientWidthSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(300)
+      offsetWidthSpy = jest.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(300)
+      scrollWidthSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(900)
+      scrollLeftSpy = jest.spyOn(HTMLElement.prototype, 'scrollLeft', 'get').mockReturnValue(50)
+      HTMLElement.prototype.scrollBy = scrollByMock as unknown as HTMLElement['scrollBy']
+      HTMLElement.prototype.scrollTo = scrollToMock as unknown as HTMLElement['scrollTo']
+      mockUseGetLiveNowCardsQuery.mockReturnValue({
+        data: [createMockCard('card-1', 'Event 1'), createMockCard('card-2', 'Event 2'), createMockCard('card-3', 'Event 3')]
+      })
+    })
+
+    afterEach(() => {
+      clientWidthSpy.mockRestore()
+      offsetWidthSpy.mockRestore()
+      scrollWidthSpy.mockRestore()
+      scrollLeftSpy.mockRestore()
+    })
+
+    it('should scroll left when the left chevron is clicked', () => {
+      render(<LiveNow />)
+      fireEvent.click(screen.getByTestId('chevron-left'))
+      expect(scrollByMock).toHaveBeenCalledWith(expect.objectContaining({ left: -300 }))
+    })
+
+    it('should scroll right when the right chevron is clicked', () => {
+      render(<LiveNow />)
+      fireEvent.click(screen.getByTestId('chevron-right'))
+      expect(scrollByMock).toHaveBeenCalledWith(expect.objectContaining({ left: 300 }))
+    })
+
+    it('should scroll the wrapper to the matching page on dot click', () => {
+      render(<LiveNow />)
+      const dots = screen.getAllByTestId('pagination-dot')
+      fireEvent.click(dots[dots.length - 1])
+      expect(scrollToMock).toHaveBeenCalled()
+    })
+
+    it('should navigate pages via ArrowRight/ArrowLeft on the active dot', () => {
+      render(<LiveNow />)
+      const dots = screen.getAllByTestId('pagination-dot')
+      fireEvent.keyDown(dots[0], { key: 'ArrowRight' })
+      fireEvent.keyDown(dots[0], { key: 'ArrowLeft' })
+      fireEvent.keyDown(dots[0], { key: 'Enter' })
+      expect(scrollToMock).toHaveBeenCalled()
     })
   })
 })
