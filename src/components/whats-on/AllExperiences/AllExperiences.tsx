@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
-import { bucketEventsByDay, useGetEventsQuery } from '../../../features/events'
+import { bucketEventsByDay, isPubliclyVisibleEvent, useGetEventsQuery } from '../../../features/events'
 import type { EventEntry, EventListType } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
@@ -64,10 +64,7 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, list
   )
 
   const dayData = useMemo(() => {
-    // The events API includes the caller's own non-approved events when authenticated so the My
-    // Hangouts tab can surface pending/rejected drafts. The public All tab must show only approved
-    // entries — drop anything pending or rejected before bucketing into day columns.
-    const visibleEvents = allEvents.filter(event => event.approved && !event.rejected)
+    const visibleEvents = allEvents.filter(isPubliclyVisibleEvent)
     const buckets = bucketEventsByDay(visibleEvents, days)
     return days.map((day, i) => ({ date: day, events: buckets[i], isLoading, isError }))
   }, [days, allEvents, isLoading, isError])

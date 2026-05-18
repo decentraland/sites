@@ -16,9 +16,13 @@ jest.mock('../../../hooks/useAuthIdentity', () => ({
 }))
 
 const mockUseGetUpcomingEventsQuery = jest.fn()
-jest.mock('../../../features/events', () => ({
-  useGetUpcomingEventsQuery: () => mockUseGetUpcomingEventsQuery()
-}))
+jest.mock('../../../features/events', () => {
+  const helpers = jest.requireActual('../../../features/events/events.helpers')
+  return {
+    useGetUpcomingEventsQuery: () => mockUseGetUpcomingEventsQuery(),
+    isPubliclyVisibleEvent: helpers.isPubliclyVisibleEvent
+  }
+})
 
 jest.mock('../EventDetailModal', () => ({
   EventDetailModal: () => <div data-testid="event-detail-modal" />,
