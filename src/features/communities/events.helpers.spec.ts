@@ -1,8 +1,16 @@
+const envMock = jest.fn<string | undefined, [string]>(() => 'https://events-api.test')
 jest.mock('../../config/env', () => ({
-  getEnv: () => 'https://events-api.test'
+  getEnv: (key: string) => envMock(key)
 }))
 
-import { mapEventsApiResponse } from './events.helpers'
+import {
+  getCommunityEventCoordinates,
+  getCommunityEventDuration,
+  getEventsApiBaseUrl,
+  mapCommunityEventToEventEntry,
+  mapEventsApiResponse
+} from './events.helpers'
+import type { CommunityEvent } from './communities.types'
 import type { EventsApiResponse } from './events.helpers.types'
 
 describe('mapEventsApiResponse', () => {
@@ -133,5 +141,145 @@ describe('mapEventsApiResponse', () => {
       expect(result.data.events).toEqual([])
       expect(result.data.total).toBe(0)
     })
+  })
+})
+
+describe('getEventsApiBaseUrl', () => {
+  beforeEach(() => {
+    envMock.mockReset().mockReturnValue('https://events-api.test')
+  })
+
+  it('should return the env value when set', () => {
+    expect(getEventsApiBaseUrl()).toBe('https://events-api.test')
+  })
+
+  it('should throw when EVENTS_API_URL is missing', () => {
+    envMock.mockReturnValueOnce(undefined)
+    expect(() => getEventsApiBaseUrl()).toThrow('EVENTS_API_URL environment variable is not set')
+  })
+})
+
+describe('getCommunityEventCoordinates', () => {
+  it('should prefer coordinates when supplied', () => {
+    expect(getCommunityEventCoordinates({ coordinates: [10, 20] } as unknown as CommunityEvent)).toEqual([10, 20])
+  })
+
+  it('should fall back to position when coordinates are missing', () => {
+    expect(getCommunityEventCoordinates({ position: [3, 4] } as unknown as CommunityEvent)).toEqual([3, 4])
+  })
+
+  it('should fall back to x/y when neither is supplied', () => {
+    expect(getCommunityEventCoordinates({ x: 1, y: 2 } as unknown as CommunityEvent)).toEqual([1, 2])
+  })
+
+  it('should default to 0,0 when nothing is supplied', () => {
+    expect(getCommunityEventCoordinates({} as unknown as CommunityEvent)).toEqual([0, 0])
+  })
+})
+
+describe('getCommunityEventDuration', () => {
+  it('should return the explicit duration when present', () => {
+    expect(getCommunityEventDuration({ duration: 600 } as unknown as CommunityEvent)).toBe(600)
+  })
+
+  it('should compute the duration from startAt/finishAt in seconds', () => {
+    const event = {
+      startAt: '2026-05-01T00:00:00Z',
+      finishAt: '2026-05-01T01:00:00Z'
+    } as unknown as CommunityEvent
+    expect(getCommunityEventDuration(event)).toBe(3600)
+  })
+
+  it('should return 0 when timestamps are invalid', () => {
+    expect(getCommunityEventDuration({ startAt: 'no', finishAt: 'no' } as unknown as CommunityEvent)).toBe(0)
+  })
+
+  it('should return 0 when finish is before start', () => {
+    expect(
+      getCommunityEventDuration({ startAt: '2026-05-02T00:00:00Z', finishAt: '2026-05-01T00:00:00Z' } as unknown as CommunityEvent)
+    ).toBe(0)
+  })
+})
+
+describe('mapCommunityEventToEventEntry', () => {
+  it('should map every camelCase field to snake_case with sensible defaults', () => {
+    const event = {
+      id: 'evt-1',
+      name: 'Hangout',
+      startAt: '2026-05-01T00:00:00Z',
+      finishAt: '2026-05-01T01:00:00Z',
+      coordinates: [10, 20],
+      duration: 60,
+      approved: true,
+      rejected: false,
+      attending: false,
+      totalAttendees: 5,
+      latestAttendees: ['0xa']
+    } as unknown as CommunityEvent
+
+    const mapped = mapCommunityEventToEventEntry(event)
+    expect(mapped.id).toBe('evt-1')
+    expect(mapped.start_at).toBe('2026-05-01T00:00:00Z')
+    expect(mapped.finish_at).toBe('2026-05-01T01:00:00Z')
+    expect(mapped.next_start_at).toBe('2026-05-01T00:00:00Z')
+    expect(mapped.next_finish_at).toBe('2026-05-01T01:00:00Z')
+    expect(mapped.coordinates).toEqual([10, 20])
+    expect(mapped.position).toEqual([10, 20])
+    expect(mapped.x).toBe(10)
+    expect(mapped.y).toBe(20)
+    expect(mapped.duration).toBe(60)
+    expect(mapped.recurrent_dates).toEqual([])
+    expect(mapped.world).toBe(false)
+    expect(mapped.live).toBe(false)
+    expect(mapped.highlighted).toBe(false)
+    expect(mapped.trending).toBe(false)
+  })
+
+  it('should preserve explicit camelCase overrides', () => {
+    const event = {
+      id: 'evt-2',
+      name: 'Tour',
+      startAt: '2026-05-01T00:00:00Z',
+      finishAt: '2026-05-01T02:00:00Z',
+      coordinates: [0, 0],
+      duration: 7200,
+      approved: false,
+      rejected: false,
+      attending: true,
+      totalAttendees: 1,
+      latestAttendees: ['0xb'],
+      nextStartAt: '2026-05-08T00:00:00Z',
+      nextFinishAt: '2026-05-08T02:00:00Z',
+      allDay: true,
+      live: true,
+      world: true,
+      placeId: 'p-1',
+      communityId: 'c-1',
+      recurrent: true,
+      recurrentFrequency: 'weekly',
+      recurrentInterval: 2,
+      recurrentWeekdayMask: 5,
+      recurrentDates: ['2026-05-08T00:00:00Z'],
+      contact: 'mail@example.test',
+      details: 'details',
+      categories: ['cat'],
+      schedules: ['sched'],
+      createdAt: '2026-04-29T00:00:00Z',
+      updatedAt: '2026-04-30T00:00:00Z',
+      userName: 'creator',
+      user: '0xcreator'
+    } as unknown as CommunityEvent
+
+    const mapped = mapCommunityEventToEventEntry(event)
+    expect(mapped.all_day).toBe(true)
+    expect(mapped.live).toBe(true)
+    expect(mapped.world).toBe(true)
+    expect(mapped.place_id).toBe('p-1')
+    expect(mapped.community_id).toBe('c-1')
+    expect(mapped.next_start_at).toBe('2026-05-08T00:00:00Z')
+    expect(mapped.recurrent_frequency).toBe('weekly')
+    expect(mapped.recurrent_dates).toEqual(['2026-05-08T00:00:00Z'])
+    expect(mapped.user_name).toBe('creator')
+    expect(mapped.user).toBe('0xcreator')
   })
 })

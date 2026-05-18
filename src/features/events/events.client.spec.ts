@@ -515,6 +515,100 @@ describe('eventsClient', () => {
     })
   })
 
+  describe('when updateEvent mutation is called', () => {
+    const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
+    const payload = { name: 'Updated', description: 'desc' } as unknown as Parameters<
+      typeof eventsClient.endpoints.updateEvent.initiate
+    >[0]['payload']
+
+    describe('and the response is ok', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test')
+        mockFetchWithIdentity.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve({ ok: true, data: { id: 'ev 1' } })
+        })
+      })
+
+      it('should PATCH the event by id with the JSON payload', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(
+          eventsClient.endpoints.updateEvent.initiate({ eventId: 'ev 1', payload, identity: mockIdentity })
+        )
+        expect(mockFetchWithIdentity).toHaveBeenCalledWith(
+          'https://events.test/events/ev%201',
+          mockIdentity,
+          'PATCH',
+          JSON.stringify(payload),
+          expect.objectContaining({ 'Content-Type': 'application/json' })
+        )
+        expect(result.data).toEqual({ ok: true, data: { id: 'ev 1' } })
+      })
+    })
+
+    describe('and the response is not ok', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test')
+        mockFetchWithIdentity.mockResolvedValue({
+          ok: false,
+          status: 422,
+          json: () => Promise.resolve({ ok: false, error: 'bad' })
+        })
+        jest.spyOn(console, 'error').mockImplementation(() => undefined)
+      })
+
+      it('should surface the envelope as the mutation error', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(
+          eventsClient.endpoints.updateEvent.initiate({ eventId: 'ev-1', payload, identity: mockIdentity })
+        )
+        expect(result.error).toEqual(expect.objectContaining({ status: 422 }))
+      })
+    })
+
+    describe('and fetch throws', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test')
+        mockFetchWithIdentity.mockRejectedValue(new Error('offline'))
+      })
+
+      it('should return FETCH_ERROR', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(
+          eventsClient.endpoints.updateEvent.initiate({ eventId: 'ev-1', payload, identity: mockIdentity })
+        )
+        expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+      })
+    })
+  })
+
+  describe('when getUpcomingEvents is dispatched twice with the same identity', () => {
+    const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
+
+    beforeEach(() => {
+      mockFetchWithOptionalIdentity.mockClear()
+      mockGetEnv.mockReturnValue('https://events.test')
+      mockFetchWithOptionalIdentity.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ data: [] })
+      })
+    })
+
+    it('should hit the cache and avoid a duplicate network call (serializeQueryArgs cache key)', async () => {
+      const store = createTestStore()
+      await store.dispatch(eventsClient.endpoints.getUpcomingEvents.initiate({ identity: mockIdentity }))
+      await store.dispatch(eventsClient.endpoints.getUpcomingEvents.initiate({ identity: mockIdentity }))
+      expect(mockFetchWithOptionalIdentity).toHaveBeenCalledTimes(1)
+    })
+
+    it('should refetch when toggling between authenticated and anonymous (cache key changes)', async () => {
+      const store = createTestStore()
+      await store.dispatch(eventsClient.endpoints.getUpcomingEvents.initiate({ identity: mockIdentity }))
+      await store.dispatch(eventsClient.endpoints.getUpcomingEvents.initiate())
+      expect(mockFetchWithOptionalIdentity).toHaveBeenCalledTimes(2)
+    })
+  })
+
   describe('when uploadPoster mutation is called', () => {
     const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
     const file = new File(['x'], 'cover.png', { type: 'image/png' })
