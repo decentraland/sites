@@ -57,11 +57,11 @@ function buildDeepLinkOptions(
   position?: string,
   realm?: string,
   explorerEnv?: string
-): { realm?: string; position?: string; dclenv?: string } {
-  const options: { realm?: string; position?: string; dclenv?: string } = {}
+): { realm?: string; position?: string; explorerEnv?: string } {
+  const options: { realm?: string; position?: string; explorerEnv?: string } = {}
   if (realm && realm !== DEFAULT_REALM) options.realm = realm
   if (position && position !== DEFAULT_POSITION) options.position = position
-  if (explorerEnv) options.dclenv = explorerEnv
+  if (explorerEnv) options.explorerEnv = explorerEnv
   return options
 }
 

@@ -63,7 +63,7 @@ jest.mock('../../../modules/segment', () => ({
   SegmentEvent: { GO_TO_EXPLORER: 'Go To Explorer', CLICK: 'Click' }
 }))
 jest.mock('../../../features/places/places.helpers', () => ({
-  buildDeepLinkOptions: (position: string, realm?: string, explorerEnv?: string) => ({ position, realm, dclenv: explorerEnv })
+  buildDeepLinkOptions: (position: string, realm?: string, explorerEnv?: string) => ({ position, realm, explorerEnv })
 }))
 
 const mockUseSearchParams = jest.mocked(useSearchParams)
@@ -112,10 +112,10 @@ describe('JumpInButton', () => {
       mockLaunchDesktopApp.mockResolvedValue(true)
     })
 
-    it('should forward dclenv to launchDesktopApp', async () => {
+    it('should forward dclenv as explorerEnv to launchDesktopApp', async () => {
       render(<JumpInButton position="75,-9" realm="sdk7testscenes.dcl.eth" />)
       await userEvent.click(screen.getByRole('button'))
-      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(expect.objectContaining({ dclenv: 'zone' }))
+      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(expect.objectContaining({ explorerEnv: 'zone' }))
     })
   })
 
@@ -124,7 +124,7 @@ describe('JumpInButton', () => {
     ['stg', 'today'],
     ['prd', 'org'],
     ['prod', 'org']
-  ])('when the URL contains env=%s but no dclenv', (envValue, expectedDclenv) => {
+  ])('when the URL contains env=%s but no dclenv', (envValue, expectedExplorerEnv) => {
     beforeEach(() => {
       mockUseSearchParams.mockReturnValue([new URLSearchParams(`env=${envValue}`), jest.fn()] as unknown as ReturnType<
         typeof useSearchParams
@@ -132,10 +132,10 @@ describe('JumpInButton', () => {
       mockLaunchDesktopApp.mockResolvedValue(true)
     })
 
-    it(`should map env=${envValue} to dclenv=${expectedDclenv}`, async () => {
+    it(`should map env=${envValue} to explorerEnv=${expectedExplorerEnv}`, async () => {
       render(<JumpInButton position="75,-9" realm="sdk7testscenes.dcl.eth" />)
       await userEvent.click(screen.getByRole('button'))
-      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(expect.objectContaining({ dclenv: expectedDclenv }))
+      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(expect.objectContaining({ explorerEnv: expectedExplorerEnv }))
     })
   })
 
@@ -145,10 +145,10 @@ describe('JumpInButton', () => {
       mockLaunchDesktopApp.mockResolvedValue(true)
     })
 
-    it('should not include dclenv in launchDesktopApp options', async () => {
+    it('should not include explorerEnv in launchDesktopApp options', async () => {
       render(<JumpInButton position="75,-9" realm="sdk7testscenes.dcl.eth" />)
       await userEvent.click(screen.getByRole('button'))
-      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(expect.not.objectContaining({ dclenv: expect.anything() }))
+      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(expect.not.objectContaining({ explorerEnv: expect.anything() }))
     })
   })
 
@@ -163,7 +163,7 @@ describe('JumpInButton', () => {
     it('should prefer dclenv over env', async () => {
       render(<JumpInButton position="75,-9" realm="sdk7testscenes.dcl.eth" />)
       await userEvent.click(screen.getByRole('button'))
-      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(expect.objectContaining({ dclenv: 'today' }))
+      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(expect.objectContaining({ explorerEnv: 'today' }))
     })
   })
 
@@ -172,10 +172,10 @@ describe('JumpInButton', () => {
       mockLaunchDesktopApp.mockResolvedValue(true)
     })
 
-    it('should not include dclenv in launchDesktopApp options', async () => {
+    it('should not include explorerEnv in launchDesktopApp options', async () => {
       render(<JumpInButton position="75,-9" realm="sdk7testscenes.dcl.eth" />)
       await userEvent.click(screen.getByRole('button'))
-      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(expect.not.objectContaining({ dclenv: expect.anything() }))
+      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(expect.not.objectContaining({ explorerEnv: expect.anything() }))
     })
   })
 
