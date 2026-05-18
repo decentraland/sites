@@ -38,6 +38,14 @@ function isDclFoundationCreator(creatorName: string | null | undefined): boolean
   return creatorName?.trim().toLowerCase() === DCL_FOUNDATION_NAME_LOWER
 }
 
+// The events API returns the caller's own pending and rejected events when authenticated so the
+// My Hangouts tab can surface drafts with their status overlay. Any surface that lists events
+// publicly (Upcoming carousel, All Experiences day-grid, etc.) must filter through this predicate
+// to avoid leaking unapproved drafts to the rest of the audience.
+function isPubliclyVisibleEvent(event: Pick<EventEntry, 'approved' | 'rejected'>): boolean {
+  return event.approved && !event.rejected
+}
+
 // Buckets events into one array per visible day, expanding recurrent events into one virtual entry
 // per occurrence in `recurrent_dates` that falls on a visible day, and sorts each bucket ascending
 // by start_at. For recurrent events `start_at` is the FIRST occurrence (often months in the past),
@@ -272,5 +280,13 @@ async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig):
   })
 }
 
-export { bucketEventsByDay, buildLiveNowCards, DCL_FOUNDATION_LOGO_URL, DCL_FOUNDATION_NAME, enrichPlaceCards, isDclFoundationCreator }
+export {
+  bucketEventsByDay,
+  buildLiveNowCards,
+  DCL_FOUNDATION_LOGO_URL,
+  DCL_FOUNDATION_NAME,
+  enrichPlaceCards,
+  isDclFoundationCreator,
+  isPubliclyVisibleEvent
+}
 export type { EnrichmentConfig, HotScene, LiveNowCard }
