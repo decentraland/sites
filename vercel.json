@@ -1,4 +1,15 @@
 {
+  "images": {
+    "remotePatterns": [
+      { "protocol": "https", "hostname": "peer.decentraland.org" },
+      { "protocol": "https", "hostname": "peer.decentraland.zone" },
+      { "protocol": "https", "hostname": "events-assets-099ac00.decentraland.org" },
+      { "protocol": "https", "hostname": "cdn.decentraland.org" }
+    ],
+    "sizes": [384, 640, 750, 828, 1080, 1200, 1600, 1920],
+    "formats": ["image/webp"],
+    "minimumCacheTTL": 86400
+  },
   "rewrites": [
     { "source": "/blog/:path*", "destination": "/api/seo?path=/blog/:path*" },
     { "source": "/blog", "destination": "/api/seo?path=/blog" },
@@ -14,6 +25,10 @@
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
     {
       "source": "/whitepaper.pdf",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
