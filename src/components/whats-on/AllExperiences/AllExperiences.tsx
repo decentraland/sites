@@ -64,7 +64,11 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, list
   )
 
   const dayData = useMemo(() => {
-    const buckets = bucketEventsByDay(allEvents, days)
+    // The events API includes the caller's own non-approved events when authenticated so the My
+    // Hangouts tab can surface pending/rejected drafts. The public All tab must show only approved
+    // entries — drop anything pending or rejected before bucketing into day columns.
+    const visibleEvents = allEvents.filter(event => event.approved && !event.rejected)
+    const buckets = bucketEventsByDay(visibleEvents, days)
     return days.map((day, i) => ({ date: day, events: buckets[i], isLoading, isError }))
   }, [days, allEvents, isLoading, isError])
 

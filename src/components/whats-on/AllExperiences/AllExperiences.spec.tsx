@@ -305,6 +305,30 @@ describe('AllExperiences', () => {
     })
   })
 
+  describe("when the response includes the caller's pending or rejected events on the All tab", () => {
+    beforeEach(() => {
+      mockColumnCount.mockReturnValue(3)
+      // Issue #482: events API includes the caller's own non-approved events when authenticated.
+      // The public All tab must hide them; only the My tab is allowed to surface drafts.
+      mockUseGetEventsQuery.mockReturnValue({
+        data: [
+          createMockEvent({ id: 'approved', approved: true, rejected: false, start_at: '2026-09-13T14:00:00Z' }),
+          createMockEvent({ id: 'pending', approved: false, rejected: false, start_at: '2026-09-13T15:00:00Z' }),
+          createMockEvent({ id: 'rejected', approved: false, rejected: true, start_at: '2026-09-13T16:00:00Z' })
+        ],
+        isLoading: false,
+        isError: false
+      })
+    })
+
+    it('should only bucket approved events into the day columns', () => {
+      render(<AllExperiences />)
+
+      const ids = screen.getAllByTestId('day-column')[0]?.getAttribute('data-event-ids') ?? ''
+      expect(ids.split(',').filter(Boolean)).toEqual(['approved'])
+    })
+  })
+
   describe('when data has loaded with events on mobile', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(1)

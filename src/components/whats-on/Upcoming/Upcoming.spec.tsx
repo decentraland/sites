@@ -128,4 +128,44 @@ describe('Upcoming', () => {
       expect(container.firstChild).toBeNull()
     })
   })
+
+  describe('when the response includes pending and rejected events', () => {
+    beforeEach(() => {
+      // The events API returns the caller's own non-approved events when authenticated. Issue #482:
+      // those pending/rejected drafts must NOT leak into the public Upcoming carousel.
+      mockUseGetUpcomingEventsQuery.mockReturnValue({
+        data: [
+          createMockEvent({ id: 'approved', name: 'Approved', approved: true, rejected: false }),
+          createMockEvent({ id: 'pending', name: 'Pending', approved: false, rejected: false }),
+          createMockEvent({ id: 'rejected', name: 'Rejected', approved: false, rejected: true })
+        ]
+      })
+    })
+
+    it('should render only the approved event', () => {
+      render(<Upcoming />)
+
+      const ids = screen.getAllByTestId('upcoming-card').map(card => card.getAttribute('data-id'))
+      expect(ids).toEqual(expect.arrayContaining(['approved']))
+      expect(ids).not.toEqual(expect.arrayContaining(['pending']))
+      expect(ids).not.toEqual(expect.arrayContaining(['rejected']))
+    })
+  })
+
+  describe('when every event is pending or rejected', () => {
+    beforeEach(() => {
+      mockUseGetUpcomingEventsQuery.mockReturnValue({
+        data: [
+          createMockEvent({ id: 'pending', name: 'Pending', approved: false, rejected: false }),
+          createMockEvent({ id: 'rejected', name: 'Rejected', approved: false, rejected: true })
+        ]
+      })
+    })
+
+    it('should return null because nothing is visible', () => {
+      const { container } = render(<Upcoming />)
+
+      expect(container.firstChild).toBeNull()
+    })
+  })
 })

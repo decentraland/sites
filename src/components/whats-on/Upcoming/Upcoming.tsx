@@ -19,7 +19,12 @@ function Upcoming() {
   const { closeEventDetailModal, editActiveEvent, modalData, openEventDetailModal } = useEventDetailModal()
   const trackRef = useRef<HTMLDivElement>(null)
 
-  const pages = useMemo(() => chunk(events, PAGE_SIZE), [events])
+  // The events API returns the caller's own non-approved events when authenticated so the My
+  // Hangouts tab can surface pending/rejected drafts. The public Upcoming carousel must show
+  // only approved entries — drop anything that's pending or rejected before rendering.
+  const visibleEvents = useMemo(() => events.filter(event => event.approved && !event.rejected), [events])
+
+  const pages = useMemo(() => chunk(visibleEvents, PAGE_SIZE), [visibleEvents])
 
   const handleScroll = useCallback(() => {
     const el = trackRef.current
@@ -34,13 +39,13 @@ function Upcoming() {
     el.scrollTo({ left: index * el.clientWidth, behavior: 'smooth' })
   }, [])
 
-  if (events.length === 0) return null
+  if (visibleEvents.length === 0) return null
 
   return (
     <UpcomingSection>
       <UpcomingTitle variant="h5">{t('upcoming.title')}</UpcomingTitle>
       <DesktopGrid>
-        {events.map(event => (
+        {visibleEvents.map(event => (
           <UpcomingCard key={event.id} event={event} onClick={openEventDetailModal} />
         ))}
       </DesktopGrid>
