@@ -1028,6 +1028,8 @@
       "by": "생성자",
       "unknown": "알 수 없음",
       "joined": "참여 중",
+      "leave": "나가기",
+      "confirm_leave": "나가기 확인",
       "sign_in_to_join": "로그인하여 참여",
       "request_to_join": "참여 요청",
       "cancel_request": "요청 취소",
@@ -1094,5 +1096,99 @@
   "upcoming": {
     "today_at": "오늘 {time}",
     "tomorrow_at": "내일 {time}"
+  },
+    "social": {
+    "nav": {
+      "live": "디스커버",
+      "communities": "커뮤니티"
+    },
+    "home": {
+      "page_title": "디스커버 — Decentraland"
+    },
+    "card": {
+      "live": "라이브",
+      "details": "상세",
+      "jump_in": "입장",
+      "users_count": "{count}명"
+    },
+    "live": {
+      "page_title": "라이브 — Decentraland",
+      "heading": "라이브 중",
+      "empty": "지금 라이브 중인 장면이 없습니다. 곧 다시 확인해 주세요."
+    },
+    "explore": {
+      "page_title": "탐색 — Decentraland",
+      "heading": "탐색",
+      "search_placeholder": "장소와 월드를 검색",
+      "empty": "조건에 맞는 장소가 없습니다.",
+      "category": {
+        "all": "전체",
+        "social": "소셜",
+        "music": "음악",
+        "art": "아트",
+        "game": "게임",
+        "fashion": "패션",
+        "education": "교육",
+        "shop": "쇼핑",
+        "sports": "스포츠",
+        "business": "비즈니스"
+      },
+      "sort": {
+        "most_active": "사용자 많은 순",
+        "name": "A–Z",
+        "like_score_best": "평점 높은 순"
+      },
+      "section": {
+        "places": "장소",
+        "worlds": "월드"
+      }
+    },
+    "communities": {
+      "page_title": "커뮤니티 — Decentraland",
+      "heading": "커뮤니티",
+      "search_placeholder": "커뮤니티 검색",
+      "empty": "커뮤니티를 찾을 수 없습니다.",
+      "members_count": "멤버 {count}명"
+    },
+    "scene": {
+      "jump_in": "입장",
+      "watch_live": "플레이어에서 보기",
+      "chat": "채팅",
+      "parcel_label": "Genesis 파셀",
+      "world_label": "월드",
+      "people_count": "월드에 {count}명",
+      "people_empty": "아직 아무도 없습니다.",
+      "tab_video": "비디오",
+      "tab_streaming": "장면 Web",
+      "launch_title": "이 장면을 3D로 탐험하기",
+      "launch_hint": "브라우저에서 실행 — 설치 불필요.",
+      "launch_cta": "장면 탐험",
+      "resume_cta": "라이브 보기",
+      "close_media": "중지",
+      "author_by": "제작: {author}",
+      "open_external": "전체 보기",
+      "fullscreen": "전체화면",
+      "exit_fullscreen": "나가기",
+      "enable_audio": "클릭하여 오디오 활성화",
+      "scene_picker": "장면",
+      "mute": "음소거",
+      "unmute": "음소거 해제",
+      "connecting": "방송에 연결 중…",
+      "retry": "재시도",
+      "no_broadcast": {
+        "title": "라이브 방송 없음",
+        "hint": "지금 이 장면에서 방송하는 사람이 없습니다. 그래도 입장하여 월드에 있는 사람들을 만날 수 있습니다."
+      },
+      "waiting": {
+        "title": "장면 활동",
+        "hint": "이 장면에 {count}명이 있습니다. 오른쪽 채팅이 실시간으로 표시됩니다."
+      },
+      "upcoming_events": "다가오는 이벤트",
+      "no_events": "예정된 이벤트가 없습니다.",
+      "not_found": {
+        "title": "장면을 찾을 수 없음",
+        "description": "해당 장소 또는 월드를 불러올 수 없습니다. 삭제되었을 수 있습니다."
+      }
+    }
   }
 }

@@ -1,6 +1,8 @@
-import { memo, useCallback, useMemo } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention -- React component default export, matches MUI icon convention
 import CheckIcon from '@mui/icons-material/Check'
+// eslint-disable-next-line @typescript-eslint/naming-convention -- React component default export, matches MUI icon convention
+import ExitToAppIcon from '@mui/icons-material/ExitToApp'
 import { useAnalytics } from '@dcl/hooks'
 import { useTabletAndBelowMediaQuery, useTabletMediaQuery, useTheme } from 'decentraland-ui2'
 import { getRarityColor, getThumbnailUrl } from '../../../../features/communities/communities.helpers'
@@ -19,6 +21,7 @@ import {
   CommunityDetails,
   CommunityImage,
   CommunityImageContent,
+  CommunityImageFallback,
   CommunityLabel,
   Description,
   DescriptionRow,
@@ -51,6 +54,7 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
     hasPendingRequest = false,
     isLoadingMemberRequests = false,
     onJoin,
+    onLeave,
     onRequestToJoin,
     onCancelRequest
   } = props
@@ -63,6 +67,12 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
   const ownerAvatarBackgroundColor = useMemo(() => getRarityColor(theme, community.ownerAddress), [theme, community.ownerAddress])
 
   const thumbnailUrl = getThumbnailUrl(community.id)
+  // `getThumbnailUrl` returns a CDN URL by convention but 404s when no image was uploaded;
+  // track load failure so we render the gradient + initial fallback (mirrors CommunityCard).
+  const [imageBroken, setImageBroken] = useState(false)
+  const thumbnailVisible = thumbnailUrl && !imageBroken
+  const fallbackInitial = (community.name || '?').charAt(0).toUpperCase()
+  const [confirmingLeave, setConfirmingLeave] = useState(false)
   const isPrivate = community.privacy === Privacy.PRIVATE
   const formattedMembersCount = useMemo(
     () => new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(community.membersCount),
@@ -95,6 +105,17 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
     void onCancelRequest(community.id)
   }, [community.id, isLoggedIn, address, onCancelRequest, track, trackPayload])
 
+  const handleLeaveClick = useCallback(() => {
+    if (!isLoggedIn || !address || isPerformingCommunityAction) return
+    if (!confirmingLeave) {
+      setConfirmingLeave(true)
+      return
+    }
+    setConfirmingLeave(false)
+    track(SegmentEvent.COMMUNITY_CLICK_LEAVE, trackPayload)
+    void onLeave(community.id)
+  }, [community.id, isLoggedIn, address, isPerformingCommunityAction, confirmingLeave, onLeave, track, trackPayload])
+
   const handleSignInToJoinClick = useCallback(() => {
     track(SegmentEvent.COMMUNITY_CLICK_SIGN_IN_TO_JOIN, trackPayload)
     const action = isPrivate ? AllowedAction.REQUEST_TO_JOIN : AllowedAction.JOIN
@@ -103,9 +124,20 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
 
   const renderActionButton = () => {
     if (isMember) {
+      // Two-tap leave control: first click primes confirmation, second fires the mutation.
+      // `onMouseLeave` cancels a pending confirm so an accidental press doesn't sit waiting.
+      const label = confirmingLeave ? t('community.info.confirm_leave') : t('community.info.joined')
+      const icon = confirmingLeave ? <ExitToAppIcon fontSize="small" /> : <CheckIcon fontSize="small" />
       return (
-        <CTAButton variant="outlined" color="secondary" disabled startIcon={<CheckIcon fontSize="small" />}>
-          {t('community.info.joined')}
+        <CTAButton
+          variant="outlined"
+          color="secondary"
+          onClick={handleLeaveClick}
+          onMouseLeave={() => setConfirmingLeave(false)}
+          disabled={isPerformingCommunityAction}
+          startIcon={icon}
+        >
+          {label}
         </CTAButton>
       )
     }
@@ -124,11 +156,14 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
           </CTAButton>
         )
       }
-      const label = isPerformingCommunityAction
-        ? t('community.global.loading')
-        : hasPendingRequest
-          ? t('community.info.cancel_request')
-          : t('community.info.request_to_join')
+      let label: string
+      if (isPerformingCommunityAction) {
+        label = t('community.global.loading')
+      } else if (hasPendingRequest) {
+        label = t('community.info.cancel_request')
+      } else {
+        label = t('community.info.request_to_join')
+      }
       return (
         <CTAButton
           color="secondary"
@@ -152,7 +187,13 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
   return (
     <InfoSection>
       <TopRow>
-        <CommunityImage>{thumbnailUrl && <CommunityImageContent src={thumbnailUrl} alt={community.name} />}</CommunityImage>
+        <CommunityImage>
+          {thumbnailVisible ? (
+            <CommunityImageContent src={thumbnailUrl} alt={community.name} onError={() => setImageBroken(true)} />
+          ) : (
+            <CommunityImageFallback>{fallbackInitial}</CommunityImageFallback>
+          )}
+        </CommunityImage>
         <CommunityDetails>
           <TitleContainer>
             <CommunityLabel>{t('community.info.decentraland_community')}</CommunityLabel>

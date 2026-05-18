@@ -109,6 +109,25 @@ const communitiesApi = socialClient.injectEndpoints({
       invalidatesTags: (_result, _error, id) => [{ type: 'Communities' as const, id }, 'Communities']
     }),
 
+    // DELETE counterpart of joinCommunity on the same `/members` endpoint; identity comes
+    // from the signed-fetch headers. Optimistically flips role back to NONE; reverts on error.
+    leaveCommunity: builder.mutation<void, string>({
+      query: id => ({ url: `/v1/communities/${encodeURIComponent(id)}/members`, method: 'DELETE' }),
+      async onQueryStarted(communityId, { dispatch, queryFulfilled }) {
+        const patch = dispatch(
+          communitiesApi.util.updateQueryData('getCommunityById', { id: communityId, isSigned: true }, draft => {
+            if (draft?.data) draft.data.role = Role.NONE
+          })
+        )
+        try {
+          await queryFulfilled
+        } catch {
+          patch.undo()
+        }
+      },
+      invalidatesTags: (_result, _error, id) => [{ type: 'Communities' as const, id }, 'Communities']
+    }),
+
     createCommunityRequest: builder.mutation<CreateCommunityRequestResponse, { communityId: string; targetedAddress: string }>({
       query: ({ communityId, targetedAddress }) => ({
         url: `/v1/communities/${encodeURIComponent(communityId)}/requests`,
@@ -204,6 +223,7 @@ const {
   useGetCommunityMembersQuery,
   useGetCommunityEventsQuery,
   useJoinCommunityMutation,
+  useLeaveCommunityMutation,
   useCreateCommunityRequestMutation,
   useCancelCommunityRequestMutation,
   useGetMemberRequestsQuery
@@ -217,5 +237,6 @@ export {
   useGetCommunityEventsQuery,
   useGetCommunityMembersQuery,
   useGetMemberRequestsQuery,
-  useJoinCommunityMutation
+  useJoinCommunityMutation,
+  useLeaveCommunityMutation
 }

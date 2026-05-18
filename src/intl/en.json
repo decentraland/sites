@@ -1507,6 +1507,8 @@
       "by": "By",
       "unknown": "Unknown",
       "joined": "JOINED",
+      "leave": "LEAVE",
+      "confirm_leave": "CONFIRM LEAVE",
       "sign_in_to_join": "SIGN IN TO JOIN",
       "request_to_join": "REQUEST TO JOIN",
       "cancel_request": "CANCEL REQUEST",
@@ -1538,6 +1540,100 @@
     "tabs": {
       "members": "Members",
       "upcoming_events": "Upcoming Events"
+    }
+  },
+  "social": {
+    "nav": {
+      "live": "Discover",
+      "communities": "Communities"
+    },
+    "home": {
+      "page_title": "Discover — Decentraland"
+    },
+    "card": {
+      "live": "Live",
+      "details": "Details",
+      "jump_in": "Jump in",
+      "users_count": "{count, plural, one {# person} other {# people}}"
+    },
+    "live": {
+      "page_title": "Live now — Decentraland",
+      "heading": "Live now",
+      "empty": "No live scenes right now. Check back soon."
+    },
+    "explore": {
+      "page_title": "Explore — Decentraland",
+      "heading": "Explore",
+      "search_placeholder": "Search places and worlds",
+      "empty": "No places match your filters.",
+      "category": {
+        "all": "All",
+        "social": "Social",
+        "music": "Music",
+        "art": "Art",
+        "game": "Game",
+        "fashion": "Fashion",
+        "education": "Education",
+        "shop": "Shop",
+        "sports": "Sports",
+        "business": "Business"
+      },
+      "sort": {
+        "most_active": "Most users",
+        "name": "A–Z",
+        "like_score_best": "Highest rated"
+      },
+      "section": {
+        "places": "Places",
+        "worlds": "Worlds"
+      }
+    },
+    "communities": {
+      "page_title": "Communities — Decentraland",
+      "heading": "Communities",
+      "search_placeholder": "Search communities",
+      "empty": "No communities found.",
+      "members_count": "{count, plural, one {# member} other {# members}}"
+    },
+    "scene": {
+      "jump_in": "Jump in",
+      "watch_live": "Watch in player",
+      "chat": "Chat",
+      "parcel_label": "Genesis parcel",
+      "world_label": "World",
+      "people_count": "{count, plural, one {# person in-world} other {# people in-world}}",
+      "people_empty": "Nobody here yet.",
+      "tab_video": "Video",
+      "tab_streaming": "Scene Web",
+      "launch_title": "Explore this scene in 3D",
+      "launch_hint": "Runs in your browser — no install required.",
+      "launch_cta": "Explore Scene",
+      "resume_cta": "Watch Live",
+      "close_media": "Stop",
+      "author_by": "By {author}",
+      "open_external": "Open full",
+      "fullscreen": "Fullscreen",
+      "exit_fullscreen": "Exit fullscreen",
+      "enable_audio": "Click to enable audio",
+      "scene_picker": "Scene",
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "connecting": "Connecting to the broadcast…",
+      "retry": "Retry",
+      "no_broadcast": {
+        "title": "No live broadcast",
+        "hint": "Nobody is streaming from this scene right now. You can still jump in and meet whoever is in-world."
+      },
+      "waiting": {
+        "title": "Scene activity",
+        "hint": "{count, plural, =0 {Nobody else is here yet — be the first to jump in.} one {# person is in this scene. Their chat is live on the right.} other {# people are in this scene. Their chat is live on the right.}}"
+      },
+      "upcoming_events": "Upcoming events",
+      "no_events": "No events scheduled.",
+      "not_found": {
+        "title": "Scene not found",
+        "description": "We couldn't load that place or world. It may have been removed."
+      }
     }
   }
 }

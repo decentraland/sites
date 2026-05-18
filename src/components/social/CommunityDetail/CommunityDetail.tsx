@@ -5,7 +5,8 @@ import {
   useCancelCommunityRequestMutation,
   useCreateCommunityRequestMutation,
   useGetMemberRequestsQuery,
-  useJoinCommunityMutation
+  useJoinCommunityMutation,
+  useLeaveCommunityMutation
 } from '../../../features/communities/communities.client'
 import { isMember as checkIsMember } from '../../../features/communities/communities.helpers'
 import { Privacy, RequestStatus, RequestType } from '../../../features/communities/communities.types'
@@ -51,9 +52,10 @@ function CommunityDetailComponent({ community, isLoggedIn, address }: CommunityD
   const hasPendingRequest = Boolean(pendingRequest)
 
   const [joinCommunity, { isLoading: isJoining }] = useJoinCommunityMutation()
+  const [leaveCommunity, { isLoading: isLeaving }] = useLeaveCommunityMutation()
   const [createCommunityRequest, { isLoading: isCreatingRequest }] = useCreateCommunityRequestMutation()
   const [cancelCommunityRequest, { isLoading: isCancellingRequest }] = useCancelCommunityRequestMutation()
-  const isPerformingCommunityAction = isJoining || isCreatingRequest || isCancellingRequest
+  const isPerformingCommunityAction = isJoining || isLeaving || isCreatingRequest || isCancellingRequest
 
   const {
     members,
@@ -85,6 +87,20 @@ function CommunityDetailComponent({ community, isLoggedIn, address }: CommunityD
       }
     },
     [isLoggedIn, address, joinCommunity]
+  )
+
+  const handleLeave = useCallback(
+    async (communityId: string) => {
+      if (!isLoggedIn || !address) return
+      try {
+        await leaveCommunity(communityId).unwrap()
+        setErrorKind(null)
+      } catch (err) {
+        console.error('[CommunityDetail] leave failed', err)
+        setErrorKind(describeError(err))
+      }
+    },
+    [isLoggedIn, address, leaveCommunity]
   )
 
   const handleRequestToJoin = useCallback(
@@ -184,6 +200,7 @@ function CommunityDetailComponent({ community, isLoggedIn, address }: CommunityD
         hasPendingRequest={hasPendingRequest}
         isLoadingMemberRequests={isLoadingMemberRequests}
         onJoin={handleJoin}
+        onLeave={handleLeave}
         onRequestToJoin={handleRequestToJoin}
         onCancelRequest={pendingRequest ? handleCancelRequest : undefined}
       />

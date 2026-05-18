@@ -46,6 +46,13 @@
           "value": "accelerometer=(self \"https://www.youtube.com\"), autoplay=(self \"https://www.youtube.com\"), encrypted-media=(self \"https://www.youtube.com\"), gyroscope=(self \"https://www.youtube.com\"), fullscreen=*, camera=(self), microphone=(self), display-capture=(self), clipboard-write=(self), geolocation=(), interest-cohort=(), payment=(), usb=(), xr-spatial-tracking=()"
         }
       ]
+    },
+    {
+      "source": "/social/(place|world)/(.*)",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "credentialless" }
+      ]
     }
   ]
 }

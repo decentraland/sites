@@ -1028,6 +1028,8 @@
       "by": "作成者:",
       "unknown": "不明",
       "joined": "参加済み",
+      "leave": "退出",
+      "confirm_leave": "退出を確認",
       "sign_in_to_join": "サインインして参加",
       "request_to_join": "参加をリクエスト",
       "cancel_request": "リクエストをキャンセル",
@@ -1094,5 +1096,99 @@
   "upcoming": {
     "today_at": "今日 {time}",
     "tomorrow_at": "明日 {time}"
+  },
+    "social": {
+    "nav": {
+      "live": "見つける",
+      "communities": "コミュニティ"
+    },
+    "home": {
+      "page_title": "見つける — Decentraland"
+    },
+    "card": {
+      "live": "ライブ",
+      "details": "詳細",
+      "jump_in": "参加",
+      "users_count": "{count}人"
+    },
+    "live": {
+      "page_title": "ライブ — Decentraland",
+      "heading": "ライブ配信中",
+      "empty": "現在ライブ中のシーンはありません。"
+    },
+    "explore": {
+      "page_title": "探索 — Decentraland",
+      "heading": "探索",
+      "search_placeholder": "プレイスとワールドを検索",
+      "empty": "条件に一致するプレイスがありません。",
+      "category": {
+        "all": "すべて",
+        "social": "ソーシャル",
+        "music": "ミュージック",
+        "art": "アート",
+        "game": "ゲーム",
+        "fashion": "ファッション",
+        "education": "教育",
+        "shop": "ショップ",
+        "sports": "スポーツ",
+        "business": "ビジネス"
+      },
+      "sort": {
+        "most_active": "ユーザーが多い順",
+        "name": "A–Z",
+        "like_score_best": "高評価順"
+      },
+      "section": {
+        "places": "プレイス",
+        "worlds": "ワールド"
+      }
+    },
+    "communities": {
+      "page_title": "コミュニティ — Decentraland",
+      "heading": "コミュニティ",
+      "search_placeholder": "コミュニティを検索",
+      "empty": "コミュニティが見つかりませんでした。",
+      "members_count": "メンバー{count}人"
+    },
+    "scene": {
+      "jump_in": "参加",
+      "watch_live": "プレイヤーで視聴",
+      "chat": "チャット",
+      "parcel_label": "Genesisパーセル",
+      "world_label": "ワールド",
+      "people_count": "ワールドに{count}人",
+      "people_empty": "まだ誰もいません。",
+      "tab_video": "ビデオ",
+      "tab_streaming": "シーン Web",
+      "launch_title": "このシーンを3Dで探索",
+      "launch_hint": "ブラウザで実行 — インストール不要。",
+      "launch_cta": "シーンを探索",
+      "resume_cta": "ライブを視聴",
+      "close_media": "停止",
+      "author_by": "作者: {author}",
+      "open_external": "全画面",
+      "fullscreen": "フルスクリーン",
+      "exit_fullscreen": "解除",
+      "enable_audio": "クリックして音声を有効にする",
+      "scene_picker": "シーン",
+      "mute": "ミュート",
+      "unmute": "ミュート解除",
+      "connecting": "配信に接続しています…",
+      "retry": "再試行",
+      "no_broadcast": {
+        "title": "ライブ配信なし",
+        "hint": "現在このシーンから配信している人はいません。それでも参加して、ワールドにいる人たちに会えます。"
+      },
+      "waiting": {
+        "title": "シーンのアクティビティ",
+        "hint": "このシーンに {count} 人います。右側でチャットがライブ表示されています。"
+      },
+      "upcoming_events": "今後のイベント",
+      "no_events": "予定されているイベントはありません。",
+      "not_found": {
+        "title": "シーンが見つかりません",
+        "description": "このプレイスまたはワールドを読み込めませんでした。削除された可能性があります。"
+      }
+    }
   }
 }

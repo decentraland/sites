@@ -10,6 +10,7 @@ type CommunityInfoProps = {
   hasPendingRequest?: boolean
   isLoadingMemberRequests?: boolean
   onJoin: (communityId: string) => Promise<void>
+  onLeave: (communityId: string) => Promise<void>
   onRequestToJoin?: (communityId: string) => Promise<void>
   onCancelRequest?: (communityId: string) => Promise<void>
 }

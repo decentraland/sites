@@ -68,6 +68,23 @@ const CommunityImageContent = styled('img')({
   objectFit: 'cover'
 })
 
+// Visible when the thumbnail URL is missing or 404s. Mirrors the
+// CommunityCard fallback shape so missing-image cards stay on-brand
+// instead of showing the browser's broken-image glyph.
+const CommunityImageFallback = styled('div')(({ theme }) => ({
+  width: '100%',
+  height: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: 96,
+  fontWeight: 700,
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase',
+  color: theme.palette.common.white,
+  background: 'linear-gradient(135deg, #4a2475 0%, #1a0b2e 100%)'
+}))
+
 const CommunityDetails = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -232,6 +249,7 @@ export {
   CommunityDetails,
   CommunityImage,
   CommunityImageContent,
+  CommunityImageFallback,
   CommunityLabel,
   Description,
   DescriptionRow,

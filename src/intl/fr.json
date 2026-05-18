@@ -1023,6 +1023,8 @@
       "by": "Par",
       "unknown": "Inconnu",
       "joined": "REJOINT",
+      "leave": "QUITTER",
+      "confirm_leave": "CONFIRMER",
       "sign_in_to_join": "CONNECTEZ-VOUS POUR REJOINDRE",
       "request_to_join": "DEMANDER À REJOINDRE",
       "cancel_request": "ANNULER LA DEMANDE",
@@ -1089,5 +1091,99 @@
   "upcoming": {
     "today_at": "Aujourd'hui {time}",
     "tomorrow_at": "Demain {time}"
+  },
+    "social": {
+    "nav": {
+      "live": "Découvrir",
+      "communities": "Communautés"
+    },
+    "home": {
+      "page_title": "Découvrir — Decentraland"
+    },
+    "card": {
+      "live": "En direct",
+      "details": "Détails",
+      "jump_in": "Rejoindre",
+      "users_count": "{count, plural, one {# personne} other {# personnes}}"
+    },
+    "live": {
+      "page_title": "En direct — Decentraland",
+      "heading": "En direct",
+      "empty": "Aucune scène en direct pour le moment. Revenez bientôt."
+    },
+    "explore": {
+      "page_title": "Explorer — Decentraland",
+      "heading": "Explorer",
+      "search_placeholder": "Rechercher des lieux et des mondes",
+      "empty": "Aucun lieu ne correspond aux filtres.",
+      "category": {
+        "all": "Tous",
+        "social": "Social",
+        "music": "Musique",
+        "art": "Art",
+        "game": "Jeu",
+        "fashion": "Mode",
+        "education": "Éducation",
+        "shop": "Boutique",
+        "sports": "Sports",
+        "business": "Affaires"
+      },
+      "sort": {
+        "most_active": "Plus d’utilisateurs",
+        "name": "A–Z",
+        "like_score_best": "Mieux notés"
+      },
+      "section": {
+        "places": "Lieux",
+        "worlds": "Mondes"
+      }
+    },
+    "communities": {
+      "page_title": "Communautés — Decentraland",
+      "heading": "Communautés",
+      "search_placeholder": "Rechercher des communautés",
+      "empty": "Aucune communauté trouvée.",
+      "members_count": "{count, plural, one {# membre} other {# membres}}"
+    },
+    "scene": {
+      "jump_in": "Rejoindre",
+      "watch_live": "Regarder dans le lecteur",
+      "chat": "Chat",
+      "parcel_label": "Parcelle Genesis",
+      "world_label": "Monde",
+      "people_count": "{count, plural, one {# personne dans le monde} other {# personnes dans le monde}}",
+      "people_empty": "Personne ici pour le moment.",
+      "tab_video": "Vidéo",
+      "tab_streaming": "Scène Web",
+      "launch_title": "Explorer cette scène en 3D",
+      "launch_hint": "S'exécute dans votre navigateur — aucune installation requise.",
+      "launch_cta": "Explorer la Scène",
+      "resume_cta": "Regarder en direct",
+      "close_media": "Arrêter",
+      "author_by": "Par {author}",
+      "open_external": "Ouvrir",
+      "fullscreen": "Plein écran",
+      "exit_fullscreen": "Quitter",
+      "enable_audio": "Cliquez pour activer le son",
+      "scene_picker": "Scène",
+      "mute": "Couper le son",
+      "unmute": "Activer le son",
+      "connecting": "Connexion à la diffusion…",
+      "retry": "Réessayer",
+      "no_broadcast": {
+        "title": "Aucune diffusion en direct",
+        "hint": "Personne ne diffuse depuis cette scène pour le moment. Vous pouvez quand même rejoindre et rencontrer les personnes présentes."
+      },
+      "waiting": {
+        "title": "Activité de la scène",
+        "hint": "{count, plural, =0 {Personne d'autre n'est ici — soyez le premier à rejoindre.} one {# personne est sur cette scène. Son chat est en direct à droite.} other {# personnes sont sur cette scène. Leur chat est en direct à droite.}}"
+      },
+      "upcoming_events": "Événements à venir",
+      "no_events": "Aucun événement prévu.",
+      "not_found": {
+        "title": "Scène introuvable",
+        "description": "Impossible de charger ce lieu ou ce monde. Il a peut-être été supprimé."
+      }
+    }
   }
 }

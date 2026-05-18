@@ -81,6 +81,15 @@ export default defineConfig(({ command, mode }) => {
     ...(command === 'build' ? { base: envVariables.VITE_BASE_URL || '/' } : undefined),
     server: {
       /* eslint-disable @typescript-eslint/naming-convention */
+      headers: {
+        // Mirrors vercel.json — local dev needs cross-origin isolation so the
+        // bevy-web iframe (which relies on SharedArrayBuffer) can boot.
+        // `credentialless` lets us load cross-origin resources without
+        // requiring CORP everywhere, at the cost of stripping credentials
+        // from those requests.
+        'Cross-Origin-Opener-Policy': 'same-origin',
+        'Cross-Origin-Embedder-Policy': 'credentialless'
+      },
       proxy: {
         '/auth': {
           target: 'https://decentraland.zone',
@@ -94,6 +103,14 @@ export default defineConfig(({ command, mode }) => {
           secure: false,
           rewrite: (path: string) => path.replace(/^\/api\/cms/, '/spaces/ea2ybdmmn1kv/environments/master')
         }
+      }
+      /* eslint-enable @typescript-eslint/naming-convention */
+    },
+    preview: {
+      /* eslint-disable @typescript-eslint/naming-convention */
+      headers: {
+        'Cross-Origin-Opener-Policy': 'same-origin',
+        'Cross-Origin-Embedder-Policy': 'credentialless'
       }
       /* eslint-enable @typescript-eslint/naming-convention */
     }

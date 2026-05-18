@@ -67,8 +67,15 @@ const LegacyHangoutRedirect = lazy(() => import('./pages/whats-on/LegacyHangoutR
 const LegacyWhatsOnRedirect = lazy(() => import('./pages/whats-on/LegacyWhatsOnRedirect').then(m => ({ default: m.LegacyWhatsOnRedirect })))
 const LegacyWorldRedirect = lazy(() => import('./pages/whats-on/LegacyWorldRedirect').then(m => ({ default: m.LegacyWorldRedirect })))
 
-// Social pages — community detail. Heavy route (Redux + RTK Query). Auth via
-// localStorage identity (no Web3 providers); CTAs gated on useAuthIdentity.
+// Social pages — heavy route (Redux + RTK Query). Auth via localStorage identity
+// (no Web3 providers); CTAs gated on useAuthIdentity. /social/* mirrors the
+// decentraland.social experience: a unified DISCOVER landing (LIVE NOW + all
+// places/worlds with search and category filters), COMMUNITIES (list +
+// detail), and SCENE detail (place / world deep link).
+const SocialLayout = lazy(() => import('./components/social/SocialLayout').then(m => ({ default: m.SocialLayout })))
+const SocialHomePage = lazy(() => import('./pages/social/SocialHomePage').then(m => ({ default: m.SocialHomePage })))
+const SocialCommunitiesPage = lazy(() => import('./pages/social/SocialCommunitiesPage').then(m => ({ default: m.SocialCommunitiesPage })))
+const SocialScenePage = lazy(() => import('./pages/social/SocialScenePage').then(m => ({ default: m.SocialScenePage })))
 const CommunityDetailPage = lazy(() => import('./pages/social/CommunityDetailPage').then(m => ({ default: m.CommunityDetailPage })))
 const SocialNotFoundPage = lazy(() => import('./pages/social/SocialNotFoundPage').then(m => ({ default: m.SocialNotFoundPage })))
 
@@ -193,7 +200,13 @@ const App = () => {
               <Route path="/storage/players" element={<StoragePlayersPage />} />
               <Route path="/storage/players/:address" element={<StoragePlayerDetailPage />} />
               <Route path="/storage/*" element={<StorageNotFoundPage />} />
-              <Route path="/social/communities/:id" element={<CommunityDetailPage />} />
+              <Route element={<SocialLayout />}>
+                <Route path="/social" element={<SocialHomePage />} />
+                <Route path="/social/communities" element={<SocialCommunitiesPage />} />
+                <Route path="/social/communities/:id" element={<CommunityDetailPage />} />
+                <Route path="/social/place/:position" element={<SocialScenePage kind="place" />} />
+                <Route path="/social/world/:name" element={<SocialScenePage kind="world" />} />
+              </Route>
               <Route path="/social/*" element={<SocialNotFoundPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />

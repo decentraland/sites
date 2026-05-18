@@ -49,7 +49,12 @@ export function Avatar({ profile, name, imageUrl, hasClaimedName, ethAddress, ad
     [displayName, resolvedAddress, resolvedName]
   )
 
-  const initial = firstGrapheme(displayName) || firstGrapheme(resolvedName ?? '') || '?'
+  // Prefer the validated display name's first char, then the raw name, then
+  // the first char of the wallet address (strip `0x`). Only fall back to `?`
+  // when even an address is missing — keeps anonymous-but-real participants
+  // visually distinguishable.
+  const addressInitial = resolvedAddress?.startsWith('0x') ? resolvedAddress.charAt(2) : resolvedAddress?.charAt(0)
+  const initial = firstGrapheme(displayName) || firstGrapheme(resolvedName ?? '') || addressInitial || '?'
 
   // Reset the image-error guard whenever the source URL changes so the next
   // profile load gets a fresh attempt rather than the previous failure stuck.

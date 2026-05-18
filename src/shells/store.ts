@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux'
 import type { TypedUseSelectorHook } from 'react-redux'
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
+import { setupListeners } from '@reduxjs/toolkit/query'
 import { blogReducer } from '../features/cms/cms.slice'
 import { adminClient } from '../features/events/events.admin.client'
 import { eventsClient } from '../features/events/events.client'
@@ -42,6 +43,12 @@ const store = configureStore({
       ),
   devTools: import.meta.env.DEV
 })
+
+// Wire up the global `focus` + `online` listeners so any query that opts into
+// `refetchOnFocus` / `refetchOnReconnect` actually fires. Without this call,
+// those flags are silently ignored. Used by the /social LIVE page to keep
+// hot-scenes / live-worlds data fresh when the user returns to the tab.
+setupListeners(store.dispatch)
 
 type RootState = ReturnType<typeof store.getState>
 type AppDispatch = typeof store.dispatch

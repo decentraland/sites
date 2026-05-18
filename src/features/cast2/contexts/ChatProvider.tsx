@@ -11,6 +11,8 @@ interface ChatContextValue {
   isChatOpen: boolean
   setChatOpen: (open: boolean) => void
   profiles: ReturnType<typeof useProfiles>['profiles']
+  sendMessage: (message: string) => Promise<void>
+  isSending: boolean
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null)
@@ -23,21 +25,17 @@ const useChatContext = (): ChatContextValue => {
   return context
 }
 
-const ChatProvider = ({ children }: { children: ReactNode }) => {
-  const { chatMessages } = useChat()
+const ChatProvider = ({ children, peerUrl }: { children: ReactNode; peerUrl?: string }) => {
+  const { chatMessages, sendMessage, isSending } = useChat()
   const [lastReadMessageIndex, setLastReadMessageIndex] = useState(0)
   const [isChatOpen, setChatOpen] = useState(false)
 
   const addresses = useMemo(() => {
-    const set = new Set<string>()
-    chatMessages.forEach(msg => {
-      const address = msg.participantName
-      if (address && address.startsWith('0x')) set.add(address)
-    })
-    return Array.from(set)
+    const wallets = chatMessages.map(msg => msg.participantName).filter((name): name is string => !!name && name.startsWith('0x'))
+    return Array.from(new Set(wallets))
   }, [chatMessages])
 
-  const { profiles } = useProfiles(addresses)
+  const { profiles } = useProfiles(addresses, peerUrl)
 
   const markMessagesAsRead = useCallback(() => {
     setLastReadMessageIndex(chatMessages.length)
@@ -46,8 +44,8 @@ const ChatProvider = ({ children }: { children: ReactNode }) => {
   const unreadMessagesCount = isChatOpen ? 0 : Math.max(0, chatMessages.length - lastReadMessageIndex)
 
   const value = useMemo<ChatContextValue>(
-    () => ({ chatMessages, unreadMessagesCount, markMessagesAsRead, isChatOpen, setChatOpen, profiles }),
-    [chatMessages, unreadMessagesCount, markMessagesAsRead, isChatOpen, profiles]
+    () => ({ chatMessages, unreadMessagesCount, markMessagesAsRead, isChatOpen, setChatOpen, profiles, sendMessage, isSending }),
+    [chatMessages, unreadMessagesCount, markMessagesAsRead, isChatOpen, profiles, sendMessage, isSending]
   )
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>

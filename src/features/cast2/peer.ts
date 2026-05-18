@@ -27,51 +27,55 @@ const fetchProfilesFromApi = async (peerUrl: string, addresses: string[]): Promi
       console.error('[cast2/peer] Failed to fetch profiles:', response.status)
       return addresses.map(createEmptyProfile)
     }
+    // The catalyst returns ONE wrapper per requested address — an array of
+    // `{ avatars: [Avatar] }`. We previously read only `body[0].avatars` and
+    // dropped the rest, so any batch request larger than one address lost
+    // every profile except the first. Flatten across all entries.
     const body: { avatars: Avatar[] }[] = await response.json()
-    return body[0].avatars.map(avatar => ({
-      address: avatar.userId.toLowerCase(),
-      name: avatar.name,
-      hasClaimedName: avatar.hasClaimedName,
-      avatarFace256: avatar.avatar?.snapshots?.face256
-    }))
+    return body
+      .flatMap(entry => entry.avatars ?? [])
+      .map(avatar => ({
+        address: avatar.userId.toLowerCase(),
+        name: avatar.name,
+        hasClaimedName: avatar.hasClaimedName,
+        avatarFace256: avatar.avatar?.snapshots?.face256
+      }))
   } catch (error) {
     console.error('[cast2/peer] Error fetching profiles:', error)
     return addresses.map(createEmptyProfile)
   }
 }
 
-const fetchProfiles = async (addresses: string[], useCache = true): Promise<Profile[]> => {
-  const peerUrl = getEnv('PEER_URL')
+const fetchProfiles = async (addresses: string[], useCache = true, peerUrlOverride?: string): Promise<Profile[]> => {
+  const peerUrl = peerUrlOverride ?? getEnv('PEER_URL')
   if (!peerUrl) throw new Error('PEER_URL environment variable is not set')
 
   const lowercased = addresses.map(a => a.toLowerCase())
   const uncached: string[] = []
-  const cached: Map<string, Promise<Profile>> = new Map()
 
   for (const address of lowercased) {
-    if (useCache && profileCache.has(address)) {
-      cached.set(address, profileCache.get(address)!)
-    } else {
-      uncached.push(address)
-    }
+    if (!useCache || !profileCache.has(address)) uncached.push(address)
   }
 
-  let fresh: Profile[] = []
+  // De-duplicate concurrent callers: when multiple hooks request the same
+  // address list at the same moment, we want a SINGLE HTTP round-trip. We
+  // cache the in-flight Promise (not just the resolved Profile) up front so
+  // sibling callers that arrive before the response see a cache hit and
+  // wait on the same promise instead of firing their own request.
   if (uncached.length > 0) {
-    fresh = await fetchProfilesFromApi(peerUrl, uncached)
-    fresh.forEach(profile => {
-      profileCache.set(profile.address, Promise.resolve(profile))
-    })
+    const inflight = fetchProfilesFromApi(peerUrl, uncached)
+    for (const address of uncached) {
+      profileCache.set(
+        address,
+        inflight.then(list => list.find(p => p.address === address) ?? createEmptyProfile(address))
+      )
+    }
   }
 
   const result: Profile[] = []
   for (const address of lowercased) {
-    if (cached.has(address)) {
-      result.push(await cached.get(address)!)
-    } else {
-      const fetched = fresh.find(p => p.address === address)
-      if (fetched) result.push(fetched)
-    }
+    const entry = profileCache.get(address)
+    if (entry) result.push(await entry)
   }
   return result
 }

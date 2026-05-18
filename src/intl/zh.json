@@ -1028,6 +1028,8 @@
       "by": "创建者",
       "unknown": "未知",
       "joined": "已加入",
+      "leave": "离开",
+      "confirm_leave": "确认离开",
       "sign_in_to_join": "登录以加入",
       "request_to_join": "申请加入",
       "cancel_request": "取消申请",
@@ -1094,5 +1096,99 @@
   "upcoming": {
     "today_at": "今天 {time}",
     "tomorrow_at": "明天 {time}"
+  },
+    "social": {
+    "nav": {
+      "live": "发现",
+      "communities": "社区"
+    },
+    "home": {
+      "page_title": "发现 — Decentraland"
+    },
+    "card": {
+      "live": "直播",
+      "details": "详情",
+      "jump_in": "进入",
+      "users_count": "{count} 人"
+    },
+    "live": {
+      "page_title": "直播中 — Decentraland",
+      "heading": "正在直播",
+      "empty": "目前没有直播中的场景，请稍后再来。"
+    },
+    "explore": {
+      "page_title": "探索 — Decentraland",
+      "heading": "探索",
+      "search_placeholder": "搜索场所和世界",
+      "empty": "没有符合筛选条件的场所。",
+      "category": {
+        "all": "全部",
+        "social": "社交",
+        "music": "音乐",
+        "art": "艺术",
+        "game": "游戏",
+        "fashion": "时尚",
+        "education": "教育",
+        "shop": "购物",
+        "sports": "运动",
+        "business": "商业"
+      },
+      "sort": {
+        "most_active": "用户最多",
+        "name": "A–Z",
+        "like_score_best": "评分最高"
+      },
+      "section": {
+        "places": "场所",
+        "worlds": "世界"
+      }
+    },
+    "communities": {
+      "page_title": "社区 — Decentraland",
+      "heading": "社区",
+      "search_placeholder": "搜索社区",
+      "empty": "未找到社区。",
+      "members_count": "{count} 位成员"
+    },
+    "scene": {
+      "jump_in": "进入",
+      "watch_live": "在播放器中观看",
+      "chat": "聊天",
+      "parcel_label": "Genesis 地块",
+      "world_label": "世界",
+      "people_count": "世界中有 {count} 人",
+      "people_empty": "暂时还没有人。",
+      "tab_video": "视频",
+      "tab_streaming": "场景 Web",
+      "launch_title": "在 3D 中探索此场景",
+      "launch_hint": "在浏览器中运行 — 无需安装。",
+      "launch_cta": "探索场景",
+      "resume_cta": "观看直播",
+      "close_media": "停止",
+      "author_by": "作者：{author}",
+      "open_external": "全屏打开",
+      "fullscreen": "全屏",
+      "exit_fullscreen": "退出",
+      "enable_audio": "点击启用音频",
+      "scene_picker": "场景",
+      "mute": "静音",
+      "unmute": "取消静音",
+      "connecting": "正在连接直播…",
+      "retry": "重试",
+      "no_broadcast": {
+        "title": "暂无直播",
+        "hint": "目前没有人在此场景进行直播。你仍然可以进入并认识世界里的其他玩家。"
+      },
+      "waiting": {
+        "title": "场景动态",
+        "hint": "此场景中有 {count} 人，右侧聊天正在实时显示。"
+      },
+      "upcoming_events": "即将举行的活动",
+      "no_events": "暂无活动安排。",
+      "not_found": {
+        "title": "未找到场景",
+        "description": "无法加载该场所或世界。它可能已被移除。"
+      }
+    }
   }
 }
