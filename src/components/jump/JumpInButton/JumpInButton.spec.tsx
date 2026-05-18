@@ -1,6 +1,6 @@
+import { useSearchParams } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useSearchParams } from 'react-router-dom'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
@@ -112,9 +112,7 @@ describe('JumpInButton', () => {
     it('should forward dclenv to launchDesktopApp', async () => {
       render(<JumpInButton position="75,-9" realm="sdk7testscenes.dcl.eth" />)
       await userEvent.click(screen.getByRole('button'))
-      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(
-        expect.objectContaining({ dclenv: 'zone' })
-      )
+      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(expect.objectContaining({ dclenv: 'zone' }))
     })
   })
 
@@ -126,9 +124,7 @@ describe('JumpInButton', () => {
     it('should not include dclenv in launchDesktopApp options', async () => {
       render(<JumpInButton position="75,-9" realm="sdk7testscenes.dcl.eth" />)
       await userEvent.click(screen.getByRole('button'))
-      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(
-        expect.not.objectContaining({ dclenv: expect.anything() })
-      )
+      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(expect.not.objectContaining({ dclenv: expect.anything() }))
     })
   })
 
