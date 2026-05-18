@@ -8,9 +8,16 @@ if (typeof globalThis.TextEncoder === 'undefined') {
   globalThis.TextDecoder = TD as typeof globalThis.TextDecoder
 }
 
-// Polyfill global fetch
+// Polyfill global fetch + Fetch API classes (jsdom omits Request/Response/Headers).
 if (typeof globalThis.fetch === 'undefined') {
   globalThis.fetch = jest.fn() as unknown as typeof fetch
+}
+if (typeof globalThis.Response === 'undefined' || typeof globalThis.Request === 'undefined' || typeof globalThis.Headers === 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const undici = require('undici') as { Response: typeof Response; Request: typeof Request; Headers: typeof Headers }
+  globalThis.Response = undici.Response
+  globalThis.Request = undici.Request
+  globalThis.Headers = undici.Headers
 }
 
 // Polyfill AbortSignal.timeout (jsdom omits this static method)

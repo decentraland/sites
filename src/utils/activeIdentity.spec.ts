@@ -385,4 +385,92 @@ describe('activeIdentity', () => {
       expect(isRelevantStorageKey('random-app-key')).toBe(false)
     })
   })
+
+  describe('when localStorage throws', () => {
+    // Some browsers throw on every read (private-mode Safari) or on writes that
+    // would exceed quota. The defensive catch blocks fall back to sane defaults
+    // instead of crashing the navbar.
+    const throwingStorage = {
+      getItem: () => {
+        throw new Error('storage unavailable')
+      },
+      setItem: () => {
+        throw new Error('storage unavailable')
+      },
+      removeItem: () => {
+        throw new Error('storage unavailable')
+      },
+      get length(): number {
+        throw new Error('storage unavailable')
+      },
+      key: () => {
+        throw new Error('storage unavailable')
+      },
+      clear: () => undefined
+    }
+
+    let originalDescriptor: PropertyDescriptor | undefined
+
+    beforeEach(() => {
+      originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+      Object.defineProperty(globalThis, 'localStorage', {
+        value: throwingStorage,
+        writable: true,
+        configurable: true
+      })
+    })
+
+    afterEach(() => {
+      if (originalDescriptor) Object.defineProperty(globalThis, 'localStorage', originalDescriptor)
+    })
+
+    it('readActivePointer should swallow errors and return null', () => {
+      expect(readActivePointer()).toBeNull()
+    })
+
+    it('writeActivePointer should swallow errors silently when writing an address', () => {
+      expect(() => writeActivePointer('0xabc')).not.toThrow()
+    })
+
+    it('writeActivePointer should swallow errors silently when clearing the pointer', () => {
+      expect(() => writeActivePointer(null)).not.toThrow()
+    })
+
+    it('markSignInPending should swallow errors silently', () => {
+      expect(() => markSignInPending()).not.toThrow()
+    })
+
+    it('resolveActiveAddress should swallow errors and return null', () => {
+      // Iterating localStorage throws via the `length` getter, exercising both
+      // the snapshot scan (listKnownAddresses) and the heuristic scan
+      // (listValidIdentities) catch arms.
+      expect(resolveActiveAddress()).toBeNull()
+    })
+
+    it('resolveActiveIdentity should swallow errors and return undefined', () => {
+      expect(resolveActiveIdentity()).toBeUndefined()
+    })
+  })
+
+  describe('when localStorageGetIdentity throws', () => {
+    it('hasValidIdentityFor should return false', () => {
+      mockLocalStorageGetIdentity.mockImplementation(() => {
+        throw new Error('decryption failed')
+      })
+      expect(hasValidIdentityFor('0xabc')).toBe(false)
+    })
+  })
+
+  describe('markSignInPending', () => {
+    it('should persist a numeric timestamp and a JSON snapshot of known addresses', () => {
+      setIdentity('0xa', '2030-01-01T00:00:00Z')
+      setIdentity('0xb', '2030-01-01T00:00:00Z')
+
+      markSignInPending()
+
+      expect(Number(store[SIGN_IN_PENDING_KEY])).toBeGreaterThan(0)
+      const snapshot = JSON.parse(store[SIGN_IN_PENDING_SNAPSHOT_KEY]) as string[]
+      expect(snapshot.sort()).toEqual(['0xa', '0xb'])
+    })
+  })
 })

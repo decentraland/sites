@@ -143,6 +143,29 @@ describe('redirectToAuth', () => {
     })
   })
 
+  describe('when AUTH_URL is unset', () => {
+    beforeEach(() => {
+      mockGetEnv.mockImplementation(() => undefined)
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        value: {
+          ...originalLocation,
+          origin: 'http://localhost:5173',
+          hostname: 'localhost',
+          replace: replaceMock
+        }
+      })
+    })
+
+    it('should fall back to the relative /auth path', () => {
+      redirectToAuth('/whats-on')
+
+      expect(replaceMock).toHaveBeenCalledTimes(1)
+      const [calledWith] = replaceMock.mock.calls[0] as [string]
+      expect(calledWith.startsWith('/auth/login?')).toBe(true)
+    })
+  })
+
   describe('when AUTH_URL is relative on localhost', () => {
     beforeEach(() => {
       mockGetEnv.mockImplementation((key: string) => (key === 'AUTH_URL' ? '/auth' : undefined))
