@@ -72,6 +72,17 @@ const referrerProfile = {
   avatars: [{ ethAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd', name: 'SirTesla' }]
 }
 
+// Save and restore the original `global.fetch` once per file. The previous
+// per-describe `global.fetch = mockFetch` assignments did not restore, so a
+// throw in any test would leak the stub into the next file.
+const originalFetch = global.fetch
+beforeAll(() => {
+  global.fetch = mockFetch as unknown as typeof fetch
+})
+afterAll(() => {
+  global.fetch = originalFetch
+})
+
 describe('when the referrer param is a Decentraland name', () => {
   beforeEach(() => {
     mockUseParams.mockReturnValue({ referrer: 'Brai' })
@@ -84,7 +95,6 @@ describe('when the referrer param is a Decentraland name', () => {
       }
       return Promise.reject(new Error(`unexpected fetch: ${url}`))
     })
-    global.fetch = mockFetch as unknown as typeof fetch
   })
 
   afterEach(() => {
@@ -127,7 +137,6 @@ describe('when the referrer param is already an Ethereum address', () => {
       }
       return Promise.reject(new Error(`unexpected fetch: ${url}`))
     })
-    global.fetch = mockFetch as unknown as typeof fetch
   })
 
   afterEach(() => {
@@ -145,5 +154,63 @@ describe('when the referrer param is already an Ethereum address', () => {
     })
     const calledUrls = mockFetch.mock.calls.map(([url]) => url as string)
     expect(calledUrls.some(url => url.includes('/lambdas/names/'))).toBe(false)
+  })
+})
+
+describe('when the name lookup fails', () => {
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: 'Unknown' })
+    mockFetch.mockRejectedValue(new Error('network'))
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should keep the inviter referrer prop null', async () => {
+    render(<InvitePage />)
+    await waitFor(() => expect(mockInviteHero).toHaveBeenCalled())
+    expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrer: null }))
+  })
+})
+
+describe('when the profile fetch fails after a successful name resolution', () => {
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: 'Brai' })
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes('/lambdas/names/Brai/owner')) {
+        return Promise.resolve({ json: () => Promise.resolve({ owner: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' }) })
+      }
+      return Promise.reject(new Error('profile down'))
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should set referrer to null', async () => {
+    render(<InvitePage />)
+    await waitFor(() => {
+      const calls = mockFetch.mock.calls.map(c => String(c[0]))
+      expect(calls.some(u => u.includes('/lambdas/profiles/'))).toBe(true)
+    })
+    expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrer: null }))
+  })
+})
+
+describe('when the referrer is empty', () => {
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: '' })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should skip the lookup entirely', async () => {
+    render(<InvitePage />)
+    await waitFor(() => expect(mockInviteHero).toHaveBeenCalled())
+    expect(mockFetch).not.toHaveBeenCalled()
   })
 })

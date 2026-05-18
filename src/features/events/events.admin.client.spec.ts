@@ -170,4 +170,77 @@ describe('when calling admin profile settings endpoints', () => {
       )
     })
   })
+
+  describe('and the API responds with a non-2xx', () => {
+    it('should surface a numeric status for approveEvent', async () => {
+      mockFetchWithIdentity.mockResolvedValueOnce({ ok: false, status: 500 })
+      jest.spyOn(console, 'error').mockImplementation(() => undefined)
+      const result = await store.dispatch(adminClient.endpoints.approveEvent.initiate({ eventId: 'abc', identity }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 500 }))
+    })
+
+    it('should surface a numeric status for updateAdminPermissions', async () => {
+      mockFetchWithIdentity.mockResolvedValueOnce({ ok: false, status: 403 })
+      jest.spyOn(console, 'error').mockImplementation(() => undefined)
+      const result = await store.dispatch(
+        adminClient.endpoints.updateAdminPermissions.initiate({ address: '0xabc', permissions: [], identity })
+      )
+      expect(result.error).toEqual(expect.objectContaining({ status: 403 }))
+    })
+
+    it('should surface FETCH_ERROR for getMyProfileSettings when fetch rejects', async () => {
+      mockFetchWithIdentity.mockRejectedValueOnce(new Error('net'))
+      const result = await store.dispatch(adminClient.endpoints.getMyProfileSettings.initiate({ identity }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+    })
+
+    it('should surface FETCH_ERROR for getMyProfileSettings on non-ok response', async () => {
+      mockFetchWithIdentity.mockResolvedValueOnce({ ok: false, status: 500 })
+      const result = await store.dispatch(adminClient.endpoints.getMyProfileSettings.initiate({ identity }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+    })
+
+    it('should surface FETCH_ERROR for listAdmins on non-ok response', async () => {
+      mockFetchWithIdentity.mockResolvedValueOnce({ ok: false, status: 500 })
+      const result = await store.dispatch(adminClient.endpoints.listAdmins.initiate({ identity }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+    })
+
+    it('should surface FETCH_ERROR for updateAdminPermissions when fetch rejects', async () => {
+      mockFetchWithIdentity.mockRejectedValueOnce(new Error('net'))
+      const result = await store.dispatch(
+        adminClient.endpoints.updateAdminPermissions.initiate({ address: '0xabc', permissions: [], identity })
+      )
+      expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+    })
+
+    it('should surface FETCH_ERROR for getAdminEvents on non-ok', async () => {
+      mockFetchWithIdentity.mockResolvedValueOnce({ ok: false, status: 500 })
+      const result = await store.dispatch(adminClient.endpoints.getAdminEvents.initiate({ identity }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+    })
+
+    it('should surface FETCH_ERROR for approveEvent when fetch rejects', async () => {
+      mockFetchWithIdentity.mockRejectedValueOnce(new Error('net'))
+      const result = await store.dispatch(adminClient.endpoints.approveEvent.initiate({ eventId: 'abc', identity }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+    })
+
+    it.each([
+      ['getMyProfileSettings', () => adminClient.endpoints.getMyProfileSettings.initiate({ identity })],
+      ['listAdmins', () => adminClient.endpoints.listAdmins.initiate({ identity })],
+      [
+        'updateAdminPermissions',
+        () => adminClient.endpoints.updateAdminPermissions.initiate({ address: '0xabc', permissions: [], identity })
+      ],
+      ['getAdminEvents', () => adminClient.endpoints.getAdminEvents.initiate({ identity })],
+      ['approveEvent', () => adminClient.endpoints.approveEvent.initiate({ eventId: 'abc', identity })],
+      ['rejectEvent', () => adminClient.endpoints.rejectEvent.initiate({ eventId: 'abc', identity })]
+    ] as const)('should surface "Unknown error" for %s on non-Error rejection', async (_name, dispatch) => {
+      mockFetchWithIdentity.mockRejectedValueOnce('non-error-rejection')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result: any = await store.dispatch(dispatch() as never)
+      expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR', error: 'Unknown error' }))
+    })
+  })
 })

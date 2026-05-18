@@ -36,6 +36,8 @@ function normalizeEventEntry(event: EventEntry): ModalEventData {
     categories: event.categories,
     url: buildEventJumpInUrl(event.x, event.y, realm),
     realm,
+    isWorld: event.world,
+    placeName: event.scene_name ?? event.estate_name ?? null,
     isEvent: true
   }
 }
@@ -68,6 +70,8 @@ function normalizeLiveNowCard(card: LiveNowCard): ModalEventData {
     categories: card.categories ?? [],
     url,
     realm,
+    isWorld: card.world ?? false,
+    placeName: card.type === 'place' ? card.title : null,
     isEvent: card.type === 'event'
   }
 }

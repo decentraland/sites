@@ -19,7 +19,16 @@ jest.mock('decentraland-ui2', () => ({
 jest.mock('@dcl/hooks', () => ({
   useAnalytics: () => ({ isInitialized: analyticsIsInitialized, track: mockTrack }),
   useTranslation: () => ({
-    intl: { formatMessage: ({ id }: { id: string }) => id }
+    intl: {
+      formatMessage: ({ id }: { id: string }, values?: Record<string, unknown>) => {
+        if (values?.link) return values.link
+        if (values?.span) {
+          const spanFn = values.span as (chunks: unknown) => unknown
+          return spanFn(id)
+        }
+        return id
+      }
+    }
   })
 }))
 
@@ -57,8 +66,24 @@ jest.mock('../../modules/url', () => ({
   addQueryParamsToUrlString: (url: string) => url
 }))
 
+type LayoutProps = {
+  loading?: boolean
+  backdropContent?: React.ReactNode
+  footer?: React.ReactNode
+  renderCardOverlay?: (step: unknown, index: number) => React.ReactNode
+  steps: unknown[]
+  afterContent?: React.ReactNode
+}
+
 jest.mock('./DownloadSuccessLayout', () => ({
-  DownloadSuccessLayout: () => <div data-testid="layout" />
+  DownloadSuccessLayout: (props: LayoutProps) => (
+    <div data-testid="layout">
+      <div data-testid="backdrop">{props.backdropContent}</div>
+      <div data-testid="footer-slot">{props.footer}</div>
+      <div data-testid="step-overlay">{props.renderCardOverlay?.(props.steps[0], 0)}</div>
+      {props.afterContent}
+    </div>
+  )
 }))
 
 jest.mock('./DownloadSuccess.styled', () => ({
@@ -241,6 +266,106 @@ describe('when Segment has not finished lazy-loading at mount (race condition)',
     // While analytics is still loading, neither event has fired.
     expect(mockTrack).not.toHaveBeenCalledWith('download_started', expect.anything())
     expect(mockTrack).not.toHaveBeenCalledWith('download_success', expect.anything())
+  })
+})
+
+describe('when the auto-download history-state key is already present', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    sessionStorage.clear()
+    window.history.replaceState({ 'downloadSuccess:autoDownloadKey': 'Windows:amd64' }, '', '/download_success?os=Windows&arch=amd64')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    window.history.replaceState({}, '', '/')
+  })
+
+  it('should skip the auto-download stream entirely', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => {
+      expect(mockCalculateDownloadUrl).not.toHaveBeenCalled()
+    })
+    expect(mockStreamOrFallback).not.toHaveBeenCalled()
+  })
+})
+
+describe('when the auto-download session flag is already set', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=macOS&arch=arm64&place=landing-hero')
+    sessionStorage.setItem('downloadSuccess:triggered:macOS:arm64', '1')
+    window.history.replaceState({}, '', '/download_success?os=macOS&arch=arm64')
+    mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://cdn.test/foo.dmg', filename: 'foo.dmg' })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    sessionStorage.clear()
+  })
+
+  it('should skip the auto-download stream', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => {
+      expect(mockStreamOrFallback).not.toHaveBeenCalled()
+    })
+  })
+})
+
+describe('when the user clicks the footer re-download link', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    sessionStorage.setItem('downloadSuccess:triggered:Windows:amd64', '1')
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64')
+    mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://cdn.test/Foo.exe', filename: 'Foo.exe' })
+    mockStreamOrFallback.mockResolvedValue(undefined)
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    sessionStorage.clear()
+  })
+
+  it('should fire download_started with the footer place and call streamOrFallback', async () => {
+    const { findByRole } = render(<DownloadSuccess />)
+    const link = await findByRole('link')
+    link.click()
+    await waitFor(() => {
+      expect(mockStreamOrFallback).toHaveBeenCalled()
+    })
+    expect(mockTrack).toHaveBeenCalledWith('download_started', expect.objectContaining({ place: 'download-success-footer' }))
+    expect(mockTrack).toHaveBeenCalledWith(
+      'download_success',
+      expect.objectContaining({ place: 'download-success-footer', filename: 'Foo.exe' })
+    )
+  })
+
+  it('should ignore a second click while a re-download is in flight', async () => {
+    // First call resolves after a tick so the in-flight guard triggers on the second click.
+    let resolveStream: (() => void) | undefined
+    mockStreamOrFallback.mockImplementation(() => new Promise<void>(r => (resolveStream = r)))
+    const { findByRole } = render(<DownloadSuccess />)
+    const link = await findByRole('link')
+    link.click()
+    link.click()
+    resolveStream?.()
+    await waitFor(() => {
+      expect(mockStreamOrFallback).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  it('should fire download_failed when the footer download throws', async () => {
+    mockCalculateDownloadUrl.mockRejectedValueOnce(new Error('boom'))
+    jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    const { findByRole } = render(<DownloadSuccess />)
+    const link = await findByRole('link')
+    link.click()
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('download_failed', expect.objectContaining({ place: 'download-success-footer' }))
+    })
   })
 })
 

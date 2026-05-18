@@ -144,6 +144,7 @@ npm run lint:pkg     # package.json lint (silent on success — easy to skip; do
 3. Place the `<Route>` inside `<Route element={<Layout />}>` block, OUTSIDE `<Route element={<DappsShell />}>`. (Only put it BEFORE the Layout block if the page is fullscreen and intentionally bypasses navbar+footer — see reels / download / invite.)
 4. Use `useSyncExternalStore`-based clients for data, or co-locate a tiny client under `src/features/` using the same pattern as `features/events/events.discovery.ts`, `features/profile/`, or `features/reels/`.
 5. Do NOT import anything from `src/shells/*`, `src/services/*`, or any heavy-tier feature directory: `src/features/cms/*`, `src/features/events/*` (except for `events.discovery.ts`, which is the lightweight homepage data client), `src/features/places/*`, `src/features/communities/*`, `src/features/cast2/*`, `src/features/storage/*`.
+6. **If shareable, add the pathname to the SEO worker's `PAGES` map** in `sites-deployer` (`workers/sites-worker/rollouts/routes/handlers/OpenGraphStaticPageRoute.ts`). Crawlers don't run JS — Helmet titles aren't visible; the worker rewrites OG meta at the edge based on this map. Skip if non-shareable or already covered by a dedicated handler (invite, reels).
 
 ## Adding a heavy route
 
@@ -227,6 +228,7 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
 
 - New providers/shells/layouts in `src/shells/` or `src/components/Layout/` MUST have at least a smoke test.
 - New reducers/RTK Query clients MUST have a test asserting the store builds with the expected `reducerPath` keys.
+- **Coverage floor: 95% on statements, lines, and functions.** Branches stay informational (current floor ~85%). The Stop hook (`.claude/hooks/stop-coverage-guard.sh`) blocks the agent from finishing when any of the three metrics drops below 95% after `src/**` or `api/**` edits. Use the `/coverage-guard` skill on demand and the `coverage-keeper` agent to write missing specs. Reuse `src/__test-utils__/styledMock.ts` for `*.styled.ts` files instead of bypassing the styled engine.
 
 ### 7. Barrel exports
 

@@ -119,6 +119,8 @@ function createMockModalData(overrides: Partial<ModalEventData> = {}): ModalEven
     live: false,
     categories: ['music'],
     url: 'https://decentraland.org/jump/event?position=10,20',
+    isWorld: false,
+    placeName: 'Test Scene',
     isEvent: true,
     ...overrides
   }

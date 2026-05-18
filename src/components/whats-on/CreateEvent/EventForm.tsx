@@ -23,6 +23,7 @@ import {
 } from '../../../hooks/useCreateEventForm.helpers'
 import type { CreateEventFormState } from '../../../hooks/useCreateEventForm.types'
 import { WEEKDAY_INDICES, localizedWeekdayLong, localizedWeekdayShort } from '../../../utils/recurrence'
+import { formatUtcTime, getUtcDayDelta } from '../../../utils/whatsOnTime'
 import { buildEventJumpInUrl } from '../../../utils/whatsOnUrl'
 import { EventDetailModal } from '../EventDetailModal'
 import type { ModalEventData } from '../EventDetailModal'
@@ -118,6 +119,9 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
     live: false,
     categories: [],
     url: buildEventJumpInUrl(x, y),
+    realm: isWorld ? form.world.trim() || undefined : undefined,
+    isWorld,
+    placeName: null,
     isEvent: false
   }
 }
@@ -153,6 +157,18 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
   const showVerticalPanel = verticalPanelOpen || Boolean(form.verticalImagePreviewUrl)
 
   const missingPreviewFields = useMemo(() => PREVIEW_REQUIRED_FIELDS.filter(field => !String(form[field] ?? '').trim()), [form])
+
+  const startUtcPreview = useMemo(() => {
+    if (!form.startDate || !form.startTime) return null
+    const localStart = new Date(`${form.startDate}T${form.startTime}`)
+    if (Number.isNaN(localStart.getTime())) return null
+    const iso = localStart.toISOString()
+    const time = formatUtcTime(iso, locale)
+    const delta = getUtcDayDelta(iso)
+    if (delta === 1) return t('event_time.form_utc_preview_next_day', { time })
+    if (delta === -1) return t('event_time.form_utc_preview_previous_day', { time })
+    return t('event_time.form_utc_preview', { time })
+  }, [form.startDate, form.startTime, locale, t])
   const imageMissing = !form.imageUrl
   const canPreview = missingPreviewFields.length === 0 && !imageMissing
   const previewData = useMemo(
@@ -287,7 +303,7 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
                     value={form.startTime}
                     onChange={e => setField('startTime', e.target.value)}
                     error={Boolean(errors.startTime)}
-                    helperText={errors.startTime}
+                    helperText={errors.startTime || startUtcPreview || undefined}
                     fullWidth
                     InputLabelProps={{ shrink: true }}
                     InputProps={{

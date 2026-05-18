@@ -44,6 +44,14 @@ jest.mock('decentraland-ui2', () => ({
   )
 }))
 
+jest.mock('../common/LocalDateTimeTooltip', () => ({
+  LocalDateTimeTooltip: ({ children, startIso, finishIso }: { children: React.ReactNode; startIso: string; finishIso?: string | null }) => (
+    <span data-testid="local-datetime-tooltip" data-start={startIso} data-finish={finishIso ?? ''}>
+      {children}
+    </span>
+  )
+}))
+
 function createMockData(overrides: Partial<ReturnType<typeof createMockModalData>> = {}) {
   return createMockModalData({
     image: null,
@@ -260,6 +268,36 @@ describe('EventDetailModalContent', () => {
         )
 
         expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_daily')
+      })
+
+      it('should fall through to the monthly label when frequency is MONTHLY even if byDay is set (Nth-weekday-of-month rule)', () => {
+        render(
+          <EventDetailModalContent
+            data={createMockData({
+              recurrent: true,
+              recurrentFrequency: 'MONTHLY',
+              recurrentInterval: 1,
+              recurrentByDay: [1]
+            })}
+          />
+        )
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_monthly')
+      })
+
+      it('should fall through to the yearly label when frequency is YEARLY even if byDay is set', () => {
+        render(
+          <EventDetailModalContent
+            data={createMockData({
+              recurrent: true,
+              recurrentFrequency: 'YEARLY',
+              recurrentInterval: 1,
+              recurrentByDay: [1]
+            })}
+          />
+        )
+
+        expect(screen.getByTestId('recurrence')).toHaveTextContent('event_detail.recurrent_yearly')
       })
     })
 
