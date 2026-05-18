@@ -25,6 +25,8 @@ type CreateEventFormState = {
   duration: string
   repeatEnabled: boolean
   frequency: string
+  repeatInterval: string
+  repeatDays: number[]
   repeatEndDate: string
   location: string
   coordX: string

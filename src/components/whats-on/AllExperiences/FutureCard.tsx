@@ -24,6 +24,7 @@ import {
   TimeLabel,
   TimePill
 } from '../common/CardActions.styled'
+import { LocalDateTimeTooltip } from '../common/LocalDateTimeTooltip'
 import { RemindMeButton } from '../common/RemindMeButton'
 import { CardContent, CardImage, CardImageWrapper, CardTitle, FutureCardContainer } from './AllExperiencesCard.styled'
 
@@ -71,10 +72,12 @@ const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
             <CreatorNameHighlight>{creatorName}</CreatorNameHighlight>
           </CreatorName>
         </CreatorRow>
-        <TimePill data-role="time-pill">
-          <TimeIcon />
-          <TimeLabel>{getRelativeTimeLabel(event.start_at, t)}</TimeLabel>
-        </TimePill>
+        <LocalDateTimeTooltip startIso={event.start_at} finishIso={event.finish_at}>
+          <TimePill data-role="time-pill">
+            <TimeIcon />
+            <TimeLabel>{getRelativeTimeLabel(event.start_at, t)}</TimeLabel>
+          </TimePill>
+        </LocalDateTimeTooltip>
         <HoverActions data-role="hover-actions">
           {hasValidIdentity ? (
             <RemindMeButton

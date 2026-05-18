@@ -332,6 +332,34 @@ describe('buildCalendarUrl', () => {
       })
     })
 
+    describe('and the event has a recurrentByDay weekday selection', () => {
+      it('should emit BYDAY=SU,FR,SA when WEEKLY × 2 picks Sun + Fri + Sat', () => {
+        const url = buildCalendarUrl({
+          ...baseEvent(),
+          recurrent: true,
+          recurrentFrequency: 'WEEKLY',
+          recurrentInterval: 2,
+          recurrentByDay: [0, 5, 6]
+        })
+
+        expect(url).toContain('FREQ%3DWEEKLY')
+        expect(url).toContain('INTERVAL%3D2')
+        expect(url).toContain('BYDAY%3DSU%2CFR%2CSA')
+      })
+
+      it('should omit BYDAY when the full week is selected', () => {
+        const url = buildCalendarUrl({
+          ...baseEvent(),
+          recurrent: true,
+          recurrentFrequency: 'WEEKLY',
+          recurrentInterval: 1,
+          recurrentByDay: [0, 1, 2, 3, 4, 5, 6]
+        })
+
+        expect(url).not.toContain('BYDAY')
+      })
+    })
+
     describe('and the legacy data stores weeks as DAILY × 14', () => {
       it('should normalize the recurrence to WEEKLY × 2 in the RRULE', () => {
         const url = buildCalendarUrl({

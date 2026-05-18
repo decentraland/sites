@@ -35,6 +35,7 @@ function createMockEvent(overrides: Partial<EventEntry> = {}): EventEntry {
     recurrent: false,
     recurrent_frequency: null,
     recurrent_interval: null,
+    recurrent_weekday_mask: null,
     recurrent_count: null,
     recurrent_until: null,
     recurrent_dates: [],
@@ -118,6 +119,8 @@ function createMockModalData(overrides: Partial<ModalEventData> = {}): ModalEven
     live: false,
     categories: ['music'],
     url: 'https://decentraland.org/jump/event?position=10,20',
+    isWorld: false,
+    placeName: 'Test Scene',
     isEvent: true,
     ...overrides
   }
