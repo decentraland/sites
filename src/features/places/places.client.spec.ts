@@ -635,4 +635,31 @@ describe('placesEndpoints', () => {
       })
     })
   })
+
+  describe('non-Error rejection branch (`Unknown error` fallback)', () => {
+    beforeEach(() => {
+      mockGetEnv.mockReturnValue('https://places.test/api')
+    })
+
+    it.each([
+      ['getJumpPlaces', () => placesEndpoints.endpoints.getJumpPlaces.initiate({ position: [0, 0] }), 'fetch'],
+      ['getJumpEvents', () => placesEndpoints.endpoints.getJumpEvents.initiate({ position: [0, 0] }), 'identity'],
+      ['getJumpEventById', () => placesEndpoints.endpoints.getJumpEventById.initiate({ id: 'e1' }), 'identity'],
+      ['getSceneMetadata', () => placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0' }), 'fetch'],
+      ['getProfileCreator', () => placesEndpoints.endpoints.getProfileCreator.initiate({ address: '0xabc' }), 'fetch']
+    ] as const)(
+      'should surface "Unknown error" for %s when the underlying fetch rejects with a non-Error',
+      async (_name, dispatch, channel) => {
+        if (channel === 'fetch') {
+          fetchSpy.mockRejectedValue('plain-string')
+        } else {
+          mockFetchWithOptionalIdentity.mockRejectedValue('plain-string')
+        }
+        const store = createTestStore()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result: any = await store.dispatch(dispatch() as never)
+        expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR', error: 'Unknown error' }))
+      }
+    )
+  })
 })

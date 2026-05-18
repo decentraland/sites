@@ -807,4 +807,77 @@ describe('eventsClient', () => {
       })
     })
   })
+
+  describe('non-Error rejection branch (`Unknown error` fallback)', () => {
+    const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
+
+    beforeEach(() => {
+      mockGetEnv.mockReturnValue('https://events.test')
+      mockFetchWithOptionalIdentity.mockClear()
+      mockFetchWithIdentity.mockClear()
+    })
+
+    it.each([
+      ['getEvents', () => eventsClient.endpoints.getEvents.initiate({})],
+      ['getUpcomingEvents', () => eventsClient.endpoints.getUpcomingEvents.initiate()],
+      ['getEventById', () => eventsClient.endpoints.getEventById.initiate({ eventId: 'e1' })],
+      ['createEvent', () => eventsClient.endpoints.createEvent.initiate({ payload: {} as never, identity: mockIdentity })],
+      ['updateEvent', () => eventsClient.endpoints.updateEvent.initiate({ eventId: 'e', payload: {} as never, identity: mockIdentity })],
+      ['toggleAttendee', () => eventsClient.endpoints.toggleAttendee.initiate({ eventId: 'e', attending: true, identity: mockIdentity })],
+      ['uploadPoster', () => eventsClient.endpoints.uploadPoster.initiate({ file: new File([], 'p'), identity: mockIdentity })],
+      [
+        'uploadPosterVertical',
+        () => eventsClient.endpoints.uploadPosterVertical.initiate({ file: new File([], 'p'), identity: mockIdentity })
+      ],
+      ['getCommunities', () => eventsClient.endpoints.getCommunities.initiate({ identity: mockIdentity })]
+    ] as const)('should surface "Unknown error" for %s when fetch rejects with a non-Error value', async (_name, dispatch) => {
+      mockFetchWithOptionalIdentity.mockRejectedValue('plain-string-rejection')
+      mockFetchWithIdentity.mockRejectedValue('plain-string-rejection')
+      const originalFetch = global.fetch
+      global.fetch = jest.fn().mockRejectedValue('plain-string-rejection') as unknown as typeof fetch
+      try {
+        const store = createTestStore()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result: any = await store.dispatch(dispatch() as never)
+        expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR', error: 'Unknown error' }))
+      } finally {
+        global.fetch = originalFetch
+      }
+    })
+
+    it('should hit the bare-array branch in getWorldNames when the response is already an array', async () => {
+      const fetchMock = jest.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve(['name-a.dcl.eth']) })
+      const originalFetch = global.fetch
+      global.fetch = fetchMock as unknown as typeof fetch
+      try {
+        const store = createTestStore()
+        const result = await store.dispatch(eventsClient.endpoints.getWorldNames.initiate())
+        expect(result.data).toEqual(['name-a.dcl.eth'])
+      } finally {
+        global.fetch = originalFetch
+      }
+    })
+
+    it('should serialize getCommunities cache key to "anon" when no identity is supplied', async () => {
+      mockFetchWithOptionalIdentity.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ data: { results: [] } })
+      })
+      const store = createTestStore()
+      const result = await store.dispatch(
+        eventsClient.endpoints.getCommunities.initiate({ identity: undefined as unknown as AuthIdentity })
+      )
+      expect(result.data).toEqual([])
+    })
+
+    it('should default getCommunities results to [] when envelope.data is missing', async () => {
+      mockFetchWithOptionalIdentity.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({})
+      })
+      const store = createTestStore()
+      const result = await store.dispatch(eventsClient.endpoints.getCommunities.initiate({ identity: mockIdentity }))
+      expect(result.data).toEqual([])
+    })
+  })
 })

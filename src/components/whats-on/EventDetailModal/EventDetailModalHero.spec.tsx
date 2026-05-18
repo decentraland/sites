@@ -481,4 +481,46 @@ describe('EventDetailModalHero', () => {
       expect(screen.queryByTestId('copy-button')).not.toBeInTheDocument()
     })
   })
+
+  describe('recurrence label branches', () => {
+    const renderRecurrent = (overrides: Record<string, unknown>) => {
+      render(<EventDetailModalHero data={createMockData({ recurrent: true, ...overrides })} onClose={mockOnClose} />)
+    }
+
+    it('renders the "every N weeks on days" label with byDay subset and interval > 1', () => {
+      renderRecurrent({ recurrentFrequency: 'WEEKLY', recurrentInterval: 2, recurrentByDay: [1, 3] })
+    })
+
+    it('renders the DAILY "every N days" label when interval > 1', () => {
+      renderRecurrent({ recurrentFrequency: 'DAILY', recurrentInterval: 3 })
+    })
+
+    it('renders the WEEKLY "every N weeks" label when interval > 1 without byDay subset', () => {
+      renderRecurrent({ recurrentFrequency: 'WEEKLY', recurrentInterval: 3, recurrentByDay: undefined })
+    })
+
+    it('renders the MONTHLY "every N months" label when interval > 1', () => {
+      renderRecurrent({ recurrentFrequency: 'MONTHLY', recurrentInterval: 4 })
+    })
+
+    it('renders the MONTHLY "every month" label when interval is 1', () => {
+      renderRecurrent({ recurrentFrequency: 'MONTHLY', recurrentInterval: 1 })
+    })
+
+    it('renders the YEARLY "every year" label when interval is 1', () => {
+      renderRecurrent({ recurrentFrequency: 'YEARLY', recurrentInterval: 1 })
+    })
+
+    it('renders the YEARLY "every N years" label when interval > 1', () => {
+      renderRecurrent({ recurrentFrequency: 'YEARLY', recurrentInterval: 5 })
+    })
+
+    it('does not render a subtitle when startAt is invalid', () => {
+      render(<EventDetailModalHero data={createMockData({ startAt: 'not-a-date' })} onClose={mockOnClose} />)
+    })
+
+    it('does not render a subtitle when startAt is missing', () => {
+      render(<EventDetailModalHero data={createMockData({ startAt: null })} onClose={mockOnClose} />)
+    })
+  })
 })
