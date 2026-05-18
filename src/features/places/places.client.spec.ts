@@ -435,6 +435,61 @@ describe('placesEndpoints', () => {
       })
     })
 
+    describe('and the deployment endpoint returns 404', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://peer.test')
+        fetchSpy
+          .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([{ id: 'entity-1' }]) } as unknown as Response)
+          .mockResolvedValueOnce({ ok: false } as unknown as Response)
+      })
+
+      it('should return null when the deployment lookup fails', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0' }))
+        expect(result.data).toBeNull()
+      })
+    })
+
+    describe('and the active-entities endpoint returns a server error', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://peer.test')
+        fetchSpy.mockResolvedValueOnce({ ok: false } as unknown as Response)
+      })
+
+      it('should return null without crashing', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0' }))
+        expect(result.data).toBeNull()
+      })
+    })
+
+    describe('and PEER_URL is not set', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue(undefined)
+      })
+
+      it('should surface FETCH_ERROR', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0' }))
+        expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+      })
+    })
+
+    describe('and the deployments fetch is missing the deployments array', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://peer.test')
+        fetchSpy
+          .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([{ id: 'entity-1' }]) } as unknown as Response)
+          .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) } as unknown as Response)
+      })
+
+      it('should return null when deployments are missing', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0' }))
+        expect(result.data).toBeNull()
+      })
+    })
+
     describe('and the deployer has no Catalyst profile', () => {
       beforeEach(() => {
         mockGetEnv.mockImplementation(key => (key === 'PEER_URL' ? 'https://peer.test' : undefined))
@@ -452,6 +507,131 @@ describe('placesEndpoints', () => {
         const result = await store.dispatch(placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0' }))
 
         expect(result.data).toBeNull()
+      })
+    })
+  })
+
+  describe('getJumpPlaces with no position or realm', () => {
+    beforeEach(() => {
+      mockGetEnv.mockReturnValue('https://places.test/api')
+      fetchSpy.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ ok: true, data: [] }) } as unknown as Response)
+    })
+
+    it('should hit the bare /places endpoint', async () => {
+      const store = createTestStore()
+      await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({}))
+      expect(fetchSpy).toHaveBeenCalledWith('https://places.test/api/places')
+    })
+  })
+
+  describe('resolveIdentity error handling', () => {
+    const address = '0xABCDEF0123456789ABCDEF0123456789ABCDEF01'
+
+    beforeEach(() => {
+      mockGetEnv.mockReturnValue('https://events.test/api')
+      mockLocalStorageGetIdentity.mockImplementation(() => {
+        throw new Error('storage corrupted')
+      })
+      mockFetchWithOptionalIdentity.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ ok: true, data: [] })
+      } as unknown as Response)
+    })
+
+    it('should swallow the localStorage failure and fall back to anonymous calls', async () => {
+      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+      const store = createTestStore()
+      await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [0, 0], address }))
+      expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(expect.any(String), undefined, expect.any(AbortSignal))
+      expect(errorSpy).toHaveBeenCalled()
+      errorSpy.mockRestore()
+    })
+  })
+
+  describe('getJumpEvents catch path', () => {
+    beforeEach(() => {
+      mockGetEnv.mockReturnValue('https://events.test/api')
+      mockFetchWithOptionalIdentity.mockRejectedValueOnce(new Error('network down'))
+    })
+
+    it('should surface FETCH_ERROR', async () => {
+      const store = createTestStore()
+      const result = await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [0, 0] }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+    })
+  })
+
+  describe('getJumpEventById catch path', () => {
+    beforeEach(() => {
+      mockGetEnv.mockReturnValue('https://events.test/api')
+      mockFetchWithOptionalIdentity.mockRejectedValueOnce(new Error('boom'))
+    })
+
+    it('should surface FETCH_ERROR', async () => {
+      const store = createTestStore()
+      const result = await store.dispatch(placesEndpoints.endpoints.getJumpEventById.initiate({ id: 'ev-1' }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+    })
+  })
+
+  describe('getProfileCreator', () => {
+    describe('and the profile has a name', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://peer.test')
+        fetchSpy.mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve([{ avatars: [{ name: 'Creator Person', avatar: { snapshots: { face256: 'face.png' } } }] }])
+        } as unknown as Response)
+      })
+
+      it('should return the mapped creator data', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(placesEndpoints.endpoints.getProfileCreator.initiate({ address: '0xabc' }))
+        expect(result.data).toEqual({ user: '0xabc', user_name: 'Creator Person', avatar: 'face.png' })
+      })
+    })
+
+    describe('and the profile only has realName', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://peer.test')
+        fetchSpy.mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve([{ avatars: [{ realName: 'Real Name' }] }])
+        } as unknown as Response)
+      })
+
+      it('should use realName as user_name', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(placesEndpoints.endpoints.getProfileCreator.initiate({ address: '0xabc' }))
+        expect(result.data?.user_name).toBe('Real Name')
+      })
+    })
+
+    describe('and the profile has no name fields', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://peer.test')
+        fetchSpy.mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve([{ avatars: [{}] }])
+        } as unknown as Response)
+      })
+
+      it('should return null', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(placesEndpoints.endpoints.getProfileCreator.initiate({ address: '0xabc' }))
+        expect(result.data).toBeNull()
+      })
+    })
+
+    describe('and PEER_URL is not configured', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue(undefined)
+      })
+
+      it('should surface FETCH_ERROR', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(placesEndpoints.endpoints.getProfileCreator.initiate({ address: '0xabc' }))
+        expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
       })
     })
   })
