@@ -95,6 +95,7 @@ function VerticalCoverPanel({ previewUrl, imageError, onSelect, onRemove }: Vert
               </HintText>
               <RecommendedSize>{t('create_event.vertical_recommended_size')}</RecommendedSize>
               <RecommendedSize>{t('create_event.vertical_file_hint')}</RecommendedSize>
+              <RecommendedSize>{t('create_event.vertical_image_usage')}</RecommendedSize>
             </HintGroup>
           </DropZoneContent>
         )}
