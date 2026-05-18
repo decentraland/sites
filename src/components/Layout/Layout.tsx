@@ -71,7 +71,10 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
           onClickJumpIn={handleJumpIn}
         />
       )}
-      {children ?? <Outlet />}
+      {/* Layout owns the single <main> landmark for every wrapped route. Layout-less
+          routes (/download, /reels, /invite) must provide their own landmark and
+          must never be nested under <Layout /> to avoid invalid nested <main>. */}
+      <main>{children ?? <Outlet />}</main>
       <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />
       {withFooter && (
         <Suspense fallback={<FooterFallback />}>

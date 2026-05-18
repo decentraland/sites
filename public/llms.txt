@@ -1,0 +1,34 @@
+# Decentraland
+
+> Decentraland is an online social world. People show up to hang out, join live music shows, watch movies, attend trivia nights, and explore community-built experiences. The platform is governed by its users through the Decentraland DAO and free to enter from a browser or the Decentraland desktop client.
+
+## Get started
+
+- [Decentraland home](https://decentraland.org/): What Decentraland is, how to join, and where to download the client.
+- [Download Decentraland](https://decentraland.org/download): Install the Decentraland desktop client for Windows and macOS.
+- [Creator Hub](https://decentraland.org/download/creator-hub): Download the Creator Hub to build scenes, wearables, and emotes.
+- [What's on](https://decentraland.org/whats-on): Discover live and upcoming events, hangouts, and places.
+- [Blog](https://decentraland.org/blog): News, product updates, and creator stories from the Decentraland community.
+
+## Build and contribute
+
+- [Documentation](https://docs.decentraland.org/): Technical guides for building scenes, wearables, smart wearables, and emotes with the SDK.
+- [DAO](https://decentraland.org/dao/): Governance forum, proposals, and voting for the Decentraland DAO.
+- [Discord](https://decentraland.org/discord): Real-time community chat for creators, players, and contributors.
+- [Press kit](https://decentraland.org/press): Logos, screenshots, and brand resources for media coverage.
+
+## Policies and legal
+
+- [Terms of Use](https://decentraland.org/terms): Terms that govern use of the Decentraland website and platform.
+- [Privacy Policy](https://decentraland.org/privacy): How Decentraland collects, uses, and stores personal information.
+- [Content Policy](https://decentraland.org/content): Rules for user-generated content published in Decentraland.
+- [Code of Ethics](https://decentraland.org/ethics): Principles that guide community behavior in Decentraland.
+- [Logo and Name](https://decentraland.org/brand): Terms for using the Decentraland logo and name.
+- [Security](https://decentraland.org/security): How to report security vulnerabilities responsibly.
+- [Rewards Program Terms](https://decentraland.org/rewards-terms): Terms governing official Decentraland rewards campaigns.
+- [Referral Program Terms](https://decentraland.org/referral-terms): Terms governing the Decentraland referral program.
+
+## Optional
+
+- [Sitemap](https://decentraland.org/sitemap.xml): Machine-readable list of public pages on decentraland.org.
+- [Help](https://decentraland.org/help): Frequently asked questions and links to support resources.
