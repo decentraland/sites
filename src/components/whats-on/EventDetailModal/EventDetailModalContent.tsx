@@ -27,8 +27,11 @@ function getRecurrenceLabel(
   locale: string
 ): string | null {
   const { frequency: normalizedFrequency, interval: count } = normalizeRecurrence(frequency, interval)
-  // Day-picker selection wins when present and partial — full week falls through to the frequency label.
-  if (byDay && byDay.length > 0 && byDay.length < 7) {
+  // Day-picker selection wins for weekly-cadence events only — for MONTHLY/YEARLY events the
+  // weekday mask is paired with `recurrent_setpos` (e.g. "3rd Monday of the month") which we
+  // don't surface, so we must fall through to the plain monthly/yearly label.
+  const isWeeklyCadence = normalizedFrequency === 'WEEKLY' || normalizedFrequency === 'DAILY'
+  if (isWeeklyCadence && byDay && byDay.length > 0 && byDay.length < 7) {
     const days = formatRecurrentDays(byDay, locale)
     if (count > 1) {
       return t('event_detail.recurrent_on_days_every_n_weeks', { count, days })

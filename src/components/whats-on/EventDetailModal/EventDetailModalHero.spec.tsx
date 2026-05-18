@@ -342,6 +342,19 @@ describe('EventDetailModalHero', () => {
     })
   })
 
+  describe('when the event is monthly recurrent with a weekday-of-month rule', () => {
+    it('should render the "every month" label and ignore the weekday mask (recurrent_setpos is not surfaced)', () => {
+      render(
+        <EventDetailModalHero
+          data={createMockData({ recurrent: true, recurrentFrequency: 'MONTHLY', recurrentInterval: 1, recurrentByDay: [1] })}
+          onClose={mockOnClose}
+        />
+      )
+
+      expect(screen.getByTestId('schedule-subtitle')).toHaveTextContent(/event_detail\.hero_every_month\s*-\s*10:00\s*AM/i)
+    })
+  })
+
   describe('when the event has no startAt', () => {
     it('should not render the calendar button in either primary or secondary slots', () => {
       render(<EventDetailModalHero data={createMockData({ startAt: null })} onClose={mockOnClose} />)
