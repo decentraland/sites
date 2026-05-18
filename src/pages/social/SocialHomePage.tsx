@@ -177,7 +177,15 @@ function SocialHomePage() {
   const dedupedBrowsePlaces = useMemo(() => browsePlaces.filter(p => !liveIds.has(p.id)), [browsePlaces, liveIds])
   const dedupedBrowseWorlds = useMemo(() => browseWorlds.filter(w => !liveIds.has(w.id)), [browseWorlds, liveIds])
 
-  const isInitialLoading = isLoadingLive && isLoadingBrowse
+  // Wait for EVERYTHING on first paint — including the dependent worlds-
+  // metadata batch fetch — so LIVE NOW and the BROWSE sections appear
+  // together. Releasing them progressively (one section landing, layout
+  // shifting when the next arrives, then again when the worlds-metadata
+  // join completes) was the visible glitch on cold load. Polling /
+  // search refetches use `isFetching`, not `isLoading`, so they don't
+  // re-trigger this gate.
+  const isLoadingWorldsMetadata = liveWorldNames.length > 0 && worldsMetadataQuery.isLoading
+  const isInitialLoading = isLoadingLive || isLoadingBrowse || isLoadingWorldsMetadata
   const isEmpty =
     !isInitialLoading && filteredLiveCards.length === 0 && dedupedBrowsePlaces.length === 0 && dedupedBrowseWorlds.length === 0
 
