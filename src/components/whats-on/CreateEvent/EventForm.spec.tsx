@@ -16,6 +16,7 @@ jest.mock('./EventForm.styled', () => ({
       {children}
     </button>
   ),
+  ChipErrorText: ({ children }: { children: React.ReactNode }) => <span data-testid="chip-error-text">{children}</span>,
   ContentContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CoordPrefix: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   CoordinatesRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -62,10 +63,11 @@ jest.mock('./EventForm.styled', () => ({
     )
   },
   EventTextField: (props: Record<string, unknown>) => {
-    const { label, value, onChange, placeholder, type, ...rest } = props
+    const { label, value, onChange, placeholder, type, helperText, error: _error, InputLabelProps: _ilp, InputProps: _ip, ...rest } = props
     return (
       <input
         data-testid="event-textfield"
+        data-helper-text={typeof helperText === 'string' ? helperText : ''}
         aria-label={label as string}
         value={value as string}
         onChange={onChange as React.ChangeEventHandler<HTMLInputElement>}
@@ -78,6 +80,22 @@ jest.mock('./EventForm.styled', () => ({
   FormActions: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   FormColumns: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   ImageSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  IntervalChip: ({
+    children,
+    $active,
+    ...props
+  }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode; $active: boolean }) => (
+    <button data-testid="interval-chip" data-active={$active} {...props}>
+      {children}
+    </button>
+  ),
+  IntervalChipGroup: ({ children, ...props }: { children: React.ReactNode } & Record<string, unknown>) => (
+    <div data-testid="interval-chip-group" {...props}>
+      {children}
+    </div>
+  ),
+  IntervalChipLabel: ({ children }: { children: React.ReactNode }) => <span data-testid="interval-chip-label">{children}</span>,
+  IntervalChipRow: ({ children }: { children: React.ReactNode }) => <div data-testid="interval-chip-row">{children}</div>,
   LeftCard: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   LocationBlock: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   LocationLabel: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
@@ -212,7 +230,9 @@ function createFormState(overrides = {}) {
     startTime: '',
     duration: '',
     repeatEnabled: false,
-    frequency: 'every_week',
+    frequency: 'every_day',
+    repeatInterval: '1',
+    repeatDays: [0, 1, 2, 3, 4, 5, 6],
     repeatEndDate: '',
     location: 'land',
     coordX: '0',
@@ -597,6 +617,60 @@ describe('EventForm', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByTestId('submit-button')).toHaveTextContent('create_event.submitting')
+    })
+  })
+
+  describe('when the start time is set', () => {
+    describe('and the local→UTC offset stays within the same calendar day', () => {
+      it('should render the same-day UTC preview as helper text under the Start field', () => {
+        mockUseCreateEventForm.mockReturnValue({
+          form: createFormState({ startDate: '2026-05-01', startTime: '10:00' }),
+          errors: {},
+          setField: mockSetField,
+          handleImageSelect: mockHandleImageSelect,
+          handleImageRemove: mockHandleImageRemove,
+          handleVerticalImageSelect: jest.fn(),
+          handleVerticalImageRemove: jest.fn(),
+          isFormValid: false,
+          isSubmitting: false,
+          handleSubmit: mockHandleSubmit
+        })
+
+        render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+        const helper = screen.getByLabelText('create_event.start').getAttribute('data-helper-text') ?? ''
+        expect(helper).toMatch(/event_time\.form_utc_preview\b/)
+        expect(helper).not.toMatch(/_next_day|_previous_day/)
+      })
+    })
+
+    describe('and the field has a validation error', () => {
+      it('should render the error message instead of the UTC preview', () => {
+        mockUseCreateEventForm.mockReturnValue({
+          form: createFormState({ startDate: '2026-05-01', startTime: '10:00' }),
+          errors: { startTime: 'Start time is required' },
+          setField: mockSetField,
+          handleImageSelect: mockHandleImageSelect,
+          handleImageRemove: mockHandleImageRemove,
+          handleVerticalImageSelect: jest.fn(),
+          handleVerticalImageRemove: jest.fn(),
+          isFormValid: false,
+          isSubmitting: false,
+          handleSubmit: mockHandleSubmit
+        })
+
+        render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+        expect(screen.getByLabelText('create_event.start')).toHaveAttribute('data-helper-text', 'Start time is required')
+      })
+    })
+
+    describe('and neither the date nor the time is set', () => {
+      it('should leave the Start helper text empty so MUI does not reserve a paragraph for whitespace', () => {
+        render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+        expect(screen.getByLabelText('create_event.start')).toHaveAttribute('data-helper-text', '')
+      })
     })
   })
 

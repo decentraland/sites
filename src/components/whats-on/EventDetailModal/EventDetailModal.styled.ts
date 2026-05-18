@@ -1,15 +1,48 @@
 import { Box, Typography, styled } from 'decentraland-ui2'
 
-const CategoryLabel = styled(Typography)({
+const ScheduleSubtitle = styled(Typography)({
   fontSize: 14,
   fontWeight: 600,
   color: '#FCFCFC',
-  textTransform: 'uppercase',
   letterSpacing: '0.04em'
 })
 
 const LiveBadgeWrapper = styled(Box)({
   alignSelf: 'flex-start'
+})
+
+const CreatorLocationRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  columnGap: theme.spacing(3),
+  rowGap: theme.spacing(0.5),
+  // Matches the 16px Figma gap between the creator/location row and the action buttons below.
+  // HeroContent itself contributes 8px via its flex gap; this margin adds the remaining 8px.
+  marginBottom: theme.spacing(1)
+}))
+
+const LocationRow = styled(Box)(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.75),
+  color: '#FCFCFC',
+  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  padding: theme.spacing(0.5, 1.25),
+  borderRadius: theme.spacing(1),
+  /* eslint-disable @typescript-eslint/naming-convention */
+  '& .MuiSvgIcon-root': {
+    fontSize: 18,
+    color: '#FCFCFC'
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
+}))
+
+const LocationText = styled(Typography)({
+  fontSize: 14,
+  lineHeight: 1.4,
+  color: '#FCFCFC',
+  wordBreak: 'break-word'
 })
 
 const EditButton = styled('button')(({ theme }) => ({
@@ -92,4 +125,16 @@ const AdminActionsRow = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(2)
 }))
 
-export { AdminActionsRow, CategoryLabel, EditButton, LiveBadgeWrapper, RecurrenceText, ScheduleIconButton, ScheduleRow, ScheduleText }
+export {
+  AdminActionsRow,
+  CreatorLocationRow,
+  EditButton,
+  LiveBadgeWrapper,
+  LocationRow,
+  LocationText,
+  RecurrenceText,
+  ScheduleIconButton,
+  ScheduleRow,
+  ScheduleSubtitle,
+  ScheduleText
+}

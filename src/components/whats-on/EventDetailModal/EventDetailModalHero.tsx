@@ -5,15 +5,23 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import EditIcon from '@mui/icons-material/Edit'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import PublicRoundedIcon from '@mui/icons-material/PublicRounded'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTranslation } from '@dcl/hooks'
 import { LiveBadge, Tooltip, useTheme } from 'decentraland-ui2'
+import type { RecurrentFrequency } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCanEditEvent } from '../../../hooks/useCanEditEvent'
 import { useCopyShareLink } from '../../../hooks/useCopyShareLink'
 import { useRemindMe } from '../../../hooks/useRemindMe'
-import { buildCalendarUrl, buildEventShareUrl } from '../../../utils/whatsOnUrl'
+import { localizedWeekdayLong, normalizeDayIndices } from '../../../utils/recurrence'
+import { formatLocalDate, formatLocalTime } from '../../../utils/whatsOnTime'
+import { buildCalendarUrl, buildEventShareUrl, normalizeRecurrence } from '../../../utils/whatsOnUrl'
 import { JumpInButton } from '../../jump/JumpInButton'
+import { LocalDateTimeTooltip } from '../common/LocalDateTimeTooltip'
 import { RemindMeIcon } from '../common/RemindMeIcon'
 import { DetailModalCreator } from '../DetailModal'
 import {
@@ -31,10 +39,61 @@ import {
   SecondaryButton
 } from '../DetailModal/DetailModal.styled'
 import type { ModalEventData } from './EventDetailModal.types'
-import { CategoryLabel, EditButton, LiveBadgeWrapper } from './EventDetailModal.styled'
+import { CreatorLocationRow, EditButton, LiveBadgeWrapper, LocationRow, LocationText, ScheduleSubtitle } from './EventDetailModal.styled'
+
+function getHeroRecurrenceLabel(
+  startAt: string,
+  frequency: RecurrentFrequency | null,
+  interval: number | null,
+  byDay: number[] | undefined,
+  t: (key: string, values?: Record<string, string | number>) => string,
+  locale: string
+): string | null {
+  const { frequency: normalizedFrequency, interval: count } = normalizeRecurrence(frequency, interval)
+  if (byDay && byDay.length > 0 && byDay.length < 7) {
+    const days = normalizeDayIndices(byDay)
+      .map(i => localizedWeekdayLong(i, locale))
+      .join(', ')
+    return count > 1 ? t('event_detail.recurrent_on_days_every_n_weeks', { count, days }) : t('event_detail.hero_every_days', { days })
+  }
+  switch (normalizedFrequency) {
+    case 'DAILY':
+      return count === 1 ? t('event_detail.hero_every_day') : t('event_detail.recurrent_every_n_days', { count })
+    case 'WEEKLY': {
+      if (count > 1) return t('event_detail.recurrent_every_n_weeks', { count })
+      // Derive the weekday from the local-time `startAt` — keeps the recurrence label aligned with the user's calendar.
+      const weekday = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(new Date(startAt))
+      return t('event_detail.hero_every_weekday', { weekday })
+    }
+    case 'MONTHLY':
+      return count === 1 ? t('event_detail.hero_every_month') : t('event_detail.recurrent_every_n_months', { count })
+    case 'YEARLY':
+      return count === 1 ? t('event_detail.hero_every_year') : t('event_detail.recurrent_every_n_years', { count })
+    default:
+      return null
+  }
+}
+
+function buildHeroSubtitle(
+  data: ModalEventData,
+  t: (key: string, values?: Record<string, string | number>) => string,
+  locale: string
+): string | null {
+  if (!data.startAt) return null
+  const start = new Date(data.startAt)
+  if (Number.isNaN(start.getTime())) return null
+  const time = formatLocalTime(data.startAt, locale)
+  if (!data.recurrent) {
+    const date = formatLocalDate(data.startAt, locale)
+    return `${date} - ${time}`
+  }
+  const recurrence = getHeroRecurrenceLabel(data.startAt, data.recurrentFrequency, data.recurrentInterval, data.recurrentByDay, t, locale)
+  if (!recurrence) return null
+  return `${recurrence} - ${time}`
+}
 
 function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData; onClose: () => void; onEdit?: () => void }) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const { isReminded, isLoading: isRemindLoading, isShaking, handleToggle: handleRemindToggle } = useRemindMe(data.id, data.attending)
@@ -60,7 +119,7 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
     if (url) window.open(url, '_blank', 'noopener,noreferrer')
   }, [data])
 
-  const categorySubtitle = data.categories[0] ?? null
+  const scheduleSubtitle = useMemo(() => buildHeroSubtitle(data, t, locale), [data, t, locale])
 
   return (
     <>
@@ -76,10 +135,34 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
               <LiveBadge />
             </LiveBadgeWrapper>
           ) : (
-            categorySubtitle && <CategoryLabel>{categorySubtitle}</CategoryLabel>
+            scheduleSubtitle &&
+            data.startAt && (
+              <LocalDateTimeTooltip startIso={data.startAt} finishIso={data.finishAt}>
+                <ScheduleSubtitle>{scheduleSubtitle}</ScheduleSubtitle>
+              </LocalDateTimeTooltip>
+            )
           )}
           <ModalTitle id="event-detail-title">{data.name}</ModalTitle>
-          <DetailModalCreator address={data.creatorAddress} name={data.creatorName} prefixLabel={t('event_detail.by_prefix')} />
+          <CreatorLocationRow>
+            <DetailModalCreator address={data.creatorAddress} name={data.creatorName} prefixLabel={t('event_detail.by_prefix')} />
+            {data.isWorld ? (
+              data.realm && (
+                <LocationRow>
+                  <PublicRoundedIcon />
+                  <LocationText>{data.realm}</LocationText>
+                </LocationRow>
+              )
+            ) : (
+              <LocationRow>
+                <LocationOnOutlinedIcon />
+                <LocationText>
+                  {data.placeName
+                    ? t('event_detail.location_with_coords', { place: data.placeName, x: data.x, y: data.y })
+                    : t('event_detail.location_coords', { x: data.x, y: data.y })}
+                </LocationText>
+              </LocationRow>
+            )}
+          </CreatorLocationRow>
           <ActionsRow>
             {data.live && (
               <JumpInButton position={`${data.x},${data.y}`} size="medium">
