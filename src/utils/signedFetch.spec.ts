@@ -4,7 +4,7 @@ const mockSignedFetch = jest.fn()
 const mockSignedFetchFactory = jest.fn(() => mockSignedFetch)
 
 jest.mock('decentraland-crypto-fetch', () => ({
-  signedFetchFactory: (...args: unknown[]) => mockSignedFetchFactory(...args)
+  signedFetchFactory: () => mockSignedFetchFactory()
 }))
 
 describe('signedFetch', () => {
