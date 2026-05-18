@@ -299,7 +299,7 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
             // state into the iframe so the bevy client's `SharedArrayBuffer`
             // assets loader works (it errors with DataCloneError otherwise).
             // Requires COOP/COEP on the parent — set in vercel.json for the
-            // /social/place/* and /social/world/* routes.
+            // /discover/place/* and /discover/world/* routes.
             allow="camera; microphone; clipboard-read; clipboard-write; fullscreen; xr-spatial-tracking; cross-origin-isolated"
           />
         )}

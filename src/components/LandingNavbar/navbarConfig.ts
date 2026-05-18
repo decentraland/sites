@@ -15,6 +15,7 @@ type MenuConfig = {
   shop: MenuSection
   create: MenuSection
   learn: MenuSection
+  discover: MenuSection
 }
 
 const MENU_CONFIG: MenuConfig = {
@@ -50,6 +51,10 @@ const MENU_CONFIG: MenuConfig = {
   learn: {
     labelKey: 'component.landing.navbar.learn',
     url: 'https://decentraland.org/blog/'
+  },
+  discover: {
+    labelKey: 'component.landing.navbar.discover',
+    url: '/discover'
   }
 }
 

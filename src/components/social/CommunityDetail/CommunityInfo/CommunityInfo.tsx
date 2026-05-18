@@ -84,7 +84,7 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
   const handleJoinClick = useCallback(() => {
     track(SegmentEvent.COMMUNITY_CLICK_JOIN, trackPayload)
     if (!isLoggedIn || !address) {
-      redirectToAuth(`/social/communities/${community.id}`, { action: AllowedAction.JOIN })
+      redirectToAuth(`/discover/communities/${community.id}`, { action: AllowedAction.JOIN })
       return
     }
     void onJoin(community.id)
@@ -93,7 +93,7 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
   const handleRequestToJoinClick = useCallback(() => {
     track(SegmentEvent.COMMUNITY_CLICK_REQUEST_TO_JOIN, trackPayload)
     if (!isLoggedIn || !address) {
-      redirectToAuth(`/social/communities/${community.id}`, { action: AllowedAction.REQUEST_TO_JOIN })
+      redirectToAuth(`/discover/communities/${community.id}`, { action: AllowedAction.REQUEST_TO_JOIN })
       return
     }
     if (onRequestToJoin) void onRequestToJoin(community.id)
@@ -119,7 +119,7 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
   const handleSignInToJoinClick = useCallback(() => {
     track(SegmentEvent.COMMUNITY_CLICK_SIGN_IN_TO_JOIN, trackPayload)
     const action = isPrivate ? AllowedAction.REQUEST_TO_JOIN : AllowedAction.JOIN
-    redirectToAuth(`/social/communities/${community.id}`, { action })
+    redirectToAuth(`/discover/communities/${community.id}`, { action })
   }, [community.id, isPrivate, track, trackPayload])
 
   const renderActionButton = () => {

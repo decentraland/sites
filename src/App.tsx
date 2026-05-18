@@ -68,7 +68,7 @@ const LegacyWhatsOnRedirect = lazy(() => import('./pages/whats-on/LegacyWhatsOnR
 const LegacyWorldRedirect = lazy(() => import('./pages/whats-on/LegacyWorldRedirect').then(m => ({ default: m.LegacyWorldRedirect })))
 
 // Social pages — heavy route (Redux + RTK Query). Auth via localStorage identity
-// (no Web3 providers); CTAs gated on useAuthIdentity. /social/* mirrors the
+// (no Web3 providers); CTAs gated on useAuthIdentity. /discover/* mirrors the
 // decentraland.social experience: a unified DISCOVER landing (LIVE NOW + all
 // places/worlds with search and category filters), COMMUNITIES (list +
 // detail), and SCENE detail (place / world deep link).
@@ -201,13 +201,13 @@ const App = () => {
               <Route path="/storage/players/:address" element={<StoragePlayerDetailPage />} />
               <Route path="/storage/*" element={<StorageNotFoundPage />} />
               <Route element={<SocialLayout />}>
-                <Route path="/social" element={<SocialHomePage />} />
-                <Route path="/social/communities" element={<SocialCommunitiesPage />} />
-                <Route path="/social/communities/:id" element={<CommunityDetailPage />} />
-                <Route path="/social/place/:position" element={<SocialScenePage kind="place" />} />
-                <Route path="/social/world/:name" element={<SocialScenePage kind="world" />} />
+                <Route path="/discover" element={<SocialHomePage />} />
+                <Route path="/discover/communities" element={<SocialCommunitiesPage />} />
+                <Route path="/discover/communities/:id" element={<CommunityDetailPage />} />
+                <Route path="/discover/place/:position" element={<SocialScenePage kind="place" />} />
+                <Route path="/discover/world/:name" element={<SocialScenePage kind="world" />} />
               </Route>
-              <Route path="/social/*" element={<SocialNotFoundPage />} />
+              <Route path="/discover/*" element={<SocialNotFoundPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

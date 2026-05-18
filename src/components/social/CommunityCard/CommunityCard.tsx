@@ -23,7 +23,7 @@ function CommunityCardComponent({ community }: CommunityCardProps) {
   const [imageBroken, setImageBroken] = useState(false)
   const showFallback = !thumbnail || imageBroken
 
-  const onOpen = () => navigate(`/social/communities/${community.id}`)
+  const onOpen = () => navigate(`/discover/communities/${community.id}`)
 
   return (
     <Card

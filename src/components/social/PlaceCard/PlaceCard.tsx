@@ -24,10 +24,10 @@ function PlaceCardComponent({ place }: PlaceCardProps) {
 
   const detailHref = useMemo(() => {
     if (place.world && place.world_name) {
-      return `/social/world/${encodeURIComponent(place.world_name.toLowerCase())}`
+      return `/discover/world/${encodeURIComponent(place.world_name.toLowerCase())}`
     }
-    if (place.base_position) return `/social/place/${place.base_position}`
-    if (place.positions?.[0]) return `/social/place/${place.positions[0]}`
+    if (place.base_position) return `/discover/place/${place.base_position}`
+    if (place.positions?.[0]) return `/discover/place/${place.positions[0]}`
     return null
   }, [place])
 
@@ -45,7 +45,7 @@ function PlaceCardComponent({ place }: PlaceCardProps) {
   const handleJumpIn = useCallback(
     (e: React.MouseEvent) => {
       // Stop propagation so the parent card's onClick doesn't also fire and
-      // try to navigate to /social/place/... while the launcher is opening.
+      // try to navigate to /discover/place/... while the launcher is opening.
       e.stopPropagation()
       window.location.href = jumpInHref
     },

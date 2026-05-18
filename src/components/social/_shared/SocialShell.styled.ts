@@ -40,11 +40,16 @@ const CardGrid = styled(Box)(({ theme }) => ({
   }
 }))
 
+// Matches `CenteredBox` (the DappsShell Suspense fallback) — same 60vh
+// vertical center so when the lazy chunk finishes loading and the page's
+// own loader takes over, the spinner stays anchored in place instead of
+// jumping. On mobile this is what eliminated the "two loaders" perception
+// (chunk spinner at one Y position, data spinner at another).
 const Loader = styled(Box)({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  minHeight: '40vh'
+  minHeight: '60vh'
 })
 
 const Empty = styled(Typography)(({ theme }) => ({
