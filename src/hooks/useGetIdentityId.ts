@@ -1,7 +1,12 @@
 import { useCallback, useRef } from 'react'
-import { Authenticator } from '@dcl/crypto/dist/Authenticator'
 import { Env, getEnv } from '@dcl/ui-env'
 import { useAuthIdentity } from './useAuthIdentity'
+
+// `@dcl/crypto/dist/Authenticator` pulls in ~340 KB of crypto deps. Loading it
+// statically would put the whole vendor-crypto chunk on the homepage critical
+// path, since this hook is consumed by DownloadOptions on `/`. Defer the
+// import to the actual click-time callback so vendor-crypto stays lazy.
+const loadAuthenticator = () => import('@dcl/crypto/dist/Authenticator').then(m => m.Authenticator)
 
 const AUTH_CHAIN_HEADER_PREFIX = 'x-identity-auth-chain-'
 const AUTH_TIMESTAMP_HEADER = 'x-identity-timestamp'
@@ -33,7 +38,8 @@ export function useGetIdentityId(): () => Promise<string | undefined> {
       const timestamp = String(Date.now())
       const payload = [method, path, timestamp, JSON.stringify(metadata)].join(':').toLowerCase()
 
-      const chain = Authenticator.signPayload(currentIdentity, payload)
+      const authenticator = await loadAuthenticator()
+      const chain = authenticator.signPayload(currentIdentity, payload)
       const headers: Record<string, string> = {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         'Content-Type': 'application/json',
