@@ -53,17 +53,6 @@ function formatDateForGoogleCalendar(date: Date): string {
   return `${year}${month}${day}T${hours}${minutes}${seconds}Z`
 }
 
-const ENV_TO_DCLENV: Record<string, string> = {
-  dev: 'zone',
-  stg: 'today',
-  prd: 'org',
-  prod: 'org'
-}
-
-function mapEnvToDclenv(env: string | null | undefined): string | undefined {
-  return env ? ENV_TO_DCLENV[env] : undefined
-}
-
 function buildDeepLinkOptions(position?: string, realm?: string, env?: string): { realm?: string; position?: string; dclenv?: string } {
   const options: { realm?: string; position?: string; dclenv?: string } = {}
   if (realm && realm !== DEFAULT_REALM) options.realm = realm
@@ -84,7 +73,6 @@ export {
   formatDateForGoogleCalendar,
   formatLocation,
   isEns,
-  mapEnvToDclenv,
   parsePosition
 }
 export type { ParsedPosition }
