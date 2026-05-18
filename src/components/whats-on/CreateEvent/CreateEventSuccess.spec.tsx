@@ -53,10 +53,16 @@ describe('CreateEventSuccess', () => {
       expect(screen.getByTestId('check-circle')).toContainElement(screen.getByTestId('check-icon'))
     })
 
-    it('should render the translated success message', () => {
+    it('should render the create success message by default', () => {
       render(<CreateEventSuccess />)
 
       expect(screen.getByTestId('success-message')).toHaveTextContent('create_event.success_message')
+    })
+
+    it('should render the edit success message when mode is edit', () => {
+      render(<CreateEventSuccess mode="edit" />)
+
+      expect(screen.getByTestId('success-message')).toHaveTextContent('create_event.edit_success_message')
     })
 
     it('should render the back-to-explore secondary button', () => {
