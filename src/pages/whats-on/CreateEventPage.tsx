@@ -90,7 +90,7 @@ function CreateEventPage() {
       <>
         <PageBackground />
         <PageContent>
-          <CreateEventSuccess />
+          <CreateEventSuccess mode={isEditRoute && initialEvent ? 'edit' : 'create'} />
         </PageContent>
       </>
     )
