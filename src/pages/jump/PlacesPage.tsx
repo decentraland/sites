@@ -41,8 +41,17 @@ const PlacesPage = () => {
     if (placesQuery.data.length === 0) {
       return buildGenericPlace({ coordinates: parsedPosition.coordinates, realm })
     }
-    return fromPlace(placesQuery.data[0])
-  }, [placesQuery.data, parsedPosition.coordinates, realm])
+    const mapped = fromPlace(placesQuery.data[0])
+    // When realm is an ENS name, buildPlacesUrl queries /worlds?names=... and
+    // ignores position entirely. fromPlace() then sets position from the
+    // scene's base_position, which may differ from the requested parcel.
+    // Override so the Explorer deep link always targets the exact coordinates
+    // the user specified — critical for multi-scene worlds.
+    if (positionParam !== DEFAULT_POSITION) {
+      return { ...mapped, position: parsedPosition.coordinates.join(',') }
+    }
+    return mapped
+  }, [placesQuery.data, parsedPosition.coordinates, realm, positionParam])
 
   const creator: Creator | undefined = useMemo(() => {
     const info = sceneMetadataQuery.data

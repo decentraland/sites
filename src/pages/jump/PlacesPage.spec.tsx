@@ -43,8 +43,8 @@ jest.mock('../../features/places', () => ({
 }))
 
 jest.mock('../../components/jump/Card', () => ({
-  Card: ({ isLoading, data }: { isLoading: boolean; data?: { title: string } }) => (
-    <div data-testid="card" data-loading={String(isLoading)}>
+  Card: ({ isLoading, data }: { isLoading: boolean; data?: { title: string; position?: string } }) => (
+    <div data-testid="card" data-loading={String(isLoading)} data-position={data?.position ?? ''}>
       {data?.title ?? 'no-data'}
     </div>
   )
@@ -101,6 +101,59 @@ describe('PlacesPage', () => {
     it('should render the first place', () => {
       renderWithRouter()
       expect(screen.getByText('Plaza')).toBeInTheDocument()
+    })
+  })
+
+  describe('when places query returns data and a non-default position is in the URL', () => {
+    beforeEach(() => {
+      mockUseGetJumpPlacesQuery.mockReturnValue({
+        isLoading: false,
+        isError: false,
+        data: [
+          {
+            id: 'p1',
+            title: 'World Scene',
+            image: '',
+            description: '',
+            positions: ['0,0'],
+            // The world entry point returned by the API differs from the requested parcel
+            base_position: '0,0',
+            owner: '0xOwner'
+          }
+        ]
+      } as never)
+      mockUseGetSceneMetadataQuery.mockReturnValue({ isLoading: false, isError: false, data: undefined } as never)
+    })
+
+    it('should forward the URL position to the Card instead of the scene base_position', () => {
+      renderWithRouter('/jump/places?realm=italy2026.dcl.eth&position=26,18')
+      expect(screen.getByTestId('card')).toHaveAttribute('data-position', '26,18')
+    })
+  })
+
+  describe('when places query returns data and no position is in the URL', () => {
+    beforeEach(() => {
+      mockUseGetJumpPlacesQuery.mockReturnValue({
+        isLoading: false,
+        isError: false,
+        data: [
+          {
+            id: 'p1',
+            title: 'World Scene',
+            image: '',
+            description: '',
+            positions: ['5,10'],
+            base_position: '5,10',
+            owner: '0xOwner'
+          }
+        ]
+      } as never)
+      mockUseGetSceneMetadataQuery.mockReturnValue({ isLoading: false, isError: false, data: undefined } as never)
+    })
+
+    it('should use the scene base_position when no position param is provided', () => {
+      renderWithRouter('/jump/places?realm=italy2026.dcl.eth')
+      expect(screen.getByTestId('card')).toHaveAttribute('data-position', '5,10')
     })
   })
 
