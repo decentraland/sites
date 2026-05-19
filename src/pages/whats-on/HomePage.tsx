@@ -29,7 +29,7 @@ function HomePage() {
   const optimizedTopBg = useMemo(() => optimizedImageUrl(topBackground, { width: 1920 }), [])
 
   return (
-    <MainContainer component="main">
+    <MainContainer>
       <picture>
         <source srcSet={optimizedTopBg} media="(min-width: 600px)" />
         <TopBackgroundImage
