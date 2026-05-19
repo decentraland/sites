@@ -1,8 +1,8 @@
 import { isAnalyticsExemptPath } from './isAnalyticsExemptPath'
 
 describe('isAnalyticsExemptPath', () => {
-  describe('when the pathname is a pure legal/text route', () => {
-    it.each(['/brand', '/content', '/ethics', '/privacy', '/referral-terms', '/rewards-terms', '/security', '/terms'])(
+  describe('when the pathname is a pure legal/text route or the download landing', () => {
+    it.each(['/brand', '/content', '/download', '/ethics', '/privacy', '/referral-terms', '/rewards-terms', '/security', '/terms'])(
       'should return true for %s',
       pathname => {
         expect(isAnalyticsExemptPath(pathname)).toBe(true)
@@ -19,7 +19,6 @@ describe('isAnalyticsExemptPath', () => {
   describe('when the pathname is a route that should keep analytics enabled', () => {
     it.each([
       '/',
-      '/download',
       '/whats-on',
       '/whats-on/new-hangout',
       '/blog',

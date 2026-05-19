@@ -1,12 +1,16 @@
-// Pure static text routes (legal copy + Decentraland trademark policy) where
-// no funnel, conversion, or engagement signal lives. We skip Segment +
-// Contentsquare on cold loads to these paths so the third-party cookies and
-// extra JS execution cost stop counting against Lighthouse there. Users who
-// land on the homepage and navigate to a legal page still get tracked
-// normally — the gate only applies to the initial pathname.
+// Routes where no funnel, conversion, or engagement signal lives on cold load.
+// Skipping Segment + Contentsquare here removes the third-party cookies and
+// idle JS execution cost they impose on Lighthouse. Users who land on the
+// homepage and navigate to one of these via SPA still get tracked normally —
+// the gate only applies to the initial pathname.
+//
+// /download lives here too: the download event is fired server-side from the
+// installer's first-run telemetry, so client-side Segment on the page itself
+// only duplicates the signal while doubling third-party cookie noise.
 const ANALYTICS_EXEMPT_PATHS = new Set([
   '/brand',
   '/content',
+  '/download',
   '/ethics',
   '/privacy',
   '/referral-terms',
