@@ -164,7 +164,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
   return (
     <>
-      <DownloadPageContainer>
+      <DownloadPageContainer component="main">
         <DownloadContainer>
           <DclLogo onClick={() => (window.location.href = 'https://decentraland.org')} />
 
