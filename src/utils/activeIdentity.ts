@@ -8,34 +8,55 @@ const SIGN_IN_PENDING_TTL_MS = 10 * 60 * 1000
 const SSO_KEY_PREFIX = 'single-sign-on-'
 const SSO_ADDRESS_PREFIX = 'single-sign-on-0x'
 
-function listKnownAddresses(): string[] {
-  const addresses: string[] = []
+function ephemeralFingerprintFromIdentity(identity: AuthIdentity | null | undefined): string {
+  // The ECDSA_EPHEMERAL payload carries a freshly generated public key on
+  // every sign-in, so it changes even when the user signs in with the same
+  // wallet address (e.g. OTP/Magic emails that map to a stable on-chain key).
+  return String(identity?.authChain?.[1]?.payload ?? '')
+}
+
+function listIdentityFingerprints(): Record<string, string> {
+  const fingerprints: Record<string, string> = {}
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i)
       if (!key?.startsWith(SSO_ADDRESS_PREFIX)) continue
-      addresses.push(key.slice(SSO_KEY_PREFIX.length).toLowerCase())
+      const address = key.slice(SSO_KEY_PREFIX.length).toLowerCase()
+      let identity: AuthIdentity | null = null
+      try {
+        identity = localStorageGetIdentity(address)
+      } catch {
+        identity = null
+      }
+      // Always include the address even when the identity is missing or
+      // unreadable so a wallet whose entry pre-existed isn't misclassified
+      // as a newcomer on return.
+      fingerprints[address] = ephemeralFingerprintFromIdentity(identity)
     }
   } catch {
-    return []
+    return {}
   }
-  return addresses
+  return fingerprints
 }
 
 /**
  * Records that the user has just left for the auth dapp, along with a snapshot
- * of the addresses we already had identities for. On return, the address that
- * was NOT in the snapshot is the one the auth dapp just wrote — and wins over
- * any pre-existing identity regardless of expiration ordering.
+ * of the ephemeral fingerprint we had for every known wallet. On return:
+ *  - An address absent from the snapshot is a brand-new wallet — the auth dapp
+ *    wrote it during this redirect, and it wins.
+ *  - An address present in the snapshot whose fingerprint changed is a
+ *    refreshed wallet — the auth dapp re-signed an existing wallet during
+ *    this redirect (OTP/Magic with a stable per-email address). It also wins.
  *
- * Storing only a timestamp is not enough: Magic/OTP ephemerals may have a
- * shorter TTL than a pre-existing MetaMask identity, so a max-expiration
- * heuristic would keep the user on the previous wallet.
+ * Either signal beats a pre-existing pointer regardless of expiration ordering,
+ * because Magic/OTP ephemerals may have a shorter TTL than a pre-existing
+ * MetaMask identity — a max-expiration heuristic would keep the user on the
+ * previous wallet.
  */
 function markSignInPending(): void {
   try {
     localStorage.setItem(SIGN_IN_PENDING_KEY, String(Date.now()))
-    localStorage.setItem(SIGN_IN_PENDING_SNAPSHOT_KEY, JSON.stringify(listKnownAddresses()))
+    localStorage.setItem(SIGN_IN_PENDING_SNAPSHOT_KEY, JSON.stringify(listIdentityFingerprints()))
   } catch {
     // Non-fatal: without the flag, fresh sign-ins fall back to the standard
     // resolution path (pointer → auto-promote → max-expiration heuristic).
@@ -44,11 +65,11 @@ function markSignInPending(): void {
 
 type PendingSignIn = {
   active: boolean
-  snapshot: Set<string>
+  fingerprints: Record<string, string>
 }
 
 function consumePendingSignIn(): PendingSignIn {
-  const empty: PendingSignIn = { active: false, snapshot: new Set() }
+  const empty: PendingSignIn = { active: false, fingerprints: {} }
   try {
     const value = localStorage.getItem(SIGN_IN_PENDING_KEY)
     const snapshotRaw = localStorage.getItem(SIGN_IN_PENDING_SNAPSHOT_KEY)
@@ -60,7 +81,7 @@ function consumePendingSignIn(): PendingSignIn {
     localStorage.removeItem(SIGN_IN_PENDING_SNAPSHOT_KEY)
     const ts = Number(value)
     if (!Number.isFinite(ts) || Date.now() - ts >= SIGN_IN_PENDING_TTL_MS) return empty
-    let parsed: unknown = []
+    let parsed: unknown = {}
     if (snapshotRaw) {
       try {
         parsed = JSON.parse(snapshotRaw)
@@ -68,8 +89,21 @@ function consumePendingSignIn(): PendingSignIn {
         // Malformed snapshot — treat as empty so any current identity is a newcomer.
       }
     }
-    const addresses = Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string').map(s => s.toLowerCase()) : []
-    return { active: true, snapshot: new Set(addresses) }
+    const fingerprints: Record<string, string> = {}
+    if (Array.isArray(parsed)) {
+      // Legacy snapshot format (addresses only). Preserve the membership
+      // signal so newcomer detection still works during the rollout window.
+      for (const value of parsed) {
+        if (typeof value === 'string') fingerprints[value.toLowerCase()] = ''
+      }
+    } else if (parsed && typeof parsed === 'object') {
+      for (const [address, fingerprint] of Object.entries(parsed as Record<string, unknown>)) {
+        if (typeof address === 'string' && typeof fingerprint === 'string') {
+          fingerprints[address.toLowerCase()] = fingerprint
+        }
+      }
+    }
+    return { active: true, fingerprints }
   } catch {
     return empty
   }
@@ -152,8 +186,13 @@ function pickByLatestExpiration(records: IdentityRecord[]): ActiveSelection {
  * exactly one valid identity exists and clears stale pointers on read.
  *
  * If a sign-in is pending (the user just returned from the auth dapp), the
- * address that wasn't present pre-redirect is treated as authoritative —
- * that's the one the auth dapp just wrote — and gets promoted to the pointer.
+ * wallet that was either added or refreshed during the round-trip is treated
+ * as authoritative and gets promoted to the pointer:
+ *   - A newcomer (address absent from the pre-redirect snapshot) wins outright.
+ *   - A refreshed identity (address present in the snapshot but with a new
+ *     ECDSA_EPHEMERAL payload) also wins — this covers OTP/Magic flows whose
+ *     wallet address is stable per email, so re-signing in regenerates the
+ *     ephemeral key without changing the address.
  *
  * Shared by `resolveActiveAddress` (returns address) and `resolveActiveIdentity`
  * (returns identity) so the two stay in sync.
@@ -162,18 +201,26 @@ function resolveActive(): ActiveSelection {
   const pending = consumePendingSignIn()
   if (pending.active) {
     const records = listValidIdentities()
-    const newcomers = records.filter(rec => !pending.snapshot.has(rec.address))
-    if (newcomers.length > 0) {
+    const candidates = records.filter(rec => {
+      const previousFingerprint = pending.fingerprints[rec.address]
+      // Absent from the snapshot → brand-new wallet written during this redirect.
+      if (previousFingerprint === undefined) return true
+      // Present in the snapshot with a non-empty fingerprint that changed →
+      // identity was re-signed during this redirect (OTP/Magic re-login).
+      const currentFingerprint = ephemeralFingerprintFromIdentity(rec.identity)
+      return previousFingerprint !== '' && previousFingerprint !== currentFingerprint
+    })
+    if (candidates.length > 0) {
       // If the auth dapp wrote more than one identity (rare — concurrent flows),
       // tie-break on latest expiration so we still pick a deterministic winner.
-      const fresh = pickByLatestExpiration(newcomers)
+      const fresh = pickByLatestExpiration(candidates)
       if (fresh.bestAddress) {
         writeActivePointer(fresh.bestAddress)
         return fresh
       }
     }
-    // No newcomer (auth canceled, or user re-signed-in with the same wallet):
-    // fall through to the standard resolution path so we don't leave the user blank.
+    // No newcomer and no refresh (auth canceled): fall through to the standard
+    // resolution path so we don't leave the user blank.
   }
 
   const pointer = readActivePointer()

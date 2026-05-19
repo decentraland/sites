@@ -94,13 +94,13 @@ describe('redirectToAuth', () => {
       expect(Number(written)).toBeGreaterThan(0)
     })
 
-    it('should snapshot the addresses with valid identities before redirecting', () => {
+    it('should snapshot an address→ephemeral-fingerprint map of known wallets before redirecting', () => {
       // Pretend the user already had MetaMask connected before clicking Sign In.
       localStorage.setItem('single-sign-on-0xprev', '{}')
       redirectToAuth('/whats-on')
 
-      const snapshot = JSON.parse(localStorage.getItem('dcl:sign-in-pending-snapshot') ?? '[]')
-      expect(snapshot).toEqual(['0xprev'])
+      const snapshot = JSON.parse(localStorage.getItem('dcl:sign-in-pending-snapshot') ?? '{}') as Record<string, string>
+      expect(Object.keys(snapshot)).toEqual(['0xprev'])
     })
   })
 

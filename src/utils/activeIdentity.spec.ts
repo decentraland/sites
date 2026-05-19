@@ -42,23 +42,23 @@ Object.defineProperty(globalThis, 'localStorage', {
   configurable: true
 })
 
-function fakeIdentity(address: string, expiration: string) {
+function fakeIdentity(address: string, expiration: string, ephemeralPubKey: string = '0xabc') {
   return {
     authChain: [
       { type: 'SIGNER', payload: address },
       {
         type: 'ECDSA_EPHEMERAL',
-        payload: `Decentraland Login\nEphemeral address: 0xabc\nExpiration: ${expiration}`
+        payload: `Decentraland Login\nEphemeral address: ${ephemeralPubKey}\nExpiration: ${expiration}`
       },
       { type: 'ECDSA_SIGNED_ENTITY', payload: 'sig', signature: 'sig' }
     ],
-    ephemeralIdentity: { address: '0xabc', publicKey: 'pk', privateKey: 'sk' },
+    ephemeralIdentity: { address: ephemeralPubKey, publicKey: 'pk', privateKey: 'sk' },
     expiration: new Date(expiration)
   }
 }
 
-function setIdentity(address: string, expiration: string) {
-  store[`single-sign-on-${address.toLowerCase()}`] = JSON.stringify(fakeIdentity(address.toLowerCase(), expiration))
+function setIdentity(address: string, expiration: string, ephemeralPubKey?: string) {
+  store[`single-sign-on-${address.toLowerCase()}`] = JSON.stringify(fakeIdentity(address.toLowerCase(), expiration, ephemeralPubKey))
 }
 
 describe('activeIdentity', () => {
@@ -191,6 +191,29 @@ describe('activeIdentity', () => {
       })
     })
 
+    describe('when a sign-in is pending and re-signed-in the SAME address as the previous wallet (OTP/Magic reuse)', () => {
+      // Regression: OTP/Magic emails map to a stable on-chain address per
+      // user, so a re-sign-in keeps the same `single-sign-on-<address>` key.
+      // The address is therefore NOT a newcomer, but the ECDSA_EPHEMERAL
+      // payload is rewritten with a fresh ephemeral public key. The pointer
+      // was previously left untouched and the user landed back on whichever
+      // wallet they had selected before signing in.
+      beforeEach(() => {
+        setIdentity('0xmetamask', '2026-12-01T00:00:00.000Z')
+        setIdentity('0xotp', '2026-06-15T00:00:00.000Z', 'old-ephemeral-pubkey')
+        writeActivePointer('0xmetamask')
+        markSignInPending()
+        // Auth dapp rewrites the OTP identity with a fresh ephemeral key while
+        // keeping the same on-chain address.
+        setIdentity('0xotp', '2026-09-15T00:00:00.000Z', 'fresh-ephemeral-pubkey')
+      })
+
+      it('should promote the refreshed identity over the stale pointer', () => {
+        expect(resolveActiveAddress()).toBe('0xotp')
+        expect(store[ACTIVE_ADDRESS_KEY]).toBe('0xotp')
+      })
+    })
+
     describe('when a sign-in is pending with multiple newcomers', () => {
       beforeEach(() => {
         setIdentity('0xprevious', '2026-06-01T00:00:00.000Z')
@@ -280,18 +303,19 @@ describe('activeIdentity', () => {
       expect(written).toBeLessThanOrEqual(Date.now())
     })
 
-    it('should snapshot the addresses with valid identities at the time of the call', () => {
+    it('should snapshot one fingerprint per known address at the time of the call', () => {
       setIdentity('0xa', '2030-01-01T00:00:00Z')
       setIdentity('0xb', '2030-01-01T00:00:00Z')
       markSignInPending()
-      const snapshot = JSON.parse(store[SIGN_IN_PENDING_SNAPSHOT_KEY] ?? '[]')
-      expect(snapshot).toEqual(expect.arrayContaining(['0xa', '0xb']))
-      expect(snapshot).toHaveLength(2)
+      const snapshot = JSON.parse(store[SIGN_IN_PENDING_SNAPSHOT_KEY] ?? '{}') as Record<string, string>
+      expect(Object.keys(snapshot).sort()).toEqual(['0xa', '0xb'])
+      expect(snapshot['0xa']).toMatch(/Expiration: /)
+      expect(snapshot['0xb']).toMatch(/Expiration: /)
     })
 
-    it('should snapshot an empty array when no identities exist yet', () => {
+    it('should snapshot an empty object when no identities exist yet', () => {
       markSignInPending()
-      expect(JSON.parse(store[SIGN_IN_PENDING_SNAPSHOT_KEY] ?? '[]')).toEqual([])
+      expect(JSON.parse(store[SIGN_IN_PENDING_SNAPSHOT_KEY] ?? '{}')).toEqual({})
     })
   })
 
@@ -462,15 +486,16 @@ describe('activeIdentity', () => {
   })
 
   describe('markSignInPending', () => {
-    it('should persist a numeric timestamp and a JSON snapshot of known addresses', () => {
+    it('should persist a numeric timestamp and an address→fingerprint snapshot', () => {
       setIdentity('0xa', '2030-01-01T00:00:00Z')
       setIdentity('0xb', '2030-01-01T00:00:00Z')
 
       markSignInPending()
 
       expect(Number(store[SIGN_IN_PENDING_KEY])).toBeGreaterThan(0)
-      const snapshot = JSON.parse(store[SIGN_IN_PENDING_SNAPSHOT_KEY]) as string[]
-      expect(snapshot.sort()).toEqual(['0xa', '0xb'])
+      const snapshot = JSON.parse(store[SIGN_IN_PENDING_SNAPSHOT_KEY]) as Record<string, string>
+      expect(Object.keys(snapshot).sort()).toEqual(['0xa', '0xb'])
+      expect(snapshot['0xa']).toMatch(/Expiration: 2030-01-01T00:00:00Z/)
     })
   })
 })
