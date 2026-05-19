@@ -327,22 +327,22 @@ function resolveActive(): ActiveSelection {
   // resolve against the current storage to catch sign-ins that didn't go
   // through our `redirectToAuth` (direct `/auth/login`, cross-app SSO sync, etc.).
   const lastSnapshot = readLastKnownSnapshot()
-  if (Object.keys(lastSnapshot).length > 0) {
-    const { comparison, candidates } = classifyAgainstSnapshot(records, lastSnapshot)
-    if (candidates.length > 0) {
-      console.log('[wallet-switch] resolveActive: silent newcomer path', {
-        knownAddresses: records.map(r => r.address),
-        comparison,
-        candidateCount: candidates.length
-      })
-      const fresh = pickByLatestExpiration(candidates)
-      if (fresh.bestAddress) {
-        writeActivePointer(fresh.bestAddress)
-        writeLastKnownSnapshot(currentFingerprints)
+  const { comparison: silentComparison, candidates: silentCandidates } = classifyAgainstSnapshot(records, lastSnapshot)
+  console.log('[wallet-switch] resolveActive: silent newcomer evaluation', {
+    lastSnapshotSize: Object.keys(lastSnapshot).length,
+    lastSnapshot,
+    currentFingerprints,
+    comparison: silentComparison,
+    candidateCount: silentCandidates.length
+  })
+  if (Object.keys(lastSnapshot).length > 0 && silentCandidates.length > 0) {
+    const fresh = pickByLatestExpiration(silentCandidates)
+    if (fresh.bestAddress) {
+      writeActivePointer(fresh.bestAddress)
+      writeLastKnownSnapshot(currentFingerprints)
 
-        console.log('[wallet-switch] resolveActive: promoted silent newcomer', { picked: fresh.bestAddress })
-        return fresh
-      }
+      console.log('[wallet-switch] resolveActive: promoted silent newcomer', { picked: fresh.bestAddress })
+      return fresh
     }
   }
 
