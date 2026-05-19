@@ -1155,6 +1155,7 @@
       "jump_in": "입장",
       "watch_live": "플레이어에서 보기",
       "chat": "채팅",
+      "about": "소개",
       "parcel_label": "Genesis 파셀",
       "world_label": "월드",
       "people_count": "월드에 {count}명",
@@ -1189,6 +1190,11 @@
       "not_found": {
         "title": "장면을 찾을 수 없음",
         "description": "해당 장소 또는 월드를 불러올 수 없습니다. 삭제되었을 수 있습니다."
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "이 환경은 모바일 브라우저에서 사용할 수 없습니다. 앱을 다운로드하세요:",
+        "cta": "앱 다운로드"
       }
     }
   }

@@ -1155,6 +1155,7 @@
       "jump_in": "参加",
       "watch_live": "プレイヤーで視聴",
       "chat": "チャット",
+      "about": "概要",
       "parcel_label": "Genesisパーセル",
       "world_label": "ワールド",
       "people_count": "ワールドに{count}人",
@@ -1189,6 +1190,11 @@
       "not_found": {
         "title": "シーンが見つかりません",
         "description": "このプレイスまたはワールドを読み込めませんでした。削除された可能性があります。"
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "このエクスペリエンスはモバイルブラウザでは利用できません。アプリをダウンロードしてください:",
+        "cta": "アプリを入手"
       }
     }
   }

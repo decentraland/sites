@@ -51,7 +51,11 @@
       "source": "/discover/(place|world)/(.*)",
       "headers": [
         { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
-        { "key": "Cross-Origin-Embedder-Policy", "value": "credentialless" }
+        { "key": "Cross-Origin-Embedder-Policy", "value": "credentialless" },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self \"https://decentraland.zone\"), microphone=(self \"https://decentraland.zone\"), clipboard-read=(self \"https://decentraland.zone\"), clipboard-write=(self \"https://decentraland.zone\"), display-capture=(self \"https://decentraland.zone\"), xr-spatial-tracking=(self \"https://decentraland.zone\"), fullscreen=*, cross-origin-isolated=*"
+        }
       ]
     }
   ]

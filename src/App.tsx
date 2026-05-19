@@ -72,12 +72,14 @@ const LegacyWorldRedirect = lazy(() => import('./pages/whats-on/LegacyWorldRedir
 // decentraland.social experience: a unified DISCOVER landing (LIVE NOW + all
 // places/worlds with search and category filters), COMMUNITIES (list +
 // detail), and SCENE detail (place / world deep link).
-const SocialLayout = lazy(() => import('./components/social/SocialLayout').then(m => ({ default: m.SocialLayout })))
-const SocialHomePage = lazy(() => import('./pages/social/SocialHomePage').then(m => ({ default: m.SocialHomePage })))
-const SocialCommunitiesPage = lazy(() => import('./pages/social/SocialCommunitiesPage').then(m => ({ default: m.SocialCommunitiesPage })))
-const SocialScenePage = lazy(() => import('./pages/social/SocialScenePage').then(m => ({ default: m.SocialScenePage })))
-const CommunityDetailPage = lazy(() => import('./pages/social/CommunityDetailPage').then(m => ({ default: m.CommunityDetailPage })))
-const SocialNotFoundPage = lazy(() => import('./pages/social/SocialNotFoundPage').then(m => ({ default: m.SocialNotFoundPage })))
+const DiscoverLayout = lazy(() => import('./components/discover/DiscoverLayout').then(m => ({ default: m.DiscoverLayout })))
+const DiscoverHomePage = lazy(() => import('./pages/discover/DiscoverHomePage').then(m => ({ default: m.DiscoverHomePage })))
+const DiscoverCommunitiesPage = lazy(() =>
+  import('./pages/discover/DiscoverCommunitiesPage').then(m => ({ default: m.DiscoverCommunitiesPage }))
+)
+const DiscoverScenePage = lazy(() => import('./pages/discover/DiscoverScenePage').then(m => ({ default: m.DiscoverScenePage })))
+const CommunityDetailPage = lazy(() => import('./pages/discover/CommunityDetailPage').then(m => ({ default: m.CommunityDetailPage })))
+const DiscoverNotFoundPage = lazy(() => import('./pages/discover/DiscoverNotFoundPage').then(m => ({ default: m.DiscoverNotFoundPage })))
 
 // Jump pages — deep-link handler for decentraland:// launcher. Heavy route (Redux).
 const JumpPlacesPage = lazy(() => import('./pages/jump/PlacesPage').then(m => ({ default: m.PlacesPage })))
@@ -200,14 +202,14 @@ const App = () => {
               <Route path="/storage/players" element={<StoragePlayersPage />} />
               <Route path="/storage/players/:address" element={<StoragePlayerDetailPage />} />
               <Route path="/storage/*" element={<StorageNotFoundPage />} />
-              <Route element={<SocialLayout />}>
-                <Route path="/discover" element={<SocialHomePage />} />
-                <Route path="/discover/communities" element={<SocialCommunitiesPage />} />
+              <Route element={<DiscoverLayout />}>
+                <Route path="/discover" element={<DiscoverHomePage />} />
+                <Route path="/discover/communities" element={<DiscoverCommunitiesPage />} />
                 <Route path="/discover/communities/:id" element={<CommunityDetailPage />} />
-                <Route path="/discover/place/:position" element={<SocialScenePage kind="place" />} />
-                <Route path="/discover/world/:name" element={<SocialScenePage kind="world" />} />
+                <Route path="/discover/place/:position" element={<DiscoverScenePage kind="place" />} />
+                <Route path="/discover/world/:name" element={<DiscoverScenePage kind="world" />} />
               </Route>
-              <Route path="/discover/*" element={<SocialNotFoundPage />} />
+              <Route path="/discover/*" element={<DiscoverNotFoundPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

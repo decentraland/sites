@@ -1155,6 +1155,7 @@
       "jump_in": "进入",
       "watch_live": "在播放器中观看",
       "chat": "聊天",
+      "about": "关于",
       "parcel_label": "Genesis 地块",
       "world_label": "世界",
       "people_count": "世界中有 {count} 人",
@@ -1189,6 +1190,11 @@
       "not_found": {
         "title": "未找到场景",
         "description": "无法加载该场所或世界。它可能已被移除。"
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "此体验不支持移动浏览器。请下载应用：",
+        "cta": "获取应用"
       }
     }
   }

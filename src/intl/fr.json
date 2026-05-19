@@ -1150,6 +1150,7 @@
       "jump_in": "Rejoindre",
       "watch_live": "Regarder dans le lecteur",
       "chat": "Chat",
+      "about": "À propos",
       "parcel_label": "Parcelle Genesis",
       "world_label": "Monde",
       "people_count": "{count, plural, one {# personne dans le monde} other {# personnes dans le monde}}",
@@ -1184,6 +1185,11 @@
       "not_found": {
         "title": "Scène introuvable",
         "description": "Impossible de charger ce lieu ou ce monde. Il a peut-être été supprimé."
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "Cette expérience n'est pas disponible sur les navigateurs mobiles. Téléchargez l'application :",
+        "cta": "Obtenir l'application"
       }
     }
   }

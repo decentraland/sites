@@ -1600,6 +1600,7 @@
       "jump_in": "Jump in",
       "watch_live": "Watch in player",
       "chat": "Chat",
+      "about": "About",
       "parcel_label": "Genesis parcel",
       "world_label": "World",
       "people_count": "{count, plural, one {# person in-world} other {# people in-world}}",
@@ -1634,6 +1635,11 @@
       "not_found": {
         "title": "Scene not found",
         "description": "We couldn't load that place or world. It may have been removed."
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "This experience is not available on mobile browsers. Download the app instead:",
+        "cta": "Get the app"
       }
     }
   }

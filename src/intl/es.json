@@ -1155,6 +1155,7 @@
       "jump_in": "Entrar",
       "watch_live": "Ver en el reproductor",
       "chat": "Chat",
+      "about": "Acerca de",
       "parcel_label": "Parcela Genesis",
       "world_label": "Mundo",
       "people_count": "{count, plural, one {# persona en el mundo} other {# personas en el mundo}}",
@@ -1189,6 +1190,11 @@
       "not_found": {
         "title": "Escena no encontrada",
         "description": "No pudimos cargar ese lugar o mundo. Es posible que haya sido eliminado."
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "Esta experiencia no está disponible en navegadores móviles. Descargá la aplicación:",
+        "cta": "Obtener la app"
       }
     }
   }
