@@ -76,6 +76,33 @@ describe('SceneAddDialog', () => {
     expect(onError).toHaveBeenCalledTimes(1)
     expect(onClose).not.toHaveBeenCalled()
   })
+
+  it('closes the dialog when setSceneValue resolves', async () => {
+    const { SceneAddDialog } = await import('./SceneDialogs')
+    const user = userEvent.setup()
+    const onClose = jest.fn()
+    const onSuccess = jest.fn()
+    const onError = jest.fn()
+
+    render(
+      <SceneAddDialog
+        open
+        onClose={onClose}
+        onSuccess={onSuccess}
+        onError={onError}
+        identity={undefined}
+        realm="vitsky.dcl.eth"
+        position="0,0"
+      />
+    )
+
+    fireEvent.change(screen.getByLabelText('component.storage.scene_page.add_dialog.key_label'), { target: { value: 'gameState' } })
+    fireEvent.change(screen.getByLabelText('component.storage.scene_page.add_dialog.value_label'), { target: { value: '"new"' } })
+    await user.click(screen.getByRole('button', { name: 'component.storage.common.save' }))
+
+    expect(onSuccess).toHaveBeenCalledTimes(1)
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('SceneEditDialog', () => {
@@ -84,14 +111,11 @@ describe('SceneEditDialog', () => {
     mockSetSceneValue.mockClear()
   })
 
-  it('shows the server error key when the request returns 500', async () => {
-    mockSetSceneResult = { unwrap: jest.fn().mockRejectedValue({ status: 500 }) }
+  const renderEdit = async () => {
     const { SceneEditDialog } = await import('./SceneDialogs')
-    const user = userEvent.setup()
     const onClose = jest.fn()
     const onSuccess = jest.fn()
     const onError = jest.fn()
-
     render(
       <SceneEditDialog
         open
@@ -104,6 +128,13 @@ describe('SceneEditDialog', () => {
         position="0,0"
       />
     )
+    return { onClose, onSuccess, onError }
+  }
+
+  it('shows the server error key when the request returns 500', async () => {
+    mockSetSceneResult = { unwrap: jest.fn().mockRejectedValue({ status: 500 }) }
+    const user = userEvent.setup()
+    const { onSuccess, onError } = await renderEdit()
 
     fireEvent.change(screen.getByLabelText('component.storage.scene_page.edit_dialog.value_label'), { target: { value: '"updated"' } })
     await user.click(screen.getByRole('button', { name: 'component.storage.common.save' }))
@@ -111,5 +142,17 @@ describe('SceneEditDialog', () => {
     expect(await screen.findByText('component.storage.errors.server')).toBeInTheDocument()
     expect(onError).toHaveBeenCalledTimes(1)
     expect(onSuccess).not.toHaveBeenCalled()
+  })
+
+  it('closes and emits success when the mutation resolves', async () => {
+    const user = userEvent.setup()
+    const { onClose, onSuccess, onError } = await renderEdit()
+
+    fireEvent.change(screen.getByLabelText('component.storage.scene_page.edit_dialog.value_label'), { target: { value: '"updated"' } })
+    await user.click(screen.getByRole('button', { name: 'component.storage.common.save' }))
+
+    expect(onSuccess).toHaveBeenCalledTimes(1)
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(onError).not.toHaveBeenCalled()
   })
 })

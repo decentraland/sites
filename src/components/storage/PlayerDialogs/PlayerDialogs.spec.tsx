@@ -77,6 +77,34 @@ describe('PlayerAddDialog', () => {
     expect(onError).toHaveBeenCalledTimes(1)
     expect(onClose).not.toHaveBeenCalled()
   })
+
+  it('closes and emits success when setPlayerValue resolves', async () => {
+    const { PlayerAddDialog } = await import('./PlayerDialogs')
+    const user = userEvent.setup()
+    const onClose = jest.fn()
+    const onSuccess = jest.fn()
+    const onError = jest.fn()
+
+    render(
+      <PlayerAddDialog
+        open
+        address="0xplayer"
+        onClose={onClose}
+        onSuccess={onSuccess}
+        onError={onError}
+        identity={undefined}
+        realm="vitsky.dcl.eth"
+        position="0,0"
+      />
+    )
+
+    fireEvent.change(screen.getByLabelText('component.storage.player_page.add_dialog.key_label'), { target: { value: 'progress' } })
+    fireEvent.change(screen.getByLabelText('component.storage.player_page.add_dialog.value_label'), { target: { value: '"new"' } })
+    await user.click(screen.getByRole('button', { name: 'component.storage.common.save' }))
+
+    expect(onSuccess).toHaveBeenCalledTimes(1)
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('PlayerEditDialog', () => {
@@ -112,5 +140,33 @@ describe('PlayerEditDialog', () => {
 
     expect(await screen.findByText('component.storage.errors.rate_limited')).toBeInTheDocument()
     expect(onError).toHaveBeenCalledTimes(1)
+  })
+
+  it('closes and emits success when the mutation resolves', async () => {
+    const { PlayerEditDialog } = await import('./PlayerDialogs')
+    const user = userEvent.setup()
+    const onClose = jest.fn()
+    const onSuccess = jest.fn()
+    const onError = jest.fn()
+
+    render(
+      <PlayerEditDialog
+        open
+        address="0xplayer"
+        keyName="progress"
+        onClose={onClose}
+        onSuccess={onSuccess}
+        onError={onError}
+        identity={undefined}
+        realm="vitsky.dcl.eth"
+        position="0,0"
+      />
+    )
+
+    fireEvent.change(screen.getByLabelText('component.storage.player_page.edit_dialog.value_label'), { target: { value: '"updated"' } })
+    await user.click(screen.getByRole('button', { name: 'component.storage.common.save' }))
+
+    expect(onSuccess).toHaveBeenCalledTimes(1)
+    expect(onClose).toHaveBeenCalledTimes(1)
   })
 })
