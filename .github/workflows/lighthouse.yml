@@ -92,10 +92,14 @@ jobs:
             SAFE_NAME=$(echo "$route" | sed 's/\//_/g' | sed 's/^_//')
             [ -z "$SAFE_NAME" ] && SAFE_NAME="root"
 
+            # Skip audits that only fail because the audit URL is http://localhost
+            # (no TLS) and is served by `npx serve` (no long-cache headers). Both
+            # are properties of the local harness, not the deployed bundle.
             npx lighthouse "http://localhost:8080${route}" \
               --output=json \
               --output-path="./lighthouse-results/${SAFE_NAME}.json" \
               --chrome-flags="--headless --no-sandbox --disable-gpu" \
+              --skip-audits=is-on-https,uses-long-cache-ttl \
               --quiet \
               || true
           done
