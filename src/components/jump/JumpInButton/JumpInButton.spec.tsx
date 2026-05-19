@@ -179,6 +179,49 @@ describe('JumpInButton', () => {
     })
   })
 
+  describe.each([
+    ['decentraland.zone', 'zone'],
+    ['play.decentraland.zone', 'zone'],
+    ['decentraland.today', 'today']
+  ])('when hosted on %s without dclenv or env in the URL', (hostname, expectedDclenv) => {
+    const originalLocation = window.location
+
+    beforeEach(() => {
+      Object.defineProperty(window, 'location', { configurable: true, value: { ...originalLocation, hostname } })
+      mockLaunchDesktopApp.mockResolvedValue(true)
+    })
+
+    afterEach(() => {
+      Object.defineProperty(window, 'location', { configurable: true, value: originalLocation })
+    })
+
+    it(`should default dclenv to ${expectedDclenv}`, async () => {
+      render(<JumpInButton position="75,-9" realm="sdk7testscenes.dcl.eth" />)
+      await userEvent.click(screen.getByRole('button'))
+      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(expect.objectContaining({ dclenv: expectedDclenv }))
+    })
+  })
+
+  describe('when hosted on decentraland.zone but the URL forces env=prod', () => {
+    const originalLocation = window.location
+
+    beforeEach(() => {
+      Object.defineProperty(window, 'location', { configurable: true, value: { ...originalLocation, hostname: 'decentraland.zone' } })
+      mockUseSearchParams.mockReturnValue([new URLSearchParams('env=prod'), jest.fn()] as unknown as ReturnType<typeof useSearchParams>)
+      mockLaunchDesktopApp.mockResolvedValue(true)
+    })
+
+    afterEach(() => {
+      Object.defineProperty(window, 'location', { configurable: true, value: originalLocation })
+    })
+
+    it('should override the host default with dclenv=org', async () => {
+      render(<JumpInButton position="75,-9" realm="sdk7testscenes.dcl.eth" />)
+      await userEvent.click(screen.getByRole('button'))
+      expect(mockLaunchDesktopApp).toHaveBeenCalledWith(expect.objectContaining({ dclenv: 'org' }))
+    })
+  })
+
   describe('when it is clicked on a mobile device', () => {
     const windowOpenMock = jest.fn()
 

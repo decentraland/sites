@@ -19,10 +19,11 @@ const buildPlaceUrl = async (x: string | number, y: string | number, signal?: Ab
   }
 }
 
-const buildJumpInUrl = (x: string | number, y: string | number, realm?: string): string => {
+const buildJumpInUrl = (x: string | number, y: string | number, realm?: string, dclenv?: string): string => {
   const explorerUrl = getEnv('JUMP_IN_URL') ?? '/jump'
   const params = new URLSearchParams({ position: `${x},${y}` })
   if (realm) params.set('realm', realm)
+  if (dclenv) params.set('dclenv', dclenv)
   return `${explorerUrl}?${params.toString()}`
 }
 

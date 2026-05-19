@@ -114,6 +114,18 @@ describe('buildJumpInUrl', () => {
       expect(buildJumpInUrl(10, 20, 'foo.dcl.eth')).toBe('https://decentraland.org/jump?position=10,20&realm=foo.dcl.eth')
     })
   })
+
+  describe('when a dclenv is provided', () => {
+    it('should append it as a query param', () => {
+      expect(buildJumpInUrl(10, 20, undefined, 'zone')).toBe('https://decentraland.org/jump?position=10,20&dclenv=zone')
+    })
+
+    it('should keep the realm and append the dclenv', () => {
+      expect(buildJumpInUrl(10, 20, 'foo.dcl.eth', 'today')).toBe(
+        'https://decentraland.org/jump?position=10,20&realm=foo.dcl.eth&dclenv=today'
+      )
+    })
+  })
 })
 
 describe('buildEventJumpInUrl', () => {
@@ -130,6 +142,18 @@ describe('buildEventJumpInUrl', () => {
   describe('when a realm is provided', () => {
     it('should append the realm as a query param', () => {
       expect(buildEventJumpInUrl(10, 20, 'foo.dcl.eth')).toBe('https://decentraland.org/jump/event?position=10,20&realm=foo.dcl.eth')
+    })
+  })
+
+  describe('when a dclenv is provided', () => {
+    it('should append it as a query param', () => {
+      expect(buildEventJumpInUrl(10, 20, undefined, 'zone')).toBe('https://decentraland.org/jump/event?position=10,20&dclenv=zone')
+    })
+
+    it('should keep the realm and append the dclenv', () => {
+      expect(buildEventJumpInUrl(10, 20, 'foo.dcl.eth', 'today')).toBe(
+        'https://decentraland.org/jump/event?position=10,20&realm=foo.dcl.eth&dclenv=today'
+      )
     })
   })
 })

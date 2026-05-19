@@ -42,11 +42,11 @@ const PlacesPage = () => {
       return buildGenericPlace({ coordinates: parsedPosition.coordinates, realm })
     }
     const mapped = fromPlace(placesQuery.data[0])
-    // When realm is an ENS name, buildPlacesUrl queries /worlds?names=... and
-    // ignores position entirely. fromPlace() then sets position from the
-    // scene's base_position, which may differ from the requested parcel.
-    // Override so the Explorer deep link always targets the exact coordinates
-    // the user specified — critical for multi-scene worlds.
+    // When the user specified a non-default position, prefer it over the
+    // scene's base_position. This is most painful for ENS worlds (where
+    // buildPlacesUrl queries /worlds?names=... and ignores position entirely)
+    // but the override is correct for any realm: the user-targeted parcel
+    // should win over the scene anchor in the Explorer deep link.
     if (positionParam !== DEFAULT_POSITION) {
       return { ...mapped, position: parsedPosition.coordinates.join(',') }
     }

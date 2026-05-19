@@ -8,7 +8,7 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
 import PublicIcon from '@mui/icons-material/Public'
 import { CircularProgress, Skeleton, useMobileMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
-import { eventHasEnded, formatLocation } from '../../../features/places/places.helpers'
+import { eventHasEnded, formatLocation, formatRealmWithPosition } from '../../../features/places/places.helpers'
 import type { CardData, Creator } from '../../../features/places/places.types'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
@@ -151,7 +151,7 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
               }
             >
               {data.realm ? <PublicIcon sx={{ fontSize: 16 }} /> : <PlaceOutlinedIcon sx={{ fontSize: 16 }} />}
-              {data.realm ?? formatLocation(data.coordinates)}
+              {data.realm ? formatRealmWithPosition(data.realm, data.position) : formatLocation(data.coordinates)}
             </CardLocation>
           </MetaRow>
           <TextWrapper maxHeight={isMobile ? 250 : 128} gradientColor={isMobile ? '#2E013E' : '#380A4D'}>

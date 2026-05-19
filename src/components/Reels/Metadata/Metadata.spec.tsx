@@ -1,5 +1,14 @@
+import { MemoryRouter } from 'react-router-dom'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { Metadata } from './Metadata'
+
+function renderMetadata(props: Parameters<typeof Metadata>[0]) {
+  return render(
+    <MemoryRouter>
+      <Metadata {...props} />
+    </MemoryRouter>
+  )
+}
 
 const trackMock = jest.fn()
 const buildPlaceUrlMock = jest.fn()
@@ -72,32 +81,32 @@ describe('Metadata', () => {
 
   describe('when loading', () => {
     it('should render skeleton placeholders', () => {
-      render(<Metadata metadata={fakeMetadata} loading={true} visible={true} />)
+      renderMetadata({ metadata: fakeMetadata, loading: true, visible: true })
       expect(screen.getAllByTestId('reels-loading-text').length).toBeGreaterThan(0)
     })
   })
 
   describe('when loaded', () => {
     it('should render the photo date and user name', () => {
-      render(<Metadata metadata={fakeMetadata} loading={false} visible={true} />)
+      renderMetadata({ metadata: fakeMetadata, loading: false, visible: true })
       expect(screen.getByText('May 01 2026')).toBeInTheDocument()
       const profileLink = screen.getByRole('link', { name: 'alice' })
       expect(profileLink).toHaveAttribute('href', 'https://profile/0xa')
     })
 
     it('should render the scene name and coordinates', () => {
-      render(<Metadata metadata={fakeMetadata} loading={false} visible={true} />)
+      renderMetadata({ metadata: fakeMetadata, loading: false, visible: true })
       expect(screen.getByText('Plaza 0,0')).toBeInTheDocument()
     })
 
     it('should track REELS_JUMP_IN when the jump-in button is clicked', () => {
-      render(<Metadata metadata={fakeMetadata} loading={false} visible={true} />)
+      renderMetadata({ metadata: fakeMetadata, loading: false, visible: true })
       fireEvent.click(screen.getByText('component.reels.metadata.jump_in'))
       expect(trackMock).toHaveBeenCalledWith('Reels Jump In', { x: '0', y: '0' })
     })
 
     it('should render UserMetadata for each visible person', () => {
-      render(<Metadata metadata={fakeMetadata} loading={false} visible={true} />)
+      renderMetadata({ metadata: fakeMetadata, loading: false, visible: true })
       expect(screen.getAllByTestId('reels-user')).toHaveLength(2)
     })
   })

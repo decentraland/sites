@@ -4,6 +4,7 @@ import {
   buildDeepLinkOptions,
   eventHasEnded,
   formatDateForGoogleCalendar,
+  formatRealmWithPosition,
   isEns,
   parsePosition
 } from './places.helpers'
@@ -155,6 +156,54 @@ describe('jump.helpers', () => {
     it('should return a YYYYMMDDTHHmmssZ formatted string', () => {
       const result = formatDateForGoogleCalendar(new Date(Date.UTC(2026, 0, 15, 12, 30, 0)))
       expect(result).toBe('20260115T123000Z')
+    })
+  })
+
+  describe('when formatRealmWithPosition is called', () => {
+    describe('and the position is undefined', () => {
+      it('should return only the realm', () => {
+        expect(formatRealmWithPosition('foo.eth')).toBe('foo.eth')
+      })
+    })
+
+    describe('and the position is the default', () => {
+      it('should return only the realm', () => {
+        expect(formatRealmWithPosition('foo.eth', DEFAULT_POSITION)).toBe('foo.eth')
+      })
+    })
+
+    describe('and the position is a non-default comma pair', () => {
+      it('should return the realm joined with the formatted location', () => {
+        expect(formatRealmWithPosition('foo.eth', '26,18')).toBe('foo.eth · 26, 18')
+      })
+    })
+
+    describe('and the position uses the dot-form alias', () => {
+      it('should normalize the dot form to a comma form', () => {
+        expect(formatRealmWithPosition('foo.eth', '26.18')).toBe('foo.eth · 26, 18')
+      })
+    })
+
+    describe('and the position has negative coordinates', () => {
+      it('should preserve the sign', () => {
+        expect(formatRealmWithPosition('foo.eth', '-50,-30')).toBe('foo.eth · -50, -30')
+      })
+    })
+
+    describe('and the position is invalid', () => {
+      it('should return only the realm', () => {
+        expect(formatRealmWithPosition('foo.eth', 'not-a-position')).toBe('foo.eth')
+      })
+    })
+
+    describe('and a coordinate is a partial-number token', () => {
+      it('should reject "26abc,18" and return only the realm', () => {
+        expect(formatRealmWithPosition('foo.eth', '26abc,18')).toBe('foo.eth')
+      })
+
+      it('should reject "26.5,18" (non-integer) and return only the realm', () => {
+        expect(formatRealmWithPosition('foo.eth', '26.5,18')).toBe('foo.eth')
+      })
     })
   })
 })

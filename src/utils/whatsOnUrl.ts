@@ -7,16 +7,22 @@ function appendRealmParam(url: string, realm?: string | null): string {
   return `${url}${separator}realm=${encodeURIComponent(realm)}`
 }
 
+function appendDclenvParam(url: string, dclenv?: string | null): string {
+  if (!dclenv) return url
+  const separator = url.includes('?') ? '&' : '?'
+  return `${url}${separator}dclenv=${encodeURIComponent(dclenv)}`
+}
+
 function resolveEventRealm(world: boolean | undefined, server: string | null | undefined): string | undefined {
   return world && server ? server : undefined
 }
 
-function buildJumpInUrl(x: number, y: number, realm?: string | null): string {
-  return appendRealmParam(`https://decentraland.org/jump?position=${x},${y}`, realm)
+function buildJumpInUrl(x: number, y: number, realm?: string | null, dclenv?: string | null): string {
+  return appendDclenvParam(appendRealmParam(`https://decentraland.org/jump?position=${x},${y}`, realm), dclenv)
 }
 
-function buildEventJumpInUrl(x: number, y: number, realm?: string | null): string {
-  return appendRealmParam(`https://decentraland.org/jump/event?position=${x},${y}`, realm)
+function buildEventJumpInUrl(x: number, y: number, realm?: string | null, dclenv?: string | null): string {
+  return appendDclenvParam(appendRealmParam(`https://decentraland.org/jump/event?position=${x},${y}`, realm), dclenv)
 }
 
 const EVENT_ID_PARAM = 'id'

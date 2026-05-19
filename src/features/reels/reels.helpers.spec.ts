@@ -42,6 +42,14 @@ describe('reels.helpers', () => {
     it('should accept string coordinates', () => {
       expect(buildJumpInUrl('-5', '7')).toBe('https://decentraland.org/jump?position=-5%2C7')
     })
+
+    it('should include dclenv when provided', () => {
+      expect(buildJumpInUrl(10, 20, undefined, 'zone')).toBe('https://decentraland.org/jump?position=10%2C20&dclenv=zone')
+    })
+
+    it('should include realm and dclenv together', () => {
+      expect(buildJumpInUrl(10, 20, 'main', 'today')).toBe('https://decentraland.org/jump?position=10%2C20&realm=main&dclenv=today')
+    })
   })
 
   describe('when building profile URL', () => {

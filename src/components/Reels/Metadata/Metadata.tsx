@@ -1,7 +1,9 @@
-import { type MouseEvent, memo, useCallback, useEffect, useState } from 'react'
+import { type MouseEvent, memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { LocationOnOutlined } from '@mui/icons-material'
 import { useAnalytics } from '@dcl/hooks'
 import { useMediaQuery } from 'decentraland-ui2'
+import { resolveExplorerEnv } from '../../../config/dclenv'
 import { buildJumpInUrl, buildPlaceUrl, buildProfileUrl, formatPhotoDate } from '../../../features/reels'
 import type { ImageMetadata } from '../../../features/reels'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
@@ -38,10 +40,12 @@ const Metadata = memo(({ metadata, loading, visible }: MetadataProps) => {
   const l = useFormatMessage()
   const { track } = useAnalytics()
   const isDesktop = useMediaQuery('(min-width: 1200px)')
+  const [searchParams] = useSearchParams()
   const [placeUrl, setPlaceUrl] = useState<string | null>(null)
 
   const x = metadata.scene.location.x
   const y = metadata.scene.location.y
+  const explorerEnv = useMemo(() => resolveExplorerEnv(searchParams), [searchParams])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -51,7 +55,7 @@ const Metadata = memo(({ metadata, loading, visible }: MetadataProps) => {
     return () => controller.abort()
   }, [x, y])
 
-  const jumpInUrl = buildJumpInUrl(x, y, metadata.realm)
+  const jumpInUrl = buildJumpInUrl(x, y, metadata.realm, explorerEnv)
   const profileUrl = metadata.userAddress ? buildProfileUrl(metadata.userAddress) : undefined
   const photoTakenByFaceUrl = metadata.visiblePeople.find(
     person => person.userAddress?.toLowerCase() === metadata.userAddress?.toLowerCase()

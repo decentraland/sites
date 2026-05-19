@@ -2,7 +2,7 @@ import { type FC, type ReactNode, useCallback, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { type ButtonProps, DownloadModal, JumpInIcon, launchDesktopApp } from 'decentraland-ui2'
-import { mapEnvToDclenv } from '../../../config/dclenv'
+import { resolveExplorerEnv } from '../../../config/dclenv'
 import { getEnv } from '../../../config/env'
 import { buildDeepLinkOptions } from '../../../features/places/places.helpers'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
@@ -36,7 +36,7 @@ const JumpInButton: FC<JumpInButtonProps> = ({
   const { hasValidIdentity } = useAuthIdentity()
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false)
 
-  const explorerEnv = searchParams.get('dclenv') ?? mapEnvToDclenv(searchParams.get('env'))
+  const explorerEnv = resolveExplorerEnv(searchParams)
 
   const onboardingUrl = getEnv('ONBOARDING_URL') ?? ''
   const downloadUrl = getEnv('DOWNLOAD_URL') ?? DOWNLOAD_URLS.windows

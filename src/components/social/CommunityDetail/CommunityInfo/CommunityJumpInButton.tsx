@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { DownloadModal, JumpInIcon, launchDesktopApp } from 'decentraland-ui2'
+import { resolveExplorerEnv } from '../../../../config/dclenv'
 import { getEnv } from '../../../../config/env'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../../hooks/useAuthIdentity'
@@ -10,10 +12,12 @@ import { JumpInButton } from './CommunityJumpInButton.styled'
 
 function CommunityJumpInButton({ communityId, onTrack }: CommunityJumpInButtonProps) {
   const t = useFormatMessage()
+  const [searchParams] = useSearchParams()
   const [, advancedUserAgent] = useAdvancedUserAgentData()
   const { hasValidIdentity } = useAuthIdentity()
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false)
 
+  const explorerEnv = resolveExplorerEnv(searchParams)
   const onboardingUrl = getEnv('ONBOARDING_URL') ?? ''
   const downloadUrl = getEnv('DOWNLOAD_URL') ?? DOWNLOAD_URLS.windows
   const isMobile = Boolean(advancedUserAgent?.mobile)
@@ -39,12 +43,12 @@ function CommunityJumpInButton({ communityId, onTrack }: CommunityJumpInButtonPr
       return
     }
     try {
-      const launched = await launchDesktopApp({ communityId })
+      const launched = await launchDesktopApp({ communityId, dclenv: explorerEnv })
       if (!launched) openDownloadFallback()
     } catch {
       openDownloadFallback()
     }
-  }, [communityId, isMobile, downloadOs, openDownloadFallback, onTrack])
+  }, [communityId, explorerEnv, isMobile, downloadOs, openDownloadFallback, onTrack])
 
   const downloadModalProps = {
     os: downloadOs,

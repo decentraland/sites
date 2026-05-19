@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import CloseIcon from '@mui/icons-material/Close'
 import { Typography } from 'decentraland-ui2'
+import { resolveExplorerEnv } from '../../../config/dclenv'
 import { useChatContext } from '../../../features/cast2/contexts/ChatProvider'
 import { useLiveKitCredentials } from '../../../features/cast2/contexts/LiveKitContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
@@ -34,6 +36,7 @@ export function ChatPanel({ onClose, chatMessages, onMessagesRead }: ChatPanelPr
   const { t } = useCastTranslation()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { streamMetadata } = useLiveKitCredentials()
+  const [searchParams] = useSearchParams()
 
   // Mark messages as read when panel opens
   useEffect(() => {
@@ -45,12 +48,17 @@ export function ChatPanel({ onClose, chatMessages, onMessagesRead }: ChatPanelPr
   // Get profiles from context (already prefetched)
   const { profiles } = useChatContext()
 
+  const explorerEnv = useMemo(() => resolveExplorerEnv(searchParams), [searchParams])
+
   // Generate jump link based on stream metadata
-  const jumpLink = streamMetadata
-    ? streamMetadata.isWorld
-      ? `https://decentraland.org/jump/?realm=${streamMetadata.location}`
-      : `https://decentraland.org/jump/?position=${encodeURIComponent(streamMetadata.location)}`
-    : null
+  const jumpLink = useMemo(() => {
+    if (!streamMetadata) return null
+    const params = new URLSearchParams()
+    if (streamMetadata.isWorld) params.set('realm', streamMetadata.location)
+    else params.set('position', streamMetadata.location)
+    if (explorerEnv) params.set('dclenv', explorerEnv)
+    return `https://decentraland.org/jump/?${params.toString()}`
+  }, [streamMetadata, explorerEnv])
 
   const sceneName = streamMetadata?.placeName || 'this scene'
 
