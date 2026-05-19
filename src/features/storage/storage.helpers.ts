@@ -47,23 +47,50 @@ type SignedFetch = (url: string, init?: RequestInit) => Promise<Response>
 
 const UNSIGNED_WRITE_METHODS = new Set(['PUT', 'POST', 'PATCH', 'DELETE'])
 
+const isIdentityValid = (identity: AuthIdentity): boolean => {
+  // The expiration check here mirrors decentraland-storage-service-site's
+  // `isIdentityValid` — localStorageGetIdentity already drops expired ones, but
+  // an identity that survived the read might still expire between the page load
+  // and the user's click. Without this guard, signedFetchLib hits the network
+  // with an expired ephemeral key and the server returns 401.
+  if (!identity.expiration) return false
+  const expiration = identity.expiration instanceof Date ? identity.expiration : new Date(identity.expiration)
+  return expiration.getTime() > Date.now()
+}
+
 const createScopedSignedFetch = (identity: AuthIdentity | undefined, realm?: string | null, position?: string | null): SignedFetch => {
   const metadata = buildSignedFetchMetadata(realm, position)
   return async (url: string, init: RequestInit = {}) => {
-    if (!identity) {
+    const method = init.method?.toUpperCase()
+    const isWrite = method !== undefined && UNSIGNED_WRITE_METHODS.has(method)
+
+    if (!identity || !isIdentityValid(identity)) {
       // NOTE: storage write endpoints require a signed request (ADR-44). The
       // previous behavior was to fall back to an unsigned fetch, which let the
       // server reply 400 "Invalid Auth Chain" — the dialogs swallowed that
       // failure (issue #505: a user clicked Save 27 times in a row with no
       // visible feedback). Surface a structured error so the dialog can show a
       // sign-in prompt instead of pretending the request is in flight.
-      const method = init.method?.toUpperCase()
-      if (method && UNSIGNED_WRITE_METHODS.has(method)) {
+      if (isWrite) {
         throw { status: 401, data: 'Unauthorized: no signed identity available' }
       }
       return fetch(url, init)
     }
-    return signedFetchLib(url, { ...init, identity, metadata })
+
+    try {
+      return await signedFetchLib(url, { ...init, identity, metadata })
+    } catch (error) {
+      // signedFetchLib throws TypeError when the identity is malformed (missing
+      // ephemeralIdentity/authChain) — those throws don't have a `status` field
+      // and would otherwise bubble up as a generic FETCH_ERROR ("Could not reach
+      // the storage service"). For writes we map them to a 401 so the dialog
+      // shows the "sign in again" message; reads still fall back to unsigned so
+      // an unauthorized list reply matches the original storage-service-site UX.
+      if (isWrite) {
+        throw { status: 401, data: error instanceof Error ? error.message : 'Failed to sign request' }
+      }
+      return fetch(url, init)
+    }
   }
 }
 

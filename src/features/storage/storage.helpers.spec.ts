@@ -132,6 +132,12 @@ describe('buildSignedFetchMetadata', () => {
 })
 
 describe('createScopedSignedFetch', () => {
+  const validIdentity = {
+    ephemeralIdentity: {},
+    authChain: [],
+    expiration: new Date(Date.now() + 60_000)
+  } as unknown as Parameters<typeof createScopedSignedFetch>[0]
+
   beforeEach(() => signedFetchMock.mockReset())
 
   it('falls back to plain fetch when identity is missing and the request is a read (GET)', async () => {
@@ -154,15 +160,44 @@ describe('createScopedSignedFetch', () => {
     }
   )
 
-  it('delegates to decentraland-crypto-fetch when identity is present', async () => {
+  it('treats an expired identity the same as a missing one (issue #505 — identity that survived the page load but expired before the click)', async () => {
+    const expiredIdentity = {
+      ephemeralIdentity: {},
+      authChain: [],
+      expiration: new Date(Date.now() - 60_000)
+    } as unknown as Parameters<typeof createScopedSignedFetch>[0]
+    const sf = createScopedSignedFetch(expiredIdentity, 'vitsky.dcl.eth', '0,0')
+    await expect(sf('https://example/api', { method: 'PUT' })).rejects.toMatchObject({ status: 401 })
+    expect(signedFetchMock).not.toHaveBeenCalled()
+  })
+
+  it('delegates to decentraland-crypto-fetch when identity is valid', async () => {
     signedFetchMock.mockResolvedValue(makeResponse('{}'))
-    const identity = { ephemeralIdentity: {}, authChain: [] } as unknown as Parameters<typeof createScopedSignedFetch>[0]
-    const sf = createScopedSignedFetch(identity, 'vitsky.dcl.eth', '0,0')
+    const sf = createScopedSignedFetch(validIdentity, 'vitsky.dcl.eth', '0,0')
     await sf('https://example/api', { method: 'PUT' })
     expect(signedFetchMock).toHaveBeenCalledWith(
       'https://example/api',
-      expect.objectContaining({ method: 'PUT', identity, metadata: expect.objectContaining({ realmName: 'vitsky.dcl.eth' }) })
+      expect.objectContaining({
+        method: 'PUT',
+        identity: validIdentity,
+        metadata: expect.objectContaining({ realmName: 'vitsky.dcl.eth' })
+      })
     )
+  })
+
+  it('wraps signedFetchLib failures on writes as 401 instead of FETCH_ERROR', async () => {
+    signedFetchMock.mockRejectedValue(new TypeError("Cannot read properties of undefined (reading 'privateKey')"))
+    const sf = createScopedSignedFetch(validIdentity, 'vitsky.dcl.eth', '0,0')
+    await expect(sf('https://example/api', { method: 'PUT' })).rejects.toMatchObject({ status: 401 })
+  })
+
+  it('falls back to unsigned fetch on signing failures for reads', async () => {
+    signedFetchMock.mockRejectedValue(new Error('signing broken'))
+    const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue(makeResponse('{}'))
+    const sf = createScopedSignedFetch(validIdentity, 'vitsky.dcl.eth', '0,0')
+    await sf('https://example/api')
+    expect(fetchSpy).toHaveBeenCalledWith('https://example/api', {})
+    fetchSpy.mockRestore()
   })
 })
 

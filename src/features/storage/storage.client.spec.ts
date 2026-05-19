@@ -24,9 +24,11 @@ const setupStore = () =>
     middleware: g => g({ serializableCheck: false }).concat(storageClient.middleware)
   })
 
-const identity = { ephemeralIdentity: {}, authChain: [{ type: 'SIGNER', payload: '0xowner' }] } as unknown as Parameters<
-  typeof storageEndpoints.endpoints.setEnv.initiate
->[0]['identity']
+const identity = {
+  ephemeralIdentity: {},
+  authChain: [{ type: 'SIGNER', payload: '0xowner' }],
+  expiration: new Date(Date.now() + 60_000)
+} as unknown as Parameters<typeof storageEndpoints.endpoints.setEnv.initiate>[0]['identity']
 const ctx = { realm: 'world.dcl.eth', position: '0,0' }
 
 describe('storage.client endpoints', () => {
