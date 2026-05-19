@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import CloseIcon from '@mui/icons-material/Close'
 import { Typography } from 'decentraland-ui2'
 import { resolveExplorerEnv } from '../../../config/dclenv'
+import { getEnv } from '../../../config/env'
 import { useChatContext } from '../../../features/cast2/contexts/ChatProvider'
 import { useLiveKitCredentials } from '../../../features/cast2/contexts/LiveKitContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
@@ -50,14 +51,17 @@ export function ChatPanel({ onClose, chatMessages, onMessagesRead }: ChatPanelPr
 
   const explorerEnv = useMemo(() => resolveExplorerEnv(searchParams), [searchParams])
 
-  // Generate jump link based on stream metadata
+  // Generate jump link based on stream metadata. Resolves the origin via
+  // JUMP_IN_URL so the link respects the current env (zone/today/prod) instead
+  // of pinning every share back to decentraland.org.
   const jumpLink = useMemo(() => {
     if (!streamMetadata) return null
     const params = new URLSearchParams()
     if (streamMetadata.isWorld) params.set('realm', streamMetadata.location)
     else params.set('position', streamMetadata.location)
     if (explorerEnv) params.set('dclenv', explorerEnv)
-    return `https://decentraland.org/jump/?${params.toString()}`
+    const base = getEnv('JUMP_IN_URL') ?? 'https://decentraland.org/jump'
+    return `${base}?${params.toString()}`
   }, [streamMetadata, explorerEnv])
 
   const sceneName = streamMetadata?.placeName || 'this scene'

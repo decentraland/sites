@@ -1,5 +1,6 @@
 import { MemoryRouter } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
+import { getEnv } from '../../../config/env'
 import { useChatContext } from '../../../features/cast2/contexts/ChatProvider'
 import { useLiveKitCredentials } from '../../../features/cast2/contexts/LiveKitContext'
 import { ChatPanel } from './ChatPanel'
@@ -8,6 +9,8 @@ jest.mock('../../../config/env', () => ({
   getEnv: jest.fn(),
   getCurrentEnv: jest.fn()
 }))
+
+const mockGetEnv = jest.mocked(getEnv)
 
 jest.mock('decentraland-ui2', () => ({
   Typography: ({ children, ...props }: { children?: React.ReactNode } & Record<string, unknown>) => (
@@ -53,6 +56,7 @@ function renderPanel(initialEntries: string[] = ['/cast/s/whatever']) {
 describe('ChatPanel', () => {
   beforeEach(() => {
     mockUseChatContext.mockReturnValue({ profiles: new Map() } as never)
+    mockGetEnv.mockImplementation((key: string) => (key === 'JUMP_IN_URL' ? 'https://decentraland.org/jump' : undefined))
   })
 
   afterEach(() => {
@@ -80,13 +84,13 @@ describe('ChatPanel', () => {
     it('should build a jump link with realm and no position', () => {
       renderPanel()
       const link = screen.getByRole('link')
-      expect(link).toHaveAttribute('href', 'https://decentraland.org/jump/?realm=foo.dcl.eth')
+      expect(link).toHaveAttribute('href', 'https://decentraland.org/jump?realm=foo.dcl.eth')
     })
 
     it('should append dclenv when ?dclenv is in the URL', () => {
       renderPanel(['/cast/s/whatever?dclenv=zone'])
       const link = screen.getByRole('link')
-      expect(link).toHaveAttribute('href', 'https://decentraland.org/jump/?realm=foo.dcl.eth&dclenv=zone')
+      expect(link).toHaveAttribute('href', 'https://decentraland.org/jump?realm=foo.dcl.eth&dclenv=zone')
     })
   })
 
@@ -100,13 +104,13 @@ describe('ChatPanel', () => {
     it('should build a jump link with position', () => {
       renderPanel()
       const link = screen.getByRole('link')
-      expect(link).toHaveAttribute('href', 'https://decentraland.org/jump/?position=10%2C20')
+      expect(link).toHaveAttribute('href', 'https://decentraland.org/jump?position=10%2C20')
     })
 
     it('should append dclenv from ?env=dev mapping', () => {
       renderPanel(['/cast/s/whatever?env=dev'])
       const link = screen.getByRole('link')
-      expect(link).toHaveAttribute('href', 'https://decentraland.org/jump/?position=10%2C20&dclenv=zone')
+      expect(link).toHaveAttribute('href', 'https://decentraland.org/jump?position=10%2C20&dclenv=zone')
     })
   })
 
@@ -130,7 +134,23 @@ describe('ChatPanel', () => {
     it('should default the dclenv to zone', () => {
       renderPanel()
       const link = screen.getByRole('link')
-      expect(link).toHaveAttribute('href', 'https://decentraland.org/jump/?realm=foo.dcl.eth&dclenv=zone')
+      expect(link).toHaveAttribute('href', 'https://decentraland.org/jump?realm=foo.dcl.eth&dclenv=zone')
+    })
+  })
+
+  describe('when JUMP_IN_URL resolves to a non-prod origin', () => {
+    beforeEach(() => {
+      mockGetEnv.mockImplementation((key: string) => (key === 'JUMP_IN_URL' ? '/jump' : undefined))
+      mockUseLiveKitCredentials.mockReturnValue({
+        streamMetadata: { isWorld: true, location: 'foo.dcl.eth', placeName: 'Foo' }
+      } as never)
+    })
+
+    it('should respect the configured base instead of hardcoding decentraland.org', () => {
+      renderPanel()
+      const link = screen.getByRole('link')
+      // Anchor.href is resolved against document base — assert the bare attribute instead.
+      expect(link.getAttribute('href')).toBe('/jump?realm=foo.dcl.eth')
     })
   })
 })
