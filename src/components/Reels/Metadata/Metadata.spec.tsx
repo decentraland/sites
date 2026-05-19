@@ -13,6 +13,11 @@ function renderMetadata(props: Parameters<typeof Metadata>[0]) {
 const trackMock = jest.fn()
 const buildPlaceUrlMock = jest.fn()
 
+jest.mock('../../../config/env', () => ({
+  getEnv: jest.fn(),
+  getCurrentEnv: jest.fn()
+}))
+
 jest.mock('@dcl/hooks', () => ({
   useAnalytics: () => ({ track: trackMock, isInitialized: true })
 }))

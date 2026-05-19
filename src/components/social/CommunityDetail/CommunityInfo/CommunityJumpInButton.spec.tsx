@@ -36,7 +36,10 @@ jest.mock('../../../../hooks/useAuthIdentity', () => ({
 jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))
-jest.mock('../../../../config/env')
+jest.mock('../../../../config/env', () => ({
+  getEnv: jest.fn(),
+  getCurrentEnv: jest.fn()
+}))
 jest.mock('../../../../modules/downloadConstants', () => ({
   DOWNLOAD_URLS: {
     apple: 'https://dl.test',

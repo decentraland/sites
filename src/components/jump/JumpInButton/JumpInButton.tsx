@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { type ButtonProps, DownloadModal, JumpInIcon, launchDesktopApp } from 'decentraland-ui2'
 import { resolveExplorerEnv } from '../../../config/dclenv'
-import { getEnv } from '../../../config/env'
+import { getCurrentEnv, getEnv } from '../../../config/env'
 import { buildDeepLinkOptions } from '../../../features/places/places.helpers'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
@@ -68,7 +68,15 @@ const JumpInButton: FC<JumpInButtonProps> = ({
     track(SegmentEvent.GO_TO_EXPLORER, { position, realm, osName, arch })
 
     try {
-      const launched = await launchDesktopApp(buildDeepLinkOptions(position, realm, explorerEnv))
+      const opts = buildDeepLinkOptions(position, realm, explorerEnv)
+      // NOTE: deliberate diagnostic — logged on every Jump in click only on
+      // non-prod envs (dev/zone, stg/today) so QA can confirm dclenv routing
+      // across environments without a source-level breakpoint. Production
+      // (decentraland.org) stays silent.
+      if (getCurrentEnv() !== 'prod') {
+        console.log('[JumpInButton] deep-link opts:', opts)
+      }
+      const launched = await launchDesktopApp(opts)
       if (!launched) {
         track(SegmentEvent.CLICK, { event: 'Client not installed', osName, arch })
         openDownloadFallback()

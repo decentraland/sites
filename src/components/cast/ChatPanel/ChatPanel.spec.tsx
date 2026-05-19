@@ -4,6 +4,11 @@ import { useChatContext } from '../../../features/cast2/contexts/ChatProvider'
 import { useLiveKitCredentials } from '../../../features/cast2/contexts/LiveKitContext'
 import { ChatPanel } from './ChatPanel'
 
+jest.mock('../../../config/env', () => ({
+  getEnv: jest.fn(),
+  getCurrentEnv: jest.fn()
+}))
+
 jest.mock('decentraland-ui2', () => ({
   Typography: ({ children, ...props }: { children?: React.ReactNode } & Record<string, unknown>) => (
     <p {...(props as object)}>{children}</p>

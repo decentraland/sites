@@ -6,6 +6,11 @@ import { detectDownloadOS } from '../modules/downloadConstants'
 import { useHangOutAction } from './useHangOutAction'
 import { useWalletAddress } from './useWalletAddress'
 
+jest.mock('../config/env', () => ({
+  getEnv: jest.fn(),
+  getCurrentEnv: jest.fn()
+}))
+
 jest.mock('@dcl/hooks', () => ({
   useAsyncMemo: jest.fn(() => [null, { loading: false, loaded: false }])
 }))

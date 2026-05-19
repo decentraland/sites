@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
-import { getEnv } from '../../../config/env'
+import { getCurrentEnv, getEnv } from '../../../config/env'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { detectDownloadOS } from '../../../modules/downloadConstants'
 import { JumpInButton } from './JumpInButton'
@@ -48,7 +48,10 @@ jest.mock('../../../hooks/useAuthIdentity', () => ({
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))
-jest.mock('../../../config/env')
+jest.mock('../../../config/env', () => ({
+  getEnv: jest.fn(),
+  getCurrentEnv: jest.fn()
+}))
 jest.mock('../../../modules/downloadConstants', () => ({
   DOWNLOAD_URLS: {
     apple: 'https://dl.test',
@@ -73,6 +76,7 @@ const mockUseAnalytics = jest.mocked(useAnalytics)
 const mockDetectDownloadOS = jest.mocked(detectDownloadOS)
 const mockLaunchDesktopApp = jest.mocked(launchDesktopApp)
 const mockGetEnv = jest.mocked(getEnv)
+const mockGetCurrentEnv = jest.mocked(getCurrentEnv)
 
 describe('JumpInButton', () => {
   beforeEach(() => {
@@ -86,6 +90,7 @@ describe('JumpInButton', () => {
     mockGetEnv.mockImplementation((key: string) =>
       key === 'DOWNLOAD_URL' ? 'https://dl.test' : key === 'ONBOARDING_URL' ? 'https://onboarding.test' : undefined
     )
+    mockGetCurrentEnv.mockReturnValue('prod')
   })
 
   afterEach(() => {
@@ -142,6 +147,7 @@ describe('JumpInButton', () => {
   describe('when the URL contains an unknown env value and no dclenv', () => {
     beforeEach(() => {
       mockUseSearchParams.mockReturnValue([new URLSearchParams('env=bogus'), jest.fn()] as unknown as ReturnType<typeof useSearchParams>)
+      mockGetCurrentEnv.mockReturnValue(undefined)
       mockLaunchDesktopApp.mockResolvedValue(true)
     })
 
@@ -169,6 +175,7 @@ describe('JumpInButton', () => {
 
   describe('when the URL contains neither dclenv nor env', () => {
     beforeEach(() => {
+      mockGetCurrentEnv.mockReturnValue(undefined)
       mockLaunchDesktopApp.mockResolvedValue(true)
     })
 
@@ -219,6 +226,33 @@ describe('JumpInButton', () => {
       render(<JumpInButton position="75,-9" realm="sdk7testscenes.dcl.eth" />)
       await userEvent.click(screen.getByRole('button'))
       expect(mockLaunchDesktopApp).toHaveBeenCalledWith(expect.objectContaining({ dclenv: 'org' }))
+    })
+  })
+
+  describe('debug logging', () => {
+    let consoleSpy: jest.SpyInstance
+
+    beforeEach(() => {
+      consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined)
+      mockLaunchDesktopApp.mockResolvedValue(true)
+    })
+
+    afterEach(() => {
+      consoleSpy.mockRestore()
+    })
+
+    it('should not log the deep-link opts when running in prod', async () => {
+      mockGetCurrentEnv.mockReturnValue('prod')
+      render(<JumpInButton position="0,0" />)
+      await userEvent.click(screen.getByRole('button'))
+      expect(consoleSpy).not.toHaveBeenCalled()
+    })
+
+    it.each(['dev', 'stg', undefined])('should log the deep-link opts when running in %p', async configEnv => {
+      mockGetCurrentEnv.mockReturnValue(configEnv)
+      render(<JumpInButton position="0,0" />)
+      await userEvent.click(screen.getByRole('button'))
+      expect(consoleSpy).toHaveBeenCalledWith('[JumpInButton] deep-link opts:', expect.any(Object))
     })
   })
 

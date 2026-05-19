@@ -1,6 +1,21 @@
-import { mapEnvToDclenv, mapHostnameToDclenv, resolveExplorerEnv } from './dclenv'
+import { mapConfigEnvToDclenv, mapEnvToDclenv, mapHostnameToDclenv, resolveExplorerEnv } from './dclenv'
+import { getCurrentEnv } from './env'
+
+jest.mock('./env', () => ({
+  getCurrentEnv: jest.fn()
+}))
+
+const mockGetCurrentEnv = jest.mocked(getCurrentEnv)
 
 describe('dclenv', () => {
+  beforeEach(() => {
+    mockGetCurrentEnv.mockReturnValue(undefined)
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
   describe('when mapEnvToDclenv is called', () => {
     describe.each([
       ['dev', 'zone'],
@@ -97,6 +112,43 @@ describe('dclenv', () => {
     describe('and the hostname is an empty string (SSR / no window)', () => {
       it('should return undefined when no query is present either', () => {
         expect(resolveExplorerEnv(new URLSearchParams(''), '')).toBeUndefined()
+      })
+    })
+
+    describe('and the active @dcl/ui-env config env is the only signal', () => {
+      describe.each([
+        ['dev', 'zone'],
+        ['stg', 'today'],
+        ['prod', 'org']
+      ])('and config.getEnv() returns %s', (configEnv, expected) => {
+        it(`should default dclenv to ${expected}`, () => {
+          mockGetCurrentEnv.mockReturnValue(configEnv)
+          expect(resolveExplorerEnv(new URLSearchParams(''), 'localhost')).toBe(expected)
+        })
+      })
+
+      it('should still let the hostname win over the config env', () => {
+        mockGetCurrentEnv.mockReturnValue('prod')
+        expect(resolveExplorerEnv(new URLSearchParams(''), 'decentraland.zone')).toBe('zone')
+      })
+
+      it('should still let an explicit ?dclenv win over the config env', () => {
+        mockGetCurrentEnv.mockReturnValue('dev')
+        expect(resolveExplorerEnv(new URLSearchParams('dclenv=org'), 'localhost')).toBe('org')
+      })
+    })
+  })
+
+  describe('when mapConfigEnvToDclenv is called', () => {
+    describe.each([
+      ['dev', 'zone'],
+      ['stg', 'today'],
+      ['prod', 'org'],
+      [undefined, undefined]
+    ])('and the active env is %p', (configEnv, expected) => {
+      it(`should return ${expected}`, () => {
+        mockGetCurrentEnv.mockReturnValue(configEnv)
+        expect(mapConfigEnvToDclenv()).toBe(expected)
       })
     })
   })

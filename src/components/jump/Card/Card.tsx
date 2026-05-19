@@ -89,10 +89,17 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
     ) : null
   const bottomSlot = children ?? jumpInFallback
 
-  // Render the world badge and the parcel badge as siblings so screen readers
-  // announce them independently and the parcel is always visible next to a
-  // dedicated pin icon — including world jumps that target a specific parcel.
-  const parcelCoordinates = parsePositionPair(data.position) ?? (data.realm ? null : data.coordinates)
+  // Render the world badge and the parcel badge as independent siblings so
+  // screen readers announce them separately and worlds that target a specific
+  // parcel show both pieces of context.
+  // Resolution order:
+  // 1. Parse the user-targeted parcel from `data.position` (preferred, takes
+  //    user intent verbatim).
+  // 2. Genesis City fallback — when there's no realm, fall back to the
+  //    scene's `coordinates`.
+  // 3. World without a specific parcel → hide the parcel badge (null).
+  const parsedParcel = parsePositionPair(data.position)
+  const parcelCoordinates = parsedParcel ?? (data.realm ? null : data.coordinates)
 
   return (
     <CardContainer>
