@@ -45,10 +45,22 @@ const buildSignedFetchMetadata = (realm?: string | null, position?: string | nul
 
 type SignedFetch = (url: string, init?: RequestInit) => Promise<Response>
 
+const UNSIGNED_WRITE_METHODS = new Set(['PUT', 'POST', 'PATCH', 'DELETE'])
+
 const createScopedSignedFetch = (identity: AuthIdentity | undefined, realm?: string | null, position?: string | null): SignedFetch => {
   const metadata = buildSignedFetchMetadata(realm, position)
   return async (url: string, init: RequestInit = {}) => {
     if (!identity) {
+      // NOTE: storage write endpoints require a signed request (ADR-44). The
+      // previous behavior was to fall back to an unsigned fetch, which let the
+      // server reply 400 "Invalid Auth Chain" — the dialogs swallowed that
+      // failure (issue #505: a user clicked Save 27 times in a row with no
+      // visible feedback). Surface a structured error so the dialog can show a
+      // sign-in prompt instead of pretending the request is in flight.
+      const method = init.method?.toUpperCase()
+      if (method && UNSIGNED_WRITE_METHODS.has(method)) {
+        throw { status: 401, data: 'Unauthorized: no signed identity available' }
+      }
       return fetch(url, init)
     }
     return signedFetchLib(url, { ...init, identity, metadata })

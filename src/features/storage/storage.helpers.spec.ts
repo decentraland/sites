@@ -117,7 +117,7 @@ describe('buildSignedFetchMetadata', () => {
 describe('createScopedSignedFetch', () => {
   beforeEach(() => signedFetchMock.mockReset())
 
-  it('falls back to plain fetch when identity is missing', async () => {
+  it('falls back to plain fetch when identity is missing and the request is a read (GET)', async () => {
     const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue(makeResponse('{}'))
     const sf = createScopedSignedFetch(undefined, 'vitsky.dcl.eth', '0,0')
     await sf('https://example/api')
@@ -125,6 +125,17 @@ describe('createScopedSignedFetch', () => {
     expect(signedFetchMock).not.toHaveBeenCalled()
     fetchSpy.mockRestore()
   })
+
+  it.each(['PUT', 'POST', 'PATCH', 'DELETE'])(
+    'throws a 401-shaped error instead of issuing an unsigned %s (issue #505 silent failure)',
+    async method => {
+      const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue(makeResponse('{}'))
+      const sf = createScopedSignedFetch(undefined, 'vitsky.dcl.eth', '0,0')
+      await expect(sf('https://example/api', { method })).rejects.toMatchObject({ status: 401 })
+      expect(fetchSpy).not.toHaveBeenCalled()
+      fetchSpy.mockRestore()
+    }
+  )
 
   it('delegates to decentraland-crypto-fetch when identity is present', async () => {
     signedFetchMock.mockResolvedValue(makeResponse('{}'))
