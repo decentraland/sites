@@ -1075,5 +1075,9 @@
     "form_utc_preview": "{time} UTC",
     "form_utc_preview_next_day": "{time} UTC (+1 jour)",
     "form_utc_preview_previous_day": "{time} UTC (-1 jour)"
+  },
+  "upcoming": {
+    "today_at": "Aujourd'hui {time}",
+    "tomorrow_at": "Demain {time}"
   }
 }

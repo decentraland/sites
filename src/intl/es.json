@@ -1080,5 +1080,9 @@
     "form_utc_preview": "{time} UTC",
     "form_utc_preview_next_day": "{time} UTC (+1 día)",
     "form_utc_preview_previous_day": "{time} UTC (-1 día)"
+  },
+  "upcoming": {
+    "today_at": "Hoy {time}",
+    "tomorrow_at": "Mañana {time}"
   }
 }
