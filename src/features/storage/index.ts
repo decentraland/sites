@@ -23,6 +23,7 @@ export { assetsEndpoints, useGetUserDCLNamesQuery, useGetUserLandsQuery, useGetU
 export {
   getLandPosition,
   getRoleLabelKey,
+  getStorageErrorKey,
   storageContextId,
   transformLandQueryResult,
   transformRentalsQueryResult,

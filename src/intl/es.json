@@ -932,6 +932,16 @@
         "title": "Página no encontrada",
         "subtitle": "La página que estás buscando no existe.",
         "go_home": "Ir al inicio"
+      },
+      "errors": {
+        "unknown": "No se pudo guardar. Inténtalo de nuevo.",
+        "network": "No se pudo contactar el servicio de almacenamiento. Verifica tu conexión y vuelve a intentarlo.",
+        "signed_fetch": "No se pudo firmar la solicitud. Cierra sesión y vuelve a iniciarla, luego inténtalo de nuevo.",
+        "unauthorized": "No tienes permisos para actualizar el almacenamiento de este mundo. Solo el dueño o el desplegador de la escena pueden editar las variables de entorno.",
+        "not_found": "No se encontró este mundo o escena en el servicio de almacenamiento.",
+        "payload_too_large": "El valor es demasiado grande para este espacio de almacenamiento.",
+        "rate_limited": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.",
+        "server": "El servicio de almacenamiento devolvió un error. Inténtalo de nuevo en unos minutos."
       }
     },
     "report": {

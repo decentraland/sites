@@ -92,6 +92,31 @@ const sendSignedFetch = async (signedFetch: SignedFetch, url: string, init: Requ
   }
 }
 
+const STORAGE_ERROR_KEY_PREFIX = 'component.storage.errors'
+
+/**
+ * Map an RTK Query mutation rejection (FetchBaseQueryError-shaped; HTTP status
+ * or the 'FETCH_ERROR' sentinel for network failures) into a translation key.
+ * The dialogs use this to show an inline error message instead of swallowing
+ * failures — issue #505 surfaced a user who clicked Save 27 times with no
+ * visible feedback because the catch branch only tracked an analytics event.
+ */
+const getStorageErrorKey = (error: unknown): string => {
+  if (!error || typeof error !== 'object' || !('status' in error)) {
+    return `${STORAGE_ERROR_KEY_PREFIX}.unknown`
+  }
+  const status = (error as { status: number | string }).status
+  if (status === 'FETCH_ERROR') return `${STORAGE_ERROR_KEY_PREFIX}.network`
+  if (typeof status !== 'number') return `${STORAGE_ERROR_KEY_PREFIX}.unknown`
+  if (status === 400) return `${STORAGE_ERROR_KEY_PREFIX}.signed_fetch`
+  if (status === 401 || status === 403) return `${STORAGE_ERROR_KEY_PREFIX}.unauthorized`
+  if (status === 404) return `${STORAGE_ERROR_KEY_PREFIX}.not_found`
+  if (status === 413) return `${STORAGE_ERROR_KEY_PREFIX}.payload_too_large`
+  if (status === 429) return `${STORAGE_ERROR_KEY_PREFIX}.rate_limited`
+  if (status >= 500) return `${STORAGE_ERROR_KEY_PREFIX}.server`
+  return `${STORAGE_ERROR_KEY_PREFIX}.unknown`
+}
+
 const parcelToLand = (parcel: SubgraphParcel, role: RoleType): Land => ({
   id: `parcel-${parcel.x}-${parcel.y}`,
   tokenId: parcel.tokenId,
@@ -319,6 +344,7 @@ export {
   getLandTypeFromContract,
   getRentalsQuery,
   getRoleLabelKey,
+  getStorageErrorKey,
   parcelToLand,
   sendSignedFetch,
   storageContextId,
