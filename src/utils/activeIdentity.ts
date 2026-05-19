@@ -301,6 +301,18 @@ function resolveActive(): ActiveSelection {
   const records = listValidIdentities()
   const currentFingerprints = listIdentityFingerprints()
 
+  console.log('[wallet-switch] resolveActive: entry', {
+    pointer: (() => {
+      try {
+        return localStorage.getItem(ACTIVE_ADDRESS_KEY)
+      } catch {
+        return null
+      }
+    })(),
+    recordCount: records.length,
+    addresses: records.map(r => r.address)
+  })
+
   const pending = consumePendingSignIn()
   if (pending.active) {
     const { comparison, candidates } = classifyAgainstSnapshot(records, pending.fingerprints)
