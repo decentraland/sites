@@ -1,6 +1,6 @@
 import { fromUnixTime } from 'date-fns/fromUnixTime'
 import type { AuthIdentity } from '@dcl/crypto'
-import signedFetchLib from 'decentraland-crypto-fetch'
+import signedFetchLibImport from 'decentraland-crypto-fetch'
 import { getEnv } from '../../config/env'
 import { LandType, RoleType } from './storage.types'
 import type {
@@ -14,6 +14,18 @@ import type {
   SubgraphParcel,
   WrapSignedFetchError
 } from './storage.types'
+
+// NOTE: Vite's CJS interop wraps `decentraland-crypto-fetch` (which is `exports.default = fn`)
+// in a shim that re-exports the whole `exports` object as the default, so the real function
+// lands on `.default`. Production (Rollup), Jest, and Node all import the function directly.
+// Reaching for `.default` first keeps every consumer working without a Vite plugin tweak —
+// without this, Vite dev throws "signedFetchLib is not a function" before the request ever
+// hits the wire (root cause of issue #505: dialogs reported "Unauthorized" with no network call).
+type SignedFetchFn = (url: string | URL | Request, init: RequestInit & { identity?: unknown; metadata?: unknown }) => Promise<Response>
+const signedFetchLib: SignedFetchFn =
+  typeof signedFetchLibImport === 'function'
+    ? (signedFetchLibImport as SignedFetchFn)
+    : ((signedFetchLibImport as { default?: SignedFetchFn }).default as SignedFetchFn)
 
 const MAX_RESULTS = 1000
 
