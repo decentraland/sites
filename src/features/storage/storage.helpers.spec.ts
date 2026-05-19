@@ -140,25 +140,20 @@ describe('createScopedSignedFetch', () => {
 
   beforeEach(() => signedFetchMock.mockReset())
 
-  it('falls back to plain fetch when identity is missing and the request is a read (GET)', async () => {
-    const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue(makeResponse('{}'))
+  it.each([
+    ['GET', undefined],
+    ['PUT', 'PUT'],
+    ['POST', 'POST'],
+    ['PATCH', 'PATCH'],
+    ['DELETE', 'DELETE']
+  ])('throws 401 for %s when identity is missing (no unsigned request ever leaves the client)', async (_label, method) => {
+    const fetchSpy = jest.spyOn(globalThis, 'fetch')
     const sf = createScopedSignedFetch(undefined, 'vitsky.dcl.eth', '0,0')
-    await sf('https://example/api')
-    expect(fetchSpy).toHaveBeenCalledWith('https://example/api', {})
+    await expect(sf('https://example/api', method ? { method } : {})).rejects.toMatchObject({ status: 401 })
+    expect(fetchSpy).not.toHaveBeenCalled()
     expect(signedFetchMock).not.toHaveBeenCalled()
     fetchSpy.mockRestore()
   })
-
-  it.each(['PUT', 'POST', 'PATCH', 'DELETE'])(
-    'throws a 401-shaped error instead of issuing an unsigned %s (issue #505 silent failure)',
-    async method => {
-      const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue(makeResponse('{}'))
-      const sf = createScopedSignedFetch(undefined, 'vitsky.dcl.eth', '0,0')
-      await expect(sf('https://example/api', { method })).rejects.toMatchObject({ status: 401 })
-      expect(fetchSpy).not.toHaveBeenCalled()
-      fetchSpy.mockRestore()
-    }
-  )
 
   it('treats an expired identity the same as a missing one (issue #505 — identity that survived the page load but expired before the click)', async () => {
     const expiredIdentity = {
@@ -185,19 +180,25 @@ describe('createScopedSignedFetch', () => {
     )
   })
 
-  it('wraps signedFetchLib failures on writes as 401 instead of FETCH_ERROR', async () => {
+  it('wraps a TypeError thrown by signedFetchLib as 401 (malformed identity, not a network failure)', async () => {
     signedFetchMock.mockRejectedValue(new TypeError("Cannot read properties of undefined (reading 'privateKey')"))
     const sf = createScopedSignedFetch(validIdentity, 'vitsky.dcl.eth', '0,0')
     await expect(sf('https://example/api', { method: 'PUT' })).rejects.toMatchObject({ status: 401 })
   })
 
-  it('falls back to unsigned fetch on signing failures for reads', async () => {
+  it('wraps a generic signing Error as 401 too (never falls back to an unsigned request)', async () => {
     signedFetchMock.mockRejectedValue(new Error('signing broken'))
-    const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue(makeResponse('{}'))
+    const fetchSpy = jest.spyOn(globalThis, 'fetch')
     const sf = createScopedSignedFetch(validIdentity, 'vitsky.dcl.eth', '0,0')
-    await sf('https://example/api')
-    expect(fetchSpy).toHaveBeenCalledWith('https://example/api', {})
+    await expect(sf('https://example/api')).rejects.toMatchObject({ status: 401 })
+    expect(fetchSpy).not.toHaveBeenCalled()
     fetchSpy.mockRestore()
+  })
+
+  it('re-throws structured errors with a status field untouched', async () => {
+    signedFetchMock.mockRejectedValue({ status: 403, data: 'forbidden' })
+    const sf = createScopedSignedFetch(validIdentity, 'vitsky.dcl.eth', '0,0')
+    await expect(sf('https://example/api', { method: 'PUT' })).rejects.toMatchObject({ status: 403, data: 'forbidden' })
   })
 })
 

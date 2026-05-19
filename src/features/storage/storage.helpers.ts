@@ -45,8 +45,6 @@ const buildSignedFetchMetadata = (realm?: string | null, position?: string | nul
 
 type SignedFetch = (url: string, init?: RequestInit) => Promise<Response>
 
-const UNSIGNED_WRITE_METHODS = new Set(['PUT', 'POST', 'PATCH', 'DELETE'])
-
 const isIdentityValid = (identity: AuthIdentity): boolean => {
   // The expiration check here mirrors decentraland-storage-service-site's
   // `isIdentityValid` — localStorageGetIdentity already drops expired ones, but
@@ -61,20 +59,16 @@ const isIdentityValid = (identity: AuthIdentity): boolean => {
 const createScopedSignedFetch = (identity: AuthIdentity | undefined, realm?: string | null, position?: string | null): SignedFetch => {
   const metadata = buildSignedFetchMetadata(realm, position)
   return async (url: string, init: RequestInit = {}) => {
-    const method = init.method?.toUpperCase()
-    const isWrite = method !== undefined && UNSIGNED_WRITE_METHODS.has(method)
-
+    // NOTE: every world-storage endpoint requires a signed-fetch request
+    // (ADR-44). The original storage-service-site falls back to plain `fetch`
+    // when signing isn't possible, but that path puts an unsigned request on
+    // the wire and the server replies 400 "Invalid Auth Chain" — exactly the
+    // failure mode observed in issue #505 ("no veo que esté haciendo el auth
+    // chain en la request"). We refuse to issue an unsigned request and throw
+    // a 401 instead so the dialog surfaces the "sign in again" message and
+    // `useStorageRedirect` can take the user back through auth.
     if (!identity || !isIdentityValid(identity)) {
-      // NOTE: storage write endpoints require a signed request (ADR-44). The
-      // previous behavior was to fall back to an unsigned fetch, which let the
-      // server reply 400 "Invalid Auth Chain" — the dialogs swallowed that
-      // failure (issue #505: a user clicked Save 27 times in a row with no
-      // visible feedback). Surface a structured error so the dialog can show a
-      // sign-in prompt instead of pretending the request is in flight.
-      if (isWrite) {
-        throw { status: 401, data: 'Unauthorized: no signed identity available' }
-      }
-      return fetch(url, init)
+      throw { status: 401, data: 'Unauthorized: no signed identity available' }
     }
 
     try {
@@ -83,13 +77,12 @@ const createScopedSignedFetch = (identity: AuthIdentity | undefined, realm?: str
       // signedFetchLib throws TypeError when the identity is malformed (missing
       // ephemeralIdentity/authChain) — those throws don't have a `status` field
       // and would otherwise bubble up as a generic FETCH_ERROR ("Could not reach
-      // the storage service"). For writes we map them to a 401 so the dialog
-      // shows the "sign in again" message; reads still fall back to unsigned so
-      // an unauthorized list reply matches the original storage-service-site UX.
-      if (isWrite) {
-        throw { status: 401, data: error instanceof Error ? error.message : 'Failed to sign request' }
+      // the storage service"). Re-throw with a 401 shape so the dialog can ask
+      // the user to sign in again instead of suggesting a connectivity problem.
+      if (error instanceof TypeError || (error instanceof Error && !('status' in error))) {
+        throw { status: 401, data: error.message }
       }
-      return fetch(url, init)
+      throw error
     }
   }
 }
