@@ -144,11 +144,20 @@ function SceneRoomMount({ credentials, children }: { credentials: LiveKitCredent
 type WatcherTab = 'video' | 'scene'
 
 // `<iframe credentialless>` opts the bevy-web frame into credentialless
-// loading explicitly, which is required for it to inherit our credentialless
-// COEP and become cross-origin-isolated. React's IframeHTMLAttributes
-// doesn't declare this attribute yet; we spread it onto the element via a
-// typed object so the DOM gets the bare boolean attribute it expects.
-const IFRAME_CREDENTIALLESS = { credentialless: '' } as const
+// loading so it inherits our parent COEP: credentialless context and
+// becomes cross-origin-isolated. Without it, Chrome refuses COI and
+// bevy's worker postMessage of a SharedArrayBuffer throws DataCloneError.
+// React strips unknown camelCase + boolean-empty attributes on iframe in
+// some build paths, so we attach it via a ref after mount instead of
+// rendering it as JSX. Idempotent.
+function useCredentiallessIframeRef() {
+  const ref = useRef<HTMLIFrameElement | null>(null)
+  const setRef = useCallback((node: HTMLIFrameElement | null) => {
+    ref.current = node
+    if (node && !node.hasAttribute('credentialless')) node.setAttribute('credentialless', '')
+  }, [])
+  return setRef
+}
 
 interface SceneWatcherCardProps {
   status: SceneRoomState['status']
@@ -293,6 +302,7 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
   // On mobile the SCENE WEB tab can never become "media active" — we render
   // the not-supported template instead of mounting the bevy iframe.
   const isMediaActive = tab === 'video' ? !isVideoPaused : !isMobile && hasLaunchedScene && Boolean(streamingHref)
+  const iframeCredentiallessRef = useCredentiallessIframeRef()
   return (
     <WatcherContainer>
       <TabStrip>
@@ -325,23 +335,11 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
             it; a fresh re-launch boots a clean session. */}
         {streamingHref && hasLaunchedScene && !isMobile && (
           <SceneIframe
+            ref={iframeCredentiallessRef}
             $visible={showScene}
             src={streamingHref}
             title={t('social.scene.tab_streaming')}
             sandbox="allow-scripts allow-same-origin allow-popups allow-pointer-lock allow-forms allow-modals"
-            // `cross-origin-isolated` propagates the parent page's isolation
-            // state into the iframe so the bevy client's `SharedArrayBuffer`
-            // assets loader works (it errors with DataCloneError otherwise).
-            // Requires COOP/COEP on the parent — set in vercel.json for
-            // /discover/(place|world)/*. The `credentialless` attribute is
-            // mandatory when the parent's COEP is `credentialless` and the
-            // iframe response's COEP is `require-corp` (which bevy-web at
-            // decentraland.zone uses) — without it Chrome refuses to grant
-            // the iframe cross-origin-isolated status and bevy's worker
-            // postMessage of a SharedArrayBuffer throws DataCloneError.
-            // Spread-cast because React's `IframeHTMLAttributes` typings
-            // don't yet include `credentialless`.
-            {...(IFRAME_CREDENTIALLESS as Record<string, unknown>)}
             allow="camera; microphone; clipboard-read; clipboard-write; fullscreen; xr-spatial-tracking; cross-origin-isolated"
           />
         )}
