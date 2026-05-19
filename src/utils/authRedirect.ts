@@ -59,8 +59,11 @@ function redirectToAuth(path: string, queryParams?: Record<string, string>): voi
   // Flag the round-trip so the identity the auth dapp writes during this
   // redirect becomes authoritative on return, even if a stale pointer exists.
   markSignInPending()
+  const target = `${authUrl}/login?redirectTo=${encodeURIComponent(redirectTo)}`
 
-  window.location.replace(`${authUrl}/login?redirectTo=${encodeURIComponent(redirectTo)}`)
+  console.log('[wallet-switch] redirectToAuth', { path, queryParams, redirectTo, target })
+
+  window.location.replace(target)
 }
 
 export { buildAuthRedirectUrl, redirectToAuth }

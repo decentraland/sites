@@ -55,9 +55,18 @@ function listIdentityFingerprints(): Record<string, string> {
  */
 function markSignInPending(): void {
   try {
+    const fingerprints = listIdentityFingerprints()
     localStorage.setItem(SIGN_IN_PENDING_KEY, String(Date.now()))
-    localStorage.setItem(SIGN_IN_PENDING_SNAPSHOT_KEY, JSON.stringify(listIdentityFingerprints()))
-  } catch {
+    localStorage.setItem(SIGN_IN_PENDING_SNAPSHOT_KEY, JSON.stringify(fingerprints))
+
+    console.log('[wallet-switch] markSignInPending', {
+      pointer: localStorage.getItem(ACTIVE_ADDRESS_KEY),
+      snapshotAddresses: Object.keys(fingerprints),
+      snapshotFingerprints: fingerprints,
+      timestamp: Date.now()
+    })
+  } catch (err) {
+    console.warn('[wallet-switch] markSignInPending FAILED', err)
     // Non-fatal: without the flag, fresh sign-ins fall back to the standard
     // resolution path (pointer → auto-promote → max-expiration heuristic).
   }
@@ -75,36 +84,53 @@ function consumePendingSignIn(): PendingSignIn {
     const snapshotRaw = localStorage.getItem(SIGN_IN_PENDING_SNAPSHOT_KEY)
     if (!value) {
       if (snapshotRaw !== null) localStorage.removeItem(SIGN_IN_PENDING_SNAPSHOT_KEY)
+
+      console.log('[wallet-switch] consumePendingSignIn: no pending flag', { snapshotRawWasPresent: snapshotRaw !== null })
       return empty
     }
     localStorage.removeItem(SIGN_IN_PENDING_KEY)
     localStorage.removeItem(SIGN_IN_PENDING_SNAPSHOT_KEY)
     const ts = Number(value)
-    if (!Number.isFinite(ts) || Date.now() - ts >= SIGN_IN_PENDING_TTL_MS) return empty
+    if (!Number.isFinite(ts) || Date.now() - ts >= SIGN_IN_PENDING_TTL_MS) {
+      console.log('[wallet-switch] consumePendingSignIn: flag expired or invalid', { rawValue: value, ts, ageMs: Date.now() - ts })
+      return empty
+    }
     let parsed: unknown = {}
     if (snapshotRaw) {
       try {
         parsed = JSON.parse(snapshotRaw)
-      } catch {
+      } catch (err) {
+        console.warn('[wallet-switch] consumePendingSignIn: snapshot JSON malformed', { snapshotRaw, err })
         // Malformed snapshot — treat as empty so any current identity is a newcomer.
       }
     }
     const fingerprints: Record<string, string> = {}
+    let formatUsed: 'modern' | 'legacy-array' | 'empty' = 'empty'
     if (Array.isArray(parsed)) {
+      formatUsed = 'legacy-array'
       // Legacy snapshot format (addresses only). Preserve the membership
       // signal so newcomer detection still works during the rollout window.
       for (const value of parsed) {
         if (typeof value === 'string') fingerprints[value.toLowerCase()] = ''
       }
     } else if (parsed && typeof parsed === 'object') {
+      formatUsed = 'modern'
       for (const [address, fingerprint] of Object.entries(parsed as Record<string, unknown>)) {
         if (typeof address === 'string' && typeof fingerprint === 'string') {
           fingerprints[address.toLowerCase()] = fingerprint
         }
       }
     }
+
+    console.log('[wallet-switch] consumePendingSignIn: pending active', {
+      ageMs: Date.now() - ts,
+      formatUsed,
+      snapshotAddresses: Object.keys(fingerprints),
+      snapshotFingerprints: fingerprints
+    })
     return { active: true, fingerprints }
-  } catch {
+  } catch (err) {
+    console.warn('[wallet-switch] consumePendingSignIn FAILED', err)
     return empty
   }
 }
@@ -201,14 +227,24 @@ function resolveActive(): ActiveSelection {
   const pending = consumePendingSignIn()
   if (pending.active) {
     const records = listValidIdentities()
-    const candidates = records.filter(rec => {
+    // Build a comparison row per record so the diagnostic log shows exactly
+    // which identity matched (or didn't match) the snapshot.
+    const comparison = records.map(rec => {
       const previousFingerprint = pending.fingerprints[rec.address]
-      // Absent from the snapshot → brand-new wallet written during this redirect.
-      if (previousFingerprint === undefined) return true
-      // Present in the snapshot with a non-empty fingerprint that changed →
-      // identity was re-signed during this redirect (OTP/Magic re-login).
       const currentFingerprint = ephemeralFingerprintFromIdentity(rec.identity)
-      return previousFingerprint !== '' && previousFingerprint !== currentFingerprint
+      let verdict: 'newcomer' | 'refreshed' | 'unchanged' | 'legacy-membership'
+      if (previousFingerprint === undefined) verdict = 'newcomer'
+      else if (previousFingerprint === '') verdict = 'legacy-membership'
+      else if (previousFingerprint !== currentFingerprint) verdict = 'refreshed'
+      else verdict = 'unchanged'
+      return { address: rec.address, expiration: rec.expiration, previousFingerprint, currentFingerprint, verdict }
+    })
+    const candidates = records.filter((_, i) => comparison[i].verdict === 'newcomer' || comparison[i].verdict === 'refreshed')
+
+    console.log('[wallet-switch] resolveActive: pending path', {
+      knownAddresses: records.map(r => r.address),
+      comparison,
+      candidateCount: candidates.length
     })
     if (candidates.length > 0) {
       // If the auth dapp wrote more than one identity (rare — concurrent flows),
@@ -216,25 +252,40 @@ function resolveActive(): ActiveSelection {
       const fresh = pickByLatestExpiration(candidates)
       if (fresh.bestAddress) {
         writeActivePointer(fresh.bestAddress)
+
+        console.log('[wallet-switch] resolveActive: promoted candidate', { picked: fresh.bestAddress })
         return fresh
       }
     }
     // No newcomer and no refresh (auth canceled): fall through to the standard
     // resolution path so we don't leave the user blank.
+
+    console.log('[wallet-switch] resolveActive: no candidates, falling through to pointer/heuristic')
   }
 
   const pointer = readActivePointer()
   if (pointer) {
     const identity = localStorageGetIdentity(pointer)
-    if (identity) return { bestAddress: pointer, bestIdentity: identity }
+    if (identity) {
+      console.log('[wallet-switch] resolveActive: returning pointer', { pointer })
+      return { bestAddress: pointer, bestIdentity: identity }
+    }
     writeActivePointer(null)
   }
   const records = listValidIdentities()
   if (records.length === 1) {
     writeActivePointer(records[0].address)
+
+    console.log('[wallet-switch] resolveActive: auto-promoted single identity', { picked: records[0].address })
     return { bestAddress: records[0].address, bestIdentity: records[0].identity }
   }
-  return pickByLatestExpiration(records)
+  const heuristic = pickByLatestExpiration(records)
+
+  console.log('[wallet-switch] resolveActive: heuristic (max expiration)', {
+    knownAddresses: records.map(r => ({ address: r.address, expiration: r.expiration })),
+    picked: heuristic.bestAddress
+  })
+  return heuristic
 }
 
 /**
