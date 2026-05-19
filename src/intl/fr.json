@@ -1156,7 +1156,7 @@
       "people_count": "{count, plural, one {# personne dans le monde} other {# personnes dans le monde}}",
       "people_empty": "Personne ici pour le moment.",
       "tab_video": "Vidéo",
-      "tab_streaming": "Scène Web",
+      "tab_streaming": "DCL Web",
       "launch_title": "Explorer cette scène en 3D",
       "launch_hint": "S'exécute dans votre navigateur — aucune installation requise.",
       "launch_cta": "Explorer la Scène",

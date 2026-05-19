@@ -1161,7 +1161,7 @@
       "people_count": "{count, plural, one {# persona en el mundo} other {# personas en el mundo}}",
       "people_empty": "Nadie por acá todavía.",
       "tab_video": "Video",
-      "tab_streaming": "Escena Web",
+      "tab_streaming": "DCL Web",
       "launch_title": "Explora esta escena en 3D",
       "launch_hint": "Se ejecuta en tu navegador — sin instalación.",
       "launch_cta": "Explorar Escena",

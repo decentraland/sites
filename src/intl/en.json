@@ -1606,7 +1606,7 @@
       "people_count": "{count, plural, one {# person in-world} other {# people in-world}}",
       "people_empty": "Nobody here yet.",
       "tab_video": "Video",
-      "tab_streaming": "Scene Web",
+      "tab_streaming": "DCL Web",
       "launch_title": "Explore this scene in 3D",
       "launch_hint": "Runs in your browser — no install required.",
       "launch_cta": "Explore Scene",
