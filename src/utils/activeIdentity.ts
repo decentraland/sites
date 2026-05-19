@@ -4,6 +4,7 @@ import { localStorageGetIdentity } from '@dcl/single-sign-on-client'
 const ACTIVE_ADDRESS_KEY = 'dcl:active-address'
 const SIGN_IN_PENDING_KEY = 'dcl:sign-in-pending'
 const SIGN_IN_PENDING_SNAPSHOT_KEY = 'dcl:sign-in-pending-snapshot'
+const LAST_KNOWN_SNAPSHOT_KEY = 'dcl:last-known-snapshot'
 const SIGN_IN_PENDING_TTL_MS = 10 * 60 * 1000
 const SSO_KEY_PREFIX = 'single-sign-on-'
 const SSO_ADDRESS_PREFIX = 'single-sign-on-0x'
@@ -144,6 +145,41 @@ function readActivePointer(): string | null {
   }
 }
 
+/**
+ * Persisted snapshot of the SSO identities we saw on the previous resolve.
+ * Lets us detect a fresh sign-in even when it didn't go through our own
+ * `redirectToAuth` — e.g. the user typed `/auth/login` directly, or another
+ * DCL dapp synced an identity via the SSO library. We compare the persisted
+ * snapshot against the current storage on every resolve and treat any
+ * newcomer or refreshed identity as authoritative.
+ */
+function readLastKnownSnapshot(): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(LAST_KNOWN_SNAPSHOT_KEY)
+    if (!raw) return {}
+    const parsed: unknown = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {}
+    const fingerprints: Record<string, string> = {}
+    for (const [address, fingerprint] of Object.entries(parsed as Record<string, unknown>)) {
+      if (typeof address === 'string' && typeof fingerprint === 'string') {
+        fingerprints[address.toLowerCase()] = fingerprint
+      }
+    }
+    return fingerprints
+  } catch {
+    return {}
+  }
+}
+
+function writeLastKnownSnapshot(fingerprints: Record<string, string>): void {
+  try {
+    localStorage.setItem(LAST_KNOWN_SNAPSHOT_KEY, JSON.stringify(fingerprints))
+  } catch {
+    // Non-fatal: without the snapshot, the next resolve falls back to the
+    // pending-flag + pointer + heuristic chain.
+  }
+}
+
 function writeActivePointer(address: string | null): void {
   try {
     if (address) {
@@ -206,40 +242,68 @@ function pickByLatestExpiration(records: IdentityRecord[]): ActiveSelection {
   }
 }
 
+type SnapshotVerdict = 'newcomer' | 'refreshed' | 'unchanged' | 'legacy-membership'
+
+function classifyAgainstSnapshot(
+  records: IdentityRecord[],
+  snapshot: Record<string, string>
+): {
+  comparison: {
+    address: string
+    expiration: number
+    previousFingerprint: string | undefined
+    currentFingerprint: string
+    verdict: SnapshotVerdict
+  }[]
+  candidates: IdentityRecord[]
+} {
+  const comparison = records.map(rec => {
+    const previousFingerprint = snapshot[rec.address]
+    const currentFingerprint = ephemeralFingerprintFromIdentity(rec.identity)
+    let verdict: SnapshotVerdict
+    if (previousFingerprint === undefined) verdict = 'newcomer'
+    else if (previousFingerprint === '') verdict = 'legacy-membership'
+    else if (previousFingerprint !== currentFingerprint) verdict = 'refreshed'
+    else verdict = 'unchanged'
+    return { address: rec.address, expiration: rec.expiration, previousFingerprint, currentFingerprint, verdict }
+  })
+  const candidates = records.filter((_, i) => comparison[i].verdict === 'newcomer' || comparison[i].verdict === 'refreshed')
+  return { comparison, candidates }
+}
+
 /**
  * Resolves the active wallet selection using the persistent pointer first,
  * then falling back to the heuristic scan. Auto-promotes the pointer when
  * exactly one valid identity exists and clears stale pointers on read.
  *
- * If a sign-in is pending (the user just returned from the auth dapp), the
- * wallet that was either added or refreshed during the round-trip is treated
- * as authoritative and gets promoted to the pointer:
- *   - A newcomer (address absent from the pre-redirect snapshot) wins outright.
- *   - A refreshed identity (address present in the snapshot but with a new
- *     ECDSA_EPHEMERAL payload) also wins — this covers OTP/Magic flows whose
- *     wallet address is stable per email, so re-signing in regenerates the
- *     ephemeral key without changing the address.
+ * Two snapshot-based detection paths run before falling back to pointer/heuristic:
+ *
+ * 1. **Pending sign-in** — when the user clicked our "Sign In" button, we wrote
+ *    a snapshot in `markSignInPending` right before the redirect. On return we
+ *    diff that snapshot against the current SSO storage and promote any
+ *    newcomer or refreshed identity.
+ *
+ * 2. **Silent newcomer (this is the catch-all)** — covers sign-ins that bypassed
+ *    `redirectToAuth`: user typed `/auth/login` directly, followed a deep link,
+ *    or another DCL dapp synced an identity via the SSO library. We persist a
+ *    `dcl:last-known-snapshot` on every successful resolve and diff it against
+ *    the current storage. Any newcomer/refreshed identity is treated as the
+ *    intentional sign-in even though we never saw the click.
+ *
+ * Fingerprints (the `ECDSA_EPHEMERAL.payload`) change on every sign-in even
+ * when the address is stable (OTP/Magic per email), so the refresh comparison
+ * catches the case where the user re-signs into a wallet they had before.
  *
  * Shared by `resolveActiveAddress` (returns address) and `resolveActiveIdentity`
  * (returns identity) so the two stay in sync.
  */
 function resolveActive(): ActiveSelection {
+  const records = listValidIdentities()
+  const currentFingerprints = listIdentityFingerprints()
+
   const pending = consumePendingSignIn()
   if (pending.active) {
-    const records = listValidIdentities()
-    // Build a comparison row per record so the diagnostic log shows exactly
-    // which identity matched (or didn't match) the snapshot.
-    const comparison = records.map(rec => {
-      const previousFingerprint = pending.fingerprints[rec.address]
-      const currentFingerprint = ephemeralFingerprintFromIdentity(rec.identity)
-      let verdict: 'newcomer' | 'refreshed' | 'unchanged' | 'legacy-membership'
-      if (previousFingerprint === undefined) verdict = 'newcomer'
-      else if (previousFingerprint === '') verdict = 'legacy-membership'
-      else if (previousFingerprint !== currentFingerprint) verdict = 'refreshed'
-      else verdict = 'unchanged'
-      return { address: rec.address, expiration: rec.expiration, previousFingerprint, currentFingerprint, verdict }
-    })
-    const candidates = records.filter((_, i) => comparison[i].verdict === 'newcomer' || comparison[i].verdict === 'refreshed')
+    const { comparison, candidates } = classifyAgainstSnapshot(records, pending.fingerprints)
 
     console.log('[wallet-switch] resolveActive: pending path', {
       knownAddresses: records.map(r => r.address),
@@ -247,21 +311,42 @@ function resolveActive(): ActiveSelection {
       candidateCount: candidates.length
     })
     if (candidates.length > 0) {
-      // If the auth dapp wrote more than one identity (rare — concurrent flows),
-      // tie-break on latest expiration so we still pick a deterministic winner.
       const fresh = pickByLatestExpiration(candidates)
       if (fresh.bestAddress) {
         writeActivePointer(fresh.bestAddress)
+        writeLastKnownSnapshot(currentFingerprints)
 
-        console.log('[wallet-switch] resolveActive: promoted candidate', { picked: fresh.bestAddress })
+        console.log('[wallet-switch] resolveActive: promoted pending candidate', { picked: fresh.bestAddress })
         return fresh
       }
     }
-    // No newcomer and no refresh (auth canceled): fall through to the standard
-    // resolution path so we don't leave the user blank.
-
-    console.log('[wallet-switch] resolveActive: no candidates, falling through to pointer/heuristic')
+    console.log('[wallet-switch] resolveActive: no pending candidates, trying silent newcomer path')
   }
+
+  // Silent newcomer detection: compare the persisted snapshot of the last
+  // resolve against the current storage to catch sign-ins that didn't go
+  // through our `redirectToAuth` (direct `/auth/login`, cross-app SSO sync, etc.).
+  const lastSnapshot = readLastKnownSnapshot()
+  if (Object.keys(lastSnapshot).length > 0) {
+    const { comparison, candidates } = classifyAgainstSnapshot(records, lastSnapshot)
+    if (candidates.length > 0) {
+      console.log('[wallet-switch] resolveActive: silent newcomer path', {
+        knownAddresses: records.map(r => r.address),
+        comparison,
+        candidateCount: candidates.length
+      })
+      const fresh = pickByLatestExpiration(candidates)
+      if (fresh.bestAddress) {
+        writeActivePointer(fresh.bestAddress)
+        writeLastKnownSnapshot(currentFingerprints)
+
+        console.log('[wallet-switch] resolveActive: promoted silent newcomer', { picked: fresh.bestAddress })
+        return fresh
+      }
+    }
+  }
+
+  writeLastKnownSnapshot(currentFingerprints)
 
   const pointer = readActivePointer()
   if (pointer) {
@@ -272,7 +357,6 @@ function resolveActive(): ActiveSelection {
     }
     writeActivePointer(null)
   }
-  const records = listValidIdentities()
   if (records.length === 1) {
     writeActivePointer(records[0].address)
 
@@ -322,6 +406,7 @@ function isRelevantStorageKey(key: string | null): boolean {
 
 export {
   ACTIVE_ADDRESS_KEY,
+  LAST_KNOWN_SNAPSHOT_KEY,
   SIGN_IN_PENDING_KEY,
   SIGN_IN_PENDING_SNAPSHOT_KEY,
   hasValidIdentityFor,

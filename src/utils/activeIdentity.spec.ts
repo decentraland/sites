@@ -1,5 +1,6 @@
 import {
   ACTIVE_ADDRESS_KEY,
+  LAST_KNOWN_SNAPSHOT_KEY,
   SIGN_IN_PENDING_KEY,
   SIGN_IN_PENDING_SNAPSHOT_KEY,
   hasValidIdentityFor,
@@ -290,6 +291,96 @@ describe('activeIdentity', () => {
         // With an empty snapshot, both addresses are newcomers — fall back to
         // max-expiration among them so we still pick a fresh-looking identity.
         expect(resolveActiveAddress()).toBe('0xfresh')
+      })
+    })
+
+    describe('silent newcomer detection (sign-in bypassed redirectToAuth)', () => {
+      // Covers the case where the user typed `/auth/login` directly, followed a
+      // deep link, or another DCL dapp synced an identity via the SSO library.
+      // No `dcl:sign-in-pending` flag, but `dcl:last-known-snapshot` reveals the
+      // change after the fact.
+      describe('when a brand-new address appears since the last resolve', () => {
+        beforeEach(() => {
+          setIdentity('0xmetamask', '2026-12-01T00:00:00.000Z')
+          writeActivePointer('0xmetamask')
+          // First resolve persists the snapshot of just MetaMask.
+          expect(resolveActiveAddress()).toBe('0xmetamask')
+          // Then a brand-new OTP wallet is written by auth-site after the user
+          // visited /auth/login directly. Pointer is still stuck on MetaMask.
+          setIdentity('0xotp', '2026-06-15T00:00:00.000Z')
+        })
+
+        it('should promote the newcomer over the stale pointer on the next resolve', () => {
+          expect(resolveActiveAddress()).toBe('0xotp')
+          expect(store[ACTIVE_ADDRESS_KEY]).toBe('0xotp')
+        })
+      })
+
+      describe('when an existing wallet is re-signed-in with a fresh ephemeral key', () => {
+        // Same address (OTP/Magic emails map to stable on-chain wallets), but
+        // the ECDSA_EPHEMERAL payload changed because auth-site issued a new
+        // ephemeral key on the re-sign-in.
+        beforeEach(() => {
+          setIdentity('0xmetamask', '2026-12-01T00:00:00.000Z')
+          setIdentity('0xotp', '2026-06-15T00:00:00.000Z', 'stale-ephemeral')
+          writeActivePointer('0xmetamask')
+          expect(resolveActiveAddress()).toBe('0xmetamask')
+          // The user re-signed-in with OTP from /auth/login; the auth-site
+          // rewrote 0xotp's identity with a fresh ephemeral key.
+          setIdentity('0xotp', '2026-08-01T00:00:00.000Z', 'fresh-ephemeral')
+        })
+
+        it('should promote the refreshed identity over the stale pointer', () => {
+          expect(resolveActiveAddress()).toBe('0xotp')
+          expect(store[ACTIVE_ADDRESS_KEY]).toBe('0xotp')
+        })
+      })
+
+      describe('when nothing changed since the last resolve', () => {
+        beforeEach(() => {
+          setIdentity('0xmetamask', '2026-12-01T00:00:00.000Z')
+          setIdentity('0xotp', '2026-06-15T00:00:00.000Z')
+          writeActivePointer('0xmetamask')
+          expect(resolveActiveAddress()).toBe('0xmetamask')
+        })
+
+        it('should respect the existing pointer instead of re-promoting', () => {
+          expect(resolveActiveAddress()).toBe('0xmetamask')
+        })
+      })
+
+      describe('when there is no prior snapshot (first ever resolve)', () => {
+        beforeEach(() => {
+          setIdentity('0xmetamask', '2026-12-01T00:00:00.000Z')
+          setIdentity('0xotp', '2026-06-15T00:00:00.000Z')
+          // No last-known-snapshot yet, no pointer.
+        })
+
+        it('should not promote anything via the silent path and rely on the heuristic', () => {
+          // With multiple identities and no pointer, latest-expiration wins.
+          expect(resolveActiveAddress()).toBe('0xmetamask')
+        })
+
+        it('should write the last-known-snapshot after the first resolve so subsequent runs can diff against it', () => {
+          resolveActiveAddress()
+          const snapshot = JSON.parse(store[LAST_KNOWN_SNAPSHOT_KEY] ?? '{}') as Record<string, string>
+          expect(Object.keys(snapshot).sort()).toEqual(['0xmetamask', '0xotp'])
+        })
+      })
+
+      describe('when the persisted snapshot is malformed', () => {
+        beforeEach(() => {
+          setIdentity('0xmetamask', '2026-12-01T00:00:00.000Z')
+          writeActivePointer('0xmetamask')
+          store[LAST_KNOWN_SNAPSHOT_KEY] = '{not json'
+          setIdentity('0xnew', '2026-06-15T00:00:00.000Z')
+        })
+
+        it('should treat the malformed snapshot as empty and fall through to pointer', () => {
+          // An unparseable snapshot means we cannot tell what's a newcomer, so
+          // we conservatively keep the existing pointer.
+          expect(resolveActiveAddress()).toBe('0xmetamask')
+        })
       })
     })
   })
