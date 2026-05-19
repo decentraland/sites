@@ -54,6 +54,7 @@ describe('EnvAddDialog', () => {
 
     expect(await screen.findByText('component.storage.errors.unauthorized')).toBeInTheDocument()
     expect(onError).toHaveBeenCalledTimes(1)
+    expect(onError).toHaveBeenCalledWith({ status: 401, data: 'Unauthorized' })
     expect(onSuccess).not.toHaveBeenCalled()
     expect(onClose).not.toHaveBeenCalled()
   })

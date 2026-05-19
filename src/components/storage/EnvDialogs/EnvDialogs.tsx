@@ -8,7 +8,7 @@ interface EnvAddDialogProps {
   open: boolean
   onClose: () => void
   onSuccess: () => void
-  onError: () => void
+  onError: (error: unknown) => void
   identity: AuthIdentity | undefined
   realm: string | null
   position: string | null
@@ -38,7 +38,7 @@ const EnvAddDialog = ({ open, onClose, onSuccess, onError, identity, realm, posi
       onClose()
     } catch (error) {
       setErrorKey(getStorageErrorKey(error))
-      onError()
+      onError(error)
     }
   }, [newKey, newValue, setEnv, identity, realm, position, onClose, onSuccess, onError])
 
@@ -85,7 +85,7 @@ interface EnvEditDialogProps {
   keyName: string
   onClose: () => void
   onSuccess: () => void
-  onError: () => void
+  onError: (error: unknown) => void
   identity: AuthIdentity | undefined
   realm: string | null
   position: string | null
@@ -113,7 +113,7 @@ const EnvEditDialog = ({ open, keyName, onClose, onSuccess, onError, identity, r
       onClose()
     } catch (error) {
       setErrorKey(getStorageErrorKey(error))
-      onError()
+      onError(error)
     }
   }, [editValue, keyName, setEnv, identity, realm, position, onClose, onSuccess, onError])
 

@@ -107,6 +107,19 @@ const sendSignedFetch = async (signedFetch: SignedFetch, url: string, init: Requ
 const STORAGE_ERROR_KEY_PREFIX = 'component.storage.errors'
 
 /**
+ * Extract the HTTP status (or the 'FETCH_ERROR' sentinel) from an RTK Query
+ * rejection. Returns `undefined` when the error has no recognisable shape, so
+ * analytics tracking can pass it through without inventing fake codes.
+ */
+const getStorageErrorStatus = (error: unknown): number | 'FETCH_ERROR' | undefined => {
+  if (!error || typeof error !== 'object' || !('status' in error)) return undefined
+  const status = (error as { status: unknown }).status
+  if (status === 'FETCH_ERROR') return 'FETCH_ERROR'
+  if (typeof status === 'number') return status
+  return undefined
+}
+
+/**
  * Map an RTK Query mutation rejection (FetchBaseQueryError-shaped; HTTP status
  * or the 'FETCH_ERROR' sentinel for network failures) into a translation key.
  * The dialogs use this to show an inline error message instead of swallowing
@@ -114,12 +127,9 @@ const STORAGE_ERROR_KEY_PREFIX = 'component.storage.errors'
  * visible feedback because the catch branch only tracked an analytics event.
  */
 const getStorageErrorKey = (error: unknown): string => {
-  if (!error || typeof error !== 'object' || !('status' in error)) {
-    return `${STORAGE_ERROR_KEY_PREFIX}.unknown`
-  }
-  const status = (error as { status: number | string }).status
+  const status = getStorageErrorStatus(error)
+  if (status === undefined) return `${STORAGE_ERROR_KEY_PREFIX}.unknown`
   if (status === 'FETCH_ERROR') return `${STORAGE_ERROR_KEY_PREFIX}.network`
-  if (typeof status !== 'number') return `${STORAGE_ERROR_KEY_PREFIX}.unknown`
   if (status === 400) return `${STORAGE_ERROR_KEY_PREFIX}.signed_fetch`
   if (status === 401 || status === 403) return `${STORAGE_ERROR_KEY_PREFIX}.unauthorized`
   if (status === 404) return `${STORAGE_ERROR_KEY_PREFIX}.not_found`
@@ -357,6 +367,7 @@ export {
   getRentalsQuery,
   getRoleLabelKey,
   getStorageErrorKey,
+  getStorageErrorStatus,
   parcelToLand,
   sendSignedFetch,
   storageContextId,

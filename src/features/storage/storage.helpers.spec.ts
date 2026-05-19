@@ -31,6 +31,7 @@ import {
   getRentalsQuery,
   getRoleLabelKey,
   getStorageErrorKey,
+  getStorageErrorStatus,
   parcelToLand,
   sendSignedFetch,
   storageContextId,
@@ -75,6 +76,22 @@ describe('getStorageErrorKey', () => {
   it('falls back to the unknown key when the status field is missing or non-numeric', () => {
     expect(getStorageErrorKey({})).toBe('component.storage.errors.unknown')
     expect(getStorageErrorKey({ status: 'WAT' as unknown as number })).toBe('component.storage.errors.unknown')
+  })
+})
+
+describe('getStorageErrorStatus', () => {
+  it('returns the numeric status when present', () => {
+    expect(getStorageErrorStatus({ status: 401, data: 'nope' })).toBe(401)
+  })
+
+  it('returns the FETCH_ERROR sentinel for network failures', () => {
+    expect(getStorageErrorStatus({ status: 'FETCH_ERROR', error: 'offline' })).toBe('FETCH_ERROR')
+  })
+
+  it('returns undefined for unrecognised shapes (passes through to analytics as "unknown")', () => {
+    expect(getStorageErrorStatus(null)).toBeUndefined()
+    expect(getStorageErrorStatus({})).toBeUndefined()
+    expect(getStorageErrorStatus({ status: 'WAT' })).toBeUndefined()
   })
 })
 

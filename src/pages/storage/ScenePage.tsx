@@ -9,7 +9,7 @@ import { ConfirmDialog } from '../../components/storage/ConfirmDialog'
 import { KeyTable } from '../../components/storage/KeyTable'
 import { SceneAddDialog, SceneEditDialog } from '../../components/storage/SceneDialogs'
 import { StorageLayout } from '../../components/storage/StorageLayout'
-import { useClearSceneMutation, useDeleteSceneValueMutation, useListSceneKeysQuery } from '../../features/storage'
+import { getStorageErrorStatus, useClearSceneMutation, useDeleteSceneValueMutation, useListSceneKeysQuery } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
@@ -99,7 +99,7 @@ function ScenePage() {
         open={addOpen}
         onClose={() => setAddOpen(false)}
         onSuccess={() => track(SegmentEvent.STORAGE_SCENE_SET_SUCCESS)}
-        onError={() => track(SegmentEvent.STORAGE_SCENE_SET_FAILURE)}
+        onError={error => track(SegmentEvent.STORAGE_SCENE_SET_FAILURE, { errorStatus: getStorageErrorStatus(error) ?? 'unknown' })}
         identity={identity}
         realm={realm}
         position={position}
@@ -110,7 +110,7 @@ function ScenePage() {
           keyName={editKey}
           onClose={() => setEditKey(null)}
           onSuccess={() => track(SegmentEvent.STORAGE_SCENE_SET_SUCCESS)}
-          onError={() => track(SegmentEvent.STORAGE_SCENE_SET_FAILURE)}
+          onError={error => track(SegmentEvent.STORAGE_SCENE_SET_FAILURE, { errorStatus: getStorageErrorStatus(error) ?? 'unknown' })}
           identity={identity}
           realm={realm}
           position={position}

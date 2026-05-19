@@ -10,7 +10,7 @@ interface PlayerAddDialogProps {
   address: string
   onClose: () => void
   onSuccess: () => void
-  onError: () => void
+  onError: (error: unknown) => void
   identity: AuthIdentity | undefined
   realm: string | null
   position: string | null
@@ -44,7 +44,7 @@ const PlayerAddDialog = ({ open, address, onClose, onSuccess, onError, identity,
       onClose()
     } catch (error) {
       setErrorKey(getStorageErrorKey(error))
-      onError()
+      onError(error)
     }
   }, [newKey, setPlayerValue, identity, realm, position, address, onClose, onSuccess, onError])
 
@@ -104,7 +104,7 @@ interface PlayerEditDialogProps {
   keyName: string
   onClose: () => void
   onSuccess: () => void
-  onError: () => void
+  onError: (error: unknown) => void
   identity: AuthIdentity | undefined
   realm: string | null
   position: string | null
@@ -132,7 +132,7 @@ const PlayerEditDialog = ({ open, address, keyName, onClose, onSuccess, onError,
       onClose()
     } catch (error) {
       setErrorKey(getStorageErrorKey(error))
-      onError()
+      onError(error)
     }
   }, [keyName, setPlayerValue, identity, realm, position, address, onClose, onSuccess, onError])
 

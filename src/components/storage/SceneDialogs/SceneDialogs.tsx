@@ -9,7 +9,7 @@ interface SceneAddDialogProps {
   open: boolean
   onClose: () => void
   onSuccess: () => void
-  onError: () => void
+  onError: (error: unknown) => void
   identity: AuthIdentity | undefined
   realm: string | null
   position: string | null
@@ -43,7 +43,7 @@ const SceneAddDialog = ({ open, onClose, onSuccess, onError, identity, realm, po
       onClose()
     } catch (error) {
       setErrorKey(getStorageErrorKey(error))
-      onError()
+      onError(error)
     }
   }, [newKey, setSceneValue, identity, realm, position, onClose, onSuccess, onError])
 
@@ -93,7 +93,7 @@ interface SceneEditDialogProps {
   keyName: string
   onClose: () => void
   onSuccess: () => void
-  onError: () => void
+  onError: (error: unknown) => void
   identity: AuthIdentity | undefined
   realm: string | null
   position: string | null
@@ -121,7 +121,7 @@ const SceneEditDialog = ({ open, keyName, onClose, onSuccess, onError, identity,
       onClose()
     } catch (error) {
       setErrorKey(getStorageErrorKey(error))
-      onError()
+      onError(error)
     }
   }, [keyName, setSceneValue, identity, realm, position, onClose, onSuccess, onError])
 
