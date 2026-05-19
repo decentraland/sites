@@ -109,7 +109,7 @@ Why the split:
 - **Layout is lazy** — `const Layout = lazy(...)` in `App.tsx`. Keeps `decentraland-ui2`'s Navbar (~1.3MB of MUI) out of the critical path until after hero paint.
 - **DappsShell is lazy** — Redux, RTK Query, Contentful renderer, dompurify, livekit-client (`@livekit/components-react`) and the per-dapp endpoint code only load when a user navigates to `/whats-on/*`, `/blog/*`, `/jump/*`, `/social/*`, `/cast/*`, or `/storage/*`.
 - **Deferred analytics** — Segment (`DeferredAnalyticsProvider`) and Contentsquare (`scheduleDeferredThirdParty`) activate via `requestIdleCallback` (4s fallback timeout).
-- **Manual chunks** — `vite.config.ts` splits `vendor-sentry`, `vendor-schemas` (ajv), `vendor-crypto` (`@dcl/crypto`, `eth-connect`), `vendor-intl`, `vendor-ua`, `vendor-router` for cache stability across releases.
+- **Manual chunks** — `vite.config.ts` splits `vendor-sentry`, `vendor-schemas` (ajv), `vendor-crypto` (`@dcl/crypto`, `eth-connect`), `vendor-intl`, `vendor-ua`, `vendor-router`, `vendor-livekit` (JS-only) for cache stability across releases. The same chunk names are filtered out of `modulePreload.resolveDependencies` so they don't get eagerly fetched on routes that never load them. **Watch out:** packages that ship CSS (e.g. `@livekit/components-styles`) must NOT live inside `manualChunks` — Vite injects their stylesheet as a render-blocking `<link rel="stylesheet">` on every page even when the JS is filtered out of `modulePreload`. Keep CSS-bearing packages outside `manualChunks` so the CSS rides with the importing lazy chunk. Verify with `grep "modulepreload\|stylesheet" dist/index.html` after any change — nothing related to a lazy route should be there.
 
 ## Blog SEO
 

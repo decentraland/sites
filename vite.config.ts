@@ -80,6 +80,16 @@ export default defineConfig(({ command, mode }) => {
     build: {
       target: 'esnext',
       sourcemap: 'hidden',
+      // Vite preloads every chunk transitively reachable from the entry,
+      // including dynamic imports. The vendors below are only consumed inside
+      // already-lazy chunks (Sentry/crypto on form submit, ajv inside RTK
+      // schema validation, ua-parser inside analytics, LiveKit only inside
+      // the /cast/* routes). Stripping them from the modulepreload list keeps
+      // the homepage and /whats-on critical path free of ~350 KB of gzipped
+      // JS that would otherwise be eagerly fetched.
+      modulePreload: {
+        resolveDependencies: (_filename, deps) => deps.filter(dep => !/vendor-(sentry|crypto|schemas|ua|livekit)/.test(dep))
+      },
       rollupOptions: {
         output: {
           manualChunks: (id: string) => {
@@ -98,11 +108,11 @@ export default defineConfig(({ command, mode }) => {
               return 'vendor-intl'
             if (id.includes('node_modules/ua-parser-js')) return 'vendor-ua'
             if (id.includes('node_modules/react-router')) return 'vendor-router'
-            if (
-              id.includes('node_modules/livekit-client') ||
-              id.includes('node_modules/@livekit/components-react') ||
-              id.includes('node_modules/@livekit/components-styles')
-            ) {
+            // Keep the livekit JS deps grouped but let CSS (@livekit/components-styles)
+            // ride with the importing cast chunk. When CSS sits inside a manualChunk
+            // Vite injects a top-level <link rel="stylesheet"> for it on every page,
+            // even though the JS is lazy — which would render-block /, /brand, /terms…
+            if (id.includes('node_modules/livekit-client') || id.includes('node_modules/@livekit/components-react')) {
               return 'vendor-livekit'
             }
             return null
