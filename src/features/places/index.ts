@@ -14,9 +14,9 @@ export {
   eventHasEnded,
   formatDateForGoogleCalendar,
   formatLocation,
-  formatRealmWithPosition,
   isEns,
-  parsePosition
+  parsePosition,
+  parsePositionPair
 } from './places.helpers'
 export type {
   CardData,

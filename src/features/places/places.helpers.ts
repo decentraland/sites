@@ -67,15 +67,14 @@ function formatLocation(coordinates: [number, number]): string {
 
 const INTEGER_TOKEN = /^-?\d+$/
 
-// Display "<world> · X, Y" only when the user opened the jump with an explicit
-// non-default parcel inside the world. Worlds visited at their entry point keep
-// the bare world name. Rejects partial-number tokens like "26abc" so junk URL
-// inputs never bleed into the visible card.
-function formatRealmWithPosition(realm: string, position?: string): string {
-  if (!position || position === DEFAULT_POSITION) return realm
+// Parse the canonical "X,Y" Card position into a coordinate pair, or null when
+// it's missing / the default entry point / not a valid integer pair. Rejects
+// partial-number tokens like "26abc" so junk URL inputs never reach the UI.
+function parsePositionPair(position?: string): [number, number] | null {
+  if (!position || position === DEFAULT_POSITION) return null
   const tokens = position.split(POSITION_SEPARATORS)
-  if (tokens.length !== 2 || !tokens.every(t => INTEGER_TOKEN.test(t))) return realm
-  return `${realm} · ${formatLocation([Number(tokens[0]), Number(tokens[1])])}`
+  if (tokens.length !== 2 || !tokens.every(t => INTEGER_TOKEN.test(t))) return null
+  return [Number(tokens[0]), Number(tokens[1])]
 }
 
 export {
@@ -85,8 +84,8 @@ export {
   eventHasEnded,
   formatDateForGoogleCalendar,
   formatLocation,
-  formatRealmWithPosition,
   isEns,
-  parsePosition
+  parsePosition,
+  parsePositionPair
 }
 export type { ParsedPosition }

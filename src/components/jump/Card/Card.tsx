@@ -8,7 +8,7 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
 import PublicIcon from '@mui/icons-material/Public'
 import { CircularProgress, Skeleton, useMobileMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
-import { eventHasEnded, formatLocation, formatRealmWithPosition } from '../../../features/places/places.helpers'
+import { eventHasEnded, formatLocation, parsePositionPair } from '../../../features/places/places.helpers'
 import type { CardData, Creator } from '../../../features/places/places.types'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
@@ -89,6 +89,11 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
     ) : null
   const bottomSlot = children ?? jumpInFallback
 
+  // Render the world badge and the parcel badge as siblings so screen readers
+  // announce them independently and the parcel is always visible next to a
+  // dedicated pin icon — including world jumps that target a specific parcel.
+  const parcelCoordinates = parsePositionPair(data.position) ?? (data.realm ? null : data.coordinates)
+
   return (
     <CardContainer>
       <ImageSection>
@@ -145,14 +150,18 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
                 {hasEnded ? formatMessage('component.jump.event.has_ended') : data.start_at}
               </CardDate>
             )}
-            <CardLocation
-              aria-label={
-                data.realm ? formatMessage('component.jump.card.accessibility.world_label', { worldName: data.realm }) : undefined
-              }
-            >
-              {data.realm ? <PublicIcon sx={{ fontSize: 16 }} /> : <PlaceOutlinedIcon sx={{ fontSize: 16 }} />}
-              {data.realm ? formatRealmWithPosition(data.realm, data.position) : formatLocation(data.coordinates)}
-            </CardLocation>
+            {data.realm && (
+              <CardLocation aria-label={formatMessage('component.jump.card.accessibility.world_label', { worldName: data.realm })}>
+                <PublicIcon sx={{ fontSize: 16 }} />
+                {data.realm}
+              </CardLocation>
+            )}
+            {parcelCoordinates && (
+              <CardLocation>
+                <PlaceOutlinedIcon sx={{ fontSize: 16 }} />
+                {formatLocation(parcelCoordinates)}
+              </CardLocation>
+            )}
           </MetaRow>
           <TextWrapper maxHeight={isMobile ? 250 : 128} gradientColor={isMobile ? '#2E013E' : '#380A4D'}>
             <DescriptionText>{data.description || formatMessage('component.jump.card.place.default_description')}</DescriptionText>
