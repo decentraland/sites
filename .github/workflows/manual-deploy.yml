@@ -1,0 +1,85 @@
+name: Manual deploy branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploymentEnvironment:
+        type: choice
+        description: 'Deployment environment'
+        required: true
+        default: 'zone'
+        options:
+          - zone
+          - today
+      rolloutPercentage:
+        description: 'Rollout percentage'
+        required: true
+        default: '100'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    outputs:
+      version: ${{ steps.publish.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # @v4.3.0
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # @v4.0.1
+        with:
+          node-version: 24.x
+
+      - name: Set package.json version
+        uses: decentraland/oddish-action@d9612ec0a1f3cd012d5736df7744fcf9e940bfce # master (node24)
+        with:
+          deterministic-snapshot: true
+          only-update-versions: true
+
+      - name: Install
+        run: npm install
+        env:
+          HUSKY: 0
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish
+        id: publish
+        uses: decentraland/oddish-action@d9612ec0a1f3cd012d5736df7744fcf9e940bfce # master (node24)
+        with:
+          cwd: './dist'
+          deterministic-snapshot: true
+          provenance: false
+          registry-url: 'https://registry.npmjs.org'
+          access: public
+          gitlab-token: ${{ secrets.GITLAB_CDN_DEPLOYER_TOKEN }}
+          gitlab-pipeline-url: ${{ secrets.GITLAB_CDN_DEPLOYER_URL }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  rollout:
+    needs: build-and-publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set Rollout
+        uses: decentraland/set-rollout-action@26ead404b6944fd0ce0d087cc59fd817607454d6 # v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+          ref: ${{ github.ref }}
+          sha: ${{ github.sha }}
+
+          packageName: '@dcl/sites'
+          packageVersion: ${{ needs.build-and-publish.outputs.version }}
+
+          deploymentPath: 'sites'
+          deploymentEnvironment: ${{ github.event.inputs.deploymentEnvironment }}
+          deploymentName: '_site'
+          percentage: ${{ github.event.inputs.rolloutPercentage }}
