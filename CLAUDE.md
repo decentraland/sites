@@ -167,12 +167,6 @@ npm run lint:pkg     # package.json lint (silent on success — easy to skip; do
 - **Pages**: `src/pages/<route>/`. Heavy routes under `src/pages/{whats-on,blog,jump,social,cast,storage}/`. Layout-less fullscreen routes use the same `src/pages/<area>/` shape but are placed before the `<Layout />` Route block in `src/App.tsx` (`reels`, `download`, `invite`).
 - **Signal you're placing a file wrong**: `src/features/<domain>/use<X>.ts`, inline styled bigger than a single `sx`, type inside `.client.ts`. Stop and move it.
 
-### Dependencies
-
-- `npm install`/`npm uninstall` always — never manually edit `package.json` deps.
-- `@dcl/*` / `decentraland-*`: caret ranges (`^`). All others: exact (`--save-exact`).
-- `npm ci` to install existing deps.
-
 ### Styled components
 
 - Import from `decentraland-ui2`: `styled`, `Box`, `Typography`, `keyframes`.
@@ -188,12 +182,6 @@ npm run lint:pkg     # package.json lint (silent on success — easy to skip; do
 - `describe("when ...")` / `it("should ...")` pattern.
 - `beforeEach` for setup, `afterEach` with `jest.resetAllMocks()`.
 - React Testing Library: `getByRole` > `getByLabelText` > `getByText`.
-
-### Git
-
-- Branches: `<type>/<description>` (feat, fix, chore, docs, refactor).
-- Commits: `<type>: <summary>` — no Co-Authored-By.
-- Pre-commit: `npm run format` → `npm run lint:fix` → `npm run build` → `npm test`.
 
 ## Pre-PR review
 
