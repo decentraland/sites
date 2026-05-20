@@ -1,0 +1,133 @@
+name: Manual deploy branch (trusted publisher)
+
+# Manual deploy variant that publishes to npm via Trusted Publishers (OIDC) instead
+# of NPM_TOKEN. Uses decentraland/oddish-action pinned to the commit that adds OIDC
+# support (PR #10). The publish flow itself is identical to the existing manual
+# deploy workflow — only the auth mechanism changes.
+#
+# Prerequisite (npm side, done by a maintainer of @dcl/sites once):
+#   https://www.npmjs.com/package/@dcl/sites/access -> Trusted Publishers -> Add
+#     Provider:    GitHub Actions
+#     Owner:       decentraland
+#     Repository:  sites
+#     Workflow:    manual-deploy-trusted.yml
+#     Environment: (leave empty)
+#
+# Until that entry exists, the publish step returns
+#   "OIDC token exchange error - package not found"
+# That is the expected failure mode pre-configuration.
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploymentEnvironment:
+        type: choice
+        description: 'Deployment environment'
+        required: true
+        default: 'zone'
+        options:
+          - zone
+          - today
+      rolloutPercentage:
+        description: 'Rollout percentage'
+        required: true
+        default: '100'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    outputs:
+      version: ${{ steps.publish.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1 (Node 24)
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0 (Node 24)
+        with:
+          node-version: 24.x
+
+      - name: Verify OIDC environment is available
+        run: |
+          set +u
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" ]; then
+            echo "OIDC env vars missing - id-token: write permission is not active on this job"
+            exit 1
+          fi
+          echo "OIDC env vars present (token length: ${#ACTIONS_ID_TOKEN_REQUEST_TOKEN})"
+
+      - name: Set package.json version
+        uses: decentraland/oddish-action@0074f2d535c43b5c83f136525304a6277166d77f # master @ PR #10 (OIDC support)
+        with:
+          deterministic-snapshot: true
+          only-update-versions: true
+
+      - name: Install
+        run: npm install
+        env:
+          HUSKY: 0
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish via Trusted Publisher (OIDC, no NPM_TOKEN)
+        id: publish
+        # NOTE: deliberately no `env: NODE_AUTH_TOKEN`. The OIDC-enabled oddish skips
+        # the _authToken in .npmrc when no token is provided, letting npm 11 handle
+        # the OIDC handshake. Provenance is required for Trusted Publisher attestation.
+        uses: decentraland/oddish-action@0074f2d535c43b5c83f136525304a6277166d77f # master @ PR #10 (OIDC support)
+        with:
+          cwd: './dist'
+          deterministic-snapshot: true
+          provenance: true
+          registry-url: 'https://registry.npmjs.org'
+          access: public
+          custom-tag: 'manual'
+          branch-to-custom-tag: ${{ github.ref_name }}
+          gitlab-token: ${{ secrets.GITLAB_CDN_DEPLOYER_TOKEN }}
+          gitlab-pipeline-url: ${{ secrets.GITLAB_CDN_DEPLOYER_URL }}
+
+  rollout:
+    needs: build-and-publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Wait for CDN propagation
+        env:
+          PACKAGE_NAME: '@dcl/sites'
+          PACKAGE_VERSION: ${{ needs.build-and-publish.outputs.version }}
+        run: |
+          URL="https://cdn.decentraland.org/${PACKAGE_NAME}/${PACKAGE_VERSION}"
+          echo "Polling ${URL} until the CDN serves the package..."
+          for attempt in $(seq 1 60); do
+            status=$(curl -s -o /dev/null -w '%{http_code}' -I "${URL}" || echo "000")
+            if [ "${status}" -ge 200 ] && [ "${status}" -lt 400 ]; then
+              echo "Package available in CDN (status ${status}) after attempt ${attempt}"
+              exit 0
+            fi
+            echo "Attempt ${attempt}: status ${status}, retrying in 15s..."
+            sleep 15
+          done
+          echo "Timed out waiting for ${URL}"
+          exit 1
+
+      - name: Set Rollout
+        uses: decentraland/set-rollout-action@26ead404b6944fd0ce0d087cc59fd817607454d6 # v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+          ref: ${{ github.ref }}
+          sha: ${{ github.sha }}
+
+          packageName: '@dcl/sites'
+          packageVersion: ${{ needs.build-and-publish.outputs.version }}
+
+          deploymentPath: 'sites'
+          deploymentEnvironment: ${{ github.event.inputs.deploymentEnvironment }}
+          deploymentName: '_site'
+          percentage: ${{ github.event.inputs.rolloutPercentage }}
