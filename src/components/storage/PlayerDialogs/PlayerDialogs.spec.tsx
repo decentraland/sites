@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { dialogMockFactory } from '../__test-utils__/dialogMocks'
+import { dialogMockFactory, storageValueFieldMockFactory } from '../__test-utils__/dialogMocks'
 
 let mockSetPlayerResult: { unwrap: () => Promise<{ key: string; value: unknown }> } = {
   unwrap: jest.fn().mockResolvedValue({ key: 'k', value: 'v' })
@@ -21,26 +21,7 @@ jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (key: string, vars?: Record<string, string>) => (vars?.key ? `${key}:${vars.key}` : key)
 }))
 
-jest.mock('../StorageValueField', () => {
-  const React = jest.requireActual('react')
-  return {
-    StorageValueField: React.forwardRef((props: { onChange?: (e: { isValid: boolean }) => void; label?: string }, ref: unknown) => {
-      const [raw, setRaw] = React.useState('')
-      React.useImperativeHandle(ref, () => ({
-        reset: () => setRaw(''),
-        getParsedValue: () => (raw.trim() ? raw : null)
-      }))
-      return React.createElement('input', {
-        'aria-label': props.label ?? 'storage-value-field',
-        value: raw,
-        onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-          setRaw(e.target.value)
-          props.onChange?.({ isValid: e.target.value.trim().length > 0 })
-        }
-      })
-    })
-  }
-})
+jest.mock('../StorageValueField', () => storageValueFieldMockFactory())
 
 describe('PlayerAddDialog', () => {
   beforeEach(() => {
