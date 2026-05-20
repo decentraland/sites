@@ -25,7 +25,7 @@ jobs:
           node-version: 24.x
 
       - name: Set package.json version
-        uses: decentraland/oddish-action@master
+        uses: decentraland/oddish-action@d9612ec0a1f3cd012d5736df7744fcf9e940bfce # master (node24)
         with:
           deterministic-snapshot: true
           only-update-versions: true
@@ -39,7 +39,7 @@ jobs:
         run: npm run build
 
       - name: Publish
-        uses: decentraland/oddish-action@master
+        uses: decentraland/oddish-action@d9612ec0a1f3cd012d5736df7744fcf9e940bfce # master (node24)
         with:
           cwd: './dist'
           deterministic-snapshot: true
