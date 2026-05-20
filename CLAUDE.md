@@ -74,6 +74,10 @@ Each absorbed dapp's feature client, base client, components, and pages live und
 - `docs/domains/reels.md` — `src/features/reels/`. Camera-screenshot client; Layout-less.
 - `docs/domains/report.md` — `src/features/report/`. Lightweight report form (no RTK Query).
 
+### Skill + hook governance
+
+For the human-readable index of all skills, hooks, per-dapp docs, and the Pre-PR rule → skill mapping → `docs/skills-registry.md`. Update it whenever you add or remove a skill, hook, or Pre-PR rule so the documentation stays consistent.
+
 ## RTK Query split (`services/` vs `features/`)
 
 Base clients (infra) in `src/services/<name>Client.ts`. Endpoints (business logic) injected from `src/features/<domain>/<domain>.client.ts` via `<base>.injectEndpoints({ ... })`. Full rationale, step-by-step for adding endpoints / base clients, and Pre-PR rules 17-18 → skill `rtk-query-split`.
