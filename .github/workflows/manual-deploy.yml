@@ -58,6 +58,12 @@ jobs:
           provenance: false
           registry-url: 'https://registry.npmjs.org'
           access: public
+          # oddish-action skips publish on non master/main branches unless either
+          # `branch-to-next` or `custom-tag` + `branch-to-custom-tag` are set.
+          # Tag manual-deploy builds under the `manual` dist-tag so the rollout
+          # step can find the package in npm and the CDN.
+          custom-tag: 'manual'
+          branch-to-custom-tag: ${{ github.ref_name }}
           gitlab-token: ${{ secrets.GITLAB_CDN_DEPLOYER_TOKEN }}
           gitlab-pipeline-url: ${{ secrets.GITLAB_CDN_DEPLOYER_URL }}
         env:
