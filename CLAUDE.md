@@ -82,30 +82,15 @@ Base clients (infra) in `src/services/<name>Client.ts`. Endpoints (business logi
 
 ## Auth flow
 
-- `useWalletAddress()` reads `single-sign-on-*` keys from `localStorage`. Subscribes to MetaMask `accountsChanged` and cross-tab `storage` events. No Web3 provider needed. Sync store pattern (external-store hook) — safe on lightweight routes.
-- `useAuthIdentity()` wraps `useWalletAddress`, returns `{ identity, hasValidIdentity, address }`. Identity comes from `localStorageGetIdentity()` (`@dcl/single-sign-on-client`).
-- Sign-in: navbar button → redirects to the external `/auth` SSO dapp. On return, identity is in localStorage; hooks pick it up.
-- Sign-out: navbar button → `useWalletAddress.disconnect()` clears `single-sign-on-*`, `wagmi*`, `wc@2*`, `dcl_magic_user_email`, `dcl_thirdweb_user_email` from localStorage.
-- Explore mutations (create event, toggle attendee) call `signedFetch(url, identity)` from `src/utils/signedFetch.ts`.
-- Blog public endpoints don't need identity.
+No Web3 providers (no wagmi, magic-sdk, core-web3, thirdweb). Wallet + identity via localStorage (`useWalletAddress`, `useAuthIdentity`). Mutations call `signedFetch(url, identity)` from `src/utils/signedFetch.ts`. Full sign-in/out flow, hook details, OTP/Magic edge cases → skill `auth-flow`.
 
 ## Performance
 
-- **Hero prerender** (`scripts/prerender-hero.mjs`) — injects a static HTML shell + critical CSS into `dist/index.html` at build time so LCP paints before React mounts.
-- **Layout is lazy** — `const Layout = lazy(...)` in `App.tsx`. Keeps `decentraland-ui2`'s Navbar (~1.3MB of MUI) out of the critical path until after hero paint.
-- **DappsShell is lazy** — Redux, RTK Query, Contentful renderer, dompurify, livekit-client (`@livekit/components-react`) and the per-dapp endpoint code only load when a user navigates to `/whats-on/*`, `/blog/*`, `/jump/*`, `/social/*`, `/cast/*`, or `/storage/*`.
-- **Deferred analytics** — Segment (`DeferredAnalyticsProvider`) and Contentsquare (`scheduleDeferredThirdParty`) activate via `requestIdleCallback` (4s fallback timeout).
-- **Manual chunks** — `vite.config.ts` splits `vendor-sentry`, `vendor-schemas` (ajv), `vendor-crypto` (`@dcl/crypto`, `eth-connect`), `vendor-intl`, `vendor-ua`, `vendor-router`, `vendor-livekit` (JS-only) for cache stability across releases. The same chunk names are filtered out of `modulePreload.resolveDependencies` so they don't get eagerly fetched on routes that never load them. **Watch out:** packages that ship CSS (e.g. `@livekit/components-styles`) must NOT live inside `manualChunks` — Vite injects their stylesheet as a render-blocking `<link rel="stylesheet">` on every page even when the JS is filtered out of `modulePreload`. Keep CSS-bearing packages outside `manualChunks` so the CSS rides with the importing lazy chunk. Verify with `grep "modulepreload\|stylesheet" dist/index.html` after any change — nothing related to a lazy route should be there.
+Hero prerender + lazy `<Layout />` + lazy `<DappsShell />` + deferred analytics. Manual chunks in `vite.config.ts` with a render-blocking CSS gotcha for packages like `@livekit/components-styles`. Full setup, manualChunks rules, verification command → skill `perf-tier`.
 
 ## Blog SEO
 
-`api/seo.ts` is a Vercel serverless function. `vercel.json` rewrites `/blog/:path*` to `/api/seo?path=...`. On request:
-
-1. Function parses the path (post, category, author, search, or unknown).
-2. Fetches relevant metadata from `cms-api.decentraland.org/spaces/ea2ybdmmn1kv/environments/master`.
-3. Loads the static `dist/index.html` shell, rewrites `og:*` / `twitter:*` / canonical meta tags with the fetched values, and returns.
-4. Strict HTML escaping + path sanitization + canonical origin allowlist (`decentraland.org`, `decentraland.zone`, `decentraland.today`).
-5. Cache-Control: 1 hour with 14 hour stale-while-revalidate.
+`api/seo.ts` is a Vercel serverless function that rewrites OG/Twitter meta at the edge for `/blog/*` (crawlers don't run JS so Helmet titles are invisible to them). HTML escaping + origin allowlist + path sanitization. Full flow, CMS_BASE_URL coherence, security checklist for new template paths → skill `seo-worker`.
 
 ## Environment config
 
@@ -245,21 +230,11 @@ Hits outside `src/App.tsx` and `src/shells/` itself = violation.
 
 ### 15. CMS origin + vite proxy rewrites
 
-- All CMS_BASE_URL across `config/env/*.json`, `api/seo.ts`, and the `vite.config.ts` dev proxy must point to the same origin (`cms-api.decentraland.org`). Shared HTTP cache and ETag revalidation depend on this.
-- The dev proxy `/api/cms` rewrite must substitute the full upstream path (`/spaces/ea2ybdmmn1kv/environments/master`), not just strip the local prefix.
+All `CMS_BASE_URL` references (env files, `api/seo.ts`, `vite.config.ts` proxy) must point to `cms-api.decentraland.org`. Dev proxy must substitute the full upstream path. Skill `seo-worker`.
 
 ### 16. No module-top-level throws in shell-reachable code
 
-- NEVER throw at module top-level in files imported by `src/shells/store.ts` or any file reachable from the lazy `DappsShell` chunk boundary. One `if (!X) throw` at import-time crashes the ENTIRE lazy chunk load — not just the feature that needs `X`.
-- For env-var validation, use a lazy getter that throws only on invocation:
-  ```ts
-  const getCmsBaseUrl = (): string => {
-    const url = getEnv('CMS_BASE_URL')
-    if (!url) throw new Error('CMS_BASE_URL is required')
-    return url
-  }
-  // inside endpoint: `url: \`\${getCmsBaseUrl()}/entries?...\``
-  ```
+NEVER throw at module top-level in files imported by `src/shells/store.ts` — one bad import crashes the entire lazy `DappsShell` chunk load. Use a lazy getter. Skill `shell-safe-imports`.
 
 ### 17. RTK Query — no direct store imports in endpoint files
 
