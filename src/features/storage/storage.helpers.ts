@@ -162,6 +162,12 @@ const getStorageErrorKey = (error: unknown): string => {
   const status = getStorageErrorStatus(error)
   if (status === undefined) return `${STORAGE_ERROR_KEY_PREFIX}.unknown`
   if (status === 'FETCH_ERROR') return `${STORAGE_ERROR_KEY_PREFIX}.network`
+  // The world-storage-service returns 400 only for "Invalid Auth Chain" /
+  // "Request must include a realm name or a parcel" / schema-validation issues.
+  // All of them mean the request was malformed, not "bad user input" — the
+  // actionable fix is to sign out and back in, which is what the `signed_fetch`
+  // message tells the user. Add a more specific key here if the service ever
+  // grows business-validation 400s.
   if (status === 400) return `${STORAGE_ERROR_KEY_PREFIX}.signed_fetch`
   if (status === 401 || status === 403) return `${STORAGE_ERROR_KEY_PREFIX}.unauthorized`
   if (status === 404) return `${STORAGE_ERROR_KEY_PREFIX}.not_found`

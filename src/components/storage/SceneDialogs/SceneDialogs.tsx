@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AuthIdentity } from '@dcl/crypto'
 import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from 'decentraland-ui2'
-import { getStorageErrorKey, useGetSceneValueQuery, useSetSceneValueMutation } from '../../../features/storage'
+import { useGetSceneValueQuery, useSetSceneValueMutation } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useDialogError } from '../../../hooks/useDialogError'
 import { StorageValueField, type StorageValueFieldRef } from '../StorageValueField'
 
 interface SceneAddDialogProps {
@@ -20,14 +21,13 @@ const SceneAddDialog = ({ open, onClose, onSuccess, onError, identity, realm, po
   const [setSceneValue, { isLoading }] = useSetSceneValueMutation()
   const [newKey, setNewKey] = useState('')
   const [isValueValid, setIsValueValid] = useState(false)
-  const [errorKey, setErrorKey] = useState<string | null>(null)
+  const { errorKey, clearError, setErrorFrom } = useDialogError([open])
   const fieldRef = useRef<StorageValueFieldRef>(null)
 
   useEffect(() => {
     if (open) {
       setNewKey('')
       setIsValueValid(false)
-      setErrorKey(null)
       fieldRef.current?.reset()
     }
   }, [open])
@@ -36,16 +36,16 @@ const SceneAddDialog = ({ open, onClose, onSuccess, onError, identity, realm, po
     if (!newKey.trim()) return
     const parsedValue = fieldRef.current?.getParsedValue() ?? null
     if (parsedValue === null) return
-    setErrorKey(null)
+    clearError()
     try {
       await setSceneValue({ identity, realm, position, key: newKey.trim(), value: parsedValue }).unwrap()
       onSuccess()
       onClose()
     } catch (error) {
-      setErrorKey(getStorageErrorKey(error))
+      setErrorFrom(error)
       onError(error)
     }
-  }, [newKey, setSceneValue, identity, realm, position, onClose, onSuccess, onError])
+  }, [newKey, setSceneValue, identity, realm, position, onClose, onSuccess, onError, clearError, setErrorFrom])
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -105,25 +105,21 @@ const SceneEditDialog = ({ open, keyName, onClose, onSuccess, onError, identity,
   const [setSceneValue] = useSetSceneValueMutation()
   const fieldRef = useRef<StorageValueFieldRef>(null)
   const [isValid, setIsValid] = useState(false)
-  const [errorKey, setErrorKey] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (open) setErrorKey(null)
-  }, [open, keyName])
+  const { errorKey, clearError, setErrorFrom } = useDialogError([open, keyName])
 
   const handleSave = useCallback(async () => {
     const parsedValue = fieldRef.current?.getParsedValue() ?? null
     if (parsedValue === null) return
-    setErrorKey(null)
+    clearError()
     try {
       await setSceneValue({ identity, realm, position, key: keyName, value: parsedValue }).unwrap()
       onSuccess()
       onClose()
     } catch (error) {
-      setErrorKey(getStorageErrorKey(error))
+      setErrorFrom(error)
       onError(error)
     }
-  }, [keyName, setSceneValue, identity, realm, position, onClose, onSuccess, onError])
+  }, [keyName, setSceneValue, identity, realm, position, onClose, onSuccess, onError, clearError, setErrorFrom])
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
