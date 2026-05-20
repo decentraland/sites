@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AuthIdentity } from '@dcl/crypto'
 import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from 'decentraland-ui2'
-import { getStorageErrorKey, useGetPlayerValueQuery, useSetPlayerValueMutation } from '../../../features/storage'
+import { useGetPlayerValueQuery, useSetPlayerValueMutation } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useDialogError } from '../../../hooks/useDialogError'
 import { StorageValueField, type StorageValueFieldRef } from '../StorageValueField'
 
 interface PlayerAddDialogProps {
@@ -21,14 +22,13 @@ const PlayerAddDialog = ({ open, address, onClose, onSuccess, onError, identity,
   const [setPlayerValue, { isLoading }] = useSetPlayerValueMutation()
   const [newKey, setNewKey] = useState('')
   const [isValueValid, setIsValueValid] = useState(false)
-  const [errorKey, setErrorKey] = useState<string | null>(null)
+  const { errorKey, clearError, setErrorFrom } = useDialogError([open])
   const fieldRef = useRef<StorageValueFieldRef>(null)
 
   useEffect(() => {
     if (open) {
       setNewKey('')
       setIsValueValid(false)
-      setErrorKey(null)
       fieldRef.current?.reset()
     }
   }, [open])
@@ -37,16 +37,16 @@ const PlayerAddDialog = ({ open, address, onClose, onSuccess, onError, identity,
     if (!newKey.trim()) return
     const parsedValue = fieldRef.current?.getParsedValue() ?? null
     if (parsedValue === null) return
-    setErrorKey(null)
+    clearError()
     try {
       await setPlayerValue({ identity, realm, position, address, key: newKey.trim(), value: parsedValue }).unwrap()
       onSuccess()
       onClose()
     } catch (error) {
-      setErrorKey(getStorageErrorKey(error))
+      setErrorFrom(error)
       onError(error)
     }
-  }, [newKey, setPlayerValue, identity, realm, position, address, onClose, onSuccess, onError])
+  }, [newKey, setPlayerValue, identity, realm, position, address, onClose, onSuccess, onError, clearError, setErrorFrom])
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -116,25 +116,21 @@ const PlayerEditDialog = ({ open, address, keyName, onClose, onSuccess, onError,
   const [setPlayerValue] = useSetPlayerValueMutation()
   const fieldRef = useRef<StorageValueFieldRef>(null)
   const [isValid, setIsValid] = useState(false)
-  const [errorKey, setErrorKey] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (open) setErrorKey(null)
-  }, [open, keyName])
+  const { errorKey, clearError, setErrorFrom } = useDialogError([open, keyName])
 
   const handleSave = useCallback(async () => {
     const parsedValue = fieldRef.current?.getParsedValue() ?? null
     if (parsedValue === null) return
-    setErrorKey(null)
+    clearError()
     try {
       await setPlayerValue({ identity, realm, position, address, key: keyName, value: parsedValue }).unwrap()
       onSuccess()
       onClose()
     } catch (error) {
-      setErrorKey(getStorageErrorKey(error))
+      setErrorFrom(error)
       onError(error)
     }
-  }, [keyName, setPlayerValue, identity, realm, position, address, onClose, onSuccess, onError])
+  }, [keyName, setPlayerValue, identity, realm, position, address, onClose, onSuccess, onError, clearError, setErrorFrom])
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
