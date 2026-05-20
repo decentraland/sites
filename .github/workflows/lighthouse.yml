@@ -61,7 +61,7 @@ jobs:
           ref: ${{ steps.pr.outputs.sha }}
 
       - name: Use Node.js 24.x
-        uses: actions/setup-node@v4.0.1
+        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # @v4.0.1
         with:
           node-version: 24.x
           cache: 'npm'
