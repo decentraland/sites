@@ -23,6 +23,8 @@ export { assetsEndpoints, useGetUserDCLNamesQuery, useGetUserLandsQuery, useGetU
 export {
   getLandPosition,
   getRoleLabelKey,
+  getStorageErrorKey,
+  getStorageErrorStatus,
   storageContextId,
   transformLandQueryResult,
   transformRentalsQueryResult,
@@ -31,12 +33,16 @@ export {
 export { LandType, RoleType } from './storage.types'
 export type {
   ContributableDomain,
+  EnvKey,
   Land,
+  PlayerKey,
   PlayerProfile,
   PlayerValue,
   Rental,
+  SceneKey,
   SceneValue,
   StorageContext,
   World,
-  WorldScene
+  WorldScene,
+  WrapSignedFetchError
 } from './storage.types'
