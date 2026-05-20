@@ -36,7 +36,7 @@ jobs:
           node-version: 24.x
 
       - name: Set package.json version
-        uses: decentraland/oddish-action@d9612ec0a1f3cd012d5736df7744fcf9e940bfce # master (node24)
+        uses: decentraland/oddish-action@master
         with:
           deterministic-snapshot: true
           only-update-versions: true
@@ -51,11 +51,16 @@ jobs:
 
       - name: Publish
         id: publish
-        uses: decentraland/oddish-action@d9612ec0a1f3cd012d5736df7744fcf9e940bfce # master (node24)
+        # Auth via npm Trusted Publishers (OIDC) — `id-token: write` is granted on
+        # this job and no `NODE_AUTH_TOKEN` is provided, so the OIDC-aware oddish
+        # skips writing `_authToken` to `.npmrc` and lets npm 11 do the handshake.
+        # Requires a Trusted Publisher entry for `manual-deploy.yml` at
+        # https://www.npmjs.com/package/@dcl/sites/access
+        uses: decentraland/oddish-action@master
         with:
           cwd: './dist'
           deterministic-snapshot: true
-          provenance: false
+          provenance: true
           registry-url: 'https://registry.npmjs.org'
           access: public
           # oddish-action skips publish on non master/main branches unless either
@@ -66,8 +71,6 @@ jobs:
           branch-to-custom-tag: ${{ github.ref_name }}
           gitlab-token: ${{ secrets.GITLAB_CDN_DEPLOYER_TOKEN }}
           gitlab-pipeline-url: ${{ secrets.GITLAB_CDN_DEPLOYER_URL }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   rollout:
     needs: build-and-publish
