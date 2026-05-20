@@ -23,8 +23,6 @@ This SPA splits RTK Query into two folders per backend API. The split breaks a c
 - Calls `<base>.injectEndpoints({ endpoints: builder => ({ ... }) })`.
 - Example: `features/cms/cms.client.ts` injects `getBlogPosts`, `getBlogPost`, `getBlogCategories`, … into `cmsClient`. `features/cms/cms.search.client.ts` injects the search endpoints into the same `cmsClient`.
 
-**Naming nit:** `services/blogClient.ts` actually hosts `cmsClient` (legacy filename — search now injects into the same client because cms-server `/blog/posts?q=` shares the origin and HTTP cache). A future rename to `services/cmsClient.ts` is fine but not urgent.
-
 ## Why the split
 
 1. **Breaks a circular dep.** `store.ts` imports the base client. Endpoints in `features/blog/blog.client.ts` import `store` for one cache-read optimization (`getPostFromStore`). If the base client lived next to the endpoints, that would cycle. The split keeps the hub (`services/`) free of app-layer imports.
