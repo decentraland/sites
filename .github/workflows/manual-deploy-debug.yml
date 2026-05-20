@@ -2,7 +2,15 @@ name: Manual deploy branch (debug)
 
 # Diagnostic version of Manual deploy branch that bypasses decentraland/oddish-action
 # and runs the publish flow inline, on Node 24, with full verbose logging at every
-# step. The original Manual deploy branch workflow stays untouched.
+# step. Auth is via npm Trusted Publishers (OIDC) — no NPM_TOKEN consumed.
+#
+# Prerequisite (npm side, done by a maintainer of @dcl/sites once):
+#   https://www.npmjs.com/package/@dcl/sites/access -> Trusted Publishers -> Add
+#     Provider:    GitHub Actions
+#     Owner:       decentraland
+#     Repository:  sites
+#     Workflow:    manual-deploy-debug.yml
+#     Environment: (leave empty)
 
 on:
   workflow_dispatch:
@@ -64,29 +72,29 @@ jobs:
           echo "=== Root package.json (truncated) ==="
           node -e "const p=require('./package.json');console.log(JSON.stringify({name:p.name,version:p.version,homepage:p.homepage,scripts:Object.keys(p.scripts||{})},null,2))"
 
-      - name: Diagnose npm auth (whoami + access)
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Verify OIDC environment is available
         run: |
-          set +e
-          echo "=== .npmrc contents (registry config from setup-node) ==="
-          cat ~/.npmrc 2>&1 | sed 's/\(_authToken=\).*/\1***REDACTED***/'
+          set +u
+          echo "=== OIDC env vars injected by GitHub Actions ==="
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" ]; then
+            echo "ACTIONS_ID_TOKEN_REQUEST_URL / _TOKEN missing - id-token: write permission is not active on this job"
+            exit 1
+          fi
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL   = ${ACTIONS_ID_TOKEN_REQUEST_URL}"
+          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN = ***REDACTED*** (${#ACTIONS_ID_TOKEN_REQUEST_TOKEN} chars)"
           echo
-          echo "=== npm config get registry ==="
-          npm config get registry
+          echo "=== Requesting an OIDC token audience=npm:registry.npmjs.org (dry probe) ==="
+          curl -sf \
+            -H "Accept: application/json" \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:registry.npmjs.org" \
+            | python3 -c "import sys,json; t=json.load(sys.stdin).get('value',''); print('token length:', len(t))" \
+            || echo "(OIDC probe failed - npm publish below will reveal exact reason)"
           echo
-          echo "=== npm whoami (must succeed and be 'decentralandbot' or 'imazzara') ==="
-          npm whoami
-          WHOAMI_EXIT=$?
-          echo "whoami exit code: ${WHOAMI_EXIT}"
-          echo
-          echo "=== npm access list packages (showing @dcl/* only) ==="
-          npm access list packages 2>&1 | grep -E "^\s*\"?@dcl" || echo "(no @dcl entries returned)"
-          echo
-          echo "=== npm view @dcl/sites collaborators ==="
+          echo "=== npm view @dcl/sites collaborators (public, no auth) ==="
           npm view @dcl/sites collaborators --json 2>&1 || true
           echo
-          echo "=== npm view @dcl/sites dist-tags ==="
+          echo "=== npm view @dcl/sites dist-tags (public, no auth) ==="
           npm view @dcl/sites dist-tags --json 2>&1 || true
 
       - name: Install
@@ -101,7 +109,6 @@ jobs:
         id: compute-version
         env:
           RUN_ID: ${{ github.run_id }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           set -euo pipefail
           SHORT_SHA=$(git rev-parse --short HEAD)
@@ -142,22 +149,22 @@ jobs:
 
       - name: npm publish --dry-run
         working-directory: ./dist
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # No NODE_AUTH_TOKEN: publish runs via Trusted Publishers (OIDC).
         run: |
           echo "=== Tarball preview ==="
           npm pack --dry-run 2>&1 | tail -40
           echo
           echo "=== Dry-run publish ==="
-          npm publish --access public --tag manual --dry-run --loglevel=verbose 2>&1 | tail -60
+          npm publish --provenance --access public --tag manual --dry-run --loglevel=verbose 2>&1 | tail -60
 
       - name: npm publish (real)
         working-directory: ./dist
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # No NODE_AUTH_TOKEN: publish runs via Trusted Publishers (OIDC).
+        # Requires a Trusted Publisher entry for `manual-deploy-debug.yml` at
+        # https://www.npmjs.com/package/@dcl/sites/access
         run: |
           echo "=== Real publish ==="
-          npm publish --access public --tag manual --loglevel=verbose
+          npm publish --provenance --access public --tag manual --loglevel=verbose
 
       - name: Verify package on npm
         env:
