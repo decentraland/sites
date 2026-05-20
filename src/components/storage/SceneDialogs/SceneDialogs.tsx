@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AuthIdentity } from '@dcl/crypto'
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from 'decentraland-ui2'
-import { useGetSceneValueQuery, useSetSceneValueMutation } from '../../../features/storage'
+import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from 'decentraland-ui2'
+import { getStorageErrorKey, useGetSceneValueQuery, useSetSceneValueMutation } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { StorageValueField, type StorageValueFieldRef } from '../StorageValueField'
 
@@ -9,7 +9,7 @@ interface SceneAddDialogProps {
   open: boolean
   onClose: () => void
   onSuccess: () => void
-  onError: () => void
+  onError: (error: unknown) => void
   identity: AuthIdentity | undefined
   realm: string | null
   position: string | null
@@ -20,12 +20,14 @@ const SceneAddDialog = ({ open, onClose, onSuccess, onError, identity, realm, po
   const [setSceneValue, { isLoading }] = useSetSceneValueMutation()
   const [newKey, setNewKey] = useState('')
   const [isValueValid, setIsValueValid] = useState(false)
+  const [errorKey, setErrorKey] = useState<string | null>(null)
   const fieldRef = useRef<StorageValueFieldRef>(null)
 
   useEffect(() => {
     if (open) {
       setNewKey('')
       setIsValueValid(false)
+      setErrorKey(null)
       fieldRef.current?.reset()
     }
   }, [open])
@@ -34,12 +36,14 @@ const SceneAddDialog = ({ open, onClose, onSuccess, onError, identity, realm, po
     if (!newKey.trim()) return
     const parsedValue = fieldRef.current?.getParsedValue() ?? null
     if (parsedValue === null) return
+    setErrorKey(null)
     try {
       await setSceneValue({ identity, realm, position, key: newKey.trim(), value: parsedValue }).unwrap()
       onSuccess()
       onClose()
-    } catch {
-      onError()
+    } catch (error) {
+      setErrorKey(getStorageErrorKey(error))
+      onError(error)
     }
   }, [newKey, setSceneValue, identity, realm, position, onClose, onSuccess, onError])
 
@@ -47,6 +51,11 @@ const SceneAddDialog = ({ open, onClose, onSuccess, onError, identity, realm, po
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{t('component.storage.scene_page.add_dialog.title')}</DialogTitle>
       <DialogContent>
+        {errorKey ? (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {t(errorKey)}
+          </Alert>
+        ) : null}
         <TextField
           autoFocus
           margin="dense"
@@ -84,7 +93,7 @@ interface SceneEditDialogProps {
   keyName: string
   onClose: () => void
   onSuccess: () => void
-  onError: () => void
+  onError: (error: unknown) => void
   identity: AuthIdentity | undefined
   realm: string | null
   position: string | null
@@ -96,16 +105,23 @@ const SceneEditDialog = ({ open, keyName, onClose, onSuccess, onError, identity,
   const [setSceneValue] = useSetSceneValueMutation()
   const fieldRef = useRef<StorageValueFieldRef>(null)
   const [isValid, setIsValid] = useState(false)
+  const [errorKey, setErrorKey] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (open) setErrorKey(null)
+  }, [open, keyName])
 
   const handleSave = useCallback(async () => {
     const parsedValue = fieldRef.current?.getParsedValue() ?? null
     if (parsedValue === null) return
+    setErrorKey(null)
     try {
       await setSceneValue({ identity, realm, position, key: keyName, value: parsedValue }).unwrap()
       onSuccess()
       onClose()
-    } catch {
-      onError()
+    } catch (error) {
+      setErrorKey(getStorageErrorKey(error))
+      onError(error)
     }
   }, [keyName, setSceneValue, identity, realm, position, onClose, onSuccess, onError])
 
@@ -113,6 +129,11 @@ const SceneEditDialog = ({ open, keyName, onClose, onSuccess, onError, identity,
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>{t('component.storage.scene_page.edit_dialog.title', { key: keyName })}</DialogTitle>
       <DialogContent>
+        {errorKey ? (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {t(errorKey)}
+          </Alert>
+        ) : null}
         {isLoading ? (
           <Box display="flex" justifyContent="center" p={3}>
             <CircularProgress />

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AuthIdentity } from '@dcl/crypto'
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from 'decentraland-ui2'
-import { useGetPlayerValueQuery, useSetPlayerValueMutation } from '../../../features/storage'
+import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from 'decentraland-ui2'
+import { getStorageErrorKey, useGetPlayerValueQuery, useSetPlayerValueMutation } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { StorageValueField, type StorageValueFieldRef } from '../StorageValueField'
 
@@ -10,7 +10,7 @@ interface PlayerAddDialogProps {
   address: string
   onClose: () => void
   onSuccess: () => void
-  onError: () => void
+  onError: (error: unknown) => void
   identity: AuthIdentity | undefined
   realm: string | null
   position: string | null
@@ -21,12 +21,14 @@ const PlayerAddDialog = ({ open, address, onClose, onSuccess, onError, identity,
   const [setPlayerValue, { isLoading }] = useSetPlayerValueMutation()
   const [newKey, setNewKey] = useState('')
   const [isValueValid, setIsValueValid] = useState(false)
+  const [errorKey, setErrorKey] = useState<string | null>(null)
   const fieldRef = useRef<StorageValueFieldRef>(null)
 
   useEffect(() => {
     if (open) {
       setNewKey('')
       setIsValueValid(false)
+      setErrorKey(null)
       fieldRef.current?.reset()
     }
   }, [open])
@@ -35,12 +37,14 @@ const PlayerAddDialog = ({ open, address, onClose, onSuccess, onError, identity,
     if (!newKey.trim()) return
     const parsedValue = fieldRef.current?.getParsedValue() ?? null
     if (parsedValue === null) return
+    setErrorKey(null)
     try {
       await setPlayerValue({ identity, realm, position, address, key: newKey.trim(), value: parsedValue }).unwrap()
       onSuccess()
       onClose()
-    } catch {
-      onError()
+    } catch (error) {
+      setErrorKey(getStorageErrorKey(error))
+      onError(error)
     }
   }, [newKey, setPlayerValue, identity, realm, position, address, onClose, onSuccess, onError])
 
@@ -48,6 +52,11 @@ const PlayerAddDialog = ({ open, address, onClose, onSuccess, onError, identity,
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{t('component.storage.player_page.add_dialog.title')}</DialogTitle>
       <DialogContent>
+        {errorKey ? (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {t(errorKey)}
+          </Alert>
+        ) : null}
         <TextField
           margin="dense"
           label={t('component.storage.player_page.add_dialog.address_label')}
@@ -95,7 +104,7 @@ interface PlayerEditDialogProps {
   keyName: string
   onClose: () => void
   onSuccess: () => void
-  onError: () => void
+  onError: (error: unknown) => void
   identity: AuthIdentity | undefined
   realm: string | null
   position: string | null
@@ -107,16 +116,23 @@ const PlayerEditDialog = ({ open, address, keyName, onClose, onSuccess, onError,
   const [setPlayerValue] = useSetPlayerValueMutation()
   const fieldRef = useRef<StorageValueFieldRef>(null)
   const [isValid, setIsValid] = useState(false)
+  const [errorKey, setErrorKey] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (open) setErrorKey(null)
+  }, [open, keyName])
 
   const handleSave = useCallback(async () => {
     const parsedValue = fieldRef.current?.getParsedValue() ?? null
     if (parsedValue === null) return
+    setErrorKey(null)
     try {
       await setPlayerValue({ identity, realm, position, address, key: keyName, value: parsedValue }).unwrap()
       onSuccess()
       onClose()
-    } catch {
-      onError()
+    } catch (error) {
+      setErrorKey(getStorageErrorKey(error))
+      onError(error)
     }
   }, [keyName, setPlayerValue, identity, realm, position, address, onClose, onSuccess, onError])
 
@@ -124,6 +140,11 @@ const PlayerEditDialog = ({ open, address, keyName, onClose, onSuccess, onError,
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>{t('component.storage.player_page.edit_dialog.title', { key: keyName })}</DialogTitle>
       <DialogContent>
+        {errorKey ? (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {t(errorKey)}
+          </Alert>
+        ) : null}
         {isLoading ? (
           <Box display="flex" justifyContent="center" p={3}>
             <CircularProgress />

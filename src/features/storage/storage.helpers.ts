@@ -1,6 +1,6 @@
 import { fromUnixTime } from 'date-fns/fromUnixTime'
 import type { AuthIdentity } from '@dcl/crypto'
-import signedFetchLib from 'decentraland-crypto-fetch'
+import signedFetchLibImport from 'decentraland-crypto-fetch'
 import { getEnv } from '../../config/env'
 import { LandType, RoleType } from './storage.types'
 import type {
@@ -14,6 +14,18 @@ import type {
   SubgraphParcel,
   WrapSignedFetchError
 } from './storage.types'
+
+// NOTE: Vite's CJS interop wraps `decentraland-crypto-fetch` (which is `exports.default = fn`)
+// in a shim that re-exports the whole `exports` object as the default, so the real function
+// lands on `.default`. Production (Rollup), Jest, and Node all import the function directly.
+// Reaching for `.default` first keeps every consumer working without a Vite plugin tweak —
+// without this, Vite dev throws "signedFetchLib is not a function" before the request ever
+// hits the wire (root cause of issue #505: dialogs reported "Unauthorized" with no network call).
+type SignedFetchFn = (url: string | URL | Request, init: RequestInit & { identity?: unknown; metadata?: unknown }) => Promise<Response>
+const signedFetchLib: SignedFetchFn =
+  typeof signedFetchLibImport === 'function'
+    ? (signedFetchLibImport as SignedFetchFn)
+    : ((signedFetchLibImport as { default?: SignedFetchFn }).default as SignedFetchFn)
 
 const MAX_RESULTS = 1000
 
@@ -45,13 +57,45 @@ const buildSignedFetchMetadata = (realm?: string | null, position?: string | nul
 
 type SignedFetch = (url: string, init?: RequestInit) => Promise<Response>
 
+const isIdentityValid = (identity: AuthIdentity): boolean => {
+  // The expiration check here mirrors decentraland-storage-service-site's
+  // `isIdentityValid` — localStorageGetIdentity already drops expired ones, but
+  // an identity that survived the read might still expire between the page load
+  // and the user's click. Without this guard, signedFetchLib hits the network
+  // with an expired ephemeral key and the server returns 401.
+  if (!identity.expiration) return false
+  const expiration = identity.expiration instanceof Date ? identity.expiration : new Date(identity.expiration)
+  return expiration.getTime() > Date.now()
+}
+
 const createScopedSignedFetch = (identity: AuthIdentity | undefined, realm?: string | null, position?: string | null): SignedFetch => {
   const metadata = buildSignedFetchMetadata(realm, position)
   return async (url: string, init: RequestInit = {}) => {
-    if (!identity) {
-      return fetch(url, init)
+    // NOTE: every world-storage endpoint requires a signed-fetch request
+    // (ADR-44). The original storage-service-site falls back to plain `fetch`
+    // when signing isn't possible, but that path puts an unsigned request on
+    // the wire and the server replies 400 "Invalid Auth Chain" — exactly the
+    // failure mode observed in issue #505 ("no veo que esté haciendo el auth
+    // chain en la request"). We refuse to issue an unsigned request and throw
+    // a 401 instead so the dialog surfaces the "sign in again" message and
+    // `useStorageRedirect` can take the user back through auth.
+    if (!identity || !isIdentityValid(identity)) {
+      throw { status: 401, data: 'Unauthorized: no signed identity available' }
     }
-    return signedFetchLib(url, { ...init, identity, metadata })
+
+    try {
+      return await signedFetchLib(url, { ...init, identity, metadata })
+    } catch (error) {
+      // signedFetchLib throws TypeError when the identity is malformed (missing
+      // ephemeralIdentity/authChain) — those throws don't have a `status` field
+      // and would otherwise bubble up as a generic FETCH_ERROR ("Could not reach
+      // the storage service"). Re-throw with a 401 shape so the dialog can ask
+      // the user to sign in again instead of suggesting a connectivity problem.
+      if (error instanceof TypeError || (error instanceof Error && !('status' in error))) {
+        throw { status: 401, data: error.message }
+      }
+      throw error
+    }
   }
 }
 
@@ -90,6 +134,41 @@ const sendSignedFetch = async (signedFetch: SignedFetch, url: string, init: Requ
       error: error instanceof Error ? error.message : String(error)
     } satisfies WrapSignedFetchError
   }
+}
+
+const STORAGE_ERROR_KEY_PREFIX = 'component.storage.errors'
+
+/**
+ * Extract the HTTP status (or the 'FETCH_ERROR' sentinel) from an RTK Query
+ * rejection. Returns `undefined` when the error has no recognisable shape, so
+ * analytics tracking can pass it through without inventing fake codes.
+ */
+const getStorageErrorStatus = (error: unknown): number | 'FETCH_ERROR' | undefined => {
+  if (!error || typeof error !== 'object' || !('status' in error)) return undefined
+  const status = (error as { status: unknown }).status
+  if (status === 'FETCH_ERROR') return 'FETCH_ERROR'
+  if (typeof status === 'number') return status
+  return undefined
+}
+
+/**
+ * Map an RTK Query mutation rejection (FetchBaseQueryError-shaped; HTTP status
+ * or the 'FETCH_ERROR' sentinel for network failures) into a translation key.
+ * The dialogs use this to show an inline error message instead of swallowing
+ * failures — issue #505 surfaced a user who clicked Save 27 times with no
+ * visible feedback because the catch branch only tracked an analytics event.
+ */
+const getStorageErrorKey = (error: unknown): string => {
+  const status = getStorageErrorStatus(error)
+  if (status === undefined) return `${STORAGE_ERROR_KEY_PREFIX}.unknown`
+  if (status === 'FETCH_ERROR') return `${STORAGE_ERROR_KEY_PREFIX}.network`
+  if (status === 400) return `${STORAGE_ERROR_KEY_PREFIX}.signed_fetch`
+  if (status === 401 || status === 403) return `${STORAGE_ERROR_KEY_PREFIX}.unauthorized`
+  if (status === 404) return `${STORAGE_ERROR_KEY_PREFIX}.not_found`
+  if (status === 413) return `${STORAGE_ERROR_KEY_PREFIX}.payload_too_large`
+  if (status === 429) return `${STORAGE_ERROR_KEY_PREFIX}.rate_limited`
+  if (status >= 500) return `${STORAGE_ERROR_KEY_PREFIX}.server`
+  return `${STORAGE_ERROR_KEY_PREFIX}.unknown`
 }
 
 const parcelToLand = (parcel: SubgraphParcel, role: RoleType): Land => ({
@@ -319,6 +398,8 @@ export {
   getLandTypeFromContract,
   getRentalsQuery,
   getRoleLabelKey,
+  getStorageErrorKey,
+  getStorageErrorStatus,
   parcelToLand,
   sendSignedFetch,
   storageContextId,
