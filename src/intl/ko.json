@@ -1128,7 +1128,9 @@
       "load_more": "더 보기",
       "filter_wearables": "웨어러블",
       "filter_emotes": "이모트",
-      "view_all": "모두 보기"
+      "view_all": "모두 보기",
+      "not_for_sale": "판매 중 아님",
+      "view_in_marketplace": "마켓플레이스에서 보기"
     },
     "assets": {
       "empty_title": "아직 에셋이 없습니다",
@@ -1140,7 +1142,9 @@
       "filter_lands": "랜드",
       "filter_estates": "에스테이트",
       "count": "{count}개 에셋",
-      "view": "보기"
+      "view": "보기",
+      "edit": "편집",
+      "transfer": "이전"
     },
     "communities": {
       "empty_title": "아직 커뮤니티가 없습니다",
@@ -1151,7 +1155,12 @@
       "member": "회원",
       "members_count": "{count}명의 회원",
       "role_owner": "소유자",
-      "role_admin": "관리자"
+      "role_admin": "관리자",
+      "action_view": "보기",
+      "action_joined": "가입됨",
+      "share_aria": "커뮤니티 링크 공유",
+      "copy_link": "링크 복사",
+      "copied": "복사됨!"
     },
     "places": {
       "empty_title": "아직 장소가 없습니다",

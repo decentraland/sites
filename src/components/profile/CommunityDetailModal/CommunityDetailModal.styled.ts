@@ -6,7 +6,7 @@ const CommunityDialog = styled(Dialog)(({ theme }) => ({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .MuiDialog-paper': {
     borderRadius: theme.spacing(2),
-    maxWidth: 1100,
+    maxWidth: 1240,
     width: '100%',
     maxHeight: '90vh',
     margin: 0,
@@ -16,9 +16,13 @@ const CommunityDialog = styled(Dialog)(({ theme }) => ({
     color: theme.palette.common.white,
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
     [theme.breakpoints.up('md')]: {
-      paddingLeft: theme.spacing(4),
-      paddingRight: theme.spacing(4)
+      paddingLeft: '27px',
+      paddingRight: '27px',
+      paddingTop: '30px',
+      paddingBottom: '30px'
     }
   }
 })) as typeof Dialog

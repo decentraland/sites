@@ -1128,7 +1128,9 @@
       "load_more": "加载更多",
       "filter_wearables": "穿戴品",
       "filter_emotes": "表情动作",
-      "view_all": "查看全部"
+      "view_all": "查看全部",
+      "not_for_sale": "非售品",
+      "view_in_marketplace": "在市场中查看"
     },
     "assets": {
       "empty_title": "暂无资产",
@@ -1140,7 +1142,9 @@
       "filter_lands": "土地",
       "filter_estates": "地产",
       "count": "{count} 件资产",
-      "view": "查看"
+      "view": "查看",
+      "edit": "编辑",
+      "transfer": "转让"
     },
     "communities": {
       "empty_title": "暂无社区",
@@ -1151,7 +1155,12 @@
       "member": "成员",
       "members_count": "{count} 位成员",
       "role_owner": "所有者",
-      "role_admin": "管理员"
+      "role_admin": "管理员",
+      "action_view": "查看",
+      "action_joined": "已加入",
+      "share_aria": "分享社区链接",
+      "copy_link": "复制链接",
+      "copied": "已复制！"
     },
     "places": {
       "empty_title": "暂无场所",

@@ -89,6 +89,15 @@ function EventDetailModal({ open, onClose, data, adminActions, onEdit }: EventDe
   const showingPlace = place !== null
   const showingCommunity = communityId !== null
   const isOwnProfile = Boolean(showingProfile && viewerAddress && profileAddress === viewerAddress.toLowerCase())
+  const swapVariant: 'profile' | 'photo' | 'place' | 'community' | undefined = showingPhoto
+    ? 'photo'
+    : showingPlace
+      ? 'place'
+      : showingCommunity
+        ? 'community'
+        : showingProfile
+          ? 'profile'
+          : undefined
 
   return (
     <StyledDialog
@@ -97,7 +106,8 @@ function EventDetailModal({ open, onClose, data, adminActions, onEdit }: EventDe
       aria-labelledby="event-detail-title"
       fullWidth
       maxWidth={false}
-      $wide={showingProfile || showingPhoto || showingPlace || showingCommunity}
+      $wide={swapVariant !== undefined}
+      $swapVariant={swapVariant}
     >
       {data && (
         <ModalProfileNavigationProvider

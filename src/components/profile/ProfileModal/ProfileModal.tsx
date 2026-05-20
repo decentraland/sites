@@ -67,9 +67,16 @@ function ProfileModal({ address, open, onClose, onBack, initialTab = 'overview' 
     return null
   }
   const isOwnProfile = Boolean(viewerAddress && shownAddress === viewerAddress.toLowerCase())
+  const variant: 'profile' | 'photo' | 'place' | 'community' = viewingPhotoId
+    ? 'photo'
+    : viewingPlace
+      ? 'place'
+      : viewingCommunityId
+        ? 'community'
+        : 'profile'
 
   return (
-    <ProfileDialog open={open} onClose={onClose} fullWidth maxWidth={false} scroll="paper">
+    <ProfileDialog open={open} onClose={onClose} fullWidth maxWidth={false} scroll="paper" $variant={variant}>
       <ModalProfileNavigationProvider
         onOpenProfile={handleOpenProfile}
         onOpenPhoto={handleOpenPhoto}

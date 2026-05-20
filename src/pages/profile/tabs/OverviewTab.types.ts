@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { Profile } from '../../../features/profile/profile.client'
 
 interface OverviewTabProps {
@@ -10,6 +11,7 @@ type AvatarSnapshot = NonNullable<NonNullable<Profile['avatars']>[number]>
 interface InfoField {
   labelKey: string
   value: string | undefined
+  icon?: ReactNode
 }
 
 interface ProfileLink {

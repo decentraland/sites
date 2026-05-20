@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import { Box, Button, Chip, CircularProgress } from 'decentraland-ui2'
+import { Button, Chip, CircularProgress } from 'decentraland-ui2'
 import { CatalogCard } from '../../../components/profile/CatalogCard'
 import { getEnv } from '../../../config/env'
 import { useGetProfileCreationsQuery } from '../../../features/profile/profile.creations.client'
@@ -10,7 +10,7 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { CreatorByLine } from './OverviewTab.creator'
 import { formatPriceMana, toItemNetwork, toRarity } from './OverviewTab.helpers'
 import { WearableInfoBadges } from './OverviewTab.icons'
-import { CreationsFilters, CreationsHeader, EmptyBio, EquippedGrid, LoadingRow, ViewAllLink } from './OverviewTab.styled'
+import { CreationsFilters, CreationsHeader, EmptyBio, EquippedCardLink, EquippedGrid, LoadingRow, ViewAllLink } from './OverviewTab.styled'
 
 interface CreationsTabProps {
   address: string
@@ -124,14 +124,20 @@ function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
           const rawPrice = item.price && item.price !== '0' ? item.price : item.minListingPrice
           const price = formatPriceMana(rawPrice)
           const wearableData = item.data?.wearable ?? item.data?.emote
+          // Sold-out items with no secondary listing still need a visible signal
+          // in the slot where price normally renders — the ui2 card falls back
+          // to `owners` when `price` is empty, so we surface "Not for sale" there
+          // instead of leaving the row blank.
+          const fallbackLabel = price ? undefined : t('profile.creations.not_for_sale')
           return (
-            <Box key={item.id}>
+            <EquippedCardLink key={item.id} href={marketplaceUrl} target="_blank" rel="noopener noreferrer" aria-label={item.name}>
               <CatalogCard
                 asset={toCatalogAsset(item)}
                 imageSrc={item.thumbnail}
                 action={null}
                 extraInformation={null}
                 price={price}
+                owners={fallbackLabel}
                 notForSale={!price}
                 withShadow={false}
                 creatorSlot={<CreatorByLine address={item.creator} />}
@@ -143,12 +149,18 @@ function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
                   />
                 }
                 bottomAction={
-                  <Button fullWidth variant="contained" color="primary" href={marketplaceUrl} target="_blank" rel="noopener noreferrer">
-                    {t('profile.overview.buy')}
-                  </Button>
+                  price ? (
+                    <Button fullWidth variant="contained" color="primary" href={marketplaceUrl} target="_blank" rel="noopener noreferrer">
+                      {t('profile.overview.buy')}
+                    </Button>
+                  ) : (
+                    <Button fullWidth variant="outlined" color="inherit" href={marketplaceUrl} target="_blank" rel="noopener noreferrer">
+                      {t('profile.creations.view_in_marketplace')}
+                    </Button>
+                  )
                 }
               />
-            </Box>
+            </EquippedCardLink>
           )
         })}
       </EquippedGrid>

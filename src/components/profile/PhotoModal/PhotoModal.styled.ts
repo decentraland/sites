@@ -1,32 +1,61 @@
 import { Box, Dialog, IconButton, Typography, styled } from 'decentraland-ui2'
 
-const PhotoDialog = styled(Dialog)(({ theme }) => ({
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .MuiBackdrop-root': {
-    backgroundColor: 'rgba(0, 0, 0, 0.85)'
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .MuiDialog-paper': {
-    borderRadius: theme.spacing(2),
-    maxWidth: 1500,
-    width: '100%',
-    maxHeight: '92vh',
-    margin: 0,
-    background: '#0E0518',
-    boxShadow: '0px 4px 25px 0px rgba(255, 255, 255, 0.25)',
-    overflow: 'hidden'
-  },
-  [theme.breakpoints.down('md')]: {
+type PhotoDialogVariant = 'photo' | 'profile'
+
+// Paper size + chrome per swap variant. Photo variant keeps the dark cinematic
+// background and 1500px Paper; profile variant matches ProfileModal (1650 × 930
+// with the brand radial gradient + ContentArea gutters) so the embedded
+// ProfileSurface renders the same way as it does inside ProfileModal.
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const PhotoDialog = styled(Dialog, {
+  shouldForwardProp: prop => prop !== '$variant'
+})<{ $variant?: PhotoDialogVariant }>(({ theme, $variant = 'photo' }) => {
+  const isProfile = $variant === 'profile'
+  return {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    '& .MuiBackdrop-root': {
+      backgroundColor: 'rgba(0, 0, 0, 0.85)'
+    },
     // eslint-disable-next-line @typescript-eslint/naming-convention
     '& .MuiDialog-paper': {
-      borderRadius: 0,
-      maxWidth: '100%',
-      maxHeight: '100%',
-      height: '100%',
-      margin: 0
+      borderRadius: theme.spacing(2),
+      maxWidth: isProfile ? 1650 : 1500,
+      width: '100%',
+      maxHeight: isProfile ? 'min(930px, 90vh)' : '92vh',
+      margin: 0,
+      background: isProfile ? 'radial-gradient(123.58% 82% at 9.01% 25.79%, #7434B1 0%, #481C6C 37.11%, #2B1040 100%)' : '#0E0518',
+      boxShadow: '0px 4px 25px 0px rgba(255, 255, 255, 0.25)',
+      overflow: isProfile ? 'auto' : 'hidden',
+      // ProfileSurface (embedded) skips ContentArea, so the Paper itself must
+      // reproduce its gutters (27/30 ≥md, spacing(2) mobile) to match Figma 167:78643.
+      ...(isProfile && {
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2),
+        paddingTop: theme.spacing(2),
+        paddingBottom: theme.spacing(2),
+        [theme.breakpoints.up('md')]: {
+          paddingLeft: '27px',
+          paddingRight: '27px',
+          paddingTop: '30px',
+          paddingBottom: '30px'
+        }
+      }),
+      display: 'flex',
+      flexDirection: 'column',
+      transition: 'max-width 280ms cubic-bezier(0.4, 0, 0.2, 1), max-height 280ms cubic-bezier(0.4, 0, 0.2, 1)'
+    },
+    [theme.breakpoints.down('md')]: {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      '& .MuiDialog-paper': {
+        borderRadius: 0,
+        maxWidth: '100%',
+        maxHeight: '100%',
+        height: '100%',
+        margin: 0
+      }
     }
   }
-})) as typeof Dialog
+}) as React.ComponentType<React.ComponentProps<typeof Dialog> & { $variant?: PhotoDialogVariant }>
 
 const DialogBody = styled(Box, { shouldForwardProp: prop => prop !== '$metadataVisible' })<{ $metadataVisible: boolean }>(
   ({ theme, $metadataVisible }) => ({
@@ -175,3 +204,4 @@ export {
   SectionTitle,
   SectionTitleRow
 }
+export type { PhotoDialogVariant }

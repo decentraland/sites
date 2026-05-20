@@ -1605,7 +1605,9 @@
       "load_more": "Load more",
       "filter_wearables": "Wearables",
       "filter_emotes": "Emotes",
-      "view_all": "View all"
+      "view_all": "View all",
+      "not_for_sale": "Not for sale",
+      "view_in_marketplace": "View in marketplace"
     },
     "assets": {
       "empty_title": "No assets yet",
@@ -1617,7 +1619,9 @@
       "filter_lands": "Lands",
       "filter_estates": "Estates",
       "count": "{count} assets",
-      "view": "View"
+      "view": "View",
+      "edit": "Edit",
+      "transfer": "Transfer"
     },
     "communities": {
       "empty_title": "No communities yet",
@@ -1628,7 +1632,12 @@
       "member": "Member",
       "members_count": "{count} members",
       "role_owner": "Owner",
-      "role_admin": "Admin"
+      "role_admin": "Admin",
+      "action_view": "View",
+      "action_joined": "Joined",
+      "share_aria": "Share community link",
+      "copy_link": "Copy link",
+      "copied": "Copied!"
     },
     "places": {
       "empty_title": "No places yet",

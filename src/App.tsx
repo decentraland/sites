@@ -92,6 +92,7 @@ const CastNotFoundPage = lazy(() => import('./pages/cast/CastNotFoundPage').then
 // on useAuthIdentity. Signed mutations use signedFetch.
 const ProfilePage = lazy(() => import('./pages/profile').then(m => ({ default: m.ProfilePage })))
 const ProfileMeRedirect = lazy(() => import('./pages/profile').then(m => ({ default: m.ProfileMeRedirect })))
+const ProfileAccountsRedirect = lazy(() => import('./pages/profile').then(m => ({ default: m.ProfileAccountsRedirect })))
 
 // Storage pages — heavy DappsShell route. Migrated from the standalone storage-service-site.
 const StorageRedirectPage = lazy(() => import('./pages/storage/StorageRedirectPage').then(m => ({ default: m.StorageRedirectPage })))
@@ -202,12 +203,15 @@ const App = () => {
               <Route path="/social/communities/:id" element={<CommunityDetailPage />} />
               <Route path="/social/*" element={<SocialNotFoundPage />} />
               {/* Profile routes — absorbed from decentraland/profile + decentraland/account dapps.
-                  ORDER MATTERS in react-router v7: literal `me` segment comes before the `:address`
-                  param so /profile/me hits the redirect, not the page. /profile (no params) and
-                  /profile/me both bounce to /profile/<connectedAddress> via ProfileMeRedirect. */}
+                  ORDER MATTERS in react-router v7: literal `me` and `accounts` segments come before
+                  the `:address` param so they hit their redirects, not the page. */}
               <Route path="/profile" element={<ProfileMeRedirect />} />
               <Route path="/profile/me" element={<ProfileMeRedirect />} />
               <Route path="/profile/me/:tab" element={<ProfileMeRedirect />} />
+              {/* Legacy `decentraland/profile` dapp served /profile/accounts/:address — keep shareable
+                  links alive by redirecting to the canonical /profile/:address. */}
+              <Route path="/profile/accounts/:address" element={<ProfileAccountsRedirect />} />
+              <Route path="/profile/accounts/:address/:tab" element={<ProfileAccountsRedirect />} />
               <Route path="/profile/:address" element={<ProfilePage />} />
               <Route path="/profile/:address/:tab" element={<ProfilePage />} />
             </Route>

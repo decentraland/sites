@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { Avatar } from '@dcl/schemas'
 import { AvatarFace, DownloadModal, JumpInIcon } from 'decentraland-ui2'
 import { catchTheVibeContent } from '../../../data/static-content'
@@ -23,6 +24,7 @@ import {
   PlayBadge,
   PlayIcon,
   UserInfo,
+  UserInfoButton,
   UserName,
   VideoCard,
   VideoCardFooter,
@@ -46,6 +48,11 @@ function formatDuration(seconds: number): string {
 const VideoCardContent = ({ item }: { item: CardItem }) => {
   const l = useFormatMessage()
   const videoRef = useRef<HTMLVideoElement>(null)
+  // Navigate (instead of opening a modal) because Home is lightweight tier: it
+  // doesn't mount the Redux store / RTK Query clients that the profile modal
+  // tabs require. /profile/<address> lazy-loads DappsShell so the homepage
+  // bundle stays slim.
+  const navigate = useNavigate()
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
   const [duration, setDuration] = useState<string | null>(null)
@@ -190,10 +197,25 @@ const VideoCardContent = ({ item }: { item: CardItem }) => {
         )}
       </MediaContainer>
       <VideoCardFooter>
-        <UserInfo $avatarBackgroundColor={avatarBackgroundColor}>
-          <AvatarFace size="small" avatar={avatar} />
-          <UserName>{item.userName}</UserName>
-        </UserInfo>
+        {item.userAddress ? (
+          <UserInfoButton
+            type="button"
+            $avatarBackgroundColor={avatarBackgroundColor}
+            onClick={event => {
+              event.stopPropagation()
+              if (item.userAddress) navigate(`/profile/${item.userAddress.toLowerCase()}`)
+            }}
+            aria-label={item.userName}
+          >
+            <AvatarFace size="small" avatar={avatar} />
+            <UserName>{item.userName}</UserName>
+          </UserInfoButton>
+        ) : (
+          <UserInfo $avatarBackgroundColor={avatarBackgroundColor}>
+            <AvatarFace size="small" avatar={avatar} />
+            <UserName>{item.userName}</UserName>
+          </UserInfo>
+        )}
       </VideoCardFooter>
     </VideoCard>
   )

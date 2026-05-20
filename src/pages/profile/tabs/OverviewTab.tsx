@@ -1,6 +1,14 @@
 import { useMemo } from 'react'
-// eslint-disable-next-line @typescript-eslint/naming-convention
+/* eslint-disable @typescript-eslint/naming-convention */
+import AlternateEmailRoundedIcon from '@mui/icons-material/AlternateEmailRounded'
+import CakeRoundedIcon from '@mui/icons-material/CakeRounded'
+import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded'
 import InsertLinkIcon from '@mui/icons-material/InsertLink'
+import PublicRoundedIcon from '@mui/icons-material/PublicRounded'
+import SportsEsportsOutlinedIcon from '@mui/icons-material/SportsEsportsOutlined'
+import TransgenderRoundedIcon from '@mui/icons-material/TransgenderRounded'
+import TranslateRoundedIcon from '@mui/icons-material/TranslateRounded'
+/* eslint-enable @typescript-eslint/naming-convention */
 import { Box, Button, CircularProgress, Tooltip, Typography } from 'decentraland-ui2'
 import { CatalogCard } from '../../../components/profile/CatalogCard'
 import { useProfileBadges } from '../../../features/profile/profile.badges.client'
@@ -18,7 +26,7 @@ import {
   safeLinkUrl,
   toCatalogAsset
 } from './OverviewTab.helpers'
-import { WearableInfoBadges } from './OverviewTab.icons'
+import { PronounsIcon, WearableInfoBadges } from './OverviewTab.icons'
 import type { InfoField, OverviewTabProps, ProfileLink } from './OverviewTab.types'
 import {
   BadgeFallback,
@@ -30,6 +38,7 @@ import {
   EquippedCardLink,
   EquippedGrid,
   InfoGrid,
+  InfoIcon,
   InfoItem,
   InfoLabel,
   InfoSurface,
@@ -54,15 +63,27 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
   const visibleBadges = badges
 
   const infoFields: InfoField[] = [
-    { labelKey: 'profile.overview.country', value: readField(avatar, 'country') },
-    { labelKey: 'profile.overview.language', value: readField(avatar, 'language') },
-    { labelKey: 'profile.overview.pronouns', value: readField(avatar, 'pronouns') },
-    { labelKey: 'profile.overview.relationship_status', value: readField(avatar, 'relationshipStatus') },
-    { labelKey: 'profile.overview.gender', value: readField(avatar, 'gender') },
-    { labelKey: 'profile.overview.profession', value: readField(avatar, 'profession') },
-    { labelKey: 'profile.overview.birth_date', value: readField(avatar, 'birthdate') },
-    { labelKey: 'profile.overview.real_name', value: readField(avatar, 'realName') },
-    { labelKey: 'profile.overview.favorite_hobby', value: readField(avatar, 'hobbies') }
+    { labelKey: 'profile.overview.country', value: readField(avatar, 'country'), icon: <PublicRoundedIcon fontSize="small" /> },
+    { labelKey: 'profile.overview.language', value: readField(avatar, 'language'), icon: <TranslateRoundedIcon fontSize="small" /> },
+    { labelKey: 'profile.overview.pronouns', value: readField(avatar, 'pronouns'), icon: <PronounsIcon /> },
+    {
+      labelKey: 'profile.overview.relationship_status',
+      value: readField(avatar, 'relationshipStatus'),
+      icon: <FavoriteBorderRoundedIcon fontSize="small" />
+    },
+    { labelKey: 'profile.overview.gender', value: readField(avatar, 'gender'), icon: <TransgenderRoundedIcon fontSize="small" /> },
+    {
+      labelKey: 'profile.overview.profession',
+      value: readField(avatar, 'profession'),
+      icon: <SportsEsportsOutlinedIcon fontSize="small" />
+    },
+    { labelKey: 'profile.overview.birth_date', value: readField(avatar, 'birthdate'), icon: <CakeRoundedIcon fontSize="small" /> },
+    { labelKey: 'profile.overview.real_name', value: readField(avatar, 'realName'), icon: <AlternateEmailRoundedIcon fontSize="small" /> },
+    {
+      labelKey: 'profile.overview.favorite_hobby',
+      value: readField(avatar, 'hobbies'),
+      icon: <FavoriteBorderRoundedIcon fontSize="small" />
+    }
   ]
   const populatedInfo = infoFields.filter(field => field.value !== undefined)
 
@@ -150,7 +171,10 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
             <InfoGrid>
               {populatedInfo.map(field => (
                 <InfoItem key={field.labelKey}>
-                  <InfoLabel>{t(field.labelKey)}</InfoLabel>
+                  <InfoLabel>
+                    {field.icon ? <InfoIcon>{field.icon}</InfoIcon> : null}
+                    {t(field.labelKey)}
+                  </InfoLabel>
                   <InfoValue>{field.value}</InfoValue>
                 </InfoItem>
               ))}

@@ -97,5 +97,30 @@ function WearableInfoBadges({ category, bodyShapes, isSmart }: WearableInfoBadge
   )
 }
 
-export { WearableInfoBadges }
+// Custom Pronouns icon — three overlapping circles. MUI ships no pronoun-
+// specific glyph, so we inline the spec from the profile Figma. `currentColor`
+// inherits from the surrounding `<InfoIcon>` styled wrapper.
+function PronounsIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path
+        d="M8.41591 3.20801C10.7861 3.20803 12.7079 5.12981 12.7079 7.5C12.7079 9.87017 10.7861 11.792 8.41591 11.792C6.04573 11.792 4.12394 9.87018 4.12392 7.5C4.12392 5.1298 6.04571 3.20801 8.41591 3.20801Z"
+        stroke="currentColor"
+        strokeWidth="1.41667"
+      />
+      <path
+        d="M5.41665 8.20813C7.78683 8.20815 9.70864 10.1299 9.70864 12.5001C9.70862 14.8703 7.78682 16.7921 5.41665 16.7921C3.04646 16.7921 1.12468 14.8703 1.12465 12.5001C1.12465 10.1299 3.04645 8.20813 5.41665 8.20813Z"
+        stroke="currentColor"
+        strokeWidth="1.41667"
+      />
+      <path
+        d="M11.5 8.20813C13.8701 8.20815 15.7919 10.1299 15.7919 12.5001C15.7919 14.8703 13.8701 16.7921 11.5 16.7921C9.12976 16.7921 7.20798 14.8703 7.20796 12.5001C7.20796 10.1299 9.12975 8.20813 11.5 8.20813Z"
+        stroke="currentColor"
+        strokeWidth="1.41667"
+      />
+    </svg>
+  )
+}
+
+export { PronounsIcon, WearableInfoBadges }
 export type { WearableInfoBadgesProps }

@@ -1,4 +1,5 @@
-import { memo, useMemo } from 'react'
+import { memo, useCallback, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { Avatar } from '@dcl/schemas'
 import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
 import type { ExploreItem } from '../../../features/events/events.discovery.types'
@@ -16,8 +17,15 @@ const DCL_LOGO_URL = assetUrl('/dcl-logo.svg').replace(/^http:\/\//, 'https://')
 
 const WhatsOnCard = memo(({ card, loading }: { card?: ExploreItem; loading?: boolean }) => {
   const onClickHandle = useTrackClick()
+  // Navigate (instead of opening a modal) because Home is lightweight tier
+  // and doesn't mount the profile modal's Redux store. /profile/<addr> lazy-loads
+  // DappsShell on first navigation.
+  const navigate = useNavigate()
   const { data: profile } = useGetProfileQuery(card?.creatorAddress, { skip: !card?.creatorAddress })
   const fetchedAvatar = profile?.avatars?.[0]
+  const handleAvatarClick = useCallback(() => {
+    if (card?.creatorAddress) navigate(`/profile/${card.creatorAddress.toLowerCase()}`)
+  }, [card?.creatorAddress, navigate])
 
   let avatar: Avatar | undefined = fetchedAvatar as Avatar | undefined
   if (!avatar && card?.creatorName) {
@@ -62,6 +70,7 @@ const WhatsOnCard = memo(({ card, loading }: { card?: ExploreItem; loading?: boo
         sceneName={card?.title ?? ''}
         avatar={avatar}
         coordinates={card?.coordinates}
+        onAvatarClick={card?.creatorAddress ? handleAvatarClick : undefined}
         leftBadgeTransparent
         hideLocation
         leftBadge={

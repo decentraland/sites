@@ -20,6 +20,11 @@ interface ProfilePlace {
   // `/worlds` adds this; absent on `/places`.
   world?: boolean
   world_name?: string
+  // Owner metadata — places-api returns these on `/places?owner=` and `/worlds?owner=`; needed by
+  // the shared PlaceDetailModal Hero ("By {creator}" creator row + profile-modal click-through).
+  owner?: string
+  contact_name?: string
+  favorites?: number
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 

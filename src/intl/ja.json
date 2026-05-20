@@ -1128,7 +1128,9 @@
       "load_more": "もっと見る",
       "filter_wearables": "ウェアラブル",
       "filter_emotes": "エモート",
-      "view_all": "すべて表示"
+      "view_all": "すべて表示",
+      "not_for_sale": "販売されていません",
+      "view_in_marketplace": "マーケットプレイスで表示"
     },
     "assets": {
       "empty_title": "アセットはまだありません",
@@ -1140,7 +1142,9 @@
       "filter_lands": "ランド",
       "filter_estates": "エステート",
       "count": "{count} アセット",
-      "view": "表示"
+      "view": "表示",
+      "edit": "編集",
+      "transfer": "転送"
     },
     "communities": {
       "empty_title": "コミュニティはまだありません",
@@ -1151,7 +1155,12 @@
       "member": "メンバー",
       "members_count": "{count}人のメンバー",
       "role_owner": "オーナー",
-      "role_admin": "管理者"
+      "role_admin": "管理者",
+      "action_view": "表示",
+      "action_joined": "参加中",
+      "share_aria": "コミュニティのリンクを共有",
+      "copy_link": "リンクをコピー",
+      "copied": "コピーしました！"
     },
     "places": {
       "empty_title": "プレイスはまだありません",

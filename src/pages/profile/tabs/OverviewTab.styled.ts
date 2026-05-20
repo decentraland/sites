@@ -133,6 +133,22 @@ const InfoLabel = styled(Typography)({
   textTransform: 'uppercase'
 })
 
+// 20×20 slot rendered inline with the label. Inherits color from InfoLabel
+// (`#CFCDD4`), so the custom PronounsIcon SVG (stroke="currentColor") matches.
+const InfoIcon = styled(Box)({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  width: 20,
+  height: 20,
+  color: '#CFCDD4',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& .MuiSvgIcon-root': { fontSize: 20 },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& svg': { width: 20, height: 20 }
+})
+
 // Figma I322:49174;288:27835 — info value: Inter Regular 16, #fcfcfc, line 1.5
 const InfoValue = styled(Typography)({
   fontFamily: '"Inter", sans-serif',
@@ -317,6 +333,7 @@ export {
   EquippedGrid,
   ViewAllLink,
   InfoGrid,
+  InfoIcon,
   InfoItem,
   InfoLabel,
   InfoSurface,

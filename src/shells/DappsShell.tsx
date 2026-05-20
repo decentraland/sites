@@ -67,8 +67,10 @@ function DappsShell() {
           {/* ProfileModalHost listens to `?profile=<address>` and renders the
               full profile experience as an overlay on top of whats-on, blog,
               social, jump, cast, storage and profile pages. Mounting it at
-              shell level means any link or button in those pages can open the
-              modal via useOpenProfileModal — see ProfileModalHost. */}
+              shell level keeps the store + RTK clients bundled with the heavy
+              chunk so the lightweight homepage stays slim. Lightweight routes
+              that want to open a profile must navigate to `/profile/<address>`
+              instead of calling `useOpenProfileModal()`. */}
           <ProfileModalHost />
         </Suspense>
       </Provider>
