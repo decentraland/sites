@@ -1145,6 +1145,8 @@
     "title": "Upcoming",
     "starts_in_mins": "Starts in {count} mins",
     "starts_in_hours": "Starts in {count} {count, plural, one {hour} other {hours}}",
+    "today_at": "Today {time}",
+    "tomorrow_at": "Tomorrow {time}",
     "by_prefix": "By ",
     "unknown_creator": "Unknown",
     "remind_me": "Remind me",
