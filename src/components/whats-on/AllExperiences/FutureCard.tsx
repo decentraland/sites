@@ -80,7 +80,7 @@ const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
         <LocalDateTimeTooltip startIso={event.start_at} finishIso={event.finish_at}>
           <TimePill data-role="time-pill">
             <TimeIcon />
-            <TimeLabel>{getRelativeTimeLabel(event.next_start_at || event.start_at, t)}</TimeLabel>
+            <TimeLabel>{getRelativeTimeLabel(event.start_at, t)}</TimeLabel>
           </TimePill>
         </LocalDateTimeTooltip>
         <HoverActions data-role="hover-actions">
