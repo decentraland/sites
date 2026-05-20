@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AuthIdentity } from '@dcl/crypto'
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from 'decentraland-ui2'
+import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from 'decentraland-ui2'
 import { useGetSceneValueQuery, useSetSceneValueMutation } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useDialogError } from '../../../hooks/useDialogError'
 import { StorageValueField, type StorageValueFieldRef } from '../StorageValueField'
 
 interface SceneAddDialogProps {
   open: boolean
   onClose: () => void
   onSuccess: () => void
-  onError: () => void
+  onError: (error: unknown) => void
   identity: AuthIdentity | undefined
   realm: string | null
   position: string | null
@@ -20,6 +21,7 @@ const SceneAddDialog = ({ open, onClose, onSuccess, onError, identity, realm, po
   const [setSceneValue, { isLoading }] = useSetSceneValueMutation()
   const [newKey, setNewKey] = useState('')
   const [isValueValid, setIsValueValid] = useState(false)
+  const { errorKey, clearError, setErrorFrom } = useDialogError([open])
   const fieldRef = useRef<StorageValueFieldRef>(null)
 
   useEffect(() => {
@@ -34,19 +36,26 @@ const SceneAddDialog = ({ open, onClose, onSuccess, onError, identity, realm, po
     if (!newKey.trim()) return
     const parsedValue = fieldRef.current?.getParsedValue() ?? null
     if (parsedValue === null) return
+    clearError()
     try {
       await setSceneValue({ identity, realm, position, key: newKey.trim(), value: parsedValue }).unwrap()
       onSuccess()
       onClose()
-    } catch {
-      onError()
+    } catch (error) {
+      setErrorFrom(error)
+      onError(error)
     }
-  }, [newKey, setSceneValue, identity, realm, position, onClose, onSuccess, onError])
+  }, [newKey, setSceneValue, identity, realm, position, onClose, onSuccess, onError, clearError, setErrorFrom])
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{t('component.storage.scene_page.add_dialog.title')}</DialogTitle>
       <DialogContent>
+        {errorKey ? (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {t(errorKey)}
+          </Alert>
+        ) : null}
         <TextField
           autoFocus
           margin="dense"
@@ -84,7 +93,7 @@ interface SceneEditDialogProps {
   keyName: string
   onClose: () => void
   onSuccess: () => void
-  onError: () => void
+  onError: (error: unknown) => void
   identity: AuthIdentity | undefined
   realm: string | null
   position: string | null
@@ -96,23 +105,31 @@ const SceneEditDialog = ({ open, keyName, onClose, onSuccess, onError, identity,
   const [setSceneValue] = useSetSceneValueMutation()
   const fieldRef = useRef<StorageValueFieldRef>(null)
   const [isValid, setIsValid] = useState(false)
+  const { errorKey, clearError, setErrorFrom } = useDialogError([open, keyName])
 
   const handleSave = useCallback(async () => {
     const parsedValue = fieldRef.current?.getParsedValue() ?? null
     if (parsedValue === null) return
+    clearError()
     try {
       await setSceneValue({ identity, realm, position, key: keyName, value: parsedValue }).unwrap()
       onSuccess()
       onClose()
-    } catch {
-      onError()
+    } catch (error) {
+      setErrorFrom(error)
+      onError(error)
     }
-  }, [keyName, setSceneValue, identity, realm, position, onClose, onSuccess, onError])
+  }, [keyName, setSceneValue, identity, realm, position, onClose, onSuccess, onError, clearError, setErrorFrom])
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>{t('component.storage.scene_page.edit_dialog.title', { key: keyName })}</DialogTitle>
       <DialogContent>
+        {errorKey ? (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {t(errorKey)}
+          </Alert>
+        ) : null}
         {isLoading ? (
           <Box display="flex" justifyContent="center" p={3}>
             <CircularProgress />
