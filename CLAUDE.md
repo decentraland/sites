@@ -1,6 +1,6 @@
 # Sites
 
-Decentraland's main website. Single Vite SPA that absorbed several standalone dapps: the homepage and legal pages, the download flow, `/whats-on/*` (events), `/blog/*` (CMS posts), `/jump/*` (deep-link handler for the launcher), `/social/*` (communities), `/cast/*` (LiveKit browser streaming), `/storage/*` (storage-service-site), `/reels/*` (in-game camera screenshots), and `/report/*` (community report flow). Module Federation was removed — every absorbed dapp is a native lazy-loaded route group in this repo.
+Decentraland's main website. Single Vite SPA — every absorbed dapp is a native lazy-loaded route group (Module Federation removed). See **Architecture: Dual Shell** below for the full route map.
 
 ## Architecture: Dual Shell
 
@@ -137,24 +137,9 @@ npm run lint:fix     # ESLint
 npm run lint:pkg     # package.json lint (silent on success — easy to skip; do not skip)
 ```
 
-## Adding a lightweight route
+## Adding a route
 
-1. Create page in `src/pages/my-page/`.
-2. Add `lazy(() => import(...))` in `src/App.tsx`.
-3. Place the `<Route>` inside `<Route element={<Layout />}>` block, OUTSIDE `<Route element={<DappsShell />}>`. (Only put it BEFORE the Layout block if the page is fullscreen and intentionally bypasses navbar+footer — see reels / download / invite.)
-4. Use `useSyncExternalStore`-based clients for data, or co-locate a tiny client under `src/features/` using the same pattern as `features/events/events.discovery.ts`, `features/profile/`, or `features/reels/`.
-5. Do NOT import anything from `src/shells/*`, `src/services/*`, or any heavy-tier feature directory: `src/features/cms/*`, `src/features/events/*` (except for `events.discovery.ts`, which is the lightweight homepage data client), `src/features/places/*`, `src/features/communities/*`, `src/features/cast2/*`, `src/features/storage/*`.
-6. **If shareable, add the pathname to the SEO worker's `PAGES` map** in `sites-deployer` (`workers/sites-worker/rollouts/routes/handlers/OpenGraphStaticPageRoute.ts`). Crawlers don't run JS — Helmet titles aren't visible; the worker rewrites OG meta at the edge based on this map. Skip if non-shareable or already covered by a dedicated handler (invite, reels).
-
-## Adding a heavy route
-
-1. Create page in `src/pages/<area>/`. Mirror the existing absorbed-dapp layout: `whats-on/`, `blog/`, `jump/`, `social/`, `cast/`, `storage/`.
-2. Add `lazy(() => import(...))` in `src/App.tsx`.
-3. Place the `<Route>` INSIDE `<Route element={<DappsShell />}>`. If your area needs an extra Outlet wrapper (LiveKit + Notification contexts for cast, layout chrome for whats-on), add a per-area Layout component and nest the routes under it (see `WhatsOnLayout`, `CastLayout`).
-4. If you need Redux state: prefer injecting endpoints into an existing base client (`cmsClient`, `placesClient`, `socialClient`, `cast2Client`, `storageClient`, `subgraphClient`, `eventsClient`, `adminClient`). Only add a new base client under `src/services/<name>Client.ts` (and register the reducer + middleware in `src/shells/store.ts`) when the new domain genuinely doesn't fit any existing one.
-5. Never import your feature from lightweight route code.
-6. If the page sets `<title>` via Helmet + async data (Contentful, RTK Query, etc.) — call `useBlogPageTracking` from `src/hooks/useBlogPageTracking.ts` and add the route to `Layout`'s page-tracking skip list (`Layout.helpers.ts:isPageTrackingExempt`). See rule 23.
-7. **Add the route to the GitHub issue templates.** `.github/ISSUE_TEMPLATE/bug_report.yml` has a `Page / Area` dropdown that explicitly says `Keep options in sync with the routes defined in src/App.tsx`. `.github/ISSUE_TEMPLATE/feature_request.yml` has a sibling `Area` dropdown. Adding a route without updating these means bug reporters can't categorize their issue against the new page.
+Tier picker (lightweight / heavy / Layout-less), full step-by-step, navbar clearance, and the repo sync checklist (README + SEO worker `PAGES` + GitHub issue templates) → skill `add-route`.
 
 ## Coding conventions
 
@@ -193,8 +178,13 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
 
 ### 2. Architectural boundary check (P1 failures)
 
-- `src/shells/*` MUST NOT be imported from lightweight route code.
-- The only legitimate reference to `src/shells/` from outside is the `lazy(() => import('./shells/DappsShell'))` call in `src/App.tsx`.
+Enforce the boundary rule from Architecture > Dual Shell. Grep diff:
+
+```bash
+git diff master...HEAD --name-only | xargs grep -l "from ['\"].*shells/" 2>/dev/null
+```
+
+Hits outside `src/App.tsx` and `src/shells/` itself = violation.
 
 ### 3. YAGNI check
 
@@ -313,15 +303,15 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
 
 ### 19-25. Extended rules — see `docs/pre-pr-rules-detail.md`
 
-The following rules ship with code patterns that live in `docs/pre-pr-rules-detail.md` to keep this file under 40k chars. Open that doc when touching any of the areas below.
+One line each. Open the doc for code patterns and full rationale.
 
-- **19. XSS sanitization for CMS/search HTML.** Every React innerHTML injection sourced from Contentful, cms-server search, or any external/user-supplied content must go through DOMPurify with a scoped per-source allowlist (`sanitizeX.ts`). Never a generic global sanitizer.
-- **20. URL validation — parse + allowlist, never `includes()`.** `new URL()` + hostname `Set` + regex on the extracted ID before interpolating into iframe `src`. `.includes()`/`.endsWith()` is trivially bypassable.
-- **21. `package-lock.json` after rebase conflicts.** Never `npm install --package-lock-only` (drops linux platform binaries → CI `npm ci` fails). Always `rm -rf node_modules package-lock.json && npm install`.
-- **22. Immutable data in RTK Query cache.** Never mutate objects returned by `queryFn`/`transformResponse`/`updateQueryData`. Build enrichment in a `Map`, then `.map(card => ({ ...card, ...extra }))`.
-- **23. Page tracking + Helmet titles.** `usePageTracking(pathname)` races Helmet's async title write — Segment grabs the previous title. Helmet-titled routes (currently `/blog/*`) MUST use `useBlogPageTracking({ name, properties })` and be added to `Layout`'s skip list.
-- **24. Props destructuring threshold.** ≤3 props → destructure in the parameter list. ≥4 → take `props` as one arg and destructure in the body. Same for hook/helper option objects. Defaults move with their key into the body.
-- **25. No inline `sx` with hardcoded values.** `sx` is allowed only for a single runtime-dynamic value the styled component can't accept as a prop. Hardcoded dimensions/colors/spacing belong in a co-located `*.styled.ts` using theme tokens.
+- **19.** XSS sanitization for CMS/search HTML — DOMPurify with scoped per-source allowlist.
+- **20.** URL validation — `new URL()` + hostname `Set` + regex ID, never `includes()`.
+- **21.** `package-lock.json` after rebase — `rm -rf node_modules package-lock.json && npm install`, never `--package-lock-only`.
+- **22.** Immutable RTK Query cache — don't mutate `queryFn` / `transformResponse` / `updateQueryData` returns.
+- **23.** Page tracking + Helmet — `useBlogPageTracking({ name, properties })` + `Layout.helpers.ts:isPageTrackingExempt`.
+- **24.** Props destructuring threshold — ≤3 in params, ≥4 in body.
+- **25.** No inline `sx` with hardcoded values — co-located `*.styled.ts` with theme tokens.
 
 ## Security checklist
 
