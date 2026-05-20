@@ -1,4 +1,4 @@
-import { createElement } from 'react'
+import { createElement, forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import type { ChangeEvent, ReactNode } from 'react'
 
 /**
@@ -84,4 +84,39 @@ const dialogMockFactory = (): Record<string, unknown> => ({
   }
 })
 
-export { dialogMockFactory }
+interface StorageValueFieldMockRef {
+  reset: () => void
+  getParsedValue: () => string | null
+}
+
+interface StorageValueFieldMockProps {
+  onChange?: (e: { isValid: boolean; parsedValue: string | null }) => void
+  label?: string
+}
+
+/**
+ * Shared mock for the real `StorageValueField` (which mounts MUI's TextField
+ * with multiline/rows props that aren't supported by the lightweight dialog
+ * mock). Exposes the same `reset` / `getParsedValue` imperative handle, and
+ * surfaces a plain text input so specs can drive it with `fireEvent.change`.
+ */
+const storageValueFieldMockFactory = () => ({
+  StorageValueField: forwardRef<StorageValueFieldMockRef, StorageValueFieldMockProps>((props, ref) => {
+    const [raw, setRaw] = useState('')
+    useImperativeHandle(ref, () => ({
+      reset: () => setRaw(''),
+      getParsedValue: () => (raw.trim() ? raw : null)
+    }))
+    useEffect(() => {
+      props.onChange?.({ isValid: raw.trim().length > 0, parsedValue: raw.trim() ? raw : null })
+    }, [raw])
+    return createElement('input', {
+      ['aria-label']: props.label ?? 'storage-value-field',
+      value: raw,
+      onChange: (e: ChangeEvent<HTMLInputElement>) => setRaw(e.target.value)
+    })
+  })
+})
+
+export { dialogMockFactory, storageValueFieldMockFactory }
+export type { StorageValueFieldMockRef, StorageValueFieldMockProps }

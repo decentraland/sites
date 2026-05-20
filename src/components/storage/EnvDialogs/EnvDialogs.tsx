@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { AuthIdentity } from '@dcl/crypto'
 import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from 'decentraland-ui2'
-import { getStorageErrorKey, useSetEnvMutation } from '../../../features/storage'
+import { useSetEnvMutation } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useDialogError } from '../../../hooks/useDialogError'
 
 interface EnvAddDialogProps {
   open: boolean
@@ -19,28 +20,27 @@ const EnvAddDialog = ({ open, onClose, onSuccess, onError, identity, realm, posi
   const [setEnv, { isLoading }] = useSetEnvMutation()
   const [newKey, setNewKey] = useState('')
   const [newValue, setNewValue] = useState('')
-  const [errorKey, setErrorKey] = useState<string | null>(null)
+  const { errorKey, clearError, setErrorFrom } = useDialogError([open])
 
   useEffect(() => {
     if (open) {
       setNewKey('')
       setNewValue('')
-      setErrorKey(null)
     }
   }, [open])
 
   const handleSave = useCallback(async () => {
     if (!newKey.trim() || !newValue.trim()) return
-    setErrorKey(null)
+    clearError()
     try {
       await setEnv({ identity, realm, position, key: newKey.trim(), value: newValue.trim() }).unwrap()
       onSuccess()
       onClose()
     } catch (error) {
-      setErrorKey(getStorageErrorKey(error))
+      setErrorFrom(error)
       onError(error)
     }
-  }, [newKey, newValue, setEnv, identity, realm, position, onClose, onSuccess, onError])
+  }, [newKey, newValue, setEnv, identity, realm, position, onClose, onSuccess, onError, clearError, setErrorFrom])
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -95,27 +95,24 @@ const EnvEditDialog = ({ open, keyName, onClose, onSuccess, onError, identity, r
   const t = useFormatMessage()
   const [setEnv, { isLoading }] = useSetEnvMutation()
   const [editValue, setEditValue] = useState('')
-  const [errorKey, setErrorKey] = useState<string | null>(null)
+  const { errorKey, clearError, setErrorFrom } = useDialogError([open, keyName])
 
   useEffect(() => {
-    if (open) {
-      setEditValue('')
-      setErrorKey(null)
-    }
+    if (open) setEditValue('')
   }, [open, keyName])
 
   const handleSave = useCallback(async () => {
     if (!editValue.trim()) return
-    setErrorKey(null)
+    clearError()
     try {
       await setEnv({ identity, realm, position, key: keyName, value: editValue.trim() }).unwrap()
       onSuccess()
       onClose()
     } catch (error) {
-      setErrorKey(getStorageErrorKey(error))
+      setErrorFrom(error)
       onError(error)
     }
-  }, [editValue, keyName, setEnv, identity, realm, position, onClose, onSuccess, onError])
+  }, [editValue, keyName, setEnv, identity, realm, position, onClose, onSuccess, onError, clearError, setErrorFrom])
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
