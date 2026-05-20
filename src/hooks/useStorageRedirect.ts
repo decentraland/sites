@@ -9,17 +9,23 @@ interface UseStorageRedirectResult {
 }
 
 function useStorageRedirect(): UseStorageRedirectResult {
-  const { hasValidIdentity, address } = useAuthIdentity()
+  const { hasValidIdentity } = useAuthIdentity()
   const { pathname } = useLocation()
   const { realm, position } = useStorageScope()
 
   useEffect(() => {
-    if (hasValidIdentity || address) return
+    // NOTE: storage endpoints require a SIGNED request (ADR-44). An address alone
+    // is not enough — without a valid ephemeral identity, `setEnv` falls back to
+    // an unsigned fetch and the server replies 400 "Invalid Auth Chain".
+    // Issue #505 surfaced a user stuck in that half-signed-in state: address in
+    // localStorage but identity expired. Redirecting to /auth here forces a
+    // fresh sign-in instead of letting the page emit silent failures.
+    if (hasValidIdentity) return
     const queryParams: Record<string, string> = {}
     if (realm) queryParams.realm = realm
     if (position) queryParams.position = position
     redirectToAuth(pathname, Object.keys(queryParams).length > 0 ? queryParams : undefined)
-  }, [hasValidIdentity, address, pathname, realm, position])
+  }, [hasValidIdentity, pathname, realm, position])
 
   return { isReady: hasValidIdentity }
 }
