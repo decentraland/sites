@@ -58,6 +58,12 @@ jobs:
           provenance: false
           registry-url: 'https://registry.npmjs.org'
           access: public
+          # oddish-action skips publish on non master/main branches unless either
+          # `branch-to-next` or `custom-tag` + `branch-to-custom-tag` are set.
+          # Tag manual-deploy builds under the `manual` dist-tag so the rollout
+          # step can find the package in npm and the CDN.
+          custom-tag: 'manual'
+          branch-to-custom-tag: ${{ github.ref_name }}
           gitlab-token: ${{ secrets.GITLAB_CDN_DEPLOYER_TOKEN }}
           gitlab-pipeline-url: ${{ secrets.GITLAB_CDN_DEPLOYER_URL }}
         env:
@@ -68,6 +74,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Wait for CDN propagation
+        env:
+          PACKAGE_NAME: '@dcl/sites'
+          PACKAGE_VERSION: ${{ needs.build-and-publish.outputs.version }}
+        run: |
+          URL="https://cdn.decentraland.org/${PACKAGE_NAME}/${PACKAGE_VERSION}"
+          echo "Polling ${URL} until the CDN serves the package..."
+          for attempt in $(seq 1 60); do
+            status=$(curl -s -o /dev/null -w '%{http_code}' -I "${URL}" || echo "000")
+            if [ "${status}" -ge 200 ] && [ "${status}" -lt 400 ]; then
+              echo "Package available in CDN (status ${status}) after attempt ${attempt}"
+              exit 0
+            fi
+            echo "Attempt ${attempt}: status ${status}, retrying in 15s..."
+            sleep 15
+          done
+          echo "Timed out waiting for ${URL}"
+          exit 1
+
       - name: Set Rollout
         uses: decentraland/set-rollout-action@26ead404b6944fd0ce0d087cc59fd817607454d6 # v2
         with:
