@@ -61,14 +61,15 @@ If unsure, default to **lightweight (with Layout)**.
 4. Same data + import restrictions as the lightweight tier.
 5. Helmet titles still follow rule 23 if the title resolves async.
 
-## Keep README in sync
+## Repo sync checklist (same PR)
 
-The route table under "What lives here" in `README.md` is curated by hand — there is no codegen. Any time you **add, remove, or rename** a route in `src/App.tsx`, update the matching row in `README.md` **in the same PR**:
+Every time you **add, remove, or rename** a route in `src/App.tsx`:
 
-- Route column: every public-facing path (including legacy aliases worth advertising).
-- Notes column: 404 catch-alls (`/area/*`), legacy redirects, and tier-specific quirks (`fullscreen`, `Heavy DappsShell route`, etc.).
+1. **README.md route table** under "What lives here". Curated by hand — no codegen. Route column = every public-facing path (including legacy aliases worth advertising). Notes column = 404 catch-alls (`/area/*`), legacy redirects, tier-specific quirks (`fullscreen`, `Heavy DappsShell route`).
+2. **SEO worker `PAGES` map** in `sites-deployer` (`workers/sites-worker/rollouts/routes/handlers/OpenGraphStaticPageRoute.ts`). Crawlers don't run JS — Helmet titles aren't visible; the worker rewrites OG meta at the edge based on this map. Skip if non-shareable or already covered by a dedicated handler (invite, reels).
+3. **GitHub issue templates.** `.github/ISSUE_TEMPLATE/bug_report.yml` has a `Page / Area` dropdown that explicitly says `Keep options in sync with the routes defined in src/App.tsx`. `.github/ISSUE_TEMPLATE/feature_request.yml` has a sibling `Area` dropdown. Missing the route here means bug reporters can't categorize their issue against the new page.
 
-If the change is purely internal (component rename, lazy-import path, comment) and no public path changes, the README is fine as is.
+Internal-only changes (component rename, lazy-import path, comment) where no public path changes — skip all three.
 
 A `PostToolUse` hook fires on every edit to `src/App.tsx` to surface this reminder.
 
