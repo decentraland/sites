@@ -139,10 +139,36 @@ describe('eventEntryToFormState', () => {
   })
 
   describe('when hydrating recurrent_weekday_mask from a stored event', () => {
-    it('should default to all 7 weekdays when the mask is missing or 0', () => {
-      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_weekday_mask: null }))
+    // Issue #517: previously the helper returned all 7 weekdays when the mask was null/0, which
+    // matched the literal bitmask but not its semantics. The server treats mask=0 as "use
+    // start_at's weekday" (RRULE default), and the form needs to mirror that so editing a weekly
+    // event doesn't silently expand its recurrence to every day.
+    it('should default repeatDays to the start_at weekday when the mask is null', () => {
+      // Both production (`parseStartWeekday`) and the assertion below call `Date#getDay()` on the
+      // same local-time anchor, so the test is TZ-agnostic.
+      const formState = eventEntryToFormState(
+        buildEvent({
+          recurrent: true,
+          recurrent_frequency: 'WEEKLY',
+          recurrent_weekday_mask: null,
+          start_at: '2030-01-07T10:00:00.000Z'
+        })
+      )
 
-      expect(formState.repeatDays).toEqual([0, 1, 2, 3, 4, 5, 6])
+      expect(formState.repeatDays).toEqual([new Date('2030-01-07T10:00:00.000Z').getDay()])
+    })
+
+    it('should default repeatDays to the start_at weekday when the mask is 0', () => {
+      const formState = eventEntryToFormState(
+        buildEvent({
+          recurrent: true,
+          recurrent_frequency: 'WEEKLY',
+          recurrent_weekday_mask: 0,
+          start_at: '2030-01-07T10:00:00.000Z'
+        })
+      )
+
+      expect(formState.repeatDays).toEqual([new Date('2030-01-07T10:00:00.000Z').getDay()])
     })
 
     it('should decode Tuesday + Friday (mask 36) into [2, 5]', () => {
@@ -155,6 +181,47 @@ describe('eventEntryToFormState', () => {
       const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_weekday_mask: 127 }))
 
       expect(formState.repeatDays).toEqual([0, 1, 2, 3, 4, 5, 6])
+    })
+
+    it('should preserve a single explicitly stored weekday across the round-trip (mask 2 → [Mon])', () => {
+      // Regression for the "Monday turned into Wednesday" symptom in issue #517: a mask explicitly
+      // set to Monday (2) must round-trip as `[1]`, not get overwritten by the start_at fallback.
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_weekday_mask: 2 }))
+
+      expect(formState.repeatDays).toEqual([1])
+    })
+  })
+
+  describe('when hydrating repeatEndDate from a stored event', () => {
+    // Issue #517: `recurrent_dates` is capped at ~10 occurrences server-side (see
+    // `events.helpers.ts:53-58`). Reading the form's end date from the last entry of that array
+    // would silently truncate the recurrence horizon and overwrite `recurrent_until` on save.
+    it('should hydrate from recurrent_until when it extends past the truncated recurrent_dates window', () => {
+      const formState = eventEntryToFormState(
+        buildEvent({
+          recurrent: true,
+          recurrent_frequency: 'WEEKLY',
+          recurrent_until: '2026-11-30T00:00:00.000Z',
+          recurrent_dates: ['2026-05-04T10:00:00.000Z', '2026-05-11T10:00:00.000Z', '2026-07-13T10:00:00.000Z']
+        })
+      )
+
+      const expected = asLocalFormFields('2026-11-30T00:00:00.000Z')
+      expect(formState.repeatEndDate).toBe(expected.date)
+    })
+
+    it('should fall back to the last recurrent date only when recurrent_until is missing (legacy)', () => {
+      const formState = eventEntryToFormState(
+        buildEvent({
+          recurrent: true,
+          recurrent_frequency: 'WEEKLY',
+          recurrent_until: null,
+          recurrent_dates: ['2026-05-04T10:00:00.000Z', '2026-07-13T10:00:00.000Z']
+        })
+      )
+
+      const expected = asLocalFormFields('2026-07-13T10:00:00.000Z')
+      expect(formState.repeatEndDate).toBe(expected.date)
     })
   })
 

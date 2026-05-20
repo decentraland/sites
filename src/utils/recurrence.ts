@@ -16,8 +16,13 @@ function dayIndicesToWeekdayMask(days: number[]): number {
   return days.reduce((mask, day) => (day >= 0 && day <= 6 ? mask | (1 << day) : mask), 0)
 }
 
+// Pure mask decoder. Returns `[]` for null/0/undefined — the server's default mask of `0` means
+// "fall back to start_at's weekday" (RRULE behavior), not "all 7 days", so callers that need a
+// concrete default must derive it from `start_at` themselves. Returning ALL_WEEKDAYS here was the
+// root cause of issue #517: the create-event form auto-selected every weekday on load and saved
+// `mask=127`, corrupting weekly events.
 function weekdayMaskToDayIndices(mask: number | null | undefined): number[] {
-  if (mask === null || mask === undefined || mask === 0) return [...ALL_WEEKDAYS]
+  if (mask === null || mask === undefined || mask === 0) return []
   return ALL_WEEKDAYS.filter(day => (mask & (1 << day)) !== 0)
 }
 
