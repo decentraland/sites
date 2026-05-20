@@ -78,19 +78,7 @@ These render as `<Outlet />` children of `src/shells/DappsShell.tsx`. The shell 
 
 ## RTK Query split (`services/` vs `features/`)
 
-One folder per backend API. Inside each folder, endpoints either inject into a shared base from `src/services/<name>Client.ts` or define their own `createApi`. The whole folder ships in the same lazy chunk.
-
-**`src/services/<name>Client.ts`** — infrastructure. Declares the empty base client (base URL, cache config, tag types, custom signed-fetch baseQuery when needed). No endpoints. Imported by `src/shells/store.ts` to register reducers and middleware. Existing bases: `cmsClient`, `placesClient`, `socialClient`, `cast2Client`, `storageClient`, `subgraphClient`. Two more bases live next to their endpoints rather than in `services/` (legacy shape, both still load via the shell): `eventsClient` (`features/events/events.client.ts`) and `adminClient` (`features/events/events.admin.client.ts`).
-
-**`src/features/<api>/<api>.client.ts`** (and siblings like `<api>.admin.client.ts`, `<api>.search.client.ts`) — business logic. Calls `<base>.injectEndpoints({ endpoints: ... })`. For example, `features/cms/cms.client.ts` injects `getBlogPosts`, `getBlogPost`, `getBlogCategories`, … into `cmsClient`, and `features/cms/cms.search.client.ts` injects the search endpoints into the same `cmsClient`. Same one-folder-per-API pattern for `features/places/`, `features/communities/`, `features/storage/`, etc.
-
-Why the split:
-
-1. **Breaks a circular dep.** `store.ts` imports the base client. Endpoints in `features/blog/blog.client.ts` import `store` for one cache-read optimization (`getPostFromStore`). If the base client lived next to the endpoints, that would cycle. The split keeps the hub (`services/`) free of app-layer imports.
-2. **Matches RTK Query's recommended pattern** ([code splitting](https://redux-toolkit.js.org/rtk-query/usage/code-splitting)). The "empty api + inject" idiom scales cleanly with each new dapp.
-3. **Keeps the store lean.** `store.ts` doesn't need to import feature endpoint definitions just to register reducers/middleware.
-
-**Naming nit:** `services/blogClient.ts` only hosts `cmsClient` (search now injects into the same client because cms-server `/blog/posts?q=` shares the origin and HTTP cache). The filename is mildly misleading — a future rename to `services/cmsClient.ts` is fine but not urgent.
+Base clients (infra) in `src/services/<name>Client.ts`. Endpoints (business logic) injected from `src/features/<domain>/<domain>.client.ts` via `<base>.injectEndpoints({ ... })`. Full rationale, step-by-step for adding endpoints / base clients, and Pre-PR rules 17-18 → skill `rtk-query-split`.
 
 ## Auth flow
 
@@ -275,31 +263,11 @@ Hits outside `src/App.tsx` and `src/shells/` itself = violation.
 
 ### 17. RTK Query — no direct store imports in endpoint files
 
-- RTK Query endpoint files (`features/<domain>/<domain>.client.ts`) must NOT `import { store } from '.../shells/store'` for dispatching inside `transformResponse` or `queryFn`. That creates a circular dep with `store.ts` and breaks tree-shaking guarantees.
-- Use RTK Query's `onQueryStarted` lifecycle instead:
-  ```ts
-  getBlogPosts: builder.query({
-    query: args => `posts?${args}`,
-    async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-      try {
-        const { data } = await queryFulfilled
-        dispatch(postsUpserted(data.items))
-      } catch {
-        /* hook surfaces error */
-      }
-    }
-  })
-  ```
-- A single legitimate read of `store.getState()` for cache-check optimizations is tolerated (see `features/blog/blog.client.ts:getPostFromStore`) as long as the file does NOT dispatch from within RTK Query callbacks.
+Don't `import { store }` in endpoint files for dispatching. Use `onQueryStarted` lifecycle instead. Skill `rtk-query-split`.
 
 ### 18. RTK Query — no internal cache state access
 
-- NEVER reach into `state.cmsClient.queries` or similar internals via `as any` casts. The shape is undocumented and changes between `@reduxjs/toolkit` minor versions.
-- Read cached data through one of:
-  - Normalized entity-adapter selectors (preferred — `selectBlogPostById(state, id)`)
-  - `cmsClient.endpoints.getBlogPost.select(args)(state)`
-  - Generated hooks with `selectFromResult` inside components
-- If the data isn't reachable through any of the above, add an `onQueryStarted` that upserts into an entity adapter — then select from there.
+No `state.cmsClient.queries` casts via `as any`. Use entity-adapter selectors, `endpoints.foo.select(args)(state)`, or `selectFromResult`. Skill `rtk-query-split`.
 
 ### 19-25. Extended rules — see `docs/pre-pr-rules-detail.md`
 
