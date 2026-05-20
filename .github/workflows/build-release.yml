@@ -17,15 +17,15 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # @v4.3.0
 
       - name: Use Node.js 24.x
-        uses: actions/setup-node@v4.0.1
+        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # @v4.0.1
         with:
           node-version: 24.x
 
       - name: Set package.json version
-        uses: decentraland/oddish-action@master
+        uses: decentraland/oddish-action@d9612ec0a1f3cd012d5736df7744fcf9e940bfce # master (node24)
         with:
           deterministic-snapshot: true
           only-update-versions: true
@@ -39,7 +39,7 @@ jobs:
         run: npm run build
 
       - name: Publish
-        uses: decentraland/oddish-action@master
+        uses: decentraland/oddish-action@d9612ec0a1f3cd012d5736df7744fcf9e940bfce # master (node24)
         with:
           cwd: './dist'
           deterministic-snapshot: true
