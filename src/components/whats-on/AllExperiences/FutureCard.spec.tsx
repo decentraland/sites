@@ -72,6 +72,11 @@ jest.mock('../common/LocalDateTimeTooltip', () => ({
   )
 }))
 
+const mockGetRelativeTimeLabel = jest.fn((iso: string, _t: (k: string) => string) => `time:${iso}`)
+jest.mock('../../../utils/whatsOnTime', () => ({
+  getRelativeTimeLabel: (...args: unknown[]) => mockGetRelativeTimeLabel(...(args as [string, (k: string) => string]))
+}))
+
 jest.mock('../common/CardActions.styled', () => ({
   ActionButton: ({ children, onClick }: { children: React.ReactNode; onClick?: React.MouseEventHandler }) => (
     <button data-testid="action-button" onClick={onClick}>
@@ -127,10 +132,31 @@ describe('FutureCard', () => {
   beforeEach(() => {
     mockOnClick = jest.fn()
     mockUseCreatorProfile.mockReturnValue(defaultCreatorProfile)
+    mockGetRelativeTimeLabel.mockImplementation((iso: string, _t: (k: string) => string) => `time:${iso}`)
   })
 
   afterEach(() => {
     jest.resetAllMocks()
+  })
+
+  describe('when the event is recurring and start_at is in the past', () => {
+    it('should pass next_start_at to getRelativeTimeLabel', () => {
+      mockHasValidIdentity.mockReturnValue(false)
+      const event = createMockEvent({ live: false, start_at: '2026-04-05T10:00:00Z', next_start_at: '2026-04-07T10:00:00Z' })
+
+      render(<FutureCard event={event} onClick={mockOnClick} />)
+
+      expect(mockGetRelativeTimeLabel).toHaveBeenCalledWith('2026-04-07T10:00:00Z', expect.any(Function))
+    })
+
+    it('should fall back to start_at when next_start_at is empty', () => {
+      mockHasValidIdentity.mockReturnValue(false)
+      const event = createMockEvent({ live: false, start_at: '2026-04-07T10:00:00Z', next_start_at: '' })
+
+      render(<FutureCard event={event} onClick={mockOnClick} />)
+
+      expect(mockGetRelativeTimeLabel).toHaveBeenCalledWith('2026-04-07T10:00:00Z', expect.any(Function))
+    })
   })
 
   describe('when the user is signed out', () => {
