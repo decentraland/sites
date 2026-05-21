@@ -58,7 +58,7 @@ jobs:
           npm --version
 
       - name: Set package.json version
-        uses: decentraland/oddish-action@0074f2d535c43b5c83f136525304a6277166d77f # master @ feat/support-npm-trusted-publishing
+        uses: decentraland/oddish-action@4334287e94bcb192de0c7d841fe80a9faedcf191 # PR #11 head: node24 runtime + TS 6 / @types/node 24
         with:
           deterministic-snapshot: true
           only-update-versions: true
@@ -82,7 +82,7 @@ jobs:
         # For workflow_dispatch (manual branch deploys), the build is published
         # under the `manual` dist-tag so it doesn't move `latest`. Auto-deploys
         # (push/release) publish without a custom tag.
-        uses: decentraland/oddish-action@0074f2d535c43b5c83f136525304a6277166d77f # master @ feat/support-npm-trusted-publishing
+        uses: decentraland/oddish-action@4334287e94bcb192de0c7d841fe80a9faedcf191 # PR #11 head: node24 runtime + TS 6 / @types/node 24
         with:
           cwd: './dist'
           deterministic-snapshot: true
