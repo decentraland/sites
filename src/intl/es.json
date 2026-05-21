@@ -1098,7 +1098,7 @@
     "today_at": "Hoy {time}",
     "tomorrow_at": "Mañana {time}"
   },
-    "social": {
+  "discover": {
     "nav": {
       "live": "Descubrir",
       "communities": "Comunidades"
@@ -1160,7 +1160,7 @@
       "world_label": "Mundo",
       "people_count": "{count, plural, one {# persona en el mundo} other {# personas en el mundo}}",
       "people_empty": "Nadie por acá todavía.",
-      "tab_video": "Video",
+      "tab_video": "Stream",
       "tab_streaming": "DCL Web",
       "launch_title": "Explora esta escena en 3D",
       "launch_hint": "Se ejecuta en tu navegador — sin instalación.",
@@ -1196,6 +1196,9 @@
         "hint": "Esta experiencia no está disponible en navegadores móviles. Descargá la aplicación:",
         "cta": "Obtener la app"
       }
+    },
+    "community": {
+      "about": "Acerca de"
     }
   }
 }

@@ -13,7 +13,7 @@ jest.mock('decentraland-ui2', () => {
 })
 
 jest.mock('./DiscoverLayout.styled', () => ({
-  PageContainer: ({ children }: { children: React.ReactNode }) => <div data-testid="social-page">{children}</div>
+  PageContainer: ({ children }: { children: React.ReactNode }) => <div data-testid="discover-page">{children}</div>
 }))
 
 describe('DiscoverLayout', () => {
@@ -23,6 +23,6 @@ describe('DiscoverLayout', () => {
         <DiscoverLayout />
       </MemoryRouter>
     )
-    expect(screen.getByTestId('social-page')).toBeInTheDocument()
+    expect(screen.getByTestId('discover-page')).toBeInTheDocument()
   })
 })

@@ -8,9 +8,15 @@ import { CardGrid, Empty, HeaderRow, PageContent, PageTitle, SearchField } from 
 import { CommunityCard } from '../../components/discover/CommunityCard'
 import { useGetCommunitiesListQuery } from '../../features/discover'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
 
 function DiscoverCommunitiesPage() {
   const t = useFormatMessage()
+
+  // `/discover/*` is in `isPageTrackingExempt`, so the Layout's route-level
+  // `page()` is suppressed. Static name — fires immediately on mount.
+  useBlogPageTracking({ name: t('discover.communities.page_title') })
+
   const [searchInput, setSearchInput] = useState('')
   const search = useDeferredValue(searchInput.trim())
 
@@ -36,7 +42,7 @@ function DiscoverCommunitiesPage() {
     return (
       <>
         <Helmet>
-          <title>{t('social.communities.page_title')}</title>
+          <title>{t('discover.communities.page_title')}</title>
         </Helmet>
         <CenteredBox>
           <CircularProgress />
@@ -48,13 +54,13 @@ function DiscoverCommunitiesPage() {
   return (
     <PageContent>
       <Helmet>
-        <title>{t('social.communities.page_title')}</title>
+        <title>{t('discover.communities.page_title')}</title>
       </Helmet>
       <HeaderRow>
-        <PageTitle>{t('social.communities.heading')}</PageTitle>
+        <PageTitle>{t('discover.communities.heading')}</PageTitle>
         <SearchField
           variant="outlined"
-          placeholder={t('social.communities.search_placeholder')}
+          placeholder={t('discover.communities.search_placeholder')}
           value={searchInput}
           onChange={e => setSearchInput(e.target.value)}
           InputProps={{
@@ -67,7 +73,7 @@ function DiscoverCommunitiesPage() {
         />
       </HeaderRow>
       {isEmpty ? (
-        <Empty>{t('social.communities.empty')}</Empty>
+        <Empty>{t('discover.communities.empty')}</Empty>
       ) : (
         <CardGrid>
           {communities.map(community => (

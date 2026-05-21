@@ -1,1 +1,1 @@
-export { SceneChatDock, SceneRoomMount, SceneWatcherCard, useSceneRoom } from './SceneLiveWatcher'
+export { SceneChatDock, SceneRoomMount, SceneWatcherCard } from './SceneLiveWatcher'

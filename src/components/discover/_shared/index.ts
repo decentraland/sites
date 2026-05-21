@@ -1,1 +1,1 @@
-export { CardGrid, Empty, HeaderRow, Loader, PageContent, PageTitle, SearchField } from './DiscoverShell.styled'
+export { CardGrid, Empty, HeaderRow, PageContent, PageTitle, SearchField } from './DiscoverShell.styled'

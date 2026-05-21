@@ -46,7 +46,7 @@ const store = configureStore({
 
 // Wire up the global `focus` + `online` listeners so any query that opts into
 // `refetchOnFocus` / `refetchOnReconnect` actually fires. Without this call,
-// those flags are silently ignored. Used by the /social LIVE page to keep
+// those flags are silently ignored. Used by the /discover LIVE page to keep
 // hot-scenes / live-worlds data fresh when the user returns to the tab.
 setupListeners(store.dispatch)
 

@@ -11,23 +11,20 @@ interface SceneAdapterCredentials {
   token: string
 }
 
-// The /social/* LIVE feature reads its data from the realm-provider-ea
-// hot-scenes endpoint, which is pinned to prod in every env file (there is
-// no dev hot-scenes endpoint). The LiveKit cluster behind the prod hot-scenes
-// is comms-gatekeeper.decentraland.org's. If we used the env-default
-// GATEKEEPER_URL (.zone on dev/stg), we'd join an empty LiveKit cluster
-// while showing prod's "14 people here" counter — split-brain UX.
-//
-// We always target prod for scene watching so the player counts and presence
-// shown on /social match what the watcher actually joins. Same trick as
-// HOT_SCENES_URL: hardcoded to the prod origin in every env file.
-const PROD_GATEKEEPER_URL = 'https://comms-gatekeeper.decentraland.org'
-const PROD_PEER_URL = 'https://peer.decentraland.org'
+// Discover's LIVE watcher reads its gatekeeper / peer URLs from the env
+// file (`dev.json` → prod, `stg.json` → zone, `prd.json` → prod). The
+// LiveKit cluster, the catalyst we query for profiles, and the hot-scenes
+// counts must all line up to the same cluster — otherwise we'd join an
+// empty LiveKit room while displaying another cluster's "14 people here"
+// counter. Fallback constants are last-resort defaults if the env key
+// is missing entirely.
+const FALLBACK_GATEKEEPER_URL = 'https://comms-gatekeeper.decentraland.org'
+const FALLBACK_PEER_URL = 'https://peer.decentraland.org'
 
 // `getEnv` can return '' for unset keys (not undefined) so check for truthy.
-const getGatekeeperUrl = (): string => getEnv('LIVE_GATEKEEPER_URL') || PROD_GATEKEEPER_URL
+const getGatekeeperUrl = (): string => getEnv('GATEKEEPER_URL') || FALLBACK_GATEKEEPER_URL
 
-const getPeerUrl = (): string => getEnv('LIVE_PEER_URL') || PROD_PEER_URL
+const getPeerUrl = (): string => getEnv('PEER_URL') || FALLBACK_PEER_URL
 
 // Genesis City scenes deploy under a parcel pointer; the catalyst returns the
 // active deployment's entity id (sceneId from the gatekeeper's perspective).
@@ -135,11 +132,13 @@ async function fetchSceneAdapter({
   }
 }
 
-// World scene listing — pinned to the prod worlds-content-server for the
-// same split-brain reason as the gatekeeper / peer URLs above. Worlds now
-// support multi-scene deployments; the LIVE feed surfaces the world name
-// but we need to know which scene the user actually wants to join.
-const PROD_WORLDS_CONTENT_SERVER_URL = 'https://worlds-content-server.decentraland.org'
+// World scene listing — follows the env's `WORLDS_CONTENT_SERVER_URL`
+// so the dropdown shows scenes from the same cluster the watcher will
+// join. Worlds support multi-scene deployments; the LIVE feed surfaces
+// the world name but we need to know which scene the user actually
+// wants to join.
+const FALLBACK_WORLDS_CONTENT_SERVER_URL = 'https://worlds-content-server.decentraland.org'
+const getWorldsContentServerUrl = (): string => getEnv('WORLDS_CONTENT_SERVER_URL') || FALLBACK_WORLDS_CONTENT_SERVER_URL
 
 interface WorldSceneSummary {
   // Entity hash from the catalyst — the value the gatekeeper expects as
@@ -154,7 +153,7 @@ interface WorldSceneSummary {
 
 async function fetchWorldScenes(worldName: string): Promise<WorldSceneSummary[]> {
   try {
-    const url = `${PROD_WORLDS_CONTENT_SERVER_URL}/world/${encodeURIComponent(worldName.toLowerCase())}/scenes`
+    const url = `${getWorldsContentServerUrl()}/world/${encodeURIComponent(worldName.toLowerCase())}/scenes`
     const response = await fetch(url)
     if (!response.ok) return []
     const body = (await response.json()) as {
@@ -203,15 +202,10 @@ async function fetchCastWatcherToken(args: {
   }
 }
 
-// Peer URL for chat/profile lookups. Pinned to prod for the same split-brain
-// reason as the gatekeeper / hot-scenes URLs: the LiveKit room we joined IS
-// the prod scene-comms cluster, so every other participant is a real prod
-// user whose profile lives on `peer.decentraland.org`. Pointing this at the
-// env's `.zone` peer would erase names + avatars for everyone in the room
-// except the local dev tester. Worth-it trade-off: a dev user whose profile
-// only exists on `.zone` won't see their own name in chat, but the rest of
-// the participant list resolves correctly.
-const getLivePeerUrl = (): string => PROD_PEER_URL
+// Peer URL for chat/profile lookups inside the LIVE watcher. Same source
+// as the gatekeeper above — env-driven so the catalyst we query for
+// profiles is the same cluster the LiveKit room is bound to.
+const getLivePeerUrl = (): string => getPeerUrl()
 
 export { fetchCastWatcherToken, fetchSceneAdapter, fetchWorldScenes, getLivePeerUrl }
 export type { SceneAdapterCredentials, WorldSceneSummary }

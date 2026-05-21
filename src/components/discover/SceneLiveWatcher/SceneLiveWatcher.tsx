@@ -10,15 +10,14 @@ import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded'
 import VolumeOffIcon from '@mui/icons-material/VolumeOff'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import { Track } from 'livekit-client'
-import type { AuthIdentity } from '@dcl/crypto'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { Button, CircularProgress, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import type { LiveKitCredentials } from '../../../features/cast2/cast2.types'
-import { generateRandomName } from '../../../features/cast2/cast2.utils'
 import { ChatProvider, useChatContext } from '../../../features/cast2/contexts/ChatProvider'
 import { LiveKitProvider } from '../../../features/cast2/contexts/LiveKitContext'
-import { fetchCastWatcherToken, fetchSceneAdapter, getLivePeerUrl } from '../../../features/discover/sceneAdapter'
+import { getLivePeerUrl } from '../../../features/discover/sceneAdapter'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import type { SceneRoomState } from '../../../hooks/useSceneRoom'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../../../modules/downloadConstants'
 import { assetUrl } from '../../../utils/assetUrl'
 import { ChatPanel } from '../../cast/ChatPanel/ChatPanel'
@@ -47,80 +46,6 @@ import {
   VideoArea,
   WatcherContainer
 } from './SceneLiveWatcher.styled'
-
-interface UseSceneRoomArgs {
-  location: string
-  parcel?: string
-  // For multi-scene worlds, the explicit entity hash to target. When absent
-  // the gatekeeper resolves to the world's default scene.
-  sceneId?: string
-  // Logged-in identity from useAuthIdentity. When present, the gatekeeper
-  // request is signed as the real wallet so chat messages publish under the
-  // user's address (profile + claimed name resolve). Absent → guest identity.
-  identity?: AuthIdentity
-}
-
-interface SceneRoomState {
-  status: 'loading' | 'ready' | 'no-broadcast'
-  mode: 'scene' | 'cast'
-  credentials: LiveKitCredentials | null
-  retry: () => void
-}
-
-// Hook owns credential fetching + retry. The page wraps the layout in
-// <SceneRoomMount /> using these credentials. Split out from the display
-// components so the LiveKitRoom div (which the LiveKit React SDK renders)
-// can sit ABOVE the page grid, not inside it — otherwise it would break the
-// grid-template-areas layout on DiscoverScenePage.
-function useSceneRoom({ location, parcel, sceneId, identity: userIdentity }: UseSceneRoomArgs): SceneRoomState {
-  const [credentials, setCredentials] = useState<LiveKitCredentials | null>(null)
-  const [mode, setMode] = useState<'scene' | 'cast'>('scene')
-  const [status, setStatus] = useState<SceneRoomState['status']>('loading')
-  // Bumping this triggers a re-fetch in the effect below; useCallback `retry`
-  // is just a stable handle the UI can call without taking a dep on the bump.
-  const [attempt, setAttempt] = useState(0)
-  const retry = useCallback(() => setAttempt(n => n + 1), [])
-
-  useEffect(() => {
-    if (!location) return
-    let cancelled = false
-    setStatus('loading')
-    setCredentials(null)
-
-    const isWorld = location.endsWith('.eth')
-    ;(async () => {
-      const sceneCreds = await fetchSceneAdapter(
-        isWorld ? { worldName: location, parcel, sceneId, identity: userIdentity } : { parcel: location, identity: userIdentity }
-      )
-      if (cancelled) return
-      if (sceneCreds) {
-        setCredentials({ url: sceneCreds.url, token: sceneCreds.token, identity: 'guest', roomId: '' })
-        setMode('scene')
-        setStatus('ready')
-        return
-      }
-      const identity = generateRandomName()
-      const castCreds = await fetchCastWatcherToken({ location, identity, parcel })
-      if (cancelled) return
-      if (castCreds) {
-        setCredentials({ url: castCreds.url, token: castCreds.token, identity, roomId: '' })
-        setMode('cast')
-        setStatus('ready')
-      } else {
-        setStatus('no-broadcast')
-      }
-    })()
-
-    return () => {
-      cancelled = true
-    }
-    // Re-run when login state flips. `userIdentity` is memoized per-address by
-    // useAuthIdentity, so this only fires on actual identity change — not on
-    // every render.
-  }, [location, parcel, sceneId, attempt, userIdentity])
-
-  return { status, mode, credentials, retry }
-}
 
 // Conditionally wraps `children` in the LiveKit + Chat providers. When no
 // credentials are available (loading / no broadcast), renders the children
@@ -198,7 +123,7 @@ function SceneWatcherCard(props: SceneWatcherCardProps) {
         <VideoArea>
           <Placeholder>
             <CircularProgress size={32} />
-            <PlaceholderHint>{t('social.scene.connecting')}</PlaceholderHint>
+            <PlaceholderHint>{t('discover.scene.connecting')}</PlaceholderHint>
           </Placeholder>
         </VideoArea>
       </WatcherContainer>
@@ -210,10 +135,10 @@ function SceneWatcherCard(props: SceneWatcherCardProps) {
       <WatcherContainer>
         <VideoArea>
           <Placeholder>
-            <PlaceholderTitle>{t('social.scene.no_broadcast.title')}</PlaceholderTitle>
-            <PlaceholderHint>{t('social.scene.no_broadcast.hint')}</PlaceholderHint>
+            <PlaceholderTitle>{t('discover.scene.no_broadcast.title')}</PlaceholderTitle>
+            <PlaceholderHint>{t('discover.scene.no_broadcast.hint')}</PlaceholderHint>
             <Button variant="outlined" color="secondary" size="small" onClick={props.onRetry}>
-              {t('social.scene.retry')}
+              {t('discover.scene.retry')}
             </Button>
           </Placeholder>
         </VideoArea>
@@ -308,7 +233,7 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
       <TabStrip>
         {hasLiveVideo && (
           <TabButton type="button" $active={tab === 'video'} onClick={() => setTab('video')}>
-            {t('social.scene.tab_video')}
+            {t('discover.scene.tab_video')}
           </TabButton>
         )}
         <TabButton
@@ -318,7 +243,7 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
           onClick={() => streamingHref && setTab('scene')}
           aria-disabled={!streamingHref}
         >
-          {t('social.scene.tab_streaming')}
+          {t('discover.scene.tab_streaming')}
         </TabButton>
       </TabStrip>
 
@@ -338,7 +263,7 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
             ref={iframeCredentiallessRef}
             $visible={showScene}
             src={streamingHref}
-            title={t('social.scene.tab_streaming')}
+            title={t('discover.scene.tab_streaming')}
             sandbox="allow-scripts allow-same-origin allow-popups allow-pointer-lock allow-forms allow-modals"
             allow="camera; microphone; clipboard-read; clipboard-write; fullscreen; xr-spatial-tracking; cross-origin-isolated"
           />
@@ -348,12 +273,12 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
             <SceneLaunchCard>
               {tab === 'video' ? (
                 <Button variant="contained" color="primary" size="large" startIcon={<PlayArrowRoundedIcon />} onClick={resumeVideo}>
-                  {t('social.scene.resume_cta')}
+                  {t('discover.scene.resume_cta')}
                 </Button>
               ) : isMobile ? (
                 <>
-                  <MobileUnsupportedTitle>{t('social.scene.mobile_unsupported.title')}</MobileUnsupportedTitle>
-                  <MobileUnsupportedHint>{t('social.scene.mobile_unsupported.hint')}</MobileUnsupportedHint>
+                  <MobileUnsupportedTitle>{t('discover.scene.mobile_unsupported.title')}</MobileUnsupportedTitle>
+                  <MobileUnsupportedHint>{t('discover.scene.mobile_unsupported.hint')}</MobileUnsupportedHint>
                   {/* Official store badge — same brand-red pill the landing
                       Hero uses. iOS gets the App Store SVG, Android the
                       Google Play SVG. We don't expose a separate JUMP IN
@@ -377,10 +302,10 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
                   disabled={!streamingHref}
                   onClick={launchScene}
                 >
-                  {t('social.scene.launch_cta')}
+                  {t('discover.scene.launch_cta')}
                 </Button>
               )}
-              {tab === 'scene' && !isMobile && <SceneLaunchHint>{t('social.scene.launch_hint')}</SceneLaunchHint>}
+              {tab === 'scene' && !isMobile && <SceneLaunchHint>{t('discover.scene.launch_hint')}</SceneLaunchHint>}
             </SceneLaunchCard>
           </SceneLaunchOverlay>
         )}
@@ -394,7 +319,7 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
              supply a separate external href. */
           <IframeOpenButton href={streamingExternalHref ?? streamingHref ?? '#'} target="_blank" rel="noopener noreferrer">
             <OpenInNewIcon />
-            {t('social.scene.open_external')}
+            {t('discover.scene.open_external')}
           </IframeOpenButton>
         )}
         {tab === 'video' && !isVideoPaused && (mode === 'scene' ? <SceneRoomContent /> : <WatcherViewContent />)}
@@ -410,7 +335,7 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
             onClick={onToggleMute}
             disabled={tab !== 'video'}
           >
-            {muted ? t('social.scene.unmute') : t('social.scene.mute')}
+            {muted ? t('discover.scene.unmute') : t('discover.scene.mute')}
           </Button>
           {/* Fullscreen targets the whole video area (`videoAreaRef`), which
               wraps both the LiveKit video surface and the bevy iframe — so
@@ -425,7 +350,7 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
             onClick={toggleFullscreen}
             disabled={tab === 'scene' && !streamingHref}
           >
-            {isFullscreen ? t('social.scene.exit_fullscreen') : t('social.scene.fullscreen')}
+            {isFullscreen ? t('discover.scene.exit_fullscreen') : t('discover.scene.fullscreen')}
           </Button>
           {/* STOP — context-aware: pauses the LiveKit video on the VIDEO tab,
               unmounts the bevy iframe on SCENE WEB. Hidden when there's
@@ -434,7 +359,7 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
               (where it collided with the top-right PeopleStack pill). */}
           {isMediaActive && (
             <Button variant="outlined" color="secondary" size="small" startIcon={<CloseRoundedIcon />} onClick={closeMedia}>
-              {t('social.scene.close_media')}
+              {t('discover.scene.close_media')}
             </Button>
           )}
         </ControlsButtons>
@@ -448,7 +373,7 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
       {/* Browsers block autoplay until a user gesture. StartAudio renders an
           overlay button only when audio is blocked; clicking it unblocks
           playback for the rest of the session. */}
-      <StartAudio label={t('social.scene.enable_audio')} />
+      <StartAudio label={t('discover.scene.enable_audio')} />
       <ConnectionStateToast />
     </WatcherContainer>
   )
@@ -494,11 +419,11 @@ function SceneChatDock({ status }: { status: SceneRoomState['status'] }) {
       <ChatBody>
         <Placeholder>
           {status === 'loading' && <CircularProgress size={24} />}
-          <PlaceholderHint>{t(status === 'loading' ? 'social.scene.connecting' : 'social.scene.no_broadcast.hint')}</PlaceholderHint>
+          <PlaceholderHint>{t(status === 'loading' ? 'discover.scene.connecting' : 'discover.scene.no_broadcast.hint')}</PlaceholderHint>
         </Placeholder>
       </ChatBody>
     </ChatDock>
   )
 }
 
-export { SceneChatDock, SceneRoomMount, SceneWatcherCard, useSceneRoom }
+export { SceneChatDock, SceneRoomMount, SceneWatcherCard }

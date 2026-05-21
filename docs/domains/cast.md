@@ -8,16 +8,16 @@ LiveKit browser streaming. Absorbed from `decentraland/cast2`. Mounted under `<D
 
 ## Key paths
 
-| Path                                       | Purpose                                                                                                                                                                                                                       |
-| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/pages/cast/`                          | Page components for the cast area (streaming UI, world join, not-found).                                                                                                                                                       |
-| `src/components/cast/`                     | Cast-specific UI components (video tiles, controls, participant list, toast stack).                                                                                                                                            |
-| `src/features/cast2/cast2.client.ts`       | RTK Query endpoints for LiveKit streaming. Defines `cast2Client`.                                                                                                                                                              |
-| `src/features/cast2/*.context.tsx`         | LiveKit + Notification contexts consumed by `<CastLayout />`.                                                                                                                                                                  |
-| `src/features/cast2/comms-protocol.ts`     | Comms protocol wrapper (peer connection, signaling).                                                                                                                                                                           |
-| `src/features/cast2/peer-wrapper.ts`       | LiveKit peer abstraction.                                                                                                                                                                                                      |
-| `src/features/cast2/cast2.errors.ts`       | Error → i18n key mapping for cast-specific failures.                                                                                                                                                                           |
-| `src/services/cast2Client.ts`              | RTK Query base for cast — signed-fetch baseQuery, supports both anonymous and token-in-URL auth flows.                                                                                                                         |
+| Path                                   | Purpose                                                                                                |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `src/pages/cast/`                      | Page components for the cast area (streaming UI, world join, not-found).                               |
+| `src/components/cast/`                 | Cast-specific UI components (video tiles, controls, participant list, toast stack).                    |
+| `src/features/cast2/cast2.client.ts`   | RTK Query endpoints for LiveKit streaming. Defines `cast2Client`.                                      |
+| `src/features/cast2/*.context.tsx`     | LiveKit + Notification contexts consumed by `<CastLayout />`.                                          |
+| `src/features/cast2/comms-protocol.ts` | Comms protocol wrapper (peer connection, signaling).                                                   |
+| `src/features/cast2/peer-wrapper.ts`   | LiveKit peer abstraction.                                                                              |
+| `src/features/cast2/cast2.errors.ts`   | Error → i18n key mapping for cast-specific failures.                                                   |
+| `src/services/cast2Client.ts`          | RTK Query base for cast — signed-fetch baseQuery, supports both anonymous and token-in-URL auth flows. |
 
 ## LiveKit deps
 

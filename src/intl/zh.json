@@ -1098,7 +1098,7 @@
     "today_at": "今天 {time}",
     "tomorrow_at": "明天 {time}"
   },
-    "social": {
+  "discover": {
     "nav": {
       "live": "发现",
       "communities": "社区"
@@ -1160,7 +1160,7 @@
       "world_label": "世界",
       "people_count": "世界中有 {count} 人",
       "people_empty": "暂时还没有人。",
-      "tab_video": "视频",
+      "tab_video": "Stream",
       "tab_streaming": "DCL Web",
       "launch_title": "在 3D 中探索此场景",
       "launch_hint": "在浏览器中运行 — 无需安装。",
@@ -1183,7 +1183,7 @@
       },
       "waiting": {
         "title": "场景动态",
-        "hint": "此场景中有 {count} 人，右侧聊天正在实时显示。"
+        "hint": "{count, plural, =0 {还没有人 — 来当第一个吧。} other {此场景中有 {count} 人，右侧聊天正在实时显示。}}"
       },
       "upcoming_events": "即将举行的活动",
       "no_events": "暂无活动安排。",
@@ -1196,6 +1196,9 @@
         "hint": "此体验不支持移动浏览器。请下载应用：",
         "cta": "获取应用"
       }
+    },
+    "community": {
+      "about": "关于"
     }
   }
 }

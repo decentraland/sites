@@ -8,12 +8,12 @@ Community report flow. **Lightweight route** inside `<Layout />` — no Redux, n
 
 ## Key paths
 
-| Path                                   | Purpose                                                                                                          |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `src/pages/report/`                    | Page components for the report form and success confirmation.                                                     |
-| `src/components/Report/`               | Report-specific UI components (form fields, category selector, submit button). Note the capitalized directory.   |
-| `src/features/report/report.types.ts`  | Domain types for the report form (categories, severity, target kinds).                                            |
-| `src/features/report/*.helpers.ts`     | Form validation, target normalization.                                                                            |
+| Path                                  | Purpose                                                                                                        |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `src/pages/report/`                   | Page components for the report form and success confirmation.                                                  |
+| `src/components/Report/`              | Report-specific UI components (form fields, category selector, submit button). Note the capitalized directory. |
+| `src/features/report/report.types.ts` | Domain types for the report form (categories, severity, target kinds).                                         |
+| `src/features/report/*.helpers.ts`    | Form validation, target normalization.                                                                         |
 
 ## Submission
 

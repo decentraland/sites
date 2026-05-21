@@ -17,13 +17,6 @@ const PageContainer = styled(Box)(({ theme }) => ({
   [theme.breakpoints.up('md')]: { paddingTop: 96 }
 }))
 
-const InitialLoader = styled(Box)({
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  minHeight: '60vh'
-})
-
 const NotFoundContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -53,4 +46,4 @@ const NotFoundIcon = styled(ErrorOutlineIcon)(({ theme }) => ({
   color: dclColors.neutral.softWhite
 }))
 
-export { InitialLoader, NotFoundContainer, NotFoundDescription, NotFoundIcon, NotFoundTitle, PageContainer }
+export { NotFoundContainer, NotFoundDescription, NotFoundIcon, NotFoundTitle, PageContainer }

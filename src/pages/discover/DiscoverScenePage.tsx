@@ -7,18 +7,20 @@ import PublicIcon from '@mui/icons-material/Public'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { CircularProgress } from 'decentraland-ui2'
 import { CenteredBox } from '../../App.styled'
-import { SceneChatDock, SceneRoomMount, SceneWatcherCard, useSceneRoom } from '../../components/discover/SceneLiveWatcher'
+import { SceneChatDock, SceneRoomMount, SceneWatcherCard } from '../../components/discover/SceneLiveWatcher'
 import {
   buildJumpInHref,
   parsePositionParam,
-  useGetSocialPlaceByPositionQuery,
-  useGetSocialWorldByNameQuery
+  useGetDiscoverPlaceByPositionQuery,
+  useGetDiscoverWorldByNameQuery
 } from '../../features/discover'
-import type { SocialPlace } from '../../features/discover'
+import type { DiscoverPlace } from '../../features/discover'
 import { fetchWorldScenes } from '../../features/discover/sceneAdapter'
 import type { WorldSceneSummary } from '../../features/discover/sceneAdapter'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { useSceneRoom } from '../../hooks/useSceneRoom'
 import {
   ChatArea,
   Content,
@@ -46,7 +48,7 @@ interface DiscoverScenePageProps {
 // Synthesize a minimal place when the places-api doesn't have the world
 // indexed (private / brand-new / `show_in_places: false` worlds still have
 // real worlds-content-server scenes and live users — we should render them).
-function synthWorldPlace(worldName: string): SocialPlace {
+function synthWorldPlace(worldName: string): DiscoverPlace {
   return {
     id: worldName.toLowerCase(),
     title: worldName,
@@ -83,8 +85,8 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
   const parsedPosition = kind === 'place' ? parsePositionParam(params.position) : undefined
   const worldName = kind === 'world' ? params.name?.toLowerCase() ?? '' : ''
 
-  const placeQuery = useGetSocialPlaceByPositionQuery(parsedPosition ? { position: parsedPosition } : skipToken)
-  const worldQuery = useGetSocialWorldByNameQuery(worldName ? { name: worldName } : skipToken)
+  const placeQuery = useGetDiscoverPlaceByPositionQuery(parsedPosition ? { position: parsedPosition } : skipToken)
+  const worldQuery = useGetDiscoverWorldByNameQuery(worldName ? { name: worldName } : skipToken)
 
   // For worlds, fall back to a synthesized place when the places-api 404s but
   // the world is still real on worlds-content-server (checked via worldScenes
@@ -120,13 +122,21 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
 
   // Effective place — apiPlace when known, synthesized stub for worlds that
   // worlds-content-server can resolve but places-api cannot.
-  const place = useMemo<SocialPlace | undefined>(() => {
+  const place = useMemo<DiscoverPlace | undefined>(() => {
     if (apiPlace) return apiPlace
     if (kind === 'world' && worldName && worldScenes.length > 0) return synthWorldPlace(worldName)
     return undefined
   }, [apiPlace, kind, worldName, worldScenes])
 
   const jumpInHref = useMemo(() => (place ? buildJumpInHref(place) : null), [place])
+
+  // `/discover/*` is in `isPageTrackingExempt`, so Layout's route-level
+  // `page()` is suppressed. Fire once the place title resolves so Segment
+  // captures the scene name + kind. Stays silent on the loading frames.
+  useBlogPageTracking({
+    name: place?.title,
+    properties: place ? { kind, place_id: place.id, world: place.world_name ?? null } : undefined
+  })
 
   const watcherTarget = useMemo<{ location: string; parcel?: string; sceneId?: string } | null>(() => {
     if (kind === 'place' && parsedPosition) return { location: `${parsedPosition[0]},${parsedPosition[1]}` }
@@ -171,8 +181,8 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
     return (
       <Content>
         <NotFound>
-          <SceneTitle>{t('social.scene.not_found.title')}</SceneTitle>
-          <NotFoundHint>{t('social.scene.not_found.description')}</NotFoundHint>
+          <SceneTitle>{t('discover.scene.not_found.title')}</SceneTitle>
+          <NotFoundHint>{t('discover.scene.not_found.description')}</NotFoundHint>
         </NotFound>
       </Content>
     )
@@ -217,13 +227,13 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
             {place.description && (
               <>
                 <ContentDivider />
-                <SectionLabel>{t('social.scene.about')}</SectionLabel>
+                <SectionLabel>{t('discover.scene.about')}</SectionLabel>
                 <SceneDescription>{place.description}</SceneDescription>
               </>
             )}
             {showScenePicker && (
               <ScenePickerRow>
-                <ScenePickerLabel>{t('social.scene.scene_picker')}</ScenePickerLabel>
+                <ScenePickerLabel>{t('discover.scene.scene_picker')}</ScenePickerLabel>
                 <ScenePickerSelect
                   value={selectedScene?.entityId ?? ''}
                   onChange={event => {
@@ -245,7 +255,7 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
                   window.location.href = jumpInHref
                 }}
               >
-                {t('social.scene.jump_in')}
+                {t('discover.scene.jump_in')}
               </PrimaryButton>
             )}
           </InfoCard>

@@ -3,7 +3,7 @@
 // Places API returns these on /places. World items come back on /worlds with
 // extra `world_name` populated. We model them as one shape with optional
 // world fields so the same card component renders both surfaces.
-interface SocialPlace {
+interface DiscoverPlace {
   id: string
   title: string
   description: string
@@ -22,10 +22,10 @@ interface SocialPlace {
   world_name?: string
 }
 
-interface SocialPlacesResponse {
+interface DiscoverPlacesResponse {
   ok: boolean
   total: number
-  data: SocialPlace[]
+  data: DiscoverPlace[]
 }
 
 // Hot Scenes (realm provider) — minimal subset used by the LIVE tab.
@@ -46,25 +46,25 @@ interface LiveWorldEntry {
   users: number
 }
 
-type SocialOrderBy = 'most_active' | 'name' | 'created_at' | 'updated_at' | 'like_score_best'
+type DiscoverOrderBy = 'most_active' | 'name' | 'created_at' | 'updated_at' | 'like_score_best'
 
-type SocialOrder = 'asc' | 'desc'
+type DiscoverOrder = 'asc' | 'desc'
 
-interface GetSocialPlacesArgs {
+interface GetDiscoverPlacesArgs {
   limit?: number
   offset?: number
-  order_by?: SocialOrderBy
-  order?: SocialOrder
+  order_by?: DiscoverOrderBy
+  order?: DiscoverOrder
   search?: string
   categories?: string[]
   only_pois?: boolean
 }
 
-interface GetSocialWorldsArgs {
+interface GetDiscoverWorldsArgs {
   limit?: number
   offset?: number
-  order_by?: SocialOrderBy
-  order?: SocialOrder
+  order_by?: DiscoverOrderBy
+  order?: DiscoverOrder
   search?: string
 }
 
@@ -74,7 +74,7 @@ interface GetCommunitiesListArgs {
   search?: string
 }
 
-interface SocialCommunity {
+interface DiscoverCommunity {
   id: string
   name: string
   description: string
@@ -86,23 +86,23 @@ interface SocialCommunity {
   thumbnails?: Record<string, string>
 }
 
-interface SocialCommunitiesResponse {
+interface DiscoverCommunitiesResponse {
   data: {
-    results: SocialCommunity[]
+    results: DiscoverCommunity[]
     total: number
   }
 }
 
 export type {
   GetCommunitiesListArgs,
-  GetSocialPlacesArgs,
-  GetSocialWorldsArgs,
+  GetDiscoverPlacesArgs,
+  GetDiscoverWorldsArgs,
   HotScene,
   LiveWorldEntry,
-  SocialCommunitiesResponse,
-  SocialCommunity,
-  SocialOrder,
-  SocialOrderBy,
-  SocialPlace,
-  SocialPlacesResponse
+  DiscoverCommunitiesResponse,
+  DiscoverCommunity,
+  DiscoverOrder,
+  DiscoverOrderBy,
+  DiscoverPlace,
+  DiscoverPlacesResponse
 }

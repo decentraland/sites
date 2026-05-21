@@ -1543,7 +1543,7 @@
       "upcoming_events": "Upcoming Events"
     }
   },
-  "social": {
+  "discover": {
     "nav": {
       "live": "Discover",
       "communities": "Communities"
@@ -1605,7 +1605,7 @@
       "world_label": "World",
       "people_count": "{count, plural, one {# person in-world} other {# people in-world}}",
       "people_empty": "Nobody here yet.",
-      "tab_video": "Video",
+      "tab_video": "Stream",
       "tab_streaming": "DCL Web",
       "launch_title": "Explore this scene in 3D",
       "launch_hint": "Runs in your browser — no install required.",
@@ -1641,6 +1641,9 @@
         "hint": "This experience is not available on mobile browsers. Download the app instead:",
         "cta": "Get the app"
       }
+    },
+    "community": {
+      "about": "About"
     }
   }
 }

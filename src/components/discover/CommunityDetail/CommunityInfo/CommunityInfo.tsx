@@ -233,7 +233,7 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
           </TitleContainer>
           {canViewContent && !isTablet && community.description && (
             <DescriptionRow>
-              <SectionLabel>{t('social.scene.about')}</SectionLabel>
+              <SectionLabel>{t('discover.community.about')}</SectionLabel>
               <Description>{community.description}</Description>
             </DescriptionRow>
           )}
@@ -241,7 +241,7 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
       </TopRow>
       {canViewContent && isTablet && community.description && (
         <DescriptionRow>
-          <SectionLabel>{t('social.scene.about')}</SectionLabel>
+          <SectionLabel>{t('discover.community.about')}</SectionLabel>
           <Description>{community.description}</Description>
         </DescriptionRow>
       )}

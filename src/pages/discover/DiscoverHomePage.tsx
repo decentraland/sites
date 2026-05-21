@@ -8,15 +8,16 @@ import { CenteredBox } from '../../App.styled'
 import { CardGrid, Empty, PageContent, SearchField } from '../../components/discover/_shared'
 import { PlaceCard } from '../../components/discover/PlaceCard'
 import {
-  SOCIAL_CATEGORIES,
+  DISCOVER_CATEGORIES,
+  useGetDiscoverPlacesQuery,
+  useGetDiscoverWorldsByNamesQuery,
+  useGetDiscoverWorldsQuery,
   useGetHotScenesQuery,
-  useGetLiveWorldsQuery,
-  useGetSocialPlacesQuery,
-  useGetSocialWorldsByNamesQuery,
-  useGetSocialWorldsQuery
+  useGetLiveWorldsQuery
 } from '../../features/discover'
-import type { SocialCategory, SocialPlace } from '../../features/discover'
+import type { DiscoverCategory, DiscoverPlace } from '../../features/discover'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
 import { CategoryTab, CategoryTabs, FiltersBar, SectionTitle } from './DiscoverHomePage.styled'
 
 // Unified /discover landing — LIVE NOW sits at the top showing every scene
@@ -42,26 +43,35 @@ const BROWSE_LIMIT = 24
 
 // Auto-generated road parcels surface in hot-scenes whenever an avatar walks
 // across them, but they aren't real "places" — no scene, no creator, just a
-// crossroads. The places-api gives them a deterministic title prefix and
-// empty categories array. Drop them so LIVE NOW only advertises destinations
-// users would actually want to jump into.
-function isRoad(place: SocialPlace): boolean {
-  return !place.world && (place.title?.startsWith('Road at ') ?? false)
+// crossroads. The places-api gives them a deterministic title prefix AND an
+// empty `categories` array; require both so an artistic title like
+// `"Road at the Edge"` on a real scene (with at least one category) doesn't
+// get filtered.
+function isRoad(place: DiscoverPlace): boolean {
+  if (place.world) return false
+  const titleMatches = place.title?.startsWith('Road at ') ?? false
+  const noCategories = (place.categories?.length ?? 0) === 0
+  return titleMatches && noCategories
 }
 
 function DiscoverHomePage() {
   const t = useFormatMessage()
 
+  // `/discover/*` is in `isPageTrackingExempt`, so the Layout's route-level
+  // `page()` is suppressed. Fire it from the page so Segment still records a
+  // page view. Static name — no async data, so it fires immediately.
+  useBlogPageTracking({ name: t('discover.home.page_title') })
+
   // `useDeferredValue` keeps typing snappy while debouncing the actual filter pass.
   const [searchInput, setSearchInput] = useState('')
   const search = useDeferredValue(searchInput.trim())
-  const [activeCategory, setActiveCategory] = useState<SocialCategory | 'all'>('all')
+  const [activeCategory, setActiveCategory] = useState<DiscoverCategory | 'all'>('all')
 
   // ── LIVE NOW queries ──────────────────────────────────────────────────
   // Independent of search/sort/category — we always fetch the full live set
   // and filter client-side. Server APIs don't support "places with users".
   const hotScenesQuery = useGetHotScenesQuery({ limit: 40 }, LIVE_REFRESH_OPTIONS)
-  const livePlacesQuery = useGetSocialPlacesQuery({ limit: 50, order_by: 'most_active', order: 'desc' }, LIVE_REFRESH_OPTIONS)
+  const livePlacesQuery = useGetDiscoverPlacesQuery({ limit: 50, order_by: 'most_active', order: 'desc' }, LIVE_REFRESH_OPTIONS)
   const liveWorldsQuery = useGetLiveWorldsQuery(undefined, LIVE_REFRESH_OPTIONS)
 
   const liveWorldNames = useMemo(() => {
@@ -71,7 +81,7 @@ function DiscoverHomePage() {
 
   // Batch metadata fetch — one request for all live worlds, not N per-world.
   // Worlds the places-api doesn't know get rendered with PlaceCard's fallback.
-  const worldsMetadataQuery = useGetSocialWorldsByNamesQuery(liveWorldNames.length > 0 ? { names: liveWorldNames } : skipToken)
+  const worldsMetadataQuery = useGetDiscoverWorldsByNamesQuery(liveWorldNames.length > 0 ? { names: liveWorldNames } : skipToken)
 
   const isLoadingLive = hotScenesQuery.isLoading || livePlacesQuery.isLoading || liveWorldsQuery.isLoading
   const hotScenes = hotScenesQuery.data ?? []
@@ -80,14 +90,14 @@ function DiscoverHomePage() {
   const worldsMetadata = worldsMetadataQuery.data ?? []
 
   // Join hot-scenes + live-worlds against their metadata sources.
-  const liveCards = useMemo<SocialPlace[]>(() => {
-    const placeByPosition = new Map<string, SocialPlace>()
+  const liveCards = useMemo<DiscoverPlace[]>(() => {
+    const placeByPosition = new Map<string, DiscoverPlace>()
     for (const p of livePlaces) {
       if (p.base_position) placeByPosition.set(p.base_position, p)
       for (const pos of p.positions ?? []) placeByPosition.set(pos, p)
     }
     const seen = new Set<string>()
-    const result: SocialPlace[] = []
+    const result: DiscoverPlace[] = []
 
     // Genesis City — hot-scenes ⇄ places-api by parcel.
     for (const scene of hotScenes) {
@@ -99,7 +109,7 @@ function DiscoverHomePage() {
     }
 
     // Worlds — live-data ⇄ places-api by world name (with fallback).
-    const worldByName = new Map<string, SocialPlace>()
+    const worldByName = new Map<string, DiscoverPlace>()
     for (const w of worldsMetadata) {
       if (w.world_name) worldByName.set(w.world_name.toLowerCase(), w)
     }
@@ -168,8 +178,8 @@ function DiscoverHomePage() {
     [search]
   )
 
-  const placesQuery = useGetSocialPlacesQuery(placesArgs)
-  const worldsQuery = useGetSocialWorldsQuery(worldsArgs)
+  const placesQuery = useGetDiscoverPlacesQuery(placesArgs)
+  const worldsQuery = useGetDiscoverWorldsQuery(worldsArgs)
   const browsePlaces = placesQuery.data?.data ?? []
   const browseWorlds = worldsQuery.data?.data ?? []
   const isLoadingBrowse = placesQuery.isLoading || worldsQuery.isLoading
@@ -215,7 +225,7 @@ function DiscoverHomePage() {
     return (
       <>
         <Helmet>
-          <title>{t('social.home.page_title')}</title>
+          <title>{t('discover.home.page_title')}</title>
         </Helmet>
         <CenteredBox>
           <CircularProgress />
@@ -227,7 +237,7 @@ function DiscoverHomePage() {
   return (
     <PageContent>
       <Helmet>
-        <title>{t('social.home.page_title')}</title>
+        <title>{t('discover.home.page_title')}</title>
       </Helmet>
 
       {/* Filters bar — text-tab category strip on the left, compact search
@@ -236,7 +246,7 @@ function DiscoverHomePage() {
           getting squished. The shared bottom border ties them together so
           the bar reads as one control rather than two stacked elements. */}
       <FiltersBar>
-        <CategoryTabs role="tablist" aria-label={t('social.explore.category.all')}>
+        <CategoryTabs role="tablist" aria-label={t('discover.explore.category.all')}>
           <CategoryTab
             type="button"
             role="tab"
@@ -244,9 +254,9 @@ function DiscoverHomePage() {
             $active={activeCategory === 'all'}
             onClick={() => setActiveCategory('all')}
           >
-            {t('social.explore.category.all')}
+            {t('discover.explore.category.all')}
           </CategoryTab>
-          {SOCIAL_CATEGORIES.map(c => (
+          {DISCOVER_CATEGORIES.map(c => (
             <CategoryTab
               key={c}
               type="button"
@@ -255,13 +265,13 @@ function DiscoverHomePage() {
               $active={activeCategory === c}
               onClick={() => setActiveCategory(c)}
             >
-              {t(`social.explore.category.${c}`)}
+              {t(`discover.explore.category.${c}`)}
             </CategoryTab>
           ))}
         </CategoryTabs>
         <SearchField
           variant="outlined"
-          placeholder={t('social.explore.search_placeholder')}
+          placeholder={t('discover.explore.search_placeholder')}
           value={searchInput}
           onChange={e => setSearchInput(e.target.value)}
           InputProps={{
@@ -275,12 +285,12 @@ function DiscoverHomePage() {
       </FiltersBar>
 
       {isEmpty ? (
-        <Empty>{t('social.explore.empty')}</Empty>
+        <Empty>{t('discover.explore.empty')}</Empty>
       ) : (
         <>
           {filteredLiveCards.length > 0 && (
             <>
-              <SectionTitle>{t('social.live.heading')}</SectionTitle>
+              <SectionTitle>{t('discover.live.heading')}</SectionTitle>
               <CardGrid>
                 {filteredLiveCards.map(place => (
                   <PlaceCard key={place.id} place={place} />
@@ -290,7 +300,7 @@ function DiscoverHomePage() {
           )}
           {dedupedBrowsePlaces.length > 0 && (
             <>
-              <SectionTitle>{t('social.explore.section.places')}</SectionTitle>
+              <SectionTitle>{t('discover.explore.section.places')}</SectionTitle>
               <CardGrid>
                 {dedupedBrowsePlaces.map(place => (
                   <PlaceCard key={place.id} place={place} />
@@ -300,7 +310,7 @@ function DiscoverHomePage() {
           )}
           {showWorldsSection && dedupedBrowseWorlds.length > 0 && (
             <>
-              <SectionTitle>{t('social.explore.section.worlds')}</SectionTitle>
+              <SectionTitle>{t('discover.explore.section.worlds')}</SectionTitle>
               <CardGrid>
                 {dedupedBrowseWorlds.map(world => (
                   <PlaceCard key={world.id} place={world} />

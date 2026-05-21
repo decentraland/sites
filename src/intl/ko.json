@@ -1098,7 +1098,7 @@
     "today_at": "오늘 {time}",
     "tomorrow_at": "내일 {time}"
   },
-    "social": {
+  "discover": {
     "nav": {
       "live": "디스커버",
       "communities": "커뮤니티"
@@ -1160,7 +1160,7 @@
       "world_label": "월드",
       "people_count": "월드에 {count}명",
       "people_empty": "아직 아무도 없습니다.",
-      "tab_video": "비디오",
+      "tab_video": "Stream",
       "tab_streaming": "DCL Web",
       "launch_title": "이 장면을 3D로 탐험하기",
       "launch_hint": "브라우저에서 실행 — 설치 불필요.",
@@ -1183,7 +1183,7 @@
       },
       "waiting": {
         "title": "장면 활동",
-        "hint": "이 장면에 {count}명이 있습니다. 오른쪽 채팅이 실시간으로 표시됩니다."
+        "hint": "{count, plural, =0 {아직 아무도 없습니다 — 가장 먼저 참여하세요。} other {이 장면에 {count}명이 있습니다. 오른쪽 채팅이 실시간으로 표시됩니다。}}"
       },
       "upcoming_events": "다가오는 이벤트",
       "no_events": "예정된 이벤트가 없습니다.",
@@ -1196,6 +1196,9 @@
         "hint": "이 환경은 모바일 브라우저에서 사용할 수 없습니다. 앱을 다운로드하세요:",
         "cta": "앱 다운로드"
       }
+    },
+    "community": {
+      "about": "소개"
     }
   }
 }

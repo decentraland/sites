@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { useRemoteParticipants } from '@livekit/components-react'
 import { Popover } from 'decentraland-ui2'
 import type { Profile } from '../../../features/cast2/peer'
@@ -108,13 +108,13 @@ function PeopleStack({ initialCount }: PeopleStackProps = {}) {
     // (clicking would open an empty popover).
     const fallbackCount = initialCount ?? 0
     return (
-      <StackTrigger type="button" disabled aria-label={t('social.scene.people_count', { count: fallbackCount })}>
+      <StackTrigger type="button" disabled aria-label={t('discover.scene.people_count', { count: fallbackCount })}>
         <AvatarStack>
           <StackSlot $index={0}>
             <Avatar size={MINI_AVATAR_SIZE - 4} />
           </StackSlot>
         </AvatarStack>
-        <StackCount>{t('social.scene.people_count', { count: fallbackCount })}</StackCount>
+        <StackCount>{t('discover.scene.people_count', { count: fallbackCount })}</StackCount>
       </StackTrigger>
     )
   }
@@ -124,7 +124,7 @@ function PeopleStack({ initialCount }: PeopleStackProps = {}) {
       <StackTrigger
         type="button"
         onClick={event => setAnchor(event.currentTarget)}
-        aria-label={t('social.scene.people_count', { count: total })}
+        aria-label={t('discover.scene.people_count', { count: total })}
       >
         <AvatarStack>
           {visible.map((row, i) => (
@@ -132,7 +132,7 @@ function PeopleStack({ initialCount }: PeopleStackProps = {}) {
           ))}
           {overflow > 0 && <OverflowDisc>+{overflow}</OverflowDisc>}
         </AvatarStack>
-        <StackCount>{t('social.scene.people_count', { count: total })}</StackCount>
+        <StackCount>{t('discover.scene.people_count', { count: total })}</StackCount>
       </StackTrigger>
       <Popover
         open={Boolean(anchor)}
@@ -147,10 +147,10 @@ function PeopleStack({ initialCount }: PeopleStackProps = {}) {
         }}
       >
         <PopoverShell>
-          <PopoverHeader>{t('social.scene.people_count', { count: total })}</PopoverHeader>
+          <PopoverHeader>{t('discover.scene.people_count', { count: total })}</PopoverHeader>
           <PopoverList>
             {rows.length === 0 ? (
-              <EmptyState>{t('social.scene.people_empty')}</EmptyState>
+              <EmptyState>{t('discover.scene.people_empty')}</EmptyState>
             ) : (
               rows.map(row => <PersonRow key={row.identity} row={row} />)
             )}
@@ -161,7 +161,10 @@ function PeopleStack({ initialCount }: PeopleStackProps = {}) {
   )
 }
 
-function PersonRow({ row }: { row: ParticipantRow }) {
+// Memoized so the participant list doesn't re-render every row each time
+// one profile prefetch resolves — only the rows whose `row` prop actually
+// changed re-render. Matches `PlaceCard`, `CommunityCard`, `MemberCard`.
+const PersonRow = memo(function PersonRow({ row }: { row: ParticipantRow }) {
   // Display priority:
   //   1. claimed name → "Alice"
   //   2. deployed name (no claim) → "alice#a1b2" (DCL convention)
@@ -182,6 +185,6 @@ function PersonRow({ row }: { row: ParticipantRow }) {
       {showShortAddress && <PersonAddress>{`${row.address!.slice(0, 4)}…${row.address!.slice(-4)}`}</PersonAddress>}
     </PopoverRow>
   )
-}
+})
 
 export { PeopleStack }

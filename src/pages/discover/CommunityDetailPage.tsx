@@ -1,19 +1,13 @@
 import { Helmet } from 'react-helmet-async'
 import { useParams } from 'react-router-dom'
 import { CircularProgress } from 'decentraland-ui2'
+import { CenteredBox } from '../../App.styled'
 import { CommunityDetail } from '../../components/discover/CommunityDetail'
 import { useGetCommunityByIdQuery } from '../../features/communities/communities.client'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
-import {
-  InitialLoader,
-  NotFoundContainer,
-  NotFoundDescription,
-  NotFoundIcon,
-  NotFoundTitle,
-  PageContainer
-} from './CommunityDetailPage.styled'
+import { NotFoundContainer, NotFoundDescription, NotFoundIcon, NotFoundTitle, PageContainer } from './CommunityDetailPage.styled'
 
 function CommunityDetailPage() {
   const t = useFormatMessage()
@@ -33,9 +27,9 @@ function CommunityDetailPage() {
   if (isLoading) {
     return (
       <PageContainer>
-        <InitialLoader>
+        <CenteredBox>
           <CircularProgress />
-        </InitialLoader>
+        </CenteredBox>
       </PageContainer>
     )
   }

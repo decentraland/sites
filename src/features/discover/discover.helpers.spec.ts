@@ -1,7 +1,7 @@
 import { buildJumpInHref, parsePositionParam } from './discover.helpers'
-import type { SocialPlace } from './discover.types'
+import type { DiscoverPlace } from './discover.types'
 
-function makePlace(overrides: Partial<SocialPlace>): SocialPlace {
+function makePlace(overrides: Partial<DiscoverPlace>): DiscoverPlace {
   return {
     id: 'place-id',
     title: 'Place',

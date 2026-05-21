@@ -1098,7 +1098,7 @@
     "today_at": "今日 {time}",
     "tomorrow_at": "明日 {time}"
   },
-    "social": {
+  "discover": {
     "nav": {
       "live": "見つける",
       "communities": "コミュニティ"
@@ -1160,7 +1160,7 @@
       "world_label": "ワールド",
       "people_count": "ワールドに{count}人",
       "people_empty": "まだ誰もいません。",
-      "tab_video": "ビデオ",
+      "tab_video": "Stream",
       "tab_streaming": "DCL Web",
       "launch_title": "このシーンを3Dで探索",
       "launch_hint": "ブラウザで実行 — インストール不要。",
@@ -1183,7 +1183,7 @@
       },
       "waiting": {
         "title": "シーンのアクティビティ",
-        "hint": "このシーンに {count} 人います。右側でチャットがライブ表示されています。"
+        "hint": "{count, plural, =0 {まだ誰もいません — 最初に参加しよう。} other {このシーンに {count} 人います。右側でチャットがライブ表示されています。}}"
       },
       "upcoming_events": "今後のイベント",
       "no_events": "予定されているイベントはありません。",
@@ -1196,6 +1196,9 @@
         "hint": "このエクスペリエンスはモバイルブラウザでは利用できません。アプリをダウンロードしてください:",
         "cta": "アプリを入手"
       }
+    },
+    "community": {
+      "about": "概要"
     }
   }
 }

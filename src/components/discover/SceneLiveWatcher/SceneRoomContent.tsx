@@ -22,8 +22,8 @@ function SceneRoomContent() {
 
   return (
     <Placeholder>
-      <PlaceholderTitle>{t('social.scene.waiting.title')}</PlaceholderTitle>
-      <PlaceholderHint>{t('social.scene.waiting.hint', { count: participants.length })}</PlaceholderHint>
+      <PlaceholderTitle>{t('discover.scene.waiting.title')}</PlaceholderTitle>
+      <PlaceholderHint>{t('discover.scene.waiting.hint', { count: participants.length })}</PlaceholderHint>
     </Placeholder>
   )
 }
