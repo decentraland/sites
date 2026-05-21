@@ -1090,5 +1090,9 @@
     "form_utc_preview": "{time} UTC",
     "form_utc_preview_next_day": "{time} UTC（+1日）",
     "form_utc_preview_previous_day": "{time} UTC（-1日）"
+  },
+  "upcoming": {
+    "today_at": "今日 {time}",
+    "tomorrow_at": "明日 {time}"
   }
 }

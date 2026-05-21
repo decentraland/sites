@@ -75,6 +75,7 @@ describe('whatsOnTime helpers', () => {
   })
 
   describe('getRelativeTimeLabel', () => {
+    // 2026-04-07T12:00:00Z — UTC noon on a Tuesday
     const now = new Date('2026-04-07T12:00:00Z').getTime()
     beforeEach(() => {
       jest.spyOn(Date, 'now').mockReturnValue(now)
@@ -93,9 +94,19 @@ describe('whatsOnTime helpers', () => {
       expect(getRelativeTimeLabel(soon, t)).toContain('upcoming.starts_in_mins')
     })
 
-    it('should return "starts_in_hours" when less than a day away', () => {
-      const later = '2026-04-07T20:00:00Z'
-      expect(getRelativeTimeLabel(later, t)).toContain('upcoming.starts_in_hours')
+    it('should return "today_at" for an event later the same local day', () => {
+      // 8 hours after now — still the same calendar day in UTC (and most local TZs)
+      const laterToday = '2026-04-07T20:00:00Z'
+      const result = getRelativeTimeLabel(laterToday, t)
+      expect(result).toContain('upcoming.today_at')
+      expect(result).toContain(formatLocalTime(laterToday))
+    })
+
+    it('should return "tomorrow_at" for an event starting the next local day', () => {
+      const tomorrow = '2026-04-08T10:00:00Z'
+      const result = getRelativeTimeLabel(tomorrow, t)
+      expect(result).toContain('upcoming.tomorrow_at')
+      expect(result).toContain(formatLocalTime(tomorrow))
     })
 
     it('should return the local time for events more than a day away', () => {
