@@ -46,15 +46,18 @@ jobs:
         with:
           node-version: 24.x
 
-      - name: Enable npm 11.x via corepack
-        # npm Trusted Publishing requires npm CLI >= 11.5.1. Node 24 already ships
-        # with npm 11 bundled, but we use corepack defensively to guarantee npm 11
-        # regardless of the runner's toolcache state, matching the marketplace
-        # pattern. The self-upgrade route (`npm install -g npm@11`) is known to
-        # crash due to broken modules in the cached npm 10.x.
+      - name: Enable npm 11.14.1 via corepack
+        # npm Trusted Publishing requires npm CLI >= 11.5.1. We pin to 11.14.1
+        # because npm 11.15.0 (latest at time of writing) silently fails the OIDC
+        # token exchange and surfaces only a generic `ENEEDAUTH / npm adduser`
+        # message — the known regression tracked in npm/cli#9088. 11.14.1 is the
+        # last version verified to publish to `@dcl/sites` via Trusted Publishers.
+        # Bump only after confirming OIDC works end-to-end against a new release.
+        # Corepack is used (instead of `npm install -g`) to avoid the self-upgrade
+        # corruption where npm overwrites its own modules mid-install.
         run: |
           corepack enable npm
-          corepack install -g npm@11
+          corepack install -g npm@11.14.1
           npm --version
 
       - name: Set package.json version
