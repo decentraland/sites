@@ -3,11 +3,12 @@
 // poster (raw IPFS content from peer.decentraland.org) into ~50 KB WebP at
 // 500 px wide — the LCP bottleneck on slow mobile.
 //
-// The endpoint only exists on Vercel deployments. On `vite dev` and any
-// non-Vercel host (CI preview, internal tools) the path 404s, so we fall back
-// to the original URL there.
-
-const HOSTS_WITHOUT_OPTIMIZER = new Set(['localhost', '127.0.0.1', '0.0.0.0'])
+// The endpoint ONLY exists on Vercel previews (`*.vercel.app`). Production
+// (`decentraland.zone/today/org`) is served from cdn.decentraland.org via
+// `set-rollout-action`, where the path falls back to the SPA index.html and
+// the browser renders a broken-image placeholder. Same for `vite dev`. The
+// allowlist below is closed-form: only Vercel hostnames opt into the
+// optimizer; everywhere else we serve the original URL.
 
 interface OptimizedImageOptions {
   width: number
@@ -29,8 +30,8 @@ function isOptimizableUrl(value: unknown): value is string {
 }
 
 function shouldUseOptimizer(): boolean {
-  if (typeof window === 'undefined') return true
-  return !HOSTS_WITHOUT_OPTIMIZER.has(window.location.hostname)
+  if (typeof window === 'undefined') return false
+  return window.location.hostname.endsWith('.vercel.app')
 }
 
 function optimizedImageUrl(url: string | null | undefined, options: OptimizedImageOptions): string {
