@@ -28,7 +28,7 @@ describe('optimizedImageUrl', () => {
   })
 
   describe('when the input URL has an unsupported protocol', () => {
-    beforeEach(() => setHostname('decentraland.org'))
+    beforeEach(() => setHostname('sites-git-feat.vercel.app'))
 
     it('returns the original URL for `data:`', () => {
       const url = 'data:image/png;base64,AAAA'
@@ -46,7 +46,7 @@ describe('optimizedImageUrl', () => {
     })
   })
 
-  describe('when running on localhost', () => {
+  describe('when running on localhost (vite dev)', () => {
     beforeEach(() => setHostname('localhost'))
 
     it('returns the original URL', () => {
@@ -58,8 +58,19 @@ describe('optimizedImageUrl', () => {
     })
   })
 
+  describe('when running on a production DCL host (cdn.decentraland.org-backed)', () => {
+    // `/_vercel/image` only exists on Vercel previews. decentraland.zone /
+    // today / org are served from cdn.decentraland.org via set-rollout-action,
+    // where the path falls back to the SPA index.html and the browser renders
+    // a broken-image placeholder (white border). Skip the optimizer here.
+    it.each(['decentraland.zone', 'decentraland.today', 'decentraland.org'])('returns the original URL on %s', host => {
+      setHostname(host)
+      expect(optimizedImageUrl('https://peer.decentraland.org/x.webp', { width: 500 })).toBe('https://peer.decentraland.org/x.webp')
+    })
+  })
+
   describe('when running on a Vercel deployment', () => {
-    beforeEach(() => setHostname('decentraland.org'))
+    beforeEach(() => setHostname('sites-git-feat.vercel.app'))
 
     it('wraps absolute https URLs through /_vercel/image', () => {
       const result = optimizedImageUrl('https://peer.decentraland.org/x.webp', { width: 500 })
@@ -92,7 +103,7 @@ describe('optimizedImageUrl', () => {
   })
 
   describe('when called with a non-string value (e.g. mocked Vite module)', () => {
-    beforeEach(() => setHostname('decentraland.org'))
+    beforeEach(() => setHostname('sites-git-feat.vercel.app'))
 
     it('does not throw on object inputs', () => {
       expect(() => optimizedImageUrl({} as unknown as string, { width: 500 })).not.toThrow()

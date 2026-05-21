@@ -1,9 +1,8 @@
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import type { AuthIdentity } from '@dcl/crypto'
-import { localStorageGetIdentity } from '@dcl/single-sign-on-client'
 import { signedFetchFactory } from 'decentraland-crypto-fetch'
 import { getEnv } from '../config/env'
+import { resolveActiveIdentity } from '../utils/activeIdentity'
 
 // Lazy getter — throws only when a query actually runs, not at import time.
 // A module-level throw would crash DappsShell at import even when no community query is made.
@@ -14,35 +13,6 @@ const getSocialApiUrl = (): string => {
 }
 
 const signedFetch = signedFetchFactory()
-
-// TODO(post-prod): once the social migration ships and stabilizes, lift this
-// SSO scan and the address-only `getStoredAddress` in `src/hooks/useWalletAddress.ts`
-// into a shared util in `src/utils/`. They walk the same `single-sign-on-0x*` keys
-// and pick the most recent expiration; the only difference is that this base
-// query needs the full `AuthIdentity` while the hook exposes just the address.
-function getStoredIdentity(): AuthIdentity | undefined {
-  try {
-    let bestIdentity: AuthIdentity | undefined
-    let bestExpiration = 0
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i)
-      if (!key?.startsWith('single-sign-on-0x')) continue
-      const address = key.replace('single-sign-on-', '')
-      const identity = localStorageGetIdentity(address.toLowerCase())
-      if (!identity) continue
-      const payload = identity.authChain?.[1]?.payload
-      const match = payload ? String(payload).match(/Expiration: ([^\n]+)/) : null
-      const expiration = match ? new Date(match[1]).getTime() : 0
-      if (expiration > bestExpiration) {
-        bestExpiration = expiration
-        bestIdentity = identity
-      }
-    }
-    return bestIdentity
-  } catch {
-    return undefined
-  }
-}
 
 const socialBaseQuery: BaseQueryFn<string | (FetchArgs & { baseUrl?: string }), unknown, FetchBaseQueryError> = async (
   args,
@@ -55,7 +25,7 @@ const socialBaseQuery: BaseQueryFn<string | (FetchArgs & { baseUrl?: string }), 
     const baseUrl = customBaseUrl ?? getSocialApiUrl()
 
     const fetchFn: typeof fetch = async (input, init) => {
-      const identity = getStoredIdentity()
+      const identity = resolveActiveIdentity()
       if (identity) {
         return signedFetch(input as RequestInfo, { ...(init ?? {}), identity })
       }

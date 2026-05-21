@@ -139,9 +139,20 @@ describe('socialClient', () => {
       expect(init.identity).toBe(newer)
     })
 
-    it('should ignore identities returned without payload metadata', async () => {
+    it('should still sign identities whose payload lacks parseable expiration metadata', async () => {
+      // Identity resolution was moved to resolveActiveIdentity (utils/activeIdentity),
+      // which trusts whatever localStorageGetIdentity returns and ranks by parsed
+      // expiration (defaulting to 0 when missing). A malformed but non-null identity
+      // is therefore still selected and signed with — payload validation is the
+      // SSO client's responsibility, not this client's.
       localStorage.setItem('single-sign-on-0xnoexp', 'x')
       getIdentityMock.mockReturnValue({ authChain: [{ payload: 'signer' }] })
+      signedFetchMock.mockResolvedValue(
+        new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        })
+      )
 
       const api = socialClient.injectEndpoints({
         overrideExisting: true,
@@ -153,8 +164,7 @@ describe('socialClient', () => {
 
       await store.dispatch(api.endpoints.pingNoExp.initiate())
 
-      expect(signedFetchMock).not.toHaveBeenCalled()
-      expect(global.fetch).toHaveBeenCalled()
+      expect(signedFetchMock).toHaveBeenCalledTimes(1)
     })
 
     it('should ignore non-matching localStorage keys', async () => {

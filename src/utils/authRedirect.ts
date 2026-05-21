@@ -1,4 +1,5 @@
 import { getEnv } from '../config/env'
+import { markSignInPending } from './activeIdentity'
 
 /**
  * Builds a same-origin redirect path for after authentication, preserving query params.
@@ -55,7 +56,14 @@ function redirectToAuth(path: string, queryParams?: Record<string, string>): voi
   const redirectTo = buildAuthRedirectUrl(path, queryParams)
   const authUrl = resolveAuthUrl()
 
-  window.location.replace(`${authUrl}/login?redirectTo=${encodeURIComponent(redirectTo)}`)
+  // Flag the round-trip so the identity the auth dapp writes during this
+  // redirect becomes authoritative on return, even if a stale pointer exists.
+  markSignInPending()
+  const target = `${authUrl}/login?redirectTo=${encodeURIComponent(redirectTo)}`
+
+  console.log('[wallet-switch] redirectToAuth', { path, queryParams, redirectTo, target })
+
+  window.location.replace(target)
 }
 
 export { buildAuthRedirectUrl, redirectToAuth }
