@@ -7,14 +7,36 @@ on:
   release:
     types:
       - created
+  # Manual branch deploy — replaces the standalone manual-deploy.yml so a single
+  # workflow filename is used for all publish paths. npm Trusted Publishers
+  # allows only one publisher entry per package, so consolidating here lets
+  # auto-deploys (push/release) and manual branch deploys (workflow_dispatch)
+  # share the same OIDC trust configuration.
+  workflow_dispatch:
+    inputs:
+      deploymentEnvironment:
+        type: choice
+        description: 'Deployment environment'
+        required: true
+        default: 'zone'
+        options:
+          - zone
+          - today
+      rolloutPercentage:
+        description: 'Rollout percentage'
+        required: true
+        default: '100'
 
 jobs:
-  build-release:
+  build-and-publish:
     runs-on: ubuntu-latest
 
     permissions:
       id-token: write
       contents: read
+
+    outputs:
+      version: ${{ steps.publish.outputs.version }}
 
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # @v4.3.0
@@ -23,17 +45,20 @@ jobs:
         uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # @v4.0.1
         with:
           node-version: 24.x
+
       - name: Enable npm 11.x via corepack
-        # npm Trusted Publishing requires npm CLI >= 11.5.1. The runner's toolcache
-        # ships Node 22.x with npm 10.9.x bundled. Using corepack avoids the known
-        # self-upgrade corruption where npm overwrites its own modules mid-install.
+        # npm Trusted Publishing requires npm CLI >= 11.5.1. Node 24 already ships
+        # with npm 11 bundled, but we use corepack defensively to guarantee npm 11
+        # regardless of the runner's toolcache state, matching the marketplace
+        # pattern. The self-upgrade route (`npm install -g npm@11`) is known to
+        # crash due to broken modules in the cached npm 10.x.
         run: |
           corepack enable npm
           corepack install -g npm@11
           npm --version
 
       - name: Set package.json version
-        uses: decentraland/oddish-action@d9612ec0a1f3cd012d5736df7744fcf9e940bfce # master (node24)
+        uses: decentraland/oddish-action@master
         with:
           deterministic-snapshot: true
           only-update-versions: true
@@ -47,14 +72,67 @@ jobs:
         run: npm run build
 
       - name: Publish
-        uses: decentraland/oddish-action@d9612ec0a1f3cd012d5736df7744fcf9e940bfce # master (node24)
+        id: publish
+        # Auth via npm Trusted Publishers (OIDC) — `id-token: write` is granted on
+        # this job and no `NODE_AUTH_TOKEN` is provided, so the OIDC-aware oddish
+        # skips writing `_authToken` to `.npmrc` and lets npm 11 do the handshake.
+        # Requires a Trusted Publisher entry for `build-release.yml` at
+        # https://www.npmjs.com/package/@dcl/sites/access
+        #
+        # For workflow_dispatch (manual branch deploys), the build is published
+        # under the `manual` dist-tag so it doesn't move `latest`. Auto-deploys
+        # (push/release) publish without a custom tag.
+        uses: decentraland/oddish-action@master
         with:
           cwd: './dist'
           deterministic-snapshot: true
-          provenance: false
+          provenance: true
           registry-url: 'https://registry.npmjs.org'
           access: public
+          custom-tag: ${{ github.event_name == 'workflow_dispatch' && 'manual' || '' }}
+          branch-to-custom-tag: ${{ github.event_name == 'workflow_dispatch' && github.ref_name || '' }}
           gitlab-token: ${{ secrets.GITLAB_CDN_DEPLOYER_TOKEN }}
           gitlab-pipeline-url: ${{ secrets.GITLAB_CDN_DEPLOYER_URL }}
+
+  rollout:
+    # Only runs for manual branch deploys. Auto-deploys (push/release) trigger
+    # `set-rollout.yml` separately via the GitLab `deployment_status` event.
+    if: github.event_name == 'workflow_dispatch'
+    needs: build-and-publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Wait for CDN propagation
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PACKAGE_NAME: '@dcl/sites'
+          PACKAGE_VERSION: ${{ needs.build-and-publish.outputs.version }}
+        run: |
+          URL="https://cdn.decentraland.org/${PACKAGE_NAME}/${PACKAGE_VERSION}"
+          echo "Polling ${URL} until the CDN serves the package..."
+          for attempt in $(seq 1 60); do
+            status=$(curl -s -o /dev/null -w '%{http_code}' -I "${URL}" || echo "000")
+            if [ "${status}" -ge 200 ] && [ "${status}" -lt 400 ]; then
+              echo "Package available in CDN (status ${status}) after attempt ${attempt}"
+              exit 0
+            fi
+            echo "Attempt ${attempt}: status ${status}, retrying in 15s..."
+            sleep 15
+          done
+          echo "Timed out waiting for ${URL}"
+          exit 1
+
+      - name: Set Rollout
+        uses: decentraland/set-rollout-action@26ead404b6944fd0ce0d087cc59fd817607454d6 # v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+          ref: ${{ github.ref }}
+          sha: ${{ github.sha }}
+
+          packageName: '@dcl/sites'
+          packageVersion: ${{ needs.build-and-publish.outputs.version }}
+
+          deploymentPath: 'sites'
+          deploymentEnvironment: ${{ github.event.inputs.deploymentEnvironment }}
+          deploymentName: '_site'
+          percentage: ${{ github.event.inputs.rolloutPercentage }}
