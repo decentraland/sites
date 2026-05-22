@@ -4,7 +4,7 @@ import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-u
 import type { ExploreItem } from '../../../features/events/events.discovery.types'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
-import { SectionViewedTrack } from '../../../modules/segment'
+import { SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { assetUrl } from '../../../utils/assetUrl'
 import { DCL_FOUNDATION_BACKGROUND_COLOR, getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import { CardWrapper } from './WhatsOn.styled'
@@ -52,7 +52,7 @@ const WhatsOnCard = memo(({ card, loading }: { card?: ExploreItem; loading?: boo
     <CardWrapper
       $avatarBackgroundColor={avatarBackgroundColor}
       data-place={SectionViewedTrack.LANDING_EXPLORE}
-      data-event="click"
+      data-event={SegmentEvent.CLICK}
       data-card={card?.title}
       onClick={onClickHandle}
     >

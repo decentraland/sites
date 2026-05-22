@@ -10,12 +10,12 @@ Placed BEFORE the `<Route element={<Layout />}>` block in `src/App.tsx` (Layout-
 
 ## Key paths
 
-| Path                                  | Purpose                                                                                                          |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `src/pages/reels/`                    | Page components for the reels area (gallery, single image view).                                                  |
-| `src/components/Reels/`               | Reels-specific UI components (image grid, fullscreen viewer, share controls). Note the capitalized directory.    |
-| `src/features/reels/reels.client.ts`  | Reels camera-screenshot client + helpers. Uses `useSyncExternalStore`-style hooks (NOT RTK Query).                |
-| `src/features/reels/*.helpers.ts`     | Image URL builders, address parsing, share-link helpers.                                                          |
+| Path                                 | Purpose                                                                                                       |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `src/pages/reels/`                   | Page components for the reels area (gallery, single image view).                                              |
+| `src/components/Reels/`              | Reels-specific UI components (image grid, fullscreen viewer, share controls). Note the capitalized directory. |
+| `src/features/reels/reels.client.ts` | Reels camera-screenshot client + helpers. Uses `useSyncExternalStore`-style hooks (NOT RTK Query).            |
+| `src/features/reels/*.helpers.ts`    | Image URL builders, address parsing, share-link helpers.                                                      |
 
 ## Lightweight tier rules apply
 

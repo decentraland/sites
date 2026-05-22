@@ -1,6 +1,6 @@
 import { Suspense, lazy, memo, useCallback, useEffect, useState } from 'react'
-import { useAnalytics } from '@dcl/hooks'
 import { AnimatedBackground } from 'decentraland-ui2'
+import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useVideoOptimization } from '../../../hooks/contentful'
 import { useFeatureFlagContext } from '../../../hooks/useFeatureFlagContext'
 import { useReferralUrl } from '../../../hooks/useReferralUrl'
@@ -67,18 +67,18 @@ const InviteHero = memo((props: InviteHeroProps) => {
   const referrerAddress = referrer?.avatars?.[0]?.ethAddress
   const referrerName = referrer?.avatars?.[0]?.name
 
-  const analytics = useAnalytics()
+  const trackClick = useTrackClick()
   const urlWithReferrer = useReferralUrl(referrerAddress)
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
       event.preventDefault()
-      analytics.track('Click', { section: eventPlace })
+      trackClick(event)
       setTimeout(() => {
         window.location.href = urlWithReferrer
       }, 500)
     },
-    [analytics, eventPlace, urlWithReferrer]
+    [trackClick, urlWithReferrer]
   )
 
   const [, { loading: featureFlagsLoading }] = useFeatureFlagContext()

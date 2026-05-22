@@ -6,7 +6,7 @@ import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
-import { SectionViewedTrack } from '../../../modules/segment'
+import { SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { assetUrl } from '../../../utils/assetUrl'
 import { getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import { Carousel } from '../../Carousel/Carousel'
@@ -243,7 +243,7 @@ const CatchTheVibe = memo(() => {
           handleClick(e)
         }}
         data-place={SectionViewedTrack.LANDING_CATCH_THE_VIBE}
-        data-event="click"
+        data-event={SegmentEvent.CLICK}
         endIcon={<JumpInIcon />}
       >
         {l('page.home.hang_out_now')}

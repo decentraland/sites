@@ -39,7 +39,11 @@ if (!CMS_BASE_URL) throw new Error('CMS_BASE_URL is required')
 
 // 🚫 Class field default that evaluates synchronously
 class Client {
-  baseUrl = getEnv('CMS_BASE_URL') ?? (() => { throw new Error('missing') })()
+  baseUrl =
+    getEnv('CMS_BASE_URL') ??
+    (() => {
+      throw new Error('missing')
+    })()
 }
 
 // 🚫 IIFE at top-level
