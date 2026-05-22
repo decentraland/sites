@@ -65,7 +65,7 @@ const JumpInButton: FC<JumpInButtonProps> = ({
     try {
       const launched = await launchDesktopApp(buildDeepLinkOptions(position, realm))
       if (!launched) {
-        track(SegmentEvent.CLICK, { event: 'Client not installed', osName, arch })
+        track(SegmentEvent.CLICK, { event: SegmentEvent.CLIENT_NOT_INSTALLED, os: osName, arch })
         openDownloadFallback()
       }
     } catch {

@@ -171,7 +171,59 @@ If grep returns zero matches the enum value is **dead code**. See section 7 of t
 - **P1-3** (✅ partial via `useDeferredTrack`): `useTrackClick` silent drop when `isInitialized === false`. Adopting `useDeferredTrack` inside the adapter would resolve this for Click events too.
 - **P2 list:** see Plan.md.
 
-## 12. Reference files in priority order
+## 12. Lessons learned — anti-patterns to NOT repeat
+
+Discovered the hard way during the 2026-05-22 tracking overhaul. Read before designing any tracking change.
+
+### LL-1. Don't mirror the Explorer pattern blindly on the Creator Hub
+
+The Creator Hub flow is **dispatch-and-forget** (anchor click → 3s setTimeout → redirect). There is no stream, no progress, no failure signal from the browser. **Do NOT add a `creator_hub_download_started/_success/_failed` event family unless the data team explicitly requests it** — the upstream `Click` already covers the funnel that product needs. The 2026-05-22 P0-3 was originally scoped as a full event family by reading the analysis HTML in isolation; the user corrected it to "just fix the footer click" because the rest was unnecessary scope creep.
+
+### LL-2. Don't assume an event family is active — check with the data team
+
+The `'Onboarding Checkpoint'` family was deprecated by data team and the entire helper + callsites had to be removed. Before adding any tracking to a "checkpoint"-style funnel, confirm with the data team that they want it. Don't reanimate `trackCheckpoint` — design from scratch.
+
+### LL-3. Payload key conventions (read before adding any track call)
+
+- **`place`** (not `section`, not `location`) — the canonical key for "where the click happened". `InviteHero.tsx` previously used `section: eventPlace` and it broke every analytics query that grouped by `place`. Fixed by migrating to `useTrackClick` + `data-place`.
+- **`os`** (not `osName`, not `operativeSystem`) — short and consistent with the codebase's `OperativeSystem` enum values. `JumpInButton` previously used `osName` and it splintered queries.
+- **`event`** — sub-type of a Click. Used as a payload key when the click should be filtered into a sub-bucket (e.g. `Click + event=Download` is "a Click that's a download"). Values should ALWAYS come from `SegmentEvent` enum, never hardcoded literals like `"click"` or `"Client not installed"`.
+- **`anon_user_id`** (snake_case, optional) — never `anonUserId` (camelCase) in payloads. Mirrors the Segment warehouse convention.
+- **`auth_state`** (snake_case) — values are `'authenticated' | 'anonymous'`, literal strings.
+
+### LL-4. `data-event` is always an enum value, never a literal
+
+`useTrackClick` strips `payload.event` when it equals the event name (`'Click'`). To make this work consistently, **every** `data-event` in the codebase must use a `SegmentEvent` enum value (e.g. `data-event={SegmentEvent.CLICK}` or `data-event={SegmentEvent.DOWNLOAD}`). Hardcoded literals like `data-event="click"` (lowercase) are not allowed — they break the strip logic and produce inconsistent casing in the warehouse.
+
+### LL-5. `data-place` must match the component's actual section
+
+Before copying a `data-place` from a neighboring component, verify that the section value matches THIS component, not the one you copied from. `ComeHangOut.tsx` previously had `data-place={SectionViewedTrack.LANDING_HERO}` because someone copy-pasted from Hero. That misattributed every ComeHangOut click as a Hero click in analytics. Fixed by adding `SectionViewedTrack.LANDING_COME_HANG_OUT` and using it.
+
+### LL-6. There are two `place` namespaces — pick the right one
+
+- `SectionViewedTrack` (Title Case: `'Landing Hero'`) — for **Click** events, used via `data-place`.
+- `DownloadPlace` (kebab-case: `'landing-hero'`) — for **download_started/success/failed** events, used via URL query param.
+
+They overlap in intent but NOT in value. `SectionViewedTrack.DOWNLOAD = 'Download'` and `SegmentEvent.DOWNLOAD = 'Download'` happen to share a literal, which has led to bugs where someone passed `SectionViewedTrack.DOWNLOAD` as `data-event` thinking they were referring to the event family. Use `SegmentEvent.DOWNLOAD` for `data-event`. Use `SectionViewedTrack.X` for `data-place`. Don't mix.
+
+### LL-7. Before adding tracking, check whether an existing hook already covers it
+
+`useTrackClick` is the canonical Click adapter. `useDeferredTrack` is the canonical queue-on-init hook. `createDownloadTracker` is the canonical download events factory. Inventing a new mechanism without first verifying these can't cover the use case is the most common source of duplicated logic + divergent payloads.
+
+### LL-8. The `_SUCCESS` event in the download family doesn't mean "saved to disk"
+
+`download_success` semantics:
+
+- Windows: bytes arrived to browser memory via streamed `fetch`.
+- macOS: estimated time elapsed (800ms–4000ms heuristic).
+
+Neither signals OS-level disk save. The only way to know that would be `showSaveFilePicker` which is Chromium-only and breaks the `<a download>` flow that macOS needs for `kMDItemWhereFroms`. **Don't rename to `_DISPATCHED` or anything else** — the data team trackes by the literal name. The imprecision is documented in payload metadata (`bytes_transferred`, `delivery_mode` via `os`) instead.
+
+### LL-9. The `useAnonUserId` race is mostly handled by latency, not a fix
+
+If `useAnonUserId` returns `undefined` on Hero's render (Segment not loaded yet), the Hero builds a redirect URL without `anon_user_id`. **But** the success page mounts fresh on the navigation, `useAnonUserId` re-evaluates from scratch, and by then Segment has typically loaded → localStorage has the ID → recovery works. The race is genuine only on direct landings to `/download_success` where Segment hasn't loaded by the time `calculateDownloadUrl` is called. This was P1-2 in the original plan and was **accept-risk** dropped — fixing it requires delaying the download until Segment loads, which adds UX latency.
+
+## 13. Reference files in priority order
 
 1. `src/modules/segment.types.ts` — enums.
 2. `src/modules/segment.ts` — re-exports + `resolveDownloadPlace`.

@@ -86,7 +86,7 @@ const ComeHangOut = memo(() => {
       <div style={{ display: 'flex', gap: 24, justifyContent: 'center' }}>
         <DownloadButton
           href={userAgentData ? `/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.COME_HANG_OUT}` : '/download'}
-          data-place={SectionViewedTrack.LANDING_HERO}
+          data-place={SectionViewedTrack.LANDING_COME_HANG_OUT}
           data-event={SegmentEvent.CLICK}
           onClick={handleDownloadClick}
         >

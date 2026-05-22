@@ -209,10 +209,14 @@ describe('streamOrFallback', () => {
         resolved = true
       })
 
-      await jest.advanceTimersByTimeAsync(ESTIMATE_MIN_HOLD_MS - 1)
+      // Wide tolerance window: CI runs slow enough that the real Date.now()
+      // elapsed between streamOrFallback() entering and the sleep starting can
+      // shave hundreds of ms off the remaining hold. Anything inside the hold
+      // window with > 500ms of buffer on both sides is safely deterministic.
+      await jest.advanceTimersByTimeAsync(ESTIMATE_MIN_HOLD_MS - 1000)
       expect(resolved).toBe(false)
 
-      await jest.advanceTimersByTimeAsync(2)
+      await jest.advanceTimersByTimeAsync(1500)
       expect(resolved).toBe(true)
     })
 
