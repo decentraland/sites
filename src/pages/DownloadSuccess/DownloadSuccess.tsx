@@ -138,7 +138,25 @@ const DownloadSuccess = memo(() => {
 
   const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
 
+  // Gate the auto-download on the anon_user_id resolution. `useAnonUserId` is
+  // reactive to `isInitialized` (see hook docstring), so a cold load that
+  // mounts before Segment boots starts with `anonUserId === undefined`, then
+  // flips to the real value once Segment writes `ajs_anonymous_id` to
+  // localStorage. We wait up to ANON_USER_ID_WAIT_MS for that — beyond which
+  // we proceed anyway so the UX doesn't hang on a blocked / failing Segment.
+  const [anonUserIdReady, setAnonUserIdReady] = useState(anonUserId !== undefined)
   useEffect(() => {
+    if (anonUserId !== undefined) {
+      setAnonUserIdReady(true)
+      return
+    }
+    if (anonUserIdReady) return
+    const timer = setTimeout(() => setAnonUserIdReady(true), 800)
+    return () => clearTimeout(timer)
+  }, [anonUserId, anonUserIdReady])
+
+  useEffect(() => {
+    if (!anonUserIdReady) return
     const abortController = new AbortController()
     const { signal } = abortController
 
@@ -247,7 +265,7 @@ const DownloadSuccess = memo(() => {
     return () => {
       abortController.abort()
     }
-  }, [clientOS, clientArch, osLink, place, revisitNumber, deferredTrack])
+  }, [anonUserIdReady, clientOS, clientArch, osLink, place, revisitNumber, deferredTrack])
 
   const handleDownloadClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {

@@ -167,7 +167,7 @@ If grep returns zero matches the enum value is **dead code**. See section 7 of t
 - **P0-2** (✅ done — Onboarding Checkpoint family deprecated 2026-05-22): all CP5/CP6 fires and the `trackCheckpoint` helper were removed. No replacement scheduled.
 - **P0-3:** Creator Hub has zero outcome tracking. Solution: mirror Explorer pattern with a `CREATOR_HUB_DOWNLOAD_*` enum family, reuse `createDownloadTracker`.
 - **P1-1** (✅ done): `download_started/success/failed` payload + timing fixes. See Plan.md section.
-- **P1-2:** `useAnonUserId` not reactive to `isInitialized` — Hero builds redirect URL without `anon_user_id` if user clicks fast.
+- **P1-2** (✅ done — `useAnonUserId` reactivity 2026-05-22): hook now depends on `isInitialized` so it re-evaluates when Segment boots; `DownloadSuccess` gates the auto-download on a `anonUserIdReady` state with an 800ms timeout fallback. See LL-9.
 - **P1-3** (✅ partial via `useDeferredTrack`): `useTrackClick` silent drop when `isInitialized === false`. Adopting `useDeferredTrack` inside the adapter would resolve this for Click events too.
 - **P2 list:** see Plan.md.
 
@@ -219,9 +219,16 @@ They overlap in intent but NOT in value. `SectionViewedTrack.DOWNLOAD = 'Downloa
 
 Neither signals OS-level disk save. The only way to know that would be `showSaveFilePicker` which is Chromium-only and breaks the `<a download>` flow that macOS needs for `kMDItemWhereFroms`. **Don't rename to `_DISPATCHED` or anything else** — the data team tracks by the literal name. The imprecision is documented in payload metadata (`bytes_transferred`, `delivery_mode` via `os`) instead.
 
-### LL-9. The `useAnonUserId` race is mostly handled by latency, not a fix
+### LL-9. The `useAnonUserId` race — fixed 2026-05-22
 
-If `useAnonUserId` returns `undefined` on Hero's render (Segment not loaded yet), the Hero builds a redirect URL without `anon_user_id`. **But** the success page mounts fresh on the navigation, `useAnonUserId` re-evaluates from scratch, and by then Segment has typically loaded → localStorage has the ID → recovery works. The race is genuine only on direct landings to `/download_success` where Segment hasn't loaded by the time `calculateDownloadUrl` is called. This was P1-2 in the original plan and was **accept-risk** dropped — fixing it requires delaying the download until Segment loads, which adds UX latency.
+The hook is now **reactive** to `useAnalytics().isInitialized`: when Segment boots and writes `ajs_anonymous_id` to localStorage, the memo re-evaluates and consumers (Hero's `buildDownloadSuccessHref`, DownloadSuccess's `calculateDownloadUrl` call) see the up-to-date value on the next render.
+
+`DownloadSuccess.tsx` gates the auto-download on an `anonUserIdReady` state. If `anonUserId` is `undefined` at mount, it waits up to **800ms** for the reactive update before triggering the download regardless. Trade-off: cold loads of `/download_success` see up to 800ms of backdrop before the stream starts, which is imperceptible compared to the gateway's 5-30s NSIS+sign step. Worth it to avoid losing campaign attribution on direct landings.
+
+If you add a NEW page that derives URLs or analytics payloads from `useAnonUserId`, decide whether to:
+
+- **Render-time only** — Hero pattern: derive the value at render and re-render automatically when the hook updates. Cheap and reactive.
+- **Effect-time** — DownloadSuccess pattern: gate the effect on a `anonUserIdReady` state when the effect can't naturally re-run on hook updates.
 
 ## 13. Reference files in priority order
 
