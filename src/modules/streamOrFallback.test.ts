@@ -165,6 +165,21 @@ describe('streamOrFallback', () => {
       expect(mockDownloadFileWithProgress).not.toHaveBeenCalled()
     })
 
+    it('should resolve with no bytesTransferred (the browser owns the transfer past the anchor)', async () => {
+      const promise = streamOrFallback({
+        url: 'https://example.com/file.dmg',
+        filename: 'Decentraland-Installer.dmg',
+        os: OperativeSystem.MACOS,
+        signal: abortController.signal,
+        onProgress
+      })
+
+      await jest.advanceTimersByTimeAsync(ESTIMATE_MAX_HOLD_MS)
+      const result = await promise
+
+      expect(result.bytesTransferred).toBeUndefined()
+    })
+
     it('should HEAD the URL to get Content-Length for the adaptive estimate', async () => {
       const promise = streamOrFallback({
         url: 'https://example.com/file.dmg',
@@ -310,6 +325,25 @@ describe('streamOrFallback', () => {
 
         expect(onProgress).not.toHaveBeenCalled()
       })
+
+      it('should return bytesTransferred equal to the last loaded value reported during the stream', async () => {
+        mockDownloadFileWithProgress.mockImplementation(
+          async (_url: string, _filename: string, progressCb: (p: { loaded: number; total: number }) => void) => {
+            progressCb({ loaded: 1024 * 1024, total: 4 * 1024 * 1024 })
+            progressCb({ loaded: 4 * 1024 * 1024, total: 4 * 1024 * 1024 })
+          }
+        )
+
+        const result = await streamOrFallback({
+          url: 'https://example.com/file.exe',
+          filename: 'Decentraland-Installer.exe',
+          os: OperativeSystem.WINDOWS,
+          signal: abortController.signal,
+          onProgress
+        })
+
+        expect(result.bytesTransferred).toBe(4 * 1024 * 1024)
+      })
     })
 
     describe('and the streamed fetch fails', () => {
@@ -331,6 +365,21 @@ describe('streamOrFallback', () => {
         await promise
 
         expect(mockTriggerFileDownload).toHaveBeenCalledWith('https://example.com/file.exe', 'Decentraland-Installer.exe')
+      })
+
+      it('should resolve with no bytesTransferred when falling back to the native anchor (no byte counter past the anchor)', async () => {
+        const promise = streamOrFallback({
+          url: 'https://example.com/file.exe',
+          filename: 'Decentraland-Installer.exe',
+          os: OperativeSystem.WINDOWS,
+          signal: abortController.signal,
+          onProgress
+        })
+
+        await jest.advanceTimersByTimeAsync(FALLBACK_LOADER_HOLD_MS)
+        const result = await promise
+
+        expect(result.bytesTransferred).toBeUndefined()
       })
 
       it('should rethrow when the failure is due to the signal being aborted', async () => {

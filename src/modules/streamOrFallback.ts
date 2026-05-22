@@ -1,6 +1,6 @@
 import { OperativeSystem } from '../types/download.types'
 import { downloadFileWithProgress, triggerFileDownload } from './file'
-import type { StreamOrFallbackArgs } from './streamOrFallback.types'
+import type { StreamOrFallbackArgs, StreamOrFallbackResult } from './streamOrFallback.types'
 
 // Fallback hold for the Windows fetch-error path. The HEAD that powers the
 // macOS adaptive estimate would likely fail for the same reason the streamed
@@ -121,22 +121,29 @@ const estimateDownloadHoldMs = async (url: string, signal?: AbortSignal): Promis
  * allows known prod/staging hosts), fall back to the native anchor + a
  * fixed hold so the download still happens.
  */
-const streamOrFallback = async ({ url, filename, os, signal, onProgress }: StreamOrFallbackArgs): Promise<void> => {
+const streamOrFallback = async ({ url, filename, os, signal, onProgress }: StreamOrFallbackArgs): Promise<StreamOrFallbackResult> => {
   if (os === OperativeSystem.MACOS) {
     const startedAt = Date.now()
     triggerFileDownload(url, filename)
     const holdMs = await estimateDownloadHoldMs(url, signal)
-    if (signal.aborted) return
+    if (signal.aborted) return {}
     const remaining = Math.max(0, holdMs - (Date.now() - startedAt))
     await sleep(remaining, signal)
-    return
+    return {}
   }
+
+  // Tracked across the progress callback so the caller can include the
+  // total in analytics. Final value after the stream resolves is the byte
+  // count the browser received — not necessarily what landed on disk, but
+  // the closest signal available without `showSaveFilePicker`.
+  let bytesTransferred = 0
 
   try {
     await downloadFileWithProgress(
       url,
       filename,
       ({ loaded, total }) => {
+        bytesTransferred = loaded
         if (signal.aborted || total <= 0) return
         // Cap at 99 so the UI shows "Downloading..." while we hand the blob
         // off to the anchor click; the caller flips to 100 once the click
@@ -145,6 +152,7 @@ const streamOrFallback = async ({ url, filename, os, signal, onProgress }: Strea
       },
       signal
     )
+    return { bytesTransferred }
   } catch (error) {
     if (signal.aborted) throw error
     console.warn('Streamed download failed, falling back to native anchor', {
@@ -152,6 +160,7 @@ const streamOrFallback = async ({ url, filename, os, signal, onProgress }: Strea
     })
     triggerFileDownload(url, filename)
     await sleep(FALLBACK_LOADER_HOLD_MS, signal)
+    return {}
   }
 }
 

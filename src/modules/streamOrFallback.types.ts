@@ -8,4 +8,18 @@ interface StreamOrFallbackArgs {
   onProgress: (percent: number) => void
 }
 
-export type { StreamOrFallbackArgs }
+/**
+ * Result of a stream-or-fallback attempt.
+ *
+ * `bytesTransferred` is populated **only** on the Windows streamed path
+ * (`fetch` + progress tap). macOS uses a native anchor click — the browser
+ * owns the transfer past that point and we have no byte counter. The
+ * Windows fallback path (CORS failure → native anchor) also has no counter.
+ *
+ * Callers treat `undefined` as "unknown / not measured" rather than zero.
+ */
+interface StreamOrFallbackResult {
+  bytesTransferred?: number
+}
+
+export type { StreamOrFallbackArgs, StreamOrFallbackResult }
