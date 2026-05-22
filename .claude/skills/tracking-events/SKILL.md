@@ -28,7 +28,7 @@ The single source of truth for understanding analytics in sites. **Read top-to-b
 
 All declared in `src/modules/segment.types.ts` and re-exported by `src/modules/segment.ts`:
 
-- **`SegmentEvent`** — every event name fired with `track()`. Mixed casing because some literals are historical: `'Click'`, `'Download'`, `'Reels Click …'` (Title Case Words), and the funnel events `download_started / download_success / download_failed` (snake_case). Don't normalize — the data team trackes by these literal strings.
+- **`SegmentEvent`** — every event name fired with `track()`. Mixed casing because some literals are historical: `'Click'`, `'Download'`, `'Reels Click …'` (Title Case Words), and the funnel events `download_started / download_success / download_failed` (snake_case). Don't normalize — the data team tracks by these literal strings.
 - **`DownloadPlace`** — kebab-case enum for the `place` field of `download_*` events. Values: `landing-hero`, `landing-hero-epic`, `landing-hero-platform-switch`, `come-hang-out`, `jump-in-already-user`, `download-page`, `download-success-footer`, `unknown`.
 - **`SectionViewedTrack`** — Title Case enum for the `place` field of `Click` events (consumed via `data-place`). Values: `Landing Hero`, `Creators Hero`, `Landing Explore`, etc. **Different namespace from `DownloadPlace`** — they happen to overlap in intent (e.g. `SectionViewedTrack.LANDING_HERO = 'Landing Hero'` vs `DownloadPlace.LANDING_HERO = 'landing-hero'`), but to join them in a query the warehouse has to normalize.
 
@@ -217,7 +217,7 @@ They overlap in intent but NOT in value. `SectionViewedTrack.DOWNLOAD = 'Downloa
 - Windows: bytes arrived to browser memory via streamed `fetch`.
 - macOS: estimated time elapsed (800ms–4000ms heuristic).
 
-Neither signals OS-level disk save. The only way to know that would be `showSaveFilePicker` which is Chromium-only and breaks the `<a download>` flow that macOS needs for `kMDItemWhereFroms`. **Don't rename to `_DISPATCHED` or anything else** — the data team trackes by the literal name. The imprecision is documented in payload metadata (`bytes_transferred`, `delivery_mode` via `os`) instead.
+Neither signals OS-level disk save. The only way to know that would be `showSaveFilePicker` which is Chromium-only and breaks the `<a download>` flow that macOS needs for `kMDItemWhereFroms`. **Don't rename to `_DISPATCHED` or anything else** — the data team tracks by the literal name. The imprecision is documented in payload metadata (`bytes_transferred`, `delivery_mode` via `os`) instead.
 
 ### LL-9. The `useAnonUserId` race is mostly handled by latency, not a fix
 

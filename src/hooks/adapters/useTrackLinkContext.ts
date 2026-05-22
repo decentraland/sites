@@ -27,14 +27,18 @@ function useTrackClick() {
       const payload: Record<string, string | null> = {}
 
       Array.from(element.attributes).forEach(attr => {
-        if (attr.name.startsWith('data-')) {
-          const key = attr.name
-            .slice(5)
-            .split('-')
-            .map((part, index) => (index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()))
-            .join('')
-          payload[key] = attr.value
-        }
+        if (!attr.name.startsWith('data-')) return
+        // Skip empty string attributes — components like BannerButton set
+        // `data-title=""` / `data-subtitle=""` as placeholders when the
+        // metadata isn't applicable. Forwarding empty strings to the
+        // warehouse creates noise without analytic value.
+        if (attr.value === '') return
+        const key = attr.name
+          .slice(5)
+          .split('-')
+          .map((part, index) => (index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()))
+          .join('')
+        payload[key] = attr.value
       })
 
       if (payload.event === SegmentEvent.CLICK) {

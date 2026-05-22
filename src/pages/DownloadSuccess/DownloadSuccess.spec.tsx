@@ -379,6 +379,28 @@ describe('when the user clicks the footer re-download link', () => {
       expect(mockTrack).toHaveBeenCalledWith('download_failed', expect.objectContaining({ place: 'download-success-footer' }))
     })
   })
+
+  it('should fire footer download_failed via the built tracker when the stream itself throws', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    const { findByRole } = render(<DownloadSuccess />)
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything())
+    })
+    // URL resolution succeeds for the footer too; stream rejects after the
+    // tracker is built so the catch branch must reuse it (covers the
+    // tracker.failed line, not the fallback tracker path).
+    mockStreamOrFallback.mockRejectedValueOnce(new Error('footer stream blew up'))
+
+    const link = await findByRole('link')
+    link.click()
+
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith(
+        'download_failed',
+        expect.objectContaining({ place: 'download-success-footer', reason: 'footer stream blew up' })
+      )
+    })
+  })
 })
 
 describe('when DownloadSuccess mounts and the url resolution rejects', () => {
@@ -412,6 +434,34 @@ describe('when DownloadSuccess mounts and the url resolution rejects', () => {
         })
       )
     })
+  })
+
+  it('should fire download_failed via the built tracker when the stream itself throws (URL resolution succeeded)', async () => {
+    // URL resolution succeeds, so the tracker is built and _STARTED fires;
+    // then the stream rejects. The catch branch must reuse the built tracker
+    // (NOT the fallback path) so the payload carries the resolved downloadUrl.
+    mockCalculateDownloadUrl.mockReset()
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockReset()
+    mockStreamOrFallback.mockRejectedValue(new Error('stream blew up'))
+    jest.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith(
+        'download_failed',
+        expect.objectContaining({
+          place: 'download-page',
+          href: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+          reason: 'stream blew up'
+        })
+      )
+    })
+    expect(mockTrack).toHaveBeenCalledWith('download_started', expect.anything())
   })
 
   it('should NOT fire download_started when URL resolution fails before the tracker is built', async () => {

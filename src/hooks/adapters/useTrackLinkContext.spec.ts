@@ -77,6 +77,25 @@ describe('useTrackClick', () => {
     })
   })
 
+  describe('when a data-* attribute has an empty string value', () => {
+    it('should skip the key so the warehouse does not receive empty-string noise', () => {
+      const { result } = renderHook(() => useTrackClick())
+
+      act(() => {
+        result.current(
+          buildClickEvent({
+            'data-place': 'Referrer Invite First Hero',
+            'data-event': SegmentEvent.CLICK,
+            'data-title': '',
+            'data-subtitle': ''
+          })
+        )
+      })
+
+      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.CLICK, { place: 'Referrer Invite First Hero' })
+    })
+  })
+
   describe('when Segment is NOT initialized at click time', () => {
     beforeEach(() => {
       mockIsInitialized = false
