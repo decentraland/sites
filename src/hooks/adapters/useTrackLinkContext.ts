@@ -1,12 +1,28 @@
 import { useCallback } from 'react'
-import { useAnalytics } from '@dcl/hooks'
 import { SegmentEvent } from '../../modules/segment'
+import { useDeferredTrack } from '../useDeferredTrack'
 
-export function useTrackClick() {
-  const { isInitialized, track } = useAnalytics()
+/**
+ * Click adapter consumed by interactive elements that follow the
+ * `data-*` convention. Reads every `data-*` attribute on the clicked
+ * element, camelCases each key, and ships the merged payload through
+ * `useDeferredTrack` so calls that land before Segment is initialized
+ * are queued instead of dropped.
+ *
+ * The event name is always `SegmentEvent.CLICK`. Action subtype lives in
+ * the payload as `event` (sourced from `data-event`) so the data team can
+ * group clicks by action without splitting them into separate event
+ * families. To keep payloads tight, the `event` key is stripped when its
+ * value would simply repeat the event name (`Click`).
+ *
+ * Callers should always set `data-event` to a `SegmentEvent` enum value
+ * rather than a hardcoded literal — keeps casing consistent in the
+ * warehouse and makes grep over the codebase trivial.
+ */
+function useTrackClick() {
+  const deferredTrack = useDeferredTrack()
   return useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
-      if (!isInitialized) return
       const element = event.currentTarget
       const payload: Record<string, string | null> = {}
 
@@ -21,8 +37,14 @@ export function useTrackClick() {
         }
       })
 
-      track(SegmentEvent.CLICK, payload)
+      if (payload.event === SegmentEvent.CLICK) {
+        delete payload.event
+      }
+
+      deferredTrack(SegmentEvent.CLICK, payload)
     },
-    [isInitialized, track]
+    [deferredTrack]
   )
 }
+
+export { useTrackClick }

@@ -10,7 +10,7 @@ import microsoftLogo from '../../../images/microsoft-logo.svg'
 import { DOWNLOAD_URLS } from '../../../modules/downloadConstants'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
 import { formatToShorthand } from '../../../modules/number'
-import { DownloadPlace, SectionViewedTrack } from '../../../modules/segment'
+import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
@@ -87,7 +87,7 @@ const ComeHangOut = memo(() => {
         <DownloadButton
           href={userAgentData ? `/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.COME_HANG_OUT}` : '/download'}
           data-place={SectionViewedTrack.LANDING_HERO}
-          data-event="click"
+          data-event={SegmentEvent.CLICK}
           onClick={handleDownloadClick}
         >
           {l('page.download.download_for_short')}
