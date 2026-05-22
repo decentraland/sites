@@ -18,6 +18,10 @@
       {
         "matcher": "Edit|Write|MultiEdit",
         "hooks": [{ "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-i18n-parity.sh" }]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [{ "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-routes-readme.sh" }]
       }
     ],
     "SessionStart": [

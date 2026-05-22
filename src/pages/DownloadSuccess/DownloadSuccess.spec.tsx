@@ -26,7 +26,16 @@ jest.mock('@dcl/hooks', () => ({
     return { isInitialized: analyticsIsInitialized, track: mockTrack }
   },
   useTranslation: () => ({
-    intl: { formatMessage: ({ id }: { id: string }) => id }
+    intl: {
+      formatMessage: ({ id }: { id: string }, values?: Record<string, unknown>) => {
+        if (values?.link) return values.link
+        if (values?.span) {
+          const spanFn = values.span as (chunks: unknown) => unknown
+          return spanFn(id)
+        }
+        return id
+      }
+    }
   })
 }))
 
@@ -64,8 +73,24 @@ jest.mock('../../modules/url', () => ({
   addQueryParamsToUrlString: (url: string) => url
 }))
 
+type LayoutProps = {
+  loading?: boolean
+  backdropContent?: React.ReactNode
+  footer?: React.ReactNode
+  renderCardOverlay?: (step: unknown, index: number) => React.ReactNode
+  steps: unknown[]
+  afterContent?: React.ReactNode
+}
+
 jest.mock('./DownloadSuccessLayout', () => ({
-  DownloadSuccessLayout: () => <div data-testid="layout" />
+  DownloadSuccessLayout: (props: LayoutProps) => (
+    <div data-testid="layout">
+      <div data-testid="backdrop">{props.backdropContent}</div>
+      <div data-testid="footer-slot">{props.footer}</div>
+      <div data-testid="step-overlay">{props.renderCardOverlay?.(props.steps[0], 0)}</div>
+      {props.afterContent}
+    </div>
+  )
 }))
 
 jest.mock('./DownloadSuccess.styled', () => ({
@@ -111,7 +136,9 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
           arch: 'amd64',
           anon_user_id: 'anon-123',
           auth_state: 'anonymous',
-          revisit: 0
+          revisit: 0,
+          fp_screen_width: expect.any(Number),
+          fp_screen_height: expect.any(Number)
         })
       )
     })
@@ -135,7 +162,9 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
           anon_user_id: 'anon-123',
           auth_state: 'anonymous',
           revisit: 0,
-          bytes_transferred: 4 * 1024 * 1024
+          bytes_transferred: 4 * 1024 * 1024,
+          fp_screen_width: expect.any(Number),
+          fp_device_pixel_ratio: expect.any(Number)
         })
       )
     })
@@ -281,6 +310,74 @@ describe('when Segment has not finished lazy-loading at mount (race condition)',
     // component's React.memo barrier, which serves no value over those tests.
     expect(mockTrack).not.toHaveBeenCalledWith('download_started', expect.anything())
     expect(mockTrack).not.toHaveBeenCalledWith('download_success', expect.anything())
+  })
+})
+
+// NOTE: P1-1 removed the sessionStorage + history.state idempotency bails so
+// every landing on `/download_success` re-runs the flow with an incremented
+// `revisit` counter. The previous "skip auto-download when flag set" tests no
+// longer apply — the new behavior is covered by the "revisited within the
+// session" describe block below.
+
+describe('when the user clicks the footer re-download link', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    sessionStorage.setItem('downloadSuccess:triggered:Windows:amd64', '1')
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64')
+    mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://cdn.test/Foo.exe', filename: 'Foo.exe' })
+    mockStreamOrFallback.mockResolvedValue({})
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    sessionStorage.clear()
+  })
+
+  it('should fire download_started with the footer place and call streamOrFallback', async () => {
+    const { findByRole } = render(<DownloadSuccess />)
+    const link = await findByRole('link')
+    link.click()
+    await waitFor(() => {
+      expect(mockStreamOrFallback).toHaveBeenCalled()
+    })
+    expect(mockTrack).toHaveBeenCalledWith('download_started', expect.objectContaining({ place: 'download-success-footer' }))
+    expect(mockTrack).toHaveBeenCalledWith(
+      'download_success',
+      expect.objectContaining({ place: 'download-success-footer', filename: 'Foo.exe' })
+    )
+  })
+
+  it('should ignore a second click while a re-download is in flight', async () => {
+    // First call resolves after a tick so the in-flight guard triggers on the second click.
+    let resolveStream: (() => void) | undefined
+    mockStreamOrFallback.mockImplementation(() => new Promise<{ bytesTransferred?: number }>(r => (resolveStream = () => r({}))))
+    const { findByRole } = render(<DownloadSuccess />)
+    const link = await findByRole('link')
+    link.click()
+    link.click()
+    resolveStream?.()
+    await waitFor(() => {
+      expect(mockStreamOrFallback).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  it('should fire download_failed when the footer download throws', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    const { findByRole } = render(<DownloadSuccess />)
+    // Wait for the auto-flow to complete its own _STARTED + _SUCCESS using the
+    // default resolved mock, so the next mockRejectedValueOnce we set up only
+    // affects the footer click — not the page-mount flow.
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything())
+    })
+    mockCalculateDownloadUrl.mockRejectedValueOnce(new Error('boom'))
+
+    const link = await findByRole('link')
+    link.click()
+
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('download_failed', expect.objectContaining({ place: 'download-success-footer' }))
+    })
   })
 })
 

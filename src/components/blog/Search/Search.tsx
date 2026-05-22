@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
-import { useSearchBlogQuery } from '../../../features/search/search.client'
+import { useSearchBlogQuery } from '../../../features/cms/cms.search.client'
 import { sanitizeHighlight } from './sanitizeHighlight'
 import type { SearchProps } from './Search.types'
 import {

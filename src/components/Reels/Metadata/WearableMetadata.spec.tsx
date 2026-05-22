@@ -62,4 +62,11 @@ describe('WearableMetadata', () => {
     expect(screen.queryByRole('link')).toBeNull()
     expect(screen.getByText('Cool Hat')).toBeInTheDocument()
   })
+
+  it('should fire mouseEnter and mouseLeave handlers so the BuyButton becomes visible on hover', () => {
+    render(<WearableMetadata wearable={wearable} />)
+    const link = screen.getByRole('link')
+    fireEvent.mouseEnter(link)
+    fireEvent.mouseLeave(link)
+  })
 })

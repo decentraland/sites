@@ -1,5 +1,5 @@
 import { forwardRef } from 'react'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { createMockEvent } from '../../../__test-utils__/factories'
 import { DayColumn } from './DayColumn'
 
@@ -90,6 +90,73 @@ describe('DayColumn', () => {
       render(<DayColumn events={[]} isLoading={false} dateLabel="Tuesday, September 15, 2026" renderCard={mockRenderCard} />)
 
       expect(screen.getByTestId('day-column-container')).toHaveAttribute('aria-label', 'Tuesday, September 15, 2026')
+    })
+  })
+
+  describe('when the user drags the scroll area', () => {
+    let scrollHeightSpy: jest.SpyInstance
+    let clientHeightSpy: jest.SpyInstance
+
+    beforeEach(() => {
+      scrollHeightSpy = jest.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(800)
+      clientHeightSpy = jest.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(400)
+    })
+
+    afterEach(() => {
+      scrollHeightSpy.mockRestore()
+      clientHeightSpy.mockRestore()
+    })
+
+    it('should hide the filler when content overflows the scroll area', () => {
+      render(
+        <DayColumn
+          events={[createMockEvent({ id: 'e1', name: 'Event 1' })]}
+          isLoading={false}
+          dateLabel="Today"
+          renderCard={mockRenderCard}
+        />
+      )
+      expect(screen.queryByTestId('column-filler')).not.toBeInTheDocument()
+    })
+
+    it('should update scrollTop while dragging vertically', () => {
+      const setSpy = jest.spyOn(HTMLElement.prototype, 'scrollTop', 'set')
+      const getSpy = jest.spyOn(HTMLElement.prototype, 'scrollTop', 'get').mockReturnValue(200)
+      try {
+        render(
+          <DayColumn
+            events={[createMockEvent({ id: 'e1', name: 'Event 1' })]}
+            isLoading={false}
+            dateLabel="Today"
+            renderCard={mockRenderCard}
+          />
+        )
+        const area = screen.getByTestId('card-scroll-area')
+        fireEvent.mouseDown(area, { clientY: 100 })
+        const callsBefore = setSpy.mock.calls.length
+        fireEvent.mouseMove(area, { clientY: 50 })
+        fireEvent.mouseUp(area)
+        // scrollTop should be assigned during the drag (startY=100, current=50, walk=-50, scrollTop=200-(-50)=250)
+        expect(setSpy.mock.calls.length).toBeGreaterThan(callsBefore)
+        expect(setSpy).toHaveBeenCalledWith(250)
+      } finally {
+        setSpy.mockRestore()
+        getSpy.mockRestore()
+      }
+    })
+
+    it('should bail out of mouseMove when no drag is in progress', () => {
+      const setSpy = jest.spyOn(HTMLElement.prototype, 'scrollTop', 'set')
+      try {
+        render(<DayColumn events={[]} isLoading={false} dateLabel="Today" renderCard={mockRenderCard} />)
+        const area = screen.getByTestId('card-scroll-area')
+        const callsBefore = setSpy.mock.calls.length
+        fireEvent.mouseMove(area, { clientY: 100 })
+        fireEvent.mouseLeave(area)
+        expect(setSpy.mock.calls.length).toBe(callsBefore)
+      } finally {
+        setSpy.mockRestore()
+      }
     })
   })
 })

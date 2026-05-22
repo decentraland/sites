@@ -52,5 +52,37 @@ describe('useReelImageById', () => {
       expect(result.current.error?.message).toBe('not found')
       expect(result.current.image).toBeNull()
     })
+
+    it('should wrap non-Error rejections so the state still has an Error instance', async () => {
+      reelsMock.fetchImageById.mockRejectedValue('bonk')
+      const { result } = renderHook(() => useReelImageById('z'))
+      await waitFor(() => expect(result.current.isLoading).toBe(false))
+      expect(result.current.error?.message).toBe('bonk')
+    })
+
+    it('should merge enriched wearables and face URLs into the visible people array', async () => {
+      const person = { userAddress: '0xABC', userName: 'Alice', isGuest: false, wearables: [] }
+      reelsMock.fetchImageById.mockResolvedValue({
+        id: 'z2',
+        url: 'u',
+        thumbnailUrl: 't',
+        metadata: {
+          visiblePeople: [person],
+          dateTime: '',
+          userName: '',
+          userAddress: '',
+          realm: '',
+          scene: { name: '', location: { x: '0', y: '0' } }
+        }
+      })
+      reelsMock.enrichWearables.mockResolvedValueOnce([{ ...person, wearablesParsed: [] }])
+      reelsMock.fetchProfileFaces.mockResolvedValueOnce(new Map([['0xabc', 'face256.png']]))
+      const { result } = renderHook(() => useReelImageById('z2'))
+      await waitFor(() => expect(result.current.isLoading).toBe(false))
+      expect(result.current.image?.metadata.visiblePeople[0]).toMatchObject({
+        userAddress: '0xABC',
+        faceUrl: 'face256.png'
+      })
+    })
   })
 })

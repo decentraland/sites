@@ -1,8 +1,10 @@
 import { type FC, type ReactNode, useCallback, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { type ButtonProps, DownloadModal, JumpInIcon, launchDesktopApp } from 'decentraland-ui2'
+import { mapEnvToDclenv } from '../../../config/dclenv'
 import { getEnv } from '../../../config/env'
-import { buildDeepLinkOptions } from '../../../features/jump/jump.helpers'
+import { buildDeepLinkOptions } from '../../../features/places/places.helpers'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../../../modules/downloadConstants'
@@ -27,11 +29,14 @@ const JumpInButton: FC<JumpInButtonProps> = ({
   color = 'primary',
   variant = 'contained'
 }) => {
+  const [searchParams] = useSearchParams()
   const [, advancedUserAgent] = useAdvancedUserAgentData()
   const { track } = useAnalytics()
   const formatMessage = useFormatMessage()
   const { hasValidIdentity } = useAuthIdentity()
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false)
+
+  const explorerEnv = searchParams.get('dclenv') ?? mapEnvToDclenv(searchParams.get('env'))
 
   const onboardingUrl = getEnv('ONBOARDING_URL') ?? ''
   const downloadUrl = getEnv('DOWNLOAD_URL') ?? DOWNLOAD_URLS.windows
@@ -63,7 +68,7 @@ const JumpInButton: FC<JumpInButtonProps> = ({
     track(SegmentEvent.GO_TO_EXPLORER, { position, realm, osName, arch })
 
     try {
-      const launched = await launchDesktopApp(buildDeepLinkOptions(position, realm))
+      const launched = await launchDesktopApp(buildDeepLinkOptions(position, realm, explorerEnv))
       if (!launched) {
         track(SegmentEvent.CLICK, { event: SegmentEvent.CLIENT_NOT_INSTALLED, os: osName, arch })
         openDownloadFallback()
@@ -71,7 +76,7 @@ const JumpInButton: FC<JumpInButtonProps> = ({
     } catch {
       openDownloadFallback()
     }
-  }, [isMobile, downloadOs, track, position, realm, osName, arch, openDownloadFallback])
+  }, [isMobile, downloadOs, track, position, realm, explorerEnv, osName, arch, openDownloadFallback])
 
   const closeDownloadModal = useCallback(() => setDownloadModalOpen(false), [])
 

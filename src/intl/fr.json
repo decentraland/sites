@@ -927,6 +927,16 @@
         "title": "Page introuvable",
         "subtitle": "La page que vous recherchez n’existe pas.",
         "go_home": "Retour à l’accueil"
+      },
+      "errors": {
+        "unknown": "Impossible d’enregistrer. Veuillez réessayer.",
+        "network": "Impossible de joindre le service de stockage. Vérifiez votre connexion et réessayez.",
+        "signed_fetch": "Impossible de signer la requête. Déconnectez-vous et reconnectez-vous, puis réessayez.",
+        "unauthorized": "Vous n’êtes pas autorisé à modifier le stockage de ce monde. Seul le propriétaire du monde ou le déployeur de la scène peut modifier les variables d’environnement.",
+        "not_found": "Ce monde ou cette scène est introuvable dans le service de stockage.",
+        "payload_too_large": "La valeur est trop volumineuse pour cet espace de stockage.",
+        "rate_limited": "Trop de requêtes. Patientez un instant et réessayez.",
+        "server": "Le service de stockage a renvoyé une erreur. Réessayez dans quelques minutes."
       }
     },
     "report": {
@@ -988,7 +998,15 @@
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
-    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again"
+    "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "repeat_interval": "Répéter tous les",
+    "repeat_on": "Répéter le",
+    "interval_chip_week_singular": "1 Semaine",
+    "interval_chip_week_plural": "{count} Semaines",
+    "error_repeat_interval_invalid": "L'intervalle de répétition doit être un nombre entier entre 1 et 4",
+    "error_repeat_days_required": "Sélectionnez au moins un jour",
+    "error_start_date_not_in_repeat_days": "Le jour de la semaine de la date de début doit faire partie des jours sélectionnés",
+    "vertical_recommended_size": "Taille recommandée : 716 × 1814 px"
   },
   "community": {
     "global": {
@@ -1037,5 +1055,39 @@
       "members": "Membres",
       "upcoming_events": "Événements à venir"
     }
+  },
+  "event_detail": {
+    "recurrent_daily": "Se répète tous les jours",
+    "recurrent_weekly": "Se répète chaque semaine",
+    "recurrent_monthly": "Se répète chaque mois",
+    "recurrent_yearly": "Se répète chaque année",
+    "recurrent_every_n_days": "Tous les {count} jours",
+    "recurrent_every_n_weeks": "Toutes les {count} semaines",
+    "recurrent_every_n_months": "Tous les {count} mois",
+    "recurrent_every_n_years": "Tous les {count} ans",
+    "recurrent_on_days": "Se répète les {days}",
+    "recurrent_on_days_every_n_weeks": "Toutes les {count} semaines les {days}",
+    "hero_every_day": "Tous les jours",
+    "hero_every_weekday": "Tous les {weekday}",
+    "hero_every_month": "Tous les mois",
+    "hero_every_year": "Tous les ans",
+    "hero_every_days": "Tous les {days}",
+    "location_with_coords": "{place} ({x},{y})",
+    "location_coords": "({x},{y})",
+    "schedule_starting": "À partir du {schedule}"
+  },
+  "event_time": {
+    "utc_same_day": "{time} UTC",
+    "utc_next_day": "{time} UTC (+1 jour)",
+    "utc_previous_day": "{time} UTC (-1 jour)",
+    "utc_range_same_day": "{start} – {end} UTC",
+    "utc_range_with_dates": "{startDate}, {start} – {endDate}, {end} UTC",
+    "form_utc_preview": "{time} UTC",
+    "form_utc_preview_next_day": "{time} UTC (+1 jour)",
+    "form_utc_preview_previous_day": "{time} UTC (-1 jour)"
+  },
+  "upcoming": {
+    "today_at": "Aujourd'hui {time}",
+    "tomorrow_at": "Demain {time}"
   }
 }

@@ -18,30 +18,63 @@ export default defineConfig(({ command, mode }) => {
       react(),
       nodePolyfills({
         include: ['buffer']
-      })
+      }),
+      // @mui/icons-material@5 has no `exports` field, so subpath imports like
+      // `@mui/icons-material/ChevronLeft` resolve to the CJS file. Vite 8's
+      // pre-bundler emits `export default require_X()` for those, leaking the
+      // whole CJS exports object (`{ __esModule, default }`) instead of the
+      // icon component. Rewrite to the ESM build that ships in the same package.
+      {
+        name: 'mui-icons-esm-redirect',
+        enforce: 'pre',
+        resolveId(source) {
+          if (source.startsWith('@mui/icons-material/') && !source.startsWith('@mui/icons-material/esm/')) {
+            return this.resolve(source.replace('@mui/icons-material/', '@mui/icons-material/esm/'))
+          }
+          return null
+        }
+      }
     ],
     build: {
       target: 'esnext',
       sourcemap: 'hidden',
+      // Vite preloads every chunk transitively reachable from the entry,
+      // including dynamic imports. The vendors below are only consumed inside
+      // already-lazy chunks (Sentry/crypto on form submit, ajv inside RTK
+      // schema validation, ua-parser inside analytics, LiveKit only inside
+      // the /cast/* routes). Stripping them from the modulepreload list keeps
+      // the homepage and /whats-on critical path free of ~350 KB of gzipped
+      // JS that would otherwise be eagerly fetched.
+      modulePreload: {
+        resolveDependencies: (_filename, deps) => deps.filter(dep => !/vendor-(sentry|crypto|schemas|ua|livekit)/.test(dep))
+      },
       rollupOptions: {
         output: {
-          /* eslint-disable @typescript-eslint/naming-convention */
-          manualChunks: {
-            'vendor-sentry': [
-              '@sentry/browser',
-              '@sentry/core',
-              '@sentry-internal/replay',
-              '@sentry-internal/browser-utils',
-              '@sentry-internal/feedback'
-            ],
-            'vendor-schemas': ['ajv'],
-            'vendor-crypto': ['@dcl/crypto', 'eth-connect'],
-            'vendor-intl': ['@formatjs/icu-messageformat-parser', '@formatjs/intl'],
-            'vendor-ua': ['ua-parser-js'],
-            'vendor-router': ['react-router'],
-            'vendor-livekit': ['livekit-client', '@livekit/components-react', '@livekit/components-styles']
+          manualChunks: (id: string) => {
+            if (
+              id.includes('node_modules/@sentry/browser') ||
+              id.includes('node_modules/@sentry/core') ||
+              id.includes('node_modules/@sentry-internal/replay') ||
+              id.includes('node_modules/@sentry-internal/browser-utils') ||
+              id.includes('node_modules/@sentry-internal/feedback')
+            ) {
+              return 'vendor-sentry'
+            }
+            if (id.includes('node_modules/ajv')) return 'vendor-schemas'
+            if (id.includes('node_modules/@dcl/crypto') || id.includes('node_modules/eth-connect')) return 'vendor-crypto'
+            if (id.includes('node_modules/@formatjs/icu-messageformat-parser') || id.includes('node_modules/@formatjs/intl'))
+              return 'vendor-intl'
+            if (id.includes('node_modules/ua-parser-js')) return 'vendor-ua'
+            if (id.includes('node_modules/react-router')) return 'vendor-router'
+            // Keep the livekit JS deps grouped but let CSS (@livekit/components-styles)
+            // ride with the importing cast chunk. When CSS sits inside a manualChunk
+            // Vite injects a top-level <link rel="stylesheet"> for it on every page,
+            // even though the JS is lazy — which would render-block /, /brand, /terms…
+            if (id.includes('node_modules/livekit-client') || id.includes('node_modules/@livekit/components-react')) {
+              return 'vendor-livekit'
+            }
+            return null
           }
-          /* eslint-enable @typescript-eslint/naming-convention */
         }
       }
     },

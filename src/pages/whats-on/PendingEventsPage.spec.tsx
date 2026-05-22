@@ -3,11 +3,15 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMockEvent } from '../../__test-utils__/factories'
 import type { EventDetailModalProps } from '../../components/whats-on/EventDetailModal/EventDetailModal.types'
-import type { EventEntry } from '../../features/whats-on-events/events.types'
+import type { EventEntry } from '../../features/events/events.types'
 /* eslint-disable-next-line @typescript-eslint/no-require-imports */
 const { PendingEventsPage } = require('./PendingEventsPage')
 
 const mockUseGetAdminEventsQuery = jest.fn()
+const mockApprove = jest.fn()
+const mockReject = jest.fn()
+const approveLoading = false
+const rejectLoading = false
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
@@ -26,10 +30,20 @@ jest.mock('../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ identity: { authChain: [] }, hasValidIdentity: true, address: '0xadmin' })
 }))
 
-jest.mock('../../features/whats-on/admin/admin.client', () => ({
+jest.mock('../../features/events/events.admin.client', () => ({
   useGetAdminEventsQuery: (...args: unknown[]) => mockUseGetAdminEventsQuery(...args),
-  useApproveEventMutation: () => [jest.fn(), { isLoading: false }],
-  useRejectEventMutation: () => [jest.fn(), { isLoading: false }]
+  useApproveEventMutation: () => [
+    (args: unknown) => ({
+      unwrap: () => mockApprove(args)
+    }),
+    { isLoading: approveLoading }
+  ],
+  useRejectEventMutation: () => [
+    (args: unknown) => ({
+      unwrap: () => mockReject(args)
+    }),
+    { isLoading: rejectLoading }
+  ]
 }))
 
 jest.mock('../../components/whats-on/EventDetailModal', () => ({
@@ -38,6 +52,16 @@ jest.mock('../../components/whats-on/EventDetailModal', () => ({
       <button type="button" onClick={onClose}>
         close-modal
       </button>
+      {adminActions && (
+        <>
+          <button type="button" onClick={adminActions.onApprove}>
+            approve
+          </button>
+          <button type="button" onClick={adminActions.onReject}>
+            reject
+          </button>
+        </>
+      )}
     </div>
   )
 }))
@@ -57,7 +81,25 @@ jest.mock('../../components/whats-on/PendingEventCard', () => ({
 }))
 
 jest.mock('../../components/whats-on/RejectEventModal', () => ({
-  RejectEventModal: ({ open }: { open: boolean }) => (open ? <div data-testid="reject-event-modal" /> : null)
+  RejectEventModal: ({
+    open,
+    onSubmit,
+    onClose
+  }: {
+    open: boolean
+    onSubmit: (payload: { reasons: string[]; notes: string }) => void
+    onClose: () => void
+  }) =>
+    open ? (
+      <div data-testid="reject-event-modal">
+        <button type="button" onClick={() => onSubmit({ reasons: ['invalid'], notes: '' })}>
+          submit-reject
+        </button>
+        <button type="button" onClick={onClose}>
+          close-reject
+        </button>
+      </div>
+    ) : null
 }))
 
 jest.mock('decentraland-ui2', () => ({
@@ -179,6 +221,78 @@ describe('PendingEventsPage', () => {
 
       expect(screen.queryByTestId('event-detail-modal')).not.toBeInTheDocument()
       expect(screen.getByTestId('location-search').textContent).toBe('?filter=mine')
+    })
+  })
+
+  describe('when the admin clicks Approve', () => {
+    beforeEach(() => {
+      const pending = createMockEvent({
+        id: 'ev-pending',
+        name: 'Pending hangout',
+        approved: false,
+        rejected: false,
+        finish_at: FAR_FUTURE
+      })
+      mockUseGetAdminEventsQuery.mockReturnValue({ data: [pending], isSuccess: true, refetch: jest.fn() })
+    })
+
+    it('should call approve and show the success snackbar', async () => {
+      mockApprove.mockResolvedValueOnce(undefined)
+      const user = userEvent.setup()
+      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+
+      await user.click(screen.getByRole('button', { name: 'approve' }))
+
+      expect(mockApprove).toHaveBeenCalledWith({ eventId: 'ev-pending', identity: { authChain: [] } })
+      expect(screen.getByRole('alert')).toHaveTextContent('whats_on_admin.pending_events.approve_success')
+    })
+
+    it('should show the error snackbar when approve rejects', async () => {
+      mockApprove.mockRejectedValueOnce(new Error('boom'))
+      jest.spyOn(console, 'error').mockImplementation(() => undefined)
+      const user = userEvent.setup()
+      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+
+      await user.click(screen.getByRole('button', { name: 'approve' }))
+
+      expect(screen.getByRole('alert')).toHaveTextContent('whats_on_admin.pending_events.action_error')
+    })
+  })
+
+  describe('when the admin clicks Reject and submits a reason', () => {
+    beforeEach(() => {
+      const pending = createMockEvent({
+        id: 'ev-pending',
+        name: 'Pending hangout',
+        approved: false,
+        rejected: false,
+        finish_at: FAR_FUTURE
+      })
+      mockUseGetAdminEventsQuery.mockReturnValue({ data: [pending], isSuccess: true, refetch: jest.fn() })
+    })
+
+    it('should open the RejectEventModal and call reject with a built reason', async () => {
+      mockReject.mockResolvedValueOnce(undefined)
+      const user = userEvent.setup()
+      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+
+      await user.click(screen.getByRole('button', { name: 'reject' }))
+      expect(screen.getByTestId('reject-event-modal')).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'submit-reject' }))
+      expect(mockReject).toHaveBeenCalledWith(expect.objectContaining({ eventId: 'ev-pending', identity: { authChain: [] } }))
+    })
+
+    it('should show the error snackbar when reject rejects', async () => {
+      mockReject.mockRejectedValueOnce(new Error('boom'))
+      jest.spyOn(console, 'error').mockImplementation(() => undefined)
+      const user = userEvent.setup()
+      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+
+      await user.click(screen.getByRole('button', { name: 'reject' }))
+      await user.click(screen.getByRole('button', { name: 'submit-reject' }))
+
+      expect(screen.getByRole('alert')).toHaveTextContent('whats_on_admin.pending_events.action_error')
     })
   })
 })

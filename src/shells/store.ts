@@ -1,15 +1,16 @@
 import { useDispatch, useSelector } from 'react-redux'
 import type { TypedUseSelectorHook } from 'react-redux'
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
-import { blogReducer } from '../features/blog/blog.slice'
-import { adminClient } from '../features/whats-on/admin'
-import { eventsClient } from '../features/whats-on-events/events.client'
-import { cmsClient } from '../services/blogClient'
+import { blogReducer } from '../features/cms/cms.slice'
+import { adminClient } from '../features/events/events.admin.client'
+import { eventsClient } from '../features/events/events.client'
 import { cast2Client } from '../services/cast2Client'
+import { cmsClient } from '../services/cmsClient'
 import { placesClient } from '../services/placesClient'
 import { socialClient } from '../services/socialClient'
 import { storageClient } from '../services/storageClient'
 import { subgraphClient } from '../services/subgraphClient'
+import { createJumpEventsListenerMiddleware } from './jumpEvents.listeners'
 import { createWhatsOnAdminListenerMiddleware } from './whatsOnAdmin.listeners'
 
 const rootReducer = combineReducers({
@@ -28,7 +29,7 @@ const store = configureStore({
   reducer: rootReducer,
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware()
-      .prepend(createWhatsOnAdminListenerMiddleware().middleware)
+      .prepend(createWhatsOnAdminListenerMiddleware().middleware, createJumpEventsListenerMiddleware().middleware)
       .concat(
         eventsClient.middleware,
         adminClient.middleware,

@@ -20,10 +20,10 @@ import {
   TextField
 } from 'decentraland-ui2'
 import { AdminPermissionsModal } from '../../components/whats-on/AdminPermissionsModal'
+import { useListAdminsQuery, useUpdateAdminPermissionsMutation } from '../../features/events/events.admin.client'
+import { AdminPermission } from '../../features/events/events.admin.types'
+import type { AdminProfileSettings } from '../../features/events/events.admin.types'
 import { useGetProfileNames } from '../../features/profile/profile.client'
-import { useListAdminsQuery, useUpdateAdminPermissionsMutation } from '../../features/whats-on/admin/admin.client'
-import { AdminPermission } from '../../features/whats-on/admin/admin.types'
-import type { AdminProfileSettings } from '../../features/whats-on/admin/admin.types'
 import { useAdminPermissions } from '../../hooks/useAdminPermissions'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useProfileAvatar } from '../../hooks/useProfileAvatar'

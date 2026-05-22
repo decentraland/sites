@@ -4,7 +4,7 @@ const jestConfig: Config = {
   testEnvironment: 'jsdom',
   watchman: false,
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  testMatch: ['<rootDir>/src/**/*.test.ts', '<rootDir>/src/**/*.spec.ts', '<rootDir>/src/**/*.spec.tsx'],
+  testMatch: ['<rootDir>/src/**/*.test.ts', '<rootDir>/src/**/*.spec.ts', '<rootDir>/src/**/*.spec.tsx', '<rootDir>/api/**/*.spec.ts'],
   transform: {
     ['^.+\\.tsx?$']: [
       'ts-jest',
@@ -20,6 +20,8 @@ const jestConfig: Config = {
   moduleNameMapper: {
     '\\.(webp|png|jpg|jpeg|gif|svg)$': '<rootDir>/src/__mocks__/fileMock.js'
   },
+  coveragePathIgnorePatterns: ['/node_modules/', '/src/__test-utils__/', '/src/__mocks__/', '/src/setupTests.ts'],
+  globalSetup: '<rootDir>/src/__test-utils__/jestGlobalSetup.ts',
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
   testEnvironmentOptions: {}
 }

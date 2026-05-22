@@ -1,4 +1,4 @@
-import type { JumpPlace } from '../../../features/jump'
+import type { JumpPlace } from '../../../features/places'
 import { parseCoordinates } from '../../../utils/whatsOnUrl'
 import type { ModalPlaceData } from './PlaceDetailModal.types'
 

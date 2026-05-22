@@ -9,7 +9,7 @@ import { ConfirmDialog } from '../../components/storage/ConfirmDialog'
 import { EnvAddDialog, EnvEditDialog } from '../../components/storage/EnvDialogs'
 import { KeyTable } from '../../components/storage/KeyTable'
 import { StorageLayout } from '../../components/storage/StorageLayout'
-import { useClearEnvMutation, useDeleteEnvMutation, useListEnvKeysQuery } from '../../features/storage'
+import { getStorageErrorStatus, useClearEnvMutation, useDeleteEnvMutation, useListEnvKeysQuery } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
@@ -94,7 +94,7 @@ function EnvPage() {
         open={addOpen}
         onClose={() => setAddOpen(false)}
         onSuccess={() => track(SegmentEvent.STORAGE_ENV_SET_SUCCESS)}
-        onError={() => track(SegmentEvent.STORAGE_ENV_SET_FAILURE)}
+        onError={error => track(SegmentEvent.STORAGE_ENV_SET_FAILURE, { errorStatus: getStorageErrorStatus(error) ?? 'unknown' })}
         identity={identity}
         realm={realm}
         position={position}
@@ -105,7 +105,7 @@ function EnvPage() {
           keyName={editKey}
           onClose={() => setEditKey(null)}
           onSuccess={() => track(SegmentEvent.STORAGE_ENV_SET_SUCCESS)}
-          onError={() => track(SegmentEvent.STORAGE_ENV_SET_FAILURE)}
+          onError={error => track(SegmentEvent.STORAGE_ENV_SET_FAILURE, { errorStatus: getStorageErrorStatus(error) ?? 'unknown' })}
           identity={identity}
           realm={realm}
           position={position}

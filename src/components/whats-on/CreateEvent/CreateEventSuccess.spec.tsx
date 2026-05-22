@@ -53,10 +53,16 @@ describe('CreateEventSuccess', () => {
       expect(screen.getByTestId('check-circle')).toContainElement(screen.getByTestId('check-icon'))
     })
 
-    it('should render the translated success message', () => {
+    it('should render the create success message by default', () => {
       render(<CreateEventSuccess />)
 
       expect(screen.getByTestId('success-message')).toHaveTextContent('create_event.success_message')
+    })
+
+    it('should render the edit success message when mode is edit', () => {
+      render(<CreateEventSuccess mode="edit" />)
+
+      expect(screen.getByTestId('success-message')).toHaveTextContent('create_event.edit_success_message')
     })
 
     it('should render the back-to-explore secondary button', () => {
@@ -83,12 +89,12 @@ describe('CreateEventSuccess', () => {
   })
 
   describe('when the my-events button is clicked', () => {
-    it('should navigate to /whats-on with the my tab activated', () => {
+    it('should navigate to /whats-on with the my tab activated via query param', () => {
       render(<CreateEventSuccess />)
 
       fireEvent.click(screen.getByTestId('primary-button'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/whats-on', { state: { activeTab: 'my' } })
+      expect(mockNavigate).toHaveBeenCalledWith('/whats-on?tab=my')
     })
   })
 

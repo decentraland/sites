@@ -6,7 +6,7 @@ import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react'
 const placesClient = createApi({
   reducerPath: 'placesClient',
   baseQuery: fakeBaseQuery(),
-  tagTypes: ['Place', 'World', 'SceneMetadata'],
+  tagTypes: ['Place', 'World', 'SceneMetadata', 'JumpEvent'],
   keepUnusedDataFor: 300,
   refetchOnFocus: false,
   refetchOnReconnect: false,

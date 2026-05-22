@@ -492,8 +492,9 @@ const LandingNavbar = memo(function LandingNavbar({
             src={assetUrl('/dcl_name.svg')}
             alt="Decentraland"
             className="desktop-only"
+            width={160}
+            height={20}
             style={{
-              height: 20,
               opacity: scrolled ? 0 : 1,
               transition: 'opacity 0.3s ease',
               pointerEvents: scrolled ? 'none' : 'auto'

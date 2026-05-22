@@ -1,10 +1,9 @@
-# name: Lighthouse Audit
-# Temporarily disabled — takes too long during active development
-#
-# on:
-#   pull_request:
-#     types: [opened, synchronize, reopened]
-on: workflow_dispatch
+name: Lighthouse Audit
+
+# Triggered by commenting "/lighthouse" on a pull request.
+on:
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: read
@@ -12,14 +11,57 @@ permissions:
 
 jobs:
   lighthouse:
+    if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, '/lighthouse') }}
     runs-on: ubuntu-latest
     continue-on-error: true
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Verify commenter has write access
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { data: { permission } } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: context.payload.comment.user.login,
+            })
+            const allowed = ['write', 'maintain', 'admin']
+            if (!allowed.includes(permission)) {
+              core.setFailed(`@${context.payload.comment.user.login} lacks write access (current: ${permission}); aborting Lighthouse run.`)
+            }
+
+      - name: React to the trigger comment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'rocket'
+            })
+
+      - name: Resolve PR head ref
+        id: pr
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            })
+            core.setOutput('sha', pr.data.head.sha)
+            core.setOutput('ref', pr.data.head.ref)
+            core.setOutput('repo', pr.data.head.repo.full_name)
+
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # @v4.3.0
+        with:
+          repository: ${{ steps.pr.outputs.repo }}
+          ref: ${{ steps.pr.outputs.sha }}
 
       - name: Use Node.js 24.x
-        uses: actions/setup-node@v4.0.1
+        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # @v4.0.1
         with:
           node-version: 24.x
           cache: 'npm'
@@ -36,6 +78,9 @@ jobs:
 
       - name: Start static server
         run: |
+          # Copy the serve config into dist/ so `serve` finds it via its default
+          # lookup (it only reads serve.json next to the served directory).
+          cp scripts/lighthouse-serve.json ./dist/serve.json
           npx serve@14 ./dist --single --listen 8080 &
           timeout 30 bash -c 'until curl -sf http://localhost:8080 > /dev/null; do sleep 1; done'
 
@@ -50,22 +95,30 @@ jobs:
             SAFE_NAME=$(echo "$route" | sed 's/\//_/g' | sed 's/^_//')
             [ -z "$SAFE_NAME" ] && SAFE_NAME="root"
 
+            # is-on-https fails because the audit URL is http://localhost; this is
+            # a property of the local harness, not the deployed bundle. inspector-
+            # issues surfaces deprecation/CORS warnings raised by third-party
+            # scripts (Sentry, Segment, Contentsquare) — they're noise we can't
+            # action from this repo. Both audits are skipped here so the score
+            # reflects the bundle we ship.
             npx lighthouse "http://localhost:8080${route}" \
               --output=json \
               --output-path="./lighthouse-results/${SAFE_NAME}.json" \
               --chrome-flags="--headless --no-sandbox --disable-gpu" \
+              --skip-audits=is-on-https,inspector-issues \
               --quiet \
               || true
           done
 
       - name: Parse Lighthouse results
+        env:
+          HEAD_SHA: ${{ steps.pr.outputs.sha }}
         run: |
-          COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
-          SHORT_SHA="${COMMIT_SHA:0:7}"
+          SHORT_SHA="${HEAD_SHA:0:7}"
 
           BODY="<!-- lighthouse-audit-comment -->"
           BODY+=$'\n'"## Lighthouse Audit Results"$'\n'
-          BODY+=$'\n'"**Commit:** \`${SHORT_SHA}\` (${COMMIT_SHA})"$'\n'
+          BODY+=$'\n'"**Commit:** \`${SHORT_SHA}\` (${HEAD_SHA})"$'\n'
           BODY+=$'\n'"### Scores"$'\n'
           BODY+=$'\n'"| Route | Performance | Accessibility | Best Practices | SEO |"
           BODY+=$'\n'"|-------|:-----------:|:-------------:|:--------------:|:---:|"
@@ -123,8 +176,8 @@ jobs:
       - name: Post or update PR comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.issue.number }}
         run: |
-          PR_NUMBER="${{ github.event.pull_request.number }}"
           MARKER="<!-- lighthouse-audit-comment -->"
           BODY=$(cat ./lighthouse-comment.md)
 

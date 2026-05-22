@@ -33,7 +33,7 @@ describe('useStorageRedirect', () => {
     jest.resetAllMocks()
   })
 
-  describe('when the identity is missing', () => {
+  describe('when the identity is missing and the wallet is disconnected', () => {
     it('should redirect to auth preserving realm and position', () => {
       mockedAuth.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
       renderHook(() => useStorageRedirect())
@@ -41,9 +41,21 @@ describe('useStorageRedirect', () => {
     })
   })
 
+  describe('when there is an address but no valid identity (half-signed-in)', () => {
+    it('should redirect to auth so signed-fetch operations can succeed (issue #505)', () => {
+      mockedAuth.mockReturnValue({
+        identity: undefined,
+        hasValidIdentity: false,
+        address: '0xabc' as `0x${string}`
+      })
+      renderHook(() => useStorageRedirect())
+      expect(mockedRedirect).toHaveBeenCalledWith('/storage/env', { realm: 'foo', position: '0,0' })
+    })
+  })
+
   describe('when the identity is present', () => {
     it('should not redirect and report ready', () => {
-      mockedAuth.mockReturnValue({ identity: undefined, hasValidIdentity: true, address: '0xabc' as `0x${string}` })
+      mockedAuth.mockReturnValue({ identity: {} as never, hasValidIdentity: true, address: '0xabc' as `0x${string}` })
       const { result } = renderHook(() => useStorageRedirect())
       expect(mockedRedirect).not.toHaveBeenCalled()
       expect(result.current.isReady).toBe(true)

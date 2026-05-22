@@ -1,20 +1,21 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import { useTranslation } from '@dcl/hooks'
 import { EventSmallCard, Tooltip } from 'decentraland-ui2'
-import type { EventEntry } from '../../../features/whats-on-events'
+import type { EventEntry } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCardActions } from '../../../hooks/useCardActions'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
+import { optimizedImageUrl } from '../../../utils/imageUrl'
 import { getRelativeTimeLabel } from '../../../utils/whatsOnTime'
 import { resolveEventRealm } from '../../../utils/whatsOnUrl'
 import { CalendarAddIcon } from '../common/CalendarAddIcon'
 import { ActionButton, ActionTextButton, ActionTextLabel, CalendarIcon, CopyIcon } from '../common/CardActions.styled'
 import { RemindMeButton } from '../common/RemindMeButton'
 import { RemindMeIcon } from '../common/RemindMeIcon'
-import { MobileActionButton } from './UpcomingCard.styled'
+import { EventSmallCardWrapper, MobileActionButton } from './UpcomingCard.styled'
 
 const UpcomingCard = memo(function UpcomingCard({
   event,
@@ -42,6 +43,11 @@ const UpcomingCard = memo(function UpcomingCard({
   const handleClick = useCallback(() => {
     onClick(event)
   }, [onClick, event])
+
+  const optimizedImage = useMemo(() => {
+    const url = optimizedImageUrl(event.image, { width: 640 })
+    return url || undefined
+  }, [event.image])
 
   const mobileAction = hasValidIdentity ? (
     <MobileActionButton onClick={handleRemindToggle} disabled={isRemindLoading} aria-label={t('upcoming.remind_me')}>
@@ -85,17 +91,19 @@ const UpcomingCard = memo(function UpcomingCard({
   )
 
   return (
-    <EventSmallCard
-      image={event.image ?? undefined}
-      title={event.name}
-      creatorName={creatorName}
-      creatorAvatarUrl={avatarFace}
-      timeLabel={getRelativeTimeLabel(event.start_at, t)}
-      onClick={handleClick}
-      disableHover={disableHover}
-      action={mobileAction}
-      hoverActions={desktopHoverActions}
-    />
+    <EventSmallCardWrapper>
+      <EventSmallCard
+        image={optimizedImage}
+        title={event.name}
+        creatorName={creatorName}
+        creatorAvatarUrl={avatarFace}
+        timeLabel={getRelativeTimeLabel(event.next_start_at || event.start_at, t)}
+        onClick={handleClick}
+        disableHover={disableHover}
+        action={mobileAction}
+        hoverActions={desktopHoverActions}
+      />
+    </EventSmallCardWrapper>
   )
 })
 

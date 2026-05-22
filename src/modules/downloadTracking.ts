@@ -2,7 +2,10 @@ import { DownloadPlace, SegmentEvent } from './segment'
 import type { DownloadTrackFn, DownloadTracker, DownloadTrackerContext } from './downloadTracking.types'
 
 const buildBasePayload = (ctx: DownloadTrackerContext): Record<string, unknown> => {
+  // ctx.extra goes first so the core schema fields below take precedence on
+  // any accidental key collision (e.g. an extra incorrectly named `os`).
   const payload: Record<string, unknown> = {
+    ...(ctx.extra ?? {}),
     href: ctx.href,
     os: ctx.os,
     arch: ctx.arch,

@@ -1,4 +1,4 @@
-import { styled } from 'decentraland-ui2'
+import { Box, styled } from 'decentraland-ui2'
 
 const MobileActionButton = styled('button')(({ theme }) => ({
   display: 'none',
@@ -21,4 +21,8 @@ const MobileActionButton = styled('button')(({ theme }) => ({
   }
 }))
 
-export { MobileActionButton }
+const EventSmallCardWrapper = styled(Box)({
+  width: '100%'
+})
+
+export { EventSmallCardWrapper, MobileActionButton }

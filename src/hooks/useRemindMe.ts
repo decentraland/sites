@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useToggleAttendeeMutation } from '../features/whats-on-events'
+import { useToggleAttendeeMutation } from '../features/events'
 import { redirectToAuth } from '../utils/authRedirect'
 import { useAuthIdentity } from './useAuthIdentity'
 

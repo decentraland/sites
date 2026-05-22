@@ -25,8 +25,7 @@ const MainContainer = styled(Box)(({ theme }) => ({
     padding: theme.spacing(5, 3, 0, 3)
   },
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(0, 0, 0, 0),
-    background: '#1A0A2E'
+    padding: theme.spacing(0, 0, 0, 0)
   }
 }))
 

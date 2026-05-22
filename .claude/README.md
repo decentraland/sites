@@ -15,13 +15,16 @@ Project-level configuration for Claude Code working in this repo. Every hook, sk
 ## Skills
 
 - `add-i18n-key` — adding/editing translation keys with 6-locale parity (rule 9).
-- `add-route` — placing a new route on the correct shell (lightweight vs `DappsShell`).
+- `add-route` — placing a new route on the correct tier (Layout-less, lightweight, or `DappsShell`).
 - `avatar-background-color` — applying ADR-292's deterministic background color on every avatar surface.
+- `coverage-guard` — checks the 95% coverage floor (statements / lines / functions, rule 6) and dispatches `coverage-keeper` on the worst files when below.
+- `migrate-dapp` — playbook for absorbing a standalone Decentraland dapp (whats-on, blog, jump, social, cast, storage, reels) into this SPA as a heavy `DappsShell` route.
 - `pre-pr-review` — runs the full pre-PR gate before `gh pr create`.
 
 ## Agents
 
 - `code-reviewer` — repo-aware diff review against rules 1-25 + security checklist.
+- `coverage-keeper` — writes Jest specs to bring listed files above the 95% floor (rule 6) without violating rules 17 / 18 / 22.
 - `i18n-auditor` — verifies locale parity and detects duplicate keys.
 - `route-architect` — designs new routes respecting the dual-shell boundary.
 
@@ -35,7 +38,9 @@ Registered in `.claude/settings.json`. Each one enforces a rule from `CLAUDE.md`
 | PreToolUse(Edit\|Write\|MultiEdit)  | `pre-write-warn-package-lock.sh` | Warns on direct edits to `package.json` / `package-lock.json`, and on edits to `src/config/env/{dev,stg,prd}.json` (these files ship to the client — secrets belong in Vercel env, not here).                                                                                                                                                                                                                                                                                                                                        |
 | PreToolUse(Edit\|Write\|MultiEdit)  | `pre-write-warn-classname.sh`    | Warns when `className=` is being introduced into a `.tsx` file under `src/`. Decentraland's styled-components convention forbids `className`-driven descendant selectors — every child gets its own styled component (CLAUDE.md > Coding conventions > Styled components).                                                                                                                                                                                                                                                           |
 | PostToolUse(Edit\|Write\|MultiEdit) | `post-edit-i18n-parity.sh`       | When `src/intl/en.json` changes, reminds about the 5 sibling locales (rule 9).                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| PostToolUse(Edit\|Write\|MultiEdit) | `post-edit-routes-readme.sh`     | When `src/App.tsx` changes, reminds to keep the route table in `README.md` ("What lives here") in sync in the same PR. See the `add-route` skill.                                                                                                                                                                                                                                                                                                                                                                                    |
 | SessionStart                        | `session-start.sh`               | Prints branch + key reminders into the session context.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Stop                                | `stop-coverage-guard.sh`         | When the session edited any `src/**` or `api/**` source/spec, reads `coverage/coverage-summary.json` and blocks the stop if statements / lines / functions are below 95% (rule 6). Emits the worst 10 files by uncovered statements and points at the `coverage-keeper` agent. No-op when no src/spec was touched. Branches are reported but not blocking (current floor ~85%).                                                                                                                                                      |
 
 Hooks require `jq` (Homebrew default on macOS). Missing `jq` → hooks no-op silently.
 

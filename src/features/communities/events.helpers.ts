@@ -1,10 +1,10 @@
 import { getEnv } from '../../config/env'
-import type { EventEntry } from '../whats-on-events'
+import type { EventEntry } from '../events'
 import type { CommunityEvent, CommunityEventsResponse } from './communities.types'
 import type { EventsApiResponse } from './events.helpers.types'
 
 // TODO(post-prod): the snake_case → camelCase mapping below duplicates the
-// shape conversions already performed in `src/features/whats-on-events/events.helpers.ts`.
+// shape conversions already performed in `src/features/events/events.helpers.ts`.
 // Once the social migration ships, extract the shared event-shape mapper into a single
 // helper consumed by both the whats-on and the communities event clients. Today they're
 // kept separate to scope the migration; the duplication is intentional but temporary.
@@ -37,6 +37,10 @@ function mapEventsApiResponse(response: EventsApiResponse): CommunityEventsRespo
           ['place_id']: placeId,
           ['recurrent_dates']: recurrentDates,
           ['recurrent_frequency']: recurrentFrequency,
+          ['recurrent_interval']: recurrentInterval,
+          ['recurrent_weekday_mask']: recurrentWeekdayMask,
+          ['recurrent_count']: recurrentCount,
+          ['recurrent_until']: recurrentUntil,
           ['rejection_reason']: rejectionReason,
           ['scene_name']: sceneName,
           ['total_attendees']: totalAttendees,
@@ -60,6 +64,10 @@ function mapEventsApiResponse(response: EventsApiResponse): CommunityEventsRespo
           placeId: placeId as string | null | undefined,
           recurrentDates: recurrentDates as string[] | undefined,
           recurrentFrequency: recurrentFrequency as string | null | undefined,
+          recurrentInterval: recurrentInterval as number | null | undefined,
+          recurrentWeekdayMask: recurrentWeekdayMask as number | null | undefined,
+          recurrentCount: recurrentCount as number | null | undefined,
+          recurrentUntil: recurrentUntil as string | null | undefined,
           rejectionReason: rejectionReason as string | null | undefined,
           sceneName: sceneName as string | undefined,
           totalAttendees: (totalAttendees as number) ?? 0,
@@ -117,6 +125,10 @@ function mapCommunityEventToEventEntry(event: CommunityEvent): EventEntry {
     trending: event.trending ?? false,
     recurrent: event.recurrent ?? false,
     recurrent_frequency: (event.recurrentFrequency ?? null) as EventEntry['recurrent_frequency'],
+    recurrent_interval: event.recurrentInterval ?? null,
+    recurrent_weekday_mask: event.recurrentWeekdayMask ?? null,
+    recurrent_count: event.recurrentCount ?? null,
+    recurrent_until: event.recurrentUntil ?? null,
     recurrent_dates: event.recurrentDates ?? [],
     contact: event.contact ?? null,
     details: event.details ?? null,

@@ -18,6 +18,7 @@ import microsoftLogo from '../../images/microsoft-logo.svg'
 import { createDownloadTracker } from '../../modules/downloadTracking'
 import type { DownloadTracker } from '../../modules/downloadTracking.types'
 import { calculateDownloadUrl } from '../../modules/downloadWithIdentity'
+import { collectClientFingerprint } from '../../modules/fingerprint'
 import { DownloadPlace, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
 import { streamOrFallback } from '../../modules/streamOrFallback'
 import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
@@ -167,6 +168,10 @@ const DownloadSuccess = memo(() => {
 
         const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserIdRef.current })
 
+        // Fingerprint snapshot used by the data team's server-side join to
+        // match this download with the launcher's first-run event from the
+        // same machine. Lives in `extra` so every event the tracker emits
+        // carries it without polluting the tracker's core schema.
         tracker = createDownloadTracker(deferredTrack, {
           place,
           href: downloadUrl,
@@ -176,7 +181,8 @@ const DownloadSuccess = memo(() => {
           anon_user_id: anonUserIdRef.current ?? undefined,
           // eslint-disable-next-line @typescript-eslint/naming-convention
           auth_state: authStateRef.current,
-          revisit: revisitNumber
+          revisit: revisitNumber,
+          extra: { ...(collectClientFingerprint() ?? {}) }
         })
 
         // Fire intent BEFORE the stream so a mid-stream tab close still
@@ -224,7 +230,8 @@ const DownloadSuccess = memo(() => {
             anon_user_id: anonUserIdRef.current ?? undefined,
             // eslint-disable-next-line @typescript-eslint/naming-convention
             auth_state: authStateRef.current,
-            revisit: revisitNumber
+            revisit: revisitNumber,
+            extra: { ...(collectClientFingerprint() ?? {}) }
           })
           fallbackTracker.failed(reason)
         }
@@ -258,6 +265,7 @@ const DownloadSuccess = memo(() => {
 
       const footerPlace = DownloadPlace.DOWNLOAD_SUCCESS_FOOTER
       let tracker: DownloadTracker | null = null
+      const fingerprint: Record<string, unknown> = { ...(collectClientFingerprint() ?? {}) }
 
       try {
         const { url, filename } = await calculateDownloadUrl({
@@ -278,7 +286,8 @@ const DownloadSuccess = memo(() => {
           anon_user_id: anonUserId ?? undefined,
           // eslint-disable-next-line @typescript-eslint/naming-convention
           auth_state: authState,
-          revisit: revisitNumber
+          revisit: revisitNumber,
+          extra: fingerprint
         })
 
         tracker.started()
@@ -312,7 +321,8 @@ const DownloadSuccess = memo(() => {
             anon_user_id: anonUserId ?? undefined,
             // eslint-disable-next-line @typescript-eslint/naming-convention
             auth_state: authState,
-            revisit: revisitNumber
+            revisit: revisitNumber,
+            extra: fingerprint
           })
           fallbackTracker.failed(reason)
         }

@@ -1,106 +1,98 @@
 # Sites
 
-Decentraland's main website. Single Vite SPA hosting the homepage, legal pages, download flow, `/whats-on/*` (events), and `/blog/*` (CMS posts). Module Federation was removed — what's on and blog are now native lazy-loaded route groups inside this repo.
+Decentraland's main website. Single Vite SPA — every absorbed dapp is a native lazy-loaded route group (Module Federation removed). See **Architecture: Dual Shell** below for the full route map.
 
 ## Architecture: Dual Shell
 
-Routes are split into two tiers to protect homepage Lighthouse performance:
+Routes are split into two tiers to protect homepage Lighthouse performance. A third "Layout-less" group exists for fullscreen experiences that intentionally bypass navbar+footer.
 
 ### Lightweight routes (main bundle, no Redux, no Web3)
 
-`/`, `/download`, `/download/creator-hub`, `/download/creator-hub-success`, `/invite/:referrer`, `/brand`, `/content`, `/ethics`, `/rewards-terms`, `/security`, `/privacy`, `/referral-terms`, `/terms`, `/help`, `/create`, `/discord`, `/press`, `/sign-in`.
+Inside `<Layout />` (navbar + footer):
+`/`, `/brand`, `/content`, `/ethics`, `/rewards-terms`, `/security`, `/privacy`, `/referral-terms`, `/terms`, `/help`, `/create`, `/download/creator-hub`, `/download/creator-hub-success`, `/discord`, `/press`, `/report`, `/report/success`, `/sign-in`.
+
+Outside `<Layout />` (no navbar, no footer — fullscreen UX):
+`/download`, `/download_success`, `/invite/:referrer`, `/reels`, `/reels/list/:address`, `/reels/:imageId`. These are placed BEFORE the `<Route element={<Layout />}>` block in `src/App.tsx`. Reels were migrated from the standalone `reels.decentraland.org` Gatsby app and the immersive UX is preserved by keeping them out of the shared layout.
 
 Provider tree (`src/main.tsx`):
 `StrictMode` > `DclThemeProvider(darkTheme)` > `LocaleProvider` > `DeferredAnalyticsProvider` > `App > BrowserRouter`.
 
-Data access on lightweight routes uses `useSyncExternalStore`-based clients (see `features/events/events.client.ts`, `features/profile/profile.client.ts`). No Redux store mounted for these routes.
+Data access on lightweight routes uses `useSyncExternalStore`-based clients (see `features/events/events.discovery.ts`, `features/profile/profile.client.ts`). No Redux store mounted for these routes.
 
 ### Heavy routes (`DappsShell`, lazy-loaded)
 
-`/whats-on`, `/whats-on/new-event`, `/blog`, `/blog/preview`, `/blog/search`, `/blog/sign-in`, `/blog/author/:authorSlug`, `/blog/:categorySlug`, `/blog/:categorySlug/:postSlug`.
+- **What's on**: `/whats-on`, `/whats-on/new-hangout`, `/whats-on/edit-hangout/:eventId`, `/whats-on/admin/pending-events`, `/whats-on/admin/users` (plus legacy `/whats-on/new-event` and `/whats-on/edit-event/:eventId` aliases that redirect into the hangout flow). `/events/*` and `/places/*` legacy paths from the standalone events/places sites redirect into `/whats-on` with deep-link params.
+- **Blog**: `/blog`, `/blog/preview`, `/blog/search`, `/blog/sign-in`, `/blog/author/:authorSlug`, `/blog/:categorySlug`, `/blog/:categorySlug/:postSlug`.
+- **Jump** (launcher deep-link handler): `/jump`, `/jump/places`, `/jump/places/invalid`, `/jump/events`, `/jump/events/invalid`, plus the `/jump/event` legacy alias used by production.
+- **Social** (communities): `/social/communities/:id`, `/social/*` (catch-all not-found).
+- **Cast** (LiveKit streaming, absorbed from `decentraland/cast2`): `/cast/s/:token`, `/cast/s/streaming`, `/cast/w/:worldName/parcel/:parcel`, `/cast/w/:location`, plus `/cast` index and `/cast/*` catch-all rendering `CastNotFoundPage`. Cast adds an extra `<CastLayout />` that provides LiveKit + Notification contexts and renders the toast stack.
+- **Storage** (storage-service-site): `/storage`, `/storage/select`, `/storage/env`, `/storage/scene`, `/storage/players`, `/storage/players/:address`, plus `/storage/*` not-found.
 
-These render as `<Outlet />` children of `src/shells/DappsShell.tsx`. The shell chunk is lazy-imported in `src/App.tsx` via `lazy(() => import('./shells/DappsShell'))` and boots the Redux store, the RTK Query RTK middleware, and blog-specific deps (contentful rich-text renderer, algoliasearch, dompurify) only when one of these routes is navigated to.
+These render as `<Outlet />` children of `src/shells/DappsShell.tsx`. The shell chunk is lazy-imported in `src/App.tsx` via `lazy(() => import('./shells/DappsShell'))` and boots the Redux store, the RTK Query middleware, and the heaviest deps (contentful rich-text renderer, dompurify, `livekit-client` + `@livekit/components-react` for cast) only when one of these routes is navigated to.
 
-**No Web3 providers.** Authentication on heavy routes uses the same localStorage-based `useAuthIdentity` hook as the navbar — whats-on signs mutations with `signedFetch(identity)`, blog reads CMS public endpoints and only needs identity for (Future) notifications/preview. No wagmi, magic-sdk, core-web3, or thirdweb — ~580-780KB saved vs. the federated predecessor.
+**No Web3 providers.** Authentication on heavy routes uses the same localStorage-based `useAuthIdentity` hook as the navbar — whats-on / social / storage sign mutations with `signedFetch(identity)`, blog reads CMS public endpoints, jump/cast can run without identity. No wagmi, magic-sdk, core-web3, or thirdweb — ~580-780KB saved vs. the federated predecessor.
 
-**Boundary rule:** code that runs on lightweight routes (anything reachable from `App.tsx` without going through `<DappsShell />`) must never `import` from `src/shells/`. That includes `src/components/Layout/*`, `src/components/LandingNavbar/*`, `src/components/LandingFooter/*`, all pages under `src/pages/*` except `src/pages/whats-on/*` and `src/pages/blog/*`, and any hook the navbar consumes. The ONLY legitimate reference to `src/shells/` from outside the shell itself is the `lazy()` import in `src/App.tsx`.
+**Boundary rule:** code that runs on lightweight routes (anything reachable from `App.tsx` without going through `<DappsShell />`) must never `import` from `src/shells/`. The lightweight tier covers everything under `src/pages/*` EXCEPT the heavy-route page directories: `src/pages/whats-on/*`, `src/pages/blog/*`, `src/pages/jump/*`, `src/pages/social/*`, `src/pages/cast/*`, `src/pages/storage/*`. The same applies to `src/components/Layout/*`, `src/components/LandingNavbar/*`, `src/components/LandingFooter/*`, and any hook the navbar consumes. The ONLY legitimate reference to `src/shells/` from outside the shell itself is the `lazy()` import in `src/App.tsx`.
 
-## Directory map
+## Directory map (top-level)
 
-| Path                            | Purpose                                                                                                                                                                                                                                                                                                              |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/App.tsx`                   | Router. Splits routes into lightweight (inside `<Layout />`) and heavy (inside `<DappsShell />`).                                                                                                                                                                                                                    |
-| `src/App.styled.ts`             | Shared `CenteredBox` styled component (used by App-level fallback + DappsShell fallback).                                                                                                                                                                                                                            |
-| `src/main.tsx`                  | Entry point. Mounts the lightweight provider tree.                                                                                                                                                                                                                                                                   |
-| `src/shells/`                   | `DappsShell.tsx` + `store.ts` — lazy-loaded Redux + RTK Query middleware. Bundle-isolated from the main chunk.                                                                                                                                                                                                       |
-| `src/pages/`                    | Page components. `whats-on/` and `blog/` subdirs for the absorbed apps.                                                                                                                                                                                                                                              |
-| `src/pages/index.tsx`           | Landing homepage (hero is prerendered by `scripts/prerender-hero.mjs`).                                                                                                                                                                                                                                              |
-| `src/components/`               | Shared components. Top-level for landing-specific UI. `blog/` and `whats-on/` subdirs for the absorbed apps.                                                                                                                                                                                                         |
-| `src/components/Layout/`        | Outlet-based layout. Mounts `LandingNavbar`, renders child route, then `LandingFooter`. Wraps ALL routes (both tiers).                                                                                                                                                                                               |
-| `src/components/LandingNavbar/` | Navbar. Consumes `useWalletAddress` (localStorage) — does NOT require Redux.                                                                                                                                                                                                                                         |
-| `src/components/LandingFooter/` | Footer. Newsletter + social + legal links.                                                                                                                                                                                                                                                                           |
-| `src/features/events/`          | Lightweight what's-on data client (useSyncExternalStore). Used by the homepage "what's on" section.                                                                                                                                                                                                                  |
-| `src/features/whats-on-events/` | RTK Query client + endpoints for `/whats-on/*`. Only loaded inside `DappsShell`.                                                                                                                                                                                                                                     |
-| `src/features/blog/`            | RTK Query endpoints + entity adapter for blog posts. `blog.client.ts` injects endpoints into `cmsClient`.                                                                                                                                                                                                            |
-| `src/features/search/`          | Algolia-backed search endpoints for `/blog/search`. `search.client.ts` injects into `algoliaClient`.                                                                                                                                                                                                                 |
-| `src/features/profile/`         | Lightweight Catalyst profile client (useSyncExternalStore).                                                                                                                                                                                                                                                          |
-| `src/features/notifications/`   | `usePageNotifications` hook used by `Layout` (navbar notifications).                                                                                                                                                                                                                                                 |
-| `src/services/blogClient.ts`    | RTK Query base clients (`cmsClient`, `algoliaClient`) — infrastructure only, empty endpoints. Endpoints are injected from `features/blog/` and `features/search/`. See "RTK Query split" below.                                                                                                                      |
-| `src/hooks/`                    | `useAuthIdentity`, `useWalletAddress`, `useManaBalances`, etc. All localStorage-based — no Redux dependency.                                                                                                                                                                                                         |
-| `src/config/env/`               | Per-environment JSON (`dev.json`, `stg.json`, `prd.json`). Access via `getEnv('KEY')` from `src/config/env.ts`.                                                                                                                                                                                                      |
-| `src/intl/`                     | Six locale files — `en.json`, `es.json`, `fr.json`, `ja.json`, `ko.json`, `zh.json` — each with all translations merged (landing + whats-on + blog namespaces). When adding a key to `en.json`, add it to ALL five other locales in the same commit. `LocaleContext.tsx` wraps `@dcl/hooks`'s `TranslationProvider`. |
-| `src/modules/`                  | Side-effect wiring: Sentry (`sentry.ts`), Segment/Contentsquare (`DeferredAnalyticsProvider`, `deferredThirdParty.ts`).                                                                                                                                                                                              |
-| `src/shared/blog/`              | Domain types and utilities (dates, slugs, locations) for blog content.                                                                                                                                                                                                                                               |
-| `src/utils/signedFetch.ts`      | Shared identity-signed fetch. Used by whats-on mutations.                                                                                                                                                                                                                                                            |
-| `scripts/prebuild.cjs`          | Resolves CDN base URL and writes `.env` before build.                                                                                                                                                                                                                                                                |
-| `scripts/prerender-hero.mjs`    | Injects static hero HTML + critical CSS into `dist/index.html` post-build (LCP optimization).                                                                                                                                                                                                                        |
-| `api/seo.ts`                    | Vercel serverless function. Injects Open Graph meta tags for `/blog/*` crawlers.                                                                                                                                                                                                                                     |
-| `vercel.json`                   | Rewrites `/blog/*` to `/api/seo?path=...`, everything else to `/index.html`.                                                                                                                                                                                                                                         |
+| Path                            | Purpose                                                                                |
+| ------------------------------- | -------------------------------------------------------------------------------------- |
+| `src/App.tsx`                   | Router. Splits routes into Layout-less / lightweight / heavy.                          |
+| `src/App.styled.ts`             | Shared `CenteredBox` styled component (App-level + DappsShell fallback).               |
+| `src/main.tsx`                  | Entry point. Mounts the lightweight provider tree.                                     |
+| `src/shells/`                   | `DappsShell.tsx` + `store.ts` (+ listener middleware). Lazy-loaded Redux.              |
+| `src/pages/`                    | Page components. Subdirs per dapp (see per-dapp docs below).                           |
+| `src/pages/index.tsx`           | Landing homepage (hero prerendered by `scripts/prerender-hero.mjs`).                   |
+| `src/components/`               | Shared components. Top-level for landing; subdirs per dapp (see per-dapp docs).        |
+| `src/components/Layout/`        | Outlet-based layout. Mounts navbar, child route, footer.                               |
+| `src/components/LandingNavbar/` | Navbar. Consumes `useWalletAddress` (localStorage, no Redux).                          |
+| `src/components/LandingFooter/` | Footer. Newsletter + social + legal links.                                             |
+| `src/features/profile/`         | Lightweight Catalyst profile client (`useSyncExternalStore`). Used cross-domain.       |
+| `src/features/notifications/`   | `usePageNotifications` hook used by `Layout` (navbar notifications).                   |
+| `src/hooks/`                    | Shared hooks. `useAuthIdentity`, `useWalletAddress`, `useBlogPageTracking`, etc.       |
+| `src/config/env/`               | Per-environment JSON (`dev.json`, `stg.json`, `prd.json`). Access via `getEnv('KEY')`. |
+| `src/intl/`                     | Six locale files (`en`, `es`, `fr`, `ja`, `ko`, `zh`). Skill `add-i18n-key`.           |
+| `src/modules/`                  | Side-effect wiring: Sentry, Segment, Contentsquare.                                    |
+| `src/utils/signedFetch.ts`      | Shared identity-signed fetch (used by whats-on, social, storage mutations).            |
+| `src/utils/avatarColor.ts`      | Deterministic avatar background color. Skill `avatar-background-color`.                |
+| `scripts/prebuild.cjs`          | Resolves CDN base URL and writes `.env` before build.                                  |
+| `scripts/prerender-hero.mjs`    | Injects static hero HTML + critical CSS post-build (LCP).                              |
+| `api/seo.ts`                    | Vercel serverless function for `/blog/*` OG meta. Skill `seo-worker`.                  |
+| `vercel.json`                   | Rewrites `/blog/*` to `/api/seo?path=...`, everything else to `/index.html`.           |
+
+### Per-dapp directory details
+
+Each absorbed dapp's feature client, base client, components, and pages live under per-dapp docs. Load the one matching your task:
+
+- `docs/domains/whats-on.md` — `src/features/events/`, components/whats-on, pages/whats-on. Events API + admin + lightweight discovery.
+- `docs/domains/blog.md` — `src/features/cms/`, `src/services/cmsClient.ts`, `src/shared/blog/`. Contentful + cms-server search.
+- `docs/domains/jump.md` — `src/features/places/`, `src/services/placesClient.ts`. Launcher deep-link resolution.
+- `docs/domains/social.md` — `src/features/communities/`, `src/services/socialClient.ts`. Communities API.
+- `docs/domains/cast.md` — `src/features/cast2/`, `src/services/cast2Client.ts`. LiveKit streaming.
+- `docs/domains/storage.md` — `src/features/storage/`, `src/services/storageClient.ts`, `src/services/subgraphClient.ts`. Storage + subgraph ownership.
+- `docs/domains/reels.md` — `src/features/reels/`. Camera-screenshot client; Layout-less.
+- `docs/domains/report.md` — `src/features/report/`. Lightweight report form (no RTK Query).
+
+### Skill + hook governance
+
+For the human-readable index of all skills, hooks, per-dapp docs, and the Pre-PR rule → skill mapping → `docs/skills-registry.md`. Update it whenever you add or remove a skill, hook, or Pre-PR rule so the documentation stays consistent.
 
 ## RTK Query split (`services/` vs `features/`)
 
-The blog domain has two client files — this is intentional, not a duplicate.
-
-**`src/services/blogClient.ts`** — infrastructure. Declares the empty base clients `cmsClient` (Contentful base URL, cache config, tag types) and `algoliaClient` (fakeBaseQuery for Algolia SDK). No endpoints. Imported by `src/shells/store.ts` to register reducers and middleware.
-
-**`src/features/blog/blog.client.ts`** — business logic. Calls `cmsClient.injectEndpoints({ endpoints: ... })` to add the blog endpoints (`getBlogPosts`, `getBlogPost`, `getBlogPostBySlug`, `getBlogCategories`, `getBlogAuthors`, …). Exports the generated hooks.
-
-**`src/features/search/search.client.ts`** — same pattern: `algoliaClient.injectEndpoints({ endpoints: ... })`.
-
-Why the split:
-
-1. **Breaks a circular dep.** `store.ts` imports the base client. Endpoints in `features/blog/blog.client.ts` import `store` for one cache-read optimization (`getPostFromStore`). If the base client lived next to the endpoints, that would cycle. The split keeps the hub (`services/`) free of app-layer imports.
-2. **Matches RTK Query's recommended pattern** ([`code splitting`](https://redux-toolkit.js.org/rtk-query/usage/code-splitting)). The "empty api + inject" idiom scales cleanly when additional domains are added.
-3. **Keeps the store lean.** `store.ts` doesn't need to import feature endpoint definitions just to register reducers/middleware.
-
-**Naming nit:** `services/blogClient.ts` hosts BOTH `cmsClient` and `algoliaClient` — the filename is misleading. A future refactor could split it into `services/cmsClient.ts` and `services/algoliaClient.ts`. Not urgent, but consider when touching the file.
+Base clients (infra) in `src/services/<name>Client.ts`. Endpoints (business logic) injected from `src/features/<domain>/<domain>.client.ts` via `<base>.injectEndpoints({ ... })`. Full rationale, step-by-step for adding endpoints / base clients, and Pre-PR rules 17-18 → skill `rtk-query-split`.
 
 ## Auth flow
 
-- `useWalletAddress()` reads `single-sign-on-*` keys from `localStorage`. Subscribes to MetaMask `accountsChanged` and cross-tab `storage` events. No Web3 provider needed. Sync store pattern (external-store hook) — safe on lightweight routes.
-- `useAuthIdentity()` wraps `useWalletAddress`, returns `{ identity, hasValidIdentity, address }`. Identity comes from `localStorageGetIdentity()` (`@dcl/single-sign-on-client`).
-- Sign-in: navbar button → redirects to the external `/auth` SSO dapp. On return, identity is in localStorage; hooks pick it up.
-- Sign-out: navbar button → `useWalletAddress.disconnect()` clears `single-sign-on-*`, `wagmi*`, `wc@2*`, `dcl_magic_user_email`, `dcl_thirdweb_user_email` from localStorage.
-- Explore mutations (create event, toggle attendee) call `signedFetch(url, identity)` from `src/utils/signedFetch.ts`.
-- Blog public endpoints don't need identity.
+No Web3 providers (no wagmi, magic-sdk, core-web3, thirdweb). Wallet + identity via localStorage (`useWalletAddress`, `useAuthIdentity`). Mutations call `signedFetch(url, identity)` from `src/utils/signedFetch.ts`. Full sign-in/out flow, hook details, OTP/Magic edge cases → skill `auth-flow`.
 
 ## Performance
 
-- **Hero prerender** (`scripts/prerender-hero.mjs`) — injects a static HTML shell + critical CSS into `dist/index.html` at build time so LCP paints before React mounts.
-- **Layout is lazy** — `const Layout = lazy(...)` in `App.tsx`. Keeps `decentraland-ui2`'s Navbar (~1.3MB of MUI) out of the critical path until after hero paint.
-- **DappsShell is lazy** — Redux, RTK Query, Contentful renderer, Algolia SDK, dompurify only load when a user navigates to `/whats-on/*` or `/blog/*`.
-- **Deferred analytics** — Segment (`DeferredAnalyticsProvider`) and Contentsquare (`scheduleDeferredThirdParty`) activate via `requestIdleCallback` (4s fallback timeout).
-- **Manual chunks** — `vite.config.ts` splits `vendor-sentry`, `vendor-schemas` (ajv), `vendor-crypto` (`@dcl/crypto`, `eth-connect`), `vendor-intl`, `vendor-ua`, `vendor-router` for cache stability across releases.
+Hero prerender + lazy `<Layout />` + lazy `<DappsShell />` + deferred analytics. Manual chunks in `vite.config.ts` with a render-blocking CSS gotcha for packages like `@livekit/components-styles`. Full setup, manualChunks rules, verification command → skill `perf-tier`.
 
 ## Blog SEO
 
-`api/seo.ts` is a Vercel serverless function. `vercel.json` rewrites `/blog/:path*` to `/api/seo?path=...`. On request:
-
-1. Function parses the path (post, category, author, search, or unknown).
-2. Fetches relevant metadata from `cms-api.decentraland.org/spaces/ea2ybdmmn1kv/environments/master`.
-3. Loads the static `dist/index.html` shell, rewrites `og:*` / `twitter:*` / canonical meta tags with the fetched values, and returns.
-4. Strict HTML escaping + path sanitization + canonical origin allowlist (`decentraland.org`, `decentraland.zone`, `decentraland.today`).
-5. Cache-Control: 1 hour with 14 hour stale-while-revalidate.
+`api/seo.ts` is a Vercel serverless function that rewrites OG/Twitter meta at the edge for `/blog/*` (crawlers don't run JS so Helmet titles are invisible to them). HTML escaping + origin allowlist + path sanitization. Full flow, CMS_BASE_URL coherence, security checklist for new template paths → skill `seo-worker`.
 
 ## Environment config
 
@@ -112,30 +104,17 @@ Unified CMS origin: all three env files point at `cms-api.decentraland.org` (mat
 
 ```bash
 npm run dev          # Vite dev server (+ /api/cms + /auth proxies)
-npm run build        # tsc + vite build + hero prerender
-npm test             # Jest (28 suites, 346 tests)
+npm run build        # prebuild + tsc -b + vite build + hero prerender
+npm run preview      # Serve dist/ — required to validate prod-only failures (rule 14)
+npm test             # Jest, co-located *.spec.ts(x) suites
 npm run format       # Prettier
 npm run lint:fix     # ESLint
-npm run lint:pkg     # package.json lint
+npm run lint:pkg     # package.json lint (silent on success — easy to skip; do not skip)
 ```
 
-## Adding a lightweight route
+## Adding a route
 
-1. Create page in `src/pages/my-page/`.
-2. Add `lazy(() => import(...))` in `src/App.tsx`.
-3. Place the `<Route>` inside `<Route element={<Layout />}>` block, OUTSIDE `<Route element={<DappsShell />}>`.
-4. Use `useSyncExternalStore`-based clients for data, or co-locate a tiny client under `src/features/` using the same pattern as `features/events/` or `features/profile/`.
-5. Do NOT import anything from `src/shells/*`, `src/features/blog/*`, `src/features/search/*`, `src/features/whats-on-events/*`, `src/services/*`.
-
-## Adding a heavy route
-
-1. Create page in `src/pages/my-feature/`.
-2. Add `lazy(() => import(...))` in `src/App.tsx`.
-3. Place the `<Route>` INSIDE `<Route element={<DappsShell />}>`.
-4. If you need Redux state, either inject endpoints into an existing RTK Query client or add a new base client in `src/services/` and a new reducer in `src/shells/store.ts`.
-5. Never import your feature from lightweight route code.
-6. If the page sets `<title>` via Helmet + async data (Contentful, RTK Query, etc.) — call `useBlogPageTracking` from `src/hooks/useBlogPageTracking.ts` and add the route to `Layout`'s page-tracking skip list. See rule 23.
-7. **Add the route to the GitHub issue templates.** `.github/ISSUE_TEMPLATE/bug_report.yml` has a `Page / Area` dropdown that explicitly says `Keep options in sync with the routes defined in src/App.tsx`. `.github/ISSUE_TEMPLATE/feature_request.yml` has a sibling `Area` dropdown. Adding a route without updating these means bug reporters can't categorize their issue against the new page.
+Tier picker (lightweight / heavy / Layout-less), full step-by-step, navbar clearance, and the repo sync checklist (README + SEO worker `PAGES` + GitHub issue templates) → skill `add-route`.
 
 ## Coding conventions
 
@@ -145,14 +124,8 @@ npm run lint:pkg     # package.json lint
 - **Styled components**: `<Component>.styled.ts` co-located with `<Component>.tsx`. Inline `sx={...}` only for one-off micro-tweaks; conditional styling with props belongs in `.styled.ts`.
 - **Types / interfaces**: `<thing>.types.ts`. Never inline in `.client.ts`, `.helpers.ts`, or logic files.
 - **RTK Query**: base client → `src/services/<name>Client.ts` (infra only). Endpoints → `src/features/<domain>/<domain>.client.ts`. See "RTK Query split".
-- **Pages**: `src/pages/<route>/`. Heavy routes under `src/pages/{whats-on,blog}/`.
+- **Pages**: `src/pages/<route>/`. Heavy routes under `src/pages/{whats-on,blog,jump,social,cast,storage}/`. Layout-less fullscreen routes use the same `src/pages/<area>/` shape but are placed before the `<Layout />` Route block in `src/App.tsx` (`reels`, `download`, `invite`).
 - **Signal you're placing a file wrong**: `src/features/<domain>/use<X>.ts`, inline styled bigger than a single `sx`, type inside `.client.ts`. Stop and move it.
-
-### Dependencies
-
-- `npm install`/`npm uninstall` always — never manually edit `package.json` deps.
-- `@dcl/*` / `decentraland-*`: caret ranges (`^`). All others: exact (`--save-exact`).
-- `npm ci` to install existing deps.
 
 ### Styled components
 
@@ -170,12 +143,6 @@ npm run lint:pkg     # package.json lint
 - `beforeEach` for setup, `afterEach` with `jest.resetAllMocks()`.
 - React Testing Library: `getByRole` > `getByLabelText` > `getByText`.
 
-### Git
-
-- Branches: `<type>/<description>` (feat, fix, chore, docs, refactor).
-- Commits: `<type>: <summary>` — no Co-Authored-By.
-- Pre-commit: `npm run format` → `npm run lint:fix` → `npm run build` → `npm test`.
-
 ## Pre-PR review
 
 Before running `gh pr create`, self-review the diff against this repo's review bot standards. The bot blocks PRs on P0/P1 findings; catching them here saves a round-trip.
@@ -186,8 +153,13 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
 
 ### 2. Architectural boundary check (P1 failures)
 
-- `src/shells/*` MUST NOT be imported from lightweight route code.
-- The only legitimate reference to `src/shells/` from outside is the `lazy(() => import('./shells/DappsShell'))` call in `src/App.tsx`.
+Enforce the boundary rule from Architecture > Dual Shell. Grep diff:
+
+```bash
+git diff master...HEAD --name-only | xargs grep -l "from ['\"].*shells/" 2>/dev/null
+```
+
+Hits outside `src/App.tsx` and `src/shells/` itself = violation.
 
 ### 3. YAGNI check
 
@@ -209,6 +181,7 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
 
 - New providers/shells/layouts in `src/shells/` or `src/components/Layout/` MUST have at least a smoke test.
 - New reducers/RTK Query clients MUST have a test asserting the store builds with the expected `reducerPath` keys.
+- **Coverage floor: 95% on statements, lines, and functions.** Branches stay informational (current floor ~85%). The Stop hook (`.claude/hooks/stop-coverage-guard.sh`) blocks the agent from finishing when any of the three metrics drops below 95% after `src/**` or `api/**` edits. Use the `/coverage-guard` skill on demand and the `coverage-keeper` agent to write missing specs. Reuse `src/__test-utils__/styledMock.ts` for `*.styled.ts` files instead of bypassing the styled engine.
 
 ### 7. Barrel exports
 
@@ -259,61 +232,31 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
 
 ### 15. CMS origin + vite proxy rewrites
 
-- All CMS_BASE_URL across `config/env/*.json`, `api/seo.ts`, and the `vite.config.ts` dev proxy must point to the same origin (`cms-api.decentraland.org`). Shared HTTP cache and ETag revalidation depend on this.
-- The dev proxy `/api/cms` rewrite must substitute the full upstream path (`/spaces/ea2ybdmmn1kv/environments/master`), not just strip the local prefix.
+All `CMS_BASE_URL` references (env files, `api/seo.ts`, `vite.config.ts` proxy) must point to `cms-api.decentraland.org`. Dev proxy must substitute the full upstream path. Skill `seo-worker`.
 
 ### 16. No module-top-level throws in shell-reachable code
 
-- NEVER throw at module top-level in files imported by `src/shells/store.ts` or any file reachable from the lazy `DappsShell` chunk boundary. One `if (!X) throw` at import-time crashes the ENTIRE lazy chunk load — not just the feature that needs `X`.
-- For env-var validation, use a lazy getter that throws only on invocation:
-  ```ts
-  const getCmsBaseUrl = (): string => {
-    const url = getEnv('CMS_BASE_URL')
-    if (!url) throw new Error('CMS_BASE_URL is required')
-    return url
-  }
-  // inside endpoint: `url: \`\${getCmsBaseUrl()}/entries?...\``
-  ```
+NEVER throw at module top-level in files imported by `src/shells/store.ts` — one bad import crashes the entire lazy `DappsShell` chunk load. Use a lazy getter. Skill `shell-safe-imports`.
 
 ### 17. RTK Query — no direct store imports in endpoint files
 
-- RTK Query endpoint files (`features/<domain>/<domain>.client.ts`) must NOT `import { store } from '.../shells/store'` for dispatching inside `transformResponse` or `queryFn`. That creates a circular dep with `store.ts` and breaks tree-shaking guarantees.
-- Use RTK Query's `onQueryStarted` lifecycle instead:
-  ```ts
-  getBlogPosts: builder.query({
-    query: args => `posts?${args}`,
-    async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-      try {
-        const { data } = await queryFulfilled
-        dispatch(postsUpserted(data.items))
-      } catch {
-        /* hook surfaces error */
-      }
-    }
-  })
-  ```
-- A single legitimate read of `store.getState()` for cache-check optimizations is tolerated (see `features/blog/blog.client.ts:getPostFromStore`) as long as the file does NOT dispatch from within RTK Query callbacks.
+Don't `import { store }` in endpoint files for dispatching. Use `onQueryStarted` lifecycle instead. Skill `rtk-query-split`.
 
 ### 18. RTK Query — no internal cache state access
 
-- NEVER reach into `state.cmsClient.queries` or similar internals via `as any` casts. The shape is undocumented and changes between `@reduxjs/toolkit` minor versions.
-- Read cached data through one of:
-  - Normalized entity-adapter selectors (preferred — `selectBlogPostById(state, id)`)
-  - `cmsClient.endpoints.getBlogPost.select(args)(state)`
-  - Generated hooks with `selectFromResult` inside components
-- If the data isn't reachable through any of the above, add an `onQueryStarted` that upserts into an entity adapter — then select from there.
+No `state.cmsClient.queries` casts via `as any`. Use entity-adapter selectors, `endpoints.foo.select(args)(state)`, or `selectFromResult`. Skill `rtk-query-split`.
 
 ### 19-25. Extended rules — see `docs/pre-pr-rules-detail.md`
 
-The following rules ship with code patterns that live in `docs/pre-pr-rules-detail.md` to keep this file under 40k chars. Open that doc when touching any of the areas below.
+One line each. Open the doc for code patterns and full rationale.
 
-- **19. XSS sanitization for CMS/search HTML.** Every React innerHTML injection sourced from Contentful/Algolia/external must go through DOMPurify with a scoped per-source allowlist (`sanitizeX.ts`). Never a generic global sanitizer.
-- **20. URL validation — parse + allowlist, never `includes()`.** `new URL()` + hostname `Set` + regex on the extracted ID before interpolating into iframe `src`. `.includes()`/`.endsWith()` is trivially bypassable.
-- **21. `package-lock.json` after rebase conflicts.** Never `npm install --package-lock-only` (drops linux platform binaries → CI `npm ci` fails). Always `rm -rf node_modules package-lock.json && npm install`.
-- **22. Immutable data in RTK Query cache.** Never mutate objects returned by `queryFn`/`transformResponse`/`updateQueryData`. Build enrichment in a `Map`, then `.map(card => ({ ...card, ...extra }))`.
-- **23. Page tracking + Helmet titles.** `usePageTracking(pathname)` races Helmet's async title write — Segment grabs the previous title. Helmet-titled routes (currently `/blog/*`) MUST use `useBlogPageTracking({ name, properties })` and be added to `Layout`'s skip list.
-- **24. Props destructuring threshold.** ≤3 props → destructure in the parameter list. ≥4 → take `props` as one arg and destructure in the body. Same for hook/helper option objects. Defaults move with their key into the body.
-- **25. No inline `sx` with hardcoded values.** `sx` is allowed only for a single runtime-dynamic value the styled component can't accept as a prop. Hardcoded dimensions/colors/spacing belong in a co-located `*.styled.ts` using theme tokens.
+- **19.** XSS sanitization for CMS/search HTML — DOMPurify with scoped per-source allowlist.
+- **20.** URL validation — `new URL()` + hostname `Set` + regex ID, never `includes()`.
+- **21.** `package-lock.json` after rebase — `rm -rf node_modules package-lock.json && npm install`, never `--package-lock-only`.
+- **22.** Immutable RTK Query cache — don't mutate `queryFn` / `transformResponse` / `updateQueryData` returns.
+- **23.** Page tracking + Helmet — `useBlogPageTracking({ name, properties })` + `Layout.helpers.ts:isPageTrackingExempt`.
+- **24.** Props destructuring threshold — ≤3 in params, ≥4 in body.
+- **25.** No inline `sx` with hardcoded values — co-located `*.styled.ts` with theme tokens.
 
 ## Security checklist
 

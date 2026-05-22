@@ -1,6 +1,6 @@
 ---
 name: migrate-dapp
-description: Use when absorbing a standalone Decentraland dapp (jump, blog, whats-on, social) into the sites SPA as a heavy DappsShell route. Triggers on "migrate dapp", "absorb <dapp> into sites", "port <dapp>". Captures path/auth/i18n/sign-in decisions, files to touch, the Web3-drop pattern, and the Jest/ts-jest gotchas you'd otherwise re-discover by trial.
+description: Use when absorbing a standalone Decentraland dapp (whats-on, blog, jump, social, cast, storage, reels, report) into the sites SPA as a heavy DappsShell route (or, for reels, a Layout-less lightweight route). Triggers on "migrate dapp", "absorb <dapp> into sites", "port <dapp>". Captures path/auth/i18n/sign-in decisions, files to touch, the Web3-drop pattern, and the Jest/ts-jest gotchas you'd otherwise re-discover by trial.
 ---
 
 # migrate-dapp
@@ -28,7 +28,7 @@ Use `AskUserQuestion` for these in **plan mode**. Cite the trade-offs (e.g. drop
 Launch up to 3 `Explore` agents in parallel:
 
 - One to map the source dapp: routes, RTK Query clients, types, page components, helpers, i18n keys, segment events, auth flow, tests.
-- One to refresh the sites patterns: `src/services/blogClient.ts`, `src/features/blog/blog.client.ts`, `src/shells/store.ts`, `src/shells/DappsShell.tsx`, `src/components/Layout/Layout.helpers.ts`, `src/utils/signedFetch.ts`, `src/hooks/useAuthIdentity.ts`, `src/hooks/useBlogPageTracking.ts`, `src/utils/authRedirect.ts`, `src/features/profile/profile.client.ts`, `src/features/blog/useInfiniteBlogPosts.ts`, env JSONs.
+- One to refresh the sites patterns: `src/services/cmsClient.ts`, `src/features/cms/cms.client.ts`, `src/shells/store.ts`, `src/shells/DappsShell.tsx`, `src/components/Layout/Layout.helpers.ts`, `src/utils/signedFetch.ts`, `src/hooks/useAuthIdentity.ts`, `src/hooks/useBlogPageTracking.ts`, `src/utils/authRedirect.ts`, `src/features/profile/profile.client.ts`, `src/features/cms/useInfiniteBlogPosts.ts`, env JSONs.
 - Optional third agent for path resolution if the source has a `basename` quirk.
 
 Then read the actual files (not just agent summaries) for: source `*.client.ts`, source `*.types.ts`, source page components, source i18n locales (all of them — you'll port them).
@@ -116,7 +116,10 @@ Every cast2 source dependency below was a wasted install + extra cleanup commit 
 ## Reference: prior migrations
 
 - `whats-on` — events flow + admin
-- `blog` — Contentful + Algolia
-- `jump` — deep-link handler
+- `blog` — Contentful + cms-server full-text search
+- `jump` — launcher deep-link handler (places + events + worlds)
 - `social` — communities (`feat/migrate-social-dapps` branch — canonical for the standard auth+RTK shape)
 - `cast` — LiveKit streaming (PR #403 — canonical for: anonymous + token-in-URL auth, `<AnimatedBackground>` + `<Logo>` swap, `dclColors`/WebP cleanup, react-router v7 index-route fix, RTK Query error → i18n mapping)
+- `storage` — storage-service-site (subgraph ownership lookups, scene/players queries; uses `storageClient` + `subgraphClient` base APIs)
+- `reels` — in-game camera screenshots. **Layout-less lightweight tier** (the only absorbed dapp not under `DappsShell`) — fullscreen UX is the whole point, so reels routes are placed BEFORE the `<Layout />` block in `src/App.tsx` and use a `useSyncExternalStore`-style client (no Redux)
+- `report` — community report flow. Lightweight (no RTK Query, no Redux); helpers + types only under `src/features/report/`
