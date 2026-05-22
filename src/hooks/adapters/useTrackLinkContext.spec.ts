@@ -36,7 +36,10 @@ describe('useTrackClick', () => {
         result.current(buildClickEvent({ 'data-place': 'Landing Hero', 'data-event': SegmentEvent.DOWNLOAD }))
       })
 
-      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.CLICK, { place: 'Landing Hero', event: SegmentEvent.DOWNLOAD })
+      expect(mockTrack).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ place: 'Landing Hero', event: SegmentEvent.DOWNLOAD })
+      )
     })
   })
 
@@ -48,7 +51,8 @@ describe('useTrackClick', () => {
         result.current(buildClickEvent({ 'data-place': 'Landing Explore', 'data-event': SegmentEvent.CLICK }))
       })
 
-      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.CLICK, { place: 'Landing Explore' })
+      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.CLICK, expect.objectContaining({ place: 'Landing Explore' }))
+      expect(mockTrack.mock.calls[0][1]).not.toHaveProperty('event')
     })
   })
 
@@ -68,12 +72,15 @@ describe('useTrackClick', () => {
         )
       })
 
-      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.CLICK, {
-        place: 'Landing Explore',
-        card: 'recurring-events',
-        section: 'view_all',
-        osArch: 'amd64'
-      })
+      expect(mockTrack).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({
+          place: 'Landing Explore',
+          card: 'recurring-events',
+          section: 'view_all',
+          osArch: 'amd64'
+        })
+      )
     })
   })
 
@@ -92,7 +99,9 @@ describe('useTrackClick', () => {
         )
       })
 
-      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.CLICK, { place: 'Referrer Invite First Hero' })
+      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.CLICK, expect.objectContaining({ place: 'Referrer Invite First Hero' }))
+      expect(mockTrack.mock.calls[0][1]).not.toHaveProperty('title')
+      expect(mockTrack.mock.calls[0][1]).not.toHaveProperty('subtitle')
     })
   })
 
@@ -115,7 +124,10 @@ describe('useTrackClick', () => {
       rerender()
 
       expect(mockTrack).toHaveBeenCalledTimes(1)
-      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.CLICK, { place: 'Landing Hero', event: SegmentEvent.DOWNLOAD })
+      expect(mockTrack).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ place: 'Landing Hero', event: SegmentEvent.DOWNLOAD })
+      )
     })
   })
 
@@ -127,7 +139,7 @@ describe('useTrackClick', () => {
         result.current(buildClickEvent({ 'data-place': 'Landing Hero' }))
       })
 
-      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.CLICK, { place: 'Landing Hero' })
+      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.CLICK, expect.objectContaining({ place: 'Landing Hero' }))
     })
   })
 })

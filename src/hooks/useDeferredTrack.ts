@@ -14,6 +14,16 @@ type Track = (event: SegmentEvent, payload: Record<string, unknown>) => void
  * (`started_at`, etc.) so that ingestion delay introduced by queueing
  * doesn't distort timing analysis downstream.
  *
+ * **Observability fields added to every payload:**
+ * - `track_called_at`: ms timestamp captured when the consumer invoked the
+ *   returned function (i.e. the moment of intent).
+ * - `track_delivered_at`: ms timestamp captured right before Segment's
+ *   `track()` actually runs (i.e. either the same tick as the call, or
+ *   later when the queue drains).
+ * - `track_deferred`: boolean — true if Segment was not yet initialized at
+ *   call time and the event had to be queued. Lets the data team filter
+ *   `WHERE track_deferred = true` to inspect queued fires separately.
+ *
  * The queue is component-scoped — on unmount, any still-pending events are
  * dropped along with the ref. That trade-off is intentional: the alternative
  * (a module-level queue) would leak events across page navigations.
@@ -35,11 +45,24 @@ function useDeferredTrack(): Track {
   }, [isInitialized])
 
   return useCallback((event, payload) => {
-    if (isInitializedRef.current) {
-      trackRef.current(event, payload)
+    const calledAt = Date.now()
+    const wasInitialized = isInitializedRef.current
+    const fire = () => {
+      trackRef.current(event, {
+        ...payload,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        track_called_at: calledAt,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        track_delivered_at: Date.now(),
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        track_deferred: !wasInitialized
+      })
+    }
+    if (wasInitialized) {
+      fire()
       return
     }
-    queueRef.current.push(() => trackRef.current(event, payload))
+    queueRef.current.push(fire)
   }, [])
 }
 

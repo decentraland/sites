@@ -28,7 +28,19 @@ describe('useDeferredTrack', () => {
       })
 
       expect(mockTrack).toHaveBeenCalledTimes(1)
-      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.DOWNLOAD_STARTED, { foo: 'bar' })
+      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.DOWNLOAD_STARTED, expect.objectContaining({ foo: 'bar', track_deferred: false }))
+    })
+
+    it('should attach track_called_at and track_delivered_at observability fields', () => {
+      const { result } = renderHook(() => useDeferredTrack())
+
+      act(() => {
+        result.current(SegmentEvent.DOWNLOAD_STARTED, { foo: 'bar' })
+      })
+
+      const payload = mockTrack.mock.calls[0][1]
+      expect(payload).toHaveProperty('track_called_at', expect.any(Number))
+      expect(payload).toHaveProperty('track_delivered_at', expect.any(Number))
     })
   })
 
@@ -47,7 +59,7 @@ describe('useDeferredTrack', () => {
       expect(mockTrack).not.toHaveBeenCalled()
     })
 
-    it('should drain queued calls when isInitialized flips to true', () => {
+    it('should drain queued calls when isInitialized flips to true and mark them as deferred', () => {
       const { result, rerender } = renderHook(() => useDeferredTrack())
 
       act(() => {
@@ -61,8 +73,16 @@ describe('useDeferredTrack', () => {
       rerender()
 
       expect(mockTrack).toHaveBeenCalledTimes(2)
-      expect(mockTrack).toHaveBeenNthCalledWith(1, SegmentEvent.DOWNLOAD_STARTED, { foo: 'bar' })
-      expect(mockTrack).toHaveBeenNthCalledWith(2, SegmentEvent.DOWNLOAD_SUCCESS, { filename: 'X.exe' })
+      expect(mockTrack).toHaveBeenNthCalledWith(
+        1,
+        SegmentEvent.DOWNLOAD_STARTED,
+        expect.objectContaining({ foo: 'bar', track_deferred: true })
+      )
+      expect(mockTrack).toHaveBeenNthCalledWith(
+        2,
+        SegmentEvent.DOWNLOAD_SUCCESS,
+        expect.objectContaining({ filename: 'X.exe', track_deferred: true })
+      )
     })
 
     it('should drain the queue in enqueue order so _STARTED always precedes _SUCCESS / _FAILED', () => {
@@ -91,7 +111,10 @@ describe('useDeferredTrack', () => {
       })
 
       expect(mockTrack).toHaveBeenCalledTimes(1)
-      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.DOWNLOAD_SUCCESS, { foo: 'after-init' })
+      expect(mockTrack).toHaveBeenCalledWith(
+        SegmentEvent.DOWNLOAD_SUCCESS,
+        expect.objectContaining({ foo: 'after-init', track_deferred: false })
+      )
     })
   })
 })

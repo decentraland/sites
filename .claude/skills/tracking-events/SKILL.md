@@ -14,7 +14,20 @@ The single source of truth for understanding analytics in sites. **Read top-to-b
 - **Contentsquare:** activated alongside Segment via `scheduleDeferredThirdParty` in `src/modules/deferredThirdParty.ts`. Out of scope here; it's session recording, not event tracking.
 - **Anonymous id:** `@segment/analytics-next` stores its anonymous id in `localStorage` as `ajs_anonymous_id` (JSON-encoded). Read it via `useAnonUserId()` (`src/hooks/useAnonUserId.ts`) which validates against UUID format and also accepts an `?anon_user_id=…` URL param override (used by the download success → launcher → Explorer attribution chain).
 
-## 2. The hooks — pick the right one
+## 2. Two abstraction layers — infra and domain
+
+Tracking in sites is split into two layers that compose cleanly:
+
+- **Infra (`useDeferredTrack`)** — wraps `useAnalytics().track` with a queue. Doesn't know what the event is or what the payload means. Its only job: make sure the track call survives Segment's lazy boot. Adds `track_called_at`, `track_delivered_at`, `track_deferred` to every payload so the data team can audit deferral.
+- **Domain (`createDownloadTracker`, future per-funnel factories)** — knows the schema of a specific funnel. Builds the canonical payload, captures timestamps tied to domain semantics (`started_at`, `succeeded_at`), exposes a small intent-shaped API (`.started()` / `.success()` / `.failed()`). Doesn't know about Segment loading — receives an opaque `track` function (typically from `useDeferredTrack`).
+
+You should almost never call `useAnalytics().track` directly. The decision tree:
+
+- Click handler driven by `data-*`? → `useTrackClick` (which already uses `useDeferredTrack` internally).
+- Download funnel event? → `createDownloadTracker(deferredTrack, ctx)`.
+- New domain that needs queueing? → call `useDeferredTrack()` and pass it to whatever domain factory you build. Don't reach for `useAnalytics().track` directly unless you accept silent-drop on cold loads.
+
+## 3a. The hooks — pick the right one
 
 | Hook                          | Where it lives                              | When to use                                                                                                                                                                                                                                                                                                                              |
 | ----------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -24,7 +37,7 @@ The single source of truth for understanding analytics in sites. **Read top-to-b
 | `useBlogPageTracking()`       | `src/hooks/useBlogPageTracking.ts`          | Per-route `page()` event for Helmet-titled routes where the automatic `page()` in `Layout.tsx` races the async title write. See sites CLAUDE.md rule 23.                                                                                                                                                                                 |
 | `useLegacyRedirectTracking()` | `src/hooks/useLegacyRedirectTracking.ts`    | Specialized: waits up to 800ms for Segment to load, then emits one of `LEGACY_EVENTS_REDIRECTED` / `LEGACY_PLACES_REDIRECTED` and proceeds with the `<Navigate>`. Pattern reference for "block briefly on analytics readiness then unblock UI".                                                                                          |
 
-## 3. The event enums — where to find names
+## 3b. The event enums — where to find names
 
 All declared in `src/modules/segment.types.ts` and re-exported by `src/modules/segment.ts`:
 
