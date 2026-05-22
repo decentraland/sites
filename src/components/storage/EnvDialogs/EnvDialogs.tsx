@@ -3,12 +3,13 @@ import type { AuthIdentity } from '@dcl/crypto'
 import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from 'decentraland-ui2'
 import { useSetEnvMutation } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useDialogError } from '../../../hooks/useDialogError'
 
 interface EnvAddDialogProps {
   open: boolean
   onClose: () => void
   onSuccess: () => void
-  onError: () => void
+  onError: (error: unknown) => void
   identity: AuthIdentity | undefined
   realm: string | null
   position: string | null
@@ -19,6 +20,7 @@ const EnvAddDialog = ({ open, onClose, onSuccess, onError, identity, realm, posi
   const [setEnv, { isLoading }] = useSetEnvMutation()
   const [newKey, setNewKey] = useState('')
   const [newValue, setNewValue] = useState('')
+  const { errorKey, clearError, setErrorFrom } = useDialogError([open])
 
   useEffect(() => {
     if (open) {
@@ -29,19 +31,26 @@ const EnvAddDialog = ({ open, onClose, onSuccess, onError, identity, realm, posi
 
   const handleSave = useCallback(async () => {
     if (!newKey.trim() || !newValue.trim()) return
+    clearError()
     try {
       await setEnv({ identity, realm, position, key: newKey.trim(), value: newValue.trim() }).unwrap()
       onSuccess()
       onClose()
-    } catch {
-      onError()
+    } catch (error) {
+      setErrorFrom(error)
+      onError(error)
     }
-  }, [newKey, newValue, setEnv, identity, realm, position, onClose, onSuccess, onError])
+  }, [newKey, newValue, setEnv, identity, realm, position, onClose, onSuccess, onError, clearError, setErrorFrom])
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{t('component.storage.env_page.add_dialog.title')}</DialogTitle>
       <DialogContent>
+        {errorKey ? (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {t(errorKey)}
+          </Alert>
+        ) : null}
         <TextField
           autoFocus
           margin="dense"
@@ -76,7 +85,7 @@ interface EnvEditDialogProps {
   keyName: string
   onClose: () => void
   onSuccess: () => void
-  onError: () => void
+  onError: (error: unknown) => void
   identity: AuthIdentity | undefined
   realm: string | null
   position: string | null
@@ -86,6 +95,7 @@ const EnvEditDialog = ({ open, keyName, onClose, onSuccess, onError, identity, r
   const t = useFormatMessage()
   const [setEnv, { isLoading }] = useSetEnvMutation()
   const [editValue, setEditValue] = useState('')
+  const { errorKey, clearError, setErrorFrom } = useDialogError([open, keyName])
 
   useEffect(() => {
     if (open) setEditValue('')
@@ -93,19 +103,26 @@ const EnvEditDialog = ({ open, keyName, onClose, onSuccess, onError, identity, r
 
   const handleSave = useCallback(async () => {
     if (!editValue.trim()) return
+    clearError()
     try {
       await setEnv({ identity, realm, position, key: keyName, value: editValue.trim() }).unwrap()
       onSuccess()
       onClose()
-    } catch {
-      onError()
+    } catch (error) {
+      setErrorFrom(error)
+      onError(error)
     }
-  }, [editValue, keyName, setEnv, identity, realm, position, onClose, onSuccess, onError])
+  }, [editValue, keyName, setEnv, identity, realm, position, onClose, onSuccess, onError, clearError, setErrorFrom])
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{t('component.storage.env_page.edit_dialog.title')}</DialogTitle>
       <DialogContent>
+        {errorKey ? (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {t(errorKey)}
+          </Alert>
+        ) : null}
         <Alert severity="info" sx={{ mb: 2 }}>
           {t('component.storage.env_page.edit_dialog.helper_text')}
         </Alert>

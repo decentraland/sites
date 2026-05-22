@@ -927,6 +927,16 @@
         "title": "Page introuvable",
         "subtitle": "La page que vous recherchez n’existe pas.",
         "go_home": "Retour à l’accueil"
+      },
+      "errors": {
+        "unknown": "Impossible d’enregistrer. Veuillez réessayer.",
+        "network": "Impossible de joindre le service de stockage. Vérifiez votre connexion et réessayez.",
+        "signed_fetch": "Impossible de signer la requête. Déconnectez-vous et reconnectez-vous, puis réessayez.",
+        "unauthorized": "Vous n’êtes pas autorisé à modifier le stockage de ce monde. Seul le propriétaire du monde ou le déployeur de la scène peut modifier les variables d’environnement.",
+        "not_found": "Ce monde ou cette scène est introuvable dans le service de stockage.",
+        "payload_too_large": "La valeur est trop volumineuse pour cet espace de stockage.",
+        "rate_limited": "Trop de requêtes. Patientez un instant et réessayez.",
+        "server": "Le service de stockage a renvoyé une erreur. Réessayez dans quelques minutes."
       }
     },
     "report": {
@@ -1244,5 +1254,9 @@
     "form_utc_preview": "{time} UTC",
     "form_utc_preview_next_day": "{time} UTC (+1 jour)",
     "form_utc_preview_previous_day": "{time} UTC (-1 jour)"
+  },
+  "upcoming": {
+    "today_at": "Aujourd'hui {time}",
+    "tomorrow_at": "Demain {time}"
   }
 }

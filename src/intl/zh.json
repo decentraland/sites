@@ -932,6 +932,16 @@
         "title": "页面未找到",
         "subtitle": "您正在寻找的页面不存在。",
         "go_home": "返回首页"
+      },
+      "errors": {
+        "unknown": "无法保存，请重试。",
+        "network": "无法连接到存储服务。请检查网络连接后重试。",
+        "signed_fetch": "无法签署请求。请退出登录后重新登录，然后重试。",
+        "unauthorized": "你无权更新该世界的存储。仅世界所有者或场景部署者可以编辑环境变量。",
+        "not_found": "在存储服务中找不到该世界或场景。",
+        "payload_too_large": "值对该存储空间来说过大。",
+        "rate_limited": "请求过多。请稍候后再试。",
+        "server": "存储服务返回了错误。请几分钟后再试。"
       }
     },
     "report": {
@@ -1249,5 +1259,9 @@
     "form_utc_preview": "{time} UTC",
     "form_utc_preview_next_day": "{time} UTC（+1天）",
     "form_utc_preview_previous_day": "{time} UTC（-1天）"
+  },
+  "upcoming": {
+    "today_at": "今天 {time}",
+    "tomorrow_at": "明天 {time}"
   }
 }

@@ -16,8 +16,9 @@ jest.mock('../../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ identity: undefined, hasValidIdentity: false, address: undefined })
 }))
 
+const mockGetRelativeTimeLabel = jest.fn((_iso: string, _t: (k: string) => string) => 'Starts in 10 mins')
 jest.mock('../../../utils/whatsOnTime', () => ({
-  getRelativeTimeLabel: () => 'Starts in 10 mins'
+  getRelativeTimeLabel: (...args: unknown[]) => mockGetRelativeTimeLabel(...(args as [string, (k: string) => string]))
 }))
 
 const mockHandleCopy = jest.fn()
@@ -113,6 +114,7 @@ describe('UpcomingCard', () => {
   beforeEach(() => {
     mockOnClick = jest.fn()
     mockUseCreatorProfile.mockReturnValue(defaultCreatorProfile)
+    mockGetRelativeTimeLabel.mockImplementation((_iso: string, _t: (k: string) => string) => 'Starts in 10 mins')
   })
 
   afterEach(() => {
@@ -142,6 +144,20 @@ describe('UpcomingCard', () => {
       render(<UpcomingCard event={createMockEvent()} onClick={mockOnClick} />)
 
       expect(screen.getByTestId('time-label')).toHaveTextContent('Starts in 10 mins')
+    })
+
+    it('should pass next_start_at to getRelativeTimeLabel for recurring events whose start_at is in the past', () => {
+      const event = createMockEvent({ start_at: '2026-04-05T10:00:00Z', next_start_at: '2026-04-07T10:00:00Z' })
+      render(<UpcomingCard event={event} onClick={mockOnClick} />)
+
+      expect(mockGetRelativeTimeLabel).toHaveBeenCalledWith('2026-04-07T10:00:00Z', expect.any(Function))
+    })
+
+    it('should fall back to start_at when next_start_at is empty', () => {
+      const event = createMockEvent({ start_at: '2026-04-07T10:00:00Z', next_start_at: '' })
+      render(<UpcomingCard event={event} onClick={mockOnClick} />)
+
+      expect(mockGetRelativeTimeLabel).toHaveBeenCalledWith('2026-04-07T10:00:00Z', expect.any(Function))
     })
 
     it('should forward the click to onClick', () => {

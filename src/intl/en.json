@@ -1066,6 +1066,16 @@
         "title": "Page Not Found",
         "subtitle": "The page you are looking for does not exist.",
         "go_home": "Go Home"
+      },
+      "errors": {
+        "unknown": "Could not save. Please try again.",
+        "network": "Could not reach the storage service. Check your connection and try again.",
+        "signed_fetch": "Could not sign the request. Sign out and sign back in, then try again.",
+        "unauthorized": "You are not authorized to update this world’s storage. Only the world owner or scene deployer can edit env variables.",
+        "not_found": "This world or scene was not found in the storage service.",
+        "payload_too_large": "Value is too large for this storage namespace.",
+        "rate_limited": "Too many requests. Wait a moment and try again.",
+        "server": "The storage service returned an error. Try again in a few minutes."
       }
     },
     "report": {
@@ -1135,6 +1145,8 @@
     "title": "Upcoming",
     "starts_in_mins": "Starts in {count} mins",
     "starts_in_hours": "Starts in {count} {count, plural, one {hour} other {hours}}",
+    "today_at": "Today {time}",
+    "tomorrow_at": "Tomorrow {time}",
     "by_prefix": "By ",
     "unknown_creator": "Unknown",
     "remind_me": "Remind me",

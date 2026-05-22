@@ -1,9 +1,11 @@
+import { isSameLocalDay } from './whatsOnDate'
+
 type TranslateFn = (key: string, values?: Record<string, string | number>) => string
 
 function getRelativeTimeLabel(startTime: string, t: TranslateFn): string {
-  const now = Date.now()
-  const start = new Date(startTime).getTime()
-  const diffMs = start - now
+  const now = new Date(Date.now())
+  const start = new Date(startTime)
+  const diffMs = start.getTime() - now.getTime()
 
   if (diffMs <= 0) {
     return formatLocalTime(startTime)
@@ -15,12 +17,19 @@ function getRelativeTimeLabel(startTime: string, t: TranslateFn): string {
     return t('upcoming.starts_in_mins', { count: diffMins })
   }
 
-  const diffHours = Math.round(diffMins / 60)
-  if (diffHours < 24) {
-    return t('upcoming.starts_in_hours', { count: diffHours })
+  const localTime = formatLocalTime(startTime)
+
+  if (isSameLocalDay(start, now)) {
+    return t('upcoming.today_at', { time: localTime })
   }
 
-  return formatLocalTime(startTime)
+  const tomorrow = new Date(now.getTime())
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  if (isSameLocalDay(start, tomorrow)) {
+    return t('upcoming.tomorrow_at', { time: localTime })
+  }
+
+  return localTime
 }
 
 function formatLocalTime(isoString: string, locale?: string): string {

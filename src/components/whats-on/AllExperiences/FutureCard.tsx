@@ -7,7 +7,7 @@ import { useCardActions } from '../../../hooks/useCardActions'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { optimizedImageUrl } from '../../../utils/imageUrl'
-import { getRelativeTimeLabel } from '../../../utils/whatsOnTime'
+import { formatLocalTime } from '../../../utils/whatsOnTime'
 import { resolveEventRealm } from '../../../utils/whatsOnUrl'
 import {
   ActionButton,
@@ -80,7 +80,7 @@ const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
         <LocalDateTimeTooltip startIso={event.start_at} finishIso={event.finish_at}>
           <TimePill data-role="time-pill">
             <TimeIcon />
-            <TimeLabel>{getRelativeTimeLabel(event.start_at, t)}</TimeLabel>
+            <TimeLabel>{formatLocalTime(event.next_start_at || event.start_at)}</TimeLabel>
           </TimePill>
         </LocalDateTimeTooltip>
         <HoverActions data-role="hover-actions">

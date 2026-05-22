@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Verify commenter has write access
-        uses: actions/github-script@v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const { data: { permission } } = await github.rest.repos.getCollaboratorPermissionLevel({
@@ -31,7 +31,7 @@ jobs:
             }
 
       - name: React to the trigger comment
-        uses: actions/github-script@v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             await github.rest.reactions.createForIssueComment({
@@ -43,7 +43,7 @@ jobs:
 
       - name: Resolve PR head ref
         id: pr
-        uses: actions/github-script@v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const pr = await github.rest.pulls.get({
@@ -61,7 +61,7 @@ jobs:
           ref: ${{ steps.pr.outputs.sha }}
 
       - name: Use Node.js 24.x
-        uses: actions/setup-node@v4.0.1
+        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # @v4.0.1
         with:
           node-version: 24.x
           cache: 'npm'
