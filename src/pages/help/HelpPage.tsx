@@ -10,7 +10,6 @@ const SERVICES = [
   { name: 'Catalyst EC1', url: 'https://peer-ec1.decentraland.org/about' },
   { name: 'Catalyst Interconnected', url: 'https://interconnected.online/about' },
   { name: 'Catalyst Melonwave', url: 'https://peer.melonwave.com/about' },
-  { name: 'Catalyst Kyllian', url: 'https://peer.kyllian.me/about' },
   { name: 'Catalyst UADevops', url: 'https://peer.uadevops.com/about' },
   { name: 'Catalyst DCLNodes', url: 'https://peer.dclnodes.io/about' },
   { name: 'Catalyst AP1', url: 'https://peer-ap1.decentraland.org/about' },

@@ -90,6 +90,9 @@ const CreatorsHero = memo(() => {
                     {secondaryOptions.map(option => (
                       <AlternativeIconButton
                         key={option.text}
+                        data-place={SectionViewedTrack.CREATORS_HERO}
+                        data-event={SegmentEvent.DOWNLOAD}
+                        data-os={option.text}
                         onClick={event => {
                           event.preventDefault()
                           trackClick(event)

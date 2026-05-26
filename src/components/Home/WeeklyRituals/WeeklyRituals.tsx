@@ -3,7 +3,7 @@ import { useMediaQuery } from 'decentraland-ui2'
 import { weeklyRitualsContent } from '../../../data/static-content'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
-import { SectionViewedTrack } from '../../../modules/segment'
+import { SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { Carousel } from '../../Carousel'
 import { CardImage, MobileCardImage, SectionTitle, WeeklyRitualsContainer, WeeklyRitualsOuter } from './WeeklyRituals.styled'
 
@@ -30,7 +30,7 @@ const WeeklyRituals = memo(() => {
               draggable={false}
               style={{ display: 'block', height: '100%' }}
               data-place={SectionViewedTrack.LANDING_WEEKLY_RITUALS}
-              data-event="click"
+              data-event={SegmentEvent.CLICK}
               data-card={card.id}
               onClick={onClickHandle}
             >
