@@ -1,7 +1,9 @@
 import { memo, useCallback, useMemo } from 'react'
+import type { ComponentType } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Avatar } from '@dcl/schemas'
-import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
+import type { EventCardProps as BaseEventCardProps } from 'decentraland-ui2/dist/components/EventCard/EventCard.types'
+import { BadgeGroup, EventCard as BaseEventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
 import type { ExploreItem } from '../../../features/events/events.discovery.types'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
@@ -9,6 +11,19 @@ import { SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { assetUrl } from '../../../utils/assetUrl'
 import { DCL_FOUNDATION_BACKGROUND_COLOR, getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import { CardWrapper } from './WhatsOn.styled'
+
+// Bridge type to accept the `onAvatarClick` prop from the local ui2 fork
+// (`ui2/src/components/EventCard/EventCard.tsx`) before that change ships to
+// npm. The local tgz install honors the prop; published `decentraland-ui2`
+// silently ignores it. Drop this shim and switch back to the direct import
+// once a published ui2 version exposes the prop.
+interface EventCardProps extends BaseEventCardProps {
+  /** Click handler for the creator avatar/name row inside the card. */
+  onAvatarClick?: () => void
+}
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const EventCard = BaseEventCard as unknown as ComponentType<EventCardProps>
 
 // AvatarFace only passes through URLs starting with https://, otherwise it
 // prepends peer.decentraland.org. In prod assetUrl gives https://cdn..., in
