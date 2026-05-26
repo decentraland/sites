@@ -131,22 +131,131 @@ function SceneWatcherCard(props: SceneWatcherCardProps) {
   }
 
   if (props.status === 'no-broadcast') {
-    return (
-      <WatcherContainer>
-        <VideoArea>
-          <Placeholder>
-            <PlaceholderTitle>{t('discover.scene.no_broadcast.title')}</PlaceholderTitle>
-            <PlaceholderHint>{t('discover.scene.no_broadcast.hint')}</PlaceholderHint>
-            <Button variant="outlined" color="secondary" size="small" onClick={props.onRetry}>
-              {t('discover.scene.retry')}
-            </Button>
-          </Placeholder>
-        </VideoArea>
-      </WatcherContainer>
-    )
+    return <SceneOnlyWatcher {...props} />
   }
 
   return <SceneWatcherReady {...props} />
+}
+
+// No-broadcast variant: nobody is streaming yet, so the LiveKit room isn't
+// mounted (`SceneRoomMount` renders children untouched without credentials)
+// and any LiveKit hook would throw `useEnsureRoom`. The bevy iframe and
+// fullscreen / launch UX don't depend on LiveKit at all, so render them
+// in a stripped-down watcher: SCENE WEB tab only, no PeopleStack, no
+// audio renderer, no chat hook.
+function SceneOnlyWatcher(props: SceneWatcherCardProps) {
+  const { streamingHref, streamingExternalHref, coverImage, onRetry } = props
+  const t = useFormatMessage()
+  const videoAreaRef = useRef<HTMLDivElement | null>(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [, advancedUserAgent] = useAdvancedUserAgentData()
+  const isMobile = Boolean(advancedUserAgent?.mobile)
+  const mobileStoreHref = detectDownloadOS() === 'android' ? DOWNLOAD_URLS.googlePlay : DOWNLOAD_URLS.appStore
+  const [hasLaunchedScene, setHasLaunchedScene] = useState(false)
+  const launchScene = useCallback(() => setHasLaunchedScene(true), [])
+  const closeMedia = useCallback(() => setHasLaunchedScene(false), [])
+  const iframeCredentiallessRef = useCredentiallessIframeRef()
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(document.fullscreenElement === videoAreaRef.current)
+    document.addEventListener('fullscreenchange', onChange)
+    return () => document.removeEventListener('fullscreenchange', onChange)
+  }, [])
+
+  const toggleFullscreen = useCallback(() => {
+    const el = videoAreaRef.current
+    if (!el) return
+    if (document.fullscreenElement === el) {
+      document.exitFullscreen().catch(() => undefined)
+    } else {
+      el.requestFullscreen().catch(error => console.warn('[SceneLiveWatcher] fullscreen rejected', error))
+    }
+  }, [])
+
+  const showIframe = hasLaunchedScene && Boolean(streamingHref) && !isMobile
+
+  return (
+    <WatcherContainer>
+      <TabStrip>
+        <TabButton type="button" $active disabled={!streamingHref} aria-disabled={!streamingHref}>
+          {t('discover.scene.tab_streaming')}
+        </TabButton>
+      </TabStrip>
+
+      <VideoArea ref={videoAreaRef}>
+        {showIframe && (
+          <SceneIframe
+            ref={iframeCredentiallessRef}
+            $visible
+            src={streamingHref ?? undefined}
+            title={t('discover.scene.tab_streaming')}
+            sandbox="allow-scripts allow-same-origin allow-popups allow-pointer-lock allow-forms allow-modals"
+            allow="camera; microphone; clipboard-read; clipboard-write; fullscreen; xr-spatial-tracking; cross-origin-isolated"
+          />
+        )}
+        {!showIframe && (
+          <SceneLaunchOverlay $cover={coverImage}>
+            <SceneLaunchCard>
+              <PlaceholderTitle>{t('discover.scene.no_broadcast.title')}</PlaceholderTitle>
+              <PlaceholderHint>{t('discover.scene.no_broadcast.hint')}</PlaceholderHint>
+              {isMobile ? (
+                <>
+                  <MobileUnsupportedTitle>{t('discover.scene.mobile_unsupported.title')}</MobileUnsupportedTitle>
+                  <MobileUnsupportedHint>{t('discover.scene.mobile_unsupported.hint')}</MobileUnsupportedHint>
+                  <StoreBadgeLink href={mobileStoreHref} target="_blank" rel="noopener noreferrer">
+                    <StoreBadgeImage
+                      src={detectDownloadOS() === 'android' ? assetUrl('/google_play_cta.svg') : assetUrl('/download-on-the-app-store.svg')}
+                      alt={detectDownloadOS() === 'android' ? 'Get it on Google Play' : 'Download on the App Store'}
+                    />
+                  </StoreBadgeLink>
+                </>
+              ) : (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  startIcon={<PlayArrowRoundedIcon />}
+                  disabled={!streamingHref}
+                  onClick={launchScene}
+                >
+                  {t('discover.scene.launch_cta')}
+                </Button>
+              )}
+              <Button variant="outlined" color="secondary" size="small" onClick={onRetry}>
+                {t('discover.scene.retry')}
+              </Button>
+            </SceneLaunchCard>
+          </SceneLaunchOverlay>
+        )}
+        {showIframe && (
+          <IframeOpenButton href={streamingExternalHref ?? streamingHref ?? '#'} target="_blank" rel="noopener noreferrer">
+            <OpenInNewIcon />
+            {t('discover.scene.open_external')}
+          </IframeOpenButton>
+        )}
+      </VideoArea>
+
+      <ControlsRow>
+        <ControlsButtons>
+          <Button
+            variant="outlined"
+            color="secondary"
+            size="small"
+            startIcon={isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+            onClick={toggleFullscreen}
+            disabled={!streamingHref}
+          >
+            {isFullscreen ? t('discover.scene.exit_fullscreen') : t('discover.scene.fullscreen')}
+          </Button>
+          {showIframe && (
+            <Button variant="outlined" color="secondary" size="small" startIcon={<CloseRoundedIcon />} onClick={closeMedia}>
+              {t('discover.scene.close_media')}
+            </Button>
+          )}
+        </ControlsButtons>
+      </ControlsRow>
+    </WatcherContainer>
+  )
 }
 
 function SceneWatcherReady(props: SceneWatcherCardProps) {
