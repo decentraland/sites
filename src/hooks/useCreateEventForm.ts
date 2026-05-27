@@ -37,15 +37,23 @@ function validateImageType(file: File, accepted: string[], invalidCode: ImageErr
   return null
 }
 
-async function compressOversized(
+// Re-encode every selected cover to WebP (falling back to JPEG when the browser
+// can't encode WebP), shrinking past 500 KB when needed. When the source can't
+// be re-encoded at all (animated GIF, or a decoder/canvas failure) we keep the
+// original if it already fits and only reject when it's both unconvertible and
+// over the limit.
+async function prepareImageUpload(
   file: File,
   options: { maxWidth?: number; maxHeight?: number; preserveDimensions?: boolean }
 ): Promise<{ file: File; error: ImageErrorCode | null }> {
-  const compressed = await compressImageFile(file, { ...options, maxBytes: MAX_IMAGE_SIZE_BYTES })
-  if (compressed) {
-    return { file: compressed, error: null }
+  const converted = await compressImageFile(file, { ...options, maxBytes: MAX_IMAGE_SIZE_BYTES })
+  if (converted) {
+    return { file: converted, error: null }
   }
-  return { file, error: 'image_too_large' }
+  if (file.size > MAX_IMAGE_SIZE_BYTES) {
+    return { file, error: 'image_too_large' }
+  }
+  return { file, error: null }
 }
 
 function readImageDimensions(file: File): Promise<{ width: number; height: number }> {
@@ -154,42 +162,33 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         })
         return
       }
-      let uploadable: File = file
-      if (file.size > MAX_IMAGE_SIZE_BYTES) {
-        const { file: compressed, error: sizeError } = await compressOversized(file, {
-          maxWidth: COVER_RECOMMENDED_WIDTH,
-          maxHeight: COVER_RECOMMENDED_HEIGHT
-        })
-        if (sizeError) {
-          setForm(prev => {
-            if (prev.imagePreviewUrl) URL.revokeObjectURL(prev.imagePreviewUrl)
-            return { ...prev, imageError: sizeError, image: null, imagePreviewUrl: null, imageUrl: null, isUploadingImage: false }
-          })
-          return
-        }
-        uploadable = compressed
-      }
       if (!identity) {
         setForm(prev => ({ ...prev, imageError: 'upload_failed' }))
         return
       }
-      const previewUrl = URL.createObjectURL(uploadable)
+      // Show the original immediately and flag uploading before the async
+      // re-encode so the form's submit guard sees the in-flight state.
+      const previewUrl = URL.createObjectURL(file)
       setForm(prev => {
         if (prev.imagePreviewUrl) URL.revokeObjectURL(prev.imagePreviewUrl)
-        return {
-          ...prev,
-          image: uploadable,
-          imagePreviewUrl: previewUrl,
-          imageError: null,
-          imageUrl: null,
-          isUploadingImage: true
-        }
+        return { ...prev, image: file, imagePreviewUrl: previewUrl, imageError: null, imageUrl: null, isUploadingImage: true }
       })
+      const { file: uploadable, error: prepError } = await prepareImageUpload(file, {
+        maxWidth: COVER_RECOMMENDED_WIDTH,
+        maxHeight: COVER_RECOMMENDED_HEIGHT
+      })
+      if (prepError) {
+        setForm(prev => {
+          if (prev.imagePreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(prev.imagePreviewUrl)
+          return { ...prev, imageError: prepError, image: null, imagePreviewUrl: null, imageUrl: null, isUploadingImage: false }
+        })
+        return
+      }
       try {
         const result = await uploadPoster({ file: uploadable, identity }).unwrap()
         setForm(prev => {
           if (prev.imagePreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(prev.imagePreviewUrl)
-          return { ...prev, imageUrl: result.url, imagePreviewUrl: result.url, isUploadingImage: false }
+          return { ...prev, image: uploadable, imageUrl: result.url, imagePreviewUrl: result.url, isUploadingImage: false }
         })
       } catch {
         setForm(prev => ({ ...prev, isUploadingImage: false, imageError: 'upload_failed' }))
@@ -222,32 +221,31 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         })
         return
       }
-      let sizedFile: File = file
-      if (file.size > MAX_IMAGE_SIZE_BYTES) {
-        const { file: compressed, error: sizeError } = await compressOversized(file, { preserveDimensions: true })
-        if (sizeError) {
-          setForm(prev => {
-            if (prev.verticalImagePreviewUrl) URL.revokeObjectURL(prev.verticalImagePreviewUrl)
-            return {
-              ...prev,
-              verticalImageError: sizeError,
-              verticalImage: null,
-              verticalImagePreviewUrl: null,
-              verticalImageUrl: null,
-              isUploadingVerticalImage: false
-            }
-          })
-          return
-        }
-        sizedFile = compressed
+      if (!identity) {
+        setForm(prev => ({ ...prev, verticalImageError: 'upload_failed' }))
+        return
       }
-      const dimensionError = await validateVerticalImageDimensions(sizedFile)
-      if (dimensionError) {
+      const previewUrl = URL.createObjectURL(file)
+      setForm(prev => {
+        if (prev.verticalImagePreviewUrl) URL.revokeObjectURL(prev.verticalImagePreviewUrl)
+        return {
+          ...prev,
+          verticalImage: file,
+          verticalImagePreviewUrl: previewUrl,
+          verticalImageError: null,
+          verticalImageUrl: null,
+          isUploadingVerticalImage: true
+        }
+      })
+      // Preserve dimensions: the 716×1814 requirement is validated right after.
+      const { file: uploadable, error: prepError } = await prepareImageUpload(file, { preserveDimensions: true })
+      const validationError = prepError ?? (await validateVerticalImageDimensions(uploadable))
+      if (validationError) {
         setForm(prev => {
-          if (prev.verticalImagePreviewUrl) URL.revokeObjectURL(prev.verticalImagePreviewUrl)
+          if (prev.verticalImagePreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(prev.verticalImagePreviewUrl)
           return {
             ...prev,
-            verticalImageError: dimensionError,
+            verticalImageError: validationError,
             verticalImage: null,
             verticalImagePreviewUrl: null,
             verticalImageUrl: null,
@@ -256,28 +254,13 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         })
         return
       }
-      if (!identity) {
-        setForm(prev => ({ ...prev, verticalImageError: 'upload_failed' }))
-        return
-      }
-      const previewUrl = URL.createObjectURL(sizedFile)
-      setForm(prev => {
-        if (prev.verticalImagePreviewUrl) URL.revokeObjectURL(prev.verticalImagePreviewUrl)
-        return {
-          ...prev,
-          verticalImage: sizedFile,
-          verticalImagePreviewUrl: previewUrl,
-          verticalImageError: null,
-          verticalImageUrl: null,
-          isUploadingVerticalImage: true
-        }
-      })
       try {
-        const result = await uploadPosterVertical({ file: sizedFile, identity }).unwrap()
+        const result = await uploadPosterVertical({ file: uploadable, identity }).unwrap()
         setForm(prev => {
           if (prev.verticalImagePreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(prev.verticalImagePreviewUrl)
           return {
             ...prev,
+            verticalImage: uploadable,
             verticalImageUrl: result.url,
             verticalImagePreviewUrl: result.url,
             isUploadingVerticalImage: false

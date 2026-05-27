@@ -656,8 +656,9 @@ describe('useCreateEventForm', () => {
     })
   })
 
-  describe('when handleImageSelect succeeds', () => {
-    it('should store the uploaded url in form state', async () => {
+  describe('when handleImageSelect succeeds with an unconvertible-but-small file (e.g. animated GIF)', () => {
+    it('should upload the original file unchanged', async () => {
+      mockCompressImageFile.mockResolvedValueOnce(null)
       const { result } = renderHook(() => useCreateEventForm())
       const file = new File(['x'], 'valid.png', { type: 'image/png' })
 
@@ -668,6 +669,23 @@ describe('useCreateEventForm', () => {
       expect(mockUploadPoster).toHaveBeenCalledWith({ file, identity: mockIdentity })
       expect(result.current.form.imageUrl).toBe('https://cdn/test.png')
       expect(result.current.form.isUploadingImage).toBe(false)
+    })
+  })
+
+  describe('when handleImageSelect converts a small image to WebP', () => {
+    it('should upload the converted WebP file instead of the original', async () => {
+      const converted = new File([new Uint8Array(50 * 1024)], 'valid.webp', { type: 'image/webp' })
+      mockCompressImageFile.mockResolvedValueOnce(converted)
+      const { result } = renderHook(() => useCreateEventForm())
+      const file = new File(['x'], 'valid.png', { type: 'image/png' })
+
+      await act(async () => {
+        await result.current.handleImageSelect(file)
+      })
+
+      expect(mockCompressImageFile).toHaveBeenCalledWith(file, expect.objectContaining({ maxWidth: 1340, maxHeight: 670 }))
+      expect(mockUploadPoster).toHaveBeenCalledWith({ file: converted, identity: mockIdentity })
+      expect(result.current.form.imageUrl).toBe('https://cdn/test.png')
     })
   })
 
@@ -811,8 +829,9 @@ describe('useCreateEventForm', () => {
     })
   })
 
-  describe('when handleVerticalImageSelect succeeds', () => {
-    it('should store the uploaded vertical url and clear the uploading flag', async () => {
+  describe('when handleVerticalImageSelect succeeds with an unconvertible-but-small file', () => {
+    it('should upload the original vertical file and clear the uploading flag', async () => {
+      mockCompressImageFile.mockResolvedValueOnce(null)
       const { result } = renderHook(() => useCreateEventForm())
       const file = new File(['x'], 'v.png', { type: 'image/png' })
 
@@ -823,6 +842,23 @@ describe('useCreateEventForm', () => {
       expect(mockUploadPosterVertical).toHaveBeenCalledWith({ file, identity: mockIdentity })
       expect(result.current.form.verticalImageUrl).toBe('https://cdn/vertical.png')
       expect(result.current.form.isUploadingVerticalImage).toBe(false)
+    })
+  })
+
+  describe('when handleVerticalImageSelect converts a small image to WebP', () => {
+    it('should upload the converted WebP file (dimensions preserved) instead of the original', async () => {
+      const converted = new File([new Uint8Array(40 * 1024)], 'v.webp', { type: 'image/webp' })
+      mockCompressImageFile.mockResolvedValueOnce(converted)
+      const { result } = renderHook(() => useCreateEventForm())
+      const file = new File(['x'], 'v.png', { type: 'image/png' })
+
+      await act(async () => {
+        await result.current.handleVerticalImageSelect(file)
+      })
+
+      expect(mockCompressImageFile).toHaveBeenCalledWith(file, expect.objectContaining({ preserveDimensions: true }))
+      expect(mockUploadPosterVertical).toHaveBeenCalledWith({ file: converted, identity: mockIdentity })
+      expect(result.current.form.verticalImageUrl).toBe('https://cdn/vertical.png')
     })
   })
 
