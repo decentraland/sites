@@ -1006,6 +1006,7 @@
     "error_repeat_interval_invalid": "L'intervalle de répétition doit être un nombre entier entre 1 et 4",
     "error_repeat_days_required": "Sélectionnez au moins un jour",
     "error_start_date_not_in_repeat_days": "Le jour de la semaine de la date de début doit faire partie des jours sélectionnés",
+    "error_image_too_large": "Nous n'avons pas pu compresser cette image en dessous de 500 Ko. Veuillez choisir un fichier plus petit.",
     "vertical_recommended_size": "Taille recommandée : 716 × 1814 px"
   },
   "community": {
