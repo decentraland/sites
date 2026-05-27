@@ -363,6 +363,15 @@
     "report": {
       "title": "プレイヤーを報告する – Decentraland",
       "success_title": "報告が送信されました – Decentraland"
+    },
+    "play": {
+      "title": "ウェブ版は提供を終了しました。",
+      "subtitle": "デスクトップまたはモバイルアプリでプレイを続けましょう。",
+      "also_available_on": "こちらでも利用可能",
+      "already_downloaded": "すでにダウンロード済みですか？",
+      "jump_in": "入場する！",
+      "experimental": "ウェブでプレイを続けたいですか？実験版を{here}でお試しください",
+      "here": "こちら"
     }
   },
   "page_invite": {
@@ -1006,6 +1015,7 @@
     "error_repeat_interval_invalid": "繰り返し間隔は1から4までの整数で入力してください",
     "error_repeat_days_required": "少なくとも1つの曜日を選択してください",
     "error_start_date_not_in_repeat_days": "開始日の曜日は選択した曜日のいずれかである必要があります",
+    "error_image_too_large": "この画像を500 KB以下に圧縮できませんでした。より小さいファイルを選択してください。",
     "vertical_recommended_size": "推奨サイズ：716 × 1814 px"
   },
   "community": {

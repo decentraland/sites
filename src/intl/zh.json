@@ -363,6 +363,15 @@
     "report": {
       "title": "举报玩家 – Decentraland",
       "success_title": "举报已提交 – Decentraland"
+    },
+    "play": {
+      "title": "网页版已不再提供。",
+      "subtitle": "在桌面或移动应用上继续游玩。",
+      "also_available_on": "同时支持",
+      "already_downloaded": "已经下载了？",
+      "jump_in": "立即进入！",
+      "experimental": "想继续在网页上游玩？点击{here}体验实验版",
+      "here": "这里"
     }
   },
   "page_invite": {
@@ -1006,6 +1015,7 @@
     "error_repeat_interval_invalid": "重复间隔必须是 1 到 4 之间的整数",
     "error_repeat_days_required": "请至少选择一天",
     "error_start_date_not_in_repeat_days": "开始日期的星期必须是所选日期之一",
+    "error_image_too_large": "无法将此图片压缩到 500 KB 以下。请选择较小的文件。",
     "vertical_recommended_size": "建议尺寸：716 × 1814 px"
   },
   "community": {

@@ -51,13 +51,6 @@ const ErrorText = styled(Typography)(({ theme }) => ({
   fontFamily: "'Inter', sans-serif"
 }))
 
-const OptimizeLink = styled('a')(({ theme }) => ({
-  color: theme.palette.error.main,
-  fontWeight: 700,
-  textDecoration: 'underline',
-  cursor: 'pointer'
-}))
-
 const PreviewImage = styled('img')({
   position: 'absolute',
   inset: 0,
@@ -92,4 +85,4 @@ const OverlayText = styled(Typography)({
   textTransform: 'uppercase'
 })
 
-export { ErrorIcon, ErrorRow, ErrorText, OptimizeLink, OverlayText, PreviewImage, PreviewOverlay, errorPulse, errorShake }
+export { ErrorIcon, ErrorRow, ErrorText, OverlayText, PreviewImage, PreviewOverlay, errorPulse, errorShake }
