@@ -4,15 +4,18 @@ import { useInView } from 'react-intersection-observer'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
+import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { Button, Typography, launchDesktopApp, useDesktopMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../config/env'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useWalletAddress } from '../../hooks/useWalletAddress'
+import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
+import { assetUrl } from '../../utils/assetUrl'
 import { redirectToAuth } from '../../utils/authRedirect'
 import { DownloadOptions } from '../DownloadOptions'
+import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../Home/shared/googlePlay'
+import { GooglePlayButton, GooglePlayImage } from '../Home/shared/MobileCTA.styled'
 import { LandingFooter } from '../LandingFooter'
 import { LandingNavbarConnected } from '../LandingNavbar'
 import { DownloadLayoutProps } from './DownloadLayout.types'
@@ -35,7 +38,6 @@ import {
   ModalIcon,
   ModalTitle,
   PreTitleContainer,
-  ShareButton,
   ShareContainer,
   SignInButton
 } from './DownloadLayout.styled'
@@ -49,6 +51,8 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
   const l = useFormatMessage()
   const isDesktop = useDesktopMediaQuery()
+  const [, userAgentData] = useAdvancedUserAgentData()
+  const isMobileAndroid = !!userAgentData?.mobile && userAgentData.os.name === 'Android'
 
   const { address } = useWalletAddress()
 
@@ -140,21 +144,6 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
     return 'default' + (Math.floor(Math.random() * (160 - 1 + 1)) + 1)
   }, [])
 
-  const handleShare = useCallback(async () => {
-    try {
-      const shareUrl = new URL(window.location.href)
-      shareUrl.searchParams.delete('email')
-      shareUrl.searchParams.delete('user')
-      await navigator.share({
-        title: l('page.download.share_title'),
-        text: l('page.download.share_title'),
-        url: shareUrl.toString()
-      })
-    } catch {
-      /* user cancelled or API unavailable */
-    }
-  }, [l])
-
   return (
     <>
       {/* Signed-in download mirrors the homepage chrome: full navbar (nav links +
@@ -224,12 +213,17 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
           )}
         </DownloadContainer>
 
-        {!isDesktop && typeof navigator !== 'undefined' && !!navigator.share && (
+        {!isDesktop && (
           <ShareContainer>
-            <Typography variant="h6">{l('page.download.mobile.switch_to_computer')}</Typography>
-            <ShareButton onClick={handleShare} endIcon={<ShareOutlinedIcon />} variant="contained">
-              {l('page.download.mobile.send_link')}
-            </ShareButton>
+            {isMobileAndroid ? (
+              <GooglePlayButton href={GOOGLE_PLAY_MOBILE_URL} target="_blank" rel="noopener noreferrer">
+                <GooglePlayImage src={googlePlayBadge} alt="Get it on Google Play" />
+              </GooglePlayButton>
+            ) : (
+              <GooglePlayButton href={DOWNLOAD_URLS.appStore} target="_blank" rel="noopener noreferrer">
+                <GooglePlayImage src={assetUrl('/download-on-the-app-store.svg')} alt="Download on the App Store" />
+              </GooglePlayButton>
+            )}
           </ShareContainer>
         )}
         <Modal open={openModal} size="tiny">

@@ -1,6 +1,7 @@
 import { useInView } from 'react-intersection-observer'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useWalletAddress } from '../../hooks/useWalletAddress'
@@ -8,6 +9,8 @@ import { redirectToAuth } from '../../utils/authRedirect'
 import { DownloadLayout } from './DownloadLayout'
 
 jest.mock('react-intersection-observer', () => ({ useInView: jest.fn() }))
+
+jest.mock('@dcl/hooks', () => ({ useAdvancedUserAgentData: jest.fn(() => [false, undefined]) }))
 
 jest.mock('decentraland-ui2', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -57,9 +60,9 @@ jest.mock('../LandingFooter', () => ({ LandingFooter: () => <div data-testid="fo
 jest.mock('../LandingNavbar', () => ({ LandingNavbarConnected: () => <nav data-testid="connected-navbar" /> }))
 jest.mock('@mui/icons-material/CheckCircle', () => ({ __esModule: true, default: () => <span data-testid="check-icon" /> }))
 jest.mock('@mui/icons-material/FileDownloadOutlined', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/ShareOutlined', () => ({ __esModule: true, default: () => <span /> }))
 
 const mockUseInView = jest.mocked(useInView)
+const mockUseAdvancedUserAgentData = jest.mocked(useAdvancedUserAgentData)
 const mockUseWalletAddress = jest.mocked(useWalletAddress)
 const mockUseGetProfileQuery = jest.mocked(useGetProfileQuery)
 const mockLaunchDesktopApp = jest.mocked(launchDesktopApp)
@@ -80,6 +83,7 @@ describe('DownloadLayout', () => {
     window.history.pushState({}, '', '/download')
     mockUseInView.mockReturnValue({ ref: jest.fn(), inView: false } as unknown as ReturnType<typeof useInView>)
     mockUseDesktopMediaQuery.mockReturnValue(true)
+    mockUseAdvancedUserAgentData.mockReturnValue([false, undefined] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
     setWallet(null)
     setProfile(undefined)
   })
@@ -190,24 +194,25 @@ describe('DownloadLayout', () => {
     })
   })
 
-  describe('when rendered on a mobile device that supports the Web Share API', () => {
-    const shareMock = jest.fn().mockResolvedValue(undefined)
-
+  describe('when rendered on a mobile device', () => {
     beforeEach(() => {
       mockUseDesktopMediaQuery.mockReturnValue(false)
-      setWallet('0xabc')
-      setProfile({ avatars: [{ name: 'Tesla', ethAddress: '0xabc' }] })
-      Object.defineProperty(navigator, 'share', { configurable: true, value: shareMock })
     })
 
-    afterEach(() => {
-      shareMock.mockClear()
-    })
-
-    it('should invoke the Web Share API when the send-link button is clicked', async () => {
+    it('should show the App Store badge on iOS', () => {
+      mockUseAdvancedUserAgentData.mockReturnValue([false, { os: { name: 'iOS' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
       render(<DownloadLayout title={TITLE} />)
-      await userEvent.click(screen.getByText('page.download.mobile.send_link'))
-      expect(shareMock).toHaveBeenCalledTimes(1)
+      expect(screen.getByAltText('Download on the App Store')).toBeInTheDocument()
+    })
+
+    it('should show the Google Play badge on Android', () => {
+      mockUseAdvancedUserAgentData.mockReturnValue([false, { os: { name: 'Android' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+      render(<DownloadLayout title={TITLE} />)
+      expect(screen.getByAltText('Get it on Google Play')).toBeInTheDocument()
     })
   })
 })

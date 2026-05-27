@@ -38,10 +38,6 @@
       "your_account": "あなたのアカウント",
       "already_downloaded": "すでにダウンロード済みですか？",
       "jump_in": "入場する",
-      "mobile": {
-        "switch_to_computer": "Decentralandをダウンロードするにはパソコンに切り替えてください",
-        "send_link": "リンクを送る"
-      },
       "modal": {
         "title_first_line": "まだ",
         "title_second_line": "Decentralandアプリがありません",
@@ -49,7 +45,6 @@
       },
       "downloading": "Decentralandをダウンロード中...",
       "avatar_preview": "Decentralandアバタープレビュー",
-      "share_title": "Decentralandをダウンロード",
       "success": {
         "title": "もう少しで完了です！",
         "subtitle": "ダウンロードしたファイルを開いてDecentralandのインストールを完了し、{action}を始めましょう",

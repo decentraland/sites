@@ -38,10 +38,6 @@
       "your_account": "내 계정",
       "already_downloaded": "이미 다운로드하셨나요?",
       "jump_in": "입장하기",
-      "mobile": {
-        "switch_to_computer": "Decentraland를 다운로드하려면 컴퓨터로 전환하세요",
-        "send_link": "링크 보내기"
-      },
       "modal": {
         "title_first_line": "아직",
         "title_second_line": "Decentraland 앱이 없습니다",
@@ -49,7 +45,6 @@
       },
       "downloading": "Decentraland 다운로드 중...",
       "avatar_preview": "Decentraland 아바타 미리보기",
-      "share_title": "Decentraland 다운로드",
       "success": {
         "title": "거의 다 됐어요!",
         "subtitle": "방금 다운로드한 파일을 열어 Decentraland 설치를 완료하고 {action}을 시작하세요",

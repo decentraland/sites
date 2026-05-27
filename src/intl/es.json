@@ -38,10 +38,6 @@
       "your_account": "Tu Cuenta",
       "already_downloaded": "¿Ya lo descargaste?",
       "jump_in": "Entrar",
-      "mobile": {
-        "switch_to_computer": "Usá tu computadora para descargar Decentraland",
-        "send_link": "Enviarme el enlace"
-      },
       "modal": {
         "title_first_line": "Aún no tienes la",
         "title_second_line": "aplicación de Decentraland",
@@ -49,7 +45,6 @@
       },
       "downloading": "Descargando Decentraland...",
       "avatar_preview": "Vista previa del Avatar de Decentraland",
-      "share_title": "Descargar Decentraland",
       "success": {
         "title": "¡Ya casi está!",
         "subtitle": "Abre el archivo que acabas de descargar para terminar de instalar Decentraland y comenzar a {action}",
