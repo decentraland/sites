@@ -368,6 +368,15 @@
     "report": {
       "title": "Reportar a un jugador – Decentraland",
       "success_title": "Reporte enviado – Decentraland"
+    },
+    "play": {
+      "title": "La versión web ya no está disponible.",
+      "subtitle": "Seguí jugando en la app de escritorio o móvil.",
+      "also_available_on": "También disponible en",
+      "already_downloaded": "¿Ya lo descargaste?",
+      "jump_in": "¡ENTRAR!",
+      "experimental": "¿Querés seguir jugando en la web? Probá la versión experimental {here}",
+      "here": "AQUÍ"
     }
   },
   "page_invite": {
