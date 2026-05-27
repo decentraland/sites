@@ -4,6 +4,7 @@ import { useDesktopMediaQuery } from 'decentraland-ui2'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
 import { useAnonUserId } from '../../hooks/useAnonUserId'
 import { useHangOutAction } from '../../hooks/useHangOutAction'
+import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
 import { PlayPage } from '.'
 
 jest.mock('decentraland-ui2', () => {
@@ -147,6 +148,15 @@ describe('PlayPage', () => {
       const here = screen.getByText('page.play.here')
       expect(here).toHaveAttribute('href', 'https://decentraland.zone/bevy-web')
       fireEvent.click(here)
+      expect(trackClick).toHaveBeenCalledTimes(1)
+    })
+
+    it('should link the Epic CTA to the Epic Games store and track the click', () => {
+      render(<PlayPage />)
+      const epic = screen.getByText('page.download.download_on')
+      expect(epic).toHaveAttribute('href', DOWNLOAD_URLS.epic)
+      expect(screen.getByAltText('Epic Games')).toBeInTheDocument()
+      fireEvent.click(epic)
       expect(trackClick).toHaveBeenCalledTimes(1)
     })
   })

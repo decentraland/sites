@@ -12,7 +12,7 @@ import { useHangOutAction } from '../../hooks/useHangOutAction'
 import appleLogo from '../../images/apple-logo.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
-import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
+import { DownloadPlace, SegmentEvent } from '../../modules/segment'
 import { OperativeSystem } from '../../types/download.types'
 import { assetUrl } from '../../utils/assetUrl'
 import {
@@ -98,7 +98,7 @@ const PlayPage = memo(() => {
             href={isMobileAndroid ? GOOGLE_PLAY_MOBILE_URL : DOWNLOAD_URLS.appStore}
             target="_blank"
             rel="noopener noreferrer"
-            data-place={DownloadPlace.PLAY_HERO}
+            data-place={isMobileAndroid ? DownloadPlace.PLAY_HERO_GOOGLE_PLAY : DownloadPlace.PLAY_HERO_APP_STORE}
             data-event={SegmentEvent.DOWNLOAD}
             onClick={onClickHandle}
           >
@@ -137,7 +137,7 @@ const PlayPage = memo(() => {
           <PlayCTAButtons>
             <PlayDownloadButton
               href={userAgentData ? buildDownloadSuccessHref(userAgentData.os.name, DownloadPlace.PLAY_HERO) : '/download'}
-              data-place={SectionViewedTrack.PLAY_HERO}
+              data-place={DownloadPlace.PLAY_HERO}
               data-event={SegmentEvent.DOWNLOAD}
               onClick={handleDownloadClick}
             >
@@ -177,7 +177,7 @@ const PlayPage = memo(() => {
               href={DOWNLOAD_URLS.appStore}
               target="_blank"
               rel="noopener noreferrer"
-              data-place={DownloadPlace.PLAY_HERO}
+              data-place={DownloadPlace.PLAY_HERO_APP_STORE}
               data-event={SegmentEvent.DOWNLOAD}
               onClick={onClickHandle}
             >
@@ -187,7 +187,7 @@ const PlayPage = memo(() => {
               href={GOOGLE_PLAY_MOBILE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              data-place={DownloadPlace.PLAY_HERO}
+              data-place={DownloadPlace.PLAY_HERO_GOOGLE_PLAY}
               data-event={SegmentEvent.DOWNLOAD}
               onClick={onClickHandle}
             >
