@@ -1,4 +1,7 @@
-const QUALITY_STEPS = [0.85, 0.7, 0.55, 0.4]
+// Start near-lossless and only step down when the result is still over budget.
+// Images that already fit (the common case) are encoded at 0.92 — visually
+// indistinguishable from the source — so we never degrade quality needlessly.
+const QUALITY_STEPS = [0.92, 0.82, 0.7, 0.6, 0.5]
 const OUTPUT_FORMATS_DEFAULT = ['image/webp', 'image/jpeg'] as const
 
 type CompressOptions = {
@@ -117,6 +120,9 @@ async function compressImageFile(file: File, options: CompressOptions): Promise<
   canvas.height = rect.dHeight
   const ctx = canvas.getContext('2d')
   if (!ctx) return null
+  // Use the browser's highest-quality resampling so downscaling stays crisp.
+  ctx.imageSmoothingEnabled = true
+  ctx.imageSmoothingQuality = 'high'
   try {
     ctx.drawImage(loaded.bitmap as CanvasImageSource, rect.sx, rect.sy, rect.sWidth, rect.sHeight, 0, 0, rect.dWidth, rect.dHeight)
   } catch {

@@ -181,6 +181,24 @@ describe('compressImageFile', () => {
     })
   })
 
+  describe('when the image already fits at the top quality', () => {
+    it('should encode at the near-lossless quality (0.92) and not step down', async () => {
+      installBitmapMock(1340, 670)
+      const qualities: number[] = []
+      installCanvasMock((mime, quality) => {
+        qualities.push(quality)
+        return makeBlob(200, mime)
+      })
+      const file = new File(['x'], 'cover.png', { type: 'image/png' })
+
+      const result = await compressImageFile(file, { maxBytes: 500 * 1024, cover: { width: 1340, height: 670 } })
+
+      expect(result).not.toBeNull()
+      expect(qualities[0]).toBe(0.92)
+      expect(qualities).toHaveLength(1)
+    })
+  })
+
   describe('when every quality step exceeds the budget', () => {
     it('should return null', async () => {
       installBitmapMock(1000, 1000)
