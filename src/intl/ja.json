@@ -1011,6 +1011,7 @@
     "error_repeat_interval_invalid": "繰り返し間隔は1から4までの整数で入力してください",
     "error_repeat_days_required": "少なくとも1つの曜日を選択してください",
     "error_start_date_not_in_repeat_days": "開始日の曜日は選択した曜日のいずれかである必要があります",
+    "error_image_too_large": "この画像を500 KB以下に圧縮できませんでした。より小さいファイルを選択してください。",
     "vertical_recommended_size": "推奨サイズ：716 × 1814 px"
   },
   "community": {

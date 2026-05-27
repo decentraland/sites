@@ -11,6 +11,7 @@ const mockUploadPosterVertical = jest.fn()
 const mockUnwrap = jest.fn()
 const mockUpdateUnwrap = jest.fn()
 const mockCaptureException = jest.fn()
+const mockCompressImageFile = jest.fn<Promise<File | null>, [File, unknown]>()
 
 let mockUseAuthIdentityReturn: { identity: AuthIdentity | undefined }
 
@@ -27,6 +28,10 @@ jest.mock('../features/events', () => ({
   useUpdateEventMutation: () => [mockUpdateEvent],
   useUploadPosterMutation: () => [mockUploadPoster],
   useUploadPosterVerticalMutation: () => [mockUploadPosterVertical]
+}))
+
+jest.mock('../utils/imageCompression', () => ({
+  compressImageFile: (file: File, options: unknown) => mockCompressImageFile(file, options)
 }))
 
 function buildInitialEvent(overrides: Partial<EventEntry> = {}): EventEntry {
@@ -129,6 +134,8 @@ describe('useCreateEventForm', () => {
     mockImageHeight = 1814
     mockImageShouldFail = false
     ;(global as unknown as { Image: unknown }).Image = MockImage
+    mockCompressImageFile.mockReset()
+    mockCompressImageFile.mockResolvedValue(null)
   })
 
   afterEach(() => {
@@ -579,6 +586,29 @@ describe('useCreateEventForm', () => {
     })
   })
 
+  describe('when markRequiredFields is called', () => {
+    it('should set the required-error message on every listed field', () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      act(() => {
+        result.current.markRequiredFields(['name', 'description'])
+      })
+
+      expect(result.current.errors.name).toBe('create_event.error_required')
+      expect(result.current.errors.description).toBe('create_event.error_required')
+    })
+
+    it('should be a no-op when given an empty list', () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      act(() => {
+        result.current.markRequiredFields([])
+      })
+
+      expect(result.current.errors).toEqual({})
+    })
+  })
+
   describe('when handleImageSelect receives an unsupported file type', () => {
     it('should surface the invalid type error and not call uploadPoster', async () => {
       const { result } = renderHook(() => useCreateEventForm())
@@ -593,8 +623,9 @@ describe('useCreateEventForm', () => {
     })
   })
 
-  describe('when handleImageSelect receives a file larger than 500kb', () => {
-    it('should surface the too-large error', async () => {
+  describe('when handleImageSelect receives a file larger than 500kb that compression cannot shrink', () => {
+    it('should surface the too-large error and skip the upload', async () => {
+      mockCompressImageFile.mockResolvedValueOnce(null)
       const { result } = renderHook(() => useCreateEventForm())
       const oversized = new File([new Uint8Array(600 * 1024)], 'big.png', { type: 'image/png' })
 
@@ -602,7 +633,26 @@ describe('useCreateEventForm', () => {
         await result.current.handleImageSelect(oversized)
       })
 
+      expect(mockCompressImageFile).toHaveBeenCalled()
       expect(result.current.form.imageError).toBe('image_too_large')
+      expect(mockUploadPoster).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when handleImageSelect receives a file larger than 500kb that compression can shrink', () => {
+    it('should upload the compressed file instead of the original', async () => {
+      const compressed = new File([new Uint8Array(100 * 1024)], 'big.webp', { type: 'image/webp' })
+      mockCompressImageFile.mockResolvedValueOnce(compressed)
+      const { result } = renderHook(() => useCreateEventForm())
+      const oversized = new File([new Uint8Array(600 * 1024)], 'big.png', { type: 'image/png' })
+
+      await act(async () => {
+        await result.current.handleImageSelect(oversized)
+      })
+
+      expect(mockUploadPoster).toHaveBeenCalledWith({ file: compressed, identity: mockIdentity })
+      expect(result.current.form.imageError).toBeNull()
+      expect(result.current.form.imageUrl).toBe('https://cdn/test.png')
     })
   })
 
@@ -688,8 +738,9 @@ describe('useCreateEventForm', () => {
     })
   })
 
-  describe('when handleVerticalImageSelect receives a file larger than 500kb', () => {
-    it('should surface the too-large error', async () => {
+  describe('when handleVerticalImageSelect receives a file larger than 500kb that compression cannot shrink', () => {
+    it('should surface the too-large error and skip the upload', async () => {
+      mockCompressImageFile.mockResolvedValueOnce(null)
       const { result } = renderHook(() => useCreateEventForm())
       const oversized = new File([new Uint8Array(600 * 1024)], 'big.png', { type: 'image/png' })
 
@@ -697,7 +748,25 @@ describe('useCreateEventForm', () => {
         await result.current.handleVerticalImageSelect(oversized)
       })
 
+      expect(mockCompressImageFile).toHaveBeenCalledWith(oversized, expect.objectContaining({ preserveDimensions: true }))
       expect(result.current.form.verticalImageError).toBe('image_too_large')
+      expect(mockUploadPosterVertical).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when handleVerticalImageSelect receives a file larger than 500kb that compression can shrink', () => {
+    it('should upload the compressed file (preserving 716x1814 dimensions) instead of the original', async () => {
+      const compressed = new File([new Uint8Array(100 * 1024)], 'big.webp', { type: 'image/webp' })
+      mockCompressImageFile.mockResolvedValueOnce(compressed)
+      const { result } = renderHook(() => useCreateEventForm())
+      const oversized = new File([new Uint8Array(600 * 1024)], 'big.png', { type: 'image/png' })
+
+      await act(async () => {
+        await result.current.handleVerticalImageSelect(oversized)
+      })
+
+      expect(mockUploadPosterVertical).toHaveBeenCalledWith({ file: compressed, identity: mockIdentity })
+      expect(result.current.form.verticalImageError).toBeNull()
     })
   })
 

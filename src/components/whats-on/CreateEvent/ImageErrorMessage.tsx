@@ -2,9 +2,7 @@
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
 import { useTranslation } from '@dcl/hooks'
 import type { ImageErrorCode } from '../../../hooks/useCreateEventForm.types'
-import { ErrorIcon, ErrorRow, ErrorText, OptimizeLink } from './shared.styled'
-
-const OPTIMIZE_IMAGE_URL = 'https://imagecompressor.com/'
+import { ErrorIcon, ErrorRow, ErrorText } from './shared.styled'
 
 /* eslint-disable @typescript-eslint/naming-convention -- keys match ImageErrorCode union */
 const IMAGE_ERROR_I18N = {
@@ -30,17 +28,7 @@ function ImageErrorMessage({ code }: ImageErrorMessageProps) {
       <ErrorIcon>
         <ErrorOutlineIcon />
       </ErrorIcon>
-      <ErrorText>
-        {t(IMAGE_ERROR_I18N[code])}
-        {code === 'image_too_large' && (
-          <>
-            {' '}
-            <OptimizeLink href={OPTIMIZE_IMAGE_URL} target="_blank" rel="noreferrer">
-              {t('create_event.optimize_link')}
-            </OptimizeLink>
-          </>
-        )}
-      </ErrorText>
+      <ErrorText>{t(IMAGE_ERROR_I18N[code])}</ErrorText>
     </ErrorRow>
   )
 }
