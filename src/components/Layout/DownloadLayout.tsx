@@ -11,9 +11,10 @@ import { getEnv } from '../../config/env'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useWalletAddress } from '../../hooks/useWalletAddress'
+import { redirectToAuth } from '../../utils/authRedirect'
 import { DownloadOptions } from '../DownloadOptions'
 import { LandingFooter } from '../LandingFooter'
-import { WrapDecentralandText } from '../WrapDecentralandText'
+import { LandingNavbarConnected } from '../LandingNavbar'
 import { DownloadLayoutProps } from './DownloadLayout.types'
 import {
   AlreadyDownloadedContainer,
@@ -35,7 +36,8 @@ import {
   ModalTitle,
   PreTitleContainer,
   ShareButton,
-  ShareContainer
+  ShareContainer,
+  SignInButton
 } from './DownloadLayout.styled'
 
 const DownloadLayout = memo((props: DownloadLayoutProps) => {
@@ -67,8 +69,13 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   }, [email, user])
 
   const profileAddress = user || address
+  const isSignedIn = !!profileAddress
   const { data: profile } = useGetProfileQuery(profileAddress ?? undefined, { skip: !profileAddress })
   const profileName = profile?.avatars?.[0]?.name
+
+  const handleSignIn = useCallback(() => {
+    redirectToAuth(window.location.pathname + window.location.search)
+  }, [])
 
   const wearableContainerRef = useRef<HTMLDivElement | null>(null)
   const { ref: wearableRef, inView } = useInView({ triggerOnce: true, rootMargin: '200px' })
@@ -150,9 +157,17 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
   return (
     <>
-      <DownloadPageContainer component="main">
-        <DownloadContainer>
-          <DclLogo onClick={() => (window.location.href = 'https://decentraland.org')} />
+      {/* Signed-in download mirrors the homepage chrome: full navbar (nav links +
+          avatar/MANA/notifications). Signed-out keeps the minimal logo + Sign In. */}
+      {isSignedIn && <LandingNavbarConnected />}
+      <DownloadPageContainer component="main" hasPreview={isSignedIn}>
+        <DownloadContainer hasPreview={isSignedIn}>
+          {!isSignedIn && (
+            <>
+              <DclLogo onClick={() => (window.location.href = 'https://decentraland.org')} />
+              <SignInButton onClick={handleSignIn}>{l('component.landing.navbar.sign_in')}</SignInButton>
+            </>
+          )}
 
           {isDesktop && (
             <>
@@ -163,49 +178,50 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
                 </AlreadyDownloadedText>
               </AlreadyDownloadedContainer>
               <DownloadOptionsContainer>
-                <PreTitleContainer>
-                  <CheckCircleIcon htmlColor="#34CE77" fontSize="large" />
-                  <Typography variant="h4">
-                    {l('page.download.pre_title', {
-                      name: profileName || l('page.download.your_account')
-                    })}
-                  </Typography>
-                </PreTitleContainer>
-                <DownloadTitle variant="h2">
-                  <WrapDecentralandText text={title} />
-                </DownloadTitle>
+                {isSignedIn && (
+                  <PreTitleContainer>
+                    <CheckCircleIcon htmlColor="#34CE77" fontSize="large" />
+                    <Typography variant="h4">
+                      {l('page.download.pre_title', {
+                        name: profileName || l('page.download.your_account')
+                      })}
+                    </Typography>
+                  </PreTitleContainer>
+                )}
+                <DownloadTitle variant="h2">{title}</DownloadTitle>
                 <DownloadOptions />
               </DownloadOptionsContainer>
             </>
           )}
 
-          {!isDesktop && (
-            <MobileTitle variant="h2">
-              <WrapDecentralandText text={title} />
-            </MobileTitle>
-          )}
+          {!isDesktop && <MobileTitle variant="h2">{title}</MobileTitle>}
 
-          <DownloadImageContainer>
-            {!isDesktop && <DownloadWearablePreviewOverlay />}
-            <DownloadWearablePreviewContainer
-              ref={(node: HTMLDivElement | null) => {
-                wearableRef(node)
-                wearableContainerRef.current = node
-              }}
-            >
-              {WearablePreviewComponent && (
-                <WearablePreviewComponent
-                  unity
-                  unityMode="jesus"
-                  profile={profile?.avatars?.[0]?.ethAddress || randomDefaultProfile}
-                  disableBackground={true}
-                  lockBeta={true}
-                  dev={false}
-                  baseUrl={getEnv('WEARABLE_PREVIEW_URL')}
-                />
-              )}
-            </DownloadWearablePreviewContainer>
-          </DownloadImageContainer>
+          {isSignedIn && (
+            <DownloadImageContainer>
+              {!isDesktop && <DownloadWearablePreviewOverlay />}
+              <DownloadWearablePreviewContainer
+                ref={(node: HTMLDivElement | null) => {
+                  wearableRef(node)
+                  wearableContainerRef.current = node
+                }}
+              >
+                {WearablePreviewComponent && (
+                  <WearablePreviewComponent
+                    unity
+                    unityMode="jesus"
+                    // Drive the preview off the known address (available synchronously when
+                    // signed in) instead of the async profile query — otherwise the first
+                    // render falls back to a random default avatar until the query resolves.
+                    profile={profileAddress || randomDefaultProfile}
+                    disableBackground={true}
+                    lockBeta={true}
+                    dev={false}
+                    baseUrl={getEnv('WEARABLE_PREVIEW_URL')}
+                  />
+                )}
+              </DownloadWearablePreviewContainer>
+            </DownloadImageContainer>
+          )}
         </DownloadContainer>
 
         {!isDesktop && typeof navigator !== 'undefined' && !!navigator.share && (

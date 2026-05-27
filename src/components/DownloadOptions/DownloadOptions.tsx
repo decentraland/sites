@@ -14,7 +14,7 @@ import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../modules/s
 import { addQueryParamsToUrlString, sanitizeCDNReleaseLinks, updateUrlWithLastValue } from '../../modules/url'
 import { Architecture, DownloadOptionProps, OperativeSystem } from '../../types/download.types'
 import { assetUrl } from '../../utils/assetUrl'
-import { CTAButton } from '../Buttons/CTAButton'
+import { DownloadButton, EpicButton } from '../Home/Hero/Hero.styled'
 import { EPIC_GAMES_URL } from '../Home/shared/epicGames'
 import { GOOGLE_PLAY_DESKTOP_URL } from '../Home/shared/googlePlay'
 import { VerifiedIcon } from '../Icon/VerifiedIcon'
@@ -24,7 +24,6 @@ import {
   AlternativeButtonsWrapper,
   AlternativeContainer,
   DownloadActions,
-  DownloadButtonImage,
   DownloadButtonsContainer,
   DownloadCounts,
   DownloadOptionsContainer
@@ -158,21 +157,32 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
         <DownloadActions>
           <DownloadButtonsContainer>
             {primaryDownloadOptions.map((option, index) => (
-              <CTAButton
+              <DownloadButton
                 key={index}
-                href={option.link!}
+                href={option.link}
+                data-place={SectionViewedTrack.DOWNLOAD}
+                data-event={SegmentEvent.DOWNLOAD}
                 onClick={event => {
                   event.preventDefault()
                   onClickHandle(event)
                   onClickDownloadHandler(option)
                 }}
-                event={SegmentEvent.DOWNLOAD}
-                place={SectionViewedTrack.DOWNLOAD}
-                endIcon={<DownloadButtonImage src={option.image} />}
-                label={l('page.download.download')}
-                isFullWidth={false}
-              />
+              >
+                {l('page.download.download_for_short')}
+                <img src={option.image} alt={option.text} width={32} height={32} style={{ filter: 'brightness(0) invert(1)' }} />
+              </DownloadButton>
             ))}
+            <EpicButton
+              href={EPIC_GAMES_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-place={DownloadPlace.DOWNLOAD_PAGE}
+              data-event={SegmentEvent.DOWNLOAD}
+              onClick={onClickHandle}
+            >
+              {l('page.download.download_on')}
+              <img src={assetUrl('/epic_icon.svg')} alt="Epic Games" width={32} height={32} style={{ filter: 'brightness(0)' }} />
+            </EpicButton>
           </DownloadButtonsContainer>
           <AlternativeContainer>
             {!hideDownloadCounts && downloadCountsFormatted && (
@@ -192,16 +202,16 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                   }}
                   href={option.link}
                   key={index}
+                  aria-label={option.text}
                   startIcon={<AlternativeButtonImage src={option.image} />}
-                >
-                  {option.arch ? `(${l(`page.download.${option.arch}_processors_short`)})` : undefined}
-                </AlternativeButton>
+                />
               ))}
               <AlternativeButton
                 variant="text"
                 color="inherit"
                 href={GOOGLE_PLAY_DESKTOP_URL}
                 {...{ target: '_blank', rel: 'noopener noreferrer' }}
+                aria-label="Google Play"
                 startIcon={<AlternativeButtonImage src={assetUrl('/google_play_icon.svg')} />}
               />
               <AlternativeButton
@@ -209,6 +219,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                 color="inherit"
                 href={EPIC_GAMES_URL}
                 {...{ target: '_blank', rel: 'noopener noreferrer' }}
+                aria-label="Epic Games"
                 startIcon={<AlternativeButtonImage src={assetUrl('/epic_icon.svg')} />}
               />
             </AlternativeButtonsWrapper>
