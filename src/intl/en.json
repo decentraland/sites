@@ -416,6 +416,13 @@
     "report": {
       "title": "Report a player – Decentraland",
       "success_title": "Report submitted – Decentraland"
+    },
+    "play": {
+      "title": "The Web Version Is No Longer Available.",
+      "subtitle": "Continue Playing on Desktop or Mobile App.",
+      "also_available_on": "Also Available on",
+      "already_downloaded": "Already Downloaded?",
+      "jump_in": "JUMP IN!"
     }
   },
   "page_invite": {

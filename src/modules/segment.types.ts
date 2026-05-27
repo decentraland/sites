@@ -81,6 +81,8 @@ enum DownloadPlace {
   LANDING_HERO_PLATFORM_SWITCH = 'landing-hero-platform-switch',
   COME_HANG_OUT = 'come-hang-out',
   JUMP_IN_ALREADY_USER = 'jump-in-already-user',
+  PLAY_HERO = 'play-hero',
+  PLAY_HERO_EPIC = 'play-hero-epic',
   DOWNLOAD_PAGE = 'download-page',
   DOWNLOAD_SUCCESS_FOOTER = 'download-success-footer',
   UNKNOWN = 'unknown'
@@ -121,7 +123,8 @@ enum SectionViewedTrack {
   LANDING_NAVBAR = 'Landing Navbar',
   REELS_IMAGE = 'Reels Image',
   REELS_LIST = 'Reels List',
-  REELS_NOT_FOUND = 'Reels Not Found'
+  REELS_NOT_FOUND = 'Reels Not Found',
+  PLAY_HERO = 'Play Hero'
 }
 
 export { DownloadPlace, SectionViewedTrack, SegmentEvent }

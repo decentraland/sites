@@ -368,6 +368,13 @@
     "report": {
       "title": "Signaler un joueur – Decentraland",
       "success_title": "Signalement envoyé – Decentraland"
+    },
+    "play": {
+      "title": "La version web n'est plus disponible.",
+      "subtitle": "Continuez à jouer sur l'application de bureau ou mobile.",
+      "also_available_on": "Également disponible sur",
+      "already_downloaded": "Déjà téléchargé ?",
+      "jump_in": "ENTRER !"
     }
   },
   "page_invite": {

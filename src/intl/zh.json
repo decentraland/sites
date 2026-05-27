@@ -368,6 +368,13 @@
     "report": {
       "title": "举报玩家 – Decentraland",
       "success_title": "举报已提交 – Decentraland"
+    },
+    "play": {
+      "title": "网页版已不再提供。",
+      "subtitle": "在桌面或移动应用上继续游玩。",
+      "also_available_on": "同时支持",
+      "already_downloaded": "已经下载了？",
+      "jump_in": "立即进入！"
     }
   },
   "page_invite": {
