@@ -1,7 +1,8 @@
 import { memo, useCallback } from 'react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
-import { AnimatedBackground, DownloadModal } from 'decentraland-ui2'
-import { GOOGLE_PLAY_MOBILE_URL } from '../../components/Home/shared/googlePlay'
+import { AnimatedBackground, useDesktopMediaQuery } from 'decentraland-ui2'
+import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../../components/Home/shared/googlePlay'
+import { GooglePlayButton, GooglePlayImage } from '../../components/Home/shared/MobileCTA.styled'
 import { VerifiedIcon } from '../../components/Icon/VerifiedIcon'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
@@ -29,22 +30,24 @@ import {
   PlayDownloadCounts,
   PlayEpicButton,
   PlayJumpInLink,
+  PlayMobileContent,
   PlaySubtitle,
   PlayTitle,
   PlayTitleGroup
 } from './PlayPage.styled'
 
-const imageByOs: Record<string, string> = {
-  [OperativeSystem.WINDOWS]: microsoftLogo,
-  [OperativeSystem.MACOS]: appleLogo
-}
+// Launcher deep link. A native anchor href opens the installed app via the OS
+// protocol handler — reliable on desktop and mobile, and never traps the user
+// behind a download modal when they already have the app.
+const JUMP_IN_URL = 'decentraland://?'
 
 const PlayPage = memo(() => {
   const l = useFormatMessage()
   const onClickHandle = useTrackClick()
   const anonUserId = useAnonUserId()
   const [, userAgentData] = useAdvancedUserAgentData()
-  const { handleClick: handleJumpIn, isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads } = useHangOutAction()
+  const isDesktop = useDesktopMediaQuery()
+  const { totalDownloads } = useHangOutAction()
 
   // Bake the campaign anon_user_id into the /download_success URL so the wrapper
   // installer runs and attribution survives end-to-end (mirrors the home Hero).
@@ -59,8 +62,7 @@ const PlayPage = memo(() => {
     [anonUserId]
   )
 
-  const osImage = userAgentData ? imageByOs[userAgentData.os.name] : null
-  const osIconSize = userAgentData?.os.name === OperativeSystem.MACOS ? 32 : 28
+  const isApple = userAgentData?.os.name === OperativeSystem.MACOS
 
   const handleDownloadClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
@@ -72,13 +74,48 @@ const PlayPage = memo(() => {
     [onClickHandle, userAgentData, buildDownloadSuccessHref]
   )
 
-  const handleJumpInClick = useCallback(
-    (e: React.MouseEvent<HTMLElement>) => {
-      onClickHandle(e)
-      handleJumpIn(e)
-    },
-    [onClickHandle, handleJumpIn]
-  )
+  // Mobile (< sm): no glass card, a single Ruby store button — Google Play on
+  // Android devices, App Store otherwise — mirroring the home Hero mobile CTA.
+  if (!isDesktop) {
+    const isMobileAndroid = !!userAgentData?.mobile && userAgentData?.os.name === 'Android'
+    return (
+      <PlayContainer>
+        <AnimatedBackground variant="absolute" />
+        <PlayMobileContent>
+          <PlayTitleGroup>
+            <PlayTitle variant="h1">{l('page.play.title')}</PlayTitle>
+            <PlaySubtitle>{l('page.play.subtitle')}</PlaySubtitle>
+          </PlayTitleGroup>
+
+          <GooglePlayButton
+            href={isMobileAndroid ? GOOGLE_PLAY_MOBILE_URL : DOWNLOAD_URLS.appStore}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-place={DownloadPlace.PLAY_HERO}
+            data-event={SegmentEvent.DOWNLOAD}
+            onClick={onClickHandle}
+          >
+            <GooglePlayImage
+              src={isMobileAndroid ? googlePlayBadge : assetUrl('/download-on-the-app-store.svg')}
+              alt={isMobileAndroid ? 'Get it on Google Play' : 'Download on the App Store'}
+            />
+          </GooglePlayButton>
+
+          <PlayAlreadyText>
+            {l('page.play.already_downloaded')}{' '}
+            <PlayJumpInLink
+              href={JUMP_IN_URL}
+              data-place={DownloadPlace.JUMP_IN_ALREADY_USER}
+              data-event={SegmentEvent.CLICK}
+              onClick={onClickHandle}
+            >
+              {l('page.play.jump_in')}
+            </PlayJumpInLink>
+          </PlayAlreadyText>
+        </PlayMobileContent>
+      </PlayContainer>
+    )
+  }
 
   return (
     <PlayContainer>
@@ -98,16 +135,10 @@ const PlayPage = memo(() => {
               onClick={handleDownloadClick}
             >
               {l('page.download.download_for_short')}
-              {osImage ? (
-                <img
-                  src={osImage}
-                  alt={userAgentData?.os.name ?? ''}
-                  width={osIconSize}
-                  height={osIconSize}
-                  style={{ filter: 'brightness(0) invert(1)' }}
-                />
+              {isApple ? (
+                <img src={appleLogo} alt="macOS" width={32} height={32} style={{ filter: 'brightness(0) invert(1)' }} />
               ) : (
-                <span style={{ display: 'block', width: 32, height: 32, flexShrink: 0 }} />
+                <img src={microsoftLogo} alt="Windows" width={28} height={28} style={{ filter: 'brightness(0) invert(1)' }} />
               )}
             </PlayDownloadButton>
 
@@ -161,17 +192,15 @@ const PlayPage = memo(() => {
         <PlayAlreadyText>
           {l('page.play.already_downloaded')}{' '}
           <PlayJumpInLink
-            href="#"
+            href={JUMP_IN_URL}
             data-place={DownloadPlace.JUMP_IN_ALREADY_USER}
             data-event={SegmentEvent.CLICK}
-            onClick={handleJumpInClick}
+            onClick={onClickHandle}
           >
             {l('page.play.jump_in')}
           </PlayJumpInLink>
         </PlayAlreadyText>
       </PlayCard>
-
-      <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />
     </PlayContainer>
   )
 })

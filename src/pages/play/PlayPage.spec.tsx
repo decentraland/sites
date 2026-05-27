@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
+import { useDesktopMediaQuery } from 'decentraland-ui2'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
 import { useAnonUserId } from '../../hooks/useAnonUserId'
 import { useHangOutAction } from '../../hooks/useHangOutAction'
@@ -14,7 +15,7 @@ jest.mock('decentraland-ui2', () => {
     Typography,
     dclColors: { neutral: { white: '#FCFCFC' } },
     AnimatedBackground: (props: Record<string, unknown>) => <div data-testid="animated-background" data-variant={String(props.variant)} />,
-    DownloadModal: ({ open }: { open: boolean }) => (open ? <div data-testid="download-modal" /> : null)
+    useDesktopMediaQuery: jest.fn()
   }
 })
 
@@ -47,10 +48,9 @@ const mockUserAgent = jest.mocked(useAdvancedUserAgentData)
 const mockTrackClick = jest.mocked(useTrackClick)
 const mockAnonUserId = jest.mocked(useAnonUserId)
 const mockHangOut = jest.mocked(useHangOutAction)
+const mockDesktop = jest.mocked(useDesktopMediaQuery)
 
 const trackClick = jest.fn()
-const handleJumpIn = jest.fn()
-const closeDownloadModal = jest.fn()
 
 const originalLocation = window.location
 
@@ -65,14 +65,9 @@ const setLocationMock = () => {
 describe('PlayPage', () => {
   beforeEach(() => {
     mockTrackClick.mockReturnValue(trackClick)
+    mockDesktop.mockReturnValue(true)
     mockAnonUserId.mockReturnValue('anon-123')
-    mockHangOut.mockReturnValue({
-      handleClick: handleJumpIn,
-      isDownloadModalOpen: false,
-      closeDownloadModal,
-      downloadModalProps: { os: 'windows' },
-      totalDownloads: '+250K'
-    } as unknown as ReturnType<typeof useHangOutAction>)
+    mockHangOut.mockReturnValue({ totalDownloads: '+250K' } as unknown as ReturnType<typeof useHangOutAction>)
     mockUserAgent.mockReturnValue([false, { os: { name: 'Windows' }, mobile: false }] as unknown as ReturnType<
       typeof useAdvancedUserAgentData
     >)
@@ -95,7 +90,17 @@ describe('PlayPage', () => {
       expect(screen.getByText('page.play.jump_in')).toBeInTheDocument()
       expect(screen.getByAltText('Download on the App Store')).toBeInTheDocument()
       expect(screen.getByAltText('Get it on Google Play')).toBeInTheDocument()
+      expect(screen.getByAltText('Windows')).toBeInTheDocument()
       expect(screen.getByTestId('animated-background')).toHaveAttribute('data-variant', 'absolute')
+    })
+
+    it('should show the Apple icon on the download CTA for a macOS user', () => {
+      mockUserAgent.mockReturnValue([false, { os: { name: 'macOS' }, mobile: false }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+      render(<PlayPage />)
+      expect(screen.getByAltText('macOS')).toBeInTheDocument()
+      expect(screen.queryByAltText('Windows')).not.toBeInTheDocument()
     })
 
     it('should track and navigate to /download_success with the os and anon id on download click', () => {
@@ -108,11 +113,12 @@ describe('PlayPage', () => {
       expect(window.location.href).toContain('anon_user_id=anon-123')
     })
 
-    it('should track the jump-in click and trigger the hang out action', () => {
+    it('should link the jump-in CTA to the launcher protocol and track the click', () => {
       render(<PlayPage />)
-      fireEvent.click(screen.getByText('page.play.jump_in'))
+      const jumpIn = screen.getByText('page.play.jump_in')
+      expect(jumpIn).toHaveAttribute('href', 'decentraland://?')
+      fireEvent.click(jumpIn)
       expect(trackClick).toHaveBeenCalledTimes(1)
-      expect(handleJumpIn).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -144,23 +150,41 @@ describe('PlayPage', () => {
     })
   })
 
-  describe('when the download modal is open', () => {
+  describe('when it renders on a mobile device', () => {
     beforeEach(() => {
-      mockHangOut.mockReturnValue({
-        handleClick: handleJumpIn,
-        isDownloadModalOpen: true,
-        closeDownloadModal,
-        downloadModalProps: { os: 'apple' },
-        totalDownloads: '+250K'
-      } as unknown as ReturnType<typeof useHangOutAction>)
-      mockUserAgent.mockReturnValue([false, { os: { name: 'macOS' }, mobile: false }] as unknown as ReturnType<
-        typeof useAdvancedUserAgentData
-      >)
+      mockDesktop.mockReturnValue(false)
     })
 
-    it('should render the download modal', () => {
+    it('should show the App Store CTA on an iOS device (no desktop CTAs)', () => {
+      mockUserAgent.mockReturnValue([false, { os: { name: 'iOS' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
       render(<PlayPage />)
-      expect(screen.getByTestId('download-modal')).toBeInTheDocument()
+      expect(screen.getByText('page.play.title')).toBeInTheDocument()
+      expect(screen.getByAltText('Download on the App Store')).toBeInTheDocument()
+      expect(screen.getByText('page.play.jump_in')).toBeInTheDocument()
+      expect(screen.queryByText('page.download.download_for_short')).not.toBeInTheDocument()
+      expect(screen.queryByText('page.play.also_available_on')).not.toBeInTheDocument()
+    })
+
+    it('should show the Google Play CTA on an Android device', () => {
+      mockUserAgent.mockReturnValue([false, { os: { name: 'Android' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+      render(<PlayPage />)
+      expect(screen.getByAltText('Get it on Google Play')).toBeInTheDocument()
+      expect(screen.queryByAltText('Download on the App Store')).not.toBeInTheDocument()
+    })
+
+    it('should link the jump-in CTA to the launcher protocol on mobile', () => {
+      mockUserAgent.mockReturnValue([false, { os: { name: 'iOS' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+      render(<PlayPage />)
+      const jumpIn = screen.getByText('page.play.jump_in')
+      expect(jumpIn).toHaveAttribute('href', 'decentraland://?')
+      fireEvent.click(jumpIn)
+      expect(trackClick).toHaveBeenCalledTimes(1)
     })
   })
 })

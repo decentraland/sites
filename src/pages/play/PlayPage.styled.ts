@@ -40,6 +40,20 @@ const PlayCard = styled(Box)(({ theme }) => ({
   }
 }))
 
+// Mobile layout: no glass card — title + subtitle + a single Ruby store button
+// + the "already downloaded" link sit directly on the animated background.
+const PlayMobileContent = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  zIndex: 2,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  textAlign: 'center',
+  gap: theme.spacing(4),
+  width: '100%',
+  maxWidth: 420
+}))
+
 const PlayTitleGroup = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -80,15 +94,15 @@ const PlayCTASection = styled(Box)(({ theme }) => ({
   width: '100%'
 }))
 
-// Stacked, full-width CTAs capped at the download modal's button column width
-// (595px modal − 2×105px padding = 385px) so the buttons match the modal exactly.
+// Desktop CTAs sit side by side and split the card width evenly (flex: 1), the
+// widest the pair can be on a single line inside the 648px card content.
 const PlayCTAButtons = styled(Box)({
   display: 'flex',
-  flexDirection: 'column',
+  flexDirection: 'row',
   alignItems: 'stretch',
+  justifyContent: 'center',
   gap: 24,
-  width: '100%',
-  maxWidth: 385
+  width: '100%'
 })
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -97,7 +111,7 @@ const PlayDownloadButton = styled('a')({
   alignItems: 'center',
   justifyContent: 'center',
   gap: 16,
-  width: '100%',
+  flex: 1,
   height: 64,
   backgroundColor: '#FF2D55',
   borderRadius: 16,
@@ -126,7 +140,7 @@ const PlayEpicButton = styled('a')({
   alignItems: 'center',
   justifyContent: 'center',
   gap: 24,
-  width: '100%',
+  flex: 1,
   height: 64,
   backgroundColor: 'white',
   border: '3px solid white',
@@ -262,6 +276,7 @@ export {
   PlayDownloadCounts,
   PlayEpicButton,
   PlayJumpInLink,
+  PlayMobileContent,
   PlaySubtitle,
   PlayTitle,
   PlayTitleGroup
