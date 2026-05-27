@@ -3,11 +3,17 @@ const OUTPUT_FORMATS_DEFAULT = ['image/webp', 'image/jpeg'] as const
 
 type CompressOptions = {
   maxBytes: number
-  maxWidth?: number
-  maxHeight?: number
+  // When set, the source is scaled to *cover* this box and center-cropped to its
+  // exact aspect ratio (no stretching, no letterboxing). Output never upscales:
+  // it caps at `cover.width × cover.height` and stays smaller for tiny sources.
+  cover?: { width: number; height: number }
+  // Forces keeping the source dimensions even if `cover` is provided. Used by the
+  // vertical poster, whose 716×1814 size is validated downstream and must not be cropped.
   preserveDimensions?: boolean
   mimeTypes?: readonly string[]
 }
+
+type DrawRect = { sx: number; sy: number; sWidth: number; sHeight: number; dWidth: number; dHeight: number }
 
 function isCompressibleType(type: string): boolean {
   return type === 'image/png' || type === 'image/jpeg'
@@ -32,18 +38,28 @@ function loadImageBitmap(file: File): Promise<{ width: number; height: number; b
   })
 }
 
-function computeTargetSize(
-  sourceWidth: number,
-  sourceHeight: number,
-  { maxWidth, maxHeight, preserveDimensions }: CompressOptions
-): { width: number; height: number } {
-  if (preserveDimensions || (!maxWidth && !maxHeight)) {
-    return { width: sourceWidth, height: sourceHeight }
+function computeDrawRect(sourceWidth: number, sourceHeight: number, { cover, preserveDimensions }: CompressOptions): DrawRect {
+  if (!cover || preserveDimensions) {
+    return { sx: 0, sy: 0, sWidth: sourceWidth, sHeight: sourceHeight, dWidth: sourceWidth, dHeight: sourceHeight }
   }
-  const widthRatio = maxWidth ? maxWidth / sourceWidth : 1
-  const heightRatio = maxHeight ? maxHeight / sourceHeight : 1
-  const ratio = Math.min(1, widthRatio, heightRatio)
-  return { width: Math.max(1, Math.round(sourceWidth * ratio)), height: Math.max(1, Math.round(sourceHeight * ratio)) }
+  const targetAspect = cover.width / cover.height
+  const sourceAspect = sourceWidth / sourceHeight
+  // Center-crop the overflow on the longer axis so the kept region matches the
+  // target aspect ratio exactly.
+  let cropWidth = sourceWidth
+  let cropHeight = sourceHeight
+  if (sourceAspect > targetAspect) {
+    cropWidth = Math.round(sourceHeight * targetAspect)
+  } else if (sourceAspect < targetAspect) {
+    cropHeight = Math.round(sourceWidth / targetAspect)
+  }
+  const sx = Math.round((sourceWidth - cropWidth) / 2)
+  const sy = Math.round((sourceHeight - cropHeight) / 2)
+  // Scale the cropped region down to the target box; never upscale a small source.
+  const scale = Math.min(1, cover.width / cropWidth)
+  const dWidth = Math.max(1, Math.round(cropWidth * scale))
+  const dHeight = Math.max(1, Math.round(cropHeight * scale))
+  return { sx, sy, sWidth: cropWidth, sHeight: cropHeight, dWidth, dHeight }
 }
 
 function canvasToBlob(canvas: HTMLCanvasElement, mimeType: string, quality: number): Promise<Blob | null> {
@@ -94,15 +110,15 @@ async function compressImageFile(file: File, options: CompressOptions): Promise<
   } catch {
     return null
   }
-  const { width, height } = computeTargetSize(loaded.width, loaded.height, options)
+  const rect = computeDrawRect(loaded.width, loaded.height, options)
 
   const canvas = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
+  canvas.width = rect.dWidth
+  canvas.height = rect.dHeight
   const ctx = canvas.getContext('2d')
   if (!ctx) return null
   try {
-    ctx.drawImage(loaded.bitmap as CanvasImageSource, 0, 0, width, height)
+    ctx.drawImage(loaded.bitmap as CanvasImageSource, rect.sx, rect.sy, rect.sWidth, rect.sHeight, 0, 0, rect.dWidth, rect.dHeight)
   } catch {
     return null
   }

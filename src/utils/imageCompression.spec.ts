@@ -86,11 +86,79 @@ describe('compressImageFile', () => {
       installCanvasMock((mime, _quality) => (mime === 'image/webp' ? makeBlob(500, 'image/webp') : null))
       const file = new File(['x'], 'photo.png', { type: 'image/png' })
 
-      const result = await compressImageFile(file, { maxBytes: 1024, maxWidth: 1340, maxHeight: 670 })
+      const result = await compressImageFile(file, { maxBytes: 1024, cover: { width: 1340, height: 670 } })
 
       expect(result).not.toBeNull()
       expect(result!.type).toBe('image/webp')
       expect(result!.name).toBe('photo.webp')
+    })
+  })
+
+  describe('cover-crop sizing (keeps the target aspect ratio without stretching)', () => {
+    it('should produce exactly the target box for an oversized source already at the target ratio', async () => {
+      installBitmapMock(4000, 2000) // 2:1, same as 1340x670
+      const canvas = { width: 0, height: 0 } as { width: number; height: number }
+      const drawImage = jest.fn()
+      document.createElement = jest.fn(((tag: string) => {
+        if (tag !== 'canvas') return originalCreateElement(tag)
+        return {
+          get width() {
+            return canvas.width
+          },
+          set width(v: number) {
+            canvas.width = v
+          },
+          get height() {
+            return canvas.height
+          },
+          set height(v: number) {
+            canvas.height = v
+          },
+          getContext: () => ({ drawImage }),
+          toBlob: (cb: ToBlobCallback, mime: string) => cb(makeBlob(300, mime))
+        } as unknown as HTMLCanvasElement
+      }) as typeof document.createElement)
+      const file = new File(['x'], 'wide.png', { type: 'image/png' })
+
+      await compressImageFile(file, { maxBytes: 1024, cover: { width: 1340, height: 670 } })
+
+      expect(canvas.width).toBe(1340)
+      expect(canvas.height).toBe(670)
+      // Full source drawn (no crop) since it's already 2:1, scaled to the 1340x670 box.
+      expect(drawImage).toHaveBeenCalledWith(expect.anything(), 0, 0, 4000, 2000, 0, 0, 1340, 670)
+    })
+
+    it('should center-crop the sides of a too-wide (panoramic) source', async () => {
+      installBitmapMock(4000, 1000) // 4:1, wider than 2:1
+      const { drawImage } = installCanvasMock(mime => makeBlob(200, mime))
+      const file = new File(['x'], 'pano.png', { type: 'image/png' })
+
+      await compressImageFile(file, { maxBytes: 1024, cover: { width: 1340, height: 670 } })
+
+      // Keep 2:1 by cropping width to 2000 (=1000*2), centered at sx=1000; full height.
+      expect(drawImage).toHaveBeenCalledWith(expect.anything(), 1000, 0, 2000, 1000, 0, 0, 1340, 670)
+    })
+
+    it('should center-crop the top/bottom of a too-tall (portrait) source', async () => {
+      installBitmapMock(1000, 2000) // 1:2, taller than 2:1
+      const { drawImage } = installCanvasMock(mime => makeBlob(200, mime))
+      const file = new File(['x'], 'tall.png', { type: 'image/png' })
+
+      await compressImageFile(file, { maxBytes: 1024, cover: { width: 1340, height: 670 } })
+
+      // Keep 2:1 by cropping height to 500 (=1000/2), centered at sy=750; full width.
+      expect(drawImage).toHaveBeenCalledWith(expect.anything(), 0, 750, 1000, 500, 0, 0, 1000, 500)
+    })
+
+    it('should not upscale a small source: crop to ratio at native resolution', async () => {
+      installBitmapMock(600, 400) // 3:2, smaller than the 1340x670 box
+      const { drawImage } = installCanvasMock(mime => makeBlob(100, mime))
+      const file = new File(['x'], 'small.png', { type: 'image/png' })
+
+      await compressImageFile(file, { maxBytes: 1024, cover: { width: 1340, height: 670 } })
+
+      // Crop height to 300 (=600/2) for the 2:1 ratio, centered at sy=50; no upscaling.
+      expect(drawImage).toHaveBeenCalledWith(expect.anything(), 0, 50, 600, 300, 0, 0, 600, 300)
     })
   })
 
@@ -125,32 +193,29 @@ describe('compressImageFile', () => {
     })
   })
 
-  describe('when preserveDimensions is set', () => {
-    it('should pass the source dimensions through without scaling', async () => {
+  describe('when preserveDimensions is set (vertical poster)', () => {
+    it('should draw the full source at its exact dimensions, never cropping even if a cover box is given', async () => {
       installBitmapMock(716, 1814)
-      const blobsByMime: string[] = []
-      installCanvasMock((mime, _quality) => {
-        blobsByMime.push(mime)
-        return makeBlob(400, mime)
-      })
+      const { drawImage } = installCanvasMock(mime => makeBlob(400, mime))
       const file = new File(['x'], 'vertical.png', { type: 'image/png' })
 
-      const result = await compressImageFile(file, { maxBytes: 1024, preserveDimensions: true })
+      const result = await compressImageFile(file, { maxBytes: 1024, preserveDimensions: true, cover: { width: 1340, height: 670 } })
 
       expect(result).not.toBeNull()
-      expect(blobsByMime[0]).toBe('image/webp')
+      expect(drawImage).toHaveBeenCalledWith(expect.anything(), 0, 0, 716, 1814, 0, 0, 716, 1814)
     })
   })
 
-  describe('when no maxWidth or maxHeight is provided', () => {
-    it('should keep source dimensions even without preserveDimensions flag', async () => {
+  describe('when no cover box is provided', () => {
+    it('should keep source dimensions (no crop, no scale)', async () => {
       installBitmapMock(500, 500)
-      installCanvasMock(mime => makeBlob(100, mime))
+      const { drawImage } = installCanvasMock(mime => makeBlob(100, mime))
       const file = new File(['x'], 'square.png', { type: 'image/png' })
 
       const result = await compressImageFile(file, { maxBytes: 1024 })
 
       expect(result).not.toBeNull()
+      expect(drawImage).toHaveBeenCalledWith(expect.anything(), 0, 0, 500, 500, 0, 0, 500, 500)
     })
   })
 

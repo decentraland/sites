@@ -44,7 +44,7 @@ function validateImageType(file: File, accepted: string[], invalidCode: ImageErr
 // over the limit.
 async function prepareImageUpload(
   file: File,
-  options: { maxWidth?: number; maxHeight?: number; preserveDimensions?: boolean }
+  options: { cover?: { width: number; height: number }; preserveDimensions?: boolean }
 ): Promise<{ file: File; error: ImageErrorCode | null }> {
   const converted = await compressImageFile(file, { ...options, maxBytes: MAX_IMAGE_SIZE_BYTES })
   if (converted) {
@@ -174,8 +174,7 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         return { ...prev, image: file, imagePreviewUrl: previewUrl, imageError: null, imageUrl: null, isUploadingImage: true }
       })
       const { file: uploadable, error: prepError } = await prepareImageUpload(file, {
-        maxWidth: COVER_RECOMMENDED_WIDTH,
-        maxHeight: COVER_RECOMMENDED_HEIGHT
+        cover: { width: COVER_RECOMMENDED_WIDTH, height: COVER_RECOMMENDED_HEIGHT }
       })
       if (prepError) {
         setForm(prev => {
