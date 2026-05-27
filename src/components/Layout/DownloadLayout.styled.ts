@@ -6,9 +6,9 @@ import backgroundImage from '../../images/download/download_background.webp'
 // while leaving the right side of the scene visible.
 const SIGNED_IN_BACKGROUND = `linear-gradient(150deg, #2A0C43 0%, #2A0C43 25%, transparent 100%), linear-gradient(225deg, #2A0C43 0%, rgba(42, 12, 67, 0.8) 15%, transparent 100%), url(${backgroundImage})`
 const SIGNED_OUT_BACKGROUND = `linear-gradient(270deg, rgba(42, 12, 67, 0.00) 13.9%, rgba(42, 12, 67, 0.84) 53.91%, #2A0C43 86.65%), url(${backgroundImage})`
-// Mobile signed-out: the gradient alone (no scene image) — the transparent end
-// falls through to the dark page background.
-const SIGNED_OUT_BACKGROUND_MOBILE = 'linear-gradient(89deg, #380169 16.82%, rgba(56, 1, 105, 0.00) 76.7%)'
+// Mobile signed-out: the gradient over the scene image (the transparent end keeps
+// the theatre visible on the right).
+const SIGNED_OUT_BACKGROUND_MOBILE = `linear-gradient(89deg, #380169 16.82%, rgba(56, 1, 105, 0.00) 76.7%), url(${backgroundImage})`
 
 const DownloadPageContainer = styled(Box, {
   shouldForwardProp: prop => prop !== 'hasPreview'
