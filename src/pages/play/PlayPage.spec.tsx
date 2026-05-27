@@ -13,7 +13,11 @@ jest.mock('decentraland-ui2', () => {
     styled,
     Box,
     Typography,
-    dclColors: { neutral: { white: '#FCFCFC' } },
+    dclColors: {
+      neutral: { white: '#FFFFFF', trueWhite: '#FFFFFF', softWhite: '#FCFCFC', softBlack2: '#242129' },
+      brand: { ruby: '#FF2D55' },
+      whiteTransparent: { soft: 'rgba(255, 255, 255, 0.2)', backdrop: 'rgba(255, 255, 255, 0.6)' }
+    },
     AnimatedBackground: (props: Record<string, unknown>) => <div data-testid="animated-background" data-variant={String(props.variant)} />,
     useDesktopMediaQuery: jest.fn()
   }
@@ -28,7 +32,23 @@ jest.mock('@dcl/hooks', () => ({
 }))
 
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
-  useFormatMessage: () => (id: string) => id
+  useFormatMessage:
+    () =>
+    (id: string, values?: Record<string, React.ReactNode>): React.ReactNode =>
+      values ? (
+        <>
+          {id}
+          {Object.entries(values).map(([key, value]) => (
+            <span key={key}>{value}</span>
+          ))}
+        </>
+      ) : (
+        id
+      )
+}))
+
+jest.mock('../../config/env', () => ({
+  getEnv: () => 'https://decentraland.zone'
 }))
 
 jest.mock('../../hooks/adapters/useTrackLinkContext', () => ({
@@ -120,6 +140,15 @@ describe('PlayPage', () => {
       fireEvent.click(jumpIn)
       expect(trackClick).toHaveBeenCalledTimes(1)
     })
+
+    it('should link the experimental web CTA to the env bevy-web build', () => {
+      render(<PlayPage />)
+      expect(screen.getByText('page.play.experimental')).toBeInTheDocument()
+      const here = screen.getByText('page.play.here')
+      expect(here).toHaveAttribute('href', 'https://decentraland.zone/bevy-web')
+      fireEvent.click(here)
+      expect(trackClick).toHaveBeenCalledTimes(1)
+    })
   })
 
   describe('when there is no resolved user agent', () => {
@@ -174,6 +203,14 @@ describe('PlayPage', () => {
       render(<PlayPage />)
       expect(screen.getByAltText('Get it on Google Play')).toBeInTheDocument()
       expect(screen.queryByAltText('Download on the App Store')).not.toBeInTheDocument()
+    })
+
+    it('should not show the experimental web link on mobile', () => {
+      mockUserAgent.mockReturnValue([false, { os: { name: 'iOS' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+      render(<PlayPage />)
+      expect(screen.queryByText('page.play.experimental')).not.toBeInTheDocument()
     })
 
     it('should link the jump-in CTA to the launcher protocol on mobile', () => {

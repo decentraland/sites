@@ -422,7 +422,9 @@
       "subtitle": "Continue Playing on Desktop or Mobile App.",
       "also_available_on": "Also Available on",
       "already_downloaded": "Already Downloaded?",
-      "jump_in": "JUMP IN!"
+      "jump_in": "JUMP IN!",
+      "experimental": "Want to keep playing on web? Try the experimental version {here}",
+      "here": "HERE"
     }
   },
   "page_invite": {

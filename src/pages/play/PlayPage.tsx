@@ -4,6 +4,7 @@ import { AnimatedBackground, useDesktopMediaQuery } from 'decentraland-ui2'
 import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../../components/Home/shared/googlePlay'
 import { GooglePlayButton, GooglePlayImage } from '../../components/Home/shared/MobileCTA.styled'
 import { VerifiedIcon } from '../../components/Icon/VerifiedIcon'
+import { getEnv } from '../../config/env'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
 import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
@@ -29,6 +30,8 @@ import {
   PlayDownloadButton,
   PlayDownloadCounts,
   PlayEpicButton,
+  PlayExperimentalLink,
+  PlayExperimentalText,
   PlayJumpInLink,
   PlayMobileContent,
   PlaySubtitle,
@@ -63,6 +66,10 @@ const PlayPage = memo(() => {
   )
 
   const isApple = userAgentData?.os.name === OperativeSystem.MACOS
+
+  // Experimental web build lives under /bevy-web on the env's Decentraland host
+  // (zone in dev, today in stg, org in prod).
+  const bevyWebUrl = `${getEnv('DECENTRALAND_HOMEPAGE_URL') ?? 'https://decentraland.org'}/bevy-web`
 
   const handleDownloadClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
@@ -201,6 +208,23 @@ const PlayPage = memo(() => {
           </PlayJumpInLink>
         </PlayAlreadyText>
       </PlayCard>
+
+      <PlayExperimentalText>
+        {l('page.play.experimental', {
+          here: (
+            <PlayExperimentalLink
+              href={bevyWebUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-place={DownloadPlace.PLAY_EXPERIMENTAL_WEB}
+              data-event={SegmentEvent.CLICK}
+              onClick={onClickHandle}
+            >
+              {l('page.play.here')}
+            </PlayExperimentalLink>
+          )
+        })}
+      </PlayExperimentalText>
     </PlayContainer>
   )
 })

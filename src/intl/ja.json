@@ -374,7 +374,9 @@
       "subtitle": "デスクトップまたはモバイルアプリでプレイを続けましょう。",
       "also_available_on": "こちらでも利用可能",
       "already_downloaded": "すでにダウンロード済みですか？",
-      "jump_in": "入場する！"
+      "jump_in": "入場する！",
+      "experimental": "ウェブでプレイを続けたいですか？実験版を{here}でお試しください",
+      "here": "こちら"
     }
   },
   "page_invite": {

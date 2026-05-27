@@ -374,7 +374,9 @@
       "subtitle": "在桌面或移动应用上继续游玩。",
       "also_available_on": "同时支持",
       "already_downloaded": "已经下载了？",
-      "jump_in": "立即进入！"
+      "jump_in": "立即进入！",
+      "experimental": "想继续在网页上游玩？点击{here}体验实验版",
+      "here": "这里"
     }
   },
   "page_invite": {

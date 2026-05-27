@@ -7,8 +7,10 @@ const PlayContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   minHeight: '100vh',
   display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
+  gap: theme.spacing(7.5),
   overflow: 'hidden',
   padding: theme.spacing(13, 2.5),
   [theme.breakpoints.up('md')]: {
@@ -28,7 +30,8 @@ const PlayCard = styled(Box)(({ theme }) => ({
   maxWidth: 808,
   padding: theme.spacing(7.5, 10),
   borderRadius: 24,
-  border: '1px solid rgba(255, 255, 255, 0.2)',
+  border: `1px solid ${dclColors.whiteTransparent.soft}`,
+  // Glass fill — no dclColors token for this specific tinted black at 32% alpha.
   backgroundColor: 'rgba(32, 32, 32, 0.32)',
   backdropFilter: 'blur(6px)',
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -113,14 +116,14 @@ const PlayDownloadButton = styled('a')({
   gap: 16,
   flex: 1,
   height: 64,
-  backgroundColor: '#FF2D55',
+  backgroundColor: dclColors.brand.ruby,
   borderRadius: 16,
   cursor: 'pointer',
   textDecoration: 'none',
   fontFamily: 'Inter, sans-serif',
   fontWeight: 600,
   fontSize: '19.89px',
-  color: dclColors.neutral.white,
+  color: dclColors.neutral.softWhite,
   textTransform: 'uppercase',
   letterSpacing: '0.61px',
   boxSizing: 'border-box',
@@ -128,7 +131,7 @@ const PlayDownloadButton = styled('a')({
   outlineOffset: 4,
   transition: 'outline-color 0.15s ease',
   '&:hover': {
-    outlineColor: 'white'
+    outlineColor: dclColors.neutral.trueWhite
   },
   '& img': {
     display: 'block'
@@ -142,15 +145,15 @@ const PlayEpicButton = styled('a')({
   gap: 24,
   flex: 1,
   height: 64,
-  backgroundColor: 'white',
-  border: '3px solid white',
+  backgroundColor: dclColors.neutral.trueWhite,
+  border: `3px solid ${dclColors.neutral.trueWhite}`,
   borderRadius: 16,
   cursor: 'pointer',
   textDecoration: 'none',
   fontFamily: 'Inter, sans-serif',
   fontWeight: 600,
   fontSize: '19.89px',
-  color: '#242129',
+  color: dclColors.neutral.softBlack2,
   textTransform: 'uppercase',
   letterSpacing: '0.61px',
   boxSizing: 'border-box',
@@ -158,7 +161,7 @@ const PlayEpicButton = styled('a')({
   outlineOffset: 4,
   transition: 'outline-color 0.15s ease',
   '&:hover': {
-    outlineColor: 'white'
+    outlineColor: dclColors.neutral.trueWhite
   },
   '& img': {
     display: 'block'
@@ -224,7 +227,7 @@ const PlayBadgeLink = styled('a')({
   transition: 'outline-color 0.15s ease',
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:hover': {
-    outlineColor: 'rgba(255, 255, 255, 0.6)'
+    outlineColor: dclColors.whiteTransparent.backdrop
   }
 })
 
@@ -247,12 +250,35 @@ const PlayAlreadyText = styled(Typography)({
 })
 
 const PlayJumpInLink = styled('a')({
-  color: '#FF2D55',
+  color: dclColors.brand.ruby,
   fontWeight: 500,
   fontSize: 20,
   lineHeight: 1.6,
   textDecoration: 'underline',
   textTransform: 'uppercase',
+  cursor: 'pointer',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:hover': {
+    opacity: 0.8
+  }
+})
+
+// Secondary note, desktop only: points to the experimental web version.
+// typography/h6 — Inter 20px / 500 / 160%.
+const PlayExperimentalText = styled(Typography)({
+  color: dclColors.neutral.trueWhite,
+  fontSize: 20,
+  fontWeight: 500,
+  lineHeight: 1.6,
+  textAlign: 'center'
+})
+
+const PlayExperimentalLink = styled('a')({
+  color: dclColors.brand.ruby,
+  fontSize: 20,
+  fontWeight: 500,
+  lineHeight: 1.6,
+  textDecoration: 'underline',
   cursor: 'pointer',
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:hover': {
@@ -275,6 +301,8 @@ export {
   PlayDownloadButton,
   PlayDownloadCounts,
   PlayEpicButton,
+  PlayExperimentalLink,
+  PlayExperimentalText,
   PlayJumpInLink,
   PlayMobileContent,
   PlaySubtitle,

@@ -374,7 +374,9 @@
       "subtitle": "데스크톱 또는 모바일 앱에서 계속 플레이하세요.",
       "also_available_on": "다음에서도 이용 가능",
       "already_downloaded": "이미 다운로드하셨나요?",
-      "jump_in": "입장하기!"
+      "jump_in": "입장하기!",
+      "experimental": "웹에서 계속 플레이하고 싶으신가요? 실험 버전을 {here}에서 사용해 보세요",
+      "here": "여기"
     }
   },
   "page_invite": {

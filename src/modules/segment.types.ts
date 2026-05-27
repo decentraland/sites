@@ -83,6 +83,7 @@ enum DownloadPlace {
   JUMP_IN_ALREADY_USER = 'jump-in-already-user',
   PLAY_HERO = 'play-hero',
   PLAY_HERO_EPIC = 'play-hero-epic',
+  PLAY_EXPERIMENTAL_WEB = 'play-experimental-web',
   DOWNLOAD_PAGE = 'download-page',
   DOWNLOAD_SUCCESS_FOOTER = 'download-success-footer',
   UNKNOWN = 'unknown'
