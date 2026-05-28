@@ -1,23 +1,6 @@
 {
   "general": {
-    "main_browser_cta": "开始使用",
-    "main_browser_cta_target": "https://decentraland.org/play/",
-    "mvmf_main_stage_target": "https://decentraland.org/play/?position=-62%2C58",
-    "see_festival_events_target": "https://events.decentraland.org/schedule/?id=297fb4fa-fe11-4746-8abd-ce6c77bad3e2",
-    "main_desktop_cta": "下载",
-    "secondary_desktop_cta": "在浏览器中打开",
-    "discord_cta": "加入我们的Discord",
-    "discord_cta_target": "https://dcl.gg/discord",
-    "discord": "Discord",
-    "twitter_cta_target": "https://twitter.com/decentraland",
-    "follow_us_on": "关注我们 ",
-    "twitter": "Twitter",
-    "telegram_cta_target": "https://t.me/decentralandTG",
-    "join_us_on": "加入我们 ",
-    "telegram": "Telegram",
-    "sdk_cta_target": "https://developers.decentraland.org/",
-    "get_started_with_our": "开始使用我们的 ",
-    "sdk": "SDK"
+    "discord_cta_target": "https://dcl.gg/discord"
   },
   "page": {
     "download": {
@@ -435,101 +418,10 @@
     }
   },
   "index": {
-    "create_my_account": "创建我的账户",
-    "get_started": "开始使用",
-    "social": {
-      "title": "Decentraland | 来一起玩",
-      "description": "Decentraland 是你的线上社交空间。加入电影放映、现场音乐、问答游戏和其他社区活动。随时来看看谁在线。"
-    },
-    "mobile_modal": {
-      "description": "Decentraland 目前仅在桌面端可用。输入您的邮箱，我们会在移动端上线时通知您。",
-      "placeholder": "email@domain.com",
-      "sign_up": "注册",
-      "signed_up": "感谢您的订阅！",
-      "sign_up_fail": "哎呀，出了点问题！",
-      "close": "关闭"
-    },
-    "main": {
-      "title": "欢迎来到 Decentraland",
-      "description": "在首个由用户拥有的虚拟世界中创建、探索和交易。",
-      "jump_in": "立即进入",
-      "see_festival_events": "查看节日活动"
-    },
-    "explore": {
-      "title": "探索",
-      "subtitle": "沉浸在一个令人惊叹的、不断发展的世界中",
-      "description": "探索用户拥有的 LAND，体验令人难以置信的场景和建筑。从太空冒险到中世纪地牢迷宫，再到社区成员精心打造的整个村庄。",
-      "main_cta": "开始探索",
-      "main_cta_target": "https://decentraland.org/play/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "create": {
-      "title": "创造",
-      "subtitle": "测试你想象力的极限",
-      "description": "使用简单的 Builder 工具创建场景、艺术品、挑战等，然后参加活动赢取奖品。对于更有经验的创作者，SDK 提供了用社交游戏和应用填充世界的工具。",
-      "main_cta": "开始构建",
-      "main_cta_target": "https://builder.decentraland.org/",
-      "secondary_cta": "开始开发",
-      "secondary_cta_target": "https://developers.decentraland.org/"
-    },
-    "trade": {
-      "title": "交易",
-      "subtitle": "数字资产的虚拟目的地",
-      "description": "在 Decentraland 市场买卖 LAND、房产、头像可穿戴设备和名称：由以太坊区块链支持的最佳数字商品。",
-      "main_cta": "开始浏览",
-      "main_cta_target": "https://market.decentraland.org/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "where_to_start": {
-      "title": "不知道从哪里开始？",
-      "description": "",
-      "poi": "兴趣点",
-      "our_picks": "我们的推荐",
-      "our_events": "即将举行的活动",
-      "target_events": "https://events.decentraland.org",
-      "more_events": "更多活动",
-      "best_multiplayer": "最佳多人游戏",
-      "best_adventures": "最佳冒险"
-    },
-    "dao": {
-      "title": "关于 Decentraland",
-      "subtitle": "决定虚拟世界的未来",
-      "description": "作为第一个完全去中心化的世界，Decentraland 通过 DAO 控制，DAO 拥有 Decentraland 最重要的智能合约和资产。通过 DAO，您可以决定和投票世界如何运作。",
-      "main_cta": "了解更多",
-      "main_cta_target": "https://dao.decentraland.org/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "blog": {
-      "title": "博客动态",
-      "more": "更多文章",
-      "target": "https://decentraland.org/blog"
-    },
-    "contact": {
-      "title": "联系我们",
-      "description": "您随时可以在 Discord 上找到我们。也可以通过其他渠道联系我们。",
-      "main_cta": "联系我们",
-      "main_cta_target": "mailto:hello@decentraland.org"
-    },
-    "subscribe": {
-      "title": "获取最新动态",
-      "description": "活动、竞赛和 Decentraland 新发展的最新消息，直达您的收件箱",
-      "placeholder": "email@domain.com",
-      "sign_up": "注册",
-      "signed_up": "感谢您的订阅！",
-      "sign_up_fail": "哎呀，出了点问题！"
-    },
     "press": {
       "title": "Decentraland 新闻资料包",
-      "description": "下载 Decentraland 新闻材料和品牌资产",
       "page_description": "我们准备了各种素材，欢迎您在撰写和谈论我们的项目时自由使用。如有任何问题，请联系：",
       "download_button": "下载新闻资料包"
-    },
-    "support": {
-      "title": "Decentraland - 帮助中心",
-      "description": "获取 Decentraland 帮助。浏览常见问题、查看服务状态并联系支持团队。"
     }
   },
   "component": {
