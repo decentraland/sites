@@ -73,13 +73,13 @@ const DownloadContainer = styled(Box, {
     padding: theme.spacing(15.5),
     // Signed-in mounts the fixed navbar (64px on mobile); clear it so the title
     // isn't tucked underneath. Signed-out has no navbar, so keep the small inset.
-    ...(hasPreview && { paddingTop: theme.spacing(11) }),
+    ...(hasPreview && { paddingTop: theme.spacing(8) }),
     height: '100svh',
     overflow: 'visible'
   },
   [theme.breakpoints.down('xs')]: {
     padding: theme.spacing(3),
-    ...(hasPreview && { paddingTop: theme.spacing(11) }),
+    ...(hasPreview && { paddingTop: theme.spacing(8) }),
     width: '100%'
   }
 }))
@@ -179,10 +179,9 @@ const DclLogo = styled(Logo)(({ theme }) => ({
 }))
 
 const MobileTitle = styled(Typography)(({ theme }) => ({
-  marginTop: theme.spacing(4),
+  marginTop: theme.spacing(6),
   zIndex: 10,
-  fontWeight: 500,
-  fontStyle: 'Medium',
+  fontWeight: 600,
   fontSize: '30px',
   lineHeight: '124%',
   letterSpacing: '0px',
