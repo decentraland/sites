@@ -37,7 +37,7 @@ const buildMarketplaceWearableUrl = (collectionId: string, blockchainId: string)
 }
 
 const buildTwitterShareUrl = (description: string, url: string): string => {
-  const params = new URLSearchParams({ text: description, hashtags: 'DCLCamera', url })
+  const params = new URLSearchParams({ text: description, url })
   return `https://twitter.com/intent/tweet?${params.toString()}`
 }
 
