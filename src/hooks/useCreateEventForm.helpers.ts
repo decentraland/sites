@@ -1,5 +1,5 @@
 import type { EventEntry, RecurrentFrequency } from '../features/events'
-import { ALL_WEEKDAYS, weekdayMaskToDayIndices } from '../utils/recurrence'
+import { ALL_WEEKDAYS, parseStartWeekday, weekdayMaskToDayIndices } from '../utils/recurrence'
 import type { CreateEventFormState } from './useCreateEventForm.types'
 
 /* eslint-disable @typescript-eslint/naming-convention -- keys are API enum values */
@@ -113,8 +113,17 @@ function eventEntryToFormState(event: EventEntry, now: number = Date.now()): Cre
   const referenceStartAt = resolveFormReferenceStartAt(event, now)
   const start = splitIsoDateTime(referenceStartAt)
   const durationMs = resolveDurationMs(event, referenceStartAt)
+  // Hydrate the repeat end-date from `recurrent_until` — the canonical horizon stored by the API.
+  // Falling back to `recurrent_dates[last]` (issue #517) is wrong because that array is capped at
+  // ~10 occurrences (see `events.helpers.ts:53-58`), so an event ending in November but only
+  // expanded through July would silently round-trip back to July on save.
   const lastRecurrentDate = event.recurrent_dates?.[event.recurrent_dates.length - 1] ?? null
-  const repeatEnd = splitIsoDateTime(lastRecurrentDate)
+  const repeatEnd = splitIsoDateTime(event.recurrent_until ?? lastRecurrentDate)
+  const decodedRepeatDays = weekdayMaskToDayIndices(event.recurrent_weekday_mask)
+  // A WEEKLY event with mask=0 means the server is using start_at's weekday as the RRULE default.
+  // Mirror that here so the picker shows the actually-recurring day instead of a blank/full grid.
+  const startWeekday = parseStartWeekday(start.date)
+  const repeatDays = decodedRepeatDays.length > 0 ? decodedRepeatDays : startWeekday !== null ? [startWeekday] : [...ALL_WEEKDAYS]
   // Treat events whose `world: true` flag isn't backed by a non-empty `server`
   // name as Land. The combination is an upstream-data symptom: the events API
   // has been observed returning `world: true` for events created with valid
@@ -139,7 +148,7 @@ function eventEntryToFormState(event: EventEntry, now: number = Date.now()): Cre
     repeatEnabled: Boolean(event.recurrent),
     frequency: (event.recurrent_frequency && REVERSE_FREQUENCY_MAP[event.recurrent_frequency]) ?? 'every_day',
     repeatInterval: String(parseRecurrentInterval(String(event.recurrent_interval ?? '')) ?? 1),
-    repeatDays: weekdayMaskToDayIndices(event.recurrent_weekday_mask),
+    repeatDays,
     repeatEndDate: repeatEnd.date,
     location: isWorld ? 'world' : 'land',
     coordX: isWorld ? '0' : String(event.x ?? 0),
