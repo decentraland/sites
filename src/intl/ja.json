@@ -1,23 +1,6 @@
 {
   "general": {
-    "main_browser_cta": "はじめる",
-    "main_browser_cta_target": "https://decentraland.org/play/",
-    "mvmf_main_stage_target": "https://decentraland.org/play/?position=-62%2C58",
-    "see_festival_events_target": "https://events.decentraland.org/schedule/?id=297fb4fa-fe11-4746-8abd-ce6c77bad3e2",
-    "main_desktop_cta": "ダウンロード",
-    "secondary_desktop_cta": "ブラウザで開く",
-    "discord_cta": "Discordに参加する",
-    "discord_cta_target": "https://dcl.gg/discord",
-    "discord": "Discord",
-    "twitter_cta_target": "https://twitter.com/decentraland",
-    "follow_us_on": "フォローする ",
-    "twitter": "Twitter",
-    "telegram_cta_target": "https://t.me/decentralandTG",
-    "join_us_on": "参加する ",
-    "telegram": "Telegram",
-    "sdk_cta_target": "https://developers.decentraland.org/",
-    "get_started_with_our": "はじめる ",
-    "sdk": "SDK"
+    "discord_cta_target": "https://dcl.gg/discord"
   },
   "page": {
     "download": {
@@ -435,101 +418,10 @@
     }
   },
   "index": {
-    "create_my_account": "アカウントを作成",
-    "get_started": "はじめる",
-    "social": {
-      "title": "Decentraland | 一緒に遊ぼう",
-      "description": "Decentralandはオンラインで集まる場所です。映画上映、ライブ音楽、トリビア、その他のコミュニティイベントに参加しましょう。いつでも立ち寄って誰がいるか確認してください。"
-    },
-    "mobile_modal": {
-      "description": "Decentralandは現在デスクトップのみで利用可能です。モバイル対応時に通知を受け取るにはメールアドレスを入力してください。",
-      "placeholder": "email@domain.com",
-      "sign_up": "登録",
-      "signed_up": "ご登録ありがとうございます！",
-      "sign_up_fail": "エラーが発生しました！",
-      "close": "閉じる"
-    },
-    "main": {
-      "title": "Decentralandへようこそ",
-      "description": "ユーザーが所有する世界初のバーチャルワールドで、作成、探索、取引しましょう。",
-      "jump_in": "入場する",
-      "see_festival_events": "フェスティバルイベントを見る"
-    },
-    "explore": {
-      "title": "探索",
-      "subtitle": "驚くべき進化する世界に没入しましょう",
-      "description": "ユーザーが所有するLANDを探索して、素晴らしいシーンや建造物を体験しましょう。宇宙冒険から中世のダンジョン迷路、コミュニティメンバーが作った村まで。",
-      "main_cta": "探索を始める",
-      "main_cta_target": "https://decentraland.org/play/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "create": {
-      "title": "作成",
-      "subtitle": "想像力の限界を試しましょう",
-      "description": "シンプルなBuilderツールを使ってシーン、アートワーク、チャレンジなどを作成し、イベントに参加して賞品を獲得しましょう。経験豊富なクリエイター向けに、SDKはソーシャルゲームやアプリケーションで世界を満たすツールを提供します。",
-      "main_cta": "ビルドを始める",
-      "main_cta_target": "https://builder.decentraland.org/",
-      "secondary_cta": "開発を始める",
-      "secondary_cta_target": "https://developers.decentraland.org/"
-    },
-    "trade": {
-      "title": "取引",
-      "subtitle": "デジタル資産のバーチャル目的地",
-      "description": "Decentralandマーケットプレイスで、LAND、エステート、アバターウェアラブル、ネームを売買しましょう。イーサリアムブロックチェーンに裏付けされた最高のデジタルグッズ。",
-      "main_cta": "ブラウジングを始める",
-      "main_cta_target": "https://market.decentraland.org/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "where_to_start": {
-      "title": "どこから始めるか迷っていますか？",
-      "description": "",
-      "poi": "注目ポイント",
-      "our_picks": "おすすめ",
-      "our_events": "今後のイベント",
-      "target_events": "https://events.decentraland.org",
-      "more_events": "もっとイベントを見る",
-      "best_multiplayer": "ベストマルチプレイヤー",
-      "best_adventures": "ベストアドベンチャー"
-    },
-    "dao": {
-      "title": "Decentralandについて",
-      "subtitle": "バーチャルワールドの未来を決めましょう",
-      "description": "初の完全分散型ワールドであるDecentralandは、最も重要なスマートコントラクトと資産を所有するDAOを通じて管理されています。DAOを通じて、世界の仕組みについて決定し投票できます。",
-      "main_cta": "詳しく見る",
-      "main_cta_target": "https://dao.decentraland.org/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "blog": {
-      "title": "ブログから",
-      "more": "もっと記事を見る",
-      "target": "https://decentraland.org/blog"
-    },
-    "contact": {
-      "title": "お問い合わせ",
-      "description": "Discordでいつでもお会いできます。通常のチャンネルからもご連絡いただけます。",
-      "main_cta": "お問い合わせ",
-      "main_cta_target": "mailto:hello@decentraland.org"
-    },
-    "subscribe": {
-      "title": "最新情報を受け取る",
-      "description": "Decentralandのイベント、コンペティション、新開発に関するニュースを直接受信箱にお届けします",
-      "placeholder": "email@domain.com",
-      "sign_up": "登録",
-      "signed_up": "ご登録ありがとうございます！",
-      "sign_up_fail": "エラーが発生しました！"
-    },
     "press": {
       "title": "Decentralandプレスキット",
-      "description": "Decentralandのプレス資料とブランドアセットをダウンロード",
       "page_description": "プロジェクトについて執筆・発信する際にご自由にお使いいただける素材をご用意しました。ご質問は以下までお問い合わせください：",
       "download_button": "プレスキットをダウンロード"
-    },
-    "support": {
-      "title": "Decentraland - ヘルプセンター",
-      "description": "Decentralandのヘルプ。FAQの検索、サービスステータスの確認、サポートへのお問い合わせ。"
     }
   },
   "component": {
