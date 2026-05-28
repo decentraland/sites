@@ -31,6 +31,7 @@ const CreatorHubDownloadSuccessPage = lazy(() =>
   import('./pages/download/CreatorHubDownloadSuccess').then(m => ({ default: m.CreatorHubDownloadSuccess }))
 )
 const HelpPage = lazy(() => import('./pages/help').then(m => ({ default: m.HelpPage })))
+const PlayPage = lazy(() => import('./pages/play').then(m => ({ default: m.PlayPage })))
 const InvitePage = lazy(() => import('./pages/invite/InvitePage').then(m => ({ default: m.InvitePage })))
 const CreatePage = lazy(() => import('./pages/create').then(m => ({ default: m.CreatePage })))
 const DiscordPage = lazy(() => import('./pages/discord').then(m => ({ default: m.DiscordPage })))
@@ -129,6 +130,7 @@ const App = () => {
             <Route path="/referral-terms" element={<ReferralTerms />} />
             <Route path="/terms" element={<TermsOfUse />} />
             <Route path="/help" element={<HelpPage />} />
+            <Route path="/play" element={<PlayPage />} />
             <Route path="/create" element={<CreatePage />} />
             <Route path="/download/creator-hub" element={<CreatorHubDownloadPage />} />
             <Route path="/download/creator-hub-success" element={<CreatorHubDownloadSuccessPage />} />

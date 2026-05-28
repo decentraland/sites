@@ -23,7 +23,7 @@
     "download": {
       "title": "Decentralandをダウンロード",
       "description": "Decentralandをダウンロードしてメタバースの探検を始めましょう",
-      "download_onboarding_title": "Decentralandをダウンロード\n\nさあ飛び込もう！",
+      "download_onboarding_title": "Decentralandをダウンロード\n一緒に遊ぼう！",
       "not_available": "お使いのOSではご利用いただけません",
       "not_available_subtitle": "Decentralandは<span>Windows</span>と<span>macOS</span>でご利用いただけます。",
       "download": "ダウンロード",
@@ -38,10 +38,6 @@
       "your_account": "あなたのアカウント",
       "already_downloaded": "すでにダウンロード済みですか？",
       "jump_in": "入場する",
-      "mobile": {
-        "switch_to_computer": "Decentralandをダウンロードするにはパソコンに切り替えてください",
-        "send_link": "リンクを送る"
-      },
       "modal": {
         "title_first_line": "まだ",
         "title_second_line": "Decentralandアプリがありません",
@@ -49,7 +45,6 @@
       },
       "downloading": "Decentralandをダウンロード中...",
       "avatar_preview": "Decentralandアバタープレビュー",
-      "share_title": "Decentralandをダウンロード",
       "success": {
         "title": "もう少しで完了です！",
         "subtitle": "ダウンロードしたファイルを開いてDecentralandのインストールを完了し、{action}を始めましょう",
@@ -368,6 +363,15 @@
     "report": {
       "title": "プレイヤーを報告する – Decentraland",
       "success_title": "報告が送信されました – Decentraland"
+    },
+    "play": {
+      "title": "ウェブ版は提供を終了しました。",
+      "subtitle": "デスクトップまたはモバイルアプリでプレイを続けましょう。",
+      "also_available_on": "こちらでも利用可能",
+      "already_downloaded": "すでにダウンロード済みですか？",
+      "jump_in": "入場する！",
+      "experimental": "ウェブでプレイを続けたいですか？実験版を{here}でお試しください",
+      "here": "こちら"
     }
   },
   "page_invite": {
@@ -1011,6 +1015,7 @@
     "error_repeat_interval_invalid": "繰り返し間隔は1から4までの整数で入力してください",
     "error_repeat_days_required": "少なくとも1つの曜日を選択してください",
     "error_start_date_not_in_repeat_days": "開始日の曜日は選択した曜日のいずれかである必要があります",
+    "error_image_too_large": "この画像を500 KB以下に圧縮できませんでした。より小さいファイルを選択してください。",
     "vertical_recommended_size": "推奨サイズ：716 × 1814 px"
   },
   "community": {

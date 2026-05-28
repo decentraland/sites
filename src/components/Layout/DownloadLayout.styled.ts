@@ -1,7 +1,18 @@
-import { Box, Button, Link, Logo, Typography, dclColors, dclModal, styled } from 'decentraland-ui2'
+import { Box, Link, Logo, Typography, dclColors, dclModal, styled } from 'decentraland-ui2'
 import backgroundImage from '../../images/download/download_background.webp'
 
-const DownloadPageContainer = styled(Box)(({ theme }) => ({
+// Signed-in keeps the original framing (darkens the top/left corners around the
+// avatar). Signed-out fades the left side behind the copy into the page purple
+// while leaving the right side of the scene visible.
+const SIGNED_IN_BACKGROUND = `linear-gradient(150deg, #2A0C43 0%, #2A0C43 25%, transparent 100%), linear-gradient(225deg, #2A0C43 0%, rgba(42, 12, 67, 0.8) 15%, transparent 100%), url(${backgroundImage})`
+const SIGNED_OUT_BACKGROUND = `linear-gradient(270deg, rgba(42, 12, 67, 0.00) 13.9%, rgba(42, 12, 67, 0.84) 53.91%, #2A0C43 86.65%), url(${backgroundImage})`
+// Mobile signed-out: top-to-bottom gradient over the scene image (purple behind
+// the copy up top, fading to reveal the theatre below).
+const SIGNED_OUT_BACKGROUND_MOBILE = `linear-gradient(180deg, #380169 16.82%, rgba(56, 1, 105, 0.00) 76.7%), url(${backgroundImage})`
+
+const DownloadPageContainer = styled(Box, {
+  shouldForwardProp: prop => prop !== 'hasPreview'
+})<{ hasPreview?: boolean }>(({ theme, hasPreview }) => ({
   position: 'relative',
   display: 'flex',
   flexDirection: 'column',
@@ -10,13 +21,14 @@ const DownloadPageContainer = styled(Box)(({ theme }) => ({
   minHeight: '650px',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundImage: `linear-gradient(150deg, #2A0C43 0%, #2A0C43 25%, transparent 100%), linear-gradient(225deg, #2A0C43 0%, rgba(42, 12, 67, 0.8) 15%, transparent 100%), url(${backgroundImage})`,
+  backgroundImage: hasPreview ? SIGNED_IN_BACKGROUND : SIGNED_OUT_BACKGROUND,
   backgroundSize: 'cover',
   backgroundPosition: 'center',
   [theme.breakpoints.down('sm')]: {
     height: '100svh',
     minHeight: 'unset',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    ...(!hasPreview && { backgroundImage: SIGNED_OUT_BACKGROUND_MOBILE })
   }
 }))
 
@@ -30,7 +42,9 @@ const DownloadWearablePreviewOverlay = styled(Box)({
   zIndex: 3
 })
 
-const DownloadContainer = styled(Box)(({ theme }) => ({
+const DownloadContainer = styled(Box, {
+  shouldForwardProp: prop => prop !== 'hasPreview'
+})<{ hasPreview?: boolean }>(({ theme, hasPreview }) => ({
   display: 'flex',
   flexDirection: 'row',
   justifyContent: 'space-between',
@@ -50,14 +64,22 @@ const DownloadContainer = styled(Box)(({ theme }) => ({
   },
   [theme.breakpoints.down('sm')]: {
     flexDirection: 'column',
+    // With the avatar preview present the title sits above it (space-between).
+    // Without it (signed-out), keep the title near the top instead of letting
+    // space-between push it to the bottom of the viewport.
+    justifyContent: hasPreview ? 'space-between' : 'flex-start',
     alignItems: 'flex-start',
     width: 'calc(100% - 32px)',
     padding: theme.spacing(15.5),
+    // Signed-in mounts the fixed navbar (64px on mobile); clear it so the title
+    // isn't tucked underneath. Signed-out has no navbar, so keep the small inset.
+    ...(hasPreview && { paddingTop: theme.spacing(8) }),
     height: '100svh',
     overflow: 'visible'
   },
   [theme.breakpoints.down('xs')]: {
     padding: theme.spacing(3),
+    ...(hasPreview && { paddingTop: theme.spacing(8) }),
     width: '100%'
   }
 }))
@@ -65,7 +87,12 @@ const DownloadContainer = styled(Box)(({ theme }) => ({
 const DownloadOptionsContainer = styled(Box)({
   zIndex: 10,
   position: 'relative',
-  width: '100vw'
+  // Size to the content instead of `100vw`: a full-viewport width turned this
+  // (zIndex:10) block into an invisible overlay spanning the right side, covering
+  // the empty area when signed out and the avatar when signed in. `flexShrink: 0`
+  // keeps the title on two lines when the avatar shares the row (signed in).
+  width: 'fit-content',
+  flexShrink: 0
 })
 
 const PreTitleContainer = styled(Box)(({ theme }) => ({
@@ -152,17 +179,18 @@ const DclLogo = styled(Logo)(({ theme }) => ({
 }))
 
 const MobileTitle = styled(Typography)(({ theme }) => ({
-  marginTop: theme.spacing(4),
+  marginTop: theme.spacing(6),
   zIndex: 10,
-  fontWeight: 500,
-  fontStyle: 'Medium',
+  fontWeight: 600,
   fontSize: '30px',
   lineHeight: '124%',
-  letterSpacing: '0px'
+  letterSpacing: '0px',
+  whiteSpace: 'pre-line'
 }))
 
 const DownloadTitle = styled(Typography)(({ theme }) => ({
   marginTop: theme.spacing(1),
+  whiteSpace: 'pre-line',
   [theme.breakpoints.down('sm')]: {
     textAlign: 'center',
     fontSize: '3rem'
@@ -191,11 +219,6 @@ const ShareContainer = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2),
   zIndex: 100
 }))
-
-const ShareButton = styled(Button)({
-  width: '100%',
-  height: '56px'
-})
 
 const Modal = styled(dclModal.Modal)({})
 
@@ -229,6 +252,45 @@ const ModalTitle = styled(Typography)({
   verticalAlign: 'middle'
 })
 
+const SignInButton = styled('button')(({ theme }) => ({
+  all: 'unset',
+  boxSizing: 'border-box',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '8px 22px',
+  border: `1px solid ${dclColors.neutral.softWhite}`,
+  borderRadius: 6,
+  fontWeight: 600,
+  fontSize: 15,
+  lineHeight: '24px',
+  letterSpacing: 0.46,
+  textTransform: 'uppercase',
+  color: dclColors.neutral.softWhite,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  zIndex: 10,
+  transition: 'background-color 0.15s ease, border-color 0.15s ease',
+  position: 'absolute',
+  top: theme.spacing(9),
+  right: theme.spacing(9),
+  ['&:hover']: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.7)'
+  },
+  ['&:active']: {
+    backgroundColor: 'rgba(255, 255, 255, 0.12)'
+  },
+  ['&:focus-visible']: {
+    outline: `2px solid ${dclColors.base.primary}`,
+    outlineOffset: 2
+  },
+  [theme.breakpoints.down('sm')]: {
+    top: theme.spacing(4),
+    right: theme.spacing(3)
+  }
+}))
+
 export {
   AlreadyDownloadedContainer,
   AlreadyDownloadedLink,
@@ -248,6 +310,6 @@ export {
   ModalIcon,
   ModalTitle,
   PreTitleContainer,
-  ShareButton,
-  ShareContainer
+  ShareContainer,
+  SignInButton
 }

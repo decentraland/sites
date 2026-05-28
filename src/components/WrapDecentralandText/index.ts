@@ -1,1 +1,0 @@
-export { WrapDecentralandText } from './WrapDecentralandText'

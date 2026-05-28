@@ -23,7 +23,7 @@
     "download": {
       "title": "Descargar Decentraland",
       "description": "Descarga Decentraland y comienza a divertirte",
-      "download_onboarding_title": "Descarga Decentraland\n\n¡y entra!",
+      "download_onboarding_title": "Descarga Decentraland\n¡y vení a divertirte!",
       "not_available": "No disponible para tu sistema operativo",
       "not_available_subtitle": "Decentraland está disponible para <span>Windows</span> y <span>macOS</span>.",
       "download": "Descargar",
@@ -38,10 +38,6 @@
       "your_account": "Tu Cuenta",
       "already_downloaded": "¿Ya lo descargaste?",
       "jump_in": "Entrar",
-      "mobile": {
-        "switch_to_computer": "Usá tu computadora para descargar Decentraland",
-        "send_link": "Enviarme el enlace"
-      },
       "modal": {
         "title_first_line": "Aún no tienes la",
         "title_second_line": "aplicación de Decentraland",
@@ -49,7 +45,6 @@
       },
       "downloading": "Descargando Decentraland...",
       "avatar_preview": "Vista previa del Avatar de Decentraland",
-      "share_title": "Descargar Decentraland",
       "success": {
         "title": "¡Ya casi está!",
         "subtitle": "Abre el archivo que acabas de descargar para terminar de instalar Decentraland y comenzar a {action}",
@@ -368,6 +363,15 @@
     "report": {
       "title": "Reportar a un jugador – Decentraland",
       "success_title": "Reporte enviado – Decentraland"
+    },
+    "play": {
+      "title": "La versión web ya no está disponible.",
+      "subtitle": "Seguí jugando en la app de escritorio o móvil.",
+      "also_available_on": "También disponible en",
+      "already_downloaded": "¿Ya lo descargaste?",
+      "jump_in": "¡ENTRAR!",
+      "experimental": "¿Querés seguir jugando en la web? Probá la versión experimental {here}",
+      "here": "AQUÍ"
     }
   },
   "page_invite": {
@@ -1011,6 +1015,7 @@
     "error_repeat_interval_invalid": "El intervalo de repetición debe ser un número entero entre 1 y 4",
     "error_repeat_days_required": "Seleccioná al menos un día",
     "error_start_date_not_in_repeat_days": "El día de la semana de la fecha de inicio debe estar entre los seleccionados",
+    "error_image_too_large": "No pudimos comprimir esta imagen a menos de 500 KB. Por favor, elegí un archivo más pequeño.",
     "vertical_recommended_size": "Tamaño recomendado: 716 × 1814 px"
   },
   "community": {

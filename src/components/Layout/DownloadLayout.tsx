@@ -4,16 +4,20 @@ import { useInView } from 'react-intersection-observer'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
+import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { Button, Typography, launchDesktopApp, useDesktopMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../config/env'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { useSignInRedirect } from '../../hooks/useSignInRedirect'
 import { useWalletAddress } from '../../hooks/useWalletAddress'
+import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
+import { assetUrl } from '../../utils/assetUrl'
 import { DownloadOptions } from '../DownloadOptions'
+import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../Home/shared/googlePlay'
+import { GooglePlayButton, GooglePlayImage } from '../Home/shared/MobileCTA.styled'
 import { LandingFooter } from '../LandingFooter'
-import { WrapDecentralandText } from '../WrapDecentralandText'
+import { LandingNavbarConnected } from '../LandingNavbar'
 import { DownloadLayoutProps } from './DownloadLayout.types'
 import {
   AlreadyDownloadedContainer,
@@ -34,8 +38,8 @@ import {
   ModalIcon,
   ModalTitle,
   PreTitleContainer,
-  ShareButton,
-  ShareContainer
+  ShareContainer,
+  SignInButton
 } from './DownloadLayout.styled'
 
 const DownloadLayout = memo((props: DownloadLayoutProps) => {
@@ -47,6 +51,8 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
   const l = useFormatMessage()
   const isDesktop = useDesktopMediaQuery()
+  const [, userAgentData] = useAdvancedUserAgentData()
+  const isMobileAndroid = !!userAgentData?.mobile && userAgentData.os.name === 'Android'
 
   const { address } = useWalletAddress()
 
@@ -67,8 +73,11 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   }, [email, user])
 
   const profileAddress = user || address
+  const isSignedIn = !!profileAddress
   const { data: profile } = useGetProfileQuery(profileAddress ?? undefined, { skip: !profileAddress })
   const profileName = profile?.avatars?.[0]?.name
+
+  const handleSignIn = useSignInRedirect()
 
   const wearableContainerRef = useRef<HTMLDivElement | null>(null)
   const { ref: wearableRef, inView } = useInView({ triggerOnce: true, rootMargin: '200px' })
@@ -133,26 +142,22 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
     return 'default' + (Math.floor(Math.random() * (160 - 1 + 1)) + 1)
   }, [])
 
-  const handleShare = useCallback(async () => {
-    try {
-      const shareUrl = new URL(window.location.href)
-      shareUrl.searchParams.delete('email')
-      shareUrl.searchParams.delete('user')
-      await navigator.share({
-        title: l('page.download.share_title'),
-        text: l('page.download.share_title'),
-        url: shareUrl.toString()
-      })
-    } catch {
-      /* user cancelled or API unavailable */
-    }
-  }, [l])
-
   return (
     <>
-      <DownloadPageContainer component="main">
-        <DownloadContainer>
-          <DclLogo onClick={() => (window.location.href = 'https://decentraland.org')} />
+      {/* Signed-in download mirrors the homepage chrome: full navbar (nav links +
+          avatar/MANA/notifications). Signed-out keeps the minimal logo + Sign In.
+          Forwarding `profileAddress` keeps the navbar's profile query in sync with the
+          one this layout already runs (no duplicate request, no stale avatar when the
+          page is entered via the `?user=` onboarding deep link). */}
+      {isSignedIn && <LandingNavbarConnected address={profileAddress ?? undefined} />}
+      <DownloadPageContainer component="main" hasPreview={isSignedIn}>
+        <DownloadContainer hasPreview={isSignedIn}>
+          {!isSignedIn && (
+            <>
+              <DclLogo onClick={() => (window.location.href = 'https://decentraland.org')} />
+              <SignInButton onClick={handleSignIn}>{l('component.landing.navbar.sign_in')}</SignInButton>
+            </>
+          )}
 
           {isDesktop && (
             <>
@@ -163,57 +168,66 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
                 </AlreadyDownloadedText>
               </AlreadyDownloadedContainer>
               <DownloadOptionsContainer>
-                <PreTitleContainer>
-                  <CheckCircleIcon htmlColor="#34CE77" fontSize="large" />
-                  <Typography variant="h4">
-                    {l('page.download.pre_title', {
-                      name: profileName || l('page.download.your_account')
-                    })}
-                  </Typography>
-                </PreTitleContainer>
-                <DownloadTitle variant="h2">
-                  <WrapDecentralandText text={title} />
-                </DownloadTitle>
+                {isSignedIn && (
+                  <PreTitleContainer>
+                    <CheckCircleIcon htmlColor="#34CE77" fontSize="large" />
+                    <Typography variant="h4">
+                      {l('page.download.pre_title', {
+                        name: profileName || l('page.download.your_account')
+                      })}
+                    </Typography>
+                  </PreTitleContainer>
+                )}
+                <DownloadTitle variant="h2">{title}</DownloadTitle>
                 <DownloadOptions />
               </DownloadOptionsContainer>
             </>
           )}
 
-          {!isDesktop && (
-            <MobileTitle variant="h2">
-              <WrapDecentralandText text={title} />
-            </MobileTitle>
-          )}
+          {!isDesktop && <MobileTitle variant="h2">{title}</MobileTitle>}
 
-          <DownloadImageContainer>
-            {!isDesktop && <DownloadWearablePreviewOverlay />}
-            <DownloadWearablePreviewContainer
-              ref={(node: HTMLDivElement | null) => {
-                wearableRef(node)
-                wearableContainerRef.current = node
-              }}
-            >
-              {WearablePreviewComponent && (
-                <WearablePreviewComponent
-                  unity
-                  unityMode="jesus"
-                  profile={profile?.avatars?.[0]?.ethAddress || randomDefaultProfile}
-                  disableBackground={true}
-                  lockBeta={true}
-                  dev={false}
-                  baseUrl={getEnv('WEARABLE_PREVIEW_URL')}
-                />
-              )}
-            </DownloadWearablePreviewContainer>
-          </DownloadImageContainer>
+          {isSignedIn && (
+            <DownloadImageContainer>
+              {!isDesktop && <DownloadWearablePreviewOverlay />}
+              <DownloadWearablePreviewContainer
+                ref={(node: HTMLDivElement | null) => {
+                  wearableRef(node)
+                  wearableContainerRef.current = node
+                }}
+              >
+                {WearablePreviewComponent && (
+                  <WearablePreviewComponent
+                    unity
+                    unityMode="jesus"
+                    // Drive the preview off the known address (available synchronously when
+                    // signed in) instead of the async profile query — otherwise the first
+                    // render falls back to a random default avatar until the query resolves.
+                    profile={profileAddress || randomDefaultProfile}
+                    disableBackground={true}
+                    lockBeta={true}
+                    dev={false}
+                    baseUrl={getEnv('WEARABLE_PREVIEW_URL')}
+                  />
+                )}
+              </DownloadWearablePreviewContainer>
+            </DownloadImageContainer>
+          )}
         </DownloadContainer>
 
-        {!isDesktop && typeof navigator !== 'undefined' && !!navigator.share && (
+        {!isDesktop && (
           <ShareContainer>
-            <Typography variant="h6">{l('page.download.mobile.switch_to_computer')}</Typography>
-            <ShareButton onClick={handleShare} endIcon={<ShareOutlinedIcon />} variant="contained">
-              {l('page.download.mobile.send_link')}
-            </ShareButton>
+            {/* `GooglePlayButton` / `GooglePlayImage` are generic store-badge styled components
+                (same anchor + image sizing for the Apple and Google badges); the name is
+                historical from when they were Google-Play–only. Reused here for both OSes. */}
+            {isMobileAndroid ? (
+              <GooglePlayButton href={GOOGLE_PLAY_MOBILE_URL} target="_blank" rel="noopener noreferrer">
+                <GooglePlayImage src={googlePlayBadge} alt="Get it on Google Play" />
+              </GooglePlayButton>
+            ) : (
+              <GooglePlayButton href={DOWNLOAD_URLS.appStore} target="_blank" rel="noopener noreferrer">
+                <GooglePlayImage src={assetUrl('/download-on-the-app-store.svg')} alt="Download on the App Store" />
+              </GooglePlayButton>
+            )}
           </ShareContainer>
         )}
         <Modal open={openModal} size="tiny">

@@ -16,17 +16,11 @@ const DownloadButtonsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
   gap: '16px',
-  [theme.breakpoints.down('xl')]: {
+  [theme.breakpoints.down('lg')]: {
     flexDirection: 'column',
     alignItems: 'flex-start'
   }
 }))
-
-const DownloadButtonImage = styled('img')({
-  height: '32px',
-  width: '32px',
-  filter: 'brightness(0) invert(1)'
-})
 
 const DownloadCounts = styled(Typography)({
   display: 'flex',
@@ -86,7 +80,6 @@ export {
   AlternativeButtonsWrapper,
   AlternativeContainer,
   DownloadActions,
-  DownloadButtonImage,
   DownloadButtonsContainer,
   DownloadCounts,
   DownloadOptionsContainer
