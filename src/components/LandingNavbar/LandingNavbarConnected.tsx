@@ -6,14 +6,22 @@ import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useHangOutAction } from '../../hooks/useHangOutAction'
 import { useManaBalances } from '../../hooks/useManaBalances'
+import { useSignInRedirect } from '../../hooks/useSignInRedirect'
 import { useWalletAddress } from '../../hooks/useWalletAddress'
 import { useLocale } from '../../intl/LocaleContext'
-import { redirectToAuth } from '../../utils/authRedirect'
 import { LandingNavbar } from './LandingNavbar'
 import type { LandingNavbarProps } from './LandingNavbar'
 
 type LandingNavbarConnectedProps = {
   isLandingPage?: boolean
+  /**
+   * Optional override for the address whose profile/avatar/MANA the navbar should display.
+   * When set, takes precedence over the wallet address resolved from localStorage.
+   * Used by `DownloadLayout` to keep the navbar in sync with the page's effective profile
+   * (e.g. the `?user=` param from the onboarding email flow) and to share a single
+   * `useGetProfileQuery` call instead of issuing a second one for a different address.
+   */
+  address?: string
 }
 
 /**
@@ -23,9 +31,10 @@ type LandingNavbarConnectedProps = {
  * re-wiring the hooks. Consumed by `Layout` (every lightweight route) and by
  * `DownloadLayout` for the signed-in download experience.
  */
-const LandingNavbarConnected = ({ isLandingPage = false }: LandingNavbarConnectedProps) => {
+const LandingNavbarConnected = ({ isLandingPage = false, address: addressOverride }: LandingNavbarConnectedProps) => {
   const { locale } = useLocale()
-  const { address, isConnected, disconnect } = useWalletAddress()
+  const { address: walletAddress, isConnected, disconnect } = useWalletAddress()
+  const address = addressOverride ?? walletAddress
   const { data: profile, isLoading: isLoadingProfile } = useGetProfileQuery(address ?? undefined, { skip: !address })
   const avatar = profile?.avatars?.[0]
   const effectivelySignedIn = isConnected || !!address
@@ -40,9 +49,7 @@ const LandingNavbarConnected = ({ isLandingPage = false }: LandingNavbarConnecte
     locale: notificationLocale
   })
 
-  const handleSignIn = useCallback(() => {
-    redirectToAuth(window.location.pathname + window.location.search)
-  }, [])
+  const handleSignIn = useSignInRedirect()
 
   const handleSignOut = useCallback(() => {
     disconnect()

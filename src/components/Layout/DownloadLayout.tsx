@@ -9,10 +9,10 @@ import { Button, Typography, launchDesktopApp, useDesktopMediaQuery } from 'dece
 import { getEnv } from '../../config/env'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { useSignInRedirect } from '../../hooks/useSignInRedirect'
 import { useWalletAddress } from '../../hooks/useWalletAddress'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
 import { assetUrl } from '../../utils/assetUrl'
-import { redirectToAuth } from '../../utils/authRedirect'
 import { DownloadOptions } from '../DownloadOptions'
 import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../Home/shared/googlePlay'
 import { GooglePlayButton, GooglePlayImage } from '../Home/shared/MobileCTA.styled'
@@ -77,9 +77,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   const { data: profile } = useGetProfileQuery(profileAddress ?? undefined, { skip: !profileAddress })
   const profileName = profile?.avatars?.[0]?.name
 
-  const handleSignIn = useCallback(() => {
-    redirectToAuth(window.location.pathname + window.location.search)
-  }, [])
+  const handleSignIn = useSignInRedirect()
 
   const wearableContainerRef = useRef<HTMLDivElement | null>(null)
   const { ref: wearableRef, inView } = useInView({ triggerOnce: true, rootMargin: '200px' })
@@ -147,8 +145,11 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   return (
     <>
       {/* Signed-in download mirrors the homepage chrome: full navbar (nav links +
-          avatar/MANA/notifications). Signed-out keeps the minimal logo + Sign In. */}
-      {isSignedIn && <LandingNavbarConnected />}
+          avatar/MANA/notifications). Signed-out keeps the minimal logo + Sign In.
+          Forwarding `profileAddress` keeps the navbar's profile query in sync with the
+          one this layout already runs (no duplicate request, no stale avatar when the
+          page is entered via the `?user=` onboarding deep link). */}
+      {isSignedIn && <LandingNavbarConnected address={profileAddress ?? undefined} />}
       <DownloadPageContainer component="main" hasPreview={isSignedIn}>
         <DownloadContainer hasPreview={isSignedIn}>
           {!isSignedIn && (
@@ -215,6 +216,9 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
 
         {!isDesktop && (
           <ShareContainer>
+            {/* `GooglePlayButton` / `GooglePlayImage` are generic store-badge styled components
+                (same anchor + image sizing for the Apple and Google badges); the name is
+                historical from when they were Google-Play–only. Reused here for both OSes. */}
             {isMobileAndroid ? (
               <GooglePlayButton href={GOOGLE_PLAY_MOBILE_URL} target="_blank" rel="noopener noreferrer">
                 <GooglePlayImage src={googlePlayBadge} alt="Get it on Google Play" />

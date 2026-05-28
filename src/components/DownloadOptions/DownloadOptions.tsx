@@ -157,22 +157,24 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
       {primaryDownloadOptions.length > 0 && (
         <DownloadActions>
           <DownloadButtonsContainer>
-            {primaryDownloadOptions.map((option, index) => (
-              <DownloadButton
-                key={index}
-                href={option.link}
-                data-place={SectionViewedTrack.DOWNLOAD}
-                data-event={SegmentEvent.DOWNLOAD}
-                onClick={event => {
-                  event.preventDefault()
-                  onClickHandle(event)
-                  onClickDownloadHandler(option)
-                }}
-              >
-                {l('page.download.download_for_short')}
-                <img src={option.image} alt={option.text} width={32} height={32} style={{ filter: 'brightness(0) invert(1)' }} />
-              </DownloadButton>
-            ))}
+            {primaryDownloadOptions.map((option, index) =>
+              option.link ? (
+                <DownloadButton
+                  key={index}
+                  href={option.link}
+                  data-place={SectionViewedTrack.DOWNLOAD}
+                  data-event={SegmentEvent.DOWNLOAD}
+                  onClick={event => {
+                    event.preventDefault()
+                    onClickHandle(event)
+                    onClickDownloadHandler(option)
+                  }}
+                >
+                  {l('page.download.download_for_short')}
+                  <img src={option.image} alt={option.text} width={32} height={32} style={{ filter: 'brightness(0) invert(1)' }} />
+                </DownloadButton>
+              ) : null
+            )}
             <EpicButton
               href={EPIC_GAMES_URL}
               target="_blank"
