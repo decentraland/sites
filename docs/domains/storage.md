@@ -8,14 +8,14 @@ Scene + player storage browser. Absorbed from `storage-service-site`. Mounted un
 
 ## Key paths
 
-| Path                                       | Purpose                                                                                                                                  |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/pages/storage/`                       | Page components for the storage area (scene browser, player browser, env selector, not-found).                                            |
-| `src/components/storage/`                  | Storage-specific UI components (scene grid, player tiles, ownership badges).                                                              |
-| `src/features/storage/storage.client.ts`   | RTK Query endpoints for scene / players / assets queries. Injects into `storageClient`.                                                   |
-| `src/features/storage/assets.client.ts`    | RTK Query endpoints for on-chain ownership lookups (The Graph subgraph). Injects into `subgraphClient`.                                   |
-| `src/services/storageClient.ts`            | RTK Query base for storage-service-site (scene + player metadata).                                                                        |
-| `src/services/subgraphClient.ts`           | RTK Query base for The Graph subgraph queries used by `/storage/*` ownership checks.                                                      |
+| Path                                     | Purpose                                                                                                 |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `src/pages/storage/`                     | Page components for the storage area (scene browser, player browser, env selector, not-found).          |
+| `src/components/storage/`                | Storage-specific UI components (scene grid, player tiles, ownership badges).                            |
+| `src/features/storage/storage.client.ts` | RTK Query endpoints for scene / players / assets queries. Injects into `storageClient`.                 |
+| `src/features/storage/assets.client.ts`  | RTK Query endpoints for on-chain ownership lookups (The Graph subgraph). Injects into `subgraphClient`. |
+| `src/services/storageClient.ts`          | RTK Query base for storage-service-site (scene + player metadata).                                      |
+| `src/services/subgraphClient.ts`         | RTK Query base for The Graph subgraph queries used by `/storage/*` ownership checks.                    |
 
 ## Auth + mutations
 

@@ -23,7 +23,7 @@
     "download": {
       "title": "Télécharger Decentraland",
       "description": "Téléchargez Decentraland et commencez à explorer le métavers",
-      "download_onboarding_title": "Téléchargez Decentraland\n\net plongez !",
+      "download_onboarding_title": "Téléchargez Decentraland\net venez traîner !",
       "not_available": "Non disponible pour votre système d'exploitation",
       "not_available_subtitle": "Decentraland est disponible pour <span>Windows</span> et <span>macOS</span>.",
       "download": "Télécharger",
@@ -38,10 +38,6 @@
       "your_account": "Votre Compte",
       "already_downloaded": "Déjà téléchargé ?",
       "jump_in": "Plonger",
-      "mobile": {
-        "switch_to_computer": "Passez sur votre ordinateur pour télécharger Decentraland",
-        "send_link": "Envoyez-moi le lien"
-      },
       "modal": {
         "title_first_line": "Vous n'avez pas encore",
         "title_second_line": "l'application Decentraland",
@@ -49,7 +45,6 @@
       },
       "downloading": "Téléchargement de Decentraland...",
       "avatar_preview": "Aperçu de l'Avatar Decentraland",
-      "share_title": "Télécharger Decentraland",
       "success": {
         "title": "Vous y êtes presque !",
         "subtitle": "Ouvrez le fichier que vous venez de télécharger pour terminer l'installation de Decentraland et commencer à {action}",
@@ -368,6 +363,15 @@
     "report": {
       "title": "Signaler un joueur – Decentraland",
       "success_title": "Signalement envoyé – Decentraland"
+    },
+    "play": {
+      "title": "La version web n'est plus disponible.",
+      "subtitle": "Continuez à jouer sur l'application de bureau ou mobile.",
+      "also_available_on": "Également disponible sur",
+      "already_downloaded": "Déjà téléchargé ?",
+      "jump_in": "ENTRER !",
+      "experimental": "Envie de continuer à jouer sur le web ? Essayez la version expérimentale {here}",
+      "here": "ICI"
     }
   },
   "page_invite": {
@@ -1006,6 +1010,7 @@
     "error_repeat_interval_invalid": "L'intervalle de répétition doit être un nombre entier entre 1 et 4",
     "error_repeat_days_required": "Sélectionnez au moins un jour",
     "error_start_date_not_in_repeat_days": "Le jour de la semaine de la date de début doit faire partie des jours sélectionnés",
+    "error_image_too_large": "Nous n'avons pas pu compresser cette image en dessous de 500 Ko. Veuillez choisir un fichier plus petit.",
     "vertical_recommended_size": "Taille recommandée : 716 × 1814 px"
   },
   "community": {
@@ -1085,5 +1090,9 @@
     "form_utc_preview": "{time} UTC",
     "form_utc_preview_next_day": "{time} UTC (+1 jour)",
     "form_utc_preview_previous_day": "{time} UTC (-1 jour)"
+  },
+  "upcoming": {
+    "today_at": "Aujourd'hui {time}",
+    "tomorrow_at": "Demain {time}"
   }
 }

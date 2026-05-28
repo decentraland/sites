@@ -8,8 +8,8 @@ Launcher deep-link handler — resolves places, events, and world coordinates fr
 
 ## Key paths
 
-| Path                                   | Purpose                                                                                                                  |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Path                                   | Purpose                                                                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `src/pages/jump/`                      | Page components for the jump area (resolver UI, invalid-target landing pages).                                            |
 | `src/components/jump/`                 | Jump-specific UI (place/event card previews, "open in explorer" CTA).                                                     |
 | `src/features/places/places.client.ts` | RTK Query endpoints for `/jump/*` deep-link resolution (places, events, world coordinates). Injected into `placesClient`. |

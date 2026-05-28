@@ -2,6 +2,7 @@ import { memo, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { Typography } from 'decentraland-ui2'
+import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
 import { Repo, useLatestGithubRelease } from '../../hooks/useLatestGithubRelease'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsSetup from '../../images/download/creator-hub/mac_setup.svg'
@@ -12,6 +13,7 @@ import windowsDownloadFolder from '../../images/download/creator-hub/windows_dow
 import windowsSetup from '../../images/download/creator-hub/windows_setup.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
 import { triggerFileDownload } from '../../modules/file'
+import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { Architecture, OperativeSystem } from '../../types/download.types'
 import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from '../DownloadSuccess/DownloadSuccess.types'
 import { DownloadSuccessLayout } from '../DownloadSuccess/DownloadSuccessLayout'
@@ -21,6 +23,7 @@ const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
 const CreatorHubDownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
   const { intl } = useTranslation()
+  const trackClick = useTrackClick()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const l = useCallback((id: string, values?: Record<string, any>) => intl.formatMessage({ id }, values), [intl])
@@ -84,14 +87,16 @@ const CreatorHubDownloadSuccess = memo(() => {
 
   const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
 
+  // Track the footer re-download via the standard Click adapter — same data-*
+  // convention as every other download CTA in the codebase.
   const handleDownloadClick = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement>) => {
       event.preventDefault()
-      if (osLink) {
-        triggerFileDownload(osLink)
-      }
+      if (!osLink) return
+      trackClick(event)
+      triggerFileDownload(osLink)
     },
-    [osLink]
+    [osLink, trackClick]
   )
 
   return (
@@ -104,7 +109,13 @@ const CreatorHubDownloadSuccess = memo(() => {
       footer={
         <Typography variant="body1">
           {l('page.download.success.footer_prefix')}{' '}
-          <a href={osLink} onClick={handleDownloadClick}>
+          <a
+            href={osLink}
+            onClick={handleDownloadClick}
+            data-place={SectionViewedTrack.CREATOR_HUB_SUCCESS_FOOTER}
+            data-event={SegmentEvent.DOWNLOAD}
+            data-os={clientOS}
+          >
             {l('page.creator-hub.download.success.footer_link_label')}
           </a>
         </Typography>

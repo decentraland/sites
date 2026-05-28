@@ -36,30 +36,30 @@ These render as `<Outlet />` children of `src/shells/DappsShell.tsx`. The shell 
 
 ## Directory map (top-level)
 
-| Path                              | Purpose                                                                              |
-| --------------------------------- | ------------------------------------------------------------------------------------ |
-| `src/App.tsx`                     | Router. Splits routes into Layout-less / lightweight / heavy.                        |
-| `src/App.styled.ts`               | Shared `CenteredBox` styled component (App-level + DappsShell fallback).             |
-| `src/main.tsx`                    | Entry point. Mounts the lightweight provider tree.                                   |
-| `src/shells/`                     | `DappsShell.tsx` + `store.ts` (+ listener middleware). Lazy-loaded Redux.            |
-| `src/pages/`                      | Page components. Subdirs per dapp (see per-dapp docs below).                         |
-| `src/pages/index.tsx`             | Landing homepage (hero prerendered by `scripts/prerender-hero.mjs`).                 |
-| `src/components/`                 | Shared components. Top-level for landing; subdirs per dapp (see per-dapp docs).      |
-| `src/components/Layout/`          | Outlet-based layout. Mounts navbar, child route, footer.                             |
-| `src/components/LandingNavbar/`   | Navbar. Consumes `useWalletAddress` (localStorage, no Redux).                        |
-| `src/components/LandingFooter/`   | Footer. Newsletter + social + legal links.                                           |
-| `src/features/profile/`           | Lightweight Catalyst profile client (`useSyncExternalStore`). Used cross-domain.     |
-| `src/features/notifications/`     | `usePageNotifications` hook used by `Layout` (navbar notifications).                 |
-| `src/hooks/`                      | Shared hooks. `useAuthIdentity`, `useWalletAddress`, `useBlogPageTracking`, etc.     |
-| `src/config/env/`                 | Per-environment JSON (`dev.json`, `stg.json`, `prd.json`). Access via `getEnv('KEY')`. |
-| `src/intl/`                       | Six locale files (`en`, `es`, `fr`, `ja`, `ko`, `zh`). Skill `add-i18n-key`.         |
-| `src/modules/`                    | Side-effect wiring: Sentry, Segment, Contentsquare.                                  |
-| `src/utils/signedFetch.ts`        | Shared identity-signed fetch (used by whats-on, social, storage mutations).          |
-| `src/utils/avatarColor.ts`        | Deterministic avatar background color. Skill `avatar-background-color`.              |
-| `scripts/prebuild.cjs`            | Resolves CDN base URL and writes `.env` before build.                                |
-| `scripts/prerender-hero.mjs`      | Injects static hero HTML + critical CSS post-build (LCP).                            |
-| `api/seo.ts`                      | Vercel serverless function for `/blog/*` OG meta. Skill `seo-worker`.                |
-| `vercel.json`                     | Rewrites `/blog/*` to `/api/seo?path=...`, everything else to `/index.html`.         |
+| Path                            | Purpose                                                                                |
+| ------------------------------- | -------------------------------------------------------------------------------------- |
+| `src/App.tsx`                   | Router. Splits routes into Layout-less / lightweight / heavy.                          |
+| `src/App.styled.ts`             | Shared `CenteredBox` styled component (App-level + DappsShell fallback).               |
+| `src/main.tsx`                  | Entry point. Mounts the lightweight provider tree.                                     |
+| `src/shells/`                   | `DappsShell.tsx` + `store.ts` (+ listener middleware). Lazy-loaded Redux.              |
+| `src/pages/`                    | Page components. Subdirs per dapp (see per-dapp docs below).                           |
+| `src/pages/index.tsx`           | Landing homepage (hero prerendered by `scripts/prerender-hero.mjs`).                   |
+| `src/components/`               | Shared components. Top-level for landing; subdirs per dapp (see per-dapp docs).        |
+| `src/components/Layout/`        | Outlet-based layout. Mounts navbar, child route, footer.                               |
+| `src/components/LandingNavbar/` | Navbar. Consumes `useWalletAddress` (localStorage, no Redux).                          |
+| `src/components/LandingFooter/` | Footer. Newsletter + social + legal links.                                             |
+| `src/features/profile/`         | Lightweight Catalyst profile client (`useSyncExternalStore`). Used cross-domain.       |
+| `src/features/notifications/`   | `usePageNotifications` hook used by `Layout` (navbar notifications).                   |
+| `src/hooks/`                    | Shared hooks. `useAuthIdentity`, `useWalletAddress`, `useBlogPageTracking`, etc.       |
+| `src/config/env/`               | Per-environment JSON (`dev.json`, `stg.json`, `prd.json`). Access via `getEnv('KEY')`. |
+| `src/intl/`                     | Six locale files (`en`, `es`, `fr`, `ja`, `ko`, `zh`). Skill `add-i18n-key`.           |
+| `src/modules/`                  | Side-effect wiring: Sentry, Segment, Contentsquare.                                    |
+| `src/utils/signedFetch.ts`      | Shared identity-signed fetch (used by whats-on, social, storage mutations).            |
+| `src/utils/avatarColor.ts`      | Deterministic avatar background color. Skill `avatar-background-color`.                |
+| `scripts/prebuild.cjs`          | Resolves CDN base URL and writes `.env` before build.                                  |
+| `scripts/prerender-hero.mjs`    | Injects static hero HTML + critical CSS post-build (LCP).                              |
+| `api/seo.ts`                    | Vercel serverless function for `/blog/*` OG meta. Skill `seo-worker`.                  |
+| `vercel.json`                   | Rewrites `/blog/*` to `/api/seo?path=...`, everything else to `/index.html`.           |
 
 ### Per-dapp directory details
 

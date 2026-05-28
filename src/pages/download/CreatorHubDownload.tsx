@@ -50,6 +50,9 @@ const CreatorHubDownload = memo(() => {
                   {secondaryOptions.map(option => (
                     <AlternativeIconButton
                       key={option.text}
+                      data-place={SectionViewedTrack.DOWNLOAD}
+                      data-event={SegmentEvent.DOWNLOAD}
+                      data-os={option.text}
                       onClick={event => {
                         event.preventDefault()
                         trackClick(event)

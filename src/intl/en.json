@@ -29,7 +29,7 @@
     "download": {
       "title": "Download Decentraland",
       "description": "Download Decentraland and start exploring the metaverse",
-      "download_onboarding_title": "Download Decentraland\n\nand Jump In!",
+      "download_onboarding_title": "Download Decentraland\nand Come Hang Out!",
       "not_available": "Not available for your OS",
       "not_available_subtitle": "Decentraland is available for <span>Windows</span> & <span>macOS</span>.",
       "download": "Download",
@@ -45,10 +45,6 @@
       "your_account": "Your Account",
       "already_downloaded": "Already downloaded?",
       "jump_in": "Jump In",
-      "mobile": {
-        "switch_to_computer": "Switch to your computer to download Decentraland",
-        "send_link": "Send me the link"
-      },
       "modal": {
         "title_first_line": "You don't have the",
         "title_second_line": "Decentraland app yet",
@@ -56,7 +52,6 @@
       },
       "downloading": "Downloading Decentraland...",
       "avatar_preview": "Decentraland Avatar Preview",
-      "share_title": "Download Decentraland",
       "success": {
         "title": "You're almost done!",
         "subtitle": "Open the file you just downloaded to finish installing Decentraland and start {action}",
@@ -416,6 +411,15 @@
     "report": {
       "title": "Report a player – Decentraland",
       "success_title": "Report submitted – Decentraland"
+    },
+    "play": {
+      "title": "The Web Version Is No Longer Available.",
+      "subtitle": "Continue Playing on Desktop or Mobile App.",
+      "also_available_on": "Also Available on",
+      "already_downloaded": "Already Downloaded?",
+      "jump_in": "JUMP IN!",
+      "experimental": "Want to keep playing on web? Try the experimental version {here}",
+      "here": "HERE"
     }
   },
   "page_invite": {
@@ -1145,6 +1149,8 @@
     "title": "Upcoming",
     "starts_in_mins": "Starts in {count} mins",
     "starts_in_hours": "Starts in {count} {count, plural, one {hour} other {hours}}",
+    "today_at": "Today {time}",
+    "tomorrow_at": "Tomorrow {time}",
     "by_prefix": "By ",
     "unknown_creator": "Unknown",
     "remind_me": "Remind me",
@@ -1308,14 +1314,13 @@
     "error_submit": "Something went wrong. Please try again.",
     "error_invalid_image_type": "Please upload a PNG, JPG, or GIF file.",
     "error_invalid_vertical_image_type": "Vertical cover must be PNG or JPG.",
-    "error_image_too_large": "This image is too heavy (more than 500Kb), try to optimize with",
+    "error_image_too_large": "We couldn't compress this image below 500 KB. Please pick a smaller file.",
     "error_image_dimensions": "Image must be 1340×670 pixels.",
     "error_vertical_image_dimensions": "Vertical cover must be 716×1814 pixels.",
     "error_vertical_image_decode": "We couldn't read this image. Please try a different file.",
     "error_not_signed_in": "Your session expired. Please sign in again to submit this hangout.",
     "error_upload_failed": "Failed to upload image. Please try again.",
     "error_image_required": "A hangout cover is required.",
-    "optimize_link": "optimizilla",
     "success_message": "Your hangout was created successfully. You'll be notified once it's approved. Track its status in \"My Hangouts\"",
     "edit_success_message": "Your hangout was updated successfully.",
     "back_to_explore": "Back to Explore",

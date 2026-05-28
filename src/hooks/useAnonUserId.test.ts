@@ -23,6 +23,14 @@ jest.mock('react-router-dom', () => ({
   useSearchParams: () => [mockSearchParams]
 }))
 
+// useAnonUserId reads `isInitialized` to refresh once Segment loads; default
+// to true for the existing assertions and override in the reactivity tests.
+let mockIsInitialized = true
+
+jest.mock('@dcl/hooks', () => ({
+  useAnalytics: () => ({ isInitialized: mockIsInitialized })
+}))
+
 // Mock useMemo to execute the factory immediately (no React runtime needed)
 jest.mock('react', () => ({
   useMemo: (fn: () => unknown) => fn()
@@ -35,6 +43,7 @@ const VALID_UUID_3 = '11111111-2222-3333-4444-555555555555'
 describe('useAnonUserId', () => {
   afterEach(() => {
     localStorage.clear()
+    mockIsInitialized = true
     jest.restoreAllMocks()
   })
 
@@ -117,6 +126,38 @@ describe('useAnonUserId', () => {
 
       it('should return undefined', () => {
         expect(result).toBeUndefined()
+      })
+    })
+  })
+
+  describe('when Segment has not finished initializing (cold load race)', () => {
+    describe('on the first render with isInitialized=false', () => {
+      let result: string | undefined
+
+      beforeEach(() => {
+        mockIsInitialized = false
+        mockSearchParams = new URLSearchParams('')
+        // Segment hasn't written ajs_anonymous_id yet.
+        result = useAnonUserId()
+      })
+
+      it('should return undefined while waiting for Segment to boot', () => {
+        expect(result).toBeUndefined()
+      })
+    })
+
+    describe('on the re-render after Segment finishes and writes ajs_anonymous_id', () => {
+      let result: string | undefined
+
+      beforeEach(() => {
+        mockIsInitialized = true
+        mockSearchParams = new URLSearchParams('')
+        localStorage.setItem('ajs_anonymous_id', VALID_UUID_2)
+        result = useAnonUserId()
+      })
+
+      it('should return the now-available Segment anonymous ID', () => {
+        expect(result).toBe(VALID_UUID_2)
       })
     })
   })
