@@ -73,6 +73,9 @@ interface ProfileHeaderProps {
   onBack?: () => void
   /** When set, renders the mobile hamburger (visible only `<md`) — clicking it opens the tabs drawer. */
   onOpenMenu?: () => void
+  /** When true, the header is rendered inside a parent modal. Suppresses controls that would stack a second
+   * dialog (FriendsModal). Friends-list is only available on the standalone /profile/:address route. */
+  embedded?: boolean
 }
 
 function truncateAddress(value: string): string {
@@ -83,7 +86,7 @@ function truncateAddress(value: string): string {
 // `getFriendButtonConfig` lives in `./ProfileHeader.helpers` so `ProfileMobileMenu` can reuse the
 // same logic without duplicating the friendship-status switch.
 
-function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu }: ProfileHeaderProps) {
+function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu, embedded = false }: ProfileHeaderProps) {
   const t = useFormatMessage()
   const isMobile = useTabletAndBelowMediaQuery()
   const { name, avatar, backgroundColor } = useProfileAvatar(address)
@@ -203,7 +206,7 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu }: P
       <ActionsBlock>
         {isOwnProfile ? (
           <>
-            {typeof friendsCount === 'number' ? (
+            {typeof friendsCount === 'number' && !embedded ? (
               <Button
                 variant="outlined"
                 color="inherit"
@@ -293,7 +296,7 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu }: P
           </CloseIconButton>
         ) : null}
       </ActionsBlock>
-      {isOwnProfile ? (
+      {isOwnProfile && !embedded ? (
         <FriendsModal
           open={isFriendsModalOpen}
           onClose={() => setIsFriendsModalOpen(false)}

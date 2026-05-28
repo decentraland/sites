@@ -38,37 +38,45 @@ function identityKey(identity: AuthIdentity): string {
 // with a different wallet). Connection is lazy — established on first call.
 let client: Client | null = null
 let clientIdentityKey: string | null = null
-let connectPromise: Promise<Client> | null = null
+// In-flight connect promises keyed by identity. Callers racing on the SAME identity dedupe
+// onto the same promise. Callers on a DIFFERENT identity don't await each other — the prior
+// connect runs to completion against its own key (its caller already received the right
+// client) and the new connect supersedes the global `client` ref when it finishes. This
+// avoids the prior race where a competing identity could disconnect a freshly-resolved
+// client out from under a caller still holding the reference.
+const inflight = new Map<string, Promise<Client>>()
 
 async function getClient(identity: AuthIdentity): Promise<Client> {
   const key = identityKey(identity)
   if (client && clientIdentityKey === key) return client
-  if (connectPromise) {
-    const existing = await connectPromise
-    if (clientIdentityKey === key) return existing
-  }
-  if (client) {
-    try {
-      client.disconnect()
-    } catch {
-      /* swallow — connection may already be dropped */
+  const existing = inflight.get(key)
+  if (existing) return existing
+  const promise = (async () => {
+    // If the global client belongs to a different identity, drop it before connecting
+    // ours. Safe to do here because we only reach this branch on the first caller for a
+    // brand-new key (subsequent same-key callers join via the `inflight.get(key)` path).
+    if (client && clientIdentityKey !== key) {
+      try {
+        client.disconnect()
+      } catch {
+        /* swallow — connection may already be dropped */
+      }
+      client = null
+      clientIdentityKey = null
+      statusCache.clear()
+      notifyAll()
     }
-    client = null
-    clientIdentityKey = null
-    statusCache.clear()
-    notifyAll()
-  }
-  connectPromise = (async () => {
     const next = createSocialClientV2(getSocialRpcUrl())
     await next.connect(identity)
     client = next
     clientIdentityKey = key
     return next
   })()
+  inflight.set(key, promise)
   try {
-    return await connectPromise
+    return await promise
   } finally {
-    connectPromise = null
+    inflight.delete(key)
   }
 }
 

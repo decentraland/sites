@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -41,8 +41,10 @@ function CommunitiesTab({ address, isOwnProfile }: CommunitiesTabProps) {
   const communities = useMemo<ProfileCommunity[]>(() => data?.data?.results ?? [], [data])
   const { openCommunityId, open: openCommunity, close: closeCommunity } = useOpenCommunityModal()
 
+  // Stable `(id, event) => void` handler — passing `(id) => (event) => ...` would
+  // build a fresh closure per render and defeat the `memo()` wrap on the card.
   const handleOpenCommunity = useCallback(
-    (id: string) => (event: React.MouseEvent<HTMLAnchorElement>) => {
+    (id: string, event: React.MouseEvent<HTMLAnchorElement>) => {
       event.preventDefault()
       openCommunity(id)
     },
@@ -70,7 +72,7 @@ function CommunitiesTab({ address, isOwnProfile }: CommunitiesTabProps) {
       <CommunityCountLabel>{t('profile.communities.count', { count: communities.length })}</CommunityCountLabel>
       <CommunityRow>
         {communities.map(community => (
-          <CommunityCardItem key={community.id} community={community} onOpen={handleOpenCommunity(community.id)} />
+          <CommunityCardItem key={community.id} community={community} onOpen={handleOpenCommunity} />
         ))}
       </CommunityRow>
       <CommunityDetailModal communityId={openCommunityId} onClose={closeCommunity} />
@@ -80,11 +82,12 @@ function CommunitiesTab({ address, isOwnProfile }: CommunitiesTabProps) {
 
 interface CommunityCardItemProps {
   community: ProfileCommunity
-  onOpen: (event: React.MouseEvent<HTMLAnchorElement>) => void
+  onOpen: (id: string, event: React.MouseEvent<HTMLAnchorElement>) => void
 }
 
-function CommunityCardItem({ community, onOpen }: CommunityCardItemProps) {
+const CommunityCardItem = memo(function CommunityCardItem({ community, onOpen }: CommunityCardItemProps) {
   const t = useFormatMessage()
+  const handleAnchorClick = useCallback((event: React.MouseEvent<HTMLAnchorElement>) => onOpen(community.id, event), [community.id, onOpen])
   const shareUrl = `${window.location.origin}/social/communities/${community.id}`
   const { copied, handleCopy } = useCopyShareLink(shareUrl)
   const isOwner = community.role === 'owner' || community.role === 'admin'
@@ -104,7 +107,7 @@ function CommunityCardItem({ community, onOpen }: CommunityCardItemProps) {
   )
 
   return (
-    <CommunityCard href={`/social/communities/${community.id}`} onClick={onOpen}>
+    <CommunityCard href={`/social/communities/${community.id}`} onClick={handleAnchorClick}>
       <CommunityThumb>
         {thumbnailUrl && !thumbnailFailed ? (
           <CommunityThumbImage src={thumbnailUrl} alt={community.name} loading="lazy" onError={handleThumbnailError} />
@@ -136,7 +139,9 @@ function CommunityCardItem({ community, onOpen }: CommunityCardItemProps) {
       </CommunityCardBody>
     </CommunityCard>
   )
-}
+})
+
+CommunityCardItem.displayName = 'CommunityCardItem'
 
 export { CommunitiesTab }
 export type { CommunitiesTabProps }

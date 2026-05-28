@@ -12,6 +12,7 @@ import { PlaceDetailModal, useOpenPlaceModal } from '../../../components/profile
 import { useGetProfilePlacesQuery } from '../../../features/profile/profile.places.client'
 import type { ProfilePlace } from '../../../features/profile/profile.places.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { safeCssUrl } from '../../../utils/safeCssUrl'
 import { EmptyBio, LoadingRow } from './OverviewTab.styled'
 import { PlaceBody, PlaceCard, PlaceImage, PlaceMeta, PlaceMetaItem, PlaceTitle, PlacesGrid } from './PlacesTab.styled'
 
@@ -56,7 +57,7 @@ function PlacesTab({ address, isOwnProfile }: PlacesTabProps) {
       <PlacesGrid>
         {places.map(place => (
           <PlaceCard key={place.id} href="#" onClick={handleOpen(place)}>
-            <PlaceImage style={place.image ? { backgroundImage: `url("${place.image}")` } : undefined} />
+            <PlaceImage $image={place.image ? safeCssUrl(place.image) : undefined} />
             <PlaceBody>
               <PlaceTitle>{place.title}</PlaceTitle>
               <PlaceMeta>

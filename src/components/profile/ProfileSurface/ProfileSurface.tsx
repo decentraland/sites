@@ -78,7 +78,14 @@ function ProfileSurface({
     <>
       <ProfileLayout
         header={
-          <ProfileHeader address={address} isOwnProfile={isOwnProfile} onClose={onClose} onBack={onBack} onOpenMenu={openMobileMenu} />
+          <ProfileHeader
+            address={address}
+            isOwnProfile={isOwnProfile}
+            onClose={onClose}
+            onBack={onBack}
+            onOpenMenu={openMobileMenu}
+            embedded={embedded}
+          />
         }
         tabs={<ProfileTabs activeTab={resolvedTab} isOwnProfile={isOwnProfile} onTabSelect={onTabChange} hiddenTabs={hidden} />}
         aside={aside}

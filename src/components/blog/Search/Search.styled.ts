@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Link } from 'react-router-dom'
 import { Box, dclColors, styled } from 'decentraland-ui2'
-import { safeCssUrl } from '../utils/safeCssUrl'
+import { safeCssUrl } from '../../../utils/safeCssUrl'
 
 const SearchContainer = styled(Box, {
   shouldForwardProp: prop => prop !== '$hasResults'

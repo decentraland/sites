@@ -55,8 +55,17 @@ const profilePlacesApi = placesClient.injectEndpoints({
             fetchOwned('places', address, limit, offset),
             fetchOwned('worlds', address, limit, offset)
           ])
-          if (!places.ok) return { error: { status: places.status, data: places.body } }
-          if (!worlds.ok) return { error: { status: worlds.status, data: worlds.body } }
+          // Log the raw upstream body for ops/Sentry but DO NOT propagate it through
+          // RTK Query's `error.data` — review rule 10 forbids surfacing raw server bodies to
+          // the UI (and reaching `error.data` is undocumented anyway).
+          if (!places.ok) {
+            console.error('[ProfilePlaces] /places failed', places.status, places.body)
+            return { error: { status: places.status, error: 'Places fetch failed' } }
+          }
+          if (!worlds.ok) {
+            console.error('[ProfilePlaces] /worlds failed', worlds.status, worlds.body)
+            return { error: { status: worlds.status, error: 'Worlds fetch failed' } }
+          }
           const merged: ProfilePlace[] = [
             ...(worlds.data.data ?? []).map(w => ({ ...w, world: true as const })),
             ...(places.data.data ?? [])

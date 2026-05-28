@@ -25,14 +25,17 @@ const PlaceCard = styled('a')({
   }
 })
 
-const PlaceImage = styled(Box)({
+const PlaceImage = styled(Box, { shouldForwardProp: prop => prop !== '$image' })<{ $image?: string }>(({ $image }) => ({
   width: '100%',
   aspectRatio: '16 / 10',
   background: 'rgba(255, 255, 255, 0.04)',
   backgroundSize: 'cover',
   backgroundPosition: 'center',
-  flexShrink: 0
-})
+  flexShrink: 0,
+  // `$image` is validated by `safeCssUrl()` at the caller (returns '' on
+  // non-https or malformed input). Empty string falls back to the solid bg.
+  ...($image ? { backgroundImage: `url("${$image}")` } : {})
+}))
 
 const PlaceBody = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1.5, 2),
