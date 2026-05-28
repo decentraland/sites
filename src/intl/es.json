@@ -1,23 +1,6 @@
 {
   "general": {
-    "main_browser_cta": "comenzar",
-    "main_browser_cta_target": "https://decentraland.org/play/",
-    "mvmf_main_stage_target": "https://decentraland.org/play/?position=-62%2C58",
-    "see_festival_events_target": "https://events.decentraland.org/schedule/?id=297fb4fa-fe11-4746-8abd-ce6c77bad3e2",
-    "main_desktop_cta": "descargar",
-    "secondary_desktop_cta": "abrir en el navegador",
-    "discord_cta": "únete a nuestro discord",
-    "discord_cta_target": "https://dcl.gg/discord",
-    "discord": "Discord",
-    "twitter_cta_target": "https://twitter.com/decentraland",
-    "follow_us_on": "Síguenos en ",
-    "twitter": "Twitter",
-    "telegram_cta_target": "https://t.me/decentralandTG",
-    "join_us_on": "Únete en ",
-    "telegram": "Telegram",
-    "sdk_cta_target": "https://developers.decentraland.org/",
-    "get_started_with_our": "Comienza con nuestro ",
-    "sdk": "SDK"
+    "discord_cta_target": "https://dcl.gg/discord"
   },
   "page": {
     "download": {
@@ -435,101 +418,10 @@
     }
   },
   "index": {
-    "create_my_account": "Crear mi cuenta",
-    "get_started": "Comenzar",
-    "social": {
-      "title": "Decentraland | Ven a pasar el rato",
-      "description": "Decentraland es donde pasas el rato en línea. Únete a proyecciones de películas, música en vivo, trivia y otros eventos comunitarios. Pasa cuando quieras y mira quién está."
-    },
-    "mobile_modal": {
-      "description": "Decentraland actualmente solo está disponible en escritorio. Ingresa tu email para recibir una notificación cuando estemos en dispositivos móviles.",
-      "placeholder": "email@dominio.com",
-      "sign_up": "Suscribirse",
-      "signed_up": "¡Gracias por suscribirte!",
-      "sign_up_fail": "¡Ups, algo salió mal!",
-      "close": "Cerrar"
-    },
-    "main": {
-      "title": "Bienvenido a Decentraland",
-      "description": "Crea, explora y comercia en el primer mundo virtual propiedad de sus usuarios.",
-      "jump_in": "Entrar",
-      "see_festival_events": "ver eventos del festival"
-    },
-    "explore": {
-      "title": "Explorar",
-      "subtitle": "Piérdete en un mundo increíble y en constante evolución",
-      "description": "Explora LANDs de los usuarios para experimentar escenas y estructuras increíbles. Desde una aventura espacial hasta un laberinto de mazmorras medievales y aldeas enteras creadas por la comunidad.",
-      "main_cta": "comenzar a explorar",
-      "main_cta_target": "https://decentraland.org/play/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "create": {
-      "title": "Crear",
-      "subtitle": "Pon a prueba los límites de tu imaginación",
-      "description": "Crea escenas, obras de arte, desafíos y más, usando la herramienta Builder, luego participa en eventos para ganar premios. Para creadores más experimentados, el SDK proporciona las herramientas para llenar el mundo con juegos sociales y aplicaciones.",
-      "main_cta": "comenzar a construir",
-      "main_cta_target": "https://builder.decentraland.org/",
-      "secondary_cta": "comenzar a desarrollar",
-      "secondary_cta_target": "https://developers.decentraland.org/"
-    },
-    "trade": {
-      "title": "Comerciar",
-      "subtitle": "El destino virtual para activos digitales",
-      "description": "Compra y vende LAND, Estates, wearables de Avatar y nombres en el Marketplace de Decentraland: los mejores bienes digitales respaldados por la blockchain de Ethereum.",
-      "main_cta": "comenzar a explorar",
-      "main_cta_target": "https://market.decentraland.org/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "where_to_start": {
-      "title": "¿No sabes por dónde empezar?",
-      "description": "",
-      "poi": "punto de interés",
-      "our_picks": "nuestras selecciones",
-      "our_events": "próximos eventos",
-      "target_events": "https://events.decentraland.org",
-      "more_events": "más eventos",
-      "best_multiplayer": "mejor multijugador",
-      "best_adventures": "mejores aventuras"
-    },
-    "dao": {
-      "title": "Sobre Decentraland",
-      "subtitle": "Determina el futuro del mundo virtual",
-      "description": "El primer mundo completamente descentralizado, Decentraland es controlado a través del DAO, que posee los contratos inteligentes y activos más importantes de Decentraland. A través del DAO, tú decides y votas sobre cómo funciona el mundo.",
-      "main_cta": "saber más",
-      "main_cta_target": "https://dao.decentraland.org/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "blog": {
-      "title": "Del blog",
-      "more": "más artículos",
-      "target": "https://decentraland.org/blog"
-    },
-    "contact": {
-      "title": "Contáctanos",
-      "description": "Nos encontrarás a toda hora en Discord. También puedes contactarnos por los canales habituales.",
-      "main_cta": "contactar",
-      "main_cta_target": "mailto:hello@decentraland.org"
-    },
-    "subscribe": {
-      "title": "Recibe las últimas novedades",
-      "description": "Noticias sobre eventos, competencias y novedades en Decentraland, directo a tu bandeja de entrada",
-      "placeholder": "email@dominio.com",
-      "sign_up": "Suscribirse",
-      "signed_up": "¡Gracias por suscribirte!",
-      "sign_up_fail": "¡Ups, algo salió mal!"
-    },
     "press": {
       "title": "Kit de Prensa de Decentraland",
-      "description": "Descarga materiales de prensa y activos de marca de Decentraland",
       "page_description": "Hemos preparado todo tipo de recursos que podés usar libremente al escribir y hablar sobre nuestro proyecto. Por favor, dirigí cualquier consulta a ",
       "download_button": "Descargar Kit de Prensa"
-    },
-    "support": {
-      "title": "Decentraland - Centro de Ayuda",
-      "description": "Obtén ayuda con Decentraland. Consulta las preguntas frecuentes, el estado del servicio y contacta a soporte."
     }
   },
   "component": {
