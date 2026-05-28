@@ -36,3 +36,6 @@ coverage
 .claude/settings.local.json
 .claude/cache/
 .tmp-screens/
+
+# Local-only profile migration plan (kept on disk, not committed)
+docs/profile-migration.md
