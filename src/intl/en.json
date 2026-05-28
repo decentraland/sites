@@ -29,7 +29,7 @@
     "download": {
       "title": "Download Decentraland",
       "description": "Download Decentraland and start exploring the metaverse",
-      "download_onboarding_title": "Download Decentraland\n\nand Jump In!",
+      "download_onboarding_title": "Download Decentraland\nand Come Hang Out!",
       "not_available": "Not available for your OS",
       "not_available_subtitle": "Decentraland is available for <span>Windows</span> & <span>macOS</span>.",
       "download": "Download",
@@ -45,10 +45,6 @@
       "your_account": "Your Account",
       "already_downloaded": "Already downloaded?",
       "jump_in": "Jump In",
-      "mobile": {
-        "switch_to_computer": "Switch to your computer to download Decentraland",
-        "send_link": "Send me the link"
-      },
       "modal": {
         "title_first_line": "You don't have the",
         "title_second_line": "Decentraland app yet",
@@ -56,7 +52,6 @@
       },
       "downloading": "Downloading Decentraland...",
       "avatar_preview": "Decentraland Avatar Preview",
-      "share_title": "Download Decentraland",
       "success": {
         "title": "You're almost done!",
         "subtitle": "Open the file you just downloaded to finish installing Decentraland and start {action}",

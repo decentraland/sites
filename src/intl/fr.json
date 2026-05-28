@@ -23,7 +23,7 @@
     "download": {
       "title": "Télécharger Decentraland",
       "description": "Téléchargez Decentraland et commencez à explorer le métavers",
-      "download_onboarding_title": "Téléchargez Decentraland\n\net plongez !",
+      "download_onboarding_title": "Téléchargez Decentraland\net venez traîner !",
       "not_available": "Non disponible pour votre système d'exploitation",
       "not_available_subtitle": "Decentraland est disponible pour <span>Windows</span> et <span>macOS</span>.",
       "download": "Télécharger",
@@ -38,10 +38,6 @@
       "your_account": "Votre Compte",
       "already_downloaded": "Déjà téléchargé ?",
       "jump_in": "Plonger",
-      "mobile": {
-        "switch_to_computer": "Passez sur votre ordinateur pour télécharger Decentraland",
-        "send_link": "Envoyez-moi le lien"
-      },
       "modal": {
         "title_first_line": "Vous n'avez pas encore",
         "title_second_line": "l'application Decentraland",
@@ -49,7 +45,6 @@
       },
       "downloading": "Téléchargement de Decentraland...",
       "avatar_preview": "Aperçu de l'Avatar Decentraland",
-      "share_title": "Télécharger Decentraland",
       "success": {
         "title": "Vous y êtes presque !",
         "subtitle": "Ouvrez le fichier que vous venez de télécharger pour terminer l'installation de Decentraland et commencer à {action}",
