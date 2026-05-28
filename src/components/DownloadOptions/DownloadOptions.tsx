@@ -7,6 +7,7 @@ import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
+import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
 import { getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
 import { ExplorerDownloads } from '../../modules/explorerDownloads'
 import { formatToShorthand } from '../../modules/number'
@@ -209,18 +210,18 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
               <AlternativeButton
                 variant="text"
                 color="inherit"
-                href={GOOGLE_PLAY_DESKTOP_URL}
+                href={DOWNLOAD_URLS.appStore}
                 {...{ target: '_blank', rel: 'noopener noreferrer' }}
-                aria-label="Google Play"
-                startIcon={<AlternativeButtonImage src={assetUrl('/google_play_icon.svg')} />}
+                aria-label="iOS"
+                startIcon={<AlternativeButtonImage src={assetUrl('/ios-logo.svg')} />}
               />
               <AlternativeButton
                 variant="text"
                 color="inherit"
-                href={EPIC_GAMES_URL}
+                href={GOOGLE_PLAY_DESKTOP_URL}
                 {...{ target: '_blank', rel: 'noopener noreferrer' }}
-                aria-label="Epic Games"
-                startIcon={<AlternativeButtonImage src={assetUrl('/epic_icon.svg')} />}
+                aria-label="Google Play"
+                startIcon={<AlternativeButtonImage src={assetUrl('/google_play_icon.svg')} />}
               />
             </AlternativeButtonsWrapper>
           </AlternativeContainer>
