@@ -15,15 +15,9 @@ import { useGetCommunitiesQuery, useGetWorldNamesQuery } from '../../../features
 import type { EventEntry } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
-import {
-  FREQUENCY_MAP,
-  RECURRENT_INTERVAL_OPTIONS,
-  parseDurationMs,
-  parseRecurrentInterval
-} from '../../../hooks/useCreateEventForm.helpers'
+import { RECURRENCE_OPTIONS, computeUpcomingOccurrences, parseDurationMs, recurrenceToApi } from '../../../hooks/useCreateEventForm.helpers'
 import type { CreateEventFormState } from '../../../hooks/useCreateEventForm.types'
-import { WEEKDAY_INDICES, localizedWeekdayLong, localizedWeekdayShort } from '../../../utils/recurrence'
-import { formatUtcTime, getUtcDayDelta } from '../../../utils/whatsOnTime'
+import { formatLocalDate, formatLocalTime, formatUtcTime, getUtcDayDelta } from '../../../utils/whatsOnTime'
 import { buildEventJumpInUrl } from '../../../utils/whatsOnUrl'
 import { EventDetailModal } from '../EventDetailModal'
 import type { ModalEventData } from '../EventDetailModal'
@@ -36,7 +30,6 @@ import {
   AddCoverText,
   AddVerticalCoverButton,
   CancelButton,
-  ChipErrorText,
   ContentContainer,
   CoordPrefix,
   CoordinatesRow,
@@ -55,10 +48,6 @@ import {
   FormActions,
   FormColumns,
   ImageSection,
-  IntervalChip,
-  IntervalChipGroup,
-  IntervalChipLabel,
-  IntervalChipRow,
   LeftCard,
   LocationBlock,
   LocationLabel,
@@ -76,7 +65,12 @@ import {
   RightSectionFooter,
   SectionHeading,
   SubmitButton,
-  SubmitErrorMessage
+  SubmitErrorMessage,
+  UpcomingDateItem,
+  UpcomingDatesEmpty,
+  UpcomingDatesGroup,
+  UpcomingDatesLabel,
+  UpcomingDatesList
 } from './EventForm.styled'
 
 const PREVIEW_REQUIRED_FIELDS: Array<keyof CreateEventFormState> = ['name', 'startDate', 'startTime', 'duration']
@@ -95,6 +89,7 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
   const creatorName = initialEvent?.user_name || undefined
 
   const previewUntil = form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : null
+  const recurrenceApi = form.repeatEnabled ? recurrenceToApi(form.recurrence) : null
 
   return {
     id: 'preview',
@@ -108,11 +103,12 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
     startAt,
     finishAt,
     recurrent: form.repeatEnabled,
-    recurrentFrequency: form.repeatEnabled ? FREQUENCY_MAP[form.frequency] ?? null : null,
-    recurrentInterval: form.repeatEnabled ? (form.frequency === 'every_week' ? parseRecurrentInterval(form.repeatInterval) : 1) : null,
+    recurrentFrequency: recurrenceApi?.frequency ?? null,
+    recurrentInterval: recurrenceApi?.interval ?? null,
     recurrentCount: null,
     recurrentUntil: previewUntil,
-    recurrentByDay: form.repeatEnabled && form.frequency === 'every_week' ? form.repeatDays : undefined,
+    // Single-weekday recurrence: no per-weekday mask, so the modal derives the weekday from startAt.
+    recurrentByDay: undefined,
     recurrentDates: [],
     totalAttendees: 0,
     attending: false,
@@ -169,6 +165,12 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
     if (delta === -1) return t('event_time.form_utc_preview_previous_day', { time })
     return t('event_time.form_utc_preview', { time })
   }, [form.startDate, form.startTime, locale, t])
+
+  const upcomingDates = useMemo(
+    () => (form.repeatEnabled ? computeUpcomingOccurrences(form.startDate, form.startTime, form.recurrence, form.repeatEndDate) : []),
+    [form.repeatEnabled, form.startDate, form.startTime, form.recurrence, form.repeatEndDate]
+  )
+
   const imageMissing = !form.imageUrl
   const canPreview = missingPreviewFields.length === 0 && !imageMissing
   const previewData = useMemo(
@@ -327,74 +329,20 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
 
                 <RepeatFields $visible={form.repeatEnabled}>
                   <EventFormControl variant="outlined" fullWidth>
-                    <EventInputLabel shrink>{t('create_event.frequency')}</EventInputLabel>
+                    <EventInputLabel shrink>{t('create_event.recurrence')}</EventInputLabel>
                     <EventSelect
-                      value={form.frequency}
-                      onChange={e => setField('frequency', e.target.value as string)}
-                      label={t('create_event.frequency')}
+                      value={form.recurrence}
+                      onChange={e => setField('recurrence', e.target.value as string)}
+                      label={t('create_event.recurrence')}
                       notched
                     >
-                      <EventMenuItem value="every_day">{t('create_event.every_day')}</EventMenuItem>
-                      <EventMenuItem value="every_week">{t('create_event.every_week')}</EventMenuItem>
-                      <EventMenuItem value="every_month">{t('create_event.every_month')}</EventMenuItem>
+                      {RECURRENCE_OPTIONS.map(option => (
+                        <EventMenuItem key={option} value={option}>
+                          {t(`create_event.${option}`)}
+                        </EventMenuItem>
+                      ))}
                     </EventSelect>
                   </EventFormControl>
-                  {form.frequency === 'every_week' && (
-                    <>
-                      <IntervalChipGroup role="group" aria-label={t('create_event.repeat_on')}>
-                        <IntervalChipLabel>{t('create_event.repeat_on')}</IntervalChipLabel>
-                        <IntervalChipRow>
-                          {WEEKDAY_INDICES.map(dayIndex => {
-                            const isActive = form.repeatDays.includes(dayIndex)
-                            return (
-                              <IntervalChip
-                                key={dayIndex}
-                                type="button"
-                                role="checkbox"
-                                aria-checked={isActive}
-                                aria-label={localizedWeekdayLong(dayIndex, locale)}
-                                $active={isActive}
-                                onClick={() => {
-                                  const next = isActive
-                                    ? form.repeatDays.filter(d => d !== dayIndex)
-                                    : [...form.repeatDays, dayIndex].sort((a, b) => a - b)
-                                  setField('repeatDays', next)
-                                }}
-                              >
-                                {localizedWeekdayShort(dayIndex, locale)}
-                              </IntervalChip>
-                            )
-                          })}
-                        </IntervalChipRow>
-                        {errors.repeatDays && <ChipErrorText>{errors.repeatDays}</ChipErrorText>}
-                      </IntervalChipGroup>
-                      <IntervalChipGroup role="radiogroup" aria-label={t('create_event.repeat_interval')}>
-                        <IntervalChipLabel>{t('create_event.repeat_interval')}</IntervalChipLabel>
-                        <IntervalChipRow>
-                          {RECURRENT_INTERVAL_OPTIONS.map(value => {
-                            const isActive = parseRecurrentInterval(form.repeatInterval) === value
-                            const chipLabel =
-                              value === 1
-                                ? t('create_event.interval_chip_week_singular')
-                                : t('create_event.interval_chip_week_plural', { count: value })
-                            return (
-                              <IntervalChip
-                                key={value}
-                                type="button"
-                                role="radio"
-                                aria-checked={isActive}
-                                $active={isActive}
-                                onClick={() => setField('repeatInterval', String(value))}
-                              >
-                                {chipLabel}
-                              </IntervalChip>
-                            )
-                          })}
-                        </IntervalChipRow>
-                        {errors.repeatInterval && <ChipErrorText>{errors.repeatInterval}</ChipErrorText>}
-                      </IntervalChipGroup>
-                    </>
-                  )}
                   <EventTextField
                     variant="outlined"
                     label={t('create_event.repeat_until')}
@@ -406,6 +354,23 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
                     fullWidth
                     InputLabelProps={{ shrink: true }}
                   />
+                  <UpcomingDatesGroup>
+                    <UpcomingDatesLabel>{t('create_event.upcoming_dates_label')}</UpcomingDatesLabel>
+                    {upcomingDates.length > 0 ? (
+                      <UpcomingDatesList>
+                        {upcomingDates.map(date => {
+                          const iso = date.toISOString()
+                          return (
+                            <UpcomingDateItem key={iso}>
+                              {formatLocalDate(iso, locale)} · {formatLocalTime(iso, locale)}
+                            </UpcomingDateItem>
+                          )
+                        })}
+                      </UpcomingDatesList>
+                    ) : (
+                      <UpcomingDatesEmpty>{t('create_event.upcoming_dates_empty')}</UpcomingDatesEmpty>
+                    )}
+                  </UpcomingDatesGroup>
                 </RepeatFields>
               </DateTimeSection>
             </EventDetailsBlock>

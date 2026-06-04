@@ -16,7 +16,6 @@ jest.mock('./EventForm.styled', () => ({
       {children}
     </button>
   ),
-  ChipErrorText: ({ children }: { children: React.ReactNode }) => <span data-testid="chip-error-text">{children}</span>,
   ContentContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CoordPrefix: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   CoordinatesRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -80,22 +79,6 @@ jest.mock('./EventForm.styled', () => ({
   FormActions: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   FormColumns: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   ImageSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  IntervalChip: ({
-    children,
-    $active,
-    ...props
-  }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode; $active: boolean }) => (
-    <button data-testid="interval-chip" data-active={$active} {...props}>
-      {children}
-    </button>
-  ),
-  IntervalChipGroup: ({ children, ...props }: { children: React.ReactNode } & Record<string, unknown>) => (
-    <div data-testid="interval-chip-group" {...props}>
-      {children}
-    </div>
-  ),
-  IntervalChipLabel: ({ children }: { children: React.ReactNode }) => <span data-testid="interval-chip-label">{children}</span>,
-  IntervalChipRow: ({ children }: { children: React.ReactNode }) => <div data-testid="interval-chip-row">{children}</div>,
   LeftCard: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   LocationBlock: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   LocationLabel: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
@@ -135,7 +118,12 @@ jest.mock('./EventForm.styled', () => ({
       {children}
     </button>
   ),
-  SubmitErrorMessage: ({ children }: { children: React.ReactNode }) => <span data-testid="submit-error-message">{children}</span>
+  SubmitErrorMessage: ({ children }: { children: React.ReactNode }) => <span data-testid="submit-error-message">{children}</span>,
+  UpcomingDateItem: ({ children }: { children: React.ReactNode }) => <li data-testid="upcoming-date-item">{children}</li>,
+  UpcomingDatesEmpty: ({ children }: { children: React.ReactNode }) => <span data-testid="upcoming-dates-empty">{children}</span>,
+  UpcomingDatesGroup: ({ children }: { children: React.ReactNode }) => <div data-testid="upcoming-dates-group">{children}</div>,
+  UpcomingDatesLabel: ({ children }: { children: React.ReactNode }) => <span data-testid="upcoming-dates-label">{children}</span>,
+  UpcomingDatesList: ({ children }: { children: React.ReactNode }) => <ul data-testid="upcoming-dates-list">{children}</ul>
 }))
 
 jest.mock('../EventDetailModal', () => ({
@@ -205,7 +193,8 @@ jest.mock('decentraland-ui2', () => ({
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
-    t: (key: string, values?: Record<string, string | number>) => (values ? `${key} ${JSON.stringify(values)}` : key)
+    t: (key: string, values?: Record<string, string | number>) => (values ? `${key} ${JSON.stringify(values)}` : key),
+    locale: 'en'
   })
 }))
 
@@ -233,9 +222,7 @@ function createFormState(overrides = {}) {
     startTime: '',
     duration: '',
     repeatEnabled: false,
-    frequency: 'every_day',
-    repeatInterval: '1',
-    repeatDays: [0, 1, 2, 3, 4, 5, 6],
+    recurrence: 'every_week',
     repeatEndDate: '',
     location: 'land',
     coordX: '0',
@@ -798,18 +785,18 @@ describe('EventForm', () => {
     })
   })
 
-  describe('when repeatEnabled is true and frequency is every_week', () => {
+  describe('when repeatEnabled is true', () => {
     const markRequiredFields = jest.fn()
     beforeEach(() => {
       mockUseCreateEventForm.mockReturnValue({
         form: createFormState({
           repeatEnabled: true,
-          frequency: 'every_week',
-          repeatDays: [1, 3],
-          repeatInterval: '2',
-          repeatEndDate: '2026-12-31'
+          recurrence: 'every_2_weeks',
+          startDate: '2030-01-01',
+          startTime: '10:00',
+          repeatEndDate: '2030-03-01'
         }),
-        errors: { repeatDays: 'Pick at least one day', repeatInterval: 'Pick an interval' },
+        errors: {},
         mode: 'create',
         setField: mockSetField,
         markRequiredFields,
@@ -823,23 +810,65 @@ describe('EventForm', () => {
       })
     })
 
-    it('should render weekday chips and interval radio chips with their respective error texts', () => {
+    it('should render the combined recurrence selector with all six options', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
-      expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0)
-      expect(screen.getAllByRole('radio').length).toBeGreaterThan(0)
-      expect(screen.getAllByTestId('chip-error-text').length).toBeGreaterThan(0)
+
+      const options = screen.getAllByRole('option')
+      const values = options.map(o => o.getAttribute('value'))
+      expect(values).toEqual(
+        expect.arrayContaining(['every_day', 'every_week', 'every_2_weeks', 'every_3_weeks', 'every_4_weeks', 'every_month'])
+      )
     })
 
-    it('should toggle a weekday and an interval chip on click', () => {
+    it('should call setField with the chosen recurrence when the selector changes', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
-      const dayChips = screen.getAllByRole('checkbox')
-      fireEvent.click(dayChips[0])
-      fireEvent.click(dayChips[1])
-      expect(mockSetField).toHaveBeenCalledWith('repeatDays', expect.any(Array))
 
-      const intervalChips = screen.getAllByRole('radio')
-      fireEvent.click(intervalChips[0])
-      expect(mockSetField).toHaveBeenCalledWith('repeatInterval', expect.any(String))
+      // The form renders several EventSelects (recurrence + location type); pick the recurrence one by its value.
+      const recurrenceSelect = screen.getAllByTestId('event-select').find(el => (el as HTMLSelectElement).value === 'every_2_weeks')
+      expect(recurrenceSelect).toBeDefined()
+      fireEvent.change(recurrenceSelect as HTMLSelectElement, { target: { value: 'every_month' } })
+
+      expect(mockSetField).toHaveBeenCalledWith('recurrence', 'every_month')
+    })
+
+    it('should render an upcoming-dates preview with one item per projected occurrence', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByTestId('upcoming-dates-label')).toBeInTheDocument()
+      expect(screen.getAllByTestId('upcoming-date-item').length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('when repeatEnabled is true but the recurrence has no upcoming dates', () => {
+    beforeEach(() => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({
+          repeatEnabled: true,
+          recurrence: 'every_week',
+          startDate: '2020-01-01',
+          startTime: '10:00',
+          // End date already in the past relative to start so no occurrence survives the `now` filter.
+          repeatEndDate: '2020-01-02'
+        }),
+        errors: {},
+        mode: 'create',
+        setField: mockSetField,
+        markRequiredFields: jest.fn(),
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: true,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
+    it('should render the empty-state message instead of a date list', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByTestId('upcoming-dates-empty')).toBeInTheDocument()
+      expect(screen.queryByTestId('upcoming-date-item')).not.toBeInTheDocument()
     })
   })
 
