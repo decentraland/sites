@@ -900,15 +900,17 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "repeat_interval": "繰り返し間隔",
-    "repeat_on": "繰り返す曜日",
-    "interval_chip_week_singular": "1週間",
-    "interval_chip_week_plural": "{count}週間",
-    "error_repeat_interval_invalid": "繰り返し間隔は1から4までの整数で入力してください",
-    "error_repeat_days_required": "少なくとも1つの曜日を選択してください",
-    "error_start_date_not_in_repeat_days": "開始日の曜日は選択した曜日のいずれかである必要があります",
     "error_image_too_large": "この画像を500 KB以下に圧縮できませんでした。より小さいファイルを選択してください。",
-    "vertical_recommended_size": "推奨サイズ：716 × 1814 px"
+    "vertical_recommended_size": "推奨サイズ：716 × 1814 px",
+    "recurrence": "繰り返し",
+    "every_day": "毎日",
+    "every_week": "毎週",
+    "every_2_weeks": "2週間ごと",
+    "every_3_weeks": "3週間ごと",
+    "every_4_weeks": "4週間ごと",
+    "every_month": "毎月",
+    "upcoming_dates_label": "次回以降の日程",
+    "upcoming_dates_empty": "この繰り返し設定に該当する今後の日程はありません"
   },
   "community": {
     "global": {

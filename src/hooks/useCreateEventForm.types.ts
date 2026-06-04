@@ -24,9 +24,10 @@ type CreateEventFormState = {
   startTime: string
   duration: string
   repeatEnabled: boolean
-  frequency: string
-  repeatInterval: string
-  repeatDays: number[]
+  // Single combined recurrence option (every_day | every_week | every_2_weeks | every_3_weeks |
+  // every_4_weeks | every_month). It folds the legacy frequency + interval pair into one selector;
+  // the weekly weekday is derived from startDate, so there is no separate weekday picker anymore.
+  recurrence: string
   repeatEndDate: string
   location: string
   coordX: string
