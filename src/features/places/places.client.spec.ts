@@ -509,6 +509,152 @@ describe('placesEndpoints', () => {
         expect(result.data).toBeNull()
       })
     })
+
+    describe('and the realm is a World (ENS name)', () => {
+      const mockWorldsAndPeer = (key: string) => {
+        if (key === 'WORLDS_CONTENT_SERVER_URL') return 'https://worlds.test'
+        if (key === 'PEER_URL') return 'https://peer.test'
+        return undefined
+      }
+
+      describe('and the world scene entity exposes an owner with a Catalyst profile', () => {
+        beforeEach(() => {
+          mockGetEnv.mockImplementation(mockWorldsAndPeer)
+          fetchSpy
+            .mockResolvedValueOnce({
+              ok: true,
+              json: () => Promise.resolve([{ id: 'world-entity', metadata: { owner: '0xOwner' } }])
+            } as unknown as Response)
+            .mockResolvedValueOnce({
+              ok: true,
+              json: () =>
+                Promise.resolve([
+                  {
+                    timestamp: 0,
+                    avatars: [
+                      {
+                        name: 'Chiri',
+                        userId: '0xOwner',
+                        avatar: { snapshots: { face256: 'owner.png', body: 'body.png' } }
+                      }
+                    ]
+                  }
+                ])
+            } as unknown as Response)
+        })
+
+        it('should resolve the owner profile from the Worlds Content Server scene entity', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '25,4', realm: 'MyWorld.dcl.eth' })
+          )
+
+          expect(fetchSpy).toHaveBeenCalledWith(
+            'https://worlds.test/entities/active',
+            expect.objectContaining({ method: 'POST', body: JSON.stringify({ pointers: ['myworld.dcl.eth'] }) })
+          )
+          expect(result.data).toEqual({
+            deployerAddress: '0xOwner',
+            deployerName: 'Chiri',
+            deployerAvatar: 'owner.png'
+          })
+        })
+
+        it('should not query the main Catalyst active-entities endpoint by position', async () => {
+          // Drop call history accumulated by earlier suites so the assertion only
+          // reflects this dispatch; the `mockResolvedValueOnce` queue survives.
+          fetchSpy.mockClear()
+          const store = createTestStore()
+          await store.dispatch(placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '25,4', realm: 'myworld.dcl.eth' }))
+
+          const calledUrls = fetchSpy.mock.calls.map(call => call[0])
+          expect(calledUrls).toContain('https://worlds.test/entities/active')
+          expect(calledUrls).not.toContain('https://peer.test/content/entities/active')
+        })
+      })
+
+      describe('and the world has no active scene entity', () => {
+        beforeEach(() => {
+          mockGetEnv.mockImplementation(mockWorldsAndPeer)
+          fetchSpy.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) } as unknown as Response)
+        })
+
+        it('should return null', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0', realm: 'empty.dcl.eth' })
+          )
+          expect(result.data).toBeNull()
+        })
+      })
+
+      describe('and the world scene entity has no owner', () => {
+        beforeEach(() => {
+          mockGetEnv.mockImplementation(mockWorldsAndPeer)
+          fetchSpy.mockResolvedValueOnce({
+            ok: true,
+            json: () => Promise.resolve([{ id: 'world-entity', metadata: {} }])
+          } as unknown as Response)
+        })
+
+        it('should return null', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0', realm: 'ownerless.dcl.eth' })
+          )
+          expect(result.data).toBeNull()
+        })
+      })
+
+      describe('and the owner has no Catalyst profile', () => {
+        beforeEach(() => {
+          mockGetEnv.mockImplementation(mockWorldsAndPeer)
+          fetchSpy
+            .mockResolvedValueOnce({
+              ok: true,
+              json: () => Promise.resolve([{ id: 'world-entity', metadata: { owner: '0xOwner' } }])
+            } as unknown as Response)
+            .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) } as unknown as Response)
+        })
+
+        it('should return null so the Places API contact_name is used', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0', realm: 'noprofile.dcl.eth' })
+          )
+          expect(result.data).toBeNull()
+        })
+      })
+
+      describe('and the Worlds Content Server returns a server error', () => {
+        beforeEach(() => {
+          mockGetEnv.mockImplementation(mockWorldsAndPeer)
+          fetchSpy.mockResolvedValueOnce({ ok: false } as unknown as Response)
+        })
+
+        it('should return null without crashing', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0', realm: 'down.dcl.eth' })
+          )
+          expect(result.data).toBeNull()
+        })
+      })
+
+      describe('and WORLDS_CONTENT_SERVER_URL is not set', () => {
+        beforeEach(() => {
+          mockGetEnv.mockImplementation(key => (key === 'PEER_URL' ? 'https://peer.test' : undefined))
+        })
+
+        it('should surface FETCH_ERROR', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0', realm: 'noenv.dcl.eth' })
+          )
+          expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+        })
+      })
+    })
   })
 
   describe('getJumpPlaces with no position or realm', () => {

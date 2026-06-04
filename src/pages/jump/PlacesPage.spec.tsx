@@ -43,8 +43,8 @@ jest.mock('../../features/places', () => ({
 }))
 
 jest.mock('../../components/jump/Card', () => ({
-  Card: ({ isLoading, data }: { isLoading: boolean; data?: { title: string } }) => (
-    <div data-testid="card" data-loading={String(isLoading)}>
+  Card: ({ isLoading, data, creator }: { isLoading: boolean; data?: { title: string }; creator?: { user_name: string } }) => (
+    <div data-testid="card" data-loading={String(isLoading)} data-creator={creator?.user_name ?? ''}>
       {data?.title ?? 'no-data'}
     </div>
   )
@@ -113,6 +113,41 @@ describe('PlacesPage', () => {
     it('should render the generic placeholder', () => {
       renderWithRouter('/jump/places?position=50,50&realm=foo.eth')
       expect(screen.getByText('foo.eth')).toBeInTheDocument()
+    })
+  })
+
+  describe('when the scene metadata query resolves a creator', () => {
+    beforeEach(() => {
+      mockUseGetJumpPlacesQuery.mockReturnValue({
+        isLoading: false,
+        isError: false,
+        data: [
+          {
+            id: 'p1',
+            title: 'The Impossible Dimension',
+            image: '',
+            description: '',
+            positions: ['25,4'],
+            base_position: '25,4',
+            owner: '0xOwner'
+          }
+        ]
+      } as never)
+      mockUseGetSceneMetadataQuery.mockReturnValue({
+        isLoading: false,
+        isError: false,
+        data: { deployerAddress: '0xOwner', deployerName: 'Chiri', deployerAvatar: 'owner.png' }
+      } as never)
+    })
+
+    it('should pass the resolved creator to the card', () => {
+      renderWithRouter('/jump/places?position=25,4&realm=impssbldimnsn.dcl.eth')
+      expect(screen.getByTestId('card')).toHaveAttribute('data-creator', 'Chiri')
+    })
+
+    it('should query scene metadata with the realm so Worlds resolve on the Worlds Content Server', () => {
+      renderWithRouter('/jump/places?position=25,4&realm=impssbldimnsn.dcl.eth')
+      expect(mockUseGetSceneMetadataQuery).toHaveBeenCalledWith({ position: '25,4', realm: 'impssbldimnsn.dcl.eth' })
     })
   })
 })

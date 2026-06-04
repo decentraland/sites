@@ -28,7 +28,7 @@ const PlacesPage = () => {
   const realm = realmParam === DEFAULT_REALM ? undefined : realmParam
 
   const placesQuery = useGetJumpPlacesQuery({ position: parsedPosition.coordinates, realm })
-  const sceneMetadataQuery = useGetSceneMetadataQuery({ position: parsedPosition.coordinates.join(',') })
+  const sceneMetadataQuery = useGetSceneMetadataQuery({ position: parsedPosition.coordinates.join(','), realm })
 
   useEffect(() => {
     if (!parsedPosition.isValid || placesQuery.isError) {

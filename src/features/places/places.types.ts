@@ -59,6 +59,9 @@ interface JumpEventResponse {
 
 interface PeerSceneEntity {
   id: string
+  metadata?: {
+    owner?: string
+  }
 }
 
 interface PeerDeployment {
@@ -134,6 +137,11 @@ interface GetPlacesArgs {
 
 interface GetSceneMetadataArgs {
   position: string
+  // Worlds are not deployed on the main Catalyst at a Genesis City `position`;
+  // their scene lives on the Worlds Content Server keyed by the world name.
+  // When `realm` is an ENS name the query resolves the world owner instead of a
+  // Genesis City scene deployer.
+  realm?: string
 }
 
 export type {

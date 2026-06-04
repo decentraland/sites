@@ -76,6 +76,21 @@ async function fetchPeerDeployment(peerUrl: string, entityId: string): Promise<P
   return body.deployments?.[0] ?? null
 }
 
+// Worlds live on the Worlds Content Server, which exposes the active scene
+// entity (carrying `metadata.owner`) under `/entities/active` keyed by the world
+// name — note the path has no `/content` prefix, unlike the main Catalyst's
+// `fetchPeerSceneEntity`.
+async function fetchWorldSceneEntity(worldsUrl: string, worldName: string): Promise<PeerSceneEntity | null> {
+  const response = await fetch(`${worldsUrl}/entities/active`, {
+    method: 'POST',
+    headers: { Accept: '*/*', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pointers: [worldName] })
+  })
+  if (!response.ok) return null
+  const entities: PeerSceneEntity[] = await response.json()
+  return entities?.[0] ?? null
+}
+
 async function fetchPeerProfile(peerUrl: string, address: string): Promise<PeerProfile | null> {
   const response = await fetch(`${peerUrl}/lambdas/profiles`, {
     method: 'POST',
@@ -95,6 +110,23 @@ function toCreator(address: string, profile: PeerProfile | null): Creator | null
     user: address,
     user_name: userName,
     avatar: avatar?.avatar?.snapshots?.face256
+  }
+}
+
+// Resolve a Catalyst profile into the card's creator slot. Returns null when the
+// address has no profile name — curated scenes (e.g. Genesis Plaza) and some
+// world owners are deployed by / owned by addresses with no Catalyst user
+// profile, and returning null lets the Card fall back to the Places API's
+// contact_name instead of overriding it with a placeholder like "Unknown".
+async function resolveDeployerInfo(peerUrl: string, address: string): Promise<SceneDeployerInfo | null> {
+  const profile = await fetchPeerProfile(peerUrl, address)
+  const avatar = profile?.avatars?.[0]
+  const deployerName = avatar?.name || avatar?.realName
+  if (!deployerName) return null
+  return {
+    deployerAddress: address,
+    deployerName,
+    deployerAvatar: avatar?.avatar?.snapshots?.face256
   }
 }
 
@@ -165,10 +197,25 @@ const placesEndpoints = placesClient.injectEndpoints({
       providesTags: (_result, _error, { id }) => [{ type: 'JumpEvent', id }]
     }),
     getSceneMetadata: build.query<SceneDeployerInfo | null, GetSceneMetadataArgs>({
-      queryFn: async ({ position }) => {
+      queryFn: async ({ position, realm }) => {
         try {
           const peerUrl = getEnv('PEER_URL')
           if (!peerUrl) throw new Error('PEER_URL is not set')
+
+          // Worlds aren't on the main Catalyst at `position` — their scene lives
+          // on the Worlds Content Server keyed by the world name. Resolve the
+          // owner from the scene entity's `metadata.owner` and look that profile
+          // up on the Catalyst lambdas.
+          if (realm && isEns(realm)) {
+            const worldsUrl = getEnv('WORLDS_CONTENT_SERVER_URL')
+            if (!worldsUrl) throw new Error('WORLDS_CONTENT_SERVER_URL is not set')
+
+            const entity = await fetchWorldSceneEntity(worldsUrl, realm.toLowerCase())
+            const ownerAddress = entity?.metadata?.owner
+            if (!ownerAddress) return { data: null }
+
+            return { data: await resolveDeployerInfo(peerUrl, ownerAddress) }
+          }
 
           const entity = await fetchPeerSceneEntity(peerUrl, position)
           if (!entity) return { data: null }
@@ -176,26 +223,12 @@ const placesEndpoints = placesClient.injectEndpoints({
           const deployment = await fetchPeerDeployment(peerUrl, entity.id)
           if (!deployment) return { data: null }
 
-          const profile = await fetchPeerProfile(peerUrl, deployment.deployedBy)
-          const avatar = profile?.avatars?.[0]
-          const deployerName = avatar?.name || avatar?.realName
-          // Curated scenes (e.g. Genesis Plaza) are deployed by addresses that
-          // have no Catalyst user profile. Returning null here lets the Card
-          // fall back to the Places API's contact_name instead of overriding
-          // it with a placeholder like "Unknown".
-          if (!deployerName) return { data: null }
-
-          const info: SceneDeployerInfo = {
-            deployerAddress: deployment.deployedBy,
-            deployerName,
-            deployerAvatar: avatar?.avatar?.snapshots?.face256
-          }
-          return { data: info }
+          return { data: await resolveDeployerInfo(peerUrl, deployment.deployedBy) }
         } catch (error) {
           return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
         }
       },
-      providesTags: (_result, _err, args) => [{ type: 'SceneMetadata', id: args.position }]
+      providesTags: (_result, _err, args) => [{ type: 'SceneMetadata', id: args.realm ? args.realm.toLowerCase() : args.position }]
     }),
     getProfileCreator: build.query<Creator | null, { address: string }>({
       queryFn: async ({ address }) => {
