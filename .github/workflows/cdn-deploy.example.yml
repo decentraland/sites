@@ -1,0 +1,180 @@
+# =============================================================================
+# EXAMPLE — how @dcl/sites would adopt decentraland/actions/cdn-deploy
+# =============================================================================
+#
+# This is an illustration, not the live pipeline. It is INERT by default: every
+# job is gated on the `CDN_DEPLOY_EXAMPLE_ENABLED` repo variable, which is unset,
+# so merging this file does NOT deploy anything or interfere with the current
+# build-release.yml / set-rollout*.yml workflows.
+#
+# `cdn-deploy` replaces the current three-stage relay (oddish npm publish ->
+# static-sites-pipeline gitlab S3 upload -> set-rollout-action -> webhooks-receiver)
+# with one in-job step that uploads straight to S3 (auth via GitHub OIDC, no
+# static AWS keys) and patches the Cloudflare KV inline. See:
+#   https://github.com/decentraland/actions/tree/main/cdn-deploy
+#
+# To actually adopt it:
+#   1. Merge decentraland/actions#17 so `decentraland/actions/cdn-deploy@main` exists
+#      (or pin `@feat/cdn-deploy-action` to trial it before the merge).
+#   2. Configure the repo vars/secrets referenced below.
+#   3. Set the `CDN_DEPLOY_EXAMPLE_ENABLED` repo variable to `true`.
+#   4. Delete build-release.yml, set-rollout.yml and set-rollout-manual.yml —
+#      this single file replaces all three.
+#
+# Required configuration (non-secret -> repo Variables; secret -> repo Secrets):
+#   vars.CDN_DEPLOY_ROLE_ARN   IAM role assumed via GitHub OIDC (s3:PutObject on the CDN bucket)
+#   vars.CF_ACCOUNT_ID         Cloudflare account id
+#   vars.CF_NS_ZONE / _TODAY / _ORG   KV namespace ids per environment
+#   secrets.CF_KV_API_TOKEN    Cloudflare token scoped to Workers KV: Edit (the only secret)
+#   secrets.ROLLOUTS_SLACK_WEBHOOK   Slack webhook for the #rollouts channel (optional)
+# =============================================================================
+
+name: CDN deploy (example)
+
+on:
+  # Auto-deploy to dev + stg on every push to master (today: build-release.yml + set-rollout.yml).
+  push:
+    branches: [master]
+  # Promote the already-published build to prod under the release tag, WITHOUT
+  # rebuilding (today: a manual set-rollout-manual.yml run against `org`).
+  release:
+    types: [published]
+  # Manual rollout / rollback — move the KV pointer to an already-uploaded version
+  # (today: set-rollout-manual.yml).
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Already-uploaded version to point at (e.g. a snapshot or a release tag)'
+        required: true
+      environment:
+        type: choice
+        description: 'Target environment'
+        required: true
+        default: 'zone'
+        options: [zone, today, org]
+      percentage:
+        description: 'Rollout percentage'
+        required: true
+        default: '100'
+
+# Serialize deploys to the same ref: the KV update is read-modify-write and
+# Cloudflare KV has no compare-and-swap.
+concurrency:
+  group: cdn-deploy-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PACKAGE_NAME: '@dcl/sites'
+  DEPLOYMENT_PATH: 'sites'
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1) push to master -> build ONCE, deploy to dev (zone), then repoint stg (today)
+  #    at the very same bytes. All environments are served from the same S3 path
+  #    `@dcl/sites/<version>/`; only the KV namespace differs per env — so we
+  #    upload once (zone deploy) and repoint stg (no re-upload).
+  # ---------------------------------------------------------------------------
+  deploy-dev-stg:
+    if: ${{ github.event_name == 'push' && vars.CDN_DEPLOY_EXAMPLE_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # OIDC for the S3 upload
+      contents: read
+      deployments: write
+      statuses: write
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
+        with:
+          node-version: 24.x
+      - run: npm install
+        env:
+          HUSKY: 0
+      - run: npm run build
+
+      - name: Deploy to dev (zone) — uploads to S3 + sets the zone KV
+        id: dev
+        uses: decentraland/actions/cdn-deploy@main
+        with:
+          folder: ./dist
+          package-name: ${{ env.PACKAGE_NAME }}
+          deployment-path: ${{ env.DEPLOYMENT_PATH }}
+          deployment-environment: zone
+          aws-role-to-assume: ${{ vars.CDN_DEPLOY_ROLE_ARN }}
+          cloudflare-account-id: ${{ vars.CF_ACCOUNT_ID }}
+          cloudflare-api-token: ${{ secrets.CF_KV_API_TOKEN }}
+          cloudflare-namespace-zone: ${{ vars.CF_NS_ZONE }}
+          slack-webhook: ${{ secrets.ROLLOUTS_SLACK_WEBHOOK }}
+
+      - name: Repoint stg (today) at the same version — KV only, no re-upload
+        uses: decentraland/actions/cdn-deploy@main
+        with:
+          package-name: ${{ env.PACKAGE_NAME }}
+          version: ${{ steps.dev.outputs.version }}
+          deployment-path: ${{ env.DEPLOYMENT_PATH }}
+          deployment-environment: today
+          cloudflare-account-id: ${{ vars.CF_ACCOUNT_ID }}
+          cloudflare-api-token: ${{ secrets.CF_KV_API_TOKEN }}
+          cloudflare-namespace-today: ${{ vars.CF_NS_TODAY }}
+          slack-webhook: ${{ secrets.ROLLOUTS_SLACK_WEBHOOK }}
+
+  # ---------------------------------------------------------------------------
+  # 2) release published -> PROMOTE WITHOUT REBUILDING.
+  #    Copy the build already live on stg from `@dcl/sites/<source-version>/` to
+  #    `@dcl/sites/<release-tag>/` (server-side S3 copy) and point the prod (org)
+  #    KV at the tag. No checkout, no npm install, no build.
+  # ---------------------------------------------------------------------------
+  promote-prod:
+    if: ${{ github.event_name == 'release' && vars.CDN_DEPLOY_EXAMPLE_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # OIDC for the S3 copy
+      contents: read
+      deployments: write
+      statuses: write
+    steps:
+      - name: Promote stg build to prod under the release tag
+        uses: decentraland/actions/cdn-deploy@main
+        with:
+          package-name: ${{ env.PACKAGE_NAME }}
+          # The snapshot already uploaded + live on stg. Surface it however you
+          # track it — e.g. a repo variable kept up to date by the dev/stg deploy,
+          # the deploy job's `version` output, or a lookup of the current `_site`
+          # version in the `today` KV namespace.
+          source-version: ${{ vars.LIVE_STG_VERSION }}
+          version: ${{ github.event.release.tag_name }} # copy to / point org at the tag
+          deployment-path: ${{ env.DEPLOYMENT_PATH }}
+          deployment-environment: org
+          aws-role-to-assume: ${{ vars.CDN_DEPLOY_ROLE_ARN }}
+          cloudflare-account-id: ${{ vars.CF_ACCOUNT_ID }}
+          cloudflare-api-token: ${{ secrets.CF_KV_API_TOKEN }}
+          cloudflare-namespace-org: ${{ vars.CF_NS_ORG }}
+          slack-webhook: ${{ secrets.ROLLOUTS_SLACK_WEBHOOK }}
+
+  # ---------------------------------------------------------------------------
+  # 3) manual dispatch -> rollout / rollback by moving the KV pointer only.
+  #    No S3 op and no AWS creds (the action skips the OIDC step for a repoint).
+  #    Replaces set-rollout-manual.yml.
+  # ---------------------------------------------------------------------------
+  repoint:
+    if: ${{ github.event_name == 'workflow_dispatch' && vars.CDN_DEPLOY_EXAMPLE_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+      statuses: write
+    steps:
+      - name: Repoint the rollout at an already-uploaded version
+        uses: decentraland/actions/cdn-deploy@main
+        with:
+          package-name: ${{ env.PACKAGE_NAME }}
+          version: ${{ github.event.inputs.version }}
+          deployment-path: ${{ env.DEPLOYMENT_PATH }}
+          deployment-environment: ${{ github.event.inputs.environment }}
+          percentage: ${{ github.event.inputs.percentage }}
+          cloudflare-account-id: ${{ vars.CF_ACCOUNT_ID }}
+          cloudflare-api-token: ${{ secrets.CF_KV_API_TOKEN }}
+          cloudflare-namespace-zone: ${{ vars.CF_NS_ZONE }}
+          cloudflare-namespace-today: ${{ vars.CF_NS_TODAY }}
+          cloudflare-namespace-org: ${{ vars.CF_NS_ORG }}
+          slack-webhook: ${{ secrets.ROLLOUTS_SLACK_WEBHOOK }}
