@@ -1048,6 +1048,8 @@
       "filter_names": "네임",
       "filter_lands": "랜드",
       "filter_estates": "에스테이트",
+      "filter_rarity": "희귀도로 필터링",
+      "rarity_all": "모든 희귀도",
       "count": "{count}개 에셋",
       "view": "보기",
       "edit": "편집",

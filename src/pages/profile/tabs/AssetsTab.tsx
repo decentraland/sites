@@ -5,6 +5,7 @@ import CheckroomOutlinedIcon from '@mui/icons-material/CheckroomOutlined'
 import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined'
 import LandscapeOutlinedIcon from '@mui/icons-material/LandscapeOutlined'
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined'
+import { Rarity } from '@dcl/schemas'
 /* eslint-enable @typescript-eslint/naming-convention */
 import { Box, Button, CircularProgress, Typography } from 'decentraland-ui2'
 import { CatalogCard } from '../../../components/profile/CatalogCard'
@@ -23,7 +24,10 @@ import {
   NameLabel,
   NameLogoTile,
   NameRow,
-  NameSuffix
+  NameSuffix,
+  RarityFilterControl,
+  RarityFilterItem,
+  RarityFilterSelect
 } from './AssetsTab.styled'
 import { EmptyBio, EquippedGrid, LoadingRow } from './OverviewTab.styled'
 
@@ -46,6 +50,28 @@ const CATEGORY_FILTERS: CategoryOption[] = [
 ]
 
 const PAGE_SIZE = 24
+
+// Rarity tiers, common → unique. Only wearables and emotes carry a rarity, so
+// the dropdown is hidden for ens/parcel/estate categories.
+const RARITY_FILTERS: Rarity[] = [
+  Rarity.COMMON,
+  Rarity.UNCOMMON,
+  Rarity.RARE,
+  Rarity.EPIC,
+  Rarity.LEGENDARY,
+  Rarity.EXOTIC,
+  Rarity.MYTHIC,
+  Rarity.UNIQUE
+]
+
+const RARITY_CATEGORIES = new Set<AssetCategory>(['wearable', 'emote'])
+
+// Rarity tier names are canonical product terms shown untranslated across
+// Decentraland surfaces (e.g. the CatalogCard rarity badge), so we display the
+// capitalized enum value rather than a per-tier translation key.
+function rarityLabel(rarity: Rarity): string {
+  return rarity.charAt(0).toUpperCase() + rarity.slice(1)
+}
 
 function buildMarketplaceUrl(entry: AssetEntry): string {
   const base = (getEnv('MARKETPLACE_URL') ?? 'https://decentraland.org/marketplace').replace(/\/+$/, '')
@@ -116,9 +142,14 @@ function AssetsTab({ address }: AssetsTabProps) {
   }, [availableCategories])
   const [category, setCategory] = useState<AssetCategory | null>(null)
   const effectiveCategory = category ?? firstAvailable
+  const [rarity, setRarity] = useState<Rarity | null>(null)
+  // Rarity only applies to wearables/emotes; ignore any stale pick for other
+  // categories so the query and cache key stay correct without forcing a reset.
+  const supportsRarity = !!effectiveCategory && RARITY_CATEGORIES.has(effectiveCategory)
+  const effectiveRarity = supportsRarity ? rarity : null
   const [offset, setOffset] = useState(0)
   const [accumulated, setAccumulated] = useState<AssetEntry[]>([])
-  const cacheKey = `${address.toLowerCase()}|${effectiveCategory ?? 'none'}`
+  const cacheKey = `${address.toLowerCase()}|${effectiveCategory ?? 'none'}|${effectiveRarity ?? 'all'}`
   const [activeKey, setActiveKey] = useState(cacheKey)
 
   useEffect(() => {
@@ -141,6 +172,7 @@ function AssetsTab({ address }: AssetsTabProps) {
     {
       address,
       category: effectiveCategory ?? 'wearable',
+      rarity: effectiveRarity ?? undefined,
       limit: PAGE_SIZE,
       offset
     },
@@ -180,6 +212,23 @@ function AssetsTab({ address }: AssetsTabProps) {
           )
         })}
       </AssetsFilters>
+      {supportsRarity ? (
+        <RarityFilterControl size="small">
+          <RarityFilterSelect
+            value={rarity ?? ''}
+            onChange={event => setRarity((event.target.value as Rarity) || null)}
+            displayEmpty
+            aria-label={t('profile.assets.filter_rarity')}
+          >
+            <RarityFilterItem value="">{t('profile.assets.rarity_all')}</RarityFilterItem>
+            {RARITY_FILTERS.map(option => (
+              <RarityFilterItem key={option} value={option}>
+                {rarityLabel(option)}
+              </RarityFilterItem>
+            ))}
+          </RarityFilterSelect>
+        </RarityFilterControl>
+      ) : null}
     </AssetsHeader>
   )
 

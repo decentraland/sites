@@ -1,3 +1,4 @@
+import { Rarity } from '@dcl/schemas'
 import { marketplaceClient } from '../../services/marketplaceClient'
 
 type AssetCategory = 'wearable' | 'emote' | 'ens' | 'parcel' | 'estate'
@@ -49,6 +50,8 @@ interface AssetsResponse {
 interface AssetsQuery {
   address: string
   category?: AssetCategory
+  /** Wearable/emote rarity tier. Maps to the marketplace `itemRarity` param (singular — `rarity`/`rarities` are silently ignored by `/v1/nfts`). */
+  rarity?: Rarity
   onSale?: boolean
   limit?: number
   offset?: number
@@ -57,18 +60,19 @@ interface AssetsQuery {
 const profileAssetsApi = marketplaceClient.injectEndpoints({
   endpoints: builder => ({
     getProfileAssets: builder.query<AssetsResponse, AssetsQuery>({
-      query: ({ address, category, onSale, limit = 24, offset = 0 }) => {
+      query: ({ address, category, rarity, onSale, limit = 24, offset = 0 }) => {
         const params = new URLSearchParams()
         params.set('owner', address.toLowerCase())
         params.set('first', String(limit))
         params.set('skip', String(offset))
         params.set('sortBy', 'newest')
         if (category) params.set('category', category)
+        if (rarity) params.set('itemRarity', rarity)
         if (typeof onSale === 'boolean') params.set('isOnSale', String(onSale))
         return `/v1/nfts?${params.toString()}`
       },
-      providesTags: (_result, _error, { address, category }) => [
-        { type: 'Nfts', id: `owner-${address.toLowerCase()}-${category ?? 'all'}` },
+      providesTags: (_result, _error, { address, category, rarity }) => [
+        { type: 'Nfts', id: `owner-${address.toLowerCase()}-${category ?? 'all'}-${rarity ?? 'all'}` },
         'Nfts'
       ]
     })

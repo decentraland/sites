@@ -1048,6 +1048,8 @@
       "filter_names": "Names",
       "filter_lands": "Lands",
       "filter_estates": "Estates",
+      "filter_rarity": "Filtrar por rareza",
+      "rarity_all": "Todas las rarezas",
       "count": "{count} assets",
       "view": "Ver",
       "edit": "Editar",

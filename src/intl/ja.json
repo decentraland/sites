@@ -1048,6 +1048,8 @@
       "filter_names": "ネーム",
       "filter_lands": "ランド",
       "filter_estates": "エステート",
+      "filter_rarity": "レアリティで絞り込む",
+      "rarity_all": "すべてのレアリティ",
       "count": "{count} アセット",
       "view": "表示",
       "edit": "編集",

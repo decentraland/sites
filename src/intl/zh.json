@@ -1048,6 +1048,8 @@
       "filter_names": "名称",
       "filter_lands": "土地",
       "filter_estates": "地产",
+      "filter_rarity": "按稀有度筛选",
+      "rarity_all": "所有稀有度",
       "count": "{count} 件资产",
       "view": "查看",
       "edit": "编辑",

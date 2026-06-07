@@ -1,4 +1,4 @@
-import { Box, Chip, styled } from 'decentraland-ui2'
+import { Box, Chip, FormControl, MenuItem, Select, styled } from 'decentraland-ui2'
 
 // Card row used for ENS name NFTs — they ship no thumbnail/rarity so they don't
 // belong in the wearable CatalogCard grid. The shape mirrors a "list row" item:
@@ -132,4 +132,67 @@ const AssetFilterChip = styled(Chip)(({ theme }) => ({
   }
 }))
 
-export { AssetFilterChip, AssetsFilters, AssetsHeader, NameActions, NameCard, NameLabel, NameLogoTile, NameRow, NameSuffix }
+// Rarity dropdown lives on the right of AssetsHeader (category chips on the
+// left). Styled as a compact outlined pill so it reads as a sibling of the
+// AssetFilterChip row rather than a heavyweight form control.
+const RarityFilterControl = styled(FormControl)({
+  minWidth: 168
+})
+
+const RarityFilterSelect = styled(Select)({
+  height: 32,
+  borderRadius: 999,
+  fontFamily: '"Inter", sans-serif',
+  fontWeight: 600,
+  fontSize: 13,
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase',
+  color: '#FCFCFC',
+  backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& .MuiSelect-select': {
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingLeft: 16,
+    display: 'flex',
+    alignItems: 'center'
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(255, 255, 255, 0.25)'
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(255, 255, 255, 0.35)'
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderWidth: 1,
+    borderColor: '#FCFCFC'
+  },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& .MuiSelect-icon': {
+    color: '#FCFCFC'
+  }
+})
+
+const RarityFilterItem = styled(MenuItem)({
+  fontFamily: '"Inter", sans-serif',
+  fontSize: 14,
+  fontWeight: 600
+})
+
+export {
+  AssetFilterChip,
+  AssetsFilters,
+  AssetsHeader,
+  NameActions,
+  NameCard,
+  NameLabel,
+  NameLogoTile,
+  NameRow,
+  NameSuffix,
+  RarityFilterControl,
+  RarityFilterItem,
+  RarityFilterSelect
+}
