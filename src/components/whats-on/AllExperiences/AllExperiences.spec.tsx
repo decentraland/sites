@@ -293,8 +293,8 @@ describe('AllExperiences', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(3)
       const events = [
-        createMockEvent({ id: 'e1', start_at: '2026-09-13T14:00:00Z' }),
-        createMockEvent({ id: 'e2', start_at: '2026-09-13T16:00:00Z' })
+        createMockEvent({ id: 'e1', start_at: '2026-09-13T14:00:00Z', finish_at: '2026-09-13T15:00:00Z' }),
+        createMockEvent({ id: 'e2', start_at: '2026-09-13T16:00:00Z', finish_at: '2026-09-13T17:00:00Z' })
       ]
       mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
     })
@@ -313,9 +313,27 @@ describe('AllExperiences', () => {
       // The public All tab must hide them; only the My tab is allowed to surface drafts.
       mockUseGetEventsQuery.mockReturnValue({
         data: [
-          createMockEvent({ id: 'approved', approved: true, rejected: false, start_at: '2026-09-13T14:00:00Z' }),
-          createMockEvent({ id: 'pending', approved: false, rejected: false, start_at: '2026-09-13T15:00:00Z' }),
-          createMockEvent({ id: 'rejected', approved: false, rejected: true, start_at: '2026-09-13T16:00:00Z' })
+          createMockEvent({
+            id: 'approved',
+            approved: true,
+            rejected: false,
+            start_at: '2026-09-13T14:00:00Z',
+            finish_at: '2026-09-13T15:00:00Z'
+          }),
+          createMockEvent({
+            id: 'pending',
+            approved: false,
+            rejected: false,
+            start_at: '2026-09-13T15:00:00Z',
+            finish_at: '2026-09-13T16:00:00Z'
+          }),
+          createMockEvent({
+            id: 'rejected',
+            approved: false,
+            rejected: true,
+            start_at: '2026-09-13T16:00:00Z',
+            finish_at: '2026-09-13T17:00:00Z'
+          })
         ],
         isLoading: false,
         isError: false
@@ -356,9 +374,9 @@ describe('AllExperiences', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(1)
       const events = [
-        createMockEvent({ id: 'e1', start_at: '2026-09-13T14:00:00Z' }),
-        createMockEvent({ id: 'e2', start_at: '2026-09-13T16:00:00Z' }),
-        createMockEvent({ id: 'e3', start_at: '2026-09-13T18:00:00Z' })
+        createMockEvent({ id: 'e1', start_at: '2026-09-13T14:00:00Z', finish_at: '2026-09-13T15:00:00Z' }),
+        createMockEvent({ id: 'e2', start_at: '2026-09-13T16:00:00Z', finish_at: '2026-09-13T17:00:00Z' }),
+        createMockEvent({ id: 'e3', start_at: '2026-09-13T18:00:00Z', finish_at: '2026-09-13T19:00:00Z' })
       ]
       mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
     })
