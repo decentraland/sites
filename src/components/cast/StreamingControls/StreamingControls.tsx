@@ -16,9 +16,9 @@ import VolumeOffIcon from '@mui/icons-material/VolumeOff'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import { ConnectionState, LocalAudioTrack, LocalVideoTrack, Track } from 'livekit-client'
 import { useLiveKitCredentials } from '../../../features/cast2/contexts/LiveKitContext'
+import { useNotifications } from '../../../features/cast2/contexts/NotificationContext'
 import { usePresentationOptional } from '../../../features/cast2/contexts/PresentationContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
-import { useScreenShare } from '../../../hooks/useScreenShare'
 import { SharePresentationModal } from '../SharePresentationModal/SharePresentationModal'
 import { ShareMenuDropdown } from './ShareMenuDropdown'
 import { StreamingControlsProps } from './StreamingControls.types'
@@ -52,11 +52,12 @@ export function StreamingControls({
   onToggleTabMute
 }: StreamingControlsProps) {
   const { t } = useCastTranslation()
+  const notifications = useNotifications()
   const room = useRoomContext()
   const { localParticipant } = useLocalParticipant()
   const remoteParticipants = useRemoteParticipants()
   const connectionState = useConnectionState()
-  const { isScreenSharing, startScreenShare, stopScreenShare } = useScreenShare()
+  const [isScreenSharing, setIsScreenSharing] = useState(false)
   const [showAudioMenu, setShowAudioMenu] = useState(false)
   const [showVideoMenu, setShowVideoMenu] = useState(false)
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([])
@@ -71,7 +72,7 @@ export function StreamingControls({
 
   const handleShareScreenClick = () => {
     setShowShareMenu(false)
-    void startScreenShare()
+    handleScreenShare()
   }
 
   const handleSharePresentationClick = () => {
@@ -86,7 +87,7 @@ export function StreamingControls({
 
   const handleShareButtonClick = () => {
     if (isScreenSharing) {
-      void stopScreenShare() // stops screen share
+      handleScreenShare() // stops screen share
     } else {
       setShowShareMenu(prev => !prev)
     }
@@ -156,6 +157,27 @@ export function StreamingControls({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  useEffect(() => {
+    const screenShareTrack = Array.from(localParticipant?.videoTrackPublications.values() || []).find(
+      pub => pub.source === Track.Source.ScreenShare
+    )
+    setIsScreenSharing(!!screenShareTrack)
+
+    // Listen for screen share track ending (e.g., when user stops from Chrome controls)
+    if (screenShareTrack?.track) {
+      const handleTrackEnded = () => {
+        setIsScreenSharing(false)
+      }
+
+      const mediaStreamTrack = screenShareTrack.track.mediaStreamTrack
+      mediaStreamTrack?.addEventListener('ended', handleTrackEnded)
+
+      return () => {
+        mediaStreamTrack?.removeEventListener('ended', handleTrackEnded)
+      }
+    }
+  }, [localParticipant])
+
   const handleToggleMic = async () => {
     if (!localParticipant) return
 
@@ -183,6 +205,55 @@ export function StreamingControls({
       }
     } catch (error) {
       console.error('[StreamingControls] Failed to toggle camera:', error)
+    }
+  }
+
+  const handleScreenShare = async () => {
+    if (!localParticipant) {
+      console.error('[StreamingControls] No local participant for screen share')
+      return
+    }
+
+    if (isScreenSharing) {
+      const screenShareTrack = Array.from(localParticipant.videoTrackPublications.values()).find(
+        pub => pub.source === Track.Source.ScreenShare
+      )
+      if (screenShareTrack) {
+        await localParticipant.unpublishTrack(screenShareTrack.track!)
+        setIsScreenSharing(false)
+      }
+    } else {
+      try {
+        // Check if screen share is supported
+        const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+
+        if (isMobileDevice) {
+          notifications.show('ScreenShareFailed', { message: t('streaming_controls.screen_share_mobile_not_supported') })
+          return
+        }
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+          console.error('[StreamingControls] Screen share not supported on this device/browser')
+          notifications.show('ScreenShareFailed', { message: t('streaming_controls.screen_share_not_supported') })
+          return
+        }
+
+        await localParticipant.setScreenShareEnabled(true, { audio: true })
+        setIsScreenSharing(true)
+      } catch (error) {
+        console.error('[StreamingControls] Error enabling screen share:', error)
+        setIsScreenSharing(false)
+
+        // Surface a user-friendly error via the toast stack instead of
+        // blocking the main thread with `alert()`.
+        if (error instanceof Error) {
+          if (error.name === 'NotAllowedError') {
+            notifications.show('ScreenShareFailed', { message: t('streaming_controls.screen_share_permission_denied') })
+          } else if (error.name === 'NotSupportedError') {
+            notifications.show('ScreenShareFailed', { message: t('streaming_controls.screen_share_not_supported') })
+          }
+        }
+      }
     }
   }
 
