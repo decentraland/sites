@@ -17,14 +17,22 @@ type PointerDrag = {
   handlers: PointerDragHandlers
 }
 
+type PointerDragOptions = {
+  // Called on release (while snap is still disabled) so the caller can land the
+  // scroll on a page boundary; the CSS scroll-snap is restored right after.
+  onSettle?: (element: HTMLDivElement) => void
+}
+
 /**
- * Drag-to-scroll a horizontally overflowing element with a pointer (mouse, touch
- * or pen). Uses pointer events + pointer capture so the drag keeps working when
- * it starts on a child (e.g. a card image) and across device emulation, disables
- * scroll-snap while dragging, and restores it on release so the strip snaps into
- * place. `isDragging` lets the caller suppress the click fired after a drag.
+ * Drag-to-scroll a paged, horizontally overflowing element with a pointer (mouse,
+ * touch or pen). Uses pointer events + pointer capture so the drag keeps working
+ * when it starts on a child (e.g. a card image) and across device emulation, and
+ * disables scroll-snap while dragging. On release it runs the optional `onSettle`
+ * (to snap to a page) and restores scroll-snap. `isDragging` lets the caller
+ * suppress the click fired after a drag.
  */
-function usePointerDrag(ref: RefObject<HTMLDivElement | null>): PointerDrag {
+function usePointerDrag(ref: RefObject<HTMLDivElement | null>, options?: PointerDragOptions): PointerDrag {
+  const onSettle = options?.onSettle
   const [isDragging, setIsDragging] = useState(false)
   const state = useRef({ isDown: false, startX: 0, scrollLeft: 0 })
 
@@ -59,12 +67,15 @@ function usePointerDrag(ref: RefObject<HTMLDivElement | null>): PointerDrag {
       state.current.isDown = false
       const el = ref.current
       if (!el) return
+      // Land on a page boundary (while snap is still off, so it is not fought),
+      // then restore scroll-snap.
+      onSettle?.(el)
       el.style.scrollSnapType = ''
       if (typeof el.releasePointerCapture === 'function' && el.hasPointerCapture?.(event.pointerId)) {
         el.releasePointerCapture(event.pointerId)
       }
     },
-    [ref]
+    [ref, onSettle]
   )
 
   // Stop the browser's native drag (e.g. ghost-dragging card images) so it does

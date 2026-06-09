@@ -305,6 +305,8 @@ describe('LiveNow', () => {
       HTMLElement.prototype.setPointerCapture = jest.fn()
       HTMLElement.prototype.releasePointerCapture = jest.fn()
       HTMLElement.prototype.hasPointerCapture = jest.fn(() => true)
+      // The drag releases through onSettle → scrollTo.
+      HTMLElement.prototype.scrollTo = jest.fn() as unknown as HTMLElement['scrollTo']
     })
 
     it('should update scrollLeft on every pointerMove after pointerDown', () => {
@@ -343,7 +345,6 @@ describe('LiveNow', () => {
   })
 
   describe('when chevrons are visible', () => {
-    let scrollByMock: jest.Mock
     let scrollToMock: jest.Mock
     let clientWidthSpy: jest.SpyInstance
     let offsetWidthSpy: jest.SpyInstance
@@ -351,14 +352,12 @@ describe('LiveNow', () => {
     let scrollLeftSpy: jest.SpyInstance
 
     beforeEach(() => {
-      scrollByMock = jest.fn()
       scrollToMock = jest.fn()
       // Need both left and right chevrons visible.
       clientWidthSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(300)
       offsetWidthSpy = jest.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(300)
       scrollWidthSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(900)
       scrollLeftSpy = jest.spyOn(HTMLElement.prototype, 'scrollLeft', 'get').mockReturnValue(50)
-      HTMLElement.prototype.scrollBy = scrollByMock as unknown as HTMLElement['scrollBy']
       HTMLElement.prototype.scrollTo = scrollToMock as unknown as HTMLElement['scrollTo']
       mockUseGetLiveNowCardsQuery.mockReturnValue({
         data: [createMockCard('card-1', 'Event 1'), createMockCard('card-2', 'Event 2'), createMockCard('card-3', 'Event 3')]
@@ -372,18 +371,18 @@ describe('LiveNow', () => {
       scrollLeftSpy.mockRestore()
     })
 
-    it('should scroll one viewport to the left when the left chevron is clicked', () => {
+    it('should scroll to the previous page when the left chevron is clicked', () => {
       render(<LiveNow />)
       fireEvent.click(screen.getByTestId('chevron-left'))
-      // Scrolls back one viewport (clientWidth = 300).
-      expect(scrollByMock).toHaveBeenCalledWith(expect.objectContaining({ left: -300 }))
+      // current page 0 → clamped to 0 → scrollTo page 0.
+      expect(scrollToMock).toHaveBeenCalledWith(expect.objectContaining({ left: 0 }))
     })
 
-    it('should scroll one viewport to the right when the right chevron is clicked', () => {
+    it('should scroll to the next page when the right chevron is clicked', () => {
       render(<LiveNow />)
       fireEvent.click(screen.getByTestId('chevron-right'))
-      // Scrolls forward one viewport (clientWidth = 300).
-      expect(scrollByMock).toHaveBeenCalledWith(expect.objectContaining({ left: 300 }))
+      // current page 0 → next page 1 → scrollTo (1 * clientWidth 300) = 300.
+      expect(scrollToMock).toHaveBeenCalledWith(expect.objectContaining({ left: 300 }))
     })
 
     it('should scroll the wrapper to the matching page on dot click', () => {

@@ -2,9 +2,9 @@ import { act, useRef } from 'react'
 import { render, screen } from '@testing-library/react'
 import { usePointerDrag } from './usePointerDrag'
 
-function Harness() {
+function Harness({ onSettle }: { onSettle?: (element: HTMLDivElement) => void }) {
   const ref = useRef<HTMLDivElement>(null)
-  const { isDragging, handlers } = usePointerDrag(ref)
+  const { isDragging, handlers } = usePointerDrag(ref, { onSettle })
   return <div ref={ref} data-testid="track" data-dragging={isDragging} {...handlers} />
 }
 
@@ -74,6 +74,24 @@ describe('usePointerDrag', () => {
     expect(track.style.scrollSnapType).toBe('none')
     firePointer(track, 'pointerup', 100)
     expect(track.style.scrollSnapType).toBe('')
+  })
+
+  it('should run onSettle on release so the caller can snap to a page', () => {
+    const onSettle = jest.fn()
+    render(<Harness onSettle={onSettle} />)
+    const track = screen.getByTestId('track')
+    firePointer(track, 'pointerdown', 100)
+    firePointer(track, 'pointermove', 60)
+    firePointer(track, 'pointerup', 60)
+    expect(onSettle).toHaveBeenCalledWith(track)
+  })
+
+  it('should not run onSettle when releasing without a prior pointerDown', () => {
+    const onSettle = jest.fn()
+    render(<Harness onSettle={onSettle} />)
+    const track = screen.getByTestId('track')
+    firePointer(track, 'pointerup', 100)
+    expect(onSettle).not.toHaveBeenCalled()
   })
 
   it('should ignore a pointerUp that was not preceded by a pointerDown', () => {

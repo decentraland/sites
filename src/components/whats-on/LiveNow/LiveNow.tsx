@@ -31,14 +31,40 @@ function LiveNow() {
   const queryParams = useLiveNowQueryParams()
   const isVisible = useDocumentVisible()
   const { data: cards = [] } = useGetLiveNowCardsQuery(queryParams, { pollingInterval: isVisible ? 60_000 : 0 })
-  const [rangeStart, setRangeStart] = useState(0)
-  const [rangeSize, setRangeSize] = useState(1)
+  const [pageCount, setPageCount] = useState(1)
+  const [activePage, setActivePage] = useState(0)
   const [hasScroll, setHasScroll] = useState(false)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
   const [modalData, setModalData] = useState<ModalEventData | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const { isDragging, handlers: dragHandlers } = usePointerDrag(scrollRef)
+
+  // Scroll so the first card of `page` sits at the start of the viewport. A page
+  // is `cardsPerView` cards wide, so the target lands on a card boundary (which
+  // is also a scroll-snap point) — no fighting the CSS snap.
+  const scrollToPage = useCallback(
+    (page: number) => {
+      const container = scrollRef.current
+      if (!container) return
+      const { clientWidth, scrollWidth } = container
+      const cardCount = cards.length
+      const cardSpan = cardCount > 0 && scrollWidth > 0 ? scrollWidth / cardCount : 0
+      const cardsPerView = cardSpan > 0 && clientWidth > 0 ? Math.max(1, Math.round(clientWidth / cardSpan)) : 1
+      const maxScroll = Math.max(0, scrollWidth - clientWidth)
+      container.scrollTo({ left: Math.min(page * cardsPerView * cardSpan, maxScroll), behavior: 'smooth' })
+    },
+    [cards.length]
+  )
+
+  // On drag release, snap to the page that is currently most in view.
+  const handleSettle = useCallback(
+    (container: HTMLDivElement) => {
+      scrollToPage(container.clientWidth > 0 ? Math.round(container.scrollLeft / container.clientWidth) : 0)
+    },
+    [scrollToPage]
+  )
+
+  const { isDragging, handlers: dragHandlers } = usePointerDrag(scrollRef, { onSettle: handleSettle })
 
   const syncScrollState = useCallback(() => {
     const container = scrollRef.current
@@ -50,16 +76,16 @@ function LiveNow() {
     const cardCount = cards.length
     const cardSpan = cardCount > 0 && scrollWidth > 0 ? scrollWidth / cardCount : 0
     const cardsPerView = cardSpan > 0 && clientWidth > 0 ? Math.max(1, Math.round(clientWidth / cardSpan)) : 1
-    const scrollable = cardCount > cardsPerView
+    // One dot per page (a viewport-worth of cards), not per card.
+    const pages = Math.max(1, Math.ceil(cardCount / cardsPerView))
+    const scrollable = pages > 1
 
-    setRangeSize(cardsPerView)
+    setPageCount(pages)
     setHasScroll(scrollable)
     setCanScrollLeft(scrollable && scrollLeft > SCROLL_TOLERANCE_PX)
     setCanScrollRight(scrollable && scrollLeft + clientWidth < scrollWidth - SCROLL_TOLERANCE_PX)
 
-    // One dot per card; the highlighted range starts at the first visible card.
-    const maxFirstVisible = Math.max(0, cardCount - cardsPerView)
-    setRangeStart(cardSpan > 0 ? Math.min(Math.max(0, Math.round(scrollLeft / cardSpan)), maxFirstVisible) : 0)
+    setActivePage(scrollable && clientWidth > 0 ? Math.min(Math.max(0, Math.round(scrollLeft / clientWidth)), pages - 1) : 0)
   }, [cards.length])
 
   useEffect(() => {
@@ -71,30 +97,21 @@ function LiveNow() {
     return () => observer.disconnect()
   }, [cards.length, syncScrollState])
 
-  const handleChevronClick = useCallback((direction: 'left' | 'right') => {
-    const container = scrollRef.current
-    if (!container) return
-    // Advance one viewport-worth of cards; the highlighted range follows the scroll.
-    container.scrollBy({ left: direction === 'left' ? -container.clientWidth : container.clientWidth, behavior: 'smooth' })
-  }, [])
+  const handleChevronClick = useCallback(
+    (direction: 'left' | 'right') => {
+      const container = scrollRef.current
+      if (!container || container.clientWidth === 0) return
+      const current = Math.round(container.scrollLeft / container.clientWidth)
+      scrollToPage(Math.max(0, Math.min(pageCount - 1, current + (direction === 'left' ? -1 : 1))))
+    },
+    [pageCount, scrollToPage]
+  )
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       if (isDragging) e.stopPropagation()
     },
     [isDragging]
-  )
-
-  const handleDotClick = useCallback(
-    (index: number) => {
-      const container = scrollRef.current
-      if (!container) return
-      const cardSpan = cards.length > 0 ? container.scrollWidth / cards.length : 0
-      const maxScroll = Math.max(0, container.scrollWidth - container.clientWidth)
-      // Bring the clicked card to the start of the viewport.
-      container.scrollTo({ left: Math.min(index * cardSpan, maxScroll), behavior: 'smooth' })
-    },
-    [cards.length]
   )
 
   const handleCardClick = useCallback((card: LiveNowCard) => {
@@ -141,13 +158,7 @@ function LiveNow() {
           </LiveNowGrid>
         </CarouselWrapper>
       </ChevronLayer>
-      <CardPagination
-        count={cards.length}
-        rangeStart={rangeStart}
-        rangeSize={rangeSize}
-        onSelect={handleDotClick}
-        label={t('live_now.title')}
-      />
+      <CardPagination count={pageCount} rangeStart={activePage} rangeSize={1} onSelect={scrollToPage} label={t('live_now.title')} />
       <EventDetailModal open={!!modalData} onClose={handleModalClose} data={modalData} />
     </LiveNowSection>
   )
