@@ -8,10 +8,10 @@ import { useGetLiveNowCardsQuery } from '../../../features/events'
 import type { LiveNowCard } from '../../../features/events'
 import { useDocumentVisible } from '../../../hooks/useDocumentVisible'
 import { useLiveNowQueryParams } from '../../../hooks/useLiveNowQueryParams'
+import { CardPagination } from '../common/CardPagination'
 import { EventDetailModal, normalizeLiveNowCard } from '../EventDetailModal'
 import type { ModalEventData } from '../EventDetailModal'
 import { LiveNowCardItem } from './LiveNowCardItem'
-import { LiveNowPagination } from './LiveNowPagination'
 import {
   CarouselWrapper,
   ChevronButton,
@@ -82,6 +82,9 @@ function LiveNow() {
     const container = scrollRef.current
     if (!container) return
     dragState.current = { isDown: true, startX: e.pageX - container.offsetLeft, scrollLeft: container.scrollLeft }
+    // Disable scroll-snap while dragging so the strip follows the pointer instead
+    // of fighting the mandatory snap points; it is restored on release.
+    container.style.scrollSnapType = 'none'
     setIsDragging(false)
   }, [])
 
@@ -98,6 +101,9 @@ function LiveNow() {
 
   const handleMouseUp = useCallback(() => {
     dragState.current.isDown = false
+    // Restore the CSS scroll-snap so the carousel snaps to the nearest card.
+    const container = scrollRef.current
+    if (container) container.style.scrollSnapType = ''
   }, [])
 
   const handleClick = useCallback(
@@ -166,7 +172,7 @@ function LiveNow() {
           </LiveNowGrid>
         </CarouselWrapper>
       </ChevronLayer>
-      <LiveNowPagination
+      <CardPagination
         count={cards.length}
         rangeStart={rangeStart}
         rangeSize={rangeSize}

@@ -1,23 +1,23 @@
 import { memo, useCallback } from 'react'
 import type { KeyboardEvent } from 'react'
 import { useTranslation } from '@dcl/hooks'
-import { DOT_GAP, DOT_SIZE, DOT_SLOT, PaginationDot, PaginationTrack, PaginationViewport } from './LiveNowPagination.styled'
+import { DOT_GAP, DOT_SIZE, DOT_SLOT, PaginationDot, PaginationTrack, PaginationViewport } from './CardPagination.styled'
 
 // One dot of context shown on each side of the highlighted range.
 const CONTEXT_DOTS = 1
 
-type LiveNowPaginationProps = {
-  // Total number of cards (one dot each).
+type CardPaginationProps = {
+  // Total number of dots (one per card or per page).
   count: number
-  // Index of the first currently-visible card.
+  // Index of the first highlighted dot (the first visible card / current page).
   rangeStart: number
-  // How many cards are visible at once (how many dots are highlighted).
+  // How many contiguous dots are highlighted (visible cards; 1 for paged carousels).
   rangeSize: number
   onSelect: (index: number) => void
   label: string
 }
 
-function LiveNowPaginationComponent({ count, rangeStart, rangeSize, onSelect, label }: LiveNowPaginationProps) {
+function CardPaginationComponent({ count, rangeStart, rangeSize, onSelect, label }: CardPaginationProps) {
   const { t } = useTranslation()
 
   const handleKeyDown = useCallback(
@@ -33,11 +33,11 @@ function LiveNowPaginationComponent({ count, rangeStart, rangeSize, onSelect, la
     [count, onSelect]
   )
 
-  // Nothing to paginate when every card is visible at once.
+  // Nothing to paginate when everything is visible at once.
   if (count <= rangeSize) return null
 
   // Show the highlighted range plus a context dot on each side, keeping it
-  // within the strip; the window slides as the visible range moves and the
+  // within the strip; the window slides as the highlighted range moves and the
   // out-of-range dots fade at the edges.
   const windowSize = Math.min(count, rangeSize + CONTEXT_DOTS * 2)
   const maxStart = Math.max(0, count - windowSize)
@@ -68,6 +68,6 @@ function LiveNowPaginationComponent({ count, rangeStart, rangeSize, onSelect, la
   )
 }
 
-const LiveNowPagination = memo(LiveNowPaginationComponent)
+const CardPagination = memo(CardPaginationComponent)
 
-export { LiveNowPagination }
+export { CardPagination }

@@ -61,8 +61,8 @@ jest.mock('./LiveNow.styled', () => ({
   LiveNowGrid: ({ children }: { children: React.ReactNode }) => <div data-testid="live-now-grid">{children}</div>
 }))
 
-jest.mock('./LiveNowPagination', () => ({
-  LiveNowPagination: ({
+jest.mock('../common/CardPagination', () => ({
+  CardPagination: ({
     count,
     rangeStart,
     rangeSize,

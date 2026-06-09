@@ -52,11 +52,34 @@ jest.mock('./Upcoming.styled', () => ({
   MobileCarouselPage: ({ children }: { children: React.ReactNode }) => <div data-testid="mobile-page">{children}</div>
 }))
 
-jest.mock('../common/PaginationDots.styled', () => ({
-  PaginationDots: ({ children }: { children: React.ReactNode }) => <div data-testid="pagination-dots">{children}</div>,
-  PaginationDot: (props: React.ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }) => (
-    <button data-testid="pagination-dot" data-active={props.active} {...props} />
-  )
+jest.mock('../common/CardPagination', () => ({
+  CardPagination: ({
+    count,
+    rangeStart,
+    rangeSize,
+    onSelect
+  }: {
+    count: number
+    rangeStart: number
+    rangeSize: number
+    onSelect: (index: number) => void
+  }) =>
+    count > rangeSize ? (
+      <div data-testid="pagination-dots">
+        {Array.from({ length: count }, (_, index) => (
+          <button
+            key={index}
+            data-testid="pagination-dot"
+            data-active={index >= rangeStart && index < rangeStart + rangeSize}
+            onClick={() => onSelect(index)}
+            onKeyDown={e => {
+              if (e.key === 'ArrowRight') onSelect((index + 1) % count)
+              else if (e.key === 'ArrowLeft') onSelect((index - 1 + count) % count)
+            }}
+          />
+        ))}
+      </div>
+    ) : null
 }))
 
 // removed — using shared createMockEvent from __test-utils__/factories
@@ -235,6 +258,43 @@ describe('Upcoming', () => {
       fireEvent.scroll(track)
       const dots = screen.getAllByTestId('pagination-dot')
       expect(dots[0]).toHaveAttribute('data-active', 'true')
+    })
+  })
+
+  describe('when the user drags the mobile carousel', () => {
+    beforeEach(() => {
+      const events = Array.from({ length: 10 }, (_, i) => createMockEvent({ id: `ev-${i}`, name: `Event ${i}` }))
+      mockUseGetUpcomingEventsQuery.mockReturnValue({ data: events })
+    })
+
+    it('should update scrollLeft on every mouseMove after mouseDown', () => {
+      const setSpy = jest.spyOn(HTMLElement.prototype, 'scrollLeft', 'set')
+      try {
+        render(<Upcoming />)
+        const track = screen.getByTestId('mobile-track')
+        const callsBefore = setSpy.mock.calls.length
+        fireEvent.mouseDown(track, { pageX: 100 })
+        fireEvent.mouseMove(track, { pageX: 200 })
+        fireEvent.mouseMove(track, { pageX: 50 })
+        fireEvent.mouseUp(track)
+        // mouseMove writes to scrollLeft on each move during the active drag.
+        expect(setSpy.mock.calls.length - callsBefore).toBe(2)
+      } finally {
+        setSpy.mockRestore()
+      }
+    })
+
+    it('should not update scrollLeft when mouseMove fires without a prior mouseDown', () => {
+      const setSpy = jest.spyOn(HTMLElement.prototype, 'scrollLeft', 'set')
+      try {
+        render(<Upcoming />)
+        const track = screen.getByTestId('mobile-track')
+        const callsBefore = setSpy.mock.calls.length
+        fireEvent.mouseMove(track, { pageX: 100 })
+        expect(setSpy.mock.calls.length).toBe(callsBefore)
+      } finally {
+        setSpy.mockRestore()
+      }
     })
   })
 })

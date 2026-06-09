@@ -1,10 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
+import type { MouseEvent } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { isPubliclyVisibleEvent, useGetUpcomingEventsQuery } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
 import { chunk } from '../../../utils/whatsOnChunk'
-import { PaginationDot, PaginationDots } from '../common/PaginationDots.styled'
+import { CardPagination } from '../common/CardPagination'
 import { EventDetailModal } from '../EventDetailModal'
 import { UpcomingCard } from './UpcomingCard'
 import { DesktopGrid, MobileCarousel, MobileCarouselPage, MobileCarouselTrack, UpcomingSection, UpcomingTitle } from './Upcoming.styled'
@@ -16,8 +17,10 @@ function Upcoming() {
   const { identity } = useAuthIdentity()
   const { data: events = [] } = useGetUpcomingEventsQuery(identity ? { identity } : undefined)
   const [activePage, setActivePage] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
   const { closeEventDetailModal, editActiveEvent, modalData, openEventDetailModal } = useEventDetailModal()
   const trackRef = useRef<HTMLDivElement>(null)
+  const dragState = useRef({ isDown: false, startX: 0, scrollLeft: 0 })
 
   const visibleEvents = useMemo(() => events.filter(isPubliclyVisibleEvent), [events])
 
@@ -36,6 +39,41 @@ function Upcoming() {
     el.scrollTo({ left: index * el.clientWidth, behavior: 'smooth' })
   }, [])
 
+  const handleMouseDown = useCallback((e: MouseEvent) => {
+    const el = trackRef.current
+    if (!el) return
+    dragState.current = { isDown: true, startX: e.pageX - el.offsetLeft, scrollLeft: el.scrollLeft }
+    // Disable scroll-snap while dragging so the track follows the pointer instead
+    // of fighting the mandatory snap points; it is restored on release.
+    el.style.scrollSnapType = 'none'
+    setIsDragging(false)
+  }, [])
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!dragState.current.isDown) return
+    const el = trackRef.current
+    if (!el) return
+    e.preventDefault()
+    const x = e.pageX - el.offsetLeft
+    const walk = x - dragState.current.startX
+    if (Math.abs(walk) > 5) setIsDragging(true)
+    el.scrollLeft = dragState.current.scrollLeft - walk
+  }, [])
+
+  const handleMouseUp = useCallback(() => {
+    dragState.current.isDown = false
+    // Restore the CSS scroll-snap so the carousel snaps to the nearest page.
+    const el = trackRef.current
+    if (el) el.style.scrollSnapType = ''
+  }, [])
+
+  const handleClickCapture = useCallback(
+    (e: MouseEvent) => {
+      if (isDragging) e.stopPropagation()
+    },
+    [isDragging]
+  )
+
   if (visibleEvents.length === 0) return null
 
   return (
@@ -47,7 +85,16 @@ function Upcoming() {
         ))}
       </DesktopGrid>
       <MobileCarousel>
-        <MobileCarouselTrack ref={trackRef} onScroll={handleScroll}>
+        <MobileCarouselTrack
+          ref={trackRef}
+          onScroll={handleScroll}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onClickCapture={handleClickCapture}
+          sx={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+        >
           {pages.map((page, i) => (
             <MobileCarouselPage key={i}>
               {page.map(event => (
@@ -56,34 +103,7 @@ function Upcoming() {
             </MobileCarouselPage>
           ))}
         </MobileCarouselTrack>
-        {pages.length > 1 && (
-          <PaginationDots role="tablist" aria-label={t('upcoming.title')}>
-            {pages.map((_, index) => {
-              const isActive = index === activePage
-              return (
-                <PaginationDot
-                  key={index}
-                  active={isActive}
-                  role="tab"
-                  aria-selected={isActive}
-                  aria-current={isActive ? 'true' : undefined}
-                  tabIndex={isActive ? 0 : -1}
-                  onClick={() => handleDotClick(index)}
-                  onKeyDown={e => {
-                    if (e.key === 'ArrowRight') {
-                      e.preventDefault()
-                      handleDotClick((index + 1) % pages.length)
-                    } else if (e.key === 'ArrowLeft') {
-                      e.preventDefault()
-                      handleDotClick((index - 1 + pages.length) % pages.length)
-                    }
-                  }}
-                  aria-label={t('pagination.go_to_page', { page: index + 1 })}
-                />
-              )
-            })}
-          </PaginationDots>
-        )}
+        <CardPagination count={pages.length} rangeStart={activePage} rangeSize={1} onSelect={handleDotClick} label={t('upcoming.title')} />
       </MobileCarousel>
       <EventDetailModal open={!!modalData} onClose={closeEventDetailModal} data={modalData} onEdit={editActiveEvent} />
     </UpcomingSection>
