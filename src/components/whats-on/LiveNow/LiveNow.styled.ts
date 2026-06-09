@@ -67,6 +67,8 @@ const CarouselWrapper = styled(Box, {
           scrollSnapType: 'x mandatory',
           scrollPaddingInline: 16,
           scrollBehavior: 'smooth',
+          // Horizontal pointer gestures drive the JS drag; vertical still scrolls the page.
+          touchAction: 'pan-y',
           scrollbarWidth: 'none',
           '&::-webkit-scrollbar': {
             display: 'none'

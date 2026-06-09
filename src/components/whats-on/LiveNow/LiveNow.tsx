@@ -25,6 +25,10 @@ import {
 
 const SCROLL_TOLERANCE_PX = 2
 
+// Stop the browser's native drag (e.g. ghost-dragging card images) so it does
+// not hijack the pointer-drag swipe.
+const preventDefault = (event: React.SyntheticEvent) => event.preventDefault()
+
 function LiveNow() {
   const { t } = useTranslation()
   const queryParams = useLiveNowQueryParams()
@@ -78,32 +82,40 @@ function LiveNow() {
     container.scrollBy({ left: direction === 'left' ? -container.clientWidth : container.clientWidth, behavior: 'smooth' })
   }, [])
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+  // Pointer events (not mouse) so dragging works with mouse, touch and device
+  // emulation, and pointer capture keeps the drag going even when it starts on a
+  // card/image inside the track.
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
     const container = scrollRef.current
-    if (!container) return
-    dragState.current = { isDown: true, startX: e.pageX - container.offsetLeft, scrollLeft: container.scrollLeft }
+    // Ignore secondary buttons (right/middle); primary mouse, touch and pen are 0.
+    if (!container || (e.button ?? 0) !== 0) return
+    dragState.current = { isDown: true, startX: e.clientX, scrollLeft: container.scrollLeft }
+    if (typeof container.setPointerCapture === 'function') container.setPointerCapture(e.pointerId)
     // Disable scroll-snap while dragging so the strip follows the pointer instead
     // of fighting the mandatory snap points; it is restored on release.
     container.style.scrollSnapType = 'none'
     setIsDragging(false)
   }, [])
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!dragState.current.isDown) return
     const container = scrollRef.current
     if (!container) return
-    e.preventDefault()
-    const x = e.pageX - container.offsetLeft
-    const walk = x - dragState.current.startX
+    const walk = e.clientX - dragState.current.startX
     if (Math.abs(walk) > 5) setIsDragging(true)
     container.scrollLeft = dragState.current.scrollLeft - walk
   }, [])
 
-  const handleMouseUp = useCallback(() => {
+  const handlePointerUp = useCallback((e: React.PointerEvent) => {
+    if (!dragState.current.isDown) return
     dragState.current.isDown = false
-    // Restore the CSS scroll-snap so the carousel snaps to the nearest card.
     const container = scrollRef.current
-    if (container) container.style.scrollSnapType = ''
+    if (!container) return
+    // Restore the CSS scroll-snap so the carousel snaps to the nearest card.
+    container.style.scrollSnapType = ''
+    if (typeof container.releasePointerCapture === 'function' && container.hasPointerCapture?.(e.pointerId)) {
+      container.releasePointerCapture(e.pointerId)
+    }
   }, [])
 
   const handleClick = useCallback(
@@ -158,11 +170,12 @@ function LiveNow() {
           fadeLeft={canScrollLeft}
           fadeRight={canScrollRight}
           hasScroll={hasScroll}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
           onClickCapture={handleClick}
+          onDragStart={preventDefault}
           sx={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         >
           <LiveNowGrid>

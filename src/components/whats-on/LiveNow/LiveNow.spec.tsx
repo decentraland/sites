@@ -301,7 +301,13 @@ describe('LiveNow', () => {
   })
 
   describe('when the user drags the carousel', () => {
-    it('should update scrollLeft on every mouseMove after mouseDown', () => {
+    beforeEach(() => {
+      HTMLElement.prototype.setPointerCapture = jest.fn()
+      HTMLElement.prototype.releasePointerCapture = jest.fn()
+      HTMLElement.prototype.hasPointerCapture = jest.fn(() => true)
+    })
+
+    it('should update scrollLeft on every pointerMove after pointerDown', () => {
       mockUseGetLiveNowCardsQuery.mockReturnValue({
         data: [createMockCard('card-1', 'Event 1'), createMockCard('card-2', 'Event 2')]
       })
@@ -310,25 +316,25 @@ describe('LiveNow', () => {
         render(<LiveNow />)
         const wrapper = screen.getByTestId('carousel-wrapper')
         const callsBefore = setSpy.mock.calls.length
-        fireEvent.mouseDown(wrapper, { pageX: 100 })
-        fireEvent.mouseMove(wrapper, { pageX: 200 })
-        fireEvent.mouseMove(wrapper, { pageX: 50 })
-        fireEvent.mouseUp(wrapper)
-        // mouseMove should have written to scrollLeft twice during the active drag.
+        fireEvent.pointerDown(wrapper, { clientX: 100, button: 0, pointerId: 1 })
+        fireEvent.pointerMove(wrapper, { clientX: 200, pointerId: 1 })
+        fireEvent.pointerMove(wrapper, { clientX: 50, pointerId: 1 })
+        fireEvent.pointerUp(wrapper, { clientX: 50, pointerId: 1 })
+        // pointerMove should have written to scrollLeft twice during the active drag.
         expect(setSpy.mock.calls.length - callsBefore).toBe(2)
       } finally {
         setSpy.mockRestore()
       }
     })
 
-    it('should not update scrollLeft when mouseMove fires without a prior mouseDown', () => {
+    it('should not update scrollLeft when pointerMove fires without a prior pointerDown', () => {
       mockUseGetLiveNowCardsQuery.mockReturnValue({ data: [createMockCard('card-1', 'Event 1')] })
       const setSpy = jest.spyOn(HTMLElement.prototype, 'scrollLeft', 'set')
       try {
         render(<LiveNow />)
         const wrapper = screen.getByTestId('carousel-wrapper')
         const callsBefore = setSpy.mock.calls.length
-        fireEvent.mouseMove(wrapper, { pageX: 100 })
+        fireEvent.pointerMove(wrapper, { clientX: 100, pointerId: 1 })
         expect(setSpy.mock.calls.length).toBe(callsBefore)
       } finally {
         setSpy.mockRestore()

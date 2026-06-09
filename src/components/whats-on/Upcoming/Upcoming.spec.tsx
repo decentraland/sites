@@ -265,32 +265,35 @@ describe('Upcoming', () => {
     beforeEach(() => {
       const events = Array.from({ length: 10 }, (_, i) => createMockEvent({ id: `ev-${i}`, name: `Event ${i}` }))
       mockUseGetUpcomingEventsQuery.mockReturnValue({ data: events })
+      HTMLElement.prototype.setPointerCapture = jest.fn()
+      HTMLElement.prototype.releasePointerCapture = jest.fn()
+      HTMLElement.prototype.hasPointerCapture = jest.fn(() => true)
     })
 
-    it('should update scrollLeft on every mouseMove after mouseDown', () => {
+    it('should update scrollLeft on every pointerMove after pointerDown', () => {
       const setSpy = jest.spyOn(HTMLElement.prototype, 'scrollLeft', 'set')
       try {
         render(<Upcoming />)
         const track = screen.getByTestId('mobile-track')
         const callsBefore = setSpy.mock.calls.length
-        fireEvent.mouseDown(track, { pageX: 100 })
-        fireEvent.mouseMove(track, { pageX: 200 })
-        fireEvent.mouseMove(track, { pageX: 50 })
-        fireEvent.mouseUp(track)
-        // mouseMove writes to scrollLeft on each move during the active drag.
+        fireEvent.pointerDown(track, { clientX: 100, button: 0, pointerId: 1 })
+        fireEvent.pointerMove(track, { clientX: 200, pointerId: 1 })
+        fireEvent.pointerMove(track, { clientX: 50, pointerId: 1 })
+        fireEvent.pointerUp(track, { clientX: 50, pointerId: 1 })
+        // pointerMove writes to scrollLeft on each move during the active drag.
         expect(setSpy.mock.calls.length - callsBefore).toBe(2)
       } finally {
         setSpy.mockRestore()
       }
     })
 
-    it('should not update scrollLeft when mouseMove fires without a prior mouseDown', () => {
+    it('should not update scrollLeft when pointerMove fires without a prior pointerDown', () => {
       const setSpy = jest.spyOn(HTMLElement.prototype, 'scrollLeft', 'set')
       try {
         render(<Upcoming />)
         const track = screen.getByTestId('mobile-track')
         const callsBefore = setSpy.mock.calls.length
-        fireEvent.mouseMove(track, { pageX: 100 })
+        fireEvent.pointerMove(track, { clientX: 100, pointerId: 1 })
         expect(setSpy.mock.calls.length).toBe(callsBefore)
       } finally {
         setSpy.mockRestore()

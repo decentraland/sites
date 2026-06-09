@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import type { MouseEvent } from 'react'
+import type { MouseEvent, PointerEvent, SyntheticEvent } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { isPubliclyVisibleEvent, useGetUpcomingEventsQuery } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
@@ -11,6 +11,10 @@ import { UpcomingCard } from './UpcomingCard'
 import { DesktopGrid, MobileCarousel, MobileCarouselPage, MobileCarouselTrack, UpcomingSection, UpcomingTitle } from './Upcoming.styled'
 
 const PAGE_SIZE = 4
+
+// Stop the browser's native drag (e.g. ghost-dragging card images) so it does
+// not hijack the pointer-drag swipe.
+const preventDefault = (event: SyntheticEvent) => event.preventDefault()
 
 function Upcoming() {
   const { t } = useTranslation()
@@ -39,32 +43,40 @@ function Upcoming() {
     el.scrollTo({ left: index * el.clientWidth, behavior: 'smooth' })
   }, [])
 
-  const handleMouseDown = useCallback((e: MouseEvent) => {
+  // Pointer events (not mouse) so dragging works with mouse, touch and device
+  // emulation, and pointer capture keeps the drag going even when it starts on a
+  // card/image inside the track.
+  const handlePointerDown = useCallback((e: PointerEvent) => {
     const el = trackRef.current
-    if (!el) return
-    dragState.current = { isDown: true, startX: e.pageX - el.offsetLeft, scrollLeft: el.scrollLeft }
+    // Ignore secondary buttons (right/middle); primary mouse, touch and pen are 0.
+    if (!el || (e.button ?? 0) !== 0) return
+    dragState.current = { isDown: true, startX: e.clientX, scrollLeft: el.scrollLeft }
+    if (typeof el.setPointerCapture === 'function') el.setPointerCapture(e.pointerId)
     // Disable scroll-snap while dragging so the track follows the pointer instead
     // of fighting the mandatory snap points; it is restored on release.
     el.style.scrollSnapType = 'none'
     setIsDragging(false)
   }, [])
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
+  const handlePointerMove = useCallback((e: PointerEvent) => {
     if (!dragState.current.isDown) return
     const el = trackRef.current
     if (!el) return
-    e.preventDefault()
-    const x = e.pageX - el.offsetLeft
-    const walk = x - dragState.current.startX
+    const walk = e.clientX - dragState.current.startX
     if (Math.abs(walk) > 5) setIsDragging(true)
     el.scrollLeft = dragState.current.scrollLeft - walk
   }, [])
 
-  const handleMouseUp = useCallback(() => {
+  const handlePointerUp = useCallback((e: PointerEvent) => {
+    if (!dragState.current.isDown) return
     dragState.current.isDown = false
-    // Restore the CSS scroll-snap so the carousel snaps to the nearest page.
     const el = trackRef.current
-    if (el) el.style.scrollSnapType = ''
+    if (!el) return
+    // Restore the CSS scroll-snap so the carousel snaps to the nearest page.
+    el.style.scrollSnapType = ''
+    if (typeof el.releasePointerCapture === 'function' && el.hasPointerCapture?.(e.pointerId)) {
+      el.releasePointerCapture(e.pointerId)
+    }
   }, [])
 
   const handleClickCapture = useCallback(
@@ -88,11 +100,12 @@ function Upcoming() {
         <MobileCarouselTrack
           ref={trackRef}
           onScroll={handleScroll}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
           onClickCapture={handleClickCapture}
+          onDragStart={preventDefault}
           sx={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         >
           {pages.map((page, i) => (
