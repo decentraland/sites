@@ -61,11 +61,34 @@ jest.mock('./LiveNow.styled', () => ({
   LiveNowGrid: ({ children }: { children: React.ReactNode }) => <div data-testid="live-now-grid">{children}</div>
 }))
 
-jest.mock('../common/PaginationDots.styled', () => ({
-  PaginationDots: ({ children }: { children: React.ReactNode }) => <div data-testid="pagination-dots">{children}</div>,
-  PaginationDot: (props: React.ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }) => (
-    <button data-testid="pagination-dot" {...props} />
-  )
+jest.mock('./LiveNowPagination', () => ({
+  LiveNowPagination: ({
+    count,
+    rangeStart,
+    rangeSize,
+    onSelect
+  }: {
+    count: number
+    rangeStart: number
+    rangeSize: number
+    onSelect: (index: number) => void
+  }) =>
+    count > rangeSize ? (
+      <div data-testid="pagination-dots">
+        {Array.from({ length: count }, (_, index) => (
+          <button
+            key={index}
+            data-testid="pagination-dot"
+            data-active={index >= rangeStart && index < rangeStart + rangeSize}
+            onClick={() => onSelect(index)}
+            onKeyDown={e => {
+              if (e.key === 'ArrowRight') onSelect((index + 1) % count)
+              else if (e.key === 'ArrowLeft') onSelect((index - 1 + count) % count)
+            }}
+          />
+        ))}
+      </div>
+    ) : null
 }))
 
 jest.mock('@mui/icons-material/ChevronLeft', () => ({
@@ -343,15 +366,17 @@ describe('LiveNow', () => {
       scrollLeftSpy.mockRestore()
     })
 
-    it('should scroll left when the left chevron is clicked', () => {
+    it('should scroll one viewport to the left when the left chevron is clicked', () => {
       render(<LiveNow />)
       fireEvent.click(screen.getByTestId('chevron-left'))
+      // Scrolls back one viewport (clientWidth = 300).
       expect(scrollByMock).toHaveBeenCalledWith(expect.objectContaining({ left: -300 }))
     })
 
-    it('should scroll right when the right chevron is clicked', () => {
+    it('should scroll one viewport to the right when the right chevron is clicked', () => {
       render(<LiveNow />)
       fireEvent.click(screen.getByTestId('chevron-right'))
+      // Scrolls forward one viewport (clientWidth = 300).
       expect(scrollByMock).toHaveBeenCalledWith(expect.objectContaining({ left: 300 }))
     })
 

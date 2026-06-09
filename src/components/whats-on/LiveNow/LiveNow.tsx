@@ -8,10 +8,10 @@ import { useGetLiveNowCardsQuery } from '../../../features/events'
 import type { LiveNowCard } from '../../../features/events'
 import { useDocumentVisible } from '../../../hooks/useDocumentVisible'
 import { useLiveNowQueryParams } from '../../../hooks/useLiveNowQueryParams'
-import { PaginationDot, PaginationDots } from '../common/PaginationDots.styled'
 import { EventDetailModal, normalizeLiveNowCard } from '../EventDetailModal'
 import type { ModalEventData } from '../EventDetailModal'
 import { LiveNowCardItem } from './LiveNowCardItem'
+import { LiveNowPagination } from './LiveNowPagination'
 import {
   CarouselWrapper,
   ChevronButton,
@@ -23,19 +23,18 @@ import {
   LiveNowTitle
 } from './LiveNow.styled'
 
-const SCROLL_AMOUNT = 300
 const SCROLL_TOLERANCE_PX = 2
-const CARD_SELECTOR = '.MuiCard-root'
 
 function LiveNow() {
   const { t } = useTranslation()
   const queryParams = useLiveNowQueryParams()
   const isVisible = useDocumentVisible()
   const { data: cards = [] } = useGetLiveNowCardsQuery(queryParams, { pollingInterval: isVisible ? 60_000 : 0 })
-  const [activeIndex, setActiveIndex] = useState(0)
+  const [rangeStart, setRangeStart] = useState(0)
+  const [rangeSize, setRangeSize] = useState(1)
+  const [hasScroll, setHasScroll] = useState(false)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
-  const [pageCount, setPageCount] = useState(1)
   const [isDragging, setIsDragging] = useState(false)
   const [modalData, setModalData] = useState<ModalEventData | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -44,23 +43,23 @@ function LiveNow() {
   const syncScrollState = useCallback(() => {
     const container = scrollRef.current
     if (!container) return
-    const firstCard = container.querySelector<HTMLElement>(CARD_SELECTOR)
-    const cardWidth = firstCard?.offsetWidth ?? 0
-    const cardsPerPage = cardWidth > 0 && container.clientWidth > 0 ? Math.max(1, Math.round(container.clientWidth / cardWidth)) : 1
-    const pages = Math.max(1, Math.ceil(cards.length / cardsPerPage))
-    const hasScroll = pages > 1
+    const { clientWidth, scrollLeft, scrollWidth } = container
+    // Use the average rendered card span (scrollWidth / cardCount) instead of a
+    // single card's offsetWidth: it includes the gap and is stable across the
+    // layout reflows the carousel triggers when it toggles its own padding.
+    const cardCount = cards.length
+    const cardSpan = cardCount > 0 && scrollWidth > 0 ? scrollWidth / cardCount : 0
+    const cardsPerView = cardSpan > 0 && clientWidth > 0 ? Math.max(1, Math.round(clientWidth / cardSpan)) : 1
+    const scrollable = cardCount > cardsPerView
 
-    setPageCount(pages)
-    setCanScrollLeft(hasScroll && container.scrollLeft > SCROLL_TOLERANCE_PX)
-    setCanScrollRight(hasScroll && container.scrollLeft + container.clientWidth < container.scrollWidth - SCROLL_TOLERANCE_PX)
+    setRangeSize(cardsPerView)
+    setHasScroll(scrollable)
+    setCanScrollLeft(scrollable && scrollLeft > SCROLL_TOLERANCE_PX)
+    setCanScrollRight(scrollable && scrollLeft + clientWidth < scrollWidth - SCROLL_TOLERANCE_PX)
 
-    const maxScroll = container.scrollWidth - container.clientWidth
-    if (!hasScroll || maxScroll <= 0) {
-      setActiveIndex(0)
-    } else {
-      const progress = container.scrollLeft / maxScroll
-      setActiveIndex(Math.round(progress * (pages - 1)))
-    }
+    // One dot per card; the highlighted range starts at the first visible card.
+    const maxFirstVisible = Math.max(0, cardCount - cardsPerView)
+    setRangeStart(cardSpan > 0 ? Math.min(Math.max(0, Math.round(scrollLeft / cardSpan)), maxFirstVisible) : 0)
   }, [cards.length])
 
   useEffect(() => {
@@ -75,8 +74,8 @@ function LiveNow() {
   const handleChevronClick = useCallback((direction: 'left' | 'right') => {
     const container = scrollRef.current
     if (!container) return
-    const delta = direction === 'left' ? -SCROLL_AMOUNT : SCROLL_AMOUNT
-    container.scrollBy({ left: delta, behavior: 'smooth' })
+    // Advance one viewport-worth of cards; the highlighted range follows the scroll.
+    container.scrollBy({ left: direction === 'left' ? -container.clientWidth : container.clientWidth, behavior: 'smooth' })
   }, [])
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -112,11 +111,12 @@ function LiveNow() {
     (index: number) => {
       const container = scrollRef.current
       if (!container) return
-      const maxScroll = container.scrollWidth - container.clientWidth
-      const scrollTo = pageCount <= 1 ? 0 : (maxScroll * index) / (pageCount - 1)
-      container.scrollTo({ left: scrollTo, behavior: 'smooth' })
+      const cardSpan = cards.length > 0 ? container.scrollWidth / cards.length : 0
+      const maxScroll = Math.max(0, container.scrollWidth - container.clientWidth)
+      // Bring the clicked card to the start of the viewport.
+      container.scrollTo({ left: Math.min(index * cardSpan, maxScroll), behavior: 'smooth' })
     },
-    [pageCount]
+    [cards.length]
   )
 
   const handleCardClick = useCallback((card: LiveNowCard) => {
@@ -151,7 +151,7 @@ function LiveNow() {
           onScroll={syncScrollState}
           fadeLeft={canScrollLeft}
           fadeRight={canScrollRight}
-          hasScroll={pageCount > 1}
+          hasScroll={hasScroll}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -166,34 +166,13 @@ function LiveNow() {
           </LiveNowGrid>
         </CarouselWrapper>
       </ChevronLayer>
-      {pageCount > 1 && (
-        <PaginationDots role="tablist" aria-label={t('live_now.title')}>
-          {Array.from({ length: pageCount }, (_, index) => {
-            const isActive = index === activeIndex
-            return (
-              <PaginationDot
-                key={index}
-                active={isActive}
-                role="tab"
-                aria-selected={isActive}
-                aria-current={isActive ? 'true' : undefined}
-                tabIndex={isActive ? 0 : -1}
-                onClick={() => handleDotClick(index)}
-                onKeyDown={e => {
-                  if (e.key === 'ArrowRight') {
-                    e.preventDefault()
-                    handleDotClick((index + 1) % pageCount)
-                  } else if (e.key === 'ArrowLeft') {
-                    e.preventDefault()
-                    handleDotClick((index - 1 + pageCount) % pageCount)
-                  }
-                }}
-                aria-label={t('pagination.go_to_page', { page: index + 1 })}
-              />
-            )
-          })}
-        </PaginationDots>
-      )}
+      <LiveNowPagination
+        count={cards.length}
+        rangeStart={rangeStart}
+        rangeSize={rangeSize}
+        onSelect={handleDotClick}
+        label={t('live_now.title')}
+      />
       <EventDetailModal open={!!modalData} onClose={handleModalClose} data={modalData} />
     </LiveNowSection>
   )
