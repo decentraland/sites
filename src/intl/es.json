@@ -317,8 +317,7 @@
         },
         "screen_share_failed": {
           "title": "Falló al compartir pantalla",
-          "default_message": "No pudimos iniciar el compartir pantalla. Volvé a intentar.",
-          "stopped_message": "Tu pantalla compartida se detuvo. Haz clic en reintentar para compartir de nuevo."
+          "default_message": "No pudimos iniciar el compartir pantalla. Volvé a intentar."
         },
         "retry": "Reintentar",
         "dismiss": "Cerrar"

@@ -317,8 +317,7 @@
         },
         "screen_share_failed": {
           "title": "屏幕共享失败",
-          "default_message": "无法开始屏幕共享。请重试。",
-          "stopped_message": "您的屏幕共享已停止。点击重试以重新共享。"
+          "default_message": "无法开始屏幕共享。请重试。"
         },
         "retry": "重试",
         "dismiss": "关闭"
