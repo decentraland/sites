@@ -1,5 +1,5 @@
 import { memo, useCallback } from 'react'
-import type { KeyboardEvent } from 'react'
+import type { KeyboardEvent, MouseEvent } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { DOT_GAP, DOT_SIZE, DOT_SLOT, PaginationDot, PaginationTrack, PaginationViewport } from './CardPagination.styled'
 
@@ -20,8 +20,13 @@ type CardPaginationProps = {
 function CardPaginationComponent({ count, rangeStart, rangeSize, onSelect, label }: CardPaginationProps) {
   const { t } = useTranslation()
 
+  // Stable handlers (one per render, not one per dot) that read the dot index
+  // from `data-index`, so the dot list stays allocation-free.
+  const handleClick = useCallback((event: MouseEvent<HTMLButtonElement>) => onSelect(Number(event.currentTarget.dataset.index)), [onSelect])
+
   const handleKeyDown = useCallback(
-    (index: number) => (event: KeyboardEvent<HTMLButtonElement>) => {
+    (event: KeyboardEvent<HTMLButtonElement>) => {
+      const index = Number(event.currentTarget.dataset.index)
       if (event.key === 'ArrowRight') {
         event.preventDefault()
         onSelect((index + 1) % count)
@@ -55,10 +60,11 @@ function CardPaginationComponent({ count, rangeStart, rangeSize, onSelect, label
             <PaginationDot
               key={index}
               active={isHighlighted}
+              data-index={index}
               aria-current={isHighlighted ? 'true' : undefined}
               tabIndex={index === rangeStart ? 0 : -1}
-              onClick={() => onSelect(index)}
-              onKeyDown={handleKeyDown(index)}
+              onClick={handleClick}
+              onKeyDown={handleKeyDown}
               aria-label={t('pagination.go_to_page', { page: index + 1 })}
             />
           )

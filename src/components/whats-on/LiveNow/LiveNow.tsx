@@ -8,6 +8,7 @@ import { useGetLiveNowCardsQuery } from '../../../features/events'
 import type { LiveNowCard } from '../../../features/events'
 import { useDocumentVisible } from '../../../hooks/useDocumentVisible'
 import { useLiveNowQueryParams } from '../../../hooks/useLiveNowQueryParams'
+import { usePointerDrag } from '../../../hooks/usePointerDrag'
 import { CardPagination } from '../common/CardPagination'
 import { EventDetailModal, normalizeLiveNowCard } from '../EventDetailModal'
 import type { ModalEventData } from '../EventDetailModal'
@@ -25,10 +26,6 @@ import {
 
 const SCROLL_TOLERANCE_PX = 2
 
-// Stop the browser's native drag (e.g. ghost-dragging card images) so it does
-// not hijack the pointer-drag swipe.
-const preventDefault = (event: React.SyntheticEvent) => event.preventDefault()
-
 function LiveNow() {
   const { t } = useTranslation()
   const queryParams = useLiveNowQueryParams()
@@ -39,10 +36,9 @@ function LiveNow() {
   const [hasScroll, setHasScroll] = useState(false)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
   const [modalData, setModalData] = useState<ModalEventData | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const dragState = useRef({ isDown: false, startX: 0, scrollLeft: 0 })
+  const { isDragging, handlers: dragHandlers } = usePointerDrag(scrollRef)
 
   const syncScrollState = useCallback(() => {
     const container = scrollRef.current
@@ -80,42 +76,6 @@ function LiveNow() {
     if (!container) return
     // Advance one viewport-worth of cards; the highlighted range follows the scroll.
     container.scrollBy({ left: direction === 'left' ? -container.clientWidth : container.clientWidth, behavior: 'smooth' })
-  }, [])
-
-  // Pointer events (not mouse) so dragging works with mouse, touch and device
-  // emulation, and pointer capture keeps the drag going even when it starts on a
-  // card/image inside the track.
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    const container = scrollRef.current
-    // Ignore secondary buttons (right/middle); primary mouse, touch and pen are 0.
-    if (!container || (e.button ?? 0) !== 0) return
-    dragState.current = { isDown: true, startX: e.clientX, scrollLeft: container.scrollLeft }
-    if (typeof container.setPointerCapture === 'function') container.setPointerCapture(e.pointerId)
-    // Disable scroll-snap while dragging so the strip follows the pointer instead
-    // of fighting the mandatory snap points; it is restored on release.
-    container.style.scrollSnapType = 'none'
-    setIsDragging(false)
-  }, [])
-
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!dragState.current.isDown) return
-    const container = scrollRef.current
-    if (!container) return
-    const walk = e.clientX - dragState.current.startX
-    if (Math.abs(walk) > 5) setIsDragging(true)
-    container.scrollLeft = dragState.current.scrollLeft - walk
-  }, [])
-
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    if (!dragState.current.isDown) return
-    dragState.current.isDown = false
-    const container = scrollRef.current
-    if (!container) return
-    // Restore the CSS scroll-snap so the carousel snaps to the nearest card.
-    container.style.scrollSnapType = ''
-    if (typeof container.releasePointerCapture === 'function' && container.hasPointerCapture?.(e.pointerId)) {
-      container.releasePointerCapture(e.pointerId)
-    }
   }, [])
 
   const handleClick = useCallback(
@@ -170,12 +130,8 @@ function LiveNow() {
           fadeLeft={canScrollLeft}
           fadeRight={canScrollRight}
           hasScroll={hasScroll}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
+          {...dragHandlers}
           onClickCapture={handleClick}
-          onDragStart={preventDefault}
           sx={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         >
           <LiveNowGrid>
