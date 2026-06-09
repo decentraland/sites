@@ -58,6 +58,8 @@ const MobileCarouselTrack = styled(Box)({
   overflowX: 'auto',
   scrollSnapType: 'x mandatory',
   scrollBehavior: 'smooth',
+  // Horizontal pointer gestures drive the JS drag; vertical still scrolls the page.
+  touchAction: 'pan-y',
   scrollbarWidth: 'none',
   '&::-webkit-scrollbar': {
     display: 'none'
