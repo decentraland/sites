@@ -1,5 +1,5 @@
 import type { EventEntry } from '../features/events'
-import { eventEntryToFormState } from './useCreateEventForm.helpers'
+import { computeUpcomingOccurrences, eventEntryToFormState, recurrenceToApi } from './useCreateEventForm.helpers'
 
 // Format an ISO timestamp into the same `YYYY-MM-DD` / `HH:MM` shape the form fields use, so the
 // tests below don't have to duplicate the local-timezone arithmetic the helper performs internally.
@@ -112,49 +112,131 @@ describe('eventEntryToFormState', () => {
     })
   })
 
-  describe('when hydrating recurrent_interval from a stored event', () => {
-    it('should preserve a chip-compatible interval as a string', () => {
+  describe('when hydrating the combined recurrence option from a stored event', () => {
+    it('should map a biweekly WEEKLY event to every_2_weeks', () => {
       const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_interval: 2 }))
 
-      expect(formState.repeatInterval).toBe('2')
+      expect(formState.recurrence).toBe('every_2_weeks')
     })
 
-    it('should default to "1" when the event has no interval', () => {
+    it('should map a plain WEEKLY event (no interval) to every_week', () => {
       const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_interval: null }))
 
-      expect(formState.repeatInterval).toBe('1')
+      expect(formState.recurrence).toBe('every_week')
     })
 
-    it('should default to "1" when the event has a non-positive interval', () => {
+    it('should map a non-positive WEEKLY interval to every_week', () => {
       const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_interval: 0 }))
 
-      expect(formState.repeatInterval).toBe('1')
+      expect(formState.recurrence).toBe('every_week')
     })
 
-    it('should default to "1" for legacy intervals that fall outside the chip range', () => {
+    it('should clamp a WEEKLY interval above 4 to every_4_weeks', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_interval: 6 }))
+
+      expect(formState.recurrence).toBe('every_4_weeks')
+    })
+
+    it('should map a DAILY event to every_day regardless of interval', () => {
       const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'DAILY', recurrent_interval: 14 }))
 
-      expect(formState.repeatInterval).toBe('1')
+      expect(formState.recurrence).toBe('every_day')
+    })
+
+    it('should map a MONTHLY event to every_month', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'MONTHLY', recurrent_interval: 1 }))
+
+      expect(formState.recurrence).toBe('every_month')
+    })
+
+    it('should fall back to every_week for an unsupported frequency', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'YEARLY', recurrent_interval: 1 }))
+
+      expect(formState.recurrence).toBe('every_week')
     })
   })
 
-  describe('when hydrating recurrent_weekday_mask from a stored event', () => {
-    it('should default to all 7 weekdays when the mask is missing or 0', () => {
-      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_weekday_mask: null }))
-
-      expect(formState.repeatDays).toEqual([0, 1, 2, 3, 4, 5, 6])
+  describe('recurrenceToApi', () => {
+    it('should map every_2_weeks to a WEEKLY frequency with interval 2', () => {
+      expect(recurrenceToApi('every_2_weeks')).toEqual({ frequency: 'WEEKLY', interval: 2 })
     })
 
-    it('should decode Tuesday + Friday (mask 36) into [2, 5]', () => {
-      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_weekday_mask: 36 }))
-
-      expect(formState.repeatDays).toEqual([2, 5])
+    it('should map every_day to a DAILY frequency with interval 1', () => {
+      expect(recurrenceToApi('every_day')).toEqual({ frequency: 'DAILY', interval: 1 })
     })
 
-    it('should decode the full week (mask 127) into [0..6]', () => {
-      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_weekday_mask: 127 }))
+    it('should map every_month to a MONTHLY frequency with interval 1', () => {
+      expect(recurrenceToApi('every_month')).toEqual({ frequency: 'MONTHLY', interval: 1 })
+    })
 
-      expect(formState.repeatDays).toEqual([0, 1, 2, 3, 4, 5, 6])
+    it('should fall back to the default weekly option for an unknown value', () => {
+      expect(recurrenceToApi('bogus')).toEqual({ frequency: 'WEEKLY', interval: 1 })
+    })
+  })
+
+  describe('computeUpcomingOccurrences', () => {
+    const startDate = '2030-01-01'
+    const startTime = '10:00'
+    const startMs = new Date(`${startDate}T${startTime}`).getTime()
+    const DAY = 24 * 60 * 60 * 1000
+
+    it('should return an empty array when the start date or time is missing', () => {
+      expect(computeUpcomingOccurrences('', startTime, 'every_week', '')).toEqual([])
+      expect(computeUpcomingOccurrences(startDate, '', 'every_week', '')).toEqual([])
+    })
+
+    it('should return an empty array for an unknown recurrence option', () => {
+      expect(computeUpcomingOccurrences(startDate, startTime, 'bogus', '', startMs)).toEqual([])
+    })
+
+    it('should project five biweekly occurrences spaced exactly 14 days apart', () => {
+      const dates = computeUpcomingOccurrences(startDate, startTime, 'every_2_weeks', '', startMs)
+
+      expect(dates).toHaveLength(5)
+      expect(dates[0].getTime()).toBe(startMs)
+      for (let i = 1; i < dates.length; i++) {
+        expect(dates[i].getTime() - dates[i - 1].getTime()).toBe(14 * DAY)
+      }
+    })
+
+    it('should project five daily occurrences spaced exactly 1 day apart', () => {
+      const dates = computeUpcomingOccurrences(startDate, startTime, 'every_day', '', startMs)
+
+      expect(dates).toHaveLength(5)
+      for (let i = 1; i < dates.length; i++) {
+        expect(dates[i].getTime() - dates[i - 1].getTime()).toBe(DAY)
+      }
+    })
+
+    it('should stop generating once the end date is passed', () => {
+      // Weekly from Jan 1: Jan 1, Jan 8, Jan 15 land on/before Jan 20; Jan 22 is excluded.
+      const dates = computeUpcomingOccurrences(startDate, startTime, 'every_week', '2030-01-20', startMs)
+
+      expect(dates).toHaveLength(3)
+    })
+
+    it('should skip occurrences that already passed relative to now', () => {
+      const now = startMs + 15 * DAY
+
+      const dates = computeUpcomingOccurrences(startDate, startTime, 'every_week', '', now)
+
+      expect(dates[0].getTime()).toBeGreaterThanOrEqual(now)
+    })
+
+    it('should step monthly occurrences by whole months and clamp short months', () => {
+      const monthlyStart = '2030-01-31'
+      const dates = computeUpcomingOccurrences(
+        monthlyStart,
+        startTime,
+        'every_month',
+        '',
+        new Date(`${monthlyStart}T${startTime}`).getTime()
+      )
+
+      expect(dates).toHaveLength(5)
+      // Jan 31 + 1 month clamps to Feb 28 (2030 is not a leap year).
+      expect(dates[1].getMonth()).toBe(1)
+      expect(dates[1].getDate()).toBe(28)
     })
   })
 

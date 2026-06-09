@@ -647,7 +647,7 @@
         "copied": "已复制!",
         "download": "下载照片",
         "info": "切换信息",
-        "share_text": "看看我现在在 Decentraland 做什么并加入我吧!"
+        "share_text": "正在 @decentraland 玩。\n\n一起来吧 👋\n\n"
       },
       "metadata": {
         "title": "信息",
@@ -900,15 +900,17 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "repeat_interval": "重复间隔",
-    "repeat_on": "重复在",
-    "interval_chip_week_singular": "1 周",
-    "interval_chip_week_plural": "{count} 周",
-    "error_repeat_interval_invalid": "重复间隔必须是 1 到 4 之间的整数",
-    "error_repeat_days_required": "请至少选择一天",
-    "error_start_date_not_in_repeat_days": "开始日期的星期必须是所选日期之一",
     "error_image_too_large": "无法将此图片压缩到 500 KB 以下。请选择较小的文件。",
-    "vertical_recommended_size": "建议尺寸：716 × 1814 px"
+    "vertical_recommended_size": "建议尺寸：716 × 1814 px",
+    "recurrence": "重复频率",
+    "every_day": "每天",
+    "every_week": "每周",
+    "every_2_weeks": "每2周",
+    "every_3_weeks": "每3周",
+    "every_4_weeks": "每4周",
+    "every_month": "每月",
+    "upcoming_dates_label": "近期日期",
+    "upcoming_dates_empty": "此重复设置没有近期日期"
   },
   "community": {
     "global": {

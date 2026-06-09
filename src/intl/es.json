@@ -647,7 +647,7 @@
         "copied": "¡Copiado!",
         "download": "Descargar foto",
         "info": "Mostrar información",
-        "share_text": "¡Mira lo que estoy haciendo en Decentraland y únete!"
+        "share_text": "Pasando ahora en @decentraland.\n\nVení a sumarte 👋\n\n"
       },
       "metadata": {
         "title": "información",
@@ -900,15 +900,17 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "repeat_interval": "Repetir cada",
-    "repeat_on": "Repetir los",
-    "interval_chip_week_singular": "1 Semana",
-    "interval_chip_week_plural": "{count} Semanas",
-    "error_repeat_interval_invalid": "El intervalo de repetición debe ser un número entero entre 1 y 4",
-    "error_repeat_days_required": "Seleccioná al menos un día",
-    "error_start_date_not_in_repeat_days": "El día de la semana de la fecha de inicio debe estar entre los seleccionados",
     "error_image_too_large": "No pudimos comprimir esta imagen a menos de 500 KB. Por favor, elegí un archivo más pequeño.",
-    "vertical_recommended_size": "Tamaño recomendado: 716 × 1814 px"
+    "vertical_recommended_size": "Tamaño recomendado: 716 × 1814 px",
+    "recurrence": "Recurrencia",
+    "every_day": "Cada día",
+    "every_week": "Cada semana",
+    "every_2_weeks": "Cada 2 semanas",
+    "every_3_weeks": "Cada 3 semanas",
+    "every_4_weeks": "Cada 4 semanas",
+    "every_month": "Cada mes",
+    "upcoming_dates_label": "Próximas fechas",
+    "upcoming_dates_empty": "No hay próximas fechas para esta recurrencia"
   },
   "community": {
     "global": {

@@ -221,9 +221,15 @@ function bucketEventsByDay(events: EventEntry[], days: Date[], now: number = Dat
       if (dayIdx < 0) continue
 
       const startTs = start.getTime()
+      const finishTs = hasRecurrence ? startTs + event.duration : new Date(event.finish_at).getTime()
+      // Drop occurrences that already ended. Only the "today" column can hold past
+      // occurrences (future days are entirely ahead of `now`, earlier days aren't
+      // visible), so this hides hangouts that have already finished from Today while
+      // leaving in-progress (live) ones, which finish in the future.
+      if (finishTs < now) continue
+
       let entry: EventEntry
       if (hasRecurrence) {
-        const finishTs = startTs + event.duration
         /* eslint-disable @typescript-eslint/naming-convention */
         entry = {
           ...event,

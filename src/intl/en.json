@@ -781,7 +781,7 @@
         "copied": "Copied!",
         "download": "Download photo",
         "info": "Toggle info",
-        "share_text": "Check out what I'm doing in Decentraland right now and join me!"
+        "share_text": "Happening right now in @decentraland.\n\nCome hang out 👋\n\n"
       },
       "metadata": {
         "title": "information",
@@ -1161,11 +1161,6 @@
     "duration": "Duration",
     "repeat_until": "Ends",
     "repeat_event": "Repeat Hangout",
-    "repeat_interval": "Repeat every",
-    "repeat_on": "Repeat on",
-    "interval_chip_week_singular": "1 Week",
-    "interval_chip_week_plural": "{count} Weeks",
-    "frequency": "Frequency",
     "every_day": "Every Day",
     "every_week": "Every Week",
     "every_month": "Every Month",
@@ -1200,9 +1195,6 @@
     "error_description_too_long": "Description cannot exceed 5000 characters",
     "error_duration_invalid": "Enter duration as hh:mm",
     "error_duration_too_long": "Maximum allowed duration is 24 hours",
-    "error_repeat_interval_invalid": "Repeat interval must be a whole number between 1 and 4",
-    "error_repeat_days_required": "Select at least one day",
-    "error_start_date_not_in_repeat_days": "The start date's weekday must be one of the selected days",
     "error_submit": "Something went wrong. Please try again.",
     "error_invalid_image_type": "Please upload a PNG, JPG, or GIF file.",
     "error_invalid_vertical_image_type": "Vertical cover must be PNG or JPG.",
@@ -1229,7 +1221,13 @@
     "preview": "Preview",
     "preview_disabled_tooltip": "Complete the required fields to preview the hangout",
     "vertical_file_hint": "PNG or JPG, max 500 KB",
-    "vertical_image_usage": "Used for featured events in-world"
+    "vertical_image_usage": "Used for featured events in-world",
+    "recurrence": "Recurrence",
+    "every_2_weeks": "Every 2 Weeks",
+    "every_3_weeks": "Every 3 Weeks",
+    "every_4_weeks": "Every 4 Weeks",
+    "upcoming_dates_label": "Upcoming dates",
+    "upcoming_dates_empty": "No upcoming dates for this recurrence"
   },
   "host_banner": {
     "title": "Host a Hangout",
