@@ -570,6 +570,44 @@ const SubmitButton = styled('button')(({ theme }) => ({
   /* eslint-enable @typescript-eslint/naming-convention */
 }))
 
+// Delete lives on the left of the edit-form action bar (only shown in edit mode); marginRight
+// auto pushes Cancel/Submit to the right while keeping the destructive action visually separate.
+const DeleteButton = styled('button')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: theme.spacing(1),
+  marginRight: 'auto',
+  background: 'transparent',
+  border: '1.555px solid #ff2d55',
+  borderRadius: 12,
+  color: '#ff2d55',
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 14,
+  fontWeight: 600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.48px',
+  padding: '8px 22px',
+  height: 48,
+  cursor: 'pointer',
+  transition: theme.transitions.create(['background-color', 'color'], {
+    duration: theme.transitions.duration.standard
+  }),
+  /* eslint-disable @typescript-eslint/naming-convention */
+  '&:hover': {
+    background: theme.palette.error.main,
+    color: '#ffffff'
+  },
+  '&:focus-visible': {
+    outline: '2px solid #ff2d55',
+    outlineOffset: 2
+  },
+  [theme.breakpoints.down('md')]: {
+    marginRight: 0
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
+}))
+
 /* ── vertical cover button ──────────────────────────────────────────── */
 
 const AddVerticalCoverButton = styled('button')({
@@ -621,6 +659,7 @@ export {
   AddCoverText,
   AddVerticalCoverButton,
   CancelButton,
+  DeleteButton,
   ContentContainer,
   CoordPrefix,
   CoordinatesRow,

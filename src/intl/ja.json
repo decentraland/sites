@@ -962,6 +962,15 @@
     }
   },
   "event_detail": {
+    "delete": "削除",
+    "delete_modal": {
+      "title": "このハングアウトを削除してもよろしいですか？",
+      "cancel": "キャンセル",
+      "confirm": "削除",
+      "toast_title": "ハングアウトを削除しました",
+      "toast_description": "ハングアウト「{name}」を削除しました！",
+      "error": "ハングアウトを削除できませんでした。もう一度お試しください。"
+    },
     "recurrent_daily": "毎日繰り返し",
     "recurrent_weekly": "毎週繰り返し",
     "recurrent_monthly": "毎月繰り返し",

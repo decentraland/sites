@@ -2,12 +2,15 @@ import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { skipToken } from '@reduxjs/toolkit/query'
 import { useTranslation } from '@dcl/hooks'
+import { Alert, Snackbar } from 'decentraland-ui2'
 import { CreateEventSuccess } from '../../components/whats-on/CreateEvent/CreateEventSuccess'
 import { EventForm } from '../../components/whats-on/CreateEvent/EventForm'
+import { DeleteEventModal } from '../../components/whats-on/DeleteEventModal'
 import { useGetEventByIdQuery } from '../../features/events'
 import type { EventEntry } from '../../features/events'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useCanEditEvent } from '../../hooks/useCanEditEvent'
+import { useDeleteHangout } from '../../hooks/useDeleteHangout'
 import { BackArrowIcon, BackButton, HeaderRow, PageBackground, PageContent, PageTitle } from './CreateEventPage.styled'
 
 function CreateEventPage() {
@@ -33,6 +36,20 @@ function CreateEventPage() {
 
   const initialEvent = eventFromState ?? fetchedEvent ?? null
   const { canEdit, isLoading: isPermissionsLoading } = useCanEditEvent(initialEvent?.user)
+
+  // Delete is only reachable from the edit form (per design). After a successful delete the
+  // hangout is gone, so we send the user to their My Hangouts list.
+  const handleDeleted = useCallback(() => {
+    navigate('/whats-on?tab=my')
+  }, [navigate])
+
+  const { requestDelete, isConfirmOpen, isDeleting, closeConfirm, confirmDelete, feedback, clearFeedback } = useDeleteHangout({
+    onDeleted: handleDeleted
+  })
+
+  const handleDeleteClick = useCallback(() => {
+    if (initialEvent) requestDelete({ id: initialEvent.id, name: initialEvent.name })
+  }, [initialEvent, requestDelete])
 
   useEffect(() => {
     if (!hasValidIdentity) {
@@ -109,11 +126,25 @@ function CreateEventPage() {
         <EventForm
           onCancel={handleBack}
           onSuccess={handleSuccess}
+          onDelete={isEditRoute && initialEvent ? handleDeleteClick : undefined}
           initialEvent={initialEvent}
           initialCommunityId={initialCommunityId}
           initialOpenPreview={initialOpenPreview}
         />
       </PageContent>
+      <DeleteEventModal open={isConfirmOpen} isSubmitting={isDeleting} onClose={closeConfirm} onConfirm={confirmDelete} />
+      <Snackbar
+        open={feedback !== null}
+        autoHideDuration={4000}
+        onClose={clearFeedback}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        {feedback ? (
+          <Alert severity={feedback.severity} onClose={clearFeedback} variant="filled">
+            {feedback.message}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
     </>
   )
 }

@@ -962,6 +962,15 @@
     }
   },
   "event_detail": {
+    "delete": "삭제",
+    "delete_modal": {
+      "title": "행아웃을 삭제하시겠습니까?",
+      "cancel": "취소",
+      "confirm": "삭제",
+      "toast_title": "행아웃이 삭제되었습니다",
+      "toast_description": "행아웃 {name}이(가) 성공적으로 삭제되었습니다!",
+      "error": "행아웃을 삭제하지 못했습니다. 다시 시도해 주세요."
+    },
     "recurrent_daily": "매일 반복",
     "recurrent_weekly": "매주 반복",
     "recurrent_monthly": "매월 반복",

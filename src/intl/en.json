@@ -1065,6 +1065,15 @@
     "copy_link": "Copy link",
     "copied": "Copied!",
     "edit": "Edit",
+    "delete": "Delete",
+    "delete_modal": {
+      "title": "Are you sure you want to delete your hangout?",
+      "cancel": "Cancel",
+      "confirm": "Delete",
+      "toast_title": "Hangout Deleted successfully",
+      "toast_description": "Your hangout {name} has been deleted successfully!",
+      "error": "We couldn't delete your hangout. Please try again."
+    },
     "by_prefix": "By ",
     "unknown_creator": "Unknown",
     "recurrent_weekly": "Repeats weekly",

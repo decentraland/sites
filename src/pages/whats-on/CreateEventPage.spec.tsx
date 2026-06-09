@@ -5,6 +5,8 @@ import type { EventEntry } from '../../features/events/events.types'
 const mockNavigate = jest.fn()
 const mockUseCanEditEvent = jest.fn()
 const mockUseGetEventByIdQuery = jest.fn()
+const mockRequestDelete = jest.fn()
+let mockDeleteOnDeleted: (() => void) | undefined
 let mockIdentityReturn: { hasValidIdentity: boolean; identity?: unknown }
 let mockLocationState: { event?: EventEntry } | null
 let mockParams: { eventId?: string }
@@ -12,6 +14,31 @@ let mockSearch = ''
 
 jest.mock('../../features/events', () => ({
   useGetEventByIdQuery: (...args: unknown[]) => mockUseGetEventByIdQuery(...args)
+}))
+
+jest.mock('../../hooks/useDeleteHangout', () => ({
+  useDeleteHangout: (options?: { onDeleted?: () => void }) => {
+    mockDeleteOnDeleted = options?.onDeleted
+    return {
+      requestDelete: mockRequestDelete,
+      isConfirmOpen: false,
+      isDeleting: false,
+      closeConfirm: jest.fn(),
+      confirmDelete: jest.fn(),
+      feedback: null,
+      clearFeedback: jest.fn()
+    }
+  }
+}))
+
+jest.mock('../../components/whats-on/DeleteEventModal', () => ({
+  DeleteEventModal: () => <div data-testid="delete-event-modal" />
+}))
+
+jest.mock('decentraland-ui2', () => ({
+  Alert: ({ children }: { children: React.ReactNode }) => <div data-testid="alert">{children}</div>,
+  Snackbar: ({ open, children }: { open: boolean; children?: React.ReactNode }) =>
+    open ? <div data-testid="snackbar">{children}</div> : null
 }))
 
 // CreateEventPage must be imported AFTER jest.mock so the mocked barrel wins.
@@ -58,19 +85,22 @@ jest.mock('../../components/whats-on/CreateEvent/EventForm', () => ({
     initialCommunityId,
     initialOpenPreview,
     onCancel,
-    onSuccess
+    onSuccess,
+    onDelete
   }: {
     initialEvent?: EventEntry | null
     initialCommunityId?: string | null
     initialOpenPreview?: boolean
     onCancel: () => void
     onSuccess: () => void
+    onDelete?: () => void
   }) => (
     <div
       data-testid="event-form"
       data-event-id={initialEvent?.id ?? ''}
       data-community-id={initialCommunityId ?? ''}
       data-open-preview={String(Boolean(initialOpenPreview))}
+      data-has-delete={String(Boolean(onDelete))}
     >
       <button data-testid="form-cancel" onClick={onCancel}>
         cancel
@@ -78,6 +108,11 @@ jest.mock('../../components/whats-on/CreateEvent/EventForm', () => ({
       <button data-testid="form-success" onClick={onSuccess}>
         success
       </button>
+      {onDelete && (
+        <button data-testid="form-delete" onClick={onDelete}>
+          delete
+        </button>
+      )}
     </div>
   )
 }))
@@ -98,6 +133,8 @@ describe('CreateEventPage', () => {
     mockSearch = ''
     mockUseCanEditEvent.mockReturnValue({ canEdit: false, isLoading: false })
     mockUseGetEventByIdQuery.mockReturnValue({ data: undefined, isFetching: false, isError: false })
+    mockRequestDelete.mockReset()
+    mockDeleteOnDeleted = undefined
   })
 
   afterEach(() => {
@@ -377,6 +414,48 @@ describe('CreateEventPage', () => {
         render(<CreateEventPage />)
 
         expect(mockNavigate).toHaveBeenCalledWith('/whats-on', { replace: true })
+      })
+    })
+  })
+
+  describe('delete action', () => {
+    it('should not pass a delete handler to the form on the create route', () => {
+      render(<CreateEventPage />)
+
+      expect(screen.getByTestId('event-form')).toHaveAttribute('data-has-delete', 'false')
+      expect(screen.queryByTestId('form-delete')).not.toBeInTheDocument()
+    })
+
+    describe('on the edit route with a matching event the user can edit', () => {
+      let event: EventEntry
+
+      beforeEach(() => {
+        event = createMockEvent({ id: 'ev-42', user: '0xCreator', name: 'My Hangout' })
+        mockLocationState = { event }
+        mockParams = { eventId: 'ev-42' }
+        mockUseCanEditEvent.mockReturnValue({ canEdit: true, isLoading: false })
+      })
+
+      it('should pass a delete handler to the form', () => {
+        render(<CreateEventPage />)
+
+        expect(screen.getByTestId('event-form')).toHaveAttribute('data-has-delete', 'true')
+      })
+
+      it('should request deletion of the event when the form delete action fires', () => {
+        render(<CreateEventPage />)
+
+        fireEvent.click(screen.getByTestId('form-delete'))
+
+        expect(mockRequestDelete).toHaveBeenCalledWith({ id: 'ev-42', name: 'My Hangout' })
+      })
+
+      it('should navigate to My Hangouts after a successful delete', () => {
+        render(<CreateEventPage />)
+
+        mockDeleteOnDeleted?.()
+
+        expect(mockNavigate).toHaveBeenCalledWith('/whats-on?tab=my')
       })
     })
   })

@@ -962,6 +962,15 @@
     }
   },
   "event_detail": {
+    "delete": "删除",
+    "delete_modal": {
+      "title": "确定要删除你的聚会吗？",
+      "cancel": "取消",
+      "confirm": "删除",
+      "toast_title": "聚会已成功删除",
+      "toast_description": "你的聚会 {name} 已成功删除！",
+      "error": "无法删除你的聚会，请重试。"
+    },
     "recurrent_daily": "每天重复",
     "recurrent_weekly": "每周重复",
     "recurrent_monthly": "每月重复",

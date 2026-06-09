@@ -4,6 +4,8 @@ import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AddIcon from '@mui/icons-material/Add'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import EventIcon from '@mui/icons-material/Event'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
@@ -35,6 +37,7 @@ import {
   CoordinatesRow,
   DateTimeRow,
   DateTimeSection,
+  DeleteButton,
   DescriptionFields,
   EmailSection,
   EventDetailsBlock,
@@ -125,12 +128,20 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
 type EventFormProps = {
   onCancel: () => void
   onSuccess: () => void
+  onDelete?: () => void
   initialEvent?: EventEntry | null
   initialCommunityId?: string | null
   initialOpenPreview?: boolean
 }
 
-function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityId = null, initialOpenPreview = false }: EventFormProps) {
+function EventForm({
+  onCancel,
+  onSuccess,
+  onDelete,
+  initialEvent = null,
+  initialCommunityId = null,
+  initialOpenPreview = false
+}: EventFormProps) {
   const { t, locale } = useTranslation()
   const {
     form,
@@ -498,6 +509,12 @@ function EventForm({ onCancel, onSuccess, initialEvent = null, initialCommunityI
             </ReviewBar>
 
             <FormActions>
+              {mode === 'edit' && onDelete && (
+                <DeleteButton type="button" onClick={onDelete}>
+                  <DeleteOutlineIcon sx={{ fontSize: 20 }} />
+                  {t('event_detail.delete')}
+                </DeleteButton>
+              )}
               <CancelButton type="button" onClick={onCancel}>
                 {t('create_event.cancel')}
               </CancelButton>

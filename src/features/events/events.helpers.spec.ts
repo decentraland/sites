@@ -5,6 +5,7 @@ import {
   enrichPlaceCards,
   expandRecurrentDates,
   isDclFoundationCreator,
+  isDeleted,
   isPubliclyVisibleEvent
 } from './events.helpers'
 import type { HotScene, LiveNowCard } from './events.helpers'
@@ -63,6 +64,39 @@ describe('isPubliclyVisibleEvent', () => {
     it('should return false even if approved is somehow also true', () => {
       expect(isPubliclyVisibleEvent({ approved: false, rejected: true })).toBe(false)
       expect(isPubliclyVisibleEvent({ approved: true, rejected: true })).toBe(false)
+    })
+  })
+
+  describe('when the event has been deleted', () => {
+    it('should return false even if approved and not rejected', () => {
+      expect(isPubliclyVisibleEvent({ approved: true, rejected: false, deleted_by_user: true, deleted_by_admin: false })).toBe(false)
+      expect(isPubliclyVisibleEvent({ approved: true, rejected: false, deleted_by_user: false, deleted_by_admin: true })).toBe(false)
+    })
+  })
+})
+
+describe('isDeleted', () => {
+  describe('when deleted_by_user is true', () => {
+    it('should return true', () => {
+      expect(isDeleted({ deleted_by_user: true, deleted_by_admin: false })).toBe(true)
+    })
+  })
+
+  describe('when deleted_by_admin is true', () => {
+    it('should return true', () => {
+      expect(isDeleted({ deleted_by_user: false, deleted_by_admin: true })).toBe(true)
+    })
+  })
+
+  describe('when neither flag is set', () => {
+    it('should return false', () => {
+      expect(isDeleted({ deleted_by_user: false, deleted_by_admin: false })).toBe(false)
+    })
+  })
+
+  describe('when the flags are undefined', () => {
+    it('should return false', () => {
+      expect(isDeleted({})).toBe(false)
     })
   })
 })

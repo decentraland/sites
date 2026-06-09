@@ -962,6 +962,15 @@
     }
   },
   "event_detail": {
+    "delete": "Eliminar",
+    "delete_modal": {
+      "title": "¿Seguro que quieres eliminar tu hangout?",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar",
+      "toast_title": "Hangout eliminado correctamente",
+      "toast_description": "¡Tu hangout {name} se ha eliminado correctamente!",
+      "error": "No pudimos eliminar tu hangout. Inténtalo de nuevo."
+    },
     "recurrent_daily": "Se repite diariamente",
     "recurrent_weekly": "Se repite semanalmente",
     "recurrent_monthly": "Se repite mensualmente",
