@@ -92,6 +92,13 @@ function fillValidForm(setField: ReturnType<typeof useCreateEventForm>['setField
   })
 }
 
+// The default valid form starts on 2030-01-01 10:00. The submitted weekday mask must always carry the
+// start instant's own UTC weekday bit (the #560 invariant) — asserting against this keeps the tests
+// independent of the runner's timezone.
+const DEFAULT_START_AT = new Date('2030-01-01T10:00:00').toISOString()
+const DEFAULT_START_UTC_BIT = 1 << new Date(DEFAULT_START_AT).getUTCDay()
+const countBits = (mask: number): number => mask.toString(2).replace(/0/g, '').length
+
 let mockImageWidth = 716
 let mockImageHeight = 1814
 let mockImageShouldFail = false
@@ -222,7 +229,7 @@ describe('useCreateEventForm', () => {
   })
 
   describe('when repeat is enabled on a weekly recurrence with a valid end date', () => {
-    it('should send WEEKLY, interval 1 and a 0 weekday mask so the server uses the start_at weekday', async () => {
+    it('should send WEEKLY, interval 1 and a mask carrying the start weekday so the series never gains a phantom day', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
       fillValidForm(result.current.setField)
@@ -242,8 +249,8 @@ describe('useCreateEventForm', () => {
             recurrent: true,
             recurrent_frequency: 'WEEKLY',
             recurrent_interval: 1,
-            // 0 (not undefined) so the backend clears any stale mask and recurs on start_at's weekday — issue #560.
-            recurrent_weekday_mask: 0,
+            // Just the start weekday when no extra days are picked — and it's start_at's UTC weekday (#560).
+            recurrent_weekday_mask: DEFAULT_START_UTC_BIT,
             recurrent_until: expect.stringContaining('2030-02-01')
           })
         })
@@ -252,7 +259,7 @@ describe('useCreateEventForm', () => {
   })
 
   describe('when repeat is enabled on a biweekly recurrence', () => {
-    it('should send WEEKLY with interval 2 and a 0 weekday mask', async () => {
+    it('should send WEEKLY with interval 2 and the start-weekday mask', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
       fillValidForm(result.current.setField)
@@ -271,10 +278,34 @@ describe('useCreateEventForm', () => {
           payload: expect.objectContaining({
             recurrent_frequency: 'WEEKLY',
             recurrent_interval: 2,
-            recurrent_weekday_mask: 0
+            recurrent_weekday_mask: DEFAULT_START_UTC_BIT
           })
         })
       )
+    })
+  })
+
+  describe('when repeat is enabled on a weekly recurrence with extra weekdays selected', () => {
+    it('should send a mask with the start weekday plus each extra day', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+      act(() => {
+        result.current.setField('repeatEnabled', true)
+        result.current.setField('recurrence', 'every_week')
+        // Thursday (4) — distinct from the 2030-01-01 start weekday in any timezone.
+        result.current.setField('repeatDays', [4])
+        result.current.setField('repeatEndDate', '2030-02-01')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      const payload = mockCreateEvent.mock.calls[0][0].payload
+      // Start weekday is always present (no phantom occurrence), plus exactly one extra day.
+      expect(payload.recurrent_weekday_mask & DEFAULT_START_UTC_BIT).toBe(DEFAULT_START_UTC_BIT)
+      expect(countBits(payload.recurrent_weekday_mask)).toBe(2)
     })
   })
 

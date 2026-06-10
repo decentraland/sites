@@ -156,6 +156,29 @@ describe('eventEntryToFormState', () => {
     })
   })
 
+  describe('when hydrating repeatDays from a stored weekly event', () => {
+    // Tests run with TZ pinned to UTC (jestGlobalSetup), so local weekdays equal the stored UTC mask.
+    it('should decode the UTC weekday mask into local weekday indices', () => {
+      // mask 42 = Monday(2) | Wednesday(8) | Friday(32).
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_weekday_mask: 42 }))
+
+      expect(formState.repeatDays).toEqual([1, 3, 5])
+    })
+
+    it('should fall back to the start weekday when the mask is 0', () => {
+      // start_at 2030-01-01 is a Tuesday (weekday index 2).
+      const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'WEEKLY', recurrent_weekday_mask: 0 }))
+
+      expect(formState.repeatDays).toEqual([2])
+    })
+
+    it('should leave repeatDays empty for a non-recurrent event', () => {
+      const formState = eventEntryToFormState(buildEvent({ recurrent: false }))
+
+      expect(formState.repeatDays).toEqual([])
+    })
+  })
+
   describe('recurrenceToApi', () => {
     it('should map every_2_weeks to a WEEKLY frequency with interval 2', () => {
       expect(recurrenceToApi('every_2_weeks')).toEqual({ frequency: 'WEEKLY', interval: 2 })
@@ -186,11 +209,11 @@ describe('eventEntryToFormState', () => {
     })
 
     it('should return an empty array for an unknown recurrence option', () => {
-      expect(computeUpcomingOccurrences(startDate, startTime, 'bogus', '', startMs)).toEqual([])
+      expect(computeUpcomingOccurrences(startDate, startTime, 'bogus', '', [], startMs)).toEqual([])
     })
 
     it('should project five biweekly occurrences spaced exactly 14 days apart', () => {
-      const dates = computeUpcomingOccurrences(startDate, startTime, 'every_2_weeks', '', startMs)
+      const dates = computeUpcomingOccurrences(startDate, startTime, 'every_2_weeks', '', [], startMs)
 
       expect(dates).toHaveLength(5)
       expect(dates[0].getTime()).toBe(startMs)
@@ -200,7 +223,7 @@ describe('eventEntryToFormState', () => {
     })
 
     it('should project five daily occurrences spaced exactly 1 day apart', () => {
-      const dates = computeUpcomingOccurrences(startDate, startTime, 'every_day', '', startMs)
+      const dates = computeUpcomingOccurrences(startDate, startTime, 'every_day', '', [], startMs)
 
       expect(dates).toHaveLength(5)
       for (let i = 1; i < dates.length; i++) {
@@ -210,7 +233,7 @@ describe('eventEntryToFormState', () => {
 
     it('should stop generating once the end date is passed', () => {
       // Weekly from Jan 1: Jan 1, Jan 8, Jan 15 land on/before Jan 20; Jan 22 is excluded.
-      const dates = computeUpcomingOccurrences(startDate, startTime, 'every_week', '2030-01-20', startMs)
+      const dates = computeUpcomingOccurrences(startDate, startTime, 'every_week', '2030-01-20', [], startMs)
 
       expect(dates).toHaveLength(3)
     })
@@ -218,7 +241,7 @@ describe('eventEntryToFormState', () => {
     it('should skip occurrences that already passed relative to now', () => {
       const now = startMs + 15 * DAY
 
-      const dates = computeUpcomingOccurrences(startDate, startTime, 'every_week', '', now)
+      const dates = computeUpcomingOccurrences(startDate, startTime, 'every_week', '', [], now)
 
       expect(dates[0].getTime()).toBeGreaterThanOrEqual(now)
     })
@@ -230,6 +253,7 @@ describe('eventEntryToFormState', () => {
         startTime,
         'every_month',
         '',
+        [],
         new Date(`${monthlyStart}T${startTime}`).getTime()
       )
 
@@ -237,6 +261,26 @@ describe('eventEntryToFormState', () => {
       // Jan 31 + 1 month clamps to Feb 28 (2030 is not a leap year).
       expect(dates[1].getMonth()).toBe(1)
       expect(dates[1].getDate()).toBe(28)
+    })
+
+    describe('when selected weekdays are provided for a weekly cadence', () => {
+      // 2030-01-07 is a Monday; project Mon/Wed/Fri (1/3/5).
+      const mondayStart = '2030-01-07'
+      const mondayStartMs = new Date(`${mondayStart}T${startTime}`).getTime()
+
+      it('should project every selected weekday each week', () => {
+        const dates = computeUpcomingOccurrences(mondayStart, startTime, 'every_week', '', [1, 3, 5], mondayStartMs)
+
+        expect(dates.map(d => d.getDate())).toEqual([7, 9, 11, 14, 16])
+        expect(dates.map(d => d.getDay())).toEqual([1, 3, 5, 1, 3])
+      })
+
+      it('should only project selected weekdays inside active interval weeks (biweekly skips the off week)', () => {
+        const dates = computeUpcomingOccurrences(mondayStart, startTime, 'every_2_weeks', '', [1, 3, 5], mondayStartMs)
+
+        // Week of Jan 7 (Mon/Wed/Fri), then skip Jan 14 week, then week of Jan 21.
+        expect(dates.map(d => d.getDate())).toEqual([7, 9, 11, 21, 23])
+      })
     })
   })
 

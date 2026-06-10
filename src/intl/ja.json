@@ -911,7 +911,8 @@
     "every_4_weeks": "4週間ごと",
     "every_month": "毎月",
     "upcoming_dates_label": "次回以降の日程",
-    "upcoming_dates_empty": "この繰り返し設定に該当する今後の日程はありません"
+    "upcoming_dates_empty": "この繰り返し設定に該当する今後の日程はありません",
+    "repeat_on": "繰り返す曜日"
   },
   "community": {
     "global": {
