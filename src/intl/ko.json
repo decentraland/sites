@@ -317,7 +317,8 @@
         },
         "screen_share_failed": {
           "title": "화면 공유 실패",
-          "default_message": "화면 공유를 시작할 수 없습니다. 다시 시도해 주세요."
+          "default_message": "화면 공유를 시작할 수 없습니다. 다시 시도해 주세요.",
+          "stopped_message": "화면 공유가 중지되었습니다. 다시 공유하려면 재시도를 클릭하세요."
         },
         "retry": "재시도",
         "dismiss": "닫기"
