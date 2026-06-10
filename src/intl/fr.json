@@ -413,7 +413,8 @@
           "streaming": "Streaming",
           "access": "Accès",
           "events": "Événements",
-          "auth_server": "Serveur autoritaire"
+          "auth_server": "Serveur autoritaire",
+          "moderation": "Modération"
         },
         "stat": {
           "parcels": "Parcelles"

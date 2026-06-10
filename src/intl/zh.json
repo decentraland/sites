@@ -413,7 +413,8 @@
           "streaming": "直播",
           "access": "访问",
           "events": "活动",
-          "auth_server": "权威服务器"
+          "auth_server": "权威服务器",
+          "moderation": "管理"
         },
         "stat": {
           "parcels": "地块"

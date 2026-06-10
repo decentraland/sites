@@ -1,5 +1,4 @@
 import { memo, useCallback, useMemo, useState } from 'react'
-import { Helmet } from 'react-helmet-async'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import BlockIcon from '@mui/icons-material/Block'
 import { skipToken } from '@reduxjs/toolkit/query/react'
@@ -9,9 +8,8 @@ import { useAddSceneBanMutation, useGetSceneBansQuery, useRemoveSceneBanMutation
 import type { SceneBan, SceneBanScope } from '../../../features/bans'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
-import { useBlogPageTracking } from '../../../hooks/useBlogPageTracking'
 import { AddRow, EntryAddress, EntryIdentity, EntryInput, EntryList, EntryName, EntryRow } from './entryList.styled'
-import { Helper, SectionCard, SectionHeaderRow, SectionTitle, SpinnerBox } from './world.styled'
+import { Helper, SpinnerBox } from './world.styled'
 
 const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/
 
@@ -37,7 +35,9 @@ const BanRowItem = memo(function BanRowItem({ ban, onUnban, removing, unbanLabel
   )
 })
 
-function BansPage() {
+// Scene-ban management — a sub-panel of the Moderation tab. ModerationPage owns
+// the card chrome + sub-tab nav, so this renders only its hint, add row and list.
+function BansPanel() {
   const t = useFormatMessage()
   const { worldName, latest } = useWorldContext()
   const { identity } = useAuthIdentity()
@@ -51,11 +51,6 @@ function BansPage() {
   const { data, isLoading, isError } = useGetSceneBansQuery(scope && identity ? { ...scope, limit: 100 } : skipToken)
   const [addSceneBan, addState] = useAddSceneBanMutation()
   const [removeSceneBan, removeState] = useRemoveSceneBanMutation()
-
-  useBlogPageTracking({
-    name: `${t('page.creators.world.nav.bans')} · ${worldName}`,
-    properties: { section: 'creators_world_bans', world: worldName }
-  })
 
   const handleAdd = useCallback(async () => {
     const trimmed = value.trim()
@@ -83,13 +78,7 @@ function BansPage() {
   const bans = data?.results ?? []
 
   return (
-    <SectionCard>
-      <Helmet>
-        <title>{`${t('page.creators.world.nav.bans')} · ${worldName}`}</title>
-      </Helmet>
-      <SectionHeaderRow>
-        <SectionTitle>{t('page.creators.world.nav.bans')}</SectionTitle>
-      </SectionHeaderRow>
+    <>
       <Helper>{t('page.creators.world.bans_hint')}</Helper>
 
       {!identity ? (
@@ -141,8 +130,8 @@ function BansPage() {
           )}
         </>
       )}
-    </SectionCard>
+    </>
   )
 }
 
-export { BansPage }
+export { BansPanel }

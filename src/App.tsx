@@ -93,8 +93,7 @@ const CreatorOverviewPage = lazy(() => import('./pages/creators/world/OverviewPa
 const CreatorPreviewPage = lazy(() => import('./pages/creators/world/PreviewPage').then(m => ({ default: m.PreviewPage })))
 const CreatorEventsPage = lazy(() => import('./pages/creators/world/EventsPage').then(m => ({ default: m.EventsPage })))
 const CreatorAuthServerPage = lazy(() => import('./pages/creators/world/AuthServerPage').then(m => ({ default: m.AuthServerPage })))
-const CreatorBansPage = lazy(() => import('./pages/creators/world/BansPage').then(m => ({ default: m.BansPage })))
-const CreatorAdminsPage = lazy(() => import('./pages/creators/world/AdminsPage').then(m => ({ default: m.AdminsPage })))
+const CreatorModerationPage = lazy(() => import('./pages/creators/world/ModerationPage').then(m => ({ default: m.ModerationPage })))
 const CreatorStreamingPage = lazy(() => import('./pages/creators/world/StreamingPage').then(m => ({ default: m.StreamingPage })))
 const CreatorAccessPage = lazy(() => import('./pages/creators/world/AccessPage').then(m => ({ default: m.AccessPage })))
 const CreatorAnalyticsPage = lazy(() => import('./pages/creators/world/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })))
@@ -238,9 +237,11 @@ const App = () => {
                   <Route path="events" element={<CreatorEventsPage />} />
                   <Route path="auth-server" element={<CreatorAuthServerPage />} />
                   <Route path="streaming" element={<CreatorStreamingPage />} />
-                  <Route path="admins" element={<CreatorAdminsPage />} />
                   <Route path="access" element={<CreatorAccessPage />} />
-                  <Route path="bans" element={<CreatorBansPage />} />
+                  <Route path="moderation" element={<CreatorModerationPage />} />
+                  {/* Scene admins + Bans were merged into the Moderation tab — redirect the old deep links. */}
+                  <Route path="admins" element={<Navigate to="../moderation" replace />} />
+                  <Route path="bans" element={<Navigate to="../moderation" replace />} />
                   <Route path="analytics" element={<CreatorAnalyticsPage />} />
                   <Route path="monetization" element={<CreatorMonetizationPage />} />
                 </Route>

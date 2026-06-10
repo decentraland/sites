@@ -5,8 +5,6 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import BlockIcon from '@mui/icons-material/Block'
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import InsightsIcon from '@mui/icons-material/Insights'
@@ -156,17 +154,13 @@ function CreatorWorldLayout() {
           <PodcastsIcon />
           {t('page.creators.world.nav.streaming')}
         </RailLink>
-        <RailLink to={`${base}/admins`}>
-          <ShieldOutlinedIcon />
-          {t('page.creators.world.nav.admins')}
-        </RailLink>
         <RailLink to={`${base}/access`}>
           <PeopleOutlineIcon />
           {t('page.creators.world.nav.access')}
         </RailLink>
-        <RailLink to={`${base}/bans`}>
-          <BlockIcon />
-          {t('page.creators.world.nav.bans')}
+        <RailLink to={`${base}/moderation`}>
+          <ShieldOutlinedIcon />
+          {t('page.creators.world.nav.moderation')}
         </RailLink>
         <RailLink to={`${base}/analytics`}>
           <InsightsIcon />

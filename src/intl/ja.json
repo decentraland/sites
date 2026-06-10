@@ -413,7 +413,8 @@
           "streaming": "配信",
           "access": "アクセス",
           "events": "イベント",
-          "auth_server": "権威サーバー"
+          "auth_server": "権威サーバー",
+          "moderation": "モデレーション"
         },
         "stat": {
           "parcels": "パーセル"

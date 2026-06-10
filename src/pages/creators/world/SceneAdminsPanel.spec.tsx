@@ -12,11 +12,9 @@ let mockRemoveState: { isLoading: boolean; isError: boolean }
 
 jest.mock('../../../components/creators/CreatorWorldLayout', () => ({ useWorldContext: () => mockContext }))
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({ useFormatMessage: () => (id: string) => id }))
-jest.mock('../../../hooks/useBlogPageTracking', () => ({ useBlogPageTracking: () => undefined }))
 jest.mock('../../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ identity: mockIdentity, hasValidIdentity: !!mockIdentity, address: '0xowner' })
 }))
-jest.mock('react-helmet-async', () => ({ Helmet: ({ children }: { children?: React.ReactNode }) => <>{children}</> }))
 jest.mock('decentraland-ui2', () => jest.requireActual('../../../__test-utils__/creatorsUi2Mock'))
 jest.mock('../../../features/sceneGatekeeper', () => ({
   useGetSceneAdminsQuery: (...a: unknown[]) => mockUseGetAdmins(...a),
@@ -26,7 +24,7 @@ jest.mock('../../../features/sceneGatekeeper', () => ({
 
 // Imported after the mocks so the mocked barrels win.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { AdminsPage } = require('./AdminsPage') as typeof import('./AdminsPage')
+const { SceneAdminsPanel } = require('./SceneAdminsPanel') as typeof import('./SceneAdminsPanel')
 
 const LATEST = { entityId: 'e1', baseParcel: '0,0' }
 
@@ -34,7 +32,7 @@ function makeAdmin(overrides: Partial<SceneAdmin> = {}): SceneAdmin {
   return { admin: '0x1111111111111111111111111111111111111111', name: '', canBeRemoved: true, ...overrides }
 }
 
-describe('AdminsPage', () => {
+describe('SceneAdminsPanel', () => {
   beforeEach(() => {
     mockContext = { worldName: 'test.dcl.eth', deployments: [], latest: LATEST, place: null }
     mockIdentity = { authChain: [] }
@@ -50,31 +48,31 @@ describe('AdminsPage', () => {
 
   it('should ask the user to sign in when there is no identity', () => {
     mockIdentity = undefined
-    render(<AdminsPage />)
+    render(<SceneAdminsPanel />)
     expect(screen.getByText('page.creators.world.admins_sign_in')).toBeInTheDocument()
   })
 
   it('should explain there is no deployment when latest is missing', () => {
     mockContext = { ...mockContext, latest: null }
-    render(<AdminsPage />)
+    render(<SceneAdminsPanel />)
     expect(screen.getByText('page.creators.world.admins_no_deployment')).toBeInTheDocument()
   })
 
   it('should show a spinner while admins load', () => {
     mockUseGetAdmins.mockReturnValue({ data: undefined, isLoading: true, isError: false })
-    render(<AdminsPage />)
+    render(<SceneAdminsPanel />)
     expect(screen.getByRole('progressbar')).toBeInTheDocument()
   })
 
   it('should surface a load error', () => {
     mockUseGetAdmins.mockReturnValue({ data: undefined, isLoading: false, isError: true })
-    render(<AdminsPage />)
+    render(<SceneAdminsPanel />)
     expect(screen.getByText('page.creators.world.admins_load_error')).toBeInTheDocument()
   })
 
   it('should render the empty state when the world has no admins', () => {
     mockUseGetAdmins.mockReturnValue({ data: [], isLoading: false, isError: false })
-    render(<AdminsPage />)
+    render(<SceneAdminsPanel />)
     expect(screen.getByText('page.creators.world.admins_empty')).toBeInTheDocument()
   })
 
@@ -84,13 +82,13 @@ describe('AdminsPage', () => {
       isLoading: false,
       isError: false
     })
-    render(<AdminsPage />)
+    render(<SceneAdminsPanel />)
     expect(screen.getByText('Alice')).toBeInTheDocument()
     expect(screen.getByText('0x2222222222222222222222222222222222222222')).toBeInTheDocument()
   })
 
   it('should add an admin by address when the value is address-shaped', async () => {
-    render(<AdminsPage />)
+    render(<SceneAdminsPanel />)
     const input = screen.getByRole('textbox')
     fireEvent.change(input, { target: { value: '0xABCDEF0123456789ABCDEF0123456789ABCDEF01' } })
     fireEvent.click(screen.getByRole('button', { name: 'page.creators.world.admins_add' }))
@@ -99,7 +97,7 @@ describe('AdminsPage', () => {
   })
 
   it('should add an admin by name when the value is not address-shaped', async () => {
-    render(<AdminsPage />)
+    render(<SceneAdminsPanel />)
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'cooluser' } })
     fireEvent.click(screen.getByRole('button', { name: 'page.creators.world.admins_add' }))
     await Promise.resolve()
@@ -107,7 +105,7 @@ describe('AdminsPage', () => {
   })
 
   it('should add an admin when pressing Enter in the input', async () => {
-    render(<AdminsPage />)
+    render(<SceneAdminsPanel />)
     const input = screen.getByRole('textbox')
     fireEvent.change(input, { target: { value: 'enteruser' } })
     fireEvent.keyDown(input, { key: 'Enter' })
@@ -116,7 +114,7 @@ describe('AdminsPage', () => {
   })
 
   it('should ignore whitespace-only input on add', () => {
-    render(<AdminsPage />)
+    render(<SceneAdminsPanel />)
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '   ' } })
     const addButton = screen.getByRole('button', { name: 'page.creators.world.admins_add' })
     fireEvent.click(addButton)
@@ -129,7 +127,7 @@ describe('AdminsPage', () => {
       isLoading: false,
       isError: false
     })
-    render(<AdminsPage />)
+    render(<SceneAdminsPanel />)
     fireEvent.click(screen.getByRole('button', { name: 'page.creators.world.admins_remove' }))
     expect(mockRemove).toHaveBeenCalledWith(expect.objectContaining({ admin: '0x3333333333333333333333333333333333333333' }))
   })
@@ -142,7 +140,7 @@ describe('AdminsPage', () => {
       isLoading: false,
       isError: false
     })
-    render(<AdminsPage />)
+    render(<SceneAdminsPanel />)
     fireEvent.click(screen.getByRole('button', { name: 'page.creators.world.admins_remove' }))
     expect(mockRemove).toHaveBeenCalledWith(expect.objectContaining({ parcel: '0,0' }))
   })
@@ -153,14 +151,14 @@ describe('AdminsPage', () => {
       isLoading: false,
       isError: false
     })
-    render(<AdminsPage />)
+    render(<SceneAdminsPanel />)
     expect(screen.getByText('page.creators.world.admins_implicit')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'page.creators.world.admins_remove' })).not.toBeInTheDocument()
   })
 
   it('should surface the add error helper when the add mutation failed', () => {
     mockAddState = { isLoading: false, isError: true }
-    render(<AdminsPage />)
+    render(<SceneAdminsPanel />)
     expect(screen.getByText('page.creators.world.admins_error')).toBeInTheDocument()
   })
 })

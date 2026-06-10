@@ -1,5 +1,4 @@
 import { memo, useCallback, useMemo, useState } from 'react'
-import { Helmet } from 'react-helmet-async'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PersonAddIcon from '@mui/icons-material/PersonAddAlt1'
 import { skipToken } from '@reduxjs/toolkit/query/react'
@@ -9,9 +8,8 @@ import { useAddSceneAdminMutation, useGetSceneAdminsQuery, useRemoveSceneAdminMu
 import type { SceneAdmin, SceneScope } from '../../../features/sceneGatekeeper'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
-import { useBlogPageTracking } from '../../../hooks/useBlogPageTracking'
 import { AddRow, EntryAddress, EntryIdentity, EntryInput, EntryList, EntryName, EntryRow, EntryTag } from './entryList.styled'
-import { Helper, SectionCard, SectionHeaderRow, SectionTitle, SpinnerBox } from './world.styled'
+import { Helper, SpinnerBox } from './world.styled'
 
 const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/
 
@@ -42,7 +40,9 @@ const AdminRowItem = memo(function AdminRowItem({ admin, onRemove, removing, rem
   )
 })
 
-function AdminsPage() {
+// Scene-admin management — a sub-panel of the Moderation tab. ModerationPage owns
+// the card chrome + sub-tab nav, so this renders only its hint, add row and list.
+function SceneAdminsPanel() {
   const t = useFormatMessage()
   const { worldName, latest } = useWorldContext()
   const { identity } = useAuthIdentity()
@@ -56,11 +56,6 @@ function AdminsPage() {
   const { data: admins, isLoading, isError } = useGetSceneAdminsQuery(scope && identity ? scope : skipToken)
   const [addSceneAdmin, addState] = useAddSceneAdminMutation()
   const [removeSceneAdmin, removeState] = useRemoveSceneAdminMutation()
-
-  useBlogPageTracking({
-    name: `${t('page.creators.world.nav.admins')} · ${worldName}`,
-    properties: { section: 'creators_world_admins', world: worldName }
-  })
 
   const handleAdd = useCallback(async () => {
     const trimmed = value.trim()
@@ -85,13 +80,7 @@ function AdminsPage() {
   const list = admins ?? []
 
   return (
-    <SectionCard>
-      <Helmet>
-        <title>{`${t('page.creators.world.nav.admins')} · ${worldName}`}</title>
-      </Helmet>
-      <SectionHeaderRow>
-        <SectionTitle>{t('page.creators.world.nav.admins')}</SectionTitle>
-      </SectionHeaderRow>
+    <>
       <Helper>{t('page.creators.world.admins_hint')}</Helper>
 
       {!identity ? (
@@ -144,8 +133,8 @@ function AdminsPage() {
           )}
         </>
       )}
-    </SectionCard>
+    </>
   )
 }
 
-export { AdminsPage }
+export { SceneAdminsPanel }

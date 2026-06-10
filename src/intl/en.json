@@ -461,7 +461,8 @@
           "streaming": "Streaming",
           "access": "Access",
           "events": "Events",
-          "auth_server": "Auth Server"
+          "auth_server": "Auth Server",
+          "moderation": "Moderation"
         },
         "stat": {
           "parcels": "Parcels"

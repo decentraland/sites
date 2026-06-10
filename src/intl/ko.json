@@ -413,7 +413,8 @@
           "streaming": "스트리밍",
           "access": "접근",
           "events": "이벤트",
-          "auth_server": "권한 서버"
+          "auth_server": "권한 서버",
+          "moderation": "모더레이션"
         },
         "stat": {
           "parcels": "파셀"

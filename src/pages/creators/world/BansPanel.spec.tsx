@@ -12,11 +12,9 @@ let mockRemoveState: { isLoading: boolean; isError: boolean }
 
 jest.mock('../../../components/creators/CreatorWorldLayout', () => ({ useWorldContext: () => mockContext }))
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({ useFormatMessage: () => (id: string) => id }))
-jest.mock('../../../hooks/useBlogPageTracking', () => ({ useBlogPageTracking: () => undefined }))
 jest.mock('../../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ identity: mockIdentity, hasValidIdentity: !!mockIdentity, address: '0xowner' })
 }))
-jest.mock('react-helmet-async', () => ({ Helmet: ({ children }: { children?: React.ReactNode }) => <>{children}</> }))
 jest.mock('decentraland-ui2', () => jest.requireActual('../../../__test-utils__/creatorsUi2Mock'))
 jest.mock('../../../features/bans', () => ({
   useGetSceneBansQuery: (...a: unknown[]) => mockUseGetBans(...a),
@@ -26,7 +24,7 @@ jest.mock('../../../features/bans', () => ({
 
 // Imported after the mocks so the mocked barrels win.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { BansPage } = require('./BansPage') as typeof import('./BansPage')
+const { BansPanel } = require('./BansPanel') as typeof import('./BansPanel')
 
 const LATEST = { entityId: 'e1', baseParcel: '0,0' }
 
@@ -34,7 +32,7 @@ function makeBan(overrides: Partial<SceneBan> = {}): SceneBan {
   return { bannedAddress: '0x1111111111111111111111111111111111111111', name: '', ...overrides }
 }
 
-describe('BansPage', () => {
+describe('BansPanel', () => {
   beforeEach(() => {
     mockContext = { worldName: 'test.dcl.eth', deployments: [], latest: LATEST, place: null }
     mockIdentity = { authChain: [] }
@@ -50,31 +48,31 @@ describe('BansPage', () => {
 
   it('should ask the user to sign in when there is no identity', () => {
     mockIdentity = undefined
-    render(<BansPage />)
+    render(<BansPanel />)
     expect(screen.getByText('page.creators.world.bans_sign_in')).toBeInTheDocument()
   })
 
   it('should explain there is no deployment when latest is missing', () => {
     mockContext = { ...mockContext, latest: null }
-    render(<BansPage />)
+    render(<BansPanel />)
     expect(screen.getByText('page.creators.world.bans_no_deployment')).toBeInTheDocument()
   })
 
   it('should show a spinner while bans load', () => {
     mockUseGetBans.mockReturnValue({ data: undefined, isLoading: true, isError: false })
-    render(<BansPage />)
+    render(<BansPanel />)
     expect(screen.getByRole('progressbar')).toBeInTheDocument()
   })
 
   it('should surface a load error', () => {
     mockUseGetBans.mockReturnValue({ data: undefined, isLoading: false, isError: true })
-    render(<BansPage />)
+    render(<BansPanel />)
     expect(screen.getByText('page.creators.world.bans_load_error')).toBeInTheDocument()
   })
 
   it('should render the empty state when the world has no bans', () => {
     mockUseGetBans.mockReturnValue({ data: { results: [] }, isLoading: false, isError: false })
-    render(<BansPage />)
+    render(<BansPanel />)
     expect(screen.getByText('page.creators.world.bans_empty')).toBeInTheDocument()
   })
 
@@ -84,13 +82,13 @@ describe('BansPage', () => {
       isLoading: false,
       isError: false
     })
-    render(<BansPage />)
+    render(<BansPanel />)
     expect(screen.getByText('Bob')).toBeInTheDocument()
     expect(screen.getByText('0x2222222222222222222222222222222222222222')).toBeInTheDocument()
   })
 
   it('should add a ban by address when the value is address-shaped', async () => {
-    render(<BansPage />)
+    render(<BansPanel />)
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '0xABCDEF0123456789ABCDEF0123456789ABCDEF01' } })
     fireEvent.click(screen.getByRole('button', { name: 'page.creators.world.bans_add' }))
     await Promise.resolve()
@@ -98,7 +96,7 @@ describe('BansPage', () => {
   })
 
   it('should add a ban by name when the value is not address-shaped', async () => {
-    render(<BansPage />)
+    render(<BansPanel />)
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'baduser' } })
     fireEvent.click(screen.getByRole('button', { name: 'page.creators.world.bans_add' }))
     await Promise.resolve()
@@ -106,7 +104,7 @@ describe('BansPage', () => {
   })
 
   it('should add a ban when pressing Enter in the input', async () => {
-    render(<BansPage />)
+    render(<BansPanel />)
     const input = screen.getByRole('textbox')
     fireEvent.change(input, { target: { value: 'enterban' } })
     fireEvent.keyDown(input, { key: 'Enter' })
@@ -115,7 +113,7 @@ describe('BansPage', () => {
   })
 
   it('should ignore whitespace-only input on add', () => {
-    render(<BansPage />)
+    render(<BansPanel />)
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '   ' } })
     fireEvent.click(screen.getByRole('button', { name: 'page.creators.world.bans_add' }))
     expect(mockAdd).not.toHaveBeenCalled()
@@ -127,7 +125,7 @@ describe('BansPage', () => {
       isLoading: false,
       isError: false
     })
-    render(<BansPage />)
+    render(<BansPanel />)
     fireEvent.click(screen.getByRole('button', { name: 'page.creators.world.bans_unban' }))
     expect(mockRemove).toHaveBeenCalledWith(expect.objectContaining({ address: '0x3333333333333333333333333333333333333333' }))
   })
@@ -140,7 +138,7 @@ describe('BansPage', () => {
       isLoading: false,
       isError: false
     })
-    render(<BansPage />)
+    render(<BansPanel />)
     fireEvent.click(screen.getByRole('button', { name: 'page.creators.world.bans_unban' }))
     expect(mockRemove).toHaveBeenCalledWith(expect.objectContaining({ parcel: '0,0' }))
   })
@@ -151,14 +149,14 @@ describe('BansPage', () => {
       isLoading: false,
       isError: false
     })
-    render(<BansPage />)
+    render(<BansPanel />)
     fireEvent.click(screen.getByRole('button', { name: 'page.creators.world.bans_unban' }))
     expect(mockRemove).toHaveBeenCalledWith(expect.objectContaining({ name: 'NamedOnly' }))
   })
 
   it('should surface the add error helper when the add mutation failed', () => {
     mockAddState = { isLoading: false, isError: true }
-    render(<BansPage />)
+    render(<BansPanel />)
     expect(screen.getByText('page.creators.world.bans_error')).toBeInTheDocument()
   })
 })

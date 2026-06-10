@@ -413,7 +413,8 @@
           "streaming": "Transmisión",
           "access": "Acceso",
           "events": "Eventos",
-          "auth_server": "Servidor autoritativo"
+          "auth_server": "Servidor autoritativo",
+          "moderation": "Moderación"
         },
         "stat": {
           "parcels": "Parcelas"
