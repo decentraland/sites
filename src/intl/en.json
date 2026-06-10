@@ -563,7 +563,15 @@
         "auth_server_logs_connecting": "Connecting…",
         "auth_server_logs_live": "Live",
         "auth_server_logs_disconnected": "Disconnected",
-        "auth_server_logs_sign_in": "Sign in to view server logs."
+        "auth_server_logs_sign_in": "Sign in to view server logs.",
+        "sign_in": {
+          "title": "Sign in required",
+          "hint": "Connect your wallet to manage your worlds."
+        },
+        "no_access": {
+          "title": "You don’t have access to this world",
+          "hint": "You can only manage worlds you own or collaborate on."
+        }
       }
     }
   },

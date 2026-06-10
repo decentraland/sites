@@ -515,7 +515,15 @@
         "auth_server_logs_connecting": "Conectando…",
         "auth_server_logs_live": "En vivo",
         "auth_server_logs_disconnected": "Desconectado",
-        "auth_server_logs_sign_in": "Inicia sesión para ver los registros del servidor."
+        "auth_server_logs_sign_in": "Inicia sesión para ver los registros del servidor.",
+        "sign_in": {
+          "title": "Inicia sesión",
+          "hint": "Conecta tu billetera para gestionar tus mundos."
+        },
+        "no_access": {
+          "title": "No tienes acceso a este mundo",
+          "hint": "Solo puedes gestionar mundos que posees o en los que colaboras."
+        }
       }
     }
   },

@@ -515,7 +515,15 @@
         "auth_server_logs_connecting": "연결 중…",
         "auth_server_logs_live": "실시간",
         "auth_server_logs_disconnected": "연결 끊김",
-        "auth_server_logs_sign_in": "서버 로그를 보려면 로그인하세요."
+        "auth_server_logs_sign_in": "서버 로그를 보려면 로그인하세요.",
+        "sign_in": {
+          "title": "로그인 필요",
+          "hint": "지갑을 연결하여 월드를 관리하세요."
+        },
+        "no_access": {
+          "title": "이 월드에 접근할 수 없습니다",
+          "hint": "소유하거나 협업하는 월드만 관리할 수 있습니다."
+        }
       }
     }
   },

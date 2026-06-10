@@ -3,15 +3,30 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 const mockUseDeployments = jest.fn()
 const mockUseWorld = jest.fn()
+const mockUseNames = jest.fn()
+const mockUseDomains = jest.fn()
+const mockAuthIdentity = jest.fn()
+const mockRedirect = jest.fn()
 const mockNavigate = jest.fn()
 
 jest.mock('react-router-dom', () => ({ ...jest.requireActual('react-router-dom'), useNavigate: () => mockNavigate }))
 jest.mock('../../../features/creators', () => ({
-  useGetWorldDeploymentsQuery: (...args: unknown[]) => mockUseDeployments(...args)
+  useGetWorldDeploymentsQuery: (...args: unknown[]) => mockUseDeployments(...args),
+  // Mirror the real merge: lower-cased owner names + collaborator domains.
+  mergeCreatorWorlds: (names: string[] | undefined, domains: { name: string }[] | undefined) => [
+    ...(names ?? []).map(name => ({ name: name.toLowerCase(), role: 'owner' })),
+    ...(domains ?? []).map(domain => ({ name: domain.name.toLowerCase(), role: 'collaborator' }))
+  ]
 }))
 jest.mock('../../../features/discover', () => ({
   useGetDiscoverWorldByNameQuery: (...args: unknown[]) => mockUseWorld(...args)
 }))
+jest.mock('../../../features/storage', () => ({
+  useGetUserDCLNamesQuery: (...args: unknown[]) => mockUseNames(...args),
+  useGetContributableDomainsQuery: (...args: unknown[]) => mockUseDomains(...args)
+}))
+jest.mock('../../../hooks/useAuthIdentity', () => ({ useAuthIdentity: () => mockAuthIdentity() }))
+jest.mock('../../../utils/authRedirect', () => ({ redirectToAuth: (...args: unknown[]) => mockRedirect(...args) }))
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))
@@ -51,10 +66,55 @@ function renderLayout() {
 
 describe('CreatorWorldLayout', () => {
   beforeEach(() => {
+    // Default: connected wallet that owns the routed world → has access.
+    mockAuthIdentity.mockReturnValue({ identity: { id: 'i' }, address: '0xabc' })
+    mockUseNames.mockReturnValue({ data: ['test.dcl.eth'], isLoading: false })
+    mockUseDomains.mockReturnValue({ data: [], isLoading: false })
+    mockUseDeployments.mockReturnValue({ data: [{ entityId: 'e1', title: 'Scene' }], isLoading: false, isError: false })
     mockUseWorld.mockReturnValue({ data: null })
   })
   afterEach(() => {
     jest.resetAllMocks()
+  })
+
+  it('should prompt to sign in when no wallet is connected', () => {
+    mockAuthIdentity.mockReturnValue({ identity: undefined, address: undefined })
+    renderLayout()
+    expect(screen.getByText('page.creators.world.sign_in.title')).toBeInTheDocument()
+  })
+
+  it('should redirect to auth with the world return path from the sign-in state', () => {
+    mockAuthIdentity.mockReturnValue({ identity: undefined, address: undefined })
+    renderLayout()
+    fireEvent.click(screen.getByRole('button', { name: 'page.creators.home.sign_in' }))
+    expect(mockRedirect).toHaveBeenCalledWith('/creators/world/test.dcl.eth')
+  })
+
+  it('should show a spinner while ownership permissions load', () => {
+    mockUseNames.mockReturnValue({ data: undefined, isLoading: true })
+    renderLayout()
+    expect(screen.getByTestId('spinner')).toBeInTheDocument()
+  })
+
+  it('should deny access when the wallet does not own or collaborate on the world', () => {
+    mockUseNames.mockReturnValue({ data: ['other.dcl.eth'], isLoading: false })
+    renderLayout()
+    expect(screen.getByText('page.creators.world.no_access.title')).toBeInTheDocument()
+    expect(screen.queryByTestId('outlet')).not.toBeInTheDocument()
+  })
+
+  it('should grant access to a collaborator (contributable) world', () => {
+    mockUseNames.mockReturnValue({ data: [], isLoading: false })
+    mockUseDomains.mockReturnValue({ data: [{ name: 'test.dcl.eth' }], isLoading: false })
+    renderLayout()
+    expect(screen.getByTestId('outlet')).toBeInTheDocument()
+  })
+
+  it('should navigate back to the creations grid from the no-access state', () => {
+    mockUseNames.mockReturnValue({ data: ['other.dcl.eth'], isLoading: false })
+    renderLayout()
+    fireEvent.click(screen.getByRole('button', { name: 'page.creators.world.back' }))
+    expect(mockNavigate).toHaveBeenCalledWith('/creators')
   })
 
   it('should show a spinner while deployments load', () => {
@@ -77,7 +137,6 @@ describe('CreatorWorldLayout', () => {
   })
 
   it('should render the routed rail and the child outlet on success', () => {
-    mockUseDeployments.mockReturnValue({ data: [{ entityId: 'e1', title: 'Scene' }], isLoading: false, isError: false })
     renderLayout()
     expect(screen.getByTestId('outlet')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /page.creators.world.nav.overview/ })).toBeInTheDocument()
@@ -85,7 +144,6 @@ describe('CreatorWorldLayout', () => {
   })
 
   it('should navigate back to the creations grid from the rail back link', () => {
-    mockUseDeployments.mockReturnValue({ data: [{ entityId: 'e1', title: 'Scene' }], isLoading: false, isError: false })
     renderLayout()
     fireEvent.click(screen.getByRole('button', { name: 'page.creators.world.back' }))
     expect(mockNavigate).toHaveBeenCalledWith('/creators')

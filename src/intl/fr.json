@@ -515,7 +515,15 @@
         "auth_server_logs_connecting": "Connexion…",
         "auth_server_logs_live": "En direct",
         "auth_server_logs_disconnected": "Déconnecté",
-        "auth_server_logs_sign_in": "Connecte-toi pour voir les journaux du serveur."
+        "auth_server_logs_sign_in": "Connecte-toi pour voir les journaux du serveur.",
+        "sign_in": {
+          "title": "Connexion requise",
+          "hint": "Connecte ton portefeuille pour gérer tes mondes."
+        },
+        "no_access": {
+          "title": "Tu n’as pas accès à ce monde",
+          "hint": "Tu ne peux gérer que les mondes que tu possèdes ou auxquels tu collabores."
+        }
       }
     }
   },

@@ -515,7 +515,15 @@
         "auth_server_logs_connecting": "接続中…",
         "auth_server_logs_live": "ライブ",
         "auth_server_logs_disconnected": "切断されました",
-        "auth_server_logs_sign_in": "サーバーログを表示するにはサインインしてください。"
+        "auth_server_logs_sign_in": "サーバーログを表示するにはサインインしてください。",
+        "sign_in": {
+          "title": "サインインが必要です",
+          "hint": "ウォレットを接続してワールドを管理しましょう。"
+        },
+        "no_access": {
+          "title": "このワールドへのアクセス権がありません",
+          "hint": "管理できるのは、所有または共同編集しているワールドのみです。"
+        }
       }
     }
   },
