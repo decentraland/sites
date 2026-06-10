@@ -368,6 +368,155 @@
     "report": {
       "title": "プレイヤーを報告する – Decentraland",
       "success_title": "報告が送信されました – Decentraland"
+    },
+    "creators": {
+      "home": {
+        "title": "クリエイター · あなたの作品",
+        "heading": "あなたの作品",
+        "subtitle": "デプロイしたワールドを管理 — デプロイ、設定、ストレージなどを確認できます。",
+        "not_connected": "ウォレットでサインインすると、デプロイしたワールドが表示されます。",
+        "sign_in": "サインイン",
+        "loading": "作品を読み込み中",
+        "empty": "まだワールドをデプロイしていません。",
+        "eyebrow": "クリエイターツール",
+        "not_connected_title": "ウォレットを接続",
+        "empty_title": "まだワールドがありません"
+      },
+      "role": {
+        "owner": "オーナー",
+        "collaborator": "コラボレーター"
+      },
+      "not_found": {
+        "title": "ページが見つかりません",
+        "description": "クリエイターで対象が見つかりませんでした。"
+      },
+      "world": {
+        "back": "作品一覧",
+        "nav_label": "ワールドのセクション",
+        "jump_in": "参加する",
+        "world_name": "ワールド",
+        "updated": "最終デプロイ",
+        "deployer": "デプロイ者",
+        "preview_hint": "Decentraland ウェブクライアントを使って、ブラウザでワールドのライブプレビューを起動します。",
+        "storage_hint": "シーンとプレイヤーのサーバーサイドストレージ（権威サーバー）。",
+        "storage_sign_in": "サインインすると、シーンとプレイヤーのストレージを確認できます。",
+        "soon": "近日公開",
+        "analytics_hint": "訪問数・プレイヤー・エンゲージメントの指標は近日公開予定です。",
+        "monetization_hint": "売上と収益のインサイトは近日公開予定です。",
+        "nav": {
+          "overview": "概要",
+          "preview": "プレビュー",
+          "analytics": "分析",
+          "monetization": "収益化",
+          "bans": "ブロック",
+          "admins": "シーン管理者",
+          "streaming": "配信",
+          "access": "アクセス",
+          "events": "イベント",
+          "auth_server": "権威サーバー"
+        },
+        "stat": {
+          "parcels": "パーセル"
+        },
+        "storage": {
+          "players": "プレイヤー",
+          "scene": "シーン",
+          "env": "環境変数"
+        },
+        "analytics": {
+          "visits": "訪問数",
+          "unique_players": "ユニークプレイヤー",
+          "avg_session": "平均セッション",
+          "peak_concurrent": "最大同時接続"
+        },
+        "monetization": {
+          "revenue": "収益",
+          "items": "販売アイテム"
+        },
+        "not_found": {
+          "title": "ワールドが見つかりません",
+          "hint": "このワールドにはアクティブなデプロイがないか、アクセスできませんでした。"
+        },
+        "deploys": {
+          "entity": "デプロイID"
+        },
+        "deployment": "デプロイ",
+        "live_now": "現在 {count} 人",
+        "preview_launch": "プレビューを開始",
+        "preview_launch_hint": "Decentraland ウェブクライアントを読み込み、ブラウザでワールドをプレビューします。",
+        "bans_hint": "ブロックされたウォレットはこのワールドのシーンに入れません。",
+        "bans_sign_in": "ブロックを管理するにはサインインしてください。",
+        "bans_no_deployment": "ブロックを管理するにはワールドをデプロイしてください。",
+        "bans_placeholder": "ウォレットアドレスまたは DCL 名",
+        "bans_add": "ブロック",
+        "bans_error": "ブロックを追加できませんでした。アドレスまたは名前と権限を確認してください。",
+        "bans_load_error": "ブロックを読み込めませんでした。",
+        "bans_empty": "このシーンでブロックされている人はいません。",
+        "bans_unban": "解除",
+        "preview_fullscreen": "全画面",
+        "preview_exit_fullscreen": "全画面を終了",
+        "admins_hint": "シーン管理者はワールドをモデレートできます（ブロックや配信の管理）。",
+        "admins_sign_in": "シーン管理者を管理するにはサインインしてください。",
+        "admins_no_deployment": "シーン管理者を管理するにはワールドをデプロイしてください。",
+        "admins_placeholder": "ウォレットアドレスまたは DCL 名",
+        "admins_add": "管理者を追加",
+        "admins_error": "管理者を追加できませんでした。アドレスまたは名前と権限を確認してください。",
+        "admins_load_error": "シーン管理者を読み込めませんでした。",
+        "admins_empty": "まだシーン管理者がいません。",
+        "admins_remove": "削除",
+        "admins_implicit": "オーナー",
+        "streaming_hint": "下のサーバー URL とストリームキーを使って、OBS などの RTMP エンコーダーからワールドに配信できます。",
+        "streaming_sign_in": "配信アクセスを管理するにはサインインしてください。",
+        "streaming_no_deployment": "配信を設定するにはワールドをデプロイしてください。",
+        "streaming_load_error": "配信アクセスを読み込めませんでした。",
+        "streaming_none": "まだストリームキーがありません。生成してワールドへの配信を開始しましょう。",
+        "streaming_generate": "ストリームキーを生成",
+        "streaming_server": "サーバー URL",
+        "streaming_key": "ストリームキー",
+        "streaming_copy": "コピー",
+        "streaming_copied": "コピーしました",
+        "streaming_expires": "有効期限",
+        "streaming_reset": "キーをリセット",
+        "streaming_revoke": "無効化",
+        "access_hint": "ワールドへのデプロイ・配信・入場を許可する相手を管理します。",
+        "access_sign_in": "ワールドのアクセスを管理するにはサインインしてください。",
+        "access_load_error": "ワールドの権限を読み込めませんでした。",
+        "access_error": "権限を更新できませんでした。アドレスと所有権を確認してください。",
+        "access_placeholder": "ウォレットアドレス（0x…）",
+        "access_add": "追加",
+        "access_remove": "削除",
+        "access_empty": "ウォレットなし — オーナーのみ。",
+        "access_unrestricted": "全員に公開。",
+        "access": {
+          "deployment": "デプロイ",
+          "streaming": "配信",
+          "access": "入場",
+          "deployment_hint": "このワールドにシーンをデプロイできるウォレット。",
+          "streaming_hint": "このワールドに配信できるウォレット。",
+          "access_hint": "このワールドに入場できる相手。"
+        },
+        "storage_not_authoritative": "このシーンはサーバーサイドストレージを使用していません。シーンとプレイヤーのストレージを有効にするには、scene.json に \"authoritativeMultiplayer\": true を追加してください。",
+        "access_learn_more": "プライベートワールドについて詳しく",
+        "events_hint": "このワールドで予定されている今後のイベント。",
+        "events_empty": "このワールドにはまだ予定されたイベントがありません。",
+        "events_schedule": "イベントを予定",
+        "events_load_error": "イベントを読み込めませんでした。",
+        "events_live": "ライブ",
+        "events_attendees": "{count} 人が興味あり",
+        "auth_server_storage_title": "ストレージ",
+        "auth_server_logs_hint": "シーンの権威サーバーの最近のアクティビティ。",
+        "auth_server_logs_empty": "まだログがありません。",
+        "auth_server_logs_error": "サーバーログを読み込めませんでした。",
+        "auth_server_tab_logs": "ログ",
+        "auth_server_logs_connect": "ログをストリーミング",
+        "auth_server_logs_stop": "停止",
+        "auth_server_logs_clear": "クリア",
+        "auth_server_logs_reconnect": "再接続",
+        "auth_server_logs_connecting": "接続中…",
+        "auth_server_logs_live": "ライブ",
+        "auth_server_logs_disconnected": "切断されました",
+        "auth_server_logs_sign_in": "サーバーログを表示するにはサインインしてください。"
+      }
     }
   },
   "page_invite": {

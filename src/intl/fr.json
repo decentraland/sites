@@ -368,6 +368,155 @@
     "report": {
       "title": "Signaler un joueur – Decentraland",
       "success_title": "Signalement envoyé – Decentraland"
+    },
+    "creators": {
+      "home": {
+        "title": "Créateurs · Vos créations",
+        "heading": "Vos créations",
+        "subtitle": "Gérez les mondes que vous avez déployés : déploiements, configuration, stockage et plus encore.",
+        "not_connected": "Connectez-vous avec votre wallet pour voir les mondes que vous avez déployés.",
+        "sign_in": "Se connecter",
+        "loading": "Chargement de vos créations",
+        "empty": "Vous n'avez encore déployé aucun monde.",
+        "eyebrow": "Outils créateur",
+        "not_connected_title": "Connectez votre wallet",
+        "empty_title": "Aucun monde pour l'instant"
+      },
+      "role": {
+        "owner": "Propriétaire",
+        "collaborator": "Collaborateur"
+      },
+      "not_found": {
+        "title": "Page introuvable",
+        "description": "Nous n'avons pas trouvé ce que vous cherchiez dans Créateurs."
+      },
+      "world": {
+        "back": "Créations",
+        "nav_label": "Sections du monde",
+        "jump_in": "Rejoindre",
+        "world_name": "Monde",
+        "updated": "Dernier déploiement",
+        "deployer": "Déployé par",
+        "preview_hint": "Lancez un aperçu en direct de votre monde dans le navigateur, propulsé par le client web Decentraland.",
+        "storage_hint": "Stockage côté serveur pour votre scène et vos joueurs (serveur autoritaire).",
+        "storage_sign_in": "Connectez-vous pour voir le stockage de votre scène et de vos joueurs.",
+        "soon": "Bientôt",
+        "analytics_hint": "Les statistiques de visites, de joueurs et d'engagement arrivent bientôt.",
+        "monetization_hint": "Les informations sur les ventes et les revenus arrivent bientôt.",
+        "nav": {
+          "overview": "Vue d'ensemble",
+          "preview": "Aperçu",
+          "analytics": "Analyses",
+          "monetization": "Monétisation",
+          "bans": "Bannissements",
+          "admins": "Administrateurs",
+          "streaming": "Streaming",
+          "access": "Accès",
+          "events": "Événements",
+          "auth_server": "Serveur autoritaire"
+        },
+        "stat": {
+          "parcels": "Parcelles"
+        },
+        "storage": {
+          "players": "Joueurs",
+          "scene": "Scène",
+          "env": "Environnement"
+        },
+        "analytics": {
+          "visits": "Visites",
+          "unique_players": "Joueurs uniques",
+          "avg_session": "Session moy.",
+          "peak_concurrent": "Pic simultané"
+        },
+        "monetization": {
+          "revenue": "Revenus",
+          "items": "Articles vendus"
+        },
+        "not_found": {
+          "title": "Monde introuvable",
+          "hint": "Ce monde n'a pas de déploiement actif ou est inaccessible."
+        },
+        "deploys": {
+          "entity": "ID de déploiement"
+        },
+        "deployment": "Déploiement",
+        "live_now": "{count} dans le monde",
+        "preview_launch": "Lancer l'aperçu",
+        "preview_launch_hint": "Charge le client web Decentraland pour prévisualiser votre monde dans le navigateur.",
+        "bans_hint": "Les wallets bannis ne peuvent pas entrer dans la scène de ce monde.",
+        "bans_sign_in": "Connectez-vous pour gérer les bannissements.",
+        "bans_no_deployment": "Déployez votre monde pour gérer les bannissements.",
+        "bans_placeholder": "Adresse de wallet ou nom DCL",
+        "bans_add": "Bannir",
+        "bans_error": "Impossible d'ajouter ce bannissement. Vérifiez l'adresse ou le nom et vos permissions.",
+        "bans_load_error": "Impossible de charger les bannissements.",
+        "bans_empty": "Personne n'est banni de cette scène.",
+        "bans_unban": "Débannir",
+        "preview_fullscreen": "Plein écran",
+        "preview_exit_fullscreen": "Quitter le plein écran",
+        "admins_hint": "Les administrateurs peuvent modérer votre monde : gérer les bannissements et le streaming.",
+        "admins_sign_in": "Connectez-vous pour gérer les administrateurs.",
+        "admins_no_deployment": "Déployez votre monde pour gérer les administrateurs.",
+        "admins_placeholder": "Adresse de wallet ou nom DCL",
+        "admins_add": "Ajouter un administrateur",
+        "admins_error": "Impossible d'ajouter cet administrateur. Vérifiez l'adresse ou le nom et vos permissions.",
+        "admins_load_error": "Impossible de charger les administrateurs.",
+        "admins_empty": "Aucun administrateur pour l'instant.",
+        "admins_remove": "Retirer",
+        "admins_implicit": "Propriétaire",
+        "streaming_hint": "Diffusez dans votre monde depuis OBS ou tout encodeur RTMP avec l'URL du serveur et la clé ci-dessous.",
+        "streaming_sign_in": "Connectez-vous pour gérer l'accès au streaming.",
+        "streaming_no_deployment": "Déployez votre monde pour configurer le streaming.",
+        "streaming_load_error": "Impossible de charger l'accès au streaming.",
+        "streaming_none": "Aucune clé de streaming. Générez-en une pour commencer à diffuser dans votre monde.",
+        "streaming_generate": "Générer une clé",
+        "streaming_server": "URL du serveur",
+        "streaming_key": "Clé de streaming",
+        "streaming_copy": "Copier",
+        "streaming_copied": "Copié",
+        "streaming_expires": "Expire",
+        "streaming_reset": "Réinitialiser la clé",
+        "streaming_revoke": "Révoquer",
+        "access_hint": "Contrôlez qui peut déployer, diffuser et entrer dans votre monde.",
+        "access_sign_in": "Connectez-vous pour gérer l'accès au monde.",
+        "access_load_error": "Impossible de charger les permissions du monde.",
+        "access_error": "Impossible de mettre à jour les permissions. Vérifiez l'adresse et votre propriété.",
+        "access_placeholder": "Adresse de wallet (0x…)",
+        "access_add": "Ajouter",
+        "access_remove": "Retirer",
+        "access_empty": "Aucun wallet — seulement le propriétaire.",
+        "access_unrestricted": "Ouvert à tous.",
+        "access": {
+          "deployment": "Déployer",
+          "streaming": "Streaming",
+          "access": "Entrer",
+          "deployment_hint": "Wallets autorisés à déployer des scènes dans ce monde.",
+          "streaming_hint": "Wallets autorisés à diffuser dans ce monde.",
+          "access_hint": "Qui peut entrer dans ce monde."
+        },
+        "storage_not_authoritative": "Cette scène n’utilise pas le stockage côté serveur. Ajoutez \"authoritativeMultiplayer\": true à votre scene.json pour activer le stockage de scène et de joueurs.",
+        "access_learn_more": "En savoir plus sur les mondes privés",
+        "events_hint": "Événements à venir programmés dans votre monde.",
+        "events_empty": "Aucun événement à venir dans ce monde.",
+        "events_schedule": "Programmer un événement",
+        "events_load_error": "Impossible de charger les événements.",
+        "events_live": "En direct",
+        "events_attendees": "{count} intéressés",
+        "auth_server_storage_title": "Stockage",
+        "auth_server_logs_hint": "Activité récente du serveur autoritaire de ta scène.",
+        "auth_server_logs_empty": "Aucun journal pour le moment.",
+        "auth_server_logs_error": "Impossible de charger les journaux du serveur.",
+        "auth_server_tab_logs": "Journaux",
+        "auth_server_logs_connect": "Diffuser les journaux",
+        "auth_server_logs_stop": "Arrêter",
+        "auth_server_logs_clear": "Effacer",
+        "auth_server_logs_reconnect": "Reconnecter",
+        "auth_server_logs_connecting": "Connexion…",
+        "auth_server_logs_live": "En direct",
+        "auth_server_logs_disconnected": "Déconnecté",
+        "auth_server_logs_sign_in": "Connecte-toi pour voir les journaux du serveur."
+      }
     }
   },
   "page_invite": {

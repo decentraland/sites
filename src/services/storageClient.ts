@@ -16,7 +16,7 @@ const getWorldsContentServerUrl = (): string => {
 const storageClient = createApi({
   reducerPath: 'storageClient',
   baseQuery: fakeBaseQuery(),
-  tagTypes: ['Env', 'Scene', 'Player', 'PlayerKeys', 'Profiles', 'ContributableDomains', 'WorldScenes'],
+  tagTypes: ['Env', 'Scene', 'Player', 'PlayerKeys', 'Profiles', 'ContributableDomains', 'WorldScenes', 'WorldPermissions'],
   keepUnusedDataFor: 60,
   refetchOnFocus: false,
   refetchOnReconnect: true,

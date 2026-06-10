@@ -34,6 +34,15 @@ describe('isPageTrackingExempt', () => {
     )
   })
 
+  describe('when pathname is a creators route', () => {
+    it.each(['/creators', '/creators/world/my-world.dcl.eth'])(
+      'should return true for %s — the page owns its page() call after the async Helmet title resolves',
+      pathname => {
+        expect(isPageTrackingExempt(pathname)).toBe(true)
+      }
+    )
+  })
+
   describe('when pathname matches the legacy prefixes but as a substring', () => {
     it.each(['/eventsy', '/places-foo', '/whats-on/events'])('should return false for %s', pathname => {
       expect(isPageTrackingExempt(pathname)).toBe(false)

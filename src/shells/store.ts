@@ -7,6 +7,7 @@ import { adminClient } from '../features/events/events.admin.client'
 import { eventsClient } from '../features/events/events.client'
 import { cast2Client } from '../services/cast2Client'
 import { cmsClient } from '../services/cmsClient'
+import { gatekeeperClient } from '../services/gatekeeperClient'
 import { placesClient } from '../services/placesClient'
 import { socialClient } from '../services/socialClient'
 import { storageClient } from '../services/storageClient'
@@ -23,13 +24,27 @@ const rootReducer = combineReducers({
   [cast2Client.reducerPath]: cast2Client.reducer,
   [socialClient.reducerPath]: socialClient.reducer,
   [storageClient.reducerPath]: storageClient.reducer,
-  [subgraphClient.reducerPath]: subgraphClient.reducer
+  [subgraphClient.reducerPath]: subgraphClient.reducer,
+  [gatekeeperClient.reducerPath]: gatekeeperClient.reducer
 })
 
 const store = configureStore({
   reducer: rootReducer,
   middleware: getDefaultMiddleware =>
-    getDefaultMiddleware()
+    getDefaultMiddleware({
+      serializableCheck: {
+        // Signed endpoints (storage, events, cast) take the `AuthIdentity` as a
+        // query/mutation arg so the baseQuery can sign the request. Its
+        // `expiration` is a `Date`, and RTK Query persists query args under
+        // `queries.<key>.originalArgs`, so the dev serializability check flags
+        // it. Identity is already excluded from every cache key (see each
+        // endpoint's `serializeQueryArgs`) and never drives rendering, so we
+        // exclude the `originalArgs.identity` subtree from the state check
+        // rather than reshape every signed endpoint's args. The `meta.arg`
+        // action path is ignored by RTK's defaults already.
+        ignoredPaths: [/\.originalArgs\.identity$/]
+      }
+    })
       .prepend(createWhatsOnAdminListenerMiddleware().middleware, createJumpEventsListenerMiddleware().middleware)
       .concat(
         eventsClient.middleware,
@@ -39,7 +54,8 @@ const store = configureStore({
         cast2Client.middleware,
         socialClient.middleware,
         storageClient.middleware,
-        subgraphClient.middleware
+        subgraphClient.middleware,
+        gatekeeperClient.middleware
       ),
   devTools: import.meta.env.DEV
 })

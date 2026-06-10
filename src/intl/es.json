@@ -368,6 +368,155 @@
     "report": {
       "title": "Reportar a un jugador – Decentraland",
       "success_title": "Reporte enviado – Decentraland"
+    },
+    "creators": {
+      "home": {
+        "title": "Creadores · Tus creaciones",
+        "heading": "Tus creaciones",
+        "subtitle": "Administra los mundos que has desplegado: revisa despliegues, configuración, almacenamiento y más.",
+        "not_connected": "Inicia sesión con tu wallet para ver los mundos que has desplegado.",
+        "sign_in": "Iniciar sesión",
+        "loading": "Cargando tus creaciones",
+        "empty": "Todavía no has desplegado ningún mundo.",
+        "eyebrow": "Herramientas de creador",
+        "not_connected_title": "Conecta tu wallet",
+        "empty_title": "Aún no hay mundos"
+      },
+      "role": {
+        "owner": "Propietario",
+        "collaborator": "Colaborador"
+      },
+      "not_found": {
+        "title": "Página no encontrada",
+        "description": "No pudimos encontrar lo que buscabas en Creadores."
+      },
+      "world": {
+        "back": "Creaciones",
+        "nav_label": "Secciones del mundo",
+        "jump_in": "Entrar",
+        "world_name": "Mundo",
+        "updated": "Último despliegue",
+        "deployer": "Desplegado por",
+        "preview_hint": "Inicia una vista previa en vivo de tu mundo en el navegador, con el cliente web de Decentraland.",
+        "storage_hint": "Almacenamiento del lado del servidor para tu escena y jugadores (servidor autoritativo).",
+        "storage_sign_in": "Inicia sesión para ver el almacenamiento de tu escena y jugadores.",
+        "soon": "Pronto",
+        "analytics_hint": "Las métricas de visitas, jugadores e interacción llegarán pronto.",
+        "monetization_hint": "La información de ventas e ingresos llegará pronto.",
+        "nav": {
+          "overview": "Resumen",
+          "preview": "Vista previa",
+          "analytics": "Analíticas",
+          "monetization": "Monetización",
+          "bans": "Bloqueos",
+          "admins": "Administradores",
+          "streaming": "Transmisión",
+          "access": "Acceso",
+          "events": "Eventos",
+          "auth_server": "Servidor autoritativo"
+        },
+        "stat": {
+          "parcels": "Parcelas"
+        },
+        "storage": {
+          "players": "Jugadores",
+          "scene": "Escena",
+          "env": "Entorno"
+        },
+        "analytics": {
+          "visits": "Visitas",
+          "unique_players": "Jugadores únicos",
+          "avg_session": "Sesión media",
+          "peak_concurrent": "Pico concurrente"
+        },
+        "monetization": {
+          "revenue": "Ingresos",
+          "items": "Artículos vendidos"
+        },
+        "not_found": {
+          "title": "Mundo no encontrado",
+          "hint": "Este mundo no tiene un despliegue activo o no se pudo acceder a él."
+        },
+        "deploys": {
+          "entity": "ID de despliegue"
+        },
+        "deployment": "Despliegue",
+        "live_now": "{count} en el mundo ahora",
+        "preview_launch": "Iniciar vista previa",
+        "preview_launch_hint": "Carga el cliente web de Decentraland para previsualizar tu mundo en el navegador.",
+        "bans_hint": "Las wallets bloqueadas no pueden entrar a la escena de este mundo.",
+        "bans_sign_in": "Inicia sesión para gestionar los bloqueos.",
+        "bans_no_deployment": "Despliega tu mundo para gestionar los bloqueos.",
+        "bans_placeholder": "Dirección de wallet o nombre DCL",
+        "bans_add": "Bloquear",
+        "bans_error": "No se pudo añadir el bloqueo. Revisa la dirección o el nombre y tus permisos.",
+        "bans_load_error": "No se pudieron cargar los bloqueos.",
+        "bans_empty": "Nadie está bloqueado en esta escena.",
+        "bans_unban": "Desbloquear",
+        "preview_fullscreen": "Pantalla completa",
+        "preview_exit_fullscreen": "Salir de pantalla completa",
+        "admins_hint": "Los administradores pueden moderar tu mundo: gestionar bloqueos y transmisión.",
+        "admins_sign_in": "Inicia sesión para gestionar los administradores.",
+        "admins_no_deployment": "Despliega tu mundo para gestionar administradores.",
+        "admins_placeholder": "Dirección de wallet o nombre DCL",
+        "admins_add": "Añadir administrador",
+        "admins_error": "No se pudo añadir ese administrador. Revisa la dirección o el nombre y tus permisos.",
+        "admins_load_error": "No se pudieron cargar los administradores.",
+        "admins_empty": "Aún no hay administradores.",
+        "admins_remove": "Quitar",
+        "admins_implicit": "Propietario",
+        "streaming_hint": "Transmite a tu mundo desde OBS o cualquier codificador RTMP usando la URL del servidor y la clave de abajo.",
+        "streaming_sign_in": "Inicia sesión para gestionar el acceso de transmisión.",
+        "streaming_no_deployment": "Despliega tu mundo para configurar la transmisión.",
+        "streaming_load_error": "No se pudo cargar el acceso de transmisión.",
+        "streaming_none": "Aún no hay clave de transmisión. Genera una para empezar a transmitir a tu mundo.",
+        "streaming_generate": "Generar clave",
+        "streaming_server": "URL del servidor",
+        "streaming_key": "Clave de transmisión",
+        "streaming_copy": "Copiar",
+        "streaming_copied": "Copiado",
+        "streaming_expires": "Expira",
+        "streaming_reset": "Restablecer clave",
+        "streaming_revoke": "Revocar",
+        "access_hint": "Controla quién puede desplegar, transmitir y entrar a tu mundo.",
+        "access_sign_in": "Inicia sesión para gestionar el acceso al mundo.",
+        "access_load_error": "No se pudieron cargar los permisos del mundo.",
+        "access_error": "No se pudieron actualizar los permisos. Revisa la dirección y tu propiedad.",
+        "access_placeholder": "Dirección de wallet (0x…)",
+        "access_add": "Añadir",
+        "access_remove": "Quitar",
+        "access_empty": "Sin wallets: solo el propietario.",
+        "access_unrestricted": "Abierto para todos.",
+        "access": {
+          "deployment": "Desplegar",
+          "streaming": "Transmisión",
+          "access": "Entrar",
+          "deployment_hint": "Wallets que pueden desplegar escenas en este mundo.",
+          "streaming_hint": "Wallets que pueden transmitir a este mundo.",
+          "access_hint": "Quién puede entrar a este mundo."
+        },
+        "storage_not_authoritative": "Esta escena no usa almacenamiento del lado del servidor. Añade \"authoritativeMultiplayer\": true a tu scene.json para habilitar el almacenamiento de escena y jugadores.",
+        "access_learn_more": "Más información sobre mundos privados",
+        "events_hint": "Próximos eventos programados en tu mundo.",
+        "events_empty": "Aún no hay próximos eventos en este mundo.",
+        "events_schedule": "Programar un evento",
+        "events_load_error": "No se pudieron cargar los eventos.",
+        "events_live": "En vivo",
+        "events_attendees": "{count} interesados",
+        "auth_server_storage_title": "Almacenamiento",
+        "auth_server_logs_hint": "Actividad reciente del servidor autoritativo de tu escena.",
+        "auth_server_logs_empty": "Aún no hay registros.",
+        "auth_server_logs_error": "No se pudieron cargar los registros del servidor.",
+        "auth_server_tab_logs": "Registros",
+        "auth_server_logs_connect": "Transmitir registros",
+        "auth_server_logs_stop": "Detener",
+        "auth_server_logs_clear": "Limpiar",
+        "auth_server_logs_reconnect": "Reconectar",
+        "auth_server_logs_connecting": "Conectando…",
+        "auth_server_logs_live": "En vivo",
+        "auth_server_logs_disconnected": "Desconectado",
+        "auth_server_logs_sign_in": "Inicia sesión para ver los registros del servidor."
+      }
     }
   },
   "page_invite": {

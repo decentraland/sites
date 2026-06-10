@@ -9,6 +9,7 @@ function isPageTrackingExempt(pathname: string): boolean {
   if (pathname === '/cast' || pathname.startsWith('/cast/')) return true
   if (pathname === '/storage' || pathname.startsWith('/storage/')) return true
   if (pathname === '/discover' || pathname.startsWith('/discover/')) return true
+  if (pathname === '/creators' || pathname.startsWith('/creators/')) return true
   return false
 }
 

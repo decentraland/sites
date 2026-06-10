@@ -99,4 +99,16 @@ describe('when inspecting the store source file', () => {
   it('should concatenate cast2Client.middleware in the middleware chain', () => {
     expect(source).toContain('cast2Client.middleware')
   })
+
+  it('should import the gatekeeper client', () => {
+    expect(source).toMatch(/from '\.\.\/services\/gatekeeperClient'/)
+  })
+
+  it('should register gatekeeperClient.reducer in the reducer map', () => {
+    expect(source).toContain('[gatekeeperClient.reducerPath]: gatekeeperClient.reducer')
+  })
+
+  it('should concatenate gatekeeperClient.middleware in the middleware chain', () => {
+    expect(source).toContain('gatekeeperClient.middleware')
+  })
 })

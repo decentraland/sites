@@ -81,6 +81,26 @@ const DiscoverScenePage = lazy(() => import('./pages/discover/DiscoverScenePage'
 const CommunityDetailPage = lazy(() => import('./pages/discover/CommunityDetailPage').then(m => ({ default: m.CommunityDetailPage })))
 const DiscoverNotFoundPage = lazy(() => import('./pages/discover/DiscoverNotFoundPage').then(m => ({ default: m.DiscoverNotFoundPage })))
 
+// Creators tools — heavy route (Redux + RTK Query). Roblox-style per-world
+// dashboard: a Creations grid (/creators) and a world overview (/creators/world/:name)
+// with deploy/config info, the authoritative-server storage panel, a live bevy
+// preview (reuses the /discover scene watcher), and analytics/monetization
+// placeholders. Auth via localStorage identity (no Web3 providers).
+const CreatorsLayout = lazy(() => import('./components/creators/CreatorsLayout').then(m => ({ default: m.CreatorsLayout })))
+const CreatorsHomePage = lazy(() => import('./pages/creators/CreatorsHomePage').then(m => ({ default: m.CreatorsHomePage })))
+const CreatorWorldLayout = lazy(() => import('./components/creators/CreatorWorldLayout').then(m => ({ default: m.CreatorWorldLayout })))
+const CreatorOverviewPage = lazy(() => import('./pages/creators/world/OverviewPage').then(m => ({ default: m.OverviewPage })))
+const CreatorPreviewPage = lazy(() => import('./pages/creators/world/PreviewPage').then(m => ({ default: m.PreviewPage })))
+const CreatorEventsPage = lazy(() => import('./pages/creators/world/EventsPage').then(m => ({ default: m.EventsPage })))
+const CreatorAuthServerPage = lazy(() => import('./pages/creators/world/AuthServerPage').then(m => ({ default: m.AuthServerPage })))
+const CreatorBansPage = lazy(() => import('./pages/creators/world/BansPage').then(m => ({ default: m.BansPage })))
+const CreatorAdminsPage = lazy(() => import('./pages/creators/world/AdminsPage').then(m => ({ default: m.AdminsPage })))
+const CreatorStreamingPage = lazy(() => import('./pages/creators/world/StreamingPage').then(m => ({ default: m.StreamingPage })))
+const CreatorAccessPage = lazy(() => import('./pages/creators/world/AccessPage').then(m => ({ default: m.AccessPage })))
+const CreatorAnalyticsPage = lazy(() => import('./pages/creators/world/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })))
+const CreatorMonetizationPage = lazy(() => import('./pages/creators/world/MonetizationPage').then(m => ({ default: m.MonetizationPage })))
+const CreatorsNotFoundPage = lazy(() => import('./pages/creators/CreatorsNotFoundPage').then(m => ({ default: m.CreatorsNotFoundPage })))
+
 // Jump pages — deep-link handler for decentraland:// launcher. Heavy route (Redux).
 const JumpPlacesPage = lazy(() => import('./pages/jump/PlacesPage').then(m => ({ default: m.PlacesPage })))
 const JumpEventsPage = lazy(() => import('./pages/jump/EventsPage').then(m => ({ default: m.EventsPage })))
@@ -210,6 +230,22 @@ const App = () => {
                 <Route path="/discover/world/:name" element={<DiscoverScenePage kind="world" />} />
               </Route>
               <Route path="/discover/*" element={<DiscoverNotFoundPage />} />
+              <Route element={<CreatorsLayout />}>
+                <Route path="/creators" element={<CreatorsHomePage />} />
+                <Route path="/creators/world/:name" element={<CreatorWorldLayout />}>
+                  <Route index element={<CreatorOverviewPage />} />
+                  <Route path="preview" element={<CreatorPreviewPage />} />
+                  <Route path="events" element={<CreatorEventsPage />} />
+                  <Route path="auth-server" element={<CreatorAuthServerPage />} />
+                  <Route path="streaming" element={<CreatorStreamingPage />} />
+                  <Route path="admins" element={<CreatorAdminsPage />} />
+                  <Route path="access" element={<CreatorAccessPage />} />
+                  <Route path="bans" element={<CreatorBansPage />} />
+                  <Route path="analytics" element={<CreatorAnalyticsPage />} />
+                  <Route path="monetization" element={<CreatorMonetizationPage />} />
+                </Route>
+                <Route path="/creators/*" element={<CreatorsNotFoundPage />} />
+              </Route>
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

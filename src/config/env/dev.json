@@ -37,5 +37,6 @@
   "LAND_REGISTRY_ADDRESS": "0x42f4ba48791e2de32f5fbf553441c2672864bb33",
   "ESTATE_REGISTRY_ADDRESS": "0x369a7fbe718c870c79f99fb423882e8dd8b20486",
   "GATEKEEPER_URL": "https://comms-gatekeeper.decentraland.zone",
-  "PRESENTER_SERVER_URL": "https://cast-presenter-service.decentraland.zone"
+  "PRESENTER_SERVER_URL": "https://cast-presenter-service.decentraland.zone",
+  "MULTIPLAYER_SERVER_URL": "https://multiplayer-server.decentraland.zone"
 }

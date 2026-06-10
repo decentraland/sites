@@ -368,6 +368,155 @@
     "report": {
       "title": "플레이어 신고 – Decentraland",
       "success_title": "신고가 전송되었습니다 – Decentraland"
+    },
+    "creators": {
+      "home": {
+        "title": "크리에이터 · 내 창작물",
+        "heading": "내 창작물",
+        "subtitle": "배포한 월드를 관리하세요 — 배포, 구성, 스토리지 등을 확인할 수 있습니다.",
+        "not_connected": "지갑으로 로그인하면 배포한 월드를 볼 수 있습니다.",
+        "sign_in": "로그인",
+        "loading": "창작물 불러오는 중",
+        "empty": "아직 배포한 월드가 없습니다.",
+        "eyebrow": "크리에이터 도구",
+        "not_connected_title": "지갑 연결",
+        "empty_title": "아직 월드가 없습니다"
+      },
+      "role": {
+        "owner": "소유자",
+        "collaborator": "협업자"
+      },
+      "not_found": {
+        "title": "페이지를 찾을 수 없습니다",
+        "description": "크리에이터에서 찾으시는 항목을 찾을 수 없습니다."
+      },
+      "world": {
+        "back": "창작물",
+        "nav_label": "월드 섹션",
+        "jump_in": "입장하기",
+        "world_name": "월드",
+        "updated": "마지막 배포",
+        "deployer": "배포자",
+        "preview_hint": "Decentraland 웹 클라이언트로 브라우저에서 월드의 라이브 미리보기를 실행합니다.",
+        "storage_hint": "씬과 플레이어를 위한 서버 측 스토리지(권한 서버).",
+        "storage_sign_in": "로그인하면 씬과 플레이어 스토리지를 볼 수 있습니다.",
+        "soon": "곧 제공",
+        "analytics_hint": "방문, 플레이어 및 참여 지표가 곧 제공됩니다.",
+        "monetization_hint": "판매 및 수익 인사이트가 곧 제공됩니다.",
+        "nav": {
+          "overview": "개요",
+          "preview": "미리보기",
+          "analytics": "분석",
+          "monetization": "수익화",
+          "bans": "차단",
+          "admins": "씬 관리자",
+          "streaming": "스트리밍",
+          "access": "접근",
+          "events": "이벤트",
+          "auth_server": "권한 서버"
+        },
+        "stat": {
+          "parcels": "파셀"
+        },
+        "storage": {
+          "players": "플레이어",
+          "scene": "씬",
+          "env": "환경 변수"
+        },
+        "analytics": {
+          "visits": "방문",
+          "unique_players": "순 플레이어",
+          "avg_session": "평균 세션",
+          "peak_concurrent": "최대 동시 접속"
+        },
+        "monetization": {
+          "revenue": "수익",
+          "items": "판매 아이템"
+        },
+        "not_found": {
+          "title": "월드를 찾을 수 없습니다",
+          "hint": "이 월드에는 활성 배포가 없거나 접근할 수 없습니다."
+        },
+        "deploys": {
+          "entity": "배포 ID"
+        },
+        "deployment": "배포",
+        "live_now": "현재 {count}명",
+        "preview_launch": "미리보기 시작",
+        "preview_launch_hint": "Decentraland 웹 클라이언트를 불러와 브라우저에서 월드를 미리 봅니다.",
+        "bans_hint": "차단된 지갑은 이 월드의 씬에 입장할 수 없습니다.",
+        "bans_sign_in": "차단을 관리하려면 로그인하세요.",
+        "bans_no_deployment": "차단을 관리하려면 월드를 배포하세요.",
+        "bans_placeholder": "지갑 주소 또는 DCL 이름",
+        "bans_add": "차단",
+        "bans_error": "차단을 추가하지 못했습니다. 주소나 이름과 권한을 확인하세요.",
+        "bans_load_error": "차단 목록을 불러오지 못했습니다.",
+        "bans_empty": "이 씬에서 차단된 사람이 없습니다.",
+        "bans_unban": "차단 해제",
+        "preview_fullscreen": "전체 화면",
+        "preview_exit_fullscreen": "전체 화면 종료",
+        "admins_hint": "씬 관리자는 월드를 관리할 수 있습니다(차단 및 스트리밍 관리).",
+        "admins_sign_in": "씬 관리자를 관리하려면 로그인하세요.",
+        "admins_no_deployment": "씬 관리자를 관리하려면 월드를 배포하세요.",
+        "admins_placeholder": "지갑 주소 또는 DCL 이름",
+        "admins_add": "관리자 추가",
+        "admins_error": "관리자를 추가하지 못했습니다. 주소나 이름과 권한을 확인하세요.",
+        "admins_load_error": "씬 관리자를 불러오지 못했습니다.",
+        "admins_empty": "아직 씬 관리자가 없습니다.",
+        "admins_remove": "제거",
+        "admins_implicit": "소유자",
+        "streaming_hint": "아래 서버 URL과 스트림 키로 OBS 등 RTMP 인코더에서 월드로 스트리밍할 수 있습니다.",
+        "streaming_sign_in": "스트리밍 액세스를 관리하려면 로그인하세요.",
+        "streaming_no_deployment": "스트리밍을 설정하려면 월드를 배포하세요.",
+        "streaming_load_error": "스트리밍 액세스를 불러오지 못했습니다.",
+        "streaming_none": "아직 스트림 키가 없습니다. 생성하여 월드로 방송을 시작하세요.",
+        "streaming_generate": "스트림 키 생성",
+        "streaming_server": "서버 URL",
+        "streaming_key": "스트림 키",
+        "streaming_copy": "복사",
+        "streaming_copied": "복사됨",
+        "streaming_expires": "만료",
+        "streaming_reset": "키 재설정",
+        "streaming_revoke": "해지",
+        "access_hint": "월드에 배포·스트리밍·입장할 수 있는 대상을 관리하세요.",
+        "access_sign_in": "월드 접근을 관리하려면 로그인하세요.",
+        "access_load_error": "월드 권한을 불러오지 못했습니다.",
+        "access_error": "권한을 업데이트하지 못했습니다. 주소와 소유권을 확인하세요.",
+        "access_placeholder": "지갑 주소 (0x…)",
+        "access_add": "추가",
+        "access_remove": "제거",
+        "access_empty": "지갑 없음 — 소유자만.",
+        "access_unrestricted": "모두에게 공개.",
+        "access": {
+          "deployment": "배포",
+          "streaming": "스트리밍",
+          "access": "입장",
+          "deployment_hint": "이 월드에 씬을 배포할 수 있는 지갑.",
+          "streaming_hint": "이 월드에 스트리밍할 수 있는 지갑.",
+          "access_hint": "이 월드에 입장할 수 있는 대상."
+        },
+        "storage_not_authoritative": "이 씬은 서버 측 스토리지를 사용하지 않습니다. 씬 및 플레이어 스토리지를 사용하려면 scene.json에 \"authoritativeMultiplayer\": true를 추가하세요.",
+        "access_learn_more": "비공개 월드에 대해 자세히 알아보기",
+        "events_hint": "월드에 예정된 다가오는 이벤트.",
+        "events_empty": "이 월드에는 아직 예정된 이벤트가 없습니다.",
+        "events_schedule": "이벤트 예약",
+        "events_load_error": "이벤트를 불러오지 못했습니다.",
+        "events_live": "라이브",
+        "events_attendees": "{count}명 관심",
+        "auth_server_storage_title": "스토리지",
+        "auth_server_logs_hint": "씬의 권한 서버에서 발생한 최근 활동입니다.",
+        "auth_server_logs_empty": "아직 로그가 없습니다.",
+        "auth_server_logs_error": "서버 로그를 불러올 수 없습니다.",
+        "auth_server_tab_logs": "로그",
+        "auth_server_logs_connect": "로그 스트리밍",
+        "auth_server_logs_stop": "중지",
+        "auth_server_logs_clear": "지우기",
+        "auth_server_logs_reconnect": "다시 연결",
+        "auth_server_logs_connecting": "연결 중…",
+        "auth_server_logs_live": "실시간",
+        "auth_server_logs_disconnected": "연결 끊김",
+        "auth_server_logs_sign_in": "서버 로그를 보려면 로그인하세요."
+      }
     }
   },
   "page_invite": {

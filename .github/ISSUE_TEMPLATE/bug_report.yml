@@ -82,6 +82,8 @@ body:
         - Discover — Community Detail (/discover/communities/:id)
         - Discover — Place Detail (/discover/place/:position)
         - Discover — World Detail (/discover/world/:name)
+        - Creators — Creations (/creators)
+        - Creators — World Overview (/creators/world/:name)
         - Blog — Home (/blog)
         - Blog — Search (/blog/search)
         - Blog — Category (/blog/:categorySlug)

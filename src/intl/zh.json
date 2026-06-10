@@ -368,6 +368,155 @@
     "report": {
       "title": "举报玩家 – Decentraland",
       "success_title": "举报已提交 – Decentraland"
+    },
+    "creators": {
+      "home": {
+        "title": "创作者 · 你的作品",
+        "heading": "你的作品",
+        "subtitle": "管理你已部署的世界 — 查看部署、配置、存储等信息。",
+        "not_connected": "使用钱包登录即可查看你部署的世界。",
+        "sign_in": "登录",
+        "loading": "正在加载你的作品",
+        "empty": "你还没有部署任何世界。",
+        "eyebrow": "创作者工具",
+        "not_connected_title": "连接你的钱包",
+        "empty_title": "还没有世界"
+      },
+      "role": {
+        "owner": "所有者",
+        "collaborator": "协作者"
+      },
+      "not_found": {
+        "title": "页面未找到",
+        "description": "我们在创作者中找不到你要查找的内容。"
+      },
+      "world": {
+        "back": "作品",
+        "nav_label": "世界板块",
+        "jump_in": "进入",
+        "world_name": "世界",
+        "updated": "最近部署",
+        "deployer": "部署者",
+        "preview_hint": "由 Decentraland 网页客户端驱动，在浏览器中启动你世界的实时预览。",
+        "storage_hint": "为你的场景和玩家提供的服务器端存储（权威服务器）。",
+        "storage_sign_in": "登录即可查看你的场景和玩家存储。",
+        "soon": "即将推出",
+        "analytics_hint": "访问量、玩家和互动指标即将推出。",
+        "monetization_hint": "销售和收入洞察即将推出。",
+        "nav": {
+          "overview": "概览",
+          "preview": "预览",
+          "analytics": "分析",
+          "monetization": "变现",
+          "bans": "封禁",
+          "admins": "场景管理员",
+          "streaming": "直播",
+          "access": "访问",
+          "events": "活动",
+          "auth_server": "权威服务器"
+        },
+        "stat": {
+          "parcels": "地块"
+        },
+        "storage": {
+          "players": "玩家",
+          "scene": "场景",
+          "env": "环境变量"
+        },
+        "analytics": {
+          "visits": "访问量",
+          "unique_players": "独立玩家",
+          "avg_session": "平均会话",
+          "peak_concurrent": "峰值并发"
+        },
+        "monetization": {
+          "revenue": "收入",
+          "items": "已售物品"
+        },
+        "not_found": {
+          "title": "未找到世界",
+          "hint": "该世界没有活跃的部署，或无法访问。"
+        },
+        "deploys": {
+          "entity": "部署 ID"
+        },
+        "deployment": "部署",
+        "live_now": "当前 {count} 人在线",
+        "preview_launch": "启动预览",
+        "preview_launch_hint": "加载 Decentraland 网页客户端，在浏览器中预览你的世界。",
+        "bans_hint": "被封禁的钱包无法进入该世界的场景。",
+        "bans_sign_in": "登录以管理封禁。",
+        "bans_no_deployment": "部署你的世界以管理封禁。",
+        "bans_placeholder": "钱包地址或 DCL 名称",
+        "bans_add": "封禁",
+        "bans_error": "无法添加封禁。请检查地址或名称以及你的权限。",
+        "bans_load_error": "无法加载封禁列表。",
+        "bans_empty": "该场景没有被封禁的人。",
+        "bans_unban": "解除封禁",
+        "preview_fullscreen": "全屏",
+        "preview_exit_fullscreen": "退出全屏",
+        "admins_hint": "场景管理员可以管理你的世界（管理封禁和直播）。",
+        "admins_sign_in": "登录以管理场景管理员。",
+        "admins_no_deployment": "部署你的世界以管理场景管理员。",
+        "admins_placeholder": "钱包地址或 DCL 名称",
+        "admins_add": "添加管理员",
+        "admins_error": "无法添加该管理员。请检查地址或名称以及你的权限。",
+        "admins_load_error": "无法加载场景管理员。",
+        "admins_empty": "还没有场景管理员。",
+        "admins_remove": "移除",
+        "admins_implicit": "所有者",
+        "streaming_hint": "使用下方的服务器 URL 和推流密钥，从 OBS 或任意 RTMP 编码器直播到你的世界。",
+        "streaming_sign_in": "登录以管理直播访问。",
+        "streaming_no_deployment": "部署你的世界以设置直播。",
+        "streaming_load_error": "无法加载直播访问。",
+        "streaming_none": "还没有推流密钥。生成一个即可开始向你的世界直播。",
+        "streaming_generate": "生成推流密钥",
+        "streaming_server": "服务器 URL",
+        "streaming_key": "推流密钥",
+        "streaming_copy": "复制",
+        "streaming_copied": "已复制",
+        "streaming_expires": "过期",
+        "streaming_reset": "重置密钥",
+        "streaming_revoke": "吊销",
+        "access_hint": "控制谁可以部署、直播和进入你的世界。",
+        "access_sign_in": "登录以管理世界访问。",
+        "access_load_error": "无法加载世界权限。",
+        "access_error": "无法更新权限。请检查地址和你的所有权。",
+        "access_placeholder": "钱包地址 (0x…)",
+        "access_add": "添加",
+        "access_remove": "移除",
+        "access_empty": "没有钱包——仅所有者。",
+        "access_unrestricted": "对所有人开放。",
+        "access": {
+          "deployment": "部署",
+          "streaming": "直播",
+          "access": "进入",
+          "deployment_hint": "允许向该世界部署场景的钱包。",
+          "streaming_hint": "允许向该世界直播的钱包。",
+          "access_hint": "谁可以进入该世界。"
+        },
+        "storage_not_authoritative": "该场景未使用服务器端存储。请在 scene.json 中添加 \"authoritativeMultiplayer\": true 以启用场景和玩家存储。",
+        "access_learn_more": "了解更多关于私有世界",
+        "events_hint": "你的世界中即将举行的活动。",
+        "events_empty": "该世界还没有即将举行的活动。",
+        "events_schedule": "安排活动",
+        "events_load_error": "无法加载活动。",
+        "events_live": "直播",
+        "events_attendees": "{count} 人感兴趣",
+        "auth_server_storage_title": "存储",
+        "auth_server_logs_hint": "来自场景权威服务器的近期活动。",
+        "auth_server_logs_empty": "暂无日志。",
+        "auth_server_logs_error": "无法加载服务器日志。",
+        "auth_server_tab_logs": "日志",
+        "auth_server_logs_connect": "开始日志流",
+        "auth_server_logs_stop": "停止",
+        "auth_server_logs_clear": "清除",
+        "auth_server_logs_reconnect": "重新连接",
+        "auth_server_logs_connecting": "连接中…",
+        "auth_server_logs_live": "实时",
+        "auth_server_logs_disconnected": "已断开",
+        "auth_server_logs_sign_in": "登录以查看服务器日志。"
+      }
     }
   },
   "page_invite": {

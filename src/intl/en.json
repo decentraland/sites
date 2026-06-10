@@ -416,6 +416,155 @@
     "report": {
       "title": "Report a player – Decentraland",
       "success_title": "Report submitted – Decentraland"
+    },
+    "creators": {
+      "home": {
+        "title": "Creators · Your creations",
+        "heading": "Your Creations",
+        "subtitle": "Manage the worlds you have deployed — review deployments, configuration, storage and more.",
+        "not_connected": "Sign in with your wallet to see the worlds you have deployed.",
+        "sign_in": "Sign in",
+        "loading": "Loading your creations",
+        "empty": "You have not deployed any worlds yet.",
+        "eyebrow": "Creator tools",
+        "not_connected_title": "Connect your wallet",
+        "empty_title": "No worlds yet"
+      },
+      "role": {
+        "owner": "Owner",
+        "collaborator": "Collaborator"
+      },
+      "not_found": {
+        "title": "Page not found",
+        "description": "We couldn't find what you were looking for in Creators."
+      },
+      "world": {
+        "back": "Creations",
+        "nav_label": "World sections",
+        "jump_in": "Jump in",
+        "world_name": "World",
+        "updated": "Last deployed",
+        "deployer": "Deployed by",
+        "preview_hint": "Launch a live preview of your world in the browser, powered by the Decentraland web client.",
+        "storage_hint": "Server-side storage for your scene and players (authoritative server).",
+        "storage_sign_in": "Sign in to view your scene and player storage.",
+        "soon": "Soon",
+        "analytics_hint": "Visits, players and engagement metrics are coming soon.",
+        "monetization_hint": "Sales and revenue insights are coming soon.",
+        "nav": {
+          "overview": "Overview",
+          "preview": "Preview",
+          "analytics": "Analytics",
+          "monetization": "Monetization",
+          "bans": "Bans",
+          "admins": "Scene admins",
+          "streaming": "Streaming",
+          "access": "Access",
+          "events": "Events",
+          "auth_server": "Auth Server"
+        },
+        "stat": {
+          "parcels": "Parcels"
+        },
+        "storage": {
+          "players": "Players",
+          "scene": "Scene",
+          "env": "Environment"
+        },
+        "analytics": {
+          "visits": "Visits",
+          "unique_players": "Unique players",
+          "avg_session": "Avg. session",
+          "peak_concurrent": "Peak concurrent"
+        },
+        "monetization": {
+          "revenue": "Revenue",
+          "items": "Items sold"
+        },
+        "not_found": {
+          "title": "World not found",
+          "hint": "This world doesn't have an active deployment, or it could not be reached."
+        },
+        "deploys": {
+          "entity": "Deployment ID"
+        },
+        "deployment": "Deployment",
+        "live_now": "{count} in world now",
+        "preview_launch": "Launch preview",
+        "preview_launch_hint": "Loads the Decentraland web client to preview your world in the browser.",
+        "bans_hint": "Banned wallets can't enter this world's scene.",
+        "bans_sign_in": "Sign in to manage bans.",
+        "bans_no_deployment": "Deploy your world to manage bans.",
+        "bans_placeholder": "Wallet address or DCL name",
+        "bans_add": "Ban",
+        "bans_error": "Couldn't add that ban. Check the address or name and your permissions.",
+        "bans_load_error": "Couldn't load bans.",
+        "bans_empty": "No one is banned from this scene.",
+        "bans_unban": "Unban",
+        "preview_fullscreen": "Fullscreen",
+        "preview_exit_fullscreen": "Exit fullscreen",
+        "admins_hint": "Scene admins can moderate your world — manage bans and streaming.",
+        "admins_sign_in": "Sign in to manage scene admins.",
+        "admins_no_deployment": "Deploy your world to manage scene admins.",
+        "admins_placeholder": "Wallet address or DCL name",
+        "admins_add": "Add admin",
+        "admins_error": "Couldn't add that admin. Check the address or name and your permissions.",
+        "admins_load_error": "Couldn't load scene admins.",
+        "admins_empty": "No scene admins yet.",
+        "admins_remove": "Remove",
+        "admins_implicit": "Owner",
+        "streaming_hint": "Stream into your world from OBS or any RTMP encoder using the server URL and stream key below.",
+        "streaming_sign_in": "Sign in to manage streaming access.",
+        "streaming_no_deployment": "Deploy your world to set up streaming.",
+        "streaming_load_error": "Couldn't load streaming access.",
+        "streaming_none": "No streaming key yet. Generate one to start broadcasting into your world.",
+        "streaming_generate": "Generate stream key",
+        "streaming_server": "Server URL",
+        "streaming_key": "Stream key",
+        "streaming_copy": "Copy",
+        "streaming_copied": "Copied",
+        "streaming_expires": "Expires",
+        "streaming_reset": "Reset key",
+        "streaming_revoke": "Revoke",
+        "access_hint": "Control who can deploy to, stream into, and enter your world.",
+        "access_sign_in": "Sign in to manage world access.",
+        "access_load_error": "Couldn't load world permissions.",
+        "access_error": "Couldn't update permissions. Check the address and your ownership.",
+        "access_placeholder": "Wallet address (0x…)",
+        "access_add": "Add",
+        "access_remove": "Remove",
+        "access_empty": "No wallets — only the owner.",
+        "access_unrestricted": "Open to everyone.",
+        "access": {
+          "deployment": "Deploy",
+          "streaming": "Streaming",
+          "access": "Enter",
+          "deployment_hint": "Wallets allowed to deploy scenes to this world.",
+          "streaming_hint": "Wallets allowed to stream into this world.",
+          "access_hint": "Who can enter this world."
+        },
+        "storage_not_authoritative": "This scene doesn’t use server-side storage. Add \"authoritativeMultiplayer\": true to your scene.json to enable scene and player storage.",
+        "access_learn_more": "Learn more about private worlds",
+        "events_hint": "Upcoming events scheduled in your world.",
+        "events_empty": "No upcoming events in this world yet.",
+        "events_schedule": "Schedule an event",
+        "events_load_error": "Couldn't load events.",
+        "events_live": "Live",
+        "events_attendees": "{count} interested",
+        "auth_server_storage_title": "Storage",
+        "auth_server_logs_hint": "Recent activity from your scene’s authoritative server.",
+        "auth_server_logs_empty": "No logs yet.",
+        "auth_server_logs_error": "Couldn’t load the server logs.",
+        "auth_server_tab_logs": "Logs",
+        "auth_server_logs_connect": "Stream logs",
+        "auth_server_logs_stop": "Stop",
+        "auth_server_logs_clear": "Clear",
+        "auth_server_logs_reconnect": "Reconnect",
+        "auth_server_logs_connecting": "Connecting…",
+        "auth_server_logs_live": "Live",
+        "auth_server_logs_disconnected": "Disconnected",
+        "auth_server_logs_sign_in": "Sign in to view server logs."
+      }
     }
   },
   "page_invite": {
