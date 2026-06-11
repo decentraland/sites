@@ -90,7 +90,11 @@ const AsideArea = styled(Box, {
   transition: 'opacity 240ms cubic-bezier(0.4, 0, 0.2, 1)',
   [theme.breakpoints.down('md')]: {
     maxWidth: '100%',
-    minHeight: $showAside ? 320 : 0
+    minHeight: $showAside ? 320 : 0,
+    // On mobile the grid stacks rows instead of collapsing a column, so opacity alone
+    // leaves the (invisible) avatar iframe occupying its full height above the tab
+    // content. Drop it from layout entirely when hidden.
+    display: $showAside ? 'block' : 'none'
   }
 }))
 

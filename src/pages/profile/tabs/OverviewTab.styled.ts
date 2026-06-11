@@ -215,6 +215,13 @@ const EquippedGrid = styled(Box)(({ theme }) => ({
     rowGap: 16,
     columnGap: 12
   },
+  // Grid `1fr` tracks can't shrink below the item's min-content, and the ui2 CatalogCard
+  // reports a fixed 288px there — without `minWidth: 0` the 2-col mobile grid overflows
+  // the viewport instead of compressing the cards.
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& > *': {
+    minWidth: 0
+  },
   // CatalogCard de ui2 trae ancho fijo (theme.spacing(36) ≈ 288px) y crece en
   // hover. Forzamos width: 100% al ancho del grid cell y bloqueamos el growth
   // de altura en ambos estados.

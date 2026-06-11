@@ -57,18 +57,22 @@ function ProfileSurface({
   embedded
 }: ProfileSurfaceProps) {
   const t = useFormatMessage()
-  const { hidden } = useProfileTabAvailability(address, isOwnProfile)
+  const { hidden, isReady } = useProfileTabAvailability(address, isOwnProfile)
   const { name: avatarName } = useProfileAvatar(address)
   const visibleTab: ProfileTab = isTabAvailable(activeTab, isOwnProfile) ? activeTab : 'overview'
-  const resolvedTab: ProfileTab = hidden.has(visibleTab) ? 'overview' : visibleTab
+  // While the availability probes are still in flight every data tab sits in `hidden`, so
+  // redirecting immediately would bounce ALL deep links to overview. Render the requested
+  // tab optimistically (it owns its loading state) and only redirect once the probes
+  // confirmed the tab is truly empty.
+  const resolvedTab: ProfileTab = isReady && hidden.has(visibleTab) ? 'overview' : visibleTab
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false)
   const openMobileMenu = useCallback(() => setMobileMenuOpen(true), [])
   const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), [])
 
-  // Direct URL hits on a now-empty tab should rewrite the location, not just swap content.
+  // Direct URL hits on a confirmed-empty tab should rewrite the location, not just swap content.
   useEffect(() => {
-    if (resolvedTab !== activeTab) onTabChange(resolvedTab)
-  }, [resolvedTab, activeTab, onTabChange])
+    if (isReady && resolvedTab !== activeTab) onTabChange(resolvedTab)
+  }, [isReady, resolvedTab, activeTab, onTabChange])
 
   // Wearable preview is anchored to Overview only; on other tabs the right
   // column slides over the aside (animated in ProfileLayout.styled).
