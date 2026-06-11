@@ -965,8 +965,9 @@
     "delete": "删除",
     "delete_modal": {
       "title": "确定要删除你的聚会吗？",
+      "subtitle": "此聚会将从你的聚会中永久删除。此操作无法撤销。",
       "cancel": "取消",
-      "confirm": "删除",
+      "confirm": "删除聚会",
       "toast_title": "聚会已成功删除",
       "toast_description": "你的聚会 {name} 已成功删除！",
       "error": "无法删除你的聚会，请重试。"

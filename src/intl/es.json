@@ -965,8 +965,9 @@
     "delete": "Eliminar",
     "delete_modal": {
       "title": "¿Seguro que quieres eliminar tu hangout?",
+      "subtitle": "Este hangout se eliminará permanentemente de tus hangouts. Esta acción no se puede deshacer.",
       "cancel": "Cancelar",
-      "confirm": "Eliminar",
+      "confirm": "Eliminar hangout",
       "toast_title": "Hangout eliminado correctamente",
       "toast_description": "¡Tu hangout {name} se ha eliminado correctamente!",
       "error": "No pudimos eliminar tu hangout. Inténtalo de nuevo."

@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import { Button } from 'decentraland-ui2'
 import type { DeleteEventModalProps } from './DeleteEventModal.types'
-import { StyledDialog, StyledDialogActions, Title } from './DeleteEventModal.styled'
+import { CancelActionButton, StyledDialog, StyledDialogActions, Subtitle, Title } from './DeleteEventModal.styled'
 
 function DeleteEventModal({ open, isSubmitting, onClose, onConfirm }: DeleteEventModalProps) {
   const { t } = useTranslation()
@@ -15,10 +15,11 @@ function DeleteEventModal({ open, isSubmitting, onClose, onConfirm }: DeleteEven
   return (
     <StyledDialog open={open} onClose={handleClose} fullWidth>
       <Title>{t('event_detail.delete_modal.title')}</Title>
+      <Subtitle>{t('event_detail.delete_modal.subtitle')}</Subtitle>
       <StyledDialogActions>
-        <Button variant="contained" color="secondary" onClick={handleClose} disabled={isSubmitting}>
+        <CancelActionButton variant="contained" onClick={handleClose} disabled={isSubmitting}>
           {t('event_detail.delete_modal.cancel')}
-        </Button>
+        </CancelActionButton>
         <Button variant="contained" color="primary" onClick={onConfirm} disabled={isSubmitting}>
           {t('event_detail.delete_modal.confirm')}
         </Button>

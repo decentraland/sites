@@ -8,6 +8,12 @@ jest.mock('@dcl/hooks', () => ({
 jest.mock('./DeleteEventModal.styled', () => ({
   StyledDialog: ({ children, open }: { children: React.ReactNode; open: boolean }) => (open ? <div role="dialog">{children}</div> : null),
   Title: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+  Subtitle: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
+  CancelActionButton: ({ children, onClick, disabled }: { children: React.ReactNode; onClick?: () => void; disabled?: boolean }) => (
+    <button onClick={onClick} disabled={disabled}>
+      {children}
+    </button>
+  ),
   StyledDialogActions: ({ children }: { children: React.ReactNode }) => <div data-testid="actions">{children}</div>
 }))
 
@@ -46,6 +52,10 @@ describe('DeleteEventModal', () => {
 
     it('should render the confirmation title', () => {
       expect(screen.getByRole('heading')).toHaveTextContent('event_detail.delete_modal.title')
+    })
+
+    it('should render the permanent-removal subtitle', () => {
+      expect(screen.getByText('event_detail.delete_modal.subtitle')).toBeInTheDocument()
     })
 
     describe('and the confirm button is clicked', () => {

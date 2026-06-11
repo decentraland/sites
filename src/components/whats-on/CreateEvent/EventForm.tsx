@@ -511,8 +511,8 @@ function EventForm({
             <FormActions>
               {mode === 'edit' && onDelete && (
                 <DeleteButton type="button" onClick={onDelete}>
-                  <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                   {t('event_detail.delete')}
+                  <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                 </DeleteButton>
               )}
               <CancelButton type="button" onClick={onCancel}>

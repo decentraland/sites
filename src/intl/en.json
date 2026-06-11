@@ -1068,8 +1068,9 @@
     "delete": "Delete",
     "delete_modal": {
       "title": "Are you sure you want to delete your hangout?",
+      "subtitle": "This hangout will be permanently removed from your hangouts. This action can’t be undone.",
       "cancel": "Cancel",
-      "confirm": "Delete",
+      "confirm": "Delete hangout",
       "toast_title": "Hangout Deleted successfully",
       "toast_description": "Your hangout {name} has been deleted successfully!",
       "error": "We couldn't delete your hangout. Please try again."

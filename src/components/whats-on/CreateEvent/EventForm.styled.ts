@@ -579,7 +579,7 @@ const DeleteButton = styled('button')(({ theme }) => ({
   gap: theme.spacing(1),
   marginRight: 'auto',
   background: 'transparent',
-  border: '1.555px solid #ff2d55',
+  border: 'none',
   borderRadius: 12,
   color: '#ff2d55',
   fontFamily: "'Inter', sans-serif",
@@ -587,7 +587,7 @@ const DeleteButton = styled('button')(({ theme }) => ({
   fontWeight: 600,
   textTransform: 'uppercase',
   letterSpacing: '0.48px',
-  padding: '8px 22px',
+  padding: '8px 12px',
   height: 48,
   cursor: 'pointer',
   transition: theme.transitions.create(['background-color', 'color'], {

@@ -960,8 +960,9 @@
     "delete": "Supprimer",
     "delete_modal": {
       "title": "Voulez-vous vraiment supprimer votre hangout ?",
+      "subtitle": "Ce hangout sera définitivement supprimé de vos hangouts. Cette action est irréversible.",
       "cancel": "Annuler",
-      "confirm": "Supprimer",
+      "confirm": "Supprimer le hangout",
       "toast_title": "Hangout supprimé avec succès",
       "toast_description": "Votre hangout {name} a été supprimé avec succès !",
       "error": "Nous n'avons pas pu supprimer votre hangout. Veuillez réessayer."
