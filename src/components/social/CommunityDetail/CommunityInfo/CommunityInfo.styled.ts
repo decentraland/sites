@@ -16,6 +16,8 @@ const InfoSection = styled(Box)(({ theme }) => ({
   paddingLeft: theme.spacing(3),
   paddingRight: theme.spacing(3),
   backgroundColor: hexToRgba(dclColors.neutral.black, 0.3),
+  // Figma note 677:57917 ("Dark background use rounded corners") — match the dialog Paper radius.
+  borderRadius: theme.spacing(2),
   [theme.breakpoints.up('md')]: {
     gap: theme.spacing(5),
     paddingTop: theme.spacing(5),
