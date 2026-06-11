@@ -10,8 +10,15 @@ function Harness({ onSettle }: { onSettle?: (element: HTMLDivElement) => void })
 
 // jsdom does not populate clientX/button on synthetic PointerEvents, so dispatch
 // a MouseEvent (which carries clientX) under a pointer-event type instead.
-const firePointer = (el: HTMLElement, type: string, clientX: number) => {
-  const event = new MouseEvent(type, { bubbles: true, cancelable: true, clientX, button: 0 })
+// `buttons` defaults to 1 on pointermove (primary button held, as during a drag).
+const firePointer = (el: HTMLElement, type: string, clientX: number, buttons?: number) => {
+  const event = new MouseEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    clientX,
+    button: 0,
+    buttons: buttons ?? (type === 'pointermove' ? 1 : 0)
+  })
   act(() => {
     el.dispatchEvent(event)
   })
@@ -19,8 +26,11 @@ const firePointer = (el: HTMLElement, type: string, clientX: number) => {
 }
 
 describe('usePointerDrag', () => {
+  let setPointerCaptureMock: jest.Mock
+
   beforeEach(() => {
-    HTMLElement.prototype.setPointerCapture = jest.fn()
+    setPointerCaptureMock = jest.fn()
+    HTMLElement.prototype.setPointerCapture = setPointerCaptureMock
     HTMLElement.prototype.releasePointerCapture = jest.fn()
     HTMLElement.prototype.hasPointerCapture = jest.fn(() => true)
   })
@@ -56,6 +66,48 @@ describe('usePointerDrag', () => {
     } finally {
       setSpy.mockRestore()
     }
+  })
+
+  it('should drop a press released outside the element instead of scrolling on hover', () => {
+    // Below the threshold nothing is captured, so a press that leaves the track
+    // and is released outside never delivers pointerup to it. The next hover
+    // move (buttons === 0) must reset the press and restore scroll-snap
+    // instead of dragging the carousel around with no button held.
+    const setSpy = jest.spyOn(HTMLElement.prototype, 'scrollLeft', 'set')
+    try {
+      render(<Harness />)
+      const track = screen.getByTestId('track')
+      firePointer(track, 'pointerdown', 100)
+      expect(track.style.scrollSnapType).toBe('none')
+      // Pointer re-enters and moves with no button pressed (released outside).
+      const before = setSpy.mock.calls.length
+      firePointer(track, 'pointermove', 300, 0)
+      expect(setSpy.mock.calls.length).toBe(before)
+      expect(track.style.scrollSnapType).toBe('')
+      expect(track).toHaveAttribute('data-dragging', 'false')
+    } finally {
+      setSpy.mockRestore()
+    }
+  })
+
+  it('should not capture the pointer on pointerDown alone', () => {
+    // Capturing on pointerdown retargets the derived click to the container
+    // (per the Pointer Events spec), swallowing clicks on the cards inside.
+    render(<Harness />)
+    const track = screen.getByTestId('track')
+    firePointer(track, 'pointerdown', 100)
+    expect(setPointerCaptureMock).not.toHaveBeenCalled()
+  })
+
+  it('should capture the pointer only once the travel passes the drag threshold', () => {
+    render(<Harness />)
+    const track = screen.getByTestId('track')
+    firePointer(track, 'pointerdown', 100)
+    firePointer(track, 'pointermove', 103)
+    expect(setPointerCaptureMock).not.toHaveBeenCalled()
+    firePointer(track, 'pointermove', 130)
+    firePointer(track, 'pointermove', 160)
+    expect(setPointerCaptureMock).toHaveBeenCalledTimes(1)
   })
 
   it('should flag dragging once the pointer travels past the threshold', () => {
