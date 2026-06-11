@@ -37,7 +37,9 @@ interface CommunitiesTabProps {
 
 function CommunitiesTab({ address, isOwnProfile }: CommunitiesTabProps) {
   const t = useFormatMessage()
-  const { data, isLoading } = useGetProfileCommunitiesQuery({ address }, { skip: !isOwnProfile })
+  // Member view only receives the user's publicly visible communities (public + listed);
+  // the endpoint returns the full list (incl. private/unlisted) for the member themselves.
+  const { data, isLoading } = useGetProfileCommunitiesQuery({ address })
   const communities = useMemo<ProfileCommunity[]>(() => data?.data?.results ?? [], [data])
   const { openCommunityId, open: openCommunity, close: closeCommunity } = useOpenCommunityModal()
 
@@ -50,10 +52,6 @@ function CommunitiesTab({ address, isOwnProfile }: CommunitiesTabProps) {
     },
     [openCommunity]
   )
-
-  if (!isOwnProfile) {
-    return <EmptyBio sx={{ mt: 1 }}>{t('profile.communities.private')}</EmptyBio>
-  }
 
   if (isLoading) {
     return (
@@ -72,7 +70,7 @@ function CommunitiesTab({ address, isOwnProfile }: CommunitiesTabProps) {
       <CommunityCountLabel>{t('profile.communities.count', { count: communities.length })}</CommunityCountLabel>
       <CommunityRow>
         {communities.map(community => (
-          <CommunityCardItem key={community.id} community={community} onOpen={handleOpenCommunity} />
+          <CommunityCardItem key={community.id} community={community} isOwnProfile={isOwnProfile} onOpen={handleOpenCommunity} />
         ))}
       </CommunityRow>
       <CommunityDetailModal communityId={openCommunityId} onClose={closeCommunity} />
@@ -82,10 +80,11 @@ function CommunitiesTab({ address, isOwnProfile }: CommunitiesTabProps) {
 
 interface CommunityCardItemProps {
   community: ProfileCommunity
+  isOwnProfile: boolean
   onOpen: (id: string, event: React.MouseEvent<HTMLAnchorElement>) => void
 }
 
-const CommunityCardItem = memo(function CommunityCardItem({ community, onOpen }: CommunityCardItemProps) {
+const CommunityCardItem = memo(function CommunityCardItem({ community, isOwnProfile, onOpen }: CommunityCardItemProps) {
   const t = useFormatMessage()
   const handleAnchorClick = useCallback((event: React.MouseEvent<HTMLAnchorElement>) => onOpen(community.id, event), [community.id, onOpen])
   const shareUrl = `${window.location.origin}/social/communities/${community.id}`
@@ -128,7 +127,9 @@ const CommunityCardItem = memo(function CommunityCardItem({ community, onOpen }:
         <CommunityName>{community.name}</CommunityName>
         <CommunityActionRow>
           <CommunityActionButton>
-            {t(isOwner ? 'profile.communities.action_view' : 'profile.communities.action_joined')}
+            {/* "JOINED" only makes sense on the viewer's own profile — on a member profile the
+                role belongs to the profile owner, not the viewer, so every card reads "VIEW". */}
+            {t(isOwner || !isOwnProfile ? 'profile.communities.action_view' : 'profile.communities.action_joined')}
           </CommunityActionButton>
           <Tooltip title={copied ? t('profile.communities.copied') : t('profile.communities.copy_link')} placement="top" arrow>
             <CommunityShareButton type="button" onClick={handleShare} aria-label={t('profile.communities.copy_link')}>

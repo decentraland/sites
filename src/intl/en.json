@@ -1533,7 +1533,6 @@
       "empty_title": "No communities yet",
       "empty_owner": "Join a community to see it here.",
       "empty_member": "This member has not joined any communities yet.",
-      "private": "This member's communities are private.",
       "count": "{count} communities",
       "member": "Member",
       "members_count": "{count} members",

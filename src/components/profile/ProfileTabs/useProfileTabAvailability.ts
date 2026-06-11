@@ -23,7 +23,9 @@ function useProfileTabAvailability(address: string, isOwnProfile: boolean): TabA
   const wearables = useGetProfileCreationsQuery({ address, category: 'wearable', limit: 1, offset: 0 }, { skip: isOwnProfile })
   const emotes = useGetProfileCreationsQuery({ address, category: 'emote', limit: 1, offset: 0 }, { skip: isOwnProfile })
   const assets = useGetProfileAssetsQuery({ address, limit: 1, offset: 0 }, { skip: !isOwnProfile })
-  const communities = useGetProfileCommunitiesQuery({ address, limit: 1, offset: 0 }, { skip: !isOwnProfile })
+  // Member view gets the target user's publicly visible communities (public + listed) — the
+  // endpoint only returns the full list (incl. private/unlisted) for the member themselves.
+  const communities = useGetProfileCommunitiesQuery({ address, limit: 1, offset: 0 })
   const photos = useReelImagesByUser(address, PROBE_OPTIONS, isOwnProfile ? identity : undefined)
 
   return useMemo(() => {
@@ -46,15 +48,19 @@ function useProfileTabAvailability(address: string, isOwnProfile: boolean): TabA
       const total = photos.images.length > 0 ? photos.images.length : photos.total ?? 0
       if (total > 0) hidden.delete('photos')
     }
-    // `assets` and `communities` are only visible for own profile (see `ProfileTabs.types`), and on
-    // own profile they always stay visible regardless of count. So we skip the count probes for
-    // these on member view — the visibility filter takes care of hiding them.
+    if (!isOwnProfile && communities.isSuccess) {
+      const total = communities.data?.data?.total ?? communities.data?.data?.results?.length ?? 0
+      if (total > 0) hidden.delete('communities')
+    }
+    // `assets` is only visible for own profile (see `ProfileTabs.types`), and on own profile it
+    // always stays visible regardless of count. So we skip its count probe on member view — the
+    // visibility filter takes care of hiding it.
 
     const probesReady =
       !places.isLoading &&
       (isOwnProfile || (!wearables.isLoading && !emotes.isLoading)) &&
       (!isOwnProfile || !assets.isLoading) &&
-      (!isOwnProfile || !communities.isLoading) &&
+      !communities.isLoading &&
       !photos.isLoading
 
     return { hidden, isReady: probesReady }
