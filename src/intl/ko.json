@@ -1076,7 +1076,10 @@
       "empty_owner": "보유한 장소가 여기에 표시됩니다.",
       "empty_member": "이 회원은 아직 장소를 등록하지 않았습니다.",
       "count": "{count}개 장소",
-      "jump_in": "점프"
+      "jump_in": "점프",
+      "filter_my_places": "내 장소",
+      "filter_favorites": "즐겨찾기",
+      "empty_favorites": "아직 즐겨찾기한 장소가 없습니다."
     },
     "photos": {
       "empty_title": "아직 사진이 없습니다",

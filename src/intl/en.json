@@ -1549,7 +1549,10 @@
       "empty_owner": "Places you own will appear here.",
       "empty_member": "This member has not registered any places yet.",
       "count": "{count} places",
-      "jump_in": "Jump in"
+      "jump_in": "Jump in",
+      "filter_my_places": "My Places",
+      "filter_favorites": "Favourites",
+      "empty_favorites": "You haven't added any favorite places yet."
     },
     "photos": {
       "empty_title": "No photos yet",

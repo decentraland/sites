@@ -1071,7 +1071,10 @@
       "empty_owner": "Vos lieux apparaîtront ici.",
       "empty_member": "Ce membre n'a enregistré aucun lieu.",
       "count": "{count} lieux",
-      "jump_in": "Rejoindre"
+      "jump_in": "Rejoindre",
+      "filter_my_places": "Mes lieux",
+      "filter_favorites": "Favoris",
+      "empty_favorites": "Vous n'avez pas encore ajouté de lieux favoris."
     },
     "photos": {
       "empty_title": "Pas encore de photos",

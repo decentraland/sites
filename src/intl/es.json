@@ -1076,7 +1076,10 @@
       "empty_owner": "Los lugares que tengas aparecerán acá.",
       "empty_member": "Este miembro todavía no registró lugares.",
       "count": "{count} lugares",
-      "jump_in": "Saltar"
+      "jump_in": "Saltar",
+      "filter_my_places": "Mis lugares",
+      "filter_favorites": "Favoritos",
+      "empty_favorites": "Todavía no agregaste lugares favoritos."
     },
     "photos": {
       "empty_title": "Todavía no hay fotos",

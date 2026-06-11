@@ -1076,7 +1076,10 @@
       "empty_owner": "您拥有的场所将显示在这里。",
       "empty_member": "该成员尚未注册任何场所。",
       "count": "{count} 个场所",
-      "jump_in": "前往"
+      "jump_in": "前往",
+      "filter_my_places": "我的地点",
+      "filter_favorites": "收藏",
+      "empty_favorites": "你还没有收藏任何地点。"
     },
     "photos": {
       "empty_title": "暂无照片",

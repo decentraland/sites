@@ -1076,7 +1076,10 @@
       "empty_owner": "所有しているプレイスがここに表示されます。",
       "empty_member": "このメンバーはまだプレイスを登録していません。",
       "count": "{count} プレイス",
-      "jump_in": "ジャンプイン"
+      "jump_in": "ジャンプイン",
+      "filter_my_places": "マイプレイス",
+      "filter_favorites": "お気に入り",
+      "empty_favorites": "お気に入りの場所はまだありません。"
     },
     "photos": {
       "empty_title": "写真はまだありません",
