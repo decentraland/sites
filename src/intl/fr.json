@@ -317,7 +317,8 @@
         },
         "screen_share_failed": {
           "title": "Échec du partage d'écran",
-          "default_message": "Impossible de démarrer le partage d'écran. Veuillez réessayer."
+          "default_message": "Impossible de démarrer le partage d'écran. Veuillez réessayer.",
+          "stopped_message": "Votre partage d'écran s'est arrêté. Cliquez sur réessayer pour partager à nouveau."
         },
         "retry": "Réessayer",
         "dismiss": "Fermer"

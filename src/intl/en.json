@@ -365,7 +365,8 @@
         },
         "screen_share_failed": {
           "title": "Screen sharing failed",
-          "default_message": "We couldn't start screen sharing. Please try again."
+          "default_message": "We couldn't start screen sharing. Please try again.",
+          "stopped_message": "Your screen share stopped. Click retry to share again."
         },
         "retry": "Retry",
         "dismiss": "Dismiss"
