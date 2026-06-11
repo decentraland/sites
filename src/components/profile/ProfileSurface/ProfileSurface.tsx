@@ -4,6 +4,7 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
 import { AssetsTab, CommunitiesTab, CreationsTab, OverviewTab, PhotosTab, PlacesTab, ReferralRewardsTab } from '../../../pages/profile/tabs'
 import { AvatarRender } from '../AvatarRender'
+import { EditProfileButton } from '../EditProfileButton'
 import { ProfileHeader } from '../ProfileHeader'
 import { ProfileLayout } from '../ProfileLayout'
 import { ProfileMobileMenu } from '../ProfileMobileMenu'
@@ -87,7 +88,12 @@ function ProfileSurface({
             embedded={embedded}
           />
         }
-        tabs={<ProfileTabs activeTab={resolvedTab} isOwnProfile={isOwnProfile} onTabSelect={onTabChange} hiddenTabs={hidden} />}
+        tabs={
+          <>
+            <ProfileTabs activeTab={resolvedTab} isOwnProfile={isOwnProfile} onTabSelect={onTabChange} hiddenTabs={hidden} />
+            {isOwnProfile ? <EditProfileButton /> : null}
+          </>
+        }
         aside={aside}
         showAside={showAside}
         embedded={embedded}
