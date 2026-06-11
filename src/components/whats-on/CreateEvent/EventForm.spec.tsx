@@ -21,6 +21,11 @@ jest.mock('./EventForm.styled', () => ({
   CoordinatesRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DateTimeRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DateTimeSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DeleteButton: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) => (
+    <button data-testid="delete-button" {...props}>
+      {children}
+    </button>
+  ),
   DescriptionFields: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   EmailSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   ErrorMessage: ({ children }: { children: React.ReactNode }) => <span data-testid="error-message">{children}</span>,
@@ -174,6 +179,11 @@ jest.mock('@mui/icons-material/Add', () => ({
 jest.mock('@mui/icons-material/Event', () => ({
   __esModule: true,
   default: () => <span data-testid="event-icon" />
+}))
+
+jest.mock('@mui/icons-material/DeleteOutline', () => ({
+  __esModule: true,
+  default: () => <span data-testid="delete-outline-icon" />
 }))
 
 jest.mock('@mui/icons-material/InfoOutlined', () => ({
@@ -1099,6 +1109,55 @@ describe('EventForm', () => {
       })
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
       expect(screen.getByLabelText('create_event.start')).toHaveAttribute('data-helper-text', '')
+    })
+  })
+
+  describe('delete action', () => {
+    function mockEditMode() {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState(),
+        errors: {},
+        mode: 'edit',
+        setField: mockSetField,
+        markRequiredFields: jest.fn(),
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: true,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    }
+
+    it('should render the delete button in edit mode when onDelete is provided', () => {
+      mockEditMode()
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} onDelete={jest.fn()} />)
+
+      expect(screen.getByTestId('delete-button')).toBeInTheDocument()
+    })
+
+    it('should call onDelete when the delete button is clicked', () => {
+      mockEditMode()
+      const onDelete = jest.fn()
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} onDelete={onDelete} />)
+
+      fireEvent.click(screen.getByTestId('delete-button'))
+
+      expect(onDelete).toHaveBeenCalledTimes(1)
+    })
+
+    it('should not render the delete button in create mode', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} onDelete={jest.fn()} />)
+
+      expect(screen.queryByTestId('delete-button')).not.toBeInTheDocument()
+    })
+
+    it('should not render the delete button in edit mode when onDelete is omitted', () => {
+      mockEditMode()
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.queryByTestId('delete-button')).not.toBeInTheDocument()
     })
   })
 })

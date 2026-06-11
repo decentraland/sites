@@ -24,7 +24,7 @@ import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useRemindMe } from '../../hooks/useRemindMe'
 import { appendRealmParam, resolveEventRealm } from '../../utils/whatsOnUrl'
-import { CalendarButton, EventActions, ExploreEventsButton, ShareIconButton } from './EventsPage.styled'
+import { CalendarButton, DeletedNotice, DeletedNoticeLink, EventActions, ExploreEventsButton, ShareIconButton } from './EventsPage.styled'
 import { JumpPageContainer, JumpPageContent } from './PageContainer.styled'
 
 function buildJumpEventShareUrl(event: JumpEvent): string {
@@ -127,8 +127,24 @@ const EventsPage = () => {
     }
   }, [event])
 
+  const isEventDeleted = Boolean(event?.deleted_by_user || event?.deleted_by_admin)
+
   const actions = useMemo(() => {
     if (!cardData || !cardData.start_at) return null
+
+    // Soft-deleted hangouts stay reachable by URL but lose every action.
+    if (isEventDeleted) {
+      return (
+        <EventActions isMobile={isMobile}>
+          <DeletedNotice>
+            {formatMessage('component.jump.events_page.deleted_notice_prefix')}{' '}
+            <DeletedNoticeLink to="/whats-on">{formatMessage('component.jump.events_page.deleted_notice_link')}</DeletedNoticeLink>{' '}
+            {formatMessage('component.jump.events_page.deleted_notice_suffix')}
+          </DeletedNotice>
+        </EventActions>
+      )
+    }
+
     const hasEnded = eventHasEnded(cardData)
     if (cardData.live) return null
 
@@ -168,7 +184,18 @@ const EventsPage = () => {
         </ShareIconButton>
       </EventActions>
     )
-  }, [cardData, isMobile, isReminded, remindLoading, isShaking, formatMessage, handleAddToCalendar, handleRemindToggle, handleShare])
+  }, [
+    cardData,
+    isEventDeleted,
+    isMobile,
+    isReminded,
+    remindLoading,
+    isShaking,
+    formatMessage,
+    handleAddToCalendar,
+    handleRemindToggle,
+    handleShare
+  ])
 
   const creator = creatorQuery.data ?? undefined
 

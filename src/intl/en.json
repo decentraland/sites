@@ -764,7 +764,10 @@
       "events_page": {
         "explore_events_button": "EXPLORE EVENTS",
         "jump_in_button": "Jump In",
-        "calendar_label": "Jump In"
+        "calendar_label": "Jump In",
+        "deleted_notice_prefix": "This hangout is no longer available. Browse",
+        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_suffix": "to discover more."
       },
       "invalid_page": {
         "title": "Oops!",
@@ -1065,6 +1068,16 @@
     "copy_link": "Copy link",
     "copied": "Copied!",
     "edit": "Edit",
+    "delete": "Delete",
+    "delete_modal": {
+      "title": "Are you sure you want to delete your hangout?",
+      "subtitle": "This hangout will be permanently removed from your hangouts. This action can’t be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete hangout",
+      "toast_title": "Hangout Deleted successfully",
+      "toast_description": "Your hangout {name} has been deleted successfully!",
+      "error": "We couldn't delete your hangout. Please try again."
+    },
     "by_prefix": "By ",
     "unknown_creator": "Unknown",
     "recurrent_weekly": "Repeats weekly",

@@ -582,6 +582,52 @@ describe('eventsClient', () => {
     })
   })
 
+  describe('when deleteEvent mutation is called', () => {
+    const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
+
+    describe('and the response is ok', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test')
+        mockFetchWithIdentity.mockResolvedValue({ ok: true, json: () => Promise.resolve({ ok: true }) })
+      })
+
+      it('should DELETE the event by id', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(eventsClient.endpoints.deleteEvent.initiate({ eventId: 'ev 1', identity: mockIdentity }))
+        expect(mockFetchWithIdentity).toHaveBeenCalledWith('https://events.test/events/ev%201', mockIdentity, 'DELETE')
+        expect(result.data).toBeUndefined()
+        expect(result.error).toBeUndefined()
+      })
+    })
+
+    describe('and the response is not ok', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test')
+        mockFetchWithIdentity.mockResolvedValue({ ok: false, status: 403, json: () => Promise.resolve({ ok: false, error: 'forbidden' }) })
+        jest.spyOn(console, 'error').mockImplementation(() => undefined)
+      })
+
+      it('should surface the status as the mutation error', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(eventsClient.endpoints.deleteEvent.initiate({ eventId: 'ev-1', identity: mockIdentity }))
+        expect(result.error).toEqual(expect.objectContaining({ status: 403 }))
+      })
+    })
+
+    describe('and fetch throws', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://events.test')
+        mockFetchWithIdentity.mockRejectedValue(new Error('offline'))
+      })
+
+      it('should return FETCH_ERROR', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(eventsClient.endpoints.deleteEvent.initiate({ eventId: 'ev-1', identity: mockIdentity }))
+        expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+      })
+    })
+  })
+
   describe('when getUpcomingEvents is dispatched twice with the same identity', () => {
     const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
 
