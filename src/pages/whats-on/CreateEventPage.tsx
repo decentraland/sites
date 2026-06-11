@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { skipToken } from '@reduxjs/toolkit/query'
 import { useTranslation } from '@dcl/hooks'
-import { Alert, Snackbar } from 'decentraland-ui2'
+import { Alert, AlertTitle, Snackbar } from 'decentraland-ui2'
 import { CreateEventSuccess } from '../../components/whats-on/CreateEvent/CreateEventSuccess'
 import { EventForm } from '../../components/whats-on/CreateEvent/EventForm'
 import { DeleteEventModal } from '../../components/whats-on/DeleteEventModal'
@@ -141,6 +141,7 @@ function CreateEventPage() {
       >
         {feedback ? (
           <Alert severity={feedback.severity} onClose={clearFeedback} variant="filled">
+            {feedback.title && <AlertTitle>{feedback.title}</AlertTitle>}
             {feedback.message}
           </Alert>
         ) : undefined}

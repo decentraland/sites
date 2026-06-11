@@ -891,6 +891,13 @@
         "body": "Votre signalement a bien été reçu et sera examiné rapidement.",
         "dismiss": "Vous pouvez maintenant fermer cette fenêtre."
       }
+    },
+    "jump": {
+      "events_page": {
+        "deleted_notice_prefix": "Ce hangout n’est plus disponible. Parcourez",
+        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_suffix": "pour en découvrir plus."
+      }
     }
   },
   "create_event": {

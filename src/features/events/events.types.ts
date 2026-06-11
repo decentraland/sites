@@ -59,6 +59,7 @@ interface EventEntry {
   // else's. Use the `isDeleted` helper rather than reading these flags directly.
   deleted_by_user?: boolean
   deleted_by_admin?: boolean
+  // Audit fields returned by the API; no UI consumes them yet — reserved for admin/audit surfaces.
   deleted_by?: string | null
   deleted_at?: string | null
   deleted_reason?: string | null

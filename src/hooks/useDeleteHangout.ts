@@ -9,6 +9,7 @@ type DeleteTarget = {
 }
 
 type DeleteFeedback = {
+  title?: string
   message: string
   severity: 'success' | 'error'
 }
@@ -64,6 +65,7 @@ function useDeleteHangout(options: UseDeleteHangoutOptions = {}): UseDeleteHango
     try {
       await deleteEvent({ eventId: target.id, identity }).unwrap()
       setFeedback({
+        title: t('event_detail.delete_modal.toast_title'),
         message: t('event_detail.delete_modal.toast_description', { name: target.name }),
         severity: 'success'
       })
@@ -88,4 +90,3 @@ function useDeleteHangout(options: UseDeleteHangoutOptions = {}): UseDeleteHango
 }
 
 export { useDeleteHangout }
-export type { DeleteFeedback, DeleteTarget, UseDeleteHangoutResult }

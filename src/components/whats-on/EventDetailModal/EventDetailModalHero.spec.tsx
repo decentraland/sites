@@ -105,7 +105,6 @@ jest.mock('./EventDetailModal.styled', () => ({
   ScheduleSubtitle: ({ children }: { children: React.ReactNode }) => <span data-testid="schedule-subtitle">{children}</span>,
   LiveBadgeWrapper: ({ children, ...props }: { children: React.ReactNode } & Record<string, unknown>) => <span {...props}>{children}</span>,
   EditButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="edit-button" {...props} />,
-  DeleteButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="delete-button" {...props} />,
   CreatorLocationRow: ({ children }: { children: React.ReactNode }) => <div data-testid="creator-location-row">{children}</div>,
   LocationRow: ({ children }: { children: React.ReactNode }) => <div data-testid="location-row">{children}</div>,
   LocationText: ({ children }: { children: React.ReactNode }) => <span data-testid="location-text">{children}</span>
@@ -127,11 +126,6 @@ jest.mock('@mui/icons-material/CalendarMonth', () => ({
 jest.mock('@mui/icons-material/Edit', () => ({
   __esModule: true,
   default: () => <span data-testid="edit-icon" />
-}))
-
-jest.mock('@mui/icons-material/DeleteOutline', () => ({
-  __esModule: true,
-  default: () => <span data-testid="delete-icon" />
 }))
 
 jest.mock('@mui/icons-material/NotificationsNone', () => ({

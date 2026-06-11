@@ -896,6 +896,13 @@
         "body": "신고를 접수했습니다. 곧 검토할 예정입니다.",
         "dismiss": "이제 이 창을 닫으셔도 됩니다."
       }
+    },
+    "jump": {
+      "events_page": {
+        "deleted_notice_prefix": "이 행아웃은 더 이상 이용할 수 없습니다.",
+        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_suffix": "에서 더 많은 행아웃을 찾아보세요."
+      }
     }
   },
   "create_event": {

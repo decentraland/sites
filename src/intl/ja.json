@@ -896,6 +896,13 @@
         "body": "報告を受け付けました。内容は順次確認します。",
         "dismiss": "このウィンドウを閉じても問題ありません。"
       }
+    },
+    "jump": {
+      "events_page": {
+        "deleted_notice_prefix": "このハングアウトは利用できなくなりました。",
+        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_suffix": "でさらに探してみましょう。"
+      }
     }
   },
   "create_event": {

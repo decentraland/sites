@@ -61,6 +61,7 @@ describe('useDeleteHangout', () => {
       expect(onDeleted).toHaveBeenCalledTimes(1)
       expect(result.current.isConfirmOpen).toBe(false)
       expect(result.current.feedback).toEqual({
+        title: 'event_detail.delete_modal.toast_title',
         message: 'event_detail.delete_modal.toast_description:{"name":"My Hangout"}',
         severity: 'success'
       })

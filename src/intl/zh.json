@@ -896,6 +896,13 @@
         "body": "我们已收到你的举报,会尽快进行审核。",
         "dismiss": "你现在可以关闭此窗口。"
       }
+    },
+    "jump": {
+      "events_page": {
+        "deleted_notice_prefix": "此聚会已不再可用。浏览",
+        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_suffix": "发现更多。"
+      }
     }
   },
   "create_event": {
