@@ -8,6 +8,9 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
   /* eslint-disable @typescript-eslint/naming-convention */
   '&& .MuiDialog-paper': {
     backgroundColor: DELETE_MODAL_BACKGROUND,
+    // MUI dark mode tints elevated Paper with a translucent white overlay
+    // (elevation24 ≈ 16%), washing out the background color. Disable it.
+    backgroundImage: 'none',
     borderRadius: theme.spacing(3),
     color: dclColors.neutral.softWhite,
     maxWidth: 540,
