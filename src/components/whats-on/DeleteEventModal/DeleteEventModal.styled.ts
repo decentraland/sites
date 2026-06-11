@@ -2,9 +2,11 @@ import { Button, Dialog, DialogActions, Typography, dclColors, styled } from 'de
 
 const DELETE_MODAL_BACKGROUND = '#2E1041'
 
+// Doubled `&&` raises specificity so these rules deterministically beat the theme's
+// paper/button styles regardless of Emotion style-injection order (which varies per route).
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   /* eslint-disable @typescript-eslint/naming-convention */
-  '& .MuiDialog-paper': {
+  '&& .MuiDialog-paper': {
     backgroundColor: DELETE_MODAL_BACKGROUND,
     borderRadius: theme.spacing(3),
     color: dclColors.neutral.softWhite,
@@ -37,13 +39,15 @@ const Subtitle = styled(Typography)({
 // Light cancel button per the design: soft-white surface with dark text,
 // in contrast with the red destructive confirm.
 const CancelActionButton = styled(Button)({
-  backgroundColor: dclColors.neutral.softWhite,
-  color: dclColors.neutral.softBlack1,
   /* eslint-disable @typescript-eslint/naming-convention */
-  '&:hover': {
+  '&&': {
+    backgroundColor: dclColors.neutral.softWhite,
+    color: dclColors.neutral.softBlack1
+  },
+  '&&:hover': {
     backgroundColor: dclColors.neutral.gray5
   },
-  '&.Mui-disabled': {
+  '&&.Mui-disabled': {
     backgroundColor: dclColors.neutral.gray4,
     color: dclColors.neutral.gray1
   }
