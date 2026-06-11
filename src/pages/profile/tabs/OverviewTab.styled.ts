@@ -42,16 +42,20 @@ const SectionTitle = styled(Typography)({
   textTransform: 'uppercase'
 })
 
-// Figma I322:49174;288:27826 — badges grid: flex row, gap 30
-const BadgesRow = styled(Box)({
+// Figma I322:49174;288:27826 — badges grid: flex row, gap 30.
+// Mobile (Figma 167:85490) tightens the gap so four smaller badges fit per row.
+const BadgesRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexWrap: 'wrap',
   gap: 30,
-  alignItems: 'center'
-})
+  alignItems: 'center',
+  [theme.breakpoints.down('sm')]: {
+    gap: 12
+  }
+}))
 
-// Figma `Badges` component — 86×86 slot
-const BadgeSlot = styled(Box)({
+// Figma `Badges` component — 86×86 slot (72×72 on phones, four per row).
+const BadgeSlot = styled(Box)(({ theme }) => ({
   width: 86,
   height: 86,
   display: 'flex',
@@ -61,8 +65,12 @@ const BadgeSlot = styled(Box)({
   border: 'none',
   padding: 0,
   cursor: 'default',
-  outline: 'none'
-})
+  outline: 'none',
+  [theme.breakpoints.down('sm')]: {
+    width: 72,
+    height: 72
+  }
+}))
 
 const BadgeImage = styled('img')({
   width: '100%',

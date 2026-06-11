@@ -985,7 +985,8 @@
       "edit": "編集",
       "back": "戻る",
       "open_menu": "プロフィールメニューを開く",
-      "logout": "ログアウト"
+      "logout": "ログアウト",
+      "share_profile": "プロフィールを共有"
     },
     "friends_modal": {
       "title": "友達 ({count})",

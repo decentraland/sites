@@ -985,7 +985,8 @@
       "edit": "Editar",
       "back": "Volver",
       "open_menu": "Abrir menú de perfil",
-      "logout": "Cerrar sesión"
+      "logout": "Cerrar sesión",
+      "share_profile": "Compartir perfil"
     },
     "friends_modal": {
       "title": "Amigos ({count})",

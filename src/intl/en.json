@@ -1458,7 +1458,8 @@
       "edit": "Edit",
       "back": "Back",
       "open_menu": "Open profile menu",
-      "logout": "Logout"
+      "logout": "Logout",
+      "share_profile": "Share Profile"
     },
     "friends_modal": {
       "title": "Friends ({count})",

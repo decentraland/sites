@@ -980,7 +980,8 @@
       "edit": "Modifier",
       "back": "Retour",
       "open_menu": "Ouvrir le menu du profil",
-      "logout": "Déconnexion"
+      "logout": "Déconnexion",
+      "share_profile": "Partager le profil"
     },
     "friends_modal": {
       "title": "Amis ({count})",

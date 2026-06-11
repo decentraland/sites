@@ -985,7 +985,8 @@
       "edit": "편집",
       "back": "뒤로",
       "open_menu": "프로필 메뉴 열기",
-      "logout": "로그아웃"
+      "logout": "로그아웃",
+      "share_profile": "프로필 공유"
     },
     "friends_modal": {
       "title": "친구 ({count})",

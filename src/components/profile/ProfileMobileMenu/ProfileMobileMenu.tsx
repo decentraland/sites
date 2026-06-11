@@ -189,7 +189,8 @@ const ProfileMobileNav = memo(
               </DrawerCta>
             ) : null}
             <DrawerCta variant="outlined" color="inherit" startIcon={<ShareOutlinedIcon />} onClick={handleShareProfile}>
-              {t(hasCopiedInvite ? 'profile.header.invite_copied' : 'profile.header.invite_friends')}
+              {/* Mobile root copy per Figma 322:49246 — "Share Profile" (the action still copies the invite link). */}
+              {t(hasCopiedInvite ? 'profile.header.invite_copied' : 'profile.header.share_profile')}
             </DrawerCta>
           </CtaRow>
         ) : (

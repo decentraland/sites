@@ -985,7 +985,8 @@
       "edit": "编辑",
       "back": "返回",
       "open_menu": "打開個人資料選單",
-      "logout": "登出"
+      "logout": "登出",
+      "share_profile": "分享个人资料"
     },
     "friends_modal": {
       "title": "好友 ({count})",
