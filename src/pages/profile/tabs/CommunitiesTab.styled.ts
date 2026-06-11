@@ -1,10 +1,11 @@
 import { Box, Typography, styled } from 'decentraland-ui2'
 
 // Figma 322:59967 — 5 cards per row at desktop, vertical cards with 1:1
-// thumbnail. The breakpoints scale down gracefully on smaller viewports.
+// thumbnail. The breakpoints scale down gracefully on smaller viewports;
+// phones show one full-width card per row (Figma mobile communities 294:50475).
 const CommunityRow = styled(Box)(({ theme }) => ({
   display: 'grid',
-  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+  gridTemplateColumns: 'minmax(0, 1fr)',
   gap: theme.spacing(2),
   [theme.breakpoints.up('sm')]: {
     gridTemplateColumns: 'repeat(3, minmax(0, 1fr))'

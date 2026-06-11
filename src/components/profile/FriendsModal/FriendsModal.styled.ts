@@ -13,7 +13,16 @@ const FriendsDialog = styled(Dialog)(({ theme }) => ({
     border: '1px solid rgba(255, 255, 255, 0.08)',
     borderRadius: 16,
     color: theme.palette.common.white,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    // Full-screen list on phones (Figma 254:58965 "Friends Modal Mobile").
+    [theme.breakpoints.down('sm')]: {
+      maxWidth: '100%',
+      maxHeight: '100%',
+      height: '100%',
+      margin: 0,
+      borderRadius: 0,
+      border: 'none'
+    }
   }
 }))
 

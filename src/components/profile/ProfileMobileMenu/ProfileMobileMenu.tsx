@@ -33,11 +33,11 @@ import {
   DrawerHeader,
   DrawerIconButton,
   LogoutButton,
-  MobileDrawer,
   MutualDot,
   MutualRow,
   MutualSlot,
   MutualStack,
+  NavScreen,
   SectionDivider,
   TabChevron,
   TabItem,
@@ -51,16 +51,18 @@ import {
   UserNameColumn
 } from './ProfileMobileMenu.styled'
 
-interface ProfileMobileMenuProps {
-  open: boolean
-  onClose: () => void
+interface ProfileMobileNavProps {
   address: string
   displayName: string
   isOwnProfile: boolean
-  activeTab: ProfileTab
+  activeTab?: ProfileTab
   onTabSelect: (tab: ProfileTab) => void
-  /** Tabs hidden by `useProfileTabAvailability`. The drawer applies the same filter as the desktop nav. */
+  /** Tabs hidden by `useProfileTabAvailability`. The nav applies the same filter as the desktop nav. */
   hiddenTabs?: Set<ProfileTab>
+  /** Back chevron in the top row — browser/back navigation owned by the mount. */
+  onBack?: () => void
+  /** X in the top row — only modal mounts close the profile, so the row hides it otherwise. */
+  onClose?: () => void
 }
 
 function shortenAddress(value: string): string {
@@ -68,14 +70,20 @@ function shortenAddress(value: string): string {
   return `${value.slice(0, 6)}…${value.slice(-4)}`
 }
 
-const ProfileMobileMenu = memo(
-  ({ open, onClose, address, displayName, isOwnProfile, activeTab, onTabSelect, hiddenTabs }: ProfileMobileMenuProps) => {
+/**
+ * Mobile root screen of the profile (Figma 167:85610 member / 322:49246 own): full-width
+ * navigation list — identity block, friendship/share CTAs and one row per visible tab.
+ * Replaces the old side-drawer; on mobile each tab then renders as its own sub-screen.
+ */
+const ProfileMobileNav = memo(
+  ({ address, displayName, isOwnProfile, activeTab, onTabSelect, hiddenTabs, onBack, onClose }: ProfileMobileNavProps) => {
     const t = useFormatMessage()
     const { hasValidIdentity } = useAuthIdentity()
     const { disconnect } = useWalletAddress()
     const navigate = useNavigate()
     const canQueryFriendship = !isOwnProfile && hasValidIdentity
     const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false)
+    const [isMutualModalOpen, setIsMutualModalOpen] = useState(false)
     const [hasCopiedInvite, setHasCopiedInvite] = useState(false)
 
     const { status: friendshipStatus, isLoading: isLoadingFriendship } = useFriendshipStatus(canQueryFriendship ? address : undefined)
@@ -136,19 +144,26 @@ const ProfileMobileMenu = memo(
 
     const handleLogout = useCallback(() => {
       void disconnect()
-      onClose()
-    }, [disconnect, onClose])
+    }, [disconnect])
 
     return (
-      <MobileDrawer anchor="right" open={open} onClose={onClose}>
-        <DrawerHeader>
-          <DrawerIconButton aria-label={t('profile.header.back')} onClick={onClose}>
-            <ArrowBackIosNewIcon fontSize="small" />
-          </DrawerIconButton>
-          <DrawerIconButton aria-label={t('profile.header.close_profile')} onClick={onClose}>
-            <CloseIcon />
-          </DrawerIconButton>
-        </DrawerHeader>
+      <NavScreen>
+        {onBack || onClose ? (
+          <DrawerHeader>
+            {onBack ? (
+              <DrawerIconButton aria-label={t('profile.header.back')} onClick={onBack}>
+                <ArrowBackIosNewIcon fontSize="small" />
+              </DrawerIconButton>
+            ) : (
+              <span />
+            )}
+            {onClose ? (
+              <DrawerIconButton aria-label={t('profile.header.close_profile')} onClick={onClose}>
+                <CloseIcon />
+              </DrawerIconButton>
+            ) : null}
+          </DrawerHeader>
+        ) : null}
         <UserBlock>
           <ProfileAvatar address={address} size={76} />
           <UserNameColumn>
@@ -180,7 +195,11 @@ const ProfileMobileMenu = memo(
         ) : (
           <>
             {mutualCount > 0 ? (
-              <MutualRow>
+              <MutualRow
+                type="button"
+                onClick={() => setIsMutualModalOpen(true)}
+                aria-label={t('profile.friends_modal.mutual_title', { count: mutualCount })}
+              >
                 <MutualStack>
                   {mutualSlots.map((slot, idx) =>
                     slot.address ? (
@@ -216,15 +235,7 @@ const ProfileMobileMenu = memo(
             // eslint-disable-next-line @typescript-eslint/naming-convention -- React component alias must be PascalCase
             const LeadingIcon = TAB_ICONS.get(tab.id)
             return (
-              <TabItem
-                key={tab.id}
-                type="button"
-                $active={tab.id === activeTab}
-                onClick={() => {
-                  onTabSelect(tab.id)
-                  onClose()
-                }}
-              >
+              <TabItem key={tab.id} type="button" $active={tab.id === activeTab} onClick={() => onTabSelect(tab.id)}>
                 <TabLeading>{LeadingIcon ? <LeadingIcon fontSize="small" /> : null}</TabLeading>
                 <TabLabel>{t(tab.labelKey)}</TabLabel>
                 <TabChevron>
@@ -248,15 +259,26 @@ const ProfileMobileMenu = memo(
             onClose={() => setIsFriendsModalOpen(false)}
             onSelect={friend => {
               setIsFriendsModalOpen(false)
-              onClose()
               navigate(`/profile/${friend.address.toLowerCase()}`)
             }}
           />
-        ) : null}
-      </MobileDrawer>
+        ) : (
+          <FriendsModal
+            open={isMutualModalOpen}
+            onClose={() => setIsMutualModalOpen(false)}
+            mutualOfAddress={address}
+            onSelect={friend => {
+              setIsMutualModalOpen(false)
+              navigate(`/profile/${friend.address.toLowerCase()}`)
+            }}
+          />
+        )}
+      </NavScreen>
     )
   }
 )
 
-export { ProfileMobileMenu }
-export type { ProfileMobileMenuProps }
+ProfileMobileNav.displayName = 'ProfileMobileNav'
+
+export { ProfileMobileNav }
+export type { ProfileMobileNavProps }

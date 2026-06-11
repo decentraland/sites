@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Typography } from 'decentraland-ui2'
 import { ProfileSurface } from '../../components/profile/ProfileSurface'
 import type { ProfileTab } from '../../components/profile/ProfileTabs'
@@ -22,6 +22,8 @@ function isValidTab(value: string | undefined): value is ProfileTab {
 function ProfilePage() {
   const t = useFormatMessage()
   const navigate = useNavigate()
+  // Keep the query string (`?env=…` overrides and share params) across tab navigation.
+  const { search } = useLocation()
   const { address, tab } = useParams<{ address: string; tab?: string }>()
   const { address: viewerAddress } = useAuthIdentity()
 
@@ -46,7 +48,10 @@ function ProfilePage() {
       address={normalizedAddress}
       isOwnProfile={isOwnProfile}
       activeTab={requestedTab}
-      onTabChange={nextTab => navigate(`/profile/${normalizedAddress}/${nextTab}`)}
+      onTabChange={nextTab => navigate({ pathname: `/profile/${normalizedAddress}/${nextTab}`, search })}
+      // No tab segment in the URL → mobile renders the navigation root screen.
+      hasExplicitTab={isValidTab(tab)}
+      onExitTab={() => navigate({ pathname: `/profile/${normalizedAddress}`, search })}
       manageDocumentTitle
     />
   )

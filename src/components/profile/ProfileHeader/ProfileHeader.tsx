@@ -13,8 +13,6 @@ import CloseIcon from '@mui/icons-material/Close'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import MenuIcon from '@mui/icons-material/Menu'
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
@@ -50,7 +48,6 @@ import {
   FriendCtaButton,
   HeaderRoot,
   IdentityBlock,
-  MobileMenuIconButton,
   MoreActionsButton,
   MutualAvatarSlot,
   MutualFriendsRow,
@@ -71,8 +68,6 @@ interface ProfileHeaderProps {
   onClose?: () => void
   /** When set, a back chevron renders before the avatar. Used when the profile modal opens on top of another modal. */
   onBack?: () => void
-  /** When set, renders the mobile hamburger (visible only `<md`) — clicking it opens the tabs drawer. */
-  onOpenMenu?: () => void
   /** When true, the header is rendered inside a parent modal. Suppresses controls that would stack a second
    * dialog (FriendsModal). Friends-list is only available on the standalone /profile/:address route. */
   embedded?: boolean
@@ -86,7 +81,7 @@ function truncateAddress(value: string): string {
 // `getFriendButtonConfig` lives in `./ProfileHeader.helpers` so `ProfileMobileMenu` can reuse the
 // same logic without duplicating the friendship-status switch.
 
-function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu, embedded = false }: ProfileHeaderProps) {
+function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = false }: ProfileHeaderProps) {
   const t = useFormatMessage()
   const isMobile = useTabletAndBelowMediaQuery()
   const { name, avatar, backgroundColor } = useProfileAvatar(address)
@@ -293,11 +288,6 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu, emb
             </Menu>
           </>
         )}
-        {onOpenMenu ? (
-          <MobileMenuIconButton aria-label={t('profile.header.open_menu')} onClick={onOpenMenu}>
-            <MenuIcon />
-          </MobileMenuIconButton>
-        ) : null}
         {onClose ? (
           <CloseIconButton aria-label={t('profile.header.close_profile')} onClick={onClose}>
             <CloseIcon />

@@ -1,2 +1,2 @@
-export { ProfileMobileMenu } from './ProfileMobileMenu'
-export type { ProfileMobileMenuProps } from './ProfileMobileMenu'
+export { ProfileMobileNav } from './ProfileMobileMenu'
+export type { ProfileMobileNavProps } from './ProfileMobileMenu'

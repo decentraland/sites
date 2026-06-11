@@ -27,6 +27,9 @@ function isValidAddress(value: string | undefined): value is `0x${string}` {
 function ProfileModal({ address, open, onClose, onBack, initialTab = 'overview' }: ProfileModalProps) {
   const { address: viewerAddress } = useAuthIdentity()
   const [activeTab, setActiveTab] = useState<ProfileTab>(initialTab)
+  // Mobile renders the navigation root until a tab is explicitly chosen; opening the modal
+  // straight into a non-overview tab (photo flows) counts as an explicit choice.
+  const [hasChosenTab, setHasChosenTab] = useState(initialTab !== 'overview')
   // Photos / places / communities opened from inside this modal swap in-place
   // (rule: never stack a modal on a modal). The back chevron returns to the profile while
   // `onClose` still dismisses the whole dialog.
@@ -43,6 +46,15 @@ function ProfileModal({ address, open, onClose, onBack, initialTab = 'overview' 
     setViewingCommunityId(null)
     setShownAddress(nextAddress.toLowerCase())
     setActiveTab('overview')
+    setHasChosenTab(false)
+  }, [])
+  const handleTabChange = useCallback((nextTab: ProfileTab) => {
+    setActiveTab(nextTab)
+    setHasChosenTab(true)
+  }, [])
+  const handleExitTab = useCallback(() => {
+    setActiveTab('overview')
+    setHasChosenTab(false)
   }, [])
   const handleOpenPhoto = useCallback((imageId: string) => {
     setViewingPlace(null)
@@ -94,7 +106,9 @@ function ProfileModal({ address, open, onClose, onBack, initialTab = 'overview' 
             address={shownAddress}
             isOwnProfile={isOwnProfile}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
+            hasExplicitTab={hasChosenTab}
+            onExitTab={handleExitTab}
             onClose={onClose}
             onBack={onBack}
             embedded

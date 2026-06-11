@@ -1,24 +1,14 @@
-import { Box, Button, Drawer, IconButton, Typography, styled } from 'decentraland-ui2'
+import { Box, Button, IconButton, Typography, styled } from 'decentraland-ui2'
 
-const MobileDrawer = styled(Drawer)(({ theme }) => ({
-  // Sits above the Dialog backdrop (Dialog z-index = 1300) so the drawer also works inside `ProfileModal`.
-  zIndex: theme.zIndex.modal + 1,
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .MuiBackdrop-root': {
-    backgroundColor: 'rgba(0, 0, 0, 0.7)'
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .MuiDrawer-paper': {
-    width: 320,
-    maxWidth: '90vw',
-    background: 'radial-gradient(123.58% 82% at 9.01% 25.79%, #7434B1 0%, #481C6C 37.11%, #2B1040 100%)',
-    color: theme.palette.text.primary,
-    padding: theme.spacing(2),
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(1.5)
-  }
-})) as typeof Drawer
+// Mobile root screen wrapper (Figma 167:85610 / 322:49246) — the navigation list renders
+// full-width inside the profile layout instead of a side drawer.
+const NavScreen = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1.5),
+  width: '100%',
+  minHeight: '60vh'
+}))
 
 const DrawerHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -115,15 +105,27 @@ const DrawerCta = styled(Button)({
   }
 })
 
-const MutualRow = styled(Box)(({ theme }) => ({
+// A <button> — tapping the cluster opens the mutual-friends modal (Figma note 677:58358).
+/* eslint-disable @typescript-eslint/naming-convention */
+const MutualRow = styled('button')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(0.75),
   color: theme.palette.text.primary,
   fontFamily: '"Inter", sans-serif',
   fontWeight: 400,
-  fontSize: 14
+  fontSize: 14,
+  background: 'none',
+  border: 'none',
+  padding: theme.spacing(0.5, 0),
+  borderRadius: 8,
+  cursor: 'pointer',
+  '&:focus-visible': {
+    outline: '2px solid rgba(252, 252, 252, 0.6)',
+    outlineOffset: 2
+  }
 }))
+/* eslint-enable @typescript-eslint/naming-convention */
 
 const MutualStack = styled(Box)({
   display: 'flex',
@@ -242,11 +244,11 @@ export {
   DrawerHeader,
   DrawerIconButton,
   LogoutButton,
-  MobileDrawer,
   MutualDot,
   MutualRow,
   MutualSlot,
   MutualStack,
+  NavScreen,
   SectionDivider,
   TabChevron,
   TabItem,
