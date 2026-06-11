@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, Typography, dclColors, styled } from 'decentraland-ui2'
+import { Dialog, DialogActions, Typography, dclColors, styled } from 'decentraland-ui2'
 
 const DELETE_MODAL_BACKGROUND = '#2E1041'
 
@@ -38,21 +38,79 @@ const Subtitle = styled(Typography)({
 
 // Light cancel button per the design: soft-white surface with dark text,
 // in contrast with the red destructive confirm.
-const CancelActionButton = styled(Button)({
+// Native button instead of MUI Button: the theme styles `containedPrimary` with
+// high-specificity selectors (`.MuiButton-sizeMedium.MuiButton-containedPrimary:not(...)`)
+// that class-based overrides can't reliably beat. Same pattern as EventForm's buttons.
+const CancelActionButton = styled('button')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: 48,
+  border: 'none',
+  borderRadius: 12,
+  padding: '8px 22px',
+  backgroundColor: dclColors.neutral.softWhite,
+  color: dclColors.neutral.softBlack1,
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 14,
+  fontWeight: 600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.48px',
+  cursor: 'pointer',
+  transition: theme.transitions.create(['background-color'], {
+    duration: theme.transitions.duration.standard
+  }),
   /* eslint-disable @typescript-eslint/naming-convention */
-  '&&': {
-    backgroundColor: dclColors.neutral.softWhite,
-    color: dclColors.neutral.softBlack1
-  },
-  '&&:hover': {
+  '&:hover': {
     backgroundColor: dclColors.neutral.gray5
   },
-  '&&.Mui-disabled': {
+  '&:focus-visible': {
+    outline: `2px solid ${dclColors.neutral.softWhite}`,
+    outlineOffset: 2
+  },
+  '&:disabled': {
     backgroundColor: dclColors.neutral.gray4,
-    color: dclColors.neutral.gray1
+    color: dclColors.neutral.gray1,
+    cursor: 'default'
   }
   /* eslint-enable @typescript-eslint/naming-convention */
-})
+}))
+
+// Destructive confirm, same native-button shape as Cancel so both actions match.
+const DeleteActionButton = styled('button')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: 48,
+  border: 'none',
+  borderRadius: 12,
+  padding: '8px 22px',
+  backgroundColor: theme.palette.primary.main,
+  color: dclColors.neutral.softWhite,
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 14,
+  fontWeight: 600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.48px',
+  cursor: 'pointer',
+  transition: theme.transitions.create(['background-color'], {
+    duration: theme.transitions.duration.standard
+  }),
+  /* eslint-disable @typescript-eslint/naming-convention */
+  '&:hover': {
+    backgroundColor: theme.palette.primary.dark
+  },
+  '&:focus-visible': {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: 2
+  },
+  '&:disabled': {
+    backgroundColor: dclColors.neutral.gray4,
+    color: dclColors.neutral.gray1,
+    cursor: 'default'
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
+}))
 
 const StyledDialogActions = styled(DialogActions)(({ theme }) => ({
   padding: 0,
@@ -63,4 +121,4 @@ const StyledDialogActions = styled(DialogActions)(({ theme }) => ({
   /* eslint-enable @typescript-eslint/naming-convention */
 }))
 
-export { CancelActionButton, StyledDialog, StyledDialogActions, Subtitle, Title }
+export { CancelActionButton, DeleteActionButton, StyledDialog, StyledDialogActions, Subtitle, Title }

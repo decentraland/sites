@@ -14,6 +14,11 @@ jest.mock('./DeleteEventModal.styled', () => ({
       {children}
     </button>
   ),
+  DeleteActionButton: ({ children, onClick, disabled }: { children: React.ReactNode; onClick?: () => void; disabled?: boolean }) => (
+    <button onClick={onClick} disabled={disabled}>
+      {children}
+    </button>
+  ),
   StyledDialogActions: ({ children }: { children: React.ReactNode }) => <div data-testid="actions">{children}</div>
 }))
 
