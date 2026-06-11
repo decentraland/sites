@@ -764,7 +764,10 @@
       "events_page": {
         "explore_events_button": "EXPLORE EVENTS",
         "jump_in_button": "Jump In",
-        "calendar_label": "Jump In"
+        "calendar_label": "Jump In",
+        "deleted_notice_prefix": "This hangout is no longer available. Browse",
+        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_suffix": "to discover more."
       },
       "invalid_page": {
         "title": "Oops!",
