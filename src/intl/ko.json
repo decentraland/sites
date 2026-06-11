@@ -992,7 +992,8 @@
       "close": "친구 목록 닫기",
       "search_placeholder": "친구 검색",
       "empty": "아직 친구가 없습니다.",
-      "no_results": "일치하는 친구가 없습니다."
+      "no_results": "일치하는 친구가 없습니다.",
+      "mutual_title": "함께 아는 친구 ({count})"
     },
     "tabs": {
       "overview": "개요",

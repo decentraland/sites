@@ -1465,7 +1465,8 @@
       "close": "Close friends list",
       "search_placeholder": "Search friends",
       "empty": "You have no friends yet.",
-      "no_results": "No matching friends."
+      "no_results": "No matching friends.",
+      "mutual_title": "Mutual Friends ({count})"
     },
     "tabs": {
       "overview": "Overview",

@@ -992,7 +992,8 @@
       "close": "友達リストを閉じる",
       "search_placeholder": "友達を検索",
       "empty": "まだ友達がいません。",
-      "no_results": "該当する友達が見つかりません。"
+      "no_results": "該当する友達が見つかりません。",
+      "mutual_title": "共通の友達（{count}）"
     },
     "tabs": {
       "overview": "概要",

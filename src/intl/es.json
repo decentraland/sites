@@ -992,7 +992,8 @@
       "close": "Cerrar lista de amigos",
       "search_placeholder": "Buscar amigos",
       "empty": "Todavía no tenés amigos.",
-      "no_results": "No hay coincidencias."
+      "no_results": "No hay coincidencias.",
+      "mutual_title": "Amigos en común ({count})"
     },
     "tabs": {
       "overview": "Resumen",

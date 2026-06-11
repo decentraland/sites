@@ -987,7 +987,8 @@
       "close": "Fermer la liste d'amis",
       "search_placeholder": "Rechercher des amis",
       "empty": "Vous n'avez pas encore d'amis.",
-      "no_results": "Aucun résultat."
+      "no_results": "Aucun résultat.",
+      "mutual_title": "Amis en commun ({count})"
     },
     "tabs": {
       "overview": "Aperçu",

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CloseIcon from '@mui/icons-material/Close'
 import { CircularProgress, IconButton } from 'decentraland-ui2'
-import { useFriendsList } from '../../../features/profile/profile.social.rpc'
+import { useFriendsList, useMutualFriendsList } from '../../../features/profile/profile.social.rpc'
 import type { FriendProfile } from '../../../features/profile/profile.social.rpc'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { ProfileAvatar } from '../ProfileAvatar'
@@ -27,6 +27,11 @@ interface FriendsModalProps {
   onClose: () => void
   /** Called when the user picks a friend — typically navigates to their profile. */
   onSelect: (friend: FriendProfile) => void
+  /**
+   * When set, the modal lists the mutual friends between the signed user and this address
+   * (member-profile header cluster) instead of the signed user's own friends list.
+   */
+  mutualOfAddress?: string
 }
 
 function truncateAddress(value: string): string {
@@ -34,9 +39,12 @@ function truncateAddress(value: string): string {
   return `${value.slice(0, 6)}…${value.slice(-4)}`
 }
 
-function FriendsModal({ open, onClose, onSelect }: FriendsModalProps) {
+function FriendsModal({ open, onClose, onSelect, mutualOfAddress }: FriendsModalProps) {
   const t = useFormatMessage()
-  const { friends, total, isLoading } = useFriendsList(open)
+  const isMutualMode = Boolean(mutualOfAddress)
+  const ownFriends = useFriendsList(open && !isMutualMode)
+  const mutualFriends = useMutualFriendsList(mutualOfAddress, open && isMutualMode)
+  const { friends, total, isLoading } = isMutualMode ? mutualFriends : ownFriends
   const [query, setQuery] = useState('')
 
   const filtered = useMemo(() => {
@@ -48,7 +56,9 @@ function FriendsModal({ open, onClose, onSelect }: FriendsModalProps) {
   return (
     <FriendsDialog open={open} onClose={onClose} aria-labelledby="friends-modal-title">
       <DialogHeader>
-        <DialogTitle id="friends-modal-title">{t('profile.friends_modal.title', { count: total ?? friends.length })}</DialogTitle>
+        <DialogTitle id="friends-modal-title">
+          {t(isMutualMode ? 'profile.friends_modal.mutual_title' : 'profile.friends_modal.title', { count: total ?? friends.length })}
+        </DialogTitle>
         <IconButton aria-label={t('profile.friends_modal.close')} onClick={onClose} sx={{ color: 'common.white' }}>
           <CloseIcon />
         </IconButton>

@@ -123,6 +123,7 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu, emb
   })
   const [hasCopiedInvite, setHasCopiedInvite] = useState(false)
   const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false)
+  const [isMutualModalOpen, setIsMutualModalOpen] = useState(false)
   const navigate = useNavigate()
 
   const handleCopyAddress = useCallback(() => {
@@ -241,7 +242,14 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu, emb
         ) : (
           <>
             {mutualCount > 0 ? (
-              <MutualFriendsRow>
+              // Inside the profile modal (`embedded`) the click stays disabled — opening the
+              // friends dialog there would stack a modal on a modal, which the surface forbids.
+              <MutualFriendsRow
+                type="button"
+                onClick={() => setIsMutualModalOpen(true)}
+                disabled={embedded}
+                aria-label={t('profile.friends_modal.mutual_title', { count: mutualCount })}
+              >
                 <MutualStack>
                   {mutualSlots.map((slot, idx) =>
                     slot.kind === 'avatar' ? (
@@ -302,6 +310,17 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, onOpenMenu, emb
           onClose={() => setIsFriendsModalOpen(false)}
           onSelect={friend => {
             setIsFriendsModalOpen(false)
+            navigate(`/profile/${friend.address.toLowerCase()}`)
+          }}
+        />
+      ) : null}
+      {!isOwnProfile && !embedded ? (
+        <FriendsModal
+          open={isMutualModalOpen}
+          onClose={() => setIsMutualModalOpen(false)}
+          mutualOfAddress={address}
+          onSelect={friend => {
+            setIsMutualModalOpen(false)
             navigate(`/profile/${friend.address.toLowerCase()}`)
           }}
         />

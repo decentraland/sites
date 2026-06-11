@@ -320,6 +320,60 @@ function useFriendsList(enabled: boolean = true): UseFriendsListResult {
   return { friends, total, isLoading, error }
 }
 
+/**
+ * Full mutual-friends list between the signed user and `address` — same eager pagination
+ * as `useFriendsList`. Backs the mutual-friends modal; `useMutualFriends` below stays as
+ * the cheap 3-item preview used by the header cluster.
+ */
+function useMutualFriendsList(address: string | undefined, enabled: boolean = true): UseFriendsListResult {
+  const { identity } = useAuthIdentity()
+  const [friends, setFriends] = useState<FriendProfile[]>([])
+  const [total, setTotal] = useState<number | undefined>(undefined)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    if (!enabled || !identity || !address) {
+      setFriends([])
+      setTotal(undefined)
+      setIsLoading(false)
+      setError(null)
+      return undefined
+    }
+    let cancelled = false
+    setIsLoading(true)
+    setError(null)
+    void (async () => {
+      try {
+        const c = await getClient(identity)
+        const all: FriendProfile[] = []
+        let offset = 0
+        let totalCount: number | undefined
+        while (!cancelled) {
+          const response = await c.getMutualFriends(address.toLowerCase(), { limit: FRIENDS_PAGE_SIZE, offset })
+          if (cancelled) return
+          all.push(...response.friends)
+          totalCount = response.paginationData?.total ?? totalCount
+          if (response.friends.length < FRIENDS_PAGE_SIZE) break
+          offset += FRIENDS_PAGE_SIZE
+        }
+        if (cancelled) return
+        setFriends(all)
+        setTotal(totalCount ?? all.length)
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)))
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [enabled, identity, address])
+
+  return { friends, total, isLoading, error }
+}
+
 const mutualCache = new Map<string, { count: number; friends: FriendProfile[] }>()
 const mutualSubscribers = new Map<string, Set<() => void>>()
 
@@ -460,7 +514,7 @@ function useBlockUser(): UseBlockUserResult {
   return { setBlocked, isLoading, error }
 }
 
-export { useBlockUser, useFriendsCount, useFriendsList, useFriendshipStatus, useMutualFriends, useUpsertFriendship }
+export { useBlockUser, useFriendsCount, useFriendsList, useFriendshipStatus, useMutualFriends, useMutualFriendsList, useUpsertFriendship }
 export type {
   FriendProfile,
   FriendshipAction,

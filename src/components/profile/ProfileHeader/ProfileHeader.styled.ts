@@ -120,12 +120,38 @@ const ActionsBlock = styled(Box)(({ theme }) => ({
   }
 }))
 
-const MutualFriendsRow = styled(Box)(({ theme }) => ({
+// Rendered as a <button> (Figma note 677:58358: "Mutual friends should be clickable") —
+// clicking opens the mutual-friends modal. Carries its own reset + interactive states.
+/* eslint-disable @typescript-eslint/naming-convention */
+const MutualFriendsRow = styled('button')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(0.75),
-  color: '#ECEBED'
+  color: '#ECEBED',
+  background: 'none',
+  border: 'none',
+  padding: theme.spacing(0.5, 1),
+  marginLeft: -theme.spacing(1),
+  borderRadius: 8,
+  font: 'inherit',
+  cursor: 'pointer',
+  transition: 'background-color 150ms ease',
+  '&:hover': {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)'
+  },
+  '&:focus-visible': {
+    outline: '2px solid rgba(252, 252, 252, 0.6)',
+    outlineOffset: 2
+  },
+  '&:active': {
+    backgroundColor: 'rgba(255, 255, 255, 0.14)'
+  },
+  '&:disabled': {
+    cursor: 'default',
+    backgroundColor: 'transparent'
+  }
 }))
+/* eslint-enable @typescript-eslint/naming-convention */
 
 const MutualStack = styled(Box)({
   display: 'flex',

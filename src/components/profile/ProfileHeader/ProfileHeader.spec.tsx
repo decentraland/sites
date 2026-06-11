@@ -23,16 +23,18 @@ jest.mock('../../../config/env', () => ({
   getEnv: () => undefined
 }))
 
+const useMutualFriendsMock = jest.fn()
 jest.mock('../../../features/profile/profile.social.rpc', () => ({
   useFriendshipStatus: () => ({ status: 'none', isLoading: false, error: null }),
   useFriendsCount: () => ({ count: undefined, isLoading: false, error: null }),
   useUpsertFriendship: () => ({ upsert: jest.fn(), isLoading: false, error: null }),
-  useMutualFriends: () => ({ count: 0, friends: [], isLoading: false, error: null }),
+  useMutualFriends: () => useMutualFriendsMock(),
   useBlockUser: () => ({ setBlocked: jest.fn(), isLoading: false, error: null })
 }))
 
 jest.mock('../FriendsModal', () => ({
-  FriendsModal: () => null
+  FriendsModal: ({ open, mutualOfAddress }: { open: boolean; mutualOfAddress?: string }) =>
+    open ? mockReact.createElement('div', { 'data-testid': 'friends-modal', 'data-mutual-of': mutualOfAddress }) : null
 }))
 
 jest.mock('../ProfileAvatar', () => ({
@@ -101,6 +103,7 @@ function renderHeader(isOwnProfile: boolean) {
 
 describe('ProfileHeader', () => {
   beforeEach(() => {
+    useMutualFriendsMock.mockReturnValue({ count: 0, friends: [], isLoading: false, error: null })
     useProfileAvatarMock.mockReturnValue({
       avatar: { name: 'Mojito', hasClaimedName: true, userId: address },
       avatarForCard: undefined,
@@ -108,8 +111,11 @@ describe('ProfileHeader', () => {
       name: 'Mojito',
       backgroundColor: '#ff4bed'
     })
-    Object.assign(navigator, {
-      clipboard: { writeText: jest.fn().mockResolvedValue(undefined) }
+    // `defineProperty` (not Object.assign) — userEvent.setup() leaves a getter-only
+    // `navigator.clipboard` stub behind that a plain assign cannot overwrite.
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: jest.fn().mockResolvedValue(undefined) },
+      configurable: true
     })
   })
 
@@ -147,6 +153,17 @@ describe('ProfileHeader', () => {
     renderHeader(true)
     expect(screen.queryByRole('button', { name: /profile\.header\.get_a_name/i })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /profile\.header\.invite_friends/i })).toBeInTheDocument()
+  })
+
+  it('should open the mutual friends modal when clicking the mutual friends cluster on Member view', async () => {
+    useMutualFriendsMock.mockReturnValue({ count: 2, friends: [], isLoading: false, error: null })
+    const user = userEvent.setup()
+    renderHeader(false)
+
+    await user.click(screen.getByTestId('mutual-friends-row'))
+
+    const modal = screen.getByTestId('friends-modal')
+    expect(modal.getAttribute('data-mutual-of')).toBe(address)
   })
 
   it('should copy the address to the clipboard when clicking the copy button', async () => {
