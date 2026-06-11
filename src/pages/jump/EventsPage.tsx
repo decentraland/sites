@@ -66,6 +66,7 @@ const EventsPage = () => {
 
   const isLoading = byIdQuery.isLoading || byPositionQuery.isLoading
   const event = idParam ? byIdQuery.data : byPositionQuery.data?.[0]
+  const isEventDeleted = Boolean(event?.deleted_by_user || event?.deleted_by_admin)
 
   const creatorQuery = useGetProfileCreatorQuery({ address: event?.user ?? '' }, { skip: !event?.user })
 
@@ -83,12 +84,15 @@ const EventsPage = () => {
   const cardData: CardData | undefined = useMemo(() => {
     if (!event) return undefined
     const mapped = fromEvent(event)
+    // A deleted hangout must not advertise itself as live nor as ended, even if the backend
+    // still reports it: clearing `finish_at_iso` keeps the card on the plain date row.
+    if (isEventDeleted) return { ...mapped, live: false, finish_at_iso: undefined }
     if (event.live && placesQuery.data) {
       const match = placesQuery.data.find(place => place.title === event.scene_name || place.base_position === event.coordinates.join(','))
       if (match) return { ...mapped, user_count: match.user_count || 0 }
     }
     return mapped
-  }, [event, placesQuery.data])
+  }, [event, placesQuery.data, isEventDeleted])
 
   // Watson-style Remind Me: identity check, optimistic update, bell shake.
   // Cross-API cache invalidation (eventsClient → placesClient JumpEvent tag)
@@ -126,8 +130,6 @@ const EventsPage = () => {
       console.error('Share failed', error)
     }
   }, [event])
-
-  const isEventDeleted = Boolean(event?.deleted_by_user || event?.deleted_by_admin)
 
   const actions = useMemo(() => {
     if (!cardData || !cardData.start_at) return null
