@@ -1,5 +1,7 @@
 import { memo, useCallback, useMemo, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import CheckIcon from '@mui/icons-material/Check'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
@@ -128,8 +130,16 @@ const CommunityCardItem = memo(function CommunityCardItem({ community, isOwnProf
         <CommunityActionRow>
           <CommunityActionButton>
             {/* "JOINED" only makes sense on the viewer's own profile — on a member profile the
-                role belongs to the profile owner, not the viewer, so every card reads "VIEW". */}
-            {t(isOwner || !isOwnProfile ? 'profile.communities.action_view' : 'profile.communities.action_joined')}
+                role belongs to the profile owner, not the viewer, so every card reads "VIEW".
+                The check mark comes from Figma note 677:57902 ("Add a tik to the joined CTA"). */}
+            {isOwner || !isOwnProfile ? (
+              t('profile.communities.action_view')
+            ) : (
+              <>
+                <CheckIcon fontSize="small" />
+                {t('profile.communities.action_joined')}
+              </>
+            )}
           </CommunityActionButton>
           <Tooltip title={copied ? t('profile.communities.copied') : t('profile.communities.copy_link')} placement="top" arrow>
             <CommunityShareButton type="button" onClick={handleShare} aria-label={t('profile.communities.copy_link')}>
