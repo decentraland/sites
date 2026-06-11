@@ -8,23 +8,14 @@ import MapOutlinedIcon from '@mui/icons-material/MapOutlined'
 /* eslint-enable @typescript-eslint/naming-convention */
 import { Box, Button, CircularProgress, Typography } from 'decentraland-ui2'
 import { CatalogCard } from '../../../components/profile/CatalogCard'
+import { FilterChip } from '../../../components/profile/FilterChips'
 import { getEnv } from '../../../config/env'
 import { useGetProfileAssetsQuery } from '../../../features/profile/profile.assets.client'
 import type { AssetCategory, AssetEntry } from '../../../features/profile/profile.assets.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { formatPriceMana, toItemNetwork, toRarity } from './OverviewTab.helpers'
 import { WearableInfoBadges } from './OverviewTab.icons'
-import {
-  AssetFilterChip,
-  AssetsFilters,
-  AssetsHeader,
-  NameActions,
-  NameCard,
-  NameLabel,
-  NameLogoTile,
-  NameRow,
-  NameSuffix
-} from './AssetsTab.styled'
+import { AssetsFilters, AssetsHeader, NameActions, NameCard, NameLabel, NameLogoTile, NameRow, NameSuffix } from './AssetsTab.styled'
 import { EmptyBio, EquippedGrid, LoadingRow } from './OverviewTab.styled'
 
 interface AssetsTabProps {
@@ -168,11 +159,11 @@ function AssetsTab({ address }: AssetsTabProps) {
         {visibleFilters.map(option => {
           const active = effectiveCategory === option.value
           return (
-            <AssetFilterChip
+            <FilterChip
               key={option.value}
               label={t(option.labelKey)}
               icon={option.icon as React.ReactElement}
-              className={active ? 'is-active' : undefined}
+              $active={active}
               onClick={() => setCategory(option.value)}
               clickable
               aria-pressed={active}

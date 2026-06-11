@@ -1,8 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import CheckroomOutlinedIcon from '@mui/icons-material/CheckroomOutlined'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import { Button, Chip, CircularProgress } from 'decentraland-ui2'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined'
+import { Button, CircularProgress } from 'decentraland-ui2'
 import { CatalogCard } from '../../../components/profile/CatalogCard'
+import { FilterChip } from '../../../components/profile/FilterChips'
 import { getEnv } from '../../../config/env'
 import { useGetProfileCreationsQuery } from '../../../features/profile/profile.creations.client'
 import type { CreationItem, CreationsCategory } from '../../../features/profile/profile.creations.client'
@@ -75,17 +80,21 @@ function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
   const header = (
     <CreationsHeader>
       <CreationsFilters>
-        <Chip
+        <FilterChip
+          icon={<CheckroomOutlinedIcon />}
           label={t('profile.creations.filter_wearables')}
-          color={category === 'wearable' ? 'primary' : 'default'}
+          $active={category === 'wearable'}
           onClick={() => setCategory('wearable')}
           clickable
+          aria-pressed={category === 'wearable'}
         />
-        <Chip
+        <FilterChip
+          icon={<EmojiEmotionsOutlinedIcon />}
           label={t('profile.creations.filter_emotes')}
-          color={category === 'emote' ? 'primary' : 'default'}
+          $active={category === 'emote'}
           onClick={() => setCategory('emote')}
           clickable
+          aria-pressed={category === 'emote'}
         />
       </CreationsFilters>
       <ViewAllLink href={accountUrl} target="_blank" rel="noopener noreferrer">

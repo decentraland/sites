@@ -1,4 +1,4 @@
-import { Box, Chip, styled } from 'decentraland-ui2'
+import { Box, styled } from 'decentraland-ui2'
 
 // Card row used for ENS name NFTs — they ship no thumbnail/rarity so they don't
 // belong in the wearable CatalogCard grid. The shape mirrors a "list row" item:
@@ -82,54 +82,4 @@ const AssetsFilters = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1)
 }))
 
-// Filter chip styled to match Figma 322:54170 — outlined pill with icon slot.
-// Selected state uses the brand primary (#FF2D55) instead of MUI's default
-// white-on-primary, so the active filter matches the "MY ASSETS" tab underline
-// and reads as the same brand accent.
-const AssetFilterChip = styled(Chip)(({ theme }) => ({
-  height: 32,
-  borderRadius: 999,
-  paddingLeft: theme.spacing(0.5),
-  paddingRight: theme.spacing(0.5),
-  fontFamily: '"Inter", sans-serif',
-  fontWeight: 600,
-  fontSize: 13,
-  letterSpacing: '0.04em',
-  textTransform: 'uppercase',
-  color: '#FCFCFC',
-  borderColor: 'rgba(255, 255, 255, 0.25)',
-  backgroundColor: 'rgba(255, 255, 255, 0.06)',
-  transition: 'background-color 150ms ease, border-color 150ms ease, color 150ms ease',
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .MuiChip-icon': {
-    color: '#FCFCFC',
-    marginLeft: theme.spacing(0.75),
-    marginRight: -theme.spacing(0.25),
-    fontSize: 18
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .MuiChip-label': {
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1.25)
-  },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '&:hover': {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    borderColor: 'rgba(255, 255, 255, 0.35)'
-  },
-  // Selected: white background + dark text (Figma 322:54170 chip-active state).
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '&.is-active': {
-    backgroundColor: '#FCFCFC',
-    borderColor: '#FCFCFC',
-    color: '#161518',
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    '& .MuiChip-icon': { color: '#161518' },
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    '&:hover': {
-      backgroundColor: 'rgba(252, 252, 252, 0.88)'
-    }
-  }
-}))
-
-export { AssetFilterChip, AssetsFilters, AssetsHeader, NameActions, NameCard, NameLabel, NameLogoTile, NameRow, NameSuffix }
+export { AssetsFilters, AssetsHeader, NameActions, NameCard, NameLabel, NameLogoTile, NameRow, NameSuffix }
