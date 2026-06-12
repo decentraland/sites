@@ -11,6 +11,7 @@ import TranslateRoundedIcon from '@mui/icons-material/TranslateRounded'
 /* eslint-enable @typescript-eslint/naming-convention */
 import { Box, Button, CircularProgress, Tooltip, Typography } from 'decentraland-ui2'
 import { CatalogCard } from '../../../components/profile/CatalogCard'
+import { EditProfileButton } from '../../../components/profile/EditProfileButton'
 import { useProfileBadges } from '../../../features/profile/profile.badges.client'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { useEquippedCollectibles } from '../../../features/profile/profile.wearables.client'
@@ -102,6 +103,7 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
   return (
     <OverviewRoot>
       <InfoSurface>
+        {isOwnProfile ? <EditProfileButton /> : null}
         <section style={{ width: '100%' }}>
           <SectionHeader>
             <SectionTitle>{t('profile.overview.badges')}</SectionTitle>

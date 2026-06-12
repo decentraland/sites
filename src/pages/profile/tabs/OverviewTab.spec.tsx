@@ -29,6 +29,10 @@ jest.mock('./OverviewTab.creator', () => ({
   CreatorByLine: () => null
 }))
 
+jest.mock('../../../components/profile/EditProfileButton', () => ({
+  EditProfileButton: () => mockReact.createElement('button', { 'data-testid': 'edit-profile-button' })
+}))
+
 jest.mock('../../../config/env', () => ({
   getEnv: () => 'https://peer.test'
 }))
@@ -139,6 +143,28 @@ describe('OverviewTab', () => {
     it('should show the no-bio message for a Member viewer', () => {
       renderOverview({ address: '0xabc', isOwnProfile: false })
       expect(screen.getByText('profile.overview.no_bio_member')).toBeInTheDocument()
+    })
+  })
+
+  describe('when rendering the edit CTA', () => {
+    beforeEach(() => {
+      useGetProfileQueryMock.mockReturnValue({
+        data: { avatars: [{ name: 'Brai', hasClaimedName: true }] },
+        isLoading: false
+      })
+    })
+
+    it('should render it inside the info card on the own profile', () => {
+      renderOverview({ address: '0xabc', isOwnProfile: true })
+
+      const infoSurfaces = screen.getAllByTestId('info-surface')
+      expect(infoSurfaces[0]).toContainElement(screen.getByTestId('edit-profile-button'))
+    })
+
+    it('should not render it on a member profile', () => {
+      renderOverview({ address: '0xabc', isOwnProfile: false })
+
+      expect(screen.queryByTestId('edit-profile-button')).not.toBeInTheDocument()
     })
   })
 })

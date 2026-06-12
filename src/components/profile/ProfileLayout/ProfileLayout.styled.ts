@@ -40,10 +40,8 @@ const ProfileCard = styled(Box)({
   flexDirection: 'column'
 })
 
-// `position: relative` anchors the floating EditProfileButton to the tabs row (Figma 322:49174).
 const TabsArea = styled(Box)({
-  width: '100%',
-  position: 'relative'
+  width: '100%'
 })
 
 const BodySplit = styled(Box, {

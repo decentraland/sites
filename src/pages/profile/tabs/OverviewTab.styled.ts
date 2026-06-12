@@ -10,7 +10,10 @@ const OverviewRoot = styled(Box)(({ theme }) => ({
 
 // Figma 288:27808 — info container that wraps Badges + About + Links.
 // Specs: border-radius 16, bg rgba(0,0,0,0.20), padding 30/40, gap 32, column.
+// `position: relative` anchors the floating EditProfileButton (Figma "edit CTAS",
+// absolute right 14 / top 12 of this card) on the own profile.
 const InfoSurface = styled(Box)(({ theme }) => ({
+  position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',

@@ -40,11 +40,11 @@ describe('EditProfileButton', () => {
   })
 
   describe('when rendering the button', () => {
-    it('should show only the edit label without any icon', () => {
+    it('should show the edit label with the pencil icon', () => {
       render(<EditProfileButton />)
 
       const button = screen.getByRole('button', { name: 'profile.header.edit' })
-      expect(button.querySelector('svg')).toBeNull()
+      expect(button.querySelector('svg')).not.toBeNull()
     })
   })
 
