@@ -5,7 +5,7 @@ import CheckroomOutlinedIcon from '@mui/icons-material/CheckroomOutlined'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined'
-import { Button, CircularProgress, EmotePreviewPlayerProvider } from 'decentraland-ui2'
+import { AssetPreviewPlayerProvider, Button, CircularProgress } from 'decentraland-ui2'
 import { CatalogCard } from '../../../components/profile/CatalogCard'
 import { FilterChip } from '../../../components/profile/FilterChips'
 import { getEnv } from '../../../config/env'
@@ -48,8 +48,8 @@ function toCatalogAsset(item: CreationItem) {
 function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
   const t = useFormatMessage()
   const [category, setCategory] = useState<CreationsCategory>('wearable')
-  // Animated emote previews (ui2 EmotePreviewPlayer): one shared iframe, enabled only
-  // while the emotes filter is active so wearables browsing never pays the boot cost.
+  // Live previews on hover (ui2 AssetPreviewPlayer, one shared iframe): the profile
+  // owner's avatar plays hovered emotes and wears hovered wearables.
   const peerUrl = getEnv('PEER_URL') ?? undefined
   const marketplaceServerUrl = (getEnv('MARKETPLACE_API_URL') ?? '').replace(/\/v2\/?$/, '') || undefined
   const isPreviewDev = Boolean(peerUrl?.includes('.zone'))
@@ -130,12 +130,7 @@ function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
   }
 
   return (
-    <EmotePreviewPlayerProvider
-      enabled={category === 'emote'}
-      peerUrl={peerUrl}
-      marketplaceServerUrl={marketplaceServerUrl}
-      dev={isPreviewDev}
-    >
+    <AssetPreviewPlayerProvider enabled peerUrl={peerUrl} marketplaceServerUrl={marketplaceServerUrl} profile={address} dev={isPreviewDev}>
       {header}
       <EquippedGrid sx={{ mt: 0 }}>
         {items.map(item => {
@@ -152,7 +147,7 @@ function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
             <EquippedCardLink key={item.id} href={marketplaceUrl} target="_blank" rel="noopener noreferrer" aria-label={item.name}>
               <CatalogCard
                 asset={toCatalogAsset(item)}
-                emotePreviewUrn={category === 'emote' ? item.urn : undefined}
+                hoverPreviewUrn={item.urn}
                 imageSrc={item.thumbnail}
                 action={null}
                 extraInformation={null}
@@ -160,6 +155,7 @@ function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
                 owners={fallbackLabel}
                 notForSale={!price}
                 withShadow={false}
+                hoverShadow="glow"
                 creatorSlot={<CreatorByLine address={item.creator} />}
                 infoBadges={
                   <WearableInfoBadges
@@ -196,7 +192,7 @@ function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
           <CircularProgress size={22} />
         </LoadingRow>
       ) : null}
-    </EmotePreviewPlayerProvider>
+    </AssetPreviewPlayerProvider>
   )
 }
 

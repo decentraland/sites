@@ -233,34 +233,14 @@ const EquippedGrid = styled(Box)(({ theme }) => ({
   '& > *': {
     minWidth: 0
   },
-  // CatalogCard de ui2 trae ancho fijo (theme.spacing(36) ≈ 288px) y crece en
-  // hover. Forzamos width: 100% al ancho del grid cell y bloqueamos el growth
-  // de altura en ambos estados.
+  // CatalogCard de ui2 trae ancho fijo (theme.spacing(36) ≈ 288px). Forzamos
+  // width: 100% al ancho del grid cell. La altura ya es estable en el card local
+  // (el hover redistribuye espacio imagen↔info sin crecer el card), pero el lock
+  // protege contra la versión publicada de ui2 (height growth legacy) en Vercel.
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '& .MuiCard-root, & .MuiCard-root:hover': {
     width: '100%',
     height: theme.spacing(45)
-  },
-  // Shrink the wearable thumbnail on hover for other-profile cards so the BUY
-  // button doesn't end up overlapping the badge row underneath. Own-profile
-  // cards are wrapped in `EquippedCardLink` (an <a>), so the `div >` selector
-  // scopes this to the non-own case only.
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& > div .MuiCard-root:hover .AssetImageContainer': {
-    height: theme.spacing(20),
-    transition: 'height 0.1s ease-in-out'
-  },
-  // ui2 expands CatalogItemInformationContainer / ExtraInformationContainer on
-  // hover to reveal `action` / `extraInformation`. We always pass `null` for
-  // those, so the expansion produces empty rows (~34px from an empty <p>) that
-  // push the price line into the BUY button. Keep them collapsed on hover.
-  // `!important` is required because ui2 ships the hover rule with the same
-  // specificity tier (single emotion target class) and the cascade order is
-  // not deterministic across HMR — without `!important` the auto-height rule
-  // can win when the styled file is hot-reloaded.
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& > div .MuiCard-root:hover .CatalogItemInformationContainer, & > div .MuiCard-root:hover .ExtraInformationContainer': {
-    display: 'none'
   }
 }))
 

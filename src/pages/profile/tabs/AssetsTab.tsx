@@ -6,7 +6,7 @@ import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined
 import LandscapeOutlinedIcon from '@mui/icons-material/LandscapeOutlined'
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined'
 /* eslint-enable @typescript-eslint/naming-convention */
-import { Box, Button, CircularProgress, EmotePreviewPlayerProvider, Typography } from 'decentraland-ui2'
+import { AssetPreviewPlayerProvider, Box, Button, CircularProgress, Typography } from 'decentraland-ui2'
 import { CatalogCard } from '../../../components/profile/CatalogCard'
 import { FilterChip } from '../../../components/profile/FilterChips'
 import { getEnv } from '../../../config/env'
@@ -153,11 +153,13 @@ function AssetsTab({ address }: AssetsTabProps) {
 
   const visibleFilters = useMemo(() => CATEGORY_FILTERS.filter(option => availableCategories.has(option.value)), [availableCategories])
 
-  // Animated emote previews (ui2 EmotePreviewPlayer): one shared iframe, enabled only
-  // while the emotes filter is active so the other categories never pay the boot cost.
+  // Live previews on hover (ui2 AssetPreviewPlayer, one shared iframe): the avatar plays
+  // hovered emotes and wears hovered wearables. Names / LAND have nothing to preview, so
+  // those categories never pay the iframe boot cost.
   const peerUrl = getEnv('PEER_URL') ?? undefined
   const marketplaceServerUrl = (getEnv('MARKETPLACE_API_URL') ?? '').replace(/\/v2\/?$/, '') || undefined
   const isPreviewDev = Boolean(peerUrl?.includes('.zone'))
+  const canHoverPreview = effectiveCategory === 'wearable' || effectiveCategory === 'emote'
 
   const header = (
     <AssetsHeader>
@@ -201,10 +203,11 @@ function AssetsTab({ address }: AssetsTabProps) {
   }
 
   return (
-    <EmotePreviewPlayerProvider
-      enabled={effectiveCategory === 'emote'}
+    <AssetPreviewPlayerProvider
+      enabled={canHoverPreview}
       peerUrl={peerUrl}
       marketplaceServerUrl={marketplaceServerUrl}
+      profile={address}
       dev={isPreviewDev}
     >
       {header}
@@ -250,13 +253,14 @@ function AssetsTab({ address }: AssetsTabProps) {
               <Box key={nft.id}>
                 <CatalogCard
                   asset={toCatalogAsset(entry)}
-                  emotePreviewUrn={effectiveCategory === 'emote' ? nft.urn : undefined}
+                  hoverPreviewUrn={canHoverPreview ? nft.urn : undefined}
                   imageSrc={nft.image}
                   action={null}
                   extraInformation={null}
                   price={price}
                   notForSale={!price}
                   withShadow={false}
+                  hoverShadow="glow"
                   infoBadges={
                     <WearableInfoBadges
                       category={wearableData?.category}
@@ -287,7 +291,7 @@ function AssetsTab({ address }: AssetsTabProps) {
           <CircularProgress size={22} />
         </LoadingRow>
       ) : null}
-    </EmotePreviewPlayerProvider>
+    </AssetPreviewPlayerProvider>
   )
 }
 

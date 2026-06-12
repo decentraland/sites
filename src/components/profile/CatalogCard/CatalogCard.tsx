@@ -20,8 +20,8 @@ interface CatalogCardProps extends BaseCatalogCardProps {
   hideRarityOnHover?: boolean
   /** Shadow style on hover. */
   hoverShadow?: 'default' | 'glow'
-  /** URN of the emote to animate on hover (requires an `EmotePreviewPlayerProvider` above). */
-  emotePreviewUrn?: string
+  /** URN of the asset to preview on hover — emotes play, wearables dress the avatar (requires an `AssetPreviewPlayerProvider` above). */
+  hoverPreviewUrn?: string
   /** When true, renders the rarity tag as a subdued pastel chip. */
   subduedRarity?: boolean
 }
