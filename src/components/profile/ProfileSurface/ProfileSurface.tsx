@@ -4,6 +4,7 @@ import { useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
 import { AssetsTab, CommunitiesTab, CreationsTab, OverviewTab, PhotosTab, PlacesTab, ReferralRewardsTab } from '../../../pages/profile/tabs'
+import { getDisplayName } from '../../../utils/avatarColor'
 import { AvatarRender } from '../AvatarRender'
 import { ProfileHeader } from '../ProfileHeader'
 import { ProfileLayout } from '../ProfileLayout'
@@ -69,7 +70,13 @@ function ProfileSurface({
   const t = useFormatMessage()
   const isMobile = useTabletAndBelowMediaQuery()
   const { hidden, isReady } = useProfileTabAvailability(address, isOwnProfile)
-  const { name: avatarName } = useProfileAvatar(address)
+  const { name: avatarName, avatar } = useProfileAvatar(address)
+  // "<displayName> | Decentraland" — unclaimed names get the #1234 suffix (ADR-292's
+  // getDisplayName). Empty while the profile loads → fall back to the generic title.
+  const documentTitle = `${
+    getDisplayName({ name: avatarName, hasClaimedName: avatar?.hasClaimedName, ethAddress: avatar?.ethAddress ?? address }) ||
+    t('profile.tabs.overview')
+  } | Decentraland`
   const visibleTab: ProfileTab = isTabAvailable(activeTab, isOwnProfile) ? activeTab : 'overview'
   // While the availability probes are still in flight every data tab sits in `hidden`, so
   // redirecting immediately would bounce ALL deep links to overview. Render the requested
@@ -111,7 +118,7 @@ function ProfileSurface({
     <ProfileLayout header={header} tabs={tabs} aside={aside} showAside={showAside} embedded={embedded}>
       {manageDocumentTitle ? (
         <Helmet>
-          <title>{`${t('profile.tabs.overview')} | Decentraland`}</title>
+          <title>{documentTitle}</title>
         </Helmet>
       ) : null}
       {showMobileRoot ? (
