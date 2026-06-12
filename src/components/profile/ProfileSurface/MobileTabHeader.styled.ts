@@ -7,6 +7,8 @@ const HeaderRow = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(0.5),
   width: '100%',
+  // Breathing room below the fixed navbar so the back button isn't glued to it.
+  paddingTop: theme.spacing(2),
   paddingBottom: theme.spacing(1)
 }))
 

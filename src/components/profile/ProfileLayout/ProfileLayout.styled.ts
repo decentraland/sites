@@ -98,7 +98,8 @@ const AsideArea = styled(Box, {
 
 const BodyArea = styled(Box)(({ theme }) => ({
   flex: '1 1 auto',
-  padding: theme.spacing(3),
+  // 16px on every mobile/tablet width (<md) — 24 squeezed the content too much.
+  padding: theme.spacing(2),
   // Internal scroll keeps the profile header + tabs pinned in modal contexts
   // (Paper has a constrained maxHeight). On the standalone /profile route the
   // page scrolls instead, so this only kicks in when the parent is shorter
@@ -106,9 +107,6 @@ const BodyArea = styled(Box)(({ theme }) => ({
   overflow: 'auto',
   [theme.breakpoints.up('md')]: {
     padding: theme.spacing(4)
-  },
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(2)
   }
 }))
 

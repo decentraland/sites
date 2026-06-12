@@ -23,7 +23,7 @@ const InfoSurface = styled(Box)(({ theme }) => ({
   background: 'rgba(0, 0, 0, 0.20)',
   width: '100%',
   [theme.breakpoints.down('md')]: {
-    padding: theme.spacing(3, 2),
+    padding: theme.spacing(2),
     gap: theme.spacing(3)
   }
 }))
