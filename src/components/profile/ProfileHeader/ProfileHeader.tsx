@@ -5,8 +5,6 @@ import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalance
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import BlockIcon from '@mui/icons-material/Block'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CloseIcon from '@mui/icons-material/Close'
@@ -17,7 +15,11 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import PublicIcon from '@mui/icons-material/Public'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import VerifiedIcon from '@mui/icons-material/Verified'
 import { Button, Menu, MenuItem, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import {
@@ -156,6 +158,12 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
     window.open(`${builderUrl.replace(/\/+$/, '')}/names`, '_blank', 'noopener,noreferrer')
   }, [])
 
+  const handleManageWorld = useCallback(() => {
+    const builderUrl = getEnv('BUILDER_URL')
+    if (!builderUrl) return
+    window.open(`${builderUrl.replace(/\/+$/, '')}/worlds`, '_blank', 'noopener,noreferrer')
+  }, [])
+
   const handleInviteFriends = useCallback(() => {
     if (typeof navigator === 'undefined' || !navigator.clipboard || typeof window === 'undefined') return
     const inviteUrl = `${window.location.origin}/invite/${address}`
@@ -202,6 +210,27 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
       <ActionsBlock>
         {isOwnProfile ? (
           <>
+            {!hasClaimedName ? (
+              <Button
+                variant="contained"
+                color="primary"
+                size={isMobile ? 'small' : 'medium'}
+                startIcon={<VerifiedIcon />}
+                onClick={handleGetAName}
+              >
+                {t('profile.header.get_a_name')}
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                color="primary"
+                size={isMobile ? 'small' : 'medium'}
+                startIcon={<PublicIcon />}
+                onClick={handleManageWorld}
+              >
+                {t('profile.header.manage_world')}
+              </Button>
+            )}
             {typeof friendsCount === 'number' && !embedded ? (
               <Button
                 variant="outlined"
@@ -211,17 +240,6 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
                 onClick={() => setIsFriendsModalOpen(true)}
               >
                 {t('profile.header.friends_count', { count: friendsCount })}
-              </Button>
-            ) : null}
-            {!hasClaimedName ? (
-              <Button
-                variant="contained"
-                color="primary"
-                size={isMobile ? 'small' : 'medium'}
-                startIcon={<BadgeOutlinedIcon />}
-                onClick={handleGetAName}
-              >
-                {t('profile.header.get_a_name')}
               </Button>
             ) : null}
             <Button
