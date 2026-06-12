@@ -101,7 +101,12 @@ const MetadataPanel = styled(Box)(({ theme }) => ({
   overflowX: 'hidden',
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(2)
+  gap: theme.spacing(2),
+  // Stacked layout on mobile: cap the panel so the photo always keeps context above —
+  // long wearables lists scroll inside the panel instead of pushing the photo away.
+  [theme.breakpoints.down('md')]: {
+    maxHeight: '55%'
+  }
 }))
 
 const MetadataHeader = styled(Box)({
