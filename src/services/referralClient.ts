@@ -1,9 +1,8 @@
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import type { AuthIdentity } from '@dcl/crypto'
-import { localStorageGetIdentity } from '@dcl/single-sign-on-client'
 import { signedFetchFactory } from 'decentraland-crypto-fetch'
 import { getEnv } from '../config/env'
+import { resolveActiveIdentity } from '../utils/activeIdentity'
 
 const getReferralApiUrl = (): string => {
   const url = getEnv('REFERRAL_API_URL')
@@ -12,30 +11,6 @@ const getReferralApiUrl = (): string => {
 }
 
 const signedFetch = signedFetchFactory()
-
-function getStoredIdentity(): AuthIdentity | undefined {
-  try {
-    let bestIdentity: AuthIdentity | undefined
-    let bestExpiration = 0
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i)
-      if (!key?.startsWith('single-sign-on-0x')) continue
-      const address = key.replace('single-sign-on-', '')
-      const identity = localStorageGetIdentity(address.toLowerCase())
-      if (!identity) continue
-      const payload = identity.authChain?.[1]?.payload
-      const match = payload ? String(payload).match(/Expiration: ([^\n]+)/) : null
-      const expiration = match ? new Date(match[1]).getTime() : 0
-      if (expiration > bestExpiration) {
-        bestExpiration = expiration
-        bestIdentity = identity
-      }
-    }
-    return bestIdentity
-  } catch {
-    return undefined
-  }
-}
 
 const referralBaseQuery: BaseQueryFn<string | (FetchArgs & { baseUrl?: string }), unknown, FetchBaseQueryError> = async (
   args,
@@ -48,7 +23,10 @@ const referralBaseQuery: BaseQueryFn<string | (FetchArgs & { baseUrl?: string })
     const baseUrl = customBaseUrl ?? getReferralApiUrl()
 
     const fetchFn: typeof fetch = async (input, init) => {
-      const identity = getStoredIdentity()
+      // Resolve through the same pointer/snapshot chain `useWalletAddress` uses —
+      // a raw max-expiration scan over `single-sign-on-0x…` keys can pick a STALE
+      // wallet from a previous session and sign referral calls as the wrong user.
+      const identity = resolveActiveIdentity()
       if (identity) {
         return signedFetch(input as RequestInfo, { ...(init ?? {}), identity })
       }
