@@ -36,6 +36,7 @@ import { redirectToAuth } from '../../../utils/authRedirect'
 import { getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import { FriendsModal } from '../FriendsModal'
 import { ProfileAvatar } from '../ProfileAvatar'
+import { useModalFriendsNavigation } from '../ProfileModal/ModalProfileNavigation'
 import { getFriendButtonConfig } from './ProfileHeader.helpers'
 import {
   ActionsBlock,
@@ -70,8 +71,8 @@ interface ProfileHeaderProps {
   onClose?: () => void
   /** When set, a back chevron renders before the avatar. Used when the profile modal opens on top of another modal. */
   onBack?: () => void
-  /** When true, the header is rendered inside a parent modal. Suppresses controls that would stack a second
-   * dialog (FriendsModal). Friends-list is only available on the standalone /profile/:address route. */
+  /** When true, the header is rendered inside a parent modal: friends / mutual lists open as
+   * modal-stack surfaces (via ModalProfileNavigation) instead of a stacked FriendsModal dialog. */
   embedded?: boolean
 }
 
@@ -152,6 +153,10 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
     })
   }, [address, canQueryFriendship, friendshipStatus, setBlocked])
 
+  // Inside a modal the friends/mutual lists render as stack surfaces (never a dialog on
+  // a dialog); on the standalone page they open the FriendsModal dialog.
+  const openFriendsSurface = useModalFriendsNavigation()
+
   const handleGetAName = useCallback(() => {
     const builderUrl = getEnv('BUILDER_URL')
     if (!builderUrl) return
@@ -231,13 +236,13 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
                 {t('profile.header.manage_world')}
               </Button>
             )}
-            {typeof friendsCount === 'number' && !embedded ? (
+            {typeof friendsCount === 'number' && (!embedded || openFriendsSurface) ? (
               <Button
                 variant="outlined"
                 color="inherit"
                 size={isMobile ? 'small' : 'medium'}
                 startIcon={<PeopleAltOutlinedIcon />}
-                onClick={() => setIsFriendsModalOpen(true)}
+                onClick={() => (embedded && openFriendsSurface ? openFriendsSurface() : setIsFriendsModalOpen(true))}
               >
                 {t('profile.header.friends_count', { count: friendsCount })}
               </Button>
@@ -255,12 +260,12 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
         ) : (
           <>
             {mutualCount > 0 ? (
-              // Inside the profile modal (`embedded`) the click stays disabled — opening the
-              // friends dialog there would stack a modal on a modal, which the surface forbids.
+              // Inside a modal the list opens as a stack surface (never a dialog on a dialog);
+              // the row only stays disabled when no surface navigation is available.
               <MutualFriendsRow
                 type="button"
-                onClick={() => setIsMutualModalOpen(true)}
-                disabled={embedded}
+                onClick={() => (embedded && openFriendsSurface ? openFriendsSurface(address) : setIsMutualModalOpen(true))}
+                disabled={embedded && !openFriendsSurface}
                 aria-label={t('profile.friends_modal.mutual_title', { count: mutualCount })}
               >
                 <MutualStack>

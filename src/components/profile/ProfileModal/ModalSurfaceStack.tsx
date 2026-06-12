@@ -1,5 +1,6 @@
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { CommunityDetailSurface } from '../CommunityDetailModal'
+import { FriendsSurface } from '../FriendsModal/FriendsSurface'
 import { PhotoSurface } from '../PhotoModal/PhotoSurface'
 import { PlaceDetailSurface } from '../PlaceDetailModal/PlaceDetailSurface'
 import { ProfileSurface } from '../ProfileSurface'
@@ -28,6 +29,8 @@ function ModalSurfaceView({ surface, onBack, onClose, onTabChange, onExitTab }: 
       return <PlaceDetailSurface place={surface.place} onBack={onBack} onClose={onClose} />
     case 'community':
       return <CommunityDetailSurface communityId={surface.communityId} onBack={onBack} onClose={onClose} />
+    case 'friends':
+      return <FriendsSurface mutualOfAddress={surface.mutualOf} onBack={onBack} onClose={onClose} />
     case 'profile':
       return (
         <ProfileSurface

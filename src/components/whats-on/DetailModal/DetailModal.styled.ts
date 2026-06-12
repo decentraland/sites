@@ -6,13 +6,15 @@ import { Box, Dialog, Typography, dclColors, styled } from 'decentraland-ui2'
 
 const MOBILE_NAVBAR_OFFSET = 64
 
-type SwapVariant = 'profile' | 'photo' | 'place' | 'community'
+type SwapVariant = 'profile' | 'photo' | 'place' | 'community' | 'friends'
 
 const SWAP_PAPER: Record<SwapVariant, { maxWidth: number; maxHeight: string }> = {
   profile: { maxWidth: 1650, maxHeight: 'min(930px, 90vh)' },
   photo: { maxWidth: 1500, maxHeight: '92vh' },
   place: { maxWidth: 880, maxHeight: '90vh' },
-  community: { maxWidth: 1240, maxHeight: '90vh' }
+  community: { maxWidth: 1240, maxHeight: '90vh' },
+  // matches the standalone FriendsModal dialog (520 × 80vh)
+  friends: { maxWidth: 520, maxHeight: '80vh' }
 }
 
 const StyledDialog = styled(Dialog, {

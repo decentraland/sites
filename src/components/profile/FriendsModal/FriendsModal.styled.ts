@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import SearchIcon from '@mui/icons-material/Search'
-import { Box, Dialog, InputAdornment, TextField, Typography, styled } from 'decentraland-ui2'
+import { Box, Dialog, IconButton, InputAdornment, TextField, Typography, styled } from 'decentraland-ui2'
 
 const FriendsDialog = styled(Dialog)(({ theme }) => ({
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -9,7 +9,8 @@ const FriendsDialog = styled(Dialog)(({ theme }) => ({
     maxWidth: 520,
     minHeight: 480,
     maxHeight: '80vh',
-    background: 'radial-gradient(140% 100% at 0% 0%, rgba(116, 52, 177, 0.6) 0%, rgba(43, 16, 64, 0.95) 60%, #1a0b29 100%)',
+    // Near-opaque surface — the 0.6-alpha version let the page bleed through and hurt readability.
+    background: 'radial-gradient(140% 100% at 0% 0%, rgba(116, 52, 177, 0.92) 0%, rgba(43, 16, 64, 0.98) 60%, #1a0b29 100%)',
     border: '1px solid rgba(255, 255, 255, 0.08)',
     borderRadius: 16,
     color: theme.palette.common.white,
@@ -25,6 +26,22 @@ const FriendsDialog = styled(Dialog)(({ theme }) => ({
     }
   }
 }))
+
+// Back chevron used when the list renders as a modal-stack surface (not a dialog).
+const BackIconButton = styled(IconButton)(({ theme }) => ({
+  color: theme.palette.common.white,
+  marginRight: theme.spacing(0.5)
+}))
+
+// Container for the in-modal surface flavour: same column layout the dialog Paper
+// provides, sized by the host Paper ('friends' variant).
+const FriendsSurfaceRoot = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  flex: '1 1 auto',
+  minHeight: 0,
+  width: '100%'
+})
 
 const DialogHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -86,8 +103,13 @@ const FriendRow = styled('button')(({ theme }) => ({
   transition: 'background-color 160ms ease',
   // eslint-disable-next-line @typescript-eslint/naming-convention
   '&:hover, &:focus-visible': {
-    background: 'rgba(255, 255, 255, 0.06)',
+    background: 'rgba(255, 255, 255, 0.08)',
     outline: 'none'
+  },
+  // Touch feedback on mobile (no hover there).
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '&:active': {
+    background: 'rgba(255, 255, 255, 0.12)'
   }
 }))
 
@@ -134,6 +156,7 @@ const LoadingState = styled(Box)({
 })
 
 export {
+  BackIconButton,
   DialogHeader,
   DialogTitle,
   EmptyState,
@@ -143,6 +166,7 @@ export {
   FriendNameBlock,
   FriendRow,
   FriendsDialog,
+  FriendsSurfaceRoot,
   InputAdornment,
   LoadingState,
   SearchField,
