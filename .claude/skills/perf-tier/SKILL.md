@@ -11,7 +11,7 @@ The homepage Lighthouse score is the headline metric. Every kilobyte added to th
 
 - **Hero prerender** (`scripts/prerender-hero.mjs`) — injects a static HTML shell + critical CSS into `dist/index.html` at build time so LCP paints **before** React mounts.
 - **`<Layout />` is lazy** — `const Layout = lazy(...)` in `src/App.tsx`. Keeps `decentraland-ui2`'s Navbar (~1.3MB of MUI) out of the critical path until after hero paint.
-- **`<DappsShell />` is lazy** — Redux, RTK Query, Contentful renderer, dompurify, livekit-client (`@livekit/components-react`) and the per-dapp endpoint code only load when a user navigates to `/whats-on/*`, `/blog/*`, `/jump/*`, `/social/*`, `/cast/*`, or `/storage/*`.
+- **`<DappsShell />` is lazy** — Redux, RTK Query, Contentful renderer, dompurify, livekit-client (`@livekit/components-react`) and the per-dapp endpoint code only load when a user navigates to `/whats-on/*`, `/blog/*`, `/jump/*`, `/social/*`, `/cast/*`, `/storage/*`, or `/profile/*`.
 - **Deferred analytics** — Segment (`DeferredAnalyticsProvider`) and Contentsquare (`scheduleDeferredThirdParty`) activate via `requestIdleCallback` with a 4s fallback timeout.
 
 ## Manual chunks (vite.config.ts)
@@ -26,7 +26,7 @@ The build splits these JS-only vendor chunks for cache stability across releases
 - `vendor-router`
 - `vendor-livekit` (JS-only, no CSS — see gotcha below)
 
-These chunk names are also filtered out of `modulePreload.resolveDependencies` so they don't get eagerly fetched on routes that never load them.
+Five of them (`vendor-sentry|crypto|schemas|ua|livekit` — see the regex in `vite.config.ts` `modulePreload.resolveDependencies`) are filtered out of module preload so they don't get eagerly fetched on routes that never load them; `vendor-intl` and `vendor-router` ARE preloaded.
 
 ### CSS gotcha (read this)
 
