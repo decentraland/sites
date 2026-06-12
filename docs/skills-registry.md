@@ -20,6 +20,7 @@ Each row maps to a `SKILL.md` under `.claude/skills/<name>/`.
 | `pre-pr-review`           | (on-demand, before `gh pr create`)                                                                                                                     | "create PR", "open pull request", "ready to push", "pre-PR check"                                                            | 1 (code-reviewer dispatch)                | dispatches `pr-review-toolkit:code-reviewer` agent         |
 | `rtk-query-split`         | `src/services/*Client.ts`, `src/features/*/*.client.ts` (and `*.admin.client.ts`, `*.search.client.ts`)                                                | "RTK Query", "injectEndpoints", "transformResponse", "onQueryStarted", "base client", "endpoint injection", "reducerPath"    | 17, 18                                    | `docs/domains/{whats-on,blog,jump,social,cast,storage}.md` |
 | `seo-worker`              | `api/seo.ts`, `vercel.json`, `src/config/env/{dev,stg,prd}.json`, `vite.config.ts` (proxy)                                                             | "SEO", "OG tags", "open graph", "Twitter card", "crawler", "Helmet titles", "Vercel function", "CMS_BASE_URL", "PAGES map"   | 15 (CMS origin coherence)                 | `docs/domains/blog.md`                                     |
+| `tracking-events`         | (reference/investigation)                                                                                                                              | "Segment", "analytics event", "tracking", "useTrackClick", "GO_TO_EXPLORER", "page tracking", "where is X fired"             | —                                         | `src/modules/analytics`, `useLaunchExplorer`               |
 | `shell-safe-imports`      | `src/shells/store.ts`, `src/services/*Client.ts`, `src/features/*/*.client.ts`                                                                         | "top-level throw", "env var validation", "lazy chunk", "DappsShell crash", "shell-reachable", "module top-level"             | 16 (no top-level throws)                  | —                                                          |
 
 ## Per-dapp directory docs
@@ -36,6 +37,7 @@ Reference docs for per-dapp file maps. **Not skills** — no auto-load. Read on 
 | `docs/domains/storage.md`  | `src/features/storage/`, `src/services/storageClient.ts`, `src/services/subgraphClient.ts`. Storage + subgraph.       |
 | `docs/domains/reels.md`    | `src/features/reels/`, `components/Reels/`. Layout-less, lightweight tier.                                            |
 | `docs/domains/report.md`   | `src/features/report/`, `components/Report/`. Lightweight, no RTK Query.                                              |
+| `docs/domains/profile.md`  | `src/features/profile/`, `components/profile/`, `pages/profile/`. Profile route group + modal surfaces.               |
 
 ## Active hooks (auto-fire)
 

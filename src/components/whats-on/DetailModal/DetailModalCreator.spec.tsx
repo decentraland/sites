@@ -8,6 +8,11 @@ jest.mock('../../../hooks/useCreatorProfile', () => ({
 
 jest.mock('./DetailModal.styled', () => ({
   CreatorRow: ({ children }: { children: React.ReactNode }) => <div data-testid="creator-row">{children}</div>,
+  CreatorButton: ({ children, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+    <button data-testid="creator-button" type="button" {...rest}>
+      {children}
+    </button>
+  ),
   AvatarImage: ({ fallbackColor, ...props }: React.ImgHTMLAttributes<HTMLImageElement> & { fallbackColor?: string }) => (
     <img data-testid="avatar-image" data-fallback-color={fallbackColor ?? ''} {...props} />
   ),
@@ -16,6 +21,11 @@ jest.mock('./DetailModal.styled', () => ({
   ),
   CreatorName: ({ children }: { children: React.ReactNode }) => <span data-testid="creator-name">{children}</span>,
   CreatorNameHighlight: ({ children }: { children: React.ReactNode }) => <strong>{children}</strong>
+}))
+
+const mockOpenProfile = jest.fn()
+jest.mock('../../profile/ProfileModal/useOpenProfileModal', () => ({
+  useOpenProfileModal: () => mockOpenProfile
 }))
 
 describe('DetailModalCreator', () => {
@@ -33,12 +43,19 @@ describe('DetailModalCreator', () => {
       })
     })
 
-    it('should render the creator row with the avatar image and name', () => {
+    it('should render the creator as a clickable button with the avatar image and name', () => {
       render(<DetailModalCreator address="0xCreator" name="CreatorName" prefixLabel="By " />)
 
-      expect(screen.getByTestId('creator-row')).toBeInTheDocument()
+      expect(screen.getByTestId('creator-button')).toBeInTheDocument()
       expect(screen.getByTestId('creator-name')).toHaveTextContent('By CreatorName')
       expect(screen.getByTestId('avatar-image')).toHaveAttribute('src', 'https://example.com/face.png')
+    })
+
+    it('should call openProfileModal when clicked', () => {
+      render(<DetailModalCreator address="0xCreator" name="CreatorName" prefixLabel="By " />)
+
+      screen.getByTestId('creator-button').click()
+      expect(mockOpenProfile).toHaveBeenCalledWith('0xCreator')
     })
   })
 

@@ -1,30 +1,29 @@
 import { hexToRgba } from 'decentraland-ui2/dist/utils/colors'
 import { Avatar, Box, Button, Typography, dclColors, styled } from 'decentraland-ui2'
 
+// Inside the profile community modal (Paper maxWidth 1100), the legacy
+// account-dapp padding (240px lateral on xl, 80px on lg-xl) collapses the
+// content column and snaps the action buttons. Cap lateral padding so the
+// info section breathes inside the dialog while still padding nicely on
+// wider standalone contexts.
 const InfoSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(7.5),
+  gap: theme.spacing(4),
   alignItems: 'start',
-  paddingTop: theme.spacing(6),
+  paddingTop: theme.spacing(4),
   paddingBottom: theme.spacing(4),
-  paddingLeft: theme.spacing(30),
-  paddingRight: theme.spacing(30),
+  paddingLeft: theme.spacing(3),
+  paddingRight: theme.spacing(3),
   backgroundColor: hexToRgba(dclColors.neutral.black, 0.3),
-  [theme.breakpoints.between('lg', 'xl')]: {
-    paddingLeft: theme.spacing(10),
-    paddingRight: theme.spacing(10)
-  },
-  [theme.breakpoints.between('md', 'lg')]: {
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3)
-  },
-  [theme.breakpoints.down('md')]: {
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3)
-  },
-  [theme.breakpoints.down('sm')]: {
-    gap: theme.spacing(3)
+  // Figma note 677:57917 ("Dark background use rounded corners") — match the dialog Paper radius.
+  borderRadius: theme.spacing(2),
+  [theme.breakpoints.up('md')]: {
+    gap: theme.spacing(5),
+    paddingTop: theme.spacing(5),
+    paddingBottom: theme.spacing(4),
+    paddingLeft: theme.spacing(4),
+    paddingRight: theme.spacing(4)
   },
   [theme.breakpoints.down('xs')]: {
     paddingLeft: 0,
@@ -52,17 +51,30 @@ const DescriptionRow = styled(Box)(({ theme }) => ({
 }))
 
 const CommunityImage = styled(Box)(({ theme }) => ({
+  position: 'relative',
   width: '320px',
   height: '320px',
   borderRadius: '23.712px',
   overflow: 'hidden',
   flexShrink: 0,
-  backgroundColor: theme.palette.background.default,
+  // Brand-aligned fallback background so communities without a thumbnail
+  // render as a purple tile + centered icon instead of a flat black square.
+  background: 'radial-gradient(123.58% 82% at 9.01% 25.79%, #7434B1 0%, #481C6C 60%, #2B1040 100%)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& .MuiSvgIcon-root': {
+    fontSize: 96,
+    color: 'rgba(255, 255, 255, 0.35)'
+  },
   [theme.breakpoints.down('sm')]: { width: '210px', height: '210px' },
   [theme.breakpoints.down(391)]: { width: '100%', height: '300px', borderRadius: '0' }
 }))
 
 const CommunityImageContent = styled('img')({
+  position: 'absolute',
+  inset: 0,
   width: '100%',
   height: '100%',
   objectFit: 'cover'
@@ -151,17 +163,19 @@ const OwnerName = styled('span')(({ theme }) => ({
 
 const ActionButtons = styled(Box)(({ theme }) => ({
   display: 'flex',
-  gap: theme.spacing(2),
+  flexWrap: 'wrap',
+  gap: theme.spacing(1.5),
   paddingTop: theme.spacing(1.5),
   [theme.breakpoints.down('sm')]: {
-    flexDirection: 'column'
+    flexDirection: 'column',
+    width: '100%'
   }
 }))
 
 const CTAButton = styled(Button)(({ theme }) => ({
-  width: '184px',
-  height: '40px',
-  [theme.breakpoints.down('xs')]: { width: '100%' },
+  minWidth: 140,
+  height: 40,
+  whiteSpace: 'nowrap',
   [theme.breakpoints.down('sm')]: { width: '100%' }
 }))
 

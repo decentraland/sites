@@ -6,41 +6,77 @@ import { Box, Dialog, Typography, dclColors, styled } from 'decentraland-ui2'
 
 const MOBILE_NAVBAR_OFFSET = 64
 
-const StyledDialog = styled(Dialog)(({ theme }) => ({
-  /* eslint-disable @typescript-eslint/naming-convention */
-  '& .MuiBackdrop-root': {
-    backgroundColor: 'rgba(0, 0, 0, 0.8)'
-  },
-  '& .MuiDialog-paper': {
-    borderRadius: theme.spacing(2),
-    maxWidth: 880,
-    width: '100%',
-    maxHeight: '80vh',
-    margin: 0,
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    backgroundColor: 'transparent',
-    boxShadow: '0px 4px 25px 0px #FFFFFF40',
-    display: 'flex',
-    flexDirection: 'column',
-    scrollbarWidth: 'none'
-  },
-  '& .MuiDialog-paper::-webkit-scrollbar': {
-    display: 'none'
-  },
-  [theme.breakpoints.down('sm')]: {
+type SwapVariant = 'profile' | 'photo' | 'place' | 'community'
+
+const SWAP_PAPER: Record<SwapVariant, { maxWidth: number; maxHeight: string }> = {
+  profile: { maxWidth: 1650, maxHeight: 'min(930px, 90vh)' },
+  photo: { maxWidth: 1500, maxHeight: '92vh' },
+  place: { maxWidth: 880, maxHeight: '90vh' },
+  community: { maxWidth: 1240, maxHeight: '90vh' }
+}
+
+const StyledDialog = styled(Dialog, {
+  shouldForwardProp: prop => prop !== '$wide' && prop !== '$swapVariant'
+})<{ $wide?: boolean; $swapVariant?: SwapVariant }>(({ theme, $wide, $swapVariant }) => {
+  const variant = $swapVariant ?? 'profile'
+  const swap = $wide ? SWAP_PAPER[variant] : null
+  // Place and photo surfaces are full-bleed Hero (event mode is too) — no
+  // Paper gutters. Profile and community surfaces render header/avatar
+  // content that needs the 27/30 inset to match Figma 167:78643.
+  const needsGutters = $wide && (variant === 'profile' || variant === 'community')
+  return {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    '& .MuiBackdrop-root': {
+      backgroundColor: 'rgba(0, 0, 0, 0.8)'
+    },
     '& .MuiDialog-paper': {
-      borderRadius: 0,
-      maxWidth: '100%',
-      maxHeight: `calc(100% - ${MOBILE_NAVBAR_OFFSET}px)`,
-      height: `calc(100% - ${MOBILE_NAVBAR_OFFSET}px)`,
+      borderRadius: theme.spacing(2),
+      maxWidth: swap ? swap.maxWidth : 880,
+      width: '100%',
+      maxHeight: swap ? swap.maxHeight : '80vh',
       margin: 0,
-      marginTop: MOBILE_NAVBAR_OFFSET,
-      backgroundColor: '#1A0A2E'
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      // The profile-view swap uses the brand radial gradient defined in ui2 so
+      // the background matches the standalone /profile route. Event mode keeps
+      // its transparent Paper since the Hero image fills the top.
+      background: $wide ? 'radial-gradient(123.58% 82% at 9.01% 25.79%, #7434B1 0%, #481C6C 37.11%, #2B1040 100%)' : 'transparent',
+      ...(needsGutters && {
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2),
+        paddingTop: theme.spacing(2),
+        paddingBottom: theme.spacing(2),
+        [theme.breakpoints.up('md')]: {
+          paddingLeft: '27px',
+          paddingRight: '27px',
+          paddingTop: '30px',
+          paddingBottom: '30px'
+        }
+      }),
+      boxShadow: '0px 4px 25px 0px #FFFFFF40',
+      display: 'flex',
+      flexDirection: 'column',
+      scrollbarWidth: 'none',
+      transition:
+        'max-width 280ms cubic-bezier(0.4, 0, 0.2, 1), max-height 280ms cubic-bezier(0.4, 0, 0.2, 1), background 280ms ease, padding 280ms ease'
+    },
+    '& .MuiDialog-paper::-webkit-scrollbar': {
+      display: 'none'
+    },
+    [theme.breakpoints.down('sm')]: {
+      '& .MuiDialog-paper': {
+        borderRadius: 0,
+        maxWidth: '100%',
+        maxHeight: `calc(100% - ${MOBILE_NAVBAR_OFFSET}px)`,
+        height: `calc(100% - ${MOBILE_NAVBAR_OFFSET}px)`,
+        margin: 0,
+        marginTop: MOBILE_NAVBAR_OFFSET,
+        backgroundColor: '#1A0A2E'
+      }
     }
+    /* eslint-enable @typescript-eslint/naming-convention */
   }
-  /* eslint-enable @typescript-eslint/naming-convention */
-}))
+})
 
 const HeroSection = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -81,10 +117,10 @@ const HeroOverlay = styled(Box)(({ theme }) => ({
   }
 }))
 
-const CloseButton = styled('button')(({ theme }) => ({
-  position: 'absolute',
-  top: theme.spacing(1.5),
-  right: theme.spacing(1.5),
+// Shared chrome between Close (top-right) and Back (top-left) Hero buttons.
+const HERO_ICON_BASE = {
+  position: 'absolute' as const,
+  top: 8 * 1.5,
   width: 40,
   height: 40,
   display: 'flex',
@@ -95,7 +131,19 @@ const CloseButton = styled('button')(({ theme }) => ({
   borderRadius: '50%',
   cursor: 'pointer',
   zIndex: 2,
-  padding: 0,
+  padding: 0
+}
+
+// Close (X) — top-right. On mobile, when there's no Back chevron, it falls back
+// to the legacy single-button position (top-left) shown as a back-style chevron
+// for the standalone event modal UX. When a Back button is present ($hasBack),
+// Close stays on the right.
+const CloseButton = styled('button', {
+  shouldForwardProp: prop => prop !== '$hasBack'
+})<{ $hasBack?: boolean }>(({ theme, $hasBack }) => ({
+  ...HERO_ICON_BASE,
+  top: theme.spacing(1.5),
+  right: theme.spacing(1.5),
   /* eslint-disable @typescript-eslint/naming-convention */
   '&:hover': {
     backgroundColor: 'rgba(0, 0, 0, 0.6)'
@@ -106,8 +154,28 @@ const CloseButton = styled('button')(({ theme }) => ({
   },
   [theme.breakpoints.down('sm')]: {
     top: theme.spacing(1),
-    left: theme.spacing(1),
-    right: 'auto'
+    ...($hasBack ? { right: theme.spacing(1) } : { left: theme.spacing(1), right: 'auto' })
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
+}))
+
+// Back (chevron) — top-left, only rendered when the surface is swapped inside
+// another modal (`onBack` callback is provided).
+const BackButton = styled('button')(({ theme }) => ({
+  ...HERO_ICON_BASE,
+  top: theme.spacing(1.5),
+  left: theme.spacing(1.5),
+  /* eslint-disable @typescript-eslint/naming-convention */
+  '&:hover': {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)'
+  },
+  '&:focus-visible': {
+    outline: '2px solid #FCFCFC',
+    outlineOffset: 2
+  },
+  [theme.breakpoints.down('sm')]: {
+    top: theme.spacing(1),
+    left: theme.spacing(1)
   }
   /* eslint-enable @typescript-eslint/naming-convention */
 }))
@@ -153,6 +221,30 @@ const CreatorRow = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(1)
 }))
+
+/* eslint-disable @typescript-eslint/naming-convention */
+const CreatorButton = styled('button')(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  padding: 0,
+  margin: 0,
+  background: 'transparent',
+  border: 'none',
+  color: 'inherit',
+  cursor: 'pointer',
+  font: 'inherit',
+  borderRadius: theme.spacing(1),
+  transition: 'opacity 150ms ease',
+  '&:hover': {
+    opacity: 0.85
+  },
+  '&:focus-visible': {
+    outline: `2px solid ${dclColors.base.primary}`,
+    outlineOffset: 2
+  }
+}))
+/* eslint-enable @typescript-eslint/naming-convention */
 
 const AvatarImage = styled('img', { shouldForwardProp: prop => prop !== 'fallbackColor' })<{ fallbackColor: string }>(
   ({ theme, fallbackColor }) => ({
@@ -350,12 +442,14 @@ export {
   ActionsRow,
   AvatarFallback,
   AvatarImage,
+  BackButton,
   CloseButton,
   CloseIconStyled,
   ContentDivider,
   ContentSection,
   CopyButton,
   CopyIconStyled,
+  CreatorButton,
   CreatorName,
   CreatorNameHighlight,
   CreatorRow,
