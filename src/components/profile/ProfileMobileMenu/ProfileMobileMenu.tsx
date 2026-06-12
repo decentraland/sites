@@ -135,8 +135,8 @@ const ProfileMobileNav = memo(
 
     const handleShareProfile = useCallback(() => {
       if (typeof navigator === 'undefined' || !navigator.clipboard || typeof window === 'undefined') return
-      const inviteUrl = `${window.location.origin}/invite/${address}`
-      void navigator.clipboard.writeText(inviteUrl).then(() => {
+      const profileUrl = `${window.location.origin}/profile/${address}`
+      void navigator.clipboard.writeText(profileUrl).then(() => {
         setHasCopiedInvite(true)
         setTimeout(() => setHasCopiedInvite(false), 2000)
       })
@@ -189,7 +189,7 @@ const ProfileMobileNav = memo(
               </DrawerCta>
             ) : null}
             <DrawerCta variant="outlined" color="inherit" startIcon={<ShareOutlinedIcon />} onClick={handleShareProfile}>
-              {/* Mobile root copy per Figma 322:49246 — "Share Profile" (the action still copies the invite link). */}
+              {/* Mobile root copy per Figma 322:49246 — "Share Profile" copies the profile URL. */}
               {t(hasCopiedInvite ? 'profile.header.invite_copied' : 'profile.header.share_profile')}
             </DrawerCta>
           </CtaRow>

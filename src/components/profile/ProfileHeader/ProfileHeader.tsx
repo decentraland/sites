@@ -17,7 +17,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import PersonAddIcon from '@mui/icons-material/PersonAdd'
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import { Button, Menu, MenuItem, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import {
@@ -228,7 +228,7 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
               variant="outlined"
               color="inherit"
               size={isMobile ? 'small' : 'medium'}
-              startIcon={<PersonAddIcon />}
+              startIcon={<ShareOutlinedIcon />}
               onClick={handleInviteFriends}
             >
               {t(hasCopiedInvite ? 'profile.header.invite_copied' : 'profile.header.invite_friends')}
