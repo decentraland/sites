@@ -39,6 +39,7 @@ jest.mock('../../profile/ProfileModal', () => {
   return {
     ModalProfileNavigationProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     useModalSurfaceStack: actual.useModalSurfaceStack,
+    useStackDialogClose: actual.useStackDialogClose,
     ModalSurfaceView: ({ surface }: { surface: { kind: string } }) => <div data-testid="modal-surface-view" data-kind={surface.kind} />
   }
 })

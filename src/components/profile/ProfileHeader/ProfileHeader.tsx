@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined'
@@ -32,6 +32,7 @@ import {
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
+import { truncateAddress } from '../../../utils/address'
 import { redirectToAuth } from '../../../utils/authRedirect'
 import { getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import { FriendsModal } from '../FriendsModal'
@@ -76,11 +77,6 @@ interface ProfileHeaderProps {
   embedded?: boolean
 }
 
-function truncateAddress(value: string): string {
-  if (value.length < 12) return value
-  return `${value.slice(0, 4)}...${value.slice(-4)}`
-}
-
 // `getFriendButtonConfig` lives in `./ProfileHeader.helpers` so `ProfileMobileMenu` can reuse the
 // same logic without duplicating the friendship-status switch.
 
@@ -110,15 +106,19 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
   // preview list we render real `ProfileAvatar`s (which resolve the face image and fall back
   // to a deterministic colour + initial). Otherwise we emit a colour-only dot so the cluster
   // still mirrors the count even before the preview lands.
-  const mutualSlots = Array.from({ length: Math.min(3, mutualCount) }, (_, idx) => {
-    const friend = mutualFriendsPreview[idx]
-    if (friend?.address) return { kind: 'avatar' as const, address: friend.address }
-    const displayName = friend
-      ? getDisplayName({ name: friend.name, hasClaimedName: friend.hasClaimedName, ethAddress: friend.address })
-      : ''
-    const color = getAvatarBackgroundColor(displayName || `${address}-${idx}`)
-    return { kind: 'dot' as const, color }
-  })
+  const mutualSlots = useMemo(
+    () =>
+      Array.from({ length: Math.min(3, mutualCount) }, (_, idx) => {
+        const friend = mutualFriendsPreview[idx]
+        if (friend?.address) return { kind: 'avatar' as const, address: friend.address }
+        const displayName = friend
+          ? getDisplayName({ name: friend.name, hasClaimedName: friend.hasClaimedName, ethAddress: friend.address })
+          : ''
+        const color = getAvatarBackgroundColor(displayName || `${address}-${idx}`)
+        return { kind: 'dot' as const, color }
+      }),
+    [address, mutualCount, mutualFriendsPreview]
+  )
   const [hasCopiedInvite, setHasCopiedInvite] = useState(false)
   const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false)
   const [isMutualModalOpen, setIsMutualModalOpen] = useState(false)
@@ -169,12 +169,21 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
     window.open(`${builderUrl.replace(/\/+$/, '')}/worlds`, '_blank', 'noopener,noreferrer')
   }, [])
 
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(
+    () => () => {
+      if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current)
+    },
+    []
+  )
+
   const handleInviteFriends = useCallback(() => {
     if (typeof navigator === 'undefined' || !navigator.clipboard || typeof window === 'undefined') return
     const inviteUrl = `${window.location.origin}/invite/${address}`
     void navigator.clipboard.writeText(inviteUrl).then(() => {
       setHasCopiedInvite(true)
-      setTimeout(() => setHasCopiedInvite(false), 2000)
+      if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current)
+      copiedTimerRef.current = setTimeout(() => setHasCopiedInvite(false), 2000)
     })
   }, [address])
 
@@ -242,7 +251,7 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
                 color="inherit"
                 size={isMobile ? 'small' : 'medium'}
                 startIcon={<PeopleAltOutlinedIcon />}
-                onClick={() => (embedded && openFriendsSurface ? openFriendsSurface() : setIsFriendsModalOpen(true))}
+                onClick={() => (openFriendsSurface ? openFriendsSurface() : setIsFriendsModalOpen(true))}
               >
                 {t('profile.header.friends_count', { count: friendsCount })}
               </Button>
@@ -264,7 +273,7 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
               // the row only stays disabled when no surface navigation is available.
               <MutualFriendsRow
                 type="button"
-                onClick={() => (embedded && openFriendsSurface ? openFriendsSurface(address) : setIsMutualModalOpen(true))}
+                onClick={() => (openFriendsSurface ? openFriendsSurface(address) : setIsMutualModalOpen(true))}
                 disabled={embedded && !openFriendsSurface}
                 aria-label={t('profile.friends_modal.mutual_title', { count: mutualCount })}
               >

@@ -100,4 +100,22 @@ function useModalSurfaceStack(): ModalSurfaceStack {
   )
 }
 
-export { useModalSurfaceStack }
+/**
+ * Dialog `onClose` handler shared by every stack host: Escape unwinds one surface at a
+ * time and only closes the dialog at the root; any other reason (backdrop click,
+ * programmatic) dismisses outright.
+ */
+function useStackDialogClose(top: ModalSurface | null, pop: () => void, onClose: () => void) {
+  return useCallback(
+    (_event: object, reason?: string) => {
+      if (reason === 'escapeKeyDown' && top) {
+        pop()
+        return
+      }
+      onClose()
+    },
+    [top, pop, onClose]
+  )
+}
+
+export { useModalSurfaceStack, useStackDialogClose }

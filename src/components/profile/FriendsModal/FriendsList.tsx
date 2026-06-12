@@ -7,6 +7,7 @@ import { CircularProgress, IconButton } from 'decentraland-ui2'
 import { useFriendsList, useMutualFriendsList } from '../../../features/profile/profile.social.rpc'
 import type { FriendProfile } from '../../../features/profile/profile.social.rpc'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { truncateAddress } from '../../../utils/address'
 import { ProfileAvatar } from '../ProfileAvatar'
 import {
   BackIconButton,
@@ -37,11 +38,6 @@ interface FriendsListProps {
    * (member-profile header cluster) instead of the signed user's own friends list.
    */
   mutualOfAddress?: string
-}
-
-function truncateAddress(value: string): string {
-  if (value.length < 12) return value
-  return `${value.slice(0, 6)}…${value.slice(-4)}`
 }
 
 /** Header + search + list shared by the FriendsModal dialog and the in-modal FriendsSurface. */

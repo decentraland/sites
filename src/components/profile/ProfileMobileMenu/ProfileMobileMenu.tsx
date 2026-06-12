@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
@@ -136,12 +136,21 @@ const ProfileMobileNav = memo(
       })
     }, [address, canQueryFriendship, friendButton.action, hasValidIdentity, isOwnProfile, upsertFriendship])
 
+    const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    useEffect(
+      () => () => {
+        if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current)
+      },
+      []
+    )
+
     const handleShareProfile = useCallback(() => {
       if (typeof navigator === 'undefined' || !navigator.clipboard || typeof window === 'undefined') return
       const profileUrl = `${window.location.origin}/profile/${address}`
       void navigator.clipboard.writeText(profileUrl).then(() => {
         setHasCopiedInvite(true)
-        setTimeout(() => setHasCopiedInvite(false), 2000)
+        if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current)
+        copiedTimerRef.current = setTimeout(() => setHasCopiedInvite(false), 2000)
       })
     }, [address])
 

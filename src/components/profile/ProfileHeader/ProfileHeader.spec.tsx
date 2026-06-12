@@ -126,7 +126,7 @@ describe('ProfileHeader', () => {
   it('should render the display name and the truncated address', () => {
     renderHeader(false)
     expect(screen.getByText('Mojito')).toBeInTheDocument()
-    expect(screen.getByText(`${address.slice(0, 4)}...${address.slice(-4)}`)).toBeInTheDocument()
+    expect(screen.getByText(`${address.slice(0, 6)}…${address.slice(-4)}`)).toBeInTheDocument()
   })
 
   it('should show the Add friend CTA on Member view', () => {

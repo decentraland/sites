@@ -1,7 +1,7 @@
-import { memo, useCallback, useEffect } from 'react'
+import { memo, useEffect } from 'react'
 import { ModalProfileNavigationProvider } from '../ProfileModal/ModalProfileNavigation'
 import { ModalSurfaceView } from '../ProfileModal/ModalSurfaceStack'
-import { useModalSurfaceStack } from '../ProfileModal/useModalSurfaceStack'
+import { useModalSurfaceStack, useStackDialogClose } from '../ProfileModal/useModalSurfaceStack'
 import { PhotoSurface } from './PhotoSurface'
 import { PhotoDialog } from './PhotoModal.styled'
 
@@ -21,17 +21,7 @@ const PhotoModal = memo(({ imageId, onClose }: PhotoModalProps) => {
     reset()
   }, [imageId, reset])
 
-  // Escape unwinds one surface at a time; backdrop click dismisses the dialog.
-  const handleDialogClose = useCallback(
-    (_event: object, reason?: string) => {
-      if (reason === 'escapeKeyDown' && top) {
-        pop()
-        return
-      }
-      onClose()
-    },
-    [top, pop, onClose]
-  )
+  const handleDialogClose = useStackDialogClose(top, pop, onClose)
 
   return (
     <PhotoDialog

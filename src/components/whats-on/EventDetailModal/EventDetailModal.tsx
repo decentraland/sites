@@ -1,5 +1,5 @@
-import { useCallback, useEffect } from 'react'
-import { ModalProfileNavigationProvider, ModalSurfaceView, useModalSurfaceStack } from '../../profile/ProfileModal'
+import { useEffect } from 'react'
+import { ModalProfileNavigationProvider, ModalSurfaceView, useModalSurfaceStack, useStackDialogClose } from '../../profile/ProfileModal'
 import { StyledDialog } from '../DetailModal/DetailModal.styled'
 import { EventDetailModalContent } from './EventDetailModalContent'
 import { EventDetailModalHero } from './EventDetailModalHero'
@@ -21,17 +21,7 @@ function EventDetailModal({ open, onClose, data, adminActions, onEdit }: EventDe
     reset()
   }, [data?.id, reset])
 
-  // Escape unwinds one surface at a time; backdrop click dismisses the dialog.
-  const handleDialogClose = useCallback(
-    (_event: object, reason?: string) => {
-      if (reason === 'escapeKeyDown' && top) {
-        pop()
-        return
-      }
-      onClose()
-    },
-    [top, pop, onClose]
-  )
+  const handleDialogClose = useStackDialogClose(top, pop, onClose)
 
   return (
     <StyledDialog

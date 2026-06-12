@@ -4,7 +4,7 @@ import { ProfileSurface } from '../ProfileSurface'
 import type { ProfileTab } from '../ProfileTabs'
 import { ModalProfileNavigationProvider } from './ModalProfileNavigation'
 import { ModalSurfaceView } from './ModalSurfaceStack'
-import { useModalSurfaceStack } from './useModalSurfaceStack'
+import { useModalSurfaceStack, useStackDialogClose } from './useModalSurfaceStack'
 import { ProfileDialog } from './ProfileModal.styled'
 
 interface ProfileModalProps {
@@ -50,18 +50,7 @@ function ProfileModal({ address, open, onClose, onBack, initialTab = 'overview' 
     },
     [rootAddress, top, openProfile]
   )
-  // Escape unwinds one surface at a time; only at the root (or via backdrop click,
-  // which always means "dismiss") does it close the whole dialog.
-  const handleDialogClose = useCallback(
-    (_event: object, reason?: string) => {
-      if (reason === 'escapeKeyDown' && top) {
-        pop()
-        return
-      }
-      onClose()
-    },
-    [top, pop, onClose]
-  )
+  const handleDialogClose = useStackDialogClose(top, pop, onClose)
   const handleRootTabChange = useCallback((nextTab: ProfileTab) => {
     setActiveTab(nextTab)
     setHasChosenTab(true)
