@@ -14,8 +14,9 @@ jest.mock('@dcl/hooks', () => ({
   })
 }))
 
+const mockUseCanEditEvent = jest.fn(() => ({ canEdit: false, isLoading: false }))
 jest.mock('../../../hooks/useCanEditEvent', () => ({
-  useCanEditEvent: () => ({ canEdit: false, isLoading: false })
+  useCanEditEvent: () => mockUseCanEditEvent()
 }))
 
 const mockUseAuthIdentity = jest.fn()
@@ -122,6 +123,11 @@ jest.mock('@mui/icons-material/CalendarMonth', () => ({
   default: () => <span data-testid="calendar-icon" />
 }))
 
+jest.mock('@mui/icons-material/Edit', () => ({
+  __esModule: true,
+  default: () => <span data-testid="edit-icon" />
+}))
+
 jest.mock('@mui/icons-material/NotificationsNone', () => ({
   __esModule: true,
   default: () => <span data-testid="notification-icon" />
@@ -152,6 +158,8 @@ describe('EventDetailModalHero', () => {
     jest.spyOn(window, 'open').mockImplementation(jest.fn())
     mockUseAuthIdentity.mockReset()
     mockUseAuthIdentity.mockReturnValue({ hasValidIdentity: false, identity: undefined, address: undefined })
+    mockUseCanEditEvent.mockReset()
+    mockUseCanEditEvent.mockReturnValue({ canEdit: false, isLoading: false })
   })
 
   afterEach(() => {

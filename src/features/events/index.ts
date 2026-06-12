@@ -1,6 +1,7 @@
 export {
   eventsClient,
   useCreateEventMutation,
+  useDeleteEventMutation,
   useGetCommunitiesQuery,
   useGetEventByIdQuery,
   useGetEventsQuery,
@@ -17,6 +18,7 @@ export {
   DCL_FOUNDATION_LOGO_URL,
   DCL_FOUNDATION_NAME,
   isDclFoundationCreator,
+  isDeleted,
   isPubliclyVisibleEvent
 } from './events.helpers'
 export type { EnrichmentConfig, LiveNowCard } from './events.helpers'

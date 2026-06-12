@@ -896,6 +896,13 @@
         "body": "報告を受け付けました。内容は順次確認します。",
         "dismiss": "このウィンドウを閉じても問題ありません。"
       }
+    },
+    "jump": {
+      "events_page": {
+        "deleted_notice_prefix": "このハングアウトは利用できなくなりました。",
+        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_suffix": "でさらに探してみましょう。"
+      }
     }
   },
   "create_event": {
@@ -1135,6 +1142,16 @@
     }
   },
   "event_detail": {
+    "delete": "削除",
+    "delete_modal": {
+      "title": "このハングアウトを削除してもよろしいですか？",
+      "subtitle": "このハングアウトはハングアウト一覧から完全に削除されます。この操作は元に戻せません。",
+      "cancel": "キャンセル",
+      "confirm": "ハングアウトを削除",
+      "toast_title": "ハングアウトを削除しました",
+      "toast_description": "ハングアウト「{name}」を削除しました！",
+      "error": "ハングアウトを削除できませんでした。もう一度お試しください。"
+    },
     "recurrent_daily": "毎日繰り返し",
     "recurrent_weekly": "毎週繰り返し",
     "recurrent_monthly": "毎月繰り返し",

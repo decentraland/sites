@@ -896,6 +896,13 @@
         "body": "我们已收到你的举报,会尽快进行审核。",
         "dismiss": "你现在可以关闭此窗口。"
       }
+    },
+    "jump": {
+      "events_page": {
+        "deleted_notice_prefix": "此聚会已不再可用。浏览",
+        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_suffix": "发现更多。"
+      }
     }
   },
   "create_event": {
@@ -1135,6 +1142,16 @@
     }
   },
   "event_detail": {
+    "delete": "删除",
+    "delete_modal": {
+      "title": "确定要删除你的聚会吗？",
+      "subtitle": "此聚会将从你的聚会中永久删除。此操作无法撤销。",
+      "cancel": "取消",
+      "confirm": "删除聚会",
+      "toast_title": "聚会已成功删除",
+      "toast_description": "你的聚会 {name} 已成功删除！",
+      "error": "无法删除你的聚会，请重试。"
+    },
     "recurrent_daily": "每天重复",
     "recurrent_weekly": "每周重复",
     "recurrent_monthly": "每月重复",

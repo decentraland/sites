@@ -891,6 +891,13 @@
         "body": "Votre signalement a bien été reçu et sera examiné rapidement.",
         "dismiss": "Vous pouvez maintenant fermer cette fenêtre."
       }
+    },
+    "jump": {
+      "events_page": {
+        "deleted_notice_prefix": "Ce hangout n’est plus disponible. Parcourez",
+        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_suffix": "pour en découvrir plus."
+      }
     }
   },
   "create_event": {
@@ -1130,6 +1137,16 @@
     }
   },
   "event_detail": {
+    "delete": "Supprimer",
+    "delete_modal": {
+      "title": "Voulez-vous vraiment supprimer votre hangout ?",
+      "subtitle": "Ce hangout sera définitivement supprimé de vos hangouts. Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer le hangout",
+      "toast_title": "Hangout supprimé avec succès",
+      "toast_description": "Votre hangout {name} a été supprimé avec succès !",
+      "error": "Nous n'avons pas pu supprimer votre hangout. Veuillez réessayer."
+    },
     "recurrent_daily": "Se répète tous les jours",
     "recurrent_weekly": "Se répète chaque semaine",
     "recurrent_monthly": "Se répète chaque mois",
