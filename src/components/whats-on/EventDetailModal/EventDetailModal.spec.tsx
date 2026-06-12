@@ -34,9 +34,14 @@ jest.mock('../../profile/ProfileSurface', () => ({
   ProfileSurface: ({ address }: { address: string }) => <div data-testid="profile-surface" data-address={address} />
 }))
 
-jest.mock('../../profile/ProfileModal', () => ({
-  ModalProfileNavigationProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>
-}))
+jest.mock('../../profile/ProfileModal', () => {
+  const actual = jest.requireActual('../../profile/ProfileModal/useModalSurfaceStack')
+  return {
+    ModalProfileNavigationProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    useModalSurfaceStack: actual.useModalSurfaceStack,
+    ModalSurfaceView: ({ surface }: { surface: { kind: string } }) => <div data-testid="modal-surface-view" data-kind={surface.kind} />
+  }
+})
 
 jest.mock('../../profile/PhotoModal/PhotoSurface', () => ({
   PhotoSurface: ({ imageId }: { imageId: string }) => <div data-testid="photo-surface" data-image-id={imageId} />

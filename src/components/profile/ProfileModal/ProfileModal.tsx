@@ -1,12 +1,10 @@
-import { useCallback, useState } from 'react'
-import type { ProfilePlace } from '../../../features/profile/profile.places.client'
+import { useCallback, useEffect, useState } from 'react'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
-import { CommunityDetailSurface } from '../CommunityDetailModal'
-import { PhotoSurface } from '../PhotoModal/PhotoSurface'
-import { PlaceDetailSurface } from '../PlaceDetailModal/PlaceDetailSurface'
 import { ProfileSurface } from '../ProfileSurface'
 import type { ProfileTab } from '../ProfileTabs'
 import { ModalProfileNavigationProvider } from './ModalProfileNavigation'
+import { ModalSurfaceView } from './ModalSurfaceStack'
+import { useModalSurfaceStack } from './useModalSurfaceStack'
 import { ProfileDialog } from './ProfileModal.styled'
 
 interface ProfileModalProps {
@@ -26,89 +24,64 @@ function isValidAddress(value: string | undefined): value is `0x${string}` {
 
 function ProfileModal({ address, open, onClose, onBack, initialTab = 'overview' }: ProfileModalProps) {
   const { address: viewerAddress } = useAuthIdentity()
+  const rootAddress = address.toLowerCase()
   const [activeTab, setActiveTab] = useState<ProfileTab>(initialTab)
   // Mobile renders the navigation root until a tab is explicitly chosen; opening the modal
   // straight into a non-overview tab (photo flows) counts as an explicit choice.
   const [hasChosenTab, setHasChosenTab] = useState(initialTab !== 'overview')
-  // Photos / places / communities opened from inside this modal swap in-place
-  // (rule: never stack a modal on a modal). The back chevron returns to the profile while
-  // `onClose` still dismisses the whole dialog.
-  const [viewingPhotoId, setViewingPhotoId] = useState<string | null>(null)
-  const [viewingPlace, setViewingPlace] = useState<ProfilePlace | null>(null)
-  const [viewingCommunityId, setViewingCommunityId] = useState<string | null>(null)
-  // Address swapping while staying in the same dialog — mirrors the event modal pattern so
-  // jumping between profiles never opens nested dialogs.
-  const [shownAddress, setShownAddress] = useState(address.toLowerCase())
+  // Photos / places / communities / other profiles opened from inside this modal swap
+  // in-place (rule: never stack a modal on a modal). The surface stack keeps the full
+  // history so back unwinds one level at a time instead of jumping to this root profile.
+  const { top, variant, openProfile, openPhoto, openPlace, openCommunity, pop, reset, setTopProfileTab, exitTopProfileTab } =
+    useModalSurfaceStack()
 
-  const handleOpenProfile = useCallback((nextAddress: string) => {
-    setViewingPhotoId(null)
-    setViewingPlace(null)
-    setViewingCommunityId(null)
-    setShownAddress(nextAddress.toLowerCase())
-    setActiveTab('overview')
-    setHasChosenTab(false)
-  }, [])
-  const handleTabChange = useCallback((nextTab: ProfileTab) => {
+  // Opening a different root profile (or re-opening the modal) starts a fresh history.
+  useEffect(() => {
+    reset()
+    setActiveTab(initialTab)
+    setHasChosenTab(initialTab !== 'overview')
+  }, [rootAddress, open, initialTab, reset])
+
+  const handleOpenProfile = useCallback(
+    (nextAddress: string) => {
+      // The root profile is already visible — only deeper navigation creates history.
+      if (nextAddress.toLowerCase() === rootAddress && !top) return
+      openProfile(nextAddress)
+    },
+    [rootAddress, top, openProfile]
+  )
+  const handleRootTabChange = useCallback((nextTab: ProfileTab) => {
     setActiveTab(nextTab)
     setHasChosenTab(true)
   }, [])
-  const handleExitTab = useCallback(() => {
+  const handleRootExitTab = useCallback(() => {
     setActiveTab('overview')
     setHasChosenTab(false)
   }, [])
-  const handleOpenPhoto = useCallback((imageId: string) => {
-    setViewingPlace(null)
-    setViewingCommunityId(null)
-    setViewingPhotoId(imageId)
-  }, [])
-  const handleOpenPlace = useCallback((place: ProfilePlace) => {
-    setViewingPhotoId(null)
-    setViewingCommunityId(null)
-    setViewingPlace(place)
-  }, [])
-  const handleOpenCommunity = useCallback((communityId: string) => {
-    setViewingPhotoId(null)
-    setViewingPlace(null)
-    setViewingCommunityId(communityId)
-  }, [])
-  const handleBackFromPhoto = useCallback(() => setViewingPhotoId(null), [])
-  const handleBackFromPlace = useCallback(() => setViewingPlace(null), [])
-  const handleBackFromCommunity = useCallback(() => setViewingCommunityId(null), [])
 
-  if (!isValidAddress(shownAddress)) {
+  if (!isValidAddress(rootAddress)) {
     return null
   }
-  const isOwnProfile = Boolean(viewerAddress && shownAddress === viewerAddress.toLowerCase())
-  const variant: 'profile' | 'photo' | 'place' | 'community' = viewingPhotoId
-    ? 'photo'
-    : viewingPlace
-      ? 'place'
-      : viewingCommunityId
-        ? 'community'
-        : 'profile'
+  const isOwnProfile = Boolean(viewerAddress && rootAddress === viewerAddress.toLowerCase())
 
   return (
-    <ProfileDialog open={open} onClose={onClose} fullWidth maxWidth={false} scroll="paper" $variant={variant}>
+    <ProfileDialog open={open} onClose={onClose} fullWidth maxWidth={false} scroll="paper" $variant={variant ?? 'profile'}>
       <ModalProfileNavigationProvider
         onOpenProfile={handleOpenProfile}
-        onOpenPhoto={handleOpenPhoto}
-        onOpenPlace={handleOpenPlace}
-        onOpenCommunity={handleOpenCommunity}
+        onOpenPhoto={openPhoto}
+        onOpenPlace={openPlace}
+        onOpenCommunity={openCommunity}
       >
-        {viewingPhotoId ? (
-          <PhotoSurface imageId={viewingPhotoId} onBack={handleBackFromPhoto} onClose={onClose} />
-        ) : viewingPlace ? (
-          <PlaceDetailSurface place={viewingPlace} onBack={handleBackFromPlace} onClose={onClose} />
-        ) : viewingCommunityId ? (
-          <CommunityDetailSurface communityId={viewingCommunityId} onBack={handleBackFromCommunity} onClose={onClose} />
+        {top ? (
+          <ModalSurfaceView surface={top} onBack={pop} onClose={onClose} onTabChange={setTopProfileTab} onExitTab={exitTopProfileTab} />
         ) : (
           <ProfileSurface
-            address={shownAddress}
+            address={rootAddress}
             isOwnProfile={isOwnProfile}
             activeTab={activeTab}
-            onTabChange={handleTabChange}
+            onTabChange={handleRootTabChange}
             hasExplicitTab={hasChosenTab}
-            onExitTab={handleExitTab}
+            onExitTab={handleRootExitTab}
             onClose={onClose}
             onBack={onBack}
             embedded
