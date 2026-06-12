@@ -9,8 +9,7 @@ import SportsEsportsOutlinedIcon from '@mui/icons-material/SportsEsportsOutlined
 import TransgenderRoundedIcon from '@mui/icons-material/TransgenderRounded'
 import TranslateRoundedIcon from '@mui/icons-material/TranslateRounded'
 /* eslint-enable @typescript-eslint/naming-convention */
-import { Box, Button, CircularProgress, Tooltip, Typography } from 'decentraland-ui2'
-import { CatalogCard } from '../../../components/profile/CatalogCard'
+import { Box, Button, CatalogCard, CircularProgress, Tooltip, Typography } from 'decentraland-ui2'
 import { EditProfileButton } from '../../../components/profile/EditProfileButton'
 import { useProfileBadges } from '../../../features/profile/profile.badges.client'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'

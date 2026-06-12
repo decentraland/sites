@@ -234,13 +234,11 @@ const EquippedGrid = styled(Box)(({ theme }) => ({
     minWidth: 0
   },
   // CatalogCard de ui2 trae ancho fijo (theme.spacing(36) ≈ 288px). Forzamos
-  // width: 100% al ancho del grid cell. La altura ya es estable en el card local
-  // (el hover redistribuye espacio imagen↔info sin crecer el card), pero el lock
-  // protege contra la versión publicada de ui2 (height growth legacy) en Vercel.
+  // width: 100% al ancho del grid cell; la altura ya es estable en ui2 ≥3.13
+  // (el hover redistribuye espacio imagen↔info sin crecer el card).
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  '& .MuiCard-root, & .MuiCard-root:hover': {
-    width: '100%',
-    height: theme.spacing(45)
+  '& .MuiCard-root': {
+    width: '100%'
   }
 }))
 

@@ -6,8 +6,7 @@ import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined
 import LandscapeOutlinedIcon from '@mui/icons-material/LandscapeOutlined'
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined'
 /* eslint-enable @typescript-eslint/naming-convention */
-import { AssetPreviewPlayerProvider, Box, Button, CircularProgress, Typography } from 'decentraland-ui2'
-import { CatalogCard } from '../../../components/profile/CatalogCard'
+import { AssetPreviewPlayerProvider, Box, Button, CatalogCard, CircularProgress, Typography } from 'decentraland-ui2'
 import { FilterChip } from '../../../components/profile/FilterChips'
 import { getEnv } from '../../../config/env'
 import { useGetProfileAssetsQuery } from '../../../features/profile/profile.assets.client'
