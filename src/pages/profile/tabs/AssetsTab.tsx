@@ -6,7 +6,7 @@ import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined
 import LandscapeOutlinedIcon from '@mui/icons-material/LandscapeOutlined'
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined'
 /* eslint-enable @typescript-eslint/naming-convention */
-import { Box, Button, CircularProgress, Typography } from 'decentraland-ui2'
+import { Box, Button, CircularProgress, EmotePreviewPlayerProvider, Typography } from 'decentraland-ui2'
 import { CatalogCard } from '../../../components/profile/CatalogCard'
 import { FilterChip } from '../../../components/profile/FilterChips'
 import { getEnv } from '../../../config/env'
@@ -153,6 +153,12 @@ function AssetsTab({ address }: AssetsTabProps) {
 
   const visibleFilters = useMemo(() => CATEGORY_FILTERS.filter(option => availableCategories.has(option.value)), [availableCategories])
 
+  // Animated emote previews (ui2 EmotePreviewPlayer): one shared iframe, enabled only
+  // while the emotes filter is active so the other categories never pay the boot cost.
+  const peerUrl = getEnv('PEER_URL') ?? undefined
+  const marketplaceServerUrl = (getEnv('MARKETPLACE_API_URL') ?? '').replace(/\/v2\/?$/, '') || undefined
+  const isPreviewDev = Boolean(peerUrl?.includes('.zone'))
+
   const header = (
     <AssetsHeader>
       <AssetsFilters>
@@ -195,7 +201,12 @@ function AssetsTab({ address }: AssetsTabProps) {
   }
 
   return (
-    <>
+    <EmotePreviewPlayerProvider
+      enabled={effectiveCategory === 'emote'}
+      peerUrl={peerUrl}
+      marketplaceServerUrl={marketplaceServerUrl}
+      dev={isPreviewDev}
+    >
       {header}
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {t('profile.assets.count', { count: total })}
@@ -239,6 +250,7 @@ function AssetsTab({ address }: AssetsTabProps) {
               <Box key={nft.id}>
                 <CatalogCard
                   asset={toCatalogAsset(entry)}
+                  emotePreviewUrn={effectiveCategory === 'emote' ? nft.urn : undefined}
                   imageSrc={nft.image}
                   action={null}
                   extraInformation={null}
@@ -275,7 +287,7 @@ function AssetsTab({ address }: AssetsTabProps) {
           <CircularProgress size={22} />
         </LoadingRow>
       ) : null}
-    </>
+    </EmotePreviewPlayerProvider>
   )
 }
 

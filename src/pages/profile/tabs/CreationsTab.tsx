@@ -5,7 +5,7 @@ import CheckroomOutlinedIcon from '@mui/icons-material/CheckroomOutlined'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined'
-import { Button, CircularProgress } from 'decentraland-ui2'
+import { Button, CircularProgress, EmotePreviewPlayerProvider } from 'decentraland-ui2'
 import { CatalogCard } from '../../../components/profile/CatalogCard'
 import { FilterChip } from '../../../components/profile/FilterChips'
 import { getEnv } from '../../../config/env'
@@ -48,6 +48,11 @@ function toCatalogAsset(item: CreationItem) {
 function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
   const t = useFormatMessage()
   const [category, setCategory] = useState<CreationsCategory>('wearable')
+  // Animated emote previews (ui2 EmotePreviewPlayer): one shared iframe, enabled only
+  // while the emotes filter is active so wearables browsing never pays the boot cost.
+  const peerUrl = getEnv('PEER_URL') ?? undefined
+  const marketplaceServerUrl = (getEnv('MARKETPLACE_API_URL') ?? '').replace(/\/v2\/?$/, '') || undefined
+  const isPreviewDev = Boolean(peerUrl?.includes('.zone'))
   const [accumulated, setAccumulated] = useState<CreationItem[]>([])
   const [offset, setOffset] = useState(0)
   const cacheKey = `${address.toLowerCase()}|${category}`
@@ -125,7 +130,12 @@ function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
   }
 
   return (
-    <>
+    <EmotePreviewPlayerProvider
+      enabled={category === 'emote'}
+      peerUrl={peerUrl}
+      marketplaceServerUrl={marketplaceServerUrl}
+      dev={isPreviewDev}
+    >
       {header}
       <EquippedGrid sx={{ mt: 0 }}>
         {items.map(item => {
@@ -142,6 +152,7 @@ function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
             <EquippedCardLink key={item.id} href={marketplaceUrl} target="_blank" rel="noopener noreferrer" aria-label={item.name}>
               <CatalogCard
                 asset={toCatalogAsset(item)}
+                emotePreviewUrn={category === 'emote' ? item.urn : undefined}
                 imageSrc={item.thumbnail}
                 action={null}
                 extraInformation={null}
@@ -185,7 +196,7 @@ function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
           <CircularProgress size={22} />
         </LoadingRow>
       ) : null}
-    </>
+    </EmotePreviewPlayerProvider>
   )
 }
 
