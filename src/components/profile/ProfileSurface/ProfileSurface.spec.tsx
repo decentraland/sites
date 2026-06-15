@@ -21,9 +21,9 @@ jest.mock('../../../hooks/useProfileAvatar', () => ({
 }))
 
 jest.mock('../../../pages/profile/tabs', () => ({
-  AssetsTab: () => null,
+  AssetsTab: ({ embedded }: { embedded?: boolean }) => <div data-testid="assets-tab" data-embedded={String(Boolean(embedded))} />,
   CommunitiesTab: () => null,
-  CreationsTab: () => null,
+  CreationsTab: ({ embedded }: { embedded?: boolean }) => <div data-testid="creations-tab" data-embedded={String(Boolean(embedded))} />,
   OverviewTab: () => <div data-testid="overview-tab" />,
   PhotosTab: () => null,
   PlacesTab: () => null,
@@ -108,6 +108,25 @@ describe('ProfileSurface', () => {
     it('should not render a Helmet at all', () => {
       renderSurface({ manageDocumentTitle: false })
       expect(screen.queryByTestId('helmet')).not.toBeInTheDocument()
+    })
+  })
+
+  // The preview-bearing tabs lift their hover-preview overlay above the dialog only when
+  // the surface is embedded in the profile modal (#588), so `embedded` must reach them.
+  describe('when threading the embedded flag to preview tabs', () => {
+    it('should mark the assets tab as not embedded on the standalone surface', () => {
+      renderSurface({ activeTab: 'assets' })
+      expect(screen.getByTestId('assets-tab')).toHaveAttribute('data-embedded', 'false')
+    })
+
+    it('should mark the assets tab as embedded inside the modal', () => {
+      renderSurface({ activeTab: 'assets', embedded: true })
+      expect(screen.getByTestId('assets-tab')).toHaveAttribute('data-embedded', 'true')
+    })
+
+    it('should thread embedded to the creations tab as well', () => {
+      renderSurface({ activeTab: 'creations', embedded: true })
+      expect(screen.getByTestId('creations-tab')).toHaveAttribute('data-embedded', 'true')
     })
   })
 })

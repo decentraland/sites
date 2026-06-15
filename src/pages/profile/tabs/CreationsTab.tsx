@@ -19,6 +19,8 @@ import { CreationsFilters, CreationsHeader, EmptyBio, EquippedCardLink, Equipped
 interface CreationsTabProps {
   address: string
   isOwnProfile: boolean
+  /** True when rendered inside the profile modal — lifts the hover preview above the dialog. */
+  embedded?: boolean
 }
 
 const PAGE_SIZE = 24
@@ -44,7 +46,7 @@ function toCatalogAsset(item: CreationItem) {
   }
 }
 
-function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
+function CreationsTab({ address, isOwnProfile, embedded = false }: CreationsTabProps) {
   const t = useFormatMessage()
   const [category, setCategory] = useState<CreationsCategory>('wearable')
   // Live previews on hover (ui2 AssetPreviewPlayer, one shared iframe): the profile
@@ -129,7 +131,16 @@ function CreationsTab({ address, isOwnProfile }: CreationsTabProps) {
   }
 
   return (
-    <AssetPreviewPlayerProvider enabled peerUrl={peerUrl} marketplaceServerUrl={marketplaceServerUrl} profile={address} dev={isPreviewDev}>
+    <AssetPreviewPlayerProvider
+      enabled
+      peerUrl={peerUrl}
+      marketplaceServerUrl={marketplaceServerUrl}
+      profile={address}
+      dev={isPreviewDev}
+      // Standalone page: leave the default (below the fixed navbar). Inside the profile
+      // modal the cards live above the dialog (z 1300), so lift the preview over it.
+      overlayZIndex={embedded ? 1600 : undefined}
+    >
       {header}
       <EquippedGrid sx={{ mt: 0 }}>
         {items.map(item => {
