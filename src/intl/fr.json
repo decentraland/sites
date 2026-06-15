@@ -978,6 +978,7 @@
       "block": "Bloquer",
       "more_actions": "Plus d'actions",
       "copy_address": "Copier l'adresse",
+      "address_copied": "Adresse copiée !",
       "close_profile": "Fermer le profil",
       "get_a_name": "Obtenir un nom unique",
       "manage_world": "Gérer le World",

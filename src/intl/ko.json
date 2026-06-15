@@ -983,6 +983,7 @@
       "block": "차단",
       "more_actions": "더 보기",
       "copy_address": "주소 복사",
+      "address_copied": "주소가 복사되었습니다!",
       "close_profile": "프로필 닫기",
       "get_a_name": "고유한 이름 받기",
       "manage_world": "월드 관리",

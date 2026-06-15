@@ -983,6 +983,7 @@
       "block": "Bloquear",
       "more_actions": "Más acciones",
       "copy_address": "Copiar dirección",
+      "address_copied": "¡Dirección copiada!",
       "close_profile": "Cerrar perfil",
       "get_a_name": "Obtener un nombre único",
       "manage_world": "Gestionar World",

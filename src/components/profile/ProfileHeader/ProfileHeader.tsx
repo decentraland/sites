@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined'
@@ -6,6 +6,8 @@ import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalance
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import BlockIcon from '@mui/icons-material/Block'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CloseIcon from '@mui/icons-material/Close'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -20,7 +22,7 @@ import PublicIcon from '@mui/icons-material/Public'
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import VerifiedIcon from '@mui/icons-material/Verified'
-import { Button, Menu, MenuItem, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
+import { Box, Button, Menu, MenuItem, Tooltip, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import {
   useBlockUser,
@@ -31,6 +33,7 @@ import {
 } from '../../../features/profile/profile.social.rpc'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
+import { useCopyToClipboard } from '../../../hooks/useCopyToClipboard'
 import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
 import { truncateAddress } from '../../../utils/address'
 import { redirectToAuth } from '../../../utils/authRedirect'
@@ -119,16 +122,13 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
       }),
     [address, mutualCount, mutualFriendsPreview]
   )
-  const [hasCopiedInvite, setHasCopiedInvite] = useState(false)
+  const { copied: hasCopiedInvite, copy: copyInvite } = useCopyToClipboard()
+  const { copied: hasCopiedAddress, copy: copyAddress } = useCopyToClipboard()
   const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false)
   const [isMutualModalOpen, setIsMutualModalOpen] = useState(false)
   const navigate = useNavigate()
 
-  const handleCopyAddress = useCallback(() => {
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      void navigator.clipboard.writeText(address)
-    }
-  }, [address])
+  const handleCopyAddress = useCallback(() => copyAddress(address), [copyAddress, address])
 
   const handleFriendAction = useCallback(() => {
     // Anonymous viewers see the CTA enabled (per Figma) — clicking redirects to sign-in and
@@ -169,23 +169,10 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
     window.open(`${builderUrl.replace(/\/+$/, '')}/worlds`, '_blank', 'noopener,noreferrer')
   }, [])
 
-  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  useEffect(
-    () => () => {
-      if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current)
-    },
-    []
-  )
-
   const handleInviteFriends = useCallback(() => {
-    if (typeof navigator === 'undefined' || !navigator.clipboard || typeof window === 'undefined') return
-    const inviteUrl = `${window.location.origin}/invite/${address}`
-    void navigator.clipboard.writeText(inviteUrl).then(() => {
-      setHasCopiedInvite(true)
-      if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current)
-      copiedTimerRef.current = setTimeout(() => setHasCopiedInvite(false), 2000)
-    })
-  }, [address])
+    if (typeof window === 'undefined') return
+    copyInvite(`${window.location.origin}/invite/${address}`)
+  }, [copyInvite, address])
 
   return (
     <HeaderRoot>
@@ -213,11 +200,25 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
               <AccountBalanceWalletOutlinedIcon />
             </WalletIcon>
             <AddressText>{truncateAddress(address)}</AddressText>
-            <CopyButton aria-label={t('profile.header.copy_address')} size="small" onClick={handleCopyAddress}>
-              <CopyButtonIcon>
-                <ContentCopyIcon />
-              </CopyButtonIcon>
-            </CopyButton>
+            <Tooltip
+              open={hasCopiedAddress}
+              disableFocusListener
+              disableHoverListener
+              disableTouchListener
+              arrow
+              placement="top"
+              title={
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CheckRoundedIcon fontSize="small" /> {t('profile.header.address_copied')}
+                </Box>
+              }
+            >
+              <CopyButton aria-label={t('profile.header.copy_address')} size="small" onClick={handleCopyAddress}>
+                <CopyButtonIcon>
+                  <ContentCopyIcon />
+                </CopyButtonIcon>
+              </CopyButton>
+            </Tooltip>
           </AddressRow>
         </NameAddressBlock>
       </IdentityBlock>

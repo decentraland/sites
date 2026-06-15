@@ -1462,6 +1462,7 @@
       "block": "Block",
       "more_actions": "More actions",
       "copy_address": "Copy address",
+      "address_copied": "Address copied!",
       "close_profile": "Close profile",
       "get_a_name": "Get a Unique Name",
       "manage_world": "Manage World",

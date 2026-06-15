@@ -1,7 +1,9 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -14,9 +16,11 @@ import LogoutIcon from '@mui/icons-material/Logout'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
+import { Box, Tooltip } from 'decentraland-ui2'
 import { useFriendsCount, useFriendshipStatus, useMutualFriends, useUpsertFriendship } from '../../../features/profile/profile.social.rpc'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
+import { useCopyToClipboard } from '../../../hooks/useCopyToClipboard'
 import { useWalletAddress } from '../../../hooks/useWalletAddress'
 import { redirectToAuth } from '../../../utils/authRedirect'
 import { getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
@@ -87,7 +91,8 @@ const ProfileMobileNav = memo(
     const [isMutualModalOpen, setIsMutualModalOpen] = useState(false)
     // Inside a modal the lists render as stack surfaces (never a dialog on a dialog).
     const openFriendsSurface = useModalFriendsNavigation()
-    const [hasCopiedInvite, setHasCopiedInvite] = useState(false)
+    const { copied: hasCopiedInvite, copy: copyShareProfile } = useCopyToClipboard()
+    const { copied: hasCopiedAddress, copy: copyAddress } = useCopyToClipboard()
 
     const { status: friendshipStatus, isLoading: isLoadingFriendship } = useFriendshipStatus(canQueryFriendship ? address : undefined)
     const { upsert: upsertFriendship, isLoading: isUpdatingFriendship } = useUpsertFriendship()
@@ -115,11 +120,7 @@ const ProfileMobileNav = memo(
       return all.filter(tab => !hiddenTabs.has(tab.id))
     }, [isOwnProfile, hiddenTabs])
 
-    const handleCopyAddress = useCallback(() => {
-      if (typeof navigator !== 'undefined' && navigator.clipboard) {
-        void navigator.clipboard.writeText(address)
-      }
-    }, [address])
+    const handleCopyAddress = useCallback(() => copyAddress(address), [copyAddress, address])
 
     const friendButton = useMemo(() => getFriendButtonConfig(friendshipStatus), [friendshipStatus])
 
@@ -136,23 +137,10 @@ const ProfileMobileNav = memo(
       })
     }, [address, canQueryFriendship, friendButton.action, hasValidIdentity, isOwnProfile, upsertFriendship])
 
-    const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-    useEffect(
-      () => () => {
-        if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current)
-      },
-      []
-    )
-
     const handleShareProfile = useCallback(() => {
-      if (typeof navigator === 'undefined' || !navigator.clipboard || typeof window === 'undefined') return
-      const profileUrl = `${window.location.origin}/profile/${address}`
-      void navigator.clipboard.writeText(profileUrl).then(() => {
-        setHasCopiedInvite(true)
-        if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current)
-        copiedTimerRef.current = setTimeout(() => setHasCopiedInvite(false), 2000)
-      })
-    }, [address])
+      if (typeof window === 'undefined') return
+      copyShareProfile(`${window.location.origin}/profile/${address}`)
+    }, [copyShareProfile, address])
 
     const handleLogout = useCallback(() => {
       void disconnect()
@@ -182,9 +170,23 @@ const ProfileMobileNav = memo(
             <UserName>{displayName}</UserName>
             <UserAddressRow>
               <UserAddressText>{shortenAddress(address)}</UserAddressText>
-              <AddressCopyButton aria-label={t('profile.header.copy_address')} size="small" onClick={handleCopyAddress}>
-                <ContentCopyIcon />
-              </AddressCopyButton>
+              <Tooltip
+                open={hasCopiedAddress}
+                disableFocusListener
+                disableHoverListener
+                disableTouchListener
+                arrow
+                placement="top"
+                title={
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <CheckRoundedIcon fontSize="small" /> {t('profile.header.address_copied')}
+                  </Box>
+                }
+              >
+                <AddressCopyButton aria-label={t('profile.header.copy_address')} size="small" onClick={handleCopyAddress}>
+                  <ContentCopyIcon />
+                </AddressCopyButton>
+              </Tooltip>
             </UserAddressRow>
           </UserNameColumn>
         </UserBlock>

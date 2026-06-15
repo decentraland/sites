@@ -52,8 +52,11 @@ jest.mock('decentraland-ui2', () => {
     open ? mockReact.createElement('div', { role: 'menu' }, children) : null
   const MenuItem = ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) =>
     mockReact.createElement('div', { role: 'menuitem', onClick }, children)
+  const Box = ({ children }: { children?: React.ReactNode }) => mockReact.createElement('div', null, children)
+  const Tooltip = ({ open, title, children }: { open?: boolean; title?: React.ReactNode; children?: React.ReactNode }) =>
+    mockReact.createElement(mockReact.Fragment, null, children, open ? mockReact.createElement('div', { role: 'tooltip' }, title) : null)
   const useTabletAndBelowMediaQuery = () => false
-  return { Button, IconButton, Menu, MenuItem, useTabletAndBelowMediaQuery }
+  return { Box, Button, IconButton, Menu, MenuItem, Tooltip, useTabletAndBelowMediaQuery }
 })
 
 jest.mock('./ProfileHeader.styled', () => {
@@ -172,5 +175,13 @@ describe('ProfileHeader', () => {
     renderHeader(false)
     await user.click(screen.getByRole('button', { name: /profile\.header\.copy_address/i }))
     expect(writeTextSpy).toHaveBeenCalledWith(address)
+  })
+
+  it('should surface the copied feedback after copying the address', async () => {
+    const user = userEvent.setup()
+    renderHeader(false)
+    expect(screen.queryByText('profile.header.address_copied')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /profile\.header\.copy_address/i }))
+    expect(await screen.findByText('profile.header.address_copied')).toBeInTheDocument()
   })
 })
