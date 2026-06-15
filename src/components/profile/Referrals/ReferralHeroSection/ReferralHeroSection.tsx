@@ -15,6 +15,7 @@ import ShareRoundedIcon from '@mui/icons-material/ShareRounded'
 import XIcon from '@mui/icons-material/X'
 import { Box, InputAdornment, Menu, MenuItem, Tooltip, Typography, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
+import { assetUrl } from '../../../../utils/assetUrl'
 import {
   EnvelopeImage,
   EnvelopeImageContainer,
@@ -42,9 +43,9 @@ interface ReferralHeroSectionProps {
   hasClaimedName?: boolean
 }
 
-const ENVELOPE_SRC = '/images/referrals/referral-envelope.webp'
-const LOGO_POINTER_SRC = '/images/referrals/logo-with-pointer.webp'
-const MEDAL_SRC = '/images/referrals/sports-medal.webp'
+const ENVELOPE_SRC = assetUrl('/images/referrals/referral-envelope.webp')
+const LOGO_POINTER_SRC = assetUrl('/images/referrals/logo-with-pointer.webp')
+const MEDAL_SRC = assetUrl('/images/referrals/sports-medal.webp')
 
 function shortenAddress(value: string): string {
   if (value.length < 12) return value
