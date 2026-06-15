@@ -36,14 +36,14 @@ interface ProfileSurfaceProps {
   embedded?: boolean
 }
 
-function renderTabContent(tab: ProfileTab, address: string, isOwnProfile: boolean) {
+function renderTabContent(tab: ProfileTab, address: string, isOwnProfile: boolean, embedded: boolean = false) {
   switch (tab) {
     case 'overview':
       return <OverviewTab address={address} isOwnProfile={isOwnProfile} />
     case 'assets':
-      return <AssetsTab address={address} />
+      return <AssetsTab address={address} embedded={embedded} />
     case 'creations':
-      return <CreationsTab address={address} isOwnProfile={isOwnProfile} />
+      return <CreationsTab address={address} isOwnProfile={isOwnProfile} embedded={embedded} />
     case 'communities':
       return <CommunitiesTab address={address} isOwnProfile={isOwnProfile} />
     case 'places':
@@ -131,7 +131,7 @@ function ProfileSurface({
           onClose={onClose}
         />
       ) : (
-        renderTabContent(resolvedTab, address, isOwnProfile)
+        renderTabContent(resolvedTab, address, isOwnProfile, embedded)
       )}
     </ProfileLayout>
   )

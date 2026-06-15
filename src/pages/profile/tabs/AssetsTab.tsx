@@ -19,6 +19,8 @@ import { EmptyBio, EquippedGrid, LoadingRow } from './OverviewTab.styled'
 
 interface AssetsTabProps {
   address: string
+  /** True when rendered inside the profile modal — lifts the hover preview above the dialog. */
+  embedded?: boolean
 }
 
 interface CategoryOption {
@@ -95,7 +97,7 @@ function useAvailableCategories(address: string): Set<AssetCategory> {
   }, [wearable.data?.total, emote.data?.total, ens.data?.total, parcel.data?.total, estate.data?.total])
 }
 
-function AssetsTab({ address }: AssetsTabProps) {
+function AssetsTab({ address, embedded = false }: AssetsTabProps) {
   const t = useFormatMessage()
   const availableCategories = useAvailableCategories(address)
   // Default to the first category that actually has items, in canonical order
@@ -208,6 +210,9 @@ function AssetsTab({ address }: AssetsTabProps) {
       marketplaceServerUrl={marketplaceServerUrl}
       profile={address}
       dev={isPreviewDev}
+      // Standalone page: leave the default (below the fixed navbar). Inside the profile
+      // modal the cards live above the dialog (z 1300), so lift the preview over it.
+      overlayZIndex={embedded ? 1600 : undefined}
     >
       {header}
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
