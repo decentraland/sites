@@ -983,6 +983,7 @@
       "block": "屏蔽",
       "more_actions": "更多操作",
       "copy_address": "复制地址",
+      "address_copied": "地址已复制！",
       "close_profile": "关闭个人资料",
       "get_a_name": "获取唯一名称",
       "manage_world": "管理 World",

@@ -7,6 +7,8 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import BlockIcon from '@mui/icons-material/Block'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import CloseIcon from '@mui/icons-material/Close'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -20,7 +22,7 @@ import PublicIcon from '@mui/icons-material/Public'
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import VerifiedIcon from '@mui/icons-material/Verified'
-import { Button, Menu, MenuItem, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
+import { Box, Button, Menu, MenuItem, Tooltip, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import {
   useBlockUser,
@@ -120,14 +122,24 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
     [address, mutualCount, mutualFriendsPreview]
   )
   const [hasCopiedInvite, setHasCopiedInvite] = useState(false)
+  const [hasCopiedAddress, setHasCopiedAddress] = useState(false)
+  const copiedAddressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false)
   const [isMutualModalOpen, setIsMutualModalOpen] = useState(false)
   const navigate = useNavigate()
 
   const handleCopyAddress = useCallback(() => {
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      void navigator.clipboard.writeText(address)
-    }
+    if (typeof navigator === 'undefined' || !navigator.clipboard) return
+    void navigator.clipboard
+      .writeText(address)
+      .then(() => {
+        setHasCopiedAddress(true)
+        if (copiedAddressTimerRef.current) clearTimeout(copiedAddressTimerRef.current)
+        copiedAddressTimerRef.current = setTimeout(() => setHasCopiedAddress(false), 2000)
+      })
+      .catch(() => {
+        /* clipboard write can reject on denied permission / insecure context — no feedback to surface */
+      })
   }, [address])
 
   const handleFriendAction = useCallback(() => {
@@ -173,6 +185,7 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
   useEffect(
     () => () => {
       if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current)
+      if (copiedAddressTimerRef.current) clearTimeout(copiedAddressTimerRef.current)
     },
     []
   )
@@ -213,11 +226,25 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
               <AccountBalanceWalletOutlinedIcon />
             </WalletIcon>
             <AddressText>{truncateAddress(address)}</AddressText>
-            <CopyButton aria-label={t('profile.header.copy_address')} size="small" onClick={handleCopyAddress}>
-              <CopyButtonIcon>
-                <ContentCopyIcon />
-              </CopyButtonIcon>
-            </CopyButton>
+            <Tooltip
+              open={hasCopiedAddress}
+              disableFocusListener
+              disableHoverListener
+              disableTouchListener
+              arrow
+              placement="top"
+              title={
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CheckRoundedIcon fontSize="small" /> {t('profile.header.address_copied')}
+                </Box>
+              }
+            >
+              <CopyButton aria-label={t('profile.header.copy_address')} size="small" onClick={handleCopyAddress}>
+                <CopyButtonIcon>
+                  <ContentCopyIcon />
+                </CopyButtonIcon>
+              </CopyButton>
+            </Tooltip>
           </AddressRow>
         </NameAddressBlock>
       </IdentityBlock>

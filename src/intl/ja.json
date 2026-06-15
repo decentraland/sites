@@ -983,6 +983,7 @@
       "block": "ブロック",
       "more_actions": "その他",
       "copy_address": "アドレスをコピー",
+      "address_copied": "アドレスをコピーしました！",
       "close_profile": "プロフィールを閉じる",
       "get_a_name": "ユニークな名前を取得",
       "manage_world": "ワールドを管理",

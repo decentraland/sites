@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CloseIcon from '@mui/icons-material/Close'
@@ -14,6 +16,7 @@ import LogoutIcon from '@mui/icons-material/Logout'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
+import { Box, Tooltip } from 'decentraland-ui2'
 import { useFriendsCount, useFriendshipStatus, useMutualFriends, useUpsertFriendship } from '../../../features/profile/profile.social.rpc'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
@@ -88,6 +91,8 @@ const ProfileMobileNav = memo(
     // Inside a modal the lists render as stack surfaces (never a dialog on a dialog).
     const openFriendsSurface = useModalFriendsNavigation()
     const [hasCopiedInvite, setHasCopiedInvite] = useState(false)
+    const [hasCopiedAddress, setHasCopiedAddress] = useState(false)
+    const copiedAddressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const { status: friendshipStatus, isLoading: isLoadingFriendship } = useFriendshipStatus(canQueryFriendship ? address : undefined)
     const { upsert: upsertFriendship, isLoading: isUpdatingFriendship } = useUpsertFriendship()
@@ -116,9 +121,17 @@ const ProfileMobileNav = memo(
     }, [isOwnProfile, hiddenTabs])
 
     const handleCopyAddress = useCallback(() => {
-      if (typeof navigator !== 'undefined' && navigator.clipboard) {
-        void navigator.clipboard.writeText(address)
-      }
+      if (typeof navigator === 'undefined' || !navigator.clipboard) return
+      void navigator.clipboard
+        .writeText(address)
+        .then(() => {
+          setHasCopiedAddress(true)
+          if (copiedAddressTimerRef.current) clearTimeout(copiedAddressTimerRef.current)
+          copiedAddressTimerRef.current = setTimeout(() => setHasCopiedAddress(false), 2000)
+        })
+        .catch(() => {
+          /* clipboard write can reject on denied permission / insecure context — no feedback to surface */
+        })
     }, [address])
 
     const friendButton = useMemo(() => getFriendButtonConfig(friendshipStatus), [friendshipStatus])
@@ -140,6 +153,7 @@ const ProfileMobileNav = memo(
     useEffect(
       () => () => {
         if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current)
+        if (copiedAddressTimerRef.current) clearTimeout(copiedAddressTimerRef.current)
       },
       []
     )
@@ -182,9 +196,23 @@ const ProfileMobileNav = memo(
             <UserName>{displayName}</UserName>
             <UserAddressRow>
               <UserAddressText>{shortenAddress(address)}</UserAddressText>
-              <AddressCopyButton aria-label={t('profile.header.copy_address')} size="small" onClick={handleCopyAddress}>
-                <ContentCopyIcon />
-              </AddressCopyButton>
+              <Tooltip
+                open={hasCopiedAddress}
+                disableFocusListener
+                disableHoverListener
+                disableTouchListener
+                arrow
+                placement="top"
+                title={
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <CheckRoundedIcon fontSize="small" /> {t('profile.header.address_copied')}
+                  </Box>
+                }
+              >
+                <AddressCopyButton aria-label={t('profile.header.copy_address')} size="small" onClick={handleCopyAddress}>
+                  <ContentCopyIcon />
+                </AddressCopyButton>
+              </Tooltip>
             </UserAddressRow>
           </UserNameColumn>
         </UserBlock>
