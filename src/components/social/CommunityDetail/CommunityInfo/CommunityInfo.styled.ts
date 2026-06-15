@@ -206,7 +206,12 @@ const Title = styled(Typography)(({ theme }) => ({
   fontWeight: 500,
   fontSize: theme.typography.h4.fontSize,
   lineHeight: '124%',
-  color: dclColors.neutral.softWhite
+  color: dclColors.neutral.softWhite,
+  // Long, unbroken names (e.g. "HELLOOOO…OOO") must wrap inside the details
+  // column instead of overflowing the card and overlapping the close button.
+  // `anywhere` also lets the flex item shrink to its container (CommunityDetails
+  // already sets `minWidth: 0`) so the break actually takes effect.
+  overflowWrap: 'anywhere'
 }))
 
 const PrivacyMembersRow = styled(Box)(({ theme }) => ({
