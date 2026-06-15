@@ -7,8 +7,9 @@ type ModalSurface =
   | { kind: 'photo'; imageId: string }
   | { kind: 'place'; place: ProfilePlace }
   | { kind: 'community'; communityId: string }
+  | { kind: 'friends'; mutualOf?: string }
 
-type ModalSurfaceVariant = 'profile' | 'photo' | 'place' | 'community'
+type ModalSurfaceVariant = 'profile' | 'photo' | 'place' | 'community' | 'friends'
 
 interface ModalSurfaceStack {
   /** Current visible surface, or `null` when the modal shows its root content. */
@@ -19,6 +20,8 @@ interface ModalSurfaceStack {
   openPhoto: (imageId: string) => void
   openPlace: (place: ProfilePlace) => void
   openCommunity: (communityId: string) => void
+  /** Opens the friends list (own) or the mutual-friends list with `mutualOf`. */
+  openFriends: (mutualOf?: string) => void
   /** Goes back exactly one surface (photo → profile → … → root). */
   pop: () => void
   /** Clears the whole history (modal closed / root content changed). */

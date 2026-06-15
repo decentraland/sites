@@ -67,6 +67,32 @@ describe('useModalSurfaceStack', () => {
     })
   })
 
+  describe('when opening the friends list as a surface', () => {
+    it('should push a friends entry and unwind back through it', () => {
+      const { result } = renderHook(() => useModalSurfaceStack())
+
+      act(() => result.current.openFriends('0xAaaaAAAAaaaaAAAAaaaaAAAAaaaaAAAAaaaaAAAA'))
+      expect(result.current.top).toEqual({ kind: 'friends', mutualOf: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' })
+
+      act(() => result.current.openProfile('0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'))
+      expect(result.current.top?.kind).toBe('profile')
+
+      act(() => result.current.pop())
+      expect(result.current.top).toEqual({ kind: 'friends', mutualOf: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' })
+    })
+
+    it('should dedupe re-opening the same friends list and ignore invalid mutual addresses', () => {
+      const { result } = renderHook(() => useModalSurfaceStack())
+
+      act(() => result.current.openFriends())
+      act(() => result.current.openFriends())
+      expect(result.current.top).toEqual({ kind: 'friends', mutualOf: undefined })
+
+      act(() => result.current.openFriends('not-an-address'))
+      expect(result.current.top).toEqual({ kind: 'friends', mutualOf: undefined })
+    })
+  })
+
   describe('when the stack is reset', () => {
     it('should return to the root surface', () => {
       const { result } = renderHook(() => useModalSurfaceStack())

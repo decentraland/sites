@@ -51,6 +51,15 @@ function useModalSurfaceStack(): ModalSurfaceStack {
     })
   }, [])
 
+  const openFriends = useCallback((mutualOf?: string) => {
+    const normalized = mutualOf && ADDRESS_REGEX.test(mutualOf) ? mutualOf.toLowerCase() : undefined
+    setStack(prev => {
+      const top = prev[prev.length - 1]
+      if (top?.kind === 'friends' && top.mutualOf === normalized) return prev
+      return [...prev, { kind: 'friends', mutualOf: normalized }]
+    })
+  }, [])
+
   const pop = useCallback(() => setStack(prev => prev.slice(0, -1)), [])
   const reset = useCallback(() => setStack([]), [])
 
@@ -74,9 +83,39 @@ function useModalSurfaceStack(): ModalSurfaceStack {
   const variant: ModalSurfaceVariant | undefined = top?.kind
 
   return useMemo(
-    () => ({ top, variant, openProfile, openPhoto, openPlace, openCommunity, pop, reset, setTopProfileTab, exitTopProfileTab }),
-    [top, variant, openProfile, openPhoto, openPlace, openCommunity, pop, reset, setTopProfileTab, exitTopProfileTab]
+    () => ({
+      top,
+      variant,
+      openProfile,
+      openPhoto,
+      openPlace,
+      openCommunity,
+      openFriends,
+      pop,
+      reset,
+      setTopProfileTab,
+      exitTopProfileTab
+    }),
+    [top, variant, openProfile, openPhoto, openPlace, openCommunity, openFriends, pop, reset, setTopProfileTab, exitTopProfileTab]
   )
 }
 
-export { useModalSurfaceStack }
+/**
+ * Dialog `onClose` handler shared by every stack host: Escape unwinds one surface at a
+ * time and only closes the dialog at the root; any other reason (backdrop click,
+ * programmatic) dismisses outright.
+ */
+function useStackDialogClose(top: ModalSurface | null, pop: () => void, onClose: () => void) {
+  return useCallback(
+    (_event: object, reason?: string) => {
+      if (reason === 'escapeKeyDown' && top) {
+        pop()
+        return
+      }
+      onClose()
+    },
+    [top, pop, onClose]
+  )
+}
+
+export { useModalSurfaceStack, useStackDialogClose }

@@ -12,7 +12,9 @@ function ProfileModalHost() {
     const next = new URLSearchParams(location.search)
     next.delete(QUERY_KEY)
     const search = next.toString()
-    navigate({ pathname: location.pathname, search: search ? `?${search}` : '' }, { replace: false })
+    // `replace: true` — pushing a new entry on close left the `?profile=` entry in the
+    // history, so the browser back button re-opened the modal (double-back to escape).
+    navigate({ pathname: location.pathname, search: search ? `?${search}` : '' }, { replace: true })
   }, [location.pathname, location.search, navigate])
 
   if (!address) return null

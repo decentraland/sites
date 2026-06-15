@@ -4,7 +4,7 @@ import { ProfileSurface } from '../ProfileSurface'
 import type { ProfileTab } from '../ProfileTabs'
 import { ModalProfileNavigationProvider } from './ModalProfileNavigation'
 import { ModalSurfaceView } from './ModalSurfaceStack'
-import { useModalSurfaceStack } from './useModalSurfaceStack'
+import { useModalSurfaceStack, useStackDialogClose } from './useModalSurfaceStack'
 import { ProfileDialog } from './ProfileModal.styled'
 
 interface ProfileModalProps {
@@ -32,7 +32,7 @@ function ProfileModal({ address, open, onClose, onBack, initialTab = 'overview' 
   // Photos / places / communities / other profiles opened from inside this modal swap
   // in-place (rule: never stack a modal on a modal). The surface stack keeps the full
   // history so back unwinds one level at a time instead of jumping to this root profile.
-  const { top, variant, openProfile, openPhoto, openPlace, openCommunity, pop, reset, setTopProfileTab, exitTopProfileTab } =
+  const { top, variant, openProfile, openPhoto, openPlace, openCommunity, openFriends, pop, reset, setTopProfileTab, exitTopProfileTab } =
     useModalSurfaceStack()
 
   // Opening a different root profile (or re-opening the modal) starts a fresh history.
@@ -50,6 +50,7 @@ function ProfileModal({ address, open, onClose, onBack, initialTab = 'overview' 
     },
     [rootAddress, top, openProfile]
   )
+  const handleDialogClose = useStackDialogClose(top, pop, onClose)
   const handleRootTabChange = useCallback((nextTab: ProfileTab) => {
     setActiveTab(nextTab)
     setHasChosenTab(true)
@@ -65,12 +66,13 @@ function ProfileModal({ address, open, onClose, onBack, initialTab = 'overview' 
   const isOwnProfile = Boolean(viewerAddress && rootAddress === viewerAddress.toLowerCase())
 
   return (
-    <ProfileDialog open={open} onClose={onClose} fullWidth maxWidth={false} scroll="paper" $variant={variant ?? 'profile'}>
+    <ProfileDialog open={open} onClose={handleDialogClose} fullWidth maxWidth={false} scroll="paper" $variant={variant ?? 'profile'}>
       <ModalProfileNavigationProvider
         onOpenProfile={handleOpenProfile}
         onOpenPhoto={openPhoto}
         onOpenPlace={openPlace}
         onOpenCommunity={openCommunity}
+        onOpenFriends={openFriends}
       >
         {top ? (
           <ModalSurfaceView surface={top} onBack={pop} onClose={onClose} onTabChange={setTopProfileTab} onExitTab={exitTopProfileTab} />

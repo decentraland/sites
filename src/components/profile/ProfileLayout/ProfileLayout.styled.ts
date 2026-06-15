@@ -23,8 +23,10 @@ const ContentArea = styled(Box)(({ theme }) => ({
   maxWidth: 1650,
   marginLeft: 'auto',
   marginRight: 'auto',
-  paddingLeft: theme.spacing(2),
-  paddingRight: theme.spacing(2),
+  // No lateral padding below md: BodyArea already provides the single 16px gutter —
+  // stacking both nested the content 32px from the viewport edge on phones.
+  paddingLeft: 0,
+  paddingRight: 0,
   display: 'flex',
   flexDirection: 'column',
   [theme.breakpoints.up('md')]: {

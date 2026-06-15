@@ -2,7 +2,7 @@ import { Dialog, styled } from 'decentraland-ui2'
 
 const MOBILE_NAVBAR_OFFSET = 64
 
-type ProfileDialogVariant = 'profile' | 'photo' | 'place' | 'community'
+type ProfileDialogVariant = 'profile' | 'photo' | 'place' | 'community' | 'friends'
 
 // Paper sizing per variant. `profile` matches Figma 167:78643 (1650×930);
 // `photo`, `place`, and `community` shrink to the standalone modal sizes so
@@ -14,7 +14,9 @@ const VARIANT_PAPER: Record<ProfileDialogVariant, { maxWidth: number; maxHeight:
   // doesn't get cropped vertically when the swap-in-profile view opens it.
   photo: { maxWidth: 1500, maxHeight: '92vh' },
   place: { maxWidth: 880, maxHeight: '90vh' },
-  community: { maxWidth: 1240, maxHeight: '90vh' }
+  community: { maxWidth: 1240, maxHeight: '90vh' },
+  // matches the standalone FriendsModal dialog (520 × 80vh)
+  friends: { maxWidth: 520, maxHeight: '80vh' }
 }
 
 // Mirrors `whats-on/DetailModal/DetailModal.styled.ts` StyledDialog in its

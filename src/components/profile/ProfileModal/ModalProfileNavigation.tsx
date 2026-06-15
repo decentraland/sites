@@ -6,12 +6,14 @@ type OpenProfileFn = (address: string) => void
 type OpenPhotoFn = (imageId: string) => void
 type OpenPlaceFn = (place: ProfilePlace) => void
 type OpenCommunityFn = (communityId: string) => void
+type OpenFriendsFn = (mutualOf?: string) => void
 
 interface ModalNavigationValue {
   openProfile: OpenProfileFn
   openPhoto?: OpenPhotoFn
   openPlace?: OpenPlaceFn
   openCommunity?: OpenCommunityFn
+  openFriends?: OpenFriendsFn
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -26,6 +28,8 @@ interface ModalProfileNavigationProviderProps {
   onOpenPlace?: OpenPlaceFn
   /** Called when a child requests opening a community while this provider is mounted. Same anti-stacking pattern. */
   onOpenCommunity?: OpenCommunityFn
+  /** Called when a child requests opening the friends / mutual-friends list. Renders as a stack surface instead of a dialog-on-dialog. */
+  onOpenFriends?: OpenFriendsFn
   children: ReactNode
 }
 
@@ -34,11 +38,18 @@ function ModalProfileNavigationProvider({
   onOpenPhoto,
   onOpenPlace,
   onOpenCommunity,
+  onOpenFriends,
   children
 }: ModalProfileNavigationProviderProps) {
   const value = useMemo<ModalNavigationValue>(
-    () => ({ openProfile: onOpenProfile, openPhoto: onOpenPhoto, openPlace: onOpenPlace, openCommunity: onOpenCommunity }),
-    [onOpenProfile, onOpenPhoto, onOpenPlace, onOpenCommunity]
+    () => ({
+      openProfile: onOpenProfile,
+      openPhoto: onOpenPhoto,
+      openPlace: onOpenPlace,
+      openCommunity: onOpenCommunity,
+      openFriends: onOpenFriends
+    }),
+    [onOpenProfile, onOpenPhoto, onOpenPlace, onOpenCommunity, onOpenFriends]
   )
   return <ModalProfileNavigationContext.Provider value={value}>{children}</ModalProfileNavigationContext.Provider>
 }
@@ -59,9 +70,14 @@ function useModalCommunityNavigation(): OpenCommunityFn | null {
   return useContext(ModalProfileNavigationContext)?.openCommunity ?? null
 }
 
+function useModalFriendsNavigation(): OpenFriendsFn | null {
+  return useContext(ModalProfileNavigationContext)?.openFriends ?? null
+}
+
 export {
   ModalProfileNavigationProvider,
   useModalCommunityNavigation,
+  useModalFriendsNavigation,
   useModalPhotoNavigation,
   useModalPlaceNavigation,
   useModalProfileNavigation

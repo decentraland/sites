@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { ModalProfileNavigationProvider, ModalSurfaceView, useModalSurfaceStack } from '../../profile/ProfileModal'
+import { ModalProfileNavigationProvider, ModalSurfaceView, useModalSurfaceStack, useStackDialogClose } from '../../profile/ProfileModal'
 import { StyledDialog } from '../DetailModal/DetailModal.styled'
 import { EventDetailModalContent } from './EventDetailModalContent'
 import { EventDetailModalHero } from './EventDetailModalHero'
@@ -9,7 +9,7 @@ function EventDetailModal({ open, onClose, data, adminActions, onEdit }: EventDe
   // Profiles / photos / places / communities opened from inside the modal swap in-place —
   // never stack on top of the event dialog. The surface stack keeps the full history so the
   // back chevron unwinds one level at a time (e.g. event → profile → photo → other profile).
-  const { top, variant, openProfile, openPhoto, openPlace, openCommunity, pop, reset, setTopProfileTab, exitTopProfileTab } =
+  const { top, variant, openProfile, openPhoto, openPlace, openCommunity, openFriends, pop, reset, setTopProfileTab, exitTopProfileTab } =
     useModalSurfaceStack()
 
   // Reset the swap history whenever the underlying event changes or the modal closes,
@@ -21,10 +21,12 @@ function EventDetailModal({ open, onClose, data, adminActions, onEdit }: EventDe
     reset()
   }, [data?.id, reset])
 
+  const handleDialogClose = useStackDialogClose(top, pop, onClose)
+
   return (
     <StyledDialog
       open={open && !!data}
-      onClose={onClose}
+      onClose={handleDialogClose}
       aria-labelledby="event-detail-title"
       fullWidth
       maxWidth={false}
@@ -37,6 +39,7 @@ function EventDetailModal({ open, onClose, data, adminActions, onEdit }: EventDe
           onOpenPhoto={openPhoto}
           onOpenPlace={openPlace}
           onOpenCommunity={openCommunity}
+          onOpenFriends={openFriends}
         >
           {top ? (
             <ModalSurfaceView surface={top} onBack={pop} onClose={onClose} onTabChange={setTopProfileTab} onExitTab={exitTopProfileTab} />

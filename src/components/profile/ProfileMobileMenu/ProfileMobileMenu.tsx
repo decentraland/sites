@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
@@ -23,6 +23,7 @@ import { getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarC
 import { FriendsModal } from '../FriendsModal'
 import { ProfileAvatar } from '../ProfileAvatar'
 import { getFriendButtonConfig } from '../ProfileHeader/ProfileHeader.helpers'
+import { useModalFriendsNavigation } from '../ProfileModal/ModalProfileNavigation'
 import { getVisibleTabs } from '../ProfileTabs'
 import type { ProfileTab } from '../ProfileTabs'
 import { TAB_ICONS } from './ProfileMobileMenu.icons'
@@ -84,6 +85,8 @@ const ProfileMobileNav = memo(
     const canQueryFriendship = !isOwnProfile && hasValidIdentity
     const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false)
     const [isMutualModalOpen, setIsMutualModalOpen] = useState(false)
+    // Inside a modal the lists render as stack surfaces (never a dialog on a dialog).
+    const openFriendsSurface = useModalFriendsNavigation()
     const [hasCopiedInvite, setHasCopiedInvite] = useState(false)
 
     const { status: friendshipStatus, isLoading: isLoadingFriendship } = useFriendshipStatus(canQueryFriendship ? address : undefined)
@@ -133,12 +136,21 @@ const ProfileMobileNav = memo(
       })
     }, [address, canQueryFriendship, friendButton.action, hasValidIdentity, isOwnProfile, upsertFriendship])
 
+    const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    useEffect(
+      () => () => {
+        if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current)
+      },
+      []
+    )
+
     const handleShareProfile = useCallback(() => {
       if (typeof navigator === 'undefined' || !navigator.clipboard || typeof window === 'undefined') return
       const profileUrl = `${window.location.origin}/profile/${address}`
       void navigator.clipboard.writeText(profileUrl).then(() => {
         setHasCopiedInvite(true)
-        setTimeout(() => setHasCopiedInvite(false), 2000)
+        if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current)
+        copiedTimerRef.current = setTimeout(() => setHasCopiedInvite(false), 2000)
       })
     }, [address])
 
@@ -183,7 +195,7 @@ const ProfileMobileNav = memo(
                 variant="outlined"
                 color="inherit"
                 startIcon={<PeopleAltOutlinedIcon />}
-                onClick={() => setIsFriendsModalOpen(true)}
+                onClick={() => (openFriendsSurface ? openFriendsSurface() : setIsFriendsModalOpen(true))}
               >
                 {t('profile.header.friends_count', { count: friendsCount })}
               </DrawerCta>
@@ -198,7 +210,7 @@ const ProfileMobileNav = memo(
             {mutualCount > 0 ? (
               <MutualRow
                 type="button"
-                onClick={() => setIsMutualModalOpen(true)}
+                onClick={() => (openFriendsSurface ? openFriendsSurface(address) : setIsMutualModalOpen(true))}
                 aria-label={t('profile.friends_modal.mutual_title', { count: mutualCount })}
               >
                 <MutualStack>
