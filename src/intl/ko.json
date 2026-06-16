@@ -1276,6 +1276,30 @@
           "save": "저장"
         }
       }
+    },
+    "credits": {
+      "title": "마켓플레이스 크레딧 프로그램",
+      "description": "월드 내 목표를 달성하여 매주 크레딧을 획득하세요.",
+      "status_label": "상태:",
+      "status": {
+        "enrolled": "등록됨",
+        "opted_out": "탈퇴함",
+        "not_registered": "미등록"
+      },
+      "learn_more": "자세히 알아보기",
+      "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
+      "join_button": "프로그램 참여",
+      "leave_button": "프로그램 탈퇴",
+      "leave_modal": {
+        "warning": "마켓플레이스 크레딧을 탈퇴하시겠습니까?",
+        "description": "매주 크레딧 획득이 중단됩니다. 언제든지 다시 참여할 수 있습니다.",
+        "cancel": "취소",
+        "confirm": "프로그램 탈퇴",
+        "errors": {
+          "generic": "지금은 프로그램을 탈퇴할 수 없습니다. 다시 시도해 주세요.",
+          "already_claimed": "이번 주에는 이미 크레딧을 청구했기 때문에 탈퇴할 수 없습니다. 다음 주에 다시 시도해 주세요."
+        }
+      }
     }
   }
 }

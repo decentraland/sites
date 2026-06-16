@@ -1276,6 +1276,30 @@
           "save": "Guardar"
         }
       }
+    },
+    "credits": {
+      "title": "Programa de Créditos del Marketplace",
+      "description": "Gana créditos semanales completando objetivos en el mundo.",
+      "status_label": "Estado:",
+      "status": {
+        "enrolled": "Inscrito",
+        "opted_out": "Dado de baja",
+        "not_registered": "No Registrado"
+      },
+      "learn_more": "Más información",
+      "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
+      "join_button": "Unirse al Programa",
+      "leave_button": "Abandonar Programa",
+      "leave_modal": {
+        "warning": "¿Abandonar Créditos del Marketplace?",
+        "description": "Dejarás de ganar créditos semanales. Puedes volver a unirte en cualquier momento.",
+        "cancel": "Cancelar",
+        "confirm": "Abandonar Programa",
+        "errors": {
+          "generic": "No se pudo abandonar el programa en este momento. Por favor, inténtalo de nuevo.",
+          "already_claimed": "No puedes abandonar esta semana porque ya has reclamado créditos. Por favor, inténtalo de nuevo la próxima semana."
+        }
+      }
     }
   }
 }

@@ -1711,6 +1711,30 @@
           "save": "Save"
         }
       }
+    },
+    "credits": {
+      "title": "Marketplace Credits Program",
+      "description": "Earn weekly credits by completing in-world goals.",
+      "status_label": "Status:",
+      "status": {
+        "enrolled": "Enrolled",
+        "opted_out": "Opted Out",
+        "not_registered": "Not Registered"
+      },
+      "learn_more": "Learn more",
+      "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
+      "join_button": "Join Program",
+      "leave_button": "Leave Program",
+      "leave_modal": {
+        "warning": "Leave Marketplace Credits?",
+        "description": "You'll stop earning weekly credits. You can rejoin at any time.",
+        "cancel": "Cancel",
+        "confirm": "Leave Program",
+        "errors": {
+          "generic": "Couldn't leave the program right now. Please try again.",
+          "already_claimed": "You can't leave this week because you've already claimed credits. Please try again next week."
+        }
+      }
     }
   }
 }

@@ -1271,6 +1271,30 @@
           "save": "Enregistrer"
         }
       }
+    },
+    "credits": {
+      "title": "Programme de Crédits du Marketplace",
+      "description": "Gagnez des crédits hebdomadaires en accomplissant des objectifs dans le monde.",
+      "status_label": "Statut :",
+      "status": {
+        "enrolled": "Inscrit",
+        "opted_out": "Désinscrit",
+        "not_registered": "Non inscrit"
+      },
+      "learn_more": "En savoir plus",
+      "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
+      "join_button": "Rejoindre le programme",
+      "leave_button": "Quitter le programme",
+      "leave_modal": {
+        "warning": "Quitter les Crédits du Marketplace ?",
+        "description": "Vous cesserez de gagner des crédits hebdomadaires. Vous pouvez vous réinscrire à tout moment.",
+        "cancel": "Annuler",
+        "confirm": "Quitter le programme",
+        "errors": {
+          "generic": "Impossible de quitter le programme pour le moment. Veuillez réessayer.",
+          "already_claimed": "Vous ne pouvez pas quitter cette semaine car vous avez déjà réclamé des crédits. Veuillez réessayer la semaine prochaine."
+        }
+      }
     }
   }
 }
