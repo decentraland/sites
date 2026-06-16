@@ -1020,10 +1020,10 @@
     },
     "overview": {
       "about": "소개",
-      "no_bio_owner": "자기소개를 추가해 보세요.",
+      "no_bio_owner": "아직 정보가 없습니다. 월드에 입장하여 자기소개를 완성해 보세요!",
       "no_bio_member": "이 회원은 아직 자기소개를 추가하지 않았습니다.",
       "equipped_wearables": "착용 중인 웨어러블",
-      "no_wearables": "착용 중인 웨어러블이 없습니다.",
+      "no_wearables": "아직 착용한 아이템이 없습니다.",
       "badges": "배지",
       "links": "링크",
       "equipped_items": "착용한 아이템",
@@ -1065,11 +1065,12 @@
       "count": "{count}개 에셋",
       "view": "보기",
       "edit": "편집",
-      "transfer": "이전"
+      "transfer": "이전",
+      "empty_owner_subtitle": "마켓플레이스에서 나만의 스타일을 만들어 보세요",
+      "empty_owner_cta": "마켓플레이스로 이동"
     },
     "communities": {
       "empty_title": "아직 커뮤니티가 없습니다",
-      "empty_owner": "커뮤니티에 가입하면 여기에 표시됩니다.",
       "empty_member": "이 회원은 아직 커뮤니티에 가입하지 않았습니다.",
       "count": "{count}개 커뮤니티",
       "member": "회원",
@@ -1080,23 +1081,30 @@
       "action_joined": "가입됨",
       "share_aria": "커뮤니티 링크 공유",
       "copy_link": "링크 복사",
-      "copied": "복사됨!"
+      "copied": "복사됨!",
+      "empty_owner_subtitle": "Decentraland에 입장하여 나에게 맞는 커뮤니티에 참여하세요. 직접 만들 수도 있습니다!",
+      "empty_owner_cta": "커뮤니티 둘러보기"
     },
     "places": {
       "empty_title": "아직 장소가 없습니다",
-      "empty_owner": "보유한 장소가 여기에 표시됩니다.",
       "empty_member": "이 회원은 아직 장소를 등록하지 않았습니다.",
       "count": "{count}개 장소",
       "jump_in": "점프",
       "filter_my_places": "내 장소",
       "filter_favorites": "즐겨찾기",
-      "empty_favorites": "아직 즐겨찾기한 장소가 없습니다."
+      "empty_owner_title": "아직 아무것도 없어요—하지만 쉽게 바꿀 수 있어요",
+      "empty_owner_subtitle": "내 장소에는 Decentraland에서 소유하거나 관리하는 공간이 표시됩니다. 가장 쉬운 시작 방법은 NAME을 얻는 것이며, 나만의 World가 열립니다.",
+      "empty_owner_cta": "NAME 받기",
+      "empty_favorites_title": "아직 저장한 항목이 없어요",
+      "empty_favorites_subtitle": "장소 카드나 Decentraland 지도에서 하트를 눌러 즐겨찾는 장소를 추가하세요. 여기에서 모두 확인할 수 있어요.",
+      "empty_favorites_cta": "장소 둘러보기"
     },
     "photos": {
       "empty_title": "아직 사진이 없습니다",
-      "empty_owner": "월드 내 스냅샷이 여기에 표시됩니다.",
       "empty_member": "이 회원은 아직 사진을 찍지 않았습니다.",
-      "count": "{count}장의 사진"
+      "count": "{count}장의 사진",
+      "empty_owner_subtitle": "입장해서 추억을 모아 보세요! 'C'를 눌러 카메라를 열고 '스페이스바'로 사진을 찍을 수 있어요.",
+      "empty_owner_cta": "입장하기"
     },
     "referral_rewards": {
       "anonymous": "로그인하여 친구를 초대하고 보상을 잠금 해제하세요.",

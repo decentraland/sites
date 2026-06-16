@@ -41,7 +41,7 @@ function renderTabContent(tab: ProfileTab, address: string, isOwnProfile: boolea
     case 'overview':
       return <OverviewTab address={address} isOwnProfile={isOwnProfile} />
     case 'assets':
-      return <AssetsTab address={address} embedded={embedded} />
+      return <AssetsTab address={address} isOwnProfile={isOwnProfile} embedded={embedded} />
     case 'creations':
       return <CreationsTab address={address} isOwnProfile={isOwnProfile} embedded={embedded} />
     case 'communities':
