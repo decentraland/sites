@@ -45,6 +45,7 @@
     "react-intersection-observer": "10.0.3",
     "react-redux": "9.2.0",
     "react-router-dom": "7.15.1",
+    "thirdweb": "5.120.1",
     "viem": "2.50.4"
   },
   "devDependencies": {

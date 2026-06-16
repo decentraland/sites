@@ -1222,6 +1222,51 @@
       "title": "ページが見つかりません",
       "description": "お探しのアカウントページは存在しません。",
       "cta": "ウォレットへ移動"
+    },
+    "delete": {
+      "danger_zone": "危険ゾーン",
+      "danger_description": "アカウントを削除すると、元に戻すことはできません。よくご確認ください。",
+      "warning": "以下の情報は永久に失われます：",
+      "consequences": {
+        "profile": {
+          "title": "プロフィール",
+          "description": "ユーザー名、アバター、自己紹介、表示名"
+        },
+        "social": {
+          "title": "ソーシャルのつながり",
+          "description": "フレンドリストとブロックしたユーザー"
+        },
+        "marketplace": {
+          "title": "マーケットプレイスの活動",
+          "description": "出品中のリスト、購入履歴、オファー"
+        },
+        "credits": {
+          "title": "プラットフォーム内クレジット",
+          "description": "未使用の残高や報酬"
+        },
+        "favorites": {
+          "title": "お気に入りと履歴",
+          "description": "保存した場所、最近の活動、イベントの参加予定"
+        },
+        "notifications": {
+          "title": "通知と設定",
+          "description": "すべての設定と通知履歴"
+        }
+      },
+      "asset_warning_title": "オンチェーン資産のリスク",
+      "asset_warning_description": "アカウントを削除すると、オンチェーン資産（ウェアラブル、エモート、LANDなど）へのアクセスを永久に失う可能性があります。続行する前に必ず秘密鍵をエクスポートしてください。",
+      "export_key_description": "Walletsタブに移動し、アドレスの下にあるウォレットマネージャーを使用して秘密鍵をエクスポートしてください。",
+      "export_key_link": "Walletsへ移動",
+      "delete_button": "アカウントを削除",
+      "modal": {
+        "title": "本当にアカウントを削除しますか？",
+        "description": "この操作は取り消せません。すべてのデータが永久に削除されます。確認するには、下のフィールドに DELETE と入力して確定してください。",
+        "input_label": "DELETE と入力",
+        "deleting": "削除中...",
+        "delete": "アカウントを削除",
+        "cancel": "キャンセル",
+        "generic_error": "アカウントの削除に失敗しました。後でもう一度お試しください。"
+      }
     }
   }
 }
