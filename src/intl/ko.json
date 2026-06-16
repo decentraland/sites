@@ -1239,6 +1239,43 @@
         "copied": "복사됨!",
         "close": "닫기"
       }
+    },
+    "notifications": {
+      "title": "알림",
+      "description": "자리를 비운 동안에도 Decentraland 알림을 놓치지 마세요! 이메일 알림을 신청하고 아래에서 받고 싶은 알림을 선택하세요.",
+      "loading": "알림 설정을 불러오는 중…",
+      "load_error": "알림 설정을 불러오지 못했습니다. 나중에 다시 시도해 주세요.",
+      "groups": {
+        "marketplace": "마켓플레이스",
+        "worlds": "월드",
+        "credits": "마켓플레이스 크레딧",
+        "streaming": "월드 내 스트리밍",
+        "events": "이벤트",
+        "rewards": "경품 및 보상",
+        "dao": "DAO",
+        "tips": "팁",
+        "referral": "추천"
+      },
+      "email": {
+        "title": "이메일 주소",
+        "placeholder": "example@decentraland.org",
+        "invalid": "잘못된 이메일",
+        "description": {
+          "without_email": "이메일을 입력한 후 받은 편지함에서 확인 링크가 담긴 이메일을 확인하세요. 확인 후 아래 알림을 맞춤 설정할 수 있습니다.",
+          "with_email": "이메일 주소를 변경하려면 아래에서 수정하세요. 이후 받은 편지함에서 확인 이메일을 꼭 확인하세요!",
+          "pending_approval": "확인 이메일을 보냈습니다. 받은 편지함을 확인하세요.",
+          "confirmed": "이메일이 확인되었습니다."
+        },
+        "status": {
+          "confirmed": "확인됨",
+          "pending": "승인 대기 중"
+        },
+        "button": {
+          "submit": "제출",
+          "resend": "재전송",
+          "save": "저장"
+        }
+      }
     }
   }
 }

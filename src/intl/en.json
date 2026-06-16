@@ -1674,6 +1674,43 @@
         "copied": "Copied!",
         "close": "Close"
       }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Don't miss any Decentraland notifications when you're AFK! Sign up to receive email notifications and pick & choose which ones you want to get below.",
+      "loading": "Loading your notification settings…",
+      "load_error": "We couldn't load your notification settings. Please try again later.",
+      "groups": {
+        "marketplace": "Marketplace",
+        "worlds": "Worlds",
+        "credits": "Marketplace Credits",
+        "streaming": "In-World Streaming",
+        "events": "Events",
+        "rewards": "Giveaway and Rewards",
+        "dao": "DAO",
+        "tips": "Tips",
+        "referral": "Referrals"
+      },
+      "email": {
+        "title": "Your Email Address",
+        "placeholder": "example@decentraland.org",
+        "invalid": "Invalid email",
+        "description": {
+          "without_email": "Enter your email, then check your inbox for an email with the confirmation link. After confirming, you will be able to customize the notifications below.",
+          "with_email": "If you'd like to update your email address, edit it below. Make sure to check for the confirmation email in your inbox afterwards!",
+          "pending_approval": "Confirmation email sent, check your inbox.",
+          "confirmed": "Your email has been confirmed."
+        },
+        "status": {
+          "confirmed": "confirmed",
+          "pending": "pending approval"
+        },
+        "button": {
+          "submit": "Submit",
+          "resend": "Resend",
+          "save": "Save"
+        }
+      }
     }
   }
 }

@@ -1239,6 +1239,43 @@
         "copied": "¡Copiado!",
         "close": "Cerrar"
       }
+    },
+    "notifications": {
+      "title": "Notificaciones",
+      "description": "¡No te pierdas ninguna notificación de Decentraland cuando estés ausente! Regístrate para recibir notificaciones por correo y elige cuáles quieres recibir a continuación.",
+      "loading": "Cargando tu configuración de notificaciones…",
+      "load_error": "No pudimos cargar tu configuración de notificaciones. Inténtalo de nuevo más tarde.",
+      "groups": {
+        "marketplace": "Marketplace",
+        "worlds": "Worlds",
+        "credits": "Créditos del Marketplace",
+        "streaming": "Streaming en el mundo",
+        "events": "Eventos",
+        "rewards": "Sorteos y recompensas",
+        "dao": "DAO",
+        "tips": "Propinas",
+        "referral": "Referidos"
+      },
+      "email": {
+        "title": "Tu dirección de correo",
+        "placeholder": "ejemplo@decentraland.org",
+        "invalid": "Correo inválido",
+        "description": {
+          "without_email": "Ingresa tu correo y revisa tu bandeja de entrada en busca del enlace de confirmación. Tras confirmarlo, podrás personalizar las notificaciones de abajo.",
+          "with_email": "Si quieres actualizar tu dirección de correo, edítala abajo. ¡Asegúrate de revisar el correo de confirmación en tu bandeja de entrada después!",
+          "pending_approval": "Correo de confirmación enviado, revisa tu bandeja de entrada.",
+          "confirmed": "Tu correo ha sido confirmado."
+        },
+        "status": {
+          "confirmed": "confirmado",
+          "pending": "pendiente de aprobación"
+        },
+        "button": {
+          "submit": "Enviar",
+          "resend": "Reenviar",
+          "save": "Guardar"
+        }
+      }
     }
   }
 }

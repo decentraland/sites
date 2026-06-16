@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { adminClient } from '../features/events/events.admin.client'
 import { eventsClient } from '../features/events/events.client'
+import { accountNotificationsClient } from '../services/accountNotificationsClient'
 import { cast2Client } from '../services/cast2Client'
 import { cmsClient } from '../services/cmsClient'
 import { marketplaceClient } from '../services/marketplaceClient'
@@ -44,7 +45,8 @@ describe('when building the DappsShell store', () => {
       [placesClient.reducerPath]: placesClient.reducer,
       [cast2Client.reducerPath]: cast2Client.reducer,
       [marketplaceClient.reducerPath]: marketplaceClient.reducer,
-      [referralClient.reducerPath]: referralClient.reducer
+      [referralClient.reducerPath]: referralClient.reducer,
+      [accountNotificationsClient.reducerPath]: accountNotificationsClient.reducer
     })
     const store = configureStore({
       reducer: rootReducer,
@@ -56,7 +58,8 @@ describe('when building the DappsShell store', () => {
           placesClient.middleware,
           cast2Client.middleware,
           marketplaceClient.middleware,
-          referralClient.middleware
+          referralClient.middleware,
+          accountNotificationsClient.middleware
         )
     })
     state = store.getState() as Record<string, unknown>
@@ -84,6 +87,10 @@ describe('when building the DappsShell store', () => {
 
   it('should register the referral RTK Query reducer', () => {
     expect(state).toHaveProperty('referralClient')
+  })
+
+  it('should register the account notifications RTK Query reducer', () => {
+    expect(state).toHaveProperty('accountNotificationsClient')
   })
 })
 
