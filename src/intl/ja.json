@@ -1222,6 +1222,43 @@
       "title": "ページが見つかりません",
       "description": "お探しのアカウントページは存在しません。",
       "cta": "ウォレットへ移動"
+    },
+    "notifications": {
+      "title": "通知",
+      "description": "離席中もDecentralandの通知を見逃さないようにしましょう！メール通知に登録し、受け取りたい通知を以下から選んでください。",
+      "loading": "通知設定を読み込んでいます…",
+      "load_error": "通知設定を読み込めませんでした。しばらくしてからもう一度お試しください。",
+      "groups": {
+        "marketplace": "マーケットプレイス",
+        "worlds": "ワールド",
+        "credits": "マーケットプレイスクレジット",
+        "streaming": "ワールド内ストリーミング",
+        "events": "イベント",
+        "rewards": "プレゼントと報酬",
+        "dao": "DAO",
+        "tips": "チップ",
+        "referral": "紹介"
+      },
+      "email": {
+        "title": "メールアドレス",
+        "placeholder": "example@decentraland.org",
+        "invalid": "無効なメールアドレス",
+        "description": {
+          "without_email": "メールアドレスを入力し、受信トレイで確認リンク付きのメールを確認してください。確認後、以下の通知をカスタマイズできます。",
+          "with_email": "メールアドレスを変更したい場合は、以下で編集してください。その後、受信トレイで確認メールを必ずチェックしてください。",
+          "pending_approval": "確認メールを送信しました。受信トレイをご確認ください。",
+          "confirmed": "メールアドレスが確認されました。"
+        },
+        "status": {
+          "confirmed": "確認済み",
+          "pending": "承認待ち"
+        },
+        "button": {
+          "submit": "送信",
+          "resend": "再送信",
+          "save": "保存"
+        }
+      }
     }
   }
 }

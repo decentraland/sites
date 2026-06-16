@@ -4,6 +4,7 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { blogReducer } from '../features/cms/cms.slice'
 import { adminClient } from '../features/events/events.admin.client'
 import { eventsClient } from '../features/events/events.client'
+import { accountNotificationsClient } from '../services/accountNotificationsClient'
 import { cast2Client } from '../services/cast2Client'
 import { cmsClient } from '../services/cmsClient'
 import { marketplaceClient } from '../services/marketplaceClient'
@@ -26,7 +27,8 @@ const rootReducer = combineReducers({
   [storageClient.reducerPath]: storageClient.reducer,
   [subgraphClient.reducerPath]: subgraphClient.reducer,
   [marketplaceClient.reducerPath]: marketplaceClient.reducer,
-  [referralClient.reducerPath]: referralClient.reducer
+  [referralClient.reducerPath]: referralClient.reducer,
+  [accountNotificationsClient.reducerPath]: accountNotificationsClient.reducer
 })
 
 const store = configureStore({
@@ -44,7 +46,8 @@ const store = configureStore({
         storageClient.middleware,
         subgraphClient.middleware,
         marketplaceClient.middleware,
-        referralClient.middleware
+        referralClient.middleware,
+        accountNotificationsClient.middleware
       ),
   devTools: import.meta.env.DEV
 })

@@ -1217,6 +1217,43 @@
       "title": "Page introuvable",
       "description": "La page de compte que vous recherchez n’existe pas.",
       "cta": "Aller aux portefeuilles"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Ne manquez aucune notification Decentraland lorsque vous êtes absent ! Inscrivez-vous pour recevoir des notifications par e-mail et choisissez celles que vous souhaitez recevoir ci-dessous.",
+      "loading": "Chargement de vos paramètres de notification…",
+      "load_error": "Nous n'avons pas pu charger vos paramètres de notification. Veuillez réessayer plus tard.",
+      "groups": {
+        "marketplace": "Marketplace",
+        "worlds": "Worlds",
+        "credits": "Crédits du Marketplace",
+        "streaming": "Streaming dans le monde",
+        "events": "Événements",
+        "rewards": "Cadeaux et récompenses",
+        "dao": "DAO",
+        "tips": "Pourboires",
+        "referral": "Parrainages"
+      },
+      "email": {
+        "title": "Votre adresse e-mail",
+        "placeholder": "exemple@decentraland.org",
+        "invalid": "E-mail invalide",
+        "description": {
+          "without_email": "Saisissez votre e-mail, puis consultez votre boîte de réception pour y trouver le lien de confirmation. Après confirmation, vous pourrez personnaliser les notifications ci-dessous.",
+          "with_email": "Si vous souhaitez mettre à jour votre adresse e-mail, modifiez-la ci-dessous. Pensez ensuite à vérifier l'e-mail de confirmation dans votre boîte de réception !",
+          "pending_approval": "E-mail de confirmation envoyé, vérifiez votre boîte de réception.",
+          "confirmed": "Votre e-mail a été confirmé."
+        },
+        "status": {
+          "confirmed": "confirmé",
+          "pending": "en attente de validation"
+        },
+        "button": {
+          "submit": "Envoyer",
+          "resend": "Renvoyer",
+          "save": "Enregistrer"
+        }
+      }
     }
   }
 }

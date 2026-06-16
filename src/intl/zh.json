@@ -1222,6 +1222,43 @@
       "title": "找不到頁面",
       "description": "您要找的帳戶頁面不存在。",
       "cta": "前往錢包"
+    },
+    "notifications": {
+      "title": "通知",
+      "description": "不要在离开时错过任何 Decentraland 通知！注册以接收电子邮件通知，并在下方选择您想要接收的通知。",
+      "loading": "正在加载您的通知设置…",
+      "load_error": "我们无法加载您的通知设置。请稍后再试。",
+      "groups": {
+        "marketplace": "市场",
+        "worlds": "Worlds",
+        "credits": "市场积分",
+        "streaming": "世界内直播",
+        "events": "活动",
+        "rewards": "赠品与奖励",
+        "dao": "DAO",
+        "tips": "打赏",
+        "referral": "推荐"
+      },
+      "email": {
+        "title": "您的电子邮件地址",
+        "placeholder": "example@decentraland.org",
+        "invalid": "无效的电子邮件",
+        "description": {
+          "without_email": "输入您的电子邮件，然后查看收件箱中的确认链接邮件。确认后，您就可以自定义下方的通知。",
+          "with_email": "如果您想更新电子邮件地址，请在下方编辑。之后请务必在收件箱中查看确认邮件！",
+          "pending_approval": "确认邮件已发送，请查看您的收件箱。",
+          "confirmed": "您的电子邮件已确认。"
+        },
+        "status": {
+          "confirmed": "已确认",
+          "pending": "待批准"
+        },
+        "button": {
+          "submit": "提交",
+          "resend": "重新发送",
+          "save": "保存"
+        }
+      }
     }
   }
 }
