@@ -1295,6 +1295,51 @@
           "already_claimed": "Vous ne pouvez pas quitter cette semaine car vous avez déjà réclamé des crédits. Veuillez réessayer la semaine prochaine."
         }
       }
+    },
+    "delete": {
+      "danger_zone": "Zone de danger",
+      "danger_description": "Une fois votre compte supprimé, il n’y a pas de retour en arrière. Veuillez en être certain.",
+      "warning": "Les éléments suivants seront perdus à jamais :",
+      "consequences": {
+        "profile": {
+          "title": "Profil",
+          "description": "votre nom d’utilisateur, avatar, biographie et nom affiché"
+        },
+        "social": {
+          "title": "Connexions sociales",
+          "description": "liste d’amis et utilisateurs bloqués"
+        },
+        "marketplace": {
+          "title": "Activité du Marketplace",
+          "description": "annonces ouvertes, historique d’achats et offres"
+        },
+        "credits": {
+          "title": "Crédits de la plateforme",
+          "description": "tout solde ou récompense non dépensé"
+        },
+        "favorites": {
+          "title": "Favoris et historique",
+          "description": "lieux enregistrés, activité récente et confirmations d’événements"
+        },
+        "notifications": {
+          "title": "Notifications et préférences",
+          "description": "tous vos paramètres et l’historique des notifications"
+        }
+      },
+      "asset_warning_title": "Actifs on-chain en danger",
+      "asset_warning_description": "La suppression de votre compte peut vous faire perdre définitivement l’accès à vos actifs on-chain (wearables, emotes, LAND, etc.). Assurez-vous d’exporter votre clé privée avant de continuer.",
+      "export_key_description": "Allez dans l’onglet Wallets et utilisez le gestionnaire de portefeuille sous votre adresse pour exporter votre clé privée.",
+      "export_key_link": "Aller aux Wallets",
+      "delete_button": "Supprimer le compte",
+      "modal": {
+        "title": "Êtes-vous sûr de vouloir supprimer votre compte ?",
+        "description": "Cette action est irréversible. Toutes vos données seront définitivement supprimées. Pour confirmer, veuillez taper DELETE dans le champ ci-dessous et confirmer.",
+        "input_label": "Tapez DELETE",
+        "deleting": "Suppression...",
+        "delete": "Supprimer le compte",
+        "cancel": "Annuler",
+        "generic_error": "Échec de la suppression de votre compte. Veuillez réessayer plus tard."
+      }
     }
   }
 }

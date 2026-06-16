@@ -1300,6 +1300,51 @@
           "already_claimed": "이번 주에는 이미 크레딧을 청구했기 때문에 탈퇴할 수 없습니다. 다음 주에 다시 시도해 주세요."
         }
       }
+    },
+    "delete": {
+      "danger_zone": "위험 구역",
+      "danger_description": "계정을 삭제하면 되돌릴 수 없습니다. 신중하게 결정해 주세요.",
+      "warning": "다음 항목은 영구적으로 사라집니다:",
+      "consequences": {
+        "profile": {
+          "title": "프로필",
+          "description": "사용자 이름, 아바타, 소개 및 표시 이름"
+        },
+        "social": {
+          "title": "소셜 연결",
+          "description": "친구 목록 및 차단된 사용자"
+        },
+        "marketplace": {
+          "title": "마켓플레이스 활동",
+          "description": "진행 중인 판매, 구매 내역 및 제안"
+        },
+        "credits": {
+          "title": "플랫폼 내 크레딧",
+          "description": "사용하지 않은 잔액 또는 보상"
+        },
+        "favorites": {
+          "title": "즐겨찾기 및 기록",
+          "description": "저장된 장소, 최근 활동 및 이벤트 참석 응답"
+        },
+        "notifications": {
+          "title": "알림 및 환경설정",
+          "description": "모든 설정 및 알림 기록"
+        }
+      },
+      "asset_warning_title": "온체인 자산 위험",
+      "asset_warning_description": "계정을 삭제하면 온체인 자산(웨어러블, 이모트, LAND 등)에 대한 액세스 권한을 영구적으로 잃을 수 있습니다. 계속하기 전에 반드시 개인 키를 내보내세요.",
+      "export_key_description": "Wallets 탭으로 이동하여 주소 아래의 지갑 관리자를 사용해 개인 키를 내보내세요.",
+      "export_key_link": "Wallets로 이동",
+      "delete_button": "계정 삭제",
+      "modal": {
+        "title": "정말 계정을 삭제하시겠습니까?",
+        "description": "이 작업은 되돌릴 수 없습니다. 모든 데이터가 영구적으로 삭제됩니다. 확인하려면 아래 필드에 DELETE를 입력하고 확인하세요.",
+        "input_label": "DELETE 입력",
+        "deleting": "삭제 중...",
+        "delete": "계정 삭제",
+        "cancel": "취소",
+        "generic_error": "계정 삭제에 실패했습니다. 나중에 다시 시도해 주세요."
+      }
     }
   }
 }
