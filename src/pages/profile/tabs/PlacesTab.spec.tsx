@@ -47,6 +47,27 @@ jest.mock('./OverviewTab.styled', () => ({
 jest.mock('./PlacesTab.styled', () => ({
   PlacesGrid: ({ children }: { children?: React.ReactNode }) => mockReact.createElement('div', { 'data-testid': 'places-grid' }, children)
 }))
+jest.mock('../../../components/profile/ProfileEmptyState', () => ({
+  JumpInBadgeIcon: () => null,
+  ProfileEmptyState: ({
+    title,
+    subtitle,
+    action
+  }: {
+    title: string
+    subtitle?: string
+    action?: { label: string; href?: string; onClick?: () => void }
+  }) =>
+    mockReact.createElement(
+      'div',
+      { 'data-testid': 'empty-state' },
+      mockReact.createElement('p', null, title),
+      subtitle ? mockReact.createElement('p', null, subtitle) : null,
+      action ? mockReact.createElement('button', { 'data-href': action.href, onClick: action.onClick }, action.label) : null
+    )
+}))
+jest.mock('react-router-dom', () => ({ useNavigate: () => jest.fn() }))
+jest.mock('../../../config/env', () => ({ getEnv: () => 'https://decentraland.org/builder' }))
 
 const mockedOwnedQuery = useGetProfilePlacesQuery as jest.MockedFunction<typeof useGetProfilePlacesQuery>
 const mockedFavoritesQuery = useGetProfileFavoritePlacesQuery as jest.MockedFunction<typeof useGetProfileFavoritePlacesQuery>
@@ -112,6 +133,17 @@ describe('PlacesTab', () => {
 
       expect(mockedFavoritesQuery).toHaveBeenCalledWith(undefined, { skip: true })
     })
+
+    it('should render the plain member empty message without a CTA when there are no places', () => {
+      mockedOwnedQuery.mockReturnValue({ data: { ok: true, data: [], total: 0 }, isLoading: false } as unknown as ReturnType<
+        typeof useGetProfilePlacesQuery
+      >)
+
+      render(<PlacesTab address={ADDRESS} isOwnProfile={false} />)
+
+      expect(screen.getByText('profile.places.empty_member')).toBeInTheDocument()
+      expect(screen.queryByTestId('empty-state')).toBeNull()
+    })
   })
 
   describe('when viewing the own profile', () => {
@@ -127,6 +159,23 @@ describe('PlacesTab', () => {
 
       const cards = screen.getAllByTestId('scene-card')
       expect(cards.map(card => card.getAttribute('data-coordinates'))).toEqual(expect.arrayContaining(['owned.dcl.eth', '10,20']))
+    })
+
+    describe('and there are no owned places', () => {
+      beforeEach(() => {
+        mockedOwnedQuery.mockReturnValue({ data: { ok: true, data: [], total: 0 }, isLoading: false } as unknown as ReturnType<
+          typeof useGetProfilePlacesQuery
+        >)
+      })
+
+      it('should render the my places empty state with a get-a-name CTA linking to the builder', () => {
+        render(<PlacesTab address={ADDRESS} isOwnProfile={true} />)
+
+        expect(screen.getByText('profile.places.empty_owner_title')).toBeInTheDocument()
+        const cta = screen.getByText('profile.places.empty_owner_cta')
+        expect(cta).toBeInTheDocument()
+        expect(cta.getAttribute('data-href')).toBe('https://decentraland.org/builder/names')
+      })
     })
 
     describe('and switching to the favourites view', () => {
@@ -154,7 +203,8 @@ describe('PlacesTab', () => {
 
           await userEvent.click(screen.getByText('profile.places.filter_favorites'))
 
-          expect(screen.getByText('profile.places.empty_favorites')).toBeInTheDocument()
+          expect(screen.getByText('profile.places.empty_favorites_title')).toBeInTheDocument()
+          expect(screen.getByText('profile.places.empty_favorites_cta')).toBeInTheDocument()
         })
       })
     })
