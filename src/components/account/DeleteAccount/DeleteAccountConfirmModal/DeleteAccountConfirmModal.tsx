@@ -8,7 +8,7 @@ import { localStorageClearIdentity } from '@dcl/single-sign-on-client'
 import { getEnv } from '../../../../config/env'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import { useWalletAddress } from '../../../../hooks/useWalletAddress'
-import { thirdwebClient } from '../../../../lib/thirdweb'
+import { getThirdwebClient } from '../../../../lib/thirdweb'
 import { DeleteAccountConfirmModalProps } from './DeleteAccountConfirmModal.types'
 import {
   ButtonContainer,
@@ -43,8 +43,9 @@ const CONFIRMATION_WORD = 'DELETE'
  * @throws If no profiles are linked or if any unlinkProfile call fails.
  */
 async function deleteThirdwebAccount() {
+  const client = getThirdwebClient()
   // Fetch all authentication profiles linked to the in-app wallet.
-  const profiles = await getProfiles({ client: thirdwebClient })
+  const profiles = await getProfiles({ client })
 
   if (profiles.length === 0) {
     throw new Error('No profiles linked to this account')
@@ -54,7 +55,7 @@ async function deleteThirdwebAccount() {
   for (let i = 0; i < profiles.length; i++) {
     const isLast = i === profiles.length - 1
     await unlinkProfile({
-      client: thirdwebClient,
+      client,
       profileToUnlink: profiles[i],
       allowAccountDeletion: isLast
     })

@@ -56,7 +56,7 @@ jest.mock('thirdweb/wallets/in-app', () => ({
 }))
 
 jest.mock('../../../../lib/thirdweb', () => ({
-  thirdwebClient: { __mockClient: true }
+  getThirdwebClient: () => ({ __mockClient: true })
 }))
 
 const mockClearIdentity = jest.fn()
