@@ -1,18 +1,20 @@
-import type { ReactNode } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 
-/**
- * CTA shown under an empty profile tab. Only the viewer's own profile renders an
- * action — member views fall back to a plain message (see each tab). Provide
- * either `href` (external link, opens in a new tab) or `onClick` (in-app action
- * such as the jump-in launcher or a router navigation), not both.
- */
-interface ProfileEmptyStateAction {
+interface ProfileEmptyStateActionBase {
   label: string
-  href?: string
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
   startIcon?: ReactNode
   endIcon?: ReactNode
 }
+
+/**
+ * CTA shown under an empty profile tab. Only the viewer's own profile renders an
+ * action — member views fall back to a plain message (see each tab). The CTA is
+ * either an external link (`href`, opens in a new tab) or an in-app handler
+ * (`onClick`, e.g. the jump-in launcher or a router navigation) — never both;
+ * the discriminated union enforces that at compile time.
+ */
+type ProfileEmptyStateAction = ProfileEmptyStateActionBase &
+  ({ href: string; onClick?: never } | { href?: never; onClick: (event: MouseEvent<HTMLButtonElement>) => void })
 
 /**
  * Figma "EmptyMessage" (Profile Account, node 322:49163): a centered icon box,

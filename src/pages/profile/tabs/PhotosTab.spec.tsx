@@ -5,7 +5,6 @@ import { PhotosTab } from './PhotosTab'
 
 jest.mock('decentraland-ui2', () => ({
   CircularProgress: () => mockReact.createElement('div', { role: 'progressbar' }),
-  DownloadModal: ({ open }: { open?: boolean }) => (open ? mockReact.createElement('div', { role: 'dialog' }, 'download') : null),
   Typography: ({ children }: { children?: React.ReactNode }) => mockReact.createElement('p', null, children)
 }))
 jest.mock('./OverviewTab.styled', () => ({
@@ -24,26 +23,14 @@ jest.mock('../../../components/profile/ProfileModal/useOpenPhotoModal', () => ({
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({ useFormatMessage: () => (key: string) => key }))
 jest.mock('../../../hooks/useAuthIdentity', () => ({ useAuthIdentity: () => ({ identity: undefined }) }))
 jest.mock('../../../hooks/useReelImagesByUser', () => ({ useReelImagesByUser: jest.fn() }))
-jest.mock('../../../hooks/useHangOutAction', () => ({
-  useHangOutAction: () => ({ handleClick: jest.fn(), isDownloadModalOpen: false, closeDownloadModal: jest.fn(), downloadModalProps: {} })
-}))
 jest.mock('../../../components/profile/ProfileEmptyState', () => ({
-  JumpInBadgeIcon: () => null,
-  ProfileEmptyState: ({
-    title,
-    subtitle,
-    action
-  }: {
-    title: string
-    subtitle?: string
-    action?: { label: string; onClick?: () => void }
-  }) =>
+  JumpInEmptyState: ({ title, subtitle, ctaLabel }: { title: string; subtitle?: string; ctaLabel: string }) =>
     mockReact.createElement(
       'div',
       { 'data-testid': 'empty-state' },
       mockReact.createElement('p', null, title),
       subtitle ? mockReact.createElement('p', null, subtitle) : null,
-      action ? mockReact.createElement('button', { onClick: action.onClick }, action.label) : null
+      mockReact.createElement('button', null, ctaLabel)
     )
 }))
 

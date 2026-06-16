@@ -7,15 +7,14 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
-import { CircularProgress, DownloadModal, Tooltip } from 'decentraland-ui2'
+import { CircularProgress, Tooltip } from 'decentraland-ui2'
 import { CommunityDetailModal, useOpenCommunityModal } from '../../../components/profile/CommunityDetailModal'
-import { JumpInBadgeIcon, ProfileEmptyState } from '../../../components/profile/ProfileEmptyState'
+import { JumpInEmptyState } from '../../../components/profile/ProfileEmptyState'
 import { getThumbnailUrl as getCommunityThumbnailUrl } from '../../../features/communities/communities.helpers'
 import { useGetProfileCommunitiesQuery } from '../../../features/profile/profile.social.client'
 import type { ProfileCommunity } from '../../../features/profile/profile.social.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useCopyShareLink } from '../../../hooks/useCopyShareLink'
-import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import {
   CommunityActionButton,
   CommunityActionRow,
@@ -46,9 +45,6 @@ function CommunitiesTab({ address, isOwnProfile }: CommunitiesTabProps) {
   const { data, isLoading } = useGetProfileCommunitiesQuery({ address })
   const communities = useMemo<ProfileCommunity[]>(() => data?.data?.results ?? [], [data])
   const { openCommunityId, open: openCommunity, close: closeCommunity } = useOpenCommunityModal()
-  // "Explore communities" jumps into the world (there is no in-site communities browse),
-  // mirroring the navbar's Jump In flow: launch the desktop app or fall back to download.
-  const { handleClick: handleJumpIn, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
 
   // Stable `(id, event) => void` handler — passing `(id) => (event) => ...` would
   // build a fresh closure per render and defeat the `memo()` wrap on the card.
@@ -73,15 +69,12 @@ function CommunitiesTab({ address, isOwnProfile }: CommunitiesTabProps) {
       return <EmptyBio sx={{ mt: 1 }}>{t('profile.communities.empty_member')}</EmptyBio>
     }
     return (
-      <>
-        <ProfileEmptyState
-          icon={<GroupsOutlinedIcon />}
-          title={t('profile.communities.empty_title')}
-          subtitle={t('profile.communities.empty_owner_subtitle')}
-          action={{ label: t('profile.communities.empty_owner_cta'), onClick: handleJumpIn, endIcon: <JumpInBadgeIcon /> }}
-        />
-        <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />
-      </>
+      <JumpInEmptyState
+        icon={<GroupsOutlinedIcon />}
+        title={t('profile.communities.empty_title')}
+        subtitle={t('profile.communities.empty_owner_subtitle')}
+        ctaLabel={t('profile.communities.empty_owner_cta')}
+      />
     )
   }
 

@@ -77,7 +77,7 @@ describe('ProfileEmptyState', () => {
       <ProfileEmptyState
         icon={<span />}
         title="No communities yet"
-        action={{ label: 'Explore', startIcon: <span data-testid="start" />, endIcon: <span data-testid="end" /> }}
+        action={{ label: 'Explore', onClick: jest.fn(), startIcon: <span data-testid="start" />, endIcon: <span data-testid="end" /> }}
       />
     )
 
