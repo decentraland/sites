@@ -8,6 +8,7 @@ jest.mock('decentraland-ui2', () => ({
 }))
 
 jest.mock('./AccountLayout.styled', () => ({
+  AccountLayoutRoot: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   AccountContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   AccountPageContainer: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   SignInPrompt: ({ children }: { children: ReactNode }) => <div>{children}</div>,

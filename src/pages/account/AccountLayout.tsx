@@ -4,7 +4,7 @@ import { AccountSidebar } from '../../components/account/AccountSidebar/AccountS
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useSignInRedirect } from '../../hooks/useSignInRedirect'
-import { AccountContent, AccountPageContainer, SignInPrompt, SignInTitle } from './AccountLayout.styled'
+import { AccountContent, AccountLayoutRoot, AccountPageContainer, SignInPrompt, SignInTitle } from './AccountLayout.styled'
 
 /**
  * Shell for the Account Settings area (absorbed from the standalone decentraland/account dapp).
@@ -17,24 +17,24 @@ const AccountLayout = () => {
   const { address } = useAuthIdentity()
   const signIn = useSignInRedirect()
 
-  if (!address) {
-    return (
-      <SignInPrompt>
-        <SignInTitle variant="h4">{t('account.sign_in.title')}</SignInTitle>
-        <Button variant="contained" color="primary" onClick={signIn}>
-          {t('account.sign_in.cta')}
-        </Button>
-      </SignInPrompt>
-    )
-  }
-
   return (
-    <AccountPageContainer>
-      <AccountSidebar address={address} />
-      <AccountContent>
-        <Outlet />
-      </AccountContent>
-    </AccountPageContainer>
+    <AccountLayoutRoot>
+      {address ? (
+        <AccountPageContainer>
+          <AccountSidebar address={address} />
+          <AccountContent>
+            <Outlet />
+          </AccountContent>
+        </AccountPageContainer>
+      ) : (
+        <SignInPrompt>
+          <SignInTitle variant="h4">{t('account.sign_in.title')}</SignInTitle>
+          <Button variant="contained" color="primary" onClick={signIn}>
+            {t('account.sign_in.cta')}
+          </Button>
+        </SignInPrompt>
+      )}
+    </AccountLayoutRoot>
   )
 }
 

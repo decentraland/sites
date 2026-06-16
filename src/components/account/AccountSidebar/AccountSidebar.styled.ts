@@ -1,6 +1,11 @@
 import { Link } from 'react-router-dom'
 import { Box, Typography, styled } from 'decentraland-ui2'
 
+// Figma 322:101466 — Account sidebar. Colours mirror the DCL design tokens used across the
+// profile area (idle nav #CFCDD4, active text #FCFCFC, muted labels #A09BA8). The active
+// section is a solid Brand/Violet (#A524B3) pill; the destructive Delete item turns DCL
+// Red (#FF2D55) when active. Hardcoded hexes follow the sibling profile styled files.
+
 const Sidebar = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -47,15 +52,16 @@ const AvatarImage = styled('img')(() => ({
 const UserName = styled(Typography)(() => ({
   fontWeight: 600,
   fontSize: 16,
+  color: '#FCFCFC',
   maxWidth: '100%',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap'
 }))
 
-const UserAddress = styled(Typography)(({ theme }) => ({
+const UserAddress = styled(Typography)(() => ({
   fontSize: 13,
-  color: theme.palette.text.secondary
+  color: '#A09BA8'
 }))
 
 const SectionLabel = styled(Typography)(({ theme }) => ({
@@ -63,7 +69,7 @@ const SectionLabel = styled(Typography)(({ theme }) => ({
   fontSize: 12,
   textTransform: 'uppercase',
   letterSpacing: 0.6,
-  color: theme.palette.text.secondary,
+  color: '#A09BA8',
   padding: theme.spacing(1, 1.5, 0.5),
   [theme.breakpoints.up('md')]: {
     display: 'block'
@@ -81,9 +87,8 @@ const Nav = styled(Box)(({ theme }) => ({
   }
 }))
 
-// Theme-independent base shared by the three nav controls. Theme-dependent rules (spacing,
-// palette, pseudo-states) are applied inline in each styled definition to keep them typed
-// against the styled callback's own theme.
+// Theme-independent base shared by the three nav controls. Theme-dependent spacing and the
+// colour/pseudo-state rules are applied inline in each styled definition.
 const navItemStaticStyles = {
   display: 'flex',
   alignItems: 'center',
@@ -102,13 +107,14 @@ const NavItem = styled(Link, { shouldForwardProp: prop => prop !== '$active' })<
   gap: theme.spacing(1),
   padding: theme.spacing(1, 1.5),
   borderRadius: theme.spacing(1),
-  background: $active ? theme.palette.primary.main : 'transparent',
-  color: $active ? theme.palette.primary.contrastText : theme.palette.text.primary,
+  background: $active ? '#A524B3' : 'transparent',
+  color: $active ? '#FCFCFC' : '#CFCDD4',
   ['&:hover']: {
-    background: $active ? theme.palette.primary.main : theme.palette.action.hover
+    background: $active ? '#A524B3' : 'rgba(255, 255, 255, 0.06)',
+    color: '#FCFCFC'
   },
   ['&:focus-visible']: {
-    outline: `2px solid ${theme.palette.primary.main}`,
+    outline: '2px solid rgba(255, 255, 255, 0.6)',
     outlineOffset: 2
   }
 }))
@@ -118,13 +124,14 @@ const DeleteNavItem = styled(Link, { shouldForwardProp: prop => prop !== '$activ
   gap: theme.spacing(1),
   padding: theme.spacing(1, 1.5),
   borderRadius: theme.spacing(1),
-  background: $active ? theme.palette.error.main : 'transparent',
-  color: $active ? theme.palette.error.contrastText : theme.palette.error.main,
+  background: $active ? '#FF2D55' : 'transparent',
+  color: $active ? '#FCFCFC' : '#CFCDD4',
   ['&:hover']: {
-    background: $active ? theme.palette.error.main : theme.palette.action.hover
+    background: $active ? '#FF2D55' : 'rgba(255, 45, 85, 0.12)',
+    color: $active ? '#FCFCFC' : '#FF2D55'
   },
   ['&:focus-visible']: {
-    outline: `2px solid ${theme.palette.error.main}`,
+    outline: '2px solid rgba(255, 255, 255, 0.6)',
     outlineOffset: 2
   }
 }))
@@ -136,13 +143,14 @@ const LogoutButton = styled('button')(({ theme }) => ({
   padding: theme.spacing(1, 1.5),
   borderRadius: theme.spacing(1),
   background: 'transparent',
-  color: theme.palette.text.primary,
+  color: '#CFCDD4',
   textAlign: 'left',
   ['&:hover']: {
-    background: theme.palette.action.hover
+    background: 'rgba(255, 255, 255, 0.06)',
+    color: '#FCFCFC'
   },
   ['&:focus-visible']: {
-    outline: `2px solid ${theme.palette.primary.main}`,
+    outline: '2px solid rgba(255, 255, 255, 0.6)',
     outlineOffset: 2
   }
 }))
@@ -156,7 +164,7 @@ const BottomGroup = styled(Box)(({ theme }) => ({
     flexDirection: 'column',
     marginTop: theme.spacing(2),
     paddingTop: theme.spacing(2),
-    borderTop: `1px solid ${theme.palette.divider}`
+    borderTop: '1px solid rgba(255, 255, 255, 0.15)'
   }
 }))
 
