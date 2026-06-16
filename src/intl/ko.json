@@ -1186,5 +1186,42 @@
   "upcoming": {
     "today_at": "오늘 {time}",
     "tomorrow_at": "내일 {time}"
+  },
+  "account": {
+    "meta": {
+      "title": "계정 설정"
+    },
+    "nav": {
+      "section_label": "계정 설정",
+      "wallets": "지갑",
+      "notifications": "알림",
+      "credits": "크레딧 설정",
+      "delete": "계정 삭제",
+      "logout": "로그아웃"
+    },
+    "sign_in": {
+      "title": "계정을 관리하려면 로그인하세요",
+      "cta": "로그인"
+    },
+    "coming_soon": "곧 제공 예정",
+    "pages": {
+      "wallets": {
+        "title": "지갑"
+      },
+      "notifications": {
+        "title": "알림"
+      },
+      "credits": {
+        "title": "크레딧 설정"
+      },
+      "delete": {
+        "title": "계정 삭제"
+      }
+    },
+    "not_found": {
+      "title": "페이지를 찾을 수 없습니다",
+      "description": "찾으시는 계정 페이지가 존재하지 않습니다.",
+      "cta": "지갑으로 이동"
+    }
   }
 }

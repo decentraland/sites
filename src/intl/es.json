@@ -1186,5 +1186,42 @@
   "upcoming": {
     "today_at": "Hoy {time}",
     "tomorrow_at": "Mañana {time}"
+  },
+  "account": {
+    "meta": {
+      "title": "Configuración de la cuenta"
+    },
+    "nav": {
+      "section_label": "Configuración de la cuenta",
+      "wallets": "Wallets",
+      "notifications": "Notificaciones",
+      "credits": "Configuración de Créditos",
+      "delete": "Eliminar cuenta",
+      "logout": "Cerrar sesión"
+    },
+    "sign_in": {
+      "title": "Inicia sesión para gestionar tu cuenta",
+      "cta": "Iniciar sesión"
+    },
+    "coming_soon": "Próximamente",
+    "pages": {
+      "wallets": {
+        "title": "Wallets"
+      },
+      "notifications": {
+        "title": "Notificaciones"
+      },
+      "credits": {
+        "title": "Configuración de Créditos"
+      },
+      "delete": {
+        "title": "Eliminar Cuenta"
+      }
+    },
+    "not_found": {
+      "title": "Página no encontrada",
+      "description": "La página de cuenta que buscas no existe.",
+      "cta": "Ir a Wallets"
+    }
   }
 }

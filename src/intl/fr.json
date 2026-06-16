@@ -1181,5 +1181,42 @@
   "upcoming": {
     "today_at": "Aujourd'hui {time}",
     "tomorrow_at": "Demain {time}"
+  },
+  "account": {
+    "meta": {
+      "title": "Paramètres du compte"
+    },
+    "nav": {
+      "section_label": "Paramètres du compte",
+      "wallets": "Portefeuilles",
+      "notifications": "Notifications",
+      "credits": "Paramètres des crédits",
+      "delete": "Supprimer le compte",
+      "logout": "Se déconnecter"
+    },
+    "sign_in": {
+      "title": "Connectez-vous pour gérer votre compte",
+      "cta": "Se connecter"
+    },
+    "coming_soon": "Bientôt disponible",
+    "pages": {
+      "wallets": {
+        "title": "Portefeuilles"
+      },
+      "notifications": {
+        "title": "Notifications"
+      },
+      "credits": {
+        "title": "Paramètres des crédits"
+      },
+      "delete": {
+        "title": "Supprimer le compte"
+      }
+    },
+    "not_found": {
+      "title": "Page introuvable",
+      "description": "La page de compte que vous recherchez n’existe pas.",
+      "cta": "Aller aux portefeuilles"
+    }
   }
 }

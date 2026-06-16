@@ -1621,5 +1621,42 @@
       "tooltip_title": "{count} Friends Joined",
       "tooltip_subtitle": "{count} More friends for your next Reward!"
     }
+  },
+  "account": {
+    "meta": {
+      "title": "Account Settings"
+    },
+    "nav": {
+      "section_label": "Account Settings",
+      "wallets": "Wallets",
+      "notifications": "Notifications",
+      "credits": "Credits Settings",
+      "delete": "Delete account",
+      "logout": "Log out"
+    },
+    "sign_in": {
+      "title": "Sign in to manage your account",
+      "cta": "Sign In"
+    },
+    "coming_soon": "Coming soon",
+    "pages": {
+      "wallets": {
+        "title": "Wallets"
+      },
+      "notifications": {
+        "title": "Notifications"
+      },
+      "credits": {
+        "title": "Credits Settings"
+      },
+      "delete": {
+        "title": "Delete Account"
+      }
+    },
+    "not_found": {
+      "title": "Page not found",
+      "description": "The account page you’re looking for doesn’t exist.",
+      "cta": "Go to Wallets"
+    }
   }
 }

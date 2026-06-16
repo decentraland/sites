@@ -1186,5 +1186,42 @@
   "upcoming": {
     "today_at": "今日 {time}",
     "tomorrow_at": "明日 {time}"
+  },
+  "account": {
+    "meta": {
+      "title": "アカウント設定"
+    },
+    "nav": {
+      "section_label": "アカウント設定",
+      "wallets": "ウォレット",
+      "notifications": "通知",
+      "credits": "クレジット設定",
+      "delete": "アカウントを削除",
+      "logout": "ログアウト"
+    },
+    "sign_in": {
+      "title": "アカウントを管理するにはサインインしてください",
+      "cta": "サインイン"
+    },
+    "coming_soon": "近日公開",
+    "pages": {
+      "wallets": {
+        "title": "ウォレット"
+      },
+      "notifications": {
+        "title": "通知"
+      },
+      "credits": {
+        "title": "クレジット設定"
+      },
+      "delete": {
+        "title": "アカウントの削除"
+      }
+    },
+    "not_found": {
+      "title": "ページが見つかりません",
+      "description": "お探しのアカウントページは存在しません。",
+      "cta": "ウォレットへ移動"
+    }
   }
 }
