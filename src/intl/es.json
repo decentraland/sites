@@ -1222,6 +1222,23 @@
       "title": "Página no encontrada",
       "description": "La página de cuenta que buscas no existe.",
       "cta": "Ir a Wallets"
+    },
+    "wallets": {
+      "eth_label": "Ethereum MANA",
+      "polygon_label": "Polygon MANA",
+      "actions": {
+        "buy": "Comprar",
+        "swap": "Intercambiar",
+        "send": "Enviar",
+        "receive": "Recibir"
+      },
+      "receive": {
+        "title": "Recibir MANA",
+        "description": "Comparte la dirección de tu billetera para recibir MANA y otros activos.",
+        "copy": "Copiar dirección",
+        "copied": "¡Copiado!",
+        "close": "Cerrar"
+      }
     }
   }
 }

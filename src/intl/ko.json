@@ -1222,6 +1222,23 @@
       "title": "페이지를 찾을 수 없습니다",
       "description": "찾으시는 계정 페이지가 존재하지 않습니다.",
       "cta": "지갑으로 이동"
+    },
+    "wallets": {
+      "eth_label": "Ethereum MANA",
+      "polygon_label": "Polygon MANA",
+      "actions": {
+        "buy": "구매",
+        "swap": "스왑",
+        "send": "보내기",
+        "receive": "받기"
+      },
+      "receive": {
+        "title": "MANA 받기",
+        "description": "지갑 주소를 공유하여 MANA 및 기타 자산을 받으세요.",
+        "copy": "주소 복사",
+        "copied": "복사됨!",
+        "close": "닫기"
+      }
     }
   }
 }

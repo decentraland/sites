@@ -1657,6 +1657,23 @@
       "title": "Page not found",
       "description": "The account page you’re looking for doesn’t exist.",
       "cta": "Go to Wallets"
+    },
+    "wallets": {
+      "eth_label": "Ethereum MANA",
+      "polygon_label": "Polygon MANA",
+      "actions": {
+        "buy": "Buy",
+        "swap": "Swap",
+        "send": "Send",
+        "receive": "Receive"
+      },
+      "receive": {
+        "title": "Receive MANA",
+        "description": "Share your wallet address to receive MANA and other assets.",
+        "copy": "Copy address",
+        "copied": "Copied!",
+        "close": "Close"
+      }
     }
   }
 }

@@ -1222,6 +1222,23 @@
       "title": "ページが見つかりません",
       "description": "お探しのアカウントページは存在しません。",
       "cta": "ウォレットへ移動"
+    },
+    "wallets": {
+      "eth_label": "Ethereum MANA",
+      "polygon_label": "Polygon MANA",
+      "actions": {
+        "buy": "購入",
+        "swap": "スワップ",
+        "send": "送信",
+        "receive": "受取"
+      },
+      "receive": {
+        "title": "MANAを受け取る",
+        "description": "ウォレットアドレスを共有して、MANAやその他の資産を受け取りましょう。",
+        "copy": "アドレスをコピー",
+        "copied": "コピーしました！",
+        "close": "閉じる"
+      }
     }
   }
 }

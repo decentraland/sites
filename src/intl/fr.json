@@ -1217,6 +1217,23 @@
       "title": "Page introuvable",
       "description": "La page de compte que vous recherchez n’existe pas.",
       "cta": "Aller aux portefeuilles"
+    },
+    "wallets": {
+      "eth_label": "Ethereum MANA",
+      "polygon_label": "Polygon MANA",
+      "actions": {
+        "buy": "Acheter",
+        "swap": "Échanger",
+        "send": "Envoyer",
+        "receive": "Recevoir"
+      },
+      "receive": {
+        "title": "Recevoir des MANA",
+        "description": "Partagez l’adresse de votre portefeuille pour recevoir des MANA et d’autres actifs.",
+        "copy": "Copier l’adresse",
+        "copied": "Copié !",
+        "close": "Fermer"
+      }
     }
   }
 }

@@ -1222,6 +1222,23 @@
       "title": "找不到頁面",
       "description": "您要找的帳戶頁面不存在。",
       "cta": "前往錢包"
+    },
+    "wallets": {
+      "eth_label": "Ethereum MANA",
+      "polygon_label": "Polygon MANA",
+      "actions": {
+        "buy": "购买",
+        "swap": "兑换",
+        "send": "发送",
+        "receive": "接收"
+      },
+      "receive": {
+        "title": "接收 MANA",
+        "description": "分享您的钱包地址以接收 MANA 和其他资产。",
+        "copy": "复制地址",
+        "copied": "已复制！",
+        "close": "关闭"
+      }
     }
   }
 }
