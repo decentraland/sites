@@ -1,16 +1,19 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 /* eslint-disable @typescript-eslint/naming-convention */
 import AlternateEmailRoundedIcon from '@mui/icons-material/AlternateEmailRounded'
 import CakeRoundedIcon from '@mui/icons-material/CakeRounded'
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded'
 import InsertLinkIcon from '@mui/icons-material/InsertLink'
+import PublicIcon from '@mui/icons-material/Public'
 import PublicRoundedIcon from '@mui/icons-material/PublicRounded'
 import SportsEsportsOutlinedIcon from '@mui/icons-material/SportsEsportsOutlined'
 import TransgenderRoundedIcon from '@mui/icons-material/TransgenderRounded'
 import TranslateRoundedIcon from '@mui/icons-material/TranslateRounded'
+import VerifiedIcon from '@mui/icons-material/Verified'
 /* eslint-enable @typescript-eslint/naming-convention */
-import { Box, Button, CatalogCard, CircularProgress, Tooltip, Typography } from 'decentraland-ui2'
+import { Box, Button, CatalogCard, CircularProgress, Tooltip, Typography, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import { EditProfileButton } from '../../../components/profile/EditProfileButton'
+import { getEnv } from '../../../config/env'
 import { useProfileBadges } from '../../../features/profile/profile.badges.client'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { useEquippedCollectibles } from '../../../features/profile/profile.wearables.client'
@@ -47,15 +50,19 @@ import {
   LinkPillIcon,
   LinksRow,
   LoadingRow,
+  NameCtaButton,
   OverviewRoot,
+  OwnerCtaRow,
   SectionHeader,
   SectionTitle
 } from './OverviewTab.styled'
 
 function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
   const t = useFormatMessage()
+  const isMobile = useTabletAndBelowMediaQuery()
   const { data: profile, isLoading } = useGetProfileQuery(address)
   const avatar = profile?.avatars?.[0]
+  const hasClaimedName = avatar?.hasClaimedName ?? false
   const description = avatar?.description?.trim() ?? ''
   const wearables = useMemo(() => getEquippedWearables(avatar), [avatar])
   const { collectibles, isLoading: isLoadingCollectibles } = useEquippedCollectibles(wearables)
@@ -89,6 +96,20 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
 
   const links = (avatar as unknown as { links?: ProfileLink[] } | undefined)?.links ?? []
 
+  // The own-profile name/world CTA lives in the desktop header; on mobile there is no
+  // header, so it renders here in the Overview action row (Figma 322:49226).
+  const handleGetAName = useCallback(() => {
+    const builderUrl = getEnv('BUILDER_URL')
+    if (!builderUrl) return
+    window.open(`${builderUrl.replace(/\/+$/, '')}/names`, '_blank', 'noopener,noreferrer')
+  }, [])
+
+  const handleManageWorld = useCallback(() => {
+    const builderUrl = getEnv('BUILDER_URL')
+    if (!builderUrl) return
+    window.open(`${builderUrl.replace(/\/+$/, '')}/worlds`, '_blank', 'noopener,noreferrer')
+  }, [])
+
   if (isLoading) {
     return (
       <OverviewRoot>
@@ -102,7 +123,24 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
   return (
     <OverviewRoot>
       <InfoSurface>
-        {isOwnProfile ? <EditProfileButton /> : null}
+        {isOwnProfile ? (
+          isMobile ? (
+            <OwnerCtaRow>
+              {!hasClaimedName ? (
+                <NameCtaButton variant="contained" color="primary" startIcon={<VerifiedIcon />} onClick={handleGetAName}>
+                  {t('profile.header.get_a_name')}
+                </NameCtaButton>
+              ) : (
+                <NameCtaButton variant="contained" color="primary" startIcon={<PublicIcon />} onClick={handleManageWorld}>
+                  {t('profile.header.manage_world')}
+                </NameCtaButton>
+              )}
+              <EditProfileButton />
+            </OwnerCtaRow>
+          ) : (
+            <EditProfileButton />
+          )
+        ) : null}
         <section style={{ width: '100%' }}>
           <SectionHeader>
             <SectionTitle>{t('profile.overview.badges')}</SectionTitle>

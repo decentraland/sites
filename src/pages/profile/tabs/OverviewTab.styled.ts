@@ -1,4 +1,4 @@
-import { Box, Typography, styled } from 'decentraland-ui2'
+import { Box, Button, Typography, styled } from 'decentraland-ui2'
 
 const OverviewRoot = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -112,6 +112,22 @@ const EmptyBio = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.disabled,
   fontStyle: 'italic'
 }))
+
+// Mobile-only own-profile CTA row (Figma 322:49226): the name action (Get a Unique
+// Name / Manage World) sits next to Edit above the Badges card. On desktop these CTAs
+// live in the header, so this row only renders below md.
+const OwnerCtaRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1.5),
+  width: '100%'
+}))
+
+const NameCtaButton = styled(Button)({
+  flex: 1,
+  height: 40,
+  whiteSpace: 'nowrap'
+})
 
 // Figma I322:49174;288:27830 — AdditionalInfo: flex-wrap, gap 16, each cell 200×50 column
 const InfoGrid = styled(Box)(({ theme }) => ({
@@ -338,7 +354,9 @@ export {
   LinkPillIcon,
   LinksRow,
   LoadingRow,
+  NameCtaButton,
   OverviewRoot,
+  OwnerCtaRow,
   SectionHeader,
   SectionTitle
 }

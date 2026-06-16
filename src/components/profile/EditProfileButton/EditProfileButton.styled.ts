@@ -2,8 +2,9 @@ import { Button, styled } from 'decentraland-ui2'
 
 // Figma I322:49174;322:64427 ("edit CTAS") — CTA anchored to the top-right of the
 // Badges/About/Links InfoSurface (right 14 / top 12): bg rgba(0,0,0,0.4), h 40, radius 12,
-// px 16, Inter SemiBold 14 uppercase soft-white label + 24px pencil icon, gap 8. Hidden
-// below md (mobile navigates through ProfileMobileNav instead).
+// px 16, Inter SemiBold 14 uppercase soft-white label + 24px pencil icon, gap 8. Below md
+// (Figma 322:49226) it drops the absolute anchor and flows inline next to the name CTA in
+// OverviewTab's mobile action row.
 const EditButton = styled(Button)(({ theme }) => ({
   position: 'absolute',
   right: 14,
@@ -34,7 +35,9 @@ const EditButton = styled(Button)(({ theme }) => ({
     backgroundColor: 'rgba(0, 0, 0, 0.65)'
   },
   [theme.breakpoints.down('md')]: {
-    display: 'none'
+    position: 'static',
+    right: 'auto',
+    top: 'auto'
   }
 }))
 
