@@ -1222,6 +1222,30 @@
       "title": "找不到頁面",
       "description": "您要找的帳戶頁面不存在。",
       "cta": "前往錢包"
+    },
+    "credits": {
+      "title": "市场积分计划",
+      "description": "通过完成世界内的目标赚取每周积分。",
+      "status_label": "状态：",
+      "status": {
+        "enrolled": "已注册",
+        "opted_out": "已退出",
+        "not_registered": "未注册"
+      },
+      "learn_more": "了解更多",
+      "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
+      "join_button": "加入计划",
+      "leave_button": "离开计划",
+      "leave_modal": {
+        "warning": "离开市场积分？",
+        "description": "您将停止赚取每周积分。您可以随时重新加入。",
+        "cancel": "取消",
+        "confirm": "离开计划",
+        "errors": {
+          "generic": "目前无法离开计划。请重试。",
+          "already_claimed": "您本周无法离开，因为您已经领取了积分。请下周再试。"
+        }
+      }
     }
   }
 }

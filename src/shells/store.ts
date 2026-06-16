@@ -6,6 +6,7 @@ import { adminClient } from '../features/events/events.admin.client'
 import { eventsClient } from '../features/events/events.client'
 import { cast2Client } from '../services/cast2Client'
 import { cmsClient } from '../services/cmsClient'
+import { creditsClient } from '../services/creditsClient'
 import { marketplaceClient } from '../services/marketplaceClient'
 import { placesClient } from '../services/placesClient'
 import { referralClient } from '../services/referralClient'
@@ -26,7 +27,8 @@ const rootReducer = combineReducers({
   [storageClient.reducerPath]: storageClient.reducer,
   [subgraphClient.reducerPath]: subgraphClient.reducer,
   [marketplaceClient.reducerPath]: marketplaceClient.reducer,
-  [referralClient.reducerPath]: referralClient.reducer
+  [referralClient.reducerPath]: referralClient.reducer,
+  [creditsClient.reducerPath]: creditsClient.reducer
 })
 
 const store = configureStore({
@@ -44,7 +46,8 @@ const store = configureStore({
         storageClient.middleware,
         subgraphClient.middleware,
         marketplaceClient.middleware,
-        referralClient.middleware
+        referralClient.middleware,
+        creditsClient.middleware
       ),
   devTools: import.meta.env.DEV
 })

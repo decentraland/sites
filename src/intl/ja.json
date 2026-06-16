@@ -1222,6 +1222,30 @@
       "title": "ページが見つかりません",
       "description": "お探しのアカウントページは存在しません。",
       "cta": "ウォレットへ移動"
+    },
+    "credits": {
+      "title": "マーケットプレイス クレジット プログラム",
+      "description": "ワールド内の目標を達成して毎週クレジットを獲得しましょう。",
+      "status_label": "ステータス：",
+      "status": {
+        "enrolled": "登録済み",
+        "opted_out": "退会済み",
+        "not_registered": "未登録"
+      },
+      "learn_more": "詳細はこちら",
+      "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
+      "join_button": "プログラムに参加",
+      "leave_button": "プログラムを退会",
+      "leave_modal": {
+        "warning": "マーケットプレイス クレジットを退会しますか？",
+        "description": "毎週のクレジット獲得が停止します。いつでも再参加できます。",
+        "cancel": "キャンセル",
+        "confirm": "プログラムを退会",
+        "errors": {
+          "generic": "現在プログラムを退会できませんでした。もう一度お試しください。",
+          "already_claimed": "今週はすでにクレジットを請求しているため退会できません。来週もう一度お試しください。"
+        }
+      }
     }
   }
 }

@@ -6,6 +6,7 @@ import { eventsClient } from '../features/events/events.client'
 import { cast2Client } from '../services/cast2Client'
 import { cmsClient } from '../services/cmsClient'
 import { marketplaceClient } from '../services/marketplaceClient'
+import { creditsClient } from '../services/creditsClient'
 import { placesClient } from '../services/placesClient'
 import { referralClient } from '../services/referralClient'
 
@@ -44,7 +45,8 @@ describe('when building the DappsShell store', () => {
       [placesClient.reducerPath]: placesClient.reducer,
       [cast2Client.reducerPath]: cast2Client.reducer,
       [marketplaceClient.reducerPath]: marketplaceClient.reducer,
-      [referralClient.reducerPath]: referralClient.reducer
+      [referralClient.reducerPath]: referralClient.reducer,
+      [creditsClient.reducerPath]: creditsClient.reducer
     })
     const store = configureStore({
       reducer: rootReducer,
@@ -56,7 +58,8 @@ describe('when building the DappsShell store', () => {
           placesClient.middleware,
           cast2Client.middleware,
           marketplaceClient.middleware,
-          referralClient.middleware
+          referralClient.middleware,
+          creditsClient.middleware
         )
     })
     state = store.getState() as Record<string, unknown>
@@ -84,6 +87,10 @@ describe('when building the DappsShell store', () => {
 
   it('should register the referral RTK Query reducer', () => {
     expect(state).toHaveProperty('referralClient')
+  })
+
+  it('should register the credits RTK Query reducer', () => {
+    expect(state).toHaveProperty('creditsClient')
   })
 })
 
@@ -140,5 +147,17 @@ describe('when inspecting the store source file', () => {
 
   it('should concatenate referralClient.middleware in the middleware chain', () => {
     expect(source).toContain('referralClient.middleware')
+  })
+
+  it('should import the credits client', () => {
+    expect(source).toMatch(/from '\.\.\/services\/creditsClient'/)
+  })
+
+  it('should register creditsClient.reducer in the reducer map', () => {
+    expect(source).toContain('[creditsClient.reducerPath]: creditsClient.reducer')
+  })
+
+  it('should concatenate creditsClient.middleware in the middleware chain', () => {
+    expect(source).toContain('creditsClient.middleware')
   })
 })
