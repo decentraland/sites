@@ -1,5 +1,12 @@
 import { NotificationType, type SubscriptionDetails } from '@dcl/schemas'
-import { SUBSCRIPTION_GROUP_ORDER, isGroupEnabled, setGroupEnabled, subscriptionGroups } from './account-notifications.helpers'
+import {
+  SUBSCRIPTION_GROUP_ORDER,
+  isAllEmailEnabled,
+  isTypeEmailEnabled,
+  setAllEmail,
+  setTypeEmail,
+  subscriptionGroups
+} from './account-notifications.helpers'
 import { SubscriptionGroupKey } from './account-notifications.types'
 
 const buildDetails = (override: Partial<Record<NotificationType, { email: boolean; in_app: boolean }>> = {}): SubscriptionDetails => {
@@ -32,49 +39,60 @@ describe('account-notifications helpers', () => {
     })
   })
 
-  describe('isGroupEnabled', () => {
-    it('should be false when no type in the group has email enabled', () => {
-      expect(isGroupEnabled(buildDetails(), SubscriptionGroupKey.TIPS)).toBe(false)
+  describe('isTypeEmailEnabled', () => {
+    it('should be false when the type has its email channel off', () => {
+      expect(isTypeEmailEnabled(buildDetails(), NotificationType.TIP_RECEIVED)).toBe(false)
     })
 
-    it('should be true only when every type in the group has email enabled', () => {
+    it('should be true when the type has its email channel on', () => {
       const details = buildDetails({ [NotificationType.TIP_RECEIVED]: { email: true, in_app: true } })
-      expect(isGroupEnabled(details, SubscriptionGroupKey.TIPS)).toBe(true)
-    })
-
-    it('should be false for a partially-enabled group', () => {
-      const details = buildDetails({ [NotificationType.EVENTS_STARTED]: { email: true, in_app: true } })
-      // EVENTS_STARTS_SOON still disabled → partial → off.
-      expect(isGroupEnabled(details, SubscriptionGroupKey.EVENTS)).toBe(false)
+      expect(isTypeEmailEnabled(details, NotificationType.TIP_RECEIVED)).toBe(true)
     })
   })
 
-  describe('setGroupEnabled', () => {
-    it('should enable email on every type in the group without mutating the input', () => {
+  describe('setTypeEmail', () => {
+    it('should set a single type email channel without mutating the input or its in_app channel', () => {
       const details = buildDetails()
-      const next = setGroupEnabled(details, SubscriptionGroupKey.EVENTS, true)
+      const next = setTypeEmail(details, NotificationType.TIP_RECEIVED, true)
 
       expect(next).not.toBe(details)
-      expect(next.message_type[NotificationType.EVENTS_STARTED].email).toBe(true)
-      expect(next.message_type[NotificationType.EVENTS_STARTS_SOON].email).toBe(true)
-      // Original untouched.
-      expect(details.message_type[NotificationType.EVENTS_STARTED].email).toBe(false)
-    })
-
-    it('should leave the in_app channel untouched', () => {
-      const next = setGroupEnabled(buildDetails(), SubscriptionGroupKey.TIPS, true)
+      expect(next.message_type[NotificationType.TIP_RECEIVED].email).toBe(true)
       expect(next.message_type[NotificationType.TIP_RECEIVED].in_app).toBe(true)
+      expect(details.message_type[NotificationType.TIP_RECEIVED].email).toBe(false)
     })
 
     it('should recompute ignore_all_email to false when at least one email is on', () => {
-      const next = setGroupEnabled(buildDetails(), SubscriptionGroupKey.TIPS, true)
-      expect(next.ignore_all_email).toBe(false)
+      expect(setTypeEmail(buildDetails(), NotificationType.TIP_RECEIVED, true).ignore_all_email).toBe(false)
     })
 
-    it('should set ignore_all_email back to true when the last enabled group is turned off', () => {
-      const enabled = setGroupEnabled(buildDetails(), SubscriptionGroupKey.TIPS, true)
-      const disabled = setGroupEnabled(enabled, SubscriptionGroupKey.TIPS, false)
-      expect(disabled.ignore_all_email).toBe(true)
+    it('should set ignore_all_email back to true when the last enabled type is turned off', () => {
+      const enabled = setTypeEmail(buildDetails(), NotificationType.TIP_RECEIVED, true)
+      expect(setTypeEmail(enabled, NotificationType.TIP_RECEIVED, false).ignore_all_email).toBe(true)
+    })
+  })
+
+  describe('master toggle', () => {
+    it('should reflect !ignore_all_email', () => {
+      expect(isAllEmailEnabled(buildDetails())).toBe(false)
+      expect(isAllEmailEnabled({ ...buildDetails(), ignore_all_email: false })).toBe(true)
+    })
+
+    it('should enable the email channel of every managed type when turned on', () => {
+      const next = setAllEmail(buildDetails(), true)
+
+      expect(next.ignore_all_email).toBe(false)
+      for (const types of Object.values(subscriptionGroups)) {
+        for (const type of types) {
+          expect(next.message_type[type].email).toBe(true)
+        }
+      }
+    })
+
+    it('should disable every managed type and mute all email when turned off', () => {
+      const next = setAllEmail(setAllEmail(buildDetails(), true), false)
+
+      expect(next.ignore_all_email).toBe(true)
+      expect(next.message_type[NotificationType.ITEM_SOLD].email).toBe(false)
     })
   })
 })

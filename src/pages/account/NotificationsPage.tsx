@@ -1,14 +1,15 @@
 import { useCallback } from 'react'
 import { Helmet } from 'react-helmet-async'
+import type { NotificationType } from '@dcl/schemas'
 import { EmailCard } from '../../components/account/Notifications/EmailCard/EmailCard'
-import { NotificationGroupRow } from '../../components/account/Notifications/NotificationGroupRow/NotificationGroupRow'
+import { NotificationGroupAccordion } from '../../components/account/Notifications/NotificationGroupAccordion/NotificationGroupAccordion'
 import { useGetSubscriptionQuery, useUpdateSubscriptionMutation } from '../../features/account-notifications/account-notifications.client'
 import {
   SUBSCRIPTION_GROUP_ORDER,
-  isGroupEnabled,
-  setGroupEnabled
+  setAllEmail,
+  setTypeEmail,
+  subscriptionGroups
 } from '../../features/account-notifications/account-notifications.helpers'
-import type { SubscriptionGroupKey } from '../../features/account-notifications/account-notifications.types'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { GroupsGrid, Header, NotificationsPanel, StateMessage, Subtitle, Title } from './NotificationsPage.styled'
 
@@ -18,14 +19,22 @@ const NotificationsPage = () => {
   const [updateSubscription, { isLoading: isSaving }] = useUpdateSubscriptionMutation()
 
   const details = subscription?.details
-  // Group toggles only make sense once an email is confirmed — until then the user manages
+  // Per-type toggles only make sense once an email is confirmed — until then the user manages
   // their address in the card above (mirrors the standalone account dapp's `hasEmail` gate).
   const hasConfirmedEmail = !!subscription?.email && !subscription?.unconfirmedEmail
 
-  const handleToggleGroup = useCallback(
-    (group: SubscriptionGroupKey, checked: boolean) => {
+  const handleToggleType = useCallback(
+    (type: NotificationType, checked: boolean) => {
       if (!details) return
-      void updateSubscription(setGroupEnabled(details, group, checked))
+      void updateSubscription(setTypeEmail(details, type, checked))
+    },
+    [details, updateSubscription]
+  )
+
+  const handleToggleAll = useCallback(
+    (enabled: boolean) => {
+      if (!details) return
+      void updateSubscription(setAllEmail(details, enabled))
     },
     [details, updateSubscription]
   )
@@ -41,7 +50,13 @@ const NotificationsPage = () => {
           <Subtitle>{t('account.notifications.description')}</Subtitle>
         </Header>
 
-        <EmailCard email={subscription?.email} unconfirmedEmail={subscription?.unconfirmedEmail} disabled={isLoading} />
+        <EmailCard
+          email={subscription?.email}
+          unconfirmedEmail={subscription?.unconfirmedEmail}
+          details={details}
+          disabled={isLoading || isSaving}
+          onToggleAll={handleToggleAll}
+        />
 
         {isError && <StateMessage data-role="notifications-error">{t('account.notifications.load_error')}</StateMessage>}
 
@@ -50,12 +65,13 @@ const NotificationsPage = () => {
         {details && (
           <GroupsGrid data-role="notifications-groups">
             {SUBSCRIPTION_GROUP_ORDER.map(group => (
-              <NotificationGroupRow
+              <NotificationGroupAccordion
                 key={group}
                 group={group}
-                checked={isGroupEnabled(details, group)}
+                types={subscriptionGroups[group]}
+                details={details}
                 disabled={!hasConfirmedEmail || isSaving}
-                onToggle={handleToggleGroup}
+                onToggleType={handleToggleType}
               />
             ))}
           </GroupsGrid>

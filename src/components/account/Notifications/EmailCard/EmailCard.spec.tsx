@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
+import type { SubscriptionDetails } from '@dcl/schemas'
 import { EmailCard } from './EmailCard'
 
 type ChildrenProps = { children?: ReactNode }
@@ -27,15 +28,37 @@ jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({
 }))
 
 jest.mock('decentraland-ui2', () => ({
-  CircularProgress: () => <span data-testid="spinner" />
+  CircularProgress: () => <span data-testid="spinner" />,
+  Switch: ({
+    checked,
+    disabled,
+    onChange
+  }: {
+    checked?: boolean
+    disabled?: boolean
+    onChange?: (event: unknown, checked: boolean) => void
+  }) => (
+    <input
+      type="checkbox"
+      role="switch"
+      checked={!!checked}
+      disabled={disabled}
+      onChange={event => onChange?.(event, event.target.checked)}
+    />
+  )
 }))
 
 jest.mock('@dcl/schemas', () => ({
   Email: { validate: (value: string) => /.+@.+\..+/.test(value) }
 }))
 
+jest.mock('../../../../features/account-notifications/account-notifications.helpers', () => ({
+  isAllEmailEnabled: (details: { ignore_all_email?: boolean }) => !details.ignore_all_email
+}))
+
 jest.mock('./EmailCard.styled', () => ({
   Card: ({ children, 'data-role': dataRole }: BadgeProps) => <div data-role={dataRole}>{children}</div>,
+  HeadingRow: ({ children }: ChildrenProps) => <div>{children}</div>,
   Heading: ({ children }: ChildrenProps) => <div>{children}</div>,
   StatusBadge: ({ children, 'data-role': dataRole }: BadgeProps) => <span data-role={dataRole}>{children}</span>,
   Description: ({ children, 'data-role': dataRole }: BadgeProps) => <p data-role={dataRole}>{children}</p>,
@@ -114,6 +137,26 @@ describe('EmailCard', () => {
       mockIsLoading = true
       render(<EmailCard />)
       expect(screen.getByTestId('spinner')).toBeInTheDocument()
+    })
+  })
+
+  describe('master email toggle', () => {
+    const details = { ignore_all_email: false, ignore_all_in_app: false, message_type: {} } as unknown as SubscriptionDetails
+
+    it('should render the master switch (on) and toggle all off when clicked', () => {
+      const onToggleAll = jest.fn()
+      render(<EmailCard email="user@decentraland.org" details={details} onToggleAll={onToggleAll} />)
+
+      const masterSwitch = screen.getByRole('switch')
+      expect(masterSwitch).toBeChecked()
+
+      fireEvent.click(masterSwitch)
+      expect(onToggleAll).toHaveBeenCalledWith(false)
+    })
+
+    it('should not render the master switch without a confirmed email', () => {
+      render(<EmailCard details={details} onToggleAll={jest.fn()} />)
+      expect(screen.queryByRole('switch')).not.toBeInTheDocument()
     })
   })
 })

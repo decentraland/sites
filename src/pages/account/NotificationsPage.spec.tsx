@@ -5,11 +5,14 @@ import { SubscriptionGroupKey } from '../../features/account-notifications/accou
 import { NotificationsPage } from './NotificationsPage'
 
 type ChildrenProps = { children?: ReactNode; 'data-role'?: string }
-type GroupRowProps = {
+type AccordionProps = {
   group: SubscriptionGroupKey
-  checked: boolean
   disabled?: boolean
-  onToggle: (group: SubscriptionGroupKey, checked: boolean) => void
+  onToggleType: (type: string, checked: boolean) => void
+}
+type EmailCardProps = {
+  email?: string
+  onToggleAll?: (enabled: boolean) => void
 }
 
 const mockUpdateSubscription = jest.fn()
@@ -29,27 +32,23 @@ jest.mock('../../features/account-notifications/account-notifications.helpers', 
   const { SubscriptionGroupKey: keys } = jest.requireActual('../../features/account-notifications/account-notifications.types')
   return {
     SUBSCRIPTION_GROUP_ORDER: [keys.MARKETPLACE, keys.TIPS],
-    isGroupEnabled: (_details: unknown, group: string) => group === keys.MARKETPLACE,
-    setGroupEnabled: (details: unknown) => details
+    subscriptionGroups: { [keys.MARKETPLACE]: ['item_sold'], [keys.TIPS]: ['tip_received'] },
+    setTypeEmail: (details: unknown) => details,
+    setAllEmail: (details: unknown) => details
   }
 })
 
 jest.mock('../../components/account/Notifications/EmailCard/EmailCard', () => ({
-  EmailCard: ({ email, unconfirmedEmail }: { email?: string; unconfirmedEmail?: string }) => (
-    <div data-role="email-card" data-email={email} data-unconfirmed={unconfirmedEmail} />
+  EmailCard: ({ email, onToggleAll }: EmailCardProps) => (
+    <button type="button" data-role="email-card" data-email={email} onClick={() => onToggleAll?.(true)}>
+      email-card
+    </button>
   )
 }))
 
-jest.mock('../../components/account/Notifications/NotificationGroupRow/NotificationGroupRow', () => ({
-  NotificationGroupRow: ({ group, checked, disabled, onToggle }: GroupRowProps) => (
-    <button
-      type="button"
-      data-role="group-row"
-      data-group={group}
-      data-checked={checked}
-      disabled={disabled}
-      onClick={() => onToggle(group, !checked)}
-    >
+jest.mock('../../components/account/Notifications/NotificationGroupAccordion/NotificationGroupAccordion', () => ({
+  NotificationGroupAccordion: ({ group, disabled, onToggleType }: AccordionProps) => (
+    <button type="button" data-role="group" data-group={group} disabled={disabled} onClick={() => onToggleType('item_sold', true)}>
       {group}
     </button>
   )
@@ -83,6 +82,8 @@ const buildSubscription = (override: Record<string, unknown> = {}) => ({
   ...override
 })
 
+const getGroupButtons = () => screen.getAllByRole('button').filter(b => b.getAttribute('data-role') === 'group')
+
 describe('NotificationsPage', () => {
   beforeEach(() => {
     mockQueryResult = { data: undefined, isLoading: false, isError: false }
@@ -111,30 +112,36 @@ describe('NotificationsPage', () => {
     expect(screen.getByText('account.notifications.load_error')).toBeInTheDocument()
   })
 
-  it('should render a group row per configured group with the computed checked state', () => {
+  it('should render an accordion per configured group', () => {
     mockQueryResult = { data: buildSubscription(), isLoading: false, isError: false }
     renderPage()
-    const rows = screen.getAllByRole('button')
-    expect(rows).toHaveLength(2)
-    expect(rows[0]).toHaveAttribute('data-group', SubscriptionGroupKey.MARKETPLACE)
-    expect(rows[0]).toHaveAttribute('data-checked', 'true')
-    expect(rows[1]).toHaveAttribute('data-checked', 'false')
+    const groups = getGroupButtons()
+    expect(groups).toHaveLength(2)
+    expect(groups[0]).toHaveAttribute('data-group', SubscriptionGroupKey.MARKETPLACE)
+    expect(groups[1]).toHaveAttribute('data-group', SubscriptionGroupKey.TIPS)
   })
 
-  it('should dispatch updateSubscription when a group is toggled', () => {
+  it('should dispatch updateSubscription when a notification type is toggled', () => {
     mockQueryResult = { data: buildSubscription(), isLoading: false, isError: false }
     renderPage()
-    fireEvent.click(screen.getAllByRole('button')[0])
+    fireEvent.click(getGroupButtons()[0])
     expect(mockUpdateSubscription).toHaveBeenCalledTimes(1)
   })
 
-  it('should disable the rows when the email is not yet confirmed', () => {
+  it('should dispatch updateSubscription when the master email toggle fires', () => {
+    mockQueryResult = { data: buildSubscription(), isLoading: false, isError: false }
+    renderPage()
+    fireEvent.click(screen.getByRole('button', { name: 'email-card' }))
+    expect(mockUpdateSubscription).toHaveBeenCalledTimes(1)
+  })
+
+  it('should disable the accordions when the email is not yet confirmed', () => {
     mockQueryResult = {
       data: buildSubscription({ email: '', unconfirmedEmail: 'pending@decentraland.org' }),
       isLoading: false,
       isError: false
     }
     renderPage()
-    screen.getAllByRole('button').forEach(row => expect(row).toBeDisabled())
+    getGroupButtons().forEach(row => expect(row).toBeDisabled())
   })
 })

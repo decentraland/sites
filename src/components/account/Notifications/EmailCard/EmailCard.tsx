@@ -1,17 +1,20 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { Email } from '@dcl/schemas'
-import { CircularProgress } from 'decentraland-ui2'
+import { Email, type SubscriptionDetails } from '@dcl/schemas'
+import { CircularProgress, Switch } from 'decentraland-ui2'
 import { useSetEmailMutation } from '../../../../features/account-notifications/account-notifications.client'
+import { isAllEmailEnabled } from '../../../../features/account-notifications/account-notifications.helpers'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
-import { Card, Description, EmailInput, Heading, InputRow, SaveButton, StatusBadge } from './EmailCard.styled'
+import { Card, Description, EmailInput, Heading, HeadingRow, InputRow, SaveButton, StatusBadge } from './EmailCard.styled'
 
 interface EmailCardProps {
   email?: string
   unconfirmedEmail?: string
+  details?: SubscriptionDetails
   disabled?: boolean
+  onToggleAll?: (enabled: boolean) => void
 }
 
-const EmailCard = ({ email = '', unconfirmedEmail, disabled = false }: EmailCardProps) => {
+const EmailCard = ({ email = '', unconfirmedEmail, details, disabled = false, onToggleAll }: EmailCardProps) => {
   const t = useFormatMessage()
   const [setEmail, { isLoading }] = useSetEmailMutation()
   const [value, setValue] = useState(unconfirmedEmail || email)
@@ -56,16 +59,31 @@ const EmailCard = ({ email = '', unconfirmedEmail, disabled = false }: EmailCard
 
   const isSaveDisabled = disabled || isLoading || value === '' || (value === email && !unconfirmedEmail)
 
+  // `aria-label` is a valid DOM attribute but not camelCase; scope the lint exception to this object.
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const masterToggleInputProps = { 'aria-label': t('account.notifications.email.master_label') }
+
   return (
     <Card data-role="notifications-email-card">
-      <Heading variant="h6">
-        {t('account.notifications.email.title')}
-        {(isPending || isConfirmed) && (
-          <StatusBadge $confirmed={isConfirmed} data-role="notifications-email-status">
-            {isConfirmed ? t('account.notifications.email.status.confirmed') : t('account.notifications.email.status.pending')}
-          </StatusBadge>
+      <HeadingRow>
+        <Heading variant="h6">
+          {t('account.notifications.email.title')}
+          {(isPending || isConfirmed) && (
+            <StatusBadge $confirmed={isConfirmed} data-role="notifications-email-status">
+              {isConfirmed ? t('account.notifications.email.status.confirmed') : t('account.notifications.email.status.pending')}
+            </StatusBadge>
+          )}
+        </Heading>
+        {!!email && details && onToggleAll && (
+          <Switch
+            checked={isAllEmailEnabled(details)}
+            disabled={disabled}
+            onChange={(_event, checked) => onToggleAll(checked)}
+            inputProps={masterToggleInputProps}
+            data-role="notifications-email-master"
+          />
         )}
-      </Heading>
+      </HeadingRow>
       <Description data-role="notifications-email-description">{description}</Description>
       <InputRow>
         <EmailInput

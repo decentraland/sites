@@ -13,6 +13,13 @@ const Card = styled(Box)(({ theme }) => ({
   background: 'rgba(0, 0, 0, 0.2)'
 }))
 
+const HeadingRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: theme.spacing(2)
+}))
+
 const Heading = styled(Typography)(({ theme }) => ({
   display: 'flex',
   flexWrap: 'wrap',
@@ -84,4 +91,4 @@ const SaveButton = styled(Button)(({ theme }) => ({
   }
 }))
 
-export { Card, Description, EmailInput, Heading, InputRow, SaveButton, StatusBadge }
+export { Card, Description, EmailInput, Heading, HeadingRow, InputRow, SaveButton, StatusBadge }
