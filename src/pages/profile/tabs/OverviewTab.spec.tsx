@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { OverviewTab } from './OverviewTab'
 
 const useGetProfileQueryMock = jest.fn()
+const useTabletAndBelowMediaQueryMock = jest.fn()
 
 jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: (address: string | undefined) => useGetProfileQueryMock(address)
@@ -22,6 +23,7 @@ jest.mock('decentraland-ui2', () => ({
   CircularProgress: () => mockReact.createElement('div', { role: 'progressbar' }),
   Tooltip: ({ children }: { children: React.ReactElement }) => children,
   Typography: ({ children }: { children: React.ReactNode }) => mockReact.createElement('p', null, children),
+  useTabletAndBelowMediaQuery: () => useTabletAndBelowMediaQueryMock(),
   styled: () => (component: unknown) => component
 }))
 
@@ -68,7 +70,9 @@ jest.mock('./OverviewTab.styled', () => {
     LinkPillIcon: make('link-pill-icon', 'span'),
     LinksRow: make('links-row'),
     LoadingRow: make('loading-row'),
+    NameCtaButton: make('name-cta-button', 'button'),
     OverviewRoot: make('overview-root'),
+    OwnerCtaRow: make('owner-cta-row'),
     SectionHeader: make('section-header'),
     SectionTitle: make('section-title', 'h3')
   }
@@ -79,6 +83,11 @@ function renderOverview(props: { address: string; isOwnProfile: boolean } = { ad
 }
 
 describe('OverviewTab', () => {
+  beforeEach(() => {
+    // Default to desktop; the mobile-only name CTA row is asserted explicitly below.
+    useTabletAndBelowMediaQueryMock.mockReturnValue(false)
+  })
+
   afterEach(() => {
     jest.clearAllMocks()
   })
@@ -165,6 +174,37 @@ describe('OverviewTab', () => {
       renderOverview({ address: '0xabc', isOwnProfile: false })
 
       expect(screen.queryByTestId('edit-profile-button')).not.toBeInTheDocument()
+    })
+  })
+
+  // On mobile the profile header is absent, so the own-profile name CTA renders in the
+  // Overview action row (Figma 322:49226) — this is the missing-button bug.
+  describe('when rendering the own-profile name CTA on mobile', () => {
+    beforeEach(() => {
+      useTabletAndBelowMediaQueryMock.mockReturnValue(true)
+    })
+
+    it('should show the get-a-unique-name CTA when the name is not claimed', () => {
+      useGetProfileQueryMock.mockReturnValue({ data: { avatars: [{ name: 'Anon', hasClaimedName: false }] }, isLoading: false })
+      renderOverview({ address: '0xabc', isOwnProfile: true })
+
+      expect(screen.getByText('profile.header.get_a_name')).toBeInTheDocument()
+      expect(screen.queryByText('profile.header.manage_world')).not.toBeInTheDocument()
+    })
+
+    it('should show the manage-world CTA when the name is claimed', () => {
+      useGetProfileQueryMock.mockReturnValue({ data: { avatars: [{ name: 'Brai', hasClaimedName: true }] }, isLoading: false })
+      renderOverview({ address: '0xabc', isOwnProfile: true })
+
+      expect(screen.getByText('profile.header.manage_world')).toBeInTheDocument()
+      expect(screen.queryByText('profile.header.get_a_name')).not.toBeInTheDocument()
+    })
+
+    it('should not render the name CTA on a member profile', () => {
+      useGetProfileQueryMock.mockReturnValue({ data: { avatars: [{ name: 'Anon', hasClaimedName: false }] }, isLoading: false })
+      renderOverview({ address: '0xabc', isOwnProfile: false })
+
+      expect(screen.queryByText('profile.header.get_a_name')).not.toBeInTheDocument()
     })
   })
 })
