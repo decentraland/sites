@@ -1681,6 +1681,23 @@
         "copy": "Copy address",
         "copied": "Copied!",
         "close": "Close"
+      },
+      "send": {
+        "title": "Send MANA",
+        "loading": "Loading wallet…",
+        "connect_description": "Connect your wallet to send MANA.",
+        "switch_description": "Switch your wallet to the right network to continue.",
+        "switch_button": "Switch network",
+        "to_label": "Recipient address",
+        "amount_label": "Amount",
+        "invalid_address": "Enter a valid wallet address",
+        "send_button": "Send",
+        "confirm_in_wallet": "Confirm in your wallet…",
+        "sending": "Sending…",
+        "success": "MANA sent successfully.",
+        "close": "Close",
+        "rejected": "You rejected the transaction.",
+        "error": "Something went wrong. Please try again."
       }
     },
     "notifications": {

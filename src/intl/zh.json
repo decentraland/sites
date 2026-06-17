@@ -1246,6 +1246,23 @@
         "copy": "复制地址",
         "copied": "已复制！",
         "close": "关闭"
+      },
+      "send": {
+        "title": "发送 MANA",
+        "loading": "正在加载钱包…",
+        "connect_description": "连接您的钱包以发送 MANA。",
+        "switch_description": "请将钱包切换到正确的网络以继续。",
+        "switch_button": "切换网络",
+        "to_label": "收款地址",
+        "amount_label": "金额",
+        "invalid_address": "请输入有效的钱包地址",
+        "send_button": "发送",
+        "confirm_in_wallet": "请在钱包中确认…",
+        "sending": "发送中…",
+        "success": "MANA 发送成功。",
+        "close": "关闭",
+        "rejected": "您已拒绝该交易。",
+        "error": "出错了，请重试。"
       }
     },
     "notifications": {

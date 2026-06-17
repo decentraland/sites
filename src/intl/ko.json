@@ -1246,6 +1246,23 @@
         "copy": "주소 복사",
         "copied": "복사됨!",
         "close": "닫기"
+      },
+      "send": {
+        "title": "MANA 보내기",
+        "loading": "지갑 불러오는 중…",
+        "connect_description": "MANA를 보내려면 지갑을 연결하세요.",
+        "switch_description": "계속하려면 지갑을 올바른 네트워크로 전환하세요.",
+        "switch_button": "네트워크 전환",
+        "to_label": "받는 사람 주소",
+        "amount_label": "금액",
+        "invalid_address": "유효한 지갑 주소를 입력하세요",
+        "send_button": "보내기",
+        "confirm_in_wallet": "지갑에서 승인하세요…",
+        "sending": "보내는 중…",
+        "success": "MANA를 보냈습니다.",
+        "close": "닫기",
+        "rejected": "거래를 거부했습니다.",
+        "error": "문제가 발생했습니다. 다시 시도하세요."
       }
     },
     "notifications": {

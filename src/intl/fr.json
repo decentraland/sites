@@ -1241,6 +1241,23 @@
         "copy": "Copier l’adresse",
         "copied": "Copié !",
         "close": "Fermer"
+      },
+      "send": {
+        "title": "Envoyer du MANA",
+        "loading": "Chargement du portefeuille…",
+        "connect_description": "Connectez votre portefeuille pour envoyer du MANA.",
+        "switch_description": "Basculez votre portefeuille sur le bon réseau pour continuer.",
+        "switch_button": "Changer de réseau",
+        "to_label": "Adresse du destinataire",
+        "amount_label": "Montant",
+        "invalid_address": "Saisissez une adresse de portefeuille valide",
+        "send_button": "Envoyer",
+        "confirm_in_wallet": "Confirmez dans votre portefeuille…",
+        "sending": "Envoi en cours…",
+        "success": "MANA envoyé avec succès.",
+        "close": "Fermer",
+        "rejected": "Vous avez rejeté la transaction.",
+        "error": "Une erreur s'est produite. Veuillez réessayer."
       }
     },
     "notifications": {

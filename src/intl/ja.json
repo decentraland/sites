@@ -1246,6 +1246,23 @@
         "copy": "アドレスをコピー",
         "copied": "コピーしました！",
         "close": "閉じる"
+      },
+      "send": {
+        "title": "MANAを送る",
+        "loading": "ウォレットを読み込み中…",
+        "connect_description": "MANAを送るにはウォレットを接続してください。",
+        "switch_description": "続行するにはウォレットを正しいネットワークに切り替えてください。",
+        "switch_button": "ネットワークを切り替える",
+        "to_label": "送信先アドレス",
+        "amount_label": "金額",
+        "invalid_address": "有効なウォレットアドレスを入力してください",
+        "send_button": "送信",
+        "confirm_in_wallet": "ウォレットで承認してください…",
+        "sending": "送信中…",
+        "success": "MANAを送信しました。",
+        "close": "閉じる",
+        "rejected": "トランザクションを拒否しました。",
+        "error": "問題が発生しました。もう一度お試しください。"
       }
     },
     "notifications": {

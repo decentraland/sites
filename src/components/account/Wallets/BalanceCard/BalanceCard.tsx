@@ -11,7 +11,7 @@ import { Skeleton } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import { SegmentEvent } from '../../../../modules/segment'
 import { ManaEthIcon, ManaMaticIcon } from '../../../LandingNavbar/icons'
-import { buildBuyManaUrl, buildSendManaUrl, buildSwapManaUrl, formatMana } from '../wallets.helpers'
+import { buildBuyManaUrl, buildSwapManaUrl, formatMana } from '../wallets.helpers'
 import { ActionButton, Actions, BalanceAmount, BalanceInfo, Card, NetworkLabel, NetworkRow } from './BalanceCard.styled'
 
 type WalletNetwork = 'ethereum' | 'polygon'
@@ -21,11 +21,12 @@ interface BalanceCardProps {
   balance: number | undefined
   isLoading: boolean
   onReceive: () => void
+  onSend: () => void
 }
 
 const openExternal = (url: string) => window.open(url, '_blank', 'noopener,noreferrer')
 
-const BalanceCard = ({ network, balance, isLoading, onReceive }: BalanceCardProps) => {
+const BalanceCard = ({ network, balance, isLoading, onReceive, onSend }: BalanceCardProps) => {
   const t = useFormatMessage()
   const { track, isInitialized } = useAnalytics()
 
@@ -45,7 +46,7 @@ const BalanceCard = ({ network, balance, isLoading, onReceive }: BalanceCardProp
   }
   const handleSend = () => {
     trackAction('send')
-    openExternal(buildSendManaUrl())
+    onSend()
   }
   const handleReceive = () => {
     trackAction('receive')

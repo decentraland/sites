@@ -20,6 +20,10 @@ jest.mock('../../components/account/Wallets/ReceiveModal/ReceiveModal', () => ({
   ReceiveModal: ({ open }: { open: boolean }) => (open ? <div data-testid="receive-modal" /> : null)
 }))
 
+jest.mock('../../components/account/Wallets/SendManaModal/SendManaModal', () => ({
+  SendManaModal: ({ open, network }: { open: boolean; network: string }) => (open ? <div data-testid="send-modal">{network}</div> : null)
+}))
+
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))

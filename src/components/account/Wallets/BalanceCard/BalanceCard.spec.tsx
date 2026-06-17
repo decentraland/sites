@@ -35,7 +35,6 @@ jest.mock('../../../../modules/segment', () => ({
 jest.mock('../wallets.helpers', () => ({
   buildBuyManaUrl: () => 'https://market.example.org/buy',
   buildSwapManaUrl: () => 'https://market.example.org/swap',
-  buildSendManaUrl: () => 'https://market.example.org/send',
   formatMana: (value: number) => `formatted-${value}`
 }))
 
@@ -66,7 +65,7 @@ describe('BalanceCard', () => {
   })
 
   it('should render the network label and the formatted balance', () => {
-    render(<BalanceCard network="ethereum" balance={100595} isLoading={false} onReceive={jest.fn()} />)
+    render(<BalanceCard network="ethereum" balance={100595} isLoading={false} onReceive={jest.fn()} onSend={jest.fn()} />)
 
     expect(screen.getByText('account.wallets.eth_label')).toBeInTheDocument()
     expect(screen.getByText('formatted-100595')).toBeInTheDocument()
@@ -74,13 +73,13 @@ describe('BalanceCard', () => {
   })
 
   it('should show a skeleton while loading or before the balance resolves', () => {
-    render(<BalanceCard network="polygon" balance={undefined} isLoading onReceive={jest.fn()} />)
+    render(<BalanceCard network="polygon" balance={undefined} isLoading onReceive={jest.fn()} onSend={jest.fn()} />)
 
     expect(screen.getByTestId('skeleton')).toBeInTheDocument()
   })
 
   it('should open the marketplace in a new tab when Buy is clicked', () => {
-    render(<BalanceCard network="ethereum" balance={1} isLoading={false} onReceive={jest.fn()} />)
+    render(<BalanceCard network="ethereum" balance={1} isLoading={false} onReceive={jest.fn()} onSend={jest.fn()} />)
 
     fireEvent.click(screen.getByText('account.wallets.actions.buy'))
 
@@ -90,11 +89,22 @@ describe('BalanceCard', () => {
 
   it('should invoke onReceive instead of navigating when Receive is clicked', () => {
     const onReceive = jest.fn()
-    render(<BalanceCard network="ethereum" balance={1} isLoading={false} onReceive={onReceive} />)
+    render(<BalanceCard network="ethereum" balance={1} isLoading={false} onReceive={onReceive} onSend={jest.fn()} />)
 
     fireEvent.click(screen.getByText('account.wallets.actions.receive'))
 
     expect(onReceive).toHaveBeenCalledTimes(1)
     expect(openSpy).not.toHaveBeenCalled()
+  })
+
+  it('should invoke onSend in-page instead of deep-linking when Send is clicked', () => {
+    const onSend = jest.fn()
+    render(<BalanceCard network="polygon" balance={1} isLoading={false} onReceive={jest.fn()} onSend={onSend} />)
+
+    fireEvent.click(screen.getByText('account.wallets.actions.send'))
+
+    expect(onSend).toHaveBeenCalledTimes(1)
+    expect(openSpy).not.toHaveBeenCalled()
+    expect(mockTrack).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'send', network: 'polygon' }))
   })
 })
