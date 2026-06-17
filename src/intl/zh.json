@@ -1205,7 +1205,8 @@
       "notifications": "通知",
       "credits": "积分设置",
       "delete": "刪除帳戶",
-      "logout": "登出"
+      "logout": "登出",
+      "close": "关闭"
     },
     "sign_in": {
       "title": "登入以管理您的帳戶",

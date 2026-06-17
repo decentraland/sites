@@ -14,6 +14,7 @@ jest.mock('@mui/icons-material/AccountBalanceWalletOutlined', () => ({
   default: () => <span data-testid="wallet-icon" />
 }))
 jest.mock('@mui/icons-material/CardGiftcardOutlined', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/ChevronRight', () => ({ __esModule: true, default: () => <span data-testid="chevron-icon" /> }))
 jest.mock('@mui/icons-material/ContentCopyOutlined', () => ({ __esModule: true, default: () => <span data-testid="copy-icon" /> }))
 jest.mock('@mui/icons-material/DeleteOutlineOutlined', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('@mui/icons-material/LogoutOutlined', () => ({ __esModule: true, default: () => <span /> }))
@@ -42,6 +43,7 @@ jest.mock('./AccountSidebar.styled', () => ({
   Divider: () => <hr />,
   SectionLabel: ({ children }: ChildrenProps) => <div>{children}</div>,
   Nav: ({ children }: ChildrenProps) => <div>{children}</div>,
+  NavChevron: ({ children }: ChildrenProps) => <span>{children}</span>,
   NavItem: ({ children, 'data-role': dataRole }: NavProps) => <a data-role={dataRole}>{children}</a>,
   DeleteNavItem: ({ children, 'data-role': dataRole }: NavProps) => <a data-role={dataRole}>{children}</a>,
   LogoutButton: ({ children, onClick, 'data-role': dataRole }: ButtonProps) => (

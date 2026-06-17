@@ -5,6 +5,8 @@ import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalance
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CardGiftcardOutlinedIcon from '@mui/icons-material/CardGiftcardOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined'
@@ -27,6 +29,7 @@ import {
   Divider,
   LogoutButton,
   Nav,
+  NavChevron,
   NavItem,
   SectionLabel,
   Sidebar,
@@ -115,6 +118,9 @@ const AccountSidebar = ({ address }: AccountSidebarProps) => {
             <NavItem key={key} to={path} $active={active} data-role="account-nav-item">
               {icon}
               {t(`account.nav.${key}`)}
+              <NavChevron>
+                <ChevronRightIcon fontSize="small" />
+              </NavChevron>
             </NavItem>
           )
         })}
@@ -132,6 +138,9 @@ const AccountSidebar = ({ address }: AccountSidebarProps) => {
         >
           <DeleteOutlineOutlinedIcon fontSize="small" />
           {t('account.nav.delete')}
+          <NavChevron>
+            <ChevronRightIcon fontSize="small" />
+          </NavChevron>
         </DeleteNavItem>
         <Divider />
         <LogoutButton type="button" onClick={disconnect} data-role="account-logout">

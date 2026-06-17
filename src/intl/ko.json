@@ -1205,7 +1205,8 @@
       "notifications": "알림",
       "credits": "크레딧 설정",
       "delete": "계정 삭제",
-      "logout": "로그아웃"
+      "logout": "로그아웃",
+      "close": "닫기"
     },
     "sign_in": {
       "title": "계정을 관리하려면 로그인하세요",

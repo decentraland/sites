@@ -1205,7 +1205,8 @@
       "notifications": "通知",
       "credits": "クレジット設定",
       "delete": "アカウントを削除",
-      "logout": "ログアウト"
+      "logout": "ログアウト",
+      "close": "閉じる"
     },
     "sign_in": {
       "title": "アカウントを管理するにはサインインしてください",

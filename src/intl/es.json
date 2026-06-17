@@ -1205,7 +1205,8 @@
       "notifications": "Notificaciones",
       "credits": "Configuración de Créditos",
       "delete": "Eliminar cuenta",
-      "logout": "Cerrar sesión"
+      "logout": "Cerrar sesión",
+      "close": "Cerrar"
     },
     "sign_in": {
       "title": "Inicia sesión para gestionar tu cuenta",

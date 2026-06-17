@@ -45,6 +45,53 @@ const AccountContent = styled(Box)(({ theme }) => ({
   }
 }))
 
+// Mobile section detail (Figma 783:73199): full-width column with a back/close header above the
+// active section's content. No sidebar — the dashboard lives on the /account index route.
+const MobileSection = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  zIndex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  width: '100%',
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2)
+}))
+
+const MobileSectionHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: theme.spacing(2),
+  paddingBottom: theme.spacing(2)
+}))
+
+const MobileBackButton = styled('button')(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  border: 'none',
+  background: 'none',
+  padding: 0,
+  cursor: 'pointer',
+  color: '#FCFCFC',
+  fontSize: 18,
+  fontWeight: 600,
+  ['& .MuiSvgIcon-root']: {
+    fontSize: 16
+  }
+}))
+
+const MobileCloseButton = styled('button')(() => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: 'none',
+  background: 'none',
+  padding: 0,
+  cursor: 'pointer',
+  color: '#FCFCFC'
+}))
+
 const SignInPrompt = styled(Box)(({ theme }) => ({
   position: 'relative',
   zIndex: 1,
@@ -64,4 +111,14 @@ const SignInTitle = styled(Typography)(() => ({
   color: '#FCFCFC'
 }))
 
-export { AccountContent, AccountLayoutRoot, AccountPageContainer, SignInPrompt, SignInTitle }
+export {
+  AccountContent,
+  AccountLayoutRoot,
+  AccountPageContainer,
+  MobileBackButton,
+  MobileCloseButton,
+  MobileSection,
+  MobileSectionHeader,
+  SignInPrompt,
+  SignInTitle
+}

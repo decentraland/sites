@@ -109,6 +109,7 @@ const StorageNotFoundPage = lazy(() => import('./pages/storage/StorageNotFoundPa
 // providers). Public path stays /account/* — the cutover from the standalone dapp is handled
 // in definitions once this implementation is functional.
 const AccountLayout = lazy(() => import('./pages/account').then(m => ({ default: m.AccountLayout })))
+const AccountIndexRedirect = lazy(() => import('./pages/account').then(m => ({ default: m.AccountIndexRedirect })))
 const AccountWalletsPage = lazy(() => import('./pages/account').then(m => ({ default: m.WalletsPage })))
 const AccountNotificationsPage = lazy(() => import('./pages/account').then(m => ({ default: m.NotificationsPage })))
 const AccountCreditsPage = lazy(() => import('./pages/account').then(m => ({ default: m.CreditsPage })))
@@ -232,7 +233,7 @@ const App = () => {
                   this is functional. AccountLayout owns the sidebar + auth gate, sections render
                   via <Outlet />. The index redirect lands signed-in users on Wallets. */}
               <Route path="/account" element={<AccountLayout />}>
-                <Route index element={<Navigate to="/account/wallets" replace />} />
+                <Route index element={<AccountIndexRedirect />} />
                 <Route path="wallets" element={<AccountWalletsPage />} />
                 <Route path="notifications" element={<AccountNotificationsPage />} />
                 <Route path="credits" element={<AccountCreditsPage />} />

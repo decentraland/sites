@@ -1200,7 +1200,8 @@
       "notifications": "Notifications",
       "credits": "Paramètres des crédits",
       "delete": "Supprimer le compte",
-      "logout": "Se déconnecter"
+      "logout": "Se déconnecter",
+      "close": "Fermer"
     },
     "sign_in": {
       "title": "Connectez-vous pour gérer votre compte",

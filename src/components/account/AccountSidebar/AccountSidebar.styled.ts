@@ -185,6 +185,21 @@ const BottomGroup = styled(Box)(({ theme }) => ({
   paddingTop: theme.spacing(2)
 }))
 
+// Mobile dashboard affordance (Figma 776:69124): each nav row shows a trailing chevron to read as
+// "tap to open the section". Hidden on desktop, where the sidebar is a persistent rail.
+const NavChevron = styled('span')(({ theme }) => ({
+  display: 'none',
+  marginLeft: 'auto',
+  alignItems: 'center',
+  color: '#A09BA8',
+  ['& .MuiSvgIcon-root']: {
+    fontSize: 18
+  },
+  [theme.breakpoints.down('md')]: {
+    display: 'inline-flex'
+  }
+}))
+
 export {
   AddressRow,
   Avatar,
@@ -195,6 +210,7 @@ export {
   Divider,
   LogoutButton,
   Nav,
+  NavChevron,
   NavItem,
   SectionLabel,
   Sidebar,

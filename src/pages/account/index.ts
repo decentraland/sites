@@ -1,4 +1,4 @@
-export { AccountLayout } from './AccountLayout'
+export { AccountIndexRedirect, AccountLayout } from './AccountLayout'
 export { AccountNotFoundPage } from './AccountNotFoundPage'
 export { CreditsPage } from './CreditsPage'
 export { DeleteAccountPage } from './DeleteAccountPage'
