@@ -1,5 +1,6 @@
 import { NotificationType, type SubscriptionDetails } from '@dcl/schemas'
 import {
+  SUBSCRIPTION_GROUP_COLUMNS,
   SUBSCRIPTION_GROUP_ORDER,
   isAllEmailEnabled,
   isTypeEmailEnabled,
@@ -29,6 +30,13 @@ describe('account-notifications helpers', () => {
     it('should expose every settings group in the display order', () => {
       expect(new Set(SUBSCRIPTION_GROUP_ORDER)).toEqual(new Set(Object.values(SubscriptionGroupKey)))
       expect(SUBSCRIPTION_GROUP_ORDER).toHaveLength(9)
+    })
+
+    it('should split the groups into two independent columns covering every group once', () => {
+      expect(SUBSCRIPTION_GROUP_COLUMNS).toHaveLength(2)
+      const flattened = SUBSCRIPTION_GROUP_COLUMNS.flat()
+      expect(flattened).toEqual(SUBSCRIPTION_GROUP_ORDER)
+      expect(new Set(flattened)).toEqual(new Set(Object.values(SubscriptionGroupKey)))
     })
 
     it('should map referrals to the two referral notification types', () => {

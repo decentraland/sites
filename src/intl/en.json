@@ -1717,7 +1717,7 @@
         "referral": "Referrals"
       },
       "email": {
-        "title": "Your Email Address",
+        "title": "Email Notification",
         "placeholder": "example@decentraland.org",
         "invalid": "Invalid email",
         "description": {

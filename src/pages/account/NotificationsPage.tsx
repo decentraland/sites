@@ -5,13 +5,13 @@ import { EmailCard } from '../../components/account/Notifications/EmailCard/Emai
 import { NotificationGroupAccordion } from '../../components/account/Notifications/NotificationGroupAccordion/NotificationGroupAccordion'
 import { useGetSubscriptionQuery, useUpdateSubscriptionMutation } from '../../features/account-notifications/account-notifications.client'
 import {
-  SUBSCRIPTION_GROUP_ORDER,
+  SUBSCRIPTION_GROUP_COLUMNS,
   setAllEmail,
   setTypeEmail,
   subscriptionGroups
 } from '../../features/account-notifications/account-notifications.helpers'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
-import { GroupsGrid, Header, NotificationsPanel, StateMessage, Subtitle, Title } from './NotificationsPage.styled'
+import { GroupsColumn, GroupsColumns, NotificationsPanel, StateMessage } from './NotificationsPage.styled'
 
 const NotificationsPage = () => {
   const t = useFormatMessage()
@@ -45,11 +45,6 @@ const NotificationsPage = () => {
         <title>{`${t('account.pages.notifications.title')} | Decentraland`}</title>
       </Helmet>
       <NotificationsPanel data-role="notifications-page">
-        <Header>
-          <Title variant="h4">{t('account.notifications.title')}</Title>
-          <Subtitle>{t('account.notifications.description')}</Subtitle>
-        </Header>
-
         <EmailCard
           email={subscription?.email}
           unconfirmedEmail={subscription?.unconfirmedEmail}
@@ -63,18 +58,22 @@ const NotificationsPage = () => {
         {isLoading && !details && <StateMessage data-role="notifications-loading">{t('account.notifications.loading')}</StateMessage>}
 
         {details && (
-          <GroupsGrid data-role="notifications-groups">
-            {SUBSCRIPTION_GROUP_ORDER.map(group => (
-              <NotificationGroupAccordion
-                key={group}
-                group={group}
-                types={subscriptionGroups[group]}
-                details={details}
-                disabled={!hasConfirmedEmail || isSaving}
-                onToggleType={handleToggleType}
-              />
+          <GroupsColumns data-role="notifications-groups">
+            {SUBSCRIPTION_GROUP_COLUMNS.map((column, index) => (
+              <GroupsColumn key={index}>
+                {column.map(group => (
+                  <NotificationGroupAccordion
+                    key={group}
+                    group={group}
+                    types={subscriptionGroups[group]}
+                    details={details}
+                    disabled={!hasConfirmedEmail || isSaving}
+                    onToggleType={handleToggleType}
+                  />
+                ))}
+              </GroupsColumn>
             ))}
-          </GroupsGrid>
+          </GroupsColumns>
         )}
       </NotificationsPanel>
     </>

@@ -1,7 +1,7 @@
-import { Box, Typography, styled } from 'decentraland-ui2'
+import { Box, styled } from 'decentraland-ui2'
 
-// Figma 797:78245 — Delete Account page header. Title #FCFCFC; mirrors the sibling Account
-// section headers.
+// Figma 797:78245 — Delete Account page. No page heading (the sidebar marks the active section,
+// matching every other account section); the panel starts directly with the Danger Zone banner.
 
 const PageRoot = styled(Box)({
   display: 'flex',
@@ -9,9 +9,4 @@ const PageRoot = styled(Box)({
   gap: 16
 })
 
-const PageTitle = styled(Typography)({
-  color: '#FCFCFC',
-  fontWeight: 600
-})
-
-export { PageRoot, PageTitle }
+export { PageRoot }

@@ -1,4 +1,4 @@
-const mockCreateWeb3CoreConfig = jest.fn(() => ({ created: true }))
+const mockCreateWeb3CoreConfig = jest.fn((..._args: unknown[]) => ({ created: true }))
 let mockEnv: string
 
 jest.mock('@dcl/core-web3', () => ({

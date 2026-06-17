@@ -1282,7 +1282,7 @@
         "referral": "추천"
       },
       "email": {
-        "title": "이메일 주소",
+        "title": "이메일 알림",
         "placeholder": "example@decentraland.org",
         "invalid": "잘못된 이메일",
         "description": {

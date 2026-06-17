@@ -55,21 +55,24 @@ const subscriptionGroups: SubscriptionGroups = {
 }
 
 /**
- * Display order for the two-column accordion grid (matches the Figma left-to-right, top-to-bottom
- * flow): Marketplace, Worlds, Marketplace Credits, In-World Streaming, Events, Giveaway and
- * Rewards, DAO, Tips, Referrals.
+ * Accordion layout as two INDEPENDENT columns (Figma 522:122213). Each column flows on its own, so
+ * expanding an accordion only grows its column — it never stretches the row across both columns.
+ * Left column: Marketplace, Marketplace Credits, Events, Giveaway and Rewards, DAO.
+ * Right column: Worlds, In-World Streaming, Tips, Referrals.
  */
-const SUBSCRIPTION_GROUP_ORDER: SubscriptionGroupKey[] = [
-  SubscriptionGroupKey.MARKETPLACE,
-  SubscriptionGroupKey.WORLDS,
-  SubscriptionGroupKey.CREDITS,
-  SubscriptionGroupKey.STREAMING,
-  SubscriptionGroupKey.EVENTS,
-  SubscriptionGroupKey.REWARDS,
-  SubscriptionGroupKey.DAO,
-  SubscriptionGroupKey.TIPS,
-  SubscriptionGroupKey.REFERRAL
+const SUBSCRIPTION_GROUP_COLUMNS: SubscriptionGroupKey[][] = [
+  [
+    SubscriptionGroupKey.MARKETPLACE,
+    SubscriptionGroupKey.CREDITS,
+    SubscriptionGroupKey.EVENTS,
+    SubscriptionGroupKey.REWARDS,
+    SubscriptionGroupKey.DAO
+  ],
+  [SubscriptionGroupKey.WORLDS, SubscriptionGroupKey.STREAMING, SubscriptionGroupKey.TIPS, SubscriptionGroupKey.REFERRAL]
 ]
+
+/** Flattened group order (column-major); used for mobile's single column and parity checks. */
+const SUBSCRIPTION_GROUP_ORDER: SubscriptionGroupKey[] = SUBSCRIPTION_GROUP_COLUMNS.flat()
 
 /** Reads a single notification type's email-channel state. */
 function isTypeEmailEnabled(details: SubscriptionDetails, type: NotificationType): boolean {
@@ -116,4 +119,12 @@ function setAllEmail(details: SubscriptionDetails, enabled: boolean): Subscripti
   /* eslint-enable @typescript-eslint/naming-convention */
 }
 
-export { SUBSCRIPTION_GROUP_ORDER, isAllEmailEnabled, isTypeEmailEnabled, setAllEmail, setTypeEmail, subscriptionGroups }
+export {
+  SUBSCRIPTION_GROUP_COLUMNS,
+  SUBSCRIPTION_GROUP_ORDER,
+  isAllEmailEnabled,
+  isTypeEmailEnabled,
+  setAllEmail,
+  setTypeEmail,
+  subscriptionGroups
+}

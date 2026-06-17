@@ -1282,7 +1282,7 @@
         "referral": "推荐"
       },
       "email": {
-        "title": "您的电子邮件地址",
+        "title": "电子邮件通知",
         "placeholder": "example@decentraland.org",
         "invalid": "无效的电子邮件",
         "description": {

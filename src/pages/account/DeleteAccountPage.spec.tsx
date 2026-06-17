@@ -14,8 +14,7 @@ jest.mock('react-helmet-async', () => ({
 }))
 
 jest.mock('./DeleteAccountPage.styled', () => ({
-  PageRoot: ({ children }: ChildrenProps) => <div>{children}</div>,
-  PageTitle: ({ children }: ChildrenProps) => <h1>{children}</h1>
+  PageRoot: ({ children }: ChildrenProps) => <div>{children}</div>
 }))
 
 const ADDRESS = '0x1234567890123456789012345678901234567890'

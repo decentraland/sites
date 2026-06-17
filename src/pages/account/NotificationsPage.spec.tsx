@@ -31,7 +31,7 @@ jest.mock('../../features/account-notifications/account-notifications.client', (
 jest.mock('../../features/account-notifications/account-notifications.helpers', () => {
   const { SubscriptionGroupKey: keys } = jest.requireActual('../../features/account-notifications/account-notifications.types')
   return {
-    SUBSCRIPTION_GROUP_ORDER: [keys.MARKETPLACE, keys.TIPS],
+    SUBSCRIPTION_GROUP_COLUMNS: [[keys.MARKETPLACE], [keys.TIPS]],
     subscriptionGroups: { [keys.MARKETPLACE]: ['item_sold'], [keys.TIPS]: ['tip_received'] },
     setTypeEmail: (details: unknown) => details,
     setAllEmail: (details: unknown) => details
@@ -60,10 +60,8 @@ jest.mock('../../hooks/adapters/useFormatMessage', () => ({
 
 jest.mock('./NotificationsPage.styled', () => ({
   NotificationsPanel: ({ children, 'data-role': dataRole }: ChildrenProps) => <section data-role={dataRole}>{children}</section>,
-  Header: ({ children }: ChildrenProps) => <header>{children}</header>,
-  Title: ({ children }: ChildrenProps) => <h1>{children}</h1>,
-  Subtitle: ({ children }: ChildrenProps) => <p>{children}</p>,
-  GroupsGrid: ({ children, 'data-role': dataRole }: ChildrenProps) => <div data-role={dataRole}>{children}</div>,
+  GroupsColumns: ({ children, 'data-role': dataRole }: ChildrenProps) => <div data-role={dataRole}>{children}</div>,
+  GroupsColumn: ({ children }: ChildrenProps) => <div>{children}</div>,
   StateMessage: ({ children, 'data-role': dataRole }: ChildrenProps) => <p data-role={dataRole}>{children}</p>
 }))
 
@@ -94,10 +92,9 @@ describe('NotificationsPage', () => {
     jest.clearAllMocks()
   })
 
-  it('should render the title and description', () => {
+  it('should render the email card', () => {
     renderPage()
-    expect(screen.getByText('account.notifications.title')).toBeInTheDocument()
-    expect(screen.getByText('account.notifications.description')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'email-card' })).toBeInTheDocument()
   })
 
   it('should render the loading message while fetching with no data', () => {

@@ -1282,7 +1282,7 @@
         "referral": "Referidos"
       },
       "email": {
-        "title": "Tu dirección de correo",
+        "title": "Notificaciones por email",
         "placeholder": "ejemplo@decentraland.org",
         "invalid": "Correo inválido",
         "description": {

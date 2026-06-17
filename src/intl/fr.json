@@ -1277,7 +1277,7 @@
         "referral": "Parrainages"
       },
       "email": {
-        "title": "Votre adresse e-mail",
+        "title": "Notifications par e-mail",
         "placeholder": "exemple@decentraland.org",
         "invalid": "E-mail invalide",
         "description": {

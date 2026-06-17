@@ -1282,7 +1282,7 @@
         "referral": "紹介"
       },
       "email": {
-        "title": "メールアドレス",
+        "title": "メール通知",
         "placeholder": "example@decentraland.org",
         "invalid": "無効なメールアドレス",
         "description": {

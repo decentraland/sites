@@ -149,7 +149,8 @@ const ExportKeyLink = styled(Button)({
 
 const DeleteButton = styled(Button)({
   marginTop: 8,
-  alignSelf: 'flex-start',
+  // Figma 797:78245 — the destructive action sits at the bottom-right of the section.
+  alignSelf: 'flex-end',
   backgroundColor: '#FF2D55',
   ['&:hover']: {
     backgroundColor: '#E0264B'
