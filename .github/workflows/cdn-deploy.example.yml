@@ -29,15 +29,18 @@ on:
     types: [published]
   workflow_dispatch:
     inputs:
-      version:
-        description: "Already-uploaded version (or release tag) to point at"
-        required: true
       environment:
         type: choice
-        description: "Target environment"
+        description: "Environment to deploy to"
         required: true
-        default: "org"
+        default: "today"
         options: [zone, today, org]
+      version:
+        description: "Version to deploy (e.g. a tag, or 0.0.1-commit-abc1234). Leave empty to use 'commit'."
+        required: false
+      commit:
+        description: "Commit sha to deploy (alternative to version). Its build must already be on the CDN."
+        required: false
       percentage:
         description: "Rollout percentage"
         required: true
@@ -75,8 +78,10 @@ jobs:
       build-command: "" # copy, don't build
     secrets: inherit
 
-  # manual -> switch a chosen environment's KV to an already-staged version.
-  switch:
+  # manual -> deploy a chosen version OR commit to a chosen environment
+  # (e.g. promote what's on dev to stg). No rebuild: the build is already on the
+  # CDN, so this just repoints that environment's KV.
+  manual-deploy:
     if: ${{ github.event_name == 'workflow_dispatch' && vars.CDN_DEPLOY_EXAMPLE_ENABLED == 'true' }}
     permissions:
       id-token: write
@@ -87,6 +92,7 @@ jobs:
     with:
       package-name: "@dcl/sites"
       version: ${{ github.event.inputs.version }}
+      commit: ${{ github.event.inputs.commit }}
       deployment-environments: ${{ format('["{0}"]', github.event.inputs.environment) }}
       percentage: ${{ fromJSON(github.event.inputs.percentage) }}
       build-command: ""
