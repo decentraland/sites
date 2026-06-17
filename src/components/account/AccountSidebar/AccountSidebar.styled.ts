@@ -19,7 +19,8 @@ const Sidebar = styled(Box)(({ theme }) => ({
     position: 'sticky',
     top: 96,
     width: 264,
-    minHeight: 560,
+    // Full-height left rail: span from just under the fixed navbar to the bottom of the viewport.
+    minHeight: 'calc(100vh - 120px)',
     alignSelf: 'flex-start'
   }
 }))

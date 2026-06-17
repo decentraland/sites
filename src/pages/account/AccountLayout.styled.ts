@@ -22,14 +22,16 @@ const AccountPageContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   width: '100%',
-  maxWidth: 1440,
-  margin: '0 auto',
+  // Full-width, left-aligned: the sidebar reads as a left rail hugging the edge instead of a
+  // centered column (Figma dashboard layout).
+  maxWidth: 'none',
+  margin: 0,
   [theme.breakpoints.up('md')]: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: theme.spacing(4),
-    paddingLeft: theme.spacing(4),
-    paddingRight: theme.spacing(4)
+    alignItems: 'stretch',
+    gap: theme.spacing(3),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(3)
   }
 }))
 
