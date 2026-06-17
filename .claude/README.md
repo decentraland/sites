@@ -20,6 +20,12 @@ Project-level configuration for Claude Code working in this repo. Every hook, sk
 - `coverage-guard` — checks the 95% coverage floor (statements / lines / functions, rule 6) and dispatches `coverage-keeper` on the worst files when below.
 - `migrate-dapp` — playbook for absorbing a standalone Decentraland dapp (whats-on, blog, jump, social, cast, storage, reels) into this SPA as a heavy `DappsShell` route.
 - `pre-pr-review` — runs the full pre-PR gate before `gh pr create`.
+- `auth-flow` — localStorage-based wallet/identity stack (`useWalletAddress`, `useAuthIdentity`, `signedFetch`); no Web3 providers.
+- `perf-tier` — lazy boundaries, manual chunks, hero prerender, deferred analytics; anything that moves Lighthouse/LCP.
+- `rtk-query-split` — base clients in `services/` vs injected endpoints in `features/` (+ rules 17-18).
+- `seo-worker` — `api/seo.ts` OG/Twitter rewrite flow and CMS origin coherence.
+- `shell-safe-imports` — rule 16: no module-top-level throws in shell-reachable code.
+- `tracking-events` — Segment analytics playbook: where events fire, deferred provider, funnels.
 
 ## Agents
 
@@ -40,7 +46,6 @@ Registered in `.claude/settings.json`. Each one enforces a rule from `CLAUDE.md`
 | PostToolUse(Edit\|Write\|MultiEdit) | `post-edit-i18n-parity.sh`       | When `src/intl/en.json` changes, reminds about the 5 sibling locales (rule 9).                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | PostToolUse(Edit\|Write\|MultiEdit) | `post-edit-routes-readme.sh`     | When `src/App.tsx` changes, reminds to keep the route table in `README.md` ("What lives here") in sync in the same PR. See the `add-route` skill.                                                                                                                                                                                                                                                                                                                                                                                    |
 | SessionStart                        | `session-start.sh`               | Prints branch + key reminders into the session context.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Stop                                | `stop-coverage-guard.sh`         | When the session edited any `src/**` or `api/**` source/spec, reads `coverage/coverage-summary.json` and blocks the stop if statements / lines / functions are below 95% (rule 6). Emits the worst 10 files by uncovered statements and points at the `coverage-keeper` agent. No-op when no src/spec was touched. Branches are reported but not blocking (current floor ~85%).                                                                                                                                                      |
 
 Hooks require `jq` (Homebrew default on macOS). Missing `jq` → hooks no-op silently.
 

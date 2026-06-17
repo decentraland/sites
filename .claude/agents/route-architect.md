@@ -32,7 +32,7 @@ If any of these is missing, ask — once, in a single block — before producing
 - LiveKit / `@livekit/components-react` (used by `/cast/*`).
 - Authenticated mutations via `signedFetch`.
 
-Existing heavy areas to mirror: `src/pages/{whats-on,blog,jump,social,cast,storage}/`.
+Existing heavy areas to mirror: `src/pages/{whats-on,blog,jump,social,cast,storage,profile}/`.
 
 **Layout-less** (a third small group): fullscreen UX that bypasses navbar+footer. Currently `/reels/*`, `/download`, `/download_success`, `/invite/:referrer`. Same lightweight rules (no Redux, no Web3) but the `<Route>` is placed BEFORE the `<Route element={<Layout />}>` block in `src/App.tsx`. Pick this only when the immersive UX is the whole point of the page.
 
@@ -62,7 +62,7 @@ Lightweight | Heavy | Layout-less — one-sentence reason.
 - decentraland-ui2 (Box, Typography, styled, theme tokens)
 - src/hooks/* (useFormatMessage, useTrackClick, useAuthIdentity, useWalletAddress)
 - src/components/* (top-level shared components)
-- (lightweight / Layout-less only) `useSyncExternalStore` clients: `src/features/events/events.discovery.ts`, `src/features/profile/`, `src/features/reels/`
+- (lightweight / Layout-less only) `useSyncExternalStore` clients: `src/features/events/events.discovery.ts`, `src/features/profile/profile.client.ts` (ONLY that file — the rest of `src/features/profile/` is RTK Query endpoint files for the heavy `/profile/*` routes), `src/features/reels/`
 - (heavy only) RTK Query hooks from `src/features/{cms,events,places,communities,cast2,storage}/` (note `events` mixes heavy RTK Query files with the lightweight `events.discovery.ts`)
 
 ### Imports forbidden

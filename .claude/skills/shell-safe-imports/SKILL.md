@@ -5,7 +5,7 @@ description: Use when adding or editing files under `src/shells/*` or any file i
 
 # shell-safe-imports
 
-The `<DappsShell />` is a lazy-loaded chunk. When a user navigates to `/whats-on`, `/blog`, `/jump`, `/social`, `/cast`, or `/storage`, the chunk loads — and **every** module in its import graph evaluates synchronously.
+The `<DappsShell />` is a lazy-loaded chunk. When a user navigates to `/whats-on`, `/blog`, `/jump`, `/social`, `/cast`, `/storage`, or `/profile`, the chunk loads — and **every** module in its import graph evaluates synchronously.
 
 If ANY one of those modules has a `throw` at the top level (not inside a function — at module scope), the entire lazy chunk load fails. Not just the feature that needed the validation. **All of `DappsShell`** crashes, the user sees a blank page or fallback UI for all heavy routes, even ones unrelated to the broken module.
 

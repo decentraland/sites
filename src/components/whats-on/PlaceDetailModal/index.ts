@@ -1,3 +1,5 @@
 export { PlaceDetailModal } from './PlaceDetailModal'
+export { PlaceDetailModalContent } from './PlaceDetailModalContent'
+export { PlaceDetailModalHero } from './PlaceDetailModalHero'
 export { normalizeJumpPlace } from './normalizers'
 export type { ModalPlaceData } from './PlaceDetailModal.types'

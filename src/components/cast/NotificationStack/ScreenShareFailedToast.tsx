@@ -20,6 +20,7 @@ function ScreenShareFailedToast({ notification, onDismiss }: ScreenShareFailedTo
         </Toast.Body>
         <Toast.DismissButton />
       </Toast.Header>
+      {notification.action ? <Toast.Action label={notification.action.label} onClick={notification.action.onClick} /> : null}
     </Toast.Root>
   )
 }

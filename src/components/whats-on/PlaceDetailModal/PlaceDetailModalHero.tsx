@@ -10,6 +10,7 @@ import { JumpInButton } from '../../jump/JumpInButton'
 import { DetailModalCreator } from '../DetailModal'
 import {
   ActionsRow,
+  BackButton,
   CloseButton,
   CloseIconStyled,
   CopyButton,
@@ -22,7 +23,14 @@ import {
 } from '../DetailModal/DetailModal.styled'
 import type { ModalPlaceData } from './PlaceDetailModal.types'
 
-function PlaceDetailModalHero({ data, onClose }: { data: ModalPlaceData; onClose: () => void }) {
+interface PlaceDetailModalHeroProps {
+  data: ModalPlaceData
+  onClose: () => void
+  /** When provided, a back chevron replaces the close X (embedded-in-another-modal use). */
+  onBack?: () => void
+}
+
+function PlaceDetailModalHero({ data, onClose, onBack }: PlaceDetailModalHeroProps) {
   const { t } = useTranslation()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
@@ -40,8 +48,13 @@ function PlaceDetailModalHero({ data, onClose }: { data: ModalPlaceData; onClose
     <HeroSection>
       {data.image && <HeroImage src={data.image} alt={data.title} />}
       <HeroOverlay />
-      <CloseButton onClick={onClose} aria-label={t('place_detail.close')}>
-        {isMobile ? <ArrowBackIosNewIcon sx={{ fontSize: 20, color: '#FCFCFC' }} /> : <CloseIconStyled />}
+      {onBack ? (
+        <BackButton onClick={onBack} aria-label={t('profile.header.back')}>
+          <ArrowBackIosNewIcon sx={{ fontSize: 20, color: '#FCFCFC' }} />
+        </BackButton>
+      ) : null}
+      <CloseButton onClick={onClose} aria-label={t('place_detail.close')} $hasBack={Boolean(onBack)}>
+        {!onBack && isMobile ? <ArrowBackIosNewIcon sx={{ fontSize: 20, color: '#FCFCFC' }} /> : <CloseIconStyled />}
       </CloseButton>
       <HeroContent>
         <ModalTitle id="place-detail-title">{data.title}</ModalTitle>

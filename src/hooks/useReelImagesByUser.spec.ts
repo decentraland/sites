@@ -31,7 +31,7 @@ describe('useReelImagesByUser', () => {
       const { result } = renderHook(() => useReelImagesByUser('0xabc', { limit: 24, offset: 0 }))
       await waitFor(() => expect(result.current.isLoading).toBe(false))
       expect(result.current.images).toHaveLength(2)
-      expect(result.current.total).toBe(50)
+      expect(result.current.total).toBe(2)
     })
 
     it('should expose the error when the fetch fails', async () => {

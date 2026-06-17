@@ -365,7 +365,8 @@
         },
         "screen_share_failed": {
           "title": "Screen sharing failed",
-          "default_message": "We couldn't start screen sharing. Please try again."
+          "default_message": "We couldn't start screen sharing. Please try again.",
+          "stopped_message": "Your screen share stopped. Click retry to share again."
         },
         "retry": "Retry",
         "dismiss": "Dismiss"
@@ -763,7 +764,10 @@
       "events_page": {
         "explore_events_button": "EXPLORE EVENTS",
         "jump_in_button": "Jump In",
-        "calendar_label": "Jump In"
+        "calendar_label": "Jump In",
+        "deleted_notice_prefix": "This hangout is no longer available. Browse",
+        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_suffix": "to discover more."
       },
       "invalid_page": {
         "title": "Oops!",
@@ -1064,6 +1068,16 @@
     "copy_link": "Copy link",
     "copied": "Copied!",
     "edit": "Edit",
+    "delete": "Delete",
+    "delete_modal": {
+      "title": "Are you sure you want to delete your hangout?",
+      "subtitle": "This hangout will be permanently removed from your hangouts. This action can’t be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete hangout",
+      "toast_title": "Hangout Deleted successfully",
+      "toast_description": "Your hangout {name} has been deleted successfully!",
+      "error": "We couldn't delete your hangout. Please try again."
+    },
     "by_prefix": "By ",
     "unknown_creator": "Unknown",
     "recurrent_weekly": "Repeats weekly",
@@ -1431,6 +1445,189 @@
     "tabs": {
       "members": "Members",
       "upcoming_events": "Upcoming Events"
+    }
+  },
+  "profile": {
+    "not_found": {
+      "title": "Profile not found",
+      "description": "The address \"{address}\" is not a valid Ethereum address."
+    },
+    "header": {
+      "edit_profile": "Edit profile",
+      "add_friend": "Add friend",
+      "request_sent": "Request sent",
+      "friends": "Friends",
+      "remove_friend": "Unfriend",
+      "unblock": "Unblock",
+      "block": "Block",
+      "more_actions": "More actions",
+      "copy_address": "Copy address",
+      "address_copied": "Address copied!",
+      "close_profile": "Close profile",
+      "get_a_name": "Get a Unique Name",
+      "manage_world": "Manage World",
+      "invite_friends": "Invite friends",
+      "invite_copied": "Link Copied!",
+      "friends_count": "{count} Friends",
+      "mutual_count": "{count} Mutual",
+      "edit": "Edit",
+      "back": "Back",
+      "open_menu": "Open profile menu",
+      "logout": "Logout",
+      "share_profile": "Share Profile"
+    },
+    "friends_modal": {
+      "title": "Friends ({count})",
+      "close": "Close friends list",
+      "search_placeholder": "Search friends",
+      "empty": "You have no friends yet.",
+      "no_results": "No matching friends.",
+      "mutual_title": "Mutual Friends ({count})"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "assets": "Assets",
+      "creations": "Creations",
+      "communities": "Communities",
+      "places": "Places",
+      "photos": "Photos",
+      "referral_rewards": "Referral Rewards",
+      "my_assets": "My Assets",
+      "my_communities": "My Communities",
+      "my_places": "My Places",
+      "my_photos": "My Photos"
+    },
+    "overview": {
+      "about": "About",
+      "no_bio_owner": "No information yet. Jump in world and complete your bio!",
+      "no_bio_member": "This member has not added a bio yet.",
+      "equipped_wearables": "Equipped wearables",
+      "no_wearables": "No equipped items yet.",
+      "badges": "Badges",
+      "links": "Links",
+      "equipped_items": "Equipped items",
+      "country": "Country",
+      "language": "Language",
+      "pronouns": "Pronouns",
+      "relationship_status": "Relationship status",
+      "gender": "Gender",
+      "profession": "Profession",
+      "birth_date": "Birth date",
+      "real_name": "Real name",
+      "favorite_hobby": "Favorite hobby",
+      "no_badges_yet": "No badges yet. Jump in world and start collecting badges!",
+      "badge_unlocked_on": "Unlocked on {date}",
+      "by_creator": "By {name}",
+      "buy": "Buy"
+    },
+    "creations": {
+      "empty_title": "No creations yet",
+      "empty_owner": "Items you create will appear here.",
+      "empty_member": "This account has not created anything yet.",
+      "count": "{count} items",
+      "load_more": "Load more",
+      "filter_wearables": "Wearables",
+      "filter_emotes": "Emotes",
+      "view_all": "View all",
+      "not_for_sale": "Not for sale",
+      "view_in_marketplace": "View in marketplace"
+    },
+    "assets": {
+      "empty_title": "No assets yet",
+      "empty_description": "Wearables, names and lands you own will appear here.",
+      "filter_all": "All",
+      "filter_wearables": "Wearables",
+      "filter_emotes": "Emotes",
+      "filter_names": "Names",
+      "filter_lands": "Lands",
+      "filter_estates": "Estates",
+      "count": "{count} assets",
+      "view": "View",
+      "edit": "Edit",
+      "transfer": "Transfer",
+      "empty_owner_subtitle": "Go to marketplace and start creating your unique look",
+      "empty_owner_cta": "Go to marketplace"
+    },
+    "communities": {
+      "empty_title": "No communities yet",
+      "empty_member": "This member has not joined any communities yet.",
+      "count": "{count} communities",
+      "member": "Member",
+      "members_count": "{count} members",
+      "role_owner": "Owner",
+      "role_admin": "Admin",
+      "action_view": "View",
+      "action_joined": "Joined",
+      "share_aria": "Share community link",
+      "copy_link": "Copy link",
+      "copied": "Copied!",
+      "empty_owner_subtitle": "Jump into Decentraland and join the community that better aligns with you. You can also create your own!",
+      "empty_owner_cta": "Explore communities"
+    },
+    "places": {
+      "empty_title": "No places yet",
+      "empty_member": "This member has not registered any places yet.",
+      "count": "{count} places",
+      "jump_in": "Jump in",
+      "filter_my_places": "My Places",
+      "filter_favorites": "Favourites",
+      "empty_owner_title": "Nothing here yet—but that's easy to change",
+      "empty_owner_subtitle": "My Places shows the spaces you own or manage in Decentraland. The easiest way to start is with a NAME, which unlocks your own World.",
+      "empty_owner_cta": "Get a name",
+      "empty_favorites_title": "Nothing saved yet",
+      "empty_favorites_subtitle": "Add favorite Places by tapping the heart on a place card or the map in Decentraland. You'll find them all here.",
+      "empty_favorites_cta": "Explore places"
+    },
+    "photos": {
+      "empty_title": "No photos yet",
+      "empty_member": "This member has not taken any photos yet.",
+      "count": "{count} photos",
+      "empty_owner_subtitle": "Jump in and start collecting memories! Press 'C' to open the Camera and 'Space bar' to snap a photo.",
+      "empty_owner_cta": "Jump in"
+    },
+    "referral_rewards": {
+      "anonymous": "Sign in to invite friends and unlock rewards.",
+      "invite_title": "Invite friends & get rewards",
+      "invite_subtitle": "Share your code. When friends join Decentraland you unlock exclusive wearables and badges.",
+      "copy_invite_link": "Copy invite link",
+      "copied": "Copied!",
+      "invited": "Invited",
+      "confirmed": "Confirmed",
+      "your_rewards": "Your rewards",
+      "no_rewards": "No rewards yet. Keep inviting to unlock tiers.",
+      "claimed": "Claimed",
+      "unlocked": "Unlocked",
+      "locked": "Locked",
+      "tiers_unlocked": "Tiers unlocked",
+      "next_tier_at": "until next tier ({count} invites)",
+      "tier_label": "Tier {tier}",
+      "tier_invites": "{count} invites"
+    },
+    "referral_hero_section": {
+      "title": "Decentraland is Better With Friends",
+      "subtitle": "Invite yours and get rewards!",
+      "tooltip_text": "Invitees must be new to Decentraland and must jump in-world on 3 separate days to count toward reward goals. See ",
+      "tooltip_link_label": "Terms & Conditions",
+      "step_1": "Invite friends to hang out in-world by sharing your referral link.",
+      "step_2": "Your friends download Decentraland and jump in on 3 separate days.",
+      "step_3": "You earn exclusive rewards for helping grow our community!",
+      "how_it_works": "How it works",
+      "share": "SHARE",
+      "copy_link": "Copy Link",
+      "copied_to_clipboard": "Link copied successfully",
+      "share_on_x": "Share on X",
+      "share_on_x_title": "Wanna hang out in Decentraland? Use my referral link to make your account and download Decentraland so we can explore together! #DCL #Decentraland"
+    },
+    "referral_reward_card": {
+      "swag": "IRL SWAG PACK",
+      "claim": "CLAIM",
+      "image_alt": "Reward Image"
+    },
+    "referral_journey": {
+      "title": "Your Reward Journey",
+      "invites_accepted": "{count} Friends Joined",
+      "tooltip_title": "{count} Friends Joined",
+      "tooltip_subtitle": "{count} More friends for your next Reward!"
     }
   }
 }

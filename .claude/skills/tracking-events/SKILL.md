@@ -129,21 +129,21 @@ When the upstream `Click` (post-P0-1 fix: `'Download'` event name) is correctly 
 
 ## 7. Adjacent / route-level tracking
 
-- **Automatic `page(pathname)`** in `src/components/Layout/Layout.tsx:33`, runs on every route change unless the path is in `ANALYTICS_EXEMPT_PATHS`.
+- **Automatic `page(pathname)`** in `src/components/Layout/Layout.tsx` (~line 16), runs on every route change unless `isPageTrackingExempt(pathname)` (`src/components/Layout/Layout.helpers.ts`) exempts it.
 - **Exempt paths:** `/brand`, `/content`, `/download`, `/ethics`, `/privacy`, `/referral-terms`, `/rewards-terms`, `/security`, `/terms`. These skip the automatic page() — but **manual track() calls fire as usual**. The comment on the constant has been historically misleading; clarify if you touch it.
 - **Routes with NO `page()` at all:** `/download_success`, `/download/creator-hub`, `/download/creator-hub-success`, `/reels/*`, `/invite/:referrer`. These are Layout-less and don't get the automatic page(). Some (e.g. `/blog/*`) use `useBlogPageTracking` to fire their own page() event.
 
 ## 8. Other event domains — pointers
 
-| Domain           | Where the fires live                                                                                                                                                                 |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Reels actions    | `src/components/Reels/ImageActions/ImageActions.tsx`, `Metadata.tsx`, `UserMetadata.tsx`, `WearableMetadata.tsx`, `ReelsListPage.tsx`, `Reels/Logo/Logo.tsx`                         |
-| Communities      | `src/components/whats-on/Communities/CommunityInfo.tsx` (`COMMUNITY_CLICK_*` family)                                                                                                 |
-| Report Player    | `src/components/whats-on/.../ReportForm.tsx` (`REPORT_PLAYER_*` family)                                                                                                              |
-| Storage          | via `src/hooks/useStorageTrack.ts` (`STORAGE_*` families, injects `realmName`/`parcel`/`address`)                                                                                    |
-| Jump             | `src/components/JumpInButton/JumpInButton.tsx` (`GO_TO_EXPLORER` + `Click {event:'Client not installed'}`)                                                                           |
-| Legacy redirects | `src/hooks/useLegacyRedirectTracking.ts` (`LEGACY_EVENTS_REDIRECTED`, `LEGACY_PLACES_REDIRECTED`)                                                                                    |
-| Invite Hero      | `src/components/Invite/InviteHero/InviteHero.tsx:76` — **uses string literal `'Click'` with `section: ...` instead of the enum + `place`. Inconsistent — flagged as P2 in Plan.md.** |
+| Domain           | Where the fires live                                                                                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Reels actions    | `src/components/Reels/ImageActions/ImageActions.tsx`, `Metadata.tsx`, `UserMetadata.tsx`, `WearableMetadata.tsx`, `ReelsListPage.tsx`, `Reels/Logo/Logo.tsx` |
+| Communities      | `src/components/social/CommunityDetail/CommunityInfo/CommunityInfo.tsx` (`COMMUNITY_CLICK_*` family)                                                         |
+| Report Player    | `src/components/Report/ReportForm/ReportForm.tsx` (`REPORT_PLAYER_*` family)                                                                                 |
+| Storage          | via `src/hooks/useStorageTrack.ts` (`STORAGE_*` families, injects `realmName`/`parcel`/`address`)                                                            |
+| Jump             | `src/hooks/useLaunchExplorer.ts` fires `GO_TO_EXPLORER` (shared by `src/components/jump/JumpInButton/` and `EditProfileButton`)                              |
+| Legacy redirects | `src/hooks/useLegacyRedirectTracking.ts` (`LEGACY_EVENTS_REDIRECTED`, `LEGACY_PLACES_REDIRECTED`)                                                            |
+| Invite Hero      | `src/components/Invite/InviteHero/InviteHero.tsx` — migrated to `useTrackClick` + `data-place` (see LL-3 below).                                             |
 
 ## 9. How to find where event X is fired
 
@@ -161,7 +161,7 @@ rg -n 'data-event=\\{SegmentEvent\\.X\\}|data-event="X literal"' src/
 rg -n "useStorageTrack\\(\\)" src/
 ```
 
-If grep returns zero matches the enum value is **dead code**. See section 7 of the P0-1 inventory at `tracking-issues/P01-callsites-inventory.md` and Plan.md `P2-2` for the current list of ~25 dead enum values.
+If grep returns zero matches the enum value is **dead code** — verify with a repo-wide grep before assuming an event still fires.
 
 ## 10. How to add a new tracking event
 
@@ -174,9 +174,9 @@ If grep returns zero matches the enum value is **dead code**. See section 7 of t
 4. **Tests:** add a unit test that asserts both the event name and the payload shape. See `src/modules/downloadTracking.spec.ts` for a per-event matcher pattern and `src/pages/DownloadSuccess/DownloadSuccess.spec.tsx` for an integration shape with mocked hooks.
 5. **Coordinate with data team if the event is consumed by an existing dashboard.** Don't rename existing events — the warehouse joins on the literal name. Adding new fields is safe; removing/renaming requires a parallel-emission window.
 
-## 11. Outstanding / known issues (track in `tracking-issues/Plan.md`)
+## 11. Outstanding / known issues
 
-- **P0-1** (✅ in progress): `useTrackClick` ignoring `data-event` for non-Click events. See `tracking-issues/P01-callsites-inventory.md` for the 13-callsite breakdown.
+- **P0-1** (✅ shipped): `useTrackClick` ignoring `data-event` for non-Click events — fixed; verify with the dead-enum grep above when touching callsites.
 - **P0-2** (✅ done — Onboarding Checkpoint family deprecated 2026-05-22): all CP5/CP6 fires and the `trackCheckpoint` helper were removed. No replacement scheduled.
 - **P0-3:** Creator Hub has zero outcome tracking. Solution: mirror Explorer pattern with a `CREATOR_HUB_DOWNLOAD_*` enum family, reuse `createDownloadTracker`.
 - **P1-1** (✅ done): `download_started/success/failed` payload + timing fixes. See Plan.md section.
@@ -251,7 +251,5 @@ If you add a NEW page that derives URLs or analytics payloads from `useAnonUserI
 4. `src/hooks/adapters/useTrackLinkContext.ts` — Click adapter.
 5. `src/modules/downloadTracking.ts` + `.types.ts` — Download events factory.
 6. `src/modules/DeferredAnalyticsProvider.tsx` — provider wiring.
-7. `src/components/Layout/Layout.tsx` — automatic `page()` + `ANALYTICS_EXEMPT_PATHS`.
+7. `src/components/Layout/Layout.tsx` + `Layout.helpers.ts` — automatic `page()` + `isPageTrackingExempt`.
 8. `src/hooks/useBlogPageTracking.ts` — manual `page()` for Helmet routes.
-9. `tracking-issues/Plan.md` (workspace root) — outstanding work.
-10. `tracking-issues/P01-callsites-inventory.md` — `data-event` callsite map.

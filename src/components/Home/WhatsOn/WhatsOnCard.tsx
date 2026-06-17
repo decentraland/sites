@@ -1,6 +1,9 @@
-import { memo, useMemo } from 'react'
+import { memo, useCallback, useMemo } from 'react'
+import type { ComponentType } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { Avatar } from '@dcl/schemas'
-import { BadgeGroup, EventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
+import type { EventCardProps as BaseEventCardProps } from 'decentraland-ui2/dist/components/EventCard/EventCard.types'
+import { BadgeGroup, EventCard as BaseEventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
 import type { ExploreItem } from '../../../features/events/events.discovery.types'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
@@ -9,6 +12,19 @@ import { assetUrl } from '../../../utils/assetUrl'
 import { DCL_FOUNDATION_BACKGROUND_COLOR, getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import { CardWrapper } from './WhatsOn.styled'
 
+// Bridge type to accept the `onAvatarClick` prop from the local ui2 fork
+// (`ui2/src/components/EventCard/EventCard.tsx`) before that change ships to
+// npm. The local tgz install honors the prop; published `decentraland-ui2`
+// silently ignores it. Drop this shim and switch back to the direct import
+// once a published ui2 version exposes the prop.
+interface EventCardProps extends BaseEventCardProps {
+  /** Click handler for the creator avatar/name row inside the card. */
+  onAvatarClick?: () => void
+}
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const EventCard = BaseEventCard as unknown as ComponentType<EventCardProps>
+
 // AvatarFace only passes through URLs starting with https://, otherwise it
 // prepends peer.decentraland.org. In prod assetUrl gives https://cdn..., in
 // dev we force https by replacing the protocol.
@@ -16,8 +32,15 @@ const DCL_LOGO_URL = assetUrl('/dcl-logo.svg').replace(/^http:\/\//, 'https://')
 
 const WhatsOnCard = memo(({ card, loading }: { card?: ExploreItem; loading?: boolean }) => {
   const onClickHandle = useTrackClick()
+  // Navigate (instead of opening a modal) because Home is lightweight tier
+  // and doesn't mount the profile modal's Redux store. /profile/<addr> lazy-loads
+  // DappsShell on first navigation.
+  const navigate = useNavigate()
   const { data: profile } = useGetProfileQuery(card?.creatorAddress, { skip: !card?.creatorAddress })
   const fetchedAvatar = profile?.avatars?.[0]
+  const handleAvatarClick = useCallback(() => {
+    if (card?.creatorAddress) navigate(`/profile/${card.creatorAddress.toLowerCase()}`)
+  }, [card?.creatorAddress, navigate])
 
   let avatar: Avatar | undefined = fetchedAvatar as Avatar | undefined
   if (!avatar && card?.creatorName) {
@@ -62,6 +85,7 @@ const WhatsOnCard = memo(({ card, loading }: { card?: ExploreItem; loading?: boo
         sceneName={card?.title ?? ''}
         avatar={avatar}
         coordinates={card?.coordinates}
+        onAvatarClick={card?.creatorAddress ? handleAvatarClick : undefined}
         leftBadgeTransparent
         hideLocation
         leftBadge={

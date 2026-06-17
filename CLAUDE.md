@@ -73,6 +73,7 @@ Each absorbed dapp's feature client, base client, components, and pages live und
 - `docs/domains/storage.md` — `src/features/storage/`, `src/services/storageClient.ts`, `src/services/subgraphClient.ts`. Storage + subgraph ownership.
 - `docs/domains/reels.md` — `src/features/reels/`. Camera-screenshot client; Layout-less.
 - `docs/domains/report.md` — `src/features/report/`. Lightweight report form (no RTK Query).
+- `docs/domains/profile.md` — `src/features/profile/`, components/profile, pages/profile. Profile route group + modal surfaces + social RPC.
 
 ### Skill + hook governance
 
@@ -181,7 +182,7 @@ Hits outside `src/App.tsx` and `src/shells/` itself = violation.
 
 - New providers/shells/layouts in `src/shells/` or `src/components/Layout/` MUST have at least a smoke test.
 - New reducers/RTK Query clients MUST have a test asserting the store builds with the expected `reducerPath` keys.
-- **Coverage floor: 95% on statements, lines, and functions.** Branches stay informational (current floor ~85%). The Stop hook (`.claude/hooks/stop-coverage-guard.sh`) blocks the agent from finishing when any of the three metrics drops below 95% after `src/**` or `api/**` edits. Use the `/coverage-guard` skill on demand and the `coverage-keeper` agent to write missing specs. Reuse `src/__test-utils__/styledMock.ts` for `*.styled.ts` files instead of bypassing the styled engine.
+- **Coverage floor: 95% on statements, lines, and functions.** Branches stay informational (current floor ~85%). There is no automatic enforcement (the old Stop hook was removed on 2026-05-20 — see `docs/skills-registry.md`); run the `/coverage-guard` skill before any PR that touches `src/**` or `api/**` and use the `coverage-keeper` agent to write missing specs. Reuse `src/__test-utils__/styledMock.ts` for `*.styled.ts` files instead of bypassing the styled engine.
 
 ### 7. Barrel exports
 
