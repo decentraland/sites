@@ -14,8 +14,9 @@
 #
 # To adopt:
 #   1. Merge decentraland/actions#17, then pin @cdn-deploy-v1 once tagged.
-#   2. One-time org setup (admin): secrets CF_KV_API_TOKEN, ROLLOUTS_SLACK_WEBHOOK;
-#      variables CF_ACCOUNT_ID, CDN_DEPLOY_ROLE_ARN. (No per-repo config.)
+#   2. One-time org setup (admin): secrets CF_KV_API_TOKEN, ROLLOUTS_SLACK_WEBHOOK,
+#      CF_NS_ZONE, CF_NS_TODAY, CF_NS_ORG; variables CF_ACCOUNT_ID,
+#      CDN_DEPLOY_ROLE_ARN. (No per-repo config.)
 #   3. Set the CDN_DEPLOY_EXAMPLE_ENABLED repo variable to `true`.
 #   4. Delete build-release.yml, set-rollout.yml and set-rollout-manual.yml.
 # =============================================================================
