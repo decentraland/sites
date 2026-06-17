@@ -2,7 +2,7 @@ import { type MouseEvent, memo, useCallback, useEffect, useState } from 'react'
 import { LocationOnOutlined } from '@mui/icons-material'
 import { useAnalytics } from '@dcl/hooks'
 import { useMediaQuery } from 'decentraland-ui2'
-import { buildJumpInUrl, buildPlaceUrl, buildProfileUrl, formatPhotoDate } from '../../../features/reels'
+import { buildJumpInUrl, buildPlaceUrl, formatPhotoDate } from '../../../features/reels'
 import type { ImageMetadata } from '../../../features/reels'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { SegmentEvent } from '../../../modules/segment'
@@ -52,7 +52,9 @@ const Metadata = memo(({ metadata, loading, visible }: MetadataProps) => {
   }, [x, y])
 
   const jumpInUrl = buildJumpInUrl(x, y, metadata.realm)
-  const profileUrl = metadata.userAddress ? buildProfileUrl(metadata.userAddress) : undefined
+  // Profiles were absorbed into sites — link to the in-site /profile route
+  // instead of the standalone profile dapp (decentraland/profile).
+  const profileUrl = metadata.userAddress ? `/profile/${metadata.userAddress.toLowerCase()}` : undefined
   const photoTakenByFaceUrl = metadata.visiblePeople.find(
     person => person.userAddress?.toLowerCase() === metadata.userAddress?.toLowerCase()
   )?.faceUrl

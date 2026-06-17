@@ -6,7 +6,7 @@ import CloseIcon from '@mui/icons-material/Close'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined'
 import { CircularProgress } from 'decentraland-ui2'
-import { buildProfileUrl, formatPhotoDate } from '../../../features/reels'
+import { formatPhotoDate } from '../../../features/reels'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useReelImageById } from '../../../hooks/useReelImageById'
 import { JumpInButton } from '../../jump/JumpInButton'
@@ -66,7 +66,7 @@ const PhotoSurface = memo(({ imageId, onBack, onClose }: PhotoSurfaceProps) => {
               {image.metadata.userName ? (
                 <PhotoTakenByLine>
                   {t('component.reels.metadata.photo_taken_by')}{' '}
-                  <PhotoTakenByLink href={buildProfileUrl(image.metadata.userAddress)} target="_blank" rel="noopener noreferrer">
+                  <PhotoTakenByLink href={`/profile/${image.metadata.userAddress.toLowerCase()}`} target="_blank" rel="noopener noreferrer">
                     {image.metadata.userName}
                   </PhotoTakenByLink>
                 </PhotoTakenByLine>

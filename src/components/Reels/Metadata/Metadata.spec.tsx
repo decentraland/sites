@@ -43,7 +43,6 @@ jest.mock('./UserMetadata', () => ({
 jest.mock('../../../features/reels', () => ({
   buildJumpInUrl: () => 'https://jump',
   buildPlaceUrl: (...args: [string, string, AbortSignal?]) => buildPlaceUrlMock(...args),
-  buildProfileUrl: (address: string) => `https://profile/${address}`,
   formatPhotoDate: () => 'May 01 2026'
 }))
 
@@ -82,7 +81,7 @@ describe('Metadata', () => {
       render(<Metadata metadata={fakeMetadata} loading={false} visible={true} />)
       expect(screen.getByText('May 01 2026')).toBeInTheDocument()
       const profileLink = screen.getByRole('link', { name: 'alice' })
-      expect(profileLink).toHaveAttribute('href', 'https://profile/0xa')
+      expect(profileLink).toHaveAttribute('href', '/profile/0xa')
     })
 
     it('should render the scene name and coordinates', () => {
