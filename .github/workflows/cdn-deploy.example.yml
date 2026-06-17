@@ -2,71 +2,51 @@
 # EXAMPLE — how @dcl/sites would adopt the cdn-deploy reusable workflow
 # =============================================================================
 #
-# This is an illustration, not the live pipeline. It is INERT by default: every
-# job is gated on the `CDN_DEPLOY_EXAMPLE_ENABLED` repo variable, which is unset,
-# so merging this file does NOT deploy anything or interfere with the current
-# build-release.yml / set-rollout*.yml workflows.
+# Illustration, not the live pipeline. INERT by default: every job is gated on
+# the `CDN_DEPLOY_EXAMPLE_ENABLED` repo variable (unset), so merging this does
+# not deploy anything or interfere with build-release.yml / set-rollout*.yml.
 #
-# It calls the reusable workflow `decentraland/actions/.github/workflows/cdn-deploy.yml`,
-# which wraps checkout + Node 24 + build + the cdn-deploy action (upload to S3 via
-# GitHub OIDC + patch the Cloudflare KV) — replacing the old oddish npm publish ->
-# static-sites-pipeline gitlab upload -> set-rollout relay. See:
-#   https://github.com/decentraland/actions/tree/main/cdn-deploy
+# The reusable workflow does checkout + Node 24 + build + upload-to-S3 (GitHub
+# OIDC) + Cloudflare KV, replacing the oddish -> static-sites-pipeline ->
+# set-rollout relay. It is state-aware: it uploads when the version is not in
+# S3, copies the commit's build for a release, or just repoints when already
+# there. See https://github.com/decentraland/actions/tree/main/cdn-deploy
 #
-# To actually adopt it:
-#   1. Merge decentraland/actions#17 so the reusable workflow + action exist
-#      (then pin @cdn-deploy-v1 once the first release tag is cut).
-#   2. Configure the repo vars/secrets referenced below.
-#   3. Set the `CDN_DEPLOY_EXAMPLE_ENABLED` repo variable to `true`.
+# To adopt:
+#   1. Merge decentraland/actions#17, then pin @cdn-deploy-v1 once tagged.
+#   2. One-time org setup (admin): secrets CF_KV_API_TOKEN, ROLLOUTS_SLACK_WEBHOOK;
+#      variables CF_ACCOUNT_ID, CDN_DEPLOY_ROLE_ARN. (No per-repo config.)
+#   3. Set the CDN_DEPLOY_EXAMPLE_ENABLED repo variable to `true`.
 #   4. Delete build-release.yml, set-rollout.yml and set-rollout-manual.yml.
-#
-# Required configuration (non-secret -> repo Variables; secret -> repo Secrets):
-#   vars.CDN_DEPLOY_ROLE_ARN   IAM role assumed via GitHub OIDC (s3:PutObject on the CDN bucket)
-#   vars.CF_ACCOUNT_ID         Cloudflare account id
-#   vars.CF_NS_ZONE / _TODAY / _ORG   KV namespace ids per environment
-#   secrets.CF_KV_API_TOKEN    Cloudflare token scoped to Workers KV: Edit (the only secret)
-#   secrets.ROLLOUTS_SLACK_WEBHOOK   Slack webhook for the #rollouts channel (optional)
 # =============================================================================
 
 name: CDN deploy (example)
 
 on:
-  # Auto-deploy to dev + stg on every push to master (today: build-release.yml + set-rollout.yml).
   push:
     branches: [master]
-  # Promote the already-published build to prod under the release tag, WITHOUT
-  # rebuilding (today: a manual set-rollout-manual.yml run against `org`).
   release:
     types: [published]
-  # Manual rollout / rollback — move the KV pointer to an already-uploaded version
-  # (today: set-rollout-manual.yml).
   workflow_dispatch:
     inputs:
       version:
-        description: 'Already-uploaded version to point at (e.g. a snapshot or a release tag)'
+        description: "Already-uploaded version (or release tag) to point at"
         required: true
       environment:
         type: choice
-        description: 'Target environment'
+        description: "Target environment"
         required: true
-        default: 'zone'
+        default: "org"
         options: [zone, today, org]
       percentage:
-        description: 'Rollout percentage'
+        description: "Rollout percentage"
         required: true
-        default: '100'
-
-# Serialize deploys to the same ref: the KV update is read-modify-write and
-# Cloudflare KV has no compare-and-swap.
-concurrency:
-  group: cdn-deploy-${{ github.event_name }}-${{ github.ref }}
-  cancel-in-progress: false
+        default: "100"
 
 jobs:
-  # ---------------------------------------------------------------------------
-  # 1a) push to master -> build ONCE and deploy to dev (zone).
-  # ---------------------------------------------------------------------------
-  deploy-dev:
+  # push -> build once, deploy dev + stg. package-name / deployment-path are
+  # derived from the checked-out package.json. One upload; both envs repointed.
+  dev-stg:
     if: ${{ github.event_name == 'push' && vars.CDN_DEPLOY_EXAMPLE_ENABLED == 'true' }}
     permissions:
       id-token: write
@@ -75,45 +55,12 @@ jobs:
       statuses: write
     uses: decentraland/actions/.github/workflows/cdn-deploy.yml@main
     with:
-      package-name: '@dcl/sites'
-      deployment-path: sites
-      deployment-environment: zone
-      aws-role-to-assume: ${{ vars.CDN_DEPLOY_ROLE_ARN }}
-      cloudflare-account-id: ${{ vars.CF_ACCOUNT_ID }}
-      cloudflare-namespace-zone: ${{ vars.CF_NS_ZONE }}
-    secrets:
-      cloudflare-api-token: ${{ secrets.CF_KV_API_TOKEN }}
-      slack-webhook: ${{ secrets.ROLLOUTS_SLACK_WEBHOOK }}
+      deployment-environments: '["zone","today"]'
+    secrets: inherit
 
-  # 1b) repoint stg (today) at the SAME version dev just deployed — no rebuild,
-  #     no re-upload (all envs serve the same S3 path; only the KV namespace differs).
-  deploy-stg:
-    needs: deploy-dev
-    if: ${{ github.event_name == 'push' && vars.CDN_DEPLOY_EXAMPLE_ENABLED == 'true' }}
-    permissions:
-      id-token: write
-      contents: read
-      deployments: write
-      statuses: write
-    uses: decentraland/actions/.github/workflows/cdn-deploy.yml@main
-    with:
-      package-name: '@dcl/sites'
-      build-command: '' # repoint only — no checkout/build
-      version: ${{ needs.deploy-dev.outputs.version }}
-      deployment-path: sites
-      deployment-environment: today
-      cloudflare-account-id: ${{ vars.CF_ACCOUNT_ID }}
-      cloudflare-namespace-today: ${{ vars.CF_NS_TODAY }}
-    secrets:
-      cloudflare-api-token: ${{ secrets.CF_KV_API_TOKEN }}
-      slack-webhook: ${{ secrets.ROLLOUTS_SLACK_WEBHOOK }}
-
-  # ---------------------------------------------------------------------------
-  # 2) release published -> PROMOTE WITHOUT REBUILDING.
-  #    Copy the build already live on stg to the release-tagged prefix
-  #    (server-side S3 copy) and point the prod (org) KV at the tag.
-  # ---------------------------------------------------------------------------
-  promote-prod:
+  # release -> STAGE the build under the release tag, no KV change. No build:
+  # the action copies the build the last master commit already uploaded.
+  stage-release:
     if: ${{ github.event_name == 'release' && vars.CDN_DEPLOY_EXAMPLE_ENABLED == 'true' }}
     permissions:
       id-token: write
@@ -122,27 +69,14 @@ jobs:
       statuses: write
     uses: decentraland/actions/.github/workflows/cdn-deploy.yml@main
     with:
-      package-name: '@dcl/sites'
-      build-command: '' # copy, don't build
-      # The snapshot already uploaded + live on stg. Surface it however you track
-      # it — a repo variable kept current by the dev/stg deploy, an earlier job's
-      # output, or a lookup of the current `_site` version in the `today` KV.
-      source-version: ${{ vars.LIVE_STG_VERSION }}
-      version: ${{ github.event.release.tag_name }} # copy to / point org at the tag
-      deployment-path: sites
-      deployment-environment: org
-      aws-role-to-assume: ${{ vars.CDN_DEPLOY_ROLE_ARN }}
-      cloudflare-account-id: ${{ vars.CF_ACCOUNT_ID }}
-      cloudflare-namespace-org: ${{ vars.CF_NS_ORG }}
-    secrets:
-      cloudflare-api-token: ${{ secrets.CF_KV_API_TOKEN }}
-      slack-webhook: ${{ secrets.ROLLOUTS_SLACK_WEBHOOK }}
+      package-name: "@dcl/sites" # no checkout, so name is explicit
+      version: ${{ github.event.release.tag_name }}
+      deployment-environments: "[]" # stage only — no KV
+      build-command: "" # copy, don't build
+    secrets: inherit
 
-  # ---------------------------------------------------------------------------
-  # 3) manual dispatch -> rollout / rollback by moving the KV pointer only.
-  #    Replaces set-rollout-manual.yml.
-  # ---------------------------------------------------------------------------
-  repoint:
+  # manual -> switch a chosen environment's KV to an already-staged version.
+  switch:
     if: ${{ github.event_name == 'workflow_dispatch' && vars.CDN_DEPLOY_EXAMPLE_ENABLED == 'true' }}
     permissions:
       id-token: write
@@ -151,16 +85,9 @@ jobs:
       statuses: write
     uses: decentraland/actions/.github/workflows/cdn-deploy.yml@main
     with:
-      package-name: '@dcl/sites'
-      build-command: '' # repoint only
+      package-name: "@dcl/sites"
       version: ${{ github.event.inputs.version }}
+      deployment-environments: ${{ format('["{0}"]', github.event.inputs.environment) }}
       percentage: ${{ fromJSON(github.event.inputs.percentage) }}
-      deployment-path: sites
-      deployment-environment: ${{ github.event.inputs.environment }}
-      cloudflare-account-id: ${{ vars.CF_ACCOUNT_ID }}
-      cloudflare-namespace-zone: ${{ vars.CF_NS_ZONE }}
-      cloudflare-namespace-today: ${{ vars.CF_NS_TODAY }}
-      cloudflare-namespace-org: ${{ vars.CF_NS_ORG }}
-    secrets:
-      cloudflare-api-token: ${{ secrets.CF_KV_API_TOKEN }}
-      slack-webhook: ${{ secrets.ROLLOUTS_SLACK_WEBHOOK }}
+      build-command: ""
+    secrets: inherit
