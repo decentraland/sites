@@ -1391,6 +1391,8 @@
         "cancel": "Cancelar",
         "generic_error": "No se pudo eliminar tu cuenta. Por favor, inténtalo más tarde."
       }
-    }
+    },
+    "copy": "Copiar",
+    "copied": "¡Copiado!"
   }
 }

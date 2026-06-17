@@ -1386,6 +1386,8 @@
         "cancel": "Annuler",
         "generic_error": "Échec de la suppression de votre compte. Veuillez réessayer plus tard."
       }
-    }
+    },
+    "copy": "Copier",
+    "copied": "Copié !"
   }
 }

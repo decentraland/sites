@@ -1,43 +1,40 @@
 import { Link } from 'react-router-dom'
 import { Box, Typography, styled } from 'decentraland-ui2'
 
-// Figma 322:101466 — Account sidebar. Colours mirror the DCL design tokens used across the
-// profile area (idle nav #CFCDD4, active text #FCFCFC, muted labels #A09BA8). The active
-// section is a solid Brand/Violet (#A524B3) pill; the destructive Delete item turns DCL
-// Red (#FF2D55) when active. Hardcoded hexes follow the sibling profile styled files.
+// Figma 322:101481 — Account sidebar. The panel uses black at 40% (#00000066). Nav idle text
+// #CFCDD4, active text #FCFCFC; the active section is a Brand/Violet (#A524B3) pill, the
+// destructive Delete item turns DCL Red (#FF2D55) when active. Hardcoded hexes follow the sibling
+// profile styled files.
 
 const Sidebar = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   flexShrink: 0,
   width: '100%',
-  gap: theme.spacing(0.5),
+  borderRadius: 16,
+  background: 'rgba(0, 0, 0, 0.4)',
   padding: theme.spacing(2),
+  gap: theme.spacing(1.5),
   [theme.breakpoints.up('md')]: {
     position: 'sticky',
     top: 96,
-    width: 280,
-    padding: theme.spacing(2)
+    width: 264,
+    minHeight: 560,
+    alignSelf: 'flex-start'
   }
 }))
 
 const UserHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
-  flexDirection: 'column',
   alignItems: 'center',
-  textAlign: 'center',
-  gap: theme.spacing(1),
-  paddingBottom: theme.spacing(2),
-  [theme.breakpoints.up('md')]: {
-    alignItems: 'flex-start',
-    textAlign: 'left'
-  }
+  gap: theme.spacing(1.5),
+  padding: theme.spacing(0.5, 0.5, 0)
 }))
 
 const Avatar = styled(Box)(() => ({
   position: 'relative',
-  width: 56,
-  height: 56,
+  width: 48,
+  height: 48,
   borderRadius: '50%',
   overflow: 'hidden',
   flexShrink: 0
@@ -49,46 +46,70 @@ const AvatarImage = styled('img')(() => ({
   objectFit: 'cover'
 }))
 
+const UserInfo = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+  minWidth: 0,
+  flex: 1
+}))
+
 const UserName = styled(Typography)(() => ({
-  fontWeight: 600,
+  fontWeight: 700,
   fontSize: 16,
   color: '#FCFCFC',
-  maxWidth: '100%',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap'
 }))
 
-const UserAddress = styled(Typography)(() => ({
-  fontSize: 13,
-  color: '#A09BA8'
+const AddressRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  color: '#A09BA8',
+  fontSize: 13
+}))
+
+const CopyButton = styled('button')(() => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 2,
+  border: 'none',
+  background: 'transparent',
+  cursor: 'pointer',
+  color: '#A09BA8',
+  transition: 'color 0.2s ease',
+  ['&:hover']: {
+    color: '#FCFCFC'
+  },
+  ['&:focus-visible']: {
+    outline: '2px solid rgba(255, 255, 255, 0.6)',
+    outlineOffset: 2
+  }
+}))
+
+const Divider = styled(Box)(() => ({
+  height: 1,
+  width: '100%',
+  background: 'rgba(255, 255, 255, 0.1)'
 }))
 
 const SectionLabel = styled(Typography)(({ theme }) => ({
-  display: 'none',
   fontSize: 12,
   textTransform: 'uppercase',
   letterSpacing: 0.6,
   color: '#A09BA8',
-  padding: theme.spacing(1, 1.5, 0.5),
-  [theme.breakpoints.up('md')]: {
-    display: 'block'
-  }
+  padding: theme.spacing(0, 0.5)
 }))
 
 const Nav = styled(Box)(({ theme }) => ({
   display: 'flex',
-  flexDirection: 'row',
-  gap: theme.spacing(0.5),
-  overflowX: 'auto',
-  [theme.breakpoints.up('md')]: {
-    flexDirection: 'column',
-    overflowX: 'visible'
-  }
+  flexDirection: 'column',
+  gap: theme.spacing(0.5)
 }))
 
-// Theme-independent base shared by the three nav controls. Theme-dependent spacing and the
-// colour/pseudo-state rules are applied inline in each styled definition.
 const navItemStaticStyles = {
   display: 'flex',
   alignItems: 'center',
@@ -104,7 +125,7 @@ const navItemStaticStyles = {
 
 const NavItem = styled(Link, { shouldForwardProp: prop => prop !== '$active' })<{ $active?: boolean }>(({ theme, $active }) => ({
   ...navItemStaticStyles,
-  gap: theme.spacing(1),
+  gap: theme.spacing(1.5),
   padding: theme.spacing(1, 1.5),
   borderRadius: theme.spacing(1),
   background: $active ? '#A524B3' : 'transparent',
@@ -121,7 +142,7 @@ const NavItem = styled(Link, { shouldForwardProp: prop => prop !== '$active' })<
 
 const DeleteNavItem = styled(Link, { shouldForwardProp: prop => prop !== '$active' })<{ $active?: boolean }>(({ theme, $active }) => ({
   ...navItemStaticStyles,
-  gap: theme.spacing(1),
+  gap: theme.spacing(1.5),
   padding: theme.spacing(1, 1.5),
   borderRadius: theme.spacing(1),
   background: $active ? '#FF2D55' : 'transparent',
@@ -139,7 +160,7 @@ const DeleteNavItem = styled(Link, { shouldForwardProp: prop => prop !== '$activ
 const LogoutButton = styled('button')(({ theme }) => ({
   ...navItemStaticStyles,
   width: '100%',
-  gap: theme.spacing(1),
+  gap: theme.spacing(1.5),
   padding: theme.spacing(1, 1.5),
   borderRadius: theme.spacing(1),
   background: 'transparent',
@@ -157,28 +178,26 @@ const LogoutButton = styled('button')(({ theme }) => ({
 
 const BottomGroup = styled(Box)(({ theme }) => ({
   display: 'flex',
-  flexDirection: 'row',
-  gap: theme.spacing(0.5),
-  marginTop: theme.spacing(1),
-  [theme.breakpoints.up('md')]: {
-    flexDirection: 'column',
-    marginTop: theme.spacing(2),
-    paddingTop: theme.spacing(2),
-    borderTop: '1px solid rgba(255, 255, 255, 0.15)'
-  }
+  flexDirection: 'column',
+  gap: theme.spacing(1),
+  marginTop: 'auto',
+  paddingTop: theme.spacing(2)
 }))
 
 export {
+  AddressRow,
   Avatar,
   AvatarImage,
   BottomGroup,
+  CopyButton,
   DeleteNavItem,
+  Divider,
   LogoutButton,
   Nav,
   NavItem,
   SectionLabel,
   Sidebar,
-  UserAddress,
   UserHeader,
+  UserInfo,
   UserName
 }

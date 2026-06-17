@@ -1,22 +1,29 @@
 import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { AccountSidebar } from './AccountSidebar'
 
 type ChildrenProps = { children?: ReactNode }
-type NavProps = { children?: ReactNode; 'data-role'?: string }
-type ButtonProps = NavProps & { onClick?: () => void }
+type NavProps = ChildrenProps & { 'data-role'?: string }
+type ButtonProps = NavProps & { onClick?: () => void; 'aria-label'?: string }
+type AddressProps = { value: string; shorten?: boolean }
+type TooltipProps = ChildrenProps & { title?: ReactNode }
 
-jest.mock('@mui/icons-material/AccountBalanceWalletRounded', () => ({
+jest.mock('@mui/icons-material/AccountBalanceWalletOutlined', () => ({
   __esModule: true,
-  default: () => <span data-testid="wallets-icon" />
+  default: () => <span data-testid="wallet-icon" />
 }))
-jest.mock('@mui/icons-material/CardGiftcardRounded', () => ({ __esModule: true, default: () => <span data-testid="credits-icon" /> }))
-jest.mock('@mui/icons-material/DeleteOutlineRounded', () => ({ __esModule: true, default: () => <span data-testid="delete-icon" /> }))
-jest.mock('@mui/icons-material/LogoutRounded', () => ({ __esModule: true, default: () => <span data-testid="logout-icon" /> }))
-jest.mock('@mui/icons-material/NotificationsRounded', () => ({
-  __esModule: true,
-  default: () => <span data-testid="notifications-icon" />
+jest.mock('@mui/icons-material/CardGiftcardOutlined', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/ContentCopyOutlined', () => ({ __esModule: true, default: () => <span data-testid="copy-icon" /> }))
+jest.mock('@mui/icons-material/DeleteOutlineOutlined', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/LogoutOutlined', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/NotificationsNoneOutlined', () => ({ __esModule: true, default: () => <span /> }))
+
+jest.mock('decentraland-ui2', () => ({
+  Address: ({ value, shorten }: AddressProps) => (
+    <span data-role="address">{shorten ? `${value.slice(0, 6)}...${value.slice(-4)}` : value}</span>
+  ),
+  Tooltip: ({ children, title }: TooltipProps) => <span data-tooltip={String(title)}>{children}</span>
 }))
 
 jest.mock('./AccountSidebar.styled', () => ({
@@ -24,8 +31,15 @@ jest.mock('./AccountSidebar.styled', () => ({
   UserHeader: ({ children }: ChildrenProps) => <div>{children}</div>,
   Avatar: ({ children }: ChildrenProps) => <div>{children}</div>,
   AvatarImage: ({ src }: { src?: string }) => <img alt="" src={src} />,
+  UserInfo: ({ children }: ChildrenProps) => <div>{children}</div>,
   UserName: ({ children }: ChildrenProps) => <div>{children}</div>,
-  UserAddress: ({ children }: ChildrenProps) => <div>{children}</div>,
+  AddressRow: ({ children }: ChildrenProps) => <div>{children}</div>,
+  CopyButton: ({ children, onClick, 'data-role': dataRole, 'aria-label': ariaLabel }: ButtonProps) => (
+    <button type="button" data-role={dataRole} aria-label={ariaLabel} onClick={onClick}>
+      {children}
+    </button>
+  ),
+  Divider: () => <hr />,
   SectionLabel: ({ children }: ChildrenProps) => <div>{children}</div>,
   Nav: ({ children }: ChildrenProps) => <div>{children}</div>,
   NavItem: ({ children, 'data-role': dataRole }: NavProps) => <a data-role={dataRole}>{children}</a>,
@@ -61,6 +75,12 @@ const renderSidebar = (initialPath = '/account/wallets') =>
   )
 
 describe('AccountSidebar', () => {
+  const writeText = jest.fn().mockResolvedValue(undefined)
+
+  beforeEach(() => {
+    Object.assign(navigator, { clipboard: { writeText } })
+  })
+
   afterEach(() => {
     jest.clearAllMocks()
   })
@@ -75,11 +95,21 @@ describe('AccountSidebar', () => {
     expect(screen.getByText('account.nav.logout')).toBeInTheDocument()
   })
 
-  it('should show the shortened address when the profile has no claimed name', () => {
+  it('should render the shortened wallet address and the wallet icon', () => {
     renderSidebar()
 
-    // Falls back to the shortened address in both the name slot and the address label.
-    expect(screen.getAllByText('0x1234...7890').length).toBeGreaterThan(0)
+    expect(screen.getByText('0x1234...7890', { selector: '[data-role="address"]' })).toBeInTheDocument()
+    // The wallet glyph appears in both the address row and the Wallets nav item.
+    expect(screen.getAllByTestId('wallet-icon').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('should copy the address and surface the copied tooltip when the copy button is clicked', async () => {
+    renderSidebar()
+
+    fireEvent.click(screen.getByRole('button', { name: /account.copy/ }))
+
+    expect(writeText).toHaveBeenCalledWith(ADDRESS)
+    await waitFor(() => expect(screen.getByTestId('copy-icon').closest('[data-tooltip]')).toHaveAttribute('data-tooltip', 'account.copied'))
   })
 
   it('should disconnect the wallet when logout is clicked', () => {
