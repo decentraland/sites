@@ -35,6 +35,10 @@ coverage
 # Claude — versioned ADK lives in .claude/. Keep per-user overrides + caches local.
 .claude/settings.local.json
 .claude/cache/
+.tmp-screens/
+
+# Local-only profile migration plan (kept on disk, not committed)
+docs/profile-migration.md
 
 # Playwright E2E
 playwright-report/

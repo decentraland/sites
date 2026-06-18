@@ -57,9 +57,9 @@ describe('reels.helpers', () => {
   })
 
   describe('when building Twitter share URL', () => {
-    it('should encode text + url + hashtags', () => {
+    it('should encode text + url without hashtags', () => {
       const url = buildTwitterShareUrl('Hello world', 'https://reels.example/abc')
-      expect(url).toContain('hashtags=DCLCamera')
+      expect(url).not.toContain('hashtags=')
       expect(url).toContain('text=Hello+world')
       expect(url).toContain('url=https%3A%2F%2Freels.example%2Fabc')
     })

@@ -1,29 +1,12 @@
 {
   "general": {
-    "main_browser_cta": "commencer",
-    "main_browser_cta_target": "https://decentraland.org/play/",
-    "mvmf_main_stage_target": "https://decentraland.org/play/?position=-62%2C58",
-    "see_festival_events_target": "https://events.decentraland.org/schedule/?id=297fb4fa-fe11-4746-8abd-ce6c77bad3e2",
-    "main_desktop_cta": "télécharger",
-    "secondary_desktop_cta": "ouvrir dans le navigateur",
-    "discord_cta": "rejoignez notre discord",
-    "discord_cta_target": "https://dcl.gg/discord",
-    "discord": "Discord",
-    "twitter_cta_target": "https://twitter.com/decentraland",
-    "follow_us_on": "Suivez-nous sur ",
-    "twitter": "Twitter",
-    "telegram_cta_target": "https://t.me/decentralandTG",
-    "join_us_on": "Rejoignez-nous sur ",
-    "telegram": "Telegram",
-    "sdk_cta_target": "https://developers.decentraland.org/",
-    "get_started_with_our": "Commencez avec notre ",
-    "sdk": "SDK"
+    "discord_cta_target": "https://dcl.gg/discord"
   },
   "page": {
     "download": {
       "title": "Télécharger Decentraland",
       "description": "Téléchargez Decentraland et commencez à explorer le métavers",
-      "download_onboarding_title": "Téléchargez Decentraland\n\net plongez !",
+      "download_onboarding_title": "Téléchargez Decentraland\net venez traîner !",
       "not_available": "Non disponible pour votre système d'exploitation",
       "not_available_subtitle": "Decentraland est disponible pour <span>Windows</span> et <span>macOS</span>.",
       "download": "Télécharger",
@@ -38,10 +21,6 @@
       "your_account": "Votre Compte",
       "already_downloaded": "Déjà téléchargé ?",
       "jump_in": "Plonger",
-      "mobile": {
-        "switch_to_computer": "Passez sur votre ordinateur pour télécharger Decentraland",
-        "send_link": "Envoyez-moi le lien"
-      },
       "modal": {
         "title_first_line": "Vous n'avez pas encore",
         "title_second_line": "l'application Decentraland",
@@ -49,7 +28,6 @@
       },
       "downloading": "Téléchargement de Decentraland...",
       "avatar_preview": "Aperçu de l'Avatar Decentraland",
-      "share_title": "Télécharger Decentraland",
       "success": {
         "title": "Vous y êtes presque !",
         "subtitle": "Ouvrez le fichier que vous venez de télécharger pour terminer l'installation de Decentraland et commencer à {action}",
@@ -339,7 +317,8 @@
         },
         "screen_share_failed": {
           "title": "Échec du partage d'écran",
-          "default_message": "Impossible de démarrer le partage d'écran. Veuillez réessayer."
+          "default_message": "Impossible de démarrer le partage d'écran. Veuillez réessayer.",
+          "stopped_message": "Votre partage d'écran s'est arrêté. Cliquez sur réessayer pour partager à nouveau."
         },
         "retry": "Réessayer",
         "dismiss": "Fermer"
@@ -368,6 +347,15 @@
     "report": {
       "title": "Signaler un joueur – Decentraland",
       "success_title": "Signalement envoyé – Decentraland"
+    },
+    "play": {
+      "title": "La version web n'est plus disponible.",
+      "subtitle": "Continuez à jouer sur l'application de bureau ou mobile.",
+      "also_available_on": "Également disponible sur",
+      "already_downloaded": "Déjà téléchargé ?",
+      "jump_in": "ENTRER !",
+      "experimental": "Envie de continuer à jouer sur le web ? Essayez la version expérimentale {here}",
+      "here": "ICI"
     }
   },
   "page_invite": {
@@ -431,101 +419,10 @@
     }
   },
   "index": {
-    "create_my_account": "Créer mon compte",
-    "get_started": "Commencer",
-    "social": {
-      "title": "Decentraland | Venez traîner",
-      "description": "Decentraland est l'endroit où vous traînez en ligne. Rejoignez des projections de films, de la musique en direct, des quiz et d'autres événements communautaires. Passez quand vous voulez et voyez qui est là."
-    },
-    "mobile_modal": {
-      "description": "Decentraland est actuellement disponible uniquement sur ordinateur. Entrez votre email pour être notifié dès que nous serons sur mobile.",
-      "placeholder": "email@domaine.com",
-      "sign_up": "S'inscrire",
-      "signed_up": "Merci pour votre inscription !",
-      "sign_up_fail": "Oups, quelque chose s'est mal passé !",
-      "close": "Fermer"
-    },
-    "main": {
-      "title": "Bienvenue sur Decentraland",
-      "description": "Créez, explorez et échangez dans le premier monde virtuel appartenant à ses utilisateurs.",
-      "jump_in": "Plonger",
-      "see_festival_events": "voir les événements du festival"
-    },
-    "explore": {
-      "title": "Explorer",
-      "subtitle": "Perdez-vous dans un monde incroyable en constante évolution",
-      "description": "Explorez les LANDs des utilisateurs pour découvrir des scènes et structures incroyables. D'une aventure spatiale à un labyrinthe de donjons médiévaux en passant par des villages entiers créés par la communauté.",
-      "main_cta": "commencer à explorer",
-      "main_cta_target": "https://decentraland.org/play/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "create": {
-      "title": "Créer",
-      "subtitle": "Testez les limites de votre imagination",
-      "description": "Créez des scènes, des œuvres d'art, des défis et plus encore avec l'outil Builder, puis participez à des événements pour gagner des prix. Pour les créateurs plus expérimentés, le SDK fournit les outils pour remplir le monde de jeux sociaux et d'applications.",
-      "main_cta": "commencer à construire",
-      "main_cta_target": "https://builder.decentraland.org/",
-      "secondary_cta": "commencer à développer",
-      "secondary_cta_target": "https://developers.decentraland.org/"
-    },
-    "trade": {
-      "title": "Échanger",
-      "subtitle": "La destination virtuelle pour les actifs numériques",
-      "description": "Achetez et vendez des LAND, Estates, wearables d'Avatar et noms sur le Marketplace Decentraland : les meilleurs biens numériques soutenus par la blockchain Ethereum.",
-      "main_cta": "commencer à parcourir",
-      "main_cta_target": "https://market.decentraland.org/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "where_to_start": {
-      "title": "Vous ne savez pas par où commencer ?",
-      "description": "",
-      "poi": "point d'intérêt",
-      "our_picks": "nos sélections",
-      "our_events": "événements à venir",
-      "target_events": "https://events.decentraland.org",
-      "more_events": "plus d'événements",
-      "best_multiplayer": "meilleur multijoueur",
-      "best_adventures": "meilleures aventures"
-    },
-    "dao": {
-      "title": "À propos de Decentraland",
-      "subtitle": "Déterminez l'avenir du monde virtuel",
-      "description": "Le premier monde entièrement décentralisé, Decentraland est contrôlé via le DAO, qui possède les contrats intelligents et actifs les plus importants de Decentraland. Via le DAO, vous décidez et votez sur le fonctionnement du monde.",
-      "main_cta": "en savoir plus",
-      "main_cta_target": "https://dao.decentraland.org/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "blog": {
-      "title": "Du blog",
-      "more": "plus d'articles",
-      "target": "https://decentraland.org/blog"
-    },
-    "contact": {
-      "title": "Contactez-nous",
-      "description": "Vous nous trouverez à toute heure sur Discord. Vous pouvez aussi nous contacter par les canaux habituels.",
-      "main_cta": "nous contacter",
-      "main_cta_target": "mailto:hello@decentraland.org"
-    },
-    "subscribe": {
-      "title": "Recevez les dernières nouvelles",
-      "description": "Actualités sur les événements, compétitions et nouveautés de Decentraland, directement dans votre boîte mail",
-      "placeholder": "email@domaine.com",
-      "sign_up": "S'inscrire",
-      "signed_up": "Merci pour votre inscription !",
-      "sign_up_fail": "Oups, quelque chose s'est mal passé !"
-    },
     "press": {
       "title": "Kit Presse Decentraland",
-      "description": "Téléchargez les matériaux presse et actifs de marque de Decentraland",
       "page_description": "Nous avons rassemblé toutes sortes de ressources que vous pouvez utiliser librement lorsque vous écrivez ou parlez de notre projet. Veuillez adresser toute question à ",
       "download_button": "Télécharger le Kit de Presse"
-    },
-    "support": {
-      "title": "Decentraland - Centre d'aide",
-      "description": "Obtenez de l'aide avec Decentraland. Parcourez les FAQ, vérifiez l'état du service et contactez le support."
     }
   },
   "component": {
@@ -746,7 +643,7 @@
         "copied": "Copié !",
         "download": "Télécharger la photo",
         "info": "Afficher les infos",
-        "share_text": "Regardez ce que je fais dans Decentraland et rejoignez-moi !"
+        "share_text": "En direct sur @decentraland.\n\nViens nous rejoindre 👋\n\n"
       },
       "metadata": {
         "title": "informations",
@@ -927,6 +824,16 @@
         "title": "Page introuvable",
         "subtitle": "La page que vous recherchez n’existe pas.",
         "go_home": "Retour à l’accueil"
+      },
+      "errors": {
+        "unknown": "Impossible d’enregistrer. Veuillez réessayer.",
+        "network": "Impossible de joindre le service de stockage. Vérifiez votre connexion et réessayez.",
+        "signed_fetch": "Impossible de signer la requête. Déconnectez-vous et reconnectez-vous, puis réessayez.",
+        "unauthorized": "Vous n’êtes pas autorisé à modifier le stockage de ce monde. Seul le propriétaire du monde ou le déployeur de la scène peut modifier les variables d’environnement.",
+        "not_found": "Ce monde ou cette scène est introuvable dans le service de stockage.",
+        "payload_too_large": "La valeur est trop volumineuse pour cet espace de stockage.",
+        "rate_limited": "Trop de requêtes. Patientez un instant et réessayez.",
+        "server": "Le service de stockage a renvoyé une erreur. Réessayez dans quelques minutes."
       }
     },
     "report": {
@@ -984,19 +891,29 @@
         "body": "Votre signalement a bien été reçu et sera examiné rapidement.",
         "dismiss": "Vous pouvez maintenant fermer cette fenêtre."
       }
+    },
+    "jump": {
+      "events_page": {
+        "deleted_notice_prefix": "Ce hangout n’est plus disponible. Parcourez",
+        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_suffix": "pour en découvrir plus."
+      }
     }
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "repeat_interval": "Répéter tous les",
-    "repeat_on": "Répéter le",
-    "interval_chip_week_singular": "1 Semaine",
-    "interval_chip_week_plural": "{count} Semaines",
-    "error_repeat_interval_invalid": "L'intervalle de répétition doit être un nombre entier entre 1 et 4",
-    "error_repeat_days_required": "Sélectionnez au moins un jour",
-    "error_start_date_not_in_repeat_days": "Le jour de la semaine de la date de début doit faire partie des jours sélectionnés",
-    "vertical_recommended_size": "Taille recommandée : 716 × 1814 px"
+    "error_image_too_large": "Nous n'avons pas pu compresser cette image en dessous de 500 Ko. Veuillez choisir un fichier plus petit.",
+    "vertical_recommended_size": "Taille recommandée : 716 × 1814 px",
+    "recurrence": "Récurrence",
+    "every_day": "Chaque jour",
+    "every_week": "Chaque semaine",
+    "every_2_weeks": "Toutes les 2 semaines",
+    "every_3_weeks": "Toutes les 3 semaines",
+    "every_4_weeks": "Toutes les 4 semaines",
+    "every_month": "Chaque mois",
+    "upcoming_dates_label": "Prochaines dates",
+    "upcoming_dates_empty": "Aucune date à venir pour cette récurrence"
   },
   "community": {
     "global": {
@@ -1046,7 +963,200 @@
       "upcoming_events": "Événements à venir"
     }
   },
+  "profile": {
+    "not_found": {
+      "title": "Profil introuvable",
+      "description": "L'adresse « {address} » n'est pas une adresse Ethereum valide."
+    },
+    "header": {
+      "edit_profile": "Modifier le profil",
+      "add_friend": "Ajouter un ami",
+      "request_sent": "Demande envoyée",
+      "friends": "Amis",
+      "remove_friend": "Retirer",
+      "unblock": "Débloquer",
+      "block": "Bloquer",
+      "more_actions": "Plus d'actions",
+      "copy_address": "Copier l'adresse",
+      "address_copied": "Adresse copiée !",
+      "close_profile": "Fermer le profil",
+      "get_a_name": "Obtenir un nom unique",
+      "manage_world": "Gérer le World",
+      "invite_friends": "Inviter des amis",
+      "invite_copied": "Lien copié !",
+      "friends_count": "{count} amis",
+      "mutual_count": "{count} en commun",
+      "edit": "Modifier",
+      "back": "Retour",
+      "open_menu": "Ouvrir le menu du profil",
+      "logout": "Déconnexion",
+      "share_profile": "Partager le profil"
+    },
+    "friends_modal": {
+      "title": "Amis ({count})",
+      "close": "Fermer la liste d'amis",
+      "search_placeholder": "Rechercher des amis",
+      "empty": "Vous n'avez pas encore d'amis.",
+      "no_results": "Aucun résultat.",
+      "mutual_title": "Amis en commun ({count})"
+    },
+    "tabs": {
+      "overview": "Aperçu",
+      "assets": "Actifs",
+      "creations": "Créations",
+      "communities": "Communautés",
+      "places": "Lieux",
+      "photos": "Photos",
+      "referral_rewards": "Récompenses de parrainage",
+      "my_assets": "Mes Actifs",
+      "my_communities": "Mes Communautés",
+      "my_places": "Mes Lieux",
+      "my_photos": "Mes Photos"
+    },
+    "overview": {
+      "about": "À propos",
+      "no_bio_owner": "Aucune information pour l’instant. Entrez dans le monde et complétez votre bio !",
+      "no_bio_member": "Ce membre n'a pas encore ajouté de bio.",
+      "equipped_wearables": "Wearables équipés",
+      "no_wearables": "Aucun objet équipé pour l’instant.",
+      "badges": "Badges",
+      "links": "Liens",
+      "equipped_items": "Items équipés",
+      "country": "Pays",
+      "language": "Langue",
+      "pronouns": "Pronoms",
+      "relationship_status": "Situation amoureuse",
+      "gender": "Genre",
+      "profession": "Profession",
+      "birth_date": "Date de naissance",
+      "real_name": "Nom réel",
+      "favorite_hobby": "Hobby favori",
+      "no_badges_yet": "Pas encore de badges. Entrez dans le monde et commencez à en collecter !",
+      "badge_unlocked_on": "Débloqué le {date}",
+      "by_creator": "Par {name}",
+      "buy": "Acheter"
+    },
+    "creations": {
+      "empty_title": "Pas encore de créations",
+      "empty_owner": "Vos créations apparaîtront ici.",
+      "empty_member": "Ce compte n'a encore rien créé.",
+      "count": "{count} éléments",
+      "load_more": "Charger plus",
+      "filter_wearables": "Wearables",
+      "filter_emotes": "Emotes",
+      "view_all": "Tout voir",
+      "not_for_sale": "Pas en vente",
+      "view_in_marketplace": "Voir sur le marketplace"
+    },
+    "assets": {
+      "empty_title": "Pas encore d'actifs",
+      "empty_description": "Vos wearables, names et lands apparaîtront ici.",
+      "filter_all": "Tous",
+      "filter_wearables": "Wearables",
+      "filter_emotes": "Emotes",
+      "filter_names": "Names",
+      "filter_lands": "Lands",
+      "filter_estates": "Estates",
+      "count": "{count} actifs",
+      "view": "Voir",
+      "edit": "Modifier",
+      "transfer": "Transférer",
+      "empty_owner_subtitle": "Allez sur le marketplace et commencez à créer votre look unique",
+      "empty_owner_cta": "Aller au marketplace"
+    },
+    "communities": {
+      "empty_title": "Pas encore de communautés",
+      "empty_member": "Ce membre n'a rejoint aucune communauté.",
+      "count": "{count} communautés",
+      "member": "Membre",
+      "members_count": "{count} membres",
+      "role_owner": "Propriétaire",
+      "role_admin": "Admin",
+      "action_view": "Voir",
+      "action_joined": "Rejoint",
+      "share_aria": "Partager le lien de la communauté",
+      "copy_link": "Copier le lien",
+      "copied": "Copié !",
+      "empty_owner_subtitle": "Entrez dans Decentraland et rejoignez la communauté qui vous correspond le mieux. Vous pouvez aussi créer la vôtre !",
+      "empty_owner_cta": "Explorer les communautés"
+    },
+    "places": {
+      "empty_title": "Pas encore de lieux",
+      "empty_member": "Ce membre n'a enregistré aucun lieu.",
+      "count": "{count} lieux",
+      "jump_in": "Rejoindre",
+      "filter_my_places": "Mes lieux",
+      "filter_favorites": "Favoris",
+      "empty_owner_title": "Rien ici pour l'instant — mais c'est facile à changer",
+      "empty_owner_subtitle": "Mes Lieux affiche les espaces que vous possédez ou gérez dans Decentraland. Le plus simple pour commencer est d'obtenir un NAME, qui débloque votre propre World.",
+      "empty_owner_cta": "Obtenir un name",
+      "empty_favorites_title": "Rien d'enregistré pour l'instant",
+      "empty_favorites_subtitle": "Ajoutez des Lieux favoris en appuyant sur le cœur d’une carte de lieu ou sur la carte de Decentraland. Vous les retrouverez tous ici.",
+      "empty_favorites_cta": "Explorer les lieux"
+    },
+    "photos": {
+      "empty_title": "Pas encore de photos",
+      "empty_member": "Ce membre n'a pris aucune photo.",
+      "count": "{count} photos",
+      "empty_owner_subtitle": "Entrez et commencez à collectionner des souvenirs ! Appuyez sur « C » pour ouvrir l’appareil photo et sur la « barre d’espace » pour prendre une photo.",
+      "empty_owner_cta": "Entrer"
+    },
+    "referral_rewards": {
+      "anonymous": "Connectez-vous pour inviter des amis et débloquer des récompenses.",
+      "invite_title": "Invitez des amis et obtenez des récompenses",
+      "invite_subtitle": "Partagez votre code. Quand vos amis rejoignent Decentraland, vous débloquez des wearables et badges exclusifs.",
+      "copy_invite_link": "Copier le lien d'invitation",
+      "copied": "Copié !",
+      "invited": "Invités",
+      "confirmed": "Confirmés",
+      "your_rewards": "Vos récompenses",
+      "no_rewards": "Pas encore de récompenses. Continuez à inviter pour débloquer des niveaux.",
+      "claimed": "Réclamé",
+      "unlocked": "Débloqué",
+      "locked": "Verrouillé",
+      "tiers_unlocked": "Niveaux débloqués",
+      "next_tier_at": "jusqu'au prochain niveau ({count} invités)",
+      "tier_label": "Niveau {tier}",
+      "tier_invites": "{count} invités"
+    },
+    "referral_hero_section": {
+      "title": "Decentraland is Better With Friends",
+      "subtitle": "Invite yours and get rewards!",
+      "tooltip_text": "Invitees must be new to Decentraland and must jump in-world on 3 separate days to count toward reward goals. See ",
+      "tooltip_link_label": "Terms & Conditions",
+      "step_1": "Invite friends to hang out in-world by sharing your referral link.",
+      "step_2": "Your friends download Decentraland and jump in on 3 separate days.",
+      "step_3": "You earn exclusive rewards for helping grow our community!",
+      "how_it_works": "How it works",
+      "share": "SHARE",
+      "copy_link": "Copy Link",
+      "copied_to_clipboard": "Link copied successfully",
+      "share_on_x": "Share on X",
+      "share_on_x_title": "Wanna hang out in Decentraland? Use my referral link to make your account and download Decentraland so we can explore together! #DCL #Decentraland"
+    },
+    "referral_reward_card": {
+      "swag": "IRL SWAG PACK",
+      "claim": "CLAIM",
+      "image_alt": "Reward Image"
+    },
+    "referral_journey": {
+      "title": "Your Reward Journey",
+      "invites_accepted": "{count} Friends Joined",
+      "tooltip_title": "{count} Friends Joined",
+      "tooltip_subtitle": "{count} More friends for your next Reward!"
+    }
+  },
   "event_detail": {
+    "delete": "Supprimer",
+    "delete_modal": {
+      "title": "Voulez-vous vraiment supprimer votre hangout ?",
+      "subtitle": "Ce hangout sera définitivement supprimé de vos hangouts. Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer le hangout",
+      "toast_title": "Hangout supprimé avec succès",
+      "toast_description": "Votre hangout {name} a été supprimé avec succès !",
+      "error": "Nous n'avons pas pu supprimer votre hangout. Veuillez réessayer."
+    },
     "recurrent_daily": "Se répète tous les jours",
     "recurrent_weekly": "Se répète chaque semaine",
     "recurrent_monthly": "Se répète chaque mois",
@@ -1075,5 +1185,9 @@
     "form_utc_preview": "{time} UTC",
     "form_utc_preview_next_day": "{time} UTC (+1 jour)",
     "form_utc_preview_previous_day": "{time} UTC (-1 jour)"
+  },
+  "upcoming": {
+    "today_at": "Aujourd'hui {time}",
+    "tomorrow_at": "Demain {time}"
   }
 }

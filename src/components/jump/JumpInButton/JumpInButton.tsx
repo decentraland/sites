@@ -1,14 +1,7 @@
-import { type FC, type ReactNode, useCallback, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
-import { type ButtonProps, DownloadModal, JumpInIcon, launchDesktopApp } from 'decentraland-ui2'
-import { mapEnvToDclenv } from '../../../config/dclenv'
-import { getEnv } from '../../../config/env'
-import { buildDeepLinkOptions } from '../../../features/places/places.helpers'
+import { type FC, type ReactNode } from 'react'
+import { type ButtonProps, DownloadModal, JumpInIcon } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
-import { DOWNLOAD_URLS, detectDownloadOS } from '../../../modules/downloadConstants'
-import { SegmentEvent } from '../../../modules/segment'
+import { useLaunchExplorer } from '../../../hooks/useLaunchExplorer'
 import { JumpInIconButton, StyledJumpInButton } from './JumpInButton.styled'
 
 interface JumpInButtonProps extends Omit<ButtonProps, 'onClick' | 'children'> {
@@ -29,69 +22,16 @@ const JumpInButton: FC<JumpInButtonProps> = ({
   color = 'primary',
   variant = 'contained'
 }) => {
-  const [searchParams] = useSearchParams()
-  const [, advancedUserAgent] = useAdvancedUserAgentData()
-  const { track } = useAnalytics()
   const formatMessage = useFormatMessage()
-  const { hasValidIdentity } = useAuthIdentity()
-  const [isDownloadModalOpen, setDownloadModalOpen] = useState(false)
-
-  const explorerEnv = searchParams.get('dclenv') ?? mapEnvToDclenv(searchParams.get('env'))
-
-  const onboardingUrl = getEnv('ONBOARDING_URL') ?? ''
-  const downloadUrl = getEnv('DOWNLOAD_URL') ?? DOWNLOAD_URLS.windows
-  const osName = advancedUserAgent?.os?.name ?? 'unknown'
-  const arch = advancedUserAgent?.cpu?.architecture?.toLowerCase() ?? 'unknown'
-  const isMobile = Boolean(advancedUserAgent?.mobile)
-  const downloadOs = detectDownloadOS()
-
-  const openDownloadFallback = useCallback(() => {
-    if (hasValidIdentity) {
-      window.open(downloadUrl, '_self')
-      return
-    }
-    if (onboardingUrl) {
-      window.open(onboardingUrl, '_self')
-    } else {
-      setDownloadModalOpen(true)
-    }
-  }, [hasValidIdentity, downloadUrl, onboardingUrl])
-
-  const handleJumpIn = useCallback(async () => {
-    if (isMobile) {
-      const storeUrl = downloadOs === 'android' ? DOWNLOAD_URLS.googlePlay : DOWNLOAD_URLS.appStore
-      track(SegmentEvent.GO_TO_EXPLORER, { position, realm, osName, arch, target: 'mobile-store' })
-      window.open(storeUrl, '_self')
-      return
-    }
-
-    track(SegmentEvent.GO_TO_EXPLORER, { position, realm, osName, arch })
-
-    try {
-      const launched = await launchDesktopApp(buildDeepLinkOptions(position, realm, explorerEnv))
-      if (!launched) {
-        track(SegmentEvent.CLICK, { event: 'Client not installed', osName, arch })
-        openDownloadFallback()
-      }
-    } catch {
-      openDownloadFallback()
-    }
-  }, [isMobile, downloadOs, track, position, realm, explorerEnv, osName, arch, openDownloadFallback])
-
-  const closeDownloadModal = useCallback(() => setDownloadModalOpen(false), [])
-
-  const downloadModalProps = {
-    os: downloadOs,
-    downloadUrl: downloadOs === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows,
-    epicUrl: DOWNLOAD_URLS.epic,
-    googlePlayUrl: DOWNLOAD_URLS.googlePlay,
-    appStoreUrl: DOWNLOAD_URLS.appStore
-  }
+  const { launchExplorer, isMobile, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useLaunchExplorer({
+    position,
+    realm
+  })
 
   const renderButton = () => {
     if (onlyIcon) {
       return (
-        <JumpInIconButton onClick={handleJumpIn} aria-label={formatMessage('component.jump.jump_in_button.jump_in')} sx={sx}>
+        <JumpInIconButton onClick={launchExplorer} aria-label={formatMessage('component.jump.jump_in_button.jump_in')} sx={sx}>
           <JumpInIcon />
         </JumpInIconButton>
       )
@@ -104,7 +44,7 @@ const JumpInButton: FC<JumpInButtonProps> = ({
         fullWidth={fullWidth}
         sx={sx}
         endIcon={<JumpInIcon />}
-        onClick={handleJumpIn}
+        onClick={launchExplorer}
       >
         {children ?? formatMessage('component.jump.jump_in_button.jump_in')}
       </StyledJumpInButton>

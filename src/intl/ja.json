@@ -1,29 +1,12 @@
 {
   "general": {
-    "main_browser_cta": "はじめる",
-    "main_browser_cta_target": "https://decentraland.org/play/",
-    "mvmf_main_stage_target": "https://decentraland.org/play/?position=-62%2C58",
-    "see_festival_events_target": "https://events.decentraland.org/schedule/?id=297fb4fa-fe11-4746-8abd-ce6c77bad3e2",
-    "main_desktop_cta": "ダウンロード",
-    "secondary_desktop_cta": "ブラウザで開く",
-    "discord_cta": "Discordに参加する",
-    "discord_cta_target": "https://dcl.gg/discord",
-    "discord": "Discord",
-    "twitter_cta_target": "https://twitter.com/decentraland",
-    "follow_us_on": "フォローする ",
-    "twitter": "Twitter",
-    "telegram_cta_target": "https://t.me/decentralandTG",
-    "join_us_on": "参加する ",
-    "telegram": "Telegram",
-    "sdk_cta_target": "https://developers.decentraland.org/",
-    "get_started_with_our": "はじめる ",
-    "sdk": "SDK"
+    "discord_cta_target": "https://dcl.gg/discord"
   },
   "page": {
     "download": {
       "title": "Decentralandをダウンロード",
       "description": "Decentralandをダウンロードしてメタバースの探検を始めましょう",
-      "download_onboarding_title": "Decentralandをダウンロード\n\nさあ飛び込もう！",
+      "download_onboarding_title": "Decentralandをダウンロード\n一緒に遊ぼう！",
       "not_available": "お使いのOSではご利用いただけません",
       "not_available_subtitle": "Decentralandは<span>Windows</span>と<span>macOS</span>でご利用いただけます。",
       "download": "ダウンロード",
@@ -38,10 +21,6 @@
       "your_account": "あなたのアカウント",
       "already_downloaded": "すでにダウンロード済みですか？",
       "jump_in": "入場する",
-      "mobile": {
-        "switch_to_computer": "Decentralandをダウンロードするにはパソコンに切り替えてください",
-        "send_link": "リンクを送る"
-      },
       "modal": {
         "title_first_line": "まだ",
         "title_second_line": "Decentralandアプリがありません",
@@ -49,7 +28,6 @@
       },
       "downloading": "Decentralandをダウンロード中...",
       "avatar_preview": "Decentralandアバタープレビュー",
-      "share_title": "Decentralandをダウンロード",
       "success": {
         "title": "もう少しで完了です！",
         "subtitle": "ダウンロードしたファイルを開いてDecentralandのインストールを完了し、{action}を始めましょう",
@@ -339,7 +317,8 @@
         },
         "screen_share_failed": {
           "title": "画面共有に失敗しました",
-          "default_message": "画面共有を開始できませんでした。もう一度お試しください。"
+          "default_message": "画面共有を開始できませんでした。もう一度お試しください。",
+          "stopped_message": "画面共有が停止しました。もう一度共有するには「再試行」をクリックしてください。"
         },
         "retry": "再試行",
         "dismiss": "閉じる"
@@ -368,6 +347,15 @@
     "report": {
       "title": "プレイヤーを報告する – Decentraland",
       "success_title": "報告が送信されました – Decentraland"
+    },
+    "play": {
+      "title": "ウェブ版は提供を終了しました。",
+      "subtitle": "デスクトップまたはモバイルアプリでプレイを続けましょう。",
+      "also_available_on": "こちらでも利用可能",
+      "already_downloaded": "すでにダウンロード済みですか？",
+      "jump_in": "入場する！",
+      "experimental": "ウェブでプレイを続けたいですか？実験版を{here}でお試しください",
+      "here": "こちら"
     }
   },
   "page_invite": {
@@ -431,101 +419,10 @@
     }
   },
   "index": {
-    "create_my_account": "アカウントを作成",
-    "get_started": "はじめる",
-    "social": {
-      "title": "Decentraland | 一緒に遊ぼう",
-      "description": "Decentralandはオンラインで集まる場所です。映画上映、ライブ音楽、トリビア、その他のコミュニティイベントに参加しましょう。いつでも立ち寄って誰がいるか確認してください。"
-    },
-    "mobile_modal": {
-      "description": "Decentralandは現在デスクトップのみで利用可能です。モバイル対応時に通知を受け取るにはメールアドレスを入力してください。",
-      "placeholder": "email@domain.com",
-      "sign_up": "登録",
-      "signed_up": "ご登録ありがとうございます！",
-      "sign_up_fail": "エラーが発生しました！",
-      "close": "閉じる"
-    },
-    "main": {
-      "title": "Decentralandへようこそ",
-      "description": "ユーザーが所有する世界初のバーチャルワールドで、作成、探索、取引しましょう。",
-      "jump_in": "入場する",
-      "see_festival_events": "フェスティバルイベントを見る"
-    },
-    "explore": {
-      "title": "探索",
-      "subtitle": "驚くべき進化する世界に没入しましょう",
-      "description": "ユーザーが所有するLANDを探索して、素晴らしいシーンや建造物を体験しましょう。宇宙冒険から中世のダンジョン迷路、コミュニティメンバーが作った村まで。",
-      "main_cta": "探索を始める",
-      "main_cta_target": "https://decentraland.org/play/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "create": {
-      "title": "作成",
-      "subtitle": "想像力の限界を試しましょう",
-      "description": "シンプルなBuilderツールを使ってシーン、アートワーク、チャレンジなどを作成し、イベントに参加して賞品を獲得しましょう。経験豊富なクリエイター向けに、SDKはソーシャルゲームやアプリケーションで世界を満たすツールを提供します。",
-      "main_cta": "ビルドを始める",
-      "main_cta_target": "https://builder.decentraland.org/",
-      "secondary_cta": "開発を始める",
-      "secondary_cta_target": "https://developers.decentraland.org/"
-    },
-    "trade": {
-      "title": "取引",
-      "subtitle": "デジタル資産のバーチャル目的地",
-      "description": "Decentralandマーケットプレイスで、LAND、エステート、アバターウェアラブル、ネームを売買しましょう。イーサリアムブロックチェーンに裏付けされた最高のデジタルグッズ。",
-      "main_cta": "ブラウジングを始める",
-      "main_cta_target": "https://market.decentraland.org/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "where_to_start": {
-      "title": "どこから始めるか迷っていますか？",
-      "description": "",
-      "poi": "注目ポイント",
-      "our_picks": "おすすめ",
-      "our_events": "今後のイベント",
-      "target_events": "https://events.decentraland.org",
-      "more_events": "もっとイベントを見る",
-      "best_multiplayer": "ベストマルチプレイヤー",
-      "best_adventures": "ベストアドベンチャー"
-    },
-    "dao": {
-      "title": "Decentralandについて",
-      "subtitle": "バーチャルワールドの未来を決めましょう",
-      "description": "初の完全分散型ワールドであるDecentralandは、最も重要なスマートコントラクトと資産を所有するDAOを通じて管理されています。DAOを通じて、世界の仕組みについて決定し投票できます。",
-      "main_cta": "詳しく見る",
-      "main_cta_target": "https://dao.decentraland.org/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "blog": {
-      "title": "ブログから",
-      "more": "もっと記事を見る",
-      "target": "https://decentraland.org/blog"
-    },
-    "contact": {
-      "title": "お問い合わせ",
-      "description": "Discordでいつでもお会いできます。通常のチャンネルからもご連絡いただけます。",
-      "main_cta": "お問い合わせ",
-      "main_cta_target": "mailto:hello@decentraland.org"
-    },
-    "subscribe": {
-      "title": "最新情報を受け取る",
-      "description": "Decentralandのイベント、コンペティション、新開発に関するニュースを直接受信箱にお届けします",
-      "placeholder": "email@domain.com",
-      "sign_up": "登録",
-      "signed_up": "ご登録ありがとうございます！",
-      "sign_up_fail": "エラーが発生しました！"
-    },
     "press": {
       "title": "Decentralandプレスキット",
-      "description": "Decentralandのプレス資料とブランドアセットをダウンロード",
       "page_description": "プロジェクトについて執筆・発信する際にご自由にお使いいただける素材をご用意しました。ご質問は以下までお問い合わせください：",
       "download_button": "プレスキットをダウンロード"
-    },
-    "support": {
-      "title": "Decentraland - ヘルプセンター",
-      "description": "Decentralandのヘルプ。FAQの検索、サービスステータスの確認、サポートへのお問い合わせ。"
     }
   },
   "component": {
@@ -751,7 +648,7 @@
         "copied": "コピーしました!",
         "download": "写真をダウンロード",
         "info": "情報を切り替え",
-        "share_text": "Decentralandで今やっていることをチェックして、一緒に参加しよう!"
+        "share_text": "今@decentralandで開催中。\n\n遊びに来てね 👋\n\n"
       },
       "metadata": {
         "title": "情報",
@@ -932,6 +829,16 @@
         "title": "ページが見つかりません",
         "subtitle": "お探しのページは存在しません。",
         "go_home": "ホームへ戻る"
+      },
+      "errors": {
+        "unknown": "保存できませんでした。もう一度お試しください。",
+        "network": "ストレージサービスに接続できませんでした。接続を確認してもう一度お試しください。",
+        "signed_fetch": "リクエストに署名できませんでした。一度サインアウトしてから再度サインインし、再度お試しください。",
+        "unauthorized": "このワールドのストレージを更新する権限がありません。環境変数の編集はワールドの所有者またはシーンのデプロイ者のみが行えます。",
+        "not_found": "このワールドまたはシーンはストレージサービスに見つかりませんでした。",
+        "payload_too_large": "値がこのストレージ領域には大きすぎます。",
+        "rate_limited": "リクエストが多すぎます。少し待ってからもう一度お試しください。",
+        "server": "ストレージサービスがエラーを返しました。数分後にもう一度お試しください。"
       }
     },
     "report": {
@@ -989,19 +896,29 @@
         "body": "報告を受け付けました。内容は順次確認します。",
         "dismiss": "このウィンドウを閉じても問題ありません。"
       }
+    },
+    "jump": {
+      "events_page": {
+        "deleted_notice_prefix": "このハングアウトは利用できなくなりました。",
+        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_suffix": "でさらに探してみましょう。"
+      }
     }
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "repeat_interval": "繰り返し間隔",
-    "repeat_on": "繰り返す曜日",
-    "interval_chip_week_singular": "1週間",
-    "interval_chip_week_plural": "{count}週間",
-    "error_repeat_interval_invalid": "繰り返し間隔は1から4までの整数で入力してください",
-    "error_repeat_days_required": "少なくとも1つの曜日を選択してください",
-    "error_start_date_not_in_repeat_days": "開始日の曜日は選択した曜日のいずれかである必要があります",
-    "vertical_recommended_size": "推奨サイズ：716 × 1814 px"
+    "error_image_too_large": "この画像を500 KB以下に圧縮できませんでした。より小さいファイルを選択してください。",
+    "vertical_recommended_size": "推奨サイズ：716 × 1814 px",
+    "recurrence": "繰り返し",
+    "every_day": "毎日",
+    "every_week": "毎週",
+    "every_2_weeks": "2週間ごと",
+    "every_3_weeks": "3週間ごと",
+    "every_4_weeks": "4週間ごと",
+    "every_month": "毎月",
+    "upcoming_dates_label": "次回以降の日程",
+    "upcoming_dates_empty": "この繰り返し設定に該当する今後の日程はありません"
   },
   "community": {
     "global": {
@@ -1051,7 +968,200 @@
       "upcoming_events": "今後のイベント"
     }
   },
+  "profile": {
+    "not_found": {
+      "title": "プロフィールが見つかりません",
+      "description": "アドレス「{address}」は有効なEthereumアドレスではありません。"
+    },
+    "header": {
+      "edit_profile": "プロフィールを編集",
+      "add_friend": "友達を追加",
+      "request_sent": "リクエスト送信済み",
+      "friends": "友達",
+      "remove_friend": "友達解除",
+      "unblock": "ブロック解除",
+      "block": "ブロック",
+      "more_actions": "その他",
+      "copy_address": "アドレスをコピー",
+      "address_copied": "アドレスをコピーしました！",
+      "close_profile": "プロフィールを閉じる",
+      "get_a_name": "ユニークな名前を取得",
+      "manage_world": "ワールドを管理",
+      "invite_friends": "友達を招待",
+      "invite_copied": "リンクをコピーしました！",
+      "friends_count": "{count} 人の友達",
+      "mutual_count": "{count} 人の共通",
+      "edit": "編集",
+      "back": "戻る",
+      "open_menu": "プロフィールメニューを開く",
+      "logout": "ログアウト",
+      "share_profile": "プロフィールを共有"
+    },
+    "friends_modal": {
+      "title": "友達 ({count})",
+      "close": "友達リストを閉じる",
+      "search_placeholder": "友達を検索",
+      "empty": "まだ友達がいません。",
+      "no_results": "該当する友達が見つかりません。",
+      "mutual_title": "共通の友達（{count}）"
+    },
+    "tabs": {
+      "overview": "概要",
+      "assets": "アセット",
+      "creations": "作品",
+      "communities": "コミュニティ",
+      "places": "プレイス",
+      "photos": "写真",
+      "referral_rewards": "リファラル報酬",
+      "my_assets": "マイアセット",
+      "my_communities": "マイコミュニティ",
+      "my_places": "マイプレイス",
+      "my_photos": "マイ写真"
+    },
+    "overview": {
+      "about": "概要",
+      "no_bio_owner": "まだ情報がありません。ワールドに入って自己紹介を完成させましょう！",
+      "no_bio_member": "このメンバーはまだ自己紹介を追加していません。",
+      "equipped_wearables": "装備中のウェアラブル",
+      "no_wearables": "装備中のアイテムはまだありません。",
+      "badges": "バッジ",
+      "links": "リンク",
+      "equipped_items": "装備中のアイテム",
+      "country": "国",
+      "language": "言語",
+      "pronouns": "代名詞",
+      "relationship_status": "交際状況",
+      "gender": "性別",
+      "profession": "職業",
+      "birth_date": "誕生日",
+      "real_name": "本名",
+      "favorite_hobby": "趣味",
+      "no_badges_yet": "まだバッジがありません。ワールドに入ってバッジを集めましょう！",
+      "badge_unlocked_on": "{date}に獲得",
+      "by_creator": "作成者: {name}",
+      "buy": "購入"
+    },
+    "creations": {
+      "empty_title": "作品はまだありません",
+      "empty_owner": "作成したアイテムがここに表示されます。",
+      "empty_member": "このアカウントはまだ何も作成していません。",
+      "count": "{count} アイテム",
+      "load_more": "もっと見る",
+      "filter_wearables": "ウェアラブル",
+      "filter_emotes": "エモート",
+      "view_all": "すべて表示",
+      "not_for_sale": "販売されていません",
+      "view_in_marketplace": "マーケットプレイスで表示"
+    },
+    "assets": {
+      "empty_title": "アセットはまだありません",
+      "empty_description": "所有しているウェアラブル、ネーム、ランドがここに表示されます。",
+      "filter_all": "すべて",
+      "filter_wearables": "ウェアラブル",
+      "filter_emotes": "エモート",
+      "filter_names": "ネーム",
+      "filter_lands": "ランド",
+      "filter_estates": "エステート",
+      "count": "{count} アセット",
+      "view": "表示",
+      "edit": "編集",
+      "transfer": "転送",
+      "empty_owner_subtitle": "マーケットプレイスで、自分だけのスタイルを作り始めましょう",
+      "empty_owner_cta": "マーケットプレイスへ"
+    },
+    "communities": {
+      "empty_title": "コミュニティはまだありません",
+      "empty_member": "このメンバーはまだコミュニティに参加していません。",
+      "count": "{count} コミュニティ",
+      "member": "メンバー",
+      "members_count": "{count}人のメンバー",
+      "role_owner": "オーナー",
+      "role_admin": "管理者",
+      "action_view": "表示",
+      "action_joined": "参加中",
+      "share_aria": "コミュニティのリンクを共有",
+      "copy_link": "リンクをコピー",
+      "copied": "コピーしました！",
+      "empty_owner_subtitle": "Decentralandに入って、自分に合ったコミュニティに参加しましょう。自分で作ることもできます！",
+      "empty_owner_cta": "コミュニティを探す"
+    },
+    "places": {
+      "empty_title": "プレイスはまだありません",
+      "empty_member": "このメンバーはまだプレイスを登録していません。",
+      "count": "{count} プレイス",
+      "jump_in": "ジャンプイン",
+      "filter_my_places": "マイプレイス",
+      "filter_favorites": "お気に入り",
+      "empty_owner_title": "まだ何もありません。でも、簡単に変えられます",
+      "empty_owner_subtitle": "「マイプレイス」には、Decentralandで所有または管理しているスペースが表示されます。まずはNAMEを取得するのが一番簡単で、自分だけのWorldを使えるようになります。",
+      "empty_owner_cta": "NAMEを取得",
+      "empty_favorites_title": "保存済みのものはまだありません",
+      "empty_favorites_subtitle": "プレイスカードやDecentralandのマップでハートをタップして、お気に入りのプレイスを追加しましょう。ここですべて見つけられます。",
+      "empty_favorites_cta": "プレイスを探す"
+    },
+    "photos": {
+      "empty_title": "写真はまだありません",
+      "empty_member": "このメンバーはまだ写真を撮影していません。",
+      "count": "{count} 枚の写真",
+      "empty_owner_subtitle": "入って思い出を集めましょう！「C」キーでカメラを開き、「スペースキー」で写真を撮影できます。",
+      "empty_owner_cta": "参加する"
+    },
+    "referral_rewards": {
+      "anonymous": "サインインして友達を招待し、報酬を獲得しましょう。",
+      "invite_title": "友達を招待して報酬をゲット",
+      "invite_subtitle": "コードを共有しましょう。友達がDecentralandに参加すると、限定ウェアラブルやバッジを獲得できます。",
+      "copy_invite_link": "招待リンクをコピー",
+      "copied": "コピーしました！",
+      "invited": "招待済み",
+      "confirmed": "確認済み",
+      "your_rewards": "あなたの報酬",
+      "no_rewards": "まだ報酬はありません。招待を続けてティアを解除しましょう。",
+      "claimed": "受取済み",
+      "unlocked": "解除済み",
+      "locked": "未解除",
+      "tiers_unlocked": "解除済みティア",
+      "next_tier_at": "次のティアまで ({count} 招待)",
+      "tier_label": "ティア {tier}",
+      "tier_invites": "{count} 招待"
+    },
+    "referral_hero_section": {
+      "title": "Decentraland is Better With Friends",
+      "subtitle": "Invite yours and get rewards!",
+      "tooltip_text": "Invitees must be new to Decentraland and must jump in-world on 3 separate days to count toward reward goals. See ",
+      "tooltip_link_label": "Terms & Conditions",
+      "step_1": "Invite friends to hang out in-world by sharing your referral link.",
+      "step_2": "Your friends download Decentraland and jump in on 3 separate days.",
+      "step_3": "You earn exclusive rewards for helping grow our community!",
+      "how_it_works": "How it works",
+      "share": "SHARE",
+      "copy_link": "Copy Link",
+      "copied_to_clipboard": "Link copied successfully",
+      "share_on_x": "Share on X",
+      "share_on_x_title": "Wanna hang out in Decentraland? Use my referral link to make your account and download Decentraland so we can explore together! #DCL #Decentraland"
+    },
+    "referral_reward_card": {
+      "swag": "IRL SWAG PACK",
+      "claim": "CLAIM",
+      "image_alt": "Reward Image"
+    },
+    "referral_journey": {
+      "title": "Your Reward Journey",
+      "invites_accepted": "{count} Friends Joined",
+      "tooltip_title": "{count} Friends Joined",
+      "tooltip_subtitle": "{count} More friends for your next Reward!"
+    }
+  },
   "event_detail": {
+    "delete": "削除",
+    "delete_modal": {
+      "title": "このハングアウトを削除してもよろしいですか？",
+      "subtitle": "このハングアウトはハングアウト一覧から完全に削除されます。この操作は元に戻せません。",
+      "cancel": "キャンセル",
+      "confirm": "ハングアウトを削除",
+      "toast_title": "ハングアウトを削除しました",
+      "toast_description": "ハングアウト「{name}」を削除しました！",
+      "error": "ハングアウトを削除できませんでした。もう一度お試しください。"
+    },
     "recurrent_daily": "毎日繰り返し",
     "recurrent_weekly": "毎週繰り返し",
     "recurrent_monthly": "毎月繰り返し",
@@ -1080,5 +1190,9 @@
     "form_utc_preview": "{time} UTC",
     "form_utc_preview_next_day": "{time} UTC（+1日）",
     "form_utc_preview_previous_day": "{time} UTC（-1日）"
+  },
+  "upcoming": {
+    "today_at": "今日 {time}",
+    "tomorrow_at": "明日 {time}"
   }
 }

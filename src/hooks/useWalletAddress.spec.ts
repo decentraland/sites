@@ -95,7 +95,13 @@ describe('useWalletAddress module', () => {
       }
     })
 
-    it('should reconcile with MetaMask eth_accounts when an active account differs from the current snapshot', async () => {
+    it('should not probe MetaMask eth_accounts at load time', async () => {
+      // Regression for the Magic/OTP fix: a previous version called
+      // window.ethereum.request({ method: 'eth_accounts' }) on init to seed the
+      // pointer with MetaMask's active account. That probe overrode Magic/OTP
+      // sessions whenever both providers were present. The module now relies
+      // exclusively on the sign-in-pending snapshot, the persistent pointer,
+      // and the heuristic scan — never on eth_accounts.
       setupLocalStorage({ 'single-sign-on-0xactive': 'x' })
       localStorageGetIdentityMock.mockReturnValue(buildIdentity('2031-01-01T00:00:00Z'))
       const request = jest.fn().mockResolvedValue(['0xACTIVE'])
@@ -103,19 +109,8 @@ describe('useWalletAddress module', () => {
       await jest.isolateModulesAsync(async () => {
         await import('./useWalletAddress')
       })
-      // Wait a microtask so the .then handler can run.
       await Promise.resolve()
-      expect(request).toHaveBeenCalledWith({ method: 'eth_accounts' })
-    })
-
-    it('should swallow a rejected eth_accounts call', async () => {
-      const request = jest.fn().mockRejectedValue(new Error('user denied'))
-      installEthereum(request)
-      await jest.isolateModulesAsync(async () => {
-        await import('./useWalletAddress')
-      })
-      await Promise.resolve()
-      expect(request).toHaveBeenCalled()
+      expect(request).not.toHaveBeenCalled()
     })
   })
 
@@ -180,12 +175,17 @@ describe('useWalletAddress module', () => {
   })
 
   describe('cross-tab storage event', () => {
-    it('should re-read the address when a storage event fires after the cooldown', async () => {
+    it('should react to storage events for relevant SSO keys', async () => {
+      // The previous "cooldown" gating was removed alongside the eth_accounts
+      // probe: relevant storage events now always trigger re-resolution
+      // (filtered by isRelevantStorageKey). Dispatching an irrelevant event
+      // must remain a no-op.
       installEthereum()
       await jest.isolateModulesAsync(async () => {
         await import('./useWalletAddress')
       })
-      window.dispatchEvent(new Event('storage'))
+      window.dispatchEvent(new StorageEvent('storage', { key: 'unrelated-app-key' }))
+      window.dispatchEvent(new StorageEvent('storage', { key: 'single-sign-on-0xabc' }))
     })
   })
 

@@ -1,0 +1,315 @@
+import { useCallback, useMemo } from 'react'
+/* eslint-disable @typescript-eslint/naming-convention */
+import AlternateEmailRoundedIcon from '@mui/icons-material/AlternateEmailRounded'
+import CakeRoundedIcon from '@mui/icons-material/CakeRounded'
+import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded'
+import InsertLinkIcon from '@mui/icons-material/InsertLink'
+import PublicIcon from '@mui/icons-material/Public'
+import PublicRoundedIcon from '@mui/icons-material/PublicRounded'
+import SportsEsportsOutlinedIcon from '@mui/icons-material/SportsEsportsOutlined'
+import TransgenderRoundedIcon from '@mui/icons-material/TransgenderRounded'
+import TranslateRoundedIcon from '@mui/icons-material/TranslateRounded'
+import VerifiedIcon from '@mui/icons-material/Verified'
+/* eslint-enable @typescript-eslint/naming-convention */
+import { Box, Button, CatalogCard, CircularProgress, Tooltip, Typography, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
+import { EditProfileButton } from '../../../components/profile/EditProfileButton'
+import { getEnv } from '../../../config/env'
+import { useProfileBadges } from '../../../features/profile/profile.badges.client'
+import { useGetProfileQuery } from '../../../features/profile/profile.client'
+import { useEquippedCollectibles } from '../../../features/profile/profile.wearables.client'
+import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { CreatorByLine } from './OverviewTab.creator'
+import {
+  detectLinkProvider,
+  extractAchievedTierDescription,
+  formatBadgeDate,
+  formatPriceMana,
+  getEquippedWearables,
+  readField,
+  safeLinkUrl,
+  toCatalogAsset
+} from './OverviewTab.helpers'
+import { PronounsIcon, WearableInfoBadges } from './OverviewTab.icons'
+import type { InfoField, OverviewTabProps, ProfileLink } from './OverviewTab.types'
+import {
+  BadgeFallback,
+  BadgeImage,
+  BadgeSlot,
+  BadgesRow,
+  BioText,
+  EmptyBio,
+  EquippedCardLink,
+  EquippedGrid,
+  InfoGrid,
+  InfoIcon,
+  InfoItem,
+  InfoLabel,
+  InfoSurface,
+  InfoValue,
+  LinkPill,
+  LinkPillIcon,
+  LinksRow,
+  LoadingRow,
+  NameCtaButton,
+  OverviewRoot,
+  OwnerCtaRow,
+  SectionHeader,
+  SectionTitle
+} from './OverviewTab.styled'
+
+function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
+  const t = useFormatMessage()
+  const isMobile = useTabletAndBelowMediaQuery()
+  const { data: profile, isLoading } = useGetProfileQuery(address)
+  const avatar = profile?.avatars?.[0]
+  const hasClaimedName = avatar?.hasClaimedName ?? false
+  const description = avatar?.description?.trim() ?? ''
+  const wearables = useMemo(() => getEquippedWearables(avatar), [avatar])
+  const { collectibles, isLoading: isLoadingCollectibles } = useEquippedCollectibles(wearables)
+  const { badges, isLoading: isLoadingBadges } = useProfileBadges(address)
+  const visibleBadges = badges
+
+  const infoFields: InfoField[] = [
+    { labelKey: 'profile.overview.country', value: readField(avatar, 'country'), icon: <PublicRoundedIcon fontSize="small" /> },
+    { labelKey: 'profile.overview.language', value: readField(avatar, 'language'), icon: <TranslateRoundedIcon fontSize="small" /> },
+    { labelKey: 'profile.overview.pronouns', value: readField(avatar, 'pronouns'), icon: <PronounsIcon /> },
+    {
+      labelKey: 'profile.overview.relationship_status',
+      value: readField(avatar, 'relationshipStatus'),
+      icon: <FavoriteBorderRoundedIcon fontSize="small" />
+    },
+    { labelKey: 'profile.overview.gender', value: readField(avatar, 'gender'), icon: <TransgenderRoundedIcon fontSize="small" /> },
+    {
+      labelKey: 'profile.overview.profession',
+      value: readField(avatar, 'profession'),
+      icon: <SportsEsportsOutlinedIcon fontSize="small" />
+    },
+    { labelKey: 'profile.overview.birth_date', value: readField(avatar, 'birthdate'), icon: <CakeRoundedIcon fontSize="small" /> },
+    { labelKey: 'profile.overview.real_name', value: readField(avatar, 'realName'), icon: <AlternateEmailRoundedIcon fontSize="small" /> },
+    {
+      labelKey: 'profile.overview.favorite_hobby',
+      value: readField(avatar, 'hobbies'),
+      icon: <FavoriteBorderRoundedIcon fontSize="small" />
+    }
+  ]
+  const populatedInfo = infoFields.filter(field => field.value !== undefined)
+
+  const links = (avatar as unknown as { links?: ProfileLink[] } | undefined)?.links ?? []
+
+  // The own-profile name/world CTA lives in the desktop header; on mobile there is no
+  // header, so it renders here in the Overview action row (Figma 322:49226).
+  const handleGetAName = useCallback(() => {
+    const builderUrl = getEnv('BUILDER_URL')
+    if (!builderUrl) return
+    window.open(`${builderUrl.replace(/\/+$/, '')}/names`, '_blank', 'noopener,noreferrer')
+  }, [])
+
+  const handleManageWorld = useCallback(() => {
+    const builderUrl = getEnv('BUILDER_URL')
+    if (!builderUrl) return
+    window.open(`${builderUrl.replace(/\/+$/, '')}/worlds`, '_blank', 'noopener,noreferrer')
+  }, [])
+
+  if (isLoading) {
+    return (
+      <OverviewRoot>
+        <LoadingRow>
+          <CircularProgress size={24} />
+        </LoadingRow>
+      </OverviewRoot>
+    )
+  }
+
+  return (
+    <OverviewRoot>
+      <InfoSurface>
+        {isOwnProfile ? (
+          isMobile ? (
+            <OwnerCtaRow>
+              {!hasClaimedName ? (
+                <NameCtaButton variant="contained" color="primary" startIcon={<VerifiedIcon />} onClick={handleGetAName}>
+                  {t('profile.header.get_a_name')}
+                </NameCtaButton>
+              ) : (
+                <NameCtaButton variant="contained" color="primary" startIcon={<PublicIcon />} onClick={handleManageWorld}>
+                  {t('profile.header.manage_world')}
+                </NameCtaButton>
+              )}
+              <EditProfileButton />
+            </OwnerCtaRow>
+          ) : (
+            <EditProfileButton />
+          )
+        ) : null}
+        <section style={{ width: '100%' }}>
+          <SectionHeader>
+            <SectionTitle>{t('profile.overview.badges')}</SectionTitle>
+          </SectionHeader>
+          {isLoadingBadges ? (
+            <LoadingRow>
+              <CircularProgress size={22} />
+            </LoadingRow>
+          ) : visibleBadges.length > 0 ? (
+            <BadgesRow>
+              {visibleBadges.map(badge => {
+                const tierName = badge.tierName
+                const description = extractAchievedTierDescription(badge.description, tierName)
+                const completedAt = formatBadgeDate(badge.progress?.lastCompletedTierAt ?? badge.completedAt)
+                return (
+                  <Tooltip
+                    key={badge.id}
+                    arrow
+                    placement="top"
+                    title={
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, py: 0.5, px: 0.25, maxWidth: 240 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                          {badge.name}
+                        </Typography>
+                        {tierName ? (
+                          <Typography variant="caption" sx={{ opacity: 0.7, textTransform: 'uppercase', letterSpacing: 1 }}>
+                            {tierName}
+                          </Typography>
+                        ) : null}
+                        {description ? (
+                          <Typography variant="caption" sx={{ opacity: 0.85 }}>
+                            {description}
+                          </Typography>
+                        ) : null}
+                        {completedAt ? (
+                          <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                            {t('profile.overview.badge_unlocked_on', { date: completedAt })}
+                          </Typography>
+                        ) : null}
+                      </Box>
+                    }
+                  >
+                    <BadgeSlot tabIndex={0} aria-label={badge.name}>
+                      {badge.imageUrl ? (
+                        <BadgeImage src={badge.imageUrl} alt={badge.name} loading="lazy" />
+                      ) : (
+                        <BadgeFallback>{badge.name.charAt(0).toUpperCase()}</BadgeFallback>
+                      )}
+                    </BadgeSlot>
+                  </Tooltip>
+                )
+              })}
+            </BadgesRow>
+          ) : (
+            <EmptyBio>{t('profile.overview.no_badges_yet')}</EmptyBio>
+          )}
+        </section>
+
+        <section style={{ width: '100%' }}>
+          <SectionTitle>{t('profile.overview.about')}</SectionTitle>
+          {description.length > 0 ? (
+            <BioText sx={{ mt: 1 }}>{description}</BioText>
+          ) : (
+            <EmptyBio sx={{ mt: 1 }}>{t(isOwnProfile ? 'profile.overview.no_bio_owner' : 'profile.overview.no_bio_member')}</EmptyBio>
+          )}
+          {populatedInfo.length > 0 ? (
+            <InfoGrid>
+              {populatedInfo.map(field => (
+                <InfoItem key={field.labelKey}>
+                  <InfoLabel>
+                    {field.icon ? <InfoIcon>{field.icon}</InfoIcon> : null}
+                    {t(field.labelKey)}
+                  </InfoLabel>
+                  <InfoValue>{field.value}</InfoValue>
+                </InfoItem>
+              ))}
+            </InfoGrid>
+          ) : null}
+        </section>
+
+        {(() => {
+          // User-editable catalyst metadata: validate the URL (`http:` / `https:` only) before
+          // it ever reaches the DOM. `javascript:` / `data:` payloads return null and are
+          // dropped — guards the XSS regression that already burned this surface once.
+          const safeLinks = links
+            .map(link => ({ ...link, safeUrl: safeLinkUrl(link.url) }))
+            .filter((link): link is ProfileLink & { safeUrl: string } => link.safeUrl !== null)
+          if (safeLinks.length === 0) return null
+          return (
+            <section style={{ width: '100%' }}>
+              <SectionTitle>{t('profile.overview.links')}</SectionTitle>
+              <LinksRow sx={{ mt: 1 }}>
+                {safeLinks.map(link => (
+                  <LinkPill key={`${link.safeUrl}-${link.title ?? ''}`} href={link.safeUrl} target="_blank" rel="noopener noreferrer">
+                    <LinkPillIcon>
+                      <InsertLinkIcon fontSize="medium" />
+                    </LinkPillIcon>
+                    {link.title || detectLinkProvider(link.safeUrl)}
+                  </LinkPill>
+                ))}
+              </LinksRow>
+            </section>
+          )
+        })()}
+      </InfoSurface>
+
+      <InfoSurface>
+        <section style={{ width: '100%' }}>
+          <SectionTitle>{t('profile.overview.equipped_items')}</SectionTitle>
+          {collectibles.length > 0 ? (
+            <EquippedGrid sx={{ mt: 2 }}>
+              {collectibles.map(item => {
+                const price = formatPriceMana(item.price)
+                const card = (
+                  <CatalogCard
+                    asset={toCatalogAsset(item)}
+                    imageSrc={item.thumbnail}
+                    action={null}
+                    extraInformation={null}
+                    price={price}
+                    notForSale={!price}
+                    withShadow={false}
+                    hoverShadow="glow"
+                    disableInfoExpansion={isOwnProfile}
+                    creatorSlot={<CreatorByLine address={item.creator} />}
+                    infoBadges={<WearableInfoBadges category={item.wearableCategory} bodyShapes={item.bodyShapes} isSmart={item.isSmart} />}
+                    bottomAction={
+                      isOwnProfile ? undefined : (
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          color="primary"
+                          href={item.marketplaceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {t('profile.overview.buy')}
+                        </Button>
+                      )
+                    }
+                  />
+                )
+                return isOwnProfile ? (
+                  <EquippedCardLink
+                    key={item.urn}
+                    href={item.marketplaceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={item.name}
+                  >
+                    {card}
+                  </EquippedCardLink>
+                ) : (
+                  <Box key={item.urn}>{card}</Box>
+                )
+              })}
+            </EquippedGrid>
+          ) : isLoadingCollectibles ? (
+            <LoadingRow>
+              <CircularProgress size={20} />
+            </LoadingRow>
+          ) : (
+            <EmptyBio sx={{ mt: 1 }}>{t('profile.overview.no_wearables')}</EmptyBio>
+          )}
+        </section>
+      </InfoSurface>
+    </OverviewRoot>
+  )
+}
+
+export { OverviewTab }
+export type { OverviewTabProps }

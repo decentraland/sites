@@ -7,14 +7,16 @@ import {
   useUploadPosterVerticalMutation
 } from '../features/events'
 import type { EventEntry } from '../features/events'
-import { dayIndicesToWeekdayMask, parseStartWeekday } from '../utils/recurrence'
+import { compressImageFile } from '../utils/imageCompression'
 import { useAuthIdentity } from './useAuthIdentity'
-import { FREQUENCY_MAP, INITIAL_STATE, eventEntryToFormState, parseDurationMs, parseRecurrentInterval } from './useCreateEventForm.helpers'
+import { INITIAL_STATE, eventEntryToFormState, parseDurationMs, recurrenceToApi } from './useCreateEventForm.helpers'
 import type { CreateEventFormMode, CreateEventFormState, FormErrors, ImageErrorCode } from './useCreateEventForm.types'
 
 const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif']
 const ACCEPTED_VERTICAL_IMAGE_TYPES = ['image/png', 'image/jpeg']
 const MAX_IMAGE_SIZE_BYTES = 500 * 1024
+const COVER_RECOMMENDED_WIDTH = 1340
+const COVER_RECOMMENDED_HEIGHT = 670
 const VERTICAL_IMAGE_EXPECTED_WIDTH = 716
 const VERTICAL_IMAGE_EXPECTED_HEIGHT = 1814
 
@@ -27,24 +29,30 @@ const MAX_EVENT_DURATION_MS = 24 * 60 * 60 * 1000
 const MAX_NAME_LENGTH = 150
 const MAX_DESCRIPTION_LENGTH = 5000
 
-function validateImage(file: File): ImageErrorCode | null {
-  if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-    return 'invalid_image_type'
-  }
-  if (file.size > MAX_IMAGE_SIZE_BYTES) {
-    return 'image_too_large'
+function validateImageType(file: File, accepted: string[], invalidCode: ImageErrorCode): ImageErrorCode | null {
+  if (!accepted.includes(file.type)) {
+    return invalidCode
   }
   return null
 }
 
-function validateVerticalImage(file: File): ImageErrorCode | null {
-  if (!ACCEPTED_VERTICAL_IMAGE_TYPES.includes(file.type)) {
-    return 'invalid_vertical_image_type'
+// Re-encode every selected cover to WebP (falling back to JPEG when the browser
+// can't encode WebP), shrinking past 500 KB when needed. When the source can't
+// be re-encoded at all (animated GIF, or a decoder/canvas failure) we keep the
+// original if it already fits and only reject when it's both unconvertible and
+// over the limit.
+async function prepareImageUpload(
+  file: File,
+  options: { cover?: { width: number; height: number }; preserveDimensions?: boolean }
+): Promise<{ file: File; error: ImageErrorCode | null }> {
+  const converted = await compressImageFile(file, { ...options, maxBytes: MAX_IMAGE_SIZE_BYTES })
+  if (converted) {
+    return { file: converted, error: null }
   }
   if (file.size > MAX_IMAGE_SIZE_BYTES) {
-    return 'image_too_large'
+    return { file, error: 'image_too_large' }
   }
-  return null
+  return { file, error: null }
 }
 
 function readImageDimensions(file: File): Promise<{ width: number; height: number }> {
@@ -145,11 +153,11 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
 
   const handleImageSelect = useCallback(
     async (file: File) => {
-      const validationError = validateImage(file)
-      if (validationError) {
+      const typeError = validateImageType(file, ACCEPTED_IMAGE_TYPES, 'invalid_image_type')
+      if (typeError) {
         setForm(prev => {
           if (prev.imagePreviewUrl) URL.revokeObjectURL(prev.imagePreviewUrl)
-          return { ...prev, imageError: validationError, image: null, imagePreviewUrl: null, imageUrl: null, isUploadingImage: false }
+          return { ...prev, imageError: typeError, image: null, imagePreviewUrl: null, imageUrl: null, isUploadingImage: false }
         })
         return
       }
@@ -157,23 +165,28 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         setForm(prev => ({ ...prev, imageError: 'upload_failed' }))
         return
       }
+      // Show the original immediately and flag uploading before the async
+      // re-encode so the form's submit guard sees the in-flight state.
       const previewUrl = URL.createObjectURL(file)
       setForm(prev => {
         if (prev.imagePreviewUrl) URL.revokeObjectURL(prev.imagePreviewUrl)
-        return {
-          ...prev,
-          image: file,
-          imagePreviewUrl: previewUrl,
-          imageError: null,
-          imageUrl: null,
-          isUploadingImage: true
-        }
+        return { ...prev, image: file, imagePreviewUrl: previewUrl, imageError: null, imageUrl: null, isUploadingImage: true }
       })
-      try {
-        const result = await uploadPoster({ file, identity }).unwrap()
+      const { file: uploadable, error: prepError } = await prepareImageUpload(file, {
+        cover: { width: COVER_RECOMMENDED_WIDTH, height: COVER_RECOMMENDED_HEIGHT }
+      })
+      if (prepError) {
         setForm(prev => {
           if (prev.imagePreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(prev.imagePreviewUrl)
-          return { ...prev, imageUrl: result.url, imagePreviewUrl: result.url, isUploadingImage: false }
+          return { ...prev, imageError: prepError, image: null, imagePreviewUrl: null, imageUrl: null, isUploadingImage: false }
+        })
+        return
+      }
+      try {
+        const result = await uploadPoster({ file: uploadable, identity }).unwrap()
+        setForm(prev => {
+          if (prev.imagePreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(prev.imagePreviewUrl)
+          return { ...prev, image: uploadable, imageUrl: result.url, imagePreviewUrl: result.url, isUploadingImage: false }
         })
       } catch {
         setForm(prev => ({ ...prev, isUploadingImage: false, imageError: 'upload_failed' }))
@@ -191,13 +204,13 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
 
   const handleVerticalImageSelect = useCallback(
     async (file: File) => {
-      const validationError = validateVerticalImage(file) ?? (await validateVerticalImageDimensions(file))
-      if (validationError) {
+      const typeError = validateImageType(file, ACCEPTED_VERTICAL_IMAGE_TYPES, 'invalid_vertical_image_type')
+      if (typeError) {
         setForm(prev => {
           if (prev.verticalImagePreviewUrl) URL.revokeObjectURL(prev.verticalImagePreviewUrl)
           return {
             ...prev,
-            verticalImageError: validationError,
+            verticalImageError: typeError,
             verticalImage: null,
             verticalImagePreviewUrl: null,
             verticalImageUrl: null,
@@ -222,12 +235,30 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
           isUploadingVerticalImage: true
         }
       })
-      try {
-        const result = await uploadPosterVertical({ file, identity }).unwrap()
+      // Preserve dimensions: the 716×1814 requirement is validated right after.
+      const { file: uploadable, error: prepError } = await prepareImageUpload(file, { preserveDimensions: true })
+      const validationError = prepError ?? (await validateVerticalImageDimensions(uploadable))
+      if (validationError) {
         setForm(prev => {
           if (prev.verticalImagePreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(prev.verticalImagePreviewUrl)
           return {
             ...prev,
+            verticalImageError: validationError,
+            verticalImage: null,
+            verticalImagePreviewUrl: null,
+            verticalImageUrl: null,
+            isUploadingVerticalImage: false
+          }
+        })
+        return
+      }
+      try {
+        const result = await uploadPosterVertical({ file: uploadable, identity }).unwrap()
+        setForm(prev => {
+          if (prev.verticalImagePreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(prev.verticalImagePreviewUrl)
+          return {
+            ...prev,
+            verticalImage: uploadable,
             verticalImageUrl: result.url,
             verticalImagePreviewUrl: result.url,
             isUploadingVerticalImage: false
@@ -301,23 +332,11 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
       newErrors.email = t('create_event.error_invalid_email')
     }
 
-    if (form.repeatEnabled) {
-      if (!form.repeatEndDate) {
-        newErrors.repeatEndDate = t('create_event.error_required')
-      }
-      if (form.frequency === 'every_week') {
-        if (parseRecurrentInterval(form.repeatInterval) === null) {
-          newErrors.repeatInterval = t('create_event.error_repeat_interval_invalid')
-        }
-        if (form.repeatDays.length === 0) {
-          newErrors.repeatDays = t('create_event.error_repeat_days_required')
-        } else {
-          const startWeekday = parseStartWeekday(form.startDate)
-          if (startWeekday !== null && !form.repeatDays.includes(startWeekday)) {
-            newErrors.repeatDays = t('create_event.error_start_date_not_in_repeat_days')
-          }
-        }
-      }
+    // NOTE: the per-weekday picker and the standalone interval validation were removed (#560). The
+    // combined recurrence selector only yields valid (frequency, interval) pairs, and the weekly
+    // weekday is now derived from start_at, so the only thing left to validate is the end date.
+    if (form.repeatEnabled && !form.repeatEndDate) {
+      newErrors.repeatEndDate = t('create_event.error_required')
     }
 
     return newErrors
@@ -350,6 +369,7 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
       const duration = parseDurationMs(form.duration) ?? 0
 
       const isWorld = form.location === 'world'
+      const recurrenceApi = form.repeatEnabled ? recurrenceToApi(form.recurrence) : null
       /* eslint-disable @typescript-eslint/naming-convention */
       const payload = {
         name: form.name.trim(),
@@ -371,16 +391,14 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         server: isWorld ? form.world : null,
         community_id: form.communityId || null,
         recurrent: form.repeatEnabled || undefined,
-        recurrent_frequency: form.repeatEnabled ? FREQUENCY_MAP[form.frequency] : undefined,
-        recurrent_interval: form.repeatEnabled
-          ? form.frequency === 'every_week'
-            ? parseRecurrentInterval(form.repeatInterval) ?? 1
-            : 1
-          : undefined,
-        // Mask only goes on the wire for WEEKLY — for DAILY/MONTHLY (and non-recurrent events) we omit
-        // it so the server's schema default (0) takes effect and the RRule defaults to start_at's weekday.
-        recurrent_weekday_mask:
-          form.repeatEnabled && form.frequency === 'every_week' ? dayIndicesToWeekdayMask(form.repeatDays) : undefined,
+        recurrent_frequency: recurrenceApi?.frequency,
+        recurrent_interval: recurrenceApi?.interval,
+        // NOTE: send an explicit 0 (not undefined) whenever the event is recurrent (#560). 0 makes the
+        // server's RRule default BYDAY to start_at's own weekday, so a weekly/biweekly event recurs on
+        // exactly that one day. Sending it explicitly also CLEARS any stale per-weekday mask on edit —
+        // omitting the field on a PATCH would let the backend keep the old mask, which is how a Tuesday
+        // event ended up also showing every Wednesday. Omit it only when the event isn't recurrent.
+        recurrent_weekday_mask: form.repeatEnabled ? 0 : undefined,
         recurrent_until: form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : undefined
       }
       /* eslint-enable @typescript-eslint/naming-convention */

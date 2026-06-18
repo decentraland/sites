@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useAnalytics } from '@dcl/hooks'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -10,24 +11,25 @@ const ANON_USER_ID_PARAM = 'anon_user_id'
 /**
  * Returns the anonymous user ID for campaign attribution.
  *
- * Priority: URL param `anon_user_id` > Segment anonymous ID.
+ * Priority: URL param `anon_user_id` > Segment anonymous ID in localStorage.
  *
  * The URL param is used for re-download flows (the `/download_success` page
- * receives it from `DownloadOptions` via the redirect query string).
- * The Segment fallback is the primary source on the initial download page.
+ * receives it from upstream landings via the redirect query string).
+ * The Segment fallback is the primary source on direct landings.
  *
- * **Note:** The Segment fallback is NOT reactive. `useMemo` depends only on
- * `searchParams`. If Segment's SDK initializes after the first render and
- * there's no URL param, the hook returns `undefined` for that render cycle.
- * This is acceptable because the download page loads Segment early via
- * `AnalyticsProvider`, and the URL-param path (re-downloads) doesn't depend
- * on the SDK at all.
+ * **Reactivity:** the `useAnalytics().isInitialized` flag is included in the
+ * memo dependencies. When Segment finishes its lazy boot and writes
+ * `ajs_anonymous_id` to localStorage, the hook re-evaluates and returns the
+ * newly-available ID. Consumers that derive URLs from the result (Hero's
+ * `buildDownloadSuccessHref`, DownloadSuccess's gateway URL) get the up-to-date
+ * value on the next render after init.
  *
  * Both sources are validated against UUID format to prevent malformed strings
  * from flowing into download URLs and analytics events.
  */
 function useAnonUserId(): string | undefined {
   const [searchParams] = useSearchParams()
+  const { isInitialized } = useAnalytics()
 
   return useMemo(() => {
     const fromUrl = searchParams.get(ANON_USER_ID_PARAM)
@@ -48,7 +50,9 @@ function useAnonUserId(): string | undefined {
     }
 
     return undefined
-  }, [searchParams])
+    // `isInitialized` participates in deps so the memo re-runs when Segment
+    // boots and `ajs_anonymous_id` becomes available.
+  }, [searchParams, isInitialized])
 }
 
 export { ANON_USER_ID_PARAM, useAnonUserId }

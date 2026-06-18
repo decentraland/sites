@@ -1,29 +1,12 @@
 {
   "general": {
-    "main_browser_cta": "시작하기",
-    "main_browser_cta_target": "https://decentraland.org/play/",
-    "mvmf_main_stage_target": "https://decentraland.org/play/?position=-62%2C58",
-    "see_festival_events_target": "https://events.decentraland.org/schedule/?id=297fb4fa-fe11-4746-8abd-ce6c77bad3e2",
-    "main_desktop_cta": "다운로드",
-    "secondary_desktop_cta": "브라우저에서 열기",
-    "discord_cta": "디스코드에 참여하세요",
-    "discord_cta_target": "https://dcl.gg/discord",
-    "discord": "Discord",
-    "twitter_cta_target": "https://twitter.com/decentraland",
-    "follow_us_on": "팔로우하기 ",
-    "twitter": "Twitter",
-    "telegram_cta_target": "https://t.me/decentralandTG",
-    "join_us_on": "참여하기 ",
-    "telegram": "Telegram",
-    "sdk_cta_target": "https://developers.decentraland.org/",
-    "get_started_with_our": "시작하기 ",
-    "sdk": "SDK"
+    "discord_cta_target": "https://dcl.gg/discord"
   },
   "page": {
     "download": {
       "title": "Decentraland 다운로드",
       "description": "Decentraland를 다운로드하고 메타버스 탐험을 시작하세요",
-      "download_onboarding_title": "Decentraland 다운로드\n\n바로 시작하세요!",
+      "download_onboarding_title": "Decentraland 다운로드\n함께 어울려요!",
       "not_available": "사용 중인 OS에서는 사용할 수 없습니다",
       "not_available_subtitle": "Decentraland는 <span>Windows</span>와 <span>macOS</span>에서 사용 가능합니다.",
       "download": "다운로드",
@@ -38,10 +21,6 @@
       "your_account": "내 계정",
       "already_downloaded": "이미 다운로드하셨나요?",
       "jump_in": "입장하기",
-      "mobile": {
-        "switch_to_computer": "Decentraland를 다운로드하려면 컴퓨터로 전환하세요",
-        "send_link": "링크 보내기"
-      },
       "modal": {
         "title_first_line": "아직",
         "title_second_line": "Decentraland 앱이 없습니다",
@@ -49,7 +28,6 @@
       },
       "downloading": "Decentraland 다운로드 중...",
       "avatar_preview": "Decentraland 아바타 미리보기",
-      "share_title": "Decentraland 다운로드",
       "success": {
         "title": "거의 다 됐어요!",
         "subtitle": "방금 다운로드한 파일을 열어 Decentraland 설치를 완료하고 {action}을 시작하세요",
@@ -339,7 +317,8 @@
         },
         "screen_share_failed": {
           "title": "화면 공유 실패",
-          "default_message": "화면 공유를 시작할 수 없습니다. 다시 시도해 주세요."
+          "default_message": "화면 공유를 시작할 수 없습니다. 다시 시도해 주세요.",
+          "stopped_message": "화면 공유가 중지되었습니다. 다시 공유하려면 재시도를 클릭하세요."
         },
         "retry": "재시도",
         "dismiss": "닫기"
@@ -368,6 +347,15 @@
     "report": {
       "title": "플레이어 신고 – Decentraland",
       "success_title": "신고가 전송되었습니다 – Decentraland"
+    },
+    "play": {
+      "title": "웹 버전은 더 이상 제공되지 않습니다.",
+      "subtitle": "데스크톱 또는 모바일 앱에서 계속 플레이하세요.",
+      "also_available_on": "다음에서도 이용 가능",
+      "already_downloaded": "이미 다운로드하셨나요?",
+      "jump_in": "입장하기!",
+      "experimental": "웹에서 계속 플레이하고 싶으신가요? 실험 버전을 {here}에서 사용해 보세요",
+      "here": "여기"
     }
   },
   "page_invite": {
@@ -431,101 +419,10 @@
     }
   },
   "index": {
-    "create_my_account": "계정 만들기",
-    "get_started": "시작하기",
-    "social": {
-      "title": "Decentraland | 함께 어울리기",
-      "description": "Decentraland는 온라인에서 어울리는 곳입니다. 영화 상영, 라이브 음악, 퀴즈 및 기타 커뮤니티 이벤트에 참여하세요. 언제든 들러서 누가 있는지 확인하세요."
-    },
-    "mobile_modal": {
-      "description": "Decentraland는 현재 데스크톱에서만 사용 가능합니다. 모바일 지원 시 알림을 받으려면 이메일을 입력하세요.",
-      "placeholder": "email@domain.com",
-      "sign_up": "가입하기",
-      "signed_up": "구독해 주셔서 감사합니다!",
-      "sign_up_fail": "오류가 발생했습니다!",
-      "close": "닫기"
-    },
-    "main": {
-      "title": "Decentraland에 오신 것을 환영합니다",
-      "description": "사용자가 소유한 최초의 가상 세계에서 만들고, 탐험하고, 거래하세요.",
-      "jump_in": "입장하기",
-      "see_festival_events": "축제 이벤트 보기"
-    },
-    "explore": {
-      "title": "탐험",
-      "subtitle": "놀라운 진화하는 세계에 빠져보세요",
-      "description": "사용자가 소유한 LAND를 탐험하며 놀라운 장면과 구조물을 경험하세요. 우주 모험부터 중세 던전 미로, 커뮤니티 구성원들이 만든 마을까지.",
-      "main_cta": "탐험 시작",
-      "main_cta_target": "https://decentraland.org/play/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "create": {
-      "title": "창조",
-      "subtitle": "상상력의 한계를 시험하세요",
-      "description": "간단한 Builder 도구를 사용하여 장면, 예술 작품, 도전 등을 만들고 이벤트에 참여하여 상금을 받으세요. 숙련된 크리에이터를 위해 SDK는 소셜 게임과 애플리케이션으로 세계를 채울 수 있는 도구를 제공합니다.",
-      "main_cta": "빌딩 시작",
-      "main_cta_target": "https://builder.decentraland.org/",
-      "secondary_cta": "개발 시작",
-      "secondary_cta_target": "https://developers.decentraland.org/"
-    },
-    "trade": {
-      "title": "거래",
-      "subtitle": "디지털 자산의 가상 목적지",
-      "description": "Decentraland 마켓플레이스에서 LAND, 부동산, 아바타 웨어러블 및 이름을 사고 파세요: 이더리움 블록체인이 뒷받침하는 최고의 디지털 상품.",
-      "main_cta": "둘러보기 시작",
-      "main_cta_target": "https://market.decentraland.org/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "where_to_start": {
-      "title": "어디서 시작할지 모르겠나요?",
-      "description": "",
-      "poi": "관심 지점",
-      "our_picks": "추천",
-      "our_events": "다가오는 이벤트",
-      "target_events": "https://events.decentraland.org",
-      "more_events": "더 많은 이벤트",
-      "best_multiplayer": "베스트 멀티플레이어",
-      "best_adventures": "베스트 어드벤처"
-    },
-    "dao": {
-      "title": "Decentraland 소개",
-      "subtitle": "가상 세계의 미래를 결정하세요",
-      "description": "최초의 완전 탈중앙화 세계인 Decentraland는 가장 중요한 스마트 컨트랙트와 자산을 소유한 DAO를 통해 관리됩니다. DAO를 통해 세계의 작동 방식에 대해 결정하고 투표할 수 있습니다.",
-      "main_cta": "자세히 알아보기",
-      "main_cta_target": "https://dao.decentraland.org/",
-      "secondary_cta": "",
-      "secondary_cta_target": ""
-    },
-    "blog": {
-      "title": "블로그에서",
-      "more": "더 많은 글",
-      "target": "https://decentraland.org/blog"
-    },
-    "contact": {
-      "title": "문의하기",
-      "description": "Discord에서 언제든 만나실 수 있습니다. 일반적인 채널을 통해서도 연락 가능합니다.",
-      "main_cta": "연락하기",
-      "main_cta_target": "mailto:hello@decentraland.org"
-    },
-    "subscribe": {
-      "title": "최신 소식 받기",
-      "description": "Decentraland의 이벤트, 대회, 새로운 개발에 대한 최신 뉴스를 받아보세요",
-      "placeholder": "email@domain.com",
-      "sign_up": "가입하기",
-      "signed_up": "구독해 주셔서 감사합니다!",
-      "sign_up_fail": "오류가 발생했습니다!"
-    },
     "press": {
       "title": "Decentraland 프레스 키트",
-      "description": "Decentraland 언론 자료 및 브랜드 자산 다운로드",
       "page_description": "프로젝트에 대해 글을 쓰거나 이야기할 때 자유롭게 사용할 수 있는 다양한 자료를 준비했습니다. 문의 사항은 다음으로 연락해 주세요: ",
       "download_button": "프레스 키트 다운로드"
-    },
-    "support": {
-      "title": "Decentraland - 도움말 센터",
-      "description": "Decentraland 도움말을 받으세요. FAQ 검색, 서비스 상태 확인 및 지원팀 문의."
     }
   },
   "component": {
@@ -751,7 +648,7 @@
         "copied": "복사됨!",
         "download": "사진 다운로드",
         "info": "정보 전환",
-        "share_text": "지금 Decentraland에서 무엇을 하고 있는지 확인하고 함께 참여하세요!"
+        "share_text": "지금 @decentraland에서 진행 중.\n\n놀러 오세요 👋\n\n"
       },
       "metadata": {
         "title": "정보",
@@ -932,6 +829,16 @@
         "title": "페이지를 찾을 수 없습니다",
         "subtitle": "찾으시는 페이지가 존재하지 않습니다.",
         "go_home": "홈으로"
+      },
+      "errors": {
+        "unknown": "저장하지 못했습니다. 다시 시도하세요.",
+        "network": "스토리지 서비스에 연결할 수 없습니다. 연결 상태를 확인한 후 다시 시도하세요.",
+        "signed_fetch": "요청에 서명할 수 없습니다. 로그아웃 후 다시 로그인하고 다시 시도하세요.",
+        "unauthorized": "이 월드의 스토리지를 업데이트할 권한이 없습니다. 환경 변수는 월드 소유자 또는 씬 배포자만 편집할 수 있습니다.",
+        "not_found": "이 월드 또는 씬을 스토리지 서비스에서 찾을 수 없습니다.",
+        "payload_too_large": "값이 이 스토리지 네임스페이스에 비해 너무 큽니다.",
+        "rate_limited": "요청이 너무 많습니다. 잠시 기다린 후 다시 시도하세요.",
+        "server": "스토리지 서비스가 오류를 반환했습니다. 몇 분 후에 다시 시도하세요."
       }
     },
     "report": {
@@ -989,19 +896,29 @@
         "body": "신고를 접수했습니다. 곧 검토할 예정입니다.",
         "dismiss": "이제 이 창을 닫으셔도 됩니다."
       }
+    },
+    "jump": {
+      "events_page": {
+        "deleted_notice_prefix": "이 행아웃은 더 이상 이용할 수 없습니다.",
+        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_suffix": "에서 더 많은 행아웃을 찾아보세요."
+      }
     }
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "repeat_interval": "반복 간격",
-    "repeat_on": "반복 요일",
-    "interval_chip_week_singular": "1주",
-    "interval_chip_week_plural": "{count}주",
-    "error_repeat_interval_invalid": "반복 간격은 1에서 4 사이의 정수여야 합니다",
-    "error_repeat_days_required": "최소 한 개의 요일을 선택하세요",
-    "error_start_date_not_in_repeat_days": "시작일의 요일이 선택된 요일 중 하나여야 합니다",
-    "vertical_recommended_size": "권장 크기: 716 × 1814 px"
+    "error_image_too_large": "이 이미지를 500KB 이하로 압축할 수 없습니다. 더 작은 파일을 선택해 주세요.",
+    "vertical_recommended_size": "권장 크기: 716 × 1814 px",
+    "recurrence": "반복",
+    "every_day": "매일",
+    "every_week": "매주",
+    "every_2_weeks": "2주마다",
+    "every_3_weeks": "3주마다",
+    "every_4_weeks": "4주마다",
+    "every_month": "매월",
+    "upcoming_dates_label": "예정된 날짜",
+    "upcoming_dates_empty": "이 반복 설정에 예정된 날짜가 없습니다"
   },
   "community": {
     "global": {
@@ -1051,7 +968,200 @@
       "upcoming_events": "다가오는 이벤트"
     }
   },
+  "profile": {
+    "not_found": {
+      "title": "프로필을 찾을 수 없습니다",
+      "description": "주소 \"{address}\"는 유효한 이더리움 주소가 아닙니다."
+    },
+    "header": {
+      "edit_profile": "프로필 편집",
+      "add_friend": "친구 추가",
+      "request_sent": "요청 보냄",
+      "friends": "친구",
+      "remove_friend": "친구 삭제",
+      "unblock": "차단 해제",
+      "block": "차단",
+      "more_actions": "더 보기",
+      "copy_address": "주소 복사",
+      "address_copied": "주소가 복사되었습니다!",
+      "close_profile": "프로필 닫기",
+      "get_a_name": "고유한 이름 받기",
+      "manage_world": "월드 관리",
+      "invite_friends": "친구 초대",
+      "invite_copied": "링크가 복사되었습니다!",
+      "friends_count": "친구 {count} 명",
+      "mutual_count": "공통 {count} 명",
+      "edit": "편집",
+      "back": "뒤로",
+      "open_menu": "프로필 메뉴 열기",
+      "logout": "로그아웃",
+      "share_profile": "프로필 공유"
+    },
+    "friends_modal": {
+      "title": "친구 ({count})",
+      "close": "친구 목록 닫기",
+      "search_placeholder": "친구 검색",
+      "empty": "아직 친구가 없습니다.",
+      "no_results": "일치하는 친구가 없습니다.",
+      "mutual_title": "함께 아는 친구 ({count})"
+    },
+    "tabs": {
+      "overview": "개요",
+      "assets": "에셋",
+      "creations": "창작물",
+      "communities": "커뮤니티",
+      "places": "장소",
+      "photos": "사진",
+      "referral_rewards": "추천 보상",
+      "my_assets": "내 에셋",
+      "my_communities": "내 커뮤니티",
+      "my_places": "내 장소",
+      "my_photos": "내 사진"
+    },
+    "overview": {
+      "about": "소개",
+      "no_bio_owner": "아직 정보가 없습니다. 월드에 입장하여 자기소개를 완성해 보세요!",
+      "no_bio_member": "이 회원은 아직 자기소개를 추가하지 않았습니다.",
+      "equipped_wearables": "착용 중인 웨어러블",
+      "no_wearables": "아직 착용한 아이템이 없습니다.",
+      "badges": "배지",
+      "links": "링크",
+      "equipped_items": "착용한 아이템",
+      "country": "국가",
+      "language": "언어",
+      "pronouns": "대명사",
+      "relationship_status": "관계 상태",
+      "gender": "성별",
+      "profession": "직업",
+      "birth_date": "생년월일",
+      "real_name": "실명",
+      "favorite_hobby": "취미",
+      "no_badges_yet": "아직 배지가 없습니다. 월드에 입장하여 배지를 모아보세요!",
+      "badge_unlocked_on": "{date}에 획득",
+      "by_creator": "제작자 {name}",
+      "buy": "구매"
+    },
+    "creations": {
+      "empty_title": "아직 창작물이 없습니다",
+      "empty_owner": "만든 아이템이 여기에 표시됩니다.",
+      "empty_member": "이 계정은 아직 아무것도 만들지 않았습니다.",
+      "count": "{count}개 아이템",
+      "load_more": "더 보기",
+      "filter_wearables": "웨어러블",
+      "filter_emotes": "이모트",
+      "view_all": "모두 보기",
+      "not_for_sale": "판매 중 아님",
+      "view_in_marketplace": "마켓플레이스에서 보기"
+    },
+    "assets": {
+      "empty_title": "아직 에셋이 없습니다",
+      "empty_description": "보유한 웨어러블, 네임, 랜드가 여기에 표시됩니다.",
+      "filter_all": "전체",
+      "filter_wearables": "웨어러블",
+      "filter_emotes": "이모트",
+      "filter_names": "네임",
+      "filter_lands": "랜드",
+      "filter_estates": "에스테이트",
+      "count": "{count}개 에셋",
+      "view": "보기",
+      "edit": "편집",
+      "transfer": "이전",
+      "empty_owner_subtitle": "마켓플레이스에서 나만의 스타일을 만들어 보세요",
+      "empty_owner_cta": "마켓플레이스로 이동"
+    },
+    "communities": {
+      "empty_title": "아직 커뮤니티가 없습니다",
+      "empty_member": "이 회원은 아직 커뮤니티에 가입하지 않았습니다.",
+      "count": "{count}개 커뮤니티",
+      "member": "회원",
+      "members_count": "{count}명의 회원",
+      "role_owner": "소유자",
+      "role_admin": "관리자",
+      "action_view": "보기",
+      "action_joined": "가입됨",
+      "share_aria": "커뮤니티 링크 공유",
+      "copy_link": "링크 복사",
+      "copied": "복사됨!",
+      "empty_owner_subtitle": "Decentraland에 입장하여 나에게 맞는 커뮤니티에 참여하세요. 직접 만들 수도 있습니다!",
+      "empty_owner_cta": "커뮤니티 둘러보기"
+    },
+    "places": {
+      "empty_title": "아직 장소가 없습니다",
+      "empty_member": "이 회원은 아직 장소를 등록하지 않았습니다.",
+      "count": "{count}개 장소",
+      "jump_in": "점프",
+      "filter_my_places": "내 장소",
+      "filter_favorites": "즐겨찾기",
+      "empty_owner_title": "아직 아무것도 없어요—하지만 쉽게 바꿀 수 있어요",
+      "empty_owner_subtitle": "내 장소에는 Decentraland에서 소유하거나 관리하는 공간이 표시됩니다. 가장 쉬운 시작 방법은 NAME을 얻는 것이며, 나만의 World가 열립니다.",
+      "empty_owner_cta": "NAME 받기",
+      "empty_favorites_title": "아직 저장한 항목이 없어요",
+      "empty_favorites_subtitle": "장소 카드나 Decentraland 지도에서 하트를 눌러 즐겨찾는 장소를 추가하세요. 여기에서 모두 확인할 수 있어요.",
+      "empty_favorites_cta": "장소 둘러보기"
+    },
+    "photos": {
+      "empty_title": "아직 사진이 없습니다",
+      "empty_member": "이 회원은 아직 사진을 찍지 않았습니다.",
+      "count": "{count}장의 사진",
+      "empty_owner_subtitle": "입장해서 추억을 모아 보세요! 'C'를 눌러 카메라를 열고 '스페이스바'로 사진을 찍을 수 있어요.",
+      "empty_owner_cta": "입장하기"
+    },
+    "referral_rewards": {
+      "anonymous": "로그인하여 친구를 초대하고 보상을 잠금 해제하세요.",
+      "invite_title": "친구 초대하고 보상 받기",
+      "invite_subtitle": "코드를 공유하세요. 친구가 Decentraland에 가입하면 독점 웨어러블과 배지를 잠금 해제할 수 있습니다.",
+      "copy_invite_link": "초대 링크 복사",
+      "copied": "복사됨!",
+      "invited": "초대됨",
+      "confirmed": "확인됨",
+      "your_rewards": "내 보상",
+      "no_rewards": "아직 보상이 없습니다. 계속 초대하여 등급을 잠금 해제하세요.",
+      "claimed": "수령함",
+      "unlocked": "잠금 해제됨",
+      "locked": "잠김",
+      "tiers_unlocked": "잠금 해제된 등급",
+      "next_tier_at": "다음 등급까지 ({count}명 초대)",
+      "tier_label": "등급 {tier}",
+      "tier_invites": "{count}명 초대"
+    },
+    "referral_hero_section": {
+      "title": "Decentraland is Better With Friends",
+      "subtitle": "Invite yours and get rewards!",
+      "tooltip_text": "Invitees must be new to Decentraland and must jump in-world on 3 separate days to count toward reward goals. See ",
+      "tooltip_link_label": "Terms & Conditions",
+      "step_1": "Invite friends to hang out in-world by sharing your referral link.",
+      "step_2": "Your friends download Decentraland and jump in on 3 separate days.",
+      "step_3": "You earn exclusive rewards for helping grow our community!",
+      "how_it_works": "How it works",
+      "share": "SHARE",
+      "copy_link": "Copy Link",
+      "copied_to_clipboard": "Link copied successfully",
+      "share_on_x": "Share on X",
+      "share_on_x_title": "Wanna hang out in Decentraland? Use my referral link to make your account and download Decentraland so we can explore together! #DCL #Decentraland"
+    },
+    "referral_reward_card": {
+      "swag": "IRL SWAG PACK",
+      "claim": "CLAIM",
+      "image_alt": "Reward Image"
+    },
+    "referral_journey": {
+      "title": "Your Reward Journey",
+      "invites_accepted": "{count} Friends Joined",
+      "tooltip_title": "{count} Friends Joined",
+      "tooltip_subtitle": "{count} More friends for your next Reward!"
+    }
+  },
   "event_detail": {
+    "delete": "삭제",
+    "delete_modal": {
+      "title": "행아웃을 삭제하시겠습니까?",
+      "subtitle": "이 행아웃은 내 행아웃에서 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.",
+      "cancel": "취소",
+      "confirm": "행아웃 삭제",
+      "toast_title": "행아웃이 삭제되었습니다",
+      "toast_description": "행아웃 {name}이(가) 성공적으로 삭제되었습니다!",
+      "error": "행아웃을 삭제하지 못했습니다. 다시 시도해 주세요."
+    },
     "recurrent_daily": "매일 반복",
     "recurrent_weekly": "매주 반복",
     "recurrent_monthly": "매월 반복",
@@ -1080,5 +1190,9 @@
     "form_utc_preview": "{time} UTC",
     "form_utc_preview_next_day": "{time} UTC (+1일)",
     "form_utc_preview_previous_day": "{time} UTC (-1일)"
+  },
+  "upcoming": {
+    "today_at": "오늘 {time}",
+    "tomorrow_at": "내일 {time}"
   }
 }

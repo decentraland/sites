@@ -5,6 +5,7 @@ import {
   enrichPlaceCards,
   expandRecurrentDates,
   isDclFoundationCreator,
+  isDeleted,
   isPubliclyVisibleEvent
 } from './events.helpers'
 import type { HotScene, LiveNowCard } from './events.helpers'
@@ -63,6 +64,39 @@ describe('isPubliclyVisibleEvent', () => {
     it('should return false even if approved is somehow also true', () => {
       expect(isPubliclyVisibleEvent({ approved: false, rejected: true })).toBe(false)
       expect(isPubliclyVisibleEvent({ approved: true, rejected: true })).toBe(false)
+    })
+  })
+
+  describe('when the event has been deleted', () => {
+    it('should return false even if approved and not rejected', () => {
+      expect(isPubliclyVisibleEvent({ approved: true, rejected: false, deleted_by_user: true, deleted_by_admin: false })).toBe(false)
+      expect(isPubliclyVisibleEvent({ approved: true, rejected: false, deleted_by_user: false, deleted_by_admin: true })).toBe(false)
+    })
+  })
+})
+
+describe('isDeleted', () => {
+  describe('when deleted_by_user is true', () => {
+    it('should return true', () => {
+      expect(isDeleted({ deleted_by_user: true, deleted_by_admin: false })).toBe(true)
+    })
+  })
+
+  describe('when deleted_by_admin is true', () => {
+    it('should return true', () => {
+      expect(isDeleted({ deleted_by_user: false, deleted_by_admin: true })).toBe(true)
+    })
+  })
+
+  describe('when neither flag is set', () => {
+    it('should return false', () => {
+      expect(isDeleted({ deleted_by_user: false, deleted_by_admin: false })).toBe(false)
+    })
+  })
+
+  describe('when the flags are undefined', () => {
+    it('should return false', () => {
+      expect(isDeleted({})).toBe(false)
     })
   })
 })
@@ -619,7 +653,7 @@ describe('bucketEventsByDay', () => {
         finish_at: '2026-04-29T11:00:00Z'
       })
 
-      const buckets = bucketEventsByDay([event], days)
+      const buckets = bucketEventsByDay([event], days, new Date('2026-04-29T00:00:00Z').getTime())
 
       expect(buckets[0]).toHaveLength(1)
       expect(buckets[0][0]).toBe(event)
@@ -640,9 +674,14 @@ describe('bucketEventsByDay', () => {
 
   describe('when a recurrent event has empty recurrent_dates', () => {
     it('should fall back to start_at for bucketing', () => {
-      const event = createMockEvent({ recurrent: true, recurrent_dates: [], start_at: '2026-04-29T10:00:00Z' })
+      const event = createMockEvent({
+        recurrent: true,
+        recurrent_dates: [],
+        start_at: '2026-04-29T10:00:00Z',
+        finish_at: '2026-04-29T11:00:00Z'
+      })
 
-      const buckets = bucketEventsByDay([event], days)
+      const buckets = bucketEventsByDay([event], days, new Date('2026-04-29T00:00:00Z').getTime())
 
       expect(buckets[0]).toHaveLength(1)
       expect(buckets[0][0]).toBe(event)
@@ -694,12 +733,61 @@ describe('bucketEventsByDay', () => {
     })
   })
 
+  describe('when an event on the today column has already finished', () => {
+    it('should drop the passed occurrence while keeping later ones the same day', () => {
+      const passed = createMockEvent({
+        id: 'passed',
+        start_at: '2026-04-29T08:00:00Z',
+        finish_at: '2026-04-29T09:00:00Z',
+        recurrent: false,
+        recurrent_dates: []
+      })
+      const upcoming = createMockEvent({
+        id: 'upcoming',
+        start_at: '2026-04-29T18:00:00Z',
+        finish_at: '2026-04-29T19:00:00Z',
+        recurrent: false,
+        recurrent_dates: []
+      })
+
+      const buckets = bucketEventsByDay([passed, upcoming], days, new Date('2026-04-29T12:00:00Z').getTime())
+
+      expect(buckets[0].map(e => e.id)).toEqual(['upcoming'])
+    })
+
+    it('should keep an in-progress (live) occurrence whose finish is still in the future', () => {
+      const live = createMockEvent({
+        id: 'live',
+        start_at: '2026-04-29T11:00:00Z',
+        finish_at: '2026-04-29T13:00:00Z',
+        recurrent: false,
+        recurrent_dates: []
+      })
+
+      const buckets = bucketEventsByDay([live], days, new Date('2026-04-29T12:00:00Z').getTime())
+
+      expect(buckets[0].map(e => e.id)).toEqual(['live'])
+    })
+  })
+
   describe('when several events fall on the same day in arbitrary API order', () => {
     it('should sort each day bucket ascending by start time', () => {
-      const late = createMockEvent({ id: 'late', start_at: '2026-04-29T18:00:00Z', recurrent: false, recurrent_dates: [] })
-      const early = createMockEvent({ id: 'early', start_at: '2026-04-29T09:00:00Z', recurrent: false, recurrent_dates: [] })
+      const late = createMockEvent({
+        id: 'late',
+        start_at: '2026-04-29T18:00:00Z',
+        finish_at: '2026-04-29T19:00:00Z',
+        recurrent: false,
+        recurrent_dates: []
+      })
+      const early = createMockEvent({
+        id: 'early',
+        start_at: '2026-04-29T09:00:00Z',
+        finish_at: '2026-04-29T10:00:00Z',
+        recurrent: false,
+        recurrent_dates: []
+      })
 
-      const buckets = bucketEventsByDay([late, early], days)
+      const buckets = bucketEventsByDay([late, early], days, new Date('2026-04-29T00:00:00Z').getTime())
 
       expect(buckets[0].map(e => e.id)).toEqual(['early', 'late'])
     })

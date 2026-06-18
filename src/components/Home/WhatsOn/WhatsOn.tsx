@@ -7,7 +7,7 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import { useWalletAddress } from '../../../hooks/useWalletAddress'
-import { SectionViewedTrack } from '../../../modules/segment'
+import { SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { Carousel } from '../../Carousel/Carousel'
 import { WhatsOnCard } from './WhatsOnCard'
 import { CardsGrid, MobileCarousel, SectionTitle, ViewAllButton, WhatsOnContainer } from './WhatsOn.styled'
@@ -60,7 +60,7 @@ const WhatsOn = memo(() => {
       <ViewAllButton
         to="/whats-on"
         data-place={SectionViewedTrack.LANDING_EXPLORE}
-        data-event="click"
+        data-event={SegmentEvent.CLICK}
         data-section="view_all"
         onClick={trackClick}
       >

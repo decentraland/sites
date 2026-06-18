@@ -12,7 +12,13 @@ import { ConfirmDialog } from '../../components/storage/ConfirmDialog'
 import { KeyTable } from '../../components/storage/KeyTable'
 import { PlayerAddDialog, PlayerEditDialog } from '../../components/storage/PlayerDialogs'
 import { StorageLayout } from '../../components/storage/StorageLayout'
-import { truncateAddress, useClearPlayerMutation, useDeletePlayerValueMutation, useListPlayerKeysQuery } from '../../features/storage'
+import {
+  getStorageErrorStatus,
+  truncateAddress,
+  useClearPlayerMutation,
+  useDeletePlayerValueMutation,
+  useListPlayerKeysQuery
+} from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
@@ -121,7 +127,7 @@ function PlayerDetailPage() {
         address={address}
         onClose={() => setAddOpen(false)}
         onSuccess={() => track(SegmentEvent.STORAGE_PLAYER_SET_SUCCESS)}
-        onError={() => track(SegmentEvent.STORAGE_PLAYER_SET_FAILURE)}
+        onError={error => track(SegmentEvent.STORAGE_PLAYER_SET_FAILURE, { errorStatus: getStorageErrorStatus(error) ?? 'unknown' })}
         identity={identity}
         realm={realm}
         position={position}
@@ -133,7 +139,7 @@ function PlayerDetailPage() {
           keyName={editKey}
           onClose={() => setEditKey(null)}
           onSuccess={() => track(SegmentEvent.STORAGE_PLAYER_SET_SUCCESS)}
-          onError={() => track(SegmentEvent.STORAGE_PLAYER_SET_FAILURE)}
+          onError={error => track(SegmentEvent.STORAGE_PLAYER_SET_FAILURE, { errorStatus: getStorageErrorStatus(error) ?? 'unknown' })}
           identity={identity}
           realm={realm}
           position={position}

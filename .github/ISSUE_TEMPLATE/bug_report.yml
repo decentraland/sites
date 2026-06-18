@@ -78,6 +78,14 @@ body:
         - Cast — Streamer (/cast/s)
         - Cast — Watcher (/cast/w)
         - Social — Community Detail (/social/communities/:id)
+        - Profile — Overview (/profile/:address)
+        - Profile — Assets tab (/profile/:address/assets)
+        - Profile — Creations tab (/profile/:address/creations)
+        - Profile — Communities tab (/profile/:address/communities)
+        - Profile — Places tab (/profile/:address/places)
+        - Profile — Photos tab (/profile/:address/photos)
+        - Profile — Referral Rewards tab (/profile/:address/referral-rewards)
+        - Profile — Friendship / Block CTAs
         - Blog — Home (/blog)
         - Blog — Search (/blog/search)
         - Blog — Category (/blog/:categorySlug)
@@ -303,6 +311,16 @@ body:
       label: Failed Network Requests
       description: DevTools → Network. For failed/slow requests, include URL, status code, and response body. Redact tokens.
       render: shell
+
+  - type: textarea
+    id: har
+    attributes:
+      label: HAR file
+      description: |
+        DevTools → Network → right-click → "Save all as HAR with content" → drag the file here.
+        HARs capture every request/response and are the single most useful artifact for debugging silent failures.
+        Important: HARs include cookies and auth headers. Use "Save all as HAR (sanitized)" if your browser offers it, or scrub `single-sign-on-*`, `Authorization`, and `Cookie` values before uploading.
+      placeholder: Drag and drop a .har file here, or paste a link to one.
 
   - type: textarea
     id: context

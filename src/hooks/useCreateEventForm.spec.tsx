@@ -11,6 +11,7 @@ const mockUploadPosterVertical = jest.fn()
 const mockUnwrap = jest.fn()
 const mockUpdateUnwrap = jest.fn()
 const mockCaptureException = jest.fn()
+const mockCompressImageFile = jest.fn<Promise<File | null>, [File, unknown]>()
 
 let mockUseAuthIdentityReturn: { identity: AuthIdentity | undefined }
 
@@ -27,6 +28,10 @@ jest.mock('../features/events', () => ({
   useUpdateEventMutation: () => [mockUpdateEvent],
   useUploadPosterMutation: () => [mockUploadPoster],
   useUploadPosterVerticalMutation: () => [mockUploadPosterVertical]
+}))
+
+jest.mock('../utils/imageCompression', () => ({
+  compressImageFile: (file: File, options: unknown) => mockCompressImageFile(file, options)
 }))
 
 function buildInitialEvent(overrides: Partial<EventEntry> = {}): EventEntry {
@@ -129,6 +134,8 @@ describe('useCreateEventForm', () => {
     mockImageHeight = 1814
     mockImageShouldFail = false
     ;(global as unknown as { Image: unknown }).Image = MockImage
+    mockCompressImageFile.mockReset()
+    mockCompressImageFile.mockResolvedValue(null)
   })
 
   afterEach(() => {
@@ -214,14 +221,14 @@ describe('useCreateEventForm', () => {
     })
   })
 
-  describe('when repeat is enabled on every_week with the default day selection (all 7) and a valid end date', () => {
-    it('should include the recurrent fields and the all-week weekday mask in the payload', async () => {
+  describe('when repeat is enabled on a weekly recurrence with a valid end date', () => {
+    it('should send WEEKLY, interval 1 and a 0 weekday mask so the server uses the start_at weekday', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
       fillValidForm(result.current.setField)
       act(() => {
         result.current.setField('repeatEnabled', true)
-        result.current.setField('frequency', 'every_week')
+        result.current.setField('recurrence', 'every_week')
         result.current.setField('repeatEndDate', '2030-02-01')
       })
 
@@ -235,7 +242,8 @@ describe('useCreateEventForm', () => {
             recurrent: true,
             recurrent_frequency: 'WEEKLY',
             recurrent_interval: 1,
-            recurrent_weekday_mask: 127,
+            // 0 (not undefined) so the backend clears any stale mask and recurs on start_at's weekday — issue #560.
+            recurrent_weekday_mask: 0,
             recurrent_until: expect.stringContaining('2030-02-01')
           })
         })
@@ -243,16 +251,14 @@ describe('useCreateEventForm', () => {
     })
   })
 
-  describe('when repeat is enabled on every_week with Tuesday only and interval 2 (every other Tuesday)', () => {
-    it('should send WEEKLY, interval=2, mask=TUESDAY(4)', async () => {
+  describe('when repeat is enabled on a biweekly recurrence', () => {
+    it('should send WEEKLY with interval 2 and a 0 weekday mask', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
       fillValidForm(result.current.setField)
       act(() => {
         result.current.setField('repeatEnabled', true)
-        result.current.setField('frequency', 'every_week')
-        result.current.setField('repeatInterval', '2')
-        result.current.setField('repeatDays', [2]) // Tue — matches default startDate '2030-01-01'
+        result.current.setField('recurrence', 'every_2_weeks')
         result.current.setField('repeatEndDate', '2030-02-01')
       })
 
@@ -265,132 +271,21 @@ describe('useCreateEventForm', () => {
           payload: expect.objectContaining({
             recurrent_frequency: 'WEEKLY',
             recurrent_interval: 2,
-            recurrent_weekday_mask: 4
+            recurrent_weekday_mask: 0
           })
         })
       )
     })
   })
 
-  describe('when repeat is enabled with a non-integer interval', () => {
-    it('should report the interval invalid error', async () => {
+  describe('when repeat is enabled on a daily recurrence', () => {
+    it('should send DAILY, interval 1 and a 0 weekday mask', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
       fillValidForm(result.current.setField)
       act(() => {
         result.current.setField('repeatEnabled', true)
-        result.current.setField('frequency', 'every_week')
-        result.current.setField('repeatInterval', '1.5')
-        result.current.setField('repeatEndDate', '2030-02-01')
-      })
-
-      await act(async () => {
-        await result.current.handleSubmit()
-      })
-
-      expect(result.current.errors.repeatInterval).toBe('create_event.error_repeat_interval_invalid')
-      expect(mockCreateEvent).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('when repeat is enabled with an out-of-range interval', () => {
-    it('should report the interval invalid error', async () => {
-      const { result } = renderHook(() => useCreateEventForm())
-
-      fillValidForm(result.current.setField)
-      act(() => {
-        result.current.setField('repeatEnabled', true)
-        result.current.setField('frequency', 'every_week')
-        result.current.setField('repeatInterval', '5')
-        result.current.setField('repeatEndDate', '2030-02-01')
-      })
-
-      await act(async () => {
-        await result.current.handleSubmit()
-      })
-
-      expect(result.current.errors.repeatInterval).toBe('create_event.error_repeat_interval_invalid')
-    })
-  })
-
-  describe('when repeat is enabled on every_week with all days deselected', () => {
-    it('should report the repeatDays required error', async () => {
-      const { result } = renderHook(() => useCreateEventForm())
-
-      fillValidForm(result.current.setField)
-      act(() => {
-        result.current.setField('repeatEnabled', true)
-        result.current.setField('frequency', 'every_week')
-        result.current.setField('repeatDays', [])
-        result.current.setField('repeatEndDate', '2030-02-01')
-      })
-
-      await act(async () => {
-        await result.current.handleSubmit()
-      })
-
-      expect(result.current.errors.repeatDays).toBe('create_event.error_repeat_days_required')
-      expect(mockCreateEvent).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('when repeat is enabled on every_week with days that exclude the start weekday', () => {
-    it('should report the start-date weekday mismatch error', async () => {
-      const { result } = renderHook(() => useCreateEventForm())
-
-      fillValidForm(result.current.setField)
-      act(() => {
-        result.current.setField('repeatEnabled', true)
-        result.current.setField('frequency', 'every_week')
-        result.current.setField('repeatDays', [1, 3]) // Mon + Wed; 2030-01-01 is Tue (2)
-        result.current.setField('repeatEndDate', '2030-02-01')
-      })
-
-      await act(async () => {
-        await result.current.handleSubmit()
-      })
-
-      expect(result.current.errors.repeatDays).toBe('create_event.error_start_date_not_in_repeat_days')
-      expect(mockCreateEvent).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('when repeat is enabled on every_week with Tuesday + Friday (start day in selection)', () => {
-    it('should send WEEKLY with weekday_mask=TUE|FRI', async () => {
-      const { result } = renderHook(() => useCreateEventForm())
-
-      fillValidForm(result.current.setField)
-      act(() => {
-        result.current.setField('repeatEnabled', true)
-        result.current.setField('frequency', 'every_week')
-        result.current.setField('repeatDays', [2, 5]) // Tue(4) + Fri(32) = 36
-        result.current.setField('repeatEndDate', '2030-02-01')
-      })
-
-      await act(async () => {
-        await result.current.handleSubmit()
-      })
-
-      expect(mockCreateEvent).toHaveBeenCalledWith(
-        expect.objectContaining({
-          payload: expect.objectContaining({
-            recurrent_frequency: 'WEEKLY',
-            recurrent_interval: 1,
-            recurrent_weekday_mask: 36
-          })
-        })
-      )
-    })
-  })
-
-  describe('when repeat is enabled on every_day', () => {
-    it('should send DAILY, interval=1 and weekday_mask=0 (no filter)', async () => {
-      const { result } = renderHook(() => useCreateEventForm())
-
-      fillValidForm(result.current.setField)
-      act(() => {
-        result.current.setField('repeatEnabled', true)
-        result.current.setField('frequency', 'every_day')
+        result.current.setField('recurrence', 'every_day')
         result.current.setField('repeatEndDate', '2030-02-01')
       })
 
@@ -403,22 +298,21 @@ describe('useCreateEventForm', () => {
           payload: expect.objectContaining({
             recurrent_frequency: 'DAILY',
             recurrent_interval: 1,
-            recurrent_weekday_mask: undefined
+            recurrent_weekday_mask: 0
           })
         })
       )
     })
   })
 
-  describe('when repeat is enabled on every_month', () => {
-    it('should send MONTHLY, interval=1 and weekday_mask=0', async () => {
+  describe('when repeat is enabled on a monthly recurrence', () => {
+    it('should send MONTHLY, interval 1 and a 0 weekday mask', async () => {
       const { result } = renderHook(() => useCreateEventForm())
 
       fillValidForm(result.current.setField)
       act(() => {
         result.current.setField('repeatEnabled', true)
-        result.current.setField('frequency', 'every_month')
-        result.current.setField('repeatInterval', '3')
+        result.current.setField('recurrence', 'every_month')
         result.current.setField('repeatEndDate', '2030-06-01')
       })
 
@@ -431,6 +325,27 @@ describe('useCreateEventForm', () => {
           payload: expect.objectContaining({
             recurrent_frequency: 'MONTHLY',
             recurrent_interval: 1,
+            recurrent_weekday_mask: 0
+          })
+        })
+      )
+    })
+  })
+
+  describe('when repeat is disabled', () => {
+    it('should omit the weekday mask so a non-recurrent edit never carries one', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            recurrent: undefined,
             recurrent_weekday_mask: undefined
           })
         })
@@ -568,7 +483,7 @@ describe('useCreateEventForm', () => {
       fillValidForm(result.current.setField)
       act(() => {
         result.current.setField('repeatEnabled', true)
-        result.current.setField('frequency', 'every_week')
+        result.current.setField('recurrence', 'every_week')
       })
 
       await act(async () => {
@@ -576,6 +491,29 @@ describe('useCreateEventForm', () => {
       })
 
       expect(result.current.errors.repeatEndDate).toBe('create_event.error_required')
+    })
+  })
+
+  describe('when markRequiredFields is called', () => {
+    it('should set the required-error message on every listed field', () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      act(() => {
+        result.current.markRequiredFields(['name', 'description'])
+      })
+
+      expect(result.current.errors.name).toBe('create_event.error_required')
+      expect(result.current.errors.description).toBe('create_event.error_required')
+    })
+
+    it('should be a no-op when given an empty list', () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      act(() => {
+        result.current.markRequiredFields([])
+      })
+
+      expect(result.current.errors).toEqual({})
     })
   })
 
@@ -593,8 +531,9 @@ describe('useCreateEventForm', () => {
     })
   })
 
-  describe('when handleImageSelect receives a file larger than 500kb', () => {
-    it('should surface the too-large error', async () => {
+  describe('when handleImageSelect receives a file larger than 500kb that compression cannot shrink', () => {
+    it('should surface the too-large error and skip the upload', async () => {
+      mockCompressImageFile.mockResolvedValueOnce(null)
       const { result } = renderHook(() => useCreateEventForm())
       const oversized = new File([new Uint8Array(600 * 1024)], 'big.png', { type: 'image/png' })
 
@@ -602,12 +541,32 @@ describe('useCreateEventForm', () => {
         await result.current.handleImageSelect(oversized)
       })
 
+      expect(mockCompressImageFile).toHaveBeenCalled()
       expect(result.current.form.imageError).toBe('image_too_large')
+      expect(mockUploadPoster).not.toHaveBeenCalled()
     })
   })
 
-  describe('when handleImageSelect succeeds', () => {
-    it('should store the uploaded url in form state', async () => {
+  describe('when handleImageSelect receives a file larger than 500kb that compression can shrink', () => {
+    it('should upload the compressed file instead of the original', async () => {
+      const compressed = new File([new Uint8Array(100 * 1024)], 'big.webp', { type: 'image/webp' })
+      mockCompressImageFile.mockResolvedValueOnce(compressed)
+      const { result } = renderHook(() => useCreateEventForm())
+      const oversized = new File([new Uint8Array(600 * 1024)], 'big.png', { type: 'image/png' })
+
+      await act(async () => {
+        await result.current.handleImageSelect(oversized)
+      })
+
+      expect(mockUploadPoster).toHaveBeenCalledWith({ file: compressed, identity: mockIdentity })
+      expect(result.current.form.imageError).toBeNull()
+      expect(result.current.form.imageUrl).toBe('https://cdn/test.png')
+    })
+  })
+
+  describe('when handleImageSelect succeeds with an unconvertible-but-small file (e.g. animated GIF)', () => {
+    it('should upload the original file unchanged', async () => {
+      mockCompressImageFile.mockResolvedValueOnce(null)
       const { result } = renderHook(() => useCreateEventForm())
       const file = new File(['x'], 'valid.png', { type: 'image/png' })
 
@@ -618,6 +577,23 @@ describe('useCreateEventForm', () => {
       expect(mockUploadPoster).toHaveBeenCalledWith({ file, identity: mockIdentity })
       expect(result.current.form.imageUrl).toBe('https://cdn/test.png')
       expect(result.current.form.isUploadingImage).toBe(false)
+    })
+  })
+
+  describe('when handleImageSelect converts a small image to WebP', () => {
+    it('should upload the converted WebP file instead of the original', async () => {
+      const converted = new File([new Uint8Array(50 * 1024)], 'valid.webp', { type: 'image/webp' })
+      mockCompressImageFile.mockResolvedValueOnce(converted)
+      const { result } = renderHook(() => useCreateEventForm())
+      const file = new File(['x'], 'valid.png', { type: 'image/png' })
+
+      await act(async () => {
+        await result.current.handleImageSelect(file)
+      })
+
+      expect(mockCompressImageFile).toHaveBeenCalledWith(file, expect.objectContaining({ cover: { width: 1340, height: 670 } }))
+      expect(mockUploadPoster).toHaveBeenCalledWith({ file: converted, identity: mockIdentity })
+      expect(result.current.form.imageUrl).toBe('https://cdn/test.png')
     })
   })
 
@@ -688,8 +664,9 @@ describe('useCreateEventForm', () => {
     })
   })
 
-  describe('when handleVerticalImageSelect receives a file larger than 500kb', () => {
-    it('should surface the too-large error', async () => {
+  describe('when handleVerticalImageSelect receives a file larger than 500kb that compression cannot shrink', () => {
+    it('should surface the too-large error and skip the upload', async () => {
+      mockCompressImageFile.mockResolvedValueOnce(null)
       const { result } = renderHook(() => useCreateEventForm())
       const oversized = new File([new Uint8Array(600 * 1024)], 'big.png', { type: 'image/png' })
 
@@ -697,7 +674,25 @@ describe('useCreateEventForm', () => {
         await result.current.handleVerticalImageSelect(oversized)
       })
 
+      expect(mockCompressImageFile).toHaveBeenCalledWith(oversized, expect.objectContaining({ preserveDimensions: true }))
       expect(result.current.form.verticalImageError).toBe('image_too_large')
+      expect(mockUploadPosterVertical).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when handleVerticalImageSelect receives a file larger than 500kb that compression can shrink', () => {
+    it('should upload the compressed file (preserving 716x1814 dimensions) instead of the original', async () => {
+      const compressed = new File([new Uint8Array(100 * 1024)], 'big.webp', { type: 'image/webp' })
+      mockCompressImageFile.mockResolvedValueOnce(compressed)
+      const { result } = renderHook(() => useCreateEventForm())
+      const oversized = new File([new Uint8Array(600 * 1024)], 'big.png', { type: 'image/png' })
+
+      await act(async () => {
+        await result.current.handleVerticalImageSelect(oversized)
+      })
+
+      expect(mockUploadPosterVertical).toHaveBeenCalledWith({ file: compressed, identity: mockIdentity })
+      expect(result.current.form.verticalImageError).toBeNull()
     })
   })
 
@@ -742,8 +737,9 @@ describe('useCreateEventForm', () => {
     })
   })
 
-  describe('when handleVerticalImageSelect succeeds', () => {
-    it('should store the uploaded vertical url and clear the uploading flag', async () => {
+  describe('when handleVerticalImageSelect succeeds with an unconvertible-but-small file', () => {
+    it('should upload the original vertical file and clear the uploading flag', async () => {
+      mockCompressImageFile.mockResolvedValueOnce(null)
       const { result } = renderHook(() => useCreateEventForm())
       const file = new File(['x'], 'v.png', { type: 'image/png' })
 
@@ -754,6 +750,23 @@ describe('useCreateEventForm', () => {
       expect(mockUploadPosterVertical).toHaveBeenCalledWith({ file, identity: mockIdentity })
       expect(result.current.form.verticalImageUrl).toBe('https://cdn/vertical.png')
       expect(result.current.form.isUploadingVerticalImage).toBe(false)
+    })
+  })
+
+  describe('when handleVerticalImageSelect converts a small image to WebP', () => {
+    it('should upload the converted WebP file (dimensions preserved) instead of the original', async () => {
+      const converted = new File([new Uint8Array(40 * 1024)], 'v.webp', { type: 'image/webp' })
+      mockCompressImageFile.mockResolvedValueOnce(converted)
+      const { result } = renderHook(() => useCreateEventForm())
+      const file = new File(['x'], 'v.png', { type: 'image/png' })
+
+      await act(async () => {
+        await result.current.handleVerticalImageSelect(file)
+      })
+
+      expect(mockCompressImageFile).toHaveBeenCalledWith(file, expect.objectContaining({ preserveDimensions: true }))
+      expect(mockUploadPosterVertical).toHaveBeenCalledWith({ file: converted, identity: mockIdentity })
+      expect(result.current.form.verticalImageUrl).toBe('https://cdn/vertical.png')
     })
   })
 

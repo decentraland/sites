@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import { CircularProgress } from 'decentraland-ui2'
+import { SegmentEvent } from '../../modules/segment'
 import { CTAButtonProps } from './CTAButton.types'
 import { CTAButtonLabelContainer, CTAButtonStyled } from './CTAButton.styled'
 
@@ -9,7 +10,7 @@ const CTAButton = memo((props: CTAButtonProps) => {
     <CTAButtonStyled
       variant="contained"
       data-place={place}
-      data-event={event || 'click'}
+      data-event={event || SegmentEvent.CLICK}
       href={href}
       onClick={onClick}
       fullWidth={isFullWidth}

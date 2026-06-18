@@ -1,20 +1,5 @@
 import type { EventEntry, RecurrentFrequency } from '../features/events'
-import { ALL_WEEKDAYS, weekdayMaskToDayIndices } from '../utils/recurrence'
 import type { CreateEventFormState } from './useCreateEventForm.types'
-
-/* eslint-disable @typescript-eslint/naming-convention -- keys are API enum values */
-const REVERSE_FREQUENCY_MAP: Partial<Record<RecurrentFrequency, string>> = {
-  DAILY: 'every_day',
-  WEEKLY: 'every_week',
-  MONTHLY: 'every_month'
-}
-
-const FREQUENCY_MAP: Record<string, RecurrentFrequency> = {
-  every_day: 'DAILY',
-  every_week: 'WEEKLY',
-  every_month: 'MONTHLY'
-}
-/* eslint-enable @typescript-eslint/naming-convention */
 
 const DURATION_PATTERN = /^([0-9]{1,2}):([0-5][0-9])$/
 
@@ -25,16 +10,104 @@ function parseDurationMs(value: string): number | null {
   return totalMinutes > 0 ? totalMinutes * 60 * 1000 : null
 }
 
-const RECURRENT_INTERVAL_OPTIONS = [1, 2, 3, 4] as const
-const MIN_RECURRENT_INTERVAL = RECURRENT_INTERVAL_OPTIONS[0]
-const MAX_RECURRENT_INTERVAL = RECURRENT_INTERVAL_OPTIONS[RECURRENT_INTERVAL_OPTIONS.length - 1]
+// The combined recurrence selector folds the old "frequency" dropdown + "repeat every N weeks"
+// chips into a single ordered list. Each option maps to the API's (frequency, interval) pair.
+// Biweekly is now a first-class choice instead of "Weekly" + "2 weeks", and the weekly weekday is
+// always start_at's own weekday (no per-weekday mask), so a one-day event never spreads across days.
+const RECURRENCE_OPTIONS = ['every_day', 'every_week', 'every_2_weeks', 'every_3_weeks', 'every_4_weeks', 'every_month'] as const
 
-function parseRecurrentInterval(value: string): number | null {
-  if (!value.trim()) return null
-  const num = Number(value)
-  if (!Number.isFinite(num) || !Number.isInteger(num)) return null
-  if (num < MIN_RECURRENT_INTERVAL || num > MAX_RECURRENT_INTERVAL) return null
-  return num
+type RecurrenceOption = (typeof RECURRENCE_OPTIONS)[number]
+
+/* eslint-disable @typescript-eslint/naming-convention -- keys are recurrence option ids */
+const RECURRENCE_TO_API: Record<RecurrenceOption, { frequency: RecurrentFrequency; interval: number }> = {
+  every_day: { frequency: 'DAILY', interval: 1 },
+  every_week: { frequency: 'WEEKLY', interval: 1 },
+  every_2_weeks: { frequency: 'WEEKLY', interval: 2 },
+  every_3_weeks: { frequency: 'WEEKLY', interval: 3 },
+  every_4_weeks: { frequency: 'WEEKLY', interval: 4 },
+  every_month: { frequency: 'MONTHLY', interval: 1 }
+}
+/* eslint-enable @typescript-eslint/naming-convention */
+
+// NOTE: the new-event default recurrence is now 'every_week' (was 'every_day' before #560).
+// `repeatEnabled` still starts false, so this only surfaces once a user turns on Repeat, and weekly
+// is the most common cadence creators reach for.
+const DEFAULT_RECURRENCE: RecurrenceOption = 'every_week'
+
+function recurrenceToApi(recurrence: string): { frequency: RecurrentFrequency; interval: number } {
+  return RECURRENCE_TO_API[recurrence as RecurrenceOption] ?? RECURRENCE_TO_API[DEFAULT_RECURRENCE]
+}
+
+// Map a saved event's (frequency, interval) back onto a single combined option for the edit form.
+// WEEKLY intervals are clamped into the 1-4 range the selector offers; HOURLY/YEARLY (which this
+// form can't author) and any unknown frequency fall back to the default weekly option.
+function apiToRecurrence(frequency: RecurrentFrequency | null | undefined, interval: number | null | undefined): RecurrenceOption {
+  switch (frequency) {
+    case 'DAILY':
+      return 'every_day'
+    case 'MONTHLY':
+      return 'every_month'
+    case 'WEEKLY': {
+      const clamped = Math.min(Math.max(Math.round(interval ?? 1) || 1, 1), 4)
+      return clamped === 1 ? 'every_week' : (`every_${clamped}_weeks` as RecurrenceOption)
+    }
+    default:
+      return DEFAULT_RECURRENCE
+  }
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000
+const RECURRENCE_PREVIEW_COUNT = 5
+const MAX_PREVIEW_ITERATIONS = 1000
+
+// Advance a date by whole months, anchored on the start day-of-month and clamped to the target
+// month's last day (Jan 31 + 1mo -> Feb 28/29) so the preview mirrors the server's RRule rather
+// than JS's silent day overflow.
+function addMonthsClamped(date: Date, months: number): Date {
+  const anchorDay = date.getDate()
+  const shifted = new Date(date.getTime())
+  shifted.setDate(1)
+  shifted.setMonth(shifted.getMonth() + months)
+  const lastDay = new Date(shifted.getFullYear(), shifted.getMonth() + 1, 0).getDate()
+  shifted.setDate(Math.min(anchorDay, lastDay))
+  return shifted
+}
+
+// Best-effort client-side projection of the next occurrences for the recurrence preview. Mirrors the
+// single-weekday model the form submits (weekly cadences step by whole weeks from start_at, so every
+// occurrence keeps start_at's weekday). Only occurrences at/after `now` are returned, capped at
+// `count`; an empty array means "nothing upcoming" (e.g. the end date already passed).
+function computeUpcomingOccurrences(
+  startDate: string,
+  startTime: string,
+  recurrence: string,
+  repeatEndDate: string,
+  now: number = Date.now(),
+  count: number = RECURRENCE_PREVIEW_COUNT
+): Date[] {
+  if (!startDate || !startTime) return []
+  const start = new Date(`${startDate}T${startTime}`)
+  if (Number.isNaN(start.getTime())) return []
+  if (!Object.prototype.hasOwnProperty.call(RECURRENCE_TO_API, recurrence)) return []
+  const { frequency, interval } = recurrenceToApi(recurrence)
+
+  const end = repeatEndDate ? new Date(`${repeatEndDate}T23:59:59`) : null
+  const endTs = end && !Number.isNaN(end.getTime()) ? end.getTime() : null
+
+  const next = (date: Date): Date => {
+    if (frequency === 'MONTHLY') return addMonthsClamped(date, interval)
+    const stepDays = frequency === 'DAILY' ? interval : interval * 7
+    return new Date(date.getTime() + stepDays * DAY_MS)
+  }
+
+  const occurrences: Date[] = []
+  let current = start
+  for (let i = 0; i < MAX_PREVIEW_ITERATIONS && occurrences.length < count; i++) {
+    if (endTs !== null && current.getTime() > endTs) break
+    if (current.getTime() >= now) occurrences.push(current)
+    current = next(current)
+  }
+  return occurrences
 }
 
 const INITIAL_STATE: CreateEventFormState = {
@@ -54,9 +127,7 @@ const INITIAL_STATE: CreateEventFormState = {
   startTime: '',
   duration: '',
   repeatEnabled: false,
-  frequency: 'every_day',
-  repeatInterval: '1',
-  repeatDays: [...ALL_WEEKDAYS],
+  recurrence: DEFAULT_RECURRENCE,
   repeatEndDate: '',
   location: 'land',
   coordX: '0',
@@ -137,9 +208,7 @@ function eventEntryToFormState(event: EventEntry, now: number = Date.now()): Cre
     startTime: start.time,
     duration: durationMsToHhMm(durationMs),
     repeatEnabled: Boolean(event.recurrent),
-    frequency: (event.recurrent_frequency && REVERSE_FREQUENCY_MAP[event.recurrent_frequency]) ?? 'every_day',
-    repeatInterval: String(parseRecurrentInterval(String(event.recurrent_interval ?? '')) ?? 1),
-    repeatDays: weekdayMaskToDayIndices(event.recurrent_weekday_mask),
+    recurrence: apiToRecurrence(event.recurrent_frequency, event.recurrent_interval),
     repeatEndDate: repeatEnd.date,
     location: isWorld ? 'world' : 'land',
     coordX: isWorld ? '0' : String(event.x ?? 0),
@@ -152,13 +221,11 @@ function eventEntryToFormState(event: EventEntry, now: number = Date.now()): Cre
 
 export {
   DURATION_PATTERN,
-  FREQUENCY_MAP,
   INITIAL_STATE,
-  MAX_RECURRENT_INTERVAL,
-  MIN_RECURRENT_INTERVAL,
-  RECURRENT_INTERVAL_OPTIONS,
+  RECURRENCE_OPTIONS,
+  computeUpcomingOccurrences,
   durationMsToHhMm,
   eventEntryToFormState,
   parseDurationMs,
-  parseRecurrentInterval
+  recurrenceToApi
 }

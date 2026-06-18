@@ -1,6 +1,8 @@
-import { memo, useCallback, useMemo } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention -- React component default export, matches MUI icon convention
 import CheckIcon from '@mui/icons-material/Check'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import { useAnalytics } from '@dcl/hooks'
 import { useTabletAndBelowMediaQuery, useTabletMediaQuery, useTheme } from 'decentraland-ui2'
 import { getRarityColor, getThumbnailUrl } from '../../../../features/communities/communities.helpers'
@@ -63,6 +65,8 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
   const ownerAvatarBackgroundColor = useMemo(() => getRarityColor(theme, community.ownerAddress), [theme, community.ownerAddress])
 
   const thumbnailUrl = getThumbnailUrl(community.id)
+  const [thumbnailFailed, setThumbnailFailed] = useState(false)
+  const handleThumbnailError = useCallback(() => setThumbnailFailed(true), [])
   const isPrivate = community.privacy === Privacy.PRIVATE
   const formattedMembersCount = useMemo(
     () => new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(community.membersCount),
@@ -152,7 +156,13 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
   return (
     <InfoSection>
       <TopRow>
-        <CommunityImage>{thumbnailUrl && <CommunityImageContent src={thumbnailUrl} alt={community.name} />}</CommunityImage>
+        <CommunityImage>
+          {thumbnailUrl && !thumbnailFailed ? (
+            <CommunityImageContent src={thumbnailUrl} alt={community.name} onError={handleThumbnailError} />
+          ) : (
+            <GroupsOutlinedIcon />
+          )}
+        </CommunityImage>
         <CommunityDetails>
           <TitleContainer>
             <CommunityLabel>{t('community.info.decentraland_community')}</CommunityLabel>

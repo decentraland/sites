@@ -18,7 +18,7 @@ This SPA has a **dual shell with a third Layout-less group**. Routes go in one o
 
 - Anything that needs Redux/RTK Query.
 - Pages that consume Contentful rich-text, dompurify, LiveKit, full-text search.
-- Existing heavy areas you can mirror: `/whats-on/*`, `/blog/*`, `/jump/*`, `/social/*`, `/cast/*`, `/storage/*`.
+- Existing heavy areas you can mirror: `/whats-on/*`, `/blog/*`, `/jump/*`, `/social/*`, `/cast/*`, `/storage/*`, `/profile/*`.
 
 **Layout-less** (rare — fullscreen UX that bypasses navbar + footer):
 
@@ -46,7 +46,7 @@ If unsure, default to **lightweight (with Layout)**.
 
 ## Steps — heavy route
 
-1. Create page at `src/pages/<area>/<Route>.tsx` (e.g. under `src/pages/whats-on/`, `src/pages/blog/`, `src/pages/jump/`, `src/pages/social/`, `src/pages/cast/`, `src/pages/storage/`).
+1. Create page at `src/pages/<area>/<Route>.tsx` (e.g. under `src/pages/whats-on/`, `src/pages/blog/`, `src/pages/jump/`, `src/pages/social/`, `src/pages/cast/`, `src/pages/storage/`, `src/pages/profile/`).
 2. In `src/App.tsx`, add `const MyPage = lazy(() => import('./pages/<area>/<route>'))`.
 3. Place `<Route>` **inside** `<Route element={<DappsShell />}>` block. If the area needs an extra Outlet wrapper (LiveKit + Notification contexts for cast, layout chrome for whats-on), add a per-area Layout component and nest the routes under it (see `WhatsOnLayout`, `CastLayout`).
 4. RTK Query: prefer injecting endpoints into an existing base client (`cmsClient`, `placesClient`, `socialClient`, `cast2Client`, `storageClient`, `subgraphClient`, `eventsClient`, `adminClient`). Only add a new base client under `src/services/<name>Client.ts` (and register the reducer + middleware in `src/shells/store.ts`) when the new domain genuinely doesn't fit any existing one.
@@ -61,14 +61,15 @@ If unsure, default to **lightweight (with Layout)**.
 4. Same data + import restrictions as the lightweight tier.
 5. Helmet titles still follow rule 23 if the title resolves async.
 
-## Keep README in sync
+## Repo sync checklist (same PR)
 
-The route table under "What lives here" in `README.md` is curated by hand — there is no codegen. Any time you **add, remove, or rename** a route in `src/App.tsx`, update the matching row in `README.md` **in the same PR**:
+Every time you **add, remove, or rename** a route in `src/App.tsx`:
 
-- Route column: every public-facing path (including legacy aliases worth advertising).
-- Notes column: 404 catch-alls (`/area/*`), legacy redirects, and tier-specific quirks (`fullscreen`, `Heavy DappsShell route`, etc.).
+1. **README.md route table** under "What lives here". Curated by hand — no codegen. Route column = every public-facing path (including legacy aliases worth advertising). Notes column = 404 catch-alls (`/area/*`), legacy redirects, tier-specific quirks (`fullscreen`, `Heavy DappsShell route`).
+2. **SEO worker `PAGES` map** in `sites-deployer` (`workers/sites-worker/rollouts/routes/handlers/OpenGraphStaticPageRoute.ts`). Crawlers don't run JS — Helmet titles aren't visible; the worker rewrites OG meta at the edge based on this map. Skip if non-shareable or already covered by a dedicated handler (invite, reels).
+3. **GitHub issue templates.** `.github/ISSUE_TEMPLATE/bug_report.yml` has a `Page / Area` dropdown that explicitly says `Keep options in sync with the routes defined in src/App.tsx`. `.github/ISSUE_TEMPLATE/feature_request.yml` has a sibling `Area` dropdown. Missing the route here means bug reporters can't categorize their issue against the new page.
 
-If the change is purely internal (component rename, lazy-import path, comment) and no public path changes, the README is fine as is.
+Internal-only changes (component rename, lazy-import path, comment) where no public path changes — skip all three.
 
 A `PostToolUse` hook fires on every edit to `src/App.tsx` to surface this reminder.
 
