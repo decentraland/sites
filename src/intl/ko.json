@@ -1286,7 +1286,7 @@
         "empty": "아직 거래가 없습니다.",
         "type": {
           "send": "보냄",
-          "swap": "스왑"
+          "swap": "입금"
         },
         "status": {
           "pending": "대기 중",

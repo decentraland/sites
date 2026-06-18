@@ -5,9 +5,9 @@ import { BalanceCard } from './BalanceCard'
 type ChildrenProps = { children?: ReactNode }
 type ButtonProps = ChildrenProps & { onClick?: () => void; 'data-role'?: string }
 
-jest.mock('@mui/icons-material/AddRounded', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/NorthEastRounded', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/QrCode2Rounded', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/AttachMoneyRounded', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/ArrowUpwardRounded', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/ArrowDownwardRounded', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('@mui/icons-material/SwapHorizRounded', () => ({ __esModule: true, default: () => <span /> }))
 
 jest.mock('decentraland-ui2', () => ({
@@ -17,6 +17,10 @@ jest.mock('decentraland-ui2', () => ({
 jest.mock('../../../LandingNavbar/icons', () => ({
   ManaEthIcon: () => <span data-testid="mana-eth" />,
   ManaMaticIcon: () => <span data-testid="mana-matic" />
+}))
+
+jest.mock('../ManaMarkIcon', () => ({
+  ManaMarkIcon: () => <span data-testid="mana-mark" />
 }))
 
 jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({
@@ -47,6 +51,7 @@ jest.mock('./BalanceCard.styled', () => ({
   BalanceInfo: ({ children }: ChildrenProps) => <div>{children}</div>,
   NetworkRow: ({ children }: ChildrenProps) => <div>{children}</div>,
   NetworkLabel: ({ children }: ChildrenProps) => <div>{children}</div>,
+  BalanceRow: ({ children }: ChildrenProps) => <div>{children}</div>,
   BalanceAmount: ({ children }: ChildrenProps) => <div>{children}</div>,
   Actions: ({ children }: ChildrenProps) => <div>{children}</div>,
   ActionButton: ({ children, onClick, 'data-role': dataRole }: ButtonProps) => (

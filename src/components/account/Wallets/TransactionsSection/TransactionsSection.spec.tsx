@@ -9,7 +9,12 @@ type HeaderProps = ChildrenProps & { onClick?: () => void; 'aria-expanded'?: boo
 
 jest.mock('@mui/icons-material/ExpandMoreRounded', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('@mui/icons-material/NorthEastRounded', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/SwapHorizRounded', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/SouthWestRounded', () => ({ __esModule: true, default: () => <span /> }))
+
+// The MANA mark renders nothing in tests so the amount's text stays matchable by getByText.
+jest.mock('decentraland-ui2', () => ({
+  SvgIcon: () => null
+}))
 
 jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
@@ -31,8 +36,7 @@ jest.mock('./TransactionsSection.styled', () => ({
   List: ({ children, 'data-role': dataRole }: ChildrenProps) => <div data-role={dataRole}>{children}</div>,
   EmptyState: ({ children, 'data-role': dataRole }: ChildrenProps) => <p data-role={dataRole}>{children}</p>,
   Row: ({ children, 'data-role': dataRole }: ChildrenProps) => <div data-role={dataRole}>{children}</div>,
-  TypeIcon: ({ children }: ChildrenProps) => <span>{children}</span>,
-  RowMain: ({ children }: ChildrenProps) => <div>{children}</div>,
+  IconChip: ({ children }: ChildrenProps) => <span>{children}</span>,
   RowType: ({ children }: ChildrenProps) => <span>{children}</span>,
   RowDate: ({ children }: ChildrenProps) => <span>{children}</span>,
   HashLink: ({ children, href, 'data-role': dataRole }: LinkProps) => (
@@ -69,13 +73,15 @@ describe('TransactionsSection', () => {
     expect(screen.getByText('account.wallets.transactions.empty')).toBeInTheDocument()
   })
 
-  it('should render a row with type, explorer link, status and amount when expanded', () => {
+  it('should render a row with type, full explorer hash link, status and amount when expanded', () => {
     render(<TransactionsSection transactions={[tx]} />)
     fireEvent.click(screen.getByRole('button'))
 
     expect(screen.getByText('account.wallets.transactions.type.send')).toBeInTheDocument()
     expect(screen.getByText('account.wallets.transactions.status.pending')).toBeInTheDocument()
     expect(screen.getByText('formatted-10')).toBeInTheDocument()
-    expect(screen.getByRole('link')).toHaveAttribute('href', `https://explorer.test/ethereum/${tx.hash}`)
+    const link = screen.getByRole('link')
+    expect(link).toHaveAttribute('href', `https://explorer.test/ethereum/${tx.hash}`)
+    expect(link).toHaveTextContent(tx.hash)
   })
 })

@@ -1,9 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import AddRoundedIcon from '@mui/icons-material/AddRounded'
+import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded'
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import NorthEastRoundedIcon from '@mui/icons-material/NorthEastRounded'
+import ArrowUpwardRoundedIcon from '@mui/icons-material/ArrowUpwardRounded'
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import QrCode2RoundedIcon from '@mui/icons-material/QrCode2Rounded'
+import AttachMoneyRoundedIcon from '@mui/icons-material/AttachMoneyRounded'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import SwapHorizRoundedIcon from '@mui/icons-material/SwapHorizRounded'
 import { useAnalytics } from '@dcl/hooks'
@@ -12,9 +12,20 @@ import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import type { WalletTransaction } from '../../../../hooks/useWalletTransactions.types'
 import { SegmentEvent } from '../../../../modules/segment'
 import { ManaEthIcon, ManaMaticIcon } from '../../../LandingNavbar/icons'
+import { ManaMarkIcon } from '../ManaMarkIcon'
 import { TransactionsSection } from '../TransactionsSection/TransactionsSection'
 import { buildBuyManaUrl, formatMana } from '../wallets.helpers'
-import { ActionButton, Actions, BalanceAmount, BalanceInfo, Card, CardTop, NetworkLabel, NetworkRow } from './BalanceCard.styled'
+import {
+  ActionButton,
+  Actions,
+  BalanceAmount,
+  BalanceInfo,
+  BalanceRow,
+  Card,
+  CardTop,
+  NetworkLabel,
+  NetworkRow
+} from './BalanceCard.styled'
 
 type WalletNetwork = 'ethereum' | 'polygon'
 
@@ -68,12 +79,15 @@ const BalanceCard = ({ network, balance, isLoading, transactions, onReceive, onS
           {isLoading || balance === undefined ? (
             <Skeleton variant="text" width={140} height={40} />
           ) : (
-            <BalanceAmount data-role="balance-amount">{formatMana(balance)}</BalanceAmount>
+            <BalanceRow>
+              <ManaMarkIcon />
+              <BalanceAmount data-role="balance-amount">{formatMana(balance)}</BalanceAmount>
+            </BalanceRow>
           )}
         </BalanceInfo>
         <Actions>
           <ActionButton type="button" onClick={handleBuy} data-role="wallet-action-buy">
-            <AddRoundedIcon fontSize="small" />
+            <AttachMoneyRoundedIcon fontSize="small" />
             {t('account.wallets.actions.buy')}
           </ActionButton>
           <ActionButton type="button" onClick={handleSwap} data-role="wallet-action-swap">
@@ -81,11 +95,11 @@ const BalanceCard = ({ network, balance, isLoading, transactions, onReceive, onS
             {t('account.wallets.actions.swap')}
           </ActionButton>
           <ActionButton type="button" onClick={handleSend} data-role="wallet-action-send">
-            <NorthEastRoundedIcon fontSize="small" />
+            <ArrowUpwardRoundedIcon fontSize="small" />
             {t('account.wallets.actions.send')}
           </ActionButton>
           <ActionButton type="button" onClick={handleReceive} data-role="wallet-action-receive">
-            <QrCode2RoundedIcon fontSize="small" />
+            <ArrowDownwardRoundedIcon fontSize="small" />
             {t('account.wallets.actions.receive')}
           </ActionButton>
         </Actions>

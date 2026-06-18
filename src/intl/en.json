@@ -1721,7 +1721,7 @@
         "empty": "No transactions yet.",
         "type": {
           "send": "Sent",
-          "swap": "Swap"
+          "swap": "Deposit"
         },
         "status": {
           "pending": "Pending",

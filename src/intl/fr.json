@@ -1281,7 +1281,7 @@
         "empty": "Aucune transaction pour l'instant.",
         "type": {
           "send": "Envoyé",
-          "swap": "Échange"
+          "swap": "Dépôt"
         },
         "status": {
           "pending": "En attente",

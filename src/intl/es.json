@@ -1286,7 +1286,7 @@
         "empty": "Todavía no hay transacciones.",
         "type": {
           "send": "Enviado",
-          "swap": "Cambio"
+          "swap": "Depósito"
         },
         "status": {
           "pending": "Pendiente",

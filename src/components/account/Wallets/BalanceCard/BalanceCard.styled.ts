@@ -39,6 +39,18 @@ const NetworkLabel = styled(Typography)(() => ({
   color: '#A09BA8'
 }))
 
+// Balance amount with the MANA diamond mark to its left (Figma). The mark is colored/sized here so
+// the shared ManaMarkIcon stays presentation-agnostic.
+const BalanceRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  ['& .MuiSvgIcon-root']: {
+    fontSize: 30,
+    color: '#FF2D55'
+  }
+}))
+
 const BalanceAmount = styled(Typography)(() => ({
   fontSize: 32,
   fontWeight: 700,
@@ -52,24 +64,29 @@ const Actions = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1)
 }))
 
+// Solid dark pills with uppercase labels (Figma) — BUY / SWAP / SEND / RECEIVE.
 const ActionButton = styled('button')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(0.5),
-  padding: theme.spacing(1, 1.5),
+  gap: theme.spacing(0.75),
+  padding: theme.spacing(1, 2),
   borderRadius: theme.spacing(1),
-  border: '1px solid rgba(255, 255, 255, 0.15)',
-  background: 'rgba(0, 0, 0, 0.2)',
+  border: 'none',
+  background: 'rgba(0, 0, 0, 0.4)',
   color: '#FCFCFC',
   fontSize: 13,
-  fontWeight: 500,
+  fontWeight: 600,
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase',
   fontFamily: 'inherit',
   whiteSpace: 'nowrap',
   cursor: 'pointer',
-  transition: 'background 0.2s ease, border-color 0.2s ease',
+  transition: 'background 0.2s ease',
+  ['& .MuiSvgIcon-root']: {
+    fontSize: 16
+  },
   ['&:hover']: {
-    background: 'rgba(255, 255, 255, 0.08)',
-    borderColor: 'rgba(255, 255, 255, 0.3)'
+    background: 'rgba(0, 0, 0, 0.6)'
   },
   ['&:focus-visible']: {
     outline: '2px solid rgba(255, 255, 255, 0.6)',
@@ -77,4 +94,4 @@ const ActionButton = styled('button')(({ theme }) => ({
   }
 }))
 
-export { ActionButton, Actions, BalanceAmount, BalanceInfo, Card, CardTop, NetworkLabel, NetworkRow }
+export { ActionButton, Actions, BalanceAmount, BalanceInfo, BalanceRow, Card, CardTop, NetworkLabel, NetworkRow }

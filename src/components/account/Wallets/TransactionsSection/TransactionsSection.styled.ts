@@ -1,8 +1,10 @@
 import { Box, Link, Typography, styled } from 'decentraland-ui2'
 import type { WalletTransactionStatus } from '../../../../hooks/useWalletTransactions.types'
 
-// Transactions section inside each balance card (Figma 322:101467): a collapsible "Transactions"
-// header that expands to the tracked tx rows. Hardcoded DCL hexes match the sibling wallet styles.
+// Transactions section inside each balance card (Figma "Profile-Account" Wallets): a collapsible
+// "Transactions" header that expands to the tracked tx rows. Each row is a column grid — icon chip,
+// type, date, explorer hash, status badge, MANA amount — aligned across rows. Hardcoded DCL hexes
+// match the sibling wallet styles.
 const Section = styled(Box)(() => ({
   borderTop: '1px solid rgba(255, 255, 255, 0.08)'
 }))
@@ -45,64 +47,81 @@ const EmptyState = styled(Typography)(({ theme }) => ({
   padding: theme.spacing(1.5, 0)
 }))
 
+// Mobile stacks type/amount, date/status and a full-width hash into three rows beside the icon;
+// md+ lays everything out in one aligned six-column row.
 const Row = styled(Box)(({ theme }) => ({
-  display: 'flex',
+  display: 'grid',
   alignItems: 'center',
-  gap: theme.spacing(1.5),
-  padding: theme.spacing(1, 0),
+  columnGap: theme.spacing(2),
+  rowGap: theme.spacing(0.25),
+  padding: theme.spacing(1.25, 0),
+  gridTemplateColumns: 'auto minmax(0, 1fr) auto',
+  gridTemplateAreas: `
+    "icon type amount"
+    "icon date status"
+    "icon hash hash"
+  `,
   ['& + &']: {
-    borderTop: '1px solid rgba(255, 255, 255, 0.04)'
+    borderTop: '1px solid rgba(255, 255, 255, 0.06)'
+  },
+  [theme.breakpoints.up('md')]: {
+    gridTemplateColumns: 'auto 88px 188px minmax(0, 1fr) auto auto',
+    gridTemplateAreas: '"icon type date hash status amount"',
+    rowGap: 0
   }
 }))
 
-const TypeIcon = styled('span')(() => ({
+const IconChip = styled('span')(({ theme }) => ({
+  gridArea: 'icon',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
+  width: 36,
+  height: 36,
   flexShrink: 0,
-  color: '#A09BA8',
+  borderRadius: theme.spacing(1),
+  background: 'rgba(255, 255, 255, 0.06)',
+  color: '#FCFCFC',
   ['& .MuiSvgIcon-root']: {
     fontSize: 18
   }
 }))
 
-const RowMain = styled(Box)(() => ({
-  display: 'flex',
-  flexDirection: 'column',
-  minWidth: 0,
-  flexShrink: 0,
-  width: 96
-}))
-
 const RowType = styled(Typography)(() => ({
+  gridArea: 'type',
   fontSize: 14,
-  fontWeight: 500,
-  color: '#FCFCFC'
+  fontWeight: 600,
+  color: '#FCFCFC',
+  whiteSpace: 'nowrap'
 }))
 
 const RowDate = styled(Typography)(() => ({
-  fontSize: 11,
+  gridArea: 'date',
+  fontSize: 13,
   color: '#A09BA8',
   whiteSpace: 'nowrap'
 }))
 
 const HashLink = styled(Link)(() => ({
-  flex: 1,
+  gridArea: 'hash',
   minWidth: 0,
-  fontSize: 12,
+  maxWidth: '100%',
+  fontSize: 13,
   // DCL accent red for the explorer link (Figma).
   color: '#FF2D55',
-  textDecoration: 'none',
+  textDecoration: 'underline',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
   ['&:hover']: {
-    textDecoration: 'underline'
+    opacity: 0.85
   }
 }))
 
 const StatusBadge = styled('span', { shouldForwardProp: prop => prop !== '$status' })<{ $status: WalletTransactionStatus }>(
   ({ theme, $status }) => ({
+    gridArea: 'status',
+    justifySelf: 'end',
     flexShrink: 0,
     padding: theme.spacing(0.25, 1),
     borderRadius: 6,
@@ -111,19 +130,27 @@ const StatusBadge = styled('span', { shouldForwardProp: prop => prop !== '$statu
     textTransform: 'capitalize',
     color: $status === 'failed' ? '#FF2D55' : $status === 'confirmed' ? '#34CE77' : '#FFA500',
     background:
-      $status === 'failed' ? 'rgba(255, 45, 85, 0.12)' : $status === 'confirmed' ? 'rgba(52, 206, 119, 0.12)' : 'rgba(255, 165, 0, 0.12)'
+      $status === 'failed' ? 'rgba(255, 45, 85, 0.12)' : $status === 'confirmed' ? 'rgba(52, 206, 119, 0.12)' : 'rgba(255, 165, 0, 0.12)',
+    [theme.breakpoints.up('md')]: {
+      justifySelf: 'start'
+    }
   })
 )
 
 const Amount = styled(Typography)(({ theme }) => ({
-  flexShrink: 0,
-  display: 'flex',
+  gridArea: 'amount',
+  justifySelf: 'end',
+  display: 'inline-flex',
   alignItems: 'center',
   gap: theme.spacing(0.5),
-  fontSize: 13,
+  fontSize: 14,
   fontWeight: 600,
   color: '#FCFCFC',
-  whiteSpace: 'nowrap'
+  whiteSpace: 'nowrap',
+  ['& .MuiSvgIcon-root']: {
+    fontSize: 16,
+    color: '#FF2D55'
+  }
 }))
 
-export { Amount, ChevronWrap, EmptyState, HashLink, Header, List, Row, RowDate, RowMain, RowType, Section, StatusBadge, TypeIcon }
+export { Amount, ChevronWrap, EmptyState, HashLink, Header, IconChip, List, Row, RowDate, RowType, Section, StatusBadge }

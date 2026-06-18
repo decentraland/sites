@@ -1286,7 +1286,7 @@
         "empty": "暂无交易。",
         "type": {
           "send": "已发送",
-          "swap": "兑换"
+          "swap": "存入"
         },
         "status": {
           "pending": "待处理",
