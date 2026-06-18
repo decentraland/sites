@@ -17,7 +17,8 @@ const TABLE_OF_CONTENTS: TOCEntry[] = [
   { id: 'second-season', label: 'Second Season (2025)', depth: 1 },
   { id: 'third-season', label: 'Third Season (2025)', depth: 1 },
   { id: 'fourth-season', label: 'Fourth Season (2026)', depth: 1 },
-  { id: 'fifth-season', label: 'Fifth Season (2026)', depth: 1 }
+  { id: 'fifth-season', label: 'Fifth Season (2026)', depth: 1 },
+  { id: 'sixth-season', label: 'Sixth Season (2026)', depth: 1 }
 ]
 
 const RewardsTerms = memo(() => (
@@ -205,6 +206,21 @@ const RewardsTerms = memo(() => (
         <li>Starts March 16, 2026, finishes April 19, 2026.</li>
         <li>5 weeks. Budget: 640,000 Credits. Max per user: 200 Credits.</li>
         <li>Validity: six (6) weeks (April 26, 2026 at 23:59:59).</li>
+        <li>Each Credit valued at 1 MANA.</li>
+      </BulletList>
+      <Paragraph>Weekly Goals:</Paragraph>
+      <BulletList>
+        <li>Log into DCL on at least 3 separate days - 20 Credits</li>
+        <li>Attend at least 2 events - 10 Credits (Must remain 5+ min)</li>
+        <li>Explore a weekly location - 5 Credits</li>
+        <li>Snap A Photo Emoting With Someone - 5 Credits</li>
+      </BulletList>
+
+      <SubsectionTitle id="sixth-season">Sixth Season (2026)</SubsectionTitle>
+      <BulletList>
+        <li>Starts June 15, 2026, finishes July 19, 2026.</li>
+        <li>5 weeks. Budget: 640,000 Credits. Max per user: 200 Credits.</li>
+        <li>Validity: six (6) weeks (July 26, 2026 at 23:59:59).</li>
         <li>Each Credit valued at 1 MANA.</li>
       </BulletList>
       <Paragraph>Weekly Goals:</Paragraph>
