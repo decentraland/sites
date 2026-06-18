@@ -17,8 +17,10 @@ const accountNotificationsApi = accountNotificationsClient.injectEndpoints({
         method: 'PUT',
         body: details
       }),
-      // Optimistically write the new details into the cached subscription so the toggles
-      // reflect the change immediately; roll back if the request fails.
+      // Optimistically write the new details into the cached subscription so the toggles reflect
+      // the change immediately and stay put; roll back only if the request fails. We deliberately
+      // do NOT reconcile with the PUT response — that endpoint can echo a partial/empty `details`,
+      // which would wipe the just-applied toggles ("everything reverts"); the next GET is canonical.
       async onQueryStarted(details, { dispatch, queryFulfilled }) {
         const patch = dispatch(
           accountNotificationsApi.util.updateQueryData('getSubscription', undefined, draft => {
@@ -26,13 +28,7 @@ const accountNotificationsApi = accountNotificationsClient.injectEndpoints({
           })
         )
         try {
-          const { data } = await queryFulfilled
-          // Reconcile with the server's canonical response (preserves email / unconfirmedEmail).
-          dispatch(
-            accountNotificationsApi.util.updateQueryData('getSubscription', undefined, draft => {
-              draft.details = data.details
-            })
-          )
+          await queryFulfilled
         } catch {
           patch.undo()
         }

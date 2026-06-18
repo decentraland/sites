@@ -16,7 +16,7 @@ import { GroupsColumn, GroupsColumns, NotificationsPanel, StateMessage } from '.
 const NotificationsPage = () => {
   const t = useFormatMessage()
   const { data: subscription, isLoading, isError } = useGetSubscriptionQuery()
-  const [updateSubscription, { isLoading: isSaving }] = useUpdateSubscriptionMutation()
+  const [updateSubscription] = useUpdateSubscriptionMutation()
 
   const details = subscription?.details
   // Per-type toggles only make sense once an email is confirmed — until then the user manages
@@ -49,7 +49,7 @@ const NotificationsPage = () => {
           email={subscription?.email}
           unconfirmedEmail={subscription?.unconfirmedEmail}
           details={details}
-          disabled={isLoading || isSaving}
+          disabled={isLoading}
           onToggleAll={handleToggleAll}
         />
 
@@ -67,7 +67,7 @@ const NotificationsPage = () => {
                     group={group}
                     types={subscriptionGroups[group]}
                     details={details}
-                    disabled={!hasConfirmedEmail || isSaving}
+                    disabled={!hasConfirmedEmail}
                     onToggleType={handleToggleType}
                   />
                 ))}
