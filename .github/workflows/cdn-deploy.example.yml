@@ -1,16 +1,16 @@
 # =============================================================================
-# EXAMPLE — how @dcl/sites would adopt the cdn-deploy reusable workflow
+# EXAMPLE — how @dcl/sites would adopt decentraland/actions/cdn-deploy
 # =============================================================================
 #
 # Illustration, not the live pipeline. INERT by default: every job is gated on
 # the `CDN_DEPLOY_EXAMPLE_ENABLED` repo variable (unset), so merging this does
 # not deploy anything or interfere with build-release.yml / set-rollout*.yml.
 #
-# The reusable workflow does checkout + Node 24 + build + upload-to-S3 (GitHub
-# OIDC) + Cloudflare KV, replacing the oddish -> static-sites-pipeline ->
-# set-rollout relay. It is state-aware: it uploads when the version is not in
-# S3, copies the commit's build for a release, or just repoints when already
-# there. See https://github.com/decentraland/actions/tree/main/cdn-deploy
+# The site builds its own artifact and hands the action a `dist-path`; the
+# action uploads it to S3 (GitHub OIDC) and patches the Cloudflare KV. It is
+# state-aware: it uploads when the version isn't in S3, copies the commit's
+# build for a release, or just repoints when it's already there.
+# See https://github.com/decentraland/actions/tree/main/cdn-deploy
 #
 # To adopt:
 #   1. Merge decentraland/actions#17, then pin @cdn-deploy-v1 once tagged.
@@ -47,57 +47,93 @@ on:
         required: true
         default: "100"
 
+# One deploy at a time per repo — the KV update is read-modify-write.
+concurrency:
+  group: cdn-deploy-${{ github.repository }}
+  cancel-in-progress: false
+
 jobs:
-  # push -> build once, deploy dev + stg. package-name / deployment-path are
-  # derived from the checked-out package.json. One upload; both envs repointed.
+  # push -> build once, deploy dev + stg (one upload, both envs repointed).
   dev-stg:
     if: ${{ github.event_name == 'push' && vars.CDN_DEPLOY_EXAMPLE_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
       deployments: write
       statuses: write
-    uses: decentraland/actions/.github/workflows/cdn-deploy.yml@main
-    with:
-      deployment-environments: '["zone","today"]'
-    secrets: inherit
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24.x
+      - run: npm ci && npm run build
+      - uses: decentraland/actions/cdn-deploy@main
+        with:
+          dist-path: ./dist
+          deployment-environments: '["zone","today"]'
+          aws-role-to-assume: ${{ vars.CDN_DEPLOY_ROLE_ARN }}
+          cloudflare-account-id: ${{ vars.CF_ACCOUNT_ID }}
+          cloudflare-api-token: ${{ secrets.CF_KV_API_TOKEN }}
+          cloudflare-namespace-zone: ${{ secrets.CF_NS_ZONE }}
+          cloudflare-namespace-today: ${{ secrets.CF_NS_TODAY }}
+          slack-webhook: ${{ secrets.ROLLOUTS_SLACK_WEBHOOK }}
 
-  # release -> STAGE the build under the release tag, no KV change. No build:
-  # the action copies the build the last master commit already uploaded.
+  # release -> STAGE the build under the release tag (S3 copy, no KV). No build:
+  # the action copies the build the last master commit already uploaded. Checkout
+  # is still needed so the base version is read from the repo-root package.json.
   stage-release:
     if: ${{ github.event_name == 'release' && vars.CDN_DEPLOY_EXAMPLE_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
       deployments: write
       statuses: write
-    uses: decentraland/actions/.github/workflows/cdn-deploy.yml@main
-    with:
-      # The reusable workflow checks out the release commit, so name + base
-      # version (hence the copy source) come from package.json; package-name is
-      # optional here but kept explicit.
-      package-name: "@dcl/sites"
-      version: ${{ github.event.release.tag_name }}
-      deployment-environments: "[]" # stage only — no KV
-      build-command: "" # copy, don't build
-    secrets: inherit
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24.x
+      - uses: decentraland/actions/cdn-deploy@main
+        with:
+          version: ${{ github.event.release.tag_name }}
+          deployment-environments: "[]" # stage only — no KV
+          aws-role-to-assume: ${{ vars.CDN_DEPLOY_ROLE_ARN }}
+          cloudflare-account-id: ${{ vars.CF_ACCOUNT_ID }}
+          cloudflare-api-token: ${{ secrets.CF_KV_API_TOKEN }}
+          slack-webhook: ${{ secrets.ROLLOUTS_SLACK_WEBHOOK }}
 
   # manual -> deploy a chosen version OR commit to a chosen environment
-  # (e.g. promote what's on dev to stg). No rebuild: the build is already on the
+  # (e.g. promote what's on dev to stg). No rebuild — the build is already on the
   # CDN, so this just repoints that environment's KV.
   manual-deploy:
     if: ${{ github.event_name == 'workflow_dispatch' && vars.CDN_DEPLOY_EXAMPLE_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
       deployments: write
       statuses: write
-    uses: decentraland/actions/.github/workflows/cdn-deploy.yml@main
-    with:
-      package-name: "@dcl/sites"
-      version: ${{ github.event.inputs.version }}
-      commit: ${{ github.event.inputs.commit }}
-      deployment-environments: ${{ format('["{0}"]', github.event.inputs.environment) }}
-      percentage: ${{ fromJSON(github.event.inputs.percentage) }}
-      build-command: ""
-    secrets: inherit
+    steps:
+      # Check out at the chosen commit (empty -> default ref) so the base version
+      # the action reconstructs matches what was deployed.
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.event.inputs.commit }}
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24.x
+      - uses: decentraland/actions/cdn-deploy@main
+        with:
+          version: ${{ github.event.inputs.version }}
+          commit: ${{ github.event.inputs.commit }}
+          deployment-environments: ${{ format('["{0}"]', github.event.inputs.environment) }}
+          percentage: ${{ fromJSON(github.event.inputs.percentage) }}
+          aws-role-to-assume: ${{ vars.CDN_DEPLOY_ROLE_ARN }}
+          cloudflare-account-id: ${{ vars.CF_ACCOUNT_ID }}
+          cloudflare-api-token: ${{ secrets.CF_KV_API_TOKEN }}
+          cloudflare-namespace-zone: ${{ secrets.CF_NS_ZONE }}
+          cloudflare-namespace-today: ${{ secrets.CF_NS_TODAY }}
+          cloudflare-namespace-org: ${{ secrets.CF_NS_ORG }}
+          slack-webhook: ${{ secrets.ROLLOUTS_SLACK_WEBHOOK }}
