@@ -1,6 +1,7 @@
 import { getAddress } from 'viem'
 import { mainnet, polygon, polygonAmoy, sepolia } from 'viem/chains'
-import { Env, getEnv } from '@dcl/ui-env'
+import { Env } from '@dcl/ui-env'
+import { getCurrentEnv } from '../../../config/env'
 
 type WalletNetwork = 'ethereum' | 'polygon'
 
@@ -21,7 +22,7 @@ const CHAIN_ID = {
   development: { ethereum: sepolia.id, polygon: polygonAmoy.id }
 } as const
 
-const isProduction = (): boolean => getEnv() === Env.PRODUCTION
+const isProduction = (): boolean => getCurrentEnv() === Env.PRODUCTION
 
 /** MANA contract address for the network on the active environment. */
 const getManaAddress = (network: WalletNetwork): `0x${string}` =>

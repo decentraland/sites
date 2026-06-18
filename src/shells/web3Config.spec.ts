@@ -6,8 +6,11 @@ jest.mock('@dcl/core-web3', () => ({
 }))
 
 jest.mock('@dcl/ui-env', () => ({
-  Env: { PRODUCTION: 'prod' },
-  getEnv: () => mockEnv
+  Env: { PRODUCTION: 'prod' }
+}))
+
+jest.mock('../config/env', () => ({
+  getCurrentEnv: () => mockEnv
 }))
 
 describe('web3Config', () => {

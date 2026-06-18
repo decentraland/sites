@@ -1,11 +1,13 @@
 import { createWeb3CoreConfig } from '@dcl/core-web3'
 import type { Web3CoreConfig } from '@dcl/core-web3'
-import { Env, getEnv } from '@dcl/ui-env'
+import { Env } from '@dcl/ui-env'
+import { getCurrentEnv } from '../config/env'
 
 // core-web3's `environment` selects the default Magic key + default chains. sites only
 // distinguishes production from everything else (dev/stg run on testnets), mirroring
-// `useManaBalances.impl`.
-const resolveEnvironment = (): 'dev' | 'prd' => (getEnv() === Env.PRODUCTION ? 'prd' : 'dev')
+// `useManaBalances.impl`. Uses the sites config env (defaults to 'dev' on localhost), NOT the
+// standalone `getEnv()` which falls back to production on unknown hosts.
+const resolveEnvironment = (): 'dev' | 'prd' => (getCurrentEnv() === Env.PRODUCTION ? 'prd' : 'dev')
 
 let config: Web3CoreConfig | undefined
 

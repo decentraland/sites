@@ -1,8 +1,11 @@
 let mockEnv: string
 
 jest.mock('@dcl/ui-env', () => ({
-  Env: { PRODUCTION: 'prod' },
-  getEnv: () => mockEnv
+  Env: { PRODUCTION: 'prod' }
+}))
+
+jest.mock('../../../config/env', () => ({
+  getCurrentEnv: () => mockEnv
 }))
 
 jest.mock('viem', () => ({
