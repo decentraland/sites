@@ -27,7 +27,8 @@ jest.mock('./CreditsStatusCard.styled', () => ({
       {children}
     </a>
   ),
-  ActionRow: ({ children }: ChildrenProps) => <div>{children}</div>
+  ActionRow: ({ children }: ChildrenProps) => <div>{children}</div>,
+  ErrorText: ({ children, 'data-role': dataRole }: ChildrenProps & { 'data-role'?: string }) => <p data-role={dataRole}>{children}</p>
 }))
 
 jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({

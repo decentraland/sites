@@ -139,4 +139,41 @@ describe('accountCreditsApi', () => {
       })
     })
   })
+
+  describe('when registerForCredits is called', () => {
+    describe('and the POST succeeds', () => {
+      beforeEach(() => {
+        fetchSpy
+          .mockResolvedValueOnce(jsonResponse({ data: { status: UserCreditsStatus.NOT_REGISTERED, optedOutAt: null } }))
+          .mockResolvedValueOnce(jsonResponse({ ok: true }))
+      })
+
+      it('should POST to /users and patch the cached status to enrolled', async () => {
+        const store = createTestStore()
+        await store.dispatch(accountCreditsApi.endpoints.getUserCreditsStatus.initiate(ADDRESS))
+
+        await store.dispatch(accountCreditsApi.endpoints.registerForCredits.initiate(ADDRESS))
+
+        const cached = accountCreditsApi.endpoints.getUserCreditsStatus.select(ADDRESS)(store.getState())
+        expect(cached.data?.status).toBe(UserCreditsStatus.ENROLLED)
+        expect(cached.data?.optedOutAt).toBeNull()
+        const postRequest = fetchSpy.mock.calls.at(-1)?.[0] as Request
+        expect(postRequest.url).toBe('https://credits.test/users')
+        expect(postRequest.method).toBe('POST')
+      })
+    })
+
+    describe('and the POST fails because the wallet has no confirmed email', () => {
+      beforeEach(() => {
+        fetchSpy.mockResolvedValueOnce(jsonResponse({ error: 'User must be subscribed to notifications with a valid email' }, 400))
+      })
+
+      it('should surface the error and leave the cache untouched', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(accountCreditsApi.endpoints.registerForCredits.initiate(ADDRESS))
+
+        expect('error' in result ? result.error : undefined).toEqual(expect.objectContaining({ status: 400 }))
+      })
+    })
+  })
 })

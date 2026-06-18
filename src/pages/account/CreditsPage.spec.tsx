@@ -42,13 +42,9 @@ jest.mock('../../components/account/Credits/OptOutConfirmModal/OptOutConfirmModa
     ) : null
 }))
 
-const mockOpenCreditsSignup = jest.fn()
-jest.mock('../../components/account/Credits/credits.helpers', () => ({
-  openCreditsSignup: () => mockOpenCreditsSignup()
-}))
-
 jest.mock('../../components/account/Credits/credits.errors', () => ({
-  mapOptOutErrorToI18nKey: () => 'account.credits.leave_modal.errors.generic'
+  mapOptOutErrorToI18nKey: () => 'account.credits.leave_modal.errors.generic',
+  mapJoinErrorToI18nKey: () => 'account.credits.join_errors.generic'
 }))
 
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
@@ -57,9 +53,11 @@ jest.mock('../../hooks/adapters/useFormatMessage', () => ({
 
 const mockUseGetUserCreditsStatusQuery = jest.fn()
 const mockOptOut = jest.fn()
+const mockRegister = jest.fn()
 jest.mock('../../features/account-credits', () => ({
   useGetUserCreditsStatusQuery: (...args: unknown[]) => mockUseGetUserCreditsStatusQuery(...args),
-  useOptOutFromCreditsMutation: () => [mockOptOut, { isLoading: false }]
+  useOptOutFromCreditsMutation: () => [mockOptOut, { isLoading: false }],
+  useRegisterForCreditsMutation: () => [mockRegister, { isLoading: false }]
 }))
 
 jest.mock('../../hooks/useAuthIdentity', () => ({
@@ -70,6 +68,7 @@ describe('CreditsPage', () => {
   beforeEach(() => {
     mockUseGetUserCreditsStatusQuery.mockReturnValue({ data: { status: UserCreditsStatus.ENROLLED, optedOutAt: null }, isLoading: false })
     mockOptOut.mockReturnValue({ unwrap: () => Promise.resolve(undefined) })
+    mockRegister.mockReturnValue({ unwrap: () => Promise.resolve(undefined) })
   })
 
   afterEach(() => {
@@ -82,7 +81,7 @@ describe('CreditsPage', () => {
     expect(screen.getByTestId('status-card')).toHaveAttribute('data-status', UserCreditsStatus.ENROLLED)
   })
 
-  it('should deep-link to the marketplace signup when Join is clicked', () => {
+  it('should register via the credits API when Join is clicked', async () => {
     mockUseGetUserCreditsStatusQuery.mockReturnValue({
       data: { status: UserCreditsStatus.NOT_REGISTERED, optedOutAt: null },
       isLoading: false
@@ -91,7 +90,7 @@ describe('CreditsPage', () => {
 
     fireEvent.click(screen.getByText('join'))
 
-    expect(mockOpenCreditsSignup).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(mockRegister).toHaveBeenCalledWith('0x1234567890123456789012345678901234567890'))
   })
 
   it('should not show the confirm modal until Leave is clicked', () => {

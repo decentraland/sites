@@ -33,5 +33,29 @@ const mapOptOutErrorToI18nKey = (error: CreditsError): string => {
   return OPT_OUT_GENERIC_ERROR
 }
 
-export { OPT_OUT_ALREADY_CLAIMED_ERROR, OPT_OUT_GENERIC_ERROR, mapOptOutErrorToI18nKey }
+// i18n keys for the join (opt-in) flow. The only actionable case is the credits-server rejecting
+// the POST because the wallet has no confirmed notifications email; everything else is generic.
+const JOIN_GENERIC_ERROR = 'account.credits.join_errors.generic'
+const JOIN_EMAIL_REQUIRED_ERROR = 'account.credits.join_errors.email_required'
+
+const isEmailRequired = (error: FetchBaseQueryError): boolean => {
+  const message = extractServerMessage(error).toLowerCase()
+  return message.includes('subscribed to notifications') || message.includes('valid email')
+}
+
+const mapJoinErrorToI18nKey = (error: CreditsError): string => {
+  if (error && 'status' in error && isEmailRequired(error)) {
+    return JOIN_EMAIL_REQUIRED_ERROR
+  }
+  return JOIN_GENERIC_ERROR
+}
+
+export {
+  JOIN_EMAIL_REQUIRED_ERROR,
+  JOIN_GENERIC_ERROR,
+  OPT_OUT_ALREADY_CLAIMED_ERROR,
+  OPT_OUT_GENERIC_ERROR,
+  mapJoinErrorToI18nKey,
+  mapOptOutErrorToI18nKey
+}
 export type { CreditsError }

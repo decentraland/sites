@@ -1,4 +1,11 @@
-import { OPT_OUT_ALREADY_CLAIMED_ERROR, OPT_OUT_GENERIC_ERROR, mapOptOutErrorToI18nKey } from './credits.errors'
+import {
+  JOIN_EMAIL_REQUIRED_ERROR,
+  JOIN_GENERIC_ERROR,
+  OPT_OUT_ALREADY_CLAIMED_ERROR,
+  OPT_OUT_GENERIC_ERROR,
+  mapJoinErrorToI18nKey,
+  mapOptOutErrorToI18nKey
+} from './credits.errors'
 
 describe('mapOptOutErrorToI18nKey', () => {
   describe('when the error is undefined', () => {
@@ -38,5 +45,21 @@ describe('mapOptOutErrorToI18nKey', () => {
       const error = { name: 'Error', message: 'boom' }
       expect(mapOptOutErrorToI18nKey(error)).toBe(OPT_OUT_GENERIC_ERROR)
     })
+  })
+})
+
+describe('mapJoinErrorToI18nKey', () => {
+  it('should map the missing-email rejection to the email-required key', () => {
+    const error = { status: 400, data: { error: 'User must be subscribed to notifications with a valid email' } }
+    expect(mapJoinErrorToI18nKey(error)).toBe(JOIN_EMAIL_REQUIRED_ERROR)
+  })
+
+  it('should map unrelated server errors to the generic key', () => {
+    const error = { status: 500, data: { message: 'Internal server error' } }
+    expect(mapJoinErrorToI18nKey(error)).toBe(JOIN_GENERIC_ERROR)
+  })
+
+  it('should map an undefined error to the generic key', () => {
+    expect(mapJoinErrorToI18nKey(undefined)).toBe(JOIN_GENERIC_ERROR)
   })
 })

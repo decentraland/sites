@@ -58,10 +58,36 @@ const accountCreditsApi = creditsClient.injectEndpoints({
           // Mutation failed — leave the cached status untouched; the card surfaces the error.
         }
       }
+    }),
+
+    // Opt-in / re-join: `POST /users` enrolls the signed-in wallet (the server reads the address
+    // from the auth chain, not the body). It 400s if the wallet has no confirmed notifications
+    // email. On success we patch the status cache to ENROLLED so the card flips without a refetch.
+    registerForCredits: builder.mutation<void, string>({
+      async queryFn(address, _api, _extraOptions, baseQuery) {
+        const result = await baseQuery({ url: '/users', method: 'POST', body: { address } })
+        if (result.error) {
+          return { error: result.error }
+        }
+        return { data: undefined }
+      },
+      async onQueryStarted(address, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled
+          dispatch(
+            accountCreditsApi.util.updateQueryData('getUserCreditsStatus', address, draft => {
+              draft.status = UserCreditsStatus.ENROLLED
+              draft.optedOutAt = null
+            })
+          )
+        } catch {
+          // Mutation failed — leave the cached status untouched; the page surfaces the error.
+        }
+      }
     })
   })
 })
 
-const { useGetUserCreditsStatusQuery, useOptOutFromCreditsMutation } = accountCreditsApi
+const { useGetUserCreditsStatusQuery, useOptOutFromCreditsMutation, useRegisterForCreditsMutation } = accountCreditsApi
 
-export { accountCreditsApi, useGetUserCreditsStatusQuery, useOptOutFromCreditsMutation }
+export { accountCreditsApi, useGetUserCreditsStatusQuery, useOptOutFromCreditsMutation, useRegisterForCreditsMutation }

@@ -1,1 +1,1 @@
-export { useGetUserCreditsStatusQuery, useOptOutFromCreditsMutation } from './account-credits.client'
+export { useGetUserCreditsStatusQuery, useOptOutFromCreditsMutation, useRegisterForCreditsMutation } from './account-credits.client'

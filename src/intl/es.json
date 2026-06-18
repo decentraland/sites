@@ -1363,6 +1363,10 @@
           "generic": "No se pudo abandonar el programa en este momento. Por favor, inténtalo de nuevo.",
           "already_claimed": "No puedes abandonar esta semana porque ya has reclamado créditos. Por favor, inténtalo de nuevo la próxima semana."
         }
+      },
+      "join_errors": {
+        "generic": "No se pudo unir al programa en este momento. Intentá de nuevo.",
+        "email_required": "Agregá y confirmá un email en Notificaciones antes de unirte al Programa de Créditos."
       }
     },
     "delete": {

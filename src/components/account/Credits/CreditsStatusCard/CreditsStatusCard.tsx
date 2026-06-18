@@ -1,11 +1,13 @@
 import { Button, Skeleton } from 'decentraland-ui2'
 import { UserCreditsStatus } from '../../../../features/account-credits/account-credits.types'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
-import { ActionRow, Card, Description, LearnMoreLink, StatusLine, StatusValue, Title } from './CreditsStatusCard.styled'
+import { ActionRow, Card, Description, ErrorText, LearnMoreLink, StatusLine, StatusValue, Title } from './CreditsStatusCard.styled'
 
 interface CreditsStatusCardProps {
   status: UserCreditsStatus | undefined
   isLoading: boolean
+  isJoining?: boolean
+  joinErrorKey?: string | null
   onJoin: () => void
   onLeave: () => void
 }
@@ -17,7 +19,7 @@ const STATUS_LABEL_KEY: Record<UserCreditsStatus, string> = {
 }
 
 const CreditsStatusCard = (props: CreditsStatusCardProps) => {
-  const { status, isLoading, onJoin, onLeave } = props
+  const { status, isLoading, isJoining = false, joinErrorKey = null, onJoin, onLeave } = props
   const t = useFormatMessage()
 
   const isEnrolled = status === UserCreditsStatus.ENROLLED
@@ -45,12 +47,13 @@ const CreditsStatusCard = (props: CreditsStatusCardProps) => {
               {t('account.credits.leave_button')}
             </Button>
           ) : (
-            <Button variant="contained" color="primary" onClick={onJoin} data-role="credits-join-button">
+            <Button variant="contained" color="primary" onClick={onJoin} disabled={isJoining} data-role="credits-join-button">
               {t('account.credits.join_button')}
             </Button>
           )}
         </ActionRow>
       ) : null}
+      {joinErrorKey ? <ErrorText data-role="credits-join-error">{t(joinErrorKey)}</ErrorText> : null}
     </Card>
   )
 }

@@ -55,4 +55,10 @@ const ActionRow = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(1)
 }))
 
-export { ActionRow, Card, Description, LearnMoreLink, StatusLine, StatusValue, Title }
+const ErrorText = styled(Typography)(() => ({
+  fontSize: 13,
+  // DCL accent red for the actionable join error (e.g. "confirm an email first").
+  color: '#FF2D55'
+}))
+
+export { ActionRow, Card, Description, ErrorText, LearnMoreLink, StatusLine, StatusValue, Title }
