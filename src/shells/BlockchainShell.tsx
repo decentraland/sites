@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import type { PropsWithChildren, ReactNode } from 'react'
 import { WalletStateProvider, Web3LazyProvider } from '@dcl/core-web3/lazy'
 import { injectWeb3Reducers } from './store'
@@ -25,10 +25,17 @@ interface BlockchainShellProps {
 const BlockchainShell = ({ fallback = null, children }: PropsWithChildren<BlockchainShellProps>) => {
   const [isReady, setIsReady] = useState(false)
 
-  const handleLoad = useCallback(() => {
+  // Inject core-web3's wallet/network/transactions slices into the store synchronously on first
+  // render — BEFORE Web3LazyProvider mounts Web3Inner, whose Web3Sync reads the wallet slice the
+  // moment it mounts (during the load window, ahead of onLoad). Injecting in onLoad is too late and
+  // throws "Cannot read properties of undefined (reading 'address')". Idempotent + ref-guarded.
+  const didInject = useRef(false)
+  if (!didInject.current) {
+    didInject.current = true
     injectWeb3Reducers()
-    setIsReady(true)
-  }, [])
+  }
+
+  const handleLoad = useCallback(() => setIsReady(true), [])
 
   return (
     <WalletStateProvider>

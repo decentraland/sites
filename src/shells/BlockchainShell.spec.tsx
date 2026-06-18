@@ -30,19 +30,21 @@ describe('BlockchainShell', () => {
     jest.clearAllMocks()
   })
 
-  it('should render the fallback and withhold children until the Web3 bundle loads', () => {
+  it('should inject the Web3 reducers on mount and withhold children until the bundle loads', () => {
     render(
       <BlockchainShell fallback={<div data-testid="fallback" />}>
         <div data-testid="children" />
       </BlockchainShell>
     )
 
+    // Reducers are injected synchronously on mount — before Web3Inner mounts and reads the wallet
+    // slice — not in onLoad.
+    expect(mockInjectWeb3Reducers).toHaveBeenCalledTimes(1)
     expect(screen.getByTestId('fallback')).toBeInTheDocument()
     expect(screen.queryByTestId('children')).not.toBeInTheDocument()
-    expect(mockInjectWeb3Reducers).not.toHaveBeenCalled()
   })
 
-  it('should inject the Web3 reducers and reveal children once loaded', () => {
+  it('should reveal children once the Web3 bundle has loaded', () => {
     render(
       <BlockchainShell fallback={<div data-testid="fallback" />}>
         <div data-testid="children" />
@@ -51,7 +53,6 @@ describe('BlockchainShell', () => {
 
     fireEvent.click(screen.getByTestId('trigger-load'))
 
-    expect(mockInjectWeb3Reducers).toHaveBeenCalledTimes(1)
     expect(screen.getByTestId('children')).toBeInTheDocument()
     expect(screen.queryByTestId('fallback')).not.toBeInTheDocument()
   })
