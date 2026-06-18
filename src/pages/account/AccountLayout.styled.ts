@@ -7,12 +7,15 @@ const AccountLayoutRoot = styled(Box)(({ theme }) => ({
   position: 'relative',
   width: '100%',
   minHeight: '100vh',
+  // Clearance below the fixed navbar. Figma 322:101467: desktop navbar is 92px and the content
+  // starts at y=151, i.e. a 59px gap → 151px top. Mobile navbar is 64px with the content flush
+  // beneath it (Figma 776:69124, Menu at y=64).
   paddingTop: 64,
   paddingBottom: theme.spacing(8),
   background: 'radial-gradient(123.58% 82% at 9.01% 25.79%, #7434B1 0%, #481C6C 37.11%, #2B1040 100%)',
   isolation: 'isolate',
   [theme.breakpoints.up('md')]: {
-    paddingTop: 96
+    paddingTop: 151
   }
 }))
 
@@ -40,8 +43,10 @@ const AccountContent = styled(Box)(({ theme }) => ({
   minWidth: 0,
   width: '100%',
   padding: theme.spacing(2),
+  // Align the content's top edge with the sidebar's (both flush to the page container) — no extra
+  // top padding on desktop, or the panel sits lower than the sidebar.
   [theme.breakpoints.up('md')]: {
-    padding: theme.spacing(2, 0, 0)
+    padding: 0
   }
 }))
 
