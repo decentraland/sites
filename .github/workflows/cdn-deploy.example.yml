@@ -73,7 +73,10 @@ jobs:
       statuses: write
     uses: decentraland/actions/.github/workflows/cdn-deploy.yml@main
     with:
-      package-name: "@dcl/sites" # no checkout, so name is explicit
+      # The reusable workflow checks out the release commit, so name + base
+      # version (hence the copy source) come from package.json; package-name is
+      # optional here but kept explicit.
+      package-name: "@dcl/sites"
       version: ${{ github.event.release.tag_name }}
       deployment-environments: "[]" # stage only — no KV
       build-command: "" # copy, don't build
