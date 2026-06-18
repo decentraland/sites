@@ -1,30 +1,23 @@
 import { memo, useCallback, useState } from 'react'
 import type { ReactNode } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlined'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import CreditCardOutlinedIcon from '@mui/icons-material/CreditCardOutlined'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import EventOutlinedIcon from '@mui/icons-material/EventOutlined'
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import GroupAddOutlinedIcon from '@mui/icons-material/GroupAddOutlined'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import RedeemOutlinedIcon from '@mui/icons-material/RedeemOutlined'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import SensorsOutlinedIcon from '@mui/icons-material/SensorsOutlined'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined'
 import type { NotificationType, SubscriptionDetails } from '@dcl/schemas'
 import { Switch } from 'decentraland-ui2'
 import { isTypeEmailEnabled } from '../../../../features/account-notifications/account-notifications.helpers'
 import { SubscriptionGroupKey } from '../../../../features/account-notifications/account-notifications.types'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
+import {
+  DaoIcon,
+  EventsIcon,
+  MarketplaceCreditsIcon,
+  MarketplaceIcon,
+  ReferralsIcon,
+  RewardsIcon,
+  StreamingIcon,
+  TipsIcon,
+  WorldsIcon
+} from './groupIcons'
 import {
   AccordionRoot,
   ChevronIconWrap,
@@ -36,18 +29,17 @@ import {
   TypeRow
 } from './NotificationGroupAccordion.styled'
 
-// Per-group icon (Figma 522:122213 — each accordion header carries its category icon). Outlined
-// MUI icons to match the sidebar's icon style.
+// Per-group icon (Figma 522:122213 — the category SVGs provided by design, wrapped as MUI SvgIcons).
 const GROUP_ICON: Record<SubscriptionGroupKey, ReactNode> = {
-  [SubscriptionGroupKey.MARKETPLACE]: <StorefrontOutlinedIcon fontSize="small" />,
-  [SubscriptionGroupKey.CREDITS]: <CreditCardOutlinedIcon fontSize="small" />,
-  [SubscriptionGroupKey.EVENTS]: <EventOutlinedIcon fontSize="small" />,
-  [SubscriptionGroupKey.REWARDS]: <RedeemOutlinedIcon fontSize="small" />,
-  [SubscriptionGroupKey.DAO]: <AccountBalanceOutlinedIcon fontSize="small" />,
-  [SubscriptionGroupKey.WORLDS]: <PublicOutlinedIcon fontSize="small" />,
-  [SubscriptionGroupKey.STREAMING]: <SensorsOutlinedIcon fontSize="small" />,
-  [SubscriptionGroupKey.TIPS]: <PaidOutlinedIcon fontSize="small" />,
-  [SubscriptionGroupKey.REFERRAL]: <GroupAddOutlinedIcon fontSize="small" />
+  [SubscriptionGroupKey.MARKETPLACE]: <MarketplaceIcon fontSize="small" />,
+  [SubscriptionGroupKey.CREDITS]: <MarketplaceCreditsIcon fontSize="small" />,
+  [SubscriptionGroupKey.EVENTS]: <EventsIcon fontSize="small" />,
+  [SubscriptionGroupKey.REWARDS]: <RewardsIcon fontSize="small" />,
+  [SubscriptionGroupKey.DAO]: <DaoIcon fontSize="small" />,
+  [SubscriptionGroupKey.WORLDS]: <WorldsIcon fontSize="small" />,
+  [SubscriptionGroupKey.STREAMING]: <StreamingIcon fontSize="small" />,
+  [SubscriptionGroupKey.TIPS]: <TipsIcon fontSize="small" />,
+  [SubscriptionGroupKey.REFERRAL]: <ReferralsIcon fontSize="small" />
 }
 
 interface NotificationGroupAccordionProps {

@@ -9,15 +9,20 @@ type SwitchProps = { checked?: boolean; disabled?: boolean; onChange?: (event: u
 type HeaderProps = ChildrenProps & { onClick?: () => void; 'aria-expanded'?: boolean }
 
 jest.mock('@mui/icons-material/ExpandMoreRounded', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/AccountBalanceOutlined', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/CreditCardOutlined', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/EventOutlined', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/GroupAddOutlined', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/PaidOutlined', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/PublicOutlined', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/RedeemOutlined', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/SensorsOutlined', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/StorefrontOutlined', () => ({ __esModule: true, default: () => <span /> }))
+
+// The per-group SVG icons are exercised by the build; here they are stubbed so the accordion
+// behavior tests stay focused.
+jest.mock('./groupIcons', () => ({
+  MarketplaceIcon: () => <span />,
+  MarketplaceCreditsIcon: () => <span />,
+  EventsIcon: () => <span />,
+  RewardsIcon: () => <span />,
+  DaoIcon: () => <span />,
+  WorldsIcon: () => <span />,
+  StreamingIcon: () => <span />,
+  TipsIcon: () => <span />,
+  ReferralsIcon: () => <span />
+}))
 
 jest.mock('decentraland-ui2', () => ({
   Switch: ({ checked, disabled, onChange }: SwitchProps) => (
