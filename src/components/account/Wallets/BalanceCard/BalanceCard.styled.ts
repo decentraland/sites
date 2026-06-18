@@ -3,10 +3,18 @@ import { Box, Typography, styled } from 'decentraland-ui2'
 const Card = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(2),
+  gap: theme.spacing(1.5),
   padding: theme.spacing(2.5),
   borderRadius: theme.spacing(1.5),
-  background: 'rgba(0, 0, 0, 0.2)',
+  background: 'rgba(0, 0, 0, 0.2)'
+}))
+
+// Top row: balance on the left, actions on the right (md+); stacked on mobile. The transactions
+// section renders full-width below this row.
+const CardTop = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
   [theme.breakpoints.up('md')]: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -69,4 +77,4 @@ const ActionButton = styled('button')(({ theme }) => ({
   }
 }))
 
-export { ActionButton, Actions, BalanceAmount, BalanceInfo, Card, NetworkLabel, NetworkRow }
+export { ActionButton, Actions, BalanceAmount, BalanceInfo, Card, CardTop, NetworkLabel, NetworkRow }

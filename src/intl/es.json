@@ -1280,6 +1280,19 @@
         "close": "Cerrar",
         "rejected": "Rechazaste la transacción.",
         "error": "Algo salió mal. Intentá de nuevo."
+      },
+      "transactions": {
+        "title": "Transacciones",
+        "empty": "Todavía no hay transacciones.",
+        "type": {
+          "send": "Enviado",
+          "swap": "Cambio"
+        },
+        "status": {
+          "pending": "Pendiente",
+          "confirmed": "Confirmada",
+          "failed": "Fallida"
+        }
       }
     },
     "notifications": {

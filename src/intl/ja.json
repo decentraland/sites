@@ -1280,6 +1280,19 @@
         "close": "閉じる",
         "rejected": "トランザクションを拒否しました。",
         "error": "問題が発生しました。もう一度お試しください。"
+      },
+      "transactions": {
+        "title": "取引",
+        "empty": "まだ取引はありません。",
+        "type": {
+          "send": "送信",
+          "swap": "スワップ"
+        },
+        "status": {
+          "pending": "保留中",
+          "confirmed": "確認済み",
+          "failed": "失敗"
+        }
       }
     },
     "notifications": {

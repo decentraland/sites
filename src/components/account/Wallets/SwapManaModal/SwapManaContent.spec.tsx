@@ -43,6 +43,10 @@ jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))
 
+jest.mock('../../../../hooks/useWalletTransactions', () => ({
+  useWalletTransactions: () => ({ addTransaction: jest.fn(), updateTransactionStatus: jest.fn() })
+}))
+
 jest.mock('decentraland-ui2', () => ({
   Button: ({ children, onClick, disabled }: { children?: ReactNode; onClick?: () => void; disabled?: boolean }) => (
     <button type="button" onClick={onClick} disabled={disabled}>
@@ -84,7 +88,7 @@ describe('SwapManaContent', () => {
         connectors: [{ uid: 'c1', name: 'MetaMask' }]
       }
 
-      render(<SwapManaContent balance={100} onClose={jest.fn()} />)
+      render(<SwapManaContent balance={100} address="0xUSER" onClose={jest.fn()} />)
       fireEvent.click(screen.getByText('MetaMask'))
 
       expect(mockConnect).toHaveBeenCalledWith({ uid: 'c1', name: 'MetaMask' })
@@ -95,7 +99,7 @@ describe('SwapManaContent', () => {
     it('should prompt switching to the L1 chain', () => {
       mockAccountReturn = { address: '0xUSER', chainId: 1 }
 
-      render(<SwapManaContent balance={100} onClose={jest.fn()} />)
+      render(<SwapManaContent balance={100} address="0xUSER" onClose={jest.fn()} />)
       fireEvent.click(screen.getByText('account.wallets.swap.switch_button'))
 
       expect(mockSwitchChain).toHaveBeenCalledWith({ chainId: 11155111 })
@@ -105,7 +109,7 @@ describe('SwapManaContent', () => {
   describe('when connected on the L1 chain', () => {
     it('should approve then deposit when the allowance is short', async () => {
       mockReadContract.mockResolvedValue(0n)
-      render(<SwapManaContent balance={100} onClose={jest.fn()} />)
+      render(<SwapManaContent balance={100} address="0xUSER" onClose={jest.fn()} />)
 
       fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '5' } })
       fireEvent.click(screen.getByText('account.wallets.swap.submit'))
@@ -119,7 +123,7 @@ describe('SwapManaContent', () => {
 
     it('should skip the approval when the allowance already covers the amount', async () => {
       mockReadContract.mockResolvedValue(BigInt(1e30))
-      render(<SwapManaContent balance={100} onClose={jest.fn()} />)
+      render(<SwapManaContent balance={100} address="0xUSER" onClose={jest.fn()} />)
 
       fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '5' } })
       fireEvent.click(screen.getByText('account.wallets.swap.submit'))
@@ -132,7 +136,7 @@ describe('SwapManaContent', () => {
     it('should surface a rejection message without leaking the raw error', async () => {
       mockReadContract.mockResolvedValue(0n)
       mockWriteContractAsync.mockRejectedValue(new Error('User rejected the request'))
-      render(<SwapManaContent balance={100} onClose={jest.fn()} />)
+      render(<SwapManaContent balance={100} address="0xUSER" onClose={jest.fn()} />)
 
       fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '5' } })
       fireEvent.click(screen.getByText('account.wallets.swap.submit'))
@@ -143,7 +147,7 @@ describe('SwapManaContent', () => {
     it('should error (not succeed) when the deposit receipt reverts', async () => {
       mockReadContract.mockResolvedValue(BigInt(1e30))
       mockWaitForTransactionReceipt.mockResolvedValue({ status: 'reverted' })
-      render(<SwapManaContent balance={100} onClose={jest.fn()} />)
+      render(<SwapManaContent balance={100} address="0xUSER" onClose={jest.fn()} />)
 
       fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '5' } })
       fireEvent.click(screen.getByText('account.wallets.swap.submit'))
@@ -155,7 +159,7 @@ describe('SwapManaContent', () => {
     it('should call onSuccess after a confirmed deposit', async () => {
       const onSuccess = jest.fn()
       mockReadContract.mockResolvedValue(BigInt(1e30))
-      render(<SwapManaContent balance={100} onClose={jest.fn()} onSuccess={onSuccess} />)
+      render(<SwapManaContent balance={100} address="0xUSER" onClose={jest.fn()} onSuccess={onSuccess} />)
 
       fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '5' } })
       fireEvent.click(screen.getByText('account.wallets.swap.submit'))
@@ -164,7 +168,7 @@ describe('SwapManaContent', () => {
     })
 
     it('should disable the submit when the amount exceeds the balance', () => {
-      render(<SwapManaContent balance={3} onClose={jest.fn()} />)
+      render(<SwapManaContent balance={3} address="0xUSER" onClose={jest.fn()} />)
 
       fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '5' } })
 

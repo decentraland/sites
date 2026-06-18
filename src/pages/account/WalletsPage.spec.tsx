@@ -41,6 +41,10 @@ jest.mock('../../hooks/useManaBalances', () => ({
   useManaBalances: () => ({ balances: { ethereum: 100595, polygon: 42 }, isLoading: false, fetchBalances: mockFetchBalances })
 }))
 
+jest.mock('../../hooks/useWalletTransactions', () => ({
+  useWalletTransactions: () => ({ transactions: [], addTransaction: jest.fn(), updateTransactionStatus: jest.fn() })
+}))
+
 describe('WalletsPage', () => {
   afterEach(() => {
     jest.clearAllMocks()

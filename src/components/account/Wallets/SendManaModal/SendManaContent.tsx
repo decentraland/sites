@@ -1,29 +1,50 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { parseEther } from 'viem'
 import { useAccount, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
 import { useWallet } from '@dcl/core-web3'
 import { Button, TextField } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
+import { useWalletTransactions } from '../../../../hooks/useWalletTransactions'
 import { ERC20_TRANSFER_ABI, type WalletNetwork, getManaAddress, getNetworkChainId } from '../manaContract'
 import { Body, Centered, ConnectList, Description, StateText } from './SendManaModal.styled'
 
 interface SendManaContentProps {
   network: WalletNetwork
+  // Session address used to key the local transaction log (same key the cards read).
+  address: string | undefined
   onClose: () => void
+  onSuccess?: () => void
 }
 
 const ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/
 
-const SendManaContent = ({ network, onClose }: SendManaContentProps) => {
+const SendManaContent = ({ network, address, onClose, onSuccess }: SendManaContentProps) => {
   const t = useFormatMessage()
   const { isConnected, connect, connectors } = useWallet()
   const { chainId } = useAccount()
   const { switchChain, isPending: isSwitching } = useSwitchChain()
   const { writeContract, data: hash, isPending: isSending, error: writeError } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+  const { addTransaction, updateTransactionStatus } = useWalletTransactions(address)
 
   const [to, setTo] = useState('')
   const [amount, setAmount] = useState('')
+  const recordedHash = useRef<string | null>(null)
+
+  // Record the transfer the moment it has a hash (pending), then flip to confirmed when mined.
+  useEffect(() => {
+    if (hash && recordedHash.current !== hash) {
+      recordedHash.current = hash
+      addTransaction({ hash, type: 'send', network, amount: Number(amount), timestamp: Date.now(), status: 'pending' })
+    }
+  }, [hash, network, amount, addTransaction])
+
+  useEffect(() => {
+    if (isSuccess && hash) {
+      updateTransactionStatus(hash, 'confirmed')
+      onSuccess?.()
+    }
+  }, [isSuccess, hash, updateTransactionStatus, onSuccess])
 
   const targetChainId = getNetworkChainId(network)
   const isAddressValid = ADDRESS_REGEX.test(to.trim())

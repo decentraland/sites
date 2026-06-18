@@ -37,8 +37,13 @@ jest.mock('../wallets.helpers', () => ({
   formatMana: (value: number) => `formatted-${value}`
 }))
 
+jest.mock('../TransactionsSection/TransactionsSection', () => ({
+  TransactionsSection: () => <div data-testid="transactions-section" />
+}))
+
 jest.mock('./BalanceCard.styled', () => ({
   Card: ({ children }: ChildrenProps) => <div>{children}</div>,
+  CardTop: ({ children }: ChildrenProps) => <div>{children}</div>,
   BalanceInfo: ({ children }: ChildrenProps) => <div>{children}</div>,
   NetworkRow: ({ children }: ChildrenProps) => <div>{children}</div>,
   NetworkLabel: ({ children }: ChildrenProps) => <div>{children}</div>,
@@ -65,7 +70,15 @@ describe('BalanceCard', () => {
 
   it('should render the network label and the formatted balance', () => {
     render(
-      <BalanceCard network="ethereum" balance={100595} isLoading={false} onReceive={jest.fn()} onSend={jest.fn()} onSwap={jest.fn()} />
+      <BalanceCard
+        network="ethereum"
+        balance={100595}
+        isLoading={false}
+        transactions={[]}
+        onReceive={jest.fn()}
+        onSend={jest.fn()}
+        onSwap={jest.fn()}
+      />
     )
 
     expect(screen.getByText('account.wallets.eth_label')).toBeInTheDocument()
@@ -74,13 +87,33 @@ describe('BalanceCard', () => {
   })
 
   it('should show a skeleton while loading or before the balance resolves', () => {
-    render(<BalanceCard network="polygon" balance={undefined} isLoading onReceive={jest.fn()} onSend={jest.fn()} onSwap={jest.fn()} />)
+    render(
+      <BalanceCard
+        network="polygon"
+        balance={undefined}
+        isLoading
+        transactions={[]}
+        onReceive={jest.fn()}
+        onSend={jest.fn()}
+        onSwap={jest.fn()}
+      />
+    )
 
     expect(screen.getByTestId('skeleton')).toBeInTheDocument()
   })
 
   it('should open the marketplace in a new tab when Buy is clicked', () => {
-    render(<BalanceCard network="ethereum" balance={1} isLoading={false} onReceive={jest.fn()} onSend={jest.fn()} onSwap={jest.fn()} />)
+    render(
+      <BalanceCard
+        network="ethereum"
+        balance={1}
+        isLoading={false}
+        transactions={[]}
+        onReceive={jest.fn()}
+        onSend={jest.fn()}
+        onSwap={jest.fn()}
+      />
+    )
 
     fireEvent.click(screen.getByText('account.wallets.actions.buy'))
 
@@ -90,7 +123,17 @@ describe('BalanceCard', () => {
 
   it('should invoke onReceive instead of navigating when Receive is clicked', () => {
     const onReceive = jest.fn()
-    render(<BalanceCard network="ethereum" balance={1} isLoading={false} onReceive={onReceive} onSend={jest.fn()} onSwap={jest.fn()} />)
+    render(
+      <BalanceCard
+        network="ethereum"
+        balance={1}
+        isLoading={false}
+        transactions={[]}
+        onReceive={onReceive}
+        onSend={jest.fn()}
+        onSwap={jest.fn()}
+      />
+    )
 
     fireEvent.click(screen.getByText('account.wallets.actions.receive'))
 
@@ -100,7 +143,17 @@ describe('BalanceCard', () => {
 
   it('should invoke onSend in-page instead of deep-linking when Send is clicked', () => {
     const onSend = jest.fn()
-    render(<BalanceCard network="polygon" balance={1} isLoading={false} onReceive={jest.fn()} onSend={onSend} onSwap={jest.fn()} />)
+    render(
+      <BalanceCard
+        network="polygon"
+        balance={1}
+        isLoading={false}
+        transactions={[]}
+        onReceive={jest.fn()}
+        onSend={onSend}
+        onSwap={jest.fn()}
+      />
+    )
 
     fireEvent.click(screen.getByText('account.wallets.actions.send'))
 
@@ -111,7 +164,17 @@ describe('BalanceCard', () => {
 
   it('should invoke onSwap in-page instead of deep-linking when Swap is clicked', () => {
     const onSwap = jest.fn()
-    render(<BalanceCard network="ethereum" balance={1} isLoading={false} onReceive={jest.fn()} onSend={jest.fn()} onSwap={onSwap} />)
+    render(
+      <BalanceCard
+        network="ethereum"
+        balance={1}
+        isLoading={false}
+        transactions={[]}
+        onReceive={jest.fn()}
+        onSend={jest.fn()}
+        onSwap={onSwap}
+      />
+    )
 
     fireEvent.click(screen.getByText('account.wallets.actions.swap'))
 

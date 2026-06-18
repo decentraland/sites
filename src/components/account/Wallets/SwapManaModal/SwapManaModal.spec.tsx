@@ -36,14 +36,14 @@ describe('SwapManaModal', () => {
   })
 
   it('should not mount the Web3 shell while closed', () => {
-    render(<SwapManaModal open={false} balance={100} onClose={jest.fn()} />)
+    render(<SwapManaModal open={false} balance={100} address="0xabc" onClose={jest.fn()} />)
 
     expect(screen.queryByTestId('blockchain-shell')).not.toBeInTheDocument()
     expect(screen.queryByTestId('swap-content')).not.toBeInTheDocument()
   })
 
   it('should mount the shell and the swap content with the balance when open', () => {
-    render(<SwapManaModal open balance={42} onClose={jest.fn()} />)
+    render(<SwapManaModal open balance={42} address="0xabc" onClose={jest.fn()} />)
 
     expect(screen.getByTestId('blockchain-shell')).toBeInTheDocument()
     expect(screen.getByTestId('swap-content')).toHaveTextContent('42')

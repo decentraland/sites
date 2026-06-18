@@ -1280,6 +1280,19 @@
         "close": "关闭",
         "rejected": "您已拒绝该交易。",
         "error": "出错了，请重试。"
+      },
+      "transactions": {
+        "title": "交易",
+        "empty": "暂无交易。",
+        "type": {
+          "send": "已发送",
+          "swap": "兑换"
+        },
+        "status": {
+          "pending": "待处理",
+          "confirmed": "已确认",
+          "failed": "失败"
+        }
       }
     },
     "notifications": {

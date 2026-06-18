@@ -9,11 +9,12 @@ import { SwapManaContent } from './SwapManaContent'
 interface SwapManaModalProps {
   open: boolean
   balance: number | undefined
+  address: string | undefined
   onClose: () => void
   onSuccess?: () => void
 }
 
-const SwapManaModal = ({ open, balance, onClose, onSuccess }: SwapManaModalProps) => {
+const SwapManaModal = ({ open, balance, address, onClose, onSuccess }: SwapManaModalProps) => {
   const t = useFormatMessage()
 
   return (
@@ -36,7 +37,7 @@ const SwapManaModal = ({ open, balance, onClose, onSuccess }: SwapManaModalProps
             </Centered>
           }
         >
-          <SwapManaContent balance={balance} onClose={onClose} onSuccess={onSuccess} />
+          <SwapManaContent balance={balance} address={address} onClose={onClose} onSuccess={onSuccess} />
         </BlockchainShell>
       )}
     </StyledDialog>

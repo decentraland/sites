@@ -4,6 +4,7 @@ import { useAccount, usePublicClient, useSwitchChain, useWriteContract } from 'w
 import { useWallet } from '@dcl/core-web3'
 import { Button, TextField } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
+import { useWalletTransactions } from '../../../../hooks/useWalletTransactions'
 import {
   ERC20_ALLOWANCE_ABI,
   ROOT_CHAIN_MANAGER_ABI,
@@ -17,6 +18,8 @@ import { Body, Centered, ConnectList, Description, StateText } from '../SendMana
 interface SwapManaContentProps {
   // MANA balance on Ethereum (L1) — the amount available to deposit to Polygon.
   balance: number | undefined
+  // Session address used to key the local transaction log (same key the cards read).
+  address: string | undefined
   onClose: () => void
   // Called after a confirmed deposit so the page can refresh balances (the L1 balance drops now;
   // Polygon credits after the bridge sync, which can take ~20-30 min).
@@ -25,10 +28,11 @@ interface SwapManaContentProps {
 
 type Phase = 'idle' | 'approving' | 'depositing' | 'success'
 
-const SwapManaContent = ({ balance, onClose, onSuccess }: SwapManaContentProps) => {
+const SwapManaContent = ({ balance, address: trackingAddress, onClose, onSuccess }: SwapManaContentProps) => {
   const t = useFormatMessage()
   const { isConnected, connect, connectors } = useWallet()
   const { address, chainId } = useAccount()
+  const { addTransaction, updateTransactionStatus } = useWalletTransactions(trackingAddress)
   const { switchChain, isPending: isSwitching } = useSwitchChain()
   const { writeContractAsync } = useWriteContract()
   const l1ChainId = getL1ChainId()
@@ -82,10 +86,22 @@ const SwapManaContent = ({ balance, onClose, onSuccess }: SwapManaContentProps) 
         args: [address, manaAddress, depositData],
         chainId: l1ChainId
       })
+      addTransaction({
+        hash: depositHash,
+        type: 'swap',
+        network: 'ethereum',
+        amount: amountValue,
+        timestamp: Date.now(),
+        status: 'pending'
+      })
       // waitForTransactionReceipt resolves even when the tx reverted — guard on the status so a
       // reverted deposit doesn't show "success".
       const depositReceipt = await publicClient.waitForTransactionReceipt({ hash: depositHash })
-      if (depositReceipt.status !== 'success') throw new Error('Deposit reverted')
+      if (depositReceipt.status !== 'success') {
+        updateTransactionStatus(depositHash, 'failed')
+        throw new Error('Deposit reverted')
+      }
+      updateTransactionStatus(depositHash, 'confirmed')
 
       setPhase('success')
       onSuccess?.()
@@ -95,7 +111,18 @@ const SwapManaContent = ({ balance, onClose, onSuccess }: SwapManaContentProps) 
       setErrorKey(/rejected|denied|UserRejected/i.test(message) ? 'account.wallets.swap.rejected' : 'account.wallets.swap.error')
       setPhase('idle')
     }
-  }, [address, publicClient, isAmountValid, amount, writeContractAsync, l1ChainId, onSuccess])
+  }, [
+    address,
+    publicClient,
+    isAmountValid,
+    amount,
+    amountValue,
+    writeContractAsync,
+    l1ChainId,
+    addTransaction,
+    updateTransactionStatus,
+    onSuccess
+  ])
 
   const submitLabel = useMemo(() => {
     if (phase === 'approving') return t('account.wallets.swap.approving')

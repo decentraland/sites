@@ -37,14 +37,14 @@ describe('SendManaModal', () => {
   })
 
   it('should not mount the Web3 shell while closed', () => {
-    render(<SendManaModal open={false} network="polygon" onClose={jest.fn()} />)
+    render(<SendManaModal open={false} network="polygon" address="0xabc" onClose={jest.fn()} />)
 
     expect(screen.queryByTestId('blockchain-shell')).not.toBeInTheDocument()
     expect(screen.queryByTestId('send-content')).not.toBeInTheDocument()
   })
 
   it('should mount the shell and the send content for the given network when open', () => {
-    render(<SendManaModal open network="ethereum" onClose={jest.fn()} />)
+    render(<SendManaModal open network="ethereum" address="0xabc" onClose={jest.fn()} />)
 
     expect(screen.getByTestId('blockchain-shell')).toBeInTheDocument()
     expect(screen.getByTestId('send-content')).toHaveTextContent('ethereum')

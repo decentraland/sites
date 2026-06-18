@@ -10,10 +10,12 @@ import { Centered, CloseButton, Header, StateText, StyledDialog, Title } from '.
 interface SendManaModalProps {
   open: boolean
   network: WalletNetwork
+  address: string | undefined
   onClose: () => void
+  onSuccess?: () => void
 }
 
-const SendManaModal = ({ open, network, onClose }: SendManaModalProps) => {
+const SendManaModal = ({ open, network, address, onClose, onSuccess }: SendManaModalProps) => {
   const t = useFormatMessage()
 
   return (
@@ -36,7 +38,7 @@ const SendManaModal = ({ open, network, onClose }: SendManaModalProps) => {
             </Centered>
           }
         >
-          <SendManaContent network={network} onClose={onClose} />
+          <SendManaContent network={network} address={address} onClose={onClose} onSuccess={onSuccess} />
         </BlockchainShell>
       )}
     </StyledDialog>

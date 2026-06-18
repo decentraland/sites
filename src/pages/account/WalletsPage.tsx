@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { BalanceCard } from '../../components/account/Wallets/BalanceCard/BalanceCard'
 import type { WalletNetwork } from '../../components/account/Wallets/manaContract'
@@ -8,15 +8,20 @@ import { SwapManaModal } from '../../components/account/Wallets/SwapManaModal/Sw
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useManaBalances } from '../../hooks/useManaBalances'
+import { useWalletTransactions } from '../../hooks/useWalletTransactions'
 import { WalletsPanel } from './WalletsPage.styled'
 
 const WalletsPage = () => {
   const t = useFormatMessage()
   const { address } = useAuthIdentity()
   const { balances, isLoading, fetchBalances } = useManaBalances(address ?? undefined)
+  const { transactions } = useWalletTransactions(address ?? undefined)
   const [isReceiveOpen, setIsReceiveOpen] = useState(false)
   const [sendNetwork, setSendNetwork] = useState<WalletNetwork | null>(null)
   const [isSwapOpen, setIsSwapOpen] = useState(false)
+
+  const ethereumTransactions = useMemo(() => transactions.filter(transaction => transaction.network === 'ethereum'), [transactions])
+  const polygonTransactions = useMemo(() => transactions.filter(transaction => transaction.network === 'polygon'), [transactions])
 
   // Balances are not fetched on mount by the hook (it stays out of the homepage critical path);
   // the wallets page explicitly requests them once the user lands here.
@@ -34,6 +39,7 @@ const WalletsPage = () => {
           network="ethereum"
           balance={balances?.ethereum}
           isLoading={isLoading}
+          transactions={ethereumTransactions}
           onReceive={() => setIsReceiveOpen(true)}
           onSend={() => setSendNetwork('ethereum')}
           onSwap={() => setIsSwapOpen(true)}
@@ -42,20 +48,27 @@ const WalletsPage = () => {
           network="polygon"
           balance={balances?.polygon}
           isLoading={isLoading}
+          transactions={polygonTransactions}
           onReceive={() => setIsReceiveOpen(true)}
           onSend={() => setSendNetwork('polygon')}
           onSwap={() => setIsSwapOpen(true)}
         />
-        {/* NOTE: The transactions list (Figma 322:101467) is deferred. The standalone account dapp
-            built it from client-side Redux (deposits/withdrawals/transfers tracked locally); there
-            is no public read-only MANA transaction-history API to source it from in sites, so it is
-            left out rather than faked. Revisit once a data source exists. */}
+        {/* NOTE: The transactions list shows what the user does HERE (Send/Swap), tracked client-side
+            in localStorage — there is no public indexer for per-wallet MANA transfers, so received
+            transfers and prior history aren't available without an external API. */}
       </WalletsPanel>
       {address ? <ReceiveModal open={isReceiveOpen} address={address} onClose={() => setIsReceiveOpen(false)} /> : null}
-      <SendManaModal open={sendNetwork !== null} network={sendNetwork ?? 'ethereum'} onClose={() => setSendNetwork(null)} />
+      <SendManaModal
+        open={sendNetwork !== null}
+        network={sendNetwork ?? 'ethereum'}
+        address={address ?? undefined}
+        onClose={() => setSendNetwork(null)}
+        onSuccess={() => fetchBalances(true)}
+      />
       <SwapManaModal
         open={isSwapOpen}
         balance={balances?.ethereum}
+        address={address ?? undefined}
         onClose={() => setIsSwapOpen(false)}
         onSuccess={() => fetchBalances(true)}
       />

@@ -1715,6 +1715,19 @@
         "close": "Close",
         "rejected": "You rejected the transaction.",
         "error": "Something went wrong. Please try again."
+      },
+      "transactions": {
+        "title": "Transactions",
+        "empty": "No transactions yet.",
+        "type": {
+          "send": "Sent",
+          "swap": "Swap"
+        },
+        "status": {
+          "pending": "Pending",
+          "confirmed": "Confirmed",
+          "failed": "Failed"
+        }
       }
     },
     "notifications": {

@@ -1275,6 +1275,19 @@
         "close": "Fermer",
         "rejected": "Vous avez rejeté la transaction.",
         "error": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "transactions": {
+        "title": "Transactions",
+        "empty": "Aucune transaction pour l'instant.",
+        "type": {
+          "send": "Envoyé",
+          "swap": "Échange"
+        },
+        "status": {
+          "pending": "En attente",
+          "confirmed": "Confirmée",
+          "failed": "Échouée"
+        }
       }
     },
     "notifications": {

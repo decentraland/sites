@@ -37,6 +37,10 @@ jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))
 
+jest.mock('../../../../hooks/useWalletTransactions', () => ({
+  useWalletTransactions: () => ({ addTransaction: jest.fn(), updateTransactionStatus: jest.fn() })
+}))
+
 jest.mock('decentraland-ui2', () => ({
   Button: ({ children, onClick, disabled }: { children?: ReactNode; onClick?: () => void; disabled?: boolean }) => (
     <button type="button" onClick={onClick} disabled={disabled}>
@@ -96,7 +100,7 @@ describe('SendManaContent', () => {
         ]
       }
 
-      render(<SendManaContent network="polygon" onClose={jest.fn()} />)
+      render(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} />)
 
       fireEvent.click(screen.getByText('MetaMask'))
 
@@ -109,7 +113,7 @@ describe('SendManaContent', () => {
       mockWalletReturn = { isConnected: true, connect: mockConnect, connectors: [] }
       mockAccountReturn = { chainId: 1 }
 
-      render(<SendManaContent network="polygon" onClose={jest.fn()} />)
+      render(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} />)
 
       fireEvent.click(screen.getByText('account.wallets.send.switch_button'))
 
@@ -124,7 +128,7 @@ describe('SendManaContent', () => {
     })
 
     it('should disable the submit and show a hint for an invalid address', () => {
-      render(<SendManaContent network="polygon" onClose={jest.fn()} />)
+      render(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} />)
 
       fireEvent.change(screen.getByRole('textbox'), { target: { value: 'not-an-address' } })
 
@@ -133,7 +137,7 @@ describe('SendManaContent', () => {
     })
 
     it('should call writeContract with the transfer args for a valid form', () => {
-      render(<SendManaContent network="polygon" onClose={jest.fn()} />)
+      render(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} />)
 
       fireEvent.change(screen.getByRole('textbox'), { target: { value: VALID_ADDRESS } })
       fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '5' } })
@@ -156,7 +160,7 @@ describe('SendManaContent', () => {
         error: new Error('User rejected the request')
       }
 
-      render(<SendManaContent network="polygon" onClose={jest.fn()} />)
+      render(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} />)
 
       expect(screen.getByText('account.wallets.send.rejected')).toBeInTheDocument()
       expect(screen.queryByText(/User rejected the request/)).not.toBeInTheDocument()
@@ -165,7 +169,7 @@ describe('SendManaContent', () => {
     it('should surface a generic message for non-rejection errors', () => {
       mockWriteReturn = { writeContract: mockWriteContract, data: undefined, isPending: false, error: new Error('boom') }
 
-      render(<SendManaContent network="polygon" onClose={jest.fn()} />)
+      render(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} />)
 
       expect(screen.getByText('account.wallets.send.error')).toBeInTheDocument()
     })
@@ -178,7 +182,7 @@ describe('SendManaContent', () => {
       mockReceiptReturn = { isLoading: false, isSuccess: true }
       const onClose = jest.fn()
 
-      render(<SendManaContent network="polygon" onClose={onClose} />)
+      render(<SendManaContent network="polygon" address="0xUSER" onClose={onClose} />)
 
       expect(screen.getByText('account.wallets.send.success')).toBeInTheDocument()
       fireEvent.click(screen.getByText('account.wallets.send.close'))
