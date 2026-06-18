@@ -1259,6 +1259,22 @@
         "close": "Fermer",
         "rejected": "Vous avez rejeté la transaction.",
         "error": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "swap": {
+        "title": "Échanger du MANA",
+        "loading": "Chargement du portefeuille…",
+        "connect_description": "Connectez votre portefeuille pour transférer du MANA vers Polygon.",
+        "switch_description": "Basculez votre portefeuille sur Ethereum pour continuer.",
+        "switch_button": "Changer de réseau",
+        "description": "Transférez votre MANA d'Ethereum vers Polygon. Deux transactions sont nécessaires : une autorisation, puis le dépôt.",
+        "amount_label": "Montant",
+        "submit": "Transférer vers Polygon",
+        "approving": "Autorisez dans votre portefeuille…",
+        "depositing": "Dépôt en cours…",
+        "success": "Votre MANA est en route vers Polygon. L'arrivée peut prendre quelques minutes.",
+        "close": "Fermer",
+        "rejected": "Vous avez rejeté la transaction.",
+        "error": "Une erreur s'est produite. Veuillez réessayer."
       }
     },
     "notifications": {

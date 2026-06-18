@@ -1264,6 +1264,22 @@
         "close": "닫기",
         "rejected": "거래를 거부했습니다.",
         "error": "문제가 발생했습니다. 다시 시도하세요."
+      },
+      "swap": {
+        "title": "MANA 스왑",
+        "loading": "지갑 불러오는 중…",
+        "connect_description": "MANA를 Polygon으로 이동하려면 지갑을 연결하세요.",
+        "switch_description": "계속하려면 지갑을 Ethereum으로 전환하세요.",
+        "switch_button": "네트워크 전환",
+        "description": "Ethereum의 MANA를 Polygon으로 이동합니다. 승인과 입금, 두 번의 트랜잭션이 필요합니다.",
+        "amount_label": "금액",
+        "submit": "Polygon으로 이동",
+        "approving": "지갑에서 승인하세요…",
+        "depositing": "입금 중…",
+        "success": "MANA가 Polygon으로 이동 중입니다. 도착까지 몇 분 정도 걸릴 수 있습니다.",
+        "close": "닫기",
+        "rejected": "거래를 거부했습니다.",
+        "error": "문제가 발생했습니다. 다시 시도하세요."
       }
     },
     "notifications": {

@@ -2,7 +2,7 @@ jest.mock('../../../config/env', () => ({
   getEnv: (key: string) => (key === 'MARKETPLACE_URL' ? 'https://market.example.org' : '')
 }))
 
-import { buildBuyManaUrl, buildSwapManaUrl, formatMana, getMarketplaceUrl } from './wallets.helpers'
+import { buildBuyManaUrl, formatMana, getMarketplaceUrl } from './wallets.helpers'
 
 describe('wallets.helpers', () => {
   describe('formatMana', () => {
@@ -24,9 +24,8 @@ describe('wallets.helpers', () => {
       expect(getMarketplaceUrl()).toBe('https://market.example.org')
     })
 
-    it('should point buy and swap at the marketplace', () => {
+    it('should point buy at the marketplace', () => {
       expect(buildBuyManaUrl()).toBe('https://market.example.org')
-      expect(buildSwapManaUrl()).toBe('https://market.example.org')
     })
   })
 })

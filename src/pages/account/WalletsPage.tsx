@@ -4,6 +4,7 @@ import { BalanceCard } from '../../components/account/Wallets/BalanceCard/Balanc
 import type { WalletNetwork } from '../../components/account/Wallets/manaContract'
 import { ReceiveModal } from '../../components/account/Wallets/ReceiveModal/ReceiveModal'
 import { SendManaModal } from '../../components/account/Wallets/SendManaModal/SendManaModal'
+import { SwapManaModal } from '../../components/account/Wallets/SwapManaModal/SwapManaModal'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useManaBalances } from '../../hooks/useManaBalances'
@@ -15,6 +16,7 @@ const WalletsPage = () => {
   const { balances, isLoading, fetchBalances } = useManaBalances(address ?? undefined)
   const [isReceiveOpen, setIsReceiveOpen] = useState(false)
   const [sendNetwork, setSendNetwork] = useState<WalletNetwork | null>(null)
+  const [isSwapOpen, setIsSwapOpen] = useState(false)
 
   // Balances are not fetched on mount by the hook (it stays out of the homepage critical path);
   // the wallets page explicitly requests them once the user lands here.
@@ -34,6 +36,7 @@ const WalletsPage = () => {
           isLoading={isLoading}
           onReceive={() => setIsReceiveOpen(true)}
           onSend={() => setSendNetwork('ethereum')}
+          onSwap={() => setIsSwapOpen(true)}
         />
         <BalanceCard
           network="polygon"
@@ -41,6 +44,7 @@ const WalletsPage = () => {
           isLoading={isLoading}
           onReceive={() => setIsReceiveOpen(true)}
           onSend={() => setSendNetwork('polygon')}
+          onSwap={() => setIsSwapOpen(true)}
         />
         {/* NOTE: The transactions list (Figma 322:101467) is deferred. The standalone account dapp
             built it from client-side Redux (deposits/withdrawals/transfers tracked locally); there
@@ -49,6 +53,12 @@ const WalletsPage = () => {
       </WalletsPanel>
       {address ? <ReceiveModal open={isReceiveOpen} address={address} onClose={() => setIsReceiveOpen(false)} /> : null}
       <SendManaModal open={sendNetwork !== null} network={sendNetwork ?? 'ethereum'} onClose={() => setSendNetwork(null)} />
+      <SwapManaModal
+        open={isSwapOpen}
+        balance={balances?.ethereum}
+        onClose={() => setIsSwapOpen(false)}
+        onSuccess={() => fetchBalances(true)}
+      />
     </>
   )
 }

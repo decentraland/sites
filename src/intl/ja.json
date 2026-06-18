@@ -1264,6 +1264,22 @@
         "close": "閉じる",
         "rejected": "トランザクションを拒否しました。",
         "error": "問題が発生しました。もう一度お試しください。"
+      },
+      "swap": {
+        "title": "MANAをスワップ",
+        "loading": "ウォレットを読み込み中…",
+        "connect_description": "MANAをPolygonに移動するにはウォレットを接続してください。",
+        "switch_description": "続行するにはウォレットをEthereumに切り替えてください。",
+        "switch_button": "ネットワークを切り替える",
+        "description": "EthereumのMANAをPolygonに移動します。承認とデポジットの2つのトランザクションが必要です。",
+        "amount_label": "金額",
+        "submit": "Polygonに移動",
+        "approving": "ウォレットで承認してください…",
+        "depositing": "デポジット中…",
+        "success": "MANAはPolygonに送信中です。到着まで数分かかる場合があります。",
+        "close": "閉じる",
+        "rejected": "トランザクションを拒否しました。",
+        "error": "問題が発生しました。もう一度お試しください。"
       }
     },
     "notifications": {

@@ -1699,6 +1699,22 @@
         "close": "Close",
         "rejected": "You rejected the transaction.",
         "error": "Something went wrong. Please try again."
+      },
+      "swap": {
+        "title": "Swap MANA",
+        "loading": "Loading wallet…",
+        "connect_description": "Connect your wallet to move MANA to Polygon.",
+        "switch_description": "Switch your wallet to Ethereum to continue.",
+        "switch_button": "Switch network",
+        "description": "Move your Ethereum MANA to Polygon. This needs two transactions: an approval, then the deposit.",
+        "amount_label": "Amount",
+        "submit": "Swap to Polygon",
+        "approving": "Approve in your wallet…",
+        "depositing": "Depositing…",
+        "success": "Your MANA is on its way to Polygon. It can take a few minutes to arrive.",
+        "close": "Close",
+        "rejected": "You rejected the transaction.",
+        "error": "Something went wrong. Please try again."
       }
     },
     "notifications": {

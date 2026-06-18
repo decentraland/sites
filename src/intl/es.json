@@ -1264,6 +1264,22 @@
         "close": "Cerrar",
         "rejected": "Rechazaste la transacción.",
         "error": "Algo salió mal. Intentá de nuevo."
+      },
+      "swap": {
+        "title": "Cambiar MANA",
+        "loading": "Cargando billetera…",
+        "connect_description": "Conectá tu billetera para mover MANA a Polygon.",
+        "switch_description": "Cambiá tu billetera a Ethereum para continuar.",
+        "switch_button": "Cambiar de red",
+        "description": "Mové tu MANA de Ethereum a Polygon. Requiere dos transacciones: una aprobación y luego el depósito.",
+        "amount_label": "Monto",
+        "submit": "Pasar a Polygon",
+        "approving": "Aprobá en tu billetera…",
+        "depositing": "Depositando…",
+        "success": "Tu MANA está en camino a Polygon. Puede tardar unos minutos en llegar.",
+        "close": "Cerrar",
+        "rejected": "Rechazaste la transacción.",
+        "error": "Algo salió mal. Intentá de nuevo."
       }
     },
     "notifications": {

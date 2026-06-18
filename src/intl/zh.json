@@ -1264,6 +1264,22 @@
         "close": "关闭",
         "rejected": "您已拒绝该交易。",
         "error": "出错了，请重试。"
+      },
+      "swap": {
+        "title": "兑换 MANA",
+        "loading": "正在加载钱包…",
+        "connect_description": "连接您的钱包以将 MANA 转移到 Polygon。",
+        "switch_description": "请将钱包切换到 Ethereum 以继续。",
+        "switch_button": "切换网络",
+        "description": "将您在 Ethereum 上的 MANA 转移到 Polygon。需要两笔交易：先授权，再存入。",
+        "amount_label": "金额",
+        "submit": "转移到 Polygon",
+        "approving": "请在钱包中授权…",
+        "depositing": "存入中…",
+        "success": "您的 MANA 正在转移到 Polygon，可能需要几分钟才能到账。",
+        "close": "关闭",
+        "rejected": "您已拒绝该交易。",
+        "error": "出错了，请重试。"
       }
     },
     "notifications": {
