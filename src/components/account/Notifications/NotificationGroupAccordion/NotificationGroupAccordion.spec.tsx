@@ -9,6 +9,15 @@ type SwitchProps = { checked?: boolean; disabled?: boolean; onChange?: (event: u
 type HeaderProps = ChildrenProps & { onClick?: () => void; 'aria-expanded'?: boolean }
 
 jest.mock('@mui/icons-material/ExpandMoreRounded', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/AccountBalanceOutlined', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/CreditCardOutlined', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/EventOutlined', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/GroupAddOutlined', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/PaidOutlined', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/PublicOutlined', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/RedeemOutlined', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/SensorsOutlined', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/StorefrontOutlined', () => ({ __esModule: true, default: () => <span /> }))
 
 jest.mock('decentraland-ui2', () => ({
   Switch: ({ checked, disabled, onChange }: SwitchProps) => (
@@ -34,6 +43,8 @@ jest.mock('./NotificationGroupAccordion.styled', () => ({
     </button>
   ),
   ChevronIconWrap: ({ children }: ChildrenProps) => <span>{children}</span>,
+  HeaderLabel: ({ children }: ChildrenProps) => <span>{children}</span>,
+  GroupIcon: ({ children }: ChildrenProps) => <span>{children}</span>,
   Content: ({ children, 'data-role': dataRole }: ChildrenProps) => <div data-role={dataRole}>{children}</div>,
   TypeRow: ({ children }: ChildrenProps) => <div>{children}</div>,
   TypeLabel: ({ children }: ChildrenProps) => <span>{children}</span>

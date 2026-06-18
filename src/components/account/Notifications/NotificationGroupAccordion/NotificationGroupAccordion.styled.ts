@@ -5,7 +5,13 @@ const AccordionRoot = styled(Box)(() => ({
   background: 'rgba(0, 0, 0, 0.2)',
   overflow: 'hidden',
   // Fill the column width (the parent flex column stretches us); height stays content-sized.
-  width: '100%'
+  width: '100%',
+  // Hover: soft white glow around the edges — same `CARD_HOVER_SHADOW` the what's on cards use
+  // (kept inline to avoid coupling account to the whats-on domain).
+  transition: 'box-shadow 0.2s ease',
+  ['&:hover']: {
+    boxShadow: '0px 2px 12px 12px rgba(255, 255, 255, 0.3)'
+  }
 }))
 
 const Header = styled('button')(({ theme }) => ({
@@ -31,6 +37,20 @@ const Header = styled('button')(({ theme }) => ({
     outline: '2px solid rgba(255, 255, 255, 0.6)',
     outlineOffset: -2
   }
+}))
+
+const HeaderLabel = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1.5),
+  minWidth: 0
+}))
+
+const GroupIcon = styled('span')(() => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  flexShrink: 0,
+  color: '#A09BA8'
 }))
 
 const ChevronIconWrap = styled(Box, { shouldForwardProp: prop => prop !== '$expanded' })<{ $expanded: boolean }>(({ $expanded }) => ({
@@ -60,4 +80,4 @@ const TypeLabel = styled(Typography)(() => ({
   color: '#CFCDD4'
 }))
 
-export { AccordionRoot, ChevronIconWrap, Content, Header, TypeLabel, TypeRow }
+export { AccordionRoot, ChevronIconWrap, Content, GroupIcon, Header, HeaderLabel, TypeLabel, TypeRow }
