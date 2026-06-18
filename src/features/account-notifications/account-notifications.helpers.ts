@@ -102,21 +102,14 @@ function isAllEmailEnabled(details: SubscriptionDetails): boolean {
 }
 
 /**
- * Master toggle: flips the email channel of EVERY managed notification type to `enabled` and sets
- * `ignore_all_email` accordingly (mirrors the account dapp's top-level switch).
+ * Master toggle: flips only the global `ignore_all_email` mute. It does NOT touch the per-type
+ * email channels — the individual switches keep their own state, and this flag globally overrides
+ * delivery when muted (the server honors `ignore_all_email`). So toggling the master moves just the
+ * master switch, not every row.
  */
 function setAllEmail(details: SubscriptionDetails, enabled: boolean): SubscriptionDetails {
-  const messageType = { ...details.message_type }
-  for (const types of Object.values(subscriptionGroups)) {
-    for (const type of types) {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      const current = messageType[type] ?? { email: false, in_app: true }
-      messageType[type] = { ...current, email: enabled }
-    }
-  }
-  /* eslint-disable @typescript-eslint/naming-convention */
-  return { ...details, ignore_all_email: !enabled, message_type: messageType }
-  /* eslint-enable @typescript-eslint/naming-convention */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  return { ...details, ignore_all_email: !enabled }
 }
 
 export {

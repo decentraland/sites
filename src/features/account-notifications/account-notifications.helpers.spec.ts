@@ -85,22 +85,24 @@ describe('account-notifications helpers', () => {
       expect(isAllEmailEnabled({ ...buildDetails(), ignore_all_email: false })).toBe(true)
     })
 
-    it('should enable the email channel of every managed type when turned on', () => {
-      const next = setAllEmail(buildDetails(), true)
+    it('should clear ignore_all_email when turned on without touching the per-type channels', () => {
+      const details = buildDetails({ [NotificationType.ITEM_SOLD]: { email: true, in_app: true } })
+
+      const next = setAllEmail(details, true)
 
       expect(next.ignore_all_email).toBe(false)
-      for (const types of Object.values(subscriptionGroups)) {
-        for (const type of types) {
-          expect(next.message_type[type].email).toBe(true)
-        }
-      }
+      // Individual switches keep their own state — the master only moves the global mute.
+      expect(next.message_type).toEqual(details.message_type)
     })
 
-    it('should disable every managed type and mute all email when turned off', () => {
-      const next = setAllEmail(setAllEmail(buildDetails(), true), false)
+    it('should set ignore_all_email when turned off without touching the per-type channels', () => {
+      const details = buildDetails({ [NotificationType.ITEM_SOLD]: { email: true, in_app: true } })
+
+      const next = setAllEmail(details, false)
 
       expect(next.ignore_all_email).toBe(true)
-      expect(next.message_type[NotificationType.ITEM_SOLD].email).toBe(false)
+      expect(next.message_type[NotificationType.ITEM_SOLD].email).toBe(true)
+      expect(next.message_type).toEqual(details.message_type)
     })
   })
 })
