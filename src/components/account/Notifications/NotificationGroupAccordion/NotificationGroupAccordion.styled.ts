@@ -4,7 +4,8 @@ const AccordionRoot = styled(Box)(() => ({
   borderRadius: 12,
   background: 'rgba(0, 0, 0, 0.2)',
   overflow: 'hidden',
-  alignSelf: 'flex-start'
+  // Fill the column width (the parent flex column stretches us); height stays content-sized.
+  width: '100%'
 }))
 
 const Header = styled('button')(({ theme }) => ({
