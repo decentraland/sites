@@ -54,16 +54,21 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
     [filteredTracks]
   )
 
-  // Auto-expand presentation bot tile on its first appearance only, so manual
-  // tile selections by the user aren't snapped back to the bot on every rerender.
-  // The ref latches once per bot-presence cycle and resets when the bot leaves.
+  // Auto-focus a "spotlight" tile on its first appearance only, so manual tile selections by
+  // the user aren't snapped back on every rerender. Presentation bots keep priority; otherwise
+  // the first non-presentation screen share is focused. The ref latches once per spotlight-present
+  // cycle: a second share by another participant never steals focus, and the latch only re-arms
+  // once no presentation AND no screen share remain.
   const autoExpandedRef = useRef(false)
   useEffect(() => {
     const presentationTrack = finalTracks.find(t => isPresentationBot(t.participant))
-    if (presentationTrack && !autoExpandedRef.current) {
-      setExpandedTrackSid(presentationTrack.participant.sid + presentationTrack.source)
+    const screenShareTrack = finalTracks.find(t => t.source === Track.Source.ScreenShare && !isPresentationBot(t.participant))
+    const focusTrack = presentationTrack ?? screenShareTrack
+
+    if (focusTrack && !autoExpandedRef.current) {
+      setExpandedTrackSid(focusTrack.participant.sid + focusTrack.source)
       autoExpandedRef.current = true
-    } else if (!presentationTrack) {
+    } else if (!focusTrack) {
       autoExpandedRef.current = false
       setExpandedTrackSid(prev => (prev && !finalTracks.some(t => t.participant.sid + t.source === prev) ? null : prev))
     }
