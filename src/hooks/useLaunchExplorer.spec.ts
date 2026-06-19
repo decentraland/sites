@@ -19,6 +19,17 @@ jest.mock('decentraland-ui2', () => ({
 }))
 jest.mock('./useAuthIdentity', () => ({ useAuthIdentity: jest.fn() }))
 jest.mock('../config/env')
+jest.mock('../modules/url', () => ({
+  addQueryParamsToUrlString: jest.fn((url: string, params: Record<string, string | undefined>) => {
+    const urlObj = new URL(url)
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        urlObj.searchParams.append(key, value)
+      }
+    })
+    return urlObj.toString()
+  })
+}))
 jest.mock('../modules/downloadConstants', () => ({
   DOWNLOAD_URLS: {
     apple: 'https://dl.test/apple',
@@ -94,6 +105,22 @@ describe('useLaunchExplorer', () => {
 
         expect(windowOpenSpy).toHaveBeenCalledWith('https://dl.test/direct', '_self')
       })
+
+      it('should append position and realm to the download url when non-default', async () => {
+        const { result } = renderHook(() => useLaunchExplorer({ position: '42,-5', realm: 'myworld.dcl.eth' }))
+
+        await act(() => result.current.launchExplorer())
+
+        expect(windowOpenSpy).toHaveBeenCalledWith('https://dl.test/direct?position=42%2C-5&realm=myworld.dcl.eth', '_self')
+      })
+
+      it('should not append default position or realm to the download url', async () => {
+        const { result } = renderHook(() => useLaunchExplorer({ position: '0,0', realm: 'main' }))
+
+        await act(() => result.current.launchExplorer())
+
+        expect(windowOpenSpy).toHaveBeenCalledWith('https://dl.test/direct', '_self')
+      })
     })
 
     describe('and the user has no identity nor onboarding url', () => {
@@ -106,6 +133,12 @@ describe('useLaunchExplorer', () => {
 
         act(() => result.current.closeDownloadModal())
         expect(result.current.isDownloadModalOpen).toBe(false)
+      })
+
+      it('should include position and realm in the download modal url when non-default', async () => {
+        const { result } = renderHook(() => useLaunchExplorer({ position: '10,20', realm: 'custom.dcl.eth' }))
+
+        expect(result.current.downloadModalProps.downloadUrl).toBe('https://dl.test/apple?position=10%2C20&realm=custom.dcl.eth')
       })
     })
   })

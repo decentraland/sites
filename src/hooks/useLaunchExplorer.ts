@@ -1,12 +1,13 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import { mapEnvToDclenv } from '../config/dclenv'
 import { getEnv } from '../config/env'
-import { buildDeepLinkOptions } from '../features/places/places.helpers'
+import { DEFAULT_POSITION, DEFAULT_REALM, buildDeepLinkOptions } from '../features/places/places.helpers'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
 import { SegmentEvent } from '../modules/segment'
+import { addQueryParamsToUrlString } from '../modules/url'
 import { useAuthIdentity } from './useAuthIdentity'
 
 interface LaunchExplorerOptions {
@@ -44,17 +45,30 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
   const isMobile = Boolean(advancedUserAgent?.mobile)
   const downloadOs = detectDownloadOS()
 
+  const deepLinkParams = useMemo<Record<string, string | undefined>>(() => ({
+    position: position !== DEFAULT_POSITION ? position : undefined,
+    realm: realm && realm !== DEFAULT_REALM ? realm : undefined
+  }), [position, realm])
+
+  const buildDownloadUrl = useCallback(
+    (base: string): string => {
+      const hasParams = Object.values(deepLinkParams).some(Boolean)
+      return hasParams ? addQueryParamsToUrlString(base, deepLinkParams) : base
+    },
+    [deepLinkParams]
+  )
+
   const openDownloadFallback = useCallback(() => {
     if (hasValidIdentity) {
-      window.open(downloadUrl, '_self')
+      window.open(buildDownloadUrl(downloadUrl), '_self')
       return
     }
     if (onboardingUrl) {
-      window.open(onboardingUrl, '_self')
+      window.open(buildDownloadUrl(onboardingUrl), '_self')
     } else {
       setDownloadModalOpen(true)
     }
-  }, [hasValidIdentity, downloadUrl, onboardingUrl])
+  }, [hasValidIdentity, downloadUrl, onboardingUrl, buildDownloadUrl])
 
   const launchExplorer = useCallback(async () => {
     if (isMobile) {
@@ -81,7 +95,7 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
 
   const downloadModalProps: DownloadModalProps = {
     os: downloadOs,
-    downloadUrl: downloadOs === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows,
+    downloadUrl: buildDownloadUrl(downloadOs === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows),
     epicUrl: DOWNLOAD_URLS.epic,
     googlePlayUrl: DOWNLOAD_URLS.googlePlay,
     appStoreUrl: DOWNLOAD_URLS.appStore
