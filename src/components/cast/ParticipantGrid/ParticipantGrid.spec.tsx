@@ -211,6 +211,28 @@ describe('ParticipantGrid', () => {
       expect(fullscreenTile()?.textContent).toContain('streaming_controls.presentation')
       expect(screen.queryByText('bob - screen')).not.toBeInTheDocument()
     })
+
+    it('should let a presentation preempt an already-spotlighted screen share', () => {
+      videoTracks = [cameraTrack('alice'), screenTrack('bob')]
+      const { rerender } = render(<ParticipantGrid />)
+      expect(fullscreenTile()?.textContent).toContain('bob - screen')
+
+      // presentation starts later — it must take over the spotlight
+      videoTracks = [cameraTrack('alice'), screenTrack('bob'), presentationTrack('botpres')]
+      rerender(<ParticipantGrid />)
+      expect(fullscreenTile()?.textContent).toContain('streaming_controls.presentation')
+    })
+
+    it('should let the screen share reclaim the spotlight when the presentation ends', () => {
+      videoTracks = [cameraTrack('alice'), screenTrack('bob'), presentationTrack('botpres')]
+      const { rerender } = render(<ParticipantGrid />)
+      expect(fullscreenTile()?.textContent).toContain('streaming_controls.presentation')
+
+      // presentation ends while the screen share is still live
+      videoTracks = [cameraTrack('alice'), screenTrack('bob')]
+      rerender(<ParticipantGrid />)
+      expect(fullscreenTile()?.textContent).toContain('bob - screen')
+    })
   })
 
   describe('when the expanded view has more thumbnails than the maximum', () => {

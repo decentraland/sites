@@ -55,15 +55,29 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
   )
 
   // Auto-focus a "spotlight" tile on its first appearance only, so manual tile selections by
-  // the user aren't snapped back on every rerender. Presentation bots keep priority; otherwise
-  // the first non-presentation screen share is focused. The ref latches once per spotlight-present
-  // cycle: a second share by another participant never steals focus, and the latch only re-arms
-  // once no presentation AND no screen share remain.
+  // the user aren't snapped back on every rerender. Priority: presentation bot > screen share >
+  // (cameras render normally, never force-spotlighted). The latch fires once per spotlight-present
+  // cycle so a second share by another participant never steals focus.
+  //
+  // Presentations OUTRANK screen shares: a presentation that starts while a screen share is
+  // already spotlighted preempts it (the `hadPresentationRef` edge), and when that presentation
+  // ends the latch re-arms so a still-active screen share reclaims the spotlight in the same pass.
   const autoExpandedRef = useRef(false)
+  const hadPresentationRef = useRef(false)
   useEffect(() => {
     const presentationTrack = finalTracks.find(t => isPresentationBot(t.participant))
     const screenShareTrack = finalTracks.find(t => t.source === Track.Source.ScreenShare && !isPresentationBot(t.participant))
     const focusTrack = presentationTrack ?? screenShareTrack
+
+    if (presentationTrack && !hadPresentationRef.current) {
+      // A presentation just started — preempt whatever is currently spotlighted.
+      setExpandedTrackSid(presentationTrack.participant.sid + presentationTrack.source)
+      autoExpandedRef.current = true
+    } else if (!presentationTrack && hadPresentationRef.current) {
+      // The presentation ended — re-arm so a still-active screen share reclaims the spotlight.
+      autoExpandedRef.current = false
+    }
+    hadPresentationRef.current = !!presentationTrack
 
     if (focusTrack && !autoExpandedRef.current) {
       setExpandedTrackSid(focusTrack.participant.sid + focusTrack.source)
