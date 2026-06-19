@@ -45,10 +45,13 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
   const isMobile = Boolean(advancedUserAgent?.mobile)
   const downloadOs = detectDownloadOS()
 
-  const deepLinkParams = useMemo<Record<string, string | undefined>>(() => ({
-    position: position !== DEFAULT_POSITION ? position : undefined,
-    realm: realm && realm !== DEFAULT_REALM ? realm : undefined
-  }), [position, realm])
+  const deepLinkParams = useMemo<Record<string, string | undefined>>(
+    () => ({
+      position: position !== DEFAULT_POSITION ? position : undefined,
+      realm: realm && realm !== DEFAULT_REALM ? realm : undefined
+    }),
+    [position, realm]
+  )
 
   const buildDownloadUrl = useCallback(
     (base: string): string => {

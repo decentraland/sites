@@ -3,6 +3,8 @@ import { act, renderHook } from '@testing-library/react'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import { getEnv } from '../config/env'
+import { detectDownloadOS } from '../modules/downloadConstants'
+import { addQueryParamsToUrlString } from '../modules/url'
 import { useAuthIdentity } from './useAuthIdentity'
 import { useLaunchExplorer } from './useLaunchExplorer'
 
@@ -20,15 +22,7 @@ jest.mock('decentraland-ui2', () => ({
 jest.mock('./useAuthIdentity', () => ({ useAuthIdentity: jest.fn() }))
 jest.mock('../config/env')
 jest.mock('../modules/url', () => ({
-  addQueryParamsToUrlString: jest.fn((url: string, params: Record<string, string | undefined>) => {
-    const urlObj = new URL(url)
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        urlObj.searchParams.append(key, value)
-      }
-    })
-    return urlObj.toString()
-  })
+  addQueryParamsToUrlString: jest.fn()
 }))
 jest.mock('../modules/downloadConstants', () => ({
   DOWNLOAD_URLS: {
@@ -46,6 +40,8 @@ const mockedUseAdvancedUserAgentData = useAdvancedUserAgentData as jest.MockedFu
 const mockedUseAnalytics = useAnalytics as jest.MockedFunction<typeof useAnalytics>
 const mockedUseAuthIdentity = useAuthIdentity as jest.MockedFunction<typeof useAuthIdentity>
 const mockedLaunchDesktopApp = launchDesktopApp as jest.MockedFunction<typeof launchDesktopApp>
+const mockedDetectDownloadOS = detectDownloadOS as jest.MockedFunction<typeof detectDownloadOS>
+const mockedAddQueryParams = addQueryParamsToUrlString as jest.MockedFunction<typeof addQueryParamsToUrlString>
 const mockedGetEnv = getEnv as jest.MockedFunction<typeof getEnv>
 
 describe('useLaunchExplorer', () => {
@@ -62,6 +58,16 @@ describe('useLaunchExplorer', () => {
       true,
       { os: { name: 'macOS' }, cpu: { architecture: 'arm64' }, mobile: false }
     ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+    mockedDetectDownloadOS.mockReturnValue('apple')
+    mockedAddQueryParams.mockImplementation((url: string, params: Record<string, string | undefined | null>) => {
+      const urlObj = new URL(url)
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          urlObj.searchParams.append(key, value)
+        }
+      })
+      return urlObj.toString()
+    })
     mockedGetEnv.mockReturnValue(undefined)
   })
 

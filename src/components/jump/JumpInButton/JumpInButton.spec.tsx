@@ -6,6 +6,7 @@ import { launchDesktopApp } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { detectDownloadOS } from '../../../modules/downloadConstants'
+import { addQueryParamsToUrlString } from '../../../modules/url'
 import { JumpInButton } from './JumpInButton'
 
 jest.mock('react-router-dom', () => ({
@@ -63,9 +64,15 @@ jest.mock('../../../modules/segment', () => ({
   SegmentEvent: { GO_TO_EXPLORER: 'Go To Explorer', CLICK: 'Click' }
 }))
 jest.mock('../../../features/places/places.helpers', () => ({
+  DEFAULT_POSITION: '0,0',
+  DEFAULT_REALM: 'main',
   buildDeepLinkOptions: (position: string, realm?: string, env?: string) => ({ position, realm, dclenv: env })
 }))
+jest.mock('../../../modules/url', () => ({
+  addQueryParamsToUrlString: jest.fn()
+}))
 
+const mockAddQueryParams = jest.mocked(addQueryParamsToUrlString)
 const mockUseSearchParams = jest.mocked(useSearchParams)
 const mockUseAuthIdentity = jest.mocked(useAuthIdentity)
 const mockUseAdvancedUserAgentData = jest.mocked(useAdvancedUserAgentData)
@@ -76,6 +83,15 @@ const mockGetEnv = jest.mocked(getEnv)
 
 describe('JumpInButton', () => {
   beforeEach(() => {
+    mockAddQueryParams.mockImplementation((url: string, params: Record<string, string | undefined | null>) => {
+      const urlObj = new URL(url)
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          urlObj.searchParams.append(key, value)
+        }
+      })
+      return urlObj.toString()
+    })
     mockUseSearchParams.mockReturnValue([new URLSearchParams(''), jest.fn()] as unknown as ReturnType<typeof useSearchParams>)
     mockUseAnalytics.mockReturnValue({ track: jest.fn() } as unknown as ReturnType<typeof useAnalytics>)
     mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
