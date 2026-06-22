@@ -141,7 +141,7 @@ const createCards: CreateCardData[] = [
         },
         {
           label: 'Publishing Wearables',
-          url: 'https://docs.decentraland.org/creator/wearables/publishing-collections/'
+          url: 'https://docs.decentraland.org/creator/wearables-and-emotes/publishing-collections/publishing-collections'
         },
         {
           label: 'Wearable Tutorials',
@@ -199,7 +199,7 @@ const createCards: CreateCardData[] = [
         },
         {
           label: 'Publishing Emotes',
-          url: 'https://docs.decentraland.org/creator/wearables/publishing-collections/'
+          url: 'https://docs.decentraland.org/creator/wearables-and-emotes/publishing-collections/publishing-collections'
         },
         {
           label: 'Emotes in the Marketplace',
