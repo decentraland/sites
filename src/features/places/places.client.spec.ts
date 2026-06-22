@@ -101,17 +101,6 @@ describe('placesEndpoints', () => {
               ok: true,
               data: [
                 {
-                  id: 'lobby',
-                  title: 'Lobby',
-                  base_position: '0,0',
-                  owner: null,
-                  image: '',
-                  description: '',
-                  positions: ['0,0'],
-                  world: true,
-                  world_name: 'cool.dcl.eth'
-                },
-                {
                   id: 'arena',
                   title: 'Arena',
                   base_position: '10,20',
@@ -127,25 +116,18 @@ describe('placesEndpoints', () => {
         } as unknown as Response)
       })
 
-      it('should query the World scenes by name instead of the frozen /worlds record', async () => {
+      it('should query the World scene by name AND position so the API returns only the matching scene', async () => {
         const store = createTestStore()
         await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'Cool.DCL.eth', position: [10, 20] }))
 
-        expect(fetchSpy).toHaveBeenCalledWith('https://places.test/api/places?names=cool.dcl.eth')
+        expect(fetchSpy).toHaveBeenCalledWith('https://places.test/api/places?names=cool.dcl.eth&positions=10,20')
       })
 
-      it('should surface the scene whose parcels contain the requested position first', async () => {
+      it('should return the scene the server resolved for that position', async () => {
         const store = createTestStore()
         const result = await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [10, 20] }))
 
         expect(result.data?.[0]).toEqual(expect.objectContaining({ id: 'arena' }))
-      })
-
-      it('should fall back to the first scene when no parcel matches the position', async () => {
-        const store = createTestStore()
-        const result = await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [99, 99] }))
-
-        expect(result.data?.[0]).toEqual(expect.objectContaining({ id: 'lobby' }))
       })
     })
 

@@ -1,23 +1,9 @@
-import type { CardData, JumpPlace } from './places.types'
+import type { CardData } from './places.types'
 
 const ENS_REGEX = /^[a-zA-Z0-9.]+\.eth$/
 
 function isEns(value: string | undefined): value is `${string}.eth` {
   return !!value?.match(ENS_REGEX)?.length
-}
-
-// A World can host multiple scenes, so `/places?names=<world>` may return more
-// than one place. Pick the scene whose parcels include the requested position
-// so the jump card shows the scene the user actually jumped to; fall back to
-// the first place when none match (e.g. the position lies outside any indexed
-// parcel). Returns the list reordered so the chosen scene is first, which is
-// what every consumer reads (`data[0]`).
-function selectWorldPlace(places: JumpPlace[], position: [number, number]): JumpPlace[] {
-  if (places.length <= 1) return places
-  const target = `${position[0]},${position[1]}`
-  const matchIndex = places.findIndex(place => place.positions?.includes(target))
-  if (matchIndex <= 0) return places
-  return [places[matchIndex], ...places.slice(0, matchIndex), ...places.slice(matchIndex + 1)]
 }
 
 interface ParsedPosition {
@@ -102,7 +88,6 @@ export {
   formatLocation,
   isEns,
   parsePosition,
-  resolvePlacesPosition,
-  selectWorldPlace
+  resolvePlacesPosition
 }
 export type { ParsedPosition }

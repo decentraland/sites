@@ -3,7 +3,7 @@ import { localStorageGetIdentity } from '@dcl/single-sign-on-client'
 import { getEnv } from '../../config/env'
 import { placesClient } from '../../services/placesClient'
 import { fetchWithOptionalIdentity } from '../../utils/signedFetch'
-import { isEns, selectWorldPlace } from './places.helpers'
+import { isEns } from './places.helpers'
 import type {
   Creator,
   GetEventByIdArgs,
@@ -41,11 +41,11 @@ function buildPlacesUrl(baseUrl: string, { position, realm }: GetPlacesArgs): st
   if (realm && isEns(realm)) {
     const name = realm.toLowerCase()
     // A World can host multiple scenes. With an explicit position we want the
-    // SCENE at that position, so query the World's place(s) by name — positions
-    // in `/places?positions=` are Genesis-global, not World-local, so they would
-    // never resolve a World scene. Without a position we want the World-level
-    // record from `/worlds`.
-    return position ? `${baseUrl}/places?names=${name}` : `${baseUrl}/worlds?names=${name}`
+    // SCENE at that position: scope to the World by name AND filter by position
+    // so the API returns only the matching scene (positions in `/places` are
+    // World-local when combined with `names`). Without a position we want the
+    // World-level record from `/worlds`.
+    return position ? `${baseUrl}/places?names=${name}&positions=${position[0]},${position[1]}` : `${baseUrl}/worlds?names=${name}`
   }
   if (position) {
     return `${baseUrl}/places?positions=${position[0]},${position[1]}`
@@ -116,12 +116,7 @@ const placesEndpoints = placesClient.injectEndpoints({
             return { error: { status: response.status, data: await response.text().catch(() => null) } }
           }
           const envelope: JumpPlacesResponse = await response.json()
-          const places = envelope.data ?? []
-          // For a World jump with an explicit position, `/places?names=` returns
-          // every scene of the World; surface the one matching the requested
-          // parcel first so `data[0]` is the scene the user jumped to.
-          const data = args.realm && isEns(args.realm) && args.position ? selectWorldPlace(places, args.position) : places
-          return { data }
+          return { data: envelope.data ?? [] }
         } catch (error) {
           return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
         }

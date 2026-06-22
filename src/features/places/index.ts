@@ -16,8 +16,7 @@ export {
   formatLocation,
   isEns,
   parsePosition,
-  resolvePlacesPosition,
-  selectWorldPlace
+  resolvePlacesPosition
 } from './places.helpers'
 export type {
   CardData,

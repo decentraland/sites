@@ -6,22 +6,9 @@ import {
   formatDateForGoogleCalendar,
   isEns,
   parsePosition,
-  resolvePlacesPosition,
-  selectWorldPlace
+  resolvePlacesPosition
 } from './places.helpers'
-import type { CardData, JumpPlace } from './places.types'
-
-function makePlace(overrides: Partial<JumpPlace> & Pick<JumpPlace, 'id'>): JumpPlace {
-  return {
-    title: '',
-    image: '',
-    description: '',
-    positions: [],
-    base_position: '0,0',
-    owner: null,
-    ...overrides
-  }
-}
+import type { CardData } from './places.types'
 
 describe('jump.helpers', () => {
   describe('when isEns is called', () => {
@@ -169,35 +156,6 @@ describe('jump.helpers', () => {
     it('should return a YYYYMMDDTHHmmssZ formatted string', () => {
       const result = formatDateForGoogleCalendar(new Date(Date.UTC(2026, 0, 15, 12, 30, 0)))
       expect(result).toBe('20260115T123000Z')
-    })
-  })
-
-  describe('when selectWorldPlace is called', () => {
-    const lobby = makePlace({ id: 'lobby', title: 'Lobby', base_position: '0,0', positions: ['0,0'] })
-    const arena = makePlace({ id: 'arena', title: 'Arena', base_position: '10,20', positions: ['10,20', '11,20'] })
-
-    describe('and a place has parcels containing the requested position', () => {
-      it('should reorder that place to the front', () => {
-        expect(selectWorldPlace([lobby, arena], [10, 20]).map(place => place.id)).toEqual(['arena', 'lobby'])
-      })
-    })
-
-    describe('and no place contains the requested position', () => {
-      it('should leave the first place first', () => {
-        expect(selectWorldPlace([lobby, arena], [99, 99]).map(place => place.id)).toEqual(['lobby', 'arena'])
-      })
-    })
-
-    describe('and the matching place is already first', () => {
-      it('should return the list unchanged', () => {
-        expect(selectWorldPlace([lobby, arena], [0, 0]).map(place => place.id)).toEqual(['lobby', 'arena'])
-      })
-    })
-
-    describe('and there is a single place', () => {
-      it('should return the list as-is', () => {
-        expect(selectWorldPlace([arena], [99, 99])).toEqual([arena])
-      })
     })
   })
 
