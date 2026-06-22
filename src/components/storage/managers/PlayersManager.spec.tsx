@@ -153,6 +153,29 @@ describe('PlayersManager', () => {
     })
   })
 
+  describe('when there are more players than one page', () => {
+    const manyPlayers = Array.from({ length: 15 }, (_, i) => `0x${i.toString().padStart(3, '0')}`)
+
+    beforeEach(() => {
+      mockListPlayersQuery.mockReturnValue({ data: manyPlayers, isLoading: false })
+      mockGetProfileNames.mockReturnValue(new Map())
+    })
+
+    it('should show only the first page of cards and the pager', () => {
+      render(<PlayersManager {...baseProps} />)
+      expect(screen.getByTestId('page-info')).toHaveTextContent('1-12 of 15')
+      expect(screen.getByText('player:0x000:none')).toBeInTheDocument()
+      expect(screen.queryByText('player:0x012:none')).not.toBeInTheDocument()
+    })
+
+    it('should reveal the rest of the cards on the next page', () => {
+      render(<PlayersManager {...baseProps} />)
+      fireEvent.click(screen.getByLabelText('next-page'))
+      expect(screen.getByText('player:0x012:none')).toBeInTheDocument()
+      expect(screen.queryByText('player:0x000:none')).not.toBeInTheDocument()
+    })
+  })
+
   describe('when there is no identity', () => {
     it('should skip the list query', () => {
       render(<PlayersManager identity={undefined} realm={null} position={null} onSelectPlayer={onSelectPlayer} />)

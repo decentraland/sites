@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { Box, CircularProgress, Tab, Tabs, Typography } from 'decentraland-ui2'
 import { LandCard } from '../../components/storage/LandCard'
 import { SearchField } from '../../components/storage/SearchField'
+import { GRID_PAGE_SIZES, StoragePagination } from '../../components/storage/StoragePagination'
 import { WorldCard } from '../../components/storage/WorldCard'
 import {
   getLandPosition,
@@ -17,6 +18,7 @@ import type { Land, World } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePagination } from '../../hooks/usePagination'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
 import { CardsGrid, EmptyState, SelectPageContainer } from './SelectPage.styled'
 
@@ -64,6 +66,9 @@ function SelectPage() {
     const query = landsQuery.trim().toLowerCase()
     return lands.filter(land => land.name.toLowerCase().includes(query))
   }, [lands, landsQuery])
+
+  const worldsPagination = usePagination(filteredWorlds, GRID_PAGE_SIZES[0])
+  const landsPagination = usePagination(filteredLands, GRID_PAGE_SIZES[0])
 
   const isLoading = domainsLoading || namesLoading || rentalsLoading || landsLoading
 
@@ -141,11 +146,21 @@ function SelectPage() {
               })}
             </EmptyState>
           ) : (
-            <CardsGrid>
-              {filteredWorlds.map(world => (
-                <WorldCard key={world.name} world={world} onEditClick={handleSelectWorld} />
-              ))}
-            </CardsGrid>
+            <>
+              <CardsGrid>
+                {worldsPagination.paginated.map(world => (
+                  <WorldCard key={world.name} world={world} onEditClick={handleSelectWorld} />
+                ))}
+              </CardsGrid>
+              <StoragePagination
+                count={filteredWorlds.length}
+                page={worldsPagination.page}
+                rowsPerPage={worldsPagination.rowsPerPage}
+                rowsPerPageOptions={GRID_PAGE_SIZES}
+                onPageChange={worldsPagination.onPageChange}
+                onRowsPerPageChange={worldsPagination.onRowsPerPageChange}
+              />
+            </>
           )}
         </Box>
       ) : null}
@@ -165,11 +180,21 @@ function SelectPage() {
               })}
             </EmptyState>
           ) : (
-            <CardsGrid>
-              {filteredLands.map(land => (
-                <LandCard key={land.id} land={land} onClick={() => handleSelectLand(land)} />
-              ))}
-            </CardsGrid>
+            <>
+              <CardsGrid>
+                {landsPagination.paginated.map(land => (
+                  <LandCard key={land.id} land={land} onClick={() => handleSelectLand(land)} />
+                ))}
+              </CardsGrid>
+              <StoragePagination
+                count={filteredLands.length}
+                page={landsPagination.page}
+                rowsPerPage={landsPagination.rowsPerPage}
+                rowsPerPageOptions={GRID_PAGE_SIZES}
+                onPageChange={landsPagination.onPageChange}
+                onRowsPerPageChange={landsPagination.onRowsPerPageChange}
+              />
+            </>
           )}
         </Box>
       ) : null}

@@ -7,11 +7,13 @@ import { Box, Button, CircularProgress, Typography } from 'decentraland-ui2'
 import { useGetProfileNames } from '../../../features/profile/profile.client'
 import { useClearAllPlayersMutation, useListPlayersQuery } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { usePagination } from '../../../hooks/usePagination'
 import { useStorageTrack } from '../../../hooks/useStorageTrack'
 import { SegmentEvent } from '../../../modules/segment.types'
 import { ConfirmDialog } from '../ConfirmDialog'
 import { PlayerCard } from '../PlayerCard'
 import { SearchField } from '../SearchField'
+import { GRID_PAGE_SIZES, StoragePagination } from '../StoragePagination'
 import { CardsGrid, HeaderActions, SearchSlot, SectionHeader } from './managers.styled'
 
 interface PlayersManagerProps {
@@ -48,6 +50,14 @@ function PlayersManager(props: PlayersManagerProps) {
       return name ? name.toLowerCase().includes(needle) : false
     })
   }, [playerAddresses, query, profileNames])
+
+  const {
+    page,
+    rowsPerPage,
+    paginated: pagedPlayers,
+    onPageChange,
+    onRowsPerPageChange
+  } = usePagination(filteredPlayers, GRID_PAGE_SIZES[0])
 
   const handleConfirmClearAll = useCallback(async () => {
     try {
@@ -97,16 +107,26 @@ function PlayersManager(props: PlayersManagerProps) {
           {query ? t('component.storage.player_page.no_search_results', { query }) : t('component.storage.player_page.no_players')}
         </Typography>
       ) : (
-        <CardsGrid>
-          {filteredPlayers.map(address => (
-            <PlayerCard
-              key={address}
-              address={address}
-              displayName={profileNames.get(address.toLowerCase())}
-              onClick={() => onSelectPlayer(address)}
-            />
-          ))}
-        </CardsGrid>
+        <>
+          <CardsGrid>
+            {pagedPlayers.map(address => (
+              <PlayerCard
+                key={address}
+                address={address}
+                displayName={profileNames.get(address.toLowerCase())}
+                onClick={() => onSelectPlayer(address)}
+              />
+            ))}
+          </CardsGrid>
+          <StoragePagination
+            count={filteredPlayers.length}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            rowsPerPageOptions={GRID_PAGE_SIZES}
+            onPageChange={onPageChange}
+            onRowsPerPageChange={onRowsPerPageChange}
+          />
+        </>
       )}
 
       <ConfirmDialog

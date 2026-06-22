@@ -62,4 +62,32 @@ const Tabs = ({ onChange, children, ...rest }: TabsProps) => {
   return createElement('div', { role: 'tablist', ...rest }, mapped)
 }
 
-export { Box, Button, CircularProgress, dclColors, fakeTheme, keyframes, styled, Tab, Tabs, Typography }
+interface TablePaginationProps {
+  count: number
+  page: number
+  rowsPerPage: number
+  onPageChange: (event: unknown, page: number) => void
+  onRowsPerPageChange: (event: { target: { value: string } }) => void
+  rowsPerPageOptions: number[]
+}
+// Pager stub that surfaces the current window and exposes prev/next +
+// rows-per-page controls so pagination can be driven from specs.
+/* eslint-disable @typescript-eslint/naming-convention -- DOM attrs require quoted kebab-case keys */
+const TablePagination = ({ count, page, rowsPerPage, onPageChange, onRowsPerPageChange, rowsPerPageOptions }: TablePaginationProps) =>
+  createElement('div', { 'data-testid': 'pagination' }, [
+    createElement(
+      'span',
+      { key: 'info', 'data-testid': 'page-info' },
+      `${page * rowsPerPage + 1}-${Math.min((page + 1) * rowsPerPage, count)} of ${count}`
+    ),
+    createElement('button', { key: 'prev', 'aria-label': 'prev-page', onClick: (e: unknown) => onPageChange(e, page - 1) }, 'prev'),
+    createElement('button', { key: 'next', 'aria-label': 'next-page', onClick: (e: unknown) => onPageChange(e, page + 1) }, 'next'),
+    createElement(
+      'select',
+      { key: 'rpp', 'aria-label': 'rows-per-page', value: rowsPerPage, onChange: onRowsPerPageChange },
+      rowsPerPageOptions.map(option => createElement('option', { key: option, value: option }, option))
+    )
+  ])
+/* eslint-enable @typescript-eslint/naming-convention */
+
+export { Box, Button, CircularProgress, dclColors, fakeTheme, keyframes, styled, Tab, TablePagination, Tabs, Typography }
