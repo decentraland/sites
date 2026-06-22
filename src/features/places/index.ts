@@ -15,7 +15,8 @@ export {
   formatDateForGoogleCalendar,
   formatLocation,
   isEns,
-  parsePosition
+  parsePosition,
+  selectWorldPlace
 } from './places.helpers'
 export type {
   CardData,

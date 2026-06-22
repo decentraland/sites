@@ -115,4 +115,28 @@ describe('PlacesPage', () => {
       expect(screen.getByText('foo.eth')).toBeInTheDocument()
     })
   })
+
+  describe('when the jump targets a World without a position', () => {
+    beforeEach(() => {
+      mockUseGetJumpPlacesQuery.mockReturnValue({ isLoading: false, isError: false, data: [] } as never)
+      mockUseGetSceneMetadataQuery.mockReturnValue({ isLoading: false, isError: false, data: undefined } as never)
+    })
+
+    it('should query by realm without a position so the World card resolves', () => {
+      renderWithRouter('/jump/places?realm=brai.dcl.eth')
+      expect(mockUseGetJumpPlacesQuery).toHaveBeenCalledWith({ position: undefined, realm: 'brai.dcl.eth' })
+    })
+  })
+
+  describe('when the jump targets a World with an explicit position', () => {
+    beforeEach(() => {
+      mockUseGetJumpPlacesQuery.mockReturnValue({ isLoading: false, isError: false, data: [] } as never)
+      mockUseGetSceneMetadataQuery.mockReturnValue({ isLoading: false, isError: false, data: undefined } as never)
+    })
+
+    it('should query with both realm and position so the scene resolves', () => {
+      renderWithRouter('/jump/places?realm=brai.dcl.eth&position=10,20')
+      expect(mockUseGetJumpPlacesQuery).toHaveBeenCalledWith({ position: [10, 20], realm: 'brai.dcl.eth' })
+    })
+  })
 })

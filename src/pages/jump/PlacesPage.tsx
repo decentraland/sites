@@ -19,7 +19,8 @@ const PlacesPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  const positionParam = searchParams.get('position') ?? DEFAULT_POSITION
+  const rawPositionParam = searchParams.get('position')
+  const positionParam = rawPositionParam ?? DEFAULT_POSITION
   // Accept `?world=` as an alias of `?realm=` so legacy share links emitted by
   // older clients keep resolving to the same world.
   const realmParam = searchParams.get('realm') ?? searchParams.get('world') ?? DEFAULT_REALM
@@ -27,7 +28,14 @@ const PlacesPage = () => {
 
   const realm = realmParam === DEFAULT_REALM ? undefined : realmParam
 
-  const placesQuery = useGetJumpPlacesQuery({ position: parsedPosition.coordinates, realm })
+  // Forward a position to the Places API only when one is explicitly present in
+  // the URL, or when there is no World realm (a bare Genesis jump keeps the 0,0
+  // default). For a World jump WITHOUT a position, omitting it lets
+  // buildPlacesUrl resolve to `/worlds` (the World-level card) instead of the
+  // per-scene `/places` lookup.
+  const placesPosition = rawPositionParam !== null || !realm ? parsedPosition.coordinates : undefined
+
+  const placesQuery = useGetJumpPlacesQuery({ position: placesPosition, realm })
   const sceneMetadataQuery = useGetSceneMetadataQuery({ position: parsedPosition.coordinates.join(',') })
 
   useEffect(() => {

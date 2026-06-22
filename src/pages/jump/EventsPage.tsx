@@ -51,7 +51,8 @@ const EventsPage = () => {
   const isMobile = useMobileMediaQuery()
   const { address } = useAuthIdentity()
 
-  const positionParam = searchParams.get('position') ?? DEFAULT_POSITION
+  const rawPositionParam = searchParams.get('position')
+  const positionParam = rawPositionParam ?? DEFAULT_POSITION
   // Accept `?world=` as an alias of `?realm=` so legacy share links emitted by
   // older clients keep resolving to the same world.
   const realmParam = searchParams.get('realm') ?? searchParams.get('world') ?? DEFAULT_REALM
@@ -60,9 +61,15 @@ const EventsPage = () => {
   const parsedPosition = useMemo(() => parsePosition(positionParam), [positionParam])
   const realm = realmParam === DEFAULT_REALM ? undefined : realmParam
 
+  // The live-event user_count enrichment reads from the Places API. Forward a
+  // position only when one is explicitly present, or when there is no World
+  // realm, so a World event WITHOUT a position keeps resolving to `/worlds`
+  // (matching pre-fix behavior) instead of the per-scene `/places` lookup.
+  const placesPosition = rawPositionParam !== null || !realm ? parsedPosition.coordinates : undefined
+
   const byIdQuery = useGetJumpEventByIdQuery({ id: idParam ?? '', address }, { skip: !idParam })
   const byPositionQuery = useGetJumpEventsQuery({ position: parsedPosition.coordinates, realm, address }, { skip: Boolean(idParam) })
-  const placesQuery = useGetJumpPlacesQuery({ position: parsedPosition.coordinates, realm })
+  const placesQuery = useGetJumpPlacesQuery({ position: placesPosition, realm })
 
   const isLoading = byIdQuery.isLoading || byPositionQuery.isLoading
   const event = idParam ? byIdQuery.data : byPositionQuery.data?.[0]
