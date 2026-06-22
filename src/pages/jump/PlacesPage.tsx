@@ -9,6 +9,7 @@ import {
   buildGenericPlace,
   fromPlace,
   parsePosition,
+  resolvePlacesPosition,
   useGetJumpPlacesQuery,
   useGetSceneMetadataQuery
 } from '../../features/places'
@@ -28,12 +29,7 @@ const PlacesPage = () => {
 
   const realm = realmParam === DEFAULT_REALM ? undefined : realmParam
 
-  // Forward a position to the Places API only when one is explicitly present in
-  // the URL, or when there is no World realm (a bare Genesis jump keeps the 0,0
-  // default). For a World jump WITHOUT a position, omitting it lets
-  // buildPlacesUrl resolve to `/worlds` (the World-level card) instead of the
-  // per-scene `/places` lookup.
-  const placesPosition = rawPositionParam !== null || !realm ? parsedPosition.coordinates : undefined
+  const placesPosition = resolvePlacesPosition(rawPositionParam, realm, parsedPosition.coordinates)
 
   const placesQuery = useGetJumpPlacesQuery({ position: placesPosition, realm })
   const sceneMetadataQuery = useGetSceneMetadataQuery({ position: parsedPosition.coordinates.join(',') })

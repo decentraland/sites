@@ -6,6 +6,7 @@ import {
   formatDateForGoogleCalendar,
   isEns,
   parsePosition,
+  resolvePlacesPosition,
   selectWorldPlace
 } from './places.helpers'
 import type { CardData, JumpPlace } from './places.types'
@@ -196,6 +197,26 @@ describe('jump.helpers', () => {
     describe('and there is a single place', () => {
       it('should return the list as-is', () => {
         expect(selectWorldPlace([arena], [99, 99])).toEqual([arena])
+      })
+    })
+  })
+
+  describe('when resolvePlacesPosition is called', () => {
+    describe('and a position param is present', () => {
+      it('should forward the coordinates even for a World realm', () => {
+        expect(resolvePlacesPosition('10,20', 'cool.dcl.eth', [10, 20])).toEqual([10, 20])
+      })
+    })
+
+    describe('and there is no position param but there is a World realm', () => {
+      it('should return undefined so the World-level record resolves', () => {
+        expect(resolvePlacesPosition(null, 'cool.dcl.eth', [0, 0])).toBeUndefined()
+      })
+    })
+
+    describe('and there is neither a position param nor a realm', () => {
+      it('should fall back to the coordinates so a bare Genesis jump keeps 0,0', () => {
+        expect(resolvePlacesPosition(null, undefined, [0, 0])).toEqual([0, 0])
       })
     })
   })

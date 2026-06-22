@@ -16,6 +16,7 @@ export {
   formatLocation,
   isEns,
   parsePosition,
+  resolvePlacesPosition,
   selectWorldPlace
 } from './places.helpers'
 export type {

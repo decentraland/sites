@@ -14,6 +14,7 @@ import {
   formatDateForGoogleCalendar,
   fromEvent,
   parsePosition,
+  resolvePlacesPosition,
   useGetJumpEventByIdQuery,
   useGetJumpEventsQuery,
   useGetJumpPlacesQuery,
@@ -61,11 +62,10 @@ const EventsPage = () => {
   const parsedPosition = useMemo(() => parsePosition(positionParam), [positionParam])
   const realm = realmParam === DEFAULT_REALM ? undefined : realmParam
 
-  // The live-event user_count enrichment reads from the Places API. Forward a
-  // position only when one is explicitly present, or when there is no World
-  // realm, so a World event WITHOUT a position keeps resolving to `/worlds`
-  // (matching pre-fix behavior) instead of the per-scene `/places` lookup.
-  const placesPosition = rawPositionParam !== null || !realm ? parsedPosition.coordinates : undefined
+  // The live-event user_count enrichment reads from the Places API; share the
+  // same position-resolution rule as PlacesPage so a World event without a
+  // position keeps resolving to `/worlds` instead of the per-scene `/places`.
+  const placesPosition = resolvePlacesPosition(rawPositionParam, realm, parsedPosition.coordinates)
 
   const byIdQuery = useGetJumpEventByIdQuery({ id: idParam ?? '', address }, { skip: !idParam })
   const byPositionQuery = useGetJumpEventsQuery({ position: parsedPosition.coordinates, realm, address }, { skip: Boolean(idParam) })

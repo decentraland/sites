@@ -38,6 +38,8 @@ jest.mock('../../features/places', () => ({
       position: place.base_position
     }
   },
+  resolvePlacesPosition: (rawPositionParam: string | null, realm: string | undefined, coordinates: [number, number]) =>
+    rawPositionParam !== null || !realm ? coordinates : undefined,
   useGetJumpPlacesQuery: jest.fn(),
   useGetSceneMetadataQuery: jest.fn()
 }))
