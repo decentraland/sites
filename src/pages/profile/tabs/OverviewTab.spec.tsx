@@ -39,8 +39,9 @@ jest.mock('../../../config/env', () => ({
   getEnv: () => 'https://peer.test'
 }))
 
+const useProfileBadgesMock = jest.fn((_address?: string) => ({ badges: [], isLoading: false }))
 jest.mock('../../../features/profile/profile.badges.client', () => ({
-  useProfileBadges: () => ({ badges: [], isLoading: false })
+  useProfileBadges: (address: string | undefined) => useProfileBadgesMock(address)
 }))
 
 jest.mock('../../../features/profile/profile.wearables.client', () => ({
@@ -133,6 +134,33 @@ describe('OverviewTab', () => {
     it('should render the empty-badges message when no badges are returned', () => {
       renderOverview()
       expect(screen.getByText('profile.overview.no_badges_yet')).toBeInTheDocument()
+    })
+  })
+
+  describe('when the address has no Catalyst profile', () => {
+    beforeEach(() => {
+      useGetProfileQueryMock.mockReturnValue({ data: { avatars: [] }, isLoading: false })
+    })
+
+    it('should not fetch badges (passes undefined) so a naked avatar is not decorated with false badges', () => {
+      renderOverview({ address: '0xabc', isOwnProfile: false })
+      expect(useProfileBadgesMock).toHaveBeenCalledWith(undefined)
+    })
+
+    it('should render the empty-badges message rather than any badge', () => {
+      renderOverview({ address: '0xabc', isOwnProfile: false })
+      expect(screen.getByText('profile.overview.no_badges_yet')).toBeInTheDocument()
+    })
+  })
+
+  describe('when a real profile exists', () => {
+    beforeEach(() => {
+      useGetProfileQueryMock.mockReturnValue({ data: { avatars: [{ name: 'Brai' }] }, isLoading: false })
+    })
+
+    it('should fetch badges for the resolved address', () => {
+      renderOverview({ address: '0xabc', isOwnProfile: false })
+      expect(useProfileBadgesMock).toHaveBeenCalledWith('0xabc')
     })
   })
 
