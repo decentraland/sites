@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Box, Button, styled } from 'decentraland-ui2'
+import { Link } from 'react-router-dom'
+import { Box, Button, Typography, dclColors, styled } from 'decentraland-ui2'
 
 interface ActionsProps {
   isMobile: boolean
@@ -49,4 +50,25 @@ const ExploreEventsButton = styled(Button)({
   color: '#161518'
 })
 
-export { CalendarButton, EventActions, ExploreEventsButton, ShareIconButton }
+// Shown instead of the action buttons when the hangout was soft-deleted.
+const DeletedNotice = styled(Typography)({
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 14,
+  fontWeight: 400,
+  lineHeight: 1.5,
+  color: dclColors.neutral.softWhite
+})
+
+const DeletedNoticeLink = styled(Link)({
+  color: '#FF2D55',
+  textDecoration: 'none',
+  '&:hover': {
+    textDecoration: 'underline'
+  },
+  '&:focus-visible': {
+    outline: '2px solid #FF2D55',
+    outlineOffset: 2
+  }
+})
+
+export { CalendarButton, DeletedNotice, DeletedNoticeLink, EventActions, ExploreEventsButton, ShareIconButton }

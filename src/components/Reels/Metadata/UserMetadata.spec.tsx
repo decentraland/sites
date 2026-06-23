@@ -35,6 +35,15 @@ jest.mock('../../../features/reels', () => ({
   buildProfileUrl: (address: string) => `https://profile/${address}`
 }))
 
+// UserMetadata now calls `useOpenProfileModal()` internally, which depends on
+// react-router (`useNavigate` + `useLocation`). The spec has no <Router> in
+// scope and doesn't need to assert the modal/navigate plumbing, so mock the
+// hook to a noop — keeps tests focused on UserMetadata's own behavior.
+const openProfileMock = jest.fn()
+jest.mock('../../profile/ProfileModal/useOpenProfileModal', () => ({
+  useOpenProfileModal: () => openProfileMock
+}))
+
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (key: string) => key
 }))
@@ -48,12 +57,17 @@ const baseUser = {
 }
 
 describe('UserMetadata', () => {
-  beforeEach(() => trackMock.mockReset())
+  beforeEach(() => {
+    trackMock.mockReset()
+    openProfileMock.mockReset()
+  })
 
   it('should render the user name as a link to the profile', () => {
     render(<UserMetadata user={baseUser} isFirst={true} />)
     const link = screen.getByText('alice').closest('a')
-    expect(link).toHaveAttribute('href', 'https://profile/0xa')
+    // Visible href is now the internal SPA route; the legacy URL still rides
+    // along in the Segment payload (see UserMetadata.tsx:handleProfileClick).
+    expect(link).toHaveAttribute('href', '/profile/0xa')
   })
 
   it('should render the guest badge when isGuest is true', () => {

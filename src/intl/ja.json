@@ -317,7 +317,8 @@
         },
         "screen_share_failed": {
           "title": "画面共有に失敗しました",
-          "default_message": "画面共有を開始できませんでした。もう一度お試しください。"
+          "default_message": "画面共有を開始できませんでした。もう一度お試しください。",
+          "stopped_message": "画面共有が停止しました。もう一度共有するには「再試行」をクリックしてください。"
         },
         "retry": "再試行",
         "dismiss": "閉じる"
@@ -431,7 +432,7 @@
         "subtitle": "Decentralandについて詳しく見る",
         "cta": {
           "label": "もっと見る",
-          "link": "https://docs.decentraland.org/player/general/faq/"
+          "link": "https://docs.decentraland.org/faqs/"
         }
       },
       "marketplace": {
@@ -895,6 +896,13 @@
         "body": "報告を受け付けました。内容は順次確認します。",
         "dismiss": "このウィンドウを閉じても問題ありません。"
       }
+    },
+    "jump": {
+      "events_page": {
+        "deleted_notice_prefix": "このハングアウトは利用できなくなりました。",
+        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_suffix": "でさらに探してみましょう。"
+      }
     }
   },
   "create_event": {
@@ -960,7 +968,200 @@
       "upcoming_events": "今後のイベント"
     }
   },
+  "profile": {
+    "not_found": {
+      "title": "プロフィールが見つかりません",
+      "description": "アドレス「{address}」は有効なEthereumアドレスではありません。"
+    },
+    "header": {
+      "edit_profile": "プロフィールを編集",
+      "add_friend": "友達を追加",
+      "request_sent": "リクエスト送信済み",
+      "friends": "友達",
+      "remove_friend": "友達解除",
+      "unblock": "ブロック解除",
+      "block": "ブロック",
+      "more_actions": "その他",
+      "copy_address": "アドレスをコピー",
+      "address_copied": "アドレスをコピーしました！",
+      "close_profile": "プロフィールを閉じる",
+      "get_a_name": "ユニークな名前を取得",
+      "manage_world": "ワールドを管理",
+      "invite_friends": "友達を招待",
+      "invite_copied": "リンクをコピーしました！",
+      "friends_count": "{count} 人の友達",
+      "mutual_count": "{count} 人の共通",
+      "edit": "編集",
+      "back": "戻る",
+      "open_menu": "プロフィールメニューを開く",
+      "logout": "ログアウト",
+      "share_profile": "プロフィールを共有"
+    },
+    "friends_modal": {
+      "title": "友達 ({count})",
+      "close": "友達リストを閉じる",
+      "search_placeholder": "友達を検索",
+      "empty": "まだ友達がいません。",
+      "no_results": "該当する友達が見つかりません。",
+      "mutual_title": "共通の友達（{count}）"
+    },
+    "tabs": {
+      "overview": "概要",
+      "assets": "アセット",
+      "creations": "作品",
+      "communities": "コミュニティ",
+      "places": "プレイス",
+      "photos": "写真",
+      "referral_rewards": "リファラル報酬",
+      "my_assets": "マイアセット",
+      "my_communities": "マイコミュニティ",
+      "my_places": "マイプレイス",
+      "my_photos": "マイ写真"
+    },
+    "overview": {
+      "about": "概要",
+      "no_bio_owner": "まだ情報がありません。ワールドに入って自己紹介を完成させましょう！",
+      "no_bio_member": "このメンバーはまだ自己紹介を追加していません。",
+      "equipped_wearables": "装備中のウェアラブル",
+      "no_wearables": "装備中のアイテムはまだありません。",
+      "badges": "バッジ",
+      "links": "リンク",
+      "equipped_items": "装備中のアイテム",
+      "country": "国",
+      "language": "言語",
+      "pronouns": "代名詞",
+      "relationship_status": "交際状況",
+      "gender": "性別",
+      "profession": "職業",
+      "birth_date": "誕生日",
+      "real_name": "本名",
+      "favorite_hobby": "趣味",
+      "no_badges_yet": "まだバッジがありません。ワールドに入ってバッジを集めましょう！",
+      "badge_unlocked_on": "{date}に獲得",
+      "by_creator": "作成者: {name}",
+      "buy": "購入"
+    },
+    "creations": {
+      "empty_title": "作品はまだありません",
+      "empty_owner": "作成したアイテムがここに表示されます。",
+      "empty_member": "このアカウントはまだ何も作成していません。",
+      "count": "{count} アイテム",
+      "load_more": "もっと見る",
+      "filter_wearables": "ウェアラブル",
+      "filter_emotes": "エモート",
+      "view_all": "すべて表示",
+      "not_for_sale": "販売されていません",
+      "view_in_marketplace": "マーケットプレイスで表示"
+    },
+    "assets": {
+      "empty_title": "アセットはまだありません",
+      "empty_description": "所有しているウェアラブル、ネーム、ランドがここに表示されます。",
+      "filter_all": "すべて",
+      "filter_wearables": "ウェアラブル",
+      "filter_emotes": "エモート",
+      "filter_names": "ネーム",
+      "filter_lands": "ランド",
+      "filter_estates": "エステート",
+      "count": "{count} アセット",
+      "view": "表示",
+      "edit": "編集",
+      "transfer": "転送",
+      "empty_owner_subtitle": "マーケットプレイスで、自分だけのスタイルを作り始めましょう",
+      "empty_owner_cta": "マーケットプレイスへ"
+    },
+    "communities": {
+      "empty_title": "コミュニティはまだありません",
+      "empty_member": "このメンバーはまだコミュニティに参加していません。",
+      "count": "{count} コミュニティ",
+      "member": "メンバー",
+      "members_count": "{count}人のメンバー",
+      "role_owner": "オーナー",
+      "role_admin": "管理者",
+      "action_view": "表示",
+      "action_joined": "参加中",
+      "share_aria": "コミュニティのリンクを共有",
+      "copy_link": "リンクをコピー",
+      "copied": "コピーしました！",
+      "empty_owner_subtitle": "Decentralandに入って、自分に合ったコミュニティに参加しましょう。自分で作ることもできます！",
+      "empty_owner_cta": "コミュニティを探す"
+    },
+    "places": {
+      "empty_title": "プレイスはまだありません",
+      "empty_member": "このメンバーはまだプレイスを登録していません。",
+      "count": "{count} プレイス",
+      "jump_in": "ジャンプイン",
+      "filter_my_places": "マイプレイス",
+      "filter_favorites": "お気に入り",
+      "empty_owner_title": "まだ何もありません。でも、簡単に変えられます",
+      "empty_owner_subtitle": "「マイプレイス」には、Decentralandで所有または管理しているスペースが表示されます。まずはNAMEを取得するのが一番簡単で、自分だけのWorldを使えるようになります。",
+      "empty_owner_cta": "NAMEを取得",
+      "empty_favorites_title": "保存済みのものはまだありません",
+      "empty_favorites_subtitle": "プレイスカードやDecentralandのマップでハートをタップして、お気に入りのプレイスを追加しましょう。ここですべて見つけられます。",
+      "empty_favorites_cta": "プレイスを探す"
+    },
+    "photos": {
+      "empty_title": "写真はまだありません",
+      "empty_member": "このメンバーはまだ写真を撮影していません。",
+      "count": "{count} 枚の写真",
+      "empty_owner_subtitle": "入って思い出を集めましょう！「C」キーでカメラを開き、「スペースキー」で写真を撮影できます。",
+      "empty_owner_cta": "参加する"
+    },
+    "referral_rewards": {
+      "anonymous": "サインインして友達を招待し、報酬を獲得しましょう。",
+      "invite_title": "友達を招待して報酬をゲット",
+      "invite_subtitle": "コードを共有しましょう。友達がDecentralandに参加すると、限定ウェアラブルやバッジを獲得できます。",
+      "copy_invite_link": "招待リンクをコピー",
+      "copied": "コピーしました！",
+      "invited": "招待済み",
+      "confirmed": "確認済み",
+      "your_rewards": "あなたの報酬",
+      "no_rewards": "まだ報酬はありません。招待を続けてティアを解除しましょう。",
+      "claimed": "受取済み",
+      "unlocked": "解除済み",
+      "locked": "未解除",
+      "tiers_unlocked": "解除済みティア",
+      "next_tier_at": "次のティアまで ({count} 招待)",
+      "tier_label": "ティア {tier}",
+      "tier_invites": "{count} 招待"
+    },
+    "referral_hero_section": {
+      "title": "Decentraland is Better With Friends",
+      "subtitle": "Invite yours and get rewards!",
+      "tooltip_text": "Invitees must be new to Decentraland and must jump in-world on 3 separate days to count toward reward goals. See ",
+      "tooltip_link_label": "Terms & Conditions",
+      "step_1": "Invite friends to hang out in-world by sharing your referral link.",
+      "step_2": "Your friends download Decentraland and jump in on 3 separate days.",
+      "step_3": "You earn exclusive rewards for helping grow our community!",
+      "how_it_works": "How it works",
+      "share": "SHARE",
+      "copy_link": "Copy Link",
+      "copied_to_clipboard": "Link copied successfully",
+      "share_on_x": "Share on X",
+      "share_on_x_title": "Wanna hang out in Decentraland? Use my referral link to make your account and download Decentraland so we can explore together! #DCL #Decentraland"
+    },
+    "referral_reward_card": {
+      "swag": "IRL SWAG PACK",
+      "claim": "CLAIM",
+      "image_alt": "Reward Image"
+    },
+    "referral_journey": {
+      "title": "Your Reward Journey",
+      "invites_accepted": "{count} Friends Joined",
+      "tooltip_title": "{count} Friends Joined",
+      "tooltip_subtitle": "{count} More friends for your next Reward!"
+    }
+  },
   "event_detail": {
+    "delete": "削除",
+    "delete_modal": {
+      "title": "このハングアウトを削除してもよろしいですか？",
+      "subtitle": "このハングアウトはハングアウト一覧から完全に削除されます。この操作は元に戻せません。",
+      "cancel": "キャンセル",
+      "confirm": "ハングアウトを削除",
+      "toast_title": "ハングアウトを削除しました",
+      "toast_description": "ハングアウト「{name}」を削除しました！",
+      "error": "ハングアウトを削除できませんでした。もう一度お試しください。"
+    },
     "recurrent_daily": "毎日繰り返し",
     "recurrent_weekly": "毎週繰り返し",
     "recurrent_monthly": "毎月繰り返し",

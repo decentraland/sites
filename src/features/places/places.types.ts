@@ -23,6 +23,8 @@ interface JumpEvent {
   world?: boolean
   server?: string
   live?: boolean
+  deleted_by_user?: boolean
+  deleted_by_admin?: boolean
 }
 
 interface JumpPlace {

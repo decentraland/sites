@@ -1,0 +1,559 @@
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { AuthIdentity } from '@dcl/crypto'
+import { createSocialClientV2 } from '@dcl/social-rpc-client'
+import { FriendshipStatus as RpcFriendshipStatus } from '@dcl/social-rpc-client/dist/protobuff-types/decentraland/social_service/v2/social_service_v2.gen'
+import type { FriendProfile } from '@dcl/social-rpc-client/dist/protobuff-types/decentraland/social_service/v2/social_service_v2.gen'
+import { getEnv } from '../../config/env'
+import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+
+type Client = ReturnType<typeof createSocialClientV2>
+
+type FriendshipStatus = 'none' | 'request_sent' | 'request_received' | 'accepted' | 'blocked'
+
+type FriendshipAction = 'request' | 'cancel' | 'accept' | 'reject' | 'remove'
+
+const RPC_TO_STATUS: Record<number, FriendshipStatus> = {
+  [RpcFriendshipStatus.REQUEST_SENT]: 'request_sent',
+  [RpcFriendshipStatus.REQUEST_RECEIVED]: 'request_received',
+  [RpcFriendshipStatus.ACCEPTED]: 'accepted',
+  [RpcFriendshipStatus.BLOCKED]: 'blocked'
+}
+
+function toFriendshipStatus(rpcStatus: number): FriendshipStatus {
+  return RPC_TO_STATUS[rpcStatus] ?? 'none'
+}
+
+function getSocialRpcUrl(): string {
+  const url = getEnv('SOCIAL_RPC_URL')
+  if (!url) throw new Error('SOCIAL_RPC_URL environment variable is not set')
+  return url
+}
+
+function identityKey(identity: AuthIdentity): string {
+  const owner = identity.authChain?.[0]?.payload
+  return typeof owner === 'string' ? owner.toLowerCase() : ''
+}
+
+// Singleton client, reset when the authed identity changes (sign-out + sign-in
+// with a different wallet). Connection is lazy — established on first call — and torn
+// down after a grace period once the last hook consumer unmounts (see `retainClient`).
+let client: Client | null = null
+let clientIdentityKey: string | null = null
+// In-flight connect promises keyed by identity. Callers racing on the SAME identity dedupe
+// onto the same promise. Callers on a DIFFERENT identity don't await each other — the new
+// connect supersedes the global `client` ref when it finishes. A caller can still end up
+// holding a client that a competing identity disconnected mid-flight; `withClient` retries
+// once against a freshly-resolved client to cover that wallet-switch window.
+const inflight = new Map<string, Promise<Client>>()
+
+async function getClient(identity: AuthIdentity): Promise<Client> {
+  const key = identityKey(identity)
+  if (client && clientIdentityKey === key) return client
+  const existing = inflight.get(key)
+  if (existing) return existing
+  const promise = (async () => {
+    // If the global client belongs to a different identity, drop it before connecting
+    // ours. Safe to do here because we only reach this branch on the first caller for a
+    // brand-new key (subsequent same-key callers join via the `inflight.get(key)` path).
+    if (client && clientIdentityKey !== key) {
+      try {
+        client.disconnect()
+      } catch {
+        /* swallow — connection may already be dropped */
+      }
+      client = null
+      clientIdentityKey = null
+      statusCache.clear()
+      notifyAll()
+    }
+    const next = createSocialClientV2(getSocialRpcUrl())
+    await next.connect(identity)
+    client = next
+    clientIdentityKey = key
+    return next
+  })()
+  inflight.set(key, promise)
+  try {
+    return await promise
+  } finally {
+    inflight.delete(key)
+  }
+}
+
+/**
+ * Runs an RPC call re-resolving the client once on failure. Covers the wallet-switch
+ * race: identity B connecting disconnects the client a caller of identity A is still
+ * holding — the first call throws on the stale reference, the retry resolves a fresh
+ * client. A genuinely failing RPC resolves to the SAME client and propagates its error.
+ */
+async function withClient<T>(identity: AuthIdentity, call: (c: Client) => Promise<T>): Promise<T> {
+  const first = await getClient(identity)
+  try {
+    return await call(first)
+  } catch (err) {
+    const second = await getClient(identity)
+    if (second === first) throw err
+    return call(second)
+  }
+}
+
+// Idle teardown: the WebSocket stays open only while at least one hook consumer is
+// mounted. When the last one unmounts, a grace period avoids churn on quick
+// navigation (profile → away → back); `getClient` reconnects lazily on next use.
+const IDLE_DISCONNECT_MS = 60_000
+let activeConsumers = 0
+let idleDisconnectTimer: ReturnType<typeof setTimeout> | null = null
+
+function scheduleIdleDisconnect(): void {
+  if (idleDisconnectTimer) clearTimeout(idleDisconnectTimer)
+  idleDisconnectTimer = setTimeout(() => {
+    idleDisconnectTimer = null
+    if (activeConsumers > 0 || !client) return
+    try {
+      client.disconnect()
+    } catch {
+      /* swallow — connection may already be dropped */
+    }
+    client = null
+    clientIdentityKey = null
+  }, IDLE_DISCONNECT_MS)
+}
+
+function retainClient(): () => void {
+  activeConsumers++
+  if (idleDisconnectTimer) {
+    clearTimeout(idleDisconnectTimer)
+    idleDisconnectTimer = null
+  }
+  let released = false
+  return () => {
+    if (released) return
+    released = true
+    activeConsumers--
+    if (activeConsumers <= 0) scheduleIdleDisconnect()
+  }
+}
+
+const statusCache = new Map<string, FriendshipStatus>()
+const subscribers = new Map<string, Set<() => void>>()
+
+function notify(address: string) {
+  subscribers.get(address)?.forEach(cb => cb())
+}
+
+function notifyAll() {
+  subscribers.forEach(set => set.forEach(cb => cb()))
+}
+
+function subscribe(address: string, listener: () => void): () => void {
+  let set = subscribers.get(address)
+  if (!set) {
+    set = new Set()
+    subscribers.set(address, set)
+  }
+  set.add(listener)
+  return () => {
+    set.delete(listener)
+    if (set.size === 0) subscribers.delete(address)
+  }
+}
+
+async function fetchStatus(identity: AuthIdentity, address: string): Promise<FriendshipStatus> {
+  const key = address.toLowerCase()
+  const response = await withClient(identity, c => c.getFriendshipStatus(key))
+  const status = toFriendshipStatus(response.status)
+  statusCache.set(key, status)
+  notify(key)
+  return status
+}
+
+async function applyAction(identity: AuthIdentity, address: string, action: FriendshipAction): Promise<FriendshipStatus> {
+  const key = address.toLowerCase()
+  await withClient(identity, async c => {
+    switch (action) {
+      case 'request':
+        await c.requestFriendship(key)
+        break
+      case 'cancel':
+        await c.cancelFriendshipRequest(key)
+        break
+      case 'accept':
+        await c.acceptFriendshipRequest(key)
+        break
+      case 'reject':
+        await c.rejectFriendshipRequest(key)
+        break
+      case 'remove':
+        await c.removeFriendship(key)
+        break
+    }
+  })
+  return fetchStatus(identity, address)
+}
+
+async function applyBlock(identity: AuthIdentity, address: string, block: boolean): Promise<FriendshipStatus> {
+  const key = address.toLowerCase()
+  await withClient(identity, async c => {
+    if (block) await c.blockUser(key)
+    else await c.unblockUser(key)
+  })
+  return fetchStatus(identity, address)
+}
+
+interface UseFriendshipStatusResult {
+  status: FriendshipStatus | undefined
+  isLoading: boolean
+  error: Error | null
+}
+
+function useFriendshipStatus(address: string | undefined): UseFriendshipStatusResult {
+  const { identity } = useAuthIdentity()
+  const [, setTick] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    if (!address || !identity) {
+      setIsLoading(false)
+      setError(null)
+      return undefined
+    }
+    const key = address.toLowerCase()
+    const releaseClient = retainClient()
+    const unsubscribe = subscribe(key, () => setTick(t => t + 1))
+
+    if (!statusCache.has(key)) {
+      setIsLoading(true)
+      setError(null)
+      let cancelled = false
+      void fetchStatus(identity, key)
+        .catch(err => {
+          if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)))
+        })
+        .finally(() => {
+          if (!cancelled) setIsLoading(false)
+        })
+      return () => {
+        cancelled = true
+        unsubscribe()
+        releaseClient()
+      }
+    }
+    return () => {
+      unsubscribe()
+      releaseClient()
+    }
+  }, [address, identity])
+
+  const status = address ? statusCache.get(address.toLowerCase()) : undefined
+  return { status, isLoading, error }
+}
+
+const friendsCountCache = new Map<string, number>()
+const friendsCountSubscribers = new Map<string, Set<() => void>>()
+
+function notifyFriendsCount(key: string) {
+  friendsCountSubscribers.get(key)?.forEach(cb => cb())
+}
+
+async function fetchFriendsCount(identity: AuthIdentity): Promise<number> {
+  const key = identityKey(identity)
+  const response = await withClient(identity, c => c.getFriends({ limit: 1, offset: 0 }))
+  const total = response.paginationData?.total ?? response.friends?.length ?? 0
+  friendsCountCache.set(key, total)
+  notifyFriendsCount(key)
+  return total
+}
+
+interface UseFriendsCountResult {
+  count: number | undefined
+  isLoading: boolean
+  error: Error | null
+}
+
+function useFriendsCount(): UseFriendsCountResult {
+  const { identity } = useAuthIdentity()
+  const [, setTick] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    if (!identity) {
+      setIsLoading(false)
+      setError(null)
+      return undefined
+    }
+    const key = identityKey(identity)
+    const releaseClient = retainClient()
+    let set = friendsCountSubscribers.get(key)
+    if (!set) {
+      set = new Set()
+      friendsCountSubscribers.set(key, set)
+    }
+    const listener = () => setTick(t => t + 1)
+    set.add(listener)
+    const unsubscribe = () => {
+      set.delete(listener)
+      if (set.size === 0) friendsCountSubscribers.delete(key)
+      releaseClient()
+    }
+
+    if (!friendsCountCache.has(key)) {
+      setIsLoading(true)
+      setError(null)
+      let cancelled = false
+      void fetchFriendsCount(identity)
+        .catch(err => {
+          if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)))
+        })
+        .finally(() => {
+          if (!cancelled) setIsLoading(false)
+        })
+      return () => {
+        cancelled = true
+        unsubscribe()
+      }
+    }
+    return unsubscribe
+  }, [identity])
+
+  const count = identity ? friendsCountCache.get(identityKey(identity)) : undefined
+  return { count, isLoading, error }
+}
+
+interface UseFriendsListResult {
+  friends: FriendProfile[]
+  total: number | undefined
+  isLoading: boolean
+  error: Error | null
+}
+
+const FRIENDS_PAGE_SIZE = 200
+
+type FriendsPage = { friends: FriendProfile[]; paginationData?: { total?: number } }
+type FriendsPageFetcher = (c: Client, page: { limit: number; offset: number }) => Promise<FriendsPage>
+
+/**
+ * Shared eager pagination over a friends-shaped RPC endpoint: loads every page in one
+ * pass (typical counts are well below the page size; if we ever cross it, swap to
+ * incremental loads). Pass `null` to disable — state resets to empty.
+ */
+function usePaginatedFriendProfiles(fetchPage: FriendsPageFetcher | null): UseFriendsListResult {
+  const { identity } = useAuthIdentity()
+  const [friends, setFriends] = useState<FriendProfile[]>([])
+  const [total, setTotal] = useState<number | undefined>(undefined)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    if (!fetchPage || !identity) {
+      setFriends([])
+      setTotal(undefined)
+      setIsLoading(false)
+      setError(null)
+      return undefined
+    }
+    const releaseClient = retainClient()
+    let cancelled = false
+    setIsLoading(true)
+    setError(null)
+    void (async () => {
+      try {
+        const all: FriendProfile[] = []
+        let offset = 0
+        let totalCount: number | undefined
+        while (!cancelled) {
+          const response = await withClient(identity, c => fetchPage(c, { limit: FRIENDS_PAGE_SIZE, offset }))
+          if (cancelled) return
+          all.push(...response.friends)
+          totalCount = response.paginationData?.total ?? totalCount
+          if (response.friends.length < FRIENDS_PAGE_SIZE) break
+          offset += FRIENDS_PAGE_SIZE
+        }
+        if (cancelled) return
+        setFriends(all)
+        setTotal(totalCount ?? all.length)
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)))
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+      releaseClient()
+    }
+  }, [fetchPage, identity])
+
+  return { friends, total, isLoading, error }
+}
+
+function useFriendsList(enabled: boolean = true): UseFriendsListResult {
+  const fetchPage = useCallback<FriendsPageFetcher>((c, page) => c.getFriends(page), [])
+  return usePaginatedFriendProfiles(enabled ? fetchPage : null)
+}
+
+/**
+ * Full mutual-friends list between the signed user and `address`. Backs the
+ * mutual-friends modal; `useMutualFriends` below stays as the cheap 3-item preview
+ * used by the header cluster.
+ */
+function useMutualFriendsList(address: string | undefined, enabled: boolean = true): UseFriendsListResult {
+  const key = address?.toLowerCase()
+  const fetchPage = useMemo<FriendsPageFetcher | null>(() => (key ? (c, page) => c.getMutualFriends(key, page) : null), [key])
+  return usePaginatedFriendProfiles(enabled ? fetchPage : null)
+}
+
+const mutualCache = new Map<string, { count: number; friends: FriendProfile[] }>()
+const mutualSubscribers = new Map<string, Set<() => void>>()
+
+function notifyMutual(key: string) {
+  mutualSubscribers.get(key)?.forEach(cb => cb())
+}
+
+const MUTUAL_PREVIEW_LIMIT = 3
+
+async function fetchMutual(identity: AuthIdentity, address: string): Promise<{ count: number; friends: FriendProfile[] }> {
+  const key = `${identityKey(identity)}|${address.toLowerCase()}`
+  const response = await withClient(identity, c => c.getMutualFriends(address.toLowerCase(), { limit: MUTUAL_PREVIEW_LIMIT, offset: 0 }))
+  const result = {
+    count: response.paginationData?.total ?? response.friends.length,
+    friends: response.friends
+  }
+  mutualCache.set(key, result)
+  notifyMutual(key)
+  return result
+}
+
+interface UseMutualFriendsResult {
+  count: number
+  friends: FriendProfile[]
+  isLoading: boolean
+  error: Error | null
+}
+
+function useMutualFriends(address: string | undefined): UseMutualFriendsResult {
+  const { identity } = useAuthIdentity()
+  const [, setTick] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    if (!address || !identity) {
+      setIsLoading(false)
+      setError(null)
+      return undefined
+    }
+    const key = `${identityKey(identity)}|${address.toLowerCase()}`
+    const releaseClient = retainClient()
+    let set = mutualSubscribers.get(key)
+    if (!set) {
+      set = new Set()
+      mutualSubscribers.set(key, set)
+    }
+    const listener = () => setTick(t => t + 1)
+    set.add(listener)
+    const unsubscribe = () => {
+      set.delete(listener)
+      if (set.size === 0) mutualSubscribers.delete(key)
+      releaseClient()
+    }
+    if (!mutualCache.has(key)) {
+      setIsLoading(true)
+      setError(null)
+      let cancelled = false
+      void fetchMutual(identity, address)
+        .catch(err => {
+          if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)))
+        })
+        .finally(() => {
+          if (!cancelled) setIsLoading(false)
+        })
+      return () => {
+        cancelled = true
+        unsubscribe()
+      }
+    }
+    return unsubscribe
+  }, [address, identity])
+
+  const cached = address && identity ? mutualCache.get(`${identityKey(identity)}|${address.toLowerCase()}`) : undefined
+  return { count: cached?.count ?? 0, friends: cached?.friends ?? [], isLoading, error }
+}
+
+interface UseUpsertFriendshipResult {
+  upsert: (args: { address: string; action: FriendshipAction }) => Promise<void>
+  isLoading: boolean
+  error: Error | null
+}
+
+function useUpsertFriendship(): UseUpsertFriendshipResult {
+  const { identity } = useAuthIdentity()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  const upsert = useCallback(
+    async ({ address, action }: { address: string; action: FriendshipAction }) => {
+      if (!identity) throw new Error('Authentication required')
+      setIsLoading(true)
+      setError(null)
+      try {
+        await applyAction(identity, address, action)
+      } catch (err) {
+        const wrapped = err instanceof Error ? err : new Error(String(err))
+        setError(wrapped)
+        throw wrapped
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [identity]
+  )
+
+  return { upsert, isLoading, error }
+}
+
+interface UseBlockUserResult {
+  setBlocked: (args: { address: string; blocked: boolean }) => Promise<void>
+  isLoading: boolean
+  error: Error | null
+}
+
+function useBlockUser(): UseBlockUserResult {
+  const { identity } = useAuthIdentity()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  const setBlocked = useCallback(
+    async ({ address, blocked }: { address: string; blocked: boolean }) => {
+      if (!identity) throw new Error('Authentication required')
+      setIsLoading(true)
+      setError(null)
+      try {
+        await applyBlock(identity, address, blocked)
+      } catch (err) {
+        const wrapped = err instanceof Error ? err : new Error(String(err))
+        setError(wrapped)
+        throw wrapped
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [identity]
+  )
+
+  return { setBlocked, isLoading, error }
+}
+
+export { useBlockUser, useFriendsCount, useFriendsList, useFriendshipStatus, useMutualFriends, useMutualFriendsList, useUpsertFriendship }
+export type {
+  FriendProfile,
+  FriendshipAction,
+  FriendshipStatus,
+  UseBlockUserResult,
+  UseFriendsCountResult,
+  UseFriendsListResult,
+  UseFriendshipStatusResult,
+  UseMutualFriendsResult,
+  UseUpsertFriendshipResult
+}

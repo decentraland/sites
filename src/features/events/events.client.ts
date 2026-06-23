@@ -9,6 +9,7 @@ import type {
   CommunityAttributes,
   CreateEventParams,
   CreateEventResponse,
+  DeleteEventParams,
   EventAttendeesResponse,
   EventEntry,
   EventsQueryParams,
@@ -200,6 +201,25 @@ const eventsClient = createApi({
       },
       invalidatesTags: ['Events']
     }),
+    deleteEvent: build.mutation<void, DeleteEventParams>({
+      queryFn: async ({ eventId, identity }) => {
+        try {
+          const baseUrl = getEnv('EVENTS_API_URL')!
+          const response = await fetchWithIdentity(`${baseUrl}/events/${encodeURIComponent(eventId)}`, identity, 'DELETE')
+
+          if (!response.ok) {
+            const envelope = await response.json().catch(() => null)
+            console.error('[Events] deleteEvent failed', response.status, envelope)
+            return { error: { status: response.status, data: envelope } }
+          }
+
+          return { data: undefined }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
+        }
+      },
+      invalidatesTags: (_result, _error, { eventId }) => ['Events', 'LiveNow', { type: 'Events', id: eventId }]
+    }),
     getWorldNames: build.query<string[], void>({
       queryFn: async () => {
         try {
@@ -299,6 +319,7 @@ const eventsClient = createApi({
 
 const {
   useCreateEventMutation,
+  useDeleteEventMutation,
   useGetCommunitiesQuery,
   useGetEventByIdQuery,
   useGetEventsQuery,
@@ -314,6 +335,7 @@ const {
 export {
   eventsClient,
   useCreateEventMutation,
+  useDeleteEventMutation,
   useGetCommunitiesQuery,
   useGetEventByIdQuery,
   useGetEventsQuery,

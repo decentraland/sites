@@ -42,8 +42,15 @@ function isDclFoundationCreator(creatorName: string | null | undefined): boolean
 // My Hangouts tab can surface drafts with their status overlay. Any surface that lists events
 // publicly (Upcoming carousel, All Experiences day-grid, etc.) must filter through this predicate
 // to avoid leaking unapproved drafts to the rest of the audience.
-function isPubliclyVisibleEvent(event: Pick<EventEntry, 'approved' | 'rejected'>): boolean {
-  return event.approved && !event.rejected
+function isPubliclyVisibleEvent(event: Pick<EventEntry, 'approved' | 'rejected' | 'deleted_by_user' | 'deleted_by_admin'>): boolean {
+  return event.approved && !event.rejected && !isDeleted(event)
+}
+
+// Soft-delete is terminal — once either flag is set the hangout never comes back. The events API
+// already filters deleted events out of every listing, so this is defense-in-depth for any surface
+// that holds an event in memory (e.g. an open detail modal) when the delete completes.
+function isDeleted(event: Pick<EventEntry, 'deleted_by_user' | 'deleted_by_admin'>): boolean {
+  return Boolean(event.deleted_by_user) || Boolean(event.deleted_by_admin)
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -221,9 +228,15 @@ function bucketEventsByDay(events: EventEntry[], days: Date[], now: number = Dat
       if (dayIdx < 0) continue
 
       const startTs = start.getTime()
+      const finishTs = hasRecurrence ? startTs + event.duration : new Date(event.finish_at).getTime()
+      // Drop occurrences that already ended. Only the "today" column can hold past
+      // occurrences (future days are entirely ahead of `now`, earlier days aren't
+      // visible), so this hides hangouts that have already finished from Today while
+      // leaving in-progress (live) ones, which finish in the future.
+      if (finishTs < now) continue
+
       let entry: EventEntry
       if (hasRecurrence) {
-        const finishTs = startTs + event.duration
         /* eslint-disable @typescript-eslint/naming-convention */
         entry = {
           ...event,
@@ -445,6 +458,7 @@ export {
   enrichPlaceCards,
   expandRecurrentDates,
   isDclFoundationCreator,
+  isDeleted,
   isPubliclyVisibleEvent
 }
 export type { EnrichmentConfig, HotScene, LiveNowCard }

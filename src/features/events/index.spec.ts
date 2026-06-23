@@ -11,6 +11,7 @@ describe('features/events barrel', () => {
   it('should re-export every public symbol from the underlying modules', () => {
     expect(eventsIndex.eventsClient).toBeDefined()
     expect(eventsIndex.useCreateEventMutation).toBeDefined()
+    expect(eventsIndex.useDeleteEventMutation).toBeDefined()
     expect(eventsIndex.useGetCommunitiesQuery).toBeDefined()
     expect(eventsIndex.useGetEventByIdQuery).toBeDefined()
     expect(eventsIndex.useGetEventsQuery).toBeDefined()
@@ -26,6 +27,8 @@ describe('features/events barrel', () => {
     expect(eventsIndex.DCL_FOUNDATION_LOGO_URL).toBeDefined()
     expect(eventsIndex.DCL_FOUNDATION_NAME).toBeDefined()
     expect(eventsIndex.isDclFoundationCreator).toBeDefined()
+    expect(eventsIndex.isDeleted).toBeDefined()
+    expect(eventsIndex.isPubliclyVisibleEvent).toBeDefined()
 
     expect(eventsIndex.adminClient).toBeDefined()
     expect(eventsIndex.useApproveEventMutation).toBeDefined()

@@ -53,6 +53,16 @@ interface EventEntry {
   live: boolean
   created_at: string
   updated_at: string
+  // Soft-delete is terminal: the events API filters deleted events out of every listing (even for
+  // the owner), so these only surface on a freshly-fetched single event. `deleted_by_user` is set
+  // when the owner deletes their own hangout; `deleted_by_admin` when an admin deletes someone
+  // else's. Use the `isDeleted` helper rather than reading these flags directly.
+  deleted_by_user?: boolean
+  deleted_by_admin?: boolean
+  // Audit fields returned by the API; no UI consumes them yet — reserved for admin/audit surfaces.
+  deleted_by?: string | null
+  deleted_at?: string | null
+  deleted_reason?: string | null
 }
 
 interface EventsResponse {
@@ -137,6 +147,11 @@ interface UpdateEventParams {
   identity: AuthIdentity
 }
 
+interface DeleteEventParams {
+  eventId: string
+  identity: AuthIdentity
+}
+
 interface CreateEventResponse {
   ok: boolean
   data: EventEntry
@@ -187,6 +202,7 @@ export type {
   CreateEventParams,
   CreateEventPayload,
   CreateEventResponse,
+  DeleteEventParams,
   EventAttendee,
   EventAttendeesResponse,
   EventEntry,

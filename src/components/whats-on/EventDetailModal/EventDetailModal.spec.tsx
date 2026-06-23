@@ -26,6 +26,38 @@ jest.mock('./EventDetailModalContent', () => ({
   EventDetailModalContent: ({ data }: { data: ModalEventData }) => <div data-testid="content" data-name={data.name} />
 }))
 
+jest.mock('../../../hooks/useAuthIdentity', () => ({
+  useAuthIdentity: () => ({ address: undefined, identity: null, hasValidIdentity: false })
+}))
+
+jest.mock('../../profile/ProfileSurface', () => ({
+  ProfileSurface: ({ address }: { address: string }) => <div data-testid="profile-surface" data-address={address} />
+}))
+
+jest.mock('../../profile/ProfileModal', () => {
+  const actual = jest.requireActual('../../profile/ProfileModal/useModalSurfaceStack')
+  return {
+    ModalProfileNavigationProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    useModalSurfaceStack: actual.useModalSurfaceStack,
+    useStackDialogClose: actual.useStackDialogClose,
+    ModalSurfaceView: ({ surface }: { surface: { kind: string } }) => <div data-testid="modal-surface-view" data-kind={surface.kind} />
+  }
+})
+
+jest.mock('../../profile/PhotoModal/PhotoSurface', () => ({
+  PhotoSurface: ({ imageId }: { imageId: string }) => <div data-testid="photo-surface" data-image-id={imageId} />
+}))
+
+jest.mock('../../profile/PlaceDetailModal/PlaceDetailSurface', () => ({
+  PlaceDetailSurface: ({ place }: { place: { id: string } }) => <div data-testid="place-detail-surface" data-place-id={place.id} />
+}))
+
+jest.mock('../../profile/CommunityDetailModal', () => ({
+  CommunityDetailSurface: ({ communityId }: { communityId: string }) => (
+    <div data-testid="community-detail-surface" data-community-id={communityId} />
+  )
+}))
+
 describe('EventDetailModal', () => {
   let mockOnClose: jest.Mock
 
