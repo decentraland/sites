@@ -8,6 +8,7 @@ import {
 } from '../features/events'
 import type { EventEntry } from '../features/events'
 import { compressImageFile } from '../utils/imageCompression'
+import { effectiveWeekdays, localWeekdaysToUtcMask, parseStartWeekday } from '../utils/recurrence'
 import { useAuthIdentity } from './useAuthIdentity'
 import { INITIAL_STATE, eventEntryToFormState, parseDurationMs, recurrenceToApi } from './useCreateEventForm.helpers'
 import type { CreateEventFormMode, CreateEventFormState, FormErrors, ImageErrorCode } from './useCreateEventForm.types'
@@ -370,6 +371,14 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
 
       const isWorld = form.location === 'world'
       const recurrenceApi = form.repeatEnabled ? recurrenceToApi(form.recurrence) : null
+      // Weekly cadences send the selected weekdays as a UTC mask (always including start_at's own
+      // weekday — see localWeekdaysToUtcMask); daily/monthly send 0 so the server uses start_at's
+      // weekday; non-recurrent events omit the field entirely.
+      const weekdayMask = !form.repeatEnabled
+        ? undefined
+        : recurrenceApi?.frequency === 'WEEKLY'
+          ? localWeekdaysToUtcMask(effectiveWeekdays(form.repeatDays, parseStartWeekday(form.startDate)), startAt)
+          : 0
       /* eslint-disable @typescript-eslint/naming-convention */
       const payload = {
         name: form.name.trim(),
@@ -393,12 +402,11 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         recurrent: form.repeatEnabled || undefined,
         recurrent_frequency: recurrenceApi?.frequency,
         recurrent_interval: recurrenceApi?.interval,
-        // NOTE: send an explicit 0 (not undefined) whenever the event is recurrent (#560). 0 makes the
-        // server's RRule default BYDAY to start_at's own weekday, so a weekly/biweekly event recurs on
-        // exactly that one day. Sending it explicitly also CLEARS any stale per-weekday mask on edit —
-        // omitting the field on a PATCH would let the backend keep the old mask, which is how a Tuesday
-        // event ended up also showing every Wednesday. Omit it only when the event isn't recurrent.
-        recurrent_weekday_mask: form.repeatEnabled ? 0 : undefined,
+        // Always send the mask explicitly for recurrent events (#560): a weekly cadence carries the
+        // selected weekdays (converted to UTC, start_at's weekday guaranteed included so RRule never
+        // adds a phantom start-day occurrence); daily/monthly send 0 (server uses start_at's weekday).
+        // Sending it explicitly also clears any stale mask on a PATCH. Non-recurrent events omit it.
+        recurrent_weekday_mask: weekdayMask,
         recurrent_until: form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : undefined
       }
       /* eslint-enable @typescript-eslint/naming-convention */

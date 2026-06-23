@@ -1241,7 +1241,8 @@
     "every_3_weeks": "Every 3 Weeks",
     "every_4_weeks": "Every 4 Weeks",
     "upcoming_dates_label": "Upcoming dates",
-    "upcoming_dates_empty": "No upcoming dates for this recurrence"
+    "upcoming_dates_empty": "No upcoming dates for this recurrence",
+    "repeat_on": "Repeat on"
   },
   "host_banner": {
     "title": "Host a Hangout",

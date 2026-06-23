@@ -918,7 +918,8 @@
     "every_4_weeks": "4주마다",
     "every_month": "매월",
     "upcoming_dates_label": "예정된 날짜",
-    "upcoming_dates_empty": "이 반복 설정에 예정된 날짜가 없습니다"
+    "upcoming_dates_empty": "이 반복 설정에 예정된 날짜가 없습니다",
+    "repeat_on": "반복 요일"
   },
   "community": {
     "global": {

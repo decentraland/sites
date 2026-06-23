@@ -1,4 +1,5 @@
 import type { EventEntry, RecurrentFrequency } from '../features/events'
+import { parseStartWeekday, utcMaskToLocalWeekdays } from '../utils/recurrence'
 import type { CreateEventFormState } from './useCreateEventForm.types'
 
 const DURATION_PATTERN = /^([0-9]{1,2}):([0-5][0-9])$/
@@ -73,15 +74,24 @@ function addMonthsClamped(date: Date, months: number): Date {
   return shifted
 }
 
-// Best-effort client-side projection of the next occurrences for the recurrence preview. Mirrors the
-// single-weekday model the form submits (weekly cadences step by whole weeks from start_at, so every
-// occurrence keeps start_at's weekday). Only occurrences at/after `now` are returned, capped at
-// `count`; an empty array means "nothing upcoming" (e.g. the end date already passed).
+// Local midnight of the Monday that opens `date`'s week (WKST=Monday, matching the iCal RRule default
+// the events server uses to bucket weekly occurrences into interval-week cycles).
+function mondayOfWeek(date: Date): Date {
+  const offsetFromMonday = (date.getDay() + 6) % 7
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() - offsetFromMonday)
+}
+
+// Best-effort client-side projection of the next occurrences for the recurrence preview. Only
+// occurrences at/after `now` are returned, capped at `count`; an empty array means "nothing upcoming"
+// (e.g. the end date already passed). `selectedDays` are LOCAL weekday indices (Sun=0..Sat=6) and only
+// apply to weekly cadences — when provided, the preview projects every selected weekday within each
+// active interval-week cycle; when empty it falls back to the single start-day-of-week cadence.
 function computeUpcomingOccurrences(
   startDate: string,
   startTime: string,
   recurrence: string,
   repeatEndDate: string,
+  selectedDays: number[] = [],
   now: number = Date.now(),
   count: number = RECURRENCE_PREVIEW_COUNT
 ): Date[] {
@@ -93,6 +103,32 @@ function computeUpcomingOccurrences(
 
   const end = repeatEndDate ? new Date(`${repeatEndDate}T23:59:59`) : null
   const endTs = end && !Number.isNaN(end.getTime()) ? end.getTime() : null
+  const occurrences: Date[] = []
+
+  if (frequency === 'WEEKLY' && selectedDays.length > 0) {
+    const daySet = new Set(selectedDays)
+    const startWeekMondayTs = mondayOfWeek(start).getTime()
+    // Walk forward calendar-day by calendar-day (date math, not ms addition, to stay DST-safe),
+    // keeping start_at's time-of-day, and collect days that fall on a selected weekday inside an
+    // active interval-week cycle.
+    for (let dayOffset = 0; dayOffset < MAX_PREVIEW_ITERATIONS && occurrences.length < count; dayOffset++) {
+      const candidate = new Date(
+        start.getFullYear(),
+        start.getMonth(),
+        start.getDate() + dayOffset,
+        start.getHours(),
+        start.getMinutes(),
+        start.getSeconds(),
+        start.getMilliseconds()
+      )
+      if (endTs !== null && candidate.getTime() > endTs) break
+      if (!daySet.has(candidate.getDay())) continue
+      const weeksSinceStart = Math.round((mondayOfWeek(candidate).getTime() - startWeekMondayTs) / (7 * DAY_MS))
+      if (weeksSinceStart % interval !== 0) continue
+      if (candidate.getTime() >= now) occurrences.push(candidate)
+    }
+    return occurrences
+  }
 
   const next = (date: Date): Date => {
     if (frequency === 'MONTHLY') return addMonthsClamped(date, interval)
@@ -100,7 +136,6 @@ function computeUpcomingOccurrences(
     return new Date(date.getTime() + stepDays * DAY_MS)
   }
 
-  const occurrences: Date[] = []
   let current = start
   for (let i = 0; i < MAX_PREVIEW_ITERATIONS && occurrences.length < count; i++) {
     if (endTs !== null && current.getTime() > endTs) break
@@ -128,6 +163,7 @@ const INITIAL_STATE: CreateEventFormState = {
   duration: '',
   repeatEnabled: false,
   recurrence: DEFAULT_RECURRENCE,
+  repeatDays: [],
   repeatEndDate: '',
   location: 'land',
   coordX: '0',
@@ -196,6 +232,13 @@ function eventEntryToFormState(event: EventEntry, now: number = Date.now()): Cre
   const hasWorldName = typeof event.server === 'string' && event.server.length > 0
   const isWorld = Boolean(event.world) && hasWorldName
 
+  // Hydrate the weekday chips from the stored UTC mask, converted back to the creator's local
+  // weekdays against the same reference instant the date/time fields use. A 0/absent mask means the
+  // server defaults to start_at's weekday, so fall back to that single local weekday.
+  const startWeekday = parseStartWeekday(start.date)
+  const decodedDays = utcMaskToLocalWeekdays(event.recurrent_weekday_mask, referenceStartAt)
+  const repeatDays = event.recurrent ? (decodedDays.length > 0 ? decodedDays : startWeekday !== null ? [startWeekday] : []) : []
+
   return {
     ...INITIAL_STATE,
     imageUrl: event.image ?? null,
@@ -209,6 +252,7 @@ function eventEntryToFormState(event: EventEntry, now: number = Date.now()): Cre
     duration: durationMsToHhMm(durationMs),
     repeatEnabled: Boolean(event.recurrent),
     recurrence: apiToRecurrence(event.recurrent_frequency, event.recurrent_interval),
+    repeatDays,
     repeatEndDate: repeatEnd.date,
     location: isWorld ? 'world' : 'land',
     coordX: isWorld ? '0' : String(event.x ?? 0),

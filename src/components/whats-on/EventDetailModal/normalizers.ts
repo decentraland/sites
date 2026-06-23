@@ -1,13 +1,18 @@
 import type { EventEntry, LiveNowCard } from '../../../features/events'
-import { weekdayMaskToDayIndices } from '../../../utils/recurrence'
+import { utcMaskToLocalWeekdays, weekdayMaskToDayIndices } from '../../../utils/recurrence'
 import { buildEventJumpInUrl, buildJumpInUrl, parseCoordinates, resolveEventRealm } from '../../../utils/whatsOnUrl'
 import type { ModalEventData } from './EventDetailModal.types'
 
-// Decode the server's WeekdayMask into a sorted day-of-week array. Returns undefined when the
-// event has no per-weekday selection so getRecurrenceLabel falls through to the frequency label.
-function decodeRecurrentByDay(mask: number | null | undefined): number[] | undefined {
+// Decode the server's UTC WeekdayMask into a sorted day-of-week array in the VIEWER's local calendar
+// (anchored on the event's start instant), so the recurrence label matches the locally-formatted
+// schedule date/time shown alongside it and the create-form preview. Returns undefined when the event
+// has no per-weekday selection so getRecurrenceLabel falls through to the frequency label. Without a
+// start instant to anchor the conversion we fall back to the raw mask decode.
+function decodeRecurrentByDay(mask: number | null | undefined, startAt: string | null | undefined): number[] | undefined {
   if (mask === null || mask === undefined || mask === 0) return undefined
-  return weekdayMaskToDayIndices(mask)
+  if (!startAt) return weekdayMaskToDayIndices(mask)
+  const localDays = utcMaskToLocalWeekdays(mask, startAt)
+  return localDays.length > 0 ? localDays : undefined
 }
 
 function normalizeEventEntry(event: EventEntry): ModalEventData {
@@ -28,7 +33,7 @@ function normalizeEventEntry(event: EventEntry): ModalEventData {
     recurrentInterval: event.recurrent_interval,
     recurrentCount: event.recurrent_count,
     recurrentUntil: event.recurrent_until,
-    recurrentByDay: decodeRecurrentByDay(event.recurrent_weekday_mask),
+    recurrentByDay: decodeRecurrentByDay(event.recurrent_weekday_mask, event.start_at),
     recurrentDates: event.recurrent_dates,
     totalAttendees: event.total_attendees,
     attending: event.attending,
@@ -62,7 +67,7 @@ function normalizeLiveNowCard(card: LiveNowCard): ModalEventData {
     recurrentInterval: card.recurrentInterval ?? null,
     recurrentCount: card.recurrentCount ?? null,
     recurrentUntil: card.recurrentUntil ?? null,
-    recurrentByDay: decodeRecurrentByDay(card.recurrentWeekdayMask),
+    recurrentByDay: decodeRecurrentByDay(card.recurrentWeekdayMask, card.startAt),
     recurrentDates: card.recurrentDates ?? [],
     totalAttendees: card.users,
     attending: card.attending,

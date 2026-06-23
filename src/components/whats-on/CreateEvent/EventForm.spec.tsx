@@ -128,7 +128,23 @@ jest.mock('./EventForm.styled', () => ({
   UpcomingDatesEmpty: ({ children }: { children: React.ReactNode }) => <span data-testid="upcoming-dates-empty">{children}</span>,
   UpcomingDatesGroup: ({ children }: { children: React.ReactNode }) => <div data-testid="upcoming-dates-group">{children}</div>,
   UpcomingDatesLabel: ({ children }: { children: React.ReactNode }) => <span data-testid="upcoming-dates-label">{children}</span>,
-  UpcomingDatesList: ({ children }: { children: React.ReactNode }) => <ul data-testid="upcoming-dates-list">{children}</ul>
+  UpcomingDatesList: ({ children }: { children: React.ReactNode }) => <ul data-testid="upcoming-dates-list">{children}</ul>,
+  WeekdayChip: ({
+    children,
+    $active,
+    ...props
+  }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode; $active: boolean }) => (
+    <button data-testid="weekday-chip" data-active={$active} {...props}>
+      {children}
+    </button>
+  ),
+  WeekdayChipGroup: ({ children, ...props }: { children: React.ReactNode } & Record<string, unknown>) => (
+    <div data-testid="weekday-chip-group" {...props}>
+      {children}
+    </div>
+  ),
+  WeekdayChipLabel: ({ children }: { children: React.ReactNode }) => <span data-testid="weekday-chip-label">{children}</span>,
+  WeekdayChipRow: ({ children }: { children: React.ReactNode }) => <div data-testid="weekday-chip-row">{children}</div>
 }))
 
 jest.mock('../EventDetailModal', () => ({
@@ -233,6 +249,7 @@ function createFormState(overrides = {}) {
     duration: '',
     repeatEnabled: false,
     recurrence: 'every_week',
+    repeatDays: [],
     repeatEndDate: '',
     location: 'land',
     coordX: '0',
@@ -846,6 +863,57 @@ describe('EventForm', () => {
 
       expect(screen.getByTestId('upcoming-dates-label')).toBeInTheDocument()
       expect(screen.getAllByTestId('upcoming-date-item').length).toBeGreaterThan(0)
+    })
+
+    it('should render a weekday chip for every day with the start weekday locked on', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      const chips = screen.getAllByRole('checkbox')
+      expect(chips).toHaveLength(7)
+      // 2030-01-01 is a Tuesday (index 2): that chip is locked (disabled) and pre-checked.
+      expect(chips[2]).toBeDisabled()
+      expect(chips[2]).toHaveAttribute('aria-checked', 'true')
+    })
+
+    it('should toggle a non-locked weekday through setField', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      const chips = screen.getAllByRole('checkbox')
+      fireEvent.click(chips[0]) // Sunday (index 0)
+
+      expect(mockSetField).toHaveBeenCalledWith('repeatDays', [0])
+    })
+  })
+
+  describe('when repeatEnabled is true with a non-weekly cadence', () => {
+    beforeEach(() => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({
+          repeatEnabled: true,
+          recurrence: 'every_month',
+          startDate: '2030-01-01',
+          startTime: '10:00',
+          repeatEndDate: '2030-06-01'
+        }),
+        errors: {},
+        mode: 'create',
+        setField: mockSetField,
+        markRequiredFields: jest.fn(),
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: true,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
+    it('should not render the weekday chips', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.queryByTestId('weekday-chip-group')).not.toBeInTheDocument()
+      expect(screen.queryAllByRole('checkbox')).toHaveLength(0)
     })
   })
 

@@ -918,7 +918,8 @@
     "every_4_weeks": "每4周",
     "every_month": "每月",
     "upcoming_dates_label": "近期日期",
-    "upcoming_dates_empty": "此重复设置没有近期日期"
+    "upcoming_dates_empty": "此重复设置没有近期日期",
+    "repeat_on": "重复于"
   },
   "community": {
     "global": {

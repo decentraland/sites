@@ -913,7 +913,8 @@
     "every_4_weeks": "Toutes les 4 semaines",
     "every_month": "Chaque mois",
     "upcoming_dates_label": "Prochaines dates",
-    "upcoming_dates_empty": "Aucune date à venir pour cette récurrence"
+    "upcoming_dates_empty": "Aucune date à venir pour cette récurrence",
+    "repeat_on": "Répéter le"
   },
   "community": {
     "global": {

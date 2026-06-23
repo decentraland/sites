@@ -19,6 +19,13 @@ import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
 import { RECURRENCE_OPTIONS, computeUpcomingOccurrences, parseDurationMs, recurrenceToApi } from '../../../hooks/useCreateEventForm.helpers'
 import type { CreateEventFormState } from '../../../hooks/useCreateEventForm.types'
+import {
+  WEEKDAY_INDICES,
+  effectiveWeekdays,
+  localizedWeekdayLong,
+  localizedWeekdayShort,
+  parseStartWeekday
+} from '../../../utils/recurrence'
 import { formatLocalDate, formatLocalTime, formatUtcTime, getUtcDayDelta } from '../../../utils/whatsOnTime'
 import { buildEventJumpInUrl } from '../../../utils/whatsOnUrl'
 import { EventDetailModal } from '../EventDetailModal'
@@ -73,7 +80,11 @@ import {
   UpcomingDatesEmpty,
   UpcomingDatesGroup,
   UpcomingDatesLabel,
-  UpcomingDatesList
+  UpcomingDatesList,
+  WeekdayChip,
+  WeekdayChipGroup,
+  WeekdayChipLabel,
+  WeekdayChipRow
 } from './EventForm.styled'
 
 const PREVIEW_REQUIRED_FIELDS: Array<keyof CreateEventFormState> = ['name', 'startDate', 'startTime', 'duration']
@@ -93,6 +104,9 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
 
   const previewUntil = form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : null
   const recurrenceApi = form.repeatEnabled ? recurrenceToApi(form.recurrence) : null
+  // For weekly cadences show the selected local weekdays in the modal label; daily/monthly carry none.
+  const previewByDay =
+    recurrenceApi?.frequency === 'WEEKLY' ? effectiveWeekdays(form.repeatDays, parseStartWeekday(form.startDate)) : undefined
 
   return {
     id: 'preview',
@@ -110,8 +124,7 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
     recurrentInterval: recurrenceApi?.interval ?? null,
     recurrentCount: null,
     recurrentUntil: previewUntil,
-    // Single-weekday recurrence: no per-weekday mask, so the modal derives the weekday from startAt.
-    recurrentByDay: undefined,
+    recurrentByDay: previewByDay,
     recurrentDates: [],
     totalAttendees: 0,
     attending: false,
@@ -177,9 +190,23 @@ function EventForm({
     return t('event_time.form_utc_preview', { time })
   }, [form.startDate, form.startTime, locale, t])
 
+  // Weekly cadences expose a weekday picker; the start date's weekday is always part of the set.
+  const isWeeklyCadence = recurrenceToApi(form.recurrence).frequency === 'WEEKLY'
+  const startWeekday = parseStartWeekday(form.startDate)
+  const selectedWeekdays = useMemo(() => effectiveWeekdays(form.repeatDays, startWeekday), [form.repeatDays, startWeekday])
+
   const upcomingDates = useMemo(
-    () => (form.repeatEnabled ? computeUpcomingOccurrences(form.startDate, form.startTime, form.recurrence, form.repeatEndDate) : []),
-    [form.repeatEnabled, form.startDate, form.startTime, form.recurrence, form.repeatEndDate]
+    () =>
+      form.repeatEnabled
+        ? computeUpcomingOccurrences(
+            form.startDate,
+            form.startTime,
+            form.recurrence,
+            form.repeatEndDate,
+            isWeeklyCadence ? selectedWeekdays : []
+          )
+        : [],
+    [form.repeatEnabled, form.startDate, form.startTime, form.recurrence, form.repeatEndDate, isWeeklyCadence, selectedWeekdays]
   )
 
   const imageMissing = !form.imageUrl
@@ -205,6 +232,18 @@ function EventForm({
   const handlePreviewClose = useCallback(() => {
     setIsPreviewOpen(false)
   }, [])
+
+  const toggleWeekday = useCallback(
+    (dayIndex: number) => {
+      // The start date's weekday is locked on — it's always part of the recurrence.
+      if (dayIndex === startWeekday) return
+      const next = form.repeatDays.includes(dayIndex)
+        ? form.repeatDays.filter(day => day !== dayIndex)
+        : [...form.repeatDays, dayIndex].sort((a, b) => a - b)
+      setField('repeatDays', next)
+    },
+    [form.repeatDays, setField, startWeekday]
+  )
 
   const handleVerticalClick = useCallback(() => {
     if (form.verticalImagePreviewUrl) {
@@ -354,6 +393,31 @@ function EventForm({
                       ))}
                     </EventSelect>
                   </EventFormControl>
+                  {isWeeklyCadence && (
+                    <WeekdayChipGroup role="group" aria-label={t('create_event.repeat_on')}>
+                      <WeekdayChipLabel>{t('create_event.repeat_on')}</WeekdayChipLabel>
+                      <WeekdayChipRow>
+                        {WEEKDAY_INDICES.map(dayIndex => {
+                          const isActive = selectedWeekdays.includes(dayIndex)
+                          const isLocked = dayIndex === startWeekday
+                          return (
+                            <WeekdayChip
+                              key={dayIndex}
+                              type="button"
+                              role="checkbox"
+                              aria-checked={isActive}
+                              aria-label={localizedWeekdayLong(dayIndex, locale)}
+                              $active={isActive}
+                              disabled={isLocked}
+                              onClick={() => toggleWeekday(dayIndex)}
+                            >
+                              {localizedWeekdayShort(dayIndex, locale)}
+                            </WeekdayChip>
+                          )
+                        })}
+                      </WeekdayChipRow>
+                    </WeekdayChipGroup>
+                  )}
                   <EventTextField
                     variant="outlined"
                     label={t('create_event.repeat_until')}
