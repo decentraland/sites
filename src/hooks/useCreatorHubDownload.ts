@@ -2,11 +2,14 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import appleLogo from '../images/apple-logo.svg'
 import microsoftLogo from '../images/microsoft-logo.svg'
+import { createDownloadTracker } from '../modules/downloadTracking'
 import { triggerFileDownload } from '../modules/file'
+import { DownloadPlace } from '../modules/segment'
 import { addQueryParamsToUrlString, updateUrlWithLastValue } from '../modules/url'
 import { OperativeSystem } from '../types/download.types'
 import type { Architecture } from '../types/download.types'
 import { Repo, useLatestGithubRelease } from './useLatestGithubRelease'
+import { useDeferredTrack } from './useDeferredTrack'
 
 const REDIRECT_PATH = '/download/creator-hub-success'
 const REDIRECT_DELAY_MS = 3000
@@ -24,6 +27,7 @@ const imageByOs: Record<string, string> = {
 }
 
 function useCreatorHubDownload() {
+  const track = useDeferredTrack()
   const [isLoadingUserAgentData, userAgentData] = useAdvancedUserAgentData()
   const { links, loading: isLoadingLinks } = useLatestGithubRelease(Repo.CREATOR_HUB)
   const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -79,22 +83,35 @@ function useCreatorHubDownload() {
       })
   }, [userAgentData, links])
 
-  const handleDownload = useCallback((option: DownloadOption) => {
-    if (!option.link) return
+  const handleDownload = useCallback(
+    (option: DownloadOption) => {
+      if (!option.link) return
 
-    if (redirectTimerRef.current !== null) {
-      clearTimeout(redirectTimerRef.current)
-      redirectTimerRef.current = null
-    }
+      if (redirectTimerRef.current !== null) {
+        clearTimeout(redirectTimerRef.current)
+        redirectTimerRef.current = null
+      }
 
-    triggerFileDownload(option.link)
+      const tracker = createDownloadTracker(track, {
+        href: option.link,
+        os: option.text as OperativeSystem,
+        arch: (option.arch ?? 'amd64') as Architecture,
+        place: DownloadPlace.CREATOR_HUB_DOWNLOAD_PAGE,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        auth_state: 'anonymous',
+        revisit: 0
+      })
+      tracker.started()
+      triggerFileDownload(option.link)
 
-    const redirectUrl = updateUrlWithLastValue(new URL(REDIRECT_PATH, window.location.origin).toString(), 'os', option.text)
-    const finalUrl = addQueryParamsToUrlString(redirectUrl, { arch: option.arch })
-    redirectTimerRef.current = setTimeout(() => {
-      window.location.href = finalUrl
-    }, REDIRECT_DELAY_MS)
-  }, [])
+      const redirectUrl = updateUrlWithLastValue(new URL(REDIRECT_PATH, window.location.origin).toString(), 'os', option.text)
+      const finalUrl = addQueryParamsToUrlString(redirectUrl, { arch: option.arch })
+      redirectTimerRef.current = setTimeout(() => {
+        window.location.href = finalUrl
+      }, REDIRECT_DELAY_MS)
+    },
+    [track]
+  )
 
   return { isReady, primaryOption, secondaryOptions, handleDownload }
 }

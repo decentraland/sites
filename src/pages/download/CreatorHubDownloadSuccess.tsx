@@ -1,8 +1,9 @@
-import { memo, useCallback, useMemo } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { Typography } from 'decentraland-ui2'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
+import { useDeferredTrack } from '../../hooks/useDeferredTrack'
 import { Repo, useLatestGithubRelease } from '../../hooks/useLatestGithubRelease'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsSetup from '../../images/download/creator-hub/mac_setup.svg'
@@ -13,7 +14,7 @@ import windowsDownloadFolder from '../../images/download/creator-hub/windows_dow
 import windowsSetup from '../../images/download/creator-hub/windows_setup.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
 import { triggerFileDownload } from '../../modules/file'
-import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
+import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { Architecture, OperativeSystem } from '../../types/download.types'
 import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from '../DownloadSuccess/DownloadSuccess.types'
 import { DownloadSuccessLayout } from '../DownloadSuccess/DownloadSuccessLayout'
@@ -23,7 +24,9 @@ const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
 const CreatorHubDownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
   const { intl } = useTranslation()
+  const track = useDeferredTrack()
   const trackClick = useTrackClick()
+  const hasTrackedArrivalRef = useRef(false)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const l = useCallback((id: string, values?: Record<string, any>) => intl.formatMessage({ id }, values), [intl])
@@ -38,6 +41,18 @@ const CreatorHubDownloadSuccess = memo(() => {
   const defaultArch = clientOS === OperativeSystem.WINDOWS ? 'amd64' : 'arm64'
   const rawArch = searchParams.get('arch') || defaultArch
   const clientArch = (VALID_ARCHS.has(rawArch) ? rawArch : defaultArch) as Architecture
+
+  useEffect(() => {
+    if (hasTrackedArrivalRef.current) return
+    hasTrackedArrivalRef.current = true
+    track(SegmentEvent.DOWNLOAD_SUCCESS, {
+      os: clientOS,
+      arch: clientArch,
+      place: DownloadPlace.CREATOR_HUB_SUCCESS_PAGE,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      arrived_at: Date.now()
+    })
+  }, [track, clientOS, clientArch])
 
   const osIcon = clientOS === OperativeSystem.WINDOWS ? microsoftLogo : appleLogo
   const osLink = links?.[clientOS]?.[clientArch]
