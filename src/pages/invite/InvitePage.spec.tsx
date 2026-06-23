@@ -214,3 +214,57 @@ describe('when the referrer is empty', () => {
     expect(mockFetch).not.toHaveBeenCalled()
   })
 })
+
+describe('document meta management', () => {
+  let metaDesc: HTMLMetaElement
+  let ogTitle: HTMLMetaElement
+  let ogDesc: HTMLMetaElement
+  const originalTitle = document.title
+
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: '' })
+    document.title = 'Original Title'
+
+    metaDesc = document.createElement('meta')
+    metaDesc.setAttribute('name', 'description')
+    metaDesc.setAttribute('content', 'original description')
+    document.head.appendChild(metaDesc)
+
+    ogTitle = document.createElement('meta')
+    ogTitle.setAttribute('property', 'og:title')
+    ogTitle.setAttribute('content', 'original og title')
+    document.head.appendChild(ogTitle)
+
+    ogDesc = document.createElement('meta')
+    ogDesc.setAttribute('property', 'og:description')
+    ogDesc.setAttribute('content', 'original og description')
+    document.head.appendChild(ogDesc)
+  })
+
+  afterEach(() => {
+    metaDesc.remove()
+    ogTitle.remove()
+    ogDesc.remove()
+    document.title = originalTitle
+    jest.resetAllMocks()
+  })
+
+  it('should set the page title and og/description meta tags while mounted', () => {
+    render(<InvitePage />)
+
+    expect(document.title).toBe('page_invite.social.title')
+    expect(metaDesc.getAttribute('content')).toBe('page_invite.social.description')
+    expect(ogTitle.getAttribute('content')).toBe('page_invite.social.title')
+    expect(ogDesc.getAttribute('content')).toBe('page_invite.social.description')
+  })
+
+  it('should restore the previous title and meta tags on unmount', () => {
+    const { unmount } = render(<InvitePage />)
+    unmount()
+
+    expect(document.title).toBe('Original Title')
+    expect(metaDesc.getAttribute('content')).toBe('original description')
+    expect(ogTitle.getAttribute('content')).toBe('original og title')
+    expect(ogDesc.getAttribute('content')).toBe('original og description')
+  })
+})
