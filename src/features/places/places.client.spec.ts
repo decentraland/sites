@@ -91,6 +91,46 @@ describe('placesEndpoints', () => {
       })
     })
 
+    describe('and an ENS realm with an explicit position is provided', () => {
+      beforeEach(() => {
+        mockGetEnv.mockImplementation(key => (key === 'PLACES_API_URL' ? 'https://places.test/api' : undefined))
+        fetchSpy.mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              ok: true,
+              data: [
+                {
+                  id: 'arena',
+                  title: 'Arena',
+                  base_position: '10,20',
+                  owner: null,
+                  image: '',
+                  description: '',
+                  positions: ['10,20', '11,20'],
+                  world: true,
+                  world_name: 'cool.dcl.eth'
+                }
+              ]
+            })
+        } as unknown as Response)
+      })
+
+      it('should query the World scene by name AND position so the API returns only the matching scene', async () => {
+        const store = createTestStore()
+        await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'Cool.DCL.eth', position: [10, 20] }))
+
+        expect(fetchSpy).toHaveBeenCalledWith('https://places.test/api/places?names=cool.dcl.eth&positions=10,20')
+      })
+
+      it('should return the scene the server resolved for that position', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [10, 20] }))
+
+        expect(result.data?.[0]).toEqual(expect.objectContaining({ id: 'arena' }))
+      })
+    })
+
     describe('and the API returns a 5xx', () => {
       beforeEach(() => {
         mockGetEnv.mockReturnValue('https://places.test/api')

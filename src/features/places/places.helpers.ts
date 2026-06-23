@@ -36,6 +36,20 @@ function parsePosition(value: string): ParsedPosition {
   return { original, coordinates: [x, y], isValid: true }
 }
 
+// Resolve the position forwarded to the Places API for a jump. Shared by
+// PlacesPage and EventsPage. A position is forwarded only when one is explicitly
+// present in the URL, or when there is no World realm (a bare Genesis jump keeps
+// the 0,0 default). For a World jump WITHOUT a position, omitting it lets
+// buildPlacesUrl resolve to `/worlds` (the World-level card) instead of the
+// per-scene `/places` lookup.
+function resolvePlacesPosition(
+  rawPositionParam: string | null,
+  realm: string | undefined,
+  coordinates: [number, number]
+): [number, number] | undefined {
+  return rawPositionParam !== null || !realm ? coordinates : undefined
+}
+
 function eventHasEnded(event?: CardData): boolean {
   if (!event?.finish_at_iso) return false
   const finishAt = new Date(event.finish_at_iso)
@@ -73,6 +87,7 @@ export {
   formatDateForGoogleCalendar,
   formatLocation,
   isEns,
-  parsePosition
+  parsePosition,
+  resolvePlacesPosition
 }
 export type { ParsedPosition }
