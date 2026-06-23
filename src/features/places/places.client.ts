@@ -39,7 +39,13 @@ function resolveIdentity(address: string | undefined) {
 
 function buildPlacesUrl(baseUrl: string, { position, realm }: GetPlacesArgs): string {
   if (realm && isEns(realm)) {
-    return `${baseUrl}/worlds?names=${realm.toLowerCase()}`
+    const name = realm.toLowerCase()
+    // A World can host multiple scenes. With an explicit position we want the
+    // SCENE at that position: scope to the World by name AND filter by position
+    // so the API returns only the matching scene (positions in `/places` are
+    // World-local when combined with `names`). Without a position we want the
+    // World-level record from `/worlds`.
+    return position ? `${baseUrl}/places?names=${name}&positions=${position[0]},${position[1]}` : `${baseUrl}/worlds?names=${name}`
   }
   if (position) {
     return `${baseUrl}/places?positions=${position[0]},${position[1]}`

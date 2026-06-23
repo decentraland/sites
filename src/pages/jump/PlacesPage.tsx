@@ -9,6 +9,7 @@ import {
   buildGenericPlace,
   fromPlace,
   parsePosition,
+  resolvePlacesPosition,
   useGetJumpPlacesQuery,
   useGetSceneMetadataQuery
 } from '../../features/places'
@@ -19,7 +20,8 @@ const PlacesPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  const positionParam = searchParams.get('position') ?? DEFAULT_POSITION
+  const rawPositionParam = searchParams.get('position')
+  const positionParam = rawPositionParam ?? DEFAULT_POSITION
   // Accept `?world=` as an alias of `?realm=` so legacy share links emitted by
   // older clients keep resolving to the same world.
   const realmParam = searchParams.get('realm') ?? searchParams.get('world') ?? DEFAULT_REALM
@@ -27,7 +29,9 @@ const PlacesPage = () => {
 
   const realm = realmParam === DEFAULT_REALM ? undefined : realmParam
 
-  const placesQuery = useGetJumpPlacesQuery({ position: parsedPosition.coordinates, realm })
+  const placesPosition = resolvePlacesPosition(rawPositionParam, realm, parsedPosition.coordinates)
+
+  const placesQuery = useGetJumpPlacesQuery({ position: placesPosition, realm })
   const sceneMetadataQuery = useGetSceneMetadataQuery({ position: parsedPosition.coordinates.join(','), realm })
 
   useEffect(() => {

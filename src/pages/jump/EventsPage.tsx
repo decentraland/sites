@@ -14,6 +14,7 @@ import {
   formatDateForGoogleCalendar,
   fromEvent,
   parsePosition,
+  resolvePlacesPosition,
   useGetJumpEventByIdQuery,
   useGetJumpEventsQuery,
   useGetJumpPlacesQuery,
@@ -51,7 +52,8 @@ const EventsPage = () => {
   const isMobile = useMobileMediaQuery()
   const { address } = useAuthIdentity()
 
-  const positionParam = searchParams.get('position') ?? DEFAULT_POSITION
+  const rawPositionParam = searchParams.get('position')
+  const positionParam = rawPositionParam ?? DEFAULT_POSITION
   // Accept `?world=` as an alias of `?realm=` so legacy share links emitted by
   // older clients keep resolving to the same world.
   const realmParam = searchParams.get('realm') ?? searchParams.get('world') ?? DEFAULT_REALM
@@ -60,9 +62,14 @@ const EventsPage = () => {
   const parsedPosition = useMemo(() => parsePosition(positionParam), [positionParam])
   const realm = realmParam === DEFAULT_REALM ? undefined : realmParam
 
+  // The live-event user_count enrichment reads from the Places API; share the
+  // same position-resolution rule as PlacesPage so a World event without a
+  // position keeps resolving to `/worlds` instead of the per-scene `/places`.
+  const placesPosition = resolvePlacesPosition(rawPositionParam, realm, parsedPosition.coordinates)
+
   const byIdQuery = useGetJumpEventByIdQuery({ id: idParam ?? '', address }, { skip: !idParam })
   const byPositionQuery = useGetJumpEventsQuery({ position: parsedPosition.coordinates, realm, address }, { skip: Boolean(idParam) })
-  const placesQuery = useGetJumpPlacesQuery({ position: parsedPosition.coordinates, realm })
+  const placesQuery = useGetJumpPlacesQuery({ position: placesPosition, realm })
 
   const isLoading = byIdQuery.isLoading || byPositionQuery.isLoading
   const event = idParam ? byIdQuery.data : byPositionQuery.data?.[0]
