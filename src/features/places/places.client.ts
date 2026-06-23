@@ -21,6 +21,19 @@ import type {
   SceneDeployerInfo
 } from './places.types'
 
+// Custom RTK Query error status used by getSceneMetadata to signal that an ENS
+// realm does not resolve to a real World on the Worlds Content Server. Consumers
+// (PlacesPage) match on it via isWorldNotFoundError to redirect to
+// /jump/places/invalid.
+const WORLD_NOT_FOUND = 'WORLD_NOT_FOUND'
+
+// Narrow a getSceneMetadata error to the WORLD_NOT_FOUND signal. Keeps the
+// producer and consumer matching on one shape instead of a structural cast at
+// the call site, so the contract stays in a single place.
+function isWorldNotFoundError(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && (error as { status?: unknown }).status === WORLD_NOT_FOUND
+}
+
 function resolveIdentity(address: string | undefined) {
   // Resolving the identity inside queryFn (instead of accepting it as a query
   // arg) keeps the ephemeral key material out of `state.placesClient.queries.*.
@@ -82,6 +95,27 @@ async function fetchPeerDeployment(peerUrl: string, entityId: string): Promise<P
   return body.deployments?.[0] ?? null
 }
 
+// Worlds live on the Worlds Content Server, which exposes the active scene
+// entity (carrying `metadata.owner`) under `/entities/active` keyed by the world
+// name — note the path has no `/content` prefix, unlike the main Catalyst's
+// `fetchPeerSceneEntity`.
+//
+// A `null` return is meaningful: it means the server answered 200 with no
+// active entity, i.e. the world does not exist on the WCS. A non-OK response
+// (outage, 5xx) THROWS instead, so callers can tell "world doesn't exist" apart
+// from "couldn't reach the server" and avoid treating a transient outage as a
+// missing world.
+async function fetchWorldSceneEntity(worldsUrl: string, worldName: string): Promise<PeerSceneEntity | null> {
+  const response = await fetch(`${worldsUrl}/entities/active`, {
+    method: 'POST',
+    headers: { Accept: '*/*', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pointers: [worldName] })
+  })
+  if (!response.ok) throw new Error(`Worlds Content Server responded ${response.status}`)
+  const entities: PeerSceneEntity[] = await response.json()
+  return entities?.[0] ?? null
+}
+
 async function fetchPeerProfile(peerUrl: string, address: string): Promise<PeerProfile | null> {
   const response = await fetch(`${peerUrl}/lambdas/profiles`, {
     method: 'POST',
@@ -101,6 +135,23 @@ function toCreator(address: string, profile: PeerProfile | null): Creator | null
     user: address,
     user_name: userName,
     avatar: avatar?.avatar?.snapshots?.face256
+  }
+}
+
+// Resolve a Catalyst profile into the card's creator slot. Returns null when the
+// address has no profile name — curated scenes (e.g. Genesis Plaza) and some
+// world owners are deployed by / owned by addresses with no Catalyst user
+// profile, and returning null lets the Card fall back to the Places API's
+// contact_name instead of overriding it with a placeholder like "Unknown".
+async function resolveDeployerInfo(peerUrl: string, address: string): Promise<SceneDeployerInfo | null> {
+  const profile = await fetchPeerProfile(peerUrl, address)
+  const avatar = profile?.avatars?.[0]
+  const deployerName = avatar?.name || avatar?.realName
+  if (!deployerName) return null
+  return {
+    deployerAddress: address,
+    deployerName,
+    deployerAvatar: avatar?.avatar?.snapshots?.face256
   }
 }
 
@@ -171,10 +222,32 @@ const placesEndpoints = placesClient.injectEndpoints({
       providesTags: (_result, _error, { id }) => [{ type: 'JumpEvent', id }]
     }),
     getSceneMetadata: build.query<SceneDeployerInfo | null, GetSceneMetadataArgs>({
-      queryFn: async ({ position }) => {
+      queryFn: async ({ position, realm }) => {
         try {
           const peerUrl = getEnv('PEER_URL')
           if (!peerUrl) throw new Error('PEER_URL is not set')
+
+          // Worlds aren't on the main Catalyst at `position` — their scene lives
+          // on the Worlds Content Server keyed by the world name. Resolve the
+          // owner from the scene entity's `metadata.owner` and look that profile
+          // up on the Catalyst lambdas.
+          if (realm && isEns(realm)) {
+            const worldsUrl = getEnv('WORLDS_CONTENT_SERVER_URL')
+            if (!worldsUrl) throw new Error('WORLDS_CONTENT_SERVER_URL is not set')
+
+            const entity = await fetchWorldSceneEntity(worldsUrl, realm.toLowerCase())
+            // No active scene entity means the realm is not a real World on the
+            // WCS — even when the Places API still serves a stale record for it.
+            // Surface a typed not-found so the page can redirect to
+            // /jump/places/invalid; this is distinct from a FETCH_ERROR raised on
+            // a WCS outage (fetchWorldSceneEntity throws), which must NOT redirect.
+            if (!entity) return { error: { status: WORLD_NOT_FOUND } }
+
+            const ownerAddress = entity.metadata?.owner
+            if (!ownerAddress) return { data: null }
+
+            return { data: await resolveDeployerInfo(peerUrl, ownerAddress) }
+          }
 
           const entity = await fetchPeerSceneEntity(peerUrl, position)
           if (!entity) return { data: null }
@@ -182,26 +255,12 @@ const placesEndpoints = placesClient.injectEndpoints({
           const deployment = await fetchPeerDeployment(peerUrl, entity.id)
           if (!deployment) return { data: null }
 
-          const profile = await fetchPeerProfile(peerUrl, deployment.deployedBy)
-          const avatar = profile?.avatars?.[0]
-          const deployerName = avatar?.name || avatar?.realName
-          // Curated scenes (e.g. Genesis Plaza) are deployed by addresses that
-          // have no Catalyst user profile. Returning null here lets the Card
-          // fall back to the Places API's contact_name instead of overriding
-          // it with a placeholder like "Unknown".
-          if (!deployerName) return { data: null }
-
-          const info: SceneDeployerInfo = {
-            deployerAddress: deployment.deployedBy,
-            deployerName,
-            deployerAvatar: avatar?.avatar?.snapshots?.face256
-          }
-          return { data: info }
+          return { data: await resolveDeployerInfo(peerUrl, deployment.deployedBy) }
         } catch (error) {
           return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
         }
       },
-      providesTags: (_result, _err, args) => [{ type: 'SceneMetadata', id: args.position }]
+      providesTags: (_result, _err, args) => [{ type: 'SceneMetadata', id: args.realm ? args.realm.toLowerCase() : args.position }]
     }),
     getProfileCreator: build.query<Creator | null, { address: string }>({
       queryFn: async ({ address }) => {
@@ -225,6 +284,7 @@ const { useGetJumpEventByIdQuery, useGetJumpEventsQuery, useGetJumpPlacesQuery, 
   placesEndpoints
 
 export {
+  isWorldNotFoundError,
   placesEndpoints,
   useGetJumpEventByIdQuery,
   useGetJumpEventsQuery,

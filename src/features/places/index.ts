@@ -1,4 +1,5 @@
 export {
+  isWorldNotFoundError,
   placesEndpoints,
   useGetJumpEventByIdQuery,
   useGetJumpEventsQuery,
