@@ -613,18 +613,18 @@ describe('placesEndpoints', () => {
         })
       })
 
-      describe('and the world has no active scene entity', () => {
+      describe('and the world has no active scene entity (server answered 200 with [])', () => {
         beforeEach(() => {
           mockGetEnv.mockImplementation(mockWorldsAndPeer)
           fetchSpy.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) } as unknown as Response)
         })
 
-        it('should return null', async () => {
+        it('should surface WORLD_NOT_FOUND so the page can treat the realm as an invalid jump', async () => {
           const store = createTestStore()
           const result = await store.dispatch(
             placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0', realm: 'empty.dcl.eth' })
           )
-          expect(result.data).toBeNull()
+          expect(result.error).toEqual(expect.objectContaining({ status: 'WORLD_NOT_FOUND' }))
         })
       })
 
@@ -669,15 +669,15 @@ describe('placesEndpoints', () => {
       describe('and the Worlds Content Server returns a server error', () => {
         beforeEach(() => {
           mockGetEnv.mockImplementation(mockWorldsAndPeer)
-          fetchSpy.mockResolvedValueOnce({ ok: false } as unknown as Response)
+          fetchSpy.mockResolvedValueOnce({ ok: false, status: 503 } as unknown as Response)
         })
 
-        it('should return null without crashing', async () => {
+        it('should surface FETCH_ERROR (not WORLD_NOT_FOUND) so an outage does not redirect valid worlds to invalid', async () => {
           const store = createTestStore()
           const result = await store.dispatch(
             placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0', realm: 'down.dcl.eth' })
           )
-          expect(result.data).toBeNull()
+          expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
         })
       })
 

@@ -21,6 +21,19 @@ import type {
   SceneDeployerInfo
 } from './places.types'
 
+// Custom RTK Query error status used by getSceneMetadata to signal that an ENS
+// realm does not resolve to a real World on the Worlds Content Server. Consumers
+// (PlacesPage) match on it via isWorldNotFoundError to redirect to
+// /jump/places/invalid.
+const WORLD_NOT_FOUND = 'WORLD_NOT_FOUND'
+
+// Narrow a getSceneMetadata error to the WORLD_NOT_FOUND signal. Keeps the
+// producer and consumer matching on one shape instead of a structural cast at
+// the call site, so the contract stays in a single place.
+function isWorldNotFoundError(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && (error as { status?: unknown }).status === WORLD_NOT_FOUND
+}
+
 function resolveIdentity(address: string | undefined) {
   // Resolving the identity inside queryFn (instead of accepting it as a query
   // arg) keeps the ephemeral key material out of `state.placesClient.queries.*.
@@ -86,13 +99,19 @@ async function fetchPeerDeployment(peerUrl: string, entityId: string): Promise<P
 // entity (carrying `metadata.owner`) under `/entities/active` keyed by the world
 // name — note the path has no `/content` prefix, unlike the main Catalyst's
 // `fetchPeerSceneEntity`.
+//
+// A `null` return is meaningful: it means the server answered 200 with no
+// active entity, i.e. the world does not exist on the WCS. A non-OK response
+// (outage, 5xx) THROWS instead, so callers can tell "world doesn't exist" apart
+// from "couldn't reach the server" and avoid treating a transient outage as a
+// missing world.
 async function fetchWorldSceneEntity(worldsUrl: string, worldName: string): Promise<PeerSceneEntity | null> {
   const response = await fetch(`${worldsUrl}/entities/active`, {
     method: 'POST',
     headers: { Accept: '*/*', 'Content-Type': 'application/json' },
     body: JSON.stringify({ pointers: [worldName] })
   })
-  if (!response.ok) return null
+  if (!response.ok) throw new Error(`Worlds Content Server responded ${response.status}`)
   const entities: PeerSceneEntity[] = await response.json()
   return entities?.[0] ?? null
 }
@@ -217,7 +236,14 @@ const placesEndpoints = placesClient.injectEndpoints({
             if (!worldsUrl) throw new Error('WORLDS_CONTENT_SERVER_URL is not set')
 
             const entity = await fetchWorldSceneEntity(worldsUrl, realm.toLowerCase())
-            const ownerAddress = entity?.metadata?.owner
+            // No active scene entity means the realm is not a real World on the
+            // WCS — even when the Places API still serves a stale record for it.
+            // Surface a typed not-found so the page can redirect to
+            // /jump/places/invalid; this is distinct from a FETCH_ERROR raised on
+            // a WCS outage (fetchWorldSceneEntity throws), which must NOT redirect.
+            if (!entity) return { error: { status: WORLD_NOT_FOUND } }
+
+            const ownerAddress = entity.metadata?.owner
             if (!ownerAddress) return { data: null }
 
             return { data: await resolveDeployerInfo(peerUrl, ownerAddress) }
@@ -258,6 +284,7 @@ const { useGetJumpEventByIdQuery, useGetJumpEventsQuery, useGetJumpPlacesQuery, 
   placesEndpoints
 
 export {
+  isWorldNotFoundError,
   placesEndpoints,
   useGetJumpEventByIdQuery,
   useGetJumpEventsQuery,

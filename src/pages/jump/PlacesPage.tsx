@@ -8,6 +8,7 @@ import {
   DEFAULT_REALM,
   buildGenericPlace,
   fromPlace,
+  isWorldNotFoundError,
   parsePosition,
   resolvePlacesPosition,
   useGetJumpPlacesQuery,
@@ -34,11 +35,18 @@ const PlacesPage = () => {
   const placesQuery = useGetJumpPlacesQuery({ position: placesPosition, realm })
   const sceneMetadataQuery = useGetSceneMetadataQuery({ position: parsedPosition.coordinates.join(','), realm })
 
+  // A World realm that the Worlds Content Server doesn't know about resolves to
+  // no real scene — the Places API may still serve a stale record, so the WCS is
+  // the source of truth. Treat it as an invalid jump rather than rendering the
+  // stale card. A generic WCS error (outage) is NOT WORLD_NOT_FOUND, so it does
+  // not redirect.
+  const worldNotFound = isWorldNotFoundError(sceneMetadataQuery.error)
+
   useEffect(() => {
-    if (!parsedPosition.isValid || placesQuery.isError) {
+    if (!parsedPosition.isValid || placesQuery.isError || worldNotFound) {
       navigate('/jump/places/invalid')
     }
-  }, [parsedPosition.isValid, placesQuery.isError, navigate])
+  }, [parsedPosition.isValid, placesQuery.isError, worldNotFound, navigate])
 
   const cardData = useMemo(() => {
     if (!placesQuery.data) return undefined
