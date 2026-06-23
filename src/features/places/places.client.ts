@@ -66,6 +66,25 @@ function buildPlacesUrl(baseUrl: string, { position, realm }: GetPlacesArgs): st
   return `${baseUrl}/places`
 }
 
+// The Places API's `/places` endpoint reports a contaminated `user_count` for
+// World records reached via `?names=&positions=`: it returns the live occupancy
+// of the Genesis City parcel at that position (e.g. Genesis Plaza at 0,0), not
+// the World's own occupancy. The `/worlds` endpoint reports the correct count.
+// Launcher deep-links always carry `position=0,0` for Worlds, so without this
+// overlay every World card shows the busy Genesis Plaza count instead of the
+// real one. A `undefined` return (network error, non-OK, or missing record)
+// leaves the `/places` value untouched — never worse than today's behaviour.
+async function fetchWorldUserCount(worldsUrl: string): Promise<number | undefined> {
+  try {
+    const response = await fetch(worldsUrl)
+    if (!response.ok) return undefined
+    const envelope: JumpPlacesResponse = await response.json()
+    return envelope.data?.[0]?.user_count
+  } catch {
+    return undefined
+  }
+}
+
 function buildEventsUrl(baseUrl: string, { position, realm }: GetEventsArgs): string {
   const params = new URLSearchParams()
   if (position) params.set('position', `${position[0]},${position[1]}`)
@@ -167,7 +186,22 @@ const placesEndpoints = placesClient.injectEndpoints({
             return { error: { status: response.status, data: await response.text().catch(() => null) } }
           }
           const envelope: JumpPlacesResponse = await response.json()
-          return { data: envelope.data ?? [] }
+          const places = envelope.data ?? []
+          // A World jump WITH a position resolves the scene via
+          // `/places?names=&positions=`, but that endpoint's `user_count`
+          // reflects the Genesis City parcel at the position, not the World.
+          // Overlay the reliable count from `/worlds` so the card shows the
+          // World's real occupancy (see fetchWorldUserCount).
+          if (places.length > 0 && args.realm && isEns(args.realm) && args.position) {
+            // NOTE: buildPlacesUrl with no position resolves an ENS realm to the
+            // `/worlds?names=` record, whose user_count is the reliable one. This
+            // depends on buildPlacesUrl's no-position branch staying `/worlds`.
+            const worldUserCount = await fetchWorldUserCount(buildPlacesUrl(baseUrl, { realm: args.realm }))
+            if (worldUserCount !== undefined) {
+              return { data: [{ ...places[0], user_count: worldUserCount }, ...places.slice(1)] }
+            }
+          }
+          return { data: places }
         } catch (error) {
           return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
         }
