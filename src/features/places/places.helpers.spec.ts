@@ -5,7 +5,8 @@ import {
   eventHasEnded,
   formatDateForGoogleCalendar,
   isEns,
-  parsePosition
+  parsePosition,
+  resolvePlacesPosition
 } from './places.helpers'
 import type { CardData } from './places.types'
 
@@ -155,6 +156,26 @@ describe('jump.helpers', () => {
     it('should return a YYYYMMDDTHHmmssZ formatted string', () => {
       const result = formatDateForGoogleCalendar(new Date(Date.UTC(2026, 0, 15, 12, 30, 0)))
       expect(result).toBe('20260115T123000Z')
+    })
+  })
+
+  describe('when resolvePlacesPosition is called', () => {
+    describe('and a position param is present', () => {
+      it('should forward the coordinates even for a World realm', () => {
+        expect(resolvePlacesPosition('10,20', 'cool.dcl.eth', [10, 20])).toEqual([10, 20])
+      })
+    })
+
+    describe('and there is no position param but there is a World realm', () => {
+      it('should return undefined so the World-level record resolves', () => {
+        expect(resolvePlacesPosition(null, 'cool.dcl.eth', [0, 0])).toBeUndefined()
+      })
+    })
+
+    describe('and there is neither a position param nor a realm', () => {
+      it('should fall back to the coordinates so a bare Genesis jump keeps 0,0', () => {
+        expect(resolvePlacesPosition(null, undefined, [0, 0])).toEqual([0, 0])
+      })
     })
   })
 })

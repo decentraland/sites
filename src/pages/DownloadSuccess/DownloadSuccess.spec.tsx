@@ -43,9 +43,10 @@ jest.mock('react-router-dom', () => ({
   useSearchParams: () => [searchParamsInstance, jest.fn()]
 }))
 
+const mockUseAnonUserId = jest.fn<string | undefined, []>(() => 'anon-123')
 jest.mock('../../hooks/useAnonUserId', () => ({
   ANON_USER_ID_PARAM: 'anonUserId',
-  useAnonUserId: () => 'anon-123'
+  useAnonUserId: () => mockUseAnonUserId()
 }))
 
 jest.mock('../../hooks/useGetIdentityId', () => ({
@@ -105,6 +106,12 @@ jest.mock('./DownloadSuccess.styled', () => ({
 jest.mock('../../components/LandingFooter', () => ({
   LandingFooter: () => <div data-testid="footer" />
 }))
+
+beforeEach(() => {
+  // jest.resetAllMocks() in each suite's afterEach wipes implementations, so
+  // re-establish the default anon id (resolved immediately) before every test.
+  mockUseAnonUserId.mockReturnValue('anon-123')
+})
 
 describe('when DownloadSuccess mounts with os, place, and a successful url resolution', () => {
   beforeEach(() => {
@@ -516,5 +523,103 @@ describe('when the same os/arch is revisited within the session', () => {
     await waitFor(() => {
       expect(mockStreamOrFallback).toHaveBeenCalledTimes(2)
     })
+  })
+})
+
+describe('when anon_user_id has not resolved yet at mount', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64')
+    mockUseAnonUserId.mockReturnValue(undefined)
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+    jest.resetAllMocks()
+  })
+
+  it('should wait for the anon id timeout before starting the download', async () => {
+    render(<DownloadSuccess />)
+
+    // Before the timeout elapses the download must not have started.
+    expect(mockCalculateDownloadUrl).not.toHaveBeenCalled()
+
+    // Flush the 800ms grace period; the download proceeds without an anon id.
+    await React.act(async () => {
+      jest.advanceTimersByTime(800)
+    })
+
+    expect(mockCalculateDownloadUrl).toHaveBeenCalled()
+  })
+
+  it('should clear the pending timeout on unmount before it fires', () => {
+    const clearSpy = jest.spyOn(global, 'clearTimeout')
+    const { unmount } = render(<DownloadSuccess />)
+    unmount()
+    expect(clearSpy).toHaveBeenCalled()
+    clearSpy.mockRestore()
+  })
+})
+
+describe('when the page unmounts mid-flight (abort handling)', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64')
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should bail out after url resolution when the request was aborted by an unmount', async () => {
+    let resolveUrl: ((value: { url: string; filename: string }) => void) | undefined
+    mockCalculateDownloadUrl.mockReturnValue(
+      new Promise(resolve => {
+        resolveUrl = resolve
+      })
+    )
+
+    const { unmount } = render(<DownloadSuccess />)
+    // Abort the in-flight request, then let url resolution settle.
+    unmount()
+    await React.act(async () => {
+      resolveUrl?.({ url: 'https://cdn.decentraland.org/x.exe', filename: 'x.exe' })
+      await Promise.resolve()
+    })
+
+    // Because the controller was aborted before resolution, the stream is never
+    // requested and no success/started analytics fire post-abort.
+    expect(mockStreamOrFallback).not.toHaveBeenCalled()
+  })
+
+  it('should not finalize the stream result when aborted mid-stream', async () => {
+    mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://cdn.decentraland.org/x.exe', filename: 'x.exe' })
+    let resolveStream: ((value: { bytesTransferred: number }) => void) | undefined
+    mockStreamOrFallback.mockReturnValue(
+      new Promise(resolve => {
+        resolveStream = resolve
+      })
+    )
+
+    const { unmount } = render(<DownloadSuccess />)
+    await waitFor(() => expect(mockStreamOrFallback).toHaveBeenCalled())
+
+    unmount()
+    await React.act(async () => {
+      resolveStream?.({ bytesTransferred: 10 })
+      await Promise.resolve()
+    })
+
+    // The post-abort success branch is skipped, so download_success never fires.
+    expect(mockTrack).not.toHaveBeenCalledWith('download_success', expect.anything())
   })
 })

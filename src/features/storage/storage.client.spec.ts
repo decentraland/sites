@@ -209,4 +209,62 @@ describe('storage.client endpoints', () => {
     expect((result.error as { status: string }).status).toBe('FETCH_ERROR')
     fetchSpy.mockRestore()
   })
+
+  it('getWorldScenes sorts multiple scenes alphabetically by title', async () => {
+    const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+      makeResponse({
+        scenes: [
+          {
+            entity: { metadata: { display: { title: 'Zephyr' }, scene: { base: '1,1', parcels: ['1,1'] } }, pointers: [] },
+            parcels: ['1,1']
+          },
+          {
+            entity: { metadata: { display: { title: 'Atlas' }, scene: { base: '2,2', parcels: ['2,2'] } }, pointers: [] },
+            parcels: ['2,2']
+          }
+        ],
+        total: 2
+      })
+    )
+    const store = setupStore()
+    const result = await store.dispatch(storageEndpoints.endpoints.getWorldScenes.initiate({ worldName: 'foo.dcl.eth' }))
+    expect(result.data?.map(scene => scene.title)).toEqual(['Atlas', 'Zephyr'])
+    fetchSpy.mockRestore()
+  })
+
+  it('getWorldScenes leaves error.data undefined when the not-ok body cannot be read as text', async () => {
+    const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: () => Promise.reject(new Error('stream closed'))
+    } as unknown as Response)
+    const store = setupStore()
+    const result = await store.dispatch(storageEndpoints.endpoints.getWorldScenes.initiate({ worldName: 'foo.dcl.eth' }))
+    expect(result.error).toEqual(expect.objectContaining({ status: 500, data: undefined }))
+    fetchSpy.mockRestore()
+  })
+
+  describe('signed-fetch endpoints surface HTTP errors from their catch branch', () => {
+    it.each([
+      ['deleteEnv', () => storageEndpoints.endpoints.deleteEnv.initiate({ identity, key: 'API_KEY', ...ctx })],
+      ['clearEnv', () => storageEndpoints.endpoints.clearEnv.initiate({ identity, ...ctx })],
+      ['setSceneValue', () => storageEndpoints.endpoints.setSceneValue.initiate({ identity, key: 'k', value: 1, ...ctx })],
+      ['deleteSceneValue', () => storageEndpoints.endpoints.deleteSceneValue.initiate({ identity, key: 'k', ...ctx })],
+      ['clearScene', () => storageEndpoints.endpoints.clearScene.initiate({ identity, ...ctx })],
+      [
+        'setPlayerValue',
+        () => storageEndpoints.endpoints.setPlayerValue.initiate({ identity, address: '0xa', key: 'k', value: 1, ...ctx })
+      ],
+      ['deletePlayerValue', () => storageEndpoints.endpoints.deletePlayerValue.initiate({ identity, address: '0xa', key: 'k', ...ctx })],
+      ['clearPlayer', () => storageEndpoints.endpoints.clearPlayer.initiate({ identity, address: '0xa', ...ctx })],
+      ['clearAllPlayers', () => storageEndpoints.endpoints.clearAllPlayers.initiate({ identity, ...ctx })],
+      ['getContributableDomains', () => storageEndpoints.endpoints.getContributableDomains.initiate({ identity })]
+    ] as const)('%s returns the wrapped error when the request is rejected', async (_name, dispatch) => {
+      signedFetchMock.mockResolvedValue(makeResponse('forbidden', { status: 403 }))
+      const store = setupStore()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result: any = await store.dispatch(dispatch() as never)
+      expect((result.error as { status: number }).status).toBe(403)
+    })
+  })
 })

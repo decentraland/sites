@@ -15,7 +15,7 @@ import windowsDownloadsFolder from '../../images/download/windows_downloads_fold
 import windowsLaunchingDecentraland from '../../images/download/windows_launching_decentraland.webp'
 import windowsSetup from '../../images/download/windows_setup.webp'
 import microsoftLogo from '../../images/microsoft-logo.svg'
-import { createDownloadTracker } from '../../modules/downloadTracking'
+import { createDownloadTracker, toAuthState } from '../../modules/downloadTracking'
 import type { DownloadTracker } from '../../modules/downloadTracking.types'
 import { calculateDownloadUrl } from '../../modules/downloadWithIdentity'
 import { collectClientFingerprint } from '../../modules/fingerprint'
@@ -49,7 +49,7 @@ const DownloadSuccess = memo(() => {
   // on anon_user_id. Useful for breaking down the funnel by login state and
   // for catching regressions where authenticated users fall back to the
   // anonymous gateway path.
-  const authState: 'authenticated' | 'anonymous' = hasValidIdentity ? 'authenticated' : 'anonymous'
+  const authState = toAuthState(hasValidIdentity)
 
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)

@@ -17,17 +17,14 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
+const mockUseAdminPermissions = jest.fn()
 jest.mock('../../hooks/useAdminPermissions', () => ({
-  useAdminPermissions: () => ({
-    canApproveAnyEvent: true,
-    canApproveOwnEvent: false,
-    canEditAnyEvent: false,
-    isLoading: false
-  })
+  useAdminPermissions: () => mockUseAdminPermissions()
 }))
 
+const mockUseAuthIdentity = jest.fn()
 jest.mock('../../hooks/useAuthIdentity', () => ({
-  useAuthIdentity: () => ({ identity: { authChain: [] }, hasValidIdentity: true, address: '0xadmin' })
+  useAuthIdentity: () => mockUseAuthIdentity()
 }))
 
 jest.mock('../../features/events/events.admin.client', () => ({
@@ -103,8 +100,27 @@ jest.mock('../../components/whats-on/RejectEventModal', () => ({
 }))
 
 jest.mock('decentraland-ui2', () => ({
-  Alert: ({ children }: { children: React.ReactNode }) => <div role="alert">{children}</div>,
-  Snackbar: ({ open, children }: { open: boolean; children: React.ReactNode }) => (open ? <div>{children}</div> : null)
+  Alert: ({ children, onClose }: { children: React.ReactNode; onClose?: () => void }) => (
+    <div role="alert">
+      {children}
+      {onClose && (
+        <button type="button" onClick={onClose}>
+          close-alert
+        </button>
+      )}
+    </div>
+  ),
+  Snackbar: ({ open, children, onClose }: { open: boolean; children: React.ReactNode; onClose?: () => void }) =>
+    open ? (
+      <div>
+        {onClose && (
+          <button type="button" onClick={() => onClose()}>
+            close-snackbar
+          </button>
+        )}
+        {children}
+      </div>
+    ) : null
 }))
 
 jest.mock('./AdminLayout.styled', () => ({
@@ -141,6 +157,13 @@ const FAR_FUTURE = '2099-01-01T12:00:00Z'
 describe('PendingEventsPage', () => {
   beforeEach(() => {
     mockUseGetAdminEventsQuery.mockReturnValue({ data: [], isSuccess: true, refetch: jest.fn() })
+    mockUseAdminPermissions.mockReturnValue({
+      canApproveAnyEvent: true,
+      canApproveOwnEvent: false,
+      canEditAnyEvent: false,
+      isLoading: false
+    })
+    mockUseAuthIdentity.mockReturnValue({ identity: { authChain: [] }, hasValidIdentity: true, address: '0xadmin' })
   })
 
   afterEach(() => {
@@ -293,6 +316,126 @@ describe('PendingEventsPage', () => {
       await user.click(screen.getByRole('button', { name: 'submit-reject' }))
 
       expect(screen.getByRole('alert')).toHaveTextContent('whats_on_admin.pending_events.action_error')
+    })
+
+    it('should close the RejectEventModal without rejecting when dismissed', async () => {
+      const user = userEvent.setup()
+      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+
+      await user.click(screen.getByRole('button', { name: 'reject' }))
+      expect(screen.getByTestId('reject-event-modal')).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'close-reject' }))
+
+      expect(screen.queryByTestId('reject-event-modal')).not.toBeInTheDocument()
+      expect(mockReject).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when the user lacks every admin permission', () => {
+    beforeEach(() => {
+      mockUseAdminPermissions.mockReturnValue({
+        canApproveAnyEvent: false,
+        canApproveOwnEvent: false,
+        canEditAnyEvent: false,
+        isLoading: false
+      })
+    })
+
+    it('should redirect to /whats-on instead of rendering the admin page', () => {
+      renderPage('/whats-on/admin/pending-events')
+
+      expect(screen.queryByRole('heading', { level: 1, name: 'whats_on_admin.pending_events.title' })).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when permissions are still loading', () => {
+    beforeEach(() => {
+      mockUseAdminPermissions.mockReturnValue({
+        canApproveAnyEvent: false,
+        canApproveOwnEvent: false,
+        canEditAnyEvent: false,
+        isLoading: true
+      })
+    })
+
+    it('should render the page while permissions resolve rather than redirecting prematurely', () => {
+      renderPage('/whats-on/admin/pending-events')
+
+      expect(screen.getByRole('heading', { level: 1, name: 'whats_on_admin.pending_events.title' })).toBeInTheDocument()
+    })
+  })
+
+  describe('when the admin action fires without a usable identity', () => {
+    beforeEach(() => {
+      mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
+      const pending = createMockEvent({
+        id: 'ev-pending',
+        name: 'Pending hangout',
+        approved: false,
+        rejected: false,
+        finish_at: FAR_FUTURE
+      })
+      mockUseGetAdminEventsQuery.mockReturnValue({ data: [pending], isSuccess: true, refetch: jest.fn() })
+      jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    })
+
+    it('should bail out of approve without calling the mutation', async () => {
+      const user = userEvent.setup()
+      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+
+      await user.click(screen.getByRole('button', { name: 'approve' }))
+
+      expect(mockApprove).not.toHaveBeenCalled()
+    })
+
+    it('should bail out of reject submit without calling the mutation', async () => {
+      const user = userEvent.setup()
+      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+
+      await user.click(screen.getByRole('button', { name: 'reject' }))
+      await user.click(screen.getByRole('button', { name: 'submit-reject' }))
+
+      expect(mockReject).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when the success snackbar is dismissed', () => {
+    beforeEach(() => {
+      const pending = createMockEvent({
+        id: 'ev-pending',
+        name: 'Pending hangout',
+        approved: false,
+        rejected: false,
+        finish_at: FAR_FUTURE
+      })
+      mockUseGetAdminEventsQuery.mockReturnValue({ data: [pending], isSuccess: true, refetch: jest.fn() })
+    })
+
+    it('should close the snackbar when its Alert close button is pressed', async () => {
+      mockApprove.mockResolvedValueOnce(undefined)
+      const user = userEvent.setup()
+      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+
+      await user.click(screen.getByRole('button', { name: 'approve' }))
+      expect(screen.getByRole('alert')).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'close-alert' }))
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('should close the snackbar when it auto-dismisses via onClose', async () => {
+      mockApprove.mockResolvedValueOnce(undefined)
+      const user = userEvent.setup()
+      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+
+      await user.click(screen.getByRole('button', { name: 'approve' }))
+      expect(screen.getByRole('alert')).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'close-snackbar' }))
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
   })
 })

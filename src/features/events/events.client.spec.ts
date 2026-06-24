@@ -926,4 +926,84 @@ describe('eventsClient', () => {
       expect(result.data).toEqual([])
     })
   })
+
+  describe('when a mutation receives a non-ok response whose body is not valid JSON', () => {
+    const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
+
+    beforeEach(() => {
+      mockGetEnv.mockReturnValue('https://events.test')
+      jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    })
+
+    it('should fall back to null data for getEventById when response.json() rejects', async () => {
+      mockFetchWithOptionalIdentity.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () => Promise.reject(new Error('invalid json'))
+      })
+      const store = createTestStore()
+      const result = await store.dispatch(eventsClient.endpoints.getEventById.initiate({ eventId: 'ev-1', identity: mockIdentity }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 500, data: null }))
+    })
+
+    it('should fall back to null data for createEvent when response.json() rejects', async () => {
+      mockFetchWithIdentity.mockResolvedValue({
+        ok: false,
+        status: 502,
+        json: () => Promise.reject(new Error('invalid json'))
+      })
+      const store = createTestStore()
+      const result = await store.dispatch(eventsClient.endpoints.createEvent.initiate({ payload: {} as never, identity: mockIdentity }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 502, data: null }))
+    })
+
+    it('should fall back to null data for updateEvent when response.json() rejects', async () => {
+      mockFetchWithIdentity.mockResolvedValue({
+        ok: false,
+        status: 503,
+        json: () => Promise.reject(new Error('invalid json'))
+      })
+      const store = createTestStore()
+      const result = await store.dispatch(
+        eventsClient.endpoints.updateEvent.initiate({ eventId: 'ev-1', payload: {} as never, identity: mockIdentity })
+      )
+      expect(result.error).toEqual(expect.objectContaining({ status: 503, data: null }))
+    })
+
+    it('should fall back to null data for deleteEvent when response.json() rejects', async () => {
+      mockFetchWithIdentity.mockResolvedValue({
+        ok: false,
+        status: 504,
+        json: () => Promise.reject(new Error('invalid json'))
+      })
+      const store = createTestStore()
+      const result = await store.dispatch(eventsClient.endpoints.deleteEvent.initiate({ eventId: 'ev-1', identity: mockIdentity }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 504, data: null }))
+    })
+  })
+
+  describe('when getUpcomingEvents is fetched successfully with an identity', () => {
+    const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
+
+    beforeEach(() => {
+      mockGetEnv.mockReturnValue('https://events.test')
+      mockFetchWithOptionalIdentity.mockClear()
+      mockFetchWithOptionalIdentity.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ data: [{ id: 'up-1' }] })
+      })
+    })
+
+    it('should request a 24h window with from/to bounds and forward the identity', async () => {
+      const store = createTestStore()
+      const result = await store.dispatch(eventsClient.endpoints.getUpcomingEvents.initiate({ identity: mockIdentity }))
+
+      expect(result.data).toEqual([{ id: 'up-1' }])
+      const requestedUrl = mockFetchWithOptionalIdentity.mock.calls[0][0] as string
+      expect(requestedUrl).toContain('list=upcoming')
+      expect(requestedUrl).toContain('from=')
+      expect(requestedUrl).toContain('to=')
+      expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(expect.any(String), mockIdentity, expect.any(AbortSignal))
+    })
+  })
 })

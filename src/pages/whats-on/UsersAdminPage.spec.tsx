@@ -15,12 +15,14 @@ jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
 }))
 
+const mockUseAdminPermissions = jest.fn()
 jest.mock('../../hooks/useAdminPermissions', () => ({
-  useAdminPermissions: () => ({ canEditAnyProfile: true, isLoading: false })
+  useAdminPermissions: () => mockUseAdminPermissions()
 }))
 
+const mockUseAuthIdentity = jest.fn()
 jest.mock('../../hooks/useAuthIdentity', () => ({
-  useAuthIdentity: () => ({ identity: { authChain: [] }, hasValidIdentity: true, address: '0xadmin' })
+  useAuthIdentity: () => mockUseAuthIdentity()
 }))
 
 jest.mock('../../features/events/events.admin.types', () => ({
@@ -59,7 +61,7 @@ jest.mock('../../components/whats-on/AdminPermissionsModal', () => ({
   AdminPermissionsModal: ({ open, mode, initialUser, onSubmit, onClose }: ModalProps) =>
     open ? (
       <div data-testid="admin-permissions-modal" data-mode={mode}>
-        <button onClick={onClose}>close-modal</button>
+        <button onClick={() => onClose()}>close-modal</button>
         <button onClick={() => onSubmit({ address: initialUser ?? '0xnew', permissions: ['approve_own_event'] })}>
           submit-permissions
         </button>
@@ -108,10 +110,21 @@ type PaginationProps = {
 }
 
 jest.mock('decentraland-ui2', () => ({
-  Alert: ({ children }: { children: React.ReactNode }) => <div role="alert">{children}</div>,
+  Alert: ({ children, onClose }: { children: React.ReactNode; onClose?: () => void }) => (
+    <div role="alert">
+      {children}
+      {onClose && <button onClick={() => onClose()}>close-alert</button>}
+    </div>
+  ),
   Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => <button onClick={onClick}>{children}</button>,
   InputAdornment: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
-  Snackbar: ({ open, children }: { open: boolean; children: React.ReactNode }) => (open ? <div>{children}</div> : null),
+  Snackbar: ({ open, children, onClose }: { open: boolean; children: React.ReactNode; onClose?: () => void }) =>
+    open ? (
+      <div>
+        {onClose && <button onClick={() => onClose()}>close-snackbar</button>}
+        {children}
+      </div>
+    ) : null,
   Table: ({ children }: { children: React.ReactNode }) => <table>{children}</table>,
   TableBody: ({ children }: { children: React.ReactNode }) => <tbody>{children}</tbody>,
   TableCell: ({ children }: { children: React.ReactNode }) => <td>{children}</td>,
@@ -130,6 +143,11 @@ jest.mock('decentraland-ui2', () => ({
     </label>
   )
 }))
+
+beforeEach(() => {
+  mockUseAdminPermissions.mockReturnValue({ canEditAnyProfile: true, isLoading: false })
+  mockUseAuthIdentity.mockReturnValue({ identity: { authChain: [] }, hasValidIdentity: true, address: '0xadmin' })
+})
 
 describe('when rendering UsersAdminPage with canEditAnyProfile', () => {
   beforeEach(() => {
@@ -273,5 +291,160 @@ describe('when paginating the table', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: 'next-page' }))
     fireEvent.click(screen.getByRole('button', { name: 'change-rows' }))
+  })
+})
+
+describe('when searching admins by wallet address fragment', () => {
+  beforeEach(() => {
+    mockAdmins = [
+      { user: ADMIN_ALICE, email: null, permissions: [] },
+      { user: ADMIN_BOB, email: null, permissions: [] }
+    ]
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should keep only rows whose address matches the query', () => {
+    render(
+      <MemoryRouter>
+        <UsersAdminPage />
+      </MemoryRouter>
+    )
+
+    // ADMIN_ALICE is all 1s, ADMIN_BOB all 2s — search by the address fragment.
+    fireEvent.change(screen.getByLabelText('whats_on_admin.users.search_label'), { target: { value: '2222' } })
+
+    expect(screen.getByText(new RegExp(ADMIN_BOB, 'i'))).toBeInTheDocument()
+    expect(screen.queryByText(new RegExp(ADMIN_ALICE, 'i'))).not.toBeInTheDocument()
+  })
+})
+
+describe('when the user lacks edit-profile permission', () => {
+  beforeEach(() => {
+    mockAdmins = []
+    mockUseAdminPermissions.mockReturnValue({ canEditAnyProfile: false, isLoading: false })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should redirect to /whats-on instead of rendering the users table', () => {
+    render(
+      <MemoryRouter>
+        <UsersAdminPage />
+      </MemoryRouter>
+    )
+
+    expect(screen.queryByRole('heading', { name: 'whats_on_admin.users.title' })).not.toBeInTheDocument()
+  })
+})
+
+describe('when permissions are still loading', () => {
+  beforeEach(() => {
+    mockAdmins = []
+    mockUseAdminPermissions.mockReturnValue({ canEditAnyProfile: false, isLoading: true })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should render the page while permissions resolve rather than redirecting prematurely', () => {
+    render(
+      <MemoryRouter>
+        <UsersAdminPage />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByRole('heading', { name: 'whats_on_admin.users.title' })).toBeInTheDocument()
+  })
+})
+
+describe('when submitting permissions without a usable identity', () => {
+  beforeEach(() => {
+    mockAdmins = []
+    mockUpdatePermissions.mockReset()
+    mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
+    jest.spyOn(console, 'error').mockImplementation(() => undefined)
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('should bail out of the update without calling the mutation', () => {
+    render(
+      <MemoryRouter>
+        <UsersAdminPage />
+      </MemoryRouter>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'whats_on_admin.cta.add_user' }))
+    fireEvent.click(screen.getByRole('button', { name: 'submit-permissions' }))
+
+    expect(mockUpdatePermissions).not.toHaveBeenCalled()
+  })
+})
+
+describe('when dismissing modal and snackbar surfaces', () => {
+  beforeEach(() => {
+    mockAdmins = []
+    mockUpdatePermissions.mockReset()
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should close the permissions modal when dismissed', () => {
+    render(
+      <MemoryRouter>
+        <UsersAdminPage />
+      </MemoryRouter>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'whats_on_admin.cta.add_user' }))
+    expect(screen.getByTestId('admin-permissions-modal')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'close-modal' }))
+
+    expect(screen.queryByTestId('admin-permissions-modal')).not.toBeInTheDocument()
+  })
+
+  it('should close the feedback snackbar via both the snackbar and the alert close handlers', async () => {
+    mockUpdatePermissions.mockResolvedValueOnce(undefined)
+    render(
+      <MemoryRouter>
+        <UsersAdminPage />
+      </MemoryRouter>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'whats_on_admin.cta.add_user' }))
+    fireEvent.click(screen.getByRole('button', { name: 'submit-permissions' }))
+    await screen.findByRole('alert')
+
+    fireEvent.click(screen.getByRole('button', { name: 'close-alert' }))
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('should close the feedback snackbar when the snackbar onClose fires', async () => {
+    mockUpdatePermissions.mockResolvedValueOnce(undefined)
+    render(
+      <MemoryRouter>
+        <UsersAdminPage />
+      </MemoryRouter>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'whats_on_admin.cta.add_user' }))
+    fireEvent.click(screen.getByRole('button', { name: 'submit-permissions' }))
+    await screen.findByRole('alert')
+
+    fireEvent.click(screen.getByRole('button', { name: 'close-snackbar' }))
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 })

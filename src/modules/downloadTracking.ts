@@ -1,5 +1,12 @@
 import { DownloadPlace, SegmentEvent } from './segment'
-import type { DownloadTrackFn, DownloadTracker, DownloadTrackerContext } from './downloadTracking.types'
+import type { AuthState, DownloadTrackFn, DownloadTracker, DownloadTrackerContext } from './downloadTracking.types'
+
+/**
+ * Maps the localStorage identity presence flag to the `auth_state` dimension
+ * shared by every `download_*` event. Extracted so the Explorer and Creator
+ * Hub funnels derive it identically instead of repeating the ternary.
+ */
+const toAuthState = (hasValidIdentity: boolean): AuthState => (hasValidIdentity ? 'authenticated' : 'anonymous')
 
 const buildBasePayload = (ctx: DownloadTrackerContext): Record<string, unknown> => {
   // ctx.extra goes first so the core schema fields below take precedence on
@@ -77,4 +84,4 @@ function createDownloadTracker(track: DownloadTrackFn, ctx: DownloadTrackerConte
   }
 }
 
-export { createDownloadTracker }
+export { createDownloadTracker, toAuthState }
