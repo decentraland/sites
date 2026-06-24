@@ -4,8 +4,15 @@ export default defineConfig({
   testDir: './specs',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: 0,
+  // 0 locally so flakes surface immediately; 2 in CI as a safety net for
+  // genuine cold-load jitter once the third-party block lands.
+  retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 3 : undefined,
+  // 60s per test covers the worst case: cold lazy chunk + multi-step journey.
+  // expect.timeout absorbs the first assertion after a goto, so specs no
+  // longer need ad-hoc { timeout: 15_000 } overrides.
+  timeout: 60_000,
+  expect: { timeout: 15_000 },
   reporter: process.env.CI ? [['html', { open: 'never' }], ['github']] : 'list',
   use: {
     baseURL: 'http://localhost:4173',

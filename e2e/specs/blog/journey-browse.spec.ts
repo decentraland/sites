@@ -1,27 +1,12 @@
-import { expect, test } from '@playwright/test'
+// See e2e/README.md for the suite's mental model (spec = user journey).
 import { announcementsCategory } from '../../fixtures/blog/categories'
 import { featuredPost, gridPosts } from '../../fixtures/blog/posts-page-1'
 import { mockBlogApi } from '../../mocks/blog'
-import { watchUnmockedCmsRequests } from '../../mocks/shared'
 import { BlogCategoryPage, BlogListingPage, BlogPostDetailPage } from '../../pages/blog.page'
+import { expect, test } from './_setup'
 
-// Flow: a user lands on /blog, opens the featured post, jumps from the post
-// detail into its category, and opens another post from the filtered list.
-// Every navigation step is a real click — no direct `page.goto` to deep links
-// except the initial landing.
-
-test.describe('User journey: browse blog', () => {
-  let unmocked: { errors: string[] }
-
-  test.beforeEach(({ page }) => {
-    unmocked = watchUnmockedCmsRequests(page)
-  })
-
-  test.afterEach(() => {
-    expect(unmocked.errors, 'Unmocked CMS requests detected').toEqual([])
-  })
-
-  test('opens a post from the listing and walks back into its category', async ({ page }) => {
+test.describe('Browsing the blog', () => {
+  test('a reader can open the featured post and jump to other posts in the same category', async ({ page }) => {
     await mockBlogApi(page, {})
     const blog = new BlogListingPage(page)
     const detail = new BlogPostDetailPage(page)
@@ -34,25 +19,25 @@ test.describe('User journey: browse blog', () => {
 
     // 1. Land on /blog and confirm the listing renders.
     await blog.goto()
-    await expect(blog.postList()).toBeVisible({ timeout: 15_000 })
+    await expect(blog.postList()).toBeVisible()
     await expect(blog.mainPostCard()).toContainText(featuredTitle)
 
     // 2. Click the featured card and confirm we navigate to its detail page.
     await blog.clickCardByTitle(featuredTitle)
     await page.waitForURL(`**/blog/${categorySlug}/${featuredSlug}`)
     await expect(detail.title()).toHaveText(featuredTitle)
-    // The body must render — guards against RichText regressions that would
-    // ship a blank detail page.
-    await expect(detail.body().first()).toBeVisible()
+    // The body must render real text — guards against RichText regressions
+    // that would ship a blank detail page (the default factory body wraps
+    // the title in a paragraph).
+    await expect(detail.body()).toContainText(featuredTitle)
 
     // 3. From the post header, click the category meta link.
-    await detail.categoryLink(categoryTitle).click()
+    await detail.categoryLink().click()
     await page.waitForURL(`**/blog/${categorySlug}`)
     await expect(category.hero(categoryTitle)).toBeVisible()
     await expect(category.postList()).toBeVisible()
 
     // 4. Pick another post from the filtered list and confirm we land on it.
-    // Use a different post in the same category to validate the filter.
     const anotherInCategory = gridPosts.find(p => {
       const cat = p.fields.category as { fields: { id: string } } | undefined
       return cat?.fields.id === categorySlug && p.sys.id !== featuredPost.sys.id
@@ -66,19 +51,57 @@ test.describe('User journey: browse blog', () => {
     await expect(detail.title()).toHaveText(otherTitle)
   })
 
-  test('shows the error state when /blog/posts returns 500', async ({ page }) => {
+  test('when the post list fails to load, the reader sees a friendly error', async ({ page }) => {
     await mockBlogApi(page, { posts: 'error' })
     const blog = new BlogListingPage(page)
     await blog.goto()
-    await expect(blog.errorState()).toBeVisible({ timeout: 15_000 })
-    // Sanity: no card content leaked through behind the error.
+    await expect(blog.errorState()).toBeVisible()
     await expect(blog.postList()).toHaveCount(0)
   })
 
-  test('shows the error state when a deep-linked post does not exist', async ({ page }) => {
+  test('when a deep-linked post does not exist, the reader sees a friendly error', async ({ page }) => {
     await mockBlogApi(page, { postBySlug: 'not-found' })
     const detail = new BlogPostDetailPage(page)
     await detail.goto('announcements', 'this-slug-does-not-exist')
-    await expect(detail.errorState()).toBeVisible({ timeout: 15_000 })
+    await expect(detail.errorState()).toBeVisible()
+  })
+
+  test('when the category dropdown fails but posts load, the listing still works', async ({ page }) => {
+    // Partial CMS failure scenario: /blog/categories returns 500, posts work.
+    // Should NOT crash the whole page — the listing must still render.
+    await mockBlogApi(page, { categories: 'error' })
+    const blog = new BlogListingPage(page)
+    await blog.goto()
+    await expect(blog.postList()).toBeVisible()
+    // Listing itself is fine — only the navbar category links are absent.
+    await expect(blog.cards()).not.toHaveCount(0)
+  })
+
+  test('the post detail exposes share intent links for X and Facebook', async ({ page }) => {
+    await mockBlogApi(page, {})
+    const blog = new BlogListingPage(page)
+    const detail = new BlogPostDetailPage(page)
+
+    const featuredTitle = featuredPost.fields.title as string
+    const featuredSlug = featuredPost.fields.id as string
+
+    await blog.goto()
+    await expect(blog.postList()).toBeVisible()
+    await blog.clickCardByTitle(featuredTitle)
+    await page.waitForURL(`**/blog/${announcementsCategory.fields.id}/${featuredSlug}`)
+
+    const twitter = detail.shareTwitter()
+    await expect(twitter).toBeVisible()
+    await expect(twitter).toHaveAttribute('href', /x\.com\/intent\/post/)
+    await expect(twitter).toHaveAttribute('href', new RegExp(encodeURIComponent(featuredSlug)))
+    await expect(twitter).toHaveAttribute('target', '_blank')
+    await expect(twitter).toHaveAttribute('rel', /noopener/)
+
+    const facebook = detail.shareFacebook()
+    await expect(facebook).toBeVisible()
+    await expect(facebook).toHaveAttribute('href', /facebook\.com\/sharer/)
+    await expect(facebook).toHaveAttribute('href', new RegExp(encodeURIComponent(featuredSlug)))
+    await expect(facebook).toHaveAttribute('target', '_blank')
+    await expect(facebook).toHaveAttribute('rel', /noopener/)
   })
 })

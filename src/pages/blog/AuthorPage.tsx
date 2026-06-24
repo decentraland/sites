@@ -28,7 +28,7 @@ const AuthorPostList = ({ author }: { author: BlogAuthor }) => {
 
   return (
     <>
-      <AuthorHeaderBox>
+      <AuthorHeaderBox data-testid="author-header">
         {author.image && <AuthorImage src={author.image.url} alt={author.title} />}
 
         <Typography variant="h5">{author.title}</Typography>

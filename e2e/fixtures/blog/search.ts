@@ -54,3 +54,40 @@ export const searchHits = [withHighlight(baseSearchHit1), withHighlight(baseSear
 
 export const searchHappyResponse = createCmsListResponse(searchHits, 3)
 export const searchEmptyResponse = createCmsListResponse([], 0)
+
+// Paginated SearchPage fixtures: 15 total hits split across 10 + 5. The
+// component computes hasMore as `(page+1)*hitsPerPage < total`, so with
+// hitsPerPage=10: page 0 → hasMore=true, page 1 → hasMore=false.
+const PAGINATED_TOTAL = 15
+
+const paginatedFirstPageHits = Array.from({ length: 10 }, (_, i) =>
+  withHighlight(
+    createBlogPostEntry({
+      id: `paginated-hit-${i + 1}`,
+      slug: `paginated-hit-${i + 1}`,
+      title: `Paginated Hit ${i + 1}`,
+      description: `Description for paginated hit ${i + 1}.`,
+      category: announcementsCategory,
+      author: decentralandTeamAuthor,
+      imageAsset: post1Asset
+    })
+  )
+)
+
+const paginatedSecondPageHits = Array.from({ length: 5 }, (_, i) =>
+  withHighlight(
+    createBlogPostEntry({
+      id: `paginated-hit-${i + 11}`,
+      slug: `paginated-hit-${i + 11}`,
+      title: `Paginated Hit ${i + 11}`,
+      description: `Description for paginated hit ${i + 11}.`,
+      category: technologyCategory,
+      author: decentralandTeamAuthor,
+      imageAsset: post2Asset
+    })
+  )
+)
+
+export const paginatedSearchHits = [...paginatedFirstPageHits, ...paginatedSecondPageHits]
+export const searchPaginatedFirstPage = createCmsListResponse(paginatedFirstPageHits, PAGINATED_TOTAL)
+export const searchPaginatedSecondPage = createCmsListResponse(paginatedSecondPageHits, PAGINATED_TOTAL)

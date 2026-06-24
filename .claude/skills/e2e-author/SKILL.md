@@ -27,12 +27,17 @@ Use locators in this order — drop down only when the previous tier doesn't dis
 Existing `data-testid` whitelist (do not invent new ones without justification):
 
 - `blog-error` — generic CMS error UI across Blog/Post/Category/Author pages.
-- `post-list` — real post grid (PostList non-loading branch).
-- `post-list-skeleton` — loading skeleton (PostList loading branch). Counting only `post-list` excludes skeletons.
-- `post-card`, `post-card-skeleton` — PostCard root in real / loading branches.
-- `main-post-card`, `main-post-card-skeleton` — MainPostCard root in real / loading branches.
-- `blog-navbar` — BlogNavigation root. Scope navbar links here so they don't collide with category meta links rendered inside cards or post headers.
-- `search-hit` — single `<SearchResultItem>` in the navbar search dropdown. Distinguishes hit `<li>`s from CategoryItem `<li>`s.
+- `post-list` / `post-list-skeleton` — PostList grid in real / loading branches. Counting only `post-list` excludes skeletons.
+- `post-card`, `post-card-skeleton` — PostCard root.
+- `main-post-card`, `main-post-card-skeleton` — MainPostCard root (only renders on desktop with `hasMainPost`).
+- `blog-navbar` — BlogNavigation root. Scope navbar links here so they don't collide with category meta links inside cards or post headers.
+- `search-hit` — single `<SearchResultItem>` in the navbar dropdown. Distinguishes hit `<li>`s from CategoryItem `<li>`s.
+- `post-title`, `post-body` — PostPage headline + rich-text body container. Use these instead of role-based heading lookups (RelatedPost renders its own headings).
+- `post-category-meta`, `post-author` — links in the post header. Scoped so they don't collide with RelatedPost card links.
+- `post-share`, `post-share-twitter`, `post-share-facebook` — Share intent CTAs in PostPage.
+- `category-hero` — CategoryHero container in the category landing.
+- `author-header` — AuthorHeaderBox in the author landing.
+- `related-posts` — RelatedPost section in the post detail.
 
 ## Adding a scenario
 

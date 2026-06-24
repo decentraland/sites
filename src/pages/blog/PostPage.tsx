@@ -168,10 +168,14 @@ export const PostPage = () => {
           <MetaText as="span">
             {publishedDateUtc}
             <MetaSeparator>•</MetaSeparator>
-            <CategoryMetaLink to={locations.category(displayPost.category.slug)}>{displayPost.category.title}</CategoryMetaLink>
+            <CategoryMetaLink data-testid="post-category-meta" to={locations.category(displayPost.category.slug)}>
+              {displayPost.category.title}
+            </CategoryMetaLink>
           </MetaText>
           <TitleBox>
-            <TitleText variant="h4">{displayPost.title}</TitleText>
+            <TitleText data-testid="post-title" variant="h4">
+              {displayPost.title}
+            </TitleText>
           </TitleBox>
           <SubtitleText variant="h6">{displayPost.description}</SubtitleText>
         </HeaderBox>
@@ -179,24 +183,24 @@ export const PostPage = () => {
         {showAuthor && (
           <AuthorRow>
             <AuthorBox>
-              <AuthorLink to={author.url}>
+              <AuthorLink data-testid="post-author" to={author.url}>
                 {author.image?.url && <AuthorAvatar src={author.image.url} alt={author.title} loading="lazy" decoding="async" />}
                 <AuthorName variant="body2">{author.title}</AuthorName>
               </AuthorLink>
             </AuthorBox>
-            <ShareContainer>
+            <ShareContainer data-testid="post-share">
               <ShareLabel>{t('blog.share')}</ShareLabel>
-              <ShareLink href={locations.twitter(displayPost)} target="_blank" rel="noopener noreferrer">
+              <ShareLink data-testid="post-share-twitter" href={locations.twitter(displayPost)} target="_blank" rel="noopener noreferrer">
                 <XIcon fontSize="small" />
               </ShareLink>
-              <ShareLink href={locations.facebook(displayPost)} target="_blank" rel="noopener noreferrer">
+              <ShareLink data-testid="post-share-facebook" href={locations.facebook(displayPost)} target="_blank" rel="noopener noreferrer">
                 <FacebookIcon fontSize="small" />
               </ShareLink>
             </ShareContainer>
           </AuthorRow>
         )}
 
-        <BodyContainer>
+        <BodyContainer data-testid="post-body">
           <RichText document={displayPost.body} assets={displayPost.bodyAssets} />
         </BodyContainer>
       </ContentContainer>

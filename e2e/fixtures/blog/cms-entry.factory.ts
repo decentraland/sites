@@ -87,7 +87,10 @@ export function createBlogPostEntry(input: {
       category: input.category,
       author: input.author,
       image: input.imageAsset,
-      body: input.body
+      // Default body so detail-page specs can assert the rich-text renderer
+      // actually produced paragraphs. Override per fixture when you need
+      // specific marks/blocks.
+      body: input.body ?? createDocument([`Body paragraph for "${input.title}".`])
     }
   }
 }

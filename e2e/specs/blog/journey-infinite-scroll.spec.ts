@@ -1,32 +1,18 @@
-import { expect, test } from '@playwright/test'
+// See e2e/README.md for the suite's mental model (spec = user journey).
 import { postsPage2 } from '../../fixtures/blog/posts-page-2'
 import { mockBlogApi } from '../../mocks/blog'
-import { watchUnmockedCmsRequests } from '../../mocks/shared'
 import { BlogListingPage, BlogPostDetailPage } from '../../pages/blog.page'
+import { expect, test } from './_setup'
 
-// Flow: a user lands on /blog, scrolls to trigger the second page load, picks
-// a card from page 2, reads its detail, presses browser back, and confirms
-// the listing state is preserved (no full re-fetch, scrolled position kept).
-
-test.describe('User journey: infinite scroll then deep-read', () => {
-  let unmocked: { errors: string[] }
-
-  test.beforeEach(({ page }) => {
-    unmocked = watchUnmockedCmsRequests(page)
-  })
-
-  test.afterEach(() => {
-    expect(unmocked.errors, 'Unmocked CMS requests detected').toEqual([])
-  })
-
-  test('loads page 2 on scroll, opens an older post, and preserves the list on back', async ({ page }) => {
-    await mockBlogApi(page, { posts: 'multi-page', postsDelayMs: 100 })
+test.describe('Scrolling for more posts', () => {
+  test('after scrolling loads more posts, opening one and pressing back keeps the list scrolled, not reset', async ({ page }) => {
+    await mockBlogApi(page, { posts: 'multi-page' })
     const blog = new BlogListingPage(page)
     const detail = new BlogPostDetailPage(page)
 
     // 1. Land on /blog and snapshot the initial card count.
     await blog.goto()
-    await expect(blog.postList()).toBeVisible({ timeout: 15_000 })
+    await expect(blog.postList()).toBeVisible()
     const initialCount = await blog.cards().count()
     expect(initialCount).toBeGreaterThan(0)
 
@@ -41,15 +27,15 @@ test.describe('User journey: infinite scroll then deep-read', () => {
       }
     })
 
-    // Scroll to the bottom — the useInfiniteScroll hook listens on window scroll.
+    // Scroll to the bottom — useInfiniteScroll listens on window scroll.
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
     await page2Request
 
     // Wait for new cards to be appended.
-    await expect.poll(async () => blog.cards().count(), { timeout: 15_000 }).toBeGreaterThan(initialCount)
-    const afterScrollCount = await blog.cards().count()
+    await expect.poll(async () => blog.cards().count()).toBeGreaterThan(initialCount)
 
-    // 3. Click an older post that only exists in page 2.
+    // 3. Click a post that only exists in page 2 to prove the scroll really
+    // pulled the second page.
     const targetPage2Post = postsPage2[0]
     const targetTitle = targetPage2Post.fields.title as string
     const targetSlug = targetPage2Post.fields.id as string
@@ -59,12 +45,13 @@ test.describe('User journey: infinite scroll then deep-read', () => {
     await page.waitForURL(`**/blog/${targetCategorySlug}/${targetSlug}`)
     await expect(detail.title()).toHaveText(targetTitle)
 
-    // 4. Press browser back — RTK Query cache (keepUnusedDataFor = 60s)
-    // should keep the merged listing intact instead of refetching from skip=0.
+    // 4. Press browser back — RTK Query cache (keepUnusedDataFor = 60s) should
+    // keep the merged listing intact, so a page-2 card still resolves on /blog
+    // without scrolling again. We assert the contract directly instead of
+    // counting cards (count has a racy isFetching window).
     await page.goBack()
     await page.waitForURL('**/blog')
     await expect(blog.postList()).toBeVisible()
-    // Count should match what we had after the scroll (no reset to first page).
-    await expect.poll(async () => blog.cards().count(), { timeout: 10_000 }).toBe(afterScrollCount)
+    await expect(blog.cardByTitle(targetTitle)).toBeVisible()
   })
 })

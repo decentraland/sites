@@ -1,3 +1,20 @@
+// mockBlogApi(page, scenario)
+//
+// Installs `page.route` handlers over every CMS endpoint blog talks to.
+//
+// CONTRACT:
+// 1. Call this BEFORE the first `page.goto(...)` — handlers must be ready
+//    before React mounts and fires the first fetch.
+// 2. Pair it with `watchUnmockedCmsRequests(page)` in beforeEach. Any CMS URL
+//    not matched by a handler is short-circuited to `UNMOCKED_CMS_STATUS`
+//    (599), which the watcher converts into an afterEach failure.
+// 3. Add new shapes here: extend `BlogScenario` (mocks/types.ts), add a
+//    handler branch, and seed a fixture under fixtures/blog/ — then run
+//    `npm run e2e:check-fixtures` to validate the cross-refs.
+//
+// Anything that is NOT the CMS (third-party telemetry, assets-cdn, etc.)
+// passes through naturally because the dispatcher's regex doesn't match it.
+// To kill telemetry noise see `blockThirdParties` in mocks/shared.ts.
 import type { Page, Route } from '@playwright/test'
 import type { CMSEntry, CMSListResponse } from '../../src/features/cms/cms.types'
 import {
@@ -25,8 +42,15 @@ import { createCmsListResponse } from '../fixtures/blog/cms-entry.factory'
 import { detailNotFoundResponse, detailPost } from '../fixtures/blog/post-detail'
 import { allPostsPage1, postsPage1Response } from '../fixtures/blog/posts-page-1'
 import { postsPage2, postsPage2Response } from '../fixtures/blog/posts-page-2'
-import { searchEmptyResponse, searchHappyResponse, searchHits } from '../fixtures/blog/search'
-import { SENTINEL_STATUS } from './shared'
+import {
+  paginatedSearchHits,
+  searchEmptyResponse,
+  searchHappyResponse,
+  searchHits,
+  searchPaginatedFirstPage,
+  searchPaginatedSecondPage
+} from '../fixtures/blog/search'
+import { UNMOCKED_CMS_STATUS } from './shared'
 import type { BlogScenario } from './types'
 
 const CMS_URL_RE = /cms-api\.decentraland\.org|\/api\/cms\//
@@ -66,7 +90,7 @@ const ENTRIES_BY_ID = new Map<string, CMSEntry>(
 // All posts the fixture set knows about. Used by handlePostsBySlug so user
 // journeys can navigate by clicking real cards or search hits (any visible
 // slug resolves to a CMSEntry).
-const ALL_KNOWN_POSTS: CMSEntry[] = [...allPostsPage1, ...postsPage2, detailPost, ...searchHits]
+const ALL_KNOWN_POSTS: CMSEntry[] = [...allPostsPage1, ...postsPage2, detailPost, ...searchHits, ...paginatedSearchHits]
 
 function jsonResponse(route: Route, body: unknown, status = 200) {
   return route.fulfill({
@@ -112,8 +136,22 @@ function handlePostsBySlug(route: Route, slug: string, scenario: BlogScenario) {
   }
 }
 
-function handlePostsSearch(route: Route, scenario: BlogScenario) {
-  switch (scenario.search ?? 'happy') {
+function handlePostsSearch(route: Route, scenario: BlogScenario, params: URLSearchParams) {
+  const limit = Number(params.get('limit') ?? '0')
+  const page = Number(params.get('page') ?? '0')
+
+  // SearchPage requests use limit=10. The dispatcher routes those through
+  // `scenario.searchPage` so /blog/search-specific behaviour (paginated,
+  // error, empty) can be set independently from the navbar dropdown.
+  const isSearchPage = limit >= 10
+  const mode = isSearchPage ? scenario.searchPage ?? scenario.search ?? 'happy' : scenario.search ?? 'happy'
+
+  switch (mode) {
+    case 'paginated':
+      return jsonResponse(route, page === 0 ? searchPaginatedFirstPage : searchPaginatedSecondPage)
+    case 'overflow':
+      // 10 hits so the navbar dropdown (slice(0,4) + "see more") renders.
+      return jsonResponse(route, searchPaginatedFirstPage)
     case 'happy':
       return jsonResponse(route, searchHappyResponse)
     case 'empty':
@@ -123,12 +161,16 @@ function handlePostsSearch(route: Route, scenario: BlogScenario) {
   }
 }
 
-function handlePostsByCategory(route: Route, categorySlug: string, scenario: BlogScenario) {
+function handlePostsByCategory(route: Route, categoryId: string, scenario: BlogScenario) {
   switch (scenario.postsByCategory ?? 'happy') {
     case 'happy': {
+      // The app's RTK Query sends `category: displayPost.category.id` which is
+      // the entry sys.id (e.g. `cat-announcements`), while navbar/category
+      // pages send the slug (e.g. `announcements`). Match either so both
+      // call sites resolve.
       const matching = ALL_KNOWN_POSTS.filter(post => {
         const cat = post.fields.category as CMSEntry | undefined
-        return cat?.fields.id === categorySlug
+        return cat?.fields.id === categoryId || cat?.sys.id === categoryId
       })
       return jsonResponse(route, createCmsListResponse(matching, matching.length))
     }
@@ -139,12 +181,12 @@ function handlePostsByCategory(route: Route, categorySlug: string, scenario: Blo
   }
 }
 
-function handlePostsByAuthor(route: Route, authorSlug: string, scenario: BlogScenario) {
+function handlePostsByAuthor(route: Route, authorId: string, scenario: BlogScenario) {
   switch (scenario.postsByAuthor ?? 'happy') {
     case 'happy': {
       const matching = ALL_KNOWN_POSTS.filter(post => {
         const author = post.fields.author as CMSEntry | undefined
-        return author?.fields.id === authorSlug
+        return author?.fields.id === authorId || author?.sys.id === authorId
       })
       return jsonResponse(route, createCmsListResponse(matching, matching.length))
     }
@@ -240,7 +282,7 @@ export async function mockBlogApi(page: Page, scenario: BlogScenario = {}) {
       const author = params.get('author')
       const skip = Number(params.get('skip') ?? '0')
 
-      if (q) return handlePostsSearch(route, scenario)
+      if (q) return handlePostsSearch(route, scenario, params)
       if (slug) return handlePostsBySlug(route, slug, scenario)
       if (category) return handlePostsByCategory(route, category, scenario)
       if (author) return handlePostsByAuthor(route, author, scenario)
@@ -257,7 +299,7 @@ export async function mockBlogApi(page: Page, scenario: BlogScenario = {}) {
     if (assetMatch) return handleAsset(route, assetMatch[1], scenario)
 
     return route.fulfill({
-      status: SENTINEL_STATUS,
+      status: UNMOCKED_CMS_STATUS,
       contentType: 'text/plain',
       body: `Unmocked CMS request: ${path}${url.search}`
     })

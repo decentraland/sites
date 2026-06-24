@@ -1,26 +1,13 @@
-import { expect, test } from '@playwright/test'
+// See e2e/README.md for the suite's mental model (spec = user journey).
 import { decentralandTeamAuthor } from '../../fixtures/blog/authors'
 import { announcementsCategory } from '../../fixtures/blog/categories'
 import { featuredPost, gridPosts } from '../../fixtures/blog/posts-page-1'
 import { mockBlogApi } from '../../mocks/blog'
-import { watchUnmockedCmsRequests } from '../../mocks/shared'
 import { BlogAuthorPage, BlogPostDetailPage } from '../../pages/blog.page'
+import { expect, test } from './_setup'
 
-// Flow: a user lands on a deep-linked post (worst case for cold lazy load),
-// clicks the author link, browses other posts by that author, and opens one.
-
-test.describe('User journey: browse by author', () => {
-  let unmocked: { errors: string[] }
-
-  test.beforeEach(({ page }) => {
-    unmocked = watchUnmockedCmsRequests(page)
-  })
-
-  test.afterEach(() => {
-    expect(unmocked.errors, 'Unmocked CMS requests detected').toEqual([])
-  })
-
-  test('jumps from a post into the author page and opens another post', async ({ page }) => {
+test.describe('Browsing by author', () => {
+  test('a reader can click the author of a post and open another post by them', async ({ page }) => {
     await mockBlogApi(page, {})
     const detail = new BlogPostDetailPage(page)
     const author = new BlogAuthorPage(page)
@@ -33,10 +20,10 @@ test.describe('User journey: browse by author', () => {
 
     // 1. Land on the featured post directly to validate the deep-link path.
     await detail.goto(categorySlug, startSlug)
-    await expect(detail.title()).toHaveText(startTitle, { timeout: 15_000 })
+    await expect(detail.title()).toHaveText(startTitle)
 
     // 2. Click the author link in the post header.
-    await detail.authorLink(authorTitle).click()
+    await detail.authorLink().click()
     await page.waitForURL(`**/blog/author/${authorSlug}`)
     await expect(author.authorHeading(authorTitle)).toBeVisible()
     await expect(author.postList()).toBeVisible()
@@ -57,10 +44,19 @@ test.describe('User journey: browse by author', () => {
     await expect(detail.title()).toHaveText(otherTitle)
   })
 
-  test('shows the error state when /blog/authors returns 500', async ({ page }) => {
+  test('when the author page fails to load, the reader sees a friendly error', async ({ page }) => {
     await mockBlogApi(page, { authors: 'error' })
     const author = new BlogAuthorPage(page)
     await author.goto(decentralandTeamAuthor.fields.id as string)
-    await expect(author.errorState()).toBeVisible({ timeout: 15_000 })
+    await expect(author.errorState()).toBeVisible()
+  })
+
+  test('when an author has no posts, the reader still sees the header (no error UI)', async ({ page }) => {
+    await mockBlogApi(page, { postsByAuthor: 'empty' })
+    const author = new BlogAuthorPage(page)
+    await author.goto(decentralandTeamAuthor.fields.id as string)
+    await expect(author.authorHeading(decentralandTeamAuthor.fields.title as string)).toBeVisible()
+    await expect(author.cards()).toHaveCount(0)
+    await expect(author.errorState()).toHaveCount(0)
   })
 })

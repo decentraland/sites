@@ -96,29 +96,45 @@ export class BlogPostDetailPage {
     return this.page.goto(`/blog/${categorySlug}/${postSlug}`)
   }
 
-  // PostPage.tsx renders the post title inside <TitleText variant="h4">.
+  // Post title rendered as <TitleText variant="h4"> in PostPage.tsx.
   title(): Locator {
-    return this.page.getByRole('heading', { level: 4 })
+    return this.page.getByTestId('post-title')
   }
 
-  // First paragraph of the rich-text body (RichText.styled Paragraph -> <p>).
-  // Used to assert the body actually rendered, not just the header.
+  // Rich-text body container. Scoped paragraphs only — must NOT match
+  // chrome <p>s like ShareLabel or AuthorName.
   body(): Locator {
-    return this.page.locator('main p')
+    return this.page.getByTestId('post-body')
   }
 
-  // CategoryMetaLink inside the post header. Several places on the page can
-  // render a link with the same category title (header meta, related-post
-  // cards, etc.); we want the one rendered first in the DOM, which is the
-  // header.
-  categoryLink(categoryTitle: string): Locator {
-    return this.page.getByRole('link', { name: categoryTitle, exact: true }).first()
+  // CategoryMetaLink in the post header (NOT the related-post cards).
+  categoryLink(): Locator {
+    return this.page.getByTestId('post-category-meta')
   }
 
-  // AuthorLink wraps the avatar + the author display name. Multiple matches
-  // can exist (header + related); take the first (header).
-  authorLink(authorTitle: string): Locator {
-    return this.page.getByRole('link', { name: authorTitle }).first()
+  // AuthorLink in the post header (NOT related-post author links).
+  authorLink(): Locator {
+    return this.page.getByTestId('post-author')
+  }
+
+  // Share intent CTAs.
+  shareTwitter(): Locator {
+    return this.page.getByTestId('post-share-twitter')
+  }
+
+  shareFacebook(): Locator {
+    return this.page.getByTestId('post-share-facebook')
+  }
+
+  // RelatedPost section rendered below the body (sibling, not nested).
+  relatedPosts(): Locator {
+    return this.page.getByTestId('related-posts')
+  }
+
+  // Cards inside RelatedPost — distinct from the listing/grid cards because
+  // those live on /blog, not /blog/:cat/:slug.
+  relatedCards(): Locator {
+    return this.relatedPosts().getByTestId('post-card')
   }
 
   errorState(): Locator {
@@ -133,8 +149,10 @@ export class BlogCategoryPage {
     return this.page.goto(`/blog/${categorySlug}`)
   }
 
+  // CategoryHero (HeroContainer testid) scopes the assertion to the page hero
+  // — avoids matching card titles that happen to share the category name.
   hero(name: string): Locator {
-    return this.page.getByRole('heading', { name })
+    return this.page.getByTestId('category-hero').getByRole('heading', { name })
   }
 
   errorState(): Locator {
@@ -161,9 +179,10 @@ export class BlogAuthorPage {
     return this.page.goto(`/blog/author/${authorSlug}`)
   }
 
-  // AuthorPostList renders an <h5> with the author title.
+  // Author header testid scopes to the page header (avoids matching same name
+  // inside card chrome if author titles ever land there).
   authorHeading(name: string): Locator {
-    return this.page.getByRole('heading', { name })
+    return this.page.getByTestId('author-header').getByRole('heading', { name })
   }
 
   errorState(): Locator {
