@@ -74,7 +74,7 @@ jobs:
       - name: Publish
         id: publish
         # Auth via npm Trusted Publishers (OIDC) — `id-token: write` is granted on
-        # skips writing `_authToken` to `.npmrc` and lets npm 11 do the handshake.
+        # this job so oddish and npm 11 handle the OIDC handshake automatically.
         # Requires a Trusted Publisher entry for `build-release.yml` at
         # https://www.npmjs.com/package/@dcl/sites/access
         #
