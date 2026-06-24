@@ -6,7 +6,7 @@ Suite Playwright que ejercita los flujos visibles de `/blog/*` con el CMS **mock
 
 ## Modelo mental — 4 conceptos
 
-1. **Spec = user journey.** Cada archivo en `specs/blog/journey-*.spec.ts` walks un flujo entero click a click. **No** son tests aislados que aterrizan en una URL y assertan una cosa. La única `page.goto` permitida es la landing inicial; el resto son clicks reales.
+1. **Test aislado, estilo `when/and/should`.** Cada `test()` tiene su propio setup (mockBlogApi + goto + waits) y verifica UN solo comportamiento. Los nombres siguen el estándar DCL: `describe('when …')` + `describe('and …')` + `test('should …')`. Trade-off explícito: la cadena clic-tras-clic se valida en pasos discretos, no en flujos largos. Si una regresión rompe SOLO la transición entre dos pasos pero cada paso aislado funciona, esta suite no la detecta — para eso hay que ampliar a un journey serial dedicado.
 2. **Mock = lo que el browser ve del CMS.** `mocks/blog.ts` registra `page.route()` sobre todos los endpoints CMS (`cms-api.decentraland.org/...`). Se llama **antes** de la primera navegación, así no hay race con el primer fetch.
 3. **Fixtures = datos sintéticos del CMS.** TypeScript en `fixtures/blog/` (no JSON). Las factories en `cms-entry.factory.ts` producen objetos con el shape exacto de `CMSEntry` / `CMSListResponse`. `npm run e2e:check-fixtures` valida cross-references (post → categoría → autor).
 4. **Sentinel = nada al CMS real.** Cualquier request al CMS que **no** matchee un handler vuelve con status `599`. Un listener en `mocks/shared.ts` marca el test como fallido si ve un `599`. Garantiza que ningún test pase pegándole a prod.
@@ -21,13 +21,13 @@ e2e/
 ├── specs/
 │   └── blog/
 │       ├── _setup.ts                       # test.extend con watcher CMS + blockThirdParties
-│       ├── journey-browse.spec.ts          # /blog → featured → detail → click categoría → otra → share buttons + partial-fail
-│       ├── journey-by-category.spec.ts     # navbar → categoría → click post + empty + back to /blog
-│       ├── journey-by-author.spec.ts       # post → click autor → otro post + empty author
-│       ├── journey-related.spec.ts         # detail → related → click related → otro detail
-│       ├── journey-search.spec.ts          # dropdown click + Enter submit + empty + load-more + ArrowDown+Enter + see-more + Escape
+│       ├── journey-browse.spec.ts          # listing, click featured, post detail, share, category meta, partial-fail, errors
+│       ├── journey-by-category.spec.ts     # navbar → cat, cat page, click post, empty, all-articles, errors
+│       ├── journey-by-author.spec.ts       # author link from detail, author page, click another, empty, errors
+│       ├── journey-related.spec.ts         # related section, exclude self, click related
+│       ├── journey-search.spec.ts          # dropdown, click hit, Enter submit, empty, load more, keyboard, see-more, Escape
 │       ├── journey-mobile.spec.ts          # 390x844 → sin featured → tap post
-│       └── journey-infinite-scroll.spec.ts # scroll → skip>0 → click pág 2 → back preserva estado
+│       └── journey-infinite-scroll.spec.ts # scroll → skip>0, append cards, click page-2 card, back preserves state
 ├── pages/
 │   └── blog.page.ts              # Page Objects: BlogListingPage, BlogPostDetailPage, BlogCategoryPage, BlogAuthorPage, BlogSearchPage, BlogNavbar
 ├── mocks/

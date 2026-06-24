@@ -60,14 +60,30 @@ describe('when rendering BlogNavigation', () => {
   })
 
   describe('and there is no active category', () => {
-    it('should render the all-articles link and visible categories', () => {
+    it('should link the all-articles entry to /blog', () => {
       render(
         <MemoryRouter>
           <BlogNavigation />
         </MemoryRouter>
       )
       expect(screen.getByRole('link', { name: 'blog.all_articles' })).toHaveAttribute('href', '/blog')
+    })
+
+    it('should link the announcements category to its slug', () => {
+      render(
+        <MemoryRouter>
+          <BlogNavigation />
+        </MemoryRouter>
+      )
       expect(screen.getByRole('link', { name: 'Announcements' })).toHaveAttribute('href', '/blog/announcements')
+    })
+
+    it('should link the events category to its slug', () => {
+      render(
+        <MemoryRouter>
+          <BlogNavigation />
+        </MemoryRouter>
+      )
       expect(screen.getByRole('link', { name: 'Events' })).toHaveAttribute('href', '/blog/events')
     })
 
@@ -119,12 +135,14 @@ describe('when rendering BlogNavigation', () => {
     })
   })
 
-  it('should render the embedded Search component', () => {
-    render(
-      <MemoryRouter>
-        <BlogNavigation />
-      </MemoryRouter>
-    )
-    expect(screen.getByTestId('mock-search')).toBeInTheDocument()
+  describe('and a search component is mounted alongside the categories', () => {
+    it('should render the embedded Search component', () => {
+      render(
+        <MemoryRouter>
+          <BlogNavigation />
+        </MemoryRouter>
+      )
+      expect(screen.getByTestId('mock-search')).toBeInTheDocument()
+    })
   })
 })

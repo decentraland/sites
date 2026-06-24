@@ -66,13 +66,21 @@ describe('when rendering MainPostCard', () => {
       expect(screen.getByTestId('main-post-card')).toBeInTheDocument()
     })
 
-    it('should render the post title and description', () => {
+    it('should render the post title', () => {
       render(
         <MemoryRouter>
           <MainPostCard post={post} />
         </MemoryRouter>
       )
       expect(screen.getByText('Featured Title')).toBeInTheDocument()
+    })
+
+    it('should render the post description', () => {
+      render(
+        <MemoryRouter>
+          <MainPostCard post={post} />
+        </MemoryRouter>
+      )
       expect(screen.getByText('Featured description.')).toBeInTheDocument()
     })
 

@@ -1,22 +1,21 @@
-// See e2e/README.md for the suite's mental model (spec = user journey).
+// See e2e/README.md for the suite's mental model (isolated when/and/should tests).
 import { postsPage2 } from '../../fixtures/blog/posts-page-2'
 import { mockBlogApi } from '../../mocks/blog'
 import { BlogListingPage, BlogPostDetailPage } from '../../pages/blog.page'
 import { expect, test } from './_setup'
 
-test.describe('Scrolling for more posts', () => {
-  test('after scrolling loads more posts, opening one and pressing back keeps the list scrolled, not reset', async ({ page }) => {
+const PAGE_2_POST = postsPage2[0]
+const PAGE_2_TITLE = PAGE_2_POST.fields.title as string
+const PAGE_2_SLUG = PAGE_2_POST.fields.id as string
+const PAGE_2_CATEGORY = (PAGE_2_POST.fields.category as { fields: { id: string } }).fields.id
+
+test.describe('when a reader on /blog scrolls past the first page of posts', () => {
+  test('should fetch a second page with skip > 0', async ({ page }) => {
     await mockBlogApi(page, { posts: 'multi-page' })
     const blog = new BlogListingPage(page)
-    const detail = new BlogPostDetailPage(page)
-
-    // 1. Land on /blog and snapshot the initial card count.
     await blog.goto()
     await expect(blog.postList()).toBeVisible()
-    const initialCount = await blog.cards().count()
-    expect(initialCount).toBeGreaterThan(0)
 
-    // 2. Register the page-2 fetch watcher BEFORE the scroll so we don't race.
     const page2Request = page.waitForRequest(req => {
       try {
         const u = new URL(req.url())
@@ -26,32 +25,56 @@ test.describe('Scrolling for more posts', () => {
         return false
       }
     })
-
-    // Scroll to the bottom — useInfiniteScroll listens on window scroll.
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
     await page2Request
+  })
 
-    // Wait for new cards to be appended.
+  test('should append new cards without dropping the first page', async ({ page }) => {
+    await mockBlogApi(page, { posts: 'multi-page' })
+    const blog = new BlogListingPage(page)
+    await blog.goto()
+    await expect(blog.postList()).toBeVisible()
+    const initialCount = await blog.cards().count()
+    expect(initialCount).toBeGreaterThan(0)
+
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
     await expect.poll(async () => blog.cards().count()).toBeGreaterThan(initialCount)
+  })
+})
 
-    // 3. Click a post that only exists in page 2 to prove the scroll really
-    // pulled the second page.
-    const targetPage2Post = postsPage2[0]
-    const targetTitle = targetPage2Post.fields.title as string
-    const targetSlug = targetPage2Post.fields.id as string
-    const targetCategorySlug = (targetPage2Post.fields.category as { fields: { id: string } }).fields.id
+test.describe('when a reader clicks a card that only exists in the second page', () => {
+  test('should navigate to its detail page', async ({ page }) => {
+    await mockBlogApi(page, { posts: 'multi-page' })
+    const blog = new BlogListingPage(page)
+    const detail = new BlogPostDetailPage(page)
+    await blog.goto()
+    await expect(blog.postList()).toBeVisible()
 
-    await blog.clickCardByTitle(targetTitle)
-    await page.waitForURL(`**/blog/${targetCategorySlug}/${targetSlug}`)
-    await expect(detail.title()).toHaveText(targetTitle)
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+    await expect(blog.cardByTitle(PAGE_2_TITLE)).toBeVisible()
 
-    // 4. Press browser back — RTK Query cache (keepUnusedDataFor = 60s) should
-    // keep the merged listing intact, so a page-2 card still resolves on /blog
-    // without scrolling again. We assert the contract directly instead of
-    // counting cards (count has a racy isFetching window).
+    await blog.clickCardByTitle(PAGE_2_TITLE)
+    await page.waitForURL(`**/blog/${PAGE_2_CATEGORY}/${PAGE_2_SLUG}`)
+    await expect(detail.title()).toHaveText(PAGE_2_TITLE)
+  })
+})
+
+test.describe('when a reader presses back from a deep-page-2 post', () => {
+  test('should keep the page-2 card visible on /blog (cache hit)', async ({ page }) => {
+    await mockBlogApi(page, { posts: 'multi-page' })
+    const blog = new BlogListingPage(page)
+    const detail = new BlogPostDetailPage(page)
+
+    await blog.goto()
+    await expect(blog.postList()).toBeVisible()
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+    await expect(blog.cardByTitle(PAGE_2_TITLE)).toBeVisible()
+    await blog.clickCardByTitle(PAGE_2_TITLE)
+    await page.waitForURL(`**/blog/${PAGE_2_CATEGORY}/${PAGE_2_SLUG}`)
+    await expect(detail.title()).toHaveText(PAGE_2_TITLE)
+
     await page.goBack()
     await page.waitForURL('**/blog')
-    await expect(blog.postList()).toBeVisible()
-    await expect(blog.cardByTitle(targetTitle)).toBeVisible()
+    await expect(blog.cardByTitle(PAGE_2_TITLE)).toBeVisible()
   })
 })
