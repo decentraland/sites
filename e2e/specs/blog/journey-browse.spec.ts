@@ -8,7 +8,6 @@ import { expect, test } from './_setup'
 const FEATURED_TITLE = featuredPost.fields.title as string
 const FEATURED_SLUG = featuredPost.fields.id as string
 const CATEGORY_SLUG = announcementsCategory.fields.id as string
-const CATEGORY_TITLE = announcementsCategory.fields.title as string
 
 test.describe('when a reader lands on /blog', () => {
   let blog: BlogListingPage
