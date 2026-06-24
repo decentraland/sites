@@ -1,7 +1,7 @@
 import { Suspense, lazy, memo, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import type { Profile } from 'dcl-catalyst-client/dist/client/specs/lambdas-client'
-import { useAsyncMemo, useTranslation } from '@dcl/hooks'
+import { useAnalytics, useAsyncMemo, useTranslation } from '@dcl/hooks'
 import { EthAddress } from '@dcl/schemas/dist/misc'
 import { useDesktopMediaQuery } from 'decentraland-ui2'
 import { InviteHero } from '../../components/Invite/InviteHero/InviteHero'
@@ -78,8 +78,10 @@ function useDocumentMeta(title: string, description: string) {
 
 const InvitePage = memo(() => {
   const { referrer = '' } = useParams<{ referrer: string }>()
+  const location = useLocation()
   const isDesktop = useDesktopMediaQuery()
   const { t } = useTranslation()
+  const { isInitialized: isAnalyticsInitialized, page } = useAnalytics()
 
   const [referrerProfile, referrerProfileStatus] = useAsyncMemo(async () => {
     if (!referrer) return null
@@ -87,6 +89,15 @@ const InvitePage = memo(() => {
   }, [referrer])
 
   useDocumentMeta(t('page_invite.social.title'), t('page_invite.social.description'))
+
+  // Invite is a Layout-less route, so it never gets the automatic page() that
+  // Layout fires for wrapped routes. Fire it here to restore the invite
+  // pageview lost in the Gatsby→SPA migration (the warehouse's invite funnel
+  // reads FCT_PAGEVIEWS for /invite paths). Mirrors Layout.tsx exactly.
+  useEffect(() => {
+    if (!isAnalyticsInitialized) return
+    page(location.pathname)
+  }, [isAnalyticsInitialized, location.pathname, page])
 
   return (
     <>

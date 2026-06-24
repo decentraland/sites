@@ -92,6 +92,10 @@ describe('placesEndpoints', () => {
     })
 
     describe('and an ENS realm with an explicit position is provided', () => {
+      // The /places scene record carries a contaminated user_count (the Genesis
+      // City parcel's occupancy); /worlds carries the World's real count. The
+      // scene fetch is always the first call, so it's queued in the parent
+      // beforeEach; each child queues only its distinct /worlds response next.
       beforeEach(() => {
         mockGetEnv.mockImplementation(key => (key === 'PLACES_API_URL' ? 'https://places.test/api' : undefined))
         fetchSpy.mockResolvedValueOnce({
@@ -109,25 +113,118 @@ describe('placesEndpoints', () => {
                   description: '',
                   positions: ['10,20', '11,20'],
                   world: true,
-                  world_name: 'cool.dcl.eth'
+                  world_name: 'cool.dcl.eth',
+                  user_count: 99
                 }
               ]
             })
         } as unknown as Response)
       })
 
-      it('should query the World scene by name AND position so the API returns only the matching scene', async () => {
-        const store = createTestStore()
-        await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'Cool.DCL.eth', position: [10, 20] }))
+      describe('and the /worlds lookup resolves the World record', () => {
+        beforeEach(() => {
+          fetchSpy.mockResolvedValueOnce({
+            ok: true,
+            json: () =>
+              Promise.resolve({ ok: true, data: [{ id: 'cool.dcl.eth', world: true, world_name: 'cool.dcl.eth', user_count: 2 }] })
+          } as unknown as Response)
+        })
 
-        expect(fetchSpy).toHaveBeenCalledWith('https://places.test/api/places?names=cool.dcl.eth&positions=10,20')
+        it('should query the World scene by name AND position so the API returns only the matching scene', async () => {
+          const store = createTestStore()
+          await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'Cool.DCL.eth', position: [10, 20] }))
+
+          expect(fetchSpy).toHaveBeenCalledWith('https://places.test/api/places?names=cool.dcl.eth&positions=10,20')
+        })
+
+        it('should return the scene the server resolved for that position', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [10, 20] })
+          )
+
+          expect(result.data?.[0]).toEqual(expect.objectContaining({ id: 'arena' }))
+        })
+
+        it('should also query /worlds with the lowercased name to read the reliable occupancy', async () => {
+          const store = createTestStore()
+          await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'Cool.DCL.eth', position: [10, 20] }))
+
+          expect(fetchSpy).toHaveBeenCalledWith('https://places.test/api/worlds?names=cool.dcl.eth')
+        })
+
+        it('should overlay the /worlds user_count so the card shows the World occupancy, not the Genesis City parcel count', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [10, 20] })
+          )
+
+          expect(result.data?.[0].user_count).toBe(2)
+        })
       })
 
-      it('should return the scene the server resolved for that position', async () => {
-        const store = createTestStore()
-        const result = await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [10, 20] }))
+      describe('and the /worlds lookup reports zero users (the user is alone)', () => {
+        beforeEach(() => {
+          fetchSpy.mockResolvedValueOnce({
+            ok: true,
+            json: () =>
+              Promise.resolve({ ok: true, data: [{ id: 'cool.dcl.eth', world: true, world_name: 'cool.dcl.eth', user_count: 0 }] })
+          } as unknown as Response)
+        })
 
-        expect(result.data?.[0]).toEqual(expect.objectContaining({ id: 'arena' }))
+        it('should overlay the zero count instead of leaving the contaminated value', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [10, 20] })
+          )
+
+          expect(result.data?.[0].user_count).toBe(0)
+        })
+      })
+
+      describe('and the /worlds lookup fails', () => {
+        beforeEach(() => {
+          fetchSpy.mockRejectedValueOnce(new Error('worlds down'))
+        })
+
+        it('should keep the scene record and not crash the query', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [10, 20] })
+          )
+
+          expect(result.data?.[0]).toEqual(expect.objectContaining({ id: 'arena', user_count: 99 }))
+        })
+      })
+
+      describe('and the /worlds lookup returns a non-OK response', () => {
+        beforeEach(() => {
+          fetchSpy.mockResolvedValueOnce({ ok: false, status: 503 } as unknown as Response)
+        })
+
+        it('should fall back to the scene record value rather than overriding with undefined', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [10, 20] })
+          )
+
+          expect(result.data?.[0].user_count).toBe(99)
+        })
+      })
+
+      describe('and the /worlds lookup returns no record', () => {
+        beforeEach(() => {
+          fetchSpy.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ ok: true, data: [] }) } as unknown as Response)
+        })
+
+        it('should keep the scene record value', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [10, 20] })
+          )
+
+          expect(result.data?.[0].user_count).toBe(99)
+        })
       })
     })
 
