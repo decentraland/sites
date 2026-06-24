@@ -1,8 +1,11 @@
-import { memo, useCallback, useMemo } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { Typography } from 'decentraland-ui2'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
+import { useAnonUserId } from '../../hooks/useAnonUserId'
+import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+import { useDeferredTrack } from '../../hooks/useDeferredTrack'
 import { Repo, useLatestGithubRelease } from '../../hooks/useLatestGithubRelease'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsSetup from '../../images/download/creator-hub/mac_setup.svg'
@@ -12,8 +15,9 @@ import windowsAppIcon from '../../images/download/creator-hub/windows_app_icon.s
 import windowsDownloadFolder from '../../images/download/creator-hub/windows_downloads_folder.svg'
 import windowsSetup from '../../images/download/creator-hub/windows_setup.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
+import { createDownloadTracker, toAuthState } from '../../modules/downloadTracking'
 import { triggerFileDownload } from '../../modules/file'
-import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
+import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { Architecture, OperativeSystem } from '../../types/download.types'
 import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from '../DownloadSuccess/DownloadSuccess.types'
 import { DownloadSuccessLayout } from '../DownloadSuccess/DownloadSuccessLayout'
@@ -23,7 +27,11 @@ const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
 const CreatorHubDownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
   const { intl } = useTranslation()
+  const track = useDeferredTrack()
   const trackClick = useTrackClick()
+  const anonUserId = useAnonUserId()
+  const { hasValidIdentity } = useAuthIdentity()
+  const hasTrackedArrivalRef = useRef(false)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const l = useCallback((id: string, values?: Record<string, any>) => intl.formatMessage({ id }, values), [intl])
@@ -41,6 +49,43 @@ const CreatorHubDownloadSuccess = memo(() => {
 
   const osIcon = clientOS === OperativeSystem.WINDOWS ? microsoftLogo : appleLogo
   const osLink = links?.[clientOS]?.[clientArch]
+
+  // Revisit counter captured once via a lazy initializer (keyed by os:arch) so
+  // refreshes / back-forward navigations of the success page are recorded as
+  // revisit:n rather than re-counted as fresh arrivals. Mirrors the Explorer
+  // DownloadSuccess flow.
+  const [revisitNumber] = useState(() => {
+    const visitsKey = `creatorHubDownloadSuccess:visits:${clientOS}:${clientArch}`
+    const current = Number(sessionStorage.getItem(visitsKey) ?? '0')
+    sessionStorage.setItem(visitsKey, String(current + 1))
+    return current
+  })
+
+  // Reaching this page is the completion signal for the Creator Hub download
+  // funnel — the file was already triggered on the previous page. Fire
+  // download_success via the shared tracker so the payload shape matches the
+  // Explorer funnel (the data team joins it to download_started by
+  // anon_user_id + place). Gated on osLink so href/filename are meaningful and
+  // guarded by a ref so React strict-mode double-invoke fires it only once.
+  useEffect(() => {
+    if (hasTrackedArrivalRef.current) return
+    if (!osLink) return
+    hasTrackedArrivalRef.current = true
+
+    const filename = osLink.split('/').pop() || ''
+    const tracker = createDownloadTracker(track, {
+      href: osLink,
+      os: clientOS,
+      arch: clientArch,
+      place: DownloadPlace.CREATOR_HUB_SUCCESS_PAGE,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      anon_user_id: anonUserId,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      auth_state: toAuthState(hasValidIdentity),
+      revisit: revisitNumber
+    })
+    tracker.success(filename)
+  }, [track, osLink, clientOS, clientArch, anonUserId, hasValidIdentity, revisitNumber])
 
   const productAction = l('page.download.success.subtitle_action_creating')
 

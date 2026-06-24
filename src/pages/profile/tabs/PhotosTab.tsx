@@ -1,6 +1,9 @@
 import { useCallback, useMemo } from 'react'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined'
 import { CircularProgress, Typography } from 'decentraland-ui2'
 import { PhotoModal } from '../../../components/profile/PhotoModal'
+import { JumpInEmptyState } from '../../../components/profile/ProfileEmptyState'
 import { useOpenPhotoModal } from '../../../components/profile/ProfileModal/useOpenPhotoModal'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
@@ -39,7 +42,17 @@ function PhotosTab({ address, isOwnProfile }: PhotosTabProps) {
   }
 
   if (photos.length === 0) {
-    return <EmptyBio sx={{ mt: 1 }}>{t(isOwnProfile ? 'profile.photos.empty_owner' : 'profile.photos.empty_member')}</EmptyBio>
+    if (!isOwnProfile) {
+      return <EmptyBio sx={{ mt: 1 }}>{t('profile.photos.empty_member')}</EmptyBio>
+    }
+    return (
+      <JumpInEmptyState
+        icon={<ImageOutlinedIcon />}
+        title={t('profile.photos.empty_title')}
+        subtitle={t('profile.photos.empty_owner_subtitle')}
+        ctaLabel={t('profile.photos.empty_owner_cta')}
+      />
+    )
   }
 
   // Show the rendered count, not the service-side `currentImages` total — the

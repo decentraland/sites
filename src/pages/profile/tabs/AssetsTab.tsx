@@ -8,6 +8,7 @@ import MapOutlinedIcon from '@mui/icons-material/MapOutlined'
 /* eslint-enable @typescript-eslint/naming-convention */
 import { AssetPreviewPlayerProvider, Box, Button, CatalogCard, CircularProgress, Typography } from 'decentraland-ui2'
 import { FilterChip } from '../../../components/profile/FilterChips'
+import { ProfileEmptyState } from '../../../components/profile/ProfileEmptyState'
 import { getEnv } from '../../../config/env'
 import { useGetProfileAssetsQuery } from '../../../features/profile/profile.assets.client'
 import type { AssetCategory, AssetEntry } from '../../../features/profile/profile.assets.client'
@@ -19,6 +20,7 @@ import { EmptyBio, EquippedGrid, LoadingRow } from './OverviewTab.styled'
 
 interface AssetsTabProps {
   address: string
+  isOwnProfile: boolean
   /** True when rendered inside the profile modal — lifts the hover preview above the dialog. */
   embedded?: boolean
 }
@@ -97,7 +99,7 @@ function useAvailableCategories(address: string): Set<AssetCategory> {
   }, [wearable.data?.total, emote.data?.total, ens.data?.total, parcel.data?.total, estate.data?.total])
 }
 
-function AssetsTab({ address, embedded = false }: AssetsTabProps) {
+function AssetsTab({ address, isOwnProfile, embedded = false }: AssetsTabProps) {
   const t = useFormatMessage()
   const availableCategories = useAvailableCategories(address)
   // Default to the first category that actually has items, in canonical order
@@ -195,10 +197,20 @@ function AssetsTab({ address, embedded = false }: AssetsTabProps) {
   }
 
   if (!isLoading && items.length === 0) {
+    const marketplaceUrl = (getEnv('MARKETPLACE_URL') ?? 'https://decentraland.org/marketplace').replace(/\/+$/, '')
     return (
       <>
         {header}
-        <EmptyBio sx={{ mt: 1 }}>{t('profile.assets.empty_description')}</EmptyBio>
+        {isOwnProfile ? (
+          <ProfileEmptyState
+            icon={<CheckroomOutlinedIcon />}
+            title={t('profile.assets.empty_title')}
+            subtitle={t('profile.assets.empty_owner_subtitle')}
+            action={{ label: t('profile.assets.empty_owner_cta'), href: marketplaceUrl }}
+          />
+        ) : (
+          <EmptyBio sx={{ mt: 1 }}>{t('profile.assets.empty_description')}</EmptyBio>
+        )}
       </>
     )
   }

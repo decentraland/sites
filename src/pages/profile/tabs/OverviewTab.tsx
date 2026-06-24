@@ -66,7 +66,12 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
   const description = avatar?.description?.trim() ?? ''
   const wearables = useMemo(() => getEquippedWearables(avatar), [avatar])
   const { collectibles, isLoading: isLoadingCollectibles } = useEquippedCollectibles(wearables)
-  const { badges, isLoading: isLoadingBadges } = useProfileBadges(address)
+  // Badges live on a separate API, independent of the Catalyst profile. Only
+  // fetch/show them when a real profile exists (it has an avatar); otherwise a
+  // bare address would render a naked avatar decorated with badges, which reads
+  // as false information. No profile -> no address passed -> no badges.
+  const hasProfile = Boolean(avatar)
+  const { badges, isLoading: isLoadingBadges } = useProfileBadges(hasProfile ? address : undefined)
   const visibleBadges = badges
 
   const infoFields: InfoField[] = [

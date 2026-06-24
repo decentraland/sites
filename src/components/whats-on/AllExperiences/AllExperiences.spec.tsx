@@ -112,14 +112,23 @@ jest.mock('./DateNavigation', () => ({
 }))
 
 jest.mock('./DayColumn', () => ({
-  DayColumn: ({ dateLabel, isLoading, events }: Record<string, unknown>) => (
+  DayColumn: ({ dateLabel, isLoading, events, renderCard }: Record<string, unknown>) => (
     <div
       data-testid="day-column"
       data-date-label={dateLabel}
       data-loading={isLoading}
       data-event-count={(events as unknown[]).length}
       data-event-ids={(events as { id: string }[]).map(e => e.id).join(',')}
-    />
+    >
+      {/* Exercise the parent-provided renderCard so its closure is covered. */}
+      {typeof renderCard === 'function'
+        ? (events as { id: string; start_at: string }[]).map(event => (
+            <div key={`${event.id}-${event.start_at}`} data-testid="day-column-card-slot">
+              {(renderCard as (event: unknown) => React.ReactNode)(event)}
+            </div>
+          ))
+        : null}
+    </div>
   )
 }))
 
@@ -841,6 +850,152 @@ describe('AllExperiences', () => {
         expect(mockRedirectToAuth).not.toHaveBeenCalled()
         expect(mockSearchParams.has('tab')).toBe(false)
       })
+    })
+
+    describe('and a recurrent my-event carries next_start_at / next_finish_at', () => {
+      beforeEach(() => {
+        const events = [
+          createMockEvent({
+            id: 'mine-recurrent',
+            user: '0xCreator',
+            approved: true,
+            rejected: false,
+            recurrent: true,
+            // start_at is the FIRST (past) occurrence; the upcoming one lives in next_*.
+            start_at: '2024-01-01T14:00:00Z',
+            finish_at: '2024-01-01T16:00:00Z',
+            next_start_at: '2026-09-20T14:00:00Z',
+            next_finish_at: '2026-09-20T16:00:00Z'
+          })
+        ]
+        mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
+      })
+
+      it('should surface the recurrent event using its upcoming occurrence instead of the past start_at', () => {
+        render(<AllExperiences />)
+
+        fireEvent.click(screen.getByTestId('tab-my'))
+
+        // If the past start_at were used the event would be filtered out as finished;
+        // mapping to next_finish_at keeps it visible.
+        const cardIds = screen.getAllByTestId('my-exp-grid-card').map(c => c.getAttribute('data-id'))
+        expect(cardIds).toContain('mine-recurrent')
+      })
+    })
+
+    describe('and the identity is valid but the address resolves to empty', () => {
+      beforeEach(() => {
+        mockUseAuthIdentity.mockReturnValue({ identity: { authChain: [] }, hasValidIdentity: true, address: '' })
+        mockSearchParams = new URLSearchParams('tab=my')
+        mockUseGetEventsQuery.mockReturnValue({
+          data: [createMockEvent({ id: 'mine', user: '0xCreator', start_at: '2026-09-20T14:00:00Z', finish_at: '2026-09-20T16:00:00Z' })],
+          isLoading: false,
+          isError: false
+        })
+      })
+
+      it('should produce no my-events so the empty state renders', () => {
+        render(<AllExperiences />)
+
+        // showMyEmptyState requires a truthy address, so an empty address renders
+        // the (empty) grid rather than the empty-state placeholder.
+        expect(screen.queryByTestId('my-exp-grid-card')).not.toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('when the day rolls over to a new local day', () => {
+    beforeEach(() => {
+      mockColumnCount.mockReturnValue(3)
+      mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
+      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+    })
+
+    it('should reset the visible day window when a visibilitychange fires after midnight', () => {
+      render(<AllExperiences />)
+
+      // Move the day window forward so we can observe the reset.
+      fireEvent.click(screen.getByTestId('nav-right'))
+      expect(screen.getByTestId('date-navigation')).toHaveAttribute('data-start-offset', '3')
+
+      // Advance the clock to the next calendar day and notify the visibility listener.
+      jest.setSystemTime(new Date(2026, 8, 14, 9, 0, 0))
+      fireEvent(document, new Event('visibilitychange'))
+
+      expect(screen.getByTestId('date-navigation')).toHaveAttribute('data-start-offset', '0')
+    })
+
+    it('should leave the day window untouched when visibilitychange fires on the same day', () => {
+      render(<AllExperiences />)
+
+      fireEvent.click(screen.getByTestId('nav-right'))
+      // Same day — the midnight check is a no-op.
+      fireEvent(document, new Event('visibilitychange'))
+
+      expect(screen.getByTestId('date-navigation')).toHaveAttribute('data-start-offset', '3')
+    })
+  })
+
+  describe('when ?tab=my is active and the section needs to scroll into view', () => {
+    let rafSpy: jest.SpyInstance
+    let cancelSpy: jest.SpyInstance
+    let scrollIntoViewMock: jest.Mock
+
+    beforeEach(() => {
+      mockColumnCount.mockReturnValue(3)
+      mockUseAuthIdentity.mockReturnValue({ identity: { authChain: [] }, hasValidIdentity: true, address: '0xCreator' })
+      mockSearchParams = new URLSearchParams('tab=my')
+      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      scrollIntoViewMock = jest.fn()
+      // jsdom does not implement scrollIntoView.
+      Element.prototype.scrollIntoView = scrollIntoViewMock
+    })
+
+    afterEach(() => {
+      rafSpy?.mockRestore()
+      cancelSpy?.mockRestore()
+    })
+
+    it('should scroll the section into view once it gains a layout box', () => {
+      // First rAF tick: offsetParent is null (display:none ancestor) → retry.
+      // Second tick: offsetParent present → scrollIntoView fires once.
+      let offsetParentValue: Element | null = null
+      Object.defineProperty(HTMLElement.prototype, 'offsetParent', {
+        configurable: true,
+        get() {
+          return offsetParentValue
+        }
+      })
+      const callbacks: FrameRequestCallback[] = []
+      rafSpy = jest.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: FrameRequestCallback) => {
+        callbacks.push(cb)
+        return callbacks.length
+      })
+
+      render(<AllExperiences />)
+
+      // Flush the first scheduled frame while still display:none → schedules a retry.
+      expect(callbacks).toHaveLength(1)
+      callbacks.shift()?.(0)
+      expect(scrollIntoViewMock).not.toHaveBeenCalled()
+
+      // Now the section has a layout box; the retry frame should scroll.
+      offsetParentValue = document.body
+      expect(callbacks).toHaveLength(1)
+      callbacks.shift()?.(0)
+      expect(scrollIntoViewMock).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' })
+
+      delete (HTMLElement.prototype as unknown as { offsetParent?: unknown }).offsetParent
+    })
+
+    it('should cancel the pending frame on unmount', () => {
+      cancelSpy = jest.spyOn(window, 'cancelAnimationFrame')
+      rafSpy = jest.spyOn(window, 'requestAnimationFrame').mockReturnValue(42)
+
+      const { unmount } = render(<AllExperiences />)
+      unmount()
+
+      expect(cancelSpy).toHaveBeenCalledWith(42)
     })
   })
 })

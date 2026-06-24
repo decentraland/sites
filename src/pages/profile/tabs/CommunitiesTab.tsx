@@ -9,6 +9,7 @@ import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import { CircularProgress, Tooltip } from 'decentraland-ui2'
 import { CommunityDetailModal, useOpenCommunityModal } from '../../../components/profile/CommunityDetailModal'
+import { JumpInEmptyState } from '../../../components/profile/ProfileEmptyState'
 import { getThumbnailUrl as getCommunityThumbnailUrl } from '../../../features/communities/communities.helpers'
 import { useGetProfileCommunitiesQuery } from '../../../features/profile/profile.social.client'
 import type { ProfileCommunity } from '../../../features/profile/profile.social.client'
@@ -64,7 +65,17 @@ function CommunitiesTab({ address, isOwnProfile }: CommunitiesTabProps) {
   }
 
   if (communities.length === 0) {
-    return <EmptyBio sx={{ mt: 1 }}>{t(isOwnProfile ? 'profile.communities.empty_owner' : 'profile.communities.empty_member')}</EmptyBio>
+    if (!isOwnProfile) {
+      return <EmptyBio sx={{ mt: 1 }}>{t('profile.communities.empty_member')}</EmptyBio>
+    }
+    return (
+      <JumpInEmptyState
+        icon={<GroupsOutlinedIcon />}
+        title={t('profile.communities.empty_title')}
+        subtitle={t('profile.communities.empty_owner_subtitle')}
+        ctaLabel={t('profile.communities.empty_owner_cta')}
+      />
+    )
   }
 
   return (

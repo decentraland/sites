@@ -1,13 +1,18 @@
 import { useCallback, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import VerifiedIcon from '@mui/icons-material/Verified'
 import { useAnalytics } from '@dcl/hooks'
 import type { Avatar } from '@dcl/schemas'
 import { CircularProgress, SceneCard, Typography } from 'decentraland-ui2'
 import { FilterChip, FiltersRow } from '../../../components/profile/FilterChips'
 import { PlaceDetailModal, useOpenPlaceModal } from '../../../components/profile/PlaceDetailModal'
+import { JumpInBadgeIcon, ProfileEmptyState } from '../../../components/profile/ProfileEmptyState'
+import { getEnv } from '../../../config/env'
 import { useGetProfileFavoritePlacesQuery, useGetProfilePlacesQuery } from '../../../features/profile/profile.places.client'
 import type { ProfileFavoritePlace, ProfilePlace } from '../../../features/profile/profile.places.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
@@ -53,8 +58,12 @@ function PlacesTab({ address, isOwnProfile }: PlacesTabProps) {
   // hook delegates so the same dialog swaps content (no modal-on-modal); standalone it
   // opens a local PlaceDetailModal below.
   const { openPlace, open: openPlaceModal, close: closePlaceModal } = useOpenPlaceModal()
+  const navigate = useNavigate()
   const handleSelectPlaces = useCallback(() => setView('places'), [])
   const handleSelectFavorites = useCallback(() => setView('favorites'), [])
+  // "Explore places" sends the user to the in-site places browse (/whats-on);
+  // the legacy /places paths already redirect there.
+  const handleExplorePlaces = useCallback(() => navigate('/whats-on'), [navigate])
 
   const handleJumpInTrack = useCallback(
     (data: JumpInTrackData) => track(SegmentEvent.GO_TO_EXPLORER, { ...data, position: 'profile-places' }),
@@ -94,15 +103,34 @@ function PlacesTab({ address, isOwnProfile }: PlacesTabProps) {
   }
 
   if (places.length === 0) {
-    const emptyKey = showFavorites
-      ? 'profile.places.empty_favorites'
-      : isOwnProfile
-        ? 'profile.places.empty_owner'
-        : 'profile.places.empty_member'
+    let emptyContent
+    if (showFavorites) {
+      // Favourites are scoped to the signed caller, so this branch is own-profile only.
+      emptyContent = (
+        <ProfileEmptyState
+          icon={<FavoriteBorderIcon />}
+          title={t('profile.places.empty_favorites_title')}
+          subtitle={t('profile.places.empty_favorites_subtitle')}
+          action={{ label: t('profile.places.empty_favorites_cta'), onClick: handleExplorePlaces, endIcon: <JumpInBadgeIcon /> }}
+        />
+      )
+    } else if (isOwnProfile) {
+      const namesUrl = `${(getEnv('BUILDER_URL') ?? 'https://decentraland.org/builder').replace(/\/+$/, '')}/names`
+      emptyContent = (
+        <ProfileEmptyState
+          icon={<PlaceOutlinedIcon />}
+          title={t('profile.places.empty_owner_title')}
+          subtitle={t('profile.places.empty_owner_subtitle')}
+          action={{ label: t('profile.places.empty_owner_cta'), href: namesUrl, startIcon: <VerifiedIcon /> }}
+        />
+      )
+    } else {
+      emptyContent = <EmptyBio sx={{ mt: 1 }}>{t('profile.places.empty_member')}</EmptyBio>
+    }
     return (
       <>
         {filters}
-        <EmptyBio sx={{ mt: 1 }}>{t(emptyKey)}</EmptyBio>
+        {emptyContent}
       </>
     )
   }

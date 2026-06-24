@@ -432,7 +432,7 @@
         "subtitle": "Decentralandについて詳しく見る",
         "cta": {
           "label": "もっと見る",
-          "link": "https://docs.decentraland.org/player/general/faq/"
+          "link": "https://docs.decentraland.org/faqs/"
         }
       },
       "marketplace": {
@@ -1020,10 +1020,10 @@
     },
     "overview": {
       "about": "概要",
-      "no_bio_owner": "自己紹介を追加しましょう。",
+      "no_bio_owner": "まだ情報がありません。ワールドに入って自己紹介を完成させましょう！",
       "no_bio_member": "このメンバーはまだ自己紹介を追加していません。",
       "equipped_wearables": "装備中のウェアラブル",
-      "no_wearables": "装備中のウェアラブルはありません。",
+      "no_wearables": "装備中のアイテムはまだありません。",
       "badges": "バッジ",
       "links": "リンク",
       "equipped_items": "装備中のアイテム",
@@ -1065,11 +1065,12 @@
       "count": "{count} アセット",
       "view": "表示",
       "edit": "編集",
-      "transfer": "転送"
+      "transfer": "転送",
+      "empty_owner_subtitle": "マーケットプレイスで、自分だけのスタイルを作り始めましょう",
+      "empty_owner_cta": "マーケットプレイスへ"
     },
     "communities": {
       "empty_title": "コミュニティはまだありません",
-      "empty_owner": "コミュニティに参加するとここに表示されます。",
       "empty_member": "このメンバーはまだコミュニティに参加していません。",
       "count": "{count} コミュニティ",
       "member": "メンバー",
@@ -1080,23 +1081,30 @@
       "action_joined": "参加中",
       "share_aria": "コミュニティのリンクを共有",
       "copy_link": "リンクをコピー",
-      "copied": "コピーしました！"
+      "copied": "コピーしました！",
+      "empty_owner_subtitle": "Decentralandに入って、自分に合ったコミュニティに参加しましょう。自分で作ることもできます！",
+      "empty_owner_cta": "コミュニティを探す"
     },
     "places": {
       "empty_title": "プレイスはまだありません",
-      "empty_owner": "所有しているプレイスがここに表示されます。",
       "empty_member": "このメンバーはまだプレイスを登録していません。",
       "count": "{count} プレイス",
       "jump_in": "ジャンプイン",
       "filter_my_places": "マイプレイス",
       "filter_favorites": "お気に入り",
-      "empty_favorites": "お気に入りの場所はまだありません。"
+      "empty_owner_title": "まだ何もありません。でも、簡単に変えられます",
+      "empty_owner_subtitle": "「マイプレイス」には、Decentralandで所有または管理しているスペースが表示されます。まずはNAMEを取得するのが一番簡単で、自分だけのWorldを使えるようになります。",
+      "empty_owner_cta": "NAMEを取得",
+      "empty_favorites_title": "保存済みのものはまだありません",
+      "empty_favorites_subtitle": "プレイスカードやDecentralandのマップでハートをタップして、お気に入りのプレイスを追加しましょう。ここですべて見つけられます。",
+      "empty_favorites_cta": "プレイスを探す"
     },
     "photos": {
       "empty_title": "写真はまだありません",
-      "empty_owner": "ワールド内のスナップショットがここに表示されます。",
       "empty_member": "このメンバーはまだ写真を撮影していません。",
-      "count": "{count} 枚の写真"
+      "count": "{count} 枚の写真",
+      "empty_owner_subtitle": "入って思い出を集めましょう！「C」キーでカメラを開き、「スペースキー」で写真を撮影できます。",
+      "empty_owner_cta": "参加する"
     },
     "referral_rewards": {
       "anonymous": "サインインして友達を招待し、報酬を獲得しましょう。",

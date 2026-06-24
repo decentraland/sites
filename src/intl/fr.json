@@ -432,7 +432,7 @@
         "subtitle": "En savoir plus sur Decentraland",
         "cta": {
           "label": "voir plus",
-          "link": "https://docs.decentraland.org/player/general/faq/"
+          "link": "https://docs.decentraland.org/faqs/"
         }
       },
       "marketplace": {
@@ -1015,10 +1015,10 @@
     },
     "overview": {
       "about": "À propos",
-      "no_bio_owner": "Ajoutez une bio pour parler de vous.",
+      "no_bio_owner": "Aucune information pour l’instant. Entrez dans le monde et complétez votre bio !",
       "no_bio_member": "Ce membre n'a pas encore ajouté de bio.",
       "equipped_wearables": "Wearables équipés",
-      "no_wearables": "Aucun wearable équipé.",
+      "no_wearables": "Aucun objet équipé pour l’instant.",
       "badges": "Badges",
       "links": "Liens",
       "equipped_items": "Items équipés",
@@ -1060,11 +1060,12 @@
       "count": "{count} actifs",
       "view": "Voir",
       "edit": "Modifier",
-      "transfer": "Transférer"
+      "transfer": "Transférer",
+      "empty_owner_subtitle": "Allez sur le marketplace et commencez à créer votre look unique",
+      "empty_owner_cta": "Aller au marketplace"
     },
     "communities": {
       "empty_title": "Pas encore de communautés",
-      "empty_owner": "Rejoignez une communauté pour la voir ici.",
       "empty_member": "Ce membre n'a rejoint aucune communauté.",
       "count": "{count} communautés",
       "member": "Membre",
@@ -1075,23 +1076,30 @@
       "action_joined": "Rejoint",
       "share_aria": "Partager le lien de la communauté",
       "copy_link": "Copier le lien",
-      "copied": "Copié !"
+      "copied": "Copié !",
+      "empty_owner_subtitle": "Entrez dans Decentraland et rejoignez la communauté qui vous correspond le mieux. Vous pouvez aussi créer la vôtre !",
+      "empty_owner_cta": "Explorer les communautés"
     },
     "places": {
       "empty_title": "Pas encore de lieux",
-      "empty_owner": "Vos lieux apparaîtront ici.",
       "empty_member": "Ce membre n'a enregistré aucun lieu.",
       "count": "{count} lieux",
       "jump_in": "Rejoindre",
       "filter_my_places": "Mes lieux",
       "filter_favorites": "Favoris",
-      "empty_favorites": "Vous n'avez pas encore ajouté de lieux favoris."
+      "empty_owner_title": "Rien ici pour l'instant — mais c'est facile à changer",
+      "empty_owner_subtitle": "Mes Lieux affiche les espaces que vous possédez ou gérez dans Decentraland. Le plus simple pour commencer est d'obtenir un NAME, qui débloque votre propre World.",
+      "empty_owner_cta": "Obtenir un name",
+      "empty_favorites_title": "Rien d'enregistré pour l'instant",
+      "empty_favorites_subtitle": "Ajoutez des Lieux favoris en appuyant sur le cœur d’une carte de lieu ou sur la carte de Decentraland. Vous les retrouverez tous ici.",
+      "empty_favorites_cta": "Explorer les lieux"
     },
     "photos": {
       "empty_title": "Pas encore de photos",
-      "empty_owner": "Les captures en monde apparaîtront ici.",
       "empty_member": "Ce membre n'a pris aucune photo.",
-      "count": "{count} photos"
+      "count": "{count} photos",
+      "empty_owner_subtitle": "Entrez et commencez à collectionner des souvenirs ! Appuyez sur « C » pour ouvrir l’appareil photo et sur la « barre d’espace » pour prendre une photo.",
+      "empty_owner_cta": "Entrer"
     },
     "referral_rewards": {
       "anonymous": "Connectez-vous pour inviter des amis et débloquer des récompenses.",

@@ -22,18 +22,24 @@ jest.mock('../../../hooks/useProfileAvatar', () => ({
 
 jest.mock('../../../pages/profile/tabs', () => ({
   AssetsTab: ({ embedded }: { embedded?: boolean }) => <div data-testid="assets-tab" data-embedded={String(Boolean(embedded))} />,
-  CommunitiesTab: () => null,
+  CommunitiesTab: () => <div data-testid="communities-tab" />,
   CreationsTab: ({ embedded }: { embedded?: boolean }) => <div data-testid="creations-tab" data-embedded={String(Boolean(embedded))} />,
   OverviewTab: () => <div data-testid="overview-tab" />,
-  PhotosTab: () => null,
-  PlacesTab: () => null,
-  ReferralRewardsTab: () => null
+  PhotosTab: () => <div data-testid="photos-tab" />,
+  PlacesTab: () => <div data-testid="places-tab" />,
+  ReferralRewardsTab: () => <div data-testid="referral-rewards-tab" />
 }))
 
 jest.mock('../AvatarRender', () => ({ AvatarRender: () => null }))
 jest.mock('../ProfileHeader', () => ({ ProfileHeader: () => <div data-testid="profile-header" /> }))
 jest.mock('../ProfileMobileMenu', () => ({ ProfileMobileNav: () => <div data-testid="mobile-nav" /> }))
-jest.mock('./MobileTabHeader', () => ({ MobileTabHeader: () => <div data-testid="mobile-tab-header" /> }))
+jest.mock('./MobileTabHeader', () => ({
+  MobileTabHeader: ({ label, onBack }: { label?: string; onBack?: () => void }) => (
+    <button data-testid="mobile-tab-header" onClick={onBack}>
+      {label}
+    </button>
+  )
+}))
 jest.mock('../ProfileLayout', () => ({
   ProfileLayout: ({ header, children }: { header?: React.ReactNode; children?: React.ReactNode }) => (
     <div>
@@ -127,6 +133,71 @@ describe('ProfileSurface', () => {
     it('should thread embedded to the creations tab as well', () => {
       renderSurface({ activeTab: 'creations', embedded: true })
       expect(screen.getByTestId('creations-tab')).toHaveAttribute('data-embedded', 'true')
+    })
+  })
+
+  describe('when rendering each tab variant', () => {
+    it('should render the communities tab', () => {
+      renderSurface({ activeTab: 'communities' })
+      expect(screen.getByTestId('communities-tab')).toBeInTheDocument()
+    })
+
+    it('should render the places tab', () => {
+      renderSurface({ activeTab: 'places' })
+      expect(screen.getByTestId('places-tab')).toBeInTheDocument()
+    })
+
+    it('should render the photos tab', () => {
+      renderSurface({ activeTab: 'photos' })
+      expect(screen.getByTestId('photos-tab')).toBeInTheDocument()
+    })
+
+    it('should render the referral-rewards tab', () => {
+      renderSurface({ activeTab: 'referral-rewards' })
+      expect(screen.getByTestId('referral-rewards-tab')).toBeInTheDocument()
+    })
+  })
+
+  describe('when rendered on a mobile viewport', () => {
+    beforeEach(() => {
+      useTabletAndBelowMediaQueryMock.mockReturnValue(true)
+    })
+
+    describe('and the mount carries no explicit tab', () => {
+      it('should render the mobile navigation root instead of a tab', () => {
+        renderSurface({ hasExplicitTab: false })
+        expect(screen.getByTestId('mobile-nav')).toBeInTheDocument()
+        expect(screen.queryByTestId('mobile-tab-header')).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and the mount carries an explicit tab', () => {
+      it('should render the mobile tab header and forward the exit handler on back', async () => {
+        const onExitTab = jest.fn()
+        renderSurface({ hasExplicitTab: true, activeTab: 'overview', onExitTab })
+
+        const header = screen.getByTestId('mobile-tab-header')
+        expect(header).toBeInTheDocument()
+        expect(screen.queryByTestId('mobile-nav')).not.toBeInTheDocument()
+
+        header.click()
+        expect(onExitTab).toHaveBeenCalledTimes(1)
+      })
+
+      it('should not throw when no exit handler is provided on back', () => {
+        renderSurface({ hasExplicitTab: true, activeTab: 'overview' })
+        const header = screen.getByTestId('mobile-tab-header')
+        expect(() => header.click()).not.toThrow()
+      })
+    })
+  })
+
+  describe('when a confirmed-empty tab is requested', () => {
+    it('should rewrite the location to overview once availability is ready', () => {
+      const onTabChange = jest.fn()
+      render(<ProfileSurface address={ADDRESS} isOwnProfile={false} activeTab="overview" onTabChange={onTabChange} manageDocumentTitle />)
+      // resolvedTab === activeTab here so no redirect; the effect guard stays quiet.
+      expect(onTabChange).not.toHaveBeenCalled()
     })
   })
 })

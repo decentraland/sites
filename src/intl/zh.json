@@ -432,7 +432,7 @@
         "subtitle": "了解更多关于 Decentraland",
         "cta": {
           "label": "查看更多",
-          "link": "https://docs.decentraland.org/player/general/faq/"
+          "link": "https://docs.decentraland.org/faqs/"
         }
       },
       "marketplace": {
@@ -1020,10 +1020,10 @@
     },
     "overview": {
       "about": "关于",
-      "no_bio_owner": "添加简介，介绍一下自己。",
+      "no_bio_owner": "暂无信息。进入世界完善你的简介吧！",
       "no_bio_member": "该成员尚未添加简介。",
       "equipped_wearables": "已穿戴的可穿戴物品",
-      "no_wearables": "没有已穿戴的可穿戴物品。",
+      "no_wearables": "暂无已装备的物品。",
       "badges": "徽章",
       "links": "链接",
       "equipped_items": "已装备物品",
@@ -1065,11 +1065,12 @@
       "count": "{count} 件资产",
       "view": "查看",
       "edit": "编辑",
-      "transfer": "转让"
+      "transfer": "转让",
+      "empty_owner_subtitle": "前往市场，开始打造你的专属造型",
+      "empty_owner_cta": "前往市场"
     },
     "communities": {
       "empty_title": "暂无社区",
-      "empty_owner": "加入社区后将在此显示。",
       "empty_member": "该成员尚未加入任何社区。",
       "count": "{count} 个社区",
       "member": "成员",
@@ -1080,23 +1081,30 @@
       "action_joined": "已加入",
       "share_aria": "分享社区链接",
       "copy_link": "复制链接",
-      "copied": "已复制！"
+      "copied": "已复制！",
+      "empty_owner_subtitle": "进入 Decentraland，加入最适合你的社区。你也可以创建自己的社区！",
+      "empty_owner_cta": "探索社区"
     },
     "places": {
       "empty_title": "暂无场所",
-      "empty_owner": "您拥有的场所将显示在这里。",
       "empty_member": "该成员尚未注册任何场所。",
       "count": "{count} 个场所",
       "jump_in": "前往",
       "filter_my_places": "我的地点",
       "filter_favorites": "收藏",
-      "empty_favorites": "你还没有收藏任何地点。"
+      "empty_owner_title": "这里还什么都没有——但这很容易改变",
+      "empty_owner_subtitle": "“我的地点”会显示你在 Decentraland 中拥有或管理的空间。最简单的开始方式是获取一个 NAME，它会解锁你专属的 World。",
+      "empty_owner_cta": "获取 NAME",
+      "empty_favorites_title": "还没有收藏任何内容",
+      "empty_favorites_subtitle": "在地点卡片或 Decentraland 地图上点击爱心即可添加收藏的地点。你可以在这里找到它们。",
+      "empty_favorites_cta": "探索地点"
     },
     "photos": {
       "empty_title": "暂无照片",
-      "empty_owner": "世界内快照将显示在这里。",
       "empty_member": "该成员尚未拍摄任何照片。",
-      "count": "{count} 张照片"
+      "count": "{count} 张照片",
+      "empty_owner_subtitle": "快进来开始收集回忆吧！按 'C' 打开相机，按 '空格键' 拍照。",
+      "empty_owner_cta": "立即加入"
     },
     "referral_rewards": {
       "anonymous": "登录以邀请好友并解锁奖励。",

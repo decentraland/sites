@@ -480,7 +480,7 @@
         "subtitle": "Learn more about Decentraland",
         "cta": {
           "label": "see more",
-          "link": "https://docs.decentraland.org/player/general/faq/"
+          "link": "https://docs.decentraland.org/faqs/"
         }
       },
       "marketplace": {
@@ -1499,10 +1499,10 @@
     },
     "overview": {
       "about": "About",
-      "no_bio_owner": "Add a bio to tell people about yourself.",
+      "no_bio_owner": "No information yet. Jump in world and complete your bio!",
       "no_bio_member": "This member has not added a bio yet.",
       "equipped_wearables": "Equipped wearables",
-      "no_wearables": "No wearables equipped.",
+      "no_wearables": "No equipped items yet.",
       "badges": "Badges",
       "links": "Links",
       "equipped_items": "Equipped items",
@@ -1544,11 +1544,12 @@
       "count": "{count} assets",
       "view": "View",
       "edit": "Edit",
-      "transfer": "Transfer"
+      "transfer": "Transfer",
+      "empty_owner_subtitle": "Go to marketplace and start creating your unique look",
+      "empty_owner_cta": "Go to marketplace"
     },
     "communities": {
       "empty_title": "No communities yet",
-      "empty_owner": "Join a community to see it here.",
       "empty_member": "This member has not joined any communities yet.",
       "count": "{count} communities",
       "member": "Member",
@@ -1559,23 +1560,30 @@
       "action_joined": "Joined",
       "share_aria": "Share community link",
       "copy_link": "Copy link",
-      "copied": "Copied!"
+      "copied": "Copied!",
+      "empty_owner_subtitle": "Jump into Decentraland and join the community that better aligns with you. You can also create your own!",
+      "empty_owner_cta": "Explore communities"
     },
     "places": {
       "empty_title": "No places yet",
-      "empty_owner": "Places you own will appear here.",
       "empty_member": "This member has not registered any places yet.",
       "count": "{count} places",
       "jump_in": "Jump in",
       "filter_my_places": "My Places",
       "filter_favorites": "Favourites",
-      "empty_favorites": "You haven't added any favorite places yet."
+      "empty_owner_title": "Nothing here yet—but that's easy to change",
+      "empty_owner_subtitle": "My Places shows the spaces you own or manage in Decentraland. The easiest way to start is with a NAME, which unlocks your own World.",
+      "empty_owner_cta": "Get a name",
+      "empty_favorites_title": "Nothing saved yet",
+      "empty_favorites_subtitle": "Add favorite Places by tapping the heart on a place card or the map in Decentraland. You'll find them all here.",
+      "empty_favorites_cta": "Explore places"
     },
     "photos": {
       "empty_title": "No photos yet",
-      "empty_owner": "In-world snapshots will appear here.",
       "empty_member": "This member has not taken any photos yet.",
-      "count": "{count} photos"
+      "count": "{count} photos",
+      "empty_owner_subtitle": "Jump in and start collecting memories! Press 'C' to open the Camera and 'Space bar' to snap a photo.",
+      "empty_owner_cta": "Jump in"
     },
     "referral_rewards": {
       "anonymous": "Sign in to invite friends and unlock rewards.",

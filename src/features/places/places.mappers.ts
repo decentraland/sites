@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import decentralandLogo from '../../images/jump/decentraland-logo.svg'
+import { isValidEthAddress } from '../../utils/avatar'
 import { resolveEventRealm } from '../../utils/whatsOnUrl'
 import type { CardData, JumpEvent, JumpPlace } from './places.types'
 
@@ -11,12 +12,18 @@ function fromPlace(data: JumpPlace): CardData {
   // foundation. User-deployed places can also have owner=null + a contact_name
   // (e.g. "Pink Oasis"), and those should fall back to the generic avatar.
   const isFoundationPlace = data.contact_name === FOUNDATION_CONTACT_NAME
+  // `owner` doubles as a display string on some records (zone returns
+  // "dexou by xyz.lb" for dexou.dcl.eth), so only feed it to the profile link +
+  // avatar lookup when it is a real wallet address. A non-address owner still
+  // shows as the creator name, but the name is not turned into a profile link
+  // that would resolve to a bogus `?profile=<display name>`.
+  const ownerAddress = isValidEthAddress(data.owner) ? data.owner : undefined
   return {
     id: data.id,
     type: 'place',
     title: data.title,
     user_name: data.owner || data.contact_name || 'Unknown',
-    user: data.owner ?? undefined,
+    user: ownerAddress,
     user_avatar: isFoundationPlace ? decentralandLogo : undefined,
     coordinates,
     image: data.image,

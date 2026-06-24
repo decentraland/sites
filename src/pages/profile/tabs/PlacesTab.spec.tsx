@@ -1,13 +1,35 @@
 import * as mockReact from 'react'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useGetProfileFavoritePlacesQuery, useGetProfilePlacesQuery } from '../../../features/profile/profile.places.client'
 import { PlacesTab } from './PlacesTab'
 
 jest.mock('decentraland-ui2', () => ({
   CircularProgress: () => mockReact.createElement('div', { role: 'progressbar' }),
-  SceneCard: ({ sceneName, avatar, coordinates }: { sceneName: string; avatar?: { name?: string }; coordinates?: string }) =>
-    mockReact.createElement('div', { 'data-testid': 'scene-card', 'data-owner': avatar?.name, 'data-coordinates': coordinates }, sceneName),
+  SceneCard: ({
+    sceneName,
+    avatar,
+    coordinates,
+    image,
+    onClick,
+    onJumpInTrack
+  }: {
+    sceneName: string
+    avatar?: { name?: string }
+    coordinates?: string
+    image?: string
+    onClick?: () => void
+    onJumpInTrack?: (data: { type: string; has_launcher: boolean }) => void
+  }) =>
+    mockReact.createElement(
+      'div',
+      { 'data-testid': 'scene-card', 'data-owner': avatar?.name, 'data-coordinates': coordinates, 'data-image': image },
+      mockReact.createElement('button', { 'data-testid': 'scene-open', onClick }, sceneName),
+      mockReact.createElement('button', {
+        'data-testid': 'scene-jump',
+        onClick: () => onJumpInTrack?.({ type: 'world', has_launcher: false })
+      })
+    ),
   Typography: ({ children }: { children: React.ReactNode }) => mockReact.createElement('p', null, children),
   Box: ({ children, ...rest }: { children?: React.ReactNode } & React.HTMLAttributes<HTMLDivElement>) =>
     mockReact.createElement('div', rest, children),
@@ -15,8 +37,9 @@ jest.mock('decentraland-ui2', () => ({
     mockReact.createElement('button', { onClick, 'aria-pressed': Boolean($active) }, label),
   styled: () => (component: unknown) => component
 }))
+const trackMock = jest.fn()
 jest.mock('@dcl/hooks', () => ({
-  useAnalytics: () => ({ track: jest.fn() })
+  useAnalytics: () => ({ track: trackMock })
 }))
 jest.mock('../../../components/profile/FilterChips', () => {
   const actualReact = jest.requireActual<typeof mockReact>('react')
@@ -26,9 +49,10 @@ jest.mock('../../../components/profile/FilterChips', () => {
       actualReact.createElement('button', { onClick, 'aria-pressed': Boolean($active) }, label)
   }
 })
+const openPlaceMock = jest.fn()
 jest.mock('../../../components/profile/PlaceDetailModal', () => ({
   PlaceDetailModal: () => null,
-  useOpenPlaceModal: () => ({ openPlace: null, open: jest.fn(), close: jest.fn() })
+  useOpenPlaceModal: () => ({ openPlace: null, open: openPlaceMock, close: jest.fn() })
 }))
 jest.mock('../../../features/profile/profile.places.client', () => ({
   useGetProfilePlacesQuery: jest.fn(),
@@ -47,6 +71,28 @@ jest.mock('./OverviewTab.styled', () => ({
 jest.mock('./PlacesTab.styled', () => ({
   PlacesGrid: ({ children }: { children?: React.ReactNode }) => mockReact.createElement('div', { 'data-testid': 'places-grid' }, children)
 }))
+jest.mock('../../../components/profile/ProfileEmptyState', () => ({
+  JumpInBadgeIcon: () => null,
+  ProfileEmptyState: ({
+    title,
+    subtitle,
+    action
+  }: {
+    title: string
+    subtitle?: string
+    action?: { label: string; href?: string; onClick?: () => void }
+  }) =>
+    mockReact.createElement(
+      'div',
+      { 'data-testid': 'empty-state' },
+      mockReact.createElement('p', null, title),
+      subtitle ? mockReact.createElement('p', null, subtitle) : null,
+      action ? mockReact.createElement('button', { 'data-href': action.href, onClick: action.onClick }, action.label) : null
+    )
+}))
+const navigateMock = jest.fn()
+jest.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }))
+jest.mock('../../../config/env', () => ({ getEnv: () => 'https://decentraland.org/builder' }))
 
 const mockedOwnedQuery = useGetProfilePlacesQuery as jest.MockedFunction<typeof useGetProfilePlacesQuery>
 const mockedFavoritesQuery = useGetProfileFavoritePlacesQuery as jest.MockedFunction<typeof useGetProfileFavoritePlacesQuery>
@@ -112,6 +158,47 @@ describe('PlacesTab', () => {
 
       expect(mockedFavoritesQuery).toHaveBeenCalledWith(undefined, { skip: true })
     })
+
+    it('should render the plain member empty message without a CTA when there are no places', () => {
+      mockedOwnedQuery.mockReturnValue({ data: { ok: true, data: [], total: 0 }, isLoading: false } as unknown as ReturnType<
+        typeof useGetProfilePlacesQuery
+      >)
+
+      render(<PlacesTab address={ADDRESS} isOwnProfile={false} />)
+
+      expect(screen.getByText('profile.places.empty_member')).toBeInTheDocument()
+      expect(screen.queryByTestId('empty-state')).toBeNull()
+    })
+
+    it('should render a loading spinner while owned places are loading', () => {
+      mockedOwnedQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown as ReturnType<typeof useGetProfilePlacesQuery>)
+
+      render(<PlacesTab address={ADDRESS} isOwnProfile={false} />)
+
+      expect(screen.getByRole('progressbar')).toBeInTheDocument()
+    })
+
+    it('should pass a sanitized css url as the card image', () => {
+      render(<PlacesTab address={ADDRESS} isOwnProfile={false} />)
+
+      const cards = screen.getAllByTestId('scene-card')
+      const withImage = cards.find(card => card.getAttribute('data-image'))
+      expect(withImage?.getAttribute('data-image')).toContain('https://img.test/p1.png')
+    })
+
+    it('should open the place detail modal when a card is clicked', () => {
+      render(<PlacesTab address={ADDRESS} isOwnProfile={false} />)
+
+      fireEvent.click(screen.getAllByTestId('scene-open')[0])
+      expect(openPlaceMock).toHaveBeenCalledWith(expect.objectContaining({ id: 'p1' }))
+    })
+
+    it('should track a jump-in with the profile-places position', () => {
+      render(<PlacesTab address={ADDRESS} isOwnProfile={false} />)
+
+      fireEvent.click(screen.getAllByTestId('scene-jump')[0])
+      expect(trackMock).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ position: 'profile-places' }))
+    })
   })
 
   describe('when viewing the own profile', () => {
@@ -127,6 +214,23 @@ describe('PlacesTab', () => {
 
       const cards = screen.getAllByTestId('scene-card')
       expect(cards.map(card => card.getAttribute('data-coordinates'))).toEqual(expect.arrayContaining(['owned.dcl.eth', '10,20']))
+    })
+
+    describe('and there are no owned places', () => {
+      beforeEach(() => {
+        mockedOwnedQuery.mockReturnValue({ data: { ok: true, data: [], total: 0 }, isLoading: false } as unknown as ReturnType<
+          typeof useGetProfilePlacesQuery
+        >)
+      })
+
+      it('should render the my places empty state with a get-a-name CTA linking to the builder', () => {
+        render(<PlacesTab address={ADDRESS} isOwnProfile={true} />)
+
+        expect(screen.getByText('profile.places.empty_owner_title')).toBeInTheDocument()
+        const cta = screen.getByText('profile.places.empty_owner_cta')
+        expect(cta).toBeInTheDocument()
+        expect(cta.getAttribute('data-href')).toBe('https://decentraland.org/builder/names')
+      })
     })
 
     describe('and switching to the favourites view', () => {
@@ -154,7 +258,28 @@ describe('PlacesTab', () => {
 
           await userEvent.click(screen.getByText('profile.places.filter_favorites'))
 
-          expect(screen.getByText('profile.places.empty_favorites')).toBeInTheDocument()
+          expect(screen.getByText('profile.places.empty_favorites_title')).toBeInTheDocument()
+          expect(screen.getByText('profile.places.empty_favorites_cta')).toBeInTheDocument()
+        })
+
+        it('should navigate to whats-on when the explore-places CTA is clicked', async () => {
+          render(<PlacesTab address={ADDRESS} isOwnProfile={true} />)
+
+          await userEvent.click(screen.getByText('profile.places.filter_favorites'))
+          fireEvent.click(screen.getByText('profile.places.empty_favorites_cta'))
+
+          expect(navigateMock).toHaveBeenCalledWith('/whats-on')
+        })
+
+        it('should switch back to the owned places view when the my-places filter is clicked again', async () => {
+          render(<PlacesTab address={ADDRESS} isOwnProfile={true} />)
+
+          await userEvent.click(screen.getByText('profile.places.filter_favorites'))
+          expect(screen.getByText('profile.places.empty_favorites_title')).toBeInTheDocument()
+
+          await userEvent.click(screen.getByText('profile.places.filter_my_places'))
+          // Back on owned places: the owned scene cards render again.
+          expect(screen.getAllByTestId('scene-card')).toHaveLength(2)
         })
       })
     })
