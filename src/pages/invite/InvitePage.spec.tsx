@@ -4,9 +4,13 @@ import { InvitePage } from './InvitePage'
 const mockUseParams = jest.fn()
 const mockInviteHero = jest.fn()
 const mockFetch = jest.fn()
+const mockPage = jest.fn()
+let mockIsAnalyticsInitialized = true
+const INVITE_PATHNAME = '/invite/Brai'
 
 jest.mock('react-router-dom', () => ({
-  useParams: () => mockUseParams()
+  useParams: () => mockUseParams(),
+  useLocation: () => ({ pathname: INVITE_PATHNAME })
 }))
 
 jest.mock('decentraland-ui2', () => ({
@@ -18,6 +22,7 @@ jest.mock('@dcl/hooks', () => {
   const ReactLib = require('react') as typeof import('react')
   return {
     useTranslation: () => ({ t: (id: string) => id }),
+    useAnalytics: () => ({ isInitialized: mockIsAnalyticsInitialized, page: mockPage }),
     useAsyncMemo: <T,>(factory: () => Promise<T>, deps: unknown[]) => {
       const [state, setState] = ReactLib.useState<{ value: T | null; loading: boolean }>({ value: null, loading: true })
       ReactLib.useEffect(() => {
@@ -81,6 +86,12 @@ beforeAll(() => {
 })
 afterAll(() => {
   global.fetch = originalFetch
+})
+
+// Reset the analytics-initialized flag before every test so a test that flips it
+// false doesn't leak into the next one.
+beforeEach(() => {
+  mockIsAnalyticsInitialized = true
 })
 
 describe('when the referrer param is a Decentraland name', () => {
@@ -212,5 +223,72 @@ describe('when the referrer is empty', () => {
     render(<InvitePage />)
     await waitFor(() => expect(mockInviteHero).toHaveBeenCalled())
     expect(mockFetch).not.toHaveBeenCalled()
+  })
+})
+
+describe('when tracking the invite pageview', () => {
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: 'Brai' })
+    mockFetch.mockResolvedValue({ json: () => Promise.resolve(null) })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should fire a page() event for the invite path once analytics is initialized', async () => {
+    render(<InvitePage />)
+
+    await waitFor(() => expect(mockPage).toHaveBeenCalledWith(INVITE_PATHNAME))
+    expect(mockPage).toHaveBeenCalledTimes(1)
+  })
+
+  it('should not fire page() before analytics is initialized', async () => {
+    mockIsAnalyticsInitialized = false
+    render(<InvitePage />)
+
+    await waitFor(() => expect(mockInviteHero).toHaveBeenCalled())
+    expect(mockPage).not.toHaveBeenCalled()
+  })
+})
+
+describe('when the document head already has meta tags', () => {
+  const addMeta = (attr: 'name' | 'property', key: string, content: string) => {
+    const meta = document.createElement('meta')
+    meta.setAttribute(attr, key)
+    meta.setAttribute('content', content)
+    document.head.appendChild(meta)
+    return meta
+  }
+  let metaEls: HTMLMetaElement[] = []
+
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: '' })
+    metaEls = [
+      addMeta('name', 'description', 'orig-desc'),
+      addMeta('property', 'og:title', 'orig-og-title'),
+      addMeta('property', 'og:description', 'orig-og-desc')
+    ]
+  })
+
+  afterEach(() => {
+    metaEls.forEach(el => el.remove())
+    metaEls = []
+    jest.resetAllMocks()
+  })
+
+  it('should set the invite meta on mount and restore the originals on unmount', async () => {
+    const { unmount } = render(<InvitePage />)
+    await waitFor(() => expect(mockInviteHero).toHaveBeenCalled())
+
+    expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('page_invite.social.description')
+    expect(document.querySelector('meta[property="og:title"]')?.getAttribute('content')).toBe('page_invite.social.title')
+    expect(document.querySelector('meta[property="og:description"]')?.getAttribute('content')).toBe('page_invite.social.description')
+
+    unmount()
+
+    expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('orig-desc')
+    expect(document.querySelector('meta[property="og:title"]')?.getAttribute('content')).toBe('orig-og-title')
+    expect(document.querySelector('meta[property="og:description"]')?.getAttribute('content')).toBe('orig-og-desc')
   })
 })
