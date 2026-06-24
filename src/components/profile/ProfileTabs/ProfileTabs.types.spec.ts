@@ -1,8 +1,7 @@
 import { ALL_PROFILE_TABS, getVisibleTabs, isTabAvailable } from './ProfileTabs.types'
-import type { ProfileTabConfig } from './ProfileTabs.types'
 
 describe('when getting the visible tabs', () => {
-  let tabs: ProfileTabConfig[]
+  let tabs: ReturnType<typeof getVisibleTabs>
 
   afterEach(() => {
     jest.resetAllMocks()
