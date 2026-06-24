@@ -38,86 +38,171 @@ jest.mock('decentraland-ui2', () => {
 
 describe('OverviewTab.icons', () => {
   afterEach(() => {
-    jest.clearAllMocks()
+    jest.resetAllMocks()
   })
 
-  describe('WearableInfoBadges category icon', () => {
-    it('should render the matching category icon with a humanized label', () => {
-      const { container } = render(<WearableInfoBadges category="upper_body" />)
+  describe('when rendering the WearableInfoBadges category icon', () => {
+    describe('and the category is a known category', () => {
+      let container: HTMLElement
 
-      const icon = container.querySelector('[data-icon="upper-body"]')
-      expect(icon).not.toBeNull()
-      expect(icon?.getAttribute('data-title')).toBe('Upper Body')
-      // The tooltip title mirrors the humanized label.
-      expect(container.querySelector('[data-tooltip="Upper Body"]')).not.toBeNull()
+      beforeEach(() => {
+        ;({ container } = render(<WearableInfoBadges category="upper_body" />))
+      })
+
+      it('should render the matching category icon', () => {
+        expect(container.querySelector('[data-icon="upper-body"]')).not.toBeNull()
+      })
+
+      it('should label the icon with the humanized label', () => {
+        expect(container.querySelector('[data-icon="upper-body"]')?.getAttribute('data-title')).toBe('Upper Body')
+      })
+
+      it('should mirror the humanized label in the tooltip title', () => {
+        expect(container.querySelector('[data-tooltip="Upper Body"]')).not.toBeNull()
+      })
     })
 
-    it('should render nothing for an unknown category', () => {
-      const { container } = render(<WearableInfoBadges category="not_a_category" />)
-      expect(container.querySelector('[data-icon]')).toBeNull()
+    describe('and the category is unknown', () => {
+      let container: HTMLElement
+
+      beforeEach(() => {
+        ;({ container } = render(<WearableInfoBadges category="not_a_category" />))
+      })
+
+      it('should render no category icon', () => {
+        expect(container.querySelector('[data-icon]')).toBeNull()
+      })
     })
 
-    it('should render no category icon when category is omitted', () => {
-      const { container } = render(<WearableInfoBadges />)
-      expect(container.querySelector('[data-icon]')).toBeNull()
-    })
-  })
+    describe('and the category is omitted', () => {
+      let container: HTMLElement
 
-  describe('WearableInfoBadges body-shape icon', () => {
-    it('should render the unisex icon when both base shapes are present', () => {
-      const { container } = render(<WearableInfoBadges bodyShapes={['urn:BaseMale', 'urn:BaseFemale']} />)
+      beforeEach(() => {
+        ;({ container } = render(<WearableInfoBadges />))
+      })
 
-      const icon = container.querySelector('[data-icon="unisex"]')
-      expect(icon).not.toBeNull()
-      expect(icon?.getAttribute('data-title')).toBe('Unisex')
-    })
-
-    it('should render the male icon for male-only shapes', () => {
-      const { container } = render(<WearableInfoBadges bodyShapes={['urn:BaseMale']} />)
-
-      const icon = container.querySelector('[data-icon="base-male"]')
-      expect(icon).not.toBeNull()
-      expect(icon?.getAttribute('data-title')).toBe('For male')
-    })
-
-    it('should render the female icon for female-only shapes', () => {
-      const { container } = render(<WearableInfoBadges bodyShapes={['urn:BaseFemale']} />)
-
-      const icon = container.querySelector('[data-icon="base-female"]')
-      expect(icon).not.toBeNull()
-      expect(icon?.getAttribute('data-title')).toBe('For female')
-    })
-
-    it('should render no body icon when there are no recognizable shapes', () => {
-      const { container } = render(<WearableInfoBadges bodyShapes={['something']} />)
-      expect(container.querySelector('[data-icon="base-male"]')).toBeNull()
-      expect(container.querySelector('[data-icon="base-female"]')).toBeNull()
-      expect(container.querySelector('[data-icon="unisex"]')).toBeNull()
+      it('should render no category icon', () => {
+        expect(container.querySelector('[data-icon]')).toBeNull()
+      })
     })
   })
 
-  describe('WearableInfoBadges smart wearable icon', () => {
-    it('should render the smart wearable icon when isSmart is true', () => {
-      const { container } = render(<WearableInfoBadges isSmart />)
+  describe('when rendering the WearableInfoBadges body-shape icon', () => {
+    describe('and both base shapes are present', () => {
+      let container: HTMLElement
 
-      const icon = container.querySelector('[data-icon="smart-wearable"]')
-      expect(icon).not.toBeNull()
-      expect(icon?.getAttribute('data-title')).toBe('Smart wearable')
+      beforeEach(() => {
+        ;({ container } = render(<WearableInfoBadges bodyShapes={['urn:BaseMale', 'urn:BaseFemale']} />))
+      })
+
+      it('should render the unisex icon', () => {
+        expect(container.querySelector('[data-icon="unisex"]')).not.toBeNull()
+      })
+
+      it('should label the unisex icon', () => {
+        expect(container.querySelector('[data-icon="unisex"]')?.getAttribute('data-title')).toBe('Unisex')
+      })
     })
 
-    it('should not render the smart wearable icon when isSmart is false', () => {
-      const { container } = render(<WearableInfoBadges isSmart={false} />)
-      expect(container.querySelector('[data-icon="smart-wearable"]')).toBeNull()
+    describe('and only the male shape is present', () => {
+      let container: HTMLElement
+
+      beforeEach(() => {
+        ;({ container } = render(<WearableInfoBadges bodyShapes={['urn:BaseMale']} />))
+      })
+
+      it('should render the male icon', () => {
+        expect(container.querySelector('[data-icon="base-male"]')).not.toBeNull()
+      })
+
+      it('should label the male icon', () => {
+        expect(container.querySelector('[data-icon="base-male"]')?.getAttribute('data-title')).toBe('For male')
+      })
+    })
+
+    describe('and only the female shape is present', () => {
+      let container: HTMLElement
+
+      beforeEach(() => {
+        ;({ container } = render(<WearableInfoBadges bodyShapes={['urn:BaseFemale']} />))
+      })
+
+      it('should render the female icon', () => {
+        expect(container.querySelector('[data-icon="base-female"]')).not.toBeNull()
+      })
+
+      it('should label the female icon', () => {
+        expect(container.querySelector('[data-icon="base-female"]')?.getAttribute('data-title')).toBe('For female')
+      })
+    })
+
+    describe('and there are no recognizable shapes', () => {
+      let container: HTMLElement
+
+      beforeEach(() => {
+        ;({ container } = render(<WearableInfoBadges bodyShapes={['something']} />))
+      })
+
+      it('should render no male icon', () => {
+        expect(container.querySelector('[data-icon="base-male"]')).toBeNull()
+      })
+
+      it('should render no female icon', () => {
+        expect(container.querySelector('[data-icon="base-female"]')).toBeNull()
+      })
+
+      it('should render no unisex icon', () => {
+        expect(container.querySelector('[data-icon="unisex"]')).toBeNull()
+      })
     })
   })
 
-  describe('PronounsIcon', () => {
-    it('should render an aria-hidden svg with three circle paths', () => {
-      const { container } = render(<PronounsIcon />)
+  describe('when rendering the WearableInfoBadges smart wearable icon', () => {
+    describe('and isSmart is true', () => {
+      let container: HTMLElement
 
-      const svg = container.querySelector('svg')
-      expect(svg).not.toBeNull()
-      expect(svg?.getAttribute('aria-hidden')).toBe('true')
+      beforeEach(() => {
+        ;({ container } = render(<WearableInfoBadges isSmart />))
+      })
+
+      it('should render the smart wearable icon', () => {
+        expect(container.querySelector('[data-icon="smart-wearable"]')).not.toBeNull()
+      })
+
+      it('should label the smart wearable icon', () => {
+        expect(container.querySelector('[data-icon="smart-wearable"]')?.getAttribute('data-title')).toBe('Smart wearable')
+      })
+    })
+
+    describe('and isSmart is false', () => {
+      let container: HTMLElement
+
+      beforeEach(() => {
+        ;({ container } = render(<WearableInfoBadges isSmart={false} />))
+      })
+
+      it('should not render the smart wearable icon', () => {
+        expect(container.querySelector('[data-icon="smart-wearable"]')).toBeNull()
+      })
+    })
+  })
+
+  describe('when rendering the PronounsIcon', () => {
+    let container: HTMLElement
+
+    beforeEach(() => {
+      ;({ container } = render(<PronounsIcon />))
+    })
+
+    it('should render an svg', () => {
+      expect(container.querySelector('svg')).not.toBeNull()
+    })
+
+    it('should mark the svg aria-hidden', () => {
+      expect(container.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true')
+    })
+
+    it('should render three circle paths', () => {
       expect(container.querySelectorAll('svg path')).toHaveLength(3)
     })
   })
