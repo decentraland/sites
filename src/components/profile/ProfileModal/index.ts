@@ -1,6 +1,7 @@
 export { ProfileModal } from './ProfileModal'
 export type { ProfileModalProps } from './ProfileModal'
 export { ProfileModalHost, PROFILE_MODAL_QUERY_KEY } from './ProfileModalHost'
+export { ProfileModalHostProvider, useProfileModalHostAvailable } from './ProfileModalHostContext'
 export { useOpenProfileModal } from './useOpenProfileModal'
 export { ModalProfileNavigationProvider, useModalPhotoNavigation, useModalProfileNavigation } from './ModalProfileNavigation'
 export { ModalSurfaceView } from './ModalSurfaceStack'
