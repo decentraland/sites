@@ -59,6 +59,48 @@ describe('collectClientFingerprint', () => {
     })
   })
 
+  describe('when navigator is unavailable (SSR / non-browser)', () => {
+    let originalNavigatorDescriptor: PropertyDescriptor | undefined
+
+    beforeEach(() => {
+      originalNavigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator')
+      Object.defineProperty(globalThis, 'navigator', { configurable: true, value: undefined })
+    })
+
+    afterEach(() => {
+      if (originalNavigatorDescriptor) {
+        Object.defineProperty(globalThis, 'navigator', originalNavigatorDescriptor)
+      }
+    })
+
+    it('should return null instead of crashing', () => {
+      expect(collectClientFingerprint()).toBeNull()
+    })
+  })
+
+  describe('when Intl.DateTimeFormat throws while resolving the timezone', () => {
+    let intlSpy: jest.SpyInstance
+
+    beforeEach(() => {
+      Object.defineProperty(window, 'screen', {
+        configurable: true,
+        value: { width: 1024, height: 768 }
+      })
+      intlSpy = jest.spyOn(Intl, 'DateTimeFormat').mockImplementation((() => {
+        throw new Error('locked down')
+      }) as unknown as typeof Intl.DateTimeFormat)
+    })
+
+    afterEach(() => {
+      intlSpy.mockRestore()
+    })
+
+    it('should fall back to a null timezone', () => {
+      const fp = collectClientFingerprint()
+      expect(fp?.fp_timezone).toBeNull()
+    })
+  })
+
   describe('when individual browser fields are missing', () => {
     it('should fall back to safe defaults rather than crashing', () => {
       Object.defineProperty(window, 'screen', { configurable: true, value: undefined })

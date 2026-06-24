@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import type { AuthIdentity } from '@dcl/crypto'
 import { getEnv } from '../../config/env'
-import { placesEndpoints } from './places.client'
+import { isWorldNotFoundError, placesEndpoints } from './places.client'
 
 jest.mock('../../config/env')
 
@@ -906,6 +906,19 @@ describe('placesEndpoints', () => {
       })
     })
 
+    describe('and the lambdas profiles endpoint responds not-ok', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://peer.test')
+        fetchSpy.mockResolvedValueOnce({ ok: false, status: 503 } as unknown as Response)
+      })
+
+      it('should resolve to null because no profile could be fetched', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(placesEndpoints.endpoints.getProfileCreator.initiate({ address: '0xabc' }))
+        expect(result.data).toBeNull()
+      })
+    })
+
     describe('and PEER_URL is not configured', () => {
       beforeEach(() => {
         mockGetEnv.mockReturnValue(undefined)
@@ -944,5 +957,58 @@ describe('placesEndpoints', () => {
         expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR', error: 'Unknown error' }))
       }
     )
+  })
+
+  describe('when a not-ok response body cannot be read as text', () => {
+    beforeEach(() => {
+      mockGetEnv.mockReturnValue('https://places.test/api')
+    })
+
+    it('should fall back to null data for getJumpPlaces when response.text() rejects', async () => {
+      fetchSpy.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: () => Promise.reject(new Error('stream closed'))
+      } as unknown as Response)
+      const store = createTestStore()
+      const result = await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ position: [0, 0] }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 500, data: null }))
+    })
+
+    it('should fall back to null data for getJumpEvents when response.text() rejects', async () => {
+      mockFetchWithOptionalIdentity.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: () => Promise.reject(new Error('stream closed'))
+      } as unknown as Response)
+      const store = createTestStore()
+      const result = await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [0, 0] }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 500, data: null }))
+    })
+
+    it('should fall back to null data for getJumpEventById when response.text() rejects on a non-404 error', async () => {
+      mockFetchWithOptionalIdentity.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: () => Promise.reject(new Error('stream closed'))
+      } as unknown as Response)
+      const store = createTestStore()
+      const result = await store.dispatch(placesEndpoints.endpoints.getJumpEventById.initiate({ id: 'e1' }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 500, data: null }))
+    })
+  })
+
+  describe('isWorldNotFoundError', () => {
+    it('should return true only for the typed WORLD_NOT_FOUND error shape', () => {
+      expect(isWorldNotFoundError({ status: 'WORLD_NOT_FOUND' })).toBe(true)
+    })
+
+    it('should return false for other error shapes and primitives', () => {
+      expect(isWorldNotFoundError({ status: 'FETCH_ERROR' })).toBe(false)
+      expect(isWorldNotFoundError({ status: 404 })).toBe(false)
+      expect(isWorldNotFoundError(null)).toBe(false)
+      expect(isWorldNotFoundError(undefined)).toBe(false)
+      expect(isWorldNotFoundError('WORLD_NOT_FOUND')).toBe(false)
+    })
   })
 })

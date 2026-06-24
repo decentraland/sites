@@ -123,6 +123,37 @@ describe('DownloadLayout', () => {
       await userEvent.click(screen.getByText('component.landing.navbar.sign_in'))
       expect(mockRedirectToAuth).toHaveBeenCalledTimes(1)
     })
+
+    it('should navigate to decentraland.org when the logo is clicked', async () => {
+      const assignSpy = jest.fn()
+      const original = window.location
+      // Redefine location so the assignment in the click handler is observable
+      // and does not trigger jsdom's "navigation not implemented" warning.
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: {
+          ...original,
+          set href(value: string) {
+            assignSpy(value)
+          },
+          get href() {
+            return original.href
+          }
+        }
+      })
+      try {
+        render(<DownloadLayout title={TITLE} />)
+        // DclLogo is the label-less clickable element rendered immediately before
+        // the Sign In button in the signed-out chrome.
+        const signIn = screen.getByText('component.landing.navbar.sign_in')
+        const logo = signIn.previousElementSibling as HTMLElement
+        expect(logo).not.toBeNull()
+        await userEvent.click(logo)
+        expect(assignSpy).toHaveBeenCalledWith('https://decentraland.org')
+      } finally {
+        Object.defineProperty(window, 'location', { configurable: true, value: original })
+      }
+    })
   })
 
   describe('when the user is signed in', () => {
@@ -156,6 +187,63 @@ describe('DownloadLayout', () => {
       mockUseInView.mockReturnValue({ ref: jest.fn(), inView: true } as unknown as ReturnType<typeof useInView>)
       render(<DownloadLayout title={TITLE} />)
       await waitFor(() => expect(screen.getByTestId('wearable-preview')).toBeInTheDocument())
+    })
+
+    it('should set an accessible title on the preview iframe once it is present in the container', async () => {
+      // The ref callback wires the container; once the WearablePreview iframe is
+      // rendered the effect's `existing` branch runs and labels it for a11y.
+      mockUseInView.mockReturnValue({ ref: jest.fn(), inView: true } as unknown as ReturnType<typeof useInView>)
+      render(<DownloadLayout title={TITLE} />)
+      await waitFor(() => expect(screen.getByTestId('wearable-preview')).toHaveAttribute('title', 'page.download.avatar_preview'))
+    })
+
+    it('should label an iframe that the WearablePreview injects asynchronously via MutationObserver', async () => {
+      // Render the preview wrapper but with NO iframe yet, then inject one into
+      // the container after mount so the MutationObserver branch (not the
+      // synchronous `existing` branch) sets the title.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const wpModule = require('decentraland-ui2/dist/components/WearablePreview/WearablePreview')
+      const originalPreview = wpModule.WearablePreview
+      // Replace the preview with an empty container so no iframe exists initially.
+      wpModule.WearablePreview = () => <div data-testid="empty-preview" />
+      try {
+        mockUseInView.mockReturnValue({ ref: jest.fn(), inView: true } as unknown as ReturnType<typeof useInView>)
+        const { container } = render(<DownloadLayout title={TITLE} />)
+        await waitFor(() => expect(screen.getByTestId('empty-preview')).toBeInTheDocument())
+
+        const host = screen.getByTestId('empty-preview').parentElement as HTMLElement
+        const injected = document.createElement('iframe')
+        host.appendChild(injected)
+
+        await waitFor(() => expect(injected).toHaveAttribute('title', 'page.download.avatar_preview'))
+        expect(container).toBeTruthy()
+      } finally {
+        wpModule.WearablePreview = originalPreview
+      }
+    })
+
+    it('should label an iframe nested inside an element the WearablePreview injects', async () => {
+      // Same MutationObserver path, but the added node is a wrapper element that
+      // contains the iframe rather than the iframe itself.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const wpModule = require('decentraland-ui2/dist/components/WearablePreview/WearablePreview')
+      const originalPreview = wpModule.WearablePreview
+      wpModule.WearablePreview = () => <div data-testid="empty-preview-nested" />
+      try {
+        mockUseInView.mockReturnValue({ ref: jest.fn(), inView: true } as unknown as ReturnType<typeof useInView>)
+        render(<DownloadLayout title={TITLE} />)
+        await waitFor(() => expect(screen.getByTestId('empty-preview-nested')).toBeInTheDocument())
+
+        const host = screen.getByTestId('empty-preview-nested').parentElement as HTMLElement
+        const wrapper = document.createElement('div')
+        const nestedIframe = document.createElement('iframe')
+        wrapper.appendChild(nestedIframe)
+        host.appendChild(wrapper)
+
+        await waitFor(() => expect(nestedIframe).toHaveAttribute('title', 'page.download.avatar_preview'))
+      } finally {
+        wpModule.WearablePreview = originalPreview
+      }
     })
   })
 
