@@ -19,6 +19,7 @@ jest.mock('viem/chains', () => ({
 
 import {
   ERC20_ALLOWANCE_ABI,
+  MANA_CHILD_WITHDRAW_ABI,
   ROOT_CHAIN_MANAGER_ABI,
   getErc20PredicateAddress,
   getL1ChainId,
@@ -61,10 +62,17 @@ describe('bridgeContract', () => {
       expect(ERC20_ALLOWANCE_ABI.map(entry => entry.name)).toEqual(['allowance', 'approve'])
     })
 
-    it('should expose depositFor on the RootChainManager ABI', () => {
-      const [depositFor] = ROOT_CHAIN_MANAGER_ABI
-      expect(depositFor.name).toBe('depositFor')
-      expect(depositFor.inputs.map(input => input.type)).toEqual(['address', 'address', 'bytes'])
+    it('should expose depositFor + exit on the RootChainManager ABI', () => {
+      const names = ROOT_CHAIN_MANAGER_ABI.map(entry => entry.name)
+      expect(names).toEqual(['depositFor', 'exit'])
+      const exit = ROOT_CHAIN_MANAGER_ABI.find(entry => entry.name === 'exit')
+      expect(exit?.inputs.map(input => input.type)).toEqual(['bytes'])
+    })
+
+    it('should expose withdraw(uint256) on the MANA child ABI', () => {
+      const [withdraw] = MANA_CHILD_WITHDRAW_ABI
+      expect(withdraw.name).toBe('withdraw')
+      expect(withdraw.inputs.map(input => input.type)).toEqual(['uint256'])
     })
   })
 })

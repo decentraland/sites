@@ -17,6 +17,7 @@ import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNone
 import { Address, Tooltip } from 'decentraland-ui2'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useIsThirdwebAccount } from '../../../hooks/useIsThirdwebAccount'
 import { useWalletAddress } from '../../../hooks/useWalletAddress'
 import { getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import {
@@ -61,6 +62,7 @@ const AccountSidebar = ({ address }: AccountSidebarProps) => {
   const t = useFormatMessage()
   const { pathname } = useLocation()
   const { disconnect } = useWalletAddress()
+  const isThirdweb = useIsThirdwebAccount()
   const { data: profile } = useGetProfileQuery(address)
   const [copied, setCopied] = useState(false)
 
@@ -127,21 +129,24 @@ const AccountSidebar = ({ address }: AccountSidebarProps) => {
       </Nav>
 
       <BottomGroup>
-        <Divider />
-        {/* NOTE: Delete is only meaningful for thirdweb (email/social-OTP) wallets. Per product, it
-            stays visible for everyone until the deletion flow is confirmed working end-to-end; the
-            OTP-only gating is a pending follow-up. */}
-        <DeleteNavItem
-          to="/account/delete"
-          $active={pathname === '/account/delete' || pathname.startsWith('/account/delete/')}
-          data-role="account-nav-delete"
-        >
-          <DeleteOutlineOutlinedIcon fontSize="small" />
-          {t('account.nav.delete')}
-          <NavChevron>
-            <ChevronRightIcon fontSize="small" />
-          </NavChevron>
-        </DeleteNavItem>
+        {/* Delete only applies to thirdweb (email/social-OTP) wallets — the SDK unlink flow has no
+            equivalent for self-custodial logins — so the entry is hidden for everyone else. */}
+        {isThirdweb && (
+          <>
+            <Divider />
+            <DeleteNavItem
+              to="/account/delete"
+              $active={pathname === '/account/delete' || pathname.startsWith('/account/delete/')}
+              data-role="account-nav-delete"
+            >
+              <DeleteOutlineOutlinedIcon fontSize="small" />
+              {t('account.nav.delete')}
+              <NavChevron>
+                <ChevronRightIcon fontSize="small" />
+              </NavChevron>
+            </DeleteNavItem>
+          </>
+        )}
         <Divider />
         <LogoutButton type="button" onClick={disconnect} data-role="account-logout">
           <LogoutOutlinedIcon fontSize="small" />

@@ -14,7 +14,7 @@ import { SegmentEvent } from '../../../../modules/segment'
 import { ManaEthIcon, ManaMaticIcon } from '../../../LandingNavbar/icons'
 import { ManaMarkIcon } from '../ManaMarkIcon'
 import { TransactionsSection } from '../TransactionsSection/TransactionsSection'
-import { buildBuyManaUrl, formatMana } from '../wallets.helpers'
+import { formatMana } from '../wallets.helpers'
 import {
   ActionButton,
   Actions,
@@ -37,11 +37,13 @@ interface BalanceCardProps {
   onReceive: () => void
   onSend: () => void
   onSwap: () => void
+  // Opens the Buy-with-fiat modal (MoonPay / Transak) for this card's network.
+  onBuy: () => void
+  // Opens the exit (claim on Ethereum) flow for a checkpointed withdrawal in this card's list.
+  onClaim?: (withdrawal: WalletTransaction) => void
 }
 
-const openExternal = (url: string) => window.open(url, '_blank', 'noopener,noreferrer')
-
-const BalanceCard = ({ network, balance, isLoading, transactions, onReceive, onSend, onSwap }: BalanceCardProps) => {
+const BalanceCard = ({ network, balance, isLoading, transactions, onReceive, onSend, onSwap, onBuy, onClaim }: BalanceCardProps) => {
   const t = useFormatMessage()
   const { track, isInitialized } = useAnalytics()
 
@@ -53,7 +55,7 @@ const BalanceCard = ({ network, balance, isLoading, transactions, onReceive, onS
 
   const handleBuy = () => {
     trackAction('buy')
-    openExternal(buildBuyManaUrl())
+    onBuy()
   }
   const handleSwap = () => {
     trackAction('swap')
@@ -104,7 +106,7 @@ const BalanceCard = ({ network, balance, isLoading, transactions, onReceive, onS
           </ActionButton>
         </Actions>
       </CardTop>
-      <TransactionsSection transactions={transactions} />
+      <TransactionsSection transactions={transactions} onClaim={onClaim} />
     </Card>
   )
 }

@@ -28,6 +28,22 @@ jest.mock('../../components/account/Wallets/SwapManaModal/SwapManaModal', () => 
   SwapManaModal: ({ open }: { open: boolean }) => (open ? <div data-testid="swap-modal" /> : null)
 }))
 
+jest.mock('../../components/account/Wallets/WithdrawManaModal/WithdrawManaModal', () => ({
+  WithdrawManaModal: ({ open }: { open: boolean }) => (open ? <div data-testid="withdraw-modal" /> : null)
+}))
+
+jest.mock('../../components/account/Wallets/ClaimWithdrawModal/ClaimWithdrawModal', () => ({
+  ClaimWithdrawModal: ({ withdrawal }: { withdrawal: unknown }) => (withdrawal ? <div data-testid="claim-modal" /> : null)
+}))
+
+jest.mock('../../components/account/Wallets/BuyManaModal/BuyManaModal', () => ({
+  BuyManaModal: ({ open }: { open: boolean }) => (open ? <div data-testid="buy-modal" /> : null)
+}))
+
+jest.mock('../../hooks/useBridgeWithdrawals', () => ({
+  useBridgeWithdrawals: jest.fn()
+}))
+
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))
@@ -41,8 +57,8 @@ jest.mock('../../hooks/useManaBalances', () => ({
   useManaBalances: () => ({ balances: { ethereum: 100595, polygon: 42 }, isLoading: false, fetchBalances: mockFetchBalances })
 }))
 
-jest.mock('../../hooks/useWalletTransactions', () => ({
-  useWalletTransactions: () => ({ transactions: [], addTransaction: jest.fn(), updateTransactionStatus: jest.fn() })
+jest.mock('../../hooks/useWalletHistory', () => ({
+  useWalletHistory: () => ({ transactions: [], isLoading: false, isError: false })
 }))
 
 describe('WalletsPage', () => {

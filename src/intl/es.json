@@ -1286,13 +1286,77 @@
         "empty": "Todavía no hay transacciones.",
         "type": {
           "send": "Enviado",
-          "swap": "Depósito"
+          "swap": "Depósito",
+          "received": "Recibido",
+          "withdraw": "Retiro"
         },
         "status": {
           "pending": "Pendiente",
           "confirmed": "Confirmada",
-          "failed": "Fallida"
-        }
+          "failed": "Fallida",
+          "bridging": "En tránsito",
+          "checkpoint": "Reclamable"
+        },
+        "pending_title": "Transacciones pendientes",
+        "latest_title": "Últimas transacciones",
+        "claim": "Reclamar"
+      },
+      "withdraw": {
+        "title": "Retirar MANA",
+        "loading": "Cargando billetera…",
+        "connect_description": "Conectá tu billetera para mover MANA a Ethereum.",
+        "switch_description": "Cambiá tu billetera a Polygon para continuar.",
+        "switch_button": "Cambiar red",
+        "description": "Mové tu MANA de Polygon a Ethereum. Se quema en Polygon ahora; lo reclamás en Ethereum cuando esté confirmado por checkpoint (puede tardar unas horas).",
+        "amount_label": "Monto",
+        "submit": "Retirar a Ethereum",
+        "withdrawing": "Retirando…",
+        "success": "Tu retiro comenzó. Cuando esté confirmado por checkpoint (unas horas), volvé para reclamarlo en Ethereum.",
+        "close": "Cerrar",
+        "rejected": "Rechazaste la transacción.",
+        "error": "Algo salió mal. Intentá de nuevo."
+      },
+      "claim": {
+        "title": "Reclamar retiro",
+        "loading": "Cargando billetera…",
+        "connect_description": "Conectá tu billetera para reclamar tu MANA en Ethereum.",
+        "switch_description": "Cambiá tu billetera a Ethereum para continuar.",
+        "switch_button": "Cambiar red",
+        "description": "Tu retiro de {amount} MANA está listo. Reclamalo en Ethereum para recibir tu MANA.",
+        "submit": "Reclamar en Ethereum",
+        "claiming": "Reclamando…",
+        "success": "Tu MANA fue liberado en Ethereum.",
+        "close": "Cerrar",
+        "rejected": "Rechazaste la transacción.",
+        "error": "No se pudo reclamar el retiro. Intentá de nuevo.",
+        "not_ready": "Este retiro todavía no está listo para reclamar. El checkpoint puede tardar unas horas; probá de nuevo más tarde."
+      },
+      "buy": {
+        "title": "Comprar MANA",
+        "subtitle": "Elegí qué MANA querés comprar:",
+        "close": "Cerrar",
+        "error": "No se pudo abrir el proveedor. Intentá de nuevo.",
+        "network": {
+          "ethereum": {
+            "label": "MANA de Ethereum",
+            "name": "Ethereum",
+            "description": "Usalo para comprar LAND, nombres y wearables específicos en Ethereum."
+          },
+          "polygon": {
+            "label": "MANA de Polygon",
+            "name": "Polygon",
+            "description": "Usalo para comprar la mayoría de los wearables y emotes en Polygon."
+          }
+        },
+        "provider_title": "Comprar MANA de {network} con {provider}",
+        "provider_subtitle": "Podés comprar con tarjeta de débito y crédito, Apple Pay, Google Pay o transferencia bancaria.",
+        "continue": "Continuar con {provider}",
+        "learn_more": "Más información sobre {provider}",
+        "provider": {
+          "moonpay": "MoonPay",
+          "transak": "Transak"
+        },
+        "loading": "Abriendo…"
       }
     },
     "notifications": {
@@ -1441,7 +1505,9 @@
         "delete": "Eliminar Cuenta",
         "cancel": "Cancelar",
         "generic_error": "No se pudo eliminar tu cuenta. Por favor, inténtalo más tarde."
-      }
+      },
+      "unavailable_title": "La eliminación de cuenta no está disponible para esta billetera",
+      "unavailable_description": "Eliminar tu cuenta solo aplica a cuentas creadas con email o inicio de sesión social. Las billeteras self-custody (como MetaMask o WalletConnect) controlan sus propias claves, así que no hay nada que eliminar acá; simplemente desconectate para cerrar sesión."
     },
     "copy": "Copiar",
     "copied": "¡Copiado!"

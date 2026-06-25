@@ -5,11 +5,10 @@ jest.mock('@dcl/ui-env', () => ({
 }))
 
 jest.mock('../../../config/env', () => ({
-  getEnv: (key: string) => (key === 'MARKETPLACE_URL' ? 'https://market.example.org' : ''),
   getCurrentEnv: () => mockEnv
 }))
 
-import { buildBuyManaUrl, formatMana, getExplorerTxUrl, getMarketplaceUrl } from './wallets.helpers'
+import { formatMana, getExplorerTxUrl } from './wallets.helpers'
 
 describe('wallets.helpers', () => {
   describe('formatMana', () => {
@@ -23,16 +22,6 @@ describe('wallets.helpers', () => {
 
     it('should render zero as 0', () => {
       expect(formatMana(0)).toBe('0')
-    })
-  })
-
-  describe('marketplace deep-links', () => {
-    it('should resolve the marketplace base url', () => {
-      expect(getMarketplaceUrl()).toBe('https://market.example.org')
-    })
-
-    it('should point buy at the marketplace', () => {
-      expect(buildBuyManaUrl()).toBe('https://market.example.org')
     })
   })
 

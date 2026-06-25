@@ -1286,13 +1286,77 @@
         "empty": "まだ取引はありません。",
         "type": {
           "send": "送信",
-          "swap": "入金"
+          "swap": "入金",
+          "received": "受取",
+          "withdraw": "出金"
         },
         "status": {
           "pending": "保留中",
           "confirmed": "確認済み",
-          "failed": "失敗"
-        }
+          "failed": "失敗",
+          "bridging": "ブリッジ中",
+          "checkpoint": "請求可能"
+        },
+        "pending_title": "保留中の取引",
+        "latest_title": "最新の取引",
+        "claim": "請求"
+      },
+      "withdraw": {
+        "title": "MANAを引き出す",
+        "loading": "ウォレットを読み込み中…",
+        "connect_description": "MANAをEthereumに移動するにはウォレットを接続してください。",
+        "switch_description": "続行するにはウォレットをPolygonに切り替えてください。",
+        "switch_button": "ネットワークを切り替える",
+        "description": "PolygonのMANAをEthereumに移動します。今すぐPolygonでバーンされ、チェックポイントが完了したらEthereumで請求できます（数時間かかる場合があります）。",
+        "amount_label": "金額",
+        "submit": "Ethereumに引き出す",
+        "withdrawing": "引き出し中…",
+        "success": "引き出しを開始しました。チェックポイントが完了したら（数時間）、Ethereumで請求しに戻ってきてください。",
+        "close": "閉じる",
+        "rejected": "取引を拒否しました。",
+        "error": "問題が発生しました。もう一度お試しください。"
+      },
+      "claim": {
+        "title": "引き出しを請求",
+        "loading": "ウォレットを読み込み中…",
+        "connect_description": "EthereumでMANAを請求するにはウォレットを接続してください。",
+        "switch_description": "続行するにはウォレットをEthereumに切り替えてください。",
+        "switch_button": "ネットワークを切り替える",
+        "description": "{amount} MANAの引き出しの準備ができました。EthereumでMANAを受け取るには請求してください。",
+        "submit": "Ethereumで請求",
+        "claiming": "請求中…",
+        "success": "MANAがEthereumで解放されました。",
+        "close": "閉じる",
+        "rejected": "取引を拒否しました。",
+        "error": "引き出しを請求できませんでした。もう一度お試しください。",
+        "not_ready": "この引き出しはまだ請求できません。チェックポイントには数時間かかる場合があります。後でもう一度お試しください。"
+      },
+      "buy": {
+        "title": "MANAを購入",
+        "subtitle": "購入するMANAを選択してください：",
+        "close": "閉じる",
+        "error": "プロバイダーを開けませんでした。もう一度お試しください。",
+        "network": {
+          "ethereum": {
+            "label": "Ethereum MANA",
+            "name": "Ethereum",
+            "description": "Ethereumで LAND、名前、特定のウェアラブルの購入に使用できます。"
+          },
+          "polygon": {
+            "label": "Polygon MANA",
+            "name": "Polygon",
+            "description": "Polygonでほとんどのウェアラブルとエモートの購入に使用できます。"
+          }
+        },
+        "provider_title": "{provider}で{network} MANAを購入",
+        "provider_subtitle": "デビットカード、クレジットカード、Apple Pay、Google Pay、または銀行振込で購入できます。",
+        "continue": "{provider}で続行",
+        "learn_more": "{provider}について詳しく見る",
+        "provider": {
+          "moonpay": "MoonPay",
+          "transak": "Transak"
+        },
+        "loading": "開いています…"
       }
     },
     "notifications": {
@@ -1441,7 +1505,9 @@
         "delete": "アカウントを削除",
         "cancel": "キャンセル",
         "generic_error": "アカウントの削除に失敗しました。後でもう一度お試しください。"
-      }
+      },
+      "unavailable_title": "このウォレットではアカウントの削除を利用できません",
+      "unavailable_description": "アカウントの削除は、メールまたはソーシャルログインで作成されたアカウントにのみ適用されます。セルフカストディウォレット（MetaMaskやWalletConnectなど）は自分でキーを管理するため、ここで削除するものはありません。ログアウトするには切断してください。"
     },
     "copy": "コピー",
     "copied": "コピーしました"

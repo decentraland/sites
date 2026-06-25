@@ -1281,13 +1281,77 @@
         "empty": "Aucune transaction pour l'instant.",
         "type": {
           "send": "Envoyé",
-          "swap": "Dépôt"
+          "swap": "Dépôt",
+          "received": "Reçu",
+          "withdraw": "Retrait"
         },
         "status": {
           "pending": "En attente",
           "confirmed": "Confirmée",
-          "failed": "Échouée"
-        }
+          "failed": "Échouée",
+          "bridging": "En transit",
+          "checkpoint": "Réclamable"
+        },
+        "pending_title": "Transactions en attente",
+        "latest_title": "Dernières transactions",
+        "claim": "Réclamer"
+      },
+      "withdraw": {
+        "title": "Retirer du MANA",
+        "loading": "Chargement du portefeuille…",
+        "connect_description": "Connectez votre portefeuille pour transférer du MANA vers Ethereum.",
+        "switch_description": "Passez votre portefeuille sur Polygon pour continuer.",
+        "switch_button": "Changer de réseau",
+        "description": "Transférez votre MANA de Polygon vers Ethereum. Il est brûlé sur Polygon maintenant ; vous le réclamerez sur Ethereum une fois le checkpoint validé (cela peut prendre quelques heures).",
+        "amount_label": "Montant",
+        "submit": "Retirer vers Ethereum",
+        "withdrawing": "Retrait en cours…",
+        "success": "Votre retrait a démarré. Une fois le checkpoint validé (quelques heures), revenez le réclamer sur Ethereum.",
+        "close": "Fermer",
+        "rejected": "Vous avez rejeté la transaction.",
+        "error": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "claim": {
+        "title": "Réclamer le retrait",
+        "loading": "Chargement du portefeuille…",
+        "connect_description": "Connectez votre portefeuille pour réclamer votre MANA sur Ethereum.",
+        "switch_description": "Passez votre portefeuille sur Ethereum pour continuer.",
+        "switch_button": "Changer de réseau",
+        "description": "Votre retrait de {amount} MANA est prêt. Réclamez-le sur Ethereum pour recevoir votre MANA.",
+        "submit": "Réclamer sur Ethereum",
+        "claiming": "Réclamation en cours…",
+        "success": "Votre MANA a été libéré sur Ethereum.",
+        "close": "Fermer",
+        "rejected": "Vous avez rejeté la transaction.",
+        "error": "Impossible de réclamer le retrait. Veuillez réessayer.",
+        "not_ready": "Ce retrait n'est pas encore prêt à être réclamé. Le checkpoint peut prendre quelques heures ; veuillez réessayer plus tard."
+      },
+      "buy": {
+        "title": "Acheter du MANA",
+        "subtitle": "Choisissez le MANA que vous voulez acheter :",
+        "close": "Fermer",
+        "error": "Impossible d'ouvrir le fournisseur. Veuillez réessayer.",
+        "network": {
+          "ethereum": {
+            "label": "MANA Ethereum",
+            "name": "Ethereum",
+            "description": "Utilisez-le pour acheter des LAND, des noms et certains wearables sur Ethereum."
+          },
+          "polygon": {
+            "label": "MANA Polygon",
+            "name": "Polygon",
+            "description": "Utilisez-le pour acheter la plupart des wearables et emotes sur Polygon."
+          }
+        },
+        "provider_title": "Acheter du MANA {network} avec {provider}",
+        "provider_subtitle": "Vous pouvez payer par carte de débit et de crédit, Apple Pay, Google Pay ou virement bancaire.",
+        "continue": "Continuer avec {provider}",
+        "learn_more": "En savoir plus sur {provider}",
+        "provider": {
+          "moonpay": "MoonPay",
+          "transak": "Transak"
+        },
+        "loading": "Ouverture…"
       }
     },
     "notifications": {
@@ -1436,7 +1500,9 @@
         "delete": "Supprimer le compte",
         "cancel": "Annuler",
         "generic_error": "Échec de la suppression de votre compte. Veuillez réessayer plus tard."
-      }
+      },
+      "unavailable_title": "La suppression de compte n’est pas disponible pour ce portefeuille",
+      "unavailable_description": "La suppression de votre compte ne s’applique qu’aux comptes créés avec un e-mail ou une connexion sociale. Les portefeuilles auto-gérés (comme MetaMask ou WalletConnect) contrôlent leurs propres clés ; il n’y a donc rien à supprimer ici — déconnectez-vous simplement."
     },
     "copy": "Copier",
     "copied": "Copié !"

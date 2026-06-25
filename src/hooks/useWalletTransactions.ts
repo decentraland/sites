@@ -69,18 +69,23 @@ function useWalletTransactions(address: string | undefined) {
     [address]
   )
 
-  const updateTransactionStatus = useCallback(
-    (hash: string, status: WalletTransactionStatus) => {
+  const updateTransaction = useCallback(
+    (hash: string, partial: Partial<WalletTransaction>) => {
       if (!address) return
       persist(
         address,
-        getTransactions(address).map(transaction => (transaction.hash === hash ? { ...transaction, status } : transaction))
+        getTransactions(address).map(transaction => (transaction.hash === hash ? { ...transaction, ...partial } : transaction))
       )
     },
     [address]
   )
 
-  return { transactions, addTransaction, updateTransactionStatus }
+  const updateTransactionStatus = useCallback(
+    (hash: string, status: WalletTransactionStatus) => updateTransaction(hash, { status }),
+    [updateTransaction]
+  )
+
+  return { transactions, addTransaction, updateTransaction, updateTransactionStatus }
 }
 
 export { useWalletTransactions }

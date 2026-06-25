@@ -1286,13 +1286,77 @@
         "empty": "暂无交易。",
         "type": {
           "send": "已发送",
-          "swap": "存入"
+          "swap": "存入",
+          "received": "已收到",
+          "withdraw": "提现"
         },
         "status": {
           "pending": "待处理",
           "confirmed": "已确认",
-          "failed": "失败"
-        }
+          "failed": "失败",
+          "bridging": "跨链中",
+          "checkpoint": "可领取"
+        },
+        "pending_title": "待处理交易",
+        "latest_title": "最近交易",
+        "claim": "领取"
+      },
+      "withdraw": {
+        "title": "提取 MANA",
+        "loading": "正在加载钱包…",
+        "connect_description": "连接您的钱包以将 MANA 转移到 Ethereum。",
+        "switch_description": "请将您的钱包切换到 Polygon 以继续。",
+        "switch_button": "切换网络",
+        "description": "将您的 Polygon MANA 转移到 Ethereum。现在会在 Polygon 上销毁；待检查点确认后（可能需要几个小时）即可在 Ethereum 上领取。",
+        "amount_label": "金额",
+        "submit": "提取到 Ethereum",
+        "withdrawing": "提取中…",
+        "success": "您的提取已开始。检查点确认后（几个小时），请返回在 Ethereum 上领取。",
+        "close": "关闭",
+        "rejected": "您拒绝了交易。",
+        "error": "出现错误，请重试。"
+      },
+      "claim": {
+        "title": "领取提款",
+        "loading": "正在加载钱包…",
+        "connect_description": "连接您的钱包以在 Ethereum 上领取您的 MANA。",
+        "switch_description": "请将您的钱包切换到 Ethereum 以继续。",
+        "switch_button": "切换网络",
+        "description": "您提取的 {amount} MANA 已就绪。在 Ethereum 上领取以接收您的 MANA。",
+        "submit": "在 Ethereum 上领取",
+        "claiming": "领取中…",
+        "success": "您的 MANA 已在 Ethereum 上释放。",
+        "close": "关闭",
+        "rejected": "您拒绝了交易。",
+        "error": "无法领取提款，请重试。",
+        "not_ready": "此提款尚未可领取。检查点可能需要几个小时，请稍后再试。"
+      },
+      "buy": {
+        "title": "购买 MANA",
+        "subtitle": "选择您想购买的 MANA：",
+        "close": "关闭",
+        "error": "无法打开服务商，请重试。",
+        "network": {
+          "ethereum": {
+            "label": "Ethereum MANA",
+            "name": "Ethereum",
+            "description": "用于在 Ethereum 上购买 LAND、名称和特定可穿戴物品。"
+          },
+          "polygon": {
+            "label": "Polygon MANA",
+            "name": "Polygon",
+            "description": "用于在 Polygon 上购买大多数可穿戴物品和表情动作。"
+          }
+        },
+        "provider_title": "通过 {provider} 购买 {network} MANA",
+        "provider_subtitle": "您可以使用借记卡和信用卡、Apple Pay、Google Pay 或银行转账购买。",
+        "continue": "通过 {provider} 继续",
+        "learn_more": "了解更多关于 {provider}",
+        "provider": {
+          "moonpay": "MoonPay",
+          "transak": "Transak"
+        },
+        "loading": "正在打开…"
       }
     },
     "notifications": {
@@ -1441,7 +1505,9 @@
         "delete": "删除账户",
         "cancel": "取消",
         "generic_error": "无法删除您的账户。请稍后重试。"
-      }
+      },
+      "unavailable_title": "此钱包无法删除账户",
+      "unavailable_description": "删除账户仅适用于通过电子邮件或社交登录创建的账户。自托管钱包（如 MetaMask 或 WalletConnect）自行管理密钥，因此这里没有可删除的内容——只需断开连接即可退出登录。"
     },
     "copy": "複製",
     "copied": "已複製"

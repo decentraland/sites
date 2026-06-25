@@ -1286,13 +1286,77 @@
         "empty": "아직 거래가 없습니다.",
         "type": {
           "send": "보냄",
-          "swap": "입금"
+          "swap": "입금",
+          "received": "받음",
+          "withdraw": "출금"
         },
         "status": {
           "pending": "대기 중",
           "confirmed": "확인됨",
-          "failed": "실패"
-        }
+          "failed": "실패",
+          "bridging": "브리징 중",
+          "checkpoint": "청구 가능"
+        },
+        "pending_title": "대기 중인 거래",
+        "latest_title": "최근 거래",
+        "claim": "청구"
+      },
+      "withdraw": {
+        "title": "MANA 출금",
+        "loading": "지갑 불러오는 중…",
+        "connect_description": "MANA를 Ethereum으로 이동하려면 지갑을 연결하세요.",
+        "switch_description": "계속하려면 지갑을 Polygon으로 전환하세요.",
+        "switch_button": "네트워크 전환",
+        "description": "Polygon의 MANA를 Ethereum으로 이동합니다. 지금 Polygon에서 소각되며, 체크포인트가 완료되면 Ethereum에서 청구할 수 있습니다(몇 시간이 걸릴 수 있음).",
+        "amount_label": "금액",
+        "submit": "Ethereum으로 출금",
+        "withdrawing": "출금 중…",
+        "success": "출금이 시작되었습니다. 체크포인트가 완료되면(몇 시간) 돌아와 Ethereum에서 청구하세요.",
+        "close": "닫기",
+        "rejected": "거래를 거부했습니다.",
+        "error": "문제가 발생했습니다. 다시 시도해 주세요."
+      },
+      "claim": {
+        "title": "출금 청구",
+        "loading": "지갑 불러오는 중…",
+        "connect_description": "Ethereum에서 MANA를 청구하려면 지갑을 연결하세요.",
+        "switch_description": "계속하려면 지갑을 Ethereum으로 전환하세요.",
+        "switch_button": "네트워크 전환",
+        "description": "{amount} MANA 출금이 준비되었습니다. Ethereum에서 MANA를 받으려면 청구하세요.",
+        "submit": "Ethereum에서 청구",
+        "claiming": "청구 중…",
+        "success": "MANA가 Ethereum에서 출금되었습니다.",
+        "close": "닫기",
+        "rejected": "거래를 거부했습니다.",
+        "error": "출금을 청구할 수 없습니다. 다시 시도해 주세요.",
+        "not_ready": "이 출금은 아직 청구할 수 없습니다. 체크포인트는 몇 시간이 걸릴 수 있으니 나중에 다시 시도해 주세요."
+      },
+      "buy": {
+        "title": "MANA 구매",
+        "subtitle": "구매할 MANA를 선택하세요:",
+        "close": "닫기",
+        "error": "제공업체를 열 수 없습니다. 다시 시도해 주세요.",
+        "network": {
+          "ethereum": {
+            "label": "Ethereum MANA",
+            "name": "Ethereum",
+            "description": "Ethereum에서 LAND, 이름, 특정 웨어러블을 구매하는 데 사용합니다."
+          },
+          "polygon": {
+            "label": "Polygon MANA",
+            "name": "Polygon",
+            "description": "Polygon에서 대부분의 웨어러블과 이모트를 구매하는 데 사용합니다."
+          }
+        },
+        "provider_title": "{provider}(으)로 {network} MANA 구매",
+        "provider_subtitle": "직불카드, 신용카드, Apple Pay, Google Pay 또는 계좌 이체로 구매할 수 있습니다.",
+        "continue": "{provider}(으)로 계속",
+        "learn_more": "{provider}에 대해 자세히 알아보기",
+        "provider": {
+          "moonpay": "MoonPay",
+          "transak": "Transak"
+        },
+        "loading": "여는 중…"
       }
     },
     "notifications": {
@@ -1441,7 +1505,9 @@
         "delete": "계정 삭제",
         "cancel": "취소",
         "generic_error": "계정 삭제에 실패했습니다. 나중에 다시 시도해 주세요."
-      }
+      },
+      "unavailable_title": "이 지갑에서는 계정 삭제를 사용할 수 없습니다",
+      "unavailable_description": "계정 삭제는 이메일 또는 소셜 로그인으로 생성된 계정에만 적용됩니다. 자가 수탁형 지갑(MetaMask 또는 WalletConnect 등)은 자체 키를 관리하므로 여기서 삭제할 것이 없습니다. 로그아웃하려면 연결을 해제하세요."
     },
     "copy": "복사",
     "copied": "복사됨"

@@ -47,6 +47,17 @@ const EmptyState = styled(Typography)(({ theme }) => ({
   padding: theme.spacing(1.5, 0)
 }))
 
+// Sub-section label inside the expanded list ("Pending transactions" / "Latest transactions"),
+// separating in-flight swaps/withdrawals from the settled history (Figma "Profile-Account" Wallets).
+const GroupHeader = styled(Typography)(({ theme }) => ({
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: 0.6,
+  textTransform: 'uppercase',
+  color: '#A09BA8',
+  padding: theme.spacing(1.5, 0, 0.5)
+}))
+
 // Mobile stacks type/amount, date/status and a full-width hash into three rows beside the icon;
 // md+ lays everything out in one aligned six-column row.
 const Row = styled(Box)(({ theme }) => ({
@@ -118,6 +129,24 @@ const HashLink = styled(Link)(() => ({
   }
 }))
 
+// pending: in-page submit lifecycle. bridging: swap/withdraw mined on its origin chain, waiting for
+// the destination-chain credit (~20-30 min). checkpoint: withdrawal checkpointed, claimable (shown as
+// the claim button, not this badge). confirmed: settled. failed: reverted.
+const STATUS_COLOR: Record<WalletTransactionStatus, string> = {
+  confirmed: '#34CE77',
+  failed: '#FF2D55',
+  bridging: '#4A8FE7',
+  checkpoint: '#2EE6C5',
+  pending: '#FFA500'
+}
+const STATUS_BACKGROUND: Record<WalletTransactionStatus, string> = {
+  confirmed: 'rgba(52, 206, 119, 0.12)',
+  failed: 'rgba(255, 45, 85, 0.12)',
+  bridging: 'rgba(74, 143, 231, 0.14)',
+  checkpoint: 'rgba(46, 230, 197, 0.14)',
+  pending: 'rgba(255, 165, 0, 0.12)'
+}
+
 const StatusBadge = styled('span', { shouldForwardProp: prop => prop !== '$status' })<{ $status: WalletTransactionStatus }>(
   ({ theme, $status }) => ({
     gridArea: 'status',
@@ -128,9 +157,8 @@ const StatusBadge = styled('span', { shouldForwardProp: prop => prop !== '$statu
     fontSize: 11,
     fontWeight: 600,
     textTransform: 'capitalize',
-    color: $status === 'failed' ? '#FF2D55' : $status === 'confirmed' ? '#34CE77' : '#FFA500',
-    background:
-      $status === 'failed' ? 'rgba(255, 45, 85, 0.12)' : $status === 'confirmed' ? 'rgba(52, 206, 119, 0.12)' : 'rgba(255, 165, 0, 0.12)',
+    color: STATUS_COLOR[$status],
+    background: STATUS_BACKGROUND[$status],
     [theme.breakpoints.up('md')]: {
       justifySelf: 'start'
     }
@@ -153,4 +181,50 @@ const Amount = styled(Typography)(({ theme }) => ({
   }
 }))
 
-export { Amount, ChevronWrap, EmptyState, HashLink, Header, IconChip, List, Row, RowDate, RowType, Section, StatusBadge }
+// Replaces the status badge on a checkpointed withdrawal row: the "claim on Ethereum" (exit) action.
+const ClaimButton = styled('button')(({ theme }) => ({
+  gridArea: 'status',
+  justifySelf: 'end',
+  flexShrink: 0,
+  padding: theme.spacing(0.5, 1.25),
+  border: 'none',
+  borderRadius: 6,
+  fontFamily: 'inherit',
+  fontSize: 11,
+  fontWeight: 700,
+  cursor: 'pointer',
+  color: '#1B0F2B',
+  background: '#2EE6C5',
+  transition: 'opacity 0.15s ease',
+  ['&:hover']: {
+    opacity: 0.85
+  },
+  ['&:focus-visible']: {
+    outline: '2px solid rgba(255, 255, 255, 0.6)',
+    outlineOffset: 2
+  },
+  ['&:disabled']: {
+    opacity: 0.6,
+    cursor: 'default'
+  },
+  [theme.breakpoints.up('md')]: {
+    justifySelf: 'start'
+  }
+}))
+
+export {
+  Amount,
+  ChevronWrap,
+  ClaimButton,
+  EmptyState,
+  GroupHeader,
+  HashLink,
+  Header,
+  IconChip,
+  List,
+  Row,
+  RowDate,
+  RowType,
+  Section,
+  StatusBadge
+}

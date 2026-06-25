@@ -1721,13 +1721,77 @@
         "empty": "No transactions yet.",
         "type": {
           "send": "Sent",
-          "swap": "Deposit"
+          "swap": "Deposit",
+          "received": "Received",
+          "withdraw": "Withdraw"
         },
         "status": {
           "pending": "Pending",
           "confirmed": "Confirmed",
-          "failed": "Failed"
-        }
+          "failed": "Failed",
+          "bridging": "Bridging",
+          "checkpoint": "Claimable"
+        },
+        "pending_title": "Pending transactions",
+        "latest_title": "Latest transactions",
+        "claim": "Claim"
+      },
+      "withdraw": {
+        "title": "Withdraw MANA",
+        "loading": "Loading wallet…",
+        "connect_description": "Connect your wallet to move MANA to Ethereum.",
+        "switch_description": "Switch your wallet to Polygon to continue.",
+        "switch_button": "Switch network",
+        "description": "Move your Polygon MANA to Ethereum. It's burned on Polygon now; you'll claim it on Ethereum once it's checkpointed (this can take a few hours).",
+        "amount_label": "Amount",
+        "submit": "Withdraw to Ethereum",
+        "withdrawing": "Withdrawing…",
+        "success": "Your withdrawal has started. Once it's checkpointed (a few hours), come back to claim it on Ethereum.",
+        "close": "Close",
+        "rejected": "You rejected the transaction.",
+        "error": "Something went wrong. Please try again."
+      },
+      "claim": {
+        "title": "Claim withdrawal",
+        "loading": "Loading wallet…",
+        "connect_description": "Connect your wallet to claim your MANA on Ethereum.",
+        "switch_description": "Switch your wallet to Ethereum to continue.",
+        "switch_button": "Switch network",
+        "description": "Your withdrawal of {amount} MANA is ready. Claim it on Ethereum to receive your MANA.",
+        "submit": "Claim on Ethereum",
+        "claiming": "Claiming…",
+        "success": "Your MANA has been released on Ethereum.",
+        "close": "Close",
+        "rejected": "You rejected the transaction.",
+        "error": "Couldn't claim the withdrawal. Please try again.",
+        "not_ready": "This withdrawal isn't ready to claim yet. The checkpoint can take a few hours — please try again later."
+      },
+      "buy": {
+        "title": "Buy MANA",
+        "subtitle": "Select what MANA you want to buy:",
+        "close": "Close",
+        "error": "Couldn't open the provider. Please try again.",
+        "network": {
+          "ethereum": {
+            "label": "Ethereum MANA",
+            "name": "Ethereum",
+            "description": "Use it to buy LAND, names and specific wearables in Ethereum."
+          },
+          "polygon": {
+            "label": "Polygon MANA",
+            "name": "Polygon",
+            "description": "Use it to buy most wearables and emotes in Polygon."
+          }
+        },
+        "provider_title": "Buy {network} MANA with {provider}",
+        "provider_subtitle": "You can buy with debit and credit cards, Apple Pay, Google Pay, or via bank transfer.",
+        "continue": "Continue with {provider}",
+        "learn_more": "Learn More about {provider}",
+        "provider": {
+          "moonpay": "MoonPay",
+          "transak": "Transak"
+        },
+        "loading": "Opening…"
       }
     },
     "notifications": {
@@ -1876,7 +1940,9 @@
         "delete": "Delete Account",
         "cancel": "Cancel",
         "generic_error": "Failed to delete your account. Please try again later."
-      }
+      },
+      "unavailable_title": "Account deletion isn’t available for this wallet",
+      "unavailable_description": "Deleting your account only applies to accounts created with email or social login. Self-custodial wallets (like MetaMask or WalletConnect) control their own keys, so there’s nothing to delete here — just disconnect to sign out."
     },
     "copy": "Copy",
     "copied": "Copied"

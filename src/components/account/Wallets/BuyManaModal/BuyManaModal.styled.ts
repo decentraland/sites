@@ -1,0 +1,62 @@
+import { Box, Link, Typography, styled } from 'decentraland-ui2'
+
+// "Buy MANA" modal, faithful to the standalone account dapp: a subtitle, then one section per network
+// (Ethereum MANA / Polygon MANA) each with a description and one gateway card per provider.
+const Subtitle = styled(Typography)(({ theme }) => ({
+  fontSize: 14,
+  color: '#CFCDD4',
+  marginBottom: theme.spacing(1)
+}))
+
+const NetworkSection = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1),
+  ['& + &']: {
+    marginTop: theme.spacing(2)
+  }
+}))
+
+const NetworkLabel = styled(Typography)(() => ({
+  fontSize: 15,
+  fontWeight: 700,
+  color: '#FCFCFC'
+}))
+
+const NetworkDescription = styled(Typography)(({ theme }) => ({
+  fontSize: 13,
+  color: '#A09BA8',
+  marginBottom: theme.spacing(0.5)
+}))
+
+const GatewayCard = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1),
+  padding: theme.spacing(2),
+  border: '1px solid rgba(255, 255, 255, 0.12)',
+  borderRadius: theme.spacing(1.5)
+}))
+
+const GatewayTitle = styled(Typography)(() => ({
+  fontSize: 14,
+  fontWeight: 700,
+  color: '#FCFCFC'
+}))
+
+const GatewaySubtitle = styled(Typography)(() => ({
+  fontSize: 13,
+  color: '#A09BA8'
+}))
+
+const LearnMore = styled(Link)(() => ({
+  fontSize: 12,
+  color: '#FF2D55',
+  textDecoration: 'underline',
+  alignSelf: 'flex-start',
+  ['&:hover']: {
+    opacity: 0.85
+  }
+}))
+
+export { GatewayCard, GatewaySubtitle, GatewayTitle, LearnMore, NetworkDescription, NetworkLabel, NetworkSection, Subtitle }

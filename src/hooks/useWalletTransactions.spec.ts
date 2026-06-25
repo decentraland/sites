@@ -51,6 +51,19 @@ describe('useWalletTransactions', () => {
     expect(result.current.transactions.find(t => t.hash === '0xc')?.status).toBe('confirmed')
   })
 
+  it('should patch arbitrary fields of a transaction by hash', () => {
+    const { result } = renderHook(() => useWalletTransactions(ADDRESS))
+    act(() => result.current.addTransaction(tx({ hash: '0xw', type: 'withdraw', amount: 42, status: 'checkpoint' })))
+
+    act(() => result.current.updateTransaction('0xw', { status: 'pending', claimHash: '0xexit' }))
+
+    const updated = result.current.transactions.find(t => t.hash === '0xw')
+    expect(updated?.status).toBe('pending')
+    expect(updated?.claimHash).toBe('0xexit')
+    // untouched fields are preserved
+    expect(updated?.amount).toBe(42)
+  })
+
   it('should be a no-op without an address', () => {
     const { result } = renderHook(() => useWalletTransactions(undefined))
     act(() => result.current.addTransaction(tx()))

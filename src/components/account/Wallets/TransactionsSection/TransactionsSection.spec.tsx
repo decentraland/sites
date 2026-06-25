@@ -45,6 +45,12 @@ jest.mock('./TransactionsSection.styled', () => ({
     </a>
   ),
   StatusBadge: ({ children }: ChildrenProps) => <span>{children}</span>,
+  GroupHeader: ({ children, 'data-role': dataRole }: ChildrenProps) => <p data-role={dataRole}>{children}</p>,
+  ClaimButton: ({ children, onClick, 'data-role': dataRole }: ChildrenProps & { onClick?: () => void }) => (
+    <button type="button" data-role={dataRole} onClick={onClick}>
+      {children}
+    </button>
+  ),
   Amount: ({ children }: ChildrenProps) => <span>{children}</span>
 }))
 
@@ -56,6 +62,17 @@ const tx: WalletTransaction = {
   timestamp: 1718000000000,
   status: 'pending'
 }
+
+const withdrawTx: WalletTransaction = {
+  hash: '0xabcabcabcabcabcabcabcabcabcabcabcabcabca',
+  type: 'withdraw',
+  network: 'polygon',
+  amount: 50,
+  timestamp: 1718000500000,
+  status: 'checkpoint'
+}
+
+const confirmedTx: WalletTransaction = { ...tx, hash: '0xdeadbeef', status: 'confirmed' }
 
 describe('TransactionsSection', () => {
   it('should keep the list collapsed until the header is clicked', () => {
@@ -83,5 +100,41 @@ describe('TransactionsSection', () => {
     const link = screen.getByRole('link')
     expect(link).toHaveAttribute('href', `https://explorer.test/ethereum/${tx.hash}`)
     expect(link).toHaveTextContent(tx.hash)
+  })
+
+  it('should link a claimed withdrawal to its Ethereum exit tx (claimHash) instead of the burn', () => {
+    const claimed: WalletTransaction = { ...withdrawTx, status: 'pending', claimHash: '0xexit1234' }
+    render(<TransactionsSection transactions={[claimed]} />)
+    fireEvent.click(screen.getByRole('button', { name: /account.wallets.transactions.title/ }))
+
+    const link = screen.getByRole('link')
+    expect(link).toHaveAttribute('href', 'https://explorer.test/ethereum/0xexit1234')
+    expect(link).toHaveTextContent('0xexit1234')
+  })
+
+  it('should split in-progress txs into a pending group and settled txs into a latest group', () => {
+    render(<TransactionsSection transactions={[tx, confirmedTx]} />)
+    fireEvent.click(screen.getByRole('button', { name: /account.wallets.transactions.title/ }))
+
+    expect(screen.getByText('account.wallets.transactions.pending_title')).toBeInTheDocument()
+    expect(screen.getByText('account.wallets.transactions.latest_title')).toBeInTheDocument()
+  })
+
+  it('should render a claim button on a checkpointed withdrawal and call onClaim', () => {
+    const onClaim = jest.fn()
+    render(<TransactionsSection transactions={[withdrawTx]} onClaim={onClaim} />)
+    fireEvent.click(screen.getByRole('button', { name: /account.wallets.transactions.title/ }))
+
+    const claim = screen.getByRole('button', { name: 'account.wallets.transactions.claim' })
+    fireEvent.click(claim)
+    expect(onClaim).toHaveBeenCalledWith(withdrawTx)
+  })
+
+  it('should fall back to a status badge for a checkpointed withdrawal when no onClaim is given', () => {
+    render(<TransactionsSection transactions={[withdrawTx]} />)
+    fireEvent.click(screen.getByRole('button', { name: /account.wallets.transactions.title/ }))
+
+    expect(screen.getByText('account.wallets.transactions.status.checkpoint')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'account.wallets.transactions.claim' })).not.toBeInTheDocument()
   })
 })

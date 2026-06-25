@@ -22,6 +22,15 @@ jest.mock('../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ address: ADDRESS })
 }))
 
+let mockIsThirdweb = true
+jest.mock('../../hooks/useIsThirdwebAccount', () => ({
+  useIsThirdwebAccount: () => mockIsThirdweb
+}))
+
+jest.mock('../../components/account/DeleteAccount/DeleteAccountUnavailable/DeleteAccountUnavailable', () => ({
+  DeleteAccountUnavailable: () => <div data-role="unavailable" />
+}))
+
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))
@@ -55,8 +64,20 @@ jest.mock('../../components/account/DeleteAccount/DeleteAccountConfirmModal/Dele
 }))
 
 describe('DeleteAccountPage', () => {
+  beforeEach(() => {
+    mockIsThirdweb = true
+  })
+
   afterEach(() => {
     jest.clearAllMocks()
+  })
+
+  it('should show the unavailable message (not the danger zone) for a non-thirdweb account', () => {
+    mockIsThirdweb = false
+    const { container } = render(<DeleteAccountPage />)
+
+    expect(container.querySelector('[data-role="unavailable"]')).toBeTruthy()
+    expect(screen.queryByText(`section-address:${ADDRESS}`)).not.toBeInTheDocument()
   })
 
   it('should render the section with the authenticated address and the modal closed by default', () => {
