@@ -26,6 +26,11 @@ async function fetchImageById(id: string, signal?: AbortSignal): Promise<Image> 
   return image
 }
 
+// camera-reel-service has no visibility query param — it gates visibility purely by auth: a request
+// signed as the owner returns ALL images (public + private, each carrying `isPublic`), an unsigned
+// request returns only public ones. So pass `identity` ONLY when fetching the owner's own gallery
+// (so they can filter public/private client-side); never pass it for someone else's gallery, or it
+// would leak that user's private snapshots.
 async function fetchImagesByUser(
   address: string,
   options: FetchListOptions,

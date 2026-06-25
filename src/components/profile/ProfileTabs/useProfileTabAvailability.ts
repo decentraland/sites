@@ -3,7 +3,6 @@ import { useGetProfileAssetsQuery } from '../../../features/profile/profile.asse
 import { useGetProfileCreationsQuery } from '../../../features/profile/profile.creations.client'
 import { useGetProfilePlacesQuery } from '../../../features/profile/profile.places.client'
 import { useGetProfileCommunitiesQuery } from '../../../features/profile/profile.social.client'
-import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useReelImagesByUser } from '../../../hooks/useReelImagesByUser'
 import type { ProfileTab } from './ProfileTabs.types'
 
@@ -17,8 +16,6 @@ interface TabAvailability {
 const PROBE_OPTIONS = { limit: 1, offset: 0 } as const
 
 function useProfileTabAvailability(address: string, isOwnProfile: boolean): TabAvailability {
-  const { identity } = useAuthIdentity()
-
   const places = useGetProfilePlacesQuery({ address, limit: 1, offset: 0 })
   const wearables = useGetProfileCreationsQuery({ address, category: 'wearable', limit: 1, offset: 0 }, { skip: isOwnProfile })
   const emotes = useGetProfileCreationsQuery({ address, category: 'emote', limit: 1, offset: 0 }, { skip: isOwnProfile })
@@ -26,7 +23,10 @@ function useProfileTabAvailability(address: string, isOwnProfile: boolean): TabA
   // Member view gets the target user's publicly visible communities (public + listed) — the
   // endpoint only returns the full list (incl. private/unlisted) for the member themselves.
   const communities = useGetProfileCommunitiesQuery({ address, limit: 1, offset: 0 })
-  const photos = useReelImagesByUser(address, PROBE_OPTIONS, isOwnProfile ? identity : undefined)
+  // Probe public photos only (unsigned) so the photos tab is revealed on a member profile solely
+  // when the user has public snapshots — matching what the gallery actually renders. On the own
+  // profile the tab is always shown (see below), so this probe's result is unused there.
+  const photos = useReelImagesByUser(address, PROBE_OPTIONS)
 
   return useMemo(() => {
     // Reveal-on-data model: on a MEMBER profile every data-driven tab starts hidden and only
