@@ -10,6 +10,8 @@ interface ReelImagesState {
   error: Error | null
 }
 
+// Pass `identity` only to fetch the signed-in user's OWN gallery (returns public + private). Leave it
+// undefined for anyone else's gallery so the unsigned listing returns public images only.
 const useReelImagesByUser = (address: string | undefined, options: FetchListOptions, identity?: AuthIdentity): ReelImagesState => {
   const [state, setState] = useState<ReelImagesState>({
     images: [],

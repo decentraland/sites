@@ -1104,7 +1104,11 @@
       "empty_member": "该成员尚未拍摄任何照片。",
       "count": "{count} 张照片",
       "empty_owner_subtitle": "快进来开始收集回忆吧！按 'C' 打开相机，按 '空格键' 拍照。",
-      "empty_owner_cta": "立即加入"
+      "empty_owner_cta": "立即加入",
+      "filter_all": "全部",
+      "filter_public": "公开",
+      "filter_private": "私密",
+      "empty_filter": "没有符合此筛选条件的照片。"
     },
     "referral_rewards": {
       "anonymous": "登录以邀请好友并解锁奖励。",
