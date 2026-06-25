@@ -1,16 +1,18 @@
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
+import type { WalletNetwork } from '../manaContract'
 import { CloseButton, Header, StyledDialog, Title } from '../SendManaModal/SendManaModal.styled'
 import { BuyManaContent } from './BuyManaContent'
 
 interface BuyManaModalProps {
   open: boolean
   address: string | undefined
+  network: WalletNetwork
   onClose: () => void
 }
 
-const BuyManaModal = ({ open, address, onClose }: BuyManaModalProps) => {
+const BuyManaModal = ({ open, address, network, onClose }: BuyManaModalProps) => {
   const t = useFormatMessage()
 
   return (
@@ -24,7 +26,7 @@ const BuyManaModal = ({ open, address, onClose }: BuyManaModalProps) => {
         </CloseButton>
       </Header>
       {/* No Web3 signer needed — the modal only opens hosted on-ramp URLs for the user's address. */}
-      {open && <BuyManaContent address={address} onClose={onClose} />}
+      {open && <BuyManaContent address={address} network={network} onClose={onClose} />}
     </StyledDialog>
   )
 }

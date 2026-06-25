@@ -25,13 +25,13 @@ describe('BuyManaModal', () => {
   })
 
   it('should not render the content while closed', () => {
-    render(<BuyManaModal open={false} address="0xabc" onClose={jest.fn()} />)
+    render(<BuyManaModal open={false} network="ethereum" address="0xabc" onClose={jest.fn()} />)
 
     expect(screen.queryByTestId('buy-content')).not.toBeInTheDocument()
   })
 
   it('should render the content with the address when open', () => {
-    render(<BuyManaModal open address="0xabc" onClose={jest.fn()} />)
+    render(<BuyManaModal open network="ethereum" address="0xabc" onClose={jest.fn()} />)
 
     expect(screen.getByTestId('buy-content')).toHaveTextContent('0xabc')
   })

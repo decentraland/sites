@@ -18,6 +18,7 @@ import {
 
 interface BuyManaContentProps {
   address: string | undefined
+  network: WalletNetwork
   onClose: () => void
 }
 
@@ -33,7 +34,7 @@ const LEARN_MORE: Record<BuyManaProvider, string> = {
   transak: 'https://transak.com/'
 }
 
-const BuyManaContent = ({ address, onClose }: BuyManaContentProps) => {
+const BuyManaContent = ({ address, network, onClose }: BuyManaContentProps) => {
   const t = useFormatMessage()
   const [loadingKey, setLoadingKey] = useState<string | null>(null)
   const [errorKey, setErrorKey] = useState<string | null>(null)
@@ -74,7 +75,7 @@ const BuyManaContent = ({ address, onClose }: BuyManaContentProps) => {
   return (
     <Body data-role="buy-form">
       <Subtitle>{t('account.wallets.buy.subtitle')}</Subtitle>
-      {NETWORKS.map(({ id, gateways }) => {
+      {NETWORKS.filter(({ id }) => id === network).map(({ id, gateways }) => {
         const networkName = t(`account.wallets.buy.network.${id}.name`)
         return (
           <NetworkSection key={id} data-role={`buy-network-${id}`}>

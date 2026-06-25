@@ -25,8 +25,9 @@ const WalletsPage = () => {
   useBridgeWithdrawals(address ?? undefined)
   const [isReceiveOpen, setIsReceiveOpen] = useState(false)
   const [sendNetwork, setSendNetwork] = useState<WalletNetwork | null>(null)
-  // Buy-with-fiat modal (MoonPay / Transak): shows both networks, faithful to the account dapp.
-  const [isBuyOpen, setIsBuyOpen] = useState(false)
+  // Buy-with-fiat modal (MoonPay / Transak): directional per card — the active card's network selects
+  // which gateways show (Ethereum: MoonPay + Transak, Polygon: Transak).
+  const [buyNetwork, setBuyNetwork] = useState<WalletNetwork | null>(null)
   // Swap is directional per card: Ethereum bridges to Polygon (deposit), Polygon bridges to Ethereum
   // (withdraw). The active card's network selects which modal opens.
   const [swapNetwork, setSwapNetwork] = useState<WalletNetwork | null>(null)
@@ -55,7 +56,7 @@ const WalletsPage = () => {
           onReceive={() => setIsReceiveOpen(true)}
           onSend={() => setSendNetwork('ethereum')}
           onSwap={() => setSwapNetwork('ethereum')}
-          onBuy={() => setIsBuyOpen(true)}
+          onBuy={() => setBuyNetwork('ethereum')}
           onClaim={setClaimWithdrawal}
         />
         <BalanceCard
@@ -66,7 +67,7 @@ const WalletsPage = () => {
           onReceive={() => setIsReceiveOpen(true)}
           onSend={() => setSendNetwork('polygon')}
           onSwap={() => setSwapNetwork('polygon')}
-          onBuy={() => setIsBuyOpen(true)}
+          onBuy={() => setBuyNetwork('polygon')}
           onClaim={setClaimWithdrawal}
         />
         {/* The transactions list is the wallet's full MANA history from the mana-graph subgraph
@@ -101,7 +102,12 @@ const WalletsPage = () => {
         onClose={() => setClaimWithdrawal(null)}
         onSuccess={() => fetchBalances(true)}
       />
-      <BuyManaModal open={isBuyOpen} address={address ?? undefined} onClose={() => setIsBuyOpen(false)} />
+      <BuyManaModal
+        open={buyNetwork !== null}
+        network={buyNetwork ?? 'ethereum'}
+        address={address ?? undefined}
+        onClose={() => setBuyNetwork(null)}
+      />
     </>
   )
 }

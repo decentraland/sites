@@ -60,21 +60,30 @@ describe('BuyManaContent', () => {
     openSpy.mockRestore()
   })
 
-  it('should render an Ethereum section (MoonPay + Transak) and a Polygon section (Transak only)', () => {
-    const { container } = render(<BuyManaContent address="0xUSER" onClose={jest.fn()} />)
+  it('should render only the Ethereum section (MoonPay + Transak) when the network is ethereum', () => {
+    const { container } = render(<BuyManaContent address="0xUSER" network="ethereum" onClose={jest.fn()} />)
 
     expect(container.querySelector('[data-role="buy-network-ethereum"]')).toBeInTheDocument()
-    expect(container.querySelector('[data-role="buy-network-polygon"]')).toBeInTheDocument()
     expect(container.querySelector('[data-role="buy-gateway-ethereum-moonpay"]')).toBeInTheDocument()
     expect(container.querySelector('[data-role="buy-gateway-ethereum-transak"]')).toBeInTheDocument()
+    // The Polygon section is not rendered when buying Ethereum MANA
+    expect(container.querySelector('[data-role="buy-network-polygon"]')).not.toBeInTheDocument()
+    expect(container.querySelector('[data-role="buy-gateway-polygon-transak"]')).not.toBeInTheDocument()
+  })
+
+  it('should render only the Polygon section (Transak only) when the network is polygon', () => {
+    const { container } = render(<BuyManaContent address="0xUSER" network="polygon" onClose={jest.fn()} />)
+
+    expect(container.querySelector('[data-role="buy-network-polygon"]')).toBeInTheDocument()
     expect(container.querySelector('[data-role="buy-gateway-polygon-transak"]')).toBeInTheDocument()
-    // MoonPay is not offered on Polygon
+    // The Ethereum section and MoonPay are not rendered when buying Polygon MANA
+    expect(container.querySelector('[data-role="buy-network-ethereum"]')).not.toBeInTheDocument()
     expect(container.querySelector('[data-role="buy-gateway-polygon-moonpay"]')).not.toBeInTheDocument()
   })
 
   it('should open the MoonPay hosted checkout synchronously and close', () => {
     const onClose = jest.fn()
-    const { container } = render(<BuyManaContent address="0xUSER" onClose={onClose} />)
+    const { container } = render(<BuyManaContent address="0xUSER" network="ethereum" onClose={onClose} />)
 
     click(container, 'buy-continue-ethereum-moonpay')
 
@@ -85,7 +94,7 @@ describe('BuyManaContent', () => {
 
   it('should open a blank tab synchronously and point it at the fetched Transak url', async () => {
     const onClose = jest.fn()
-    const { container } = render(<BuyManaContent address="0xUSER" onClose={onClose} />)
+    const { container } = render(<BuyManaContent address="0xUSER" network="polygon" onClose={onClose} />)
 
     click(container, 'buy-continue-polygon-transak')
 
@@ -99,7 +108,7 @@ describe('BuyManaContent', () => {
 
   it('should close the blank tab and show a stable error when Transak fails', async () => {
     mockFetchTransakUrl.mockRejectedValue(new Error('boom'))
-    const { container } = render(<BuyManaContent address="0xUSER" onClose={jest.fn()} />)
+    const { container } = render(<BuyManaContent address="0xUSER" network="ethereum" onClose={jest.fn()} />)
 
     click(container, 'buy-continue-ethereum-transak')
 
@@ -108,7 +117,7 @@ describe('BuyManaContent', () => {
   })
 
   it('should do nothing without an address', () => {
-    const { container } = render(<BuyManaContent address={undefined} onClose={jest.fn()} />)
+    const { container } = render(<BuyManaContent address={undefined} network="ethereum" onClose={jest.fn()} />)
 
     click(container, 'buy-continue-ethereum-moonpay')
 
