@@ -16,7 +16,7 @@ const RelatedPost = memo((props: RelatedPostProps) => {
   }
 
   return (
-    <RelatedSection>
+    <RelatedSection data-testid="related-posts">
       <RelatedContainer>
         <RelatedTitle variant="h6">{t('blog.related_post')}</RelatedTitle>
         <RelatedWrapper>

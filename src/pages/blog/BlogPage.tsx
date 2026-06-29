@@ -42,7 +42,7 @@ export const BlogPage = () => {
         }
       />
       {error ? (
-        <ErrorContainer>
+        <ErrorContainer data-testid="blog-error">
           <Typography color="error">{t('error.load_posts')}</Typography>
         </ErrorContainer>
       ) : (

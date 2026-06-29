@@ -12,6 +12,7 @@ module.exports = [
       'prettier.config.cjs',
       'jest.config.ts',
       'src/__mocks__/**',
+      'e2e/**',
     ],
   },
   {

@@ -137,7 +137,12 @@ const Search = ({ placeholder, onClose }: SearchProps) => {
             !isError &&
             hasResults &&
             searchResults.slice(0, 4).map((result, index) => (
-              <SearchResultItem key={result.id} $selected={index === selectedIndex} onMouseEnter={() => setSelectedIndex(index)}>
+              <SearchResultItem
+                key={result.id}
+                data-testid="search-hit"
+                $selected={index === selectedIndex}
+                onMouseEnter={() => setSelectedIndex(index)}
+              >
                 <SearchResultLink to={`/blog/${result.categorySlug}/${result.id}`} onClick={handleClose}>
                   <SearchResultImage $image={result.image} />
                   <SearchResultText>

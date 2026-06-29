@@ -39,3 +39,7 @@ coverage
 
 # Local-only profile migration plan (kept on disk, not committed)
 docs/profile-migration.md
+
+# Playwright E2E
+playwright-report/
+test-results/

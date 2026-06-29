@@ -21,7 +21,7 @@ const PostCard = (props: PostCardProps) => {
 
   if (loading) {
     return (
-      <CardContainer elevation={0}>
+      <CardContainer elevation={0} data-testid="post-card-skeleton">
         <LoadingImage variant="rectangular" />
         <CardInfo>
           <LoadingHeader>
@@ -38,7 +38,7 @@ const PostCard = (props: PostCardProps) => {
   if (!post) return null
 
   return (
-    <CardContainer elevation={0}>
+    <CardContainer elevation={0} data-testid="post-card">
       <CardImageLink to={post.url}>
         <CardImage src={post.image.url} alt={post.title} loading="lazy" decoding="async" />
       </CardImageLink>

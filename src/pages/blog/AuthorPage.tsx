@@ -20,7 +20,7 @@ const AuthorPostList = ({ author }: { author: BlogAuthor }) => {
 
   if (error) {
     return (
-      <CenteredBox>
+      <CenteredBox data-testid="blog-error">
         <Typography color="error">{t('error.load_posts')}</Typography>
       </CenteredBox>
     )
@@ -28,7 +28,7 @@ const AuthorPostList = ({ author }: { author: BlogAuthor }) => {
 
   return (
     <>
-      <AuthorHeaderBox>
+      <AuthorHeaderBox data-testid="author-header">
         {author.image && <AuthorImage src={author.image.url} alt={author.title} />}
 
         <Typography variant="h5">{author.title}</Typography>
@@ -71,7 +71,7 @@ export const AuthorPage = () => {
   if (authorError) {
     return (
       <BlogLayout showBlogNavigation={true}>
-        <CenteredBox>
+        <CenteredBox data-testid="blog-error">
           <Typography color="error">{t('error.load_author')}</Typography>
         </CenteredBox>
       </BlogLayout>

@@ -22,7 +22,7 @@ const CategoryPostList = ({ category }: { category: BlogCategory }) => {
 
   if (error) {
     return (
-      <CenteredBox>
+      <CenteredBox data-testid="blog-error">
         <Typography color="error">{t('error.load_posts')}</Typography>
       </CenteredBox>
     )
@@ -53,7 +53,7 @@ export const CategoryPage = () => {
   if (categoryError) {
     return (
       <BlogLayout showBlogNavigation={true} activeCategory={categorySlug}>
-        <CenteredBox>
+        <CenteredBox data-testid="blog-error">
           <Typography color="error">{t('error.load_category')}</Typography>
         </CenteredBox>
       </BlogLayout>
