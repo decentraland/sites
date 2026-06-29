@@ -35,6 +35,7 @@ const fakeImage = {
   id: 'img-1',
   url: 'https://image.url/blob',
   thumbnailUrl: '',
+  isPublic: true,
   metadata: {
     userName: 'alice',
     userAddress: '0xa',

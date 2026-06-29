@@ -1104,7 +1104,11 @@
       "empty_member": "このメンバーはまだ写真を撮影していません。",
       "count": "{count} 枚の写真",
       "empty_owner_subtitle": "入って思い出を集めましょう！「C」キーでカメラを開き、「スペースキー」で写真を撮影できます。",
-      "empty_owner_cta": "参加する"
+      "empty_owner_cta": "参加する",
+      "filter_all": "すべて",
+      "filter_public": "公開",
+      "filter_private": "非公開",
+      "empty_filter": "このフィルターに一致する写真はありません。"
     },
     "referral_rewards": {
       "anonymous": "サインインして友達を招待し、報酬を獲得しましょう。",
