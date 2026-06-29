@@ -109,13 +109,16 @@ const StorageNotFoundPage = lazy(() => import('./pages/storage/StorageNotFoundPa
 // (Redux + RTK Query for credits/notifications). Auth via localStorage identity (no Web3
 // providers). Public path stays /account/* — the cutover from the standalone dapp is handled
 // in definitions once this implementation is functional.
-const AccountLayout = lazy(() => import('./pages/account').then(m => ({ default: m.AccountLayout })))
-const AccountIndexRedirect = lazy(() => import('./pages/account').then(m => ({ default: m.AccountIndexRedirect })))
-const AccountWalletsPage = lazy(() => import('./pages/account').then(m => ({ default: m.WalletsPage })))
-const AccountNotificationsPage = lazy(() => import('./pages/account').then(m => ({ default: m.NotificationsPage })))
-const AccountCreditsPage = lazy(() => import('./pages/account').then(m => ({ default: m.CreditsPage })))
-const AccountDeletePage = lazy(() => import('./pages/account').then(m => ({ default: m.DeleteAccountPage })))
-const AccountNotFoundPage = lazy(() => import('./pages/account').then(m => ({ default: m.AccountNotFoundPage })))
+// Per-file lazy imports (not the ./pages/account barrel): a barrel collapses all 7 routes into one
+// chunk, so visiting /account/notifications would eagerly pull WalletsPage's web3 tree (wagmi/viem) and
+// DeleteAccountPage's auth tree (thirdweb/magic-sdk). Per-file keeps each route's heavy deps on its own.
+const AccountLayout = lazy(() => import('./pages/account/AccountLayout').then(m => ({ default: m.AccountLayout })))
+const AccountIndexRedirect = lazy(() => import('./pages/account/AccountLayout').then(m => ({ default: m.AccountIndexRedirect })))
+const AccountWalletsPage = lazy(() => import('./pages/account/WalletsPage').then(m => ({ default: m.WalletsPage })))
+const AccountNotificationsPage = lazy(() => import('./pages/account/NotificationsPage').then(m => ({ default: m.NotificationsPage })))
+const AccountCreditsPage = lazy(() => import('./pages/account/CreditsPage').then(m => ({ default: m.CreditsPage })))
+const AccountDeletePage = lazy(() => import('./pages/account/DeleteAccountPage').then(m => ({ default: m.DeleteAccountPage })))
+const AccountNotFoundPage = lazy(() => import('./pages/account/AccountNotFoundPage').then(m => ({ default: m.AccountNotFoundPage })))
 
 const App = () => {
   return (
