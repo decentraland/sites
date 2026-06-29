@@ -38,6 +38,17 @@ const GatewayCard = styled(Box)(({ theme }) => ({
   borderRadius: theme.spacing(1.5)
 }))
 
+// Gateway brand banner, faithful to the standalone account dapp's Buy modal (decentraland-ui's
+// Network card renders the provider logo centred on a white banner above the title).
+const GatewayLogo = styled('img')(({ theme }) => ({
+  width: '100%',
+  height: 120,
+  objectFit: 'contain',
+  background: '#FFFFFF',
+  borderRadius: theme.spacing(1),
+  padding: theme.spacing(1)
+}))
+
 const GatewayTitle = styled(Typography)(() => ({
   fontSize: 14,
   fontWeight: 700,
@@ -59,4 +70,4 @@ const LearnMore = styled(Link)(() => ({
   }
 }))
 
-export { GatewayCard, GatewaySubtitle, GatewayTitle, LearnMore, NetworkDescription, NetworkLabel, NetworkSection, Subtitle }
+export { GatewayCard, GatewayLogo, GatewaySubtitle, GatewayTitle, LearnMore, NetworkDescription, NetworkLabel, NetworkSection, Subtitle }
