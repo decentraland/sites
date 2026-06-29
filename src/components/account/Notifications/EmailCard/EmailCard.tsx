@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Email, type SubscriptionDetails } from '@dcl/schemas'
 import { CircularProgress, Switch } from 'decentraland-ui2'
 import { useSetEmailMutation } from '../../../../features/account-notifications/account-notifications.client'
@@ -19,11 +19,16 @@ const EmailCard = ({ email = '', unconfirmedEmail, details, disabled = false, on
   const [setEmail, { isLoading }] = useSetEmailMutation()
   const [value, setValue] = useState(unconfirmedEmail || email)
   const [isValid, setIsValid] = useState(true)
+  const lastSyncedRef = useRef(unconfirmedEmail || email)
 
-  // Keep the field in sync once the subscription resolves (or after an address change).
+  // Sync the field only when the upstream email actually changes (subscription resolves / address
+  // change / confirmation elsewhere) — not on every prop identity change. Guarding against the last
+  // synced value preserves an in-progress edit when a background refetch returns the same email.
   useEffect(() => {
-    if (unconfirmedEmail || email) {
-      setValue(unconfirmedEmail || email)
+    const upstream = unconfirmedEmail || email
+    if (upstream && upstream !== lastSyncedRef.current) {
+      lastSyncedRef.current = upstream
+      setValue(upstream)
     }
   }, [email, unconfirmedEmail])
 

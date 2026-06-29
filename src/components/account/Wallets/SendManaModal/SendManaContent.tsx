@@ -12,13 +12,15 @@ interface SendManaContentProps {
   network: WalletNetwork
   // Session address used to key the local transaction log (same key the cards read).
   address: string | undefined
+  // MANA balance on this network — gates the amount so a transfer can't exceed it.
+  balance?: number
   onClose: () => void
   onSuccess?: () => void
 }
 
 const ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/
 
-const SendManaContent = ({ network, address, onClose, onSuccess }: SendManaContentProps) => {
+const SendManaContent = ({ network, address, balance, onClose, onSuccess }: SendManaContentProps) => {
   const t = useFormatMessage()
   const { isConnected, connect, connectors } = useWallet()
   const { chainId } = useAccount()
@@ -48,7 +50,11 @@ const SendManaContent = ({ network, address, onClose, onSuccess }: SendManaConte
 
   const targetChainId = getNetworkChainId(network)
   const isAddressValid = ADDRESS_REGEX.test(to.trim())
-  const isAmountValid = Number(amount) > 0
+  const amountValue = Number(amount)
+  // Gate the amount on the available balance, matching SwapManaContent (the tx would otherwise revert
+  // on-chain, wasting gas). When the balance is unknown (undefined) we only require a positive amount.
+  const isAmountValid = amountValue > 0 && (balance === undefined || amountValue <= balance)
+  const isOverBalance = balance !== undefined && amountValue > balance
   const isBusy = isSending || isConfirming
 
   const handleSend = useCallback(() => {
@@ -131,6 +137,8 @@ const SendManaContent = ({ network, address, onClose, onSuccess }: SendManaConte
         label={t('account.wallets.send.amount_label')}
         value={amount}
         onChange={event => setAmount(event.target.value)}
+        error={amount.length > 0 && isOverBalance}
+        helperText={amount.length > 0 && isOverBalance ? t('account.wallets.send.insufficient_balance') : undefined}
         disabled={isBusy}
         data-role="send-amount"
       />

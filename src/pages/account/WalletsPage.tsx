@@ -79,6 +79,7 @@ const WalletsPage = () => {
         open={sendNetwork !== null}
         network={sendNetwork ?? 'ethereum'}
         address={address ?? undefined}
+        balance={sendNetwork ? balances?.[sendNetwork] : undefined}
         onClose={() => setSendNetwork(null)}
         onSuccess={() => fetchBalances(true)}
       />

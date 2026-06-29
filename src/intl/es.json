@@ -1261,6 +1261,7 @@
         "to_label": "Dirección de destino",
         "amount_label": "Monto",
         "invalid_address": "Ingresá una dirección de billetera válida",
+        "insufficient_balance": "Saldo insuficiente",
         "send_button": "Enviar",
         "confirm_in_wallet": "Confirmá en tu billetera…",
         "sending": "Enviando…",

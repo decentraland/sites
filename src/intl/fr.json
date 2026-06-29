@@ -1256,6 +1256,7 @@
         "to_label": "Adresse du destinataire",
         "amount_label": "Montant",
         "invalid_address": "Saisissez une adresse de portefeuille valide",
+        "insufficient_balance": "Solde insuffisant",
         "send_button": "Envoyer",
         "confirm_in_wallet": "Confirmez dans votre portefeuille…",
         "sending": "Envoi en cours…",

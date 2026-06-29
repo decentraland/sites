@@ -1261,6 +1261,7 @@
         "to_label": "收款地址",
         "amount_label": "金额",
         "invalid_address": "请输入有效的钱包地址",
+        "insufficient_balance": "余额不足",
         "send_button": "发送",
         "confirm_in_wallet": "请在钱包中确认…",
         "sending": "发送中…",

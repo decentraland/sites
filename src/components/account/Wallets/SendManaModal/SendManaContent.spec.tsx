@@ -5,6 +5,8 @@ import { SendManaContent } from './SendManaContent'
 const mockConnect = jest.fn()
 const mockSwitchChain = jest.fn()
 const mockWriteContract = jest.fn()
+const mockAddTransaction = jest.fn()
+const mockUpdateTransactionStatus = jest.fn()
 
 let mockWalletReturn: { isConnected: boolean; connect: jest.Mock; connectors: Array<{ uid: string; name: string }> }
 let mockAccountReturn: { chainId: number | undefined }
@@ -38,12 +40,25 @@ jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({
 }))
 
 jest.mock('../../../../hooks/useWalletTransactions', () => ({
-  useWalletTransactions: () => ({ addTransaction: jest.fn(), updateTransactionStatus: jest.fn() })
+  useWalletTransactions: () => ({
+    addTransaction: mockAddTransaction,
+    updateTransactionStatus: mockUpdateTransactionStatus
+  })
 }))
 
 jest.mock('decentraland-ui2', () => ({
-  Button: ({ children, onClick, disabled }: { children?: ReactNode; onClick?: () => void; disabled?: boolean }) => (
-    <button type="button" onClick={onClick} disabled={disabled}>
+  Button: ({
+    children,
+    onClick,
+    disabled,
+    ['data-role']: dataRole
+  }: {
+    children?: ReactNode
+    onClick?: () => void
+    disabled?: boolean
+    ['data-role']?: string
+  }) => (
+    <button type="button" onClick={onClick} disabled={disabled} data-role={dataRole}>
       {children}
     </button>
   ),
@@ -52,14 +67,18 @@ jest.mock('decentraland-ui2', () => ({
     type,
     value,
     onChange,
-    helperText
+    helperText,
+    error,
+    ['data-role']: dataRole
   }: {
     type?: string
     value?: string
     onChange?: (event: { target: { value: string } }) => void
     helperText?: ReactNode
+    error?: boolean
+    ['data-role']?: string
   }) => (
-    <span>
+    <span data-role={dataRole} data-testid={dataRole} data-error={error ? 'true' : 'false'}>
       <input role={type === 'number' ? 'spinbutton' : 'textbox'} value={value} onChange={onChange} />
       <span>{helperText}</span>
     </span>
@@ -175,6 +194,70 @@ describe('SendManaContent', () => {
     })
   })
 
+  describe('when a balance is provided', () => {
+    beforeEach(() => {
+      mockWalletReturn = { isConnected: true, connect: mockConnect, connectors: [] }
+      mockAccountReturn = { chainId: 137 }
+    })
+
+    it('should flag the amount field and disable submit when the amount exceeds the balance', () => {
+      render(<SendManaContent network="polygon" address="0xUSER" balance={10} onClose={jest.fn()} />)
+
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: VALID_ADDRESS } })
+      fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '20' } })
+
+      expect(screen.getByText('account.wallets.send.insufficient_balance')).toBeInTheDocument()
+      expect(screen.getByTestId('send-amount')).toHaveAttribute('data-error', 'true')
+      expect(screen.getByText('account.wallets.send.send_button')).toBeDisabled()
+    })
+
+    it('should accept an amount within the balance and enable submit without an error', () => {
+      render(<SendManaContent network="polygon" address="0xUSER" balance={10} onClose={jest.fn()} />)
+
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: VALID_ADDRESS } })
+      fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '5' } })
+
+      expect(screen.queryByText('account.wallets.send.insufficient_balance')).not.toBeInTheDocument()
+      expect(screen.getByTestId('send-amount')).toHaveAttribute('data-error', 'false')
+      expect(screen.getByText('account.wallets.send.send_button')).not.toBeDisabled()
+    })
+  })
+
+  describe('when no balance is provided', () => {
+    it('should only require a positive amount and allow any positive value', () => {
+      mockWalletReturn = { isConnected: true, connect: mockConnect, connectors: [] }
+      mockAccountReturn = { chainId: 137 }
+
+      render(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} />)
+
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: VALID_ADDRESS } })
+      fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '999999' } })
+
+      expect(screen.queryByText('account.wallets.send.insufficient_balance')).not.toBeInTheDocument()
+      expect(screen.getByTestId('send-amount')).toHaveAttribute('data-error', 'false')
+      expect(screen.getByText('account.wallets.send.send_button')).not.toBeDisabled()
+    })
+  })
+
+  describe('when the transaction acquires a hash', () => {
+    it('should record the pending transfer once', () => {
+      mockWalletReturn = { isConnected: true, connect: mockConnect, connectors: [] }
+      mockAccountReturn = { chainId: 137 }
+      mockWriteReturn = { writeContract: mockWriteContract, data: '0xHASH', isPending: false, error: null }
+
+      const { rerender } = render(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} />)
+
+      expect(mockAddTransaction).toHaveBeenCalledTimes(1)
+      expect(mockAddTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({ hash: '0xHASH', type: 'send', network: 'polygon', status: 'pending' })
+      )
+
+      // A re-render with the same hash must not record the transfer again (recordedHash guard).
+      rerender(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} />)
+      expect(mockAddTransaction).toHaveBeenCalledTimes(1)
+    })
+  })
+
   describe('when the transfer succeeds', () => {
     it('should show the success state and close on confirm', () => {
       mockWalletReturn = { isConnected: true, connect: mockConnect, connectors: [] }
@@ -188,6 +271,19 @@ describe('SendManaContent', () => {
       fireEvent.click(screen.getByText('account.wallets.send.close'))
 
       expect(onClose).toHaveBeenCalledTimes(1)
+    })
+
+    it('should confirm the recorded transfer and call onSuccess once mined', () => {
+      mockWalletReturn = { isConnected: true, connect: mockConnect, connectors: [] }
+      mockAccountReturn = { chainId: 137 }
+      mockWriteReturn = { writeContract: mockWriteContract, data: '0xHASH', isPending: false, error: null }
+      mockReceiptReturn = { isLoading: false, isSuccess: true }
+      const onSuccess = jest.fn()
+
+      render(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} onSuccess={onSuccess} />)
+
+      expect(mockUpdateTransactionStatus).toHaveBeenCalledWith('0xHASH', 'confirmed')
+      expect(onSuccess).toHaveBeenCalledTimes(1)
     })
   })
 })

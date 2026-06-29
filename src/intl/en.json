@@ -1696,6 +1696,7 @@
         "to_label": "Recipient address",
         "amount_label": "Amount",
         "invalid_address": "Enter a valid wallet address",
+        "insufficient_balance": "Insufficient balance",
         "send_button": "Send",
         "confirm_in_wallet": "Confirm in your wallet…",
         "sending": "Sending…",

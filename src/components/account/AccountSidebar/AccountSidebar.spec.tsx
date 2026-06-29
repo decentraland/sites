@@ -64,8 +64,9 @@ jest.mock('../../../hooks/useIsThirdwebAccount', () => ({
   useIsThirdwebAccount: () => mockIsThirdweb
 }))
 
+let mockProfile: unknown = undefined
 jest.mock('../../../features/profile/profile.client', () => ({
-  useGetProfileQuery: () => ({ data: undefined })
+  useGetProfileQuery: () => ({ data: mockProfile })
 }))
 
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
@@ -86,6 +87,7 @@ describe('AccountSidebar', () => {
 
   beforeEach(() => {
     mockIsThirdweb = true
+    mockProfile = undefined
     Object.assign(navigator, { clipboard: { writeText } })
   })
 
@@ -134,5 +136,42 @@ describe('AccountSidebar', () => {
     fireEvent.click(screen.getByText('account.nav.logout'))
 
     expect(mockDisconnect).toHaveBeenCalledTimes(1)
+  })
+
+  it('should resolve a content-hash avatar face to the peer content gateway', () => {
+    mockProfile = { avatars: [{ name: 'Brai', hasClaimedName: true, avatar: { snapshots: { face256: 'QmFaceHash' } } }] }
+    const { container } = renderSidebar()
+
+    expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer.decentraland.org/content/contents/QmFaceHash')
+  })
+
+  it('should pass an absolute avatar face url through unchanged', () => {
+    mockProfile = { avatars: [{ name: 'Brai', avatar: { snapshots: { face256: 'https://cdn.test/face.png' } } }] }
+    const { container } = renderSidebar()
+
+    expect(container.querySelector('img')).toHaveAttribute('src', 'https://cdn.test/face.png')
+  })
+
+  it('should silently ignore a clipboard write failure (no copied tooltip)', async () => {
+    writeText.mockRejectedValueOnce(new Error('clipboard unavailable'))
+    renderSidebar()
+
+    fireEvent.click(screen.getByRole('button', { name: /account.copy/ }))
+
+    await waitFor(() => expect(writeText).toHaveBeenCalled())
+    // The tooltip stays on the "copy" label — the rejection is swallowed, no crash.
+    expect(screen.getByTestId('copy-icon').closest('[data-tooltip]')).toHaveAttribute('data-tooltip', 'account.copy')
+  })
+
+  it('should clear the pending copied timeout on unmount', async () => {
+    const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout')
+    const { unmount } = renderSidebar()
+
+    fireEvent.click(screen.getByRole('button', { name: /account.copy/ }))
+    await waitFor(() => expect(writeText).toHaveBeenCalled())
+    unmount()
+
+    expect(clearTimeoutSpy).toHaveBeenCalled()
+    clearTimeoutSpy.mockRestore()
   })
 })

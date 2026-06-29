@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined'
@@ -65,6 +65,10 @@ const AccountSidebar = ({ address }: AccountSidebarProps) => {
   const isThirdweb = useIsThirdwebAccount()
   const { data: profile } = useGetProfileQuery(address)
   const [copied, setCopied] = useState(false)
+  const copiedTimeout = useRef<ReturnType<typeof setTimeout>>()
+
+  // Clear the pending "Copied!" reset timer on unmount so it never fires after the sidebar is gone.
+  useEffect(() => () => clearTimeout(copiedTimeout.current), [])
 
   const avatar = profile?.avatars?.[0]
   const shortAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
@@ -85,7 +89,8 @@ const AccountSidebar = ({ address }: AccountSidebarProps) => {
       .writeText(address)
       .then(() => {
         setCopied(true)
-        setTimeout(() => setCopied(false), 1500)
+        clearTimeout(copiedTimeout.current)
+        copiedTimeout.current = setTimeout(() => setCopied(false), 1500)
       })
       .catch(() => {
         // Clipboard API unavailable — the address stays visible to copy manually.

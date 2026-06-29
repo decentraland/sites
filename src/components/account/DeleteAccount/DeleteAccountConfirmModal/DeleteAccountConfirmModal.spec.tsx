@@ -167,4 +167,146 @@ describe('DeleteAccountConfirmModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
     expect(mockGetProfiles).not.toHaveBeenCalled()
   })
+
+  const confirmAndDelete = async () => {
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'DELETE' } })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'account.delete.modal.delete' }))
+    })
+  }
+
+  describe('when the account has thirdweb data in web storage', () => {
+    beforeEach(() => {
+      localStorage.clear()
+      sessionStorage.clear()
+      localStorage.setItem('thirdweb:auth-token', 'token')
+      localStorage.setItem('unrelated-local-key', 'keep')
+      sessionStorage.setItem('thirdweb:session', 'value')
+      sessionStorage.setItem('unrelated-session-key', 'keep')
+    })
+
+    afterEach(() => {
+      localStorage.clear()
+      sessionStorage.clear()
+    })
+
+    it('should remove only the thirdweb-prefixed keys from local and session storage', async () => {
+      renderModal()
+
+      await confirmAndDelete()
+
+      await waitFor(() => expect(replaceMock).toHaveBeenCalledTimes(1))
+
+      expect(localStorage.getItem('thirdweb:auth-token')).toBeNull()
+      expect(localStorage.getItem('unrelated-local-key')).toBe('keep')
+      expect(sessionStorage.getItem('thirdweb:session')).toBeNull()
+      expect(sessionStorage.getItem('unrelated-session-key')).toBe('keep')
+    })
+  })
+
+  describe('when the browser exposes indexedDB.databases', () => {
+    let deleteDatabase: jest.Mock
+    let databases: jest.Mock
+    let originalIndexedDB: IDBFactory
+
+    beforeEach(() => {
+      originalIndexedDB = window.indexedDB
+      databases = jest.fn().mockResolvedValue([{ name: 'thirdweb:device-shares' }, { name: 'some-other-db' }, { name: undefined }])
+      deleteDatabase = jest.fn((_name: string) => {
+        const request: { onsuccess: (() => void) | null; onerror: (() => void) | null; error: unknown } = {
+          onsuccess: null,
+          onerror: null,
+          error: null
+        }
+        // Fire the success callback asynchronously so the wrapping Promise resolves.
+        queueMicrotask(() => request.onsuccess?.())
+        return request as unknown as IDBOpenDBRequest
+      })
+      Object.defineProperty(window, 'indexedDB', {
+        configurable: true,
+        writable: true,
+        value: { databases, deleteDatabase }
+      })
+    })
+
+    afterEach(() => {
+      Object.defineProperty(window, 'indexedDB', { configurable: true, writable: true, value: originalIndexedDB })
+    })
+
+    it('should delete only thirdweb-named databases and then redirect', async () => {
+      renderModal()
+
+      await confirmAndDelete()
+
+      await waitFor(() => expect(replaceMock).toHaveBeenCalledTimes(1))
+
+      expect(databases).toHaveBeenCalledTimes(1)
+      expect(deleteDatabase).toHaveBeenCalledTimes(1)
+      expect(deleteDatabase).toHaveBeenCalledWith('thirdweb:device-shares')
+    })
+
+    it('should still redirect when indexedDB.databases() rejects', async () => {
+      databases.mockRejectedValueOnce(new Error('unsupported'))
+      renderModal()
+
+      await confirmAndDelete()
+
+      await waitFor(() => expect(replaceMock).toHaveBeenCalledTimes(1))
+
+      expect(deleteDatabase).not.toHaveBeenCalled()
+    })
+
+    it('should still redirect when a thirdweb database deletion request errors', async () => {
+      deleteDatabase.mockImplementationOnce((_name: string) => {
+        const request: { onsuccess: (() => void) | null; onerror: (() => void) | null; error: unknown } = {
+          onsuccess: null,
+          onerror: null,
+          error: new Error('delete failed')
+        }
+        // Fire the error callback to reject the wrapping Promise; the catch keeps the flow going.
+        queueMicrotask(() => request.onerror?.())
+        return request as unknown as IDBOpenDBRequest
+      })
+      renderModal()
+
+      await confirmAndDelete()
+
+      await waitFor(() => expect(replaceMock).toHaveBeenCalledTimes(1))
+      expect(deleteDatabase).toHaveBeenCalledWith('thirdweb:device-shares')
+    })
+  })
+
+  it('should surface a generic error and not redirect when no profiles are linked', async () => {
+    mockGetProfiles.mockResolvedValueOnce([])
+    renderModal()
+
+    await confirmAndDelete()
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'account.delete.modal.delete' })).toBeEnabled())
+    expect(screen.getByText('account.delete.modal.generic_error')).toBeInTheDocument()
+    expect(mockUnlinkProfile).not.toHaveBeenCalled()
+    expect(replaceMock).not.toHaveBeenCalled()
+  })
+
+  it('should still redirect when local session cleanup throws', async () => {
+    mockClearIdentity.mockImplementationOnce(() => {
+      throw new Error('cleanup boom')
+    })
+    renderModal()
+
+    await confirmAndDelete()
+
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledTimes(1))
+    expect(mockDisconnect).not.toHaveBeenCalled()
+  })
+
+  it('should redirect to a bare /login when AUTH_URL is not configured', async () => {
+    mockGetEnv.mockImplementation(() => undefined)
+    renderModal()
+
+    await confirmAndDelete()
+
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledTimes(1))
+    expect(replaceMock).toHaveBeenCalledWith('/login?redirectTo=%2Faccount%2Fdelete')
+  })
 })

@@ -8,10 +8,11 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 const WEI_PER_MANA = 1e18
 
-// wei → MANA for display. formatMana rounds to 2 decimals and MANA amounts stay well within
-// Number's safe range, so the lossy BigInt→Number is fine for rendering (never for on-chain math).
+// wei → MANA for display (2-decimal precision). Divide in bigint space first so a large value (e.g. an
+// aggregate above Number.MAX_SAFE_INTEGER wei) doesn't lose precision in a direct bigint→Number cast.
+// Display-only; never use for on-chain math.
 function weiToMana(value: bigint): number {
-  return Number(value) / WEI_PER_MANA
+  return Number((value * 100n) / BigInt(WEI_PER_MANA)) / 100
 }
 
 function decodeManaLog(log: ManaSubgraphLog, network: WalletTransaction['network']): DecodedManaLog {
