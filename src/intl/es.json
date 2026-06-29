@@ -1303,6 +1303,7 @@
         },
         "pending_title": "Transacciones pendientes",
         "latest_title": "Últimas transacciones",
+        "load_more": "Cargar más",
         "claim": "Reclamar"
       },
       "withdraw": {

@@ -51,6 +51,11 @@ jest.mock('./TransactionsSection.styled', () => ({
       {children}
     </button>
   ),
+  LoadMoreButton: ({ children, onClick, 'data-role': dataRole }: ChildrenProps & { onClick?: () => void }) => (
+    <button type="button" data-role={dataRole} onClick={onClick}>
+      {children}
+    </button>
+  ),
   Amount: ({ children }: ChildrenProps) => <span>{children}</span>
 }))
 
@@ -118,6 +123,47 @@ describe('TransactionsSection', () => {
 
     expect(screen.getByText('account.wallets.transactions.pending_title')).toBeInTheDocument()
     expect(screen.getByText('account.wallets.transactions.latest_title')).toBeInTheDocument()
+  })
+
+  it('should show the first 20 settled transactions and reveal the rest via Load more', () => {
+    // 25 settled txs, already newest-first as they arrive from mergeManaTransferFeeds.
+    const many: WalletTransaction[] = Array.from({ length: 25 }, (_, i) => ({
+      ...confirmedTx,
+      hash: `0xc${i}`,
+      timestamp: confirmedTx.timestamp - i
+    }))
+    render(<TransactionsSection transactions={many} />)
+    fireEvent.click(screen.getByRole('button', { name: /account.wallets.transactions.title/ }))
+
+    expect(screen.getAllByRole('link')).toHaveLength(20)
+    expect(screen.getByText('0xc0')).toBeInTheDocument() // most recent shown
+    expect(screen.queryByText('0xc20')).not.toBeInTheDocument() // 21st-newest not shown yet
+
+    fireEvent.click(screen.getByRole('button', { name: 'account.wallets.transactions.load_more' }))
+
+    expect(screen.getAllByRole('link')).toHaveLength(25)
+    expect(screen.getByText('0xc20')).toBeInTheDocument()
+    // no more pages left → the button is gone
+    expect(screen.queryByRole('button', { name: 'account.wallets.transactions.load_more' })).not.toBeInTheDocument()
+  })
+
+  it('should not show Load more when the settled history fits in a single page', () => {
+    render(<TransactionsSection transactions={[confirmedTx]} />)
+    fireEvent.click(screen.getByRole('button', { name: /account.wallets.transactions.title/ }))
+
+    expect(screen.queryByRole('button', { name: 'account.wallets.transactions.load_more' })).not.toBeInTheDocument()
+  })
+
+  it('should not cap pending transactions so an old unclaimed withdrawal stays reachable', () => {
+    const manyPending: WalletTransaction[] = Array.from({ length: 22 }, (_, i) => ({
+      ...withdrawTx,
+      hash: `0xp${i}`,
+      timestamp: withdrawTx.timestamp - i
+    }))
+    render(<TransactionsSection transactions={manyPending} />)
+    fireEvent.click(screen.getByRole('button', { name: /account.wallets.transactions.title/ }))
+
+    expect(screen.getAllByRole('link')).toHaveLength(22)
   })
 
   it('should render a claim button on a checkpointed withdrawal and call onClaim', () => {

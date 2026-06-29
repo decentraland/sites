@@ -1298,6 +1298,7 @@
         },
         "pending_title": "Transactions en attente",
         "latest_title": "Dernières transactions",
+        "load_more": "Charger plus",
         "claim": "Réclamer"
       },
       "withdraw": {

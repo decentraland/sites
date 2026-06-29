@@ -1738,6 +1738,7 @@
         },
         "pending_title": "Pending transactions",
         "latest_title": "Latest transactions",
+        "load_more": "Load more",
         "claim": "Claim"
       },
       "withdraw": {

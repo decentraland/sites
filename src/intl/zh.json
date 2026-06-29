@@ -1303,6 +1303,7 @@
         },
         "pending_title": "待处理交易",
         "latest_title": "最近交易",
+        "load_more": "加载更多",
         "claim": "领取"
       },
       "withdraw": {

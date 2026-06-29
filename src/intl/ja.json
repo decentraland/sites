@@ -1303,6 +1303,7 @@
         },
         "pending_title": "保留中の取引",
         "latest_title": "最新の取引",
+        "load_more": "もっと見る",
         "claim": "請求"
       },
       "withdraw": {

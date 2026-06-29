@@ -1303,6 +1303,7 @@
         },
         "pending_title": "대기 중인 거래",
         "latest_title": "최근 거래",
+        "load_more": "더 보기",
         "claim": "청구"
       },
       "withdraw": {

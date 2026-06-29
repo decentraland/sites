@@ -22,6 +22,7 @@ import {
   Header,
   IconChip,
   List,
+  LoadMoreButton,
   Row,
   RowDate,
   RowType,
@@ -45,6 +46,11 @@ const TYPE_ICON: Record<WalletTransactionType, ReactNode> = {
 // In-flight bridge lifecycle goes in the "Pending" group; settled/failed txs go in "Latest".
 const PENDING_STATUSES: ReadonlySet<WalletTransactionStatus> = new Set(['pending', 'bridging', 'checkpoint'])
 
+// Settled history is paged so a long record never renders hundreds of rows at once: the list shows this
+// many rows, scrolls internally, and reveals the next batch via "Load more". Pending txs are never paged
+// — they are few and actionable (e.g. an unclaimed withdrawal must stay reachable).
+const LATEST_PAGE_SIZE = 20
+
 // Local timezone — the tx was submitted from the user's device, so a UTC anchor would be wrong here.
 const formatDate = (timestamp: number): string =>
   new Date(timestamp).toLocaleString('en-US', {
@@ -60,6 +66,7 @@ const formatDate = (timestamp: number): string =>
 const TransactionsSection = ({ transactions, onClaim }: TransactionsSectionProps) => {
   const t = useFormatMessage()
   const [expanded, setExpanded] = useState(false)
+  const [visibleLatest, setVisibleLatest] = useState(LATEST_PAGE_SIZE)
 
   const { pending, latest } = useMemo(
     () => ({
@@ -68,6 +75,10 @@ const TransactionsSection = ({ transactions, onClaim }: TransactionsSectionProps
     }),
     [transactions]
   )
+
+  // transactions arrive newest-first (see mergeManaTransferFeeds), so this is the most recent page.
+  const visibleRows = latest.slice(0, visibleLatest)
+  const hasMore = latest.length > visibleLatest
 
   const renderRow = (transaction: WalletTransaction, index: number) => {
     // A claimed withdrawal's L1 exit lives on Ethereum; once we have its hash (claimHash), link to it
@@ -125,7 +136,16 @@ const TransactionsSection = ({ transactions, onClaim }: TransactionsSectionProps
               {latest.length > 0 && (
                 <>
                   <GroupHeader data-role="transactions-group-latest">{t('account.wallets.transactions.latest_title')}</GroupHeader>
-                  {latest.map(renderRow)}
+                  {visibleRows.map(renderRow)}
+                  {hasMore && (
+                    <LoadMoreButton
+                      type="button"
+                      onClick={() => setVisibleLatest(count => count + LATEST_PAGE_SIZE)}
+                      data-role="transactions-load-more"
+                    >
+                      {t('account.wallets.transactions.load_more')}
+                    </LoadMoreButton>
+                  )}
                 </>
               )}
             </>
