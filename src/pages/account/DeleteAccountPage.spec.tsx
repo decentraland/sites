@@ -27,6 +27,11 @@ jest.mock('../../hooks/useIsThirdwebAccount', () => ({
   useIsThirdwebAccount: () => mockIsThirdweb
 }))
 
+let mockIsMagic = false
+jest.mock('../../hooks/useIsMagicAccount', () => ({
+  useIsMagicAccount: () => mockIsMagic
+}))
+
 jest.mock('../../components/account/DeleteAccount/DeleteAccountUnavailable/DeleteAccountUnavailable', () => ({
   DeleteAccountUnavailable: () => <div data-role="unavailable" />
 }))
@@ -66,18 +71,28 @@ jest.mock('../../components/account/DeleteAccount/DeleteAccountConfirmModal/Dele
 describe('DeleteAccountPage', () => {
   beforeEach(() => {
     mockIsThirdweb = true
+    mockIsMagic = false
   })
 
   afterEach(() => {
     jest.clearAllMocks()
   })
 
-  it('should show the unavailable message (not the danger zone) for a non-thirdweb account', () => {
+  it('should show the unavailable message (not the danger zone) for a self-custodial account (neither thirdweb nor Magic)', () => {
     mockIsThirdweb = false
+    mockIsMagic = false
     const { container } = render(<DeleteAccountPage />)
 
     expect(container.querySelector('[data-role="unavailable"]')).toBeTruthy()
     expect(screen.queryByText(`section-address:${ADDRESS}`)).not.toBeInTheDocument()
+  })
+
+  it('should show the danger zone (not the unavailable message) for a Magic account', () => {
+    mockIsThirdweb = false
+    mockIsMagic = true
+    render(<DeleteAccountPage />)
+
+    expect(screen.getByText(`section-address:${ADDRESS}`)).toBeInTheDocument()
   })
 
   it('should render the section with the authenticated address and the modal closed by default', () => {

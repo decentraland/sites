@@ -33,10 +33,13 @@ async function fetchWithIdentity(
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
   body?: BodyInit,
   headers?: Record<string, string>,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  // Folded into the request signature (method:path:timestamp:metadata) and sent as the
+  // `x-identity-metadata` header — used to carry the Magic DID token for account deletion.
+  metadata?: Record<string, unknown>
 ): Promise<Response> {
   const signedFetch = await getSignedFetch()
-  return signedFetch(url, { method, identity, body, headers, signal })
+  return signedFetch(url, { method, identity, body, headers, signal, metadata })
 }
 
 // `signal` is required (not optional) so callers cannot forget to thread it

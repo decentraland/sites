@@ -64,6 +64,11 @@ jest.mock('../../../hooks/useIsThirdwebAccount', () => ({
   useIsThirdwebAccount: () => mockIsThirdweb
 }))
 
+let mockIsMagic = false
+jest.mock('../../../hooks/useIsMagicAccount', () => ({
+  useIsMagicAccount: () => mockIsMagic
+}))
+
 jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: () => ({ data: undefined })
 }))
@@ -86,6 +91,7 @@ describe('AccountSidebar', () => {
 
   beforeEach(() => {
     mockIsThirdweb = true
+    mockIsMagic = false
     Object.assign(navigator, { clipboard: { writeText } })
   })
 
@@ -103,12 +109,21 @@ describe('AccountSidebar', () => {
     expect(screen.getByText('account.nav.logout')).toBeInTheDocument()
   })
 
-  it('should hide the delete entry for a non-thirdweb account (logout stays)', () => {
+  it('should hide the delete entry for a self-custodial account (neither thirdweb nor Magic; logout stays)', () => {
     mockIsThirdweb = false
+    mockIsMagic = false
     renderSidebar()
 
     expect(screen.queryByText('account.nav.delete')).not.toBeInTheDocument()
     expect(screen.getByText('account.nav.logout')).toBeInTheDocument()
+  })
+
+  it('should show the delete entry for a Magic account', () => {
+    mockIsThirdweb = false
+    mockIsMagic = true
+    renderSidebar()
+
+    expect(screen.getByText('account.nav.delete')).toBeInTheDocument()
   })
 
   it('should render the shortened wallet address and the wallet icon', () => {

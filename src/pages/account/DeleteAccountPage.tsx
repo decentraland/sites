@@ -6,6 +6,7 @@ import { DeleteAccountSection } from '../../components/account/DeleteAccount/Del
 import { DeleteAccountUnavailable } from '../../components/account/DeleteAccount/DeleteAccountUnavailable/DeleteAccountUnavailable'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+import { useIsMagicAccount } from '../../hooks/useIsMagicAccount'
 import { useIsThirdwebAccount } from '../../hooks/useIsThirdwebAccount'
 import { PageRoot } from './DeleteAccountPage.styled'
 
@@ -13,9 +14,12 @@ const DeleteAccountPage = () => {
   const t = useFormatMessage()
   const navigate = useNavigate()
   const { address } = useAuthIdentity()
-  // Deletion only applies to thirdweb in-app (email / social-OTP) wallets; self-custodial logins have
-  // no account to delete client-side, so they see an explanatory message instead of the danger zone.
+  // Deletion applies to web2 logins: thirdweb in-app (email / social-OTP) wallets delete client-side
+  // via the SDK, and Magic logins delete via the auth-server. Self-custodial logins (MetaMask /
+  // WalletConnect) have no account to delete, so they see an explanatory message instead.
   const isThirdweb = useIsThirdwebAccount()
+  const isMagic = useIsMagicAccount()
+  const canDelete = isThirdweb || isMagic
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
   const handleOpenConfirmModal = useCallback(() => setIsConfirmOpen(true), [])
@@ -28,10 +32,10 @@ const DeleteAccountPage = () => {
         <title>{`${t('account.pages.delete.title')} | Decentraland`}</title>
       </Helmet>
       <PageRoot>
-        {isThirdweb ? (
+        {canDelete ? (
           <>
             <DeleteAccountSection address={address} onOpenConfirmModal={handleOpenConfirmModal} onGoToWallets={handleGoToWallets} />
-            <DeleteAccountConfirmModal open={isConfirmOpen} address={address} onClose={handleCloseConfirmModal} />
+            <DeleteAccountConfirmModal open={isConfirmOpen} address={address} isMagic={isMagic} onClose={handleCloseConfirmModal} />
           </>
         ) : (
           <DeleteAccountUnavailable />

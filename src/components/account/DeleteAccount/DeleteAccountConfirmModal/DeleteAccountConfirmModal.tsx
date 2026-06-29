@@ -7,7 +7,10 @@ import { getProfiles, unlinkProfile } from 'thirdweb/wallets/in-app'
 import { localStorageClearIdentity } from '@dcl/single-sign-on-client'
 import { getEnv } from '../../../../config/env'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
+import { useAuthIdentity } from '../../../../hooks/useAuthIdentity'
 import { useWalletAddress } from '../../../../hooks/useWalletAddress'
+import { deleteMagicAccount } from '../../../../lib/accountDeletion'
+import { getMagicDidToken } from '../../../../lib/magic'
 import { getThirdwebClient } from '../../../../lib/thirdweb'
 import { DeleteAccountConfirmModalProps } from './DeleteAccountConfirmModal.types'
 import {
@@ -71,52 +74,57 @@ async function deleteThirdwebAccount() {
  * clean up local storage. Since this modal is not rendered inside a
  * ThirdwebProvider, we clear thirdweb's local data manually.
  */
-async function clearLocalSession(address: string, disconnect: () => void) {
+async function clearLocalSession(address: string, disconnect: () => void, isMagic: boolean) {
   // Clear the Decentraland SSO identity for the connected address.
   localStorageClearIdentity(address)
 
-  // Clear thirdweb session data from localStorage (auth cookies, device shares, wallet user id).
-  Object.keys(localStorage)
-    .filter(key => key.startsWith('thirdweb'))
-    .forEach(key => localStorage.removeItem(key))
+  // Magic keeps no client-side wallet data beyond the SSO identity and the email pointer that
+  // `disconnect()` clears below, so the thirdweb-specific storage sweep is skipped for it.
+  if (!isMagic) {
+    // Clear thirdweb session data from localStorage (auth cookies, device shares, wallet user id).
+    Object.keys(localStorage)
+      .filter(key => key.startsWith('thirdweb'))
+      .forEach(key => localStorage.removeItem(key))
 
-  // Clear thirdweb session data from sessionStorage.
-  Object.keys(sessionStorage)
-    .filter(key => key.startsWith('thirdweb'))
-    .forEach(key => sessionStorage.removeItem(key))
+    // Clear thirdweb session data from sessionStorage.
+    Object.keys(sessionStorage)
+      .filter(key => key.startsWith('thirdweb'))
+      .forEach(key => sessionStorage.removeItem(key))
 
-  // Clear thirdweb IndexedDB databases (device shares, wallet encryption keys).
-  // indexedDB.deleteDatabase() returns an IDBOpenDBRequest, not a Promise, so we
-  // wrap each call to await completion before redirecting.
-  if (typeof indexedDB !== 'undefined' && typeof indexedDB.databases === 'function') {
-    try {
-      const databases = await indexedDB.databases()
-      await Promise.all(
-        databases
-          .filter(db => db.name?.includes('thirdweb'))
-          .map(
-            db =>
-              new Promise<void>((resolve, reject) => {
-                if (!db.name) return resolve()
-                const request = indexedDB.deleteDatabase(db.name)
-                request.onsuccess = () => resolve()
-                request.onerror = () => reject(request.error)
-              })
-          )
-      )
-    } catch {
-      // Best-effort: not all browsers support indexedDB.databases().
+    // Clear thirdweb IndexedDB databases (device shares, wallet encryption keys).
+    // indexedDB.deleteDatabase() returns an IDBOpenDBRequest, not a Promise, so we
+    // wrap each call to await completion before redirecting.
+    if (typeof indexedDB !== 'undefined' && typeof indexedDB.databases === 'function') {
+      try {
+        const databases = await indexedDB.databases()
+        await Promise.all(
+          databases
+            .filter(db => db.name?.includes('thirdweb'))
+            .map(
+              db =>
+                new Promise<void>((resolve, reject) => {
+                  if (!db.name) return resolve()
+                  const request = indexedDB.deleteDatabase(db.name)
+                  request.onsuccess = () => resolve()
+                  request.onerror = () => reject(request.error)
+                })
+            )
+        )
+      } catch {
+        // Best-effort: not all browsers support indexedDB.databases().
+      }
     }
   }
 
   // Drop the sites wallet pointer + SSO/connect keys (replaces decentraland-connect's
-  // connection.disconnect() — sites has no decentraland-connect).
+  // connection.disconnect() — sites has no decentraland-connect). Also clears the Magic email pointer.
   disconnect()
 }
 
-const DeleteAccountConfirmModal = ({ open, address, onClose }: DeleteAccountConfirmModalProps) => {
+const DeleteAccountConfirmModal = ({ open, address, isMagic = false, onClose }: DeleteAccountConfirmModalProps) => {
   const t = useFormatMessage()
   const { disconnect } = useWalletAddress()
+  const { identity } = useAuthIdentity()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [confirmationText, setConfirmationText] = useState('')
@@ -132,7 +140,15 @@ const DeleteAccountConfirmModal = ({ open, address, onClose }: DeleteAccountConf
     setError(null)
 
     try {
-      await deleteThirdwebAccount()
+      if (isMagic) {
+        // Magic accounts are deleted server-side: mint a fresh DID token and call the auth-server.
+        if (!identity) throw new Error('Missing Decentraland identity for the connected account')
+        const didToken = await getMagicDidToken()
+        await deleteMagicAccount(identity, didToken)
+      } else {
+        // thirdweb in-app wallets are deleted client-side via the SDK.
+        await deleteThirdwebAccount()
+      }
     } catch (deletionError) {
       // Log the raw error; surface only a generic message to the user.
       console.error('Account deletion failed:', deletionError)
@@ -145,7 +161,7 @@ const DeleteAccountConfirmModal = ({ open, address, onClose }: DeleteAccountConf
     // Past the point of no return: always clear local session and redirect,
     // even if individual cleanup steps fail.
     try {
-      await clearLocalSession(address, disconnect)
+      await clearLocalSession(address, disconnect, isMagic)
     } catch (cleanupError) {
       console.error('Local session cleanup failed:', cleanupError)
     }
@@ -153,7 +169,7 @@ const DeleteAccountConfirmModal = ({ open, address, onClose }: DeleteAccountConf
     // Redirect to the login page; a full page reload destroys all in-memory state.
     const authUrl = getEnv('AUTH_URL') ?? ''
     window.location.replace(`${authUrl}/login?redirectTo=${encodeURIComponent(window.location.pathname)}`)
-  }, [address, disconnect, isConfirmed, t])
+  }, [address, disconnect, identity, isConfirmed, isMagic, t])
 
   // Prevent dismissal via ESC or backdrop click while deletion is in flight.
   const canDismiss = !isLoading

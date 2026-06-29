@@ -78,6 +78,19 @@ jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))
 
+const mockGetMagicDidToken = jest.fn()
+const mockDeleteMagicAccount = jest.fn()
+const mockIdentity = { authChain: [], ephemeralIdentity: {} }
+jest.mock('../../../../hooks/useAuthIdentity', () => ({
+  useAuthIdentity: () => ({ identity: mockIdentity, hasValidIdentity: true, address: undefined })
+}))
+jest.mock('../../../../lib/magic', () => ({
+  getMagicDidToken: (...args: unknown[]) => mockGetMagicDidToken(...args)
+}))
+jest.mock('../../../../lib/accountDeletion', () => ({
+  deleteMagicAccount: (...args: unknown[]) => mockDeleteMagicAccount(...args)
+}))
+
 const ADDRESS = '0x1234567890123456789012345678901234567890'
 
 describe('DeleteAccountConfirmModal', () => {
@@ -96,6 +109,8 @@ describe('DeleteAccountConfirmModal', () => {
     mockGetEnv.mockImplementation((key: string) => (key === 'AUTH_URL' ? 'https://decentraland.org/auth' : undefined))
     mockGetProfiles.mockResolvedValue([{ type: 'email' }, { type: 'google' }])
     mockUnlinkProfile.mockResolvedValue(undefined)
+    mockGetMagicDidToken.mockResolvedValue('did-token-abc')
+    mockDeleteMagicAccount.mockResolvedValue(undefined)
     jest.spyOn(console, 'error').mockImplementation(() => undefined)
   })
 
@@ -166,5 +181,36 @@ describe('DeleteAccountConfirmModal', () => {
 
     expect(onClose).toHaveBeenCalledTimes(1)
     expect(mockGetProfiles).not.toHaveBeenCalled()
+  })
+
+  it('should delete via the auth-server with a fresh DID token for a Magic account', async () => {
+    render(<DeleteAccountConfirmModal open address={ADDRESS} isMagic onClose={onClose} />)
+
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'DELETE' } })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'account.delete.modal.delete' }))
+    })
+
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledTimes(1))
+
+    expect(mockGetMagicDidToken).toHaveBeenCalledTimes(1)
+    expect(mockDeleteMagicAccount).toHaveBeenCalledWith(mockIdentity, 'did-token-abc')
+    expect(mockGetProfiles).not.toHaveBeenCalled()
+    expect(mockClearIdentity).toHaveBeenCalledWith(ADDRESS)
+    expect(mockDisconnect).toHaveBeenCalledTimes(1)
+  })
+
+  it('should surface a generic error and not redirect when Magic deletion fails', async () => {
+    mockDeleteMagicAccount.mockRejectedValueOnce(new Error('boom'))
+    render(<DeleteAccountConfirmModal open address={ADDRESS} isMagic onClose={onClose} />)
+
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'DELETE' } })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'account.delete.modal.delete' }))
+    })
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'account.delete.modal.delete' })).toBeEnabled())
+    expect(screen.getByText('account.delete.modal.generic_error')).toBeInTheDocument()
+    expect(replaceMock).not.toHaveBeenCalled()
   })
 })
