@@ -64,7 +64,7 @@ jest.mock('../../../hooks/useIsThirdwebAccount', () => ({
   useIsThirdwebAccount: () => mockIsThirdweb
 }))
 
-let mockIsMagic = false
+let mockIsMagic: boolean | undefined = false
 jest.mock('../../../hooks/useIsMagicAccount', () => ({
   useIsMagicAccount: () => mockIsMagic
 }))
@@ -124,6 +124,14 @@ describe('AccountSidebar', () => {
     renderSidebar()
 
     expect(screen.getByText('account.nav.delete')).toBeInTheDocument()
+  })
+
+  it('should hide the delete entry while Magic detection is still resolving', () => {
+    mockIsThirdweb = false
+    mockIsMagic = undefined
+    renderSidebar()
+
+    expect(screen.queryByText('account.nav.delete')).not.toBeInTheDocument()
   })
 
   it('should render the shortened wallet address and the wallet icon', () => {

@@ -14,7 +14,14 @@ jest.mock('react-helmet-async', () => ({
 }))
 
 jest.mock('./DeleteAccountPage.styled', () => ({
-  PageRoot: ({ children }: ChildrenProps) => <div>{children}</div>
+  PageRoot: ({ children }: ChildrenProps) => <div>{children}</div>,
+  LoadingState: ({ children, 'data-role': dataRole }: ChildrenProps & { 'data-role'?: string }) => (
+    <div data-role={dataRole}>{children}</div>
+  )
+}))
+
+jest.mock('decentraland-ui2', () => ({
+  CircularProgress: () => <span data-role="spinner" />
 }))
 
 const ADDRESS = '0x1234567890123456789012345678901234567890'
@@ -27,7 +34,7 @@ jest.mock('../../hooks/useIsThirdwebAccount', () => ({
   useIsThirdwebAccount: () => mockIsThirdweb
 }))
 
-let mockIsMagic = false
+let mockIsMagic: boolean | undefined = false
 jest.mock('../../hooks/useIsMagicAccount', () => ({
   useIsMagicAccount: () => mockIsMagic
 }))
@@ -93,6 +100,16 @@ describe('DeleteAccountPage', () => {
     render(<DeleteAccountPage />)
 
     expect(screen.getByText(`section-address:${ADDRESS}`)).toBeInTheDocument()
+  })
+
+  it('should show a loading indicator (not the unavailable message) while Magic detection resolves for a non-thirdweb account', () => {
+    mockIsThirdweb = false
+    mockIsMagic = undefined
+    const { container } = render(<DeleteAccountPage />)
+
+    expect(container.querySelector('[data-role="delete-account-loading"]')).toBeTruthy()
+    expect(container.querySelector('[data-role="unavailable"]')).toBeNull()
+    expect(screen.queryByText(`section-address:${ADDRESS}`)).not.toBeInTheDocument()
   })
 
   it('should render the section with the authenticated address and the modal closed by default', () => {

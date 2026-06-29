@@ -64,8 +64,11 @@ const AccountSidebar = ({ address }: AccountSidebarProps) => {
   const { pathname } = useLocation()
   const { disconnect } = useWalletAddress()
   const isThirdweb = useIsThirdwebAccount()
-  const isMagic = useIsMagicAccount()
-  const canDelete = isThirdweb || isMagic
+  // Skip the Magic check (and its SDK/iframe load) for known thirdweb logins. `isMagic` is
+  // `undefined` while the async Magic-session check resolves — treat that as "not yet" so the Delete
+  // entry only appears once we positively know it is a deletable account.
+  const isMagic = useIsMagicAccount({ skip: isThirdweb })
+  const canDelete = isThirdweb || isMagic === true
   const { data: profile } = useGetProfileQuery(address)
   const [copied, setCopied] = useState(false)
 

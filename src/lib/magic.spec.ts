@@ -1,4 +1,4 @@
-import { getMagicDidToken } from './magic'
+import { getMagicDidToken, isMagicLoggedIn } from './magic'
 
 const mockIsLoggedIn = jest.fn()
 const mockGetIdToken = jest.fn()
@@ -44,5 +44,39 @@ describe('getMagicDidToken', () => {
 
     await expect(getMagicDidToken()).rejects.toThrow('not logged in')
     expect(mockGetIdToken).not.toHaveBeenCalled()
+  })
+})
+
+describe('isMagicLoggedIn', () => {
+  beforeEach(() => {
+    mockGetEnv.mockReturnValue('pk_live_test')
+    mockIsLoggedIn.mockResolvedValue(true)
+  })
+
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should resolve true when there is an active Magic session', async () => {
+    await expect(isMagicLoggedIn()).resolves.toBe(true)
+  })
+
+  it('should resolve false when there is no active Magic session', async () => {
+    mockIsLoggedIn.mockResolvedValue(false)
+
+    await expect(isMagicLoggedIn()).resolves.toBe(false)
+  })
+
+  it('should resolve false (instead of throwing) when MAGIC_API_KEY is not set', async () => {
+    mockGetEnv.mockReturnValue(undefined)
+
+    await expect(isMagicLoggedIn()).resolves.toBe(false)
+    expect(mockIsLoggedIn).not.toHaveBeenCalled()
+  })
+
+  it('should resolve false when the session check throws', async () => {
+    mockIsLoggedIn.mockRejectedValue(new Error('iframe unreachable'))
+
+    await expect(isMagicLoggedIn()).resolves.toBe(false)
   })
 })
