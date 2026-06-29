@@ -32,6 +32,7 @@ jest.mock('../SendManaModal/SendManaModal.styled', () => ({
 }))
 
 type ImageRole = { src?: string; alt?: string; 'data-role'?: string }
+type FrameRole = { src?: string; title?: string; 'data-role'?: string }
 
 jest.mock('./BuyManaModal.styled', () => ({
   Subtitle: ({ children }: ChildrenRole) => <p>{children}</p>,
@@ -42,18 +43,17 @@ jest.mock('./BuyManaModal.styled', () => ({
   GatewayLogo: ({ src, alt, 'data-role': dataRole }: ImageRole) => <img src={src} alt={alt} data-role={dataRole} />,
   GatewayTitle: ({ children }: ChildrenRole) => <h4>{children}</h4>,
   GatewaySubtitle: ({ children }: ChildrenRole) => <p>{children}</p>,
-  LearnMore: ({ children, href }: ChildrenRole & { href?: string }) => <a href={href}>{children}</a>
+  LearnMore: ({ children, href }: ChildrenRole & { href?: string }) => <a href={href}>{children}</a>,
+  TransakFrame: ({ src, title, 'data-role': dataRole }: FrameRole) => <iframe src={src} title={title} data-role={dataRole} />
 }))
 
 const click = (container: HTMLElement, role: string) => fireEvent.click(container.querySelector(`[data-role="${role}"]`) as Element)
 
 describe('BuyManaContent', () => {
   let openSpy: jest.SpyInstance
-  let tab: { opener: unknown; location: { href: string }; close: jest.Mock }
 
   beforeEach(() => {
-    tab = { opener: {}, location: { href: '' }, close: jest.fn() }
-    openSpy = jest.spyOn(window, 'open').mockImplementation(() => tab as unknown as Window)
+    openSpy = jest.spyOn(window, 'open').mockImplementation(() => null)
     mockGetMoonPayUrl.mockReturnValue('https://buy.moonpay.test/checkout')
     mockFetchTransakUrl.mockResolvedValue('https://global.transak.test/widget')
   })
@@ -100,28 +100,33 @@ describe('BuyManaContent', () => {
     expect(logo?.getAttribute('src')).toBeTruthy()
   })
 
-  it('should open a blank tab synchronously and point it at the fetched Transak url', async () => {
+  it('should embed the fetched Transak widget url in an in-modal iframe instead of opening a tab', async () => {
     const onClose = jest.fn()
     const { container } = render(<BuyManaContent address="0xUSER" network="polygon" onClose={onClose} />)
 
     click(container, 'buy-continue-polygon-transak')
 
-    // tab opened synchronously (before the await) so the popup blocker can't kill it
-    expect(openSpy).toHaveBeenCalledWith('about:blank', '_blank')
-    await waitFor(() => expect(tab.location.href).toBe('https://global.transak.test/widget'))
+    const frame = await waitFor(() => {
+      const el = container.querySelector('[data-role="buy-transak-frame"]')
+      expect(el).toBeInTheDocument()
+      return el
+    })
+    expect(frame?.getAttribute('src')).toBe('https://global.transak.test/widget')
     expect(mockFetchTransakUrl).toHaveBeenCalledWith('polygon', '0xUSER')
-    expect(tab.opener).toBeNull()
-    expect(onClose).toHaveBeenCalledTimes(1)
+    // The gateway list is replaced by the widget; no new tab is opened and the modal stays open.
+    expect(container.querySelector('[data-role="buy-gateway-polygon-transak"]')).not.toBeInTheDocument()
+    expect(openSpy).not.toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
   })
 
-  it('should close the blank tab and show a stable error when Transak fails', async () => {
+  it('should show a stable error and no iframe when fetching the Transak url fails', async () => {
     mockFetchTransakUrl.mockRejectedValue(new Error('boom'))
     const { container } = render(<BuyManaContent address="0xUSER" network="ethereum" onClose={jest.fn()} />)
 
     click(container, 'buy-continue-ethereum-transak')
 
     await waitFor(() => expect(container.querySelector('[data-role="buy-error"]')?.textContent).toBe('account.wallets.buy.error'))
-    expect(tab.close).toHaveBeenCalledTimes(1)
+    expect(container.querySelector('[data-role="buy-transak-frame"]')).not.toBeInTheDocument()
   })
 
   it('should do nothing without an address', () => {
@@ -131,5 +136,6 @@ describe('BuyManaContent', () => {
 
     expect(mockFetchTransakUrl).not.toHaveBeenCalled()
     expect(openSpy).not.toHaveBeenCalled()
+    expect(container.querySelector('[data-role="buy-transak-frame"]')).not.toBeInTheDocument()
   })
 })

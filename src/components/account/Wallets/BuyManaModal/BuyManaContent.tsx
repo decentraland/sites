@@ -15,7 +15,8 @@ import {
   NetworkDescription,
   NetworkLabel,
   NetworkSection,
-  Subtitle
+  Subtitle,
+  TransakFrame
 } from './BuyManaModal.styled'
 
 interface BuyManaContentProps {
@@ -52,6 +53,8 @@ const BuyManaContent = ({ address, network, onClose }: BuyManaContentProps) => {
   const t = useFormatMessage()
   const [loadingKey, setLoadingKey] = useState<string | null>(null)
   const [errorKey, setErrorKey] = useState<string | null>(null)
+  // Transak session widget URL, shown in an in-modal iframe once "Continue" resolves (no new tab).
+  const [transakUrl, setTransakUrl] = useState<string | null>(null)
 
   const handleContinue = async (network: WalletNetwork, provider: BuyManaProvider): Promise<void> => {
     if (!address) return
@@ -66,26 +69,34 @@ const BuyManaContent = ({ address, network, onClose }: BuyManaContentProps) => {
       return
     }
 
-    // Transak: open the tab synchronously (within the click), then point it at the fetched session URL
-    // once it resolves, so the popup blocker doesn't kill it. `opener = null` mitigates tab-nabbing.
-    const tab = window.open('about:blank', '_blank')
+    // Transak: fetch the session widget URL and embed it in this modal's iframe (the account dapp's
+    // Transak SDK does the same). The URL is host-validated to transak.com in fetchTransakUrl.
     setLoadingKey(`${network}-${provider}`)
     try {
       const url = await fetchTransakUrl(network, address)
-      if (tab) {
-        tab.opener = null
-        tab.location.href = url
-      } else {
-        window.open(url, '_blank', 'noopener,noreferrer')
-      }
-      onClose()
+      setTransakUrl(url)
     } catch {
       // Rule 10: never surface the raw error — show a stable message.
-      tab?.close()
       setErrorKey('account.wallets.buy.error')
     } finally {
       setLoadingKey(null)
     }
+  }
+
+  if (transakUrl) {
+    // No sandbox: the widget is first-party (the src is host-validated to transak.com in fetchTransakUrl)
+    // and the KYC/payment flow needs camera, the Payment Request API and same-origin session storage —
+    // a restrictive sandbox would break it. This mirrors how the account dapp's Transak SDK frames it.
+    return (
+      <Body data-role="buy-form">
+        <TransakFrame
+          src={transakUrl}
+          title={t('account.wallets.buy.provider.transak')}
+          allow="camera; microphone; payment; fullscreen"
+          data-role="buy-transak-frame"
+        />
+      </Body>
+    )
   }
 
   return (
