@@ -17,6 +17,7 @@ const Layout = lazy(() => import('./components/Layout').then(m => ({ default: m.
 // bloat the main bundle for the landing page (saves ~560 KB of unused JS).
 const BrandTerms = lazy(() => import('./pages/brand').then(m => ({ default: m.BrandTerms })))
 const ContentPolicy = lazy(() => import('./pages/content').then(m => ({ default: m.ContentPolicy })))
+const CreditsTerms = lazy(() => import('./pages/credits-terms').then(m => ({ default: m.CreditsTerms })))
 const DownloadPage = lazy(() => import('./pages/download').then(m => ({ default: m.DownloadPage })))
 const CodeOfEthics = lazy(() => import('./pages/ethics').then(m => ({ default: m.CodeOfEthics })))
 const PrivacyPolicy = lazy(() => import('./pages/privacy').then(m => ({ default: m.PrivacyPolicy })))
@@ -137,6 +138,7 @@ const App = () => {
             <Route path="/content" element={<ContentPolicy />} />
             <Route path="/ethics" element={<CodeOfEthics />} />
             <Route path="/rewards-terms" element={<RewardsTerms />} />
+            <Route path="/credits-terms" element={<CreditsTerms />} />
             <Route path="/security" element={<SecurityPage />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/referral-terms" element={<ReferralTerms />} />

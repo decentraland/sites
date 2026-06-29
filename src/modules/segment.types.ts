@@ -88,6 +88,8 @@ enum DownloadPlace {
   PLAY_EXPERIMENTAL_WEB = 'play-experimental-web',
   DOWNLOAD_PAGE = 'download-page',
   DOWNLOAD_SUCCESS_FOOTER = 'download-success-footer',
+  CREATOR_HUB_DOWNLOAD_PAGE = 'creator-hub-download-page',
+  CREATOR_HUB_SUCCESS_PAGE = 'creator-hub-success-page',
   UNKNOWN = 'unknown'
 }
 

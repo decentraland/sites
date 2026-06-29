@@ -173,7 +173,7 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
           </CreatorLocationRow>
           <ActionsRow>
             {data.live && (
-              <JumpInButton position={`${data.x},${data.y}`} size="medium">
+              <JumpInButton position={`${data.x},${data.y}`} realm={data.realm} size="medium">
                 {t('event_detail.jump_in')}
               </JumpInButton>
             )}

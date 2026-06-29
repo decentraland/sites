@@ -432,7 +432,7 @@
         "subtitle": "Aprende más sobre Decentraland",
         "cta": {
           "label": "ver más",
-          "link": "https://docs.decentraland.org/player/general/faq/"
+          "link": "https://docs.decentraland.org/faqs/"
         }
       },
       "marketplace": {
@@ -1104,7 +1104,11 @@
       "empty_member": "Este miembro todavía no sacó fotos.",
       "count": "{count} fotos",
       "empty_owner_subtitle": "¡Entrá y empezá a coleccionar recuerdos! Presioná 'C' para abrir la Cámara y la 'barra espaciadora' para sacar una foto.",
-      "empty_owner_cta": "Entrar"
+      "empty_owner_cta": "Entrar",
+      "filter_all": "Todas",
+      "filter_public": "Públicas",
+      "filter_private": "Privadas",
+      "empty_filter": "No hay fotos para este filtro."
     },
     "referral_rewards": {
       "anonymous": "Iniciá sesión para invitar amigos y desbloquear recompensas.",

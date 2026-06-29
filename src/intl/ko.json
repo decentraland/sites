@@ -432,7 +432,7 @@
         "subtitle": "Decentraland에 대해 자세히 알아보세요",
         "cta": {
           "label": "더 보기",
-          "link": "https://docs.decentraland.org/player/general/faq/"
+          "link": "https://docs.decentraland.org/faqs/"
         }
       },
       "marketplace": {
@@ -1104,7 +1104,11 @@
       "empty_member": "이 회원은 아직 사진을 찍지 않았습니다.",
       "count": "{count}장의 사진",
       "empty_owner_subtitle": "입장해서 추억을 모아 보세요! 'C'를 눌러 카메라를 열고 '스페이스바'로 사진을 찍을 수 있어요.",
-      "empty_owner_cta": "입장하기"
+      "empty_owner_cta": "입장하기",
+      "filter_all": "전체",
+      "filter_public": "공개",
+      "filter_private": "비공개",
+      "empty_filter": "이 필터에 해당하는 사진이 없습니다."
     },
     "referral_rewards": {
       "anonymous": "로그인하여 친구를 초대하고 보상을 잠금 해제하세요.",

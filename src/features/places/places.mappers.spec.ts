@@ -103,6 +103,70 @@ describe('jump.mappers', () => {
       it('should default user_name to Unknown', () => {
         expect(fromPlace(place).user_name).toBe('Unknown')
       })
+
+      it('should leave user undefined when there is no owner', () => {
+        expect(fromPlace(place).user).toBeUndefined()
+      })
+    })
+
+    describe('and the owner is a real wallet address', () => {
+      const place: JumpPlace = {
+        id: 'p5',
+        title: 'Owned World',
+        image: '',
+        description: '',
+        positions: ['0,0'],
+        base_position: '0,0',
+        owner: '0xd46a1da2aae4afc4a272dc3f28b2025ae9c18df1',
+        world: true,
+        world_name: 'dexou.dcl.eth'
+      }
+
+      it('should expose the address as user so the profile link resolves', () => {
+        expect(fromPlace(place).user).toBe('0xd46a1da2aae4afc4a272dc3f28b2025ae9c18df1')
+      })
+    })
+
+    describe('and the owner is a Places API display string instead of an address', () => {
+      // Some (notably stale) World records carry a display string in `owner`,
+      // e.g. zone returns "dexou by xyz.lb" for dexou.dcl.eth.
+      const place: JumpPlace = {
+        id: 'p6',
+        title: 'DEXOU',
+        image: '',
+        description: '',
+        positions: ['0,0'],
+        base_position: '0,0',
+        owner: 'dexou by xyz.lb                           ',
+        world: true,
+        world_name: 'dexou.dcl.eth'
+      }
+
+      it('should not turn the display string into a profile link (user stays undefined)', () => {
+        expect(fromPlace(place).user).toBeUndefined()
+      })
+
+      it('should still surface the display string as the creator name', () => {
+        expect(fromPlace(place).user_name).toBe('dexou by xyz.lb                           ')
+      })
+    })
+
+    describe('and the owner is a whitespace-padded address', () => {
+      // The address validator is anchored and does not trim, so a padded value
+      // is rejected — guards against feeding a non-canonical address to the link.
+      const place: JumpPlace = {
+        id: 'p7',
+        title: 'Padded',
+        image: '',
+        description: '',
+        positions: ['0,0'],
+        base_position: '0,0',
+        owner: ' 0xd46a1da2aae4afc4a272dc3f28b2025ae9c18df1 '
+      }
+
+      it('should leave user undefined', () => {
+        expect(fromPlace(place).user).toBeUndefined()
+      })
     })
   })
 

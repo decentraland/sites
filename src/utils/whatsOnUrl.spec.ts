@@ -301,6 +301,27 @@ describe('buildCalendarUrl', () => {
     })
   })
 
+  describe('when no realm is provided', () => {
+    it('should set the location to in-world coordinates', () => {
+      const url = buildCalendarUrl(baseEvent())
+      expect(url).toContain('location=Decentraland+In-World+%2810%2C20%29')
+    })
+  })
+
+  describe('when a realm is provided', () => {
+    it('should set the location to the world name', () => {
+      const url = buildCalendarUrl({ ...baseEvent(), realm: 'foo.dcl.eth' })
+      expect(url).toContain('location=Decentraland+World+%28foo.dcl.eth%29')
+    })
+  })
+
+  describe('when realm is null', () => {
+    it('should fall back to in-world coordinates', () => {
+      const url = buildCalendarUrl({ ...baseEvent(), realm: null })
+      expect(url).toContain('location=Decentraland+In-World+%2810%2C20%29')
+    })
+  })
+
   describe('when the event is not recurrent', () => {
     it('should not include a recur param', () => {
       const url = buildCalendarUrl(baseEvent())
