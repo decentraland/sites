@@ -4,13 +4,7 @@ import { getEnv } from '../config/env'
 // stays off the critical path — only the Delete Account flow (Magic detection + token minting)
 // pulls it in.
 
-/**
- * Builds a Magic instance keyed by `MAGIC_API_KEY` (the same publishable key the login used, so it
- * shares the existing Magic session). `MAGIC_API_KEY` is per-env config and is public, not a secret.
- *
- * @throws If `MAGIC_API_KEY` is unset.
- */
-async function loadMagicInstance() {
+async function createMagicInstance() {
   const apiKey = getEnv('MAGIC_API_KEY')
   if (!apiKey) throw new Error('MAGIC_API_KEY environment variable is not set')
 
@@ -21,12 +15,30 @@ async function loadMagicInstance() {
   return new Magic(apiKey, { extensions: [new OAuthExtension()] })
 }
 
+type MagicInstance = Awaited<ReturnType<typeof createMagicInstance>>
+
+// Lazily-created, cached Magic instance (and its iframe). Detection and token-minting can both run —
+// from different components mounting at once (e.g. the sidebar and the Delete page) — so we memoize a
+// single instance to avoid bootstrapping the SDK / its iframe more than once. The instance is keyed
+// by `MAGIC_API_KEY` (the same publishable key the login used, so it shares the existing session);
+// that key is per-env config and is public, not a secret. A failed bootstrap is not cached, so a
+// later call can retry.
+let magicInstancePromise: Promise<MagicInstance> | null = null
+
+function loadMagicInstance(): Promise<MagicInstance> {
+  if (!magicInstancePromise) {
+    magicInstancePromise = createMagicInstance().catch(error => {
+      magicInstancePromise = null
+      throw error
+    })
+  }
+  return magicInstancePromise
+}
+
 /**
  * Whether there is an active Magic session for the configured app. This is the authoritative,
  * login-method-agnostic Magic signal: unlike the `dcl_magic_user_email` localStorage key it is set
- * for *every* Magic login (email, SMS, passkey, OAuth without email). The connector id (`'magic'`)
- * would be authoritative too, but wagmi only persists it after a BlockchainShell wallet action, so
- * it is not reliably present in the provider-free account section.
+ * for *every* Magic login (email, SMS, passkey, OAuth without email).
  *
  * Resolves `false` (never throws) when the SDK is unavailable or `MAGIC_API_KEY` is unset, so
  * callers can safely treat it as "not Magic".

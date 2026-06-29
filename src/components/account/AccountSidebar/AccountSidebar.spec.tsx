@@ -59,14 +59,9 @@ jest.mock('../../../hooks/useWalletAddress', () => ({
   useWalletAddress: () => ({ disconnect: mockDisconnect })
 }))
 
-let mockIsThirdweb = true
-jest.mock('../../../hooks/useIsThirdwebAccount', () => ({
-  useIsThirdwebAccount: () => mockIsThirdweb
-}))
-
-let mockIsMagic: boolean | undefined = false
-jest.mock('../../../hooks/useIsMagicAccount', () => ({
-  useIsMagicAccount: () => mockIsMagic
+let mockCanDelete = true
+jest.mock('../../../hooks/useCanDeleteAccount', () => ({
+  useCanDeleteAccount: () => ({ canDelete: mockCanDelete, isMagic: false, isResolvingProvider: false })
 }))
 
 jest.mock('../../../features/profile/profile.client', () => ({
@@ -90,8 +85,7 @@ describe('AccountSidebar', () => {
   const writeText = jest.fn().mockResolvedValue(undefined)
 
   beforeEach(() => {
-    mockIsThirdweb = true
-    mockIsMagic = false
+    mockCanDelete = true
     Object.assign(navigator, { clipboard: { writeText } })
   })
 
@@ -99,7 +93,7 @@ describe('AccountSidebar', () => {
     jest.clearAllMocks()
   })
 
-  it('should render the three section links plus delete and logout for a thirdweb account', () => {
+  it('should render the three section links plus delete and logout for an account that can be deleted', () => {
     renderSidebar()
 
     expect(screen.getByText('account.nav.wallets')).toBeInTheDocument()
@@ -109,29 +103,12 @@ describe('AccountSidebar', () => {
     expect(screen.getByText('account.nav.logout')).toBeInTheDocument()
   })
 
-  it('should hide the delete entry for a self-custodial account (neither thirdweb nor Magic; logout stays)', () => {
-    mockIsThirdweb = false
-    mockIsMagic = false
+  it('should hide the delete entry when the account cannot be deleted (logout stays)', () => {
+    mockCanDelete = false
     renderSidebar()
 
     expect(screen.queryByText('account.nav.delete')).not.toBeInTheDocument()
     expect(screen.getByText('account.nav.logout')).toBeInTheDocument()
-  })
-
-  it('should show the delete entry for a Magic account', () => {
-    mockIsThirdweb = false
-    mockIsMagic = true
-    renderSidebar()
-
-    expect(screen.getByText('account.nav.delete')).toBeInTheDocument()
-  })
-
-  it('should hide the delete entry while Magic detection is still resolving', () => {
-    mockIsThirdweb = false
-    mockIsMagic = undefined
-    renderSidebar()
-
-    expect(screen.queryByText('account.nav.delete')).not.toBeInTheDocument()
   })
 
   it('should render the shortened wallet address and the wallet icon', () => {

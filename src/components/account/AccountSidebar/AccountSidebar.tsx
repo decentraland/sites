@@ -17,8 +17,7 @@ import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNone
 import { Address, Tooltip } from 'decentraland-ui2'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { useIsMagicAccount } from '../../../hooks/useIsMagicAccount'
-import { useIsThirdwebAccount } from '../../../hooks/useIsThirdwebAccount'
+import { useCanDeleteAccount } from '../../../hooks/useCanDeleteAccount'
 import { useWalletAddress } from '../../../hooks/useWalletAddress'
 import { getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import {
@@ -63,12 +62,9 @@ const AccountSidebar = ({ address }: AccountSidebarProps) => {
   const t = useFormatMessage()
   const { pathname } = useLocation()
   const { disconnect } = useWalletAddress()
-  const isThirdweb = useIsThirdwebAccount()
-  // Skip the Magic check (and its SDK/iframe load) for known thirdweb logins. `isMagic` is
-  // `undefined` while the async Magic-session check resolves — treat that as "not yet" so the Delete
-  // entry only appears once we positively know it is a deletable account.
-  const isMagic = useIsMagicAccount({ skip: isThirdweb })
-  const canDelete = isThirdweb || isMagic === true
+  // The Delete entry appears only once detection positively confirms a deletable account (thirdweb
+  // or Magic); while the Magic check resolves, canDelete stays false so it is not shown prematurely.
+  const { canDelete } = useCanDeleteAccount()
   const { data: profile } = useGetProfileQuery(address)
   const [copied, setCopied] = useState(false)
 

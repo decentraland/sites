@@ -7,24 +7,17 @@ import { DeleteAccountSection } from '../../components/account/DeleteAccount/Del
 import { DeleteAccountUnavailable } from '../../components/account/DeleteAccount/DeleteAccountUnavailable/DeleteAccountUnavailable'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { useIsMagicAccount } from '../../hooks/useIsMagicAccount'
-import { useIsThirdwebAccount } from '../../hooks/useIsThirdwebAccount'
+import { useCanDeleteAccount } from '../../hooks/useCanDeleteAccount'
 import { LoadingState, PageRoot } from './DeleteAccountPage.styled'
 
 const DeleteAccountPage = () => {
   const t = useFormatMessage()
   const navigate = useNavigate()
   const { address } = useAuthIdentity()
-  // Deletion applies to web2 logins: thirdweb in-app (email / social-OTP) wallets delete client-side
-  // via the SDK, and Magic logins delete via the auth-server. Self-custodial logins (MetaMask /
-  // WalletConnect) have no account to delete, so they see an explanatory message instead.
-  const isThirdweb = useIsThirdwebAccount()
-  // Skip the Magic check (and its SDK/iframe load) for known thirdweb logins.
-  const isMagic = useIsMagicAccount({ skip: isThirdweb })
-  const canDelete = isThirdweb || isMagic === true
-  // Magic detection for email-less logins needs an async SDK check; while it resolves, show a loader
-  // rather than briefly flashing the "unavailable" message at a Magic user.
-  const isResolvingProvider = !isThirdweb && isMagic === undefined
+  // Deletion applies to web2 logins (thirdweb via the SDK, Magic via the auth-server); self-custodial
+  // logins (MetaMask / WalletConnect) have no account to delete. While provider detection resolves we
+  // show a loader rather than briefly flashing the "unavailable" message at a Magic user.
+  const { canDelete, isMagic, isResolvingProvider } = useCanDeleteAccount()
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
   const handleOpenConfirmModal = useCallback(() => setIsConfirmOpen(true), [])
@@ -40,12 +33,7 @@ const DeleteAccountPage = () => {
         {canDelete ? (
           <>
             <DeleteAccountSection address={address} onOpenConfirmModal={handleOpenConfirmModal} onGoToWallets={handleGoToWallets} />
-            <DeleteAccountConfirmModal
-              open={isConfirmOpen}
-              address={address}
-              isMagic={isMagic === true}
-              onClose={handleCloseConfirmModal}
-            />
+            <DeleteAccountConfirmModal open={isConfirmOpen} address={address} isMagic={isMagic} onClose={handleCloseConfirmModal} />
           </>
         ) : isResolvingProvider ? (
           <LoadingState data-role="delete-account-loading">
