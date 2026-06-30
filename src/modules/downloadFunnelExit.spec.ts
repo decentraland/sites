@@ -1,4 +1,5 @@
-import { SEGMENT_TRACK_URL, sendDownloadFunnelExit } from './downloadFunnelExit'
+import { sendDownloadFunnelExit } from './downloadFunnelExit'
+import { SEGMENT_TRACK_URL } from './segmentConfig'
 import type { DownloadFunnelExitData } from './downloadFunnelExit.types'
 
 let mockWriteKey: string

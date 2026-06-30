@@ -1,18 +1,6 @@
-import { getEnv } from '../config/env'
-import { isAnalyticsExemptPath } from '../utils/isAnalyticsExemptPath'
 import { SegmentEvent } from './segment'
+import { SEGMENT_TRACK_URL, getSegmentWriteKey } from './segmentConfig'
 import type { DownloadFunnelExitData } from './downloadFunnelExit.types'
-
-// Segment's HTTP Tracking API. Accepts the `writeKey` in the JSON body (no
-// Authorization header), which is what lets `navigator.sendBeacon` — which
-// cannot set headers — post to it.
-const SEGMENT_TRACK_URL = 'https://api.segment.io/v1/track'
-
-function getWriteKey(): string {
-  // Mirror main.tsx: never emit analytics from exempt (pure legal/text) paths.
-  if (typeof window !== 'undefined' && isAnalyticsExemptPath(window.location.pathname)) return ''
-  return getEnv('SEGMENT_KEY') || ''
-}
 
 // Segment's HTTP API requires an identity. The funnel reliably threads
 // `anon_user_id`, but on the rare row without one we mint a throwaway id purely
@@ -58,7 +46,7 @@ function buildBody(writeKey: string, data: DownloadFunnelExitData): string {
  * the beacon queue is full. No-op when there is no write key.
  */
 function sendDownloadFunnelExit(data: DownloadFunnelExitData): void {
-  const writeKey = getWriteKey()
+  const writeKey = getSegmentWriteKey()
   if (!writeKey) return
 
   const body = buildBody(writeKey, data)
@@ -94,4 +82,4 @@ function sendDownloadFunnelExit(data: DownloadFunnelExitData): void {
   }
 }
 
-export { SEGMENT_TRACK_URL, sendDownloadFunnelExit }
+export { sendDownloadFunnelExit }

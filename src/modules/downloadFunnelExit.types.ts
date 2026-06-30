@@ -1,3 +1,5 @@
+import type { AuthState } from './downloadTracking.types'
+
 /**
  * Snapshot of the download funnel state captured when the user leaves
  * `/download_success`. Emitted as the `download_funnel_exit` diagnostic event
@@ -22,7 +24,7 @@ interface DownloadFunnelExitData {
   /** Revisit counter for this os:arch within the session (0 = first visit). */
   revisit: number
   /** `'authenticated'` | `'anonymous'` at departure time. */
-  authState: string
+  authState: AuthState
 }
 
 export type { DownloadFunnelExitData }
