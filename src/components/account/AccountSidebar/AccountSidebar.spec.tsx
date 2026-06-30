@@ -59,9 +59,9 @@ jest.mock('../../../hooks/useWalletAddress', () => ({
   useWalletAddress: () => ({ disconnect: mockDisconnect })
 }))
 
-let mockIsThirdweb = true
-jest.mock('../../../hooks/useIsThirdwebAccount', () => ({
-  useIsThirdwebAccount: () => mockIsThirdweb
+let mockCanDelete = true
+jest.mock('../../../hooks/useCanDeleteAccount', () => ({
+  useCanDeleteAccount: () => ({ canDelete: mockCanDelete, isMagic: false, isResolvingProvider: false })
 }))
 
 let mockProfile: unknown = undefined
@@ -86,7 +86,7 @@ describe('AccountSidebar', () => {
   const writeText = jest.fn().mockResolvedValue(undefined)
 
   beforeEach(() => {
-    mockIsThirdweb = true
+    mockCanDelete = true
     mockProfile = undefined
     Object.assign(navigator, { clipboard: { writeText } })
   })
@@ -95,7 +95,7 @@ describe('AccountSidebar', () => {
     jest.clearAllMocks()
   })
 
-  it('should render the three section links plus delete and logout for a thirdweb account', () => {
+  it('should render the three section links plus delete and logout for an account that can be deleted', () => {
     renderSidebar()
 
     expect(screen.getByText('account.nav.wallets')).toBeInTheDocument()
@@ -105,8 +105,8 @@ describe('AccountSidebar', () => {
     expect(screen.getByText('account.nav.logout')).toBeInTheDocument()
   })
 
-  it('should hide the delete entry for a non-thirdweb account (logout stays)', () => {
-    mockIsThirdweb = false
+  it('should hide the delete entry when the account cannot be deleted (logout stays)', () => {
+    mockCanDelete = false
     renderSidebar()
 
     expect(screen.queryByText('account.nav.delete')).not.toBeInTheDocument()

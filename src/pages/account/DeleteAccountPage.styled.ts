@@ -9,4 +9,12 @@ const PageRoot = styled(Box)({
   gap: 16
 })
 
-export { PageRoot }
+// Shown only during the brief async window while Magic detection resolves (email-less logins), so
+// the page never flashes the "unavailable" message before the real provider is known.
+const LoadingState = styled(Box)({
+  display: 'flex',
+  justifyContent: 'center',
+  padding: 48
+})
+
+export { LoadingState, PageRoot }

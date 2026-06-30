@@ -17,7 +17,7 @@ import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNone
 import { Address, Tooltip } from 'decentraland-ui2'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { useIsThirdwebAccount } from '../../../hooks/useIsThirdwebAccount'
+import { useCanDeleteAccount } from '../../../hooks/useCanDeleteAccount'
 import { useWalletAddress } from '../../../hooks/useWalletAddress'
 import { getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import {
@@ -62,7 +62,9 @@ const AccountSidebar = ({ address }: AccountSidebarProps) => {
   const t = useFormatMessage()
   const { pathname } = useLocation()
   const { disconnect } = useWalletAddress()
-  const isThirdweb = useIsThirdwebAccount()
+  // The Delete entry appears only once detection positively confirms a deletable account (thirdweb
+  // or Magic); while the Magic check resolves, canDelete stays false so it is not shown prematurely.
+  const { canDelete } = useCanDeleteAccount()
   const { data: profile } = useGetProfileQuery(address)
   const [copied, setCopied] = useState(false)
   const copiedTimeout = useRef<ReturnType<typeof setTimeout>>()
@@ -134,9 +136,9 @@ const AccountSidebar = ({ address }: AccountSidebarProps) => {
       </Nav>
 
       <BottomGroup>
-        {/* Delete only applies to thirdweb (email/social-OTP) wallets — the SDK unlink flow has no
-            equivalent for self-custodial logins — so the entry is hidden for everyone else. */}
-        {isThirdweb && (
+        {/* Delete applies to web2 logins (thirdweb via the SDK, Magic via the auth-server); it is
+            hidden for self-custodial logins, which have no account to delete. */}
+        {canDelete && (
           <>
             <Divider />
             <DeleteNavItem

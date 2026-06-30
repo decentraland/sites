@@ -14,7 +14,14 @@ jest.mock('react-helmet-async', () => ({
 }))
 
 jest.mock('./DeleteAccountPage.styled', () => ({
-  PageRoot: ({ children }: ChildrenProps) => <div>{children}</div>
+  PageRoot: ({ children }: ChildrenProps) => <div>{children}</div>,
+  LoadingState: ({ children, 'data-role': dataRole }: ChildrenProps & { 'data-role'?: string }) => (
+    <div data-role={dataRole}>{children}</div>
+  )
+}))
+
+jest.mock('decentraland-ui2', () => ({
+  CircularProgress: () => <span data-role="spinner" />
 }))
 
 const ADDRESS = '0x1234567890123456789012345678901234567890'
@@ -22,9 +29,15 @@ jest.mock('../../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ address: ADDRESS })
 }))
 
-let mockIsThirdweb = true
-jest.mock('../../hooks/useIsThirdwebAccount', () => ({
-  useIsThirdwebAccount: () => mockIsThirdweb
+let mockCanDelete = true
+let mockIsMagic = false
+let mockIsResolvingProvider = false
+jest.mock('../../hooks/useCanDeleteAccount', () => ({
+  useCanDeleteAccount: () => ({
+    canDelete: mockCanDelete,
+    isMagic: mockIsMagic,
+    isResolvingProvider: mockIsResolvingProvider
+  })
 }))
 
 jest.mock('../../components/account/DeleteAccount/DeleteAccountUnavailable/DeleteAccountUnavailable', () => ({
@@ -65,18 +78,38 @@ jest.mock('../../components/account/DeleteAccount/DeleteAccountConfirmModal/Dele
 
 describe('DeleteAccountPage', () => {
   beforeEach(() => {
-    mockIsThirdweb = true
+    mockCanDelete = true
+    mockIsMagic = false
+    mockIsResolvingProvider = false
   })
 
   afterEach(() => {
     jest.clearAllMocks()
   })
 
-  it('should show the unavailable message (not the danger zone) for a non-thirdweb account', () => {
-    mockIsThirdweb = false
+  it('should show the unavailable message (not the danger zone) for an account that cannot be deleted', () => {
+    mockCanDelete = false
     const { container } = render(<DeleteAccountPage />)
 
     expect(container.querySelector('[data-role="unavailable"]')).toBeTruthy()
+    expect(screen.queryByText(`section-address:${ADDRESS}`)).not.toBeInTheDocument()
+  })
+
+  it('should show the danger zone (not the unavailable message) for a Magic account', () => {
+    mockCanDelete = true
+    mockIsMagic = true
+    render(<DeleteAccountPage />)
+
+    expect(screen.getByText(`section-address:${ADDRESS}`)).toBeInTheDocument()
+  })
+
+  it('should show a loading indicator (not the unavailable message) while provider detection resolves', () => {
+    mockCanDelete = false
+    mockIsResolvingProvider = true
+    const { container } = render(<DeleteAccountPage />)
+
+    expect(container.querySelector('[data-role="delete-account-loading"]')).toBeTruthy()
+    expect(container.querySelector('[data-role="unavailable"]')).toBeNull()
     expect(screen.queryByText(`section-address:${ADDRESS}`)).not.toBeInTheDocument()
   })
 
