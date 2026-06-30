@@ -1,41 +1,42 @@
 import { useEffect, useRef } from 'react'
 import { sendDownloadFunnelExit } from '../modules/downloadFunnelExit'
 import type { DownloadFunnelExitData } from '../modules/downloadFunnelExit.types'
+import { subscribeVisibility } from '../utils/documentVisibility'
 
 /**
- * Fires the `download_funnel_exit` diagnostic event exactly once when the user
- * leaves the page, snapshotting the current funnel state via `getExitData`.
+ * Fires the `download_funnel_exit` diagnostic event whenever the page becomes
+ * hidden, snapshotting the current funnel state via `getExitData`.
  *
  * Used on `/download_success` to confirm whether the funnel drop comes from
- * users closing the tab before the `download_*` events fire/deliver. `pagehide`
- * is the trigger — it models "left the page" (tab close / navigation away),
- * which is the hypothesis under test, and avoids the tab-switch false positives
- * a `visibilitychange` listener would add. The download flow is desktop-only,
- * so the mobile/bfcache gaps that make `pagehide` unreliable elsewhere don't
- * apply here.
+ * users leaving before the `download_*` events fire/deliver. We trigger on
+ * `visibilitychange → hidden` (via the shared `subscribeVisibility`) rather than
+ * `pagehide`: `hidden` is the last callback the Page Lifecycle spec guarantees
+ * before a page is frozen/discarded/terminated, so it also catches the user
+ * quitting the browser to go run the installer — the modal completion behaviour
+ * for this funnel, which `pagehide` misses on some browsers. (Hard crashes /
+ * force-kills / power loss are unrecoverable by any client-side signal.)
  *
- * `getExitData` is read through a ref so the listener subscribes once and still
- * captures the latest funnel state at departure time.
+ * Because `hidden` also fires on a transient tab/app switch, the event can be
+ * emitted multiple times per session (e.g. switch away → come back → leave).
+ * That is intentional: the warehouse collapses rows per `anon_id`
+ * (`BOOLOR_AGG` on the flags), so a tab-switcher who later completes is still
+ * counted as started. Do NOT add a fire-once guard — it would record an early
+ * `started_fired = false` and never correct it.
  *
- * `enabled` scopes the diagnostic to sessions that actually entered the funnel
- * via a download CTA (the caller passes `place !== UNKNOWN`). Direct/campaign
- * landings, refreshes and bots — which never clicked a download button — don't
- * subscribe, so they're excluded from the funnel measurement entirely.
+ * `enabled` scopes the diagnostic to sessions that entered via a download CTA
+ * (the caller passes `place !== UNKNOWN`); direct/campaign landings and bots
+ * never subscribe. `getExitData` is read through a ref so the subscription is
+ * stable while still capturing the latest funnel state at fire time.
  */
 function useDownloadFunnelExit(getExitData: () => DownloadFunnelExitData, enabled = true): void {
   const getExitDataRef = useRef(getExitData)
   getExitDataRef.current = getExitData
-  const sentRef = useRef(false)
 
   useEffect(() => {
     if (!enabled) return
-    const sendOnce = () => {
-      if (sentRef.current) return
-      sentRef.current = true
-      sendDownloadFunnelExit(getExitDataRef.current())
-    }
-    window.addEventListener('pagehide', sendOnce)
-    return () => window.removeEventListener('pagehide', sendOnce)
+    return subscribeVisibility(visible => {
+      if (!visible) sendDownloadFunnelExit(getExitDataRef.current())
+    })
   }, [enabled])
 }
 

@@ -45,11 +45,18 @@ jest.mock('react-router-dom', () => ({
 
 // The download_funnel_exit diagnostic: mock the module (which otherwise pulls
 // in config/env → import.meta, unloadable under Jest) so we can assert the
-// pagehide handler fires it with the right funnel-state snapshot.
+// visibilitychange→hidden handler fires it with the right funnel-state snapshot.
 const mockSendDownloadFunnelExit = jest.fn()
 jest.mock('../../modules/downloadFunnelExit', () => ({
   sendDownloadFunnelExit: (...args: unknown[]) => mockSendDownloadFunnelExit(...args)
 }))
+
+// Drive the shared subscribeVisibility primitive used by useDownloadFunnelExit.
+const setVisibility = (hidden: boolean): void => {
+  Object.defineProperty(document, 'hidden', { value: hidden, configurable: true })
+  Object.defineProperty(document, 'visibilityState', { value: hidden ? 'hidden' : 'visible', configurable: true })
+  document.dispatchEvent(new Event('visibilitychange'))
+}
 
 const mockUseAnonUserId = jest.fn<string | undefined, []>(() => 'anon-123')
 jest.mock('../../hooks/useAnonUserId', () => ({
@@ -646,14 +653,15 @@ describe('when the user leaves the page (download_funnel_exit)', () => {
 
   afterEach(() => {
     jest.resetAllMocks()
+    setVisibility(false)
   })
 
-  it('should fire the exit event on pagehide with the fired flags set after a completed download', async () => {
+  it('should fire the exit event when hidden, with the fired flags after a completed download', async () => {
     render(<DownloadSuccess />)
     await waitFor(() => expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything()))
 
     React.act(() => {
-      window.dispatchEvent(new Event('pagehide'))
+      setVisibility(true)
     })
 
     expect(mockSendDownloadFunnelExit).toHaveBeenCalledTimes(1)
@@ -677,7 +685,7 @@ describe('when the user leaves the page (download_funnel_exit)', () => {
     render(<DownloadSuccess />)
 
     React.act(() => {
-      window.dispatchEvent(new Event('pagehide'))
+      setVisibility(true)
     })
 
     expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(
@@ -685,16 +693,17 @@ describe('when the user leaves the page (download_funnel_exit)', () => {
     )
   })
 
-  it('should fire the exit event only once across multiple pagehide events', async () => {
+  it('should fire again on a later hide (dedup handled in the warehouse)', async () => {
     render(<DownloadSuccess />)
     await waitFor(() => expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything()))
 
     React.act(() => {
-      window.dispatchEvent(new Event('pagehide'))
-      window.dispatchEvent(new Event('pagehide'))
+      setVisibility(true) // switch away
+      setVisibility(false) // come back
+      setVisibility(true) // leave
     })
 
-    expect(mockSendDownloadFunnelExit).toHaveBeenCalledTimes(1)
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledTimes(2)
   })
 
   it('should NOT fire the exit event on a direct landing with no place (no download click)', async () => {
@@ -705,7 +714,7 @@ describe('when the user leaves the page (download_funnel_exit)', () => {
     await waitFor(() => expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything()))
 
     React.act(() => {
-      window.dispatchEvent(new Event('pagehide'))
+      setVisibility(true)
     })
 
     expect(mockSendDownloadFunnelExit).not.toHaveBeenCalled()
