@@ -2,8 +2,8 @@ import { memo, useCallback, useMemo } from 'react'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
-import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
 import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
+import { useDownloadClick } from '../../hooks/useDownloadClick'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
@@ -45,7 +45,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
   const getIdentityId = useGetIdentityId()
   const anonUserId = useAnonUserId()
   const l = useFormatMessage()
-  const onClickHandle = useTrackClick()
+  const trackDownloadClick = useDownloadClick()
 
   const links = useMemo(() => sanitizeCDNReleaseLinks(getCDNRelease(CDNSource.LAUNCHER)) || {}, [])
 
@@ -166,7 +166,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                   data-event={SegmentEvent.DOWNLOAD}
                   onClick={event => {
                     event.preventDefault()
-                    onClickHandle(event)
+                    trackDownloadClick(event)
                     onClickDownloadHandler(option)
                   }}
                 >
@@ -181,7 +181,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
               rel="noopener noreferrer"
               data-place={DownloadPlace.DOWNLOAD_PAGE}
               data-event={SegmentEvent.DOWNLOAD}
-              onClick={onClickHandle}
+              onClick={trackDownloadClick}
             >
               {l('page.download.download_on')}
               <img src={assetUrl('/epic_icon.svg')} alt="Epic Games" width={32} height={32} style={{ filter: 'brightness(0)' }} />
@@ -198,9 +198,11 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                 <AlternativeButton
                   variant="text"
                   color="inherit"
+                  data-place={SectionViewedTrack.DOWNLOAD}
+                  data-event={SegmentEvent.DOWNLOAD}
                   onClick={event => {
                     event.preventDefault()
-                    onClickHandle(event)
+                    trackDownloadClick(event)
                     onClickDownloadHandler(option)
                   }}
                   href={option.link}

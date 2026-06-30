@@ -3,9 +3,9 @@ import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { DownloadModal, DownloadQRModal } from 'decentraland-ui2'
 import { heroContent } from '../../../data/static-content'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useAnimatedCounter } from '../../../hooks/useAnimatedCounter'
 import { ANON_USER_ID_PARAM, useAnonUserId } from '../../../hooks/useAnonUserId'
+import { useDownloadClick } from '../../../hooks/useDownloadClick'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import appleLogo from '../../../images/apple-logo.svg'
 import microsoftLogo from '../../../images/microsoft-logo.svg'
@@ -62,7 +62,7 @@ let cachedDownloadCounts: string | null = null
 const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const [, userAgentData] = useAdvancedUserAgentData()
   const l = useFormatMessage()
-  const onClickHandle = useTrackClick()
+  const trackDownloadClick = useDownloadClick()
   const anonUserId = useAnonUserId()
   const { isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads } = useHangOutAction()
 
@@ -174,12 +174,12 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
 
   const handleDownloadClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
-      onClickHandle(e)
+      trackDownloadClick(e)
       if (userAgentData) {
         window.location.href = buildDownloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO)
       }
     },
-    [onClickHandle, userAgentData, buildDownloadSuccessHref]
+    [trackDownloadClick, userAgentData, buildDownloadSuccessHref]
   )
 
   return (
@@ -272,7 +272,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
               rel="noopener noreferrer"
               data-place={DownloadPlace.LANDING_HERO_EPIC}
               data-event={SegmentEvent.DOWNLOAD}
-              onClick={onClickHandle}
+              onClick={trackDownloadClick}
             >
               {l('page.download.download_on')}
               <img src={assetUrl('/epic_icon.svg')} alt="Epic Games" width={32} height={32} style={{ filter: 'brightness(0)' }} />

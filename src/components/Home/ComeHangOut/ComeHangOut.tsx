@@ -2,8 +2,8 @@ import { memo, useCallback, useState } from 'react'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { AnimatedBackground, DownloadModal, DownloadQRModal } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useAnimatedCounter } from '../../../hooks/useAnimatedCounter'
+import { useDownloadClick } from '../../../hooks/useDownloadClick'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import appleLogo from '../../../images/apple-logo.svg'
 import microsoftLogo from '../../../images/microsoft-logo.svg'
@@ -34,7 +34,7 @@ let cachedDownloadCounts: string | null = null
 
 const ComeHangOut = memo(() => {
   const l = useFormatMessage()
-  const onClickHandle = useTrackClick()
+  const trackDownloadClick = useDownloadClick()
   const { isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads } = useHangOutAction()
   const [, userAgentData] = useAdvancedUserAgentData()
   const [rawDownloads, rawDownloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
@@ -69,12 +69,12 @@ const ComeHangOut = memo(() => {
 
   const handleDownloadClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
-      onClickHandle(e)
+      trackDownloadClick(e)
       if (userAgentData) {
         window.location.href = `/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.COME_HANG_OUT}`
       }
     },
-    [onClickHandle, userAgentData]
+    [trackDownloadClick, userAgentData]
   )
 
   const osImage = userAgentData
