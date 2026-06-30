@@ -10,6 +10,11 @@ const jestConfig: Config = {
       'ts-jest',
       {
         tsconfig: {
+          // Match the app build target (tsconfig.app.json) so native ES2020
+          // features survive transpilation. Without this, ts-jest down-levels
+          // the `**` operator to `Math.pow`, which throws on BigInt operands
+          // (e.g. `10n ** 18n` in OverviewTab.helpers' `formatPriceMana`).
+          target: 'ES2020',
           esModuleInterop: true,
           jsx: 'react-jsx'
         },

@@ -140,6 +140,23 @@ describe('EmailCard', () => {
     })
   })
 
+  describe('when the upstream email changes', () => {
+    it('should preserve an in-progress edit when a background refetch returns the same email', () => {
+      const { rerender } = render(<EmailCard email="user@decentraland.org" />)
+      const input = screen.getByRole('textbox')
+      fireEvent.change(input, { target: { value: 'editing@decentraland.org' } })
+      // Background RTK Query refetch resolves to the same email — must not clobber the edit.
+      rerender(<EmailCard email="user@decentraland.org" />)
+      expect(input).toHaveValue('editing@decentraland.org')
+    })
+
+    it('should sync the field when the upstream email actually changes', () => {
+      const { rerender } = render(<EmailCard email="old@decentraland.org" />)
+      rerender(<EmailCard email="new@decentraland.org" />)
+      expect(screen.getByRole('textbox')).toHaveValue('new@decentraland.org')
+    })
+  })
+
   describe('master email toggle', () => {
     const details = { ignore_all_email: false, ignore_all_in_app: false, message_type: {} } as unknown as SubscriptionDetails
 

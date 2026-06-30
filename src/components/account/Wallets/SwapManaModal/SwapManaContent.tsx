@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { encodeAbiParameters, parseEther } from 'viem'
 import { useAccount, usePublicClient, useSwitchChain, useWriteContract } from 'wagmi'
 import { useWallet } from '@dcl/core-web3'
@@ -41,6 +41,9 @@ const SwapManaContent = ({ balance, address: trackingAddress, onClose, onSuccess
   const [amount, setAmount] = useState('')
   const [phase, setPhase] = useState<Phase>('idle')
   const [errorKey, setErrorKey] = useState<string | null>(null)
+  // `phase` only flips to a busy value after the first await, so it can't gate a rapid double-click on
+  // its own — a synchronous ref guard prevents launching concurrent approve+deposit flows.
+  const isProcessing = useRef(false)
 
   const amountValue = Number(amount)
   const isAmountValid = amountValue > 0 && (balance === undefined || amountValue <= balance)
@@ -50,7 +53,8 @@ const SwapManaContent = ({ balance, address: trackingAddress, onClose, onSuccess
   // call RootChainManager.depositFor. Two sequential txs orchestrated imperatively so each waits
   // for its receipt before the next.
   const handleSwap = useCallback(async () => {
-    if (!address || !publicClient || !isAmountValid) return
+    if (!address || !publicClient || !isAmountValid || isProcessing.current) return
+    isProcessing.current = true
     setErrorKey(null)
     try {
       const amountWei = parseEther(amount)
@@ -110,6 +114,8 @@ const SwapManaContent = ({ balance, address: trackingAddress, onClose, onSuccess
       const message = error instanceof Error ? error.message : ''
       setErrorKey(/rejected|denied|UserRejected/i.test(message) ? 'account.wallets.swap.rejected' : 'account.wallets.swap.error')
       setPhase('idle')
+    } finally {
+      isProcessing.current = false
     }
   }, [
     address,

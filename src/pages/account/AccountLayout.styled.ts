@@ -7,6 +7,9 @@ const AccountLayoutRoot = styled(Box)(({ theme }) => ({
   position: 'relative',
   width: '100%',
   minHeight: '100vh',
+  // Keep the top/bottom padding inside the 100vh budget so the page is exactly one viewport tall when
+  // the content is short — otherwise the padding is added on top of 100vh and forces a needless scroll.
+  boxSizing: 'border-box',
   // Clearance below the fixed navbar. Figma 322:101467: desktop navbar is 92px and the content
   // starts at y=151, i.e. a 59px gap → 151px top. Mobile navbar is 64px with the content flush
   // beneath it (Figma 776:69124, Menu at y=64).

@@ -432,7 +432,7 @@
         "subtitle": "了解更多关于 Decentraland",
         "cta": {
           "label": "查看更多",
-          "link": "https://docs.decentraland.org/player/general/faq/"
+          "link": "https://docs.decentraland.org/faqs/"
         }
       },
       "marketplace": {
@@ -1104,7 +1104,11 @@
       "empty_member": "该成员尚未拍摄任何照片。",
       "count": "{count} 张照片",
       "empty_owner_subtitle": "快进来开始收集回忆吧！按 'C' 打开相机，按 '空格键' 拍照。",
-      "empty_owner_cta": "立即加入"
+      "empty_owner_cta": "立即加入",
+      "filter_all": "全部",
+      "filter_public": "公开",
+      "filter_private": "私密",
+      "empty_filter": "没有符合此筛选条件的照片。"
     },
     "referral_rewards": {
       "anonymous": "登录以邀请好友并解锁奖励。",
@@ -1257,6 +1261,7 @@
         "to_label": "收款地址",
         "amount_label": "金额",
         "invalid_address": "请输入有效的钱包地址",
+        "insufficient_balance": "余额不足",
         "send_button": "发送",
         "confirm_in_wallet": "请在钱包中确认…",
         "sending": "发送中…",
@@ -1299,6 +1304,7 @@
         },
         "pending_title": "待处理交易",
         "latest_title": "最近交易",
+        "load_more": "加载更多",
         "claim": "领取"
       },
       "withdraw": {

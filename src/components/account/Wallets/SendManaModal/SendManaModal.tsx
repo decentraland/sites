@@ -11,11 +11,12 @@ interface SendManaModalProps {
   open: boolean
   network: WalletNetwork
   address: string | undefined
+  balance?: number
   onClose: () => void
   onSuccess?: () => void
 }
 
-const SendManaModal = ({ open, network, address, onClose, onSuccess }: SendManaModalProps) => {
+const SendManaModal = ({ open, network, address, balance, onClose, onSuccess }: SendManaModalProps) => {
   const t = useFormatMessage()
 
   return (
@@ -38,7 +39,7 @@ const SendManaModal = ({ open, network, address, onClose, onSuccess }: SendManaM
             </Centered>
           }
         >
-          <SendManaContent network={network} address={address} onClose={onClose} onSuccess={onSuccess} />
+          <SendManaContent network={network} address={address} balance={balance} onClose={onClose} onSuccess={onSuccess} />
         </BlockchainShell>
       )}
     </StyledDialog>

@@ -35,10 +35,49 @@ const ChevronWrap = styled(Box, { shouldForwardProp: prop => prop !== '$expanded
   transform: $expanded ? 'rotate(180deg)' : 'rotate(0deg)'
 }))
 
+// Capped height with an internal scroll so a long history never pushes the card past the viewport;
+// extra rows scroll within this box (and load in batches via the Load more button below).
 const List = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  paddingBottom: theme.spacing(1)
+  paddingBottom: theme.spacing(1),
+  maxHeight: 360,
+  overflowY: 'auto',
+  // Reserve room for the scrollbar so the (overlay) thumb never sits on top of the row amounts.
+  paddingRight: theme.spacing(1.5),
+  scrollbarWidth: 'thin',
+  scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent',
+  ['&::-webkit-scrollbar']: {
+    width: 6
+  },
+  ['&::-webkit-scrollbar-thumb']: {
+    background: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 3
+  }
+}))
+
+// Pulls the next batch of settled transactions into the scroll area (Figma has no spec for this — it
+// matches the muted secondary controls used elsewhere in the account area).
+const LoadMoreButton = styled('button')(({ theme }) => ({
+  alignSelf: 'center',
+  marginTop: theme.spacing(1),
+  padding: theme.spacing(0.75, 2),
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  borderRadius: theme.spacing(1),
+  background: 'transparent',
+  color: '#FCFCFC',
+  fontFamily: 'inherit',
+  fontSize: 13,
+  fontWeight: 600,
+  cursor: 'pointer',
+  transition: 'background 0.15s ease',
+  ['&:hover']: {
+    background: 'rgba(255, 255, 255, 0.08)'
+  },
+  ['&:focus-visible']: {
+    outline: '2px solid rgba(255, 255, 255, 0.6)',
+    outlineOffset: 2
+  }
 }))
 
 const EmptyState = styled(Typography)(({ theme }) => ({
@@ -222,6 +261,7 @@ export {
   Header,
   IconChip,
   List,
+  LoadMoreButton,
   Row,
   RowDate,
   RowType,

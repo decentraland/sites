@@ -223,6 +223,24 @@ describe('EventDetailModalHero', () => {
 
       expect(screen.getByTestId('jump-in-button')).toHaveAttribute('data-position', '10,20')
     })
+
+    describe('and the event is hosted in a world', () => {
+      it('should pass the realm to the jump in button so the launcher deep-links into the world instead of Genesis City', () => {
+        render(<EventDetailModalHero data={createMockData({ live: true, isWorld: true, realm: 'kenz0.dcl.eth' })} onClose={mockOnClose} />)
+
+        const jumpInButton = screen.getByTestId('jump-in-button')
+        expect(jumpInButton).toHaveAttribute('data-position', '10,20')
+        expect(jumpInButton).toHaveAttribute('data-realm', 'kenz0.dcl.eth')
+      })
+    })
+
+    describe('and the event is hosted in Genesis City', () => {
+      it('should not pass a realm so the launcher uses the coordinates', () => {
+        render(<EventDetailModalHero data={createMockData({ live: true, isWorld: false })} onClose={mockOnClose} />)
+
+        expect(screen.getByTestId('jump-in-button')).not.toHaveAttribute('data-realm')
+      })
+    })
   })
 
   describe('when the event has no image', () => {

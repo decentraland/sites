@@ -432,7 +432,7 @@
         "subtitle": "Aprende más sobre Decentraland",
         "cta": {
           "label": "ver más",
-          "link": "https://docs.decentraland.org/player/general/faq/"
+          "link": "https://docs.decentraland.org/faqs/"
         }
       },
       "marketplace": {
@@ -1104,7 +1104,11 @@
       "empty_member": "Este miembro todavía no sacó fotos.",
       "count": "{count} fotos",
       "empty_owner_subtitle": "¡Entrá y empezá a coleccionar recuerdos! Presioná 'C' para abrir la Cámara y la 'barra espaciadora' para sacar una foto.",
-      "empty_owner_cta": "Entrar"
+      "empty_owner_cta": "Entrar",
+      "filter_all": "Todas",
+      "filter_public": "Públicas",
+      "filter_private": "Privadas",
+      "empty_filter": "No hay fotos para este filtro."
     },
     "referral_rewards": {
       "anonymous": "Iniciá sesión para invitar amigos y desbloquear recompensas.",
@@ -1257,6 +1261,7 @@
         "to_label": "Dirección de destino",
         "amount_label": "Monto",
         "invalid_address": "Ingresá una dirección de billetera válida",
+        "insufficient_balance": "Saldo insuficiente",
         "send_button": "Enviar",
         "confirm_in_wallet": "Confirmá en tu billetera…",
         "sending": "Enviando…",
@@ -1299,6 +1304,7 @@
         },
         "pending_title": "Transacciones pendientes",
         "latest_title": "Últimas transacciones",
+        "load_more": "Cargar más",
         "claim": "Reclamar"
       },
       "withdraw": {

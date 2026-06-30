@@ -3,7 +3,6 @@ import { useGetProfileAssetsQuery } from '../../../features/profile/profile.asse
 import { useGetProfileCreationsQuery } from '../../../features/profile/profile.creations.client'
 import { useGetProfilePlacesQuery } from '../../../features/profile/profile.places.client'
 import { useGetProfileCommunitiesQuery } from '../../../features/profile/profile.social.client'
-import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useReelImagesByUser } from '../../../hooks/useReelImagesByUser'
 import { useProfileTabAvailability } from './useProfileTabAvailability'
 
@@ -11,14 +10,12 @@ jest.mock('../../../features/profile/profile.assets.client', () => ({ useGetProf
 jest.mock('../../../features/profile/profile.creations.client', () => ({ useGetProfileCreationsQuery: jest.fn() }))
 jest.mock('../../../features/profile/profile.places.client', () => ({ useGetProfilePlacesQuery: jest.fn() }))
 jest.mock('../../../features/profile/profile.social.client', () => ({ useGetProfileCommunitiesQuery: jest.fn() }))
-jest.mock('../../../hooks/useAuthIdentity', () => ({ useAuthIdentity: jest.fn() }))
 jest.mock('../../../hooks/useReelImagesByUser', () => ({ useReelImagesByUser: jest.fn() }))
 
 const mockedUsePlaces = useGetProfilePlacesQuery as jest.MockedFunction<typeof useGetProfilePlacesQuery>
 const mockedUseCreations = useGetProfileCreationsQuery as jest.MockedFunction<typeof useGetProfileCreationsQuery>
 const mockedUseAssets = useGetProfileAssetsQuery as jest.MockedFunction<typeof useGetProfileAssetsQuery>
 const mockedUseCommunities = useGetProfileCommunitiesQuery as jest.MockedFunction<typeof useGetProfileCommunitiesQuery>
-const mockedUseAuthIdentity = useAuthIdentity as jest.MockedFunction<typeof useAuthIdentity>
 const mockedUseReelImages = useReelImagesByUser as jest.MockedFunction<typeof useReelImagesByUser>
 
 const ADDRESS = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
@@ -28,7 +25,6 @@ const emptyPhotosResult = { images: [], total: 0, isLoading: false, error: null 
 
 describe('useProfileTabAvailability', () => {
   beforeEach(() => {
-    mockedUseAuthIdentity.mockReturnValue({ identity: undefined } as unknown as ReturnType<typeof useAuthIdentity>)
     mockedUsePlaces.mockReturnValue(emptyQueryResult as unknown as ReturnType<typeof useGetProfilePlacesQuery>)
     mockedUseCreations.mockReturnValue(emptyQueryResult as unknown as ReturnType<typeof useGetProfileCreationsQuery>)
     mockedUseAssets.mockReturnValue(emptyQueryResult as unknown as ReturnType<typeof useGetProfileAssetsQuery>)
@@ -115,6 +111,12 @@ describe('useProfileTabAvailability', () => {
       const { result } = renderHook(() => useProfileTabAvailability(ADDRESS, true))
 
       expect(result.current.hidden.size).toBe(0)
+    })
+
+    it('should probe photos unsigned so private snapshots never reveal the tab', () => {
+      renderHook(() => useProfileTabAvailability(ADDRESS, true))
+
+      expect(mockedUseReelImages).toHaveBeenCalledWith(ADDRESS, { limit: 1, offset: 0 })
     })
   })
 })

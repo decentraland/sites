@@ -30,6 +30,9 @@ const getProofApiBase = (): string => {
 async function fetchExitPayload(burnTxHash: string): Promise<`0x${string}` | null> {
   const url = `${getProofApiBase()}/api/v1/${getProofApiNetwork()}/exit-payload/${burnTxHash}?eventSignature=${ERC20_TRANSFER_EVENT_SIG}&tokenIndex=0`
   const response = await fetch(url)
+  // Reject error statuses before reading the body, so an error response that happens to carry a
+  // `result: "0x..."` field is never accepted as a valid exit payload (it would only revert on-chain).
+  if (!response.ok) throw new Error(`Proof API responded ${response.status}`)
   const body: unknown = await response.json().catch(() => null)
   if (body && typeof body === 'object') {
     const result = (body as { result?: unknown }).result
@@ -37,7 +40,6 @@ async function fetchExitPayload(burnTxHash: string): Promise<`0x${string}` | nul
     // 200 with { error, message } while the burn isn't checkpointed yet → not ready, keep waiting.
     if ((body as { error?: unknown }).error) return null
   }
-  if (!response.ok) throw new Error(`Proof API responded ${response.status}`)
   return null
 }
 

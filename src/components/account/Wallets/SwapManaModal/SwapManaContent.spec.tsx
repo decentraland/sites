@@ -121,6 +121,24 @@ describe('SwapManaContent', () => {
       expect(mockWriteContractAsync).toHaveBeenNthCalledWith(2, expect.objectContaining({ functionName: 'depositFor' }))
     })
 
+    it('should ignore a rapid second click while a swap is already in flight', async () => {
+      // Hold the allowance read pending so both clicks race before `phase` flips to busy — only the
+      // ref guard can stop the second handleSwap from launching a concurrent flow.
+      let resolveAllowance: (value: bigint) => void = () => {}
+      mockReadContract.mockReturnValue(new Promise<bigint>(resolve => (resolveAllowance = resolve)))
+      render(<SwapManaContent balance={100} address="0xUSER" onClose={jest.fn()} />)
+
+      fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '5' } })
+      const submit = screen.getByText('account.wallets.swap.submit')
+      fireEvent.click(submit)
+      fireEvent.click(submit)
+      resolveAllowance(0n)
+
+      await waitFor(() => expect(mockWriteContractAsync).toHaveBeenCalled())
+      // The second click returned early at the guard, so the allowance read ran only once.
+      expect(mockReadContract).toHaveBeenCalledTimes(1)
+    })
+
     it('should skip the approval when the allowance already covers the amount', async () => {
       mockReadContract.mockResolvedValue(BigInt(1e30))
       render(<SwapManaContent balance={100} address="0xUSER" onClose={jest.fn()} />)

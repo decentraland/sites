@@ -39,10 +39,10 @@ jobs:
       version: ${{ steps.publish.outputs.version }}
 
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # @v4.3.0
+      - uses: actions/checkout@v6
 
       - name: Use Node.js 24.x
-        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # @v4.0.1
+        uses: actions/setup-node@v6
         with:
           node-version: 24.x
 
@@ -74,8 +74,7 @@ jobs:
       - name: Publish
         id: publish
         # Auth via npm Trusted Publishers (OIDC) — `id-token: write` is granted on
-        # this job and no `NODE_AUTH_TOKEN` is provided, so the OIDC-aware oddish
-        # skips writing `_authToken` to `.npmrc` and lets npm 11 do the handshake.
+        # this job so oddish and npm 11 handle the OIDC handshake automatically.
         # Requires a Trusted Publisher entry for `build-release.yml` at
         # https://www.npmjs.com/package/@dcl/sites/access
         #

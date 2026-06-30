@@ -19,8 +19,11 @@ const Sidebar = styled(Box)(({ theme }) => ({
     position: 'sticky',
     top: 96,
     width: 264,
-    // Full-height left rail: span from just under the fixed navbar to the bottom of the viewport.
-    minHeight: 'calc(100vh - 120px)',
+    // Full-height left rail that stays within the viewport: it starts at the root's top padding (151px,
+    // the navbar clearance) and reaches down to the root's bottom padding, so "Log out" is visible at
+    // rest without scrolling. Must subtract the 151px clearance (not the 96px sticky offset) since the
+    // rail sits at 151px until the content scrolls.
+    minHeight: `calc(100vh - 151px - ${theme.spacing(8)})`,
     alignSelf: 'flex-start'
   }
 }))

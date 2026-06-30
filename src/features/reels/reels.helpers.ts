@@ -41,6 +41,11 @@ const buildTwitterShareUrl = (description: string, url: string): string => {
   return `https://twitter.com/intent/tweet?${params.toString()}`
 }
 
+// Canonical public URL for a single reel. ImageActions renders both on the standalone
+// `/reels/:imageId` page and inside the profile PhotoModal (where `window.location` is the
+// profile URL), so the shareable link must be derived from the image id, not the current page.
+const buildReelUrl = (imageId: string): string => `${window.location.origin}/reels/${imageId}`
+
 // camera-reel-service returns dateTime as a Unix epoch string in seconds (e.g. "1776199944").
 // Some legacy entries may surface as ISO; accept both.
 const formatPhotoDate = (dateTime: string): string => {
@@ -50,4 +55,4 @@ const formatPhotoDate = (dateTime: string): string => {
   return date.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' })
 }
 
-export { buildJumpInUrl, buildMarketplaceWearableUrl, buildPlaceUrl, buildProfileUrl, buildTwitterShareUrl, formatPhotoDate }
+export { buildJumpInUrl, buildMarketplaceWearableUrl, buildPlaceUrl, buildProfileUrl, buildReelUrl, buildTwitterShareUrl, formatPhotoDate }

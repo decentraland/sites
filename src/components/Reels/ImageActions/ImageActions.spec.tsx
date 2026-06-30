@@ -23,7 +23,8 @@ jest.mock('@mui/icons-material/X', () => {
 })
 
 jest.mock('../../../features/reels', () => ({
-  buildTwitterShareUrl: (description: string, url: string) => buildTwitterShareUrlMock(description, url)
+  buildTwitterShareUrl: (description: string, url: string) => buildTwitterShareUrlMock(description, url),
+  buildReelUrl: (imageId: string) => `https://decentraland.org/reels/${imageId}`
 }))
 
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
@@ -34,6 +35,7 @@ const fakeImage = {
   id: 'img-1',
   url: 'https://image.url/blob',
   thumbnailUrl: '',
+  isPublic: true,
   metadata: {
     userName: 'alice',
     userAddress: '0xa',
@@ -72,19 +74,23 @@ describe('ImageActions', () => {
   })
 
   describe('when the share button is clicked', () => {
-    it('should open the Twitter intent and track the event', () => {
+    it('should open the Twitter intent for the canonical reel URL and track the event', () => {
       render(<ImageActions image={fakeImage} metadataVisible={false} onToggleMetadata={jest.fn()} />)
       fireEvent.click(screen.getByRole('button', { name: 'component.reels.image_actions.share' }))
+      expect(buildTwitterShareUrlMock).toHaveBeenCalledWith(
+        'component.reels.image_actions.share_text',
+        'https://decentraland.org/reels/img-1'
+      )
       expect(window.open).toHaveBeenCalledWith('https://twitter.com/intent/tweet?fake=1', '_blank', 'noopener,noreferrer')
       expect(trackMock).toHaveBeenCalledWith('Reels Share', { imageId: 'img-1' })
     })
   })
 
   describe('when the copy link button is clicked', () => {
-    it('should write the current URL to clipboard and track the event', async () => {
+    it('should write the canonical reel URL to clipboard and track the event', async () => {
       render(<ImageActions image={fakeImage} metadataVisible={false} onToggleMetadata={jest.fn()} />)
       fireEvent.click(screen.getByAltText('component.reels.image_actions.copy_link'))
-      await waitFor(() => expect(writeTextMock).toHaveBeenCalledWith('https://reels.example/img-1'))
+      await waitFor(() => expect(writeTextMock).toHaveBeenCalledWith('https://decentraland.org/reels/img-1'))
       expect(trackMock).toHaveBeenCalledWith('Reels Copy Link', { imageId: 'img-1' })
     })
   })

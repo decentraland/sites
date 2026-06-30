@@ -480,7 +480,7 @@
         "subtitle": "Learn more about Decentraland",
         "cta": {
           "label": "see more",
-          "link": "https://docs.decentraland.org/player/general/faq/"
+          "link": "https://docs.decentraland.org/faqs/"
         }
       },
       "marketplace": {
@@ -1583,7 +1583,11 @@
       "empty_member": "This member has not taken any photos yet.",
       "count": "{count} photos",
       "empty_owner_subtitle": "Jump in and start collecting memories! Press 'C' to open the Camera and 'Space bar' to snap a photo.",
-      "empty_owner_cta": "Jump in"
+      "empty_owner_cta": "Jump in",
+      "filter_all": "All",
+      "filter_public": "Public",
+      "filter_private": "Private",
+      "empty_filter": "No photos match this filter."
     },
     "referral_rewards": {
       "anonymous": "Sign in to invite friends and unlock rewards.",
@@ -1692,6 +1696,7 @@
         "to_label": "Recipient address",
         "amount_label": "Amount",
         "invalid_address": "Enter a valid wallet address",
+        "insufficient_balance": "Insufficient balance",
         "send_button": "Send",
         "confirm_in_wallet": "Confirm in your wallet…",
         "sending": "Sending…",
@@ -1734,6 +1739,7 @@
         },
         "pending_title": "Pending transactions",
         "latest_title": "Latest transactions",
+        "load_more": "Load more",
         "claim": "Claim"
       },
       "withdraw": {
