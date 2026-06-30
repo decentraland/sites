@@ -56,6 +56,13 @@ describe('bridgeProof', () => {
       fetchMock.mockResolvedValue({ ok: false, status: 500, json: async () => null })
       await expect(fetchExitPayload('0xburn')).rejects.toThrow()
     })
+
+    it('should throw on a non-ok response even if the body carries a result payload', async () => {
+      // An error status whose body happens to include a `result: "0x..."` must NOT be accepted — the
+      // exit would only revert on-chain. response.ok is checked before the body is read.
+      fetchMock.mockResolvedValue({ ok: false, status: 502, json: async () => ({ result: '0xpayload' }) })
+      await expect(fetchExitPayload('0xburn')).rejects.toThrow()
+    })
   })
 
   describe('isWithdrawClaimable', () => {
