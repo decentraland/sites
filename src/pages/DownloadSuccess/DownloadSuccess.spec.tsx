@@ -43,11 +43,12 @@ jest.mock('react-router-dom', () => ({
   useSearchParams: () => [searchParamsInstance, jest.fn()]
 }))
 
-// useDownloadEventTrack → downloadBeacon → config/env, which reads
-// `import.meta.env` and can't load under Jest. Stub the write key so the
-// beacon path is exercised without pulling in the env module.
-jest.mock('../../config/env', () => ({
-  getEnv: () => 'segment-write-key'
+// The download_funnel_exit diagnostic: mock the module (which otherwise pulls
+// in config/env → import.meta, unloadable under Jest) so we can assert the
+// pagehide handler fires it with the right funnel-state snapshot.
+const mockSendDownloadFunnelExit = jest.fn()
+jest.mock('../../modules/downloadFunnelExit', () => ({
+  sendDownloadFunnelExit: (...args: unknown[]) => mockSendDownloadFunnelExit(...args)
 }))
 
 const mockUseAnonUserId = jest.fn<string | undefined, []>(() => 'anon-123')
@@ -628,5 +629,85 @@ describe('when the page unmounts mid-flight (abort handling)', () => {
 
     // The post-abort success branch is skipped, so download_success never fires.
     expect(mockTrack).not.toHaveBeenCalledWith('download_success', expect.anything())
+  })
+})
+
+describe('when the user leaves the page (download_funnel_exit)', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=landing-hero')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should fire the exit event on pagehide with the fired flags set after a completed download', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything()))
+
+    React.act(() => {
+      window.dispatchEvent(new Event('pagehide'))
+    })
+
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledTimes(1)
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        os: 'Windows',
+        arch: 'amd64',
+        place: 'landing-hero',
+        startedFired: true,
+        successFired: true,
+        failedFired: false,
+        anonUserId: 'anon-123',
+        msOnPage: expect.any(Number)
+      })
+    )
+  })
+
+  it('should report startedFired=false when the user leaves before the download events fire', async () => {
+    // Never resolves → download_started fires but success/failed do not before exit.
+    mockCalculateDownloadUrl.mockReturnValue(new Promise(() => undefined))
+    render(<DownloadSuccess />)
+
+    React.act(() => {
+      window.dispatchEvent(new Event('pagehide'))
+    })
+
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(
+      expect.objectContaining({ startedFired: false, successFired: false, failedFired: false })
+    )
+  })
+
+  it('should fire the exit event only once across multiple pagehide events', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything()))
+
+    React.act(() => {
+      window.dispatchEvent(new Event('pagehide'))
+      window.dispatchEvent(new Event('pagehide'))
+    })
+
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledTimes(1)
+  })
+
+  it('should NOT fire the exit event on a direct landing with no place (no download click)', async () => {
+    // No `place` param → resolveDownloadPlace returns UNKNOWN → not a funnel session.
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64')
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64')
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything()))
+
+    React.act(() => {
+      window.dispatchEvent(new Event('pagehide'))
+    })
+
+    expect(mockSendDownloadFunnelExit).not.toHaveBeenCalled()
   })
 })
