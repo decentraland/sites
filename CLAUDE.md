@@ -27,39 +27,44 @@ Data access on lightweight routes uses `useSyncExternalStore`-based clients (see
 - **Social** (communities): `/social/communities/:id`, `/social/*` (catch-all not-found).
 - **Cast** (LiveKit streaming, absorbed from `decentraland/cast2`): `/cast/s/:token`, `/cast/s/streaming`, `/cast/w/:worldName/parcel/:parcel`, `/cast/w/:location`, plus `/cast` index and `/cast/*` catch-all rendering `CastNotFoundPage`. Cast adds an extra `<CastLayout />` that provides LiveKit + Notification contexts and renders the toast stack.
 - **Storage** (storage-service-site): `/storage`, `/storage/select`, `/storage/env`, `/storage/scene`, `/storage/players`, `/storage/players/:address`, plus `/storage/*` not-found.
+- **Account** (account-settings, absorbed from the standalone `account` dapp): `/account` (redirects to `/account/wallets`), `/account/wallets`, `/account/notifications`, `/account/credits`, `/account/delete`, plus `/account/*` not-found. Shares an `AccountLayout` sidebar. The Wallets "Send" action and the Delete flow need a Web3 signer, so they mount the lazy **`BlockchainShell`** (see below) — the rest of the account pages are signer-free.
 
 These render as `<Outlet />` children of `src/shells/DappsShell.tsx`. The shell chunk is lazy-imported in `src/App.tsx` via `lazy(() => import('./shells/DappsShell'))` and boots the Redux store, the RTK Query middleware, and the heaviest deps (contentful rich-text renderer, dompurify, `livekit-client` + `@livekit/components-react` for cast) only when one of these routes is navigated to.
 
-**No Web3 providers.** Authentication on heavy routes uses the same localStorage-based `useAuthIdentity` hook as the navbar — whats-on / social / storage sign mutations with `signedFetch(identity)`, blog reads CMS public endpoints, jump/cast can run without identity. No wagmi, magic-sdk, core-web3, or thirdweb — ~580-780KB saved vs. the federated predecessor.
+**No Web3 providers on the main/lightweight tiers, nor in the base `DappsShell` chunk.** Authentication on most heavy routes uses the same localStorage-based `useAuthIdentity` hook as the navbar — whats-on / social / storage sign mutations with `signedFetch(identity)`, blog reads CMS public endpoints, jump/cast can run without identity. The one exception is the account Wallets "Send" and Delete actions, gated behind the lazy `BlockchainShell` (below). The homepage and every lightweight route stay Web3-free (~580-780KB saved vs. the federated predecessor).
 
-**Boundary rule:** code that runs on lightweight routes (anything reachable from `App.tsx` without going through `<DappsShell />`) must never `import` from `src/shells/`. The lightweight tier covers everything under `src/pages/*` EXCEPT the heavy-route page directories: `src/pages/whats-on/*`, `src/pages/blog/*`, `src/pages/jump/*`, `src/pages/social/*`, `src/pages/cast/*`, `src/pages/storage/*`. The same applies to `src/components/Layout/*`, `src/components/LandingNavbar/*`, `src/components/LandingFooter/*`, and any hook the navbar consumes. The ONLY legitimate reference to `src/shells/` from outside the shell itself is the `lazy()` import in `src/App.tsx`.
+### Third tier: `BlockchainShell` (on-demand Web3, `src/shells/BlockchainShell.tsx`)
+
+A lazy, opt-in shell for the few account actions that need a connected signer (Wallets Send; Delete). It wraps children in `@dcl/core-web3`'s `WalletStateProvider` + `Web3LazyProvider`, which dynamically import the heavy Web3 stack (`wagmi` / `viem` / `magic-sdk` / `@magic-ext/oauth2`) only when an action mounts the shell, then calls `injectWeb3Reducers()` to append core-web3's `wallet` / `network` / `transactions` slices to the already-running `DappsShell` store (`createLazyStoreEnhancer` in `store.ts`). Children are withheld behind a readiness gate until the providers are mounted, so wagmi hooks never run without a `WagmiProvider`. The base `DappsShell` store only statically imports the lightweight `@dcl/core-web3/lazy` facade (the enhancer + provider shells) — the wagmi/viem bundle is code-split and never loads on a non-account heavy route.
+
+**Boundary rule:** code that runs on lightweight routes (anything reachable from `App.tsx` without going through `<DappsShell />`) must never `import` from `src/shells/`. The lightweight tier covers everything under `src/pages/*` EXCEPT the heavy-route page directories: `src/pages/whats-on/*`, `src/pages/blog/*`, `src/pages/jump/*`, `src/pages/social/*`, `src/pages/cast/*`, `src/pages/storage/*`, `src/pages/account/*`. Heavy-tier code (those page dirs + their feature/component trees, e.g. `src/components/account/*`) may import `src/shells/` — `BlockchainShell` and the RTK hooks live there. The same lightweight restriction applies to `src/components/Layout/*`, `src/components/LandingNavbar/*`, `src/components/LandingFooter/*`, and any hook the navbar consumes. The ONLY legitimate reference to `src/shells/` from outside the shell and outside a heavy-route tree is the `lazy()` import in `src/App.tsx`.
 
 ## Directory map (top-level)
 
-| Path                            | Purpose                                                                                |
-| ------------------------------- | -------------------------------------------------------------------------------------- |
-| `src/App.tsx`                   | Router. Splits routes into Layout-less / lightweight / heavy.                          |
-| `src/App.styled.ts`             | Shared `CenteredBox` styled component (App-level + DappsShell fallback).               |
-| `src/main.tsx`                  | Entry point. Mounts the lightweight provider tree.                                     |
-| `src/shells/`                   | `DappsShell.tsx` + `store.ts` (+ listener middleware). Lazy-loaded Redux.              |
-| `src/pages/`                    | Page components. Subdirs per dapp (see per-dapp docs below).                           |
-| `src/pages/index.tsx`           | Landing homepage (hero prerendered by `scripts/prerender-hero.mjs`).                   |
-| `src/components/`               | Shared components. Top-level for landing; subdirs per dapp (see per-dapp docs).        |
-| `src/components/Layout/`        | Outlet-based layout. Mounts navbar, child route, footer.                               |
-| `src/components/LandingNavbar/` | Navbar. Consumes `useWalletAddress` (localStorage, no Redux).                          |
-| `src/components/LandingFooter/` | Footer. Newsletter + social + legal links.                                             |
-| `src/features/profile/`         | Lightweight Catalyst profile client (`useSyncExternalStore`). Used cross-domain.       |
-| `src/features/notifications/`   | `usePageNotifications` hook used by `Layout` (navbar notifications).                   |
-| `src/hooks/`                    | Shared hooks. `useAuthIdentity`, `useWalletAddress`, `useBlogPageTracking`, etc.       |
-| `src/config/env/`               | Per-environment JSON (`dev.json`, `stg.json`, `prd.json`). Access via `getEnv('KEY')`. |
-| `src/intl/`                     | Six locale files (`en`, `es`, `fr`, `ja`, `ko`, `zh`). Skill `add-i18n-key`.           |
-| `src/modules/`                  | Side-effect wiring: Sentry, Segment, Contentsquare.                                    |
-| `src/utils/signedFetch.ts`      | Shared identity-signed fetch (used by whats-on, social, storage mutations).            |
-| `src/utils/avatarColor.ts`      | Deterministic avatar background color. Skill `avatar-background-color`.                |
-| `scripts/prebuild.cjs`          | Resolves CDN base URL and writes `.env` before build.                                  |
-| `scripts/prerender-hero.mjs`    | Injects static hero HTML + critical CSS post-build (LCP).                              |
-| `api/seo.ts`                    | Vercel serverless function for `/blog/*` OG meta. Skill `seo-worker`.                  |
-| `vercel.json`                   | Rewrites `/blog/*` to `/api/seo?path=...`, everything else to `/index.html`.           |
+| Path                            | Purpose                                                                                          |
+| ------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `src/App.tsx`                   | Router. Splits routes into Layout-less / lightweight / heavy.                                    |
+| `src/App.styled.ts`             | Shared `CenteredBox` styled component (App-level + DappsShell fallback).                         |
+| `src/main.tsx`                  | Entry point. Mounts the lightweight provider tree.                                               |
+| `src/shells/`                   | `DappsShell.tsx` + `store.ts` (+ listeners) + `BlockchainShell.tsx`/`web3Config.ts` (lazy Web3). |
+| `src/pages/`                    | Page components. Subdirs per dapp (see per-dapp docs below).                                     |
+| `src/pages/index.tsx`           | Landing homepage (hero prerendered by `scripts/prerender-hero.mjs`).                             |
+| `src/components/`               | Shared components. Top-level for landing; subdirs per dapp (see per-dapp docs).                  |
+| `src/components/Layout/`        | Outlet-based layout. Mounts navbar, child route, footer.                                         |
+| `src/components/LandingNavbar/` | Navbar. Consumes `useWalletAddress` (localStorage, no Redux).                                    |
+| `src/components/LandingFooter/` | Footer. Newsletter + social + legal links.                                                       |
+| `src/features/profile/`         | Lightweight Catalyst profile client (`useSyncExternalStore`). Used cross-domain.                 |
+| `src/features/notifications/`   | `usePageNotifications` hook used by `Layout` (navbar notifications).                             |
+| `src/hooks/`                    | Shared hooks. `useAuthIdentity`, `useWalletAddress`, `useBlogPageTracking`, etc.                 |
+| `src/config/env/`               | Per-environment JSON (`dev.json`, `stg.json`, `prd.json`). Access via `getEnv('KEY')`.           |
+| `src/intl/`                     | Six locale files (`en`, `es`, `fr`, `ja`, `ko`, `zh`). Skill `add-i18n-key`.                     |
+| `src/modules/`                  | Side-effect wiring: Sentry, Segment, Contentsquare.                                              |
+| `src/utils/signedFetch.ts`      | Shared identity-signed fetch (used by whats-on, social, storage mutations).                      |
+| `src/utils/avatarColor.ts`      | Deterministic avatar background color. Skill `avatar-background-color`.                          |
+| `scripts/prebuild.cjs`          | Resolves CDN base URL and writes `.env` before build.                                            |
+| `scripts/prerender-hero.mjs`    | Injects static hero HTML + critical CSS post-build (LCP).                                        |
+| `api/seo.ts`                    | Vercel serverless function for `/blog/*` OG meta. Skill `seo-worker`.                            |
+| `vercel.json`                   | Rewrites `/blog/*` to `/api/seo?path=...`, everything else to `/index.html`.                     |
 
 ### Per-dapp directory details
 
