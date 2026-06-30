@@ -43,6 +43,21 @@ jest.mock('react-router-dom', () => ({
   useSearchParams: () => [searchParamsInstance, jest.fn()]
 }))
 
+// The download_funnel_exit diagnostic: mock the module (which otherwise pulls
+// in config/env → import.meta, unloadable under Jest) so we can assert the
+// visibilitychange→hidden handler fires it with the right funnel-state snapshot.
+const mockSendDownloadFunnelExit = jest.fn()
+jest.mock('../../modules/downloadFunnelExit', () => ({
+  sendDownloadFunnelExit: (...args: unknown[]) => mockSendDownloadFunnelExit(...args)
+}))
+
+// Drive the shared subscribeVisibility primitive used by useDownloadFunnelExit.
+const setVisibility = (hidden: boolean): void => {
+  Object.defineProperty(document, 'hidden', { value: hidden, configurable: true })
+  Object.defineProperty(document, 'visibilityState', { value: hidden ? 'hidden' : 'visible', configurable: true })
+  document.dispatchEvent(new Event('visibilitychange'))
+}
+
 const mockUseAnonUserId = jest.fn<string | undefined, []>(() => 'anon-123')
 jest.mock('../../hooks/useAnonUserId', () => ({
   ANON_USER_ID_PARAM: 'anonUserId',
@@ -621,5 +636,87 @@ describe('when the page unmounts mid-flight (abort handling)', () => {
 
     // The post-abort success branch is skipped, so download_success never fires.
     expect(mockTrack).not.toHaveBeenCalledWith('download_success', expect.anything())
+  })
+})
+
+describe('when the user leaves the page (download_funnel_exit)', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=landing-hero')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    setVisibility(false)
+  })
+
+  it('should fire the exit event when hidden, with the fired flags after a completed download', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything()))
+
+    React.act(() => {
+      setVisibility(true)
+    })
+
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledTimes(1)
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        os: 'Windows',
+        arch: 'amd64',
+        place: 'landing-hero',
+        startedFired: true,
+        successFired: true,
+        failedFired: false,
+        anonUserId: 'anon-123',
+        msOnPage: expect.any(Number)
+      })
+    )
+  })
+
+  it('should report startedFired=false when the user leaves before the download events fire', async () => {
+    // Never resolves → download_started fires but success/failed do not before exit.
+    mockCalculateDownloadUrl.mockReturnValue(new Promise(() => undefined))
+    render(<DownloadSuccess />)
+
+    React.act(() => {
+      setVisibility(true)
+    })
+
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(
+      expect.objectContaining({ startedFired: false, successFired: false, failedFired: false })
+    )
+  })
+
+  it('should fire again on a later hide (dedup handled in the warehouse)', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything()))
+
+    React.act(() => {
+      setVisibility(true) // switch away
+      setVisibility(false) // come back
+      setVisibility(true) // leave
+    })
+
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledTimes(2)
+  })
+
+  it('should NOT fire the exit event on a direct landing with no place (no download click)', async () => {
+    // No `place` param → resolveDownloadPlace returns UNKNOWN → not a funnel session.
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64')
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64')
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything()))
+
+    React.act(() => {
+      setVisibility(true)
+    })
+
+    expect(mockSendDownloadFunnelExit).not.toHaveBeenCalled()
   })
 })

@@ -6,6 +6,7 @@ import { LandingFooter } from '../../components/LandingFooter'
 import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useDeferredTrack } from '../../hooks/useDeferredTrack'
+import { useDownloadFunnelExit } from '../../hooks/useDownloadFunnelExit'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsLauncher from '../../images/download/macos_launcher.webp'
@@ -15,8 +16,9 @@ import windowsDownloadsFolder from '../../images/download/windows_downloads_fold
 import windowsLaunchingDecentraland from '../../images/download/windows_launching_decentraland.webp'
 import windowsSetup from '../../images/download/windows_setup.webp'
 import microsoftLogo from '../../images/microsoft-logo.svg'
+import type { DownloadFunnelExitData } from '../../modules/downloadFunnelExit.types'
 import { createDownloadTracker, toAuthState } from '../../modules/downloadTracking'
-import type { DownloadTracker } from '../../modules/downloadTracking.types'
+import type { DownloadTrackFn, DownloadTracker } from '../../modules/downloadTracking.types'
 import { calculateDownloadUrl } from '../../modules/downloadWithIdentity'
 import { collectClientFingerprint } from '../../modules/fingerprint'
 import { DownloadPlace, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
@@ -63,6 +65,28 @@ const DownloadSuccess = memo(() => {
   getIdentityIdRef.current = getIdentityId
   anonUserIdRef.current = anonUserId
   authStateRef.current = authState
+
+  // Diagnostic state for `download_funnel_exit`: which download_* events had
+  // fired by the time the user leaves, and how long they stayed. Refs (not
+  // state) so flipping them never re-renders and the visibility (hidden)
+  // handler reads the latest values. `pageLoadedAtRef` is stamped once at
+  // first render.
+  const startedFiredRef = useRef(false)
+  const successFiredRef = useRef(false)
+  const failedFiredRef = useRef(false)
+  const pageLoadedAtRef = useRef(Date.now())
+
+  // Wraps the deferred track so every download_* event also records that it
+  // fired, without sprinkling ref writes across the four tracker call sites.
+  const trackDownloadEvent = useCallback<DownloadTrackFn>(
+    (event, payload) => {
+      if (event === SegmentEvent.DOWNLOAD_STARTED) startedFiredRef.current = true
+      else if (event === SegmentEvent.DOWNLOAD_SUCCESS) successFiredRef.current = true
+      else if (event === SegmentEvent.DOWNLOAD_FAILED) failedFiredRef.current = true
+      deferredTrack(event, payload)
+    },
+    [deferredTrack]
+  )
 
   const rawOs = searchParams.get('os') || ''
   const osMap: Record<string, OperativeSystem> = {
@@ -190,7 +214,7 @@ const DownloadSuccess = memo(() => {
         // match this download with the launcher's first-run event from the
         // same machine. Lives in `extra` so every event the tracker emits
         // carries it without polluting the tracker's core schema.
-        tracker = createDownloadTracker(deferredTrack, {
+        tracker = createDownloadTracker(trackDownloadEvent, {
           place,
           href: downloadUrl,
           os: clientOS,
@@ -239,7 +263,7 @@ const DownloadSuccess = memo(() => {
           // URL resolution rejected — no downloadUrl in hand. Emit `_FAILED`
           // with osLink as the best-known href so analytics still records the
           // attempt with consistent shape.
-          const fallbackTracker = createDownloadTracker(deferredTrack, {
+          const fallbackTracker = createDownloadTracker(trackDownloadEvent, {
             place,
             href: osLink,
             os: clientOS,
@@ -265,7 +289,7 @@ const DownloadSuccess = memo(() => {
     return () => {
       abortController.abort()
     }
-  }, [anonUserIdReady, clientOS, clientArch, osLink, place, revisitNumber, deferredTrack])
+  }, [anonUserIdReady, clientOS, clientArch, osLink, place, revisitNumber, trackDownloadEvent])
 
   const handleDownloadClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -295,7 +319,7 @@ const DownloadSuccess = memo(() => {
         })
         const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserId })
 
-        tracker = createDownloadTracker(deferredTrack, {
+        tracker = createDownloadTracker(trackDownloadEvent, {
           place: footerPlace,
           href: downloadUrl,
           os: clientOS,
@@ -330,7 +354,7 @@ const DownloadSuccess = memo(() => {
         if (tracker) {
           tracker.failed(reason)
         } else {
-          const fallbackTracker = createDownloadTracker(deferredTrack, {
+          const fallbackTracker = createDownloadTracker(trackDownloadEvent, {
             place: footerPlace,
             href: osLink,
             os: clientOS,
@@ -354,7 +378,7 @@ const DownloadSuccess = memo(() => {
         }
       }
     },
-    [clientOS, clientArch, anonUserId, getIdentityId, osLink, authState, revisitNumber, deferredTrack]
+    [clientOS, clientArch, anonUserId, getIdentityId, osLink, authState, revisitNumber, trackDownloadEvent]
   )
 
   // Cancel any in-flight footer-initiated stream when the page unmounts so
@@ -366,6 +390,29 @@ const DownloadSuccess = memo(() => {
     },
     []
   )
+
+  // Diagnostic: snapshot the funnel state on departure so we can measure how
+  // many sessions leave before the download_* events fire/deliver. Reads refs
+  // at fire time; os/arch/place/revisit are stable per page.
+  const getExitData = useCallback(
+    (): DownloadFunnelExitData => ({
+      os: clientOS,
+      arch: clientArch,
+      place,
+      anonUserId: anonUserIdRef.current ?? undefined,
+      startedFired: startedFiredRef.current,
+      successFired: successFiredRef.current,
+      failedFired: failedFiredRef.current,
+      msOnPage: Date.now() - pageLoadedAtRef.current,
+      revisit: revisitNumber,
+      authState: authStateRef.current
+    }),
+    [clientOS, clientArch, place, revisitNumber]
+  )
+  // Only measure sessions that entered via a download CTA — a known `place`
+  // means a button click navigated here. Direct/campaign landings, refreshes
+  // and bots resolve to UNKNOWN and aren't part of the click → download funnel.
+  useDownloadFunnelExit(getExitData, place !== DownloadPlace.UNKNOWN)
 
   const showBackdrop = isDownloading || (!downloadError && !isFileSaved)
 
