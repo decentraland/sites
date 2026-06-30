@@ -88,7 +88,7 @@ export default defineConfig(({ command, mode }) => {
       // the homepage and /whats-on critical path free of ~350 KB of gzipped
       // JS that would otherwise be eagerly fetched.
       modulePreload: {
-        resolveDependencies: (_filename, deps) => deps.filter(dep => !/vendor-(sentry|crypto|schemas|ua|livekit)/.test(dep))
+        resolveDependencies: (_filename, deps) => deps.filter(dep => !/vendor-(sentry|crypto|schemas|ua|livekit|web3|auth)/.test(dep))
       },
       rollupOptions: {
         output: {
@@ -114,6 +114,16 @@ export default defineConfig(({ command, mode }) => {
             // even though the JS is lazy — which would render-block /, /brand, /terms…
             if (id.includes('node_modules/livekit-client') || id.includes('node_modules/@livekit/components-react')) {
               return 'vendor-livekit'
+            }
+            // Web3 + auth deps used only by the account Wallets/Delete routes (behind the lazy
+            // BlockchainShell / the Delete flow). None ship CSS, so grouping them is safe (no
+            // render-blocking <link>). Dedicated chunks give cache stability and are filtered out of
+            // modulePreload below so they never load on the homepage or the lighter account routes.
+            if (id.includes('node_modules/wagmi') || id.includes('node_modules/viem') || id.includes('node_modules/@wagmi')) {
+              return 'vendor-web3'
+            }
+            if (id.includes('node_modules/thirdweb') || id.includes('node_modules/magic-sdk') || id.includes('node_modules/@magic-ext')) {
+              return 'vendor-auth'
             }
             return null
           }

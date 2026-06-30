@@ -66,6 +66,7 @@ body:
         - Blog
         - Social / Communities
         - Profile (member + my profile, tabs, friendship)
+        - Account Settings (wallets, notifications, credits, delete)
         - Sign In / Auth
         - Legal / Static pages
         - Navbar / Footer

@@ -105,6 +105,21 @@ const StoragePlayersPage = lazy(() => import('./pages/storage/PlayersPage').then
 const StoragePlayerDetailPage = lazy(() => import('./pages/storage/PlayerDetailPage').then(m => ({ default: m.PlayerDetailPage })))
 const StorageNotFoundPage = lazy(() => import('./pages/storage/StorageNotFoundPage').then(m => ({ default: m.StorageNotFoundPage })))
 
+// Account Settings — absorbed from the standalone decentraland/account dapp. Heavy route
+// (Redux + RTK Query for credits/notifications). Auth via localStorage identity (no Web3
+// providers). Public path stays /account/* — the cutover from the standalone dapp is handled
+// in definitions once this implementation is functional.
+// Per-file lazy imports (not the ./pages/account barrel): a barrel collapses all 7 routes into one
+// chunk, so visiting /account/notifications would eagerly pull WalletsPage's web3 tree (wagmi/viem) and
+// DeleteAccountPage's auth tree (thirdweb/magic-sdk). Per-file keeps each route's heavy deps on its own.
+const AccountLayout = lazy(() => import('./pages/account/AccountLayout').then(m => ({ default: m.AccountLayout })))
+const AccountIndexRedirect = lazy(() => import('./pages/account/AccountLayout').then(m => ({ default: m.AccountIndexRedirect })))
+const AccountWalletsPage = lazy(() => import('./pages/account/WalletsPage').then(m => ({ default: m.WalletsPage })))
+const AccountNotificationsPage = lazy(() => import('./pages/account/NotificationsPage').then(m => ({ default: m.NotificationsPage })))
+const AccountCreditsPage = lazy(() => import('./pages/account/CreditsPage').then(m => ({ default: m.CreditsPage })))
+const AccountDeletePage = lazy(() => import('./pages/account/DeleteAccountPage').then(m => ({ default: m.DeleteAccountPage })))
+const AccountNotFoundPage = lazy(() => import('./pages/account/AccountNotFoundPage').then(m => ({ default: m.AccountNotFoundPage })))
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -218,6 +233,18 @@ const App = () => {
               <Route path="/profile/accounts/:address/:tab" element={<ProfileAccountsRedirect />} />
               <Route path="/profile/:address" element={<ProfilePage />} />
               <Route path="/profile/:address/:tab" element={<ProfilePage />} />
+              {/* Account Settings — absorbed from decentraland/account. Public path /account/*
+                  is unchanged; the cutover from the standalone dapp happens in definitions once
+                  this is functional. AccountLayout owns the sidebar + auth gate, sections render
+                  via <Outlet />. The index redirect lands signed-in users on Wallets. */}
+              <Route path="/account" element={<AccountLayout />}>
+                <Route index element={<AccountIndexRedirect />} />
+                <Route path="wallets" element={<AccountWalletsPage />} />
+                <Route path="notifications" element={<AccountNotificationsPage />} />
+                <Route path="credits" element={<AccountCreditsPage />} />
+                <Route path="delete" element={<AccountDeletePage />} />
+                <Route path="*" element={<AccountNotFoundPage />} />
+              </Route>
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

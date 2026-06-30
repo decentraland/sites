@@ -1198,5 +1198,324 @@
   "upcoming": {
     "today_at": "今日 {time}",
     "tomorrow_at": "明日 {time}"
+  },
+  "account": {
+    "meta": {
+      "title": "アカウント設定"
+    },
+    "nav": {
+      "section_label": "アカウント設定",
+      "wallets": "ウォレット",
+      "notifications": "通知",
+      "credits": "クレジット設定",
+      "delete": "アカウントを削除",
+      "logout": "ログアウト",
+      "close": "閉じる"
+    },
+    "sign_in": {
+      "title": "アカウントを管理するにはサインインしてください",
+      "cta": "サインイン"
+    },
+    "coming_soon": "近日公開",
+    "pages": {
+      "wallets": {
+        "title": "ウォレット"
+      },
+      "notifications": {
+        "title": "通知"
+      },
+      "credits": {
+        "title": "クレジット設定"
+      },
+      "delete": {
+        "title": "アカウントの削除"
+      }
+    },
+    "not_found": {
+      "title": "ページが見つかりません",
+      "description": "お探しのアカウントページは存在しません。",
+      "cta": "ウォレットへ移動"
+    },
+    "wallets": {
+      "eth_label": "Ethereum MANA",
+      "polygon_label": "Polygon MANA",
+      "actions": {
+        "buy": "購入",
+        "swap": "スワップ",
+        "send": "送信",
+        "receive": "受取"
+      },
+      "receive": {
+        "title": "MANAを受け取る",
+        "description": "ウォレットアドレスを共有して、MANAやその他の資産を受け取りましょう。",
+        "copy": "アドレスをコピー",
+        "copied": "コピーしました！",
+        "close": "閉じる"
+      },
+      "send": {
+        "title": "MANAを送る",
+        "loading": "ウォレットを読み込み中…",
+        "connect_description": "MANAを送るにはウォレットを接続してください。",
+        "switch_description": "続行するにはウォレットを正しいネットワークに切り替えてください。",
+        "switch_button": "ネットワークを切り替える",
+        "to_label": "送信先アドレス",
+        "amount_label": "金額",
+        "invalid_address": "有効なウォレットアドレスを入力してください",
+        "insufficient_balance": "残高が不足しています",
+        "send_button": "送信",
+        "confirm_in_wallet": "ウォレットで承認してください…",
+        "sending": "送信中…",
+        "success": "MANAを送信しました。",
+        "close": "閉じる",
+        "rejected": "トランザクションを拒否しました。",
+        "error": "問題が発生しました。もう一度お試しください。"
+      },
+      "swap": {
+        "title": "MANAをスワップ",
+        "loading": "ウォレットを読み込み中…",
+        "connect_description": "MANAをPolygonに移動するにはウォレットを接続してください。",
+        "switch_description": "続行するにはウォレットをEthereumに切り替えてください。",
+        "switch_button": "ネットワークを切り替える",
+        "description": "EthereumのMANAをPolygonに移動します。承認とデポジットの2つのトランザクションが必要です。",
+        "amount_label": "金額",
+        "submit": "Polygonに移動",
+        "approving": "ウォレットで承認してください…",
+        "depositing": "デポジット中…",
+        "success": "MANAはPolygonに送信中です。到着まで数分かかる場合があります。",
+        "close": "閉じる",
+        "rejected": "トランザクションを拒否しました。",
+        "error": "問題が発生しました。もう一度お試しください。"
+      },
+      "transactions": {
+        "title": "取引",
+        "empty": "まだ取引はありません。",
+        "type": {
+          "send": "送信",
+          "swap": "入金",
+          "received": "受取",
+          "withdraw": "出金"
+        },
+        "status": {
+          "pending": "保留中",
+          "confirmed": "確認済み",
+          "failed": "失敗",
+          "bridging": "ブリッジ中",
+          "checkpoint": "請求可能"
+        },
+        "pending_title": "保留中の取引",
+        "latest_title": "最新の取引",
+        "load_more": "もっと見る",
+        "claim": "請求"
+      },
+      "withdraw": {
+        "title": "MANAを引き出す",
+        "loading": "ウォレットを読み込み中…",
+        "connect_description": "MANAをEthereumに移動するにはウォレットを接続してください。",
+        "switch_description": "続行するにはウォレットをPolygonに切り替えてください。",
+        "switch_button": "ネットワークを切り替える",
+        "description": "PolygonのMANAをEthereumに移動します。今すぐPolygonでバーンされ、チェックポイントが完了したらEthereumで請求できます（数時間かかる場合があります）。",
+        "amount_label": "金額",
+        "submit": "Ethereumに引き出す",
+        "withdrawing": "引き出し中…",
+        "success": "引き出しを開始しました。チェックポイントが完了したら（数時間）、Ethereumで請求しに戻ってきてください。",
+        "close": "閉じる",
+        "rejected": "取引を拒否しました。",
+        "error": "問題が発生しました。もう一度お試しください。"
+      },
+      "claim": {
+        "title": "引き出しを請求",
+        "loading": "ウォレットを読み込み中…",
+        "connect_description": "EthereumでMANAを請求するにはウォレットを接続してください。",
+        "switch_description": "続行するにはウォレットをEthereumに切り替えてください。",
+        "switch_button": "ネットワークを切り替える",
+        "description": "{amount} MANAの引き出しの準備ができました。EthereumでMANAを受け取るには請求してください。",
+        "submit": "Ethereumで請求",
+        "claiming": "請求中…",
+        "success": "MANAがEthereumで解放されました。",
+        "close": "閉じる",
+        "rejected": "取引を拒否しました。",
+        "error": "引き出しを請求できませんでした。もう一度お試しください。",
+        "not_ready": "この引き出しはまだ請求できません。チェックポイントには数時間かかる場合があります。後でもう一度お試しください。"
+      },
+      "buy": {
+        "title": "MANAを購入",
+        "subtitle": "購入するMANAを選択してください：",
+        "close": "閉じる",
+        "error": "プロバイダーを開けませんでした。もう一度お試しください。",
+        "network": {
+          "ethereum": {
+            "label": "Ethereum MANA",
+            "name": "Ethereum",
+            "description": "Ethereumで LAND、名前、特定のウェアラブルの購入に使用できます。"
+          },
+          "polygon": {
+            "label": "Polygon MANA",
+            "name": "Polygon",
+            "description": "Polygonでほとんどのウェアラブルとエモートの購入に使用できます。"
+          }
+        },
+        "provider_title": "{provider}で{network} MANAを購入",
+        "provider_subtitle": "デビットカード、クレジットカード、Apple Pay、Google Pay、または銀行振込で購入できます。",
+        "continue": "{provider}で続行",
+        "learn_more": "{provider}について詳しく見る",
+        "provider": {
+          "moonpay": "MoonPay",
+          "transak": "Transak"
+        },
+        "loading": "開いています…"
+      }
+    },
+    "notifications": {
+      "title": "通知",
+      "description": "離席中もDecentralandの通知を見逃さないようにしましょう！メール通知に登録し、受け取りたい通知を以下から選んでください。",
+      "loading": "通知設定を読み込んでいます…",
+      "load_error": "通知設定を読み込めませんでした。しばらくしてからもう一度お試しください。",
+      "groups": {
+        "marketplace": "マーケットプレイス",
+        "worlds": "ワールド",
+        "credits": "マーケットプレイスクレジット",
+        "streaming": "ワールド内ストリーミング",
+        "events": "イベント",
+        "rewards": "プレゼントと報酬",
+        "dao": "DAO",
+        "tips": "チップ",
+        "referral": "紹介"
+      },
+      "email": {
+        "title": "メール通知",
+        "placeholder": "example@decentraland.org",
+        "invalid": "無効なメールアドレス",
+        "description": {
+          "without_email": "メールアドレスを入力し、受信トレイで確認リンク付きのメールを確認してください。確認後、以下の通知をカスタマイズできます。",
+          "with_email": "メールアドレスを変更したい場合は、以下で編集してください。その後、受信トレイで確認メールを必ずチェックしてください。",
+          "pending_approval": "確認メールを送信しました。受信トレイをご確認ください。",
+          "confirmed": "メールアドレスが確認されました。"
+        },
+        "status": {
+          "confirmed": "確認済み",
+          "pending": "承認待ち"
+        },
+        "button": {
+          "submit": "送信",
+          "resend": "再送信",
+          "save": "保存"
+        },
+        "master_label": "すべてのメール通知を切り替える"
+      },
+      "types": {
+        "item_sold": "アイテムが売れました",
+        "bid_accepted": "入札が承認されました",
+        "bid_received": "入札を受け取りました",
+        "royalties_earned": "ロイヤルティを獲得",
+        "rental_ended": "LANDのレンタル期間が終了",
+        "rental_started": "LANDが貸し出されました",
+        "worlds_access_restored": "Worldへのアクセスが復元されました",
+        "worlds_access_restricted": "ストレージ不足によりWorldへのアクセスが制限されました",
+        "worlds_missing_resources": "Worldのストレージ不足の警告",
+        "worlds_permission_granted": "Worldの訪問/デプロイ/配信の権限が付与されました",
+        "worlds_permission_revoked": "Worldの訪問/デプロイ/配信の権限が取り消されました",
+        "credits_reminder_complete_goals": "目標が未完了",
+        "credits_reminder_claim_credits": "未請求のクレジット",
+        "credits_reminder_usage": "まもなく失効するクレジット",
+        "credits_reminder_do_not_miss_out": "未開始の目標",
+        "streaming_key_expired": "ストリームキーの有効期限切れ",
+        "streaming_key_reset": "ストリームキーがリセットされました",
+        "streaming_key_revoke": "ストリームキーが無効化されました",
+        "streaming_place_updated": "ストリームのシーンが変更されました",
+        "streaming_time_exceeded": "ストリームがタイムアウトしました",
+        "events_started": "イベントが開始しました",
+        "events_starts_soon": "イベントがまもなく開始",
+        "reward_assignment": "無料アイテムを受け取りました",
+        "reward_campaign_out_of_funds": "プレゼントキャンペーンの資金不足",
+        "reward_campaign_out_of_stock": "プレゼントキャンペーンの在庫切れ",
+        "governance_announcement": "新しいDAOのお知らせ",
+        "governance_authored_proposal_finished": "あなたの提案への投票が終了しました",
+        "governance_coauthor_requested": "提案の共同執筆リクエストを受け取りました",
+        "governance_new_comment_on_project_update": "プロジェクト更新に新しいコメント",
+        "governance_new_comment_on_proposal": "あなたの提案に新しいコメント",
+        "governance_proposal_enacted": "提案が施行されました",
+        "governance_voting_ended_voter": "あなたが投票した提案の投票が終了しました",
+        "tip_received": "チップを受け取りました",
+        "referral_invited_users_accepted": "紹介が完了しました",
+        "referral_new_tier_reached": "紹介報酬がアンロックされました"
+      }
+    },
+    "credits": {
+      "title": "マーケットプレイス クレジット プログラム",
+      "description": "ワールド内の目標を達成して毎週クレジットを獲得しましょう。",
+      "status_label": "ステータス：",
+      "status": {
+        "enrolled": "登録済み",
+        "opted_out": "退会済み",
+        "not_registered": "未登録"
+      },
+      "learn_more": "詳細はこちら",
+      "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
+      "join_button": "プログラムに参加",
+      "leave_button": "プログラムを退会",
+      "leave_modal": {
+        "warning": "マーケットプレイス クレジットを退会しますか？",
+        "description": "毎週のクレジット獲得が停止します。いつでも再参加できます。",
+        "cancel": "キャンセル",
+        "confirm": "プログラムを退会",
+        "errors": {
+          "generic": "現在プログラムを退会できませんでした。もう一度お試しください。",
+          "already_claimed": "今週はすでにクレジットを請求しているため退会できません。来週もう一度お試しください。"
+        }
+      },
+      "join_errors": {
+        "generic": "現在プログラムに参加できませんでした。もう一度お試しください。",
+        "email_required": "クレジットプログラムに参加する前に、通知でメールを追加して確認してください。"
+      }
+    },
+    "delete": {
+      "danger_zone": "危険ゾーン",
+      "danger_description": "アカウントを削除すると、元に戻すことはできません。よくご確認ください。",
+      "warning": "以下の情報は永久に失われます：",
+      "consequences": {
+        "profile": {
+          "title": "プロフィール",
+          "description": "ユーザー名、アバター、自己紹介、表示名"
+        },
+        "social": {
+          "title": "ソーシャルのつながり",
+          "description": "フレンドリストとブロックしたユーザー"
+        },
+        "marketplace": {
+          "title": "マーケットプレイスの活動",
+          "description": "出品中のリスト、購入履歴、オファー"
+        },
+        "credits": {
+          "title": "プラットフォーム内クレジット",
+          "description": "未使用の残高や報酬"
+        },
+        "favorites": {
+          "title": "お気に入りと履歴",
+          "description": "保存した場所、最近の活動、イベントの参加予定"
+        },
+        "notifications": {
+          "title": "通知と設定",
+          "description": "すべての設定と通知履歴"
+        }
+      },
+      "asset_warning_title": "オンチェーン資産のリスク",
+      "asset_warning_description": "アカウントを削除すると、オンチェーン資産（ウェアラブル、エモート、LANDなど）へのアクセスを永久に失う可能性があります。続行する前に必ず秘密鍵をエクスポートしてください。",
+      "export_key_description": "Walletsタブに移動し、アドレスの下にあるウォレットマネージャーを使用して秘密鍵をエクスポートしてください。",
+      "export_key_link": "Walletsへ移動",
+      "delete_button": "アカウントを削除",
+      "modal": {
+        "title": "本当にアカウントを削除しますか？",
+        "description": "この操作は取り消せません。すべてのデータが永久に削除されます。確認するには、下のフィールドに DELETE と入力して確定してください。",
+        "input_label": "DELETE と入力",
+        "deleting": "削除中...",
+        "delete": "アカウントを削除",
+        "cancel": "キャンセル",
+        "generic_error": "アカウントの削除に失敗しました。後でもう一度お試しください。"
+      },
+      "unavailable_title": "このウォレットではアカウントの削除を利用できません",
+      "unavailable_description": "アカウントの削除は、メールまたはソーシャルログインで作成されたアカウントにのみ適用されます。セルフカストディウォレット（MetaMaskやWalletConnectなど）は自分でキーを管理するため、ここで削除するものはありません。ログアウトするには切断してください。"
+    },
+    "copy": "コピー",
+    "copied": "コピーしました"
   }
 }

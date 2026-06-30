@@ -1193,5 +1193,324 @@
   "upcoming": {
     "today_at": "Aujourd'hui {time}",
     "tomorrow_at": "Demain {time}"
+  },
+  "account": {
+    "meta": {
+      "title": "Paramètres du compte"
+    },
+    "nav": {
+      "section_label": "Paramètres du compte",
+      "wallets": "Portefeuilles",
+      "notifications": "Notifications",
+      "credits": "Paramètres des crédits",
+      "delete": "Supprimer le compte",
+      "logout": "Se déconnecter",
+      "close": "Fermer"
+    },
+    "sign_in": {
+      "title": "Connectez-vous pour gérer votre compte",
+      "cta": "Se connecter"
+    },
+    "coming_soon": "Bientôt disponible",
+    "pages": {
+      "wallets": {
+        "title": "Portefeuilles"
+      },
+      "notifications": {
+        "title": "Notifications"
+      },
+      "credits": {
+        "title": "Paramètres des crédits"
+      },
+      "delete": {
+        "title": "Supprimer le compte"
+      }
+    },
+    "not_found": {
+      "title": "Page introuvable",
+      "description": "La page de compte que vous recherchez n’existe pas.",
+      "cta": "Aller aux portefeuilles"
+    },
+    "wallets": {
+      "eth_label": "Ethereum MANA",
+      "polygon_label": "Polygon MANA",
+      "actions": {
+        "buy": "Acheter",
+        "swap": "Échanger",
+        "send": "Envoyer",
+        "receive": "Recevoir"
+      },
+      "receive": {
+        "title": "Recevoir des MANA",
+        "description": "Partagez l’adresse de votre portefeuille pour recevoir des MANA et d’autres actifs.",
+        "copy": "Copier l’adresse",
+        "copied": "Copié !",
+        "close": "Fermer"
+      },
+      "send": {
+        "title": "Envoyer du MANA",
+        "loading": "Chargement du portefeuille…",
+        "connect_description": "Connectez votre portefeuille pour envoyer du MANA.",
+        "switch_description": "Basculez votre portefeuille sur le bon réseau pour continuer.",
+        "switch_button": "Changer de réseau",
+        "to_label": "Adresse du destinataire",
+        "amount_label": "Montant",
+        "invalid_address": "Saisissez une adresse de portefeuille valide",
+        "insufficient_balance": "Solde insuffisant",
+        "send_button": "Envoyer",
+        "confirm_in_wallet": "Confirmez dans votre portefeuille…",
+        "sending": "Envoi en cours…",
+        "success": "MANA envoyé avec succès.",
+        "close": "Fermer",
+        "rejected": "Vous avez rejeté la transaction.",
+        "error": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "swap": {
+        "title": "Échanger du MANA",
+        "loading": "Chargement du portefeuille…",
+        "connect_description": "Connectez votre portefeuille pour transférer du MANA vers Polygon.",
+        "switch_description": "Basculez votre portefeuille sur Ethereum pour continuer.",
+        "switch_button": "Changer de réseau",
+        "description": "Transférez votre MANA d'Ethereum vers Polygon. Deux transactions sont nécessaires : une autorisation, puis le dépôt.",
+        "amount_label": "Montant",
+        "submit": "Transférer vers Polygon",
+        "approving": "Autorisez dans votre portefeuille…",
+        "depositing": "Dépôt en cours…",
+        "success": "Votre MANA est en route vers Polygon. L'arrivée peut prendre quelques minutes.",
+        "close": "Fermer",
+        "rejected": "Vous avez rejeté la transaction.",
+        "error": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "transactions": {
+        "title": "Transactions",
+        "empty": "Aucune transaction pour l'instant.",
+        "type": {
+          "send": "Envoyé",
+          "swap": "Dépôt",
+          "received": "Reçu",
+          "withdraw": "Retrait"
+        },
+        "status": {
+          "pending": "En attente",
+          "confirmed": "Confirmée",
+          "failed": "Échouée",
+          "bridging": "En transit",
+          "checkpoint": "Réclamable"
+        },
+        "pending_title": "Transactions en attente",
+        "latest_title": "Dernières transactions",
+        "load_more": "Charger plus",
+        "claim": "Réclamer"
+      },
+      "withdraw": {
+        "title": "Retirer du MANA",
+        "loading": "Chargement du portefeuille…",
+        "connect_description": "Connectez votre portefeuille pour transférer du MANA vers Ethereum.",
+        "switch_description": "Passez votre portefeuille sur Polygon pour continuer.",
+        "switch_button": "Changer de réseau",
+        "description": "Transférez votre MANA de Polygon vers Ethereum. Il est brûlé sur Polygon maintenant ; vous le réclamerez sur Ethereum une fois le checkpoint validé (cela peut prendre quelques heures).",
+        "amount_label": "Montant",
+        "submit": "Retirer vers Ethereum",
+        "withdrawing": "Retrait en cours…",
+        "success": "Votre retrait a démarré. Une fois le checkpoint validé (quelques heures), revenez le réclamer sur Ethereum.",
+        "close": "Fermer",
+        "rejected": "Vous avez rejeté la transaction.",
+        "error": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "claim": {
+        "title": "Réclamer le retrait",
+        "loading": "Chargement du portefeuille…",
+        "connect_description": "Connectez votre portefeuille pour réclamer votre MANA sur Ethereum.",
+        "switch_description": "Passez votre portefeuille sur Ethereum pour continuer.",
+        "switch_button": "Changer de réseau",
+        "description": "Votre retrait de {amount} MANA est prêt. Réclamez-le sur Ethereum pour recevoir votre MANA.",
+        "submit": "Réclamer sur Ethereum",
+        "claiming": "Réclamation en cours…",
+        "success": "Votre MANA a été libéré sur Ethereum.",
+        "close": "Fermer",
+        "rejected": "Vous avez rejeté la transaction.",
+        "error": "Impossible de réclamer le retrait. Veuillez réessayer.",
+        "not_ready": "Ce retrait n'est pas encore prêt à être réclamé. Le checkpoint peut prendre quelques heures ; veuillez réessayer plus tard."
+      },
+      "buy": {
+        "title": "Acheter du MANA",
+        "subtitle": "Choisissez le MANA que vous voulez acheter :",
+        "close": "Fermer",
+        "error": "Impossible d'ouvrir le fournisseur. Veuillez réessayer.",
+        "network": {
+          "ethereum": {
+            "label": "MANA Ethereum",
+            "name": "Ethereum",
+            "description": "Utilisez-le pour acheter des LAND, des noms et certains wearables sur Ethereum."
+          },
+          "polygon": {
+            "label": "MANA Polygon",
+            "name": "Polygon",
+            "description": "Utilisez-le pour acheter la plupart des wearables et emotes sur Polygon."
+          }
+        },
+        "provider_title": "Acheter du MANA {network} avec {provider}",
+        "provider_subtitle": "Vous pouvez payer par carte de débit et de crédit, Apple Pay, Google Pay ou virement bancaire.",
+        "continue": "Continuer avec {provider}",
+        "learn_more": "En savoir plus sur {provider}",
+        "provider": {
+          "moonpay": "MoonPay",
+          "transak": "Transak"
+        },
+        "loading": "Ouverture…"
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Ne manquez aucune notification Decentraland lorsque vous êtes absent ! Inscrivez-vous pour recevoir des notifications par e-mail et choisissez celles que vous souhaitez recevoir ci-dessous.",
+      "loading": "Chargement de vos paramètres de notification…",
+      "load_error": "Nous n'avons pas pu charger vos paramètres de notification. Veuillez réessayer plus tard.",
+      "groups": {
+        "marketplace": "Marketplace",
+        "worlds": "Worlds",
+        "credits": "Crédits du Marketplace",
+        "streaming": "Streaming dans le monde",
+        "events": "Événements",
+        "rewards": "Cadeaux et récompenses",
+        "dao": "DAO",
+        "tips": "Pourboires",
+        "referral": "Parrainages"
+      },
+      "email": {
+        "title": "Notifications par e-mail",
+        "placeholder": "exemple@decentraland.org",
+        "invalid": "E-mail invalide",
+        "description": {
+          "without_email": "Saisissez votre e-mail, puis consultez votre boîte de réception pour y trouver le lien de confirmation. Après confirmation, vous pourrez personnaliser les notifications ci-dessous.",
+          "with_email": "Si vous souhaitez mettre à jour votre adresse e-mail, modifiez-la ci-dessous. Pensez ensuite à vérifier l'e-mail de confirmation dans votre boîte de réception !",
+          "pending_approval": "E-mail de confirmation envoyé, vérifiez votre boîte de réception.",
+          "confirmed": "Votre e-mail a été confirmé."
+        },
+        "status": {
+          "confirmed": "confirmé",
+          "pending": "en attente de validation"
+        },
+        "button": {
+          "submit": "Envoyer",
+          "resend": "Renvoyer",
+          "save": "Enregistrer"
+        },
+        "master_label": "Activer/désactiver toutes les notifications par e-mail"
+      },
+      "types": {
+        "item_sold": "Objet vendu",
+        "bid_accepted": "Offre acceptée",
+        "bid_received": "Offre reçue",
+        "royalties_earned": "Royalties perçues",
+        "rental_ended": "Période de location du LAND terminée",
+        "rental_started": "LAND loué",
+        "worlds_access_restored": "Accès au World rétabli",
+        "worlds_access_restricted": "Accès au World restreint en raison d’un stockage insuffisant",
+        "worlds_missing_resources": "Avertissement de stockage World insuffisant",
+        "worlds_permission_granted": "Permissions World pour visiter/déployer/diffuser accordées",
+        "worlds_permission_revoked": "Permissions World pour visiter/déployer/diffuser révoquées",
+        "credits_reminder_complete_goals": "Objectifs incomplets",
+        "credits_reminder_claim_credits": "Crédits non réclamés",
+        "credits_reminder_usage": "Crédits sur le point d’expirer",
+        "credits_reminder_do_not_miss_out": "Objectifs non commencés",
+        "streaming_key_expired": "Clé de stream expirée",
+        "streaming_key_reset": "Clé de stream réinitialisée",
+        "streaming_key_revoke": "Clé de stream désactivée",
+        "streaming_place_updated": "Scène de stream modifiée",
+        "streaming_time_exceeded": "Délai de stream dépassé",
+        "events_started": "Événement commencé",
+        "events_starts_soon": "L’événement commence bientôt",
+        "reward_assignment": "Objet gratuit reçu",
+        "reward_campaign_out_of_funds": "Campagne de cadeaux à court de fonds",
+        "reward_campaign_out_of_stock": "Campagne de cadeaux en rupture de stock",
+        "governance_announcement": "Nouvelle annonce du DAO",
+        "governance_authored_proposal_finished": "Le vote sur votre proposition est terminé",
+        "governance_coauthor_requested": "Demande de co-rédaction d’une proposition reçue",
+        "governance_new_comment_on_project_update": "Nouveau commentaire sur la mise à jour de votre projet",
+        "governance_new_comment_on_proposal": "Nouveau commentaire sur votre proposition",
+        "governance_proposal_enacted": "Proposition adoptée",
+        "governance_voting_ended_voter": "Le vote est terminé sur une proposition que vous avez votée",
+        "tip_received": "Pourboire reçu",
+        "referral_invited_users_accepted": "Parrainage terminé",
+        "referral_new_tier_reached": "Récompense de parrainage débloquée"
+      }
+    },
+    "credits": {
+      "title": "Programme de Crédits du Marketplace",
+      "description": "Gagnez des crédits hebdomadaires en accomplissant des objectifs dans le monde.",
+      "status_label": "Statut :",
+      "status": {
+        "enrolled": "Inscrit",
+        "opted_out": "Désinscrit",
+        "not_registered": "Non inscrit"
+      },
+      "learn_more": "En savoir plus",
+      "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
+      "join_button": "Rejoindre le programme",
+      "leave_button": "Quitter le programme",
+      "leave_modal": {
+        "warning": "Quitter les Crédits du Marketplace ?",
+        "description": "Vous cesserez de gagner des crédits hebdomadaires. Vous pouvez vous réinscrire à tout moment.",
+        "cancel": "Annuler",
+        "confirm": "Quitter le programme",
+        "errors": {
+          "generic": "Impossible de quitter le programme pour le moment. Veuillez réessayer.",
+          "already_claimed": "Vous ne pouvez pas quitter cette semaine car vous avez déjà réclamé des crédits. Veuillez réessayer la semaine prochaine."
+        }
+      },
+      "join_errors": {
+        "generic": "Impossible de rejoindre le programme pour le moment. Veuillez réessayer.",
+        "email_required": "Ajoutez et confirmez un e-mail dans Notifications avant de rejoindre le programme de crédits."
+      }
+    },
+    "delete": {
+      "danger_zone": "Zone de danger",
+      "danger_description": "Une fois votre compte supprimé, il n’y a pas de retour en arrière. Veuillez en être certain.",
+      "warning": "Les éléments suivants seront perdus à jamais :",
+      "consequences": {
+        "profile": {
+          "title": "Profil",
+          "description": "votre nom d’utilisateur, avatar, biographie et nom affiché"
+        },
+        "social": {
+          "title": "Connexions sociales",
+          "description": "liste d’amis et utilisateurs bloqués"
+        },
+        "marketplace": {
+          "title": "Activité du Marketplace",
+          "description": "annonces ouvertes, historique d’achats et offres"
+        },
+        "credits": {
+          "title": "Crédits de la plateforme",
+          "description": "tout solde ou récompense non dépensé"
+        },
+        "favorites": {
+          "title": "Favoris et historique",
+          "description": "lieux enregistrés, activité récente et confirmations d’événements"
+        },
+        "notifications": {
+          "title": "Notifications et préférences",
+          "description": "tous vos paramètres et l’historique des notifications"
+        }
+      },
+      "asset_warning_title": "Actifs on-chain en danger",
+      "asset_warning_description": "La suppression de votre compte peut vous faire perdre définitivement l’accès à vos actifs on-chain (wearables, emotes, LAND, etc.). Assurez-vous d’exporter votre clé privée avant de continuer.",
+      "export_key_description": "Allez dans l’onglet Wallets et utilisez le gestionnaire de portefeuille sous votre adresse pour exporter votre clé privée.",
+      "export_key_link": "Aller aux Wallets",
+      "delete_button": "Supprimer le compte",
+      "modal": {
+        "title": "Êtes-vous sûr de vouloir supprimer votre compte ?",
+        "description": "Cette action est irréversible. Toutes vos données seront définitivement supprimées. Pour confirmer, veuillez taper DELETE dans le champ ci-dessous et confirmer.",
+        "input_label": "Tapez DELETE",
+        "deleting": "Suppression...",
+        "delete": "Supprimer le compte",
+        "cancel": "Annuler",
+        "generic_error": "Échec de la suppression de votre compte. Veuillez réessayer plus tard."
+      },
+      "unavailable_title": "La suppression de compte n’est pas disponible pour ce portefeuille",
+      "unavailable_description": "La suppression de votre compte ne s’applique qu’aux comptes créés avec un e-mail ou une connexion sociale. Les portefeuilles auto-gérés (comme MetaMask ou WalletConnect) contrôlent leurs propres clés ; il n’y a donc rien à supprimer ici — déconnectez-vous simplement."
+    },
+    "copy": "Copier",
+    "copied": "Copié !"
   }
 }
