@@ -43,6 +43,13 @@ jest.mock('react-router-dom', () => ({
   useSearchParams: () => [searchParamsInstance, jest.fn()]
 }))
 
+// useDownloadEventTrack → downloadBeacon → config/env, which reads
+// `import.meta.env` and can't load under Jest. Stub the write key so the
+// beacon path is exercised without pulling in the env module.
+jest.mock('../../config/env', () => ({
+  getEnv: () => 'segment-write-key'
+}))
+
 const mockUseAnonUserId = jest.fn<string | undefined, []>(() => 'anon-123')
 jest.mock('../../hooks/useAnonUserId', () => ({
   ANON_USER_ID_PARAM: 'anonUserId',

@@ -5,7 +5,7 @@ import { Logo, Typography } from 'decentraland-ui2'
 import { LandingFooter } from '../../components/LandingFooter'
 import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { useDeferredTrack } from '../../hooks/useDeferredTrack'
+import { useDownloadEventTrack } from '../../hooks/useDownloadEventTrack'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsLauncher from '../../images/download/macos_launcher.webp'
@@ -39,7 +39,7 @@ const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
   const { intl } = useTranslation()
-  const deferredTrack = useDeferredTrack()
+  const deferredTrack = useDownloadEventTrack()
   const getIdentityId = useGetIdentityId()
   const anonUserId = useAnonUserId()
   const { hasValidIdentity } = useAuthIdentity()
