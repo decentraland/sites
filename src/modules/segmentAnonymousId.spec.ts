@@ -49,4 +49,29 @@ describe('when using Segment anonymous ids', () => {
       expect(localStorage.getItem('ajs_anonymous_id')).toBe(JSON.stringify(id))
     })
   })
+
+  describe('when crypto.randomUUID is available', () => {
+    it('should delegate to it', () => {
+      const minted = '33333333-3333-4333-8333-333333333333'
+      const cryptoObj = globalThis.crypto as Crypto & { randomUUID?: () => string }
+      const original = cryptoObj.randomUUID
+      Object.defineProperty(cryptoObj, 'randomUUID', { value: () => minted, configurable: true })
+
+      try {
+        expect(generateUuid()).toBe(minted)
+      } finally {
+        Object.defineProperty(cryptoObj, 'randomUUID', { value: original, configurable: true })
+      }
+    })
+  })
+
+  describe('when localStorage throws', () => {
+    it('should return a throwaway id without persisting', () => {
+      jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+        throw new Error('storage blocked')
+      })
+
+      expect(ensureSegmentAnonymousId()).toMatch(UUID_RE)
+    })
+  })
 })

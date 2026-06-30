@@ -85,4 +85,24 @@ describe('when posting a Segment event via beacon', () => {
 
     expect(mockFetch).toHaveBeenCalledTimes(1)
   })
+
+  it('should swallow a fetch rejection during unload', async () => {
+    mockSendBeacon.mockReturnValue(false)
+    mockFetch.mockImplementation(() => Promise.reject(new Error('network')))
+
+    expect(() => postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero' }, 'anon-1')).not.toThrow()
+
+    // Flush microtasks so the `.catch` handler runs and is counted as covered.
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('should swallow a synchronous fetch throw during unload', () => {
+    mockSendBeacon.mockReturnValue(false)
+    mockFetch.mockImplementation(() => {
+      throw new Error('sync fetch boom')
+    })
+
+    expect(() => postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero' }, 'anon-1')).not.toThrow()
+  })
 })
