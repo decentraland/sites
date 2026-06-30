@@ -52,9 +52,10 @@ function buildBody(writeKey: string, data: DownloadFunnelExitData): string {
 
 /**
  * Fires the `download_funnel_exit` diagnostic event via an unload-safe
- * transport. Called from a `pagehide` handler, so `navigator.sendBeacon` is the
- * primary path (purpose-built for departure); `fetch` + `keepalive` is the
- * fallback for engines without sendBeacon. No-op when there is no write key.
+ * transport. Called from a `visibilitychange → hidden` handler, so
+ * `navigator.sendBeacon` is the primary path (purpose-built for departure);
+ * `fetch` + `keepalive` is the fallback for engines without sendBeacon or when
+ * the beacon queue is full. No-op when there is no write key.
  */
 function sendDownloadFunnelExit(data: DownloadFunnelExitData): void {
   const writeKey = getWriteKey()
@@ -73,14 +74,19 @@ function sendDownloadFunnelExit(data: DownloadFunnelExitData): void {
     if (typeof fetch === 'function') {
       void fetch(SEGMENT_TRACK_URL, {
         method: 'POST',
+        // text/plain keeps this a CORS-simple request (no preflight), matching
+        // the sendBeacon path above — an application/json content-type would
+        // trigger an OPTIONS preflight that drops the request on unload, which
+        // is exactly the cohort this diagnostic exists to capture.
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain' },
         body,
         keepalive: true,
         mode: 'cors',
         credentials: 'omit'
       }).catch(() => {
-        // Best-effort diagnostic; a dropped exit beacon is acceptable.
+        // Best-effort diagnostic; a dropped exit beacon (network error or a
+        // non-2xx response) is acceptable and not worth acting on at unload.
       })
     }
   } catch {

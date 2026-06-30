@@ -68,8 +68,9 @@ const DownloadSuccess = memo(() => {
 
   // Diagnostic state for `download_funnel_exit`: which download_* events had
   // fired by the time the user leaves, and how long they stayed. Refs (not
-  // state) so flipping them never re-renders and the pagehide handler reads
-  // the latest values. `pageLoadedAtRef` is stamped once at first render.
+  // state) so flipping them never re-renders and the visibility (hidden)
+  // handler reads the latest values. `pageLoadedAtRef` is stamped once at
+  // first render.
   const startedFiredRef = useRef(false)
   const successFiredRef = useRef(false)
   const failedFiredRef = useRef(false)

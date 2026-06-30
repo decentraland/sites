@@ -87,6 +87,8 @@ describe('downloadFunnelExit', () => {
         download_success_fired: true,
         download_failed_fired: false,
         ms_on_page: 1234,
+        revisit: 0,
+        auth_state: 'anonymous',
         anon_user_id: 'anon-1'
       })
     )
@@ -99,7 +101,18 @@ describe('downloadFunnelExit', () => {
     expect(mockFetch).toHaveBeenCalledTimes(1)
     const [url, init] = mockFetch.mock.calls[0]
     expect(url).toBe(SEGMENT_TRACK_URL)
-    expect(init).toEqual(expect.objectContaining({ method: 'POST', keepalive: true }))
+    expect(init).toEqual(expect.objectContaining({ method: 'POST', keepalive: true, mode: 'cors', credentials: 'omit' }))
+  })
+
+  it('should send the fetch fallback as a CORS-simple text/plain request (no preflight)', () => {
+    // An application/json content-type would make the fallback a non-simple
+    // request and trigger an OPTIONS preflight that drops it on unload — the
+    // exact cohort this diagnostic exists to capture. Lock it to text/plain.
+    mockSendBeacon.mockReturnValue(false)
+    sendDownloadFunnelExit(sampleData())
+
+    const init = mockFetch.mock.calls[0][1]
+    expect(init.headers).toEqual({ 'Content-Type': 'text/plain' })
   })
 
   it('should fall back to fetch when sendBeacon is unavailable', () => {
@@ -126,6 +139,50 @@ describe('downloadFunnelExit', () => {
     expect(typeof body.anonymousId).toBe('string')
     expect(body.anonymousId.length).toBeGreaterThan(0)
     expect(body.properties.anon_user_id).toBeUndefined()
+  })
+
+  it('should mint the fallback anonymousId from crypto.randomUUID when available', () => {
+    const cryptoObj = globalThis.crypto as { randomUUID?: () => string }
+    const originalRandomUUID = cryptoObj.randomUUID
+    Object.defineProperty(cryptoObj, 'randomUUID', {
+      value: () => 'uuid-from-crypto',
+      configurable: true,
+      writable: true
+    })
+
+    try {
+      mockSendBeacon.mockReturnValue(false)
+      sendDownloadFunnelExit(sampleData({ anonUserId: undefined }))
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body)
+      expect(body.anonymousId).toBe('uuid-from-crypto')
+    } finally {
+      Object.defineProperty(cryptoObj, 'randomUUID', {
+        value: originalRandomUUID,
+        configurable: true,
+        writable: true
+      })
+    }
+  })
+
+  it('should mint a legacy fallback anonymousId when crypto.randomUUID is unavailable', () => {
+    const cryptoObj = globalThis.crypto as { randomUUID?: () => string }
+    const originalRandomUUID = cryptoObj.randomUUID
+    Object.defineProperty(cryptoObj, 'randomUUID', { value: undefined, configurable: true, writable: true })
+
+    try {
+      mockSendBeacon.mockReturnValue(false)
+      sendDownloadFunnelExit(sampleData({ anonUserId: undefined }))
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body)
+      expect(body.anonymousId).toMatch(/^dl-\d+-/)
+    } finally {
+      Object.defineProperty(cryptoObj, 'randomUUID', {
+        value: originalRandomUUID,
+        configurable: true,
+        writable: true
+      })
+    }
   })
 
   it('should not transmit when there is no write key (exempt path)', () => {
