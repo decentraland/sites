@@ -198,8 +198,6 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                 <AlternativeButton
                   variant="text"
                   color="inherit"
-                  data-place={SectionViewedTrack.DOWNLOAD}
-                  data-event={SegmentEvent.DOWNLOAD}
                   onClick={event => {
                     event.preventDefault()
                     trackDownloadClick(event)
