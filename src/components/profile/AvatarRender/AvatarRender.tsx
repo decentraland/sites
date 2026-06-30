@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { PreviewUnityMode } from '@dcl/schemas'
 import { CircularProgress, WearablePreview } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
@@ -45,6 +46,12 @@ function AvatarRender({ address }: AvatarRenderProps) {
       <WearablePreview
         baseUrl={baseUrl}
         profile={address.toLowerCase()}
+        // Render with the Unity engine (matching the Marketplace avatar preview) for the
+        // high-fidelity lighting/materials. `unity` is the actual renderer switch: without
+        // it the iframe falls back to the lower-quality Babylon renderer even when
+        // `unityMode` is set. `PROFILE` is the Unity layout tuned for profile avatars.
+        unity
+        unityMode={PreviewUnityMode.PROFILE}
         disableBackground
         disableDefaultWearables
         lockBeta
