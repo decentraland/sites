@@ -105,6 +105,14 @@ describe('TransactionsSection', () => {
     expect(link).toHaveTextContent(tx.hash)
   })
 
+  it('should format the date as D/M/YYYY instead of M/D/YYYY', () => {
+    render(<TransactionsSection transactions={[tx]} />)
+    fireEvent.click(screen.getByRole('button'))
+
+    // tx.timestamp = 1718000000000 -> 2024-06-10T06:13:20.000Z (jest runs pinned to TZ=UTC)
+    expect(screen.getByText('10/6/2024, 6:13:20 AM')).toBeInTheDocument()
+  })
+
   it('should render the sent, received and swap transaction type rows', () => {
     const receivedTx: WalletTransaction = { ...tx, type: 'received', hash: '0xreceived', status: 'confirmed' }
     const swapTx: WalletTransaction = { ...tx, type: 'swap', hash: '0xswap', status: 'confirmed' }

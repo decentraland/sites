@@ -49,16 +49,24 @@ const PENDING_STATUSES: ReadonlySet<WalletTransactionStatus> = new Set(['pending
 const LATEST_PAGE_SIZE = 20
 
 // Local timezone — the tx was submitted from the user's device, so a UTC anchor would be wrong here.
-const formatDate = (timestamp: number): string =>
-  new Date(timestamp).toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true
-  })
+// Built from formatToParts (not toLocaleString with a D/M/Y locale like en-GB) because those locales
+// force 2-digit zero-padded day/month — this assembles the D/M/YYYY order while keeping unpadded
+// day/month and the uppercase AM/PM (Figma "Profile-Account" Wallets) of the previous en-US format.
+const DATE_PART_FORMAT = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: true
+})
+
+const formatDate = (timestamp: number): string => {
+  const parts = DATE_PART_FORMAT.formatToParts(new Date(timestamp))
+  const part = (type: string) => parts.find(p => p.type === type)?.value ?? ''
+  return `${part('day')}/${part('month')}/${part('year')}, ${part('hour')}:${part('minute')}:${part('second')} ${part('dayPeriod')}`
+}
 
 const TransactionsSection = ({ transactions, onClaim }: TransactionsSectionProps) => {
   const t = useFormatMessage()
