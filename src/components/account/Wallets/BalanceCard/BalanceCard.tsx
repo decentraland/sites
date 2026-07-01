@@ -7,27 +7,16 @@ import AttachMoneyRoundedIcon from '@mui/icons-material/AttachMoneyRounded'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import SwapHorizRoundedIcon from '@mui/icons-material/SwapHorizRounded'
 import { useAnalytics } from '@dcl/hooks'
-import { Skeleton } from 'decentraland-ui2'
+import { Network } from '@dcl/schemas'
+import { Mana, Skeleton } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import type { WalletTransaction } from '../../../../hooks/useWalletTransactions.types'
 import { SegmentEvent } from '../../../../modules/segment'
-import { ManaEthIcon, ManaMaticIcon } from '../../../LandingNavbar/icons'
-import { ManaMarkIcon } from '../ManaMarkIcon'
+import type { WalletNetwork } from '../manaContract'
+import { NetworkIcon } from '../NetworkIcon'
 import { TransactionsSection } from '../TransactionsSection/TransactionsSection'
 import { formatMana } from '../wallets.helpers'
-import {
-  ActionButton,
-  Actions,
-  BalanceAmount,
-  BalanceInfo,
-  BalanceRow,
-  Card,
-  CardTop,
-  NetworkLabel,
-  NetworkRow
-} from './BalanceCard.styled'
-
-type WalletNetwork = 'ethereum' | 'polygon'
+import { ActionButton, Actions, BalanceInfo, BalanceRow, Card, CardTop, NetworkLabel, NetworkRow } from './BalanceCard.styled'
 
 interface BalanceCardProps {
   network: WalletNetwork
@@ -48,6 +37,9 @@ const BalanceCard = ({ network, balance, isLoading, transactions, onReceive, onS
   const { track, isInitialized } = useAnalytics()
 
   const label = network === 'ethereum' ? t('account.wallets.eth_label') : t('account.wallets.polygon_label')
+  // Network-aware MANA mark (Ethereum vs Matic) reused from decentraland-ui2 so the balance matches
+  // the design system instead of the compact navbar marks (issue #637).
+  const manaNetwork = network === 'ethereum' ? Network.ETHEREUM : Network.MATIC
 
   const trackAction = (action: string) => {
     if (isInitialized) track(SegmentEvent.CLICK, { place: 'Account - Wallets', network, action })
@@ -75,15 +67,17 @@ const BalanceCard = ({ network, balance, isLoading, transactions, onReceive, onS
       <CardTop>
         <BalanceInfo>
           <NetworkRow>
-            {network === 'ethereum' ? <ManaEthIcon /> : <ManaMaticIcon />}
+            <NetworkIcon network={network} />
             <NetworkLabel>{label}</NetworkLabel>
           </NetworkRow>
           {isLoading || balance === undefined ? (
             <Skeleton variant="text" width={140} height={40} />
           ) : (
-            <BalanceRow>
-              <ManaMarkIcon />
-              <BalanceAmount data-role="balance-amount">{formatMana(balance)}</BalanceAmount>
+            <BalanceRow data-role="balance-amount">
+              {/* Ethereum MANA renders in the brand pink; Polygon MANA stays white per the design. */}
+              <Mana network={manaNetwork} primary={network === 'ethereum'} size="large">
+                {formatMana(balance)}
+              </Mana>
             </BalanceRow>
           )}
         </BalanceInfo>
@@ -112,4 +106,3 @@ const BalanceCard = ({ network, balance, isLoading, transactions, onReceive, onS
 }
 
 export { BalanceCard }
-export type { WalletNetwork }

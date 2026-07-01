@@ -39,23 +39,12 @@ const NetworkLabel = styled(Typography)(() => ({
   color: '#A09BA8'
 }))
 
-// Balance amount with the MANA diamond mark to its left (Figma). The mark is colored/sized here so
-// the shared ManaMarkIcon stays presentation-agnostic.
-const BalanceRow = styled(Box)(({ theme }) => ({
+// Wraps the decentraland-ui2 <Mana> balance. Mana renders as a ButtonBase and doesn't accept `sx`,
+// so the bold weight (Figma) is set here and inherited by the amount text.
+const BalanceRow = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1),
-  ['& .MuiSvgIcon-root']: {
-    fontSize: 30,
-    color: '#FF2D55'
-  }
-}))
-
-const BalanceAmount = styled(Typography)(() => ({
-  fontSize: 32,
-  fontWeight: 700,
-  lineHeight: 1.2,
-  color: '#FCFCFC'
+  fontWeight: 700
 }))
 
 const Actions = styled(Box)(({ theme }) => ({
@@ -94,4 +83,4 @@ const ActionButton = styled('button')(({ theme }) => ({
   }
 }))
 
-export { ActionButton, Actions, BalanceAmount, BalanceInfo, BalanceRow, Card, CardTop, NetworkLabel, NetworkRow }
+export { ActionButton, Actions, BalanceInfo, BalanceRow, Card, CardTop, NetworkLabel, NetworkRow }

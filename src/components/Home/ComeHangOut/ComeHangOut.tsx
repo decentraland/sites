@@ -2,8 +2,8 @@ import { memo, useCallback, useState } from 'react'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { AnimatedBackground, DownloadModal, DownloadQRModal } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useAnimatedCounter } from '../../../hooks/useAnimatedCounter'
+import { useDownloadClick } from '../../../hooks/useDownloadClick'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import appleLogo from '../../../images/apple-logo.svg'
 import microsoftLogo from '../../../images/microsoft-logo.svg'
@@ -34,7 +34,7 @@ let cachedDownloadCounts: string | null = null
 
 const ComeHangOut = memo(() => {
   const l = useFormatMessage()
-  const onClickHandle = useTrackClick()
+  const trackDownloadClick = useDownloadClick()
   const { isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads } = useHangOutAction()
   const [, userAgentData] = useAdvancedUserAgentData()
   const [rawDownloads, rawDownloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
@@ -54,14 +54,30 @@ const ComeHangOut = memo(() => {
   const renderMobileContent = () => {
     if (isMobileAndroid) {
       return (
-        <GooglePlayButton href={GOOGLE_PLAY_MOBILE_URL} target="_blank" rel="noopener noreferrer">
+        <GooglePlayButton
+          href={GOOGLE_PLAY_MOBILE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-event={SegmentEvent.DOWNLOAD}
+          data-os="Android"
+          data-place={SectionViewedTrack.LANDING_COME_HANG_OUT}
+          onClick={trackDownloadClick}
+        >
           <GooglePlayImage src={googlePlayBadge} alt="Get it on Google Play" />
         </GooglePlayButton>
       )
     }
 
     return (
-      <GooglePlayButton href={DOWNLOAD_URLS.appStore} target="_blank" rel="noopener noreferrer">
+      <GooglePlayButton
+        href={DOWNLOAD_URLS.appStore}
+        target="_blank"
+        rel="noopener noreferrer"
+        data-event={SegmentEvent.DOWNLOAD}
+        data-os="iOS"
+        data-place={SectionViewedTrack.LANDING_COME_HANG_OUT}
+        onClick={trackDownloadClick}
+      >
         <GooglePlayImage src={assetUrl('/download-on-the-app-store.svg')} alt="Download on the App Store" />
       </GooglePlayButton>
     )
@@ -69,12 +85,12 @@ const ComeHangOut = memo(() => {
 
   const handleDownloadClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
-      onClickHandle(e)
+      trackDownloadClick(e)
       if (userAgentData) {
         window.location.href = `/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.COME_HANG_OUT}`
       }
     },
-    [onClickHandle, userAgentData]
+    [trackDownloadClick, userAgentData]
   )
 
   const osImage = userAgentData
@@ -97,7 +113,14 @@ const ComeHangOut = memo(() => {
             <span style={{ display: 'block', width: 32, height: 32, flexShrink: 0 }} />
           )}
         </DownloadButton>
-        <EpicButton href={DOWNLOAD_URLS.epic} target="_blank" rel="noopener noreferrer">
+        <EpicButton
+          href={DOWNLOAD_URLS.epic}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-event={SegmentEvent.DOWNLOAD}
+          data-place={DownloadPlace.COME_HANG_OUT}
+          onClick={trackDownloadClick}
+        >
           {l('page.download.download_on')}
           <img src={assetUrl('/epic_icon.svg')} alt="Epic Games" width={32} height={32} style={{ filter: 'brightness(0)' }} />
         </EpicButton>
@@ -109,19 +132,35 @@ const ComeHangOut = memo(() => {
         <DownloadSeparator />
         <PlatformIcons>
           {currentOs === OperativeSystem.MACOS && (
-            <a href={`/download_success?os=Windows&place=${DownloadPlace.COME_HANG_OUT}`}>
+            <a
+              href={`/download_success?os=Windows&place=${DownloadPlace.COME_HANG_OUT}`}
+              data-event={SegmentEvent.DOWNLOAD}
+              data-os={OperativeSystem.WINDOWS}
+              data-place={DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}
+              onClick={trackDownloadClick}
+            >
               <PlatformIcon src={microsoftLogo} alt="Windows" />
             </a>
           )}
           {currentOs === OperativeSystem.WINDOWS && (
-            <a href={`/download_success?os=macOS&place=${DownloadPlace.COME_HANG_OUT}`}>
+            <a
+              href={`/download_success?os=macOS&place=${DownloadPlace.COME_HANG_OUT}`}
+              data-event={SegmentEvent.DOWNLOAD}
+              data-os={OperativeSystem.MACOS}
+              data-place={DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}
+              onClick={trackDownloadClick}
+            >
               <PlatformIcon src={appleLogo} alt="macOS" />
             </a>
           )}
           {!currentOs && <span style={{ display: 'inline-block', width: 24, height: 24 }} />}
           <a
             href="#"
+            data-event={SegmentEvent.DOWNLOAD}
+            data-os="iOS"
+            data-place={DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}
             onClick={e => {
+              trackDownloadClick(e)
               e.preventDefault()
               setMobileModalOs('ios')
             }}
@@ -130,7 +169,11 @@ const ComeHangOut = memo(() => {
           </a>
           <a
             href="#"
+            data-event={SegmentEvent.DOWNLOAD}
+            data-os="Android"
+            data-place={DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}
             onClick={e => {
+              trackDownloadClick(e)
               e.preventDefault()
               setMobileModalOs('android')
             }}

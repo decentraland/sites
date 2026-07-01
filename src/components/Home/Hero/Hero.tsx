@@ -3,9 +3,9 @@ import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { DownloadModal, DownloadQRModal } from 'decentraland-ui2'
 import { heroContent } from '../../../data/static-content'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useAnimatedCounter } from '../../../hooks/useAnimatedCounter'
 import { ANON_USER_ID_PARAM, useAnonUserId } from '../../../hooks/useAnonUserId'
+import { useDownloadClick } from '../../../hooks/useDownloadClick'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import appleLogo from '../../../images/apple-logo.svg'
 import microsoftLogo from '../../../images/microsoft-logo.svg'
@@ -62,7 +62,7 @@ let cachedDownloadCounts: string | null = null
 const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const [, userAgentData] = useAdvancedUserAgentData()
   const l = useFormatMessage()
-  const onClickHandle = useTrackClick()
+  const trackDownloadClick = useDownloadClick()
   const anonUserId = useAnonUserId()
   const { isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads } = useHangOutAction()
 
@@ -174,12 +174,12 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
 
   const handleDownloadClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
-      onClickHandle(e)
+      trackDownloadClick(e)
       if (userAgentData) {
         window.location.href = buildDownloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO)
       }
     },
-    [onClickHandle, userAgentData, buildDownloadSuccessHref]
+    [trackDownloadClick, userAgentData, buildDownloadSuccessHref]
   )
 
   return (
@@ -218,7 +218,15 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
         <MobileHeroContent>
           <MobileHeroTitle>{l('page.home.hero.mobile_android_title')}</MobileHeroTitle>
           <MobileHeroSubtitle>{l('page.home.hero.mobile_android_subtitle')}</MobileHeroSubtitle>
-          <GooglePlayButton href={GOOGLE_PLAY_MOBILE_URL} target="_blank" rel="noopener noreferrer">
+          <GooglePlayButton
+            href={GOOGLE_PLAY_MOBILE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-event={SegmentEvent.DOWNLOAD}
+            data-os="Android"
+            data-place={SectionViewedTrack.LANDING_HERO}
+            onClick={trackDownloadClick}
+          >
             <GooglePlayImage src={googlePlayBadge} alt="Get it on Google Play" />
           </GooglePlayButton>
         </MobileHeroContent>
@@ -229,7 +237,15 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
         <MobileHeroContent>
           <MobileHeroTitle>{l('page.home.hero.mobile_android_title')}</MobileHeroTitle>
           <MobileHeroSubtitle>{l('page.home.hero.mobile_android_subtitle')}</MobileHeroSubtitle>
-          <GooglePlayButton href={DOWNLOAD_URLS.appStore} target="_blank" rel="noopener noreferrer">
+          <GooglePlayButton
+            href={DOWNLOAD_URLS.appStore}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-event={SegmentEvent.DOWNLOAD}
+            data-os="iOS"
+            data-place={SectionViewedTrack.LANDING_HERO}
+            onClick={trackDownloadClick}
+          >
             <GooglePlayImage src={assetUrl('/download-on-the-app-store.svg')} alt="Download on the App Store" />
           </GooglePlayButton>
         </MobileHeroContent>
@@ -272,7 +288,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
               rel="noopener noreferrer"
               data-place={DownloadPlace.LANDING_HERO_EPIC}
               data-event={SegmentEvent.DOWNLOAD}
-              onClick={onClickHandle}
+              onClick={trackDownloadClick}
             >
               {l('page.download.download_on')}
               <img src={assetUrl('/epic_icon.svg')} alt="Epic Games" width={32} height={32} style={{ filter: 'brightness(0)' }} />
@@ -287,12 +303,24 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
             <HeroPlatformSeparator />
             <HeroPlatformIcons>
               {currentOs === OperativeSystem.MACOS && (
-                <a href={buildDownloadSuccessHref('Windows', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)}>
+                <a
+                  href={buildDownloadSuccessHref('Windows', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)}
+                  data-event={SegmentEvent.DOWNLOAD}
+                  data-os={OperativeSystem.WINDOWS}
+                  data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}
+                  onClick={trackDownloadClick}
+                >
                   <HeroPlatformIcon src={microsoftLogo} alt="Windows" />
                 </a>
               )}
               {currentOs === OperativeSystem.WINDOWS && (
-                <a href={buildDownloadSuccessHref('macOS', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)}>
+                <a
+                  href={buildDownloadSuccessHref('macOS', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)}
+                  data-event={SegmentEvent.DOWNLOAD}
+                  data-os={OperativeSystem.MACOS}
+                  data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}
+                  onClick={trackDownloadClick}
+                >
                   <HeroPlatformIcon src={appleLogo} alt="macOS" />
                 </a>
               )}
@@ -301,7 +329,11 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
             <HeroPlatformIcons>
               <a
                 href="#"
+                data-event={SegmentEvent.DOWNLOAD}
+                data-os="iOS"
+                data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}
                 onClick={e => {
+                  trackDownloadClick(e)
                   e.preventDefault()
                   setMobileModalOs('ios')
                 }}
@@ -312,7 +344,11 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
             <HeroPlatformIcons>
               <a
                 href="#"
+                data-event={SegmentEvent.DOWNLOAD}
+                data-os="Android"
+                data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}
                 onClick={e => {
+                  trackDownloadClick(e)
                   e.preventDefault()
                   setMobileModalOs('android')
                 }}
