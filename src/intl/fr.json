@@ -1523,7 +1523,7 @@
       "responsibility_description": "Sauvegarder votre clé privée vous permet d’accéder à votre portefeuille depuis n’importe quelle application compatible et protège vos actifs si vous perdez un jour l’accès à votre connexion. Avec l’auto-conservation, cette responsabilité vous incombe à vous seul.",
       "warning_title": "Ne partagez jamais votre clé privée",
       "warning_description": "Quiconque possède votre clé privée dispose d’un contrôle total et irréversible sur votre compte et peut déplacer tous vos actifs. Aucun membre de l’équipe Decentraland ne vous la demandera jamais. Conservez-la hors ligne, dans un endroit accessible à vous seul.",
-      "reveal_description": "Vous serez redirigé vers la page de révélation sécurisée de Magic dans un nouvel onglet pour consulter et sauvegarder votre clé privée.",
+      "reveal_description": "Vous serez redirigé vers la page de révélation sécurisée de Magic dans un nouvel onglet pour consulter et sauvegarder votre clé privée. Vous devez terminer la connexion sur le site de Magic avec la même méthode que celle utilisée pour vous connecter à Decentraland.",
       "reveal_button": "Révéler la clé privée",
       "unavailable_title": "Les paramètres de sécurité ne sont pas disponibles pour ce portefeuille",
       "unavailable_description": "La révélation d’une clé privée ne s’applique qu’aux comptes créés avec un e-mail ou une connexion sociale. Les portefeuilles auto-gérés (comme MetaMask ou WalletConnect) gèrent déjà leurs propres clés ; il n’y a donc rien à révéler ici."

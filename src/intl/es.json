@@ -1528,7 +1528,7 @@
       "responsibility_description": "Hacer una copia de seguridad de tu clave privada te permite acceder a tu billetera desde cualquier app compatible y mantiene tus activos a salvo si alguna vez perdés el acceso a tu inicio de sesión. Con la autocustodia, esta responsabilidad es solo tuya.",
       "warning_title": "Nunca compartas tu clave privada",
       "warning_description": "Cualquiera que tenga tu clave privada tiene el control total e irreversible de tu cuenta y puede mover todos tus activos. Ningún miembro del equipo de Decentraland te la va a pedir jamás. Guardala sin conexión, en un lugar al que solo vos puedas acceder.",
-      "reveal_description": "Se abrirá la página de revelado segura de Magic en una pestaña nueva para que veas y hagas una copia de seguridad de tu clave privada.",
+      "reveal_description": "Se abrirá la página de revelado segura de Magic en una pestaña nueva para que veas y hagas una copia de seguridad de tu clave privada. Debes completar el inicio de sesión en el sitio de Magic con el mismo mecanismo que utilizaste para iniciar sesión en Decentraland.",
       "reveal_button": "Revelar clave privada",
       "unavailable_title": "La configuración de seguridad no está disponible para esta billetera",
       "unavailable_description": "Revelar una clave privada solo aplica a cuentas creadas con email o inicio de sesión social. Las billeteras self-custody (como MetaMask o WalletConnect) ya gestionan sus propias claves, así que no hay nada que revelar acá."

@@ -1528,7 +1528,7 @@
       "responsibility_description": "备份您的私钥可让您从任何兼容的应用访问您的钱包，并在您失去登录访问权限时保护您的资产安全。在自托管模式下，这份责任完全由您自己承担。",
       "warning_title": "切勿分享您的私钥",
       "warning_description": "任何拥有您私钥的人都可以完全且不可逆转地控制您的账户，并转移您的所有资产。Decentraland 团队成员绝不会向您索要私钥。请将其离线保存在只有您才能访问的地方。",
-      "reveal_description": "系统将在新标签页中打开 Magic 的安全揭示页面，供您查看并备份您的私钥。",
+      "reveal_description": "系统将在新标签页中打开 Magic 的安全揭示页面，供您查看并备份您的私钥。您必须使用与登录 Decentraland 相同的方式，在 Magic 网站上完成登录。",
       "reveal_button": "显示私钥",
       "unavailable_title": "此钱包无法使用安全设置",
       "unavailable_description": "显示私钥仅适用于通过电子邮件或社交登录创建的账户。自托管钱包（如 MetaMask 或 WalletConnect）自行管理密钥，因此这里没有可显示的内容。"
