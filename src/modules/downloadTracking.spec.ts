@@ -79,7 +79,10 @@ describe('createDownloadTracker', () => {
         anon_user_id: 'anon-abc',
         auth_state: 'anonymous',
         revisit: 0,
-        started_at: 1_700_000_000_000
+        started_at: 1_700_000_000_000,
+        track_called_at: 1_700_000_000_000,
+        track_delivered_at: 1_700_000_000_000,
+        track_deferred: true
       })
     })
 
@@ -129,7 +132,10 @@ describe('createDownloadTracker', () => {
         filename: 'Install-Decentraland.exe',
         started_at: 1_700_000_000_000,
         succeeded_at: 1_700_000_005_500,
-        duration_ms: 5_500
+        duration_ms: 5_500,
+        track_called_at: 1_700_000_005_500,
+        track_delivered_at: 1_700_000_005_500,
+        track_deferred: true
       })
     })
 
@@ -173,7 +179,10 @@ describe('createDownloadTracker', () => {
         reason: 'Network error: connection refused',
         started_at: 1_700_000_000_000,
         failed_at: 1_700_000_002_000,
-        duration_ms: 2_000
+        duration_ms: 2_000,
+        track_called_at: 1_700_000_002_000,
+        track_delivered_at: 1_700_000_002_000,
+        track_deferred: true
       })
     })
   })

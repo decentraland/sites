@@ -32,6 +32,25 @@ const buildBasePayload = (ctx: DownloadTrackerContext): Record<string, unknown> 
 }
 
 /**
+ * Appends the `track_called_at`, `track_delivered_at`, and `track_deferred`
+ * audit fields that `useDeferredTrack` normally injects. These events now
+ * always bypass the queue (beacon transport), so `track_deferred` is always
+ * `true` — mirrors the convention in `useDownloadClick`'s beacon path.
+ */
+const withTrackAuditFields = (payload: Record<string, unknown>): Record<string, unknown> => {
+  const now = Date.now()
+  return {
+    ...payload,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    track_called_at: now,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    track_delivered_at: now,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    track_deferred: true
+  }
+}
+
+/**
  * Builds a tracker bound to a single download attempt.
  *
  * Captures `started_at` at the moment `started()` is called (not at
@@ -54,11 +73,11 @@ function createDownloadTracker(ctx: DownloadTrackerContext): DownloadTracker {
       startedAt = Date.now()
       postSegmentEvent(
         SegmentEvent.DOWNLOAD_STARTED,
-        {
+        withTrackAuditFields({
           ...buildBasePayload(ctx),
           // eslint-disable-next-line @typescript-eslint/naming-convention
           started_at: startedAt
-        },
+        }),
         ensureSegmentAnonymousId()
       )
     },
@@ -78,14 +97,14 @@ function createDownloadTracker(ctx: DownloadTrackerContext): DownloadTracker {
       if (bytesTransferred !== undefined) {
         payload.bytes_transferred = bytesTransferred
       }
-      postSegmentEvent(SegmentEvent.DOWNLOAD_SUCCESS, payload, ensureSegmentAnonymousId())
+      postSegmentEvent(SegmentEvent.DOWNLOAD_SUCCESS, withTrackAuditFields(payload), ensureSegmentAnonymousId())
     },
     failed: reason => {
       const failedAt = Date.now()
       const anchor = startedAt ?? failedAt
       postSegmentEvent(
         SegmentEvent.DOWNLOAD_FAILED,
-        {
+        withTrackAuditFields({
           ...buildBasePayload(ctx),
           reason,
           // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -94,7 +113,7 @@ function createDownloadTracker(ctx: DownloadTrackerContext): DownloadTracker {
           failed_at: failedAt,
           // eslint-disable-next-line @typescript-eslint/naming-convention
           duration_ms: failedAt - anchor
-        },
+        }),
         ensureSegmentAnonymousId()
       )
     }

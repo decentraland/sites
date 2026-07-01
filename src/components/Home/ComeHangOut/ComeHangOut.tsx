@@ -3,7 +3,7 @@ import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { AnimatedBackground, DownloadModal, DownloadQRModal } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAnimatedCounter } from '../../../hooks/useAnimatedCounter'
-import { ANON_USER_ID_PARAM, useAnonUserId } from '../../../hooks/useAnonUserId'
+import { useAnonUserId } from '../../../hooks/useAnonUserId'
 import { useDownloadClick } from '../../../hooks/useDownloadClick'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import appleLogo from '../../../images/apple-logo.svg'
@@ -12,6 +12,7 @@ import { DOWNLOAD_URLS } from '../../../modules/downloadConstants'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
 import { formatToShorthand } from '../../../modules/number'
 import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
+import { buildDownloadSuccessHref } from '../../../modules/url'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
@@ -41,18 +42,8 @@ const ComeHangOut = memo(() => {
   const [, userAgentData] = useAdvancedUserAgentData()
   const [rawDownloads, rawDownloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
 
-  // Build the /download_success URL with the campaign anon_user_id baked in.
-  // Without this query param, /download_success falls back to a direct CDN
-  // download (bypassing the gateway), the wrapper installer never runs, and
-  // campaign attribution is lost end-to-end (mirrors the home Hero).
-  const buildDownloadSuccessHref = useCallback(
-    (os: string, place: string) => {
-      const params = new URLSearchParams({ os, place })
-      if (anonUserId) {
-        params.set(ANON_USER_ID_PARAM, anonUserId)
-      }
-      return `/download_success?${params.toString()}`
-    },
+  const downloadSuccessHref = useCallback(
+    (os: string, place: string) => buildDownloadSuccessHref(os, place, anonUserId),
     [anonUserId]
   )
 
@@ -104,10 +95,10 @@ const ComeHangOut = memo(() => {
     (e: React.MouseEvent<HTMLElement>) => {
       trackDownloadClick(e)
       if (userAgentData) {
-        window.location.href = buildDownloadSuccessHref(userAgentData.os.name, DownloadPlace.COME_HANG_OUT)
+        window.location.href = downloadSuccessHref(userAgentData.os.name, DownloadPlace.COME_HANG_OUT)
       }
     },
-    [trackDownloadClick, userAgentData, buildDownloadSuccessHref]
+    [trackDownloadClick, userAgentData, downloadSuccessHref]
   )
 
   const osImage = userAgentData
@@ -118,7 +109,7 @@ const ComeHangOut = memo(() => {
     <>
       <div style={{ display: 'flex', gap: 24, justifyContent: 'center' }}>
         <DownloadButton
-          href={userAgentData ? buildDownloadSuccessHref(userAgentData.os.name, DownloadPlace.COME_HANG_OUT) : '/download'}
+          href={userAgentData ? downloadSuccessHref(userAgentData.os.name, DownloadPlace.COME_HANG_OUT) : '/download'}
           data-place={SectionViewedTrack.LANDING_COME_HANG_OUT}
           data-event={SegmentEvent.CLICK}
           onClick={handleDownloadClick}
@@ -150,7 +141,7 @@ const ComeHangOut = memo(() => {
         <PlatformIcons>
           {currentOs === OperativeSystem.MACOS && (
             <a
-              href={buildDownloadSuccessHref('Windows', DownloadPlace.COME_HANG_OUT)}
+              href={downloadSuccessHref('Windows', DownloadPlace.COME_HANG_OUT)}
               data-event={SegmentEvent.DOWNLOAD}
               data-os={OperativeSystem.WINDOWS}
               data-place={DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}
@@ -161,7 +152,7 @@ const ComeHangOut = memo(() => {
           )}
           {currentOs === OperativeSystem.WINDOWS && (
             <a
-              href={buildDownloadSuccessHref('macOS', DownloadPlace.COME_HANG_OUT)}
+              href={downloadSuccessHref('macOS', DownloadPlace.COME_HANG_OUT)}
               data-event={SegmentEvent.DOWNLOAD}
               data-os={OperativeSystem.MACOS}
               data-place={DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}
