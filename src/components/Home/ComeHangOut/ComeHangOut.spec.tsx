@@ -7,9 +7,16 @@ import { ComeHangOut } from './ComeHangOut'
 
 jest.mock('decentraland-ui2', () => {
   const { styled, Box } = jest.requireActual('../../../__test-utils__/styledMock')
+  const Typography = ({ children, ...rest }: { children?: React.ReactNode }) => <p {...rest}>{children}</p>
   return {
     styled,
     Box,
+    Typography,
+    dclColors: {
+      neutral: { white: '#FFFFFF', trueWhite: '#FFFFFF', softWhite: '#FCFCFC', softBlack2: '#242129' },
+      brand: { ruby: '#FF2D55' },
+      whiteTransparent: { soft: 'rgba(255, 255, 255, 0.2)', backdrop: 'rgba(255, 255, 255, 0.6)' }
+    },
     AnimatedBackground: () => <div data-testid="animated-background" />,
     DownloadModal: ({ open }: { open?: boolean }) => <div data-testid="download-modal" data-open={String(!!open)} />,
     DownloadQRModal: ({ open, os }: { open?: boolean; os?: string }) => (
