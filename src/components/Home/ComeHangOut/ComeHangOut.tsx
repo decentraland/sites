@@ -3,6 +3,7 @@ import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { AnimatedBackground, DownloadModal, DownloadQRModal } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAnimatedCounter } from '../../../hooks/useAnimatedCounter'
+import { useAnonUserId } from '../../../hooks/useAnonUserId'
 import { useDownloadClick } from '../../../hooks/useDownloadClick'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import appleLogo from '../../../images/apple-logo.svg'
@@ -11,6 +12,7 @@ import { DOWNLOAD_URLS } from '../../../modules/downloadConstants'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
 import { formatToShorthand } from '../../../modules/number'
 import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
+import { buildDownloadSuccessHref } from '../../../modules/url'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
@@ -35,9 +37,12 @@ let cachedDownloadCounts: string | null = null
 const ComeHangOut = memo(() => {
   const l = useFormatMessage()
   const trackDownloadClick = useDownloadClick()
+  const anonUserId = useAnonUserId()
   const { isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads } = useHangOutAction()
   const [, userAgentData] = useAdvancedUserAgentData()
   const [rawDownloads, rawDownloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
+
+  const downloadSuccessHref = useCallback((os: string, place: string) => buildDownloadSuccessHref(os, place, anonUserId), [anonUserId])
 
   const targetDownloads = !rawDownloadsStatus.loading && rawDownloadsStatus.loaded && rawDownloads ? rawDownloads : null
   if (targetDownloads) cachedDownloadCounts = formatToShorthand(targetDownloads)
@@ -87,10 +92,10 @@ const ComeHangOut = memo(() => {
     (e: React.MouseEvent<HTMLElement>) => {
       trackDownloadClick(e)
       if (userAgentData) {
-        window.location.href = `/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.COME_HANG_OUT}`
+        window.location.href = downloadSuccessHref(userAgentData.os.name, DownloadPlace.COME_HANG_OUT)
       }
     },
-    [trackDownloadClick, userAgentData]
+    [trackDownloadClick, userAgentData, downloadSuccessHref]
   )
 
   const osImage = userAgentData
@@ -101,7 +106,7 @@ const ComeHangOut = memo(() => {
     <>
       <div style={{ display: 'flex', gap: 24, justifyContent: 'center' }}>
         <DownloadButton
-          href={userAgentData ? `/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.COME_HANG_OUT}` : '/download'}
+          href={userAgentData ? downloadSuccessHref(userAgentData.os.name, DownloadPlace.COME_HANG_OUT) : '/download'}
           data-place={SectionViewedTrack.LANDING_COME_HANG_OUT}
           data-event={SegmentEvent.CLICK}
           onClick={handleDownloadClick}
@@ -133,7 +138,7 @@ const ComeHangOut = memo(() => {
         <PlatformIcons>
           {currentOs === OperativeSystem.MACOS && (
             <a
-              href={`/download_success?os=Windows&place=${DownloadPlace.COME_HANG_OUT}`}
+              href={downloadSuccessHref('Windows', DownloadPlace.COME_HANG_OUT)}
               data-event={SegmentEvent.DOWNLOAD}
               data-os={OperativeSystem.WINDOWS}
               data-place={DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}
@@ -144,7 +149,7 @@ const ComeHangOut = memo(() => {
           )}
           {currentOs === OperativeSystem.WINDOWS && (
             <a
-              href={`/download_success?os=macOS&place=${DownloadPlace.COME_HANG_OUT}`}
+              href={downloadSuccessHref('macOS', DownloadPlace.COME_HANG_OUT)}
               data-event={SegmentEvent.DOWNLOAD}
               data-os={OperativeSystem.MACOS}
               data-place={DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}

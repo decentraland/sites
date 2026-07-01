@@ -1,5 +1,5 @@
 import type { Architecture, OperativeSystem } from '../types/download.types'
-import type { DownloadPlace, SegmentEvent } from './segment'
+import type { DownloadPlace } from './segment'
 
 type AuthState = 'authenticated' | 'anonymous'
 
@@ -21,12 +21,10 @@ interface DownloadTrackerContext {
   extra?: Record<string, unknown>
 }
 
-type DownloadTrackFn = (event: SegmentEvent, payload: Record<string, unknown>) => void
-
 interface DownloadTracker {
   started: () => void
   success: (filename: string, bytesTransferred?: number) => void
   failed: (reason: string) => void
 }
 
-export type { AuthState, DownloadTrackFn, DownloadTracker, DownloadTrackerContext }
+export type { AuthState, DownloadTracker, DownloadTrackerContext }

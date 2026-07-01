@@ -2,17 +2,25 @@ import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import { DownloadSuccess } from './DownloadSuccess'
 
-const mockTrack = jest.fn()
 const mockCalculateDownloadUrl = jest.fn()
 const mockStreamOrFallback = jest.fn()
 let searchParamsInstance = new URLSearchParams()
 // Mutable so individual tests can flip the auth state used by the component.
 let mockHasValidIdentity = false
-// Mutable so tests can simulate Segment finishing its lazy init mid-flight.
-let analyticsIsInitialized = true
-// Captured at module load so we can drive `useDeferredTrack`'s init effect by
-// re-rendering the component with a fresh value of `isInitialized`.
-const analyticsListeners: Array<() => void> = []
+
+// download_started/success/failed now bypass useDeferredTrack entirely and go
+// straight through the unload-safe beacon transport (see downloadTracking.ts).
+// Mock it directly rather than @dcl/hooks's `track`, which no longer receives
+// these events.
+const mockPostSegmentEvent = jest.fn()
+jest.mock('../../modules/segmentBeacon', () => ({
+  postSegmentEvent: (...args: unknown[]) => mockPostSegmentEvent(...args)
+}))
+jest.mock('../../modules/segmentAnonymousId', () => ({
+  ensureSegmentAnonymousId: () => 'anon-fixed'
+}))
+
+const findEventCall = (event: string) => mockPostSegmentEvent.mock.calls.find(([callEvent]) => callEvent === event)
 
 jest.mock('decentraland-ui2', () => ({
   Logo: () => null,
@@ -20,11 +28,6 @@ jest.mock('decentraland-ui2', () => ({
 }))
 
 jest.mock('@dcl/hooks', () => ({
-  useAnalytics: () => {
-    // The listener pattern is a no-op for tests that don't care, and lets the
-    // "queued events drain when Segment loads" test re-trigger a render.
-    return { isInitialized: analyticsIsInitialized, track: mockTrack }
-  },
   useTranslation: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }, values?: Record<string, unknown>) => {
@@ -142,14 +145,13 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
 
   afterEach(() => {
     jest.resetAllMocks()
-    analyticsListeners.length = 0
   })
 
   it('should fire download_started with the resolved downloadUrl as href (not the CDN fallback)', async () => {
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith(
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         'download_started',
         expect.objectContaining({
           place: 'landing-hero',
@@ -161,11 +163,12 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
           revisit: 0,
           fp_screen_width: expect.any(Number),
           fp_screen_height: expect.any(Number)
-        })
+        }),
+        'anon-fixed'
       )
     })
 
-    const startedCall = mockTrack.mock.calls.find(([event]) => event === 'download_started')
+    const startedCall = findEventCall('download_started')
     expect(startedCall?.[1]).toHaveProperty('started_at', expect.any(Number))
   })
 
@@ -173,7 +176,7 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith(
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         'download_success',
         expect.objectContaining({
           place: 'landing-hero',
@@ -187,11 +190,12 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
           bytes_transferred: 4 * 1024 * 1024,
           fp_screen_width: expect.any(Number),
           fp_device_pixel_ratio: expect.any(Number)
-        })
+        }),
+        'anon-fixed'
       )
     })
 
-    const successCall = mockTrack.mock.calls.find(([event]) => event === 'download_success')
+    const successCall = findEventCall('download_success')
     expect(successCall?.[1]).toHaveProperty('started_at', expect.any(Number))
     expect(successCall?.[1]).toHaveProperty('succeeded_at', expect.any(Number))
     expect(successCall?.[1]).toHaveProperty('duration_ms', expect.any(Number))
@@ -201,11 +205,11 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything())
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything())
     })
 
-    const startedIdx = mockTrack.mock.calls.findIndex(([event]) => event === 'download_started')
-    const successIdx = mockTrack.mock.calls.findIndex(([event]) => event === 'download_success')
+    const startedIdx = mockPostSegmentEvent.mock.calls.findIndex(([event]) => event === 'download_started')
+    const successIdx = mockPostSegmentEvent.mock.calls.findIndex(([event]) => event === 'download_success')
     expect(startedIdx).toBeGreaterThanOrEqual(0)
     expect(successIdx).toBeGreaterThan(startedIdx)
   })
@@ -215,8 +219,16 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
     try {
       render(<DownloadSuccess />)
       await waitFor(() => {
-        expect(mockTrack).toHaveBeenCalledWith('download_started', expect.objectContaining({ auth_state: 'authenticated' }))
-        expect(mockTrack).toHaveBeenCalledWith('download_success', expect.objectContaining({ auth_state: 'authenticated' }))
+        expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+          'download_started',
+          expect.objectContaining({ auth_state: 'authenticated' }),
+          expect.anything()
+        )
+        expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+          'download_success',
+          expect.objectContaining({ auth_state: 'authenticated' }),
+          expect.anything()
+        )
       })
     } finally {
       mockHasValidIdentity = false
@@ -228,10 +240,10 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything())
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything())
     })
 
-    const successCall = mockTrack.mock.calls.find(([event]) => event === 'download_success')
+    const successCall = findEventCall('download_success')
     expect(successCall?.[1]).not.toHaveProperty('bytes_transferred')
   })
 })
@@ -256,10 +268,10 @@ describe('when DownloadSuccess mounts without a place query param', () => {
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_started', expect.anything())
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.anything(), expect.anything())
     })
 
-    const startedCall = mockTrack.mock.calls.find(([event]) => event === 'download_started')
+    const startedCall = findEventCall('download_started')
     expect(startedCall?.[1]).not.toHaveProperty('place')
   })
 })
@@ -284,23 +296,22 @@ describe('when DownloadSuccess mounts with a place query param that is not in th
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_started', expect.anything())
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.anything(), expect.anything())
     })
 
-    const startedCall = mockTrack.mock.calls.find(([event]) => event === 'download_started')
+    const startedCall = findEventCall('download_started')
     expect(startedCall?.[1]).not.toHaveProperty('place')
   })
 })
 
-describe('when Segment has not finished lazy-loading at mount (race condition)', () => {
+describe('when Segment has not finished lazy-loading at mount', () => {
   // Regression guard for the previous race where calculateDownloadUrl resolved
-  // before Segment did and the funnel events dropped silently.
-  // With the new useDeferredTrack hook, events are queued and drained on
-  // isInitialized → true. Asserting the "no fire while uninitialized" half here;
-  // the "drains once Segment is ready" half is covered below.
+  // before Segment did and the funnel events dropped silently. download_started
+  // /success/failed now go through the unload-safe beacon transport
+  // (postSegmentEvent + ensureSegmentAnonymousId), which fires immediately
+  // regardless of Segment's own lazy-boot state — there is no queue to drain.
 
   beforeEach(() => {
-    analyticsIsInitialized = false
     searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
     sessionStorage.clear()
     window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=landing-hero')
@@ -313,10 +324,9 @@ describe('when Segment has not finished lazy-loading at mount (race condition)',
 
   afterEach(() => {
     jest.resetAllMocks()
-    analyticsIsInitialized = true
   })
 
-  it('should still attempt the download while Segment is loading and queue both analytics events', async () => {
+  it('should fire download_started/success via the beacon transport even though Segment has not booted', async () => {
     render(<DownloadSuccess />)
 
     // The download itself is attempted regardless of Segment readiness — UX
@@ -325,13 +335,12 @@ describe('when Segment has not finished lazy-loading at mount (race condition)',
       expect(mockStreamOrFallback).toHaveBeenCalled()
     })
 
-    // While analytics is still loading, neither event has fired — they sit
-    // in the deferred track queue waiting for isInitialized.
-    // The drain-on-init half of the contract is covered by useDeferredTrack's
-    // own unit tests; replicating it here would require breaking through the
-    // component's React.memo barrier, which serves no value over those tests.
-    expect(mockTrack).not.toHaveBeenCalledWith('download_started', expect.anything())
-    expect(mockTrack).not.toHaveBeenCalledWith('download_success', expect.anything())
+    // Both events fire immediately via the beacon transport — no queueing on
+    // Segment's isInitialized flag.
+    await waitFor(() => {
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.anything(), 'anon-fixed')
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), 'anon-fixed')
+    })
   })
 })
 
@@ -362,10 +371,15 @@ describe('when the user clicks the footer re-download link', () => {
     await waitFor(() => {
       expect(mockStreamOrFallback).toHaveBeenCalled()
     })
-    expect(mockTrack).toHaveBeenCalledWith('download_started', expect.objectContaining({ place: 'download-success-footer' }))
-    expect(mockTrack).toHaveBeenCalledWith(
+    expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+      'download_started',
+      expect.objectContaining({ place: 'download-success-footer' }),
+      expect.anything()
+    )
+    expect(mockPostSegmentEvent).toHaveBeenCalledWith(
       'download_success',
-      expect.objectContaining({ place: 'download-success-footer', filename: 'Foo.exe' })
+      expect.objectContaining({ place: 'download-success-footer', filename: 'Foo.exe' }),
+      expect.anything()
     )
   })
 
@@ -390,7 +404,7 @@ describe('when the user clicks the footer re-download link', () => {
     // default resolved mock, so the next mockRejectedValueOnce we set up only
     // affects the footer click — not the page-mount flow.
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything())
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything())
     })
     mockCalculateDownloadUrl.mockRejectedValueOnce(new Error('boom'))
 
@@ -398,7 +412,11 @@ describe('when the user clicks the footer re-download link', () => {
     link.click()
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_failed', expect.objectContaining({ place: 'download-success-footer' }))
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+        'download_failed',
+        expect.objectContaining({ place: 'download-success-footer' }),
+        expect.anything()
+      )
     })
   })
 
@@ -406,7 +424,7 @@ describe('when the user clicks the footer re-download link', () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined)
     const { findByRole } = render(<DownloadSuccess />)
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything())
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything())
     })
     // URL resolution succeeds for the footer too; stream rejects after the
     // tracker is built so the catch branch must reuse it (covers the
@@ -417,9 +435,10 @@ describe('when the user clicks the footer re-download link', () => {
     link.click()
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith(
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         'download_failed',
-        expect.objectContaining({ place: 'download-success-footer', reason: 'footer stream blew up' })
+        expect.objectContaining({ place: 'download-success-footer', reason: 'footer stream blew up' }),
+        expect.anything()
       )
     })
   })
@@ -442,7 +461,7 @@ describe('when DownloadSuccess mounts and the url resolution rejects', () => {
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith(
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         'download_failed',
         expect.objectContaining({
           place: 'download-page',
@@ -453,7 +472,8 @@ describe('when DownloadSuccess mounts and the url resolution rejects', () => {
           auth_state: 'anonymous',
           revisit: 0,
           reason: 'No download link available'
-        })
+        }),
+        expect.anything()
       )
     })
   })
@@ -474,26 +494,27 @@ describe('when DownloadSuccess mounts and the url resolution rejects', () => {
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith(
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         'download_failed',
         expect.objectContaining({
           place: 'download-page',
           href: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
           reason: 'stream blew up'
-        })
+        }),
+        expect.anything()
       )
     })
-    expect(mockTrack).toHaveBeenCalledWith('download_started', expect.anything())
+    expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.anything(), expect.anything())
   })
 
   it('should NOT fire download_started when URL resolution fails before the tracker is built', async () => {
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_failed', expect.anything())
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_failed', expect.anything(), expect.anything())
     })
 
-    expect(mockTrack).not.toHaveBeenCalledWith('download_started', expect.anything())
+    expect(mockPostSegmentEvent).not.toHaveBeenCalledWith('download_started', expect.anything(), expect.anything())
   })
 })
 
@@ -516,14 +537,14 @@ describe('when the same os/arch is revisited within the session', () => {
   it('should report revisit=0 on the first mount and increment on subsequent mounts of the same os/arch', async () => {
     const { unmount } = render(<DownloadSuccess />)
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_started', expect.objectContaining({ revisit: 0 }))
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.objectContaining({ revisit: 0 }), expect.anything())
     })
     unmount()
-    mockTrack.mockClear()
+    mockPostSegmentEvent.mockClear()
 
     render(<DownloadSuccess />)
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_started', expect.objectContaining({ revisit: 1 }))
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.objectContaining({ revisit: 1 }), expect.anything())
     })
   })
 
@@ -635,7 +656,7 @@ describe('when the page unmounts mid-flight (abort handling)', () => {
     })
 
     // The post-abort success branch is skipped, so download_success never fires.
-    expect(mockTrack).not.toHaveBeenCalledWith('download_success', expect.anything())
+    expect(mockPostSegmentEvent).not.toHaveBeenCalledWith('download_success', expect.anything(), expect.anything())
   })
 })
 
@@ -658,7 +679,7 @@ describe('when the user leaves the page (download_funnel_exit)', () => {
 
   it('should fire the exit event when hidden, with the fired flags after a completed download', async () => {
     render(<DownloadSuccess />)
-    await waitFor(() => expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything()))
+    await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything()))
 
     React.act(() => {
       setVisibility(true)
@@ -695,7 +716,7 @@ describe('when the user leaves the page (download_funnel_exit)', () => {
 
   it('should fire again on a later hide (dedup handled in the warehouse)', async () => {
     render(<DownloadSuccess />)
-    await waitFor(() => expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything()))
+    await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything()))
 
     React.act(() => {
       setVisibility(true) // switch away
@@ -711,7 +732,7 @@ describe('when the user leaves the page (download_funnel_exit)', () => {
     searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64')
     window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64')
     render(<DownloadSuccess />)
-    await waitFor(() => expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything()))
+    await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything()))
 
     React.act(() => {
       setVisibility(true)

@@ -10,7 +10,6 @@ import { OperativeSystem } from '../types/download.types'
 import type { Architecture } from '../types/download.types'
 import { ANON_USER_ID_PARAM, useAnonUserId } from './useAnonUserId'
 import { useAuthIdentity } from './useAuthIdentity'
-import { useDeferredTrack } from './useDeferredTrack'
 import { Repo, useLatestGithubRelease } from './useLatestGithubRelease'
 
 const REDIRECT_PATH = '/download/creator-hub-success'
@@ -29,7 +28,6 @@ const imageByOs: Record<string, string> = {
 }
 
 function useCreatorHubDownload() {
-  const track = useDeferredTrack()
   const anonUserId = useAnonUserId()
   const { hasValidIdentity } = useAuthIdentity()
   const [isLoadingUserAgentData, userAgentData] = useAdvancedUserAgentData()
@@ -96,7 +94,7 @@ function useCreatorHubDownload() {
         redirectTimerRef.current = null
       }
 
-      const tracker = createDownloadTracker(track, {
+      const tracker = createDownloadTracker({
         href: option.link,
         os: option.text as OperativeSystem,
         arch: option.arch ?? 'amd64',
@@ -122,7 +120,7 @@ function useCreatorHubDownload() {
         window.location.href = finalUrl
       }, REDIRECT_DELAY_MS)
     },
-    [track, anonUserId, hasValidIdentity]
+    [anonUserId, hasValidIdentity]
   )
 
   return { isReady, primaryOption, secondaryOptions, handleDownload }

@@ -4,7 +4,7 @@ import { DownloadModal, DownloadQRModal } from 'decentraland-ui2'
 import { heroContent } from '../../../data/static-content'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAnimatedCounter } from '../../../hooks/useAnimatedCounter'
-import { ANON_USER_ID_PARAM, useAnonUserId } from '../../../hooks/useAnonUserId'
+import { useAnonUserId } from '../../../hooks/useAnonUserId'
 import { useDownloadClick } from '../../../hooks/useDownloadClick'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import appleLogo from '../../../images/apple-logo.svg'
@@ -13,6 +13,7 @@ import { DOWNLOAD_URLS } from '../../../modules/downloadConstants'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
 import { formatToShorthand } from '../../../modules/number'
 import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
+import { buildDownloadSuccessHref } from '../../../modules/url'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { type ScheduledHandle, cancelScheduledIdleCall, scheduleWhenIdle } from '../../../utils/scheduleWhenIdle'
@@ -66,21 +67,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const anonUserId = useAnonUserId()
   const { isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads } = useHangOutAction()
 
-  // Build the /download_success URL with the campaign anon_user_id baked in.
-  // Without this query param, /download_success falls back to a direct CDN
-  // download (bypassing the gateway), the wrapper installer never runs, and
-  // campaign attribution is lost end-to-end. The Hero is the home page's
-  // primary download CTA so this is critical.
-  const buildDownloadSuccessHref = useCallback(
-    (os: string, place: string) => {
-      const params = new URLSearchParams({ os, place })
-      if (anonUserId) {
-        params.set(ANON_USER_ID_PARAM, anonUserId)
-      }
-      return `/download_success?${params.toString()}`
-    },
-    [anonUserId]
-  )
+  const downloadSuccessHref = useCallback((os: string, place: string) => buildDownloadSuccessHref(os, place, anonUserId), [anonUserId])
 
   const [rawDownloads, rawDownloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
 
@@ -176,10 +163,10 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
     (e: React.MouseEvent<HTMLElement>) => {
       trackDownloadClick(e)
       if (userAgentData) {
-        window.location.href = buildDownloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO)
+        window.location.href = downloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO)
       }
     },
-    [trackDownloadClick, userAgentData, buildDownloadSuccessHref]
+    [trackDownloadClick, userAgentData, downloadSuccessHref]
   )
 
   return (
@@ -263,7 +250,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
           <HeroCTAWrapper>
             {/* Download + Epic buttons */}
             <DownloadButton
-              href={userAgentData ? buildDownloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO) : '/download'}
+              href={userAgentData ? downloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO) : '/download'}
               data-place={SectionViewedTrack.LANDING_HERO}
               data-event={SegmentEvent.DOWNLOAD}
               onClick={handleDownloadClick}
@@ -304,7 +291,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
             <HeroPlatformIcons>
               {currentOs === OperativeSystem.MACOS && (
                 <a
-                  href={buildDownloadSuccessHref('Windows', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)}
+                  href={downloadSuccessHref('Windows', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)}
                   data-event={SegmentEvent.DOWNLOAD}
                   data-os={OperativeSystem.WINDOWS}
                   data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}
@@ -315,7 +302,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
               )}
               {currentOs === OperativeSystem.WINDOWS && (
                 <a
-                  href={buildDownloadSuccessHref('macOS', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)}
+                  href={downloadSuccessHref('macOS', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)}
                   data-event={SegmentEvent.DOWNLOAD}
                   data-os={OperativeSystem.MACOS}
                   data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}

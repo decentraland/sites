@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
+import { useAnonUserId } from '../../../hooks/useAnonUserId'
 import { useDownloadClick } from '../../../hooks/useDownloadClick'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
@@ -38,6 +39,11 @@ jest.mock('../../../hooks/useDownloadClick', () => ({
   useDownloadClick: jest.fn()
 }))
 
+jest.mock('../../../hooks/useAnonUserId', () => ({
+  ANON_USER_ID_PARAM: 'anon_user_id',
+  useAnonUserId: jest.fn(() => undefined)
+}))
+
 jest.mock('../../../hooks/useHangOutAction', () => ({
   useHangOutAction: jest.fn()
 }))
@@ -50,10 +56,16 @@ jest.mock('../../Icon/VerifiedIcon', () => ({
   VerifiedIcon: () => <span data-testid="verified-icon" />
 }))
 
+jest.mock('../../../modules/url', () => ({
+  buildDownloadSuccessHref: (os: string, place: string, anonUserId?: string) =>
+    `/download_success?os=${os}&place=${place}${anonUserId ? `&anon_user_id=${anonUserId}` : ''}`
+}))
+
 const mockUserAgent = jest.mocked(useAdvancedUserAgentData)
 const mockAsyncMemo = jest.mocked(useAsyncMemo)
 const mockDownloadClick = jest.mocked(useDownloadClick)
 const mockHangOut = jest.mocked(useHangOutAction)
+const mockAnonUserId = jest.mocked(useAnonUserId)
 
 const trackDownloadClick = jest.fn()
 
@@ -67,6 +79,7 @@ describe('ComeHangOut', () => {
       totalDownloads: '+400K'
     } as unknown as ReturnType<typeof useHangOutAction>)
     mockAsyncMemo.mockReturnValue([500000, { loading: false, loaded: true }] as unknown as ReturnType<typeof useAsyncMemo>)
+    mockAnonUserId.mockReturnValue(undefined)
   })
 
   afterEach(() => {
@@ -103,6 +116,23 @@ describe('ComeHangOut', () => {
       fireEvent.click(macIcon)
 
       expect(trackDownloadClick).toHaveBeenCalledTimes(1)
+    })
+
+    it('should bake anon_user_id into the download and platform-switch hrefs so attribution survives the redirect', () => {
+      mockAnonUserId.mockReturnValue('11111111-1111-4111-8111-111111111111')
+      render(<ComeHangOut />)
+
+      const downloadButton = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
+      expect(downloadButton).toHaveAttribute(
+        'href',
+        `/download_success?os=Windows&place=${DownloadPlace.COME_HANG_OUT}&anon_user_id=11111111-1111-4111-8111-111111111111`
+      )
+
+      const macIcon = screen.getByAltText('macOS').closest('a') as HTMLAnchorElement
+      expect(macIcon).toHaveAttribute(
+        'href',
+        `/download_success?os=macOS&place=${DownloadPlace.COME_HANG_OUT}&anon_user_id=11111111-1111-4111-8111-111111111111`
+      )
     })
 
     it('should track the iOS QR icon click and still open the QR modal', () => {

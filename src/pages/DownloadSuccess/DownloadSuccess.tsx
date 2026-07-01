@@ -5,7 +5,6 @@ import { Logo, Typography } from 'decentraland-ui2'
 import { LandingFooter } from '../../components/LandingFooter'
 import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { useDeferredTrack } from '../../hooks/useDeferredTrack'
 import { useDownloadFunnelExit } from '../../hooks/useDownloadFunnelExit'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
@@ -18,7 +17,7 @@ import windowsSetup from '../../images/download/windows_setup.webp'
 import microsoftLogo from '../../images/microsoft-logo.svg'
 import type { DownloadFunnelExitData } from '../../modules/downloadFunnelExit.types'
 import { createDownloadTracker, toAuthState } from '../../modules/downloadTracking'
-import type { DownloadTrackFn, DownloadTracker } from '../../modules/downloadTracking.types'
+import type { DownloadTracker } from '../../modules/downloadTracking.types'
 import { calculateDownloadUrl } from '../../modules/downloadWithIdentity'
 import { collectClientFingerprint } from '../../modules/fingerprint'
 import { DownloadPlace, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
@@ -41,7 +40,6 @@ const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
   const { intl } = useTranslation()
-  const deferredTrack = useDeferredTrack()
   const getIdentityId = useGetIdentityId()
   const anonUserId = useAnonUserId()
   const { hasValidIdentity } = useAuthIdentity()
@@ -76,16 +74,24 @@ const DownloadSuccess = memo(() => {
   const failedFiredRef = useRef(false)
   const pageLoadedAtRef = useRef(Date.now())
 
-  // Wraps the deferred track so every download_* event also records that it
-  // fired, without sprinkling ref writes across the four tracker call sites.
-  const trackDownloadEvent = useCallback<DownloadTrackFn>(
-    (event, payload) => {
-      if (event === SegmentEvent.DOWNLOAD_STARTED) startedFiredRef.current = true
-      else if (event === SegmentEvent.DOWNLOAD_SUCCESS) successFiredRef.current = true
-      else if (event === SegmentEvent.DOWNLOAD_FAILED) failedFiredRef.current = true
-      deferredTrack(event, payload)
-    },
-    [deferredTrack]
+  // Wraps a tracker so every download_* event also records that it fired,
+  // without sprinkling ref writes across the four tracker call sites.
+  const withFiredRefs = useCallback(
+    (tracker: DownloadTracker): DownloadTracker => ({
+      started: () => {
+        startedFiredRef.current = true
+        tracker.started()
+      },
+      success: (filename, bytesTransferred) => {
+        successFiredRef.current = true
+        tracker.success(filename, bytesTransferred)
+      },
+      failed: reason => {
+        failedFiredRef.current = true
+        tracker.failed(reason)
+      }
+    }),
+    []
   )
 
   const rawOs = searchParams.get('os') || ''
@@ -214,18 +220,20 @@ const DownloadSuccess = memo(() => {
         // match this download with the launcher's first-run event from the
         // same machine. Lives in `extra` so every event the tracker emits
         // carries it without polluting the tracker's core schema.
-        tracker = createDownloadTracker(trackDownloadEvent, {
-          place,
-          href: downloadUrl,
-          os: clientOS,
-          arch: clientArch,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          anon_user_id: anonUserIdRef.current ?? undefined,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          auth_state: authStateRef.current,
-          revisit: revisitNumber,
-          extra: { ...(collectClientFingerprint() ?? {}) }
-        })
+        tracker = withFiredRefs(
+          createDownloadTracker({
+            place,
+            href: downloadUrl,
+            os: clientOS,
+            arch: clientArch,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            anon_user_id: anonUserIdRef.current ?? undefined,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            auth_state: authStateRef.current,
+            revisit: revisitNumber,
+            extra: { ...(collectClientFingerprint() ?? {}) }
+          })
+        )
 
         // Fire intent BEFORE the stream so a mid-stream tab close still
         // leaves a `_STARTED` in the warehouse — paired with no `_SUCCESS`
@@ -263,18 +271,20 @@ const DownloadSuccess = memo(() => {
           // URL resolution rejected — no downloadUrl in hand. Emit `_FAILED`
           // with osLink as the best-known href so analytics still records the
           // attempt with consistent shape.
-          const fallbackTracker = createDownloadTracker(trackDownloadEvent, {
-            place,
-            href: osLink,
-            os: clientOS,
-            arch: clientArch,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            anon_user_id: anonUserIdRef.current ?? undefined,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            auth_state: authStateRef.current,
-            revisit: revisitNumber,
-            extra: { ...(collectClientFingerprint() ?? {}) }
-          })
+          const fallbackTracker = withFiredRefs(
+            createDownloadTracker({
+              place,
+              href: osLink,
+              os: clientOS,
+              arch: clientArch,
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              anon_user_id: anonUserIdRef.current ?? undefined,
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              auth_state: authStateRef.current,
+              revisit: revisitNumber,
+              extra: { ...(collectClientFingerprint() ?? {}) }
+            })
+          )
           fallbackTracker.failed(reason)
         }
       } finally {
@@ -289,7 +299,7 @@ const DownloadSuccess = memo(() => {
     return () => {
       abortController.abort()
     }
-  }, [anonUserIdReady, clientOS, clientArch, osLink, place, revisitNumber, trackDownloadEvent])
+  }, [anonUserIdReady, clientOS, clientArch, osLink, place, revisitNumber, withFiredRefs])
 
   const handleDownloadClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -319,18 +329,20 @@ const DownloadSuccess = memo(() => {
         })
         const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserId })
 
-        tracker = createDownloadTracker(trackDownloadEvent, {
-          place: footerPlace,
-          href: downloadUrl,
-          os: clientOS,
-          arch: clientArch,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          anon_user_id: anonUserId ?? undefined,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          auth_state: authState,
-          revisit: revisitNumber,
-          extra: fingerprint
-        })
+        tracker = withFiredRefs(
+          createDownloadTracker({
+            place: footerPlace,
+            href: downloadUrl,
+            os: clientOS,
+            arch: clientArch,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            anon_user_id: anonUserId ?? undefined,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            auth_state: authState,
+            revisit: revisitNumber,
+            extra: fingerprint
+          })
+        )
 
         tracker.started()
 
@@ -354,18 +366,20 @@ const DownloadSuccess = memo(() => {
         if (tracker) {
           tracker.failed(reason)
         } else {
-          const fallbackTracker = createDownloadTracker(trackDownloadEvent, {
-            place: footerPlace,
-            href: osLink,
-            os: clientOS,
-            arch: clientArch,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            anon_user_id: anonUserId ?? undefined,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            auth_state: authState,
-            revisit: revisitNumber,
-            extra: fingerprint
-          })
+          const fallbackTracker = withFiredRefs(
+            createDownloadTracker({
+              place: footerPlace,
+              href: osLink,
+              os: clientOS,
+              arch: clientArch,
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              anon_user_id: anonUserId ?? undefined,
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              auth_state: authState,
+              revisit: revisitNumber,
+              extra: fingerprint
+            })
+          )
           fallbackTracker.failed(reason)
         }
       } finally {
@@ -378,7 +392,7 @@ const DownloadSuccess = memo(() => {
         }
       }
     },
-    [clientOS, clientArch, anonUserId, getIdentityId, osLink, authState, revisitNumber, trackDownloadEvent]
+    [clientOS, clientArch, anonUserId, getIdentityId, osLink, authState, revisitNumber, withFiredRefs]
   )
 
   // Cancel any in-flight footer-initiated stream when the page unmounts so

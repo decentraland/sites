@@ -2,7 +2,17 @@ import { act, renderHook } from '@testing-library/react'
 import { DownloadPlace, SegmentEvent } from '../modules/segment'
 import { useCreatorHubDownload } from './useCreatorHubDownload'
 
-const mockTrack = jest.fn()
+// download_started fires via createDownloadTracker, which now posts directly
+// through the unload-safe beacon transport (see downloadTracking.ts) instead
+// of useDeferredTrack. Mock that transport rather than the hook.
+const mockPostSegmentEvent = jest.fn()
+jest.mock('../modules/segmentBeacon', () => ({
+  postSegmentEvent: (...args: unknown[]) => mockPostSegmentEvent(...args)
+}))
+jest.mock('../modules/segmentAnonymousId', () => ({
+  ensureSegmentAnonymousId: () => 'anon-fixed'
+}))
+
 const mockTriggerFileDownload = jest.fn()
 
 let mockAnonUserId: string | undefined = 'anon-xyz'
@@ -16,10 +26,6 @@ let mockLinksLoading = false
 
 jest.mock('@dcl/hooks', () => ({
   useAdvancedUserAgentData: () => mockUserAgent
-}))
-
-jest.mock('./useDeferredTrack', () => ({
-  useDeferredTrack: () => mockTrack
 }))
 
 jest.mock('./useAnonUserId', () => ({
@@ -98,7 +104,7 @@ describe('useCreatorHubDownload', () => {
         result.current.handleDownload(result.current.primaryOption!)
       })
 
-      expect(mockTrack).toHaveBeenCalledWith(
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         SegmentEvent.DOWNLOAD_STARTED,
         expect.objectContaining({
           href: MAC_LINK,
@@ -112,7 +118,8 @@ describe('useCreatorHubDownload', () => {
           revisit: 0,
 
           started_at: expect.any(Number)
-        })
+        }),
+        'anon-fixed'
       )
       expect(mockTriggerFileDownload).toHaveBeenCalledWith(MAC_LINK)
     })
@@ -125,10 +132,11 @@ describe('useCreatorHubDownload', () => {
         result.current.handleDownload(result.current.primaryOption!)
       })
 
-      expect(mockTrack).toHaveBeenCalledWith(
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         SegmentEvent.DOWNLOAD_STARTED,
 
-        expect.objectContaining({ auth_state: 'authenticated' })
+        expect.objectContaining({ auth_state: 'authenticated' }),
+        'anon-fixed'
       )
     })
 
@@ -164,7 +172,7 @@ describe('useCreatorHubDownload', () => {
         jest.advanceTimersByTime(3000)
       })
 
-      const payload = mockTrack.mock.calls[0][1]
+      const payload = mockPostSegmentEvent.mock.calls[0][1]
       expect(payload).not.toHaveProperty('anon_user_id')
       expect(window.location.href).not.toContain('anon_user_id')
     })
@@ -178,7 +186,7 @@ describe('useCreatorHubDownload', () => {
         result.current.handleDownload({ text: 'macOS', image: 'icon.svg' })
       })
 
-      expect(mockTrack).not.toHaveBeenCalled()
+      expect(mockPostSegmentEvent).not.toHaveBeenCalled()
       expect(mockTriggerFileDownload).not.toHaveBeenCalled()
     })
   })
@@ -194,7 +202,7 @@ describe('useCreatorHubDownload', () => {
         result.current.handleDownload(result.current.primaryOption!)
       })
 
-      expect(mockTrack).toHaveBeenCalledTimes(2)
+      expect(mockPostSegmentEvent).toHaveBeenCalledTimes(2)
       expect(mockTriggerFileDownload).toHaveBeenCalledTimes(2)
     })
   })

@@ -2,6 +2,8 @@ import { config } from 'decentraland-ui2/dist/config'
 import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
 import { Architecture } from '../types/download.types'
 
+const ANON_USER_ID_PARAM = 'anon_user_id'
+
 const addQueryParamsToUrlString = (url: string, params: Record<string, string | undefined | null>): string => {
   if (!params || Object.keys(params).length === 0) {
     return url
@@ -138,9 +140,18 @@ const extractDownloadLinkFromCDNReleaseOption = (
 
 const FALLBACK_CDN_RELEASE_LINKS = sanitizeCDNReleaseLinks(getCDNRelease(CDNSource.LAUNCHER)) || {}
 
+const buildDownloadSuccessHref = (os: string, place: string, anonUserId?: string): string => {
+  const params = new URLSearchParams({ os, place })
+  if (anonUserId) {
+    params.set(ANON_USER_ID_PARAM, anonUserId)
+  }
+  return `/download_success?${params.toString()}`
+}
+
 export {
   FALLBACK_CDN_RELEASE_LINKS,
   addQueryParamsToUrlString,
+  buildDownloadSuccessHref,
   calculateCDNReleaseLinksWithIdentity,
   extractDownloadLinkFromCDNReleaseOption,
   sanitizeCDNReleaseLinks,

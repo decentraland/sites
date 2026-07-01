@@ -3,8 +3,18 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { DownloadPlace, SegmentEvent } from '../../modules/segment'
 import { CreatorHubDownloadSuccess } from './CreatorHubDownloadSuccess'
 
-const mockTrack = jest.fn()
-const mockTrackClick = jest.fn()
+// download_success fires via createDownloadTracker, which now posts directly
+// through the unload-safe beacon transport (see downloadTracking.ts) instead
+// of useDeferredTrack. Mock that transport rather than the hook.
+const mockPostSegmentEvent = jest.fn()
+jest.mock('../../modules/segmentBeacon', () => ({
+  postSegmentEvent: (...args: unknown[]) => mockPostSegmentEvent(...args)
+}))
+jest.mock('../../modules/segmentAnonymousId', () => ({
+  ensureSegmentAnonymousId: () => 'anon-fixed'
+}))
+
+const mockPostSegmentEventClick = jest.fn()
 const mockTriggerFileDownload = jest.fn()
 
 let mockAnonUserId: string | undefined = 'anon-xyz'
@@ -36,11 +46,7 @@ jest.mock('@dcl/hooks', () => ({
 }))
 
 jest.mock('../../hooks/adapters/useTrackLinkContext', () => ({
-  useTrackClick: () => mockTrackClick
-}))
-
-jest.mock('../../hooks/useDeferredTrack', () => ({
-  useDeferredTrack: () => mockTrack
+  useTrackClick: () => mockPostSegmentEventClick
 }))
 
 jest.mock('../../hooks/useAnonUserId', () => ({
@@ -91,8 +97,8 @@ describe('CreatorHubDownloadSuccess', () => {
     it('should fire download_success once with the creator-hub-success-page place and a derived filename', async () => {
       render(<CreatorHubDownloadSuccess />)
 
-      await waitFor(() => expect(mockTrack).toHaveBeenCalledTimes(1))
-      expect(mockTrack).toHaveBeenCalledWith(
+      await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledTimes(1))
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         SegmentEvent.DOWNLOAD_SUCCESS,
         expect.objectContaining({
           href: MAC_LINK,
@@ -105,7 +111,8 @@ describe('CreatorHubDownloadSuccess', () => {
 
           auth_state: 'anonymous',
           revisit: 0
-        })
+        }),
+        'anon-fixed'
       )
     })
 
@@ -113,23 +120,24 @@ describe('CreatorHubDownloadSuccess', () => {
       mockHasValidIdentity = true
       render(<CreatorHubDownloadSuccess />)
 
-      await waitFor(() => expect(mockTrack).toHaveBeenCalledTimes(1))
-      expect(mockTrack).toHaveBeenCalledWith(
+      await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledTimes(1))
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         SegmentEvent.DOWNLOAD_SUCCESS,
 
-        expect.objectContaining({ auth_state: 'authenticated' })
+        expect.objectContaining({ auth_state: 'authenticated' }),
+        'anon-fixed'
       )
     })
 
     it('should increment the revisit counter on a second mount for the same os:arch', async () => {
       const first = render(<CreatorHubDownloadSuccess />)
-      await waitFor(() => expect(mockTrack).toHaveBeenCalledTimes(1))
+      await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledTimes(1))
       first.unmount()
 
       render(<CreatorHubDownloadSuccess />)
-      await waitFor(() => expect(mockTrack).toHaveBeenCalledTimes(2))
+      await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledTimes(2))
 
-      expect(mockTrack.mock.calls[1][1]).toEqual(expect.objectContaining({ revisit: 1 }))
+      expect(mockPostSegmentEvent.mock.calls[1][1]).toEqual(expect.objectContaining({ revisit: 1 }))
     })
   })
 
@@ -143,7 +151,7 @@ describe('CreatorHubDownloadSuccess', () => {
       render(<CreatorHubDownloadSuccess />)
 
       await Promise.resolve()
-      expect(mockTrack).not.toHaveBeenCalled()
+      expect(mockPostSegmentEvent).not.toHaveBeenCalled()
     })
   })
 
@@ -155,10 +163,11 @@ describe('CreatorHubDownloadSuccess', () => {
     it('should fire download_success with the windows link and filename', async () => {
       render(<CreatorHubDownloadSuccess />)
 
-      await waitFor(() => expect(mockTrack).toHaveBeenCalledTimes(1))
-      expect(mockTrack).toHaveBeenCalledWith(
+      await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledTimes(1))
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         SegmentEvent.DOWNLOAD_SUCCESS,
-        expect.objectContaining({ os: 'Windows', arch: 'amd64', filename: 'Creator-Hub-Setup.exe' })
+        expect.objectContaining({ os: 'Windows', arch: 'amd64', filename: 'Creator-Hub-Setup.exe' }),
+        'anon-fixed'
       )
     })
   })
@@ -171,19 +180,23 @@ describe('CreatorHubDownloadSuccess', () => {
     it('should fall back to the default arch for the os', async () => {
       render(<CreatorHubDownloadSuccess />)
 
-      await waitFor(() => expect(mockTrack).toHaveBeenCalledTimes(1))
-      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.DOWNLOAD_SUCCESS, expect.objectContaining({ arch: 'arm64' }))
+      await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledTimes(1))
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+        SegmentEvent.DOWNLOAD_SUCCESS,
+        expect.objectContaining({ arch: 'arm64' }),
+        'anon-fixed'
+      )
     })
   })
 
   describe('when the footer re-download link is clicked', () => {
     it('should track the click and trigger the download again', async () => {
       render(<CreatorHubDownloadSuccess />)
-      await waitFor(() => expect(mockTrack).toHaveBeenCalledTimes(1))
+      await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledTimes(1))
 
       fireEvent.click(screen.getByText('page.creator-hub.download.success.footer_link_label'))
 
-      expect(mockTrackClick).toHaveBeenCalledTimes(1)
+      expect(mockPostSegmentEventClick).toHaveBeenCalledTimes(1)
       expect(mockTriggerFileDownload).toHaveBeenCalledWith(MAC_LINK)
     })
   })
