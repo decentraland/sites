@@ -1208,6 +1208,7 @@
       "wallets": "錢包",
       "notifications": "通知",
       "credits": "积分设置",
+      "security": "安全",
       "delete": "刪除帳戶",
       "logout": "登出",
       "close": "关闭"
@@ -1226,6 +1227,9 @@
       },
       "credits": {
         "title": "积分设置"
+      },
+      "security": {
+        "title": "安全"
       },
       "delete": {
         "title": "刪除帳戶"
@@ -1502,6 +1506,8 @@
       "asset_warning_description": "删除账户可能导致您永久失去对链上资产（可穿戴设备、表情、LAND 等）的访问权限。请确保在继续之前导出您的私钥。",
       "export_key_description": "前往钱包选项卡，使用地址下方的钱包管理器导出您的私钥。",
       "export_key_link": "前往钱包",
+      "export_key_description_magic": "在删除账户之前，请前往安全选项卡查看并备份您的私钥。",
+      "export_key_link_magic": "前往安全",
       "delete_button": "删除账户",
       "modal": {
         "title": "您确定要删除您的账户吗？",
@@ -1514,6 +1520,18 @@
       },
       "unavailable_title": "此钱包无法删除账户",
       "unavailable_description": "删除账户仅适用于通过电子邮件或社交登录创建的账户。自托管钱包（如 MetaMask 或 WalletConnect）自行管理密钥，因此这里没有可删除的内容——只需断开连接即可退出登录。"
+    },
+    "security": {
+      "title": "私钥",
+      "intro": "您的 Decentraland 账户由自托管钱包提供支持。您的私钥是控制该钱包及其所持有的一切（MANA、NAME、LAND、可穿戴设备和表情）的主凭证。",
+      "responsibility_title": "您拥有完全的控制权",
+      "responsibility_description": "备份您的私钥可让您从任何兼容的应用访问您的钱包，并在您失去登录访问权限时保护您的资产安全。在自托管模式下，这份责任完全由您自己承担。",
+      "warning_title": "切勿分享您的私钥",
+      "warning_description": "任何拥有您私钥的人都可以完全且不可逆转地控制您的账户，并转移您的所有资产。Decentraland 团队成员绝不会向您索要私钥。请将其离线保存在只有您才能访问的地方。",
+      "reveal_description": "系统将在新标签页中打开 Magic 的安全揭示页面，供您查看并备份您的私钥。您必须使用与登录 Decentraland 相同的方式，在 Magic 网站上完成登录。",
+      "reveal_button": "显示私钥",
+      "unavailable_title": "此钱包无法使用安全设置",
+      "unavailable_description": "显示私钥仅适用于通过电子邮件或社交登录创建的账户。自托管钱包（如 MetaMask 或 WalletConnect）自行管理密钥，因此这里没有可显示的内容。"
     },
     "copy": "複製",
     "copied": "已複製"

@@ -2,26 +2,27 @@ import type { ReactNode } from 'react'
 import { render, screen } from '@testing-library/react'
 import { DeleteAccountUnavailable } from './DeleteAccountUnavailable'
 
-jest.mock('@mui/icons-material/InfoOutlined', () => ({ __esModule: true, default: () => <span /> }))
+type NoticeProps = { title: string; description: string; dataRole?: string; children?: ReactNode }
 
 jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))
 
-type ChildrenRole = { children?: ReactNode; 'data-role'?: string }
-
-jest.mock('./DeleteAccountUnavailable.styled', () => ({
-  Container: ({ children, 'data-role': dataRole }: ChildrenRole) => <div data-role={dataRole}>{children}</div>,
-  TextWrapper: ({ children }: ChildrenRole) => <div>{children}</div>,
-  Title: ({ children }: ChildrenRole) => <h3>{children}</h3>,
-  Description: ({ children }: ChildrenRole) => <p>{children}</p>
+jest.mock('../../AccountUnavailableNotice/AccountUnavailableNotice', () => ({
+  AccountUnavailableNotice: ({ title, description, dataRole }: NoticeProps) => (
+    <div data-role={dataRole}>
+      <span>{title}</span>
+      <span>{description}</span>
+    </div>
+  )
 }))
 
 describe('DeleteAccountUnavailable', () => {
-  it('should render the unavailable title and description', () => {
-    render(<DeleteAccountUnavailable />)
+  it('should render the unavailable title and description in a delete-scoped notice', () => {
+    const { container } = render(<DeleteAccountUnavailable />)
 
     expect(screen.getByText('account.delete.unavailable_title')).toBeInTheDocument()
     expect(screen.getByText('account.delete.unavailable_description')).toBeInTheDocument()
+    expect(container.querySelector('[data-role="delete-account-unavailable"]')).toBeTruthy()
   })
 })
