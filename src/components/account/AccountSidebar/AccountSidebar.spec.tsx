@@ -19,6 +19,7 @@ jest.mock('@mui/icons-material/ContentCopyOutlined', () => ({ __esModule: true, 
 jest.mock('@mui/icons-material/DeleteOutlineOutlined', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('@mui/icons-material/LogoutOutlined', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('@mui/icons-material/NotificationsNoneOutlined', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/VpnKeyOutlined', () => ({ __esModule: true, default: () => <span /> }))
 
 jest.mock('decentraland-ui2', () => ({
   Address: ({ value, shorten }: AddressProps) => (
@@ -60,8 +61,9 @@ jest.mock('../../../hooks/useWalletAddress', () => ({
 }))
 
 let mockCanDelete = true
+let mockIsMagic = false
 jest.mock('../../../hooks/useCanDeleteAccount', () => ({
-  useCanDeleteAccount: () => ({ canDelete: mockCanDelete, isMagic: false, isResolvingProvider: false })
+  useCanDeleteAccount: () => ({ canDelete: mockCanDelete, isMagic: mockIsMagic, isResolvingProvider: false })
 }))
 
 let mockProfile: unknown = undefined
@@ -87,6 +89,7 @@ describe('AccountSidebar', () => {
 
   beforeEach(() => {
     mockCanDelete = true
+    mockIsMagic = false
     mockProfile = undefined
     Object.assign(navigator, { clipboard: { writeText } })
   })
@@ -111,6 +114,19 @@ describe('AccountSidebar', () => {
 
     expect(screen.queryByText('account.nav.delete')).not.toBeInTheDocument()
     expect(screen.getByText('account.nav.logout')).toBeInTheDocument()
+  })
+
+  it('should show the security entry for a Magic account', () => {
+    mockIsMagic = true
+    renderSidebar()
+
+    expect(screen.getByText('account.nav.security')).toBeInTheDocument()
+  })
+
+  it('should hide the security entry for a non-Magic account', () => {
+    renderSidebar()
+
+    expect(screen.queryByText('account.nav.security')).not.toBeInTheDocument()
   })
 
   it('should render the shortened wallet address and the wallet icon', () => {

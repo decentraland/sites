@@ -14,6 +14,8 @@ import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import { Address, Tooltip } from 'decentraland-ui2'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
@@ -64,7 +66,8 @@ const AccountSidebar = ({ address }: AccountSidebarProps) => {
   const { disconnect } = useWalletAddress()
   // The Delete entry appears only once detection positively confirms a deletable account (thirdweb
   // or Magic); while the Magic check resolves, canDelete stays false so it is not shown prematurely.
-  const { canDelete } = useCanDeleteAccount()
+  // isMagic additionally gates the Security (private-key reveal) entry, which only applies to Magic logins.
+  const { canDelete, isMagic } = useCanDeleteAccount()
   const { data: profile } = useGetProfileQuery(address)
   const [copied, setCopied] = useState(false)
   const copiedTimeout = useRef<ReturnType<typeof setTimeout>>()
@@ -133,6 +136,21 @@ const AccountSidebar = ({ address }: AccountSidebarProps) => {
             </NavItem>
           )
         })}
+        {/* Security (Magic private-key reveal) applies only to Magic logins — thirdweb / self-custodial
+            wallets have no Magic session to reveal, so the entry stays hidden for them. */}
+        {isMagic && (
+          <NavItem
+            to="/account/security"
+            $active={pathname === '/account/security' || pathname.startsWith('/account/security/')}
+            data-role="account-nav-item"
+          >
+            <VpnKeyOutlinedIcon fontSize="small" />
+            {t('account.nav.security')}
+            <NavChevron>
+              <ChevronRightIcon fontSize="small" />
+            </NavChevron>
+          </NavItem>
+        )}
       </Nav>
 
       <BottomGroup>

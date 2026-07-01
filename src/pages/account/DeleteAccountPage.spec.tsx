@@ -48,9 +48,15 @@ jest.mock('../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))
 
-type SectionProps = { address?: string; onOpenConfirmModal: () => void; onGoToWallets: () => void }
+type SectionProps = {
+  address?: string
+  isMagic?: boolean
+  onOpenConfirmModal: () => void
+  onGoToWallets: () => void
+  onGoToSecurity?: () => void
+}
 jest.mock('../../components/account/DeleteAccount/DeleteAccountSection/DeleteAccountSection', () => ({
-  DeleteAccountSection: ({ address, onOpenConfirmModal, onGoToWallets }: SectionProps) => (
+  DeleteAccountSection: ({ address, onOpenConfirmModal, onGoToWallets, onGoToSecurity }: SectionProps) => (
     <div data-role="section">
       <span>{`section-address:${address ?? 'none'}`}</span>
       <button type="button" onClick={onOpenConfirmModal}>
@@ -58,6 +64,9 @@ jest.mock('../../components/account/DeleteAccount/DeleteAccountSection/DeleteAcc
       </button>
       <button type="button" onClick={onGoToWallets}>
         go-to-wallets
+      </button>
+      <button type="button" onClick={onGoToSecurity}>
+        go-to-security
       </button>
     </div>
   )
@@ -134,6 +143,15 @@ describe('DeleteAccountPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'go-to-wallets' }))
 
     expect(mockNavigate).toHaveBeenCalledWith('/account/wallets')
+  })
+
+  it('should navigate to the security section when a Magic user requests the export key', () => {
+    mockIsMagic = true
+    render(<DeleteAccountPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'go-to-security' }))
+
+    expect(mockNavigate).toHaveBeenCalledWith('/account/security')
   })
 
   it('should close the modal when onClose fires', () => {
