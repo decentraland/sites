@@ -18,21 +18,24 @@ The single source of truth for understanding analytics in sites. **Read top-to-b
 
 Tracking in sites is split into two layers that compose cleanly:
 
-- **Infra (`useDeferredTrack`)** — wraps `useAnalytics().track` with a queue. Doesn't know what the event is or what the payload means. Its only job: make sure the track call survives Segment's lazy boot. Adds `track_called_at`, `track_delivered_at`, `track_deferred` to every payload so the data team can audit deferral.
-- **Domain (`createDownloadTracker`, future per-funnel factories)** — knows the schema of a specific funnel. Builds the canonical payload, captures timestamps tied to domain semantics (`started_at`, `succeeded_at`), exposes a small intent-shaped API (`.started()` / `.success()` / `.failed()`). Doesn't know about Segment loading — receives an opaque `track` function (typically from `useDeferredTrack`).
+- **Infra (`useDeferredTrack`)** — wraps `useAnalytics().track` with a queue. Doesn't know what the event is or what the payload means. Its only job: make sure the track call survives Segment's lazy boot. Adds `track_called_at`, `track_delivered_at`, `track_deferred` to every payload so the data team can audit deferral. **Caveat:** the queue is component-scoped — pending events are dropped on unmount. Fine for events on routes where abrupt departure is unlikely; wrong choice for events on routes users are likely to leave abruptly (see `postSegmentEvent` below and LL-10).
+- **Infra (`postSegmentEvent` + `ensureSegmentAnonymousId`)** — the unload-safe alternative (`src/modules/segmentBeacon.ts` + `src/modules/segmentAnonymousId.ts`). Posts directly to Segment's HTTP Tracking API via `navigator.sendBeacon` (falling back to `fetch keepalive`), bypassing `useAnalytics()`/`useDeferredTrack()` entirely — so it works even if Segment hasn't booted yet, and survives a same-tick page unload. `ensureSegmentAnonymousId()` mints/persists a Segment-adoptable anonymous id (the same localStorage shape analytics-next writes) so events fired before Segment boots still carry a real, adoptable id instead of a throwaway one.
+- **Domain (`createDownloadTracker`, future per-funnel factories)** — knows the schema of a specific funnel. Builds the canonical payload, captures timestamps tied to domain semantics (`started_at`, `succeeded_at`), exposes a small intent-shaped API (`.started()` / `.success()` / `.failed()`). Doesn't know about Segment loading — internally fires via whichever transport its factory chose (`useDeferredTrack` or `postSegmentEvent`).
 
 You should almost never call `useAnalytics().track` directly. The decision tree:
 
 - Click handler driven by `data-*`? → `useTrackClick` (which already uses `useDeferredTrack` internally).
-- Download funnel event? → `createDownloadTracker(deferredTrack, ctx)`.
-- New domain that needs queueing? → call `useDeferredTrack()` and pass it to whatever domain factory you build. Don't reach for `useAnalytics().track` directly unless you accept silent-drop on cold loads.
+- Download funnel event (`download_started/_success/_failed`)? → `createDownloadTracker(ctx)` — fires via `postSegmentEvent` (see 5.3).
+- New domain that needs queueing AND fires on a route users don't abruptly leave? → call `useDeferredTrack()` and pass it to whatever domain factory you build.
+- New domain that fires on a route users are likely to abruptly leave (installer pages, exit-intent diagnostics, etc.)? → use `postSegmentEvent` + `ensureSegmentAnonymousId()` directly, following `downloadTracking.ts` / `downloadFunnelExit.ts`. Don't reach for `useAnalytics().track` directly unless you accept silent-drop on cold loads.
 
 ## 3a. The hooks — pick the right one
 
 | Hook                          | Where it lives                              | When to use                                                                                                                                                                                                                                                                                                                              |
 | ----------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `useAnalytics()`              | `@dcl/hooks`                                | When you need the raw Segment primitives. Tracks fired before Segment loads will silently drop. Rare; prefer the wrappers below.                                                                                                                                                                                                         |
-| `useDeferredTrack()`          | `src/hooks/useDeferredTrack.ts`             | When the event must survive Segment's lazy init. Returns a function with the same signature as `track`, but if `isInitialized === false` it queues the call and drains the queue when Segment becomes ready. Preferred default for any track fired from a component that mounts on a route the user can deep-link to.                    |
+| `useDeferredTrack()`          | `src/hooks/useDeferredTrack.ts`             | When the event must survive Segment's lazy init. Returns a function with the same signature as `track`, but if `isInitialized === false` it queues the call and drains the queue when Segment becomes ready. Preferred default for any track fired from a component that mounts on a route the user can deep-link to — **except** events on routes users are likely to abruptly leave (installer pages, exit-intent diagnostics): the queue is component-scoped and drops pending events on unmount. `download_started/_success/_failed` used to be the textbook example of this hook's intended use; it no longer is — see 5.3 and LL-10. |
+| `postSegmentEvent()` + `ensureSegmentAnonymousId()` | `src/modules/segmentBeacon.ts` + `src/modules/segmentAnonymousId.ts` | Unload-safe alternative to `useDeferredTrack` for events fired on routes users are likely to abruptly leave. Fires immediately via `navigator.sendBeacon`/`fetch keepalive`, independent of Segment's own boot state. Used by `useDownloadClick`, `downloadFunnelExit.ts`, and `createDownloadTracker` (download_started/_success/_failed). |
 | `useTrackClick()`             | `src/hooks/adapters/useTrackLinkContext.ts` | Click handlers driven by `data-*` attributes on the clicked element. **Always emits `SegmentEvent.CLICK`** as the event name; the action subtype lives in the payload as `event` (sourced from `data-event`). Strips `payload.event` when it would equal the event name (`Click`). Uses `useDeferredTrack` internally — no silent drops. |
 | `useBlogPageTracking()`       | `src/hooks/useBlogPageTracking.ts`          | Per-route `page()` event for Helmet-titled routes where the automatic `page()` in `Layout.tsx` races the async title write. See sites CLAUDE.md rule 23.                                                                                                                                                                                 |
 | `useLegacyRedirectTracking()` | `src/hooks/useLegacyRedirectTracking.ts`    | Specialized: waits up to 800ms for Segment to load, then emits one of `LEGACY_EVENTS_REDIRECTED` / `LEGACY_PLACES_REDIRECTED` and proceeds with the `<Navigate>`. Pattern reference for "block briefly on analytics readiness then unblock UI".                                                                                          |
@@ -117,7 +120,7 @@ DOWNLOAD_FAILED → DOWNLOAD_STARTED's payload + {
 
 **Revisits:** the previous `sessionStorage` / `history.state` idempotency bails were removed. Every aterrizaje en `/download_success` re-runs the full flow and emits events with `revisit: n`. The counter is keyed by `os:arch` combo (`sessionStorage:downloadSuccess:visits:${os}:${arch}`).
 
-**Queueing:** events fire through `useDeferredTrack()`. If Segment isn't initialized yet, they queue and drain when `isInitialized` flips to true. **Timestamps are captured at call time, not at delivery time** — so even if Segment loads after the stream completes, `started_at` / `succeeded_at` preserve the real timing.
+**Transport:** events fire via `postSegmentEvent()` (`src/modules/segmentBeacon.ts`) with `ensureSegmentAnonymousId()` (`src/modules/segmentAnonymousId.ts`) as the anonymous id — NOT through `useDeferredTrack()`. This changed because `/download_success` is the page users are most likely to abruptly leave (they're about to run the installer they just downloaded), and `useDeferredTrack`'s queue is component-scoped: any event still queued when the component unmounts is silently dropped. Since Segment's lazy boot (`DeferredAnalyticsProvider`, up to ~4s idle timeout) is frequently slower than the flow that fires `tracker.started()`, a meaningful fraction of these events were being queued and then lost on navigation. `postSegmentEvent` posts directly via `navigator.sendBeacon` (falling back to `fetch keepalive`), independent of Segment's own init state, and `ensureSegmentAnonymousId()` mints/persists a real Segment-adoptable id so attribution survives even when the event fires before Segment ever boots. See `useDownloadClick` (PR #636) and `downloadFunnelExit.ts` (PR #632) for the precedent this migration followed, and LL-10 below. **Timestamps are still captured at call time** (`started_at` / `succeeded_at` / `failed_at`), so timing analysis is unaffected by the transport change.
 
 ### 5.4 `Click` upstream — where the data lands
 
@@ -166,7 +169,7 @@ If grep returns zero matches the enum value is **dead code** — verify with a r
 ## 10. How to add a new tracking event
 
 1. **Add the literal** to the appropriate enum in `src/modules/segment.types.ts`. Match existing casing within its family (snake_case for funnel events, Title Case for "section" events, kebab-case for `DownloadPlace`-like dimensions).
-2. **Decide the hook:** is the event fired from a click-handled DOM element? `useTrackClick` via `data-event`. From inside a component lifecycle on a route the user can deep-link to? `useDeferredTrack`. From a context where Segment is guaranteed ready (e.g. inside a `useEffect` that already awaits something Segment-y)? `useAnalytics` is fine.
+2. **Decide the transport:** is the event fired from a click-handled DOM element? `useTrackClick` via `data-event`. From inside a component lifecycle on a route the user can deep-link to but is unlikely to abruptly leave? `useDeferredTrack`. From inside a component lifecycle on a route users ARE likely to abruptly leave (installer pages, exit-intent diagnostics)? `postSegmentEvent` + `ensureSegmentAnonymousId()` — see 5.3 and LL-10. From a context where Segment is guaranteed ready (e.g. inside a `useEffect` that already awaits something Segment-y)? `useAnalytics` is fine.
 3. **Payload conventions:**
    - snake_case keys (the codebase has eslint-disable comments for `auth_state`, `anon_user_id`, etc. — keep the existing pattern).
    - Capture client timestamps for any event whose timing matters; assume Segment ingestion delay is non-zero.
@@ -182,6 +185,7 @@ If grep returns zero matches the enum value is **dead code** — verify with a r
 - **P1-1** (✅ done): `download_started/success/failed` payload + timing fixes. See Plan.md section.
 - **P1-2** (✅ done — `useAnonUserId` reactivity 2026-05-22): hook now depends on `isInitialized` so it re-evaluates when Segment boots; `DownloadSuccess` gates the auto-download on a `anonUserIdReady` state with an 800ms timeout fallback. See LL-9.
 - **P1-3** (✅ partial via `useDeferredTrack`): `useTrackClick` silent drop when `isInitialized === false`. Adopting `useDeferredTrack` inside the adapter would resolve this for Click events too.
+- **P1-4** (✅ done — `download_started/_success/_failed` drop-on-unmount fixed 2026-07-01): these events used to fire via `useDeferredTrack`, whose queue is component-scoped and drops pending events on unmount — a real risk on `/download_success`, the page users are most likely to abruptly leave. `createDownloadTracker` now fires via `postSegmentEvent` + `ensureSegmentAnonymousId()` instead, matching the `useDownloadClick` (PR #636) / `downloadFunnelExit.ts` (PR #632) precedent. See 5.3 and LL-10.
 - **P2 list:** see Plan.md.
 
 ## 12. Lessons learned — anti-patterns to NOT repeat
@@ -243,13 +247,19 @@ If you add a NEW page that derives URLs or analytics payloads from `useAnonUserI
 - **Render-time only** — Hero pattern: derive the value at render and re-render automatically when the hook updates. Cheap and reactive.
 - **Effect-time** — DownloadSuccess pattern: gate the effect on a `anonUserIdReady` state when the effect can't naturally re-run on hook updates.
 
+### LL-10. Component-lifecycle events on a route users abruptly leave shouldn't use `useDeferredTrack` — even though 3a recommends it by default
+
+`useDeferredTrack`'s own docstring says its queue is component-scoped and drops any still-pending event on unmount — a deliberate trade-off to avoid a module-level queue leaking events across page navigations. That's a fine trade-off for most routes, which is why 3a recommends it as the default for lifecycle events on deep-linkable routes. But `/download_success` (`DownloadSuccess.tsx`) is the one page in the app where the user is *specifically* about to leave — they just downloaded an installer and are switching away to run it — right as `download_started`/`_success`/`_failed` fire. Combined with Segment's lazy boot (`DeferredAnalyticsProvider`, up to ~4s idle timeout) frequently outlasting the time it takes `calculateDownloadUrl` to resolve and call `tracker.started()`, a meaningful fraction of these events were queued and then silently lost. Fixed 2026-07-01 by migrating `createDownloadTracker` to `postSegmentEvent` + `ensureSegmentAnonymousId()` (`src/modules/downloadTracking.ts`), following the exact precedent `useDownloadClick` (PR #636) and `downloadFunnelExit.ts` (PR #632) already established for this same page. **The lesson generalizes:** before defaulting to `useDeferredTrack` per 3a's table, ask whether the event's route is one users are likely to abruptly leave (installer pages, external-redirect pages, exit-intent diagnostics) — if so, use the beacon transport instead, regardless of the general-case guidance.
+
 ## 13. Reference files in priority order
 
 1. `src/modules/segment.types.ts` — enums.
 2. `src/modules/segment.ts` — re-exports + `resolveDownloadPlace`.
 3. `src/hooks/useDeferredTrack.ts` — queue+drain hook.
-4. `src/hooks/adapters/useTrackLinkContext.ts` — Click adapter.
-5. `src/modules/downloadTracking.ts` + `.types.ts` — Download events factory.
-6. `src/modules/DeferredAnalyticsProvider.tsx` — provider wiring.
-7. `src/components/Layout/Layout.tsx` + `Layout.helpers.ts` — automatic `page()` + `isPageTrackingExempt`.
-8. `src/hooks/useBlogPageTracking.ts` — manual `page()` for Helmet routes.
+4. `src/modules/segmentBeacon.ts` + `src/modules/segmentAnonymousId.ts` — unload-safe beacon transport + adoptable anonymous id.
+5. `src/hooks/adapters/useTrackLinkContext.ts` — Click adapter.
+6. `src/modules/downloadTracking.ts` + `.types.ts` — Download events factory (fires via the beacon transport, see 5.3/LL-10).
+7. `src/modules/downloadFunnelExit.ts` — sibling beacon-transport precedent for the download family.
+8. `src/modules/DeferredAnalyticsProvider.tsx` — provider wiring.
+9. `src/components/Layout/Layout.tsx` + `Layout.helpers.ts` — automatic `page()` + `isPageTrackingExempt`.
+10. `src/hooks/useBlogPageTracking.ts` — manual `page()` for Helmet routes.

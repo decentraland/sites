@@ -3,6 +3,7 @@ import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { AnimatedBackground, DownloadModal, DownloadQRModal } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAnimatedCounter } from '../../../hooks/useAnimatedCounter'
+import { ANON_USER_ID_PARAM, useAnonUserId } from '../../../hooks/useAnonUserId'
 import { useDownloadClick } from '../../../hooks/useDownloadClick'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import appleLogo from '../../../images/apple-logo.svg'
@@ -35,9 +36,25 @@ let cachedDownloadCounts: string | null = null
 const ComeHangOut = memo(() => {
   const l = useFormatMessage()
   const trackDownloadClick = useDownloadClick()
+  const anonUserId = useAnonUserId()
   const { isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads } = useHangOutAction()
   const [, userAgentData] = useAdvancedUserAgentData()
   const [rawDownloads, rawDownloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
+
+  // Build the /download_success URL with the campaign anon_user_id baked in.
+  // Without this query param, /download_success falls back to a direct CDN
+  // download (bypassing the gateway), the wrapper installer never runs, and
+  // campaign attribution is lost end-to-end (mirrors the home Hero).
+  const buildDownloadSuccessHref = useCallback(
+    (os: string, place: string) => {
+      const params = new URLSearchParams({ os, place })
+      if (anonUserId) {
+        params.set(ANON_USER_ID_PARAM, anonUserId)
+      }
+      return `/download_success?${params.toString()}`
+    },
+    [anonUserId]
+  )
 
   const targetDownloads = !rawDownloadsStatus.loading && rawDownloadsStatus.loaded && rawDownloads ? rawDownloads : null
   if (targetDownloads) cachedDownloadCounts = formatToShorthand(targetDownloads)
@@ -87,10 +104,10 @@ const ComeHangOut = memo(() => {
     (e: React.MouseEvent<HTMLElement>) => {
       trackDownloadClick(e)
       if (userAgentData) {
-        window.location.href = `/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.COME_HANG_OUT}`
+        window.location.href = buildDownloadSuccessHref(userAgentData.os.name, DownloadPlace.COME_HANG_OUT)
       }
     },
-    [trackDownloadClick, userAgentData]
+    [trackDownloadClick, userAgentData, buildDownloadSuccessHref]
   )
 
   const osImage = userAgentData
@@ -101,7 +118,7 @@ const ComeHangOut = memo(() => {
     <>
       <div style={{ display: 'flex', gap: 24, justifyContent: 'center' }}>
         <DownloadButton
-          href={userAgentData ? `/download_success?os=${userAgentData.os.name}&place=${DownloadPlace.COME_HANG_OUT}` : '/download'}
+          href={userAgentData ? buildDownloadSuccessHref(userAgentData.os.name, DownloadPlace.COME_HANG_OUT) : '/download'}
           data-place={SectionViewedTrack.LANDING_COME_HANG_OUT}
           data-event={SegmentEvent.CLICK}
           onClick={handleDownloadClick}
@@ -133,7 +150,7 @@ const ComeHangOut = memo(() => {
         <PlatformIcons>
           {currentOs === OperativeSystem.MACOS && (
             <a
-              href={`/download_success?os=Windows&place=${DownloadPlace.COME_HANG_OUT}`}
+              href={buildDownloadSuccessHref('Windows', DownloadPlace.COME_HANG_OUT)}
               data-event={SegmentEvent.DOWNLOAD}
               data-os={OperativeSystem.WINDOWS}
               data-place={DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}
@@ -144,7 +161,7 @@ const ComeHangOut = memo(() => {
           )}
           {currentOs === OperativeSystem.WINDOWS && (
             <a
-              href={`/download_success?os=macOS&place=${DownloadPlace.COME_HANG_OUT}`}
+              href={buildDownloadSuccessHref('macOS', DownloadPlace.COME_HANG_OUT)}
               data-event={SegmentEvent.DOWNLOAD}
               data-os={OperativeSystem.MACOS}
               data-place={DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}

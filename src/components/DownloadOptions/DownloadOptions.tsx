@@ -35,6 +35,18 @@ interface DownloadOptionsProps {
   downloadOnClick?: boolean
 }
 
+// NOTE: shortened from a hardcoded 3000ms to 400ms — the git history has no
+// documented reason for the original value. Delay before navigating away
+// after `downloadOnClick` triggers an in-page download
+// (`getDownloadLinkWithIdentity` → `triggerFileDownload` → `clickAnchor`). By
+// the time this timeout is scheduled the anchor's synchronous `.click()` has
+// already dispatched the download to the browser (see `file.ts`'s
+// `clickAnchor`, which only needs a `requestAnimationFrame` tick before it's
+// safe to detach the anchor) — this delay only needs to outlast that
+// dispatch, not any user-visible UI moment. Kept well above a single frame
+// for headroom on slow devices without holding the redirect for seconds.
+const POST_DOWNLOAD_NAVIGATION_DELAY_MS = 400
+
 const imageByOs: Record<string, string> = {
   [OperativeSystem.WINDOWS]: microsoftLogo,
   [OperativeSystem.MACOS]: appleLogo
@@ -142,7 +154,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
         () => {
           window.location.href = finalUrl
         },
-        downloadOnClick ? 3000 : 0
+        downloadOnClick ? POST_DOWNLOAD_NAVIGATION_DELAY_MS : 0
       )
     },
     [downloadOnClick, getIdentityId, anonUserId, links]
