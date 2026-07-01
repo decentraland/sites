@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
-import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { useDownloadClick } from '../../../hooks/useDownloadClick'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
+import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { Hero } from './Hero'
 
 jest.mock('decentraland-ui2', () => {
@@ -37,6 +37,10 @@ jest.mock('../../../hooks/useHangOutAction', () => ({
 jest.mock('../../../hooks/useAnonUserId', () => ({
   ANON_USER_ID_PARAM: 'anon_user_id',
   useAnonUserId: jest.fn(() => undefined)
+}))
+
+jest.mock('../../../modules/explorerDownloads', () => ({
+  ExplorerDownloads: { get: jest.fn(() => ({ getTotalDownloads: jest.fn().mockResolvedValue(500000) })) }
 }))
 
 const mockUserAgent = jest.mocked(useAdvancedUserAgentData)
@@ -166,7 +170,9 @@ describe('Hero', () => {
 
   describe('when rendering on a mobile iOS device', () => {
     beforeEach(() => {
-      mockUserAgent.mockReturnValue([false, { os: { name: 'iOS' }, mobile: true }] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+      mockUserAgent.mockReturnValue([false, { os: { name: 'iOS' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
     })
 
     it('should track the App Store button click', () => {
