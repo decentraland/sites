@@ -84,7 +84,7 @@ const TransactionsSection = ({ transactions, onClaim }: TransactionsSectionProps
     const explorerHash = transaction.claimHash ?? transaction.hash
     return (
       <Row key={`${transaction.hash}-${index}`} data-role="transaction-row">
-        <IconChip $type={transaction.type}>{TYPE_ICON[transaction.type]}</IconChip>
+        <IconChip>{TYPE_ICON[transaction.type]}</IconChip>
         <RowType>{t(`account.wallets.transactions.type.${transaction.type}`)}</RowType>
         <RowDate>{formatDate(transaction.timestamp)}</RowDate>
         <HashLink
