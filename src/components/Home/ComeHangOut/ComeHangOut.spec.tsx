@@ -46,6 +46,10 @@ jest.mock('../../../modules/explorerDownloads', () => ({
   ExplorerDownloads: { get: jest.fn(() => ({ getTotalDownloads: jest.fn().mockResolvedValue(500000) })) }
 }))
 
+jest.mock('../../Icon/VerifiedIcon', () => ({
+  VerifiedIcon: () => <span data-testid="verified-icon" />
+}))
+
 const mockUserAgent = jest.mocked(useAdvancedUserAgentData)
 const mockAsyncMemo = jest.mocked(useAsyncMemo)
 const mockDownloadClick = jest.mocked(useDownloadClick)
