@@ -3,15 +3,12 @@ import type { ReactNode } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded'
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import NorthEastRoundedIcon from '@mui/icons-material/NorthEastRounded'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import SouthWestRoundedIcon from '@mui/icons-material/SouthWestRounded'
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import SwapVertRoundedIcon from '@mui/icons-material/SwapVertRounded'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import type { WalletTransaction, WalletTransactionStatus, WalletTransactionType } from '../../../../hooks/useWalletTransactions.types'
 import { ManaMarkIcon } from '../ManaMarkIcon'
 import { formatMana, getExplorerTxUrl } from '../wallets.helpers'
+import { TransactionReceivedIcon, TransactionSentIcon, TransactionSwapIcon } from './TransactionTypeIcon'
 import {
   Amount,
   ChevronWrap,
@@ -37,9 +34,9 @@ interface TransactionsSectionProps {
 }
 
 const TYPE_ICON: Record<WalletTransactionType, ReactNode> = {
-  send: <NorthEastRoundedIcon fontSize="small" />,
-  received: <SouthWestRoundedIcon fontSize="small" />,
-  swap: <SwapVertRoundedIcon fontSize="small" />,
+  send: <TransactionSentIcon />,
+  received: <TransactionReceivedIcon />,
+  swap: <TransactionSwapIcon />,
   withdraw: <SwapVertRoundedIcon fontSize="small" />
 }
 
@@ -52,16 +49,24 @@ const PENDING_STATUSES: ReadonlySet<WalletTransactionStatus> = new Set(['pending
 const LATEST_PAGE_SIZE = 20
 
 // Local timezone — the tx was submitted from the user's device, so a UTC anchor would be wrong here.
-const formatDate = (timestamp: number): string =>
-  new Date(timestamp).toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true
-  })
+// Built from formatToParts (not toLocaleString with a D/M/Y locale like en-GB) because those locales
+// force 2-digit zero-padded day/month — this assembles the D/M/YYYY order while keeping unpadded
+// day/month and the uppercase AM/PM (Figma "Profile-Account" Wallets) of the previous en-US format.
+const DATE_PART_FORMAT = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: true
+})
+
+const formatDate = (timestamp: number): string => {
+  const parts = DATE_PART_FORMAT.formatToParts(new Date(timestamp))
+  const part = (type: string) => parts.find(p => p.type === type)?.value ?? ''
+  return `${part('day')}/${part('month')}/${part('year')}, ${part('hour')}:${part('minute')}:${part('second')} ${part('dayPeriod')}`
+}
 
 const TransactionsSection = ({ transactions, onClaim }: TransactionsSectionProps) => {
   const t = useFormatMessage()
@@ -99,7 +104,7 @@ const TransactionsSection = ({ transactions, onClaim }: TransactionsSectionProps
           {explorerHash}
         </HashLink>
         {transaction.status === 'checkpoint' && onClaim ? (
-          <ClaimButton type="button" onClick={() => onClaim(transaction)} data-role="transaction-claim">
+          <ClaimButton variant="contained" color="primary" size="small" onClick={() => onClaim(transaction)} data-role="transaction-claim">
             {t('account.wallets.transactions.claim')}
           </ClaimButton>
         ) : (

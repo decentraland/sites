@@ -1730,7 +1730,7 @@
         "empty": "No transactions yet.",
         "type": {
           "send": "Sent",
-          "swap": "Deposit",
+          "swap": "Swap",
           "received": "Received",
           "withdraw": "Withdraw"
         },

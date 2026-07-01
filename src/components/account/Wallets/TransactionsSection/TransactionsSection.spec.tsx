@@ -8,8 +8,6 @@ type LinkProps = ChildrenProps & { href?: string }
 type HeaderProps = ChildrenProps & { onClick?: () => void; 'aria-expanded'?: boolean }
 
 jest.mock('@mui/icons-material/ExpandMoreRounded', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/NorthEastRounded', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/SouthWestRounded', () => ({ __esModule: true, default: () => <span /> }))
 
 // The MANA mark renders nothing in tests so the amount's text stays matchable by getByText.
 jest.mock('decentraland-ui2', () => ({
@@ -105,6 +103,25 @@ describe('TransactionsSection', () => {
     const link = screen.getByRole('link')
     expect(link).toHaveAttribute('href', `https://explorer.test/ethereum/${tx.hash}`)
     expect(link).toHaveTextContent(tx.hash)
+  })
+
+  it('should format the date as D/M/YYYY instead of M/D/YYYY', () => {
+    render(<TransactionsSection transactions={[tx]} />)
+    fireEvent.click(screen.getByRole('button'))
+
+    // tx.timestamp = 1718000000000 -> 2024-06-10T06:13:20.000Z (jest runs pinned to TZ=UTC)
+    expect(screen.getByText('10/6/2024, 6:13:20 AM')).toBeInTheDocument()
+  })
+
+  it('should render the sent, received and swap transaction type rows', () => {
+    const receivedTx: WalletTransaction = { ...tx, type: 'received', hash: '0xreceived', status: 'confirmed' }
+    const swapTx: WalletTransaction = { ...tx, type: 'swap', hash: '0xswap', status: 'confirmed' }
+    render(<TransactionsSection transactions={[tx, receivedTx, swapTx]} />)
+    fireEvent.click(screen.getByRole('button', { name: /account.wallets.transactions.title/ }))
+
+    expect(screen.getByText('account.wallets.transactions.type.send')).toBeInTheDocument()
+    expect(screen.getByText('account.wallets.transactions.type.received')).toBeInTheDocument()
+    expect(screen.getByText('account.wallets.transactions.type.swap')).toBeInTheDocument()
   })
 
   it('should link a claimed withdrawal to its Ethereum exit tx (claimHash) instead of the burn', () => {

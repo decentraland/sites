@@ -1290,7 +1290,7 @@
         "empty": "Aucune transaction pour l'instant.",
         "type": {
           "send": "Envoyé",
-          "swap": "Dépôt",
+          "swap": "Échange",
           "received": "Reçu",
           "withdraw": "Retrait"
         },
