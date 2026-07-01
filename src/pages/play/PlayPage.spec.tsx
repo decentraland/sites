@@ -1,10 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { useAdvancedUserAgentData } from '@dcl/hooks'
+import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { useDesktopMediaQuery } from 'decentraland-ui2'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
 import { useAnonUserId } from '../../hooks/useAnonUserId'
 import { useHangOutAction } from '../../hooks/useHangOutAction'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
+import { SegmentEvent } from '../../modules/segment'
 import { PlayPage } from '.'
 
 jest.mock('decentraland-ui2', () => {
@@ -29,7 +30,8 @@ jest.mock('../../components/Icon/VerifiedIcon', () => ({
 }))
 
 jest.mock('@dcl/hooks', () => ({
-  useAdvancedUserAgentData: jest.fn()
+  useAdvancedUserAgentData: jest.fn(),
+  useAnalytics: jest.fn()
 }))
 
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
@@ -66,14 +68,19 @@ jest.mock('../../hooks/useHangOutAction', () => ({
 }))
 
 const mockUserAgent = jest.mocked(useAdvancedUserAgentData)
+const mockUseAnalytics = jest.mocked(useAnalytics)
 const mockTrackClick = jest.mocked(useTrackClick)
 const mockAnonUserId = jest.mocked(useAnonUserId)
 const mockHangOut = jest.mocked(useHangOutAction)
 const mockDesktop = jest.mocked(useDesktopMediaQuery)
 
 const trackClick = jest.fn()
+let analyticsTrack: jest.Mock
+let mockSendBeacon: jest.Mock
 
 const originalLocation = window.location
+// eslint-disable-next-line @typescript-eslint/unbound-method
+const originalSendBeacon = navigator.sendBeacon
 
 const setLocationMock = () => {
   Object.defineProperty(window, 'location', {
@@ -85,6 +92,9 @@ const setLocationMock = () => {
 
 describe('PlayPage', () => {
   beforeEach(() => {
+    analyticsTrack = jest.fn()
+    mockSendBeacon = jest.fn(() => true)
+    mockUseAnalytics.mockReturnValue({ isInitialized: true, track: analyticsTrack } as unknown as ReturnType<typeof useAnalytics>)
     mockTrackClick.mockReturnValue(trackClick)
     mockDesktop.mockReturnValue(true)
     mockAnonUserId.mockReturnValue('anon-123')
@@ -93,11 +103,14 @@ describe('PlayPage', () => {
       typeof useAdvancedUserAgentData
     >)
     setLocationMock()
+    Object.defineProperty(navigator, 'sendBeacon', { value: mockSendBeacon, configurable: true, writable: true })
   })
 
   afterEach(() => {
     jest.resetAllMocks()
     Object.defineProperty(window, 'location', { configurable: true, writable: true, value: originalLocation })
+    Object.defineProperty(navigator, 'sendBeacon', { value: originalSendBeacon, configurable: true, writable: true })
+    localStorage.clear()
   })
 
   describe('when it renders on a Windows desktop', () => {
@@ -127,11 +140,23 @@ describe('PlayPage', () => {
     it('should track and navigate to /download_success with the os and anon id on download click', () => {
       render(<PlayPage />)
       fireEvent.click(screen.getByText('page.download.download_for_short'))
-      expect(trackClick).toHaveBeenCalledTimes(1)
+      expect(analyticsTrack).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ event: SegmentEvent.DOWNLOAD, place: 'play-hero' })
+      )
       expect(window.location.href).toContain('/download_success?')
       expect(window.location.href).toContain('os=Windows')
       expect(window.location.href).toContain('place=play-hero')
       expect(window.location.href).toContain('anon_user_id=anon-123')
+    })
+
+    it('should beacon the download Click when Segment is cold', () => {
+      mockUseAnalytics.mockReturnValue({ isInitialized: false, track: analyticsTrack } as unknown as ReturnType<typeof useAnalytics>)
+
+      render(<PlayPage />)
+      fireEvent.click(screen.getByText('page.download.download_for_short'))
+
+      expect(mockSendBeacon).toHaveBeenCalledTimes(1)
     })
 
     it('should link the jump-in CTA to the launcher protocol and track the click', () => {
@@ -157,7 +182,10 @@ describe('PlayPage', () => {
       expect(epic).toHaveAttribute('href', DOWNLOAD_URLS.epic)
       expect(screen.getByAltText('Epic Games')).toBeInTheDocument()
       fireEvent.click(epic)
-      expect(trackClick).toHaveBeenCalledTimes(1)
+      expect(analyticsTrack).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ event: SegmentEvent.DOWNLOAD, place: 'play-hero-epic' })
+      )
     })
   })
 
@@ -171,7 +199,10 @@ describe('PlayPage', () => {
       const cta = screen.getByText('page.download.download_for_short').closest('a')
       expect(cta).toHaveAttribute('href', '/download')
       fireEvent.click(cta as HTMLElement)
-      expect(trackClick).toHaveBeenCalledTimes(1)
+      expect(analyticsTrack).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ event: SegmentEvent.DOWNLOAD, place: 'play-hero' })
+      )
       expect(window.location.href).toBe('')
     })
   })
