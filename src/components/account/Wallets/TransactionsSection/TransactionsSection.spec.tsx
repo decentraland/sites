@@ -105,13 +105,15 @@ describe('TransactionsSection', () => {
     expect(link).toHaveTextContent(tx.hash)
   })
 
-  it('should render both the sent and received transaction type rows', () => {
+  it('should render the sent, received and swap transaction type rows', () => {
     const receivedTx: WalletTransaction = { ...tx, type: 'received', hash: '0xreceived', status: 'confirmed' }
-    render(<TransactionsSection transactions={[tx, receivedTx]} />)
+    const swapTx: WalletTransaction = { ...tx, type: 'swap', hash: '0xswap', status: 'confirmed' }
+    render(<TransactionsSection transactions={[tx, receivedTx, swapTx]} />)
     fireEvent.click(screen.getByRole('button', { name: /account.wallets.transactions.title/ }))
 
     expect(screen.getByText('account.wallets.transactions.type.send')).toBeInTheDocument()
     expect(screen.getByText('account.wallets.transactions.type.received')).toBeInTheDocument()
+    expect(screen.getByText('account.wallets.transactions.type.swap')).toBeInTheDocument()
   })
 
   it('should link a claimed withdrawal to its Ethereum exit tx (claimHash) instead of the burn', () => {

@@ -1291,7 +1291,7 @@
         "empty": "Todavía no hay transacciones.",
         "type": {
           "send": "Enviado",
-          "swap": "Depósito",
+          "swap": "Intercambio",
           "received": "Recibido",
           "withdraw": "Retiro"
         },

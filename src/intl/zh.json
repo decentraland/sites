@@ -1291,7 +1291,7 @@
         "empty": "暂无交易。",
         "type": {
           "send": "已发送",
-          "swap": "存入",
+          "swap": "兑换",
           "received": "已收到",
           "withdraw": "提现"
         },

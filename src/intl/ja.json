@@ -1291,7 +1291,7 @@
         "empty": "まだ取引はありません。",
         "type": {
           "send": "送信",
-          "swap": "入金",
+          "swap": "スワップ",
           "received": "受取",
           "withdraw": "出金"
         },

@@ -1291,7 +1291,7 @@
         "empty": "아직 거래가 없습니다.",
         "type": {
           "send": "보냄",
-          "swap": "입금",
+          "swap": "스왑",
           "received": "받음",
           "withdraw": "출금"
         },

@@ -8,7 +8,7 @@ import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import type { WalletTransaction, WalletTransactionStatus, WalletTransactionType } from '../../../../hooks/useWalletTransactions.types'
 import { ManaMarkIcon } from '../ManaMarkIcon'
 import { formatMana, getExplorerTxUrl } from '../wallets.helpers'
-import { TransactionReceivedIcon, TransactionSentIcon } from './TransactionTypeIcon'
+import { TransactionReceivedIcon, TransactionSentIcon, TransactionSwapIcon } from './TransactionTypeIcon'
 import {
   Amount,
   ChevronWrap,
@@ -36,7 +36,7 @@ interface TransactionsSectionProps {
 const TYPE_ICON: Record<WalletTransactionType, ReactNode> = {
   send: <TransactionSentIcon />,
   received: <TransactionReceivedIcon />,
-  swap: <SwapVertRoundedIcon fontSize="small" />,
+  swap: <TransactionSwapIcon />,
   withdraw: <SwapVertRoundedIcon fontSize="small" />
 }
 

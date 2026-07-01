@@ -1,10 +1,11 @@
 import { SvgIcon } from 'decentraland-ui2'
 import type { SvgIconProps } from 'decentraland-ui2'
 
-// Sent / Received transaction chips (Figma "Profile-Account" Wallets → Transactions). Each is a
-// self-contained 24px icon: a tinted circle plus an upload / download glyph. Colors are baked in to
-// match Figma exactly — sent is neutral (white on white-20%), received is positive (green on
-// green-20%) — so they are NOT theme-tinted via currentColor like ManaMarkIcon.
+// Transaction type chips (Figma "Profile-Account" Wallets → Transactions). Sent and Received are
+// self-contained 24px icons — a tinted circle plus an upload / download glyph, with colors baked in to
+// match Figma exactly (sent neutral white-on-white-20%, received positive green-on-green-20%). Swap is
+// a glyph-only icon (two circular arrows) tinted via currentColor, since it sits inside the neutral
+// IconChip like the withdraw icon rather than carrying its own circle.
 
 // Upload glyph on a white-20% circle — an outgoing MANA transfer.
 const TransactionSentIcon = (props: SvgIconProps) => (
@@ -56,4 +57,28 @@ const TransactionReceivedIcon = (props: SvgIconProps) => (
   </SvgIcon>
 )
 
-export { TransactionReceivedIcon, TransactionSentIcon }
+// Two circular arrows — a MANA swap (Ethereum→Polygon bridge). Stroke-based, so it inherits the chip
+// color via currentColor.
+const TransactionSwapIcon = (props: SvgIconProps) => (
+  <SvgIcon viewBox="0 0 24 24" fill="none" {...props}>
+    <path
+      d="M8.74852 7.1107C9.64041 6.58905 10.6542 6.31207 11.6874 6.30777C12.7207 6.30348 13.7367 6.572 14.6329 7.08621C15.5291 7.60042 16.2737 8.34209 16.7914 9.23628C17.3091 10.1305 17.5816 11.1455 17.5814 12.1787V13.3909M14.4815 17.3552C13.5871 17.834 12.5839 18.0728 11.5697 18.0482C10.5555 18.0236 9.56497 17.7365 8.69482 17.215C7.82467 16.6934 7.10459 15.9551 6.60487 15.0723C6.10514 14.1894 5.84282 13.192 5.84352 12.1775V10.7344"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeMiterlimit="10"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M14.9902 11.5312L17.5825 14.1235L20.176 11.5312M8.43585 12.825L5.84351 10.2327L3.25002 12.825"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </SvgIcon>
+)
+
+export { TransactionReceivedIcon, TransactionSentIcon, TransactionSwapIcon }
