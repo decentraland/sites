@@ -181,7 +181,11 @@ describe('CreatorHubDownloadSuccess', () => {
       render(<CreatorHubDownloadSuccess />)
 
       await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledTimes(1))
-      expect(mockPostSegmentEvent).toHaveBeenCalledWith(SegmentEvent.DOWNLOAD_SUCCESS, expect.objectContaining({ arch: 'arm64' }), 'anon-fixed')
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+        SegmentEvent.DOWNLOAD_SUCCESS,
+        expect.objectContaining({ arch: 'arm64' }),
+        'anon-fixed'
+      )
     })
   })
 
