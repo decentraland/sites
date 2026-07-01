@@ -166,7 +166,7 @@ describe('downloadFunnelExit', () => {
     }
   })
 
-  it('should mint a legacy fallback anonymousId when crypto.randomUUID is unavailable', () => {
+  it('should mint a UUID fallback anonymousId when crypto.randomUUID is unavailable', () => {
     const cryptoObj = globalThis.crypto as { randomUUID?: () => string }
     const originalRandomUUID = cryptoObj.randomUUID
     Object.defineProperty(cryptoObj, 'randomUUID', { value: undefined, configurable: true, writable: true })
@@ -176,7 +176,7 @@ describe('downloadFunnelExit', () => {
       sendDownloadFunnelExit(sampleData({ anonUserId: undefined }))
 
       const body = JSON.parse(mockFetch.mock.calls[0][1].body)
-      expect(body.anonymousId).toMatch(/^dl-\d+-/)
+      expect(body.anonymousId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
     } finally {
       Object.defineProperty(cryptoObj, 'randomUUID', {
         value: originalRandomUUID,

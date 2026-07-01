@@ -8,6 +8,7 @@ import { getEnv } from '../../config/env'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
 import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
+import { useDownloadClick } from '../../hooks/useDownloadClick'
 import { useHangOutAction } from '../../hooks/useHangOutAction'
 import appleLogo from '../../images/apple-logo.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
@@ -47,6 +48,7 @@ const JUMP_IN_URL = 'decentraland://?'
 const PlayPage = memo(() => {
   const l = useFormatMessage()
   const onClickHandle = useTrackClick()
+  const trackDownloadClick = useDownloadClick()
   const anonUserId = useAnonUserId()
   const [, userAgentData] = useAdvancedUserAgentData()
   const isDesktop = useDesktopMediaQuery()
@@ -73,12 +75,12 @@ const PlayPage = memo(() => {
 
   const handleDownloadClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
-      onClickHandle(e)
+      trackDownloadClick(e)
       if (userAgentData) {
         window.location.href = buildDownloadSuccessHref(userAgentData.os.name, DownloadPlace.PLAY_HERO)
       }
     },
-    [onClickHandle, userAgentData, buildDownloadSuccessHref]
+    [trackDownloadClick, userAgentData, buildDownloadSuccessHref]
   )
 
   // Mobile (< sm): no glass card, a single Ruby store button — Google Play on
@@ -100,7 +102,7 @@ const PlayPage = memo(() => {
             rel="noopener noreferrer"
             data-place={isMobileAndroid ? DownloadPlace.PLAY_HERO_GOOGLE_PLAY : DownloadPlace.PLAY_HERO_APP_STORE}
             data-event={SegmentEvent.DOWNLOAD}
-            onClick={onClickHandle}
+            onClick={trackDownloadClick}
           >
             <GooglePlayImage
               src={isMobileAndroid ? googlePlayBadge : assetUrl('/download-on-the-app-store.svg')}
@@ -155,7 +157,7 @@ const PlayPage = memo(() => {
               rel="noopener noreferrer"
               data-place={DownloadPlace.PLAY_HERO_EPIC}
               data-event={SegmentEvent.DOWNLOAD}
-              onClick={onClickHandle}
+              onClick={trackDownloadClick}
             >
               {l('page.download.download_on')}
               <img src={assetUrl('/epic-logo-black.svg')} alt="Epic Games" width={40} height={40} />
@@ -179,7 +181,7 @@ const PlayPage = memo(() => {
               rel="noopener noreferrer"
               data-place={DownloadPlace.PLAY_HERO_APP_STORE}
               data-event={SegmentEvent.DOWNLOAD}
-              onClick={onClickHandle}
+              onClick={trackDownloadClick}
             >
               <PlayBadgeImage src={assetUrl('/app-store-badge.svg')} alt="Download on the App Store" />
             </PlayBadgeLink>
@@ -189,7 +191,7 @@ const PlayPage = memo(() => {
               rel="noopener noreferrer"
               data-place={DownloadPlace.PLAY_HERO_GOOGLE_PLAY}
               data-event={SegmentEvent.DOWNLOAD}
-              onClick={onClickHandle}
+              onClick={trackDownloadClick}
             >
               <PlayBadgeImage src={assetUrl('/google-play-badge.svg')} alt="Get it on Google Play" />
             </PlayBadgeLink>
