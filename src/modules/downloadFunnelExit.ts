@@ -30,6 +30,10 @@ function buildProperties(data: DownloadFunnelExitData): Record<string, unknown> 
  * a throwaway UUID so Segment accepts the event.
  */
 function sendDownloadFunnelExit(data: DownloadFunnelExitData): void {
+  // `generateUuid()` is a throwaway id (NOT persisted). This event fires on
+  // `visibilitychange` after the download flow, so Segment adopting the id later
+  // is moot. Do NOT copy this for an event that can fire before Segment boots —
+  // use `ensureSegmentAnonymousId()` (persisted + adoptable) as `useDownloadClick` does.
   postSegmentEvent(SegmentEvent.DOWNLOAD_FUNNEL_EXIT, buildProperties(data), data.anonUserId || generateUuid())
 }
 

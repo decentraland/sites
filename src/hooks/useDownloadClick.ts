@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { useAnalytics } from '@dcl/hooks'
 import { SegmentEvent } from '../modules/segment'
 import { ensureSegmentAnonymousId } from '../modules/segmentAnonymousId'
@@ -10,25 +10,32 @@ import { useDeferredTrack } from './useDeferredTrack'
  * Click adapter for download CTAs that navigate away immediately after the
  * handler runs. Warm clicks keep analytics-next context; cold clicks bypass the
  * component-scoped queue because navigation would tear it down.
+ *
+ * `isInitialized` is read through a ref (same pattern as `useDeferredTrack`) so
+ * the handler sees Segment's current readiness even if it booted since the last
+ * render — closing the sub-render window where a stale `false` would beacon a
+ * click that could have gone through analytics-next with full context.
  */
 function useDownloadClick() {
   const { isInitialized } = useAnalytics()
   const deferredTrack = useDeferredTrack()
+  const isInitializedRef = useRef(isInitialized)
+  isInitializedRef.current = isInitialized
 
   return useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
-      const calledAt = Date.now()
       const payload: Record<string, unknown> = readDataAttributes(event.currentTarget)
 
       if (payload.event === SegmentEvent.CLICK) {
         delete payload.event
       }
 
-      if (isInitialized) {
+      if (isInitializedRef.current) {
         deferredTrack(SegmentEvent.CLICK, payload)
         return
       }
 
+      const calledAt = Date.now()
       postSegmentEvent(
         SegmentEvent.CLICK,
         {
@@ -43,7 +50,7 @@ function useDownloadClick() {
         ensureSegmentAnonymousId()
       )
     },
-    [deferredTrack, isInitialized]
+    [deferredTrack]
   )
 }
 
