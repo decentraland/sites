@@ -104,7 +104,7 @@ const TransactionsSection = ({ transactions, onClaim }: TransactionsSectionProps
           {explorerHash}
         </HashLink>
         {transaction.status === 'checkpoint' && onClaim ? (
-          <ClaimButton type="button" onClick={() => onClaim(transaction)} data-role="transaction-claim">
+          <ClaimButton variant="contained" color="primary" size="small" onClick={() => onClaim(transaction)} data-role="transaction-claim">
             {t('account.wallets.transactions.claim')}
           </ClaimButton>
         ) : (

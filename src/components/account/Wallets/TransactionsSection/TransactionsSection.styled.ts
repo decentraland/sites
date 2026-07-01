@@ -1,4 +1,4 @@
-import { Box, Link, Typography, styled } from 'decentraland-ui2'
+import { Box, Button, Link, Typography, styled } from 'decentraland-ui2'
 import type { WalletTransactionStatus } from '../../../../hooks/useWalletTransactions.types'
 
 // Transactions section inside each balance card (Figma "Profile-Account" Wallets): a collapsible
@@ -223,31 +223,12 @@ const Amount = styled(Typography)(({ theme }) => ({
 }))
 
 // Replaces the status badge on a checkpointed withdrawal row: the "claim on Ethereum" (exit) action.
-const ClaimButton = styled('button')(({ theme }) => ({
+// A slim decentraland-ui2 primary Button (variant/color/size set at the usage site, like the wallet
+// modals); this wrapper only adds the row-grid placement.
+const ClaimButton = styled(Button)(({ theme }) => ({
   gridArea: 'status',
   justifySelf: 'end',
   flexShrink: 0,
-  padding: theme.spacing(0.5, 1.25),
-  border: 'none',
-  borderRadius: 6,
-  fontFamily: 'inherit',
-  fontSize: 11,
-  fontWeight: 700,
-  cursor: 'pointer',
-  color: '#1B0F2B',
-  background: '#2EE6C5',
-  transition: 'opacity 0.15s ease',
-  ['&:hover']: {
-    opacity: 0.85
-  },
-  ['&:focus-visible']: {
-    outline: '2px solid rgba(255, 255, 255, 0.6)',
-    outlineOffset: 2
-  },
-  ['&:disabled']: {
-    opacity: 0.6,
-    cursor: 'default'
-  },
   [theme.breakpoints.up('md')]: {
     justifySelf: 'start'
   }
