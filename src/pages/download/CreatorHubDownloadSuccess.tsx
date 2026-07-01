@@ -5,7 +5,6 @@ import { Typography } from 'decentraland-ui2'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
 import { useAnonUserId } from '../../hooks/useAnonUserId'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { useDeferredTrack } from '../../hooks/useDeferredTrack'
 import { Repo, useLatestGithubRelease } from '../../hooks/useLatestGithubRelease'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsSetup from '../../images/download/creator-hub/mac_setup.svg'
@@ -27,7 +26,6 @@ const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
 const CreatorHubDownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
   const { intl } = useTranslation()
-  const track = useDeferredTrack()
   const trackClick = useTrackClick()
   const anonUserId = useAnonUserId()
   const { hasValidIdentity } = useAuthIdentity()
@@ -73,7 +71,7 @@ const CreatorHubDownloadSuccess = memo(() => {
     hasTrackedArrivalRef.current = true
 
     const filename = osLink.split('/').pop() || ''
-    const tracker = createDownloadTracker(track, {
+    const tracker = createDownloadTracker({
       href: osLink,
       os: clientOS,
       arch: clientArch,
@@ -85,7 +83,7 @@ const CreatorHubDownloadSuccess = memo(() => {
       revisit: revisitNumber
     })
     tracker.success(filename)
-  }, [track, osLink, clientOS, clientArch, anonUserId, hasValidIdentity, revisitNumber])
+  }, [osLink, clientOS, clientArch, anonUserId, hasValidIdentity, revisitNumber])
 
   const productAction = l('page.download.success.subtitle_action_creating')
 
