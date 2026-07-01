@@ -1,5 +1,5 @@
 import { Box, Link, Typography, styled } from 'decentraland-ui2'
-import type { WalletTransactionStatus } from '../../../../hooks/useWalletTransactions.types'
+import type { WalletTransactionStatus, WalletTransactionType } from '../../../../hooks/useWalletTransactions.types'
 
 // Transactions section inside each balance card (Figma "Profile-Account" Wallets): a collapsible
 // "Transactions" header that expands to the tracked tx rows. Each row is a column grid — icon chip,
@@ -121,21 +121,30 @@ const Row = styled(Box)(({ theme }) => ({
   }
 }))
 
-const IconChip = styled('span')(({ theme }) => ({
-  gridArea: 'icon',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 36,
-  height: 36,
-  flexShrink: 0,
-  borderRadius: theme.spacing(1),
-  background: 'rgba(255, 255, 255, 0.06)',
-  color: '#FCFCFC',
-  ['& .MuiSvgIcon-root']: {
-    fontSize: 18
+// send/received carry their own tinted circle baked into the SVG (Figma "Profile-Account" Wallets), so
+// the chip stays transparent and lets the 24px icon fill the 36px slot. swap/withdraw have no Figma
+// spec: the chip supplies a neutral circle behind the (smaller) MUI glyph so all four rows stay round
+// and aligned.
+const isSelfContainedIcon = (type: WalletTransactionType): boolean => type === 'send' || type === 'received'
+
+const IconChip = styled('span', { shouldForwardProp: prop => prop !== '$type' })<{ $type: WalletTransactionType }>(({ $type }) => {
+  const selfContained = isSelfContainedIcon($type)
+  return {
+    gridArea: 'icon',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 36,
+    height: 36,
+    flexShrink: 0,
+    borderRadius: '50%',
+    background: selfContained ? 'transparent' : 'rgba(255, 255, 255, 0.06)',
+    color: '#FCFCFC',
+    ['& .MuiSvgIcon-root']: {
+      fontSize: selfContained ? 36 : 18
+    }
   }
-}))
+})
 
 const RowType = styled(Typography)(() => ({
   gridArea: 'type',

@@ -3,15 +3,12 @@ import type { ReactNode } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded'
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import NorthEastRoundedIcon from '@mui/icons-material/NorthEastRounded'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import SouthWestRoundedIcon from '@mui/icons-material/SouthWestRounded'
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import SwapVertRoundedIcon from '@mui/icons-material/SwapVertRounded'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import type { WalletTransaction, WalletTransactionStatus, WalletTransactionType } from '../../../../hooks/useWalletTransactions.types'
 import { ManaMarkIcon } from '../ManaMarkIcon'
 import { formatMana, getExplorerTxUrl } from '../wallets.helpers'
+import { TransactionReceivedIcon, TransactionSentIcon } from './TransactionTypeIcon'
 import {
   Amount,
   ChevronWrap,
@@ -37,8 +34,8 @@ interface TransactionsSectionProps {
 }
 
 const TYPE_ICON: Record<WalletTransactionType, ReactNode> = {
-  send: <NorthEastRoundedIcon fontSize="small" />,
-  received: <SouthWestRoundedIcon fontSize="small" />,
+  send: <TransactionSentIcon />,
+  received: <TransactionReceivedIcon />,
   swap: <SwapVertRoundedIcon fontSize="small" />,
   withdraw: <SwapVertRoundedIcon fontSize="small" />
 }
@@ -87,7 +84,7 @@ const TransactionsSection = ({ transactions, onClaim }: TransactionsSectionProps
     const explorerHash = transaction.claimHash ?? transaction.hash
     return (
       <Row key={`${transaction.hash}-${index}`} data-role="transaction-row">
-        <IconChip>{TYPE_ICON[transaction.type]}</IconChip>
+        <IconChip $type={transaction.type}>{TYPE_ICON[transaction.type]}</IconChip>
         <RowType>{t(`account.wallets.transactions.type.${transaction.type}`)}</RowType>
         <RowDate>{formatDate(transaction.timestamp)}</RowDate>
         <HashLink

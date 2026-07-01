@@ -8,8 +8,6 @@ type LinkProps = ChildrenProps & { href?: string }
 type HeaderProps = ChildrenProps & { onClick?: () => void; 'aria-expanded'?: boolean }
 
 jest.mock('@mui/icons-material/ExpandMoreRounded', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/NorthEastRounded', () => ({ __esModule: true, default: () => <span /> }))
-jest.mock('@mui/icons-material/SouthWestRounded', () => ({ __esModule: true, default: () => <span /> }))
 
 // The MANA mark renders nothing in tests so the amount's text stays matchable by getByText.
 jest.mock('decentraland-ui2', () => ({
@@ -105,6 +103,15 @@ describe('TransactionsSection', () => {
     const link = screen.getByRole('link')
     expect(link).toHaveAttribute('href', `https://explorer.test/ethereum/${tx.hash}`)
     expect(link).toHaveTextContent(tx.hash)
+  })
+
+  it('should render both the sent and received transaction type rows', () => {
+    const receivedTx: WalletTransaction = { ...tx, type: 'received', hash: '0xreceived', status: 'confirmed' }
+    render(<TransactionsSection transactions={[tx, receivedTx]} />)
+    fireEvent.click(screen.getByRole('button', { name: /account.wallets.transactions.title/ }))
+
+    expect(screen.getByText('account.wallets.transactions.type.send')).toBeInTheDocument()
+    expect(screen.getByText('account.wallets.transactions.type.received')).toBeInTheDocument()
   })
 
   it('should link a claimed withdrawal to its Ethereum exit tx (claimHash) instead of the burn', () => {
