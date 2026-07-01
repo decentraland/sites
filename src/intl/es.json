@@ -1208,6 +1208,7 @@
       "wallets": "Wallets",
       "notifications": "Notificaciones",
       "credits": "Configuración de Créditos",
+      "security": "Seguridad",
       "delete": "Eliminar cuenta",
       "logout": "Cerrar sesión",
       "close": "Cerrar"
@@ -1226,6 +1227,9 @@
       },
       "credits": {
         "title": "Configuración de Créditos"
+      },
+      "security": {
+        "title": "Seguridad"
       },
       "delete": {
         "title": "Eliminar Cuenta"
@@ -1502,6 +1506,8 @@
       "asset_warning_description": "Eliminar tu cuenta puede hacer que pierdas permanentemente el acceso a tus activos en cadena (wearables, emotes, LAND, etc). Asegúrate de exportar tu clave privada antes de continuar.",
       "export_key_description": "Ve a la pestaña Wallets y usa el administrador de billetera debajo de tu dirección para exportar tu clave privada.",
       "export_key_link": "Ir a Wallets",
+      "export_key_description_magic": "Ve a la pestaña Seguridad para ver y hacer una copia de seguridad de tu clave privada antes de eliminar tu cuenta.",
+      "export_key_link_magic": "Ir a Seguridad",
       "delete_button": "Eliminar Cuenta",
       "modal": {
         "title": "¿Estás seguro de que quieres eliminar tu cuenta?",
@@ -1514,6 +1520,18 @@
       },
       "unavailable_title": "La eliminación de cuenta no está disponible para esta billetera",
       "unavailable_description": "Eliminar tu cuenta solo aplica a cuentas creadas con email o inicio de sesión social. Las billeteras self-custody (como MetaMask o WalletConnect) controlan sus propias claves, así que no hay nada que eliminar acá; simplemente desconectate para cerrar sesión."
+    },
+    "security": {
+      "title": "Clave privada",
+      "intro": "Tu cuenta de Decentraland funciona con una billetera self-custody. Tu clave privada es la credencial maestra que controla esta billetera y todo lo que contiene: tu MANA, NAMEs, LAND, wearables y emotes.",
+      "responsibility_title": "Tenés el control total",
+      "responsibility_description": "Hacer una copia de seguridad de tu clave privada te permite acceder a tu billetera desde cualquier app compatible y mantiene tus activos a salvo si alguna vez perdés el acceso a tu inicio de sesión. Con la autocustodia, esta responsabilidad es solo tuya.",
+      "warning_title": "Nunca compartas tu clave privada",
+      "warning_description": "Cualquiera que tenga tu clave privada tiene el control total e irreversible de tu cuenta y puede mover todos tus activos. Ningún miembro del equipo de Decentraland te la va a pedir jamás. Guardala sin conexión, en un lugar al que solo vos puedas acceder.",
+      "reveal_description": "Se abrirá la página de revelado segura de Magic en una pestaña nueva para que veas y hagas una copia de seguridad de tu clave privada. Debes completar el inicio de sesión en el sitio de Magic con el mismo mecanismo que utilizaste para iniciar sesión en Decentraland.",
+      "reveal_button": "Revelar clave privada",
+      "unavailable_title": "La configuración de seguridad no está disponible para esta billetera",
+      "unavailable_description": "Revelar una clave privada solo aplica a cuentas creadas con email o inicio de sesión social. Las billeteras self-custody (como MetaMask o WalletConnect) ya gestionan sus propias claves, así que no hay nada que revelar acá."
     },
     "copy": "Copiar",
     "copied": "¡Copiado!"

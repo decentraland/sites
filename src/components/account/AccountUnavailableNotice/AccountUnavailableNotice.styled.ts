@@ -1,5 +1,8 @@
 import { Box, Typography, styled } from 'decentraland-ui2'
 
+// Shared "not available for this wallet" panel used across account sections. Translucent black panel
+// (#00000033), text #FCFCFC, muted #CFCDD4 — mirrors the sibling account styled files.
+
 const Container = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'flex-start',

@@ -54,7 +54,8 @@ const CONSEQUENCES = [
 // flow. Deletion unlinks the thirdweb profiles client-side; there is no
 // equivalent action for self-custodial wallets (MetaMask, WalletConnect),
 // whose keys the user controls directly.
-const DeleteAccountSection = ({ address, onOpenConfirmModal, onGoToWallets }: DeleteAccountSectionProps) => {
+const DeleteAccountSection = (props: DeleteAccountSectionProps) => {
+  const { address, isMagic, onOpenConfirmModal, onGoToWallets, onGoToSecurity } = props
   const t = useFormatMessage()
 
   return (
@@ -88,9 +89,17 @@ const DeleteAccountSection = ({ address, onOpenConfirmModal, onGoToWallets }: De
         <AssetWarningTextWrapper>
           <AssetWarningTitle>{t('account.delete.asset_warning_title')}</AssetWarningTitle>
           <AssetWarningDescription>{t('account.delete.asset_warning_description')}</AssetWarningDescription>
-          <ExportKeyDescription>{t('account.delete.export_key_description')}</ExportKeyDescription>
-          <ExportKeyLink variant="text" onClick={onGoToWallets} data-role="delete-account-go-to-wallets">
-            {t('account.delete.export_key_link')}
+          {/* Magic logins reveal their key from the Security tab (reveal.magic.link); thirdweb logins
+              export theirs from the Wallets tab's wallet manager. Point each at the right place. */}
+          <ExportKeyDescription>
+            {t(isMagic ? 'account.delete.export_key_description_magic' : 'account.delete.export_key_description')}
+          </ExportKeyDescription>
+          <ExportKeyLink
+            variant="text"
+            onClick={isMagic ? onGoToSecurity : onGoToWallets}
+            data-role={isMagic ? 'delete-account-go-to-security' : 'delete-account-go-to-wallets'}
+          >
+            {t(isMagic ? 'account.delete.export_key_link_magic' : 'account.delete.export_key_link')}
           </ExportKeyLink>
         </AssetWarningTextWrapper>
       </AssetWarningBox>

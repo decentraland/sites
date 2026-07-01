@@ -117,6 +117,9 @@ const AccountIndexRedirect = lazy(() => import('./pages/account/AccountLayout').
 const AccountWalletsPage = lazy(() => import('./pages/account/WalletsPage').then(m => ({ default: m.WalletsPage })))
 const AccountNotificationsPage = lazy(() => import('./pages/account/NotificationsPage').then(m => ({ default: m.NotificationsPage })))
 const AccountCreditsPage = lazy(() => import('./pages/account/CreditsPage').then(m => ({ default: m.CreditsPage })))
+// Aliased as AccountSecurityPage: `SecurityPage` is already bound above for the lightweight /security
+// legal page. This is the account-scoped Security tab (Magic private-key reveal).
+const AccountSecurityPage = lazy(() => import('./pages/account/SecurityPage').then(m => ({ default: m.SecurityPage })))
 const AccountDeletePage = lazy(() => import('./pages/account/DeleteAccountPage').then(m => ({ default: m.DeleteAccountPage })))
 const AccountNotFoundPage = lazy(() => import('./pages/account/AccountNotFoundPage').then(m => ({ default: m.AccountNotFoundPage })))
 
@@ -242,6 +245,7 @@ const App = () => {
                 <Route path="wallets" element={<AccountWalletsPage />} />
                 <Route path="notifications" element={<AccountNotificationsPage />} />
                 <Route path="credits" element={<AccountCreditsPage />} />
+                <Route path="security" element={<AccountSecurityPage />} />
                 <Route path="delete" element={<AccountDeletePage />} />
                 <Route path="*" element={<AccountNotFoundPage />} />
               </Route>
