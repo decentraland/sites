@@ -67,10 +67,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const anonUserId = useAnonUserId()
   const { isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads } = useHangOutAction()
 
-  const downloadSuccessHref = useCallback(
-    (os: string, place: string) => buildDownloadSuccessHref(os, place, anonUserId),
-    [anonUserId]
-  )
+  const downloadSuccessHref = useCallback((os: string, place: string) => buildDownloadSuccessHref(os, place, anonUserId), [anonUserId])
 
   const [rawDownloads, rawDownloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
 

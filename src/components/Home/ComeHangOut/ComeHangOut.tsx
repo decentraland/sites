@@ -42,10 +42,7 @@ const ComeHangOut = memo(() => {
   const [, userAgentData] = useAdvancedUserAgentData()
   const [rawDownloads, rawDownloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
 
-  const downloadSuccessHref = useCallback(
-    (os: string, place: string) => buildDownloadSuccessHref(os, place, anonUserId),
-    [anonUserId]
-  )
+  const downloadSuccessHref = useCallback((os: string, place: string) => buildDownloadSuccessHref(os, place, anonUserId), [anonUserId])
 
   const targetDownloads = !rawDownloadsStatus.loading && rawDownloadsStatus.loaded && rawDownloads ? rawDownloads : null
   if (targetDownloads) cachedDownloadCounts = formatToShorthand(targetDownloads)
