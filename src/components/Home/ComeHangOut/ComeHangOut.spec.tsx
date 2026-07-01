@@ -56,6 +56,11 @@ jest.mock('../../Icon/VerifiedIcon', () => ({
   VerifiedIcon: () => <span data-testid="verified-icon" />
 }))
 
+jest.mock('../../../modules/url', () => ({
+  buildDownloadSuccessHref: (os: string, place: string, anonUserId?: string) =>
+    `/download_success?os=${os}&place=${place}${anonUserId ? `&anon_user_id=${anonUserId}` : ''}`
+}))
+
 const mockUserAgent = jest.mocked(useAdvancedUserAgentData)
 const mockAsyncMemo = jest.mocked(useAsyncMemo)
 const mockDownloadClick = jest.mocked(useDownloadClick)

@@ -113,7 +113,12 @@ describe('createDownloadTracker', () => {
 
   describe('when success() is called after started()', () => {
     it('should fire DOWNLOAD_SUCCESS with filename, succeeded_at, and duration_ms relative to the started_at', () => {
-      nowSpy = jest.spyOn(Date, 'now').mockReturnValueOnce(1_700_000_000_000).mockReturnValueOnce(1_700_000_005_500)
+      nowSpy = jest
+        .spyOn(Date, 'now')
+        .mockReturnValueOnce(1_700_000_000_000)
+        .mockReturnValueOnce(1_700_000_000_000)
+        .mockReturnValueOnce(1_700_000_005_500)
+        .mockReturnValueOnce(1_700_000_005_500)
       const tracker = createDownloadTracker(buildContext())
 
       tracker.started()
@@ -160,7 +165,12 @@ describe('createDownloadTracker', () => {
 
   describe('when failed() is called after started()', () => {
     it('should fire DOWNLOAD_FAILED with reason, failed_at, and duration_ms relative to started_at', () => {
-      nowSpy = jest.spyOn(Date, 'now').mockReturnValueOnce(1_700_000_000_000).mockReturnValueOnce(1_700_000_002_000)
+      nowSpy = jest
+        .spyOn(Date, 'now')
+        .mockReturnValueOnce(1_700_000_000_000)
+        .mockReturnValueOnce(1_700_000_000_000)
+        .mockReturnValueOnce(1_700_000_002_000)
+        .mockReturnValueOnce(1_700_000_002_000)
       const tracker = createDownloadTracker(buildContext())
 
       tracker.started()
