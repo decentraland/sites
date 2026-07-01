@@ -12,16 +12,20 @@ jest.mock('@mui/icons-material/ArrowDownwardRounded', () => ({ __esModule: true,
 jest.mock('@mui/icons-material/SwapHorizRounded', () => ({ __esModule: true, default: () => <span /> }))
 
 jest.mock('decentraland-ui2', () => ({
-  Skeleton: () => <span data-testid="skeleton" />
+  Skeleton: () => <span data-testid="skeleton" />,
+  Mana: ({ network, primary, children }: { network: string; primary?: boolean; children?: ReactNode }) => (
+    <span data-testid={`mana-${network}`} data-primary={String(Boolean(primary))}>
+      {children}
+    </span>
+  )
 }))
 
-jest.mock('../../../LandingNavbar/icons', () => ({
-  ManaEthIcon: () => <span data-testid="mana-eth" />,
-  ManaMaticIcon: () => <span data-testid="mana-matic" />
+jest.mock('@dcl/schemas', () => ({
+  Network: { ETHEREUM: 'ETHEREUM', MATIC: 'MATIC' }
 }))
 
-jest.mock('../ManaMarkIcon', () => ({
-  ManaMarkIcon: () => <span data-testid="mana-mark" />
+jest.mock('../NetworkIcon', () => ({
+  NetworkIcon: ({ network }: { network: string }) => <span data-testid={`network-icon-${network}`} />
 }))
 
 jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({
@@ -52,7 +56,6 @@ jest.mock('./BalanceCard.styled', () => ({
   NetworkRow: ({ children }: ChildrenProps) => <div>{children}</div>,
   NetworkLabel: ({ children }: ChildrenProps) => <div>{children}</div>,
   BalanceRow: ({ children }: ChildrenProps) => <div>{children}</div>,
-  BalanceAmount: ({ children }: ChildrenProps) => <div>{children}</div>,
   Actions: ({ children }: ChildrenProps) => <div>{children}</div>,
   ActionButton: ({ children, onClick, 'data-role': dataRole }: ButtonProps) => (
     <button type="button" data-role={dataRole} onClick={onClick}>
@@ -103,7 +106,18 @@ describe('BalanceCard', () => {
 
     expect(screen.getByText('account.wallets.eth_label')).toBeInTheDocument()
     expect(screen.getByText('formatted-100595')).toBeInTheDocument()
-    expect(screen.getByTestId('mana-eth')).toBeInTheDocument()
+    expect(screen.getByTestId('network-icon-ethereum')).toBeInTheDocument()
+    // Ethereum MANA renders in the brand pink (primary).
+    expect(screen.getByTestId('mana-ETHEREUM')).toHaveAttribute('data-primary', 'true')
+  })
+
+  it('should render the polygon network badge and a white (non-primary) matic MANA mark on the polygon card', () => {
+    renderCard({ network: 'polygon', balance: 10000 })
+
+    expect(screen.getByText('account.wallets.polygon_label')).toBeInTheDocument()
+    expect(screen.getByTestId('network-icon-polygon')).toBeInTheDocument()
+    // Polygon MANA stays white (not primary).
+    expect(screen.getByTestId('mana-MATIC')).toHaveAttribute('data-primary', 'false')
   })
 
   it('should show a skeleton while loading or before the balance resolves', () => {
