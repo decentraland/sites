@@ -23,6 +23,7 @@ const DeleteAccountPage = () => {
   const handleOpenConfirmModal = useCallback(() => setIsConfirmOpen(true), [])
   const handleCloseConfirmModal = useCallback(() => setIsConfirmOpen(false), [])
   const handleGoToWallets = useCallback(() => navigate('/account/wallets'), [navigate])
+  const handleGoToSecurity = useCallback(() => navigate('/account/security'), [navigate])
 
   return (
     <>
@@ -32,7 +33,13 @@ const DeleteAccountPage = () => {
       <PageRoot>
         {canDelete ? (
           <>
-            <DeleteAccountSection address={address} onOpenConfirmModal={handleOpenConfirmModal} onGoToWallets={handleGoToWallets} />
+            <DeleteAccountSection
+              address={address}
+              isMagic={isMagic}
+              onOpenConfirmModal={handleOpenConfirmModal}
+              onGoToWallets={handleGoToWallets}
+              onGoToSecurity={handleGoToSecurity}
+            />
             <DeleteAccountConfirmModal open={isConfirmOpen} address={address} isMagic={isMagic} onClose={handleCloseConfirmModal} />
           </>
         ) : isResolvingProvider ? (

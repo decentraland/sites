@@ -53,18 +53,28 @@ const ADDRESS = '0x1234567890123456789012345678901234567890'
 describe('DeleteAccountSection', () => {
   let onOpenConfirmModal: jest.Mock
   let onGoToWallets: jest.Mock
+  let onGoToSecurity: jest.Mock
 
   beforeEach(() => {
     onOpenConfirmModal = jest.fn()
     onGoToWallets = jest.fn()
+    onGoToSecurity = jest.fn()
   })
 
   afterEach(() => {
     jest.resetAllMocks()
   })
 
-  const renderSection = (address?: string) =>
-    render(<DeleteAccountSection address={address} onOpenConfirmModal={onOpenConfirmModal} onGoToWallets={onGoToWallets} />)
+  const renderSection = (address?: string, isMagic = false) =>
+    render(
+      <DeleteAccountSection
+        address={address}
+        isMagic={isMagic}
+        onOpenConfirmModal={onOpenConfirmModal}
+        onGoToWallets={onGoToWallets}
+        onGoToSecurity={onGoToSecurity}
+      />
+    )
 
   it('should render the danger banner, all six consequences and the asset warning', () => {
     renderSection(ADDRESS)
@@ -87,12 +97,30 @@ describe('DeleteAccountSection', () => {
     expect(onOpenConfirmModal).toHaveBeenCalledTimes(1)
   })
 
-  it('should navigate to wallets when the export key link is clicked', () => {
+  it('should navigate to wallets when a non-Magic account clicks the export key link', () => {
     renderSection(ADDRESS)
 
     fireEvent.click(screen.getByRole('button', { name: 'account.delete.export_key_link' }))
 
     expect(onGoToWallets).toHaveBeenCalledTimes(1)
+    expect(onGoToSecurity).not.toHaveBeenCalled()
+  })
+
+  describe('when the account is a Magic login', () => {
+    it('should render the Magic export-key description pointing at the Security tab', () => {
+      renderSection(ADDRESS, true)
+
+      expect(screen.getByText('account.delete.export_key_description_magic')).toBeInTheDocument()
+    })
+
+    it('should navigate to security (not wallets) when the export key link is clicked', () => {
+      renderSection(ADDRESS, true)
+
+      fireEvent.click(screen.getByRole('button', { name: 'account.delete.export_key_link_magic' }))
+
+      expect(onGoToSecurity).toHaveBeenCalledTimes(1)
+      expect(onGoToWallets).not.toHaveBeenCalled()
+    })
   })
 
   it('should disable the delete button when there is no address', () => {

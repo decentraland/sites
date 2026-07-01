@@ -1643,6 +1643,7 @@
       "wallets": "Wallets",
       "notifications": "Notifications",
       "credits": "Credits Settings",
+      "security": "Security",
       "delete": "Delete account",
       "logout": "Log out",
       "close": "Close"
@@ -1661,6 +1662,9 @@
       },
       "credits": {
         "title": "Credits Settings"
+      },
+      "security": {
+        "title": "Security"
       },
       "delete": {
         "title": "Delete Account"
@@ -1937,6 +1941,8 @@
       "asset_warning_description": "Deleting your account may cause you to permanently lose access to your on-chain assets (wearables, emotes, LAND, etc). Make sure to export your private key before proceeding.",
       "export_key_description": "Go to the Wallets tab and use the wallet manager below your address to export your private key.",
       "export_key_link": "Go to Wallets",
+      "export_key_description_magic": "Go to the Security tab to view and back up your private key before you delete your account.",
+      "export_key_link_magic": "Go to Security",
       "delete_button": "Delete Account",
       "modal": {
         "title": "Are you sure you want to delete your account?",
@@ -1949,6 +1955,18 @@
       },
       "unavailable_title": "Account deletion isn’t available for this wallet",
       "unavailable_description": "Deleting your account only applies to accounts created with email or social login. Self-custodial wallets (like MetaMask or WalletConnect) control their own keys, so there’s nothing to delete here — just disconnect to sign out."
+    },
+    "security": {
+      "title": "Private key",
+      "intro": "Your Decentraland account is powered by a self-custodial wallet. Your private key is the master credential that controls this wallet and everything it holds — your MANA, NAMEs, LAND, wearables and emotes.",
+      "responsibility_title": "You are in full control",
+      "responsibility_description": "Backing up your private key lets you access your wallet from any compatible app, and keeps your assets safe if you ever lose access to your login. With self-custody, this responsibility is yours alone.",
+      "warning_title": "Never share your private key",
+      "warning_description": "Anyone with your private key has full, irreversible control of your account and can move all of your assets. No Decentraland team member will ever ask for it. Store it offline, somewhere only you can reach.",
+      "reveal_description": "You’ll be taken to Magic’s secure reveal page in a new tab to view and back up your private key. You must complete sign-in on the Magic site using the same method you used to sign in to Decentraland.",
+      "reveal_button": "Reveal private key",
+      "unavailable_title": "Security settings aren’t available for this wallet",
+      "unavailable_description": "Revealing a private key only applies to accounts created with email or social login. Self-custodial wallets (like MetaMask or WalletConnect) already manage their own keys, so there’s nothing to reveal here."
     },
     "copy": "Copy",
     "copied": "Copied"
