@@ -81,6 +81,7 @@ enum DownloadPlace {
   LANDING_HERO_EPIC = 'landing-hero-epic',
   LANDING_HERO_PLATFORM_SWITCH = 'landing-hero-platform-switch',
   COME_HANG_OUT = 'come-hang-out',
+  COME_HANG_OUT_PLATFORM_SWITCH = 'come-hang-out-platform-switch',
   JUMP_IN_ALREADY_USER = 'jump-in-already-user',
   PLAY_HERO = 'play-hero',
   PLAY_HERO_EPIC = 'play-hero-epic',
