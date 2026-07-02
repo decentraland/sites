@@ -12,6 +12,7 @@ import { useDownloadSuccessHref } from '../../hooks/useDownloadSuccessHref'
 import { useHangOutAction } from '../../hooks/useHangOutAction'
 import appleLogo from '../../images/apple-logo.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
+import { withCampaignParams } from '../../modules/campaignParams'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
 import { DownloadPlace, DownloadTarget, SegmentEvent } from '../../modules/segment'
 import { OperativeSystem } from '../../types/download.types'
@@ -126,7 +127,7 @@ const PlayPage = memo(() => {
         <PlayCTASection>
           <PlayCTAButtons>
             <PlayDownloadButton
-              href={userAgentData ? downloadSuccessHref(userAgentData.os.name, DownloadPlace.PLAY_HERO) : '/download'}
+              href={userAgentData ? downloadSuccessHref(userAgentData.os.name, DownloadPlace.PLAY_HERO) : withCampaignParams('/download')}
               data-place={DownloadPlace.PLAY_HERO}
               data-event={SegmentEvent.DOWNLOAD}
               data-download-target={DownloadTarget.DESKTOP_INSTALLER}

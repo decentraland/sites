@@ -136,6 +136,18 @@ describe('ComeHangOut', () => {
       expect(downloadSuccessHref).toHaveBeenCalledWith('macOS', DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH)
     })
 
+    it('should preserve campaign params on the /download fallback href when the user agent has not resolved', () => {
+      mockUserAgent.mockReturnValue([false, undefined] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+      window.history.pushState({}, '', '/?utm_source=shefi')
+      try {
+        render(<ComeHangOut />)
+        const downloadButton = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
+        expect(downloadButton).toHaveAttribute('href', '/download?utm_source=shefi')
+      } finally {
+        window.history.pushState({}, '', '/')
+      }
+    })
+
     it('should tag the main CTA, Epic button, and platform-switch icon as desktop_installer', () => {
       render(<ComeHangOut />)
 

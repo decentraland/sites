@@ -50,11 +50,15 @@ describe('useDownloadSuccessHref', () => {
   })
 
   describe('when the page URL carries partner campaign params', () => {
-    it('should collect and forward them to buildDownloadSuccessHref', () => {
-      window.history.pushState({}, '', '/?utm_source=shefi&utm_campaign=partner-launch')
+    it('should collect them at CALL time, not render time', () => {
+      // pushState AFTER renderHook: pins that collectCampaignParams runs when
+      // the returned builder is invoked. A refactor hoisting collection into
+      // the hook body (captured at render) would break this — and would lose
+      // attribution on SPA navigations that change the query string.
       mockUseAnonUserId.mockReturnValue(undefined)
       const { result } = renderHook(() => useDownloadSuccessHref())
 
+      window.history.pushState({}, '', '/?utm_source=shefi&utm_campaign=partner-launch')
       result.current('Windows', 'landing-hero')
 
       expect(mockBuildDownloadSuccessHref).toHaveBeenCalledWith(

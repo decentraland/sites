@@ -6,8 +6,9 @@ import { useAnonUserId } from './useAnonUserId'
 /**
  * Returns a memoized `(os, place) => href` builder for `/download_success`
  * links, baking in the current anon_user_id and any partner UTM params on the
- * page URL. Shared by Hero, ComeHangOut, and /play so a change to the
- * attribution payload only needs one edit instead of three.
+ * page URL. Shared by the landing/play download CTAs — it centralizes their
+ * os/place call sites. (`DownloadOptions` composes the same options inline via
+ * `buildDownloadSuccessHref` because it also passes `arch`.)
  */
 function useDownloadSuccessHref() {
   const anonUserId = useAnonUserId()

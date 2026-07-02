@@ -515,7 +515,7 @@ describe('when the user clicks the footer re-download link', () => {
 
 describe('when DownloadSuccess mounts and the url resolution rejects', () => {
   beforeEach(() => {
-    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=download-page')
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=download-page&utm_source=shefi')
     sessionStorage.clear()
     window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=download-page')
     mockCalculateDownloadUrl.mockRejectedValue(new Error('No download link available'))
@@ -540,7 +540,12 @@ describe('when DownloadSuccess mounts and the url resolution rejects', () => {
           anon_user_id: 'anon-123',
           auth_state: 'anonymous',
           revisit: 0,
-          reason: 'No download link available'
+          reason: 'No download link available',
+          // The fallback tracker must carry the same attribution as the main
+          // one — otherwise every failed-on-mount download silently loses the
+          // desktop_installer/utm tagging and skews per-campaign failure rates.
+          download_target: 'desktop_installer',
+          utm_source: 'shefi'
         }),
         expect.anything()
       )

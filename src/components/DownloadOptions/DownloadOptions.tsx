@@ -144,8 +144,8 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
         })
       }
 
-      // Forward the partner campaign params into /download_success (through the
-      // shared href builder) so the desktop installer funnel
+      // Forward the partner campaign params into /download_success (through
+      // `buildDownloadSuccessHref`) so the desktop installer funnel
       // (download_started/_success/_failed) carries the same attribution the
       // landing click had.
       const finalUrl = buildDownloadSuccessHref(option.text, DownloadPlace.DOWNLOAD_PAGE, {

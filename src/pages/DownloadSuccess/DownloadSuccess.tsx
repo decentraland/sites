@@ -119,13 +119,24 @@ const DownloadSuccess = memo(() => {
   // mobile App Store / Google Play CTAs exit to their stores and never reach
   // this page — so tagging it lets analytics exclude mobile store exits from
   // the desktop activation metric.
+  // Non-throwing by contract: this runs in the footer click handler BEFORE its
+  // try/finally arms (a throw there would latch `downloadingRef` and brick the
+  // button) and again INSIDE the mount effect's catch when building the
+  // download_failed fallback (a throw there would kill the fallback emission).
+  // Attribution extras are best-effort — they must never break the download.
   const buildTrackerExtra = useCallback((): Record<string, unknown> => {
-    const extra: Record<string, unknown> = {
-      ...(collectClientFingerprint() ?? {}),
-      ...campaignParamsRef.current
+    try {
+      return {
+        ...(collectClientFingerprint() ?? {}),
+        ...campaignParamsRef.current,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        download_target: DownloadTarget.DESKTOP_INSTALLER
+      }
+    } catch (error) {
+      console.error('buildTrackerExtra failed:', error)
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      return { download_target: DownloadTarget.DESKTOP_INSTALLER }
     }
-    extra.download_target = DownloadTarget.DESKTOP_INSTALLER
-    return extra
   }, [])
 
   // Revisit counter — captured once at mount via a lazy useState initializer

@@ -9,6 +9,7 @@ import { useDownloadSuccessHref } from '../../../hooks/useDownloadSuccessHref'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import appleLogo from '../../../images/apple-logo.svg'
 import microsoftLogo from '../../../images/microsoft-logo.svg'
+import { withCampaignParams } from '../../../modules/campaignParams'
 import { DOWNLOAD_URLS } from '../../../modules/downloadConstants'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
 import { formatToShorthand } from '../../../modules/number'
@@ -249,7 +250,9 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
           <HeroCTAWrapper>
             {/* Download + Epic buttons */}
             <DownloadButton
-              href={userAgentData ? downloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO) : '/download'}
+              href={
+                userAgentData ? downloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO) : withCampaignParams('/download')
+              }
               data-place={SectionViewedTrack.LANDING_HERO}
               data-event={SegmentEvent.DOWNLOAD}
               data-download-target={DownloadTarget.DESKTOP_INSTALLER}

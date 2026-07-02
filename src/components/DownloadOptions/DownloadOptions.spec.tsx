@@ -53,7 +53,8 @@ jest.mock('../Icon/VerifiedIcon', () => ({ VerifiedIcon: () => null }))
 // Styled components → thin DOM passthroughs so we can assert data-* attributes,
 // href and click behavior without the styled engine. `require('react')` lives
 // inside each factory because jest hoists jest.mock() above module-scope
-// declarations — referencing an outer const would hit the TDZ.
+// declarations, and its transform rejects factories that reference
+// out-of-scope variables.
 jest.mock('../Home/Hero/Hero.styled', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ReactLib = require('react') as typeof import('react')
@@ -173,9 +174,18 @@ describe('DownloadOptions', () => {
     })
 
     it('should fire the download click tracker', async () => {
-      render(<DownloadOptions />)
-      await userEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
-      expect(mockTrackDownloadClick).toHaveBeenCalledTimes(1)
+      // installLocation fences the deferred `window.location.href =` redirect
+      // (setTimeout in onClickDownloadHandler) so it can't leak a jsdom
+      // "Not implemented: navigation" into a later test.
+      const { hrefSpy, restore } = installLocation('')
+      try {
+        render(<DownloadOptions />)
+        await userEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
+        expect(mockTrackDownloadClick).toHaveBeenCalledTimes(1)
+        await waitFor(() => expect(hrefSpy).toHaveBeenCalled())
+      } finally {
+        restore()
+      }
     })
 
     it('should redirect to /download_success with os, place, anon_user_id and arch', async () => {
@@ -216,6 +226,10 @@ describe('DownloadOptions', () => {
       render(<DownloadOptions />)
       const macOption = screen.getByLabelText('macOS')
       expect(macOption).toHaveAttribute('data-download-target', 'desktop_installer')
+      // These two are new in this PR and change the Click payload's place
+      // bucketing for secondary options — pin them alongside the target.
+      expect(macOption).toHaveAttribute('data-place', 'download-page')
+      expect(macOption).toHaveAttribute('data-event', 'Download')
     })
 
     it('should tag the App Store badge as a store exit (app_store) pointing at the App Store', () => {

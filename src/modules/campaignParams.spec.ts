@@ -1,4 +1,4 @@
-import { collectCampaignParams } from './campaignParams'
+import { collectCampaignParams, withCampaignParams } from './campaignParams'
 
 // Mirrors the module-private cap in campaignParams.ts; asserted here as the
 // documented, stable public behavior (a partner cannot flood the warehouse).
@@ -44,6 +44,37 @@ describe('collectCampaignParams', () => {
       } finally {
         window.history.pushState({}, '', '/')
       }
+    })
+  })
+})
+
+describe('withCampaignParams', () => {
+  afterEach(() => {
+    window.history.pushState({}, '', '/')
+  })
+
+  describe('when the current URL has no campaign params', () => {
+    it('should return the path unchanged', () => {
+      expect(withCampaignParams('/download')).toBe('/download')
+    })
+  })
+
+  describe('when the current URL carries campaign params', () => {
+    beforeEach(() => {
+      window.history.pushState({}, '', '/?utm_source=shefi&utm_campaign=partner-launch')
+    })
+
+    it('should append them to a plain path', () => {
+      expect(withCampaignParams('/download')).toBe('/download?utm_source=shefi&utm_campaign=partner-launch')
+    })
+
+    it('should append with & when the path already has a query string', () => {
+      expect(withCampaignParams('/download?foo=bar')).toBe('/download?foo=bar&utm_source=shefi&utm_campaign=partner-launch')
+    })
+
+    it('should ignore non-campaign params on the current URL', () => {
+      window.history.pushState({}, '', '/?utm_source=shefi&os=evil')
+      expect(withCampaignParams('/download')).toBe('/download?utm_source=shefi')
     })
   })
 })

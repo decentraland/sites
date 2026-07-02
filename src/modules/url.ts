@@ -161,6 +161,11 @@ const buildDownloadSuccessHref = (os: string, place: string, options: DownloadSu
   }
   if (options.campaignParams) {
     for (const [key, value] of Object.entries(options.campaignParams)) {
+      // Never let a campaign param overwrite the routing params set above
+      // (os/place/arch/anon_user_id). Unreachable via collectCampaignParams
+      // (utm_* allowlist), but the option is a bare Record — a future caller
+      // passing raw searchParams entries must not corrupt the funnel.
+      if (params.has(key)) continue
       params.set(key, value)
     }
   }

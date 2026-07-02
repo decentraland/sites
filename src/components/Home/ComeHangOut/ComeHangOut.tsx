@@ -8,6 +8,7 @@ import { useDownloadSuccessHref } from '../../../hooks/useDownloadSuccessHref'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import appleLogo from '../../../images/apple-logo.svg'
 import microsoftLogo from '../../../images/microsoft-logo.svg'
+import { withCampaignParams } from '../../../modules/campaignParams'
 import { DOWNLOAD_URLS } from '../../../modules/downloadConstants'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
 import { formatToShorthand } from '../../../modules/number'
@@ -105,7 +106,7 @@ const ComeHangOut = memo(() => {
     <>
       <div style={{ display: 'flex', gap: 24, justifyContent: 'center' }}>
         <DownloadButton
-          href={userAgentData ? downloadSuccessHref(userAgentData.os.name, DownloadPlace.COME_HANG_OUT) : '/download'}
+          href={userAgentData ? downloadSuccessHref(userAgentData.os.name, DownloadPlace.COME_HANG_OUT) : withCampaignParams('/download')}
           data-place={DownloadPlace.COME_HANG_OUT}
           data-event={SegmentEvent.CLICK}
           data-download-target={DownloadTarget.DESKTOP_INSTALLER}

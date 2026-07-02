@@ -182,6 +182,26 @@ describe('Hero', () => {
     })
   })
 
+  describe('when the user agent has not resolved yet', () => {
+    beforeEach(() => {
+      mockUserAgent.mockReturnValue([false, undefined] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+    })
+
+    it('should preserve campaign params on the /download fallback href', () => {
+      // A partner-attributed click during the user-agent detection window must
+      // not strip the utm params — /download's own CTAs re-read them from its
+      // URL, so losing them here would break the whole funnel attribution.
+      window.history.pushState({}, '', '/?utm_source=shefi')
+      try {
+        render(<Hero isDesktop />)
+        const downloadButton = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
+        expect(downloadButton).toHaveAttribute('href', '/download?utm_source=shefi')
+      } finally {
+        window.history.pushState({}, '', '/')
+      }
+    })
+  })
+
   describe('when rendering the desktop hero on a macOS user agent', () => {
     beforeEach(() => {
       mockUserAgent.mockReturnValue([false, { os: { name: 'macOS' }, mobile: false }] as unknown as ReturnType<

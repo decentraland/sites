@@ -8,12 +8,13 @@
 // cold-boot cost (third-party cookies + idle JS) on a page adjacent to the
 // homepage. It is NOT a tracking blind spot — the download CTAs on /download
 // (desktop installer + mobile App Store / Google Play store exits) are tracked
-// via useDownloadClick's unload-safe beacon transport (postSegmentEvent +
-// ensureSegmentAnonymousId), which fires regardless of whether Segment has
-// booted and survives the immediate navigation. That path is what carries
-// partner UTM attribution off this page, so removing /download from this set
-// (which would boot Segment on cold load) is unnecessary and would regress the
-// perf/privacy win.
+// by useDownloadClick, which fires regardless of whether Segment has booted:
+// through analytics-next when warm (e.g. SPA navigation from the homepage),
+// and through the unload-safe beacon (postSegmentEvent +
+// ensureSegmentAnonymousId) on cold loads, where it survives departures.
+// That adapter is what carries partner UTM attribution off this page, so
+// removing /download from this set (which would boot Segment on cold load) is
+// unnecessary and would regress the perf/privacy win.
 //
 // MAINTENANCE: This list is a hand-curated allowlist, not derived from the
 // router. If you add a new pure-text route (e.g. a new legal page) and want

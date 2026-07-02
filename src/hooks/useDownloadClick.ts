@@ -28,9 +28,11 @@ function useDownloadClick() {
       // Merge the URL's campaign params so a partner link
       // (`/download?utm_source=…`) attributes every download CTA click, cold
       // loads included — see `collectCampaignParams`. data-* attributes are
-      // spread last as the trusted, component-controlled source; in practice
-      // they can't collide with the snake_case utm_* keys because
-      // `readDataAttributes` camelCases dashed names.
+      // spread last as the trusted, component-controlled source. They don't
+      // collide with the snake_case utm_* keys because `readDataAttributes`
+      // camelCases dashed names — note an underscore attribute name (e.g.
+      // `data-utm_source`) WOULD bypass that and clobber the URL value, so
+      // never use underscores in data-* names on download CTAs.
       const { downloadTarget, ...dataAttributes } = readDataAttributes(event.currentTarget)
       const payload: Record<string, unknown> = {
         ...collectCampaignParams(),

@@ -224,6 +224,19 @@ describe('PlayPage', () => {
       )
       expect(window.location.href).toBe('')
     })
+
+    it('should preserve campaign params on the /download fallback href', () => {
+      // Extend the location stub with a utm-bearing search so the real
+      // withCampaignParams (not mocked here) reads it at render time.
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        writable: true,
+        value: { href: '', search: '?utm_source=shefi' }
+      })
+      render(<PlayPage />)
+      const cta = screen.getByText('page.download.download_for_short').closest('a')
+      expect(cta).toHaveAttribute('href', '/download?utm_source=shefi')
+    })
   })
 
   describe('when it renders on a mobile device', () => {

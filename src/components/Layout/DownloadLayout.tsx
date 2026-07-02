@@ -56,11 +56,12 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   const [, userAgentData] = useAdvancedUserAgentData()
   const isMobileAndroid = !!userAgentData?.mobile && userAgentData.os.name === 'Android'
 
-  // Mobile store CTAs exit to the App Store / Google Play. /download is
-  // analytics-exempt (no Segment cold-boot cost — see isAnalyticsExemptPath),
-  // so this click adapter's unload-safe beacon transport is what carries the
-  // partner attribution: it fires regardless of whether Segment has booted and
-  // survives the immediate navigation to the store.
+  // Mobile store CTAs exit to the App Store / Google Play (new tab / app
+  // switch). /download is analytics-exempt on cold load (no Segment boot —
+  // see isAnalyticsExemptPath), so this click adapter is what carries the
+  // partner attribution: analytics-next when Segment is warm (SPA entry),
+  // and the unload-safe beacon on cold loads — where Segment may never boot
+  // and the user may background the browser for the store app.
   const trackStoreExit = useDownloadClick()
 
   const { address } = useWalletAddress()

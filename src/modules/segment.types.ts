@@ -96,10 +96,11 @@ enum DownloadPlace {
 }
 
 // Which download surface a download CTA click targets. Sent as the snake_case
-// `download_target` dimension on `Click`/`Download` and `download_*` events so
-// the warehouse can split desktop installer activations from mobile store
-// exits (App Store / Google Play) — the latter never reach `/download_success`
-// and so must not pollute the desktop activation metric.
+// `download_target` dimension on `Click` events (including `event=Download`
+// sub-typed ones) and on `download_*` funnel events so the warehouse can split
+// desktop installer activations from mobile store exits (App Store / Google
+// Play) — the latter never reach `/download_success` and so must not pollute
+// the desktop activation metric.
 enum DownloadTarget {
   DESKTOP_INSTALLER = 'desktop_installer',
   APP_STORE = 'app_store',
