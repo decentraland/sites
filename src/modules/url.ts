@@ -4,6 +4,11 @@ import { Architecture } from '../types/download.types'
 
 const ANON_USER_ID_PARAM = 'anon_user_id'
 
+interface DownloadSuccessHrefOptions {
+  anonUserId?: string
+  arch?: string
+}
+
 const addQueryParamsToUrlString = (url: string, params: Record<string, string | undefined | null>): string => {
   if (!params || Object.keys(params).length === 0) {
     return url
@@ -140,10 +145,13 @@ const extractDownloadLinkFromCDNReleaseOption = (
 
 const FALLBACK_CDN_RELEASE_LINKS = sanitizeCDNReleaseLinks(getCDNRelease(CDNSource.LAUNCHER)) || {}
 
-const buildDownloadSuccessHref = (os: string, place: string, anonUserId?: string): string => {
+const buildDownloadSuccessHref = (os: string, place: string, options: DownloadSuccessHrefOptions = {}): string => {
   const params = new URLSearchParams({ os, place })
-  if (anonUserId) {
-    params.set(ANON_USER_ID_PARAM, anonUserId)
+  if (options.anonUserId) {
+    params.set(ANON_USER_ID_PARAM, options.anonUserId)
+  }
+  if (options.arch) {
+    params.set('arch', options.arch)
   }
   return `/download_success?${params.toString()}`
 }

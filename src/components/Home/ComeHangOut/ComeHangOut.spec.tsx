@@ -57,8 +57,8 @@ jest.mock('../../Icon/VerifiedIcon', () => ({
 }))
 
 jest.mock('../../../modules/url', () => ({
-  buildDownloadSuccessHref: (os: string, place: string, anonUserId?: string) =>
-    `/download_success?os=${os}&place=${place}${anonUserId ? `&anon_user_id=${anonUserId}` : ''}`
+  buildDownloadSuccessHref: (os: string, place: string, options?: { anonUserId?: string }) =>
+    `/download_success?os=${os}&place=${place}${options?.anonUserId ? `&anon_user_id=${options.anonUserId}` : ''}`
 }))
 
 const mockUserAgent = jest.mocked(useAdvancedUserAgentData)
@@ -105,11 +105,19 @@ describe('ComeHangOut', () => {
       expect(trackDownloadClick).toHaveBeenCalledTimes(1)
     })
 
+    it('should use the same place in the main CTA href and data-place', () => {
+      render(<ComeHangOut />)
+
+      const downloadButton = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
+      expect(downloadButton).toHaveAttribute('href', `/download_success?os=Windows&place=${DownloadPlace.COME_HANG_OUT}`)
+      expect(downloadButton).toHaveAttribute('data-place', DownloadPlace.COME_HANG_OUT)
+    })
+
     it('should track the macOS platform-switch icon click', () => {
       render(<ComeHangOut />)
 
       const macIcon = screen.getByAltText('macOS').closest('a') as HTMLAnchorElement
-      expect(macIcon).toHaveAttribute('href', `/download_success?os=macOS&place=${DownloadPlace.COME_HANG_OUT}`)
+      expect(macIcon).toHaveAttribute('href', `/download_success?os=macOS&place=${DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}`)
       expect(macIcon).toHaveAttribute('data-os', 'macOS')
       expect(macIcon).toHaveAttribute('data-place', DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH)
 
@@ -131,7 +139,7 @@ describe('ComeHangOut', () => {
       const macIcon = screen.getByAltText('macOS').closest('a') as HTMLAnchorElement
       expect(macIcon).toHaveAttribute(
         'href',
-        `/download_success?os=macOS&place=${DownloadPlace.COME_HANG_OUT}&anon_user_id=11111111-1111-4111-8111-111111111111`
+        `/download_success?os=macOS&place=${DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}&anon_user_id=11111111-1111-4111-8111-111111111111`
       )
     })
 
@@ -177,7 +185,7 @@ describe('ComeHangOut', () => {
       render(<ComeHangOut />)
 
       const winIcon = screen.getByAltText('Windows').closest('a') as HTMLAnchorElement
-      expect(winIcon).toHaveAttribute('href', `/download_success?os=Windows&place=${DownloadPlace.COME_HANG_OUT}`)
+      expect(winIcon).toHaveAttribute('href', `/download_success?os=Windows&place=${DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}`)
       expect(winIcon).toHaveAttribute('data-os', 'Windows')
       expect(winIcon).toHaveAttribute('data-place', DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH)
 

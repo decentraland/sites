@@ -42,7 +42,7 @@ const ComeHangOut = memo(() => {
   const [, userAgentData] = useAdvancedUserAgentData()
   const [rawDownloads, rawDownloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
 
-  const downloadSuccessHref = useCallback((os: string, place: string) => buildDownloadSuccessHref(os, place, anonUserId), [anonUserId])
+  const downloadSuccessHref = useCallback((os: string, place: string) => buildDownloadSuccessHref(os, place, { anonUserId }), [anonUserId])
 
   const targetDownloads = !rawDownloadsStatus.loading && rawDownloadsStatus.loaded && rawDownloads ? rawDownloads : null
   if (targetDownloads) cachedDownloadCounts = formatToShorthand(targetDownloads)
@@ -107,7 +107,7 @@ const ComeHangOut = memo(() => {
       <div style={{ display: 'flex', gap: 24, justifyContent: 'center' }}>
         <DownloadButton
           href={userAgentData ? downloadSuccessHref(userAgentData.os.name, DownloadPlace.COME_HANG_OUT) : '/download'}
-          data-place={SectionViewedTrack.LANDING_COME_HANG_OUT}
+          data-place={DownloadPlace.COME_HANG_OUT}
           data-event={SegmentEvent.CLICK}
           onClick={handleDownloadClick}
         >
@@ -138,7 +138,7 @@ const ComeHangOut = memo(() => {
         <PlatformIcons>
           {currentOs === OperativeSystem.MACOS && (
             <a
-              href={downloadSuccessHref('Windows', DownloadPlace.COME_HANG_OUT)}
+              href={downloadSuccessHref('Windows', DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH)}
               data-event={SegmentEvent.DOWNLOAD}
               data-os={OperativeSystem.WINDOWS}
               data-place={DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}
@@ -149,7 +149,7 @@ const ComeHangOut = memo(() => {
           )}
           {currentOs === OperativeSystem.WINDOWS && (
             <a
-              href={downloadSuccessHref('macOS', DownloadPlace.COME_HANG_OUT)}
+              href={downloadSuccessHref('macOS', DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH)}
               data-event={SegmentEvent.DOWNLOAD}
               data-os={OperativeSystem.MACOS}
               data-place={DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}
