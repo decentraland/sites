@@ -67,6 +67,11 @@ jest.mock('../../hooks/useHangOutAction', () => ({
   useHangOutAction: jest.fn()
 }))
 
+jest.mock('../../modules/url', () => ({
+  buildDownloadSuccessHref: (os: string, place: string, options?: { anonUserId?: string }) =>
+    `/download_success?os=${os}&place=${place}${options?.anonUserId ? `&anon_user_id=${options.anonUserId}` : ''}`
+}))
+
 const mockUserAgent = jest.mocked(useAdvancedUserAgentData)
 const mockUseAnalytics = jest.mocked(useAnalytics)
 const mockTrackClick = jest.mocked(useTrackClick)

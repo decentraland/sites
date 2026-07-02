@@ -31,6 +31,9 @@ describe('when posting a Segment event via beacon', () => {
     ;(getSegmentWriteKey as jest.Mock).mockReturnValue('test-key')
     Object.defineProperty(navigator, 'sendBeacon', { value: mockSendBeacon, configurable: true, writable: true })
     Object.defineProperty(global, 'fetch', { value: mockFetch, configurable: true, writable: true })
+    Object.defineProperty(document, 'referrer', { value: 'https://decentraland.org/', configurable: true })
+    document.title = 'Decentraland Download'
+    window.history.replaceState({}, '', '/download?source=landing')
   })
 
   afterEach(() => {
@@ -39,18 +42,37 @@ describe('when posting a Segment event via beacon', () => {
     jest.resetAllMocks()
   })
 
-  it('should post a text/plain payload with the event identity and properties', async () => {
+  it('should post a text/plain payload with the Segment track envelope and page context', async () => {
     postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero', event: SegmentEvent.DOWNLOAD }, 'anon-1')
 
     expect(mockSendBeacon).toHaveBeenCalledWith(SEGMENT_TRACK_URL, expect.any(Blob))
     const [, blob] = mockSendBeacon.mock.calls[0] as [string, Blob]
     expect(blob.type).toBe('text/plain')
-    await expect(readBlobText(blob).then(JSON.parse)).resolves.toEqual({
+    const body = JSON.parse(await readBlobText(blob))
+    expect(body).toEqual({
       writeKey: 'test-key',
       event: SegmentEvent.CLICK,
       anonymousId: 'anon-1',
-      properties: { place: 'Landing Hero', event: SegmentEvent.DOWNLOAD }
+      properties: { place: 'Landing Hero', event: SegmentEvent.DOWNLOAD },
+      messageId: expect.stringMatching(/^dcl-sites-beacon-/),
+      timestamp: expect.any(String),
+      sentAt: body.timestamp,
+      context: {
+        page: {
+          url: window.location.href,
+          path: '/download',
+          referrer: 'https://decentraland.org/',
+          title: 'Decentraland Download'
+        },
+        userAgent: navigator.userAgent,
+        locale: navigator.language,
+        library: {
+          name: 'dcl-sites-beacon',
+          version: '1.0.0'
+        }
+      }
     })
+    expect(body).not.toHaveProperty('type')
   })
 
   it('should not post when the write key is unavailable', () => {

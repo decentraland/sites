@@ -11,6 +11,7 @@ jest.mock('decentraland-ui2/dist/config', () => ({
 import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
 import {
   addQueryParamsToUrlString,
+  buildDownloadSuccessHref,
   calculateCDNReleaseLinksWithIdentity,
   extractDownloadLinkFromCDNReleaseOption,
   sanitizeCDNReleaseLinks,
@@ -112,6 +113,76 @@ describe('updateUrlWithLastValue', () => {
       const url = new URL(result)
       expect(url.searchParams.get('source')).toBe('landing')
       expect(url.searchParams.get('version')).toBe('3.0')
+    })
+  })
+})
+
+describe('buildDownloadSuccessHref', () => {
+  describe('when called with os and place', () => {
+    let result: string
+    let url: URL
+
+    beforeEach(() => {
+      result = buildDownloadSuccessHref('Windows', 'landing-hero')
+      url = new URL(result, 'https://decentraland.org')
+    })
+
+    it('should include the os and place query params', () => {
+      expect([url.searchParams.get('os'), url.searchParams.get('place')]).toEqual(['Windows', 'landing-hero'])
+    })
+  })
+
+  describe('when anonUserId is provided', () => {
+    let result: string
+    let url: URL
+
+    beforeEach(() => {
+      result = buildDownloadSuccessHref('Windows', 'landing-hero', { anonUserId: 'anon-123' })
+      url = new URL(result, 'https://decentraland.org')
+    })
+
+    it('should include anon_user_id', () => {
+      expect(url.searchParams.get('anon_user_id')).toBe('anon-123')
+    })
+  })
+
+  describe('when anonUserId is missing', () => {
+    let result: string
+    let url: URL
+
+    beforeEach(() => {
+      result = buildDownloadSuccessHref('Windows', 'landing-hero')
+      url = new URL(result, 'https://decentraland.org')
+    })
+
+    it('should omit anon_user_id', () => {
+      expect(url.searchParams.has('anon_user_id')).toBe(false)
+    })
+  })
+
+  describe('when arch is provided', () => {
+    let result: string
+    let url: URL
+
+    beforeEach(() => {
+      result = buildDownloadSuccessHref('macOS', 'download-page', { arch: 'arm64' })
+      url = new URL(result, 'https://decentraland.org')
+    })
+
+    it('should include arch', () => {
+      expect(url.searchParams.get('arch')).toBe('arm64')
+    })
+  })
+
+  describe('when query values contain special characters', () => {
+    let result: string
+
+    beforeEach(() => {
+      result = buildDownloadSuccessHref('Windows 11', 'landing hero/cta', { anonUserId: 'anon+id@example.com', arch: 'arm64 beta' })
+    })
+
+    it('should encode them with URLSearchParams', () => {
+      expect(result).toBe('/download_success?os=Windows+11&place=landing+hero%2Fcta&anon_user_id=anon%2Bid%40example.com&arch=arm64+beta')
     })
   })
 })

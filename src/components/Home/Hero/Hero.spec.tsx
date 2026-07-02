@@ -55,8 +55,8 @@ jest.mock('../../Icon/VerifiedIcon', () => ({
 }))
 
 jest.mock('../../../modules/url', () => ({
-  buildDownloadSuccessHref: (os: string, place: string, anonUserId?: string) =>
-    `/download_success?os=${os}&place=${place}${anonUserId ? `&anon_user_id=${anonUserId}` : ''}`
+  buildDownloadSuccessHref: (os: string, place: string, options?: { anonUserId?: string }) =>
+    `/download_success?os=${os}&place=${place}${options?.anonUserId ? `&anon_user_id=${options.anonUserId}` : ''}`
 }))
 
 const mockUserAgent = jest.mocked(useAdvancedUserAgentData)
