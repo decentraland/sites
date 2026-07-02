@@ -3,7 +3,9 @@ import { createDownloadTracker } from './downloadTracking'
 import { DownloadPlace, SegmentEvent } from './segment'
 import type { DownloadTrackerContext } from './downloadTracking.types'
 
-jest.mock('./segmentAnonymousId', () => ({ ensureSegmentAnonymousId: () => 'anon-fixed' }))
+const mockEnsureSegmentAnonymousId = jest.fn(() => 'anon-fixed')
+
+jest.mock('./segmentAnonymousId', () => ({ ensureSegmentAnonymousId: () => mockEnsureSegmentAnonymousId() }))
 
 jest.mock('../config/env', () => ({
   getEnv: () => 'wk-test'
@@ -40,6 +42,7 @@ describe('createDownloadTracker', () => {
   const readLastBody = (): Record<string, unknown> => JSON.parse(mockFetch.mock.calls[mockFetch.mock.calls.length - 1][1].body)
 
   beforeEach(() => {
+    mockEnsureSegmentAnonymousId.mockReturnValue('anon-fixed')
     mockFetch = jest.fn(() => Promise.resolve({ ok: true }))
     // Force the fetch fallback so assertions read a plain-string body — jsdom's
     // Blob has no text(), and the payload is byte-identical on both transports
@@ -194,6 +197,29 @@ describe('createDownloadTracker', () => {
         track_delivered_at: 1_700_000_002_000,
         track_deferred: true
       })
+    })
+  })
+
+  describe('when one tracker emits multiple events', () => {
+    beforeEach(() => {
+      mockEnsureSegmentAnonymousId.mockReturnValueOnce('anon-tracker')
+      const tracker = createDownloadTracker(buildContext())
+
+      tracker.started()
+      tracker.success('Install-Decentraland.exe')
+      tracker.failed('Network error: connection refused')
+    })
+
+    it('should resolve the anonymousId once for the tracker instance', () => {
+      expect(mockEnsureSegmentAnonymousId).toHaveBeenCalledTimes(1)
+    })
+
+    it('should reuse the same anonymousId for started, success, and failed', () => {
+      expect(mockFetch.mock.calls.map(([, init]) => JSON.parse(init.body).anonymousId)).toEqual([
+        'anon-tracker',
+        'anon-tracker',
+        'anon-tracker'
+      ])
     })
   })
 
