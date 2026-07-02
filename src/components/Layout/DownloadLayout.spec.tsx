@@ -3,14 +3,27 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
+import { GOOGLE_PLAY_MOBILE_URL } from '../../components/Home/shared/googlePlay'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useWalletAddress } from '../../hooks/useWalletAddress'
+import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
+import { SegmentEvent } from '../../modules/segment'
+import { postSegmentEvent } from '../../modules/segmentBeacon'
 import { redirectToAuth } from '../../utils/authRedirect'
 import { DownloadLayout } from './DownloadLayout'
 
 jest.mock('react-intersection-observer', () => ({ useInView: jest.fn() }))
 
-jest.mock('@dcl/hooks', () => ({ useAdvancedUserAgentData: jest.fn(() => [false, undefined]) }))
+// useDownloadClick (wired on the mobile store CTAs) reads useAnalytics; keep
+// Segment "cold" so store-exit clicks take the unload-safe beacon path — the
+// same state /download has in production (it is analytics-exempt on cold load).
+jest.mock('@dcl/hooks', () => ({
+  useAdvancedUserAgentData: jest.fn(() => [false, undefined]),
+  useAnalytics: () => ({ isInitialized: false, track: jest.fn() })
+}))
+
+jest.mock('../../modules/segmentBeacon', () => ({ postSegmentEvent: jest.fn() }))
+jest.mock('../../modules/segmentAnonymousId', () => ({ ensureSegmentAnonymousId: () => 'anon-fixed' }))
 
 jest.mock('decentraland-ui2', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -301,6 +314,72 @@ describe('DownloadLayout', () => {
       >)
       render(<DownloadLayout title={TITLE} />)
       expect(screen.getByAltText('Get it on Google Play')).toBeInTheDocument()
+    })
+
+    it('should point the App Store CTA at the store, never through /download_success', () => {
+      mockUseAdvancedUserAgentData.mockReturnValue([false, { os: { name: 'iOS' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+      render(<DownloadLayout title={TITLE} />)
+      const anchor = screen.getByAltText('Download on the App Store').closest('a') as HTMLAnchorElement
+      expect(anchor).toHaveAttribute('href', DOWNLOAD_URLS.appStore)
+      expect(anchor.getAttribute('href')).not.toContain('/download_success')
+    })
+
+    it('should point the Google Play CTA at the store, never through /download_success', () => {
+      mockUseAdvancedUserAgentData.mockReturnValue([false, { os: { name: 'Android' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+      render(<DownloadLayout title={TITLE} />)
+      const anchor = screen.getByAltText('Get it on Google Play').closest('a') as HTMLAnchorElement
+      expect(anchor).toHaveAttribute('href', GOOGLE_PLAY_MOBILE_URL)
+      expect(anchor.getAttribute('href')).not.toContain('/download_success')
+    })
+
+    it('should track the App Store store exit with campaign params and download_target=app_store', async () => {
+      window.history.pushState({}, '', '/download?utm_source=shefi&utm_campaign=partner')
+      mockUseAdvancedUserAgentData.mockReturnValue([false, { os: { name: 'iOS' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+      render(<DownloadLayout title={TITLE} />)
+
+      await userEvent.click(screen.getByAltText('Download on the App Store').closest('a') as HTMLAnchorElement)
+
+      expect(postSegmentEvent).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({
+          event: SegmentEvent.DOWNLOAD,
+          place: 'download-page',
+          os: 'iOS',
+          download_target: 'app_store',
+          utm_source: 'shefi',
+          utm_campaign: 'partner'
+        }),
+        'anon-fixed'
+      )
+    })
+
+    it('should track the Google Play store exit with campaign params and download_target=google_play', async () => {
+      window.history.pushState({}, '', '/download?utm_source=shefi&utm_campaign=partner')
+      mockUseAdvancedUserAgentData.mockReturnValue([false, { os: { name: 'Android' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+      render(<DownloadLayout title={TITLE} />)
+
+      await userEvent.click(screen.getByAltText('Get it on Google Play').closest('a') as HTMLAnchorElement)
+
+      expect(postSegmentEvent).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({
+          event: SegmentEvent.DOWNLOAD,
+          place: 'download-page',
+          os: 'Android',
+          download_target: 'google_play',
+          utm_source: 'shefi',
+          utm_campaign: 'partner'
+        }),
+        'anon-fixed'
+      )
     })
   })
 })

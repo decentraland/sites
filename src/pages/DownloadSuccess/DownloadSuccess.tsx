@@ -15,12 +15,13 @@ import windowsDownloadsFolder from '../../images/download/windows_downloads_fold
 import windowsLaunchingDecentraland from '../../images/download/windows_launching_decentraland.webp'
 import windowsSetup from '../../images/download/windows_setup.webp'
 import microsoftLogo from '../../images/microsoft-logo.svg'
+import { collectCampaignParams } from '../../modules/campaignParams'
 import type { DownloadFunnelExitData } from '../../modules/downloadFunnelExit.types'
 import { createDownloadTracker, toAuthState } from '../../modules/downloadTracking'
 import type { DownloadTracker } from '../../modules/downloadTracking.types'
 import { calculateDownloadUrl } from '../../modules/downloadWithIdentity'
 import { collectClientFingerprint } from '../../modules/fingerprint'
-import { DownloadPlace, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
+import { DownloadPlace, DownloadTarget, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
 import { streamOrFallback } from '../../modules/streamOrFallback'
 import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
@@ -104,6 +105,28 @@ const DownloadSuccess = memo(() => {
   const rawArch = searchParams.get('arch') || defaultArch
   const clientArch = (VALID_ARCHS.has(rawArch) ? rawArch : defaultArch) as Architecture
   const place = resolveDownloadPlace(searchParams.get('place'))
+
+  // Partner campaign params (utm_*) forwarded from the /download landing click.
+  // Captured off the URL and re-attached to every download_* event so the
+  // desktop installer funnel keeps the attribution the landing click carried.
+  const campaignParams = useMemo(() => collectCampaignParams(searchParams), [searchParams])
+  const campaignParamsRef = useRef(campaignParams)
+  campaignParamsRef.current = campaignParams
+
+  // Shared `extra` for every tracker built on this page: the client
+  // fingerprint, the campaign params, and `download_target: desktop_installer`.
+  // Every landing on /download_success is a desktop installer attempt — the
+  // mobile App Store / Google Play CTAs exit to their stores and never reach
+  // this page — so tagging it lets analytics exclude mobile store exits from
+  // the desktop activation metric.
+  const buildTrackerExtra = useCallback((): Record<string, unknown> => {
+    const extra: Record<string, unknown> = {
+      ...(collectClientFingerprint() ?? {}),
+      ...campaignParamsRef.current
+    }
+    extra.download_target = DownloadTarget.DESKTOP_INSTALLER
+    return extra
+  }, [])
 
   // Revisit counter — captured once at mount via a lazy useState initializer
   // so re-renders don't double-increment. Keyed by os:arch so that switching
@@ -218,8 +241,9 @@ const DownloadSuccess = memo(() => {
 
         // Fingerprint snapshot used by the data team's server-side join to
         // match this download with the launcher's first-run event from the
-        // same machine. Lives in `extra` so every event the tracker emits
-        // carries it without polluting the tracker's core schema.
+        // same machine, plus campaign params + download_target. Lives in
+        // `extra` so every event the tracker emits carries it without polluting
+        // the tracker's core schema.
         tracker = withFiredRefs(
           createDownloadTracker({
             place,
@@ -231,7 +255,7 @@ const DownloadSuccess = memo(() => {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             auth_state: authStateRef.current,
             revisit: revisitNumber,
-            extra: { ...(collectClientFingerprint() ?? {}) }
+            extra: buildTrackerExtra()
           })
         )
 
@@ -282,7 +306,7 @@ const DownloadSuccess = memo(() => {
               // eslint-disable-next-line @typescript-eslint/naming-convention
               auth_state: authStateRef.current,
               revisit: revisitNumber,
-              extra: { ...(collectClientFingerprint() ?? {}) }
+              extra: buildTrackerExtra()
             })
           )
           fallbackTracker.failed(reason)
@@ -299,7 +323,7 @@ const DownloadSuccess = memo(() => {
     return () => {
       abortController.abort()
     }
-  }, [anonUserIdReady, clientOS, clientArch, osLink, place, revisitNumber, withFiredRefs])
+  }, [anonUserIdReady, clientOS, clientArch, osLink, place, revisitNumber, withFiredRefs, buildTrackerExtra])
 
   const handleDownloadClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -317,7 +341,7 @@ const DownloadSuccess = memo(() => {
 
       const footerPlace = DownloadPlace.DOWNLOAD_SUCCESS_FOOTER
       let tracker: DownloadTracker | null = null
-      const fingerprint: Record<string, unknown> = { ...(collectClientFingerprint() ?? {}) }
+      const extra = buildTrackerExtra()
 
       try {
         const { url, filename } = await calculateDownloadUrl({
@@ -340,7 +364,7 @@ const DownloadSuccess = memo(() => {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             auth_state: authState,
             revisit: revisitNumber,
-            extra: fingerprint
+            extra
           })
         )
 
@@ -377,7 +401,7 @@ const DownloadSuccess = memo(() => {
               // eslint-disable-next-line @typescript-eslint/naming-convention
               auth_state: authState,
               revisit: revisitNumber,
-              extra: fingerprint
+              extra
             })
           )
           fallbackTracker.failed(reason)
@@ -392,7 +416,7 @@ const DownloadSuccess = memo(() => {
         }
       }
     },
-    [clientOS, clientArch, anonUserId, getIdentityId, osLink, authState, revisitNumber, withFiredRefs]
+    [clientOS, clientArch, anonUserId, getIdentityId, osLink, authState, revisitNumber, withFiredRefs, buildTrackerExtra]
   )
 
   // Cancel any in-flight footer-initiated stream when the page unmounts so

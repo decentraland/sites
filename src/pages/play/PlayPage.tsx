@@ -7,14 +7,13 @@ import { VerifiedIcon } from '../../components/Icon/VerifiedIcon'
 import { getEnv } from '../../config/env'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
-import { useAnonUserId } from '../../hooks/useAnonUserId'
 import { useDownloadClick } from '../../hooks/useDownloadClick'
+import { useDownloadSuccessHref } from '../../hooks/useDownloadSuccessHref'
 import { useHangOutAction } from '../../hooks/useHangOutAction'
 import appleLogo from '../../images/apple-logo.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
-import { DownloadPlace, SegmentEvent } from '../../modules/segment'
-import { buildDownloadSuccessHref } from '../../modules/url'
+import { DownloadPlace, DownloadTarget, SegmentEvent } from '../../modules/segment'
 import { OperativeSystem } from '../../types/download.types'
 import { assetUrl } from '../../utils/assetUrl'
 import {
@@ -50,14 +49,10 @@ const PlayPage = memo(() => {
   const l = useFormatMessage()
   const onClickHandle = useTrackClick()
   const trackDownloadClick = useDownloadClick()
-  const anonUserId = useAnonUserId()
   const [, userAgentData] = useAdvancedUserAgentData()
   const isDesktop = useDesktopMediaQuery()
   const { totalDownloads } = useHangOutAction()
-
-  // Bake the campaign anon_user_id into the /download_success URL so the wrapper
-  // installer runs and attribution survives end-to-end (mirrors the home Hero).
-  const downloadSuccessHref = useCallback((os: string, place: string) => buildDownloadSuccessHref(os, place, { anonUserId }), [anonUserId])
+  const downloadSuccessHref = useDownloadSuccessHref()
 
   const isApple = userAgentData?.os.name === OperativeSystem.MACOS
 
@@ -94,6 +89,7 @@ const PlayPage = memo(() => {
             rel="noopener noreferrer"
             data-place={isMobileAndroid ? DownloadPlace.PLAY_HERO_GOOGLE_PLAY : DownloadPlace.PLAY_HERO_APP_STORE}
             data-event={SegmentEvent.DOWNLOAD}
+            data-download-target={isMobileAndroid ? DownloadTarget.GOOGLE_PLAY : DownloadTarget.APP_STORE}
             onClick={trackDownloadClick}
           >
             <GooglePlayImage
@@ -133,6 +129,7 @@ const PlayPage = memo(() => {
               href={userAgentData ? downloadSuccessHref(userAgentData.os.name, DownloadPlace.PLAY_HERO) : '/download'}
               data-place={DownloadPlace.PLAY_HERO}
               data-event={SegmentEvent.DOWNLOAD}
+              data-download-target={DownloadTarget.DESKTOP_INSTALLER}
               onClick={handleDownloadClick}
             >
               {l('page.download.download_for_short')}
@@ -149,6 +146,7 @@ const PlayPage = memo(() => {
               rel="noopener noreferrer"
               data-place={DownloadPlace.PLAY_HERO_EPIC}
               data-event={SegmentEvent.DOWNLOAD}
+              data-download-target={DownloadTarget.DESKTOP_INSTALLER}
               onClick={trackDownloadClick}
             >
               {l('page.download.download_on')}
@@ -173,6 +171,7 @@ const PlayPage = memo(() => {
               rel="noopener noreferrer"
               data-place={DownloadPlace.PLAY_HERO_APP_STORE}
               data-event={SegmentEvent.DOWNLOAD}
+              data-download-target={DownloadTarget.APP_STORE}
               onClick={trackDownloadClick}
             >
               <PlayBadgeImage src={assetUrl('/app-store-badge.svg')} alt="Download on the App Store" />
@@ -183,6 +182,7 @@ const PlayPage = memo(() => {
               rel="noopener noreferrer"
               data-place={DownloadPlace.PLAY_HERO_GOOGLE_PLAY}
               data-event={SegmentEvent.DOWNLOAD}
+              data-download-target={DownloadTarget.GOOGLE_PLAY}
               onClick={trackDownloadClick}
             >
               <PlayBadgeImage src={assetUrl('/google-play-badge.svg')} alt="Get it on Google Play" />
