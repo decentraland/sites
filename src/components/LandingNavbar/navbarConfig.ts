@@ -44,7 +44,12 @@ const MENU_CONFIG: MenuConfig = {
     items: [
       { labelKey: 'component.landing.navbar.create_in_decentraland', url: 'https://decentraland.org/create/' },
       { labelKey: 'component.landing.navbar.publish_wearables_emotes', url: 'https://decentraland.org/builder/collections' },
-      { labelKey: 'component.landing.navbar.publish_land', url: 'https://decentraland.org/builder/land' }
+      { labelKey: 'component.landing.navbar.publish_land', url: 'https://decentraland.org/builder/land' },
+      {
+        labelKey: 'component.landing.navbar.creator_documentation',
+        url: 'https://docs.decentraland.org/creator',
+        isExternal: true
+      }
     ]
   },
   learn: {
