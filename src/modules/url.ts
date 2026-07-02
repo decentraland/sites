@@ -7,6 +7,12 @@ const ANON_USER_ID_PARAM = 'anon_user_id'
 interface DownloadSuccessHrefOptions {
   anonUserId?: string
   arch?: string
+  /**
+   * Partner campaign params (utm_*) collected from the landing URL, forwarded
+   * verbatim so the desktop installer funnel keeps the attribution the click
+   * carried. Snake_case keys are appended as-is (see `collectCampaignParams`).
+   */
+  campaignParams?: Record<string, string>
 }
 
 const addQueryParamsToUrlString = (url: string, params: Record<string, string | undefined | null>): string => {
@@ -152,6 +158,16 @@ const buildDownloadSuccessHref = (os: string, place: string, options: DownloadSu
   }
   if (options.arch) {
     params.set('arch', options.arch)
+  }
+  if (options.campaignParams) {
+    for (const [key, value] of Object.entries(options.campaignParams)) {
+      // Never let a campaign param overwrite the routing params set above
+      // (os/place/arch/anon_user_id). Unreachable via collectCampaignParams
+      // (utm_* allowlist), but the option is a bare Record — a future caller
+      // passing raw searchParams entries must not corrupt the funnel.
+      if (params.has(key)) continue
+      params.set(key, value)
+    }
   }
   return `/download_success?${params.toString()}`
 }

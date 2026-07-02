@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react'
 import { useAnalytics } from '@dcl/hooks'
+import { collectCampaignParams } from '../modules/campaignParams'
 import { SegmentEvent } from '../modules/segment'
 import { ensureSegmentAnonymousId } from '../modules/segmentAnonymousId'
 import { postSegmentEvent } from '../modules/segmentBeacon'
@@ -24,10 +25,31 @@ function useDownloadClick() {
 
   return useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
-      const payload: Record<string, unknown> = readDataAttributes(event.currentTarget)
+      // Merge the URL's campaign params so a partner link
+      // (`/download?utm_source=…`) attributes every download CTA click, cold
+      // loads included — see `collectCampaignParams`. data-* attributes are
+      // spread last as the trusted, component-controlled source. They don't
+      // collide with the snake_case utm_* keys because `readDataAttributes`
+      // camelCases dashed names — note an underscore attribute name (e.g.
+      // `data-utm_source`) WOULD bypass that and clobber the URL value, so
+      // never use underscores in data-* names on download CTAs.
+      const { downloadTarget, ...dataAttributes } = readDataAttributes(event.currentTarget)
+      const payload: Record<string, unknown> = {
+        ...collectCampaignParams(),
+        ...dataAttributes
+      }
 
       if (payload.event === SegmentEvent.CLICK) {
         delete payload.event
+      }
+
+      // `readDataAttributes` camelCases dashed attributes (`data-download-target`
+      // → `downloadTarget`), but the warehouse dimension is snake_case
+      // (`download_target`, alongside utm_* / anon_user_id / auth_state). Rename
+      // it so store/installer CTAs stay declarative while the payload keeps the
+      // canonical key the data team splits desktop-vs-mobile on.
+      if (downloadTarget) {
+        payload.download_target = downloadTarget
       }
 
       if (isInitializedRef.current) {

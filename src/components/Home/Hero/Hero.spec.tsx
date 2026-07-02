@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { useDownloadClick } from '../../../hooks/useDownloadClick'
+import { useDownloadSuccessHref } from '../../../hooks/useDownloadSuccessHref'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { Hero } from './Hero'
@@ -54,21 +55,28 @@ jest.mock('../../Icon/VerifiedIcon', () => ({
   VerifiedIcon: () => <span data-testid="verified-icon" />
 }))
 
-jest.mock('../../../modules/url', () => ({
-  buildDownloadSuccessHref: (os: string, place: string, options?: { anonUserId?: string }) =>
-    `/download_success?os=${os}&place=${place}${options?.anonUserId ? `&anon_user_id=${options.anonUserId}` : ''}`
-}))
+// The hook's own UTM-forwarding / anon_user_id behavior is covered by
+// useDownloadSuccessHref.spec.ts — mock it here as a plain (os, place) => href
+// builder so this spec only asserts Hero's wiring (which CTAs call it, what
+// data-* attributes they carry).
+jest.mock('../../../hooks/useDownloadSuccessHref', () => ({ useDownloadSuccessHref: jest.fn() }))
 
 const mockUserAgent = jest.mocked(useAdvancedUserAgentData)
 const mockAsyncMemo = jest.mocked(useAsyncMemo)
 const mockDownloadClick = jest.mocked(useDownloadClick)
+const mockDownloadSuccessHref = jest.mocked(useDownloadSuccessHref)
 const mockHangOut = jest.mocked(useHangOutAction)
 
 const trackDownloadClick = jest.fn()
+const downloadSuccessHref = jest.fn()
 
 describe('Hero', () => {
   beforeEach(() => {
     mockDownloadClick.mockReturnValue(trackDownloadClick)
+    // Re-armed every test: jest.resetAllMocks() in afterEach wipes the
+    // implementation, not just the return value.
+    downloadSuccessHref.mockImplementation((os: string, place: string) => `/download_success?os=${os}&place=${place}`)
+    mockDownloadSuccessHref.mockReturnValue(downloadSuccessHref)
     mockHangOut.mockReturnValue({
       isDownloadModalOpen: false,
       closeDownloadModal: jest.fn(),
@@ -142,6 +150,56 @@ describe('Hero', () => {
       fireEvent.click(epicButton)
       expect(trackDownloadClick).toHaveBeenCalledTimes(1)
     })
+
+    it('should tag the main CTA, Epic button, and platform-switch icon as desktop_installer', () => {
+      render(<Hero isDesktop />)
+
+      const downloadButton = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
+      const epicButton = screen.getByText('page.download.download_on').closest('a') as HTMLAnchorElement
+      const macIcon = screen.getByAltText('macOS').closest('a') as HTMLAnchorElement
+
+      expect(downloadButton).toHaveAttribute('data-download-target', 'desktop_installer')
+      expect(epicButton).toHaveAttribute('data-download-target', 'desktop_installer')
+      expect(macIcon).toHaveAttribute('data-download-target', 'desktop_installer')
+    })
+  })
+
+  describe('when building download hrefs', () => {
+    beforeEach(() => {
+      mockUserAgent.mockReturnValue([false, { os: { name: 'Windows' }, mobile: false }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+    })
+
+    it('should call the shared useDownloadSuccessHref builder for the main CTA and platform-switch icon', () => {
+      // UTM/anon_user_id forwarding is a useDownloadSuccessHref concern, covered
+      // in useDownloadSuccessHref.spec.ts — this asserts Hero wires os/place
+      // through to it correctly for both call sites.
+      render(<Hero isDesktop />)
+
+      expect(downloadSuccessHref).toHaveBeenCalledWith('Windows', DownloadPlace.LANDING_HERO)
+      expect(downloadSuccessHref).toHaveBeenCalledWith('macOS', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)
+    })
+  })
+
+  describe('when the user agent has not resolved yet', () => {
+    beforeEach(() => {
+      mockUserAgent.mockReturnValue([false, undefined] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+    })
+
+    it('should preserve campaign params on the /download fallback href', () => {
+      // A partner-attributed click during the user-agent detection window must
+      // not strip the utm params — /download's own CTAs re-read them from its
+      // URL, so losing them here would break the whole funnel attribution.
+      window.history.pushState({}, '', '/?utm_source=shefi')
+      try {
+        render(<Hero isDesktop />)
+        const downloadButton = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
+        expect(downloadButton).toHaveAttribute('href', '/download?utm_source=shefi')
+      } finally {
+        window.history.pushState({}, '', '/')
+      }
+    })
   })
 
   describe('when rendering the desktop hero on a macOS user agent', () => {
@@ -177,6 +235,7 @@ describe('Hero', () => {
       expect(playButton).toHaveAttribute('data-event', SegmentEvent.DOWNLOAD)
       expect(playButton).toHaveAttribute('data-os', 'Android')
       expect(playButton).toHaveAttribute('data-place', SectionViewedTrack.LANDING_HERO)
+      expect(playButton).toHaveAttribute('data-download-target', 'google_play')
 
       fireEvent.click(playButton)
 
@@ -198,6 +257,7 @@ describe('Hero', () => {
       expect(appStoreButton).toHaveAttribute('data-event', SegmentEvent.DOWNLOAD)
       expect(appStoreButton).toHaveAttribute('data-os', 'iOS')
       expect(appStoreButton).toHaveAttribute('data-place', SectionViewedTrack.LANDING_HERO)
+      expect(appStoreButton).toHaveAttribute('data-download-target', 'app_store')
 
       fireEvent.click(appStoreButton)
 

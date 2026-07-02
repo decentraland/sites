@@ -248,6 +248,59 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
   })
 })
 
+describe('when the /download_success URL carries partner campaign params', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=download-page&utm_source=shefi&utm_campaign=partner-q3')
+    sessionStorage.clear()
+    window.history.replaceState(
+      {},
+      '',
+      '/download_success?os=Windows&arch=amd64&place=download-page&utm_source=shefi&utm_campaign=partner-q3'
+    )
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should tag download_started with download_target=desktop_installer and the campaign params', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+        'download_started',
+        expect.objectContaining({
+          download_target: 'desktop_installer',
+          utm_source: 'shefi',
+          utm_campaign: 'partner-q3'
+        }),
+        'anon-fixed'
+      )
+    })
+  })
+
+  it('should carry the same desktop_installer attribution onto download_success', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+        'download_success',
+        expect.objectContaining({
+          download_target: 'desktop_installer',
+          utm_source: 'shefi',
+          utm_campaign: 'partner-q3'
+        }),
+        'anon-fixed'
+      )
+    })
+  })
+})
+
 describe('when DownloadSuccess mounts without a place query param', () => {
   beforeEach(() => {
     searchParamsInstance = new URLSearchParams('os=macOS&arch=arm64')
@@ -352,7 +405,7 @@ describe('when Segment has not finished lazy-loading at mount', () => {
 
 describe('when the user clicks the footer re-download link', () => {
   beforeEach(() => {
-    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero&utm_source=shefi&utm_campaign=partner-launch')
     sessionStorage.setItem('downloadSuccess:triggered:Windows:amd64', '1')
     window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64')
     mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://cdn.test/Foo.exe', filename: 'Foo.exe' })
@@ -373,12 +426,23 @@ describe('when the user clicks the footer re-download link', () => {
     })
     expect(mockPostSegmentEvent).toHaveBeenCalledWith(
       'download_started',
-      expect.objectContaining({ place: 'download-success-footer' }),
+      expect.objectContaining({
+        place: 'download-success-footer',
+        download_target: 'desktop_installer',
+        utm_source: 'shefi',
+        utm_campaign: 'partner-launch'
+      }),
       expect.anything()
     )
     expect(mockPostSegmentEvent).toHaveBeenCalledWith(
       'download_success',
-      expect.objectContaining({ place: 'download-success-footer', filename: 'Foo.exe' }),
+      expect.objectContaining({
+        place: 'download-success-footer',
+        filename: 'Foo.exe',
+        download_target: 'desktop_installer',
+        utm_source: 'shefi',
+        utm_campaign: 'partner-launch'
+      }),
       expect.anything()
     )
   })
@@ -414,7 +478,12 @@ describe('when the user clicks the footer re-download link', () => {
     await waitFor(() => {
       expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         'download_failed',
-        expect.objectContaining({ place: 'download-success-footer' }),
+        expect.objectContaining({
+          place: 'download-success-footer',
+          download_target: 'desktop_installer',
+          utm_source: 'shefi',
+          utm_campaign: 'partner-launch'
+        }),
         expect.anything()
       )
     })
@@ -446,7 +515,7 @@ describe('when the user clicks the footer re-download link', () => {
 
 describe('when DownloadSuccess mounts and the url resolution rejects', () => {
   beforeEach(() => {
-    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=download-page')
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=download-page&utm_source=shefi')
     sessionStorage.clear()
     window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=download-page')
     mockCalculateDownloadUrl.mockRejectedValue(new Error('No download link available'))
@@ -471,7 +540,12 @@ describe('when DownloadSuccess mounts and the url resolution rejects', () => {
           anon_user_id: 'anon-123',
           auth_state: 'anonymous',
           revisit: 0,
-          reason: 'No download link available'
+          reason: 'No download link available',
+          // The fallback tracker must carry the same attribution as the main
+          // one — otherwise every failed-on-mount download silently loses the
+          // desktop_installer/utm tagging and skews per-campaign failure rates.
+          download_target: 'desktop_installer',
+          utm_source: 'shefi'
         }),
         expect.anything()
       )

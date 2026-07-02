@@ -103,6 +103,87 @@ describe('when tracking a download click', () => {
     })
   })
 
+  describe('and the URL carries partner campaign params', () => {
+    beforeEach(() => {
+      mockIsInitialized = false
+      window.history.pushState({}, '', '/download?utm_source=shefi&utm_campaign=partner-launch')
+    })
+
+    afterEach(() => {
+      window.history.pushState({}, '', '/')
+    })
+
+    it('should merge the campaign params into the beacon payload for partner attribution', () => {
+      const { result } = renderHook(() => useDownloadClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD, 'data-place': 'download-page' }))
+      })
+
+      expect(postSegmentEvent).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ utm_source: 'shefi', utm_campaign: 'partner-launch', place: 'download-page' }),
+        expect.any(String)
+      )
+    })
+
+    it('should merge the campaign params through the initialized analytics-next path too', () => {
+      mockIsInitialized = true
+      const { result } = renderHook(() => useDownloadClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD, 'data-place': 'download-page' }))
+      })
+
+      expect(mockTrack).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ utm_source: 'shefi', utm_campaign: 'partner-launch' })
+      )
+    })
+
+    it('should keep a camelCased data-* attribute distinct from the URL campaign param', () => {
+      // `readDataAttributes` camelCases dashed names (`data-utm-source` →
+      // `utmSource`), so a data-* UTM attribute never clobbers the snake_case
+      // `utm_source` collected from the URL — both keys coexist in the payload.
+      const { result } = renderHook(() => useDownloadClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD, 'data-utm-source': 'component-value' }))
+      })
+
+      expect((postSegmentEvent as jest.Mock).mock.calls[0][1]).toMatchObject({ utmSource: 'component-value', utm_source: 'shefi' })
+    })
+  })
+
+  describe('and the CTA declares a download target', () => {
+    beforeEach(() => {
+      mockIsInitialized = false
+    })
+
+    it('should rename the camelCased downloadTarget to the snake_case download_target dimension (beacon path)', () => {
+      const { result } = renderHook(() => useDownloadClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD, 'data-download-target': 'app_store', 'data-os': 'iOS' }))
+      })
+
+      const payload = (postSegmentEvent as jest.Mock).mock.calls[0][1]
+      expect(payload).toMatchObject({ download_target: 'app_store', os: 'iOS' })
+      expect(payload).not.toHaveProperty('downloadTarget')
+    })
+
+    it('should carry download_target through the initialized analytics-next path too', () => {
+      mockIsInitialized = true
+      const { result } = renderHook(() => useDownloadClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD, 'data-download-target': 'desktop_installer' }))
+      })
+
+      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.CLICK, expect.objectContaining({ download_target: 'desktop_installer' }))
+    })
+  })
+
   describe('and data-event repeats the Segment event name', () => {
     beforeEach(() => {
       mockIsInitialized = false
