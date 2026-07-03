@@ -81,6 +81,19 @@ const BalanceCard = ({ network, balance, isLoading, transactions, onReceive, onS
     trackAction('receive')
     onReceive()
   }
+  const handleOpenMoreMenu = (event: MouseEvent<HTMLButtonElement>) => setMoreMenuAnchor(event.currentTarget)
+
+  // Send/Receive render identically in the desktop pill and the mobile kebab menu — a single
+  // source keeps both in sync as actions are added/changed.
+  const collapsibleActions = [
+    { key: 'send', icon: <ArrowUpwardRoundedIcon fontSize="small" />, label: t('account.wallets.actions.send'), onClick: handleSend },
+    {
+      key: 'receive',
+      icon: <ArrowDownwardRoundedIcon fontSize="small" />,
+      label: t('account.wallets.actions.receive'),
+      onClick: handleReceive
+    }
+  ]
 
   return (
     <Card data-role="balance-card">
@@ -110,17 +123,15 @@ const BalanceCard = ({ network, balance, isLoading, transactions, onReceive, onS
             <SwapHorizRoundedIcon fontSize="small" />
             {t('account.wallets.actions.swap')}
           </ActionButton>
-          <ActionButton type="button" $desktopOnly onClick={handleSend} data-role="wallet-action-send">
-            <ArrowUpwardRoundedIcon fontSize="small" />
-            {t('account.wallets.actions.send')}
-          </ActionButton>
-          <ActionButton type="button" $desktopOnly onClick={handleReceive} data-role="wallet-action-receive">
-            <ArrowDownwardRoundedIcon fontSize="small" />
-            {t('account.wallets.actions.receive')}
-          </ActionButton>
+          {collapsibleActions.map(action => (
+            <ActionButton key={action.key} type="button" $desktopOnly onClick={action.onClick} data-role={`wallet-action-${action.key}`}>
+              {action.icon}
+              {action.label}
+            </ActionButton>
+          ))}
           <MoreActionsButton
             type="button"
-            onClick={(event: MouseEvent<HTMLButtonElement>) => setMoreMenuAnchor(event.currentTarget)}
+            onClick={handleOpenMoreMenu}
             aria-label={t('account.wallets.actions.more')}
             aria-haspopup="true"
             aria-expanded={Boolean(moreMenuAnchor)}
@@ -129,14 +140,12 @@ const BalanceCard = ({ network, balance, isLoading, transactions, onReceive, onS
             <MoreVertIcon fontSize="small" />
           </MoreActionsButton>
           <Menu anchorEl={moreMenuAnchor} open={Boolean(moreMenuAnchor)} onClose={closeMoreMenu}>
-            <MoreMenuItem onClick={handleSend} data-role="wallet-action-send-menu-item">
-              <ArrowUpwardRoundedIcon fontSize="small" />
-              {t('account.wallets.actions.send')}
-            </MoreMenuItem>
-            <MoreMenuItem onClick={handleReceive} data-role="wallet-action-receive-menu-item">
-              <ArrowDownwardRoundedIcon fontSize="small" />
-              {t('account.wallets.actions.receive')}
-            </MoreMenuItem>
+            {collapsibleActions.map(action => (
+              <MoreMenuItem key={action.key} onClick={action.onClick} data-role={`wallet-action-${action.key}-menu-item`}>
+                {action.icon}
+                {action.label}
+              </MoreMenuItem>
+            ))}
           </Menu>
         </Actions>
       </CardTop>

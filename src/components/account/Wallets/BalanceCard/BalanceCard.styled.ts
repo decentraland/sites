@@ -53,11 +53,29 @@ const Actions = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1)
 }))
 
-// Shared across ActionButton and MoreActionsButton (Figma pill/kebab surface).
+// Shared "pill" visual surface between ActionButton and MoreActionsButton (Figma pill/kebab).
 const ACTION_PILL_COLOR = '#FCFCFC'
 const ACTION_PILL_BACKGROUND = 'rgba(0, 0, 0, 0.4)'
 const ACTION_PILL_BACKGROUND_HOVER = 'rgba(0, 0, 0, 0.6)'
 const ACTION_PILL_FOCUS_OUTLINE = '2px solid rgba(255, 255, 255, 0.6)'
+
+// Structurally typed (rather than importing MUI/emotion's Theme) since decentraland-ui2's `styled`
+// callback theme and its own `Theme` type export come from different, incompatible declarations.
+const actionPillSurface = (theme: { spacing: (value: number) => string }) => ({
+  borderRadius: theme.spacing(1),
+  background: ACTION_PILL_BACKGROUND,
+  color: ACTION_PILL_COLOR,
+  ['& .MuiSvgIcon-root']: {
+    fontSize: 16
+  },
+  ['&:hover']: {
+    background: ACTION_PILL_BACKGROUND_HOVER
+  },
+  ['&:focus-visible']: {
+    outline: ACTION_PILL_FOCUS_OUTLINE,
+    outlineOffset: 2
+  }
+})
 
 interface ActionButtonStyleProps {
   // Send/Receive collapse into the kebab menu below the desktop breakpoint (Figma mobile spec,
@@ -70,14 +88,12 @@ interface ActionButtonStyleProps {
 const ActionButton = styled('button', {
   shouldForwardProp: prop => prop !== '$desktopOnly'
 })<ActionButtonStyleProps>(({ theme, $desktopOnly }) => ({
+  ...actionPillSurface(theme),
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(0.75),
   padding: theme.spacing(1, 2),
-  borderRadius: theme.spacing(1),
   border: 'none',
-  background: ACTION_PILL_BACKGROUND,
-  color: ACTION_PILL_COLOR,
   fontSize: 13,
   fontWeight: 600,
   letterSpacing: '0.04em',
@@ -86,16 +102,6 @@ const ActionButton = styled('button', {
   whiteSpace: 'nowrap',
   cursor: 'pointer',
   transition: 'background 0.2s ease',
-  ['& .MuiSvgIcon-root']: {
-    fontSize: 16
-  },
-  ['&:hover']: {
-    background: ACTION_PILL_BACKGROUND_HOVER
-  },
-  ['&:focus-visible']: {
-    outline: ACTION_PILL_FOCUS_OUTLINE,
-    outlineOffset: 2
-  },
   ...($desktopOnly
     ? {
         display: 'none',
@@ -109,21 +115,9 @@ const ActionButton = styled('button', {
 // Kebab trigger that exposes Send/Receive on mobile/tablet; hidden once ActionButton's desktop-only
 // pills take over at the same breakpoint (Figma mobile spec, issue #640).
 const MoreActionsButton = styled(IconButton)(({ theme }) => ({
+  ...actionPillSurface(theme),
   display: 'inline-flex',
   padding: theme.spacing(1),
-  borderRadius: theme.spacing(1),
-  background: ACTION_PILL_BACKGROUND,
-  color: ACTION_PILL_COLOR,
-  ['& .MuiSvgIcon-root']: {
-    fontSize: 16
-  },
-  ['&:hover']: {
-    background: ACTION_PILL_BACKGROUND_HOVER
-  },
-  ['&:focus-visible']: {
-    outline: ACTION_PILL_FOCUS_OUTLINE,
-    outlineOffset: 2
-  },
   [theme.breakpoints.up('md')]: {
     display: 'none'
   }

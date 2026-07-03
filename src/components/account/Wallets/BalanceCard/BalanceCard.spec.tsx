@@ -67,22 +67,8 @@ jest.mock('./BalanceCard.styled', () => ({
       {children}
     </button>
   ),
-  MoreActionsButton: ({
-    children,
-    onClick,
-    'data-role': dataRole,
-    'aria-label': ariaLabel,
-    'aria-haspopup': ariaHaspopup,
-    'aria-expanded': ariaExpanded
-  }: IconButtonProps) => (
-    <button
-      type="button"
-      data-role={dataRole}
-      aria-label={ariaLabel}
-      aria-haspopup={ariaHaspopup}
-      aria-expanded={ariaExpanded}
-      onClick={onClick}
-    >
+  MoreActionsButton: ({ children, ...rest }: IconButtonProps) => (
+    <button type="button" {...rest}>
       {children}
     </button>
   ),
