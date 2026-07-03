@@ -1243,7 +1243,8 @@
         "buy": "Acheter",
         "swap": "Échanger",
         "send": "Envoyer",
-        "receive": "Recevoir"
+        "receive": "Recevoir",
+        "more": "Plus d'actions"
       },
       "receive": {
         "title": "Recevoir des MANA",

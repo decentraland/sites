@@ -1248,7 +1248,8 @@
         "buy": "구매",
         "swap": "스왑",
         "send": "보내기",
-        "receive": "받기"
+        "receive": "받기",
+        "more": "더 보기"
       },
       "receive": {
         "title": "MANA 받기",
