@@ -67,6 +67,7 @@ const withTrackAuditFields = (payload: Record<string, unknown>): Record<string, 
  */
 function createDownloadTracker(ctx: DownloadTrackerContext): DownloadTracker {
   let startedAt: number | null = null
+  const anonymousId = ensureSegmentAnonymousId()
 
   return {
     started: () => {
@@ -78,7 +79,7 @@ function createDownloadTracker(ctx: DownloadTrackerContext): DownloadTracker {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           started_at: startedAt
         }),
-        ensureSegmentAnonymousId()
+        anonymousId
       )
     },
     success: (filename, bytesTransferred) => {
@@ -97,7 +98,7 @@ function createDownloadTracker(ctx: DownloadTrackerContext): DownloadTracker {
       if (bytesTransferred !== undefined) {
         payload.bytes_transferred = bytesTransferred
       }
-      postSegmentEvent(SegmentEvent.DOWNLOAD_SUCCESS, withTrackAuditFields(payload), ensureSegmentAnonymousId())
+      postSegmentEvent(SegmentEvent.DOWNLOAD_SUCCESS, withTrackAuditFields(payload), anonymousId)
     },
     failed: reason => {
       const failedAt = Date.now()
@@ -114,7 +115,7 @@ function createDownloadTracker(ctx: DownloadTrackerContext): DownloadTracker {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           duration_ms: failedAt - anchor
         }),
-        ensureSegmentAnonymousId()
+        anonymousId
       )
     }
   }

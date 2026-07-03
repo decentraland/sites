@@ -3,7 +3,9 @@ import { createDownloadTracker } from './downloadTracking'
 import { DownloadPlace, SegmentEvent } from './segment'
 import type { DownloadTrackerContext } from './downloadTracking.types'
 
-jest.mock('./segmentAnonymousId', () => ({ ensureSegmentAnonymousId: () => 'anon-fixed' }))
+const mockEnsureSegmentAnonymousId = jest.fn(() => 'anon-fixed')
+
+jest.mock('./segmentAnonymousId', () => ({ ensureSegmentAnonymousId: () => mockEnsureSegmentAnonymousId() }))
 
 jest.mock('../config/env', () => ({
   getEnv: () => 'wk-test'
@@ -40,6 +42,7 @@ describe('createDownloadTracker', () => {
   const readLastBody = (): Record<string, unknown> => JSON.parse(mockFetch.mock.calls[mockFetch.mock.calls.length - 1][1].body)
 
   beforeEach(() => {
+    mockEnsureSegmentAnonymousId.mockReturnValue('anon-fixed')
     mockFetch = jest.fn(() => Promise.resolve({ ok: true }))
     // Force the fetch fallback so assertions read a plain-string body — jsdom's
     // Blob has no text(), and the payload is byte-identical on both transports
@@ -197,6 +200,29 @@ describe('createDownloadTracker', () => {
     })
   })
 
+  describe('when one tracker emits multiple events', () => {
+    beforeEach(() => {
+      mockEnsureSegmentAnonymousId.mockReturnValueOnce('anon-tracker')
+      const tracker = createDownloadTracker(buildContext())
+
+      tracker.started()
+      tracker.success('Install-Decentraland.exe')
+      tracker.failed('Network error: connection refused')
+    })
+
+    it('should resolve the anonymousId once for the tracker instance', () => {
+      expect(mockEnsureSegmentAnonymousId).toHaveBeenCalledTimes(1)
+    })
+
+    it('should reuse the same anonymousId for started, success, and failed', () => {
+      expect(mockFetch.mock.calls.map(([, init]) => JSON.parse(init.body).anonymousId)).toEqual([
+        'anon-tracker',
+        'anon-tracker',
+        'anon-tracker'
+      ])
+    })
+  })
+
   describe('when success() is called WITHOUT a prior started() (degenerate)', () => {
     it('should still fire DOWNLOAD_SUCCESS with started_at equal to succeeded_at and duration_ms = 0', () => {
       nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1_700_000_003_000)
@@ -208,6 +234,32 @@ describe('createDownloadTracker', () => {
         started_at: 1_700_000_003_000,
         succeeded_at: 1_700_000_003_000,
         duration_ms: 0
+      })
+    })
+  })
+
+  describe('when the context carries extra attribution fields', () => {
+    it('should pass extra keys through to started, success, and failed payloads', () => {
+      const tracker = createDownloadTracker(buildContext({ extra: { download_target: 'desktop_installer', utm_source: 'shefi' } }))
+
+      tracker.started()
+      expect(readLastPayload()).toMatchObject({ download_target: 'desktop_installer', utm_source: 'shefi' })
+
+      tracker.success('Install-Decentraland.exe')
+      expect(readLastPayload()).toMatchObject({ download_target: 'desktop_installer', utm_source: 'shefi' })
+
+      tracker.failed('boom')
+      expect(readLastPayload()).toMatchObject({ download_target: 'desktop_installer', utm_source: 'shefi' })
+    })
+
+    it('should let core schema fields win when an extra key collides (extra spreads first)', () => {
+      const tracker = createDownloadTracker(buildContext({ extra: { os: 'evil-os', place: 'evil-place' } }))
+
+      tracker.started()
+
+      expect(readLastPayload()).toMatchObject({
+        os: OperativeSystem.WINDOWS,
+        place: DownloadPlace.LANDING_HERO
       })
     })
   })
