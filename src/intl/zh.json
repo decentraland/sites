@@ -1248,7 +1248,8 @@
         "buy": "购买",
         "swap": "兑换",
         "send": "发送",
-        "receive": "接收"
+        "receive": "接收",
+        "more": "更多操作"
       },
       "receive": {
         "title": "接收 MANA",
