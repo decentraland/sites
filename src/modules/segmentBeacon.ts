@@ -78,7 +78,12 @@ const buildSegmentBeaconPayload = (
  * Segment can attach its full context.
  */
 function postSegmentEvent(event: SegmentEvent, properties: Record<string, unknown>, anonymousId: string): void {
-  const writeKey = getSegmentWriteKey()
+  // NOTE: bypasses the analytics-exempt-path gate on purpose. Every caller of
+  // this transport fires an explicit conversion event (download CTA click,
+  // funnel exit, download_started/_success/_failed) — the gate exists to
+  // suppress the automatic analytics boot on pure-text pages, and /download
+  // (exempt for Lighthouse) hosts download CTAs whose clicks must still land.
+  const writeKey = getSegmentWriteKey({ bypassExemptPathGate: true })
   if (!writeKey) return
 
   const body = JSON.stringify(buildSegmentBeaconPayload(writeKey, event, properties, anonymousId))

@@ -11,7 +11,10 @@
 // by useDownloadClick, which fires regardless of whether Segment has booted:
 // through analytics-next when warm (e.g. SPA navigation from the homepage),
 // and through the unload-safe beacon (postSegmentEvent +
-// ensureSegmentAnonymousId) on cold loads, where it survives departures.
+// ensureSegmentAnonymousId) on cold loads, where it survives departures. The
+// beacon only works here because postSegmentEvent resolves its write key with
+// getSegmentWriteKey({ bypassExemptPathGate: true }) — without that bypass
+// this gate would zero the key and silently drop every cold-load CTA click.
 // That adapter is what carries partner UTM attribution off this page, so
 // removing /download from this set (which would boot Segment on cold load) is
 // unnecessary and would regress the perf/privacy win.
