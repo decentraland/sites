@@ -1,6 +1,6 @@
 /**
  * Partner-attribution query params. Marketing shares links like
- * `https://decentraland.org/download?utm_source=shefi&utm_campaign=…` and we
+ * `https://decentraland.org/download?utm_org=dcl&utm_source=shefi&utm_campaign=…` and we
  * carry these through the download funnel so the attribution survives from the
  * landing click to the `download_*` funnel events.
  *
@@ -15,7 +15,7 @@
  * `anon_user_id`, `auth_state` — see `.claude/skills/tracking-events/SKILL.md`
  * § LL-3) — so they flow into tracking payloads unchanged, no renaming.
  */
-const CAMPAIGN_PARAM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const
+const CAMPAIGN_PARAM_KEYS = ['utm_org', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const
 
 /**
  * Cap partner-supplied values so a malformed or hostile link can't flood the

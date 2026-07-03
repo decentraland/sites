@@ -58,13 +58,13 @@ describe('useDownloadSuccessHref', () => {
       mockUseAnonUserId.mockReturnValue(undefined)
       const { result } = renderHook(() => useDownloadSuccessHref())
 
-      window.history.pushState({}, '', '/?utm_source=shefi&utm_campaign=partner-launch')
+      window.history.pushState({}, '', '/?utm_org=dcl&utm_source=shefi&utm_campaign=partner-launch')
       result.current('Windows', 'landing-hero')
 
       expect(mockBuildDownloadSuccessHref).toHaveBeenCalledWith(
         'Windows',
         'landing-hero',
-        expect.objectContaining({ campaignParams: { utm_source: 'shefi', utm_campaign: 'partner-launch' } })
+        expect.objectContaining({ campaignParams: { utm_org: 'dcl', utm_source: 'shefi', utm_campaign: 'partner-launch' } })
       )
     })
   })
