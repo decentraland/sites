@@ -106,7 +106,7 @@ describe('when tracking a download click', () => {
   describe('and the URL carries partner campaign params', () => {
     beforeEach(() => {
       mockIsInitialized = false
-      window.history.pushState({}, '', '/download?utm_source=shefi&utm_campaign=partner-launch')
+      window.history.pushState({}, '', '/download?utm_org=dcl&utm_source=shefi&utm_campaign=partner-launch')
     })
 
     afterEach(() => {
@@ -122,7 +122,7 @@ describe('when tracking a download click', () => {
 
       expect(postSegmentEvent).toHaveBeenCalledWith(
         SegmentEvent.CLICK,
-        expect.objectContaining({ utm_source: 'shefi', utm_campaign: 'partner-launch', place: 'download-page' }),
+        expect.objectContaining({ utm_org: 'dcl', utm_source: 'shefi', utm_campaign: 'partner-launch', place: 'download-page' }),
         expect.any(String)
       )
     })
@@ -137,7 +137,7 @@ describe('when tracking a download click', () => {
 
       expect(mockTrack).toHaveBeenCalledWith(
         SegmentEvent.CLICK,
-        expect.objectContaining({ utm_source: 'shefi', utm_campaign: 'partner-launch' })
+        expect.objectContaining({ utm_org: 'dcl', utm_source: 'shefi', utm_campaign: 'partner-launch' })
       )
     })
 

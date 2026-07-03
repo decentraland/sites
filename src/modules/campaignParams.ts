@@ -1,6 +1,6 @@
 /**
  * Partner-attribution query params. Marketing shares links like
- * `https://decentraland.org/download?utm_source=shefi&utm_campaign=…` and we
+ * `https://decentraland.org/download?utm_org=dcl&utm_source=shefi&utm_campaign=…` and we
  * carry these through the download funnel so the attribution survives from the
  * landing click to the `download_*` funnel events.
  *
@@ -15,7 +15,7 @@
  * `anon_user_id`, `auth_state` — see `.claude/skills/tracking-events/SKILL.md`
  * § LL-3) — so they flow into tracking payloads unchanged, no renaming.
  */
-const CAMPAIGN_PARAM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const
+const CAMPAIGN_PARAM_KEYS = ['utm_org', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const
 
 /**
  * Cap partner-supplied values so a malformed or hostile link can't flood the
@@ -25,9 +25,25 @@ const CAMPAIGN_PARAM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_co
 const MAX_CAMPAIGN_VALUE_LENGTH = 256
 
 /**
+ * UTM Builder convention: lowercase values, no raw spaces, and no punctuation
+ * that can break query parsing. Preserve `_`/`-` because marketing uses them
+ * to keep multi-word values readable.
+ */
+function normalizeCampaignParamValue(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^a-z0-9_-]/g, '')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, MAX_CAMPAIGN_VALUE_LENGTH)
+}
+
+/**
  * Collects the campaign params present on the given source (defaults to the
- * current URL's search params). Params that are absent or have empty values
- * are omitted, keeping payloads and redirect URLs clean.
+ * current URL's search params). Params that are absent or normalize to empty
+ * values are omitted, keeping payloads and redirect URLs clean.
  */
 function collectCampaignParams(source?: URLSearchParams): Record<string, string> {
   const params = source ?? new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
@@ -36,7 +52,10 @@ function collectCampaignParams(source?: URLSearchParams): Record<string, string>
   for (const key of CAMPAIGN_PARAM_KEYS) {
     const value = params.get(key)
     if (value) {
-      collected[key] = value.slice(0, MAX_CAMPAIGN_VALUE_LENGTH)
+      const normalized = normalizeCampaignParamValue(value)
+      if (normalized) {
+        collected[key] = normalized
+      }
     }
   }
   return collected
