@@ -83,6 +83,12 @@ describe('when posting a Segment event via beacon', () => {
     expect(mockSendBeacon).not.toHaveBeenCalled()
   })
 
+  it('should resolve the write key bypassing the analytics-exempt-path gate', () => {
+    postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero' }, 'anon-1')
+
+    expect(getSegmentWriteKey).toHaveBeenCalledWith({ bypassExemptPathGate: true })
+  })
+
   it('should fall back to fetch keepalive when sendBeacon rejects the payload', () => {
     mockSendBeacon.mockReturnValue(false)
 

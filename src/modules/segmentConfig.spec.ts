@@ -41,5 +41,24 @@ describe('segmentConfig', () => {
       mockWriteKey = ''
       expect(getSegmentWriteKey()).toBe('')
     })
+
+    describe('and the exempt-path gate is bypassed', () => {
+      beforeEach(() => {
+        mockExempt = true
+      })
+
+      it('should return the write key on an analytics-exempt path', () => {
+        expect(getSegmentWriteKey({ bypassExemptPathGate: true })).toBe('wk-test')
+      })
+
+      it('should still return an empty string when no write key is configured', () => {
+        mockWriteKey = ''
+        expect(getSegmentWriteKey({ bypassExemptPathGate: true })).toBe('')
+      })
+
+      it('should keep the gate active when the flag is explicitly false', () => {
+        expect(getSegmentWriteKey({ bypassExemptPathGate: false })).toBe('')
+      })
+    })
   })
 })
