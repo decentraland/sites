@@ -1247,7 +1247,8 @@
         "buy": "購入",
         "swap": "スワップ",
         "send": "送信",
-        "receive": "受取"
+        "receive": "受取",
+        "more": "その他"
       },
       "receive": {
         "title": "MANAを受け取る",

@@ -1,3 +1,4 @@
+import { type MouseEvent, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -5,10 +6,12 @@ import ArrowUpwardRoundedIcon from '@mui/icons-material/ArrowUpwardRounded'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AttachMoneyRoundedIcon from '@mui/icons-material/AttachMoneyRounded'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import SwapHorizRoundedIcon from '@mui/icons-material/SwapHorizRounded'
 import { useAnalytics } from '@dcl/hooks'
 import { Network } from '@dcl/schemas'
-import { Mana, Skeleton } from 'decentraland-ui2'
+import { Mana, Menu, Skeleton } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import type { WalletTransaction } from '../../../../hooks/useWalletTransactions.types'
 import { SegmentEvent } from '../../../../modules/segment'
@@ -16,7 +19,18 @@ import type { WalletNetwork } from '../manaContract'
 import { NetworkIcon } from '../NetworkIcon'
 import { TransactionsSection } from '../TransactionsSection/TransactionsSection'
 import { formatMana } from '../wallets.helpers'
-import { ActionButton, Actions, BalanceInfo, BalanceRow, Card, CardTop, NetworkLabel, NetworkRow } from './BalanceCard.styled'
+import {
+  ActionButton,
+  Actions,
+  BalanceInfo,
+  BalanceRow,
+  Card,
+  CardTop,
+  MoreActionsButton,
+  MoreMenuItem,
+  NetworkLabel,
+  NetworkRow
+} from './BalanceCard.styled'
 
 interface BalanceCardProps {
   network: WalletNetwork
@@ -35,6 +49,10 @@ interface BalanceCardProps {
 const BalanceCard = ({ network, balance, isLoading, transactions, onReceive, onSend, onSwap, onBuy, onClaim }: BalanceCardProps) => {
   const t = useFormatMessage()
   const { track, isInitialized } = useAnalytics()
+  // Anchors the mobile/tablet "more actions" menu that surfaces Send/Receive below the desktop
+  // breakpoint (Figma mobile spec, issue #640).
+  const [moreMenuAnchor, setMoreMenuAnchor] = useState<HTMLElement | null>(null)
+  const closeMoreMenu = () => setMoreMenuAnchor(null)
 
   const label = network === 'ethereum' ? t('account.wallets.eth_label') : t('account.wallets.polygon_label')
   // Network-aware MANA mark (Ethereum vs Matic) reused from decentraland-ui2 so the balance matches
@@ -54,10 +72,12 @@ const BalanceCard = ({ network, balance, isLoading, transactions, onReceive, onS
     onSwap()
   }
   const handleSend = () => {
+    closeMoreMenu()
     trackAction('send')
     onSend()
   }
   const handleReceive = () => {
+    closeMoreMenu()
     trackAction('receive')
     onReceive()
   }
@@ -90,14 +110,34 @@ const BalanceCard = ({ network, balance, isLoading, transactions, onReceive, onS
             <SwapHorizRoundedIcon fontSize="small" />
             {t('account.wallets.actions.swap')}
           </ActionButton>
-          <ActionButton type="button" onClick={handleSend} data-role="wallet-action-send">
+          <ActionButton type="button" $desktopOnly onClick={handleSend} data-role="wallet-action-send">
             <ArrowUpwardRoundedIcon fontSize="small" />
             {t('account.wallets.actions.send')}
           </ActionButton>
-          <ActionButton type="button" onClick={handleReceive} data-role="wallet-action-receive">
+          <ActionButton type="button" $desktopOnly onClick={handleReceive} data-role="wallet-action-receive">
             <ArrowDownwardRoundedIcon fontSize="small" />
             {t('account.wallets.actions.receive')}
           </ActionButton>
+          <MoreActionsButton
+            type="button"
+            onClick={(event: MouseEvent<HTMLButtonElement>) => setMoreMenuAnchor(event.currentTarget)}
+            aria-label={t('account.wallets.actions.more')}
+            aria-haspopup="true"
+            aria-expanded={Boolean(moreMenuAnchor)}
+            data-role="wallet-action-more"
+          >
+            <MoreVertIcon fontSize="small" />
+          </MoreActionsButton>
+          <Menu anchorEl={moreMenuAnchor} open={Boolean(moreMenuAnchor)} onClose={closeMoreMenu}>
+            <MoreMenuItem onClick={handleSend} data-role="wallet-action-send-menu-item">
+              <ArrowUpwardRoundedIcon fontSize="small" />
+              {t('account.wallets.actions.send')}
+            </MoreMenuItem>
+            <MoreMenuItem onClick={handleReceive} data-role="wallet-action-receive-menu-item">
+              <ArrowDownwardRoundedIcon fontSize="small" />
+              {t('account.wallets.actions.receive')}
+            </MoreMenuItem>
+          </Menu>
         </Actions>
       </CardTop>
       <TransactionsSection transactions={transactions} onClaim={onClaim} />

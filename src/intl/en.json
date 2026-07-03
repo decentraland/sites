@@ -1682,7 +1682,8 @@
         "buy": "Buy",
         "swap": "Swap",
         "send": "Send",
-        "receive": "Receive"
+        "receive": "Receive",
+        "more": "More actions"
       },
       "receive": {
         "title": "Receive MANA",
