@@ -43,4 +43,4 @@ function safeParseStoredId(value: string): string | undefined {
   }
 }
 
-export { ensureSegmentAnonymousId, generateUuid }
+export { ensureSegmentAnonymousId, generateUuid, safeParseStoredId }

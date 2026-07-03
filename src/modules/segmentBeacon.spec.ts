@@ -39,6 +39,7 @@ describe('when posting a Segment event via beacon', () => {
   afterEach(() => {
     Object.defineProperty(navigator, 'sendBeacon', { value: originalSendBeacon, configurable: true, writable: true })
     Object.defineProperty(global, 'fetch', { value: originalFetch, configurable: true, writable: true })
+    localStorage.clear()
     jest.resetAllMocks()
   })
 
@@ -53,6 +54,7 @@ describe('when posting a Segment event via beacon', () => {
       writeKey: 'test-key',
       event: SegmentEvent.CLICK,
       anonymousId: 'anon-1',
+      integrations: {},
       properties: { place: 'Landing Hero', event: SegmentEvent.DOWNLOAD },
       messageId: expect.stringMatching(/^dcl-sites-beacon-/),
       timestamp: expect.any(String),
@@ -61,18 +63,69 @@ describe('when posting a Segment event via beacon', () => {
         page: {
           url: window.location.href,
           path: '/download',
+          search: '?source=landing',
           referrer: 'https://decentraland.org/',
           title: 'Decentraland Download'
         },
         userAgent: navigator.userAgent,
         locale: navigator.language,
+        timezone: expect.any(String),
         library: {
           name: 'dcl-sites-beacon',
           version: '1.0.0'
         }
       }
     })
+    // The /v1/track endpoint infers the message type; the SDK does not send it
+    // on this transport, so neither do we.
     expect(body).not.toHaveProperty('type')
+  })
+
+  it('should omit userId when the visitor is anonymous', async () => {
+    postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero' }, 'anon-1')
+
+    const [, blob] = mockSendBeacon.mock.calls[0] as [string, Blob]
+    const body = JSON.parse(await readBlobText(blob))
+    expect(body).not.toHaveProperty('userId')
+  })
+
+  it('should attach the identified wallet as userId from ajs_user_id', async () => {
+    localStorage.setItem('ajs_user_id', JSON.stringify('0x1234567890123456789012345678901234567890'))
+
+    postSegmentEvent(SegmentEvent.DOWNLOAD_STARTED, { place: 'landing-hero' }, 'anon-1')
+
+    const [, blob] = mockSendBeacon.mock.calls[0] as [string, Blob]
+    const body = JSON.parse(await readBlobText(blob))
+    expect(body.userId).toBe('0x1234567890123456789012345678901234567890')
+  })
+
+  it('should attach the low-entropy userAgentData when the browser exposes it', async () => {
+    const uaData = { brands: [{ brand: 'Chromium', version: '150' }], mobile: false, platform: 'macOS' }
+    const nav = navigator as Navigator & { userAgentData?: typeof uaData }
+    const original = nav.userAgentData
+    Object.defineProperty(navigator, 'userAgentData', { value: uaData, configurable: true, writable: true })
+
+    try {
+      postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero' }, 'anon-1')
+
+      const [, blob] = mockSendBeacon.mock.calls[0] as [string, Blob]
+      const body = JSON.parse(await readBlobText(blob))
+      expect(body.context.userAgentData).toEqual(uaData)
+    } finally {
+      Object.defineProperty(navigator, 'userAgentData', { value: original, configurable: true, writable: true })
+    }
+  })
+
+  it('should omit timezone when the runtime cannot resolve it', async () => {
+    jest.spyOn(Intl, 'DateTimeFormat').mockImplementation(() => {
+      throw new Error('no Intl')
+    })
+
+    postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero' }, 'anon-1')
+
+    const [, blob] = mockSendBeacon.mock.calls[0] as [string, Blob]
+    const body = JSON.parse(await readBlobText(blob))
+    expect(body.context).not.toHaveProperty('timezone')
   })
 
   it('should not post when the write key is unavailable', () => {
