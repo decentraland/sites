@@ -4,16 +4,16 @@ import { DownloadModal, DownloadQRModal } from 'decentraland-ui2'
 import { heroContent } from '../../../data/static-content'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAnimatedCounter } from '../../../hooks/useAnimatedCounter'
-import { useAnonUserId } from '../../../hooks/useAnonUserId'
 import { useDownloadClick } from '../../../hooks/useDownloadClick'
+import { useDownloadSuccessHref } from '../../../hooks/useDownloadSuccessHref'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import appleLogo from '../../../images/apple-logo.svg'
 import microsoftLogo from '../../../images/microsoft-logo.svg'
+import { withCampaignParams } from '../../../modules/campaignParams'
 import { DOWNLOAD_URLS } from '../../../modules/downloadConstants'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
 import { formatToShorthand } from '../../../modules/number'
-import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
-import { buildDownloadSuccessHref } from '../../../modules/url'
+import { DownloadPlace, DownloadTarget, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { type ScheduledHandle, cancelScheduledIdleCall, scheduleWhenIdle } from '../../../utils/scheduleWhenIdle'
@@ -64,10 +64,8 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const [, userAgentData] = useAdvancedUserAgentData()
   const l = useFormatMessage()
   const trackDownloadClick = useDownloadClick()
-  const anonUserId = useAnonUserId()
   const { isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads } = useHangOutAction()
-
-  const downloadSuccessHref = useCallback((os: string, place: string) => buildDownloadSuccessHref(os, place, anonUserId), [anonUserId])
+  const downloadSuccessHref = useDownloadSuccessHref()
 
   const [rawDownloads, rawDownloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
 
@@ -212,6 +210,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
             data-event={SegmentEvent.DOWNLOAD}
             data-os="Android"
             data-place={SectionViewedTrack.LANDING_HERO}
+            data-download-target={DownloadTarget.GOOGLE_PLAY}
             onClick={trackDownloadClick}
           >
             <GooglePlayImage src={googlePlayBadge} alt="Get it on Google Play" />
@@ -231,6 +230,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
             data-event={SegmentEvent.DOWNLOAD}
             data-os="iOS"
             data-place={SectionViewedTrack.LANDING_HERO}
+            data-download-target={DownloadTarget.APP_STORE}
             onClick={trackDownloadClick}
           >
             <GooglePlayImage src={assetUrl('/download-on-the-app-store.svg')} alt="Download on the App Store" />
@@ -250,9 +250,12 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
           <HeroCTAWrapper>
             {/* Download + Epic buttons */}
             <DownloadButton
-              href={userAgentData ? downloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO) : '/download'}
+              href={
+                userAgentData ? downloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO) : withCampaignParams('/download')
+              }
               data-place={SectionViewedTrack.LANDING_HERO}
               data-event={SegmentEvent.DOWNLOAD}
+              data-download-target={DownloadTarget.DESKTOP_INSTALLER}
               onClick={handleDownloadClick}
             >
               {l('page.download.download_for_short')}
@@ -275,6 +278,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
               rel="noopener noreferrer"
               data-place={DownloadPlace.LANDING_HERO_EPIC}
               data-event={SegmentEvent.DOWNLOAD}
+              data-download-target={DownloadTarget.DESKTOP_INSTALLER}
               onClick={trackDownloadClick}
             >
               {l('page.download.download_on')}
@@ -295,6 +299,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
                   data-event={SegmentEvent.DOWNLOAD}
                   data-os={OperativeSystem.WINDOWS}
                   data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}
+                  data-download-target={DownloadTarget.DESKTOP_INSTALLER}
                   onClick={trackDownloadClick}
                 >
                   <HeroPlatformIcon src={microsoftLogo} alt="Windows" />
@@ -306,6 +311,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
                   data-event={SegmentEvent.DOWNLOAD}
                   data-os={OperativeSystem.MACOS}
                   data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}
+                  data-download-target={DownloadTarget.DESKTOP_INSTALLER}
                   onClick={trackDownloadClick}
                 >
                   <HeroPlatformIcon src={appleLogo} alt="macOS" />

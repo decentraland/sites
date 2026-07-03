@@ -7,12 +7,13 @@ import { useDownloadClick } from '../../hooks/useDownloadClick'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
 import appleLogo from '../../images/apple-logo.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
+import { collectCampaignParams } from '../../modules/campaignParams'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
 import { getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
 import { ExplorerDownloads } from '../../modules/explorerDownloads'
 import { formatToShorthand } from '../../modules/number'
-import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
-import { addQueryParamsToUrlString, sanitizeCDNReleaseLinks, updateUrlWithLastValue } from '../../modules/url'
+import { DownloadPlace, DownloadTarget, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
+import { buildDownloadSuccessHref, sanitizeCDNReleaseLinks } from '../../modules/url'
 import { Architecture, DownloadOptionProps, OperativeSystem } from '../../types/download.types'
 import { assetUrl } from '../../utils/assetUrl'
 import { DownloadButton, EpicButton } from '../Home/Hero/Hero.styled'
@@ -143,12 +144,14 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
         })
       }
 
-      const redirectPath = '/download_success'
-      const redirectUrl = updateUrlWithLastValue(new URL(redirectPath, window.location.origin).toString(), 'os', option.text)
-      const finalUrl = addQueryParamsToUrlString(redirectUrl, {
+      // Forward the partner campaign params into /download_success (through
+      // `buildDownloadSuccessHref`) so the desktop installer funnel
+      // (download_started/_success/_failed) carries the same attribution the
+      // landing click had.
+      const finalUrl = buildDownloadSuccessHref(option.text, DownloadPlace.DOWNLOAD_PAGE, {
+        anonUserId,
         arch: option.arch,
-        place: DownloadPlace.DOWNLOAD_PAGE,
-        [ANON_USER_ID_PARAM]: anonUserId
+        campaignParams: collectCampaignParams()
       })
       setTimeout(
         () => {
@@ -176,6 +179,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                   href={option.link}
                   data-place={SectionViewedTrack.DOWNLOAD}
                   data-event={SegmentEvent.DOWNLOAD}
+                  data-download-target={DownloadTarget.DESKTOP_INSTALLER}
                   onClick={event => {
                     event.preventDefault()
                     trackDownloadClick(event)
@@ -187,12 +191,16 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                 </DownloadButton>
               ) : null
             )}
+            {/* Epic delivers the same desktop client, just via the Epic Games
+                Store — it sits on the desktop side of the split (not a mobile
+                store exit), so it shares the desktop_installer target. */}
             <EpicButton
               href={EPIC_GAMES_URL}
               target="_blank"
               rel="noopener noreferrer"
               data-place={DownloadPlace.DOWNLOAD_PAGE}
               data-event={SegmentEvent.DOWNLOAD}
+              data-download-target={DownloadTarget.DESKTOP_INSTALLER}
               onClick={trackDownloadClick}
             >
               {l('page.download.download_on')}
@@ -210,6 +218,9 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                 <AlternativeButton
                   variant="text"
                   color="inherit"
+                  data-place={DownloadPlace.DOWNLOAD_PAGE}
+                  data-event={SegmentEvent.DOWNLOAD}
+                  data-download-target={DownloadTarget.DESKTOP_INSTALLER}
                   onClick={event => {
                     event.preventDefault()
                     trackDownloadClick(event)
@@ -221,12 +232,22 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                   startIcon={<AlternativeButtonImage src={option.image} />}
                 />
               ))}
+              {/* Store badges exit /download to the App Store / Google Play (new
+                  tab), never through /download_success — so they can't produce a
+                  download_started and won't inflate desktop installer activations.
+                  Tracked as store exits so partner attribution still lands.
+                  `useDownloadClick` merges the campaign params from the URL. */}
               <AlternativeButton
                 variant="text"
                 color="inherit"
                 href={DOWNLOAD_URLS.appStore}
                 {...{ target: '_blank', rel: 'noopener noreferrer' }}
                 aria-label="iOS"
+                data-place={DownloadPlace.DOWNLOAD_PAGE}
+                data-event={SegmentEvent.DOWNLOAD}
+                data-os="iOS"
+                data-download-target={DownloadTarget.APP_STORE}
+                onClick={trackDownloadClick}
                 startIcon={<AlternativeButtonImage src={assetUrl('/ios-logo.svg')} />}
               />
               <AlternativeButton
@@ -235,6 +256,11 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                 href={GOOGLE_PLAY_DESKTOP_URL}
                 {...{ target: '_blank', rel: 'noopener noreferrer' }}
                 aria-label="Google Play"
+                data-place={DownloadPlace.DOWNLOAD_PAGE}
+                data-event={SegmentEvent.DOWNLOAD}
+                data-os="Android"
+                data-download-target={DownloadTarget.GOOGLE_PLAY}
+                onClick={trackDownloadClick}
                 startIcon={<AlternativeButtonImage src={assetUrl('/google_play_icon.svg')} />}
               />
             </AlternativeButtonsWrapper>
