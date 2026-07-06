@@ -186,6 +186,9 @@ describe('PlayPage', () => {
       render(<PlayPage />)
       const epic = screen.getByText('page.download.download_on')
       expect(epic).toHaveAttribute('href', DOWNLOAD_URLS.epic)
+      // Epic redirects to the Epic Games Store, never reaching download_started —
+      // its own target keeps it out of the desktop activation funnel.
+      expect(epic).toHaveAttribute('data-download-target', 'epic')
       expect(screen.getByAltText('Epic Games')).toBeInTheDocument()
       fireEvent.click(epic)
       expect(analyticsTrack).toHaveBeenCalledWith(
@@ -194,7 +197,7 @@ describe('PlayPage', () => {
       )
     })
 
-    it('should tag the desktop CTA, Epic button, and store badges with the desktop/store download_target split', () => {
+    it('should tag the desktop CTA as desktop_installer, Epic as epic, and store badges with their store targets', () => {
       render(<PlayPage />)
       const downloadButton = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
       const epicButton = screen.getByText('page.download.download_on').closest('a') as HTMLAnchorElement
@@ -202,7 +205,8 @@ describe('PlayPage', () => {
       const googlePlayBadgeLink = screen.getByAltText('Get it on Google Play').closest('a') as HTMLAnchorElement
 
       expect(downloadButton).toHaveAttribute('data-download-target', 'desktop_installer')
-      expect(epicButton).toHaveAttribute('data-download-target', 'desktop_installer')
+      // Epic redirects to the Epic Games Store, never reaching download_started.
+      expect(epicButton).toHaveAttribute('data-download-target', 'epic')
       expect(appStoreBadge).toHaveAttribute('data-download-target', 'app_store')
       expect(googlePlayBadgeLink).toHaveAttribute('data-download-target', 'google_play')
     })

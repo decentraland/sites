@@ -278,7 +278,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
               rel="noopener noreferrer"
               data-place={DownloadPlace.LANDING_HERO_EPIC}
               data-event={SegmentEvent.DOWNLOAD}
-              data-download-target={DownloadTarget.DESKTOP_INSTALLER}
+              data-download-target={DownloadTarget.EPIC}
               onClick={trackDownloadClick}
             >
               {l('page.download.download_on')}

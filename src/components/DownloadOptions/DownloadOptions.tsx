@@ -191,16 +191,18 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                 </DownloadButton>
               ) : null
             )}
-            {/* Epic delivers the same desktop client, just via the Epic Games
-                Store — it sits on the desktop side of the split (not a mobile
-                store exit), so it shares the desktop_installer target. */}
+            {/* Epic delivers the same desktop client but redirects to the Epic
+                Games Store instead of the in-app download, so it never reaches
+                `/download_success`/`download_started`. Tagged with its own
+                `epic` target (not `desktop_installer`) so it can be excluded
+                from the desktop activation funnel. */}
             <EpicButton
               href={EPIC_GAMES_URL}
               target="_blank"
               rel="noopener noreferrer"
               data-place={DownloadPlace.DOWNLOAD_PAGE}
               data-event={SegmentEvent.DOWNLOAD}
-              data-download-target={DownloadTarget.DESKTOP_INSTALLER}
+              data-download-target={DownloadTarget.EPIC}
               onClick={trackDownloadClick}
             >
               {l('page.download.download_on')}

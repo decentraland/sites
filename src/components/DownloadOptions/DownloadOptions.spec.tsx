@@ -216,10 +216,12 @@ describe('DownloadOptions', () => {
       expect(button).toHaveAttribute('data-download-target', 'desktop_installer')
     })
 
-    it('should tag the Epic button with download_target=desktop_installer', () => {
+    it('should tag the Epic button with download_target=epic', () => {
       render(<DownloadOptions />)
       const epicButton = screen.getByText('page.download.download_on').closest('a') as HTMLAnchorElement
-      expect(epicButton).toHaveAttribute('data-download-target', 'desktop_installer')
+      // Epic redirects to the Epic Games Store, never reaching download_started —
+      // its own target keeps it out of the desktop activation funnel.
+      expect(epicButton).toHaveAttribute('data-download-target', 'epic')
     })
 
     it('should tag the secondary platform option (macOS) with download_target=desktop_installer', () => {
