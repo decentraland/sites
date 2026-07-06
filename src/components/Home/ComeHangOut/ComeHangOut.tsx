@@ -125,7 +125,7 @@ const ComeHangOut = memo(() => {
           rel="noopener noreferrer"
           data-event={SegmentEvent.DOWNLOAD}
           data-place={DownloadPlace.COME_HANG_OUT}
-          data-download-target={DownloadTarget.DESKTOP_INSTALLER}
+          data-download-target={DownloadTarget.EPIC}
           onClick={trackDownloadClick}
         >
           {l('page.download.download_on')}
