@@ -1,6 +1,6 @@
 import { Box, Button, Typography, styled } from 'decentraland-ui2'
 
-// Figma 797:78245 — Delete Account section ("Danger Zone"). Colours mirror the DCL design
+// Figma 797:78245 — Delete Account section. Colours mirror the DCL design
 // tokens used across the Account area: destructive DCL Red (#FF2D55), warning amber (#FFA500),
 // text #FCFCFC, muted #A09BA8. The warning card sits on the translucent panel (rgba(0,0,0,0.2)).
 // Hardcoded hexes follow the sibling Account styled files.
