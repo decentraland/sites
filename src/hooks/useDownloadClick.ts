@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react'
 import { useAnalytics } from '@dcl/hooks'
 import { collectCampaignParams } from '../modules/campaignParams'
+import { recordDownloadClickCorrelation } from '../modules/downloadClickCorrelation'
 import { SegmentEvent } from '../modules/segment'
 import { ensureSegmentAnonymousId } from '../modules/segmentAnonymousId'
 import { postSegmentEvent } from '../modules/segmentBeacon'
@@ -34,8 +35,13 @@ function useDownloadClick() {
       // `data-utm_source`) WOULD bypass that and clobber the URL value, so
       // never use underscores in data-* names on download CTAs.
       const { downloadTarget, ...dataAttributes } = readDataAttributes(event.currentTarget)
+      // Correlación determinística click → download_*: el mismo click_id que
+      // mandamos acá viaja por sessionStorage hasta /download_success (ver
+      // downloadClickCorrelation.ts). clicked_at habilita ms_since_click aguas abajo.
+      const correlation = recordDownloadClickCorrelation()
       const payload: Record<string, unknown> = {
         ...collectCampaignParams(),
+        ...correlation,
         ...dataAttributes
       }
 
