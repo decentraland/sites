@@ -63,7 +63,7 @@ const DeleteAccountSection = (props: DeleteAccountSectionProps) => {
       <DangerBanner>
         <ErrorOutlineRoundedIcon sx={{ fontSize: 24, color: '#FF2D55', flexShrink: 0 }} />
         <BannerTextWrapper>
-          <DangerBannerTitle>{t('account.delete.danger_zone')}</DangerBannerTitle>
+          <DangerBannerTitle>{t('account.delete.title')}</DangerBannerTitle>
           <DangerBannerDescription>{t('account.delete.danger_description')}</DangerBannerDescription>
         </BannerTextWrapper>
       </DangerBanner>
