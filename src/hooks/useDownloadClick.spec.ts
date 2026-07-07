@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react'
+import { markDownloadCtaClicked } from '../modules/downloadPageExit'
 import { SegmentEvent } from '../modules/segment'
 import { ensureSegmentAnonymousId, generateUuid } from '../modules/segmentAnonymousId'
 import { postSegmentEvent } from '../modules/segmentBeacon'
@@ -20,6 +21,10 @@ jest.mock('../modules/segmentAnonymousId', () => ({
 
 jest.mock('../modules/segmentBeacon', () => ({
   postSegmentEvent: jest.fn()
+}))
+
+jest.mock('../modules/downloadPageExit', () => ({
+  markDownloadCtaClicked: jest.fn()
 }))
 
 const buildClickEvent = (attrs: Record<string, string>): React.MouseEvent<HTMLElement> => {
@@ -212,6 +217,26 @@ describe('when tracking a download click', () => {
         expect.any(String)
       )
       expect((postSegmentEvent as jest.Mock).mock.calls[0][1]).not.toHaveProperty('event')
+    })
+  })
+
+  describe('and the download page exit diagnostic is fed', () => {
+    it('should mark the CTA as clicked on a warm click', () => {
+      mockIsInitialized = true
+      const { result } = renderHook(() => useDownloadClick())
+      act(() => {
+        result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD, 'data-place': 'Landing Hero' }))
+      })
+      expect(markDownloadCtaClicked).toHaveBeenCalledTimes(1)
+    })
+
+    it('should mark the CTA as clicked on a cold click', () => {
+      mockIsInitialized = false
+      const { result } = renderHook(() => useDownloadClick())
+      act(() => {
+        result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD, 'data-place': 'Landing Hero' }))
+      })
+      expect(markDownloadCtaClicked).toHaveBeenCalledTimes(1)
     })
   })
 
