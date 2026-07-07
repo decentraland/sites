@@ -85,6 +85,14 @@ describe('CreatorHubDownload', () => {
     expect(handleDownload).toHaveBeenCalledWith(expect.objectContaining({ text: 'Windows' }))
   })
 
+  it('should tag the primary Creator Hub download CTA with the creator_hub download target', () => {
+    render(<CreatorHubDownload />)
+
+    const primaryCta = screen.getByRole('link', { name: 'page.download.download_for' })
+    expect(primaryCta).toHaveAttribute('data-download-target', 'creator_hub')
+    expect(primaryCta).toHaveAttribute('href', 'https://cdn.example.com/mac.dmg')
+  })
+
   describe('when not ready', () => {
     beforeEach(() => {
       mockCreatorHubDownload.mockReturnValue({

@@ -39,6 +39,7 @@ const CreatorHubDownload = memo(() => {
                 }}
                 event={SegmentEvent.DOWNLOAD}
                 place={SectionViewedTrack.DOWNLOAD}
+                downloadTarget={DownloadTarget.CREATOR_HUB}
                 endIcon={<DownloadButtonImage src={primaryOption.image} alt="" />}
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 label={l('page.download.download_for', { os_name: primaryOption.text })}

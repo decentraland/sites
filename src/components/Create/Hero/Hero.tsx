@@ -80,6 +80,7 @@ const CreatorsHero = memo(() => {
                   }}
                   event={SegmentEvent.DOWNLOAD}
                   place={SectionViewedTrack.CREATORS_HERO}
+                  downloadTarget={DownloadTarget.CREATOR_HUB}
                   endIcon={<DownloadButtonImage src={primaryOption.image} alt="" />}
                   label={l('page.download.download_creator_hub')}
                   isFullWidth={false}

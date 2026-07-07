@@ -113,6 +113,14 @@ describe('CreatorsHero', () => {
       expect(trackClick).toHaveBeenCalledTimes(1)
       expect(handleDownload).toHaveBeenCalledWith(expect.objectContaining({ text: 'Windows' }))
     })
+
+    it('should tag the primary Creator Hub download CTA with the creator_hub download target', () => {
+      render(<CreatorsHero />)
+
+      const primaryCta = screen.getByRole('link', { name: 'page.download.download_creator_hub' })
+      expect(primaryCta).toHaveAttribute('data-download-target', 'creator_hub')
+      expect(primaryCta).toHaveAttribute('href', 'https://cdn.example.com/mac.dmg')
+    })
   })
 
   describe('when the download options are not ready yet', () => {
