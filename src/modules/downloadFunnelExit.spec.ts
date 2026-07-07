@@ -186,8 +186,14 @@ describe('downloadFunnelExit', () => {
     }
   })
 
-  it('should not transmit when there is no write key (exempt path)', () => {
+  it('should transmit on an analytics-exempt path (conversion beacons bypass the exempt gate)', () => {
     mockExempt = true
+    sendDownloadFunnelExit(sampleData())
+    expect(mockSendBeacon).toHaveBeenCalledWith(SEGMENT_TRACK_URL, expect.any(Blob))
+  })
+
+  it('should not transmit when no write key is configured', () => {
+    mockWriteKey = ''
     sendDownloadFunnelExit(sampleData())
     expect(mockSendBeacon).not.toHaveBeenCalled()
     expect(mockFetch).not.toHaveBeenCalled()

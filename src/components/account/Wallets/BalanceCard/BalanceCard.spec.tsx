@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import type { WalletTransaction } from '../../../../hooks/useWalletTransactions.types'
 import { BalanceCard } from './BalanceCard'
 
@@ -10,6 +10,7 @@ jest.mock('@mui/icons-material/AttachMoneyRounded', () => ({ __esModule: true, d
 jest.mock('@mui/icons-material/ArrowUpwardRounded', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('@mui/icons-material/ArrowDownwardRounded', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('@mui/icons-material/SwapHorizRounded', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/MoreVert', () => ({ __esModule: true, default: () => <span /> }))
 
 jest.mock('decentraland-ui2', () => ({
   Skeleton: () => <span data-testid="skeleton" />,
@@ -17,7 +18,9 @@ jest.mock('decentraland-ui2', () => ({
     <span data-testid={`mana-${network}`} data-primary={String(Boolean(primary))}>
       {children}
     </span>
-  )
+  ),
+  // Mirrors MUI's Menu: unmounted (no menu items in the DOM) while closed, matching real behavior.
+  Menu: ({ children, open }: ChildrenProps & { open?: boolean }) => (open ? <div data-testid="more-menu">{children}</div> : null)
 }))
 
 jest.mock('@dcl/schemas', () => ({
@@ -49,6 +52,8 @@ jest.mock('../TransactionsSection/TransactionsSection', () => ({
   TransactionsSection: () => <div data-testid="transactions-section" />
 }))
 
+type IconButtonProps = ButtonProps & { 'aria-label'?: string; 'aria-haspopup'?: 'true'; 'aria-expanded'?: boolean }
+
 jest.mock('./BalanceCard.styled', () => ({
   Card: ({ children }: ChildrenProps) => <div>{children}</div>,
   CardTop: ({ children }: ChildrenProps) => <div>{children}</div>,
@@ -58,6 +63,16 @@ jest.mock('./BalanceCard.styled', () => ({
   BalanceRow: ({ children }: ChildrenProps) => <div>{children}</div>,
   Actions: ({ children }: ChildrenProps) => <div>{children}</div>,
   ActionButton: ({ children, onClick, 'data-role': dataRole }: ButtonProps) => (
+    <button type="button" data-role={dataRole} onClick={onClick}>
+      {children}
+    </button>
+  ),
+  MoreActionsButton: ({ children, ...rest }: IconButtonProps) => (
+    <button type="button" {...rest}>
+      {children}
+    </button>
+  ),
+  MoreMenuItem: ({ children, onClick, 'data-role': dataRole }: ButtonProps) => (
     <button type="button" data-role={dataRole} onClick={onClick}>
       {children}
     </button>
@@ -167,5 +182,45 @@ describe('BalanceCard', () => {
     expect(onSwap).toHaveBeenCalledTimes(1)
     expect(openSpy).not.toHaveBeenCalled()
     expect(mockTrack).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'swap', network: 'ethereum' }))
+  })
+
+  // Below the desktop breakpoint, Send/Receive collapse into this kebab menu instead of the
+  // standalone pills (Figma mobile spec, issue #640).
+  it('should keep the more-actions menu closed until the kebab button is clicked, updating aria-expanded', () => {
+    renderCard()
+
+    const kebab = screen.getByRole('button', { name: 'account.wallets.actions.more' })
+    expect(kebab).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByTestId('more-menu')).not.toBeInTheDocument()
+
+    fireEvent.click(kebab)
+
+    expect(kebab).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByTestId('more-menu')).toBeInTheDocument()
+  })
+
+  it('should invoke onSend from the more-actions menu and close it afterwards', () => {
+    const onSend = jest.fn()
+    renderCard({ network: 'polygon', onSend })
+
+    fireEvent.click(screen.getByRole('button', { name: 'account.wallets.actions.more' }))
+    const menu = screen.getByTestId('more-menu')
+    fireEvent.click(within(menu).getByText('account.wallets.actions.send'))
+
+    expect(onSend).toHaveBeenCalledTimes(1)
+    expect(mockTrack).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'send', network: 'polygon' }))
+    expect(screen.queryByTestId('more-menu')).not.toBeInTheDocument()
+  })
+
+  it('should invoke onReceive from the more-actions menu and close it afterwards', () => {
+    const onReceive = jest.fn()
+    renderCard({ onReceive })
+
+    fireEvent.click(screen.getByRole('button', { name: 'account.wallets.actions.more' }))
+    const menu = screen.getByTestId('more-menu')
+    fireEvent.click(within(menu).getByText('account.wallets.actions.receive'))
+
+    expect(onReceive).toHaveBeenCalledTimes(1)
+    expect(screen.queryByTestId('more-menu')).not.toBeInTheDocument()
   })
 })

@@ -8,8 +8,11 @@ describe('collectCampaignParams', () => {
   describe('when the source is a URLSearchParams instance', () => {
     it('should collect every present utm param', () => {
       expect(
-        collectCampaignParams(new URLSearchParams('utm_source=shefi&utm_medium=email&utm_campaign=launch&utm_content=hero&utm_term=web3'))
+        collectCampaignParams(
+          new URLSearchParams('utm_org=dcl&utm_source=shefi&utm_medium=email&utm_campaign=launch&utm_content=hero&utm_term=web3')
+        )
       ).toEqual({
+        utm_org: 'dcl',
         utm_source: 'shefi',
         utm_medium: 'email',
         utm_campaign: 'launch',
@@ -28,6 +31,23 @@ describe('collectCampaignParams', () => {
 
     it('should omit params that are present but empty', () => {
       expect(collectCampaignParams(new URLSearchParams('utm_source=&utm_campaign=launch'))).toEqual({ utm_campaign: 'launch' })
+    })
+
+    it('should normalize values according to the UTM builder rules', () => {
+      expect(
+        collectCampaignParams(
+          new URLSearchParams(
+            'utm_org=DCL&utm_source=IG Stories&utm_medium=PaidSocial&utm_campaign=Brand.Launch&utm_content=15 secs&utm_term=selfdiscovery%26growth'
+          )
+        )
+      ).toEqual({
+        utm_org: 'dcl',
+        utm_source: 'ig_stories',
+        utm_medium: 'paidsocial',
+        utm_campaign: 'brandlaunch',
+        utm_content: '15_secs',
+        utm_term: 'selfdiscoverygrowth'
+      })
     })
 
     it('should cap each value at MAX_CAMPAIGN_VALUE_LENGTH so a hostile link cannot flood the warehouse', () => {
@@ -61,15 +81,15 @@ describe('withCampaignParams', () => {
 
   describe('when the current URL carries campaign params', () => {
     beforeEach(() => {
-      window.history.pushState({}, '', '/?utm_source=shefi&utm_campaign=partner-launch')
+      window.history.pushState({}, '', '/?utm_org=dcl&utm_source=shefi&utm_campaign=partner-launch')
     })
 
     it('should append them to a plain path', () => {
-      expect(withCampaignParams('/download')).toBe('/download?utm_source=shefi&utm_campaign=partner-launch')
+      expect(withCampaignParams('/download')).toBe('/download?utm_org=dcl&utm_source=shefi&utm_campaign=partner-launch')
     })
 
     it('should append with & when the path already has a query string', () => {
-      expect(withCampaignParams('/download?foo=bar')).toBe('/download?foo=bar&utm_source=shefi&utm_campaign=partner-launch')
+      expect(withCampaignParams('/download?foo=bar')).toBe('/download?foo=bar&utm_org=dcl&utm_source=shefi&utm_campaign=partner-launch')
     })
 
     it('should ignore non-campaign params on the current URL', () => {

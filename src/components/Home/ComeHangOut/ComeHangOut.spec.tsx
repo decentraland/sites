@@ -148,7 +148,7 @@ describe('ComeHangOut', () => {
       }
     })
 
-    it('should tag the main CTA, Epic button, and platform-switch icon as desktop_installer', () => {
+    it('should tag the main CTA and platform-switch icon as desktop_installer and Epic as epic', () => {
       render(<ComeHangOut />)
 
       const downloadButton = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
@@ -156,7 +156,9 @@ describe('ComeHangOut', () => {
       const macIcon = screen.getByAltText('macOS').closest('a') as HTMLAnchorElement
 
       expect(downloadButton).toHaveAttribute('data-download-target', 'desktop_installer')
-      expect(epicButton).toHaveAttribute('data-download-target', 'desktop_installer')
+      // Epic redirects to the Epic Games Store, never reaching download_started —
+      // its own target keeps it out of the desktop activation funnel.
+      expect(epicButton).toHaveAttribute('data-download-target', 'epic')
       expect(macIcon).toHaveAttribute('data-download-target', 'desktop_installer')
     })
 

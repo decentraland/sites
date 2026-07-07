@@ -192,7 +192,7 @@ describe('buildDownloadSuccessHref', () => {
     beforeEach(() => {
       const result = buildDownloadSuccessHref('Windows', 'download-page', {
         arch: 'x64',
-        campaignParams: { utm_source: 'shefi', utm_campaign: 'partner-launch' }
+        campaignParams: { utm_org: 'dcl', utm_source: 'shefi', utm_campaign: 'partner-launch' }
       })
       url = new URL(result, 'https://decentraland.org')
     })
@@ -201,6 +201,7 @@ describe('buildDownloadSuccessHref', () => {
       expect(url.searchParams.get('os')).toBe('Windows')
       expect(url.searchParams.get('place')).toBe('download-page')
       expect(url.searchParams.get('arch')).toBe('x64')
+      expect(url.searchParams.get('utm_org')).toBe('dcl')
       expect(url.searchParams.get('utm_source')).toBe('shefi')
       expect(url.searchParams.get('utm_campaign')).toBe('partner-launch')
     })

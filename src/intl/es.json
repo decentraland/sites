@@ -1248,7 +1248,8 @@
         "buy": "Comprar",
         "swap": "Intercambiar",
         "send": "Enviar",
-        "receive": "Recibir"
+        "receive": "Recibir",
+        "more": "Más acciones"
       },
       "receive": {
         "title": "Recibir MANA",
