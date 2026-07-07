@@ -110,7 +110,8 @@ enum DownloadTarget {
   DESKTOP_INSTALLER = 'desktop_installer',
   APP_STORE = 'app_store',
   GOOGLE_PLAY = 'google_play',
-  EPIC = 'epic'
+  EPIC = 'epic',
+  CREATOR_HUB = 'creator_hub'
 }
 
 enum SectionViewedTrack {

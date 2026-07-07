@@ -24,10 +24,16 @@ function useTrackClick() {
   const deferredTrack = useDeferredTrack()
   return useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
-      const payload: Record<string, unknown> = readDataAttributes(event.currentTarget)
+      const { downloadTarget, ...payload }: Record<string, unknown> = readDataAttributes(event.currentTarget)
 
       if (payload.event === SegmentEvent.CLICK) {
         delete payload.event
+      }
+
+      // `readDataAttributes` camelCasea `data-download-target`; el warehouse
+      // dimensiona por snake_case. Mismo rename que hace useDownloadClick.
+      if (downloadTarget) {
+        payload.download_target = downloadTarget
       }
 
       deferredTrack(SegmentEvent.CLICK, payload)

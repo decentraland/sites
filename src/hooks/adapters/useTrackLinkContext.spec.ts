@@ -142,4 +142,18 @@ describe('useTrackClick', () => {
       expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.CLICK, expect.objectContaining({ place: 'Landing Hero' }))
     })
   })
+
+  describe('when the element declares a download target', () => {
+    it('should rename the camelCased downloadTarget data attribute to snake_case download_target', () => {
+      const { result } = renderHook(() => useTrackClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD, 'data-download-target': 'creator_hub' }))
+      })
+
+      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.CLICK, expect.objectContaining({ download_target: 'creator_hub' }))
+      const payload = mockTrack.mock.calls[0][1] as Record<string, unknown>
+      expect(payload.downloadTarget).toBeUndefined()
+    })
+  })
 })
