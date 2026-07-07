@@ -20,7 +20,11 @@ jest.mock('decentraland-ui2', () => ({
 }))
 
 jest.mock('./AccountLayout.styled', () => ({
-  AccountLayoutRoot: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  AccountLayoutRoot: ({ children, $dashboard }: { children: ReactNode; $dashboard?: boolean }) => (
+    <div data-testid="account-layout-root" data-dashboard={$dashboard ? 'true' : undefined}>
+      {children}
+    </div>
+  ),
   AccountContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   AccountPageContainer: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   MobileSection: ({ children }: { children: ReactNode }) => <div>{children}</div>,
@@ -118,12 +122,24 @@ describe('AccountLayout', () => {
       expect(screen.queryByText('wallets-section')).not.toBeInTheDocument()
     })
 
+    it('should render the index dashboard with the full-height variant so the panel fills the viewport', () => {
+      renderLayoutAt('/account')
+
+      expect(screen.getByTestId('account-layout-root')).toHaveAttribute('data-dashboard', 'true')
+    })
+
     it('should show the section behind a back/close header without the sidebar', () => {
       renderLayoutAt('/account/notifications')
 
       expect(screen.queryByTestId('account-sidebar')).not.toBeInTheDocument()
       expect(screen.getByText('notifications-section')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'account.nav.close' })).toBeInTheDocument()
+    })
+
+    it('should not use the full-height dashboard variant on a section detail screen', () => {
+      renderLayoutAt('/account/notifications')
+
+      expect(screen.getByTestId('account-layout-root')).not.toHaveAttribute('data-dashboard')
     })
   })
 })
