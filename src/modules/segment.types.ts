@@ -24,6 +24,7 @@ enum SegmentEvent {
   DOWNLOAD_SUCCESS = 'download_success',
   DOWNLOAD_FAILED = 'download_failed',
   DOWNLOAD_FUNNEL_EXIT = 'download_funnel_exit',
+  DOWNLOAD_SUCCESS_ARRIVED = 'download_success_arrived',
   LEGACY_EVENTS_REDIRECTED = 'Legacy Events Redirected',
   LEGACY_PLACES_REDIRECTED = 'Legacy Places Redirected',
   REELS_SHARE = 'Reels Share',

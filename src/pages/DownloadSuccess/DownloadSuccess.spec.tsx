@@ -916,3 +916,41 @@ describe('when collectClientFingerprint throws', () => {
     expect(payload).not.toHaveProperty('fp_screen_width')
   })
 })
+
+describe('when DownloadSuccess mounts', () => {
+  beforeEach(() => {
+    sessionStorage.clear()
+    searchParamsInstance = new URLSearchParams('os=windows&place=landing-hero')
+    mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://gw/dl.exe', filename: 'dl.exe' })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1 })
+  })
+
+  afterEach(() => {
+    sessionStorage.clear()
+    jest.resetAllMocks()
+  })
+
+  it('should fire download_success_arrived immediately, before the download starts', () => {
+    mockUseAnonUserId.mockReturnValue(undefined) // gate de 800ms sin resolver
+    render(<DownloadSuccess />)
+    const arrived = findEventCall('download_success_arrived')
+    expect(arrived).toBeDefined()
+    expect(arrived![1]).toEqual(
+      expect.objectContaining({ os: 'Windows', arch: 'amd64', place: 'landing-hero', revisit: 0, auth_state: 'anonymous' })
+    )
+    expect(findEventCall('download_started')).toBeUndefined()
+  })
+
+  it('should keep place=unknown in the payload so direct landings are measurable', () => {
+    searchParamsInstance = new URLSearchParams('os=windows')
+    render(<DownloadSuccess />)
+    expect(findEventCall('download_success_arrived')![1]).toEqual(expect.objectContaining({ place: 'unknown' }))
+  })
+
+  it('should fire arrived exactly once per mount', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
+    const arrivedCalls = mockPostSegmentEvent.mock.calls.filter(([event]) => event === 'download_success_arrived')
+    expect(arrivedCalls).toHaveLength(1)
+  })
+})

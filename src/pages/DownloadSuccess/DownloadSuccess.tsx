@@ -23,6 +23,8 @@ import type { DownloadTracker } from '../../modules/downloadTracking.types'
 import { calculateDownloadUrl } from '../../modules/downloadWithIdentity'
 import { collectClientFingerprint } from '../../modules/fingerprint'
 import { DownloadPlace, DownloadTarget, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
+import { ensureSegmentAnonymousId } from '../../modules/segmentAnonymousId'
+import { postSegmentEvent } from '../../modules/segmentBeacon'
 import { streamOrFallback } from '../../modules/streamOrFallback'
 import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
@@ -214,6 +216,39 @@ const DownloadSuccess = memo(() => {
   }, [l])
 
   const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
+
+  // Marca de llegada a la página: parte el drop click→started en "nunca llegó"
+  // (Click sin arrived) vs "llegó pero no disparó started" (arrived sin started).
+  // Dispara antes del gate de anon_user_id a propósito — mide la llegada del
+  // documento, no la disponibilidad de Segment. `place` se incluye SIEMPRE
+  // (también 'unknown') para poder medir aterrizajes directos, a diferencia del
+  // tracker que lo omite.
+  const arrivedFiredRef = useRef(false)
+  useEffect(() => {
+    if (arrivedFiredRef.current) return
+    arrivedFiredRef.current = true
+    const correlation = readDownloadClickCorrelation()
+    const now = Date.now()
+    /* eslint-disable @typescript-eslint/naming-convention */
+    postSegmentEvent(
+      SegmentEvent.DOWNLOAD_SUCCESS_ARRIVED,
+      {
+        os: clientOS,
+        arch: clientArch,
+        place,
+        revisit: revisitNumber,
+        auth_state: authStateRef.current,
+        ...campaignParamsRef.current,
+        ...(correlation ? { click_id: correlation.click_id, ms_since_click: now - correlation.clicked_at } : {}),
+        download_target: DownloadTarget.DESKTOP_INSTALLER,
+        track_called_at: now,
+        track_delivered_at: now,
+        track_deferred: true
+      },
+      ensureSegmentAnonymousId()
+    )
+    /* eslint-enable @typescript-eslint/naming-convention */
+  }, [clientOS, clientArch, place, revisitNumber])
 
   // Gate the auto-download on the anon_user_id resolution. `useAnonUserId` is
   // reactive to `isInitialized` (see hook docstring), so a cold load that
