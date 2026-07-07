@@ -1,9 +1,10 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
 import { getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
+import { postSegmentEvent } from '../../modules/segmentBeacon'
 import { GOOGLE_PLAY_DESKTOP_URL } from '../Home/shared/googlePlay'
 import { DownloadOptions } from './DownloadOptions'
 
@@ -43,6 +44,10 @@ jest.mock('../../hooks/useAnonUserId', () => ({ ANON_USER_ID_PARAM: 'anon_user_i
 jest.mock('../../hooks/useGetIdentityId', () => ({ useGetIdentityId: () => () => Promise.resolve(undefined) }))
 
 jest.mock('../../modules/downloadWithIdentity', () => ({ getDownloadLinkWithIdentity: jest.fn() }))
+
+jest.mock('../../modules/segmentBeacon', () => ({ postSegmentEvent: jest.fn() }))
+
+jest.mock('../../modules/segmentAnonymousId', () => ({ ensureSegmentAnonymousId: jest.fn(() => 'anon-id') }))
 
 jest.mock('../../modules/explorerDownloads', () => ({
   ExplorerDownloads: { get: () => ({ getTotalDownloads: () => Promise.resolve(0) }) }
@@ -326,6 +331,45 @@ describe('DownloadOptions', () => {
       } finally {
         restore()
       }
+    })
+
+    describe('and the in-page download dispatch rejects', () => {
+      beforeEach(() => {
+        mockGetDownloadLinkWithIdentity.mockRejectedValue(new Error('gateway 500'))
+      })
+
+      it('should fire download_redirect_failed on dispatch failure', async () => {
+        const { restore } = installLocation('')
+        try {
+          render(<DownloadOptions downloadOnClick />)
+          fireEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
+          await waitFor(() =>
+            expect(postSegmentEvent).toHaveBeenCalledWith(
+              'download_redirect_failed',
+              expect.objectContaining({ reason: 'gateway 500', place: 'download-page', download_target: 'desktop_installer' }),
+              expect.any(String)
+            )
+          )
+        } finally {
+          restore()
+        }
+      })
+
+      it('should NOT change navigation behavior on failure (tracking-only: flow preserved)', async () => {
+        // Preserves current behavior: a dispatch failure does NOT navigate.
+        // Locks the tracking-only contract — the event is added, the flow is unchanged.
+        const { hrefSpy, restore } = installLocation('')
+        try {
+          const hrefBefore = window.location.href
+          render(<DownloadOptions downloadOnClick />)
+          fireEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
+          await waitFor(() => expect(postSegmentEvent).toHaveBeenCalled())
+          expect(hrefSpy).not.toHaveBeenCalled()
+          expect(window.location.href).toBe(hrefBefore)
+        } finally {
+          restore()
+        }
+      })
     })
   })
 

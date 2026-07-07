@@ -13,6 +13,8 @@ import { getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
 import { ExplorerDownloads } from '../../modules/explorerDownloads'
 import { formatToShorthand } from '../../modules/number'
 import { DownloadPlace, DownloadTarget, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
+import { ensureSegmentAnonymousId } from '../../modules/segmentAnonymousId'
+import { postSegmentEvent } from '../../modules/segmentBeacon'
 import { buildDownloadSuccessHref, sanitizeCDNReleaseLinks } from '../../modules/url'
 import { Architecture, DownloadOptionProps, OperativeSystem } from '../../types/download.types'
 import { assetUrl } from '../../utils/assetUrl'
@@ -134,14 +136,35 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
   const onClickDownloadHandler = useCallback(
     async (option: DownloadOptionProps) => {
       if (downloadOnClick) {
-        await getDownloadLinkWithIdentity({
-          os: option.text,
-          arch: option.arch,
-          fallbackLinks: links,
-          queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
-          getIdentityId,
-          anonUserId
-        })
+        try {
+          await getDownloadLinkWithIdentity({
+            os: option.text,
+            arch: option.arch,
+            fallbackLinks: links,
+            queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
+            getIdentityId,
+            anonUserId
+          })
+        } catch (error) {
+          // SOLO-TRACKING: register the failure as a drop cause without altering
+          // the flow. Re-thrown to preserve current behavior (a rejection here
+          // aborts execution and does not navigate — that stays identical).
+          /* eslint-disable @typescript-eslint/naming-convention */
+          postSegmentEvent(
+            SegmentEvent.DOWNLOAD_REDIRECT_FAILED,
+            {
+              os: option.text,
+              arch: option.arch,
+              place: DownloadPlace.DOWNLOAD_PAGE,
+              reason: error instanceof Error ? error.message : 'Download dispatch failed',
+              download_target: DownloadTarget.DESKTOP_INSTALLER,
+              ...collectCampaignParams()
+            },
+            ensureSegmentAnonymousId()
+          )
+          /* eslint-enable @typescript-eslint/naming-convention */
+          throw error
+        }
       }
 
       // Forward the partner campaign params into /download_success (through
@@ -183,7 +206,12 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                   onClick={event => {
                     event.preventDefault()
                     trackDownloadClick(event)
-                    onClickDownloadHandler(option)
+                    // NOTE: onClickDownloadHandler is intentionally not awaited here (unchanged
+                    // fire-and-forget dispatch). The no-op catch only prevents the JS engine from
+                    // flagging its rejection as unhandled — the failure itself is already reported
+                    // via the download_redirect_failed event inside the handler's own catch, and
+                    // the re-throw there still aborts navigation exactly as before.
+                    onClickDownloadHandler(option).catch(() => {})
                   }}
                 >
                   {l('page.download.download_for_short')}
@@ -226,7 +254,10 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                   onClick={event => {
                     event.preventDefault()
                     trackDownloadClick(event)
-                    onClickDownloadHandler(option)
+                    // NOTE: see the primary button's onClick above — same fire-and-forget dispatch,
+                    // same reason for the no-op catch (avoid an unhandled-rejection artifact; the
+                    // failure is already reported via download_redirect_failed).
+                    onClickDownloadHandler(option).catch(() => {})
                   }}
                   href={option.link}
                   key={index}
