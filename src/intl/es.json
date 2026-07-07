@@ -1475,7 +1475,7 @@
       }
     },
     "delete": {
-      "danger_zone": "Zona de Peligro",
+      "title": "Eliminar Cuenta",
       "danger_description": "Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate.",
       "warning": "Lo siguiente se perderá para siempre:",
       "consequences": {

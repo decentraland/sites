@@ -1470,7 +1470,7 @@
       }
     },
     "delete": {
-      "danger_zone": "Zone de danger",
+      "title": "Supprimer le compte",
       "danger_description": "Une fois votre compte supprimé, il n’y a pas de retour en arrière. Veuillez en être certain.",
       "warning": "Les éléments suivants seront perdus à jamais :",
       "consequences": {

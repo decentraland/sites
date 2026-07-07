@@ -1475,7 +1475,7 @@
       }
     },
     "delete": {
-      "danger_zone": "危険ゾーン",
+      "title": "アカウントを削除",
       "danger_description": "アカウントを削除すると、元に戻すことはできません。よくご確認ください。",
       "warning": "以下の情報は永久に失われます：",
       "consequences": {
