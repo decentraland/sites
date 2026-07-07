@@ -16,6 +16,7 @@ import windowsLaunchingDecentraland from '../../images/download/windows_launchin
 import windowsSetup from '../../images/download/windows_setup.webp'
 import microsoftLogo from '../../images/microsoft-logo.svg'
 import { collectCampaignParams } from '../../modules/campaignParams'
+import { readDownloadClickCorrelation } from '../../modules/downloadClickCorrelation'
 import type { DownloadFunnelExitData } from '../../modules/downloadFunnelExit.types'
 import { createDownloadTracker, toAuthState } from '../../modules/downloadTracking'
 import type { DownloadTracker } from '../../modules/downloadTracking.types'
@@ -114,28 +115,40 @@ const DownloadSuccess = memo(() => {
   campaignParamsRef.current = campaignParams
 
   // Shared `extra` for every tracker built on this page: the client
-  // fingerprint, the campaign params, and `download_target: desktop_installer`.
-  // Every landing on /download_success is a desktop installer attempt — the
-  // mobile App Store / Google Play CTAs exit to their stores and never reach
-  // this page — so tagging it lets analytics exclude mobile store exits from
-  // the desktop activation metric.
+  // fingerprint, the campaign params, the click→download correlation, and
+  // `download_target: desktop_installer`. Every landing on /download_success
+  // is a desktop installer attempt — the mobile App Store / Google Play CTAs
+  // exit to their stores and never reach this page — so tagging it lets
+  // analytics exclude mobile store exits from the desktop activation metric.
   // Non-throwing by contract: this runs in the footer click handler BEFORE its
   // try/finally arms (a throw there would latch `downloadingRef` and brick the
   // button) and again INSIDE the mount effect's catch when building the
   // download_failed fallback (a throw there would kill the fallback emission).
   // Attribution extras are best-effort — they must never break the download.
+  // Only `collectClientFingerprint()` can realistically throw, so the try/catch
+  // is scoped to just that call (ex P2-4: a wider try/catch here used to let a
+  // fingerprint failure also drop the utm_* campaign params).
   const buildTrackerExtra = useCallback((): Record<string, unknown> => {
+    let fingerprint: Record<string, unknown> = {}
     try {
-      return {
-        ...(collectClientFingerprint() ?? {}),
-        ...campaignParamsRef.current,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        download_target: DownloadTarget.DESKTOP_INSTALLER
-      }
+      fingerprint = collectClientFingerprint() ?? {}
     } catch (error) {
-      console.error('buildTrackerExtra failed:', error)
+      console.error('collectClientFingerprint failed:', error)
+    }
+    const correlation = readDownloadClickCorrelation()
+    return {
+      ...fingerprint,
+      ...campaignParamsRef.current,
+      ...(correlation
+        ? {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            click_id: correlation.click_id,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            ms_since_click: Date.now() - correlation.clicked_at
+          }
+        : {}),
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      return { download_target: DownloadTarget.DESKTOP_INSTALLER }
+      download_target: DownloadTarget.DESKTOP_INSTALLER
     }
   }, [])
 
@@ -449,6 +462,7 @@ const DownloadSuccess = memo(() => {
       arch: clientArch,
       place,
       anonUserId: anonUserIdRef.current ?? undefined,
+      clickId: readDownloadClickCorrelation()?.click_id,
       startedFired: startedFiredRef.current,
       successFired: successFiredRef.current,
       failedFired: failedFiredRef.current,

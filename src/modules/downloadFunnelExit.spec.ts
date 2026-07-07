@@ -198,4 +198,20 @@ describe('downloadFunnelExit', () => {
     expect(mockSendBeacon).not.toHaveBeenCalled()
     expect(mockFetch).not.toHaveBeenCalled()
   })
+
+  it('should include click_id when the exit data carries one', () => {
+    mockSendBeacon.mockReturnValue(false)
+    sendDownloadFunnelExit(sampleData({ clickId: 'click-abc' }))
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body)
+    expect(body.properties).toEqual(expect.objectContaining({ click_id: 'click-abc' }))
+  })
+
+  it('should omit click_id when the exit data does not carry one', () => {
+    mockSendBeacon.mockReturnValue(false)
+    sendDownloadFunnelExit(sampleData())
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body)
+    expect(body.properties).not.toHaveProperty('click_id')
+  })
 })

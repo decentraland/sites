@@ -22,6 +22,23 @@ jest.mock('../../modules/segmentAnonymousId', () => ({
 
 const findEventCall = (event: string) => mockPostSegmentEvent.mock.calls.find(([callEvent]) => callEvent === event)
 
+// Real fingerprint values by default so the existing `fp_*` assertions below
+// keep working; individual tests can swap the implementation to throw to
+// cover the P2-4 regression (a fingerprint failure must not drop campaign
+// params or click correlation from buildTrackerExtra).
+const mockCollectClientFingerprint = jest.fn(() => ({
+  fp_screen_width: 1024,
+  fp_screen_height: 768,
+  fp_device_pixel_ratio: 1,
+  fp_hardware_concurrency: 8,
+  fp_timezone: 'UTC',
+  fp_language: 'en-US',
+  fp_platform: 'MacIntel'
+}))
+jest.mock('../../modules/fingerprint', () => ({
+  collectClientFingerprint: () => mockCollectClientFingerprint()
+}))
+
 jest.mock('decentraland-ui2', () => ({
   Logo: () => null,
   Typography: ({ children }: { children: React.ReactNode }) => <span>{children}</span>
@@ -129,6 +146,15 @@ beforeEach(() => {
   // jest.resetAllMocks() in each suite's afterEach wipes implementations, so
   // re-establish the default anon id (resolved immediately) before every test.
   mockUseAnonUserId.mockReturnValue('anon-123')
+  mockCollectClientFingerprint.mockReturnValue({
+    fp_screen_width: 1024,
+    fp_screen_height: 768,
+    fp_device_pixel_ratio: 1,
+    fp_hardware_concurrency: 8,
+    fp_timezone: 'UTC',
+    fp_language: 'en-US',
+    fp_platform: 'MacIntel'
+  })
 })
 
 describe('when DownloadSuccess mounts with os, place, and a successful url resolution', () => {
@@ -813,5 +839,80 @@ describe('when the user leaves the page (download_funnel_exit)', () => {
     })
 
     expect(mockSendDownloadFunnelExit).not.toHaveBeenCalled()
+  })
+})
+
+describe('when a download click correlation exists in sessionStorage', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=windows&place=landing-hero')
+    sessionStorage.setItem('downloadFunnel:lastClick', JSON.stringify({ click_id: 'click-abc', clicked_at: Date.now() - 500 }))
+    mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://gw/dl.exe', filename: 'dl.exe' })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1 })
+  })
+
+  afterEach(() => {
+    sessionStorage.removeItem('downloadFunnel:lastClick')
+    jest.resetAllMocks()
+  })
+
+  it('should attach click_id and ms_since_click to download_started', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
+    const [, payload] = findEventCall('download_started')!
+    expect(payload).toEqual(expect.objectContaining({ click_id: 'click-abc', ms_since_click: expect.any(Number) }))
+  })
+
+  it('should attach click_id to the download_funnel_exit snapshot', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
+    setVisibility(true)
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(expect.objectContaining({ clickId: 'click-abc' }))
+  })
+})
+
+describe('when collectClientFingerprint throws', () => {
+  // Regression guard for P2-4: a fingerprint failure used to be caught by a
+  // try/catch that wrapped the ENTIRE buildTrackerExtra body, so it also
+  // discarded the campaign params and (now) the click correlation. The fix
+  // isolates the try/catch to only the collectClientFingerprint() call.
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero&utm_source=shefi&utm_campaign=partner-q3')
+    sessionStorage.clear()
+    sessionStorage.setItem('downloadFunnel:lastClick', JSON.stringify({ click_id: 'click-abc', clicked_at: Date.now() - 500 }))
+    window.history.replaceState(
+      {},
+      '',
+      '/download_success?os=Windows&arch=amd64&place=landing-hero&utm_source=shefi&utm_campaign=partner-q3'
+    )
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+    mockCollectClientFingerprint.mockImplementation(() => {
+      throw new Error('fingerprint blew up')
+    })
+    jest.spyOn(console, 'error').mockImplementation(() => undefined)
+  })
+
+  afterEach(() => {
+    sessionStorage.removeItem('downloadFunnel:lastClick')
+    jest.resetAllMocks()
+  })
+
+  it('should still carry the utm_* params and click_id on download_started', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
+    const [, payload] = findEventCall('download_started')!
+    expect(payload).toEqual(
+      expect.objectContaining({
+        utm_source: 'shefi',
+        utm_campaign: 'partner-q3',
+        click_id: 'click-abc',
+        download_target: 'desktop_installer'
+      })
+    )
+    expect(payload).not.toHaveProperty('fp_screen_width')
   })
 })
