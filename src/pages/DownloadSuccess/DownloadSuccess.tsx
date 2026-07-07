@@ -133,7 +133,9 @@ const DownloadSuccess = memo(() => {
   const buildTrackerExtra = useCallback((): Record<string, unknown> => {
     let fingerprint: Record<string, unknown> = {}
     try {
-      fingerprint = collectClientFingerprint() ?? {}
+      // Spread into a fresh literal: ClientFingerprint has no index signature,
+      // so it isn't directly assignable to Record<string, unknown>.
+      fingerprint = { ...(collectClientFingerprint() ?? {}) }
     } catch (error) {
       console.error('collectClientFingerprint failed:', error)
     }
