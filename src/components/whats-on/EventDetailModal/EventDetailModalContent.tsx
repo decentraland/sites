@@ -8,10 +8,11 @@ import { linkifyText } from '../../../utils/linkifyText'
 import { localizedWeekdayShort, normalizeDayIndices } from '../../../utils/recurrence'
 import { formatLocalDate, formatLocalTime } from '../../../utils/whatsOnTime'
 import { buildCalendarUrl, normalizeRecurrence } from '../../../utils/whatsOnUrl'
+import { JumpInButton } from '../../jump/JumpInButton'
 import { LocalDateTimeTooltip } from '../common/LocalDateTimeTooltip'
 import { ContentDivider, ContentSection, DescriptionText, SectionLabel } from '../DetailModal/DetailModal.styled'
 import type { AdminActions, ModalEventData } from './EventDetailModal.types'
-import { AdminActionsRow, RecurrenceText, ScheduleIconButton, ScheduleRow, ScheduleText } from './EventDetailModal.styled'
+import { AdminActionsRow, BottomJumpInRow, RecurrenceText, ScheduleIconButton, ScheduleRow, ScheduleText } from './EventDetailModal.styled'
 
 function formatRecurrentDays(days: number[], locale: string): string {
   return normalizeDayIndices(days)
@@ -57,13 +58,16 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
 
   const hasDescription = Boolean(data.description)
   const hasSchedule = Boolean(data.startAt)
+  // Bottom Jump In mirrors the in-world panel for real event/place details. Hidden in the
+  // pending-admin review flow and in the unsaved-event preview.
+  const showBottomJumpIn = !adminActions && data.id !== 'preview'
 
   const handleAddToCalendar = useCallback(() => {
     const url = buildCalendarUrl(data)
     if (url) window.open(url, '_blank', 'noopener,noreferrer')
   }, [data])
 
-  if (!hasDescription && !hasSchedule && !adminActions) {
+  if (!hasDescription && !hasSchedule && !adminActions && !showBottomJumpIn) {
     return null
   }
 
@@ -110,6 +114,13 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
             {t('whats_on_admin.pending_events.reject')}
           </Button>
         </AdminActionsRow>
+      )}
+      {showBottomJumpIn && (
+        <BottomJumpInRow>
+          <JumpInButton position={`${data.x},${data.y}`} realm={data.realm} fullWidth size="large">
+            {t('event_detail.jump_in')}
+          </JumpInButton>
+        </BottomJumpInRow>
       )}
     </ContentSection>
   )
