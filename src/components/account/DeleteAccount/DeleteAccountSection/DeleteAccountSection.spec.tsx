@@ -1,9 +1,11 @@
-import type { ReactNode } from 'react'
+import type { ChangeEventHandler, ReactNode } from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { DeleteAccountSection } from './DeleteAccountSection'
 
 type ChildrenProps = { children?: ReactNode; 'data-role'?: string }
 type ButtonProps = ChildrenProps & { onClick?: () => void; disabled?: boolean }
+type ControlProps = { control?: ReactNode; label?: ReactNode }
+type CheckboxProps = { checked?: boolean; onChange?: ChangeEventHandler<HTMLInputElement>; 'data-role'?: string }
 
 jest.mock('@mui/icons-material/AccountCircleRounded', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('@mui/icons-material/CardGiftcardRounded', () => ({ __esModule: true, default: () => <span /> }))
@@ -37,6 +39,16 @@ jest.mock('./DeleteAccountSection.styled', () => ({
       {children}
     </button>
   ),
+  AcknowledgeControl: ({ control, label }: ControlProps) => (
+    <label>
+      {control}
+      {label}
+    </label>
+  ),
+  AcknowledgeCheckbox: ({ checked, onChange, 'data-role': dataRole }: CheckboxProps) => (
+    <input type="checkbox" checked={checked} onChange={onChange} data-role={dataRole} />
+  ),
+  AcknowledgeLabel: ({ children }: ChildrenProps) => <span>{children}</span>,
   DeleteButton: ({ children, onClick, disabled, 'data-role': dataRole }: ButtonProps) => (
     <button type="button" data-role={dataRole} onClick={onClick} disabled={disabled}>
       {children}
@@ -89,12 +101,37 @@ describe('DeleteAccountSection', () => {
     expect(screen.getByText('account.delete.asset_warning_title')).toBeInTheDocument()
   })
 
-  it('should open the confirm modal when the delete button is clicked', () => {
+  it('should render the acknowledgement checkbox above the delete button', () => {
     renderSection(ADDRESS)
 
-    fireEvent.click(screen.getByRole('button', { name: 'account.delete.delete_button' }))
+    expect(screen.getByRole('checkbox', { name: 'account.delete.acknowledge' })).toBeInTheDocument()
+  })
 
-    expect(onOpenConfirmModal).toHaveBeenCalledTimes(1)
+  describe('when the acknowledgement checkbox is unchecked', () => {
+    it('should keep the delete button disabled', () => {
+      renderSection(ADDRESS)
+
+      expect(screen.getByRole('button', { name: 'account.delete.delete_button' })).toBeDisabled()
+    })
+  })
+
+  describe('when the acknowledgement checkbox is checked', () => {
+    it('should enable the delete button', () => {
+      renderSection(ADDRESS)
+
+      fireEvent.click(screen.getByRole('checkbox', { name: 'account.delete.acknowledge' }))
+
+      expect(screen.getByRole('button', { name: 'account.delete.delete_button' })).toBeEnabled()
+    })
+
+    it('should open the confirm modal when the delete button is clicked', () => {
+      renderSection(ADDRESS)
+
+      fireEvent.click(screen.getByRole('checkbox', { name: 'account.delete.acknowledge' }))
+      fireEvent.click(screen.getByRole('button', { name: 'account.delete.delete_button' }))
+
+      expect(onOpenConfirmModal).toHaveBeenCalledTimes(1)
+    })
   })
 
   it('should navigate to wallets when a non-Magic account clicks the export key link', () => {

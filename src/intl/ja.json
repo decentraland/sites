@@ -1476,7 +1476,7 @@
     },
     "delete": {
       "title": "アカウントを削除",
-      "danger_description": "アカウントを削除すると、元に戻すことはできません。よくご確認ください。",
+      "danger_description": "この操作は取り消せません。すべてのデータが永久に削除されます。",
       "warning": "以下の情報は永久に失われます：",
       "consequences": {
         "profile": {
@@ -1510,6 +1510,7 @@
       "export_key_link": "Walletsへ移動",
       "export_key_description_magic": "アカウントを削除する前に、セキュリティタブに移動して秘密鍵を確認・バックアップしてください。",
       "export_key_link_magic": "セキュリティへ移動",
+      "acknowledge": "秘密鍵をバックアップし、アカウントの削除は取り消せないことを理解しました。",
       "delete_button": "アカウントを削除",
       "modal": {
         "title": "本当にアカウントを削除しますか？",

@@ -1,16 +1,24 @@
-import { Box, Button, Typography, styled } from 'decentraland-ui2'
+import { Box, Button, Checkbox, FormControlLabel, Typography, styled } from 'decentraland-ui2'
 
 // Figma 797:78245 — Delete Account section. Colours mirror the DCL design
-// tokens used across the Account area: destructive DCL Red (#FF2D55), warning amber (#FFA500),
-// text #FCFCFC, muted #A09BA8. The warning card sits on the translucent panel (rgba(0,0,0,0.2)).
-// Hardcoded hexes follow the sibling Account styled files.
+// tokens used across the Account area: destructive DCL Red (#FF2D55) and warning amber (#FFA500) stay
+// as semantic accents; all body copy is white (#FCFCFC), never muted. Hardcoded hexes follow the
+// sibling Account styled files.
 
-const Container = styled(Box)({
+// The section is wrapped in the same translucent rounded panel that surrounds the Security section
+// (mirrors SecuritySection's Container), and stretches the full width of the account content column
+// (no maxWidth) so it matches the other account sections.
+const Container = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  gap: 16,
-  maxWidth: 660
-})
+  gap: theme.spacing(2),
+  padding: theme.spacing(2),
+  borderRadius: theme.spacing(2),
+  background: 'rgba(0, 0, 0, 0.2)',
+  [theme.breakpoints.up('md')]: {
+    padding: theme.spacing(3)
+  }
+}))
 
 const DangerBanner = styled(Box)({
   display: 'flex',
@@ -36,16 +44,14 @@ const DangerBannerTitle = styled(Typography)({
 })
 
 const DangerBannerDescription = styled(Typography)({
-  color: '#A09BA8',
+  color: '#FCFCFC',
   fontSize: 13,
   lineHeight: '20px'
 })
 
-const WarningCard = styled(Box)({
-  padding: 24,
-  borderRadius: 8,
-  backgroundColor: 'rgba(0, 0, 0, 0.2)'
-})
+// The section's outer Container is now the single translucent panel (matching the Security section),
+// so this no longer draws its own background — it only groups the "lost forever" copy + list.
+const WarningCard = styled(Box)({})
 
 const WarningDescription = styled(Typography)({
   color: '#FCFCFC',
@@ -65,7 +71,7 @@ const ConsequenceItem = styled('li')({
   display: 'flex',
   gap: 10,
   marginBottom: 12,
-  color: '#CFCDD4',
+  color: '#FCFCFC',
   fontSize: 14,
   lineHeight: '22px',
   alignItems: 'flex-start',
@@ -87,7 +93,7 @@ const ConsequenceIcon = styled('span')({
 })
 
 const ConsequenceText = styled('span')({
-  color: '#CFCDD4'
+  color: '#FCFCFC'
 })
 
 const ConsequenceTitle = styled('span')({
@@ -119,39 +125,63 @@ const AssetWarningTitle = styled(Typography)({
 })
 
 const AssetWarningDescription = styled(Typography)({
-  color: '#A09BA8',
+  color: '#FCFCFC',
   fontSize: 13,
   lineHeight: '20px'
 })
 
 const ExportKeyDescription = styled(Typography)({
-  color: '#A09BA8',
+  color: '#FCFCFC',
   fontSize: 13,
   lineHeight: '20px',
   marginTop: 4
 })
 
+// Rendered with variant="outlined" color="inherit" so it picks up the theme's NEUTRAL outlined
+// styling — a white (text.primary) label + subtle border that stays white on hover. The default
+// (primary) outlined variant turns the label red on hover via a high-specificity theme rule that a
+// styled() override can't beat, so we switch the colour scheme instead of fighting it. Only layout
+// (spacing + left alignment) is customised here; the rest comes from the theme.
 const ExportKeyLink = styled(Button)({
-  color: '#FFA500',
-  fontSize: 13,
-  fontWeight: 600,
-  marginTop: 4,
+  marginTop: 8,
+  alignSelf: 'flex-start'
+})
+
+// Confirmation gate above the delete button: the user must tick it to enable deletion.
+const AcknowledgeControl = styled(FormControlLabel)({
+  alignItems: 'flex-start',
+  margin: 0,
+  marginTop: 8,
+  gap: 8
+})
+
+const AcknowledgeCheckbox = styled(Checkbox)({
   padding: 0,
-  minWidth: 'auto',
-  textTransform: 'none',
-  justifyContent: 'flex-start',
-  alignSelf: 'flex-start',
-  ['&:hover']: {
-    textDecoration: 'underline',
-    backgroundColor: 'transparent'
+  color: 'rgba(252, 252, 252, 0.6)',
+  ['&.Mui-checked']: {
+    color: '#FF2D55'
   }
 })
 
-const DeleteButton = styled(Button)({
+const AcknowledgeLabel = styled(Typography)({
+  color: '#FCFCFC',
+  fontSize: 13,
+  lineHeight: '20px',
+  // The row is top-aligned (AcknowledgeControl uses alignItems: flex-start) so multi-line copy flows
+  // correctly beneath the first line. Nudge the label down 2px so the first line's optical centre
+  // lines up with the 24px checkbox instead of sitting slightly above it — (24 - 20) / 2.
+  marginTop: 2
+})
+
+// Figma 797:78245 — left-aligned destructive action. On mobile it stretches the full width of the
+// section (alignSelf: stretch); from md up it shrinks to its natural width, still left-aligned.
+const DeleteButton = styled(Button)(({ theme }) => ({
   marginTop: 8,
-  // Figma 797:78245 — the destructive action sits at the bottom-right of the section.
-  alignSelf: 'flex-end',
+  alignSelf: 'stretch',
   backgroundColor: '#FF2D55',
+  [theme.breakpoints.up('md')]: {
+    alignSelf: 'flex-start'
+  },
   ['&:hover']: {
     backgroundColor: '#E0264B'
   },
@@ -159,9 +189,12 @@ const DeleteButton = styled(Button)({
     backgroundColor: 'rgba(255, 45, 85, 0.4)',
     color: 'rgba(252, 252, 252, 0.6)'
   }
-})
+}))
 
 export {
+  AcknowledgeCheckbox,
+  AcknowledgeControl,
+  AcknowledgeLabel,
   AssetWarningBox,
   AssetWarningDescription,
   AssetWarningTextWrapper,
