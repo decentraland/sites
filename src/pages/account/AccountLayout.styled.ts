@@ -15,10 +15,11 @@ const AccountLayoutRoot = styled(Box, { shouldForwardProp: prop => prop !== '$da
     // Keep the top/bottom padding inside the 100vh budget so the page is exactly one viewport tall when
     // the content is short — otherwise the padding is added on top of 100vh and forces a needless scroll.
     boxSizing: 'border-box',
-    // Clearance below the fixed navbar. Figma 322:101467: desktop navbar is 92px and the content
-    // starts at y=151, i.e. a 59px gap → 151px top. Mobile navbar is 64px with the content flush
-    // beneath it (Figma 776:69124, Menu at y=64).
-    paddingTop: 64,
+    // Clearance below the fixed navbar (64px mobile / 92px desktop). NOTE: section screens add a 24px
+    // gap below the mobile navbar (88px) so the content no longer sits flush against it; the mobile
+    // dashboard (the full-screen menu, Figma 776:69124) stays flush at 64px by design. Desktop keeps
+    // the Figma 322:101467 spacing (content at y=151 → a 59px gap below the 92px navbar).
+    paddingTop: $dashboard ? 64 : 88,
     // The mobile dashboard (Figma 776:69124) is a full-screen panel flush with the bottom edge, so
     // it drops the resting bottom padding that the section screens keep for scroll breathing room.
     paddingBottom: $dashboard ? 0 : theme.spacing(8),
