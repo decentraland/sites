@@ -22,7 +22,10 @@ const CreatorLocationRow = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(1)
 }))
 
-const LocationRow = styled(Box)(({ theme }) => ({
+// Clickable location chip — jumps into the event location (coords or world) for both live and
+// non-live events. Rendered as a `<button>` so keyboard/focus works; `disabled` keeps the
+// unsaved-event preview inert while preserving the same visual chip.
+const LocationRow = styled('button')(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
   gap: theme.spacing(0.75),
@@ -30,15 +33,36 @@ const LocationRow = styled(Box)(({ theme }) => ({
   backgroundColor: 'rgba(255, 255, 255, 0.1)',
   padding: theme.spacing(0.5, 1.25),
   borderRadius: theme.spacing(1),
+  border: 'none',
+  font: 'inherit',
+  cursor: 'pointer',
+  transition: theme.transitions.create('background-color', {
+    duration: theme.transitions.duration.short
+  }),
   /* eslint-disable @typescript-eslint/naming-convention */
   '& .MuiSvgIcon-root': {
     fontSize: 18,
     color: '#FCFCFC'
+  },
+  '&:hover:not(:disabled)': {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)'
+  },
+  '&:active:not(:disabled)': {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)'
+  },
+  '&:focus-visible': {
+    outline: '2px solid #FCFCFC',
+    outlineOffset: 2
+  },
+  '&:disabled': {
+    cursor: 'default'
   }
   /* eslint-enable @typescript-eslint/naming-convention */
 }))
 
-const LocationText = styled(Typography)({
+// A `<span>` (not Typography's default `<p>`) so it can live inside the clickable `LocationRow`
+// button without producing invalid block-in-button nesting.
+const LocationText = styled('span')({
   fontSize: 14,
   lineHeight: 1.4,
   color: '#FCFCFC',
@@ -125,8 +149,16 @@ const AdminActionsRow = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(2)
 }))
 
+// Full-width Jump In pinned to the bottom of the details content, mirroring the in-world event
+// panel. Shown for both live and non-live events so recurrent users can jump straight in.
+const BottomJumpInRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  marginTop: theme.spacing(3)
+}))
+
 export {
   AdminActionsRow,
+  BottomJumpInRow,
   CreatorLocationRow,
   EditButton,
   LiveBadgeWrapper,
