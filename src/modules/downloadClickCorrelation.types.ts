@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-// snake_case a propósito: el objeto se spreadea tal cual dentro de payloads
-// de Segment, donde la convención del warehouse es snake_case (LL-3).
+// snake_case on purpose: the object is spread as-is into Segment payloads,
+// where the warehouse convention is snake_case (LL-3).
 interface DownloadClickCorrelation {
   click_id: string
   clicked_at: number

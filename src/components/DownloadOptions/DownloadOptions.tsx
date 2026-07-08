@@ -50,6 +50,11 @@ interface DownloadOptionsProps {
 // for headroom on slow devices without holding the redirect for seconds.
 const POST_DOWNLOAD_NAVIGATION_DELAY_MS = 400
 
+// Defense-in-depth cap on the failure `reason` forwarded to Segment — the
+// gateway/CDN errors this wraps are short today, but nothing guarantees an
+// unexpectedly verbose server error body won't reach this path later.
+const MAX_REDIRECT_FAILURE_REASON_LENGTH = 200
+
 const imageByOs: Record<string, string> = {
   [OperativeSystem.WINDOWS]: microsoftLogo,
   [OperativeSystem.MACOS]: appleLogo
@@ -63,6 +68,7 @@ type HandleDownloadOptionClickParams = {
   option: DownloadOptionProps
 }
 
+/** @internal — exported for testing (see DownloadOptions.spec.tsx); not part of this module's public contract. */
 const handleDownloadOptionClick = async (params: HandleDownloadOptionClickParams) => {
   const { anonUserId, downloadOnClick, getIdentityId, links, option } = params
   if (downloadOnClick) {
@@ -86,7 +92,7 @@ const handleDownloadOptionClick = async (params: HandleDownloadOptionClickParams
           os: option.text,
           arch: option.arch,
           place: DownloadPlace.DOWNLOAD_PAGE,
-          reason: error instanceof Error ? error.message : 'Download dispatch failed',
+          reason: (error instanceof Error ? error.message : 'Download dispatch failed').slice(0, MAX_REDIRECT_FAILURE_REASON_LENGTH),
           download_target: DownloadTarget.DESKTOP_INSTALLER,
           ...collectCampaignParams()
         },

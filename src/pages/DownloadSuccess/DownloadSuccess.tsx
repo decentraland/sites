@@ -219,12 +219,12 @@ const DownloadSuccess = memo(() => {
 
   const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
 
-  // Marca de llegada a la página: parte el drop click→started en "nunca llegó"
-  // (Click sin arrived) vs "llegó pero no disparó started" (arrived sin started).
-  // Dispara antes del gate de anon_user_id a propósito — mide la llegada del
-  // documento, no la disponibilidad de Segment. `place` se incluye SIEMPRE
-  // (también 'unknown') para poder medir aterrizajes directos, a diferencia del
-  // tracker que lo omite.
+  // Page-arrival marker: splits the click→started drop into "never arrived"
+  // (Click with no arrived) vs "arrived but never fired started" (arrived
+  // with no started). Fires before the anon_user_id gate on purpose — it
+  // measures the document's arrival, not Segment's readiness. `place` is
+  // ALWAYS included (even 'unknown') so direct landings are measurable,
+  // unlike the tracker, which omits it.
   const arrivedFiredRef = useRef(false)
   useEffect(() => {
     if (arrivedFiredRef.current) return
@@ -243,6 +243,11 @@ const DownloadSuccess = memo(() => {
         ...campaignParamsRef.current,
         ...(correlation ? { click_id: correlation.click_id, ms_since_click: now - correlation.clicked_at } : {}),
         download_target: DownloadTarget.DESKTOP_INSTALLER,
+        // track_delivered_at intentionally mirrors track_called_at — the
+        // beacon transport (sendBeacon/fetch keepalive) never reports actual
+        // delivery time, so this isn't a latency measurement. Matches the
+        // same audit-field convention already shipped by withTrackAuditFields
+        // (downloadTracking.ts) and useDownloadClick's cold path.
         track_called_at: now,
         track_delivered_at: now,
         track_deferred: true

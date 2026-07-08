@@ -30,8 +30,8 @@ function useTrackClick() {
         delete payload.event
       }
 
-      // `readDataAttributes` camelCasea `data-download-target`; el warehouse
-      // dimensiona por snake_case. Mismo rename que hace useDownloadClick.
+      // `readDataAttributes` camelCases `data-download-target`; the warehouse
+      // dimensions by snake_case. Same rename as useDownloadClick.
       if (downloadTarget) {
         payload.download_target = downloadTarget
       }

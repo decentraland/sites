@@ -2,16 +2,16 @@ import { generateUuid } from './segmentAnonymousId'
 import type { DownloadClickCorrelation } from './downloadClickCorrelation.types'
 
 const STORAGE_KEY = 'downloadFunnel:lastClick'
-// Un click más viejo que esto es otra intención de descarga (o una revisita
-// directa): no lo joineamos con los download_* de esta página.
+// A click older than this is a different download intent (or a direct
+// revisit): we don't join it with this page's download_*.
 const MAX_CORRELATION_AGE_MS = 30 * 60 * 1000
 
 /**
- * Mintea el id de correlación click→download_* y lo persiste en sessionStorage
- * para que sobreviva la navegación full-page a /download_success. El mismo
- * objeto se adjunta al evento `Click` (via useDownloadClick) y a los
- * download_* (via readDownloadClickCorrelation), volviendo el join click→funnel
- * determinístico en lugar de heurístico por anonymousId.
+ * Mints the click→download_* correlation id and persists it in sessionStorage
+ * so it survives the full-page navigation to /download_success. The same
+ * object is attached to the `Click` event (via useDownloadClick) and to
+ * download_* (via readDownloadClickCorrelation), making the click→funnel
+ * join deterministic instead of heuristic on anonymousId.
  */
 function recordDownloadClickCorrelation(): DownloadClickCorrelation {
   const correlation: DownloadClickCorrelation = {
@@ -23,13 +23,13 @@ function recordDownloadClickCorrelation(): DownloadClickCorrelation {
   try {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(correlation))
   } catch {
-    // Storage bloqueado (private mode / quota): el Click igual lleva la
-    // correlación; solo se pierde el join cross-page.
+    // Storage blocked (private mode / quota): the Click still carries the
+    // correlation; only the cross-page join is lost.
   }
   return correlation
 }
 
-/** No lanza nunca; null si no hay correlación fresca y válida. */
+/** Never throws; null when there's no fresh, valid correlation. */
 function readDownloadClickCorrelation(maxAgeMs: number = MAX_CORRELATION_AGE_MS): DownloadClickCorrelation | null {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY)
