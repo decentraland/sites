@@ -13,6 +13,8 @@ import { getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
 import { ExplorerDownloads } from '../../modules/explorerDownloads'
 import { formatToShorthand } from '../../modules/number'
 import { DownloadPlace, DownloadTarget, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
+import { ensureSegmentAnonymousId } from '../../modules/segmentAnonymousId'
+import { postSegmentEvent } from '../../modules/segmentBeacon'
 import { buildDownloadSuccessHref, sanitizeCDNReleaseLinks } from '../../modules/url'
 import { Architecture, DownloadOptionProps, OperativeSystem } from '../../types/download.types'
 import { assetUrl } from '../../utils/assetUrl'
@@ -48,9 +50,74 @@ interface DownloadOptionsProps {
 // for headroom on slow devices without holding the redirect for seconds.
 const POST_DOWNLOAD_NAVIGATION_DELAY_MS = 400
 
+// Defense-in-depth cap on the failure `reason` forwarded to Segment — the
+// gateway/CDN errors this wraps are short today, but nothing guarantees an
+// unexpectedly verbose server error body won't reach this path later.
+const MAX_REDIRECT_FAILURE_REASON_LENGTH = 200
+
 const imageByOs: Record<string, string> = {
   [OperativeSystem.WINDOWS]: microsoftLogo,
   [OperativeSystem.MACOS]: appleLogo
+}
+
+type HandleDownloadOptionClickParams = {
+  anonUserId?: string
+  downloadOnClick?: boolean
+  getIdentityId: () => Promise<string | undefined>
+  links: Record<string, Record<string, string>>
+  option: DownloadOptionProps
+}
+
+/** @internal — exported for testing (see DownloadOptions.spec.tsx); not part of this module's public contract. */
+const handleDownloadOptionClick = async (params: HandleDownloadOptionClickParams) => {
+  const { anonUserId, downloadOnClick, getIdentityId, links, option } = params
+  if (downloadOnClick) {
+    try {
+      await getDownloadLinkWithIdentity({
+        os: option.text,
+        arch: option.arch,
+        fallbackLinks: links,
+        queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
+        getIdentityId,
+        anonUserId
+      })
+    } catch (error) {
+      // SOLO-TRACKING: register the failure as a drop cause without altering
+      // the flow. Re-thrown to preserve current behavior (a rejection here
+      // aborts execution and does not navigate — that stays identical).
+      /* eslint-disable @typescript-eslint/naming-convention */
+      postSegmentEvent(
+        SegmentEvent.DOWNLOAD_REDIRECT_FAILED,
+        {
+          os: option.text,
+          arch: option.arch,
+          place: DownloadPlace.DOWNLOAD_PAGE,
+          reason: (error instanceof Error ? error.message : 'Download dispatch failed').slice(0, MAX_REDIRECT_FAILURE_REASON_LENGTH),
+          download_target: DownloadTarget.DESKTOP_INSTALLER,
+          ...collectCampaignParams()
+        },
+        ensureSegmentAnonymousId()
+      )
+      /* eslint-enable @typescript-eslint/naming-convention */
+      throw error
+    }
+  }
+
+  // Forward the partner campaign params into /download_success (through
+  // `buildDownloadSuccessHref`) so the desktop installer funnel
+  // (download_started/_success/_failed) carries the same attribution the
+  // landing click had.
+  const finalUrl = buildDownloadSuccessHref(option.text, DownloadPlace.DOWNLOAD_PAGE, {
+    anonUserId,
+    arch: option.arch,
+    campaignParams: collectCampaignParams()
+  })
+  setTimeout(
+    () => {
+      window.location.href = finalUrl
+    },
+    downloadOnClick ? POST_DOWNLOAD_NAVIGATION_DELAY_MS : 0
+  )
 }
 
 const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadOptionsProps) => {
@@ -132,34 +199,14 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
   }, [userAgentData, links])
 
   const onClickDownloadHandler = useCallback(
-    async (option: DownloadOptionProps) => {
-      if (downloadOnClick) {
-        await getDownloadLinkWithIdentity({
-          os: option.text,
-          arch: option.arch,
-          fallbackLinks: links,
-          queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
-          getIdentityId,
-          anonUserId
-        })
-      }
-
-      // Forward the partner campaign params into /download_success (through
-      // `buildDownloadSuccessHref`) so the desktop installer funnel
-      // (download_started/_success/_failed) carries the same attribution the
-      // landing click had.
-      const finalUrl = buildDownloadSuccessHref(option.text, DownloadPlace.DOWNLOAD_PAGE, {
+    (option: DownloadOptionProps) =>
+      handleDownloadOptionClick({
         anonUserId,
-        arch: option.arch,
-        campaignParams: collectCampaignParams()
-      })
-      setTimeout(
-        () => {
-          window.location.href = finalUrl
-        },
-        downloadOnClick ? POST_DOWNLOAD_NAVIGATION_DELAY_MS : 0
-      )
-    },
+        downloadOnClick,
+        getIdentityId,
+        links,
+        option
+      }),
     [downloadOnClick, getIdentityId, anonUserId, links]
   )
 
@@ -275,4 +322,4 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
 
 DownloadOptions.displayName = 'DownloadOptions'
 
-export { DownloadOptions }
+export { DownloadOptions, handleDownloadOptionClick }

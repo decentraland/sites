@@ -10,6 +10,7 @@ import { getEnv } from '../../config/env'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useDownloadClick } from '../../hooks/useDownloadClick'
+import { useDownloadPageExit } from '../../hooks/useDownloadPageExit'
 import { useSignInRedirect } from '../../hooks/useSignInRedirect'
 import { useWalletAddress } from '../../hooks/useWalletAddress'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
@@ -50,6 +51,10 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   const [openModal, setOpenModal] = useState(false)
   // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-explicit-any
   const [WearablePreviewComponent, setWearablePreviewComponent] = useState<any>(null)
+
+  // DownloadLayout only mounts on /download (see src/pages/download.tsx), so
+  // this is the correct scope for the download_page_exit abandonment diagnostic.
+  useDownloadPageExit()
 
   const l = useFormatMessage()
   const isDesktop = useDesktopMediaQuery()
