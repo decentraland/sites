@@ -25,10 +25,19 @@ jest.mock('../DetailModal/DetailModal.styled', () => ({
 
 jest.mock('./EventDetailModal.styled', () => ({
   AdminActionsRow: ({ children }: { children: React.ReactNode }) => <div data-testid="admin-actions">{children}</div>,
+  BottomJumpInRow: ({ children }: { children: React.ReactNode }) => <div data-testid="bottom-jump-in-row">{children}</div>,
   ScheduleRow: ({ children }: { children: React.ReactNode }) => <div data-testid="schedule-row">{children}</div>,
   ScheduleText: ({ children }: { children: React.ReactNode }) => <span data-testid="schedule-text">{children}</span>,
   ScheduleIconButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="calendar-btn" {...props} />,
   RecurrenceText: ({ children }: { children: React.ReactNode }) => <span data-testid="recurrence">{children}</span>
+}))
+
+jest.mock('../../jump/JumpInButton', () => ({
+  JumpInButton: ({ children, position, realm }: { children: React.ReactNode; position: string; realm?: string }) => (
+    <button data-testid="bottom-jump-in-button" data-position={position} data-realm={realm}>
+      {children}
+    </button>
+  )
 }))
 
 jest.mock('@mui/icons-material/CalendarToday', () => ({
@@ -123,10 +132,52 @@ describe('EventDetailModalContent', () => {
   })
 
   describe('when data has neither description nor schedule', () => {
-    it('should return null', () => {
-      const { container } = render(<EventDetailModalContent data={createMockData({ description: null, startAt: null })} />)
+    it('should still render the content section with the bottom Jump In button for a real event', () => {
+      render(<EventDetailModalContent data={createMockData({ description: null, startAt: null })} />)
+
+      expect(screen.getByTestId('content-section')).toBeInTheDocument()
+      expect(screen.getByTestId('bottom-jump-in-button')).toBeInTheDocument()
+    })
+
+    it('should return null for an unsaved-event preview with no description or schedule', () => {
+      const { container } = render(<EventDetailModalContent data={createMockData({ id: 'preview', description: null, startAt: null })} />)
 
       expect(container.firstChild).toBeNull()
+    })
+  })
+
+  describe('bottom Jump In button', () => {
+    it('should render for a non-live event with the coordinates', () => {
+      render(<EventDetailModalContent data={createMockData({ live: false, isWorld: false, x: 10, y: 20 })} />)
+
+      const button = screen.getByTestId('bottom-jump-in-button')
+      expect(button).toHaveAttribute('data-position', '10,20')
+      expect(button).not.toHaveAttribute('data-realm')
+    })
+
+    it('should pass the realm for a world event', () => {
+      render(<EventDetailModalContent data={createMockData({ isWorld: true, realm: 'kenz0.dcl.eth', x: 10, y: 20 })} />)
+
+      const button = screen.getByTestId('bottom-jump-in-button')
+      expect(button).toHaveAttribute('data-position', '10,20')
+      expect(button).toHaveAttribute('data-realm', 'kenz0.dcl.eth')
+    })
+
+    it('should not render when the modal is in the pending-admin review flow', () => {
+      render(
+        <EventDetailModalContent
+          data={createMockData()}
+          adminActions={{ onApprove: jest.fn(), onReject: jest.fn(), isProcessing: false }}
+        />
+      )
+
+      expect(screen.queryByTestId('bottom-jump-in-button')).not.toBeInTheDocument()
+    })
+
+    it('should not render in the unsaved-event preview', () => {
+      render(<EventDetailModalContent data={createMockData({ id: 'preview' })} />)
+
+      expect(screen.queryByTestId('bottom-jump-in-button')).not.toBeInTheDocument()
     })
   })
 
