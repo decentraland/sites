@@ -79,7 +79,7 @@ describe('DeleteAccountSection', () => {
   it('should render the danger banner, all six consequences and the asset warning', () => {
     renderSection(ADDRESS)
 
-    expect(screen.getByText('account.delete.danger_zone')).toBeInTheDocument()
+    expect(screen.getByText('account.delete.title')).toBeInTheDocument()
     expect(screen.getByText('account.delete.consequences.profile.title')).toBeInTheDocument()
     expect(screen.getByText('account.delete.consequences.social.title')).toBeInTheDocument()
     expect(screen.getByText('account.delete.consequences.marketplace.title')).toBeInTheDocument()

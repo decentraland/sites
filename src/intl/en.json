@@ -1910,7 +1910,7 @@
       }
     },
     "delete": {
-      "danger_zone": "Danger Zone",
+      "title": "Delete Account",
       "danger_description": "Once you delete your account, there is no going back. Please be certain.",
       "warning": "The following will be lost forever:",
       "consequences": {

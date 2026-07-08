@@ -1475,7 +1475,7 @@
       }
     },
     "delete": {
-      "danger_zone": "위험 구역",
+      "title": "계정 삭제",
       "danger_description": "계정을 삭제하면 되돌릴 수 없습니다. 신중하게 결정해 주세요.",
       "warning": "다음 항목은 영구적으로 사라집니다:",
       "consequences": {

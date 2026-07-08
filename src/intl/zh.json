@@ -1475,7 +1475,7 @@
       }
     },
     "delete": {
-      "danger_zone": "危险区域",
+      "title": "删除账户",
       "danger_description": "一旦删除账户，将无法恢复。请确认您的决定。",
       "warning": "以下内容将永久丢失：",
       "consequences": {
