@@ -175,7 +175,7 @@ Only `collectClientFingerprint()` is wrapped in try/catch. Campaign params, clic
 
 **Hero.tsx / ComeHangOut.tsx:** both replaced their local `downloadSuccessHref` builder with `useDownloadSuccessHref()` and added `data-download-target` to every download CTA (desktop button, Epic button, platform-switch icons, mobile store buttons). `PlayPage.tsx` and `DownloadOptions.tsx` got the same `data-download-target` additions (all `DESKTOP_INSTALLER` except the store badges).
 
-### 5.6 Click correlation + funnel diagnostics — PR #668, 2026-07-07
+### 5.6 Click correlation + funnel diagnostics — PR #675, 2026-07-07
 
 This PR instruments the blind window between the upstream `Click` and `download_started` without changing existing funnel event semantics.
 
@@ -326,6 +326,8 @@ If you add a NEW page that derives URLs or analytics payloads from `useAnonUserI
 7. `src/modules/downloadFunnelExit.ts` — sibling beacon-transport precedent for the download family.
 8. `src/modules/campaignParams.ts` — UTM param collection + truncation, `withCampaignParams` (see 5.5).
 9. `src/hooks/useDownloadSuccessHref.ts` — memoized `/download_success` href builder baking in `anonUserId` + campaign params (see 5.5).
-10. `src/modules/DeferredAnalyticsProvider.tsx` — provider wiring.
-11. `src/components/Layout/Layout.tsx` + `Layout.helpers.ts` — automatic `page()` + `isPageTrackingExempt`.
-12. `src/hooks/useBlogPageTracking.ts` — manual `page()` for Helmet routes.
+10. `src/modules/downloadClickCorrelation.ts` — mints/reads the `click_id`/`clicked_at` pair that joins `Click` to `download_*` (see 5.6).
+11. `src/modules/downloadPageExit.ts` + `src/hooks/useDownloadPageExit.ts` — `/download` abandonment diagnostic (see 5.6).
+12. `src/modules/DeferredAnalyticsProvider.tsx` — provider wiring.
+13. `src/components/Layout/Layout.tsx` + `Layout.helpers.ts` — automatic `page()` + `isPageTrackingExempt`.
+14. `src/hooks/useBlogPageTracking.ts` — manual `page()` for Helmet routes.
