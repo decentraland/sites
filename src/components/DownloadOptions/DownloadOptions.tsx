@@ -55,6 +55,65 @@ const imageByOs: Record<string, string> = {
   [OperativeSystem.MACOS]: appleLogo
 }
 
+type HandleDownloadOptionClickParams = {
+  anonUserId?: string
+  downloadOnClick?: boolean
+  getIdentityId: () => Promise<string | undefined>
+  links: Record<string, Record<string, string>>
+  option: DownloadOptionProps
+}
+
+const handleDownloadOptionClick = async (params: HandleDownloadOptionClickParams) => {
+  const { anonUserId, downloadOnClick, getIdentityId, links, option } = params
+  if (downloadOnClick) {
+    try {
+      await getDownloadLinkWithIdentity({
+        os: option.text,
+        arch: option.arch,
+        fallbackLinks: links,
+        queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
+        getIdentityId,
+        anonUserId
+      })
+    } catch (error) {
+      // SOLO-TRACKING: register the failure as a drop cause without altering
+      // the flow. Re-thrown to preserve current behavior (a rejection here
+      // aborts execution and does not navigate — that stays identical).
+      /* eslint-disable @typescript-eslint/naming-convention */
+      postSegmentEvent(
+        SegmentEvent.DOWNLOAD_REDIRECT_FAILED,
+        {
+          os: option.text,
+          arch: option.arch,
+          place: DownloadPlace.DOWNLOAD_PAGE,
+          reason: error instanceof Error ? error.message : 'Download dispatch failed',
+          download_target: DownloadTarget.DESKTOP_INSTALLER,
+          ...collectCampaignParams()
+        },
+        ensureSegmentAnonymousId()
+      )
+      /* eslint-enable @typescript-eslint/naming-convention */
+      throw error
+    }
+  }
+
+  // Forward the partner campaign params into /download_success (through
+  // `buildDownloadSuccessHref`) so the desktop installer funnel
+  // (download_started/_success/_failed) carries the same attribution the
+  // landing click had.
+  const finalUrl = buildDownloadSuccessHref(option.text, DownloadPlace.DOWNLOAD_PAGE, {
+    anonUserId,
+    arch: option.arch,
+    campaignParams: collectCampaignParams()
+  })
+  setTimeout(
+    () => {
+      window.location.href = finalUrl
+    },
+    downloadOnClick ? POST_DOWNLOAD_NAVIGATION_DELAY_MS : 0
+  )
+}
+
 const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadOptionsProps) => {
   const [isLoadingUserAgentData, userAgentData] = useAdvancedUserAgentData()
   const getIdentityId = useGetIdentityId()
@@ -134,55 +193,14 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
   }, [userAgentData, links])
 
   const onClickDownloadHandler = useCallback(
-    async (option: DownloadOptionProps) => {
-      if (downloadOnClick) {
-        try {
-          await getDownloadLinkWithIdentity({
-            os: option.text,
-            arch: option.arch,
-            fallbackLinks: links,
-            queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
-            getIdentityId,
-            anonUserId
-          })
-        } catch (error) {
-          // SOLO-TRACKING: register the failure as a drop cause without altering
-          // the flow. Re-thrown to preserve current behavior (a rejection here
-          // aborts execution and does not navigate — that stays identical).
-          /* eslint-disable @typescript-eslint/naming-convention */
-          postSegmentEvent(
-            SegmentEvent.DOWNLOAD_REDIRECT_FAILED,
-            {
-              os: option.text,
-              arch: option.arch,
-              place: DownloadPlace.DOWNLOAD_PAGE,
-              reason: error instanceof Error ? error.message : 'Download dispatch failed',
-              download_target: DownloadTarget.DESKTOP_INSTALLER,
-              ...collectCampaignParams()
-            },
-            ensureSegmentAnonymousId()
-          )
-          /* eslint-enable @typescript-eslint/naming-convention */
-          throw error
-        }
-      }
-
-      // Forward the partner campaign params into /download_success (through
-      // `buildDownloadSuccessHref`) so the desktop installer funnel
-      // (download_started/_success/_failed) carries the same attribution the
-      // landing click had.
-      const finalUrl = buildDownloadSuccessHref(option.text, DownloadPlace.DOWNLOAD_PAGE, {
+    (option: DownloadOptionProps) =>
+      handleDownloadOptionClick({
         anonUserId,
-        arch: option.arch,
-        campaignParams: collectCampaignParams()
-      })
-      setTimeout(
-        () => {
-          window.location.href = finalUrl
-        },
-        downloadOnClick ? POST_DOWNLOAD_NAVIGATION_DELAY_MS : 0
-      )
-    },
+        downloadOnClick,
+        getIdentityId,
+        links,
+        option
+      }),
     [downloadOnClick, getIdentityId, anonUserId, links]
   )
 
@@ -206,12 +224,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                   onClick={event => {
                     event.preventDefault()
                     trackDownloadClick(event)
-                    // NOTE: onClickDownloadHandler is intentionally not awaited here (unchanged
-                    // fire-and-forget dispatch). The no-op catch only prevents the JS engine from
-                    // flagging its rejection as unhandled — the failure itself is already reported
-                    // via the download_redirect_failed event inside the handler's own catch, and
-                    // the re-throw there still aborts navigation exactly as before.
-                    onClickDownloadHandler(option).catch(() => {})
+                    onClickDownloadHandler(option)
                   }}
                 >
                   {l('page.download.download_for_short')}
@@ -254,10 +267,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
                   onClick={event => {
                     event.preventDefault()
                     trackDownloadClick(event)
-                    // NOTE: see the primary button's onClick above — same fire-and-forget dispatch,
-                    // same reason for the no-op catch (avoid an unhandled-rejection artifact; the
-                    // failure is already reported via download_redirect_failed).
-                    onClickDownloadHandler(option).catch(() => {})
+                    onClickDownloadHandler(option)
                   }}
                   href={option.link}
                   key={index}
@@ -306,4 +316,4 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
 
 DownloadOptions.displayName = 'DownloadOptions'
 
-export { DownloadOptions }
+export { DownloadOptions, handleDownloadOptionClick }

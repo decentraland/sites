@@ -1,12 +1,13 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
 import { getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
 import { postSegmentEvent } from '../../modules/segmentBeacon'
+import type { DownloadOptionProps } from '../../types/download.types'
 import { GOOGLE_PLAY_DESKTOP_URL } from '../Home/shared/googlePlay'
-import { DownloadOptions } from './DownloadOptions'
+import { DownloadOptions, handleDownloadOptionClick } from './DownloadOptions'
 
 // Keep ../../modules/url REAL so the actual /download_success URL is built and
 // we can assert UTM preservation end-to-end. Mock only the decentraland-ui2
@@ -334,36 +335,45 @@ describe('DownloadOptions', () => {
     })
 
     describe('and the in-page download dispatch rejects', () => {
+      let callDownloadHandler: () => Promise<void>
+      let downloadOption: DownloadOptionProps
+      let getIdentityId: jest.Mock<Promise<string | undefined>, []>
+      let links: Record<string, Record<string, string>>
+
       beforeEach(() => {
+        downloadOption = {
+          text: 'Windows',
+          image: '',
+          link: 'https://cdn.decentraland.org/launcher/win.exe',
+          arch: 'x64'
+        }
+        getIdentityId = jest.fn(() => Promise.resolve(undefined))
+        links = { Windows: { x64: 'https://cdn.decentraland.org/launcher/win.exe' } }
         mockGetDownloadLinkWithIdentity.mockRejectedValue(new Error('gateway 500'))
+        callDownloadHandler = () =>
+          handleDownloadOptionClick({
+            downloadOnClick: true,
+            getIdentityId,
+            links,
+            option: downloadOption
+          })
       })
 
       it('should fire download_redirect_failed on dispatch failure', async () => {
-        const { restore } = installLocation('')
-        try {
-          render(<DownloadOptions downloadOnClick />)
-          fireEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
-          await waitFor(() =>
-            expect(postSegmentEvent).toHaveBeenCalledWith(
-              'download_redirect_failed',
-              expect.objectContaining({ reason: 'gateway 500', place: 'download-page', download_target: 'desktop_installer' }),
-              expect.any(String)
-            )
-          )
-        } finally {
-          restore()
-        }
+        await expect(callDownloadHandler()).rejects.toThrow('gateway 500')
+        expect(postSegmentEvent).toHaveBeenCalledWith(
+          'download_redirect_failed',
+          expect.objectContaining({ reason: 'gateway 500', place: 'download-page', download_target: 'desktop_installer' }),
+          expect.any(String)
+        )
       })
 
       it('should NOT change navigation behavior on failure (tracking-only: flow preserved)', async () => {
-        // Preserves current behavior: a dispatch failure does NOT navigate.
-        // Locks the tracking-only contract — the event is added, the flow is unchanged.
         const { hrefSpy, restore } = installLocation('')
         try {
           const hrefBefore = window.location.href
-          render(<DownloadOptions downloadOnClick />)
-          fireEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
-          await waitFor(() => expect(postSegmentEvent).toHaveBeenCalled())
+          await expect(callDownloadHandler()).rejects.toThrow('gateway 500')
+          expect(postSegmentEvent).toHaveBeenCalled()
           expect(hrefSpy).not.toHaveBeenCalled()
           expect(window.location.href).toBe(hrefBefore)
         } finally {
