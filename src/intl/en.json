@@ -1911,7 +1911,7 @@
     },
     "delete": {
       "title": "Delete Account",
-      "danger_description": "Once you delete your account, there is no going back. Please be certain.",
+      "danger_description": "This action is irreversible. All your data will be permanently deleted.",
       "warning": "The following will be lost forever:",
       "consequences": {
         "profile": {
@@ -1945,6 +1945,7 @@
       "export_key_link": "Go to Wallets",
       "export_key_description_magic": "Go to the Security tab to view and back up your private key before you delete your account.",
       "export_key_link_magic": "Go to Security",
+      "acknowledge": "I have backed up my private key and I understand that deleting my account is irreversible.",
       "delete_button": "Delete Account",
       "modal": {
         "title": "Are you sure you want to delete your account?",

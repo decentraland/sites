@@ -1471,7 +1471,7 @@
     },
     "delete": {
       "title": "Supprimer le compte",
-      "danger_description": "Une fois votre compte supprimé, il n’y a pas de retour en arrière. Veuillez en être certain.",
+      "danger_description": "Cette action est irréversible. Toutes vos données seront définitivement supprimées.",
       "warning": "Les éléments suivants seront perdus à jamais :",
       "consequences": {
         "profile": {
@@ -1505,6 +1505,7 @@
       "export_key_link": "Aller aux Wallets",
       "export_key_description_magic": "Allez dans l’onglet Sécurité pour consulter et sauvegarder votre clé privée avant de supprimer votre compte.",
       "export_key_link_magic": "Aller à la Sécurité",
+      "acknowledge": "J’ai sauvegardé ma clé privée et je comprends que la suppression de mon compte est irréversible.",
       "delete_button": "Supprimer le compte",
       "modal": {
         "title": "Êtes-vous sûr de vouloir supprimer votre compte ?",

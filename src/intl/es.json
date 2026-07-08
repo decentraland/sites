@@ -1476,7 +1476,7 @@
     },
     "delete": {
       "title": "Eliminar Cuenta",
-      "danger_description": "Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate.",
+      "danger_description": "Esta acción es irreversible. Todos tus datos serán eliminados permanentemente.",
       "warning": "Lo siguiente se perderá para siempre:",
       "consequences": {
         "profile": {
@@ -1510,6 +1510,7 @@
       "export_key_link": "Ir a Wallets",
       "export_key_description_magic": "Ve a la pestaña Seguridad para ver y hacer una copia de seguridad de tu clave privada antes de eliminar tu cuenta.",
       "export_key_link_magic": "Ir a Seguridad",
+      "acknowledge": "He hecho una copia de seguridad de mi clave privada y entiendo que eliminar mi cuenta es irreversible.",
       "delete_button": "Eliminar Cuenta",
       "modal": {
         "title": "¿Estás seguro de que quieres eliminar tu cuenta?",

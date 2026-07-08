@@ -1,3 +1,4 @@
+import { useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -17,6 +18,9 @@ import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import { DeleteAccountSectionProps } from './DeleteAccountSection.types'
 import {
+  AcknowledgeCheckbox,
+  AcknowledgeControl,
+  AcknowledgeLabel,
   AssetWarningBox,
   AssetWarningDescription,
   AssetWarningTextWrapper,
@@ -57,6 +61,9 @@ const CONSEQUENCES = [
 const DeleteAccountSection = (props: DeleteAccountSectionProps) => {
   const { address, isMagic, onOpenConfirmModal, onGoToWallets, onGoToSecurity } = props
   const t = useFormatMessage()
+  // Deletion is gated on an explicit acknowledgement that the private key is backed up and the action
+  // is irreversible — the delete button stays disabled until this is ticked.
+  const [hasAcknowledged, setHasAcknowledged] = useState(false)
 
   return (
     <Container data-role="delete-account-section">
@@ -95,7 +102,8 @@ const DeleteAccountSection = (props: DeleteAccountSectionProps) => {
             {t(isMagic ? 'account.delete.export_key_description_magic' : 'account.delete.export_key_description')}
           </ExportKeyDescription>
           <ExportKeyLink
-            variant="text"
+            variant="outlined"
+            color="inherit"
             onClick={isMagic ? onGoToSecurity : onGoToWallets}
             data-role={isMagic ? 'delete-account-go-to-security' : 'delete-account-go-to-wallets'}
           >
@@ -104,7 +112,23 @@ const DeleteAccountSection = (props: DeleteAccountSectionProps) => {
         </AssetWarningTextWrapper>
       </AssetWarningBox>
 
-      <DeleteButton variant="contained" disabled={!address} onClick={onOpenConfirmModal} data-role="delete-account-open-confirm">
+      <AcknowledgeControl
+        control={
+          <AcknowledgeCheckbox
+            checked={hasAcknowledged}
+            onChange={event => setHasAcknowledged(event.target.checked)}
+            data-role="delete-account-acknowledge"
+          />
+        }
+        label={<AcknowledgeLabel>{t('account.delete.acknowledge')}</AcknowledgeLabel>}
+      />
+
+      <DeleteButton
+        variant="contained"
+        disabled={!address || !hasAcknowledged}
+        onClick={onOpenConfirmModal}
+        data-role="delete-account-open-confirm"
+      >
         {t('account.delete.delete_button')}
       </DeleteButton>
     </Container>

@@ -1476,7 +1476,7 @@
     },
     "delete": {
       "title": "删除账户",
-      "danger_description": "一旦删除账户，将无法恢复。请确认您的决定。",
+      "danger_description": "此操作不可逆。您的所有数据将被永久删除。",
       "warning": "以下内容将永久丢失：",
       "consequences": {
         "profile": {
@@ -1510,6 +1510,7 @@
       "export_key_link": "前往钱包",
       "export_key_description_magic": "在删除账户之前，请前往安全选项卡查看并备份您的私钥。",
       "export_key_link_magic": "前往安全",
+      "acknowledge": "我已备份我的私钥，并理解删除账户的操作不可逆。",
       "delete_button": "删除账户",
       "modal": {
         "title": "您确定要删除您的账户吗？",
