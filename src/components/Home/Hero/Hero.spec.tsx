@@ -118,6 +118,7 @@ describe('Hero', () => {
       expect(iosIcon).toHaveAttribute('data-event', SegmentEvent.DOWNLOAD)
       expect(iosIcon).toHaveAttribute('data-os', 'iOS')
       expect(iosIcon).toHaveAttribute('data-place', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)
+      expect(iosIcon).toHaveAttribute('data-download-target', 'app_store')
 
       fireEvent.click(iosIcon)
 
@@ -133,6 +134,7 @@ describe('Hero', () => {
       expect(androidIcon).toHaveAttribute('data-event', SegmentEvent.DOWNLOAD)
       expect(androidIcon).toHaveAttribute('data-os', 'Android')
       expect(androidIcon).toHaveAttribute('data-place', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)
+      expect(androidIcon).toHaveAttribute('data-download-target', 'google_play')
 
       fireEvent.click(androidIcon)
 

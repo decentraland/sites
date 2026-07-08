@@ -5,12 +5,13 @@ import { CTAButtonProps } from './CTAButton.types'
 import { CTAButtonLabelContainer, CTAButtonStyled } from './CTAButton.styled'
 
 const CTAButton = memo((props: CTAButtonProps) => {
-  const { href, onClick, label, subLabel, place, event, isFullWidth, startIcon, endIcon, isLoading } = props
+  const { href, onClick, label, subLabel, place, event, downloadTarget, isFullWidth, startIcon, endIcon, isLoading } = props
   return (
     <CTAButtonStyled
       variant="contained"
       data-place={place}
       data-event={event || SegmentEvent.CLICK}
+      data-download-target={downloadTarget}
       href={href}
       onClick={onClick}
       fullWidth={isFullWidth}

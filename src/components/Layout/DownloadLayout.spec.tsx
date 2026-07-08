@@ -5,6 +5,7 @@ import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import { GOOGLE_PLAY_MOBILE_URL } from '../../components/Home/shared/googlePlay'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
+import { useDownloadPageExit } from '../../hooks/useDownloadPageExit'
 import { useWalletAddress } from '../../hooks/useWalletAddress'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
 import { SegmentEvent } from '../../modules/segment'
@@ -23,7 +24,13 @@ jest.mock('@dcl/hooks', () => ({
 }))
 
 jest.mock('../../modules/segmentBeacon', () => ({ postSegmentEvent: jest.fn() }))
-jest.mock('../../modules/segmentAnonymousId', () => ({ ensureSegmentAnonymousId: () => 'anon-fixed' }))
+jest.mock('../../modules/segmentAnonymousId', () => ({
+  ensureSegmentAnonymousId: () => 'anon-fixed',
+  // `downloadClickCorrelation` (used by `useDownloadClick`, wired on the store-exit
+  // CTAs below) imports `generateUuid` from this same module, so the mock must
+  // keep exporting it — mirrors the fix in `useDownloadClick.spec.ts`.
+  generateUuid: () => '11111111-1111-4111-8111-111111111111'
+}))
 
 jest.mock('decentraland-ui2', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -59,6 +66,8 @@ jest.mock('../../features/profile/profile.client', () => ({ useGetProfileQuery: 
 
 jest.mock('../../hooks/useWalletAddress', () => ({ useWalletAddress: jest.fn() }))
 
+jest.mock('../../hooks/useDownloadPageExit', () => ({ useDownloadPageExit: jest.fn() }))
+
 jest.mock('../../utils/authRedirect', () => ({ redirectToAuth: jest.fn() }))
 
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
@@ -80,6 +89,7 @@ const mockUseWalletAddress = jest.mocked(useWalletAddress)
 const mockUseGetProfileQuery = jest.mocked(useGetProfileQuery)
 const mockLaunchDesktopApp = jest.mocked(launchDesktopApp)
 const mockRedirectToAuth = jest.mocked(redirectToAuth)
+const mockUseDownloadPageExit = jest.mocked(useDownloadPageExit)
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const mockUseDesktopMediaQuery = require('decentraland-ui2').useDesktopMediaQuery as jest.Mock
 
@@ -103,6 +113,11 @@ describe('DownloadLayout', () => {
 
   afterEach(() => {
     jest.clearAllMocks()
+  })
+
+  it('should mount the download page exit diagnostic', () => {
+    render(<DownloadLayout title={TITLE} />)
+    expect(mockUseDownloadPageExit).toHaveBeenCalled()
   })
 
   describe('when the user is not signed in', () => {

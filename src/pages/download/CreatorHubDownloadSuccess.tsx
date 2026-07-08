@@ -16,7 +16,7 @@ import windowsSetup from '../../images/download/creator-hub/windows_setup.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
 import { createDownloadTracker, toAuthState } from '../../modules/downloadTracking'
 import { triggerFileDownload } from '../../modules/file'
-import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
+import { DownloadPlace, DownloadTarget, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { Architecture, OperativeSystem } from '../../types/download.types'
 import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from '../DownloadSuccess/DownloadSuccess.types'
 import { DownloadSuccessLayout } from '../DownloadSuccess/DownloadSuccessLayout'
@@ -158,6 +158,7 @@ const CreatorHubDownloadSuccess = memo(() => {
             data-place={SectionViewedTrack.CREATOR_HUB_SUCCESS_FOOTER}
             data-event={SegmentEvent.DOWNLOAD}
             data-os={clientOS}
+            data-download-target={DownloadTarget.CREATOR_HUB}
           >
             {l('page.creator-hub.download.success.footer_link_label')}
           </a>

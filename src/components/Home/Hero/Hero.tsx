@@ -325,6 +325,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
                 data-event={SegmentEvent.DOWNLOAD}
                 data-os="iOS"
                 data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}
+                data-download-target={DownloadTarget.APP_STORE}
                 onClick={e => {
                   trackDownloadClick(e)
                   e.preventDefault()
@@ -340,6 +341,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
                 data-event={SegmentEvent.DOWNLOAD}
                 data-os="Android"
                 data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}
+                data-download-target={DownloadTarget.GOOGLE_PLAY}
                 onClick={e => {
                   trackDownloadClick(e)
                   e.preventDefault()

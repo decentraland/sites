@@ -1,6 +1,8 @@
 import { useCallback, useRef } from 'react'
 import { useAnalytics } from '@dcl/hooks'
 import { collectCampaignParams } from '../modules/campaignParams'
+import { recordDownloadClickCorrelation } from '../modules/downloadClickCorrelation'
+import { markDownloadCtaClicked } from '../modules/downloadPageExit'
 import { SegmentEvent } from '../modules/segment'
 import { ensureSegmentAnonymousId } from '../modules/segmentAnonymousId'
 import { postSegmentEvent } from '../modules/segmentBeacon'
@@ -25,6 +27,10 @@ function useDownloadClick() {
 
   return useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
+      // Feeds the download_page_exit diagnostic: /download resets this flag on
+      // mount and reads it when the page becomes hidden.
+      markDownloadCtaClicked()
+
       // Merge the URL's campaign params so a partner link
       // (`/download?utm_source=…`) attributes every download CTA click, cold
       // loads included — see `collectCampaignParams`. data-* attributes are
@@ -34,8 +40,13 @@ function useDownloadClick() {
       // `data-utm_source`) WOULD bypass that and clobber the URL value, so
       // never use underscores in data-* names on download CTAs.
       const { downloadTarget, ...dataAttributes } = readDataAttributes(event.currentTarget)
+      // Deterministic click → download_* correlation: the same click_id we
+      // send here travels via sessionStorage to /download_success (see
+      // downloadClickCorrelation.ts). clicked_at enables ms_since_click downstream.
+      const correlation = recordDownloadClickCorrelation()
       const payload: Record<string, unknown> = {
         ...collectCampaignParams(),
+        ...correlation,
         ...dataAttributes
       }
 

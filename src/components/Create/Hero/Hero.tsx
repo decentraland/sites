@@ -4,7 +4,7 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useCreatorHubDownload } from '../../../hooks/useCreatorHubDownload'
 import { useTypingListEffect } from '../../../hooks/useTypingListEffect'
-import { SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
+import { DownloadTarget, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { CTAButton } from '../../Buttons/CTAButton'
 import { Video } from '../../Video'
 import { heroData } from '../data'
@@ -80,6 +80,7 @@ const CreatorsHero = memo(() => {
                   }}
                   event={SegmentEvent.DOWNLOAD}
                   place={SectionViewedTrack.CREATORS_HERO}
+                  downloadTarget={DownloadTarget.CREATOR_HUB}
                   endIcon={<DownloadButtonImage src={primaryOption.image} alt="" />}
                   label={l('page.download.download_creator_hub')}
                   isFullWidth={false}
@@ -93,6 +94,7 @@ const CreatorsHero = memo(() => {
                         data-place={SectionViewedTrack.CREATORS_HERO}
                         data-event={SegmentEvent.DOWNLOAD}
                         data-os={option.text}
+                        data-download-target={DownloadTarget.CREATOR_HUB}
                         onClick={event => {
                           event.preventDefault()
                           trackClick(event)
@@ -113,6 +115,7 @@ const CreatorsHero = memo(() => {
                 }}
                 event={SegmentEvent.DOWNLOAD}
                 place={SectionViewedTrack.CREATORS_HERO}
+                downloadTarget={DownloadTarget.CREATOR_HUB}
                 label={l('page.download.download_creator_hub')}
                 isFullWidth={false}
               />
