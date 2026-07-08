@@ -117,7 +117,7 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
       )}
       {showBottomJumpIn && (
         <BottomJumpInRow>
-          <JumpInButton position={`${data.x},${data.y}`} realm={data.realm} fullWidth size="large">
+          <JumpInButton position={`${data.x},${data.y}`} realm={data.realm} size="large">
             {t('event_detail.jump_in')}
           </JumpInButton>
         </BottomJumpInRow>
