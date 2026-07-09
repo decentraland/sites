@@ -9,6 +9,33 @@ const GOOGLE_PLAY_DEFAULT_URL =
   'https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&utm_org=dclrgl&utm_source=fdn&utm_medium=qr&utm_campaign=dclpage&utm_content=android'
 
 /**
+ * Builds the effective Play Store URL: incoming campaign params overlaid on
+ * the default tag, plus a `referrer` param mirroring the final utm_* set.
+ *
+ * The bare utm_* params only tag the store-page visit (Play Console
+ * acquisition reports). Campaign attribution for the INSTALL travels through
+ * the Play Install Referrer API, which reads the `referrer` query param —
+ * without it, no install can ever be joined back to a campaign, no matter
+ * what the URL's utm_* say. The mobile client still has to read its install
+ * referrer and forward it to analytics for the loop to close; this makes the
+ * data available at the store handoff so that work is unblocked.
+ */
+function buildGooglePlayUrl(): string {
+  const url = new URL(withCampaignParamsOverlay(GOOGLE_PLAY_DEFAULT_URL))
+  const referrer = new URLSearchParams()
+  for (const [key, value] of url.searchParams.entries()) {
+    if (key.startsWith('utm_')) {
+      referrer.append(key, value)
+    }
+  }
+  // URLSearchParams.set percent-encodes the nested query string on
+  // serialization (`utm_source%3D…%26utm_medium%3D…`), matching the format
+  // the Install Referrer API expects.
+  url.searchParams.set('referrer', referrer.toString())
+  return url.toString()
+}
+
+/**
  * Centralized download URLs.
  * Mirrors decentraland-ui2/modules/downloadUrls but avoids deep imports
  * that break with module federation's shared scope.
@@ -23,9 +50,10 @@ const DOWNLOAD_URLS = {
   // campaign into the Play Store handoff instead of always reporting
   // "fdn/qr/dclpage". Without this, no Play Store install can ever be
   // attributed to a dynamic campaign — the store link always shipped the same
-  // static tag regardless of how the visitor actually landed.
+  // static tag regardless of how the visitor actually landed. See
+  // buildGooglePlayUrl for the `referrer` install-attribution mirror.
   get googlePlay(): string {
-    return withCampaignParamsOverlay(GOOGLE_PLAY_DEFAULT_URL)
+    return buildGooglePlayUrl()
   },
   appStore: 'https://apps.apple.com/app/apple-store/id6478403840?pt=126284288&ct=Decentraland%20Home%20iOS&mt=8'
 } as const

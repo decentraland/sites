@@ -30,6 +30,23 @@ describe('downloadConstants', () => {
         expect(url.searchParams.get('utm_campaign')).toBe('ad')
         expect(url.searchParams.get('id')).toBe('org.decentraland.godotexplorer')
       })
+
+      it('should mirror the default utm set into the Install Referrer param when no campaign is present', () => {
+        const referrer = new URLSearchParams(new URL(DOWNLOAD_URLS.googlePlay).searchParams.get('referrer') ?? '')
+        expect(referrer.get('utm_source')).toBe('fdn')
+        expect(referrer.get('utm_medium')).toBe('qr')
+        expect(referrer.get('utm_campaign')).toBe('dclpage')
+      })
+
+      it('should mirror the incoming campaign into the Install Referrer param when present', () => {
+        window.history.pushState({}, '', '/?utm_source=x&utm_medium=paid&utm_campaign=ad')
+        const referrer = new URLSearchParams(new URL(DOWNLOAD_URLS.googlePlay).searchParams.get('referrer') ?? '')
+        expect(referrer.get('utm_source')).toBe('x')
+        expect(referrer.get('utm_medium')).toBe('paid')
+        expect(referrer.get('utm_campaign')).toBe('ad')
+        // Non-utm routing params never leak into the referrer payload.
+        expect(referrer.get('id')).toBeNull()
+      })
     })
   })
 
