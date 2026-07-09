@@ -191,7 +191,7 @@ This PR instruments the blind window between the upstream `Click` and `download_
 
 ## 6. The Creator Hub funnel — current state
 
-**Upstream `Click` + `download_started` + `download_success`, reusing the shared enum — NOT a separate `creator_hub_download_*` family.** Shipped by PR #619 (2026-06-xx, predates the 2026-07 tracking work in this doc).
+**Upstream `Click` + `download_started` + `download_success`, reusing the shared enum — NOT a separate `creator_hub_download_*` family.** Shipped by PR #619 (merged 2026-06-23, predates the 2026-07 tracking work in this doc).
 
 - **Click** — the primary download CTAs (CreatorsHero, `/download/creator-hub` page) emit `Click` with `place=Creators Hero` / `place=Download` and `event=Download` via the standard `useTrackClick` adapter, same as any other download surface.
 - **`download_started`** — fired from `src/hooks/useCreatorHubDownload.ts` (`handleDownload`) via `createDownloadTracker(...).started()` at the moment the file download is triggered (`place: DownloadPlace.CREATOR_HUB_DOWNLOAD_PAGE`). `revisit` is hardcoded `0` — a click is a one-shot intent, there's no per-attempt revisit notion on this page.
