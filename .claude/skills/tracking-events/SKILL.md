@@ -45,7 +45,7 @@ You should almost never call `useAnalytics().track` directly. The decision tree:
 All declared in `src/modules/segment.types.ts` and re-exported by `src/modules/segment.ts`:
 
 - **`SegmentEvent`** — every event name fired with `track()`. Mixed casing because some literals are historical: `'Click'`, `'Download'`, `'Reels Click …'` (Title Case Words), and the funnel events `download_started / download_success / download_failed` (snake_case). Don't normalize — the data team tracks by these literal strings.
-- **`DownloadPlace`** — kebab-case enum for the `place` field of `download_*` events. Values: `landing-hero`, `landing-hero-epic`, `landing-hero-platform-switch`, `come-hang-out`, `jump-in-already-user`, `download-page`, `download-success-footer`, `unknown`.
+- **`DownloadPlace`** — kebab-case enum for the `place` field of `download_*` events. 16 values incl. `landing-hero`, `landing-hero-epic`, `landing-hero-platform-switch`, `come-hang-out`, `come-hang-out-platform-switch`, `jump-in-already-user`, `play-hero`, `play-hero-epic`, `play-hero-app-store`, `play-hero-google-play`, `play-experimental-web`, `download-page`, `download-success-footer`, `creator-hub-download-page`, `creator-hub-success-page`, `unknown` — see `src/modules/segment.types.ts` for the authoritative list (it grows; don't copy this one stale).
 - **`SectionViewedTrack`** — Title Case enum for the `place` field of `Click` events (consumed via `data-place`). Values: `Landing Hero`, `Creators Hero`, `Landing Explore`, etc. **Different namespace from `DownloadPlace`** — they happen to overlap in intent (e.g. `SectionViewedTrack.LANDING_HERO = 'Landing Hero'` vs `DownloadPlace.LANDING_HERO = 'landing-hero'`), but to join them in a query the warehouse has to normalize.
 
 ## 4. The `data-event` convention (Click events)
@@ -191,7 +191,14 @@ This PR instruments the blind window between the upstream `Click` and `download_
 
 ## 6. The Creator Hub funnel — current state
 
-**Only the upstream `Click` is tracked**, by design. Decision (2026-05-22): the Creator Hub flow doesn't ship `creator_hub_download_*` outcome events because the download is `dispatch-and-forget` — we have no signal that the file actually saved, no progress, no `_FAILED` to fire. The primary download CTAs (CreatorsHero, CreatorHubDownload page) emit `Click` with `place=Creators Hero` or `place=Download` and `event=Download` via the standard `useTrackClick` adapter. The footer re-download on `/download/creator-hub-success` also fires `Click` with `place=Creator Hub Success Footer` + `data-os` so analytics can distinguish footer clicks from primary CTAs. No `page()` event on the success page.
+**Upstream `Click` + `download_started` + `download_success`, reusing the shared enum — NOT a separate `creator_hub_download_*` family.** Shipped by PR #619 (merged 2026-06-23, predates the 2026-07 tracking work in this doc).
+
+- **Click** — the primary download CTAs (CreatorsHero, `/download/creator-hub` page) emit `Click` with `place=Creators Hero` / `place=Download` and `event=Download` via the standard `useTrackClick` adapter, same as any other download surface.
+- **`download_started`** — fired from `src/hooks/useCreatorHubDownload.ts` (`handleDownload`) via `createDownloadTracker(...).started()` at the moment the file download is triggered (`place: DownloadPlace.CREATOR_HUB_DOWNLOAD_PAGE`). `revisit` is hardcoded `0` — a click is a one-shot intent, there's no per-attempt revisit notion on this page.
+- **`download_success`** — fired from `src/pages/download/CreatorHubDownloadSuccess.tsx` on mount (`useEffect`, guarded by a ref so React strict-mode double-invoke only fires once) via `createDownloadTracker(...).success(filename)`, `place: DownloadPlace.CREATOR_HUB_SUCCESS_PAGE`. **Semantically this is "the visitor reached the post-download page", not "bytes arrived"** — sites can't observe the actual download outcome for this flow (see below), so reaching the success page is used as the completion signal. `revisit` increments per mount for the same `os:arch` (sessionStorage counter, mirrors the Explorer `DownloadSuccess` pattern).
+- **No `download_failed`** — still true, and still by design: the Creator Hub download is `dispatch-and-forget` (`triggerFileDownload` + a 3s `setTimeout` redirect, no stream to observe). There is no browser-observable failure signal to fire it from.
+- The footer re-download on `/download/creator-hub-success` fires `Click` via the standard `useTrackClick` adapter with `data-place={SectionViewedTrack.CREATOR_HUB_SUCCESS_FOOTER}`, `data-os`, `data-download-target={DownloadTarget.CREATOR_HUB}` so analytics can distinguish footer clicks from primary CTAs.
+- No `page()` event on the success page.
 
 ## 7. Adjacent / route-level tracking
 
@@ -244,7 +251,7 @@ If grep returns zero matches the enum value is **dead code** — verify with a r
 
 - **P0-1** (✅ shipped): `useTrackClick` ignoring `data-event` for non-Click events — fixed; verify with the dead-enum grep above when touching callsites.
 - **P0-2** (✅ done — Onboarding Checkpoint family deprecated 2026-05-22): all CP5/CP6 fires and the `trackCheckpoint` helper were removed. No replacement scheduled.
-- **P0-3:** Creator Hub has zero outcome tracking. Solution: mirror Explorer pattern with a `CREATOR_HUB_DOWNLOAD_*` enum family, reuse `createDownloadTracker`.
+- **P0-3** (✅ done — PR #619): Creator Hub now fires `download_started` (on click) and `download_success` (on success-page mount) via the shared `createDownloadTracker`, reusing `SegmentEvent.DOWNLOAD_STARTED/_SUCCESS` — NOT a separate `CREATOR_HUB_DOWNLOAD_*` enum family. No `_FAILED` (still no observable failure signal). See section 6.
 - **P1-1** (✅ done): `download_started/success/failed` payload + timing fixes. See Plan.md section.
 - **P1-2** (✅ done — `useAnonUserId` reactivity 2026-05-22): hook now depends on `isInitialized` so it re-evaluates when Segment boots; `DownloadSuccess` gates the auto-download on a `anonUserIdReady` state with an 800ms timeout fallback. See LL-9.
 - **P1-3** (✅ partial via `useDeferredTrack`): `useTrackClick` silent drop when `isInitialized === false`. Adopting `useDeferredTrack` inside the adapter would resolve this for Click events too.
@@ -258,7 +265,7 @@ Discovered the hard way during the 2026-05-22 tracking overhaul. Read before des
 
 ### LL-1. Don't mirror the Explorer pattern blindly on the Creator Hub
 
-The Creator Hub flow is **dispatch-and-forget** (anchor click → 3s setTimeout → redirect). There is no stream, no progress, no failure signal from the browser. **Do NOT add a `creator_hub_download_started/_success/_failed` event family unless the data team explicitly requests it** — the upstream `Click` already covers the funnel that product needs. The 2026-05-22 P0-3 was originally scoped as a full event family by reading the analysis HTML in isolation; the user corrected it to "just fix the footer click" because the rest was unnecessary scope creep.
+The Creator Hub flow is **dispatch-and-forget** (anchor click → 3s setTimeout → redirect). There is no stream, no progress, no failure signal from the browser. PR #619 did add `download_started`/`download_success` for this funnel (see section 6) — but **reusing the shared `SegmentEvent` enum**, not a new `creator_hub_download_*` family, and **without** a `_failed` counterpart (there's nothing to catch a failure from). If a future change proposes a dedicated `CREATOR_HUB_DOWNLOAD_*` enum family or a `_failed` event for this flow, that's the anti-pattern this lesson warns against — confirm with the data team first, don't invent a failure signal that doesn't exist in the browser.
 
 ### LL-2. Don't assume an event family is active — check with the data team
 
