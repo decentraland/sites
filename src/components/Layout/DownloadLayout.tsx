@@ -17,7 +17,7 @@ import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
 import { DownloadPlace, DownloadTarget, SegmentEvent } from '../../modules/segment'
 import { assetUrl } from '../../utils/assetUrl'
 import { DownloadOptions } from '../DownloadOptions'
-import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../Home/shared/googlePlay'
+import { googlePlayBadge } from '../Home/shared/googlePlay'
 import { GooglePlayButton, GooglePlayImage } from '../Home/shared/MobileCTA.styled'
 import { LandingFooter } from '../LandingFooter'
 import { LandingNavbarConnected } from '../LandingNavbar'
@@ -236,7 +236,7 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
                 historical from when they were Google-Play–only. Reused here for both OSes. */}
             {isMobileAndroid ? (
               <GooglePlayButton
-                href={GOOGLE_PLAY_MOBILE_URL}
+                href={DOWNLOAD_URLS.googlePlay}
                 target="_blank"
                 rel="noopener noreferrer"
                 data-place={DownloadPlace.DOWNLOAD_PAGE}
