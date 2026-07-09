@@ -1,7 +1,7 @@
 import { memo, useCallback } from 'react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { AnimatedBackground, useDesktopMediaQuery } from 'decentraland-ui2'
-import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../../components/Home/shared/googlePlay'
+import { googlePlayBadge } from '../../components/Home/shared/googlePlay'
 import { GooglePlayButton, GooglePlayImage } from '../../components/Home/shared/MobileCTA.styled'
 import { VerifiedIcon } from '../../components/Icon/VerifiedIcon'
 import { getEnv } from '../../config/env'
@@ -85,7 +85,7 @@ const PlayPage = memo(() => {
           </PlayTitleGroup>
 
           <GooglePlayButton
-            href={isMobileAndroid ? GOOGLE_PLAY_MOBILE_URL : DOWNLOAD_URLS.appStore}
+            href={isMobileAndroid ? DOWNLOAD_URLS.googlePlay : DOWNLOAD_URLS.appStore}
             target="_blank"
             rel="noopener noreferrer"
             data-place={isMobileAndroid ? DownloadPlace.PLAY_HERO_GOOGLE_PLAY : DownloadPlace.PLAY_HERO_APP_STORE}
@@ -178,7 +178,7 @@ const PlayPage = memo(() => {
               <PlayBadgeImage src={assetUrl('/app-store-badge.svg')} alt="Download on the App Store" />
             </PlayBadgeLink>
             <PlayBadgeLink
-              href={GOOGLE_PLAY_MOBILE_URL}
+              href={DOWNLOAD_URLS.googlePlay}
               target="_blank"
               rel="noopener noreferrer"
               data-place={DownloadPlace.PLAY_HERO_GOOGLE_PLAY}

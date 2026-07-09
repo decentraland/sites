@@ -3,7 +3,6 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
-import { GOOGLE_PLAY_MOBILE_URL } from '../../components/Home/shared/googlePlay'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useDownloadPageExit } from '../../hooks/useDownloadPageExit'
 import { useWalletAddress } from '../../hooks/useWalletAddress'
@@ -347,7 +346,7 @@ describe('DownloadLayout', () => {
       >)
       render(<DownloadLayout title={TITLE} />)
       const anchor = screen.getByAltText('Get it on Google Play').closest('a') as HTMLAnchorElement
-      expect(anchor).toHaveAttribute('href', GOOGLE_PLAY_MOBILE_URL)
+      expect(anchor).toHaveAttribute('href', DOWNLOAD_URLS.googlePlay)
       expect(anchor.getAttribute('href')).not.toContain('/download_success')
     })
 

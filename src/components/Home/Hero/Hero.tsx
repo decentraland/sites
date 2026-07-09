@@ -18,7 +18,7 @@ import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { type ScheduledHandle, cancelScheduledIdleCall, scheduleWhenIdle } from '../../../utils/scheduleWhenIdle'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
-import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
+import { googlePlayBadge } from '../shared/googlePlay'
 import {
   DownloadButton,
   EpicButton,
@@ -204,7 +204,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
           <MobileHeroTitle>{l('page.home.hero.mobile_android_title')}</MobileHeroTitle>
           <MobileHeroSubtitle>{l('page.home.hero.mobile_android_subtitle')}</MobileHeroSubtitle>
           <GooglePlayButton
-            href={GOOGLE_PLAY_MOBILE_URL}
+            href={DOWNLOAD_URLS.googlePlay}
             target="_blank"
             rel="noopener noreferrer"
             data-event={SegmentEvent.DOWNLOAD}

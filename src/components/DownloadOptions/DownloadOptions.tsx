@@ -20,7 +20,6 @@ import { Architecture, DownloadOptionProps, OperativeSystem } from '../../types/
 import { assetUrl } from '../../utils/assetUrl'
 import { DownloadButton, EpicButton } from '../Home/Hero/Hero.styled'
 import { EPIC_GAMES_URL } from '../Home/shared/epicGames'
-import { GOOGLE_PLAY_DESKTOP_URL } from '../Home/shared/googlePlay'
 import { VerifiedIcon } from '../Icon/VerifiedIcon'
 import {
   AlternativeButton,
@@ -302,7 +301,7 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
               <AlternativeButton
                 variant="text"
                 color="inherit"
-                href={GOOGLE_PLAY_DESKTOP_URL}
+                href={DOWNLOAD_URLS.googlePlay}
                 {...{ target: '_blank', rel: 'noopener noreferrer' }}
                 aria-label="Google Play"
                 data-place={DownloadPlace.DOWNLOAD_PAGE}

@@ -17,7 +17,7 @@ import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
 import { DownloadButton, EpicButton } from '../Hero/Hero.styled'
-import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
+import { googlePlayBadge } from '../shared/googlePlay'
 import {
   AvatarsImage,
   ComeHangOutContainer,
@@ -58,7 +58,7 @@ const ComeHangOut = memo(() => {
     if (isMobileAndroid) {
       return (
         <GooglePlayButton
-          href={GOOGLE_PLAY_MOBILE_URL}
+          href={DOWNLOAD_URLS.googlePlay}
           target="_blank"
           rel="noopener noreferrer"
           data-event={SegmentEvent.DOWNLOAD}

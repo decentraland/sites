@@ -6,7 +6,6 @@ import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
 import { getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
 import { postSegmentEvent } from '../../modules/segmentBeacon'
 import type { DownloadOptionProps } from '../../types/download.types'
-import { GOOGLE_PLAY_DESKTOP_URL } from '../Home/shared/googlePlay'
 import { DownloadOptions, handleDownloadOptionClick } from './DownloadOptions'
 
 // Keep ../../modules/url REAL so the actual /download_success URL is built and
@@ -253,7 +252,7 @@ describe('DownloadOptions', () => {
       const googlePlay = screen.getByLabelText('Google Play')
       expect(googlePlay).toHaveAttribute('data-download-target', 'google_play')
       expect(googlePlay).toHaveAttribute('data-os', 'Android')
-      expect(googlePlay).toHaveAttribute('href', GOOGLE_PLAY_DESKTOP_URL)
+      expect(googlePlay).toHaveAttribute('href', DOWNLOAD_URLS.googlePlay)
     })
 
     it('should fire the tracker when a store badge is clicked (unload-safe path handled by useDownloadClick)', async () => {
