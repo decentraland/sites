@@ -141,7 +141,7 @@ const createCards: CreateCardData[] = [
         },
         {
           label: 'Publishing Wearables',
-          url: 'https://docs.decentraland.org/creator/wearables/publishing-collections/'
+          url: 'https://docs.decentraland.org/creator/wearables-and-emotes/publishing-collections/publishing-collections'
         },
         {
           label: 'Wearable Tutorials',
@@ -158,15 +158,15 @@ const createCards: CreateCardData[] = [
       links: [
         {
           label: 'Portable Experience Docs',
-          url: 'https://docs.decentraland.org/creator/development-guide/sdk7/portable-experiences/'
+          url: 'https://docs.decentraland.org/creator/scenes-sdk7/kinds-of-projects/portable-experiences'
         },
         {
           label: 'SDK 7 Docs',
-          url: 'https://docs.decentraland.org/creator/development-guide/sdk7/sdk-101/'
+          url: 'https://docs.decentraland.org/creator/scenes-sdk7/getting-started/sdk-101'
         },
         {
           label: 'Smart Wearables Docs',
-          url: 'https://docs.decentraland.org/creator/development-guide/sdk7/smart-wearables/'
+          url: 'https://docs.decentraland.org/creator/scenes-sdk7/kinds-of-projects/smart-wearables'
         },
         {
           label: 'Smart Wearables in the Marketplace',
@@ -191,7 +191,7 @@ const createCards: CreateCardData[] = [
       links: [
         {
           label: 'Creating Emotes',
-          url: 'https://docs.decentraland.org/creator/emotes/creating-and-exporting-emotes/'
+          url: 'https://docs.decentraland.org/creator/wearables-and-emotes/emotes/creating-emotes'
         },
         {
           label: 'Emote Tutorials',
@@ -199,7 +199,7 @@ const createCards: CreateCardData[] = [
         },
         {
           label: 'Publishing Emotes',
-          url: 'https://docs.decentraland.org/creator/wearables/publishing-collections/'
+          url: 'https://docs.decentraland.org/creator/wearables-and-emotes/publishing-collections/publishing-collections'
         },
         {
           label: 'Emotes in the Marketplace',
@@ -257,7 +257,7 @@ const createCards: CreateCardData[] = [
         },
         {
           label: 'Building Docs',
-          url: 'https://docs.decentraland.org/creator/development-guide/sdk7/sdk-101/'
+          url: 'https://docs.decentraland.org/creator/scenes-sdk7/getting-started/sdk-101'
         },
         {
           label: 'Building Tutorials',

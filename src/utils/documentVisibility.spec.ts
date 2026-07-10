@@ -112,6 +112,32 @@ describe('documentVisibility', () => {
       })
     })
 
+    describe('and the dedup unsubscribe handle is the one released', () => {
+      let unsubscribeFirst: () => void
+      let unsubscribeDuplicate: () => void
+
+      beforeEach(() => {
+        unsubscribeFirst = subscribeVisibility(listener)
+        // Second call with the same reference returns the dedup-branch closure.
+        unsubscribeDuplicate = subscribeVisibility(listener)
+      })
+
+      afterEach(() => {
+        unsubscribeFirst()
+      })
+
+      it('should remove the listener when the dedup handle runs first', () => {
+        // Releasing the dedup handle while the listener is still registered exercises the
+        // delete + maybeDetach path inside the dedup closure.
+        unsubscribeDuplicate()
+
+        hiddenValue = true
+        document.dispatchEvent(new Event('visibilitychange'))
+
+        expect(listener).not.toHaveBeenCalled()
+      })
+    })
+
     describe('and the last subscriber leaves', () => {
       let addSpy: jest.SpyInstance
       let removeSpy: jest.SpyInstance
@@ -135,6 +161,33 @@ describe('documentVisibility', () => {
         release()
 
         expect(removeSpy).toHaveBeenCalledWith('visibilitychange', expect.any(Function))
+      })
+    })
+
+    describe('and one of several subscribers leaves while others remain', () => {
+      let removeSpy: jest.SpyInstance
+
+      beforeEach(() => {
+        removeSpy = jest.spyOn(document, 'removeEventListener')
+      })
+
+      it('should keep the visibilitychange listener attached', () => {
+        const firstListener = jest.fn()
+        const secondListener = jest.fn()
+        const releaseFirst = subscribeVisibility(firstListener)
+        const releaseSecond = subscribeVisibility(secondListener)
+
+        releaseFirst()
+
+        expect(removeSpy).not.toHaveBeenCalledWith('visibilitychange', expect.any(Function))
+
+        hiddenValue = true
+        document.dispatchEvent(new Event('visibilitychange'))
+
+        expect(firstListener).not.toHaveBeenCalled()
+        expect(secondListener).toHaveBeenCalledWith(false)
+
+        releaseSecond()
       })
     })
   })

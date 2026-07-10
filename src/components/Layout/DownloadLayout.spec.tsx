@@ -4,13 +4,32 @@ import userEvent from '@testing-library/user-event'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
+import { useDownloadPageExit } from '../../hooks/useDownloadPageExit'
 import { useWalletAddress } from '../../hooks/useWalletAddress'
+import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
+import { SegmentEvent } from '../../modules/segment'
+import { postSegmentEvent } from '../../modules/segmentBeacon'
 import { redirectToAuth } from '../../utils/authRedirect'
 import { DownloadLayout } from './DownloadLayout'
 
 jest.mock('react-intersection-observer', () => ({ useInView: jest.fn() }))
 
-jest.mock('@dcl/hooks', () => ({ useAdvancedUserAgentData: jest.fn(() => [false, undefined]) }))
+// useDownloadClick (wired on the mobile store CTAs) reads useAnalytics; keep
+// Segment "cold" so store-exit clicks take the unload-safe beacon path — the
+// same state /download has in production (it is analytics-exempt on cold load).
+jest.mock('@dcl/hooks', () => ({
+  useAdvancedUserAgentData: jest.fn(() => [false, undefined]),
+  useAnalytics: () => ({ isInitialized: false, track: jest.fn() })
+}))
+
+jest.mock('../../modules/segmentBeacon', () => ({ postSegmentEvent: jest.fn() }))
+jest.mock('../../modules/segmentAnonymousId', () => ({
+  ensureSegmentAnonymousId: () => 'anon-fixed',
+  // `downloadClickCorrelation` (used by `useDownloadClick`, wired on the store-exit
+  // CTAs below) imports `generateUuid` from this same module, so the mock must
+  // keep exporting it — mirrors the fix in `useDownloadClick.spec.ts`.
+  generateUuid: () => '11111111-1111-4111-8111-111111111111'
+}))
 
 jest.mock('decentraland-ui2', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -46,6 +65,8 @@ jest.mock('../../features/profile/profile.client', () => ({ useGetProfileQuery: 
 
 jest.mock('../../hooks/useWalletAddress', () => ({ useWalletAddress: jest.fn() }))
 
+jest.mock('../../hooks/useDownloadPageExit', () => ({ useDownloadPageExit: jest.fn() }))
+
 jest.mock('../../utils/authRedirect', () => ({ redirectToAuth: jest.fn() }))
 
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
@@ -67,6 +88,7 @@ const mockUseWalletAddress = jest.mocked(useWalletAddress)
 const mockUseGetProfileQuery = jest.mocked(useGetProfileQuery)
 const mockLaunchDesktopApp = jest.mocked(launchDesktopApp)
 const mockRedirectToAuth = jest.mocked(redirectToAuth)
+const mockUseDownloadPageExit = jest.mocked(useDownloadPageExit)
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const mockUseDesktopMediaQuery = require('decentraland-ui2').useDesktopMediaQuery as jest.Mock
 
@@ -90,6 +112,11 @@ describe('DownloadLayout', () => {
 
   afterEach(() => {
     jest.clearAllMocks()
+  })
+
+  it('should mount the download page exit diagnostic', () => {
+    render(<DownloadLayout title={TITLE} />)
+    expect(mockUseDownloadPageExit).toHaveBeenCalled()
   })
 
   describe('when the user is not signed in', () => {
@@ -122,6 +149,37 @@ describe('DownloadLayout', () => {
       render(<DownloadLayout title={TITLE} />)
       await userEvent.click(screen.getByText('component.landing.navbar.sign_in'))
       expect(mockRedirectToAuth).toHaveBeenCalledTimes(1)
+    })
+
+    it('should navigate to decentraland.org when the logo is clicked', async () => {
+      const assignSpy = jest.fn()
+      const original = window.location
+      // Redefine location so the assignment in the click handler is observable
+      // and does not trigger jsdom's "navigation not implemented" warning.
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: {
+          ...original,
+          set href(value: string) {
+            assignSpy(value)
+          },
+          get href() {
+            return original.href
+          }
+        }
+      })
+      try {
+        render(<DownloadLayout title={TITLE} />)
+        // DclLogo is the label-less clickable element rendered immediately before
+        // the Sign In button in the signed-out chrome.
+        const signIn = screen.getByText('component.landing.navbar.sign_in')
+        const logo = signIn.previousElementSibling as HTMLElement
+        expect(logo).not.toBeNull()
+        await userEvent.click(logo)
+        expect(assignSpy).toHaveBeenCalledWith('https://decentraland.org')
+      } finally {
+        Object.defineProperty(window, 'location', { configurable: true, value: original })
+      }
     })
   })
 
@@ -156,6 +214,63 @@ describe('DownloadLayout', () => {
       mockUseInView.mockReturnValue({ ref: jest.fn(), inView: true } as unknown as ReturnType<typeof useInView>)
       render(<DownloadLayout title={TITLE} />)
       await waitFor(() => expect(screen.getByTestId('wearable-preview')).toBeInTheDocument())
+    })
+
+    it('should set an accessible title on the preview iframe once it is present in the container', async () => {
+      // The ref callback wires the container; once the WearablePreview iframe is
+      // rendered the effect's `existing` branch runs and labels it for a11y.
+      mockUseInView.mockReturnValue({ ref: jest.fn(), inView: true } as unknown as ReturnType<typeof useInView>)
+      render(<DownloadLayout title={TITLE} />)
+      await waitFor(() => expect(screen.getByTestId('wearable-preview')).toHaveAttribute('title', 'page.download.avatar_preview'))
+    })
+
+    it('should label an iframe that the WearablePreview injects asynchronously via MutationObserver', async () => {
+      // Render the preview wrapper but with NO iframe yet, then inject one into
+      // the container after mount so the MutationObserver branch (not the
+      // synchronous `existing` branch) sets the title.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const wpModule = require('decentraland-ui2/dist/components/WearablePreview/WearablePreview')
+      const originalPreview = wpModule.WearablePreview
+      // Replace the preview with an empty container so no iframe exists initially.
+      wpModule.WearablePreview = () => <div data-testid="empty-preview" />
+      try {
+        mockUseInView.mockReturnValue({ ref: jest.fn(), inView: true } as unknown as ReturnType<typeof useInView>)
+        const { container } = render(<DownloadLayout title={TITLE} />)
+        await waitFor(() => expect(screen.getByTestId('empty-preview')).toBeInTheDocument())
+
+        const host = screen.getByTestId('empty-preview').parentElement as HTMLElement
+        const injected = document.createElement('iframe')
+        host.appendChild(injected)
+
+        await waitFor(() => expect(injected).toHaveAttribute('title', 'page.download.avatar_preview'))
+        expect(container).toBeTruthy()
+      } finally {
+        wpModule.WearablePreview = originalPreview
+      }
+    })
+
+    it('should label an iframe nested inside an element the WearablePreview injects', async () => {
+      // Same MutationObserver path, but the added node is a wrapper element that
+      // contains the iframe rather than the iframe itself.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const wpModule = require('decentraland-ui2/dist/components/WearablePreview/WearablePreview')
+      const originalPreview = wpModule.WearablePreview
+      wpModule.WearablePreview = () => <div data-testid="empty-preview-nested" />
+      try {
+        mockUseInView.mockReturnValue({ ref: jest.fn(), inView: true } as unknown as ReturnType<typeof useInView>)
+        render(<DownloadLayout title={TITLE} />)
+        await waitFor(() => expect(screen.getByTestId('empty-preview-nested')).toBeInTheDocument())
+
+        const host = screen.getByTestId('empty-preview-nested').parentElement as HTMLElement
+        const wrapper = document.createElement('div')
+        const nestedIframe = document.createElement('iframe')
+        wrapper.appendChild(nestedIframe)
+        host.appendChild(wrapper)
+
+        await waitFor(() => expect(nestedIframe).toHaveAttribute('title', 'page.download.avatar_preview'))
+      } finally {
+        wpModule.WearablePreview = originalPreview
+      }
     })
   })
 
@@ -213,6 +328,72 @@ describe('DownloadLayout', () => {
       >)
       render(<DownloadLayout title={TITLE} />)
       expect(screen.getByAltText('Get it on Google Play')).toBeInTheDocument()
+    })
+
+    it('should point the App Store CTA at the store, never through /download_success', () => {
+      mockUseAdvancedUserAgentData.mockReturnValue([false, { os: { name: 'iOS' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+      render(<DownloadLayout title={TITLE} />)
+      const anchor = screen.getByAltText('Download on the App Store').closest('a') as HTMLAnchorElement
+      expect(anchor).toHaveAttribute('href', DOWNLOAD_URLS.appStore)
+      expect(anchor.getAttribute('href')).not.toContain('/download_success')
+    })
+
+    it('should point the Google Play CTA at the store, never through /download_success', () => {
+      mockUseAdvancedUserAgentData.mockReturnValue([false, { os: { name: 'Android' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+      render(<DownloadLayout title={TITLE} />)
+      const anchor = screen.getByAltText('Get it on Google Play').closest('a') as HTMLAnchorElement
+      expect(anchor).toHaveAttribute('href', DOWNLOAD_URLS.googlePlay)
+      expect(anchor.getAttribute('href')).not.toContain('/download_success')
+    })
+
+    it('should track the App Store store exit with campaign params and download_target=app_store', async () => {
+      window.history.pushState({}, '', '/download?utm_source=shefi&utm_campaign=partner')
+      mockUseAdvancedUserAgentData.mockReturnValue([false, { os: { name: 'iOS' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+      render(<DownloadLayout title={TITLE} />)
+
+      await userEvent.click(screen.getByAltText('Download on the App Store').closest('a') as HTMLAnchorElement)
+
+      expect(postSegmentEvent).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({
+          event: SegmentEvent.DOWNLOAD,
+          place: 'download-page',
+          os: 'iOS',
+          download_target: 'app_store',
+          utm_source: 'shefi',
+          utm_campaign: 'partner'
+        }),
+        'anon-fixed'
+      )
+    })
+
+    it('should track the Google Play store exit with campaign params and download_target=google_play', async () => {
+      window.history.pushState({}, '', '/download?utm_source=shefi&utm_campaign=partner')
+      mockUseAdvancedUserAgentData.mockReturnValue([false, { os: { name: 'Android' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+      render(<DownloadLayout title={TITLE} />)
+
+      await userEvent.click(screen.getByAltText('Get it on Google Play').closest('a') as HTMLAnchorElement)
+
+      expect(postSegmentEvent).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({
+          event: SegmentEvent.DOWNLOAD,
+          place: 'download-page',
+          os: 'Android',
+          download_target: 'google_play',
+          utm_source: 'shefi',
+          utm_campaign: 'partner'
+        }),
+        'anon-fixed'
+      )
     })
   })
 })

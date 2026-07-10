@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
+import { DownloadTarget, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 
 type CTAButtonProps = {
   href: string
@@ -8,6 +8,7 @@ type CTAButtonProps = {
   subLabel?: string
   event?: SegmentEvent
   place: SectionViewedTrack
+  downloadTarget?: DownloadTarget
   isFullWidth?: boolean
   startIcon?: ReactNode
   endIcon?: ReactNode

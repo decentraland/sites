@@ -36,31 +36,34 @@ function useManaBalances(address: string | undefined) {
     }
   }, [address])
 
-  const fetchBalances = useCallback(async () => {
-    if (!address || isLoadingRef.current) return
+  const fetchBalances = useCallback(
+    async (force = false) => {
+      if (!address || isLoadingRef.current) return
 
-    const cache = cacheRef.current
-    if (cache && cache.address === address && Date.now() - cache.fetchedAt < CACHE_TTL_MS) {
-      setBalances(cache.balances)
-      return
-    }
+      const cache = cacheRef.current
+      if (!force && cache && cache.address === address && Date.now() - cache.fetchedAt < CACHE_TTL_MS) {
+        setBalances(cache.balances)
+        return
+      }
 
-    isLoadingRef.current = true
-    setIsLoading(true)
+      isLoadingRef.current = true
+      setIsLoading(true)
 
-    try {
-      const { fetchManaBalancesFromChain } = await import('./useManaBalances.impl')
-      const result = await fetchManaBalancesFromChain(address)
-      if (addressRef.current !== address) return
-      cacheRef.current = { address, balances: result, fetchedAt: Date.now() }
-      setBalances(result)
-    } catch (error) {
-      console.error('[useManaBalances] Failed to fetch balances:', error)
-    } finally {
-      isLoadingRef.current = false
-      setIsLoading(false)
-    }
-  }, [address])
+      try {
+        const { fetchManaBalancesFromChain } = await import('./useManaBalances.impl')
+        const result = await fetchManaBalancesFromChain(address)
+        if (addressRef.current !== address) return
+        cacheRef.current = { address, balances: result, fetchedAt: Date.now() }
+        setBalances(result)
+      } catch (error) {
+        console.error('[useManaBalances] Failed to fetch balances:', error)
+      } finally {
+        isLoadingRef.current = false
+        setIsLoading(false)
+      }
+    },
+    [address]
+  )
 
   return { balances, isLoading, fetchBalances, minDisplayBalance: MIN_DISPLAY_BALANCE }
 }

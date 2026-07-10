@@ -9,12 +9,15 @@ import { Button, Typography, launchDesktopApp, useDesktopMediaQuery } from 'dece
 import { getEnv } from '../../config/env'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { useDownloadClick } from '../../hooks/useDownloadClick'
+import { useDownloadPageExit } from '../../hooks/useDownloadPageExit'
 import { useSignInRedirect } from '../../hooks/useSignInRedirect'
 import { useWalletAddress } from '../../hooks/useWalletAddress'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
+import { DownloadPlace, DownloadTarget, SegmentEvent } from '../../modules/segment'
 import { assetUrl } from '../../utils/assetUrl'
 import { DownloadOptions } from '../DownloadOptions'
-import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../Home/shared/googlePlay'
+import { googlePlayBadge } from '../Home/shared/googlePlay'
 import { GooglePlayButton, GooglePlayImage } from '../Home/shared/MobileCTA.styled'
 import { LandingFooter } from '../LandingFooter'
 import { LandingNavbarConnected } from '../LandingNavbar'
@@ -49,10 +52,22 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-explicit-any
   const [WearablePreviewComponent, setWearablePreviewComponent] = useState<any>(null)
 
+  // DownloadLayout only mounts on /download (see src/pages/download.tsx), so
+  // this is the correct scope for the download_page_exit abandonment diagnostic.
+  useDownloadPageExit()
+
   const l = useFormatMessage()
   const isDesktop = useDesktopMediaQuery()
   const [, userAgentData] = useAdvancedUserAgentData()
   const isMobileAndroid = !!userAgentData?.mobile && userAgentData.os.name === 'Android'
+
+  // Mobile store CTAs exit to the App Store / Google Play (new tab / app
+  // switch). /download is analytics-exempt on cold load (no Segment boot —
+  // see isAnalyticsExemptPath), so this click adapter is what carries the
+  // partner attribution: analytics-next when Segment is warm (SPA entry),
+  // and the unload-safe beacon on cold loads — where Segment may never boot
+  // and the user may background the browser for the store app.
+  const trackStoreExit = useDownloadClick()
 
   const { address } = useWalletAddress()
 
@@ -220,11 +235,29 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
                 (same anchor + image sizing for the Apple and Google badges); the name is
                 historical from when they were Google-Play–only. Reused here for both OSes. */}
             {isMobileAndroid ? (
-              <GooglePlayButton href={GOOGLE_PLAY_MOBILE_URL} target="_blank" rel="noopener noreferrer">
+              <GooglePlayButton
+                href={DOWNLOAD_URLS.googlePlay}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-place={DownloadPlace.DOWNLOAD_PAGE}
+                data-event={SegmentEvent.DOWNLOAD}
+                data-os="Android"
+                data-download-target={DownloadTarget.GOOGLE_PLAY}
+                onClick={trackStoreExit}
+              >
                 <GooglePlayImage src={googlePlayBadge} alt="Get it on Google Play" />
               </GooglePlayButton>
             ) : (
-              <GooglePlayButton href={DOWNLOAD_URLS.appStore} target="_blank" rel="noopener noreferrer">
+              <GooglePlayButton
+                href={DOWNLOAD_URLS.appStore}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-place={DownloadPlace.DOWNLOAD_PAGE}
+                data-event={SegmentEvent.DOWNLOAD}
+                data-os="iOS"
+                data-download-target={DownloadTarget.APP_STORE}
+                onClick={trackStoreExit}
+              >
                 <GooglePlayImage src={assetUrl('/download-on-the-app-store.svg')} alt="Download on the App Store" />
               </GooglePlayButton>
             )}

@@ -23,6 +23,10 @@ enum SegmentEvent {
   DOWNLOAD_STARTED = 'download_started',
   DOWNLOAD_SUCCESS = 'download_success',
   DOWNLOAD_FAILED = 'download_failed',
+  DOWNLOAD_FUNNEL_EXIT = 'download_funnel_exit',
+  DOWNLOAD_PAGE_EXIT = 'download_page_exit',
+  DOWNLOAD_SUCCESS_ARRIVED = 'download_success_arrived',
+  DOWNLOAD_REDIRECT_FAILED = 'download_redirect_failed',
   LEGACY_EVENTS_REDIRECTED = 'Legacy Events Redirected',
   LEGACY_PLACES_REDIRECTED = 'Legacy Places Redirected',
   REELS_SHARE = 'Reels Share',
@@ -80,6 +84,7 @@ enum DownloadPlace {
   LANDING_HERO_EPIC = 'landing-hero-epic',
   LANDING_HERO_PLATFORM_SWITCH = 'landing-hero-platform-switch',
   COME_HANG_OUT = 'come-hang-out',
+  COME_HANG_OUT_PLATFORM_SWITCH = 'come-hang-out-platform-switch',
   JUMP_IN_ALREADY_USER = 'jump-in-already-user',
   PLAY_HERO = 'play-hero',
   PLAY_HERO_EPIC = 'play-hero-epic',
@@ -88,7 +93,26 @@ enum DownloadPlace {
   PLAY_EXPERIMENTAL_WEB = 'play-experimental-web',
   DOWNLOAD_PAGE = 'download-page',
   DOWNLOAD_SUCCESS_FOOTER = 'download-success-footer',
+  CREATOR_HUB_DOWNLOAD_PAGE = 'creator-hub-download-page',
+  CREATOR_HUB_SUCCESS_PAGE = 'creator-hub-success-page',
   UNKNOWN = 'unknown'
+}
+
+// Which download surface a download CTA click targets. Sent as the snake_case
+// `download_target` dimension on `Click` events (including `event=Download`
+// sub-typed ones) and on `download_*` funnel events so the warehouse can split
+// the direct desktop-installer flow from surfaces that never reach
+// `/download_success` and so must not pollute the desktop activation metric:
+// the mobile store exits (App Store / Google Play) and Epic, which delivers the
+// same desktop client but redirects to the Epic Games Store instead of the
+// in-app download. Only `desktop_installer` clicks are expected to produce a
+// `download_started` — filter the Click → download_started funnel on it.
+enum DownloadTarget {
+  DESKTOP_INSTALLER = 'desktop_installer',
+  APP_STORE = 'app_store',
+  GOOGLE_PLAY = 'google_play',
+  EPIC = 'epic',
+  CREATOR_HUB = 'creator_hub'
 }
 
 enum SectionViewedTrack {
@@ -129,4 +153,4 @@ enum SectionViewedTrack {
   REELS_NOT_FOUND = 'Reels Not Found'
 }
 
-export { DownloadPlace, SectionViewedTrack, SegmentEvent }
+export { DownloadPlace, DownloadTarget, SectionViewedTrack, SegmentEvent }

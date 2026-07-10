@@ -432,7 +432,7 @@
         "subtitle": "了解更多关于 Decentraland",
         "cta": {
           "label": "查看更多",
-          "link": "https://docs.decentraland.org/player/general/faq/"
+          "link": "https://docs.decentraland.org/faqs/"
         }
       },
       "marketplace": {
@@ -631,6 +631,7 @@
         "create_in_decentraland": "在Decentraland中创作",
         "publish_wearables_emotes": "发布穿戴装备和表情",
         "publish_land": "发布土地",
+        "creator_documentation": "创作者文档",
         "get_started": "开始使用",
         "start_creating": "开始创作",
         "see_whats_new": "查看最新动态",
@@ -1104,7 +1105,11 @@
       "empty_member": "该成员尚未拍摄任何照片。",
       "count": "{count} 张照片",
       "empty_owner_subtitle": "快进来开始收集回忆吧！按 'C' 打开相机，按 '空格键' 拍照。",
-      "empty_owner_cta": "立即加入"
+      "empty_owner_cta": "立即加入",
+      "filter_all": "全部",
+      "filter_public": "公开",
+      "filter_private": "私密",
+      "empty_filter": "没有符合此筛选条件的照片。"
     },
     "referral_rewards": {
       "anonymous": "登录以邀请好友并解锁奖励。",
@@ -1194,5 +1199,344 @@
   "upcoming": {
     "today_at": "今天 {time}",
     "tomorrow_at": "明天 {time}"
+  },
+  "account": {
+    "meta": {
+      "title": "帳戶設定"
+    },
+    "nav": {
+      "section_label": "帳戶設定",
+      "wallets": "錢包",
+      "notifications": "通知",
+      "credits": "积分设置",
+      "security": "安全",
+      "delete": "刪除帳戶",
+      "logout": "登出",
+      "close": "关闭"
+    },
+    "sign_in": {
+      "title": "登入以管理您的帳戶",
+      "cta": "登入"
+    },
+    "coming_soon": "即將推出",
+    "pages": {
+      "wallets": {
+        "title": "錢包"
+      },
+      "notifications": {
+        "title": "通知"
+      },
+      "credits": {
+        "title": "积分设置"
+      },
+      "security": {
+        "title": "安全"
+      },
+      "delete": {
+        "title": "刪除帳戶"
+      }
+    },
+    "not_found": {
+      "title": "找不到頁面",
+      "description": "您要找的帳戶頁面不存在。",
+      "cta": "前往錢包"
+    },
+    "wallets": {
+      "eth_label": "Ethereum MANA",
+      "polygon_label": "Polygon MANA",
+      "actions": {
+        "buy": "购买",
+        "swap": "兑换",
+        "send": "发送",
+        "receive": "接收",
+        "more": "更多操作"
+      },
+      "receive": {
+        "title": "接收 MANA",
+        "description": "分享您的钱包地址以接收 MANA 和其他资产。",
+        "copy": "复制地址",
+        "copied": "已复制！",
+        "close": "关闭"
+      },
+      "send": {
+        "title": "发送 MANA",
+        "loading": "正在加载钱包…",
+        "connect_description": "连接您的钱包以发送 MANA。",
+        "switch_description": "请将钱包切换到正确的网络以继续。",
+        "switch_button": "切换网络",
+        "to_label": "收款地址",
+        "amount_label": "金额",
+        "invalid_address": "请输入有效的钱包地址",
+        "insufficient_balance": "余额不足",
+        "send_button": "发送",
+        "confirm_in_wallet": "请在钱包中确认…",
+        "sending": "发送中…",
+        "success": "MANA 发送成功。",
+        "close": "关闭",
+        "rejected": "您已拒绝该交易。",
+        "error": "出错了，请重试。"
+      },
+      "swap": {
+        "title": "兑换 MANA",
+        "loading": "正在加载钱包…",
+        "connect_description": "连接您的钱包以将 MANA 转移到 Polygon。",
+        "switch_description": "请将钱包切换到 Ethereum 以继续。",
+        "switch_button": "切换网络",
+        "description": "将您在 Ethereum 上的 MANA 转移到 Polygon。需要两笔交易：先授权，再存入。",
+        "amount_label": "金额",
+        "submit": "转移到 Polygon",
+        "approving": "请在钱包中授权…",
+        "depositing": "存入中…",
+        "success": "您的 MANA 正在转移到 Polygon，可能需要几分钟才能到账。",
+        "close": "关闭",
+        "rejected": "您已拒绝该交易。",
+        "error": "出错了，请重试。"
+      },
+      "transactions": {
+        "title": "交易",
+        "empty": "暂无交易。",
+        "type": {
+          "send": "已发送",
+          "swap": "兑换",
+          "received": "已收到",
+          "withdraw": "提现"
+        },
+        "status": {
+          "pending": "待处理",
+          "confirmed": "已确认",
+          "failed": "失败",
+          "bridging": "跨链中",
+          "checkpoint": "可领取"
+        },
+        "pending_title": "待处理交易",
+        "latest_title": "最近交易",
+        "load_more": "加载更多",
+        "claim": "领取"
+      },
+      "withdraw": {
+        "title": "提取 MANA",
+        "loading": "正在加载钱包…",
+        "connect_description": "连接您的钱包以将 MANA 转移到 Ethereum。",
+        "switch_description": "请将您的钱包切换到 Polygon 以继续。",
+        "switch_button": "切换网络",
+        "description": "将您的 Polygon MANA 转移到 Ethereum。现在会在 Polygon 上销毁；待检查点确认后（可能需要几个小时）即可在 Ethereum 上领取。",
+        "amount_label": "金额",
+        "submit": "提取到 Ethereum",
+        "withdrawing": "提取中…",
+        "success": "您的提取已开始。检查点确认后（几个小时），请返回在 Ethereum 上领取。",
+        "close": "关闭",
+        "rejected": "您拒绝了交易。",
+        "error": "出现错误，请重试。"
+      },
+      "claim": {
+        "title": "领取提款",
+        "loading": "正在加载钱包…",
+        "connect_description": "连接您的钱包以在 Ethereum 上领取您的 MANA。",
+        "switch_description": "请将您的钱包切换到 Ethereum 以继续。",
+        "switch_button": "切换网络",
+        "description": "您提取的 {amount} MANA 已就绪。在 Ethereum 上领取以接收您的 MANA。",
+        "submit": "在 Ethereum 上领取",
+        "claiming": "领取中…",
+        "success": "您的 MANA 已在 Ethereum 上释放。",
+        "close": "关闭",
+        "rejected": "您拒绝了交易。",
+        "error": "无法领取提款，请重试。",
+        "not_ready": "此提款尚未可领取。检查点可能需要几个小时，请稍后再试。"
+      },
+      "buy": {
+        "title": "购买 MANA",
+        "subtitle": "选择您想购买的 MANA：",
+        "close": "关闭",
+        "error": "无法打开服务商，请重试。",
+        "network": {
+          "ethereum": {
+            "label": "Ethereum MANA",
+            "name": "Ethereum",
+            "description": "用于在 Ethereum 上购买 LAND、名称和特定可穿戴物品。"
+          },
+          "polygon": {
+            "label": "Polygon MANA",
+            "name": "Polygon",
+            "description": "用于在 Polygon 上购买大多数可穿戴物品和表情动作。"
+          }
+        },
+        "provider_title": "通过 {provider} 购买 {network} MANA",
+        "provider_subtitle": "您可以使用借记卡和信用卡、Apple Pay、Google Pay 或银行转账购买。",
+        "continue": "通过 {provider} 继续",
+        "learn_more": "了解更多关于 {provider}",
+        "provider": {
+          "moonpay": "MoonPay",
+          "transak": "Transak"
+        },
+        "loading": "正在打开…"
+      }
+    },
+    "notifications": {
+      "title": "通知",
+      "description": "不要在离开时错过任何 Decentraland 通知！注册以接收电子邮件通知，并在下方选择您想要接收的通知。",
+      "loading": "正在加载您的通知设置…",
+      "load_error": "我们无法加载您的通知设置。请稍后再试。",
+      "groups": {
+        "marketplace": "市场",
+        "worlds": "Worlds",
+        "credits": "市场积分",
+        "streaming": "世界内直播",
+        "events": "活动",
+        "rewards": "赠品与奖励",
+        "dao": "DAO",
+        "tips": "打赏",
+        "referral": "推荐"
+      },
+      "email": {
+        "title": "电子邮件通知",
+        "placeholder": "example@decentraland.org",
+        "invalid": "无效的电子邮件",
+        "description": {
+          "without_email": "输入您的电子邮件，然后查看收件箱中的确认链接邮件。确认后，您就可以自定义下方的通知。",
+          "with_email": "如果您想更新电子邮件地址，请在下方编辑。之后请务必在收件箱中查看确认邮件！",
+          "pending_approval": "确认邮件已发送，请查看您的收件箱。",
+          "confirmed": "您的电子邮件已确认。"
+        },
+        "status": {
+          "confirmed": "已确认",
+          "pending": "待批准"
+        },
+        "button": {
+          "submit": "提交",
+          "resend": "重新发送",
+          "save": "保存"
+        },
+        "master_label": "切換所有電子郵件通知"
+      },
+      "types": {
+        "item_sold": "已售出物品",
+        "bid_accepted": "出價已接受",
+        "bid_received": "出價已收到",
+        "royalties_earned": "獲得的版稅",
+        "rental_ended": "土地租賃期間結束",
+        "rental_started": "土地已出租",
+        "worlds_access_restored": "世界存取已恢復",
+        "worlds_access_restricted": "由於儲存空間不足，世界存取受到限制",
+        "worlds_missing_resources": "世界儲存不足警告",
+        "worlds_permission_granted": "授予世界存取/部署/串流權限",
+        "worlds_permission_revoked": "世界存取/部署/串流媒體權限已撤銷",
+        "credits_reminder_complete_goals": "目标未完成",
+        "credits_reminder_claim_credits": "未领取的积分",
+        "credits_reminder_usage": "积分即将到期",
+        "credits_reminder_do_not_miss_out": "目标未开始",
+        "streaming_key_expired": "流密钥已过期",
+        "streaming_key_reset": "流密钥重置",
+        "streaming_key_revoke": "流密钥已停用",
+        "streaming_place_updated": "流场景已更改",
+        "streaming_time_exceeded": "流已超时",
+        "events_started": "活動開始",
+        "events_starts_soon": "活動即將開始",
+        "reward_assignment": "收到免費物品",
+        "reward_campaign_out_of_funds": "赠品活动资金不足",
+        "reward_campaign_out_of_stock": "赠品活动缺货",
+        "governance_announcement": "新 DAO 公告",
+        "governance_authored_proposal_finished": "對您的提案的投票結束",
+        "governance_coauthor_requested": "收到共同撰寫提案的請求",
+        "governance_new_comment_on_project_update": "關於您的專案更新的新評論",
+        "governance_new_comment_on_proposal": "對您的提案的新評論",
+        "governance_proposal_enacted": "提案已頒布",
+        "governance_voting_ended_voter": "投票結束於您投票的提案",
+        "tip_received": "收到打賞",
+        "referral_invited_users_accepted": "推薦已完成",
+        "referral_new_tier_reached": "推薦獎勵已解鎖"
+      }
+    },
+    "credits": {
+      "title": "市场积分计划",
+      "description": "通过完成世界内的目标赚取每周积分。",
+      "status_label": "状态：",
+      "status": {
+        "enrolled": "已注册",
+        "opted_out": "已退出",
+        "not_registered": "未注册"
+      },
+      "learn_more": "了解更多",
+      "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
+      "join_button": "加入计划",
+      "leave_button": "离开计划",
+      "leave_modal": {
+        "warning": "离开市场积分？",
+        "description": "您将停止赚取每周积分。您可以随时重新加入。",
+        "cancel": "取消",
+        "confirm": "离开计划",
+        "errors": {
+          "generic": "目前无法离开计划。请重试。",
+          "already_claimed": "您本周无法离开，因为您已经领取了积分。请下周再试。"
+        }
+      },
+      "join_errors": {
+        "generic": "目前无法加入该计划，请重试。",
+        "email_required": "加入积分计划前，请在通知中添加并确认电子邮件。"
+      }
+    },
+    "delete": {
+      "title": "删除账户",
+      "danger_description": "此操作不可逆。您的所有数据将被永久删除。",
+      "warning": "以下内容将永久丢失：",
+      "consequences": {
+        "profile": {
+          "title": "个人资料",
+          "description": "您的用户名、头像、简介和显示名称"
+        },
+        "social": {
+          "title": "社交关系",
+          "description": "好友列表和已屏蔽的用户"
+        },
+        "marketplace": {
+          "title": "市场活动",
+          "description": "公开列表、购买历史和报价"
+        },
+        "credits": {
+          "title": "平台内积分",
+          "description": "任何未使用的余额或奖励"
+        },
+        "favorites": {
+          "title": "收藏和历史",
+          "description": "保存的地点、最近活动和活动回复"
+        },
+        "notifications": {
+          "title": "通知和偏好设置",
+          "description": "所有设置和通知历史"
+        }
+      },
+      "asset_warning_title": "链上资产面临风险",
+      "asset_warning_description": "删除账户可能导致您永久失去对链上资产（可穿戴设备、表情、LAND 等）的访问权限。请确保在继续之前导出您的私钥。",
+      "export_key_description": "前往钱包选项卡，使用地址下方的钱包管理器导出您的私钥。",
+      "export_key_link": "前往钱包",
+      "export_key_description_magic": "在删除账户之前，请前往安全选项卡查看并备份您的私钥。",
+      "export_key_link_magic": "前往安全",
+      "acknowledge": "我已备份我的私钥，并理解删除账户的操作不可逆。",
+      "delete_button": "删除账户",
+      "modal": {
+        "title": "您确定要删除您的账户吗？",
+        "description": "此操作不可逆。您的所有数据将被永久删除。要确认，请在下方输入 DELETE 并确认。",
+        "input_label": "输入 DELETE",
+        "deleting": "删除中...",
+        "delete": "删除账户",
+        "cancel": "取消",
+        "generic_error": "无法删除您的账户。请稍后重试。"
+      },
+      "unavailable_title": "此钱包无法删除账户",
+      "unavailable_description": "删除账户仅适用于通过电子邮件或社交登录创建的账户。自托管钱包（如 MetaMask 或 WalletConnect）自行管理密钥，因此这里没有可删除的内容——只需断开连接即可退出登录。"
+    },
+    "security": {
+      "title": "私钥",
+      "intro": "您的 Decentraland 账户由自托管钱包提供支持。您的私钥是控制该钱包及其所持有的一切（MANA、NAME、LAND、可穿戴设备和表情）的主凭证。",
+      "responsibility_title": "您拥有完全的控制权",
+      "responsibility_description": "备份您的私钥可让您从任何兼容的应用访问您的钱包，并在您失去登录访问权限时保护您的资产安全。在自托管模式下，这份责任完全由您自己承担。",
+      "warning_title": "切勿分享您的私钥",
+      "warning_description": "任何拥有您私钥的人都可以完全且不可逆转地控制您的账户，并转移您的所有资产。Decentraland 团队成员绝不会向您索要私钥。请将其离线保存在只有您才能访问的地方。",
+      "reveal_description": "系统将在新标签页中打开 Magic 的安全揭示页面，供您查看并备份您的私钥。您必须使用与登录 Decentraland 相同的方式，在 Magic 网站上完成登录。",
+      "reveal_button": "显示私钥",
+      "unavailable_title": "此钱包无法使用安全设置",
+      "unavailable_description": "显示私钥仅适用于通过电子邮件或社交登录创建的账户。自托管钱包（如 MetaMask 或 WalletConnect）自行管理密钥，因此这里没有可显示的内容。"
+    },
+    "copy": "複製",
+    "copied": "已複製"
   }
 }

@@ -4,9 +4,20 @@
 // homepage and navigate to one of these via SPA still get tracked normally —
 // the gate only applies to the initial pathname.
 //
-// /download lives here too: the download event is fired server-side from the
-// installer's first-run telemetry, so client-side Segment on the page itself
-// only duplicates the signal while doubling third-party cookie noise.
+// /download lives here too, intentionally: keeping it exempt avoids Segment's
+// cold-boot cost (third-party cookies + idle JS) on a page adjacent to the
+// homepage. It is NOT a tracking blind spot — the download CTAs on /download
+// (desktop installer + mobile App Store / Google Play store exits) are tracked
+// by useDownloadClick, which fires regardless of whether Segment has booted:
+// through analytics-next when warm (e.g. SPA navigation from the homepage),
+// and through the unload-safe beacon (postSegmentEvent +
+// ensureSegmentAnonymousId) on cold loads, where it survives departures. The
+// beacon only works here because postSegmentEvent resolves its write key with
+// getSegmentWriteKey({ bypassExemptPathGate: true }) — without that bypass
+// this gate would zero the key and silently drop every cold-load CTA click.
+// That adapter is what carries partner UTM attribution off this page, so
+// removing /download from this set (which would boot Segment on cold load) is
+// unnecessary and would regress the perf/privacy win.
 //
 // MAINTENANCE: This list is a hand-curated allowlist, not derived from the
 // router. If you add a new pure-text route (e.g. a new legal page) and want

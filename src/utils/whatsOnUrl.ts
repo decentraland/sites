@@ -123,6 +123,7 @@ interface CalendarEventParams {
   finishAt?: string | null
   x: number
   y: number
+  realm?: string | null
   url: string
   recurrent?: boolean
   recurrentFrequency?: RecurrentFrequency | null
@@ -146,7 +147,7 @@ function buildCalendarUrl(event: CalendarEventParams): string | null {
     text: event.name,
     dates: `${start}/${end}`,
     details: `${event.description || ''}\n\n${event.url}`,
-    location: `Decentraland ${event.x},${event.y}`
+    location: event.realm ? `Decentraland World (${event.realm})` : `Decentraland In-World (${event.x},${event.y})`
   })
   if (event.recurrent && event.recurrentFrequency) {
     const normalized = normalizeRecurrence(event.recurrentFrequency, event.recurrentInterval)

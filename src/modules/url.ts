@@ -2,6 +2,19 @@ import { config } from 'decentraland-ui2/dist/config'
 import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
 import { Architecture } from '../types/download.types'
 
+const ANON_USER_ID_PARAM = 'anon_user_id'
+
+interface DownloadSuccessHrefOptions {
+  anonUserId?: string
+  arch?: string
+  /**
+   * Partner campaign params (utm_*) collected from the landing URL, forwarded
+   * verbatim so the desktop installer funnel keeps the attribution the click
+   * carried. Snake_case keys are appended as-is (see `collectCampaignParams`).
+   */
+  campaignParams?: Record<string, string>
+}
+
 const addQueryParamsToUrlString = (url: string, params: Record<string, string | undefined | null>): string => {
   if (!params || Object.keys(params).length === 0) {
     return url
@@ -138,9 +151,31 @@ const extractDownloadLinkFromCDNReleaseOption = (
 
 const FALLBACK_CDN_RELEASE_LINKS = sanitizeCDNReleaseLinks(getCDNRelease(CDNSource.LAUNCHER)) || {}
 
+const buildDownloadSuccessHref = (os: string, place: string, options: DownloadSuccessHrefOptions = {}): string => {
+  const params = new URLSearchParams({ os, place })
+  if (options.anonUserId) {
+    params.set(ANON_USER_ID_PARAM, options.anonUserId)
+  }
+  if (options.arch) {
+    params.set('arch', options.arch)
+  }
+  if (options.campaignParams) {
+    for (const [key, value] of Object.entries(options.campaignParams)) {
+      // Never let a campaign param overwrite the routing params set above
+      // (os/place/arch/anon_user_id). Unreachable via collectCampaignParams
+      // (utm_* allowlist), but the option is a bare Record — a future caller
+      // passing raw searchParams entries must not corrupt the funnel.
+      if (params.has(key)) continue
+      params.set(key, value)
+    }
+  }
+  return `/download_success?${params.toString()}`
+}
+
 export {
   FALLBACK_CDN_RELEASE_LINKS,
   addQueryParamsToUrlString,
+  buildDownloadSuccessHref,
   calculateCDNReleaseLinksWithIdentity,
   extractDownloadLinkFromCDNReleaseOption,
   sanitizeCDNReleaseLinks,

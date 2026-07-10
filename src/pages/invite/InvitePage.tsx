@@ -8,6 +8,7 @@ import { InviteHero } from '../../components/Invite/InviteHero/InviteHero'
 import { LandingFooter } from '../../components/LandingFooter'
 import { getEnv } from '../../config/env'
 import { INVITE_HERO_MEDIA, INVITE_SECOND_HERO_MEDIA } from '../../data/inviteContent'
+import { usePageView } from '../../hooks/usePageView'
 import { SectionViewedTrack } from '../../modules/segment'
 
 const InviteFaqs = lazy(() => import('../../components/Invite/InviteFaqs/InviteFaqs').then(m => ({ default: m.InviteFaqs })))
@@ -87,6 +88,12 @@ const InvitePage = memo(() => {
   }, [referrer])
 
   useDocumentMeta(t('page_invite.social.title'), t('page_invite.social.description'))
+
+  // Invite is a Layout-less route, so it never gets the automatic page() that
+  // Layout fires for wrapped routes. Restores the invite pageview lost in the
+  // Gatsby→SPA migration (the warehouse's invite funnel reads FCT_PAGEVIEWS for
+  // /invite paths).
+  usePageView()
 
   return (
     <>

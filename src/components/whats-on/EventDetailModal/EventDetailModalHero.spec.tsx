@@ -65,7 +65,25 @@ jest.mock('../common/LocalDateTimeTooltip', () => ({
 jest.mock('decentraland-ui2', () => ({
   LiveBadge: () => <span data-testid="live-badge">LIVE</span>,
   Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  DownloadModal: ({ open }: { open: boolean }) => (open ? <div data-testid="download-modal" /> : null),
   useTheme: () => ({ breakpoints: { down: () => '(max-width:600px)' } })
+}))
+
+const mockLaunchExplorer = jest.fn()
+const mockCloseDownloadModal = jest.fn()
+let mockLauncherState = { isMobile: false, isDownloadModalOpen: false }
+const mockUseLaunchExplorer = jest.fn((opts: { position: string; realm?: string }) => opts)
+jest.mock('../../../hooks/useLaunchExplorer', () => ({
+  useLaunchExplorer: (opts: { position: string; realm?: string }) => {
+    mockUseLaunchExplorer(opts)
+    return {
+      launchExplorer: mockLaunchExplorer,
+      isMobile: mockLauncherState.isMobile,
+      isDownloadModalOpen: mockLauncherState.isDownloadModalOpen,
+      closeDownloadModal: mockCloseDownloadModal,
+      downloadModalProps: { os: 'windows', downloadUrl: 'dl', epicUrl: 'epic', googlePlayUrl: 'gp', appStoreUrl: 'as' }
+    }
+  }
 }))
 
 jest.mock('../DetailModal', () => ({
@@ -106,7 +124,11 @@ jest.mock('./EventDetailModal.styled', () => ({
   LiveBadgeWrapper: ({ children, ...props }: { children: React.ReactNode } & Record<string, unknown>) => <span {...props}>{children}</span>,
   EditButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="edit-button" {...props} />,
   CreatorLocationRow: ({ children }: { children: React.ReactNode }) => <div data-testid="creator-location-row">{children}</div>,
-  LocationRow: ({ children }: { children: React.ReactNode }) => <div data-testid="location-row">{children}</div>,
+  LocationRow: ({ children, ...props }: { children: React.ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+    <button data-testid="location-row" {...props}>
+      {children}
+    </button>
+  ),
   LocationText: ({ children }: { children: React.ReactNode }) => <span data-testid="location-text">{children}</span>
 }))
 
@@ -160,6 +182,10 @@ describe('EventDetailModalHero', () => {
     mockUseAuthIdentity.mockReturnValue({ hasValidIdentity: false, identity: undefined, address: undefined })
     mockUseCanEditEvent.mockReset()
     mockUseCanEditEvent.mockReturnValue({ canEdit: false, isLoading: false })
+    mockLaunchExplorer.mockClear()
+    mockUseLaunchExplorer.mockClear()
+    mockCloseDownloadModal.mockClear()
+    mockLauncherState = { isMobile: false, isDownloadModalOpen: false }
   })
 
   afterEach(() => {
@@ -222,6 +248,24 @@ describe('EventDetailModalHero', () => {
       render(<EventDetailModalHero data={createMockData({ live: true })} onClose={mockOnClose} />)
 
       expect(screen.getByTestId('jump-in-button')).toHaveAttribute('data-position', '10,20')
+    })
+
+    describe('and the event is hosted in a world', () => {
+      it('should pass the realm to the jump in button so the launcher deep-links into the world instead of Genesis City', () => {
+        render(<EventDetailModalHero data={createMockData({ live: true, isWorld: true, realm: 'kenz0.dcl.eth' })} onClose={mockOnClose} />)
+
+        const jumpInButton = screen.getByTestId('jump-in-button')
+        expect(jumpInButton).toHaveAttribute('data-position', '10,20')
+        expect(jumpInButton).toHaveAttribute('data-realm', 'kenz0.dcl.eth')
+      })
+    })
+
+    describe('and the event is hosted in Genesis City', () => {
+      it('should not pass a realm so the launcher uses the coordinates', () => {
+        render(<EventDetailModalHero data={createMockData({ live: true, isWorld: false })} onClose={mockOnClose} />)
+
+        expect(screen.getByTestId('jump-in-button')).not.toHaveAttribute('data-realm')
+      })
     })
   })
 
@@ -332,6 +376,56 @@ describe('EventDetailModalHero', () => {
       render(<EventDetailModalHero data={createMockData({ isWorld: true, realm: undefined })} onClose={mockOnClose} />)
 
       expect(screen.queryByTestId('location-row')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the add to calendar CTA is clicked', () => {
+    it('should open the calendar url in a new tab', () => {
+      render(<EventDetailModalHero data={createMockData({ live: false, isEvent: true })} onClose={mockOnClose} />)
+
+      fireEvent.click(screen.getByTestId('primary-action-button'))
+
+      expect(window.open).toHaveBeenCalledWith('https://calendar.google.com/test', '_blank', 'noopener,noreferrer')
+    })
+  })
+
+  describe('when the coordinates are clicked', () => {
+    it('should launch the explorer for a non-live Genesis City event', () => {
+      render(<EventDetailModalHero data={createMockData({ live: false, isWorld: false, x: 5, y: -7 })} onClose={mockOnClose} />)
+
+      expect(mockUseLaunchExplorer).toHaveBeenCalledWith({ position: '5,-7', realm: undefined })
+      fireEvent.click(screen.getByTestId('location-row'))
+      expect(mockLaunchExplorer).toHaveBeenCalled()
+    })
+
+    it('should pass the realm to the launcher for a world event so it deep-links into the world', () => {
+      render(<EventDetailModalHero data={createMockData({ isWorld: true, realm: 'kenz0.dcl.eth', x: 10, y: 20 })} onClose={mockOnClose} />)
+
+      expect(mockUseLaunchExplorer).toHaveBeenCalledWith({ position: '10,20', realm: 'kenz0.dcl.eth' })
+      fireEvent.click(screen.getByTestId('location-row'))
+      expect(mockLaunchExplorer).toHaveBeenCalled()
+    })
+
+    it('should disable the clickable location in the unsaved-event preview', () => {
+      render(<EventDetailModalHero data={createMockData({ id: 'preview', isEvent: false })} onClose={mockOnClose} />)
+
+      expect(screen.getByTestId('location-row')).toBeDisabled()
+    })
+  })
+
+  describe('when the client is not installed', () => {
+    it('should render the download modal on desktop when the launcher requests it', () => {
+      mockLauncherState = { isMobile: false, isDownloadModalOpen: true }
+      render(<EventDetailModalHero data={createMockData()} onClose={mockOnClose} />)
+
+      expect(screen.getByTestId('download-modal')).toBeInTheDocument()
+    })
+
+    it('should not render the download modal on mobile', () => {
+      mockLauncherState = { isMobile: true, isDownloadModalOpen: true }
+      render(<EventDetailModalHero data={createMockData()} onClose={mockOnClose} />)
+
+      expect(screen.queryByTestId('download-modal')).not.toBeInTheDocument()
     })
   })
 

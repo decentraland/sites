@@ -432,7 +432,7 @@
         "subtitle": "Decentraland에 대해 자세히 알아보세요",
         "cta": {
           "label": "더 보기",
-          "link": "https://docs.decentraland.org/player/general/faq/"
+          "link": "https://docs.decentraland.org/faqs/"
         }
       },
       "marketplace": {
@@ -631,6 +631,7 @@
         "create_in_decentraland": "Decentraland에서 만들기",
         "publish_wearables_emotes": "웨어러블 & 이모트 게시",
         "publish_land": "랜드 게시",
+        "creator_documentation": "크리에이터 문서",
         "get_started": "시작하기",
         "start_creating": "만들기 시작",
         "see_whats_new": "새 소식 보기",
@@ -1104,7 +1105,11 @@
       "empty_member": "이 회원은 아직 사진을 찍지 않았습니다.",
       "count": "{count}장의 사진",
       "empty_owner_subtitle": "입장해서 추억을 모아 보세요! 'C'를 눌러 카메라를 열고 '스페이스바'로 사진을 찍을 수 있어요.",
-      "empty_owner_cta": "입장하기"
+      "empty_owner_cta": "입장하기",
+      "filter_all": "전체",
+      "filter_public": "공개",
+      "filter_private": "비공개",
+      "empty_filter": "이 필터에 해당하는 사진이 없습니다."
     },
     "referral_rewards": {
       "anonymous": "로그인하여 친구를 초대하고 보상을 잠금 해제하세요.",
@@ -1194,5 +1199,344 @@
   "upcoming": {
     "today_at": "오늘 {time}",
     "tomorrow_at": "내일 {time}"
+  },
+  "account": {
+    "meta": {
+      "title": "계정 설정"
+    },
+    "nav": {
+      "section_label": "계정 설정",
+      "wallets": "지갑",
+      "notifications": "알림",
+      "credits": "크레딧 설정",
+      "security": "보안",
+      "delete": "계정 삭제",
+      "logout": "로그아웃",
+      "close": "닫기"
+    },
+    "sign_in": {
+      "title": "계정을 관리하려면 로그인하세요",
+      "cta": "로그인"
+    },
+    "coming_soon": "곧 제공 예정",
+    "pages": {
+      "wallets": {
+        "title": "지갑"
+      },
+      "notifications": {
+        "title": "알림"
+      },
+      "credits": {
+        "title": "크레딧 설정"
+      },
+      "security": {
+        "title": "보안"
+      },
+      "delete": {
+        "title": "계정 삭제"
+      }
+    },
+    "not_found": {
+      "title": "페이지를 찾을 수 없습니다",
+      "description": "찾으시는 계정 페이지가 존재하지 않습니다.",
+      "cta": "지갑으로 이동"
+    },
+    "wallets": {
+      "eth_label": "Ethereum MANA",
+      "polygon_label": "Polygon MANA",
+      "actions": {
+        "buy": "구매",
+        "swap": "스왑",
+        "send": "보내기",
+        "receive": "받기",
+        "more": "더 보기"
+      },
+      "receive": {
+        "title": "MANA 받기",
+        "description": "지갑 주소를 공유하여 MANA 및 기타 자산을 받으세요.",
+        "copy": "주소 복사",
+        "copied": "복사됨!",
+        "close": "닫기"
+      },
+      "send": {
+        "title": "MANA 보내기",
+        "loading": "지갑 불러오는 중…",
+        "connect_description": "MANA를 보내려면 지갑을 연결하세요.",
+        "switch_description": "계속하려면 지갑을 올바른 네트워크로 전환하세요.",
+        "switch_button": "네트워크 전환",
+        "to_label": "받는 사람 주소",
+        "amount_label": "금액",
+        "invalid_address": "유효한 지갑 주소를 입력하세요",
+        "insufficient_balance": "잔액이 부족합니다",
+        "send_button": "보내기",
+        "confirm_in_wallet": "지갑에서 승인하세요…",
+        "sending": "보내는 중…",
+        "success": "MANA를 보냈습니다.",
+        "close": "닫기",
+        "rejected": "거래를 거부했습니다.",
+        "error": "문제가 발생했습니다. 다시 시도하세요."
+      },
+      "swap": {
+        "title": "MANA 스왑",
+        "loading": "지갑 불러오는 중…",
+        "connect_description": "MANA를 Polygon으로 이동하려면 지갑을 연결하세요.",
+        "switch_description": "계속하려면 지갑을 Ethereum으로 전환하세요.",
+        "switch_button": "네트워크 전환",
+        "description": "Ethereum의 MANA를 Polygon으로 이동합니다. 승인과 입금, 두 번의 트랜잭션이 필요합니다.",
+        "amount_label": "금액",
+        "submit": "Polygon으로 이동",
+        "approving": "지갑에서 승인하세요…",
+        "depositing": "입금 중…",
+        "success": "MANA가 Polygon으로 이동 중입니다. 도착까지 몇 분 정도 걸릴 수 있습니다.",
+        "close": "닫기",
+        "rejected": "거래를 거부했습니다.",
+        "error": "문제가 발생했습니다. 다시 시도하세요."
+      },
+      "transactions": {
+        "title": "거래",
+        "empty": "아직 거래가 없습니다.",
+        "type": {
+          "send": "보냄",
+          "swap": "스왑",
+          "received": "받음",
+          "withdraw": "출금"
+        },
+        "status": {
+          "pending": "대기 중",
+          "confirmed": "확인됨",
+          "failed": "실패",
+          "bridging": "브리징 중",
+          "checkpoint": "청구 가능"
+        },
+        "pending_title": "대기 중인 거래",
+        "latest_title": "최근 거래",
+        "load_more": "더 보기",
+        "claim": "청구"
+      },
+      "withdraw": {
+        "title": "MANA 출금",
+        "loading": "지갑 불러오는 중…",
+        "connect_description": "MANA를 Ethereum으로 이동하려면 지갑을 연결하세요.",
+        "switch_description": "계속하려면 지갑을 Polygon으로 전환하세요.",
+        "switch_button": "네트워크 전환",
+        "description": "Polygon의 MANA를 Ethereum으로 이동합니다. 지금 Polygon에서 소각되며, 체크포인트가 완료되면 Ethereum에서 청구할 수 있습니다(몇 시간이 걸릴 수 있음).",
+        "amount_label": "금액",
+        "submit": "Ethereum으로 출금",
+        "withdrawing": "출금 중…",
+        "success": "출금이 시작되었습니다. 체크포인트가 완료되면(몇 시간) 돌아와 Ethereum에서 청구하세요.",
+        "close": "닫기",
+        "rejected": "거래를 거부했습니다.",
+        "error": "문제가 발생했습니다. 다시 시도해 주세요."
+      },
+      "claim": {
+        "title": "출금 청구",
+        "loading": "지갑 불러오는 중…",
+        "connect_description": "Ethereum에서 MANA를 청구하려면 지갑을 연결하세요.",
+        "switch_description": "계속하려면 지갑을 Ethereum으로 전환하세요.",
+        "switch_button": "네트워크 전환",
+        "description": "{amount} MANA 출금이 준비되었습니다. Ethereum에서 MANA를 받으려면 청구하세요.",
+        "submit": "Ethereum에서 청구",
+        "claiming": "청구 중…",
+        "success": "MANA가 Ethereum에서 출금되었습니다.",
+        "close": "닫기",
+        "rejected": "거래를 거부했습니다.",
+        "error": "출금을 청구할 수 없습니다. 다시 시도해 주세요.",
+        "not_ready": "이 출금은 아직 청구할 수 없습니다. 체크포인트는 몇 시간이 걸릴 수 있으니 나중에 다시 시도해 주세요."
+      },
+      "buy": {
+        "title": "MANA 구매",
+        "subtitle": "구매할 MANA를 선택하세요:",
+        "close": "닫기",
+        "error": "제공업체를 열 수 없습니다. 다시 시도해 주세요.",
+        "network": {
+          "ethereum": {
+            "label": "Ethereum MANA",
+            "name": "Ethereum",
+            "description": "Ethereum에서 LAND, 이름, 특정 웨어러블을 구매하는 데 사용합니다."
+          },
+          "polygon": {
+            "label": "Polygon MANA",
+            "name": "Polygon",
+            "description": "Polygon에서 대부분의 웨어러블과 이모트를 구매하는 데 사용합니다."
+          }
+        },
+        "provider_title": "{provider}(으)로 {network} MANA 구매",
+        "provider_subtitle": "직불카드, 신용카드, Apple Pay, Google Pay 또는 계좌 이체로 구매할 수 있습니다.",
+        "continue": "{provider}(으)로 계속",
+        "learn_more": "{provider}에 대해 자세히 알아보기",
+        "provider": {
+          "moonpay": "MoonPay",
+          "transak": "Transak"
+        },
+        "loading": "여는 중…"
+      }
+    },
+    "notifications": {
+      "title": "알림",
+      "description": "자리를 비운 동안에도 Decentraland 알림을 놓치지 마세요! 이메일 알림을 신청하고 아래에서 받고 싶은 알림을 선택하세요.",
+      "loading": "알림 설정을 불러오는 중…",
+      "load_error": "알림 설정을 불러오지 못했습니다. 나중에 다시 시도해 주세요.",
+      "groups": {
+        "marketplace": "마켓플레이스",
+        "worlds": "월드",
+        "credits": "마켓플레이스 크레딧",
+        "streaming": "월드 내 스트리밍",
+        "events": "이벤트",
+        "rewards": "경품 및 보상",
+        "dao": "DAO",
+        "tips": "팁",
+        "referral": "추천"
+      },
+      "email": {
+        "title": "이메일 알림",
+        "placeholder": "example@decentraland.org",
+        "invalid": "잘못된 이메일",
+        "description": {
+          "without_email": "이메일을 입력한 후 받은 편지함에서 확인 링크가 담긴 이메일을 확인하세요. 확인 후 아래 알림을 맞춤 설정할 수 있습니다.",
+          "with_email": "이메일 주소를 변경하려면 아래에서 수정하세요. 이후 받은 편지함에서 확인 이메일을 꼭 확인하세요!",
+          "pending_approval": "확인 이메일을 보냈습니다. 받은 편지함을 확인하세요.",
+          "confirmed": "이메일이 확인되었습니다."
+        },
+        "status": {
+          "confirmed": "확인됨",
+          "pending": "승인 대기 중"
+        },
+        "button": {
+          "submit": "제출",
+          "resend": "재전송",
+          "save": "저장"
+        },
+        "master_label": "모든 이메일 알림 전환"
+      },
+      "types": {
+        "item_sold": "아이템 판매됨",
+        "bid_accepted": "입찰 수락됨",
+        "bid_received": "입찰 수신됨",
+        "royalties_earned": "로열티 수령",
+        "rental_ended": "LAND 임대 기간 종료",
+        "rental_started": "LAND 임대됨",
+        "worlds_access_restored": "World 접근 복원됨",
+        "worlds_access_restricted": "저장 공간 부족으로 World 접근이 제한됨",
+        "worlds_missing_resources": "World 저장 공간 부족 경고",
+        "worlds_permission_granted": "World 방문/배포/스트리밍 권한 부여됨",
+        "worlds_permission_revoked": "World 방문/배포/스트리밍 권한 취소됨",
+        "credits_reminder_complete_goals": "목표 미완료",
+        "credits_reminder_claim_credits": "미수령 크레딧",
+        "credits_reminder_usage": "곧 만료되는 크레딧",
+        "credits_reminder_do_not_miss_out": "시작하지 않은 목표",
+        "streaming_key_expired": "스트림 키 만료됨",
+        "streaming_key_reset": "스트림 키 재설정됨",
+        "streaming_key_revoke": "스트림 키 비활성화됨",
+        "streaming_place_updated": "스트림 장면 변경됨",
+        "streaming_time_exceeded": "스트림 시간 초과",
+        "events_started": "이벤트 시작됨",
+        "events_starts_soon": "이벤트가 곧 시작됩니다",
+        "reward_assignment": "무료 아이템 수령",
+        "reward_campaign_out_of_funds": "증정 캠페인 자금 소진",
+        "reward_campaign_out_of_stock": "증정 캠페인 재고 소진",
+        "governance_announcement": "새 DAO 공지",
+        "governance_authored_proposal_finished": "내 제안에 대한 투표 종료",
+        "governance_coauthor_requested": "제안 공동 작성 요청 수신",
+        "governance_new_comment_on_project_update": "프로젝트 업데이트에 새 댓글",
+        "governance_new_comment_on_proposal": "내 제안에 새 댓글",
+        "governance_proposal_enacted": "제안이 시행됨",
+        "governance_voting_ended_voter": "내가 투표한 제안의 투표 종료",
+        "tip_received": "팁 수령",
+        "referral_invited_users_accepted": "추천 완료됨",
+        "referral_new_tier_reached": "추천 보상 잠금 해제됨"
+      }
+    },
+    "credits": {
+      "title": "마켓플레이스 크레딧 프로그램",
+      "description": "월드 내 목표를 달성하여 매주 크레딧을 획득하세요.",
+      "status_label": "상태:",
+      "status": {
+        "enrolled": "등록됨",
+        "opted_out": "탈퇴함",
+        "not_registered": "미등록"
+      },
+      "learn_more": "자세히 알아보기",
+      "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
+      "join_button": "프로그램 참여",
+      "leave_button": "프로그램 탈퇴",
+      "leave_modal": {
+        "warning": "마켓플레이스 크레딧을 탈퇴하시겠습니까?",
+        "description": "매주 크레딧 획득이 중단됩니다. 언제든지 다시 참여할 수 있습니다.",
+        "cancel": "취소",
+        "confirm": "프로그램 탈퇴",
+        "errors": {
+          "generic": "지금은 프로그램을 탈퇴할 수 없습니다. 다시 시도해 주세요.",
+          "already_claimed": "이번 주에는 이미 크레딧을 청구했기 때문에 탈퇴할 수 없습니다. 다음 주에 다시 시도해 주세요."
+        }
+      },
+      "join_errors": {
+        "generic": "지금은 프로그램에 가입할 수 없습니다. 다시 시도하세요.",
+        "email_required": "크레딧 프로그램에 가입하기 전에 알림에서 이메일을 추가하고 확인하세요."
+      }
+    },
+    "delete": {
+      "title": "계정 삭제",
+      "danger_description": "이 작업은 되돌릴 수 없습니다. 모든 데이터가 영구적으로 삭제됩니다.",
+      "warning": "다음 항목은 영구적으로 사라집니다:",
+      "consequences": {
+        "profile": {
+          "title": "프로필",
+          "description": "사용자 이름, 아바타, 소개 및 표시 이름"
+        },
+        "social": {
+          "title": "소셜 연결",
+          "description": "친구 목록 및 차단된 사용자"
+        },
+        "marketplace": {
+          "title": "마켓플레이스 활동",
+          "description": "진행 중인 판매, 구매 내역 및 제안"
+        },
+        "credits": {
+          "title": "플랫폼 내 크레딧",
+          "description": "사용하지 않은 잔액 또는 보상"
+        },
+        "favorites": {
+          "title": "즐겨찾기 및 기록",
+          "description": "저장된 장소, 최근 활동 및 이벤트 참석 응답"
+        },
+        "notifications": {
+          "title": "알림 및 환경설정",
+          "description": "모든 설정 및 알림 기록"
+        }
+      },
+      "asset_warning_title": "온체인 자산 위험",
+      "asset_warning_description": "계정을 삭제하면 온체인 자산(웨어러블, 이모트, LAND 등)에 대한 액세스 권한을 영구적으로 잃을 수 있습니다. 계속하기 전에 반드시 개인 키를 내보내세요.",
+      "export_key_description": "Wallets 탭으로 이동하여 주소 아래의 지갑 관리자를 사용해 개인 키를 내보내세요.",
+      "export_key_link": "Wallets로 이동",
+      "export_key_description_magic": "계정을 삭제하기 전에 보안 탭으로 이동하여 개인 키를 확인하고 백업하세요.",
+      "export_key_link_magic": "보안으로 이동",
+      "acknowledge": "개인 키를 백업했으며 계정 삭제가 되돌릴 수 없다는 것을 이해합니다.",
+      "delete_button": "계정 삭제",
+      "modal": {
+        "title": "정말 계정을 삭제하시겠습니까?",
+        "description": "이 작업은 되돌릴 수 없습니다. 모든 데이터가 영구적으로 삭제됩니다. 확인하려면 아래 필드에 DELETE를 입력하고 확인하세요.",
+        "input_label": "DELETE 입력",
+        "deleting": "삭제 중...",
+        "delete": "계정 삭제",
+        "cancel": "취소",
+        "generic_error": "계정 삭제에 실패했습니다. 나중에 다시 시도해 주세요."
+      },
+      "unavailable_title": "이 지갑에서는 계정 삭제를 사용할 수 없습니다",
+      "unavailable_description": "계정 삭제는 이메일 또는 소셜 로그인으로 생성된 계정에만 적용됩니다. 자가 수탁형 지갑(MetaMask 또는 WalletConnect 등)은 자체 키를 관리하므로 여기서 삭제할 것이 없습니다. 로그아웃하려면 연결을 해제하세요."
+    },
+    "security": {
+      "title": "개인 키",
+      "intro": "Decentraland 계정은 자가 수탁형 지갑으로 구동됩니다. 개인 키는 이 지갑과 그 안에 보관된 모든 것(MANA, NAME, LAND, 웨어러블, 이모트)을 제어하는 마스터 자격 증명입니다.",
+      "responsibility_title": "모든 것을 직접 관리합니다",
+      "responsibility_description": "개인 키를 백업하면 호환되는 모든 앱에서 지갑에 액세스할 수 있고, 로그인 액세스 권한을 잃더라도 자산을 안전하게 지킬 수 있습니다. 자가 수탁 방식에서는 이 책임이 오직 본인에게 있습니다.",
+      "warning_title": "개인 키를 절대 공유하지 마세요",
+      "warning_description": "개인 키를 가진 사람은 누구나 계정을 완전하고 되돌릴 수 없게 제어하고 모든 자산을 옮길 수 있습니다. Decentraland 팀원은 절대로 개인 키를 요청하지 않습니다. 오프라인으로, 본인만 접근할 수 있는 곳에 보관하세요.",
+      "reveal_description": "새 탭에서 Magic의 보안 공개 페이지가 열려 개인 키를 확인하고 백업할 수 있습니다. Decentraland에 로그인할 때 사용한 것과 동일한 방식으로 Magic 사이트에서 로그인을 완료해야 합니다.",
+      "reveal_button": "개인 키 표시",
+      "unavailable_title": "이 지갑에서는 보안 설정을 사용할 수 없습니다",
+      "unavailable_description": "개인 키 표시는 이메일 또는 소셜 로그인으로 생성된 계정에만 적용됩니다. 자가 수탁형 지갑(MetaMask 또는 WalletConnect 등)은 자체 키를 관리하므로 여기서 표시할 것이 없습니다."
+    },
+    "copy": "복사",
+    "copied": "복사됨"
   }
 }

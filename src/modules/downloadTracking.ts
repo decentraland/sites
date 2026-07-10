@@ -1,5 +1,14 @@
 import { DownloadPlace, SegmentEvent } from './segment'
-import type { DownloadTrackFn, DownloadTracker, DownloadTrackerContext } from './downloadTracking.types'
+import { ensureSegmentAnonymousId } from './segmentAnonymousId'
+import { postSegmentEvent } from './segmentBeacon'
+import type { AuthState, DownloadTracker, DownloadTrackerContext } from './downloadTracking.types'
+
+/**
+ * Maps the localStorage identity presence flag to the `auth_state` dimension
+ * shared by every `download_*` event. Extracted so the Explorer and Creator
+ * Hub funnels derive it identically instead of repeating the ternary.
+ */
+const toAuthState = (hasValidIdentity: boolean): AuthState => (hasValidIdentity ? 'authenticated' : 'anonymous')
 
 const buildBasePayload = (ctx: DownloadTrackerContext): Record<string, unknown> => {
   // ctx.extra goes first so the core schema fields below take precedence on
@@ -23,24 +32,55 @@ const buildBasePayload = (ctx: DownloadTrackerContext): Record<string, unknown> 
 }
 
 /**
+ * Appends the `track_called_at`, `track_delivered_at`, and `track_deferred`
+ * audit fields that `useDeferredTrack` normally injects. These events now
+ * always bypass the queue (beacon transport), so `track_deferred` is always
+ * `true` — mirrors the convention in `useDownloadClick`'s beacon path.
+ */
+const withTrackAuditFields = (payload: Record<string, unknown>): Record<string, unknown> => {
+  const now = Date.now()
+  return {
+    ...payload,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    track_called_at: now,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    track_delivered_at: now,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    track_deferred: true
+  }
+}
+
+/**
  * Builds a tracker bound to a single download attempt.
  *
  * Captures `started_at` at the moment `started()` is called (not at
- * construction) so the timestamp survives when Segment is still lazy-loading
- * and the event is enqueued upstream — the data team can reconstruct timing
- * from the payload regardless of Segment's ingestion delay.
+ * construction) so the timestamp survives Segment's own ingestion delay —
+ * the data team can reconstruct timing from the payload regardless.
+ *
+ * Fires every event over `postSegmentEvent` (unload-safe `sendBeacon` /
+ * `fetch keepalive`) with `ensureSegmentAnonymousId()` instead of routing
+ * through `useDeferredTrack`'s component-scoped queue. `/download_success` is
+ * the page users are most likely to abruptly leave (they're about to run the
+ * installer they just downloaded), and that queue drops any still-pending
+ * event on unmount — silently losing a meaningful fraction of these events.
+ * See `useDownloadClick`/`downloadFunnelExit` for the same precedent.
  */
-function createDownloadTracker(track: DownloadTrackFn, ctx: DownloadTrackerContext): DownloadTracker {
+function createDownloadTracker(ctx: DownloadTrackerContext): DownloadTracker {
   let startedAt: number | null = null
+  const anonymousId = ensureSegmentAnonymousId()
 
   return {
     started: () => {
       startedAt = Date.now()
-      track(SegmentEvent.DOWNLOAD_STARTED, {
-        ...buildBasePayload(ctx),
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        started_at: startedAt
-      })
+      postSegmentEvent(
+        SegmentEvent.DOWNLOAD_STARTED,
+        withTrackAuditFields({
+          ...buildBasePayload(ctx),
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          started_at: startedAt
+        }),
+        anonymousId
+      )
     },
     success: (filename, bytesTransferred) => {
       const succeededAt = Date.now()
@@ -58,23 +98,27 @@ function createDownloadTracker(track: DownloadTrackFn, ctx: DownloadTrackerConte
       if (bytesTransferred !== undefined) {
         payload.bytes_transferred = bytesTransferred
       }
-      track(SegmentEvent.DOWNLOAD_SUCCESS, payload)
+      postSegmentEvent(SegmentEvent.DOWNLOAD_SUCCESS, withTrackAuditFields(payload), anonymousId)
     },
     failed: reason => {
       const failedAt = Date.now()
       const anchor = startedAt ?? failedAt
-      track(SegmentEvent.DOWNLOAD_FAILED, {
-        ...buildBasePayload(ctx),
-        reason,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        started_at: anchor,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        failed_at: failedAt,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        duration_ms: failedAt - anchor
-      })
+      postSegmentEvent(
+        SegmentEvent.DOWNLOAD_FAILED,
+        withTrackAuditFields({
+          ...buildBasePayload(ctx),
+          reason,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          started_at: anchor,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          failed_at: failedAt,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          duration_ms: failedAt - anchor
+        }),
+        anonymousId
+      )
     }
   }
 }
 
-export { createDownloadTracker }
+export { createDownloadTracker, toAuthState }

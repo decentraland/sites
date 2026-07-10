@@ -86,6 +86,10 @@ body:
         - Profile — Photos tab (/profile/:address/photos)
         - Profile — Referral Rewards tab (/profile/:address/referral-rewards)
         - Profile — Friendship / Block CTAs
+        - Account — Wallets (/account/wallets)
+        - Account — Notifications (/account/notifications)
+        - Account — Credits Settings (/account/credits)
+        - Account — Delete Account (/account/delete)
         - Blog — Home (/blog)
         - Blog — Search (/blog/search)
         - Blog — Category (/blog/:categorySlug)
@@ -99,6 +103,7 @@ body:
         - Legal — Brand (/brand)
         - Legal — Security (/security)
         - Legal — Rewards Terms (/rewards-terms)
+        - Legal — Credits (/credits-terms)
         - Legal — Referral Terms (/referral-terms)
         - Press (/press)
         - Help (/help)

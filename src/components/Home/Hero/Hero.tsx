@@ -3,21 +3,22 @@ import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { DownloadModal, DownloadQRModal } from 'decentraland-ui2'
 import { heroContent } from '../../../data/static-content'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useAnimatedCounter } from '../../../hooks/useAnimatedCounter'
-import { ANON_USER_ID_PARAM, useAnonUserId } from '../../../hooks/useAnonUserId'
+import { useDownloadClick } from '../../../hooks/useDownloadClick'
+import { useDownloadSuccessHref } from '../../../hooks/useDownloadSuccessHref'
 import { useHangOutAction } from '../../../hooks/useHangOutAction'
 import appleLogo from '../../../images/apple-logo.svg'
 import microsoftLogo from '../../../images/microsoft-logo.svg'
+import { withCampaignParams } from '../../../modules/campaignParams'
 import { DOWNLOAD_URLS } from '../../../modules/downloadConstants'
 import { ExplorerDownloads } from '../../../modules/explorerDownloads'
 import { formatToShorthand } from '../../../modules/number'
-import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
+import { DownloadPlace, DownloadTarget, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { type ScheduledHandle, cancelScheduledIdleCall, scheduleWhenIdle } from '../../../utils/scheduleWhenIdle'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
-import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
+import { googlePlayBadge } from '../shared/googlePlay'
 import {
   DownloadButton,
   EpicButton,
@@ -62,25 +63,9 @@ let cachedDownloadCounts: string | null = null
 const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
   const [, userAgentData] = useAdvancedUserAgentData()
   const l = useFormatMessage()
-  const onClickHandle = useTrackClick()
-  const anonUserId = useAnonUserId()
+  const trackDownloadClick = useDownloadClick()
   const { isDownloadModalOpen, closeDownloadModal, downloadModalProps, totalDownloads } = useHangOutAction()
-
-  // Build the /download_success URL with the campaign anon_user_id baked in.
-  // Without this query param, /download_success falls back to a direct CDN
-  // download (bypassing the gateway), the wrapper installer never runs, and
-  // campaign attribution is lost end-to-end. The Hero is the home page's
-  // primary download CTA so this is critical.
-  const buildDownloadSuccessHref = useCallback(
-    (os: string, place: string) => {
-      const params = new URLSearchParams({ os, place })
-      if (anonUserId) {
-        params.set(ANON_USER_ID_PARAM, anonUserId)
-      }
-      return `/download_success?${params.toString()}`
-    },
-    [anonUserId]
-  )
+  const downloadSuccessHref = useDownloadSuccessHref()
 
   const [rawDownloads, rawDownloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
 
@@ -174,12 +159,12 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
 
   const handleDownloadClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
-      onClickHandle(e)
+      trackDownloadClick(e)
       if (userAgentData) {
-        window.location.href = buildDownloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO)
+        window.location.href = downloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO)
       }
     },
-    [onClickHandle, userAgentData, buildDownloadSuccessHref]
+    [trackDownloadClick, userAgentData, downloadSuccessHref]
   )
 
   return (
@@ -218,7 +203,16 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
         <MobileHeroContent>
           <MobileHeroTitle>{l('page.home.hero.mobile_android_title')}</MobileHeroTitle>
           <MobileHeroSubtitle>{l('page.home.hero.mobile_android_subtitle')}</MobileHeroSubtitle>
-          <GooglePlayButton href={GOOGLE_PLAY_MOBILE_URL} target="_blank" rel="noopener noreferrer">
+          <GooglePlayButton
+            href={DOWNLOAD_URLS.googlePlay}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-event={SegmentEvent.DOWNLOAD}
+            data-os="Android"
+            data-place={SectionViewedTrack.LANDING_HERO}
+            data-download-target={DownloadTarget.GOOGLE_PLAY}
+            onClick={trackDownloadClick}
+          >
             <GooglePlayImage src={googlePlayBadge} alt="Get it on Google Play" />
           </GooglePlayButton>
         </MobileHeroContent>
@@ -229,7 +223,16 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
         <MobileHeroContent>
           <MobileHeroTitle>{l('page.home.hero.mobile_android_title')}</MobileHeroTitle>
           <MobileHeroSubtitle>{l('page.home.hero.mobile_android_subtitle')}</MobileHeroSubtitle>
-          <GooglePlayButton href={DOWNLOAD_URLS.appStore} target="_blank" rel="noopener noreferrer">
+          <GooglePlayButton
+            href={DOWNLOAD_URLS.appStore}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-event={SegmentEvent.DOWNLOAD}
+            data-os="iOS"
+            data-place={SectionViewedTrack.LANDING_HERO}
+            data-download-target={DownloadTarget.APP_STORE}
+            onClick={trackDownloadClick}
+          >
             <GooglePlayImage src={assetUrl('/download-on-the-app-store.svg')} alt="Download on the App Store" />
           </GooglePlayButton>
         </MobileHeroContent>
@@ -247,9 +250,12 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
           <HeroCTAWrapper>
             {/* Download + Epic buttons */}
             <DownloadButton
-              href={userAgentData ? buildDownloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO) : '/download'}
+              href={
+                userAgentData ? downloadSuccessHref(userAgentData.os.name, DownloadPlace.LANDING_HERO) : withCampaignParams('/download')
+              }
               data-place={SectionViewedTrack.LANDING_HERO}
               data-event={SegmentEvent.DOWNLOAD}
+              data-download-target={DownloadTarget.DESKTOP_INSTALLER}
               onClick={handleDownloadClick}
             >
               {l('page.download.download_for_short')}
@@ -272,7 +278,8 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
               rel="noopener noreferrer"
               data-place={DownloadPlace.LANDING_HERO_EPIC}
               data-event={SegmentEvent.DOWNLOAD}
-              onClick={onClickHandle}
+              data-download-target={DownloadTarget.EPIC}
+              onClick={trackDownloadClick}
             >
               {l('page.download.download_on')}
               <img src={assetUrl('/epic_icon.svg')} alt="Epic Games" width={32} height={32} style={{ filter: 'brightness(0)' }} />
@@ -287,12 +294,26 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
             <HeroPlatformSeparator />
             <HeroPlatformIcons>
               {currentOs === OperativeSystem.MACOS && (
-                <a href={buildDownloadSuccessHref('Windows', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)}>
+                <a
+                  href={downloadSuccessHref('Windows', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)}
+                  data-event={SegmentEvent.DOWNLOAD}
+                  data-os={OperativeSystem.WINDOWS}
+                  data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}
+                  data-download-target={DownloadTarget.DESKTOP_INSTALLER}
+                  onClick={trackDownloadClick}
+                >
                   <HeroPlatformIcon src={microsoftLogo} alt="Windows" />
                 </a>
               )}
               {currentOs === OperativeSystem.WINDOWS && (
-                <a href={buildDownloadSuccessHref('macOS', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)}>
+                <a
+                  href={downloadSuccessHref('macOS', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)}
+                  data-event={SegmentEvent.DOWNLOAD}
+                  data-os={OperativeSystem.MACOS}
+                  data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}
+                  data-download-target={DownloadTarget.DESKTOP_INSTALLER}
+                  onClick={trackDownloadClick}
+                >
                   <HeroPlatformIcon src={appleLogo} alt="macOS" />
                 </a>
               )}
@@ -301,7 +322,12 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
             <HeroPlatformIcons>
               <a
                 href="#"
+                data-event={SegmentEvent.DOWNLOAD}
+                data-os="iOS"
+                data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}
+                data-download-target={DownloadTarget.APP_STORE}
                 onClick={e => {
+                  trackDownloadClick(e)
                   e.preventDefault()
                   setMobileModalOs('ios')
                 }}
@@ -312,7 +338,12 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
             <HeroPlatformIcons>
               <a
                 href="#"
+                data-event={SegmentEvent.DOWNLOAD}
+                data-os="Android"
+                data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}
+                data-download-target={DownloadTarget.GOOGLE_PLAY}
                 onClick={e => {
+                  trackDownloadClick(e)
                   e.preventDefault()
                   setMobileModalOs('android')
                 }}
