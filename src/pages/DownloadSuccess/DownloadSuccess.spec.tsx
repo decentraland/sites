@@ -547,6 +547,12 @@ describe('when the user clicks the footer re-download link', () => {
         expect.anything()
       )
     })
+    // Sentry must tag the footer flow with the footer place so the issue joins
+    // to its own download_failed event (not the page-level place).
+    expect(mockCaptureDownloadError).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ feature: 'download_funnel', place: 'download-success-footer' })
+    )
   })
 })
 

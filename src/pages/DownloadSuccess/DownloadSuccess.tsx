@@ -128,6 +128,25 @@ const DownloadSuccess = memo(() => {
   const clientArch = (VALID_ARCHS.has(rawArch) ? rawArch : defaultArch) as Architecture
   const place = resolveDownloadPlace(searchParams.get('place'))
 
+  // Single source of truth for the Sentry tags shared by both catch blocks.
+  // `errorPlace` is the flow's own place (page-level for auto-download,
+  // DOWNLOAD_SUCCESS_FOOTER for the re-download) so the Sentry issue joins to
+  // the matching `download_failed` event; `step` marks where it broke.
+  const buildDownloadErrorTags = useCallback(
+    (errorPlace: DownloadPlace, step: 'stream' | 'calculate_url'): Record<string, string | undefined> => ({
+      feature: 'download_funnel',
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      click_id: readDownloadClickCorrelation()?.click_id,
+      place: errorPlace,
+      os: clientOS,
+      arch: clientArch,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      download_target: DownloadTarget.DESKTOP_INSTALLER,
+      step
+    }),
+    [clientOS, clientArch]
+  )
+
   // Partner campaign params (utm_*) forwarded from the /download landing click.
   // Captured off the URL and re-attached to every download_* event so the
   // desktop installer funnel keeps the attribution the landing click carried.
@@ -384,17 +403,7 @@ const DownloadSuccess = memo(() => {
         // Segment records THAT the download failed (download_failed); Sentry
         // records WHY, with the stack trace + milestone buffer. click_id tags
         // the issue so a warehouse drop row joins to the exact Sentry error.
-        void captureDownloadError(error, {
-          feature: 'download_funnel',
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          click_id: readDownloadClickCorrelation()?.click_id,
-          place,
-          os: clientOS,
-          arch: clientArch,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          download_target: DownloadTarget.DESKTOP_INSTALLER,
-          step: tracker ? 'stream' : 'calculate_url'
-        })
+        void captureDownloadError(error, buildDownloadErrorTags(place, tracker ? 'stream' : 'calculate_url'))
 
         if (tracker) {
           tracker.failed(reason)
@@ -501,17 +510,7 @@ const DownloadSuccess = memo(() => {
         // Segment records THAT the download failed (download_failed); Sentry
         // records WHY, with the stack trace + milestone buffer. click_id tags
         // the issue so a warehouse drop row joins to the exact Sentry error.
-        void captureDownloadError(error, {
-          feature: 'download_funnel',
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          click_id: readDownloadClickCorrelation()?.click_id,
-          place,
-          os: clientOS,
-          arch: clientArch,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          download_target: DownloadTarget.DESKTOP_INSTALLER,
-          step: tracker ? 'stream' : 'calculate_url'
-        })
+        void captureDownloadError(error, buildDownloadErrorTags(footerPlace, tracker ? 'stream' : 'calculate_url'))
 
         if (tracker) {
           tracker.failed(reason)
