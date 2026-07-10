@@ -30,6 +30,22 @@ describe('downloadFunnelSentry', () => {
     })
   })
 
+  describe('when more than the max number of milestones are recorded', () => {
+    it('should cap the buffer, dropping the oldest entries', async () => {
+      for (let i = 0; i < 30; i++) {
+        recordDownloadMilestone(`overflow-${i}`)
+      }
+
+      await captureDownloadError(new Error('boom'), {})
+
+      const { extra } = captureExceptionMock.mock.calls[0][1]
+      expect(extra.milestones.length).toBeLessThanOrEqual(20)
+      const events = extra.milestones.map((m: { event: string }) => m.event)
+      expect(events).toContain('overflow-29')
+      expect(events).not.toContain('overflow-0')
+    })
+  })
+
   describe('when reporting to Sentry throws', () => {
     it('should swallow the error and resolve (never break the download flow)', async () => {
       captureExceptionMock.mockImplementation(() => {
