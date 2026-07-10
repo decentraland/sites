@@ -18,6 +18,7 @@ import microsoftLogo from '../../images/microsoft-logo.svg'
 import { collectCampaignParams } from '../../modules/campaignParams'
 import { readDownloadClickCorrelation } from '../../modules/downloadClickCorrelation'
 import type { DownloadFunnelExitData } from '../../modules/downloadFunnelExit.types'
+import { captureDownloadError, recordDownloadMilestone } from '../../modules/downloadFunnelSentry'
 import { createDownloadTracker, toAuthState } from '../../modules/downloadTracking'
 import type { DownloadTracker } from '../../modules/downloadTracking.types'
 import { calculateDownloadUrl } from '../../modules/downloadWithIdentity'
@@ -101,6 +102,7 @@ const DownloadSuccess = memo(() => {
     (tracker: DownloadTracker): DownloadTracker => ({
       started: () => {
         startedFiredRef.current = true
+        recordDownloadMilestone('download_started')
         tracker.started()
       },
       success: (filename, bytesTransferred, extra) => {
@@ -272,6 +274,7 @@ const DownloadSuccess = memo(() => {
       ensureSegmentAnonymousId()
     )
     /* eslint-enable @typescript-eslint/naming-convention */
+    recordDownloadMilestone('download_success_arrived')
   }, [clientOS, clientArch, place, revisitNumber])
 
   // Gate the auto-download on the anon_user_id resolution. `useAnonUserId` is
@@ -378,6 +381,21 @@ const DownloadSuccess = memo(() => {
         const reason = error instanceof Error ? error.message : 'Download failed'
         setDownloadError(reason)
 
+        // Segment records THAT the download failed (download_failed); Sentry
+        // records WHY, with the stack trace + milestone buffer. click_id tags
+        // the issue so a warehouse drop row joins to the exact Sentry error.
+        void captureDownloadError(error, {
+          feature: 'download_funnel',
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          click_id: readDownloadClickCorrelation()?.click_id,
+          place,
+          os: clientOS,
+          arch: clientArch,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          download_target: DownloadTarget.DESKTOP_INSTALLER,
+          step: tracker ? 'stream' : 'calculate_url'
+        })
+
         if (tracker) {
           tracker.failed(reason)
         } else {
@@ -479,6 +497,21 @@ const DownloadSuccess = memo(() => {
         console.error('Download error:', error)
         const reason = error instanceof Error ? error.message : 'Download failed'
         setDownloadError(reason)
+
+        // Segment records THAT the download failed (download_failed); Sentry
+        // records WHY, with the stack trace + milestone buffer. click_id tags
+        // the issue so a warehouse drop row joins to the exact Sentry error.
+        void captureDownloadError(error, {
+          feature: 'download_funnel',
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          click_id: readDownloadClickCorrelation()?.click_id,
+          place,
+          os: clientOS,
+          arch: clientArch,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          download_target: DownloadTarget.DESKTOP_INSTALLER,
+          step: tracker ? 'stream' : 'calculate_url'
+        })
 
         if (tracker) {
           tracker.failed(reason)

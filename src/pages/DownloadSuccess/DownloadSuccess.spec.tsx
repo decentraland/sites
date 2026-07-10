@@ -6,7 +6,7 @@ const mockCalculateDownloadUrl = jest.fn()
 const mockStreamOrFallback = jest.fn()
 // Identity passthrough (keeps `href` assertions on the raw url) but recordable
 // so tests can assert which query params the component forwarded to the gateway.
-const mockAddQueryParams = jest.fn((url: string) => url)
+const mockAddQueryParams = jest.fn((url: string, _params?: Record<string, unknown>) => url)
 let searchParamsInstance = new URLSearchParams()
 // Mutable so individual tests can flip the auth state used by the component.
 let mockHasValidIdentity = false
@@ -102,6 +102,12 @@ jest.mock('../../modules/downloadWithIdentity', () => ({
 
 jest.mock('../../modules/streamOrFallback', () => ({
   streamOrFallback: (...args: unknown[]) => mockStreamOrFallback(...args)
+}))
+
+const mockCaptureDownloadError = jest.fn()
+jest.mock('../../modules/downloadFunnelSentry', () => ({
+  captureDownloadError: (...args: unknown[]) => mockCaptureDownloadError(...args),
+  recordDownloadMilestone: jest.fn()
 }))
 
 jest.mock('../../modules/url', () => ({
@@ -581,6 +587,35 @@ describe('when DownloadSuccess mounts and the url resolution rejects', () => {
         expect.anything()
       )
     })
+  })
+
+  it('should capture the error in Sentry tagged with step calculate_url when no tracker was built', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => expect(findEventCall('download_failed')).toBeDefined())
+    expect(mockCaptureDownloadError).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ feature: 'download_funnel', step: 'calculate_url', os: 'Windows' })
+    )
+  })
+
+  it('should capture the error in Sentry tagged with step stream when the stream throws after the tracker is built', async () => {
+    mockCalculateDownloadUrl.mockReset()
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockReset()
+    mockStreamOrFallback.mockRejectedValue(new Error('stream blew up'))
+    jest.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    render(<DownloadSuccess />)
+
+    await waitFor(() => expect(findEventCall('download_failed')).toBeDefined())
+    expect(mockCaptureDownloadError).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ feature: 'download_funnel', step: 'stream' })
+    )
   })
 
   it('should fire download_failed via the built tracker when the stream itself throws (URL resolution succeeded)', async () => {
