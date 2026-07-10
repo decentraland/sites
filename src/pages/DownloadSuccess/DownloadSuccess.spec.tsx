@@ -4,6 +4,9 @@ import { DownloadSuccess } from './DownloadSuccess'
 
 const mockCalculateDownloadUrl = jest.fn()
 const mockStreamOrFallback = jest.fn()
+// Identity passthrough (keeps `href` assertions on the raw url) but recordable
+// so tests can assert which query params the component forwarded to the gateway.
+const mockAddQueryParams = jest.fn((url: string) => url)
 let searchParamsInstance = new URLSearchParams()
 // Mutable so individual tests can flip the auth state used by the component.
 let mockHasValidIdentity = false
@@ -106,7 +109,7 @@ jest.mock('../../modules/url', () => ({
     Windows: { amd64: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe' },
     macOS: { arm64: 'https://cdn.decentraland.org/launcher/Decentraland-arm64.dmg' }
   },
-  addQueryParamsToUrlString: (url: string) => url
+  addQueryParamsToUrlString: (...args: [string, Record<string, unknown>]) => mockAddQueryParams(...args)
 }))
 
 type LayoutProps = {
@@ -146,6 +149,8 @@ beforeEach(() => {
   // jest.resetAllMocks() in each suite's afterEach wipes implementations, so
   // re-establish the default anon id (resolved immediately) before every test.
   mockUseAnonUserId.mockReturnValue('anon-123')
+  // Restore the identity passthrough wiped by resetAllMocks.
+  mockAddQueryParams.mockImplementation((url: string) => url)
   mockCollectClientFingerprint.mockReturnValue({
     fp_screen_width: 1024,
     fp_screen_height: 768,
@@ -847,7 +852,7 @@ describe('when a download click correlation exists in sessionStorage', () => {
     searchParamsInstance = new URLSearchParams('os=windows&place=landing-hero')
     sessionStorage.setItem('downloadFunnel:lastClick', JSON.stringify({ click_id: 'click-abc', clicked_at: Date.now() - 500 }))
     mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://gw/dl.exe', filename: 'dl.exe' })
-    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1 })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1, deliveryMode: 'streamed', gatewayRequestId: 'req-xyz' })
   })
 
   afterEach(() => {
@@ -867,6 +872,40 @@ describe('when a download click correlation exists in sessionStorage', () => {
     await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
     setVisibility(true)
     expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(expect.objectContaining({ clickId: 'click-abc' }))
+  })
+
+  it('should forward click_id as a query param to the gateway download url', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
+    expect(mockAddQueryParams).toHaveBeenCalledWith('https://gw/dl.exe', expect.objectContaining({ click_id: 'click-abc' }))
+  })
+
+  it('should attach delivery_mode and gateway_request_id to download_success', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(findEventCall('download_success')).toBeDefined())
+    const [, payload] = findEventCall('download_success')!
+    expect(payload).toEqual(expect.objectContaining({ delivery_mode: 'streamed', gateway_request_id: 'req-xyz' }))
+  })
+})
+
+describe('when the download stream resolves without a gateway request id (macOS / fallback)', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=macos&place=landing-hero')
+    sessionStorage.clear()
+    mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://gw/dl.dmg', filename: 'dl.dmg' })
+    mockStreamOrFallback.mockResolvedValue({ deliveryMode: 'anchor_native' })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should record delivery_mode but omit gateway_request_id on download_success', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(findEventCall('download_success')).toBeDefined())
+    const [, payload] = findEventCall('download_success')!
+    expect(payload).toEqual(expect.objectContaining({ delivery_mode: 'anchor_native' }))
+    expect(payload).not.toHaveProperty('gateway_request_id')
   })
 })
 

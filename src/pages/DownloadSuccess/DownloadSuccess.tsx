@@ -26,6 +26,7 @@ import { DownloadPlace, DownloadTarget, SegmentEvent, resolveDownloadPlace } fro
 import { ensureSegmentAnonymousId } from '../../modules/segmentAnonymousId'
 import { postSegmentEvent } from '../../modules/segmentBeacon'
 import { streamOrFallback } from '../../modules/streamOrFallback'
+import type { StreamOrFallbackResult } from '../../modules/streamOrFallback.types'
 import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
 import { DownloadSuccessLayout } from './DownloadSuccessLayout'
@@ -40,6 +41,22 @@ import {
 } from './DownloadSuccess.styled'
 
 const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
+
+/**
+ * Maps a resolved download into the event-level extras appended to
+ * `download_success`: which path delivered it (`delivery_mode`) and, on the
+ * streamed path, the gateway's `X-Request-Id` for the client↔server join.
+ * `gateway_request_id` is omitted when absent (macOS / anchor fallback / CDN).
+ */
+const buildDeliveryExtra = (result: StreamOrFallbackResult): Record<string, unknown> => {
+  /* eslint-disable @typescript-eslint/naming-convention */
+  const extra: Record<string, unknown> = { delivery_mode: result.deliveryMode }
+  if (result.gatewayRequestId) {
+    extra.gateway_request_id = result.gatewayRequestId
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
+  return extra
+}
 
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
@@ -86,13 +103,13 @@ const DownloadSuccess = memo(() => {
         startedFiredRef.current = true
         tracker.started()
       },
-      success: (filename, bytesTransferred) => {
+      success: (filename, bytesTransferred, extra) => {
         successFiredRef.current = true
-        tracker.success(filename, bytesTransferred)
+        tracker.success(filename, bytesTransferred, extra)
       },
-      failed: reason => {
+      failed: (reason, extra) => {
         failedFiredRef.current = true
-        tracker.failed(reason)
+        tracker.failed(reason, extra)
       }
     }),
     []
@@ -303,7 +320,13 @@ const DownloadSuccess = memo(() => {
 
         if (signal.aborted) return
 
-        const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserIdRef.current })
+        const downloadUrl = addQueryParamsToUrlString(url, {
+          [ANON_USER_ID_PARAM]: anonUserIdRef.current,
+          // Forwarded so the gateway echoes it into its server-side telemetry,
+          // closing the click→download join without relying on the beacon.
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          click_id: readDownloadClickCorrelation()?.click_id
+        })
 
         // Fingerprint snapshot used by the data team's server-side join to
         // match this download with the launcher's first-run event from the
@@ -348,7 +371,7 @@ const DownloadSuccess = memo(() => {
         if (signal.aborted) return
         setDownloadProgress(100)
         setIsFileSaved(true)
-        tracker.success(filename, result.bytesTransferred)
+        tracker.success(filename, result.bytesTransferred, buildDeliveryExtra(result))
       } catch (error) {
         if (signal.aborted) return
         console.error('Download error:', error)
@@ -417,7 +440,11 @@ const DownloadSuccess = memo(() => {
           getIdentityId,
           anonUserId
         })
-        const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserId })
+        const downloadUrl = addQueryParamsToUrlString(url, {
+          [ANON_USER_ID_PARAM]: anonUserId,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          click_id: readDownloadClickCorrelation()?.click_id
+        })
 
         tracker = withFiredRefs(
           createDownloadTracker({
@@ -446,7 +473,7 @@ const DownloadSuccess = memo(() => {
 
         if (signal.aborted) return
         setDownloadProgress(100)
-        tracker.success(filename, result.bytesTransferred)
+        tracker.success(filename, result.bytesTransferred, buildDeliveryExtra(result))
       } catch (error) {
         if (signal.aborted) return
         console.error('Download error:', error)
