@@ -4,7 +4,7 @@ import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import { mapEnvToDclenv } from '../config/dclenv'
 import { getEnv } from '../config/env'
-import { DEFAULT_POSITION, DEFAULT_REALM, buildDeepLinkOptions } from '../features/places/places.helpers'
+import { buildDeepLinkOptions } from '../features/places/places.helpers'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
 import { SegmentEvent } from '../modules/segment'
 import { addQueryParamsToUrlString } from '../modules/url'
@@ -45,18 +45,28 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
   const isMobile = Boolean(advancedUserAgent?.mobile)
   const downloadOs = detectDownloadOS()
 
-  const deepLinkParams = useMemo<Record<string, string | undefined>>(
-    () => ({
-      position: position !== DEFAULT_POSITION ? position : undefined,
-      realm: realm && realm !== DEFAULT_REALM ? realm : undefined
-    }),
-    [position, realm]
-  )
+  // Default-filtered deep-link params. Without the `env` arg this never emits
+  // `dclenv`, and it drops `position: ''` (the manual `!== DEFAULT` check let
+  // empty strings through as `?position=`).
+  const deepLinkParams = useMemo(() => buildDeepLinkOptions(position, realm), [position, realm])
 
   const buildDownloadUrl = useCallback(
     (base: string): string => {
-      const hasParams = Object.values(deepLinkParams).some(Boolean)
-      return hasParams ? addQueryParamsToUrlString(base, deepLinkParams) : base
+      if (Object.keys(deepLinkParams).length === 0) {
+        return base
+      }
+      const url = new URL(base)
+      const redirectTo = url.searchParams.get('redirectTo')
+      if (redirectTo) {
+        // Onboarding URLs are auth-login URLs (`.../auth/login/?redirectTo=...`).
+        // The auth site redirects to the verbatim `redirectTo` value, so params
+        // appended to the outer login URL never survive the round-trip — they
+        // must land on the inner target instead.
+        const innerUrl = addQueryParamsToUrlString(new URL(redirectTo, url.origin).toString(), deepLinkParams)
+        url.searchParams.set('redirectTo', innerUrl)
+        return url.toString()
+      }
+      return addQueryParamsToUrlString(base, deepLinkParams)
     },
     [deepLinkParams]
   )

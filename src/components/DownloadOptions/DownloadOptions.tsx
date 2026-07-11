@@ -1,6 +1,7 @@
 import { memo, useCallback, useMemo } from 'react'
 import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
+import { collectDeepLinkParams } from '../../features/places/places.helpers'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
 import { useDownloadClick } from '../../hooks/useDownloadClick'
@@ -70,13 +71,17 @@ type HandleDownloadOptionClickParams = {
 /** @internal — exported for testing (see DownloadOptions.spec.tsx); not part of this module's public contract. */
 const handleDownloadOptionClick = async (params: HandleDownloadOptionClickParams) => {
   const { anonUserId, downloadOnClick, getIdentityId, links, option } = params
+  // First-launch deep-link params (position/realm) arriving on this page's URL
+  // ride along to the file URL and to /download_success, so the launcher can
+  // parse them from the file-origin URL on first run.
+  const deepLinkParams = collectDeepLinkParams()
   if (downloadOnClick) {
     try {
       await getDownloadLinkWithIdentity({
         os: option.text,
         arch: option.arch,
         fallbackLinks: links,
-        queryParams: { [ANON_USER_ID_PARAM]: anonUserId },
+        queryParams: { [ANON_USER_ID_PARAM]: anonUserId, ...deepLinkParams },
         getIdentityId,
         anonUserId
       })
@@ -109,7 +114,8 @@ const handleDownloadOptionClick = async (params: HandleDownloadOptionClickParams
   const finalUrl = buildDownloadSuccessHref(option.text, DownloadPlace.DOWNLOAD_PAGE, {
     anonUserId,
     arch: option.arch,
-    campaignParams: collectCampaignParams()
+    campaignParams: collectCampaignParams(),
+    deepLinkParams
   })
   setTimeout(
     () => {

@@ -319,6 +319,53 @@ describe('DownloadOptions', () => {
     })
   })
 
+  describe('when the URL carries first-launch deep-link params', () => {
+    it('should forward position and realm into the /download_success redirect URL', async () => {
+      const { hrefSpy, restore } = installLocation('?position=10,20&realm=foo.eth')
+      try {
+        render(<DownloadOptions />)
+        await userEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
+        await waitFor(() => expect(hrefSpy).toHaveBeenCalled())
+        const redirectUrl = hrefSpy.mock.calls[0][0] as string
+        expect(redirectUrl).toContain('position=10%2C20')
+        expect(redirectUrl).toContain('realm=foo.eth')
+      } finally {
+        restore()
+      }
+    })
+
+    it('should forward position and realm into the file URL query params when downloadOnClick is set', async () => {
+      const { hrefSpy, restore } = installLocation('?position=10,20&realm=foo.eth')
+      mockGetDownloadLinkWithIdentity.mockResolvedValue(undefined as never)
+      try {
+        render(<DownloadOptions downloadOnClick />)
+        await userEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
+        await waitFor(() => expect(hrefSpy).toHaveBeenCalled())
+        expect(mockGetDownloadLinkWithIdentity).toHaveBeenCalledWith(
+          expect.objectContaining({
+            queryParams: expect.objectContaining({ position: '10,20', realm: 'foo.eth' })
+          })
+        )
+      } finally {
+        restore()
+      }
+    })
+
+    it('should not forward default position and realm values', async () => {
+      const { hrefSpy, restore } = installLocation('?position=0,0&realm=main')
+      try {
+        render(<DownloadOptions />)
+        await userEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
+        await waitFor(() => expect(hrefSpy).toHaveBeenCalled())
+        const redirectUrl = hrefSpy.mock.calls[0][0] as string
+        expect(redirectUrl).not.toContain('position=')
+        expect(redirectUrl).not.toContain('realm=')
+      } finally {
+        restore()
+      }
+    })
+  })
+
   describe('when downloadOnClick is set', () => {
     it('should trigger the identity-bound download before redirecting', async () => {
       const { hrefSpy, restore } = installLocation('')

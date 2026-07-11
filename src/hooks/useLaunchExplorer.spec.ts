@@ -117,7 +117,7 @@ describe('useLaunchExplorer', () => {
 
         await act(() => result.current.launchExplorer())
 
-        expect(windowOpenSpy).toHaveBeenCalledWith('https://dl.test/direct?position=42%2C-5&realm=myworld.dcl.eth', '_self')
+        expect(windowOpenSpy).toHaveBeenCalledWith('https://dl.test/direct?realm=myworld.dcl.eth&position=42%2C-5', '_self')
       })
 
       it('should not append default position or realm to the download url', async () => {
@@ -126,6 +126,46 @@ describe('useLaunchExplorer', () => {
         await act(() => result.current.launchExplorer())
 
         expect(windowOpenSpy).toHaveBeenCalledWith('https://dl.test/direct', '_self')
+      })
+
+      it('should drop an empty position and keep the non-default realm', async () => {
+        const { result } = renderHook(() => useLaunchExplorer({ position: '', realm: 'myworld.dcl.eth' }))
+
+        await act(() => result.current.launchExplorer())
+
+        expect(windowOpenSpy).toHaveBeenCalledWith('https://dl.test/direct?realm=myworld.dcl.eth', '_self')
+      })
+    })
+
+    describe('and the user has no identity but an onboarding url with a redirectTo', () => {
+      const onboardingUrl = 'https://decentraland.org/auth/login/?newUser&redirectTo=https%3A%2F%2Fdecentraland.org%2Fdownload'
+
+      beforeEach(() => {
+        mockedGetEnv.mockImplementation(key => (key === 'ONBOARDING_URL' ? onboardingUrl : undefined))
+      })
+
+      it('should append position and realm to the inner redirectTo target, not the outer login url', async () => {
+        const { result } = renderHook(() => useLaunchExplorer({ position: '42,-5', realm: 'myworld.dcl.eth' }))
+
+        await act(() => result.current.launchExplorer())
+
+        const openedUrl = new URL(windowOpenSpy.mock.calls[0][0])
+        expect(openedUrl.origin + openedUrl.pathname).toBe('https://decentraland.org/auth/login/')
+        expect(openedUrl.searchParams.get('position')).toBeNull()
+        expect(openedUrl.searchParams.get('realm')).toBeNull()
+
+        const redirectTo = new URL(openedUrl.searchParams.get('redirectTo') as string)
+        expect(redirectTo.origin + redirectTo.pathname).toBe('https://decentraland.org/download')
+        expect(redirectTo.searchParams.get('position')).toBe('42,-5')
+        expect(redirectTo.searchParams.get('realm')).toBe('myworld.dcl.eth')
+      })
+
+      it('should open the onboarding url untouched when position and realm are the defaults', async () => {
+        const { result } = renderHook(() => useLaunchExplorer({ position: '0,0', realm: 'main' }))
+
+        await act(() => result.current.launchExplorer())
+
+        expect(windowOpenSpy).toHaveBeenCalledWith(onboardingUrl, '_self')
       })
     })
 
@@ -144,7 +184,7 @@ describe('useLaunchExplorer', () => {
       it('should include position and realm in the download modal url when non-default', async () => {
         const { result } = renderHook(() => useLaunchExplorer({ position: '10,20', realm: 'custom.dcl.eth' }))
 
-        expect(result.current.downloadModalProps.downloadUrl).toBe('https://dl.test/apple?position=10%2C20&realm=custom.dcl.eth')
+        expect(result.current.downloadModalProps.downloadUrl).toBe('https://dl.test/apple?realm=custom.dcl.eth&position=10%2C20')
       })
     })
   })

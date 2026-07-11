@@ -4,6 +4,7 @@ import { DownloadSuccess } from './DownloadSuccess'
 
 const mockCalculateDownloadUrl = jest.fn()
 const mockStreamOrFallback = jest.fn()
+const mockAddQueryParamsToUrlString = jest.fn((url: string, _params?: Record<string, string | undefined | null>): string => url)
 let searchParamsInstance = new URLSearchParams()
 // Mutable so individual tests can flip the auth state used by the component.
 let mockHasValidIdentity = false
@@ -106,7 +107,7 @@ jest.mock('../../modules/url', () => ({
     Windows: { amd64: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe' },
     macOS: { arm64: 'https://cdn.decentraland.org/launcher/Decentraland-arm64.dmg' }
   },
-  addQueryParamsToUrlString: (url: string) => url
+  addQueryParamsToUrlString: (url: string, params: Record<string, string | undefined | null>) => mockAddQueryParamsToUrlString(url, params)
 }))
 
 type LayoutProps = {
@@ -146,6 +147,7 @@ beforeEach(() => {
   // jest.resetAllMocks() in each suite's afterEach wipes implementations, so
   // re-establish the default anon id (resolved immediately) before every test.
   mockUseAnonUserId.mockReturnValue('anon-123')
+  mockAddQueryParamsToUrlString.mockImplementation((url: string) => url)
   mockCollectClientFingerprint.mockReturnValue({
     fp_screen_width: 1024,
     fp_screen_height: 768,
@@ -324,6 +326,62 @@ describe('when the /download_success URL carries partner campaign params', () =>
         'anon-fixed'
       )
     })
+  })
+})
+
+describe('when the /download_success URL carries first-launch deep-link params', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=download-page&position=10,20&realm=foo.eth')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=download-page&position=10,20&realm=foo.eth')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should append position and realm to the file URL so the launcher can parse the file-origin URL', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockAddQueryParamsToUrlString).toHaveBeenCalledWith(
+        'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+        expect.objectContaining({ position: '10,20', realm: 'foo.eth' })
+      )
+    })
+  })
+})
+
+describe('when the /download_success URL carries default deep-link params', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=download-page&position=0,0&realm=main')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=download-page&position=0,0&realm=main')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should not append the default position/realm to the file URL', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockAddQueryParamsToUrlString).toHaveBeenCalled()
+    })
+    const params = mockAddQueryParamsToUrlString.mock.calls[0][1] as Record<string, string>
+    expect(params).not.toHaveProperty('position')
+    expect(params).not.toHaveProperty('realm')
   })
 })
 

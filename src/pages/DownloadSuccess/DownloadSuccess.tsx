@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { Logo, Typography } from 'decentraland-ui2'
 import { LandingFooter } from '../../components/LandingFooter'
+import { collectDeepLinkParams } from '../../features/places/places.helpers'
 import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useDownloadFunnelExit } from '../../hooks/useDownloadFunnelExit'
@@ -115,6 +116,13 @@ const DownloadSuccess = memo(() => {
   const campaignParams = useMemo(() => collectCampaignParams(searchParams), [searchParams])
   const campaignParamsRef = useRef(campaignParams)
   campaignParamsRef.current = campaignParams
+
+  // First-launch deep-link params (position/realm) forwarded from the jump-in
+  // flow. Appended to the file URL so the launcher can parse them from the
+  // file-origin URL (kMDItemWhereFroms / Zone.Identifier) on first run.
+  const deepLinkParams = useMemo(() => collectDeepLinkParams(searchParams), [searchParams])
+  const deepLinkParamsRef = useRef(deepLinkParams)
+  deepLinkParamsRef.current = deepLinkParams
 
   // Shared `extra` for every tracker built on this page: the client
   // fingerprint, the campaign params, the click→download correlation, and
@@ -303,7 +311,10 @@ const DownloadSuccess = memo(() => {
 
         if (signal.aborted) return
 
-        const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserIdRef.current })
+        const downloadUrl = addQueryParamsToUrlString(url, {
+          [ANON_USER_ID_PARAM]: anonUserIdRef.current,
+          ...deepLinkParamsRef.current
+        })
 
         // Fingerprint snapshot used by the data team's server-side join to
         // match this download with the launcher's first-run event from the
@@ -417,7 +428,7 @@ const DownloadSuccess = memo(() => {
           getIdentityId,
           anonUserId
         })
-        const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserId })
+        const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserId, ...deepLinkParamsRef.current })
 
         tracker = withFiredRefs(
           createDownloadTracker({
