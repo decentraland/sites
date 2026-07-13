@@ -60,6 +60,7 @@ describe('when posting a Segment event via beacon', () => {
       timestamp: expect.any(String),
       sentAt: body.timestamp,
       context: {
+        direct: true,
         page: {
           url: window.location.href,
           path: '/download',
@@ -79,6 +80,19 @@ describe('when posting a Segment event via beacon', () => {
     // The /v1/track endpoint infers the message type; the SDK does not send it
     // on this transport, so neither do we.
     expect(body).not.toHaveProperty('type')
+  })
+
+  it('should set context.direct so Segment stamps the request IP on device-originated events', async () => {
+    // Regression guard for the 2026-07-03 → fix-deploy attribution outage:
+    // without context.direct, Segment's HTTP Tracking API treats a payload
+    // carrying a custom context.library as server-side and leaves context.ip
+    // empty, which kills the warehouse's IP-keyed attribution join and blinds
+    // IP-based bot detection. See Segment HTTP API Source docs.
+    postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero' }, 'anon-1')
+
+    const [, blob] = mockSendBeacon.mock.calls[0] as [string, Blob]
+    const body = JSON.parse(await readBlobText(blob))
+    expect(body.context.direct).toBe(true)
   })
 
   it('should omit userId when the visitor is anonymous', async () => {

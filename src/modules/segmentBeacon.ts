@@ -20,6 +20,15 @@ interface NavigatorUAData {
 }
 
 interface SegmentBeaconContext {
+  // Tells Segment this HTTP call originates from the user's device, so it
+  // stamps the request IP into `context.ip`. Without it, the Tracking API
+  // treats a payload carrying a custom `context.library` as a server-side
+  // integration and leaves the IP empty — which is exactly what broke the
+  // warehouse's IP-keyed attribution join from 2026-07-03 (the day the custom
+  // `library` was added) through the deploy of this fix. See Segment's HTTP API
+  // Source docs: "When sending an HTTP call from a user's device, you can
+  // collect the IP address by setting context.direct to true."
+  direct: true
   page: {
     url: string
     path: string
@@ -104,6 +113,7 @@ const buildSegmentBeaconPayload = (input: SegmentBeaconInput): SegmentBeaconPayl
     timestamp,
     sentAt: timestamp,
     context: {
+      direct: true,
       page: {
         url: typeof window !== 'undefined' ? window.location.href : '',
         path: typeof window !== 'undefined' ? window.location.pathname : '',
