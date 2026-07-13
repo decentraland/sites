@@ -1,4 +1,4 @@
-import type { DownloadProgressCallback } from './file.types'
+import type { DownloadProgressCallback, DownloadStreamResult } from './file.types'
 
 const clickAnchor = (href: string, downloadAttr: string | null): void => {
   const a = document.createElement('a')
@@ -62,7 +62,7 @@ async function downloadFileWithProgress(
   filename: string,
   onProgress?: DownloadProgressCallback,
   signal?: AbortSignal
-): Promise<void> {
+): Promise<DownloadStreamResult> {
   const response = await fetch(url, {
     method: 'GET',
     mode: 'cors',
@@ -79,6 +79,11 @@ async function downloadFileWithProgress(
     throw new Error('Response body is null')
   }
 
+  // Echoed by the gateway (exposed via Access-Control-Expose-Headers) so the
+  // download_success event can be joined to the gateway's server-side
+  // telemetry. Absent on CDN-direct URLs, which don't set it.
+  const gatewayRequestId = response.headers.get('x-request-id') ?? undefined
+
   const contentLengthHeader = response.headers.get('content-length')
   const total = contentLengthHeader ? parseInt(contentLengthHeader, 10) : 0
   let loaded = 0
@@ -93,6 +98,8 @@ async function downloadFileWithProgress(
 
   const blob = await new Response(response.body.pipeThrough(progressStream)).blob()
   triggerBlobDownload(blob, filename)
+
+  return { gatewayRequestId }
 }
 
 export { downloadFileWithProgress, triggerFileDownload }

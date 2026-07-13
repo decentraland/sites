@@ -4,6 +4,9 @@ import { DownloadSuccess } from './DownloadSuccess'
 
 const mockCalculateDownloadUrl = jest.fn()
 const mockStreamOrFallback = jest.fn()
+// Identity passthrough (keeps `href` assertions on the raw url) but recordable
+// so tests can assert which query params the component forwarded to the gateway.
+const mockAddQueryParams = jest.fn((url: string, _params?: Record<string, unknown>) => url)
 let searchParamsInstance = new URLSearchParams()
 // Mutable so individual tests can flip the auth state used by the component.
 let mockHasValidIdentity = false
@@ -101,12 +104,18 @@ jest.mock('../../modules/streamOrFallback', () => ({
   streamOrFallback: (...args: unknown[]) => mockStreamOrFallback(...args)
 }))
 
+const mockCaptureDownloadError = jest.fn()
+jest.mock('../../modules/downloadFunnelSentry', () => ({
+  captureDownloadError: (...args: unknown[]) => mockCaptureDownloadError(...args),
+  recordDownloadMilestone: jest.fn()
+}))
+
 jest.mock('../../modules/url', () => ({
   FALLBACK_CDN_RELEASE_LINKS: {
     Windows: { amd64: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe' },
     macOS: { arm64: 'https://cdn.decentraland.org/launcher/Decentraland-arm64.dmg' }
   },
-  addQueryParamsToUrlString: (url: string) => url
+  addQueryParamsToUrlString: (...args: [string, Record<string, unknown>]) => mockAddQueryParams(...args)
 }))
 
 type LayoutProps = {
@@ -146,6 +155,8 @@ beforeEach(() => {
   // jest.resetAllMocks() in each suite's afterEach wipes implementations, so
   // re-establish the default anon id (resolved immediately) before every test.
   mockUseAnonUserId.mockReturnValue('anon-123')
+  // Restore the identity passthrough wiped by resetAllMocks.
+  mockAddQueryParams.mockImplementation((url: string) => url)
   mockCollectClientFingerprint.mockReturnValue({
     fp_screen_width: 1024,
     fp_screen_height: 768,
@@ -536,6 +547,12 @@ describe('when the user clicks the footer re-download link', () => {
         expect.anything()
       )
     })
+    // Sentry must tag the footer flow with the footer place so the issue joins
+    // to its own download_failed event (not the page-level place).
+    expect(mockCaptureDownloadError).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ feature: 'download_funnel', place: 'download-success-footer' })
+    )
   })
 })
 
@@ -576,6 +593,35 @@ describe('when DownloadSuccess mounts and the url resolution rejects', () => {
         expect.anything()
       )
     })
+  })
+
+  it('should capture the error in Sentry tagged with step calculate_url when no tracker was built', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => expect(findEventCall('download_failed')).toBeDefined())
+    expect(mockCaptureDownloadError).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ feature: 'download_funnel', step: 'calculate_url', os: 'Windows' })
+    )
+  })
+
+  it('should capture the error in Sentry tagged with step stream when the stream throws after the tracker is built', async () => {
+    mockCalculateDownloadUrl.mockReset()
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockReset()
+    mockStreamOrFallback.mockRejectedValue(new Error('stream blew up'))
+    jest.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    render(<DownloadSuccess />)
+
+    await waitFor(() => expect(findEventCall('download_failed')).toBeDefined())
+    expect(mockCaptureDownloadError).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ feature: 'download_funnel', step: 'stream' })
+    )
   })
 
   it('should fire download_failed via the built tracker when the stream itself throws (URL resolution succeeded)', async () => {
@@ -847,7 +893,7 @@ describe('when a download click correlation exists in sessionStorage', () => {
     searchParamsInstance = new URLSearchParams('os=windows&place=landing-hero')
     sessionStorage.setItem('downloadFunnel:lastClick', JSON.stringify({ click_id: 'click-abc', clicked_at: Date.now() - 500 }))
     mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://gw/dl.exe', filename: 'dl.exe' })
-    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1 })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1, deliveryMode: 'streamed', gatewayRequestId: 'req-xyz' })
   })
 
   afterEach(() => {
@@ -867,6 +913,40 @@ describe('when a download click correlation exists in sessionStorage', () => {
     await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
     setVisibility(true)
     expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(expect.objectContaining({ clickId: 'click-abc' }))
+  })
+
+  it('should forward click_id as a query param to the gateway download url', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
+    expect(mockAddQueryParams).toHaveBeenCalledWith('https://gw/dl.exe', expect.objectContaining({ click_id: 'click-abc' }))
+  })
+
+  it('should attach delivery_mode and gateway_request_id to download_success', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(findEventCall('download_success')).toBeDefined())
+    const [, payload] = findEventCall('download_success')!
+    expect(payload).toEqual(expect.objectContaining({ delivery_mode: 'streamed', gateway_request_id: 'req-xyz' }))
+  })
+})
+
+describe('when the download stream resolves without a gateway request id (macOS / fallback)', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=macos&place=landing-hero')
+    sessionStorage.clear()
+    mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://gw/dl.dmg', filename: 'dl.dmg' })
+    mockStreamOrFallback.mockResolvedValue({ deliveryMode: 'anchor_native' })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should record delivery_mode but omit gateway_request_id on download_success', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(findEventCall('download_success')).toBeDefined())
+    const [, payload] = findEventCall('download_success')!
+    expect(payload).toEqual(expect.objectContaining({ delivery_mode: 'anchor_native' }))
+    expect(payload).not.toHaveProperty('gateway_request_id')
   })
 })
 
