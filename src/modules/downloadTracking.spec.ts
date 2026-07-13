@@ -164,6 +164,29 @@ describe('createDownloadTracker', () => {
 
       expect(readLastPayload()).not.toHaveProperty('bytes_transferred')
     })
+
+    it('should merge event-level extras (delivery_mode, gateway_request_id) into the payload', () => {
+      const tracker = createDownloadTracker(buildContext())
+
+      tracker.started()
+      tracker.success('Install-Decentraland.exe', 123, { delivery_mode: 'streamed', gateway_request_id: 'req-1' })
+
+      expect(readLastPayload()).toMatchObject({
+        delivery_mode: 'streamed',
+        gateway_request_id: 'req-1',
+        filename: 'Install-Decentraland.exe'
+      })
+    })
+
+    it('should let core schema fields win over event-level extras on collision', () => {
+      const tracker = createDownloadTracker(buildContext({ os: OperativeSystem.WINDOWS }))
+
+      tracker.started()
+      // `os` is a core field; an extra of the same name must not override it.
+      tracker.success('Install-Decentraland.exe', 123, { os: 'tampered' })
+
+      expect(readLastPayload()).toMatchObject({ os: OperativeSystem.WINDOWS })
+    })
   })
 
   describe('when failed() is called after started()', () => {

@@ -19,6 +19,7 @@ import microsoftLogo from '../../images/microsoft-logo.svg'
 import { collectCampaignParams } from '../../modules/campaignParams'
 import { readDownloadClickCorrelation } from '../../modules/downloadClickCorrelation'
 import type { DownloadFunnelExitData } from '../../modules/downloadFunnelExit.types'
+import { captureDownloadError, recordDownloadMilestone } from '../../modules/downloadFunnelSentry'
 import { createDownloadTracker, toAuthState } from '../../modules/downloadTracking'
 import type { DownloadTracker } from '../../modules/downloadTracking.types'
 import { calculateDownloadUrl } from '../../modules/downloadWithIdentity'
@@ -27,6 +28,7 @@ import { DownloadPlace, DownloadTarget, SegmentEvent, resolveDownloadPlace } fro
 import { ensureSegmentAnonymousId } from '../../modules/segmentAnonymousId'
 import { postSegmentEvent } from '../../modules/segmentBeacon'
 import { streamOrFallback } from '../../modules/streamOrFallback'
+import type { StreamOrFallbackResult } from '../../modules/streamOrFallback.types'
 import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
 import { DownloadSuccessLayout } from './DownloadSuccessLayout'
@@ -41,6 +43,22 @@ import {
 } from './DownloadSuccess.styled'
 
 const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
+
+/**
+ * Maps a resolved download into the event-level extras appended to
+ * `download_success`: which path delivered it (`delivery_mode`) and, on the
+ * streamed path, the gateway's `X-Request-Id` for the client↔server join.
+ * `gateway_request_id` is omitted when absent (macOS / anchor fallback / CDN).
+ */
+const buildDeliveryExtra = (result: StreamOrFallbackResult): Record<string, unknown> => {
+  /* eslint-disable @typescript-eslint/naming-convention */
+  const extra: Record<string, unknown> = { delivery_mode: result.deliveryMode }
+  if (result.gatewayRequestId) {
+    extra.gateway_request_id = result.gatewayRequestId
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
+  return extra
+}
 
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
@@ -85,15 +103,16 @@ const DownloadSuccess = memo(() => {
     (tracker: DownloadTracker): DownloadTracker => ({
       started: () => {
         startedFiredRef.current = true
+        recordDownloadMilestone('download_started')
         tracker.started()
       },
-      success: (filename, bytesTransferred) => {
+      success: (filename, bytesTransferred, extra) => {
         successFiredRef.current = true
-        tracker.success(filename, bytesTransferred)
+        tracker.success(filename, bytesTransferred, extra)
       },
-      failed: reason => {
+      failed: (reason, extra) => {
         failedFiredRef.current = true
-        tracker.failed(reason)
+        tracker.failed(reason, extra)
       }
     }),
     []
@@ -109,6 +128,25 @@ const DownloadSuccess = memo(() => {
   const rawArch = searchParams.get('arch') || defaultArch
   const clientArch = (VALID_ARCHS.has(rawArch) ? rawArch : defaultArch) as Architecture
   const place = resolveDownloadPlace(searchParams.get('place'))
+
+  // Single source of truth for the Sentry tags shared by both catch blocks.
+  // `errorPlace` is the flow's own place (page-level for auto-download,
+  // DOWNLOAD_SUCCESS_FOOTER for the re-download) so the Sentry issue joins to
+  // the matching `download_failed` event; `step` marks where it broke.
+  const buildDownloadErrorTags = useCallback(
+    (errorPlace: DownloadPlace, step: 'stream' | 'calculate_url'): Record<string, string | undefined> => ({
+      feature: 'download_funnel',
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      click_id: readDownloadClickCorrelation()?.click_id,
+      place: errorPlace,
+      os: clientOS,
+      arch: clientArch,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      download_target: DownloadTarget.DESKTOP_INSTALLER,
+      step
+    }),
+    [clientOS, clientArch]
+  )
 
   // Partner campaign params (utm_*) forwarded from the /download landing click.
   // Captured off the URL and re-attached to every download_* event so the
@@ -263,6 +301,7 @@ const DownloadSuccess = memo(() => {
       ensureSegmentAnonymousId()
     )
     /* eslint-enable @typescript-eslint/naming-convention */
+    recordDownloadMilestone('download_success_arrived')
   }, [clientOS, clientArch, place, revisitNumber])
 
   // Gate the auto-download on the anon_user_id resolution. `useAnonUserId` is
@@ -313,7 +352,11 @@ const DownloadSuccess = memo(() => {
 
         const downloadUrl = addQueryParamsToUrlString(url, {
           [ANON_USER_ID_PARAM]: anonUserIdRef.current,
-          ...deepLinkParamsRef.current
+          ...deepLinkParamsRef.current,
+          // Forwarded so the gateway echoes it into its server-side telemetry,
+          // closing the click→download join without relying on the beacon.
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          click_id: readDownloadClickCorrelation()?.click_id
         })
 
         // Fingerprint snapshot used by the data team's server-side join to
@@ -359,12 +402,17 @@ const DownloadSuccess = memo(() => {
         if (signal.aborted) return
         setDownloadProgress(100)
         setIsFileSaved(true)
-        tracker.success(filename, result.bytesTransferred)
+        tracker.success(filename, result.bytesTransferred, buildDeliveryExtra(result))
       } catch (error) {
         if (signal.aborted) return
         console.error('Download error:', error)
         const reason = error instanceof Error ? error.message : 'Download failed'
         setDownloadError(reason)
+
+        // Segment records THAT the download failed (download_failed); Sentry
+        // records WHY, with the stack trace + milestone buffer. click_id tags
+        // the issue so a warehouse drop row joins to the exact Sentry error.
+        void captureDownloadError(error, buildDownloadErrorTags(place, tracker ? 'stream' : 'calculate_url'))
 
         if (tracker) {
           tracker.failed(reason)
@@ -428,7 +476,12 @@ const DownloadSuccess = memo(() => {
           getIdentityId,
           anonUserId
         })
-        const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserId, ...deepLinkParamsRef.current })
+        const downloadUrl = addQueryParamsToUrlString(url, {
+          [ANON_USER_ID_PARAM]: anonUserId,
+          ...deepLinkParamsRef.current,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          click_id: readDownloadClickCorrelation()?.click_id
+        })
 
         tracker = withFiredRefs(
           createDownloadTracker({
@@ -457,12 +510,17 @@ const DownloadSuccess = memo(() => {
 
         if (signal.aborted) return
         setDownloadProgress(100)
-        tracker.success(filename, result.bytesTransferred)
+        tracker.success(filename, result.bytesTransferred, buildDeliveryExtra(result))
       } catch (error) {
         if (signal.aborted) return
         console.error('Download error:', error)
         const reason = error instanceof Error ? error.message : 'Download failed'
         setDownloadError(reason)
+
+        // Segment records THAT the download failed (download_failed); Sentry
+        // records WHY, with the stack trace + milestone buffer. click_id tags
+        // the issue so a warehouse drop row joins to the exact Sentry error.
+        void captureDownloadError(error, buildDownloadErrorTags(footerPlace, tracker ? 'stream' : 'calculate_url'))
 
         if (tracker) {
           tracker.failed(reason)

@@ -60,6 +60,7 @@ describe('when posting a Segment event via beacon', () => {
       timestamp: expect.any(String),
       sentAt: body.timestamp,
       context: {
+        direct: true,
         page: {
           url: window.location.href,
           path: '/download',
@@ -79,6 +80,17 @@ describe('when posting a Segment event via beacon', () => {
     // The /v1/track endpoint infers the message type; the SDK does not send it
     // on this transport, so neither do we.
     expect(body).not.toHaveProperty('type')
+  })
+
+  it('should set context.direct so Segment stamps the request IP on device-originated events', async () => {
+    // Regression guard: context.direct must stay true so Segment stamps the
+    // request IP (see the rationale on SegmentBeaconContext.direct). Dropping it
+    // silently breaks the warehouse's IP-keyed attribution join.
+    postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero' }, 'anon-1')
+
+    const [, blob] = mockSendBeacon.mock.calls[0] as [string, Blob]
+    const body = JSON.parse(await readBlobText(blob))
+    expect(body.context.direct).toBe(true)
   })
 
   it('should omit userId when the visitor is anonymous', async () => {
@@ -157,6 +169,11 @@ describe('when posting a Segment event via beacon', () => {
         headers: { 'Content-Type': 'text/plain' }
       })
     )
+    // Both transports serialize the same body, but assert it here too so a
+    // future per-transport split can't silently drop context.direct (and the IP
+    // it unlocks) from the keepalive path.
+    const fetchBody = JSON.parse((mockFetch.mock.calls[0][1] as { body: string }).body)
+    expect(fetchBody.context.direct).toBe(true)
   })
 
   it('should fall back to fetch keepalive when sendBeacon is unavailable', () => {
