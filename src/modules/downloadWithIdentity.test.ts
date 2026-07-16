@@ -5,6 +5,7 @@ const mockCalculateCDNReleaseLinksWithIdentity = jest.fn()
 const mockExtractDownloadLinkFromCDNReleaseOption = jest.fn()
 const mockAddQueryParamsToUrlString = jest.fn()
 const mockTriggerFileDownload = jest.fn()
+const mockEnsureSegmentAnonymousId = jest.fn()
 
 jest.mock('./url', () => ({
   calculateCDNReleaseLinksWithIdentity: (...args: unknown[]) => mockCalculateCDNReleaseLinksWithIdentity(...args),
@@ -16,7 +17,11 @@ jest.mock('./file', () => ({
   triggerFileDownload: (...args: unknown[]) => mockTriggerFileDownload(...args)
 }))
 
-import { calculateDownloadUrl, getDownloadLinkWithIdentity } from './downloadWithIdentity'
+jest.mock('./segmentAnonymousId', () => ({
+  ensureSegmentAnonymousId: (...args: unknown[]) => mockEnsureSegmentAnonymousId(...args)
+}))
+
+import { calculateDownloadUrl, getDownloadLinkWithIdentity, resolveGatewayAnonUserId } from './downloadWithIdentity'
 
 describe('calculateDownloadUrl', () => {
   afterEach(() => {
@@ -266,6 +271,50 @@ describe('getDownloadLinkWithIdentity', () => {
 
     it('should return undefined', () => {
       expect(result).toBeUndefined()
+    })
+  })
+})
+
+describe('resolveGatewayAnonUserId', () => {
+  beforeEach(() => {
+    mockEnsureSegmentAnonymousId.mockReturnValue('generated-anon')
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  describe('when an anon_user_id is already present', () => {
+    it('should return it verbatim without minting a new one', () => {
+      const result = resolveGatewayAnonUserId('existing-anon', { position: '10,20', realm: 'main' })
+
+      expect(result).toBe('existing-anon')
+      expect(mockEnsureSegmentAnonymousId).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when there is no anon_user_id but deep-link params are present', () => {
+    it('should mint one for a position param', () => {
+      const result = resolveGatewayAnonUserId(undefined, { position: '10,20' })
+
+      expect(result).toBe('generated-anon')
+      expect(mockEnsureSegmentAnonymousId).toHaveBeenCalledTimes(1)
+    })
+
+    it('should mint one for a realm param', () => {
+      const result = resolveGatewayAnonUserId(undefined, { realm: 'myworld.dcl.eth' })
+
+      expect(result).toBe('generated-anon')
+      expect(mockEnsureSegmentAnonymousId).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('when there is no anon_user_id and no deep-link params', () => {
+    it('should return undefined without minting one', () => {
+      const result = resolveGatewayAnonUserId(undefined, {})
+
+      expect(result).toBeUndefined()
+      expect(mockEnsureSegmentAnonymousId).not.toHaveBeenCalled()
     })
   })
 })

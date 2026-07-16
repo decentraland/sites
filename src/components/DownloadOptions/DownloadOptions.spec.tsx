@@ -43,7 +43,10 @@ jest.mock('../../hooks/useAnonUserId', () => ({ ANON_USER_ID_PARAM: 'anon_user_i
 
 jest.mock('../../hooks/useGetIdentityId', () => ({ useGetIdentityId: () => () => Promise.resolve(undefined) }))
 
-jest.mock('../../modules/downloadWithIdentity', () => ({ getDownloadLinkWithIdentity: jest.fn() }))
+jest.mock('../../modules/downloadWithIdentity', () => ({
+  ...jest.requireActual('../../modules/downloadWithIdentity'),
+  getDownloadLinkWithIdentity: jest.fn()
+}))
 
 jest.mock('../../modules/segmentBeacon', () => ({ postSegmentEvent: jest.fn() }))
 
@@ -346,6 +349,42 @@ describe('DownloadOptions', () => {
             queryParams: expect.objectContaining({ position: '10,20', realm: 'foo.eth' })
           })
         )
+      } finally {
+        restore()
+      }
+    })
+
+    it('should mint an anon_user_id for deep-link downloads so they stay on the gateway route', async () => {
+      // No anon_user_id from URL/Segment, but position/realm are present — the
+      // installer must come from the gateway, which needs an anon id, so one is
+      // minted rather than falling back to the CDN.
+      mockAnonUserId.mockReturnValue(undefined)
+      const { hrefSpy, restore } = installLocation('?position=10,20&realm=foo.eth')
+      mockGetDownloadLinkWithIdentity.mockResolvedValue(undefined as never)
+      try {
+        render(<DownloadOptions downloadOnClick />)
+        await userEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
+        await waitFor(() => expect(hrefSpy).toHaveBeenCalled())
+        expect(mockGetDownloadLinkWithIdentity).toHaveBeenCalledWith(
+          expect.objectContaining({
+            anonUserId: 'anon-id',
+            queryParams: expect.objectContaining({ anon_user_id: 'anon-id' })
+          })
+        )
+      } finally {
+        restore()
+      }
+    })
+
+    it('should not mint an anon_user_id when there are no deep-link params', async () => {
+      mockAnonUserId.mockReturnValue(undefined)
+      const { hrefSpy, restore } = installLocation('')
+      mockGetDownloadLinkWithIdentity.mockResolvedValue(undefined as never)
+      try {
+        render(<DownloadOptions downloadOnClick />)
+        await userEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
+        await waitFor(() => expect(hrefSpy).toHaveBeenCalled())
+        expect(mockGetDownloadLinkWithIdentity).toHaveBeenCalledWith(expect.objectContaining({ anonUserId: undefined }))
       } finally {
         restore()
       }

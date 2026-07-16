@@ -96,6 +96,7 @@ jest.mock('../../hooks/useAuthIdentity', () => ({
 }))
 
 jest.mock('../../modules/downloadWithIdentity', () => ({
+  ...jest.requireActual('../../modules/downloadWithIdentity'),
   calculateDownloadUrl: (...args: unknown[]) => mockCalculateDownloadUrl(...args),
   getDownloadLinkWithIdentity: jest.fn()
 }))
@@ -364,6 +365,18 @@ describe('when the /download_success URL carries first-launch deep-link params',
       )
     })
   })
+
+  it('should mint an anon_user_id so the deep-link download stays on the gateway route', async () => {
+    // No anon_user_id available, but position/realm are present — the installer
+    // must come from the gateway (only it bakes them in), which needs an anon
+    // id, so one is minted rather than falling back to the CDN.
+    mockUseAnonUserId.mockReturnValue(undefined)
+    render(<DownloadSuccess />)
+
+    await waitFor(() => expect(mockCalculateDownloadUrl).toHaveBeenCalledWith(expect.objectContaining({ anonUserId: 'anon-fixed' })), {
+      timeout: 2000
+    })
+  })
 })
 
 describe('when the /download_success URL carries default deep-link params', () => {
@@ -538,6 +551,18 @@ describe('when the user clicks the footer re-download link', () => {
       }),
       expect.anything()
     )
+  })
+
+  it('should mint an anon id for a deep-link footer re-download so it stays on the gateway route', async () => {
+    // Footer re-download with position/realm but no anon id: the installer must
+    // come from the gateway, so an anon id is minted rather than hitting the CDN.
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero&position=10,20&realm=foo.eth')
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&position=10,20&realm=foo.eth')
+    mockUseAnonUserId.mockReturnValue(undefined)
+    const { findByRole } = render(<DownloadSuccess />)
+    const link = await findByRole('link')
+    link.click()
+    await waitFor(() => expect(mockCalculateDownloadUrl).toHaveBeenCalledWith(expect.objectContaining({ anonUserId: 'anon-fixed' })))
   })
 
   it('should ignore a second click while a re-download is in flight', async () => {
@@ -900,6 +925,25 @@ describe('when the user leaves the page (download_funnel_exit)', () => {
         msOnPage: expect.any(Number)
       })
     )
+  })
+
+  it('should report the minted anon id on exit for a deep-link session so it joins the funnel rows', async () => {
+    // Regression: the exit beacon must carry the SAME id the download rows use.
+    // For a cold anonymous deep-link session the id is minted at download time,
+    // so the exit snapshot has to read it (not the still-undefined anon hook).
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero&position=10,20&realm=foo.eth')
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=landing-hero&position=10,20&realm=foo.eth')
+    mockUseAnonUserId.mockReturnValue(undefined)
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything()), {
+      timeout: 2000
+    })
+
+    React.act(() => {
+      setVisibility(true)
+    })
+
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(expect.objectContaining({ anonUserId: 'anon-fixed' }))
   })
 
   it('should report startedFired=false when the user leaves before the download events fire', async () => {

@@ -10,7 +10,7 @@ import appleLogo from '../../images/apple-logo.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
 import { collectCampaignParams } from '../../modules/campaignParams'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
-import { getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
+import { getDownloadLinkWithIdentity, resolveGatewayAnonUserId } from '../../modules/downloadWithIdentity'
 import { ExplorerDownloads } from '../../modules/explorerDownloads'
 import { formatToShorthand } from '../../modules/number'
 import { DownloadPlace, DownloadTarget, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
@@ -75,15 +75,20 @@ const handleDownloadOptionClick = async (params: HandleDownloadOptionClickParams
   // ride along to the file URL and to /download_success, so the launcher can
   // parse them from the file-origin URL on first run.
   const deepLinkParams = collectDeepLinkParams()
+  // When those params are present the installer MUST come from the gateway (it
+  // bakes them into the binary; a CDN-direct fallback would drop them), so
+  // guarantee an anon_user_id to keep the download on the anonymous gateway
+  // route rather than falling back to the CDN.
+  const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserId, deepLinkParams)
   if (downloadOnClick) {
     try {
       await getDownloadLinkWithIdentity({
         os: option.text,
         arch: option.arch,
         fallbackLinks: links,
-        queryParams: { [ANON_USER_ID_PARAM]: anonUserId, ...deepLinkParams },
+        queryParams: { [ANON_USER_ID_PARAM]: gatewayAnonUserId, ...deepLinkParams },
         getIdentityId,
-        anonUserId
+        anonUserId: gatewayAnonUserId
       })
     } catch (error) {
       // SOLO-TRACKING: register the failure as a drop cause without altering
@@ -112,7 +117,7 @@ const handleDownloadOptionClick = async (params: HandleDownloadOptionClickParams
   // (download_started/_success/_failed) carries the same attribution the
   // landing click had.
   const finalUrl = buildDownloadSuccessHref(option.text, DownloadPlace.DOWNLOAD_PAGE, {
-    anonUserId,
+    anonUserId: gatewayAnonUserId,
     arch: option.arch,
     campaignParams: collectCampaignParams(),
     deepLinkParams
