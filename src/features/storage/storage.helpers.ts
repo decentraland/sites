@@ -2,6 +2,7 @@ import { fromUnixTime } from 'date-fns/fromUnixTime'
 import type { AuthIdentity } from '@dcl/crypto'
 import signedFetchLibImport from 'decentraland-crypto-fetch'
 import { getEnv } from '../../config/env'
+import { isEns } from '../places/places.helpers'
 import { LandType, RoleType } from './storage.types'
 import type {
   Land,
@@ -81,6 +82,15 @@ const createScopedSignedFetch = (identity: AuthIdentity | undefined, realm?: str
     // `useStorageRedirect` can take the user back through auth.
     if (!identity || !isIdentityValid(identity)) {
       throw { status: 401, data: 'Unauthorized: no signed identity available' }
+    }
+
+    // Belt-and-suspenders: a World realm with no parcel lets the storage-service default
+    // to 0,0, which fails for worlds deployed off-origin. The UI resolves the base before
+    // reaching here (useStorageScope); refuse otherwise so a future regression fails loudly
+    // instead of silently targeting the wrong scene. 400 mirrors the service's own
+    // "Request must include a realm name or a parcel" response (see getStorageErrorKey).
+    if (isEns(realm ?? undefined) && !position) {
+      throw { status: 400, data: 'Missing base parcel for world realm' }
     }
 
     try {

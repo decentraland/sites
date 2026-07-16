@@ -24,6 +24,14 @@ describe('jump.helpers', () => {
       })
     })
 
+    describe('and the value contains hyphens or underscores (valid ENS labels)', () => {
+      it('should return true for hyphenated and underscored world names', () => {
+        expect(isEns('my-world.dcl.eth')).toBe(true)
+        expect(isEns('common-ground.dcl.eth')).toBe(true)
+        expect(isEns('foo_bar.eth')).toBe(true)
+      })
+    })
+
     describe('and the value does not end with .eth', () => {
       it('should return false', () => {
         expect(isEns('decentraland.org')).toBe(false)

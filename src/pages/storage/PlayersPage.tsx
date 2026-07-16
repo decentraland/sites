@@ -26,10 +26,10 @@ function PlayersPage() {
   const t = useFormatMessage()
   const navigate = useNavigate()
   const { identity } = useAuthIdentity()
-  const { realm, position } = useStorageScope()
+  const { realm, position, isResolving, unresolved } = useStorageScope()
   const track = useStorageTrack()
 
-  const { data: players, isLoading } = useListPlayersQuery({ identity, realm, position }, { skip: !identity })
+  const { data: players, isLoading } = useListPlayersQuery({ identity, realm, position }, { skip: !identity || isResolving || unresolved })
   const [clearAllPlayers] = useClearAllPlayersMutation()
 
   const [query, setQuery] = useState('')

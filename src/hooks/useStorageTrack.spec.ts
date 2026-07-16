@@ -24,7 +24,7 @@ describe('useStorageTrack', () => {
     it('should call analytics.track with realm, parcel and address', () => {
       const track = jest.fn()
       mockedAnalytics.mockReturnValue({ track, isInitialized: true } as unknown as ReturnType<typeof useAnalytics>)
-      mockedScope.mockReturnValue({ realm: 'foo', position: '0,0' })
+      mockedScope.mockReturnValue({ realm: 'foo', position: '0,0', isResolving: false, unresolved: false })
       mockedAuth.mockReturnValue({ identity: undefined, hasValidIdentity: true, address: '0xabc' as `0x${string}` })
 
       const { result } = renderHook(() => useStorageTrack())
