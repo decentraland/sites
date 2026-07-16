@@ -67,12 +67,18 @@ const world = { name: 'my-world.dcl.eth', role: 'owner' as const }
 const editButton = () => screen.getByRole('button', { name: 'component.storage.select_page.edit' })
 
 describe('WorldCard', () => {
-  afterEach(() => jest.clearAllMocks())
+  afterEach(() => jest.resetAllMocks())
 
   it('disables Edit while the scene list is loading', () => {
     mockUseGetWorldScenes.mockReturnValue({ data: undefined, isLoading: true })
     render(<WorldCard world={world} onEditClick={jest.fn()} />)
     expect(editButton()).toBeDisabled()
+  })
+
+  it('labels the card by role', () => {
+    mockUseGetWorldScenes.mockReturnValue({ data: [{ title: 'Main', baseParcel: '1,1' }], isLoading: false })
+    render(<WorldCard world={{ name: 'collab.dcl.eth', role: 'collaborator' }} onEditClick={jest.fn()} />)
+    expect(screen.getByText('component.storage.common.collaborator')).toBeInTheDocument()
   })
 
   it('disables Edit when the world has no scenes (no base parcel to resolve)', () => {

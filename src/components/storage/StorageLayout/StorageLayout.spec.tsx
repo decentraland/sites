@@ -82,7 +82,7 @@ describe('StorageLayout', () => {
   beforeEach(() => {
     mockPathname = '/storage/env'
   })
-  afterEach(() => jest.clearAllMocks())
+  afterEach(() => jest.resetAllMocks())
 
   it.each([
     ['/storage/env', 'env'],
@@ -121,7 +121,7 @@ describe('StorageLayout', () => {
     expect(screen.queryByText('child-content')).not.toBeInTheDocument()
   })
 
-  it('renders children once the scope is resolved', () => {
+  it('renders children and shows the position caption once the scope is resolved', () => {
     mockUseStorageScope.mockReturnValue({ realm: 'w.dcl.eth', position: '5,5', isResolving: false, unresolved: false })
     render(
       <StorageLayout>
@@ -130,6 +130,8 @@ describe('StorageLayout', () => {
     )
     expect(screen.getByText('child-content')).toBeInTheDocument()
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+    // realm + position both present → the position caption renders alongside the realm chip.
+    expect(screen.getByText('component.storage.sidebar.position: 5,5')).toBeInTheDocument()
   })
 
   it('navigates on tab change while preserving the query string', async () => {

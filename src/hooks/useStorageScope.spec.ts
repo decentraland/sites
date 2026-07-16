@@ -31,31 +31,39 @@ describe('useStorageScope', () => {
   describe('when no params are present', () => {
     it('should return null realm and null position without resolving', () => {
       setParams('')
-      expect(render().current).toEqual({ realm: null, position: null, isResolving: false, unresolved: false })
+      expect(render().current).toEqual({ realm: null, position: null, isResolving: false, unresolved: false, blocked: false })
     })
   })
 
   describe('when a non-world realm and position are present', () => {
     it('should return both values and skip scene resolution', () => {
       setParams('realm=foo&position=10,20')
-      expect(render().current).toEqual({ realm: 'foo', position: '10,20', isResolving: false, unresolved: false })
+      expect(render().current).toEqual({ realm: 'foo', position: '10,20', isResolving: false, unresolved: false, blocked: false })
       expect(mockedUseGetWorldScenes).toHaveBeenCalledWith({ worldName: 'foo' }, { skip: true })
+    })
+  })
+
+  describe('when a non-world realm has no position', () => {
+    it('should not resolve or block (only ENS realms trigger scene resolution)', () => {
+      setParams('realm=main')
+      expect(render().current).toEqual({ realm: 'main', position: null, isResolving: false, unresolved: false, blocked: false })
+      expect(mockedUseGetWorldScenes).toHaveBeenCalledWith({ worldName: 'main' }, { skip: true })
     })
   })
 
   describe('when a world realm has an explicit position', () => {
     it('should keep the URL position authoritative and skip resolution', () => {
       setParams('realm=world.dcl.eth&position=5,5')
-      expect(render().current).toEqual({ realm: 'world.dcl.eth', position: '5,5', isResolving: false, unresolved: false })
+      expect(render().current).toEqual({ realm: 'world.dcl.eth', position: '5,5', isResolving: false, unresolved: false, blocked: false })
       expect(mockedUseGetWorldScenes).toHaveBeenCalledWith({ worldName: 'world.dcl.eth' }, { skip: true })
     })
   })
 
   describe('when a world realm has no position and scenes are loading', () => {
-    it('should report isResolving with a null position', () => {
+    it('should report isResolving (blocked) with a null position', () => {
       setParams('realm=world.dcl.eth')
       setScenes({ data: undefined, isError: false })
-      expect(render().current).toEqual({ realm: 'world.dcl.eth', position: null, isResolving: true, unresolved: false })
+      expect(render().current).toEqual({ realm: 'world.dcl.eth', position: null, isResolving: true, unresolved: false, blocked: true })
       expect(mockedUseGetWorldScenes).toHaveBeenCalledWith({ worldName: 'world.dcl.eth' }, { skip: false })
     })
   })
@@ -64,13 +72,25 @@ describe('useStorageScope', () => {
     it('should return the first scene base as the position', () => {
       setParams('realm=world.dcl.eth')
       setScenes({ data: [{ title: 'A', baseParcel: '100,100' }], isError: false })
-      expect(render().current).toEqual({ realm: 'world.dcl.eth', position: '100,100', isResolving: false, unresolved: false })
+      expect(render().current).toEqual({
+        realm: 'world.dcl.eth',
+        position: '100,100',
+        isResolving: false,
+        unresolved: false,
+        blocked: false
+      })
     })
 
     it('should resolve hyphenated world names (regression: isEns must accept "-")', () => {
       setParams('realm=common-ground.dcl.eth')
       setScenes({ data: [{ title: 'A', baseParcel: '77,-8' }], isError: false })
-      expect(render().current).toEqual({ realm: 'common-ground.dcl.eth', position: '77,-8', isResolving: false, unresolved: false })
+      expect(render().current).toEqual({
+        realm: 'common-ground.dcl.eth',
+        position: '77,-8',
+        isResolving: false,
+        unresolved: false,
+        blocked: false
+      })
       expect(mockedUseGetWorldScenes).toHaveBeenCalledWith({ worldName: 'common-ground.dcl.eth' }, { skip: false })
     })
   })
@@ -79,23 +99,23 @@ describe('useStorageScope', () => {
     it('should keep the cached base and not report unresolved', () => {
       setParams('realm=world.dcl.eth')
       setScenes({ data: [{ title: 'A', baseParcel: '3,4' }], isError: true })
-      expect(render().current).toEqual({ realm: 'world.dcl.eth', position: '3,4', isResolving: false, unresolved: false })
+      expect(render().current).toEqual({ realm: 'world.dcl.eth', position: '3,4', isResolving: false, unresolved: false, blocked: false })
     })
   })
 
   describe('when a world realm returns no scenes', () => {
-    it('should report unresolved with a null position', () => {
+    it('should report unresolved (blocked) with a null position', () => {
       setParams('realm=world.dcl.eth')
       setScenes({ data: [], isError: false })
-      expect(render().current).toEqual({ realm: 'world.dcl.eth', position: null, isResolving: false, unresolved: true })
+      expect(render().current).toEqual({ realm: 'world.dcl.eth', position: null, isResolving: false, unresolved: true, blocked: true })
     })
   })
 
   describe('when the scene fetch errors', () => {
-    it('should report unresolved with a null position', () => {
+    it('should report unresolved (blocked) with a null position', () => {
       setParams('realm=world.dcl.eth')
       setScenes({ data: undefined, isError: true })
-      expect(render().current).toEqual({ realm: 'world.dcl.eth', position: null, isResolving: false, unresolved: true })
+      expect(render().current).toEqual({ realm: 'world.dcl.eth', position: null, isResolving: false, unresolved: true, blocked: true })
     })
   })
 })

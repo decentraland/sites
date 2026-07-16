@@ -206,7 +206,7 @@ describe('createScopedSignedFetch', () => {
     async realm => {
       const fetchSpy = jest.spyOn(globalThis, 'fetch')
       const sf = createScopedSignedFetch(validIdentity, realm, null)
-      await expect(sf('https://example/api', { method: 'PUT' })).rejects.toMatchObject({ status: 400 })
+      await expect(sf('https://example/api', { method: 'PUT' })).rejects.toMatchObject({ status: 422 })
       expect(signedFetchMock).not.toHaveBeenCalled()
       expect(fetchSpy).not.toHaveBeenCalled()
       fetchSpy.mockRestore()

@@ -26,7 +26,7 @@ const mockedLocation = useLocation as jest.MockedFunction<typeof useLocation>
 describe('useStorageRedirect', () => {
   beforeEach(() => {
     mockedLocation.mockReturnValue({ pathname: '/storage/env', search: '', state: null, hash: '', key: 'k' })
-    mockedScope.mockReturnValue({ realm: 'foo', position: '0,0', isResolving: false, unresolved: false })
+    mockedScope.mockReturnValue({ realm: 'foo', position: '0,0', isResolving: false, unresolved: false, blocked: false })
   })
 
   afterEach(() => {

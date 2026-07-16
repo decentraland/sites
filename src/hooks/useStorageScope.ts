@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { isEns } from '../features/places/places.helpers'
 import { useGetWorldScenesQuery } from '../features/storage'
+import { isEns } from '../utils/ens'
 
 interface StorageScope {
   realm: string | null
@@ -14,6 +14,9 @@ interface StorageScope {
   // empty, so no base parcel can be derived. The storage-service treats an ABSENT
   // parcel as `0,0`, so callers MUST block the request rather than fall through.
   unresolved: boolean
+  // Convenience for read callers: `isResolving || unresolved`. Skip storage queries
+  // while this is true so no request fires before the base parcel is known.
+  blocked: boolean
 }
 
 function useStorageScope(): StorageScope {
@@ -40,7 +43,7 @@ function useStorageScope(): StorageScope {
     // falling back to 0,0. A resolved base (cached or fresh) sets `position`, so a
     // background refetch error can never hide a base we already have.
     const unresolved = needsResolution && position === null && (isError || scenes?.length === 0)
-    return { realm, position, isResolving, unresolved }
+    return { realm, position, isResolving, unresolved, blocked: isResolving || unresolved }
   }, [realm, urlPosition, needsResolution, scenes, isError])
 }
 

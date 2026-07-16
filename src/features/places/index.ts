@@ -15,10 +15,10 @@ export {
   eventHasEnded,
   formatDateForGoogleCalendar,
   formatLocation,
-  isEns,
   parsePosition,
   resolvePlacesPosition
 } from './places.helpers'
+export { isEns } from '../../utils/ens'
 export type {
   CardData,
   Creator,
