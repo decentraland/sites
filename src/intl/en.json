@@ -976,7 +976,8 @@
         "not_found": "This world or scene was not found in the storage service.",
         "payload_too_large": "Value is too large for this storage namespace.",
         "rate_limited": "Too many requests. Wait a moment and try again.",
-        "server": "The storage service returned an error. Try again in a few minutes."
+        "server": "The storage service returned an error. Try again in a few minutes.",
+        "world_scene_unresolved": "We couldn’t resolve this world’s scene location. It may not have a deployed scene yet."
       }
     },
     "report": {

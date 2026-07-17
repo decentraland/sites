@@ -23,10 +23,10 @@ function ScenePage() {
   useStorageRedirect()
   const t = useFormatMessage()
   const { identity } = useAuthIdentity()
-  const { realm, position } = useStorageScope()
+  const { realm, position, blocked } = useStorageScope()
   const track = useStorageTrack()
 
-  const { data: sceneKeys, isLoading } = useListSceneKeysQuery({ identity, realm, position }, { skip: !identity })
+  const { data: sceneKeys, isLoading } = useListSceneKeysQuery({ identity, realm, position }, { skip: !identity || blocked })
   const [deleteSceneValue] = useDeleteSceneValueMutation()
   const [clearScene] = useClearSceneMutation()
 

@@ -839,7 +839,8 @@
         "not_found": "No se encontró este mundo o escena en el servicio de almacenamiento.",
         "payload_too_large": "El valor es demasiado grande para este espacio de almacenamiento.",
         "rate_limited": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.",
-        "server": "El servicio de almacenamiento devolvió un error. Inténtalo de nuevo en unos minutos."
+        "server": "El servicio de almacenamiento devolvió un error. Inténtalo de nuevo en unos minutos.",
+        "world_scene_unresolved": "No pudimos resolver la ubicación de la escena de este mundo. Puede que aún no tenga una escena desplegada."
       }
     },
     "report": {

@@ -200,6 +200,25 @@ describe('createScopedSignedFetch', () => {
     const sf = createScopedSignedFetch(validIdentity, 'vitsky.dcl.eth', '0,0')
     await expect(sf('https://example/api', { method: 'PUT' })).rejects.toMatchObject({ status: 403, data: 'forbidden' })
   })
+
+  it.each(['vitsky.dcl.eth', 'common-ground.dcl.eth', 'foo_bar.eth'])(
+    'refuses World realm "%s" with no parcel instead of letting the server default to 0,0',
+    async realm => {
+      const fetchSpy = jest.spyOn(globalThis, 'fetch')
+      const sf = createScopedSignedFetch(validIdentity, realm, null)
+      await expect(sf('https://example/api', { method: 'PUT' })).rejects.toMatchObject({ status: 422 })
+      expect(signedFetchMock).not.toHaveBeenCalled()
+      expect(fetchSpy).not.toHaveBeenCalled()
+      fetchSpy.mockRestore()
+    }
+  )
+
+  it('does not apply the World-parcel guard when there is no realm (e.g. contributable-domains lookup)', async () => {
+    signedFetchMock.mockResolvedValue(makeResponse('{}'))
+    const sf = createScopedSignedFetch(validIdentity)
+    await sf('https://example/api')
+    expect(signedFetchMock).toHaveBeenCalled()
+  })
 })
 
 describe('wrapSignedFetch', () => {

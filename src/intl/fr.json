@@ -834,7 +834,8 @@
         "not_found": "Ce monde ou cette scène est introuvable dans le service de stockage.",
         "payload_too_large": "La valeur est trop volumineuse pour cet espace de stockage.",
         "rate_limited": "Trop de requêtes. Patientez un instant et réessayez.",
-        "server": "Le service de stockage a renvoyé une erreur. Réessayez dans quelques minutes."
+        "server": "Le service de stockage a renvoyé une erreur. Réessayez dans quelques minutes.",
+        "world_scene_unresolved": "Nous n’avons pas pu résoudre l’emplacement de la scène de ce monde. Il se peut qu’aucune scène n’y soit encore déployée."
       }
     },
     "report": {
