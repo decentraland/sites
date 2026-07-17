@@ -36,13 +36,9 @@ const mockTurnstileReset = jest.fn()
 
 jest.mock('@marsidev/react-turnstile', () => ({
   Turnstile: React.forwardRef(
-    (
-      { onSuccess, onWidgetLoad, onError }: { onSuccess: (t: string) => void; onWidgetLoad: () => void; onError: () => void },
-      ref: React.Ref<{ reset: () => void }>
-    ) => {
+    ({ onSuccess, onError }: { onSuccess: (t: string) => void; onError: () => void }, ref: React.Ref<{ reset: () => void }>) => {
       React.useImperativeHandle(ref, () => ({ reset: mockTurnstileReset }))
       return React.createElement('div', { 'data-testid': 'turnstile' }, [
-        React.createElement('button', { key: 'load', 'data-testid': 'turnstile-load', onClick: () => onWidgetLoad() }),
         React.createElement('button', {
           key: 'success',
           'data-testid': 'turnstile-success',
@@ -214,13 +210,10 @@ describe('ConfirmEmailPage', () => {
     })
   })
 
-  describe('when the turnstile widget reports load and error events', () => {
-    it('should stay disabled after load alone and re-disable after an error clears the token', () => {
+  describe('when the turnstile widget reports an error', () => {
+    it('should clear the token and re-disable the button', () => {
       renderPage('/account/confirm-email-challenge/:token', '/account/confirm-email-challenge/abc?address=0x1&source=account')
       const button = screen.getByRole('button', { name: 'page.confirm_email.confirm_button' })
-
-      fireEvent.click(screen.getByTestId('turnstile-load'))
-      expect(button).toBeDisabled()
 
       solveTurnstile()
       expect(button).toBeEnabled()
@@ -232,7 +225,7 @@ describe('ConfirmEmailPage', () => {
 
   describe('when no site key is configured', () => {
     it('should fall back to the test key and enable the button once solved', () => {
-      getEnvMock.mockImplementation((key: string) => (key === 'CLOUDFLARE_TURNSTILE_SITE_KEY' ? undefined : defaultEnv[key]))
+      getEnvMock.mockImplementation((key: string) => (key === 'CLOUDFLARE_TURNSTILE_SITE_KEY' ? '' : defaultEnv[key]))
       renderPage('/account/confirm-email-challenge/:token', '/account/confirm-email-challenge/abc?address=0x1&source=account')
 
       const button = screen.getByRole('button', { name: 'page.confirm_email.confirm_button' })
@@ -244,7 +237,7 @@ describe('ConfirmEmailPage', () => {
 
   describe('when the notifications url is not configured', () => {
     it('should fall back to the production notifications origin', async () => {
-      getEnvMock.mockImplementation((key: string) => (key === 'NOTIFICATIONS_API_URL' ? undefined : defaultEnv[key]))
+      getEnvMock.mockImplementation((key: string) => (key === 'NOTIFICATIONS_API_URL' ? '' : defaultEnv[key]))
 
       renderPage('/account/confirm-email-challenge/:token', '/account/confirm-email-challenge/abc?address=0xabc&source=account')
       solveTurnstile()

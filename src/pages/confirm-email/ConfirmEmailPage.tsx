@@ -48,11 +48,9 @@ const ConfirmEmailPage = () => {
   const source = useMemo(() => resolveSource(searchParams.get('source'), location.pathname), [searchParams, location.pathname])
 
   const siteKey = getEnv('CLOUDFLARE_TURNSTILE_SITE_KEY') || TURNSTILE_TEST_SITE_KEY
-  const isTestKey = siteKey === TURNSTILE_TEST_SITE_KEY
 
   const turnstileRef = useRef<TurnstileInstance>(null)
   const [turnstileToken, setTurnstileToken] = useState('')
-  const [isTurnstileLoaded, setIsTurnstileLoaded] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
   const [isConfirmed, setIsConfirmed] = useState(false)
   const [hasError, setHasError] = useState(false)
@@ -67,16 +65,10 @@ const ConfirmEmailPage = () => {
 
   const handleTurnstileSuccess = useCallback((value: string) => {
     setTurnstileToken(value)
-    setIsTurnstileLoaded(true)
-  }, [])
-
-  const handleTurnstileLoad = useCallback(() => {
-    setIsTurnstileLoaded(true)
   }, [])
 
   const handleTurnstileError = useCallback(() => {
     setTurnstileToken('')
-    setIsTurnstileLoaded(false)
   }, [])
 
   const handleConfirmEmail = useCallback(async () => {
@@ -87,7 +79,7 @@ const ConfirmEmailPage = () => {
     setIsConfirming(true)
     setHasError(false)
 
-    const notificationsUrl = getEnv('NOTIFICATIONS_API_URL') ?? 'https://notifications.decentraland.org'
+    const notificationsUrl = getEnv('NOTIFICATIONS_API_URL') || 'https://notifications.decentraland.org'
 
     try {
       const response = await fetch(`${notificationsUrl}/confirm-email`, {
@@ -116,10 +108,10 @@ const ConfirmEmailPage = () => {
 
   const handleRedirect = useCallback(() => {
     if (source === 'credits') {
-      window.location.href = getEnv('MARKETPLACE_URL') ?? 'https://market.decentraland.org'
+      window.location.href = getEnv('MARKETPLACE_URL') || 'https://market.decentraland.org'
       return
     }
-    const homepage = getEnv('DECENTRALAND_HOMEPAGE_URL') ?? 'https://decentraland.org'
+    const homepage = getEnv('DECENTRALAND_HOMEPAGE_URL') || 'https://decentraland.org'
     window.location.href = `${homepage}/account`
   }, [source])
 
@@ -161,7 +153,7 @@ const ConfirmEmailPage = () => {
     )
   }
 
-  const isButtonDisabled = isConfirming || !turnstileToken || (!isTurnstileLoaded && !isTestKey)
+  const isButtonDisabled = isConfirming || !turnstileToken
 
   return (
     <ConfirmEmailContainer>
@@ -184,7 +176,6 @@ const ConfirmEmailPage = () => {
                 siteKey={siteKey}
                 onSuccess={handleTurnstileSuccess}
                 onError={handleTurnstileError}
-                onWidgetLoad={handleTurnstileLoad}
                 options={{ theme: 'dark', size: 'normal', retry: 'auto' }}
               />
             </TurnstileContainer>
