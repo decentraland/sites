@@ -348,6 +348,27 @@
       "title": "Signaler un joueur – Decentraland",
       "success_title": "Signalement envoyé – Decentraland"
     },
+    "confirm_email": {
+      "title": "Confirmez votre e-mail – Decentraland",
+      "logo_alt": "Decentraland",
+      "heading": "Confirmez votre e-mail",
+      "heading_confirmed": "E-mail confirmé !",
+      "description_account": "Complétez le défi de sécurité ci-dessous et cliquez sur « Confirmer l'e-mail » pour activer les notifications de votre compte.",
+      "description_credits": "Complétez le défi de sécurité ci-dessous et cliquez sur « Confirmer l'e-mail » pour commencer à gagner des Marketplace Credits.",
+      "confirmed_account": "Tout est prêt. Retournez sur l'application Decentraland et commencez à utiliser votre compte.",
+      "confirmed_credits": "Tout est prêt. Retournez sur l'application Decentraland et commencez à gagner des Marketplace Credits.",
+      "confirm_button": "Confirmer l'e-mail",
+      "confirming_button": "Confirmation...",
+      "go_to_marketplace": "Aller au Marketplace",
+      "go_to_account": "Retour au compte",
+      "error_generic": "Nous n'avons pas pu confirmer votre e-mail. Réessayez ou demandez un nouveau lien de confirmation.",
+      "invalid_link_title": "Lien invalide",
+      "invalid_link_description": "Ce lien de confirmation est invalide ou a expiré.",
+      "invalid_source_title": "Source invalide",
+      "invalid_source_description": "Source de confirmation invalide. Vérifiez le lien de votre e-mail.",
+      "missing_address_title": "Adresse manquante",
+      "missing_address_description": "Le paramètre d'adresse est requis dans l'URL. Vérifiez le lien de votre e-mail."
+    },
     "play": {
       "title": "La version web n'est plus disponible.",
       "subtitle": "Continuez à jouer sur l'application de bureau ou mobile.",

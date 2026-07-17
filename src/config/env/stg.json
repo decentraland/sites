@@ -19,6 +19,7 @@
   "SEGMENT_KEY": "f0S2L1sWumT8BPjBmIBDTN5gIWjhrRHG",
   "DISCORD_CAPTCHA_URL": "https://discord-lambdas.decentraland.io/captcha",
   "HCAPTCHA_SITEKEY": "00c95ced-f512-4498-a5f2-7e0b0950d456",
+  "CLOUDFLARE_TURNSTILE_SITE_KEY": "0x4AAAAAABgMRzn7-vLyDB_X",
   "ENVIRONMENT": "staging",
   "SENTRY_DSN": "https://0c492afcd1a8331efdda7d8220237659@o4504361728212992.ingest.us.sentry.io/4505803523358720",
   "PLACES_API_URL": "https://places.decentraland.zone/api",
