@@ -206,13 +206,16 @@
         "messages_count": "{count}条消息",
         "messages_count_plural": "{count}条消息",
         "no_messages": "还没有消息。{action}",
-        "no_messages_yet": "暂无消息",
+        "no_messages_yet": "还没有消息。",
         "start_conversation": "开始对话！",
         "sign_in_to_participate": "登录以参与。",
         "type_message": "输入消息...",
         "sign_in_prompt": "登录以在聊天中发送消息",
         "connect_wallet_prompt": "连接您的Decentraland钱包以发送消息",
-        "footer_text": "进入Decentraland中的{sceneName}参与聊天。"
+        "footer_text": "进入Decentraland中的{sceneName}参与聊天。",
+        "footer_jump_prefix": "要参与聊天，请在 Decentraland 中跳入",
+        "footer_jump_suffix": "。",
+        "unavailable": "聊天暂时不可用。"
       },
       "people": {
         "title": "参与者",
@@ -637,6 +640,7 @@
         "shop": "商店",
         "create": "创作",
         "learn": "学习",
+        "discover": "发现",
         "jump_in": "进入",
         "sign_in": "登录",
         "signing_in": "登录中...",
@@ -1233,6 +1237,93 @@
   "upcoming": {
     "today_at": "今天 {time}",
     "tomorrow_at": "明天 {time}"
+  },
+  "discover": {
+    "home": {
+      "page_title": "发现 — Decentraland"
+    },
+    "card": {
+      "jump_in": "进入",
+      "by": "作者",
+      "featured": "精选"
+    },
+    "live": {
+      "heading": "直播中"
+    },
+    "explore": {
+      "search_placeholder": "搜索地点",
+      "empty": "没有符合筛选条件的场所。",
+      "filters": "筛选",
+      "remove_filter": "移除筛选",
+      "category": {
+        "label": "类别",
+        "all": "所有类别",
+        "social": "社交",
+        "music": "音乐",
+        "art": "艺术",
+        "game": "游戏",
+        "fashion": "时尚",
+        "education": "教育",
+        "shop": "购物",
+        "sports": "运动",
+        "business": "商业"
+      },
+      "section": {
+        "featured": "精选地点"
+      },
+      "tab": {
+        "explore_all": "浏览全部",
+        "favourites": "收藏",
+        "my_places": "我的地点"
+      },
+      "signin_favourites": "登录并收藏地点后即可在此查看。",
+      "empty_favourites": "你还没有收藏任何地点。",
+      "signin_my_places": "登录后即可查看你创建的地点。",
+      "empty_my_places": "你还没有发布任何地点。",
+      "error": "加载地点时出现问题。",
+      "retry": "重试"
+    },
+    "communities": {
+      "page_title": "社区 — Decentraland",
+      "heading": "社区",
+      "search_placeholder": "搜索社区",
+      "empty": "未找到社区。",
+      "members_count": "{count} 位成员",
+      "error": "加载社区时出现问题。"
+    },
+    "scene": {
+      "people_count": "世界中有 {count} 人",
+      "people_empty": "暂时还没有人。",
+      "tab_video": "Stream",
+      "tab_streaming": "DCL Web",
+      "resume_cta": "观看直播",
+      "close_media": "停止",
+      "fullscreen": "全屏",
+      "exit_fullscreen": "退出",
+      "scene_picker": "场景",
+      "connecting": "正在连接场景…",
+      "waiting": {
+        "title": "场景动态",
+        "hint": "{count, plural, =0 {还没有人 — 来当第一个吧。} other {此场景中有 {count} 人，右侧聊天正在实时显示。}}"
+      },
+      "not_found": {
+        "title": "未找到场景",
+        "description": "无法加载该场所或世界。它可能已被移除。"
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "此体验不支持移动浏览器。请下载应用："
+      },
+      "what_to_expect": "活动亮点",
+      "copy_link": "复制链接",
+      "close": "关闭",
+      "explore_scene": "探索场景",
+      "copied": "已复制！"
+    },
+    "featured": {
+      "view_all": "查看全部精选地点",
+      "view_less": "收起"
+    }
   },
   "account": {
     "meta": {

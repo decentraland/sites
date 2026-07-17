@@ -23,6 +23,21 @@ async function transformEmotionStyled(code: string, filename: string): Promise<{
   return { code: result.code, map: result.map ?? null }
 }
 
+// Mirrors vercel.json — cross-origin isolation ONLY on /discover documents so
+// the bevy-web iframe (which relies on SharedArrayBuffer) can boot there.
+// `credentialless` lets us load cross-origin resources without requiring CORP
+// everywhere, at the cost of stripping credentials from those requests.
+// Scoped per-request (not global server headers) to keep dev/preview at prod
+// parity: a global COEP would block COEP-less third-party iframes (e.g. blog
+// YouTube embeds) on routes that are NOT isolated in production.
+function discoverIsolation(req: { url?: string }, res: { setHeader: (name: string, value: string) => void }, next: () => void): void {
+  if (req.url === '/discover' || req.url?.startsWith('/discover/') || req.url?.startsWith('/discover?')) {
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
+    res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless')
+  }
+  next()
+}
+
 // eslint-disable-next-line import/no-default-export
 export default defineConfig(({ command, mode }) => {
   const envVariables = loadEnv(mode, process.cwd())
@@ -57,6 +72,15 @@ export default defineConfig(({ command, mode }) => {
         async transform(code, id) {
           if (!emotionUi2StyledRegex.test(id)) return null
           return transformEmotionStyled(code, id)
+        }
+      },
+      {
+        name: 'discover-cross-origin-isolation',
+        configureServer(server) {
+          server.middlewares.use(discoverIsolation)
+        },
+        configurePreviewServer(server) {
+          server.middlewares.use(discoverIsolation)
         }
       }
     ],

@@ -94,9 +94,14 @@ const styled = (tag: string | ComponentType, options?: { shouldForwardProp?: (pr
       capturedStyles.push(callStyle(style))
     }
 
-    const tagName = (typeof tag === 'string' ? tag : 'div') as 'div'
+    // Render THROUGH component tags (e.g. styled(Button) keeps the mocked
+    // Button's real <button> element); missing tags fall back to a div. Refs
+    // only forward to hosts/forwardRef exotics — plain function mocks (common
+    // in per-spec ui2 mocks) can't take one and would warn.
+    const tagName = (typeof tag === 'string' ? tag : tag ?? 'div') as 'div'
+    const acceptsRef = typeof tagName === 'string' || typeof tagName === 'object'
     const Component = forwardRef(({ children, ...rest }: { children?: ReactNode } & Record<string, unknown>, ref: Ref<HTMLElement>) =>
-      createElement(tagName, { ref, ...(rest as Record<string, unknown>) }, children)
+      createElement(tagName, acceptsRef ? { ref, ...(rest as Record<string, unknown>) } : (rest as Record<string, unknown>), children)
     )
     ;(Component as unknown as { displayName: string }).displayName = 'StyledMock'
     return Component as unknown as ComponentType<Record<string, unknown>>

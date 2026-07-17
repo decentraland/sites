@@ -82,10 +82,21 @@ const LegacyHangoutRedirect = lazy(() => import('./pages/whats-on/LegacyHangoutR
 const LegacyWhatsOnRedirect = lazy(() => import('./pages/whats-on/LegacyWhatsOnRedirect').then(m => ({ default: m.LegacyWhatsOnRedirect })))
 const LegacyWorldRedirect = lazy(() => import('./pages/whats-on/LegacyWorldRedirect').then(m => ({ default: m.LegacyWorldRedirect })))
 
-// Social pages — community detail. Heavy route (Redux + RTK Query). Auth via
-// localStorage identity (no Web3 providers); CTAs gated on useAuthIdentity.
+// Social pages — pre-existing communities detail + section catch-all.
 const CommunityDetailPage = lazy(() => import('./pages/social/CommunityDetailPage').then(m => ({ default: m.CommunityDetailPage })))
 const SocialNotFoundPage = lazy(() => import('./pages/social/SocialNotFoundPage').then(m => ({ default: m.SocialNotFoundPage })))
+
+// Discover pages — heavy route (Redux + RTK Query). Auth via localStorage identity
+// (no Web3 providers); CTAs gated on useAuthIdentity. /discover/* mirrors the
+// decentraland.social experience: a unified DISCOVER landing (LIVE NOW + Featured
+// + Explore grid with search and category filters), the COMMUNITIES list tab, and
+// SCENE detail (place / world deep link with the bevy preview).
+const DiscoverLayout = lazy(() => import('./components/discover/DiscoverLayout').then(m => ({ default: m.DiscoverLayout })))
+const DiscoverHomePage = lazy(() => import('./pages/discover/DiscoverHomePage').then(m => ({ default: m.DiscoverHomePage })))
+const DiscoverCommunitiesPage = lazy(() =>
+  import('./pages/discover/DiscoverCommunitiesPage').then(m => ({ default: m.DiscoverCommunitiesPage }))
+)
+const DiscoverScenePage = lazy(() => import('./pages/discover/DiscoverScenePage').then(m => ({ default: m.DiscoverScenePage })))
 
 // Jump pages — deep-link handler for decentraland:// launcher. Heavy route (Redux).
 const JumpPlacesPage = lazy(() => import('./pages/jump/PlacesPage').then(m => ({ default: m.PlacesPage })))
@@ -245,6 +256,17 @@ const App = () => {
               <Route path="/storage/players" element={<StoragePlayersPage />} />
               <Route path="/storage/players/:address" element={<StoragePlayerDetailPage />} />
               <Route path="/storage/*" element={<StorageNotFoundPage />} />
+              {/* Discover — the new explore section (Live Now + Featured + Explore grid,
+                  scene preview). Communities LIST is a Discover tab; community DETAIL is
+                  the pre-existing /social page below, which list cards link into. */}
+              <Route element={<DiscoverLayout />}>
+                <Route path="/discover" element={<DiscoverHomePage />} />
+                <Route path="/discover/communities" element={<DiscoverCommunitiesPage />} />
+                <Route path="/discover/place/:position" element={<DiscoverScenePage kind="place" />} />
+                <Route path="/discover/world/:name" element={<DiscoverScenePage kind="world" />} />
+              </Route>
+              {/* Same generic not-found page serves both section catch-alls. */}
+              <Route path="/discover/*" element={<SocialNotFoundPage />} />
               <Route path="/social/communities/:id" element={<CommunityDetailPage />} />
               <Route path="/social/*" element={<SocialNotFoundPage />} />
               {/* Profile routes — absorbed from decentraland/profile + decentraland/account dapps.

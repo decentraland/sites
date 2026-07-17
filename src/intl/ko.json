@@ -206,13 +206,16 @@
         "messages_count": "메시지 {count}개",
         "messages_count_plural": "메시지 {count}개",
         "no_messages": "아직 메시지가 없습니다. {action}",
-        "no_messages_yet": "아직 메시지가 없습니다",
+        "no_messages_yet": "아직 메시지가 없습니다.",
         "start_conversation": "대화를 시작해 보세요!",
         "sign_in_to_participate": "참여하려면 로그인하세요.",
         "type_message": "메시지를 입력하세요...",
         "sign_in_prompt": "채팅에 메시지를 보내려면 로그인하세요",
         "connect_wallet_prompt": "메시지를 보내려면 Decentraland 지갑을 연결하세요",
-        "footer_text": "Decentraland의 {sceneName}에서 채팅에 참여하세요."
+        "footer_text": "Decentraland의 {sceneName}에서 채팅에 참여하세요.",
+        "footer_jump_prefix": "채팅에 참여하려면 Decentraland에서",
+        "footer_jump_suffix": "(으)로 이동하세요.",
+        "unavailable": "현재 채팅을 사용할 수 없습니다."
       },
       "people": {
         "title": "참가자",
@@ -637,6 +640,7 @@
         "shop": "상점",
         "create": "만들기",
         "learn": "배우기",
+        "discover": "디스커버",
         "jump_in": "입장",
         "sign_in": "로그인",
         "signing_in": "로그인 중...",
@@ -1233,6 +1237,93 @@
   "upcoming": {
     "today_at": "오늘 {time}",
     "tomorrow_at": "내일 {time}"
+  },
+  "discover": {
+    "home": {
+      "page_title": "디스커버 — Decentraland"
+    },
+    "card": {
+      "jump_in": "입장",
+      "by": "제작",
+      "featured": "추천"
+    },
+    "live": {
+      "heading": "라이브"
+    },
+    "explore": {
+      "search_placeholder": "장소 검색",
+      "empty": "조건에 맞는 장소가 없습니다.",
+      "filters": "필터",
+      "remove_filter": "필터 제거",
+      "category": {
+        "label": "카테고리",
+        "all": "모든 카테고리",
+        "social": "소셜",
+        "music": "음악",
+        "art": "아트",
+        "game": "게임",
+        "fashion": "패션",
+        "education": "교육",
+        "shop": "쇼핑",
+        "sports": "스포츠",
+        "business": "비즈니스"
+      },
+      "section": {
+        "featured": "추천 장소"
+      },
+      "tab": {
+        "explore_all": "모두 보기",
+        "favourites": "즐겨찾기",
+        "my_places": "내 장소"
+      },
+      "signin_favourites": "로그인하고 장소를 즐겨찾기에 추가하면 여기에 표시됩니다.",
+      "empty_favourites": "아직 즐겨찾기한 장소가 없습니다.",
+      "signin_my_places": "로그인하면 내가 만든 장소를 볼 수 있습니다.",
+      "empty_my_places": "아직 게시한 장소가 없습니다.",
+      "error": "장소를 불러오는 중 문제가 발생했습니다.",
+      "retry": "다시 시도"
+    },
+    "communities": {
+      "page_title": "커뮤니티 — Decentraland",
+      "heading": "커뮤니티",
+      "search_placeholder": "커뮤니티 검색",
+      "empty": "커뮤니티를 찾을 수 없습니다.",
+      "members_count": "멤버 {count}명",
+      "error": "커뮤니티를 불러오는 중 문제가 발생했습니다."
+    },
+    "scene": {
+      "people_count": "월드에 {count}명",
+      "people_empty": "아직 아무도 없습니다.",
+      "tab_video": "Stream",
+      "tab_streaming": "DCL Web",
+      "resume_cta": "라이브 보기",
+      "close_media": "중지",
+      "fullscreen": "전체화면",
+      "exit_fullscreen": "나가기",
+      "scene_picker": "장면",
+      "connecting": "장면에 연결하는 중…",
+      "waiting": {
+        "title": "장면 활동",
+        "hint": "{count, plural, =0 {아직 아무도 없습니다 — 가장 먼저 참여하세요。} other {이 장면에 {count}명이 있습니다. 오른쪽 채팅이 실시간으로 표시됩니다。}}"
+      },
+      "not_found": {
+        "title": "장면을 찾을 수 없음",
+        "description": "해당 장소 또는 월드를 불러올 수 없습니다. 삭제되었을 수 있습니다."
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "이 환경은 모바일 브라우저에서 사용할 수 없습니다. 앱을 다운로드하세요:"
+      },
+      "what_to_expect": "기대 포인트",
+      "copy_link": "링크 복사",
+      "close": "닫기",
+      "explore_scene": "장면 둘러보기",
+      "copied": "복사됨!"
+    },
+    "featured": {
+      "view_all": "추천 장소 모두 보기",
+      "view_less": "접기"
+    }
   },
   "account": {
     "meta": {

@@ -254,13 +254,16 @@
         "messages_count": "{count} message",
         "messages_count_plural": "{count} messages",
         "no_messages": "No messages yet. {action}",
-        "no_messages_yet": "No messages yet",
+        "no_messages_yet": "No messages yet.",
         "start_conversation": "Start the conversation!",
         "sign_in_to_participate": "Sign in to participate.",
         "type_message": "Type a message...",
         "sign_in_prompt": "Sign in to send messages in chat",
         "connect_wallet_prompt": "Connect your Decentraland wallet to send messages",
-        "footer_text": "Jump into {sceneName} in Decentraland to participate in the chat."
+        "footer_text": "Jump into {sceneName} in Decentraland to participate in the chat.",
+        "footer_jump_prefix": "Jump into",
+        "footer_jump_suffix": "in Decentraland to participate in the chat.",
+        "unavailable": "Chat is unavailable right now."
       },
       "people": {
         "title": "Participants",
@@ -686,6 +689,7 @@
         "shop": "Shop",
         "create": "Create",
         "learn": "Learn",
+        "discover": "Discover",
         "jump_in": "Jump In",
         "sign_in": "Sign In",
         "signing_in": "Signing in...",
@@ -1478,6 +1482,93 @@
     "tabs": {
       "members": "Members",
       "upcoming_events": "Upcoming Events"
+    }
+  },
+  "discover": {
+    "home": {
+      "page_title": "Discover — Decentraland"
+    },
+    "card": {
+      "jump_in": "Jump in",
+      "by": "By",
+      "featured": "Featured"
+    },
+    "live": {
+      "heading": "Live Now"
+    },
+    "explore": {
+      "search_placeholder": "Search places",
+      "empty": "No places match your filters.",
+      "filters": "Filters",
+      "remove_filter": "Remove filter",
+      "category": {
+        "label": "Category",
+        "all": "Any Category",
+        "social": "Social",
+        "music": "Music",
+        "art": "Art",
+        "game": "Game",
+        "fashion": "Fashion",
+        "education": "Education",
+        "shop": "Shop",
+        "sports": "Sports",
+        "business": "Business"
+      },
+      "section": {
+        "featured": "Featured Places"
+      },
+      "tab": {
+        "explore_all": "Explore all",
+        "favourites": "Favourites",
+        "my_places": "My places"
+      },
+      "signin_favourites": "Sign in and favourite places to find them here.",
+      "empty_favourites": "You haven't favourited any places yet.",
+      "signin_my_places": "Sign in to see the places you created.",
+      "empty_my_places": "You haven't published any places yet.",
+      "error": "Something went wrong loading places.",
+      "retry": "Retry"
+    },
+    "communities": {
+      "page_title": "Communities — Decentraland",
+      "heading": "Communities",
+      "search_placeholder": "Search communities",
+      "empty": "No communities found.",
+      "members_count": "{count, plural, one {# member} other {# members}}",
+      "error": "Something went wrong loading communities."
+    },
+    "scene": {
+      "people_count": "{count, plural, one {# person in-world} other {# people in-world}}",
+      "people_empty": "Nobody here yet.",
+      "tab_video": "Stream",
+      "tab_streaming": "DCL Web",
+      "resume_cta": "Watch Live",
+      "close_media": "Stop",
+      "fullscreen": "Fullscreen",
+      "exit_fullscreen": "Exit fullscreen",
+      "scene_picker": "Scene",
+      "connecting": "Connecting to the scene…",
+      "waiting": {
+        "title": "Scene activity",
+        "hint": "{count, plural, =0 {Nobody else is here yet — be the first to jump in.} one {# person is in this scene. Their chat is live on the right.} other {# people are in this scene. Their chat is live on the right.}}"
+      },
+      "not_found": {
+        "title": "Scene not found",
+        "description": "We couldn't load that place or world. It may have been removed."
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "This experience is not available on mobile browsers. Download the app instead:"
+      },
+      "what_to_expect": "What to expect",
+      "copy_link": "Copy link",
+      "close": "Close",
+      "explore_scene": "Explore the scene",
+      "copied": "Copied!"
+    },
+    "featured": {
+      "view_all": "View all featured places",
+      "view_less": "View less"
     }
   },
   "profile": {
