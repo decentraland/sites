@@ -40,6 +40,13 @@ const PressPage = lazy(() => import('./pages/press').then(m => ({ default: m.Pre
 const ReportPage = lazy(() => import('./pages/report').then(m => ({ default: m.ReportPage })))
 const ReportSuccessPage = lazy(() => import('./pages/report/success').then(m => ({ default: m.ReportSuccessPage })))
 
+// Email confirmation — fullscreen challenge page reached from Decentraland notification
+// emails. Absorbed from the standalone decentraland/account dapp (which served it at
+// /account/confirm-email-challenge/:token via its `/account` basename). Lightweight and
+// Layout-less (no Redux, no Web3, no auth gate) so the original immersive UX is preserved
+// and links in already-sent emails keep working instead of hitting the /account/* not-found.
+const ConfirmEmailPage = lazy(() => import('./pages/confirm-email').then(m => ({ default: m.ConfirmEmailPage })))
+
 // Reels — fullscreen viewer for in-game camera screenshots. Migrated from the standalone
 // reels.decentraland.org Gatsby app. Lightweight (no Redux, no Web3) and intentionally
 // rendered OUTSIDE the shared <Layout> so the original immersive UX is preserved.
@@ -132,6 +139,16 @@ const App = () => {
           <Route path="/download" element={<DownloadPage />} />
           <Route path="/download_success" element={<DownloadSuccessPage />} />
           <Route path="/invite/:referrer" element={<InvitePage />} />
+          {/* Email confirmation from notification emails. Fullscreen, bypasses Layout.
+              The current unified path is /account/confirm-email-challenge/:token; the two
+              legacy paths (/account/confirm-email/:token and
+              /account/credits-email-confirmed/:token) are kept alive because emails sent by
+              the standalone account dapp are still in inboxes. Source is read from the
+              `source` query param, falling back to the path. These sit BEFORE the DappsShell
+              /account/* catch-all so react-router matches them first. */}
+          <Route path="/account/confirm-email-challenge/:token" element={<ConfirmEmailPage />} />
+          <Route path="/account/confirm-email/:token" element={<ConfirmEmailPage />} />
+          <Route path="/account/credits-email-confirmed/:token" element={<ConfirmEmailPage />} />
           {/* Reels routes are fullscreen and bypass Layout/Navbar/Footer.
               ORDER MATTERS: /reels/list/:address must precede /reels/:imageId
               so 'list' is not interpreted as an imageId. */}

@@ -348,6 +348,27 @@
       "title": "플레이어 신고 – Decentraland",
       "success_title": "신고가 전송되었습니다 – Decentraland"
     },
+    "confirm_email": {
+      "title": "이메일 확인 – Decentraland",
+      "logo_alt": "Decentraland",
+      "heading": "이메일 확인",
+      "heading_confirmed": "이메일이 확인되었습니다!",
+      "description_account": "아래 보안 확인을 완료한 후 \"이메일 확인\"을 클릭하여 계정 알림을 활성화하세요.",
+      "description_credits": "아래 보안 확인을 완료한 후 \"이메일 확인\"을 클릭하여 Marketplace Credits 적립을 시작하세요.",
+      "confirmed_account": "준비가 완료되었습니다. Decentraland 앱으로 돌아가 계정을 사용해 보세요.",
+      "confirmed_credits": "준비가 완료되었습니다. Decentraland 앱으로 돌아가 Marketplace Credits를 적립하세요.",
+      "confirm_button": "이메일 확인",
+      "confirming_button": "확인 중...",
+      "go_to_marketplace": "마켓플레이스로 이동",
+      "go_to_account": "계정으로 돌아가기",
+      "error_generic": "이메일을 확인하지 못했습니다. 다시 시도하거나 새 확인 링크를 요청하세요.",
+      "invalid_link_title": "유효하지 않은 링크",
+      "invalid_link_description": "이 확인 링크는 유효하지 않거나 만료되었습니다.",
+      "invalid_source_title": "유효하지 않은 소스",
+      "invalid_source_description": "확인 소스가 유효하지 않습니다. 이메일 링크를 확인하세요.",
+      "missing_address_title": "주소 없음",
+      "missing_address_description": "URL에 주소 매개변수가 필요합니다. 이메일 링크를 확인하세요."
+    },
     "play": {
       "title": "웹 버전은 더 이상 제공되지 않습니다.",
       "subtitle": "데스크톱 또는 모바일 앱에서 계속 플레이하세요.",
@@ -1392,6 +1413,7 @@
         "title": "이메일 알림",
         "placeholder": "example@decentraland.org",
         "invalid": "잘못된 이메일",
+        "error": "이메일을 저장하지 못했습니다. 다시 시도해 주세요.",
         "description": {
           "without_email": "이메일을 입력한 후 받은 편지함에서 확인 링크가 담긴 이메일을 확인하세요. 확인 후 아래 알림을 맞춤 설정할 수 있습니다.",
           "with_email": "이메일 주소를 변경하려면 아래에서 수정하세요. 이후 받은 편지함에서 확인 이메일을 꼭 확인하세요!",

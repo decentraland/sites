@@ -348,6 +348,27 @@
       "title": "Reportar a un jugador – Decentraland",
       "success_title": "Reporte enviado – Decentraland"
     },
+    "confirm_email": {
+      "title": "Confirma tu correo – Decentraland",
+      "logo_alt": "Decentraland",
+      "heading": "Confirma tu correo",
+      "heading_confirmed": "¡Correo confirmado!",
+      "description_account": "Completa el desafío de seguridad y haz clic en \"Confirmar correo\" para activar las notificaciones de tu cuenta.",
+      "description_credits": "Completa el desafío de seguridad y haz clic en \"Confirmar correo\" para empezar a ganar Marketplace Credits.",
+      "confirmed_account": "Todo listo. Vuelve a la app de Decentraland y empieza a usar tu cuenta.",
+      "confirmed_credits": "Todo listo. Vuelve a la app de Decentraland y empieza a ganar Marketplace Credits.",
+      "confirm_button": "Confirmar correo",
+      "confirming_button": "Confirmando...",
+      "go_to_marketplace": "Ir al Marketplace",
+      "go_to_account": "Volver a la cuenta",
+      "error_generic": "No pudimos confirmar tu correo. Inténtalo de nuevo o solicita un nuevo enlace de confirmación.",
+      "invalid_link_title": "Enlace no válido",
+      "invalid_link_description": "Este enlace de confirmación no es válido o ha caducado.",
+      "invalid_source_title": "Origen no válido",
+      "invalid_source_description": "Origen de confirmación no válido. Revisa el enlace de tu correo.",
+      "missing_address_title": "Falta la dirección",
+      "missing_address_description": "El parámetro de dirección es obligatorio en la URL. Revisa el enlace de tu correo."
+    },
     "play": {
       "title": "La versión web ya no está disponible.",
       "subtitle": "Seguí jugando en la app de escritorio o móvil.",
@@ -1392,6 +1413,7 @@
         "title": "Notificaciones por email",
         "placeholder": "ejemplo@decentraland.org",
         "invalid": "Correo inválido",
+        "error": "No pudimos guardar tu correo. Inténtalo de nuevo.",
         "description": {
           "without_email": "Ingresa tu correo y revisa tu bandeja de entrada en busca del enlace de confirmación. Tras confirmarlo, podrás personalizar las notificaciones de abajo.",
           "with_email": "Si quieres actualizar tu dirección de correo, edítala abajo. ¡Asegúrate de revisar el correo de confirmación en tu bandeja de entrada después!",

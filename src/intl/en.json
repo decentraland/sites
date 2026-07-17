@@ -396,6 +396,27 @@
       "title": "Report a player – Decentraland",
       "success_title": "Report submitted – Decentraland"
     },
+    "confirm_email": {
+      "title": "Confirm Your Email – Decentraland",
+      "logo_alt": "Decentraland",
+      "heading": "Confirm Your Email",
+      "heading_confirmed": "Email Confirmed!",
+      "description_account": "Complete the security challenge below and click \"Confirm Email\" to activate your account notifications.",
+      "description_credits": "Complete the security challenge below and click \"Confirm Email\" to start earning Marketplace Credits!",
+      "confirmed_account": "You're ready to go. Jump back over to the Decentraland app and start using your account!",
+      "confirmed_credits": "You're ready to go. Jump back over to the Decentraland app and start earning Marketplace Credits!",
+      "confirm_button": "Confirm Email",
+      "confirming_button": "Confirming...",
+      "go_to_marketplace": "Go to Marketplace",
+      "go_to_account": "Go back to Account",
+      "error_generic": "We couldn't confirm your email. Please try again or request a new confirmation link.",
+      "invalid_link_title": "Invalid Link",
+      "invalid_link_description": "This confirmation link is invalid or expired.",
+      "invalid_source_title": "Invalid Source",
+      "invalid_source_description": "Invalid confirmation source. Please check your email link.",
+      "missing_address_title": "Missing Address",
+      "missing_address_description": "Address parameter is required in the URL. Please check your email link."
+    },
     "play": {
       "title": "The Web Version Is No Longer Available.",
       "subtitle": "Continue Playing on Desktop or Mobile App.",
@@ -1827,6 +1848,7 @@
         "title": "Email Notification",
         "placeholder": "example@decentraland.org",
         "invalid": "Invalid email",
+        "error": "We couldn't save your email. Please try again.",
         "description": {
           "without_email": "Enter your email, then check your inbox for an email with the confirmation link. After confirming, you will be able to customize the notifications below.",
           "with_email": "If you'd like to update your email address, edit it below. Make sure to check for the confirmation email in your inbox afterwards!",
