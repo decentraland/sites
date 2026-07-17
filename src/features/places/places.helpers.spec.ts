@@ -5,39 +5,12 @@ import {
   collectDeepLinkParams,
   eventHasEnded,
   formatDateForGoogleCalendar,
-  isEns,
   parsePosition,
   resolvePlacesPosition
 } from './places.helpers'
 import type { CardData } from './places.types'
 
 describe('jump.helpers', () => {
-  describe('when isEns is called', () => {
-    describe('and the value ends with .eth', () => {
-      it('should return true', () => {
-        expect(isEns('decentraland.eth')).toBe(true)
-      })
-    })
-
-    describe('and the value has dots and alphanumerics ending in .eth', () => {
-      it('should return true for sub.realm.eth', () => {
-        expect(isEns('sub.realm.eth')).toBe(true)
-      })
-    })
-
-    describe('and the value does not end with .eth', () => {
-      it('should return false', () => {
-        expect(isEns('decentraland.org')).toBe(false)
-      })
-    })
-
-    describe('and the value is undefined', () => {
-      it('should return false', () => {
-        expect(isEns(undefined)).toBe(false)
-      })
-    })
-  })
-
   describe('when parsePosition is called', () => {
     describe('and the value is a valid "x,y" string', () => {
       it('should return coordinates as a tuple with isValid=true', () => {

@@ -348,6 +348,27 @@
       "title": "举报玩家 – Decentraland",
       "success_title": "举报已提交 – Decentraland"
     },
+    "confirm_email": {
+      "title": "确认您的电子邮件 – Decentraland",
+      "logo_alt": "Decentraland",
+      "heading": "确认您的电子邮件",
+      "heading_confirmed": "邮件已确认！",
+      "description_account": "完成下方的安全验证并点击「确认邮件」以启用您的账户通知。",
+      "description_credits": "完成下方的安全验证并点击「确认邮件」即可开始赚取 Marketplace Credits。",
+      "confirmed_account": "一切就绪。返回 Decentraland 应用即可开始使用您的账户。",
+      "confirmed_credits": "一切就绪。返回 Decentraland 应用即可开始赚取 Marketplace Credits。",
+      "confirm_button": "确认邮件",
+      "confirming_button": "确认中...",
+      "go_to_marketplace": "前往 Marketplace",
+      "go_to_account": "返回账户",
+      "error_generic": "我们无法确认您的电子邮件。请重试或申请新的确认链接。",
+      "invalid_link_title": "链接无效",
+      "invalid_link_description": "此确认链接无效或已过期。",
+      "invalid_source_title": "来源无效",
+      "invalid_source_description": "确认来源无效。请检查邮件中的链接。",
+      "missing_address_title": "缺少地址",
+      "missing_address_description": "URL 中需要地址参数。请检查邮件中的链接。"
+    },
     "play": {
       "title": "网页版已不再提供。",
       "subtitle": "在桌面或移动应用上继续游玩。",
@@ -839,7 +860,8 @@
         "not_found": "在存储服务中找不到该世界或场景。",
         "payload_too_large": "值对该存储空间来说过大。",
         "rate_limited": "请求过多。请稍候后再试。",
-        "server": "存储服务返回了错误。请几分钟后再试。"
+        "server": "存储服务返回了错误。请几分钟后再试。",
+        "world_scene_unresolved": "无法解析此世界的场景位置。它可能尚未部署任何场景。"
       }
     },
     "report": {
@@ -1391,6 +1413,7 @@
         "title": "电子邮件通知",
         "placeholder": "example@decentraland.org",
         "invalid": "无效的电子邮件",
+        "error": "无法保存您的电子邮件。请重试。",
         "description": {
           "without_email": "输入您的电子邮件，然后查看收件箱中的确认链接邮件。确认后，您就可以自定义下方的通知。",
           "with_email": "如果您想更新电子邮件地址，请在下方编辑。之后请务必在收件箱中查看确认邮件！",

@@ -23,10 +23,10 @@ function EnvPage() {
   useStorageRedirect()
   const t = useFormatMessage()
   const { identity } = useAuthIdentity()
-  const { realm, position } = useStorageScope()
+  const { realm, position, blocked } = useStorageScope()
   const track = useStorageTrack()
 
-  const { data: envKeys, isLoading } = useListEnvKeysQuery({ identity, realm, position }, { skip: !identity })
+  const { data: envKeys, isLoading } = useListEnvKeysQuery({ identity, realm, position }, { skip: !identity || blocked })
   const [deleteEnv] = useDeleteEnvMutation()
   const [clearEnv] = useClearEnvMutation()
 

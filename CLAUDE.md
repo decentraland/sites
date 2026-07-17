@@ -148,6 +148,8 @@ Tier picker (lightweight / heavy / Layout-less), full step-by-step, navbar clear
 - `describe("when ...")` / `it("should ...")` pattern.
 - `beforeEach` for setup, `afterEach` with `jest.resetAllMocks()`.
 - React Testing Library: `getByRole` > `getByLabelText` > `getByText`.
+- `npm run build` runs `tsc -b`, which **typechecks `*.spec.ts(x)` too** — ts-jest is more lenient, so a green `npm test` can still fail the build. Run `tsc -b` before treating specs as done (strictly-typed mock helpers like `React.createElement` are the usual culprit).
+- Inline `jest.mock` factories must not use `require()` (banned by `@typescript-eslint/no-require-imports`). Use the repo pattern: `import React from 'react'` at the top, then reference `React.createElement` inside the factory (see `LiveNowCard.spec.tsx`).
 
 ## Pre-PR review
 

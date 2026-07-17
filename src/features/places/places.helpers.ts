@@ -1,11 +1,5 @@
 import type { CardData } from './places.types'
 
-const ENS_REGEX = /^[a-zA-Z0-9.]+\.eth$/
-
-function isEns(value: string | undefined): value is `${string}.eth` {
-  return !!value?.match(ENS_REGEX)?.length
-}
-
 interface ParsedPosition {
   original: string
   coordinates: [number, number]
@@ -101,7 +95,6 @@ export {
   eventHasEnded,
   formatDateForGoogleCalendar,
   formatLocation,
-  isEns,
   parsePosition,
   resolvePlacesPosition
 }

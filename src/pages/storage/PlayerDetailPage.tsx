@@ -34,10 +34,13 @@ function PlayerDetailPage() {
   const navigate = useNavigate()
   const { address = '' } = useParams<{ address: string }>()
   const { identity } = useAuthIdentity()
-  const { realm, position } = useStorageScope()
+  const { realm, position, blocked } = useStorageScope()
   const track = useStorageTrack()
 
-  const { data: keys, isLoading } = useListPlayerKeysQuery({ identity, address, realm, position }, { skip: !identity || !address })
+  const { data: keys, isLoading } = useListPlayerKeysQuery(
+    { identity, address, realm, position },
+    { skip: !identity || !address || blocked }
+  )
   const [deletePlayerValue] = useDeletePlayerValueMutation()
   const [clearPlayer] = useClearPlayerMutation()
 

@@ -11,10 +11,10 @@ import PeopleIcon from '@mui/icons-material/People'
 import SettingsIcon from '@mui/icons-material/Settings'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ViewInArIcon from '@mui/icons-material/ViewInAr'
-import { Tab, Tabs, Typography } from 'decentraland-ui2'
+import { Box, CircularProgress, Tab, Tabs, Typography } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useStorageScope } from '../../../hooks/useStorageScope'
-import { BackButton, ScopeChip, ScopeRow, StorageHeader, StoragePageContainer, StorageTabsRoot } from './StorageLayout.styled'
+import { BackButton, LoaderBox, ScopeChip, ScopeRow, StorageHeader, StoragePageContainer, StorageTabsRoot } from './StorageLayout.styled'
 
 interface StorageLayoutProps {
   children: ReactNode
@@ -30,7 +30,7 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
   const t = useFormatMessage()
   const navigate = useNavigate()
   const location = useLocation()
-  const { realm, position } = useStorageScope()
+  const { realm, position, isResolving, unresolved } = useStorageScope()
 
   const activeTab = useMemo(() => {
     if (location.pathname.startsWith('/storage/scene')) return 'scene'
@@ -87,7 +87,17 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
           ))}
         </Tabs>
       </StorageTabsRoot>
-      {children}
+      {isResolving ? (
+        <LoaderBox>
+          <CircularProgress aria-label={t('component.storage.common.loading')} />
+        </LoaderBox>
+      ) : unresolved ? (
+        <Box sx={{ mt: 3 }}>
+          <Typography color="error">{t('component.storage.errors.world_scene_unresolved')}</Typography>
+        </Box>
+      ) : (
+        children
+      )}
     </StoragePageContainer>
   )
 }
