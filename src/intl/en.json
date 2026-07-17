@@ -1848,6 +1848,7 @@
         "title": "Email Notification",
         "placeholder": "example@decentraland.org",
         "invalid": "Invalid email",
+        "error": "We couldn't save your email. Please try again.",
         "description": {
           "without_email": "Enter your email, then check your inbox for an email with the confirmation link. After confirming, you will be able to customize the notifications below.",
           "with_email": "If you'd like to update your email address, edit it below. Make sure to check for the confirmation email in your inbox afterwards!",

@@ -1413,6 +1413,7 @@
         "title": "电子邮件通知",
         "placeholder": "example@decentraland.org",
         "invalid": "无效的电子邮件",
+        "error": "无法保存您的电子邮件。请重试。",
         "description": {
           "without_email": "输入您的电子邮件，然后查看收件箱中的确认链接邮件。确认后，您就可以自定义下方的通知。",
           "with_email": "如果您想更新电子邮件地址，请在下方编辑。之后请务必在收件箱中查看确认邮件！",

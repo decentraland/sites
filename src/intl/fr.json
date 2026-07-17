@@ -1408,6 +1408,7 @@
         "title": "Notifications par e-mail",
         "placeholder": "exemple@decentraland.org",
         "invalid": "E-mail invalide",
+        "error": "Nous n'avons pas pu enregistrer votre e-mail. Veuillez réessayer.",
         "description": {
           "without_email": "Saisissez votre e-mail, puis consultez votre boîte de réception pour y trouver le lien de confirmation. Après confirmation, vous pourrez personnaliser les notifications ci-dessous.",
           "with_email": "Si vous souhaitez mettre à jour votre adresse e-mail, modifiez-la ci-dessous. Pensez ensuite à vérifier l'e-mail de confirmation dans votre boîte de réception !",

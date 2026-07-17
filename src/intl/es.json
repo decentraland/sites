@@ -1413,6 +1413,7 @@
         "title": "Notificaciones por email",
         "placeholder": "ejemplo@decentraland.org",
         "invalid": "Correo inválido",
+        "error": "No pudimos guardar tu correo. Inténtalo de nuevo.",
         "description": {
           "without_email": "Ingresa tu correo y revisa tu bandeja de entrada en busca del enlace de confirmación. Tras confirmarlo, podrás personalizar las notificaciones de abajo.",
           "with_email": "Si quieres actualizar tu dirección de correo, edítala abajo. ¡Asegúrate de revisar el correo de confirmación en tu bandeja de entrada después!",
