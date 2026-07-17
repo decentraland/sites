@@ -1,5 +1,6 @@
 import { Architecture } from '../types/download.types'
 import { triggerFileDownload } from './file'
+import { ensureSegmentAnonymousId } from './segmentAnonymousId'
 import { addQueryParamsToUrlString, calculateCDNReleaseLinksWithIdentity, extractDownloadLinkFromCDNReleaseOption } from './url'
 
 type DownloadWithIdentityParams = {
@@ -111,5 +112,27 @@ async function getDownloadLinkWithIdentity(params: DownloadWithIdentityParams): 
   return finalLink
 }
 
-export { calculateDownloadUrl, getDownloadLinkWithIdentity }
+/**
+ * Resolves the `anon_user_id` to use for a download that carries first-launch
+ * deep-link params (position/realm).
+ *
+ * Those params only reach the Explorer's first run if the installer comes from
+ * the gateway — the gateway bakes them into the signed binary, whereas the
+ * CDN-direct fallback ships a generic installer that drops them. The anonymous
+ * gateway route requires an `anon_user_id` (it 400s without one), so when we
+ * don't already have one AND deep-link params are present, mint+persist one via
+ * `ensureSegmentAnonymousId` (idempotent — it becomes Segment's own anonymous
+ * id) so the download routes through the gateway instead of falling back to the
+ * CDN. With no deep-link params, behavior is unchanged (may return `undefined`).
+ */
+function resolveGatewayAnonUserId(
+  anonUserId: string | undefined,
+  deepLinkParams: { position?: string; realm?: string }
+): string | undefined {
+  if (anonUserId) return anonUserId
+  const hasDeepLink = Boolean(deepLinkParams.position || deepLinkParams.realm)
+  return hasDeepLink ? ensureSegmentAnonymousId() : undefined
+}
+
+export { calculateDownloadUrl, getDownloadLinkWithIdentity, resolveGatewayAnonUserId }
 export type { DownloadWithIdentityParams }

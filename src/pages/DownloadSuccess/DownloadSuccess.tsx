@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { Logo, Typography } from 'decentraland-ui2'
 import { LandingFooter } from '../../components/LandingFooter'
+import { collectDeepLinkParams } from '../../features/places/places.helpers'
 import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useDownloadFunnelExit } from '../../hooks/useDownloadFunnelExit'
@@ -21,7 +22,7 @@ import type { DownloadFunnelExitData } from '../../modules/downloadFunnelExit.ty
 import { captureDownloadError, recordDownloadMilestone } from '../../modules/downloadFunnelSentry'
 import { createDownloadTracker, toAuthState } from '../../modules/downloadTracking'
 import type { DownloadTracker } from '../../modules/downloadTracking.types'
-import { calculateDownloadUrl } from '../../modules/downloadWithIdentity'
+import { calculateDownloadUrl, resolveGatewayAnonUserId } from '../../modules/downloadWithIdentity'
 import { collectClientFingerprint } from '../../modules/fingerprint'
 import { DownloadPlace, DownloadTarget, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
 import { ensureSegmentAnonymousId } from '../../modules/segmentAnonymousId'
@@ -82,6 +83,11 @@ const DownloadSuccess = memo(() => {
   const getIdentityIdRef = useRef(getIdentityId)
   const anonUserIdRef = useRef(anonUserId)
   const authStateRef = useRef(authState)
+  // Holds the anon id actually used for a deep-link download — possibly minted
+  // by `resolveGatewayAnonUserId` when Segment hadn't booted — so the exit
+  // beacon reports the same id the download_started/_success rows carry and the
+  // warehouse join doesn't break for the deep-link cohort.
+  const gatewayAnonUserIdRef = useRef<string | undefined>(undefined)
   getIdentityIdRef.current = getIdentityId
   anonUserIdRef.current = anonUserId
   authStateRef.current = authState
@@ -153,6 +159,13 @@ const DownloadSuccess = memo(() => {
   const campaignParams = useMemo(() => collectCampaignParams(searchParams), [searchParams])
   const campaignParamsRef = useRef(campaignParams)
   campaignParamsRef.current = campaignParams
+
+  // First-launch deep-link params (position/realm) forwarded from the jump-in
+  // flow. Appended to the file URL so the launcher can parse them from the
+  // file-origin URL (kMDItemWhereFroms / Zone.Identifier) on first run.
+  const deepLinkParams = useMemo(() => collectDeepLinkParams(searchParams), [searchParams])
+  const deepLinkParamsRef = useRef(deepLinkParams)
+  deepLinkParamsRef.current = deepLinkParams
 
   // Shared `extra` for every tracker built on this page: the client
   // fingerprint, the campaign params, the click→download correlation, and
@@ -331,19 +344,27 @@ const DownloadSuccess = memo(() => {
       // best context we have at that point.
       let tracker: DownloadTracker | null = null
 
+      // Deep-link downloads (position/realm) must route through the gateway —
+      // only it bakes those params into the signed binary; the CDN-direct
+      // fallback drops them. Guarantee an anon_user_id so we stay on the
+      // anonymous gateway route instead of falling back to the CDN.
+      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserIdRef.current, deepLinkParamsRef.current)
+      gatewayAnonUserIdRef.current = gatewayAnonUserId
+
       try {
         const { url, filename } = await calculateDownloadUrl({
           os: clientOS,
           arch: clientArch,
           fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
           getIdentityId: getIdentityIdRef.current,
-          anonUserId: anonUserIdRef.current
+          anonUserId: gatewayAnonUserId
         })
 
         if (signal.aborted) return
 
         const downloadUrl = addQueryParamsToUrlString(url, {
-          [ANON_USER_ID_PARAM]: anonUserIdRef.current,
+          [ANON_USER_ID_PARAM]: gatewayAnonUserId,
+          ...deepLinkParamsRef.current,
           // Forwarded so the gateway echoes it into its server-side telemetry,
           // closing the click→download join without relying on the beacon.
           // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -362,7 +383,7 @@ const DownloadSuccess = memo(() => {
             os: clientOS,
             arch: clientArch,
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            anon_user_id: anonUserIdRef.current ?? undefined,
+            anon_user_id: gatewayAnonUserId ?? undefined,
             // eslint-disable-next-line @typescript-eslint/naming-convention
             auth_state: authStateRef.current,
             revisit: revisitNumber,
@@ -418,7 +439,7 @@ const DownloadSuccess = memo(() => {
               os: clientOS,
               arch: clientArch,
               // eslint-disable-next-line @typescript-eslint/naming-convention
-              anon_user_id: anonUserIdRef.current ?? undefined,
+              anon_user_id: gatewayAnonUserId ?? undefined,
               // eslint-disable-next-line @typescript-eslint/naming-convention
               auth_state: authStateRef.current,
               revisit: revisitNumber,
@@ -458,6 +479,10 @@ const DownloadSuccess = memo(() => {
       const footerPlace = DownloadPlace.DOWNLOAD_SUCCESS_FOOTER
       let tracker: DownloadTracker | null = null
       const extra = buildTrackerExtra()
+      // Deep-link downloads must route through the gateway (see the auto-download
+      // effect above); guarantee an anon_user_id to avoid the CDN-direct fallback.
+      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserId, deepLinkParamsRef.current)
+      gatewayAnonUserIdRef.current = gatewayAnonUserId
 
       try {
         const { url, filename } = await calculateDownloadUrl({
@@ -465,10 +490,11 @@ const DownloadSuccess = memo(() => {
           arch: clientArch,
           fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
           getIdentityId,
-          anonUserId
+          anonUserId: gatewayAnonUserId
         })
         const downloadUrl = addQueryParamsToUrlString(url, {
-          [ANON_USER_ID_PARAM]: anonUserId,
+          [ANON_USER_ID_PARAM]: gatewayAnonUserId,
+          ...deepLinkParamsRef.current,
           // eslint-disable-next-line @typescript-eslint/naming-convention
           click_id: readDownloadClickCorrelation()?.click_id
         })
@@ -480,7 +506,7 @@ const DownloadSuccess = memo(() => {
             os: clientOS,
             arch: clientArch,
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            anon_user_id: anonUserId ?? undefined,
+            anon_user_id: gatewayAnonUserId ?? undefined,
             // eslint-disable-next-line @typescript-eslint/naming-convention
             auth_state: authState,
             revisit: revisitNumber,
@@ -522,7 +548,7 @@ const DownloadSuccess = memo(() => {
               os: clientOS,
               arch: clientArch,
               // eslint-disable-next-line @typescript-eslint/naming-convention
-              anon_user_id: anonUserId ?? undefined,
+              anon_user_id: gatewayAnonUserId ?? undefined,
               // eslint-disable-next-line @typescript-eslint/naming-convention
               auth_state: authState,
               revisit: revisitNumber,
@@ -562,7 +588,10 @@ const DownloadSuccess = memo(() => {
       os: clientOS,
       arch: clientArch,
       place,
-      anonUserId: anonUserIdRef.current ?? undefined,
+      // Prefer the id the download actually used (may be minted for deep-link
+      // sessions) so this exit row joins to the same funnel rows; fall back to
+      // the plain anon id when no download ran.
+      anonUserId: gatewayAnonUserIdRef.current ?? anonUserIdRef.current ?? undefined,
       clickId: readDownloadClickCorrelation()?.click_id,
       startedFired: startedFiredRef.current,
       successFired: successFiredRef.current,

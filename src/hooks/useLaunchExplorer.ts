@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
@@ -7,6 +7,7 @@ import { getEnv } from '../config/env'
 import { buildDeepLinkOptions } from '../features/places/places.helpers'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
 import { SegmentEvent } from '../modules/segment'
+import { addQueryParamsToUrlString } from '../modules/url'
 import { useAuthIdentity } from './useAuthIdentity'
 
 interface LaunchExplorerOptions {
@@ -44,17 +45,43 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
   const isMobile = Boolean(advancedUserAgent?.mobile)
   const downloadOs = detectDownloadOS()
 
+  // Default-filtered deep-link params. Without the `env` arg this never emits
+  // `dclenv`, and it drops `position: ''` (the manual `!== DEFAULT` check let
+  // empty strings through as `?position=`).
+  const deepLinkParams = useMemo(() => buildDeepLinkOptions(position, realm), [position, realm])
+
+  const buildDownloadUrl = useCallback(
+    (base: string): string => {
+      if (Object.keys(deepLinkParams).length === 0) {
+        return base
+      }
+      const url = new URL(base)
+      const redirectTo = url.searchParams.get('redirectTo')
+      if (redirectTo) {
+        // Onboarding URLs are auth-login URLs (`.../auth/login/?redirectTo=...`).
+        // The auth site redirects to the verbatim `redirectTo` value, so params
+        // appended to the outer login URL never survive the round-trip — they
+        // must land on the inner target instead.
+        const innerUrl = addQueryParamsToUrlString(new URL(redirectTo, url.origin).toString(), deepLinkParams)
+        url.searchParams.set('redirectTo', innerUrl)
+        return url.toString()
+      }
+      return addQueryParamsToUrlString(base, deepLinkParams)
+    },
+    [deepLinkParams]
+  )
+
   const openDownloadFallback = useCallback(() => {
     if (hasValidIdentity) {
-      window.open(downloadUrl, '_self')
+      window.open(buildDownloadUrl(downloadUrl), '_self')
       return
     }
     if (onboardingUrl) {
-      window.open(onboardingUrl, '_self')
+      window.open(buildDownloadUrl(onboardingUrl), '_self')
     } else {
       setDownloadModalOpen(true)
     }
-  }, [hasValidIdentity, downloadUrl, onboardingUrl])
+  }, [hasValidIdentity, downloadUrl, onboardingUrl, buildDownloadUrl])
 
   const launchExplorer = useCallback(async () => {
     if (isMobile) {
@@ -81,7 +108,7 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
 
   const downloadModalProps: DownloadModalProps = {
     os: downloadOs,
-    downloadUrl: downloadOs === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows,
+    downloadUrl: buildDownloadUrl(downloadOs === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows),
     epicUrl: DOWNLOAD_URLS.epic,
     googlePlayUrl: DOWNLOAD_URLS.googlePlay,
     appStoreUrl: DOWNLOAD_URLS.appStore

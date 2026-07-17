@@ -2,6 +2,7 @@ import {
   DEFAULT_POSITION,
   DEFAULT_REALM,
   buildDeepLinkOptions,
+  collectDeepLinkParams,
   eventHasEnded,
   formatDateForGoogleCalendar,
   parsePosition,
@@ -121,6 +122,38 @@ describe('jump.helpers', () => {
     describe('and env is not provided', () => {
       it('should omit dclenv from the options', () => {
         expect(buildDeepLinkOptions('1,2', 'foo.eth', undefined)).toEqual({ position: '1,2', realm: 'foo.eth' })
+      })
+    })
+  })
+
+  describe('when collectDeepLinkParams is called', () => {
+    describe('and a source with custom position and realm is provided', () => {
+      it('should collect both params', () => {
+        expect(collectDeepLinkParams(new URLSearchParams('position=10,20&realm=foo.eth'))).toEqual({
+          position: '10,20',
+          realm: 'foo.eth'
+        })
+      })
+    })
+
+    describe('and the source carries default or empty values', () => {
+      it('should filter them out', () => {
+        expect(collectDeepLinkParams(new URLSearchParams(`position=${DEFAULT_POSITION}&realm=${DEFAULT_REALM}`))).toEqual({})
+        expect(collectDeepLinkParams(new URLSearchParams('position=&realm='))).toEqual({})
+      })
+    })
+
+    describe('and no source is provided', () => {
+      beforeEach(() => {
+        window.history.pushState({}, '', '/download?position=1,2&realm=bar.eth')
+      })
+
+      afterEach(() => {
+        window.history.pushState({}, '', '/')
+      })
+
+      it('should read the params from the current URL', () => {
+        expect(collectDeepLinkParams()).toEqual({ position: '1,2', realm: 'bar.eth' })
       })
     })
   })

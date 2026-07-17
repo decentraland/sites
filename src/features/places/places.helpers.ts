@@ -69,6 +69,20 @@ function buildDeepLinkOptions(position?: string, realm?: string, env?: string): 
   return options
 }
 
+/**
+ * Collects the first-launch deep-link params (position/realm) from the given
+ * source (defaults to the current URL's search params). Defaults and empty
+ * values are filtered by `buildDeepLinkOptions`, so download URLs stay clean.
+ * Used by the download surfaces to keep the params alive hop-by-hop until they
+ * land on the file-origin URL the launcher parses on first run
+ * (kMDItemWhereFroms / Zone.Identifier).
+ */
+function collectDeepLinkParams(source?: URLSearchParams): { position?: string; realm?: string } {
+  const params = source ?? new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+  const { position, realm } = buildDeepLinkOptions(params.get('position') ?? undefined, params.get('realm') ?? undefined)
+  return { ...(position ? { position } : {}), ...(realm ? { realm } : {}) }
+}
+
 function formatLocation(coordinates: [number, number]): string {
   return `${coordinates[0]}, ${coordinates[1]}`
 }
@@ -77,6 +91,7 @@ export {
   DEFAULT_POSITION,
   DEFAULT_REALM,
   buildDeepLinkOptions,
+  collectDeepLinkParams,
   eventHasEnded,
   formatDateForGoogleCalendar,
   formatLocation,

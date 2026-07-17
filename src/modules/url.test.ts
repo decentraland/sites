@@ -226,6 +226,40 @@ describe('buildDownloadSuccessHref', () => {
       expect(url.searchParams.get('utm_source')).toBe('shefi')
     })
   })
+
+  describe('when deep-link params are provided', () => {
+    let url: URL
+
+    beforeEach(() => {
+      const result = buildDownloadSuccessHref('macOS', 'download-page', {
+        arch: 'arm64',
+        deepLinkParams: { position: '10,20', realm: 'foo.eth' },
+        campaignParams: { utm_source: 'shefi' }
+      })
+      url = new URL(result, 'https://decentraland.org')
+    })
+
+    it('should append position and realm alongside the routing and campaign params', () => {
+      expect(url.searchParams.get('position')).toBe('10,20')
+      expect(url.searchParams.get('realm')).toBe('foo.eth')
+      expect(url.searchParams.get('utm_source')).toBe('shefi')
+      expect(url.searchParams.get('os')).toBe('macOS')
+    })
+  })
+
+  describe('when a deep-link param key collides with a routing param', () => {
+    it('should never overwrite the already-set os/place/arch/anon_user_id params', () => {
+      const result = buildDownloadSuccessHref('Windows', 'download-page', {
+        anonUserId: 'anon-123',
+        deepLinkParams: { os: 'evil', anon_user_id: 'evil-id', position: '1,2' }
+      })
+      const url = new URL(result, 'https://decentraland.org')
+
+      expect(url.searchParams.get('os')).toBe('Windows')
+      expect(url.searchParams.get('anon_user_id')).toBe('anon-123')
+      expect(url.searchParams.get('position')).toBe('1,2')
+    })
+  })
 })
 
 describe('sanitizeCDNReleaseLinks', () => {

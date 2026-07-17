@@ -13,6 +13,12 @@ interface DownloadSuccessHrefOptions {
    * carried. Snake_case keys are appended as-is (see `collectCampaignParams`).
    */
   campaignParams?: Record<string, string>
+  /**
+   * First-launch deep-link params (position/realm, see `collectDeepLinkParams`)
+   * forwarded so `/download_success` can put them on the file-origin URL the
+   * launcher parses on first run (kMDItemWhereFroms / Zone.Identifier).
+   */
+  deepLinkParams?: Record<string, string>
 }
 
 const addQueryParamsToUrlString = (url: string, params: Record<string, string | undefined | null>): string => {
@@ -158,6 +164,13 @@ const buildDownloadSuccessHref = (os: string, place: string, options: DownloadSu
   }
   if (options.arch) {
     params.set('arch', options.arch)
+  }
+  if (options.deepLinkParams) {
+    for (const [key, value] of Object.entries(options.deepLinkParams)) {
+      // Same guard as campaignParams below: never overwrite the routing params.
+      if (params.has(key)) continue
+      params.set(key, value)
+    }
   }
   if (options.campaignParams) {
     for (const [key, value] of Object.entries(options.campaignParams)) {
