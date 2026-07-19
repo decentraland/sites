@@ -13,7 +13,7 @@
     "test": "jest",
     "test:coverage": "npm run test -- --coverage",
     "prepare": "husky",
-    "precommit": "lint-staged --config .husky/pre-commit.js",
+    "precommit": "lint-staged",
     "format": "prettier --write '**/*.{ts,tsx,js,jsx,json,md,mdx,css}'",
     "lint": "eslint ./src",
     "lint:fix": "npm run lint -- --fix",
