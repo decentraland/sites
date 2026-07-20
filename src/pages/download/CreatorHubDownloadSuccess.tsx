@@ -80,7 +80,14 @@ const CreatorHubDownloadSuccess = memo(() => {
       anon_user_id: anonUserId,
       // eslint-disable-next-line @typescript-eslint/naming-convention
       auth_state: toAuthState(hasValidIdentity),
-      revisit: revisitNumber
+      revisit: revisitNumber,
+      // Split the Creator Hub funnel from the Explorer funnel — the matching
+      // download_success carries download_target=creator_hub, same as the
+      // download_started fired on the previous page (useCreatorHubDownload).
+      extra: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        download_target: DownloadTarget.CREATOR_HUB
+      }
     })
     tracker.success(filename)
   }, [osLink, clientOS, clientArch, anonUserId, hasValidIdentity, revisitNumber])
