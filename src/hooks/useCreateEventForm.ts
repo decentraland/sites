@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import {
   useCreateEventMutation,
@@ -9,7 +9,13 @@ import {
 import type { EventEntry } from '../features/events'
 import { compressImageFile } from '../utils/imageCompression'
 import { useAuthIdentity } from './useAuthIdentity'
-import { INITIAL_STATE, eventEntryToFormState, parseDurationMs, recurrenceToApi } from './useCreateEventForm.helpers'
+import {
+  INITIAL_STATE,
+  eventEntryToFormState,
+  hasModeratedContentChanged,
+  parseDurationMs,
+  recurrenceToApi
+} from './useCreateEventForm.helpers'
 import type { CreateEventFormMode, CreateEventFormState, FormErrors, ImageErrorCode } from './useCreateEventForm.types'
 
 const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif']
@@ -421,10 +427,19 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
     }
   }, [form, identity, isSubmitting, initialEvent, validate, createEvent, updateEvent, t, onSuccess])
 
+  // Warn the owner before a save that would bounce an already-approved hangout back to moderation:
+  // true only while editing an approved event whose name/description/image/location differs from the
+  // saved copy (see `hasModeratedContentChanged` + the backend re-moderation gate).
+  const requiresModerationReview = useMemo(
+    () => Boolean(initialEvent?.approved) && hasModeratedContentChanged(form, initialEvent),
+    [initialEvent, form]
+  )
+
   return {
     form,
     errors,
     mode,
+    requiresModerationReview,
     setField,
     markRequiredFields,
     handleImageSelect,
