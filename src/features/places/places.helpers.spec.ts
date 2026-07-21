@@ -124,6 +124,22 @@ describe('jump.helpers', () => {
         expect(buildDeepLinkOptions('1,2', 'foo.eth', undefined)).toEqual({ position: '1,2', realm: 'foo.eth' })
       })
     })
+
+    describe('and sceneConsole is provided', () => {
+      it('should include it in the options', () => {
+        expect(buildDeepLinkOptions('1,2', 'foo.eth', undefined, 'true')).toEqual({
+          position: '1,2',
+          realm: 'foo.eth',
+          sceneConsole: 'true'
+        })
+      })
+    })
+
+    describe('and sceneConsole is not provided', () => {
+      it('should omit sceneConsole from the options', () => {
+        expect(buildDeepLinkOptions('1,2', 'foo.eth', undefined, undefined)).toEqual({ position: '1,2', realm: 'foo.eth' })
+      })
+    })
   })
 
   describe('when collectDeepLinkParams is called', () => {

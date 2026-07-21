@@ -37,6 +37,7 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false)
 
   const explorerEnv = searchParams.get('dclenv') ?? mapEnvToDclenv(searchParams.get('env'))
+  const sceneConsole = searchParams.get('scene-console') ?? undefined
 
   const onboardingUrl = getEnv('ONBOARDING_URL') ?? ''
   const downloadUrl = getEnv('DOWNLOAD_URL') ?? DOWNLOAD_URLS.windows
@@ -94,7 +95,7 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
     track(SegmentEvent.GO_TO_EXPLORER, { position, realm, osName, arch })
 
     try {
-      const launched = await launchDesktopApp(buildDeepLinkOptions(position, realm, explorerEnv))
+      const launched = await launchDesktopApp(buildDeepLinkOptions(position, realm, explorerEnv, sceneConsole))
       if (!launched) {
         track(SegmentEvent.CLICK, { event: SegmentEvent.CLIENT_NOT_INSTALLED, os: osName, arch })
         openDownloadFallback()
@@ -102,7 +103,7 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
     } catch {
       openDownloadFallback()
     }
-  }, [isMobile, downloadOs, track, position, realm, explorerEnv, osName, arch, openDownloadFallback])
+  }, [isMobile, downloadOs, track, position, realm, explorerEnv, sceneConsole, osName, arch, openDownloadFallback])
 
   const closeDownloadModal = useCallback(() => setDownloadModalOpen(false), [])
 
