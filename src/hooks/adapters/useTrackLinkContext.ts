@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { getMacArchHint } from '../../modules/macArchHint'
 import { SegmentEvent } from '../../modules/segment'
 import { useDeferredTrack } from '../useDeferredTrack'
 import { readDataAttributes } from './readDataAttributes'
@@ -34,6 +35,13 @@ function useTrackClick() {
       // dimensions by snake_case. Same rename as useDownloadClick.
       if (downloadTarget) {
         payload.download_target = downloadTarget
+
+        // Mac-only architecture hint (GPU-based; the UA lies about the chip).
+        // Only download CTAs pay the (memoized) WebGL read — see macArchHint.
+        const macArch = getMacArchHint()
+        if (macArch) {
+          payload.mac_arch = macArch
+        }
       }
 
       deferredTrack(SegmentEvent.CLICK, payload)

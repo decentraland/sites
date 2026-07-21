@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react'
+import { getMacArchHint } from '../../modules/macArchHint'
 import { SegmentEvent } from '../../modules/segment'
 import { useTrackClick } from './useTrackLinkContext'
 
@@ -7,6 +8,10 @@ let mockIsInitialized: boolean
 
 jest.mock('@dcl/hooks', () => ({
   useAnalytics: () => ({ isInitialized: mockIsInitialized, track: mockTrack })
+}))
+
+jest.mock('../../modules/macArchHint', () => ({
+  getMacArchHint: jest.fn()
 }))
 
 const buildClickEvent = (attrs: Record<string, string>): React.MouseEvent<HTMLElement> => {
@@ -154,6 +159,57 @@ describe('useTrackClick', () => {
       expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.CLICK, expect.objectContaining({ download_target: 'creator_hub' }))
       const payload = mockTrack.mock.calls[0][1] as Record<string, unknown>
       expect(payload.downloadTarget).toBeUndefined()
+    })
+  })
+
+  describe('when the element carries a download_target on a macOS visitor', () => {
+    beforeEach(() => {
+      ;(getMacArchHint as jest.Mock).mockReturnValue('intel')
+    })
+
+    it('should attach mac_arch to the payload', () => {
+      const { result } = renderHook(() => useTrackClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-download-target': 'desktop_installer', 'data-place': 'Landing Hero' }))
+      })
+
+      expect(mockTrack).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ download_target: 'desktop_installer', mac_arch: 'intel' })
+      )
+    })
+  })
+
+  describe('when the visitor is not on macOS', () => {
+    beforeEach(() => {
+      ;(getMacArchHint as jest.Mock).mockReturnValue(null)
+    })
+
+    it('should not include a mac_arch key in the payload', () => {
+      const { result } = renderHook(() => useTrackClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-download-target': 'desktop_installer', 'data-place': 'Landing Hero' }))
+      })
+
+      expect(mockTrack.mock.calls[0][1]).not.toHaveProperty('mac_arch')
+    })
+  })
+
+  describe('when the element has no download_target', () => {
+    beforeEach(() => {
+      ;(getMacArchHint as jest.Mock).mockReturnValue('intel')
+    })
+
+    it('should not call getMacArchHint at all', () => {
+      const { result } = renderHook(() => useTrackClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-place': 'Landing Navbar' }))
+      })
+
+      expect(getMacArchHint).not.toHaveBeenCalled()
     })
   })
 })
