@@ -1,14 +1,25 @@
 import { useCallback, useRef } from 'react'
 import { useAnalytics } from '@dcl/hooks'
-import { collectCampaignParams } from '../modules/campaignParams'
 import { recordDownloadClickCorrelation } from '../modules/downloadClickCorrelation'
 import { markDownloadCtaClicked } from '../modules/downloadPageExit'
-import { attachMacArchHint } from '../modules/macArchHint'
 import { SegmentEvent } from '../modules/segment'
 import { ensureSegmentAnonymousId } from '../modules/segmentAnonymousId'
 import { postSegmentEvent } from '../modules/segmentBeacon'
-import { readDataAttributes } from './adapters/readDataAttributes'
+import { buildClickPayload } from './adapters/clickPayload.helpers'
 import { useDeferredTrack } from './useDeferredTrack'
+
+interface UseDownloadClickOptions {
+  /**
+   * When true (default), records a `click_id`/`clicked_at` correlation in
+   * sessionStorage and attaches it to the payload so `/download_success` (the
+   * Explorer funnel) can join the click to its `download_*` events. Callers
+   * whose funnel does NOT read that correlation back should pass `false` — e.g.
+   * the Creator Hub hero, which redirects to `/download/creator-hub-success`
+   * (a page that joins on `anon_user_id`, not `click_id`). Leaving it on there
+   * would mint an orphan id and clobber the shared key the Explorer funnel uses.
+   */
+  recordCorrelation?: boolean
+}
 
 /**
  * Click adapter for download CTAs that navigate away immediately after the
@@ -20,7 +31,8 @@ import { useDeferredTrack } from './useDeferredTrack'
  * render — closing the sub-render window where a stale `false` would beacon a
  * click that could have gone through analytics-next with full context.
  */
-function useDownloadClick() {
+function useDownloadClick(options: UseDownloadClickOptions = {}) {
+  const { recordCorrelation = true } = options
   const { isInitialized } = useAnalytics()
   const deferredTrack = useDeferredTrack()
   const isInitializedRef = useRef(isInitialized)
@@ -32,41 +44,15 @@ function useDownloadClick() {
       // mount and reads it when the page becomes hidden.
       markDownloadCtaClicked()
 
-      // Merge the URL's campaign params so a partner link
-      // (`/download?utm_source=…`) attributes every download CTA click, cold
-      // loads included — see `collectCampaignParams`. data-* attributes are
-      // spread last as the trusted, component-controlled source. They don't
-      // collide with the snake_case utm_* keys because `readDataAttributes`
-      // camelCases dashed names — note an underscore attribute name (e.g.
-      // `data-utm_source`) WOULD bypass that and clobber the URL value, so
-      // never use underscores in data-* names on download CTAs.
-      const { downloadTarget, ...dataAttributes } = readDataAttributes(event.currentTarget)
       // Deterministic click → download_* correlation: the same click_id we
       // send here travels via sessionStorage to /download_success (see
-      // downloadClickCorrelation.ts). clicked_at enables ms_since_click downstream.
-      const correlation = recordDownloadClickCorrelation()
-      const payload: Record<string, unknown> = {
-        ...collectCampaignParams(),
-        ...correlation,
-        ...dataAttributes
-      }
-
-      if (payload.event === SegmentEvent.CLICK) {
-        delete payload.event
-      }
-
-      // `readDataAttributes` camelCases dashed attributes (`data-download-target`
-      // → `downloadTarget`), but the warehouse dimension is snake_case
-      // (`download_target`, alongside utm_* / anon_user_id / auth_state). Rename
-      // it so store/installer CTAs stay declarative while the payload keeps the
-      // canonical key the data team splits desktop-vs-mobile on.
-      if (downloadTarget) {
-        payload.download_target = downloadTarget
-
-        // Mac-only architecture hint (GPU-based; the UA lies about the chip).
-        // Only download CTAs pay the (memoized) WebGL read — see macArchHint.
-        attachMacArchHint(payload)
-      }
+      // downloadClickCorrelation.ts). clicked_at enables ms_since_click
+      // downstream. Skipped when the caller's funnel doesn't consume it, so no
+      // orphan id is minted (see UseDownloadClickOptions.recordCorrelation).
+      const correlation = recordCorrelation ? recordDownloadClickCorrelation() : {}
+      // Spread into a fresh object so the typed correlation interface satisfies
+      // buildClickPayload's Record<string, unknown> `extra` parameter.
+      const payload = buildClickPayload(event.currentTarget, { ...correlation })
 
       if (isInitializedRef.current) {
         deferredTrack(SegmentEvent.CLICK, payload)
@@ -88,7 +74,7 @@ function useDownloadClick() {
         ensureSegmentAnonymousId()
       )
     },
-    [deferredTrack]
+    [deferredTrack, recordCorrelation]
   )
 }
 

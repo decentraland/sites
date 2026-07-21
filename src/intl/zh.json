@@ -926,6 +926,11 @@
         "deleted_notice_link": "All Hangouts",
         "deleted_notice_suffix": "发现更多。"
       }
+    },
+    "creators_landing": {
+      "hero": {
+        "scroll_label": "滚动到下一部分"
+      }
     }
   },
   "create_event": {

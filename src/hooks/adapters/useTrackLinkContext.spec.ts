@@ -214,4 +214,42 @@ describe('useTrackClick', () => {
       expect(attachMacArchHint).not.toHaveBeenCalled()
     })
   })
+
+  describe('when the current URL carries campaign params', () => {
+    beforeEach(() => {
+      window.history.pushState({}, '', '/create?utm_source=shefi&utm_campaign=summer_launch')
+    })
+
+    afterEach(() => {
+      window.history.pushState({}, '', '/')
+    })
+
+    it('should merge the utm_* params into the payload', () => {
+      const { result } = renderHook(() => useTrackClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-place': 'Creators Hero', 'data-event': SegmentEvent.CLICK }))
+      })
+
+      expect(mockTrack).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ place: 'Creators Hero', utm_source: 'shefi', utm_campaign: 'summer_launch' })
+      )
+    })
+
+    it('should let a colliding data-* attribute win over the campaign param', () => {
+      const { result } = renderHook(() => useTrackClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-place': 'Creators Hero', 'data-utm-source': 'component-value' }))
+      })
+
+      // `data-utm-source` camelCases to `utmSource`, so it does NOT collide with
+      // the snake_case `utm_source` campaign key — both survive, proving the
+      // documented no-underscore-in-data-* rule keeps them in separate keys.
+      const payload = mockTrack.mock.calls[0][1] as Record<string, unknown>
+      expect(payload.utm_source).toBe('shefi')
+      expect(payload.utmSource).toBe('component-value')
+    })
+  })
 })

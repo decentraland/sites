@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
-import { attachMacArchHint } from '../../modules/macArchHint'
 import { SegmentEvent } from '../../modules/segment'
 import { useDeferredTrack } from '../useDeferredTrack'
-import { readDataAttributes } from './readDataAttributes'
+import { buildClickPayload } from './clickPayload.helpers'
 
 /**
  * Click adapter consumed by interactive elements that follow the
@@ -20,28 +19,23 @@ import { readDataAttributes } from './readDataAttributes'
  * Callers should always set `data-event` to a `SegmentEvent` enum value
  * rather than a hardcoded literal — keeps casing consistent in the
  * warehouse and makes grep over the codebase trivial.
+ *
+ * The current URL's campaign (utm_*) params are merged first so a partner
+ * link (`/create?utm_source=…`) attributes every tracked click, matching the
+ * download-CTA behavior in `useDownloadClick`. `data-*` attributes are spread
+ * last as the trusted, component-controlled source and win on collision; they
+ * never collide with the snake_case utm_* keys because `readDataAttributes`
+ * camelCases dashed names (see `collectCampaignParams`).
  */
 function useTrackClick() {
   const deferredTrack = useDeferredTrack()
   return useCallback(
-    (event: React.MouseEvent<HTMLElement>) => {
-      const { downloadTarget, ...payload }: Record<string, unknown> = readDataAttributes(event.currentTarget)
-
-      if (payload.event === SegmentEvent.CLICK) {
-        delete payload.event
-      }
-
-      // `readDataAttributes` camelCases `data-download-target`; the warehouse
-      // dimensions by snake_case. Same rename as useDownloadClick.
-      if (downloadTarget) {
-        payload.download_target = downloadTarget
-
-        // Mac-only architecture hint (GPU-based; the UA lies about the chip).
-        // Only download CTAs pay the (memoized) WebGL read — see macArchHint.
-        attachMacArchHint(payload)
-      }
-
-      deferredTrack(SegmentEvent.CLICK, payload)
+    // Accepts any SyntheticEvent (mouse, keyboard, …): only `currentTarget` is
+    // read, so widening the type lets keyboard-activated controls (e.g. the FAQ
+    // accordion) call this without a lossy cast, while `onClick={trackClick}`
+    // still type-checks because a mouse event is a SyntheticEvent.
+    (event: React.SyntheticEvent<HTMLElement>) => {
+      deferredTrack(SegmentEvent.CLICK, buildClickPayload(event.currentTarget))
     },
     [deferredTrack]
   )

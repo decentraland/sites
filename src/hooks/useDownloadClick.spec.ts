@@ -52,6 +52,9 @@ describe('when tracking a download click', () => {
   })
 
   afterEach(() => {
+    // Every handler invocation with the default options mints a correlation
+    // entry; clear it so ordering between describes can't leak state.
+    sessionStorage.removeItem('downloadFunnel:lastClick')
     jest.resetAllMocks()
   })
 
@@ -340,6 +343,25 @@ describe('when tracking a download click', () => {
       })
 
       expect(attachMacArchHint).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('and the caller opts out of click correlation', () => {
+    afterEach(() => {
+      sessionStorage.removeItem('downloadFunnel:lastClick')
+    })
+
+    it('should not mint a click_id nor persist correlation state', () => {
+      mockIsInitialized = true
+      const { result } = renderHook(() => useDownloadClick({ recordCorrelation: false }))
+      act(() => {
+        result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD, 'data-place': 'Creators Hero' }))
+      })
+
+      const payload = mockTrack.mock.calls[0][1] as Record<string, unknown>
+      expect(payload).not.toHaveProperty('click_id')
+      expect(payload).not.toHaveProperty('clicked_at')
+      expect(sessionStorage.getItem('downloadFunnel:lastClick')).toBeNull()
     })
   })
 })
