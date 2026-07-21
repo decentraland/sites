@@ -1,0 +1,21 @@
+import { useAsyncMemo } from '@dcl/hooks'
+import { ExplorerDownloads } from '../modules/explorerDownloads'
+import { formatToShorthand } from '../modules/number'
+
+// Module-level cache so the count survives remounts across the different
+// surfaces that render a DownloadModal (homepage hero, jump-in fallback).
+let cachedCount: string | null = null
+
+/**
+ * Resolves the shorthand total-downloads label ("+400K") shown in the
+ * DownloadModal. Shared by `useHangOutAction` (homepage) and `useLaunchExplorer`
+ * (jump-in) so both modals show the same real count instead of ui2's stale
+ * built-in default.
+ */
+function useTotalDownloads(): string {
+  const [rawDownloads, status] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
+  if (!status.loading && status.loaded && rawDownloads) cachedCount = formatToShorthand(rawDownloads)
+  return cachedCount ?? '+400K'
+}
+
+export { useTotalDownloads }

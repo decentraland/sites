@@ -71,6 +71,8 @@ jest.mock('../../../features/places/places.helpers', () => ({
 jest.mock('../../../modules/url', () => ({
   buildTrackedDownloadUrl: jest.fn()
 }))
+jest.mock('../../../config/env', () => ({ getEnv: jest.fn() }))
+jest.mock('../../../hooks/useTotalDownloads', () => ({ useTotalDownloads: jest.fn(() => '+400K') }))
 
 const mockBuildTrackedDownloadUrl = jest.mocked(buildTrackedDownloadUrl)
 const mockUseSearchParams = jest.mocked(useSearchParams)

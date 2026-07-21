@@ -3,12 +3,14 @@ import { useSearchParams } from 'react-router-dom'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import { mapEnvToDclenv } from '../config/dclenv'
+import { getEnv } from '../config/env'
 import { buildDeepLinkOptions } from '../features/places/places.helpers'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
 import { buildDownloadTrackingParams } from '../modules/downloadTrackingParams'
 import { SegmentEvent } from '../modules/segment'
 import { buildTrackedDownloadUrl } from '../modules/url'
 import { useAnonUserId } from './useAnonUserId'
+import { useTotalDownloads } from './useTotalDownloads'
 
 interface LaunchExplorerOptions {
   /** Deep-link position ("x,y"). `DEFAULT_POSITION` keeps it out of the deep link. Also reported to analytics. */
@@ -22,6 +24,7 @@ interface DownloadModalProps {
   epicUrl: string
   googlePlayUrl: string
   appStoreUrl: string
+  i18n: { totalDownloads: string }
 }
 
 /**
@@ -36,6 +39,7 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
   const [, advancedUserAgent] = useAdvancedUserAgentData()
   const { track } = useAnalytics()
   const anonUserId = useAnonUserId()
+  const totalDownloads = useTotalDownloads()
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false)
 
   const explorerEnv = searchParams.get('dclenv') ?? mapEnvToDclenv(searchParams.get('env'))
@@ -84,12 +88,17 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
   // (first-launch position/realm) and the tracking params (campaign utm_* +
   // anon_user_id) so both survive the hop and the funnel join stays intact.
   const downloadUrlParams = buildDownloadTrackingParams(anonUserId, deepLinkParams)
+  // Prefer the env `DOWNLOAD_URL` (relative on dev/zone → resolved against the
+  // current origin by `buildTrackedDownloadUrl`, so the download stays on the
+  // zone origin and keeps its identity) and fall back to the platform constant.
+  const downloadBase = getEnv('DOWNLOAD_URL') ?? (downloadOs === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows)
   const downloadModalProps: DownloadModalProps = {
     os: downloadOs,
-    downloadUrl: buildTrackedDownloadUrl(downloadOs === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows, downloadUrlParams),
+    downloadUrl: buildTrackedDownloadUrl(downloadBase, downloadUrlParams),
     epicUrl: DOWNLOAD_URLS.epic,
     googlePlayUrl: DOWNLOAD_URLS.googlePlay,
-    appStoreUrl: DOWNLOAD_URLS.appStore
+    appStoreUrl: DOWNLOAD_URLS.appStore,
+    i18n: { totalDownloads: `Total Downloads: ${totalDownloads}` }
   }
 
   return { launchExplorer, isMobile, isDownloadModalOpen, closeDownloadModal, downloadModalProps }

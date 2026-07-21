@@ -1,19 +1,19 @@
 import { act, renderHook } from '@testing-library/react'
-import { useAsyncMemo } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
+import { getEnv } from '../config/env'
 import { collectCampaignParams } from '../modules/campaignParams'
 import { detectDownloadOS } from '../modules/downloadConstants'
 import { useAnonUserId } from './useAnonUserId'
 import { useHangOutAction } from './useHangOutAction'
+import { useTotalDownloads } from './useTotalDownloads'
 import { useWalletAddress } from './useWalletAddress'
 
-jest.mock('@dcl/hooks', () => ({ useAsyncMemo: jest.fn() }))
 jest.mock('decentraland-ui2', () => ({ launchDesktopApp: jest.fn() }))
+jest.mock('../config/env', () => ({ getEnv: jest.fn() }))
 jest.mock('./useWalletAddress', () => ({ useWalletAddress: jest.fn() }))
+jest.mock('./useTotalDownloads', () => ({ useTotalDownloads: jest.fn(() => '+400K') }))
 jest.mock('./useAnonUserId', () => ({ ANON_USER_ID_PARAM: 'anon_user_id', useAnonUserId: jest.fn() }))
 jest.mock('../modules/campaignParams', () => ({ collectCampaignParams: jest.fn(() => ({})) }))
-jest.mock('../modules/explorerDownloads', () => ({ ExplorerDownloads: { get: () => ({ getTotalDownloads: jest.fn() }) } }))
-jest.mock('../modules/number', () => ({ formatToShorthand: (n: number) => `${n}` }))
 jest.mock('../modules/url', () => ({
   buildTrackedDownloadUrl: (base: string, params: Record<string, string | undefined | null>) => {
     const url = new URL(base, window.location.origin)
@@ -34,9 +34,10 @@ jest.mock('../modules/downloadConstants', () => ({
   detectDownloadOS: jest.fn(() => 'apple')
 }))
 
-const mockedUseAsyncMemo = useAsyncMemo as jest.MockedFunction<typeof useAsyncMemo>
 const mockedLaunchDesktopApp = launchDesktopApp as jest.MockedFunction<typeof launchDesktopApp>
+const mockedGetEnv = getEnv as jest.MockedFunction<typeof getEnv>
 const mockedUseWalletAddress = useWalletAddress as jest.MockedFunction<typeof useWalletAddress>
+const mockedUseTotalDownloads = useTotalDownloads as jest.MockedFunction<typeof useTotalDownloads>
 const mockedUseAnonUserId = useAnonUserId as jest.MockedFunction<typeof useAnonUserId>
 const mockedCollectCampaignParams = collectCampaignParams as jest.MockedFunction<typeof collectCampaignParams>
 const mockedDetectDownloadOS = detectDownloadOS as jest.MockedFunction<typeof detectDownloadOS>
@@ -45,16 +46,12 @@ const clickEvent = () => ({ preventDefault: jest.fn() }) as unknown as React.Mou
 
 describe('useHangOutAction', () => {
   beforeEach(() => {
-    // Invoke the thunk so the total-downloads fetcher itself is exercised, then
-    // return the "not loaded yet" tuple by default.
-    mockedUseAsyncMemo.mockImplementation(((fn: () => Promise<unknown>) => {
-      void fn()
-      return [null, { loading: false, loaded: false }]
-    }) as unknown as typeof useAsyncMemo)
     mockedUseWalletAddress.mockReturnValue({ isConnected: false } as unknown as ReturnType<typeof useWalletAddress>)
+    mockedUseTotalDownloads.mockReturnValue('+400K')
     mockedUseAnonUserId.mockReturnValue(undefined)
     mockedCollectCampaignParams.mockReturnValue({})
     mockedDetectDownloadOS.mockReturnValue('apple')
+    mockedGetEnv.mockReturnValue(undefined)
   })
 
   afterEach(() => {
@@ -117,14 +114,24 @@ describe('useHangOutAction', () => {
       expect(url.searchParams.get('anon_user_id')).toBe('11111111-1111-4111-8111-111111111111')
     })
 
-    it('should default the total downloads label when the count has not loaded', () => {
+    it('should resolve a relative DOWNLOAD_URL against the origin instead of the prod constant', () => {
+      mockedGetEnv.mockReturnValue('/download')
       const { result } = renderHook(() => useHangOutAction())
 
-      expect(result.current.totalDownloads).toBe('+400K')
+      const url = new URL(result.current.downloadModalProps.downloadUrl)
+      expect(url.origin).toBe(window.location.origin)
+      expect(url.pathname).toBe('/download')
+    })
+
+    it('should surface the total downloads label from useTotalDownloads', () => {
+      mockedUseTotalDownloads.mockReturnValue('42000')
+      const { result } = renderHook(() => useHangOutAction())
+
+      expect(result.current.downloadModalProps.i18n?.totalDownloads).toBe('Total Downloads: 42000')
+      expect(result.current.totalDownloads).toBe('42000')
     })
 
     it('should close the modal via closeDownloadModal', async () => {
-      mockedUseWalletAddress.mockReturnValue({ isConnected: false } as unknown as ReturnType<typeof useWalletAddress>)
       const { result } = renderHook(() => useHangOutAction())
 
       await act(async () => result.current.handleClick(clickEvent()))
@@ -132,19 +139,6 @@ describe('useHangOutAction', () => {
 
       act(() => result.current.closeDownloadModal())
       expect(result.current.isDownloadModalOpen).toBe(false)
-    })
-
-    // Kept last on purpose: a loaded count writes the module-level `cachedCount`
-    // in the hook, which persists across tests. Running this before the
-    // "not loaded" assertion above would leak the cached value into it.
-    it('should format the loaded total downloads count', () => {
-      mockedUseAsyncMemo.mockImplementation(((fn: () => Promise<unknown>) => {
-        void fn()
-        return [42000, { loading: false, loaded: true }]
-      }) as unknown as typeof useAsyncMemo)
-      const { result } = renderHook(() => useHangOutAction())
-
-      expect(result.current.totalDownloads).toBe('42000')
     })
   })
 })

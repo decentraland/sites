@@ -2,10 +2,12 @@ import { useSearchParams } from 'react-router-dom'
 import { act, renderHook } from '@testing-library/react'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
+import { getEnv } from '../config/env'
 import { collectCampaignParams } from '../modules/campaignParams'
 import { detectDownloadOS } from '../modules/downloadConstants'
 import { useAnonUserId } from './useAnonUserId'
 import { useLaunchExplorer } from './useLaunchExplorer'
+import { useTotalDownloads } from './useTotalDownloads'
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
@@ -19,6 +21,8 @@ jest.mock('decentraland-ui2', () => ({
   launchDesktopApp: jest.fn()
 }))
 jest.mock('./useAnonUserId', () => ({ ANON_USER_ID_PARAM: 'anon_user_id', useAnonUserId: jest.fn() }))
+jest.mock('./useTotalDownloads', () => ({ useTotalDownloads: jest.fn(() => '+400K') }))
+jest.mock('../config/env', () => ({ getEnv: jest.fn() }))
 jest.mock('../modules/campaignParams', () => ({ collectCampaignParams: jest.fn(() => ({})) }))
 jest.mock('../modules/url', () => ({
   // Mirror the real helper: resolve relative bases against the origin, append
@@ -52,6 +56,8 @@ const mockedUseAnalytics = useAnalytics as jest.MockedFunction<typeof useAnalyti
 const mockedLaunchDesktopApp = launchDesktopApp as jest.MockedFunction<typeof launchDesktopApp>
 const mockedDetectDownloadOS = detectDownloadOS as jest.MockedFunction<typeof detectDownloadOS>
 const mockedUseAnonUserId = useAnonUserId as jest.MockedFunction<typeof useAnonUserId>
+const mockedUseTotalDownloads = useTotalDownloads as jest.MockedFunction<typeof useTotalDownloads>
+const mockedGetEnv = getEnv as jest.MockedFunction<typeof getEnv>
 const mockedCollectCampaignParams = collectCampaignParams as jest.MockedFunction<typeof collectCampaignParams>
 
 describe('useLaunchExplorer', () => {
@@ -69,6 +75,8 @@ describe('useLaunchExplorer', () => {
     ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
     mockedDetectDownloadOS.mockReturnValue('apple')
     mockedUseAnonUserId.mockReturnValue(undefined)
+    mockedUseTotalDownloads.mockReturnValue('+400K')
+    mockedGetEnv.mockReturnValue(undefined)
     mockedCollectCampaignParams.mockReturnValue({})
   })
 
@@ -175,6 +183,25 @@ describe('useLaunchExplorer', () => {
       expect(url.searchParams.get('utm_source')).toBe('shefi')
       expect(url.searchParams.get('anon_user_id')).toBe('11111111-1111-4111-8111-111111111111')
       expect(url.searchParams.get('position')).toBe('10,20')
+    })
+
+    it('should keep the modal download url on the current origin for a relative DOWNLOAD_URL (dev/zone)', () => {
+      // On dev/zone DOWNLOAD_URL is relative ("/download"); the modal must stay
+      // on the zone origin instead of jumping to the prod constant.
+      mockedGetEnv.mockReturnValue('/download')
+      const { result } = renderHook(() => useLaunchExplorer({ position: '42,-5', realm: 'myworld.dcl.eth' }))
+
+      const url = new URL(result.current.downloadModalProps.downloadUrl)
+      expect(url.origin).toBe(window.location.origin)
+      expect(url.pathname).toBe('/download')
+      expect(url.searchParams.get('position')).toBe('42,-5')
+    })
+
+    it('should surface the total downloads label on the modal props', () => {
+      mockedUseTotalDownloads.mockReturnValue('42000')
+      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
+
+      expect(result.current.downloadModalProps.i18n.totalDownloads).toBe('Total Downloads: 42000')
     })
   })
 
