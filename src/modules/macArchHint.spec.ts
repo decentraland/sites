@@ -88,6 +88,17 @@ describe('when resolving the mac architecture hint', () => {
     })
   })
 
+  describe('and the renderer reports an unrecognized GPU', () => {
+    beforeEach(() => {
+      setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36')
+      mockWebGl('NVIDIA GeForce GTX 1080 OpenGL Engine')
+    })
+
+    it('should return unknown', () => {
+      expect(getMacArchHint()).toBe('unknown')
+    })
+  })
+
   describe('and the debug renderer extension is unavailable', () => {
     beforeEach(() => {
       setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36')
