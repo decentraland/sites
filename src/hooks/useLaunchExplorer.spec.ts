@@ -91,6 +91,27 @@ describe('useLaunchExplorer', () => {
       expect(windowOpenSpy).not.toHaveBeenCalled()
       expect(result.current.isDownloadModalOpen).toBe(false)
     })
+
+    it('should forward the scene-console url param into the deep link options', async () => {
+      mockedUseSearchParams.mockReturnValue([new URLSearchParams('scene-console=true'), jest.fn()] as unknown as ReturnType<
+        typeof useSearchParams
+      >)
+
+      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
+
+      await act(() => result.current.launchExplorer())
+
+      expect(mockedLaunchDesktopApp).toHaveBeenCalledWith(expect.objectContaining({ sceneConsole: 'true' }))
+    })
+
+    it('should not include sceneConsole in the deep link options when absent from the url', async () => {
+      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
+
+      await act(() => result.current.launchExplorer())
+
+      const options = mockedLaunchDesktopApp.mock.calls[0][0]
+      expect(options).not.toHaveProperty('sceneConsole')
+    })
   })
 
   describe('when the desktop client is not installed', () => {
