@@ -56,18 +56,26 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
       if (Object.keys(deepLinkParams).length === 0) {
         return base
       }
-      const url = new URL(base)
-      const redirectTo = url.searchParams.get('redirectTo')
-      if (redirectTo) {
-        // Onboarding URLs are auth-login URLs (`.../auth/login/?redirectTo=...`).
-        // The auth site redirects to the verbatim `redirectTo` value, so params
-        // appended to the outer login URL never survive the round-trip — they
-        // must land on the inner target instead.
-        const innerUrl = addQueryParamsToUrlString(new URL(redirectTo, url.origin).toString(), deepLinkParams)
-        url.searchParams.set('redirectTo', innerUrl)
-        return url.toString()
+      try {
+        // `base` can be a relative env URL (dev/zone use `/download`,
+        // `/auth/login/?...`); resolve it against the current origin so
+        // `new URL` doesn't throw. The deep-link is an enhancement — it must
+        // never block the download, so any failure falls back to `base`.
+        const url = new URL(base, window.location.origin)
+        const redirectTo = url.searchParams.get('redirectTo')
+        if (redirectTo) {
+          // Onboarding URLs are auth-login URLs (`.../auth/login/?redirectTo=...`).
+          // The auth site redirects to the verbatim `redirectTo` value, so params
+          // appended to the outer login URL never survive the round-trip — they
+          // must land on the inner target instead.
+          const innerUrl = addQueryParamsToUrlString(new URL(redirectTo, url.origin).toString(), deepLinkParams)
+          url.searchParams.set('redirectTo', innerUrl)
+          return url.toString()
+        }
+        return addQueryParamsToUrlString(url.toString(), deepLinkParams)
+      } catch {
+        return base
       }
-      return addQueryParamsToUrlString(base, deepLinkParams)
     },
     [deepLinkParams]
   )
