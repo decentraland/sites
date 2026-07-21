@@ -9,6 +9,10 @@ describe('when attaching the mac architecture hint to a payload', () => {
     Object.defineProperty(window.navigator, 'userAgent', { configurable: true, value })
   }
 
+  const setMaxTouchPoints = (value: number) => {
+    Object.defineProperty(window.navigator, 'maxTouchPoints', { configurable: true, value })
+  }
+
   const mockWebGl = (renderer: string | null) => {
     const gl = renderer
       ? {
@@ -32,6 +36,7 @@ describe('when attaching the mac architecture hint to a payload', () => {
 
   beforeEach(async () => {
     jest.resetModules()
+    setMaxTouchPoints(0)
     ;({ attachMacArchHint } = await import('./macArchHint'))
   })
 
@@ -106,14 +111,38 @@ describe('when attaching the mac architecture hint to a payload', () => {
     })
   })
 
+  describe('and the renderer reports an NVIDIA GPU (Intel-era Macs only)', () => {
+    beforeEach(() => {
+      setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36')
+      mockWebGl('NVIDIA GeForce GT 750M OpenGL Engine')
+    })
+
+    it('should set mac_arch to intel', () => {
+      expect(attach()).toEqual({ mac_arch: 'intel' })
+    })
+  })
+
   describe('and the renderer reports an unrecognized GPU', () => {
     beforeEach(() => {
       setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36')
-      mockWebGl('NVIDIA GeForce GTX 1080 OpenGL Engine')
+      mockWebGl('llvmpipe (LLVM 15.0.7, 256 bits)')
     })
 
     it('should set mac_arch to unknown', () => {
       expect(attach()).toEqual({ mac_arch: 'unknown' })
+    })
+  })
+
+  describe('and the visitor is an iPad wearing the desktop Macintosh UA', () => {
+    beforeEach(() => {
+      setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15')
+      setMaxTouchPoints(5)
+      mockWebGl('Apple GPU')
+    })
+
+    it('should leave the payload untouched without creating a WebGL context', () => {
+      expect(attach()).toEqual({})
+      expect(getContextMock).not.toHaveBeenCalled()
     })
   })
 

@@ -14,8 +14,10 @@
  * funnel. This hint is the only place in the whole pipeline where that
  * cohort can be measured. The gate matches "Macintosh" only: iPhone/iPad UAs
  * say "like Mac OS X" but never "Macintosh", so store-badge taps on iOS stay
- * excluded; iPads in desktop mode DO report "Macintosh" but resolve to an
- * Apple GPU, so they can never be misread as `intel`.
+ * excluded. iPads in desktop mode DO report "Macintosh" but expose
+ * `maxTouchPoints > 1` (real Macs report 0), so they are excluded too —
+ * counting them as `apple_silicon` would dilute the Intel share this metric
+ * exists to expose.
  */
 type MacArchHint = 'apple_silicon' | 'intel' | 'unknown'
 
@@ -38,12 +40,16 @@ function readWebGlRenderer(): string | null {
 
 function detect(): MacArchHint | null {
   if (!/Macintosh/.test(navigator.userAgent)) return null
+  // iPads in desktop mode wear the Macintosh UA; touch points give them away.
+  if (navigator.maxTouchPoints > 1) return null
 
   try {
     const renderer = readWebGlRenderer()
     if (!renderer) return 'unknown'
     if (/apple/i.test(renderer)) return 'apple_silicon'
-    if (/intel|amd|radeon/i.test(renderer)) return 'intel'
+    // NVIDIA shipped only in Intel-era Macs (no Apple Silicon drivers/eGPU),
+    // so any of these vendors proves the machine is an Intel Mac.
+    if (/intel|amd|radeon|nvidia|geforce|quadro/i.test(renderer)) return 'intel'
     return 'unknown'
   } catch {
     return 'unknown'
