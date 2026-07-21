@@ -76,7 +76,8 @@ enum SegmentEvent {
   COMMUNITY_CLICK_SIGN_IN_TO_JOIN = 'Click on Sign In to Join',
   REPORT_PLAYER_SUBMIT_STARTED = 'Report Player Submit Started',
   REPORT_PLAYER_SUBMITTED = 'Report Player Submitted',
-  REPORT_PLAYER_SUBMIT_FAILED = 'Report Player Submit Failed'
+  REPORT_PLAYER_SUBMIT_FAILED = 'Report Player Submit Failed',
+  SECTION_VIEWED = 'Section Viewed'
 }
 
 enum DownloadPlace {
@@ -95,6 +96,7 @@ enum DownloadPlace {
   DOWNLOAD_SUCCESS_FOOTER = 'download-success-footer',
   CREATOR_HUB_DOWNLOAD_PAGE = 'creator-hub-download-page',
   CREATOR_HUB_SUCCESS_PAGE = 'creator-hub-success-page',
+  CREATORS_HERO = 'creators-hero',
   UNKNOWN = 'unknown'
 }
 

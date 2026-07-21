@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { SectionViewedTrack } from '../../../modules/segment'
 import { AnimatedSection } from '../AnimatedSection'
 import { whyCards } from '../data'
 import {
@@ -17,7 +18,7 @@ import {
 const CreatorsWhy = memo(() => {
   const l = useFormatMessage()
   return (
-    <AnimatedSection>
+    <AnimatedSection trackPlace={SectionViewedTrack.CREATORS_WHY}>
       <WhySection>
         <WhyTitle>
           <span>{l('component.creators_landing.why.title_highlight')}</span> {l('component.creators_landing.why.title')}
