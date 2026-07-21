@@ -156,6 +156,32 @@ describe('useLaunchExplorer', () => {
 
         expect(windowOpenSpy).toHaveBeenCalledWith('https://dl.test/direct?realm=myworld.dcl.eth', '_self')
       })
+
+      it('should resolve a relative DOWNLOAD_URL against the origin instead of throwing', async () => {
+        // dev/zone env ships a relative DOWNLOAD_URL ("/download"); `new URL(base)`
+        // without a base throws, which used to kill the download fallback entirely.
+        mockedGetEnv.mockImplementation(key => (key === 'DOWNLOAD_URL' ? '/download' : undefined))
+        const { result } = renderHook(() => useLaunchExplorer({ position: '42,-5', realm: 'myworld.dcl.eth' }))
+
+        await act(() => result.current.launchExplorer())
+
+        const openedUrl = new URL(windowOpenSpy.mock.calls[0][0])
+        expect(openedUrl.origin).toBe(window.location.origin)
+        expect(openedUrl.pathname).toBe('/download')
+        expect(openedUrl.searchParams.get('position')).toBe('42,-5')
+        expect(openedUrl.searchParams.get('realm')).toBe('myworld.dcl.eth')
+      })
+
+      it('should fall back to the raw base when it cannot be parsed as a url', async () => {
+        // The deep-link is an enhancement — a malformed base must never block
+        // the download; the fallback opens the base untouched.
+        mockedGetEnv.mockImplementation(key => (key === 'DOWNLOAD_URL' ? 'http://[' : undefined))
+        const { result } = renderHook(() => useLaunchExplorer({ position: '42,-5', realm: 'myworld.dcl.eth' }))
+
+        await act(() => result.current.launchExplorer())
+
+        expect(windowOpenSpy).toHaveBeenCalledWith('http://[', '_self')
+      })
     })
 
     describe('and the user has no identity but an onboarding url with a redirectTo', () => {
@@ -187,6 +213,24 @@ describe('useLaunchExplorer', () => {
         await act(() => result.current.launchExplorer())
 
         expect(windowOpenSpy).toHaveBeenCalledWith(onboardingUrl, '_self')
+      })
+
+      it('should resolve a relative onboarding url and inject params into its relative redirectTo', async () => {
+        // dev/zone ships a relative ONBOARDING_URL with a relative redirectTo.
+        mockedGetEnv.mockImplementation(key => (key === 'ONBOARDING_URL' ? '/auth/login/?newUser&redirectTo=%2Fdownload' : undefined))
+        const { result } = renderHook(() => useLaunchExplorer({ position: '42,-5', realm: 'myworld.dcl.eth' }))
+
+        await act(() => result.current.launchExplorer())
+
+        const openedUrl = new URL(windowOpenSpy.mock.calls[0][0])
+        expect(openedUrl.origin).toBe(window.location.origin)
+        expect(openedUrl.pathname).toBe('/auth/login/')
+        expect(openedUrl.searchParams.get('position')).toBeNull()
+
+        const redirectTo = new URL(openedUrl.searchParams.get('redirectTo') as string)
+        expect(redirectTo.pathname).toBe('/download')
+        expect(redirectTo.searchParams.get('position')).toBe('42,-5')
+        expect(redirectTo.searchParams.get('realm')).toBe('myworld.dcl.eth')
       })
     })
 
