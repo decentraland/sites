@@ -1,13 +1,13 @@
 import { useCallback, useState } from 'react'
-import { useAsyncMemo } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import type { DownloadModalProps } from 'decentraland-ui2'
+import { getEnv } from '../config/env'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
-import { ExplorerDownloads } from '../modules/explorerDownloads'
-import { formatToShorthand } from '../modules/number'
+import { buildDownloadTrackingParams } from '../modules/downloadTrackingParams'
+import { buildTrackedDownloadUrl } from '../modules/url'
+import { useAnonUserId } from './useAnonUserId'
+import { useTotalDownloads } from './useTotalDownloads'
 import { useWalletAddress } from './useWalletAddress'
-
-let cachedCount: string | null = null
 
 /**
  * Hook that implements the "Hang Out Now" / "Jump In" button flow:
@@ -17,11 +17,9 @@ let cachedCount: string | null = null
  */
 function useHangOutAction() {
   const { isConnected } = useWalletAddress()
+  const anonUserId = useAnonUserId()
+  const totalDownloads = useTotalDownloads()
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false)
-
-  const [rawDownloads, status] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
-  if (!status.loading && status.loaded && rawDownloads) cachedCount = formatToShorthand(rawDownloads)
-  const totalDownloads = cachedCount ?? '+400K'
 
   const handleClick = useCallback(
     async (e: React.MouseEvent) => {
@@ -48,9 +46,17 @@ function useHangOutAction() {
 
   const os = detectDownloadOS()
 
+  // Carry the tracking params (campaign utm_* + anon_user_id) onto the modal's
+  // primary CTA so attribution survives the hop to `/download` and the funnel
+  // join stays intact — same contract as the download-page CTAs.
+  const downloadUrlParams = buildDownloadTrackingParams(anonUserId)
+  // Prefer the env `DOWNLOAD_URL` (relative on dev/zone → resolved against the
+  // current origin) so the download stays on the zone origin; fall back to the
+  // platform constant.
+  const downloadBase = getEnv('DOWNLOAD_URL') ?? (os === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows)
   const downloadModalProps: Omit<DownloadModalProps, 'open' | 'onClose'> = {
     os,
-    downloadUrl: os === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows,
+    downloadUrl: buildTrackedDownloadUrl(downloadBase, downloadUrlParams),
     epicUrl: DOWNLOAD_URLS.epic,
     googlePlayUrl: DOWNLOAD_URLS.googlePlay,
     appStoreUrl: DOWNLOAD_URLS.appStore,

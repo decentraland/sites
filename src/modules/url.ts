@@ -37,6 +37,20 @@ const addQueryParamsToUrlString = (url: string, params: Record<string, string | 
   return urlObj.toString()
 }
 
+/**
+ * Appends download/tracking params to a download CTA URL, resolving relative
+ * env URLs (dev/zone use `/download`) against the current origin so `new URL`
+ * doesn't throw. The params are an enhancement — a malformed base must never
+ * block the download, so any failure returns `base` untouched.
+ */
+const buildTrackedDownloadUrl = (base: string, params: Record<string, string | undefined | null>): string => {
+  try {
+    return addQueryParamsToUrlString(new URL(base, window.location.origin).toString(), params)
+  } catch {
+    return base
+  }
+}
+
 const updateUrlWithLastValue = (url: string, paramKey: string, paramValue: string) => {
   const urlObj = new URL(url)
 
@@ -189,6 +203,7 @@ export {
   FALLBACK_CDN_RELEASE_LINKS,
   addQueryParamsToUrlString,
   buildDownloadSuccessHref,
+  buildTrackedDownloadUrl,
   calculateCDNReleaseLinksWithIdentity,
   extractDownloadLinkFromCDNReleaseOption,
   sanitizeCDNReleaseLinks,
