@@ -3,8 +3,6 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
-import { getEnv } from '../../../config/env'
-import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { detectDownloadOS } from '../../../modules/downloadConstants'
 import { buildTrackedDownloadUrl } from '../../../modules/url'
 import { JumpInButton } from './JumpInButton'
@@ -43,13 +41,9 @@ jest.mock('decentraland-ui2', () => {
   }
 })
 
-jest.mock('../../../hooks/useAuthIdentity', () => ({
-  useAuthIdentity: jest.fn()
-}))
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))
-jest.mock('../../../config/env')
 jest.mock('../../../modules/downloadConstants', () => ({
   DOWNLOAD_URLS: {
     apple: 'https://dl.test',
@@ -80,12 +74,10 @@ jest.mock('../../../modules/url', () => ({
 
 const mockBuildTrackedDownloadUrl = jest.mocked(buildTrackedDownloadUrl)
 const mockUseSearchParams = jest.mocked(useSearchParams)
-const mockUseAuthIdentity = jest.mocked(useAuthIdentity)
 const mockUseAdvancedUserAgentData = jest.mocked(useAdvancedUserAgentData)
 const mockUseAnalytics = jest.mocked(useAnalytics)
 const mockDetectDownloadOS = jest.mocked(detectDownloadOS)
 const mockLaunchDesktopApp = jest.mocked(launchDesktopApp)
-const mockGetEnv = jest.mocked(getEnv)
 
 describe('JumpInButton', () => {
   beforeEach(() => {
@@ -100,14 +92,10 @@ describe('JumpInButton', () => {
     })
     mockUseSearchParams.mockReturnValue([new URLSearchParams(''), jest.fn()] as unknown as ReturnType<typeof useSearchParams>)
     mockUseAnalytics.mockReturnValue({ track: jest.fn() } as unknown as ReturnType<typeof useAnalytics>)
-    mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
     mockUseAdvancedUserAgentData.mockReturnValue([
       true,
       { os: { name: 'macOS' }, cpu: { architecture: 'arm64' }, mobile: false }
     ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
-    mockGetEnv.mockImplementation((key: string) =>
-      key === 'DOWNLOAD_URL' ? 'https://dl.test' : key === 'ONBOARDING_URL' ? 'https://onboarding.test' : undefined
-    )
   })
 
   afterEach(() => {
@@ -272,16 +260,7 @@ describe('JumpInButton', () => {
     })
 
     describe('and the launcher is missing', () => {
-      it('should open the download modal for a user with a valid identity', async () => {
-        mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: true, address: '0xabc' })
-        mockLaunchDesktopApp.mockResolvedValue(false)
-        render(<JumpInButton position="0,0" />)
-        await userEvent.click(screen.getByRole('button'))
-        expect(screen.getByTestId('download-modal')).toBeInTheDocument()
-        expect(windowOpenMock).not.toHaveBeenCalled()
-      })
-
-      it('should open the download modal for an anonymous user', async () => {
+      it('should open the download modal without redirecting', async () => {
         mockLaunchDesktopApp.mockResolvedValue(false)
         render(<JumpInButton position="0,0" />)
         await userEvent.click(screen.getByRole('button'))

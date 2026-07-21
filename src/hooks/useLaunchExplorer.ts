@@ -4,11 +4,11 @@ import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import { mapEnvToDclenv } from '../config/dclenv'
 import { buildDeepLinkOptions } from '../features/places/places.helpers'
-import { collectCampaignParams } from '../modules/campaignParams'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
+import { buildDownloadTrackingParams } from '../modules/downloadTrackingParams'
 import { SegmentEvent } from '../modules/segment'
 import { buildTrackedDownloadUrl } from '../modules/url'
-import { ANON_USER_ID_PARAM, useAnonUserId } from './useAnonUserId'
+import { useAnonUserId } from './useAnonUserId'
 
 interface LaunchExplorerOptions {
   /** Deep-link position ("x,y"). `DEFAULT_POSITION` keeps it out of the deep link. Also reported to analytics. */
@@ -83,7 +83,7 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
   // The modal's primary CTA lands on `/download`; carry the deep-link params
   // (first-launch position/realm) and the tracking params (campaign utm_* +
   // anon_user_id) so both survive the hop and the funnel join stays intact.
-  const downloadUrlParams = { ...deepLinkParams, ...collectCampaignParams(), [ANON_USER_ID_PARAM]: anonUserId }
+  const downloadUrlParams = buildDownloadTrackingParams(anonUserId, deepLinkParams)
   const downloadModalProps: DownloadModalProps = {
     os: downloadOs,
     downloadUrl: buildTrackedDownloadUrl(downloadOs === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows, downloadUrlParams),

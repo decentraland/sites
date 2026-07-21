@@ -123,16 +123,6 @@ describe('useHangOutAction', () => {
       expect(result.current.totalDownloads).toBe('+400K')
     })
 
-    it('should format the loaded total downloads count', () => {
-      mockedUseAsyncMemo.mockImplementation(((fn: () => Promise<unknown>) => {
-        void fn()
-        return [42000, { loading: false, loaded: true }]
-      }) as unknown as typeof useAsyncMemo)
-      const { result } = renderHook(() => useHangOutAction())
-
-      expect(result.current.totalDownloads).toBe('42000')
-    })
-
     it('should close the modal via closeDownloadModal', async () => {
       mockedUseWalletAddress.mockReturnValue({ isConnected: false } as unknown as ReturnType<typeof useWalletAddress>)
       const { result } = renderHook(() => useHangOutAction())
@@ -142,6 +132,19 @@ describe('useHangOutAction', () => {
 
       act(() => result.current.closeDownloadModal())
       expect(result.current.isDownloadModalOpen).toBe(false)
+    })
+
+    // Kept last on purpose: a loaded count writes the module-level `cachedCount`
+    // in the hook, which persists across tests. Running this before the
+    // "not loaded" assertion above would leak the cached value into it.
+    it('should format the loaded total downloads count', () => {
+      mockedUseAsyncMemo.mockImplementation(((fn: () => Promise<unknown>) => {
+        void fn()
+        return [42000, { loading: false, loaded: true }]
+      }) as unknown as typeof useAsyncMemo)
+      const { result } = renderHook(() => useHangOutAction())
+
+      expect(result.current.totalDownloads).toBe('42000')
     })
   })
 })
