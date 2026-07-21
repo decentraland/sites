@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react'
-import { getMacArchHint } from '../../modules/macArchHint'
+import { attachMacArchHint } from '../../modules/macArchHint'
 import { SegmentEvent } from '../../modules/segment'
 import { useTrackClick } from './useTrackLinkContext'
 
@@ -11,7 +11,7 @@ jest.mock('@dcl/hooks', () => ({
 }))
 
 jest.mock('../../modules/macArchHint', () => ({
-  getMacArchHint: jest.fn()
+  attachMacArchHint: jest.fn()
 }))
 
 const buildClickEvent = (attrs: Record<string, string>): React.MouseEvent<HTMLElement> => {
@@ -164,7 +164,9 @@ describe('useTrackClick', () => {
 
   describe('when the element carries a download_target on a macOS visitor', () => {
     beforeEach(() => {
-      ;(getMacArchHint as jest.Mock).mockReturnValue('intel')
+      ;(attachMacArchHint as jest.Mock).mockImplementation((payload: Record<string, unknown>) => {
+        payload.mac_arch = 'intel'
+      })
     })
 
     it('should attach mac_arch to the payload', () => {
@@ -183,7 +185,7 @@ describe('useTrackClick', () => {
 
   describe('when the visitor is not on macOS', () => {
     beforeEach(() => {
-      ;(getMacArchHint as jest.Mock).mockReturnValue(null)
+      ;(attachMacArchHint as jest.Mock).mockImplementation(() => {})
     })
 
     it('should not include a mac_arch key in the payload', () => {
@@ -199,17 +201,17 @@ describe('useTrackClick', () => {
 
   describe('when the element has no download_target', () => {
     beforeEach(() => {
-      ;(getMacArchHint as jest.Mock).mockReturnValue('intel')
+      ;(attachMacArchHint as jest.Mock).mockImplementation(() => {})
     })
 
-    it('should not call getMacArchHint at all', () => {
+    it('should not call attachMacArchHint at all', () => {
       const { result } = renderHook(() => useTrackClick())
 
       act(() => {
         result.current(buildClickEvent({ 'data-place': 'Landing Navbar' }))
       })
 
-      expect(getMacArchHint).not.toHaveBeenCalled()
+      expect(attachMacArchHint).not.toHaveBeenCalled()
     })
   })
 })

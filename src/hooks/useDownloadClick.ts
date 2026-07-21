@@ -3,7 +3,7 @@ import { useAnalytics } from '@dcl/hooks'
 import { collectCampaignParams } from '../modules/campaignParams'
 import { recordDownloadClickCorrelation } from '../modules/downloadClickCorrelation'
 import { markDownloadCtaClicked } from '../modules/downloadPageExit'
-import { getMacArchHint } from '../modules/macArchHint'
+import { attachMacArchHint } from '../modules/macArchHint'
 import { SegmentEvent } from '../modules/segment'
 import { ensureSegmentAnonymousId } from '../modules/segmentAnonymousId'
 import { postSegmentEvent } from '../modules/segmentBeacon'
@@ -65,10 +65,7 @@ function useDownloadClick() {
 
         // Mac-only architecture hint (GPU-based; the UA lies about the chip).
         // Only download CTAs pay the (memoized) WebGL read — see macArchHint.
-        const macArch = getMacArchHint()
-        if (macArch) {
-          payload.mac_arch = macArch
-        }
+        attachMacArchHint(payload)
       }
 
       if (isInitializedRef.current) {

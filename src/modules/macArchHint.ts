@@ -55,5 +55,17 @@ function getMacArchHint(): MacArchHint | null {
   return cachedHint
 }
 
-export { getMacArchHint }
+/**
+ * Attaches `mac_arch` to a click payload when the visitor is on macOS.
+ * Shared by `useDownloadClick` and `useTrackClick` so the property name and
+ * the omit-off-macOS rule live in exactly one place.
+ */
+function attachMacArchHint(payload: Record<string, unknown>): void {
+  const macArch = getMacArchHint()
+  if (macArch) {
+    payload.mac_arch = macArch
+  }
+}
+
+export { attachMacArchHint, getMacArchHint }
 export type { MacArchHint }

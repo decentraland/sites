@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 import { markDownloadCtaClicked } from '../modules/downloadPageExit'
-import { getMacArchHint } from '../modules/macArchHint'
+import { attachMacArchHint } from '../modules/macArchHint'
 import { SegmentEvent } from '../modules/segment'
 import { ensureSegmentAnonymousId, generateUuid } from '../modules/segmentAnonymousId'
 import { postSegmentEvent } from '../modules/segmentBeacon'
@@ -29,7 +29,7 @@ jest.mock('../modules/downloadPageExit', () => ({
 }))
 
 jest.mock('../modules/macArchHint', () => ({
-  getMacArchHint: jest.fn()
+  attachMacArchHint: jest.fn()
 }))
 
 const buildClickEvent = (attrs: Record<string, string>): React.MouseEvent<HTMLElement> => {
@@ -290,7 +290,9 @@ describe('when tracking a download click', () => {
   describe('and the CTA carries a download_target on a macOS visitor', () => {
     beforeEach(() => {
       mockIsInitialized = true
-      ;(getMacArchHint as jest.Mock).mockReturnValue('apple_silicon')
+      ;(attachMacArchHint as jest.Mock).mockImplementation((payload: Record<string, unknown>) => {
+        payload.mac_arch = 'apple_silicon'
+      })
     })
 
     it('should attach mac_arch to the payload', () => {
@@ -310,7 +312,7 @@ describe('when tracking a download click', () => {
   describe('and the visitor is not on macOS', () => {
     beforeEach(() => {
       mockIsInitialized = true
-      ;(getMacArchHint as jest.Mock).mockReturnValue(null)
+      ;(attachMacArchHint as jest.Mock).mockImplementation(() => {})
     })
 
     it('should not include a mac_arch key in the payload', () => {
@@ -327,17 +329,17 @@ describe('when tracking a download click', () => {
   describe('and the CTA has no download_target', () => {
     beforeEach(() => {
       mockIsInitialized = true
-      ;(getMacArchHint as jest.Mock).mockReturnValue('apple_silicon')
+      ;(attachMacArchHint as jest.Mock).mockImplementation(() => {})
     })
 
-    it('should not call getMacArchHint at all', () => {
+    it('should not call attachMacArchHint at all', () => {
       const { result } = renderHook(() => useDownloadClick())
 
       act(() => {
         result.current(buildClickEvent({ 'data-place': 'Landing Footer Link' }))
       })
 
-      expect(getMacArchHint).not.toHaveBeenCalled()
+      expect(attachMacArchHint).not.toHaveBeenCalled()
     })
   })
 })

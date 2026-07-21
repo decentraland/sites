@@ -2,6 +2,7 @@ type MacArchHintModule = typeof import('./macArchHint')
 
 describe('when resolving the mac architecture hint', () => {
   let getMacArchHint: MacArchHintModule['getMacArchHint']
+  let attachMacArchHint: MacArchHintModule['attachMacArchHint']
   let getContextMock: jest.Mock
   const originalGetContextDescriptor = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'getContext')
 
@@ -26,7 +27,7 @@ describe('when resolving the mac architecture hint', () => {
 
   beforeEach(async () => {
     jest.resetModules()
-    ;({ getMacArchHint } = await import('./macArchHint'))
+    ;({ getMacArchHint, attachMacArchHint } = await import('./macArchHint'))
   })
 
   afterEach(() => {
@@ -134,6 +135,36 @@ describe('when resolving the mac architecture hint', () => {
 
     it('should return unknown', () => {
       expect(getMacArchHint()).toBe('unknown')
+    })
+  })
+
+  describe('and attaching the hint to a payload on a macOS visitor', () => {
+    beforeEach(() => {
+      setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36')
+      mockWebGl('ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)')
+    })
+
+    it('should set mac_arch on the payload', () => {
+      const payload: Record<string, unknown> = {}
+
+      attachMacArchHint(payload)
+
+      expect(payload).toEqual({ mac_arch: 'apple_silicon' })
+    })
+  })
+
+  describe('and attaching the hint to a payload off macOS', () => {
+    beforeEach(() => {
+      setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+      mockWebGl('ANGLE (NVIDIA, NVIDIA GeForce RTX 3080)')
+    })
+
+    it('should leave the payload untouched', () => {
+      const payload: Record<string, unknown> = {}
+
+      attachMacArchHint(payload)
+
+      expect(payload).toEqual({})
     })
   })
 })
