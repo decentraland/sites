@@ -1,4 +1,5 @@
 import { collectCampaignParams } from '../../modules/campaignParams'
+import { attachMacArchHint } from '../../modules/macArchHint'
 import { SegmentEvent } from '../../modules/segment'
 import { readDataAttributes } from './readDataAttributes'
 
@@ -34,6 +35,10 @@ function buildClickPayload(currentTarget: Element, extra: Record<string, unknown
 
   if (downloadTarget) {
     payload.download_target = downloadTarget
+
+    // Mac-only architecture hint (GPU-based; the UA lies about the chip).
+    // Only download CTAs pay the (memoized) WebGL read — see macArchHint.
+    attachMacArchHint(payload)
   }
 
   return payload

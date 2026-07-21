@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 import { markDownloadCtaClicked } from '../modules/downloadPageExit'
+import { attachMacArchHint } from '../modules/macArchHint'
 import { SegmentEvent } from '../modules/segment'
 import { ensureSegmentAnonymousId, generateUuid } from '../modules/segmentAnonymousId'
 import { postSegmentEvent } from '../modules/segmentBeacon'
@@ -27,6 +28,10 @@ jest.mock('../modules/downloadPageExit', () => ({
   markDownloadCtaClicked: jest.fn()
 }))
 
+jest.mock('../modules/macArchHint', () => ({
+  attachMacArchHint: jest.fn()
+}))
+
 const buildClickEvent = (attrs: Record<string, string>): React.MouseEvent<HTMLElement> => {
   const element = document.createElement('a')
   Object.entries(attrs).forEach(([name, value]) => {
@@ -47,6 +52,9 @@ describe('when tracking a download click', () => {
   })
 
   afterEach(() => {
+    // Every handler invocation with the default options mints a correlation
+    // entry; clear it so ordering between describes can't leak state.
+    sessionStorage.removeItem('downloadFunnel:lastClick')
     jest.resetAllMocks()
   })
 
@@ -279,6 +287,62 @@ describe('when tracking a download click', () => {
       const sentPayload = mockTrack.mock.calls[0][1] as Record<string, unknown>
       const stored = JSON.parse(sessionStorage.getItem('downloadFunnel:lastClick')!)
       expect(stored.click_id).toBe(sentPayload.click_id)
+    })
+  })
+
+  describe('and the CTA carries a download_target on a macOS visitor', () => {
+    beforeEach(() => {
+      mockIsInitialized = true
+      ;(attachMacArchHint as jest.Mock).mockImplementation((payload: Record<string, unknown>) => {
+        payload.mac_arch = 'apple_silicon'
+      })
+    })
+
+    it('should attach mac_arch to the payload', () => {
+      const { result } = renderHook(() => useDownloadClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-download-target': 'desktop_installer', 'data-place': 'Landing Hero' }))
+      })
+
+      expect(mockTrack).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ download_target: 'desktop_installer', mac_arch: 'apple_silicon' })
+      )
+    })
+  })
+
+  describe('and the visitor is not on macOS', () => {
+    beforeEach(() => {
+      mockIsInitialized = true
+      ;(attachMacArchHint as jest.Mock).mockImplementation(() => {})
+    })
+
+    it('should not include a mac_arch key in the payload', () => {
+      const { result } = renderHook(() => useDownloadClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-download-target': 'desktop_installer', 'data-place': 'Landing Hero' }))
+      })
+
+      expect(mockTrack.mock.calls[0][1]).not.toHaveProperty('mac_arch')
+    })
+  })
+
+  describe('and the CTA has no download_target', () => {
+    beforeEach(() => {
+      mockIsInitialized = true
+      ;(attachMacArchHint as jest.Mock).mockImplementation(() => {})
+    })
+
+    it('should not call attachMacArchHint at all', () => {
+      const { result } = renderHook(() => useDownloadClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-place': 'Landing Footer Link' }))
+      })
+
+      expect(attachMacArchHint).not.toHaveBeenCalled()
     })
   })
 
