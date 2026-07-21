@@ -12,6 +12,7 @@ import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnRelea
 import {
   addQueryParamsToUrlString,
   buildDownloadSuccessHref,
+  buildTrackedDownloadUrl,
   calculateCDNReleaseLinksWithIdentity,
   extractDownloadLinkFromCDNReleaseOption,
   sanitizeCDNReleaseLinks,
@@ -73,6 +74,42 @@ describe('addQueryParamsToUrlString', () => {
 
     it('should return the original URL unchanged', () => {
       expect(result).toBe('https://example.com/download')
+    })
+  })
+})
+
+describe('buildTrackedDownloadUrl', () => {
+  describe('when the base is an absolute url', () => {
+    it('should append the params without altering the origin', () => {
+      const result = buildTrackedDownloadUrl('https://decentraland.org/download', { position: '42,-5', anon_user_id: 'abc' })
+      const url = new URL(result)
+      expect(url.origin + url.pathname).toBe('https://decentraland.org/download')
+      expect(url.searchParams.get('position')).toBe('42,-5')
+      expect(url.searchParams.get('anon_user_id')).toBe('abc')
+    })
+  })
+
+  describe('when the base is a relative url (dev/zone env)', () => {
+    it('should resolve it against the current origin instead of throwing', () => {
+      const result = buildTrackedDownloadUrl('/download', { position: '42,-5' })
+      const url = new URL(result)
+      expect(url.origin).toBe(window.location.origin)
+      expect(url.pathname).toBe('/download')
+      expect(url.searchParams.get('position')).toBe('42,-5')
+    })
+  })
+
+  describe('when params contain undefined values', () => {
+    it('should drop them', () => {
+      const result = buildTrackedDownloadUrl('https://decentraland.org/download', { position: '42,-5', anon_user_id: undefined })
+      expect(result).toContain('position=42%2C-5')
+      expect(result).not.toContain('anon_user_id')
+    })
+  })
+
+  describe('when the base cannot be parsed as a url', () => {
+    it('should return the raw base untouched', () => {
+      expect(buildTrackedDownloadUrl('http://[', { position: '42,-5' })).toBe('http://[')
     })
   })
 })

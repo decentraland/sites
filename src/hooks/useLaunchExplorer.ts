@@ -3,12 +3,12 @@ import { useSearchParams } from 'react-router-dom'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import { mapEnvToDclenv } from '../config/dclenv'
-import { getEnv } from '../config/env'
 import { buildDeepLinkOptions } from '../features/places/places.helpers'
+import { collectCampaignParams } from '../modules/campaignParams'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
 import { SegmentEvent } from '../modules/segment'
-import { addQueryParamsToUrlString } from '../modules/url'
-import { useAuthIdentity } from './useAuthIdentity'
+import { buildTrackedDownloadUrl } from '../modules/url'
+import { ANON_USER_ID_PARAM, useAnonUserId } from './useAnonUserId'
 
 interface LaunchExplorerOptions {
   /** Deep-link position ("x,y"). `DEFAULT_POSITION` keeps it out of the deep link. Also reported to analytics. */
@@ -27,20 +27,20 @@ interface DownloadModalProps {
 /**
  * Shared "open the explorer" behavior (JumpInButton, EditProfileButton): mobile goes to the
  * store, desktop deep-links via `launchDesktopApp`, and a missing client falls back to the
- * download flow (direct download / onboarding / DownloadModal — the caller renders the modal).
+ * DownloadModal (the caller renders it). The modal's download URL carries the deep-link
+ * (position/realm) plus the tracking params (campaign utm_*, anon_user_id) so attribution and
+ * first-launch location survive the hop to `/download`.
  */
 function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
   const [searchParams] = useSearchParams()
   const [, advancedUserAgent] = useAdvancedUserAgentData()
   const { track } = useAnalytics()
-  const { hasValidIdentity } = useAuthIdentity()
+  const anonUserId = useAnonUserId()
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false)
 
   const explorerEnv = searchParams.get('dclenv') ?? mapEnvToDclenv(searchParams.get('env'))
   const sceneConsole = searchParams.get('scene-console') ?? undefined
 
-  const onboardingUrl = getEnv('ONBOARDING_URL') ?? ''
-  const downloadUrl = getEnv('DOWNLOAD_URL') ?? DOWNLOAD_URLS.windows
   const osName = advancedUserAgent?.os?.name ?? 'unknown'
   const arch = advancedUserAgent?.cpu?.architecture?.toLowerCase() ?? 'unknown'
   const isMobile = Boolean(advancedUserAgent?.mobile)
@@ -51,46 +51,11 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
   // empty strings through as `?position=`).
   const deepLinkParams = useMemo(() => buildDeepLinkOptions(position, realm), [position, realm])
 
-  const buildDownloadUrl = useCallback(
-    (base: string): string => {
-      if (Object.keys(deepLinkParams).length === 0) {
-        return base
-      }
-      try {
-        // `base` can be a relative env URL (dev/zone use `/download`,
-        // `/auth/login/?...`); resolve it against the current origin so
-        // `new URL` doesn't throw. The deep-link is an enhancement — it must
-        // never block the download, so any failure falls back to `base`.
-        const url = new URL(base, window.location.origin)
-        const redirectTo = url.searchParams.get('redirectTo')
-        if (redirectTo) {
-          // Onboarding URLs are auth-login URLs (`.../auth/login/?redirectTo=...`).
-          // The auth site redirects to the verbatim `redirectTo` value, so params
-          // appended to the outer login URL never survive the round-trip — they
-          // must land on the inner target instead.
-          const innerUrl = addQueryParamsToUrlString(new URL(redirectTo, url.origin).toString(), deepLinkParams)
-          url.searchParams.set('redirectTo', innerUrl)
-          return url.toString()
-        }
-        return addQueryParamsToUrlString(url.toString(), deepLinkParams)
-      } catch {
-        return base
-      }
-    },
-    [deepLinkParams]
-  )
-
-  const openDownloadFallback = useCallback(() => {
-    if (hasValidIdentity) {
-      window.open(buildDownloadUrl(downloadUrl), '_self')
-      return
-    }
-    if (onboardingUrl) {
-      window.open(buildDownloadUrl(onboardingUrl), '_self')
-    } else {
-      setDownloadModalOpen(true)
-    }
-  }, [hasValidIdentity, downloadUrl, onboardingUrl, buildDownloadUrl])
+  // NOTE: 2026-07-21 — the fallback used to redirect straight to DOWNLOAD_URL /
+  // ONBOARDING_URL (env). It now always opens the DownloadModal (same UX as the
+  // homepage) so the user picks their platform instead of being bounced to
+  // /download; the modal's URLs still carry the deep-link + tracking params.
+  const openDownloadFallback = useCallback(() => setDownloadModalOpen(true), [])
 
   const launchExplorer = useCallback(async () => {
     if (isMobile) {
@@ -115,9 +80,13 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
 
   const closeDownloadModal = useCallback(() => setDownloadModalOpen(false), [])
 
+  // The modal's primary CTA lands on `/download`; carry the deep-link params
+  // (first-launch position/realm) and the tracking params (campaign utm_* +
+  // anon_user_id) so both survive the hop and the funnel join stays intact.
+  const downloadUrlParams = { ...deepLinkParams, ...collectCampaignParams(), [ANON_USER_ID_PARAM]: anonUserId }
   const downloadModalProps: DownloadModalProps = {
     os: downloadOs,
-    downloadUrl: buildDownloadUrl(downloadOs === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows),
+    downloadUrl: buildTrackedDownloadUrl(downloadOs === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows, downloadUrlParams),
     epicUrl: DOWNLOAD_URLS.epic,
     googlePlayUrl: DOWNLOAD_URLS.googlePlay,
     appStoreUrl: DOWNLOAD_URLS.appStore

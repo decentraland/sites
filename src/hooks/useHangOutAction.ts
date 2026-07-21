@@ -2,9 +2,12 @@ import { useCallback, useState } from 'react'
 import { useAsyncMemo } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import type { DownloadModalProps } from 'decentraland-ui2'
+import { collectCampaignParams } from '../modules/campaignParams'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
 import { ExplorerDownloads } from '../modules/explorerDownloads'
 import { formatToShorthand } from '../modules/number'
+import { buildTrackedDownloadUrl } from '../modules/url'
+import { ANON_USER_ID_PARAM, useAnonUserId } from './useAnonUserId'
 import { useWalletAddress } from './useWalletAddress'
 
 let cachedCount: string | null = null
@@ -17,6 +20,7 @@ let cachedCount: string | null = null
  */
 function useHangOutAction() {
   const { isConnected } = useWalletAddress()
+  const anonUserId = useAnonUserId()
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false)
 
   const [rawDownloads, status] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
@@ -48,9 +52,13 @@ function useHangOutAction() {
 
   const os = detectDownloadOS()
 
+  // Carry the tracking params (campaign utm_* + anon_user_id) onto the modal's
+  // primary CTA so attribution survives the hop to `/download` and the funnel
+  // join stays intact — same contract as the download-page CTAs.
+  const downloadUrlParams = { ...collectCampaignParams(), [ANON_USER_ID_PARAM]: anonUserId }
   const downloadModalProps: Omit<DownloadModalProps, 'open' | 'onClose'> = {
     os,
-    downloadUrl: os === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows,
+    downloadUrl: buildTrackedDownloadUrl(os === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows, downloadUrlParams),
     epicUrl: DOWNLOAD_URLS.epic,
     googlePlayUrl: DOWNLOAD_URLS.googlePlay,
     appStoreUrl: DOWNLOAD_URLS.appStore,
