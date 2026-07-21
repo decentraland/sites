@@ -1,7 +1,6 @@
 type MacArchHintModule = typeof import('./macArchHint')
 
-describe('when resolving the mac architecture hint', () => {
-  let getMacArchHint: MacArchHintModule['getMacArchHint']
+describe('when attaching the mac architecture hint to a payload', () => {
   let attachMacArchHint: MacArchHintModule['attachMacArchHint']
   let getContextMock: jest.Mock
   const originalGetContextDescriptor = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'getContext')
@@ -25,9 +24,15 @@ describe('when resolving the mac architecture hint', () => {
     HTMLCanvasElement.prototype.getContext = getContextMock as unknown as typeof HTMLCanvasElement.prototype.getContext
   }
 
+  const attach = (): Record<string, unknown> => {
+    const payload: Record<string, unknown> = {}
+    attachMacArchHint(payload)
+    return payload
+  }
+
   beforeEach(async () => {
     jest.resetModules()
-    ;({ getMacArchHint, attachMacArchHint } = await import('./macArchHint'))
+    ;({ attachMacArchHint } = await import('./macArchHint'))
   })
 
   afterEach(() => {
@@ -43,8 +48,20 @@ describe('when resolving the mac architecture hint', () => {
       mockWebGl('ANGLE (NVIDIA, NVIDIA GeForce RTX 3080)')
     })
 
-    it('should return null without creating a WebGL context', () => {
-      expect(getMacArchHint()).toBeNull()
+    it('should leave the payload untouched without creating a WebGL context', () => {
+      expect(attach()).toEqual({})
+      expect(getContextMock).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('and the visitor is on an iPhone (UA says "like Mac OS X" but not "Macintosh")', () => {
+    beforeEach(() => {
+      setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15')
+      mockWebGl('Apple GPU')
+    })
+
+    it('should leave the payload untouched without creating a WebGL context', () => {
+      expect(attach()).toEqual({})
       expect(getContextMock).not.toHaveBeenCalled()
     })
   })
@@ -55,13 +72,13 @@ describe('when resolving the mac architecture hint', () => {
       mockWebGl('ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Pro, Unspecified Version)')
     })
 
-    it('should return apple_silicon', () => {
-      expect(getMacArchHint()).toBe('apple_silicon')
+    it('should set mac_arch to apple_silicon', () => {
+      expect(attach()).toEqual({ mac_arch: 'apple_silicon' })
     })
 
     it('should memoize the result and not create a second WebGL context', () => {
-      getMacArchHint()
-      getMacArchHint()
+      attach()
+      attach()
 
       expect(getContextMock).toHaveBeenCalledTimes(1)
     })
@@ -73,8 +90,8 @@ describe('when resolving the mac architecture hint', () => {
       mockWebGl('ANGLE (Intel, Intel(R) Iris(TM) Plus Graphics 655, Unspecified Version)')
     })
 
-    it('should return intel', () => {
-      expect(getMacArchHint()).toBe('intel')
+    it('should set mac_arch to intel', () => {
+      expect(attach()).toEqual({ mac_arch: 'intel' })
     })
   })
 
@@ -84,8 +101,8 @@ describe('when resolving the mac architecture hint', () => {
       mockWebGl('AMD Radeon Pro 5500M OpenGL Engine')
     })
 
-    it('should return intel', () => {
-      expect(getMacArchHint()).toBe('intel')
+    it('should set mac_arch to intel', () => {
+      expect(attach()).toEqual({ mac_arch: 'intel' })
     })
   })
 
@@ -95,8 +112,8 @@ describe('when resolving the mac architecture hint', () => {
       mockWebGl('NVIDIA GeForce GTX 1080 OpenGL Engine')
     })
 
-    it('should return unknown', () => {
-      expect(getMacArchHint()).toBe('unknown')
+    it('should set mac_arch to unknown', () => {
+      expect(attach()).toEqual({ mac_arch: 'unknown' })
     })
   })
 
@@ -108,8 +125,8 @@ describe('when resolving the mac architecture hint', () => {
       HTMLCanvasElement.prototype.getContext = getContextMock as unknown as typeof HTMLCanvasElement.prototype.getContext
     })
 
-    it('should return unknown', () => {
-      expect(getMacArchHint()).toBe('unknown')
+    it('should set mac_arch to unknown', () => {
+      expect(attach()).toEqual({ mac_arch: 'unknown' })
     })
   })
 
@@ -119,8 +136,8 @@ describe('when resolving the mac architecture hint', () => {
       mockWebGl(null)
     })
 
-    it('should return unknown', () => {
-      expect(getMacArchHint()).toBe('unknown')
+    it('should set mac_arch to unknown', () => {
+      expect(attach()).toEqual({ mac_arch: 'unknown' })
     })
   })
 
@@ -133,38 +150,8 @@ describe('when resolving the mac architecture hint', () => {
       HTMLCanvasElement.prototype.getContext = getContextMock as unknown as typeof HTMLCanvasElement.prototype.getContext
     })
 
-    it('should return unknown', () => {
-      expect(getMacArchHint()).toBe('unknown')
-    })
-  })
-
-  describe('and attaching the hint to a payload on a macOS visitor', () => {
-    beforeEach(() => {
-      setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36')
-      mockWebGl('ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)')
-    })
-
-    it('should set mac_arch on the payload', () => {
-      const payload: Record<string, unknown> = {}
-
-      attachMacArchHint(payload)
-
-      expect(payload).toEqual({ mac_arch: 'apple_silicon' })
-    })
-  })
-
-  describe('and attaching the hint to a payload off macOS', () => {
-    beforeEach(() => {
-      setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
-      mockWebGl('ANGLE (NVIDIA, NVIDIA GeForce RTX 3080)')
-    })
-
-    it('should leave the payload untouched', () => {
-      const payload: Record<string, unknown> = {}
-
-      attachMacArchHint(payload)
-
-      expect(payload).toEqual({})
+    it('should set mac_arch to unknown', () => {
+      expect(attach()).toEqual({ mac_arch: 'unknown' })
     })
   })
 })

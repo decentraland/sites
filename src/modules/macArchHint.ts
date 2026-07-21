@@ -12,8 +12,10 @@
  * Why this matters: the launcher DMG is arm64-only. An Intel Mac downloads
  * it fine and then cannot open it, firing zero telemetry — invisible in the
  * funnel. This hint is the only place in the whole pipeline where that
- * cohort can be measured. iPads in desktop mode also report "Macintosh" but
- * resolve to an Apple GPU, so they can never be misread as `intel`.
+ * cohort can be measured. The gate matches "Macintosh" only: iPhone/iPad UAs
+ * say "like Mac OS X" but never "Macintosh", so store-badge taps on iOS stay
+ * excluded; iPads in desktop mode DO report "Macintosh" but resolve to an
+ * Apple GPU, so they can never be misread as `intel`.
  */
 type MacArchHint = 'apple_silicon' | 'intel' | 'unknown'
 
@@ -35,7 +37,7 @@ function readWebGlRenderer(): string | null {
 }
 
 function detect(): MacArchHint | null {
-  if (!/Macintosh|Mac OS X/.test(navigator.userAgent)) return null
+  if (!/Macintosh/.test(navigator.userAgent)) return null
 
   try {
     const renderer = readWebGlRenderer()
@@ -67,5 +69,4 @@ function attachMacArchHint(payload: Record<string, unknown>): void {
   }
 }
 
-export { attachMacArchHint, getMacArchHint }
-export type { MacArchHint }
+export { attachMacArchHint }
