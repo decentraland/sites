@@ -653,6 +653,17 @@ const RejectionAlert = styled(Alert)({
   '& .MuiAlert-icon': { color: rejectionAlertText }
 })
 
+const reviewWarningAlertBg = '#ffe8cc'
+const reviewWarningAlertText = '#8a4b00'
+
+const ReviewWarningAlert = styled(Alert)({
+  width: '100%',
+  backgroundColor: reviewWarningAlertBg,
+  color: reviewWarningAlertText,
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& .MuiAlert-icon': { color: reviewWarningAlertText }
+})
+
 export {
   AddCoverBold,
   AddCoverLight,
@@ -687,6 +698,7 @@ export {
   LocationRow,
   PreviewButton,
   RejectionAlert,
+  ReviewWarningAlert,
   RepeatFields,
   RepeatLabel,
   RepeatRow,

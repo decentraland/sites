@@ -219,6 +219,28 @@ function eventEntryToFormState(event: EventEntry, now: number = Date.now()): Cre
   }
 }
 
+// Content fields the events backend re-moderates on: editing any of them on an already-approved
+// event flips it back to pending for a fresh review (see the events repo's `updateEvent.ts`
+// `MODERATED_CONTENT_FIELDS`). This mirrors the exact submit payload mapping in `handleSubmit`
+// (trim, world→x/y/server derivation, empty-description→null) so callers can warn the owner only
+// when a save would actually re-trigger review — not for date/recurrence/email/community edits,
+// which the backend leaves approved. Kept in parity with the backend's moderated set for the
+// fields this form can edit (categories aren't editable here, so they're omitted).
+function hasModeratedContentChanged(form: CreateEventFormState, initialEvent: EventEntry | null): boolean {
+  if (!initialEvent) return false
+  const isWorld = form.location === 'world'
+  return (
+    form.name.trim() !== initialEvent.name ||
+    (form.description.trim() || null) !== initialEvent.description ||
+    form.imageUrl !== initialEvent.image ||
+    (form.verticalImageUrl || null) !== initialEvent.image_vertical ||
+    isWorld !== Boolean(initialEvent.world) ||
+    (isWorld ? 0 : Number(form.coordX)) !== initialEvent.x ||
+    (isWorld ? 0 : Number(form.coordY)) !== initialEvent.y ||
+    (isWorld ? form.world : null) !== initialEvent.server
+  )
+}
+
 export {
   DURATION_PATTERN,
   INITIAL_STATE,
@@ -226,6 +248,7 @@ export {
   computeUpcomingOccurrences,
   durationMsToHhMm,
   eventEntryToFormState,
+  hasModeratedContentChanged,
   parseDurationMs,
   recurrenceToApi
 }

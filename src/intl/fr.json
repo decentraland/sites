@@ -931,6 +931,7 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "approved_edit_warning": "Changing the name, description, image, or location of an approved hangout will send it back for review before the updates go live.",
     "error_image_too_large": "Nous n'avons pas pu compresser cette image en dessous de 500 Ko. Veuillez choisir un fichier plus petit.",
     "vertical_recommended_size": "Taille recommandée : 716 × 1814 px",
     "recurrence": "Récurrence",

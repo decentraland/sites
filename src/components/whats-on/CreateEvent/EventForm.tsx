@@ -63,6 +63,7 @@ import {
   ReviewBar,
   ReviewNotice,
   ReviewText,
+  ReviewWarningAlert,
   RightSection,
   RightSectionFields,
   RightSectionFooter,
@@ -147,6 +148,7 @@ function EventForm({
     form,
     errors,
     mode,
+    requiresModerationReview,
     setField,
     markRequiredFields,
     handleImageSelect,
@@ -289,6 +291,11 @@ function EventForm({
                   ? t('create_event.rejected_alert', { reason: initialEvent.rejection_reason })
                   : t('create_event.rejected_alert_no_reason')}
               </RejectionAlert>
+            )}
+            {requiresModerationReview && (
+              <ReviewWarningAlert severity="warning" variant="standard">
+                {t('create_event.approved_edit_warning')}
+              </ReviewWarningAlert>
             )}
             <EventDetailsBlock>
               <SectionHeading>{t('create_event.event_details')}</SectionHeading>
