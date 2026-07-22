@@ -1,0 +1,51 @@
+import { useLocation } from 'react-router-dom'
+import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import robotImage from '../../images/notfound/notfound_robot.webp'
+import {
+  BrandLogo,
+  Content,
+  CtaButton,
+  Description,
+  HomeLink,
+  PageContainer,
+  RobotImage,
+  TextBlock,
+  Title,
+  TitleRest,
+  Watermark
+} from './NotFoundPage.styled'
+
+const NotFoundPage = () => {
+  const l = useFormatMessage()
+  const location = useLocation()
+
+  // Outside <Layout /> the route-level page() never fires -- track explicitly,
+  // carrying the missing path so broken links are measurable in Segment.
+  useBlogPageTracking({ name: 'Not Found', properties: { path: location.pathname } })
+
+  return (
+    <PageContainer component="main">
+      <Watermark aria-hidden="true">404</Watermark>
+      <RobotImage src={robotImage} alt="" />
+      <HomeLink to="/" aria-label="Decentraland Home">
+        <BrandLogo />
+      </HomeLink>
+      <Content>
+        <TextBlock>
+          <Title variant="h3" component="h1">
+            {l('page.not_found.title_oops')} <TitleRest>{l('page.not_found.title_rest')}</TitleRest>
+          </Title>
+          <Description variant="h5" component="p">
+            {l('page.not_found.description')}
+          </Description>
+        </TextBlock>
+        <CtaButton variant="contained" color="primary" size="large" href="/whats-on">
+          {l('page.not_found.cta')}
+        </CtaButton>
+      </Content>
+    </PageContainer>
+  )
+}
+
+export { NotFoundPage }
