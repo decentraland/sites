@@ -97,6 +97,7 @@ enum DownloadPlace {
   CREATOR_HUB_DOWNLOAD_PAGE = 'creator-hub-download-page',
   CREATOR_HUB_SUCCESS_PAGE = 'creator-hub-success-page',
   CREATORS_HERO = 'creators-hero',
+  LETS_PLAY_LANDING = 'lets-play-landing',
   UNKNOWN = 'unknown'
 }
 
