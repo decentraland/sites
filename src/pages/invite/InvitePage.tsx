@@ -10,6 +10,7 @@ import { getEnv } from '../../config/env'
 import { INVITE_HERO_MEDIA, INVITE_SECOND_HERO_MEDIA } from '../../data/inviteContent'
 import { usePageView } from '../../hooks/usePageView'
 import { SectionViewedTrack } from '../../modules/segment'
+import { storeReferrer } from '../../utils/referrer'
 
 const InviteFaqs = lazy(() => import('../../components/Invite/InviteFaqs/InviteFaqs').then(m => ({ default: m.InviteFaqs })))
 
@@ -86,6 +87,13 @@ const InvitePage = memo(() => {
     if (!referrer) return null
     return resolveReferrerProfile(referrer)
   }, [referrer])
+
+  // Persist the resolved address so the referrer survives the invite → download
+  // navigation even if the query param is lost. Keyed on the accepted profile so a
+  // stale in-flight resolution can't overwrite a newer one.
+  useEffect(() => {
+    storeReferrer(referrerProfile?.avatars?.[0]?.ethAddress)
+  }, [referrerProfile])
 
   useDocumentMeta(t('page_invite.social.title'), t('page_invite.social.description'))
 

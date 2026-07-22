@@ -5,6 +5,7 @@ import { useVideoOptimization } from '../../../hooks/contentful'
 import { useFeatureFlagContext } from '../../../hooks/useFeatureFlagContext'
 import { useReferralUrl } from '../../../hooks/useReferralUrl'
 import envelopeImageAsset from '../../../images/referral-envelope.webp'
+import { isDirectDownloadEnabled } from '../../../utils/referrer'
 import { BannerButton } from '../../Buttons/BannerButton'
 import type { InviteHeroProps } from './InviteHero.types'
 import {
@@ -68,7 +69,9 @@ const InviteHero = memo((props: InviteHeroProps) => {
   const referrerName = referrer?.avatars?.[0]?.name
 
   const trackClick = useTrackClick()
-  const urlWithReferrer = useReferralUrl(referrerAddress)
+  // Direct download only on desktop (mobile keeps the auth-login-first flow) and behind the flag.
+  const directDownload = isDirectDownloadEnabled() && isDesktop
+  const urlWithReferrer = useReferralUrl(referrerAddress, directDownload)
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {

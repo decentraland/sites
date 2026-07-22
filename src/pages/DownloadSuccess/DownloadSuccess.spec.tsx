@@ -15,6 +15,10 @@ let mockHasValidIdentity = false
 // straight through the unload-safe beacon transport (see downloadTracking.ts).
 // Mock it directly rather than @dcl/hooks's `track`, which no longer receives
 // these events.
+// getEnv reaches config/index which uses import.meta (Vite-only). The referrer
+// util pulls it in transitively; stub it so the flag reads as off by default.
+jest.mock('../../config/env', () => ({ getEnv: jest.fn(() => undefined) }))
+
 const mockPostSegmentEvent = jest.fn()
 jest.mock('../../modules/segmentBeacon', () => ({
   postSegmentEvent: (...args: unknown[]) => mockPostSegmentEvent(...args)
