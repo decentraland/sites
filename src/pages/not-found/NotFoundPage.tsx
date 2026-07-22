@@ -40,6 +40,11 @@ const NotFoundPage = () => {
             {l('page.not_found.description')}
           </Description>
         </TextBlock>
+        {/* Full navigation (href) rather than a react-router Link on purpose:
+            /whats-on is a heavy DappsShell route in its own lazy chunk, so a
+            document load keeps this lightweight Layout-less 404 chunk from
+            coupling to the shell. The logo above uses a Link because `/` is a
+            lightweight route where a client transition is cheap. */}
         <CtaButton variant="contained" color="primary" size="large" href="/whats-on">
           {l('page.not_found.cta')}
         </CtaButton>
