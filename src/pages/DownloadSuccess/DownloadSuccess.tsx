@@ -44,6 +44,12 @@ import {
 
 const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
 
+// GPU-detected Mac architecture the originating landing (jump-in etc.) forwards
+// on the /download_success URL as `mac_arch`. Analytics-only — unlike `arch` it
+// never selects a binary. Allowlisted because it comes off an untrusted query
+// param; anything else is dropped rather than emitted.
+const MAC_ARCH_VALUES = new Set<string>(['apple_silicon', 'intel', 'unknown'])
+
 /**
  * Maps a resolved download into the event-level extras appended to
  * `download_success`: which path delivered it (`delivery_mode`) and, on the
@@ -132,6 +138,8 @@ const DownloadSuccess = memo(() => {
   const defaultArch = clientOS === OperativeSystem.WINDOWS ? 'amd64' : 'arm64'
   const rawArch = searchParams.get('arch') || defaultArch
   const clientArch = (VALID_ARCHS.has(rawArch) ? rawArch : defaultArch) as Architecture
+  const rawMacArch = searchParams.get('mac_arch') ?? ''
+  const macArch = MAC_ARCH_VALUES.has(rawMacArch) ? rawMacArch : undefined
   const place = resolveDownloadPlace(searchParams.get('place'))
 
   // Single source of truth for the Sentry tags shared by both catch blocks.
@@ -202,10 +210,15 @@ const DownloadSuccess = memo(() => {
             ms_since_click: Date.now() - correlation.clicked_at
           }
         : {}),
+      // GPU-detected Mac architecture forwarded from the landing URL. Rides in
+      // `extra` so download_started/_success/_failed carry it like the campaign
+      // params; absent for non-Mac arrivals and unrecognized values.
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      ...(macArch ? { mac_arch: macArch } : {}),
       // eslint-disable-next-line @typescript-eslint/naming-convention
       download_target: DownloadTarget.DESKTOP_INSTALLER
     }
-  }, [])
+  }, [macArch])
 
   // Revisit counter — captured once at mount via a lazy useState initializer
   // so re-renders don't double-increment. Keyed by os:arch so that switching

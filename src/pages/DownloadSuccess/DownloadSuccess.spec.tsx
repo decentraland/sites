@@ -339,6 +339,69 @@ describe('when the /download_success URL carries partner campaign params', () =>
   })
 })
 
+describe('when the /download_success URL carries a mac_arch hint', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=macOS&arch=arm64&place=download-page&mac_arch=intel')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=macOS&arch=arm64&place=download-page&mac_arch=intel')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Decentraland.dmg?sig=abc',
+      filename: 'Decentraland.dmg'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should forward mac_arch onto download_started and download_success', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.objectContaining({ mac_arch: 'intel' }), 'anon-fixed')
+    })
+    expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.objectContaining({ mac_arch: 'intel' }), 'anon-fixed')
+  })
+
+  it('should forward the unknown bucket as-is (Mac with an unreadable GPU)', async () => {
+    searchParamsInstance = new URLSearchParams('os=macOS&arch=arm64&place=download-page&mac_arch=unknown')
+
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.objectContaining({ mac_arch: 'unknown' }), 'anon-fixed')
+    })
+  })
+})
+
+describe('when the /download_success URL carries an out-of-allowlist mac_arch', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=macOS&arch=arm64&place=download-page&mac_arch=sparc')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=macOS&arch=arm64&place=download-page&mac_arch=sparc')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Decentraland.dmg?sig=abc',
+      filename: 'Decentraland.dmg'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should drop an unrecognized mac_arch value instead of emitting it', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.anything(), expect.anything())
+    })
+    const startedCall = findEventCall('download_started')
+    expect(startedCall?.[1]).not.toHaveProperty('mac_arch')
+  })
+})
+
 describe('when the /download_success URL carries first-launch deep-link params', () => {
   beforeEach(() => {
     searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=download-page&position=10,20&realm=foo.eth')
