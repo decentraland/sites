@@ -8,6 +8,7 @@ import {
 } from '../features/events'
 import type { EventEntry } from '../features/events'
 import { compressImageFile } from '../utils/imageCompression'
+import { useAdminPermissions } from './useAdminPermissions'
 import { useAuthIdentity } from './useAuthIdentity'
 import {
   INITIAL_STATE,
@@ -118,7 +119,8 @@ type UseCreateEventFormOptions = {
 
 function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId = null }: UseCreateEventFormOptions = {}) {
   const { t } = useTranslation()
-  const { identity } = useAuthIdentity()
+  const { identity, address } = useAuthIdentity()
+  const { isAdmin, canApproveAnyEvent, canApproveOwnEvent } = useAdminPermissions()
   const [createEvent] = useCreateEventMutation()
   const [updateEvent] = useUpdateEventMutation()
   const [uploadPoster] = useUploadPosterMutation()
@@ -428,11 +430,15 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
   }, [form, identity, isSubmitting, initialEvent, validate, createEvent, updateEvent, t, onSuccess])
 
   // Warn the owner before a save that would bounce an already-approved hangout back to moderation:
-  // true only while editing an approved event whose name/description/image/location differs from the
-  // saved copy (see `hasModeratedContentChanged` + the backend re-moderation gate).
+  // true only while editing an approved event whose moderated content differs from the saved copy
+  // (see `hasModeratedContentChanged` + the backend re-moderation gate). Mirrors the backend's
+  // actor-can-approve exemption — moderators / self-approvers keep the event approved on edit, so
+  // they shouldn't see the warning.
+  const isOwner = !!address && !!initialEvent && address.toLowerCase() === initialEvent.user.toLowerCase()
+  const actorCanApprove = isAdmin || canApproveAnyEvent || (isOwner && canApproveOwnEvent)
   const requiresModerationReview = useMemo(
-    () => Boolean(initialEvent?.approved) && hasModeratedContentChanged(form, initialEvent),
-    [initialEvent, form]
+    () => Boolean(initialEvent?.approved) && !actorCanApprove && hasModeratedContentChanged(form, initialEvent),
+    [initialEvent, form, actorCanApprove]
   )
 
   return {

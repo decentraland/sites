@@ -405,6 +405,21 @@ describe('hasModeratedContentChanged', () => {
     })
   })
 
+  describe('when the vertical image changes', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      changed = hasModeratedContentChanged(
+        { ...eventEntryToFormState(savedEvent), verticalImageUrl: 'https://img/vertical.png' },
+        savedEvent
+      )
+    })
+
+    it('should return true', () => {
+      expect(changed).toBe(true)
+    })
+  })
+
   describe('when a land coordinate changes', () => {
     let changed: boolean
 

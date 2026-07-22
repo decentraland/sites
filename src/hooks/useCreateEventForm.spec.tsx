@@ -60,6 +60,14 @@ jest.mock('./useAuthIdentity', () => ({
   useAuthIdentity: () => mockUseAuthIdentityReturn
 }))
 
+jest.mock('./useAdminPermissions', () => ({
+  useAdminPermissions: () => ({
+    isAdmin: false,
+    canApproveAnyEvent: false,
+    canApproveOwnEvent: false
+  })
+}))
+
 type FormOverrides = Partial<Record<keyof CreateEventFormState, string>>
 
 function buildValidFormFields(overrides: FormOverrides = {}) {
