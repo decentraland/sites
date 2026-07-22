@@ -926,6 +926,11 @@
         "deleted_notice_link": "All Hangouts",
         "deleted_notice_suffix": "에서 더 많은 행아웃을 찾아보세요."
       }
+    },
+    "creators_landing": {
+      "hero": {
+        "scroll_label": "다음 섹션으로 스크롤"
+      }
     }
   },
   "create_event": {

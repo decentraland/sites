@@ -3,10 +3,11 @@ import { act, renderHook } from '@testing-library/react'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import { getEnv } from '../config/env'
+import { collectCampaignParams } from '../modules/campaignParams'
 import { detectDownloadOS } from '../modules/downloadConstants'
-import { addQueryParamsToUrlString } from '../modules/url'
-import { useAuthIdentity } from './useAuthIdentity'
+import { useAnonUserId } from './useAnonUserId'
 import { useLaunchExplorer } from './useLaunchExplorer'
+import { useTotalDownloads } from './useTotalDownloads'
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
@@ -19,10 +20,24 @@ jest.mock('@dcl/hooks', () => ({
 jest.mock('decentraland-ui2', () => ({
   launchDesktopApp: jest.fn()
 }))
-jest.mock('./useAuthIdentity', () => ({ useAuthIdentity: jest.fn() }))
-jest.mock('../config/env')
+jest.mock('./useAnonUserId', () => ({ ANON_USER_ID_PARAM: 'anon_user_id', useAnonUserId: jest.fn() }))
+jest.mock('./useTotalDownloads', () => ({ useTotalDownloads: jest.fn(() => '+400K') }))
+jest.mock('../config/env', () => ({ getEnv: jest.fn() }))
+jest.mock('../modules/campaignParams', () => ({ collectCampaignParams: jest.fn(() => ({})) }))
 jest.mock('../modules/url', () => ({
-  addQueryParamsToUrlString: jest.fn()
+  // Mirror the real helper: resolve relative bases against the origin, append
+  // the params, and fall back to the raw base if the URL can't be parsed.
+  buildTrackedDownloadUrl: (base: string, params: Record<string, string | undefined | null>) => {
+    try {
+      const url = new URL(base, window.location.origin)
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) url.searchParams.append(key, value)
+      })
+      return url.toString()
+    } catch {
+      return base
+    }
+  }
 }))
 jest.mock('../modules/downloadConstants', () => ({
   DOWNLOAD_URLS: {
@@ -38,11 +53,12 @@ jest.mock('../modules/downloadConstants', () => ({
 const mockedUseSearchParams = useSearchParams as jest.MockedFunction<typeof useSearchParams>
 const mockedUseAdvancedUserAgentData = useAdvancedUserAgentData as jest.MockedFunction<typeof useAdvancedUserAgentData>
 const mockedUseAnalytics = useAnalytics as jest.MockedFunction<typeof useAnalytics>
-const mockedUseAuthIdentity = useAuthIdentity as jest.MockedFunction<typeof useAuthIdentity>
 const mockedLaunchDesktopApp = launchDesktopApp as jest.MockedFunction<typeof launchDesktopApp>
 const mockedDetectDownloadOS = detectDownloadOS as jest.MockedFunction<typeof detectDownloadOS>
-const mockedAddQueryParams = addQueryParamsToUrlString as jest.MockedFunction<typeof addQueryParamsToUrlString>
+const mockedUseAnonUserId = useAnonUserId as jest.MockedFunction<typeof useAnonUserId>
+const mockedUseTotalDownloads = useTotalDownloads as jest.MockedFunction<typeof useTotalDownloads>
 const mockedGetEnv = getEnv as jest.MockedFunction<typeof getEnv>
+const mockedCollectCampaignParams = collectCampaignParams as jest.MockedFunction<typeof collectCampaignParams>
 
 describe('useLaunchExplorer', () => {
   let track: jest.Mock
@@ -53,22 +69,15 @@ describe('useLaunchExplorer', () => {
     windowOpenSpy = jest.spyOn(window, 'open').mockImplementation(() => null)
     mockedUseSearchParams.mockReturnValue([new URLSearchParams(), jest.fn()] as unknown as ReturnType<typeof useSearchParams>)
     mockedUseAnalytics.mockReturnValue({ track } as unknown as ReturnType<typeof useAnalytics>)
-    mockedUseAuthIdentity.mockReturnValue({ hasValidIdentity: false } as unknown as ReturnType<typeof useAuthIdentity>)
     mockedUseAdvancedUserAgentData.mockReturnValue([
       true,
       { os: { name: 'macOS' }, cpu: { architecture: 'arm64' }, mobile: false }
     ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
     mockedDetectDownloadOS.mockReturnValue('apple')
-    mockedAddQueryParams.mockImplementation((url: string, params: Record<string, string | undefined | null>) => {
-      const urlObj = new URL(url)
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          urlObj.searchParams.append(key, value)
-        }
-      })
-      return urlObj.toString()
-    })
+    mockedUseAnonUserId.mockReturnValue(undefined)
+    mockedUseTotalDownloads.mockReturnValue('+400K')
     mockedGetEnv.mockReturnValue(undefined)
+    mockedCollectCampaignParams.mockReturnValue({})
   })
 
   afterEach(() => {
@@ -91,6 +100,27 @@ describe('useLaunchExplorer', () => {
       expect(windowOpenSpy).not.toHaveBeenCalled()
       expect(result.current.isDownloadModalOpen).toBe(false)
     })
+
+    it('should forward the scene-console url param into the deep link options', async () => {
+      mockedUseSearchParams.mockReturnValue([new URLSearchParams('scene-console=true'), jest.fn()] as unknown as ReturnType<
+        typeof useSearchParams
+      >)
+
+      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
+
+      await act(() => result.current.launchExplorer())
+
+      expect(mockedLaunchDesktopApp).toHaveBeenCalledWith(expect.objectContaining({ sceneConsole: 'true' }))
+    })
+
+    it('should not include sceneConsole in the deep link options when absent from the url', async () => {
+      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
+
+      await act(() => result.current.launchExplorer())
+
+      const options = mockedLaunchDesktopApp.mock.calls[0][0]
+      expect(options).not.toHaveProperty('sceneConsole')
+    })
   })
 
   describe('when the desktop client is not installed', () => {
@@ -98,94 +128,80 @@ describe('useLaunchExplorer', () => {
       mockedLaunchDesktopApp.mockResolvedValue(false)
     })
 
-    describe('and the user has a valid identity', () => {
-      beforeEach(() => {
-        mockedUseAuthIdentity.mockReturnValue({ hasValidIdentity: true } as unknown as ReturnType<typeof useAuthIdentity>)
-        mockedGetEnv.mockImplementation(key => (key === 'DOWNLOAD_URL' ? 'https://dl.test/direct' : undefined))
-      })
+    it('should open the download modal instead of redirecting', async () => {
+      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
 
-      it('should open the direct download url', async () => {
-        const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
+      await act(() => result.current.launchExplorer())
 
-        await act(() => result.current.launchExplorer())
+      expect(result.current.isDownloadModalOpen).toBe(true)
+      expect(windowOpenSpy).not.toHaveBeenCalled()
 
-        expect(windowOpenSpy).toHaveBeenCalledWith('https://dl.test/direct', '_self')
-      })
-
-      it('should append position and realm to the download url when non-default', async () => {
-        const { result } = renderHook(() => useLaunchExplorer({ position: '42,-5', realm: 'myworld.dcl.eth' }))
-
-        await act(() => result.current.launchExplorer())
-
-        expect(windowOpenSpy).toHaveBeenCalledWith('https://dl.test/direct?realm=myworld.dcl.eth&position=42%2C-5', '_self')
-      })
-
-      it('should not append default position or realm to the download url', async () => {
-        const { result } = renderHook(() => useLaunchExplorer({ position: '0,0', realm: 'main' }))
-
-        await act(() => result.current.launchExplorer())
-
-        expect(windowOpenSpy).toHaveBeenCalledWith('https://dl.test/direct', '_self')
-      })
-
-      it('should drop an empty position and keep the non-default realm', async () => {
-        const { result } = renderHook(() => useLaunchExplorer({ position: '', realm: 'myworld.dcl.eth' }))
-
-        await act(() => result.current.launchExplorer())
-
-        expect(windowOpenSpy).toHaveBeenCalledWith('https://dl.test/direct?realm=myworld.dcl.eth', '_self')
-      })
+      act(() => result.current.closeDownloadModal())
+      expect(result.current.isDownloadModalOpen).toBe(false)
     })
 
-    describe('and the user has no identity but an onboarding url with a redirectTo', () => {
-      const onboardingUrl = 'https://decentraland.org/auth/login/?newUser&redirectTo=https%3A%2F%2Fdecentraland.org%2Fdownload'
+    it('should open the modal when launchDesktopApp throws', async () => {
+      mockedLaunchDesktopApp.mockRejectedValue(new Error('boom'))
+      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
 
-      beforeEach(() => {
-        mockedGetEnv.mockImplementation(key => (key === 'ONBOARDING_URL' ? onboardingUrl : undefined))
-      })
+      await act(() => result.current.launchExplorer())
 
-      it('should append position and realm to the inner redirectTo target, not the outer login url', async () => {
-        const { result } = renderHook(() => useLaunchExplorer({ position: '42,-5', realm: 'myworld.dcl.eth' }))
-
-        await act(() => result.current.launchExplorer())
-
-        const openedUrl = new URL(windowOpenSpy.mock.calls[0][0])
-        expect(openedUrl.origin + openedUrl.pathname).toBe('https://decentraland.org/auth/login/')
-        expect(openedUrl.searchParams.get('position')).toBeNull()
-        expect(openedUrl.searchParams.get('realm')).toBeNull()
-
-        const redirectTo = new URL(openedUrl.searchParams.get('redirectTo') as string)
-        expect(redirectTo.origin + redirectTo.pathname).toBe('https://decentraland.org/download')
-        expect(redirectTo.searchParams.get('position')).toBe('42,-5')
-        expect(redirectTo.searchParams.get('realm')).toBe('myworld.dcl.eth')
-      })
-
-      it('should open the onboarding url untouched when position and realm are the defaults', async () => {
-        const { result } = renderHook(() => useLaunchExplorer({ position: '0,0', realm: 'main' }))
-
-        await act(() => result.current.launchExplorer())
-
-        expect(windowOpenSpy).toHaveBeenCalledWith(onboardingUrl, '_self')
-      })
+      expect(result.current.isDownloadModalOpen).toBe(true)
     })
 
-    describe('and the user has no identity nor onboarding url', () => {
-      it('should open the download modal', async () => {
-        const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
+    it('should carry non-default position and realm into the modal download url', () => {
+      const { result } = renderHook(() => useLaunchExplorer({ position: '42,-5', realm: 'myworld.dcl.eth' }))
 
-        await act(() => result.current.launchExplorer())
+      const url = new URL(result.current.downloadModalProps.downloadUrl)
+      expect(url.searchParams.get('position')).toBe('42,-5')
+      expect(url.searchParams.get('realm')).toBe('myworld.dcl.eth')
+    })
 
-        expect(result.current.isDownloadModalOpen).toBe(true)
+    it('should not carry default position or realm into the modal download url', () => {
+      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0', realm: 'main' }))
 
-        act(() => result.current.closeDownloadModal())
-        expect(result.current.isDownloadModalOpen).toBe(false)
-      })
+      const url = new URL(result.current.downloadModalProps.downloadUrl)
+      expect(url.searchParams.get('position')).toBeNull()
+      expect(url.searchParams.get('realm')).toBeNull()
+    })
 
-      it('should include position and realm in the download modal url when non-default', async () => {
-        const { result } = renderHook(() => useLaunchExplorer({ position: '10,20', realm: 'custom.dcl.eth' }))
+    it('should drop an empty position and keep the non-default realm', () => {
+      const { result } = renderHook(() => useLaunchExplorer({ position: '', realm: 'myworld.dcl.eth' }))
 
-        expect(result.current.downloadModalProps.downloadUrl).toBe('https://dl.test/apple?realm=custom.dcl.eth&position=10%2C20')
-      })
+      const url = new URL(result.current.downloadModalProps.downloadUrl)
+      expect(url.searchParams.get('position')).toBeNull()
+      expect(url.searchParams.get('realm')).toBe('myworld.dcl.eth')
+    })
+
+    it('should carry campaign params and anon_user_id into the modal download url', () => {
+      mockedUseAnonUserId.mockReturnValue('11111111-1111-4111-8111-111111111111')
+
+      mockedCollectCampaignParams.mockReturnValue({ utm_source: 'shefi' })
+      const { result } = renderHook(() => useLaunchExplorer({ position: '10,20', realm: 'custom.dcl.eth' }))
+
+      const url = new URL(result.current.downloadModalProps.downloadUrl)
+      expect(url.searchParams.get('utm_source')).toBe('shefi')
+      expect(url.searchParams.get('anon_user_id')).toBe('11111111-1111-4111-8111-111111111111')
+      expect(url.searchParams.get('position')).toBe('10,20')
+    })
+
+    it('should keep the modal download url on the current origin for a relative DOWNLOAD_URL (dev/zone)', () => {
+      // On dev/zone DOWNLOAD_URL is relative ("/download"); the modal must stay
+      // on the zone origin instead of jumping to the prod constant.
+      mockedGetEnv.mockReturnValue('/download')
+      const { result } = renderHook(() => useLaunchExplorer({ position: '42,-5', realm: 'myworld.dcl.eth' }))
+
+      const url = new URL(result.current.downloadModalProps.downloadUrl)
+      expect(url.origin).toBe(window.location.origin)
+      expect(url.pathname).toBe('/download')
+      expect(url.searchParams.get('position')).toBe('42,-5')
+    })
+
+    it('should surface the total downloads label on the modal props', () => {
+      mockedUseTotalDownloads.mockReturnValue('42000')
+      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
+
+      expect(result.current.downloadModalProps.i18n.totalDownloads).toBe('Total Downloads: 42000')
     })
   })
 

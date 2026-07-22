@@ -1,0 +1,92 @@
+import { fireEvent, render } from '@testing-library/react'
+import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
+import { CreatorsCreate } from './CreateCards'
+
+jest.mock('decentraland-ui2', () => {
+  const actual = jest.requireActual('../../../__test-utils__/styledMock')
+  const Typography = ({ children, ...rest }: { children?: React.ReactNode }) => <p {...rest}>{children}</p>
+  return { ...actual, Typography }
+})
+
+jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
+  useFormatMessage: () => (id: string) => id
+}))
+
+jest.mock('../../../hooks/adapters/useTrackLinkContext', () => ({
+  useTrackClick: jest.fn()
+}))
+
+// AnimatedSection transitively imports @dcl/hooks (ESM); stub it to a passthrough
+// so this spec covers only CreateCards' own wiring. Its own spec covers the
+// section-viewed behavior.
+jest.mock('../AnimatedSection', () => ({
+  AnimatedSection: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>
+}))
+
+// Render the carousel items inline so the per-card CTAs are reachable.
+jest.mock('../../Carousel', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Carousel: ({ items, renderItem, keyExtractor }: any) => (
+    <div>
+      {items.map((item: unknown) => (
+        <div key={keyExtractor(item)}>{renderItem(item)}</div>
+      ))}
+    </div>
+  )
+}))
+
+const mockTrackClick = jest.mocked(useTrackClick)
+const trackClick = jest.fn()
+
+describe('CreatorsCreate', () => {
+  beforeEach(() => {
+    mockTrackClick.mockReturnValue(trackClick)
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  describe('when a useful-links resource is rendered', () => {
+    it('should tag each link with the Creators Create place plus its card and tab context', () => {
+      const { container } = render(<CreatorsCreate />)
+
+      const links = container.querySelectorAll('a[data-title]')
+      expect(links.length).toBeGreaterThan(0)
+      links.forEach(link => {
+        expect(link).toHaveAttribute('data-place', 'Creators Create')
+        expect(link).toHaveAttribute('data-card')
+        expect(link).toHaveAttribute('data-tab')
+      })
+    })
+
+    it('should fire the click adapter when a resource link is clicked', () => {
+      const { container } = render(<CreatorsCreate />)
+
+      const link = container.querySelector('a[data-title]') as HTMLElement
+      fireEvent.click(link)
+
+      expect(trackClick).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('when a card exposes tabs', () => {
+    it('should track a tab switch and reveal the selected tab content', () => {
+      const { container } = render(<CreatorsCreate />)
+
+      const tabButtons = container.querySelectorAll('button[data-tab]')
+      // Data fixtures include at least one multi-tab card.
+      expect(tabButtons.length).toBeGreaterThan(1)
+
+      // Click both the first and the second tab so each onClick handler runs.
+      fireEvent.click(tabButtons[1])
+      fireEvent.click(tabButtons[0])
+
+      expect(trackClick).toHaveBeenCalledTimes(2)
+      tabButtons.forEach(button => {
+        expect(button).toHaveAttribute('data-place', 'Creators Create')
+        expect(button).toHaveAttribute('data-card')
+      })
+    })
+  })
+})
