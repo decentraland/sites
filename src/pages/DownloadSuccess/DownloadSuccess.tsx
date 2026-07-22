@@ -370,7 +370,7 @@ const DownloadSuccess = memo(() => {
       // only it bakes those params into the signed binary; the CDN-direct
       // fallback drops them. Guarantee an anon_user_id so we stay on the
       // anonymous gateway route instead of falling back to the CDN.
-      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserIdRef.current, deepLinkParamsRef.current)
+      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserIdRef.current, deepLinkParamsRef.current, referrerRef.current)
       gatewayAnonUserIdRef.current = gatewayAnonUserId
 
       try {
@@ -504,7 +504,7 @@ const DownloadSuccess = memo(() => {
       const extra = buildTrackerExtra()
       // Deep-link downloads must route through the gateway (see the auto-download
       // effect above); guarantee an anon_user_id to avoid the CDN-direct fallback.
-      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserId, deepLinkParamsRef.current)
+      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserId, deepLinkParamsRef.current, referrerRef.current)
       gatewayAnonUserIdRef.current = gatewayAnonUserId
 
       try {

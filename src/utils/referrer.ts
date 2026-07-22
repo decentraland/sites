@@ -15,25 +15,30 @@ function parseReferrer(value: string | null | undefined): string | null {
 }
 
 /**
- * Whether the direct-download invite flow is enabled. Acts as a single
- * kill-switch: when off, the invite CTA and the download passthrough behave
- * exactly as before (no referrer flows anywhere).
+ * Whether the direct-download invite flow is enabled. This is a build-time
+ * configuration gate (bundled env value), not a remote kill-switch: turning it
+ * off requires a rebuild/deploy. When off, the invite CTA and the download
+ * passthrough behave exactly as before (no referrer flows anywhere).
  */
 function isDirectDownloadEnabled(): boolean {
   return getEnv('INVITE_DIRECT_DOWNLOAD') === 'true'
 }
 
 /**
- * Persists a valid referrer for the current tab session so it survives the
- * invite → download navigation even if the query param is lost.
- * sessionStorage (not localStorage) on purpose: short scope avoids stale
- * attributions from old visits.
+ * Sets or clears the session-stored referrer for the current tab. A valid
+ * address is persisted so it survives the invite → download navigation even if
+ * the query param is lost; an invalid/absent value CLEARS any previously stored
+ * referrer so a stale attribution from an earlier visit is never reused.
+ * sessionStorage (not localStorage) on purpose: short scope.
  */
 function storeReferrer(value: string | null | undefined): void {
   const referrer = parseReferrer(value)
-  if (!referrer) return
   try {
-    window.sessionStorage.setItem(REFERRER_STORAGE_KEY, referrer)
+    if (referrer) {
+      window.sessionStorage.setItem(REFERRER_STORAGE_KEY, referrer)
+    } else {
+      window.sessionStorage.removeItem(REFERRER_STORAGE_KEY)
+    }
   } catch {
     // Storage may be unavailable (private mode restrictions); attribution falls back to the query param
   }

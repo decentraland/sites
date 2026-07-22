@@ -76,14 +76,14 @@ const handleDownloadOptionClick = async (params: HandleDownloadOptionClickParams
   // ride along to the file URL and to /download_success, so the launcher can
   // parse them from the file-origin URL on first run.
   const deepLinkParams = collectDeepLinkParams()
-  // When those params are present the installer MUST come from the gateway (it
-  // bakes them into the binary; a CDN-direct fallback would drop them), so
-  // guarantee an anon_user_id to keep the download on the anonymous gateway
-  // route rather than falling back to the CDN.
-  const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserId, deepLinkParams)
   // Referral attribution (gated by the direct-download flag). Rides the gateway
   // file URL and forwards to /download_success so the installer chain can attribute it.
   const referrer = resolveReferrer()
+  // When deep-link params OR a referrer are present the installer MUST come from
+  // the gateway (it bakes them into the binary; a CDN-direct fallback would drop
+  // them), so guarantee an anon_user_id to keep the download on the anonymous
+  // gateway route rather than falling back to the CDN.
+  const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserId, deepLinkParams, referrer)
   if (downloadOnClick) {
     try {
       await getDownloadLinkWithIdentity({

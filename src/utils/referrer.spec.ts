@@ -42,6 +42,16 @@ describe('when storing and reading a referrer', () => {
     expect(readStoredReferrer()).toBeNull()
   })
 
+  it('should clear a previously stored referrer when given an invalid/absent value', () => {
+    storeReferrer(VALID)
+    expect(readStoredReferrer()).toBe(VALID)
+    storeReferrer(undefined)
+    expect(readStoredReferrer()).toBeNull()
+    storeReferrer(VALID)
+    storeReferrer('not-an-address')
+    expect(readStoredReferrer()).toBeNull()
+  })
+
   it('should return null when the stored value was tampered with', () => {
     window.sessionStorage.setItem(REFERRER_STORAGE_KEY, 'garbage')
     expect(readStoredReferrer()).toBeNull()
