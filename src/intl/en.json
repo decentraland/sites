@@ -425,6 +425,12 @@
       "jump_in": "JUMP IN!",
       "experimental": "Want to keep playing on web? Try the experimental version {here}",
       "here": "HERE"
+    },
+    "not_found": {
+      "title_oops": "Oops!",
+      "title_rest": "This page has left the world.",
+      "description": "The link may be outdated, but Decentraland is still live. Find community events, DJ sets, creator-built games, and new experiences happening in-world.",
+      "cta": "See What's On"
     }
   },
   "page_invite": {

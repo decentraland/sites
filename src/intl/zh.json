@@ -377,6 +377,12 @@
       "jump_in": "立即进入！",
       "experimental": "想继续在网页上游玩？点击{here}体验实验版",
       "here": "这里"
+    },
+    "not_found": {
+      "title_oops": "哎呀！",
+      "title_rest": "此页面已离开这个世界。",
+      "description": "链接可能已过期，但 Decentraland 依然在线。快来发现社区活动、DJ 表演、创作者打造的游戏以及世界中的全新体验。",
+      "cta": "看看正在发生什么"
     }
   },
   "page_invite": {
