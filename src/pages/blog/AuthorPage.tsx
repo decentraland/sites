@@ -7,7 +7,7 @@ import { OGType, SEO } from '../../components/blog/SEO/SEO'
 import { getEnv } from '../../config/env'
 import { useGetBlogAuthorBySlugQuery } from '../../features/cms/cms.client'
 import { useInfiniteBlogPosts } from '../../features/cms/useInfiniteBlogPosts'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import type { BlogAuthor } from '../../shared/blog/types/blog.domain'
 import { AuthorHeaderBox, AuthorImage } from './AuthorPage.styled'
 import { CenteredBox } from './shared.styled'
@@ -57,7 +57,7 @@ export const AuthorPage = () => {
   const baseUrl = getEnv('BLOG_BASE_URL') || ''
 
   const pageTitle = author?.title ? t('blog.posts_by', { author: author.title }) : undefined
-  useBlogPageTracking({
+  usePageViewTracking({
     name: pageTitle,
     properties: author
       ? {

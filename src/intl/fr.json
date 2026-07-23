@@ -377,6 +377,12 @@
       "jump_in": "ENTRER !",
       "experimental": "Envie de continuer à jouer sur le web ? Essayez la version expérimentale {here}",
       "here": "ICI"
+    },
+    "not_found": {
+      "title_oops": "Oups !",
+      "title_rest": "Cette page a quitté le monde.",
+      "description": "Le lien est peut-être obsolète, mais Decentraland est toujours en ligne. Découvrez des événements communautaires, des sets de DJ, des jeux conçus par des créateurs et de nouvelles expériences dans le monde.",
+      "cta": "Voir le programme"
     }
   },
   "page_invite": {

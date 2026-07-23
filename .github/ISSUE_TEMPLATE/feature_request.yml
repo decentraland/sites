@@ -70,6 +70,7 @@ body:
         - Sign In / Auth
         - Legal / Static pages
         - Navbar / Footer
+        - 404 / Not found
         - Tracking / Analytics
         - SEO
         - i18n

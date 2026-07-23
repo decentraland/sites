@@ -7,7 +7,7 @@ import { SearchResultCard } from '../../components/blog/SearchResultCard'
 import { SEO } from '../../components/blog/SEO/SEO'
 import { getEnv } from '../../config/env'
 import { useSearchBlogPostsQuery } from '../../features/cms/cms.search.client'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import type { SearchResult } from '../../shared/blog/types/blog.domain'
 import { CenteredBox, HeaderBox, LoadMoreContainer, ResultsWrapper, SearchSubtitle } from './SearchPage.styled'
 
@@ -62,7 +62,7 @@ export const SearchPage = () => {
 
   const pageTitle = query ? t('search.title_with_query', { query }) : t('search.title')
   // Avoid forwarding the raw user query to Segment — send privacy-safe signals instead.
-  useBlogPageTracking({
+  usePageViewTracking({
     name: query ? 'Blog Search Results' : 'Blog Search',
     properties: { title: pageTitle, hasQuery: query.length > 0, queryLength: query.length }
   })
