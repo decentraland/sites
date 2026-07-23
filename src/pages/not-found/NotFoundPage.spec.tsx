@@ -42,6 +42,8 @@ jest.mock('decentraland-ui2', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ({ children, ...rest }: any, ref: any) => ReactLib.createElement('span', { ref, ...rest }, children)
   )
+  // WebGL canvas component; render an inert stand-in (jsdom has no WebGL).
+  const AnimatedBackground = () => ReactLib.createElement('div', { 'data-testid': 'animated-background' })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const styled = (tag: any) => (styleArg: any) => {
     if (typeof styleArg === 'function') {
@@ -55,7 +57,7 @@ jest.mock('decentraland-ui2', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return ReactLib.forwardRef(({ children, ...rest }: any, ref: any) => ReactLib.createElement(tag, { ref, ...rest }, children))
   }
-  return { styled, Box, Button, Typography, Logo }
+  return { styled, Box, Button, Typography, Logo, AnimatedBackground }
 })
 
 describe('when rendering the 404 page', () => {

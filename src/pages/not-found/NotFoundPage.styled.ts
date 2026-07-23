@@ -1,22 +1,20 @@
 import { Link } from 'react-router-dom'
 import { Box, Button, Logo, Typography, styled } from 'decentraland-ui2'
-import backgroundImage from '../../images/notfound/notfound_background.webp'
 
 // Figma: desktop node 1:1274 (1920x1080), mobile node 1:4151 (393x852).
 // vw / dvh values below are those artboards' px coordinates normalized so the
 // composition scales continuously between the two designs. The `md` breakpoint
 // is the mobile-artboard -> desktop-artboard switch.
 
+// `isolation: isolate` establishes a stacking context so the sibling
+// <AnimatedBackground variant="absolute" /> (which paints at z-index -1) stays
+// behind the content instead of escaping this container. Mirrors the pattern in
+// the homepage WhatsOn/ComeHangOut sections and the cast onboarding.
 const PageContainer = styled(Box)({
   position: 'relative',
   minHeight: '100dvh',
   overflow: 'hidden',
-  // Base color of the Figma Background component (brand purple with no theme
-  // token); the pattern image sits on top and covers the viewport.
-  backgroundColor: '#C534FF',
-  backgroundImage: `url(${backgroundImage})`,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center'
+  isolation: 'isolate'
 })
 
 const HomeLink = styled(Link)(({ theme }) => ({

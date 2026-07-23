@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom'
+import { AnimatedBackground } from 'decentraland-ui2'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
 import robotImage from '../../images/notfound/notfound_robot.webp'
@@ -26,6 +27,7 @@ const NotFoundPage = () => {
 
   return (
     <PageContainer component="main">
+      <AnimatedBackground variant="absolute" />
       <Watermark aria-hidden="true">404</Watermark>
       <RobotImage src={robotImage} alt="" />
       <HomeLink to="/" aria-label="Decentraland Home">
