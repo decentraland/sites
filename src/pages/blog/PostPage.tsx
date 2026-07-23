@@ -13,7 +13,7 @@ import { OGType, SEO } from '../../components/blog/SEO/SEO'
 import { getEnv } from '../../config/env'
 import { useGetBlogPostBySlugQuery, useGetBlogPostsQuery } from '../../features/cms/cms.client'
 import { selectPostByCategoryAndSlug } from '../../features/cms/cms.selectors'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { formatUtcDate } from '../../shared/blog/utils/date'
 import { locations } from '../../shared/blog/utils/locations'
 import { useAppSelector } from '../../shells/store'
@@ -93,7 +93,7 @@ export const PostPage = () => {
 
   const baseUrl = getEnv('BLOG_BASE_URL') || ''
 
-  useBlogPageTracking({
+  usePageViewTracking({
     name: displayPost?.title,
     properties: displayPost
       ? {

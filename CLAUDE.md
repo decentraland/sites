@@ -133,6 +133,11 @@ Tier picker (lightweight / heavy / Layout-less), full step-by-step, navbar clear
 - **Pages**: `src/pages/<route>/`. Heavy routes under `src/pages/{whats-on,blog,jump,social,cast,storage}/`. Layout-less fullscreen routes use the same `src/pages/<area>/` shape but are placed before the `<Layout />` Route block in `src/App.tsx` (`reels`, `download`, `invite`).
 - **Signal you're placing a file wrong**: `src/features/<domain>/use<X>.ts`, inline styled bigger than a single `sx`, type inside `.client.ts`. Stop and move it.
 
+### Naming
+
+- **Name reusable code for what it does, not for the first feature that used it.** If a hook / util / component is used (or is meant to be used) beyond one domain, its name must be domain-neutral and describe its behavior. A domain prefix (`blog`, `cast`, `storage`, …) is only allowed when the code is genuinely specific to that domain.
+- **Signal you're naming it wrong**: a generic helper carries a feature prefix while callers from other domains import it. Example: a per-page Segment `page()` hook was named `useBlogPageTracking` but blog, storage, cast, social and the 404 page all use it — the correct name is the behavior (`usePageViewTracking`). Rename it rather than propagating the misnomer to new callers.
+
 ### Styled components
 
 - Import from `decentraland-ui2`: `styled`, `Box`, `Typography`, `keyframes`.

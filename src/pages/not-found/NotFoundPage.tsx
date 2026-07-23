@@ -1,7 +1,7 @@
 import { useLocation } from 'react-router-dom'
 import { AnimatedBackground } from 'decentraland-ui2'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import robotImage from '../../images/notfound/notfound_robot.webp'
 import {
   BrandLogo,
@@ -24,7 +24,7 @@ const NotFoundPage = () => {
 
   // Outside <Layout /> the route-level page() never fires -- track explicitly,
   // carrying the missing path so broken links are measurable in Segment.
-  useBlogPageTracking({ name: 'Not Found', properties: { path: location.pathname } })
+  usePageViewTracking({ name: 'Not Found', properties: { path: location.pathname } })
 
   return (
     <PageContainer component="main">
