@@ -317,4 +317,22 @@ describe('resolveGatewayAnonUserId', () => {
       expect(mockEnsureSegmentAnonymousId).not.toHaveBeenCalled()
     })
   })
+
+  describe('when there is no anon_user_id and no deep-link params but a referrer is present', () => {
+    it('should mint one to force the gateway route (the referrer is baked into the installer)', () => {
+      const result = resolveGatewayAnonUserId(undefined, {}, '0x24e5f44999c151f08609f8e27b2238c773c4d020')
+
+      expect(result).toBe('generated-anon')
+      expect(mockEnsureSegmentAnonymousId).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('when there is no anon_user_id, no deep-link params and no referrer', () => {
+    it('should not mint one for a null referrer', () => {
+      const result = resolveGatewayAnonUserId(undefined, {}, null)
+
+      expect(result).toBeUndefined()
+      expect(mockEnsureSegmentAnonymousId).not.toHaveBeenCalled()
+    })
+  })
 })
