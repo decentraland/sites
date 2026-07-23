@@ -90,6 +90,28 @@ describe('Hero', () => {
     jest.resetAllMocks()
   })
 
+  describe('when rendering the main page heading', () => {
+    it('should render the desktop hero title as the page <h1>', () => {
+      mockUserAgent.mockReturnValue([false, { os: { name: 'Windows' }, mobile: false }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+
+      render(<Hero isDesktop />)
+
+      expect(screen.getByRole('heading', { level: 1, name: 'page.home.hero.title' })).toBeInTheDocument()
+    })
+
+    it('should render the mobile hero title as the page <h1>', () => {
+      mockUserAgent.mockReturnValue([false, { os: { name: 'iOS' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+
+      render(<Hero isDesktop={false} />)
+
+      expect(screen.getByRole('heading', { level: 1, name: 'page.home.hero.mobile_android_title' })).toBeInTheDocument()
+    })
+  })
+
   describe('when rendering the desktop hero on a Windows user agent', () => {
     beforeEach(() => {
       mockUserAgent.mockReturnValue([false, { os: { name: 'Windows' }, mobile: false }] as unknown as ReturnType<
