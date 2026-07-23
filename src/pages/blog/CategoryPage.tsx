@@ -9,7 +9,7 @@ import { SEO } from '../../components/blog/SEO/SEO'
 import { getEnv } from '../../config/env'
 import { useGetBlogCategoryBySlugQuery } from '../../features/cms/cms.client'
 import { useInfiniteBlogPosts } from '../../features/cms/useInfiniteBlogPosts'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import type { BlogCategory } from '../../shared/blog/types/blog.domain'
 import { CenteredBox } from './shared.styled'
 
@@ -45,7 +45,7 @@ export const CategoryPage = () => {
 
   const baseUrl = getEnv('BLOG_BASE_URL') || ''
 
-  useBlogPageTracking({
+  usePageViewTracking({
     name: category?.title,
     properties: category ? { title: category.title, categorySlug: category.slug } : undefined
   })

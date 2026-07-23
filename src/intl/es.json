@@ -377,6 +377,12 @@
       "jump_in": "¡ENTRAR!",
       "experimental": "¿Querés seguir jugando en la web? Probá la versión experimental {here}",
       "here": "AQUÍ"
+    },
+    "not_found": {
+      "title_oops": "¡Ups!",
+      "title_rest": "Esta página abandonó el mundo.",
+      "description": "Puede que el enlace esté desactualizado, pero Decentraland sigue en vivo. Descubrí eventos de la comunidad, sets de DJ, juegos creados por la comunidad y nuevas experiencias dentro del mundo.",
+      "cta": "Descubrí qué está pasando"
     }
   },
   "page_invite": {
@@ -936,6 +942,7 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "approved_edit_warning": "Changing the name, description, image, or location of an approved hangout will send it back for review before the updates go live.",
     "error_image_too_large": "No pudimos comprimir esta imagen a menos de 500 KB. Por favor, elegí un archivo más pequeño.",
     "vertical_recommended_size": "Tamaño recomendado: 716 × 1814 px",
     "recurrence": "Recurrencia",

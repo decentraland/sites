@@ -114,6 +114,11 @@ jest.mock('./EventForm.styled', () => ({
       {children}
     </div>
   ),
+  ReviewWarningAlert: ({ children, severity }: { children: React.ReactNode; severity?: string }) => (
+    <div role="alert" data-severity={severity}>
+      {children}
+    </div>
+  ),
   RightSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   RightSectionFields: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   RightSectionFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -277,6 +282,7 @@ describe('EventForm', () => {
     mockUseCreateEventForm.mockReturnValue({
       form: createFormState(),
       errors: {},
+      requiresModerationReview: false,
       setField: mockSetField,
       markRequiredFields: jest.fn(),
       handleImageSelect: mockHandleImageSelect,
@@ -382,6 +388,43 @@ describe('EventForm', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={approvedEvent} />)
 
       expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when editing an approved event whose moderated content changed', () => {
+    const approvedEvent = createMockEvent({ id: 'evt-approved', approved: true, rejected: false })
+
+    beforeEach(() => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState(),
+        errors: {},
+        requiresModerationReview: true,
+        setField: mockSetField,
+        markRequiredFields: jest.fn(),
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
+    it('should render the re-moderation warning', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={approvedEvent} />)
+
+      expect(screen.getByRole('alert')).toHaveTextContent('create_event.approved_edit_warning')
+    })
+  })
+
+  describe('when editing an approved event with no moderated content changes', () => {
+    const approvedEvent = createMockEvent({ id: 'evt-approved', approved: true, rejected: false })
+
+    it('should not render the re-moderation warning', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={approvedEvent} />)
+
+      expect(screen.queryByText('create_event.approved_edit_warning')).not.toBeInTheDocument()
     })
   })
 

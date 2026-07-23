@@ -425,6 +425,12 @@
       "jump_in": "JUMP IN!",
       "experimental": "Want to keep playing on web? Try the experimental version {here}",
       "here": "HERE"
+    },
+    "not_found": {
+      "title_oops": "Oops!",
+      "title_rest": "This page has left the world.",
+      "description": "The link may be outdated, but Decentraland is still live. Find community events, DJ sets, creator-built games, and new experiences happening in-world.",
+      "cta": "See What's On"
     }
   },
   "page_invite": {
@@ -1195,6 +1201,7 @@
     "description_placeholder": "Be as descriptive as you can",
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "approved_edit_warning": "Changing the name, description, image, or location of an approved hangout will send it back for review before the updates go live.",
     "event_details": "Hangout Details",
     "date": "Date",
     "start": "Start",
