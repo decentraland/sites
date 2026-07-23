@@ -8,6 +8,7 @@ import {
   Content,
   CtaButton,
   Description,
+  Graphic,
   HomeLink,
   PageContainer,
   RobotImage,
@@ -28,8 +29,6 @@ const NotFoundPage = () => {
   return (
     <PageContainer component="main">
       <AnimatedBackground variant="absolute" />
-      <Watermark aria-hidden="true">404</Watermark>
-      <RobotImage src={robotImage} alt="" />
       <HomeLink to="/" aria-label="Decentraland Home">
         <BrandLogo />
       </HomeLink>
@@ -51,6 +50,10 @@ const NotFoundPage = () => {
           {l('page.not_found.cta')}
         </CtaButton>
       </Content>
+      <Graphic>
+        <Watermark aria-hidden="true">404</Watermark>
+        <RobotImage src={robotImage} alt="" />
+      </Graphic>
     </PageContainer>
   )
 }

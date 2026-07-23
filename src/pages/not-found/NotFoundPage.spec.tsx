@@ -13,52 +13,43 @@ jest.mock('@dcl/hooks', () => ({
 // decentraland-ui2 ships ESM that jest can't transform. Mock the primitives the
 // page uses with semantic tags so role queries work, and run each `.styled.ts`
 // style callback once (there are no conditional branches) so the styled file is
-// covered without bypassing the styling logic.
+// covered without bypassing the styling logic. `any` is used pervasively for the
+// passthrough props of these shims; a scoped disable is cleaner than per-line.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 jest.mock('decentraland-ui2', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ReactLib = require('react') as typeof import('react')
+  // Covers every theme path the styled callbacks touch: `palette.common.white`
+  // and `breakpoints.up`. Kept in sync deliberately — no try/catch — so a new
+  // theme access surfaces as a test failure instead of being silently swallowed.
   const fakeTheme = {
     palette: { common: { white: '#ffffff' } },
     breakpoints: { up: () => '@media (min-width:900px)' }
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const drop = ({ variant, color, size, ...rest }: any) => rest
-  const Typography = ReactLib.forwardRef(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ({ component, children, ...rest }: any, ref: any) => ReactLib.createElement(component || 'p', { ref, ...drop(rest) }, children)
+  const Typography = ReactLib.forwardRef(({ component, children, ...rest }: any, ref: any) =>
+    ReactLib.createElement(component || 'p', { ref, ...drop(rest) }, children)
   )
-  const Box = ReactLib.forwardRef(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ({ component, children, ...rest }: any, ref: any) => ReactLib.createElement(component || 'div', { ref, ...rest }, children)
+  const Box = ReactLib.forwardRef(({ component, children, ...rest }: any, ref: any) =>
+    ReactLib.createElement(component || 'div', { ref, ...rest }, children)
   )
-  const Button = ReactLib.forwardRef(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ({ href, children, ...rest }: any, ref: any) =>
-      href != null
-        ? ReactLib.createElement('a', { ref, href, ...drop(rest) }, children)
-        : ReactLib.createElement('button', { ref, ...drop(rest) }, children)
+  const Button = ReactLib.forwardRef(({ href, children, ...rest }: any, ref: any) =>
+    href != null
+      ? ReactLib.createElement('a', { ref, href, ...drop(rest) }, children)
+      : ReactLib.createElement('button', { ref, ...drop(rest) }, children)
   )
-  const Logo = ReactLib.forwardRef(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ({ children, ...rest }: any, ref: any) => ReactLib.createElement('span', { ref, ...rest }, children)
-  )
+  const Logo = ReactLib.forwardRef(({ children, ...rest }: any, ref: any) => ReactLib.createElement('span', { ref, ...rest }, children))
   // WebGL canvas component; render an inert stand-in (jsdom has no WebGL).
   const AnimatedBackground = () => ReactLib.createElement('div', { 'data-testid': 'animated-background' })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const styled = (tag: any) => (styleArg: any) => {
     if (typeof styleArg === 'function') {
-      try {
-        styleArg({ theme: fakeTheme })
-      } catch {
-        // style fn may reference theme keys the shim omits; coverage of the
-        // reachable statements still happens on the successful path.
-      }
+      styleArg({ theme: fakeTheme })
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return ReactLib.forwardRef(({ children, ...rest }: any, ref: any) => ReactLib.createElement(tag, { ref, ...rest }, children))
   }
   return { styled, Box, Button, Typography, Logo, AnimatedBackground }
 })
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 describe('when rendering the 404 page', () => {
   beforeEach(() => {

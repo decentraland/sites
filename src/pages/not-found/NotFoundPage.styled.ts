@@ -2,9 +2,11 @@ import { Link } from 'react-router-dom'
 import { Box, Button, Logo, Typography, styled } from 'decentraland-ui2'
 
 // Figma: desktop node 1:1274 (1920x1080), mobile node 1:4151 (393x852).
-// vw / dvh values below are those artboards' px coordinates normalized so the
-// composition scales continuously between the two designs. The `md` breakpoint
-// is the mobile-artboard -> desktop-artboard switch.
+// Two distinct layouts share one DOM:
+//  - Mobile (< md): a vertical flow column (logo, text, CTA) with the 404+robot
+//    graphic flowing BELOW it as its own block, so it can never overlap the CTA.
+//  - Desktop (>= md): text on the left, the graphic as an absolute overlay on
+//    the right at the exact Figma coordinates.
 
 // `isolation: isolate` establishes a stacking context so the sibling
 // <AnimatedBackground variant="absolute" /> (which paints at z-index -1) stays
@@ -13,9 +15,14 @@ import { Box, Button, Logo, Typography, styled } from 'decentraland-ui2'
 const PageContainer = styled(Box)({
   position: 'relative',
   minHeight: '100dvh',
-  overflow: 'hidden',
-  isolation: 'isolate'
-})
+  // Only clip horizontally (the robot bleeds past the viewport edges); allow the
+  // page to scroll vertically on short devices instead of overlapping content.
+  overflowX: 'hidden',
+  isolation: 'isolate',
+  display: 'flex',
+  flexDirection: 'column',
+  paddingBottom: 24
+}) as typeof Box
 
 const HomeLink = styled(Link)(({ theme }) => ({
   position: 'absolute',
@@ -56,8 +63,9 @@ const Content = styled(Box)(({ theme }) => ({
   // Figma: text block -> CTA gap
   gap: 60,
   textAlign: 'center',
-  // Figma mobile: content frame y 158 / 852 artboard height
-  paddingTop: '18.54dvh',
+  // Fixed offset (not a viewport %) so the title always clears the absolute
+  // logo (bottom edge ~118px) by a stable gap on every device.
+  paddingTop: 150,
   // Figma mobile: content frame x 16, width 360
   paddingLeft: 16,
   paddingRight: 16,
@@ -130,6 +138,25 @@ const CtaButton = styled(Button)({
   }
 }) as typeof Button
 
+// Wrapper for the 404 watermark + robot. Mobile: a flow block placed below the
+// CTA (guaranteeing no overlap). Desktop: an absolute overlay covering the
+// viewport so its children resolve to the exact Figma coordinates.
+const Graphic = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  width: '100%',
+  marginTop: 48,
+  // Reserve room for the absolutely-positioned children in the mobile flow.
+  height: '62vw',
+  [theme.breakpoints.up('md')]: {
+    position: 'absolute',
+    inset: 0,
+    marginTop: 0,
+    height: 'auto',
+    zIndex: 0,
+    pointerEvents: 'none'
+  }
+})) as typeof Box
+
 const Watermark = styled(Typography)(({ theme }) => ({
   position: 'absolute',
   zIndex: 0,
@@ -143,16 +170,17 @@ const Watermark = styled(Typography)(({ theme }) => ({
   textAlign: 'center',
   pointerEvents: 'none',
   userSelect: 'none',
-  // Figma mobile: box x -10.7, y 445, width 411; font 195.2; tracking 5.99 (/393)
-  left: '-2.72vw',
-  top: '52.23%',
-  width: '104.58vw',
-  fontSize: '49.67vw',
-  letterSpacing: '1.52vw',
+  // Mobile: centered inside the Graphic block.
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  fontSize: '54vw',
+  letterSpacing: '1.6vw',
   [theme.breakpoints.up('md')]: {
     // Figma desktop: box x 897.77, y 314, width 853; font 404.8; tracking 12.41 (/1920)
-    left: '46.76vw',
     top: '29.07%',
+    left: '46.76vw',
+    transform: 'none',
     width: '44.43vw',
     fontSize: '21.08vw',
     letterSpacing: '0.65vw'
@@ -161,19 +189,23 @@ const Watermark = styled(Typography)(({ theme }) => ({
 
 const RobotImage = styled('img')(({ theme }) => ({
   position: 'absolute',
-  zIndex: 0,
+  // Above the watermark so the robot sits on top of the "404".
+  zIndex: 1,
   height: 'auto',
   pointerEvents: 'none',
-  // Figma mobile: 425x239 @ (-34, 489) (/393 width, /852 height)
-  left: '-8.65vw',
-  top: '57.39%',
-  width: '108.14vw',
+  // Mobile: centered inside the Graphic block, sitting at its bottom.
+  bottom: 0,
+  left: '50%',
+  transform: 'translateX(-50%)',
+  width: '104vw',
   [theme.breakpoints.up('md')]: {
     // Figma desktop: 917.72x516 @ (868.28, 321) (/1920 width, /1080 height)
-    left: '45.22vw',
+    bottom: 'auto',
     top: '29.72%',
+    left: '45.22vw',
+    transform: 'none',
     width: '47.8vw'
   }
 }))
 
-export { BrandLogo, Content, CtaButton, Description, HomeLink, PageContainer, RobotImage, TextBlock, Title, TitleRest, Watermark }
+export { BrandLogo, Content, CtaButton, Description, Graphic, HomeLink, PageContainer, RobotImage, TextBlock, Title, TitleRest, Watermark }
