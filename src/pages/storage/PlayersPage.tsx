@@ -13,7 +13,7 @@ import { useGetProfileNames } from '../../features/profile/profile.client'
 import { useClearAllPlayersMutation, useListPlayersQuery } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
 import { useStorageScope } from '../../hooks/useStorageScope'
 import { useStorageTrack } from '../../hooks/useStorageTrack'
@@ -65,7 +65,7 @@ function PlayersPage() {
     setClearOpen(false)
   }, [clearAllPlayers, identity, realm, position, track])
 
-  useBlogPageTracking({
+  usePageViewTracking({
     name: t('page.storage.players.title'),
     properties: { section: 'storage_players', realm: realm ?? undefined, position: position ?? undefined }
   })

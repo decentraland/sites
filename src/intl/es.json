@@ -377,6 +377,12 @@
       "jump_in": "¡ENTRAR!",
       "experimental": "¿Querés seguir jugando en la web? Probá la versión experimental {here}",
       "here": "AQUÍ"
+    },
+    "not_found": {
+      "title_oops": "¡Ups!",
+      "title_rest": "Esta página abandonó el mundo.",
+      "description": "Puede que el enlace esté desactualizado, pero Decentraland sigue en vivo. Descubrí eventos de la comunidad, sets de DJ, juegos creados por la comunidad y nuevas experiencias dentro del mundo.",
+      "cta": "Descubrí qué está pasando"
     }
   },
   "page_invite": {

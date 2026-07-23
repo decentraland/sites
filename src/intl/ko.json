@@ -377,6 +377,12 @@
       "jump_in": "입장하기!",
       "experimental": "웹에서 계속 플레이하고 싶으신가요? 실험 버전을 {here}에서 사용해 보세요",
       "here": "여기"
+    },
+    "not_found": {
+      "title_oops": "이런!",
+      "title_rest": "이 페이지는 월드를 떠났습니다.",
+      "description": "링크가 오래되었을 수 있지만 Decentraland는 여전히 라이브 중입니다. 커뮤니티 이벤트, DJ 공연, 크리에이터가 만든 게임, 월드 속 새로운 경험을 만나보세요.",
+      "cta": "진행 중인 이벤트 보기"
     }
   },
   "page_invite": {

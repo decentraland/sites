@@ -21,7 +21,7 @@ import {
 } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
 import { useStorageScope } from '../../hooks/useStorageScope'
 import { useStorageTrack } from '../../hooks/useStorageTrack'
@@ -74,7 +74,7 @@ function PlayerDetailPage() {
     navigate({ pathname: '/storage/players', search: window.location.search })
   }, [navigate])
 
-  useBlogPageTracking({
+  usePageViewTracking({
     name: t('page.storage.player_detail.title', { address: truncateAddress(address) }),
     properties: {
       section: 'storage_player_detail',

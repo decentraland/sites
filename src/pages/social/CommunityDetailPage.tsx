@@ -5,7 +5,7 @@ import { CommunityDetail } from '../../components/social/CommunityDetail'
 import { useGetCommunityByIdQuery } from '../../features/communities/communities.client'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import {
   InitialLoader,
   NotFoundContainer,
@@ -25,7 +25,7 @@ function CommunityDetailPage() {
 
   const community = data?.data
 
-  useBlogPageTracking({
+  usePageViewTracking({
     name: community?.name,
     properties: community ? { communityId: community.id, privacy: community.privacy, membersCount: community.membersCount } : undefined
   })
