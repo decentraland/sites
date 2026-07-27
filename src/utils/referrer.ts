@@ -53,15 +53,30 @@ function readStoredReferrer(): string | null {
 }
 
 /**
- * Resolves the referrer for the current download: the URL query param takes
- * precedence (fresh intent), falling back to the value stored on the invite
- * page. Returns null when the direct-download flow is disabled, so the flag
- * gates the whole passthrough.
+ * Resolves the referrer for the current download. Returns null when the
+ * direct-download flow is disabled, so the gate covers the whole passthrough.
+ *
+ * An explicit `referrer` query param is authoritative: when it is present but
+ * invalid we must NOT fall back to the stored value, because that would
+ * attribute this download to an earlier referral. The stale value is cleared and
+ * no referrer is used. The stored value is only consulted when the param is
+ * absent (e.g. in-site navigation that dropped it).
  */
 function resolveReferrer(): string | null {
   if (!isDirectDownloadEnabled()) return null
-  const fromUrl = parseReferrer(new URLSearchParams(window.location.search).get('referrer'))
-  return fromUrl ?? readStoredReferrer()
+
+  const raw = new URLSearchParams(window.location.search).get('referrer')
+
+  if (raw !== null) {
+    const fromUrl = parseReferrer(raw)
+    if (!fromUrl) {
+      storeReferrer(null)
+      return null
+    }
+    return fromUrl
+  }
+
+  return readStoredReferrer()
 }
 
 export { REFERRER_STORAGE_KEY, isDirectDownloadEnabled, parseReferrer, readStoredReferrer, resolveReferrer, storeReferrer }

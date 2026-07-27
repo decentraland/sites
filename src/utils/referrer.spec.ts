@@ -76,10 +76,31 @@ describe('when resolving the referrer for a download', () => {
     expect(resolveReferrer()).toBe(VALID)
   })
 
-  it('should fall back to the stored referrer when the URL one is invalid', () => {
-    storeReferrer(VALID)
+  it('should not fall back to the stored referrer when the URL one is present but invalid', () => {
+    storeReferrer(OTHER)
     setSearch('?referrer=not-an-address')
+    // An explicit param is authoritative: falling back here would attribute this
+    // download to the previous referral.
+    expect(resolveReferrer()).toBeNull()
+  })
+
+  it('should clear the stale stored referrer when the URL one is present but invalid', () => {
+    storeReferrer(OTHER)
+    setSearch('?referrer=not-an-address')
+    resolveReferrer()
+    expect(readStoredReferrer()).toBeNull()
+  })
+
+  it('should fall back to the stored referrer only when the URL param is absent', () => {
+    storeReferrer(VALID)
+    setSearch('')
     expect(resolveReferrer()).toBe(VALID)
+  })
+
+  it('should return null for an empty referrer param without using storage', () => {
+    storeReferrer(OTHER)
+    setSearch('?referrer=')
+    expect(resolveReferrer()).toBeNull()
   })
 
   it('should return null when neither source has a valid referrer', () => {
