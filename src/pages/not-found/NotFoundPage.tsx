@@ -2,8 +2,9 @@ import { useLocation } from 'react-router-dom'
 import { AnimatedBackground } from 'decentraland-ui2'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
-import robotImage from '../../images/notfound/notfound_robot.webp'
+import avatarImage from '../../images/notfound/notfound_avatar.webp'
 import {
+  AvatarIllustration,
   BrandLogo,
   Content,
   CtaButton,
@@ -11,7 +12,6 @@ import {
   Graphic,
   HomeLink,
   PageContainer,
-  RobotImage,
   TextBlock,
   Title,
   TitleRest,
@@ -34,6 +34,7 @@ const NotFoundPage = () => {
       </HomeLink>
       <Content>
         <TextBlock>
+          <Watermark aria-hidden="true">404</Watermark>
           <Title variant="h3" component="h1">
             {l('page.not_found.title_oops')} <TitleRest>{l('page.not_found.title_rest')}</TitleRest>
           </Title>
@@ -51,8 +52,7 @@ const NotFoundPage = () => {
         </CtaButton>
       </Content>
       <Graphic>
-        <Watermark aria-hidden="true">404</Watermark>
-        <RobotImage src={robotImage} alt="" />
+        <AvatarIllustration src={avatarImage} alt="" />
       </Graphic>
     </PageContainer>
   )
