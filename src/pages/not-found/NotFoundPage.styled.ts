@@ -3,7 +3,7 @@ import { Box, Button, Logo, Typography, styled } from 'decentraland-ui2'
 
 // Figma: desktop node 1:1274 (1920x1080), mobile node 1:4151 (393x852).
 // Two distinct layouts share one DOM:
-//  - Mobile (< md): a vertical flow column (logo, text, CTA) with the 404+robot
+//  - Mobile (< md): a vertical flow column (logo, text, CTA) with the 404+avatar
 //    graphic flowing BELOW it as its own block, so it can never overlap the CTA.
 //  - Desktop (>= md): text on the left, the graphic as an absolute overlay on
 //    the right at the exact Figma coordinates.
@@ -15,7 +15,7 @@ import { Box, Button, Logo, Typography, styled } from 'decentraland-ui2'
 const PageContainer = styled(Box)({
   position: 'relative',
   minHeight: '100dvh',
-  // Only clip horizontally (the robot bleeds past the viewport edges); allow the
+  // Only clip horizontally (the watermark bleeds past the viewport edges); allow the
   // page to scroll vertically on short devices instead of overlapping content.
   overflowX: 'hidden',
   isolation: 'isolate',
@@ -138,7 +138,7 @@ const CtaButton = styled(Button)({
   }
 }) as typeof Button
 
-// Wrapper for the 404 watermark + robot. Mobile: a flow block placed below the
+// Wrapper for the 404 watermark + avatar. Mobile: a flow block placed below the
 // CTA (guaranteeing no overlap). Desktop: an absolute overlay covering the
 // viewport so its children resolve to the exact Figma coordinates.
 const Graphic = styled(Box)(({ theme }) => ({
@@ -187,9 +187,14 @@ const Watermark = styled(Typography)(({ theme }) => ({
   }
 }))
 
-const RobotImage = styled('img')(({ theme }) => ({
+// The artwork is 801x698 (ratio 1.15), much closer to square than the 16:9
+// graphic the Figma coordinates were measured against. Widths below are derived
+// from that ratio so the rendered HEIGHT matches Figma's 516px slot (and the
+// mobile Graphic block's 62vw) instead of overflowing it; the horizontal center
+// still lands on the watermark's (46.76 + 44.43 / 2 = 68.98vw).
+const AvatarIllustration = styled('img')(({ theme }) => ({
   position: 'absolute',
-  // Above the watermark so the robot sits on top of the "404".
+  // Above the watermark so the avatar sits on top of the "404".
   zIndex: 1,
   height: 'auto',
   pointerEvents: 'none',
@@ -197,15 +202,30 @@ const RobotImage = styled('img')(({ theme }) => ({
   bottom: 0,
   left: '50%',
   transform: 'translateX(-50%)',
-  width: '104vw',
+  // 68vw / 1.15 = 59vw tall, so it fits the 62vw Graphic block.
+  width: '68vw',
   [theme.breakpoints.up('md')]: {
-    // Figma desktop: 917.72x516 @ (868.28, 321) (/1920 width, /1080 height)
+    // Figma desktop: 516px tall @ y 321 (/1080). 516 * 1.15 = 592 (/1920 width),
+    // left = 68.98vw center - 30.83vw / 2.
     bottom: 'auto',
     top: '29.72%',
-    left: '45.22vw',
+    left: '53.56vw',
     transform: 'none',
-    width: '47.8vw'
+    width: '30.83vw'
   }
 }))
 
-export { BrandLogo, Content, CtaButton, Description, Graphic, HomeLink, PageContainer, RobotImage, TextBlock, Title, TitleRest, Watermark }
+export {
+  AvatarIllustration,
+  BrandLogo,
+  Content,
+  CtaButton,
+  Description,
+  Graphic,
+  HomeLink,
+  PageContainer,
+  TextBlock,
+  Title,
+  TitleRest,
+  Watermark
+}
