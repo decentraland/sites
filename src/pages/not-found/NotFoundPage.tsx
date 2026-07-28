@@ -34,6 +34,7 @@ const NotFoundPage = () => {
       </HomeLink>
       <Content>
         <TextBlock>
+          <Watermark aria-hidden="true">404</Watermark>
           <Title variant="h3" component="h1">
             {l('page.not_found.title_oops')} <TitleRest>{l('page.not_found.title_rest')}</TitleRest>
           </Title>
@@ -51,7 +52,6 @@ const NotFoundPage = () => {
         </CtaButton>
       </Content>
       <Graphic>
-        <Watermark aria-hidden="true">404</Watermark>
         <AvatarIllustration src={avatarImage} alt="" />
       </Graphic>
     </PageContainer>

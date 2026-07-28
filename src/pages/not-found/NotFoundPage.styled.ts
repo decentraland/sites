@@ -3,27 +3,22 @@ import { Box, Button, Logo, Typography, styled } from 'decentraland-ui2'
 
 // Figma: desktop node 1:1274 (1920x1080), mobile node 1:4151 (393x852).
 // Two distinct layouts share one DOM:
-//  - Mobile (< md): a vertical flow column (logo, text, CTA) with the 404+avatar
-//    graphic flowing BELOW it as its own block, so it can never overlap the CTA.
-//  - Desktop (>= md): text on the left, the graphic as an absolute overlay
+//  - Mobile (< md): a vertical flow column (404, text, CTA) with the avatar
+//    flowing BELOW it as its own block, so it can never overlap the CTA.
+//  - Desktop (>= md): text on the left, the avatar as an absolute overlay
 //    vertically centered on the right (see the geometry constants below).
 
-// Desktop geometry for the graphic (404 watermark + avatar). Both are derived
-// from the space left over next to the text column instead of from fixed Figma
-// coordinates, so the artwork grows on wide screens and steps out of the way of
-// the text on narrow ones (at 1280x720 a fixed 40vw avatar overlapped the
-// description) without ever needing a second breakpoint.
+// Desktop geometry for the avatar. Derived from the space left over next to the
+// text column instead of from fixed Figma coordinates, so the artwork grows on
+// wide screens and steps out of the way of the text on narrow ones (at 1280x720
+// a fixed 40vw avatar overlapped the description) without a second breakpoint.
 // Right edge of the text column: Figma's content x 172 + width 657 @ 1920.
 const TEXT_COLUMN_RIGHT = 'calc(min(8.96vw, 172px) + 657px)'
 const GRAPHIC_AVAILABLE_WIDTH = `calc(100vw - ${TEXT_COLUMN_RIGHT} - 24px)`
-// Shared center so the watermark and the avatar always move together.
 const GRAPHIC_CENTER_X = `calc(${TEXT_COLUMN_RIGHT} + ${GRAPHIC_AVAILABLE_WIDTH} / 2)`
 // Sized by HEIGHT (a share of the viewport), capped by the free width via the
 // artwork's 801/698 = 1.15 ratio.
 const GRAPHIC_HEIGHT = `min(66dvh, calc(${GRAPHIC_AVAILABLE_WIDTH} / 1.15))`
-// Figma keeps the watermark at 404.8px against a 516px-tall graphic; reuse that
-// ratio so the "404" scales with the avatar instead of being swallowed by it.
-const WATERMARK_TO_GRAPHIC_HEIGHT = 0.784
 // Vertical breathing room the text column needs on short desktop viewports: the
 // logo occupies y 114-177 at x 72-135 and the column starts at x 80-172, so a
 // perfectly centered column would collide with it below ~780px of height.
@@ -85,18 +80,21 @@ const Content = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  // Figma: text block -> CTA gap
-  gap: 60,
+  // Tighter than Figma's 60 on mobile: the 404 now sits inside this column and
+  // the avatar block below it has to stay above the fold on a 852px-tall phone.
+  gap: 48,
   textAlign: 'center',
-  // Fixed offset (not a viewport %) so the title always clears the absolute
+  // Fixed offset (not a viewport %) so the column always clears the absolute
   // logo (bottom edge ~118px) by a stable gap on every device.
-  paddingTop: 150,
+  paddingTop: 132,
   // Figma mobile: content frame x 16, width 360
   paddingLeft: 16,
   paddingRight: 16,
   [theme.breakpoints.up('md')]: {
     alignItems: 'flex-start',
     textAlign: 'left',
+    // Figma: text block -> CTA gap
+    gap: 60,
     // Vertical placement comes from the container's justifyContent: center.
     paddingTop: 0,
     // Figma desktop: content frame x 172 / 1920 artboard width
@@ -168,13 +166,13 @@ const CtaButton = styled(Button)({
   }
 }) as typeof Button
 
-// Wrapper for the 404 watermark + avatar. Mobile: a flow block placed below the
-// CTA (guaranteeing no overlap). Desktop: an absolute overlay covering the
-// viewport, so its children's 50% offsets resolve against the viewport.
+// Wrapper for the avatar. Mobile: a flow block placed below the CTA
+// (guaranteeing no overlap). Desktop: an absolute overlay covering the viewport,
+// so the avatar's 50% offsets resolve against the viewport.
 const Graphic = styled(Box)(({ theme }) => ({
   position: 'relative',
   width: '100%',
-  marginTop: 48,
+  marginTop: 24,
   // Reserve room for the absolutely-positioned children in the mobile flow.
   height: '62vw',
   [theme.breakpoints.up('md')]: {
@@ -187,36 +185,27 @@ const Graphic = styled(Box)(({ theme }) => ({
   }
 })) as typeof Box
 
+// Sits in the flow above the title rather than behind the avatar: as a backdrop
+// it was fighting the artwork for the same space, and it had to shrink or bleed
+// off-screen to coexist with it. `lineHeight: 1` plus the negative margin pull
+// the digits tight against "Oops!" so the pair reads as one lockup instead of
+// two stacked lines (the TextBlock's own 32px gap is meant for title/body).
 const Watermark = styled(Typography)(({ theme }) => ({
-  position: 'absolute',
-  zIndex: 0,
   margin: 0,
+  marginBottom: -12,
   color: theme.palette.common.white,
   opacity: 0.2,
   fontWeight: 700,
-  // Figma: 312.33/195.2 = 647.68/404.8 = 1.6
-  lineHeight: 1.6,
+  lineHeight: 1,
+  letterSpacing: 2,
   whiteSpace: 'nowrap',
-  textAlign: 'center',
   pointerEvents: 'none',
   userSelect: 'none',
-  // Mobile: centered inside the Graphic block.
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  fontSize: '54vw',
-  letterSpacing: '1.6vw',
+  fontSize: 72,
   [theme.breakpoints.up('md')]: {
-    // Desktop: same center as the avatar so the pair reads as one composition,
-    // vertically centered in the viewport. Width shrinks to the text (nowrap) so
-    // the translate actually centers it.
-    top: '50%',
-    left: GRAPHIC_CENTER_X,
-    transform: 'translate(-50%, -50%)',
-    width: 'auto',
-    fontSize: `calc(${GRAPHIC_HEIGHT} * ${WATERMARK_TO_GRAPHIC_HEIGHT})`,
-    // Figma desktop: tracking 12.41 (/1920)
-    letterSpacing: '0.65vw'
+    marginBottom: -20,
+    letterSpacing: 4,
+    fontSize: 120
   }
 }))
 
@@ -226,7 +215,6 @@ const Watermark = styled(Typography)(({ theme }) => ({
 // proportional on any aspect ratio.
 const AvatarIllustration = styled('img')(({ theme }) => ({
   position: 'absolute',
-  // Above the watermark so the avatar sits on top of the "404".
   zIndex: 1,
   height: 'auto',
   pointerEvents: 'none',
