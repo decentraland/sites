@@ -1,10 +1,12 @@
 import { render, waitFor } from '@testing-library/react'
+import { REFERRER_STORAGE_KEY } from '../../utils/referrer'
 import { InvitePage } from './InvitePage'
 
 const mockUseParams = jest.fn()
 const mockInviteHero = jest.fn()
 const mockFetch = jest.fn()
 const mockPage = jest.fn()
+const mockUseInviteDirectDownload = jest.fn()
 let mockIsAnalyticsInitialized = true
 const INVITE_PATHNAME = '/invite/Brai'
 
@@ -67,6 +69,10 @@ jest.mock('../../components/LandingFooter', () => ({
 jest.mock('../../data/inviteContent', () => ({
   INVITE_HERO_MEDIA: {},
   INVITE_SECOND_HERO_MEDIA: {}
+}))
+
+jest.mock('../../features/invite/invite.flags', () => ({
+  useInviteDirectDownload: () => mockUseInviteDirectDownload()
 }))
 
 if (typeof AbortSignal.timeout !== 'function') {
@@ -290,5 +296,61 @@ describe('when the document head already has meta tags', () => {
     expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('orig-desc')
     expect(document.querySelector('meta[property="og:title"]')?.getAttribute('content')).toBe('orig-og-title')
     expect(document.querySelector('meta[property="og:description"]')?.getAttribute('content')).toBe('orig-og-desc')
+  })
+})
+
+describe('when the direct download flag is enabled', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    mockUseInviteDirectDownload.mockReturnValue(true)
+    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes('/lambdas/profiles/')) {
+        return Promise.resolve({ json: () => Promise.resolve(referrerProfile) })
+      }
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    window.sessionStorage.clear()
+  })
+
+  it('should persist the resolved referrer for the download flow', async () => {
+    render(<InvitePage />)
+
+    await waitFor(() => {
+      expect(window.sessionStorage.getItem(REFERRER_STORAGE_KEY)).toBe('0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd')
+    })
+  })
+})
+
+describe('when the direct download flag is disabled', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    window.sessionStorage.setItem(REFERRER_STORAGE_KEY, '0x1111111111111111111111111111111111111111')
+    mockUseInviteDirectDownload.mockReturnValue(false)
+    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes('/lambdas/profiles/')) {
+        return Promise.resolve({ json: () => Promise.resolve(referrerProfile) })
+      }
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    window.sessionStorage.clear()
+  })
+
+  it('should not persist the referrer and should clear any previously stored one', async () => {
+    render(<InvitePage />)
+
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalled()
+    })
+    expect(window.sessionStorage.getItem(REFERRER_STORAGE_KEY)).toBeNull()
   })
 })

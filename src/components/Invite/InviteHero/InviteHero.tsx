@@ -1,11 +1,11 @@
 import { Suspense, lazy, memo, useCallback, useEffect, useState } from 'react'
 import { AnimatedBackground } from 'decentraland-ui2'
+import { useInviteDirectDownload } from '../../../features/invite/invite.flags'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useVideoOptimization } from '../../../hooks/contentful'
 import { useFeatureFlagContext } from '../../../hooks/useFeatureFlagContext'
 import { useReferralUrl } from '../../../hooks/useReferralUrl'
 import envelopeImageAsset from '../../../images/referral-envelope.webp'
-import { isDirectDownloadEnabled } from '../../../utils/referrer'
 import { BannerButton } from '../../Buttons/BannerButton'
 import type { InviteHeroProps } from './InviteHero.types'
 import {
@@ -69,8 +69,10 @@ const InviteHero = memo((props: InviteHeroProps) => {
   const referrerName = referrer?.avatars?.[0]?.name
 
   const trackClick = useTrackClick()
-  // Direct download only on desktop (mobile keeps the auth-login-first flow) and behind the flag.
-  const directDownload = isDirectDownloadEnabled() && isDesktop
+  // Direct download only on desktop (mobile keeps the auth-login-first flow) and
+  // behind the env gate + remote flag (default off until the flag loads).
+  const inviteDirectDownload = useInviteDirectDownload()
+  const directDownload = inviteDirectDownload && isDesktop
   const urlWithReferrer = useReferralUrl(referrerAddress, directDownload)
 
   const handleClick = useCallback(
