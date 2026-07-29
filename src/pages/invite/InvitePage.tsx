@@ -15,7 +15,16 @@ const InviteFaqs = lazy(() => import('../../components/Invite/InviteFaqs/InviteF
 
 const FETCH_TIMEOUT_MS = 5000
 
-async function resolveReferrerProfile(referrer: string): Promise<Profile | null> {
+type ResolvedReferrer = {
+  /** Referrer wallet, lowercased. Drives the `referrer` param on the auth URL. */
+  address: string | null
+  /** Catalyst profile, only used to render the inviter's name and avatar. */
+  profile: Profile | null
+}
+
+const EMPTY_REFERRER: ResolvedReferrer = { address: null, profile: null }
+
+async function resolveReferrer(referrer: string): Promise<ResolvedReferrer> {
   const peerUrl = getEnv('PEER_URL') || 'https://peer.decentraland.org'
   const signal = AbortSignal.timeout(FETCH_TIMEOUT_MS)
   let address: string | null = null
@@ -34,14 +43,20 @@ async function resolveReferrerProfile(referrer: string): Promise<Profile | null>
     }
   }
 
-  if (!address) return null
+  if (!address) return EMPTY_REFERRER
+
+  // The address is what the referral needs, so keep it even when the profile
+  // lookup fails. Deriving it back from `profile.avatars[0].ethAddress` dropped
+  // the attribution for every referrer without a deployed profile (and on any
+  // catalyst timeout), sending the visitor to auth with no `referrer` param.
+  const resolved: ResolvedReferrer = { address: address.toLowerCase(), profile: null }
 
   try {
-    const response = await fetch(`${peerUrl}/lambdas/profiles/${address.toLowerCase()}`, { signal })
+    const response = await fetch(`${peerUrl}/lambdas/profiles/${resolved.address}`, { signal })
     const data = await response.json()
-    return data ?? null
+    return { ...resolved, profile: data ?? null }
   } catch {
-    return null
+    return resolved
   }
 }
 
@@ -82,9 +97,9 @@ const InvitePage = memo(() => {
   const isDesktop = useDesktopMediaQuery()
   const { t } = useTranslation()
 
-  const [referrerProfile, referrerProfileStatus] = useAsyncMemo(async () => {
-    if (!referrer) return null
-    return resolveReferrerProfile(referrer)
+  const [resolvedReferrer, resolvedReferrerStatus] = useAsyncMemo(async () => {
+    if (!referrer) return EMPTY_REFERRER
+    return resolveReferrer(referrer)
   }, [referrer])
 
   useDocumentMeta(t('page_invite.social.title'), t('page_invite.social.description'))
@@ -103,10 +118,11 @@ const InvitePage = memo(() => {
         subtitle={t('page_invite.hero.subtitle')}
         buttonLabel={t('page_invite.hero.button_label')}
         media={INVITE_HERO_MEDIA}
-        referrer={referrerProfile ?? null}
+        referrer={resolvedReferrer?.profile ?? null}
+        referrerAddress={resolvedReferrer?.address ?? null}
         eventPlace={SectionViewedTrack.INVITE_FIRST_HERO}
         isDesktop={isDesktop}
-        isLoading={referrerProfileStatus.loading}
+        isLoading={resolvedReferrerStatus.loading}
       />
       <InviteHero
         key="invite-second-hero"
@@ -114,11 +130,12 @@ const InvitePage = memo(() => {
         subtitle={t('page_invite.second_hero.subtitle')}
         buttonLabel={t('page_invite.second_hero.button_label')}
         media={INVITE_SECOND_HERO_MEDIA}
-        referrer={referrerProfile ?? null}
+        referrer={resolvedReferrer?.profile ?? null}
+        referrerAddress={resolvedReferrer?.address ?? null}
         eventPlace={SectionViewedTrack.INVITE_SECOND_HERO}
         isDesktop={isDesktop}
         isSecondaryHero
-        isLoading={referrerProfileStatus.loading}
+        isLoading={resolvedReferrerStatus.loading}
       />
       <Suspense fallback={null}>
         <InviteFaqs />
