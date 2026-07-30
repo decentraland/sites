@@ -102,6 +102,7 @@ const InviteHero = memo((props: InviteHeroProps) => {
     const delay = isWaitingForReferrer ? REFERRER_WAIT_BUDGET_MS - elapsed : Math.max(0, TRACK_FLUSH_DELAY_MS - elapsed)
 
     const timeout = setTimeout(() => {
+      setClickedAt(null)
       window.location.href = urlWithReferrerRef.current
     }, delay)
 

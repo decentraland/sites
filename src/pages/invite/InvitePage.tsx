@@ -22,7 +22,7 @@ type ResolvedReferrer = {
   profile: Profile | null
 }
 
-const EMPTY_REFERRER: ResolvedReferrer = { address: null, profile: null }
+const EMPTY_REFERRER: ResolvedReferrer = Object.freeze({ address: null, profile: null })
 
 async function resolveReferrer(referrer: string): Promise<ResolvedReferrer> {
   const peerUrl = getEnv('PEER_URL') || 'https://peer.decentraland.org'

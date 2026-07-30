@@ -131,6 +131,29 @@ describe('when the referrer address is already resolved', () => {
 
     expect(window.location.href).toBe(URL_WITH_REFERRER)
   })
+
+  it('should not schedule a second navigation if the component re-renders after leaving', () => {
+    const { rerender } = renderHero({ referrerAddress: REFERRER_ADDRESS, isLoading: false })
+
+    clickCta()
+
+    act(() => {
+      jest.advanceTimersByTime(500)
+    })
+
+    expect(window.location.href).toBe(URL_WITH_REFERRER)
+
+    // A late render (e.g. the loading flag flipping while the page unloads)
+    // must not re-enter the deferred navigation.
+    mockUseReferralUrl.mockReturnValue('https://decentraland.org/auth/login?referrer=late')
+    rerender(<InviteHero {...baseProps} referrerAddress={REFERRER_ADDRESS} isLoading={true} />)
+
+    act(() => {
+      jest.advanceTimersByTime(2000)
+    })
+
+    expect(window.location.href).toBe(URL_WITH_REFERRER)
+  })
 })
 
 describe('when the visitor clicks while the referrer is still resolving', () => {
