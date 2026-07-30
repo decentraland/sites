@@ -47,6 +47,12 @@ const ReportSuccessPage = lazy(() => import('./pages/report/success').then(m => 
 // and links in already-sent emails keep working instead of hitting the /account/* not-found.
 const ConfirmEmailPage = lazy(() => import('./pages/confirm-email').then(m => ({ default: m.ConfirmEmailPage })))
 
+// 404 — fullscreen catch-all for unknown paths. Lightweight and Layout-less
+// (no Redux, no Web3, no navbar/footer) so the immersive Figma design renders
+// edge to edge. Area-scoped catch-alls (/cast/*, /storage/*, /social/*,
+// /account/*) keep their own not-found pages.
+const NotFoundPage = lazy(() => import('./pages/not-found/NotFoundPage').then(m => ({ default: m.NotFoundPage })))
+
 // Reels — fullscreen viewer for in-game camera screenshots. Migrated from the standalone
 // reels.decentraland.org Gatsby app. Lightweight (no Redux, no Web3) and intentionally
 // rendered OUTSIDE the shared <Layout> so the original immersive UX is preserved.
@@ -267,8 +273,14 @@ const App = () => {
                 <Route path="*" element={<AccountNotFoundPage />} />
               </Route>
             </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
+          {/* NOTE: unknown paths used to silently redirect to `/`. Intentional
+              change (2026-07): they now render the fullscreen 404 page (Figma:
+              404 Page not found). It sits OUTSIDE <Layout /> (no navbar/footer,
+              immersive UX) and `*` ranks below every explicit route, so real
+              pages, legacy redirects (/events/*, /places/*) and area-scoped
+              catch-alls (/cast/*, /storage/*, /social/*, /account/*) still win. */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

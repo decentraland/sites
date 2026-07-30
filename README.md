@@ -19,6 +19,7 @@ Decentraland's main website. A single Vite SPA that consolidates the homepage an
 | Social (communities)       | `/social/communities/:id`, `/social/*` (404)                                                                                                  | Community detail page, signed-fetch mutations.                                                                                                                                                  |
 | Cast (browser streaming)   | `/cast/s/:token`, `/cast/s/streaming`, `/cast/w/:worldName/parcel/:parcel`, `/cast/w/:location`, `/cast` + `/cast/*` (404)                    | LiveKit-based streaming — migrated from `decentraland/cast2`.                                                                                                                                   |
 | Storage service            | `/storage`, `/storage/select`, `/storage/env`, `/storage/scene`, `/storage/players`, `/storage/players/:address`, `/storage/*` (404)          | Migrated from the standalone storage-service-site.                                                                                                                                              |
+| Not found                  | `*` (any unknown path)                                                                                                                        | Fullscreen 404 page (Layout-less, no shared navbar+footer). Replaces the previous silent redirect to `/`. Area-scoped catch-alls above keep their own not-found pages.                          |
 
 The full route map and tier rules (Layout-less / lightweight / heavy DappsShell) live in `CLAUDE.md`.
 
@@ -26,7 +27,7 @@ The full route map and tier rules (Layout-less / lightweight / heavy DappsShell)
 
 Three route tiers protect homepage Lighthouse performance:
 
-- **Layout-less**: `/reels/*`, `/download`, `/download_success`, `/invite/:referrer`. Fullscreen — bypass navbar+footer.
+- **Layout-less**: `/reels/*`, `/download`, `/download_success`, `/invite/:referrer`, `*` (404). Fullscreen — bypass navbar+footer.
 - **Lightweight (with Layout)**: `/`, legal, marketing, sign-in, etc. No Redux, no Web3, data via `useSyncExternalStore` clients.
 - **Heavy (`<DappsShell />` lazy chunk)**: every absorbed dapp. Boots Redux + RTK Query + the per-domain client only when the user navigates into one of these areas.
 

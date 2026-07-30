@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react'
 import { useAnalytics } from '@dcl/hooks'
-import { useBlogPageTracking } from './useBlogPageTracking'
+import { usePageViewTracking } from './usePageViewTracking'
 
 jest.mock('@dcl/hooks', () => ({
   useAnalytics: jest.fn()
@@ -8,7 +8,7 @@ jest.mock('@dcl/hooks', () => ({
 
 const useAnalyticsMock = useAnalytics as jest.MockedFunction<typeof useAnalytics>
 
-describe('useBlogPageTracking', () => {
+describe('usePageViewTracking', () => {
   let pageMock: jest.Mock
 
   beforeEach(() => {
@@ -36,7 +36,7 @@ describe('useBlogPageTracking', () => {
     })
 
     it('should not call page', () => {
-      renderHook(() => useBlogPageTracking({ name: 'Blog Post', properties: { title: 'Hello' } }))
+      renderHook(() => usePageViewTracking({ name: 'Blog Post', properties: { title: 'Hello' } }))
 
       expect(pageMock).not.toHaveBeenCalled()
     })
@@ -44,7 +44,7 @@ describe('useBlogPageTracking', () => {
 
   describe('when name is undefined', () => {
     it('should not call page', () => {
-      renderHook(() => useBlogPageTracking({ name: undefined, properties: { title: 'Hello' } }))
+      renderHook(() => usePageViewTracking({ name: undefined, properties: { title: 'Hello' } }))
 
       expect(pageMock).not.toHaveBeenCalled()
     })
@@ -52,7 +52,7 @@ describe('useBlogPageTracking', () => {
 
   describe('when name is empty string', () => {
     it('should not call page', () => {
-      renderHook(() => useBlogPageTracking({ name: '', properties: { title: 'Hello' } }))
+      renderHook(() => usePageViewTracking({ name: '', properties: { title: 'Hello' } }))
 
       expect(pageMock).not.toHaveBeenCalled()
     })
@@ -60,13 +60,13 @@ describe('useBlogPageTracking', () => {
 
   describe('when name and analytics are ready', () => {
     it('should call page with name and properties', () => {
-      renderHook(() => useBlogPageTracking({ name: 'Blog Post', properties: { title: 'Hello', slug: 'hello' } }))
+      renderHook(() => usePageViewTracking({ name: 'Blog Post', properties: { title: 'Hello', slug: 'hello' } }))
 
       expect(pageMock).toHaveBeenCalledWith('Blog Post', { title: 'Hello', slug: 'hello' })
     })
 
     it('should call page once for stable args across re-renders', () => {
-      const { rerender } = renderHook(({ name }) => useBlogPageTracking({ name, properties: { title: 'Hello' } }), {
+      const { rerender } = renderHook(({ name }) => usePageViewTracking({ name, properties: { title: 'Hello' } }), {
         initialProps: { name: 'Blog Post' }
       })
 
@@ -76,7 +76,7 @@ describe('useBlogPageTracking', () => {
     })
 
     it('should re-fire page when name changes', () => {
-      const { rerender } = renderHook(({ name }) => useBlogPageTracking({ name, properties: { title: 'A' } }), {
+      const { rerender } = renderHook(({ name }) => usePageViewTracking({ name, properties: { title: 'A' } }), {
         initialProps: { name: 'Post A' }
       })
 
@@ -87,7 +87,7 @@ describe('useBlogPageTracking', () => {
     })
 
     it('should re-fire page when properties change', () => {
-      const { rerender } = renderHook(({ properties }) => useBlogPageTracking({ name: 'Post', properties }), {
+      const { rerender } = renderHook(({ properties }) => usePageViewTracking({ name: 'Post', properties }), {
         initialProps: { properties: { title: 'A' } as Record<string, unknown> }
       })
 
@@ -100,7 +100,7 @@ describe('useBlogPageTracking', () => {
 
   describe('when properties is omitted', () => {
     it('should call page with undefined properties', () => {
-      renderHook(() => useBlogPageTracking({ name: 'Blog' }))
+      renderHook(() => usePageViewTracking({ name: 'Blog' }))
 
       expect(pageMock).toHaveBeenCalledWith('Blog', undefined)
     })

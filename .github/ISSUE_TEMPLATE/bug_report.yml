@@ -110,6 +110,7 @@ body:
         - Discord redirect (/discord)
         - Legacy redirects (/events/*, /places/*)
         - Navbar / Footer (cross-page)
+        - 404 / Not found (any unknown path)
         - Other / Not listed
     validations:
       required: true
