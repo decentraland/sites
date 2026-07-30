@@ -17,6 +17,10 @@ jest.mock('../../../hooks/contentful', () => ({
   useVideoOptimization: () => undefined
 }))
 
+jest.mock('../../../features/invite/invite.flags', () => ({
+  useInviteDirectDownload: () => true
+}))
+
 jest.mock('../../../hooks/useFeatureFlagContext', () => ({
   useFeatureFlagContext: () => [{}, { loading: false }]
 }))
@@ -26,10 +30,6 @@ jest.mock('../../../hooks/useReferralUrl', () => ({
 }))
 
 jest.mock('../../../images/referral-envelope.webp', () => 'envelope.webp')
-
-jest.mock('../../../utils/referrer', () => ({
-  isDirectDownloadEnabled: () => true
-}))
 
 // The real module ships untranspiled ESM, which Jest can't parse through the
 // lazy() import.
