@@ -128,6 +128,16 @@ describe('when the referrer param is a Decentraland name', () => {
     })
   })
 
+  it('should pass the lowercased resolved address to InviteHero', async () => {
+    render(<InvitePage />)
+
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalledWith(
+        expect.objectContaining({ referrerAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd', isLoading: false })
+      )
+    })
+  })
+
   it('should not call the legacy /lambdas/users/{id}/names endpoint', async () => {
     render(<InvitePage />)
 
@@ -207,6 +217,54 @@ describe('when the profile fetch fails after a successful name resolution', () =
       expect(calls.some(u => u.includes('/lambdas/profiles/'))).toBe(true)
     })
     expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrer: null }))
+  })
+
+  it('should keep the resolved address so the referral is still attributed', async () => {
+    render(<InvitePage />)
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ isLoading: false }))
+    })
+    expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrerAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd' }))
+  })
+})
+
+describe('when the referrer address has no deployed profile', () => {
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    mockFetch.mockResolvedValue({ json: () => Promise.resolve({ error: 'Not Found', message: 'Profile not found' }) })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should still pass the address from the URL to InviteHero', async () => {
+    render(<InvitePage />)
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ isLoading: false }))
+    })
+    expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrerAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd' }))
+  })
+})
+
+describe('when the referrer cannot be resolved at all', () => {
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: 'Unknown' })
+    mockFetch.mockResolvedValue({ json: () => Promise.resolve({}) })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should pass a null address and skip the profile lookup', async () => {
+    render(<InvitePage />)
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ isLoading: false }))
+    })
+    expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrerAddress: null }))
+    const calledUrls = mockFetch.mock.calls.map(([url]) => url as string)
+    expect(calledUrls.some(url => url.includes('/lambdas/profiles/'))).toBe(false)
   })
 })
 
