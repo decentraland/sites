@@ -51,7 +51,7 @@ function getSnapshot(): boolean {
 
 /**
  * Whether the invite direct-download flow is enabled: the per-environment
- * configuration gate AND the remote `sites-invite-direct-download` flag.
+ * configuration gate AND the remote `dapps-invite-direct-download` flag.
  * Returns false until the remote flag loads (default off — the CTA renders
  * the auth-login-first flow, which also registers the referral).
  */

@@ -28,7 +28,7 @@ describe('when resolving the invite direct-download flag', () => {
 
   describe('and the remote flag is enabled', () => {
     beforeEach(() => {
-      fetchMock.mockReturnValue(flagsResponse({ 'sites-invite-direct-download': true }))
+      fetchMock.mockReturnValue(flagsResponse({ 'dapps-invite-direct-download': true }))
     })
 
     it('should start disabled and enable once the flag loads', async () => {
@@ -53,7 +53,7 @@ describe('when resolving the invite direct-download flag', () => {
 
   describe('and the remote flag is disabled or missing', () => {
     it.each([
-      ['disabled', { 'sites-invite-direct-download': false }],
+      ['disabled', { 'dapps-invite-direct-download': false }],
       ['missing', {}]
     ])('should stay disabled when the flag is %s', async (_label, flags) => {
       fetchMock.mockReturnValue(flagsResponse(flags))
@@ -83,7 +83,7 @@ describe('when resolving the invite direct-download flag', () => {
   describe('and the environment gate is off', () => {
     it('should stay disabled even when the remote flag is enabled', async () => {
       ;(isDirectDownloadEnabled as jest.Mock).mockReturnValue(false)
-      fetchMock.mockReturnValue(flagsResponse({ 'sites-invite-direct-download': true }))
+      fetchMock.mockReturnValue(flagsResponse({ 'dapps-invite-direct-download': true }))
 
       const { result } = renderHook(() => useInviteDirectDownload())
 
