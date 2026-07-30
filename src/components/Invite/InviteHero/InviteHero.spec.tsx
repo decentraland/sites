@@ -17,12 +17,16 @@ jest.mock('../../../hooks/contentful', () => ({
   useVideoOptimization: () => undefined
 }))
 
+jest.mock('../../../features/invite/invite.flags', () => ({
+  useInviteDirectDownload: () => true
+}))
+
 jest.mock('../../../hooks/useFeatureFlagContext', () => ({
   useFeatureFlagContext: () => [{}, { loading: false }]
 }))
 
 jest.mock('../../../hooks/useReferralUrl', () => ({
-  useReferralUrl: (referrer?: string) => mockUseReferralUrl(referrer)
+  useReferralUrl: (referrer?: string, directDownload?: boolean) => mockUseReferralUrl(referrer, directDownload)
 }))
 
 jest.mock('../../../images/referral-envelope.webp', () => 'envelope.webp')
@@ -113,7 +117,7 @@ describe('when the referrer address is already resolved', () => {
   it('should build the referral URL from the address prop', () => {
     renderHero({ referrerAddress: REFERRER_ADDRESS, isLoading: false })
 
-    expect(mockUseReferralUrl).toHaveBeenCalledWith(REFERRER_ADDRESS)
+    expect(mockUseReferralUrl).toHaveBeenCalledWith(REFERRER_ADDRESS, true)
     expect(screen.getByRole('link', { name: 'Jump in' })).toHaveAttribute('href', URL_WITH_REFERRER)
   })
 

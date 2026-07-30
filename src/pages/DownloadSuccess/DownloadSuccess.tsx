@@ -31,6 +31,7 @@ import { streamOrFallback } from '../../modules/streamOrFallback'
 import type { StreamOrFallbackResult } from '../../modules/streamOrFallback.types'
 import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
+import { resolveReferrer } from '../../utils/referrer'
 import { DownloadSuccessLayout } from './DownloadSuccessLayout'
 import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from './DownloadSuccess.types'
 import {
@@ -174,6 +175,14 @@ const DownloadSuccess = memo(() => {
   const deepLinkParams = useMemo(() => collectDeepLinkParams(searchParams), [searchParams])
   const deepLinkParamsRef = useRef(deepLinkParams)
   deepLinkParamsRef.current = deepLinkParams
+
+  // Referral attribution (gated by the direct-download flag). Appended to the
+  // gateway file URL so the launcher can attribute the referral. This page is
+  // the actual download trigger, so the referrer must be added here too — not
+  // just on the /download page.
+  const referrer = useMemo(() => resolveReferrer(), [searchParams])
+  const referrerRef = useRef(referrer)
+  referrerRef.current = referrer
 
   // Shared `extra` for every tracker built on this page: the client
   // fingerprint, the campaign params, the click→download correlation, and
@@ -361,7 +370,7 @@ const DownloadSuccess = memo(() => {
       // only it bakes those params into the signed binary; the CDN-direct
       // fallback drops them. Guarantee an anon_user_id so we stay on the
       // anonymous gateway route instead of falling back to the CDN.
-      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserIdRef.current, deepLinkParamsRef.current)
+      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserIdRef.current, deepLinkParamsRef.current, referrerRef.current)
       gatewayAnonUserIdRef.current = gatewayAnonUserId
 
       try {
@@ -378,6 +387,7 @@ const DownloadSuccess = memo(() => {
         const downloadUrl = addQueryParamsToUrlString(url, {
           [ANON_USER_ID_PARAM]: gatewayAnonUserId,
           ...deepLinkParamsRef.current,
+          ...(referrerRef.current ? { referrer: referrerRef.current } : {}),
           // Forwarded so the gateway echoes it into its server-side telemetry,
           // closing the click→download join without relying on the beacon.
           // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -494,7 +504,7 @@ const DownloadSuccess = memo(() => {
       const extra = buildTrackerExtra()
       // Deep-link downloads must route through the gateway (see the auto-download
       // effect above); guarantee an anon_user_id to avoid the CDN-direct fallback.
-      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserId, deepLinkParamsRef.current)
+      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserId, deepLinkParamsRef.current, referrerRef.current)
       gatewayAnonUserIdRef.current = gatewayAnonUserId
 
       try {
@@ -508,6 +518,7 @@ const DownloadSuccess = memo(() => {
         const downloadUrl = addQueryParamsToUrlString(url, {
           [ANON_USER_ID_PARAM]: gatewayAnonUserId,
           ...deepLinkParamsRef.current,
+          ...(referrerRef.current ? { referrer: referrerRef.current } : {}),
           // eslint-disable-next-line @typescript-eslint/naming-convention
           click_id: readDownloadClickCorrelation()?.click_id
         })

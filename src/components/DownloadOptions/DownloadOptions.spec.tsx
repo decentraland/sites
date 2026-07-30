@@ -8,6 +8,10 @@ import { postSegmentEvent } from '../../modules/segmentBeacon'
 import type { DownloadOptionProps } from '../../types/download.types'
 import { DownloadOptions, handleDownloadOptionClick } from './DownloadOptions'
 
+// getEnv reaches config/index which uses import.meta (Vite-only). The referrer
+// util pulls it in transitively; stub it so the flag reads as off by default.
+jest.mock('../../config/env', () => ({ getEnv: jest.fn(() => undefined) }))
+
 // Keep ../../modules/url REAL so the actual /download_success URL is built and
 // we can assert UTM preservation end-to-end. Mock only the decentraland-ui2
 // entry points url.ts (and this component) pull in at module load.

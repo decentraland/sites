@@ -284,6 +284,23 @@ describe('buildDownloadSuccessHref', () => {
     })
   })
 
+  describe('when a referrer is provided', () => {
+    it('should append it alongside the routing params', () => {
+      const result = buildDownloadSuccessHref('Windows', 'download-page', {
+        arch: 'x64',
+        referrer: '0x24e5f44999c151f08609f8e27b2238c773c4d020'
+      })
+      const url = new URL(result, 'https://decentraland.org')
+      expect(url.searchParams.get('referrer')).toBe('0x24e5f44999c151f08609f8e27b2238c773c4d020')
+      expect(url.searchParams.get('os')).toBe('Windows')
+    })
+
+    it('should not append a referrer param when none is provided', () => {
+      const result = buildDownloadSuccessHref('Windows', 'download-page')
+      expect(result).not.toContain('referrer')
+    })
+  })
+
   describe('when a deep-link param key collides with a routing param', () => {
     it('should never overwrite the already-set os/place/arch/anon_user_id params', () => {
       const result = buildDownloadSuccessHref('Windows', 'download-page', {

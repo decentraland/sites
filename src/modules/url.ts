@@ -19,6 +19,11 @@ interface DownloadSuccessHrefOptions {
    * launcher parses on first run (kMDItemWhereFroms / Zone.Identifier).
    */
   deepLinkParams?: Record<string, string>
+  /**
+   * Referral attribution address, forwarded so `/download_success` embeds it in
+   * the gateway download URL the launcher parses for attribution.
+   */
+  referrer?: string
 }
 
 const addQueryParamsToUrlString = (url: string, params: Record<string, string | undefined | null>): string => {
@@ -178,6 +183,9 @@ const buildDownloadSuccessHref = (os: string, place: string, options: DownloadSu
   }
   if (options.arch) {
     params.set('arch', options.arch)
+  }
+  if (options.referrer) {
+    params.set('referrer', options.referrer)
   }
   if (options.deepLinkParams) {
     for (const [key, value] of Object.entries(options.deepLinkParams)) {
