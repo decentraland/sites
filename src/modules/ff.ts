@@ -2,7 +2,7 @@ const FEATURE_FLAG = {
   conferencePage: 'landing-conference-page',
   unityWearablePreview: 'dapps-unity-wearable-preview',
   onboardingFlow: 'dapps-onboarding-flow',
-  inviteDirectDownload: 'landing-invite-direct-download'
+  inviteDirectDownload: 'sites-invite-direct-download'
 } as const
 
 enum OnboardingFlowVariant {

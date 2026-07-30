@@ -6,7 +6,7 @@ import { isDirectDownloadEnabled } from '../../utils/referrer'
 // (InvitePage / InviteHero). The flag fetch is intentionally scoped to that
 // lazy chunk so the homepage ships zero feature-flag bytes and fires zero
 // feature-flag requests (see CLAUDE.md — homepage Lighthouse budget).
-const FEATURE_FLAGS_URL = 'https://feature-flags.decentraland.org/landing.json'
+const FEATURE_FLAGS_URL = 'https://feature-flags.decentraland.org/dapps.json'
 const FETCH_TIMEOUT_MS = 5_000
 
 let remoteFlagEnabled = false
@@ -51,7 +51,7 @@ function getSnapshot(): boolean {
 
 /**
  * Whether the invite direct-download flow is enabled: the per-environment
- * configuration gate AND the remote `landing-invite-direct-download` flag.
+ * configuration gate AND the remote `sites-invite-direct-download` flag.
  * Returns false until the remote flag loads (default off — the CTA renders
  * the auth-login-first flow, which also registers the referral).
  */
