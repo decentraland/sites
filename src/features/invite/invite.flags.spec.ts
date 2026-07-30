@@ -48,6 +48,7 @@ describe('when resolving the invite direct-download flag', () => {
         expect(first.result.current).toBe(true)
       })
       expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(fetchMock).toHaveBeenCalledWith('/api/feature-flags/dapps.json', expect.objectContaining({ signal: expect.any(AbortSignal) }))
     })
   })
 

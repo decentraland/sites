@@ -6,7 +6,9 @@ import { isDirectDownloadEnabled } from '../../utils/referrer'
 // (InvitePage / InviteHero). The flag fetch is intentionally scoped to that
 // lazy chunk so the homepage ships zero feature-flag bytes and fires zero
 // feature-flag requests (see CLAUDE.md — homepage Lighthouse budget).
-const FEATURE_FLAGS_URL = 'https://feature-flags.decentraland.org/dapps.json'
+// Same-origin proxy: the feature-flags service does not expose CORS headers.
+// Vite proxies this path in development and Vercel rewrites it in deployments.
+const FEATURE_FLAGS_URL = '/api/feature-flags/dapps.json'
 const FETCH_TIMEOUT_MS = 5_000
 
 let remoteFlagEnabled = false
