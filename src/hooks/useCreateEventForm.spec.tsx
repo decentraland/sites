@@ -252,7 +252,7 @@ describe('useCreateEventForm', () => {
             recurrent_interval: 1,
             // 0 (not undefined) so the backend clears any stale mask and recurs on start_at's weekday — issue #560.
             recurrent_weekday_mask: 0,
-            recurrent_until: expect.stringContaining('2030-02-01')
+            recurrent_until: new Date('2030-02-01T23:59:59.999').toISOString()
           })
         })
       )
