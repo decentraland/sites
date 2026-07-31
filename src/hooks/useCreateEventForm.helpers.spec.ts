@@ -3,6 +3,7 @@ import {
   computeUpcomingOccurrences,
   eventEntryToFormState,
   hasModeratedContentChanged,
+  localDateToEndOfDayIso,
   recurrenceToApi
 } from './useCreateEventForm.helpers'
 
@@ -158,6 +159,21 @@ describe('eventEntryToFormState', () => {
       const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'YEARLY', recurrent_interval: 1 }))
 
       expect(formState.recurrence).toBe('every_week')
+    })
+  })
+
+  describe('when hydrating a recurrence end date', () => {
+    it('should use recurrent_until instead of the last materialized recurrent_dates entry', () => {
+      const recurrentUntil = '2026-08-01T22:00:00.000Z'
+      const formState = eventEntryToFormState(
+        buildEvent({
+          recurrent: true,
+          recurrent_until: recurrentUntil,
+          recurrent_dates: ['2026-07-31T19:00:00.000Z', '2026-08-01T19:00:00.000Z']
+        })
+      )
+
+      expect(formState.repeatEndDate).toBe(asLocalFormFields(recurrentUntil).date)
     })
   })
 
@@ -343,6 +359,12 @@ describe('eventEntryToFormState', () => {
       expect(formState.startDate).toBe(expected.date)
       expect(formState.startTime).toBe(expected.time)
     })
+  })
+})
+
+describe('localDateToEndOfDayIso', () => {
+  it('should serialize the selected date at the end of its local day', () => {
+    expect(localDateToEndOfDayIso('2030-02-01')).toBe(new Date('2030-02-01T23:59:59.999').toISOString())
   })
 })
 
