@@ -127,11 +127,15 @@ async function getDownloadLinkWithIdentity(params: DownloadWithIdentityParams): 
  */
 function resolveGatewayAnonUserId(
   anonUserId: string | undefined,
-  deepLinkParams: { position?: string; realm?: string }
+  deepLinkParams: { position?: string; realm?: string },
+  referrer?: string | null
 ): string | undefined {
   if (anonUserId) return anonUserId
-  const hasDeepLink = Boolean(deepLinkParams.position || deepLinkParams.realm)
-  return hasDeepLink ? ensureSegmentAnonymousId() : undefined
+  // A referrer (like position/realm) is baked into the installer by the gateway,
+  // so it must route through the gateway — the CDN-direct fallback would drop it.
+  // Guarantee an anon id so the anonymous gateway route is used instead of the CDN.
+  const requiresGateway = Boolean(deepLinkParams.position || deepLinkParams.realm || referrer)
+  return requiresGateway ? ensureSegmentAnonymousId() : undefined
 }
 
 export { calculateDownloadUrl, getDownloadLinkWithIdentity, resolveGatewayAnonUserId }

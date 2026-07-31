@@ -19,6 +19,7 @@ import { postSegmentEvent } from '../../modules/segmentBeacon'
 import { buildDownloadSuccessHref, sanitizeCDNReleaseLinks } from '../../modules/url'
 import { Architecture, DownloadOptionProps, OperativeSystem } from '../../types/download.types'
 import { assetUrl } from '../../utils/assetUrl'
+import { resolveReferrer } from '../../utils/referrer'
 import { DownloadButton, EpicButton } from '../Home/Hero/Hero.styled'
 import { EPIC_GAMES_URL } from '../Home/shared/epicGames'
 import { VerifiedIcon } from '../Icon/VerifiedIcon'
@@ -75,18 +76,21 @@ const handleDownloadOptionClick = async (params: HandleDownloadOptionClickParams
   // ride along to the file URL and to /download_success, so the launcher can
   // parse them from the file-origin URL on first run.
   const deepLinkParams = collectDeepLinkParams()
-  // When those params are present the installer MUST come from the gateway (it
-  // bakes them into the binary; a CDN-direct fallback would drop them), so
-  // guarantee an anon_user_id to keep the download on the anonymous gateway
-  // route rather than falling back to the CDN.
-  const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserId, deepLinkParams)
+  // Referral attribution (gated by the direct-download flag). Rides the gateway
+  // file URL and forwards to /download_success so the installer chain can attribute it.
+  const referrer = resolveReferrer()
+  // When deep-link params OR a referrer are present the installer MUST come from
+  // the gateway (it bakes them into the binary; a CDN-direct fallback would drop
+  // them), so guarantee an anon_user_id to keep the download on the anonymous
+  // gateway route rather than falling back to the CDN.
+  const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserId, deepLinkParams, referrer)
   if (downloadOnClick) {
     try {
       await getDownloadLinkWithIdentity({
         os: option.text,
         arch: option.arch,
         fallbackLinks: links,
-        queryParams: { [ANON_USER_ID_PARAM]: gatewayAnonUserId, ...deepLinkParams },
+        queryParams: { [ANON_USER_ID_PARAM]: gatewayAnonUserId, ...deepLinkParams, ...(referrer ? { referrer } : {}) },
         getIdentityId,
         anonUserId: gatewayAnonUserId
       })
@@ -120,7 +124,8 @@ const handleDownloadOptionClick = async (params: HandleDownloadOptionClickParams
     anonUserId: gatewayAnonUserId,
     arch: option.arch,
     campaignParams: collectCampaignParams(),
-    deepLinkParams
+    deepLinkParams,
+    ...(referrer ? { referrer } : {})
   })
   setTimeout(
     () => {

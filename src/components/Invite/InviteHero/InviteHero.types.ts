@@ -8,6 +8,7 @@ type InviteHeroProps = {
   media: InviteHeroMedia
   eventPlace: string
   referrer: Profile | null
+  referrerAddress: string | null
   isDesktop: boolean
   isSecondaryHero?: boolean
   isLoading?: boolean

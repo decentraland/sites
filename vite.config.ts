@@ -169,6 +169,12 @@ export default defineConfig(({ command, mode }) => {
           changeOrigin: true,
           secure: false,
           rewrite: (path: string) => path.replace(/^\/api\/cms/, '/spaces/ea2ybdmmn1kv/environments/master')
+        },
+        '/api/feature-flags': {
+          target: 'https://feature-flags.decentraland.org',
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path: string) => path.replace(/^\/api\/feature-flags/, '')
         }
       }
       /* eslint-enable @typescript-eslint/naming-convention */

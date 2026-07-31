@@ -17,7 +17,13 @@ import { useGetCommunitiesQuery, useGetWorldNamesQuery } from '../../../features
 import type { EventEntry } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
-import { RECURRENCE_OPTIONS, computeUpcomingOccurrences, parseDurationMs, recurrenceToApi } from '../../../hooks/useCreateEventForm.helpers'
+import {
+  RECURRENCE_OPTIONS,
+  computeUpcomingOccurrences,
+  localDateToEndOfDayIso,
+  parseDurationMs,
+  recurrenceToApi
+} from '../../../hooks/useCreateEventForm.helpers'
 import type { CreateEventFormState } from '../../../hooks/useCreateEventForm.types'
 import { formatLocalDate, formatLocalTime, formatUtcTime, getUtcDayDelta } from '../../../utils/whatsOnTime'
 import { buildEventJumpInUrl } from '../../../utils/whatsOnUrl'
@@ -92,7 +98,7 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
   const creatorAddress = initialEvent?.user || address
   const creatorName = initialEvent?.user_name || undefined
 
-  const previewUntil = form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : null
+  const previewUntil = form.repeatEnabled && form.repeatEndDate ? localDateToEndOfDayIso(form.repeatEndDate) : null
   const recurrenceApi = form.repeatEnabled ? recurrenceToApi(form.recurrence) : null
 
   return {

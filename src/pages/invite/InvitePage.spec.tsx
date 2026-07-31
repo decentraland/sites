@@ -1,10 +1,12 @@
 import { render, waitFor } from '@testing-library/react'
+import { REFERRER_STORAGE_KEY } from '../../utils/referrer'
 import { InvitePage } from './InvitePage'
 
 const mockUseParams = jest.fn()
 const mockInviteHero = jest.fn()
 const mockFetch = jest.fn()
 const mockPage = jest.fn()
+const mockUseInviteDirectDownload = jest.fn()
 let mockIsAnalyticsInitialized = true
 const INVITE_PATHNAME = '/invite/Brai'
 
@@ -69,6 +71,10 @@ jest.mock('../../data/inviteContent', () => ({
   INVITE_SECOND_HERO_MEDIA: {}
 }))
 
+jest.mock('../../features/invite/invite.flags', () => ({
+  useInviteDirectDownload: () => mockUseInviteDirectDownload()
+}))
+
 if (typeof AbortSignal.timeout !== 'function') {
   ;(AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout = () => new AbortController().signal
 }
@@ -125,6 +131,16 @@ describe('when the referrer param is a Decentraland name', () => {
 
     await waitFor(() => {
       expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrer: referrerProfile, isLoading: false }))
+    })
+  })
+
+  it('should pass the lowercased resolved address to InviteHero', async () => {
+    render(<InvitePage />)
+
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalledWith(
+        expect.objectContaining({ referrerAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd', isLoading: false })
+      )
     })
   })
 
@@ -208,6 +224,54 @@ describe('when the profile fetch fails after a successful name resolution', () =
     })
     expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrer: null }))
   })
+
+  it('should keep the resolved address so the referral is still attributed', async () => {
+    render(<InvitePage />)
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ isLoading: false }))
+    })
+    expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrerAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd' }))
+  })
+})
+
+describe('when the referrer address has no deployed profile', () => {
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    mockFetch.mockResolvedValue({ json: () => Promise.resolve({ error: 'Not Found', message: 'Profile not found' }) })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should still pass the address from the URL to InviteHero', async () => {
+    render(<InvitePage />)
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ isLoading: false }))
+    })
+    expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrerAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd' }))
+  })
+})
+
+describe('when the referrer cannot be resolved at all', () => {
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: 'Unknown' })
+    mockFetch.mockResolvedValue({ json: () => Promise.resolve({}) })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should pass a null address and skip the profile lookup', async () => {
+    render(<InvitePage />)
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ isLoading: false }))
+    })
+    expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrerAddress: null }))
+    const calledUrls = mockFetch.mock.calls.map(([url]) => url as string)
+    expect(calledUrls.some(url => url.includes('/lambdas/profiles/'))).toBe(false)
+  })
 })
 
 describe('when the referrer is empty', () => {
@@ -290,5 +354,61 @@ describe('when the document head already has meta tags', () => {
     expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('orig-desc')
     expect(document.querySelector('meta[property="og:title"]')?.getAttribute('content')).toBe('orig-og-title')
     expect(document.querySelector('meta[property="og:description"]')?.getAttribute('content')).toBe('orig-og-desc')
+  })
+})
+
+describe('when the direct download flag is enabled', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    mockUseInviteDirectDownload.mockReturnValue(true)
+    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes('/lambdas/profiles/')) {
+        return Promise.resolve({ json: () => Promise.resolve(referrerProfile) })
+      }
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    window.sessionStorage.clear()
+  })
+
+  it('should persist the resolved referrer for the download flow', async () => {
+    render(<InvitePage />)
+
+    await waitFor(() => {
+      expect(window.sessionStorage.getItem(REFERRER_STORAGE_KEY)).toBe('0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd')
+    })
+  })
+})
+
+describe('when the direct download flag is disabled', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    window.sessionStorage.setItem(REFERRER_STORAGE_KEY, '0x1111111111111111111111111111111111111111')
+    mockUseInviteDirectDownload.mockReturnValue(false)
+    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes('/lambdas/profiles/')) {
+        return Promise.resolve({ json: () => Promise.resolve(referrerProfile) })
+      }
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    window.sessionStorage.clear()
+  })
+
+  it('should not persist the referrer and should clear any previously stored one', async () => {
+    render(<InvitePage />)
+
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalled()
+    })
+    expect(window.sessionStorage.getItem(REFERRER_STORAGE_KEY)).toBeNull()
   })
 })

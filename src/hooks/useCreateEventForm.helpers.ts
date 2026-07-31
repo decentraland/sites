@@ -148,6 +148,28 @@ function splitIsoDateTime(iso: string | null | undefined): { date: string; time:
   return { date, time }
 }
 
+// A recurrence end is a calendar-day boundary, not the start of that day. Serializing a date input
+// at local midnight converts UTC+ timezones to the previous UTC date and, more importantly, places
+// the cutoff before every occurrence on the selected final day. Use the end of the local day so the
+// API's inclusive `recurrent_until` boundary contains that day's occurrence.
+function localDateToEndOfDayIso(date: string): string | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
+  if (!match) return null
+
+  const parsed = new Date(`${date}T23:59:59.999`)
+  const [, year, month, day] = match
+  if (
+    Number.isNaN(parsed.getTime()) ||
+    parsed.getFullYear() !== Number(year) ||
+    parsed.getMonth() + 1 !== Number(month) ||
+    parsed.getDate() !== Number(day)
+  ) {
+    return null
+  }
+
+  return parsed.toISOString()
+}
+
 function durationMsToHhMm(durationMs: number | null | undefined): string {
   if (!durationMs || durationMs <= 0) return ''
   const totalMinutes = Math.round(durationMs / 60000)
@@ -184,8 +206,10 @@ function eventEntryToFormState(event: EventEntry, now: number = Date.now()): Cre
   const referenceStartAt = resolveFormReferenceStartAt(event, now)
   const start = splitIsoDateTime(referenceStartAt)
   const durationMs = resolveDurationMs(event, referenceStartAt)
-  const lastRecurrentDate = event.recurrent_dates?.[event.recurrent_dates.length - 1] ?? null
-  const repeatEnd = splitIsoDateTime(lastRecurrentDate)
+  // `recurrent_dates` is only a materialized occurrence window and may stop before the rule does.
+  // The edit form must hydrate the actual recurrence boundary. Local parsing also recovers the
+  // calendar date selected by the creator from existing local-midnight values (issue #707).
+  const repeatEnd = splitIsoDateTime(event.recurrent_until)
   // Treat events whose `world: true` flag isn't backed by a non-empty `server`
   // name as Land. The combination is an upstream-data symptom: the events API
   // has been observed returning `world: true` for events created with valid
@@ -249,6 +273,7 @@ export {
   durationMsToHhMm,
   eventEntryToFormState,
   hasModeratedContentChanged,
+  localDateToEndOfDayIso,
   parseDurationMs,
   recurrenceToApi
 }
