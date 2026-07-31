@@ -152,8 +152,22 @@ function splitIsoDateTime(iso: string | null | undefined): { date: string; time:
 // at local midnight converts UTC+ timezones to the previous UTC date and, more importantly, places
 // the cutoff before every occurrence on the selected final day. Use the end of the local day so the
 // API's inclusive `recurrent_until` boundary contains that day's occurrence.
-function localDateToEndOfDayIso(date: string): string {
-  return new Date(`${date}T23:59:59.999`).toISOString()
+function localDateToEndOfDayIso(date: string): string | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
+  if (!match) return null
+
+  const parsed = new Date(`${date}T23:59:59.999`)
+  const [, year, month, day] = match
+  if (
+    Number.isNaN(parsed.getTime()) ||
+    parsed.getFullYear() !== Number(year) ||
+    parsed.getMonth() + 1 !== Number(month) ||
+    parsed.getDate() !== Number(day)
+  ) {
+    return null
+  }
+
+  return parsed.toISOString()
 }
 
 function durationMsToHhMm(durationMs: number | null | undefined): string {

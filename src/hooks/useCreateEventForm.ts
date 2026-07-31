@@ -408,7 +408,7 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         // omitting the field on a PATCH would let the backend keep the old mask, which is how a Tuesday
         // event ended up also showing every Wednesday. Omit it only when the event isn't recurrent.
         recurrent_weekday_mask: form.repeatEnabled ? 0 : undefined,
-        recurrent_until: form.repeatEnabled && form.repeatEndDate ? localDateToEndOfDayIso(form.repeatEndDate) : undefined
+        recurrent_until: form.repeatEnabled && form.repeatEndDate ? localDateToEndOfDayIso(form.repeatEndDate) ?? undefined : undefined
       }
       /* eslint-enable @typescript-eslint/naming-convention */
 

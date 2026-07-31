@@ -366,6 +366,10 @@ describe('localDateToEndOfDayIso', () => {
   it('should serialize the selected date at the end of its local day', () => {
     expect(localDateToEndOfDayIso('2030-02-01')).toBe(new Date('2030-02-01T23:59:59.999').toISOString())
   })
+
+  it.each(['', 'not-a-date', '2030-02-30', '2030-13-01'])('should return null for an invalid date input: %s', date => {
+    expect(localDateToEndOfDayIso(date)).toBeNull()
+  })
 })
 
 describe('hasModeratedContentChanged', () => {
