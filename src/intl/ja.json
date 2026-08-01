@@ -206,13 +206,16 @@
         "messages_count": "{count}件のメッセージ",
         "messages_count_plural": "{count}件のメッセージ",
         "no_messages": "まだメッセージはありません。{action}",
-        "no_messages_yet": "まだメッセージはありません",
+        "no_messages_yet": "まだメッセージはありません。",
         "start_conversation": "会話を始めましょう！",
         "sign_in_to_participate": "参加するにはサインインしてください。",
         "type_message": "メッセージを入力...",
         "sign_in_prompt": "チャットにメッセージを送るにはサインインしてください",
         "connect_wallet_prompt": "メッセージを送るにはDecentralandウォレットを接続してください",
-        "footer_text": "チャットに参加するにはDecentralandの{sceneName}に入ってください。"
+        "footer_text": "チャットに参加するにはDecentralandの{sceneName}に入ってください。",
+        "footer_jump_prefix": "チャットに参加するには、Decentralandで",
+        "footer_jump_suffix": "にジャンプしてください。",
+        "unavailable": "チャットは現在利用できません。"
       },
       "people": {
         "title": "参加者",
@@ -633,6 +636,7 @@
         "shop": "ショップ",
         "create": "作成",
         "learn": "学ぶ",
+        "discover": "見つける",
         "jump_in": "入場",
         "sign_in": "ログイン",
         "signing_in": "ログイン中...",
@@ -1229,6 +1233,93 @@
   "upcoming": {
     "today_at": "今日 {time}",
     "tomorrow_at": "明日 {time}"
+  },
+  "discover": {
+    "home": {
+      "page_title": "見つける — Decentraland"
+    },
+    "card": {
+      "jump_in": "参加",
+      "by": "作成者",
+      "featured": "注目"
+    },
+    "live": {
+      "heading": "ライブ中"
+    },
+    "explore": {
+      "search_placeholder": "場所を検索",
+      "empty": "条件に一致するプレイスがありません。",
+      "filters": "フィルター",
+      "remove_filter": "フィルターを削除",
+      "category": {
+        "label": "カテゴリー",
+        "all": "すべてのカテゴリ",
+        "social": "ソーシャル",
+        "music": "ミュージック",
+        "art": "アート",
+        "game": "ゲーム",
+        "fashion": "ファッション",
+        "education": "教育",
+        "shop": "ショップ",
+        "sports": "スポーツ",
+        "business": "ビジネス"
+      },
+      "section": {
+        "featured": "注目の場所"
+      },
+      "tab": {
+        "explore_all": "すべて見る",
+        "favourites": "お気に入り",
+        "my_places": "マイプレイス"
+      },
+      "signin_favourites": "サインインして場所をお気に入りに追加すると、ここに表示されます。",
+      "empty_favourites": "お気に入りの場所はまだありません。",
+      "signin_my_places": "サインインすると、作成した場所が表示されます。",
+      "empty_my_places": "公開した場所はまだありません。",
+      "error": "場所の読み込み中に問題が発生しました。",
+      "retry": "再試行"
+    },
+    "communities": {
+      "page_title": "コミュニティ — Decentraland",
+      "heading": "コミュニティ",
+      "search_placeholder": "コミュニティを検索",
+      "empty": "コミュニティが見つかりませんでした。",
+      "members_count": "メンバー{count}人",
+      "error": "コミュニティの読み込み中に問題が発生しました。"
+    },
+    "scene": {
+      "people_count": "ワールドに{count}人",
+      "people_empty": "まだ誰もいません。",
+      "tab_video": "Stream",
+      "tab_streaming": "DCL Web",
+      "resume_cta": "ライブを視聴",
+      "close_media": "停止",
+      "fullscreen": "フルスクリーン",
+      "exit_fullscreen": "解除",
+      "scene_picker": "シーン",
+      "connecting": "シーンに接続中…",
+      "waiting": {
+        "title": "シーンのアクティビティ",
+        "hint": "{count, plural, =0 {まだ誰もいません — 最初に参加しよう。} other {このシーンに {count} 人います。右側でチャットがライブ表示されています。}}"
+      },
+      "not_found": {
+        "title": "シーンが見つかりません",
+        "description": "このプレイスまたはワールドを読み込めませんでした。削除された可能性があります。"
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "このエクスペリエンスはモバイルブラウザでは利用できません。アプリをダウンロードしてください:"
+      },
+      "what_to_expect": "見どころ",
+      "copy_link": "リンクをコピー",
+      "close": "閉じる",
+      "explore_scene": "シーンを探索",
+      "copied": "コピーしました！"
+    },
+    "featured": {
+      "view_all": "注目の場所をすべて見る",
+      "view_less": "表示を減らす"
+    }
   },
   "account": {
     "meta": {

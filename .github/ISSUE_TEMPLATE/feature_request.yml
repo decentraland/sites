@@ -65,6 +65,7 @@ body:
         - Cast
         - Blog
         - Social / Communities
+        - Discover (Home / Communities / Scene)
         - Profile (member + my profile, tabs, friendship)
         - Account Settings (wallets, notifications, credits, delete)
         - Sign In / Auth

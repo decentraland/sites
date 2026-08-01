@@ -47,6 +47,28 @@
           "value": "accelerometer=(self \"https://www.youtube.com\"), autoplay=(self \"https://www.youtube.com\"), encrypted-media=(self \"https://www.youtube.com\"), gyroscope=(self \"https://www.youtube.com\"), fullscreen=*, camera=(self), microphone=(self), display-capture=(self), clipboard-write=(self), geolocation=(), interest-cohort=(), payment=(), usb=(), xr-spatial-tracking=()"
         }
       ]
+    },
+    {
+      "source": "/discover",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "credentialless" },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self \"https://decentraland.zone\" \"https://decentraland.org\"), microphone=(self \"https://decentraland.zone\" \"https://decentraland.org\"), clipboard-read=(self \"https://decentraland.zone\" \"https://decentraland.org\"), clipboard-write=(self \"https://decentraland.zone\" \"https://decentraland.org\"), display-capture=(self \"https://decentraland.zone\" \"https://decentraland.org\"), xr-spatial-tracking=(self \"https://decentraland.zone\" \"https://decentraland.org\"), fullscreen=*, cross-origin-isolated=*"
+        }
+      ]
+    },
+    {
+      "source": "/discover/:path*",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "credentialless" },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self \"https://decentraland.zone\" \"https://decentraland.org\"), microphone=(self \"https://decentraland.zone\" \"https://decentraland.org\"), clipboard-read=(self \"https://decentraland.zone\" \"https://decentraland.org\"), clipboard-write=(self \"https://decentraland.zone\" \"https://decentraland.org\"), display-capture=(self \"https://decentraland.zone\" \"https://decentraland.org\"), xr-spatial-tracking=(self \"https://decentraland.zone\" \"https://decentraland.org\"), fullscreen=*, cross-origin-isolated=*"
+        }
+      ]
     }
   ]
 }

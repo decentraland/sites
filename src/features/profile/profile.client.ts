@@ -40,16 +40,68 @@ function buildCacheKey(address: string): string {
   return `${peerUrl}|${address.toLowerCase()}`
 }
 
-async function fetchProfile(cacheKey: string): Promise<Profile | null> {
-  try {
-    const [peerUrl, address] = cacheKey.split('|', 2)
-    if (!peerUrl || !address) return null
-    const response = await fetch(`${peerUrl}/lambdas/profiles/${address}`)
-    const data = await response.json()
-    return data ?? null
-  } catch {
-    return null
+// ── Batched fetching ──────────────────────────────────────────────────────
+// A grid mount (e.g. /discover: ~30 place cards, each resolving its owner via
+// useGetProfileQuery) used to fan out one GET /lambdas/profiles/{address} per
+// card. Profile fetches requested in the same tick now coalesce into a single
+// POST /lambdas/profiles { ids } per peer — the catalyst returns one profile
+// wrapper per id that has a deployed profile (missing ids simply aren't in the
+// response → resolved as null).
+// Sentinel a failed batch settles with — distinct from `null` ("this address
+// has no deployed profile") so the entry is NOT cached and a later mount
+// retries instead of pinning synthetic avatars for the whole tab session.
+const BATCH_FAILED = Symbol('profile-batch-failed')
+
+const pendingByPeer = new Map<string, Map<string, Array<(profile: Profile | null | typeof BATCH_FAILED) => void>>>()
+
+async function flushBatch(peerUrl: string): Promise<void> {
+  const resolvers = pendingByPeer.get(peerUrl)
+  pendingByPeer.delete(peerUrl)
+  if (!resolvers || resolvers.size === 0) return
+  const settle = (lookup: (address: string) => Profile | null | typeof BATCH_FAILED) => {
+    for (const [address, fns] of resolvers) fns.forEach(fn => fn(lookup(address)))
   }
+  try {
+    const response = await fetch(`${peerUrl}/lambdas/profiles`, {
+      method: 'POST',
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: [...resolvers.keys()] })
+    })
+    if (!response.ok) {
+      console.warn('[profile.client] batch profiles fetch non-ok', { status: response.status })
+      settle(() => BATCH_FAILED)
+      return
+    }
+    const list: Profile[] = await response.json()
+    const byAddress = new Map<string, Profile>()
+    for (const profile of Array.isArray(list) ? list : []) {
+      const address = profile?.avatars?.[0]?.ethAddress?.toLowerCase()
+      if (address) byAddress.set(address, profile)
+    }
+    settle(address => byAddress.get(address) ?? null)
+  } catch (error) {
+    console.warn('[profile.client] batch profiles fetch failed', { error })
+    settle(() => BATCH_FAILED)
+  }
+}
+
+function fetchProfile(cacheKey: string): Promise<Profile | null> {
+  const [peerUrl, address] = cacheKey.split('|', 2)
+  if (!peerUrl || !address) return Promise.resolve(null)
+  let resolvers = pendingByPeer.get(peerUrl)
+  if (!resolvers) {
+    resolvers = new Map()
+    pendingByPeer.set(peerUrl, resolvers)
+    // First request this tick schedules the flush; the rest of the mount wave
+    // piggy-backs on it (cache keys are already lowercased).
+    queueMicrotask(() => void flushBatch(peerUrl))
+  }
+  return new Promise((resolve, reject) => {
+    const fns = resolvers.get(address) ?? []
+    fns.push(result => (result === BATCH_FAILED ? reject(new Error('profile batch fetch failed')) : resolve(result)))
+    resolvers.set(address, fns)
+  })
 }
 
 function ensureFetch(key: string): Promise<void> {
@@ -61,7 +113,9 @@ function ensureFetch(key: string): Promise<void> {
       const data = await fetchProfile(key)
       setEntry(key, { data, loaded: true, fetching: null })
     } catch {
-      setEntry(key, { data: null, loaded: true, fetching: null })
+      // Transient failure — leave the entry UNcached (`loaded: false`) so the
+      // next subscriber retries instead of freezing a null profile all session.
+      setEntry(key, { data: null, loaded: false, fetching: null })
     }
   })()
 

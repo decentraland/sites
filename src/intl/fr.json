@@ -206,13 +206,16 @@
         "messages_count": "{count} message",
         "messages_count_plural": "{count} messages",
         "no_messages": "Aucun message pour le moment. {action}",
-        "no_messages_yet": "Aucun message pour le moment",
+        "no_messages_yet": "Pas encore de messages.",
         "start_conversation": "Lancez la conversation !",
         "sign_in_to_participate": "Connectez-vous pour participer.",
         "type_message": "Écrivez un message...",
         "sign_in_prompt": "Connectez-vous pour envoyer des messages dans le chat",
         "connect_wallet_prompt": "Connectez votre portefeuille Decentraland pour envoyer des messages",
-        "footer_text": "Rendez-vous dans {sceneName} sur Decentraland pour participer au chat."
+        "footer_text": "Rendez-vous dans {sceneName} sur Decentraland pour participer au chat.",
+        "footer_jump_prefix": "Rejoignez",
+        "footer_jump_suffix": "dans Decentraland pour participer au chat.",
+        "unavailable": "Le chat est indisponible pour le moment."
       },
       "people": {
         "title": "Participants",
@@ -628,6 +631,7 @@
         "shop": "Boutique",
         "create": "Créer",
         "learn": "Apprendre",
+        "discover": "Découvrir",
         "jump_in": "Entrer",
         "sign_in": "Se connecter",
         "signing_in": "Connexion...",
@@ -1224,6 +1228,93 @@
   "upcoming": {
     "today_at": "Aujourd'hui {time}",
     "tomorrow_at": "Demain {time}"
+  },
+  "discover": {
+    "home": {
+      "page_title": "Découvrir — Decentraland"
+    },
+    "card": {
+      "jump_in": "Rejoindre",
+      "by": "Par",
+      "featured": "En vedette"
+    },
+    "live": {
+      "heading": "En direct"
+    },
+    "explore": {
+      "search_placeholder": "Rechercher des lieux",
+      "empty": "Aucun lieu ne correspond aux filtres.",
+      "filters": "Filtres",
+      "remove_filter": "Retirer le filtre",
+      "category": {
+        "label": "Catégorie",
+        "all": "Toute catégorie",
+        "social": "Social",
+        "music": "Musique",
+        "art": "Art",
+        "game": "Jeu",
+        "fashion": "Mode",
+        "education": "Éducation",
+        "shop": "Boutique",
+        "sports": "Sports",
+        "business": "Affaires"
+      },
+      "section": {
+        "featured": "Lieux en vedette"
+      },
+      "tab": {
+        "explore_all": "Tout explorer",
+        "favourites": "Favoris",
+        "my_places": "Mes lieux"
+      },
+      "signin_favourites": "Connectez-vous et ajoutez des lieux en favoris pour les retrouver ici.",
+      "empty_favourites": "Vous n'avez encore aucun lieu en favori.",
+      "signin_my_places": "Connectez-vous pour voir les lieux que vous avez créés.",
+      "empty_my_places": "Vous n'avez encore publié aucun lieu.",
+      "error": "Une erreur est survenue lors du chargement des lieux.",
+      "retry": "Réessayer"
+    },
+    "communities": {
+      "page_title": "Communautés — Decentraland",
+      "heading": "Communautés",
+      "search_placeholder": "Rechercher des communautés",
+      "empty": "Aucune communauté trouvée.",
+      "members_count": "{count, plural, one {# membre} other {# membres}}",
+      "error": "Une erreur est survenue lors du chargement des communautés."
+    },
+    "scene": {
+      "people_count": "{count, plural, one {# personne dans le monde} other {# personnes dans le monde}}",
+      "people_empty": "Personne ici pour le moment.",
+      "tab_video": "Stream",
+      "tab_streaming": "DCL Web",
+      "resume_cta": "Regarder en direct",
+      "close_media": "Arrêter",
+      "fullscreen": "Plein écran",
+      "exit_fullscreen": "Quitter",
+      "scene_picker": "Scène",
+      "connecting": "Connexion à la scène…",
+      "waiting": {
+        "title": "Activité de la scène",
+        "hint": "{count, plural, =0 {Personne d'autre n'est ici — soyez le premier à rejoindre.} one {# personne est sur cette scène. Son chat est en direct à droite.} other {# personnes sont sur cette scène. Leur chat est en direct à droite.}}"
+      },
+      "not_found": {
+        "title": "Scène introuvable",
+        "description": "Impossible de charger ce lieu ou ce monde. Il a peut-être été supprimé."
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "Cette expérience n'est pas disponible sur les navigateurs mobiles. Téléchargez l'application :"
+      },
+      "what_to_expect": "À quoi s’attendre",
+      "copy_link": "Copier le lien",
+      "close": "Fermer",
+      "explore_scene": "Explorer la scène",
+      "copied": "Copié !"
+    },
+    "featured": {
+      "view_all": "Voir tous les lieux à la une",
+      "view_less": "Voir moins"
+    }
   },
   "account": {
     "meta": {

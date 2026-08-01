@@ -8,7 +8,7 @@ interface UseProfilesResult {
   error: Error | null
 }
 
-const useProfiles = (addresses: string[]): UseProfilesResult => {
+const useProfiles = (addresses: string[], peerUrlOverride?: string): UseProfilesResult => {
   const [profiles, setProfiles] = useState<Map<string, Profile>>(new Map())
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
@@ -25,7 +25,7 @@ const useProfiles = (addresses: string[]): UseProfilesResult => {
     let cancelled = false
     setIsLoading(true)
     setError(null)
-    fetchProfiles(addresses, true)
+    fetchProfiles(addresses, true, peerUrlOverride)
       .then(fetched => {
         if (cancelled) return
         const map = new Map<string, Profile>()
@@ -46,7 +46,7 @@ const useProfiles = (addresses: string[]): UseProfilesResult => {
     // `key` captures the address list contents — depending on `addresses`
     // would re-fire on every freshly-built array reference with identical
     // contents.
-  }, [key])
+  }, [key, peerUrlOverride])
 
   return { profiles, isLoading, error }
 }
