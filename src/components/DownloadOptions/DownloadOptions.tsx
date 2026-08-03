@@ -147,19 +147,31 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
   const [downloads, downloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
 
   const primaryDownloadOptions: DownloadOptionProps[] = useMemo(() => {
-    if (!userAgentData) {
-      if (!links[OperativeSystem.WINDOWS]) return []
-      return [
-        {
-          text: OperativeSystem.WINDOWS,
-          image: imageByOs[OperativeSystem.WINDOWS],
-          link: links[OperativeSystem.WINDOWS].x64,
-          arch: 'x64' as Architecture
-        }
-      ]
-    }
+    // Windows is the fallback for both "not detected yet" and "detected an OS we
+    // ship no artifact for": it is the only build that covers an unknown desktop.
+    const windowsFallback: DownloadOptionProps[] = links[OperativeSystem.WINDOWS]
+      ? [
+          {
+            text: OperativeSystem.WINDOWS,
+            image: imageByOs[OperativeSystem.WINDOWS],
+            link: links[OperativeSystem.WINDOWS].x64,
+            arch: 'x64' as Architecture
+          }
+        ]
+      : []
 
-    if (!links[userAgentData.os.name]) return []
+    if (!userAgentData) return windowsFallback
+
+    // NOTE (2026-07-31): this branch used to `return []`, which left Linux and any
+    // unparsed desktop UA with no primary CTA — the only visible option was the
+    // secondary macOS dmg, which cannot run on those machines (22 anons in Jul
+    // 2026, none of whom ever opened the launcher). Tracking consequence: those
+    // users now report `os: 'Windows'` on the download events instead of 'macOS',
+    // because the payload carries the chosen option, not the detected platform.
+    if (!links[userAgentData.os.name]) {
+      if (userAgentData.mobile || userAgentData.tablet) return []
+      return windowsFallback
+    }
 
     if (userAgentData.os.name === OperativeSystem.MACOS) {
       return [

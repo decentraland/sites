@@ -305,10 +305,52 @@ describe('DownloadOptions', () => {
       expect(screen.queryByText('page.download.download_for_short')).not.toBeInTheDocument()
     })
 
-    it('should render no primary button when the detected OS has no matching CDN link', () => {
+    it('should offer the Windows build as primary when the detected desktop OS has no matching CDN link', () => {
       mockUseAdvancedUserAgentData.mockReturnValue([
         false,
         { os: { name: 'Linux' }, cpu: { architecture: 'x64' }, mobile: false }
+      ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+      render(<DownloadOptions />)
+      expect(screen.getByText('page.download.download_for_short')).toBeInTheDocument()
+      expect(screen.getByLabelText('macOS')).toBeInTheDocument()
+    })
+
+    it('should point the unknown-OS primary at the Windows installer', () => {
+      mockUseAdvancedUserAgentData.mockReturnValue([
+        false,
+        { os: { name: 'Linux' }, cpu: { architecture: 'x64' }, mobile: false }
+      ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+      render(<DownloadOptions />)
+      const primary = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
+      expect(primary).toHaveAttribute('href', 'https://cdn.decentraland.org/launcher/win.exe')
+    })
+
+    it('should render no primary button when the OS has no CDN link and there is no Windows fallback either', () => {
+      mockGetCDNRelease.mockReturnValue({
+        macOS: { arm64: 'https://cdn.decentraland.org/launcher/mac.dmg' }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any)
+      mockUseAdvancedUserAgentData.mockReturnValue([
+        false,
+        { os: { name: 'Linux' }, cpu: { architecture: 'x64' }, mobile: false }
+      ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+      render(<DownloadOptions />)
+      expect(screen.queryByText('page.download.download_for_short')).not.toBeInTheDocument()
+    })
+
+    it('should render no primary button when the OS has no CDN link and the device is mobile', () => {
+      mockUseAdvancedUserAgentData.mockReturnValue([
+        false,
+        { os: { name: 'Linux' }, cpu: { architecture: 'Unknown' }, mobile: true }
+      ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+      render(<DownloadOptions />)
+      expect(screen.queryByText('page.download.download_for_short')).not.toBeInTheDocument()
+    })
+
+    it('should render no primary button when the OS has no CDN link and the device is a tablet', () => {
+      mockUseAdvancedUserAgentData.mockReturnValue([
+        false,
+        { os: { name: 'Linux' }, cpu: { architecture: 'Unknown' }, mobile: false, tablet: true }
       ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
       render(<DownloadOptions />)
       expect(screen.queryByText('page.download.download_for_short')).not.toBeInTheDocument()
