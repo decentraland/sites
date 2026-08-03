@@ -8,6 +8,7 @@ import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useDownloadFunnelExit } from '../../hooks/useDownloadFunnelExit'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
+import { usePageView } from '../../hooks/usePageView'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsLauncher from '../../images/download/macos_launcher.webp'
 import macOsLaunchingDecentraland from '../../images/download/macos_launching_decentraland.webp'
@@ -70,6 +71,9 @@ const buildDeliveryExtra = (result: StreamOrFallbackResult): Record<string, unkn
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
   const { intl } = useTranslation()
+  // Fullscreen route: mounted outside <Layout />, which owns the shared page()
+  // call, so the pageview has to be emitted here.
+  usePageView()
   const getIdentityId = useGetIdentityId()
   const anonUserId = useAnonUserId()
   const { hasValidIdentity } = useAuthIdentity()

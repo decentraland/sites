@@ -51,6 +51,8 @@ jest.mock('decentraland-ui2', () => ({
   Typography: ({ children }: { children: React.ReactNode }) => <span>{children}</span>
 }))
 
+const mockAnalyticsPage = jest.fn()
+
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
     intl: {
@@ -63,11 +65,14 @@ jest.mock('@dcl/hooks', () => ({
         return id
       }
     }
-  })
+  }),
+  // usePageView (this page is outside <Layout />, so it emits its own pageview)
+  useAnalytics: () => ({ isInitialized: true, page: mockAnalyticsPage })
 }))
 
 jest.mock('react-router-dom', () => ({
-  useSearchParams: () => [searchParamsInstance, jest.fn()]
+  useSearchParams: () => [searchParamsInstance, jest.fn()],
+  useLocation: () => ({ pathname: '/download_success', search: '', hash: '', state: null, key: 'test' })
 }))
 
 // The download_funnel_exit diagnostic: mock the module (which otherwise pulls
@@ -187,6 +192,12 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
 
   afterEach(() => {
     jest.resetAllMocks()
+  })
+
+  it('should emit a pageview for /download_success (the route is outside <Layout />, which owns the shared page() call)', () => {
+    render(<DownloadSuccess />)
+
+    expect(mockAnalyticsPage).toHaveBeenCalledWith('/download_success')
   })
 
   it('should fire download_started with the resolved downloadUrl as href (not the CDN fallback)', async () => {
