@@ -384,14 +384,27 @@ const DownloadSuccess = memo(() => {
 
         if (signal.aborted) return
 
+        // NOTE (2026-08-04): `click_id` was removed from this URL. It used to
+        // ride along so the gateway could echo it into its server-side
+        // telemetry (added 2026-07-13, PR #679), but on macOS this URL is also
+        // the auth-token channel: the browser stores it in the DMG's
+        // `kMDItemWhereFroms` xattr and the launcher parses it to recover the
+        // `identityId` from the path. Launchers up to 1.21.2 scan the query
+        // params first and accept ANY UUID-shaped value as the token, so
+        // `click_id` shadowed the real one and auto-login failed with a 404
+        // (reproduced end-to-end; fixed launcher-side by launcher-rust#321).
+        // Do NOT put UUID-shaped values in query params here: the fix only
+        // reaches users once a launcher build carrying it ships as the
+        // gateway's base binary, so old parsers stay in the field for a long
+        // time. The client-side click→download join is unaffected (the id
+        // still travels via sessionStorage into `buildTrackerExtra`); only the
+        // gateway's server-side join is lost. Restoring it needs a non-UUID
+        // format plus normalization in the gateway (`download-telemetry.ts`
+        // validates with `isValidUUID` and silently drops anything else).
         const downloadUrl = addQueryParamsToUrlString(url, {
           [ANON_USER_ID_PARAM]: gatewayAnonUserId,
           ...deepLinkParamsRef.current,
-          ...(referrerRef.current ? { referrer: referrerRef.current } : {}),
-          // Forwarded so the gateway echoes it into its server-side telemetry,
-          // closing the click→download join without relying on the beacon.
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          click_id: readDownloadClickCorrelation()?.click_id
+          ...(referrerRef.current ? { referrer: referrerRef.current } : {})
         })
 
         // Fingerprint snapshot used by the data team's server-side join to
@@ -515,12 +528,14 @@ const DownloadSuccess = memo(() => {
           getIdentityId,
           anonUserId: gatewayAnonUserId
         })
+        // No `click_id` here either: this URL lands in the DMG's
+        // `kMDItemWhereFroms` xattr and a UUID-shaped query param shadows the
+        // auth token the launcher reads from the path. See the NOTE on the
+        // auto-download effect above.
         const downloadUrl = addQueryParamsToUrlString(url, {
           [ANON_USER_ID_PARAM]: gatewayAnonUserId,
           ...deepLinkParamsRef.current,
-          ...(referrerRef.current ? { referrer: referrerRef.current } : {}),
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          click_id: readDownloadClickCorrelation()?.click_id
+          ...(referrerRef.current ? { referrer: referrerRef.current } : {})
         })
 
         tracker = withFiredRefs(

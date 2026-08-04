@@ -1082,10 +1082,14 @@ describe('when a download click correlation exists in sessionStorage', () => {
     expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(expect.objectContaining({ clickId: 'click-abc' }))
   })
 
-  it('should forward click_id as a query param to the gateway download url', async () => {
+  // Regression: on macOS this URL is stored in the DMG's kMDItemWhereFroms
+  // xattr and the launcher recovers the auth token from it. Launchers up to
+  // 1.21.2 accept any UUID-shaped query param as the token, so a forwarded
+  // click_id shadowed the identityId in the path and broke auto-login.
+  it('should not forward click_id as a query param to the gateway download url', async () => {
     render(<DownloadSuccess />)
     await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
-    expect(mockAddQueryParams).toHaveBeenCalledWith('https://gw/dl.exe', expect.objectContaining({ click_id: 'click-abc' }))
+    expect(mockAddQueryParams).toHaveBeenCalledWith('https://gw/dl.exe', expect.not.objectContaining({ click_id: expect.anything() }))
   })
 
   it('should attach delivery_mode and gateway_request_id to download_success', async () => {
