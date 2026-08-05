@@ -13,6 +13,7 @@ export {
   DISCOVER_CATEGORIES,
   buildDetailPath,
   buildJumpInHref,
+  discoverDeepLinkOptions,
   discoverPlacePayload,
   isHiddenPlace,
   parsePositionParam,

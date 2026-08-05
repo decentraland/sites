@@ -1,0 +1,105 @@
+/* eslint-disable @typescript-eslint/naming-convention -- React context is PascalCase by convention */
+import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { useAdvancedUserAgentData } from '@dcl/hooks'
+import { DownloadModal, launchDesktopApp } from 'decentraland-ui2'
+import { mapEnvToDclenv } from '../../../config/dclenv'
+import { discoverDeepLinkOptions, discoverPlacePayload } from '../../../features/discover'
+import type { DiscoverPlace } from '../../../features/discover'
+import { buildDeepLinkOptions } from '../../../features/places/places.helpers'
+import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
+import { useDownloadModalProps } from '../../../hooks/useDownloadModalProps'
+import { DOWNLOAD_URLS, detectDownloadOS } from '../../../modules/downloadConstants'
+import { SegmentEvent } from '../../../modules/segment'
+
+interface DiscoverJumpInContextValue {
+  // Launch a place in the desktop client, or — when the client isn't installed
+  // — open the download modal. `surface` is the Segment `place` dimension of the
+  // DISCOVER_JUMP_IN event (e.g. 'place-card', 'scene-preview').
+  jumpIn: (place: DiscoverPlace, surface: string) => void
+}
+
+// The default is the no-provider fallback: still launch/track, just never able
+// to raise the shared modal (a lone card rendered outside DiscoverLayout won't
+// happen in the app, but keeps consumers from throwing).
+const DiscoverJumpInContext = createContext<DiscoverJumpInContextValue | null>(null)
+
+// Single owner of the "JUMP IN → install first" flow for the whole /discover
+// section. Mounts ONE DownloadModal (instead of one per card) and hands every
+// card/detail surface a `jumpIn(place, surface)` that deep-links into the
+// installed client and falls back to the modal when the launch doesn't take.
+function DiscoverJumpInProvider({ children }: { children: ReactNode }) {
+  const [searchParams] = useSearchParams()
+  const [, advancedUserAgent] = useAdvancedUserAgentData()
+  const track = useDeferredTrack()
+  const [isModalOpen, setModalOpen] = useState(false)
+  // Deep-link of the place the user tried to launch — carried into the download
+  // URL so the client opens at that scene on first run after installing.
+  const [pendingDeepLink, setPendingDeepLink] = useState<{ position?: string; realm?: string }>({})
+
+  const isMobile = Boolean(advancedUserAgent?.mobile)
+  const downloadOs = detectDownloadOS()
+  const osName = advancedUserAgent?.os?.name ?? 'unknown'
+  const arch = advancedUserAgent?.cpu?.architecture?.toLowerCase() ?? 'unknown'
+  const explorerEnv = searchParams.get('dclenv') ?? mapEnvToDclenv(searchParams.get('env'))
+
+  const jumpIn = useCallback(
+    async (place: DiscoverPlace, surface: string) => {
+      track(SegmentEvent.DISCOVER_JUMP_IN, { ...discoverPlacePayload(place), place: surface })
+
+      const { position, realm } = discoverDeepLinkOptions(place)
+
+      // Mobile has no desktop client to launch — send users straight to the
+      // right app store.
+      if (isMobile) {
+        const storeUrl = downloadOs === 'android' ? DOWNLOAD_URLS.googlePlay : DOWNLOAD_URLS.appStore
+        window.open(storeUrl, '_self')
+        return
+      }
+
+      try {
+        const launched = await launchDesktopApp(buildDeepLinkOptions(position, realm, explorerEnv))
+        if (launched) return
+        track(SegmentEvent.CLICK, { event: SegmentEvent.CLIENT_NOT_INSTALLED, os: osName, arch })
+      } catch {
+        // launchDesktopApp rejected (blocked protocol handler, etc.) — treat as
+        // not installed and prompt the download.
+      }
+      setPendingDeepLink({ position, realm })
+      setModalOpen(true)
+    },
+    [track, isMobile, downloadOs, explorerEnv, osName, arch]
+  )
+
+  const value = useMemo<DiscoverJumpInContextValue>(() => ({ jumpIn }), [jumpIn])
+
+  // Same download-URL + tracking-param threading as the homepage jump-in, keyed
+  // to the place the user last tried to launch.
+  const downloadModalProps = useDownloadModalProps(buildDeepLinkOptions(pendingDeepLink.position, pendingDeepLink.realm))
+
+  return (
+    <DiscoverJumpInContext.Provider value={value}>
+      {children}
+      {!isMobile && <DownloadModal open={isModalOpen} onClose={() => setModalOpen(false)} {...downloadModalProps} />}
+    </DiscoverJumpInContext.Provider>
+  )
+}
+
+// Consumers get the shared launcher. Outside a provider (only reachable in
+// isolated unit tests, or a discover card mistakenly mounted outside
+// DiscoverLayout) `jumpIn` is a no-op so a click doesn't throw — with a dev
+// warning so a missing-provider regression is visible instead of silent.
+const noProviderFallback: DiscoverJumpInContextValue = {
+  jumpIn: () => {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[discover] useDiscoverJumpIn used outside DiscoverJumpInProvider — JUMP IN is a no-op')
+    }
+  }
+}
+
+function useDiscoverJumpIn(): DiscoverJumpInContextValue {
+  return useContext(DiscoverJumpInContext) ?? noProviderFallback
+}
+
+export { DiscoverJumpInProvider, useDiscoverJumpIn }

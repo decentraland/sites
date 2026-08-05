@@ -11,6 +11,11 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate
 }))
 
+const mockJumpIn = jest.fn()
+jest.mock('../DiscoverJumpInProvider', () => ({
+  useDiscoverJumpIn: () => ({ jumpIn: mockJumpIn })
+}))
+
 const mockTrack = jest.fn()
 jest.mock('../../../hooks/useDeferredTrack', () => ({
   useDeferredTrack: () => mockTrack
@@ -176,13 +181,14 @@ describe('FeaturedCard', () => {
   })
 
   describe('when JUMP IN is clicked', () => {
-    it('should launch the client at the encoded position without triggering the card click', () => {
+    it('should hand the place to the shared launcher without triggering the card click', () => {
       const onEmptyClick = jest.fn()
-      render(<FeaturedCard place={createPlace()} onEmptyClick={onEmptyClick} />)
+      const place = createPlace()
+      render(<FeaturedCard place={place} onEmptyClick={onEmptyClick} />)
 
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
-      expect(assignedHrefs).toEqual(['decentraland://?position=12%2C34'])
+      expect(mockJumpIn).toHaveBeenCalledWith(place, 'featured-card')
       expect(onEmptyClick).not.toHaveBeenCalled()
     })
   })

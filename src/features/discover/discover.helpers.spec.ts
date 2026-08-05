@@ -1,5 +1,6 @@
 import {
   buildJumpInHref,
+  discoverDeepLinkOptions,
   discoverPlacePayload,
   isHiddenPlace,
   isMapPlaceholderImage,
@@ -84,6 +85,30 @@ describe('when buildJumpInHref is called', () => {
     it('should return the bare protocol URL', () => {
       const href = buildJumpInHref(makePlace({}))
       expect(href).toBe('decentraland://')
+    })
+  })
+})
+
+describe('when discoverDeepLinkOptions is called', () => {
+  describe('and the place is a world', () => {
+    it('should return the lowercased world name as the realm', () => {
+      expect(discoverDeepLinkOptions(makePlace({ world: true, world_name: 'MyWorld.dcl.eth' }))).toEqual({ realm: 'myworld.dcl.eth' })
+    })
+  })
+
+  describe('and the place is a Genesis City parcel', () => {
+    it('should return the base position', () => {
+      expect(discoverDeepLinkOptions(makePlace({ base_position: '-3,-2' }))).toEqual({ position: '-3,-2' })
+    })
+
+    it('should fall back to the first parcel when base_position is missing', () => {
+      expect(discoverDeepLinkOptions(makePlace({ positions: ['10,20'] }))).toEqual({ position: '10,20' })
+    })
+  })
+
+  describe('and the place has no coordinates', () => {
+    it('should return empty options', () => {
+      expect(discoverDeepLinkOptions(makePlace({}))).toEqual({})
     })
   })
 })

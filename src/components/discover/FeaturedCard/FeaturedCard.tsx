@@ -2,20 +2,14 @@ import { memo, useCallback, useMemo, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { UserCountBadge } from 'decentraland-ui2'
-import {
-  buildDetailPath,
-  buildJumpInHref,
-  discoverPlacePayload,
-  placeCoordsLabel,
-  placeCoverImage,
-  placePlayers
-} from '../../../features/discover'
+import { buildDetailPath, discoverPlacePayload, placeCoordsLabel, placeCoverImage, placePlayers } from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
 import { usePlaceOwnerAvatar } from '../../../hooks/usePlaceOwnerAvatar'
 import { SegmentEvent } from '../../../modules/segment.types'
 import { JumpInGlyph, PinGlyph } from '../_shared/CardIcons'
+import { useDiscoverJumpIn } from '../DiscoverJumpInProvider'
 import {
   BottomSwap,
   ByText,
@@ -47,8 +41,7 @@ function FeaturedCardComponent({ place, onEmptyClick }: FeaturedCardProps) {
 
   const detailHref = useMemo(() => buildDetailPath(place), [place])
 
-  const jumpInHref = useMemo(() => buildJumpInHref(place), [place])
-
+  const { jumpIn } = useDiscoverJumpIn()
   const { ownerName, ownerAvatar, avatarBg } = usePlaceOwnerAvatar(place)
   const coords = placeCoordsLabel(place)
 
@@ -81,10 +74,9 @@ function FeaturedCardComponent({ place, onEmptyClick }: FeaturedCardProps) {
   const handleJumpIn = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation()
-      track(SegmentEvent.DISCOVER_JUMP_IN, { ...discoverPlacePayload(place), place: 'featured-card' })
-      window.location.href = jumpInHref
+      jumpIn(place, 'featured-card')
     },
-    [track, jumpInHref, place]
+    [jumpIn, place]
   )
 
   return (

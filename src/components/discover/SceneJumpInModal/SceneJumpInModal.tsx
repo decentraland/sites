@@ -1,12 +1,11 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { LiveBadge, UserCountBadge, dclColors } from 'decentraland-ui2'
-import { buildDetailPath, buildJumpInHref, discoverPlacePayload, placeCoordsLabel, placeCoverImage } from '../../../features/discover'
+import { buildDetailPath, placeCoordsLabel, placeCoverImage } from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
 import { usePlaceOwnerAvatar } from '../../../hooks/usePlaceOwnerAvatar'
-import { SegmentEvent } from '../../../modules/segment.types'
 import { CloseGlyph, CopyGlyph, JumpInGlyph, PinGlyph } from '../_shared/CardIcons'
+import { useDiscoverJumpIn } from '../DiscoverJumpInProvider'
 import {
   About,
   AboutLabel,
@@ -49,17 +48,15 @@ interface SceneJumpInModalProps {
 function SceneJumpInModalComponent({ place, onClose, liveCount = 0 }: SceneJumpInModalProps) {
   const t = useFormatMessage()
 
-  const jumpInHref = useMemo(() => buildJumpInHref(place), [place])
   const coords = placeCoordsLabel(place)
 
   const { ownerName, ownerAvatar, avatarBg } = usePlaceOwnerAvatar(place)
 
-  const track = useDeferredTrack()
+  const { jumpIn } = useDiscoverJumpIn()
 
   const handleJumpIn = useCallback(() => {
-    track(SegmentEvent.DISCOVER_JUMP_IN, { ...discoverPlacePayload(place), place: 'jump-in-modal' })
-    window.location.href = jumpInHref
-  }, [track, place, jumpInHref])
+    jumpIn(place, 'jump-in-modal')
+  }, [jumpIn, place])
 
   // Copy the canonical detail URL — when the modal opens in place over the
   // grid the address bar still reads /discover, so window.location.href

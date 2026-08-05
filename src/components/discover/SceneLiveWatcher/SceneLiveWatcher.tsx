@@ -13,6 +13,7 @@ import type { LiveKitCredentials } from '../../../features/cast2/cast2.types'
 import { ChatProvider, useChatContext } from '../../../features/cast2/contexts/ChatProvider'
 import { LiveKitProvider } from '../../../features/cast2/contexts/LiveKitContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
+import type { DiscoverPlace } from '../../../features/discover'
 import { getLivePeerUrl } from '../../../features/discover/sceneAdapter'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
@@ -24,6 +25,7 @@ import { ChatPanel } from '../../cast/ChatPanel/ChatPanel'
 import { ChatContainer, ChatFooter, ChatHeader, ChatMessages, EmptyChat, FooterLink } from '../../cast/ChatPanel/ChatPanel.styled'
 import { WatcherViewContent } from '../../cast/WatcherView/WatcherViewContent'
 import { JumpInGlyph } from '../_shared/CardIcons'
+import { useDiscoverJumpIn } from '../DiscoverJumpInProvider'
 import { PeopleStack } from './PeopleStack'
 import { SceneRoomContent } from './SceneRoomContent'
 import {
@@ -114,19 +116,25 @@ function useSceneFullscreen(videoAreaRef: React.MutableRefObject<HTMLDivElement 
   return { isFullscreen, toggleFullscreen }
 }
 
-// Tracked launch / jump-in intents shared by both watcher variants.
-function useSceneCtas(streamingHref?: string | null, jumpInHref?: string | null) {
+// Tracked launch / jump-in intents shared by both watcher variants. JUMP IN
+// routes through the shared discover launcher so a missing client falls back to
+// the download modal (same as the cards); it needs the place, so callers pass
+// it alongside the streaming href.
+function useSceneCtas(streamingHref?: string | null, place?: DiscoverPlace | null) {
   const [hasLaunchedScene, setHasLaunchedScene] = useState(false)
   const track = useDeferredTrack()
+  const { jumpIn: launch } = useDiscoverJumpIn()
   const launchScene = useCallback(() => {
     track(SegmentEvent.DISCOVER_LAUNCH_SCENE, { ...(streamingHref ? { href: streamingHref } : {}) })
     setHasLaunchedScene(true)
   }, [track, streamingHref])
+  // NOTE (2026-08): DISCOVER_JUMP_IN on the 'scene-preview' surface now carries
+  // the full place payload (via the shared launcher) instead of the old
+  // `{ place: 'scene-preview', href }` — drops `href`, gains place_id/title/etc,
+  // matching the card surfaces. No dashboard keyed on the old `href` field.
   const jumpIn = useCallback(() => {
-    if (!jumpInHref) return
-    track(SegmentEvent.DISCOVER_JUMP_IN, { place: 'scene-preview', href: jumpInHref })
-    window.location.href = jumpInHref
-  }, [track, jumpInHref])
+    if (place) launch(place, 'scene-preview')
+  }, [launch, place])
   return { hasLaunchedScene, setHasLaunchedScene, launchScene, jumpIn }
 }
 
@@ -208,9 +216,13 @@ interface SceneWatcherCardProps {
   mode: SceneRoomState['mode']
   // NOTE: the RETRY escape hatch was dropped — the Figma first-jump overlay
   // has no retry affordance; a reload re-attempts credentials.
-  // `decentraland://` deep-link for the JUMP IN CTAs on the launch overlay and
-  // the floating card over the running preview.
+  // `decentraland://` deep-link presence gates whether the JUMP IN CTAs render
+  // (launch overlay + floating card). The launch itself goes through `place`.
   jumpInHref?: string | null
+  // The place the JUMP IN CTAs launch, via the shared discover launcher (so a
+  // missing client falls back to the download modal). Present whenever
+  // `jumpInHref` is — both derive from the resolved place.
+  place?: DiscoverPlace | null
   // bevy-web URL embedded in the iframe — usually the `scene viewer` variant
   // (no launcher / portables). Optional because Genesis City parcels with no
   // resolved sceneId can't deep-link; the SCENE WEB tab is disabled when
@@ -234,7 +246,7 @@ interface SceneWatcherCardProps {
 function SceneWatcherCard(props: SceneWatcherCardProps) {
   const t = useFormatMessage()
   // Unconditional so the hook order never changes; only the loading frame uses these.
-  const { launchScene, jumpIn } = useSceneCtas(props.streamingHref, props.jumpInHref)
+  const { launchScene, jumpIn } = useSceneCtas(props.streamingHref, props.place)
 
   if (props.status === 'loading') {
     // Same CTA bar as the ready states — EXPLORE stays disabled (nothing to boot
@@ -270,13 +282,13 @@ function SceneWatcherCard(props: SceneWatcherCardProps) {
 // in a stripped-down watcher: SCENE WEB tab only, no PeopleStack, no
 // audio renderer, no chat hook.
 function SceneOnlyWatcher(props: SceneWatcherCardProps) {
-  const { streamingHref, coverImage, jumpInHref } = props
+  const { streamingHref, coverImage, jumpInHref, place } = props
   const t = useFormatMessage()
   const videoAreaRef = useRef<HTMLDivElement | null>(null)
   const { isFullscreen, toggleFullscreen } = useSceneFullscreen(videoAreaRef)
   const [, advancedUserAgent] = useAdvancedUserAgentData()
   const isMobile = Boolean(advancedUserAgent?.mobile)
-  const { hasLaunchedScene, setHasLaunchedScene, launchScene, jumpIn } = useSceneCtas(streamingHref, jumpInHref)
+  const { hasLaunchedScene, setHasLaunchedScene, launchScene, jumpIn } = useSceneCtas(streamingHref, place)
   const closeMedia = useCallback(() => setHasLaunchedScene(false), [setHasLaunchedScene])
 
   const showIframe = hasLaunchedScene && Boolean(streamingHref) && !isMobile
@@ -325,7 +337,7 @@ function SceneOnlyWatcher(props: SceneWatcherCardProps) {
 }
 
 function SceneWatcherReady(props: SceneWatcherCardProps) {
-  const { mode, streamingHref, coverImage, initialUserCount, jumpInHref } = props
+  const { mode, streamingHref, coverImage, initialUserCount, jumpInHref, place } = props
   const t = useFormatMessage()
   const videoAreaRef = useRef<HTMLDivElement | null>(null)
   const { isFullscreen, toggleFullscreen } = useSceneFullscreen(videoAreaRef)
@@ -358,7 +370,7 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
   // the iframe when they click "Launch". Once launched, the iframe stays
   // mounted until the user closes it (then we go back to the launch overlay
   // and a re-click remounts a fresh bevy session).
-  const { hasLaunchedScene, setHasLaunchedScene, launchScene, jumpIn } = useSceneCtas(streamingHref, jumpInHref)
+  const { hasLaunchedScene, setHasLaunchedScene, launchScene, jumpIn } = useSceneCtas(streamingHref, place)
 
   // Video pause state. We keep the LiveKit room connected (chat + people
   // stack stay live) but hide the video surface and silence audio so the

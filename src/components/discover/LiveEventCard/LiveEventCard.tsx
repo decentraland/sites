@@ -2,7 +2,7 @@ import { memo, useCallback, useMemo, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BadgeGroup, LiveBadge, UserCountBadge, useMediaQuery, useTheme } from 'decentraland-ui2'
-import { buildDetailPath, buildJumpInHref, discoverPlacePayload, placeCoverImage, placePlayers } from '../../../features/discover'
+import { buildDetailPath, discoverPlacePayload, placeCoverImage, placePlayers } from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
@@ -10,6 +10,7 @@ import { usePlaceOwnerAvatar } from '../../../hooks/usePlaceOwnerAvatar'
 import { SegmentEvent } from '../../../modules/segment.types'
 import { JumpInGlyph } from '../_shared/CardIcons'
 import { TopRow } from '../_shared/DiscoverShell.styled'
+import { useDiscoverJumpIn } from '../DiscoverJumpInProvider'
 import { Avatar, ByRow, ByText, Card, CardContainer, ContentBar, CreatorName, EventTitle, JumpInWide, Media } from './LiveEventCard.styled'
 
 interface LiveEventCardProps {
@@ -30,8 +31,7 @@ function LiveEventCardComponent({ place }: LiveEventCardProps) {
 
   const detailHref = useMemo(() => buildDetailPath(place), [place])
 
-  const jumpInHref = useMemo(() => buildJumpInHref(place), [place])
-
+  const { jumpIn } = useDiscoverJumpIn()
   const { ownerName, ownerAvatar, avatarBg } = usePlaceOwnerAvatar(place)
 
   const players = placePlayers(place)
@@ -58,10 +58,9 @@ function LiveEventCardComponent({ place }: LiveEventCardProps) {
   const handleJumpIn = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation()
-      track(SegmentEvent.DISCOVER_JUMP_IN, { ...discoverPlacePayload(place), place: 'live-card' })
-      window.location.href = jumpInHref
+      jumpIn(place, 'live-card')
     },
-    [track, jumpInHref, place]
+    [jumpIn, place]
   )
 
   return (

@@ -315,6 +315,7 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
             coverImage={place?.image || undefined}
             initialUserCount={livePlayers}
             jumpInHref={jumpInHref}
+            place={place}
           />
         </ViewerCard>
 
