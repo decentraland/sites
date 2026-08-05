@@ -681,7 +681,7 @@
         "download": "Download"
       },
       "navbar": {
-        "whats_on": "What's On",
+        "whats_on": "Explore",
         "shop": "Shop",
         "create": "Create",
         "learn": "Learn",
@@ -714,7 +714,8 @@
         "view_profile": "View Profile",
         "my_assets": "My Assets",
         "account_settings": "Account Settings",
-        "marketplace_authorizations": "Marketplace Authorizations"
+        "marketplace_authorizations": "Marketplace Authorizations",
+        "credits_balance": "{count} credits"
       }
     },
     "creators_landing": {

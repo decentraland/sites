@@ -51,6 +51,8 @@ jest.mock('decentraland-ui2', () => ({
   Typography: ({ children }: { children: React.ReactNode }) => <span>{children}</span>
 }))
 
+const mockAnalyticsPage = jest.fn()
+
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
     intl: {
@@ -63,11 +65,14 @@ jest.mock('@dcl/hooks', () => ({
         return id
       }
     }
-  })
+  }),
+  // usePageView (this page is outside <Layout />, so it emits its own pageview)
+  useAnalytics: () => ({ isInitialized: true, page: mockAnalyticsPage })
 }))
 
 jest.mock('react-router-dom', () => ({
-  useSearchParams: () => [searchParamsInstance, jest.fn()]
+  useSearchParams: () => [searchParamsInstance, jest.fn()],
+  useLocation: () => ({ pathname: '/download_success', search: '', hash: '', state: null, key: 'test' })
 }))
 
 // The download_funnel_exit diagnostic: mock the module (which otherwise pulls
@@ -187,6 +192,12 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
 
   afterEach(() => {
     jest.resetAllMocks()
+  })
+
+  it('should emit a pageview for /download_success (the route is outside <Layout />, which owns the shared page() call)', () => {
+    render(<DownloadSuccess />)
+
+    expect(mockAnalyticsPage).toHaveBeenCalledWith('/download_success')
   })
 
   it('should fire download_started with the resolved downloadUrl as href (not the CDN fallback)', async () => {
@@ -1082,10 +1093,14 @@ describe('when a download click correlation exists in sessionStorage', () => {
     expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(expect.objectContaining({ clickId: 'click-abc' }))
   })
 
-  it('should forward click_id as a query param to the gateway download url', async () => {
+  // Regression: on macOS this URL is stored in the DMG's kMDItemWhereFroms
+  // xattr and the launcher recovers the auth token from it. Launchers up to
+  // 1.21.2 accept any UUID-shaped query param as the token, so a forwarded
+  // click_id shadowed the identityId in the path and broke auto-login.
+  it('should not forward click_id as a query param to the gateway download url', async () => {
     render(<DownloadSuccess />)
     await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
-    expect(mockAddQueryParams).toHaveBeenCalledWith('https://gw/dl.exe', expect.objectContaining({ click_id: 'click-abc' }))
+    expect(mockAddQueryParams).toHaveBeenCalledWith('https://gw/dl.exe', expect.not.objectContaining({ click_id: expect.anything() }))
   })
 
   it('should attach delivery_mode and gateway_request_id to download_success', async () => {

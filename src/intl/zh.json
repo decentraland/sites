@@ -666,7 +666,8 @@
         "my_assets": "我的资产",
         "account_settings": "账户设置",
         "marketplace_authorizations": "市场授权",
-        "whats_on": "最新活动"
+        "whats_on": "探索",
+        "credits_balance": "{count} 积分"
       }
     },
     "reels": {

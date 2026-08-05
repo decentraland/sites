@@ -661,7 +661,8 @@
         "my_assets": "Mes actifs",
         "account_settings": "Paramètres du compte",
         "marketplace_authorizations": "Autorisations du Marketplace",
-        "whats_on": "Actualités"
+        "whats_on": "Explorer",
+        "credits_balance": "{count} crédits"
       }
     },
     "reels": {
