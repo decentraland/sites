@@ -4,6 +4,7 @@ import type { NotificationLocale } from 'decentraland-ui2'
 import { usePageNotifications } from '../../features/notifications/usePageNotifications'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+import { useCreditsBalance } from '../../hooks/useCreditsBalance'
 import { useHangOutAction } from '../../hooks/useHangOutAction'
 import { useManaBalances } from '../../hooks/useManaBalances'
 import { useSignInRedirect } from '../../hooks/useSignInRedirect'
@@ -40,6 +41,9 @@ const LandingNavbarConnected = ({ isLandingPage = false, address: addressOverrid
   const effectivelySignedIn = isConnected || !!address
   const { balances: manaBalances, isLoading: isManaLoading, fetchBalances: fetchManaBalances } = useManaBalances(address || undefined)
   const { identity } = useAuthIdentity()
+  // The credits chip is always visible, so unlike MANA this reads on mount rather than on user-card
+  // open. It no-ops without a wallet AND identity, so an anonymous visit issues no request.
+  const { credits: creditsBalance } = useCreditsBalance(address || undefined, identity)
   const { handleClick: handleJumpIn, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
 
   const notificationLocale: NotificationLocale = locale === 'es' ? 'es' : locale === 'zh' ? 'zh' : 'en'
@@ -65,6 +69,7 @@ const LandingNavbarConnected = ({ isLandingPage = false, address: addressOverrid
         avatar={avatar}
         manaBalances={manaBalances}
         isManaLoading={isManaLoading}
+        creditsBalance={creditsBalance}
         onOpenUserCard={fetchManaBalances}
         notifications={notificationProps as LandingNavbarProps['notifications']}
         onClickSignIn={handleSignIn}
