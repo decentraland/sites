@@ -3,6 +3,9 @@ import { BulletList, Paragraph, Section, SectionTitle, SubsectionTitle } from '.
 
 const TermsOfUseContent = memo(() => (
   <>
+    <Paragraph>Last Updated: August 4, 2026</Paragraph>
+    <Paragraph>Previous Update: April 27, 2026</Paragraph>
+
     <Section id="acceptance-of-terms">
       <SectionTitle>1. Acceptance of Terms</SectionTitle>
 
@@ -332,7 +335,26 @@ const TermsOfUseContent = memo(() => (
         DAO shall have no liability whatsoever with regards to transactions conducted in third-party marketplaces.
       </Paragraph>
       <Paragraph>
-        6.4 You will be solely responsible to pay any and all sales, use, value-added and other taxes, duties, and assessments (except taxes
+        6.4 Credits may be purchased using fiat currency through online payment processors designated by the Foundation. Such purchases are
+        not conducted through Web3 providers and are instead processed by a third-party payment processor. Accordingly, such purchases are
+        governed by the specific terms applicable, as well as the terms and conditions of the applicable payment processor.
+      </Paragraph>
+      <Paragraph>
+        The applicable payment processor is responsible for processing the payment transaction and for administering any applicable
+        payment-related matters, including, without limitation, billing, refunds, reversals, payment recovery, chargebacks, applicable
+        taxes, etc.
+      </Paragraph>
+      <Paragraph>
+        The Foundation does not collect, store, or process your payment credentials directly and is not a party to the payment transaction
+        between you and the applicable payment processor. To the maximum extent permitted by applicable law, the Foundation shall not be
+        liable for any claims, losses, damages, or liabilities arising out of or relating to payment transactions processed by such payment
+        processors.
+      </Paragraph>
+      <Paragraph>
+        The Marketplace Transaction Cost described in Section 6.3 does not apply to purchases made using online payment processors.
+      </Paragraph>
+      <Paragraph>
+        6.5 You will be solely responsible to pay any and all sales, use, value-added and other taxes, duties, and assessments (except taxes
         that may apply on our net income) now or hereafter claimed or imposed by any governmental authority (collectively,
         &quot;Taxes&quot;) associated with your use of the Tools (including, without limitation, any Taxes that may become payable as the
         result of your ownership, or transfer of any NFT and any activity conducted by you in Decentraland). Except for income taxes levied
