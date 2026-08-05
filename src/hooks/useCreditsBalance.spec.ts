@@ -55,6 +55,15 @@ describe('useCreditsBalance', () => {
     })
   })
 
+  describe('and the address is not a well-formed wallet address', () => {
+    it('should not build a request from it', async () => {
+      const { result } = renderHook(() => useCreditsBalance('../../admin', IDENTITY))
+
+      await waitFor(() => expect(result.current.credits).toBeNull())
+      expect(mockFetchWithIdentity).not.toHaveBeenCalled()
+    })
+  })
+
   describe('and the credits-server does not know the wallet', () => {
     it('should report zero, because a 404 is a real empty balance', async () => {
       mockFetchWithIdentity.mockResolvedValue(jsonResponse({}, 404).response)

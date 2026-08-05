@@ -5,6 +5,12 @@ import { fetchWithIdentity } from '../utils/signedFetch'
 
 const CACHE_TTL_MS = 60 * 1000 // 1 minute — a balance changes on purchase, so it must not go stale for long
 
+// The address is interpolated into the request path, so it is checked before it gets there. In practice it
+// comes from the wallet provider and the server authorises against the signed identity, so this is not the
+// control that stops an attack — it closes the path-traversal shape outright rather than relying on every
+// upstream caller staying trustworthy.
+const ADDRESS_PATTERN = /^0x[0-9a-fA-F]{40}$/
+
 /** The `usd` block of the credits-server payload: spendable USD credits (1 credit = $0.10). */
 type UsdBalance = { balanceCents: number; credits: number }
 type UserCreditsResponse = { usd?: UsdBalance }
@@ -39,7 +45,7 @@ function useCreditsBalance(address: string | undefined, identity: AuthIdentity |
 
   useEffect(() => {
     const currentIdentity = identityRef.current
-    if (!address || !currentIdentity) {
+    if (!address || !currentIdentity || !ADDRESS_PATTERN.test(address)) {
       setCredits(null)
       return
     }
