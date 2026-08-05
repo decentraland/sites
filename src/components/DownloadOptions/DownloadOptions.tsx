@@ -61,6 +61,12 @@ const imageByOs: Record<string, string> = {
   [OperativeSystem.MACOS]: appleLogo
 }
 
+// The only architecture the Windows installer is published under. Named rather
+// than inlined because reading the wrong key yields `undefined` and silently
+// renders no button — the `Architecture` union still allows the legacy `'x64'`,
+// so TypeScript cannot catch the mistake.
+const WINDOWS_ARCH: Architecture = 'amd64'
+
 type HandleDownloadOptionClickParams = {
   anonUserId?: string
   downloadOnClick?: boolean
@@ -149,13 +155,21 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
   const primaryDownloadOptions: DownloadOptionProps[] = useMemo(() => {
     // Windows is the fallback for both "not detected yet" and "detected an OS we
     // ship no artifact for": it is the only build that covers an unknown desktop.
-    const windowsFallback: DownloadOptionProps[] = links[OperativeSystem.WINDOWS]
+    //
+    // The arch key is `amd64`, which is what the CDN config actually publishes
+    // (`cdnReleases.ts`: Windows has a single `amd64` entry, and
+    // `sanitizeCDNReleaseLinks` only strips empty values, it never renames keys).
+    // This read used to be `.x64`, which is `undefined` in production, so the
+    // fallback rendered nothing at all — and `arch: 'x64'` is likewise dropped by
+    // the `VALID_ARCHS` allowlist on /download_success. Both were silent because
+    // `Architecture` still permits the legacy `'x64'` literal.
+    const windowsFallback: DownloadOptionProps[] = links[OperativeSystem.WINDOWS]?.[WINDOWS_ARCH]
       ? [
           {
             text: OperativeSystem.WINDOWS,
             image: imageByOs[OperativeSystem.WINDOWS],
-            link: links[OperativeSystem.WINDOWS].x64,
-            arch: 'x64' as Architecture
+            link: links[OperativeSystem.WINDOWS][WINDOWS_ARCH],
+            arch: WINDOWS_ARCH
           }
         ]
       : []
@@ -211,7 +225,10 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
         {
           text: OperativeSystem.WINDOWS,
           image: imageByOs[OperativeSystem.WINDOWS],
-          link: links[OperativeSystem.WINDOWS]?.x64
+          // Same `amd64` correction as the primary fallback above: this read was
+          // `.x64`, which is undefined against the real CDN config, so the "also
+          // available on Windows" option a macOS visitor sees had no href.
+          link: links[OperativeSystem.WINDOWS]?.[WINDOWS_ARCH]
         }
       ]
     }
