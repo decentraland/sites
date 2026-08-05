@@ -34,16 +34,17 @@ const MENU_CONFIG: MenuConfig = {
   shop: {
     labelKey: 'component.landing.navbar.shop',
     items: [
-      { labelKey: 'component.landing.navbar.shop_all', url: 'https://decentraland.org/marketplace' },
+      { labelKey: 'component.landing.navbar.shop_all', url: 'https://decentraland.org/shop' },
       {
         labelKey: 'component.landing.navbar.wearables',
-        url: 'https://decentraland.org/marketplace/browse?assetType=item&section=wearables&status=on_sale'
+        url: 'https://decentraland.org/shop/items?category=wearable'
       },
       {
         labelKey: 'component.landing.navbar.emotes',
-        url: 'https://decentraland.org/marketplace/browse?assetType=item&section=emotes&status=on_sale'
+        url: 'https://decentraland.org/shop/items?category=emote'
       },
-      { labelKey: 'component.landing.navbar.names', url: 'https://decentraland.org/marketplace/names/claim' },
+      { labelKey: 'component.landing.navbar.names', url: 'https://decentraland.org/shop/items?category=names' },
+      // LAND has no category in the shop, so it stays on the marketplace.
       { labelKey: 'component.landing.navbar.land', url: 'https://decentraland.org/marketplace/lands' },
       { labelKey: 'component.landing.navbar.merch', url: 'https://store.decentraland.org/', isExternal: true }
     ]
