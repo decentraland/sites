@@ -50,10 +50,26 @@ const useScreenShare = (): UseScreenShareResult => {
       await localParticipant.setScreenShareEnabled(true, { audio: true })
 
       const publication = localParticipant.getTrackPublication(Track.Source.ScreenShare)
-      const settings = publication?.track?.mediaStreamTrack?.getSettings()
+      const mediaStreamTrack = publication?.track?.mediaStreamTrack
+      const settings = mediaStreamTrack?.getSettings()
       trackStatsRef.current = { width: settings?.width, height: settings?.height, frameRate: settings?.frameRate }
       shareStartedAtRef.current = Date.now()
       intentionalStopRef.current = false
+
+      // The browser's native "Stop sharing" control (and a source that closes on its own)
+      // ends the underlying MediaStreamTrack and fires `ended`. That is a clean,
+      // user/environment-driven stop, so mark it intentional — the death-detection effect
+      // then treats it like the in-app Stop button and shows no error toast. This only flips
+      // the no-toast flag; it never unpublishes or stops any track (camera/mic are untouched).
+      // A genuine anomaly (the publication being dropped without the media track ending) does
+      // NOT fire `ended`, so the unexpected-death toast still surfaces for real failures.
+      mediaStreamTrack?.addEventListener(
+        'ended',
+        () => {
+          intentionalStopRef.current = true
+        },
+        { once: true }
+      )
     } catch (error) {
       console.error('[useScreenShare] Error enabling screen share:', error)
       if (error instanceof Error) {
@@ -75,12 +91,10 @@ const useScreenShare = (): UseScreenShareResult => {
     if (!localParticipant) return
     intentionalStopRef.current = true
     try {
-      const publication = localParticipant.getTrackPublication(Track.Source.ScreenShare)
-      if (publication?.track) {
-        await localParticipant.unpublishTrack(publication.track)
-      } else {
-        await localParticipant.setScreenShareEnabled(false)
-      }
+      // Symmetric counterpart to startScreenShare's setScreenShareEnabled(true, { audio: true }):
+      // LiveKit removes BOTH the screen-share video and the ScreenShareAudio track and stops
+      // their MediaStreamTracks, while leaving the camera/mic publications untouched.
+      await localParticipant.setScreenShareEnabled(false)
     } catch (error) {
       console.error('[useScreenShare] Error stopping screen share:', error)
     }

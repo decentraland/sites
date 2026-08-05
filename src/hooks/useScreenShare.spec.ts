@@ -29,9 +29,10 @@ const flush = () =>
 
 const makeParticipant = (overrides = {}) => ({
   setScreenShareEnabled: jest.fn().mockResolvedValue(undefined),
-  unpublishTrack: jest.fn().mockResolvedValue(undefined),
+  setMicrophoneEnabled: jest.fn().mockResolvedValue(undefined),
+  setCameraEnabled: jest.fn().mockResolvedValue(undefined),
   getTrackPublication: jest.fn().mockReturnValue({
-    track: { mediaStreamTrack: { getSettings: () => ({ width: 3024, height: 1964, frameRate: 30 }) } }
+    track: { mediaStreamTrack: { getSettings: () => ({ width: 3024, height: 1964, frameRate: 30 }), addEventListener: jest.fn() } }
   }),
   ...overrides
 })
@@ -215,13 +216,15 @@ describe('useScreenShare', () => {
   })
 
   describe('when the user stops sharing intentionally', () => {
-    it('should not show a toast on the resulting transition', async () => {
+    it('should disable screen share without touching the camera or microphone', async () => {
       mockUseLocalVideoTracks.mockReturnValue({ hasLocalScreenShare: true })
       const { result, rerender } = renderHook(() => useScreenShare())
       await act(async () => {
         await result.current.stopScreenShare()
       })
-      expect(participant.unpublishTrack).toHaveBeenCalled()
+      expect(participant.setScreenShareEnabled).toHaveBeenCalledWith(false)
+      expect(participant.setMicrophoneEnabled).not.toHaveBeenCalled()
+      expect(participant.setCameraEnabled).not.toHaveBeenCalled()
 
       mockUseLocalVideoTracks.mockReturnValue({ hasLocalScreenShare: false })
       rerender()
@@ -230,17 +233,26 @@ describe('useScreenShare', () => {
     })
   })
 
-  describe('when stopping with no active publication', () => {
-    beforeEach(() => {
-      participant.getTrackPublication.mockReturnValue(undefined)
-    })
-
-    it('should fall back to setScreenShareEnabled(false)', async () => {
-      const { result } = renderHook(() => useScreenShare())
+  describe('when the screen share ends via the browser native control', () => {
+    it('should treat the track ending as intentional and not show a toast', async () => {
+      mockUseLocalVideoTracks.mockReturnValue({ hasLocalScreenShare: true })
+      const { result, rerender } = renderHook(() => useScreenShare())
       await act(async () => {
-        await result.current.stopScreenShare()
+        await result.current.startScreenShare()
       })
-      expect(participant.setScreenShareEnabled).toHaveBeenCalledWith(false)
+
+      // The browser's native "Stop sharing" button ends the MediaStreamTrack, firing `ended`.
+      const mediaStreamTrack = participant.getTrackPublication().track.mediaStreamTrack
+      const endedHandler = mediaStreamTrack.addEventListener.mock.calls.find((call: unknown[]) => call[0] === 'ended')?.[1]
+      expect(endedHandler).toBeDefined()
+      act(() => {
+        endedHandler()
+      })
+
+      mockUseLocalVideoTracks.mockReturnValue({ hasLocalScreenShare: false })
+      rerender()
+      await flush()
+      expect(showMock).not.toHaveBeenCalled()
     })
   })
 
@@ -254,13 +266,13 @@ describe('useScreenShare', () => {
       await act(async () => {
         await result.current.stopScreenShare()
       })
-      expect(participant.unpublishTrack).not.toHaveBeenCalled()
+      expect(participant.setScreenShareEnabled).not.toHaveBeenCalled()
     })
   })
 
-  describe('when unpublishing the track throws', () => {
+  describe('when disabling the screen share throws', () => {
     beforeEach(() => {
-      participant.unpublishTrack.mockRejectedValue(new Error('unpublish failed'))
+      participant.setScreenShareEnabled.mockRejectedValue(new Error('disable failed'))
     })
 
     it('should swallow the error without throwing', async () => {
