@@ -666,7 +666,8 @@
         "my_assets": "Mis cosas",
         "account_settings": "Configuración",
         "marketplace_authorizations": "Autorizaciones del Marketplace",
-        "whats_on": "Explorar"
+        "whats_on": "Explorar",
+        "credits_balance": "{count} créditos"
       }
     },
     "reels": {
