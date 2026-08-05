@@ -476,10 +476,6 @@ const LandingNavbar = memo(function LandingNavbar({
         <MobileMenuItem>
           <MobileMenuLink href={MENU_CONFIG.learn.url}>{l(MENU_CONFIG.learn.labelKey)}</MobileMenuLink>
         </MobileMenuItem>
-
-        <MobileMenuItem>
-          <MobileMenuLink href={MENU_CONFIG.discover.url}>{l(MENU_CONFIG.discover.labelKey)}</MobileMenuLink>
-        </MobileMenuItem>
       </>
     )
   }, [l, mobileAccordion, toggleMobileAccordion])
@@ -593,7 +589,6 @@ const LandingNavbar = memo(function LandingNavbar({
             ))}
 
             <DesktopTabLink href={MENU_CONFIG.learn.url}>{l(MENU_CONFIG.learn.labelKey)}</DesktopTabLink>
-            <DesktopTabLink href={MENU_CONFIG.discover.url}>{l(MENU_CONFIG.discover.labelKey)}</DesktopTabLink>
           </DesktopTabList>
         </NavBarLeft>
 
