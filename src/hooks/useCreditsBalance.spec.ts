@@ -15,8 +15,11 @@ const IDENTITY = { authChain: [] } as unknown as AuthIdentity
 let addressSeq = 0
 const nextAddress = () => `0x${String(++addressSeq).padStart(40, '0')}`
 
+// `cancel` is tracked because a path that never reads the body has to release the stream itself.
 function jsonResponse(body: unknown, status = 200) {
-  return { ok: status >= 200 && status < 300, status, json: async () => body } as Response
+  const cancel = jest.fn().mockResolvedValue(undefined)
+  const response = { ok: status >= 200 && status < 300, status, body: { cancel }, json: async () => body } as unknown as Response
+  return { response, cancel }
 }
 
 describe('useCreditsBalance', () => {
@@ -26,7 +29,7 @@ describe('useCreditsBalance', () => {
 
   describe('when the wallet holds credits', () => {
     it('should return the spendable USD credits', async () => {
-      mockFetchWithIdentity.mockResolvedValue(jsonResponse({ usd: { balanceCents: 13900, credits: 139 } }))
+      mockFetchWithIdentity.mockResolvedValue(jsonResponse({ usd: { balanceCents: 13900, credits: 139 } }).response)
 
       const { result } = renderHook(() => useCreditsBalance(nextAddress(), IDENTITY))
 
@@ -54,7 +57,7 @@ describe('useCreditsBalance', () => {
 
   describe('and the credits-server does not know the wallet', () => {
     it('should report zero, because a 404 is a real empty balance', async () => {
-      mockFetchWithIdentity.mockResolvedValue(jsonResponse({}, 404))
+      mockFetchWithIdentity.mockResolvedValue(jsonResponse({}, 404).response)
 
       const { result } = renderHook(() => useCreditsBalance(nextAddress(), IDENTITY))
 
@@ -75,11 +78,64 @@ describe('useCreditsBalance', () => {
 
   describe('and the response carries no usd block', () => {
     it('should report zero, which is what an unflagged or never-granted wallet means', async () => {
-      mockFetchWithIdentity.mockResolvedValue(jsonResponse({ credits: [], totalCredits: 0 }))
+      mockFetchWithIdentity.mockResolvedValue(jsonResponse({ credits: [], totalCredits: 0 }).response)
 
       const { result } = renderHook(() => useCreditsBalance(nextAddress(), IDENTITY))
 
       await waitFor(() => expect(result.current.credits).toBe(0))
+    })
+  })
+
+  // Reading the body is what normally releases the stream, so the paths that skip the read have to
+  // release it themselves or the socket is held open.
+  describe('and a response body is never read', () => {
+    it('should release the stream on a 404', async () => {
+      const { response, cancel } = jsonResponse({}, 404)
+      mockFetchWithIdentity.mockResolvedValue(response)
+
+      const { result } = renderHook(() => useCreditsBalance(nextAddress(), IDENTITY))
+
+      await waitFor(() => expect(result.current.credits).toBe(0))
+      expect(cancel).toHaveBeenCalled()
+    })
+
+    it('should release the stream on a server error', async () => {
+      const { response, cancel } = jsonResponse({ error: 'boom' }, 500)
+      mockFetchWithIdentity.mockResolvedValue(response)
+
+      renderHook(() => useCreditsBalance(nextAddress(), IDENTITY))
+
+      await waitFor(() => expect(cancel).toHaveBeenCalled())
+    })
+  })
+
+  describe('and the same wallet is read twice inside the cache window', () => {
+    it('should reuse the cached answer instead of re-signing', async () => {
+      mockFetchWithIdentity.mockResolvedValue(jsonResponse({ usd: { balanceCents: 5000, credits: 50 } }).response)
+      const address = nextAddress()
+
+      const first = renderHook(() => useCreditsBalance(address, IDENTITY))
+      await waitFor(() => expect(first.result.current.credits).toBe(50))
+      expect(mockFetchWithIdentity).toHaveBeenCalledTimes(1)
+
+      const second = renderHook(() => useCreditsBalance(address, IDENTITY))
+
+      await waitFor(() => expect(second.result.current.credits).toBe(50))
+      expect(mockFetchWithIdentity).toHaveBeenCalledTimes(1)
+    })
+
+    it('should cache a 404 too, so an unknown wallet is not asked about again', async () => {
+      mockFetchWithIdentity.mockResolvedValue(jsonResponse({}, 404).response)
+      const address = nextAddress()
+
+      const first = renderHook(() => useCreditsBalance(address, IDENTITY))
+      await waitFor(() => expect(first.result.current.credits).toBe(0))
+      expect(mockFetchWithIdentity).toHaveBeenCalledTimes(1)
+
+      const second = renderHook(() => useCreditsBalance(address, IDENTITY))
+
+      await waitFor(() => expect(second.result.current.credits).toBe(0))
+      expect(mockFetchWithIdentity).toHaveBeenCalledTimes(1)
     })
   })
 })

@@ -59,12 +59,19 @@ function useCreditsBalance(address: string | undefined, identity: AuthIdentity |
         const url = `${serverUrl}/users/${address.toLowerCase()}/credits`
         // Signed fetch (ADR-44): the credits-server only answers for the wallet in the path.
         const response = await fetchWithIdentity(url, currentIdentity, 'GET', undefined, undefined, controller.signal, {})
-        // 404 means the wallet is unknown to the credits-server, which is a real zero, not an error.
+        // 404 means the wallet is unknown to the credits-server, which is a real zero, not an error — so
+        // it is cached like any other answer, or a remount inside the TTL would re-sign to learn the same
+        // thing. Any path that does NOT read the body has to release the stream itself.
         if (response.status === 404) {
+          void response.body?.cancel()
+          cache = { address, credits: 0, fetchedAt: Date.now() }
           if (active) setCredits(0)
           return
         }
-        if (!response.ok) return
+        if (!response.ok) {
+          void response.body?.cancel()
+          return
+        }
         const payload = (await response.json()) as UserCreditsResponse
         const value = payload.usd?.credits ?? 0
         cache = { address, credits: value, fetchedAt: Date.now() }
@@ -86,4 +93,3 @@ function useCreditsBalance(address: string | undefined, identity: AuthIdentity |
 }
 
 export { useCreditsBalance }
-export type { UsdBalance }
