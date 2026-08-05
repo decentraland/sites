@@ -141,6 +141,22 @@ function DiscoverHomePage() {
     setBrowseOffset(0)
   }, [])
   const [section, setSection] = useState<ExploreSection>('all')
+  // Switching tabs swaps the big Explore grid for the (often much shorter)
+  // Favourites / My Places content, collapsing the page height — the browser
+  // then clamps the scroll position and the user appears to jump up the page
+  // (#720). Anchor the toolbar just under the navbar on a user-initiated tab
+  // change so the tabs + new results stay in view. `hasSwitchedTab` skips the
+  // initial mount so a deep link doesn't auto-scroll.
+  const exploreBandRef = useRef<HTMLDivElement>(null)
+  const hasSwitchedTab = useRef(false)
+  const changeSection = useCallback((next: ExploreSection) => {
+    hasSwitchedTab.current = true
+    setSection(next)
+  }, [])
+  useEffect(() => {
+    if (!hasSwitchedTab.current) return
+    exploreBandRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [section])
   // Featured rail collapse — capped at FEATURED_COLLAPSED_ROWS × the grid's
   // current column count, mirroring FeaturedGrid's breakpoints.
   const [featuredExpanded, setFeaturedExpanded] = useState(false)
@@ -471,25 +487,25 @@ function DiscoverHomePage() {
           the category dropdown pushed right. Wraps on narrow viewports.
           The band darkens the page gradient by 20% black, full-bleed, per the
           Figma's Explore All section. */}
-      <ExploreBand>
+      <ExploreBand ref={exploreBandRef}>
         <ExploreBandContent>
           <ExploreToolbar>
             <TabsRow>
-              <TabPill type="button" $active={section === 'all'} onClick={() => setSection('all')}>
+              <TabPill type="button" $active={section === 'all'} onClick={() => changeSection('all')}>
                 <BrowseGlyph
                   size="clamp(19px, 1.25vw, 24px)"
                   color={section === 'all' ? dclColors.neutral.softBlack1 : dclColors.neutral.softWhite}
                 />
                 {t('discover.explore.tab.explore_all')}
               </TabPill>
-              <TabPill type="button" $active={section === 'favourites'} onClick={() => setSection('favourites')}>
+              <TabPill type="button" $active={section === 'favourites'} onClick={() => changeSection('favourites')}>
                 <FavoriteGlyph
                   size="clamp(19px, 1.25vw, 24px)"
                   color={section === 'favourites' ? dclColors.neutral.softBlack1 : dclColors.neutral.softWhite}
                 />
                 {t('discover.explore.tab.favourites')}
               </TabPill>
-              <TabPill type="button" $active={section === 'my'} onClick={() => setSection('my')}>
+              <TabPill type="button" $active={section === 'my'} onClick={() => changeSection('my')}>
                 <MyPlacesGlyph
                   size="clamp(19px, 1.25vw, 24px)"
                   color={section === 'my' ? dclColors.neutral.softBlack1 : dclColors.neutral.softWhite}
@@ -508,6 +524,10 @@ function DiscoverHomePage() {
                     placeholder={t('discover.explore.search_placeholder')}
                     value={searchInput}
                     onChange={e => changeSearch(e.target.value)}
+                    // Suppress the browser's saved-searches / autofill dropdown:
+                    // picking one repainted the field with Chrome's light autofill
+                    // background over the dark theme, "breaking" the bar (#721).
+                    autoComplete="off"
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
