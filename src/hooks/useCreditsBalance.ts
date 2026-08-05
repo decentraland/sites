@@ -37,11 +37,17 @@ let cache: { address: string; credits: number; fetchedAt: number } | null = null
 function useCreditsBalance(address: string | undefined, identity: AuthIdentity | undefined) {
   const [credits, setCredits] = useState<number | null>(() => (cache && address && cache.address === address ? cache.credits : null))
 
-  // Read in a ref so a new identity object with the same wallet cannot retrigger the effect: the
-  // identity is regenerated per render by `useAuthIdentity`'s useMemo on address change only, but a
-  // caller could pass a fresh object and turn this into a fetch loop.
+  // Read in a ref so a new identity OBJECT for the same wallet cannot retrigger the effect: a caller
+  // passing a freshly built identity each render would otherwise turn this into a fetch loop.
+  //
+  // The ref alone is not enough, though. Whether an identity EXISTS has to stay in the dependency list,
+  // because the address can land a render before the identity does (any non-redirect connect flow). With
+  // only `[address]`, that first run bails on the guard below and never runs again — the chip would stay
+  // hidden for the whole session. `!!identity` re-runs on undefined→identity and on sign-out, while a
+  // same-wallet object swap is still true→true and changes nothing.
   const identityRef = useRef(identity)
   identityRef.current = identity
+  const hasIdentity = !!identity
 
   useEffect(() => {
     const currentIdentity = identityRef.current
@@ -93,7 +99,7 @@ function useCreditsBalance(address: string | undefined, identity: AuthIdentity |
       active = false
       controller.abort()
     }
-  }, [address])
+  }, [address, hasIdentity])
 
   return { credits }
 }

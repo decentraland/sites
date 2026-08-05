@@ -64,6 +64,45 @@ describe('useCreditsBalance', () => {
     })
   })
 
+  // The address can land a render before the identity in any non-redirect connect flow. Reading the
+  // identity only through a ref meant that first run bailed and never re-ran, leaving the chip hidden for
+  // the rest of the session.
+  describe('and the identity arrives after the address', () => {
+    it('should fetch once it exists, instead of staying hidden for the session', async () => {
+      mockFetchWithIdentity.mockResolvedValue(jsonResponse({ usd: { balanceCents: 7000, credits: 70 } }).response)
+      const address = nextAddress()
+
+      const { result, rerender } = renderHook(({ id }) => useCreditsBalance(address, id), {
+        initialProps: { id: undefined as AuthIdentity | undefined }
+      })
+
+      // Nothing yet: no identity to sign with.
+      await waitFor(() => expect(result.current.credits).toBeNull())
+      expect(mockFetchWithIdentity).not.toHaveBeenCalled()
+
+      rerender({ id: IDENTITY })
+
+      await waitFor(() => expect(result.current.credits).toBe(70))
+    })
+
+    it('should not refetch when the same wallet gets a fresh identity object', async () => {
+      mockFetchWithIdentity.mockResolvedValue(jsonResponse({ usd: { balanceCents: 3000, credits: 30 } }).response)
+      const address = nextAddress()
+
+      const { result, rerender } = renderHook(({ id }) => useCreditsBalance(address, id), {
+        initialProps: { id: { authChain: [] } as unknown as AuthIdentity }
+      })
+      await waitFor(() => expect(result.current.credits).toBe(30))
+      expect(mockFetchWithIdentity).toHaveBeenCalledTimes(1)
+
+      // A different object for the same wallet must not re-sign — that is what the ref is for.
+      rerender({ id: { authChain: [] } as unknown as AuthIdentity })
+
+      await waitFor(() => expect(result.current.credits).toBe(30))
+      expect(mockFetchWithIdentity).toHaveBeenCalledTimes(1)
+    })
+  })
+
   describe('and the credits-server does not know the wallet', () => {
     it('should report zero, because a 404 is a real empty balance', async () => {
       mockFetchWithIdentity.mockResolvedValue(jsonResponse({}, 404).response)

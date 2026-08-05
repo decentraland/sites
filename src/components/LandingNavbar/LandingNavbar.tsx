@@ -615,7 +615,7 @@ const LandingNavbar = memo(function LandingNavbar({
               {creditsBalance !== null && creditsBalance !== undefined && (
                 <CreditsChip
                   href={CREDITS_URL}
-                  aria-label={l('component.landing.navbar.credits_balance', { count: String(creditsBalance) })}
+                  aria-label={l('component.landing.navbar.credits_balance', { count: formatCredits(creditsBalance) })}
                 >
                   <CreditsIcon />
                   {formatCredits(creditsBalance)}
