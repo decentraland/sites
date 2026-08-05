@@ -10,12 +10,20 @@ type MenuSection = {
   items?: MenuItem[]
 }
 
+// NOTE (2026-08-04): the `discover` entry was removed from this config, which
+// is what fed both the desktop tab and the mobile menu link, so `/discover`
+// stops surfacing in the navbar before the section is announced. The routes,
+// the pages and the `vercel.json` COOP/COEP headers stay in place: the path
+// still resolves for anyone who types it, it is simply not advertised. The
+// `component.landing.navbar.discover` label is deliberately kept in the six
+// locale files so restoring this is a single revert with no i18n follow-up.
+// To bring it back only outside production, gate the entry on
+// `getEnv() !== Env.PRODUCTION` rather than restoring it unconditionally.
 type MenuConfig = {
   whatsOn: MenuSection
   shop: MenuSection
   create: MenuSection
   learn: MenuSection
-  discover: MenuSection
 }
 
 const MENU_CONFIG: MenuConfig = {
@@ -56,10 +64,6 @@ const MENU_CONFIG: MenuConfig = {
   learn: {
     labelKey: 'component.landing.navbar.learn',
     url: 'https://decentraland.org/blog/'
-  },
-  discover: {
-    labelKey: 'component.landing.navbar.discover',
-    url: '/discover'
   }
 }
 
