@@ -1,16 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention -- React context is PascalCase by convention */
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { useAdvancedUserAgentData } from '@dcl/hooks'
-import { DownloadModal, launchDesktopApp } from 'decentraland-ui2'
-import { mapEnvToDclenv } from '../../../config/dclenv'
+import { DownloadModal } from 'decentraland-ui2'
 import { discoverDeepLinkOptions, discoverPlacePayload } from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
 import { buildDeepLinkOptions } from '../../../features/places/places.helpers'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
 import { useDownloadModalProps } from '../../../hooks/useDownloadModalProps'
-import { DOWNLOAD_URLS, detectDownloadOS } from '../../../modules/downloadConstants'
+import { useExplorerLauncher } from '../../../hooks/useExplorerLauncher'
 import { SegmentEvent } from '../../../modules/segment'
 
 interface DiscoverJumpInContextValue {
@@ -30,46 +27,28 @@ const DiscoverJumpInContext = createContext<DiscoverJumpInContextValue | null>(n
 // card/detail surface a `jumpIn(place, surface)` that deep-links into the
 // installed client and falls back to the modal when the launch doesn't take.
 function DiscoverJumpInProvider({ children }: { children: ReactNode }) {
-  const [searchParams] = useSearchParams()
-  const [, advancedUserAgent] = useAdvancedUserAgentData()
   const track = useDeferredTrack()
+  const { launch, isMobile, osName, arch } = useExplorerLauncher()
   const [isModalOpen, setModalOpen] = useState(false)
   // Deep-link of the place the user tried to launch — carried into the download
   // URL so the client opens at that scene on first run after installing.
   const [pendingDeepLink, setPendingDeepLink] = useState<{ position?: string; realm?: string }>({})
 
-  const isMobile = Boolean(advancedUserAgent?.mobile)
-  const downloadOs = detectDownloadOS()
-  const osName = advancedUserAgent?.os?.name ?? 'unknown'
-  const arch = advancedUserAgent?.cpu?.architecture?.toLowerCase() ?? 'unknown'
-  const explorerEnv = searchParams.get('dclenv') ?? mapEnvToDclenv(searchParams.get('env'))
-
   const jumpIn = useCallback(
     async (place: DiscoverPlace, surface: string) => {
       track(SegmentEvent.DISCOVER_JUMP_IN, { ...discoverPlacePayload(place), place: surface })
 
-      const { position, realm } = discoverDeepLinkOptions(place)
-
-      // Mobile has no desktop client to launch — send users straight to the
-      // right app store.
-      if (isMobile) {
-        const storeUrl = downloadOs === 'android' ? DOWNLOAD_URLS.googlePlay : DOWNLOAD_URLS.appStore
-        window.open(storeUrl, '_self')
-        return
-      }
-
-      try {
-        const launched = await launchDesktopApp(buildDeepLinkOptions(position, realm, explorerEnv))
-        if (launched) return
+      const options = discoverDeepLinkOptions(place)
+      const outcome = await launch(options)
+      // Client not installed → prompt the download (mobile already went to the
+      // store, desktop-launched needs nothing more).
+      if (outcome === 'not-installed') {
         track(SegmentEvent.CLICK, { event: SegmentEvent.CLIENT_NOT_INSTALLED, os: osName, arch })
-      } catch {
-        // launchDesktopApp rejected (blocked protocol handler, etc.) — treat as
-        // not installed and prompt the download.
+        setPendingDeepLink(options)
+        setModalOpen(true)
       }
-      setPendingDeepLink({ position, realm })
-      setModalOpen(true)
     },
-    [track, isMobile, downloadOs, explorerEnv, osName, arch]
+    [track, launch, osName, arch]
   )
 
   const value = useMemo<DiscoverJumpInContextValue>(() => ({ jumpIn }), [jumpIn])
