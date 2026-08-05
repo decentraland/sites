@@ -35,9 +35,11 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
     // NOTE: 2026-07-21 — the fallback used to redirect straight to DOWNLOAD_URL /
     // ONBOARDING_URL (env). It now always opens the DownloadModal (same UX as the
     // homepage) so the user picks their platform; the modal's URLs still carry
-    // the deep-link + tracking params.
-    if (outcome === 'not-installed') {
-      track(SegmentEvent.CLICK, { event: SegmentEvent.CLIENT_NOT_INSTALLED, os: osName, arch })
+    // the deep-link + tracking params. A launch rejection opens the modal too but
+    // isn't tracked as CLIENT_NOT_INSTALLED (legacy behavior — a throw isn't
+    // proof the client is absent).
+    if (outcome === 'not-installed' || outcome === 'launch-error') {
+      if (outcome === 'not-installed') track(SegmentEvent.CLICK, { event: SegmentEvent.CLIENT_NOT_INSTALLED, os: osName, arch })
       setDownloadModalOpen(true)
     }
   }, [track, launch, isMobile, position, realm, osName, arch])

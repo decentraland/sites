@@ -185,7 +185,7 @@ describe('SceneLiveWatcher', () => {
       })
 
       it('should offer a live JUMP IN while connecting when the deep link is known', () => {
-        render(<SceneWatcherCard status="loading" mode="scene" jumpInHref="decentraland://?position=-9%2C-9" place={mockPlace} />)
+        render(<SceneWatcherCard status="loading" mode="scene" place={mockPlace} />)
 
         fireEvent.click(screen.getByRole('button', { name: /discover\.card\.jump_in/ }))
 
@@ -198,7 +198,6 @@ describe('SceneLiveWatcher', () => {
         status: 'no-broadcast' as const,
         mode: 'scene' as const,
         streamingHref: 'https://decentraland.zone/bevy-web/?position=-9%2C-9',
-        jumpInHref: 'decentraland://?position=-9%2C-9',
         coverImage: 'https://img.test/cover.png',
         place: mockPlace
       }
@@ -337,7 +336,7 @@ describe('SceneLiveWatcher', () => {
         status: 'ready' as const,
         mode: 'scene' as const,
         streamingHref: 'https://decentraland.zone/bevy-web/?position=-9%2C-9',
-        jumpInHref: 'decentraland://?position=-9%2C-9',
+        place: mockPlace,
         initialUserCount: 5
       }
 
@@ -363,7 +362,7 @@ describe('SceneLiveWatcher', () => {
         status: 'ready' as const,
         mode: 'scene' as const,
         streamingHref: 'https://decentraland.zone/bevy-web/?position=-9%2C-9',
-        jumpInHref: 'decentraland://?position=-9%2C-9'
+        place: mockPlace
       }
 
       beforeEach(() => {

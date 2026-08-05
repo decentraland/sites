@@ -160,15 +160,15 @@ function MobileStoreCard() {
 // Pre-launch CTAs: EXPLORE THE SCENE (boots the bevy iframe) + JUMP IN. They
 // live in the bottom controls bar — replacing FULLSCREEN until the preview
 // runs — so nothing floats over the scene thumbnail.
-function LaunchCtas(props: { streamingHref?: string | null; jumpInHref?: string | null; onLaunch: () => void; onJumpIn: () => void }) {
-  const { streamingHref, jumpInHref, onLaunch, onJumpIn } = props
+function LaunchCtas(props: { streamingHref?: string | null; canJumpIn?: boolean; onLaunch: () => void; onJumpIn: () => void }) {
+  const { streamingHref, canJumpIn, onLaunch, onJumpIn } = props
   const t = useFormatMessage()
   return (
     <>
       <BarExploreCta type="button" disabled={!streamingHref} onClick={onLaunch}>
         {t('discover.scene.explore_scene')}
       </BarExploreCta>
-      {jumpInHref && (
+      {canJumpIn && (
         <BarJumpInCta type="button" onClick={onJumpIn}>
           {t('discover.card.jump_in')}
           <JumpInGlyph size={20} />
@@ -216,12 +216,9 @@ interface SceneWatcherCardProps {
   mode: SceneRoomState['mode']
   // NOTE: the RETRY escape hatch was dropped — the Figma first-jump overlay
   // has no retry affordance; a reload re-attempts credentials.
-  // `decentraland://` deep-link presence gates whether the JUMP IN CTAs render
-  // (launch overlay + floating card). The launch itself goes through `place`.
-  jumpInHref?: string | null
   // The place the JUMP IN CTAs launch, via the shared discover launcher (so a
-  // missing client falls back to the download modal). Present whenever
-  // `jumpInHref` is — both derive from the resolved place.
+  // missing client falls back to the download modal). Its presence also gates
+  // whether the JUMP IN CTAs render (launch overlay + floating card).
   place?: DiscoverPlace | null
   // bevy-web URL embedded in the iframe — usually the `scene viewer` variant
   // (no launcher / portables). Optional because Genesis City parcels with no
@@ -261,7 +258,7 @@ function SceneWatcherCard(props: SceneWatcherCardProps) {
         </VideoArea>
         <ControlsRow>
           <ControlsButtons>
-            <LaunchCtas streamingHref={null} jumpInHref={props.jumpInHref} onLaunch={launchScene} onJumpIn={jumpIn} />
+            <LaunchCtas streamingHref={null} canJumpIn={Boolean(props.place)} onLaunch={launchScene} onJumpIn={jumpIn} />
           </ControlsButtons>
         </ControlsRow>
       </WatcherContainer>
@@ -282,7 +279,7 @@ function SceneWatcherCard(props: SceneWatcherCardProps) {
 // in a stripped-down watcher: SCENE WEB tab only, no PeopleStack, no
 // audio renderer, no chat hook.
 function SceneOnlyWatcher(props: SceneWatcherCardProps) {
-  const { streamingHref, coverImage, jumpInHref, place } = props
+  const { streamingHref, coverImage, place } = props
   const t = useFormatMessage()
   const videoAreaRef = useRef<HTMLDivElement | null>(null)
   const { isFullscreen, toggleFullscreen } = useSceneFullscreen(videoAreaRef)
@@ -309,13 +306,13 @@ function SceneOnlyWatcher(props: SceneWatcherCardProps) {
             )}
           </SceneLaunchOverlay>
         )}
-        {showIframe && jumpInHref && <JumpInFloatCard onJumpIn={jumpIn} />}
+        {showIframe && place && <JumpInFloatCard onJumpIn={jumpIn} />}
       </VideoArea>
 
       <ControlsRow>
         <ControlsButtons>
           {!showIframe && !isMobile ? (
-            <LaunchCtas streamingHref={streamingHref} jumpInHref={jumpInHref} onLaunch={launchScene} onJumpIn={jumpIn} />
+            <LaunchCtas streamingHref={streamingHref} canJumpIn={Boolean(place)} onLaunch={launchScene} onJumpIn={jumpIn} />
           ) : (
             <>
               <ControlButton type="button" onClick={toggleFullscreen} disabled={!showIframe}>
@@ -337,7 +334,7 @@ function SceneOnlyWatcher(props: SceneWatcherCardProps) {
 }
 
 function SceneWatcherReady(props: SceneWatcherCardProps) {
-  const { mode, streamingHref, coverImage, initialUserCount, jumpInHref, place } = props
+  const { mode, streamingHref, coverImage, initialUserCount, place } = props
   const t = useFormatMessage()
   const videoAreaRef = useRef<HTMLDivElement | null>(null)
   const { isFullscreen, toggleFullscreen } = useSceneFullscreen(videoAreaRef)
@@ -443,14 +440,14 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
         )}
         {/* While the bevy preview runs, JUMP IN stays pinned bottom-right so
             the native-client deep-link is always one click away. */}
-        {isMediaActive && tab === 'scene' && jumpInHref && <JumpInFloatCard onJumpIn={jumpIn} />}
+        {isMediaActive && tab === 'scene' && place && <JumpInFloatCard onJumpIn={jumpIn} />}
         {tab === 'video' && !isVideoPaused && (mode === 'scene' ? <SceneRoomContent /> : <WatcherViewContent />)}
       </VideoArea>
 
       <ControlsRow>
         <ControlsButtons>
           {tab === 'scene' && !isMediaActive && !isMobile ? (
-            <LaunchCtas streamingHref={streamingHref} jumpInHref={jumpInHref} onLaunch={launchScene} onJumpIn={jumpIn} />
+            <LaunchCtas streamingHref={streamingHref} canJumpIn={Boolean(place)} onLaunch={launchScene} onJumpIn={jumpIn} />
           ) : (
             <>
               <ControlButton type="button" onClick={toggleFullscreen} disabled={!isMediaActive}>

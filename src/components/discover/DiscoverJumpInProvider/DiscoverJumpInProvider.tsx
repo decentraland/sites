@@ -40,10 +40,12 @@ function DiscoverJumpInProvider({ children }: { children: ReactNode }) {
 
       const options = discoverDeepLinkOptions(place)
       const outcome = await launch(options)
-      // Client not installed → prompt the download (mobile already went to the
-      // store, desktop-launched needs nothing more).
-      if (outcome === 'not-installed') {
-        track(SegmentEvent.CLICK, { event: SegmentEvent.CLIENT_NOT_INSTALLED, os: osName, arch })
+      // Couldn't launch → prompt the download (mobile already went to the store,
+      // a successful launch needs nothing more). A rejection opens the modal too
+      // but isn't tracked as CLIENT_NOT_INSTALLED — a throw isn't proof the
+      // client is absent (matches the homepage flow).
+      if (outcome === 'not-installed' || outcome === 'launch-error') {
+        if (outcome === 'not-installed') track(SegmentEvent.CLICK, { event: SegmentEvent.CLIENT_NOT_INSTALLED, os: osName, arch })
         setPendingDeepLink(options)
         setModalOpen(true)
       }

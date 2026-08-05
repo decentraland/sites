@@ -5,6 +5,7 @@ import { launchDesktopApp } from 'decentraland-ui2'
 import { getEnv } from '../config/env'
 import { collectCampaignParams } from '../modules/campaignParams'
 import { detectDownloadOS } from '../modules/downloadConstants'
+import { SegmentEvent } from '../modules/segment.types'
 import { useAnonUserId } from './useAnonUserId'
 import { useLaunchExplorer } from './useLaunchExplorer'
 import { useTotalDownloads } from './useTotalDownloads'
@@ -140,13 +141,16 @@ describe('useLaunchExplorer', () => {
       expect(result.current.isDownloadModalOpen).toBe(false)
     })
 
-    it('should open the modal when launchDesktopApp throws', async () => {
+    it('should open the modal when launchDesktopApp throws, without tracking CLIENT_NOT_INSTALLED', async () => {
       mockedLaunchDesktopApp.mockRejectedValue(new Error('boom'))
       const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
 
       await act(() => result.current.launchExplorer())
 
       expect(result.current.isDownloadModalOpen).toBe(true)
+      // A rejection isn't proof the client is absent — legacy behavior never
+      // tracked it (only the explicit `launched === false` path does).
+      expect(track).not.toHaveBeenCalledWith(SegmentEvent.CLICK, expect.objectContaining({ event: SegmentEvent.CLIENT_NOT_INSTALLED }))
     })
 
     it('should carry non-default position and realm into the modal download url', () => {

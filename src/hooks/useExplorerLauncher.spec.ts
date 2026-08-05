@@ -69,7 +69,7 @@ describe('useExplorerLauncher', () => {
       expect(outcome).toBe('not-installed')
     })
 
-    it('should resolve "not-installed" when launchDesktopApp rejects', async () => {
+    it('should resolve "launch-error" when launchDesktopApp rejects', async () => {
       mockedLaunch.mockRejectedValue(new Error('blocked'))
       const { result } = renderHook(() => useExplorerLauncher())
 
@@ -78,7 +78,7 @@ describe('useExplorerLauncher', () => {
         outcome = await result.current.launch({ position: '1,2' })
       })
 
-      expect(outcome).toBe('not-installed')
+      expect(outcome).toBe('launch-error')
     })
 
     it('should thread the ?env deep-link param into the launch', async () => {

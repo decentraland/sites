@@ -9,8 +9,12 @@ import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
 // What a launch attempt resolved to, so the caller can track + fall back:
 //   'mobile-store'  → sent to the app store (no desktop client on touch devices)
 //   'launched'      → the desktop client opened the deep link
-//   'not-installed' → protocol didn't take; caller should prompt the download
-type LaunchOutcome = 'mobile-store' | 'launched' | 'not-installed'
+//   'not-installed' → launchDesktopApp reported the client didn't take
+//   'launch-error'  → the launch threw (blocked protocol handler, etc.)
+// Both 'not-installed' and 'launch-error' should prompt the download, but only
+// 'not-installed' emits CLIENT_NOT_INSTALLED — a rejection isn't proof the
+// client is absent, and the legacy flow never tracked it.
+type LaunchOutcome = 'mobile-store' | 'launched' | 'not-installed' | 'launch-error'
 
 /**
  * The device-aware "open the explorer" mechanics shared by every jump-in
@@ -42,7 +46,7 @@ function useExplorerLauncher() {
         const launched = await launchDesktopApp(buildDeepLinkOptions(options.position, options.realm, explorerEnv, sceneConsole))
         return launched ? 'launched' : 'not-installed'
       } catch {
-        return 'not-installed'
+        return 'launch-error'
       }
     },
     [isMobile, downloadOs, explorerEnv, sceneConsole]

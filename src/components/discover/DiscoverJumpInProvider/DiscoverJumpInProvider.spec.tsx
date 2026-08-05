@@ -150,7 +150,7 @@ describe('DiscoverJumpInProvider', () => {
       expect(url).toContain('anon_user_id=anon-123')
     })
 
-    it('should also fall back to the modal when launchDesktopApp rejects', async () => {
+    it('should fall back to the modal on a launch rejection without tracking CLIENT_NOT_INSTALLED', async () => {
       mockedLaunch.mockRejectedValue(new Error('blocked'))
       renderProvider()
 
@@ -159,6 +159,8 @@ describe('DiscoverJumpInProvider', () => {
       })
 
       await waitFor(() => expect(screen.getByTestId('download-modal')).toBeInTheDocument())
+      // A throw isn't proof the client is absent — matches the homepage flow.
+      expect(mockTrack).not.toHaveBeenCalledWith(SegmentEvent.CLICK, expect.objectContaining({ event: SegmentEvent.CLIENT_NOT_INSTALLED }))
     })
 
     it('should track the client-not-installed click', async () => {

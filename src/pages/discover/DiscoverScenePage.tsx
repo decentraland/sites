@@ -314,7 +314,6 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
             streamingHref={streamingHref}
             coverImage={place?.image || undefined}
             initialUserCount={livePlayers}
-            jumpInHref={jumpInHref}
             place={place}
           />
         </ViewerCard>
