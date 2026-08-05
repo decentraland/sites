@@ -139,9 +139,12 @@ jest.mock('decentraland-ui2', () => {
         {children}
       </button>
     ),
-    TextField: (props: { value?: string; onChange?: React.ChangeEventHandler<HTMLInputElement>; placeholder?: string }) => (
-      <input value={props.value} onChange={props.onChange} placeholder={props.placeholder} />
-    ),
+    TextField: (props: {
+      value?: string
+      onChange?: React.ChangeEventHandler<HTMLInputElement>
+      placeholder?: string
+      autoComplete?: string
+    }) => <input value={props.value} onChange={props.onChange} placeholder={props.placeholder} autoComplete={props.autoComplete} />,
     InputAdornment: ({ children }: { children?: React.ReactNode }) => <span>{children}</span>,
     CircularProgress: () => <div role="progressbar" />,
     dclColors: {
@@ -439,6 +442,12 @@ describe('DiscoverHomePage', () => {
       expect(mockDestinationsQuery).toHaveBeenCalledWith(expect.objectContaining({ search: 'gallery' }))
       expect(screen.queryByText('discover.live.heading')).not.toBeInTheDocument()
     })
+
+    it('should disable browser autofill so the saved-searches dropdown cannot repaint the bar (#721)', () => {
+      render(<DiscoverHomePage />)
+
+      expect(screen.getByPlaceholderText('discover.explore.search_placeholder')).toHaveAttribute('autocomplete', 'off')
+    })
   })
 
   describe('when the mobile filter drawer is used', () => {
@@ -598,6 +607,24 @@ describe('DiscoverHomePage', () => {
 
       expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
       expect(screen.getAllByTestId('place-card').length).toBeGreaterThan(0)
+    })
+
+    it('should anchor the toolbar in view on a tab switch so the shrinking page does not jump the user up (#720)', () => {
+      const scrollIntoView = jest.fn()
+      Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView })
+      render(<DiscoverHomePage />)
+
+      fireEvent.click(screen.getByRole('button', { name: 'discover.explore.tab.favourites' }))
+
+      expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' })
+    })
+
+    it('should not auto-scroll on the initial render (no tab interaction yet)', () => {
+      const scrollIntoView = jest.fn()
+      Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView })
+      render(<DiscoverHomePage />)
+
+      expect(scrollIntoView).not.toHaveBeenCalled()
     })
   })
 
