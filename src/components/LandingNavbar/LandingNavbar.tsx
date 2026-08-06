@@ -143,9 +143,13 @@ interface LandingNavbarProps {
 
 const PEER_BASE_URL = 'https://peer.decentraland.org/content/contents/'
 
-// Where the credits chip goes. An in-app route, so it stays a plain href like the rest of the navbar's
-// links rather than needing the router.
-const CREDITS_URL = '/account/credits'
+// Where the credits chip goes: the Shop's page for BUYING credits, not the account section's credits
+// settings. Someone clicking their balance is reaching for more of it.
+//
+// A same-origin path rather than an absolute URL, so it keeps the visitor on the environment they are
+// already on (.zone / .today / .org) — the Shop is served by-path at <domain>/shop, so this leaves this
+// app and the browser navigates for real. Still a plain href like the rest of the navbar's links.
+const CREDITS_URL = '/shop/credits'
 
 function formatTimeAgo(timestamp: number): string {
   const seconds = Math.floor((Date.now() - timestamp) / 1000)
