@@ -143,19 +143,29 @@ function DiscoverHomePage() {
   const [section, setSection] = useState<ExploreSection>('all')
   // Switching tabs swaps the big Explore grid for the (often much shorter)
   // Favourites / My Places content, collapsing the page height — the browser
-  // then clamps the scroll position and the user appears to jump up the page
-  // (#720). Anchor the toolbar just under the navbar on a user-initiated tab
-  // change so the tabs + new results stay in view. `hasSwitchedTab` skips the
-  // initial mount so a deep link doesn't auto-scroll.
+  // clamps the scroll and the toolbar drops down the viewport, so the user
+  // appears to jump (#720). After a user-initiated switch, re-anchor the
+  // toolbar under the navbar — but ONLY when the shrink actually pushed it well
+  // below the navbar (or scrolled it out of view above), so a switch that
+  // didn't move it (similar-height tabs) never scrolls. Honors reduced motion.
   const exploreBandRef = useRef<HTMLDivElement>(null)
   const hasSwitchedTab = useRef(false)
   const changeSection = useCallback((next: ExploreSection) => {
     hasSwitchedTab.current = true
     setSection(next)
   }, [])
+  // Runs after paint (not layout) so the browser's shrink-driven scroll clamp
+  // has already settled — otherwise the guard would read the pre-clamp position
+  // and skip the very case it's meant to fix.
   useEffect(() => {
     if (!hasSwitchedTab.current) return
-    exploreBandRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    const band = exploreBandRef.current
+    if (!band) return
+    const navClearance = window.innerWidth >= 900 ? 100 : 72
+    const top = band.getBoundingClientRect().top
+    if (top <= navClearance + 40 && top >= 0) return // already comfortably in place
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+    band.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
   }, [section])
   // Featured rail collapse — capped at FEATURED_COLLAPSED_ROWS × the grid's
   // current column count, mirroring FeaturedGrid's breakpoints.

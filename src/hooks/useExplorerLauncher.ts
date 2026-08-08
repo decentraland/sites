@@ -11,10 +11,20 @@ import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
 //   'launched'      → the desktop client opened the deep link
 //   'not-installed' → launchDesktopApp reported the client didn't take
 //   'launch-error'  → the launch threw (blocked protocol handler, etc.)
-// Both 'not-installed' and 'launch-error' should prompt the download, but only
-// 'not-installed' emits CLIENT_NOT_INSTALLED — a rejection isn't proof the
-// client is absent, and the legacy flow never tracked it.
 type LaunchOutcome = 'mobile-store' | 'launched' | 'not-installed' | 'launch-error'
+
+// The launch didn't take → prompt the download (shared by every caller so the
+// decision lives in one place).
+function shouldPromptDownload(outcome: LaunchOutcome): boolean {
+  return outcome === 'not-installed' || outcome === 'launch-error'
+}
+
+// Only an explicit `not-installed` (launchDesktopApp returned false) is tracked
+// as CLIENT_NOT_INSTALLED — a rejection isn't proof the client is absent, and
+// the legacy flow never tracked it.
+function isClientNotInstalled(outcome: LaunchOutcome): boolean {
+  return outcome === 'not-installed'
+}
 
 /**
  * The device-aware "open the explorer" mechanics shared by every jump-in
@@ -55,5 +65,5 @@ function useExplorerLauncher() {
   return { launch, isMobile, downloadOs, osName, arch }
 }
 
-export { useExplorerLauncher }
+export { isClientNotInstalled, shouldPromptDownload, useExplorerLauncher }
 export type { LaunchOutcome }

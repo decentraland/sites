@@ -21,10 +21,14 @@ interface DownloadModalProps {
  * position/realm) plus the tracking params (campaign utm_* + anon_user_id) so
  * attribution and the destination survive the hop and the funnel join stays
  * intact. `deepLinkParams` come from `buildDeepLinkOptions` (default-filtered).
+ *
+ * `enabled` defers the total-downloads fetch until the modal is actually shown —
+ * a caller that mounts the modal permanently but opens it on demand (discover
+ * jump-in) passes its open state so the fetch stays off the idle route.
  */
-function useDownloadModalProps(deepLinkParams: { position?: string; realm?: string }): DownloadModalProps {
+function useDownloadModalProps(deepLinkParams: { position?: string; realm?: string }, enabled = true): DownloadModalProps {
   const anonUserId = useAnonUserId()
-  const totalDownloads = useTotalDownloads()
+  const totalDownloads = useTotalDownloads(enabled)
   const downloadOs = detectDownloadOS()
 
   const downloadUrlParams = buildDownloadTrackingParams(anonUserId, deepLinkParams)

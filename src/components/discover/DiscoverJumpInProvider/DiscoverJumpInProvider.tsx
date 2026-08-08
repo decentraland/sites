@@ -7,7 +7,7 @@ import type { DiscoverPlace } from '../../../features/discover'
 import { buildDeepLinkOptions } from '../../../features/places/places.helpers'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
 import { useDownloadModalProps } from '../../../hooks/useDownloadModalProps'
-import { useExplorerLauncher } from '../../../hooks/useExplorerLauncher'
+import { isClientNotInstalled, shouldPromptDownload, useExplorerLauncher } from '../../../hooks/useExplorerLauncher'
 import { SegmentEvent } from '../../../modules/segment'
 
 interface DiscoverJumpInContextValue {
@@ -17,9 +17,8 @@ interface DiscoverJumpInContextValue {
   jumpIn: (place: DiscoverPlace, surface: string) => void
 }
 
-// The default is the no-provider fallback: still launch/track, just never able
-// to raise the shared modal (a lone card rendered outside DiscoverLayout won't
-// happen in the app, but keeps consumers from throwing).
+// Null default: a consumer rendered outside the provider falls back to a
+// warning no-op (see `noProviderFallback` below) instead of throwing.
 const DiscoverJumpInContext = createContext<DiscoverJumpInContextValue | null>(null)
 
 // Single owner of the "JUMP IN → install first" flow for the whole /discover
@@ -41,11 +40,9 @@ function DiscoverJumpInProvider({ children }: { children: ReactNode }) {
       const options = discoverDeepLinkOptions(place)
       const outcome = await launch(options)
       // Couldn't launch → prompt the download (mobile already went to the store,
-      // a successful launch needs nothing more). A rejection opens the modal too
-      // but isn't tracked as CLIENT_NOT_INSTALLED — a throw isn't proof the
-      // client is absent (matches the homepage flow).
-      if (outcome === 'not-installed' || outcome === 'launch-error') {
-        if (outcome === 'not-installed') track(SegmentEvent.CLICK, { event: SegmentEvent.CLIENT_NOT_INSTALLED, os: osName, arch })
+      // a successful launch needs nothing more).
+      if (shouldPromptDownload(outcome)) {
+        if (isClientNotInstalled(outcome)) track(SegmentEvent.CLICK, { event: SegmentEvent.CLIENT_NOT_INSTALLED, os: osName, arch })
         setPendingDeepLink(options)
         setModalOpen(true)
       }
@@ -56,8 +53,10 @@ function DiscoverJumpInProvider({ children }: { children: ReactNode }) {
   const value = useMemo<DiscoverJumpInContextValue>(() => ({ jumpIn }), [jumpIn])
 
   // Same download-URL + tracking-param threading as the homepage jump-in, keyed
-  // to the place the user last tried to launch.
-  const downloadModalProps = useDownloadModalProps(buildDeepLinkOptions(pendingDeepLink.position, pendingDeepLink.realm))
+  // to the place the user last tried to launch. Gated on `isModalOpen` so the
+  // total-downloads fetch never fires for the many visitors who never hit the
+  // "install first" fallback.
+  const downloadModalProps = useDownloadModalProps(buildDeepLinkOptions(pendingDeepLink.position, pendingDeepLink.realm), isModalOpen)
 
   return (
     <DiscoverJumpInContext.Provider value={value}>

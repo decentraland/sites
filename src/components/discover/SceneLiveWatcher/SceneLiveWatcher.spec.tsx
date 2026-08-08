@@ -113,29 +113,12 @@ jest.mock('decentraland-ui2', () => {
 const credentials: LiveKitCredentials = { url: 'wss://livekit.test', token: 'jwt', identity: 'guest', roomId: '' }
 
 describe('SceneLiveWatcher', () => {
-  let originalLocation: Location
-  let assignedHrefs: string[]
-
   beforeEach(() => {
-    assignedHrefs = []
-    originalLocation = window.location
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: {
-        get href() {
-          return 'https://decentraland.org/discover/place/-9,-9'
-        },
-        set href(value: string) {
-          assignedHrefs.push(value)
-        }
-      }
-    })
     mockUseTracks.mockReturnValue([])
     mockUseAdvancedUserAgentData.mockReturnValue([false, { mobile: false }])
   })
 
   afterEach(() => {
-    Object.defineProperty(window, 'location', { configurable: true, value: originalLocation })
     jest.resetAllMocks()
   })
 

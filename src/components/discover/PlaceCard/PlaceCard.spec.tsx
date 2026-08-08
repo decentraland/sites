@@ -69,30 +69,11 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
 }
 
 describe('PlaceCard', () => {
-  let originalLocation: Location
-  let assignedHrefs: string[]
-
   beforeEach(() => {
-    assignedHrefs = []
-    originalLocation = window.location
-    // Redefine location so the JUMP IN handler's href assignment is observable
-    // and does not trigger jsdom's "navigation not implemented" warning.
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: {
-        get href() {
-          return 'https://decentraland.org/discover'
-        },
-        set href(value: string) {
-          assignedHrefs.push(value)
-        }
-      }
-    })
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
   })
 
   afterEach(() => {
-    Object.defineProperty(window, 'location', { configurable: true, value: originalLocation })
     jest.resetAllMocks()
   })
 

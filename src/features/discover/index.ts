@@ -12,7 +12,7 @@ export {
 export {
   DISCOVER_CATEGORIES,
   buildDetailPath,
-  buildJumpInHref,
+  buildJumpLandingHref,
   discoverDeepLinkOptions,
   discoverPlacePayload,
   isHiddenPlace,

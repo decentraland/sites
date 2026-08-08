@@ -66,25 +66,15 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
 describe('SceneJumpInModal', () => {
   let onClose: jest.Mock
   let originalLocation: Location
-  let assignedHrefs: string[]
 
   beforeEach(() => {
     onClose = jest.fn()
-    assignedHrefs = []
+    // The copy-link handler builds the shared URL from `window.location.origin`;
+    // pin it so the assertions don't depend on the jsdom default host.
     originalLocation = window.location
-    // Redefine location so the JUMP IN handler's href assignment is observable
-    // and does not trigger jsdom's "navigation not implemented" warning.
     Object.defineProperty(window, 'location', {
       configurable: true,
-      value: {
-        origin: 'https://decentraland.org',
-        get href() {
-          return 'https://decentraland.org/discover'
-        },
-        set href(value: string) {
-          assignedHrefs.push(value)
-        }
-      }
+      value: { origin: 'https://decentraland.org', href: 'https://decentraland.org/discover' }
     })
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
   })

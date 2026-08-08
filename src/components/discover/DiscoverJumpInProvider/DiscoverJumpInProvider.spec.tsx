@@ -18,8 +18,14 @@ jest.mock('@dcl/hooks', () => ({ useAdvancedUserAgentData: jest.fn() }))
 jest.mock('decentraland-ui2', () => ({
   launchDesktopApp: jest.fn(),
   // Minimal DownloadModal stand-in that surfaces the props the flow drives.
-  DownloadModal: ({ open, downloadUrl }: { open: boolean; downloadUrl: string }) =>
-    open ? <div data-testid="download-modal" data-download-url={downloadUrl} /> : null
+  DownloadModal: ({ open, downloadUrl, onClose }: { open: boolean; downloadUrl: string; onClose: () => void }) =>
+    open ? (
+      <div data-testid="download-modal" data-download-url={downloadUrl}>
+        <button type="button" onClick={onClose}>
+          close-modal
+        </button>
+      </div>
+    ) : null
 }))
 jest.mock('../../../modules/downloadConstants', () => ({
   DOWNLOAD_URLS: {
@@ -148,6 +154,20 @@ describe('DiscoverJumpInProvider', () => {
       const url = modal.getAttribute('data-download-url') ?? ''
       expect(url).toContain('position=-3%2C-2')
       expect(url).toContain('anon_user_id=anon-123')
+    })
+
+    it('should close the modal when the user dismisses it', async () => {
+      mockedLaunch.mockResolvedValue(false)
+      renderProvider()
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('jump'))
+      })
+      expect(await screen.findByTestId('download-modal')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByText('close-modal'))
+
+      expect(screen.queryByTestId('download-modal')).not.toBeInTheDocument()
     })
 
     it('should fall back to the modal on a launch rejection without tracking CLIENT_NOT_INSTALLED', async () => {

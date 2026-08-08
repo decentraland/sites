@@ -31,7 +31,7 @@ describe('features/discover barrel', () => {
   it('should re-export every public helper', () => {
     expect(discoverIndex.DISCOVER_CATEGORIES).toBeDefined()
     expect(discoverIndex.buildDetailPath).toBeDefined()
-    expect(discoverIndex.buildJumpInHref).toBeDefined()
+    expect(discoverIndex.buildJumpLandingHref).toBeDefined()
     expect(discoverIndex.discoverPlacePayload).toBeDefined()
     expect(discoverIndex.isHiddenPlace).toBeDefined()
     expect(discoverIndex.parsePositionParam).toBeDefined()

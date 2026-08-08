@@ -609,7 +609,11 @@ describe('DiscoverHomePage', () => {
       expect(screen.getAllByTestId('place-card').length).toBeGreaterThan(0)
     })
 
-    it('should anchor the toolbar in view on a tab switch so the shrinking page does not jump the user up (#720)', () => {
+    it('should re-anchor the toolbar when a tab switch pushes it down the viewport (#720)', () => {
+      // Simulate the shrunk-page clamp pushing the toolbar well below the navbar.
+      const rectSpy = jest
+        .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+        .mockReturnValue({ top: 500, bottom: 540, left: 0, right: 0, width: 0, height: 40, x: 0, y: 500, toJSON: () => ({}) })
       const scrollIntoView = jest.fn()
       Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView })
       render(<DiscoverHomePage />)
@@ -617,9 +621,24 @@ describe('DiscoverHomePage', () => {
       fireEvent.click(screen.getByRole('button', { name: 'discover.explore.tab.favourites' }))
 
       expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' })
+      rectSpy.mockRestore()
     })
 
-    it('should not auto-scroll on the initial render (no tab interaction yet)', () => {
+    it('should not scroll when the toolbar is already comfortably in place', () => {
+      const rectSpy = jest
+        .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+        .mockReturnValue({ top: 20, bottom: 60, left: 0, right: 0, width: 0, height: 40, x: 0, y: 20, toJSON: () => ({}) })
+      const scrollIntoView = jest.fn()
+      Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView })
+      render(<DiscoverHomePage />)
+
+      fireEvent.click(screen.getByRole('button', { name: 'discover.explore.tab.favourites' }))
+
+      expect(scrollIntoView).not.toHaveBeenCalled()
+      rectSpy.mockRestore()
+    })
+
+    it('should not scroll on the initial render (no tab interaction yet)', () => {
       const scrollIntoView = jest.fn()
       Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView })
       render(<DiscoverHomePage />)

@@ -18,8 +18,8 @@ const ExploreBand = styled(Box)(({ theme }) => ({
   backgroundColor: 'rgba(0, 0, 0, 0.2)',
   marginTop: theme.spacing(6),
   padding: theme.spacing(6, 0, 8),
-  // On a tab switch the page scrolls this band to the top; offset it so the
-  // fixed navbar (64px mobile / 92px desktop) doesn't cover the toolbar.
+  // A tab switch re-anchors this band to the top; offset it so the fixed navbar
+  // (64px mobile / 92px desktop) doesn't cover the toolbar.
   scrollMarginTop: 72,
   [theme.breakpoints.up('md')]: { scrollMarginTop: 100 }
 }))

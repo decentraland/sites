@@ -65,4 +65,22 @@ describe('useTotalDownloads', () => {
     const second = renderHook(() => useTotalDownloads())
     expect(second.result.current).toBe('42000')
   })
+
+  it('should skip the downloads fetch when disabled', () => {
+    asyncMemo(null, false)
+    const useTotalDownloads = loadHook()
+
+    renderHook(() => useTotalDownloads(false))
+
+    expect(mockGetTotalDownloads).not.toHaveBeenCalled()
+  })
+
+  it('should fetch the count once enabled', () => {
+    asyncMemo(1000, true)
+    const useTotalDownloads = loadHook()
+
+    renderHook(() => useTotalDownloads(true))
+
+    expect(mockGetTotalDownloads).toHaveBeenCalled()
+  })
 })

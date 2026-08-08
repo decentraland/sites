@@ -3,7 +3,7 @@ import { act, renderHook } from '@testing-library/react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import { detectDownloadOS } from '../modules/downloadConstants'
-import { useExplorerLauncher } from './useExplorerLauncher'
+import { isClientNotInstalled, shouldPromptDownload, useExplorerLauncher } from './useExplorerLauncher'
 
 jest.mock('react-router-dom', () => ({ useSearchParams: jest.fn() }))
 jest.mock('@dcl/hooks', () => ({ useAdvancedUserAgentData: jest.fn() }))
@@ -127,5 +127,23 @@ describe('useExplorerLauncher', () => {
     const { result } = renderHook(() => useExplorerLauncher())
 
     expect(result.current).toMatchObject({ isMobile: false, downloadOs: 'apple', osName: 'macOS', arch: 'arm64' })
+  })
+})
+
+describe('shouldPromptDownload', () => {
+  it('should be true only when the launch did not take', () => {
+    expect(shouldPromptDownload('not-installed')).toBe(true)
+    expect(shouldPromptDownload('launch-error')).toBe(true)
+    expect(shouldPromptDownload('launched')).toBe(false)
+    expect(shouldPromptDownload('mobile-store')).toBe(false)
+  })
+})
+
+describe('isClientNotInstalled', () => {
+  it('should be true only for the explicit not-installed outcome, not a rejection', () => {
+    expect(isClientNotInstalled('not-installed')).toBe(true)
+    expect(isClientNotInstalled('launch-error')).toBe(false)
+    expect(isClientNotInstalled('launched')).toBe(false)
+    expect(isClientNotInstalled('mobile-store')).toBe(false)
   })
 })
