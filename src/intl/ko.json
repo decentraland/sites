@@ -506,7 +506,7 @@
         "menu": "메뉴",
         "getting_started": {
           "title": "시작하기",
-          "what_is": "Decentraland란?",
+          "what_is": "Decentraland 소개",
           "download": "Decentraland 다운로드",
           "system_requirements": "시스템 요구 사항",
           "faqs": "자주 묻는 질문",
@@ -666,7 +666,8 @@
         "my_assets": "내 자산",
         "account_settings": "계정 설정",
         "marketplace_authorizations": "마켓플레이스 승인",
-        "whats_on": "새 소식"
+        "whats_on": "탐색",
+        "credits_balance": "크레딧 {count}"
       }
     },
     "reels": {

@@ -506,7 +506,7 @@
         "menu": "Menú",
         "getting_started": {
           "title": "Primeros pasos",
-          "what_is": "¿Qué es Decentraland?",
+          "what_is": "Acerca de Decentraland",
           "download": "Descargar Decentraland",
           "system_requirements": "Requisitos del sistema",
           "faqs": "Preguntas frecuentes",
@@ -666,7 +666,8 @@
         "my_assets": "Mis cosas",
         "account_settings": "Configuración",
         "marketplace_authorizations": "Autorizaciones del Marketplace",
-        "whats_on": "Explorar"
+        "whats_on": "Explorar",
+        "credits_balance": "{count} créditos"
       }
     },
     "reels": {
