@@ -187,7 +187,7 @@ const createCards: CreateCardData[] = [
       descriptionTitle: 'More than Motion',
       descriptionSubTitle:
         'Surpassing simple animations, in Decentraland, Emotes take expression to the next level with the option of adding props and sounds!',
-      skills: ['TYPESCRIPT', '3D MODELING', 'ANIMATION'],
+      skills: ['3D MODELING', 'ANIMATION'],
       links: [
         {
           label: 'Creating Emotes',
