@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import type { AuthIdentity } from '@dcl/crypto'
 import type { EventEntry } from '../features/events'
 import { useCreateEventForm } from './useCreateEventForm'
@@ -1050,10 +1050,15 @@ describe('useCreateEventForm', () => {
       let pendingSelect: Promise<void> | null = null
       await act(async () => {
         pendingSelect = result.current.handleVerticalImageSelect(file)
-        // let the async dimension check resolve and the state flip to uploading
-        await new Promise(resolve => setTimeout(resolve, 0))
       })
-      expect(result.current.form.isUploadingVerticalImage).toBe(true)
+      // Wait for the async dimension check to resolve and flip the state to
+      // uploading. A single `setTimeout(0)` used to stand in for this, which
+      // assumed the check always lands within one macrotask: on a loaded CI
+      // runner it does not, the assertion below then failed to settle, and the
+      // whole suite fell over on a 5s timeout.
+      await waitFor(() => {
+        expect(result.current.form.isUploadingVerticalImage).toBe(true)
+      })
 
       await act(async () => {
         await result.current.handleSubmit()
