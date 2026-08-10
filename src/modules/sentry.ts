@@ -1,6 +1,6 @@
 import { type ErrorEvent, browserTracingIntegration, init, replayIntegration } from '@sentry/browser'
 import { getEnv } from '../config/env'
-import { redactBreadcrumbUrl, redactEventUrls } from './sentry.helpers'
+import { isBlockedAnalyticsScriptError, redactBreadcrumbUrl, redactEventUrls } from './sentry.helpers'
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '0.0.0.0', ''])
 
@@ -62,6 +62,11 @@ if (dsn && !isLocalHost()) {
         exception.stacktrace?.frames?.some(frame => frame.filename?.includes('gtm') || frame.filename?.includes('stag'))
       )
       if (framesMatch) return null
+
+      // A blocked Google tag is the single noisiest event in this project and is
+      // never actionable, but the existing `gtm`/`stag` frame filter above misses
+      // it: the frame belongs to Segment's loader, not to a gtm file.
+      if (isBlockedAnalyticsScriptError(event)) return null
 
       const errorMessage = event.message ?? event.exception?.values?.[0]?.value ?? ''
       if (errorFilters.some(filter => filter.test(errorMessage))) return null

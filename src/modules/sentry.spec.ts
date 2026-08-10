@@ -145,6 +145,38 @@ describe('when beforeSend inspects an event', () => {
     })
   })
 
+  describe('and the Google tag was blocked through the Segment loader', () => {
+    it('should drop the event', async () => {
+      const event = {
+        exception: {
+          values: [
+            {
+              value: 'Failed to load https://www.googletagmanager.com/gtag/js?id=G-7DM7BF7RJG',
+              stacktrace: { frames: [{ filename: 'webpack://Destination/../browser-destination-runtime/dist/esm/load-script.js' }] }
+            }
+          ]
+        }
+      } as ErrorEvent
+      expect(await send(event)).toBeNull()
+    })
+  })
+
+  describe('and a non-analytics Segment destination failed to load', () => {
+    it('should keep the event', async () => {
+      const event = {
+        exception: {
+          values: [
+            {
+              value: 'Failed to load https://cdn.some-vendor.example/destination.js',
+              stacktrace: { frames: [{ filename: 'webpack://Destination/../browser-destination-runtime/dist/esm/load-script.js' }] }
+            }
+          ]
+        }
+      } as ErrorEvent
+      expect(await send(event)).not.toBeNull()
+    })
+  })
+
   describe('and the message matches a filtered error', () => {
     it('should drop the event', async () => {
       expect(await send({ message: 'The play() request was interrupted' } as ErrorEvent)).toBeNull()
