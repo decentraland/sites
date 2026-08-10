@@ -18,18 +18,29 @@ function parsePositionParam(raw: string | undefined): [number, number] | undefin
   return [Number(match[1]), Number(match[2])]
 }
 
-// Direct `decentraland://` protocol launch into the installed desktop client.
-// We intentionally skip the decentraland.org/jump landing page on /discover/*
-// — users browsing here already know what Decentraland is; the landing page
-// adds friction. If the client isn't installed the OS protocol-handler dialog
-// is the right fallback (user can choose to download).
-function buildJumpInHref(place: DiscoverPlace): string {
-  if (place.world && place.world_name) {
-    return `decentraland://?realm=${encodeURIComponent(place.world_name.toLowerCase())}`
-  }
+// Deep-link target for the jump-in launch: worlds resolve by realm (the
+// lowercased world name), Genesis City places by parcel position. The single
+// source for the routing decision — `launchDesktopApp` + the download-fallback
+// tracking take this structured shape directly (so the "install first" flow
+// carries the first-launch destination all the way to the client), and the
+// chat-footer landing link below derives its query from it.
+function discoverDeepLinkOptions(place: DiscoverPlace): { position?: string; realm?: string } {
+  if (place.world && place.world_name) return { realm: place.world_name.toLowerCase() }
   const position = place.base_position ?? place.positions?.[0]
-  if (position) return `decentraland://?position=${encodeURIComponent(position)}`
-  return 'decentraland://'
+  return position ? { position } : {}
+}
+
+// The `/jump/` landing-page link used by the in-world chat footer's "Jump into
+// <Scene>" anchor. Unlike the JUMP IN buttons (which go through the shared
+// launcher + download modal), a plain text link can't raise the modal, so it
+// points at the launcher landing page, which resolves the deep link AND offers
+// a download when the client is absent — matching cast's chat footer, instead
+// of a bare `decentraland://` that silently no-ops for a client-less visitor.
+function buildJumpLandingHref(place: DiscoverPlace): string {
+  const { realm, position } = discoverDeepLinkOptions(place)
+  if (realm) return `https://decentraland.org/jump/?realm=${encodeURIComponent(realm)}`
+  if (position) return `https://decentraland.org/jump/?position=${encodeURIComponent(position)}`
+  return 'https://decentraland.org/jump/'
 }
 
 // In-app detail route for a place — worlds by name, parcels by base position.
@@ -155,7 +166,8 @@ function discoverPlacePayload(place: DiscoverPlace): Record<string, string | num
 export {
   DISCOVER_CATEGORIES,
   buildDetailPath,
-  buildJumpInHref,
+  buildJumpLandingHref,
+  discoverDeepLinkOptions,
   discoverPlacePayload,
   isHiddenPlace,
   isMapPlaceholderImage,

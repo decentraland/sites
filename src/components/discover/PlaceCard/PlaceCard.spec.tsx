@@ -11,6 +11,11 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate
 }))
 
+const mockJumpIn = jest.fn()
+jest.mock('../DiscoverJumpInProvider', () => ({
+  useDiscoverJumpIn: () => ({ jumpIn: mockJumpIn })
+}))
+
 const mockTrack = jest.fn()
 jest.mock('../../../hooks/useDeferredTrack', () => ({
   useDeferredTrack: () => mockTrack
@@ -64,30 +69,11 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
 }
 
 describe('PlaceCard', () => {
-  let originalLocation: Location
-  let assignedHrefs: string[]
-
   beforeEach(() => {
-    assignedHrefs = []
-    originalLocation = window.location
-    // Redefine location so the JUMP IN handler's href assignment is observable
-    // and does not trigger jsdom's "navigation not implemented" warning.
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: {
-        get href() {
-          return 'https://decentraland.org/discover'
-        },
-        set href(value: string) {
-          assignedHrefs.push(value)
-        }
-      }
-    })
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
   })
 
   afterEach(() => {
-    Object.defineProperty(window, 'location', { configurable: true, value: originalLocation })
     jest.resetAllMocks()
   })
 
@@ -196,12 +182,12 @@ describe('PlaceCard', () => {
       expect(screen.getByText('MyWorld')).toBeInTheDocument()
     })
 
-    it('should launch the client with the world realm when JUMP IN is clicked', () => {
+    it('should hand the place to the shared launcher when JUMP IN is clicked', () => {
       render(<PlaceCard place={place} />)
 
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
-      expect(assignedHrefs).toEqual(['decentraland://?realm=myworld'])
+      expect(mockJumpIn).toHaveBeenCalledWith(place, 'place-card')
     })
   })
 
@@ -226,12 +212,13 @@ describe('PlaceCard', () => {
   })
 
   describe('when JUMP IN is clicked on a parcel place', () => {
-    it('should launch the client at the encoded position without triggering the card navigation', () => {
-      render(<PlaceCard place={createPlace({ user_count: 2 })} />)
+    it('should hand the place to the shared launcher without triggering the card navigation', () => {
+      const place = createPlace({ user_count: 2 })
+      render(<PlaceCard place={place} />)
 
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
-      expect(assignedHrefs).toEqual(['decentraland://?position=-9%2C-9'])
+      expect(mockJumpIn).toHaveBeenCalledWith(place, 'place-card')
       expect(mockNavigate).not.toHaveBeenCalled()
     })
   })

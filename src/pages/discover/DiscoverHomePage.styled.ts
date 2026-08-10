@@ -17,7 +17,11 @@ const ExploreBand = styled(Box)(({ theme }) => ({
   marginLeft: 'calc(50% - 50vw)',
   backgroundColor: 'rgba(0, 0, 0, 0.2)',
   marginTop: theme.spacing(6),
-  padding: theme.spacing(6, 0, 8)
+  padding: theme.spacing(6, 0, 8),
+  // A tab switch re-anchors this band to the top; offset it so the fixed navbar
+  // (64px mobile / 92px desktop) doesn't cover the toolbar.
+  scrollMarginTop: 72,
+  [theme.breakpoints.up('md')]: { scrollMarginTop: 100 }
 }))
 
 // Re-aligns the band's children (the band itself broke out to 100vw) back onto

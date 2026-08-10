@@ -168,6 +168,18 @@ const SearchField = styled(TextField)(({ theme }) => ({
     color: dclColors.neutral.softWhite,
     opacity: 0.8
   },
+  // Keep the dark theme when the browser autofills / applies a saved value —
+  // the default `:-webkit-autofill` background is an opaque light fill the
+  // normal backgroundColor can't override (only the inset box-shadow hack can),
+  // which otherwise repaints the search bar light with invisible text (#721).
+  ['& .MuiInputBase-input:-webkit-autofill']: {
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- CSS vendor property
+    WebkitTextFillColor: dclColors.neutral.softWhite,
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- CSS vendor property
+    WebkitBoxShadow: '0 0 0 1000px rgba(0, 0, 0, 0.2) inset',
+    caretColor: dclColors.neutral.softWhite,
+    transition: 'background-color 9999s ease-in-out 0s'
+  },
   ['& .MuiSvgIcon-root']: {
     color: dclColors.neutral.softWhite
   }

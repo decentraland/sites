@@ -11,6 +11,11 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate
 }))
 
+const mockJumpIn = jest.fn()
+jest.mock('../DiscoverJumpInProvider', () => ({
+  useDiscoverJumpIn: () => ({ jumpIn: mockJumpIn })
+}))
+
 const mockTrack = jest.fn()
 jest.mock('../../../hooks/useDeferredTrack', () => ({
   useDeferredTrack: () => mockTrack
@@ -64,30 +69,11 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
 }
 
 describe('FeaturedCard', () => {
-  let originalLocation: Location
-  let assignedHrefs: string[]
-
   beforeEach(() => {
-    assignedHrefs = []
-    originalLocation = window.location
-    // Redefine location so the JUMP IN handler's href assignment is observable
-    // and does not trigger jsdom's "navigation not implemented" warning.
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: {
-        get href() {
-          return 'https://decentraland.org/discover'
-        },
-        set href(value: string) {
-          assignedHrefs.push(value)
-        }
-      }
-    })
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
   })
 
   afterEach(() => {
-    Object.defineProperty(window, 'location', { configurable: true, value: originalLocation })
     jest.resetAllMocks()
   })
 
@@ -176,13 +162,14 @@ describe('FeaturedCard', () => {
   })
 
   describe('when JUMP IN is clicked', () => {
-    it('should launch the client at the encoded position without triggering the card click', () => {
+    it('should hand the place to the shared launcher without triggering the card click', () => {
       const onEmptyClick = jest.fn()
-      render(<FeaturedCard place={createPlace()} onEmptyClick={onEmptyClick} />)
+      const place = createPlace()
+      render(<FeaturedCard place={place} onEmptyClick={onEmptyClick} />)
 
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
-      expect(assignedHrefs).toEqual(['decentraland://?position=12%2C34'])
+      expect(mockJumpIn).toHaveBeenCalledWith(place, 'featured-card')
       expect(onEmptyClick).not.toHaveBeenCalled()
     })
   })

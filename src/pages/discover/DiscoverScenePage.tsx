@@ -10,7 +10,7 @@ import { SceneJumpInModal } from '../../components/discover/SceneJumpInModal'
 import { SceneChatDock, SceneRoomMount, SceneWatcherCard } from '../../components/discover/SceneLiveWatcher'
 import { getEnv } from '../../config/env'
 import {
-  buildJumpInHref,
+  buildJumpLandingHref,
   parsePositionParam,
   useGetDiscoverPlaceByPositionQuery,
   useGetDiscoverWorldByNameQuery,
@@ -189,7 +189,9 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
   }, [kind, place, parsedPosition, worldName, hotScenesQuery.data, liveWorldsQuery.data])
   const isLoadingPlayers = kind === 'place' ? hotScenesQuery.isLoading : liveWorldsQuery.isLoading
 
-  const jumpInHref = useMemo(() => (place ? buildJumpInHref(place) : null), [place])
+  // The chat footer's "Jump into <Scene>" anchor points at the /jump/ landing
+  // page (deep-link + download fallback), not a bare protocol link.
+  const chatJumpHref = useMemo(() => (place ? buildJumpLandingHref(place) : null), [place])
 
   // `/discover/*` is in `isPageTrackingExempt`, so Layout's route-level
   // `page()` is suppressed. Fire once the place title resolves so Segment
@@ -314,13 +316,13 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
             streamingHref={streamingHref}
             coverImage={place?.image || undefined}
             initialUserCount={livePlayers}
-            jumpInHref={jumpInHref}
+            place={place}
           />
         </ViewerCard>
 
         <ChatColumn>
           <ChatFill>
-            <SceneChatDock status={canRenderWatcher ? room.status : 'loading'} sceneName={headerTitle} jumpHref={jumpInHref} />
+            <SceneChatDock status={canRenderWatcher ? room.status : 'loading'} sceneName={headerTitle} jumpHref={chatJumpHref} />
           </ChatFill>
         </ChatColumn>
 

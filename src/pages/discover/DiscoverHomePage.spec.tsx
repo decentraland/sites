@@ -139,9 +139,12 @@ jest.mock('decentraland-ui2', () => {
         {children}
       </button>
     ),
-    TextField: (props: { value?: string; onChange?: React.ChangeEventHandler<HTMLInputElement>; placeholder?: string }) => (
-      <input value={props.value} onChange={props.onChange} placeholder={props.placeholder} />
-    ),
+    TextField: (props: {
+      value?: string
+      onChange?: React.ChangeEventHandler<HTMLInputElement>
+      placeholder?: string
+      autoComplete?: string
+    }) => <input value={props.value} onChange={props.onChange} placeholder={props.placeholder} autoComplete={props.autoComplete} />,
     InputAdornment: ({ children }: { children?: React.ReactNode }) => <span>{children}</span>,
     CircularProgress: () => <div role="progressbar" />,
     dclColors: {
@@ -439,6 +442,12 @@ describe('DiscoverHomePage', () => {
       expect(mockDestinationsQuery).toHaveBeenCalledWith(expect.objectContaining({ search: 'gallery' }))
       expect(screen.queryByText('discover.live.heading')).not.toBeInTheDocument()
     })
+
+    it('should disable browser autofill so the saved-searches dropdown cannot repaint the bar (#721)', () => {
+      render(<DiscoverHomePage />)
+
+      expect(screen.getByPlaceholderText('discover.explore.search_placeholder')).toHaveAttribute('autocomplete', 'off')
+    })
   })
 
   describe('when the mobile filter drawer is used', () => {
@@ -598,6 +607,43 @@ describe('DiscoverHomePage', () => {
 
       expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
       expect(screen.getAllByTestId('place-card').length).toBeGreaterThan(0)
+    })
+
+    it('should re-anchor the toolbar when a tab switch pushes it down the viewport (#720)', () => {
+      // Simulate the shrunk-page clamp pushing the toolbar well below the navbar.
+      const rectSpy = jest
+        .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+        .mockReturnValue({ top: 500, bottom: 540, left: 0, right: 0, width: 0, height: 40, x: 0, y: 500, toJSON: () => ({}) })
+      const scrollIntoView = jest.fn()
+      Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView })
+      render(<DiscoverHomePage />)
+
+      fireEvent.click(screen.getByRole('button', { name: 'discover.explore.tab.favourites' }))
+
+      expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' })
+      rectSpy.mockRestore()
+    })
+
+    it('should not scroll when the toolbar is already comfortably in place', () => {
+      const rectSpy = jest
+        .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+        .mockReturnValue({ top: 20, bottom: 60, left: 0, right: 0, width: 0, height: 40, x: 0, y: 20, toJSON: () => ({}) })
+      const scrollIntoView = jest.fn()
+      Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView })
+      render(<DiscoverHomePage />)
+
+      fireEvent.click(screen.getByRole('button', { name: 'discover.explore.tab.favourites' }))
+
+      expect(scrollIntoView).not.toHaveBeenCalled()
+      rectSpy.mockRestore()
+    })
+
+    it('should not scroll on the initial render (no tab interaction yet)', () => {
+      const scrollIntoView = jest.fn()
+      Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView })
+      render(<DiscoverHomePage />)
+
+      expect(scrollIntoView).not.toHaveBeenCalled()
     })
   })
 

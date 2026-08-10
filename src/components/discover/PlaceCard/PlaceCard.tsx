@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { BadgeGroup, LiveBadge, UserCountBadge } from 'decentraland-ui2'
 import {
   buildDetailPath,
-  buildJumpInHref,
   discoverPlacePayload,
   placeCoordsLabel,
   placeCoverImage,
@@ -19,6 +18,7 @@ import { usePlaceOwnerAvatar } from '../../../hooks/usePlaceOwnerAvatar'
 import { SegmentEvent } from '../../../modules/segment.types'
 import { JumpInGlyph, MedalGlyph, PinGlyph } from '../_shared/CardIcons'
 import { FeaturedBadge, TopRow } from '../_shared/DiscoverShell.styled'
+import { useDiscoverJumpIn } from '../DiscoverJumpInProvider'
 import {
   Avatar,
   Body,
@@ -53,8 +53,7 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
 
   const detailHref = useMemo(() => buildDetailPath(place), [place])
 
-  const jumpInHref = useMemo(() => buildJumpInHref(place), [place])
-
+  const { jumpIn } = useDiscoverJumpIn()
   const { ownerName, ownerAvatar, avatarBg } = usePlaceOwnerAvatar(place)
 
   const players = placePlayers(place)
@@ -91,10 +90,9 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
       // Stop propagation so the card's onClick doesn't also navigate while the
       // launcher is opening.
       e.stopPropagation()
-      track(SegmentEvent.DISCOVER_JUMP_IN, { ...discoverPlacePayload(place), place: 'place-card' })
-      window.location.href = jumpInHref
+      jumpIn(place, 'place-card')
     },
-    [track, jumpInHref, place]
+    [jumpIn, place]
   )
 
   return (

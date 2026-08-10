@@ -7,6 +7,12 @@ import { SceneChatDock, SceneRoomMount, SceneWatcherCard } from '.'
 const mockUseTracks = jest.fn()
 const mockUseAdvancedUserAgentData = jest.fn()
 const mockTrack = jest.fn()
+const mockJumpIn = jest.fn()
+jest.mock('../DiscoverJumpInProvider', () => ({
+  useDiscoverJumpIn: () => ({ jumpIn: mockJumpIn })
+}))
+// Minimal place stand-in — the launcher only receives it and its surface tag.
+const mockPlace = { id: 'scene-1', base_position: '-9,-9' } as never
 const mockChatContext = {
   chatMessages: [] as unknown[],
   markMessagesAsRead: jest.fn(),
@@ -107,29 +113,12 @@ jest.mock('decentraland-ui2', () => {
 const credentials: LiveKitCredentials = { url: 'wss://livekit.test', token: 'jwt', identity: 'guest', roomId: '' }
 
 describe('SceneLiveWatcher', () => {
-  let originalLocation: Location
-  let assignedHrefs: string[]
-
   beforeEach(() => {
-    assignedHrefs = []
-    originalLocation = window.location
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: {
-        get href() {
-          return 'https://decentraland.org/discover/place/-9,-9'
-        },
-        set href(value: string) {
-          assignedHrefs.push(value)
-        }
-      }
-    })
     mockUseTracks.mockReturnValue([])
     mockUseAdvancedUserAgentData.mockReturnValue([false, { mobile: false }])
   })
 
   afterEach(() => {
-    Object.defineProperty(window, 'location', { configurable: true, value: originalLocation })
     jest.resetAllMocks()
   })
 
@@ -179,11 +168,11 @@ describe('SceneLiveWatcher', () => {
       })
 
       it('should offer a live JUMP IN while connecting when the deep link is known', () => {
-        render(<SceneWatcherCard status="loading" mode="scene" jumpInHref="decentraland://?position=-9%2C-9" />)
+        render(<SceneWatcherCard status="loading" mode="scene" place={mockPlace} />)
 
         fireEvent.click(screen.getByRole('button', { name: /discover\.card\.jump_in/ }))
 
-        expect(assignedHrefs).toEqual(['decentraland://?position=-9%2C-9'])
+        expect(mockJumpIn).toHaveBeenCalledWith(mockPlace, 'scene-preview')
       })
     })
 
@@ -192,8 +181,8 @@ describe('SceneLiveWatcher', () => {
         status: 'no-broadcast' as const,
         mode: 'scene' as const,
         streamingHref: 'https://decentraland.zone/bevy-web/?position=-9%2C-9',
-        jumpInHref: 'decentraland://?position=-9%2C-9',
-        coverImage: 'https://img.test/cover.png'
+        coverImage: 'https://img.test/cover.png',
+        place: mockPlace
       }
 
       it('should show the launch CTAs in the controls bar (no fullscreen) before launch', () => {
@@ -242,11 +231,7 @@ describe('SceneLiveWatcher', () => {
         expect(screen.queryByText('discover.scene.participate_title')).not.toBeInTheDocument()
         fireEvent.click(screen.getByRole('button', { name: /discover\.card\.jump_in/ }))
 
-        expect(assignedHrefs).toEqual(['decentraland://?position=-9%2C-9'])
-        expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.DISCOVER_JUMP_IN, {
-          place: 'scene-preview',
-          href: 'decentraland://?position=-9%2C-9'
-        })
+        expect(mockJumpIn).toHaveBeenCalledWith(mockPlace, 'scene-preview')
       })
 
       it('should toggle fullscreen on the video area through the browser API', () => {
@@ -334,7 +319,7 @@ describe('SceneLiveWatcher', () => {
         status: 'ready' as const,
         mode: 'scene' as const,
         streamingHref: 'https://decentraland.zone/bevy-web/?position=-9%2C-9',
-        jumpInHref: 'decentraland://?position=-9%2C-9',
+        place: mockPlace,
         initialUserCount: 5
       }
 
@@ -360,7 +345,7 @@ describe('SceneLiveWatcher', () => {
         status: 'ready' as const,
         mode: 'scene' as const,
         streamingHref: 'https://decentraland.zone/bevy-web/?position=-9%2C-9',
-        jumpInHref: 'decentraland://?position=-9%2C-9'
+        place: mockPlace
       }
 
       beforeEach(() => {

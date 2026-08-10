@@ -6,14 +6,12 @@ const allUrls = (): (string | undefined)[] => [
 ]
 
 describe('when reading the navbar menu config', () => {
-  // The `/discover` section ships behind an unadvertised URL until it is
-  // announced. Both the desktop tab list and the mobile menu render straight
-  // from this config, so asserting here covers both surfaces at once and stops
-  // the entry from silently coming back.
-  it('should not expose any /discover entry', () => {
-    const discoverUrls = allUrls().filter((url): url is string => typeof url === 'string' && url.includes('/discover'))
-
-    expect(discoverUrls).toEqual([])
+  // The `/discover` section is advertised in the navbar again (re-shown after
+  // it was temporarily hidden). Both the desktop tab list and the mobile menu
+  // render straight from this config, so asserting here covers both surfaces.
+  it('should expose the /discover entry', () => {
+    expect(MENU_CONFIG.discover.url).toBe('/discover')
+    expect(MENU_CONFIG.discover.labelKey).toBe('component.landing.navbar.discover')
   })
 
   it('should keep every entry pointing at a non-empty url', () => {

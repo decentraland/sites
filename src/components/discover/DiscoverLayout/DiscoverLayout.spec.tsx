@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
 // Import through the barrel so the re-export contract is exercised too.
@@ -6,6 +7,12 @@ import { DiscoverLayout } from '.'
 // Run the real DiscoverLayout.styled.ts through the shared styled shim instead
 // of the emotion engine (decentraland-ui2 ships ESM Jest can't transform).
 jest.mock('decentraland-ui2', () => jest.requireActual('../../../__test-utils__/styledMock'))
+
+// The jump-in provider pulls ESM-only packages (@dcl/hooks, ui2 DownloadModal)
+// that Jest can't parse; stub it to a passthrough — its own spec covers it.
+jest.mock('../DiscoverJumpInProvider', () => ({
+  DiscoverJumpInProvider: ({ children }: { children: ReactNode }) => children
+}))
 
 describe('DiscoverLayout', () => {
   afterEach(() => {

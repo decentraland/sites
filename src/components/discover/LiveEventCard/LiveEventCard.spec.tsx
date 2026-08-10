@@ -11,6 +11,11 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate
 }))
 
+const mockJumpIn = jest.fn()
+jest.mock('../DiscoverJumpInProvider', () => ({
+  useDiscoverJumpIn: () => ({ jumpIn: mockJumpIn })
+}))
+
 const mockTrack = jest.fn()
 jest.mock('../../../hooks/useDeferredTrack', () => ({
   useDeferredTrack: () => mockTrack
@@ -68,30 +73,11 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
 }
 
 describe('LiveEventCard', () => {
-  let originalLocation: Location
-  let assignedHrefs: string[]
-
   beforeEach(() => {
-    assignedHrefs = []
-    originalLocation = window.location
-    // Redefine location so the JUMP IN handler's href assignment is observable
-    // and does not trigger jsdom's "navigation not implemented" warning.
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: {
-        get href() {
-          return 'https://decentraland.org/discover'
-        },
-        set href(value: string) {
-          assignedHrefs.push(value)
-        }
-      }
-    })
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
   })
 
   afterEach(() => {
-    Object.defineProperty(window, 'location', { configurable: true, value: originalLocation })
     jest.resetAllMocks()
   })
 
@@ -182,13 +168,14 @@ describe('LiveEventCard', () => {
   })
 
   describe('when JUMP IN is clicked while hovered', () => {
-    it('should launch the client at the encoded position without navigating', () => {
-      render(<LiveEventCard place={createPlace()} />)
+    it('should hand the place to the shared launcher without navigating', () => {
+      const place = createPlace()
+      render(<LiveEventCard place={place} />)
 
       fireEvent.mouseEnter(screen.getByText('Live Concert'))
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
-      expect(assignedHrefs).toEqual(['decentraland://?position=1%2C2'])
+      expect(mockJumpIn).toHaveBeenCalledWith(place, 'live-card')
       expect(mockNavigate).not.toHaveBeenCalled()
     })
   })
@@ -236,13 +223,14 @@ describe('LiveEventCard', () => {
       )
     })
 
-    it('should track JUMP IN with the live-card surface', () => {
-      render(<LiveEventCard place={createPlace()} />)
-      fireEvent.mouseEnter(screen.getByText(createPlace().title))
+    it('should delegate JUMP IN to the shared launcher with the live-card surface', () => {
+      const place = createPlace()
+      render(<LiveEventCard place={place} />)
+      fireEvent.mouseEnter(screen.getByText(place.title))
 
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
-      expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.DISCOVER_JUMP_IN, expect.objectContaining({ place: 'live-card' }))
+      expect(mockJumpIn).toHaveBeenCalledWith(place, 'live-card')
     })
   })
 })

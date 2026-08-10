@@ -1,6 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { DiscoverPlace } from '../../../features/discover'
-import { SegmentEvent } from '../../../modules/segment.types'
 // Import through the barrel so the re-export contract is exercised too.
 import { SceneJumpInModal } from '.'
 
@@ -9,6 +8,11 @@ const mockUseGetProfileQuery = jest.fn()
 // The barrel re-exports the RTK Query clients (import.meta env access Jest
 // can't parse); the modal only consumes the pure helpers, so alias to them.
 jest.mock('../../../features/discover', () => jest.requireActual('../../../features/discover/discover.helpers'))
+
+const mockJumpIn = jest.fn()
+jest.mock('../DiscoverJumpInProvider', () => ({
+  useDiscoverJumpIn: () => ({ jumpIn: mockJumpIn })
+}))
 
 const mockTrack = jest.fn()
 jest.mock('../../../hooks/useDeferredTrack', () => ({
@@ -62,25 +66,15 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
 describe('SceneJumpInModal', () => {
   let onClose: jest.Mock
   let originalLocation: Location
-  let assignedHrefs: string[]
 
   beforeEach(() => {
     onClose = jest.fn()
-    assignedHrefs = []
+    // The copy-link handler builds the shared URL from `window.location.origin`;
+    // pin it so the assertions don't depend on the jsdom default host.
     originalLocation = window.location
-    // Redefine location so the JUMP IN handler's href assignment is observable
-    // and does not trigger jsdom's "navigation not implemented" warning.
     Object.defineProperty(window, 'location', {
       configurable: true,
-      value: {
-        origin: 'https://decentraland.org',
-        get href() {
-          return 'https://decentraland.org/discover'
-        },
-        set href(value: string) {
-          assignedHrefs.push(value)
-        }
-      }
+      value: { origin: 'https://decentraland.org', href: 'https://decentraland.org/discover' }
     })
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
   })
@@ -195,20 +189,22 @@ describe('SceneJumpInModal', () => {
   })
 
   describe('when JUMP IN is clicked', () => {
-    it('should launch the client at the encoded position', () => {
-      render(<SceneJumpInModal place={createPlace()} onClose={onClose} />)
+    it('should hand the place to the shared launcher', () => {
+      const place = createPlace()
+      render(<SceneJumpInModal place={place} onClose={onClose} />)
 
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
-      expect(assignedHrefs).toEqual(['decentraland://?position=3%2C4'])
+      expect(mockJumpIn).toHaveBeenCalledWith(place, 'jump-in-modal')
     })
 
-    it('should launch into the world realm for world places', () => {
-      render(<SceneJumpInModal place={createPlace({ world: true, world_name: 'GalleryWorld' })} onClose={onClose} />)
+    it('should hand world places to the shared launcher too', () => {
+      const place = createPlace({ world: true, world_name: 'GalleryWorld' })
+      render(<SceneJumpInModal place={place} onClose={onClose} />)
 
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
-      expect(assignedHrefs).toEqual(['decentraland://?realm=galleryworld'])
+      expect(mockJumpIn).toHaveBeenCalledWith(place, 'jump-in-modal')
     })
   })
 
@@ -310,16 +306,14 @@ describe('SceneJumpInModal', () => {
     })
   })
 
-  describe('when tracking discover events', () => {
-    it('should track JUMP IN with the jump-in-modal surface and place payload', () => {
-      render(<SceneJumpInModal place={createPlace()} onClose={onClose} />)
+  describe('when delegating JUMP IN', () => {
+    it('should call the shared launcher with the jump-in-modal surface', () => {
+      const place = createPlace()
+      render(<SceneJumpInModal place={place} onClose={onClose} />)
 
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
-      expect(mockTrack).toHaveBeenCalledWith(
-        SegmentEvent.DISCOVER_JUMP_IN,
-        expect.objectContaining({ place: 'jump-in-modal', place_id: 'empty-1', world: false })
-      )
+      expect(mockJumpIn).toHaveBeenCalledWith(place, 'jump-in-modal')
     })
   })
 })
