@@ -81,9 +81,7 @@ describe('when the module loads on a deployed host with a DSN', () => {
     expect(getOptions(mockedInit).integrations).toEqual([{ name: 'BrowserTracing' }, { name: 'Replay' }])
   })
 
-  // An empty list is what stops the SDK attaching `sentry-trace`/`baggage` to any
-  // request. peer.decentraland.zone rejects those headers in its CORS preflight, so a
-  // first-party allowlist here would break the Catalyst calls again.
+  // Empty on purpose; narrowing this to an allowlist breaks Catalyst (see sentry.ts).
   it('should not propagate trace headers to any host', async () => {
     const mockedInit = await loadSentryModule()
     expect(getOptions(mockedInit).tracePropagationTargets).toEqual([])

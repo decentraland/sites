@@ -26,7 +26,7 @@ const errorFilters: RegExp[] = [/The play\(\) request was interrupted/i, /paused
 // Browser-side performance data (page load, navigation, resource timing) is
 // unaffected. Only front-to-back trace correlation is given up, and re-enabling it
 // requires every Decentraland backend to allow both headers first.
-const TRACE_PROPAGATION_TARGETS: string[] = []
+const TRACE_PROPAGATION_TARGETS: (string | RegExp)[] = []
 
 // Replay is by far the heaviest signal we send, so no session is recorded merely
 // for existing — only a tenth of the sessions that actually hit an error.
