@@ -81,15 +81,10 @@ describe('when the module loads on a deployed host with a DSN', () => {
     expect(getOptions(mockedInit).integrations).toEqual([{ name: 'BrowserTracing' }, { name: 'Replay' }])
   })
 
-  it('should restrict trace propagation to first-party hosts', async () => {
+  // Empty on purpose; narrowing this to an allowlist breaks Catalyst (see sentry.ts).
+  it('should not propagate trace headers to any host', async () => {
     const mockedInit = await loadSentryModule()
-    const targets = getOptions(mockedInit).tracePropagationTargets as RegExp[]
-    const propagatesTo = (url: string): boolean => targets.some(target => target.test(url))
-    expect(propagatesTo('https://decentraland.org/api')).toBe(true)
-    expect(propagatesTo('https://places.decentraland.org/api')).toBe(true)
-    expect(propagatesTo('https://cdn.contentful.com/spaces')).toBe(false)
-    // A lookalike host must not receive the trace headers.
-    expect(propagatesTo('https://evildecentraland.org/api')).toBe(false)
+    expect(getOptions(mockedInit).tracePropagationTargets).toEqual([])
   })
 
   it('should mark window.Sentry so @dcl/hooks forwards its captures', async () => {

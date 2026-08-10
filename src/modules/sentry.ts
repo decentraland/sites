@@ -12,13 +12,21 @@ const isLocalHost = (): boolean => {
 
 const errorFilters: RegExp[] = [/The play\(\) request was interrupted/i, /paused to save power/i]
 
-// Only propagate `sentry-trace`/`baggage` headers to first-party hosts. Attaching
-// them to third-party requests (Contentful, Segment, the CDN) adds headers their
-// CORS preflight allowlists reject, which would turn working calls into network
-// errors — a tracing feature causing the very errors it is meant to observe.
-// The `([^/]*\.)?` group is anchored on purpose: an unanchored `[^/]*` would also
-// match a lookalike host like `evildecentraland.org` and leak trace headers to it.
-const TRACE_PROPAGATION_TARGETS: RegExp[] = [/^https:\/\/([^/]*\.)?decentraland\.(org|zone|today)(\/|$)/i]
+// Propagate trace headers to nothing. An empty list makes the SDK's
+// `shouldAttachHeaders` return false for every URL, so `browserTracingIntegration`
+// stops adding `sentry-trace`/`baggage` to outgoing requests.
+//
+// Restricting this to first-party hosts was not enough: Decentraland's own services
+// do not all allow those headers. On the 0.54.4 zone deploy, `peer.decentraland.zone`
+// (the Catalyst content server) rejected the preflight with "Request header field
+// sentry-trace is not allowed by Access-Control-Allow-Headers", which broke the
+// whats-on deployer enrichment. Other hosts (events, realm-provider) accepted them,
+// so a per-host allowlist would break again the moment a backend's CORS config drifts.
+//
+// Browser-side performance data (page load, navigation, resource timing) is
+// unaffected. Only front-to-back trace correlation is given up, and re-enabling it
+// requires every Decentraland backend to allow both headers first.
+const TRACE_PROPAGATION_TARGETS: (string | RegExp)[] = []
 
 // Replay is by far the heaviest signal we send, so no session is recorded merely
 // for existing — only a tenth of the sessions that actually hit an error.
