@@ -933,6 +933,11 @@
       "hero": {
         "scroll_label": "Faire défiler jusqu'à la section suivante"
       }
+    },
+    "error_boundary": {
+      "title": "Une erreur est survenue",
+      "message": "Nous n'avons pas pu charger cette page. Vérifiez votre connexion et réessayez.",
+      "reload": "Recharger"
     }
   },
   "create_event": {

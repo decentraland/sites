@@ -1066,6 +1066,11 @@
         "body": "Your report has been received and will be reviewed shortly.",
         "dismiss": "You can close this window now."
       }
+    },
+    "error_boundary": {
+      "title": "Something went wrong",
+      "message": "We couldn't load this page. Check your connection and try again.",
+      "reload": "Reload"
     }
   },
   "live_now": {

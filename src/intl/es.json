@@ -938,6 +938,11 @@
       "hero": {
         "scroll_label": "Desplazarse a la siguiente sección"
       }
+    },
+    "error_boundary": {
+      "title": "Algo salió mal",
+      "message": "No pudimos cargar esta página. Revisa tu conexión e inténtalo de nuevo.",
+      "reload": "Recargar"
     }
   },
   "create_event": {

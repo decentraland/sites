@@ -938,6 +938,11 @@
       "hero": {
         "scroll_label": "滚动到下一部分"
       }
+    },
+    "error_boundary": {
+      "title": "出现错误",
+      "message": "无法加载此页面。请检查网络连接后重试。",
+      "reload": "重新加载"
     }
   },
   "create_event": {
