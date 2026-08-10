@@ -1,8 +1,14 @@
 import { getEnv } from '../config/env'
+import { captureDownloadError } from './downloadFunnelSentry'
 import type { ExplorerDownloadsData, PlatformDownloads } from './explorerDownloads.types'
 
 class ExplorerDownloads {
   static cache = new Map<string, ExplorerDownloads>()
+  // Reported at most once per page load. A flaky or proxied connection retries the
+  // same failing request many times over a session, which is how a cosmetic counter
+  // produced 4489 Sentry events across 724 users (SITES-2MQ). One report per
+  // affected user keeps a real cdn-data outage visible without the repeats.
+  private static hasReportedFailure = false
   private baseUrl: string
   private downloadsPromise: Promise<PlatformDownloads[]> | null = null
 
@@ -30,11 +36,36 @@ class ExplorerDownloads {
     return response.json()
   }
 
+  /**
+   * Memoizes the in-flight request so the surfaces that show the counter (hero,
+   * come-hang-out, jump-in, download options) share one fetch.
+   *
+   * The failure path is deliberate on two counts. It resolves with an empty list
+   * instead of rejecting, because every caller reads the count through
+   * `useAsyncMemo`, whose internal catch reports to Sentry — a network blip on a
+   * decorative counter is not worth an event, and callers already treat a falsy
+   * count as "hide the label". And it clears the memo, because a rejected (or
+   * empty) cached promise is still truthy, so without this one blip disabled the
+   * counter for the rest of the session with no way to recover.
+   *
+   * There is no automatic retry here on purpose: the next surface to mount takes
+   * the retry, and retrying inside a real outage would only multiply requests.
+   */
   async getDownloads(): Promise<PlatformDownloads[]> {
     if (!this.downloadsPromise) {
-      this.downloadsPromise = this.fetchDownloads()
+      this.downloadsPromise = this.fetchDownloads().catch(error => {
+        this.downloadsPromise = null
+        this.reportFailureOnce(error)
+        return []
+      })
     }
     return this.downloadsPromise
+  }
+
+  private reportFailureOnce(error: unknown): void {
+    if (ExplorerDownloads.hasReportedFailure) return
+    ExplorerDownloads.hasReportedFailure = true
+    void captureDownloadError(error, { feature: 'download_counts', url: this.baseUrl })
   }
 
   private async fetchDownloads(): Promise<PlatformDownloads[]> {
