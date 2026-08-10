@@ -1,6 +1,16 @@
 import { transformAsync } from '@babel/core'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
+
+// Sentry needs a release name to tie an uploaded source map to the events that
+// reference it. `scripts/prebuild.cjs` writes REACT_APP_WEBSITE_VERSION from
+// package.json, which the CI bumps per deploy and reuses as the CDN path
+// (cdn.decentraland.org/@dcl/sites/<version>), so it identifies a build exactly.
+const SENTRY_ORG = 'decentraland'
+// Renamed from `homepage` on 2026-08-10. The DSN in src/config/env/*.json is
+// unaffected — it addresses the project by numeric id, not by slug.
+const SENTRY_PROJECT = 'sites'
 
 // decentraland-ui2 ships compiled `.styled.js` files that use Emotion component
 // selectors (e.g. `[`${StyledX}`]: { ... }`) but were NOT compiled with
@@ -40,12 +50,35 @@ function discoverIsolation(req: { url?: string }, res: { setHeader: (name: strin
 
 // eslint-disable-next-line import/no-default-export
 export default defineConfig(({ command, mode }) => {
-  const envVariables = loadEnv(mode, process.cwd())
+  // REACT_APP_ is loaded alongside VITE_ so the website version written by
+  // prebuild can be reused as the Sentry release name.
+  const envVariables = loadEnv(mode, process.cwd(), ['VITE_', 'REACT_APP_'])
+  const websiteVersion = envVariables.REACT_APP_WEBSITE_VERSION
+  const sentryRelease = websiteVersion ? `sites@${websiteVersion}` : undefined
+  // Source maps are uploaded only on CI builds that carry the token, so a local
+  // `npm run build` stays offline and never needs Sentry credentials.
+  // `filesToDeleteAfterUpload` is required, not cosmetic: build.sourcemap is
+  // 'hidden', which still writes .map files into dist/, and dist/ is published to
+  // the public CDN — leaving them there would ship the whole source publicly.
+  const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN
+  const sentryPlugins =
+    command === 'build' && sentryAuthToken && sentryRelease
+      ? [
+          sentryVitePlugin({
+            authToken: sentryAuthToken,
+            org: SENTRY_ORG,
+            project: SENTRY_PROJECT,
+            release: { name: sentryRelease },
+            sourcemaps: { filesToDeleteAfterUpload: ['./dist/**/*.map'] }
+          })
+        ]
+      : []
   return {
     define: {
       /* eslint-disable @typescript-eslint/naming-convention */
       'process.env': {
-        VITE_BASE_URL: envVariables.VITE_BASE_URL
+        VITE_BASE_URL: envVariables.VITE_BASE_URL,
+        SENTRY_RELEASE: sentryRelease
       }
       /* eslint-enable @typescript-eslint/naming-convention */
     },
@@ -82,7 +115,9 @@ export default defineConfig(({ command, mode }) => {
         configurePreviewServer(server) {
           server.middlewares.use(discoverIsolation)
         }
-      }
+      },
+      // Stays last on purpose — the plugin reads the final emitted bundle.
+      ...sentryPlugins
     ],
     // Vite 8 prebundles deps with Rolldown — top-level plugins do not run on
     // that pipeline. We register the same Emotion babel-plugin transform here
