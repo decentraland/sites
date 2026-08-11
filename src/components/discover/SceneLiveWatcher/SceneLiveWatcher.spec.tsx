@@ -4,7 +4,6 @@ import { SegmentEvent } from '../../../modules/segment.types'
 // Import through the barrel so the re-export contract is exercised too.
 import { SceneChatDock, SceneRoomMount, SceneWatcherCard } from '.'
 
-const mockUseTracks = jest.fn()
 const mockUseAdvancedUserAgentData = jest.fn()
 const mockTrack = jest.fn()
 const mockJumpIn = jest.fn()
@@ -20,16 +19,9 @@ const mockChatContext = {
 }
 
 jest.mock('@livekit/components-react', () => ({
-  LiveKitRoom: ({ children }: { children?: React.ReactNode }) => <div data-testid="livekit-room">{children}</div>,
-  RoomAudioRenderer: () => null,
-  ConnectionStateToast: () => null,
-  useTracks: () => mockUseTracks(),
-  useRemoteParticipants: () => []
+  LiveKitRoom: ({ children }: { children?: React.ReactNode }) => <div data-testid="livekit-room">{children}</div>
 }))
 jest.mock('@livekit/components-styles', () => ({}))
-jest.mock('livekit-client', () => ({
-  Track: { Source: { Camera: 'camera', ScreenShare: 'screen_share' } }
-}))
 
 jest.mock('../../../features/cast2/contexts/ChatProvider', () => ({
   ChatProvider: ({ children }: { children?: React.ReactNode }) => <div data-testid="chat-provider">{children}</div>,
@@ -45,21 +37,9 @@ jest.mock('../../../features/discover/sceneAdapter', () => ({
 }))
 
 // `config/env` reads `import.meta` (Jest can't parse it) through the
-// cast2 peer module that PeopleStack's profile lookups depend on.
+// cast2 modules the chat dock depends on.
 jest.mock('../../../config/env', () => ({
   getEnv: () => undefined
-}))
-jest.mock('../../../hooks/useProfiles', () => ({
-  useProfiles: () => ({ profiles: new Map() })
-}))
-
-// The ready-state video surfaces mount LiveKit track grids — heavy and
-// irrelevant to the watcher chrome under test.
-jest.mock('./SceneRoomContent', () => ({
-  SceneRoomContent: () => <div data-testid="scene-room-content" />
-}))
-jest.mock('../../cast/WatcherView/WatcherViewContent', () => ({
-  WatcherViewContent: () => <div data-testid="watcher-view-content" />
 }))
 
 jest.mock('@dcl/hooks', () => ({
@@ -114,7 +94,6 @@ const credentials: LiveKitCredentials = { url: 'wss://livekit.test', token: 'jwt
 
 describe('SceneLiveWatcher', () => {
   beforeEach(() => {
-    mockUseTracks.mockReturnValue([])
     mockUseAdvancedUserAgentData.mockReturnValue([false, { mobile: false }])
   })
 
@@ -154,21 +133,21 @@ describe('SceneLiveWatcher', () => {
   describe('SceneWatcherCard', () => {
     describe('when the room is still loading', () => {
       it('should render the connecting placeholder with a spinner', () => {
-        render(<SceneWatcherCard status="loading" mode="scene" />)
+        render(<SceneWatcherCard status="loading" />)
 
         expect(screen.getByRole('progressbar')).toBeInTheDocument()
         expect(screen.getByText('discover.scene.connecting')).toBeInTheDocument()
       })
 
       it('should keep a disabled fullscreen placeholder so the card height matches the running state', () => {
-        render(<SceneWatcherCard status="loading" mode="scene" />)
+        render(<SceneWatcherCard status="loading" />)
 
         expect(screen.getByRole('button', { name: 'discover.scene.fullscreen' })).toBeDisabled()
         expect(screen.queryByRole('button', { name: 'discover.scene.explore_scene' })).not.toBeInTheDocument()
       })
 
       it('should offer a live JUMP IN while connecting when the deep link is known', () => {
-        render(<SceneWatcherCard status="loading" mode="scene" place={mockPlace} />)
+        render(<SceneWatcherCard status="loading" place={mockPlace} />)
 
         fireEvent.click(screen.getByRole('button', { name: /discover\.card\.jump_in/ }))
 
@@ -176,10 +155,9 @@ describe('SceneLiveWatcher', () => {
       })
     })
 
-    describe('when nobody is broadcasting (scene-only watcher)', () => {
+    describe('when nobody is broadcasting', () => {
       const props = {
         status: 'no-broadcast' as const,
-        mode: 'scene' as const,
         streamingHref: 'https://decentraland.zone/bevy-web/?position=-9%2C-9',
         coverImage: 'https://img.test/cover.png',
         place: mockPlace
@@ -274,6 +252,19 @@ describe('SceneLiveWatcher', () => {
         warnSpy.mockRestore()
       })
 
+      describe('and the user agent is still resolving', () => {
+        beforeEach(() => {
+          mockUseAdvancedUserAgentData.mockReturnValue([true, undefined])
+        })
+
+        it('should hold the auto-launch (a phone would boot a preview it can never render)', () => {
+          render(<SceneWatcherCard {...props} />)
+
+          expect(screen.queryByTitle('discover.scene.tab_streaming')).not.toBeInTheDocument()
+          expect(mockTrack).not.toHaveBeenCalled()
+        })
+      })
+
       describe('and no streaming href could be resolved', () => {
         it('should disable the launch CTA and render no fullscreen control', () => {
           render(<SceneWatcherCard {...props} streamingHref={null} />)
@@ -304,19 +295,16 @@ describe('SceneLiveWatcher', () => {
       })
     })
 
-    describe('when the room is ready without any live video', () => {
+    describe('when the room is ready', () => {
       const props = {
         status: 'ready' as const,
-        mode: 'scene' as const,
         streamingHref: 'https://decentraland.zone/bevy-web/?position=-9%2C-9',
-        place: mockPlace,
-        initialUserCount: 5
+        place: mockPlace
       }
 
-      it('should render tabless with the bevy iframe auto-booted (Figma viewer card has no tabs)', () => {
+      it('should render the same tabless auto-booted watcher body as the no-broadcast state', () => {
         render(<SceneWatcherCard {...props} />)
 
-        expect(screen.queryByRole('button', { name: 'discover.scene.tab_video' })).not.toBeInTheDocument()
         expect(screen.getByTitle('discover.scene.tab_streaming')).toBeInTheDocument()
         expect(screen.queryByRole('button', { name: 'discover.scene.explore_scene' })).not.toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'discover.scene.close_media' })).toBeInTheDocument()
@@ -329,79 +317,6 @@ describe('SceneLiveWatcher', () => {
 
         expect(screen.queryByTitle('discover.scene.tab_streaming')).not.toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'discover.scene.explore_scene' })).toBeInTheDocument()
-      })
-    })
-
-    describe('when the room is ready with a live video broadcast', () => {
-      const props = {
-        status: 'ready' as const,
-        mode: 'scene' as const,
-        streamingHref: 'https://decentraland.zone/bevy-web/?position=-9%2C-9',
-        place: mockPlace
-      }
-
-      beforeEach(() => {
-        mockUseTracks.mockReturnValue([{ publication: { isMuted: false } }])
-      })
-
-      it('should surface the VIDEO / SCENE WEB tab strip and start on the video tab', () => {
-        render(<SceneWatcherCard {...props} />)
-
-        expect(screen.getByRole('button', { name: 'discover.scene.tab_video' })).toBeInTheDocument()
-        expect(screen.getByRole('button', { name: 'discover.scene.tab_streaming' })).toBeInTheDocument()
-        expect(screen.getByTestId('scene-room-content')).toBeInTheDocument()
-      })
-
-      it('should render the cast watcher surface when the room mode is cast', () => {
-        render(<SceneWatcherCard {...props} mode="cast" />)
-
-        expect(screen.getByTestId('watcher-view-content')).toBeInTheDocument()
-      })
-
-      it('should pause the video on STOP and offer a resume CTA', () => {
-        render(<SceneWatcherCard {...props} />)
-
-        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.close_media' }))
-
-        expect(screen.queryByTestId('scene-room-content')).not.toBeInTheDocument()
-        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.resume_cta' }))
-        expect(screen.getByTestId('scene-room-content')).toBeInTheDocument()
-      })
-
-      it('should keep bevy cold while on the video tab and auto-boot it on switching to the scene tab', () => {
-        render(<SceneWatcherCard {...props} />)
-        expect(screen.queryByTitle('discover.scene.tab_streaming')).not.toBeInTheDocument()
-
-        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.tab_streaming' }))
-
-        expect(screen.queryByTestId('scene-room-content')).not.toBeInTheDocument()
-        expect(screen.getByTitle('discover.scene.tab_streaming')).toBeInTheDocument()
-        expect(screen.queryByRole('button', { name: 'discover.scene.explore_scene' })).not.toBeInTheDocument()
-
-        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.tab_video' }))
-        expect(screen.getByTestId('scene-room-content')).toBeInTheDocument()
-      })
-
-      it('should unmount the bevy iframe when STOP is pressed on the scene tab', () => {
-        render(<SceneWatcherCard {...props} />)
-        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.tab_streaming' }))
-        expect(screen.getByTitle('discover.scene.tab_streaming')).toBeInTheDocument()
-
-        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.close_media' }))
-
-        expect(screen.queryByTitle('discover.scene.tab_streaming')).not.toBeInTheDocument()
-        expect(screen.getByRole('button', { name: 'discover.scene.explore_scene' })).toBeInTheDocument()
-      })
-
-      it('should fall back to the scene tab and auto-boot bevy when the broadcast ends while watching video', () => {
-        const { rerender } = render(<SceneWatcherCard {...props} />)
-        expect(screen.getByTestId('scene-room-content')).toBeInTheDocument()
-
-        mockUseTracks.mockReturnValue([])
-        rerender(<SceneWatcherCard {...props} />)
-
-        expect(screen.queryByTestId('scene-room-content')).not.toBeInTheDocument()
-        expect(screen.getByTitle('discover.scene.tab_streaming')).toBeInTheDocument()
       })
     })
   })

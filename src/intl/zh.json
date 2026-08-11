@@ -1296,9 +1296,7 @@
     "scene": {
       "people_count": "世界中有 {count} 人",
       "people_empty": "暂时还没有人。",
-      "tab_video": "Stream",
       "tab_streaming": "DCL Web",
-      "resume_cta": "观看直播",
       "close_media": "停止",
       "fullscreen": "全屏",
       "exit_fullscreen": "退出",

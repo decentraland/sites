@@ -45,18 +45,12 @@ jest.mock('../../components/discover/SceneLiveWatcher', () => ({
       {children}
     </div>
   ),
-  SceneWatcherCard: (props: {
-    status: string
-    streamingHref?: string | null
-    place?: { base_position?: string } | null
-    initialUserCount?: number
-  }) => (
+  SceneWatcherCard: (props: { status: string; streamingHref?: string | null; place?: { base_position?: string } | null }) => (
     <div
       data-testid="watcher-card"
       data-status={props.status}
       data-streaming={props.streamingHref ?? ''}
       data-place={props.place?.base_position ?? ''}
-      data-count={props.initialUserCount}
     />
   ),
   SceneChatDock: (props: { status: string; sceneName?: string }) => (
@@ -223,12 +217,11 @@ describe('DiscoverScenePage', () => {
       })
     })
 
-    it('should render the watcher card with the live presence snapshot', () => {
+    it('should render the watcher card wired to the scene room', () => {
       render(<DiscoverScenePage kind="place" />)
 
       const watcher = screen.getByTestId('watcher-card')
       expect(watcher).toHaveAttribute('data-status', 'ready')
-      expect(watcher).toHaveAttribute('data-count', '7')
       expect(watcher).toHaveAttribute('data-place', '10,20')
       expect(watcher.getAttribute('data-streaming')).toContain('https://decentraland.zone/bevy-web/?position=10%2C20')
     })

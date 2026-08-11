@@ -1291,9 +1291,7 @@
     "scene": {
       "people_count": "{count, plural, one {# personne dans le monde} other {# personnes dans le monde}}",
       "people_empty": "Personne ici pour le moment.",
-      "tab_video": "Stream",
       "tab_streaming": "DCL Web",
-      "resume_cta": "Regarder en direct",
       "close_media": "Arrêter",
       "fullscreen": "Plein écran",
       "exit_fullscreen": "Quitter",

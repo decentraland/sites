@@ -3,8 +3,7 @@ import { safeCssUrl } from '../../../utils/safeCssUrl'
 import { SCENE_PANEL_GRADIENT } from '../_shared/DiscoverShell.styled'
 
 // Watcher card on the left column of the scene detail page. Stacks the
-// tab strip + video area + thin controls row, with the live/people pills
-// floating on top of the video.
+// video area + thin controls row.
 // Frameless: the page's ViewerCard supplies the 24px rounding + clipping, and
 // the header bar above / controls bar below complete the Figma card chrome.
 const WatcherContainer = styled(Box)({
@@ -15,59 +14,13 @@ const WatcherContainer = styled(Box)({
   flexDirection: 'column'
 })
 
-// Slim tab strip above the video area. VIDEO switches to the LiveKit comms
-// room (chat + voice + any publisher in the scene). STREAMING SCENE swaps
-// the video panel for a bevy-web iframe rendering the actual 3D scene.
-const TabStrip = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'stretch',
-  gap: theme.spacing(0.5),
-  padding: theme.spacing(0, 1.5),
-  minHeight: 40,
-  borderBottom: `1px solid ${dclColors.whiteTransparent.subtle}`,
-  backgroundColor: dclColors.blackTransparent.blurry
-}))
-
-interface TabButtonProps {
-  $active?: boolean
-}
-
-const TabButton = styled('button', { shouldForwardProp: prop => prop !== '$active' })<TabButtonProps>(({ theme, $active }) => ({
-  position: 'relative',
-  appearance: 'none',
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  fontFamily: 'inherit',
-  textTransform: 'uppercase',
-  fontWeight: 700,
-  letterSpacing: '0.08em',
-  fontSize: 11,
-  padding: theme.spacing(0, 1.5),
-  color: $active ? dclColors.neutral.softWhite : dclColors.neutral.gray3,
-  transition: 'color 150ms ease',
-  ['&:hover']: { color: dclColors.neutral.softWhite },
-  ['&:focus-visible']: { outline: `2px solid ${dclColors.neutral.softWhite}`, outlineOffset: -2 },
-  ['&::after']: {
-    content: '""',
-    position: 'absolute',
-    left: theme.spacing(1),
-    right: theme.spacing(1),
-    bottom: 0,
-    height: 2,
-    borderRadius: '2px 2px 0 0',
-    backgroundColor: $active ? theme.palette.primary.main : 'transparent'
-  }
-}))
-
-// Iframe for the bevy-web streaming-scene tab. We mark it sandbox-permissive
+// Iframe for the bevy-web scene preview. We mark it sandbox-permissive
 // (allow-scripts, allow-same-origin, allow-popups, allow-pointer-lock) so the
 // 3D client can run. DCL serves it with `X-Frame-Options: DENY` today, which
 // browsers enforce regardless — the overlay button below is the practical
 // fallback until that header is relaxed.
-// `$visible` toggles display so the iframe stays mounted while the user
-// switches to the VIDEO tab — without it the bevy scene reloads on every
-// tab switch (cold start = many seconds of asset download).
+// `$visible` keeps the iframe mounted while hidden so a re-show doesn't
+// cold-start the scene (many seconds of asset download).
 const SceneIframe = styled('iframe', { shouldForwardProp: prop => prop !== '$visible' })<{ $visible?: boolean }>(({ $visible }) => ({
   width: '100%',
   height: '100%',
@@ -76,11 +29,10 @@ const SceneIframe = styled('iframe', { shouldForwardProp: prop => prop !== '$vis
   background: '#0d0418'
 }))
 
-// Pre-launch placeholder shown when the SCENE WEB tab is selected but the
-// user hasn't clicked the "Launch" CTA yet. Avoids auto-downloading the
-// heavy bevy bundle for users who never want to interact with the 3D scene.
-// The optional cover image renders as a darkened backdrop so it reads like
-// a scene preview card rather than a generic loading state.
+// Placeholder under the preview: mobile's store card, and desktop's
+// stopped state (after CLOSE, before an EXPLORE re-launch). The optional
+// cover image renders as a darkened backdrop so it reads like a scene
+// preview card rather than a generic loading state.
 interface SceneLaunchOverlayProps {
   $cover?: string
 }
@@ -420,8 +372,6 @@ export {
   SceneLaunchCard,
   SceneLaunchCtas,
   SceneLaunchOverlay,
-  TabButton,
-  TabStrip,
   VideoArea,
   WatcherContainer
 }

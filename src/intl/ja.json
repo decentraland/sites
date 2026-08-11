@@ -1296,9 +1296,7 @@
     "scene": {
       "people_count": "ワールドに{count}人",
       "people_empty": "まだ誰もいません。",
-      "tab_video": "Stream",
       "tab_streaming": "DCL Web",
-      "resume_cta": "ライブを視聴",
       "close_media": "停止",
       "fullscreen": "フルスクリーン",
       "exit_fullscreen": "解除",

@@ -1296,9 +1296,7 @@
     "scene": {
       "people_count": "월드에 {count}명",
       "people_empty": "아직 아무도 없습니다.",
-      "tab_video": "Stream",
       "tab_streaming": "DCL Web",
-      "resume_cta": "라이브 보기",
       "close_media": "중지",
       "fullscreen": "전체화면",
       "exit_fullscreen": "나가기",
