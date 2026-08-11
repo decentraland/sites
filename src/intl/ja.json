@@ -938,6 +938,11 @@
       "hero": {
         "scroll_label": "次のセクションへスクロール"
       }
+    },
+    "error_boundary": {
+      "title": "問題が発生しました",
+      "message": "このページを読み込めませんでした。接続を確認して、もう一度お試しください。",
+      "reload": "再読み込み"
     }
   },
   "create_event": {

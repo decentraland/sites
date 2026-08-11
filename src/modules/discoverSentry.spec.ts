@@ -22,6 +22,18 @@ describe('when capturing a discover error', () => {
     })
   })
 
+  describe('and a caller passes an undefined feature tag', () => {
+    it('should keep the discover feature tag rather than letting it be dropped', async () => {
+      const error = new Error('places-api down')
+
+      await captureDiscoverError(error, { feature: undefined, scope: 'getHotScenes' })
+
+      expect(captureExceptionMock).toHaveBeenCalledWith(error, {
+        tags: { feature: 'discover', scope: 'getHotScenes' }
+      })
+    })
+  })
+
   describe('and Sentry itself throws', () => {
     it('should swallow the error and resolve (never break the page)', async () => {
       captureExceptionMock.mockImplementation(() => {
