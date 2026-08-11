@@ -31,6 +31,12 @@ async function captureHandledError(error: unknown, { tags = {}, extra }: Capture
     const definedTags = Object.fromEntries(Object.entries(tags).filter((entry): entry is [string, string] => entry[1] !== undefined))
     captureException(error, { tags: definedTags, extra })
   } catch (reportingError) {
+    // `process.env.NODE_ENV` rather than the more idiomatic `import.meta.env.DEV`
+    // on purpose: ts-jest cannot parse `import.meta` in CJS mode, so a module that
+    // reads it can only be tested by mocking it away wholesale (see the comments in
+    // cms.search.client.spec.ts and the discover specs). Vite still folds this to
+    // `"production" !== "production"` at build time and drops the block, which was
+    // verified against the emitted bundle: the string survives only in the .map.
     if (process.env.NODE_ENV !== 'production') {
       console.warn('[captureHandledError] failed to report to Sentry', reportingError, 'original error:', error)
     }
