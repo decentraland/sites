@@ -158,4 +158,24 @@ describe('when the request fails with a network error', () => {
 
     expect(captureDownloadErrorMock).toHaveBeenCalledTimes(1)
   })
+
+  // The flag is per instance, not static: one endpoint failing must not silence
+  // the report for a different endpoint that is also broken.
+  it('should still report a failure for a different endpoint', async () => {
+    global.fetch = mockFetchNetworkError() as unknown as typeof fetch
+    const ExplorerDownloads = await loadExplorerDownloads()
+
+    await ExplorerDownloads.from('https://a.example').getTotalDownloads()
+    await ExplorerDownloads.from('https://b.example').getTotalDownloads()
+
+    expect(captureDownloadErrorMock).toHaveBeenCalledTimes(2)
+    expect(captureDownloadErrorMock).toHaveBeenNthCalledWith(1, expect.any(TypeError), {
+      feature: 'download_counts',
+      url: 'https://a.example'
+    })
+    expect(captureDownloadErrorMock).toHaveBeenNthCalledWith(2, expect.any(TypeError), {
+      feature: 'download_counts',
+      url: 'https://b.example'
+    })
+  })
 })

@@ -4,11 +4,16 @@ import type { ExplorerDownloadsData, PlatformDownloads } from './explorerDownloa
 
 class ExplorerDownloads {
   static cache = new Map<string, ExplorerDownloads>()
-  // Reported at most once per page load. A flaky or proxied connection retries the
-  // same failing request many times over a session, which is how a cosmetic counter
-  // produced 4489 Sentry events across 724 users (SITES-2MQ). One report per
-  // affected user keeps a real cdn-data outage visible without the repeats.
-  private static hasReportedFailure = false
+  // Reported at most once per endpoint per page load. A flaky or proxied connection
+  // retries the same failing request many times over a session, which is how a
+  // cosmetic counter produced 4489 Sentry events across 724 users (SITES-2MQ). One
+  // report keeps a real cdn-data outage visible without the repeats.
+  //
+  // Per instance rather than static on purpose. `from()` caches one instance per
+  // URL, so this is still a single report per page load for the one endpoint
+  // production actually uses, but a static flag would let a failure on one URL
+  // silence the report for a different, genuinely broken one.
+  private hasReportedFailure = false
   private baseUrl: string
   private downloadsPromise: Promise<PlatformDownloads[]> | null = null
 
@@ -63,8 +68,8 @@ class ExplorerDownloads {
   }
 
   private reportFailureOnce(error: unknown): void {
-    if (ExplorerDownloads.hasReportedFailure) return
-    ExplorerDownloads.hasReportedFailure = true
+    if (this.hasReportedFailure) return
+    this.hasReportedFailure = true
     void captureDownloadError(error, { feature: 'download_counts', url: this.baseUrl })
   }
 
