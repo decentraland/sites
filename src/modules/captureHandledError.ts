@@ -15,6 +15,14 @@ interface CaptureHandledErrorOptions {
  * Everything is wrapped: a blocked or failed Sentry load must never break the
  * feature that was only trying to report. `undefined` tags are stripped so they
  * do not render as the literal string "undefined" in the Sentry UI.
+ *
+ * The catch is deliberately total, and that has a real consequence worth naming:
+ * either dynamic import can fail independently (an ad blocker typically kills the
+ * `@sentry/browser` request while `./sentry` resolves from cache), and when that
+ * happens the report is lost with nothing to show for it. Staying silent is the
+ * right call in production, since the caller already handled the error and a
+ * reporting failure must not surface to the user. But a silent failure is also how
+ * a genuinely broken reporting path hides, so outside production it warns.
  */
 async function captureHandledError(error: unknown, { tags = {}, extra }: CaptureHandledErrorOptions = {}): Promise<void> {
   try {
@@ -22,8 +30,10 @@ async function captureHandledError(error: unknown, { tags = {}, extra }: Capture
     const { captureException } = await import('@sentry/browser')
     const definedTags = Object.fromEntries(Object.entries(tags).filter((entry): entry is [string, string] => entry[1] !== undefined))
     captureException(error, { tags: definedTags, extra })
-  } catch {
-    // Sentry blocked or failed to load — never break the caller.
+  } catch (reportingError) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[captureHandledError] failed to report to Sentry', reportingError, 'original error:', error)
+    }
   }
 }
 

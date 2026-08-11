@@ -43,6 +43,12 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
         chunk_load_error: String(isChunkLoadError(error)),
         // Distinguishes "the user went offline" from "the asset is unreachable
         // while the connection is up", which need different follow-ups.
+        //
+        // `navigator.onLine` is unreliable: several browsers report `true` for any
+        // link-layer connection even with no route to the internet, and a few have
+        // shipped it stuck. That is acceptable here precisely because this is a
+        // triage hint on an error we already caught, never control flow — do not
+        // promote it into a condition that decides what the app does.
         online: typeof navigator === 'undefined' ? undefined : String(navigator.onLine)
       },
       /* eslint-enable @typescript-eslint/naming-convention */

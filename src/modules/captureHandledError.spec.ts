@@ -44,12 +44,44 @@ describe('when capturing a handled error', () => {
   })
 
   describe('and Sentry itself throws', () => {
-    it('should swallow the error and resolve so the caller never breaks', async () => {
+    let consoleWarnSpy: jest.SpyInstance
+
+    beforeEach(() => {
+      consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
       captureExceptionMock.mockImplementation(() => {
         throw new Error('sentry blocked')
       })
+    })
 
+    afterEach(() => {
+      consoleWarnSpy.mockRestore()
+    })
+
+    it('should swallow the error and resolve so the caller never breaks', async () => {
       await expect(captureHandledError(new Error('x'))).resolves.toBeUndefined()
+    })
+
+    // A silent catch is right for users but is also how a broken reporting path
+    // hides, so outside production the failure has to be visible somewhere.
+    it('should warn outside production so a broken reporting path is noticeable', async () => {
+      await captureHandledError(new Error('x'))
+
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        '[captureHandledError] failed to report to Sentry',
+        expect.any(Error),
+        'original error:',
+        expect.any(Error)
+      )
+    })
+
+    it('should stay silent in production', async () => {
+      const previousEnv = process.env.NODE_ENV
+      process.env.NODE_ENV = 'production'
+
+      await captureHandledError(new Error('x'))
+
+      expect(consoleWarnSpy).not.toHaveBeenCalled()
+      process.env.NODE_ENV = previousEnv
     })
   })
 })
