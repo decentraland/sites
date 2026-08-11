@@ -160,11 +160,11 @@ describe('SceneLiveWatcher', () => {
         expect(screen.getByText('discover.scene.connecting')).toBeInTheDocument()
       })
 
-      it('should keep a disabled launch CTA so the card height matches the ready state', () => {
+      it('should keep a disabled fullscreen placeholder so the card height matches the running state', () => {
         render(<SceneWatcherCard status="loading" mode="scene" />)
 
-        expect(screen.getByRole('button', { name: 'discover.scene.explore_scene' })).toBeDisabled()
-        expect(screen.queryByRole('button', { name: 'discover.scene.fullscreen' })).not.toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'discover.scene.fullscreen' })).toBeDisabled()
+        expect(screen.queryByRole('button', { name: 'discover.scene.explore_scene' })).not.toBeInTheDocument()
       })
 
       it('should offer a live JUMP IN while connecting when the deep link is known', () => {
@@ -185,47 +185,39 @@ describe('SceneLiveWatcher', () => {
         place: mockPlace
       }
 
-      it('should show the launch CTAs in the controls bar (no fullscreen) before launch', () => {
+      it('should auto-boot the credentialless bevy iframe with no EXPLORE gate on desktop', () => {
         render(<SceneWatcherCard {...props} />)
-
-        expect(screen.getByRole('button', { name: 'discover.scene.explore_scene' })).toBeInTheDocument()
-        expect(screen.queryByRole('button', { name: 'discover.scene.fullscreen' })).not.toBeInTheDocument()
-        expect(screen.queryByTitle('discover.scene.tab_streaming')).not.toBeInTheDocument()
-      })
-
-      it('should mount the credentialless bevy iframe and surface STOP after EXPLORE THE SCENE', () => {
-        render(<SceneWatcherCard {...props} />)
-
-        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.explore_scene' }))
 
         const iframe = screen.getByTitle('discover.scene.tab_streaming')
         expect(iframe).toHaveAttribute('src', props.streamingHref)
         expect(iframe.hasAttribute('credentialless')).toBe(true)
+        expect(screen.queryByRole('button', { name: 'discover.scene.explore_scene' })).not.toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'discover.scene.close_media' })).toBeInTheDocument()
       })
 
-      it('should track the launch intent with the streaming href', () => {
+      it('should track the auto-launch with the streaming href', () => {
         render(<SceneWatcherCard {...props} />)
 
-        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.explore_scene' }))
-
-        expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.DISCOVER_LAUNCH_SCENE, { href: props.streamingHref })
+        expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.DISCOVER_LAUNCH_SCENE, { href: props.streamingHref, auto: true })
       })
 
-      it('should unmount the iframe and restore the overlay when STOP is clicked', () => {
+      it('should unmount the iframe on STOP and bring EXPLORE back as the re-open path', () => {
         render(<SceneWatcherCard {...props} />)
-        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.explore_scene' }))
 
         fireEvent.click(screen.getByRole('button', { name: 'discover.scene.close_media' }))
 
         expect(screen.queryByTitle('discover.scene.tab_streaming')).not.toBeInTheDocument()
-        expect(screen.getByRole('button', { name: 'discover.scene.explore_scene' })).toBeInTheDocument()
         expect(screen.queryByRole('button', { name: 'discover.scene.fullscreen' })).not.toBeInTheDocument()
+
+        // The auto-launch doesn't fight the explicit close — the preview only
+        // comes back through the EXPLORE CTA, tracked as a manual launch.
+        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.explore_scene' }))
+        expect(screen.getByTitle('discover.scene.tab_streaming')).toBeInTheDocument()
+        expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.DISCOVER_LAUNCH_SCENE, { href: props.streamingHref })
       })
 
       it('should keep a floating JUMP IN card over the running preview and deep-link on click', () => {
         render(<SceneWatcherCard {...props} />)
-        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.explore_scene' }))
 
         // Button-only float card — no "Jump In to participate!" title.
         expect(screen.queryByText('discover.scene.participate_title')).not.toBeInTheDocument()
@@ -246,9 +238,8 @@ describe('SceneLiveWatcher', () => {
           get: () => (requestFullscreen.mock.contexts[0] as Element | undefined) ?? null
         })
         render(<SceneWatcherCard {...props} />)
-        // FULLSCREEN only appears once the preview is running.
-        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.explore_scene' }))
 
+        // FULLSCREEN is live right away — the preview auto-boots on desktop.
         fireEvent.click(screen.getByRole('button', { name: 'discover.scene.fullscreen' }))
         expect(requestFullscreen).toHaveBeenCalledTimes(1)
 
@@ -270,7 +261,6 @@ describe('SceneLiveWatcher', () => {
           get: () => (requestFullscreen.mock.contexts[0] as Element | undefined) ?? null
         })
         render(<SceneWatcherCard {...props} />)
-        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.explore_scene' }))
 
         fireEvent.click(screen.getByRole('button', { name: 'discover.scene.fullscreen' }))
         await waitFor(() => expect(warnSpy).toHaveBeenCalledWith('[SceneLiveWatcher] fullscreen rejected', expect.any(Error)))
@@ -323,20 +313,22 @@ describe('SceneLiveWatcher', () => {
         initialUserCount: 5
       }
 
-      it('should render tabless with the launch CTAs in the controls bar (Figma viewer card has no tabs)', () => {
+      it('should render tabless with the bevy iframe auto-booted (Figma viewer card has no tabs)', () => {
         render(<SceneWatcherCard {...props} />)
 
         expect(screen.queryByRole('button', { name: 'discover.scene.tab_video' })).not.toBeInTheDocument()
-        expect(screen.getByRole('button', { name: 'discover.scene.explore_scene' })).toBeInTheDocument()
+        expect(screen.getByTitle('discover.scene.tab_streaming')).toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: 'discover.scene.explore_scene' })).not.toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'discover.scene.close_media' })).toBeInTheDocument()
       })
 
-      it('should mount the bevy iframe on launch and show STOP', () => {
+      it('should unmount the iframe on STOP and bring EXPLORE back as the re-open path', () => {
         render(<SceneWatcherCard {...props} />)
 
-        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.explore_scene' }))
+        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.close_media' }))
 
-        expect(screen.getByTitle('discover.scene.tab_streaming')).toBeInTheDocument()
-        expect(screen.getByRole('button', { name: 'discover.scene.close_media' })).toBeInTheDocument()
+        expect(screen.queryByTitle('discover.scene.tab_streaming')).not.toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'discover.scene.explore_scene' })).toBeInTheDocument()
       })
     })
 
@@ -376,13 +368,15 @@ describe('SceneLiveWatcher', () => {
         expect(screen.getByTestId('scene-room-content')).toBeInTheDocument()
       })
 
-      it('should switch to the scene tab and show the launch overlay', () => {
+      it('should keep bevy cold while on the video tab and auto-boot it on switching to the scene tab', () => {
         render(<SceneWatcherCard {...props} />)
+        expect(screen.queryByTitle('discover.scene.tab_streaming')).not.toBeInTheDocument()
 
         fireEvent.click(screen.getByRole('button', { name: 'discover.scene.tab_streaming' }))
 
         expect(screen.queryByTestId('scene-room-content')).not.toBeInTheDocument()
-        expect(screen.getByRole('button', { name: 'discover.scene.explore_scene' })).toBeInTheDocument()
+        expect(screen.getByTitle('discover.scene.tab_streaming')).toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: 'discover.scene.explore_scene' })).not.toBeInTheDocument()
 
         fireEvent.click(screen.getByRole('button', { name: 'discover.scene.tab_video' }))
         expect(screen.getByTestId('scene-room-content')).toBeInTheDocument()
@@ -391,7 +385,6 @@ describe('SceneLiveWatcher', () => {
       it('should unmount the bevy iframe when STOP is pressed on the scene tab', () => {
         render(<SceneWatcherCard {...props} />)
         fireEvent.click(screen.getByRole('button', { name: 'discover.scene.tab_streaming' }))
-        fireEvent.click(screen.getByRole('button', { name: 'discover.scene.explore_scene' }))
         expect(screen.getByTitle('discover.scene.tab_streaming')).toBeInTheDocument()
 
         fireEvent.click(screen.getByRole('button', { name: 'discover.scene.close_media' }))
@@ -400,7 +393,7 @@ describe('SceneLiveWatcher', () => {
         expect(screen.getByRole('button', { name: 'discover.scene.explore_scene' })).toBeInTheDocument()
       })
 
-      it('should fall back to the scene tab when the broadcast ends while watching video', () => {
+      it('should fall back to the scene tab and auto-boot bevy when the broadcast ends while watching video', () => {
         const { rerender } = render(<SceneWatcherCard {...props} />)
         expect(screen.getByTestId('scene-room-content')).toBeInTheDocument()
 
@@ -408,7 +401,7 @@ describe('SceneLiveWatcher', () => {
         rerender(<SceneWatcherCard {...props} />)
 
         expect(screen.queryByTestId('scene-room-content')).not.toBeInTheDocument()
-        expect(screen.getByRole('button', { name: 'discover.scene.explore_scene' })).toBeInTheDocument()
+        expect(screen.getByTitle('discover.scene.tab_streaming')).toBeInTheDocument()
       })
     })
   })

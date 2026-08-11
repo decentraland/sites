@@ -119,15 +119,25 @@ function useSceneFullscreen(videoAreaRef: React.MutableRefObject<HTMLDivElement 
 // Tracked launch / jump-in intents shared by both watcher variants. JUMP IN
 // routes through the shared discover launcher so a missing client falls back to
 // the download modal (same as the cards); it needs the place, so callers pass
-// it alongside the streaming href.
-function useSceneCtas(streamingHref?: string | null, place?: DiscoverPlace | null) {
+// it alongside the streaming href. With `autoLaunch` the bevy preview boots on
+// its own (desktop entry skips the EXPLORE gate). Auto-launch fires once per
+// streaming href so an explicit CLOSE isn't fought — after closing, the
+// EXPLORE CTA is the re-open path.
+function useSceneCtas(streamingHref?: string | null, place?: DiscoverPlace | null, autoLaunch = false) {
   const [hasLaunchedScene, setHasLaunchedScene] = useState(false)
   const track = useDeferredTrack()
   const { jumpIn: launch } = useDiscoverJumpIn()
+  const autoLaunchedHref = useRef<string | null>(null)
   const launchScene = useCallback(() => {
     track(SegmentEvent.DISCOVER_LAUNCH_SCENE, { ...(streamingHref ? { href: streamingHref } : {}) })
     setHasLaunchedScene(true)
   }, [track, streamingHref])
+  useEffect(() => {
+    if (!autoLaunch || !streamingHref || autoLaunchedHref.current === streamingHref) return
+    autoLaunchedHref.current = streamingHref
+    track(SegmentEvent.DISCOVER_LAUNCH_SCENE, { href: streamingHref, auto: true })
+    setHasLaunchedScene(true)
+  }, [autoLaunch, streamingHref, track])
   // NOTE (2026-08): DISCOVER_JUMP_IN on the 'scene-preview' surface now carries
   // the full place payload (via the shared launcher) instead of the old
   // `{ place: 'scene-preview', href }` — drops `href`, gains place_id/title/etc,
@@ -243,11 +253,12 @@ interface SceneWatcherCardProps {
 function SceneWatcherCard(props: SceneWatcherCardProps) {
   const t = useFormatMessage()
   // Unconditional so the hook order never changes; only the loading frame uses these.
-  const { launchScene, jumpIn } = useSceneCtas(props.streamingHref, props.place)
+  const { jumpIn } = useSceneCtas(props.streamingHref, props.place)
 
   if (props.status === 'loading') {
-    // Same CTA bar as the ready states — EXPLORE stays disabled (nothing to boot
-    // yet) so the card keeps its final height while the room connects.
+    // The preview auto-boots on desktop once the room resolves, so the
+    // connecting bar mirrors the running state that follows: a disabled
+    // FULLSCREEN placeholder (keeps the card height) + the JUMP IN launcher.
     return (
       <WatcherContainer>
         <VideoArea>
@@ -258,7 +269,16 @@ function SceneWatcherCard(props: SceneWatcherCardProps) {
         </VideoArea>
         <ControlsRow>
           <ControlsButtons>
-            <LaunchCtas streamingHref={null} canJumpIn={Boolean(props.place)} onLaunch={launchScene} onJumpIn={jumpIn} />
+            <ControlButton type="button" disabled>
+              <FullscreenIcon />
+              {t('discover.scene.fullscreen')}
+            </ControlButton>
+            {props.place && (
+              <BarJumpInCta type="button" onClick={jumpIn}>
+                {t('discover.card.jump_in')}
+                <JumpInGlyph size={20} />
+              </BarJumpInCta>
+            )}
           </ControlsButtons>
         </ControlsRow>
       </WatcherContainer>
@@ -285,7 +305,7 @@ function SceneOnlyWatcher(props: SceneWatcherCardProps) {
   const { isFullscreen, toggleFullscreen } = useSceneFullscreen(videoAreaRef)
   const [, advancedUserAgent] = useAdvancedUserAgentData()
   const isMobile = Boolean(advancedUserAgent?.mobile)
-  const { hasLaunchedScene, setHasLaunchedScene, launchScene, jumpIn } = useSceneCtas(streamingHref, place)
+  const { hasLaunchedScene, setHasLaunchedScene, launchScene, jumpIn } = useSceneCtas(streamingHref, place, !isMobile)
   const closeMedia = useCallback(() => setHasLaunchedScene(false), [setHasLaunchedScene])
 
   const showIframe = hasLaunchedScene && Boolean(streamingHref) && !isMobile
@@ -361,13 +381,13 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
     if (!hasLiveVideo && tab === 'video') setTab('scene')
   }, [hasLiveVideo, tab])
 
-  // Explicit launch gate. The bevy-web bundle is ~10MB and triggers a
-  // multi-second cold start, so we don't auto-load it just because the user
-  // landed on the SCENE WEB tab. Instead show a CTA overlay and only mount
-  // the iframe when they click "Launch". Once launched, the iframe stays
-  // mounted until the user closes it (then we go back to the launch overlay
-  // and a re-click remounts a fresh bevy session).
-  const { hasLaunchedScene, setHasLaunchedScene, launchScene, jumpIn } = useSceneCtas(streamingHref, place)
+  // The bevy preview auto-boots as soon as the scene surface is the active
+  // one (desktop only) — landing on a playable scene starts exploring with
+  // zero clicks. While a live video broadcast holds the VIDEO tab, the
+  // ~10MB bevy bundle stays cold until the user switches to SCENE WEB.
+  // Closing the preview unmounts the iframe and brings the EXPLORE CTA
+  // back as the re-open path (a re-click boots a fresh bevy session).
+  const { hasLaunchedScene, setHasLaunchedScene, launchScene, jumpIn } = useSceneCtas(streamingHref, place, !isMobile && tab === 'scene')
 
   // Video pause state. We keep the LiveKit room connected (chat + people
   // stack stay live) but hide the video surface and silence audio so the
