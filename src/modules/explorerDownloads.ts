@@ -85,13 +85,13 @@ class ExplorerDownloads {
   async getWindowsDownloads(): Promise<number> {
     const downloads = await this.getDownloads()
     const windows = downloads.find(item => item.platform === 'Windows')
-    return windows?.downloads || 0
+    return windows?.downloads ?? 0
   }
 
   async getMacDownloads(): Promise<number> {
     const downloads = await this.getDownloads()
     const mac = downloads.find(item => item.platform === 'Mac')
-    return mac?.downloads || 0
+    return mac?.downloads ?? 0
   }
 
   async getTotalDownloads(): Promise<number> {
