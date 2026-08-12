@@ -10,6 +10,11 @@ jest.mock('../config/env', () => ({ getEnv: jest.fn() }))
 
 const DSN = 'https://examplekey@o0.ingest.us.sentry.io/1'
 
+// The minified bundle URL the browser reports for Segment's destination loader, which
+// is all `beforeSend` gets to see. See `sentry.helpers.spec.ts` for why the readable
+// path from the Sentry UI must not be used here.
+const SEGMENT_LOADER_FILENAME = 'https://cdn.segment.com/next-integrations/actions/3962/1faa179dfb20d0a3f5a0.js'
+
 interface LoadOptions {
   dsn?: string
   environment?: string
@@ -152,7 +157,7 @@ describe('when beforeSend inspects an event', () => {
           values: [
             {
               value: 'Failed to load https://www.googletagmanager.com/gtag/js?id=G-7DM7BF7RJG',
-              stacktrace: { frames: [{ filename: 'webpack://Destination/../browser-destination-runtime/dist/esm/load-script.js' }] }
+              stacktrace: { frames: [{ filename: SEGMENT_LOADER_FILENAME }] }
             }
           ]
         }
@@ -168,7 +173,7 @@ describe('when beforeSend inspects an event', () => {
           values: [
             {
               value: 'Failed to load https://cdn.some-vendor.example/destination.js',
-              stacktrace: { frames: [{ filename: 'webpack://Destination/../browser-destination-runtime/dist/esm/load-script.js' }] }
+              stacktrace: { frames: [{ filename: SEGMENT_LOADER_FILENAME }] }
             }
           ]
         }

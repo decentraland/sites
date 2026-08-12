@@ -1,7 +1,12 @@
-import type { Breadcrumb, ErrorEvent } from '@sentry/browser'
+import { type Breadcrumb, type ErrorEvent, defaultStackParser } from '@sentry/browser'
 import { isBlockedAnalyticsScriptError, redactBreadcrumbUrl, redactEventUrls, redactSensitiveUrl } from './sentry.helpers'
 
-const SEGMENT_LOADER_FILENAME = 'webpack://Destination/../browser-destination-runtime/dist/esm/load-script.js'
+// Captured from a production repro with the Google tag hosts blocked. It has to stay
+// the minified CDN URL: that is what the browser puts on the frame, and therefore all
+// `beforeSend` ever sees. The readable `browser-destination-runtime/...` path in the
+// Sentry UI is produced by server-side source-map resolution, so asserting against it
+// let the filter pass its tests while dropping nothing in production.
+const SEGMENT_LOADER_FILENAME = 'https://cdn.segment.com/next-integrations/actions/3962/1faa179dfb20d0a3f5a0.js'
 
 const buildLoaderEvent = (value: string, filename = SEGMENT_LOADER_FILENAME): ErrorEvent =>
   ({
@@ -67,6 +72,21 @@ describe('when deciding whether an event is a blocked analytics script', () => {
     it('should NOT treat it as noise', () => {
       const event = { exception: { values: [{ value: 'googletagmanager.com' }] } } as ErrorEvent
       expect(isBlockedAnalyticsScriptError(event)).toBe(false)
+    })
+  })
+
+  // Hand-written frames are what let the first version of this filter ship dead: the
+  // fixture was copied out of the Sentry UI, which shows source-map-resolved paths the
+  // browser never produces. Here the frames come from the SDK's own parser fed a raw
+  // stack captured in production, so the fixture cannot drift from reality again.
+  describe('and the frames come from the SDK parser fed a real production stack', () => {
+    it('should treat it as blocked-analytics noise', () => {
+      const value = 'Failed to load https://www.googletagmanager.com/gtag/js?id=G-7DM7BF7RJG'
+      const stack = [`Error: ${value}`, `    at ${SEGMENT_LOADER_FILENAME}:1:2598`].join('\n')
+      const frames = defaultStackParser(stack)
+
+      expect(frames.some(frame => frame.filename?.includes('cdn.segment.com'))).toBe(true)
+      expect(isBlockedAnalyticsScriptError({ exception: { values: [{ value, stacktrace: { frames } }] } } as ErrorEvent)).toBe(true)
     })
   })
 })
