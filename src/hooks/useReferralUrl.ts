@@ -1,10 +1,23 @@
 import { useMemo } from 'react'
 import { getEnv } from '../config/env'
 
-/** Adds `referrer` to a URL that may be absolute or relative, preserving its shape. */
+/**
+ * Adds `referrer` to a URL that may be absolute or relative, preserving its shape.
+ *
+ * Parsed rather than concatenated: string manipulation puts the query in the
+ * wrong place when the value carries a hash fragment, and appends a second
+ * `referrer` when one is already there. `searchParams.set` handles both, and the
+ * absolute/relative shape is restored afterwards because auth may validate the
+ * redirect target it receives.
+ */
 const appendReferrer = (url: string, referrer?: string): string => {
   if (!referrer) return url
-  return `${url}${url.includes('?') ? '&' : '?'}referrer=${encodeURIComponent(referrer)}`
+
+  const wasAbsolute = /^[a-z][a-z0-9+.-]*:\/\//i.test(url)
+  const parsed = new URL(url, window.location.origin)
+  parsed.searchParams.set('referrer', referrer)
+
+  return wasAbsolute ? parsed.toString() : `${parsed.pathname}${parsed.search}${parsed.hash}`
 }
 
 const useReferralUrl = (referrer?: string, directDownload = false) => {

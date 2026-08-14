@@ -108,3 +108,37 @@ describe('when the env vars are missing', () => {
     expect(new URL(result.current).searchParams.get('redirectTo')).toBe('/download')
   })
 })
+
+describe('when the configured download url is less constrained', () => {
+  const redirectToOf = (url: string) => new URL(url).searchParams.get('redirectTo') as string
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should keep a hash fragment after the query instead of corrupting it', () => {
+    mockGetEnv.mockImplementation((key: string) => (key === 'DOWNLOAD_URL' ? '/download#steps' : ''))
+
+    const { result } = renderHook(() => useReferralUrl(REFERRER))
+
+    expect(redirectToOf(result.current)).toBe(`/download?referrer=${REFERRER}#steps`)
+  })
+
+  it('should replace an existing referrer rather than appending a second one', () => {
+    mockGetEnv.mockImplementation((key: string) => (key === 'DOWNLOAD_URL' ? '/download?referrer=0xold&os=windows' : ''))
+
+    const { result } = renderHook(() => useReferralUrl(REFERRER))
+
+    const redirectTo = new URL(redirectToOf(result.current), 'https://decentraland.org')
+    expect(redirectTo.searchParams.getAll('referrer')).toEqual([REFERRER])
+    expect(redirectTo.searchParams.get('os')).toBe('windows')
+  })
+
+  it('should keep an absolute download url absolute', () => {
+    mockGetEnv.mockImplementation((key: string) => (key === 'DOWNLOAD_URL' ? 'https://decentraland.org/download' : ''))
+
+    const { result } = renderHook(() => useReferralUrl(REFERRER))
+
+    expect(redirectToOf(result.current)).toBe(`https://decentraland.org/download?referrer=${REFERRER}`)
+  })
+})
