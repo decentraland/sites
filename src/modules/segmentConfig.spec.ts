@@ -1,10 +1,10 @@
-import { SEGMENT_TRACK_URL, getSegmentWriteKey } from './segmentConfig'
+import { DEFAULT_SEGMENT_TRACK_URL, getSegmentApiHost, getSegmentCdnUrl, getSegmentTrackUrl, getSegmentWriteKey } from './segmentConfig'
 
-let mockWriteKey: string
+let mockEnvValues: Record<string, string>
 let mockExempt: boolean
 
 jest.mock('../config/env', () => ({
-  getEnv: () => mockWriteKey
+  getEnv: (key: string) => mockEnvValues[key] ?? ''
 }))
 
 jest.mock('../utils/isAnalyticsExemptPath', () => ({
@@ -13,7 +13,7 @@ jest.mock('../utils/isAnalyticsExemptPath', () => ({
 
 describe('segmentConfig', () => {
   beforeEach(() => {
-    mockWriteKey = 'wk-test'
+    mockEnvValues = { SEGMENT_KEY: 'wk-test' }
     mockExempt = false
   })
 
@@ -21,9 +21,9 @@ describe('segmentConfig', () => {
     jest.resetAllMocks()
   })
 
-  describe('SEGMENT_TRACK_URL', () => {
+  describe('DEFAULT_SEGMENT_TRACK_URL', () => {
     it('should point at the Segment HTTP Tracking API track endpoint', () => {
-      expect(SEGMENT_TRACK_URL).toBe('https://api.segment.io/v1/track')
+      expect(DEFAULT_SEGMENT_TRACK_URL).toBe('https://api.segment.io/v1/track')
     })
   })
 
@@ -38,7 +38,7 @@ describe('segmentConfig', () => {
     })
 
     it('should return an empty string when no write key is configured', () => {
-      mockWriteKey = ''
+      mockEnvValues = {}
       expect(getSegmentWriteKey()).toBe('')
     })
 
@@ -52,13 +52,61 @@ describe('segmentConfig', () => {
       })
 
       it('should still return an empty string when no write key is configured', () => {
-        mockWriteKey = ''
+        mockEnvValues = {}
         expect(getSegmentWriteKey({ bypassExemptPathGate: true })).toBe('')
       })
 
       it('should keep the gate active when the flag is explicitly false', () => {
         expect(getSegmentWriteKey({ bypassExemptPathGate: false })).toBe('')
       })
+    })
+  })
+
+  describe('getSegmentCdnUrl', () => {
+    it('should return undefined when SEGMENT_CDN_URL is not configured', () => {
+      expect(getSegmentCdnUrl()).toBeUndefined()
+    })
+
+    it('should return the configured CDN URL', () => {
+      mockEnvValues.SEGMENT_CDN_URL = 'https://evs.e.decentraland.org'
+      expect(getSegmentCdnUrl()).toBe('https://evs.e.decentraland.org')
+    })
+
+    it('should return undefined when the value is an empty string', () => {
+      mockEnvValues.SEGMENT_CDN_URL = ''
+      expect(getSegmentCdnUrl()).toBeUndefined()
+    })
+  })
+
+  describe('getSegmentApiHost', () => {
+    it('should return undefined when SEGMENT_API_HOST is not configured', () => {
+      expect(getSegmentApiHost()).toBeUndefined()
+    })
+
+    it('should return the configured API host', () => {
+      mockEnvValues.SEGMENT_API_HOST = 'evs.e.decentraland.org/v1'
+      expect(getSegmentApiHost()).toBe('evs.e.decentraland.org/v1')
+    })
+
+    it('should return undefined when the value is an empty string', () => {
+      mockEnvValues.SEGMENT_API_HOST = ''
+      expect(getSegmentApiHost()).toBeUndefined()
+    })
+  })
+
+  describe('getSegmentTrackUrl', () => {
+    it('should return the default Segment track URL when SEGMENT_API_HOST is not configured', () => {
+      expect(getSegmentTrackUrl()).toBe('https://api.segment.io/v1/track')
+    })
+
+    it('should derive the track URL from SEGMENT_API_HOST when configured', () => {
+      mockEnvValues.SEGMENT_API_HOST = 'evs.e.decentraland.org/v1'
+      expect(getSegmentTrackUrl()).toBe('https://evs.e.decentraland.org/v1/track')
+    })
+
+    it('should return the default track URL when SEGMENT_API_HOST is an empty string', () => {
+      mockEnvValues.SEGMENT_API_HOST = ''
+      expect(getSegmentTrackUrl()).toBe('https://api.segment.io/v1/track')
     })
   })
 })

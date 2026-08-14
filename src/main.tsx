@@ -5,7 +5,7 @@ import { App } from './App'
 import { LocaleProvider } from './intl/LocaleContext'
 import { DeferredAnalyticsProvider } from './modules/DeferredAnalyticsProvider'
 import { scheduleDeferredThirdParty } from './modules/deferredThirdParty'
-import { getSegmentWriteKey } from './modules/segmentConfig'
+import { getSegmentApiHost, getSegmentCdnUrl, getSegmentWriteKey } from './modules/segmentConfig'
 import { isAnalyticsExemptPath } from './utils/isAnalyticsExemptPath'
 import { scheduleWhenIdle } from './utils/scheduleWhenIdle'
 
@@ -37,7 +37,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <DclThemeProvider theme={darkTheme}>
       <LocaleProvider>
-        <DeferredAnalyticsProvider writeKey={segmentWriteKey}>
+        <DeferredAnalyticsProvider writeKey={segmentWriteKey} cdnURL={getSegmentCdnUrl()} apiHost={getSegmentApiHost()}>
           <App />
         </DeferredAnalyticsProvider>
       </LocaleProvider>

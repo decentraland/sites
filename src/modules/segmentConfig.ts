@@ -1,12 +1,7 @@
 import { getEnv } from '../config/env'
 import { isAnalyticsExemptPath } from '../utils/isAnalyticsExemptPath'
 
-// Segment's HTTP Tracking API endpoint. Accepts the public `writeKey` in the
-// JSON body (no Authorization header), which is what lets transports that
-// cannot set headers — `navigator.sendBeacon` — post to it. Lives here rather
-// than inline in a feature module so the one direct-HTTP caller and any future
-// one share a single literal.
-const SEGMENT_TRACK_URL = 'https://api.segment.io/v1/track'
+const DEFAULT_SEGMENT_TRACK_URL = 'https://api.segment.io/v1/track'
 
 /**
  * Single source of truth for the public Segment write key on the current page.
@@ -32,4 +27,48 @@ function getSegmentWriteKey(options?: { bypassExemptPathGate?: boolean }): strin
   return getEnv('SEGMENT_KEY') || ''
 }
 
-export { SEGMENT_TRACK_URL, getSegmentWriteKey }
+/**
+ * Returns the first-party CDN URL that `@segment/analytics-next` should use
+ * to fetch project settings, instead of the default `cdn.segment.com`.
+ *
+ * When a first-party proxy is configured (e.g. `https://evs.e.decentraland.org`),
+ * the SDK resolves settings from `${cdnURL}/v1/projects/${writeKey}/settings`,
+ * avoiding ad-blocker filter lists that block `cdn.segment.com`.
+ *
+ * Returns `undefined` when unconfigured, which tells the SDK to use the default
+ * Segment CDN.
+ */
+function getSegmentCdnUrl(): string | undefined {
+  return getEnv('SEGMENT_CDN_URL') || undefined
+}
+
+/**
+ * Returns the first-party API host that `@segment/analytics-next` should use
+ * to deliver events, instead of the default `api.segment.io/v1`.
+ *
+ * Format: `host/basePath` without protocol (e.g. `evs.e.decentraland.org/v1`).
+ * The SDK prepends `https://` and appends the method path (`/t`, `/i`, `/p`).
+ *
+ * Returns `undefined` when unconfigured, which tells the SDK to use the default
+ * Segment ingestion endpoint.
+ */
+function getSegmentApiHost(): string | undefined {
+  return getEnv('SEGMENT_API_HOST') || undefined
+}
+
+/**
+ * Returns the full URL for the Segment HTTP Tracking API track endpoint.
+ *
+ * When a first-party proxy is configured via `SEGMENT_API_HOST`, the URL is
+ * derived as `https://${apiHost}/track`. Otherwise falls back to the default
+ * `https://api.segment.io/v1/track`.
+ *
+ * Used by the beacon transport (`segmentBeacon.ts`) and the download funnel
+ * exit module for unload-safe event delivery.
+ */
+function getSegmentTrackUrl(): string {
+  const apiHost = getEnv('SEGMENT_API_HOST')
+  return apiHost ? `https://${apiHost}/track` : DEFAULT_SEGMENT_TRACK_URL
+}
+
+export { DEFAULT_SEGMENT_TRACK_URL, getSegmentApiHost, getSegmentCdnUrl, getSegmentTrackUrl, getSegmentWriteKey }
