@@ -29,7 +29,19 @@ describe('when the auth and download URLs are configured', () => {
       const url = new URL(result.current)
       expect(url.pathname).toBe('/auth/login')
       expect(url.searchParams.get('referrer')).toBe(REFERRER)
-      expect(url.searchParams.get('redirectTo')).toBe('https://decentraland.org/download')
+      expect(url.searchParams.get('redirectTo')).toBe(`https://decentraland.org/download?referrer=${REFERRER}`)
+    })
+
+    it('should keep the referrer on redirectTo so it survives an auth bounce', () => {
+      // Auth forwards the visitor to `redirectTo` verbatim. When there is nothing
+      // to do on auth (existing session, complete profile) the visitor lands on
+      // /download directly, so the referrer has to be inside that URL or the
+      // installer chain loses the attribution.
+      const { result } = renderHook(() => useReferralUrl(REFERRER))
+
+      const redirectTo = new URL(new URL(result.current).searchParams.get('redirectTo') as string)
+      expect(redirectTo.pathname).toBe('/download')
+      expect(redirectTo.searchParams.get('referrer')).toBe(REFERRER)
     })
 
     it('should omit the referrer param when no referrer is given', () => {
@@ -87,6 +99,12 @@ describe('when the env vars are missing', () => {
 
     const url = new URL(result.current)
     expect(url.pathname).toBe('/auth/login')
-    expect(url.searchParams.get('redirectTo')).toBe('/download')
+    expect(url.searchParams.get('redirectTo')).toBe(`/download?referrer=${REFERRER}`)
+  })
+
+  it('should leave the relative redirect untouched when there is no referrer', () => {
+    const { result } = renderHook(() => useReferralUrl(undefined))
+
+    expect(new URL(result.current).searchParams.get('redirectTo')).toBe('/download')
   })
 })
