@@ -1,4 +1,4 @@
-import { Box, Typography, styled } from 'decentraland-ui2'
+import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
 
 const HeroSection = styled('section')({
   height: 'calc(90vh - 96px)',
@@ -47,7 +47,7 @@ const HeroTitle = styled(Typography)(({ theme }) => ({
   letterSpacing: '-1.28px',
   lineHeight: 'normal',
   marginBottom: theme.spacing(5.5),
-  color: '#fff',
+  color: dclColors.neutral.white,
   ['& span']: {
     background: 'linear-gradient(287deg, #ff2d55 5.21%, #ffbc5b 56.5%)',
     backgroundClip: 'text',
@@ -66,7 +66,7 @@ const HeroSubtitle = styled(Typography)(({ theme }) => ({
   fontWeight: 500,
   lineHeight: '32px',
   marginBottom: theme.spacing(8.5),
-  color: '#fff',
+  color: dclColors.neutral.white,
   [theme.breakpoints.down('sm')]: {
     fontSize: 20,
     lineHeight: '30px',

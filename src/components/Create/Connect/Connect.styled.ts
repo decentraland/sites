@@ -1,5 +1,6 @@
-import { Box, Typography, styled } from 'decentraland-ui2'
+import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
 import gridBg from '../../../images/section_connection_grid.webp'
+import { CreateSectionTitle } from '../SectionTitle.styled'
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const ConnectSection = styled('section')({
@@ -32,25 +33,10 @@ const ConnectSection = styled('section')({
 })
 /* eslint-enable @typescript-eslint/naming-convention */
 
-const ConnectTitle = styled(Typography)(({ theme }) => ({
-  textAlign: 'center',
-  fontSize: 48,
-  fontWeight: 600,
-  color: '#fcfcfc',
+const ConnectTitle = styled(CreateSectionTitle)(({ theme }) => ({
   marginTop: 56,
   marginBottom: 40,
-  maxWidth: '80vw',
-  marginLeft: 'auto',
-  marginRight: 'auto',
-  ['& span']: {
-    background: 'linear-gradient(244deg, #ff2d55 -11.67%, #ffbc5b 88.23%)',
-    backgroundClip: 'text',
-    ['WebkitBackgroundClip' as string]: 'text',
-    ['WebkitTextFillColor' as string]: 'transparent'
-  },
   [theme.breakpoints.down('sm')]: {
-    fontSize: 32,
-    lineHeight: 'normal',
     paddingLeft: 20,
     paddingRight: 20,
     marginTop: 41,
@@ -61,7 +47,7 @@ const ConnectTitle = styled(Typography)(({ theme }) => ({
 const ConnectCard = styled(Box)(({ theme }) => ({
   width: '100%',
   padding: '32px 24px',
-  background: '#fcfcfc',
+  background: dclColors.neutral.softWhite,
   borderRadius: 20,
   display: 'flex',
   flexDirection: 'column',
@@ -81,7 +67,7 @@ const ConnectCard = styled(Box)(({ theme }) => ({
 }))
 
 const ConnectCardDescription = styled(Typography)(({ theme }) => ({
-  color: '#161518',
+  color: dclColors.neutral.softBlack1,
   fontSize: 16,
   lineHeight: '24px',
   fontWeight: 400,
@@ -119,7 +105,7 @@ const ConnectCardUserImage = styled(Box)({
 })
 
 const ConnectCardUserName = styled(Typography)({
-  color: '#161518',
+  color: dclColors.neutral.softBlack1,
   fontSize: 18,
   fontWeight: 700,
   marginTop: 8,
@@ -142,7 +128,7 @@ const DiscordContainer = styled(Box)(({ theme }) => ({
 }))
 
 const DiscordTitle = styled(Typography)(({ theme }) => ({
-  color: '#fff',
+  color: dclColors.neutral.white,
   textAlign: 'center',
   textShadow: '0px 4px 20px rgba(0, 0, 0, 0.55)',
   fontSize: 20,

@@ -20,6 +20,10 @@ import { Chevron } from './Chevron'
 import { ChevronContainer, HeroActions, HeroBackground, HeroContent, HeroSection, HeroSubtitle, HeroTitle } from './Hero.styled'
 
 const CREATOR_HUB_DOWNLOAD_URL = '/download/creator-hub'
+// Mobile CTA target: the Creator Hub only ships Windows/macOS installers and
+// /download/creator-hub renders no actions on phones, so mobile users get the
+// creator docs instead of a dead-end download page.
+const CREATOR_DOCS_URL = 'https://docs.decentraland.org/creator/'
 
 const CreatorsHero = memo(() => {
   const isMobile = useMediaQuery('(max-width: 767px)')
@@ -81,7 +85,16 @@ const CreatorsHero = memo(() => {
           </HeroTitle>
           <HeroSubtitle>{heroData.subtitle}</HeroSubtitle>
           <HeroActions>
-            {showDownloadOptions && primaryOption?.link ? (
+            {isMobile ? (
+              <CTAButton
+                href={CREATOR_DOCS_URL}
+                onClick={trackClick}
+                event={SegmentEvent.CLICK}
+                place={SectionViewedTrack.CREATORS_HERO}
+                label={l('component.creators_landing.hero.mobile_docs_cta')}
+                isFullWidth={false}
+              />
+            ) : showDownloadOptions && primaryOption?.link ? (
               <>
                 <CTAButton
                   href={primaryOption.link}

@@ -1,4 +1,5 @@
-import { Box, Typography, styled } from 'decentraland-ui2'
+import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
+import { CreateSectionTitle } from '../SectionTitle.styled'
 
 const LearnSection = styled('section')({
   position: 'relative',
@@ -10,27 +11,10 @@ const LearnSection = styled('section')({
   paddingRight: 0
 })
 
-const LearnTitle = styled(Typography)(({ theme }) => ({
-  textAlign: 'center',
-  fontSize: 48,
-  fontWeight: 600,
-  color: '#fcfcfc',
+const LearnTitle = styled(CreateSectionTitle)({
   marginTop: 97,
-  marginBottom: 62,
-  maxWidth: '80vw',
-  marginLeft: 'auto',
-  marginRight: 'auto',
-  ['& span']: {
-    background: 'linear-gradient(244deg, #ff2d55 -11.67%, #ffbc5b 88.23%)',
-    backgroundClip: 'text',
-    ['WebkitBackgroundClip' as string]: 'text',
-    ['WebkitTextFillColor' as string]: 'transparent'
-  },
-  [theme.breakpoints.down('sm')]: {
-    fontSize: 36,
-    lineHeight: '40px'
-  }
-}))
+  marginBottom: 62
+})
 
 const LearnCardsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -103,7 +87,7 @@ const LearnCardVideoImage = styled(Box)(({ theme }) => ({
 
 const LearnCardInfo = styled(Box)({
   borderRadius: '0 0 20px 20px',
-  background: '#242129',
+  background: dclColors.neutral.softBlack2,
   width: '100%',
   display: 'flex',
   flexDirection: 'column'
@@ -137,7 +121,7 @@ const LearnCardUserImage = styled(Box)({
 })
 
 const LearnCardUserName = styled(Typography)(({ theme }) => ({
-  color: '#a09ba8',
+  color: dclColors.neutral.gray3,
   fontSize: 18,
   fontWeight: 600,
   marginLeft: 8,
@@ -147,7 +131,7 @@ const LearnCardUserName = styled(Typography)(({ theme }) => ({
 }))
 
 const LearnCardDate = styled(Typography)(({ theme }) => ({
-  color: '#a09ba8',
+  color: dclColors.neutral.gray3,
   fontSize: 18,
   fontWeight: 600,
   textAlign: 'right',
@@ -187,7 +171,7 @@ const LearnExtraContainer = styled(Box)(({ theme }) => ({
 const LearnExtraBlock = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  color: '#fff',
+  color: dclColors.neutral.white,
   textAlign: 'center',
   fontSize: 20,
   fontWeight: 600,
