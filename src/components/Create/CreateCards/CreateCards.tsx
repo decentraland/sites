@@ -1,4 +1,5 @@
 import { memo, useState } from 'react'
+import { useMediaQuery } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
@@ -34,6 +35,10 @@ type CreateTabContentProps = {
 const CreateTabContent = memo(({ tab, cardId }: CreateTabContentProps) => {
   const l = useFormatMessage()
   const trackClick = useTrackClick()
+  // The Creator Hub only ships desktop installers, so its download links
+  // dead-end on phones — hide them there (same breakpoint as the hero).
+  const isMobile = useMediaQuery('(max-width: 767px)')
+  const visibleLinks = tab.links.filter(link => !isMobile || !link.desktopOnly)
 
   return (
     <>
@@ -52,7 +57,7 @@ const CreateTabContent = memo(({ tab, cardId }: CreateTabContentProps) => {
       <TabInfoBlock>
         <TabInfoTitle>{l('component.creators_landing.create.tab.useful_links')}</TabInfoTitle>
         <LinksContainer>
-          {tab.links.map(link => (
+          {visibleLinks.map(link => (
             <LinkItem
               key={link.url}
               href={link.url}
@@ -79,8 +84,9 @@ type CreateCardProps = {
 }
 
 const CreateCard = memo(({ card }: CreateCardProps) => {
-  const [activeTab, setActiveTab] = useState(card.tab1.title)
+  const [activeTab, setActiveTab] = useState(card.tabs[0].title)
   const trackClick = useTrackClick()
+  const currentTab = card.tabs.find(tab => tab.title === activeTab) ?? card.tabs[0]
 
   return (
     <CreateCardContainer>
@@ -91,38 +97,27 @@ const CreateCard = memo(({ card }: CreateCardProps) => {
         <CreateCardTitle>{card.title}</CreateCardTitle>
         <CreateCardDescription>{card.description}</CreateCardDescription>
         <TabContainer>
-          {card.tab2 && (
+          {card.tabs.length > 1 && (
             <TabButtons>
-              <TabButton
-                isActive={activeTab === card.tab1.title}
-                onClick={event => {
-                  trackClick(event)
-                  setActiveTab(card.tab1.title)
-                }}
-                data-place={SectionViewedTrack.CREATORS_CREATE}
-                data-event={SegmentEvent.CLICK}
-                data-card={card.id}
-                data-tab={card.tab1.title}
-              >
-                {card.tab1.title}
-              </TabButton>
-              <TabButton
-                isActive={activeTab === card.tab2.title}
-                onClick={event => {
-                  trackClick(event)
-                  setActiveTab(card.tab2!.title)
-                }}
-                data-place={SectionViewedTrack.CREATORS_CREATE}
-                data-event={SegmentEvent.CLICK}
-                data-card={card.id}
-                data-tab={card.tab2.title}
-              >
-                {card.tab2.title}
-              </TabButton>
+              {card.tabs.map(tab => (
+                <TabButton
+                  key={tab.title}
+                  isActive={activeTab === tab.title}
+                  onClick={event => {
+                    trackClick(event)
+                    setActiveTab(tab.title)
+                  }}
+                  data-place={SectionViewedTrack.CREATORS_CREATE}
+                  data-event={SegmentEvent.CLICK}
+                  data-card={card.id}
+                  data-tab={tab.title}
+                >
+                  {tab.title}
+                </TabButton>
+              ))}
             </TabButtons>
           )}
-          {activeTab === card.tab1.title && <CreateTabContent tab={card.tab1} cardId={card.id} />}
-          {card.tab2 && activeTab === card.tab2.title && <CreateTabContent tab={card.tab2} cardId={card.id} />}
+          <CreateTabContent tab={currentTab} cardId={card.id} />
         </TabContainer>
       </CreateCardInfo>
     </CreateCardContainer>
