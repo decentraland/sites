@@ -32,14 +32,17 @@ const fetchProfilesFromApi = async (peerUrl: string, addresses: string[]): Promi
     // dropped the rest, so any batch request larger than one address lost
     // every profile except the first. Flatten across all entries.
     const body: { avatars: Avatar[] }[] = await response.json()
-    return body
-      .flatMap(entry => entry.avatars ?? [])
+    // Both id fields are deployer-controlled — keep only the addresses we asked for.
+    const requested = new Set(addresses.map(address => address.toLowerCase()))
+    return (body ?? [])
+      .flatMap(entry => entry?.avatars ?? [])
       .map(avatar => ({
-        address: avatar.userId.toLowerCase(),
+        address: (avatar.userId ?? avatar.ethAddress ?? '').toLowerCase(),
         name: avatar.name,
         hasClaimedName: avatar.hasClaimedName,
         avatarFace256: avatar.avatar?.snapshots?.face256
       }))
+      .filter(profile => requested.has(profile.address))
   } catch (error) {
     console.error('[cast2/peer] Error fetching profiles:', error)
     return addresses.map(createEmptyProfile)

@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import {
@@ -7,18 +7,19 @@ import {
   useGetMemberRequestsQuery,
   useJoinCommunityMutation
 } from '../../../features/communities/communities.client'
-import { isMember as checkIsMember } from '../../../features/communities/communities.helpers'
+import { isMember as checkIsMember, toMemberCards } from '../../../features/communities/communities.helpers'
 import { Privacy, RequestStatus, RequestType } from '../../../features/communities/communities.types'
 import { mapCommunityEventToEventEntry } from '../../../features/communities/events.helpers'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
 import { usePaginatedCommunityEvents } from '../../../hooks/usePaginatedCommunityEvents'
 import { usePaginatedCommunityMembers } from '../../../hooks/usePaginatedCommunityMembers'
+import { useProfiles } from '../../../hooks/useProfiles'
 import { EventDetailModal } from '../../whats-on/EventDetailModal'
 import { CommunityInfo } from './CommunityInfo'
 import { describeError } from './errorUtils'
 import { EventsList } from './EventsList'
-import { type MemberCardProps, MembersList } from './MembersList'
+import { MembersList } from './MembersList'
 import { PrivateMessage } from './PrivateMessage'
 import { type TabType, Tabs } from './Tabs'
 import { AllowedAction, type CommunityDetailProps } from './CommunityDetail.types'
@@ -162,13 +163,10 @@ function CommunityDetailComponent({ community, isLoggedIn, address }: CommunityD
     handleRequestToJoin
   ])
 
-  const memberCards: MemberCardProps[] = members.map(item => ({
-    memberAddress: item.memberAddress,
-    name: item.name ?? item.memberAddress,
-    role: item.role,
-    profilePictureUrl: item.profilePictureUrl ?? '',
-    hasClaimedName: item.hasClaimedName ?? false
-  }))
+  // One batched Catalyst lookup per members page — the /v2 endpoint returns addresses only.
+  const memberAddresses = useMemo(() => members.map(member => member.memberAddress), [members])
+  const { profiles } = useProfiles(memberAddresses)
+  const memberCards = useMemo(() => toMemberCards(members, profiles), [members, profiles])
 
   const eventListItems = events.map(mapCommunityEventToEventEntry)
 

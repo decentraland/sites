@@ -812,12 +812,12 @@ describe('eventsClient', () => {
         })
       })
 
-      it('should call /v1/communities with roles filter and return only active items', async () => {
+      it('should call /v2/communities with roles filter and return only active items', async () => {
         const store = createTestStore()
         const result = await store.dispatch(eventsClient.endpoints.getCommunities.initiate({ identity: mockIdentity }))
 
         expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(
-          'https://social.test/v1/communities?roles=owner&roles=moderator',
+          'https://social.test/v2/communities?roles=owner&roles=moderator',
           mockIdentity,
           expect.any(AbortSignal)
         )

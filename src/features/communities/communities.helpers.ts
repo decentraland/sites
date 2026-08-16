@@ -1,7 +1,9 @@
 import type { Theme } from 'decentraland-ui2'
 import { getEnv } from '../../config/env'
-import type { RarityPalette } from './communities.helpers.types'
+import type { Profile } from '../cast2/peer'
+import type { CommunityMemberCard, RarityPalette } from './communities.helpers.types'
 import { Role } from './communities.types'
+import type { CommunityMember } from './communities.types'
 
 function getThumbnailUrl(communityId?: string): string | undefined {
   if (!communityId) return undefined
@@ -12,6 +14,21 @@ function getThumbnailUrl(communityId?: string): string | undefined {
 
 function isMember(community?: { role?: Role }): boolean {
   return !!community?.role && community.role !== Role.NONE
+}
+
+// The members endpoint is address-only, so the display fields come from a batched
+// Catalyst lookup. A member without a profile keeps their row and shows the address.
+function toMemberCards(members: CommunityMember[], profiles: Map<string, Profile>): CommunityMemberCard[] {
+  return members.map(member => {
+    const profile = profiles.get(member.memberAddress.toLowerCase())
+    return {
+      memberAddress: member.memberAddress,
+      name: profile?.name ?? member.memberAddress,
+      role: member.role,
+      profilePictureUrl: profile?.avatarFace256 ?? '',
+      hasClaimedName: profile?.hasClaimedName ?? false
+    }
+  })
 }
 
 // Hash a string to a 32-bit unsigned integer (FNV-1a). Used to seed deterministic
@@ -37,4 +54,4 @@ function getRarityColor(theme: Theme, seed: string): string {
   return colors[hashString(seed) % colors.length]
 }
 
-export { getRarityColor, getThumbnailUrl, isMember }
+export { getRarityColor, getThumbnailUrl, isMember, toMemberCards }

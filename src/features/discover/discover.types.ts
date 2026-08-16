@@ -100,7 +100,6 @@ interface DiscoverCommunity {
   name: string
   description: string
   ownerAddress: string
-  ownerName?: string
   privacy: 'public' | 'private'
   active: boolean
   membersCount: number
