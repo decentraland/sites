@@ -1,7 +1,13 @@
 import { getEnv } from '../config/env'
 import { isAnalyticsExemptPath } from '../utils/isAnalyticsExemptPath'
 
+// Segment's HTTP Tracking API endpoint. Accepts the public `writeKey` in the
+// JSON body (no Authorization header), which is what lets transports that
+// cannot set headers — `navigator.sendBeacon` — post to it.
 const DEFAULT_SEGMENT_TRACK_URL = 'https://api.segment.io/v1/track'
+
+const PROTOCOL_PREFIX = /^[a-z][a-z0-9+.-]*:\/\//i
+const TRAILING_SLASHES = /\/+$/
 
 /**
  * Single source of truth for the public Segment write key on the current page.
@@ -28,46 +34,79 @@ function getSegmentWriteKey(options?: { bypassExemptPathGate?: boolean }): strin
 }
 
 /**
- * Returns the first-party CDN URL that `@segment/analytics-next` should use
- * to fetch project settings, instead of the default `cdn.segment.com`.
+ * Both proxy values decide where a third-party script is loaded from and where
+ * every event is delivered, so they are read from the build configuration and
+ * never from user input. A value that is not an absolute https URL is dropped
+ * with a warning, so a misconfigured environment degrades to Segment's own
+ * endpoints instead of pointing the SDK at an untrusted host.
+ */
+function resolveProxyUrl(name: string, value: string): URL | undefined {
+  let resolved: URL
+
+  try {
+    resolved = new URL(value)
+  } catch {
+    console.warn(`[Analytics] Ignoring the ${name} "${value}", it is not a valid URL`)
+    return undefined
+  }
+
+  if (resolved.protocol !== 'https:') {
+    console.warn(`[Analytics] Ignoring the ${name} "${value}", it is not served over https`)
+    return undefined
+  }
+
+  return resolved
+}
+
+/**
+ * Origin the Segment SDK fetches its project settings and its remote plugins
+ * from, instead of `cdn.segment.com`, which ad-blocker filter lists match.
+ * The SDK appends `/v1/projects/${writeKey}/settings` to it, so the trailing
+ * slash is dropped to keep the separator single.
  *
- * When a first-party proxy is configured (e.g. `https://evs.e.decentraland.org`),
- * the SDK resolves settings from `${cdnURL}/v1/projects/${writeKey}/settings`,
- * avoiding ad-blocker filter lists that block `cdn.segment.com`.
- *
- * Returns `undefined` when unconfigured, which tells the SDK to use the default
- * Segment CDN.
+ * Returns `undefined` when unconfigured or rejected, which keeps Segment's CDN.
  */
 function getSegmentCdnUrl(): string | undefined {
-  return getEnv('SEGMENT_CDN_URL') || undefined
+  const cdnUrl = getEnv('SEGMENT_CDN_URL')
+  if (!cdnUrl) {
+    return undefined
+  }
+
+  return resolveProxyUrl('cdn url', cdnUrl)?.href.replace(TRAILING_SLASHES, '')
 }
 
 /**
- * Returns the first-party API host that `@segment/analytics-next` should use
- * to deliver events, instead of the default `api.segment.io/v1`.
+ * Host the Segment SDK delivers events to, instead of `api.segment.io/v1`.
+ * Format: `host/basePath` without protocol; the SDK prepends `https://` and
+ * appends the method path (`/t`, `/i`, `/p`).
  *
- * Format: `host/basePath` without protocol (e.g. `evs.e.decentraland.org/v1`).
- * The SDK prepends `https://` and appends the method path (`/t`, `/i`, `/p`).
+ * Returns `undefined` when unconfigured or rejected, same as `getSegmentCdnUrl`.
  *
- * Returns `undefined` when unconfigured, which tells the SDK to use the default
- * Segment ingestion endpoint.
+ * NOTE: unset in every environment today. The proxy serves the CDN
+ * (bundle, settings, remote plugins) but returns 404 on the ingestion paths, so
+ * pointing events at it drops all of them. Set it once the proxy accepts them.
  */
 function getSegmentApiHost(): string | undefined {
-  return getEnv('SEGMENT_API_HOST') || undefined
+  const apiHost = getEnv('SEGMENT_API_HOST')
+  if (!apiHost) {
+    return undefined
+  }
+
+  // The SDK takes it without a protocol and prepends its own, so a configured
+  // one is accepted and stripped instead of producing `https://https://host`.
+  const resolved = resolveProxyUrl('api host', PROTOCOL_PREFIX.test(apiHost) ? apiHost : `https://${apiHost}`)
+
+  return resolved && `${resolved.host}${resolved.pathname}`.replace(TRAILING_SLASHES, '')
 }
 
 /**
- * Returns the full URL for the Segment HTTP Tracking API track endpoint.
- *
- * When a first-party proxy is configured via `SEGMENT_API_HOST`, the URL is
- * derived as `https://${apiHost}/track`. Otherwise falls back to the default
- * `https://api.segment.io/v1/track`.
- *
- * Used by the beacon transport (`segmentBeacon.ts`) and the download funnel
- * exit module for unload-safe event delivery.
+ * Full URL for the Segment HTTP Tracking API track endpoint used by the beacon
+ * transport (`segmentBeacon.ts`), which posts outside the SDK so it survives
+ * unload. Derived from the same host the SDK uses, so both transports agree on
+ * where events go and fall back together.
  */
 function getSegmentTrackUrl(): string {
-  const apiHost = getEnv('SEGMENT_API_HOST')
+  const apiHost = getSegmentApiHost()
   return apiHost ? `https://${apiHost}/track` : DEFAULT_SEGMENT_TRACK_URL
 }
 

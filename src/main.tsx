@@ -37,7 +37,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <DclThemeProvider theme={darkTheme}>
       <LocaleProvider>
-        <DeferredAnalyticsProvider writeKey={segmentWriteKey} cdnURL={getSegmentCdnUrl()} apiHost={getSegmentApiHost()}>
+        <DeferredAnalyticsProvider writeKey={segmentWriteKey} cdnUrl={getSegmentCdnUrl()} apiHost={getSegmentApiHost()}>
           <App />
         </DeferredAnalyticsProvider>
       </LocaleProvider>

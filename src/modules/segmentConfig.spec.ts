@@ -76,6 +76,40 @@ describe('segmentConfig', () => {
       mockEnvValues.SEGMENT_CDN_URL = ''
       expect(getSegmentCdnUrl()).toBeUndefined()
     })
+
+    it('should drop the trailing slash, the settings path is appended to it', () => {
+      mockEnvValues.SEGMENT_CDN_URL = 'https://evs.e.decentraland.org/'
+      expect(getSegmentCdnUrl()).toBe('https://evs.e.decentraland.org')
+    })
+
+    it('should keep the path the proxy serves it from', () => {
+      mockEnvValues.SEGMENT_CDN_URL = 'https://evs.e.decentraland.org/aPath'
+      expect(getSegmentCdnUrl()).toBe('https://evs.e.decentraland.org/aPath')
+    })
+
+    describe('when the configured value cannot be trusted', () => {
+      let consoleWarn: jest.SpyInstance
+
+      beforeEach(() => {
+        consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+      })
+
+      afterEach(() => {
+        consoleWarn.mockRestore()
+      })
+
+      it('should warn and ignore it when it is not served over https', () => {
+        mockEnvValues.SEGMENT_CDN_URL = 'http://evs.e.decentraland.org'
+        expect(getSegmentCdnUrl()).toBeUndefined()
+        expect(consoleWarn).toHaveBeenCalled()
+      })
+
+      it('should warn and ignore it when it is not a valid URL', () => {
+        mockEnvValues.SEGMENT_CDN_URL = 'evs.e.decentraland.org'
+        expect(getSegmentCdnUrl()).toBeUndefined()
+        expect(consoleWarn).toHaveBeenCalled()
+      })
+    })
   })
 
   describe('getSegmentApiHost', () => {
@@ -92,6 +126,40 @@ describe('segmentConfig', () => {
       mockEnvValues.SEGMENT_API_HOST = ''
       expect(getSegmentApiHost()).toBeUndefined()
     })
+
+    it('should strip the protocol when it carries one, the SDK prepends its own', () => {
+      mockEnvValues.SEGMENT_API_HOST = 'https://evs.e.decentraland.org/v1'
+      expect(getSegmentApiHost()).toBe('evs.e.decentraland.org/v1')
+    })
+
+    it('should return the bare host when it carries no base path', () => {
+      mockEnvValues.SEGMENT_API_HOST = 'evs.e.decentraland.org'
+      expect(getSegmentApiHost()).toBe('evs.e.decentraland.org')
+    })
+
+    describe('when the configured value cannot be trusted', () => {
+      let consoleWarn: jest.SpyInstance
+
+      beforeEach(() => {
+        consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+      })
+
+      afterEach(() => {
+        consoleWarn.mockRestore()
+      })
+
+      it('should warn and ignore it when it is not served over https', () => {
+        mockEnvValues.SEGMENT_API_HOST = 'http://evs.e.decentraland.org/v1'
+        expect(getSegmentApiHost()).toBeUndefined()
+        expect(consoleWarn).toHaveBeenCalled()
+      })
+
+      it('should warn and ignore it when it is not a valid URL', () => {
+        mockEnvValues.SEGMENT_API_HOST = 'http://['
+        expect(getSegmentApiHost()).toBeUndefined()
+        expect(consoleWarn).toHaveBeenCalled()
+      })
+    })
   })
 
   describe('getSegmentTrackUrl', () => {
@@ -107,6 +175,13 @@ describe('segmentConfig', () => {
     it('should return the default track URL when SEGMENT_API_HOST is an empty string', () => {
       mockEnvValues.SEGMENT_API_HOST = ''
       expect(getSegmentTrackUrl()).toBe('https://api.segment.io/v1/track')
+    })
+
+    it('should return the default track URL when SEGMENT_API_HOST is rejected', () => {
+      const consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+      mockEnvValues.SEGMENT_API_HOST = 'http://evs.e.decentraland.org/v1'
+      expect(getSegmentTrackUrl()).toBe('https://api.segment.io/v1/track')
+      consoleWarn.mockRestore()
     })
   })
 })
