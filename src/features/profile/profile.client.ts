@@ -78,12 +78,11 @@ async function flushBatch(peerUrl: string): Promise<void> {
       return
     }
     const list: Profile[] = await response.json()
-    // `avatars[0].ethAddress` is deployer-written metadata, not a trusted binding:
-    // content-validator ties the entity POINTER to the signer but never the address
-    // inside it, and lambdas spreads that metadata through untouched. The batch
-    // response carries no pointer, so a claim is only usable when nothing contests
-    // it — two entries claiming one row means one of them is lying, so drop both and
-    // let the row fall back to its address rather than render a stolen identity.
+    // lamb2 >= 4.13.2 pins `ethAddress`/`userId` to the entity pointer, so the claimed
+    // address is trustworthy against an up-to-date peer. Bind defensively anyway: the
+    // response carries no pointer to check against, and PEER_URL can point at a peer
+    // still serving raw deployer metadata. Ignore claims on addresses we did not ask
+    // for, and drop a row two entries claim rather than pick one of them.
     const claims = new Map<string, Profile[]>()
     for (const profile of Array.isArray(list) ? list : []) {
       const address = profile?.avatars?.[0]?.ethAddress?.toLowerCase()
