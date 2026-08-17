@@ -1,9 +1,11 @@
+import type { Role } from './communities.types'
+
 type RarityPalette = Partial<Record<string, string | undefined>>
 
 type CommunityMemberCard = {
   memberAddress: string
   name: string
-  role: string
+  role: Role
   profilePictureUrl: string
   hasClaimedName?: boolean
 }
