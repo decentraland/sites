@@ -10,7 +10,18 @@ const isLocalHost = (): boolean => {
   return LOCAL_HOSTS.has(hostname) || hostname.endsWith('.local')
 }
 
-const errorFilters: RegExp[] = [/The play\(\) request was interrupted/i, /paused to save power/i]
+const errorFilters: RegExp[] = [
+  /The play\(\) request was interrupted/i,
+  /paused to save power/i,
+  // Thrown inside the SDK itself, not by our code: `browserTracingIntegration`'s CLS
+  // measurement calls `this._sessionEntries.at(-1)` unguarded
+  // (@sentry-internal/browser-utils 9.30.0, LayoutShiftManager.js:32), and
+  // `Array.prototype.at` only exists from Chrome 92 / Safari 15.4. Older browsers get
+  // an unhandled rejection from our own instrumentation (SITES-2RH). Nothing to fix
+  // here short of patching the dependency or polyfilling `at` for every visitor, and
+  // the only cost of dropping it is losing CLS on browsers that never reported it.
+  /_sessionEntries\.at is not a function/i
+]
 
 // Propagate trace headers to nothing. An empty list makes the SDK's
 // `shouldAttachHeaders` return false for every URL, so `browserTracingIntegration`
