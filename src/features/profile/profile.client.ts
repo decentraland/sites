@@ -6,19 +6,23 @@ type Entry = {
   data: Profile | null
   loaded: boolean
   fetching: Promise<void> | null
+  hasError?: boolean
 }
 
-type Snapshot = { data: Profile | null; isLoading: boolean }
+// `hasError` separates "the batch failed" from "still in flight". Both leave the entry
+// unloaded so the next subscriber retries, but consumers that gate UI on loading would
+// otherwise wait forever on a failure.
+type Snapshot = { data: Profile | null; isLoading: boolean; hasError: boolean }
 
 const EMPTY_ENTRY: Entry = { data: null, loaded: false, fetching: null }
-const EMPTY_SNAPSHOT: Snapshot = { data: null, isLoading: false }
+const EMPTY_SNAPSHOT: Snapshot = { data: null, isLoading: false, hasError: false }
 
 const entries = new Map<string, Entry>()
 const snapshots = new Map<string, Snapshot>()
 const listenersByKey = new Map<string, Set<() => void>>()
 
 function snapshotOf(entry: Entry): Snapshot {
-  return { data: entry.data, isLoading: !entry.loaded }
+  return { data: entry.data, isLoading: !entry.loaded && !entry.hasError, hasError: !!entry.hasError }
 }
 
 function notify(key: string) {
@@ -35,8 +39,8 @@ function setEntry(key: string, next: Entry) {
 // doesn't return the previously-cached zone payload (and vice versa). The
 // public `useGetProfileQuery(address)` API stays unchanged; the env scope is
 // resolved internally each time a new subscriber attaches.
-function buildCacheKey(address: string): string {
-  const peerUrl = getEnv('PEER_URL') ?? ''
+function buildCacheKey(address: string, peerUrlOverride?: string): string {
+  const peerUrl = peerUrlOverride ?? getEnv('PEER_URL') ?? ''
   return `${peerUrl}|${address.toLowerCase()}`
 }
 
@@ -115,7 +119,7 @@ function ensureFetch(key: string): Promise<void> {
     } catch {
       // Transient failure — leave the entry UNcached (`loaded: false`) so the
       // next subscriber retries instead of freezing a null profile all session.
-      setEntry(key, { data: null, loaded: false, fetching: null })
+      setEntry(key, { data: null, loaded: false, fetching: null, hasError: true })
     }
   })()
 
@@ -141,15 +145,15 @@ function getSnapshotFor(key: string): Snapshot {
   const snap = snapshots.get(key)
   if (snap) return snap
   // Seed a stable pending snapshot so useSyncExternalStore doesn't loop.
-  const pending: Snapshot = { data: null, isLoading: true }
+  const pending: Snapshot = { data: null, isLoading: true, hasError: false }
   snapshots.set(key, pending)
   return pending
 }
 
-type QueryOptions = { skip?: boolean }
+type QueryOptions = { skip?: boolean; peerUrl?: string }
 
 function useGetProfileQuery(address: string | undefined, options: QueryOptions = {}): Snapshot {
-  const key = options.skip || !address ? '' : buildCacheKey(address)
+  const key = options.skip || !address ? '' : buildCacheKey(address, options.peerUrl)
 
   const subscribe = useCallback(
     (listener: () => void) => {
@@ -168,23 +172,30 @@ function useGetProfileQuery(address: string | undefined, options: QueryOptions =
 }
 
 function useGetProfileNames(addresses: readonly string[]): Map<string, string | undefined> {
-  return useBatchProfileField(addresses, profile => profile?.avatars?.[0]?.name)
+  return useBatchProfileField(addresses, snapshot => snapshot.data?.avatars?.[0]?.name)
 }
 
 function useGetProfilePictures(addresses: readonly string[]): Map<string, string | undefined> {
-  return useBatchProfileField(addresses, profile => profile?.avatars?.[0]?.avatar?.snapshots?.face256)
+  return useBatchProfileField(addresses, snapshot => snapshot.data?.avatars?.[0]?.avatar?.snapshots?.face256)
+}
+
+// Per-address snapshots rather than one extracted field, so callers can tell a resolved
+// profile from one still in flight or one whose batch failed.
+function useGetProfileSnapshots(addresses: readonly string[], peerUrl?: string): Map<string, Snapshot | undefined> {
+  return useBatchProfileField(addresses, snapshot => snapshot, peerUrl)
 }
 
 function useBatchProfileField<T>(
   addresses: readonly string[],
-  extract: (profile: Profile | null) => T | undefined
+  extract: (snapshot: Snapshot) => T | undefined,
+  peerUrl?: string
 ): Map<string, T | undefined> {
   const keysSignature = useMemo(
     () =>
-      Array.from(new Set(addresses.map(address => buildCacheKey(address))))
+      Array.from(new Set(addresses.map(address => buildCacheKey(address, peerUrl))))
         .sort()
         .join('\n'),
-    [addresses]
+    [addresses, peerUrl]
   )
   const [values, setValues] = useState<Map<string, T | undefined>>(() => new Map())
   const extractRef = useRef(extract)
@@ -201,7 +212,7 @@ function useBatchProfileField<T>(
         const next = new Map<string, T | undefined>()
         for (const key of keys) {
           const address = key.split('|', 2)[1] ?? key
-          next.set(address, extractRef.current(getSnapshotFor(key).data))
+          next.set(address, extractRef.current(getSnapshotFor(key)))
         }
         if (next.size === prev.size && Array.from(next.keys()).every(addr => next.get(addr) === prev.get(addr))) return prev
         return next
@@ -215,4 +226,4 @@ function useBatchProfileField<T>(
   return values
 }
 
-export { useGetProfileQuery, useGetProfileNames, useGetProfilePictures, type Profile }
+export { useGetProfileQuery, useGetProfileNames, useGetProfilePictures, useGetProfileSnapshots, type Profile, type Snapshot }

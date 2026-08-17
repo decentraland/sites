@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react'
-import type { Profile } from '../features/cast2/peer'
 import { Role } from '../features/communities/communities.types'
 import type { CommunityMember } from '../features/communities/communities.types'
+import type { ProfileSummary } from '../features/profile/profile.types'
 import { useCommunityMemberCards } from './useCommunityMemberCards'
 
 const useProfilesMock = jest.fn()
@@ -21,7 +21,7 @@ const buildMember = (memberAddress: string, communityId = 'c-1'): CommunityMembe
   joinedAt: '2026-01-01T00:00:00Z'
 })
 
-const buildProfiles = (entries: Array<[string, string]>): Map<string, Profile> =>
+const buildProfiles = (entries: Array<[string, string]>): Map<string, ProfileSummary> =>
   new Map(entries.map(([address, name]) => [address, { address, name, hasClaimedName: true }]))
 
 describe('useCommunityMemberCards', () => {

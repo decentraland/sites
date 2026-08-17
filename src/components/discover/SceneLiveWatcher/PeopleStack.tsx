@@ -1,8 +1,8 @@
 import { memo, useMemo, useState } from 'react'
 import { useRemoteParticipants } from '@livekit/components-react'
 import { Popover } from 'decentraland-ui2'
-import type { Profile } from '../../../features/cast2/peer'
 import { getLivePeerUrl } from '../../../features/discover/sceneAdapter'
+import type { ProfileSummary } from '../../../features/profile/profile.types'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useProfiles } from '../../../hooks/useProfiles'
 import { getDisplayName } from '../../../utils/avatarColor'
@@ -31,12 +31,12 @@ const MAX_VISIBLE = 4
 interface ParticipantRow {
   identity: string
   address?: string
-  profile?: Profile
+  profile?: ProfileSummary
 }
 
 // Mini avatar wrapper — keeps the bordered circle frame even while the
 // underlying Avatar component renders fallback states.
-const MiniAvatar = memo(function MiniAvatar({ profile, address, index }: { profile?: Profile; address?: string; index: number }) {
+const MiniAvatar = memo(function MiniAvatar({ profile, address, index }: { profile?: ProfileSummary; address?: string; index: number }) {
   return (
     <StackSlot $index={index}>
       <Avatar profile={profile} address={address} size={MINI_AVATAR_SIZE - 4} />

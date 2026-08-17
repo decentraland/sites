@@ -72,8 +72,8 @@ describe('profile.client batching', () => {
       fetchMock.mockRejectedValueOnce(new Error('network down'))
 
       const first = renderHook(() => useGetProfileQuery('0xdddddddddddddddddddddddddddddddddddddddd'))
-      // The failed batch settles with no data and keeps the entry uncached
-      // (isLoading stays true — the store never marks a failed batch loaded).
+      // The failed batch settles with no data and keeps the entry uncached, but flags
+      // `hasError` so callers stop waiting instead of spinning forever.
       await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
       expect(first.result.current.data).toBeNull()
       first.unmount()

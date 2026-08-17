@@ -1,71 +1,62 @@
-import { useEffect, useState } from 'react'
-import { fetchProfiles } from '../features/cast2/peer'
-import type { Profile } from '../features/cast2/peer'
+import { useMemo } from 'react'
+import { useGetProfileSnapshots } from '../features/profile/profile.client'
+import type { Profile as CatalystProfile, Snapshot } from '../features/profile/profile.client'
+import type { ProfileSummary } from '../features/profile/profile.types'
 
-interface UseProfilesResult {
-  profiles: Map<string, Profile>
+type UseProfilesResult = {
+  profiles: Map<string, ProfileSummary>
   isLoading: boolean
   error: Error | null
 }
 
-const useProfiles = (addresses: string[], peerUrlOverride?: string): UseProfilesResult => {
-  const [profiles, setProfiles] = useState<Map<string, Profile>>(new Map())
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
-
-  // Re-fetch when the comma-joined address list changes — keeps the dep stable
-  // for the array identity since callers usually pass a freshly built array.
-  const key = addresses.join(',')
-
-  useEffect(() => {
-    if (addresses.length === 0) {
-      setProfiles(new Map())
-      return
-    }
-    let cancelled = false
-    setIsLoading(true)
-    setError(null)
-    fetchProfiles(addresses, true, peerUrlOverride)
-      .then(fetched => {
-        if (cancelled) return
-        const map = new Map<string, Profile>()
-        fetched.forEach(profile => map.set(profile.address, profile))
-        setProfiles(map)
-      })
-      .catch(err => {
-        if (cancelled) return
-        console.error('[useProfiles] Error fetching profiles:', err)
-        setError(err instanceof Error ? err : new Error('Unknown error'))
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-    // `key` captures the address list contents — depending on `addresses`
-    // would re-fire on every freshly-built array reference with identical
-    // contents.
-  }, [key, peerUrlOverride])
-
-  return { profiles, isLoading, error }
+function toProfileSummary(address: string, catalystProfile: CatalystProfile | null): ProfileSummary {
+  const avatar = catalystProfile?.avatars?.[0]
+  return {
+    address,
+    name: avatar?.name,
+    hasClaimedName: avatar?.hasClaimedName ?? false,
+    avatarFace256: avatar?.avatar?.snapshots?.face256
+  }
 }
 
-const useProfile = (
-  address?: string
-): {
-  profile: Profile | null
-  isLoading: boolean
-  error: Error | null
-} => {
-  const addresses = address ? [address] : []
+// Batch view over the shared profile store (`features/profile/profile.client`), which
+// coalesces every profile read in a tick into one POST /lambdas/profiles per peer.
+// An address that settles without a deployed profile still gets an entry, so callers
+// can tell "resolved, has no name" from "still loading" and fall back to the address.
+function useProfiles(addresses: string[], peerUrl?: string): UseProfilesResult {
+  const snapshots = useGetProfileSnapshots(addresses, peerUrl)
+
+  return useMemo(() => {
+    const profiles = new Map<string, ProfileSummary>()
+    let isLoading = false
+    let failed = false
+
+    for (const [address, snapshot] of snapshots) {
+      const settled: Snapshot = snapshot ?? { data: null, isLoading: true, hasError: false }
+      if (settled.hasError) {
+        failed = true
+        continue
+      }
+      if (settled.isLoading) {
+        isLoading = true
+        continue
+      }
+      profiles.set(address, toProfileSummary(address, settled.data))
+    }
+
+    return { profiles, isLoading, error: failed ? new Error('Failed to fetch profiles') : null }
+  }, [snapshots])
+}
+
+function useProfile(address?: string): { profile: ProfileSummary | null; isLoading: boolean; error: Error | null } {
+  const addresses = useMemo(() => (address ? [address] : []), [address])
   const { profiles, isLoading, error } = useProfiles(addresses)
   return {
-    profile: address ? profiles.get(address.toLowerCase()) || null : null,
+    profile: address ? profiles.get(address.toLowerCase()) ?? null : null,
     isLoading,
     error
   }
 }
 
-export type { UseProfilesResult }
 export { useProfile, useProfiles }
+export type { UseProfilesResult }

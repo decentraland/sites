@@ -1,5 +1,5 @@
 import type { Theme } from 'decentraland-ui2'
-import type { Profile } from '../cast2/peer'
+import type { ProfileSummary } from './../../features/profile/profile.types'
 import { getRarityColor, getThumbnailUrl, isMember, toMemberCards } from './communities.helpers'
 import { Role } from './communities.types'
 import type { CommunityMember } from './communities.types'
@@ -85,7 +85,7 @@ describe('communities.helpers', () => {
 
   describe('toMemberCards', () => {
     let members: CommunityMember[]
-    let profiles: Map<string, Profile>
+    let profiles: Map<string, ProfileSummary>
 
     beforeEach(() => {
       members = [
