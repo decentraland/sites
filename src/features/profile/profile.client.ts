@@ -132,7 +132,9 @@ function ensureFetch(key: string): Promise<void> {
     }
   })()
 
-  setEntry(key, { ...existing, fetching: promise })
+  // Clear any previous failure: while this retry is in flight the entry is loading,
+  // not errored, so callers show a spinner instead of staying in the error path.
+  setEntry(key, { ...existing, fetching: promise, hasError: false })
   return promise
 }
 

@@ -155,6 +155,33 @@ describe('useProfiles', () => {
     })
   })
 
+  describe('when a failed address is retried', () => {
+    const retried = addr('c')
+
+    beforeEach(() => {
+      fetchMock.mockRejectedValueOnce(new Error('network down'))
+    })
+
+    it('should report loading again rather than pinning the previous error', async () => {
+      const first = renderHook(() => useProfiles([retried]))
+      await waitFor(() => expect(first.result.current.error).not.toBeNull())
+      first.unmount()
+
+      // Held open so the assertion lands while the retry is still in flight, then
+      // released so nothing stays pending past the test.
+      let release: (response: Response) => void = () => undefined
+      fetchMock.mockReturnValueOnce(new Promise<Response>(resolve => (release = resolve)))
+      const second = renderHook(() => useProfiles([retried]))
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
+
+      expect(second.result.current.error).toBeNull()
+      expect(second.result.current.isLoading).toBe(true)
+
+      release(jsonResponse([profileFor(retried, 'recovered')]))
+      await waitFor(() => expect(second.result.current.profiles.get(retried)?.name).toBe('recovered'))
+    })
+  })
+
   describe('when a peer URL override is supplied', () => {
     const scoped = addr('8')
 
