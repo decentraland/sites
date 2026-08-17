@@ -100,8 +100,16 @@ describe('PeopleStack', () => {
         participant('0xbbb0000000000000000000000000000000000b0b'),
         participant('0xaaa0000000000000000000000000000000000aaa')
       ])
-      profiles.set('0xaaa0000000000000000000000000000000000aaa', { name: 'Alice', hasClaimedName: true } as unknown as ProfileSummary)
-      profiles.set('0xbbb0000000000000000000000000000000000b0b', { name: 'bob', hasClaimedName: false } as unknown as ProfileSummary)
+      profiles.set('0xaaa0000000000000000000000000000000000aaa', {
+        address: '0xaaa0000000000000000000000000000000000aaa',
+        name: 'Alice',
+        hasClaimedName: true
+      })
+      profiles.set('0xbbb0000000000000000000000000000000000b0b', {
+        address: '0xbbb0000000000000000000000000000000000b0b',
+        name: 'bob',
+        hasClaimedName: false
+      })
     })
 
     it('should request profiles only for the 0x wallet identities', () => {

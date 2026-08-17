@@ -78,12 +78,22 @@ async function flushBatch(peerUrl: string): Promise<void> {
       return
     }
     const list: Profile[] = await response.json()
-    const byAddress = new Map<string, Profile>()
+    // `avatars[0].ethAddress` is deployer-written metadata, not a trusted binding:
+    // content-validator ties the entity POINTER to the signer but never the address
+    // inside it, and lambdas spreads that metadata through untouched. The batch
+    // response carries no pointer, so a claim is only usable when nothing contests
+    // it — two entries claiming one row means one of them is lying, so drop both and
+    // let the row fall back to its address rather than render a stolen identity.
+    const claims = new Map<string, Profile[]>()
     for (const profile of Array.isArray(list) ? list : []) {
       const address = profile?.avatars?.[0]?.ethAddress?.toLowerCase()
-      if (address) byAddress.set(address, profile)
+      if (!address || !resolvers.has(address)) continue
+      claims.set(address, [...(claims.get(address) ?? []), profile])
     }
-    settle(address => byAddress.get(address) ?? null)
+    settle(address => {
+      const claimed = claims.get(address)
+      return claimed?.length === 1 ? claimed[0] : null
+    })
   } catch (error) {
     console.warn('[profile.client] batch profiles fetch failed', { error })
     settle(() => BATCH_FAILED)

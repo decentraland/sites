@@ -114,6 +114,29 @@ describe('useCommunityMemberCards', () => {
     })
   })
 
+  describe('when returning to a community that already resolved earlier', () => {
+    it('should not treat it as unresolved again while a later page is pending', () => {
+      useProfilesMock.mockReturnValue({
+        profiles: buildProfiles([
+          ['0xaaa', 'alice'],
+          ['0xbbb', 'bob']
+        ]),
+        isLoading: false,
+        error: null
+      })
+      const { result, rerender } = renderHook(({ id, list }) => useCommunityMemberCards(id, list), {
+        initialProps: { id: 'c-1', list: members }
+      })
+      const otherMembers = [buildMember('0xZZZ', 'c-2')]
+
+      // c-1 resolves, the user visits c-2, then comes back to c-1 with a page appended.
+      rerender({ id: 'c-2', list: otherMembers })
+      rerender({ id: 'c-1', list: [...members, buildMember('0xCCC')] })
+
+      expect(result.current.isResolvingProfiles).toBe(false)
+    })
+  })
+
   describe('when switching to a community whose members overlap the previous one', () => {
     it('should wait rather than render the non-overlapping members as raw addresses', () => {
       useProfilesMock.mockReturnValue({

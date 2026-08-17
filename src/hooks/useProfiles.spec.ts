@@ -106,6 +106,39 @@ describe('useProfiles', () => {
     })
   })
 
+  describe('when a requested profile claims another requested address', () => {
+    const attacker = addr('a')
+    const victim = addr('b')
+
+    beforeEach(() => {
+      // Both are in the same batch and the victim has a real profile, so two entries
+      // answer for the victim's row.
+      fetchMock.mockResolvedValue(
+        jsonResponse([
+          { avatars: [{ ...profileFor(victim, 'attacker').avatars[0] }] },
+          profileFor(victim, 'victim'),
+          profileFor(attacker, 'attacker-own-row')
+        ])
+      )
+    })
+
+    it('should not fill the victim row with the contested profile', async () => {
+      const { result } = renderHook(() => useProfiles([attacker, victim]))
+
+      await waitFor(() => expect(result.current.profiles.size).toBe(2))
+
+      expect(result.current.profiles.get(victim)?.name).toBeUndefined()
+    })
+
+    it('should still resolve the uncontested row in the same batch', async () => {
+      const { result } = renderHook(() => useProfiles([attacker, victim]))
+
+      await waitFor(() => expect(result.current.profiles.size).toBe(2))
+
+      expect(result.current.profiles.get(attacker)?.name).toBe('attacker-own-row')
+    })
+  })
+
   describe('when the batch request fails', () => {
     const failing = addr('7')
 

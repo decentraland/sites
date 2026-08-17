@@ -28,14 +28,15 @@ function useCommunityMemberCards(communityId: string, members: CommunityMember[]
   )
   const memberCards = useMemo(() => toMemberCards(visibleMembers, profiles), [visibleMembers, profiles])
   // `profiles` is a shared cache, so it can already hold entries for a community the
-  // user is switching into (communities overlap). Remembering which community actually
-  // resolved is what separates "still loading this list" from "appending to it".
-  const resolvedCommunityRef = useRef<string | null>(null)
+  // user is switching into (communities overlap). Remembering which communities actually
+  // resolved is what separates "still loading this list" from "appending to it" — a set,
+  // not the last id, so returning to an earlier community doesn't look unresolved again.
+  const resolvedCommunitiesRef = useRef<Set<string>>(new Set())
   useEffect(() => {
-    if (hasCovered) resolvedCommunityRef.current = communityId
+    if (hasCovered) resolvedCommunitiesRef.current.add(communityId)
   }, [hasCovered, communityId])
 
-  const hasResolvedThisCommunity = resolvedCommunityRef.current === communityId
+  const hasResolvedThisCommunity = resolvedCommunitiesRef.current.has(communityId)
   const isResolvingProfiles = members.length > 0 && !hasCovered && !hasResolvedThisCommunity && !error
 
   return { memberCards, isResolvingProfiles }
