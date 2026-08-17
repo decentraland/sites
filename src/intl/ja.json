@@ -936,7 +936,19 @@
     },
     "creators_landing": {
       "hero": {
+        "mobile_docs_cta": "クリエイタードキュメントを見る",
         "scroll_label": "次のセクションへスクロール"
+      },
+      "live_scenes": {
+        "title": "をライブで探索",
+        "title_highlight": "クリエイターが今つくる世界",
+        "online": "{count}人がオンライン",
+        "view_all": "ライブシーンをすべて見る"
+      },
+      "blog": {
+        "title": "の最新記事",
+        "title_highlight": "ブログ",
+        "view_all": "ブログを読む"
       }
     },
     "error_boundary": {

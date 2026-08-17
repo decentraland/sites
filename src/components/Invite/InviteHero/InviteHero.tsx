@@ -63,6 +63,7 @@ const WearablePreviewLazy = lazy(() =>
 
 const InviteHero = memo((props: InviteHeroProps) => {
   const { title, subtitle, media, buttonLabel, eventPlace, referrer, referrerAddress, isDesktop, isSecondaryHero, isLoading } = props
+  const { isReferrerResolving: isReferrerResolvingProp } = props
 
   const [isClient, setIsClient] = useState(false)
 
@@ -85,7 +86,9 @@ const InviteHero = memo((props: InviteHeroProps) => {
   urlWithReferrerRef.current = urlWithReferrer
 
   const [clickedAt, setClickedAt] = useState<number | null>(null)
-  const isResolvingReferrer = !!isLoading
+  // Only the address gates the navigation — the profile lookup behind `isLoading`
+  // is cosmetic and must never hold the CTA.
+  const isResolvingReferrer = !!isReferrerResolvingProp
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {

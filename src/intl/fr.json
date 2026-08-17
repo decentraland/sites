@@ -931,7 +931,19 @@
     },
     "creators_landing": {
       "hero": {
+        "mobile_docs_cta": "Découvrez la documentation créateur",
         "scroll_label": "Faire défiler jusqu'à la section suivante"
+      },
+      "live_scenes": {
+        "title": "ce que les créateurs construisent en ce moment",
+        "title_highlight": "Explorez",
+        "online": "{count} en ligne",
+        "view_all": "Voir toutes les scènes en direct"
+      },
+      "blog": {
+        "title": "du blog",
+        "title_highlight": "Les nouveautés",
+        "view_all": "Lire le blog"
       }
     },
     "error_boundary": {

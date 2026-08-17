@@ -195,6 +195,15 @@ describe('when beforeSend inspects an event', () => {
     })
   })
 
+  // Raised by the SDK's own CLS instrumentation on browsers without
+  // `Array.prototype.at`, so it arrives as an unhandled rejection we cannot fix.
+  describe('and the SDK itself throws from its layout-shift measurement', () => {
+    it('should drop the event', async () => {
+      const event = { exception: { values: [{ value: 'this._sessionEntries.at is not a function' }] } } as ErrorEvent
+      expect(await send(event)).toBeNull()
+    })
+  })
+
   describe('and the event carries a sensitive request URL', () => {
     it('should redact it before sending', async () => {
       const event = { request: { url: 'https://decentraland.org/cast/s/tok' } } as ErrorEvent

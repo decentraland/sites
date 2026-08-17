@@ -17,48 +17,45 @@ const InviteFaqs = lazy(() => import('../../components/Invite/InviteFaqs/InviteF
 
 const FETCH_TIMEOUT_MS = 5000
 
-type ResolvedReferrer = {
-  /** Referrer wallet, lowercased. Drives the `referrer` param on the auth URL. */
-  address: string | null
-  /** Catalyst profile, only used to render the inviter's name and avatar. */
-  profile: Profile | null
-}
+/**
+ * Resolves the referrer wallet, lowercased — the only value the referral needs.
+ *
+ * Deliberately independent from the profile lookup: when the invite param is
+ * already an address this returns without touching the network, so the CTA can
+ * carry `referrer` from the very first render. Bundling both lookups meant the
+ * address stayed unpublished until the (much slower, purely cosmetic) profile
+ * request settled, and the link rendered — and could be clicked — without it.
+ */
+async function resolveReferrerAddress(referrer: string): Promise<string | null> {
+  if (EthAddress.validate(referrer)) return referrer.toLowerCase()
 
-const EMPTY_REFERRER: ResolvedReferrer = Object.freeze({ address: null, profile: null })
-
-async function resolveReferrer(referrer: string): Promise<ResolvedReferrer> {
   const peerUrl = getEnv('PEER_URL') || 'https://peer.decentraland.org'
-  const signal = AbortSignal.timeout(FETCH_TIMEOUT_MS)
-  let address: string | null = null
-
-  if (EthAddress.validate(referrer)) {
-    address = referrer
-  } else {
-    try {
-      const response = await fetch(`${peerUrl}/lambdas/names/${encodeURIComponent(referrer)}/owner`, { signal })
-      const data = await response.json()
-      if (data?.owner) {
-        address = data.owner
-      }
-    } catch {
-      // Name resolution failed
-    }
-  }
-
-  if (!address) return EMPTY_REFERRER
-
-  // The address is what the referral needs, so keep it even when the profile
-  // lookup fails. Deriving it back from `profile.avatars[0].ethAddress` dropped
-  // the attribution for every referrer without a deployed profile (and on any
-  // catalyst timeout), sending the visitor to auth with no `referrer` param.
-  const resolved: ResolvedReferrer = { address: address.toLowerCase(), profile: null }
 
   try {
-    const response = await fetch(`${peerUrl}/lambdas/profiles/${resolved.address}`, { signal })
+    const response = await fetch(`${peerUrl}/lambdas/names/${encodeURIComponent(referrer)}/owner`, {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)
+    })
     const data = await response.json()
-    return { ...resolved, profile: data ?? null }
+    return data?.owner ? String(data.owner).toLowerCase() : null
   } catch {
-    return resolved
+    // Name resolution failed — no attribution is possible for this invite.
+    return null
+  }
+}
+
+/** Catalyst profile, only used to render the inviter's name and avatar. */
+async function fetchReferrerProfile(address: string): Promise<Profile | null> {
+  const peerUrl = getEnv('PEER_URL') || 'https://peer.decentraland.org'
+
+  try {
+    const response = await fetch(`${peerUrl}/lambdas/profiles/${address}`, {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)
+    })
+    const data = await response.json()
+    return data ?? null
+  } catch {
+    // Cosmetic only: a missing profile must never cost the attribution.
+    return null
   }
 }
 
@@ -99,20 +96,33 @@ const InvitePage = memo(() => {
   const isDesktop = useDesktopMediaQuery()
   const { t } = useTranslation()
 
-  const [resolvedReferrer, resolvedReferrerStatus] = useAsyncMemo(async () => {
-    if (!referrer) return EMPTY_REFERRER
-    return resolveReferrer(referrer)
+  const [referrerAddress, referrerAddressStatus] = useAsyncMemo(async () => {
+    if (!referrer) return null
+    return resolveReferrerAddress(referrer)
   }, [referrer])
 
+  // Runs after the address is known. Only feeds the inviter's name and avatar,
+  // so the CTA never waits on it.
+  const [referrerProfile, referrerProfileStatus] = useAsyncMemo(async () => {
+    if (!referrerAddress) return null
+    return fetchReferrerProfile(referrerAddress)
+  }, [referrerAddress])
+
+  // Gates the CTA: while true the referrer is not known yet, so navigating would
+  // reach auth without the `referrer` param.
+  const isReferrerResolving = referrerAddressStatus.loading
+  // Gates the inviter's name/avatar, which need the profile too.
+  const isProfileLoading = isReferrerResolving || referrerProfileStatus.loading
+
   // Persist the resolved address so the referrer survives the invite → download
-  // navigation even if the query param is lost. Keyed on the accepted result so a
+  // navigation even if the query param is lost. Keyed on the accepted address so a
   // stale in-flight resolution can't overwrite a newer one. Gated by the same
   // flag as the CTA: with the flag off nothing is stored (and any previous value
   // is cleared), so the referrer can't leak into the download flow via storage.
   const inviteDirectDownload = useInviteDirectDownload()
   useEffect(() => {
-    storeReferrer(inviteDirectDownload ? resolvedReferrer?.address : null)
-  }, [resolvedReferrer, inviteDirectDownload])
+    storeReferrer(inviteDirectDownload ? referrerAddress : null)
+  }, [referrerAddress, inviteDirectDownload])
 
   useDocumentMeta(t('page_invite.social.title'), t('page_invite.social.description'))
 
@@ -130,11 +140,12 @@ const InvitePage = memo(() => {
         subtitle={t('page_invite.hero.subtitle')}
         buttonLabel={t('page_invite.hero.button_label')}
         media={INVITE_HERO_MEDIA}
-        referrer={resolvedReferrer?.profile ?? null}
-        referrerAddress={resolvedReferrer?.address ?? null}
+        referrer={referrerProfile ?? null}
+        referrerAddress={referrerAddress ?? null}
         eventPlace={SectionViewedTrack.INVITE_FIRST_HERO}
         isDesktop={isDesktop}
-        isLoading={resolvedReferrerStatus.loading}
+        isLoading={isProfileLoading}
+        isReferrerResolving={isReferrerResolving}
       />
       <InviteHero
         key="invite-second-hero"
@@ -142,12 +153,13 @@ const InvitePage = memo(() => {
         subtitle={t('page_invite.second_hero.subtitle')}
         buttonLabel={t('page_invite.second_hero.button_label')}
         media={INVITE_SECOND_HERO_MEDIA}
-        referrer={resolvedReferrer?.profile ?? null}
-        referrerAddress={resolvedReferrer?.address ?? null}
+        referrer={referrerProfile ?? null}
+        referrerAddress={referrerAddress ?? null}
         eventPlace={SectionViewedTrack.INVITE_SECOND_HERO}
         isDesktop={isDesktop}
         isSecondaryHero
-        isLoading={resolvedReferrerStatus.loading}
+        isLoading={isProfileLoading}
+        isReferrerResolving={isReferrerResolving}
       />
       <Suspense fallback={null}>
         <InviteFaqs />
