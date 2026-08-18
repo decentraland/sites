@@ -10,12 +10,14 @@ jest.mock('@dcl/hooks', () => ({ useAdvancedUserAgentData: jest.fn() }))
 jest.mock('decentraland-ui2', () => ({ launchDesktopApp: jest.fn() }))
 jest.mock('../config/dclenv', () => ({ mapEnvToDclenv: (v: string | null) => v ?? undefined }))
 jest.mock('../features/places/places.helpers', () => ({
-  buildDeepLinkOptions: (position?: string, realm?: string, env?: string, sceneConsole?: string, multiInstance?: string) => ({
-    ...(position ? { position } : {}),
-    ...(realm ? { realm } : {}),
-    ...(env ? { dclenv: env } : {}),
-    ...(sceneConsole ? { sceneConsole } : {}),
-    ...(multiInstance ? { multiInstance } : {})
+  buildDeepLinkOptions: (
+    input: { position?: string; realm?: string; env?: string; sceneConsole?: string; multiInstance?: string } = {}
+  ) => ({
+    ...(input.position ? { position: input.position } : {}),
+    ...(input.realm ? { realm: input.realm } : {}),
+    ...(input.env ? { dclenv: input.env } : {}),
+    ...(input.sceneConsole ? { sceneConsole: input.sceneConsole } : {}),
+    ...(input.multiInstance ? { multiInstance: input.multiInstance } : {})
   })
 }))
 jest.mock('../modules/downloadConstants', () => ({

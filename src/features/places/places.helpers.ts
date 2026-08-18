@@ -61,19 +61,29 @@ function formatDateForGoogleCalendar(date: Date): string {
   return `${year}${month}${day}T${hours}${minutes}${seconds}Z`
 }
 
-function buildDeepLinkOptions(
-  position?: string,
-  realm?: string,
-  env?: string,
-  sceneConsole?: string,
+interface DeepLinkOptions {
+  realm?: string
+  position?: string
+  dclenv?: string
+  sceneConsole?: string
   multiInstance?: string
-): { realm?: string; position?: string; dclenv?: string; sceneConsole?: string; multiInstance?: string } {
-  const options: { realm?: string; position?: string; dclenv?: string; sceneConsole?: string; multiInstance?: string } = {}
-  if (realm && realm !== DEFAULT_REALM) options.realm = realm
-  if (position && position !== DEFAULT_POSITION) options.position = position
-  if (env) options.dclenv = env
-  if (sceneConsole) options.sceneConsole = sceneConsole
-  if (multiInstance) options.multiInstance = multiInstance
+}
+
+function buildDeepLinkOptions(
+  input: {
+    position?: string
+    realm?: string
+    env?: string
+    sceneConsole?: string
+    multiInstance?: string
+  } = {}
+): DeepLinkOptions {
+  const options: DeepLinkOptions = {}
+  if (input.realm && input.realm !== DEFAULT_REALM) options.realm = input.realm
+  if (input.position && input.position !== DEFAULT_POSITION) options.position = input.position
+  if (input.env) options.dclenv = input.env
+  if (input.sceneConsole) options.sceneConsole = input.sceneConsole
+  if (input.multiInstance) options.multiInstance = input.multiInstance
   return options
 }
 
@@ -87,7 +97,10 @@ function buildDeepLinkOptions(
  */
 function collectDeepLinkParams(source?: URLSearchParams): { position?: string; realm?: string } {
   const params = source ?? new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
-  const { position, realm } = buildDeepLinkOptions(params.get('position') ?? undefined, params.get('realm') ?? undefined)
+  const { position, realm } = buildDeepLinkOptions({
+    position: params.get('position') ?? undefined,
+    realm: params.get('realm') ?? undefined
+  })
   return { ...(position ? { position } : {}), ...(realm ? { realm } : {}) }
 }
 
@@ -106,4 +119,4 @@ export {
   parsePosition,
   resolvePlacesPosition
 }
-export type { ParsedPosition }
+export type { DeepLinkOptions, ParsedPosition }

@@ -26,7 +26,7 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
   // Default-filtered deep-link params. Without the `env` arg this never emits
   // `dclenv`, and it drops `position: ''` (the manual `!== DEFAULT` check let
   // empty strings through as `?position=`).
-  const deepLinkParams = useMemo(() => buildDeepLinkOptions(position, realm), [position, realm])
+  const deepLinkParams = useMemo(() => buildDeepLinkOptions({ position, realm }), [position, realm])
 
   const launchExplorer = useCallback(async () => {
     track(SegmentEvent.GO_TO_EXPLORER, { position, realm, osName, arch, ...(isMobile ? { target: 'mobile-store' } : {}) })

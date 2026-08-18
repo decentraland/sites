@@ -97,37 +97,41 @@ describe('jump.helpers', () => {
   describe('when buildDeepLinkOptions is called', () => {
     describe('and the realm is the default value', () => {
       it('should omit realm', () => {
-        expect(buildDeepLinkOptions('10,20', DEFAULT_REALM)).toEqual({ position: '10,20' })
+        expect(buildDeepLinkOptions({ position: '10,20', realm: DEFAULT_REALM })).toEqual({ position: '10,20' })
       })
     })
 
     describe('and the position is the default value', () => {
       it('should omit position', () => {
-        expect(buildDeepLinkOptions(DEFAULT_POSITION, 'foo.eth')).toEqual({ realm: 'foo.eth' })
+        expect(buildDeepLinkOptions({ position: DEFAULT_POSITION, realm: 'foo.eth' })).toEqual({ realm: 'foo.eth' })
       })
     })
 
     describe('and both values are custom', () => {
       it('should include both in the options', () => {
-        expect(buildDeepLinkOptions('1,2', 'foo.eth')).toEqual({ position: '1,2', realm: 'foo.eth' })
+        expect(buildDeepLinkOptions({ position: '1,2', realm: 'foo.eth' })).toEqual({ position: '1,2', realm: 'foo.eth' })
       })
     })
 
     describe('and env is provided', () => {
       it('should include it in the options as dclenv', () => {
-        expect(buildDeepLinkOptions('1,2', 'foo.eth', 'zone')).toEqual({ position: '1,2', realm: 'foo.eth', dclenv: 'zone' })
+        expect(buildDeepLinkOptions({ position: '1,2', realm: 'foo.eth', env: 'zone' })).toEqual({
+          position: '1,2',
+          realm: 'foo.eth',
+          dclenv: 'zone'
+        })
       })
     })
 
     describe('and env is not provided', () => {
       it('should omit dclenv from the options', () => {
-        expect(buildDeepLinkOptions('1,2', 'foo.eth', undefined)).toEqual({ position: '1,2', realm: 'foo.eth' })
+        expect(buildDeepLinkOptions({ position: '1,2', realm: 'foo.eth' })).toEqual({ position: '1,2', realm: 'foo.eth' })
       })
     })
 
     describe('and sceneConsole is provided', () => {
       it('should include it in the options', () => {
-        expect(buildDeepLinkOptions('1,2', 'foo.eth', undefined, 'true')).toEqual({
+        expect(buildDeepLinkOptions({ position: '1,2', realm: 'foo.eth', sceneConsole: 'true' })).toEqual({
           position: '1,2',
           realm: 'foo.eth',
           sceneConsole: 'true'
@@ -137,13 +141,13 @@ describe('jump.helpers', () => {
 
     describe('and sceneConsole is not provided', () => {
       it('should omit sceneConsole from the options', () => {
-        expect(buildDeepLinkOptions('1,2', 'foo.eth', undefined, undefined)).toEqual({ position: '1,2', realm: 'foo.eth' })
+        expect(buildDeepLinkOptions({ position: '1,2', realm: 'foo.eth' })).toEqual({ position: '1,2', realm: 'foo.eth' })
       })
     })
 
     describe('and multiInstance is provided', () => {
       it('should include it in the options', () => {
-        expect(buildDeepLinkOptions('1,2', 'foo.eth', undefined, undefined, 'true')).toEqual({
+        expect(buildDeepLinkOptions({ position: '1,2', realm: 'foo.eth', multiInstance: 'true' })).toEqual({
           position: '1,2',
           realm: 'foo.eth',
           multiInstance: 'true'
@@ -153,7 +157,7 @@ describe('jump.helpers', () => {
 
     describe('and multiInstance is not provided', () => {
       it('should omit multiInstance from the options', () => {
-        expect(buildDeepLinkOptions('1,2', 'foo.eth', undefined, undefined, undefined)).toEqual({ position: '1,2', realm: 'foo.eth' })
+        expect(buildDeepLinkOptions({ position: '1,2', realm: 'foo.eth' })).toEqual({ position: '1,2', realm: 'foo.eth' })
       })
     })
   })

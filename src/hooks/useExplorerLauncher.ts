@@ -54,7 +54,15 @@ function useExplorerLauncher() {
         return 'mobile-store'
       }
       try {
-        const launched = await launchDesktopApp(buildDeepLinkOptions(options.position, options.realm, explorerEnv, sceneConsole, multiInstance))
+        const launched = await launchDesktopApp(
+          buildDeepLinkOptions({
+            position: options.position,
+            realm: options.realm,
+            env: explorerEnv,
+            sceneConsole,
+            multiInstance
+          })
+        )
         return launched ? 'launched' : 'not-installed'
       } catch {
         return 'launch-error'

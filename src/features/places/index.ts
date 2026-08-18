@@ -19,6 +19,7 @@ export {
   resolvePlacesPosition
 } from './places.helpers'
 export { isEns } from '../../utils/ens'
+export type { DeepLinkOptions } from './places.helpers'
 export type {
   CardData,
   Creator,

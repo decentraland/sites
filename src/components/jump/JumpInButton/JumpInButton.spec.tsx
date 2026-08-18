@@ -62,10 +62,10 @@ jest.mock('../../../features/places/places.helpers', () => ({
   DEFAULT_REALM: 'main',
   // Mirrors the real helper's default-filtering so the hook's deep-link
   // params stay empty on default position/realm (like production).
-  buildDeepLinkOptions: (position?: string, realm?: string, env?: string) => ({
-    ...(realm && realm !== 'main' ? { realm } : {}),
-    ...(position && position !== '0,0' ? { position } : {}),
-    ...(env ? { dclenv: env } : {})
+  buildDeepLinkOptions: (input: { position?: string; realm?: string; env?: string } = {}) => ({
+    ...(input.realm && input.realm !== 'main' ? { realm: input.realm } : {}),
+    ...(input.position && input.position !== '0,0' ? { position: input.position } : {}),
+    ...(input.env ? { dclenv: input.env } : {})
   })
 }))
 jest.mock('../../../modules/url', () => ({
