@@ -184,6 +184,31 @@ describe('when the referrer param is already an Ethereum address', () => {
   })
 })
 
+describe('when the profile lookup is still in flight', () => {
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    // Never resolves: reproduces a slow/hanging catalyst.
+    mockFetch.mockImplementation(() => new Promise(() => {}))
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should still expose the referrer address and unblock the CTA', async () => {
+    render(<InvitePage />)
+
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalledWith(
+        expect.objectContaining({
+          referrerAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd',
+          isReferrerResolving: false
+        })
+      )
+    })
+  })
+})
+
 describe('when the name lookup fails', () => {
   beforeEach(() => {
     mockUseParams.mockReturnValue({ referrer: 'Unknown' })

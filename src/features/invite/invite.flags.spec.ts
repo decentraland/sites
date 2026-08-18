@@ -48,7 +48,13 @@ describe('when resolving the invite direct-download flag', () => {
         expect(first.result.current).toBe(true)
       })
       expect(fetchMock).toHaveBeenCalledTimes(1)
-      expect(fetchMock).toHaveBeenCalledWith('/api/feature-flags/dapps.json', expect.objectContaining({ signal: expect.any(AbortSignal) }))
+      // Absolute upstream URL on purpose: the `/api/feature-flags` same-origin proxy
+      // only existed under Vercel, and production is served from the CDN — the proxied
+      // path returned the SPA HTML there and the flag could never turn on.
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://feature-flags.decentraland.org/dapps.json',
+        expect.objectContaining({ signal: expect.any(AbortSignal) })
+      )
     })
   })
 

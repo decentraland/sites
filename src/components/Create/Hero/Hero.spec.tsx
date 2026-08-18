@@ -7,12 +7,13 @@ import { DownloadPlace } from '../../../modules/segment'
 import { CreatorsHero } from './Hero'
 
 jest.mock('decentraland-ui2', () => {
-  const { styled, Box } = jest.requireActual('../../../__test-utils__/styledMock')
+  const { styled, Box, dclColors } = jest.requireActual('../../../__test-utils__/styledMock')
   const Typography = ({ children, ...rest }: { children?: React.ReactNode }) => <p {...rest}>{children}</p>
   return {
     styled,
     Box,
     Typography,
+    dclColors,
     useDesktopMediaQuery: jest.fn(),
     useMediaQuery: jest.fn()
   }
@@ -169,6 +170,37 @@ describe('CreatorsHero', () => {
       fireEvent.click(fallbackCta)
 
       expect(trackDownloadClick).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('when rendered on mobile', () => {
+    beforeEach(() => {
+      mockMediaQuery.mockReturnValue(true)
+      mockDesktopMediaQuery.mockReturnValue(false)
+      mockCreatorHubDownload.mockReturnValue({
+        isReady: true,
+        primaryOption: null,
+        secondaryOptions: [],
+        handleDownload
+      } as unknown as ReturnType<typeof useCreatorHubDownload>)
+    })
+
+    it('should link the CTA to the creator docs instead of the desktop-only download page', () => {
+      render(<CreatorsHero />)
+
+      const cta = screen.getByRole('link', { name: 'component.creators_landing.hero.mobile_docs_cta' })
+      expect(cta).toHaveAttribute('href', 'https://docs.decentraland.org/creator/')
+      expect(cta).not.toHaveAttribute('data-download-target')
+    })
+
+    it('should track the docs CTA as a plain click, not a download', () => {
+      render(<CreatorsHero />)
+
+      const cta = screen.getByRole('link', { name: 'component.creators_landing.hero.mobile_docs_cta' })
+      fireEvent.click(cta)
+
+      expect(trackClick).toHaveBeenCalledTimes(1)
+      expect(trackDownloadClick).not.toHaveBeenCalled()
     })
   })
 

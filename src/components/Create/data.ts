@@ -20,6 +20,8 @@ type WhyCardData = {
   title: string
   description: string
   image: string
+  url: string
+  buttonLabel: string
 }
 
 type CreateCardTab = {
@@ -27,7 +29,9 @@ type CreateCardTab = {
   descriptionTitle: string
   descriptionSubTitle: string
   skills: string[]
-  links: { label: string; url: string }[]
+  // desktopOnly marks links that dead-end on phones (the Creator Hub only
+  // ships Windows/macOS installers); CreateTabContent hides them on mobile.
+  links: { label: string; url: string; desktopOnly?: boolean }[]
 }
 
 type CreateCardData = {
@@ -36,8 +40,7 @@ type CreateCardData = {
   description: string
   image: string
   imageBackground: string
-  tab1: CreateCardTab
-  tab2?: CreateCardTab
+  tabs: CreateCardTab[]
 }
 
 type ConnectCardData = {
@@ -98,21 +101,27 @@ const whyCards: WhyCardData[] = [
     title: 'Join a Community of Creators',
     description:
       'Share knowledge, collaborate, and build relationships in a community of artists, designers, and developers where you can see your work appreciated everyday.',
-    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/2l0VUCaHXFG7NwltyZ1nWA/a6e18252e09a9916e8d735f098ef452a/Image_1.png'
+    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/2l0VUCaHXFG7NwltyZ1nWA/a6e18252e09a9916e8d735f098ef452a/Image_1.png',
+    url: 'https://decentraland.org/discord',
+    buttonLabel: 'Join the Discord'
   },
   {
     id: 'create',
     title: 'Create in an Open, Decentralized Ecosystem',
     description:
       "Retain full control over your content on a platform that's governed by its users and build side-by-side with other creators in an open virtual world ready to be explored.",
-    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/77yzgLkg2oQ7GAZLPtEAwY/64a8d2741a6e3f1f90b15636c4d37638/Image_2.png'
+    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/77yzgLkg2oQ7GAZLPtEAwY/64a8d2741a6e3f1f90b15636c4d37638/Image_2.png',
+    url: 'https://docs.decentraland.org/creator/',
+    buttonLabel: 'Explore the Docs'
   },
   {
     id: 'benefit',
     title: 'Benefit from a Creator-Centric Economy',
     description:
       "Decentraland is owned by its users, so you keep 97.5% of Marketplace sales while the rest funds community grants for creators like you. Plus, you'll get 2.5% royalties on resales.",
-    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/3iCBvRrzEtgD7LT8PYxMZn/2f5fba37f044d426d24e25ce33dc1f9c/Image_3.png'
+    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/3iCBvRrzEtgD7LT8PYxMZn/2f5fba37f044d426d24e25ce33dc1f9c/Image_3.png',
+    url: 'https://docs.decentraland.org/creator/wearables-and-emotes/wearables/creating-wearables',
+    buttonLabel: 'Create Wearables'
   }
 ]
 
@@ -124,56 +133,58 @@ const createCards: CreateCardData[] = [
       'In Decentraland, Wearables go beyond clothing. Think floating elements, glowing fabrics, robot prosthetics, alien bodies—anything is possible!',
     image: 'https://images.ctfassets.net/ea2ybdmmn1kv/3Cu7b7wDmHMxdlnV1kPIHK/af575947c309275575ee1f456042596a/PNG_1.png',
     imageBackground: 'https://images.ctfassets.net/ea2ybdmmn1kv/5tQ56AeW3FWfsnDIgIr1ix/1ff51b5358a8ddf13a4bb4bddaf36601/BG_1.png',
-    tab1: {
-      title: 'Regular',
-      descriptionTitle: 'Shape Your Digital Identity',
-      descriptionSubTitle:
-        'Craft the skins, clothes, accessories, and bodies that provide the Decentraland community with endless options to customize their digital identities.',
-      skills: ['3D MODELING', 'IMAGINATIVE FASHION SENSE'],
-      links: [
-        {
-          label: 'Creating Wearables',
-          url: 'https://docs.decentraland.org/creator/wearables/creating-wearables/'
-        },
-        {
-          label: 'Wearables in the Marketplace',
-          url: 'https://decentraland.org/marketplace/browse?section=wearables&vendor=decentraland&page=1&sortBy=newest&status=on_sale'
-        },
-        {
-          label: 'Publishing Wearables',
-          url: 'https://docs.decentraland.org/creator/wearables-and-emotes/publishing-collections/publishing-collections'
-        },
-        {
-          label: 'Wearable Tutorials',
-          url: 'https://www.youtube.com/watch?v=zl43Fw7zROQ&list=PLEl6fe1igtKBFDcxaC64Uxamo7kQUi5mf&pp=iAQB'
-        }
-      ]
-    },
-    tab2: {
-      title: 'Smart Wearables',
-      descriptionTitle: 'Experiences & Fashion Combined',
-      descriptionSubTitle:
-        'Want to create a jet pack that lets you fly or glasses that reveal a secret world? Tie Portable Experiences to Wearables, for a whole new realm of possibilities.',
-      skills: ['ANIMATION', 'IMAGINATIVE FASHION SENSE', '3D MODELING', 'TYPESCRIPT'],
-      links: [
-        {
-          label: 'Portable Experience Docs',
-          url: 'https://docs.decentraland.org/creator/scenes-sdk7/kinds-of-projects/portable-experiences'
-        },
-        {
-          label: 'SDK 7 Docs',
-          url: 'https://docs.decentraland.org/creator/scenes-sdk7/getting-started/sdk-101'
-        },
-        {
-          label: 'Smart Wearables Docs',
-          url: 'https://docs.decentraland.org/creator/scenes-sdk7/kinds-of-projects/smart-wearables'
-        },
-        {
-          label: 'Smart Wearables in the Marketplace',
-          url: 'https://decentraland.org/marketplace/browse?assetType=item&section=wearables&vendor=decentraland&page=1&sortBy=newest&status=on_sale&onlySmart=true'
-        }
-      ]
-    }
+    tabs: [
+      {
+        title: 'Regular',
+        descriptionTitle: 'Shape Your Digital Identity',
+        descriptionSubTitle:
+          'Craft the skins, clothes, accessories, and bodies that provide the Decentraland community with endless options to customize their digital identities.',
+        skills: ['3D MODELING', 'IMAGINATIVE FASHION SENSE'],
+        links: [
+          {
+            label: 'Creating Wearables',
+            url: 'https://docs.decentraland.org/creator/wearables-and-emotes/wearables/creating-wearables'
+          },
+          {
+            label: 'Wearables in the Marketplace',
+            url: 'https://decentraland.org/marketplace/browse?section=wearables&vendor=decentraland&page=1&sortBy=newest&status=on_sale'
+          },
+          {
+            label: 'Publishing Wearables',
+            url: 'https://docs.decentraland.org/creator/wearables-and-emotes/publishing-collections/publishing-collections'
+          },
+          {
+            label: 'Wearable Tutorials',
+            url: 'https://www.youtube.com/watch?v=zl43Fw7zROQ&list=PLEl6fe1igtKBFDcxaC64Uxamo7kQUi5mf&pp=iAQB'
+          }
+        ]
+      },
+      {
+        title: 'Smart Wearables',
+        descriptionTitle: 'Experiences & Fashion Combined',
+        descriptionSubTitle:
+          'Want to create a jet pack that lets you fly or glasses that reveal a secret world? Tie Portable Experiences to Wearables, for a whole new realm of possibilities.',
+        skills: ['ANIMATION', 'IMAGINATIVE FASHION SENSE', '3D MODELING', 'TYPESCRIPT'],
+        links: [
+          {
+            label: 'Portable Experience Docs',
+            url: 'https://docs.decentraland.org/creator/scenes-sdk7/kinds-of-projects/portable-experiences'
+          },
+          {
+            label: 'SDK 7 Docs',
+            url: 'https://docs.decentraland.org/creator/scenes-sdk7/getting-started/sdk-101'
+          },
+          {
+            label: 'Smart Wearables Docs',
+            url: 'https://docs.decentraland.org/creator/scenes-sdk7/kinds-of-projects/smart-wearables'
+          },
+          {
+            label: 'Smart Wearables in the Marketplace',
+            url: 'https://decentraland.org/marketplace/browse?assetType=item&section=wearables&vendor=decentraland&page=1&sortBy=newest&status=on_sale&onlySmart=true'
+          }
+        ]
+      }
+    ]
   },
   {
     id: 'animate-expressive-emotes',
@@ -182,31 +193,33 @@ const createCards: CreateCardData[] = [
       "Create the avatar animations that allow Decentraland's community to form connections, share emotions, and participate in endless fun activities.",
     image: 'https://images.ctfassets.net/ea2ybdmmn1kv/5TILWmR3rrA6K2DMTrPwXx/aeafb6cfc8fd3ef829833c41fb4cda16/PNG_2.png',
     imageBackground: 'https://images.ctfassets.net/ea2ybdmmn1kv/26Oa8X59NGyCSnL2j2Tvrw/091c890f8a5bfcdf8878a3c09c1268ae/BG_2.png',
-    tab1: {
-      title: 'More than Motion',
-      descriptionTitle: 'More than Motion',
-      descriptionSubTitle:
-        'Surpassing simple animations, in Decentraland, Emotes take expression to the next level with the option of adding props and sounds!',
-      skills: ['TYPESCRIPT', '3D MODELING', 'ANIMATION'],
-      links: [
-        {
-          label: 'Creating Emotes',
-          url: 'https://docs.decentraland.org/creator/wearables-and-emotes/emotes/creating-emotes'
-        },
-        {
-          label: 'Emote Tutorials',
-          url: 'https://www.youtube.com/watch?v=-iWslh4uQIk&list=PLAcRraQmr_GN8LcnnQk2BByo9L2Orvp9c&pp=iAQB'
-        },
-        {
-          label: 'Publishing Emotes',
-          url: 'https://docs.decentraland.org/creator/wearables-and-emotes/publishing-collections/publishing-collections'
-        },
-        {
-          label: 'Emotes in the Marketplace',
-          url: 'https://decentraland.org/marketplace/browse?assetType=item&section=emotes&vendor=decentraland&page=1&sortBy=newest&status=on_sale'
-        }
-      ]
-    }
+    tabs: [
+      {
+        title: 'More than Motion',
+        descriptionTitle: 'More than Motion',
+        descriptionSubTitle:
+          'Surpassing simple animations, in Decentraland, Emotes take expression to the next level with the option of adding props and sounds!',
+        skills: ['TYPESCRIPT', '3D MODELING', 'ANIMATION'],
+        links: [
+          {
+            label: 'Creating Emotes',
+            url: 'https://docs.decentraland.org/creator/wearables-and-emotes/emotes/creating-emotes'
+          },
+          {
+            label: 'Emote Tutorials',
+            url: 'https://www.youtube.com/watch?v=-iWslh4uQIk&list=PLAcRraQmr_GN8LcnnQk2BByo9L2Orvp9c&pp=iAQB'
+          },
+          {
+            label: 'Publishing Emotes',
+            url: 'https://docs.decentraland.org/creator/wearables-and-emotes/publishing-collections/publishing-collections'
+          },
+          {
+            label: 'Emotes in the Marketplace',
+            url: 'https://decentraland.org/marketplace/browse?assetType=item&section=emotes&vendor=decentraland&page=1&sortBy=newest&status=on_sale'
+          }
+        ]
+      }
+    ]
   },
   {
     id: 'craft-immersive-experiences',
@@ -215,56 +228,82 @@ const createCards: CreateCardData[] = [
       'Construct captivating scenes, interactive experiences, and games in an open-world ecosystem. Claim your own World or rent/buy LAND to start building.',
     image: 'https://images.ctfassets.net/ea2ybdmmn1kv/3JXtpqW33ILyBYzrpzykKl/f246d9529cbbc4d033c271cd02d4376b/PNG_3.png',
     imageBackground: 'https://images.ctfassets.net/ea2ybdmmn1kv/5E9WJJcBi3qeuqqetuleeT/6308247b5ca650adf34aaec41d7e7182/BG_3.png',
-    tab1: {
-      title: 'Basic',
-      descriptionTitle: 'Ideal for Beginners',
-      descriptionSubTitle:
-        'Drag and drop pre-made elements into place to create your dream scene or start with a scene template and customize the details to make it your own.',
-      skills: ['ABILITY TO CLICK A MOUSE', 'OVERACTIVE IMAGINATION'],
-      links: [
-        {
-          label: 'Explore Places',
-          url: 'https://decentraland.org/places/'
-        },
-        {
-          label: 'Download Creator Hub',
-          url: 'https://decentraland.org/download/creator-hub'
-        },
-        {
-          label: 'Building Tutorials',
-          url: 'https://www.youtube.com/watch?v=wm8ZD2kSyKA&list=PLAcRraQmr_GPrMmQekqbMWhyBxo3lXs8p&pp=iAQB'
-        },
-        {
-          label: 'Worlds Essential Guide',
-          url: 'https://decentraland.org/blog/about-decentraland/decentraland-worlds-your-own-virtual-space'
-        }
-      ]
-    },
-    tab2: {
-      title: 'Advanced',
-      descriptionTitle: 'Complete Control Over Your Creations',
-      descriptionSubTitle:
-        "Transform your ideas to reality with Decentraland's SDK 7. Craft anything you can imagine, from complex scenes and interactive experiences to fully fledged games.",
-      skills: ['TYPESCRIPT', '3D MODELING', 'ANIMATION'],
-      links: [
-        {
-          label: 'Open Source Resources & Templates',
-          url: 'https://studios.decentraland.org/resources'
-        },
-        {
-          label: 'Download Creator Hub',
-          url: 'https://decentraland.org/download/creator-hub'
-        },
-        {
-          label: 'Building Docs',
-          url: 'https://docs.decentraland.org/creator/scenes-sdk7/getting-started/sdk-101'
-        },
-        {
-          label: 'Building Tutorials',
-          url: 'https://www.youtube.com/watch?v=wm8ZD2kSyKA&list=PLAcRraQmr_GPrMmQekqbMWhyBxo3lXs8p&pp=iAQB'
-        }
-      ]
-    }
+    tabs: [
+      {
+        title: 'Create Scenes',
+        descriptionTitle: 'Build and Publish Your First Scene',
+        descriptionSubTitle:
+          'Open the Scene Editor in the Creator Hub, drop items into place, and publish your scene to a World or LAND — the docs below walk you through every step.',
+        skills: ['CREATOR HUB', 'NO CODE NEEDED'],
+        links: [
+          {
+            label: 'About the Scene Editor',
+            url: 'https://docs.decentraland.org/creator/scene-editor/get-started/about-editor'
+          },
+          {
+            label: 'Publish Your Scene',
+            url: 'https://docs.decentraland.org/creator/scene-editor/publish/publish-scene'
+          },
+          {
+            label: 'Development Workflow',
+            url: 'https://docs.decentraland.org/creator/scenes-sdk7/getting-started/dev-workflow'
+          },
+          {
+            label: 'Download Creator Hub',
+            url: '/download/creator-hub',
+            desktopOnly: true
+          }
+        ]
+      },
+      {
+        title: 'Basic',
+        descriptionTitle: 'Ideal for Beginners',
+        descriptionSubTitle:
+          'Drag and drop pre-made elements into place to create your dream scene or start with a scene template and customize the details to make it your own.',
+        skills: ['ABILITY TO CLICK A MOUSE', 'OVERACTIVE IMAGINATION'],
+        links: [
+          {
+            label: 'Explore Places',
+            url: '/discover'
+          },
+          {
+            label: 'Download Creator Hub',
+            url: '/download/creator-hub',
+            desktopOnly: true
+          },
+          {
+            label: 'Building Tutorials',
+            url: 'https://www.youtube.com/watch?v=wm8ZD2kSyKA&list=PLAcRraQmr_GPrMmQekqbMWhyBxo3lXs8p&pp=iAQB'
+          },
+          {
+            label: 'Worlds Essential Guide',
+            url: '/blog/about-decentraland/decentraland-worlds-your-own-virtual-space'
+          }
+        ]
+      },
+      {
+        title: 'Advanced',
+        descriptionTitle: 'Complete Control Over Your Creations',
+        descriptionSubTitle:
+          "Transform your ideas to reality with Decentraland's SDK 7. Craft anything you can imagine, from complex scenes and interactive experiences to fully fledged games.",
+        skills: ['TYPESCRIPT', '3D MODELING', 'ANIMATION'],
+        links: [
+          {
+            label: 'Download Creator Hub',
+            url: '/download/creator-hub',
+            desktopOnly: true
+          },
+          {
+            label: 'Building Docs',
+            url: 'https://docs.decentraland.org/creator/scenes-sdk7/getting-started/sdk-101'
+          },
+          {
+            label: 'Building Tutorials',
+            url: 'https://www.youtube.com/watch?v=wm8ZD2kSyKA&list=PLAcRraQmr_GPrMmQekqbMWhyBxo3lXs8p&pp=iAQB'
+          }
+        ]
+      }
+    ]
   }
 ]
 
@@ -282,77 +321,80 @@ const connectCards: ConnectCardData[] = [
     name: 'Canessa',
     description:
       'I think having unique Emotes is a way of making your avatar another form of yourself. I made myself a unique Emote so I could always have a special greeting [distinct from the standard animations everyone uses] for my friends.',
-    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/3ugHhjVpg2TJRKpGrE5HJO/2c267463b5cab7923fedcd2a8912c17e/anessa.png'
+    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/3ugHhjVpg2TJRKpGrE5HJO/2c267463b5cab7923fedcd2a8912c17e/anessa.png',
+    url: 'https://x.com/CanessaDCL'
   },
   {
     id: 'polygonal-mind',
     name: 'Polygonal Mind',
     description:
       'Decentraland evolves almost every day on a technical level, but also on a community level. Newcomers come into the platform with new ideas that make the whole platform spin to accommodate them. It is very exciting to see the change in real time.',
-    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/2A10uagc69WkV4Put4Je8K/b5f7d12193e3e7bc6c126c8b1cf574b9/polygonal.png'
+    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/2A10uagc69WkV4Put4Je8K/b5f7d12193e3e7bc6c126c8b1cf574b9/polygonal.png',
+    url: 'https://x.com/polygonalmind'
   },
   {
     id: 'tangpoko',
     name: 'TangPoko',
     description:
       'There is a lot of gratification in creating Wearables and Emotes in Decentraland when you see everyone around you wearing and using them!',
-    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/3VUTEOy199FdbePR0n4v9h/2011425bade058c0b6ceeda046bbc71c/tang.png'
+    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/3VUTEOy199FdbePR0n4v9h/2011425bade058c0b6ceeda046bbc71c/tang.png',
+    url: 'https://x.com/tangpoko'
   },
   {
     id: 'nikki-fuego',
     name: 'Nikki Fuego',
     description:
       "My whole life I've been a gamer and the one thing I've always wanted from games was ultimate customization with my character's wearables. [In Decentraland,] that fantasy became a reality.",
-    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/1qNFtMuqQ6NUgVFZxqIMWO/53a6bd692059f897f8df5a99c9570ecf/Nikki.png'
+    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/1qNFtMuqQ6NUgVFZxqIMWO/53a6bd692059f897f8df5a99c9570ecf/Nikki.png',
+    url: 'https://x.com/NikkiFuego92'
   }
 ]
 
 const learnCards: LearnCardData[] = [
   {
-    id: 'isamazing',
-    title: 'Emote Workshop | Create Great Animations',
-    name: 'Isamazing',
-    userImage: 'https://images.ctfassets.net/ea2ybdmmn1kv/1JsJlPSMTiDHxWvNbLcTUb/c3ae0654ff66da80a99a52334a3caf01/isa.png',
-    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/6b8IV5K8BUFIi6AyA1h6uI/e2dd6add08d9b0a77c12d65131f0b42c/5PEF2pwZxtY-HQ.jpg',
-    url: 'https://youtu.be/5PEF2pwZxtY?list=PLAcRraQmr_GN8LcnnQk2BByo9L2Orvp9c',
-    date: 'January 30, 2024'
+    id: 'blender-first-hat',
+    title: 'Blender for Beginners | Making Your First Hat',
+    name: 'Decentraland',
+    userImage: '/dcl-logo.svg',
+    image: 'https://img.youtube.com/vi/6Q8FNyjFTxc/hqdefault.jpg',
+    url: 'https://www.youtube.com/watch?v=6Q8FNyjFTxc',
+    date: 'February 11, 2026'
   },
   {
-    id: 'kjwalker',
-    title: 'Making Skins | Creating Wearables',
-    name: 'KJWalker',
-    userImage: 'https://images.ctfassets.net/ea2ybdmmn1kv/6pjOW45mmmYy5DkaoOsYLB/02b30670a4d63e32845d89d6ad063fe5/kj.png',
-    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/3BYsoFQ1UEbmjVPIDNMdIU/f9a89d99a91741da24010d68030d323e/zx2CBy3pPfo-HQ.jpg',
-    url: 'https://www.youtube.com/watch?v=zx2CBy3pPfo',
-    date: 'January 31, 2024'
+    id: 'first-virtual-gallery',
+    title: 'Your First Virtual Gallery | A Step-by-Step Build',
+    name: 'Decentraland',
+    userImage: '/dcl-logo.svg',
+    image: 'https://img.youtube.com/vi/HJ_UYh7IUf8/hqdefault.jpg',
+    url: 'https://www.youtube.com/watch?v=HJ_UYh7IUf8',
+    date: 'October 1, 2025'
   },
   {
-    id: 'nicoe',
-    title: 'Creating Scenes | SDK 7 and Smart Items',
-    name: 'NicoE',
-    userImage: 'https://images.ctfassets.net/ea2ybdmmn1kv/1HxP6difHgjUlzACC0Nha2/7c75d6c74da5171584072eadefd3b961/nico.png',
-    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/6gjVuKeWBh76Pe6UyiAZzt/29ffb9ad320ca075e2c04ad34464f9c4/J_EO1LZkaiA-HQ.jpg',
-    url: 'https://www.youtube.com/watch?v=J_EO1LZkaiA&list=PLAcRraQmr_GP_K8WN7csnKnImK4R2TgMA&index=6&ab_channel=Decentraland',
-    date: 'January 31, 2024'
+    id: 'canessa-intro-building',
+    title: 'Creator Hub | Intro to Building',
+    name: 'CanessaBuilds',
+    userImage: 'https://images.ctfassets.net/ea2ybdmmn1kv/3ugHhjVpg2TJRKpGrE5HJO/2c267463b5cab7923fedcd2a8912c17e/anessa.png',
+    image: 'https://img.youtube.com/vi/BqvYMWxlcj8/hqdefault.jpg',
+    url: 'https://www.youtube.com/watch?v=BqvYMWxlcj8',
+    date: 'September 14, 2025'
   },
   {
-    id: 'sango',
-    title: 'How to Make a Wearable | Workshop Series',
-    name: 'Sango',
-    userImage: 'https://images.ctfassets.net/ea2ybdmmn1kv/4AVvwN5SFyRJu9zEFt2qJF/fd883eb27e429351a619d6fef963f9cb/sango.png',
-    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/5ky9e2oglx9xmfLRC6uhzY/c04eee263099cccb99245c3d9b7808c3/zl43Fw7zROQ-SD.jpg',
-    url: 'https://youtu.be/zl43Fw7zROQ?list=PLEl6fe1igtKBFDcxaC64Uxamo7kQUi5mf',
-    date: 'January 24, 2024'
+    id: 'office-hours-custom-components',
+    title: 'Office Hours | Importing Assets & Custom Components',
+    name: 'Decentraland',
+    userImage: '/dcl-logo.svg',
+    image: 'https://img.youtube.com/vi/uVGSrsnmfTw/hqdefault.jpg',
+    url: 'https://www.youtube.com/watch?v=uVGSrsnmfTw',
+    date: 'August 11, 2025'
   },
   {
-    id: 'sinful',
-    title: 'Publishing Wearables & Emotes',
-    name: 'Sinful',
-    userImage:
-      'https://images.ctfassets.net/ea2ybdmmn1kv/16eJcvU74UY7k3KXZoI5AD/a8578a20da16d755c95815f6daed072a/Screenshot_2024-01-31_130003.png',
-    image: 'https://images.ctfassets.net/ea2ybdmmn1kv/5EI8frG7fYxMRGbgm92TPC/a69b8d39cb44e88640c44b0cdaa8373f/vY7IYksmC2M-HQ.jpg',
-    url: 'https://www.youtube.com/watch?v=vY7IYksmC2M',
-    date: 'January 31, 2024'
+    id: 'first-wearable-academy',
+    title: 'Making Your First Wearable | Creator Academy',
+    name: 'Decentraland',
+    userImage: '/dcl-logo.svg',
+    image: 'https://img.youtube.com/vi/UjHkVZKSWCc/hqdefault.jpg',
+    url: 'https://www.youtube.com/watch?v=UjHkVZKSWCc',
+    date: 'April 15, 2025'
   }
 ]
 
@@ -375,7 +417,7 @@ const faqItems: FaqData[] = [
   {
     question: 'Is it possible to monetize my creations?',
     answer:
-      'Yes, of course! Decentraland creators are able to monetize their skills in many ways.\n\nWearable and Emote creators publish their creations in the Marketplace, paying a $100 USD publication fee which goes to the DAO to fund community grants, and as a result earn 97.5% of the profits on all primary sales and 2.5% royalties on any secondary sales.\nSome scene creators monetize their experiences, the revenue of which they are able to keep fully for themselves, and lastly many creators offer their services for hire through Decentraland Studios.'
+      'Yes, of course! Decentraland creators are able to monetize their skills in many ways.\n\nWearable and Emote creators publish their creations in the Marketplace, paying a $100 USD publication fee which goes to the DAO to fund community grants, and as a result earn 97.5% of the profits on all primary sales and 2.5% royalties on any secondary sales.\nSome scene creators monetize their experiences, the revenue of which they are able to keep fully for themselves.'
   },
   {
     question: 'Do I need to own LAND to create experiences in Decentraland?',
@@ -389,18 +431,5 @@ const faqItems: FaqData[] = [
   }
 ]
 
-const earnSkills = [
-  '3D MODELING',
-  'CREATIVE DIRECTION',
-  'LAND RENTAL',
-  'LINKED WEARABLES',
-  'VENUE RENTAL',
-  'ADVERTISING',
-  'EMOTE DESIGN',
-  'ENTERTAINMENT',
-  'PROGRAMMING',
-  'WEARABLE DESIGN'
-]
-
-export { connectCards, createCards, earnSkills, faqItems, heroData, learnCards, whyCards }
+export { connectCards, createCards, faqItems, heroData, learnCards, whyCards }
 export type { ConnectCardData, CreateCardData, CreateCardTab, FaqData, HeroData, LearnCardData, MediaProps, WhyCardData }

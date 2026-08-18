@@ -6,8 +6,7 @@ jest.mock('decentraland-ui2', () => {
   const actual = jest.requireActual('../../../__test-utils__/styledMock')
   const Typography = ({ children, ...rest }: { children?: React.ReactNode }) => <p {...rest}>{children}</p>
   const Button = ({ children, ...rest }: { children?: React.ReactNode }) => <a {...rest}>{children}</a>
-  const dclColors = { neutral: { white: '#FFFFFF', gray0: '#43404A', gray5: '#ECEBED' } }
-  return { ...actual, Typography, Button, dclColors }
+  return { ...actual, Typography, Button }
 })
 
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({

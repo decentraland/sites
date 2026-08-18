@@ -1,5 +1,95 @@
-import type { Breadcrumb, ErrorEvent } from '@sentry/browser'
-import { redactBreadcrumbUrl, redactEventUrls, redactSensitiveUrl } from './sentry.helpers'
+import { type Breadcrumb, type ErrorEvent, defaultStackParser } from '@sentry/browser'
+import { isBlockedAnalyticsScriptError, redactBreadcrumbUrl, redactEventUrls, redactSensitiveUrl } from './sentry.helpers'
+
+// Captured from a production repro with the Google tag hosts blocked. It has to stay
+// the minified CDN URL: that is what the browser puts on the frame, and therefore all
+// `beforeSend` ever sees. The readable `browser-destination-runtime/...` path in the
+// Sentry UI is produced by server-side source-map resolution, so asserting against it
+// let the filter pass its tests while dropping nothing in production.
+const SEGMENT_LOADER_FILENAME = 'https://cdn.segment.com/next-integrations/actions/3962/1faa179dfb20d0a3f5a0.js'
+
+const buildLoaderEvent = (value: string, filename = SEGMENT_LOADER_FILENAME): ErrorEvent =>
+  ({
+    exception: { values: [{ value, stacktrace: { frames: [{ filename }] } }] }
+  }) as ErrorEvent
+
+describe('when deciding whether an event is a blocked analytics script', () => {
+  describe('and the Google tag failed to load through the Segment loader', () => {
+    it('should treat it as blocked-analytics noise', () => {
+      const event = buildLoaderEvent('Failed to load https://www.googletagmanager.com/gtag/js?id=G-7DM7BF7RJG')
+      expect(isBlockedAnalyticsScriptError(event)).toBe(true)
+    })
+
+    it('should also match the google-analytics host', () => {
+      const event = buildLoaderEvent('Failed to load https://www.google-analytics.com/analytics.js')
+      expect(isBlockedAnalyticsScriptError(event)).toBe(true)
+    })
+
+    it('should match when the useful text sits on a chained exception', () => {
+      const event = {
+        exception: {
+          values: [
+            { value: 'wrapper', stacktrace: { frames: [{ filename: SEGMENT_LOADER_FILENAME }] } },
+            { value: 'Failed to load https://www.googletagmanager.com/gtag/js' }
+          ]
+        }
+      } as ErrorEvent
+      expect(isBlockedAnalyticsScriptError(event)).toBe(true)
+    })
+
+    it('should match when the host is on the event message instead', () => {
+      const event = {
+        message: 'Failed to load https://www.googletagmanager.com/gtag/js',
+        exception: { values: [{ stacktrace: { frames: [{ filename: SEGMENT_LOADER_FILENAME }] } }] }
+      } as ErrorEvent
+      expect(isBlockedAnalyticsScriptError(event)).toBe(true)
+    })
+  })
+
+  // The whole point of pairing the frame with the host: a genuine outage of any
+  // other Segment destination has to keep reaching Sentry.
+  describe('and a different Segment destination failed to load', () => {
+    it('should NOT treat it as noise', () => {
+      const event = buildLoaderEvent('Failed to load https://cdn.some-vendor.example/destination.js')
+      expect(isBlockedAnalyticsScriptError(event)).toBe(false)
+    })
+  })
+
+  describe('and our own code failed while merely mentioning the analytics host', () => {
+    it('should NOT treat it as noise', () => {
+      const event = buildLoaderEvent('Failed to load https://www.googletagmanager.com/gtag/js', '/assets/index-abc123.js')
+      expect(isBlockedAnalyticsScriptError(event)).toBe(false)
+    })
+  })
+
+  describe('and the event has no exception at all', () => {
+    it('should NOT treat it as noise', () => {
+      expect(isBlockedAnalyticsScriptError({ message: 'boom' } as ErrorEvent)).toBe(false)
+    })
+  })
+
+  describe('and the exception has no stacktrace', () => {
+    it('should NOT treat it as noise', () => {
+      const event = { exception: { values: [{ value: 'googletagmanager.com' }] } } as ErrorEvent
+      expect(isBlockedAnalyticsScriptError(event)).toBe(false)
+    })
+  })
+
+  // Hand-written frames are what let the first version of this filter ship dead: the
+  // fixture was copied out of the Sentry UI, which shows source-map-resolved paths the
+  // browser never produces. Here the frames come from the SDK's own parser fed a raw
+  // stack captured in production, so the fixture cannot drift from reality again.
+  describe('and the frames come from the SDK parser fed a real production stack', () => {
+    it('should treat it as blocked-analytics noise', () => {
+      const value = 'Failed to load https://www.googletagmanager.com/gtag/js?id=G-7DM7BF7RJG'
+      const stack = [`Error: ${value}`, `    at ${SEGMENT_LOADER_FILENAME}:1:2598`].join('\n')
+      const frames = defaultStackParser(stack)
+
+      expect(frames.some(frame => frame.filename?.includes('cdn.segment.com'))).toBe(true)
+      expect(isBlockedAnalyticsScriptError({ exception: { values: [{ value, stacktrace: { frames } }] } } as ErrorEvent)).toBe(true)
+    })
+  })
+})
 
 describe('when redacting a sensitive URL', () => {
   describe('and the path carries a cast streaming token', () => {

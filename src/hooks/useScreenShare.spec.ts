@@ -119,14 +119,22 @@ describe('useScreenShare', () => {
       participant.setScreenShareEnabled.mockRejectedValue(err)
     })
 
-    it('should show a permission-denied toast and report to Sentry', async () => {
+    it('should show a permission-denied toast', async () => {
       const { result } = renderHook(() => useScreenShare())
       await act(async () => {
         await result.current.startScreenShare()
       })
       await flush()
       expect(showMock).toHaveBeenCalledWith('ScreenShareFailed', { message: 'streaming_controls.screen_share_permission_denied' })
-      expect(captureException).toHaveBeenCalledWith(expect.any(Error), { tags: { feature: 'cast', area: 'screen_share', step: 'start' } })
+    })
+
+    it('should NOT report to Sentry, since declining is a user choice', async () => {
+      const { result } = renderHook(() => useScreenShare())
+      await act(async () => {
+        await result.current.startScreenShare()
+      })
+      await flush()
+      expect(captureException).not.toHaveBeenCalled()
     })
   })
 
@@ -159,6 +167,36 @@ describe('useScreenShare', () => {
       })
       await flush()
       expect(showMock).toHaveBeenCalledWith('ScreenShareFailed')
+    })
+
+    it('should still report to Sentry', async () => {
+      const { result } = renderHook(() => useScreenShare())
+      await act(async () => {
+        await result.current.startScreenShare()
+      })
+      await flush()
+      expect(captureException).toHaveBeenCalledWith(expect.any(Error), { tags: { feature: 'cast', area: 'screen_share', step: 'start' } })
+    })
+  })
+
+  // Only NotAllowedError is silenced, and the check reads `.name` off an Error. A
+  // non-Error rejection has no name, so it must keep reaching Sentry even though it
+  // shows no toast.
+  describe('when the screen-share start rejects with a non-Error value', () => {
+    beforeEach(() => {
+      participant.setScreenShareEnabled.mockRejectedValue('just a string')
+    })
+
+    it('should report to Sentry without showing a toast', async () => {
+      const { result } = renderHook(() => useScreenShare())
+      await act(async () => {
+        await result.current.startScreenShare()
+      })
+      await flush()
+      expect(showMock).not.toHaveBeenCalled()
+      expect(captureException).toHaveBeenCalledWith('just a string', {
+        tags: { feature: 'cast', area: 'screen_share', step: 'start' }
+      })
     })
   })
 

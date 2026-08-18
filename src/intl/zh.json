@@ -936,8 +936,25 @@
     },
     "creators_landing": {
       "hero": {
+        "mobile_docs_cta": "浏览创作者文档",
         "scroll_label": "滚动到下一部分"
+      },
+      "live_scenes": {
+        "title": "创作者正在构建的世界",
+        "title_highlight": "探索",
+        "online": "{count} 人在线",
+        "view_all": "查看所有实时场景"
+      },
+      "blog": {
+        "title": "最新文章",
+        "title_highlight": "博客",
+        "view_all": "阅读博客"
       }
+    },
+    "error_boundary": {
+      "title": "出现错误",
+      "message": "无法加载此页面。请检查网络连接后重试。",
+      "reload": "重新加载"
     }
   },
   "create_event": {

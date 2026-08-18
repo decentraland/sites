@@ -137,7 +137,21 @@ export default defineConfig(({ command, mode }) => {
       }
     },
     build: {
-      target: 'esnext',
+      // `esnext` came in with the Module Federation host (#85) and outlived it: with no
+      // downleveling at all, esbuild is free to emit syntax that shipping browsers cannot
+      // parse. It did. `ExplorerDownloads`' `static cache = new Map()` came out as a class
+      // static initialization block (`static { this.cache = new Map }`), which Safari only
+      // learned to parse in 16.4, so Safari 16.3 and older died with
+      // `SyntaxError: Unexpected token '{'` while parsing the chunk (SITES-2RB). A parse
+      // error takes the whole chunk down, and seven chunks import that module, the
+      // homepage's among them.
+      //
+      // es2020 measured at +0.18% gzip over esnext (2,534 KB vs 2,529 KB) and leaves no
+      // static blocks in the output. An explicit browser list cost four times as much for
+      // the same result. Note this only bounds *syntax*: it emits no polyfills, so a
+      // missing runtime method on an old browser still fails, just at one call site
+      // instead of killing the chunk.
+      target: 'es2020',
       sourcemap: 'hidden',
       // Vite preloads every chunk transitively reachable from the entry,
       // including dynamic imports. The vendors below are only consumed inside
@@ -204,12 +218,6 @@ export default defineConfig(({ command, mode }) => {
           changeOrigin: true,
           secure: false,
           rewrite: (path: string) => path.replace(/^\/api\/cms/, '/spaces/ea2ybdmmn1kv/environments/master')
-        },
-        '/api/feature-flags': {
-          target: 'https://feature-flags.decentraland.org',
-          changeOrigin: true,
-          secure: false,
-          rewrite: (path: string) => path.replace(/^\/api\/feature-flags/, '')
         }
       }
       /* eslint-enable @typescript-eslint/naming-convention */

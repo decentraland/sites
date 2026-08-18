@@ -936,8 +936,25 @@
     },
     "creators_landing": {
       "hero": {
+        "mobile_docs_cta": "크리에이터 문서 살펴보기",
         "scroll_label": "다음 섹션으로 스크롤"
+      },
+      "live_scenes": {
+        "title": "를 실시간으로 탐험하세요",
+        "title_highlight": "크리에이터가 만드는 세계",
+        "online": "{count}명 접속 중",
+        "view_all": "라이브 씬 모두 보기"
+      },
+      "blog": {
+        "title": "최신 소식",
+        "title_highlight": "블로그",
+        "view_all": "블로그 읽기"
       }
+    },
+    "error_boundary": {
+      "title": "문제가 발생했습니다",
+      "message": "이 페이지를 불러올 수 없습니다. 연결을 확인한 후 다시 시도해 주세요.",
+      "reload": "다시 불러오기"
     }
   },
   "create_event": {

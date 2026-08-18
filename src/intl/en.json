@@ -747,19 +747,19 @@
         "your_tutorial_button": "Submit tutorial for review",
         "your_tutorial_target": "https://docs.google.com/forms/d/e/1FAIpQLScn1HL8_ZFL_Lw-7sbqL9g4WLctWALWUKthGEtjBGQlmIuHLQ/viewform"
       },
-      "earn": {
-        "title": "Want to create but not a creator?",
-        "second_title": "Hire the best through ",
-        "title_highlight": "Decentraland Studios",
-        "subtitle": "Browse a vetted registry of Decentraland's most talented creators skilled in:",
-        "browse_creator_label": "Ready to get started?",
-        "browse_creator_button": "browse creators",
-        "browse_creator_url": "https://studios.decentraland.org/studios",
-        "are_you_creator_label": "Already a creator?",
-        "are_you_creator_button": "Join the Registry",
-        "are_you_creator_url": "https://docs.google.com/forms/d/e/1FAIpQLSc_KsbODUsJdC4_UTn7T91RTYwSJBAEZIWlCAxnk3rRBinFWg/viewform"
+      "live_scenes": {
+        "title": "what creators are building right now",
+        "title_highlight": "Explore",
+        "online": "{count} online",
+        "view_all": "See all live scenes"
+      },
+      "blog": {
+        "title": "from the blog",
+        "title_highlight": "Fresh",
+        "view_all": "Read the blog"
       },
       "hero": {
+        "mobile_docs_cta": "Explore the Creator Docs",
         "scroll_label": "Scroll to the next section"
       }
     },
@@ -1066,6 +1066,11 @@
         "body": "Your report has been received and will be reviewed shortly.",
         "dismiss": "You can close this window now."
       }
+    },
+    "error_boundary": {
+      "title": "Something went wrong",
+      "message": "We couldn't load this page. Check your connection and try again.",
+      "reload": "Reload"
     }
   },
   "live_now": {

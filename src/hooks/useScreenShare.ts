@@ -56,16 +56,21 @@ const useScreenShare = (): UseScreenShareResult => {
       intentionalStopRef.current = false
     } catch (error) {
       console.error('[useScreenShare] Error enabling screen share:', error)
-      if (error instanceof Error) {
-        if (error.name === 'NotAllowedError') {
-          notifications.show('ScreenShareFailed', { message: t('streaming_controls.screen_share_permission_denied') })
-        } else if (error.name === 'NotSupportedError') {
-          notifications.show('ScreenShareFailed', { message: t('streaming_controls.screen_share_not_supported') })
-        } else {
-          notifications.show('ScreenShareFailed')
-        }
+      const errorName = error instanceof Error ? error.name : undefined
+      if (errorName === 'NotAllowedError') {
+        notifications.show('ScreenShareFailed', { message: t('streaming_controls.screen_share_permission_denied') })
+      } else if (errorName === 'NotSupportedError') {
+        notifications.show('ScreenShareFailed', { message: t('streaming_controls.screen_share_not_supported') })
+      } else if (error instanceof Error) {
+        notifications.show('ScreenShareFailed')
       }
-      captureException(error, { tags: { feature: 'cast', area: 'screen_share', step: 'start' } })
+      // Dismissing the browser's screen-picker rejects with NotAllowedError. That is a
+      // user declining, not a failure — the toast above is the entire correct response —
+      // so it must not reach Sentry (SITES-2PX). Every other rejection still does,
+      // including a non-Error throw, which shows no toast but is worth knowing about.
+      if (errorName !== 'NotAllowedError') {
+        captureException(error, { tags: { feature: 'cast', area: 'screen_share', step: 'start' } })
+      }
     }
   }, [localParticipant, notifications, t])
 

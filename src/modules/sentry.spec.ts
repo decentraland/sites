@@ -10,6 +10,11 @@ jest.mock('../config/env', () => ({ getEnv: jest.fn() }))
 
 const DSN = 'https://examplekey@o0.ingest.us.sentry.io/1'
 
+// The minified bundle URL the browser reports for Segment's destination loader, which
+// is all `beforeSend` gets to see. See `sentry.helpers.spec.ts` for why the readable
+// path from the Sentry UI must not be used here.
+const SEGMENT_LOADER_FILENAME = 'https://cdn.segment.com/next-integrations/actions/3962/1faa179dfb20d0a3f5a0.js'
+
 interface LoadOptions {
   dsn?: string
   environment?: string
@@ -145,6 +150,38 @@ describe('when beforeSend inspects an event', () => {
     })
   })
 
+  describe('and the Google tag was blocked through the Segment loader', () => {
+    it('should drop the event', async () => {
+      const event = {
+        exception: {
+          values: [
+            {
+              value: 'Failed to load https://www.googletagmanager.com/gtag/js?id=G-7DM7BF7RJG',
+              stacktrace: { frames: [{ filename: SEGMENT_LOADER_FILENAME }] }
+            }
+          ]
+        }
+      } as ErrorEvent
+      expect(await send(event)).toBeNull()
+    })
+  })
+
+  describe('and a non-analytics Segment destination failed to load', () => {
+    it('should keep the event', async () => {
+      const event = {
+        exception: {
+          values: [
+            {
+              value: 'Failed to load https://cdn.some-vendor.example/destination.js',
+              stacktrace: { frames: [{ filename: SEGMENT_LOADER_FILENAME }] }
+            }
+          ]
+        }
+      } as ErrorEvent
+      expect(await send(event)).not.toBeNull()
+    })
+  })
+
   describe('and the message matches a filtered error', () => {
     it('should drop the event', async () => {
       expect(await send({ message: 'The play() request was interrupted' } as ErrorEvent)).toBeNull()
@@ -154,6 +191,15 @@ describe('when beforeSend inspects an event', () => {
   describe('and the exception value matches a filtered error', () => {
     it('should drop the event', async () => {
       const event = { exception: { values: [{ value: 'paused to save power' }] } } as ErrorEvent
+      expect(await send(event)).toBeNull()
+    })
+  })
+
+  // Raised by the SDK's own CLS instrumentation on browsers without
+  // `Array.prototype.at`, so it arrives as an unhandled rejection we cannot fix.
+  describe('and the SDK itself throws from its layout-shift measurement', () => {
+    it('should drop the event', async () => {
+      const event = { exception: { values: [{ value: 'this._sessionEntries.at is not a function' }] } } as ErrorEvent
       expect(await send(event)).toBeNull()
     })
   })

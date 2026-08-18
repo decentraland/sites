@@ -6,9 +6,14 @@ import { isDirectDownloadEnabled } from '../../utils/referrer'
 // (InvitePage / InviteHero). The flag fetch is intentionally scoped to that
 // lazy chunk so the homepage ships zero feature-flag bytes and fires zero
 // feature-flag requests (see CLAUDE.md — homepage Lighthouse budget).
-// Same-origin proxy: the feature-flags service does not expose CORS headers.
-// Vite proxies this path in development and Vercel rewrites it in deployments.
-const FEATURE_FLAGS_URL = '/api/feature-flags/dapps.json'
+// Fetched straight from the service. This used to go through an `/api/feature-flags`
+// same-origin proxy, which silently broke the flag in production: prod is served from
+// the CDN behind the Cloudflare worker, not Vercel, so the `vercel.json` rewrite never
+// applied and the path fell through to the SPA catch-all — the request returned the
+// index HTML, `response.json()` threw, and the flag read false forever.
+// The proxy was never needed: the service answers with `access-control-allow-origin`
+// reflecting the caller (verified for decentraland.org, .zone and localhost).
+const FEATURE_FLAGS_URL = 'https://feature-flags.decentraland.org/dapps.json'
 const FETCH_TIMEOUT_MS = 5_000
 
 let remoteFlagEnabled = false

@@ -1,11 +1,12 @@
 import { fireEvent, render } from '@testing-library/react'
+import { useMediaQuery } from 'decentraland-ui2'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { CreatorsCreate } from './CreateCards'
 
 jest.mock('decentraland-ui2', () => {
   const actual = jest.requireActual('../../../__test-utils__/styledMock')
   const Typography = ({ children, ...rest }: { children?: React.ReactNode }) => <p {...rest}>{children}</p>
-  return { ...actual, Typography }
+  return { ...actual, Typography, useMediaQuery: jest.fn() }
 })
 
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
@@ -38,9 +39,12 @@ jest.mock('../../Carousel', () => ({
 const mockTrackClick = jest.mocked(useTrackClick)
 const trackClick = jest.fn()
 
+const mockMediaQuery = jest.mocked(useMediaQuery)
+
 describe('CreatorsCreate', () => {
   beforeEach(() => {
     mockTrackClick.mockReturnValue(trackClick)
+    mockMediaQuery.mockReturnValue(false)
   })
 
   afterEach(() => {
@@ -67,6 +71,47 @@ describe('CreatorsCreate', () => {
       fireEvent.click(link)
 
       expect(trackClick).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('when the experiences card renders', () => {
+    it('should default to the Create Scenes tab with links into the scene docs', () => {
+      const { container } = render(<CreatorsCreate />)
+
+      expect(
+        container.querySelector('a[href="https://docs.decentraland.org/creator/scene-editor/get-started/about-editor"]')
+      ).toBeInTheDocument()
+      expect(
+        container.querySelector('a[href="https://docs.decentraland.org/creator/scene-editor/publish/publish-scene"]')
+      ).toBeInTheDocument()
+    })
+  })
+
+  describe('when rendered on desktop', () => {
+    it('should include the Creator Hub download links', () => {
+      const { container } = render(<CreatorsCreate />)
+
+      expect(container.querySelectorAll('a[href="/download/creator-hub"]').length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('when rendered on mobile', () => {
+    beforeEach(() => {
+      mockMediaQuery.mockReturnValue(true)
+    })
+
+    it('should hide the desktop-only Creator Hub download links', () => {
+      const { container } = render(<CreatorsCreate />)
+
+      expect(container.querySelectorAll('a[href="/download/creator-hub"]').length).toBe(0)
+    })
+
+    it('should keep the links that work on a phone', () => {
+      const { container } = render(<CreatorsCreate />)
+
+      expect(
+        container.querySelector('a[href="https://docs.decentraland.org/creator/scene-editor/get-started/about-editor"]')
+      ).toBeInTheDocument()
     })
   })
 

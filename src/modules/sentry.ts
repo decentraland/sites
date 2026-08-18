@@ -1,6 +1,6 @@
 import { type ErrorEvent, browserTracingIntegration, init, replayIntegration } from '@sentry/browser'
 import { getEnv } from '../config/env'
-import { redactBreadcrumbUrl, redactEventUrls } from './sentry.helpers'
+import { isBlockedAnalyticsScriptError, redactBreadcrumbUrl, redactEventUrls } from './sentry.helpers'
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '0.0.0.0', ''])
 
@@ -10,7 +10,18 @@ const isLocalHost = (): boolean => {
   return LOCAL_HOSTS.has(hostname) || hostname.endsWith('.local')
 }
 
-const errorFilters: RegExp[] = [/The play\(\) request was interrupted/i, /paused to save power/i]
+const errorFilters: RegExp[] = [
+  /The play\(\) request was interrupted/i,
+  /paused to save power/i,
+  // Thrown inside the SDK itself, not by our code: `browserTracingIntegration`'s CLS
+  // measurement calls `this._sessionEntries.at(-1)` unguarded
+  // (@sentry-internal/browser-utils 9.30.0, LayoutShiftManager.js:32), and
+  // `Array.prototype.at` only exists from Chrome 92 / Safari 15.4. Older browsers get
+  // an unhandled rejection from our own instrumentation (SITES-2RH). Nothing to fix
+  // here short of patching the dependency or polyfilling `at` for every visitor, and
+  // the only cost of dropping it is losing CLS on browsers that never reported it.
+  /_sessionEntries\.at is not a function/i
+]
 
 // Propagate trace headers to nothing. An empty list makes the SDK's
 // `shouldAttachHeaders` return false for every URL, so `browserTracingIntegration`
@@ -62,6 +73,11 @@ if (dsn && !isLocalHost()) {
         exception.stacktrace?.frames?.some(frame => frame.filename?.includes('gtm') || frame.filename?.includes('stag'))
       )
       if (framesMatch) return null
+
+      // A blocked Google tag is the single noisiest event in this project and is
+      // never actionable, but the existing `gtm`/`stag` frame filter above misses
+      // it: the frame belongs to Segment's loader, not to a gtm file.
+      if (isBlockedAnalyticsScriptError(event)) return null
 
       const errorMessage = event.message ?? event.exception?.values?.[0]?.value ?? ''
       if (errorFilters.some(filter => filter.test(errorMessage))) return null

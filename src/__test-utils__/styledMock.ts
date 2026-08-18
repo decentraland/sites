@@ -117,4 +117,30 @@ const Box = forwardRef(({ children, ...rest }: { children?: ReactNode } & Record
 
 const keyframes = (chunks: TemplateStringsArray | string) => (typeof chunks === 'string' ? chunks : chunks.join(''))
 
-export { Box, fakeTheme, keyframes, styled }
+// Mirror of decentraland-ui2's dclColors constants (dist/theme/colors.js) so
+// styled files that read tokens at module scope evaluate under this mock.
+const dclColors = {
+  neutral: {
+    white: '#FFFFFF',
+    trueWhite: '#FFFFFF',
+    softWhite: '#FCFCFC',
+    gray5: '#ECEBED',
+    gray4: '#CFCDD4',
+    gray3: '#A09BA8',
+    gray2: '#716B7C',
+    gray1: '#5E5B67',
+    gray0: '#43404A',
+    softBlack2: '#242129',
+    softBlack1: '#161518',
+    black: '#000000'
+  },
+  base: {
+    primary: '#FF2D55',
+    primaryDark1: '#F70038',
+    primaryDark2: '#D80029',
+    primaryLight1: '#F8919D',
+    primaryLight2: '#FFC9D5'
+  }
+}
+
+export { Box, dclColors, fakeTheme, keyframes, styled }

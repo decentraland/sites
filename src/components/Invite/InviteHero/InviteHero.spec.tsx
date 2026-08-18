@@ -162,7 +162,7 @@ describe('when the referrer address is already resolved', () => {
 
 describe('when the visitor clicks while the referrer is still resolving', () => {
   it('should not navigate before the referrer resolves', () => {
-    renderHero({ referrerAddress: null, isLoading: true })
+    renderHero({ referrerAddress: null, isReferrerResolving: true })
 
     clickCta()
 
@@ -174,7 +174,7 @@ describe('when the visitor clicks while the referrer is still resolving', () => 
   })
 
   it('should navigate with the referrer once it resolves', () => {
-    const { rerender } = renderHero({ referrerAddress: null, isLoading: true })
+    const { rerender } = renderHero({ referrerAddress: null, isReferrerResolving: true })
 
     clickCta()
 
@@ -182,7 +182,7 @@ describe('when the visitor clicks while the referrer is still resolving', () => 
       jest.advanceTimersByTime(200)
     })
 
-    rerender(<InviteHero {...baseProps} referrerAddress={REFERRER_ADDRESS} isLoading={false} />)
+    rerender(<InviteHero {...baseProps} referrerAddress={REFERRER_ADDRESS} isReferrerResolving={false} />)
 
     act(() => {
       jest.advanceTimersByTime(500)
@@ -192,7 +192,7 @@ describe('when the visitor clicks while the referrer is still resolving', () => 
   })
 
   it('should give up and navigate unattributed once the wait budget expires', () => {
-    renderHero({ referrerAddress: null, isLoading: true })
+    renderHero({ referrerAddress: null, isReferrerResolving: true })
 
     clickCta()
 

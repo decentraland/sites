@@ -1,5 +1,6 @@
-import { render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 import { SectionViewedTrack } from '../../../modules/segment'
+import { whyCards } from '../data'
 import { CreatorsWhy } from './Why'
 
 const mockAnimatedSection = jest.fn()
@@ -11,6 +12,11 @@ jest.mock('decentraland-ui2', () => {
 
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
+}))
+
+const mockTrackClick = jest.fn()
+jest.mock('../../../hooks/adapters/useTrackLinkContext', () => ({
+  useTrackClick: () => mockTrackClick
 }))
 
 jest.mock('../AnimatedSection', () => ({
@@ -37,6 +43,32 @@ describe('CreatorsWhy', () => {
       const { container } = render(<CreatorsWhy />)
 
       expect(container.querySelectorAll('img').length).toBeGreaterThan(0)
+    })
+
+    it('should render a call-to-action button label on every card', () => {
+      const { getByText } = render(<CreatorsWhy />)
+
+      whyCards.forEach(card => {
+        expect(getByText(card.buttonLabel)).toBeInTheDocument()
+      })
+    })
+
+    it('should render every card as a link to its destination', () => {
+      const { container } = render(<CreatorsWhy />)
+
+      const hrefs = Array.from(container.querySelectorAll('a[href]')).map(card => card.getAttribute('href'))
+      expect(hrefs).toEqual(whyCards.map(card => card.url))
+    })
+
+    describe('and a card is clicked', () => {
+      it('should track the click', () => {
+        const { container } = render(<CreatorsWhy />)
+
+        const firstCard = container.querySelector('a[href]')
+        fireEvent.click(firstCard!)
+
+        expect(mockTrackClick).toHaveBeenCalled()
+      })
     })
   })
 })
