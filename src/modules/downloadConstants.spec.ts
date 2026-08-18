@@ -1,4 +1,4 @@
-import { DOWNLOAD_URLS, detectDownloadOS, getDownloadUrl } from './downloadConstants'
+import { DOWNLOAD_URLS, buildMobileDeepLinkUrl, detectDownloadOS, getDownloadUrl } from './downloadConstants'
 import type { DownloadOS } from './downloadConstants'
 
 describe('downloadConstants', () => {
@@ -119,6 +119,26 @@ describe('downloadConstants', () => {
       it('should default to "windows"', () => {
         expect(detectDownloadOS()).toBe('windows')
       })
+    })
+  })
+
+  describe('buildMobileDeepLinkUrl', () => {
+    it('should point at the /open universal-link handler with the position', () => {
+      expect(buildMobileDeepLinkUrl({ position: '10,-20' })).toBe('https://mobile.dclexplorer.com/open?position=10%2C-20')
+    })
+
+    it('should carry the realm for world jumps', () => {
+      expect(buildMobileDeepLinkUrl({ realm: 'aliceworld' })).toBe('https://mobile.dclexplorer.com/open?realm=aliceworld')
+    })
+
+    it('should keep both params when a world jump also has a position', () => {
+      const url = new URL(buildMobileDeepLinkUrl({ realm: 'aliceworld', position: '1,2' }))
+      expect(url.searchParams.get('realm')).toBe('aliceworld')
+      expect(url.searchParams.get('position')).toBe('1,2')
+    })
+
+    it('should fall back to the bare handler when there is no destination', () => {
+      expect(buildMobileDeepLinkUrl()).toBe('https://mobile.dclexplorer.com/open')
     })
   })
 

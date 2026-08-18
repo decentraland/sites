@@ -48,7 +48,10 @@ jest.mock('../modules/downloadConstants', () => ({
     googlePlay: 'https://google-play',
     appStore: 'https://app-store'
   },
-  detectDownloadOS: jest.fn(() => 'apple')
+  detectDownloadOS: jest.fn(() => 'apple'),
+  // Pure helper with no env access — keep the real one so the assertions below
+  // check the universal link the user actually gets.
+  buildMobileDeepLinkUrl: jest.requireActual('../modules/downloadConstants').buildMobileDeepLinkUrl
 }))
 
 const mockedUseSearchParams = useSearchParams as jest.MockedFunction<typeof useSearchParams>
@@ -217,13 +220,14 @@ describe('useLaunchExplorer', () => {
       ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
     })
 
-    it('should open the mobile store instead of launching the desktop app', async () => {
+    it('should open the mobile universal-link handler instead of launching the desktop app', async () => {
       const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
 
       await act(() => result.current.launchExplorer())
 
       expect(result.current.isMobile).toBe(true)
-      expect(windowOpenSpy).toHaveBeenCalledWith('https://app-store', '_self')
+      // '0,0' is DEFAULT_POSITION, so it's filtered from the universal link.
+      expect(windowOpenSpy).toHaveBeenCalledWith('https://mobile.dclexplorer.com/open', '_self')
       expect(mockedLaunchDesktopApp).not.toHaveBeenCalled()
     })
   })

@@ -35,7 +35,10 @@ jest.mock('../../../modules/downloadConstants', () => ({
     googlePlay: 'https://gplay',
     appStore: 'https://appstore'
   },
-  detectDownloadOS: jest.fn(() => 'apple')
+  detectDownloadOS: jest.fn(() => 'apple'),
+  // Pure helper with no env access — keep the real one so the assertions below
+  // check the universal link the user actually gets.
+  buildMobileDeepLinkUrl: jest.requireActual('../../../modules/downloadConstants').buildMobileDeepLinkUrl
 }))
 // The barrel re-exports RTK clients (import.meta env access Jest can't parse);
 // the provider only consumes the pure helpers, so alias to them.
@@ -196,30 +199,28 @@ describe('DiscoverJumpInProvider', () => {
   })
 
   describe('when on a mobile device', () => {
-    it('should send the user to the app store and never launch or prompt', async () => {
+    it('should open the universal-link handler at the place position and never launch or prompt', async () => {
       mockedUserAgent.mockReturnValue([false, { mobile: true, os: { name: 'iOS' } }] as never)
-      mockedDetectOS.mockReturnValue('ios')
       renderProvider()
 
       await act(async () => {
         fireEvent.click(screen.getByText('jump'))
       })
 
-      expect(window.open).toHaveBeenCalledWith('https://appstore', '_self')
+      expect(window.open).toHaveBeenCalledWith('https://mobile.dclexplorer.com/open?position=-3%2C-2', '_self')
       expect(mockedLaunch).not.toHaveBeenCalled()
       expect(screen.queryByTestId('download-modal')).not.toBeInTheDocument()
     })
 
-    it('should send Android users to Google Play', async () => {
+    it('should open the universal-link handler with the realm for a world', async () => {
       mockedUserAgent.mockReturnValue([false, { mobile: true, os: { name: 'Android' } }] as never)
-      mockedDetectOS.mockReturnValue('android')
-      renderProvider()
+      renderProvider(<JumpInProbe target={worldPlace} />)
 
       await act(async () => {
         fireEvent.click(screen.getByText('jump'))
       })
 
-      expect(window.open).toHaveBeenCalledWith('https://gplay', '_self')
+      expect(window.open).toHaveBeenCalledWith('https://mobile.dclexplorer.com/open?realm=aliceworld', '_self')
     })
   })
 
