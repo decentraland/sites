@@ -58,6 +58,20 @@ const DOWNLOAD_URLS = {
   appStore: 'https://apps.apple.com/app/apple-store/id6478403840?pt=126284288&ct=Decentraland%20Home%20iOS&mt=8'
 } as const
 
+// Universal-link handler for the mobile client (registered in the app's
+// apple-app-site-association / assetlinks.json): navigating here opens the
+// installed app — TestFlight builds included — directly at the destination.
+// Without the app, the handler page falls back to a decentraland:// attempt
+// plus the store links, so it replaces a direct store URL for launch intents.
+const MOBILE_DEEP_LINK_URL = 'https://mobile.dclexplorer.com/open'
+
+function buildMobileDeepLinkUrl(options: { position?: string; realm?: string } = {}): string {
+  const url = new URL(MOBILE_DEEP_LINK_URL)
+  if (options.realm) url.searchParams.set('realm', options.realm)
+  if (options.position) url.searchParams.set('position', options.position)
+  return url.toString()
+}
+
 type DownloadOS = 'apple' | 'windows' | 'android' | 'ios'
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -83,5 +97,5 @@ function getDownloadUrl(os: DownloadOS): string {
   }
 }
 
-export { DOWNLOAD_URLS, detectDownloadOS, getDownloadUrl }
+export { DOWNLOAD_URLS, buildMobileDeepLinkUrl, detectDownloadOS, getDownloadUrl }
 export type { DownloadOS }
