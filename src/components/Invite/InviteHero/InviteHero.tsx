@@ -1,6 +1,7 @@
 import { Suspense, lazy, memo, useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatedBackground } from 'decentraland-ui2'
 import { useInviteDirectDownload } from '../../../features/invite/invite.flags'
+import { getInviterName } from '../../../features/invite/invite.helpers'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useVideoOptimization } from '../../../hooks/contentful'
 import { useFeatureFlagContext } from '../../../hooks/useFeatureFlagContext'
@@ -71,7 +72,7 @@ const InviteHero = memo((props: InviteHeroProps) => {
     setIsClient(true)
   }, [])
 
-  const referrerName = referrer?.avatars?.[0]?.name
+  const referrerName = getInviterName(referrer)
 
   const trackClick = useTrackClick()
   // Direct download only on desktop (mobile keeps the auth-login-first flow) and
