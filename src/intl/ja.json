@@ -391,7 +391,7 @@
   "page_invite": {
     "social": {
       "title": "Decentralandに参加しよう - コミュニティが作るバーチャルワールド",
-      "description": "アバターをカスタマイズして、世界中の人々と交流し、Decentralandを発見しましょう。ブラウザから始めて、アプリをダウンロードして入場しましょう。",
+      "description": "Decentralandは、オンラインで過ごす場所です。映画上映、ライブ音楽、クイズ、その他のコミュニティイベントに参加しましょう。いつでも訪れて、誰がいるか見てみましょう。",
       "title_with_name": "{name}があなたをDecentralandに招待しました"
     },
     "hero": {
