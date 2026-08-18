@@ -391,7 +391,8 @@
   "page_invite": {
     "social": {
       "title": "加入 Decentraland - 一个由社区构建的虚拟世界",
-      "description": "自定义你的头像，与世界各地的人一起玩，探索 Decentraland。从浏览器开始，然后下载应用进入。"
+      "description": "自定义你的头像，与世界各地的人一起玩，探索 Decentraland。从浏览器开始，然后下载应用进入。",
+      "title_with_name": "{name} 邀请你加入 Decentraland"
     },
     "hero": {
       "title": "邀请你加入 Decentraland",

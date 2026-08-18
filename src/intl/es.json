@@ -391,7 +391,8 @@
   "page_invite": {
     "social": {
       "title": "Únete a Decentraland - Un mundo virtual construido por su comunidad",
-      "description": "Personaliza tu avatar, pasa el rato con personas de todo el mundo y descubre Decentraland. Empieza desde tu navegador y luego descarga la app para entrar."
+      "description": "Personaliza tu avatar, pasa el rato con personas de todo el mundo y descubre Decentraland. Empieza desde tu navegador y luego descarga la app para entrar.",
+      "title_with_name": "{name} te invitó a unirte a Decentraland"
     },
     "hero": {
       "title": "te invitó a unirte a Decentraland",

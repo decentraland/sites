@@ -391,7 +391,8 @@
   "page_invite": {
     "social": {
       "title": "Decentraland에 참여하세요 - 커뮤니티가 만든 가상 세계",
-      "description": "아바타를 꾸미고, 전 세계 사람들과 어울리고, Decentraland를 탐험하세요. 브라우저에서 시작한 다음 앱을 다운로드하여 입장하세요."
+      "description": "아바타를 꾸미고, 전 세계 사람들과 어울리고, Decentraland를 탐험하세요. 브라우저에서 시작한 다음 앱을 다운로드하여 입장하세요.",
+      "title_with_name": "{name}님이 Decentraland에 초대했습니다"
     },
     "hero": {
       "title": "님이 Decentraland에 초대했습니다",
