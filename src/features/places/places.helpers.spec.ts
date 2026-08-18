@@ -140,6 +140,22 @@ describe('jump.helpers', () => {
         expect(buildDeepLinkOptions('1,2', 'foo.eth', undefined, undefined)).toEqual({ position: '1,2', realm: 'foo.eth' })
       })
     })
+
+    describe('and multiInstance is provided', () => {
+      it('should include it in the options', () => {
+        expect(buildDeepLinkOptions('1,2', 'foo.eth', undefined, undefined, 'true')).toEqual({
+          position: '1,2',
+          realm: 'foo.eth',
+          multiInstance: 'true'
+        })
+      })
+    })
+
+    describe('and multiInstance is not provided', () => {
+      it('should omit multiInstance from the options', () => {
+        expect(buildDeepLinkOptions('1,2', 'foo.eth', undefined, undefined, undefined)).toEqual({ position: '1,2', realm: 'foo.eth' })
+      })
+    })
   })
 
   describe('when collectDeepLinkParams is called', () => {

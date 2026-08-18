@@ -44,6 +44,7 @@ function useExplorerLauncher() {
   const arch = advancedUserAgent?.cpu?.architecture?.toLowerCase() ?? 'unknown'
   const explorerEnv = searchParams.get('dclenv') ?? mapEnvToDclenv(searchParams.get('env'))
   const sceneConsole = searchParams.get('scene-console') ?? undefined
+  const multiInstance = searchParams.get('multi-instance') ?? undefined
 
   const launch = useCallback(
     async (options: { position?: string; realm?: string }): Promise<LaunchOutcome> => {
@@ -53,13 +54,13 @@ function useExplorerLauncher() {
         return 'mobile-store'
       }
       try {
-        const launched = await launchDesktopApp(buildDeepLinkOptions(options.position, options.realm, explorerEnv, sceneConsole))
+        const launched = await launchDesktopApp(buildDeepLinkOptions(options.position, options.realm, explorerEnv, sceneConsole, multiInstance))
         return launched ? 'launched' : 'not-installed'
       } catch {
         return 'launch-error'
       }
     },
-    [isMobile, downloadOs, explorerEnv, sceneConsole]
+    [isMobile, downloadOs, explorerEnv, sceneConsole, multiInstance]
   )
 
   return { launch, isMobile, downloadOs, osName, arch }

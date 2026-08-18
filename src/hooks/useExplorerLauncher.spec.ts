@@ -10,10 +10,12 @@ jest.mock('@dcl/hooks', () => ({ useAdvancedUserAgentData: jest.fn() }))
 jest.mock('decentraland-ui2', () => ({ launchDesktopApp: jest.fn() }))
 jest.mock('../config/dclenv', () => ({ mapEnvToDclenv: (v: string | null) => v ?? undefined }))
 jest.mock('../features/places/places.helpers', () => ({
-  buildDeepLinkOptions: (position?: string, realm?: string, env?: string) => ({
+  buildDeepLinkOptions: (position?: string, realm?: string, env?: string, sceneConsole?: string, multiInstance?: string) => ({
     ...(position ? { position } : {}),
     ...(realm ? { realm } : {}),
-    ...(env ? { dclenv: env } : {})
+    ...(env ? { dclenv: env } : {}),
+    ...(sceneConsole ? { sceneConsole } : {}),
+    ...(multiInstance ? { multiInstance } : {})
   })
 }))
 jest.mock('../modules/downloadConstants', () => ({
@@ -91,6 +93,18 @@ describe('useExplorerLauncher', () => {
       })
 
       expect(mockedLaunch).toHaveBeenCalledWith(expect.objectContaining({ dclenv: 'stg' }))
+    })
+
+    it('should thread the ?multi-instance deep-link param into the launch', async () => {
+      mockedSearchParams.mockReturnValue([new URLSearchParams('multi-instance=true'), jest.fn()])
+      mockedLaunch.mockResolvedValue(true)
+      const { result } = renderHook(() => useExplorerLauncher())
+
+      await act(async () => {
+        await result.current.launch({ position: '1,2' })
+      })
+
+      expect(mockedLaunch).toHaveBeenCalledWith(expect.objectContaining({ multiInstance: 'true' }))
     })
   })
 

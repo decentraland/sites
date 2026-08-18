@@ -65,13 +65,15 @@ function buildDeepLinkOptions(
   position?: string,
   realm?: string,
   env?: string,
-  sceneConsole?: string
-): { realm?: string; position?: string; dclenv?: string; sceneConsole?: string } {
-  const options: { realm?: string; position?: string; dclenv?: string; sceneConsole?: string } = {}
+  sceneConsole?: string,
+  multiInstance?: string
+): { realm?: string; position?: string; dclenv?: string; sceneConsole?: string; multiInstance?: string } {
+  const options: { realm?: string; position?: string; dclenv?: string; sceneConsole?: string; multiInstance?: string } = {}
   if (realm && realm !== DEFAULT_REALM) options.realm = realm
   if (position && position !== DEFAULT_POSITION) options.position = position
   if (env) options.dclenv = env
   if (sceneConsole) options.sceneConsole = sceneConsole
+  if (multiInstance) options.multiInstance = multiInstance
   return options
 }
 
