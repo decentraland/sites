@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
-import { mapEnvToDclenv } from '../config/dclenv'
 import { buildDeepLinkOptions } from '../features/places/places.helpers'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
+import { useDeepLinkQueryParams } from './useDeepLinkQueryParams'
 
 // What a launch attempt resolved to, so the caller can track + fall back:
 //   'mobile-store'  → sent to the app store (no desktop client on touch devices)
@@ -31,20 +30,17 @@ function isClientNotInstalled(outcome: LaunchOutcome): boolean {
  * surface (homepage `useLaunchExplorer`, discover jump-in): mobile → app store,
  * desktop → `launchDesktopApp`. It emits NO analytics and owns no modal state —
  * it returns the outcome so each caller tracks its own event and renders its own
- * DownloadModal. The `?env`/`?dclenv`/`?scene-console` query params are threaded
- * into the deep link, matching the standalone flow.
+ * DownloadModal. The deep-link query params (see `useDeepLinkQueryParams`) are
+ * threaded into the deep link, matching the standalone flow.
  */
 function useExplorerLauncher() {
-  const [searchParams] = useSearchParams()
   const [, advancedUserAgent] = useAdvancedUserAgentData()
+  const { dclenv, sceneConsole, multiInstance } = useDeepLinkQueryParams()
 
   const isMobile = Boolean(advancedUserAgent?.mobile)
   const downloadOs = detectDownloadOS()
   const osName = advancedUserAgent?.os?.name ?? 'unknown'
   const arch = advancedUserAgent?.cpu?.architecture?.toLowerCase() ?? 'unknown'
-  const explorerEnv = searchParams.get('dclenv') ?? mapEnvToDclenv(searchParams.get('env'))
-  const sceneConsole = searchParams.get('scene-console') ?? undefined
-  const multiInstance = searchParams.get('multi-instance') ?? undefined
 
   const launch = useCallback(
     async (options: { position?: string; realm?: string }): Promise<LaunchOutcome> => {
@@ -58,7 +54,7 @@ function useExplorerLauncher() {
           buildDeepLinkOptions({
             position: options.position,
             realm: options.realm,
-            env: explorerEnv,
+            dclenv,
             sceneConsole,
             multiInstance
           })
@@ -68,7 +64,7 @@ function useExplorerLauncher() {
         return 'launch-error'
       }
     },
-    [isMobile, downloadOs, explorerEnv, sceneConsole, multiInstance]
+    [isMobile, downloadOs, dclenv, sceneConsole, multiInstance]
   )
 
   return { launch, isMobile, downloadOs, osName, arch }

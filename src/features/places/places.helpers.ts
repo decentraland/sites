@@ -1,4 +1,4 @@
-import type { CardData } from './places.types'
+import type { CardData, DeepLinkOptions } from './places.types'
 
 interface ParsedPosition {
   original: string
@@ -61,27 +61,15 @@ function formatDateForGoogleCalendar(date: Date): string {
   return `${year}${month}${day}T${hours}${minutes}${seconds}Z`
 }
 
-interface DeepLinkOptions {
-  realm?: string
-  position?: string
-  dclenv?: string
-  sceneConsole?: string
-  multiInstance?: string
-}
-
-function buildDeepLinkOptions(
-  input: {
-    position?: string
-    realm?: string
-    env?: string
-    sceneConsole?: string
-    multiInstance?: string
-  } = {}
-): DeepLinkOptions {
+// Drops the values the explorer already defaults to, so a jump to Genesis City
+// origin on the main realm produces a bare deep link. Input and output share one
+// shape on purpose: re-normalizing an already-built object is a no-op, where an
+// `env`-keyed input silently discarded `dclenv` on the way back through.
+function buildDeepLinkOptions(input: DeepLinkOptions): DeepLinkOptions {
   const options: DeepLinkOptions = {}
   if (input.realm && input.realm !== DEFAULT_REALM) options.realm = input.realm
   if (input.position && input.position !== DEFAULT_POSITION) options.position = input.position
-  if (input.env) options.dclenv = input.env
+  if (input.dclenv) options.dclenv = input.dclenv
   if (input.sceneConsole) options.sceneConsole = input.sceneConsole
   if (input.multiInstance) options.multiInstance = input.multiInstance
   return options
@@ -119,4 +107,4 @@ export {
   parsePosition,
   resolvePlacesPosition
 }
-export type { DeepLinkOptions, ParsedPosition }
+export type { ParsedPosition }

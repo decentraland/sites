@@ -56,10 +56,7 @@ function DiscoverJumpInProvider({ children }: { children: ReactNode }) {
   // to the place the user last tried to launch. Gated on `isModalOpen` so the
   // total-downloads fetch never fires for the many visitors who never hit the
   // "install first" fallback.
-  const downloadModalProps = useDownloadModalProps(
-    buildDeepLinkOptions({ position: pendingDeepLink.position, realm: pendingDeepLink.realm }),
-    isModalOpen
-  )
+  const downloadModalProps = useDownloadModalProps(buildDeepLinkOptions(pendingDeepLink), isModalOpen)
 
   return (
     <DiscoverJumpInContext.Provider value={value}>

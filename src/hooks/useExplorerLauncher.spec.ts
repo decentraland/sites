@@ -10,12 +10,10 @@ jest.mock('@dcl/hooks', () => ({ useAdvancedUserAgentData: jest.fn() }))
 jest.mock('decentraland-ui2', () => ({ launchDesktopApp: jest.fn() }))
 jest.mock('../config/dclenv', () => ({ mapEnvToDclenv: (v: string | null) => v ?? undefined }))
 jest.mock('../features/places/places.helpers', () => ({
-  buildDeepLinkOptions: (
-    input: { position?: string; realm?: string; env?: string; sceneConsole?: string; multiInstance?: string } = {}
-  ) => ({
+  buildDeepLinkOptions: (input: { position?: string; realm?: string; dclenv?: string; sceneConsole?: string; multiInstance?: string }) => ({
     ...(input.position ? { position: input.position } : {}),
     ...(input.realm ? { realm: input.realm } : {}),
-    ...(input.env ? { dclenv: input.env } : {}),
+    ...(input.dclenv ? { dclenv: input.dclenv } : {}),
     ...(input.sceneConsole ? { sceneConsole: input.sceneConsole } : {}),
     ...(input.multiInstance ? { multiInstance: input.multiInstance } : {})
   })
@@ -107,6 +105,30 @@ describe('useExplorerLauncher', () => {
       })
 
       expect(mockedLaunch).toHaveBeenCalledWith(expect.objectContaining({ multiInstance: 'true' }))
+    })
+
+    it('should thread the ?scene-console deep-link param into the launch', async () => {
+      mockedSearchParams.mockReturnValue([new URLSearchParams('scene-console=true'), jest.fn()])
+      mockedLaunch.mockResolvedValue(true)
+      const { result } = renderHook(() => useExplorerLauncher())
+
+      await act(async () => {
+        await result.current.launch({ position: '1,2' })
+      })
+
+      expect(mockedLaunch).toHaveBeenCalledWith(expect.objectContaining({ sceneConsole: 'true' }))
+    })
+
+    it('should not enable multi-instance when the param says false', async () => {
+      mockedSearchParams.mockReturnValue([new URLSearchParams('multi-instance=false'), jest.fn()])
+      mockedLaunch.mockResolvedValue(true)
+      const { result } = renderHook(() => useExplorerLauncher())
+
+      await act(async () => {
+        await result.current.launch({ position: '1,2' })
+      })
+
+      expect(mockedLaunch).toHaveBeenCalledWith(expect.not.objectContaining({ multiInstance: expect.anything() }))
     })
   })
 

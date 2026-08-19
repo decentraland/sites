@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
+import { useDeepLinkQueryParams } from '../../hooks/useDeepLinkQueryParams'
 import { useDownloadPageExit } from '../../hooks/useDownloadPageExit'
 import { useWalletAddress } from '../../hooks/useWalletAddress'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
@@ -66,6 +67,7 @@ jest.mock('../../features/profile/profile.client', () => ({ useGetProfileQuery: 
 jest.mock('../../hooks/useWalletAddress', () => ({ useWalletAddress: jest.fn() }))
 
 jest.mock('../../hooks/useDownloadPageExit', () => ({ useDownloadPageExit: jest.fn() }))
+jest.mock('../../hooks/useDeepLinkQueryParams', () => ({ useDeepLinkQueryParams: jest.fn(() => ({})) }))
 
 jest.mock('../../utils/authRedirect', () => ({ redirectToAuth: jest.fn() }))
 
@@ -89,6 +91,7 @@ const mockUseGetProfileQuery = jest.mocked(useGetProfileQuery)
 const mockLaunchDesktopApp = jest.mocked(launchDesktopApp)
 const mockRedirectToAuth = jest.mocked(redirectToAuth)
 const mockUseDownloadPageExit = jest.mocked(useDownloadPageExit)
+const mockUseDeepLinkQueryParams = jest.mocked(useDeepLinkQueryParams)
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const mockUseDesktopMediaQuery = require('decentraland-ui2').useDesktopMediaQuery as jest.Mock
 
@@ -106,6 +109,7 @@ describe('DownloadLayout', () => {
     mockUseInView.mockReturnValue({ ref: jest.fn(), inView: false } as unknown as ReturnType<typeof useInView>)
     mockUseDesktopMediaQuery.mockReturnValue(true)
     mockUseAdvancedUserAgentData.mockReturnValue([false, undefined] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+    mockUseDeepLinkQueryParams.mockReturnValue({})
     setWallet(null)
     setProfile(undefined)
   })
@@ -284,7 +288,19 @@ describe('DownloadLayout', () => {
       mockLaunchDesktopApp.mockResolvedValue(true)
       render(<DownloadLayout title={TITLE} />)
       await userEvent.click(screen.getByText('page.download.jump_in'))
-      await waitFor(() => expect(mockLaunchDesktopApp).toHaveBeenCalledWith({}))
+      await waitFor(() =>
+        expect(mockLaunchDesktopApp).toHaveBeenCalledWith({ dclenv: undefined, sceneConsole: undefined, multiInstance: undefined })
+      )
+    })
+
+    it('should forward the deep-link query params into the launch', async () => {
+      mockUseDeepLinkQueryParams.mockReturnValue({ dclenv: 'zone', sceneConsole: 'true', multiInstance: 'true' })
+      mockLaunchDesktopApp.mockResolvedValue(true)
+      render(<DownloadLayout title={TITLE} />)
+      await userEvent.click(screen.getByText('page.download.jump_in'))
+      await waitFor(() =>
+        expect(mockLaunchDesktopApp).toHaveBeenCalledWith({ dclenv: 'zone', sceneConsole: 'true', multiInstance: 'true' })
+      )
     })
 
     it('should surface the fallback modal when the launcher is unavailable', async () => {

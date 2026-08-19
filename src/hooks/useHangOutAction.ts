@@ -6,6 +6,7 @@ import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
 import { buildDownloadTrackingParams } from '../modules/downloadTrackingParams'
 import { buildTrackedDownloadUrl } from '../modules/url'
 import { useAnonUserId } from './useAnonUserId'
+import { useDeepLinkQueryParams } from './useDeepLinkQueryParams'
 import { useTotalDownloads } from './useTotalDownloads'
 import { useWalletAddress } from './useWalletAddress'
 
@@ -17,6 +18,7 @@ import { useWalletAddress } from './useWalletAddress'
  */
 function useHangOutAction() {
   const { isConnected } = useWalletAddress()
+  const { dclenv, sceneConsole, multiInstance } = useDeepLinkQueryParams()
   const anonUserId = useAnonUserId()
   const totalDownloads = useTotalDownloads()
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false)
@@ -31,7 +33,10 @@ function useHangOutAction() {
       }
 
       try {
-        const hasLauncher = await launchDesktopApp()
+        // NOTE: this CTA used to call `launchDesktopApp()` with no options, so it
+        // silently dropped every deep-link query param. It now forwards the same
+        // ones as the jump surfaces (`?dclenv`/`?scene-console`/`?multi-instance`).
+        const hasLauncher = await launchDesktopApp({ dclenv, sceneConsole, multiInstance })
         if (!hasLauncher) {
           setIsDownloadModalOpen(true)
         }
@@ -39,7 +44,7 @@ function useHangOutAction() {
         setIsDownloadModalOpen(true)
       }
     },
-    [isConnected]
+    [isConnected, dclenv, sceneConsole, multiInstance]
   )
 
   const closeDownloadModal = useCallback(() => setIsDownloadModalOpen(false), [])
