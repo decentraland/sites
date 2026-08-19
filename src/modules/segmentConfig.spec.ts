@@ -87,6 +87,11 @@ describe('segmentConfig', () => {
       expect(getSegmentCdnUrl()).toBe('https://evs.e.decentraland.org/aPath')
     })
 
+    it('should drop a query string, the settings path is appended after it', () => {
+      mockEnvValues.SEGMENT_CDN_URL = 'https://evs.e.decentraland.org/aPath?debug=1#aHash'
+      expect(getSegmentCdnUrl()).toBe('https://evs.e.decentraland.org/aPath')
+    })
+
     describe('when the configured value cannot be trusted', () => {
       let consoleWarn: jest.SpyInstance
 

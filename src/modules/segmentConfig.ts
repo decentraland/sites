@@ -61,8 +61,9 @@ function resolveProxyUrl(name: string, value: string): URL | undefined {
 /**
  * Origin the Segment SDK fetches its project settings and its remote plugins
  * from, instead of `cdn.segment.com`, which ad-blocker filter lists match.
- * The SDK appends `/v1/projects/${writeKey}/settings` to it, so the trailing
- * slash is dropped to keep the separator single.
+ * The SDK appends `/v1/projects/${writeKey}/settings` to it, so only the origin
+ * and the path survive (a query or fragment would land mid-URL) and the
+ * trailing slash is dropped to keep the separator single.
  *
  * Returns `undefined` when unconfigured or rejected, which keeps Segment's CDN.
  */
@@ -72,7 +73,9 @@ function getSegmentCdnUrl(): string | undefined {
     return undefined
   }
 
-  return resolveProxyUrl('cdn url', cdnUrl)?.href.replace(TRAILING_SLASHES, '')
+  const resolved = resolveProxyUrl('cdn url', cdnUrl)
+
+  return resolved && `${resolved.origin}${resolved.pathname}`.replace(TRAILING_SLASHES, '')
 }
 
 /**
