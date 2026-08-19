@@ -3,10 +3,11 @@ import { isAnalyticsExemptPath } from '../utils/isAnalyticsExemptPath'
 
 // Segment's HTTP Tracking API endpoint. Accepts the public `writeKey` in the
 // JSON body (no Authorization header), which is what lets transports that
-// cannot set headers — `navigator.sendBeacon` — post to it. Lives here rather
-// than inline in a feature module so the one direct-HTTP caller and any future
-// one share a single literal.
-const SEGMENT_TRACK_URL = 'https://api.segment.io/v1/track'
+// cannot set headers — `navigator.sendBeacon` — post to it.
+const DEFAULT_SEGMENT_TRACK_URL = 'https://api.segment.io/v1/track'
+
+const PROTOCOL_PREFIX = /^[a-z][a-z0-9+.-]*:\/\//i
+const TRAILING_SLASHES = /\/+$/
 
 /**
  * Single source of truth for the public Segment write key on the current page.
@@ -32,4 +33,84 @@ function getSegmentWriteKey(options?: { bypassExemptPathGate?: boolean }): strin
   return getEnv('SEGMENT_KEY') || ''
 }
 
-export { SEGMENT_TRACK_URL, getSegmentWriteKey }
+/**
+ * Both proxy values decide where a third-party script is loaded from and where
+ * every event is delivered, so they are read from the build configuration and
+ * never from user input. A value that is not an absolute https URL is dropped
+ * with a warning, so a misconfigured environment degrades to Segment's own
+ * endpoints instead of pointing the SDK at an untrusted host.
+ */
+function resolveProxyUrl(name: string, value: string): URL | undefined {
+  let resolved: URL
+
+  try {
+    resolved = new URL(value)
+  } catch {
+    console.warn(`[Analytics] Ignoring the ${name} "${value}", it is not a valid URL`)
+    return undefined
+  }
+
+  if (resolved.protocol !== 'https:') {
+    console.warn(`[Analytics] Ignoring the ${name} "${value}", it is not served over https`)
+    return undefined
+  }
+
+  return resolved
+}
+
+/**
+ * Origin the Segment SDK fetches its project settings and its remote plugins
+ * from, instead of `cdn.segment.com`, which ad-blocker filter lists match.
+ * The SDK appends `/v1/projects/${writeKey}/settings` to it, so only the origin
+ * and the path survive (a query or fragment would land mid-URL) and the
+ * trailing slash is dropped to keep the separator single.
+ *
+ * Returns `undefined` when unconfigured or rejected, which keeps Segment's CDN.
+ */
+function getSegmentCdnUrl(): string | undefined {
+  const cdnUrl = getEnv('SEGMENT_CDN_URL')
+  if (!cdnUrl) {
+    return undefined
+  }
+
+  const resolved = resolveProxyUrl('cdn url', cdnUrl)
+
+  return resolved && `${resolved.origin}${resolved.pathname}`.replace(TRAILING_SLASHES, '')
+}
+
+/**
+ * Host the Segment SDK delivers events to, instead of `api.segment.io/v1`.
+ * Format: `host/basePath` without protocol; the SDK prepends `https://` and
+ * appends the method path (`/t`, `/i`, `/p`).
+ *
+ * Returns `undefined` when unconfigured or rejected, same as `getSegmentCdnUrl`.
+ *
+ * NOTE: this is a different host from `SEGMENT_CDN_URL`. The CDN one is a
+ * CloudFront distribution over static objects and 404s on the ingestion paths;
+ * only this one proxies the Tracking API.
+ */
+function getSegmentApiHost(): string | undefined {
+  const apiHost = getEnv('SEGMENT_API_HOST')
+  if (!apiHost) {
+    return undefined
+  }
+
+  // The SDK takes it without a protocol and prepends its own, so a configured
+  // one is accepted and stripped instead of producing `https://https://host`.
+  const resolved = resolveProxyUrl('api host', PROTOCOL_PREFIX.test(apiHost) ? apiHost : `https://${apiHost}`)
+
+  return resolved && `${resolved.host}${resolved.pathname}`.replace(TRAILING_SLASHES, '')
+}
+
+/**
+ * Full URL for the Segment HTTP Tracking API track endpoint used by the beacon
+ * transport (`segmentBeacon.ts`), which posts outside the SDK so it survives
+ * unload. Derived from the same host the SDK uses, so both transports agree on
+ * where events go and fall back together.
+ */
+function getSegmentTrackUrl(): string {
+  const apiHost = getSegmentApiHost()
+  return apiHost ? `https://${apiHost}/track` : DEFAULT_SEGMENT_TRACK_URL
+}
+
+export { DEFAULT_SEGMENT_TRACK_URL, getSegmentApiHost, getSegmentCdnUrl, getSegmentTrackUrl, getSegmentWriteKey }

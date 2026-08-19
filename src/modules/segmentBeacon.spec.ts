@@ -1,9 +1,9 @@
 import { SegmentEvent } from './segment'
 import { postSegmentEvent } from './segmentBeacon'
-import { SEGMENT_TRACK_URL, getSegmentWriteKey } from './segmentConfig'
+import { getSegmentTrackUrl, getSegmentWriteKey } from './segmentConfig'
 
 jest.mock('./segmentConfig', () => ({
-  SEGMENT_TRACK_URL: 'https://api.segment.io/v1/track',
+  getSegmentTrackUrl: jest.fn(() => 'https://api.segment.io/v1/track'),
   getSegmentWriteKey: jest.fn()
 }))
 
@@ -46,7 +46,8 @@ describe('when posting a Segment event via beacon', () => {
   it('should post a text/plain payload with the Segment track envelope and page context', async () => {
     postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero', event: SegmentEvent.DOWNLOAD }, 'anon-1')
 
-    expect(mockSendBeacon).toHaveBeenCalledWith(SEGMENT_TRACK_URL, expect.any(Blob))
+    const trackUrl = getSegmentTrackUrl()
+    expect(mockSendBeacon).toHaveBeenCalledWith(trackUrl, expect.any(Blob))
     const [, blob] = mockSendBeacon.mock.calls[0] as [string, Blob]
     expect(blob.type).toBe('text/plain')
     const body = JSON.parse(await readBlobText(blob))
@@ -80,6 +81,14 @@ describe('when posting a Segment event via beacon', () => {
     // The /v1/track endpoint infers the message type; the SDK does not send it
     // on this transport, so neither do we.
     expect(body).not.toHaveProperty('type')
+  })
+
+  it('should use the proxy track URL when SEGMENT_API_HOST is configured', () => {
+    ;(getSegmentTrackUrl as jest.Mock).mockReturnValue('https://evs.e.decentraland.org/v1/track')
+
+    postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero' }, 'anon-1')
+
+    expect(mockSendBeacon).toHaveBeenCalledWith('https://evs.e.decentraland.org/v1/track', expect.any(Blob))
   })
 
   it('should set context.direct so Segment stamps the request IP on device-originated events', async () => {
@@ -159,8 +168,9 @@ describe('when posting a Segment event via beacon', () => {
 
     postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero' }, 'anon-1')
 
+    const trackUrl = getSegmentTrackUrl()
     expect(mockFetch).toHaveBeenCalledWith(
-      SEGMENT_TRACK_URL,
+      trackUrl,
       expect.objectContaining({
         method: 'POST',
         keepalive: true,
