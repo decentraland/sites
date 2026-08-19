@@ -82,9 +82,9 @@ function getSegmentCdnUrl(): string | undefined {
  *
  * Returns `undefined` when unconfigured or rejected, same as `getSegmentCdnUrl`.
  *
- * NOTE: unset in every environment today. The proxy serves the CDN
- * (bundle, settings, remote plugins) but returns 404 on the ingestion paths, so
- * pointing events at it drops all of them. Set it once the proxy accepts them.
+ * NOTE: this is a different host from `SEGMENT_CDN_URL`. The CDN one is a
+ * CloudFront distribution over static objects and 404s on the ingestion paths;
+ * only this one proxies the Tracking API.
  */
 function getSegmentApiHost(): string | undefined {
   const apiHost = getEnv('SEGMENT_API_HOST')

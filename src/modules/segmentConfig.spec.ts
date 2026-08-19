@@ -184,4 +184,32 @@ describe('segmentConfig', () => {
       consoleWarn.mockRestore()
     })
   })
+
+  // Guards the shipped configuration itself, not the helpers: the CDN host and the
+  // Tracking API host are two different proxies and swapping them silently sends
+  // every event to a 404, which no unit test on mocked env values would catch.
+  describe('the configured environments', () => {
+    const envs: [string, Record<string, string | undefined>][] = [
+      ['dev', jest.requireActual('../config/env/dev.json')],
+      ['stg', jest.requireActual('../config/env/stg.json')],
+      ['prd', jest.requireActual('../config/env/prd.json')]
+    ]
+
+    describe.each(envs.filter(([, env]) => env.SEGMENT_CDN_URL))('%s', (_envName, env) => {
+      it('should point SEGMENT_CDN_URL at an absolute https origin', () => {
+        expect(env.SEGMENT_CDN_URL).toMatch(/^https:\/\//)
+        expect(new URL(env.SEGMENT_CDN_URL!).pathname).toBe('/')
+      })
+    })
+
+    describe.each(envs.filter(([, env]) => env.SEGMENT_API_HOST))('%s', (_envName, env) => {
+      it('should point SEGMENT_API_HOST at a host and base path, with no protocol', () => {
+        expect(env.SEGMENT_API_HOST).toMatch(/^[a-z0-9.-]+\/[a-z0-9]+$/)
+      })
+
+      it('should not reuse the CDN host for the ingestion, they are separate proxies', () => {
+        expect(env.SEGMENT_API_HOST!.split('/')[0]).not.toBe(new URL(env.SEGMENT_CDN_URL!).host)
+      })
+    })
+  })
 })
