@@ -16,8 +16,13 @@ const useScreenShare = (): UseScreenShareResult => {
   const connectionState = useConnectionState()
   const { hasLocalScreenShare } = useLocalVideoTracks()
 
-  // Distinguishes a user-initiated stop from a silent death.
+  // Distinguishes a stop through OUR button from a silent death.
   const intentionalStopRef = useRef(false)
+  // Set when the capture source itself ended: the browser's own "Stop sharing" bar,
+  // or the captured window/tab being closed. Both are the user deciding to stop, and
+  // neither goes through `stopScreenShare`, so without this they looked identical to
+  // a crash (SITES-2PY).
+  const sourceEndedRef = useRef(false)
   // Snapshot of the track at start — the publication may be gone by death time.
   const shareStartedAtRef = useRef<number | null>(null)
   const trackStatsRef = useRef<ScreenShareStats>({})
@@ -50,10 +55,21 @@ const useScreenShare = (): UseScreenShareResult => {
       await localParticipant.setScreenShareEnabled(true, { audio: true })
 
       const publication = localParticipant.getTrackPublication(Track.Source.ScreenShare)
-      const settings = publication?.track?.mediaStreamTrack?.getSettings()
+      const mediaStreamTrack = publication?.track?.mediaStreamTrack
+      const settings = mediaStreamTrack?.getSettings()
       trackStatsRef.current = { width: settings?.width, height: settings?.height, frameRate: settings?.frameRate }
       shareStartedAtRef.current = Date.now()
       intentionalStopRef.current = false
+      sourceEndedRef.current = false
+      // `ended` fires before LiveKit unpublishes, so it is always set by the time the
+      // transition effect below runs. `once` keeps it from outliving this share.
+      mediaStreamTrack?.addEventListener(
+        'ended',
+        () => {
+          sourceEndedRef.current = true
+        },
+        { once: true }
+      )
     } catch (error) {
       console.error('[useScreenShare] Error enabling screen share:', error)
       const errorName = error instanceof Error ? error.name : undefined
@@ -100,9 +116,22 @@ const useScreenShare = (): UseScreenShareResult => {
     // Only act on the true -> false edge.
     if (!wasSharing || hasLocalScreenShare) return
 
-    // User asked to stop — clean exit, no toast.
+    // User asked to stop through our button — clean exit, no toast.
     if (intentionalStopRef.current) {
       intentionalStopRef.current = false
+      sourceEndedRef.current = false
+      shareStartedAtRef.current = null
+      trackStatsRef.current = {}
+      return
+    }
+
+    // NOTE: the source ending used to fall through to the failure path below, which
+    // showed a "screen share failed" toast with a Retry button and reported to Sentry.
+    // The browser's own stop bar and closing the captured surface both land here, so
+    // most of those reports were users stopping on purpose (SITES-2PY: a sample had
+    // durationMs 8725 with the connection still up). Treated as a clean exit now.
+    if (sourceEndedRef.current) {
+      sourceEndedRef.current = false
       shareStartedAtRef.current = null
       trackStatsRef.current = {}
       return

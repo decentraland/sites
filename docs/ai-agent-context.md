@@ -26,7 +26,7 @@
 
 - Pure client-side SPA (Vite, no SSR or SSG)
 - All content fetched at runtime via RTK Query using a custom `cmsBaseQuery` (`src/services/api.ts`) that calls Contentful's REST API directly
-- In development, Vite proxies `/api/cms` to avoid CORS; in production the app calls `cms.decentraland.org` directly
+- In development, Vite proxies `/api/cms` to avoid CORS; in production the app calls `cms-api.decentraland.org` directly
 - Each landing section has its own RTK Query endpoint in `src/features/landing/landing.client.ts`, keyed by a Contentful entry ID from config
 - Hero is fetched first (priority); all other sections fetch in parallel and render independently
 
@@ -49,7 +49,7 @@
 
 **External Dependencies:**
 
-- Contentful CMS REST API (`cms.decentraland.org/spaces/ea2ybdmmn1kv/environments/master`) — all landing page content sections, fetched by per-section entry ID
+- Contentful CMS REST API (`cms-api.decentraland.org/spaces/ea2ybdmmn1kv/environments/master`) — all landing page content sections, fetched by per-section entry ID
 - Decentraland Catalyst peer (`peer.decentraland.org`) — auth profile context
 - Decentraland Auth (`decentraland.org/auth`) — SSO authentication
 - Magic SDK — email/social login

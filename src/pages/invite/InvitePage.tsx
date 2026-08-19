@@ -9,6 +9,7 @@ import { LandingFooter } from '../../components/LandingFooter'
 import { getEnv } from '../../config/env'
 import { INVITE_HERO_MEDIA, INVITE_SECOND_HERO_MEDIA } from '../../data/inviteContent'
 import { useInviteDirectDownload } from '../../features/invite/invite.flags'
+import { getInviterName } from '../../features/invite/invite.helpers'
 import { usePageView } from '../../hooks/usePageView'
 import { SectionViewedTrack } from '../../modules/segment'
 import { storeReferrer } from '../../utils/referrer'
@@ -59,6 +60,17 @@ async function fetchReferrerProfile(address: string): Promise<Profile | null> {
   }
 }
 
+/**
+ * Keeps the tab title and the meta description in sync with the invite copy.
+ *
+ * NOTE (2026-08-18): this deliberately no longer writes `og:title` / `og:description`.
+ * Open Graph for `/invite/:referrer` belongs to the edge worker (sites-deployer's
+ * `OpenGraphInviteRoute`), which resolves the inviter and rewrites the share card
+ * before the HTML reaches a crawler — crawlers don't run JS, so the client-side
+ * write reached nobody except to leave the hydrated DOM contradicting the card
+ * the unfurler had already read. Don't reintroduce it: the fix for a wrong share
+ * preview lives in the worker, not here.
+ */
 function useDocumentMeta(title: string, description: string) {
   useEffect(() => {
     const prevTitle = document.title
@@ -70,23 +82,9 @@ function useDocumentMeta(title: string, description: string) {
       metaDesc.setAttribute('content', description)
     }
 
-    const ogTitle = document.querySelector('meta[property="og:title"]')
-    const prevOgTitle = ogTitle?.getAttribute('content') || ''
-    if (ogTitle) {
-      ogTitle.setAttribute('content', title)
-    }
-
-    const ogDesc = document.querySelector('meta[property="og:description"]')
-    const prevOgDesc = ogDesc?.getAttribute('content') || ''
-    if (ogDesc) {
-      ogDesc.setAttribute('content', description)
-    }
-
     return () => {
       document.title = prevTitle
       if (metaDesc) metaDesc.setAttribute('content', prevDesc)
-      if (ogTitle) ogTitle.setAttribute('content', prevOgTitle)
-      if (ogDesc) ogDesc.setAttribute('content', prevOgDesc)
     }
   }, [title, description])
 }
@@ -124,7 +122,13 @@ const InvitePage = memo(() => {
     storeReferrer(inviteDirectDownload ? referrerAddress : null)
   }, [referrerAddress, inviteDirectDownload])
 
-  useDocumentMeta(t('page_invite.social.title'), t('page_invite.social.description'))
+  // Mirrors the share card the worker writes at the edge once the inviter is known,
+  // and falls back to the generic invite copy while (or if) the profile never resolves.
+  const inviterName = isProfileLoading ? null : getInviterName(referrerProfile)
+  useDocumentMeta(
+    inviterName ? t('page_invite.social.title_with_name', { name: inviterName }) : t('page_invite.social.title'),
+    t('page_invite.social.description')
+  )
 
   // Invite is a Layout-less route, so it never gets the automatic page() that
   // Layout fires for wrapped routes. Restores the invite pageview lost in the
