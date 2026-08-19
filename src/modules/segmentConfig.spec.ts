@@ -202,6 +202,15 @@ describe('segmentConfig', () => {
       })
     })
 
+    // The three env files carried the same write key from april 2026 (added in #216) until #747,
+    // so every .zone visit and every preview deploy wrote into the production source. stg keeps
+    // sharing it on purpose, mirroring marketplace, but dev must not go back to it by copy-paste.
+    it('should keep dev on its own Segment source, away from production', () => {
+      const dev = envs.find(([name]) => name === 'dev')![1]
+      const prd = envs.find(([name]) => name === 'prd')![1]
+      expect(dev.SEGMENT_KEY).not.toBe(prd.SEGMENT_KEY)
+    })
+
     describe.each(envs.filter(([, env]) => env.SEGMENT_API_HOST))('%s', (_envName, env) => {
       it('should point SEGMENT_API_HOST at a host and base path, with no protocol', () => {
         expect(env.SEGMENT_API_HOST).toMatch(/^[a-z0-9.-]+\/[a-z0-9]+$/)
