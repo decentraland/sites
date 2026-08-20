@@ -637,6 +637,8 @@
         "create": "创作",
         "learn": "学习",
         "discover": "发现",
+        "events": "活动",
+        "places": "场所",
         "jump_in": "进入",
         "sign_in": "登录",
         "signing_in": "登录中...",
@@ -666,7 +668,6 @@
         "my_assets": "我的资产",
         "account_settings": "账户设置",
         "marketplace_authorizations": "市场授权",
-        "whats_on": "探索",
         "credits_balance": "{count} 积分"
       }
     },

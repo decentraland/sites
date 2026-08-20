@@ -637,6 +637,8 @@
         "create": "만들기",
         "learn": "배우기",
         "discover": "디스커버",
+        "events": "이벤트",
+        "places": "장소",
         "jump_in": "입장",
         "sign_in": "로그인",
         "signing_in": "로그인 중...",
@@ -666,7 +668,6 @@
         "my_assets": "내 자산",
         "account_settings": "계정 설정",
         "marketplace_authorizations": "마켓플레이스 승인",
-        "whats_on": "탐색",
         "credits_balance": "크레딧 {count}"
       }
     },

@@ -681,11 +681,12 @@
         "download": "Download"
       },
       "navbar": {
-        "whats_on": "Explore",
         "shop": "Shop",
         "create": "Create",
         "learn": "Learn",
         "discover": "Discover",
+        "events": "Events",
+        "places": "Places",
         "jump_in": "Jump In",
         "sign_in": "Sign In",
         "signing_in": "Signing in...",

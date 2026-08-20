@@ -637,6 +637,8 @@
         "create": "Crear",
         "learn": "Aprender",
         "discover": "Descubrir",
+        "events": "Eventos",
+        "places": "Lugares",
         "jump_in": "Entrar",
         "sign_in": "Ingresar",
         "signing_in": "Ingresando...",
@@ -666,7 +668,6 @@
         "my_assets": "Mis cosas",
         "account_settings": "Configuración",
         "marketplace_authorizations": "Autorizaciones del Marketplace",
-        "whats_on": "Explorar",
         "credits_balance": "{count} créditos"
       }
     },
