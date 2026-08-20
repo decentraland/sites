@@ -44,15 +44,7 @@ function setActiveAddress(addr: string) {
 
 // ── Initialize + global listeners (run once) ─────────────────────────
 
-console.log('[wallet-switch] useWalletAddress module loading', {
-  href: window.location.href,
-  hasEthereum: Boolean(window.ethereum),
-  thirdwebEmail: localStorage.getItem('dcl_thirdweb_user_email'),
-  magicEmail: localStorage.getItem('dcl_magic_user_email')
-})
 currentAddress = resolveActiveAddress()
-
-console.log('[wallet-switch] useWalletAddress initial snapshot', { currentAddress })
 
 // Cross-tab updates from any dapp that touches the SSO keys or the
 // active-address pointer. Other localStorage writes are ignored so they
@@ -60,7 +52,6 @@ console.log('[wallet-switch] useWalletAddress initial snapshot', { currentAddres
 window.addEventListener('storage', (event: StorageEvent) => {
   if (!isRelevantStorageKey(event.key)) return
 
-  console.log('[wallet-switch] storage event triggered re-resolve', { key: event.key })
   setSharedAddress(resolveActiveAddress())
 })
 
