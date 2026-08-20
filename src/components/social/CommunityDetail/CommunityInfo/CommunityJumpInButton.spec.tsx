@@ -10,10 +10,14 @@ import { CommunityJumpInButton } from './CommunityJumpInButton'
 jest.mock('@dcl/hooks', () => ({ useAdvancedUserAgentData: jest.fn() }))
 
 jest.mock('decentraland-ui2', () => {
+  // Reuse the shared shim so `CommunityJumpInButton.styled.ts` actually runs its
+  // style callback instead of being skipped by a hand-rolled passthrough.
+  const { styled } = jest.requireActual('../../../../__test-utils__/styledMock')
   const Button = ({ children, onClick }: { children?: React.ReactNode; onClick?: () => void }) => (
     <button onClick={onClick}>{children}</button>
   )
   return {
+    styled,
     Button,
     DownloadModal: ({ open, onClose }: { open: boolean; onClose?: () => void }) =>
       open ? (
@@ -22,8 +26,7 @@ jest.mock('decentraland-ui2', () => {
         </div>
       ) : null,
     JumpInIcon: () => <span data-testid="jump-in-icon" />,
-    launchDesktopApp: jest.fn(),
-    styled: (tag: unknown) => () => tag
+    launchDesktopApp: jest.fn()
   }
 })
 

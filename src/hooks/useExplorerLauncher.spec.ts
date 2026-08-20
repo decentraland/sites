@@ -8,7 +8,6 @@ import { isClientNotInstalled, shouldPromptDownload, useExplorerLauncher } from 
 jest.mock('react-router-dom', () => ({ useSearchParams: jest.fn() }))
 jest.mock('@dcl/hooks', () => ({ useAdvancedUserAgentData: jest.fn() }))
 jest.mock('decentraland-ui2', () => ({ launchDesktopApp: jest.fn() }))
-jest.mock('../config/dclenv', () => ({ mapEnvToDclenv: (v: string | null) => v ?? undefined }))
 jest.mock('../features/places/places.helpers', () => ({
   buildDeepLinkOptions: (input: { position?: string; realm?: string; dclenv?: string; sceneConsole?: string; multiInstance?: string }) => ({
     ...(input.position ? { position: input.position } : {}),
@@ -92,7 +91,7 @@ describe('useExplorerLauncher', () => {
         await result.current.launch({ position: '1,2' })
       })
 
-      expect(mockedLaunch).toHaveBeenCalledWith(expect.objectContaining({ dclenv: 'stg' }))
+      expect(mockedLaunch).toHaveBeenCalledWith(expect.objectContaining({ dclenv: 'today' }))
     })
 
     it('should thread the ?multi-instance deep-link param into the launch', async () => {

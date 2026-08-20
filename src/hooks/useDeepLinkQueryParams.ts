@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router-dom'
-import { mapEnvToDclenv } from '../config/dclenv'
+import { mapEnvToDclenv, normalizeDclenv } from '../config/dclenv'
 import type { DeepLinkOptions } from '../features/places/places.types'
 
 type DeepLinkQueryParams = Pick<DeepLinkOptions, 'dclenv' | 'sceneConsole' | 'multiInstance'>
@@ -10,22 +10,22 @@ type DeepLinkQueryParams = Pick<DeepLinkOptions, 'dclenv' | 'sceneConsole' | 'mu
  * it was added for: `?dclenv` (or `?env`, mapped), `?scene-console` and
  * `?multi-instance`.
  *
- * NOTE: `?multi-instance` is normalized to the literal `'true'` that ui2
- * documents. `launchDesktopApp` presence-checks the value rather than parsing
- * it, so forwarding `?multi-instance=false` verbatim would switch multi-instance
- * ON. `?scene-console` keeps its verbatim pass-through — it shipped before this
- * contract was written down and narrowing it here would be an unrelated
- * behavior change.
+ * NOTE: every value is validated here rather than forwarded verbatim, because
+ * `launchDesktopApp` presence-checks its options without parsing them. So
+ * `?multi-instance=false` would otherwise switch multi-instance ON, and an
+ * arbitrary `?dclenv` would redirect which Explorer environment opens. Both
+ * flags are narrowed to the literal `'true'` that ui2 documents, and `?dclenv`
+ * is matched against the known environments (see `normalizeDclenv`).
  *
- * Returns primitives rather than a memoized object so callers can list the
- * individual values in their `useCallback` deps.
+ * The returned object is not memoized; its fields are primitives, so callers
+ * destructure and list the individual values in their `useCallback` deps.
  */
 function useDeepLinkQueryParams(): DeepLinkQueryParams {
   const [searchParams] = useSearchParams()
 
   return {
-    dclenv: searchParams.get('dclenv') ?? mapEnvToDclenv(searchParams.get('env')),
-    sceneConsole: searchParams.get('scene-console') ?? undefined,
+    dclenv: normalizeDclenv(searchParams.get('dclenv')) ?? mapEnvToDclenv(searchParams.get('env')),
+    sceneConsole: searchParams.get('scene-console') === 'true' ? 'true' : undefined,
     multiInstance: searchParams.get('multi-instance') === 'true' ? 'true' : undefined
   }
 }

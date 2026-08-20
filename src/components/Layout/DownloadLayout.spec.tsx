@@ -288,9 +288,7 @@ describe('DownloadLayout', () => {
       mockLaunchDesktopApp.mockResolvedValue(true)
       render(<DownloadLayout title={TITLE} />)
       await userEvent.click(screen.getByText('page.download.jump_in'))
-      await waitFor(() =>
-        expect(mockLaunchDesktopApp).toHaveBeenCalledWith({ dclenv: undefined, sceneConsole: undefined, multiInstance: undefined })
-      )
+      await waitFor(() => expect(mockLaunchDesktopApp).toHaveBeenCalledWith({}))
     })
 
     it('should forward the deep-link query params into the launch', async () => {

@@ -33,9 +33,11 @@ function useHangOutAction() {
       }
 
       try {
-        // NOTE: this CTA used to call `launchDesktopApp()` with no options, so it
-        // silently dropped every deep-link query param. It now forwards the same
-        // ones as the jump surfaces (`?dclenv`/`?scene-console`/`?multi-instance`).
+        // NOTE: this used to call `launchDesktopApp()` with no options, so every
+        // surface backed by this hook silently dropped the deep-link query params
+        // — the homepage sections and /play, but also the navbar Jump In, which
+        // `Layout` mounts on nearly every route. They now forward the same set as
+        // the jump surfaces (`?dclenv`/`?scene-console`/`?multi-instance`).
         const hasLauncher = await launchDesktopApp({ dclenv, sceneConsole, multiInstance })
         if (!hasLauncher) {
           setIsDownloadModalOpen(true)

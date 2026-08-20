@@ -135,8 +135,9 @@ describe('jump.helpers', () => {
 
     describe('and the optional launch params are empty strings', () => {
       it('should keep them out of the options', () => {
-        // `URLSearchParams.get` returns '' for a valueless `?multi-instance`, so
-        // `?? undefined` never fires and the falsy check is what drops it.
+        // `URLSearchParams.get` returns '' for a valueless param, so `?? undefined`
+        // never fires and the falsy check here is what drops it. Reachable via
+        // `collectDeepLinkParams`, which reads position/realm straight off the URL.
         expect(buildDeepLinkOptions({ position: '1,2', realm: 'foo.eth', dclenv: '', sceneConsole: '', multiInstance: '' })).toEqual({
           position: '1,2',
           realm: 'foo.eth'
