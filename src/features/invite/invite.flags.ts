@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { FEATURE_FLAG } from '../../modules/ff'
 import { isDirectDownloadEnabled } from '../../utils/referrer'
+import { timeoutSignal } from '../../utils/timeoutSignal'
 
 // IMPORTANT: this module must only be imported from the invite route chunk
 // (InvitePage / InviteHero). The flag fetch is intentionally scoped to that
@@ -26,7 +27,7 @@ function emitChange(): void {
 
 async function runFetch(): Promise<void> {
   try {
-    const response = await fetch(FEATURE_FLAGS_URL, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
+    const response = await fetch(FEATURE_FLAGS_URL, { signal: timeoutSignal(FETCH_TIMEOUT_MS) })
     if (!response.ok) {
       throw new Error(`Feature flags responded with ${response.status}`)
     }

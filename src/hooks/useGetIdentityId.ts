@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react'
 import { Env, getEnv } from '@dcl/ui-env'
+import { timeoutSignal } from '../utils/timeoutSignal'
 import { useAuthIdentity } from './useAuthIdentity'
 
 // `@dcl/crypto/dist/Authenticator` pulls in ~340 KB of crypto deps. Loading it
@@ -58,7 +59,7 @@ export function useGetIdentityId(): () => Promise<string | undefined> {
         // from the private key (ethers.Wallet) and comparing it to the provided
         // address. The ephemeral key is short-lived and NOT the user's wallet key.
         body: JSON.stringify({ identity: currentIdentity }),
-        signal: AbortSignal.timeout(5000)
+        signal: timeoutSignal(5000)
       })
 
       if (!response.ok) {
