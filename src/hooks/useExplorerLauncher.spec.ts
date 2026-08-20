@@ -8,12 +8,13 @@ import { isClientNotInstalled, shouldPromptDownload, useExplorerLauncher } from 
 jest.mock('react-router-dom', () => ({ useSearchParams: jest.fn() }))
 jest.mock('@dcl/hooks', () => ({ useAdvancedUserAgentData: jest.fn() }))
 jest.mock('decentraland-ui2', () => ({ launchDesktopApp: jest.fn() }))
-jest.mock('../config/dclenv', () => ({ mapEnvToDclenv: (v: string | null) => v ?? undefined }))
 jest.mock('../features/places/places.helpers', () => ({
-  buildDeepLinkOptions: (position?: string, realm?: string, env?: string) => ({
-    ...(position ? { position } : {}),
-    ...(realm ? { realm } : {}),
-    ...(env ? { dclenv: env } : {})
+  buildDeepLinkOptions: (input: { position?: string; realm?: string; dclenv?: string; sceneConsole?: string; multiInstance?: string }) => ({
+    ...(input.position ? { position: input.position } : {}),
+    ...(input.realm ? { realm: input.realm } : {}),
+    ...(input.dclenv ? { dclenv: input.dclenv } : {}),
+    ...(input.sceneConsole ? { sceneConsole: input.sceneConsole } : {}),
+    ...(input.multiInstance ? { multiInstance: input.multiInstance } : {})
   })
 }))
 jest.mock('../modules/downloadConstants', () => ({
@@ -90,7 +91,43 @@ describe('useExplorerLauncher', () => {
         await result.current.launch({ position: '1,2' })
       })
 
-      expect(mockedLaunch).toHaveBeenCalledWith(expect.objectContaining({ dclenv: 'stg' }))
+      expect(mockedLaunch).toHaveBeenCalledWith(expect.objectContaining({ dclenv: 'today' }))
+    })
+
+    it('should thread the ?multi-instance deep-link param into the launch', async () => {
+      mockedSearchParams.mockReturnValue([new URLSearchParams('multi-instance=true'), jest.fn()])
+      mockedLaunch.mockResolvedValue(true)
+      const { result } = renderHook(() => useExplorerLauncher())
+
+      await act(async () => {
+        await result.current.launch({ position: '1,2' })
+      })
+
+      expect(mockedLaunch).toHaveBeenCalledWith(expect.objectContaining({ multiInstance: 'true' }))
+    })
+
+    it('should thread the ?scene-console deep-link param into the launch', async () => {
+      mockedSearchParams.mockReturnValue([new URLSearchParams('scene-console=true'), jest.fn()])
+      mockedLaunch.mockResolvedValue(true)
+      const { result } = renderHook(() => useExplorerLauncher())
+
+      await act(async () => {
+        await result.current.launch({ position: '1,2' })
+      })
+
+      expect(mockedLaunch).toHaveBeenCalledWith(expect.objectContaining({ sceneConsole: 'true' }))
+    })
+
+    it('should not enable multi-instance when the param says false', async () => {
+      mockedSearchParams.mockReturnValue([new URLSearchParams('multi-instance=false'), jest.fn()])
+      mockedLaunch.mockResolvedValue(true)
+      const { result } = renderHook(() => useExplorerLauncher())
+
+      await act(async () => {
+        await result.current.launch({ position: '1,2' })
+      })
+
+      expect(mockedLaunch).toHaveBeenCalledWith(expect.not.objectContaining({ multiInstance: expect.anything() }))
     })
   })
 
