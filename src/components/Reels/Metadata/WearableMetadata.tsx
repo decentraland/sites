@@ -22,7 +22,7 @@ const WearableMetadata = memo(({ wearable }: WearableMetadataProps) => {
   const { track } = useAnalytics()
   const [hovered, setHovered] = useState(false)
 
-  const marketplaceUrl =
+  const detailUrl =
     wearable.collectionId && wearable.blockchainId ? buildWearableDetailUrl(wearable.collectionId, wearable.blockchainId) : null
 
   const handleClick = useCallback(
@@ -40,17 +40,17 @@ const WearableMetadata = memo(({ wearable }: WearableMetadataProps) => {
         </WearableImage>
         <WearableName>{wearable.name}</WearableName>
       </WearableWrapper>
-      {marketplaceUrl && <BuyButton visible={hovered}>{l('component.reels.wearable.buy')}</BuyButton>}
+      {detailUrl && <BuyButton visible={hovered}>{l('component.reels.wearable.buy')}</BuyButton>}
     </>
   )
 
-  if (!marketplaceUrl) {
+  if (!detailUrl) {
     return <WearableStaticContainer>{body}</WearableStaticContainer>
   }
 
   return (
     <WearableContainer
-      href={marketplaceUrl}
+      href={detailUrl}
       target="_blank"
       rel="noopener noreferrer"
       onClick={handleClick}
