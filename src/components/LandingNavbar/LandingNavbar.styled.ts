@@ -293,6 +293,34 @@ const bellShake = keyframes`
   75% { transform: rotate(4deg); }
 `
 
+// The credits balance chip, sitting left of the bell. A link rather than a button: it goes to the
+// credits page, so it should behave like one (middle-click, open in a new tab) instead of trapping the
+// destination behind an onClick.
+const CreditsChip = styled('a')({
+  all: 'unset',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  color: dclColors.neutral.white,
+  cursor: 'pointer',
+  flexShrink: 0,
+  borderRadius: 4,
+  fontSize: 14,
+  fontWeight: 600,
+  lineHeight: 1,
+  transition: 'opacity 0.15s ease',
+  ['&:hover']: {
+    opacity: 0.8
+  },
+  ['&:focus-visible']: {
+    outline: `2px solid ${dclColors.base.primary}`,
+    outlineOffset: 2
+  },
+  ['& svg']: {
+    flexShrink: 0
+  }
+})
+
 const BellButton = styled('button')({
   all: 'unset',
   position: 'relative',
@@ -1118,6 +1146,7 @@ export {
   AvatarFallback,
   AvatarImage,
   BellButton,
+  CreditsChip,
   DesktopDropdown,
   DesktopDropdownInner,
   DesktopDropdownItem,

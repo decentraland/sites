@@ -4,7 +4,7 @@ import appleLogo from '../images/apple-logo.svg'
 import microsoftLogo from '../images/microsoft-logo.svg'
 import { createDownloadTracker, toAuthState } from '../modules/downloadTracking'
 import { triggerFileDownload } from '../modules/file'
-import { DownloadPlace } from '../modules/segment'
+import { DownloadPlace, DownloadTarget } from '../modules/segment'
 import { addQueryParamsToUrlString, updateUrlWithLastValue } from '../modules/url'
 import { OperativeSystem } from '../types/download.types'
 import type { Architecture } from '../types/download.types'
@@ -27,7 +27,14 @@ const imageByOs: Record<string, string> = {
   [OperativeSystem.MACOS]: appleLogo
 }
 
-function useCreatorHubDownload() {
+/**
+ * @param place - `DownloadPlace` reported on the `download_started` event so
+ *   the warehouse can tell where the Creator Hub download was initiated. The
+ *   `/download/creator-hub` page keeps the default; the `/create` hero passes
+ *   `DownloadPlace.CREATORS_HERO` so its downloads are no longer mixed with the
+ *   dedicated download page's.
+ */
+function useCreatorHubDownload(place: DownloadPlace = DownloadPlace.CREATOR_HUB_DOWNLOAD_PAGE) {
   const anonUserId = useAnonUserId()
   const { hasValidIdentity } = useAuthIdentity()
   const [isLoadingUserAgentData, userAgentData] = useAdvancedUserAgentData()
@@ -98,7 +105,7 @@ function useCreatorHubDownload() {
         href: option.link,
         os: option.text as OperativeSystem,
         arch: option.arch ?? 'amd64',
-        place: DownloadPlace.CREATOR_HUB_DOWNLOAD_PAGE,
+        place,
         // eslint-disable-next-line @typescript-eslint/naming-convention
         anon_user_id: anonUserId,
         // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -106,7 +113,15 @@ function useCreatorHubDownload() {
         // A download click is a one-shot intent; there is no per-attempt revisit
         // notion on this page. The funnel is joined to the success page via
         // anon_user_id, so revisit stays 0 to satisfy the shared schema.
-        revisit: 0
+        revisit: 0,
+        // Split the Creator Hub funnel from the Explorer funnel: every Creator
+        // Hub download_* event carries download_target=creator_hub so the
+        // warehouse no longer relies on string-matching the place. Mirrors the
+        // Explorer flow's DownloadTarget.DESKTOP_INSTALLER extra.
+        extra: {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          download_target: DownloadTarget.CREATOR_HUB
+        }
       })
       tracker.started()
       triggerFileDownload(option.link)
@@ -120,7 +135,7 @@ function useCreatorHubDownload() {
         window.location.href = finalUrl
       }, REDIRECT_DELAY_MS)
     },
-    [anonUserId, hasValidIdentity]
+    [anonUserId, hasValidIdentity, place]
   )
 
   return { isReady, primaryOption, secondaryOptions, handleDownload }

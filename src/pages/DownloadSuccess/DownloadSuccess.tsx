@@ -8,6 +8,7 @@ import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useDownloadFunnelExit } from '../../hooks/useDownloadFunnelExit'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
+import { usePageView } from '../../hooks/usePageView'
 import appleLogo from '../../images/apple-logo.svg'
 import macOsLauncher from '../../images/download/macos_launcher.webp'
 import macOsLaunchingDecentraland from '../../images/download/macos_launching_decentraland.webp'
@@ -31,6 +32,7 @@ import { streamOrFallback } from '../../modules/streamOrFallback'
 import type { StreamOrFallbackResult } from '../../modules/streamOrFallback.types'
 import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
+import { resolveReferrer } from '../../utils/referrer'
 import { DownloadSuccessLayout } from './DownloadSuccessLayout'
 import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from './DownloadSuccess.types'
 import {
@@ -43,6 +45,12 @@ import {
 } from './DownloadSuccess.styled'
 
 const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
+
+// GPU-detected Mac architecture the originating landing (jump-in etc.) forwards
+// on the /download_success URL as `mac_arch`. Analytics-only — unlike `arch` it
+// never selects a binary. Allowlisted because it comes off an untrusted query
+// param; anything else is dropped rather than emitted.
+const MAC_ARCH_VALUES = new Set<string>(['apple_silicon', 'intel', 'unknown'])
 
 /**
  * Maps a resolved download into the event-level extras appended to
@@ -63,6 +71,9 @@ const buildDeliveryExtra = (result: StreamOrFallbackResult): Record<string, unkn
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
   const { intl } = useTranslation()
+  // Fullscreen route: mounted outside <Layout />, which owns the shared page()
+  // call, so the pageview has to be emitted here.
+  usePageView()
   const getIdentityId = useGetIdentityId()
   const anonUserId = useAnonUserId()
   const { hasValidIdentity } = useAuthIdentity()
@@ -132,6 +143,8 @@ const DownloadSuccess = memo(() => {
   const defaultArch = clientOS === OperativeSystem.WINDOWS ? 'amd64' : 'arm64'
   const rawArch = searchParams.get('arch') || defaultArch
   const clientArch = (VALID_ARCHS.has(rawArch) ? rawArch : defaultArch) as Architecture
+  const rawMacArch = searchParams.get('mac_arch') ?? ''
+  const macArch = MAC_ARCH_VALUES.has(rawMacArch) ? rawMacArch : undefined
   const place = resolveDownloadPlace(searchParams.get('place'))
 
   // Single source of truth for the Sentry tags shared by both catch blocks.
@@ -166,6 +179,14 @@ const DownloadSuccess = memo(() => {
   const deepLinkParams = useMemo(() => collectDeepLinkParams(searchParams), [searchParams])
   const deepLinkParamsRef = useRef(deepLinkParams)
   deepLinkParamsRef.current = deepLinkParams
+
+  // Referral attribution (gated by the direct-download flag). Appended to the
+  // gateway file URL so the launcher can attribute the referral. This page is
+  // the actual download trigger, so the referrer must be added here too — not
+  // just on the /download page.
+  const referrer = useMemo(() => resolveReferrer(), [searchParams])
+  const referrerRef = useRef(referrer)
+  referrerRef.current = referrer
 
   // Shared `extra` for every tracker built on this page: the client
   // fingerprint, the campaign params, the click→download correlation, and
@@ -202,10 +223,15 @@ const DownloadSuccess = memo(() => {
             ms_since_click: Date.now() - correlation.clicked_at
           }
         : {}),
+      // GPU-detected Mac architecture forwarded from the landing URL. Rides in
+      // `extra` so download_started/_success/_failed carry it like the campaign
+      // params; absent for non-Mac arrivals and unrecognized values.
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      ...(macArch ? { mac_arch: macArch } : {}),
       // eslint-disable-next-line @typescript-eslint/naming-convention
       download_target: DownloadTarget.DESKTOP_INSTALLER
     }
-  }, [])
+  }, [macArch])
 
   // Revisit counter — captured once at mount via a lazy useState initializer
   // so re-renders don't double-increment. Keyed by os:arch so that switching
@@ -348,7 +374,7 @@ const DownloadSuccess = memo(() => {
       // only it bakes those params into the signed binary; the CDN-direct
       // fallback drops them. Guarantee an anon_user_id so we stay on the
       // anonymous gateway route instead of falling back to the CDN.
-      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserIdRef.current, deepLinkParamsRef.current)
+      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserIdRef.current, deepLinkParamsRef.current, referrerRef.current)
       gatewayAnonUserIdRef.current = gatewayAnonUserId
 
       try {
@@ -362,13 +388,27 @@ const DownloadSuccess = memo(() => {
 
         if (signal.aborted) return
 
+        // NOTE (2026-08-04): `click_id` was removed from this URL. It used to
+        // ride along so the gateway could echo it into its server-side
+        // telemetry (added 2026-07-13, PR #679), but on macOS this URL is also
+        // the auth-token channel: the browser stores it in the DMG's
+        // `kMDItemWhereFroms` xattr and the launcher parses it to recover the
+        // `identityId` from the path. Launchers up to 1.21.2 scan the query
+        // params first and accept ANY UUID-shaped value as the token, so
+        // `click_id` shadowed the real one and auto-login failed with a 404
+        // (reproduced end-to-end; fixed launcher-side by launcher-rust#321).
+        // Do NOT put UUID-shaped values in query params here: the fix only
+        // reaches users once a launcher build carrying it ships as the
+        // gateway's base binary, so old parsers stay in the field for a long
+        // time. The client-side click→download join is unaffected (the id
+        // still travels via sessionStorage into `buildTrackerExtra`); only the
+        // gateway's server-side join is lost. Restoring it needs a non-UUID
+        // format plus normalization in the gateway (`download-telemetry.ts`
+        // validates with `isValidUUID` and silently drops anything else).
         const downloadUrl = addQueryParamsToUrlString(url, {
           [ANON_USER_ID_PARAM]: gatewayAnonUserId,
           ...deepLinkParamsRef.current,
-          // Forwarded so the gateway echoes it into its server-side telemetry,
-          // closing the click→download join without relying on the beacon.
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          click_id: readDownloadClickCorrelation()?.click_id
+          ...(referrerRef.current ? { referrer: referrerRef.current } : {})
         })
 
         // Fingerprint snapshot used by the data team's server-side join to
@@ -481,7 +521,7 @@ const DownloadSuccess = memo(() => {
       const extra = buildTrackerExtra()
       // Deep-link downloads must route through the gateway (see the auto-download
       // effect above); guarantee an anon_user_id to avoid the CDN-direct fallback.
-      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserId, deepLinkParamsRef.current)
+      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserId, deepLinkParamsRef.current, referrerRef.current)
       gatewayAnonUserIdRef.current = gatewayAnonUserId
 
       try {
@@ -492,11 +532,14 @@ const DownloadSuccess = memo(() => {
           getIdentityId,
           anonUserId: gatewayAnonUserId
         })
+        // No `click_id` here either: this URL lands in the DMG's
+        // `kMDItemWhereFroms` xattr and a UUID-shaped query param shadows the
+        // auth token the launcher reads from the path. See the NOTE on the
+        // auto-download effect above.
         const downloadUrl = addQueryParamsToUrlString(url, {
           [ANON_USER_ID_PARAM]: gatewayAnonUserId,
           ...deepLinkParamsRef.current,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          click_id: readDownloadClickCorrelation()?.click_id
+          ...(referrerRef.current ? { referrer: referrerRef.current } : {})
         })
 
         tracker = withFiredRefs(

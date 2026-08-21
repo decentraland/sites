@@ -17,6 +17,7 @@ import {
   ChevronUpIcon,
   CloseIcon,
   CopyIcon,
+  CreditsIcon,
   DclLogo,
   ExternalLinkIcon,
   HamburgerIcon,
@@ -33,6 +34,7 @@ import {
   AvatarButton,
   AvatarImage,
   BellButton,
+  CreditsChip,
   DesktopDropdown,
   DesktopDropdownInner,
   DesktopDropdownItem,
@@ -130,6 +132,8 @@ interface LandingNavbarProps {
   }
   manaBalances?: { ethereum: number; polygon: number } | null
   isManaLoading?: boolean
+  /** Spendable USD credits. `null`/absent hides the chip — see the render for why 0 and "unknown" differ. */
+  creditsBalance?: number | null
   notifications?: NotificationsData
   onClickSignIn: () => void
   onClickSignOut: () => void
@@ -138,6 +142,14 @@ interface LandingNavbarProps {
 }
 
 const PEER_BASE_URL = 'https://peer.decentraland.org/content/contents/'
+
+// Where the credits chip goes: the Shop's page for BUYING credits, not the account section's credits
+// settings. Someone clicking their balance is reaching for more of it.
+//
+// A same-origin path rather than an absolute URL, so it keeps the visitor on the environment they are
+// already on (.zone / .today / .org) — the Shop is served by-path at <domain>/shop, so this leaves this
+// app and the browser navigates for real. Still a plain href like the rest of the navbar's links.
+const CREDITS_URL = '/shop/credits'
 
 function formatTimeAgo(timestamp: number): string {
   const seconds = Math.floor((Date.now() - timestamp) / 1000)
@@ -162,6 +174,12 @@ function formatMana(balance: number): string {
     return balance.toFixed(2)
   }
   return Math.floor(balance).toString()
+}
+
+// Credits are whole units (1 credit = $0.10), so no decimals — just thousands separators, which is how
+// the shop renders the same number.
+function formatCredits(credits: number): string {
+  return Math.floor(credits).toLocaleString('en-US')
 }
 
 function renderManaBalances(
@@ -214,6 +232,7 @@ const LandingNavbar = memo(function LandingNavbar({
   avatar,
   manaBalances,
   isManaLoading = false,
+  creditsBalance,
   notifications,
   onClickSignIn,
   onClickSignOut,
@@ -441,10 +460,6 @@ const LandingNavbar = memo(function LandingNavbar({
   const renderMobileMenuContent = useCallback(() => {
     return (
       <>
-        <MobileMenuItem>
-          <MobileMenuLink href={MENU_CONFIG.whatsOn.url}>{l(MENU_CONFIG.whatsOn.labelKey)}</MobileMenuLink>
-        </MobileMenuItem>
-
         {DROPDOWN_SECTIONS.map(section => {
           const config = MENU_CONFIG[section]
           const isExpanded = mobileAccordion === section
@@ -543,8 +558,6 @@ const LandingNavbar = memo(function LandingNavbar({
           </LogoLink>
 
           <DesktopTabList>
-            <DesktopTabLink href={MENU_CONFIG.whatsOn.url}>{l(MENU_CONFIG.whatsOn.labelKey)}</DesktopTabLink>
-
             {DROPDOWN_SECTIONS.map(section => (
               <DesktopDropdownWrapper
                 key={section}
@@ -595,6 +608,17 @@ const LandingNavbar = memo(function LandingNavbar({
         <NavBarRight>
           {isSignedIn && (
             <NavBarRightGroup>
+              {/* Hidden while loading and on a failed read: a `0` there would state that the wallet has
+                  no credits, which is a different claim from "we could not find out". */}
+              {creditsBalance !== null && creditsBalance !== undefined && (
+                <CreditsChip
+                  href={CREDITS_URL}
+                  aria-label={l('component.landing.navbar.credits_balance', { count: formatCredits(creditsBalance) })}
+                >
+                  <CreditsIcon />
+                  {formatCredits(creditsBalance)}
+                </CreditsChip>
+              )}
               <NotificationWrapper>
                 <BellButton
                   onClick={onClickNotificationBell}

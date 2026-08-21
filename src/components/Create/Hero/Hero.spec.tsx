@@ -2,15 +2,18 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { useDesktopMediaQuery, useMediaQuery } from 'decentraland-ui2'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useCreatorHubDownload } from '../../../hooks/useCreatorHubDownload'
+import { useDownloadClick } from '../../../hooks/useDownloadClick'
+import { DownloadPlace } from '../../../modules/segment'
 import { CreatorsHero } from './Hero'
 
 jest.mock('decentraland-ui2', () => {
-  const { styled, Box } = jest.requireActual('../../../__test-utils__/styledMock')
+  const { styled, Box, dclColors } = jest.requireActual('../../../__test-utils__/styledMock')
   const Typography = ({ children, ...rest }: { children?: React.ReactNode }) => <p {...rest}>{children}</p>
   return {
     styled,
     Box,
     Typography,
+    dclColors,
     useDesktopMediaQuery: jest.fn(),
     useMediaQuery: jest.fn()
   }
@@ -18,6 +21,10 @@ jest.mock('decentraland-ui2', () => {
 
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
+}))
+
+jest.mock('../../../hooks/useDownloadClick', () => ({
+  useDownloadClick: jest.fn()
 }))
 
 jest.mock('../../../hooks/adapters/useTrackLinkContext', () => ({
@@ -75,14 +82,17 @@ jest.mock('../../Buttons/CTAButton', () => ({
 
 const mockDesktopMediaQuery = jest.mocked(useDesktopMediaQuery)
 const mockMediaQuery = jest.mocked(useMediaQuery)
+const mockDownloadClick = jest.mocked(useDownloadClick)
 const mockTrackClick = jest.mocked(useTrackClick)
 const mockCreatorHubDownload = jest.mocked(useCreatorHubDownload)
 
+const trackDownloadClick = jest.fn()
 const trackClick = jest.fn()
 const handleDownload = jest.fn()
 
 describe('CreatorsHero', () => {
   beforeEach(() => {
+    mockDownloadClick.mockReturnValue(trackDownloadClick)
     mockTrackClick.mockReturnValue(trackClick)
     mockMediaQuery.mockReturnValue(false)
   })
@@ -110,7 +120,7 @@ describe('CreatorsHero', () => {
 
       fireEvent.click(secondaryButton)
 
-      expect(trackClick).toHaveBeenCalledTimes(1)
+      expect(trackDownloadClick).toHaveBeenCalledTimes(1)
       expect(handleDownload).toHaveBeenCalledWith(expect.objectContaining({ text: 'Windows' }))
     })
 
@@ -120,6 +130,22 @@ describe('CreatorsHero', () => {
       const primaryCta = screen.getByRole('link', { name: 'page.download.download_creator_hub' })
       expect(primaryCta).toHaveAttribute('data-download-target', 'creator_hub')
       expect(primaryCta).toHaveAttribute('href', 'https://cdn.example.com/mac.dmg')
+    })
+
+    it('should report the /create hero as its own download place so it is not mixed with the download page', () => {
+      render(<CreatorsHero />)
+
+      expect(mockCreatorHubDownload).toHaveBeenCalledWith(DownloadPlace.CREATORS_HERO)
+    })
+
+    it('should track the download and hand the primary option to the download flow on click', () => {
+      render(<CreatorsHero />)
+
+      const primaryCta = screen.getByRole('link', { name: 'page.download.download_creator_hub' })
+      fireEvent.click(primaryCta)
+
+      expect(trackDownloadClick).toHaveBeenCalledTimes(1)
+      expect(handleDownload).toHaveBeenCalledWith(expect.objectContaining({ text: 'macOS' }))
     })
   })
 
@@ -143,7 +169,90 @@ describe('CreatorsHero', () => {
 
       fireEvent.click(fallbackCta)
 
+      expect(trackDownloadClick).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('when rendered on mobile', () => {
+    beforeEach(() => {
+      mockMediaQuery.mockReturnValue(true)
+      mockDesktopMediaQuery.mockReturnValue(false)
+      mockCreatorHubDownload.mockReturnValue({
+        isReady: true,
+        primaryOption: null,
+        secondaryOptions: [],
+        handleDownload
+      } as unknown as ReturnType<typeof useCreatorHubDownload>)
+    })
+
+    it('should link the CTA to the creator docs instead of the desktop-only download page', () => {
+      render(<CreatorsHero />)
+
+      const cta = screen.getByRole('link', { name: 'component.creators_landing.hero.mobile_docs_cta' })
+      expect(cta).toHaveAttribute('href', 'https://docs.decentraland.org/creator/')
+      expect(cta).not.toHaveAttribute('data-download-target')
+    })
+
+    it('should track the docs CTA as a plain click, not a download', () => {
+      render(<CreatorsHero />)
+
+      const cta = screen.getByRole('link', { name: 'component.creators_landing.hero.mobile_docs_cta' })
+      fireEvent.click(cta)
+
       expect(trackClick).toHaveBeenCalledTimes(1)
+      expect(trackDownloadClick).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when the scroll chevron is clicked', () => {
+    beforeEach(() => {
+      mockDesktopMediaQuery.mockReturnValue(true)
+      mockCreatorHubDownload.mockReturnValue({
+        isReady: false,
+        primaryOption: null,
+        secondaryOptions: [],
+        handleDownload
+      } as unknown as ReturnType<typeof useCreatorHubDownload>)
+      window.scrollBy = jest.fn()
+    })
+
+    it('should track the plain click and scroll down toward the next section', () => {
+      const { container } = render(<CreatorsHero />)
+
+      const chevron = container.querySelector('[data-title="scroll-to-why"]') as HTMLElement
+      expect(chevron).toBeInTheDocument()
+
+      fireEvent.click(chevron)
+
+      expect(trackClick).toHaveBeenCalledTimes(1)
+      expect(window.scrollBy).toHaveBeenCalled()
+    })
+
+    it('should render the scroll chevron as an accessible, labelled button', () => {
+      const { container } = render(<CreatorsHero />)
+
+      const chevron = container.querySelector('[data-title="scroll-to-why"]') as HTMLElement
+      expect(chevron.tagName).toBe('BUTTON')
+      expect(chevron).toHaveAttribute('type', 'button')
+      expect(chevron).toHaveAttribute('aria-label', 'component.creators_landing.hero.scroll_label')
+    })
+  })
+
+  describe('when it mounts', () => {
+    beforeEach(() => {
+      mockDesktopMediaQuery.mockReturnValue(true)
+      mockCreatorHubDownload.mockReturnValue({
+        isReady: false,
+        primaryOption: null,
+        secondaryOptions: [],
+        handleDownload
+      } as unknown as ReturnType<typeof useCreatorHubDownload>)
+    })
+
+    it('should opt the hero download CTAs out of click correlation (Creator Hub joins on anon_user_id)', () => {
+      render(<CreatorsHero />)
+
+      expect(mockDownloadClick).toHaveBeenCalledWith({ recordCorrelation: false })
     })
   })
 })

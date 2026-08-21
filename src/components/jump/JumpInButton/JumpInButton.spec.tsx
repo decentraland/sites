@@ -3,10 +3,8 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
-import { getEnv } from '../../../config/env'
-import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { detectDownloadOS } from '../../../modules/downloadConstants'
-import { addQueryParamsToUrlString } from '../../../modules/url'
+import { buildTrackedDownloadUrl } from '../../../modules/url'
 import { JumpInButton } from './JumpInButton'
 
 jest.mock('react-router-dom', () => ({
@@ -43,13 +41,9 @@ jest.mock('decentraland-ui2', () => {
   }
 })
 
-jest.mock('../../../hooks/useAuthIdentity', () => ({
-  useAuthIdentity: jest.fn()
-}))
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))
-jest.mock('../../../config/env')
 jest.mock('../../../modules/downloadConstants', () => ({
   DOWNLOAD_URLS: {
     apple: 'https://dl.test',
@@ -68,29 +62,31 @@ jest.mock('../../../features/places/places.helpers', () => ({
   DEFAULT_REALM: 'main',
   // Mirrors the real helper's default-filtering so the hook's deep-link
   // params stay empty on default position/realm (like production).
-  buildDeepLinkOptions: (position?: string, realm?: string, env?: string) => ({
-    ...(realm && realm !== 'main' ? { realm } : {}),
-    ...(position && position !== '0,0' ? { position } : {}),
-    ...(env ? { dclenv: env } : {})
+  buildDeepLinkOptions: (input: { position?: string; realm?: string; dclenv?: string; sceneConsole?: string; multiInstance?: string }) => ({
+    ...(input.realm && input.realm !== 'main' ? { realm: input.realm } : {}),
+    ...(input.position && input.position !== '0,0' ? { position: input.position } : {}),
+    ...(input.dclenv ? { dclenv: input.dclenv } : {}),
+    ...(input.sceneConsole ? { sceneConsole: input.sceneConsole } : {}),
+    ...(input.multiInstance ? { multiInstance: input.multiInstance } : {})
   })
 }))
 jest.mock('../../../modules/url', () => ({
-  addQueryParamsToUrlString: jest.fn()
+  buildTrackedDownloadUrl: jest.fn()
 }))
+jest.mock('../../../config/env', () => ({ getEnv: jest.fn() }))
+jest.mock('../../../hooks/useTotalDownloads', () => ({ useTotalDownloads: jest.fn(() => '+400K') }))
 
-const mockAddQueryParams = jest.mocked(addQueryParamsToUrlString)
+const mockBuildTrackedDownloadUrl = jest.mocked(buildTrackedDownloadUrl)
 const mockUseSearchParams = jest.mocked(useSearchParams)
-const mockUseAuthIdentity = jest.mocked(useAuthIdentity)
 const mockUseAdvancedUserAgentData = jest.mocked(useAdvancedUserAgentData)
 const mockUseAnalytics = jest.mocked(useAnalytics)
 const mockDetectDownloadOS = jest.mocked(detectDownloadOS)
 const mockLaunchDesktopApp = jest.mocked(launchDesktopApp)
-const mockGetEnv = jest.mocked(getEnv)
 
 describe('JumpInButton', () => {
   beforeEach(() => {
-    mockAddQueryParams.mockImplementation((url: string, params: Record<string, string | undefined | null>) => {
-      const urlObj = new URL(url)
+    mockBuildTrackedDownloadUrl.mockImplementation((base: string, params: Record<string, string | undefined | null>) => {
+      const urlObj = new URL(base, window.location.origin)
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           urlObj.searchParams.append(key, value)
@@ -100,14 +96,10 @@ describe('JumpInButton', () => {
     })
     mockUseSearchParams.mockReturnValue([new URLSearchParams(''), jest.fn()] as unknown as ReturnType<typeof useSearchParams>)
     mockUseAnalytics.mockReturnValue({ track: jest.fn() } as unknown as ReturnType<typeof useAnalytics>)
-    mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
     mockUseAdvancedUserAgentData.mockReturnValue([
       true,
       { os: { name: 'macOS' }, cpu: { architecture: 'arm64' }, mobile: false }
     ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
-    mockGetEnv.mockImplementation((key: string) =>
-      key === 'DOWNLOAD_URL' ? 'https://dl.test' : key === 'ONBOARDING_URL' ? 'https://onboarding.test' : undefined
-    )
   })
 
   afterEach(() => {
@@ -271,39 +263,22 @@ describe('JumpInButton', () => {
       })
     })
 
-    describe('and the launcher is missing and the user has a valid identity', () => {
-      it('should open the download URL', async () => {
-        mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: true, address: '0xabc' })
-        mockLaunchDesktopApp.mockResolvedValue(false)
-        render(<JumpInButton position="0,0" />)
-        await userEvent.click(screen.getByRole('button'))
-        expect(windowOpenMock).toHaveBeenCalledWith('https://dl.test', '_self')
-      })
-    })
-
-    describe('and the launcher is missing and the user is anonymous', () => {
-      it('should open the onboarding URL when ONBOARDING_URL is set', async () => {
-        mockLaunchDesktopApp.mockResolvedValue(false)
-        render(<JumpInButton position="0,0" />)
-        await userEvent.click(screen.getByRole('button'))
-        expect(windowOpenMock).toHaveBeenCalledWith('https://onboarding.test', '_self')
-      })
-
-      it('should open the download modal when no ONBOARDING_URL is configured', async () => {
-        mockGetEnv.mockImplementation((key: string) => (key === 'DOWNLOAD_URL' ? 'https://dl.test' : undefined))
+    describe('and the launcher is missing', () => {
+      it('should open the download modal without redirecting', async () => {
         mockLaunchDesktopApp.mockResolvedValue(false)
         render(<JumpInButton position="0,0" />)
         await userEvent.click(screen.getByRole('button'))
         expect(screen.getByTestId('download-modal')).toBeInTheDocument()
+        expect(windowOpenMock).not.toHaveBeenCalled()
       })
     })
 
     describe('and launchDesktopApp throws', () => {
-      it('should fall through to the download fallback path', async () => {
+      it('should open the download modal', async () => {
         mockLaunchDesktopApp.mockRejectedValue(new Error('protocol blocked'))
         render(<JumpInButton position="0,0" />)
         await userEvent.click(screen.getByRole('button'))
-        expect(windowOpenMock).toHaveBeenCalledWith('https://onboarding.test', '_self')
+        expect(screen.getByTestId('download-modal')).toBeInTheDocument()
       })
     })
   })

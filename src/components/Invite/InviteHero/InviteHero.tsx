@@ -1,5 +1,7 @@
-import { Suspense, lazy, memo, useCallback, useEffect, useState } from 'react'
+import { Suspense, lazy, memo, useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatedBackground } from 'decentraland-ui2'
+import { useInviteDirectDownload } from '../../../features/invite/invite.flags'
+import { getInviterName } from '../../../features/invite/invite.helpers'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useVideoOptimization } from '../../../hooks/contentful'
 import { useFeatureFlagContext } from '../../../hooks/useFeatureFlagContext'
@@ -25,6 +27,11 @@ import {
   HeroTitle,
   HeroVideo
 } from './InviteHero.styled'
+
+/** Grace period that lets the click event flush before the page unloads. */
+const TRACK_FLUSH_DELAY_MS = 500
+/** Longest the CTA will wait for the referrer to resolve before giving up on it. */
+const REFERRER_WAIT_BUDGET_MS = 1200
 
 const processTitleWithGradient = (title: string) => {
   if (!title) return title
@@ -56,7 +63,8 @@ const WearablePreviewLazy = lazy(() =>
 )
 
 const InviteHero = memo((props: InviteHeroProps) => {
-  const { title, subtitle, media, buttonLabel, eventPlace, referrer, isDesktop, isSecondaryHero, isLoading } = props
+  const { title, subtitle, media, buttonLabel, eventPlace, referrer, referrerAddress, isDesktop, isSecondaryHero, isLoading } = props
+  const { isReferrerResolving: isReferrerResolvingProp } = props
 
   const [isClient, setIsClient] = useState(false)
 
@@ -64,22 +72,51 @@ const InviteHero = memo((props: InviteHeroProps) => {
     setIsClient(true)
   }, [])
 
-  const referrerAddress = referrer?.avatars?.[0]?.ethAddress
-  const referrerName = referrer?.avatars?.[0]?.name
+  const referrerName = getInviterName(referrer)
 
   const trackClick = useTrackClick()
-  const urlWithReferrer = useReferralUrl(referrerAddress)
+  // Direct download only on desktop (mobile keeps the auth-login-first flow) and
+  // behind the env gate + remote flag (default off until the flag loads).
+  const inviteDirectDownload = useInviteDirectDownload()
+  const directDownload = inviteDirectDownload && isDesktop
+  const urlWithReferrer = useReferralUrl(referrerAddress ?? undefined, directDownload)
+
+  // Read the URL through a ref so the deferred navigation below always leaves
+  // with the latest resolved referrer, not the one captured at click time.
+  const urlWithReferrerRef = useRef(urlWithReferrer)
+  urlWithReferrerRef.current = urlWithReferrer
+
+  const [clickedAt, setClickedAt] = useState<number | null>(null)
+  // Only the address gates the navigation — the profile lookup behind `isLoading`
+  // is cosmetic and must never hold the CTA.
+  const isResolvingReferrer = !!isReferrerResolvingProp
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
       event.preventDefault()
       trackClick(event)
-      setTimeout(() => {
-        window.location.href = urlWithReferrer
-      }, 500)
+      setClickedAt(Date.now())
     },
-    [trackClick, urlWithReferrer]
+    [trackClick]
   )
+
+  useEffect(() => {
+    if (clickedAt === null) return
+
+    const elapsed = Date.now() - clickedAt
+    // Hold the navigation while the referrer is still resolving: leaving now
+    // would hit auth without a `referrer` param and the referral would never be
+    // recorded. Capped so a slow catalyst can't strand the CTA.
+    const isWaitingForReferrer = isResolvingReferrer && elapsed < REFERRER_WAIT_BUDGET_MS
+    const delay = isWaitingForReferrer ? REFERRER_WAIT_BUDGET_MS - elapsed : Math.max(0, TRACK_FLUSH_DELAY_MS - elapsed)
+
+    const timeout = setTimeout(() => {
+      setClickedAt(null)
+      window.location.href = urlWithReferrerRef.current
+    }, delay)
+
+    return () => clearTimeout(timeout)
+  }, [clickedAt, isResolvingReferrer])
 
   const [, { loading: featureFlagsLoading }] = useFeatureFlagContext()
 
@@ -137,7 +174,7 @@ const InviteHero = memo((props: InviteHeroProps) => {
             <AvatarWrapper>
               {isClient && !isLoading && !isSecondaryHero && !featureFlagsLoading && (
                 <Suspense fallback={null}>
-                  <WearablePreviewLazy profile={referrerAddress} lockBeta disableBackground background="transparent" />
+                  <WearablePreviewLazy profile={referrerAddress ?? undefined} lockBeta disableBackground background="transparent" />
                 </Suspense>
               )}
             </AvatarWrapper>

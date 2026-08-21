@@ -15,6 +15,10 @@ let mockHasValidIdentity = false
 // straight through the unload-safe beacon transport (see downloadTracking.ts).
 // Mock it directly rather than @dcl/hooks's `track`, which no longer receives
 // these events.
+// getEnv reaches config/index which uses import.meta (Vite-only). The referrer
+// util pulls it in transitively; stub it so the flag reads as off by default.
+jest.mock('../../config/env', () => ({ getEnv: jest.fn(() => undefined) }))
+
 const mockPostSegmentEvent = jest.fn()
 jest.mock('../../modules/segmentBeacon', () => ({
   postSegmentEvent: (...args: unknown[]) => mockPostSegmentEvent(...args)
@@ -47,6 +51,8 @@ jest.mock('decentraland-ui2', () => ({
   Typography: ({ children }: { children: React.ReactNode }) => <span>{children}</span>
 }))
 
+const mockAnalyticsPage = jest.fn()
+
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
     intl: {
@@ -59,11 +65,14 @@ jest.mock('@dcl/hooks', () => ({
         return id
       }
     }
-  })
+  }),
+  // usePageView (this page is outside <Layout />, so it emits its own pageview)
+  useAnalytics: () => ({ isInitialized: true, page: mockAnalyticsPage })
 }))
 
 jest.mock('react-router-dom', () => ({
-  useSearchParams: () => [searchParamsInstance, jest.fn()]
+  useSearchParams: () => [searchParamsInstance, jest.fn()],
+  useLocation: () => ({ pathname: '/download_success', search: '', hash: '', state: null, key: 'test' })
 }))
 
 // The download_funnel_exit diagnostic: mock the module (which otherwise pulls
@@ -183,6 +192,12 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
 
   afterEach(() => {
     jest.resetAllMocks()
+  })
+
+  it('should emit a pageview for /download_success (the route is outside <Layout />, which owns the shared page() call)', () => {
+    render(<DownloadSuccess />)
+
+    expect(mockAnalyticsPage).toHaveBeenCalledWith('/download_success')
   })
 
   it('should fire download_started with the resolved downloadUrl as href (not the CDN fallback)', async () => {
@@ -336,6 +351,69 @@ describe('when the /download_success URL carries partner campaign params', () =>
         'anon-fixed'
       )
     })
+  })
+})
+
+describe('when the /download_success URL carries a mac_arch hint', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=macOS&arch=arm64&place=download-page&mac_arch=intel')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=macOS&arch=arm64&place=download-page&mac_arch=intel')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Decentraland.dmg?sig=abc',
+      filename: 'Decentraland.dmg'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should forward mac_arch onto download_started and download_success', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.objectContaining({ mac_arch: 'intel' }), 'anon-fixed')
+    })
+    expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.objectContaining({ mac_arch: 'intel' }), 'anon-fixed')
+  })
+
+  it('should forward the unknown bucket as-is (Mac with an unreadable GPU)', async () => {
+    searchParamsInstance = new URLSearchParams('os=macOS&arch=arm64&place=download-page&mac_arch=unknown')
+
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.objectContaining({ mac_arch: 'unknown' }), 'anon-fixed')
+    })
+  })
+})
+
+describe('when the /download_success URL carries an out-of-allowlist mac_arch', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=macOS&arch=arm64&place=download-page&mac_arch=sparc')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=macOS&arch=arm64&place=download-page&mac_arch=sparc')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Decentraland.dmg?sig=abc',
+      filename: 'Decentraland.dmg'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should drop an unrecognized mac_arch value instead of emitting it', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.anything(), expect.anything())
+    })
+    const startedCall = findEventCall('download_started')
+    expect(startedCall?.[1]).not.toHaveProperty('mac_arch')
   })
 })
 
@@ -1015,10 +1093,14 @@ describe('when a download click correlation exists in sessionStorage', () => {
     expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(expect.objectContaining({ clickId: 'click-abc' }))
   })
 
-  it('should forward click_id as a query param to the gateway download url', async () => {
+  // Regression: on macOS this URL is stored in the DMG's kMDItemWhereFroms
+  // xattr and the launcher recovers the auth token from it. Launchers up to
+  // 1.21.2 accept any UUID-shaped query param as the token, so a forwarded
+  // click_id shadowed the identityId in the path and broke auto-login.
+  it('should not forward click_id as a query param to the gateway download url', async () => {
     render(<DownloadSuccess />)
     await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
-    expect(mockAddQueryParams).toHaveBeenCalledWith('https://gw/dl.exe', expect.objectContaining({ click_id: 'click-abc' }))
+    expect(mockAddQueryParams).toHaveBeenCalledWith('https://gw/dl.exe', expect.not.objectContaining({ click_id: expect.anything() }))
   })
 
   it('should attach delivery_mode and gateway_request_id to download_success', async () => {

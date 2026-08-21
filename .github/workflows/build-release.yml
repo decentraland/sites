@@ -70,6 +70,12 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # Lets @sentry/vite-plugin upload source maps for this release, so the
+          # stack traces in Sentry resolve to TS instead of minified chunks. The
+          # plugin is skipped when the token is absent, so a missing secret
+          # degrades to the previous behaviour rather than failing the build.
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Publish
         id: publish

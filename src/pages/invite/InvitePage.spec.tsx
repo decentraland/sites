@@ -1,10 +1,12 @@
 import { render, waitFor } from '@testing-library/react'
+import { REFERRER_STORAGE_KEY } from '../../utils/referrer'
 import { InvitePage } from './InvitePage'
 
 const mockUseParams = jest.fn()
 const mockInviteHero = jest.fn()
 const mockFetch = jest.fn()
 const mockPage = jest.fn()
+const mockUseInviteDirectDownload = jest.fn()
 let mockIsAnalyticsInitialized = true
 const INVITE_PATHNAME = '/invite/Brai'
 
@@ -21,7 +23,9 @@ jest.mock('@dcl/hooks', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ReactLib = require('react') as typeof import('react')
   return {
-    useTranslation: () => ({ t: (id: string) => id }),
+    useTranslation: () => ({
+      t: (id: string, values?: Record<string, unknown>) => (values ? `${id}:${Object.values(values).join(',')}` : id)
+    }),
     useAnalytics: () => ({ isInitialized: mockIsAnalyticsInitialized, page: mockPage }),
     useAsyncMemo: <T,>(factory: () => Promise<T>, deps: unknown[]) => {
       const [state, setState] = ReactLib.useState<{ value: T | null; loading: boolean }>({ value: null, loading: true })
@@ -67,6 +71,10 @@ jest.mock('../../components/LandingFooter', () => ({
 jest.mock('../../data/inviteContent', () => ({
   INVITE_HERO_MEDIA: {},
   INVITE_SECOND_HERO_MEDIA: {}
+}))
+
+jest.mock('../../features/invite/invite.flags', () => ({
+  useInviteDirectDownload: () => mockUseInviteDirectDownload()
 }))
 
 if (typeof AbortSignal.timeout !== 'function') {
@@ -128,6 +136,16 @@ describe('when the referrer param is a Decentraland name', () => {
     })
   })
 
+  it('should pass the lowercased resolved address to InviteHero', async () => {
+    render(<InvitePage />)
+
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalledWith(
+        expect.objectContaining({ referrerAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd', isLoading: false })
+      )
+    })
+  })
+
   it('should not call the legacy /lambdas/users/{id}/names endpoint', async () => {
     render(<InvitePage />)
 
@@ -165,6 +183,31 @@ describe('when the referrer param is already an Ethereum address', () => {
     })
     const calledUrls = mockFetch.mock.calls.map(([url]) => url as string)
     expect(calledUrls.some(url => url.includes('/lambdas/names/'))).toBe(false)
+  })
+})
+
+describe('when the profile lookup is still in flight', () => {
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    // Never resolves: reproduces a slow/hanging catalyst.
+    mockFetch.mockImplementation(() => new Promise(() => {}))
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should still expose the referrer address and unblock the CTA', async () => {
+    render(<InvitePage />)
+
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalledWith(
+        expect.objectContaining({
+          referrerAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd',
+          isReferrerResolving: false
+        })
+      )
+    })
   })
 })
 
@@ -207,6 +250,54 @@ describe('when the profile fetch fails after a successful name resolution', () =
       expect(calls.some(u => u.includes('/lambdas/profiles/'))).toBe(true)
     })
     expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrer: null }))
+  })
+
+  it('should keep the resolved address so the referral is still attributed', async () => {
+    render(<InvitePage />)
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ isLoading: false }))
+    })
+    expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrerAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd' }))
+  })
+})
+
+describe('when the referrer address has no deployed profile', () => {
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    mockFetch.mockResolvedValue({ json: () => Promise.resolve({ error: 'Not Found', message: 'Profile not found' }) })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should still pass the address from the URL to InviteHero', async () => {
+    render(<InvitePage />)
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ isLoading: false }))
+    })
+    expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrerAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd' }))
+  })
+})
+
+describe('when the referrer cannot be resolved at all', () => {
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: 'Unknown' })
+    mockFetch.mockResolvedValue({ json: () => Promise.resolve({}) })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should pass a null address and skip the profile lookup', async () => {
+    render(<InvitePage />)
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ isLoading: false }))
+    })
+    expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrerAddress: null }))
+    const calledUrls = mockFetch.mock.calls.map(([url]) => url as string)
+    expect(calledUrls.some(url => url.includes('/lambdas/profiles/'))).toBe(false)
   })
 })
 
@@ -277,18 +368,129 @@ describe('when the document head already has meta tags', () => {
     jest.resetAllMocks()
   })
 
-  it('should set the invite meta on mount and restore the originals on unmount', async () => {
+  it('should set the invite description on mount and restore the original on unmount', async () => {
     const { unmount } = render(<InvitePage />)
     await waitFor(() => expect(mockInviteHero).toHaveBeenCalled())
 
     expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('page_invite.social.description')
-    expect(document.querySelector('meta[property="og:title"]')?.getAttribute('content')).toBe('page_invite.social.title')
-    expect(document.querySelector('meta[property="og:description"]')?.getAttribute('content')).toBe('page_invite.social.description')
 
     unmount()
 
     expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('orig-desc')
+  })
+
+  it('should leave the Open Graph tags to the edge worker', async () => {
+    const { unmount } = render(<InvitePage />)
+    await waitFor(() => expect(mockInviteHero).toHaveBeenCalled())
+
     expect(document.querySelector('meta[property="og:title"]')?.getAttribute('content')).toBe('orig-og-title')
     expect(document.querySelector('meta[property="og:description"]')?.getAttribute('content')).toBe('orig-og-desc')
+
+    unmount()
+  })
+
+  it('should fall back to the generic title while no inviter is resolved', async () => {
+    render(<InvitePage />)
+    await waitFor(() => expect(mockInviteHero).toHaveBeenCalled())
+
+    expect(document.title).toBe('page_invite.social.title')
+  })
+})
+
+describe('when the inviter profile resolves', () => {
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: 'Brai' })
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes('/lambdas/names/Brai/owner')) {
+        return Promise.resolve({ json: () => Promise.resolve({ owner: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' }) })
+      }
+      if (url.includes('/lambdas/profiles/')) {
+        return Promise.resolve({ json: () => Promise.resolve(referrerProfile) })
+      }
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should name the inviter in the document title', async () => {
+    render(<InvitePage />)
+
+    await waitFor(() => expect(document.title).toBe('page_invite.social.title_with_name:SirTesla'))
+  })
+
+  it('should fall back to the generic title when the profile carries no name', async () => {
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes('/lambdas/names/Brai/owner')) {
+        return Promise.resolve({ json: () => Promise.resolve({ owner: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' }) })
+      }
+      if (url.includes('/lambdas/profiles/')) {
+        return Promise.resolve({ json: () => Promise.resolve({ avatars: [{ ethAddress: '0xd9b9', name: '  ' }] }) })
+      }
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    })
+
+    render(<InvitePage />)
+
+    await waitFor(() => expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ isLoading: false })))
+    expect(document.title).toBe('page_invite.social.title')
+  })
+})
+
+describe('when the direct download flag is enabled', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    mockUseInviteDirectDownload.mockReturnValue(true)
+    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes('/lambdas/profiles/')) {
+        return Promise.resolve({ json: () => Promise.resolve(referrerProfile) })
+      }
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    window.sessionStorage.clear()
+  })
+
+  it('should persist the resolved referrer for the download flow', async () => {
+    render(<InvitePage />)
+
+    await waitFor(() => {
+      expect(window.sessionStorage.getItem(REFERRER_STORAGE_KEY)).toBe('0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd')
+    })
+  })
+})
+
+describe('when the direct download flag is disabled', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    window.sessionStorage.setItem(REFERRER_STORAGE_KEY, '0x1111111111111111111111111111111111111111')
+    mockUseInviteDirectDownload.mockReturnValue(false)
+    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes('/lambdas/profiles/')) {
+        return Promise.resolve({ json: () => Promise.resolve(referrerProfile) })
+      }
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    window.sessionStorage.clear()
+  })
+
+  it('should not persist the referrer and should clear any previously stored one', async () => {
+    render(<InvitePage />)
+
+    await waitFor(() => {
+      expect(mockInviteHero).toHaveBeenCalled()
+    })
+    expect(window.sessionStorage.getItem(REFERRER_STORAGE_KEY)).toBeNull()
   })
 })

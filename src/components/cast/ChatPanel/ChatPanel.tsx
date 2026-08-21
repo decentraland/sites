@@ -6,6 +6,7 @@ import { useChatContext } from '../../../features/cast2/contexts/ChatProvider'
 import { useLiveKitCredentials } from '../../../features/cast2/contexts/LiveKitContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { ReceivedChatMessage } from '../../../hooks/useChat'
+import { getDisplayName } from '../../../utils/avatarColor'
 import { Avatar } from '../Avatar/Avatar'
 import { ChatPanelProps } from './ChatPanel.types'
 import {
@@ -30,7 +31,8 @@ const formatTime = (timestamp: number) => {
   })
 }
 
-export function ChatPanel({ onClose, chatMessages, onMessagesRead }: ChatPanelProps) {
+export function ChatPanel(props: ChatPanelProps) {
+  const { onClose, chatMessages, onMessagesRead, sceneName: sceneNameProp, jumpHref } = props
   const { t } = useCastTranslation()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { streamMetadata } = useLiveKitCredentials()
@@ -42,30 +44,45 @@ export function ChatPanel({ onClose, chatMessages, onMessagesRead }: ChatPanelPr
     }
   }, [onMessagesRead])
 
-  // Get profiles from context (already prefetched)
+  // Get profiles from context (already wired to the room)
   const { profiles } = useChatContext()
 
-  // Generate jump link based on stream metadata
-  const jumpLink = streamMetadata
-    ? streamMetadata.isWorld
-      ? `https://decentraland.org/jump/?realm=${streamMetadata.location}`
-      : `https://decentraland.org/jump/?position=${encodeURIComponent(streamMetadata.location)}`
-    : null
+  // Generate jump link based on stream metadata, unless the embedding page
+  // supplies its own (the discover scene page passes the decentraland:// deep-link).
+  const jumpLink =
+    jumpHref ??
+    (streamMetadata
+      ? streamMetadata.isWorld
+        ? `https://decentraland.org/jump/?realm=${streamMetadata.location}`
+        : `https://decentraland.org/jump/?position=${encodeURIComponent(streamMetadata.location)}`
+      : null)
 
-  const sceneName = streamMetadata?.placeName || 'this scene'
+  const sceneName = sceneNameProp || streamMetadata?.placeName || 'this scene'
 
   const renderMessage = (msg: ReceivedChatMessage, index: number) => {
-    // participantName contains the address
-    const address = msg.participantName
-    const profile = address?.startsWith('0x') ? profiles.get(address.toLowerCase()) : null
+    // participantName is the raw LiveKit identity. For scene comms it's the
+    // wallet (`0x…`) and we resolve a display name via the catalyst profile.
+    // For non-wallet identities (cast watchers' anonymous strings, in-world
+    // clients that publish a pre-formatted displayName) we just show the
+    // raw identifier — never re-format it, or we get double `#suffix`es.
+    const address = msg.participantName ?? ''
+    const isWalletAddress = address.startsWith('0x')
+    const lowerAddress = isWalletAddress ? address.toLowerCase() : ''
+    const profile = isWalletAddress ? profiles.get(lowerAddress) : null
 
-    // Display name: claimed name > truncated address > Unknown
-    let displayName = 'Unknown'
-    if (profile?.hasClaimedName && profile?.name) {
-      displayName = profile.name
-    } else if (address?.startsWith('0x')) {
-      // Truncate address: 0x1234...5678
-      displayName = `${address.slice(0, 6)}...${address.slice(-4)}`
+    // Wallet display priority:
+    //   1. claimed name → "Alice"
+    //   2. deployed profile with name → "alice#a1b2"
+    //   3. profile loaded but empty → "0x12…ab"
+    //   4. profile still in flight → "…" (avoids address→name flicker)
+    // Non-wallet identities (cast watchers, etc.) render raw.
+    let displayName: string
+    if (!isWalletAddress) {
+      displayName = address || 'Anonymous'
+    } else {
+      const fromProfile = getDisplayName({ name: profile?.name, hasClaimedName: profile?.hasClaimedName, ethAddress: address })
+      const shortAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
+      displayName = fromProfile || (profiles.has(lowerAddress) ? shortAddress : '…')
     }
 
     return (
@@ -80,9 +97,13 @@ export function ChatPanel({ onClose, chatMessages, onMessagesRead }: ChatPanelPr
     )
   }
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive. `block: 'nearest'`
+  // confines the scroll to the ChatMessages overflow container — without it
+  // the page itself scrolls on every new message when ChatPanel is embedded
+  // (see /discover/place/* scene detail) because scrollIntoView walks up to
+  // every scrollable ancestor by default.
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' })
   }, [chatMessages])
 
   return (
@@ -109,14 +130,18 @@ export function ChatPanel({ onClose, chatMessages, onMessagesRead }: ChatPanelPr
         )}
       </ChatMessages>
 
+      {/* NOTE: the chat is intentionally read-only in the browser — viewers are
+          not in the scene comms as chat participants, so there is no send input
+          on any surface (cast or discover). The footer deep-links them into the
+          client to participate. */}
       <ChatFooter>
         {jumpLink ? (
           <Typography variant="body2">
-            Jump into{' '}
+            {t('chat.footer_jump_prefix')}{' '}
             <FooterLink href={jumpLink} target="_blank" rel="noopener noreferrer">
               {sceneName}
             </FooterLink>{' '}
-            in Decentraland to participate in the chat.
+            {t('chat.footer_jump_suffix')}
           </Typography>
         ) : (
           <Typography variant="body2">{t('chat.footer_text', { sceneName })}</Typography>

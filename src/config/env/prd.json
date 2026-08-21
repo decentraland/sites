@@ -5,6 +5,7 @@
   "AUTH_SERVER_URL": "https://auth-api.decentraland.org",
   "THIRDWEB_CLIENT_ID": "e1adce863fe287bb6cf0e3fd90bdb77f",
   "PEER_URL": "https://peer.decentraland.org",
+  "BEVY_WEB_URL": "https://decentraland.org/bevy-web/",
   "WALLET_CONNECT_PROJECT_ID": "61570c542c2d66c659492e5b24a41522",
   "DOWNLOAD_COUNTS_URL": "https://cdn-data.decentraland.org/public/current/explorer-alpha-downloads.json",
   "EVENTS_API_URL": "https://events.decentraland.org/api",
@@ -17,6 +18,8 @@
   "DOWNLOAD_URL": "https://decentraland.org/download",
   "WEARABLE_PREVIEW_URL": "https://wearable-preview.decentraland.org/",
   "SEGMENT_KEY": "f0S2L1sWumT8BPjBmIBDTN5gIWjhrRHG",
+  "SEGMENT_CDN_URL": "https://evs.e.decentraland.org",
+  "SEGMENT_API_HOST": "api.e.decentraland.org/v1",
   "DISCORD_CAPTCHA_URL": "https://discord-lambdas.decentraland.io/captcha",
   "HCAPTCHA_SITEKEY": "00c95ced-f512-4498-a5f2-7e0b0950d456",
   "CLOUDFLARE_TURNSTILE_SITE_KEY": "0x4AAAAAABeSFZU86a2YsYhz",
@@ -50,5 +53,6 @@
   "LAND_REGISTRY_ADDRESS": "0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d",
   "ESTATE_REGISTRY_ADDRESS": "0x959e104e1a4db6317fa58f8295f586e1a978c297",
   "GATEKEEPER_URL": "https://comms-gatekeeper.decentraland.org",
-  "PRESENTER_SERVER_URL": "https://cast-presenter-service.decentraland.org"
+  "PRESENTER_SERVER_URL": "https://cast-presenter-service.decentraland.org",
+  "INVITE_DIRECT_DOWNLOAD": "false"
 }

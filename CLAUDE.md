@@ -25,6 +25,8 @@ Data access on lightweight routes uses `useSyncExternalStore`-based clients (see
 - **Blog**: `/blog`, `/blog/preview`, `/blog/search`, `/blog/sign-in`, `/blog/author/:authorSlug`, `/blog/:categorySlug`, `/blog/:categorySlug/:postSlug`.
 - **Jump** (launcher deep-link handler): `/jump`, `/jump/places`, `/jump/places/invalid`, `/jump/events`, `/jump/events/invalid`, plus the `/jump/event` legacy alias used by production.
 - **Social** (communities): `/social/communities/:id`, `/social/*` (catch-all not-found).
+- **Discover** (new explore section; absorbs the standalone decentraland.social experience): `/discover` (Live Now rail + Featured POIs + full-bleed Explore band with Explore all / Favourites / My places tabs, search + category filter — a right filter drawer on mobile), `/discover/communities` (list tab; cards link into the pre-existing `/social/communities/:id` detail), `/discover/place/:position` (Genesis City parcel detail), `/discover/world/:name` (world detail, same shape), `/discover/*` (catch-all, reuses `SocialNotFoundPage`). New pages render inside `<DiscoverLayout />`; data comes from `src/features/discover/` (endpoints injected into `placesClient` / `socialClient`). Junk listings (roads, empty parcels with only the `map.png` placeholder, `interactive-text` deploys) are hidden by `isHiddenPlace`; card covers fall back to a solid tile via `placeCoverImage`.
+  - **Scene detail** (`DiscoverScenePage`): live presence gates two states. Empty scene (desktop) → `SceneJumpInModal` over the grid; mobile always renders the modal as a full page (bevy-web can't run on touch devices) with LIVE + presence badges when live. Live scene (desktop) → 2-column grid: viewer card (bevy iframe via `SceneLiveWatcher`) + In-World Chat (`ChatPanel`, unconditionally read-only), always visible — it renders the empty-chat shell when the room is quiet. The bevy embed URL comes from `getEnv('BEVY_WEB_URL')` (`.zone` dev/stg — `.org`'s `frame-ancestors` CSP rejects non-.org parents — `.org` prd) with `systemScene=tortilla.dcl.eth` (patched scene-viewer: fly camera at the scene spawn point, no sidebar) and `guest=1&hud=0` flags (auto guest-login, no bevy HUD). COOP/COEP for the iframe are set per-route in `vercel.json` for `/discover` and `/discover/:path*`.
 - **Cast** (LiveKit streaming, absorbed from `decentraland/cast2`): `/cast/s/:token`, `/cast/s/streaming`, `/cast/w/:worldName/parcel/:parcel`, `/cast/w/:location`, plus `/cast` index and `/cast/*` catch-all rendering `CastNotFoundPage`. Cast adds an extra `<CastLayout />` that provides LiveKit + Notification contexts and renders the toast stack.
 - **Storage** (storage-service-site): `/storage`, `/storage/select`, `/storage/env`, `/storage/scene`, `/storage/players`, `/storage/players/:address`, plus `/storage/*` not-found.
 - **Account** (account-settings, absorbed from the standalone `account` dapp): `/account` (redirects to `/account/wallets`), `/account/wallets`, `/account/notifications`, `/account/credits`, `/account/delete`, plus `/account/*` not-found. Shares an `AccountLayout` sidebar. The Wallets "Send" action and the Delete flow need a Web3 signer, so they mount the lazy **`BlockchainShell`** (see below) — the rest of the account pages are signer-free.
@@ -37,7 +39,7 @@ These render as `<Outlet />` children of `src/shells/DappsShell.tsx`. The shell 
 
 A lazy, opt-in shell for the few account actions that need a connected signer (Wallets Send; Delete). It wraps children in `@dcl/core-web3`'s `WalletStateProvider` + `Web3LazyProvider`, which dynamically import the heavy Web3 stack (`wagmi` / `viem` / `magic-sdk` / `@magic-ext/oauth2`) only when an action mounts the shell, then calls `injectWeb3Reducers()` to append core-web3's `wallet` / `network` / `transactions` slices to the already-running `DappsShell` store (`createLazyStoreEnhancer` in `store.ts`). Children are withheld behind a readiness gate until the providers are mounted, so wagmi hooks never run without a `WagmiProvider`. The base `DappsShell` store only statically imports the lightweight `@dcl/core-web3/lazy` facade (the enhancer + provider shells) — the wagmi/viem bundle is code-split and never loads on a non-account heavy route.
 
-**Boundary rule:** code that runs on lightweight routes (anything reachable from `App.tsx` without going through `<DappsShell />`) must never `import` from `src/shells/`. The lightweight tier covers everything under `src/pages/*` EXCEPT the heavy-route page directories: `src/pages/whats-on/*`, `src/pages/blog/*`, `src/pages/jump/*`, `src/pages/social/*`, `src/pages/cast/*`, `src/pages/storage/*`, `src/pages/account/*`. Heavy-tier code (those page dirs + their feature/component trees, e.g. `src/components/account/*`) may import `src/shells/` — `BlockchainShell` and the RTK hooks live there. The same lightweight restriction applies to `src/components/Layout/*`, `src/components/LandingNavbar/*`, `src/components/LandingFooter/*`, and any hook the navbar consumes. The ONLY legitimate reference to `src/shells/` from outside the shell and outside a heavy-route tree is the `lazy()` import in `src/App.tsx`.
+**Boundary rule:** code that runs on lightweight routes (anything reachable from `App.tsx` without going through `<DappsShell />`) must never `import` from `src/shells/`. The lightweight tier covers everything under `src/pages/*` EXCEPT the heavy-route page directories: `src/pages/whats-on/*`, `src/pages/blog/*`, `src/pages/jump/*`, `src/pages/social/*`, `src/pages/discover/*`, `src/pages/cast/*`, `src/pages/storage/*`, `src/pages/account/*`. Heavy-tier code (those page dirs + their feature/component trees, e.g. `src/components/account/*`) may import `src/shells/` — `BlockchainShell` and the RTK hooks live there. The same lightweight restriction applies to `src/components/Layout/*`, `src/components/LandingNavbar/*`, `src/components/LandingFooter/*`, and any hook the navbar consumes. The ONLY legitimate reference to `src/shells/` from outside the shell and outside a heavy-route tree is the `lazy()` import in `src/App.tsx`.
 
 ## Directory map (top-level)
 
@@ -79,6 +81,7 @@ Each absorbed dapp's feature client, base client, components, and pages live und
 - `docs/domains/reels.md` — `src/features/reels/`. Camera-screenshot client; Layout-less.
 - `docs/domains/report.md` — `src/features/report/`. Lightweight report form (no RTK Query).
 - `docs/domains/profile.md` — `src/features/profile/`, components/profile, pages/profile. Profile route group + modal surfaces + social RPC.
+- `docs/domains/discover.md` — `src/features/discover/`, components/discover, pages/discover. Destinations feed + live presence + bevy scene preview.
 
 ### Skill + hook governance
 
@@ -102,7 +105,7 @@ Hero prerender + lazy `<Layout />` + lazy `<DappsShell />` + deferred analytics.
 
 ## Environment config
 
-All env vars live in `src/config/env/{dev,stg,prd}.json`. Access via `getEnv('KEY')` from `src/config/env.ts`. The `@dcl/ui-env` package auto-selects the right file based on the hostname. Override at runtime with `?env=dev|stg|prd` query param.
+All env vars live in `src/config/env/{dev,stg,prd}.json`. Access via `getEnv('KEY')` from `src/config/env.ts`. The `@dcl/ui-env` package auto-selects the right file based on the hostname. Override at runtime with the `?env=dev|stg|prod` query param (note: `prod`, not `prd` — an invalid value silently falls back to dev).
 
 Unified CMS origin: all three env files point at `cms-api.decentraland.org` (matches `api/seo.ts` fallback and the vite dev proxy target in `vite.config.ts`). Single origin = shared HTTP cache + ETag revalidation, obsoletes the old redux-persist cache that was removed.
 
@@ -130,8 +133,13 @@ Tier picker (lightweight / heavy / Layout-less), full step-by-step, navbar clear
 - **Styled components**: `<Component>.styled.ts` co-located with `<Component>.tsx`. Inline `sx={...}` only for one-off micro-tweaks; conditional styling with props belongs in `.styled.ts`.
 - **Types / interfaces**: `<thing>.types.ts`. Never inline in `.client.ts`, `.helpers.ts`, or logic files.
 - **RTK Query**: base client → `src/services/<name>Client.ts` (infra only). Endpoints → `src/features/<domain>/<domain>.client.ts`. See "RTK Query split".
-- **Pages**: `src/pages/<route>/`. Heavy routes under `src/pages/{whats-on,blog,jump,social,cast,storage}/`. Layout-less fullscreen routes use the same `src/pages/<area>/` shape but are placed before the `<Layout />` Route block in `src/App.tsx` (`reels`, `download`, `invite`).
+- **Pages**: `src/pages/<route>/`. Heavy routes under `src/pages/{whats-on,blog,jump,social,discover,cast,storage,account}/`. Layout-less fullscreen routes use the same `src/pages/<area>/` shape but are placed before the `<Layout />` Route block in `src/App.tsx` (`reels`, `download`, `invite`).
 - **Signal you're placing a file wrong**: `src/features/<domain>/use<X>.ts`, inline styled bigger than a single `sx`, type inside `.client.ts`. Stop and move it.
+
+### Naming
+
+- **Name reusable code for what it does, not for the first feature that used it.** If a hook / util / component is used (or is meant to be used) beyond one domain, its name must be domain-neutral and describe its behavior. A domain prefix (`blog`, `cast`, `storage`, …) is only allowed when the code is genuinely specific to that domain.
+- **Signal you're naming it wrong**: a generic helper carries a feature prefix while callers from other domains import it. Example: a per-page Segment `page()` hook was named `useBlogPageTracking` but blog, storage, cast, social and the 404 page all use it — the correct name is the behavior (`usePageViewTracking`). Rename it rather than propagating the misnomer to new callers.
 
 ### Styled components
 

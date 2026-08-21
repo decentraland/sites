@@ -76,7 +76,17 @@ enum SegmentEvent {
   COMMUNITY_CLICK_SIGN_IN_TO_JOIN = 'Click on Sign In to Join',
   REPORT_PLAYER_SUBMIT_STARTED = 'Report Player Submit Started',
   REPORT_PLAYER_SUBMITTED = 'Report Player Submitted',
-  REPORT_PLAYER_SUBMIT_FAILED = 'Report Player Submit Failed'
+  REPORT_PLAYER_SUBMIT_FAILED = 'Report Player Submit Failed',
+  SECTION_VIEWED = 'Section Viewed',
+  // /discover surfaces. Card clicks navigate to the scene preview; JUMP_IN is
+  // the decentraland:// deep-link (its `place` payload key says which surface
+  // fired it); LAUNCH_SCENE is the in-browser bevy iframe boot.
+  DISCOVER_CLICK_LIVE_CARD = 'Discover Click Live Card',
+  DISCOVER_CLICK_PLACE_CARD = 'Discover Click Place Card',
+  DISCOVER_CLICK_FEATURED_CARD = 'Discover Click Featured Card',
+  DISCOVER_JUMP_IN = 'Discover Jump In',
+  DISCOVER_FILTER_CATEGORY = 'Discover Filter Category',
+  DISCOVER_LAUNCH_SCENE = 'Discover Launch Scene'
 }
 
 enum DownloadPlace {
@@ -95,6 +105,8 @@ enum DownloadPlace {
   DOWNLOAD_SUCCESS_FOOTER = 'download-success-footer',
   CREATOR_HUB_DOWNLOAD_PAGE = 'creator-hub-download-page',
   CREATOR_HUB_SUCCESS_PAGE = 'creator-hub-success-page',
+  CREATORS_HERO = 'creators-hero',
+  LETS_PLAY_LANDING = 'lets-play-landing',
   UNKNOWN = 'unknown'
 }
 
@@ -118,12 +130,13 @@ enum DownloadTarget {
 enum SectionViewedTrack {
   CREATORS_CONNECT = 'Creators Connect',
   CREATORS_CREATE = 'Creators Create',
-  CREATORS_EARN = 'Creators Earn',
   CREATORS_HERO = 'Creators Hero',
   CREATORS_JUMP_IN = 'Creators Jump In',
   CREATORS_LEARN = 'Creators Learn',
   CREATORS_WHY = 'Creators Why',
   CREATORS_FAQS = 'Creators Faqs',
+  CREATORS_LIVE_SCENES = 'Creators Live Scenes',
+  CREATORS_BLOG = 'Creators Blog',
   LANDING_HERO = 'Landing Hero',
   LANDING_EVENTS_PLACES_FEED = 'Landing Events Places Feed',
   LANDING_BLOG_FEED = 'Landing Blog Feed',

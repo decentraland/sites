@@ -77,6 +77,10 @@ body:
         - Jump — Events (/jump/events)
         - Cast — Streamer (/cast/s)
         - Cast — Watcher (/cast/w)
+        - Discover — Home (/discover)
+        - Discover — Communities List (/discover/communities)
+        - Discover — Place Detail (/discover/place/:position)
+        - Discover — World Detail (/discover/world/:name)
         - Social — Community Detail (/social/communities/:id)
         - Profile — Overview (/profile/:address)
         - Profile — Assets tab (/profile/:address/assets)
@@ -110,6 +114,7 @@ body:
         - Discord redirect (/discord)
         - Legacy redirects (/events/*, /places/*)
         - Navbar / Footer (cross-page)
+        - 404 / Not found (any unknown path)
         - Other / Not listed
     validations:
       required: true

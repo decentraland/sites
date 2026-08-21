@@ -110,7 +110,9 @@ describe('CreatorHubDownloadSuccess', () => {
           anon_user_id: 'anon-xyz',
 
           auth_state: 'anonymous',
-          revisit: 0
+          revisit: 0,
+
+          download_target: 'creator_hub'
         }),
         'anon-fixed'
       )

@@ -206,13 +206,16 @@
         "messages_count": "{count}条消息",
         "messages_count_plural": "{count}条消息",
         "no_messages": "还没有消息。{action}",
-        "no_messages_yet": "暂无消息",
+        "no_messages_yet": "还没有消息。",
         "start_conversation": "开始对话！",
         "sign_in_to_participate": "登录以参与。",
         "type_message": "输入消息...",
         "sign_in_prompt": "登录以在聊天中发送消息",
         "connect_wallet_prompt": "连接您的Decentraland钱包以发送消息",
-        "footer_text": "进入Decentraland中的{sceneName}参与聊天。"
+        "footer_text": "进入Decentraland中的{sceneName}参与聊天。",
+        "footer_jump_prefix": "要参与聊天，请在 Decentraland 中跳入",
+        "footer_jump_suffix": "。",
+        "unavailable": "聊天暂时不可用。"
       },
       "people": {
         "title": "参与者",
@@ -377,12 +380,19 @@
       "jump_in": "立即进入！",
       "experimental": "想继续在网页上游玩？点击{here}体验实验版",
       "here": "这里"
+    },
+    "not_found": {
+      "title_oops": "哎呀！",
+      "title_rest": "此页面已离开这个世界。",
+      "description": "链接可能已过期，但 Decentraland 依然在线。快来发现社区活动、DJ 表演、创作者打造的游戏以及世界中的全新体验。",
+      "cta": "看看正在发生什么"
     }
   },
   "page_invite": {
     "social": {
       "title": "加入 Decentraland - 一个由社区构建的虚拟世界",
-      "description": "自定义你的头像，与世界各地的人一起玩，探索 Decentraland。从浏览器开始，然后下载应用进入。"
+      "description": "Decentraland 是你在线一起玩的地方。参加电影放映、现场音乐、问答等社区活动。随时进来，看看谁在线。",
+      "title_with_name": "{name} 邀请你加入 Decentraland"
     },
     "hero": {
       "title": "邀请你加入 Decentraland",
@@ -497,7 +507,7 @@
         "menu": "菜单",
         "getting_started": {
           "title": "快速入门",
-          "what_is": "什么是 Decentraland？",
+          "what_is": "关于 Decentraland",
           "download": "下载 Decentraland",
           "system_requirements": "系统要求",
           "faqs": "常见问题",
@@ -583,17 +593,13 @@
         },
         "support_updates_section": {
           "title": "支持更新",
-          "item_count": "5",
-          "item_0_question": "Explorer 发布 - v0.141.0 (22/4/2026)",
-          "item_0_answer": "客户端：\n\n新功能：\n- 为新用户禁用“切换账户”按钮\n- 扩展 AVPro 以支持 YouTube 和公开的 Google Drive 视频 (v2)\n- 太阳和月亮的镜头光晕\n\n修复：\n- 仅启用当前场景的流设置\n- 从社区中移除成员时出错\n- 多个 LSD 和资源加载问题\n- 新账户上的登录屏幕重叠\n- 在拨出通话时移除麦克风按钮\n\n更多详细信息，请查看 PR。",
-          "item_1_question": "全新 Creator Hub (v0.35.0) 发布",
-          "item_1_answer": "新功能：\n- Spawn Areas：现在你可以直接在场景编辑器中看到出生区域的可视化表示，并可视化地调整出生区域，包括随机偏移范围。\n- 动态资产目录与 SDK 兼容性：资产目录现在在运行时从 CDN 加载最新版本，因此新资产会自动出现，无需等待完整的应用更新。\n- World 访问权限：\"访问\"选项卡现在可在 Worlds 设置中使用，让你可以直接从 Creator Hub 管理谁可以进入你的 world。\n\n修复：\n- 高级模式下的场景布局：在高级模式下编辑时，场景布局现在可以正确更新。\n- 场景中的重复地面：打开场景不再渲染重复的地面平面。\n- 获取托管项目：修复了加载托管项目时的失败问题。\n- Windows 代码签名：Windows 构建管道现在会在代码签名错误时正确失败，而不是静默生成未签名的可执行文件。\n- 移除旧版依赖：用基于 viem 的更轻量的 vendored 实现替换了已弃用的 decentraland-connect 库，减小了 bundle 大小。\n\n改进：\n- UI 优化：更新了颜色、组件样式、变换对齐、实体检查器标题、实体重命名和资产选项卡样式，以获得更好的编辑体验。\n- 协作者选项卡文案：更新了协作者选项卡中的文字，提供更清晰的指导。",
-          "item_2_question": "创作者注意：Backface Culling 更新",
-          "item_2_answer": "Backface Culling 现已在引擎中默认对所有模型材质启用。\n\n原因：显著的性能优化。\n方式：由于这是引擎级别的优化，它也会影响已经发布的材质。\n\n行动要点：\n我们建议你按照文档中的故障排除部分检查你的场景。\n\n一些值得优先检查的场景：\n- 旗帜、窗帘、由平面制成的墙壁：如果一面墙由具有单面材质的平面制成，则无法从另一侧看到。\n- 由具有单面材质的平面制成的草地/树叶：与上述情况相同。\n- 用作房间的立方体和其他形状的内部：如果立方体材质朝外，则无法从内部看到。",
-          "item_3_question": "Visual Studio 扩展 - 停止支持",
-          "item_3_answer": "随着重心转向 Creator Hub，Visual Studio 扩展已不再获得支持。\n\n该扩展已从 VS Marketplace 移除。",
-          "item_4_question": "Player.logs - 如何获取",
-          "item_4_answer": "以下是如何查找和生成 Player.log 文件的指南。这些文件在排查报告的问题时很有帮助。\n\n在 Decentraland 桌面应用中打开聊天并输入：/logs\n\n或者：\n\n对于 Windows：\n导航到：C:\\Users\\{YourUserName}\\AppData\\LocalLow\\Decentraland\\Explorer\n找到名为 Player.log 的文件\n\n对于 Mac：\n打开 Finder 并按 Cmd + Shift + G 打开\"前往文件夹\"对话框。\n输入路径：/Users/UserName/Library/Logs/Decentraland/Explorer/\n找到名为 Player.log 的文件\n\nPlayer.log 文件显示当前/活跃会话的问题。\nPlayer-prev.log 文件显示上一个会话的问题。\n\nLauncher 日志 (output.log)：\nWindows：C:\\Users\\username\\AppData\\Roaming\\DecentralandLauncherLight\nMac：/Users/UserName/Library/Logs/DecentralandLauncherLight"
+          "item_count": "3",
+          "item_0_question": "创作者注意：Backface Culling 更新",
+          "item_0_answer": "Backface Culling 现已在引擎中默认对所有模型材质启用。\n\n原因：显著的性能优化。\n方式：由于这是引擎级别的优化，它也会影响已经发布的材质。\n\n行动要点：\n我们建议你按照文档中的故障排除部分检查你的场景。\n\n一些值得优先检查的场景：\n- 旗帜、窗帘、由平面制成的墙壁：如果一面墙由具有单面材质的平面制成，则无法从另一侧看到。\n- 由具有单面材质的平面制成的草地/树叶：与上述情况相同。\n- 用作房间的立方体和其他形状的内部：如果立方体材质朝外，则无法从内部看到。",
+          "item_1_question": "Visual Studio 扩展 - 停止支持",
+          "item_1_answer": "随着重心转向 Creator Hub，Visual Studio 扩展已不再获得支持。\n\n该扩展已从 VS Marketplace 移除。",
+          "item_2_question": "Player.logs - 如何获取",
+          "item_2_answer": "以下是如何查找和生成 Player.log 文件的指南。这些文件在排查报告的问题时很有帮助。\n\n在 Decentraland 桌面应用中打开聊天并输入：/logs\n\n或者：\n\n对于 Windows：\n导航到：C:\\Users\\{YourUserName}\\AppData\\LocalLow\\Decentraland\\Explorer\n找到名为 Player.log 的文件\n\n对于 Mac：\n打开 Finder 并按 Cmd + Shift + G 打开\"前往文件夹\"对话框。\n输入路径：/Users/UserName/Library/Logs/Decentraland/Explorer/\n找到名为 Player.log 的文件\n\nPlayer.log 文件显示当前/活跃会话的问题。\nPlayer-prev.log 文件显示上一个会话的问题。\n\nLauncher 日志 (output.log)：\nWindows：C:\\Users\\username\\AppData\\Roaming\\DecentralandLauncherLight\nMac：/Users/UserName/Library/Logs/DecentralandLauncherLight"
         },
         "dropdown": {
           "title": "系统状态",
@@ -631,6 +637,9 @@
         "shop": "商店",
         "create": "创作",
         "learn": "学习",
+        "discover": "发现",
+        "events": "活动",
+        "places": "场所",
         "jump_in": "进入",
         "sign_in": "登录",
         "signing_in": "登录中...",
@@ -660,7 +669,7 @@
         "my_assets": "我的资产",
         "account_settings": "账户设置",
         "marketplace_authorizations": "市场授权",
-        "whats_on": "最新活动"
+        "credits_balance": "{count} 积分"
       }
     },
     "reels": {
@@ -926,11 +935,34 @@
         "deleted_notice_link": "All Hangouts",
         "deleted_notice_suffix": "发现更多。"
       }
+    },
+    "creators_landing": {
+      "hero": {
+        "mobile_docs_cta": "浏览创作者文档",
+        "scroll_label": "滚动到下一部分"
+      },
+      "live_scenes": {
+        "title": "创作者正在构建的世界",
+        "title_highlight": "探索",
+        "online": "{count} 人在线",
+        "view_all": "查看所有实时场景"
+      },
+      "blog": {
+        "title": "最新文章",
+        "title_highlight": "博客",
+        "view_all": "阅读博客"
+      }
+    },
+    "error_boundary": {
+      "title": "出现错误",
+      "message": "无法加载此页面。请检查网络连接后重试。",
+      "reload": "重新加载"
     }
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "approved_edit_warning": "Changing the name, description, image, or location of an approved hangout will send it back for review before the updates go live.",
     "error_image_too_large": "无法将此图片压缩到 500 KB 以下。请选择较小的文件。",
     "vertical_recommended_size": "建议尺寸：716 × 1814 px",
     "recurrence": "重复频率",
@@ -1221,6 +1253,93 @@
   "upcoming": {
     "today_at": "今天 {time}",
     "tomorrow_at": "明天 {time}"
+  },
+  "discover": {
+    "home": {
+      "page_title": "发现 — Decentraland"
+    },
+    "card": {
+      "jump_in": "进入",
+      "by": "作者",
+      "featured": "精选"
+    },
+    "live": {
+      "heading": "直播中"
+    },
+    "explore": {
+      "search_placeholder": "搜索地点",
+      "empty": "没有符合筛选条件的场所。",
+      "filters": "筛选",
+      "remove_filter": "移除筛选",
+      "category": {
+        "label": "类别",
+        "all": "所有类别",
+        "social": "社交",
+        "music": "音乐",
+        "art": "艺术",
+        "game": "游戏",
+        "fashion": "时尚",
+        "education": "教育",
+        "shop": "购物",
+        "sports": "运动",
+        "business": "商业"
+      },
+      "section": {
+        "featured": "精选地点"
+      },
+      "tab": {
+        "explore_all": "浏览全部",
+        "favourites": "收藏",
+        "my_places": "我的地点"
+      },
+      "signin_favourites": "登录并收藏地点后即可在此查看。",
+      "empty_favourites": "你还没有收藏任何地点。",
+      "signin_my_places": "登录后即可查看你创建的地点。",
+      "empty_my_places": "你还没有发布任何地点。",
+      "error": "加载地点时出现问题。",
+      "retry": "重试"
+    },
+    "communities": {
+      "page_title": "社区 — Decentraland",
+      "heading": "社区",
+      "search_placeholder": "搜索社区",
+      "empty": "未找到社区。",
+      "members_count": "{count} 位成员",
+      "error": "加载社区时出现问题。"
+    },
+    "scene": {
+      "people_count": "世界中有 {count} 人",
+      "people_empty": "暂时还没有人。",
+      "tab_video": "Stream",
+      "tab_streaming": "DCL Web",
+      "resume_cta": "观看直播",
+      "close_media": "停止",
+      "fullscreen": "全屏",
+      "exit_fullscreen": "退出",
+      "scene_picker": "场景",
+      "connecting": "正在连接场景…",
+      "waiting": {
+        "title": "场景动态",
+        "hint": "{count, plural, =0 {还没有人 — 来当第一个吧。} other {此场景中有 {count} 人，右侧聊天正在实时显示。}}"
+      },
+      "not_found": {
+        "title": "未找到场景",
+        "description": "无法加载该场所或世界。它可能已被移除。"
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "此体验不支持移动浏览器。请下载应用："
+      },
+      "what_to_expect": "活动亮点",
+      "copy_link": "复制链接",
+      "close": "关闭",
+      "explore_scene": "探索场景",
+      "copied": "已复制！"
+    },
+    "featured": {
+      "view_all": "查看全部精选地点",
+      "view_less": "收起"
+    }
   },
   "account": {
     "meta": {

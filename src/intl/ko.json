@@ -206,13 +206,16 @@
         "messages_count": "메시지 {count}개",
         "messages_count_plural": "메시지 {count}개",
         "no_messages": "아직 메시지가 없습니다. {action}",
-        "no_messages_yet": "아직 메시지가 없습니다",
+        "no_messages_yet": "아직 메시지가 없습니다.",
         "start_conversation": "대화를 시작해 보세요!",
         "sign_in_to_participate": "참여하려면 로그인하세요.",
         "type_message": "메시지를 입력하세요...",
         "sign_in_prompt": "채팅에 메시지를 보내려면 로그인하세요",
         "connect_wallet_prompt": "메시지를 보내려면 Decentraland 지갑을 연결하세요",
-        "footer_text": "Decentraland의 {sceneName}에서 채팅에 참여하세요."
+        "footer_text": "Decentraland의 {sceneName}에서 채팅에 참여하세요.",
+        "footer_jump_prefix": "채팅에 참여하려면 Decentraland에서",
+        "footer_jump_suffix": "(으)로 이동하세요.",
+        "unavailable": "현재 채팅을 사용할 수 없습니다."
       },
       "people": {
         "title": "참가자",
@@ -377,12 +380,19 @@
       "jump_in": "입장하기!",
       "experimental": "웹에서 계속 플레이하고 싶으신가요? 실험 버전을 {here}에서 사용해 보세요",
       "here": "여기"
+    },
+    "not_found": {
+      "title_oops": "이런!",
+      "title_rest": "이 페이지는 월드를 떠났습니다.",
+      "description": "링크가 오래되었을 수 있지만 Decentraland는 여전히 라이브 중입니다. 커뮤니티 이벤트, DJ 공연, 크리에이터가 만든 게임, 월드 속 새로운 경험을 만나보세요.",
+      "cta": "진행 중인 이벤트 보기"
     }
   },
   "page_invite": {
     "social": {
       "title": "Decentraland에 참여하세요 - 커뮤니티가 만든 가상 세계",
-      "description": "아바타를 꾸미고, 전 세계 사람들과 어울리고, Decentraland를 탐험하세요. 브라우저에서 시작한 다음 앱을 다운로드하여 입장하세요."
+      "description": "Decentraland는 온라인에서 시간을 보내는 공간입니다. 영화 상영, 라이브 음악, 퀴즈 등 다양한 커뮤니티 이벤트에 참여하세요. 언제든 들러서 누가 있는지 확인해 보세요.",
+      "title_with_name": "{name}님이 Decentraland에 초대했습니다"
     },
     "hero": {
       "title": "님이 Decentraland에 초대했습니다",
@@ -497,7 +507,7 @@
         "menu": "메뉴",
         "getting_started": {
           "title": "시작하기",
-          "what_is": "Decentraland란?",
+          "what_is": "Decentraland 소개",
           "download": "Decentraland 다운로드",
           "system_requirements": "시스템 요구 사항",
           "faqs": "자주 묻는 질문",
@@ -583,17 +593,13 @@
         },
         "support_updates_section": {
           "title": "지원 업데이트",
-          "item_count": "5",
-          "item_0_question": "Explorer 릴리스 - v0.141.0 (22/4/2026)",
-          "item_0_answer": "클라이언트:\n\n새로운 기능:\n- 신규 사용자에 대해 \"계정 전환\" 버튼 비활성화\n- YouTube 및 공개 Google Drive 동영상을 지원하도록 AVPro 확장 (v2)\n- 태양과 달의 렌즈 플레어\n\n수정 사항:\n- 현재 장면 스트림 설정만 활성화\n- 커뮤니티에서 멤버 제거 시 오류\n- 여러 LSD 및 에셋 로드 문제\n- 신규 계정에서 겹치는 로그인 화면\n- 발신 통화 시 마이크 버튼 제거\n\n자세한 내용은 PR을 확인해 주세요.",
-          "item_1_question": "새로운 Creator Hub (v0.35.0) 릴리스",
-          "item_1_answer": "새로운 기능:\n- Spawn Areas: 이제 씬 에디터에서 스폰 영역의 시각적 표현을 직접 볼 수 있으며, 무작위 오프셋 범위를 포함하여 스폰 영역을 시각적으로 조정할 수 있습니다.\n- SDK 호환 동적 에셋 카탈로그: 에셋 카탈로그가 이제 런타임에 CDN에서 최신 버전을 로드하므로, 전체 앱 업데이트를 기다리지 않아도 새 에셋이 자동으로 표시됩니다.\n- World 접근 권한: \"접근\" 탭이 이제 Worlds 설정에서 사용 가능하여, Creator Hub에서 직접 누가 여러분의 world에 들어올 수 있는지 관리할 수 있습니다.\n\n수정 사항:\n- 고급 모드의 씬 레이아웃: 고급 모드에서 편집할 때 씬 레이아웃이 이제 올바르게 업데이트됩니다.\n- 씬의 중복 지면: 씬을 열 때 더 이상 중복 지면 평면이 렌더링되지 않습니다.\n- 관리 프로젝트 불러오기: 관리 프로젝트를 로드할 때 발생하던 오류가 수정되었습니다.\n- Windows 코드 서명: Windows 빌드 파이프라인이 이제 코드 서명 오류 시 조용히 서명되지 않은 실행 파일을 생성하는 대신 올바르게 실패합니다.\n- 레거시 의존성 제거: 더 이상 사용되지 않는 decentraland-connect 라이브러리를 viem을 사용하는 더 가벼운 vendored 구현으로 교체하여 번들 크기를 줄였습니다.\n\n개선 사항:\n- UI 개선: 더 나은 편집 경험을 위해 색상, 컴포넌트 스타일, 변환 정렬, 엔티티 인스펙터 헤더, 엔티티 이름 변경 및 에셋 탭 스타일이 업데이트되었습니다.\n- 협력자 탭 문구: 협력자 탭의 텍스트가 더 명확한 안내로 업데이트되었습니다.",
-          "item_2_question": "크리에이터 주목: Backface Culling 업데이트",
-          "item_2_answer": "Backface Culling이 엔진에서 모든 모델 재질에 기본적으로 활성화되었습니다.\n\n이유: 상당한 성능 최적화.\n방법: 엔진 최적화이므로 이미 게시된 재질에도 영향을 미칩니다.\n\n조치 사항:\n문서의 문제 해결 섹션을 따라 씬을 확인하시기 바랍니다.\n\n먼저 확인할 가치가 있는 시나리오:\n- 평면으로 만든 깃발, 커튼, 벽: 단면 재질이 있는 평면으로 만든 벽은 반대편에서 보이지 않습니다.\n- 단면 재질의 평면으로 만든 잔디 / 나뭇잎: 위와 동일한 경우입니다.\n- 방 역할을 하는 큐브 및 기타 형태의 내부: 큐브 재질이 바깥을 향하면 내부에서 보이지 않습니다.",
-          "item_3_question": "Visual Studio 확장 프로그램 - 지원 종료",
-          "item_3_answer": "Creator Hub에 집중함에 따라 Visual Studio 확장 프로그램은 더 이상 지원되지 않습니다.\n\n해당 확장 프로그램은 VS Marketplace에서 제거되었습니다.",
-          "item_4_question": "Player.logs - 가져오는 방법",
-          "item_4_answer": "아래는 Player.log 파일을 찾고 생성하는 방법에 대한 가이드입니다. 이 파일들은 보고된 문제를 해결할 때 도움이 될 수 있습니다.\n\nDecentraland 데스크톱 앱에서 채팅을 열고 다음을 입력하세요: /logs\n\n또는:\n\nWindows의 경우:\n다음으로 이동: C:\\Users\\{YourUserName}\\AppData\\LocalLow\\Decentraland\\Explorer\nPlayer.log라는 파일을 찾으세요\n\nMac의 경우:\nFinder를 열고 Cmd + Shift + G를 눌러 \"폴더로 이동\" 대화 상자를 엽니다.\n경로를 입력하세요: /Users/UserName/Library/Logs/Decentraland/Explorer/\nPlayer.log라는 파일을 찾으세요\n\nPlayer.log 파일은 현재/활성 세션의 문제를 보여줍니다.\nPlayer-prev.log 파일은 이전 세션의 문제를 보여줍니다.\n\nLauncher 로그 (output.log):\nWindows: C:\\Users\\username\\AppData\\Roaming\\DecentralandLauncherLight\nMac: /Users/UserName/Library/Logs/DecentralandLauncherLight"
+          "item_count": "3",
+          "item_0_question": "크리에이터 주목: Backface Culling 업데이트",
+          "item_0_answer": "Backface Culling이 엔진에서 모든 모델 재질에 기본적으로 활성화되었습니다.\n\n이유: 상당한 성능 최적화.\n방법: 엔진 최적화이므로 이미 게시된 재질에도 영향을 미칩니다.\n\n조치 사항:\n문서의 문제 해결 섹션을 따라 씬을 확인하시기 바랍니다.\n\n먼저 확인할 가치가 있는 시나리오:\n- 평면으로 만든 깃발, 커튼, 벽: 단면 재질이 있는 평면으로 만든 벽은 반대편에서 보이지 않습니다.\n- 단면 재질의 평면으로 만든 잔디 / 나뭇잎: 위와 동일한 경우입니다.\n- 방 역할을 하는 큐브 및 기타 형태의 내부: 큐브 재질이 바깥을 향하면 내부에서 보이지 않습니다.",
+          "item_1_question": "Visual Studio 확장 프로그램 - 지원 종료",
+          "item_1_answer": "Creator Hub에 집중함에 따라 Visual Studio 확장 프로그램은 더 이상 지원되지 않습니다.\n\n해당 확장 프로그램은 VS Marketplace에서 제거되었습니다.",
+          "item_2_question": "Player.logs - 가져오는 방법",
+          "item_2_answer": "아래는 Player.log 파일을 찾고 생성하는 방법에 대한 가이드입니다. 이 파일들은 보고된 문제를 해결할 때 도움이 될 수 있습니다.\n\nDecentraland 데스크톱 앱에서 채팅을 열고 다음을 입력하세요: /logs\n\n또는:\n\nWindows의 경우:\n다음으로 이동: C:\\Users\\{YourUserName}\\AppData\\LocalLow\\Decentraland\\Explorer\nPlayer.log라는 파일을 찾으세요\n\nMac의 경우:\nFinder를 열고 Cmd + Shift + G를 눌러 \"폴더로 이동\" 대화 상자를 엽니다.\n경로를 입력하세요: /Users/UserName/Library/Logs/Decentraland/Explorer/\nPlayer.log라는 파일을 찾으세요\n\nPlayer.log 파일은 현재/활성 세션의 문제를 보여줍니다.\nPlayer-prev.log 파일은 이전 세션의 문제를 보여줍니다.\n\nLauncher 로그 (output.log):\nWindows: C:\\Users\\username\\AppData\\Roaming\\DecentralandLauncherLight\nMac: /Users/UserName/Library/Logs/DecentralandLauncherLight"
         },
         "dropdown": {
           "title": "시스템 상태",
@@ -631,6 +637,9 @@
         "shop": "상점",
         "create": "만들기",
         "learn": "배우기",
+        "discover": "디스커버",
+        "events": "이벤트",
+        "places": "장소",
         "jump_in": "입장",
         "sign_in": "로그인",
         "signing_in": "로그인 중...",
@@ -660,7 +669,7 @@
         "my_assets": "내 자산",
         "account_settings": "계정 설정",
         "marketplace_authorizations": "마켓플레이스 승인",
-        "whats_on": "새 소식"
+        "credits_balance": "크레딧 {count}"
       }
     },
     "reels": {
@@ -926,11 +935,34 @@
         "deleted_notice_link": "All Hangouts",
         "deleted_notice_suffix": "에서 더 많은 행아웃을 찾아보세요."
       }
+    },
+    "creators_landing": {
+      "hero": {
+        "mobile_docs_cta": "크리에이터 문서 살펴보기",
+        "scroll_label": "다음 섹션으로 스크롤"
+      },
+      "live_scenes": {
+        "title": "를 실시간으로 탐험하세요",
+        "title_highlight": "크리에이터가 만드는 세계",
+        "online": "{count}명 접속 중",
+        "view_all": "라이브 씬 모두 보기"
+      },
+      "blog": {
+        "title": "최신 소식",
+        "title_highlight": "블로그",
+        "view_all": "블로그 읽기"
+      }
+    },
+    "error_boundary": {
+      "title": "문제가 발생했습니다",
+      "message": "이 페이지를 불러올 수 없습니다. 연결을 확인한 후 다시 시도해 주세요.",
+      "reload": "다시 불러오기"
     }
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "approved_edit_warning": "Changing the name, description, image, or location of an approved hangout will send it back for review before the updates go live.",
     "error_image_too_large": "이 이미지를 500KB 이하로 압축할 수 없습니다. 더 작은 파일을 선택해 주세요.",
     "vertical_recommended_size": "권장 크기: 716 × 1814 px",
     "recurrence": "반복",
@@ -1221,6 +1253,93 @@
   "upcoming": {
     "today_at": "오늘 {time}",
     "tomorrow_at": "내일 {time}"
+  },
+  "discover": {
+    "home": {
+      "page_title": "디스커버 — Decentraland"
+    },
+    "card": {
+      "jump_in": "입장",
+      "by": "제작",
+      "featured": "추천"
+    },
+    "live": {
+      "heading": "라이브"
+    },
+    "explore": {
+      "search_placeholder": "장소 검색",
+      "empty": "조건에 맞는 장소가 없습니다.",
+      "filters": "필터",
+      "remove_filter": "필터 제거",
+      "category": {
+        "label": "카테고리",
+        "all": "모든 카테고리",
+        "social": "소셜",
+        "music": "음악",
+        "art": "아트",
+        "game": "게임",
+        "fashion": "패션",
+        "education": "교육",
+        "shop": "쇼핑",
+        "sports": "스포츠",
+        "business": "비즈니스"
+      },
+      "section": {
+        "featured": "추천 장소"
+      },
+      "tab": {
+        "explore_all": "모두 보기",
+        "favourites": "즐겨찾기",
+        "my_places": "내 장소"
+      },
+      "signin_favourites": "로그인하고 장소를 즐겨찾기에 추가하면 여기에 표시됩니다.",
+      "empty_favourites": "아직 즐겨찾기한 장소가 없습니다.",
+      "signin_my_places": "로그인하면 내가 만든 장소를 볼 수 있습니다.",
+      "empty_my_places": "아직 게시한 장소가 없습니다.",
+      "error": "장소를 불러오는 중 문제가 발생했습니다.",
+      "retry": "다시 시도"
+    },
+    "communities": {
+      "page_title": "커뮤니티 — Decentraland",
+      "heading": "커뮤니티",
+      "search_placeholder": "커뮤니티 검색",
+      "empty": "커뮤니티를 찾을 수 없습니다.",
+      "members_count": "멤버 {count}명",
+      "error": "커뮤니티를 불러오는 중 문제가 발생했습니다."
+    },
+    "scene": {
+      "people_count": "월드에 {count}명",
+      "people_empty": "아직 아무도 없습니다.",
+      "tab_video": "Stream",
+      "tab_streaming": "DCL Web",
+      "resume_cta": "라이브 보기",
+      "close_media": "중지",
+      "fullscreen": "전체화면",
+      "exit_fullscreen": "나가기",
+      "scene_picker": "장면",
+      "connecting": "장면에 연결하는 중…",
+      "waiting": {
+        "title": "장면 활동",
+        "hint": "{count, plural, =0 {아직 아무도 없습니다 — 가장 먼저 참여하세요。} other {이 장면에 {count}명이 있습니다. 오른쪽 채팅이 실시간으로 표시됩니다。}}"
+      },
+      "not_found": {
+        "title": "장면을 찾을 수 없음",
+        "description": "해당 장소 또는 월드를 불러올 수 없습니다. 삭제되었을 수 있습니다."
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "이 환경은 모바일 브라우저에서 사용할 수 없습니다. 앱을 다운로드하세요:"
+      },
+      "what_to_expect": "기대 포인트",
+      "copy_link": "링크 복사",
+      "close": "닫기",
+      "explore_scene": "장면 둘러보기",
+      "copied": "복사됨!"
+    },
+    "featured": {
+      "view_all": "추천 장소 모두 보기",
+      "view_less": "접기"
+    }
   },
   "account": {
     "meta": {

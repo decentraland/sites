@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Button, Input, Typography, styled } from 'decentraland-ui2'
+import { Button, Input, Typography, dclColors, styled } from 'decentraland-ui2'
 
 const ChatContainer = styled('div')({
   height: '100%',
@@ -10,19 +10,24 @@ const ChatContainer = styled('div')({
   overflow: 'hidden'
 })
 
+// Figma 2151:31612: 20px Medium title with a hairline divider underneath,
+// inset to the panel's 30px side padding (mirrors ChatFooter's top divider).
 const ChatHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: 30,
+  margin: '0 30px',
+  padding: '16px 0 12px',
+  borderBottom: `0.5px solid ${dclColors.neutral.gray3}`,
   flexShrink: 0,
   '& .MuiTypography-root': {
     color: 'white',
     fontWeight: 500,
-    fontSize: 24
+    fontSize: 20
   },
   [theme.breakpoints.down('sm')]: {
-    padding: 16
+    margin: '0 16px',
+    padding: '12px 0 10px'
   }
 }))
 
@@ -68,10 +73,12 @@ const EmptyChat = styled('div')({
   alignItems: 'center',
   justifyContent: 'center',
   height: '100%',
-  color: 'rgba(255, 255, 255, 0.5)',
   textAlign: 'center',
+  // Figma 2151:35035: 16px/1.5 soft-white body copy.
   '& .MuiTypography-root': {
-    color: 'rgba(255, 255, 255, 0.5)'
+    color: dclColors.neutral.softWhite,
+    fontSize: 16,
+    lineHeight: 1.5
   }
 })
 
@@ -219,17 +226,26 @@ const CloseButton = styled('button')({
 })
 
 const ChatFooter = styled('div')(({ theme }) => ({
+  // Figma 2151:35035: full-width divider inside the panel's 30px side padding,
+  // 12px gap to the centered 16px/1.75 text, 12px bottom inset — no horizontal
+  // padding of its own (the old `padding: 30` narrowed the text and wrapped the
+  // jump-in line onto three lines instead of the design's two).
   margin: '0 30px',
-  borderTop: '0.5px solid #A09BA8',
-  padding: 30,
+  borderTop: `0.5px solid ${dclColors.neutral.gray3}`,
+  padding: '12px 0',
   flexShrink: 0,
   textAlign: 'center',
   fontWeight: 400,
   fontSize: 16,
   color: 'white',
+  '& .MuiTypography-root': {
+    fontSize: 16,
+    lineHeight: 1.75,
+    color: dclColors.neutral.white
+  },
   [theme.breakpoints.down('sm')]: {
     margin: '0 16px',
-    padding: 16
+    padding: '10px 0'
   }
 }))
 

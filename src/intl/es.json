@@ -206,13 +206,16 @@
         "messages_count": "{count} mensaje",
         "messages_count_plural": "{count} mensajes",
         "no_messages": "Sin mensajes aún. {action}",
-        "no_messages_yet": "Aún no hay mensajes",
+        "no_messages_yet": "Aún no hay mensajes.",
         "start_conversation": "¡Inicia la conversación!",
         "sign_in_to_participate": "Inicia sesión para participar.",
         "type_message": "Escribe un mensaje...",
         "sign_in_prompt": "Inicia sesión para enviar mensajes en el chat",
         "connect_wallet_prompt": "Conecta tu billetera de Decentraland para enviar mensajes",
-        "footer_text": "Ingresa a {sceneName} en Decentraland para participar en el chat."
+        "footer_text": "Ingresa a {sceneName} en Decentraland para participar en el chat.",
+        "footer_jump_prefix": "Entra a",
+        "footer_jump_suffix": "en Decentraland para participar en el chat.",
+        "unavailable": "El chat no está disponible en este momento."
       },
       "people": {
         "title": "Participantes",
@@ -377,12 +380,19 @@
       "jump_in": "¡ENTRAR!",
       "experimental": "¿Querés seguir jugando en la web? Probá la versión experimental {here}",
       "here": "AQUÍ"
+    },
+    "not_found": {
+      "title_oops": "¡Ups!",
+      "title_rest": "Esta página abandonó el mundo.",
+      "description": "Puede que el enlace esté desactualizado, pero Decentraland sigue en vivo. Descubrí eventos de la comunidad, sets de DJ, juegos creados por la comunidad y nuevas experiencias dentro del mundo.",
+      "cta": "Descubrí qué está pasando"
     }
   },
   "page_invite": {
     "social": {
       "title": "Únete a Decentraland - Un mundo virtual construido por su comunidad",
-      "description": "Personaliza tu avatar, pasa el rato con personas de todo el mundo y descubre Decentraland. Empieza desde tu navegador y luego descarga la app para entrar."
+      "description": "Decentraland es donde pasas el rato online. Únete a proyecciones de películas, música en vivo, trivias y otros eventos de la comunidad. Entra cuando quieras y descubre quién anda por ahí.",
+      "title_with_name": "{name} te invitó a unirte a Decentraland"
     },
     "hero": {
       "title": "te invitó a unirte a Decentraland",
@@ -497,7 +507,7 @@
         "menu": "Menú",
         "getting_started": {
           "title": "Primeros pasos",
-          "what_is": "¿Qué es Decentraland?",
+          "what_is": "Acerca de Decentraland",
           "download": "Descargar Decentraland",
           "system_requirements": "Requisitos del sistema",
           "faqs": "Preguntas frecuentes",
@@ -583,17 +593,13 @@
         },
         "support_updates_section": {
           "title": "Actualizaciones de Soporte",
-          "item_count": "5",
-          "item_0_question": "Lanzamiento de Explorer - v0.141.0 (22/4/2026)",
-          "item_0_answer": "Cliente:\n\nCaracterísticas:\n- Desactivar el botón \"cambiar cuenta\" para usuarios nuevos\n- Extender AVPro para admitir videos de YouTube y de Google Drive públicos (v2)\n- Destello de lente para el sol y la luna\n\nCorrecciones:\n- Habilitar solo el ajuste de transmisión de la escena actual\n- Error al eliminar miembros de una comunidad\n- Varios problemas de carga de LSD y de assets\n- Pantalla de inicio de sesión superpuesta en cuentas nuevas\n- Eliminar el botón del micrófono en llamadas salientes\n\nPara más detalles, consulta el PR.",
-          "item_1_question": "Nuevo lanzamiento de Creator Hub (v0.35.0)",
-          "item_1_answer": "Características:\n- Spawn Areas: Ahora puedes ver una representación visual de las áreas de aparición directamente en el editor de escenas, y ajustar las áreas de aparición visualmente, incluyendo rangos de desplazamiento aleatorio.\n- Catálogo de Activos Dinámico con Compatibilidad SDK: El catálogo de activos ahora carga la última versión desde el CDN en tiempo de ejecución, para que los nuevos activos aparezcan automáticamente sin esperar una actualización completa de la aplicación.\n- Permisos de Acceso a Worlds: La pestaña \"Acceso\" ahora está disponible en la configuración de Worlds, permitiéndote gestionar quién puede entrar a tu world directamente desde el Creator Hub.\n\nCorrecciones:\n- Diseño de Escena en Modo Avanzado: El diseño de escena ahora se actualiza correctamente al editar en modo avanzado.\n- Suelo Duplicado en Escenas: Abrir una escena ya no renderiza un plano de suelo duplicado.\n- Obtener Proyectos Gestionados: Corregido un fallo al cargar proyectos gestionados.\n- Firma de Código en Windows: El pipeline de compilación de Windows ahora falla correctamente ante errores de firma de código en lugar de producir ejecutables sin firmar silenciosamente.\n- Dependencia Legacy Eliminada: Se reemplazó la biblioteca obsoleta decentraland-connect con una implementación vendorizada más ligera usando viem, reduciendo el tamaño del bundle.\n\nMejoras:\n- Pulido de UI: Se actualizaron colores, estilos de componentes, alineación de transformaciones, encabezado del inspector de entidades, renombrado de entidades y estilado de pestaña de activos para una mejor experiencia de edición.\n- Texto de Pestaña de Colaboradores: Se actualizó el texto en la pestaña de colaboradores con una guía más clara.",
-          "item_2_question": "Atención Creadores: Actualizaciones de Backface Culling",
-          "item_2_answer": "Backface Culling ahora está activado por defecto en el motor en todos los materiales de los modelos.\n\nPor qué: Optimización significativa de rendimiento.\nCómo: Debido a que es una optimización del motor, también afecta a materiales que ya están publicados.\n\nPuntos de Acción:\nTe animamos a revisar tus escenas siguiendo la sección de Solución de Problemas en la documentación.\n\nAlgunos escenarios que vale la pena revisar primero:\n- Banderas, cortinas, paredes hechas de Planos: Si una pared hecha de un plano con un material de una sola cara, no se verá desde el otro lado.\n- Hierba / Hojas de un árbol hechas de Planos con materiales de una sola cara: Mismo caso que el anterior.\n- Interior de Cubos y otras formas que actúan como habitaciones: Si el material del cubo apunta hacia afuera, no se verá desde el interior.",
-          "item_3_question": "Extensión de Visual Studio - Fin del Soporte",
-          "item_3_answer": "Con el enfoque en el Creator Hub, la extensión de Visual Studio ya no tiene soporte.\n\nLa extensión ha sido eliminada del VS Marketplace.",
-          "item_4_question": "Player.logs - Cómo obtenerlos",
-          "item_4_answer": "A continuación se muestra una guía sobre cómo encontrar y generar el archivo Player.log. Estos archivos pueden ser útiles para solucionar problemas reportados.\n\nAbre el chat en la aplicación de escritorio de Decentraland y escribe: /logs\n\nO:\n\nPara Windows:\nNavega a: C:\\Users\\{YourUserName}\\AppData\\LocalLow\\Decentraland\\Explorer\nEncuentra el archivo llamado Player.log\n\nPara Mac:\nAbre Finder y presiona Cmd + Shift + G para abrir el diálogo \"Ir a la carpeta\".\nIngresa la ruta: /Users/UserName/Library/Logs/Decentraland/Explorer/\nEncuentra el archivo llamado Player.log\n\nEl archivo Player.log mostraría problemas con la sesión actual/activa.\nEl archivo Player-prev.log mostraría problemas con la sesión anterior.\n\nLogs del Launcher (output.log):\nWindows: C:\\Users\\username\\AppData\\Roaming\\DecentralandLauncherLight\nMac: /Users/UserName/Library/Logs/DecentralandLauncherLight"
+          "item_count": "3",
+          "item_0_question": "Atención Creadores: Actualizaciones de Backface Culling",
+          "item_0_answer": "Backface Culling ahora está activado por defecto en el motor en todos los materiales de los modelos.\n\nPor qué: Optimización significativa de rendimiento.\nCómo: Debido a que es una optimización del motor, también afecta a materiales que ya están publicados.\n\nPuntos de Acción:\nTe animamos a revisar tus escenas siguiendo la sección de Solución de Problemas en la documentación.\n\nAlgunos escenarios que vale la pena revisar primero:\n- Banderas, cortinas, paredes hechas de Planos: Si una pared hecha de un plano con un material de una sola cara, no se verá desde el otro lado.\n- Hierba / Hojas de un árbol hechas de Planos con materiales de una sola cara: Mismo caso que el anterior.\n- Interior de Cubos y otras formas que actúan como habitaciones: Si el material del cubo apunta hacia afuera, no se verá desde el interior.",
+          "item_1_question": "Extensión de Visual Studio - Fin del Soporte",
+          "item_1_answer": "Con el enfoque en el Creator Hub, la extensión de Visual Studio ya no tiene soporte.\n\nLa extensión ha sido eliminada del VS Marketplace.",
+          "item_2_question": "Player.logs - Cómo obtenerlos",
+          "item_2_answer": "A continuación se muestra una guía sobre cómo encontrar y generar el archivo Player.log. Estos archivos pueden ser útiles para solucionar problemas reportados.\n\nAbre el chat en la aplicación de escritorio de Decentraland y escribe: /logs\n\nO:\n\nPara Windows:\nNavega a: C:\\Users\\{YourUserName}\\AppData\\LocalLow\\Decentraland\\Explorer\nEncuentra el archivo llamado Player.log\n\nPara Mac:\nAbre Finder y presiona Cmd + Shift + G para abrir el diálogo \"Ir a la carpeta\".\nIngresa la ruta: /Users/UserName/Library/Logs/Decentraland/Explorer/\nEncuentra el archivo llamado Player.log\n\nEl archivo Player.log mostraría problemas con la sesión actual/activa.\nEl archivo Player-prev.log mostraría problemas con la sesión anterior.\n\nLogs del Launcher (output.log):\nWindows: C:\\Users\\username\\AppData\\Roaming\\DecentralandLauncherLight\nMac: /Users/UserName/Library/Logs/DecentralandLauncherLight"
         },
         "dropdown": {
           "title": "Estado del Sistema",
@@ -631,6 +637,9 @@
         "shop": "Comprar",
         "create": "Crear",
         "learn": "Aprender",
+        "discover": "Descubrir",
+        "events": "Eventos",
+        "places": "Lugares",
         "jump_in": "Entrar",
         "sign_in": "Ingresar",
         "signing_in": "Ingresando...",
@@ -660,7 +669,7 @@
         "my_assets": "Mis cosas",
         "account_settings": "Configuración",
         "marketplace_authorizations": "Autorizaciones del Marketplace",
-        "whats_on": "Explorar"
+        "credits_balance": "{count} créditos"
       }
     },
     "reels": {
@@ -926,11 +935,34 @@
         "deleted_notice_link": "All Hangouts",
         "deleted_notice_suffix": "para descubrir más."
       }
+    },
+    "creators_landing": {
+      "hero": {
+        "mobile_docs_cta": "Explora la documentación para creadores",
+        "scroll_label": "Desplazarse a la siguiente sección"
+      },
+      "live_scenes": {
+        "title": "lo que los creadores están construyendo ahora mismo",
+        "title_highlight": "Explora",
+        "online": "{count} en línea",
+        "view_all": "Ver todas las escenas en vivo"
+      },
+      "blog": {
+        "title": "del blog",
+        "title_highlight": "Lo último",
+        "view_all": "Leer el blog"
+      }
+    },
+    "error_boundary": {
+      "title": "Algo salió mal",
+      "message": "No pudimos cargar esta página. Revisa tu conexión e inténtalo de nuevo.",
+      "reload": "Recargar"
     }
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "approved_edit_warning": "Changing the name, description, image, or location of an approved hangout will send it back for review before the updates go live.",
     "error_image_too_large": "No pudimos comprimir esta imagen a menos de 500 KB. Por favor, elegí un archivo más pequeño.",
     "vertical_recommended_size": "Tamaño recomendado: 716 × 1814 px",
     "recurrence": "Recurrencia",
@@ -1221,6 +1253,93 @@
   "upcoming": {
     "today_at": "Hoy {time}",
     "tomorrow_at": "Mañana {time}"
+  },
+  "discover": {
+    "home": {
+      "page_title": "Descubrir — Decentraland"
+    },
+    "card": {
+      "jump_in": "Entrar",
+      "by": "Por",
+      "featured": "Destacado"
+    },
+    "live": {
+      "heading": "En vivo"
+    },
+    "explore": {
+      "search_placeholder": "Buscar lugares",
+      "empty": "Ningún lugar coincide con los filtros.",
+      "filters": "Filtros",
+      "remove_filter": "Quitar filtro",
+      "category": {
+        "label": "Categoría",
+        "all": "Cualquier categoría",
+        "social": "Social",
+        "music": "Música",
+        "art": "Arte",
+        "game": "Juego",
+        "fashion": "Moda",
+        "education": "Educación",
+        "shop": "Tienda",
+        "sports": "Deportes",
+        "business": "Negocios"
+      },
+      "section": {
+        "featured": "Lugares destacados"
+      },
+      "tab": {
+        "explore_all": "Explorar todo",
+        "favourites": "Favoritos",
+        "my_places": "Mis lugares"
+      },
+      "signin_favourites": "Inicia sesión y marca lugares como favoritos para verlos aquí.",
+      "empty_favourites": "Todavía no marcaste ningún lugar como favorito.",
+      "signin_my_places": "Inicia sesión para ver los lugares que creaste.",
+      "empty_my_places": "Todavía no publicaste ningún lugar.",
+      "error": "Algo salió mal al cargar los lugares.",
+      "retry": "Reintentar"
+    },
+    "communities": {
+      "page_title": "Comunidades — Decentraland",
+      "heading": "Comunidades",
+      "search_placeholder": "Buscar comunidades",
+      "empty": "No se encontraron comunidades.",
+      "members_count": "{count, plural, one {# miembro} other {# miembros}}",
+      "error": "Algo salió mal al cargar las comunidades."
+    },
+    "scene": {
+      "people_count": "{count, plural, one {# persona en el mundo} other {# personas en el mundo}}",
+      "people_empty": "Nadie por acá todavía.",
+      "tab_video": "Stream",
+      "tab_streaming": "DCL Web",
+      "resume_cta": "Ver en vivo",
+      "close_media": "Detener",
+      "fullscreen": "Pantalla completa",
+      "exit_fullscreen": "Salir",
+      "scene_picker": "Escena",
+      "connecting": "Conectando a la escena…",
+      "waiting": {
+        "title": "Actividad en la escena",
+        "hint": "{count, plural, =0 {Nadie más está acá todavía — sé el primero en entrar.} one {# persona está en esta escena. Su chat está en vivo a la derecha.} other {# personas están en esta escena. Su chat está en vivo a la derecha.}}"
+      },
+      "not_found": {
+        "title": "Escena no encontrada",
+        "description": "No pudimos cargar ese lugar o mundo. Es posible que haya sido eliminado."
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "Esta experiencia no está disponible en navegadores móviles. Descargá la aplicación:"
+      },
+      "what_to_expect": "Qué esperar",
+      "copy_link": "Copiar enlace",
+      "close": "Cerrar",
+      "explore_scene": "Explorar la escena",
+      "copied": "¡Copiado!"
+    },
+    "featured": {
+      "view_all": "Ver todos los lugares destacados",
+      "view_less": "Ver menos"
+    }
   },
   "account": {
     "meta": {

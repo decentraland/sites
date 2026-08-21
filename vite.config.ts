@@ -1,6 +1,16 @@
 import { transformAsync } from '@babel/core'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
+
+// Sentry needs a release name to tie an uploaded source map to the events that
+// reference it. `scripts/prebuild.cjs` writes REACT_APP_WEBSITE_VERSION from
+// package.json, which the CI bumps per deploy and reuses as the CDN path
+// (cdn.decentraland.org/@dcl/sites/<version>), so it identifies a build exactly.
+const SENTRY_ORG = 'decentraland'
+// Renamed from `homepage` on 2026-08-10. The DSN in src/config/env/*.json is
+// unaffected — it addresses the project by numeric id, not by slug.
+const SENTRY_PROJECT = 'sites'
 
 // decentraland-ui2 ships compiled `.styled.js` files that use Emotion component
 // selectors (e.g. `[`${StyledX}`]: { ... }`) but were NOT compiled with
@@ -23,14 +33,52 @@ async function transformEmotionStyled(code: string, filename: string): Promise<{
   return { code: result.code, map: result.map ?? null }
 }
 
+// Mirrors vercel.json — cross-origin isolation ONLY on /discover documents so
+// the bevy-web iframe (which relies on SharedArrayBuffer) can boot there.
+// `credentialless` lets us load cross-origin resources without requiring CORP
+// everywhere, at the cost of stripping credentials from those requests.
+// Scoped per-request (not global server headers) to keep dev/preview at prod
+// parity: a global COEP would block COEP-less third-party iframes (e.g. blog
+// YouTube embeds) on routes that are NOT isolated in production.
+function discoverIsolation(req: { url?: string }, res: { setHeader: (name: string, value: string) => void }, next: () => void): void {
+  if (req.url === '/discover' || req.url?.startsWith('/discover/') || req.url?.startsWith('/discover?')) {
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
+    res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless')
+  }
+  next()
+}
+
 // eslint-disable-next-line import/no-default-export
 export default defineConfig(({ command, mode }) => {
-  const envVariables = loadEnv(mode, process.cwd())
+  // REACT_APP_ is loaded alongside VITE_ so the website version written by
+  // prebuild can be reused as the Sentry release name.
+  const envVariables = loadEnv(mode, process.cwd(), ['VITE_', 'REACT_APP_'])
+  const websiteVersion = envVariables.REACT_APP_WEBSITE_VERSION
+  const sentryRelease = websiteVersion ? `sites@${websiteVersion}` : undefined
+  // Source maps are uploaded only on CI builds that carry the token, so a local
+  // `npm run build` stays offline and never needs Sentry credentials.
+  // `filesToDeleteAfterUpload` is required, not cosmetic: build.sourcemap is
+  // 'hidden', which still writes .map files into dist/, and dist/ is published to
+  // the public CDN — leaving them there would ship the whole source publicly.
+  const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN
+  const sentryPlugins =
+    command === 'build' && sentryAuthToken && sentryRelease
+      ? [
+          sentryVitePlugin({
+            authToken: sentryAuthToken,
+            org: SENTRY_ORG,
+            project: SENTRY_PROJECT,
+            release: { name: sentryRelease },
+            sourcemaps: { filesToDeleteAfterUpload: ['./dist/**/*.map'] }
+          })
+        ]
+      : []
   return {
     define: {
       /* eslint-disable @typescript-eslint/naming-convention */
       'process.env': {
-        VITE_BASE_URL: envVariables.VITE_BASE_URL
+        VITE_BASE_URL: envVariables.VITE_BASE_URL,
+        SENTRY_RELEASE: sentryRelease
       }
       /* eslint-enable @typescript-eslint/naming-convention */
     },
@@ -58,7 +106,18 @@ export default defineConfig(({ command, mode }) => {
           if (!emotionUi2StyledRegex.test(id)) return null
           return transformEmotionStyled(code, id)
         }
-      }
+      },
+      {
+        name: 'discover-cross-origin-isolation',
+        configureServer(server) {
+          server.middlewares.use(discoverIsolation)
+        },
+        configurePreviewServer(server) {
+          server.middlewares.use(discoverIsolation)
+        }
+      },
+      // Stays last on purpose — the plugin reads the final emitted bundle.
+      ...sentryPlugins
     ],
     // Vite 8 prebundles deps with Rolldown — top-level plugins do not run on
     // that pipeline. We register the same Emotion babel-plugin transform here
@@ -78,7 +137,21 @@ export default defineConfig(({ command, mode }) => {
       }
     },
     build: {
-      target: 'esnext',
+      // `esnext` came in with the Module Federation host (#85) and outlived it: with no
+      // downleveling at all, esbuild is free to emit syntax that shipping browsers cannot
+      // parse. It did. `ExplorerDownloads`' `static cache = new Map()` came out as a class
+      // static initialization block (`static { this.cache = new Map }`), which Safari only
+      // learned to parse in 16.4, so Safari 16.3 and older died with
+      // `SyntaxError: Unexpected token '{'` while parsing the chunk (SITES-2RB). A parse
+      // error takes the whole chunk down, and seven chunks import that module, the
+      // homepage's among them.
+      //
+      // es2020 measured at +0.18% gzip over esnext (2,534 KB vs 2,529 KB) and leaves no
+      // static blocks in the output. An explicit browser list cost four times as much for
+      // the same result. Note this only bounds *syntax*: it emits no polyfills, so a
+      // missing runtime method on an old browser still fails, just at one call site
+      // instead of killing the chunk.
+      target: 'es2020',
       sourcemap: 'hidden',
       // Vite preloads every chunk transitively reachable from the entry,
       // including dynamic imports. The vendors below are only consumed inside

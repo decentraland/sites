@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import type { AuthIdentity } from '@dcl/crypto'
 import type { EventEntry } from '../features/events'
 import { useCreateEventForm } from './useCreateEventForm'
@@ -58,6 +58,14 @@ function buildInitialEvent(overrides: Partial<EventEntry> = {}): EventEntry {
 
 jest.mock('./useAuthIdentity', () => ({
   useAuthIdentity: () => mockUseAuthIdentityReturn
+}))
+
+jest.mock('./useAdminPermissions', () => ({
+  useAdminPermissions: () => ({
+    isAdmin: false,
+    canApproveAnyEvent: false,
+    canApproveOwnEvent: false
+  })
 }))
 
 type FormOverrides = Partial<Record<keyof CreateEventFormState, string>>
@@ -244,7 +252,7 @@ describe('useCreateEventForm', () => {
             recurrent_interval: 1,
             // 0 (not undefined) so the backend clears any stale mask and recurs on start_at's weekday — issue #560.
             recurrent_weekday_mask: 0,
-            recurrent_until: expect.stringContaining('2030-02-01')
+            recurrent_until: new Date('2030-02-01T23:59:59.999').toISOString()
           })
         })
       )
@@ -1042,10 +1050,15 @@ describe('useCreateEventForm', () => {
       let pendingSelect: Promise<void> | null = null
       await act(async () => {
         pendingSelect = result.current.handleVerticalImageSelect(file)
-        // let the async dimension check resolve and the state flip to uploading
-        await new Promise(resolve => setTimeout(resolve, 0))
       })
-      expect(result.current.form.isUploadingVerticalImage).toBe(true)
+      // Wait for the async dimension check to resolve and flip the state to
+      // uploading. A single `setTimeout(0)` used to stand in for this, which
+      // assumed the check always lands within one macrotask: on a loaded CI
+      // runner it does not, the assertion below then failed to settle, and the
+      // whole suite fell over on a 5s timeout.
+      await waitFor(() => {
+        expect(result.current.form.isUploadingVerticalImage).toBe(true)
+      })
 
       await act(async () => {
         await result.current.handleSubmit()

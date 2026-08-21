@@ -19,6 +19,7 @@ import { postSegmentEvent } from '../../modules/segmentBeacon'
 import { buildDownloadSuccessHref, sanitizeCDNReleaseLinks } from '../../modules/url'
 import { Architecture, DownloadOptionProps, OperativeSystem } from '../../types/download.types'
 import { assetUrl } from '../../utils/assetUrl'
+import { resolveReferrer } from '../../utils/referrer'
 import { DownloadButton, EpicButton } from '../Home/Hero/Hero.styled'
 import { EPIC_GAMES_URL } from '../Home/shared/epicGames'
 import { VerifiedIcon } from '../Icon/VerifiedIcon'
@@ -60,6 +61,12 @@ const imageByOs: Record<string, string> = {
   [OperativeSystem.MACOS]: appleLogo
 }
 
+// The only architecture the Windows installer is published under. Named rather
+// than inlined because reading the wrong key yields `undefined` and silently
+// renders no button — the `Architecture` union still allows the legacy `'x64'`,
+// so TypeScript cannot catch the mistake.
+const WINDOWS_ARCH: Architecture = 'amd64'
+
 type HandleDownloadOptionClickParams = {
   anonUserId?: string
   downloadOnClick?: boolean
@@ -75,18 +82,21 @@ const handleDownloadOptionClick = async (params: HandleDownloadOptionClickParams
   // ride along to the file URL and to /download_success, so the launcher can
   // parse them from the file-origin URL on first run.
   const deepLinkParams = collectDeepLinkParams()
-  // When those params are present the installer MUST come from the gateway (it
-  // bakes them into the binary; a CDN-direct fallback would drop them), so
-  // guarantee an anon_user_id to keep the download on the anonymous gateway
-  // route rather than falling back to the CDN.
-  const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserId, deepLinkParams)
+  // Referral attribution (gated by the direct-download flag). Rides the gateway
+  // file URL and forwards to /download_success so the installer chain can attribute it.
+  const referrer = resolveReferrer()
+  // When deep-link params OR a referrer are present the installer MUST come from
+  // the gateway (it bakes them into the binary; a CDN-direct fallback would drop
+  // them), so guarantee an anon_user_id to keep the download on the anonymous
+  // gateway route rather than falling back to the CDN.
+  const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserId, deepLinkParams, referrer)
   if (downloadOnClick) {
     try {
       await getDownloadLinkWithIdentity({
         os: option.text,
         arch: option.arch,
         fallbackLinks: links,
-        queryParams: { [ANON_USER_ID_PARAM]: gatewayAnonUserId, ...deepLinkParams },
+        queryParams: { [ANON_USER_ID_PARAM]: gatewayAnonUserId, ...deepLinkParams, ...(referrer ? { referrer } : {}) },
         getIdentityId,
         anonUserId: gatewayAnonUserId
       })
@@ -120,7 +130,8 @@ const handleDownloadOptionClick = async (params: HandleDownloadOptionClickParams
     anonUserId: gatewayAnonUserId,
     arch: option.arch,
     campaignParams: collectCampaignParams(),
-    deepLinkParams
+    deepLinkParams,
+    ...(referrer ? { referrer } : {})
   })
   setTimeout(
     () => {
@@ -142,19 +153,39 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
   const [downloads, downloadsStatus] = useAsyncMemo(async () => ExplorerDownloads.get().getTotalDownloads(), [])
 
   const primaryDownloadOptions: DownloadOptionProps[] = useMemo(() => {
-    if (!userAgentData) {
-      if (!links[OperativeSystem.WINDOWS]) return []
-      return [
-        {
-          text: OperativeSystem.WINDOWS,
-          image: imageByOs[OperativeSystem.WINDOWS],
-          link: links[OperativeSystem.WINDOWS].x64,
-          arch: 'x64' as Architecture
-        }
-      ]
-    }
+    // Windows is the fallback for both "not detected yet" and "detected an OS we
+    // ship no artifact for": it is the only build that covers an unknown desktop.
+    //
+    // The arch key is `amd64`, which is what the CDN config actually publishes
+    // (`cdnReleases.ts`: Windows has a single `amd64` entry, and
+    // `sanitizeCDNReleaseLinks` only strips empty values, it never renames keys).
+    // This read used to be `.x64`, which is `undefined` in production, so the
+    // fallback rendered nothing at all — and `arch: 'x64'` is likewise dropped by
+    // the `VALID_ARCHS` allowlist on /download_success. Both were silent because
+    // `Architecture` still permits the legacy `'x64'` literal.
+    const windowsFallback: DownloadOptionProps[] = links[OperativeSystem.WINDOWS]?.[WINDOWS_ARCH]
+      ? [
+          {
+            text: OperativeSystem.WINDOWS,
+            image: imageByOs[OperativeSystem.WINDOWS],
+            link: links[OperativeSystem.WINDOWS][WINDOWS_ARCH],
+            arch: WINDOWS_ARCH
+          }
+        ]
+      : []
 
-    if (!links[userAgentData.os.name]) return []
+    if (!userAgentData) return windowsFallback
+
+    // NOTE (2026-07-31): this branch used to `return []`, which left Linux and any
+    // unparsed desktop UA with no primary CTA — the only visible option was the
+    // secondary macOS dmg, which cannot run on those machines (22 anons in Jul
+    // 2026, none of whom ever opened the launcher). Tracking consequence: those
+    // users now report `os: 'Windows'` on the download events instead of 'macOS',
+    // because the payload carries the chosen option, not the detected platform.
+    if (!links[userAgentData.os.name]) {
+      if (userAgentData.mobile || userAgentData.tablet) return []
+      return windowsFallback
+    }
 
     if (userAgentData.os.name === OperativeSystem.MACOS) {
       return [
@@ -194,7 +225,10 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
         {
           text: OperativeSystem.WINDOWS,
           image: imageByOs[OperativeSystem.WINDOWS],
-          link: links[OperativeSystem.WINDOWS]?.x64
+          // Same `amd64` correction as the primary fallback above: this read was
+          // `.x64`, which is undefined against the real CDN config, so the "also
+          // available on Windows" option a macOS visitor sees had no href.
+          link: links[OperativeSystem.WINDOWS]?.[WINDOWS_ARCH]
         }
       ]
     }

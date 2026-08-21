@@ -3,8 +3,9 @@ import { useDesktopMediaQuery, useMediaQuery } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { useCreatorHubDownload } from '../../../hooks/useCreatorHubDownload'
+import { useDownloadClick } from '../../../hooks/useDownloadClick'
 import { useTypingListEffect } from '../../../hooks/useTypingListEffect'
-import { DownloadTarget, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
+import { DownloadPlace, DownloadTarget, SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { CTAButton } from '../../Buttons/CTAButton'
 import { Video } from '../../Video'
 import { heroData } from '../data'
@@ -19,14 +20,29 @@ import { Chevron } from './Chevron'
 import { ChevronContainer, HeroActions, HeroBackground, HeroContent, HeroSection, HeroSubtitle, HeroTitle } from './Hero.styled'
 
 const CREATOR_HUB_DOWNLOAD_URL = '/download/creator-hub'
+// Mobile CTA target: the Creator Hub only ships Windows/macOS installers and
+// /download/creator-hub renders no actions on phones, so mobile users get the
+// creator docs instead of a dead-end download page.
+const CREATOR_DOCS_URL = 'https://docs.decentraland.org/creator/'
 
 const CreatorsHero = memo(() => {
   const isMobile = useMediaQuery('(max-width: 767px)')
   const isDesktop = useDesktopMediaQuery()
   const currentWord = useTypingListEffect(heroData.changingWords)
+  // Download CTA adapter (not the plain click adapter): the primary flow
+  // navigates to the success page ~3s after the click, so a cold-load click
+  // must beacon instead of queueing in the component-scoped deferred queue,
+  // which navigation would tear down. Also folds in campaign (utm_*) params.
+  // recordCorrelation:false — the Creator Hub success page joins on
+  // anon_user_id, not click_id, so minting a correlation id here would only
+  // orphan it and clobber the Explorer funnel's shared key.
+  const trackDownloadClick = useDownloadClick({ recordCorrelation: false })
+  // Plain click adapter for the (non-download) scroll chevron.
   const trackClick = useTrackClick()
   const l = useFormatMessage()
-  const { isReady, primaryOption, secondaryOptions, handleDownload } = useCreatorHubDownload()
+  // Report the /create hero as its own download place so these downloads are
+  // no longer mixed with the /download/creator-hub page in the warehouse.
+  const { isReady, primaryOption, secondaryOptions, handleDownload } = useCreatorHubDownload(DownloadPlace.CREATORS_HERO)
 
   const showDownloadOptions = isDesktop && isReady
 
@@ -69,13 +85,22 @@ const CreatorsHero = memo(() => {
           </HeroTitle>
           <HeroSubtitle>{heroData.subtitle}</HeroSubtitle>
           <HeroActions>
-            {showDownloadOptions && primaryOption?.link ? (
+            {isMobile ? (
+              <CTAButton
+                href={CREATOR_DOCS_URL}
+                onClick={trackClick}
+                event={SegmentEvent.CLICK}
+                place={SectionViewedTrack.CREATORS_HERO}
+                label={l('component.creators_landing.hero.mobile_docs_cta')}
+                isFullWidth={false}
+              />
+            ) : showDownloadOptions && primaryOption?.link ? (
               <>
                 <CTAButton
                   href={primaryOption.link}
                   onClick={event => {
                     event.preventDefault()
-                    trackClick(event)
+                    trackDownloadClick(event)
                     handleDownload(primaryOption)
                   }}
                   event={SegmentEvent.DOWNLOAD}
@@ -97,7 +122,7 @@ const CreatorsHero = memo(() => {
                         data-download-target={DownloadTarget.CREATOR_HUB}
                         onClick={event => {
                           event.preventDefault()
-                          trackClick(event)
+                          trackDownloadClick(event)
                           handleDownload(option)
                         }}
                       >
@@ -111,7 +136,7 @@ const CreatorsHero = memo(() => {
               <CTAButton
                 href={CREATOR_HUB_DOWNLOAD_URL}
                 onClick={event => {
-                  trackClick(event)
+                  trackDownloadClick(event)
                 }}
                 event={SegmentEvent.DOWNLOAD}
                 place={SectionViewedTrack.CREATORS_HERO}
@@ -123,7 +148,17 @@ const CreatorsHero = memo(() => {
           </HeroActions>
         </HeroContent>
       </HeroSection>
-      <ChevronContainer>
+      <ChevronContainer
+        type="button"
+        aria-label={l('component.creators_landing.hero.scroll_label')}
+        onClick={event => {
+          trackClick(event)
+          window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })
+        }}
+        data-place={SectionViewedTrack.CREATORS_HERO}
+        data-event={SegmentEvent.CLICK}
+        data-title="scroll-to-why"
+      >
         <Chevron dark />
       </ChevronContainer>
     </>

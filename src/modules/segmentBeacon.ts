@@ -1,5 +1,5 @@
 import type { SegmentEvent } from './segment'
-import { SEGMENT_TRACK_URL, getSegmentWriteKey } from './segmentConfig'
+import { getSegmentTrackUrl, getSegmentWriteKey } from './segmentConfig'
 import { resolveSegmentUserId } from './segmentUserId'
 
 const BEACON_LIBRARY_NAME = 'dcl-sites-beacon'
@@ -154,17 +154,18 @@ function postSegmentEvent(event: SegmentEvent, properties: Record<string, unknow
 
   const userId = resolveSegmentUserId()
   const body = JSON.stringify(buildSegmentBeaconPayload({ writeKey, event, properties, anonymousId, userId }))
+  const trackUrl = getSegmentTrackUrl()
 
   if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
     // text/plain keeps the request CORS-simple; application/json would preflight,
     // which is unsafe during unload.
-    const queued = navigator.sendBeacon(SEGMENT_TRACK_URL, new Blob([body], { type: 'text/plain' }))
+    const queued = navigator.sendBeacon(trackUrl, new Blob([body], { type: 'text/plain' }))
     if (queued) return
   }
 
   try {
     if (typeof fetch === 'function') {
-      void fetch(SEGMENT_TRACK_URL, {
+      void fetch(trackUrl, {
         method: 'POST',
         // eslint-disable-next-line @typescript-eslint/naming-convention
         headers: { 'Content-Type': 'text/plain' },
