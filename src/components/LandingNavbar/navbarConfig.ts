@@ -11,17 +11,22 @@ type MenuSection = {
 }
 
 type MenuConfig = {
-  whatsOn: MenuSection
+  discover: MenuSection
   shop: MenuSection
   create: MenuSection
   learn: MenuSection
-  discover: MenuSection
 }
 
 const MENU_CONFIG: MenuConfig = {
-  whatsOn: {
-    labelKey: 'component.landing.navbar.whats_on',
-    url: '/whats-on'
+  // Single entry point for both destination feeds: "Events" is the What's On
+  // calendar, "Places" is the /discover explore section. They used to sit at
+  // opposite ends of the tab list (Explore first, Discover last).
+  discover: {
+    labelKey: 'component.landing.navbar.discover',
+    items: [
+      { labelKey: 'component.landing.navbar.events', url: '/whats-on' },
+      { labelKey: 'component.landing.navbar.places', url: '/discover' }
+    ]
   },
   shop: {
     labelKey: 'component.landing.navbar.shop',
@@ -57,10 +62,6 @@ const MENU_CONFIG: MenuConfig = {
   learn: {
     labelKey: 'component.landing.navbar.learn',
     url: 'https://decentraland.org/blog/'
-  },
-  discover: {
-    labelKey: 'component.landing.navbar.discover',
-    url: '/discover'
   }
 }
 
@@ -71,7 +72,7 @@ const USER_MENU_ITEMS = [
   { labelKey: 'component.landing.navbar.marketplace_authorizations', url: 'https://decentraland.org/marketplace/settings' }
 ] as const
 
-const DROPDOWN_SECTIONS = ['shop', 'create'] as const
+const DROPDOWN_SECTIONS = ['discover', 'shop', 'create'] as const
 type DropdownSection = (typeof DROPDOWN_SECTIONS)[number]
 
 export { DROPDOWN_SECTIONS, MENU_CONFIG, USER_MENU_ITEMS }

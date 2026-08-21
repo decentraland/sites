@@ -6,12 +6,22 @@ const allUrls = (): (string | undefined)[] => [
 ]
 
 describe('when reading the navbar menu config', () => {
-  // The `/discover` section is advertised in the navbar again (re-shown after
-  // it was temporarily hidden). Both the desktop tab list and the mobile menu
-  // render straight from this config, so asserting here covers both surfaces.
-  it('should expose the /discover entry', () => {
-    expect(MENU_CONFIG.discover.url).toBe('/discover')
+  // Events (What's On) and Places (/discover) used to be two separate tabs at
+  // opposite ends of the list. They now live in a single leading "Discover"
+  // dropdown. Both the desktop tab list and the mobile menu render straight
+  // from this config, so asserting here covers both surfaces.
+  it('should expose both destination feeds inside the Discover dropdown', () => {
     expect(MENU_CONFIG.discover.labelKey).toBe('component.landing.navbar.discover')
+    expect(MENU_CONFIG.discover.items).toEqual([
+      { labelKey: 'component.landing.navbar.events', url: '/whats-on' },
+      { labelKey: 'component.landing.navbar.places', url: '/discover' }
+    ])
+  })
+
+  // The dropdown parent navigates to its first item on click, so Discover
+  // landing on the What's On calendar depends on the ordering above.
+  it('should lead the tab list with the Discover dropdown', () => {
+    expect(DROPDOWN_SECTIONS[0]).toBe('discover')
   })
 
   it('should keep every entry pointing at a non-empty url', () => {
