@@ -638,6 +638,8 @@
         "create": "作成",
         "learn": "学ぶ",
         "discover": "見つける",
+        "events": "イベント",
+        "places": "プレイス",
         "jump_in": "入場",
         "sign_in": "ログイン",
         "signing_in": "ログイン中...",
@@ -667,7 +669,6 @@
         "my_assets": "マイアセット",
         "account_settings": "アカウント設定",
         "marketplace_authorizations": "マーケットプレイス認証",
-        "whats_on": "探索",
         "credits_balance": "{count} クレジット"
       }
     },

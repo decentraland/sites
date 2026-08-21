@@ -4,6 +4,7 @@ import { getEnv } from '../config/env'
 import { collectCampaignParams } from '../modules/campaignParams'
 import { detectDownloadOS } from '../modules/downloadConstants'
 import { useAnonUserId } from './useAnonUserId'
+import { useDeepLinkQueryParams } from './useDeepLinkQueryParams'
 import { useHangOutAction } from './useHangOutAction'
 import { useTotalDownloads } from './useTotalDownloads'
 import { useWalletAddress } from './useWalletAddress'
@@ -13,6 +14,7 @@ jest.mock('../config/env', () => ({ getEnv: jest.fn() }))
 jest.mock('./useWalletAddress', () => ({ useWalletAddress: jest.fn() }))
 jest.mock('./useTotalDownloads', () => ({ useTotalDownloads: jest.fn(() => '+400K') }))
 jest.mock('./useAnonUserId', () => ({ ANON_USER_ID_PARAM: 'anon_user_id', useAnonUserId: jest.fn() }))
+jest.mock('./useDeepLinkQueryParams', () => ({ useDeepLinkQueryParams: jest.fn(() => ({})) }))
 jest.mock('../modules/campaignParams', () => ({ collectCampaignParams: jest.fn(() => ({})) }))
 jest.mock('../modules/url', () => ({
   buildTrackedDownloadUrl: (base: string, params: Record<string, string | undefined | null>) => {
@@ -35,6 +37,7 @@ jest.mock('../modules/downloadConstants', () => ({
 }))
 
 const mockedLaunchDesktopApp = launchDesktopApp as jest.MockedFunction<typeof launchDesktopApp>
+const mockedDeepLinkQueryParams = useDeepLinkQueryParams as jest.MockedFunction<typeof useDeepLinkQueryParams>
 const mockedGetEnv = getEnv as jest.MockedFunction<typeof getEnv>
 const mockedUseWalletAddress = useWalletAddress as jest.MockedFunction<typeof useWalletAddress>
 const mockedUseTotalDownloads = useTotalDownloads as jest.MockedFunction<typeof useTotalDownloads>
@@ -52,6 +55,7 @@ describe('useHangOutAction', () => {
     mockedCollectCampaignParams.mockReturnValue({})
     mockedDetectDownloadOS.mockReturnValue('apple')
     mockedGetEnv.mockReturnValue(undefined)
+    mockedDeepLinkQueryParams.mockReturnValue({})
   })
 
   afterEach(() => {
@@ -99,6 +103,16 @@ describe('useHangOutAction', () => {
       await act(async () => result.current.handleClick(clickEvent()))
 
       expect(result.current.isDownloadModalOpen).toBe(true)
+    })
+
+    it('should forward the deep-link query params into the launch', async () => {
+      mockedDeepLinkQueryParams.mockReturnValue({ dclenv: 'zone', sceneConsole: 'true', multiInstance: 'true' })
+      mockedLaunchDesktopApp.mockResolvedValue(true)
+      const { result } = renderHook(() => useHangOutAction())
+
+      await act(async () => result.current.handleClick(clickEvent()))
+
+      expect(mockedLaunchDesktopApp).toHaveBeenCalledWith({ dclenv: 'zone', sceneConsole: 'true', multiInstance: 'true' })
     })
   })
 

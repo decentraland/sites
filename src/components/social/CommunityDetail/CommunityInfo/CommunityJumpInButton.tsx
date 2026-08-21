@@ -4,6 +4,7 @@ import { DownloadModal, JumpInIcon, launchDesktopApp } from 'decentraland-ui2'
 import { getEnv } from '../../../../config/env'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../../hooks/useAuthIdentity'
+import { useDeepLinkQueryParams } from '../../../../hooks/useDeepLinkQueryParams'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../../../../modules/downloadConstants'
 import type { CommunityJumpInButtonProps } from './CommunityJumpInButton.types'
 import { JumpInButton } from './CommunityJumpInButton.styled'
@@ -12,6 +13,7 @@ function CommunityJumpInButton({ communityId, onTrack }: CommunityJumpInButtonPr
   const t = useFormatMessage()
   const [, advancedUserAgent] = useAdvancedUserAgentData()
   const { hasValidIdentity } = useAuthIdentity()
+  const { dclenv, sceneConsole, multiInstance } = useDeepLinkQueryParams()
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false)
 
   const onboardingUrl = getEnv('ONBOARDING_URL') ?? ''
@@ -39,12 +41,14 @@ function CommunityJumpInButton({ communityId, onTrack }: CommunityJumpInButtonPr
       return
     }
     try {
-      const launched = await launchDesktopApp({ communityId })
+      // NOTE: previously forwarded only `communityId`, dropping every deep-link
+      // query param. Carries the shared set now, like the jump surfaces.
+      const launched = await launchDesktopApp({ communityId, dclenv, sceneConsole, multiInstance })
       if (!launched) openDownloadFallback()
     } catch {
       openDownloadFallback()
     }
-  }, [communityId, isMobile, downloadOs, openDownloadFallback, onTrack])
+  }, [communityId, dclenv, sceneConsole, multiInstance, isMobile, downloadOs, openDownloadFallback, onTrack])
 
   const downloadModalProps = {
     os: downloadOs,

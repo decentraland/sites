@@ -146,9 +146,18 @@ interface GetSceneMetadataArgs {
   realm?: string
 }
 
+interface DeepLinkOptions {
+  realm?: string
+  position?: string
+  dclenv?: string
+  sceneConsole?: string
+  multiInstance?: string
+}
+
 export type {
   CardData,
   Creator,
+  DeepLinkOptions,
   GetEventByIdArgs,
   GetEventsArgs,
   GetPlacesArgs,
