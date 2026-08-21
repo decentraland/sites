@@ -13,6 +13,7 @@ import { getInviterName } from '../../features/invite/invite.helpers'
 import { usePageView } from '../../hooks/usePageView'
 import { SectionViewedTrack } from '../../modules/segment'
 import { storeReferrer } from '../../utils/referrer'
+import { timeoutSignal } from '../../utils/timeoutSignal'
 
 const InviteFaqs = lazy(() => import('../../components/Invite/InviteFaqs/InviteFaqs').then(m => ({ default: m.InviteFaqs })))
 
@@ -34,7 +35,7 @@ async function resolveReferrerAddress(referrer: string): Promise<string | null> 
 
   try {
     const response = await fetch(`${peerUrl}/lambdas/names/${encodeURIComponent(referrer)}/owner`, {
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)
+      signal: timeoutSignal(FETCH_TIMEOUT_MS)
     })
     const data = await response.json()
     return data?.owner ? String(data.owner).toLowerCase() : null
@@ -50,7 +51,7 @@ async function fetchReferrerProfile(address: string): Promise<Profile | null> {
 
   try {
     const response = await fetch(`${peerUrl}/lambdas/profiles/${address}`, {
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)
+      signal: timeoutSignal(FETCH_TIMEOUT_MS)
     })
     const data = await response.json()
     return data ?? null

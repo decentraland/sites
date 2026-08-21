@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { getEnv } from '../../config/env'
+import { timeoutSignal } from '../../utils/timeoutSignal'
 import { buildLatestPosts } from './cms.discovery.helpers'
 import type { CMSAssetResponse, CMSCategoriesResponse, CMSPostsResponse, LatestPost } from './cms.discovery.types'
 
@@ -24,7 +25,7 @@ async function fetchLatestPosts(): Promise<LatestPost[]> {
   const baseUrl = getEnv('CMS_BASE_URL')
   if (!baseUrl) return []
 
-  const signal = AbortSignal.timeout(FETCH_TIMEOUT_MS)
+  const signal = timeoutSignal(FETCH_TIMEOUT_MS)
   const [posts, categories] = await Promise.all([
     fetchJson<CMSPostsResponse>(`${baseUrl}/blog/posts?limit=${POSTS_LIMIT}`, signal),
     fetchJson<CMSCategoriesResponse>(`${baseUrl}/blog/categories`, signal)
