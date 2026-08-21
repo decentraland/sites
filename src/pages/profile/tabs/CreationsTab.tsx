@@ -11,6 +11,7 @@ import { getEnv } from '../../../config/env'
 import { useGetProfileCreationsQuery } from '../../../features/profile/profile.creations.client'
 import type { CreationItem, CreationsCategory } from '../../../features/profile/profile.creations.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { isShopCategory, shopItemUrl } from '../../../utils/shopUrl'
 import { CreatorByLine } from './OverviewTab.creator'
 import { formatPriceMana, toItemNetwork, toRarity } from './OverviewTab.helpers'
 import { WearableInfoBadges } from './OverviewTab.icons'
@@ -30,6 +31,17 @@ function buildMarketplaceUrl(item: CreationItem): string {
   return `${base}${item.url ?? `/contracts/${item.contractAddress}/items/${item.itemId}`}`
 }
 
+/**
+ * Where a creation card goes: the Shop, which is where collectibles are browsed and bought now.
+ *
+ * Falls back to the Marketplace for anything the Shop has no page for. A creator's list is wearables and
+ * emotes in practice, but `category` is a server-provided string, so this asks rather than assumes — a new
+ * kind of creation appearing here should keep working, not become a dead link.
+ */
+function buildItemUrl(item: CreationItem): string {
+  return isShopCategory(item.category) ? shopItemUrl(item.contractAddress, item.itemId) : buildMarketplaceUrl(item)
+}
+
 function buildAccountUrl(address: string): string {
   const base = (getEnv('MARKETPLACE_URL') ?? 'https://decentraland.org/marketplace').replace(/\/+$/, '')
   return `${base}/accounts/${address.toLowerCase()}`
@@ -38,7 +50,7 @@ function buildAccountUrl(address: string): string {
 function toCatalogAsset(item: CreationItem) {
   return {
     id: item.urn ?? item.id,
-    url: buildMarketplaceUrl(item),
+    url: buildItemUrl(item),
     name: item.name,
     rarity: toRarity(item.rarity),
     network: toItemNetwork(item.network),
@@ -144,6 +156,10 @@ function CreationsTab({ address, isOwnProfile, embedded = false }: CreationsTabP
       {header}
       <EquippedGrid sx={{ mt: 0 }}>
         {items.map(item => {
+          const detailUrl = buildItemUrl(item)
+          // The one link that stays on the Marketplace: its label promises that app by name, and it is the
+          // deliberate way out for anything the Shop does not show. Renaming it is a copy decision in six
+          // locales, not a routing one.
           const marketplaceUrl = buildMarketplaceUrl(item)
           const rawPrice = item.price && item.price !== '0' ? item.price : item.minListingPrice
           const price = formatPriceMana(rawPrice)
@@ -154,7 +170,7 @@ function CreationsTab({ address, isOwnProfile, embedded = false }: CreationsTabP
           // instead of leaving the row blank.
           const fallbackLabel = price ? undefined : t('profile.creations.not_for_sale')
           return (
-            <EquippedCardLink key={item.id} href={marketplaceUrl} target="_blank" rel="noopener noreferrer" aria-label={item.name}>
+            <EquippedCardLink key={item.id} href={detailUrl} target="_blank" rel="noopener noreferrer" aria-label={item.name}>
               <CatalogCard
                 asset={toCatalogAsset(item)}
                 hoverPreviewUrn={item.urn}
@@ -176,7 +192,7 @@ function CreationsTab({ address, isOwnProfile, embedded = false }: CreationsTabP
                 }
                 bottomAction={
                   price ? (
-                    <Button fullWidth variant="contained" color="primary" href={marketplaceUrl} target="_blank" rel="noopener noreferrer">
+                    <Button fullWidth variant="contained" color="primary" href={detailUrl} target="_blank" rel="noopener noreferrer">
                       {t('profile.overview.buy')}
                     </Button>
                   ) : (

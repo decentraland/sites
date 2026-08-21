@@ -1,6 +1,6 @@
 import { type MouseEvent, memo, useCallback, useState } from 'react'
 import { useAnalytics } from '@dcl/hooks'
-import { buildMarketplaceWearableUrl } from '../../../features/reels'
+import { buildWearableDetailUrl } from '../../../features/reels'
 import type { WearableParsed } from '../../../features/reels'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { SegmentEvent } from '../../../modules/segment'
@@ -22,8 +22,8 @@ const WearableMetadata = memo(({ wearable }: WearableMetadataProps) => {
   const { track } = useAnalytics()
   const [hovered, setHovered] = useState(false)
 
-  const marketplaceUrl =
-    wearable.collectionId && wearable.blockchainId ? buildMarketplaceWearableUrl(wearable.collectionId, wearable.blockchainId) : null
+  const detailUrl =
+    wearable.collectionId && wearable.blockchainId ? buildWearableDetailUrl(wearable.collectionId, wearable.blockchainId) : null
 
   const handleClick = useCallback(
     (_event: MouseEvent<HTMLAnchorElement>) => {
@@ -40,17 +40,17 @@ const WearableMetadata = memo(({ wearable }: WearableMetadataProps) => {
         </WearableImage>
         <WearableName>{wearable.name}</WearableName>
       </WearableWrapper>
-      {marketplaceUrl && <BuyButton visible={hovered}>{l('component.reels.wearable.buy')}</BuyButton>}
+      {detailUrl && <BuyButton visible={hovered}>{l('component.reels.wearable.buy')}</BuyButton>}
     </>
   )
 
-  if (!marketplaceUrl) {
+  if (!detailUrl) {
     return <WearableStaticContainer>{body}</WearableStaticContainer>
   }
 
   return (
     <WearableContainer
-      href={marketplaceUrl}
+      href={detailUrl}
       target="_blank"
       rel="noopener noreferrer"
       onClick={handleClick}

@@ -278,7 +278,7 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
                           fullWidth
                           variant="contained"
                           color="primary"
-                          href={item.marketplaceUrl}
+                          href={item.detailUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
@@ -289,13 +289,7 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
                   />
                 )
                 return isOwnProfile ? (
-                  <EquippedCardLink
-                    key={item.urn}
-                    href={item.marketplaceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={item.name}
-                  >
+                  <EquippedCardLink key={item.urn} href={item.detailUrl} target="_blank" rel="noopener noreferrer" aria-label={item.name}>
                     {card}
                   </EquippedCardLink>
                 ) : (

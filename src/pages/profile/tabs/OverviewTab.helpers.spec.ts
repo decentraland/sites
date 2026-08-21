@@ -72,7 +72,7 @@ describe('OverviewTab.helpers', () => {
           contractAddress: '0xabc',
           itemId: '1',
           network: 'ETHEREUM',
-          marketplaceUrl: 'https://decentraland.org/marketplace/item',
+          detailUrl: 'https://decentraland.org/shop/item/0xabc/1',
           creator: '0xcreator',
           isOnSale: true
         }
@@ -81,7 +81,7 @@ describe('OverviewTab.helpers', () => {
       it('should project the urn, marketplace url, name, normalized rarity/network and creator', () => {
         expect(toCatalogAsset(item)).toEqual({
           id: item.urn,
-          url: item.marketplaceUrl,
+          url: item.detailUrl,
           name: 'Cool Hat',
           rarity: Rarity.EPIC,
           network: Network.ETHEREUM,
@@ -101,7 +101,7 @@ describe('OverviewTab.helpers', () => {
           contractAddress: '0x0',
           itemId: '0',
           network: 'MATIC',
-          marketplaceUrl: '',
+          detailUrl: '',
           creator: '0x0',
           isOnSale: false
         }

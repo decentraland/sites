@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getEnv } from '../../config/env'
+import { shopItemUrl } from '../../utils/shopUrl'
 
 interface WearableData {
   category?: string
@@ -23,7 +24,7 @@ interface CatalogItem {
   minListingPrice?: string
   isOnSale?: boolean
   creator?: string
-  /** Relative marketplace path (e.g. `/contracts/0x.../items/0`). Concatenate with `MARKETPLACE_URL` to build the full link. */
+  /** Relative marketplace path (e.g. `/contracts/0x.../items/0`), as the API ships it. */
   url?: string
   data?: {
     wearable?: WearableData
@@ -50,7 +51,11 @@ interface CollectibleDetail {
   contractAddress: string
   itemId: string
   network: 'MATIC' | 'ETHEREUM'
-  marketplaceUrl: string
+  /**
+   * Where this collectible's card points. The SHOP, not the Marketplace: an equipped collectible is a
+   * wearable or an emote by definition — nothing else can be worn — so every one of these has a Shop page.
+   */
+  detailUrl: string
   creator: string
   price?: string
   isOnSale: boolean
@@ -59,12 +64,6 @@ interface CollectibleDetail {
 const getMarketplaceApiUrl = (): string => {
   const url = getEnv('MARKETPLACE_API_URL')
   if (!url) throw new Error('MARKETPLACE_API_URL environment variable is not set')
-  return url.replace(/\/+$/, '')
-}
-
-const getMarketplaceUrl = (): string => {
-  const url = getEnv('MARKETPLACE_URL')
-  if (!url) return 'https://decentraland.org/marketplace'
   return url.replace(/\/+$/, '')
 }
 
@@ -130,7 +129,6 @@ async function fetchOnePerNetwork(
 async function fetchCollectibleDetails(urns: readonly string[], signal?: AbortSignal): Promise<CollectibleDetail[]> {
   if (urns.length === 0) return []
   const apiUrl = getMarketplaceApiUrl()
-  const marketplaceUrl = getMarketplaceUrl()
   // marketplace-api /v2/catalog is the live profile's endpoint. It is scoped
   // per network so split URNs by chain before firing the requests in parallel.
   const matic = urns.filter(urn => networkFromUrn(urn) === 'MATIC')
@@ -146,10 +144,6 @@ async function fetchCollectibleDetails(urns: readonly string[], signal?: AbortSi
     const contractAddress = parsed?.contractAddress ?? item.contractAddress ?? ''
     const itemId = parsed?.itemId ?? item.itemId ?? ''
     const wearableData = item.data?.wearable ?? item.data?.emote
-    // Prefer the relative path the API ships (`/contracts/.../items/N`) so we
-    // stay aligned with the marketplace's canonical URL; only synthesise it as
-    // a fallback when the field is missing.
-    const itemPath = item.url ?? `/contracts/${contractAddress}/items/${itemId}`
     return {
       urn,
       name: item.name ?? urn,
@@ -161,7 +155,7 @@ async function fetchCollectibleDetails(urns: readonly string[], signal?: AbortSi
       contractAddress,
       itemId,
       network: item.network ?? networkFromUrn(urn),
-      marketplaceUrl: `${marketplaceUrl}${itemPath}`,
+      detailUrl: shopItemUrl(contractAddress, itemId),
       creator: item.creator ?? '',
       // Prefer the secondary-market floor (`minListingPrice`) because equipped wearables
       // on a profile usually circulate via resales — primary `price` is zero/empty by then.
