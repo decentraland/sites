@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { getEnv } from '../../config/env'
+import { timeoutSignal } from '../../utils/timeoutSignal'
 import type { HotScene } from './events.discovery.types'
 
 const FETCH_TIMEOUT_MS = 10_000
@@ -10,7 +11,7 @@ const FETCH_TIMEOUT_MS = 10_000
 
 async function fetchHotScenes(): Promise<HotScene[]> {
   const hotScenesUrl = getEnv('HOT_SCENES_URL') || 'https://realm-provider-ea.decentraland.org/hot-scenes'
-  const response = await fetch(hotScenesUrl, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
+  const response = await fetch(hotScenesUrl, { signal: timeoutSignal(FETCH_TIMEOUT_MS) })
   if (!response.ok) return []
   const scenes = (await response.json()) as HotScene[]
   return Array.isArray(scenes) ? scenes : []

@@ -77,10 +77,6 @@ jest.mock('../../features/invite/invite.flags', () => ({
   useInviteDirectDownload: () => mockUseInviteDirectDownload()
 }))
 
-if (typeof AbortSignal.timeout !== 'function') {
-  ;(AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout = () => new AbortController().signal
-}
-
 const referrerProfile = {
   avatars: [{ ethAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd', name: 'SirTesla' }]
 }
