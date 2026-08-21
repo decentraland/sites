@@ -1,6 +1,7 @@
 import type { AuthIdentity } from '@dcl/crypto'
 import { getEnv } from '../../config/env'
 import { fetchWithIdentity } from '../../utils/signedFetch'
+import { timeoutSignal } from '../../utils/timeoutSignal'
 import type { FetchListOptions, FetchListResult, Image, ImageUser, Rarity, WearableParsed } from './reels.types'
 
 const FETCH_TIMEOUT_MS = 5000
@@ -18,7 +19,7 @@ async function fetchImageById(id: string, signal?: AbortSignal): Promise<Image> 
   const cached = imageCache.get(id)
   if (cached) return cached
   const response = await fetch(`${getReelServiceUrl()}/api/images/${id}/metadata`, {
-    signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS)
+    signal: signal ?? timeoutSignal(FETCH_TIMEOUT_MS)
   })
   if (!response.ok) throw new Error(`Image ${id} not found`)
   const image = (await response.json()) as Image
@@ -41,7 +42,7 @@ async function fetchImagesByUser(
   const url = `${getReelServiceUrl()}/api/users/${address}/images?${params.toString()}`
   const response = identity
     ? await fetchWithIdentity(url, identity, 'GET', undefined, undefined, signal)
-    : await fetch(url, { signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS) })
+    : await fetch(url, { signal: signal ?? timeoutSignal(FETCH_TIMEOUT_MS) })
   if (!response.ok) throw new Error(`Cannot fetch images for ${address}`)
   return (await response.json()) as FetchListResult
 }
@@ -94,7 +95,7 @@ async function fetchGraph(url: string | undefined, urns: string[], signal?: Abor
       // eslint-disable-next-line @typescript-eslint/naming-convention
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: WEARABLE_QUERY, variables: { urns } }),
-      signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS)
+      signal: signal ?? timeoutSignal(FETCH_TIMEOUT_MS)
     })
     if (!response.ok) return []
     const json = (await response.json()) as { data?: { items?: GraphQLItem[] } }
@@ -172,7 +173,7 @@ async function fetchProfileFaces(addresses: string[], signal?: AbortSignal): Pro
       // eslint-disable-next-line @typescript-eslint/naming-convention
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids: uniqueIds }),
-      signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS)
+      signal: signal ?? timeoutSignal(FETCH_TIMEOUT_MS)
     })
     if (!response.ok) return result
     const profiles = (await response.json()) as ProfileResponse[]
