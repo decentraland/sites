@@ -1,10 +1,10 @@
 import {
   buildJumpInUrl,
-  buildMarketplaceWearableUrl,
   buildPlaceUrl,
   buildProfileUrl,
   buildReelUrl,
   buildTwitterShareUrl,
+  buildWearableDetailUrl,
   formatPhotoDate
 } from './reels.helpers'
 
@@ -14,6 +14,7 @@ jest.mock('../../config/env', () => ({
       JUMP_IN_URL: 'https://decentraland.org/jump',
       PROFILE_URL: 'https://profile.decentraland.org',
       MARKETPLACE_URL: 'https://market.decentraland.org',
+      SHOP_URL: 'https://decentraland.zone/shop',
       PLACES_API_URL: 'https://places.decentraland.org/api'
     }
     return env[key]
@@ -51,9 +52,10 @@ describe('reels.helpers', () => {
     })
   })
 
-  describe('when building marketplace wearable URL', () => {
-    it('should target /contracts/{collectionId}/items/{blockchainId}', () => {
-      expect(buildMarketplaceWearableUrl('0xcoll', '42')).toBe('https://market.decentraland.org/contracts/0xcoll/items/42')
+  describe('when building the wearable URL for a reel', () => {
+    // The Shop, not the Marketplace: a reel's buy link is commerce, and commerce moved.
+    it('should target the shop item route', () => {
+      expect(buildWearableDetailUrl('0xcoll', '42')).toBe('https://decentraland.zone/shop/item/0xcoll/42')
     })
   })
 

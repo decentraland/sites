@@ -32,6 +32,7 @@
   "THE_GRAPH_API_ETH_URL": "https://subgraph.decentraland.org/collections-ethereum-sepolia",
   "THE_GRAPH_API_MATIC_URL": "https://subgraph.decentraland.org/collections-matic-amoy",
   "MARKETPLACE_URL": "https://market.decentraland.zone",
+  "SHOP_URL": "https://decentraland.today/shop",
   "BUILDER_URL": "https://decentraland.today/builder",
   "MARKETPLACE_API_URL": "https://marketplace-api.decentraland.zone",
   "BADGES_API_URL": "https://badges.decentraland.zone",

@@ -1,4 +1,5 @@
 import { getEnv } from '../../config/env'
+import { shopItemUrl } from '../../utils/shopUrl'
 
 const FETCH_TIMEOUT_MS = 5000
 
@@ -31,10 +32,13 @@ const buildProfileUrl = (address: string): string => {
   return `${profileUrl}/accounts/${address}`
 }
 
-const buildMarketplaceWearableUrl = (collectionId: string, blockchainId: string): string => {
-  const marketplaceUrl = getEnv('MARKETPLACE_URL') ?? 'https://market.decentraland.org'
-  return `${marketplaceUrl}/contracts/${collectionId}/items/${blockchainId}`
-}
+/**
+ * The wearable worn in a reel, on the Shop — a reel's only commerce link, and buying happens there now.
+ *
+ * A reel's metadata can only describe worn wearables, so there is no category to check here the way the
+ * profile's asset list has to.
+ */
+const buildWearableDetailUrl = (collectionId: string, blockchainId: string): string => shopItemUrl(collectionId, blockchainId)
 
 const buildTwitterShareUrl = (description: string, url: string): string => {
   const params = new URLSearchParams({ text: description, url })
@@ -55,4 +59,4 @@ const formatPhotoDate = (dateTime: string): string => {
   return date.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' })
 }
 
-export { buildJumpInUrl, buildMarketplaceWearableUrl, buildPlaceUrl, buildProfileUrl, buildReelUrl, buildTwitterShareUrl, formatPhotoDate }
+export { buildJumpInUrl, buildPlaceUrl, buildProfileUrl, buildReelUrl, buildTwitterShareUrl, buildWearableDetailUrl, formatPhotoDate }

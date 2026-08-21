@@ -13,6 +13,7 @@ import { getEnv } from '../../../config/env'
 import { useGetProfileAssetsQuery } from '../../../features/profile/profile.assets.client'
 import type { AssetCategory, AssetEntry } from '../../../features/profile/profile.assets.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { isShopCategory, shopTokenUrl } from '../../../utils/shopUrl'
 import { formatPriceMana, toItemNetwork, toRarity } from './OverviewTab.helpers'
 import { WearableInfoBadges } from './OverviewTab.icons'
 import { AssetsFilters, AssetsHeader, NameActions, NameCard, NameLabel, NameLogoTile, NameRow, NameSuffix } from './AssetsTab.styled'
@@ -46,6 +47,18 @@ function buildMarketplaceUrl(entry: AssetEntry): string {
   return `${base}${entry.nft.url ?? `/contracts/${entry.nft.contractAddress}/tokens/${entry.nft.tokenId}`}`
 }
 
+/**
+ * Where an asset card goes: the Shop, for the asset kinds the Shop actually has a page for.
+ *
+ * This tab lists names, parcels and estates next to wearables and emotes, and the Shop sells none of those
+ * three — so this is per-asset, not a base swap. A blanket rewrite would send a LAND owner to a Shop URL
+ * that resolves to nothing, replacing a working link with a dead one.
+ */
+function buildAssetUrl(entry: AssetEntry): string {
+  const { nft } = entry
+  return isShopCategory(nft.category) ? shopTokenUrl(nft.contractAddress, nft.tokenId) : buildMarketplaceUrl(entry)
+}
+
 function buildBuilderNameUrl(name: string): string {
   const base = (getEnv('BUILDER_URL') ?? 'https://decentraland.org/builder').replace(/\/+$/, '')
   return `${base}/names/${encodeURIComponent(name)}`
@@ -67,7 +80,7 @@ function toCatalogAsset(entry: AssetEntry) {
   const wearableData = nft.data?.wearable ?? nft.data?.emote
   return {
     id: nft.id,
-    url: buildMarketplaceUrl(entry),
+    url: buildAssetUrl(entry),
     name: nft.name,
     rarity: toRarity(wearableData?.rarity),
     network: toItemNetwork(nft.network),
@@ -262,7 +275,7 @@ function AssetsTab({ address, isOwnProfile, embedded = false }: AssetsTabProps) 
         <EquippedGrid sx={{ mt: 0 }}>
           {items.map(entry => {
             const { nft, order } = entry
-            const marketplaceUrl = buildMarketplaceUrl(entry)
+            const detailUrl = buildAssetUrl(entry)
             const price = formatPriceMana(order?.price)
             const wearableData = nft.data?.wearable ?? nft.data?.emote
             return (
@@ -285,7 +298,7 @@ function AssetsTab({ address, isOwnProfile, embedded = false }: AssetsTabProps) 
                     />
                   }
                   bottomAction={
-                    <Button fullWidth variant="contained" color="primary" href={marketplaceUrl} target="_blank" rel="noopener noreferrer">
+                    <Button fullWidth variant="contained" color="primary" href={detailUrl} target="_blank" rel="noopener noreferrer">
                       {t('profile.assets.view')}
                     </Button>
                   }

@@ -400,7 +400,7 @@ describe('OverviewTab', () => {
       thumbnail: 'https://img.test/hat.png',
       rarity: 'epic',
       network: 'MATIC',
-      marketplaceUrl: 'https://decentraland.org/marketplace/item',
+      detailUrl: 'https://decentraland.org/shop/item/0xabc/1',
       creator: '0xcreator',
       price: '5000000000000000000',
       isOnSale: true,
@@ -414,10 +414,12 @@ describe('OverviewTab', () => {
       useEquippedCollectiblesMock.mockReturnValue({ collectibles: [collectible], isLoading: false })
     })
 
-    it('should wrap each card in a marketplace link on the own profile', () => {
+    // The SHOP, not the Marketplace: an equipped collectible is a wearable or an emote, and those are
+    // browsed and bought in the Shop now.
+    it('should wrap each card in a shop link on the own profile', () => {
       renderOverview({ address: '0xabc', isOwnProfile: true })
       const link = screen.getByTestId('equipped-card-link')
-      expect(link.getAttribute('href')).toBe('https://decentraland.org/marketplace/item')
+      expect(link.getAttribute('href')).toBe('https://decentraland.org/shop/item/0xabc/1')
       expect(screen.getByTestId('equipped-card')).toBeInTheDocument()
     })
 

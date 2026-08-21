@@ -24,7 +24,7 @@ function toItemNetwork(value: string | undefined): Network.ETHEREUM | Network.MA
 function toCatalogAsset(item: CollectibleDetail) {
   return {
     id: item.urn,
-    url: item.marketplaceUrl,
+    url: item.detailUrl,
     name: item.name,
     rarity: toRarity(item.rarity),
     network: toItemNetwork(item.network),

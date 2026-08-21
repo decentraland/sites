@@ -32,6 +32,7 @@
   "THE_GRAPH_API_ETH_URL": "https://subgraph.decentraland.org/collections-ethereum-mainnet",
   "THE_GRAPH_API_MATIC_URL": "https://subgraph.decentraland.org/collections-matic-mainnet",
   "MARKETPLACE_URL": "https://market.decentraland.org",
+  "SHOP_URL": "https://decentraland.org/shop",
   "BUILDER_URL": "https://decentraland.org/builder",
   "MARKETPLACE_API_URL": "https://marketplace-api.decentraland.org",
   "BADGES_API_URL": "https://badges.decentraland.org",
