@@ -1,4 +1,4 @@
-import type { CardData } from './places.types'
+import type { CardData, DeepLinkOptions } from './places.types'
 
 interface ParsedPosition {
   original: string
@@ -61,17 +61,17 @@ function formatDateForGoogleCalendar(date: Date): string {
   return `${year}${month}${day}T${hours}${minutes}${seconds}Z`
 }
 
-function buildDeepLinkOptions(
-  position?: string,
-  realm?: string,
-  env?: string,
-  sceneConsole?: string
-): { realm?: string; position?: string; dclenv?: string; sceneConsole?: string } {
-  const options: { realm?: string; position?: string; dclenv?: string; sceneConsole?: string } = {}
-  if (realm && realm !== DEFAULT_REALM) options.realm = realm
-  if (position && position !== DEFAULT_POSITION) options.position = position
-  if (env) options.dclenv = env
-  if (sceneConsole) options.sceneConsole = sceneConsole
+// Drops the values the explorer already defaults to, so a jump to Genesis City
+// origin on the main realm produces a bare deep link. Input and output share one
+// shape on purpose: re-normalizing an already-built object is a no-op, where an
+// `env`-keyed input silently discarded `dclenv` on the way back through.
+function buildDeepLinkOptions(input: DeepLinkOptions): DeepLinkOptions {
+  const options: DeepLinkOptions = {}
+  if (input.realm && input.realm !== DEFAULT_REALM) options.realm = input.realm
+  if (input.position && input.position !== DEFAULT_POSITION) options.position = input.position
+  if (input.dclenv) options.dclenv = input.dclenv
+  if (input.sceneConsole) options.sceneConsole = input.sceneConsole
+  if (input.multiInstance) options.multiInstance = input.multiInstance
   return options
 }
 
@@ -85,7 +85,10 @@ function buildDeepLinkOptions(
  */
 function collectDeepLinkParams(source?: URLSearchParams): { position?: string; realm?: string } {
   const params = source ?? new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
-  const { position, realm } = buildDeepLinkOptions(params.get('position') ?? undefined, params.get('realm') ?? undefined)
+  const { position, realm } = buildDeepLinkOptions({
+    position: params.get('position') ?? undefined,
+    realm: params.get('realm') ?? undefined
+  })
   return { ...(position ? { position } : {}), ...(realm ? { realm } : {}) }
 }
 
