@@ -973,7 +973,9 @@
     "every_4_weeks": "Cada 4 semanas",
     "every_month": "Cada mes",
     "upcoming_dates_label": "Próximas fechas",
-    "upcoming_dates_empty": "No hay próximas fechas para esta recurrencia"
+    "upcoming_dates_empty": "No hay próximas fechas para esta recurrencia",
+    "featured_item_label": "Artículo Destacado (Opcional)",
+    "featured_item_placeholder": "Pega un URN de wearable, emote o colección"
   },
   "community": {
     "global": {

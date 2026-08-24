@@ -490,13 +490,13 @@ function EventForm({
             {/* Featured Item */}
             <EmailSection>
               <EventTextField
-                  variant="outlined"
-                  label={t('create_event.featured_item_label')}
-                  placeholder={t('create_event.featured_item_placeholder')}
-                  value={form.featuredItem}
-                  onChange={e => setField('featuredItem', e.target.value)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
+                variant="outlined"
+                label={t('create_event.featured_item_label')}
+                placeholder={t('create_event.featured_item_placeholder')}
+                value={form.featuredItem}
+                onChange={e => setField('featuredItem', e.target.value)}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
               />
             </EmailSection>
             {/* Email */}
