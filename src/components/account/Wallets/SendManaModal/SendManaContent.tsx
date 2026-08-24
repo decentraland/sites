@@ -32,6 +32,7 @@ const SendManaContent = ({ network, address, balance, onClose, onSuccess }: Send
   const [to, setTo] = useState('')
   const [amount, setAmount] = useState('')
   const recordedHash = useRef<string | null>(null)
+  const confirmedHash = useRef<string | null>(null)
 
   // Record the transfer the moment it has a hash (pending), then flip to confirmed when mined.
   useEffect(() => {
@@ -41,11 +42,15 @@ const SendManaContent = ({ network, address, balance, onClose, onSuccess }: Send
     }
   }, [hash, network, amount, addTransaction])
 
+  // Keyed on the hash, like the record above: `onSuccess` is an inline callback in the
+  // parent, so its identity changes on every render and the effect re-runs on each one.
+  // Without the guard that re-ran the write and called `onSuccess` again per render
+  // (SITES-2RX).
   useEffect(() => {
-    if (isSuccess && hash) {
-      updateTransactionStatus(hash, 'confirmed')
-      onSuccess?.()
-    }
+    if (!isSuccess || !hash || confirmedHash.current === hash) return
+    confirmedHash.current = hash
+    updateTransactionStatus(hash, 'confirmed')
+    onSuccess?.()
   }, [isSuccess, hash, updateTransactionStatus, onSuccess])
 
   const targetChainId = getNetworkChainId(network)
