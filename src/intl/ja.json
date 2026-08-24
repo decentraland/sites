@@ -951,6 +951,13 @@
         "title": "の最新記事",
         "title_highlight": "ブログ",
         "view_all": "ブログを読む"
+      },
+      "subnav": {
+        "label": "クリエイターセクション",
+        "overview": "概要",
+        "collections": "コレクション",
+        "scenes": "シーン",
+        "land": "ランド/ワールド"
       }
     },
     "error_boundary": {

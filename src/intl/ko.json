@@ -951,6 +951,13 @@
         "title": "최신 소식",
         "title_highlight": "블로그",
         "view_all": "블로그 읽기"
+      },
+      "subnav": {
+        "label": "크리에이터 섹션",
+        "overview": "개요",
+        "collections": "컬렉션",
+        "scenes": "씬",
+        "land": "랜드/월드"
       }
     },
     "error_boundary": {

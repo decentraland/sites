@@ -93,6 +93,20 @@ const NavBarRoot = styled('nav')({
       // eslint-disable-next-line @typescript-eslint/naming-convention
       WebkitBackdropFilter: 'none'
     }
+  },
+  // Creators variant (/create): matches the wemotes-builder collections app's bar so
+  // moving between the two feels like one app. Backgrounds already match the base
+  // (0.4 desktop / 0.75 mobile); only shadow and blur differ at rest.
+  ['&.creators::before']: {
+    boxShadow: 'none',
+    backdropFilter: 'blur(12px)',
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    WebkitBackdropFilter: 'blur(12px)'
+  },
+  // Deepens once the page scrolls so the translucent bar doesn't wash out over light
+  // content passing underneath — same behavior as the collections app.
+  ['&.creators-scrolled::before']: {
+    background: 'rgba(22, 21, 24, 0.8)'
   }
 })
 
@@ -195,6 +209,19 @@ const DesktopTab = styled('button')({
     height: 20,
     transition: 'transform 0.2s ease',
     flexShrink: 0
+  },
+  // Creators variant (/create): tab treatment from the wemotes-builder collections app.
+  // Rest color already matches (gray5 = its #ecebed); only the hover/active fills differ.
+  ['&.creators']: {
+    ['&:hover']: {
+      color: dclColors.neutral.white,
+      backgroundColor: 'rgba(255, 255, 255, 0.12)',
+      textShadow: 'none'
+    },
+    ['&.active']: {
+      color: dclColors.neutral.white,
+      backgroundColor: 'rgba(255, 255, 255, 0.18)'
+    }
   }
 })
 
@@ -220,6 +247,13 @@ const DesktopTabLink = styled('a')({
   ['&:focus-visible']: {
     outline: `2px solid ${dclColors.base.primary}`,
     outlineOffset: 2
+  },
+  ['&.creators']: {
+    ['&:hover']: {
+      color: dclColors.neutral.white,
+      backgroundColor: 'rgba(255, 255, 255, 0.12)',
+      textShadow: 'none'
+    }
   }
 })
 

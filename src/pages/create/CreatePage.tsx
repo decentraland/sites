@@ -1,5 +1,6 @@
 import { Suspense, lazy, memo } from 'react'
 import { CreatorsHero } from '../../components/Create/Hero'
+import { CreatorsSubnav } from '../../components/Create/Subnav'
 
 const CreatorsWhy = lazy(() => import('../../components/Create/Why').then(m => ({ default: m.CreatorsWhy })))
 const CreatorsCreate = lazy(() => import('../../components/Create/CreateCards').then(m => ({ default: m.CreatorsCreate })))
@@ -12,6 +13,7 @@ const CreatorsFaqs = lazy(() => import('../../components/Create/Faqs').then(m =>
 const CreatePage = memo(() => {
   return (
     <>
+      <CreatorsSubnav />
       <CreatorsHero />
       <Suspense fallback={null}>
         <CreatorsWhy />

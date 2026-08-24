@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import { LandingNavbar } from './LandingNavbar'
 
 // decentraland-ui2 ships ESM that jest does not transform, so the styled layer is stubbed with the
@@ -44,5 +44,47 @@ describe('when the navbar shows the credits chip', () => {
 
     rerender(<LandingNavbar {...props} isSignedIn creditsBalance={null} />)
     expect(screen.queryByRole('link', { name: /credits_balance/i })).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * The /create page shares its navbar treatment with the wemotes-builder collections app
+ * (mounted at /create/collections) so moving between the two feels like one app: the bar
+ * carries the creators variant and deepens once the page scrolls.
+ */
+describe('when the navbar is on the creators page', () => {
+  const scrollTo = (y: number) => {
+    Object.defineProperty(window, 'scrollY', { value: y, configurable: true })
+    act(() => {
+      window.dispatchEvent(new Event('scroll'))
+    })
+  }
+
+  beforeEach(() => {
+    scrollTo(0)
+  })
+
+  it('should carry the creators treatment and deepen only past the scroll threshold', () => {
+    render(<LandingNavbar {...props} isSignedIn={false} isCreatorsPage />)
+    const nav = screen.getAllByRole('navigation')[0]
+
+    expect(nav).toHaveClass('creators')
+    expect(nav).not.toHaveClass('creators-scrolled')
+
+    scrollTo(9)
+    expect(nav).toHaveClass('creators-scrolled')
+
+    scrollTo(0)
+    expect(nav).not.toHaveClass('creators-scrolled')
+  })
+
+  it('should keep every other page on the default treatment', () => {
+    render(<LandingNavbar {...props} isSignedIn={false} />)
+    const nav = screen.getAllByRole('navigation')[0]
+
+    expect(nav).not.toHaveClass('creators')
+
+    scrollTo(9)
+    expect(nav).not.toHaveClass('creators-scrolled')
   })
 })

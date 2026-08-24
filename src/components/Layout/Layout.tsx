@@ -5,7 +5,7 @@ const LandingFooter = lazy(() => import('../LandingFooter').then(m => ({ default
 import { LandingNavbarConnected } from '../LandingNavbar'
 import { isPageTrackingExempt } from './Layout.helpers'
 import type { LayoutProps } from './Layout.types'
-import { FooterFallback } from './Layout.styled'
+import { CreatorsField, FooterFallback } from './Layout.styled'
 
 // eslint-disable-next-line react/prop-types
 const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter = true }) => {
@@ -17,9 +17,16 @@ const Layout: React.FC<LayoutProps> = ({ children, withNavbar = true, withFooter
     page(location.pathname)
   }, [isAnalyticsInitialized, location.pathname, page])
 
+  const isCreatorsPage = location.pathname.replace(/\/+$/, '') === '/create'
+
   return (
     <div>
-      {withNavbar && <LandingNavbarConnected isLandingPage={location.pathname === '/'} />}
+      {withNavbar && (
+        <>
+          <LandingNavbarConnected isLandingPage={location.pathname === '/'} isCreatorsPage={isCreatorsPage} />
+          {isCreatorsPage && <CreatorsField aria-hidden data-testid="creators-field" />}
+        </>
+      )}
       {/* Layout owns the single <main> landmark for every wrapped route. Layout-less
           routes (/download, /reels, /invite) must provide their own landmark and
           must never be nested under <Layout /> to avoid invalid nested <main>. */}

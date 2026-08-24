@@ -122,6 +122,8 @@ interface LandingNavbarProps {
   isSignedIn: boolean
   isSigningIn?: boolean
   isLandingPage?: boolean
+  /** /create only: switches the bar to the creators (wemotes-builder) treatment. */
+  isCreatorsPage?: boolean
   isLoadingProfile?: boolean
   address?: string
   avatar?: {
@@ -227,6 +229,7 @@ const LandingNavbar = memo(function LandingNavbar({
   isSignedIn,
   isSigningIn = false,
   isLandingPage = false,
+  isCreatorsPage = false,
   isLoadingProfile = false,
   address,
   avatar,
@@ -258,6 +261,7 @@ const LandingNavbar = memo(function LandingNavbar({
   const [desktopDropdown, setDesktopDropdown] = useState<DropdownSection | null>(null)
   const [userCardOpen, setUserCardOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [creatorsScrolled, setCreatorsScrolled] = useState(false)
 
   const navRef = useRef<HTMLElement>(null)
   const dropdownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -412,6 +416,19 @@ const LandingNavbar = memo(function LandingNavbar({
     return () => window.removeEventListener('scroll', handleScroll)
   }, [showMinimalNavbar])
 
+  // Creators (/create) bar deepens once the page scrolls — same threshold as the
+  // wemotes-builder collections app so the two bars behave identically.
+  useEffect(() => {
+    if (!isCreatorsPage) {
+      setCreatorsScrolled(false)
+      return
+    }
+    const handleScroll = () => setCreatorsScrolled(window.scrollY > 8)
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [isCreatorsPage])
+
   // Close open panels on scroll
   useEffect(() => {
     const handleScroll = () => {
@@ -549,9 +566,18 @@ const LandingNavbar = memo(function LandingNavbar({
     )
   }
 
+  const tabClassName = isCreatorsPage ? 'creators' : undefined
+  const rootClassName = [
+    isLandingPage && isSignedIn ? 'logged-landing' : null,
+    isCreatorsPage ? 'creators' : null,
+    isCreatorsPage && creatorsScrolled ? 'creators-scrolled' : null
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <>
-      <NavBarRoot ref={navRef} className={isLandingPage && isSignedIn ? 'logged-landing' : ''}>
+      <NavBarRoot ref={navRef} className={rootClassName}>
         <NavBarLeft>
           <LogoLink href="https://decentraland.org" aria-label="Decentraland Home">
             <DclLogo />
@@ -565,6 +591,9 @@ const LandingNavbar = memo(function LandingNavbar({
                 onMouseLeave={scheduleCloseDesktopDropdown}
               >
                 <DesktopTabWithDropdown
+                  // On /create the Create section tab is the active one, mirroring the
+                  // collections app's highlighted top-nav tab.
+                  className={isCreatorsPage ? (section === 'create' ? 'creators active' : 'creators') : undefined}
                   aria-expanded={desktopDropdown === section}
                   aria-haspopup="true"
                   onClick={() => {
@@ -601,7 +630,9 @@ const LandingNavbar = memo(function LandingNavbar({
               </DesktopDropdownWrapper>
             ))}
 
-            <DesktopTabLink href={MENU_CONFIG.learn.url}>{l(MENU_CONFIG.learn.labelKey)}</DesktopTabLink>
+            <DesktopTabLink className={tabClassName} href={MENU_CONFIG.learn.url}>
+              {l(MENU_CONFIG.learn.labelKey)}
+            </DesktopTabLink>
           </DesktopTabList>
         </NavBarLeft>
 
