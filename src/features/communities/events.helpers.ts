@@ -137,6 +137,7 @@ function mapCommunityEventToEventEntry(event: CommunityEvent): EventEntry {
     world: event.world ?? false,
     place_id: event.placeId ?? null,
     community_id: event.communityId ?? null,
+    featured_item: null,
     total_attendees: event.totalAttendees,
     latest_attendees: event.latestAttendees,
     attending: event.attending,

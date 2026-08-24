@@ -46,6 +46,7 @@ function createMockEvent(overrides: Partial<EventEntry> = {}): EventEntry {
     world: false,
     place_id: null,
     community_id: null,
+    featured_item: null,
     total_attendees: 0,
     latest_attendees: [],
     attending: false,
