@@ -32,6 +32,7 @@ const SendManaContent = ({ network, address, balance, onClose, onSuccess }: Send
   const [to, setTo] = useState('')
   const [amount, setAmount] = useState('')
   const recordedHash = useRef<string | null>(null)
+  const confirmedHash = useRef<string | null>(null)
 
   // Record the transfer the moment it has a hash (pending), then flip to confirmed when mined.
   useEffect(() => {
@@ -41,8 +42,11 @@ const SendManaContent = ({ network, address, balance, onClose, onSuccess }: Send
     }
   }, [hash, network, amount, addTransaction])
 
+  // Confirm once per hash: `onSuccess` is unstable across parent renders and would otherwise
+  // re-fire this effect on every tx-store notification (infinite update loop, React #185).
   useEffect(() => {
-    if (isSuccess && hash) {
+    if (isSuccess && hash && confirmedHash.current !== hash) {
+      confirmedHash.current = hash
       updateTransactionStatus(hash, 'confirmed')
       onSuccess?.()
     }

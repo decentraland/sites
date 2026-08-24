@@ -285,5 +285,19 @@ describe('SendManaContent', () => {
       expect(mockUpdateTransactionStatus).toHaveBeenCalledWith('0xHASH', 'confirmed')
       expect(onSuccess).toHaveBeenCalledTimes(1)
     })
+
+    it('should confirm only once even when onSuccess changes identity across re-renders', () => {
+      // Regression: an unstable onSuccess used to re-arm the confirm effect into an infinite loop (React #185).
+      mockWalletReturn = { isConnected: true, connect: mockConnect, connectors: [] }
+      mockAccountReturn = { chainId: 137 }
+      mockWriteReturn = { writeContract: mockWriteContract, data: '0xHASH', isPending: false, error: null }
+      mockReceiptReturn = { isLoading: false, isSuccess: true }
+
+      const { rerender } = render(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} onSuccess={jest.fn()} />)
+      rerender(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} onSuccess={jest.fn()} />)
+      rerender(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} onSuccess={jest.fn()} />)
+
+      expect(mockUpdateTransactionStatus).toHaveBeenCalledTimes(1)
+    })
   })
 })
