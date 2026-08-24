@@ -39,6 +39,8 @@ describe('when the creators sub-nav renders', () => {
   it('should link each tab to its app: overview here, collections to the collections app, scenes/land to the builder', () => {
     render(<CreatorsSubnav />)
 
+    // The violet field behind the bars ships with the sub-nav (both flag-gated together).
+    expect(screen.getByTestId('creators-field')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'component.creators_landing.subnav.overview' })).toHaveAttribute('href', '/create')
     expect(screen.getByRole('link', { name: 'component.creators_landing.subnav.collections' })).toHaveAttribute(
       'href',

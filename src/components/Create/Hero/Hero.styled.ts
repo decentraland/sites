@@ -10,7 +10,13 @@ const HeroSection = styled('section')({
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  overflow: 'hidden'
+  overflow: 'hidden',
+  // Pre-release (wemotes-builder flag off): no sub-nav above, so the hero carries the
+  // navbar clearance itself — the page's original spacing.
+  ['&.standalone']: {
+    height: 'calc(90vh - 96px)',
+    marginTop: 92
+  }
 })
 
 const HeroBackground = styled(Box)({

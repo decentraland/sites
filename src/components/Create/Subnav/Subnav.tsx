@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from 'react'
 import { getEnv } from '../../../config/env'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { SubnavRoot, SubnavTab, SubnavTabs } from './Subnav.styled'
+import { CreatorsField, SubnavRoot, SubnavTab, SubnavTabs } from './Subnav.styled'
 
 // Collections is the wemotes-builder SPA mounted on the same domain;
 // Scenes and Land live in the legacy builder app. All plain anchors — each
@@ -21,16 +21,19 @@ const CreatorsSubnav = memo(() => {
   }, [])
 
   return (
-    <SubnavRoot className={scrolled ? 'scrolled' : undefined} data-testid="creators-subnav">
-      <SubnavTabs aria-label={l('component.creators_landing.subnav.label')}>
-        <SubnavTab href="/create" aria-current="page">
-          {l('component.creators_landing.subnav.overview')}
-        </SubnavTab>
-        <SubnavTab href={`${wemotesBuilderUrl}/collections`}>{l('component.creators_landing.subnav.collections')}</SubnavTab>
-        <SubnavTab href={`${builderUrl}/scenes`}>{l('component.creators_landing.subnav.scenes')}</SubnavTab>
-        <SubnavTab href={`${builderUrl}/land`}>{l('component.creators_landing.subnav.land')}</SubnavTab>
-      </SubnavTabs>
-    </SubnavRoot>
+    <>
+      <CreatorsField aria-hidden data-testid="creators-field" />
+      <SubnavRoot className={scrolled ? 'scrolled' : undefined} data-testid="creators-subnav">
+        <SubnavTabs aria-label={l('component.creators_landing.subnav.label')}>
+          <SubnavTab href="/create" aria-current="page">
+            {l('component.creators_landing.subnav.overview')}
+          </SubnavTab>
+          <SubnavTab href={`${wemotesBuilderUrl}/collections`}>{l('component.creators_landing.subnav.collections')}</SubnavTab>
+          <SubnavTab href={`${builderUrl}/scenes`}>{l('component.creators_landing.subnav.scenes')}</SubnavTab>
+          <SubnavTab href={`${builderUrl}/land`}>{l('component.creators_landing.subnav.land')}</SubnavTab>
+        </SubnavTabs>
+      </SubnavRoot>
+    </>
   )
 })
 

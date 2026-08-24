@@ -1,6 +1,7 @@
 import { Suspense, lazy, memo } from 'react'
 import { CreatorsHero } from '../../components/Create/Hero'
 import { CreatorsSubnav } from '../../components/Create/Subnav'
+import { useWemotesBuilderEnabled } from '../../features/create/create.flags'
 
 const CreatorsWhy = lazy(() => import('../../components/Create/Why').then(m => ({ default: m.CreatorsWhy })))
 const CreatorsCreate = lazy(() => import('../../components/Create/CreateCards').then(m => ({ default: m.CreatorsCreate })))
@@ -11,10 +12,14 @@ const CreatorsBlog = lazy(() => import('../../components/Create/FromTheBlog').th
 const CreatorsFaqs = lazy(() => import('../../components/Create/Faqs').then(m => ({ default: m.CreatorsFaqs })))
 
 const CreatePage = memo(() => {
+  // TEMPORARY: the sub-nav (and the violet field it brings) stays hidden until the
+  // wemotes-builder collections app is released — see features/create/create.flags.ts.
+  const wemotesBuilderEnabled = useWemotesBuilderEnabled()
+
   return (
     <>
-      <CreatorsSubnav />
-      <CreatorsHero />
+      {wemotesBuilderEnabled && <CreatorsSubnav />}
+      <CreatorsHero standalone={!wemotesBuilderEnabled} />
       <Suspense fallback={null}>
         <CreatorsWhy />
         <CreatorsCreate />

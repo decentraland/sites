@@ -10,6 +10,29 @@ const SUBNAV_BG_SCROLLED = 'rgba(64, 20, 88, 0.8)'
 // wemotes' `orange` token — active tab underline. Not in dclColors.
 const TAB_ACTIVE_BORDER = '#ff7439'
 
+// Violet field behind the /create bars, so the translucent navbar + sub-nav composite to
+// the same colors as the wemotes-builder collections app, whose whole body sits on this
+// field. Only the strip the two bars cover is painted; the strip shows the top slice of a
+// viewport-sized gradient (background-size 100vh instead of `background-attachment: fixed`,
+// which iOS Safari ignores) matching wemotes-builder's fixed body gradient — the shared
+// Figma "Radial BG" stops. z-index -1 keeps it under all in-flow content, so scrolled
+// sections still pass over it, under the translucent bars.
+const CreatorsField = styled('div')({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  height: 156,
+  zIndex: -1,
+  pointerEvents: 'none',
+  backgroundImage: 'radial-gradient(61.64% 109.58% at 50% 54.49%, #952dc6 0%, #7c27a8 25%, #642089 50%, #4b1a6b 75%, #32134c 100%)',
+  backgroundSize: '100% 100vh',
+  backgroundRepeat: 'no-repeat',
+  [MOBILE_BREAKPOINT]: {
+    height: 128
+  }
+})
+
 const SubnavRoot = styled('div')({
   position: 'sticky',
   // Under the fixed LandingNavbar (zIndex 1100); margin-top clears it in flow, top pins
@@ -92,4 +115,4 @@ const SubnavTab = styled('a')({
   }
 })
 
-export { SubnavRoot, SubnavTab, SubnavTabs }
+export { CreatorsField, SubnavRoot, SubnavTab, SubnavTabs }
