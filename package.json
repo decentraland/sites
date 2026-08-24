@@ -24,7 +24,7 @@
     "@contentful/rich-text-types": "17.2.5",
     "@dcl/core-web3": "^0.12.0",
     "@dcl/crypto": "^3.6.0",
-    "@dcl/hooks": "^1.5.0",
+    "@dcl/hooks": "^1.5.1",
     "@dcl/protocol": "^1.0.0-5810343446.commit-4ee6d08",
     "@dcl/schemas": "^26.5.0",
     "@dcl/single-sign-on-client": "^0.1.0",
