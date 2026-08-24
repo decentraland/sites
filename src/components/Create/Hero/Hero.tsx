@@ -25,7 +25,13 @@ const CREATOR_HUB_DOWNLOAD_URL = '/download/creator-hub'
 // creator docs instead of a dead-end download page.
 const CREATOR_DOCS_URL = 'https://docs.decentraland.org/creator/'
 
-const CreatorsHero = memo(() => {
+interface CreatorsHeroProps {
+  // Rendered without the creators sub-nav above (wemotes-builder flag off), so the hero
+  // reclaims the navbar clearance the sub-nav normally provides.
+  standalone?: boolean
+}
+
+const CreatorsHero = memo(({ standalone = false }: CreatorsHeroProps) => {
   const isMobile = useMediaQuery('(max-width: 767px)')
   const isDesktop = useDesktopMediaQuery()
   const currentWord = useTypingListEffect(heroData.changingWords)
@@ -48,7 +54,7 @@ const CreatorsHero = memo(() => {
 
   return (
     <>
-      <HeroSection>
+      <HeroSection className={standalone ? 'standalone' : undefined}>
         <HeroBackground>
           {!isMobile && (
             <Video

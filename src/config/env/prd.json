@@ -33,6 +33,7 @@
   "THE_GRAPH_API_MATIC_URL": "https://subgraph.decentraland.org/collections-matic-mainnet",
   "MARKETPLACE_URL": "https://market.decentraland.org",
   "BUILDER_URL": "https://decentraland.org/builder",
+  "WEMOTES_BUILDER_URL": "https://decentraland.org/creator",
   "MARKETPLACE_API_URL": "https://marketplace-api.decentraland.org",
   "BADGES_API_URL": "https://badges.decentraland.org",
   "REFERRAL_API_URL": "https://social-api.decentraland.org",

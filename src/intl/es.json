@@ -951,6 +951,13 @@
         "title": "del blog",
         "title_highlight": "Lo último",
         "view_all": "Leer el blog"
+      },
+      "subnav": {
+        "label": "Secciones de creador",
+        "overview": "Resumen",
+        "collections": "Colecciones",
+        "scenes": "Escenas",
+        "land": "Land/Mundos"
       }
     },
     "error_boundary": {

@@ -1,15 +1,22 @@
 import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
 
 const HeroSection = styled('section')({
-  height: 'calc(90vh - 96px)',
+  // The creators sub-nav above carries the navbar clearance (its margin-top) and adds
+  // 64px of its own height, so the hero starts flush under it and gives that height back.
+  height: 'calc(90vh - 160px)',
   width: '100%',
   position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  marginTop: 92,
-  overflow: 'hidden'
+  overflow: 'hidden',
+  // Pre-release (wemotes-builder flag off): no sub-nav above, so the hero carries the
+  // navbar clearance itself — the page's original spacing.
+  ['&.standalone']: {
+    height: 'calc(90vh - 96px)',
+    marginTop: 92
+  }
 })
 
 const HeroBackground = styled(Box)({

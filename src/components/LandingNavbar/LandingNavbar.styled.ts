@@ -93,6 +93,20 @@ const NavBarRoot = styled('nav')({
       // eslint-disable-next-line @typescript-eslint/naming-convention
       WebkitBackdropFilter: 'none'
     }
+  },
+  // Creators variant (/create): matches the wemotes-builder collections app's bar so
+  // moving between the two feels like one app. Backgrounds already match the base
+  // (0.4 desktop / 0.75 mobile); only shadow and blur differ at rest.
+  ['&.creators::before']: {
+    boxShadow: 'none',
+    backdropFilter: 'blur(12px)',
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    WebkitBackdropFilter: 'blur(12px)'
+  },
+  // Deepens once the page scrolls so the translucent bar doesn't wash out over light
+  // content passing underneath — same behavior as the collections app.
+  ['&.creators-scrolled::before']: {
+    background: 'rgba(22, 21, 24, 0.8)'
   }
 })
 
@@ -181,9 +195,15 @@ const DesktopTab = styled('button')({
   borderRadius: 8,
   whiteSpace: 'nowrap',
   transition: 'background-color 0.15s ease, color 0.15s ease',
+  // Hover/active mirror decentraland-ui2's Navbar tabs — ui2 is the canonical navbar visual.
   ['&:hover']: {
     color: dclColors.neutral.white,
-    backgroundColor: GLASS_BG,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    textShadow: '0 0 0.5px currentColor, 0 0 0.5px currentColor'
+  },
+  ['&.active']: {
+    color: dclColors.neutral.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
     textShadow: '0 0 0.5px currentColor, 0 0 0.5px currentColor'
   },
   ['&:focus-visible']: {
@@ -212,9 +232,10 @@ const DesktopTabLink = styled('a')({
   borderRadius: 8,
   whiteSpace: 'nowrap',
   transition: 'background-color 0.15s ease, color 0.15s ease',
+  // Hover mirrors decentraland-ui2's Navbar tabs — ui2 is the canonical navbar visual.
   ['&:hover']: {
     color: dclColors.neutral.white,
-    backgroundColor: GLASS_BG,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     textShadow: '0 0 0.5px currentColor, 0 0 0.5px currentColor'
   },
   ['&:focus-visible']: {

@@ -15,6 +15,8 @@ import type { LandingNavbarProps } from './LandingNavbar'
 
 type LandingNavbarConnectedProps = {
   isLandingPage?: boolean
+  /** /create only: switches the bar to the creators (wemotes-builder) treatment. */
+  isCreatorsPage?: boolean
   /**
    * Optional override for the address whose profile/avatar/MANA the navbar should display.
    * When set, takes precedence over the wallet address resolved from localStorage.
@@ -32,7 +34,11 @@ type LandingNavbarConnectedProps = {
  * re-wiring the hooks. Consumed by `Layout` (every lightweight route) and by
  * `DownloadLayout` for the signed-in download experience.
  */
-const LandingNavbarConnected = ({ isLandingPage = false, address: addressOverride }: LandingNavbarConnectedProps) => {
+const LandingNavbarConnected = ({
+  isLandingPage = false,
+  isCreatorsPage = false,
+  address: addressOverride
+}: LandingNavbarConnectedProps) => {
   const { locale } = useLocale()
   const { address: walletAddress, isConnected, disconnect } = useWalletAddress()
   const address = addressOverride ?? walletAddress
@@ -64,6 +70,7 @@ const LandingNavbarConnected = ({ isLandingPage = false, address: addressOverrid
       <LandingNavbar
         isSignedIn={effectivelySignedIn}
         isLandingPage={isLandingPage}
+        isCreatorsPage={isCreatorsPage}
         isLoadingProfile={isLoadingProfile}
         address={address || undefined}
         avatar={avatar}

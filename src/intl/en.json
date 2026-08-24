@@ -763,6 +763,13 @@
       "hero": {
         "mobile_docs_cta": "Explore the Creator Docs",
         "scroll_label": "Scroll to the next section"
+      },
+      "subnav": {
+        "label": "Creator sections",
+        "overview": "Overview",
+        "collections": "Collections",
+        "scenes": "Scenes",
+        "land": "Land/World"
       }
     },
     "jump": {

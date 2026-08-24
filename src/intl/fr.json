@@ -946,6 +946,13 @@
         "title": "du blog",
         "title_highlight": "Les nouveautés",
         "view_all": "Lire le blog"
+      },
+      "subnav": {
+        "label": "Sections créateur",
+        "overview": "Aperçu",
+        "collections": "Collections",
+        "scenes": "Scènes",
+        "land": "Terrains/Mondes"
       }
     },
     "error_boundary": {

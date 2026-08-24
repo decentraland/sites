@@ -33,6 +33,7 @@
   "THE_GRAPH_API_MATIC_URL": "https://subgraph.decentraland.org/collections-matic-amoy",
   "MARKETPLACE_URL": "https://market.decentraland.zone",
   "BUILDER_URL": "https://decentraland.today/builder",
+  "WEMOTES_BUILDER_URL": "https://decentraland.today/creator",
   "MARKETPLACE_API_URL": "https://marketplace-api.decentraland.zone",
   "BADGES_API_URL": "https://badges.decentraland.zone",
   "REFERRAL_API_URL": "https://social-api.decentraland.zone",

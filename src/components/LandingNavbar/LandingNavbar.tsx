@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAnalytics } from '@dcl/hooks'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { MIN_DISPLAY_BALANCE } from '../../hooks/useManaBalances'
+import { BAR_SCROLL_THRESHOLD, useScrolledPast } from '../../hooks/useScrolledPast'
 import { useLocale } from '../../intl/LocaleContext'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { assetUrl } from '../../utils/assetUrl'
@@ -122,6 +123,8 @@ interface LandingNavbarProps {
   isSignedIn: boolean
   isSigningIn?: boolean
   isLandingPage?: boolean
+  /** /create only: switches the bar to the creators (wemotes-builder) treatment. */
+  isCreatorsPage?: boolean
   isLoadingProfile?: boolean
   address?: string
   avatar?: {
@@ -227,6 +230,7 @@ const LandingNavbar = memo(function LandingNavbar({
   isSignedIn,
   isSigningIn = false,
   isLandingPage = false,
+  isCreatorsPage = false,
   isLoadingProfile = false,
   address,
   avatar,
@@ -258,6 +262,9 @@ const LandingNavbar = memo(function LandingNavbar({
   const [desktopDropdown, setDesktopDropdown] = useState<DropdownSection | null>(null)
   const [userCardOpen, setUserCardOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  // Creators (/create) bar deepens once the page scrolls — same threshold as the
+  // wemotes-builder collections app so the two bars behave identically.
+  const creatorsScrolled = useScrolledPast(BAR_SCROLL_THRESHOLD, isCreatorsPage)
 
   const navRef = useRef<HTMLElement>(null)
   const dropdownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -549,9 +556,17 @@ const LandingNavbar = memo(function LandingNavbar({
     )
   }
 
+  const rootClassName = [
+    isLandingPage && isSignedIn ? 'logged-landing' : null,
+    isCreatorsPage ? 'creators' : null,
+    isCreatorsPage && creatorsScrolled ? 'creators-scrolled' : null
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <>
-      <NavBarRoot ref={navRef} className={isLandingPage && isSignedIn ? 'logged-landing' : ''}>
+      <NavBarRoot ref={navRef} className={rootClassName}>
         <NavBarLeft>
           <LogoLink href="https://decentraland.org" aria-label="Decentraland Home">
             <DclLogo />
@@ -565,6 +580,9 @@ const LandingNavbar = memo(function LandingNavbar({
                 onMouseLeave={scheduleCloseDesktopDropdown}
               >
                 <DesktopTabWithDropdown
+                  // On /create the Create section tab is the active one, mirroring the
+                  // collections app's highlighted top-nav tab.
+                  className={isCreatorsPage && section === 'create' ? 'active' : undefined}
                   aria-expanded={desktopDropdown === section}
                   aria-haspopup="true"
                   onClick={() => {
