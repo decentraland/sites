@@ -67,15 +67,24 @@ describe('when the navbar shows the credits chip', () => {
  * selected while the visitor is on either of them — otherwise nothing in the navbar says where they are.
  */
 describe('when the visitor is on a page the Discover dropdown owns', () => {
+  // getAllBy over every match rather than the first one: the desktop tab and the mobile accordion
+  // header both carry the state, and jsdom only exposes the mobile one (the desktop list is display:
+  // none without the media query), so asserting on all of them covers whichever surface is in the tree.
   it.each(['/whats-on', '/discover', '/discover/place/-102,129'])('should mark the Discover tab as selected on %s', pathname => {
     renderAt(pathname)
 
-    expect(screen.getAllByRole('button', { name: /navbar\.discover/i })[0]).toHaveAttribute('data-active')
+    screen.getAllByRole('button', { name: /navbar\.discover/i }).forEach(tab => expect(tab).toHaveAttribute('data-active'))
+  })
+
+  it('should leave the sections that own no in-app route unselected', () => {
+    renderAt('/whats-on')
+
+    screen.getAllByRole('button', { name: /navbar\.(shop|create)/i }).forEach(tab => expect(tab).not.toHaveAttribute('data-active'))
   })
 
   it('should leave every tab unselected on the landing page', () => {
     renderAt('/')
 
-    expect(screen.getAllByRole('button', { name: /navbar\.discover/i })[0]).not.toHaveAttribute('data-active')
+    screen.getAllByRole('button', { name: /navbar\.discover/i }).forEach(tab => expect(tab).not.toHaveAttribute('data-active'))
   })
 })

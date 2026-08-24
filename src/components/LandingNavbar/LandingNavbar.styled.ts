@@ -232,7 +232,11 @@ const DesktopTabWithDropdown = styled(DesktopTab, {
   paddingRight: 16,
   ...(active && {
     color: dclColors.neutral.white,
-    backgroundColor: GLASS_BG
+    backgroundColor: GLASS_BG,
+    // The same faux-bold the hover state uses. Without it the selected tab sits
+    // a hair lighter than the one under the cursor, which reads as a glitch when
+    // you hover across the row.
+    textShadow: '0 0 0.5px currentColor, 0 0 0.5px currentColor'
   })
 }))
 
