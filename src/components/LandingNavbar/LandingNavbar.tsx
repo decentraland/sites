@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAnalytics } from '@dcl/hooks'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { MIN_DISPLAY_BALANCE } from '../../hooks/useManaBalances'
+import { BAR_SCROLL_THRESHOLD, useScrolledPast } from '../../hooks/useScrolledPast'
 import { useLocale } from '../../intl/LocaleContext'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { assetUrl } from '../../utils/assetUrl'
@@ -261,7 +262,9 @@ const LandingNavbar = memo(function LandingNavbar({
   const [desktopDropdown, setDesktopDropdown] = useState<DropdownSection | null>(null)
   const [userCardOpen, setUserCardOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [creatorsScrolled, setCreatorsScrolled] = useState(false)
+  // Creators (/create) bar deepens once the page scrolls — same threshold as the
+  // wemotes-builder collections app so the two bars behave identically.
+  const creatorsScrolled = useScrolledPast(BAR_SCROLL_THRESHOLD, isCreatorsPage)
 
   const navRef = useRef<HTMLElement>(null)
   const dropdownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -415,19 +418,6 @@ const LandingNavbar = memo(function LandingNavbar({
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [showMinimalNavbar])
-
-  // Creators (/create) bar deepens once the page scrolls — same threshold as the
-  // wemotes-builder collections app so the two bars behave identically.
-  useEffect(() => {
-    if (!isCreatorsPage) {
-      setCreatorsScrolled(false)
-      return
-    }
-    const handleScroll = () => setCreatorsScrolled(window.scrollY > 8)
-    handleScroll()
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [isCreatorsPage])
 
   // Close open panels on scroll
   useEffect(() => {

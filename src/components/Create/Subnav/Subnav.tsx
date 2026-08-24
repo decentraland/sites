@@ -1,6 +1,7 @@
-import { memo, useEffect, useState } from 'react'
+import { memo } from 'react'
 import { getEnv } from '../../../config/env'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { BAR_SCROLL_THRESHOLD, useScrolledPast } from '../../../hooks/useScrolledPast'
 import { CreatorsField, SubnavRoot, SubnavTab, SubnavTabs } from './Subnav.styled'
 
 // Collections is the wemotes-builder SPA mounted on the same domain;
@@ -11,14 +12,7 @@ const CreatorsSubnav = memo(() => {
   const builderUrl = getEnv('BUILDER_URL')
   const wemotesBuilderUrl = getEnv('WEMOTES_BUILDER_URL')
   // The translucent band washes out over light content, so it deepens once the page scrolls
-  const [scrolled, setScrolled] = useState(false)
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8)
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+  const scrolled = useScrolledPast(BAR_SCROLL_THRESHOLD)
 
   return (
     <>
