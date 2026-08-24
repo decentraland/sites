@@ -150,6 +150,10 @@ function LocaleProvider({ children }: { children: ReactNode }) {
   // payload makes this synchronous on Vercel-deployed routes; in `vite dev` and
   // other non-prerendered hosts the dynamic import fires once and resolves
   // within the same tick the bundle is parsed.
+  //
+  // If English never arrives the page stays empty on purpose: with no messages
+  // every `t()` returns its raw key, and a screen of `page.download.title` is
+  // worse than nothing. The failure is reported to Sentry above.
   if (!hasEnglish) return null
 
   return (
