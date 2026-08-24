@@ -134,6 +134,7 @@ const INITIAL_STATE: CreateEventFormState = {
   coordY: '0',
   world: '',
   communityId: '',
+  featuredItem: '',
   email: ''
 }
 
@@ -239,6 +240,7 @@ function eventEntryToFormState(event: EventEntry, now: number = Date.now()): Cre
     coordY: isWorld ? '0' : String(event.y ?? 0),
     world: isWorld ? event.server ?? '' : '',
     communityId: event.community_id ?? '',
+    featuredItem: event.featured_item ?? '',
     email: event.contact ?? ''
   }
 }

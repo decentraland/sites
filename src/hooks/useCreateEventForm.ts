@@ -399,6 +399,7 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         world: isWorld,
         server: isWorld ? form.world : null,
         community_id: form.communityId || null,
+        featured_item: form.featuredItem.trim() || null,
         recurrent: form.repeatEnabled || undefined,
         recurrent_frequency: recurrenceApi?.frequency,
         recurrent_interval: recurrenceApi?.interval,
