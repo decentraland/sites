@@ -55,7 +55,7 @@
     "wagmi": "2.19.5"
   },
   "devDependencies": {
-    "@babel/core": "7.28.6",
+    "@babel/core": "7.29.6",
     "@dcl/eslint-config": "^3.0.0",
     "@sentry/vite-plugin": "5.4.0",
     "@testing-library/jest-dom": "6.9.1",
