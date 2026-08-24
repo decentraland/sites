@@ -195,9 +195,15 @@ const DesktopTab = styled('button')({
   borderRadius: 8,
   whiteSpace: 'nowrap',
   transition: 'background-color 0.15s ease, color 0.15s ease',
+  // Hover/active mirror decentraland-ui2's Navbar tabs — ui2 is the canonical navbar visual.
   ['&:hover']: {
     color: dclColors.neutral.white,
-    backgroundColor: GLASS_BG,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    textShadow: '0 0 0.5px currentColor, 0 0 0.5px currentColor'
+  },
+  ['&.active']: {
+    color: dclColors.neutral.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
     textShadow: '0 0 0.5px currentColor, 0 0 0.5px currentColor'
   },
   ['&:focus-visible']: {
@@ -209,19 +215,6 @@ const DesktopTab = styled('button')({
     height: 20,
     transition: 'transform 0.2s ease',
     flexShrink: 0
-  },
-  // Creators variant (/create): tab treatment from the wemotes-builder collections app.
-  // Rest color already matches (gray5 = its #ecebed); only the hover/active fills differ.
-  ['&.creators']: {
-    ['&:hover']: {
-      color: dclColors.neutral.white,
-      backgroundColor: 'rgba(255, 255, 255, 0.12)',
-      textShadow: 'none'
-    },
-    ['&.active']: {
-      color: dclColors.neutral.white,
-      backgroundColor: 'rgba(255, 255, 255, 0.18)'
-    }
   }
 })
 
@@ -239,21 +232,15 @@ const DesktopTabLink = styled('a')({
   borderRadius: 8,
   whiteSpace: 'nowrap',
   transition: 'background-color 0.15s ease, color 0.15s ease',
+  // Hover mirrors decentraland-ui2's Navbar tabs — ui2 is the canonical navbar visual.
   ['&:hover']: {
     color: dclColors.neutral.white,
-    backgroundColor: GLASS_BG,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     textShadow: '0 0 0.5px currentColor, 0 0 0.5px currentColor'
   },
   ['&:focus-visible']: {
     outline: `2px solid ${dclColors.base.primary}`,
     outlineOffset: 2
-  },
-  ['&.creators']: {
-    ['&:hover']: {
-      color: dclColors.neutral.white,
-      backgroundColor: 'rgba(255, 255, 255, 0.12)',
-      textShadow: 'none'
-    }
   }
 })
 

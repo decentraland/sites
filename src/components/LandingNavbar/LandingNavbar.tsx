@@ -566,7 +566,6 @@ const LandingNavbar = memo(function LandingNavbar({
     )
   }
 
-  const tabClassName = isCreatorsPage ? 'creators' : undefined
   const rootClassName = [
     isLandingPage && isSignedIn ? 'logged-landing' : null,
     isCreatorsPage ? 'creators' : null,
@@ -593,7 +592,7 @@ const LandingNavbar = memo(function LandingNavbar({
                 <DesktopTabWithDropdown
                   // On /create the Create section tab is the active one, mirroring the
                   // collections app's highlighted top-nav tab.
-                  className={isCreatorsPage ? (section === 'create' ? 'creators active' : 'creators') : undefined}
+                  className={isCreatorsPage && section === 'create' ? 'active' : undefined}
                   aria-expanded={desktopDropdown === section}
                   aria-haspopup="true"
                   onClick={() => {
@@ -630,9 +629,7 @@ const LandingNavbar = memo(function LandingNavbar({
               </DesktopDropdownWrapper>
             ))}
 
-            <DesktopTabLink className={tabClassName} href={MENU_CONFIG.learn.url}>
-              {l(MENU_CONFIG.learn.labelKey)}
-            </DesktopTabLink>
+            <DesktopTabLink href={MENU_CONFIG.learn.url}>{l(MENU_CONFIG.learn.labelKey)}</DesktopTabLink>
           </DesktopTabList>
         </NavBarLeft>
 
