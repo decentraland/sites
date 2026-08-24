@@ -1,6 +1,7 @@
-import { type ReactNode, useCallback, useEffect, useState } from 'react'
-import { TranslationProvider, useTranslation } from '@dcl/hooks'
+import { type ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { TranslationProvider } from '@dcl/hooks'
 import type { LanguageTranslations } from '@dcl/hooks/esm/hooks/useTranslation/useTranslation.type'
+import { captureHandledError } from '../modules/captureHandledError'
 
 type SupportedLocale = 'en' | 'es' | 'fr' | 'zh' | 'ko' | 'ja'
 type Translations = LanguageTranslations[keyof LanguageTranslations]
@@ -22,9 +23,8 @@ const SUPPORTED_LOCALES: ReadonlyArray<SupportedLocale> = ['en', 'es', 'fr', 'zh
 // import drops ~56 KB raw / ~17 KB gzip from the main bundle. We dynamic-
 // import as a fallback for `vite dev` and any host where the prerender step
 // didn't run (CI smoke tests, partial deploys, etc).
-const inlineEn = typeof window !== 'undefined' ? window.__dclEn : undefined
-const loadEnglish = (): Promise<Translations> =>
-  inlineEn ? Promise.resolve(inlineEn) : import('./en.json').then(m => m.default as unknown as Translations)
+const readInlineEnglish = (): Translations | undefined => (typeof window !== 'undefined' ? window.__dclEn : undefined)
+const loadEnglish = (): Promise<Translations> => import('./en.json').then(m => m.default as unknown as Translations)
 
 // Each non-English locale ships ~30–55 KB of JSON. Eagerly importing all six
 // adds ~70 KB gzip to the main bundle even though the visitor only ever uses
@@ -59,102 +59,112 @@ function getInitialLocale(): SupportedLocale {
   return 'en'
 }
 
+function storeLocale(locale: SupportedLocale) {
+  try {
+    localStorage.setItem(LOCALE_STORAGE_KEY, locale)
+  } catch {
+    // localStorage unavailable
+  }
+}
+
+interface LocaleContextValue {
+  locale: SupportedLocale
+  setLocale: (locale: SupportedLocale) => void
+}
+
+// `useTranslation().setLocale` only accepts a language whose messages already
+// sit in `translations`, and ours arrive in a lazy chunk. This context hands
+// consumers a setter that loads the chunk first and switches afterwards.
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const LocaleContext = createContext<LocaleContextValue | null>(null)
+
 function LocaleProvider({ children }: { children: ReactNode }) {
-  const [initialLocale] = useState<SupportedLocale>(() => getInitialLocale())
   // First paint always uses `en` so the LCP card and navbar copy don't block on
   // a JSON roundtrip. Visitors with a non-English preference see English for a
   // few hundred ms before their locale chunk takes over.
-  const [translations, setTranslations] = useState<LanguageTranslations | null>(() => (inlineEn ? { en: inlineEn } : null))
-  const [locale, setLocale] = useState<SupportedLocale>('en')
+  const [locale, setActiveLocale] = useState<SupportedLocale>('en')
+  const [translations, setTranslations] = useState<LanguageTranslations>(() => {
+    const inlineEn = readInlineEnglish()
+    const initial: LanguageTranslations = {}
+    if (inlineEn) initial.en = inlineEn
+    return initial
+  })
+  // A visitor clicking through the language menu can leave slower chunks in
+  // flight; only the last requested locale may switch the page.
+  const requestedLocale = useRef<SupportedLocale>('en')
+  const hasEnglish = translations.en !== undefined
+
+  const applyLocale = useCallback((next: SupportedLocale, persist: boolean) => {
+    requestedLocale.current = next
+
+    const commit = () => {
+      if (requestedLocale.current !== next) return
+      setActiveLocale(next)
+      if (persist) storeLocale(next)
+    }
+
+    if (next === 'en') {
+      commit()
+      return
+    }
+
+    localeLoaders[next]()
+      .then(mod => {
+        setTranslations(prev => (prev[next] ? prev : { ...prev, [next]: mod.default }))
+        commit()
+      })
+      .catch(loadError => {
+        // The visitor stays on the language already on screen.
+        captureHandledError(loadError, { tags: { feature: 'intl', area: 'locale_chunk', locale: next } })
+      })
+  }, [])
 
   useEffect(() => {
+    if (hasEnglish) return
     let cancelled = false
-    const enReady = inlineEn ? Promise.resolve(inlineEn) : loadEnglish()
-    const otherReady: Promise<Translations | undefined> =
-      initialLocale === 'en'
-        ? Promise.resolve(undefined)
-        : localeLoaders[initialLocale]()
-            .then(m => m.default)
-            .catch(() => undefined)
-    Promise.all([enReady, otherReady]).then(([enValue, otherValue]) => {
-      if (cancelled) return
-      const next: LanguageTranslations = { en: enValue }
-      if (otherValue) {
-        next[initialLocale] = otherValue
-        setLocale(initialLocale)
-      }
-      setTranslations(next)
-    })
+    loadEnglish()
+      .then(english => {
+        if (cancelled) return
+        setTranslations(prev => ({ ...prev, en: english }))
+      })
+      .catch(loadError => captureHandledError(loadError, { tags: { feature: 'intl', area: 'locale_chunk', locale: 'en' } }))
     return () => {
       cancelled = true
     }
-  }, [initialLocale])
+  }, [hasEnglish])
 
-  // Block first paint until at least the English fallback is ready. `inlineEn`
-  // makes this synchronous on Vercel-deployed routes; in `vite dev` and other
-  // non-prerendered hosts the dynamic import fires once and resolves within
-  // the same tick the bundle is parsed.
-  if (!translations) return null
+  useEffect(() => {
+    applyLocale(getInitialLocale(), false)
+  }, [applyLocale])
 
-  // No `key` on the provider: keying on `locale` would unmount the entire
-  // `<App />` subtree (router state, RTK Query cache, in-flight forms) every
-  // time the lazy locale chunk resolves. We rely on the provider re-deriving
-  // its memoized strings from the new `translations` reference instead.
+  const setLocale = useCallback(
+    (next: SupportedLocale) => {
+      applyLocale(next, true)
+    },
+    [applyLocale]
+  )
+
+  const value = useMemo(() => ({ locale, setLocale }), [locale, setLocale])
+
+  // Block first paint until at least the English fallback is ready. The inline
+  // payload makes this synchronous on Vercel-deployed routes; in `vite dev` and
+  // other non-prerendered hosts the dynamic import fires once and resolves
+  // within the same tick the bundle is parsed.
+  if (!hasEnglish) return null
+
   return (
     <TranslationProvider locale={locale} translations={translations} fallbackLocale="en">
-      <LocaleLoader translations={translations} setTranslations={setTranslations}>
-        {children}
-      </LocaleLoader>
+      <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
     </TranslationProvider>
   )
 }
 
-interface LocaleLoaderProps {
-  translations: LanguageTranslations
-  setTranslations: (updater: (prev: LanguageTranslations | null) => LanguageTranslations) => void
-  children: ReactNode
-}
-
-// Receives the imperative locale switch from `useLocale().setLocale` (via the
-// `TranslationProvider` context) and lazy-loads the chunk on first switch.
-function LocaleLoader({ translations, setTranslations, children }: LocaleLoaderProps) {
-  const { locale } = useTranslation()
-
-  useEffect(() => {
-    if (!locale || locale === 'en' || locale in translations) return
-    if (!isSupportedLocale(locale)) return
-    const nonEnglish = locale as Exclude<SupportedLocale, 'en'>
-    let cancelled = false
-    localeLoaders[nonEnglish]()
-      .then(mod => {
-        if (cancelled) return
-        setTranslations(prev => (prev ? { ...prev, [nonEnglish]: mod.default } : { [nonEnglish]: mod.default }))
-      })
-      .catch(() => undefined)
-    return () => {
-      cancelled = true
-    }
-  }, [locale, translations, setTranslations])
-
-  return <>{children}</>
-}
-
-function useLocale() {
-  const { locale, setLocale: setLocaleInternal } = useTranslation()
-
-  const setLocale = useCallback(
-    (newLocale: string) => {
-      setLocaleInternal(newLocale)
-      try {
-        localStorage.setItem(LOCALE_STORAGE_KEY, newLocale)
-      } catch {
-        // localStorage unavailable
-      }
-    },
-    [setLocaleInternal]
-  )
-
-  return { locale: locale as SupportedLocale, setLocale }
+function useLocale(): LocaleContextValue {
+  const context = useContext(LocaleContext)
+  if (!context) {
+    throw new Error('useLocale must be used within LocaleProvider')
+  }
+  return context
 }
 
 export { LocaleProvider, useLocale }
