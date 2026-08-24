@@ -14,6 +14,7 @@ import {
   INITIAL_STATE,
   eventEntryToFormState,
   hasModeratedContentChanged,
+  isValidFeaturedItemUrn,
   localDateToEndOfDayIso,
   parseDurationMs,
   recurrenceToApi
@@ -335,6 +336,10 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
       }
     } else if (form.location === 'world' && !form.world) {
       newErrors.world = t('create_event.error_required')
+    }
+
+    if (form.featuredItem.trim() && !isValidFeaturedItemUrn(form.featuredItem.trim())) {
+      newErrors.featuredItem = t('create_event.error_invalid_featured_item')
     }
 
     if (!isValidEmail(form.email)) {

@@ -495,6 +495,8 @@ function EventForm({
                 placeholder={t('create_event.featured_item_placeholder')}
                 value={form.featuredItem}
                 onChange={e => setField('featuredItem', e.target.value)}
+                error={Boolean(errors.featuredItem)}
+                helperText={errors.featuredItem}
                 fullWidth
                 InputLabelProps={{ shrink: true }}
               />

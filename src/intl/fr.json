@@ -970,7 +970,8 @@
     "upcoming_dates_label": "Prochaines dates",
     "upcoming_dates_empty": "Aucune date à venir pour cette récurrence",
     "featured_item_label": "Article en Vedette (Optionnel)",
-    "featured_item_placeholder": "Collez un URN de wearable, emote ou collection"
+    "featured_item_placeholder": "Collez un URN de wearable, emote ou collection",
+    "error_invalid_featured_item": "Doit être un URN valide de collection ou d'article"
   },
   "community": {
     "global": {

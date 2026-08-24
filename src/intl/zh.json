@@ -975,7 +975,8 @@
     "upcoming_dates_label": "近期日期",
     "upcoming_dates_empty": "此重复设置没有近期日期",
     "featured_item_label": "精选物品（可选）",
-    "featured_item_placeholder": "粘贴可穿戴物品、表情或合集的 URN"
+    "featured_item_placeholder": "粘贴可穿戴物品、表情或合集的 URN",
+    "error_invalid_featured_item": "必须是有效的合集或物品 URN"
   },
   "community": {
     "global": {

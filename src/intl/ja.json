@@ -975,7 +975,8 @@
     "upcoming_dates_label": "次回以降の日程",
     "upcoming_dates_empty": "この繰り返し設定に該当する今後の日程はありません",
     "featured_item_label": "注目アイテム（任意）",
-    "featured_item_placeholder": "ウェアラブル、エモート、またはコレクションのURNを貼り付け"
+    "featured_item_placeholder": "ウェアラブル、エモート、またはコレクションのURNを貼り付け",
+    "error_invalid_featured_item": "有効なコレクションまたはアイテムのURNを入力してください"
   },
   "community": {
     "global": {

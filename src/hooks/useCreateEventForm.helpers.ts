@@ -3,6 +3,12 @@ import type { CreateEventFormState } from './useCreateEventForm.types'
 
 const DURATION_PATTERN = /^([0-9]{1,2}):([0-5][0-9])$/
 
+const FEATURED_ITEM_URN_PATTERN = /^urn:decentraland:(matic|ethereum|amoy|sepolia):collections-v2:0x[a-fA-F0-9]{40}(:\d+)?$/
+
+function isValidFeaturedItemUrn(value: string): boolean {
+  return FEATURED_ITEM_URN_PATTERN.test(value)
+}
+
 function parseDurationMs(value: string): number | null {
   const match = value.match(DURATION_PATTERN)
   if (!match) return null
@@ -275,6 +281,7 @@ export {
   durationMsToHhMm,
   eventEntryToFormState,
   hasModeratedContentChanged,
+  isValidFeaturedItemUrn,
   localDateToEndOfDayIso,
   parseDurationMs,
   recurrenceToApi

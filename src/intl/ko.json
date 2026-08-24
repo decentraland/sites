@@ -975,7 +975,8 @@
     "upcoming_dates_label": "예정된 날짜",
     "upcoming_dates_empty": "이 반복 설정에 예정된 날짜가 없습니다",
     "featured_item_label": "추천 아이템 (선택사항)",
-    "featured_item_placeholder": "웨어러블, 이모트 또는 컬렉션 URN을 붙여넣기"
+    "featured_item_placeholder": "웨어러블, 이모트 또는 컬렉션 URN을 붙여넣기",
+    "error_invalid_featured_item": "유효한 컬렉션 또는 아이템 URN이어야 합니다"
   },
   "community": {
     "global": {

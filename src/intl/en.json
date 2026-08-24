@@ -1246,6 +1246,7 @@
     "review_notice": "The hangout submission will be reviewed by our team, you'll be notified by email",
     "error_required": "This field is required",
     "error_invalid_email": "Please enter a valid email address",
+    "error_invalid_featured_item": "Must be a valid collection or item URN",
     "error_coord_x_range": "Latitude must be between -150 and 163",
     "error_coord_y_range": "Longitude must be between -150 and 158",
     "error_name_too_long": "Name cannot exceed 150 characters",
