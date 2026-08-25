@@ -391,7 +391,8 @@
   "page_invite": {
     "social": {
       "title": "Rejoignez Decentraland - Un monde virtuel construit par sa communauté",
-      "description": "Personnalisez votre avatar, retrouvez des gens du monde entier et découvrez Decentraland. Commencez depuis votre navigateur, puis téléchargez l'application pour entrer."
+      "description": "Decentraland, c'est là où vous passez du temps en ligne. Rejoignez des projections de films, des concerts, des quiz et d'autres événements communautaires. Venez quand vous voulez et voyez qui est là.",
+      "title_with_name": "{name} vous a invité à rejoindre Decentraland"
     },
     "hero": {
       "title": "vous a invité à rejoindre Decentraland",
@@ -632,6 +633,8 @@
         "create": "Créer",
         "learn": "Apprendre",
         "discover": "Découvrir",
+        "events": "Événements",
+        "places": "Lieux",
         "jump_in": "Entrer",
         "sign_in": "Se connecter",
         "signing_in": "Connexion...",
@@ -661,7 +664,6 @@
         "my_assets": "Mes actifs",
         "account_settings": "Paramètres du compte",
         "marketplace_authorizations": "Autorisations du Marketplace",
-        "whats_on": "Explorer",
         "credits_balance": "{count} crédits"
       }
     },

@@ -9,6 +9,7 @@ import { Button, Typography, launchDesktopApp, useDesktopMediaQuery } from 'dece
 import { getEnv } from '../../config/env'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { useDeepLinkQueryParams } from '../../hooks/useDeepLinkQueryParams'
 import { useDownloadClick } from '../../hooks/useDownloadClick'
 import { useDownloadPageExit } from '../../hooks/useDownloadPageExit'
 import { useSignInRedirect } from '../../hooks/useSignInRedirect'
@@ -93,16 +94,19 @@ const DownloadLayout = memo((props: DownloadLayoutProps) => {
   const profileName = profile?.avatars?.[0]?.name
 
   const handleSignIn = useSignInRedirect()
+  const { dclenv, sceneConsole, multiInstance } = useDeepLinkQueryParams()
 
   const wearableContainerRef = useRef<HTMLDivElement | null>(null)
   const { ref: wearableRef, inView } = useInView({ triggerOnce: true, rootMargin: '200px' })
 
   const handleJumpIn = useCallback(async () => {
-    const hasLauncher = await launchDesktopApp({})
+    // NOTE: previously `launchDesktopApp({})`, which dropped every deep-link
+    // query param. Forwards the shared set now, like the jump surfaces.
+    const hasLauncher = await launchDesktopApp({ dclenv, sceneConsole, multiInstance })
     if (!hasLauncher) {
       setOpenModal(true)
     }
-  }, [])
+  }, [dclenv, sceneConsole, multiInstance])
 
   useEffect(() => {
     if (inView) {

@@ -23,10 +23,13 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
   const { launch, isMobile, osName, arch } = useExplorerLauncher()
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false)
 
-  // Default-filtered deep-link params. Without the `env` arg this never emits
-  // `dclenv`, and it drops `position: ''` (the manual `!== DEFAULT` check let
-  // empty strings through as `?position=`).
-  const deepLinkParams = useMemo(() => buildDeepLinkOptions(position, realm), [position, realm])
+  // Default-filtered deep-link params for the download fallback. Only
+  // position/realm on purpose: the `?dclenv`/`?scene-console`/`?multi-instance`
+  // params describe a launch, and this URL is consumed on first run after an
+  // install, when there is no other instance to sit beside. It also drops
+  // `position: ''` (the manual `!== DEFAULT` check let empty strings through as
+  // `?position=`).
+  const deepLinkParams = useMemo(() => buildDeepLinkOptions({ position, realm }), [position, realm])
 
   const launchExplorer = useCallback(async () => {
     track(SegmentEvent.GO_TO_EXPLORER, { position, realm, osName, arch, ...(isMobile ? { target: 'mobile-store' } : {}) })

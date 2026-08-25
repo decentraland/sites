@@ -61,8 +61,6 @@ function redirectToAuth(path: string, queryParams?: Record<string, string>): voi
   markSignInPending()
   const target = `${authUrl}/login?redirectTo=${encodeURIComponent(redirectTo)}`
 
-  console.log('[wallet-switch] redirectToAuth', { path, queryParams, redirectTo, target })
-
   window.location.replace(target)
 }
 

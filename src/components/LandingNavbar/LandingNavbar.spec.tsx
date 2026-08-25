@@ -1,3 +1,5 @@
+import type { ComponentProps } from 'react'
+import { MemoryRouter } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
 import { LandingNavbar } from './LandingNavbar'
 
@@ -23,6 +25,15 @@ const props = {
   onClickSignOut: jest.fn()
 }
 
+type NavbarProps = ComponentProps<typeof LandingNavbar>
+
+const renderAt = (pathname: string, extra: Partial<NavbarProps> = {}) =>
+  render(
+    <MemoryRouter initialEntries={[pathname]}>
+      <LandingNavbar {...props} isSignedIn={false} {...extra} />
+    </MemoryRouter>
+  )
+
 /**
  * Clicking your own balance is reaching for more of it, so the chip goes to the Shop's buy-credits
  * page. It used to point at /account/credits — the account section's credits SETTINGS — which is a
@@ -30,7 +41,7 @@ const props = {
  */
 describe('when the navbar shows the credits chip', () => {
   it('should send it to the buy-credits page in the Shop', () => {
-    render(<LandingNavbar {...props} isSignedIn creditsBalance={120} />)
+    renderAt('/', { isSignedIn: true, creditsBalance: 120 })
 
     const chip = screen.getByRole('link', { name: /credits_balance/i })
     // A same-origin path, so it survives .zone / .today / .org rather than pinning one environment.
@@ -39,10 +50,41 @@ describe('when the navbar shows the credits chip', () => {
 
   // 0 is a real balance and must still offer the way to top up; only "we don't know" hides the chip.
   it('should still offer it on a zero balance, and hide it only when the balance is unknown', () => {
-    const { rerender } = render(<LandingNavbar {...props} isSignedIn creditsBalance={0} />)
+    const { rerender } = renderAt('/', { isSignedIn: true, creditsBalance: 0 })
     expect(screen.getByRole('link', { name: /credits_balance/i })).toHaveAttribute('href', '/shop/credits')
 
-    rerender(<LandingNavbar {...props} isSignedIn creditsBalance={null} />)
+    rerender(
+      <MemoryRouter initialEntries={['/']}>
+        <LandingNavbar {...props} isSignedIn creditsBalance={null} />
+      </MemoryRouter>
+    )
     expect(screen.queryByRole('link', { name: /credits_balance/i })).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * Events and Places live behind the Discover dropdown, so the dropdown itself is what has to read as
+ * selected while the visitor is on either of them — otherwise nothing in the navbar says where they are.
+ */
+describe('when the visitor is on a page the Discover dropdown owns', () => {
+  // getAllBy over every match rather than the first one: the desktop tab and the mobile accordion
+  // header both carry the state, and jsdom only exposes the mobile one (the desktop list is display:
+  // none without the media query), so asserting on all of them covers whichever surface is in the tree.
+  it.each(['/whats-on', '/discover', '/discover/place/-102,129'])('should mark the Discover tab as selected on %s', pathname => {
+    renderAt(pathname)
+
+    screen.getAllByRole('button', { name: /navbar\.discover/i }).forEach(tab => expect(tab).toHaveAttribute('data-active'))
+  })
+
+  it('should leave the sections that own no in-app route unselected', () => {
+    renderAt('/whats-on')
+
+    screen.getAllByRole('button', { name: /navbar\.(shop|create)/i }).forEach(tab => expect(tab).not.toHaveAttribute('data-active'))
+  })
+
+  it('should leave every tab unselected on the landing page', () => {
+    renderAt('/')
+
+    screen.getAllByRole('button', { name: /navbar\.discover/i }).forEach(tab => expect(tab).not.toHaveAttribute('data-active'))
   })
 })

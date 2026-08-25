@@ -1,13 +1,16 @@
 import { getEnv } from '../config/env'
 import { captureDownloadError } from './downloadFunnelSentry'
+import { DownloadCountsHttpError, isReportableDownloadCountsFailure } from './explorerDownloads.helpers'
 import type { ExplorerDownloadsData, PlatformDownloads } from './explorerDownloads.types'
 
 class ExplorerDownloads {
   static cache = new Map<string, ExplorerDownloads>()
-  // Reported at most once per endpoint per page load. A flaky or proxied connection
-  // retries the same failing request many times over a session, which is how a
-  // cosmetic counter produced 4489 Sentry events across 724 users (SITES-2MQ). One
-  // report keeps a real cdn-data outage visible without the repeats.
+  // Reported at most once per endpoint per page load, and only for failures the
+  // endpoint is actually responsible for (see `isReportableDownloadCountsFailure`).
+  // A flaky or proxied connection retries the same failing request many times over a
+  // session, which is how a cosmetic counter produced 4489 Sentry events across 724
+  // users (SITES-2MQ). One report keeps a real cdn-data outage visible without the
+  // repeats.
   //
   // Per instance rather than static on purpose. `from()` caches one instance per
   // URL, so this is still a single report per page load for the one endpoint
@@ -36,7 +39,7 @@ class ExplorerDownloads {
   async fetchJson<T>(path: string): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`)
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      throw new DownloadCountsHttpError(response.status)
     }
     return response.json()
   }
@@ -68,7 +71,7 @@ class ExplorerDownloads {
   }
 
   private reportFailureOnce(error: unknown): void {
-    if (this.hasReportedFailure) return
+    if (this.hasReportedFailure || !isReportableDownloadCountsFailure(error)) return
     this.hasReportedFailure = true
     void captureDownloadError(error, { feature: 'download_counts', url: this.baseUrl })
   }

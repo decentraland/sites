@@ -391,7 +391,8 @@
   "page_invite": {
     "social": {
       "title": "Decentraland에 참여하세요 - 커뮤니티가 만든 가상 세계",
-      "description": "아바타를 꾸미고, 전 세계 사람들과 어울리고, Decentraland를 탐험하세요. 브라우저에서 시작한 다음 앱을 다운로드하여 입장하세요."
+      "description": "Decentraland는 온라인에서 시간을 보내는 공간입니다. 영화 상영, 라이브 음악, 퀴즈 등 다양한 커뮤니티 이벤트에 참여하세요. 언제든 들러서 누가 있는지 확인해 보세요.",
+      "title_with_name": "{name}님이 Decentraland에 초대했습니다"
     },
     "hero": {
       "title": "님이 Decentraland에 초대했습니다",
@@ -637,6 +638,8 @@
         "create": "만들기",
         "learn": "배우기",
         "discover": "디스커버",
+        "events": "이벤트",
+        "places": "장소",
         "jump_in": "입장",
         "sign_in": "로그인",
         "signing_in": "로그인 중...",
@@ -666,7 +669,6 @@
         "my_assets": "내 자산",
         "account_settings": "계정 설정",
         "marketplace_authorizations": "마켓플레이스 승인",
-        "whats_on": "탐색",
         "credits_balance": "크레딧 {count}"
       }
     },

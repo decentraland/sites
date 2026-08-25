@@ -223,9 +223,22 @@ const DesktopTabLink = styled('a')({
   }
 })
 
-const DesktopTabWithDropdown = styled(DesktopTab)({
-  paddingRight: 16
-})
+// `active` marks the section the current page belongs to. It reuses the hover
+// treatment so the selected tab reads as permanently lit rather than inventing a
+// second visual language; shouldForwardProp keeps it off the <button>.
+const DesktopTabWithDropdown = styled(DesktopTab, {
+  shouldForwardProp: prop => prop !== 'active'
+})<{ active?: boolean }>(({ active }) => ({
+  paddingRight: 16,
+  ...(active && {
+    color: dclColors.neutral.white,
+    backgroundColor: GLASS_BG,
+    // The same faux-bold the hover state uses. Without it the selected tab sits
+    // a hair lighter than the one under the cursor, which reads as a glitch when
+    // you hover across the row.
+    textShadow: '0 0 0.5px currentColor, 0 0 0.5px currentColor'
+  })
+}))
 
 const DesktopDropdownWrapper = styled('div')({
   position: 'relative',
@@ -783,7 +796,11 @@ const MobileMenuLink = styled('a')({
   }
 })
 
-const MobileMenuAccordionHeader = styled('button')({
+// Mirrors the desktop `active` tab. The label here is already white, so the
+// selected row is marked with the glass fill instead of a colour change.
+const MobileMenuAccordionHeader = styled('button', {
+  shouldForwardProp: prop => prop !== 'active'
+})<{ active?: boolean }>(({ active }) => ({
   all: 'unset',
   display: 'flex',
   alignItems: 'center',
@@ -809,8 +826,9 @@ const MobileMenuAccordionHeader = styled('button')({
     height: 20,
     flexShrink: 0,
     transition: 'transform 0.2s ease'
-  }
-})
+  },
+  ...(active && { backgroundColor: GLASS_BG })
+}))
 
 const MobileMenuSubItems = styled('div')<{ open: boolean }>(({ open }) => ({
   maxHeight: open ? 500 : 0,

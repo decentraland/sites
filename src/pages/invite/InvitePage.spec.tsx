@@ -23,7 +23,9 @@ jest.mock('@dcl/hooks', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ReactLib = require('react') as typeof import('react')
   return {
-    useTranslation: () => ({ t: (id: string) => id }),
+    useTranslation: () => ({
+      t: (id: string, values?: Record<string, unknown>) => (values ? `${id}:${Object.values(values).join(',')}` : id)
+    }),
     useAnalytics: () => ({ isInitialized: mockIsAnalyticsInitialized, page: mockPage }),
     useAsyncMemo: <T,>(factory: () => Promise<T>, deps: unknown[]) => {
       const [state, setState] = ReactLib.useState<{ value: T | null; loading: boolean }>({ value: null, loading: true })
@@ -74,10 +76,6 @@ jest.mock('../../data/inviteContent', () => ({
 jest.mock('../../features/invite/invite.flags', () => ({
   useInviteDirectDownload: () => mockUseInviteDirectDownload()
 }))
-
-if (typeof AbortSignal.timeout !== 'function') {
-  ;(AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout = () => new AbortController().signal
-}
 
 const referrerProfile = {
   avatars: [{ ethAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd', name: 'SirTesla' }]
@@ -366,19 +364,74 @@ describe('when the document head already has meta tags', () => {
     jest.resetAllMocks()
   })
 
-  it('should set the invite meta on mount and restore the originals on unmount', async () => {
+  it('should set the invite description on mount and restore the original on unmount', async () => {
     const { unmount } = render(<InvitePage />)
     await waitFor(() => expect(mockInviteHero).toHaveBeenCalled())
 
     expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('page_invite.social.description')
-    expect(document.querySelector('meta[property="og:title"]')?.getAttribute('content')).toBe('page_invite.social.title')
-    expect(document.querySelector('meta[property="og:description"]')?.getAttribute('content')).toBe('page_invite.social.description')
 
     unmount()
 
     expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('orig-desc')
+  })
+
+  it('should leave the Open Graph tags to the edge worker', async () => {
+    const { unmount } = render(<InvitePage />)
+    await waitFor(() => expect(mockInviteHero).toHaveBeenCalled())
+
     expect(document.querySelector('meta[property="og:title"]')?.getAttribute('content')).toBe('orig-og-title')
     expect(document.querySelector('meta[property="og:description"]')?.getAttribute('content')).toBe('orig-og-desc')
+
+    unmount()
+  })
+
+  it('should fall back to the generic title while no inviter is resolved', async () => {
+    render(<InvitePage />)
+    await waitFor(() => expect(mockInviteHero).toHaveBeenCalled())
+
+    expect(document.title).toBe('page_invite.social.title')
+  })
+})
+
+describe('when the inviter profile resolves', () => {
+  beforeEach(() => {
+    mockUseParams.mockReturnValue({ referrer: 'Brai' })
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes('/lambdas/names/Brai/owner')) {
+        return Promise.resolve({ json: () => Promise.resolve({ owner: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' }) })
+      }
+      if (url.includes('/lambdas/profiles/')) {
+        return Promise.resolve({ json: () => Promise.resolve(referrerProfile) })
+      }
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should name the inviter in the document title', async () => {
+    render(<InvitePage />)
+
+    await waitFor(() => expect(document.title).toBe('page_invite.social.title_with_name:SirTesla'))
+  })
+
+  it('should fall back to the generic title when the profile carries no name', async () => {
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes('/lambdas/names/Brai/owner')) {
+        return Promise.resolve({ json: () => Promise.resolve({ owner: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' }) })
+      }
+      if (url.includes('/lambdas/profiles/')) {
+        return Promise.resolve({ json: () => Promise.resolve({ avatars: [{ ethAddress: '0xd9b9', name: '  ' }] }) })
+      }
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    })
+
+    render(<InvitePage />)
+
+    await waitFor(() => expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ isLoading: false })))
+    expect(document.title).toBe('page_invite.social.title')
   })
 })
 

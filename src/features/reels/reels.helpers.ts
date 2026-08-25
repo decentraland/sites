@@ -1,4 +1,5 @@
 import { getEnv } from '../../config/env'
+import { timeoutSignal } from '../../utils/timeoutSignal'
 
 const FETCH_TIMEOUT_MS = 5000
 
@@ -7,7 +8,7 @@ const buildPlaceUrl = async (x: string | number, y: string | number, signal?: Ab
   if (!placesApiUrl) return null
   try {
     const response = await fetch(`${placesApiUrl}/places/?positions=${x},${y}`, {
-      signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS)
+      signal: signal ?? timeoutSignal(FETCH_TIMEOUT_MS)
     })
     if (!response.ok) return null
     const data = (await response.json()) as { total: number | string; data?: Array<{ id: string }> }

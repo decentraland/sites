@@ -391,7 +391,8 @@
   "page_invite": {
     "social": {
       "title": "Decentralandに参加しよう - コミュニティが作るバーチャルワールド",
-      "description": "アバターをカスタマイズして、世界中の人々と交流し、Decentralandを発見しましょう。ブラウザから始めて、アプリをダウンロードして入場しましょう。"
+      "description": "Decentralandは、オンラインで過ごす場所です。映画上映、ライブ音楽、クイズ、その他のコミュニティイベントに参加しましょう。いつでも訪れて、誰がいるか見てみましょう。",
+      "title_with_name": "{name}があなたをDecentralandに招待しました"
     },
     "hero": {
       "title": "があなたをDecentralandに招待しました",
@@ -637,6 +638,8 @@
         "create": "作成",
         "learn": "学ぶ",
         "discover": "見つける",
+        "events": "イベント",
+        "places": "プレイス",
         "jump_in": "入場",
         "sign_in": "ログイン",
         "signing_in": "ログイン中...",
@@ -666,7 +669,6 @@
         "my_assets": "マイアセット",
         "account_settings": "アカウント設定",
         "marketplace_authorizations": "マーケットプレイス認証",
-        "whats_on": "探索",
         "credits_balance": "{count} クレジット"
       }
     },

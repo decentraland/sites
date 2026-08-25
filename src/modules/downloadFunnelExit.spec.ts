@@ -1,12 +1,12 @@
 import { sendDownloadFunnelExit } from './downloadFunnelExit'
-import { SEGMENT_TRACK_URL } from './segmentConfig'
+import { DEFAULT_SEGMENT_TRACK_URL } from './segmentConfig'
 import type { DownloadFunnelExitData } from './downloadFunnelExit.types'
 
-let mockWriteKey: string
+let mockEnvValues: Record<string, string>
 let mockExempt: boolean
 
 jest.mock('../config/env', () => ({
-  getEnv: () => mockWriteKey
+  getEnv: (key: string) => mockEnvValues[key] ?? ''
 }))
 
 jest.mock('../utils/isAnalyticsExemptPath', () => ({
@@ -35,7 +35,7 @@ describe('downloadFunnelExit', () => {
   const originalSendBeacon = navigator.sendBeacon
 
   beforeEach(() => {
-    mockWriteKey = 'wk-test'
+    mockEnvValues = { SEGMENT_KEY: 'wk-test' }
     mockExempt = false
     mockFetch = jest.fn(() => Promise.resolve({ ok: true }))
     mockSendBeacon = jest.fn(() => true)
@@ -54,9 +54,18 @@ describe('downloadFunnelExit', () => {
 
     expect(mockSendBeacon).toHaveBeenCalledTimes(1)
     const [url, blob] = mockSendBeacon.mock.calls[0]
-    expect(url).toBe(SEGMENT_TRACK_URL)
+    expect(url).toBe(DEFAULT_SEGMENT_TRACK_URL)
     expect(blob).toBeInstanceOf(Blob)
     expect((blob as Blob).type).toBe('text/plain')
+  })
+
+  it('should use the proxy track URL when SEGMENT_API_HOST is configured', () => {
+    mockEnvValues.SEGMENT_API_HOST = 'evs.e.decentraland.org/v1'
+    sendDownloadFunnelExit(sampleData())
+
+    expect(mockSendBeacon).toHaveBeenCalledTimes(1)
+    const [url] = mockSendBeacon.mock.calls[0]
+    expect(url).toBe('https://evs.e.decentraland.org/v1/track')
   })
 
   it('should not call fetch when sendBeacon accepts the payload', () => {
@@ -101,7 +110,7 @@ describe('downloadFunnelExit', () => {
 
     expect(mockFetch).toHaveBeenCalledTimes(1)
     const [url, init] = mockFetch.mock.calls[0]
-    expect(url).toBe(SEGMENT_TRACK_URL)
+    expect(url).toBe(DEFAULT_SEGMENT_TRACK_URL)
     expect(init).toEqual(expect.objectContaining({ method: 'POST', keepalive: true, mode: 'cors', credentials: 'omit' }))
   })
 
@@ -189,11 +198,11 @@ describe('downloadFunnelExit', () => {
   it('should transmit on an analytics-exempt path (conversion beacons bypass the exempt gate)', () => {
     mockExempt = true
     sendDownloadFunnelExit(sampleData())
-    expect(mockSendBeacon).toHaveBeenCalledWith(SEGMENT_TRACK_URL, expect.any(Blob))
+    expect(mockSendBeacon).toHaveBeenCalledWith(DEFAULT_SEGMENT_TRACK_URL, expect.any(Blob))
   })
 
   it('should not transmit when no write key is configured', () => {
-    mockWriteKey = ''
+    mockEnvValues = {}
     sendDownloadFunnelExit(sampleData())
     expect(mockSendBeacon).not.toHaveBeenCalled()
     expect(mockFetch).not.toHaveBeenCalled()

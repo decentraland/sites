@@ -1,4 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react'
+import { changesTransaction } from './useWalletTransactions.helpers'
 import type { WalletTransaction, WalletTransactionStatus } from './useWalletTransactions.types'
 
 // Per-wallet, client-side transaction log persisted in localStorage. There is no public indexer
@@ -69,12 +70,22 @@ function useWalletTransactions(address: string | undefined) {
     [address]
   )
 
+  // A write that changes nothing still hands `useSyncExternalStore` a fresh array and
+  // wakes every subscriber. That is how a confirmed transfer used to loop until React
+  // gave up with "Maximum update depth exceeded" (SITES-2RX): the Send modal writes
+  // `confirmed` from an effect, the re-render reached a parent that passes an inline
+  // `onSuccess`, the new identity re-ran the effect, and the effect wrote again. Any
+  // consumer that writes from an effect is exposed to the same loop, so the guard
+  // belongs here rather than in the caller.
   const updateTransaction = useCallback(
     (hash: string, partial: Partial<WalletTransaction>) => {
       if (!address) return
+      const current = getTransactions(address)
+      const target = current.find(transaction => transaction.hash === hash)
+      if (!target || !changesTransaction(target, partial)) return
       persist(
         address,
-        getTransactions(address).map(transaction => (transaction.hash === hash ? { ...transaction, ...partial } : transaction))
+        current.map(transaction => (transaction.hash === hash ? { ...transaction, ...partial } : transaction))
       )
     },
     [address]

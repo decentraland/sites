@@ -89,37 +89,36 @@ function redactEventUrls(event: ErrorEvent): ErrorEvent {
   return redacted
 }
 
-// Segment loads each analytics destination as a remote bundle off its own CDN. When
-// an ad blocker, a DNS filter or a captive portal blocks the Google tag, that loader
-// rejects a promise nobody handles, so it lands in Sentry as an unhandled error
-// whose only frame belongs to the vendor bundle. There is nothing to fix on our side.
+// Segment loads each analytics destination as a remote bundle. When an ad blocker, a
+// DNS filter or a captive portal blocks the Google tag, that loader rejects a promise
+// nobody handles, so it lands in Sentry as an unhandled error. Nothing to fix on our
+// side, and it is the noisiest event in the project.
 //
-// Match the CDN host rather than the loader's source path. `beforeSend` runs in the
-// browser, where the frame is still the minified bundle URL
-// (`https://cdn.segment.com/next-integrations/actions/<id>/<hash>.js`); the readable
-// `browser-destination-runtime/dist/esm/load-script.js` path shown in the Sentry UI
-// only exists after Sentry resolves Segment's source maps server-side, long after
-// this filter has run. Keying on that path is what made the check a no-op.
-const SEGMENT_DESTINATION_CDN_HOST = 'cdn.segment.com'
-
-const BLOCKED_ANALYTICS_HOST_REGEX = /googletagmanager\.com|google-analytics\.com/i
+// Keyed on the message alone, deliberately. Two earlier versions also demanded a stack
+// frame from Segment's loader and both broke:
+//
+//   1. `browser-destination-runtime` (#739) never matched at all. That path only
+//      exists after Sentry resolves Segment's source maps server-side, and
+//      `beforeSend` runs in the browser long before that.
+//   2. `cdn.segment.com` (#745) worked until #747 moved Segment behind the
+//      first-party proxy at `evs.e.decentraland.org`, which changed the frame's host
+//      and silently turned the filter off again.
+//
+// The frame check never bought any safety either: `Failed to load` is emitted only by
+// the destination loader, and pairing it with the blocked host means a genuine outage
+// of any OTHER Segment destination carries a different URL and still reaches Sentry.
+// Both halves have to appear on the same line for this to fire.
+const BLOCKED_ANALYTICS_SCRIPT_REGEX = /Failed to load\b[^\n]*\b(?:googletagmanager|google-analytics)\.com/i
 
 /**
  * True when an event is just "the Google tag was blocked", reported through
  * Segment's destination loader. Used by `beforeSend` to drop it.
- *
- * Deliberately narrow: the frame alone would also swallow a real outage of any
- * OTHER Segment destination, so the blocked host has to match too.
  */
 function isBlockedAnalyticsScriptError(event: ErrorEvent): boolean {
   const values = event.exception?.values ?? []
-  const hasLoaderFrame = values.some(value =>
-    value.stacktrace?.frames?.some(frame => frame.filename?.includes(SEGMENT_DESTINATION_CDN_HOST))
-  )
-  if (!hasLoaderFrame) return false
   // Chained exceptions put the useful text on a later value, so check them all.
   const messages = [event.message, ...values.map(value => value.value)]
-  return messages.some(message => typeof message === 'string' && BLOCKED_ANALYTICS_HOST_REGEX.test(message))
+  return messages.some(message => typeof message === 'string' && BLOCKED_ANALYTICS_SCRIPT_REGEX.test(message))
 }
 
 export { isBlockedAnalyticsScriptError, redactBreadcrumbUrl, redactEventUrls, redactSensitiveUrl }
