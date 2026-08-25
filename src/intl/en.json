@@ -1238,7 +1238,7 @@
     "email_label": "Email (Optional)",
     "email_placeholder": "hello@example.com",
     "featured_item_label": "Featured Item (Optional)",
-    "featured_item_placeholder": "Paste a wearable, emote, or collection URN",
+    "featured_item_placeholder": "Paste an item or collection URN",
     "additional_notes": "Additional Notes",
     "notes_placeholder": "Be as descriptive as you can",
     "cancel": "Cancel",
