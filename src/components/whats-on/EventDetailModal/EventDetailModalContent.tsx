@@ -70,8 +70,9 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
   // pending-admin review flow and in the unsaved-event preview.
   const showBottomJumpIn = !adminActions && data.id !== 'preview'
   // Moderators approve the promoted item too, so show the raw URN in the pending-events review.
-  // Public/preview modals don't render it (the item is featured in-world, not on the site).
-  const showFeaturedItem = Boolean(adminActions && data.featuredItem)
+  // Creators also see it in the unsaved-event preview so they can double-check the pasted URN
+  // before submitting. The public detail modal hides it (the item is featured in-world, not on the site).
+  const showFeaturedItem = Boolean(data.featuredItem && (adminActions || data.id === 'preview'))
 
   const handleAddToCalendar = useCallback(() => {
     const url = buildCalendarUrl(data)

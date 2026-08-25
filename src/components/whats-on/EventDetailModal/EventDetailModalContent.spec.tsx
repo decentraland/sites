@@ -230,6 +230,21 @@ describe('EventDetailModalContent', () => {
         expect(screen.queryByText('event_detail.featured_item')).not.toBeInTheDocument()
       })
     })
+
+    describe('and the modal is the unsaved-event preview from the create form', () => {
+      beforeEach(() => {
+        render(<EventDetailModalContent data={createMockData({ id: 'preview', featuredItem: urn })} />)
+      })
+
+      it('should render the featured item label without admin actions', () => {
+        expect(screen.getByText('event_detail.featured_item')).toBeInTheDocument()
+        expect(screen.queryByTestId('admin-actions')).not.toBeInTheDocument()
+      })
+
+      it('should render the raw URN so the creator can double-check it', () => {
+        expect(screen.getByTestId('featured-item')).toHaveTextContent(urn)
+      })
+    })
   })
 
   describe('when a moderator reviews an event without a featured item', () => {
