@@ -3,10 +3,15 @@ import type { CreateEventFormState } from './useCreateEventForm.types'
 
 const DURATION_PATTERN = /^([0-9]{1,2}):([0-5][0-9])$/
 
+// Kept in parity with the events API's `featured_item` schema (events repo `src/entities/Event/schemas.ts`):
+// same pattern and the same 160-char cap. Only collections-v2 URNs are accepted for now (base avatars,
+// collections-v1, third-party and smart-wearable `?baseUrl=` URNs are deliberately out of scope for this
+// iteration); the testnet chains stay so `.zone` can be exercised with amoy/sepolia items.
 const FEATURED_ITEM_URN_PATTERN = /^urn:decentraland:(matic|ethereum|amoy|sepolia):collections-v2:0x[a-fA-F0-9]{40}(:\d+)?$/
+const FEATURED_ITEM_URN_MAX_LENGTH = 160
 
 function isValidFeaturedItemUrn(value: string): boolean {
-  return FEATURED_ITEM_URN_PATTERN.test(value)
+  return value.length <= FEATURED_ITEM_URN_MAX_LENGTH && FEATURED_ITEM_URN_PATTERN.test(value)
 }
 
 function parseDurationMs(value: string): number | null {
@@ -254,10 +259,11 @@ function eventEntryToFormState(event: EventEntry, now: number = Date.now()): Cre
 // Content fields the events backend re-moderates on: editing any of them on an already-approved
 // event flips it back to pending for a fresh review (see the events repo's `updateEvent.ts`
 // `MODERATED_CONTENT_FIELDS`). This mirrors the exact submit payload mapping in `handleSubmit`
-// (trim, world→x/y/server derivation, empty-description→null) so callers can warn the owner only
-// when a save would actually re-trigger review — not for date/recurrence/email/community edits,
-// which the backend leaves approved. Kept in parity with the backend's moderated set for the
-// fields this form can edit (categories aren't editable here, so they're omitted).
+// (trim, world→x/y/server derivation, empty-description/featured-item→null) so callers can warn the
+// owner only when a save would actually re-trigger review — not for date/recurrence/email/community
+// edits, which the backend leaves approved. The featured item is moderated too: promoting a different
+// wearable/emote/collection is content moderators must re-check. Kept in parity with the backend's
+// moderated set for the fields this form can edit (categories aren't editable here, so they're omitted).
 function hasModeratedContentChanged(form: CreateEventFormState, initialEvent: EventEntry | null): boolean {
   if (!initialEvent) return false
   const isWorld = form.location === 'world'
@@ -269,7 +275,9 @@ function hasModeratedContentChanged(form: CreateEventFormState, initialEvent: Ev
     isWorld !== Boolean(initialEvent.world) ||
     (isWorld ? 0 : Number(form.coordX)) !== initialEvent.x ||
     (isWorld ? 0 : Number(form.coordY)) !== initialEvent.y ||
-    (isWorld ? form.world : null) !== initialEvent.server
+    (isWorld ? form.world : null) !== initialEvent.server ||
+    // `?? null` hedges against an events deployment that predates the column and omits the key entirely.
+    (form.featuredItem.trim() || null) !== (initialEvent.featured_item ?? null)
   )
 }
 

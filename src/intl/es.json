@@ -962,7 +962,10 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "approved_edit_warning": "Changing the name, description, image, or location of an approved hangout will send it back for review before the updates go live.",
+    "approved_edit_warning": "Cambiar el nombre, la descripción, la imagen, la ubicación o el artículo destacado de un hangout aprobado lo enviará de nuevo a revisión antes de que los cambios se publiquen.",
+    "featured_item_label": "Artículo Destacado (Opcional)",
+    "featured_item_placeholder": "Pega un URN de wearable, emote o colección",
+    "error_invalid_featured_item": "Debe ser un URN válido de colección o artículo",
     "error_image_too_large": "No pudimos comprimir esta imagen a menos de 500 KB. Por favor, elegí un archivo más pequeño.",
     "vertical_recommended_size": "Tamaño recomendado: 716 × 1814 px",
     "recurrence": "Recurrencia",
@@ -973,10 +976,7 @@
     "every_4_weeks": "Cada 4 semanas",
     "every_month": "Cada mes",
     "upcoming_dates_label": "Próximas fechas",
-    "upcoming_dates_empty": "No hay próximas fechas para esta recurrencia",
-    "featured_item_label": "Artículo Destacado (Opcional)",
-    "featured_item_placeholder": "Pega un URN de wearable, emote o colección",
-    "error_invalid_featured_item": "Debe ser un URN válido de colección o artículo"
+    "upcoming_dates_empty": "No hay próximas fechas para esta recurrencia"
   },
   "community": {
     "global": {
@@ -1241,7 +1241,8 @@
     "hero_every_days": "Todos los {days}",
     "location_with_coords": "{place} ({x},{y})",
     "location_coords": "({x},{y})",
-    "schedule_starting": "Empieza el {schedule}"
+    "schedule_starting": "Empieza el {schedule}",
+    "featured_item": "Artículo destacado"
   },
   "event_time": {
     "utc_same_day": "{time} UTC",

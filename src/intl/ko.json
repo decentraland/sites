@@ -962,7 +962,10 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "approved_edit_warning": "Changing the name, description, image, or location of an approved hangout will send it back for review before the updates go live.",
+    "approved_edit_warning": "승인된 행아웃의 이름, 설명, 이미지, 위치 또는 추천 아이템을 변경하면 업데이트가 게시되기 전에 다시 검토됩니다.",
+    "featured_item_label": "추천 아이템 (선택사항)",
+    "featured_item_placeholder": "웨어러블, 이모트 또는 컬렉션 URN을 붙여넣기",
+    "error_invalid_featured_item": "유효한 컬렉션 또는 아이템 URN이어야 합니다",
     "error_image_too_large": "이 이미지를 500KB 이하로 압축할 수 없습니다. 더 작은 파일을 선택해 주세요.",
     "vertical_recommended_size": "권장 크기: 716 × 1814 px",
     "recurrence": "반복",
@@ -973,10 +976,7 @@
     "every_4_weeks": "4주마다",
     "every_month": "매월",
     "upcoming_dates_label": "예정된 날짜",
-    "upcoming_dates_empty": "이 반복 설정에 예정된 날짜가 없습니다",
-    "featured_item_label": "추천 아이템 (선택사항)",
-    "featured_item_placeholder": "웨어러블, 이모트 또는 컬렉션 URN을 붙여넣기",
-    "error_invalid_featured_item": "유효한 컬렉션 또는 아이템 URN이어야 합니다"
+    "upcoming_dates_empty": "이 반복 설정에 예정된 날짜가 없습니다"
   },
   "community": {
     "global": {
@@ -1241,7 +1241,8 @@
     "hero_every_days": "매 {days}",
     "location_with_coords": "{place} ({x},{y})",
     "location_coords": "({x},{y})",
-    "schedule_starting": "{schedule} 부터 시작"
+    "schedule_starting": "{schedule} 부터 시작",
+    "featured_item": "추천 아이템"
   },
   "event_time": {
     "utc_same_day": "{time} UTC",

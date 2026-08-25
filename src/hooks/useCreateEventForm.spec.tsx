@@ -95,6 +95,7 @@ function fillValidForm(setField: ReturnType<typeof useCreateEventForm>['setField
     setField('coordX', values.coordX)
     setField('coordY', values.coordY)
     setField('email', values.email)
+    if (values.featuredItem !== undefined) setField('featuredItem', values.featuredItem)
     setField('imageUrl', 'https://cdn/test.png')
     setField('imagePreviewUrl', 'https://cdn/test.png')
   })
@@ -226,6 +227,60 @@ describe('useCreateEventForm', () => {
       })
 
       expect(result.current.errors.email).toBe('create_event.error_invalid_email')
+    })
+  })
+
+  describe('when the featured item URN is invalid', () => {
+    it('should report the invalid-featured-item error and not submit', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField, { featuredItem: 'urn:decentraland:matic:collections-v1:not-allowed' })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.featuredItem).toBe('create_event.error_invalid_featured_item')
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when the featured item URN is valid', () => {
+    it('should send the trimmed URN as featured_item', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+      const urn = 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef12345678:7'
+
+      fillValidForm(result.current.setField, { featuredItem: `  ${urn}  ` })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.featuredItem).toBeUndefined()
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({ featured_item: urn })
+        })
+      )
+    })
+  })
+
+  describe('when the featured item is left blank', () => {
+    it('should send featured_item as null', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField, { featuredItem: '   ' })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.featuredItem).toBeUndefined()
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({ featured_item: null })
+        })
+      )
     })
   })
 

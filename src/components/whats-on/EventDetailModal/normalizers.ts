@@ -38,7 +38,8 @@ function normalizeEventEntry(event: EventEntry): ModalEventData {
     realm,
     isWorld: event.world,
     placeName: event.scene_name ?? event.estate_name ?? null,
-    isEvent: true
+    isEvent: true,
+    featuredItem: event.featured_item ?? null
   }
 }
 
@@ -72,7 +73,9 @@ function normalizeLiveNowCard(card: LiveNowCard): ModalEventData {
     realm,
     isWorld: card.world ?? false,
     placeName: card.type === 'place' ? card.title : null,
-    isEvent: card.type === 'event'
+    isEvent: card.type === 'event',
+    // Live-now cards are a slim projection without the featured item; the full entry carries it.
+    featuredItem: null
   }
 }
 

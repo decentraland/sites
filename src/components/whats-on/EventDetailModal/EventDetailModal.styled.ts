@@ -143,6 +143,15 @@ const RecurrenceText = styled(Typography)(({ theme }) => ({
   marginTop: theme.spacing(0.5)
 }))
 
+// URNs are long unbroken tokens; wrap anywhere so the moderation modal never overflows horizontally.
+const FeaturedItemText = styled(Typography)(({ theme }) => ({
+  fontSize: 14,
+  lineHeight: 1.5,
+  fontFamily: 'monospace',
+  wordBreak: 'break-all',
+  color: theme.palette.text.primary
+}))
+
 const AdminActionsRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(1),
@@ -161,6 +170,7 @@ export {
   BottomJumpInRow,
   CreatorLocationRow,
   EditButton,
+  FeaturedItemText,
   LiveBadgeWrapper,
   LocationRow,
   LocationText,

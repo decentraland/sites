@@ -45,7 +45,6 @@ import {
   DateTimeSection,
   DeleteButton,
   DescriptionFields,
-  EmailSection,
   EventDetailsBlock,
   EventFormControl,
   EventInputLabel,
@@ -56,6 +55,7 @@ import {
   EventTextField,
   FormActions,
   FormColumns,
+  FormFieldSection,
   ImageSection,
   LeftCard,
   LocationBlock,
@@ -128,7 +128,8 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
     realm: isWorld ? form.world.trim() || undefined : undefined,
     isWorld,
     placeName: null,
-    isEvent: false
+    isEvent: false,
+    featuredItem: form.featuredItem.trim() || null
   }
 }
 
@@ -488,7 +489,7 @@ function EventForm({
               </LocationBlock>
             )}
             {/* Featured Item */}
-            <EmailSection>
+            <FormFieldSection>
               <EventTextField
                 variant="outlined"
                 label={t('create_event.featured_item_label')}
@@ -500,9 +501,9 @@ function EventForm({
                 fullWidth
                 InputLabelProps={{ shrink: true }}
               />
-            </EmailSection>
+            </FormFieldSection>
             {/* Email */}
-            <EmailSection>
+            <FormFieldSection>
               <EventTextField
                 variant="outlined"
                 label={t('create_event.email_label')}
@@ -515,7 +516,7 @@ function EventForm({
                 fullWidth
                 InputLabelProps={{ shrink: true }}
               />
-            </EmailSection>
+            </FormFieldSection>
           </RightSectionFields>
 
           <RightSectionFooter>

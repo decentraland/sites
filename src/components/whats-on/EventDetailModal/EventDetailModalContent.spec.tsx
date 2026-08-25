@@ -26,6 +26,7 @@ jest.mock('../DetailModal/DetailModal.styled', () => ({
 jest.mock('./EventDetailModal.styled', () => ({
   AdminActionsRow: ({ children }: { children: React.ReactNode }) => <div data-testid="admin-actions">{children}</div>,
   BottomJumpInRow: ({ children }: { children: React.ReactNode }) => <div data-testid="bottom-jump-in-row">{children}</div>,
+  FeaturedItemText: ({ children }: { children: React.ReactNode }) => <span data-testid="featured-item">{children}</span>,
   ScheduleRow: ({ children }: { children: React.ReactNode }) => <div data-testid="schedule-row">{children}</div>,
   ScheduleText: ({ children }: { children: React.ReactNode }) => <span data-testid="schedule-text">{children}</span>,
   ScheduleIconButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button data-testid="calendar-btn" {...props} />,
@@ -178,6 +179,71 @@ describe('EventDetailModalContent', () => {
       render(<EventDetailModalContent data={createMockData({ id: 'preview' })} />)
 
       expect(screen.queryByTestId('bottom-jump-in-button')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the event has a featured item', () => {
+    const urn = 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef12345678'
+    const adminActions = { onApprove: jest.fn(), onReject: jest.fn(), isProcessing: false }
+
+    describe('and the modal is opened by a moderator', () => {
+      beforeEach(() => {
+        render(<EventDetailModalContent data={createMockData({ featuredItem: urn })} adminActions={adminActions} />)
+      })
+
+      it('should render the featured item label', () => {
+        expect(screen.getByText('event_detail.featured_item')).toBeInTheDocument()
+      })
+
+      it('should render the raw URN', () => {
+        expect(screen.getByTestId('featured-item')).toHaveTextContent(urn)
+      })
+
+      it('should separate it from the schedule with a divider', () => {
+        expect(screen.getAllByTestId('divider').length).toBeGreaterThanOrEqual(2)
+      })
+    })
+
+    describe('and the modal is opened by a moderator for an event with no description or schedule', () => {
+      beforeEach(() => {
+        render(
+          <EventDetailModalContent
+            data={createMockData({ featuredItem: urn, description: null, startAt: null })}
+            adminActions={adminActions}
+          />
+        )
+      })
+
+      it('should render the URN without a leading divider', () => {
+        expect(screen.getByTestId('featured-item')).toHaveTextContent(urn)
+        expect(screen.queryByTestId('divider')).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and the modal is opened by a regular visitor', () => {
+      beforeEach(() => {
+        render(<EventDetailModalContent data={createMockData({ featuredItem: urn })} />)
+      })
+
+      it('should not render the featured item', () => {
+        expect(screen.queryByTestId('featured-item')).not.toBeInTheDocument()
+        expect(screen.queryByText('event_detail.featured_item')).not.toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('when a moderator reviews an event without a featured item', () => {
+    beforeEach(() => {
+      render(
+        <EventDetailModalContent
+          data={createMockData({ featuredItem: null })}
+          adminActions={{ onApprove: jest.fn(), onReject: jest.fn(), isProcessing: false }}
+        />
+      )
+    })
+
+    it('should not render the featured item section', () => {
+      expect(screen.queryByTestId('featured-item')).not.toBeInTheDocument()
     })
   })
 

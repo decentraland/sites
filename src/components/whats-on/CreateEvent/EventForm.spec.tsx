@@ -27,7 +27,7 @@ jest.mock('./EventForm.styled', () => ({
     </button>
   ),
   DescriptionFields: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  EmailSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  FormFieldSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   ErrorMessage: ({ children }: { children: React.ReactNode }) => <span data-testid="error-message">{children}</span>,
   EventDetailsBlock: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   EventFormControl: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -266,6 +266,7 @@ function createFormState(overrides = {}) {
     coordY: '0',
     world: '',
     communityId: '',
+    featuredItem: '',
     email: '',
     ...overrides
   }
@@ -328,6 +329,25 @@ describe('EventForm', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByLabelText('create_event.email_label')).toBeInTheDocument()
+    })
+
+    it('should render the featured item input', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByLabelText('create_event.featured_item_label')).toBeInTheDocument()
+    })
+
+    it('should surface the featured item validation error as helper text', () => {
+      mockUseCreateEventForm.mockReturnValue({
+        ...mockUseCreateEventForm(),
+        errors: { featuredItem: 'create_event.error_invalid_featured_item' }
+      })
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByLabelText('create_event.featured_item_label')).toHaveAttribute(
+        'data-helper-text',
+        'create_event.error_invalid_featured_item'
+      )
     })
 
     it('should render the cancel button', () => {
@@ -626,6 +646,13 @@ describe('EventForm', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
       fireEvent.change(screen.getByLabelText('create_event.email_label'), { target: { value: 'a@b.test' } })
       expect(mockSetField).toHaveBeenCalledWith('email', 'a@b.test')
+    })
+
+    it('should call setField when the featured item changes', () => {
+      const urn = 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef12345678'
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      fireEvent.change(screen.getByLabelText('create_event.featured_item_label'), { target: { value: urn } })
+      expect(mockSetField).toHaveBeenCalledWith('featuredItem', urn)
     })
 
     it('should toggle the repeat switch', () => {

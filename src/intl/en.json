@@ -1137,7 +1137,8 @@
     "hero_every_days": "Every {days}",
     "location_with_coords": "{place} ({x},{y})",
     "location_coords": "({x},{y})",
-    "schedule_starting": "Starting {schedule}"
+    "schedule_starting": "Starting {schedule}",
+    "featured_item": "Featured item"
   },
   "event_time": {
     "utc_same_day": "{time} UTC",
@@ -1209,7 +1210,7 @@
     "description_placeholder": "Be as descriptive as you can",
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "approved_edit_warning": "Changing the name, description, image, or location of an approved hangout will send it back for review before the updates go live.",
+    "approved_edit_warning": "Changing the name, description, image, location, or featured item of an approved hangout will send it back for review before the updates go live.",
     "event_details": "Hangout Details",
     "date": "Date",
     "start": "Start",

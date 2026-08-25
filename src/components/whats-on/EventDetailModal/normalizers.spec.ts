@@ -200,6 +200,34 @@ describe('normalizeEventEntry', () => {
   })
 })
 
+describe('normalizeEventEntry featured item', () => {
+  describe('when the event has a featured item', () => {
+    let result: ReturnType<typeof normalizeEventEntry>
+
+    beforeEach(() => {
+      result = normalizeEventEntry(
+        createMockEvent({ featured_item: 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef12345678' })
+      )
+    })
+
+    it('should map the featured item URN', () => {
+      expect(result.featuredItem).toBe('urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef12345678')
+    })
+  })
+
+  describe('when the event has no featured item', () => {
+    let result: ReturnType<typeof normalizeEventEntry>
+
+    beforeEach(() => {
+      result = normalizeEventEntry(createMockEvent({ featured_item: null }))
+    })
+
+    it('should map it to null', () => {
+      expect(result.featuredItem).toBeNull()
+    })
+  })
+})
+
 describe('normalizeLiveNowCard', () => {
   afterEach(() => {
     jest.resetAllMocks()
@@ -417,6 +445,18 @@ describe('normalizeLiveNowCard', () => {
 
     it('should build the jump-in URL with 0,0', () => {
       expect(result.url).toBe('https://decentraland.org/jump/event?position=0,0')
+    })
+  })
+
+  describe('when normalizing any live-now card', () => {
+    let result: ReturnType<typeof normalizeLiveNowCard>
+
+    beforeEach(() => {
+      result = normalizeLiveNowCard(createMockLiveNowCard())
+    })
+
+    it('should have no featured item (the slim card projection does not carry it)', () => {
+      expect(result.featuredItem).toBeNull()
     })
   })
 })

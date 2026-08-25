@@ -12,7 +12,15 @@ import { JumpInButton } from '../../jump/JumpInButton'
 import { LocalDateTimeTooltip } from '../common/LocalDateTimeTooltip'
 import { ContentDivider, ContentSection, DescriptionText, SectionLabel } from '../DetailModal/DetailModal.styled'
 import type { AdminActions, ModalEventData } from './EventDetailModal.types'
-import { AdminActionsRow, BottomJumpInRow, RecurrenceText, ScheduleIconButton, ScheduleRow, ScheduleText } from './EventDetailModal.styled'
+import {
+  AdminActionsRow,
+  BottomJumpInRow,
+  FeaturedItemText,
+  RecurrenceText,
+  ScheduleIconButton,
+  ScheduleRow,
+  ScheduleText
+} from './EventDetailModal.styled'
 
 function formatRecurrentDays(days: number[], locale: string): string {
   return normalizeDayIndices(days)
@@ -61,6 +69,9 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
   // Bottom Jump In mirrors the in-world panel for real event/place details. Hidden in the
   // pending-admin review flow and in the unsaved-event preview.
   const showBottomJumpIn = !adminActions && data.id !== 'preview'
+  // Moderators approve the promoted item too, so show the raw URN in the pending-events review.
+  // Public/preview modals don't render it (the item is featured in-world, not on the site).
+  const showFeaturedItem = Boolean(adminActions && data.featuredItem)
 
   const handleAddToCalendar = useCallback(() => {
     const url = buildCalendarUrl(data)
@@ -103,6 +114,13 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
               <CalendarTodayIcon />
             </ScheduleIconButton>
           </ScheduleRow>
+        </>
+      )}
+      {showFeaturedItem && (
+        <>
+          {(hasDescription || hasSchedule) && <ContentDivider />}
+          <SectionLabel>{t('event_detail.featured_item')}</SectionLabel>
+          <FeaturedItemText>{data.featuredItem}</FeaturedItemText>
         </>
       )}
       {adminActions && (

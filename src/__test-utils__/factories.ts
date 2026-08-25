@@ -123,6 +123,7 @@ function createMockModalData(overrides: Partial<ModalEventData> = {}): ModalEven
     isWorld: false,
     placeName: 'Test Scene',
     isEvent: true,
+    featuredItem: null,
     ...overrides
   }
 }
