@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useAnalytics } from '@dcl/hooks'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { MIN_DISPLAY_BALANCE } from '../../hooks/useManaBalances'
@@ -28,6 +29,7 @@ import {
   ShoppingBagIcon,
   WearableIcon
 } from './icons'
+import { isSectionActive } from './LandingNavbar.helpers'
 import { DROPDOWN_SECTIONS, MENU_CONFIG, USER_MENU_ITEMS } from './navbarConfig'
 import type { DropdownSection } from './navbarConfig'
 import {
@@ -241,6 +243,7 @@ const LandingNavbar = memo(function LandingNavbar({
 }: LandingNavbarProps) {
   // On the landing page (/), show a minimal transparent navbar initially.
   // Once we know the user is signed in, transition to the full navbar.
+  const { pathname } = useLocation()
   const showMinimalNavbar = isLandingPage && !isSignedIn
   const l = useFormatMessage()
   const { locale } = useLocale()
@@ -463,10 +466,16 @@ const LandingNavbar = memo(function LandingNavbar({
         {DROPDOWN_SECTIONS.map(section => {
           const config = MENU_CONFIG[section]
           const isExpanded = mobileAccordion === section
+          const isActive = isSectionActive(section, pathname)
 
           return (
             <MobileMenuItem key={section}>
-              <MobileMenuAccordionHeader onClick={() => toggleMobileAccordion(section)} aria-expanded={isExpanded}>
+              <MobileMenuAccordionHeader
+                onClick={() => toggleMobileAccordion(section)}
+                aria-expanded={isExpanded}
+                active={isActive}
+                data-active={isActive || undefined}
+              >
                 {l(config.labelKey)}
                 {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
               </MobileMenuAccordionHeader>
@@ -493,7 +502,7 @@ const LandingNavbar = memo(function LandingNavbar({
         </MobileMenuItem>
       </>
     )
-  }, [l, mobileAccordion, toggleMobileAccordion])
+  }, [l, mobileAccordion, pathname, toggleMobileAccordion])
 
   // Minimal navbar: transparent, only logo + sign in (no tabs, no blur, no shadow)
   if (showMinimalNavbar) {
@@ -558,48 +567,54 @@ const LandingNavbar = memo(function LandingNavbar({
           </LogoLink>
 
           <DesktopTabList>
-            {DROPDOWN_SECTIONS.map(section => (
-              <DesktopDropdownWrapper
-                key={section}
-                onMouseEnter={() => openDesktopDropdown(section)}
-                onMouseLeave={scheduleCloseDesktopDropdown}
-              >
-                <DesktopTabWithDropdown
-                  aria-expanded={desktopDropdown === section}
-                  aria-haspopup="true"
-                  onClick={() => {
-                    const firstItem = MENU_CONFIG[section].items?.[0]
-                    if (firstItem) window.open(firstItem.url, '_self')
-                  }}
-                >
-                  {l(MENU_CONFIG[section].labelKey)}
-                  <ChevronDownIcon
-                    style={{
-                      transform: desktopDropdown === section ? 'rotate(180deg)' : 'rotate(0deg)',
-                      transition: 'transform 0.25s ease'
-                    }}
-                  />
-                </DesktopTabWithDropdown>
+            {DROPDOWN_SECTIONS.map(section => {
+              const isActive = isSectionActive(section, pathname)
 
-                {desktopDropdown === section && (
-                  <DesktopDropdown>
-                    <DesktopDropdownInner>
-                      {MENU_CONFIG[section].items?.map(item => (
-                        <DesktopDropdownItem
-                          key={item.labelKey}
-                          href={item.url}
-                          target={item.isExternal ? '_blank' : undefined}
-                          rel={item.isExternal ? 'noopener noreferrer' : undefined}
-                        >
-                          {l(item.labelKey)}
-                          {item.isExternal && <ExternalLinkIcon />}
-                        </DesktopDropdownItem>
-                      ))}
-                    </DesktopDropdownInner>
-                  </DesktopDropdown>
-                )}
-              </DesktopDropdownWrapper>
-            ))}
+              return (
+                <DesktopDropdownWrapper
+                  key={section}
+                  onMouseEnter={() => openDesktopDropdown(section)}
+                  onMouseLeave={scheduleCloseDesktopDropdown}
+                >
+                  <DesktopTabWithDropdown
+                    aria-expanded={desktopDropdown === section}
+                    aria-haspopup="true"
+                    active={isActive}
+                    data-active={isActive || undefined}
+                    onClick={() => {
+                      const firstItem = MENU_CONFIG[section].items?.[0]
+                      if (firstItem) window.open(firstItem.url, '_self')
+                    }}
+                  >
+                    {l(MENU_CONFIG[section].labelKey)}
+                    <ChevronDownIcon
+                      style={{
+                        transform: desktopDropdown === section ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.25s ease'
+                      }}
+                    />
+                  </DesktopTabWithDropdown>
+
+                  {desktopDropdown === section && (
+                    <DesktopDropdown>
+                      <DesktopDropdownInner>
+                        {MENU_CONFIG[section].items?.map(item => (
+                          <DesktopDropdownItem
+                            key={item.labelKey}
+                            href={item.url}
+                            target={item.isExternal ? '_blank' : undefined}
+                            rel={item.isExternal ? 'noopener noreferrer' : undefined}
+                          >
+                            {l(item.labelKey)}
+                            {item.isExternal && <ExternalLinkIcon />}
+                          </DesktopDropdownItem>
+                        ))}
+                      </DesktopDropdownInner>
+                    </DesktopDropdown>
+                  )}
+                </DesktopDropdownWrapper>
+              )
+            })}
 
             <DesktopTabLink href={MENU_CONFIG.learn.url}>{l(MENU_CONFIG.learn.labelKey)}</DesktopTabLink>
           </DesktopTabList>

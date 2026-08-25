@@ -31,6 +31,8 @@ const mockFetchOk = (body: unknown = RESPONSE_BODY): jest.Mock =>
 
 const mockFetchNetworkError = (): jest.Mock => jest.fn().mockRejectedValue(new TypeError('Failed to fetch'))
 
+const mockFetchStatus = (status: number): jest.Mock => jest.fn().mockResolvedValue({ ok: false, status } as unknown as Response)
+
 beforeEach(() => {
   getEnvMock.mockReturnValue('https://counts.example/api')
 })
@@ -103,10 +105,75 @@ describe('when the downloads endpoint responds', () => {
 
 describe('when the endpoint returns a non-ok status', () => {
   it('should resolve with an empty result instead of rejecting', async () => {
-    global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 503 } as unknown as Response) as unknown as typeof fetch
+    global.fetch = mockFetchStatus(503) as unknown as typeof fetch
     const ExplorerDownloads = await loadExplorerDownloads()
 
     await expect(ExplorerDownloads.get().getDownloads()).resolves.toEqual([])
+  })
+
+  it('should report the failure to Sentry once', async () => {
+    global.fetch = mockFetchStatus(503) as unknown as typeof fetch
+    const ExplorerDownloads = await loadExplorerDownloads()
+
+    await ExplorerDownloads.get().getTotalDownloads()
+
+    expect(captureDownloadErrorMock).toHaveBeenCalledTimes(1)
+    expect(captureDownloadErrorMock).toHaveBeenCalledWith(expect.objectContaining({ status: 503 }), {
+      feature: 'download_counts',
+      url: 'https://counts.example/api'
+    })
+  })
+
+  it('should not report again on later failures in the same session', async () => {
+    global.fetch = mockFetchStatus(503) as unknown as typeof fetch
+    const ExplorerDownloads = await loadExplorerDownloads()
+    const instance = ExplorerDownloads.get()
+
+    await instance.getTotalDownloads()
+    await instance.getTotalDownloads()
+    await instance.getTotalDownloads()
+
+    expect(captureDownloadErrorMock).toHaveBeenCalledTimes(1)
+  })
+
+  // The flag is per instance, not static: one endpoint failing must not silence
+  // the report for a different endpoint that is also broken.
+  it('should still report a failure for a different endpoint', async () => {
+    global.fetch = mockFetchStatus(503) as unknown as typeof fetch
+    const ExplorerDownloads = await loadExplorerDownloads()
+
+    await ExplorerDownloads.from('https://a.example').getTotalDownloads()
+    await ExplorerDownloads.from('https://b.example').getTotalDownloads()
+
+    expect(captureDownloadErrorMock).toHaveBeenCalledTimes(2)
+    expect(captureDownloadErrorMock).toHaveBeenNthCalledWith(1, expect.objectContaining({ status: 503 }), {
+      feature: 'download_counts',
+      url: 'https://a.example'
+    })
+    expect(captureDownloadErrorMock).toHaveBeenNthCalledWith(2, expect.objectContaining({ status: 503 }), {
+      feature: 'download_counts',
+      url: 'https://b.example'
+    })
+  })
+})
+
+// A conditional response is not a failure: the counter has no data to show, but
+// there is nothing to fix either (SITES-2RV).
+describe('when the endpoint answers 304', () => {
+  it('should resolve with an empty result', async () => {
+    global.fetch = mockFetchStatus(304) as unknown as typeof fetch
+    const ExplorerDownloads = await loadExplorerDownloads()
+
+    await expect(ExplorerDownloads.get().getDownloads()).resolves.toEqual([])
+  })
+
+  it('should not report it to Sentry', async () => {
+    global.fetch = mockFetchStatus(304) as unknown as typeof fetch
+    const ExplorerDownloads = await loadExplorerDownloads()
+
+    await ExplorerDownloads.get().getTotalDownloads()
+
+    expect(captureDownloadErrorMock).not.toHaveBeenCalled()
   })
 })
 
@@ -134,48 +201,35 @@ describe('when the request fails with a network error', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
-  it('should report the failure to Sentry once', async () => {
+  // A blocked CDN, a blocker extension or a crawler is not something we can fix,
+  // and it was 315 of the project's Sentry events in two weeks (SITES-2R8).
+  it('should not report it to Sentry', async () => {
     global.fetch = mockFetchNetworkError() as unknown as typeof fetch
     const ExplorerDownloads = await loadExplorerDownloads()
 
     await ExplorerDownloads.get().getTotalDownloads()
 
-    expect(captureDownloadErrorMock).toHaveBeenCalledTimes(1)
-    expect(captureDownloadErrorMock).toHaveBeenCalledWith(expect.any(TypeError), {
-      feature: 'download_counts',
-      url: 'https://counts.example/api'
-    })
+    expect(captureDownloadErrorMock).not.toHaveBeenCalled()
   })
 
-  it('should not report again on later failures in the same session', async () => {
-    global.fetch = mockFetchNetworkError() as unknown as typeof fetch
+  // Silencing the transport noise must not silence a later real failure on the
+  // same instance: `hasReportedFailure` is only spent on a reported event.
+  it('should still report a reportable failure that follows it', async () => {
+    const fetchMock = jest
+      .fn()
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce({ ok: false, status: 503 } as unknown as Response)
+    global.fetch = fetchMock as unknown as typeof fetch
     const ExplorerDownloads = await loadExplorerDownloads()
     const instance = ExplorerDownloads.get()
 
     await instance.getTotalDownloads()
     await instance.getTotalDownloads()
-    await instance.getTotalDownloads()
 
     expect(captureDownloadErrorMock).toHaveBeenCalledTimes(1)
-  })
-
-  // The flag is per instance, not static: one endpoint failing must not silence
-  // the report for a different endpoint that is also broken.
-  it('should still report a failure for a different endpoint', async () => {
-    global.fetch = mockFetchNetworkError() as unknown as typeof fetch
-    const ExplorerDownloads = await loadExplorerDownloads()
-
-    await ExplorerDownloads.from('https://a.example').getTotalDownloads()
-    await ExplorerDownloads.from('https://b.example').getTotalDownloads()
-
-    expect(captureDownloadErrorMock).toHaveBeenCalledTimes(2)
-    expect(captureDownloadErrorMock).toHaveBeenNthCalledWith(1, expect.any(TypeError), {
+    expect(captureDownloadErrorMock).toHaveBeenCalledWith(expect.objectContaining({ status: 503 }), {
       feature: 'download_counts',
-      url: 'https://a.example'
-    })
-    expect(captureDownloadErrorMock).toHaveBeenNthCalledWith(2, expect.any(TypeError), {
-      feature: 'download_counts',
-      url: 'https://b.example'
+      url: 'https://counts.example/api'
     })
   })
 })
