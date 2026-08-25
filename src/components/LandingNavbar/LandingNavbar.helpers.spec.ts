@@ -2,17 +2,17 @@ import { isSectionActive } from './LandingNavbar.helpers'
 
 describe('when deciding which navbar section owns the current page', () => {
   it('should light up Discover on the What is On calendar', () => {
-    expect(isSectionActive('discover', '/whats-on')).toBe(true)
+    expect(isSectionActive('discover', '/events')).toBe(true)
   })
 
   it('should light up Discover on the places feed', () => {
-    expect(isSectionActive('discover', '/discover')).toBe(true)
+    expect(isSectionActive('discover', '/places')).toBe(true)
   })
 
-  // /discover/place/-102,129 and /whats-on/new-hangout are still the same section.
+  // /places/place/-102,129 and /events/new-hangout are still the same section.
   it('should light up Discover on a nested page of either destination', () => {
-    expect(isSectionActive('discover', '/discover/place/-102,129')).toBe(true)
-    expect(isSectionActive('discover', '/whats-on/new-hangout')).toBe(true)
+    expect(isSectionActive('discover', '/places/place/-102,129')).toBe(true)
+    expect(isSectionActive('discover', '/events/new-hangout')).toBe(true)
   })
 
   it('should not light up Discover on the landing page', () => {
@@ -31,7 +31,7 @@ describe('when deciding which navbar section owns the current page', () => {
   // Shop and Create point at absolute decentraland.org URLs, so no in-app path
   // can ever match them — a bare pathname must not accidentally light them up.
   it('should never light up the sections whose destinations are external', () => {
-    for (const pathname of ['/', '/shop', '/create', '/whats-on']) {
+    for (const pathname of ['/', '/shop', '/create', '/events']) {
       expect(isSectionActive('shop', pathname)).toBe(false)
       expect(isSectionActive('create', pathname)).toBe(false)
     }

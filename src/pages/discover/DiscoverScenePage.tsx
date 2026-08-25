@@ -193,7 +193,7 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
   // page (deep-link + download fallback), not a bare protocol link.
   const chatJumpHref = useMemo(() => (place ? buildJumpLandingHref(place) : null), [place])
 
-  // `/discover/*` is in `isPageTrackingExempt`, so Layout's route-level
+  // `/places/*` is in `isPageTrackingExempt`, so Layout's route-level
   // `page()` is suppressed. Fire once the place title resolves so Segment
   // captures the scene name + kind. Stays silent on the loading frames.
   usePageViewTracking({
@@ -277,7 +277,7 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
           <title>{`${place.title} | Decentraland`}</title>
           <meta name="description" content={place.description ?? ''} />
         </Helmet>
-        <SceneJumpInModal place={place} liveCount={livePlayers} onClose={() => navigate('/discover')} />
+        <SceneJumpInModal place={place} liveCount={livePlayers} onClose={() => navigate('/places')} />
       </>
     )
   }

@@ -4,7 +4,7 @@ Events + hangouts area. Mounted under `<DappsShell />` (heavy route).
 
 ## Routes
 
-`/whats-on`, `/whats-on/new-hangout`, `/whats-on/edit-hangout/:eventId`, `/whats-on/admin/pending-events`, `/whats-on/admin/users`. Legacy aliases `/whats-on/new-event` and `/whats-on/edit-event/:eventId` redirect into the hangout flow. `/events/*` and `/places/*` legacy paths from the standalone events/places sites redirect into `/whats-on` with deep-link params.
+`/events`, `/events/new-hangout`, `/events/edit-hangout/:eventId`, `/events/admin/pending-events`, `/events/admin/users`. Legacy aliases `/events/new-event` and `/events/edit-event/:eventId` redirect into the hangout flow. `/events/*` and `/places/*` legacy paths from the standalone events/places sites redirect into `/events` with deep-link params.
 
 ## Key paths
 
@@ -12,7 +12,7 @@ Events + hangouts area. Mounted under `<DappsShell />` (heavy route).
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/pages/whats-on/`                        | Page components for the whats-on area (list, new/edit hangout, admin views).                                                                                                                                  |
 | `src/components/whats-on/`                   | Whats-on-specific UI components (cards, filters, hangout form, admin panels).                                                                                                                                 |
-| `src/features/events/events.client.ts`       | RTK Query endpoints for `/whats-on/*` reads + mutations. Defines `eventsClient` (base + endpoints in the same file — legacy shape, but still loads via the shell).                                            |
+| `src/features/events/events.client.ts`       | RTK Query endpoints for `/events/*` reads + mutations. Defines `eventsClient` (base + endpoints in the same file — legacy shape, but still loads via the shell).                                              |
 | `src/features/events/events.admin.client.ts` | Admin approve/reject + permission management. Defines `adminClient` (also legacy shape).                                                                                                                      |
 | `src/features/events/events.discovery.ts`    | **Lightweight** homepage live-cards data client built on `useSyncExternalStore`. Safe to import from lightweight routes (the homepage uses it). Do NOT import the other two `events.*.client.ts` files there. |
 
@@ -28,4 +28,4 @@ The `eventsClient` and `adminClient` base clients live next to their endpoints (
 
 - Skill `rtk-query-split` — RTK Query architecture + Pre-PR rules 17 & 18.
 - Skill `auth-flow` — signed mutations.
-- Skill `add-route` — adding new routes under `/whats-on/*`.
+- Skill `add-route` — adding new routes under `/events/*`.

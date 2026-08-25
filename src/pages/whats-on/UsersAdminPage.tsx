@@ -85,7 +85,7 @@ function UsersAdminPage() {
 
   const paginated = useMemo(() => filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage), [filtered, page, rowsPerPage])
 
-  if (!isLoading && !canEditAnyProfile) return <Navigate to="/whats-on" replace />
+  if (!isLoading && !canEditAnyProfile) return <Navigate to="/events" replace />
 
   const handleSubmit = async ({ address, permissions }: { address: string; permissions: AdminPermission[] }) => {
     if (!identity) {

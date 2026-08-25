@@ -19,8 +19,8 @@ describe('isAnalyticsExemptPath', () => {
   describe('when the pathname is a route that should keep analytics enabled', () => {
     it.each([
       '/',
-      '/whats-on',
-      '/whats-on/new-hangout',
+      '/events',
+      '/events/new-hangout',
       '/blog',
       '/blog/news',
       '/help',

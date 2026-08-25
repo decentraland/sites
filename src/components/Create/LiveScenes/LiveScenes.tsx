@@ -40,7 +40,7 @@ const LiveSceneCard = memo(({ scene }: LiveSceneCardProps) => {
   const coordinates = `${scene.baseCoords[0]},${scene.baseCoords[1]}`
   return (
     <SceneCard
-      to={`/discover/place/${coordinates}`}
+      to={`/places/place/${coordinates}`}
       onClick={trackClick}
       data-place={SectionViewedTrack.CREATORS_LIVE_SCENES}
       data-event={SegmentEvent.CLICK}
@@ -78,7 +78,7 @@ const CreatorsLiveScenes = memo(() => {
           ))}
         </LiveScenesCardsContainer>
         <ViewAllLink
-          to="/discover"
+          to="/places"
           onClick={trackClick}
           data-place={SectionViewedTrack.CREATORS_LIVE_SCENES}
           data-event={SegmentEvent.CLICK}

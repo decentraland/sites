@@ -23,7 +23,7 @@ import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 function DiscoverCommunitiesPage() {
   const t = useFormatMessage()
 
-  // `/discover/*` is in `isPageTrackingExempt`, so the Layout's route-level
+  // `/places/*` is in `isPageTrackingExempt`, so the Layout's route-level
   // `page()` is suppressed. Static name — fires immediately on mount.
   usePageViewTracking({ name: t('discover.communities.page_title') })
 

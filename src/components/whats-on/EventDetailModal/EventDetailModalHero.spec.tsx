@@ -530,7 +530,7 @@ describe('EventDetailModalHero', () => {
 
     describe('and the modal data is a future event', () => {
       beforeEach(() => {
-        mockBuildEventShareUrl.mockReturnValue('http://localhost/whats-on?id=event-1')
+        mockBuildEventShareUrl.mockReturnValue('http://localhost/events?id=event-1')
       })
 
       it('should copy the deep link back into the whats-on modal', async () => {
@@ -541,7 +541,7 @@ describe('EventDetailModalHero', () => {
         })
 
         expect(mockBuildEventShareUrl).toHaveBeenCalledWith('event-1', false)
-        expect(mockWriteText).toHaveBeenCalledWith('http://localhost/whats-on?id=event-1')
+        expect(mockWriteText).toHaveBeenCalledWith('http://localhost/events?id=event-1')
       })
     })
 

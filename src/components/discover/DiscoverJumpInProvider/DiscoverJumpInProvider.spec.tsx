@@ -79,7 +79,7 @@ function JumpInProbe({ target = place, surface = 'place-card' }: { target?: Disc
 
 function renderProvider(ui = <JumpInProbe />) {
   return render(
-    <MemoryRouter initialEntries={['/discover']}>
+    <MemoryRouter initialEntries={['/places']}>
       <DiscoverJumpInProvider>{ui}</DiscoverJumpInProvider>
     </MemoryRouter>
   )

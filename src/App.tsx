@@ -91,6 +91,9 @@ const LegacyWhatsOnRedirect = lazyWithRetry(() =>
 const LegacyWorldRedirect = lazyWithRetry(() =>
   import('./pages/whats-on/LegacyWorldRedirect').then(m => ({ default: m.LegacyWorldRedirect }))
 )
+const RenamedSectionRedirect = lazyWithRetry(() =>
+  import('./pages/RenamedSectionRedirect').then(m => ({ default: m.RenamedSectionRedirect }))
+)
 
 // Social pages — pre-existing communities detail + section catch-all.
 const CommunityDetailPage = lazyWithRetry(() =>
@@ -224,19 +227,23 @@ const App = () => {
               <Route path="/report/success" element={<ReportSuccessPage />} />
               <Route path="/report/players" element={<Navigate to="/report" replace />} />
               <Route path="/sign-in" element={<SignInRedirect />} />
-              {/* Retro-compat for the standalone events/places sites — redirect into /whats-on
-                with the deep-link params (id / position / world) it already consumes.
-                The wildcard fallbacks below catch any unknown legacy subpath (e.g. /events/listing)
-                so external shares keep landing on /whats-on instead of falling through to the SPA
-                catchall and bouncing to /. Each redirect fires a Segment event so we can sunset
-                these routes when the traffic dries up. */}
+              {/* What's On is now Events at /events, and Discover is now Places at /places. The old
+                prefixes redirect with their subpath and query intact, so shared links, bookmarks and
+                indexed pages keep resolving. Each redirect fires a Segment event so these routes can
+                be sunset once the traffic dries up. */}
+              <Route path="/whats-on/*" element={<RenamedSectionRedirect from="/whats-on" to="/events" origin="events" />} />
+              <Route path="/whats-on" element={<RenamedSectionRedirect from="/whats-on" to="/events" origin="events" />} />
+              <Route path="/discover/*" element={<RenamedSectionRedirect from="/discover" to="/places" origin="places" />} />
+              <Route path="/discover" element={<RenamedSectionRedirect from="/discover" to="/places" origin="places" />} />
+              {/* Deep links from the standalone events/places sites, which carried their target in the
+                query string (id / position / name) rather than the path. Their destination is
+                unchanged; only the section path moved under them.
+                NOTE: the /events/* and /places/* wildcards that used to backstop unknown legacy
+                subpaths are gone. Those prefixes now own real routes and a wildcard here would
+                swallow them, so unknown subpaths fall through to each section's own not-found. */}
               <Route path="/events/event" element={<LegacyWhatsOnRedirect origin="events" />} />
-              <Route path="/events" element={<LegacyWhatsOnRedirect origin="events" />} />
-              <Route path="/events/*" element={<LegacyWhatsOnRedirect origin="events" />} />
               <Route path="/places/world" element={<LegacyWorldRedirect />} />
               <Route path="/places/place" element={<LegacyWhatsOnRedirect origin="places" />} />
-              <Route path="/places" element={<LegacyWhatsOnRedirect origin="places" />} />
-              <Route path="/places/*" element={<LegacyWhatsOnRedirect origin="places" />} />
               {/* DappsShell provides Redux Provider via Outlet.
                 NOTE: /blog/* is no longer gated behind Env !== PRODUCTION as it was
                 with the federated RemoteLoader. During PR1 it serves a placeholder
@@ -244,14 +251,14 @@ const App = () => {
                 stay dev/stg-only at any point, reintroduce a getEnv() check here. */}
               <Route element={<DappsShell />}>
                 <Route element={<WhatsOnLayout />}>
-                  <Route path="/whats-on" element={<WhatsOnHomePage />} />
-                  <Route path="/whats-on/new-hangout" element={<CreateEventPage />} />
-                  <Route path="/whats-on/edit-hangout/:eventId" element={<CreateEventPage />} />
+                  <Route path="/events" element={<WhatsOnHomePage />} />
+                  <Route path="/events/new-hangout" element={<CreateEventPage />} />
+                  <Route path="/events/edit-hangout/:eventId" element={<CreateEventPage />} />
                   {/* Legacy aliases — preserve query string + location state. */}
-                  <Route path="/whats-on/new-event" element={<LegacyHangoutRedirect />} />
-                  <Route path="/whats-on/edit-event/:eventId" element={<LegacyHangoutRedirect />} />
-                  <Route path="/whats-on/admin/pending-events" element={<PendingEventsPage />} />
-                  <Route path="/whats-on/admin/users" element={<UsersAdminPage />} />
+                  <Route path="/events/new-event" element={<LegacyHangoutRedirect />} />
+                  <Route path="/events/edit-event/:eventId" element={<LegacyHangoutRedirect />} />
+                  <Route path="/events/admin/pending-events" element={<PendingEventsPage />} />
+                  <Route path="/events/admin/users" element={<UsersAdminPage />} />
                 </Route>
                 <Route path="/jump" element={<JumpPlacesPage />} />
                 <Route path="/jump/places" element={<JumpPlacesPage />} />
@@ -290,13 +297,13 @@ const App = () => {
                   scene preview). Communities LIST is a Discover tab; community DETAIL is
                   the pre-existing /social page below, which list cards link into. */}
                 <Route element={<DiscoverLayout />}>
-                  <Route path="/discover" element={<DiscoverHomePage />} />
-                  <Route path="/discover/communities" element={<DiscoverCommunitiesPage />} />
-                  <Route path="/discover/place/:position" element={<DiscoverScenePage kind="place" />} />
-                  <Route path="/discover/world/:name" element={<DiscoverScenePage kind="world" />} />
+                  <Route path="/places" element={<DiscoverHomePage />} />
+                  <Route path="/places/communities" element={<DiscoverCommunitiesPage />} />
+                  <Route path="/places/place/:position" element={<DiscoverScenePage kind="place" />} />
+                  <Route path="/places/world/:name" element={<DiscoverScenePage kind="world" />} />
                 </Route>
                 {/* Same generic not-found page serves both section catch-alls. */}
-                <Route path="/discover/*" element={<SocialNotFoundPage />} />
+                <Route path="/places/*" element={<SocialNotFoundPage />} />
                 <Route path="/social/communities/:id" element={<CommunityDetailPage />} />
                 <Route path="/social/*" element={<SocialNotFoundPage />} />
                 {/* Profile routes — absorbed from decentraland/profile + decentraland/account dapps.

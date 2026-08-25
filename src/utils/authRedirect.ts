@@ -4,7 +4,7 @@ import { markSignInPending } from './activeIdentity'
 /**
  * Builds a same-origin redirect path for after authentication, preserving query params.
  *
- * IMPORTANT: returns ONLY pathname + search (e.g. `/whats-on?foo=bar`) — never an
+ * IMPORTANT: returns ONLY pathname + search (e.g. `/events?foo=bar`) — never an
  * absolute URL. In production the JS bundle is served from `cdn.decentraland.org/@dcl/sites/<version>/`
  * (Vite's `base` / `import.meta.env.BASE_URL` points there so asset URLs resolve correctly),
  * but the USER is browsing `decentraland.org/...`. Mixing those two — e.g. prefixing the

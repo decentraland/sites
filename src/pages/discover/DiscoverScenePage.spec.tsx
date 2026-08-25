@@ -181,7 +181,7 @@ describe('DiscoverScenePage', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'close-scene-modal' }))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover')
+      expect(mockNavigate).toHaveBeenCalledWith('/places')
     })
 
     it('should not open the LiveKit room for an empty scene', () => {

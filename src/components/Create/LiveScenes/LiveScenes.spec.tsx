@@ -108,8 +108,8 @@ describe('CreatorsLiveScenes', () => {
     it('should render only non-plaza scenes ordered by live users linking into discover', () => {
       const { container } = renderSection()
 
-      const sceneLinks = Array.from(container.querySelectorAll('a[href^="/discover/place/"]')).map(link => link.getAttribute('href'))
-      expect(sceneLinks).toEqual(['/discover/place/2,2', '/discover/place/1,1'])
+      const sceneLinks = Array.from(container.querySelectorAll('a[href^="/places/place/"]')).map(link => link.getAttribute('href'))
+      expect(sceneLinks).toEqual(['/places/place/2,2', '/places/place/1,1'])
     })
 
     it('should render each scene title', () => {
@@ -123,14 +123,14 @@ describe('CreatorsLiveScenes', () => {
     it('should render a view-all link to discover', () => {
       const { container } = renderSection()
 
-      expect(container.querySelector('a[href="/discover"]')).toBeInTheDocument()
+      expect(container.querySelector('a[href="/places"]')).toBeInTheDocument()
     })
 
     describe('and a scene card is clicked', () => {
       it('should track the click', () => {
         const { container } = renderSection()
 
-        fireEvent.click(container.querySelector('a[href^="/discover/place/"]')!)
+        fireEvent.click(container.querySelector('a[href^="/places/place/"]')!)
 
         expect(mockTrackClick).toHaveBeenCalled()
       })
@@ -148,7 +148,7 @@ describe('CreatorsLiveScenes', () => {
     it('should cap the rendered cards at six', () => {
       const { container } = renderSection()
 
-      expect(container.querySelectorAll('a[href^="/discover/place/"]')).toHaveLength(6)
+      expect(container.querySelectorAll('a[href^="/places/place/"]')).toHaveLength(6)
     })
   })
 })

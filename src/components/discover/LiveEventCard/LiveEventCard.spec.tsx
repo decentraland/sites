@@ -139,7 +139,7 @@ describe('LiveEventCard', () => {
 
       fireEvent.click(screen.getByText('Live Concert'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/1,2', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/1,2', { state: { place: expect.any(Object) } })
     })
 
     it('should navigate to the lowercased world detail route for worlds', () => {
@@ -147,7 +147,7 @@ describe('LiveEventCard', () => {
 
       fireEvent.click(screen.getByText('Live Concert'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/world/partyworld', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/world/partyworld', { state: { place: expect.any(Object) } })
     })
 
     it('should navigate using the first parcel when base_position is missing', () => {
@@ -155,7 +155,7 @@ describe('LiveEventCard', () => {
 
       fireEvent.click(screen.getByText('Live Concert'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/7,8', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/7,8', { state: { place: expect.any(Object) } })
     })
 
     it('should not navigate when the place has no coordinates', () => {

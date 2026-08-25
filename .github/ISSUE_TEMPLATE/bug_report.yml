@@ -69,7 +69,7 @@ body:
         - Download — Creator Hub Success (/download/creator-hub-success)
         - Invite (/invite/:referrer)
         - Sign In (/sign-in)
-        - What's On — Home (/whats-on)
+        - What's On — Home (/events)
         - What's On — New / Edit Hangout
         - What's On — Admin: Pending Events
         - What's On — Admin: Users
@@ -77,10 +77,10 @@ body:
         - Jump — Events (/jump/events)
         - Cast — Streamer (/cast/s)
         - Cast — Watcher (/cast/w)
-        - Discover — Home (/discover)
-        - Discover — Communities List (/discover/communities)
-        - Discover — Place Detail (/discover/place/:position)
-        - Discover — World Detail (/discover/world/:name)
+        - Discover — Home (/places)
+        - Discover — Communities List (/places/communities)
+        - Discover — Place Detail (/places/place/:position)
+        - Discover — World Detail (/places/world/:name)
         - Social — Community Detail (/social/communities/:id)
         - Profile — Overview (/profile/:address)
         - Profile — Assets tab (/profile/:address/assets)

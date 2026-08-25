@@ -154,13 +154,13 @@ describe('when redacting a sensitive URL', () => {
 
   describe('and the query string has nothing sensitive', () => {
     it('should return the URL untouched', () => {
-      expect(redactSensitiveUrl('/whats-on?page=2&sort=asc')).toBe('/whats-on?page=2&sort=asc')
+      expect(redactSensitiveUrl('/events?page=2&sort=asc')).toBe('/events?page=2&sort=asc')
     })
   })
 
   describe('and the URL has no query string', () => {
     it('should return the URL untouched', () => {
-      expect(redactSensitiveUrl('/discover/communities')).toBe('/discover/communities')
+      expect(redactSensitiveUrl('/places/communities')).toBe('/places/communities')
     })
   })
 
