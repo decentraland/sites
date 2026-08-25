@@ -964,7 +964,7 @@
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "approved_edit_warning": "承認済みのハングアウトの名前、説明、画像、場所、または注目アイテムを変更すると、更新が公開される前に再審査へ送られます。",
     "featured_item_label": "注目アイテム（任意）",
-    "featured_item_placeholder": "ウェアラブル、エモート、またはコレクションのURNを貼り付け",
+    "featured_item_placeholder": "アイテムまたはコレクションのURNを貼り付け",
     "error_invalid_featured_item": "有効なコレクションまたはアイテムのURNを入力してください",
     "error_image_too_large": "この画像を500 KB以下に圧縮できませんでした。より小さいファイルを選択してください。",
     "vertical_recommended_size": "推奨サイズ：716 × 1814 px",

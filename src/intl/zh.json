@@ -964,7 +964,7 @@
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "approved_edit_warning": "更改已批准聚会的名称、描述、图片、位置或精选物品，将在更新发布前重新送审。",
     "featured_item_label": "精选物品（可选）",
-    "featured_item_placeholder": "粘贴可穿戴物品、表情或合集的 URN",
+    "featured_item_placeholder": "粘贴物品或合集的 URN",
     "error_invalid_featured_item": "必须是有效的合集或物品 URN",
     "error_image_too_large": "无法将此图片压缩到 500 KB 以下。请选择较小的文件。",
     "vertical_recommended_size": "建议尺寸：716 × 1814 px",

@@ -959,7 +959,7 @@
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "approved_edit_warning": "Modifier le nom, la description, l'image, le lieu ou l'article en vedette d'un hangout approuvé le renverra en révision avant la mise en ligne des changements.",
     "featured_item_label": "Article en Vedette (Optionnel)",
-    "featured_item_placeholder": "Collez un URN de wearable, emote ou collection",
+    "featured_item_placeholder": "Collez un URN d'article ou de collection",
     "error_invalid_featured_item": "Doit être un URN valide de collection ou d'article",
     "error_image_too_large": "Nous n'avons pas pu compresser cette image en dessous de 500 Ko. Veuillez choisir un fichier plus petit.",
     "vertical_recommended_size": "Taille recommandée : 716 × 1814 px",
