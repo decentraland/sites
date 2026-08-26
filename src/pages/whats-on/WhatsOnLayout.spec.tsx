@@ -13,10 +13,10 @@ describe('when rendering WhatsOnLayout', () => {
 
   it('should render the admin tabs bar', () => {
     render(
-      <MemoryRouter initialEntries={['/whats-on']}>
+      <MemoryRouter initialEntries={['/events']}>
         <Routes>
           <Route element={<WhatsOnLayout />}>
-            <Route path="/whats-on" element={<span>child</span>} />
+            <Route path="/events" element={<span>child</span>} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -26,10 +26,10 @@ describe('when rendering WhatsOnLayout', () => {
 
   it('should render the outlet child route', () => {
     render(
-      <MemoryRouter initialEntries={['/whats-on']}>
+      <MemoryRouter initialEntries={['/events']}>
         <Routes>
           <Route element={<WhatsOnLayout />}>
-            <Route path="/whats-on" element={<span>child</span>} />
+            <Route path="/events" element={<span>child</span>} />
           </Route>
         </Routes>
       </MemoryRouter>

@@ -74,7 +74,7 @@ describe('SceneJumpInModal', () => {
     originalLocation = window.location
     Object.defineProperty(window, 'location', {
       configurable: true,
-      value: { origin: 'https://decentraland.org', href: 'https://decentraland.org/discover' }
+      value: { origin: 'https://decentraland.org', href: 'https://decentraland.org/places' }
     })
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
   })
@@ -244,8 +244,8 @@ describe('SceneJumpInModal', () => {
       fireEvent.click(screen.getByRole('button', { name: 'discover.scene.copy_link' }))
 
       // origin + buildDetailPath(place) — canonical even when the modal opened
-      // in place over /discover without navigating.
-      expect(writeText).toHaveBeenCalledWith('https://decentraland.org/discover/place/3,4')
+      // in place over /places without navigating.
+      expect(writeText).toHaveBeenCalledWith('https://decentraland.org/places/place/3,4')
     })
 
     it('should copy the world detail URL for world places', () => {
@@ -253,7 +253,7 @@ describe('SceneJumpInModal', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'discover.scene.copy_link' }))
 
-      expect(writeText).toHaveBeenCalledWith('https://decentraland.org/discover/world/galleryworld')
+      expect(writeText).toHaveBeenCalledWith('https://decentraland.org/places/world/galleryworld')
     })
 
     it('should fall back to the current page URL when the place has no detail path', () => {
@@ -261,7 +261,7 @@ describe('SceneJumpInModal', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'discover.scene.copy_link' }))
 
-      expect(writeText).toHaveBeenCalledWith('https://decentraland.org/discover')
+      expect(writeText).toHaveBeenCalledWith('https://decentraland.org/places')
     })
 
     it('should swallow clipboard rejections', () => {

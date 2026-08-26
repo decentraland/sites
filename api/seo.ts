@@ -405,7 +405,7 @@ const ROUTE_PATTERNS: Array<{ pattern: RegExp; handler: (match: RegExpMatchArray
   // /whats-on, /jump/events and /jump/places all deep-link via query params (?id=, ?position=)
   // rather than path segments. A single 'whats-on' route type handles all three by dispatching
   // on the query params; the path patterns just gate which paths reach the handler.
-  { pattern: /^\/whats-on(\/.*)?$/, handler: () => ({ type: 'whats-on' }) },
+  { pattern: /^\/events(\/.*)?$/, handler: () => ({ type: 'whats-on' }) },
   { pattern: /^\/jump\/events(\/.*)?$/, handler: () => ({ type: 'whats-on' }) },
   { pattern: /^\/jump\/places(\/.*)?$/, handler: () => ({ type: 'whats-on' }) }
 ]
@@ -419,7 +419,7 @@ const parseRoute = (pathname: string): RouteInfo => {
   return { type: 'unknown' }
 }
 
-const ALLOWED_ROOT_PATHS = ['/blog', '/reels', '/whats-on', '/jump'] as const
+const ALLOWED_ROOT_PATHS = ['/blog', '/reels', '/events', '/jump'] as const
 
 // =============================================================================
 // SEO Data Resolution
@@ -594,7 +594,7 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   // engines link back to the deep-linked event/parcel/world rather than the
   // generic listing page. Applies to /whats-on and /jump/{events,places}.
   const canonicalQuery = new URLSearchParams()
-  const preservesQuery = requestPath.startsWith('/whats-on') || requestPath.startsWith('/jump/')
+  const preservesQuery = requestPath.startsWith('/events') || requestPath.startsWith('/jump/')
   if (preservesQuery) {
     if (eventId && EVENT_ID_REGEX.test(eventId)) canonicalQuery.set('id', eventId)
     else if (position && POSITION_REGEX.test(position)) canonicalQuery.set('position', position)

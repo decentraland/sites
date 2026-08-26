@@ -22,11 +22,11 @@ const LegacyWorldRedirect = () => {
   const ready = useLegacyRedirectTracking({
     origin: 'places',
     source: `${location.pathname}${location.search}`,
-    destination: `/whats-on${search}`,
+    destination: `/events${search}`,
     preservedParams
   })
   if (!ready) return null
-  return <Navigate to={{ pathname: '/whats-on', search }} state={location.state} replace />
+  return <Navigate to={{ pathname: '/events', search }} state={location.state} replace />
 }
 
 export { LegacyWorldRedirect }

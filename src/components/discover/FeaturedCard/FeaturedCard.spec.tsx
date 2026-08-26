@@ -125,7 +125,7 @@ describe('FeaturedCard', () => {
 
       fireEvent.click(screen.getByText('Wonder Museum'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/12,34', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/12,34', { state: { place: expect.any(Object) } })
     })
 
     it('should navigate using the first parcel when base_position is missing', () => {
@@ -133,7 +133,7 @@ describe('FeaturedCard', () => {
 
       fireEvent.click(screen.getByText('Wonder Museum'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/5,6', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/5,6', { state: { place: expect.any(Object) } })
     })
 
     it('should not navigate when the place has no coordinates', () => {
@@ -151,7 +151,7 @@ describe('FeaturedCard', () => {
 
       fireEvent.click(screen.getByText('Wonder Museum'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/world/artworld', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/world/artworld', { state: { place: expect.any(Object) } })
     })
 
     it('should show the world name as the location label', () => {
@@ -183,7 +183,7 @@ describe('FeaturedCard', () => {
       fireEvent.mouseLeave(card)
       fireEvent.click(card)
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/12,34', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/12,34', { state: { place: expect.any(Object) } })
     })
   })
 

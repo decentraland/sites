@@ -49,10 +49,10 @@ describe('useOpenProfileModal', () => {
   describe('when a ProfileModalHost is available', () => {
     it('should open the overlay by adding ?profile=<address> to the current path', () => {
       hostAvailable = true
-      mockLocation = { pathname: '/whats-on', search: '?foo=bar' }
+      mockLocation = { pathname: '/events', search: '?foo=bar' }
       const { result } = renderHook(() => useOpenProfileModal())
       result.current('0xABC')
-      expect(navigateMock).toHaveBeenCalledWith({ pathname: '/whats-on', search: '?foo=bar&profile=0xabc' })
+      expect(navigateMock).toHaveBeenCalledWith({ pathname: '/events', search: '?foo=bar&profile=0xabc' })
     })
   })
 

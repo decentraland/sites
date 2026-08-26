@@ -40,7 +40,7 @@ function CreateEventPage() {
   // Delete is only reachable from the edit form (per design). After a successful delete the
   // hangout is gone, so we send the user to their My Hangouts list.
   const handleDeleted = useCallback(() => {
-    navigate('/whats-on?tab=my')
+    navigate('/events?tab=my')
   }, [navigate])
 
   const { requestDelete, isConfirmOpen, isDeleting, closeConfirm, confirmDelete, feedback, clearFeedback } = useDeleteHangout({
@@ -53,26 +53,26 @@ function CreateEventPage() {
 
   useEffect(() => {
     if (!hasValidIdentity) {
-      navigate('/whats-on', { replace: true })
+      navigate('/events', { replace: true })
       return
     }
 
     if (!isEditRoute) return
 
     if (isEventError) {
-      navigate('/whats-on', { replace: true })
+      navigate('/events', { replace: true })
       return
     }
 
     if (shouldFetchEvent && isEventFetching) return
 
     if (!initialEvent || initialEvent.id !== params.eventId) {
-      navigate('/whats-on', { replace: true })
+      navigate('/events', { replace: true })
       return
     }
 
     if (!isPermissionsLoading && !canEdit) {
-      navigate('/whats-on', { replace: true })
+      navigate('/events', { replace: true })
     }
   }, [
     canEdit,
@@ -88,7 +88,7 @@ function CreateEventPage() {
   ])
 
   const handleBack = useCallback(() => {
-    navigate('/whats-on')
+    navigate('/events')
   }, [navigate])
 
   const handleSuccess = useCallback(() => {

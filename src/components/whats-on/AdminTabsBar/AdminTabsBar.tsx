@@ -5,10 +5,10 @@ import { Button } from 'decentraland-ui2'
 import { useAdminPermissions } from '../../../hooks/useAdminPermissions'
 import { Bar, BarTab, BarTabs, CreateEventButtonWrapper } from './AdminTabsBar.styled'
 
-const ROUTE_WHATS_ON = '/whats-on'
-const ROUTE_PENDING = '/whats-on/admin/pending-events'
-const ROUTE_USERS = '/whats-on/admin/users'
-const ROUTE_CREATE_EVENT = '/whats-on/new-hangout'
+const ROUTE_WHATS_ON = '/events'
+const ROUTE_PENDING = '/events/admin/pending-events'
+const ROUTE_USERS = '/events/admin/users'
+const ROUTE_CREATE_EVENT = '/events/new-hangout'
 
 function AdminTabsBar() {
   const { isAdmin, canApproveAnyEvent, canApproveOwnEvent, canEditAnyEvent, canEditAnyProfile } = useAdminPermissions()

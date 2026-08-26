@@ -31,7 +31,7 @@ function useLegacyRedirectTracking({ origin, source, destination, preservedParam
 
   // Snapshot the legacy URL at mount. <Navigate> drives location.search to the
   // new path before this component unmounts, so a deps-based effect would
-  // re-run with source='/whats-on' and either fire the track late with the
+  // re-run with source='/events' and either fire the track late with the
   // wrong source, or — if the timer branch released ready without setting
   // fired — emit a duplicate event for the destination instead of the origin.
   const argsRef = useRef({ origin, source, destination, preservedParams })

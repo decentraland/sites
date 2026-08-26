@@ -12,11 +12,11 @@ const LegacyWhatsOnRedirect = ({ origin }: Props) => {
   const ready = useLegacyRedirectTracking({
     origin,
     source: `${location.pathname}${location.search}`,
-    destination: `/whats-on${location.search}`,
+    destination: `/events${location.search}`,
     preservedParams
   })
   if (!ready) return null
-  return <Navigate to={{ pathname: '/whats-on', search: location.search }} state={location.state} replace />
+  return <Navigate to={{ pathname: '/events', search: location.search }} state={location.state} replace />
 }
 
 export { LegacyWhatsOnRedirect }

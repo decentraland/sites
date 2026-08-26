@@ -49,7 +49,7 @@ describe('MyExperiencesEmptyState', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /Create Hangout/ }))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/whats-on/new-hangout')
+      expect(mockNavigate).toHaveBeenCalledWith('/events/new-hangout')
     })
   })
 })

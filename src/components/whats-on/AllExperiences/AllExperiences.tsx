@@ -131,7 +131,7 @@ function AllExperiences() {
       )
       return
     }
-    redirectToAuth('/whats-on', { [TAB_QUERY_PARAM]: MY_TAB_PARAM_VALUE })
+    redirectToAuth('/events', { [TAB_QUERY_PARAM]: MY_TAB_PARAM_VALUE })
   }, [hasValidIdentity, activeTab, setSearchParams])
 
   const isMyTab = hasValidIdentity && activeTab === 'my'

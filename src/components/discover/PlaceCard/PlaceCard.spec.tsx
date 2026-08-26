@@ -101,7 +101,7 @@ describe('PlaceCard', () => {
 
       fireEvent.click(screen.getByText('Genesis Plaza'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/-9,-9', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/-9,-9', { state: { place: expect.any(Object) } })
     })
 
     it('should navigate instead of calling onEmptyClick because the scene is live', () => {
@@ -111,7 +111,7 @@ describe('PlaceCard', () => {
       fireEvent.click(screen.getByText('Genesis Plaza'))
 
       expect(onEmptyClick).not.toHaveBeenCalled()
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/-9,-9', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/-9,-9', { state: { place: expect.any(Object) } })
     })
   })
 
@@ -143,7 +143,7 @@ describe('PlaceCard', () => {
 
       fireEvent.click(screen.getByText('Genesis Plaza'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/-9,-9', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/-9,-9', { state: { place: expect.any(Object) } })
     })
   })
 
@@ -173,7 +173,7 @@ describe('PlaceCard', () => {
 
       fireEvent.click(screen.getByText('Genesis Plaza'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/world/myworld', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/world/myworld', { state: { place: expect.any(Object) } })
     })
 
     it('should show the world name in the location pill', () => {
@@ -197,7 +197,7 @@ describe('PlaceCard', () => {
 
       fireEvent.click(screen.getByText('Genesis Plaza'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/10,20', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/10,20', { state: { place: expect.any(Object) } })
     })
   })
 
@@ -232,7 +232,7 @@ describe('PlaceCard', () => {
       fireEvent.mouseLeave(card)
       fireEvent.click(card)
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/-9,-9', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/-9,-9', { state: { place: expect.any(Object) } })
     })
   })
 

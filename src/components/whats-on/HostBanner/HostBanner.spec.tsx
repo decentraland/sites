@@ -43,8 +43,8 @@ jest.mock('@mui/icons-material/Add', () => ({
   default: () => <span data-testid="add-icon" />
 }))
 
-jest.mock('../../../images/whats-on/images/host_avatar.webp', () => 'avatar.webp')
-jest.mock('../../../images/whats-on/images/host_scene.webp', () => 'scene.webp')
+jest.mock('../../../images/events/images/host_avatar.webp', () => 'avatar.webp')
+jest.mock('../../../images/events/images/host_scene.webp', () => 'scene.webp')
 
 const mockUseAuthIdentity = jest.fn()
 jest.mock('../../../hooks/useAuthIdentity', () => ({
@@ -85,12 +85,12 @@ describe('HostBanner', () => {
         mockUseAuthIdentity.mockReturnValue({ hasValidIdentity: true, identity: {}, address: '0x123' })
       })
 
-      it('should navigate to /whats-on/new-hangout', () => {
+      it('should navigate to /events/new-hangout', () => {
         render(<HostBanner />)
 
         fireEvent.click(screen.getByTestId('create-button'))
 
-        expect(mockNavigate).toHaveBeenCalledWith('/whats-on/new-hangout')
+        expect(mockNavigate).toHaveBeenCalledWith('/events/new-hangout')
       })
     })
 
@@ -99,12 +99,12 @@ describe('HostBanner', () => {
         mockUseAuthIdentity.mockReturnValue({ hasValidIdentity: false, identity: undefined, address: undefined })
       })
 
-      it('should redirect to auth with /whats-on/new-hangout as return path', () => {
+      it('should redirect to auth with /events/new-hangout as return path', () => {
         render(<HostBanner />)
 
         fireEvent.click(screen.getByTestId('create-button'))
 
-        expect(mockRedirectToAuth).toHaveBeenCalledWith('/whats-on/new-hangout')
+        expect(mockRedirectToAuth).toHaveBeenCalledWith('/events/new-hangout')
       })
 
       it('should not navigate', () => {

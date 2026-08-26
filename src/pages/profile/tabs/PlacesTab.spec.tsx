@@ -268,7 +268,7 @@ describe('PlacesTab', () => {
           await userEvent.click(screen.getByText('profile.places.filter_favorites'))
           fireEvent.click(screen.getByText('profile.places.empty_favorites_cta'))
 
-          expect(navigateMock).toHaveBeenCalledWith('/whats-on')
+          expect(navigateMock).toHaveBeenCalledWith('/events')
         })
 
         it('should switch back to the owned places view when the my-places filter is clicked again', async () => {

@@ -49,7 +49,7 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
   useLocation: () => ({
     state: mockLocationState,
-    pathname: mockParams.eventId ? `/whats-on/edit-hangout/${mockParams.eventId}` : '/whats-on/new-hangout',
+    pathname: mockParams.eventId ? `/events/edit-hangout/${mockParams.eventId}` : '/events/new-hangout',
     search: mockSearch,
     hash: '',
     key: 'default'
@@ -146,10 +146,10 @@ describe('CreateEventPage', () => {
       mockIdentityReturn = { hasValidIdentity: false }
     })
 
-    it('should redirect to /whats-on', () => {
+    it('should redirect to /events', () => {
       render(<CreateEventPage />)
 
-      expect(mockNavigate).toHaveBeenCalledWith('/whats-on', { replace: true })
+      expect(mockNavigate).toHaveBeenCalledWith('/events', { replace: true })
     })
 
     it('should render nothing in the page body', () => {
@@ -173,20 +173,20 @@ describe('CreateEventPage', () => {
       expect(screen.queryByTestId('create-event-success')).not.toBeInTheDocument()
     })
 
-    it('should navigate to /whats-on when the back button is clicked', () => {
+    it('should navigate to /events when the back button is clicked', () => {
       render(<CreateEventPage />)
 
       fireEvent.click(screen.getByTestId('back-button'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/whats-on')
+      expect(mockNavigate).toHaveBeenCalledWith('/events')
     })
 
-    it('should navigate to /whats-on when the form cancel callback fires', () => {
+    it('should navigate to /events when the form cancel callback fires', () => {
       render(<CreateEventPage />)
 
       fireEvent.click(screen.getByTestId('form-cancel'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/whats-on')
+      expect(mockNavigate).toHaveBeenCalledWith('/events')
     })
   })
 
@@ -305,10 +305,10 @@ describe('CreateEventPage', () => {
       mockUseCanEditEvent.mockReturnValue({ canEdit: false, isLoading: false })
     })
 
-    it('should redirect to /whats-on', () => {
+    it('should redirect to /events', () => {
       render(<CreateEventPage />)
 
-      expect(mockNavigate).toHaveBeenCalledWith('/whats-on', { replace: true })
+      expect(mockNavigate).toHaveBeenCalledWith('/events', { replace: true })
     })
   })
 
@@ -410,10 +410,10 @@ describe('CreateEventPage', () => {
         mockUseGetEventByIdQuery.mockReturnValue({ data: undefined, isFetching: false, isError: true })
       })
 
-      it('should redirect to /whats-on', () => {
+      it('should redirect to /events', () => {
         render(<CreateEventPage />)
 
-        expect(mockNavigate).toHaveBeenCalledWith('/whats-on', { replace: true })
+        expect(mockNavigate).toHaveBeenCalledWith('/events', { replace: true })
       })
     })
   })
@@ -455,7 +455,7 @@ describe('CreateEventPage', () => {
 
         mockDeleteOnDeleted?.()
 
-        expect(mockNavigate).toHaveBeenCalledWith('/whats-on?tab=my')
+        expect(mockNavigate).toHaveBeenCalledWith('/events?tab=my')
       })
     })
   })

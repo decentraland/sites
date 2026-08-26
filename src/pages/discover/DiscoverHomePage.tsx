@@ -109,7 +109,7 @@ const FEATURED_COLLAPSED_ROWS = 2
 function DiscoverHomePage() {
   const t = useFormatMessage()
 
-  // `/discover/*` is in `isPageTrackingExempt`, so the Layout's route-level
+  // `/places/*` is in `isPageTrackingExempt`, so the Layout's route-level
   // `page()` is suppressed. Fire it from the page so Segment still records a
   // page view. Static name — no async data, so it fires immediately.
   usePageViewTracking({ name: t('discover.home.page_title') })

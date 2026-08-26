@@ -74,9 +74,9 @@ describe('when rendering the 404 page', () => {
     expect(screen.getByText('404')).toHaveAttribute('aria-hidden', 'true')
   })
 
-  it('should link the CTA to /whats-on', () => {
+  it('should link the CTA to /events', () => {
     renderPage()
-    expect(screen.getByRole('link', { name: 'page.not_found.cta' })).toHaveAttribute('href', '/whats-on')
+    expect(screen.getByRole('link', { name: 'page.not_found.cta' })).toHaveAttribute('href', '/events')
   })
 
   it('should link the logo to the homepage', () => {

@@ -331,7 +331,7 @@ describe('when the user lacks edit-profile permission', () => {
     jest.resetAllMocks()
   })
 
-  it('should redirect to /whats-on instead of rendering the users table', () => {
+  it('should redirect to /events instead of rendering the users table', () => {
     render(
       <MemoryRouter>
         <UsersAdminPage />

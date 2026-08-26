@@ -3,7 +3,7 @@ import type { DiscoverPlace } from './discover.types'
 
 // Canonical category set used by the EXPLORE tab. Order mirrors what the
 // places-api exposes and what users expect from the standalone decentraland.social
-// site this `/discover` route absorbs. The leading 'social' is a CATEGORY
+// site this `/places` route absorbs. The leading 'social' is a CATEGORY
 // value, unrelated to the route rename.
 const DISCOVER_CATEGORIES = ['social', 'music', 'art', 'game', 'fashion', 'education', 'shop', 'sports', 'business'] as const
 
@@ -49,10 +49,10 @@ function buildJumpLandingHref(place: DiscoverPlace): string {
 // over /discover without navigating).
 function buildDetailPath(place: DiscoverPlace): string | null {
   if (place.world && place.world_name) {
-    return `/discover/world/${encodeURIComponent(place.world_name.toLowerCase())}`
+    return `/places/world/${encodeURIComponent(place.world_name.toLowerCase())}`
   }
   const position = place.base_position ?? place.positions?.[0]
-  if (position) return `/discover/place/${position}`
+  if (position) return `/places/place/${position}`
   return null
 }
 

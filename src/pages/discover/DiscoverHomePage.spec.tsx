@@ -512,7 +512,7 @@ describe('DiscoverHomePage', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Quiet Gallery' }))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/30,30', { state: { place: expect.objectContaining({ id: 'quiet-1' }) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/30,30', { state: { place: expect.objectContaining({ id: 'quiet-1' }) } })
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
   })

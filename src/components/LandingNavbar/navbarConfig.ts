@@ -24,8 +24,8 @@ const MENU_CONFIG: MenuConfig = {
   discover: {
     labelKey: 'component.landing.navbar.discover',
     items: [
-      { labelKey: 'component.landing.navbar.events', url: '/whats-on' },
-      { labelKey: 'component.landing.navbar.places', url: '/discover' }
+      { labelKey: 'component.landing.navbar.events', url: '/events' },
+      { labelKey: 'component.landing.navbar.places', url: '/places' }
     ]
   },
   shop: {
