@@ -163,7 +163,7 @@ describe('when the user is an admin with approve and edit-profile permissions', 
       </MemoryRouter>
     )
     fireEvent.click(screen.getByRole('button', { name: 'whats_on_admin.cta.create_event' }))
-    expect(screen.getByTestId('path').textContent).toBe('/events/new-hangout')
+    expect(screen.getByTestId('path').textContent).toBe('/events/new-event')
   })
 
   it('should navigate when a tab string value is provided to onChange', () => {

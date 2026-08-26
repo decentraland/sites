@@ -9,10 +9,10 @@ describe('when deciding which navbar section owns the current page', () => {
     expect(isSectionActive('discover', '/places')).toBe(true)
   })
 
-  // /places/place/-102,129 and /events/new-hangout are still the same section.
+  // /places/place/-102,129 and /events/new-event are still the same section.
   it('should light up Discover on a nested page of either destination', () => {
     expect(isSectionActive('discover', '/places/place/-102,129')).toBe(true)
-    expect(isSectionActive('discover', '/events/new-hangout')).toBe(true)
+    expect(isSectionActive('discover', '/events/new-event')).toBe(true)
   })
 
   it('should not light up Discover on the landing page', () => {

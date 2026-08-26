@@ -49,7 +49,7 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
   useLocation: () => ({
     state: mockLocationState,
-    pathname: mockParams.eventId ? `/events/edit-hangout/${mockParams.eventId}` : '/events/new-hangout',
+    pathname: mockParams.eventId ? `/events/edit-event/${mockParams.eventId}` : '/events/new-event',
     search: mockSearch,
     hash: '',
     key: 'default'

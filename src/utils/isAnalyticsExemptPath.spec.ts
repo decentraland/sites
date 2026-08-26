@@ -20,7 +20,7 @@ describe('isAnalyticsExemptPath', () => {
     it.each([
       '/',
       '/events',
-      '/events/new-hangout',
+      '/events/new-event',
       '/blog',
       '/blog/news',
       '/help',

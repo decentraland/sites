@@ -44,12 +44,12 @@ describe('MyExperiencesEmptyState', () => {
   })
 
   describe('when clicking the CTA', () => {
-    it('should navigate to the new-hangout route', () => {
+    it('should navigate to the new-event route', () => {
       render(<MyExperiencesEmptyState />)
 
       fireEvent.click(screen.getByRole('button', { name: /Create Hangout/ }))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/events/new-hangout')
+      expect(mockNavigate).toHaveBeenCalledWith('/events/new-event')
     })
   })
 })

@@ -90,9 +90,9 @@ describe('RenamedSectionRedirect', () => {
 
   describe('when the old URL carries a query string', () => {
     it('should preserve it alongside the subpath', () => {
-      renderAt({ pathname: '/whats-on/edit-hangout/ev-1', search: '?tab=details' })
+      renderAt({ pathname: '/whats-on/edit-event/ev-1', search: '?tab=details' })
 
-      expect(screen.getByTestId('pathname')).toHaveTextContent('/events/edit-hangout/ev-1')
+      expect(screen.getByTestId('pathname')).toHaveTextContent('/events/edit-event/ev-1')
       expect(screen.getByTestId('search')).toHaveTextContent('?tab=details')
     })
 

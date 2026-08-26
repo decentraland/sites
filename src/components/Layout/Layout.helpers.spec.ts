@@ -2,7 +2,7 @@ import { isPageTrackingExempt } from './Layout.helpers'
 
 describe('isPageTrackingExempt', () => {
   describe('when pathname is the landing or a regular page', () => {
-    it.each(['/', '/download', '/events', '/events/new-hangout', '/help'])('should return false for %s', pathname => {
+    it.each(['/', '/download', '/events', '/events/new-event', '/help'])('should return false for %s', pathname => {
       expect(isPageTrackingExempt(pathname)).toBe(false)
     })
   })

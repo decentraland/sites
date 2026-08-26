@@ -252,11 +252,11 @@ const App = () => {
               <Route element={<DappsShell />}>
                 <Route element={<WhatsOnLayout />}>
                   <Route path="/events" element={<WhatsOnHomePage />} />
-                  <Route path="/events/new-hangout" element={<CreateEventPage />} />
-                  <Route path="/events/edit-hangout/:eventId" element={<CreateEventPage />} />
+                  <Route path="/events/new-event" element={<CreateEventPage />} />
+                  <Route path="/events/edit-event/:eventId" element={<CreateEventPage />} />
                   {/* Legacy aliases — preserve query string + location state. */}
-                  <Route path="/events/new-event" element={<LegacyHangoutRedirect />} />
-                  <Route path="/events/edit-event/:eventId" element={<LegacyHangoutRedirect />} />
+                  <Route path="/events/new-hangout" element={<LegacyHangoutRedirect />} />
+                  <Route path="/events/edit-hangout/:eventId" element={<LegacyHangoutRedirect />} />
                   <Route path="/events/admin/pending-events" element={<PendingEventsPage />} />
                   <Route path="/events/admin/users" element={<UsersAdminPage />} />
                 </Route>
