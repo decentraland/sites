@@ -118,6 +118,9 @@
         "view_all": "查看全部"
       }
     },
+    "events": {
+      "page_title": "活动 — Decentraland"
+    },
     "cast": {
       "app": {
         "title": "Decentraland Cast 2.0",
