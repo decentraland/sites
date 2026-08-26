@@ -931,9 +931,9 @@
     },
     "jump": {
       "events_page": {
-        "deleted_notice_prefix": "이 행아웃은 더 이상 이용할 수 없습니다.",
-        "deleted_notice_link": "All Hangouts",
-        "deleted_notice_suffix": "에서 더 많은 행아웃을 찾아보세요."
+        "deleted_notice_prefix": "이 이벤트는 더 이상 이용할 수 없습니다.",
+        "deleted_notice_link": "모든 이벤트",
+        "deleted_notice_suffix": "에서 더 많은 이벤트를 찾아보세요."
       }
     },
     "creators_landing": {
@@ -962,7 +962,7 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "approved_edit_warning": "승인된 행아웃의 이름, 설명, 이미지, 위치 또는 추천 아이템을 변경하면 업데이트가 게시되기 전에 다시 검토됩니다.",
+    "approved_edit_warning": "승인된 이벤트의 이름, 설명, 이미지 또는 위치를 변경하면 다시 검토 대기 상태가 됩니다.",
     "featured_item_label": "추천 아이템 (선택사항)",
     "featured_item_placeholder": "아이템 또는 컬렉션 URN을 붙여넣기",
     "error_invalid_featured_item": "유효한 컬렉션 또는 아이템 URN이어야 합니다",
@@ -1216,13 +1216,13 @@
   "event_detail": {
     "delete": "삭제",
     "delete_modal": {
-      "title": "행아웃을 삭제하시겠습니까?",
-      "subtitle": "이 행아웃은 내 행아웃에서 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.",
+      "title": "이벤트를 삭제하시겠습니까?",
+      "subtitle": "이 이벤트는 내 이벤트에서 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.",
       "cancel": "취소",
-      "confirm": "행아웃 삭제",
-      "toast_title": "행아웃이 삭제되었습니다",
-      "toast_description": "행아웃 {name}이(가) 성공적으로 삭제되었습니다!",
-      "error": "행아웃을 삭제하지 못했습니다. 다시 시도해 주세요."
+      "confirm": "이벤트 삭제",
+      "toast_title": "이벤트가 삭제되었습니다",
+      "toast_description": "이벤트 {name}이(가) 성공적으로 삭제되었습니다!",
+      "error": "이벤트를 삭제하지 못했습니다. 다시 시도해 주세요."
     },
     "recurrent_daily": "매일 반복",
     "recurrent_weekly": "매주 반복",
@@ -1260,7 +1260,7 @@
   },
   "discover": {
     "home": {
-      "page_title": "디스커버 — Decentraland"
+      "page_title": "장소 — Decentraland"
     },
     "card": {
       "jump_in": "입장",

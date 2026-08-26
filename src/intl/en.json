@@ -433,7 +433,7 @@
       "title_oops": "Oops!",
       "title_rest": "This page has left the world.",
       "description": "The link may be outdated, but Decentraland is still live. Find community events, DJ sets, creator-built games, and new experiences happening in-world.",
-      "cta": "See What's On"
+      "cta": "See Events"
     }
   },
   "page_invite": {
@@ -799,8 +799,8 @@
         "explore_events_button": "EXPLORE EVENTS",
         "jump_in_button": "Jump In",
         "calendar_label": "Jump In",
-        "deleted_notice_prefix": "This hangout is no longer available. Browse",
-        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_prefix": "This event is no longer available. Browse",
+        "deleted_notice_link": "All Events",
         "deleted_notice_suffix": "to discover more."
       },
       "invalid_page": {
@@ -1110,13 +1110,13 @@
     "edit": "Edit",
     "delete": "Delete",
     "delete_modal": {
-      "title": "Are you sure you want to delete your hangout?",
-      "subtitle": "This hangout will be permanently removed from your hangouts. This action can’t be undone.",
+      "title": "Are you sure you want to delete your event?",
+      "subtitle": "This event will be permanently removed from your events. This action can’t be undone.",
       "cancel": "Cancel",
-      "confirm": "Delete hangout",
-      "toast_title": "Hangout Deleted successfully",
-      "toast_description": "Your hangout {name} has been deleted successfully!",
-      "error": "We couldn't delete your hangout. Please try again."
+      "confirm": "Delete event",
+      "toast_title": "Event Deleted successfully",
+      "toast_description": "Your event {name} has been deleted successfully!",
+      "error": "We couldn't delete your event. Please try again."
     },
     "by_prefix": "By ",
     "unknown_creator": "Unknown",
@@ -1164,14 +1164,14 @@
     "people_now": "{count, plural, one {# person here now} other {# people here now}}"
   },
   "all_hangouts": {
-    "title": "All Hangouts",
-    "tab_all": "All Hangouts",
-    "tab_my": "My Hangouts",
+    "title": "All Events",
+    "tab_all": "All Events",
+    "tab_my": "My Events",
     "today": "Today",
     "tomorrow": "Tomorrow",
     "navigate_previous": "Navigate to previous dates",
     "navigate_next": "Navigate to next dates",
-    "events_for_day": "Hangouts for {day}",
+    "events_for_day": "Events for {day}",
     "jump_in": "Jump In",
     "add_to_calendar": "Add to calendar",
     "remind_me": "Remind me",
@@ -1181,42 +1181,42 @@
     "unknown_creator": "Unknown"
   },
   "my_hangouts": {
-    "empty_title": "You don't have any hangout created",
-    "empty_cta": "Create Hangout",
+    "empty_title": "You don't have any event created",
+    "empty_cta": "Create Event",
     "hosted_by_me": "Hosted by me",
     "status_approved": "Approved",
     "status_pending": "Pending",
     "status_rejected": "Rejected"
   },
   "create_event": {
-    "title": "Submit a Hangout",
-    "edit_title": "Edit Hangout",
+    "title": "Submit an Event",
+    "edit_title": "Edit Event",
     "save_changes": "Save Changes",
     "back": "Go back",
-    "sign_in_message": "To create a hangout you will need to sign in or create an account",
+    "sign_in_message": "To create an event you will need to sign in or create an account",
     "sign_in": "Sign In",
     "create_account": "Create Account",
-    "image_upload_label": "Upload hangout cover image",
-    "image_preview_alt": "Hangout cover preview",
-    "select_cover": "Select a Hangout Cover",
+    "image_upload_label": "Upload event cover image",
+    "image_preview_alt": "Event cover preview",
+    "select_cover": "Select an Event Cover",
     "choose_picture": "Choose a Picture",
     "drop_hint": "from your gallery or drop it here",
     "recommended_size": "(recommended size: 1340 × 670)",
     "image_helper": "Upload a PNG, JPG, or GIF (1340×670px, max 500kb). Center visuals and text to fit all screen resolutions.",
     "change_image": "Change Image",
-    "event_name": "Hangout Name",
+    "event_name": "Event Name",
     "name_placeholder": "Be as descriptive as you can",
-    "event_description": "Hangout Description",
+    "event_description": "Event Description",
     "description_placeholder": "Be as descriptive as you can",
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "approved_edit_warning": "Changing the name, description, image, location, or featured item of an approved hangout will send it back for review before the updates go live.",
-    "event_details": "Hangout Details",
+    "approved_edit_warning": "Changing the name, description, image, or location of an approved event sends it back for review.",
+    "event_details": "Event Details",
     "date": "Date",
     "start": "Start",
     "duration": "Duration",
     "repeat_until": "Ends",
-    "repeat_event": "Repeat Hangout",
+    "repeat_event": "Repeat Event",
     "every_day": "Every Day",
     "every_week": "Every Week",
     "every_month": "Every Month",
@@ -1242,9 +1242,9 @@
     "additional_notes": "Additional Notes",
     "notes_placeholder": "Be as descriptive as you can",
     "cancel": "Cancel",
-    "submit": "Submit Hangout",
+    "submit": "Submit Event",
     "submitting": "Submitting...",
-    "review_notice": "The hangout submission will be reviewed by our team, you'll be notified by email",
+    "review_notice": "The event submission will be reviewed by our team, you'll be notified by email",
     "error_required": "This field is required",
     "error_invalid_email": "Please enter a valid email address",
     "error_invalid_featured_item": "Must be a valid collection or item URN",
@@ -1261,24 +1261,24 @@
     "error_image_dimensions": "Image must be 1340×670 pixels.",
     "error_vertical_image_dimensions": "Vertical cover must be 716×1814 pixels.",
     "error_vertical_image_decode": "We couldn't read this image. Please try a different file.",
-    "error_not_signed_in": "Your session expired. Please sign in again to submit this hangout.",
+    "error_not_signed_in": "Your session expired. Please sign in again to submit this event.",
     "error_upload_failed": "Failed to upload image. Please try again.",
-    "error_image_required": "A hangout cover is required.",
-    "success_message": "Your hangout was created successfully. You'll be notified once it's approved. Track its status in \"My Hangouts\"",
-    "edit_success_message": "Your hangout was updated successfully.",
+    "error_image_required": "An event cover is required.",
+    "success_message": "Your event was created successfully. You'll be notified once it's approved. Track its status in \"My Events\"",
+    "edit_success_message": "Your event was updated successfully.",
     "back_to_explore": "Back to Explore",
-    "my_events": "My Hangouts",
+    "my_events": "My Events",
     "add_vertical_cover": "Add Vertical Cover",
     "remove_vertical_cover": "Remove Vertical Cover",
     "recommended_parenthetical": "(recommended)",
-    "select_vertical_cover": "Select a Hangout Cover (Vertical - Optional)",
+    "select_vertical_cover": "Select an Event Cover (Vertical - Optional)",
     "vertical_recommended_size": "Recommended size: 716 × 1814 px",
-    "vertical_modal_label": "Upload vertical hangout cover",
+    "vertical_modal_label": "Upload vertical event cover",
     "world_placeholder": "Select a world",
     "community_none": "None",
     "close": "Close",
     "preview": "Preview",
-    "preview_disabled_tooltip": "Complete the required fields to preview the hangout",
+    "preview_disabled_tooltip": "Complete the required fields to preview the event",
     "vertical_file_hint": "PNG or JPG, max 500 KB",
     "vertical_image_usage": "Used for featured events in-world",
     "recurrence": "Recurrence",
@@ -1289,12 +1289,12 @@
     "upcoming_dates_empty": "No upcoming dates for this recurrence"
   },
   "host_banner": {
-    "title": "Host a Hangout",
+    "title": "Host an Event",
     "subtitle": "Bring people together, your way.",
     "check_1": "Choose a vibe people can drop into.",
-    "check_2": "Add the hangout details.",
+    "check_2": "Add the event details.",
     "check_3": "Publish it and send the invites.",
-    "create_event": "Create a Hangout",
+    "create_event": "Create an Event",
     "learn_more": "Learn More"
   },
   "blog": {
@@ -1340,30 +1340,30 @@
   },
   "whats_on_admin": {
     "tabs": {
-      "whats_on": "What's On",
-      "pending_events": "Pending Hangouts",
+      "whats_on": "Events",
+      "pending_events": "Pending Events",
       "users": "Users"
     },
     "cta": {
-      "create_event": "+ Create Hangout",
+      "create_event": "+ Create Event",
       "add_user": "+ Add User"
     },
     "pending_events": {
-      "title": "Pending Hangouts",
+      "title": "Pending Events",
       "recently_approved": "Recently Approved",
       "recently_approved_subtitle": "(Last 24hs)",
-      "empty": "No hangouts waiting for approval",
+      "empty": "No events waiting for approval",
       "approve": "Approve",
       "reject": "Reject",
-      "action_error": "Unable to update hangout. Please try again.",
+      "action_error": "Unable to update event. Please try again.",
       "today": "Today",
       "tomorrow": "Tomorrow",
       "in_n_days": "In {count} Days",
       "status_pending": "Pending",
       "status_approved": "Approved",
       "status_rejected": "Rejected",
-      "approve_success": "Hangout/Experience approved successfully",
-      "reject_success": "Hangout/Experience rejected successfully"
+      "approve_success": "Event/Experience approved successfully",
+      "reject_success": "Event/Experience rejected successfully"
     },
     "users": {
       "title": "Users",
@@ -1371,9 +1371,9 @@
       "search_placeholder": "Type wallet address",
       "columns": {
         "user": "User",
-        "approve_own_events": "Approve Own Hangouts",
-        "approve_events": "Approve Hangouts",
-        "edit_events": "Edit Hangouts",
+        "approve_own_events": "Approve Own Events",
+        "approve_events": "Approve Events",
+        "edit_events": "Edit Events",
         "edit_schedules": "Edit Schedules",
         "edit_users": "Edit Users"
       },
@@ -1387,7 +1387,7 @@
           "description": "Does not comply with our Terms or Code of Ethics"
         },
         "invalid_event_name": {
-          "title": "Invalid hangout name",
+          "title": "Invalid event name",
           "description": "Does not comply with our Terms or Code of Ethics"
         },
         "inappropriate_description": {
@@ -1422,16 +1422,16 @@
       "self_edit_locked": "You cannot remove your own admin permission",
       "permissions": {
         "approve_own_event": {
-          "title": "Approve Own Hangouts",
-          "description": "Allow this user to approve hangouts they create"
+          "title": "Approve Own Events",
+          "description": "Allow this user to approve events they create"
         },
         "approve_any_event": {
-          "title": "Approve Hangouts",
-          "description": "Allow this user to approve any hangout"
+          "title": "Approve Events",
+          "description": "Allow this user to approve any event"
         },
         "edit_any_event": {
-          "title": "Edit Hangouts",
-          "description": "Allow this user to edit any hangout"
+          "title": "Edit Events",
+          "description": "Allow this user to edit any event"
         },
         "edit_any_schedule": {
           "title": "Edit Schedules",
@@ -1494,7 +1494,7 @@
   },
   "discover": {
     "home": {
-      "page_title": "Discover — Decentraland"
+      "page_title": "Places — Decentraland"
     },
     "card": {
       "jump_in": "Jump in",

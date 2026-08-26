@@ -931,8 +931,8 @@
     },
     "jump": {
       "events_page": {
-        "deleted_notice_prefix": "此聚会已不再可用。浏览",
-        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_prefix": "此活动已不再可用。浏览",
+        "deleted_notice_link": "所有活动",
         "deleted_notice_suffix": "发现更多。"
       }
     },
@@ -962,7 +962,7 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "approved_edit_warning": "更改已批准聚会的名称、描述、图片、位置或精选物品，将在更新发布前重新送审。",
+    "approved_edit_warning": "修改已批准活动的名称、描述、图片或位置后，将重新进入审核。",
     "featured_item_label": "精选物品（可选）",
     "featured_item_placeholder": "粘贴物品或合集的 URN",
     "error_invalid_featured_item": "必须是有效的合集或物品 URN",
@@ -1216,13 +1216,13 @@
   "event_detail": {
     "delete": "删除",
     "delete_modal": {
-      "title": "确定要删除你的聚会吗？",
-      "subtitle": "此聚会将从你的聚会中永久删除。此操作无法撤销。",
+      "title": "确定要删除你的活动吗？",
+      "subtitle": "此活动将从你的活动中永久删除。此操作无法撤销。",
       "cancel": "取消",
-      "confirm": "删除聚会",
-      "toast_title": "聚会已成功删除",
-      "toast_description": "你的聚会 {name} 已成功删除！",
-      "error": "无法删除你的聚会，请重试。"
+      "confirm": "删除活动",
+      "toast_title": "活动已成功删除",
+      "toast_description": "你的活动 {name} 已成功删除！",
+      "error": "无法删除你的活动，请重试。"
     },
     "recurrent_daily": "每天重复",
     "recurrent_weekly": "每周重复",
@@ -1260,7 +1260,7 @@
   },
   "discover": {
     "home": {
-      "page_title": "发现 — Decentraland"
+      "page_title": "场所 — Decentraland"
     },
     "card": {
       "jump_in": "进入",
