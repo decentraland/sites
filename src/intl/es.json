@@ -931,8 +931,8 @@
     },
     "jump": {
       "events_page": {
-        "deleted_notice_prefix": "Este hangout ya no está disponible. Explora",
-        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_prefix": "Este evento ya no está disponible. Explora",
+        "deleted_notice_link": "Todos los eventos",
         "deleted_notice_suffix": "para descubrir más."
       }
     },
@@ -962,7 +962,7 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "approved_edit_warning": "Cambiar el nombre, la descripción, la imagen, la ubicación o el artículo destacado de un hangout aprobado lo enviará de nuevo a revisión antes de que los cambios se publiquen.",
+    "approved_edit_warning": "Cambiar el nombre, la descripción, la imagen o la ubicación de un evento aprobado lo devuelve a revisión.",
     "featured_item_label": "Artículo Destacado (Opcional)",
     "featured_item_placeholder": "Pega un URN de artículo o colección",
     "error_invalid_featured_item": "Debe ser un URN válido de colección o artículo",
@@ -1216,13 +1216,13 @@
   "event_detail": {
     "delete": "Eliminar",
     "delete_modal": {
-      "title": "¿Seguro que quieres eliminar tu hangout?",
-      "subtitle": "Este hangout se eliminará permanentemente de tus hangouts. Esta acción no se puede deshacer.",
+      "title": "¿Seguro que quieres eliminar tu evento?",
+      "subtitle": "Este evento se eliminará permanentemente de tus eventos. Esta acción no se puede deshacer.",
       "cancel": "Cancelar",
-      "confirm": "Eliminar hangout",
-      "toast_title": "Hangout eliminado correctamente",
-      "toast_description": "¡Tu hangout {name} se ha eliminado correctamente!",
-      "error": "No pudimos eliminar tu hangout. Inténtalo de nuevo."
+      "confirm": "Eliminar evento",
+      "toast_title": "Evento eliminado correctamente",
+      "toast_description": "¡Tu evento {name} se ha eliminado correctamente!",
+      "error": "No pudimos eliminar tu evento. Inténtalo de nuevo."
     },
     "recurrent_daily": "Se repite diariamente",
     "recurrent_weekly": "Se repite semanalmente",
@@ -1260,7 +1260,7 @@
   },
   "discover": {
     "home": {
-      "page_title": "Descubrir — Decentraland"
+      "page_title": "Lugares — Decentraland"
     },
     "card": {
       "jump_in": "Entrar",

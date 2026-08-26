@@ -931,8 +931,8 @@
     },
     "jump": {
       "events_page": {
-        "deleted_notice_prefix": "このハングアウトは利用できなくなりました。",
-        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_prefix": "このイベントは利用できなくなりました。",
+        "deleted_notice_link": "すべてのイベント",
         "deleted_notice_suffix": "でさらに探してみましょう。"
       }
     },
@@ -962,7 +962,7 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "approved_edit_warning": "承認済みのハングアウトの名前、説明、画像、場所、または注目アイテムを変更すると、更新が公開される前に再審査へ送られます。",
+    "approved_edit_warning": "承認済みイベントの名前、説明、画像、場所を変更すると、再審査に戻ります。",
     "featured_item_label": "注目アイテム（任意）",
     "featured_item_placeholder": "アイテムまたはコレクションのURNを貼り付け",
     "error_invalid_featured_item": "有効なコレクションまたはアイテムのURNを入力してください",
@@ -1216,13 +1216,13 @@
   "event_detail": {
     "delete": "削除",
     "delete_modal": {
-      "title": "このハングアウトを削除してもよろしいですか？",
-      "subtitle": "このハングアウトはハングアウト一覧から完全に削除されます。この操作は元に戻せません。",
+      "title": "このイベントを削除してもよろしいですか？",
+      "subtitle": "このイベントはイベント一覧から完全に削除されます。この操作は元に戻せません。",
       "cancel": "キャンセル",
-      "confirm": "ハングアウトを削除",
-      "toast_title": "ハングアウトを削除しました",
-      "toast_description": "ハングアウト「{name}」を削除しました！",
-      "error": "ハングアウトを削除できませんでした。もう一度お試しください。"
+      "confirm": "イベントを削除",
+      "toast_title": "イベントを削除しました",
+      "toast_description": "イベント「{name}」を削除しました！",
+      "error": "イベントを削除できませんでした。もう一度お試しください。"
     },
     "recurrent_daily": "毎日繰り返し",
     "recurrent_weekly": "毎週繰り返し",
@@ -1260,7 +1260,7 @@
   },
   "discover": {
     "home": {
-      "page_title": "見つける — Decentraland"
+      "page_title": "プレイス — Decentraland"
     },
     "card": {
       "jump_in": "参加",
