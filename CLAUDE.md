@@ -21,7 +21,7 @@ Data access on lightweight routes uses `useSyncExternalStore`-based clients (see
 
 ### Heavy routes (`DappsShell`, lazy-loaded)
 
-- **Events** (was What's On at `/whats-on`): `/events`, `/events/new-hangout`, `/events/edit-hangout/:eventId`, `/events/admin/pending-events`, `/events/admin/users` (plus legacy `/events/new-event` and `/events/edit-event/:eventId` aliases that redirect into the hangout flow). The old `/whats-on*` prefix redirects here with its subpath and query intact via `RenamedSectionRedirect`, and the standalone-site deep links `/events/event?id=`, `/places/place?position=` and `/places/world?name=` still resolve.
+- **Events** (was What's On at `/whats-on`): `/events`, `/events/new-event`, `/events/edit-event/:eventId`, `/events/admin/pending-events`, `/events/admin/users` (plus legacy `/events/new-hangout` and `/events/edit-hangout/:eventId` aliases that redirect into the event flow). The old `/whats-on*` prefix redirects here with its subpath and query intact via `RenamedSectionRedirect`, and the standalone-site deep links `/events/event?id=`, `/places/place?position=` and `/places/world?name=` still resolve.
 - **Blog**: `/blog`, `/blog/preview`, `/blog/search`, `/blog/sign-in`, `/blog/author/:authorSlug`, `/blog/:categorySlug`, `/blog/:categorySlug/:postSlug`.
 - **Jump** (launcher deep-link handler): `/jump`, `/jump/places`, `/jump/places/invalid`, `/jump/events`, `/jump/events/invalid`, plus the `/jump/event` legacy alias used by production.
 - **Social** (communities): `/social/communities/:id`, `/social/*` (catch-all not-found).

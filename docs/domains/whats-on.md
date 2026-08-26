@@ -4,7 +4,7 @@ Events + hangouts area. Mounted under `<DappsShell />` (heavy route).
 
 ## Routes
 
-`/events`, `/events/new-hangout`, `/events/edit-hangout/:eventId`, `/events/admin/pending-events`, `/events/admin/users`. Legacy aliases `/events/new-event` and `/events/edit-event/:eventId` redirect into the hangout flow. `/events/*` and `/places/*` legacy paths from the standalone events/places sites redirect into `/events` with deep-link params.
+`/events`, `/events/new-event`, `/events/edit-event/:eventId`, `/events/admin/pending-events`, `/events/admin/users`. Legacy aliases `/events/new-hangout` and `/events/edit-hangout/:eventId` redirect into the event flow. `/events/*` and `/places/*` legacy paths from the standalone events/places sites redirect into `/events` with deep-link params.
 
 ## Key paths
 

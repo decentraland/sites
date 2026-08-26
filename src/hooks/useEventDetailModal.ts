@@ -19,7 +19,7 @@ function useEventDetailModal() {
 
   const editActiveEvent = useCallback(() => {
     if (!activeEvent) return
-    navigate(`/events/edit-hangout/${activeEvent.id}`, { state: { event: activeEvent } })
+    navigate(`/events/edit-event/${activeEvent.id}`, { state: { event: activeEvent } })
   }, [activeEvent, navigate])
 
   return {
