@@ -5,6 +5,28 @@ description: Use when editing the Vercel SEO function (`api/seo.ts`), the rewrit
 
 # seo-worker
 
+## Read this first: `api/seo.ts` does not run in production
+
+Vercel serves previews only. Every real environment (`zone`, `today`, `org`) is served by the
+**`sites-deployer` Cloudflare Worker** (`dcl.tools:ops/sites-deployer`, GitLab — an MR, not a GitHub PR),
+which rewrites OG meta and `<title>` at the edge from `workers/sites-worker/rollouts/routes/handlers/`.
+Confirm with `curl -sI`: production answers `server: cloudflare` with no Vercel headers.
+
+So a title/OG bug reported against a live URL is **almost never fixed in this repo**. Map it first:
+
+| Symptom on a live URL                                  | Where the fix lands                                                                              |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Wrong OG strings for a section                         | that section's handler in `sites-deployer` (e.g. `OpenGraphWhatsOnRoute`)                        |
+| New path serves the bare `<title>Decentraland</title>` | route pattern in `@decentraland/definitions` (sites DSL) **+** the handler's `test()`            |
+| Static page has no OG card                             | `PAGES` map in `OpenGraphStaticPageRoute` (`sites-deployer`)                                     |
+| Tab title wrong after a client-side redirect           | Helmet in the destination page, in this repo — the served `<head>` is never rewritten by the SPA |
+| Wrong OG in a Vercel preview only                      | `api/seo.ts` / `vercel.json`, here                                                               |
+
+The same preview-only caveat applies to everything else in `vercel.json`, headers included: the COOP/COEP
+pair `/places` needs for the bevy iframe is configured there and does **not** reach production.
+
+## What this file does (preview tier)
+
 `api/seo.ts` is the SEO layer that makes blog content shareable. Crawlers (Twitter, Facebook, Discord, Slack) don't run JavaScript — Helmet titles set client-side are invisible to them. This serverless function rewrites OG meta at the edge before the HTML reaches the crawler.
 
 ## Flow
