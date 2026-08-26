@@ -21,10 +21,10 @@ const CMS_BASE_URL = process.env['CMS_BASE_URL'] ?? 'https://cms-api.decentralan
 // camera-reel-service hosts metadata for /reels/:imageId. Falls back to prod for local dev.
 const REEL_SERVICE_URL = process.env['REEL_SERVICE_URL'] ?? 'https://camera-reel-service.decentraland.org'
 
-// events-api hosts metadata for /whats-on?id=<eventId>. Falls back to prod for local dev.
+// events-api hosts metadata for /events?id=<eventId>. Falls back to prod for local dev.
 const EVENTS_API_URL = process.env['EVENTS_API_URL'] ?? 'https://events.decentraland.org/api'
 
-// places-api hosts metadata for /whats-on?position=x,y and /jump/places. Falls back to prod for local dev.
+// places-api hosts metadata for /events?position=x,y and /jump/places. Falls back to prod for local dev.
 const PLACES_API_URL = process.env['PLACES_API_URL'] ?? 'https://places.decentraland.org/api'
 
 // Brand share-card hosted on the marketing CDN so it stays editable without a sites redeploy.
@@ -39,8 +39,8 @@ const DEFAULTS = {
 } as const
 
 const WHATS_ON_DEFAULTS = {
-  title: "What's On in Decentraland",
-  description: 'Live events, hangouts, and places happening right now in Decentraland.',
+  title: 'Events in Decentraland',
+  description: 'Live events and places happening right now in Decentraland.',
   image: SHARE_IMAGE_URL
 } as const
 
@@ -89,7 +89,9 @@ const escapeHTML = (value: string): string =>
 
 // Escape ONLY what's required inside element text content (RCDATA for <title>):
 // `<` and `&`. Apostrophes and quotes need no escaping here because we're not inside
-// an attribute value. Using the full `escapeHTML` for <title> turned "What's On" into
+// an attribute value. This still matters for every title that carries an apostrophe —
+// reel and blog post titles come straight from user and CMS content.
+// The incident that produced it: using the full `escapeHTML` for <title> turned "What's On" into
 // `<title>What&#x27;s On…</title>` which then got double-encoded somewhere in our
 // edge pipeline (the live response carried `<title>What&amp;#39;s On…</title>` —
 // browsers parse <title> in RCDATA mode where character refs are decoded once, so
@@ -402,7 +404,7 @@ const ROUTE_PATTERNS: Array<{ pattern: RegExp; handler: (match: RegExpMatchArray
   // Skip /reels/list — it's a list page, not an image deep-link. The CF Worker has
   // the same exclusion in OpenGraphReelsRoute.test().
   { pattern: /^\/reels\/(?!list(?:\/|$))([^/]+)$/, handler: m => ({ type: 'reels', imageId: m[1] }) },
-  // /whats-on, /jump/events and /jump/places all deep-link via query params (?id=, ?position=)
+  // /events, /jump/events and /jump/places all deep-link via query params (?id=, ?position=)
   // rather than path segments. A single 'whats-on' route type handles all three by dispatching
   // on the query params; the path patterns just gate which paths reach the handler.
   { pattern: /^\/events(\/.*)?$/, handler: () => ({ type: 'whats-on' }) },
@@ -592,7 +594,7 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   const origin = resolveOrigin(req)
   // Preserve id / position / world in the canonical URL so social cards and search
   // engines link back to the deep-linked event/parcel/world rather than the
-  // generic listing page. Applies to /whats-on and /jump/{events,places}.
+  // generic listing page. Applies to /events and /jump/{events,places}.
   const canonicalQuery = new URLSearchParams()
   const preservesQuery = requestPath.startsWith('/events') || requestPath.startsWith('/jump/')
   if (preservesQuery) {

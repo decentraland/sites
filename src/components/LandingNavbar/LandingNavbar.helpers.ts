@@ -7,7 +7,7 @@ import type { DropdownSection } from './navbarConfig'
  * so adding a destination to a dropdown lights the parent up for free.
  *
  * A section matches on its own url and on any of its items' urls, and matches
- * nested paths too — /discover/place/-102,129 still belongs to Discover.
+ * nested paths too — /places/place/-102,129 still belongs to Discover.
  * External entries (the Shop and Create dropdowns point at absolute URLs) can
  * never be the current page, so only app-relative paths are considered.
  */

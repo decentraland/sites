@@ -33,15 +33,15 @@ async function transformEmotionStyled(code: string, filename: string): Promise<{
   return { code: result.code, map: result.map ?? null }
 }
 
-// Mirrors vercel.json — cross-origin isolation ONLY on /discover documents so
+// Mirrors vercel.json — cross-origin isolation ONLY on /places documents so
 // the bevy-web iframe (which relies on SharedArrayBuffer) can boot there.
 // `credentialless` lets us load cross-origin resources without requiring CORP
 // everywhere, at the cost of stripping credentials from those requests.
 // Scoped per-request (not global server headers) to keep dev/preview at prod
 // parity: a global COEP would block COEP-less third-party iframes (e.g. blog
 // YouTube embeds) on routes that are NOT isolated in production.
-function discoverIsolation(req: { url?: string }, res: { setHeader: (name: string, value: string) => void }, next: () => void): void {
-  if (req.url === '/discover' || req.url?.startsWith('/discover/') || req.url?.startsWith('/discover?')) {
+function placesIsolation(req: { url?: string }, res: { setHeader: (name: string, value: string) => void }, next: () => void): void {
+  if (req.url === '/places' || req.url?.startsWith('/places/') || req.url?.startsWith('/places?')) {
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
     res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless')
   }
@@ -110,10 +110,10 @@ export default defineConfig(({ command, mode }) => {
       {
         name: 'discover-cross-origin-isolation',
         configureServer(server) {
-          server.middlewares.use(discoverIsolation)
+          server.middlewares.use(placesIsolation)
         },
         configurePreviewServer(server) {
-          server.middlewares.use(discoverIsolation)
+          server.middlewares.use(placesIsolation)
         }
       },
       // Stays last on purpose — the plugin reads the final emitted bundle.
@@ -158,7 +158,7 @@ export default defineConfig(({ command, mode }) => {
       // already-lazy chunks (Sentry/crypto on form submit, ajv inside RTK
       // schema validation, ua-parser inside analytics, LiveKit only inside
       // the /cast/* routes). Stripping them from the modulepreload list keeps
-      // the homepage and /whats-on critical path free of ~350 KB of gzipped
+      // the homepage and /events critical path free of ~350 KB of gzipped
       // JS that would otherwise be eagerly fetched.
       modulePreload: {
         resolveDependencies: (_filename, deps) => deps.filter(dep => !/vendor-(sentry|crypto|schemas|ua|livekit|web3|auth)/.test(dep))
