@@ -15,6 +15,7 @@ import {
   BottomJumpInRow,
   CreatorLocationRow,
   EditButton,
+  FeaturedItemText,
   LiveBadgeWrapper,
   LocationRow,
   LocationText,
@@ -30,6 +31,7 @@ describe('EventDetailModal styled components', () => {
     render(
       <>
         <ScheduleSubtitle>subtitle</ScheduleSubtitle>
+        <FeaturedItemText>urn:decentraland:matic:collections-v2:0x0</FeaturedItemText>
         <LiveBadgeWrapper>badge</LiveBadgeWrapper>
         <CreatorLocationRow>creator</CreatorLocationRow>
         <LocationRow disabled>

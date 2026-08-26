@@ -962,7 +962,10 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "approved_edit_warning": "Changing the name, description, image, or location of an approved hangout will send it back for review before the updates go live.",
+    "approved_edit_warning": "承認済みのハングアウトの名前、説明、画像、場所、または注目アイテムを変更すると、更新が公開される前に再審査へ送られます。",
+    "featured_item_label": "注目アイテム（任意）",
+    "featured_item_placeholder": "アイテムまたはコレクションのURNを貼り付け",
+    "error_invalid_featured_item": "有効なコレクションまたはアイテムのURNを入力してください",
     "error_image_too_large": "この画像を500 KB以下に圧縮できませんでした。より小さいファイルを選択してください。",
     "vertical_recommended_size": "推奨サイズ：716 × 1814 px",
     "recurrence": "繰り返し",
@@ -1238,7 +1241,8 @@
     "hero_every_days": "毎{days}",
     "location_with_coords": "{place} ({x},{y})",
     "location_coords": "({x},{y})",
-    "schedule_starting": "{schedule} から"
+    "schedule_starting": "{schedule} から",
+    "featured_item": "注目アイテム"
   },
   "event_time": {
     "utc_same_day": "{time} UTC",
