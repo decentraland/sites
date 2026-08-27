@@ -30,6 +30,7 @@ import { buildEventJumpInUrl } from '../../../utils/whatsOnUrl'
 import { EventDetailModal } from '../EventDetailModal'
 import type { ModalEventData } from '../EventDetailModal'
 import { DurationField } from './DurationField'
+import { FeaturedItemField } from './FeaturedItemField'
 import { ImageUpload } from './ImageUpload'
 import { VerticalCoverPanel } from './VerticalCoverPanel'
 import {
@@ -490,16 +491,11 @@ function EventForm({
             )}
             {/* Featured Item */}
             <FormFieldSection>
-              <EventTextField
-                variant="outlined"
-                label={t('create_event.featured_item_label')}
-                placeholder={t('create_event.featured_item_placeholder')}
+              <FeaturedItemField
                 value={form.featuredItem}
-                onChange={e => setField('featuredItem', e.target.value)}
+                onChange={urn => setField('featuredItem', urn)}
                 error={Boolean(errors.featuredItem)}
                 helperText={errors.featuredItem}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
               />
             </FormFieldSection>
             {/* Email */}

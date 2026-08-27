@@ -179,6 +179,29 @@ jest.mock('./DurationField', () => ({
   )
 }))
 
+jest.mock('./FeaturedItemField', () => ({
+  FeaturedItemField: ({
+    value,
+    onChange,
+    error,
+    helperText
+  }: {
+    value: string
+    onChange: (urn: string) => void
+    error?: boolean
+    helperText?: string
+  }) => (
+    <input
+      data-testid="featured-item-field"
+      aria-label="create_event.featured_item_label"
+      data-error={error}
+      data-helper-text={helperText}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+    />
+  )
+}))
+
 const mockUseGetWorldNamesQuery = jest.fn(() => ({ data: [] as string[] }))
 const mockUseGetCommunitiesQuery = jest.fn(() => ({ data: [] as Array<{ id: string; name: string }> }))
 
