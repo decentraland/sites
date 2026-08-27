@@ -100,7 +100,7 @@ export function ChatPanel(props: ChatPanelProps) {
   // Auto-scroll to bottom when new messages arrive. `block: 'nearest'`
   // confines the scroll to the ChatMessages overflow container — without it
   // the page itself scrolls on every new message when ChatPanel is embedded
-  // (see /discover/place/* scene detail) because scrollIntoView walks up to
+  // (see /places/place/* scene detail) because scrollIntoView walks up to
   // every scrollable ancestor by default.
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' })

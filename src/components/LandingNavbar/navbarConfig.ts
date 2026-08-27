@@ -19,7 +19,7 @@ type MenuConfig = {
 
 const MENU_CONFIG: MenuConfig = {
   // Single entry point for both destination feeds: "Events" is the What's On
-  // calendar, "Places" is the /discover explore section. They used to sit at
+  // calendar, "Places" is the /places explore section. They used to sit at
   // opposite ends of the tab list (Explore first, Discover last).
   discover: {
     labelKey: 'component.landing.navbar.discover',

@@ -118,6 +118,9 @@
         "view_all": "모두 보기"
       }
     },
+    "events": {
+      "page_title": "이벤트 — Decentraland"
+    },
     "cast": {
       "app": {
         "title": "Decentraland Cast 2.0",

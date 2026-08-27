@@ -9,7 +9,7 @@ import { markSignInPending } from './activeIdentity'
  * (Vite's `base` / `import.meta.env.BASE_URL` points there so asset URLs resolve correctly),
  * but the USER is browsing `decentraland.org/...`. Mixing those two — e.g. prefixing the
  * CDN base onto a navigation path — produces a `redirectTo` like
- * `https://cdn.decentraland.org/@dcl/sites/0.18.0/whats-on`, which sends the user to the
+ * `https://cdn.decentraland.org/@dcl/sites/0.18.0/events`, which sends the user to the
  * raw bundle host after auth instead of back to the app. The auth dapp resolves the
  * relative `redirectTo` against the user's origin via the request referer, so a same-origin
  * path is exactly what we want here.

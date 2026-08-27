@@ -5,7 +5,7 @@ import { ScrollToTop } from './components/ScrollToTop'
 import { lazyWithRetry } from './utils/lazyWithRetry'
 
 // IndexPage is the homepage hero + below-fold sections. Keeping it lazy means
-// /whats-on, /blog/*, and every legal page never download the homepage bundle.
+// /events, /blog/*, and every legal page never download the homepage bundle.
 // On `/` the prerendered hero shell paints as LCP before this chunk arrives,
 // so the lazy split is invisible to users hitting the homepage cold.
 const IndexPage = lazyWithRetry(() => import('./pages/index.tsx').then(m => ({ default: m.IndexPage })))
@@ -73,7 +73,7 @@ const BlogSearchPage = lazyWithRetry(() => import('./pages/blog/SearchPage').the
 const PreviewPage = lazyWithRetry(() => import('./pages/blog/PreviewPage').then(m => ({ default: m.PreviewPage })))
 const BlogSignInRedirect = lazyWithRetry(() => import('./pages/blog/SignInRedirect').then(m => ({ default: m.SignInRedirect })))
 
-// Lazy-loaded for /whats-on and /blog routes only. Contains Redux Provider.
+// Lazy-loaded for /events and /blog routes only. Contains Redux Provider.
 // No Web3 providers — auth uses localStorage identity via useAuthIdentity.
 const DappsShell = lazyWithRetry(() => import('./shells/DappsShell').then(m => ({ default: m.DappsShell })))
 
@@ -102,7 +102,7 @@ const CommunityDetailPage = lazyWithRetry(() =>
 const SocialNotFoundPage = lazyWithRetry(() => import('./pages/social/SocialNotFoundPage').then(m => ({ default: m.SocialNotFoundPage })))
 
 // Discover pages — heavy route (Redux + RTK Query). Auth via localStorage identity
-// (no Web3 providers); CTAs gated on useAuthIdentity. /discover/* mirrors the
+// (no Web3 providers); CTAs gated on useAuthIdentity. /places/* mirrors the
 // decentraland.social experience: a unified DISCOVER landing (LIVE NOW + Featured
 // + Explore grid with search and category filters), the COMMUNITIES list tab, and
 // SCENE detail (place / world deep link with the bevy preview).

@@ -168,6 +168,9 @@
         "view_all": "View All"
       }
     },
+    "events": {
+      "page_title": "Events — Decentraland"
+    },
     "cast": {
       "app": {
         "title": "Decentraland Cast 2.0",

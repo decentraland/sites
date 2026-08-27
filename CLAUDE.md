@@ -26,7 +26,7 @@ Data access on lightweight routes uses `useSyncExternalStore`-based clients (see
 - **Jump** (launcher deep-link handler): `/jump`, `/jump/places`, `/jump/places/invalid`, `/jump/events`, `/jump/events/invalid`, plus the `/jump/event` legacy alias used by production.
 - **Social** (communities): `/social/communities/:id`, `/social/*` (catch-all not-found).
 - **Places** (was Discover at `/discover`, which redirects here; absorbs the standalone decentraland.social experience): `/places` (Live Now rail + Featured POIs + full-bleed Explore band with Explore all / Favourites / My places tabs, search + category filter — a right filter drawer on mobile), `/places/communities` (list tab; cards link into the pre-existing `/social/communities/:id` detail), `/places/place/:position` (Genesis City parcel detail), `/places/world/:name` (world detail, same shape), `/places/*` (catch-all, reuses `SocialNotFoundPage`). New pages render inside `<DiscoverLayout />`; data comes from `src/features/discover/` (endpoints injected into `placesClient` / `socialClient`). Junk listings (roads, empty parcels with only the `map.png` placeholder, `interactive-text` deploys) are hidden by `isHiddenPlace`; card covers fall back to a solid tile via `placeCoverImage`.
-  - **Scene detail** (`DiscoverScenePage`): live presence gates two states. Empty scene (desktop) → `SceneJumpInModal` over the grid; mobile always renders the modal as a full page (bevy-web can't run on touch devices) with LIVE + presence badges when live. Live scene (desktop) → 2-column grid: viewer card (bevy iframe via `SceneLiveWatcher`) + In-World Chat (`ChatPanel`, unconditionally read-only), always visible — it renders the empty-chat shell when the room is quiet. The bevy embed URL comes from `getEnv('BEVY_WEB_URL')` (`.zone` dev/stg — `.org`'s `frame-ancestors` CSP rejects non-.org parents — `.org` prd) with `systemScene=tortilla.dcl.eth` (patched scene-viewer: fly camera at the scene spawn point, no sidebar) and `guest=1&hud=0` flags (auto guest-login, no bevy HUD). COOP/COEP for the iframe are set per-route in `vercel.json` for `/places` and `/places/:path*`.
+  - **Scene detail** (`DiscoverScenePage`): live presence gates two states. Empty scene (desktop) → `SceneJumpInModal` over the grid; mobile always renders the modal as a full page (bevy-web can't run on touch devices) with LIVE + presence badges when live. Live scene (desktop) → 2-column grid: viewer card (bevy iframe via `SceneLiveWatcher`) + In-World Chat (`ChatPanel`, unconditionally read-only), always visible — it renders the empty-chat shell when the room is quiet. The bevy embed URL comes from `getEnv('BEVY_WEB_URL')` (`.zone` dev/stg — `.org`'s `frame-ancestors` CSP rejects non-.org parents — `.org` prd) with `systemScene=tortilla.dcl.eth` (patched scene-viewer: fly camera at the scene spawn point, no sidebar) and `guest=1&hud=0` flags (auto guest-login, no bevy HUD). COOP/COEP for the iframe are set per-route in `vercel.json` for `/places` and `/places/:path*` — which covers Vercel previews only; production headers come from the `sites-deployer` worker (see Deployment below), so check them with `curl -sI` rather than trusting this file.
 - **Cast** (LiveKit streaming, absorbed from `decentraland/cast2`): `/cast/s/:token`, `/cast/s/streaming`, `/cast/w/:worldName/parcel/:parcel`, `/cast/w/:location`, plus `/cast` index and `/cast/*` catch-all rendering `CastNotFoundPage`. Cast adds an extra `<CastLayout />` that provides LiveKit + Notification contexts and renders the toast stack.
 - **Storage** (storage-service-site): `/storage`, `/storage/select`, `/storage/env`, `/storage/scene`, `/storage/players`, `/storage/players/:address`, plus `/storage/*` not-found.
 - **Account** (account-settings, absorbed from the standalone `account` dapp): `/account` (redirects to `/account/wallets`), `/account/wallets`, `/account/notifications`, `/account/credits`, `/account/delete`, plus `/account/*` not-found. Shares an `AccountLayout` sidebar. The Wallets "Send" action and the Delete flow need a Web3 signer, so they mount the lazy **`BlockchainShell`** (see below) — the rest of the account pages are signer-free.
@@ -65,8 +65,8 @@ A lazy, opt-in shell for the few account actions that need a connected signer (W
 | `src/utils/avatarColor.ts`      | Deterministic avatar background color. Skill `avatar-background-color`.                          |
 | `scripts/prebuild.cjs`          | Resolves CDN base URL and writes `.env` before build.                                            |
 | `scripts/prerender-hero.mjs`    | Injects static hero HTML + critical CSS post-build (LCP).                                        |
-| `api/seo.ts`                    | Vercel serverless function for `/blog/*` OG meta. Skill `seo-worker`.                            |
-| `vercel.json`                   | Rewrites `/blog/*` to `/api/seo?path=...`, everything else to `/index.html`.                     |
+| `api/seo.ts`                    | **Preview-only** Vercel function for `/blog/*` OG meta. Skill `seo-worker`.                      |
+| `vercel.json`                   | **Preview-only** Vercel config: rewrites + per-route headers. Never runs in prd/stg/dev.         |
 
 ### Per-dapp directory details
 
@@ -99,9 +99,41 @@ No Web3 providers (no wagmi, magic-sdk, core-web3, thirdweb). Wallet + identity 
 
 Hero prerender + lazy `<Layout />` + lazy `<DappsShell />` + deferred analytics. Manual chunks in `vite.config.ts` with a render-blocking CSS gotcha for packages like `@livekit/components-styles`. Full setup, manualChunks rules, verification command → skill `perf-tier`.
 
-## Blog SEO
+## Deployment: where production actually comes from
 
-`api/seo.ts` is a Vercel serverless function that rewrites OG/Twitter meta at the edge for `/blog/*` (crawlers don't run JS so Helmet titles are invisible to them). HTML escaping + origin allowlist + path sanitization. Full flow, CMS_BASE_URL coherence, security checklist for new template paths → skill `seo-worker`.
+**Vercel is preview-only.** `npm run build` publishes `@dcl/sites` to npm, a GitLab job mirrors it to
+`cdn.decentraland.org/@dcl/sites/<version>`, and `set-rollout-action` points an environment at that
+version (`zone` + `today` automatic, `org` manual + release tag). At request time every environment is
+served by the **`sites-deployer` Cloudflare Worker** (`dcl.tools:ops/sites-deployer`, GitLab), which
+pulls the CDN bundle and rewrites the HTML on the way out. `server: cloudflare`, no Vercel headers.
+
+Consequence, and the reason this section exists: **anything configured in `vercel.json` or `api/seo.ts`
+affects previews only.** Two things that live there are therefore NOT what production does:
+
+- **OG meta / `<title>`.** Production titles come from the worker's handlers in
+  `workers/sites-worker/rollouts/routes/handlers/` — `OpenGraphWhatsOnRoute` (events + `/jump`),
+  `OpenGraphStaticPageRoute` (its `PAGES` map), blog, profile, reels, invite, community. The route
+  _path patterns_ are not even in that repo: they come from the sites DSL in `@decentraland/definitions`,
+  so making a new path emit OG cards is a two-repo change.
+- **Per-route headers**, including the COOP/COEP pair the bevy iframe needs. Verify a header claim with
+  `curl -sI https://decentraland.org/<path>`, never by reading `vercel.json`.
+
+A route renamed in the SPA keeps serving the old section's OG card until the worker is updated, and the
+new path serves the bare shell (`<title>Decentraland</title>`) until it is added there.
+
+### Blog SEO (preview tier)
+
+`api/seo.ts` rewrites OG/Twitter meta for `/blog/*` in Vercel previews (crawlers don't run JS so Helmet
+titles are invisible to them). HTML escaping + origin allowlist + path sanitization. Its production
+counterpart is the worker's `OpenGraphBlogRoute`. Full flow, CMS_BASE_URL coherence, security checklist
+for new template paths → skill `seo-worker`.
+
+### Titles the SPA owns
+
+Because the worker only stamps a title on the paths it knows, and a client-side redirect never rewrites
+the served `<head>`, any page that matters should set its own Helmet title. A page with no Helmet title
+inherits whatever the worker served for the URL the user _entered_ — which is how `/whats-on` → `/events`
+kept showing "What's On" in the tab.
 
 ## Environment config
 
