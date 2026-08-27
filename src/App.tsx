@@ -231,10 +231,10 @@ const App = () => {
                 prefixes redirect with their subpath and query intact, so shared links, bookmarks and
                 indexed pages keep resolving. Each redirect fires a Segment event so these routes can
                 be sunset once the traffic dries up. */}
-              <Route path="/events/*" element={<RenamedSectionRedirect from="/events" to="/events" origin="events" />} />
-              <Route path="/events" element={<RenamedSectionRedirect from="/events" to="/events" origin="events" />} />
-              <Route path="/places/*" element={<RenamedSectionRedirect from="/places" to="/places" origin="places" />} />
-              <Route path="/places" element={<RenamedSectionRedirect from="/places" to="/places" origin="places" />} />
+              <Route path="/whats-on/*" element={<RenamedSectionRedirect from="/whats-on" to="/events" origin="events" />} />
+              <Route path="/whats-on" element={<RenamedSectionRedirect from="/whats-on" to="/events" origin="events" />} />
+              <Route path="/discover/*" element={<RenamedSectionRedirect from="/discover" to="/places" origin="places" />} />
+              <Route path="/discover" element={<RenamedSectionRedirect from="/discover" to="/places" origin="places" />} />
               {/* Deep links from the standalone events/places sites, which carried their target in the
                 query string (id / position / name) rather than the path. Their destination is
                 unchanged; only the section path moved under them.
