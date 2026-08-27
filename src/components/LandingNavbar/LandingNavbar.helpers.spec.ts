@@ -1,4 +1,4 @@
-import { isSectionActive } from './LandingNavbar.helpers'
+import { isSectionActive, toNotificationLocale } from './LandingNavbar.helpers'
 
 describe('when deciding which navbar section owns the current page', () => {
   it('should light up Discover on the What is On calendar', () => {
@@ -35,5 +35,25 @@ describe('when deciding which navbar section owns the current page', () => {
       expect(isSectionActive('shop', pathname)).toBe(false)
       expect(isSectionActive('create', pathname)).toBe(false)
     }
+  })
+})
+
+describe('when narrowing a site locale for ui2 notifications', () => {
+  it.each(['en', 'es', 'zh'])('should keep %s, which ui2 ships copy for', locale => {
+    expect(toNotificationLocale(locale)).toBe(locale)
+  })
+
+  // These are the ones that crashed the navbar: ui2 has no dictionary entry, so the
+  // renderer read `.title` off undefined (SITES-2S0).
+  it.each(['ja', 'ko', 'fr'])('should fall back to english for %s', locale => {
+    expect(toNotificationLocale(locale)).toBe('en')
+  })
+
+  it.each([
+    ['an unknown code', 'pt'],
+    ['an empty string', ''],
+    ['a regional variant', 'es-AR']
+  ])('should fall back to english for %s', (_label, locale) => {
+    expect(toNotificationLocale(locale)).toBe('en')
   })
 })
