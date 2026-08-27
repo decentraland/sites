@@ -8,7 +8,8 @@ interface MarketplaceItem {
   /** Absolute catalyst thumbnail URL. */
   thumbnail: string
   urn: string
-  category: MarketplaceItemCategory | string
+  /** `string & {}` keeps editor autocomplete for the known literals while still accepting new API values. */
+  category: MarketplaceItemCategory | (string & {})
   contractAddress: string
   itemId: string
   /** Wallet address of the item's creator — resolve to a name with `useGetProfileNames`. */

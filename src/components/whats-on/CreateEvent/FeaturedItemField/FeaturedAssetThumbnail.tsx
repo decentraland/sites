@@ -19,8 +19,9 @@ function FeaturedAssetThumbnailComponent({ thumbnails, size = 'large' }: Feature
     <AssetTile $size={size}>
       {isTiled ? (
         <AssetTileGrid $size={size}>
-          {thumbnails.map(thumbnail => (
-            <AssetImage key={thumbnail} $size={size} $tiled src={thumbnail} alt="" loading="lazy" />
+          {/* Two items in a collection can legitimately share a render, so the URL alone is not unique. */}
+          {thumbnails.map((thumbnail, index) => (
+            <AssetImage key={`${thumbnail}-${index}`} $size={size} $tiled src={thumbnail} alt="" loading="lazy" />
           ))}
         </AssetTileGrid>
       ) : (

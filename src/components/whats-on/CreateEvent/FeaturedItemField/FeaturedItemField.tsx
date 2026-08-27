@@ -84,7 +84,7 @@ function FeaturedItemField(props: FeaturedItemFieldProps) {
   const renderGroup = useCallback(
     (params: { key: string; group: string; children?: ReactNode }) => (
       <FeaturedAssetGroup key={params.key}>
-        <FeaturedAssetGroupLabel>{t(GROUP_LABEL_KEY[params.group as FeaturedAssetKind])}</FeaturedAssetGroupLabel>
+        <FeaturedAssetGroupLabel>{t(GROUP_LABEL_KEY[params.group as FeaturedAssetKind] ?? params.group)}</FeaturedAssetGroupLabel>
         <FeaturedAssetGroupItems>{params.children}</FeaturedAssetGroupItems>
       </FeaturedAssetGroup>
     ),
