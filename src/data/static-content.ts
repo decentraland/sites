@@ -34,21 +34,21 @@ const weeklyRitualsContent = {
       titleKey: 'page.home.weekly_rituals.career_mondays',
       imageUrl: assetUrl('/weekly-rituals/monday.webp'),
       mobileImageUrl: assetUrl('/weekly-rituals/mobile/Monday-Mobile.webp'),
-      link: 'https://decentraland.org/whats-on?id=0795dec0-4862-4f19-a4d5-d0f3c3c3b559'
+      link: '/events?id=0795dec0-4862-4f19-a4d5-d0f3c3c3b559'
     },
     {
       id: 'takeover-tuesdays',
       titleKey: 'page.home.weekly_rituals.takeover_tuesdays',
       imageUrl: assetUrl('/weekly-rituals/tuesday.webp'),
       mobileImageUrl: assetUrl('/weekly-rituals/mobile/Tuesday-Mobile.webp'),
-      link: 'https://decentraland.org/whats-on?id=efc2bf0f-bf0d-447a-82a2-fe7a5650ca19'
+      link: '/events?id=efc2bf0f-bf0d-447a-82a2-fe7a5650ca19'
     },
     {
       id: 'watch-party',
       titleKey: 'page.home.weekly_rituals.watch_party_wednesdays',
       imageUrl: assetUrl('/weekly-rituals/wednesday.webp'),
       mobileImageUrl: assetUrl('/weekly-rituals/mobile/Wednesday-Mobile.webp'),
-      link: 'https://decentraland.org/whats-on?id=e22333e4-4277-4b59-b99b-ba3174e1dd29'
+      link: '/events?id=e22333e4-4277-4b59-b99b-ba3174e1dd29'
     }
   ]
 }
