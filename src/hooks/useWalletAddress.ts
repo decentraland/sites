@@ -1,6 +1,7 @@
 import { useMemo, useSyncExternalStore } from 'react'
 import { hasValidIdentityFor, isRelevantStorageKey, resolveActiveAddress, writeActivePointer } from '../utils/activeIdentity'
 import { redirectToAuth } from '../utils/authRedirect'
+import { removeStorageItems } from '../utils/safeStorage'
 
 type WalletState = {
   address: string | null
@@ -85,23 +86,18 @@ if (window.ethereum?.on) {
 
 // ── Disconnect ──────────────────────────────────────────────────────
 
+const isSessionKey = (key: string): boolean =>
+  key.startsWith('single-sign-on-') ||
+  key.startsWith('decentraland-connect') ||
+  key.startsWith('wagmi') ||
+  key.startsWith('wc@2') ||
+  key === 'dcl_magic_user_email' ||
+  key === 'dcl_thirdweb_user_email'
+
 function disconnectWallet() {
-  const keysToRemove: string[] = []
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i)
-    if (
-      key &&
-      (key.startsWith('single-sign-on-') ||
-        key.startsWith('decentraland-connect') ||
-        key.startsWith('wagmi') ||
-        key.startsWith('wc@2') ||
-        key === 'dcl_magic_user_email' ||
-        key === 'dcl_thirdweb_user_email')
-    ) {
-      keysToRemove.push(key)
-    }
-  }
-  keysToRemove.forEach(key => localStorage.removeItem(key))
+  // Guarded because storage can be missing or denied (SITES-2RY). The in-memory
+  // cleanup below still runs, so the session ends on screen either way.
+  removeStorageItems(isSessionKey)
   writeActivePointer(null)
   setSharedAddress(null)
 }

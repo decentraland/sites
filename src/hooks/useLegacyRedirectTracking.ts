@@ -52,7 +52,7 @@ function useLegacyRedirectTracking({ origin, source, destination, preservedParam
         })
       } catch {
         // Analytics is best-effort; never block the redirect on a Segment failure
-        // (adblocker shim, plugin error, etc.) — the user lands on /whats-on regardless.
+        // (adblocker shim, plugin error, etc.) — the user lands on the new path regardless.
       }
       fired.current = true
       setReady(true)

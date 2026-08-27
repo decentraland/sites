@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 import { DownloadModal } from 'decentraland-ui2'
-import type { NotificationLocale } from 'decentraland-ui2'
 import { usePageNotifications } from '../../features/notifications/usePageNotifications'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
@@ -12,6 +11,7 @@ import { useWalletAddress } from '../../hooks/useWalletAddress'
 import { useLocale } from '../../intl/LocaleContext'
 import { LandingNavbar } from './LandingNavbar'
 import type { LandingNavbarProps } from './LandingNavbar'
+import { toNotificationLocale } from './LandingNavbar.helpers'
 
 type LandingNavbarConnectedProps = {
   isLandingPage?: boolean
@@ -46,7 +46,7 @@ const LandingNavbarConnected = ({ isLandingPage = false, address: addressOverrid
   const { credits: creditsBalance } = useCreditsBalance(address || undefined, identity)
   const { handleClick: handleJumpIn, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
 
-  const notificationLocale: NotificationLocale = locale === 'es' ? 'es' : locale === 'zh' ? 'zh' : 'en'
+  const notificationLocale = toNotificationLocale(locale)
   const { notificationProps } = usePageNotifications({
     identity,
     isConnected,

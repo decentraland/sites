@@ -21,10 +21,10 @@ const CMS_BASE_URL = process.env['CMS_BASE_URL'] ?? 'https://cms-api.decentralan
 // camera-reel-service hosts metadata for /reels/:imageId. Falls back to prod for local dev.
 const REEL_SERVICE_URL = process.env['REEL_SERVICE_URL'] ?? 'https://camera-reel-service.decentraland.org'
 
-// events-api hosts metadata for /whats-on?id=<eventId>. Falls back to prod for local dev.
+// events-api hosts metadata for /events?id=<eventId>. Falls back to prod for local dev.
 const EVENTS_API_URL = process.env['EVENTS_API_URL'] ?? 'https://events.decentraland.org/api'
 
-// places-api hosts metadata for /whats-on?position=x,y and /jump/places. Falls back to prod for local dev.
+// places-api hosts metadata for /events?position=x,y and /jump/places. Falls back to prod for local dev.
 const PLACES_API_URL = process.env['PLACES_API_URL'] ?? 'https://places.decentraland.org/api'
 
 // Brand share-card hosted on the marketing CDN so it stays editable without a sites redeploy.
@@ -38,9 +38,9 @@ const DEFAULTS = {
   twitterHandle: '@decentraland'
 } as const
 
-const WHATS_ON_DEFAULTS = {
-  title: "What's On in Decentraland",
-  description: 'Live events, hangouts, and places happening right now in Decentraland.',
+const EVENTS_DEFAULTS = {
+  title: 'Events in Decentraland',
+  description: 'Live events and places happening right now in Decentraland.',
   image: SHARE_IMAGE_URL
 } as const
 
@@ -89,7 +89,9 @@ const escapeHTML = (value: string): string =>
 
 // Escape ONLY what's required inside element text content (RCDATA for <title>):
 // `<` and `&`. Apostrophes and quotes need no escaping here because we're not inside
-// an attribute value. Using the full `escapeHTML` for <title> turned "What's On" into
+// an attribute value. This still matters for every title that carries an apostrophe —
+// reel and blog post titles come straight from user and CMS content.
+// The incident that produced it: using the full `escapeHTML` for <title> turned "What's On" into
 // `<title>What&#x27;s On…</title>` which then got double-encoded somewhere in our
 // edge pipeline (the live response carried `<title>What&amp;#39;s On…</title>` —
 // browsers parse <title> in RCDATA mode where character refs are decoded once, so
@@ -278,14 +280,14 @@ const fetchEventSEO = async (eventId: string): Promise<SEOData | null> => {
   if (!data?.ok || !data.data) return null
   const { name, description, image } = data.data
   const sceneName = data.data.scene_name
-  const title = name?.trim() || WHATS_ON_DEFAULTS.title
+  const title = name?.trim() || EVENTS_DEFAULTS.title
   const sceneSuffix = sceneName?.trim() ? ` at ${sceneName.trim()}` : ''
   // Validate image URL here so the per-route fallback (whats-on, not blog) is preserved.
   // generateHTML's safeUrl uses DEFAULTS.image as last resort, which is the blog landscape.
-  const imageUrl = image && /^https?:\/\//.test(image) ? image : WHATS_ON_DEFAULTS.image
+  const imageUrl = image && /^https?:\/\//.test(image) ? image : EVENTS_DEFAULTS.image
   return {
     title: `${title}${sceneSuffix}`,
-    description: description?.trim() || WHATS_ON_DEFAULTS.description,
+    description: description?.trim() || EVENTS_DEFAULTS.description,
     imageUrl
   }
 }
@@ -308,7 +310,7 @@ const fetchPlaceSEO = async (position: string): Promise<SEOData | null> => {
   if (!entry) return null
   const title = entry.title?.trim() || `Explore (${position}) in Decentraland`
   const description = entry.description?.trim() || `Discover what's happening at coordinates ${position} in Decentraland.`
-  const imageUrl = entry.image && /^https?:\/\//.test(entry.image) ? entry.image : WHATS_ON_DEFAULTS.image
+  const imageUrl = entry.image && /^https?:\/\//.test(entry.image) ? entry.image : EVENTS_DEFAULTS.image
   return { title, description, imageUrl }
 }
 
@@ -319,7 +321,7 @@ const fetchWorldSEO = async (worldName: string): Promise<SEOData | null> => {
   if (!entry) return null
   const title = entry.title?.trim() || `Visit ${worldName} in Decentraland`
   const description = entry.description?.trim() || `Discover ${worldName} — a Decentraland world.`
-  const imageUrl = entry.image && /^https?:\/\//.test(entry.image) ? entry.image : WHATS_ON_DEFAULTS.image
+  const imageUrl = entry.image && /^https?:\/\//.test(entry.image) ? entry.image : EVENTS_DEFAULTS.image
   return { title, description, imageUrl }
 }
 
@@ -335,7 +337,7 @@ const fetchWhatsOnSEO = async (eventId: string | null, position: string | null, 
       return {
         title: `Explore (${position}) in Decentraland`,
         description: `Discover what's happening at coordinates ${position} in Decentraland.`,
-        imageUrl: WHATS_ON_DEFAULTS.image
+        imageUrl: EVENTS_DEFAULTS.image
       }
     }
   }
@@ -346,14 +348,14 @@ const fetchWhatsOnSEO = async (eventId: string | null, position: string | null, 
       return {
         title: `Visit ${worldName} in Decentraland`,
         description: `Discover ${worldName} — a Decentraland world.`,
-        imageUrl: WHATS_ON_DEFAULTS.image
+        imageUrl: EVENTS_DEFAULTS.image
       }
     }
   }
   return {
-    title: WHATS_ON_DEFAULTS.title,
-    description: WHATS_ON_DEFAULTS.description,
-    imageUrl: WHATS_ON_DEFAULTS.image
+    title: EVENTS_DEFAULTS.title,
+    description: EVENTS_DEFAULTS.description,
+    imageUrl: EVENTS_DEFAULTS.image
   }
 }
 
@@ -402,7 +404,7 @@ const ROUTE_PATTERNS: Array<{ pattern: RegExp; handler: (match: RegExpMatchArray
   // Skip /reels/list — it's a list page, not an image deep-link. The CF Worker has
   // the same exclusion in OpenGraphReelsRoute.test().
   { pattern: /^\/reels\/(?!list(?:\/|$))([^/]+)$/, handler: m => ({ type: 'reels', imageId: m[1] }) },
-  // /whats-on, /jump/events and /jump/places all deep-link via query params (?id=, ?position=)
+  // /events, /jump/events and /jump/places all deep-link via query params (?id=, ?position=)
   // rather than path segments. A single 'whats-on' route type handles all three by dispatching
   // on the query params; the path patterns just gate which paths reach the handler.
   { pattern: /^\/events(\/.*)?$/, handler: () => ({ type: 'whats-on' }) },
@@ -592,7 +594,7 @@ async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   const origin = resolveOrigin(req)
   // Preserve id / position / world in the canonical URL so social cards and search
   // engines link back to the deep-linked event/parcel/world rather than the
-  // generic listing page. Applies to /whats-on and /jump/{events,places}.
+  // generic listing page. Applies to /events and /jump/{events,places}.
   const canonicalQuery = new URLSearchParams()
   const preservesQuery = requestPath.startsWith('/events') || requestPath.startsWith('/jump/')
   if (preservesQuery) {

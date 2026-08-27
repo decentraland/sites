@@ -41,7 +41,7 @@ function buildCacheKey(address: string): string {
 }
 
 // ── Batched fetching ──────────────────────────────────────────────────────
-// A grid mount (e.g. /discover: ~30 place cards, each resolving its owner via
+// A grid mount (e.g. /places: ~30 place cards, each resolving its owner via
 // useGetProfileQuery) used to fan out one GET /lambdas/profiles/{address} per
 // card. Profile fetches requested in the same tick now coalesce into a single
 // POST /lambdas/profiles { ids } per peer — the catalyst returns one profile

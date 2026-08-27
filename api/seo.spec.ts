@@ -278,7 +278,7 @@ describe('seo handler', () => {
 
   it('rejects malformed world name and falls back to defaults', async () => {
     const { body } = await run({ path: '/events', world: 'not<a>world' })
-    expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
+    expect(body).toContain('<title>Events in Decentraland | Decentraland</title>')
     expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/events">/)
   })
 
@@ -294,26 +294,29 @@ describe('seo handler', () => {
     expect(body).toMatch(/<meta property="og:description" content="Discover untitled\.dcl\.eth — a Decentraland world\.">/)
   })
 
-  it('serves generic whats-on metadata when no params', async () => {
+  it('serves generic events metadata when no params', async () => {
     const { body } = await run({ path: '/events' })
-    expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
+    expect(body).toContain('<title>Events in Decentraland | Decentraland</title>')
     expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/events">/)
   })
 
+  // Runs against a reel title because those carry a real apostrophe from user content. The
+  // generic events title used to supply one and no longer does, so pinning the regression to
+  // it would have quietly stopped exercising this.
   it('keeps the apostrophe in the <title> element as a literal character, not an HTML entity, so a downstream re-encode cannot double-encode it', async () => {
-    const { body } = await run({ path: '/events' })
+    const { body } = await run({ path: '/reels/reel-with-photographer' })
     const titleMatch = body.match(/<title>([^<]*)<\/title>/)
     expect(titleMatch).not.toBeNull()
     expect(titleMatch![1]).not.toMatch(/&#?x?\d*'?;/i)
-    expect(titleMatch![1]).toBe("What's On in Decentraland | Decentraland")
+    expect(titleMatch![1]).toBe("Alice's Decentraland snapshot | Decentraland")
     // Attribute-bound titles (twitter:title, og:title) still escape the apostrophe defensively
     // because the value is wrapped in double-quoted attributes.
-    expect(body).toMatch(/<meta name="twitter:title" content="What&#x27;s On in Decentraland \| Decentraland">/)
+    expect(body).toMatch(/<meta name="twitter:title" content="Alice&#x27;s Decentraland snapshot \| Decentraland">/)
   })
 
   it('rejects malformed event id and falls back to defaults', async () => {
     const { body } = await run({ path: '/events', id: 'not<a>uuid' })
-    expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
+    expect(body).toContain('<title>Events in Decentraland | Decentraland</title>')
     // Canonical should NOT include the bad id
     expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/events">/)
   })
@@ -524,7 +527,7 @@ describe('seo handler', () => {
 
   it('rejects a malformed position and falls back to whats-on defaults', async () => {
     const { body } = await run({ path: '/events', position: 'bogus' })
-    expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
+    expect(body).toContain('<title>Events in Decentraland | Decentraland</title>')
   })
 
   it('returns 200 with a client-side redirect HTML when dist/index.html is unavailable', async () => {
@@ -706,7 +709,7 @@ describe('seo handler', () => {
       },
       async () => {
         const { body } = await run({ path: '/events', id: 'aaaaaaaaaaaa2222' })
-        expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
+        expect(body).toContain('<title>Events in Decentraland | Decentraland</title>')
       }
     )
   })
@@ -731,7 +734,7 @@ describe('seo handler', () => {
       },
       async () => {
         const { body } = await run({ path: '/events', id: 'aaaaaaaaaaaa3333' })
-        expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
+        expect(body).toContain('<title>Events in Decentraland | Decentraland</title>')
       }
     )
   })
