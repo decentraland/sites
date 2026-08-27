@@ -21,7 +21,27 @@ const FeaturedAssetPaper = styled(Paper)({
     fontFamily: "'Inter', sans-serif",
     fontSize: 14,
     fontWeight: 400
-  }
+  },
+  // MUI's own `.MuiAutocomplete-listbox` / `.MuiAutocomplete-option` rules are appended AFTER the
+  // styled components below (the listbox is composed via `as`, and options get MUI's class from the
+  // props spread), so single-class selectors on those components lose and the Figma values never
+  // land — measured on the running page as 6px 16px rows, an `action.focus` highlight and a 40vh
+  // listbox. Scoping the same values here, under the Paper, outranks them.
+  '& .MuiAutocomplete-listbox': {
+    padding: 0,
+    maxHeight: 416
+  },
+  '& .MuiAutocomplete-listbox .MuiAutocomplete-option': {
+    minHeight: 76,
+    padding: 8,
+    borderRadius: 12,
+    gap: 12
+  },
+  // MUI adds `Mui-focused` on mousemove, so this covers hover and keyboard navigation alike.
+  '& .MuiAutocomplete-listbox .MuiAutocomplete-option.Mui-focused, & .MuiAutocomplete-listbox .MuiAutocomplete-option[aria-selected="true"]':
+    {
+      backgroundColor: 'rgba(255, 255, 255, 0.2)'
+    }
   /* eslint-enable @typescript-eslint/naming-convention */
 })
 

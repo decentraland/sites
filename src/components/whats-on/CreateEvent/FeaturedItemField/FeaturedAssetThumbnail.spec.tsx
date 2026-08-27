@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { FeaturedAssetThumbnail } from './FeaturedAssetThumbnail'
 
 // The real styled engine strips `$`-prefixed props; the shared passthrough mock does not, so the
@@ -7,7 +7,8 @@ import { FeaturedAssetThumbnail } from './FeaturedAssetThumbnail'
 jest.mock('./FeaturedAssetThumbnail.styled', () => ({
   AssetTile: ({ children }: { children?: React.ReactNode }) => React.createElement('div', { 'data-testid': 'asset-tile' }, children),
   AssetTileGrid: ({ children }: { children?: React.ReactNode }) => React.createElement('div', { 'data-testid': 'asset-grid' }, children),
-  AssetImage: ({ src, alt }: { src: string; alt: string }) => React.createElement('img', { src, alt })
+  AssetImage: ({ src, alt, onError }: { src: string; alt: string; onError?: React.ReactEventHandler<HTMLImageElement> }) =>
+    React.createElement('img', { src, alt, onError })
 }))
 
 describe('FeaturedAssetThumbnail', () => {
@@ -40,6 +41,17 @@ describe('FeaturedAssetThumbnail', () => {
 
       expect(screen.getByTestId('asset-tile')).toBeInTheDocument()
       expect(screen.queryByRole('presentation')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when a thumbnail fails to load', () => {
+    it('should hide the image so the broken-image glyph never lands on the plate', () => {
+      render(<FeaturedAssetThumbnail thumbnails={['gone.png']} />)
+      const image = screen.getByRole('presentation')
+
+      fireEvent.error(image)
+
+      expect(image).toHaveStyle({ visibility: 'hidden' })
     })
   })
 

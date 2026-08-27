@@ -15,11 +15,29 @@ interface FeaturedAssetOption {
   creatorName?: string
 }
 
+/**
+ * What the dropdown should say right now. A single discriminant rather than a bag of booleans,
+ * because the states are mutually exclusive and were previously indistinguishable: "nothing typed
+ * yet", "still typing" and "searched and found nothing" all read as empty, so the field showed the
+ * no-results copy before any search had run.
+ */
+type FeaturedAssetSearchStatus =
+  /** Nothing typed — the dropdown has nothing to say and should stay shut. */
+  | 'idle'
+  /** Typed, but too short to search on. */
+  | 'too-short'
+  /** Debounce pending or a request in flight. */
+  | 'loading'
+  /** The marketplace could not be reached — distinct from "nothing matched". */
+  | 'error'
+  /** A search completed and matched nothing. */
+  | 'empty'
+  /** `options` holds at least one row. */
+  | 'results'
+
 interface FeaturedAssetSearchResult {
   options: FeaturedAssetOption[]
-  isLoading: boolean
-  /** True once a search ran for the current input and produced nothing selectable. */
-  isEmpty: boolean
+  status: FeaturedAssetSearchStatus
 }
 
-export type { FeaturedAssetKind, FeaturedAssetOption, FeaturedAssetSearchResult }
+export type { FeaturedAssetKind, FeaturedAssetOption, FeaturedAssetSearchResult, FeaturedAssetSearchStatus }

@@ -18,7 +18,7 @@ import {
   itemToOption,
   urnToOption
 } from './useFeaturedAssetSearch.helpers'
-import type { FeaturedAssetOption, FeaturedAssetSearchResult } from './useFeaturedAssetSearch.types'
+import type { FeaturedAssetOption, FeaturedAssetSearchResult, FeaturedAssetSearchStatus } from './useFeaturedAssetSearch.types'
 
 const SEARCH_DEBOUNCE_MS = 300
 /**
@@ -75,12 +75,22 @@ function useFeaturedAssetSearch(query: string): FeaturedAssetSearchResult {
 
   const thumbnailsByContract = useMemo(() => groupThumbnailsByContract(previews.data?.data ?? []), [previews.data])
 
+  // The debounce has not caught up yet, so the queries above are still keyed to the previous term.
+  // Without this the dropdown reports "nothing matched" for the whole debounce window.
+  const isDebouncePending = query.trim() !== search
+
   // Collection previews are deliberately excluded: they only fill in the tiles, so waiting on them
   // would hide item rows that are already selectable.
-  const isLoading = isTextSearch
+  const isFetching = isTextSearch
     ? itemSearch.isFetching || collectionSearch.isFetching
     : isUrn
       ? itemByUrn.isFetching || collectionByUrn.isFetching
+      : false
+
+  const isError = isTextSearch
+    ? Boolean(itemSearch.isError || collectionSearch.isError)
+    : isUrn
+      ? Boolean(itemByUrn.isError || collectionByUrn.isError)
       : false
 
   const options = useMemo(() => {
@@ -90,11 +100,23 @@ function useFeaturedAssetSearch(query: string): FeaturedAssetSearchResult {
       ...items.map(item => itemToOption(item, creatorNames)),
       ...collections.map(collection => collectionToOption(collection, thumbnailsByContract, creatorNames))
     ]
-    if (built.length === 0 && isUrn && !isLoading) return [urnToOption(search)]
+    // Only offer the raw URN once the lookup genuinely came back empty. Offering it on a failed
+    // request instead would let the caller commit it as the resolved asset, which permanently stops
+    // the retry — the saved event would then keep showing the bare URN until the page is reloaded.
+    if (built.length === 0 && isUrn && !isFetching && !isDebouncePending && !isError) return [urnToOption(search)]
     return built
-  }, [isTextSearch, isUrn, isLoading, items, collections, creatorNames, thumbnailsByContract, search])
+  }, [isTextSearch, isUrn, isFetching, isDebouncePending, isError, items, collections, creatorNames, thumbnailsByContract, search])
 
-  return { options, isLoading, isEmpty: !isLoading && (isTextSearch || isUrn) && options.length === 0 }
+  const status = useMemo((): FeaturedAssetSearchStatus => {
+    if (options.length > 0) return 'results'
+    if (!query.trim()) return 'idle'
+    if (isDebouncePending || isFetching) return 'loading'
+    if (isError) return 'error'
+    if (!isTextSearch && !isUrn) return 'too-short'
+    return 'empty'
+  }, [options.length, query, isDebouncePending, isFetching, isError, isTextSearch, isUrn])
+
+  return { options, status }
 }
 
 export { SEARCH_DEBOUNCE_MS, useFeaturedAssetSearch }

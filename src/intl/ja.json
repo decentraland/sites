@@ -975,6 +975,8 @@
     "featured_item_group_collections": "コレクション",
     "featured_item_searching": "検索中…",
     "featured_item_no_results": "アイテムまたはコレクションが見つかりません",
+    "featured_item_min_length": "{count}文字以上入力してください",
+    "featured_item_error": "マーケットプレイスに接続できませんでした。もう一度お試しください。",
     "featured_item_clear": "注目アイテムを削除",
     "error_invalid_featured_item": "有効なコレクションまたはアイテムのURNを入力してください",
     "error_image_too_large": "この画像を500 KB以下に圧縮できませんでした。より小さいファイルを選択してください。",

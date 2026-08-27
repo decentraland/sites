@@ -1249,6 +1249,8 @@
     "featured_item_group_collections": "Collections",
     "featured_item_searching": "Searching…",
     "featured_item_no_results": "No items or collections found",
+    "featured_item_min_length": "Type at least {count} characters",
+    "featured_item_error": "We couldn't reach the marketplace. Try again.",
     "featured_item_clear": "Clear featured item",
     "additional_notes": "Additional Notes",
     "notes_placeholder": "Be as descriptive as you can",

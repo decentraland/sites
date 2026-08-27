@@ -80,6 +80,24 @@ describe('useFeaturedAssetSearch', () => {
     jest.resetAllMocks()
   })
 
+  describe('when nothing has been typed', () => {
+    it('should stay idle so the dropdown has nothing to announce', () => {
+      const { result } = renderSettled('')
+
+      expect(result.current.status).toBe('idle')
+      expect(result.current.options).toEqual([])
+    })
+  })
+
+  describe('when the debounce has not caught up with the input', () => {
+    it('should report loading rather than an empty result', () => {
+      const { result, rerender } = renderSettled('hat')
+      rerender({ value: 'hats' })
+
+      expect(result.current.status).toBe('loading')
+    })
+  })
+
   describe('when the query is shorter than the minimum', () => {
     it('should skip every request and return no options', () => {
       const { result } = renderSettled('h')
@@ -87,7 +105,8 @@ describe('useFeaturedAssetSearch', () => {
       expect(mockSearchItems).toHaveBeenLastCalledWith({ search: 'h' }, { skip: true })
       expect(mockSearchCollections).toHaveBeenLastCalledWith({ search: 'h' }, { skip: true })
       expect(result.current.options).toEqual([])
-      expect(result.current.isEmpty).toBe(false)
+      // Not 'empty': nothing was searched, so the no-results copy would be a lie.
+      expect(result.current.status).toBe('too-short')
     })
   })
 
@@ -123,7 +142,7 @@ describe('useFeaturedAssetSearch', () => {
     it('should report an empty result once the search settles with nothing', () => {
       const { result } = renderSettled('zzzz')
 
-      expect(result.current.isEmpty).toBe(true)
+      expect(result.current.status).toBe('empty')
     })
 
     it('should stay loading while the searches are in flight', () => {
@@ -131,8 +150,15 @@ describe('useFeaturedAssetSearch', () => {
 
       const { result } = renderSettled('hat')
 
-      expect(result.current.isLoading).toBe(true)
-      expect(result.current.isEmpty).toBe(false)
+      expect(result.current.status).toBe('loading')
+    })
+
+    it('should report an error rather than an empty result when the marketplace fails', () => {
+      mockSearchItems.mockReturnValue({ data: undefined, isFetching: false, isError: true })
+
+      const { result } = renderSettled('hat')
+
+      expect(result.current.status).toBe('error')
     })
   })
 
@@ -167,6 +193,16 @@ describe('useFeaturedAssetSearch', () => {
       const { result } = renderSettled(ITEM_URN)
 
       expect(result.current.options).toEqual([{ urn: ITEM_URN, name: ITEM_URN, kind: 'item', thumbnails: [], creator: '' }])
+      expect(result.current.status).toBe('results')
+    })
+
+    it('should not offer it when the lookup errored, so the caller can retry', () => {
+      mockItemsByUrn.mockReturnValue({ data: undefined, isFetching: false, isError: true })
+
+      const { result } = renderSettled(ITEM_URN)
+
+      expect(result.current.options).toEqual([])
+      expect(result.current.status).toBe('error')
     })
 
     it('should not offer it while resolution is still in flight', () => {

@@ -5,7 +5,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import { useTranslation } from '@dcl/hooks'
 import { Autocomplete } from 'decentraland-ui2'
 import { useFeaturedAssetSearch } from '../../../../hooks/useFeaturedAssetSearch'
-import { urnToOption } from '../../../../hooks/useFeaturedAssetSearch.helpers'
+import { MIN_SEARCH_LENGTH, urnToOption } from '../../../../hooks/useFeaturedAssetSearch.helpers'
 import type { FeaturedAssetKind, FeaturedAssetOption } from '../../../../hooks/useFeaturedAssetSearch.types'
 import { EventTextField } from '../EventForm.styled'
 import { FeaturedAssetOptionRow } from './FeaturedAssetOptionRow'
@@ -55,14 +55,25 @@ function FeaturedItemField(props: FeaturedItemFieldProps) {
 
   useEffect(() => {
     if (!needsHydration) return
+    // `status` gates this: committing on an errored lookup would end hydration for good, leaving the
+    // field on the bare URN with no retry.
+    if (hydration.status !== 'results') return
     const match = hydration.options.find(option => option.urn === value)
     if (match) setSelected(match)
-  }, [needsHydration, hydration.options, value])
+  }, [needsHydration, hydration.options, hydration.status, value])
 
   const currentAsset = useMemo(() => {
     if (!value) return null
     return selected?.urn === value ? selected : urnToOption(value)
   }, [value, selected])
+
+  // Each of these used to render as "no items or collections found", which claimed a search had run
+  // when none had.
+  const emptyMessage = useMemo(() => {
+    if (search.status === 'too-short') return t('create_event.featured_item_min_length', { count: String(MIN_SEARCH_LENGTH) })
+    if (search.status === 'error') return t('create_event.featured_item_error')
+    return t('create_event.featured_item_no_results')
+  }, [search.status, t])
 
   const handleChange = useCallback(
     (_event: SyntheticEvent, option: FeaturedAssetOption | null) => {
@@ -96,7 +107,7 @@ function FeaturedItemField(props: FeaturedItemFieldProps) {
       options={search.options}
       value={currentAsset}
       inputValue={inputValue}
-      open={isOpen}
+      open={isOpen && search.status !== 'idle'}
       onOpen={() => setIsOpen(true)}
       onClose={() => setIsOpen(false)}
       onChange={handleChange}
@@ -109,13 +120,17 @@ function FeaturedItemField(props: FeaturedItemFieldProps) {
       groupBy={option => option.kind}
       renderGroup={renderGroup}
       renderOption={renderOption}
-      loading={search.isLoading}
+      loading={search.status === 'loading'}
       loadingText={t('create_event.featured_item_searching')}
-      noOptionsText={t('create_event.featured_item_no_results')}
+      noOptionsText={emptyMessage}
       PaperComponent={FeaturedAssetPaper}
       ListboxComponent={FeaturedAssetListbox}
       forcePopupIcon={false}
       autoHighlight
+      // Without this, blurring after pasting a URN hits MUI's `clearOnBlur` branch and the value is
+      // silently dropped — the event would save with no featured item and nothing would say so.
+      // `autoHighlight` already highlights the row, so this commits exactly what the user sees.
+      autoSelect
       handleHomeEndKeys
       clearIcon={<CloseIcon fontSize="small" />}
       clearText={t('create_event.featured_item_clear')}

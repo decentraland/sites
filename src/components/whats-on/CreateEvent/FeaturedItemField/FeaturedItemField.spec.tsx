@@ -34,6 +34,9 @@ jest.mock('decentraland-ui2', () => ({
       }),
       React.createElement('span', { 'data-testid': 'value' }, props.value ? props.getOptionLabel(props.value) : ''),
       React.createElement('span', { 'data-testid': 'clear-text' }, props.clearText),
+      React.createElement('span', { 'data-testid': 'auto-select' }, String(Boolean(props.autoSelect))),
+      React.createElement('span', { 'data-testid': 'is-open' }, String(Boolean(props.open))),
+      React.createElement('span', { 'data-testid': 'no-options-text' }, props.noOptionsText),
       props.loading ? React.createElement('span', { 'data-testid': 'loading' }, props.loadingText) : null,
       !props.loading && props.options.length === 0 ? React.createElement('span', { 'data-testid': 'empty' }, props.noOptionsText) : null,
       React.createElement('button', { 'data-testid': 'clear', onClick: () => props.onChange({}, null) }, 'clear'),
@@ -119,7 +122,7 @@ const COLLECTION_OPTION: FeaturedAssetOption = {
   creator: '0xbbbb'
 }
 
-const EMPTY: FeaturedAssetSearchResult = { options: [], isLoading: false, isEmpty: false }
+const EMPTY: FeaturedAssetSearchResult = { options: [], status: 'idle' }
 
 describe('FeaturedItemField', () => {
   const mockOnChange = jest.fn()
@@ -167,7 +170,7 @@ describe('FeaturedItemField', () => {
 
   describe('when results come back', () => {
     beforeEach(() => {
-      mockUseFeaturedAssetSearch.mockReturnValue({ options: [ITEM_OPTION, COLLECTION_OPTION], isLoading: false, isEmpty: false })
+      mockUseFeaturedAssetSearch.mockReturnValue({ options: [ITEM_OPTION, COLLECTION_OPTION], status: 'results' as const })
     })
 
     it('should head each section with its own label', () => {
@@ -198,7 +201,7 @@ describe('FeaturedItemField', () => {
 
   describe('when an asset is selected', () => {
     it('should show its name and thumbnail inside the field', () => {
-      mockUseFeaturedAssetSearch.mockReturnValue({ options: [ITEM_OPTION], isLoading: false, isEmpty: false })
+      mockUseFeaturedAssetSearch.mockReturnValue({ options: [ITEM_OPTION], status: 'results' as const })
       const { rerender } = render(<FeaturedItemField value="" onChange={mockOnChange} />)
 
       fireEvent.click(screen.getByTestId('pick-item'))
@@ -229,7 +232,7 @@ describe('FeaturedItemField', () => {
     })
 
     it('should upgrade to the resolved name once it arrives', () => {
-      mockUseFeaturedAssetSearch.mockReturnValue({ options: [ITEM_OPTION], isLoading: false, isEmpty: false })
+      mockUseFeaturedAssetSearch.mockReturnValue({ options: [ITEM_OPTION], status: 'results' as const })
 
       render(<FeaturedItemField value={ITEM_URN} onChange={mockOnChange} />)
 
@@ -239,7 +242,7 @@ describe('FeaturedItemField', () => {
 
   describe('when the search is running', () => {
     it('should surface the searching message', () => {
-      mockUseFeaturedAssetSearch.mockReturnValue({ options: [], isLoading: true, isEmpty: false })
+      mockUseFeaturedAssetSearch.mockReturnValue({ options: [], status: 'loading' })
 
       render(<FeaturedItemField value="" onChange={mockOnChange} />)
 
@@ -252,6 +255,66 @@ describe('FeaturedItemField', () => {
       render(<FeaturedItemField value="" onChange={mockOnChange} />)
 
       expect(screen.getByTestId('empty')).toHaveTextContent('create_event.featured_item_no_results')
+    })
+  })
+
+  describe('when the owner pastes a urn and blurs without clicking a row', () => {
+    it('should let MUI commit the highlighted row instead of discarding the input', () => {
+      render(<FeaturedItemField value="" onChange={mockOnChange} />)
+
+      // `autoSelect` is what stops MUI's clearOnBlur branch from dropping a pasted URN.
+      expect(screen.getByTestId('auto-select')).toHaveTextContent('true')
+    })
+  })
+
+  describe('when nothing has been typed', () => {
+    it('should keep the dropdown shut rather than announcing an empty result', () => {
+      render(<FeaturedItemField value="" onChange={mockOnChange} />)
+
+      fireEvent.click(screen.getByTestId('open'))
+
+      expect(screen.getByTestId('is-open')).toHaveTextContent('false')
+    })
+  })
+
+  describe('when the query is too short to search on', () => {
+    it('should ask for more characters instead of claiming nothing matched', () => {
+      mockUseFeaturedAssetSearch.mockReturnValue({ options: [], status: 'too-short' })
+
+      render(<FeaturedItemField value="" onChange={mockOnChange} />)
+
+      expect(screen.getByTestId('no-options-text')).toHaveTextContent('create_event.featured_item_min_length')
+    })
+  })
+
+  describe('when the marketplace cannot be reached', () => {
+    it('should say so instead of claiming nothing matched', () => {
+      mockUseFeaturedAssetSearch.mockReturnValue({ options: [], status: 'error' })
+
+      render(<FeaturedItemField value="" onChange={mockOnChange} />)
+
+      expect(screen.getByTestId('no-options-text')).toHaveTextContent('create_event.featured_item_error')
+    })
+  })
+
+  describe('when a search completes with no matches', () => {
+    it('should show the no-results copy', () => {
+      mockUseFeaturedAssetSearch.mockReturnValue({ options: [], status: 'empty' })
+
+      render(<FeaturedItemField value="" onChange={mockOnChange} />)
+
+      expect(screen.getByTestId('no-options-text')).toHaveTextContent('create_event.featured_item_no_results')
+    })
+  })
+
+  describe('when hydrating a saved urn and the lookup fails', () => {
+    it('should keep showing the raw urn rather than committing an unconfirmed row', () => {
+      mockUseFeaturedAssetSearch.mockReturnValue({ options: [], status: 'error' })
+
+      render(<FeaturedItemField value={ITEM_URN} onChange={mockOnChange} />)
+
+      expect(screen.getByTestId('value')).toHaveTextContent(ITEM_URN)
+      expect(mockOnChange).not.toHaveBeenCalled()
     })
   })
 

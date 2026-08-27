@@ -975,6 +975,8 @@
     "featured_item_group_collections": "合集",
     "featured_item_searching": "搜索中…",
     "featured_item_no_results": "未找到物品或合集",
+    "featured_item_min_length": "请至少输入 {count} 个字符",
+    "featured_item_error": "无法连接到市场，请重试。",
     "featured_item_clear": "清除精选物品",
     "error_invalid_featured_item": "必须是有效的合集或物品 URN",
     "error_image_too_large": "无法将此图片压缩到 500 KB 以下。请选择较小的文件。",

@@ -970,6 +970,8 @@
     "featured_item_group_collections": "Collections",
     "featured_item_searching": "Recherche…",
     "featured_item_no_results": "Aucun article ni collection trouvé",
+    "featured_item_min_length": "Saisissez au moins {count} caractères",
+    "featured_item_error": "Impossible de joindre la marketplace. Réessayez.",
     "featured_item_clear": "Retirer l'article en vedette",
     "error_invalid_featured_item": "Doit être un URN valide de collection ou d'article",
     "error_image_too_large": "Nous n'avons pas pu compresser cette image en dessous de 500 Ko. Veuillez choisir un fichier plus petit.",
