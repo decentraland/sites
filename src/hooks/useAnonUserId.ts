@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAnalytics } from '@dcl/hooks'
+import { readStorageItem } from '../utils/safeStorage'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -39,8 +40,11 @@ function useAnonUserId(): string | undefined {
 
     // @segment/analytics-next stores the anonymous ID in localStorage under
     // this key. We read it directly because the AnalyticsBrowser instance is
-    // not exposed globally (unlike the legacy analytics.js snippet).
-    const segmentId = localStorage.getItem('ajs_anonymous_id')
+    // not exposed globally (unlike the legacy analytics.js snippet). The read
+    // goes through `readStorageItem` because this runs inside the navbar, where
+    // a WebView with no usable storage would otherwise blank the page
+    // (SITES-2RY).
+    const segmentId = readStorageItem('ajs_anonymous_id')
     if (segmentId) {
       // The value may be stored JSON-encoded (e.g. "\"uuid\""), so strip quotes
       const cleaned = segmentId.replace(/^"|"$/g, '')
