@@ -58,27 +58,28 @@ Configured in `.claude/settings.json`.
 
 Quick lookup for which skill (if any) owns each Pre-PR rule. Rules without a skill live entirely in CLAUDE.md.
 
-| Rule  | Topic                                                                                     | Owned by                                           |
-| ----- | ----------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| 1     | Code-reviewer agent dispatch                                                              | skill `pre-pr-review`                              |
-| 2     | Architectural boundary check                                                              | CLAUDE.md (Architecture > Dual Shell)              |
-| 3     | YAGNI                                                                                     | CLAUDE.md                                          |
-| 4     | DRY                                                                                       | CLAUDE.md                                          |
-| 5     | Behavior changes / NOTE comments                                                          | CLAUDE.md                                          |
-| 6     | Test coverage (95% floor)                                                                 | skill `coverage-guard`                             |
-| 7     | Barrel exports                                                                            | CLAUDE.md (also referenced from `rtk-query-split`) |
-| 8     | ESLint scope                                                                              | CLAUDE.md                                          |
-| 9     | i18n parity + no dupe keys                                                                | skill `add-i18n-key`                               |
-| 10    | Error handling (no raw bodies to UI)                                                      | CLAUDE.md                                          |
-| 11    | List rendering (memo)                                                                     | CLAUDE.md                                          |
-| 12    | N+1 hot paths                                                                             | CLAUDE.md                                          |
-| 13    | Navbar clearance                                                                          | skill `add-route`                                  |
-| 14    | Prod build + dynamic routes                                                               | CLAUDE.md                                          |
-| 15    | CMS origin + vite proxy coherence                                                         | skill `seo-worker`                                 |
-| 16    | No module-top-level throws                                                                | skill `shell-safe-imports`                         |
-| 17    | RTK Query no direct store imports                                                         | skill `rtk-query-split`                            |
-| 18    | RTK Query no internal cache state                                                         | skill `rtk-query-split`                            |
-| 19-25 | Extended rules (XSS, URL validation, lockfile, immutable cache, page tracking, props, sx) | `docs/pre-pr-rules-detail.md`                      |
+| Rule  | Topic                                                                                      | Owned by                                                  |
+| ----- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| 1     | Code-reviewer agent dispatch                                                               | skill `pre-pr-review`                                     |
+| 2     | Architectural boundary check                                                               | CLAUDE.md (Architecture > Dual Shell)                     |
+| 3     | YAGNI                                                                                      | CLAUDE.md                                                 |
+| 4     | DRY                                                                                        | CLAUDE.md                                                 |
+| 5     | Behavior changes / NOTE comments                                                           | CLAUDE.md                                                 |
+| 6     | Test coverage (95% floor)                                                                  | skill `coverage-guard`                                    |
+| 7     | Barrel exports                                                                             | CLAUDE.md (also referenced from `rtk-query-split`)        |
+| 8     | ESLint scope                                                                               | CLAUDE.md                                                 |
+| 9     | i18n parity + no dupe keys                                                                 | skill `add-i18n-key`                                      |
+| 10    | Error handling (no raw bodies to UI)                                                       | CLAUDE.md                                                 |
+| 11    | List rendering (memo)                                                                      | CLAUDE.md                                                 |
+| 12    | N+1 hot paths                                                                              | CLAUDE.md                                                 |
+| 13    | Navbar clearance                                                                           | skill `add-route`                                         |
+| 14    | Prod build + dynamic routes                                                                | CLAUDE.md                                                 |
+| 15    | CMS origin + vite proxy coherence                                                          | skill `seo-worker`                                        |
+| 16    | No module-top-level throws                                                                 | skill `shell-safe-imports`                                |
+| 17    | RTK Query no direct store imports                                                          | skill `rtk-query-split`                                   |
+| 18    | RTK Query no internal cache state                                                          | skill `rtk-query-split`                                   |
+| 19-25 | Extended rules (XSS, URL validation, lockfile, immutable cache, page tracking, props, sx)  | `docs/pre-pr-rules-detail.md`                             |
+| 26    | Renaming/adding a public path is a three-repo change (definitions → sites-deployer → here) | CLAUDE.md (Deployment), skills `add-route` + `seo-worker` |
 
 ## When to update this file
 

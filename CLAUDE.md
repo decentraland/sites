@@ -112,14 +112,35 @@ affects previews only.** Two things that live there are therefore NOT what produ
 
 - **OG meta / `<title>`.** Production titles come from the worker's handlers in
   `workers/sites-worker/rollouts/routes/handlers/` — `OpenGraphWhatsOnRoute` (events + `/jump`),
-  `OpenGraphStaticPageRoute` (its `PAGES` map), blog, profile, reels, invite, community. The route
-  _path patterns_ are not even in that repo: they come from the sites DSL in `@decentraland/definitions`,
-  so making a new path emit OG cards is a two-repo change.
+  `OpenGraphStaticPageRoute` (its `PAGES` map), blog, profile, reels, invite, community.
 - **Per-route headers**, including the COOP/COEP pair the bevy iframe needs. Verify a header claim with
   `curl -sI https://decentraland.org/<path>`, never by reading `vercel.json`.
 
+### Which repo owns what (three repos, in this order)
+
+Emitting OG for a path is never one repo. Get the layer wrong and the fix lands somewhere that does not
+serve production.
+
+| Layer                              | Repo                                               | File                                             | Owns                                                                                                    |
+| ---------------------------------- | -------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| **Which paths get a handler**      | `decentraland/definitions` (GitHub, private)       | `src/sites/sites.ts`, `sites.config[env].routes` | The `path:` pattern per environment (dev/stg/prd). No pattern, no card: the page serves the bare shell. |
+| **What the card says**             | `dcl.tools:ops/sites-deployer` (GitLab, MR not PR) | `workers/sites-worker/rollouts/routes/handlers/` | Title, description, image, canonical, the API calls behind them.                                        |
+| **The tab title after navigation** | this repo                                          | Helmet in the page or its layout                 | What the browser tab shows once JS runs. Crawlers never see it.                                         |
+
+**Merge order, and why it is that order:** definitions first (publishes `@next` on push to `main`) →
+sites-deployer to `master` (deploys dev + stg, and its `.gitlab-ci.yml` runs
+`npm i @decentraland/definitions@next`, so one deploy picks up both) → `release` (prd) → only then the
+`org` rollout of sites. Rolling `org` first ships a live path with no card.
+
+**Do not work around a missing pattern inside the handler.** The temptation is to widen `test()` in
+sites-deployer so the new path matches without touching definitions. It buys nothing: the handler change
+needs a worker deploy anyway, and that same deploy installs `definitions@next`. Fix the layer that owns
+the problem.
+
 A route renamed in the SPA keeps serving the old section's OG card until the worker is updated, and the
-new path serves the bare shell (`<title>Decentraland</title>`) until it is added there.
+new path serves the bare shell (`<title>Decentraland</title>`) until it is added there. Keep BOTH
+prefixes configured while the redirect lives: shared and indexed links hit the worker before the SPA can
+redirect them.
 
 ### Blog SEO (preview tier)
 
@@ -293,6 +314,22 @@ Don't `import { store }` in endpoint files for dispatching. Use `onQueryStarted`
 ### 18. RTK Query — no internal cache state access
 
 No `state.cmsClient.queries` casts via `as any`. Use entity-adapter selectors, `endpoints.foo.select(args)(state)`, or `selectFromResult`. Skill `rtk-query-split`.
+
+### 26. Renaming or adding a public path is a three-repo change
+
+Any PR that adds a public path, renames one, or changes what a section is called must land the OG layer
+too, in the order in Deployment > Which repo owns what. Before opening it:
+
+- **New or renamed path** → add its `path:` pattern to `sites.config[env].routes` in
+  `decentraland/definitions` for all three environments, and keep the old prefix while its redirect
+  lives.
+- **Section renamed** → update the strings in that section's handler in `sites-deployer`, and
+  canonicalize the legacy prefix onto the new one.
+- **Either** → give the destination page or layout a Helmet title. A client-side redirect never
+  rewrites the served `<head>`, so the tab inherits the title of the URL the visitor typed.
+
+Confirm the current behavior with `curl -sA Twitterbot https://decentraland.zone/<path> | grep '<title>'`
+rather than reasoning about it. `zone` runs master, so it shows what `org` will do after the rollout.
 
 ### 19-25. Extended rules — see `docs/pre-pr-rules-detail.md`
 
