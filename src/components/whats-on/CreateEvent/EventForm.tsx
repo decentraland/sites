@@ -15,6 +15,7 @@ import { useTranslation } from '@dcl/hooks'
 import { Tooltip } from 'decentraland-ui2'
 import { useGetCommunitiesQuery, useGetWorldNamesQuery } from '../../../features/events'
 import type { EventEntry } from '../../../features/events'
+import { useEventFeaturedItemSearch } from '../../../features/events/events.flags'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
 import {
@@ -167,6 +168,7 @@ function EventForm({
     handleSubmit
   } = useCreateEventForm({ onSuccess, initialEvent, initialCommunityId })
   const { identity, address } = useAuthIdentity()
+  const isFeaturedItemSearchEnabled = useEventFeaturedItemSearch()
   const { data: worldNames = [] } = useGetWorldNamesQuery(undefined, { skip: form.location !== 'world' })
   const { data: communities = [] } = useGetCommunitiesQuery({ identity }, { skip: !identity })
   const [verticalPanelOpen, setVerticalPanelOpen] = useState(false)
@@ -489,14 +491,30 @@ function EventForm({
                 </EventFormControl>
               </LocationBlock>
             )}
-            {/* Featured Item */}
+            {/* Featured Item — behind `dapps-event-featured-item-search`. Off (and while the flag
+                loads) this stays the plain URN input that production already ships, so the field is
+                never missing, only less capable. */}
             <FormFieldSection>
-              <FeaturedItemField
-                value={form.featuredItem}
-                onChange={urn => setField('featuredItem', urn)}
-                error={Boolean(errors.featuredItem)}
-                helperText={errors.featuredItem}
-              />
+              {isFeaturedItemSearchEnabled ? (
+                <FeaturedItemField
+                  value={form.featuredItem}
+                  onChange={urn => setField('featuredItem', urn)}
+                  error={Boolean(errors.featuredItem)}
+                  helperText={errors.featuredItem}
+                />
+              ) : (
+                <EventTextField
+                  variant="outlined"
+                  label={t('create_event.featured_item_label')}
+                  placeholder={t('create_event.featured_item_placeholder')}
+                  value={form.featuredItem}
+                  onChange={e => setField('featuredItem', e.target.value)}
+                  error={Boolean(errors.featuredItem)}
+                  helperText={errors.featuredItem}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                />
+              )}
             </FormFieldSection>
             {/* Email */}
             <FormFieldSection>

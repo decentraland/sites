@@ -124,8 +124,8 @@ function FeaturedItemField(props: FeaturedItemFieldProps) {
         <EventTextField
           {...params}
           variant="outlined"
-          label={t('create_event.featured_item_label')}
-          placeholder={t('create_event.featured_item_placeholder')}
+          label={t('create_event.featured_item_search_label')}
+          placeholder={t('create_event.featured_item_search_placeholder')}
           error={error}
           helperText={helperText}
           fullWidth

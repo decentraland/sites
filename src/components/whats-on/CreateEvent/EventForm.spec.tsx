@@ -210,6 +210,12 @@ jest.mock('../../../features/events', () => ({
   useGetCommunitiesQuery: () => mockUseGetCommunitiesQuery()
 }))
 
+const mockUseEventFeaturedItemSearch = jest.fn(() => false)
+
+jest.mock('../../../features/events/events.flags', () => ({
+  useEventFeaturedItemSearch: () => mockUseEventFeaturedItemSearch()
+}))
+
 const mockUseAuthIdentity = jest.fn(() => ({ identity: null, hasValidIdentity: false, address: null as string | null }))
 
 jest.mock('../../../hooks/useAuthIdentity', () => ({
@@ -303,6 +309,7 @@ describe('EventForm', () => {
     mockUseAuthIdentity.mockReturnValue({ identity: null, hasValidIdentity: false, address: null })
     mockUseGetWorldNamesQuery.mockReturnValue({ data: [] })
     mockUseGetCommunitiesQuery.mockReturnValue({ data: [] })
+    mockUseEventFeaturedItemSearch.mockReturnValue(false)
     mockUseCreateEventForm.mockReturnValue({
       form: createFormState(),
       errors: {},
@@ -676,6 +683,56 @@ describe('EventForm', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
       fireEvent.change(screen.getByLabelText('create_event.featured_item_label'), { target: { value: urn } })
       expect(mockSetField).toHaveBeenCalledWith('featuredItem', urn)
+    })
+
+    describe('and the featured item search flag is off', () => {
+      it('should render the plain urn input rather than the search picker', () => {
+        render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+        expect(screen.getByLabelText('create_event.featured_item_label')).toBeInTheDocument()
+        expect(screen.queryByTestId('featured-item-field')).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and the featured item search flag is on', () => {
+      beforeEach(() => {
+        mockUseEventFeaturedItemSearch.mockReturnValue(true)
+      })
+
+      it('should render the search picker instead of the plain urn input', () => {
+        render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+        expect(screen.getByTestId('featured-item-field')).toBeInTheDocument()
+      })
+
+      it('should call setField with the urn the picker reports', () => {
+        const urn = 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef12345678'
+        render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+        fireEvent.change(screen.getByTestId('featured-item-field'), { target: { value: urn } })
+
+        expect(mockSetField).toHaveBeenCalledWith('featuredItem', urn)
+      })
+
+      it('should still surface the validation error', () => {
+        mockUseCreateEventForm.mockReturnValue({
+          form: createFormState(),
+          errors: { featuredItem: 'create_event.error_invalid_featured_item' },
+          requiresModerationReview: false,
+          setField: mockSetField,
+          markRequiredFields: jest.fn(),
+          handleImageSelect: mockHandleImageSelect,
+          handleImageRemove: mockHandleImageRemove,
+          handleVerticalImageSelect: jest.fn(),
+          handleVerticalImageRemove: jest.fn(),
+          isFormValid: false,
+          isSubmitting: false,
+          handleSubmit: mockHandleSubmit
+        })
+        render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+        expect(screen.getByTestId('featured-item-field')).toHaveAttribute('data-helper-text', 'create_event.error_invalid_featured_item')
+      })
     })
 
     it('should toggle the repeat switch', () => {
