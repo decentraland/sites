@@ -139,9 +139,9 @@ describe('FeaturedItemField', () => {
     it('should render the labelled, empty field without a thumbnail', () => {
       render(<FeaturedItemField value="" onChange={mockOnChange} />)
 
-      expect(screen.getByLabelText('create_event.featured_item_search_label')).toHaveAttribute(
+      expect(screen.getByLabelText('create_event.featured_item_label')).toHaveAttribute(
         'placeholder',
-        'create_event.featured_item_search_placeholder'
+        'create_event.featured_item_placeholder'
       )
       expect(screen.getByTestId('value')).toHaveTextContent('')
       expect(screen.queryByTestId('selected-adornment')).not.toBeInTheDocument()
@@ -322,7 +322,7 @@ describe('FeaturedItemField', () => {
     it('should pass it through to the field', () => {
       render(<FeaturedItemField value="nope" onChange={mockOnChange} error helperText="create_event.error_invalid_featured_item" />)
 
-      const input = screen.getByLabelText('create_event.featured_item_search_label')
+      const input = screen.getByLabelText('create_event.featured_item_label')
       expect(input).toHaveAttribute('data-error', 'true')
       expect(input).toHaveAttribute('data-helper-text', 'create_event.error_invalid_featured_item')
     })

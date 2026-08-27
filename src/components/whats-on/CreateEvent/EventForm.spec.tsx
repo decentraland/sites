@@ -301,6 +301,8 @@ function createFormState(overrides = {}) {
   }
 }
 
+const SAVED_URN = 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef12345678'
+
 describe('EventForm', () => {
   let mockOnCancel: jest.Mock
 
@@ -361,13 +363,17 @@ describe('EventForm', () => {
       expect(screen.getByLabelText('create_event.email_label')).toBeInTheDocument()
     })
 
-    it('should render the featured item input', () => {
+    it('should render the featured item input when the feature is on', () => {
+      mockUseEventFeaturedItemSearch.mockReturnValue(true)
+
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
       expect(screen.getByLabelText('create_event.featured_item_label')).toBeInTheDocument()
     })
 
-    it('should surface the featured item validation error as helper text', () => {
+    it('should surface the featured item validation error as helper text when the feature is on', () => {
+      mockUseEventFeaturedItemSearch.mockReturnValue(true)
+
       mockUseCreateEventForm.mockReturnValue({
         ...mockUseCreateEventForm(),
         errors: { featuredItem: 'create_event.error_invalid_featured_item' }
@@ -679,27 +685,52 @@ describe('EventForm', () => {
     })
 
     it('should call setField when the featured item changes', () => {
+      mockUseEventFeaturedItemSearch.mockReturnValue(true)
       const urn = 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef12345678'
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
       fireEvent.change(screen.getByLabelText('create_event.featured_item_label'), { target: { value: urn } })
       expect(mockSetField).toHaveBeenCalledWith('featuredItem', urn)
     })
 
-    describe('and the featured item search flag is off', () => {
-      it('should render the plain urn input rather than the search picker', () => {
+    describe('and the featured item flag is off', () => {
+      it('should not render the field at all', () => {
         render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
-        expect(screen.getByLabelText('create_event.featured_item_label')).toBeInTheDocument()
         expect(screen.queryByTestId('featured-item-field')).not.toBeInTheDocument()
+        expect(screen.queryByLabelText('create_event.featured_item_label')).not.toBeInTheDocument()
+      })
+
+      it('should still carry an already-saved featured item through to the submit payload', () => {
+        mockUseCreateEventForm.mockReturnValue({
+          form: createFormState({ featuredItem: SAVED_URN }),
+          errors: {},
+          requiresModerationReview: false,
+          setField: mockSetField,
+          markRequiredFields: jest.fn(),
+          handleImageSelect: mockHandleImageSelect,
+          handleImageRemove: mockHandleImageRemove,
+          handleVerticalImageSelect: jest.fn(),
+          handleVerticalImageRemove: jest.fn(),
+          isFormValid: true,
+          isSubmitting: false,
+          handleSubmit: mockHandleSubmit
+        })
+        render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+        // The field is hidden, but the value stays in form state — hiding the feature must not wipe
+        // a featured item somebody already saved.
+        expect(screen.queryByTestId('featured-item-field')).not.toBeInTheDocument()
+        fireEvent.click(screen.getByTestId('submit-button'))
+        expect(mockHandleSubmit).toHaveBeenCalled()
       })
     })
 
-    describe('and the featured item search flag is on', () => {
+    describe('and the featured item flag is on', () => {
       beforeEach(() => {
         mockUseEventFeaturedItemSearch.mockReturnValue(true)
       })
 
-      it('should render the search picker instead of the plain urn input', () => {
+      it('should render the field', () => {
         render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
         expect(screen.getByTestId('featured-item-field')).toBeInTheDocument()
