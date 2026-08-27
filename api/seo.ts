@@ -38,7 +38,7 @@ const DEFAULTS = {
   twitterHandle: '@decentraland'
 } as const
 
-const WHATS_ON_DEFAULTS = {
+const EVENTS_DEFAULTS = {
   title: 'Events in Decentraland',
   description: 'Live events and places happening right now in Decentraland.',
   image: SHARE_IMAGE_URL
@@ -280,14 +280,14 @@ const fetchEventSEO = async (eventId: string): Promise<SEOData | null> => {
   if (!data?.ok || !data.data) return null
   const { name, description, image } = data.data
   const sceneName = data.data.scene_name
-  const title = name?.trim() || WHATS_ON_DEFAULTS.title
+  const title = name?.trim() || EVENTS_DEFAULTS.title
   const sceneSuffix = sceneName?.trim() ? ` at ${sceneName.trim()}` : ''
   // Validate image URL here so the per-route fallback (whats-on, not blog) is preserved.
   // generateHTML's safeUrl uses DEFAULTS.image as last resort, which is the blog landscape.
-  const imageUrl = image && /^https?:\/\//.test(image) ? image : WHATS_ON_DEFAULTS.image
+  const imageUrl = image && /^https?:\/\//.test(image) ? image : EVENTS_DEFAULTS.image
   return {
     title: `${title}${sceneSuffix}`,
-    description: description?.trim() || WHATS_ON_DEFAULTS.description,
+    description: description?.trim() || EVENTS_DEFAULTS.description,
     imageUrl
   }
 }
@@ -310,7 +310,7 @@ const fetchPlaceSEO = async (position: string): Promise<SEOData | null> => {
   if (!entry) return null
   const title = entry.title?.trim() || `Explore (${position}) in Decentraland`
   const description = entry.description?.trim() || `Discover what's happening at coordinates ${position} in Decentraland.`
-  const imageUrl = entry.image && /^https?:\/\//.test(entry.image) ? entry.image : WHATS_ON_DEFAULTS.image
+  const imageUrl = entry.image && /^https?:\/\//.test(entry.image) ? entry.image : EVENTS_DEFAULTS.image
   return { title, description, imageUrl }
 }
 
@@ -321,7 +321,7 @@ const fetchWorldSEO = async (worldName: string): Promise<SEOData | null> => {
   if (!entry) return null
   const title = entry.title?.trim() || `Visit ${worldName} in Decentraland`
   const description = entry.description?.trim() || `Discover ${worldName} — a Decentraland world.`
-  const imageUrl = entry.image && /^https?:\/\//.test(entry.image) ? entry.image : WHATS_ON_DEFAULTS.image
+  const imageUrl = entry.image && /^https?:\/\//.test(entry.image) ? entry.image : EVENTS_DEFAULTS.image
   return { title, description, imageUrl }
 }
 
@@ -337,7 +337,7 @@ const fetchWhatsOnSEO = async (eventId: string | null, position: string | null, 
       return {
         title: `Explore (${position}) in Decentraland`,
         description: `Discover what's happening at coordinates ${position} in Decentraland.`,
-        imageUrl: WHATS_ON_DEFAULTS.image
+        imageUrl: EVENTS_DEFAULTS.image
       }
     }
   }
@@ -348,14 +348,14 @@ const fetchWhatsOnSEO = async (eventId: string | null, position: string | null, 
       return {
         title: `Visit ${worldName} in Decentraland`,
         description: `Discover ${worldName} — a Decentraland world.`,
-        imageUrl: WHATS_ON_DEFAULTS.image
+        imageUrl: EVENTS_DEFAULTS.image
       }
     }
   }
   return {
-    title: WHATS_ON_DEFAULTS.title,
-    description: WHATS_ON_DEFAULTS.description,
-    imageUrl: WHATS_ON_DEFAULTS.image
+    title: EVENTS_DEFAULTS.title,
+    description: EVENTS_DEFAULTS.description,
+    imageUrl: EVENTS_DEFAULTS.image
   }
 }
 
