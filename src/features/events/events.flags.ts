@@ -6,11 +6,12 @@ import { FEATURE_FLAG } from '../../modules/ff'
 // feature-flag bytes (see CLAUDE.md — homepage Lighthouse budget).
 
 /**
- * Whether the event form's featured-wearables field is the marketplace search picker.
+ * Whether the event form offers a featured-wearables field at all.
  *
- * Default off — and off is not "no field": it is the previous behaviour, a plain text input that
- * accepts a pasted item or collection URN. So a failed or slow flag fetch degrades to what
- * production already shipped rather than removing the field.
+ * Default off, and off means no field: neither the search picker nor the plain URN input it replaced
+ * is rendered, and the same applies during the flag fetch. A `featured_item` already saved on the
+ * event is untouched — edit hydration keeps it in form state and submit still sends it — it simply
+ * cannot be seen or edited while the flag is off.
  */
 function useEventFeaturedItemSearch(): boolean {
   return useRemoteFeatureFlag(FEATURE_FLAG.eventFeaturedItemSearch)

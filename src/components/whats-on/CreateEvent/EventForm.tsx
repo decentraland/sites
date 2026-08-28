@@ -87,7 +87,12 @@ import {
 
 const PREVIEW_REQUIRED_FIELDS: Array<keyof CreateEventFormState> = ['name', 'startDate', 'startTime', 'duration']
 
-function buildPreviewData(form: CreateEventFormState, address: string | undefined, initialEvent: EventEntry | null): ModalEventData {
+function buildPreviewData(
+  form: CreateEventFormState,
+  address: string | undefined,
+  initialEvent: EventEntry | null,
+  isFeaturedItemEnabled: boolean
+): ModalEventData {
   const startDate = form.startDate && form.startTime ? new Date(`${form.startDate}T${form.startTime}`) : null
   const startAt = startDate && !Number.isNaN(startDate.getTime()) ? startDate.toISOString() : null
   const durationMs = parseDurationMs(form.duration)
@@ -131,7 +136,7 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
     isWorld,
     placeName: null,
     isEvent: false,
-    featuredItem: form.featuredItem.trim() || null
+    featuredItem: isFeaturedItemEnabled ? form.featuredItem.trim() || null : null
   }
 }
 
@@ -197,8 +202,8 @@ function EventForm({
   const imageMissing = !form.imageUrl
   const canPreview = missingPreviewFields.length === 0 && !imageMissing
   const previewData = useMemo(
-    () => (isPreviewOpen ? buildPreviewData(form, address, initialEvent) : null),
-    [isPreviewOpen, form, address, initialEvent]
+    () => (isPreviewOpen ? buildPreviewData(form, address, initialEvent, isFeaturedItemSearchEnabled) : null),
+    [isPreviewOpen, form, address, initialEvent, isFeaturedItemSearchEnabled]
   )
 
   const handlePreviewClick = useCallback(() => {
@@ -491,31 +496,20 @@ function EventForm({
                 </EventFormControl>
               </LocationBlock>
             )}
-            {/* Featured Item — behind `dapps-event-featured-item-search`. Off (and while the flag
-                loads) this stays the plain URN input that production already ships, so the field is
-                never missing, only less capable. */}
-            <FormFieldSection>
-              {isFeaturedItemSearchEnabled ? (
+            {/* Featured Item — the whole feature sits behind `dapps-event-featured-item-search`.
+                Off (and while the flag loads) the field is not rendered at all. A `featured_item`
+                already saved on the event is untouched: it stays in form state and is still sent on
+                submit, it just cannot be seen or edited while the flag is off. */}
+            {isFeaturedItemSearchEnabled && (
+              <FormFieldSection>
                 <FeaturedItemField
                   value={form.featuredItem}
                   onChange={urn => setField('featuredItem', urn)}
                   error={Boolean(errors.featuredItem)}
                   helperText={errors.featuredItem}
                 />
-              ) : (
-                <EventTextField
-                  variant="outlined"
-                  label={t('create_event.featured_item_label')}
-                  placeholder={t('create_event.featured_item_placeholder')}
-                  value={form.featuredItem}
-                  onChange={e => setField('featuredItem', e.target.value)}
-                  error={Boolean(errors.featuredItem)}
-                  helperText={errors.featuredItem}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-              )}
-            </FormFieldSection>
+              </FormFieldSection>
+            )}
             {/* Email */}
             <FormFieldSection>
               <EventTextField
