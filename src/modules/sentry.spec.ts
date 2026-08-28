@@ -93,6 +93,30 @@ describe('when the module loads on a deployed host with a DSN', () => {
   })
 })
 
+describe('when the module loads on a deployed host', () => {
+  // Instagram's in-app browser reports its own bridge failures through our
+  // `onerror` handler, from a script served under this scheme (SITES-2P4).
+  it('should deny events whose top frame comes from an in-app browser script', async () => {
+    const mockedInit = await loadSentryModule()
+    const { denyUrls } = getOptions(mockedInit)
+
+    expect(denyUrls).toEqual([expect.any(RegExp)])
+    const matches = (url: string): boolean => (denyUrls ?? []).some(pattern => (pattern as RegExp).test(url))
+    expect(matches('iabjs://navigation_performance_logger_android')).toBe(true)
+    expect(matches('IABJS://navigation_performance_logger_android')).toBe(true)
+  })
+
+  it('should keep reporting events from our own bundle', async () => {
+    const mockedInit = await loadSentryModule()
+    const { denyUrls } = getOptions(mockedInit)
+    const matches = (url: string): boolean => (denyUrls ?? []).some(pattern => (pattern as RegExp).test(url))
+
+    expect(matches('https://cdn.decentraland.org/@dcl/sites/0.61.0/assets/index.js')).toBe(false)
+    // The scheme only counts at the start of the url, not anywhere inside it.
+    expect(matches('https://decentraland.org/blog/iabjs://fake')).toBe(false)
+  })
+})
+
 describe('when a release is injected at build time', () => {
   it('should forward it so uploaded source maps match', async () => {
     const mockedInit = await loadSentryModule({ release: 'sites@1.2.3' })

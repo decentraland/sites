@@ -23,6 +23,17 @@ const errorFilters: RegExp[] = [
   /_sessionEntries\.at is not a function/i
 ]
 
+// In-app browsers inject their own instrumentation into the webview under a
+// private scheme and report its failures through our `onerror` handler. Instagram's
+// performance logger losing its native bridge after the visitor leaves the view
+// (`Error invoking postMessage: Java object is gone`, SITES-2P4) is the one we see:
+// none of our code is on the stack, the visitor sees nothing, and there is no fix
+// available from here.
+//
+// `denyUrls` is the SDK's own mechanism for this and matches the top frame of the
+// root exception, which for these events is the injected script itself.
+const DENIED_URLS: RegExp[] = [/^iabjs:\/\//i]
+
 // Propagate trace headers to nothing. An empty list makes the SDK's
 // `shouldAttachHeaders` return false for every URL, so `browserTracingIntegration`
 // stops adding `sentry-trace`/`baggage` to outgoing requests.
@@ -56,6 +67,7 @@ if (dsn && !isLocalHost()) {
     // trace stays minified, which is how this project ran until now.
     release: process.env.SENTRY_RELEASE,
     ignoreErrors: errorFilters,
+    denyUrls: DENIED_URLS,
     integrations: [
       browserTracingIntegration(),
       // These three are already the SDK defaults; spelled out because this app
