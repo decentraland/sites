@@ -55,6 +55,34 @@ describe('CreatorsLearn', () => {
     })
   })
 
+  describe('when the strip nav arrows are clicked', () => {
+    it('should scroll the card strip by one card width in each direction', () => {
+      const { container, getByLabelText } = render(<CreatorsLearn />)
+
+      const firstCard = container.querySelector('[data-title]') as HTMLElement
+      const strip = firstCard.parentElement as HTMLElement & { scrollBy: jest.Mock }
+      strip.scrollBy = jest.fn()
+      firstCard.getBoundingClientRect = () => ({ width: 529 }) as unknown as DOMRect
+
+      fireEvent.click(getByLabelText('Next videos'))
+      expect(strip.scrollBy).toHaveBeenCalledWith({ left: 549, behavior: 'smooth' })
+
+      fireEvent.click(getByLabelText('Previous videos'))
+      expect(strip.scrollBy).toHaveBeenCalledWith({ left: -549, behavior: 'smooth' })
+    })
+
+    it('should fall back to a viewport-sized scroll when the card width is unmeasurable', () => {
+      const { container, getByLabelText } = render(<CreatorsLearn />)
+
+      const firstCard = container.querySelector('[data-title]') as HTMLElement
+      const strip = firstCard.parentElement as HTMLElement & { scrollBy: jest.Mock }
+      strip.scrollBy = jest.fn()
+
+      fireEvent.click(getByLabelText('Next videos'))
+      expect(strip.scrollBy).toHaveBeenCalledWith({ left: strip.clientWidth, behavior: 'smooth' })
+    })
+  })
+
   describe('when the watch-more and submit-tutorial CTAs are rendered', () => {
     it('should tag both with the Creators Learn place and fire the click adapter', () => {
       const { container } = render(<CreatorsLearn />)
