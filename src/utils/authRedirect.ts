@@ -52,7 +52,17 @@ function resolveAuthUrl(): string {
   return new URL(authUrl, window.location.origin).toString().replace(/\/+$/, '')
 }
 
-function redirectToAuth(path: string, queryParams?: Record<string, string>): void {
+type RedirectToAuthOptions = {
+  /**
+   * Replace the current history entry instead of pushing a new one. Only for
+   * pages whose sole job is to forward to auth (e.g. the `/sign-in` route or a
+   * mount-time identity guard): if such a page stayed in history, Back from the
+   * login screen would land on it and be instantly re-forwarded — a Back trap.
+   */
+  replace?: boolean
+}
+
+function redirectToAuth(path: string, queryParams?: Record<string, string>, options?: RedirectToAuthOptions): void {
   const redirectTo = buildAuthRedirectUrl(path, queryParams)
   const authUrl = resolveAuthUrl()
 
@@ -61,7 +71,15 @@ function redirectToAuth(path: string, queryParams?: Record<string, string>): voi
   markSignInPending()
   const target = `${authUrl}/login?redirectTo=${encodeURIComponent(redirectTo)}`
 
-  window.location.replace(target)
+  // User-initiated sign-ins must PUSH so the page the user was on stays in
+  // session history and Back from the login screen returns to it. Replacing
+  // here would erase that entry — in a fresh tab (shared event link) it leaves
+  // the login screen with no entry to go back to at all.
+  if (options?.replace) {
+    window.location.replace(target)
+  } else {
+    window.location.assign(target)
+  }
 }
 
 export { buildAuthRedirectUrl, redirectToAuth }

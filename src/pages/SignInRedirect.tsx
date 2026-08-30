@@ -9,7 +9,9 @@ function SignInRedirect() {
     const searchParams = new URLSearchParams(search)
     const currentRedirectTo = searchParams.get('redirectTo')
     const redirectPath = currentRedirectTo || `${pathname}${search}`
-    redirectToAuth(redirectPath)
+    // Pure redirector page: replace so Back from the login screen never lands
+    // here (this page would instantly forward the user to login again).
+    redirectToAuth(redirectPath, undefined, { replace: true })
   }, [pathname, search])
 
   return null
