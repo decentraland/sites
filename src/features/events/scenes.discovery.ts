@@ -1,9 +1,18 @@
 import { useSyncExternalStore } from 'react'
 import { getEnv } from '../../config/env'
+import { isDocumentVisible, subscribeVisibility } from '../../utils/documentVisibility'
 import { timeoutSignal } from '../../utils/timeoutSignal'
 import type { HotScene } from './events.discovery.types'
 
 const FETCH_TIMEOUT_MS = 10_000
+
+// Presence badges built from this feed link into /places/place/…, where the
+// detail page re-reads the same feed on arrival. Scene populations are small
+// enough to drain within minutes, so the snapshot revalidates on the shared
+// visible-tab cadence (events.discovery, whats-on LiveNow) instead of freezing
+// at whatever the first fetch saw — a frozen "N online" card would routinely
+// contradict the page it links to.
+const POLL_INTERVAL_MS = 60_000
 
 // Plain-fetch client for the raw hot-scenes feed. The explore-cards pipeline in
 // events.discovery trims this data hard (>=5 users, 3 cards total) for the
@@ -23,6 +32,8 @@ let snapshot: HotScenesSnapshot = { data: [], isLoading: true }
 const listeners = new Set<() => void>()
 let subscribers = 0
 let activeFetch: Promise<void> | null = null
+let pollTimer: ReturnType<typeof setInterval> | null = null
+let unsubscribeVisibility: (() => void) | null = null
 
 function commit(data: HotScene[]) {
   snapshot = { data, isLoading: false }
@@ -41,13 +52,42 @@ function runFetch(): Promise<void> {
   return promise
 }
 
+function startPolling() {
+  if (pollTimer) return
+  if (!isDocumentVisible()) return
+  pollTimer = setInterval(() => {
+    void runFetch()
+  }, POLL_INTERVAL_MS)
+}
+
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+function handleVisibility(visible: boolean) {
+  if (subscribers === 0) return
+  if (!visible) {
+    stopPolling()
+  } else {
+    void runFetch()
+    startPolling()
+  }
+}
+
 function subscribe(listener: () => void): () => void {
   if (listeners.has(listener)) return () => unsubscribe(listener)
   listeners.add(listener)
   subscribers += 1
-  // Refetch when the surface regains its first consumer (stale-while-revalidate);
-  // per-visit freshness is enough for a marketing section, so no polling.
-  if (subscribers === 1) void runFetch()
+  // Refetch when the surface regains its first consumer (stale-while-revalidate),
+  // then keep the snapshot live while the tab stays visible.
+  if (subscribers === 1) {
+    void runFetch()
+    startPolling()
+    unsubscribeVisibility = subscribeVisibility(handleVisibility)
+  }
   return () => unsubscribe(listener)
 }
 
@@ -55,6 +95,11 @@ function unsubscribe(listener: () => void): void {
   if (!listeners.has(listener)) return
   listeners.delete(listener)
   subscribers -= 1
+  if (subscribers === 0) {
+    stopPolling()
+    unsubscribeVisibility?.()
+    unsubscribeVisibility = null
+  }
 }
 
 function useGetHotScenesQuery(): HotScenesSnapshot {

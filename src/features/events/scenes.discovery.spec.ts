@@ -1,6 +1,18 @@
 import { act, renderHook } from '@testing-library/react'
 import { useGetHotScenesQuery } from './scenes.discovery'
 
+const mockUnsubscribe = jest.fn()
+let capturedVisibilityListener: ((visible: boolean) => void) | null = null
+let visibility = true
+
+jest.mock('../../utils/documentVisibility', () => ({
+  isDocumentVisible: () => visibility,
+  subscribeVisibility: (listener: (visible: boolean) => void) => {
+    capturedVisibilityListener = listener
+    return mockUnsubscribe
+  }
+}))
+
 const envMock = jest.fn<string | undefined, [string]>()
 jest.mock('../../config/env', () => ({
   getEnv: (key: string) => envMock(key)
@@ -37,6 +49,9 @@ describe('scenes.discovery', () => {
   let fetchMock: jest.Mock<Promise<Response>, [RequestInfo | URL, RequestInit?]>
 
   beforeEach(() => {
+    visibility = true
+    capturedVisibilityListener = null
+    mockUnsubscribe.mockReset()
     envMock.mockReset().mockImplementation((key: string) => (key === 'HOT_SCENES_URL' ? 'https://realm.test/hot-scenes' : undefined))
     fetchMock = jest.fn<Promise<Response>, [RequestInfo | URL, RequestInit?]>()
     fetchMock.mockResolvedValue(okResponse(scenesPayload))
@@ -149,6 +164,115 @@ describe('scenes.discovery', () => {
 
       expect(result.current).toEqual({ data: [], isLoading: false })
       unmount()
+    })
+  })
+
+  describe('revalidation', () => {
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    describe('when the first consumer mounts', () => {
+      it('should register a visibility listener and release it on the last unmount', () => {
+        jest.useFakeTimers()
+        const { unmount } = renderHook(() => useGetHotScenesQuery())
+
+        expect(capturedVisibilityListener).not.toBeNull()
+        expect(mockUnsubscribe).not.toHaveBeenCalled()
+
+        unmount()
+        expect(mockUnsubscribe).toHaveBeenCalledTimes(1)
+      })
+    })
+
+    describe('when the polling interval ticks', () => {
+      it('should re-run the fetch', async () => {
+        jest.useFakeTimers()
+        const { unmount } = renderHook(() => useGetHotScenesQuery())
+        await flushAll()
+        const callsBefore = fetchMock.mock.calls.length
+
+        act(() => {
+          jest.advanceTimersByTime(60_001)
+        })
+        await flushAll()
+
+        expect(fetchMock.mock.calls.length).toBe(callsBefore + 1)
+        unmount()
+      })
+    })
+
+    describe('when the tab starts hidden', () => {
+      beforeEach(() => {
+        visibility = false
+      })
+
+      it('should not poll until visibility returns', async () => {
+        jest.useFakeTimers()
+        const { unmount } = renderHook(() => useGetHotScenesQuery())
+        await flushAll()
+        const callsBefore = fetchMock.mock.calls.length
+
+        act(() => {
+          jest.advanceTimersByTime(60_001)
+        })
+        await flushAll()
+        expect(fetchMock.mock.calls.length).toBe(callsBefore)
+
+        visibility = true
+        act(() => {
+          capturedVisibilityListener?.(true)
+        })
+        await flushAll()
+        expect(fetchMock.mock.calls.length).toBe(callsBefore + 1)
+
+        act(() => {
+          jest.advanceTimersByTime(60_001)
+        })
+        await flushAll()
+        expect(fetchMock.mock.calls.length).toBe(callsBefore + 2)
+        unmount()
+      })
+    })
+
+    describe('when visibility flips to hidden after subscribers exist', () => {
+      it('should stop polling until visibility returns', async () => {
+        jest.useFakeTimers()
+        const { unmount } = renderHook(() => useGetHotScenesQuery())
+        await flushAll()
+        const callsBefore = fetchMock.mock.calls.length
+
+        visibility = false
+        act(() => {
+          capturedVisibilityListener?.(false)
+        })
+        act(() => {
+          jest.advanceTimersByTime(120_001)
+        })
+        await flushAll()
+
+        expect(fetchMock.mock.calls.length).toBe(callsBefore)
+        unmount()
+      })
+    })
+
+    describe('when there are no subscribers', () => {
+      it('should ignore visibility changes', async () => {
+        jest.useFakeTimers()
+        const { unmount } = renderHook(() => useGetHotScenesQuery())
+        await flushAll()
+        const listener = capturedVisibilityListener
+        unmount()
+        const callsBefore = fetchMock.mock.calls.length
+
+        act(() => {
+          listener?.(true)
+          jest.advanceTimersByTime(60_001)
+        })
+        await flushAll()
+
+        expect(fetchMock.mock.calls.length).toBe(callsBefore)
+      })
     })
   })
 })
