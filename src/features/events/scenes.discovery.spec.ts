@@ -62,9 +62,6 @@ describe('scenes.discovery', () => {
     jest.resetAllMocks()
   })
 
-  // Declaration order is load-bearing for this block: it must run before any
-  // test commits data, because it asserts the failure path of a never-populated
-  // module-level store.
   describe('when the first ever fetch fails', () => {
     beforeEach(() => {
       fetchMock.mockRejectedValue(new Error('network down'))
