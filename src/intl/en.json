@@ -1305,7 +1305,7 @@
     "check_1": "Choose a vibe people can drop into.",
     "check_2": "Add the event details.",
     "check_3": "Publish it and send the invites.",
-    "create_event": "Create an Event",
+    "create_event": "Create Event",
     "learn_more": "Learn More"
   },
   "blog": {
@@ -1356,7 +1356,7 @@
       "users": "Users"
     },
     "cta": {
-      "create_event": "+ Create Event",
+      "create_event": "Create Event",
       "add_user": "+ Add User"
     },
     "pending_events": {

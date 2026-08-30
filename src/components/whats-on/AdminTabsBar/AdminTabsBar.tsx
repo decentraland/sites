@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import AddIcon from '@mui/icons-material/Add'
 import { useTranslation } from '@dcl/hooks'
 import { Button } from 'decentraland-ui2'
 import { useAdminPermissions } from '../../../hooks/useAdminPermissions'
@@ -45,7 +47,12 @@ function AdminTabsBar() {
         {canSeeUsers && <BarTab label={t('whats_on_admin.tabs.users')} value={ROUTE_USERS} />}
       </BarTabs>
       <CreateEventButtonWrapper>
-        <Button variant="outlined" color="secondary" onClick={() => navigate(ROUTE_CREATE_EVENT)}>
+        <Button
+          variant="outlined"
+          color="secondary"
+          startIcon={<AddIcon />}
+          onClick={() => navigate(ROUTE_CREATE_EVENT)}
+        >
           {t('whats_on_admin.cta.create_event')}
         </Button>
       </CreateEventButtonWrapper>
