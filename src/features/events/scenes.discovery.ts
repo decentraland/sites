@@ -46,9 +46,6 @@ function runFetch(): Promise<void> {
   const promise = fetchHotScenes()
     .then(commit)
     // A failed fetch or bad payload keeps the last good snapshot on screen
-    // (events.discovery does the same): a transient error on a poll tick must
-    // not blank the section. On a virgin store this still settles to an empty
-    // list so consumers leave their loading state.
     .catch(() => commit(snapshot.data))
     .finally(() => {
       activeFetch = null
