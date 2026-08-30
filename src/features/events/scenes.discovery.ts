@@ -21,9 +21,10 @@ const POLL_INTERVAL_MS = 60_000
 async function fetchHotScenes(): Promise<HotScene[]> {
   const hotScenesUrl = getEnv('HOT_SCENES_URL') || 'https://realm-provider-ea.decentraland.org/hot-scenes'
   const response = await fetch(hotScenesUrl, { signal: timeoutSignal(FETCH_TIMEOUT_MS) })
-  if (!response.ok) return []
+  if (!response.ok) throw new Error(`hot-scenes responded ${response.status}`)
   const scenes = (await response.json()) as HotScene[]
-  return Array.isArray(scenes) ? scenes : []
+  if (!Array.isArray(scenes)) throw new Error('hot-scenes payload is not an array')
+  return scenes
 }
 
 type HotScenesSnapshot = { data: HotScene[]; isLoading: boolean }
@@ -44,7 +45,11 @@ function runFetch(): Promise<void> {
   if (activeFetch) return activeFetch
   const promise = fetchHotScenes()
     .then(commit)
-    .catch(() => commit([]))
+    // A failed fetch or bad payload keeps the last good snapshot on screen
+    // (events.discovery does the same): a transient error on a poll tick must
+    // not blank the section. On a virgin store this still settles to an empty
+    // list so consumers leave their loading state.
+    .catch(() => commit(snapshot.data))
     .finally(() => {
       activeFetch = null
     })

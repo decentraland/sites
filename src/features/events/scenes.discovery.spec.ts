@@ -62,11 +62,29 @@ describe('scenes.discovery', () => {
     jest.resetAllMocks()
   })
 
-  describe('when the feed responds with scenes', () => {
-    it('should expose them and stop loading', async () => {
+  // Declaration order is load-bearing for this block: it must run before any
+  // test commits data, because it asserts the failure path of a never-populated
+  // module-level store.
+  describe('when the first ever fetch fails', () => {
+    beforeEach(() => {
+      fetchMock.mockRejectedValue(new Error('network down'))
+    })
+
+    it('should settle on an empty list instead of staying in loading', async () => {
       const { result, unmount } = renderHook(() => useGetHotScenesQuery())
 
       expect(result.current.isLoading).toBe(true)
+
+      await flushAll()
+
+      expect(result.current).toEqual({ data: [], isLoading: false })
+      unmount()
+    })
+  })
+
+  describe('when the feed responds with scenes', () => {
+    it('should expose them and stop loading', async () => {
+      const { result, unmount } = renderHook(() => useGetHotScenesQuery())
 
       await flushAll()
 
@@ -122,48 +140,62 @@ describe('scenes.discovery', () => {
     })
   })
 
-  describe('when the request fails', () => {
-    beforeEach(() => {
-      fetchMock.mockRejectedValue(new Error('network down'))
+  describe('when a poll tick fails', () => {
+    afterEach(() => {
+      jest.useRealTimers()
     })
 
-    it('should resolve to an empty list', async () => {
-      const { result, unmount } = renderHook(() => useGetHotScenesQuery())
-
+    async function primeWithScenes() {
+      jest.useFakeTimers()
+      const hook = renderHook(() => useGetHotScenesQuery())
       await flushAll()
+      expect(hook.result.current.data).toEqual(scenesPayload)
+      return hook
+    }
 
-      expect(result.current).toEqual({ data: [], isLoading: false })
-      unmount()
-    })
-  })
-
-  describe('when the response is not ok', () => {
-    beforeEach(() => {
-      fetchMock.mockResolvedValue({ ok: false, status: 500, json: () => Promise.resolve(null) } as unknown as Response)
-    })
-
-    it('should resolve to an empty list', async () => {
-      const { result, unmount } = renderHook(() => useGetHotScenesQuery())
-
+    async function tick() {
+      const callsBefore = fetchMock.mock.calls.length
+      act(() => {
+        jest.advanceTimersByTime(60_001)
+      })
       await flushAll()
+      expect(fetchMock.mock.calls.length).toBe(callsBefore + 1)
+    }
 
-      expect(result.current).toEqual({ data: [], isLoading: false })
-      unmount()
+    describe('and the request rejects', () => {
+      it('should keep the last good snapshot', async () => {
+        const hook = await primeWithScenes()
+
+        fetchMock.mockRejectedValue(new Error('network down'))
+        await tick()
+
+        expect(hook.result.current).toEqual({ data: scenesPayload, isLoading: false })
+        hook.unmount()
+      })
     })
-  })
 
-  describe('when the response is not an array', () => {
-    beforeEach(() => {
-      fetchMock.mockResolvedValue(okResponse({ error: 'shape' }))
+    describe('and the response is not ok', () => {
+      it('should keep the last good snapshot', async () => {
+        const hook = await primeWithScenes()
+
+        fetchMock.mockResolvedValue({ ok: false, status: 500, json: () => Promise.resolve(null) } as unknown as Response)
+        await tick()
+
+        expect(hook.result.current).toEqual({ data: scenesPayload, isLoading: false })
+        hook.unmount()
+      })
     })
 
-    it('should resolve to an empty list', async () => {
-      const { result, unmount } = renderHook(() => useGetHotScenesQuery())
+    describe('and the response is not an array', () => {
+      it('should keep the last good snapshot', async () => {
+        const hook = await primeWithScenes()
 
-      await flushAll()
+        fetchMock.mockResolvedValue(okResponse({ error: 'shape' }))
+        await tick()
 
-      expect(result.current).toEqual({ data: [], isLoading: false })
-      unmount()
+        expect(hook.result.current).toEqual({ data: scenesPayload, isLoading: false })
+        hook.unmount()
+      })
     })
   })
 
