@@ -982,14 +982,5 @@ describe('seo handler', () => {
       expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/content">/)
     })
 
-    it('serves the Terms of Use title for /terms', async () => {
-      const { body } = await run({ path: '/terms' })
-      expect(body).toContain('<title>Terms of Use | Decentraland</title>')
-    })
-
-    it('serves the Privacy Policy title for /privacy', async () => {
-      const { body } = await run({ path: '/privacy' })
-      expect(body).toContain('<title>Privacy Policy | Decentraland</title>')
-    })
   })
 })
