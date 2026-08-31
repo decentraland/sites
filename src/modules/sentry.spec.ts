@@ -180,6 +180,22 @@ describe('when beforeSend inspects an event', () => {
     })
   })
 
+  // WalletConnect rejects its pending proposal when nobody scans the QR, and nothing
+  // awaits it, so it lands on us as an unhandled rejection (SITES-2S6).
+  describe('and a WalletConnect session proposal expired', () => {
+    it('should drop the event', async () => {
+      const event = { exception: { values: [{ type: 'Error', value: 'Proposal expired' }] } } as ErrorEvent
+      expect(await send(event)).toBeNull()
+    })
+  })
+
+  describe('and an error merely mentions a proposal', () => {
+    it('should keep the event', async () => {
+      const event = { exception: { values: [{ type: 'Error', value: 'Proposal expired while loading the DAO page' }] } } as ErrorEvent
+      expect(await send(event)).not.toBeNull()
+    })
+  })
+
   describe('and a non-analytics Segment destination failed to load', () => {
     it('should keep the event', async () => {
       const event = {
