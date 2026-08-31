@@ -1,9 +1,5 @@
 /**
- * SSR entry for the legal-page prerender. Built by `vite build --ssr` and run by
- * scripts/prerender-legal.mjs — see that file for why the artifacts exist.
- *
- * Each entry renders the SAME component the SPA renders, so the prerendered text
- * cannot drift from what a browser shows.
+ * SSR entry for the legal-page prerender. Built and run by scripts/prerender-legal.mjs.
  */
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router-dom'
@@ -18,10 +14,8 @@ const PAGES = [
   { slug: 'terms', element: <TermsOfUse /> }
 ] as const
 
-// Emotion serializes the whole MUI theme into <style data-emotion> tags and tags
-// every element with a generated class. None of it means anything outside the SPA,
-// and it is ~75% of the payload the worker would have to inject. Strip it so the
-// artifact is semantic HTML: its consumers read the text, they don't paint it.
+// Emotion serializes the whole MUI theme into <style> tags and a generated class per
+// element, which is ~75% of the output and means nothing outside the SPA.
 const stripPresentation = (html: string): string =>
   html
     .replace(/<style[\s\S]*?<\/style>/g, '')

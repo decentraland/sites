@@ -1,16 +1,10 @@
 /**
- * Post-build script: writes the legal pages as standalone semantic HTML into
- * dist/legal/.
+ * Post-build script: writes each legal page as standalone semantic HTML into dist/legal/.
  *
- * Why: production HTML is served by the sites-deployer Cloudflare Worker, which
- * fetches this bundle from the CDN. A non-JS client (AI agent, crawler) asking
- * for /content, /terms or /privacy gets the SPA shell with an empty #root, so it
- * reads no policy text at all. The worker injects the matching artifact from this
- * directory into #root, and because the artifact is rendered from the very same
- * React component the SPA mounts, the two cannot drift.
- *
- * The artifact is text only: no emotion class names, no inline styles, no icons.
- * Its consumers read it, they don't paint it.
+ * The pages are client-side rendered, so the HTML served for /content, /terms and /privacy
+ * carries an empty #root and a non-JS client reads no policy text. These artifacts ship in
+ * the published bundle and the sites-deployer worker injects the matching one into #root.
+ * Rendering the same components the SPA mounts is what keeps the two from drifting.
  *
  * Usage: node scripts/prerender-legal.mjs
  */
@@ -26,23 +20,23 @@ const distPath = resolve(root, 'dist')
 const outDir = resolve(distPath, 'legal')
 const tmpDir = resolve(root, 'node_modules', '.tmp', 'prerender-legal')
 
+// A page that renders to almost nothing means the component tree broke without throwing.
+// Publishing that as the legal text is worse than publishing none, so the build fails.
+const MIN_PAGE_BYTES = 1000
+
 if (!existsSync(distPath)) {
   console.error(`❌ Legal prerender failed: ${distPath} not found. Was the build step successful?`)
   process.exit(1)
 }
 
-// Compile the TSX entry through Vite so it resolves the same aliases, JSX runtime
-// and package conditions the app build uses. `ssr` keeps React external and emits
-// a plain Node module we can import below.
 await build({
   root,
   logLevel: 'warn',
   configFile: resolve(root, 'vite.config.ts'),
-  // decentraland-ui2 ships ESM with extensionless relative imports, which Node
-  // refuses to resolve. Bundling it (rather than leaving it external) also lets
-  // vite.config's Emotion transform run over its .styled.js files — without that
-  // the component selectors resolve to NO_COMPONENT_SELECTOR and render throws.
-  // React stays external so the entry and the bundled tree share one instance.
+  // decentraland-ui2 ships ESM with extensionless relative imports that Node refuses to
+  // resolve. Bundling it also lets vite.config's Emotion transform run over its .styled.js
+  // files, without which component selectors resolve to NO_COMPONENT_SELECTOR and render
+  // throws. React stays external so the entry and the bundled tree share one instance.
   ssr: { noExternal: true, external: ['react', 'react-dom', 'react-dom/server', 'react/jsx-runtime'] },
   build: {
     ssr: resolve(__dirname, 'prerender-legal.entry.tsx'),
@@ -64,10 +58,7 @@ if (!pages.length) {
 mkdirSync(outDir, { recursive: true })
 
 for (const { slug, html } of pages) {
-  // A page that renders to almost nothing means the component tree broke without
-  // throwing (a provider swallowed it, a lazy boundary never resolved). Serving
-  // that as the legal text is worse than serving nothing, so fail the build.
-  if (html.length < 1000) {
+  if (html.length < MIN_PAGE_BYTES) {
     console.error(`❌ Legal prerender failed: /${slug} rendered ${html.length} bytes, expected a full document.`)
     process.exit(1)
   }
