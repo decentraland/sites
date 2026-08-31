@@ -148,6 +148,59 @@ describe('useWalletAddress module', () => {
     })
   })
 
+  // Two wallet extensions competing for `window.ethereum` leave a Proxy whose `get`
+  // breaks a JS invariant, so merely reading `.on` throws (SITES-2S5). This file runs
+  // at import time and the navbar imports it, so an unguarded read blanked the page.
+  describe('when reading window.ethereum throws', () => {
+    const installHostileEthereum = (): void => {
+      Object.defineProperty(window, 'ethereum', {
+        configurable: true,
+        get() {
+          throw new TypeError("'get' on proxy: property 'on' is a read-only and non-configurable data property")
+        }
+      })
+    }
+
+    it('should still load the module and expose the hook', async () => {
+      installHostileEthereum()
+
+      await jest.isolateModulesAsync(async () => {
+        const mod = await import('./useWalletAddress')
+        expect(mod.useWalletAddress).toBeDefined()
+        expect(mod.disconnectWallet).toBeDefined()
+      })
+    })
+
+    // The guard sits after address resolution and before the exports, so a completed
+    // load is what proves the throw no longer aborts the module.
+    it('should still resolve the stored identity on load', async () => {
+      setupLocalStorage({ 'single-sign-on-0xabc': 'x' })
+      localStorageGetIdentityMock.mockReturnValue(buildIdentity('2031-01-01T00:00:00Z'))
+      installHostileEthereum()
+
+      await jest.isolateModulesAsync(async () => {
+        await import('./useWalletAddress')
+      })
+
+      expect(localStorageGetIdentityMock).toHaveBeenCalledWith('0xabc')
+    })
+  })
+
+  // A provider that exposes `on` but rejects the subscription itself.
+  describe('when subscribing to accountsChanged throws', () => {
+    it('should load the module without propagating the error', async () => {
+      const stub = installEthereum()
+      stub.on.mockImplementation(() => {
+        throw new TypeError('provider is not ready')
+      })
+
+      await jest.isolateModulesAsync(async () => {
+        const mod = await import('./useWalletAddress')
+        expect(mod.useWalletAddress).toBeDefined()
+      })
+    })
+  })
+
   describe('disconnectWallet', () => {
     it('should clear every known sign-in storage key', async () => {
       setupLocalStorage({

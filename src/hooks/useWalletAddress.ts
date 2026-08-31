@@ -58,22 +58,38 @@ window.addEventListener('storage', (event: StorageEvent) => {
 
 // MetaMask account switch — explicit signal from an injected EVM wallet.
 // Magic and OTP flows never reach this branch (they don't inject `window.ethereum`).
-if (window.ethereum?.on) {
-  window.ethereum.on('accountsChanged', (...args: unknown[]) => {
-    const accounts = Array.isArray(args[0]) ? (args[0] as string[]) : []
-    const newAccount = accounts[0]?.toLowerCase()
-    if (!newAccount) {
-      // Wallet locked: drop the in-memory state but keep the pointer so the
-      // user returns to the same wallet when they unlock.
-      setSharedAddress(null)
-      return
-    }
-    if (hasValidIdentityFor(newAccount)) {
-      setActiveAddress(newAccount)
-      return
-    }
-    redirectToAuth(window.location.pathname, { loginMethod: 'METAMASK' })
-  })
+const handleAccountsChanged = (...args: unknown[]): void => {
+  const accounts = Array.isArray(args[0]) ? (args[0] as string[]) : []
+  const newAccount = accounts[0]?.toLowerCase()
+  if (!newAccount) {
+    // Wallet locked: drop the in-memory state but keep the pointer so the
+    // user returns to the same wallet when they unlock.
+    setSharedAddress(null)
+    return
+  }
+  if (hasValidIdentityFor(newAccount)) {
+    setActiveAddress(newAccount)
+    return
+  }
+  redirectToAuth(window.location.pathname, { loginMethod: 'METAMASK' })
+}
+
+// `window.ethereum` belongs to whatever extensions the visitor has installed, so
+// touching it is guarded: with two wallets competing for the global, one of them
+// installs a Proxy whose `get` breaks a JS invariant, and merely reading `.on`
+// throws `'get' on proxy: property 'on' is a read-only and non-configurable data
+// property...` (SITES-2S5). This runs at module top level in a file the navbar
+// imports, so an unguarded read took the page down with it.
+//
+// Losing the subscription only costs the live account-switch signal. Address
+// resolution does not depend on it (see the NOTE below), so the session still
+// works.
+try {
+  if (window.ethereum?.on) {
+    window.ethereum.on('accountsChanged', handleAccountsChanged)
+  }
+} catch {
+  // A hostile or half-installed provider. Nothing to report: it is not ours to fix.
 }
 
 // NOTE: a previous version of this file probed `eth_accounts` on load to seed
