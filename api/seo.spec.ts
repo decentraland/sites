@@ -27,7 +27,7 @@ jest.mock('fs', () => {
   <meta property="og:url" content="https://decentraland.org/">
   <meta property="og:type" content="website">
 </head>
-<body><div id="root"></div></body>
+<body><div id="root"><!-- HERO_SHELL_START --><!-- HERO_SHELL_END --></div></body>
 </html>`
   return {
     ...actual,
@@ -959,5 +959,37 @@ describe('seo handler', () => {
     const res = makeRes()
     await handler(req, res as unknown as VercelResponse)
     expect(res.body).toContain('<title>Search | Decentraland</title>')
+  })
+
+  describe('when path is a legal page', () => {
+    it('serves the Content Policy title and description for /content', async () => {
+      const { status, body } = await run({ path: '/content' })
+      expect(status).toBe(200)
+      expect(body).toContain('<title>Content Policy | Decentraland</title>')
+      expect(body).toMatch(/<meta name="description" content="The Decentraland Content Policy/)
+    })
+
+    it('injects the Content Policy body text into #root for non-JS clients', async () => {
+      const { body } = await run({ path: '/content' })
+      expect(body).toContain('<h1>Content Policy</h1>')
+      expect(body).toContain('Prohibited Content')
+      expect(body).toContain('Restricted Content')
+      expect(body).toContain('Changes to this Policy')
+    })
+
+    it('sets the canonical URL to the /content path', async () => {
+      const { body } = await run({ path: '/content' })
+      expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/content">/)
+    })
+
+    it('serves the Terms of Use title for /terms', async () => {
+      const { body } = await run({ path: '/terms' })
+      expect(body).toContain('<title>Terms of Use | Decentraland</title>')
+    })
+
+    it('serves the Privacy Policy title for /privacy', async () => {
+      const { body } = await run({ path: '/privacy' })
+      expect(body).toContain('<title>Privacy Policy | Decentraland</title>')
+    })
   })
 })
