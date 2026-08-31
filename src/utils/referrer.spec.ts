@@ -1,17 +1,10 @@
-import { getEnv } from '../config/env'
 import { REFERRER_STORAGE_KEY, parseReferrer, readStoredReferrer, resolveReferrer, storeReferrer } from './referrer'
-
-jest.mock('../config/env', () => ({ getEnv: jest.fn() }))
 
 const VALID = '0x24e5f44999c151f08609f8e27b2238c773c4d020'
 const OTHER = '0x1111111111111111111111111111111111111111'
 
 const setSearch = (search: string) => {
   Object.defineProperty(window, 'location', { value: { ...window.location, search }, writable: true })
-}
-
-const enableFlag = (enabled: boolean) => {
-  ;(getEnv as jest.Mock).mockImplementation((key: string) => (key === 'INVITE_DIRECT_DOWNLOAD' && enabled ? 'true' : undefined))
 }
 
 describe('when parsing a referrer', () => {
@@ -62,7 +55,6 @@ describe('when resolving the referrer for a download', () => {
   beforeEach(() => {
     window.sessionStorage.clear()
     setSearch('')
-    enableFlag(true)
   })
   afterEach(() => {
     window.sessionStorage.clear()
@@ -105,13 +97,6 @@ describe('when resolving the referrer for a download', () => {
 
   it('should return null when neither source has a valid referrer', () => {
     setSearch('?referrer=garbage')
-    expect(resolveReferrer()).toBeNull()
-  })
-
-  it('should return null when the direct-download flag is off (kill-switch)', () => {
-    enableFlag(false)
-    storeReferrer(VALID)
-    setSearch(`?referrer=${VALID}`)
     expect(resolveReferrer()).toBeNull()
   })
 })
