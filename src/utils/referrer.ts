@@ -1,5 +1,3 @@
-import { getEnv } from '../config/env'
-
 const REFERRER_REGEX = /^0x[a-fA-F0-9]{40}$/
 
 const REFERRER_STORAGE_KEY = 'dcl_referrer'
@@ -12,16 +10,6 @@ const REFERRER_STORAGE_KEY = 'dcl_referrer'
 function parseReferrer(value: string | null | undefined): string | null {
   if (!value || !REFERRER_REGEX.test(value)) return null
   return value.toLowerCase()
-}
-
-/**
- * Whether the direct-download invite flow is enabled. This is a build-time
- * configuration gate (bundled env value), not a remote kill-switch: turning it
- * off requires a rebuild/deploy. When off, the invite CTA and the download
- * passthrough behave exactly as before (no referrer flows anywhere).
- */
-function isDirectDownloadEnabled(): boolean {
-  return getEnv('INVITE_DIRECT_DOWNLOAD') === 'true'
 }
 
 /**
@@ -53,8 +41,13 @@ function readStoredReferrer(): string | null {
 }
 
 /**
- * Resolves the referrer for the current download. Returns null when the
- * direct-download flow is disabled, so the gate covers the whole passthrough.
+ * Resolves the referrer for the current download.
+ *
+ * NOTE (2026-08-31): this no longer checks an `INVITE_DIRECT_DOWNLOAD` env gate.
+ * The single source of truth is now the `dapps-invite-direct-download` feature
+ * flag, checked at the invite page — the only place a referrer enters this flow
+ * (it writes the query param and the session value). Downstream just carries
+ * whatever it was handed, so there is nothing left for a second gate to guard.
  *
  * An explicit `referrer` query param is authoritative: when it is present but
  * invalid we must NOT fall back to the stored value, because that would
@@ -63,8 +56,6 @@ function readStoredReferrer(): string | null {
  * absent (e.g. in-site navigation that dropped it).
  */
 function resolveReferrer(): string | null {
-  if (!isDirectDownloadEnabled()) return null
-
   const raw = new URLSearchParams(window.location.search).get('referrer')
 
   if (raw !== null) {
@@ -79,4 +70,4 @@ function resolveReferrer(): string | null {
   return readStoredReferrer()
 }
 
-export { REFERRER_STORAGE_KEY, isDirectDownloadEnabled, parseReferrer, readStoredReferrer, resolveReferrer, storeReferrer }
+export { REFERRER_STORAGE_KEY, parseReferrer, readStoredReferrer, resolveReferrer, storeReferrer }
