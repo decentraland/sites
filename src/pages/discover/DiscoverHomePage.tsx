@@ -29,6 +29,7 @@ import {
   useGetLiveWorldsQuery
 } from '../../features/discover'
 import type { DiscoverCategory, DiscoverPlace } from '../../features/discover'
+import { usePlacesDedupeCrossSections } from '../../features/discover/discover.flags'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useDeferredTrack } from '../../hooks/useDeferredTrack'
@@ -387,6 +388,13 @@ function DiscoverHomePage() {
     showHighlights ? { limit: FEATURED_FETCH_LIMIT, only_highlighted: true } : skipToken
   )
 
+  // Cross-section dedupe. Off by default, and off is what production ships today: every
+  // highlighted place is both in Featured and at the head of the grid, and a busy one is also in
+  // the Live rail, so the same card can render three times. Only the DEFAULT view is deduped —
+  // searching or filtering empties both rails, so `shownAbove` is empty and every match still
+  // shows up in the results grid.
+  const dedupeCrossSections = usePlacesDedupeCrossSections()
+
   // Top of the live feed goes to the Live Now rail; the rest lead the grid.
   // Only genuinely-live scenes (>= LIVE_MIN_USERS in-world) qualify for the
   // rail — a couple of stragglers doesn't make a scene "Live Now".
@@ -402,17 +410,29 @@ function DiscoverHomePage() {
   const featuredCards = useMemo(() => {
     if (!showHighlights) return []
     const liveById = new Map(filteredLiveCards.map(c => [c.id, c.user_count ?? 0]))
+    // Only the four cards the rail actually renders are removed: a featured place with people that
+    // missed the top four still belongs here.
+    const shownInLiveRail = new Set(dedupeCrossSections ? liveRail.map(c => c.id) : [])
     return (featuredQuery.data?.data ?? [])
       .filter(p => !isHiddenPlace(p))
+      .filter(p => !shownInLiveRail.has(p.id))
       .map(p => ({ ...p, user_count: liveById.get(p.id) ?? 0 }))
       .sort((a, b) => (b.user_count ?? 0) - (a.user_count ?? 0))
-  }, [showHighlights, featuredQuery.data, filteredLiveCards])
+  }, [showHighlights, featuredQuery.data, filteredLiveCards, liveRail, dedupeCrossSections])
 
-  // Explore All IS the /destinations feed: one page in the API's order, junk
-  // filtered, WITHOUT deduping against the rails — a filtering user should
-  // find everything here, so live + featured scenes repeat with their tags.
-  // Rows keep the feed's real-time `user_count` (with_realms_detail).
-  const exploreCards = useMemo<DiscoverPlace[]>(() => browseDestinations.filter(p => !isHiddenPlace(p)), [browseDestinations])
+  // Explore All IS the /destinations feed: one page in the API's order, junk filtered. Rows keep
+  // the feed's real-time `user_count` (with_realms_detail).
+  //
+  // The rails are subtracted only when the dedupe flag is on. `/destinations` returns
+  // `highlighted DESC` first, so without it the head of this grid IS the Featured rail verbatim
+  // (22 of 22 today) and the user scrolls past the same cards twice. Search and category filtering
+  // empty both rails, so results are never hidden from a query.
+  const exploreCards = useMemo<DiscoverPlace[]>(() => {
+    const kept = browseDestinations.filter(p => !isHiddenPlace(p))
+    if (!dedupeCrossSections) return kept
+    const shownAbove = new Set([...liveRail.map(c => c.id), ...featuredCards.map(c => c.id)])
+    return kept.filter(p => !shownAbove.has(p.id))
+  }, [browseDestinations, dedupeCrossSections, liveRail, featuredCards])
 
   // Wait for EVERYTHING on first paint — including the dependent worlds-
   // metadata batch fetch — so the rails and the grid appear together.

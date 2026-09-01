@@ -15,6 +15,7 @@ const mockDestinationsQuery = jest.fn()
 const mockLiveWorldsQuery = jest.fn()
 const mockWorldsByNamesQuery = jest.fn()
 const mockFavoritesQuery = jest.fn()
+const mockDedupeFlag = jest.fn()
 
 jest.mock('react-helmet-async', () => ({
   Helmet: () => null
@@ -38,6 +39,10 @@ jest.mock('../../features/discover', () => ({
   useGetLiveWorldsQuery: (...args: unknown[]) => mockLiveWorldsQuery(...args),
   useGetDiscoverWorldsByNamesQuery: (...args: unknown[]) => mockWorldsByNamesQuery(...args),
   useGetDiscoverFavoritesQuery: (...args: unknown[]) => mockFavoritesQuery(...args)
+}))
+
+jest.mock('../../features/discover/discover.flags', () => ({
+  usePlacesDedupeCrossSections: () => mockDedupeFlag()
 }))
 
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
@@ -265,6 +270,8 @@ describe('DiscoverHomePage', () => {
     mockPlacesQuery.mockImplementation((args: unknown) => (args === skipToken ? { data: undefined, isLoading: false } : livePlaces))
     mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
     mockUseAdvancedUserAgentData.mockReturnValue([false, { mobile: false }])
+    // Default off: the flag is opt-in, so every other suite keeps asserting today's page.
+    mockDedupeFlag.mockReturnValue(false)
     // jsdom has no IntersectionObserver — capture the sentinel callback so the
     // pagination test can fire it manually.
     intersectionCallback = undefined
@@ -721,6 +728,89 @@ describe('DiscoverHomePage', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'discover.explore.retry' }))
       expect(refetch).toHaveBeenCalled()
+    })
+  })
+
+  describe('when the same place lands in the live rail, in featured and in the browse feed', () => {
+    beforeEach(() => {
+      featuredPlaces = {
+        data: {
+          ok: true,
+          total: 2,
+          data: [
+            createPlace({ id: 'live-a', title: 'Live Plaza', highlighted: true, positions: ['0,0'], base_position: '0,0' }),
+            createPlace({ id: 'feat-1', title: 'Featured Museum', highlighted: true, positions: ['60,60'], base_position: '60,60' })
+          ]
+        },
+        isLoading: false
+      }
+      browseDestinations = {
+        data: {
+          ok: true,
+          total: 3,
+          data: [
+            createPlace({ id: 'live-a', title: 'Live Plaza', positions: ['0,0'], base_position: '0,0' }),
+            createPlace({ id: 'feat-1', title: 'Featured Museum', positions: ['60,60'], base_position: '60,60' }),
+            createPlace({ id: 'quiet-1', title: 'Quiet Gallery', positions: ['30,30'], base_position: '30,30' })
+          ]
+        },
+        isLoading: false
+      }
+    })
+
+    const titles = (testId: string) => screen.getAllByTestId(testId).map(card => card.textContent)
+
+    describe('and the dedupe flag is off', () => {
+      it('should render the same card in all three sections', () => {
+        render(<DiscoverHomePage />)
+
+        expect(titles('live-card')).toContain('Live Plaza')
+        expect(titles('featured-card')).toContain('Live Plaza')
+        expect(titles('place-card')).toContain('Live Plaza')
+      })
+
+      it('should repeat the featured places at the head of the grid', () => {
+        render(<DiscoverHomePage />)
+
+        expect(titles('place-card')).toContain('Featured Museum')
+      })
+    })
+
+    describe('and the dedupe flag is on', () => {
+      beforeEach(() => {
+        mockDedupeFlag.mockReturnValue(true)
+      })
+
+      it('should keep a busy featured place only in the live rail', () => {
+        render(<DiscoverHomePage />)
+
+        expect(titles('live-card')).toContain('Live Plaza')
+        expect(titles('featured-card')).not.toContain('Live Plaza')
+        expect(titles('place-card')).not.toContain('Live Plaza')
+      })
+
+      it('should drop the featured places from the grid but keep the featured rail', () => {
+        render(<DiscoverHomePage />)
+
+        expect(titles('featured-card')).toContain('Featured Museum')
+        expect(titles('place-card')).not.toContain('Featured Museum')
+      })
+
+      it('should still render a place that only exists in the grid', () => {
+        render(<DiscoverHomePage />)
+
+        expect(titles('place-card')).toContain('Quiet Gallery')
+      })
+
+      it('should stop hiding anything once a search collapses the rails', () => {
+        render(<DiscoverHomePage />)
+
+        fireEvent.change(screen.getByPlaceholderText('discover.explore.search_placeholder'), { target: { value: 'plaza' } })
+
+        expect(screen.queryByText('discover.live.heading')).not.toBeInTheDocument()
+        expect(titles('place-card')).toContain('Live Plaza')
+        expect(titles('place-card')).toContain('Featured Museum')
+      })
     })
   })
 
