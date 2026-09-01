@@ -318,9 +318,9 @@ function DiscoverHomePage() {
   // ── BROWSE queries ────────────────────────────────────────────────────
   // Server-side search/category against the destinations endpoint.
   // Different args from the LIVE feed → separate RTK Query cache entry.
-  // `/destinations` serves places + worlds in one page, in the API's curated
-  // order (highlighted first, then ranking, then like_score) — there is no
-  // user-facing sort control.
+  // `/destinations` serves places + worlds in one page. The grid asks for
+  // `most_active` so scenes with people in them lead it, with curation as the
+  // tie-breaker; the Featured rail and My Places keep the curated order.
   // Safety net for the DEFERRED search value landing after the synchronous
   // handler reset (changeSearch/changeCategory reset in the same commit).
   useEffect(() => {
@@ -330,6 +330,7 @@ function DiscoverHomePage() {
     () => ({
       limit: BROWSE_LIMIT,
       offset: browseOffset,
+      order_by: 'most_active' as const,
       search: search || undefined,
       categories: activeCategory === 'all' ? undefined : [activeCategory],
       // Real-time user counts on every row — the grid's LIVE badges come
