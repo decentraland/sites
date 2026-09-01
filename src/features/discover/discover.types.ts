@@ -68,11 +68,13 @@ interface GetDiscoverPlacesArgs {
   owner?: string
 }
 
-// `/destinations` — the combined places + worlds feed. Highlighted rows are
-// always returned first (API contract), then ranking, then `order_by`.
+// `/destinations` — the combined places + worlds feed. Omitting `order_by`
+// gets the curated order (highlighted, then ranking); `most_active` puts the
+// scenes people are actually in on top, with curation as the tie-breaker.
 interface GetDiscoverDestinationsArgs {
   limit?: number
   offset?: number
+  order_by?: DiscoverOrderBy
   search?: string
   categories?: string[]
   owner?: string
