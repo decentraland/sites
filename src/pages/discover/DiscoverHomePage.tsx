@@ -412,10 +412,10 @@ function DiscoverHomePage() {
     const liveById = new Map(filteredLiveCards.map(c => [c.id, c.user_count ?? 0]))
     // Only the four cards the rail actually renders are removed: a featured place with people that
     // missed the top four still belongs here.
-    const shownInLiveRail = dedupeCrossSections ? new Set(liveRail.map(c => c.id)) : null
+    const shownInLiveRail = new Set(dedupeCrossSections ? liveRail.map(c => c.id) : [])
     return (featuredQuery.data?.data ?? [])
       .filter(p => !isHiddenPlace(p))
-      .filter(p => !shownInLiveRail?.has(p.id))
+      .filter(p => !shownInLiveRail.has(p.id))
       .map(p => ({ ...p, user_count: liveById.get(p.id) ?? 0 }))
       .sort((a, b) => (b.user_count ?? 0) - (a.user_count ?? 0))
   }, [showHighlights, featuredQuery.data, filteredLiveCards, liveRail, dedupeCrossSections])
