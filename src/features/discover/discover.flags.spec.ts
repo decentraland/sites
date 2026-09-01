@@ -65,6 +65,26 @@ describe('when resolving the places cross-section dedupe flag', () => {
     })
   })
 
+  describe('and the flags file responds with a non-ok status', () => {
+    let json: jest.Mock
+
+    beforeEach(() => {
+      json = jest.fn()
+      fetchMock.mockResolvedValue({ ok: false, status: 500, json } as unknown as Response)
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    })
+
+    it('should stay off without parsing the body', async () => {
+      const { result } = renderHook(() => usePlacesDedupeCrossSections())
+
+      await waitFor(() => {
+        expect(fetchMock).toHaveBeenCalled()
+      })
+      expect(result.current).toBe(false)
+      expect(json).not.toHaveBeenCalled()
+    })
+  })
+
   describe('and the fetch fails', () => {
     beforeEach(() => {
       fetchMock.mockRejectedValue(new Error('offline'))
