@@ -17,7 +17,7 @@ import type { DiscoverPlace } from '../../../features/discover'
 import { useNewPlacesLayout } from '../../../features/discover/discover.flags'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
-import { usePlaceOwnerAvatar } from '../../../hooks/usePlaceOwnerAvatar'
+import { usePlaceCreator } from '../../../hooks/usePlaceCreator'
 import { SegmentEvent } from '../../../modules/segment.types'
 import { JumpInGlyph, MedalGlyph, PinGlyph } from '../_shared/CardIcons'
 import { FeaturedBadge, TopRow } from '../_shared/DiscoverShell.styled'
@@ -60,7 +60,7 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
   const detailHref = useMemo(() => buildDetailPath(place), [place])
 
   const { jumpIn } = useDiscoverJumpIn()
-  const { ownerName, ownerAvatar, avatarBg } = usePlaceOwnerAvatar(place)
+  const { creatorName, creatorAvatar, avatarBg } = usePlaceCreator(place)
 
   const players = placePlayers(place)
   const newLayout = useNewPlacesLayout()
@@ -138,10 +138,10 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
           <SwapArea>
             <MetaRow $hidden={ctaShown} aria-hidden={ctaShown || undefined}>
               <CreatorRow>
-                {ownerAvatar && <Avatar src={ownerAvatar} alt="" loading="lazy" $bg={avatarBg} />}
-                {ownerName && (
+                {creatorAvatar && <Avatar src={creatorAvatar} alt="" loading="lazy" $bg={avatarBg} />}
+                {creatorName && (
                   <ByText variant="body2">
-                    {t('discover.card.by')} <CreatorName>{ownerName}</CreatorName>
+                    {t('discover.card.by')} <CreatorName>{creatorName}</CreatorName>
                   </ByText>
                 )}
               </CreatorRow>

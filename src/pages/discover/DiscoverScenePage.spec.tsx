@@ -90,8 +90,8 @@ jest.mock('../../hooks/usePageViewTracking', () => ({
   usePageViewTracking: (...args: unknown[]) => mockUsePageViewTracking(...args)
 }))
 
-jest.mock('../../hooks/usePlaceOwnerAvatar', () => ({
-  usePlaceOwnerAvatar: () => ({ ownerName: 'CreatorName', ownerAvatar: 'https://avatar.test/a.png', avatarBg: '#123456' })
+jest.mock('../../hooks/usePlaceCreator', () => ({
+  usePlaceCreator: () => ({ creatorName: 'CreatorName', creatorAvatar: 'https://avatar.test/a.png', avatarBg: '#123456' })
 }))
 
 jest.mock('../../hooks/useSceneRoom', () => ({

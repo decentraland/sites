@@ -7,12 +7,12 @@ import { isJunkContactName } from '../features/discover/discover.helpers'
 import { useGetProfileQuery } from '../features/profile/profile.client'
 import { getAvatarBackgroundColor, getDisplayName, getSyntheticAvatarUrl } from '../utils/avatarColor'
 
-interface PlaceOwnerAvatar {
+interface PlaceCreator {
   // Who the card credits for making the place.
-  ownerName: string | undefined
+  creatorName: string | undefined
   // Real catalyst face256, but only when the credited name came from that same
   // profile; otherwise a synthetic colored disc derived from the name.
-  ownerAvatar: string | undefined
+  creatorAvatar: string | undefined
   // ADR-292 deterministic identity color, painted behind the (possibly
   // transparent) face256 snapshot.
   avatarBg: string | undefined
@@ -22,7 +22,7 @@ interface PlaceOwnerAvatar {
 // background. The profile query's module-level cache dedupes per address
 // across a grid, so mounting this in every card doesn't fan out per-card
 // requests.
-function usePlaceOwnerAvatar(place: DiscoverPlace | undefined): PlaceOwnerAvatar {
+function usePlaceCreator(place: DiscoverPlace | undefined): PlaceCreator {
   const { data: ownerProfile } = useGetProfileQuery(place?.owner ?? undefined, { skip: !place?.owner })
   const hasClaimedName = ownerProfile?.avatars?.[0]?.hasClaimedName
 
@@ -34,24 +34,24 @@ function usePlaceOwnerAvatar(place: DiscoverPlace | undefined): PlaceOwnerAvatar
   // and the owner profile is only read when the scene declares no contact.
   const contactName = isJunkContactName(place?.contact_name) ? undefined : place?.contact_name?.trim()
   const ownerProfileName = ownerProfile?.avatars?.[0]?.name
-  const ownerName = contactName || ownerProfileName || undefined
+  const creatorName = contactName || ownerProfileName || undefined
 
   // The face has to belong to whoever the line credits. A real face256 is only
   // that person's when the name came from the same profile; behind a contact
   // name it would put the land owner's picture next to somebody else's name.
   const creditedFace = contactName ? undefined : ownerProfile?.avatars?.[0]?.avatar?.snapshots?.face256
-  const ownerAvatar = creditedFace || (ownerName ? getSyntheticAvatarUrl(ownerName) : undefined)
+  const creatorAvatar = creditedFace || (creatorName ? getSyntheticAvatarUrl(creatorName) : undefined)
 
   const avatarBg = useMemo(() => {
-    if (!ownerName) return undefined
+    if (!creatorName) return undefined
     // Key the color off the credited identity only: a contact name has no
     // address, and borrowing the owner's would colour it after the wrong person.
     const ethAddress = contactName ? undefined : place?.owner ?? undefined
-    return getAvatarBackgroundColor(getDisplayName({ name: ownerName, hasClaimedName: hasClaimedName ?? false, ethAddress }))
-  }, [ownerName, contactName, hasClaimedName, place?.owner])
+    return getAvatarBackgroundColor(getDisplayName({ name: creatorName, hasClaimedName: hasClaimedName ?? false, ethAddress }))
+  }, [creatorName, contactName, hasClaimedName, place?.owner])
 
-  return { ownerName, ownerAvatar, avatarBg }
+  return { creatorName, creatorAvatar, avatarBg }
 }
 
-export { usePlaceOwnerAvatar }
-export type { PlaceOwnerAvatar }
+export { usePlaceCreator }
+export type { PlaceCreator }

@@ -14,7 +14,7 @@ import type { DiscoverPlace } from '../../../features/discover'
 import { useNewPlacesLayout } from '../../../features/discover/discover.flags'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
-import { usePlaceOwnerAvatar } from '../../../hooks/usePlaceOwnerAvatar'
+import { usePlaceCreator } from '../../../hooks/usePlaceCreator'
 import { SegmentEvent } from '../../../modules/segment.types'
 import { JumpInGlyph, PinGlyph } from '../_shared/CardIcons'
 import { MEDIA_FALLBACK } from '../_shared/DiscoverShell.styled'
@@ -43,7 +43,7 @@ function FeaturedCardComponent({ place, onEmptyClick }: FeaturedCardProps) {
   const detailHref = useMemo(() => buildDetailPath(place), [place])
 
   const { jumpIn } = useDiscoverJumpIn()
-  const { ownerName, ownerAvatar, avatarBg } = usePlaceOwnerAvatar(place)
+  const { creatorName, creatorAvatar, avatarBg } = usePlaceCreator(place)
   const coords = placeCoordsLabel(place)
 
   const track = useDeferredTrack()
@@ -88,8 +88,8 @@ function FeaturedCardComponent({ place, onEmptyClick }: FeaturedCardProps) {
         ) : undefined
       }
       title={place.title}
-      creatorName={ownerName}
-      creatorAvatarUrl={ownerAvatar}
+      creatorName={creatorName}
+      creatorAvatarUrl={creatorAvatar}
       creatorAvatarBackgroundColor={avatarBg}
       byLabel={t('discover.card.by')}
       bottomPill={

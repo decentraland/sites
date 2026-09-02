@@ -14,7 +14,7 @@ import type { DiscoverPlace } from '../../../features/discover'
 import { useNewPlacesLayout } from '../../../features/discover/discover.flags'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
-import { usePlaceOwnerAvatar } from '../../../hooks/usePlaceOwnerAvatar'
+import { usePlaceCreator } from '../../../hooks/usePlaceCreator'
 import { SegmentEvent } from '../../../modules/segment.types'
 import { JumpInGlyph, MedalGlyph } from '../_shared/CardIcons'
 import { FeaturedBadge, TopRow } from '../_shared/DiscoverShell.styled'
@@ -57,7 +57,7 @@ function LiveEventCardComponent({ place }: LiveEventCardProps) {
   const detailHref = useMemo(() => buildDetailPath(place), [place])
 
   const { jumpIn } = useDiscoverJumpIn()
-  const { ownerName, ownerAvatar, avatarBg } = usePlaceOwnerAvatar(place)
+  const { creatorName, creatorAvatar, avatarBg } = usePlaceCreator(place)
 
   const players = placePlayers(place)
   const newLayout = useNewPlacesLayout()
@@ -130,11 +130,11 @@ function LiveEventCardComponent({ place }: LiveEventCardProps) {
               leaves the a11y tree instead of the DOM. Mobile shows both. */}
           <SwapArea>
             <ByRow $hidden={byRowHidden} aria-hidden={byRowHidden || undefined}>
-              {ownerName && (
+              {creatorName && (
                 <>
-                  {ownerAvatar && <Avatar src={ownerAvatar} alt="" loading="lazy" $bg={avatarBg} />}
+                  {creatorAvatar && <Avatar src={creatorAvatar} alt="" loading="lazy" $bg={avatarBg} />}
                   <ByText>
-                    {t('discover.card.by')} <CreatorName>{ownerName}</CreatorName>
+                    {t('discover.card.by')} <CreatorName>{creatorName}</CreatorName>
                   </ByText>
                 </>
               )}

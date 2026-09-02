@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react'
 import type { DiscoverPlace } from '../features/discover'
 import { useGetProfileQuery } from '../features/profile/profile.client'
 import { getSyntheticAvatarUrl } from '../utils/avatarColor'
-import { usePlaceOwnerAvatar } from './usePlaceOwnerAvatar'
+import { usePlaceCreator } from './usePlaceCreator'
 
 jest.mock('../features/profile/profile.client', () => ({
   useGetProfileQuery: jest.fn()
@@ -41,20 +41,20 @@ describe('when resolving the creator credited on a place', () => {
     })
 
     it('should credit the contact rather than whoever owns the land', () => {
-      const { result } = renderHook(() => usePlaceOwnerAvatar(buildPlace()))
+      const { result } = renderHook(() => usePlaceCreator(buildPlace()))
 
-      expect(result.current.ownerName).toBe('Alice')
+      expect(result.current.creatorName).toBe('Alice')
     })
 
     it('should NOT show the land owner face next to somebody else name', () => {
-      const { result } = renderHook(() => usePlaceOwnerAvatar(buildPlace()))
+      const { result } = renderHook(() => usePlaceCreator(buildPlace()))
 
-      expect(result.current.ownerAvatar).toBe(getSyntheticAvatarUrl('Alice'))
+      expect(result.current.creatorAvatar).toBe(getSyntheticAvatarUrl('Alice'))
     })
 
     it('should colour the avatar after the credited contact, not the owner address', () => {
-      const { result } = renderHook(() => usePlaceOwnerAvatar(buildPlace()))
-      const withoutOwner = renderHook(() => usePlaceOwnerAvatar(buildPlace({ owner: undefined })))
+      const { result } = renderHook(() => usePlaceCreator(buildPlace()))
+      const withoutOwner = renderHook(() => usePlaceCreator(buildPlace({ owner: undefined })))
 
       // Same contact, so the same color whoever holds the land.
       expect(result.current.avatarBg).toBe(withoutOwner.result.current.avatarBg)
@@ -62,9 +62,9 @@ describe('when resolving the creator credited on a place', () => {
     })
 
     it('should trim the contact name', () => {
-      const { result } = renderHook(() => usePlaceOwnerAvatar(buildPlace({ contact_name: '  Alice  ' })))
+      const { result } = renderHook(() => usePlaceCreator(buildPlace({ contact_name: '  Alice  ' })))
 
-      expect(result.current.ownerName).toBe('Alice')
+      expect(result.current.creatorName).toBe('Alice')
     })
   })
 
@@ -74,10 +74,10 @@ describe('when resolving the creator credited on a place', () => {
     })
 
     it('should fall back to the owner profile, face included', () => {
-      const { result } = renderHook(() => usePlaceOwnerAvatar(buildPlace({ contact_name: undefined })))
+      const { result } = renderHook(() => usePlaceCreator(buildPlace({ contact_name: undefined })))
 
-      expect(result.current.ownerName).toBe('LandOwner')
-      expect(result.current.ownerAvatar).toBe('https://peer/face256.png')
+      expect(result.current.creatorName).toBe('LandOwner')
+      expect(result.current.creatorAvatar).toBe('https://peer/face256.png')
     })
   })
 
@@ -87,9 +87,9 @@ describe('when resolving the creator credited on a place', () => {
     })
 
     it.each(['SDK', 'sdk', ' Sdk '])('should treat %s as no contact at all', contactName => {
-      const { result } = renderHook(() => usePlaceOwnerAvatar(buildPlace({ contact_name: contactName })))
+      const { result } = renderHook(() => usePlaceCreator(buildPlace({ contact_name: contactName })))
 
-      expect(result.current.ownerName).toBe('LandOwner')
+      expect(result.current.creatorName).toBe('LandOwner')
     })
   })
 
@@ -101,42 +101,42 @@ describe('when resolving the creator credited on a place', () => {
     })
 
     it('should credit the contact and still keep its own avatar', () => {
-      const { result } = renderHook(() => usePlaceOwnerAvatar(buildPlace()))
+      const { result } = renderHook(() => usePlaceCreator(buildPlace()))
 
-      expect(result.current.ownerName).toBe('Alice')
-      expect(result.current.ownerAvatar).toBe(getSyntheticAvatarUrl('Alice'))
+      expect(result.current.creatorName).toBe('Alice')
+      expect(result.current.creatorAvatar).toBe(getSyntheticAvatarUrl('Alice'))
     })
 
     it('should render no by-line when there is no contact either', () => {
-      const { result } = renderHook(() => usePlaceOwnerAvatar(buildPlace({ contact_name: undefined })))
+      const { result } = renderHook(() => usePlaceCreator(buildPlace({ contact_name: undefined })))
 
-      expect(result.current.ownerName).toBeUndefined()
+      expect(result.current.creatorName).toBeUndefined()
     })
   })
 
   describe('and the owner has no deployed profile', () => {
     it('should derive the avatar from the contact name', () => {
-      const { result } = renderHook(() => usePlaceOwnerAvatar(buildPlace()))
+      const { result } = renderHook(() => usePlaceCreator(buildPlace()))
 
-      expect(result.current.ownerAvatar).toBe(getSyntheticAvatarUrl('Alice'))
+      expect(result.current.creatorAvatar).toBe(getSyntheticAvatarUrl('Alice'))
     })
   })
 
   describe('and the place carries no identity at all', () => {
     it('should return undefined for every field and skip the profile query', () => {
-      const { result } = renderHook(() => usePlaceOwnerAvatar(buildPlace({ owner: undefined, contact_name: undefined })))
+      const { result } = renderHook(() => usePlaceCreator(buildPlace({ owner: undefined, contact_name: undefined })))
 
-      expect(result.current).toEqual({ ownerName: undefined, ownerAvatar: undefined, avatarBg: undefined })
+      expect(result.current).toEqual({ creatorName: undefined, creatorAvatar: undefined, avatarBg: undefined })
       expect(mockUseGetProfileQuery).toHaveBeenCalledWith(undefined, { skip: true })
     })
   })
 
   describe('and the place is undefined (page still resolving)', () => {
     it('should return undefined fields without crashing', () => {
-      const { result } = renderHook(() => usePlaceOwnerAvatar(undefined))
+      const { result } = renderHook(() => usePlaceCreator(undefined))
 
-      expect(result.current.ownerName).toBeUndefined()
-      expect(result.current.ownerAvatar).toBeUndefined()
+      expect(result.current.creatorName).toBeUndefined()
+      expect(result.current.creatorAvatar).toBeUndefined()
     })
   })
 })

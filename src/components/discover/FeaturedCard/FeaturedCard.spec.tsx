@@ -279,7 +279,7 @@ describe('FeaturedCard', () => {
     it('should pass the deterministic avatar background through (ADR-292)', () => {
       render(<FeaturedCard place={createPlace()} />)
 
-      // usePlaceOwnerAvatar derives it from the name, so identity hue matches in-world.
+      // usePlaceCreator derives it from the name, so identity hue matches in-world.
       expect(sharedCard().getAttribute('data-avatar-bg')).toMatch(/^#[0-9a-f]{6}$/i)
     })
 
