@@ -180,7 +180,7 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
     positions: ['0,0'],
     base_position: '0,0',
     owner: '0xowner',
-    user_name: 'Creator',
+    contact_name: 'Creator',
     ...overrides
   }
 }
