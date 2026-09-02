@@ -233,9 +233,16 @@ function DiscoverHomePage() {
   // ── LIVE NOW queries ──────────────────────────────────────────────────
   // Independent of search/category — we always fetch the full live set
   // and filter client-side. Server APIs don't support "places with users".
-  const hotScenesQuery = useGetHotScenesQuery({ limit: 40 }, LIVE_REFRESH_OPTIONS)
-  const livePlacesQuery = useGetDiscoverPlacesQuery({ limit: 50, order_by: 'most_active', order: 'desc' }, LIVE_REFRESH_OPTIONS)
-  const liveWorldsQuery = useGetLiveWorldsQuery(undefined, LIVE_REFRESH_OPTIONS)
+  // The 2026-09-01 layout, off by default. See discover.flags.ts for what travels together.
+  // Read here, above the presence queries, because on the new layout those three requests are
+  // dead weight: the LIVE section reads presence from the destinations feed instead.
+  const newLayout = useNewPlacesLayout()
+  const hotScenesQuery = useGetHotScenesQuery(newLayout ? skipToken : { limit: 40 }, LIVE_REFRESH_OPTIONS)
+  const livePlacesQuery = useGetDiscoverPlacesQuery(
+    newLayout ? skipToken : { limit: 50, order_by: 'most_active', order: 'desc' },
+    LIVE_REFRESH_OPTIONS
+  )
+  const liveWorldsQuery = useGetLiveWorldsQuery(newLayout ? skipToken : undefined, LIVE_REFRESH_OPTIONS)
 
   const liveWorldNames = useMemo(() => {
     const names = (liveWorldsQuery.data ?? []).filter(w => w.users > 0).map(w => w.worldName.toLowerCase())
@@ -392,10 +399,6 @@ function DiscoverHomePage() {
     showHighlights ? { limit: FEATURED_FETCH_LIMIT, only_highlighted: true, with_realms_detail: true, with_live_events: true } : skipToken
   )
 
-  // The 2026-09-01 layout, off by default. See discover.flags.ts for what travels together.
-  // Searching or filtering empties both rails either way, so results are never hidden from a query.
-  const newLayout = useNewPlacesLayout()
-
   // The LIVE section: the four busiest scenes, "busiest" meaning anyone at all is in them.
   //
   // New layout reads presence from the destinations feed, the same rows the grid renders. That is
@@ -422,14 +425,18 @@ function DiscoverHomePage() {
   // the empty-scene modal, and sorted so live ones lead the rail.
   const featuredCards = useMemo(() => {
     if (!showHighlights) return []
+    // Legacy: the featured query carried no presence, so the count is joined in from the live feed.
+    // New layout: the query asks for `with_realms_detail`, so the row already has the API's count
+    // and joining would overwrite it with 0 for anything the (skipped) legacy join never saw.
     const liveById = new Map(filteredLiveCards.map(c => [c.id, c.user_count ?? 0]))
+    const withPresence = (p: DiscoverPlace): DiscoverPlace => (newLayout ? p : { ...p, user_count: liveById.get(p.id) ?? 0 })
     // Only the four cards the rail actually renders are removed: a featured place with people that
     // missed the top four still belongs here.
     const shownInLiveRail = new Set(newLayout ? liveRail.map(c => c.id) : [])
     return (featuredQuery.data?.data ?? [])
       .filter(p => !isHiddenPlace(p))
       .filter(p => !shownInLiveRail.has(p.id))
-      .map(p => ({ ...p, user_count: liveById.get(p.id) ?? 0 }))
+      .map(withPresence)
       .sort((a, b) => (b.user_count ?? 0) - (a.user_count ?? 0))
   }, [showHighlights, featuredQuery.data, filteredLiveCards, liveRail, newLayout])
 

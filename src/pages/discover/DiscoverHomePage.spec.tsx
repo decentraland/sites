@@ -68,7 +68,7 @@ jest.mock('../../components/discover/LiveEventCard', () => ({
 }))
 jest.mock('../../components/discover/FeaturedCard', () => ({
   FeaturedCard: ({ place, onEmptyClick }: { place: DiscoverPlace; onEmptyClick?: (p: DiscoverPlace) => void }) => (
-    <div data-testid="featured-card">
+    <div data-testid="featured-card" data-users={place.user_count ?? ''}>
       <button type="button" onClick={() => onEmptyClick?.(place)}>
         {place.title}
       </button>
@@ -862,6 +862,31 @@ describe('DiscoverHomePage', () => {
       render(<DiscoverHomePage />)
 
       expect(titles('place-card')).toEqual(['One', 'Nobody'])
+    })
+
+    it('should skip the three legacy presence requests', () => {
+      render(<DiscoverHomePage />)
+
+      expect(mockHotScenesQuery).toHaveBeenCalledWith(skipToken, expect.anything())
+      expect(mockPlacesQuery).toHaveBeenCalledWith(skipToken, expect.anything())
+      expect(mockLiveWorldsQuery).toHaveBeenCalledWith(skipToken, expect.anything())
+    })
+
+    it("should keep the API's head count on a featured card the rail did not take", () => {
+      featuredPlaces = {
+        data: {
+          ok: true,
+          total: 1,
+          data: [createPlace({ id: 'f-2', title: 'Two Here', highlighted: true, positions: ['9,9'], base_position: '9,9', user_count: 2 })]
+        },
+        isLoading: false
+      }
+
+      render(<DiscoverHomePage />)
+
+      // 2 people, but the rail is already full with 20 / 5 / 4 / 2 — the legacy join would have
+      // zeroed this to 0 because hot-scenes never saw it.
+      expect(screen.getByTestId('featured-card')).toHaveAttribute('data-users', '2')
     })
 
     it('should ask the feed for presence and live events in one request', () => {
