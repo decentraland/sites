@@ -124,7 +124,8 @@ function isMapPlaceholderImage(image?: string): boolean {
 // is a default nobody chose, not an identity. Treated as absent everywhere a
 // contact name is read.
 function isJunkContactName(name?: string | null): boolean {
-  return !name || name.trim().toLowerCase() === 'sdk'
+  const trimmed = name?.trim().toLowerCase()
+  return !trimmed || trimmed === 'sdk'
 }
 
 // Number of tracks in a resolved `grid-template-columns`. Used to size the

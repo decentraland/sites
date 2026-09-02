@@ -91,6 +91,22 @@ describe('when resolving the creator credited on a place', () => {
 
       expect(result.current.creatorName).toBe('LandOwner')
     })
+
+    it.each(['', '   '])('should treat an empty contact (%p) as no contact at all', contactName => {
+      const { result } = renderHook(() => usePlaceCreator(buildPlace({ contact_name: contactName })))
+
+      expect(result.current.creatorName).toBe('LandOwner')
+    })
+  })
+
+  describe('and the contact name is not ASCII', () => {
+    it('should credit it and still derive an avatar from it', () => {
+      const { result } = renderHook(() => usePlaceCreator(buildPlace({ contact_name: 'Ñoño' })))
+
+      expect(result.current.creatorName).toBe('Ñoño')
+      expect(result.current.creatorAvatar).toBe(getSyntheticAvatarUrl('Ñoño'))
+      expect(result.current.avatarBg).toEqual(expect.stringMatching(/^#/))
+    })
   })
 
   describe('and the owner profile carries a snapshot but no name', () => {

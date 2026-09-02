@@ -4,6 +4,7 @@ import {
   discoverDeepLinkOptions,
   discoverPlacePayload,
   isHiddenPlace,
+  isJunkContactName,
   isMapPlaceholderImage,
   parsePositionParam,
   placeCoordsLabel,
@@ -380,6 +381,20 @@ describe('when isHiddenPlace evaluates anonymous placeholder deploys', () => {
     expect(
       isHiddenPlace(makePlace({ title: 'asset-load', image: REAL_IMAGE, categories: [], owner: null, contact_name: 'RealCreator' }))
     ).toBe(false)
+  })
+})
+
+describe('when deciding whether a contact name is junk', () => {
+  it.each(['SDK', 'sdk', ' Sdk '])('should call the sdk-commands default (%p) junk', name => {
+    expect(isJunkContactName(name)).toBe(true)
+  })
+
+  it.each([undefined, null, '', '   '])('should call an absent contact (%p) junk', name => {
+    expect(isJunkContactName(name)).toBe(true)
+  })
+
+  it('should accept a real contact name', () => {
+    expect(isJunkContactName('LowPolyModels')).toBe(false)
   })
 })
 
