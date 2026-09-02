@@ -1,5 +1,5 @@
 import { DEFAULT_SEGMENT_TRACK_URL, getSegmentApiHost, getSegmentCdnUrl, getSegmentTrackUrl, getSegmentWriteKey } from './segmentConfig'
-import { SEGMENT_KILL_SWITCH_KEY } from './segmentKillSwitch'
+import { SEGMENT_KILL_SWITCH_KEY, resetSegmentKillSwitchForTests } from './segmentKillSwitch'
 
 let mockEnvValues: Record<string, string>
 let mockExempt: boolean
@@ -17,10 +17,12 @@ describe('segmentConfig', () => {
     mockEnvValues = { SEGMENT_KEY: 'wk-test' }
     mockExempt = false
     localStorage.clear()
+    resetSegmentKillSwitchForTests()
   })
 
   afterEach(() => {
     localStorage.clear()
+    resetSegmentKillSwitchForTests()
     jest.resetAllMocks()
   })
 
@@ -195,7 +197,7 @@ describe('segmentConfig', () => {
 
   // The `dapps-seg-alt` kill switch. It is read from localStorage and never from the flag service,
   // because analytics boots before any flag fetch can answer — see `segmentKillSwitch.ts`.
-  describe('when the proxy kill switch is involved', () => {
+  describe('when the kill switch is involved', () => {
     beforeEach(() => {
       mockEnvValues.SEGMENT_CDN_URL = 'https://evs.e.decentraland.org'
       mockEnvValues.SEGMENT_API_HOST = 'api.e.decentraland.org/v1'
@@ -204,6 +206,7 @@ describe('segmentConfig', () => {
     describe('and the persisted value is on', () => {
       beforeEach(() => {
         localStorage.setItem(SEGMENT_KILL_SWITCH_KEY, '1')
+        resetSegmentKillSwitchForTests()
       })
 
       it('should drop the configured CDN url so the SDK loads from Segment own CDN', () => {
@@ -226,6 +229,7 @@ describe('segmentConfig', () => {
     describe('and the persisted value is off', () => {
       beforeEach(() => {
         localStorage.setItem(SEGMENT_KILL_SWITCH_KEY, '0')
+        resetSegmentKillSwitchForTests()
       })
 
       it('should keep the configured CDN url', () => {

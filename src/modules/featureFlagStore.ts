@@ -33,8 +33,9 @@ async function runFetch(): Promise<void> {
     const data = (await response.json()) as { flags?: Record<string, boolean> }
     flags = data?.flags ?? {}
     // Analytics boots before this fetch can answer, so the Segment proxy kill switch is decided
-    // from the value persisted by an earlier page load. This is the only place that learns the
-    // flag without costing the homepage a request, so it is the only place that writes it.
+    // from the value persisted by an earlier page load, and this is where that value is learned.
+    // It only reaches visitors who hit a route that reads flags — see `segmentKillSwitch.ts` for
+    // what that costs and why the homepage cannot pay for its own fetch.
     // Deliberately inside the try: a failed fetch must leave the last known value alone.
     persistSegmentProxyDisabled(isFeatureFlagEnabled(FEATURE_FLAG.segmentKillSwitch))
   } catch (error) {

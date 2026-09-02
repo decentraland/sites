@@ -41,7 +41,7 @@ function getSegmentWriteKey(options?: { bypassExemptPathGate?: boolean }): strin
  * with a warning, so a misconfigured environment degrades to Segment's own
  * endpoints instead of pointing the SDK at an untrusted host.
  *
- * Both are also switched off together by the `dapps-seg-alt` kill switch (see
+ * Both are also dropped together by the `dapps-seg-alt` kill switch (see
  * `segmentKillSwitch.ts`), which takes a broken proxy out of the path without
  * a deploy and degrades to those same endpoints.
  */
@@ -70,7 +70,8 @@ function resolveProxyUrl(name: string, value: string): URL | undefined {
  * and the path survive (a query or fragment would land mid-URL) and the
  * trailing slash is dropped to keep the separator single.
  *
- * Returns `undefined` when unconfigured, rejected or bypassed, which keeps Segment's CDN.
+ * Returns `undefined` when unconfigured, rejected or disabled by the kill
+ * switch, which keeps Segment's CDN.
  */
 function getSegmentCdnUrl(): string | undefined {
   if (isSegmentProxyDisabled()) {
@@ -92,7 +93,8 @@ function getSegmentCdnUrl(): string | undefined {
  * Format: `host/basePath` without protocol; the SDK prepends `https://` and
  * appends the method path (`/t`, `/i`, `/p`).
  *
- * Returns `undefined` when unconfigured or rejected, same as `getSegmentCdnUrl`.
+ * Returns `undefined` when unconfigured, rejected or disabled by the kill
+ * switch, same as `getSegmentCdnUrl`.
  *
  * NOTE: this is a different host from `SEGMENT_CDN_URL`. The CDN one is a
  * CloudFront distribution over static objects and 404s on the ingestion paths;

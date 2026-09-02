@@ -5,9 +5,10 @@ const FEATURE_FLAG = {
   inviteDirectDownload: 'dapps-invite-direct-download',
   eventFeaturedItemSearch: 'dapps-event-featured-item-search',
   placesRepeatCrossSections: 'dapps-places-repeat-cross-sections',
-  // Kill switch for the Segment first-party proxy, shared across our dapps. ON means send
-  // analytics straight to Segment; see `segmentKillSwitch.ts` for why it is read from
-  // localStorage at boot instead of from this store.
+  // Kill switch for the Segment first-party proxy. ON means send analytics straight to Segment.
+  // The name is deliberately short and shared: sibling dapps switch their own proxy off with the
+  // same flag. See `segmentKillSwitch.ts` for why it is read from localStorage at boot rather
+  // than through this store.
   segmentKillSwitch: 'dapps-seg-alt'
 } as const
 
