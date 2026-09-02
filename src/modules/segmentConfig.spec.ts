@@ -1,4 +1,5 @@
 import { DEFAULT_SEGMENT_TRACK_URL, getSegmentApiHost, getSegmentCdnUrl, getSegmentTrackUrl, getSegmentWriteKey } from './segmentConfig'
+import { SEGMENT_KILL_SWITCH_KEY, resetSegmentKillSwitchForTests } from './segmentKillSwitch'
 
 let mockEnvValues: Record<string, string>
 let mockExempt: boolean
@@ -15,9 +16,13 @@ describe('segmentConfig', () => {
   beforeEach(() => {
     mockEnvValues = { SEGMENT_KEY: 'wk-test' }
     mockExempt = false
+    localStorage.clear()
+    resetSegmentKillSwitchForTests()
   })
 
   afterEach(() => {
+    localStorage.clear()
+    resetSegmentKillSwitchForTests()
     jest.resetAllMocks()
   })
 
@@ -187,6 +192,71 @@ describe('segmentConfig', () => {
       mockEnvValues.SEGMENT_API_HOST = 'http://evs.e.decentraland.org/v1'
       expect(getSegmentTrackUrl()).toBe('https://api.segment.io/v1/track')
       consoleWarn.mockRestore()
+    })
+  })
+
+  // The `dapps-seg-alt` kill switch. It is read from localStorage and never from the flag service,
+  // because analytics boots before any flag fetch can answer — see `segmentKillSwitch.ts`.
+  describe('when the kill switch is involved', () => {
+    beforeEach(() => {
+      mockEnvValues.SEGMENT_CDN_URL = 'https://evs.e.decentraland.org'
+      mockEnvValues.SEGMENT_API_HOST = 'api.e.decentraland.org/v1'
+    })
+
+    describe('and the persisted value is on', () => {
+      beforeEach(() => {
+        localStorage.setItem(SEGMENT_KILL_SWITCH_KEY, '1')
+        resetSegmentKillSwitchForTests()
+      })
+
+      it('should drop the configured CDN url so the SDK loads from Segment own CDN', () => {
+        expect(getSegmentCdnUrl()).toBeUndefined()
+      })
+
+      it('should drop the configured api host so the SDK delivers to Segment own ingestion', () => {
+        expect(getSegmentApiHost()).toBeUndefined()
+      })
+
+      it('should fall back to the default track url for the beacon transport', () => {
+        expect(getSegmentTrackUrl()).toBe(DEFAULT_SEGMENT_TRACK_URL)
+      })
+
+      it('should keep resolving the write key, the switch only moves where events go', () => {
+        expect(getSegmentWriteKey()).toBe('wk-test')
+      })
+    })
+
+    describe('and the persisted value is off', () => {
+      beforeEach(() => {
+        localStorage.setItem(SEGMENT_KILL_SWITCH_KEY, '0')
+        resetSegmentKillSwitchForTests()
+      })
+
+      it('should keep the configured CDN url', () => {
+        expect(getSegmentCdnUrl()).toBe('https://evs.e.decentraland.org')
+      })
+
+      it('should keep the configured api host', () => {
+        expect(getSegmentApiHost()).toBe('api.e.decentraland.org/v1')
+      })
+
+      it('should keep deriving the track url from the configured api host', () => {
+        expect(getSegmentTrackUrl()).toBe('https://api.e.decentraland.org/v1/track')
+      })
+    })
+
+    describe('and nothing has been persisted yet', () => {
+      it('should keep the configured CDN url', () => {
+        expect(getSegmentCdnUrl()).toBe('https://evs.e.decentraland.org')
+      })
+
+      it('should keep the configured api host', () => {
+        expect(getSegmentApiHost()).toBe('api.e.decentraland.org/v1')
+      })
+
+      it('should keep deriving the track url from the configured api host', () => {
+        expect(getSegmentTrackUrl()).toBe('https://api.e.decentraland.org/v1/track')
+      })
     })
   })
 

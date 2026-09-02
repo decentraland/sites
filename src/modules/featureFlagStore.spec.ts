@@ -1,5 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { resetFeatureFlagsForTests, useRemoteFeatureFlag } from './featureFlagStore'
+import { FEATURE_FLAG } from './ff'
+import { SEGMENT_KILL_SWITCH_KEY } from './segmentKillSwitch'
 
 const flagsResponse = (flags: Record<string, boolean>) =>
   Promise.resolve({
@@ -15,9 +17,11 @@ describe('useRemoteFeatureFlag', () => {
     fetchMock = jest.fn()
     global.fetch = fetchMock as unknown as typeof fetch
     jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    localStorage.clear()
   })
 
   afterEach(() => {
+    localStorage.clear()
     jest.restoreAllMocks()
     jest.resetAllMocks()
   })
@@ -109,6 +113,36 @@ describe('useRemoteFeatureFlag', () => {
       act(() => unmount())
 
       expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  // The Segment proxy kill switch cannot be read as a flag at boot (analytics starts first), so
+  // this fetch is what persists it for the next page load. See `segmentKillSwitch.ts`.
+  describe('when the file carries the Segment proxy kill switch', () => {
+    it('should persist it as on when it is enabled', async () => {
+      fetchMock.mockReturnValue(flagsResponse({ [FEATURE_FLAG.segmentKillSwitch]: true }))
+
+      renderHook(() => useRemoteFeatureFlag('some-flag'))
+
+      await waitFor(() => expect(localStorage.getItem(SEGMENT_KILL_SWITCH_KEY)).toBe('1'))
+    })
+
+    it('should persist it as off when it is absent, the service only publishes enabled flags', async () => {
+      fetchMock.mockReturnValue(flagsResponse({ 'some-flag': true }))
+
+      renderHook(() => useRemoteFeatureFlag('some-flag'))
+
+      await waitFor(() => expect(localStorage.getItem(SEGMENT_KILL_SWITCH_KEY)).toBe('0'))
+    })
+
+    it('should leave the last known value alone when the fetch fails', async () => {
+      localStorage.setItem(SEGMENT_KILL_SWITCH_KEY, '1')
+      fetchMock.mockRejectedValue(new Error('network down'))
+
+      renderHook(() => useRemoteFeatureFlag('some-flag'))
+
+      await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+      expect(localStorage.getItem(SEGMENT_KILL_SWITCH_KEY)).toBe('1')
     })
   })
 })
