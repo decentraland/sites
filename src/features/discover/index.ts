@@ -23,6 +23,7 @@ export {
   placeCoverImage,
   placeIsFeatured,
   placeHasLiveEvent,
+  placeLiveEventName,
   placeHasPeople,
   placeIsLive,
   placePlayers

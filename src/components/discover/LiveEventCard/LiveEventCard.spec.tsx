@@ -50,6 +50,12 @@ jest.mock('decentraland-ui2', () => {
     Typography: actual.Box,
     BadgeGroup: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
     LiveBadge: () => <div>LIVE</div>,
+    // LiveEventBadge wraps the badge in this when the row carries an event title.
+    Tooltip: ({ title, children }: { title?: React.ReactNode; children?: React.ReactNode }) => (
+      <div data-testid="tooltip" data-title={String(title ?? '')}>
+        {children}
+      </div>
+    ),
     UserCountBadge: ({ count }: { count?: number }) => <div>{count}</div>,
 
     useTheme: () => ({ breakpoints: { down: () => '(max-width:0px)' } }),
@@ -380,6 +386,24 @@ describe('LiveEventCard', () => {
       render(<LiveEventCard place={createPlace({ live: true })} />)
 
       expect(screen.getByText('LIVE')).toBeInTheDocument()
+    })
+
+    it('should hang the event title off the LIVE badge as a tooltip', () => {
+      render(<LiveEventCard place={createPlace({ live: true, live_event_name: 'Watch Party Wednesdays' })} />)
+
+      const tooltip = screen.getByTestId('tooltip')
+
+      expect(tooltip).toHaveAttribute('data-title', 'Watch Party Wednesdays')
+      expect(tooltip).toContainElement(screen.getByText('LIVE'))
+    })
+
+    it('should leave the badge bare while the row carries no event title', () => {
+      // Every row looks like this until the places-api field reaches the
+      // environment being read.
+      render(<LiveEventCard place={createPlace({ live: true })} />)
+
+      expect(screen.getByText('LIVE')).toBeInTheDocument()
+      expect(screen.queryByTestId('tooltip')).not.toBeInTheDocument()
     })
 
     it('should show the head count without LIVE when people are there but no event is', () => {
