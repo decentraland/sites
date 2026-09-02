@@ -1,41 +1,55 @@
 import { useMemo } from 'react'
 import type { DiscoverPlace } from '../features/discover'
+// Deep import on purpose: the feature barrel re-exports the RTK Query client,
+// whose import.meta env access Jest cannot parse, and this hook only needs the
+// pure helper.
+import { isJunkContactName } from '../features/discover/discover.helpers'
 import { useGetProfileQuery } from '../features/profile/profile.client'
 import { getAvatarBackgroundColor, getDisplayName, getSyntheticAvatarUrl } from '../utils/avatarColor'
 
 interface PlaceOwnerAvatar {
+  // Who the card credits for making the place.
   ownerName: string | undefined
-  // Real catalyst face256 when the owner has a deployed profile, else a
-  // synthetic colored disc derived from the display name.
+  // Real catalyst face256, but only when the credited name came from that same
+  // profile; otherwise a synthetic colored disc derived from the name.
   ownerAvatar: string | undefined
   // ADR-292 deterministic identity color, painted behind the (possibly
   // transparent) face256 snapshot.
   avatarBg: string | undefined
 }
 
-// Owner catalyst profile + avatar + ADR-292 background for a discover place.
-// The profile query's module-level cache dedupes per address across a grid,
-// so mounting this in every card doesn't fan out per-card requests.
+// The creator a discover place card credits, with their avatar and ADR-292
+// background. The profile query's module-level cache dedupes per address
+// across a grid, so mounting this in every card doesn't fan out per-card
+// requests.
 function usePlaceOwnerAvatar(place: DiscoverPlace | undefined): PlaceOwnerAvatar {
   const { data: ownerProfile } = useGetProfileQuery(place?.owner ?? undefined, { skip: !place?.owner })
-  const realAvatar = ownerProfile?.avatars?.[0]?.avatar?.snapshots?.face256
   const hasClaimedName = ownerProfile?.avatars?.[0]?.hasClaimedName
-  // The owner's profile name wins so the by-line matches the avatar next to
-  // it; scene metadata (`user_name` / `contact_name`) is only a fallback — and
-  // the sdk-commands default contact ("SDK") is junk, not an identity, so it
-  // is skipped entirely (the card simply renders without a by-line).
-  const metadataName = [place?.user_name, place?.contact_name].find(n => n && n.trim().toLowerCase() !== 'sdk')
-  const ownerName = ownerProfile?.avatars?.[0]?.name || metadataName || undefined
-  const ownerAvatar = realAvatar || (ownerName ? getSyntheticAvatarUrl(ownerName) : undefined)
-  const avatarBg = useMemo(
-    () =>
-      ownerName
-        ? getAvatarBackgroundColor(
-            getDisplayName({ name: ownerName, hasClaimedName: hasClaimedName ?? false, ethAddress: place?.owner ?? undefined })
-          )
-        : undefined,
-    [ownerName, hasClaimedName, place?.owner]
-  )
+
+  // `contact_name` comes from the scene's own scene.json, so it is the author
+  // saying who made this. `owner` is whoever holds the LAND or the world name,
+  // which stops being the author the moment a studio deploys from a shared
+  // wallet — resolving that wallet to its profile is what made the page credit
+  // one person for six games they had not built. The contact therefore wins,
+  // and the owner profile is only read when the scene declares no contact.
+  const contactName = isJunkContactName(place?.contact_name) ? undefined : place?.contact_name?.trim()
+  const ownerProfileName = ownerProfile?.avatars?.[0]?.name
+  const ownerName = contactName || ownerProfileName || undefined
+
+  // The face has to belong to whoever the line credits. A real face256 is only
+  // that person's when the name came from the same profile; behind a contact
+  // name it would put the land owner's picture next to somebody else's name.
+  const creditedFace = contactName ? undefined : ownerProfile?.avatars?.[0]?.avatar?.snapshots?.face256
+  const ownerAvatar = creditedFace || (ownerName ? getSyntheticAvatarUrl(ownerName) : undefined)
+
+  const avatarBg = useMemo(() => {
+    if (!ownerName) return undefined
+    // Key the color off the credited identity only: a contact name has no
+    // address, and borrowing the owner's would colour it after the wrong person.
+    const ethAddress = contactName ? undefined : place?.owner ?? undefined
+    return getAvatarBackgroundColor(getDisplayName({ name: ownerName, hasClaimedName: hasClaimedName ?? false, ethAddress }))
+  }, [ownerName, contactName, hasClaimedName, place?.owner])
+
   return { ownerName, ownerAvatar, avatarBg }
 }
 

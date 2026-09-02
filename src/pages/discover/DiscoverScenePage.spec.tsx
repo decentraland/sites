@@ -128,7 +128,7 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
     positions: ['10,20', '10,21'],
     base_position: '10,20',
     owner: '0xabc',
-    user_name: 'CreatorName',
+    contact_name: 'CreatorName',
     ...overrides
   }
 }

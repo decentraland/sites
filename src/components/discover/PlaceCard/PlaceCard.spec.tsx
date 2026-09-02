@@ -65,8 +65,7 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
     positions: ['-9,-9'],
     base_position: '-9,-9',
     owner: '0xabc',
-    user_name: 'CreatorName',
-    contact_name: 'ContactName',
+    contact_name: 'CreatorName',
     categories: [],
     user_count: 0,
     ...overrides
@@ -301,12 +300,16 @@ describe('PlaceCard', () => {
     })
   })
 
-  describe('when the owner has a catalyst profile with a face snapshot', () => {
-    it('should render the real face256 avatar', () => {
+  describe('when the scene names no contact and the owner has a catalyst profile', () => {
+    it('should render the owner face256', () => {
       mockUseGetProfileQuery.mockReturnValue({
-        data: { avatars: [{ hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }] }
+        data: {
+          avatars: [
+            { name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }
+          ]
+        }
       })
-      const { container } = render(<PlaceCard place={createPlace()} />)
+      const { container } = render(<PlaceCard place={createPlace({ contact_name: undefined })} />)
 
       expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer.decentraland.org/face256.png')
     })
@@ -332,7 +335,7 @@ describe('PlaceCard', () => {
     })
   })
 
-  describe('when the place has a user_name', () => {
+  describe('when the place declares a contact name', () => {
     it('should render the by-line with the creator name', () => {
       render(<PlaceCard place={createPlace()} />)
 
@@ -341,17 +344,9 @@ describe('PlaceCard', () => {
     })
   })
 
-  describe('when the place only has a contact_name', () => {
-    it('should render the contact name as the creator', () => {
-      render(<PlaceCard place={createPlace({ user_name: undefined })} />)
-
-      expect(screen.getByText('ContactName')).toBeInTheDocument()
-    })
-  })
-
   describe('when the place has no creator name at all', () => {
     it('should render neither the by-line nor an avatar', () => {
-      const { container } = render(<PlaceCard place={createPlace({ user_name: undefined, contact_name: undefined, owner: null })} />)
+      const { container } = render(<PlaceCard place={createPlace({ contact_name: undefined, owner: null })} />)
 
       expect(screen.queryByText(/discover\.card\.by/)).not.toBeInTheDocument()
       expect(container.querySelector('img')).not.toBeInTheDocument()

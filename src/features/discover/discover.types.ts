@@ -18,7 +18,6 @@ interface DiscoverPlace {
   likes?: number
   dislikes?: number
   user_count?: number
-  user_name?: string
   // Set only when the request asked for `with_live_events`: true when the events API reports an
   // event running at this place right now. Presence (`user_count`) is a different thing.
   live?: boolean

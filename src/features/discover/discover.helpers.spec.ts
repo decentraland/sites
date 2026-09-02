@@ -231,9 +231,9 @@ describe('when isHiddenPlace is called', () => {
     })
 
     it('should NOT hide a categorized scene that merely starts with "Road at"', () => {
-      expect(isHiddenPlace(makePlace({ title: 'Road at the Edge', image: REAL_IMAGE, categories: ['art'], user_name: 'RoadArtist' }))).toBe(
-        false
-      )
+      expect(
+        isHiddenPlace(makePlace({ title: 'Road at the Edge', image: REAL_IMAGE, categories: ['art'], contact_name: 'RoadArtist' }))
+      ).toBe(false)
     })
   })
 
@@ -247,7 +247,7 @@ describe('when isHiddenPlace is called', () => {
     it('should NOT hide a described scene with a real screenshot', () => {
       expect(
         isHiddenPlace(
-          makePlace({ title: 'Cool Gallery', image: REAL_IMAGE, categories: [], description: 'Rotating exhibits', user_name: 'Curator' })
+          makePlace({ title: 'Cool Gallery', image: REAL_IMAGE, categories: [], description: 'Rotating exhibits', contact_name: 'Curator' })
         )
       ).toBe(false)
     })
@@ -378,7 +378,7 @@ describe('when isHiddenPlace evaluates anonymous placeholder deploys', () => {
 
   it('should NOT hide a scene with a real creator identity', () => {
     expect(
-      isHiddenPlace(makePlace({ title: 'asset-load', image: REAL_IMAGE, categories: [], owner: null, user_name: 'RealCreator' }))
+      isHiddenPlace(makePlace({ title: 'asset-load', image: REAL_IMAGE, categories: [], owner: null, contact_name: 'RealCreator' }))
     ).toBe(false)
   })
 })

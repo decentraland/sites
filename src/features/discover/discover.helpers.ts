@@ -120,6 +120,13 @@ function isMapPlaceholderImage(image?: string): boolean {
   return DEFAULT_THUMBNAIL_HASHES.has(hash)
 }
 
+// sdk-commands writes contact.name "SDK" into every scene it scaffolds, so it
+// is a default nobody chose, not an identity. Treated as absent everywhere a
+// contact name is read.
+function isJunkContactName(name?: string | null): boolean {
+  return !name || name.trim().toLowerCase() === 'sdk'
+}
+
 // Number of tracks in a resolved `grid-template-columns`. Used to size the
 // Featured rail's collapsed height off the grid the browser actually laid out:
 // its tracks come from an auto-fill formula with a px floor, which no
@@ -159,14 +166,12 @@ function isHiddenPlace(place: DiscoverPlace): boolean {
   if (isRoad(place)) return true
   if (isMapPlaceholderImage(place.image) && !(place.world && (place.user_count ?? 0) > 0)) return true
   // No creator identity → junk, regardless of description or categories.
-  // Identity = an owner address, or a real user_name / contact_name — the
-  // sdk-commands default contact ("SDK") is template boilerplate and counts
-  // as none. Identity-less PARCELS are junk even when someone happens to be
+  // Identity = an owner address or a real contact name.
+  // Identity-less PARCELS are junk even when someone happens to be
   // standing in them; identity-less WORLDS keep the presence exception
   // because the Live Now rail synthesizes exactly this shape when a live
   // world has no places-api metadata.
-  const isJunkName = (name?: string | null) => !name || name.trim().toLowerCase() === 'sdk'
-  const hasIdentity = Boolean(place.owner) || !isJunkName(place.user_name) || !isJunkName(place.contact_name)
+  const hasIdentity = Boolean(place.owner) || !isJunkContactName(place.contact_name)
   if (hasIdentity) return false
   return place.world ? (place.user_count ?? 0) === 0 : true
 }
@@ -193,6 +198,7 @@ export {
   buildJumpLandingHref,
   countGridTracks,
   discoverDeepLinkOptions,
+  isJunkContactName,
   discoverPlacePayload,
   isHiddenPlace,
   isMapPlaceholderImage,

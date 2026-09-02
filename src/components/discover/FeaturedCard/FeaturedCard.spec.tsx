@@ -141,8 +141,7 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
     positions: ['12,34'],
     base_position: '12,34',
     owner: '0xabc',
-    user_name: 'CuratorName',
-    contact_name: 'ContactName',
+    contact_name: 'CuratorName',
     categories: ['poi'],
     user_count: 0,
     ...overrides
@@ -307,13 +306,28 @@ describe('FeaturedCard', () => {
       expect(screen.getByText('12,34')).toBeInTheDocument()
     })
 
-    it('should render the real face256 avatar when the owner profile has one', () => {
+    it('should render the owner face256 only when the scene names no contact', () => {
       mockUseGetProfileQuery.mockReturnValue({
-        data: { avatars: [{ hasClaimedName: false, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }] }
+        data: {
+          avatars: [
+            { name: 'LandOwner', hasClaimedName: false, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }
+          ]
+        }
+      })
+      render(<FeaturedCard place={createPlace({ contact_name: undefined })} />)
+
+      expect(screen.getByAltText('LandOwner')).toHaveAttribute('src', 'https://peer.decentraland.org/face256.png')
+    })
+
+    it('should NOT put the land owner face next to a contact name', () => {
+      mockUseGetProfileQuery.mockReturnValue({
+        data: { avatars: [{ name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer/face.png' } } }] }
       })
       render(<FeaturedCard place={createPlace()} />)
 
-      expect(screen.getByAltText('CuratorName')).toHaveAttribute('src', 'https://peer.decentraland.org/face256.png')
+      expect(screen.getByText('CuratorName')).toBeInTheDocument()
+      expect(screen.queryByText('LandOwner')).not.toBeInTheDocument()
+      expect(screen.getByAltText('CuratorName').getAttribute('src')).toMatch(/^data:image\/svg\+xml/)
     })
 
     it('should skip the profile request and use a synthetic avatar when there is no owner', () => {
@@ -323,14 +337,8 @@ describe('FeaturedCard', () => {
       expect(screen.getByAltText('CuratorName').getAttribute('src')).toMatch(/^data:image\/svg\+xml/)
     })
 
-    it('should fall back to the contact name when user_name is missing', () => {
-      render(<FeaturedCard place={createPlace({ user_name: undefined })} />)
-
-      expect(screen.getByText('ContactName')).toBeInTheDocument()
-    })
-
     it('should render no by-line when the place has no creator name', () => {
-      render(<FeaturedCard place={createPlace({ user_name: undefined, contact_name: undefined, owner: null })} />)
+      render(<FeaturedCard place={createPlace({ contact_name: undefined, owner: null })} />)
 
       expect(screen.queryByText(/discover\.card\.by/)).not.toBeInTheDocument()
     })

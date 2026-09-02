@@ -17,6 +17,7 @@ export {
   discoverDeepLinkOptions,
   discoverPlacePayload,
   isHiddenPlace,
+  isJunkContactName,
   parsePositionParam,
   placeCoordsLabel,
   placeCoverImage,
