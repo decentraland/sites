@@ -21,6 +21,9 @@ interface DiscoverPlace {
   // Set only when the request asked for `with_live_events`: true when the events API reports an
   // event running at this place right now. Presence (`user_count`) is a different thing.
   live?: boolean
+  // Title of that event, from the same `with_live_events` join. Absent on rows with no event, and
+  // absent everywhere until the places-api field ships, so the badge has to read fine without it.
+  live_event_name?: string
   world?: boolean
   world_name?: string
 }

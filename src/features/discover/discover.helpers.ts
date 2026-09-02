@@ -89,6 +89,14 @@ function placeHasLiveEvent(place: DiscoverPlace): boolean {
   return place.live === true
 }
 
+// Title of the running event, for the LIVE badge's tooltip. Reads through one helper so the field
+// name lives in a single place while places-api is still adding it, and so a blank title from the
+// join is treated as no title rather than an empty tooltip.
+function placeLiveEventName(place: DiscoverPlace): string | undefined {
+  if (!placeHasLiveEvent(place)) return undefined
+  return place.live_event_name?.trim() || undefined
+}
+
 function placePlayers(place: DiscoverPlace): number {
   return place.user_count ?? 0
 }
@@ -208,6 +216,7 @@ export {
   placeCoverImage,
   placeIsFeatured,
   placeHasLiveEvent,
+  placeLiveEventName,
   placeHasPeople,
   placeIsLive,
   placePlayers

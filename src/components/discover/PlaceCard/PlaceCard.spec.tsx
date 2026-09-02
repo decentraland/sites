@@ -47,6 +47,12 @@ jest.mock('decentraland-ui2', () => {
     Typography: actual.Box,
     BadgeGroup: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
     LiveBadge: () => <div>LIVE</div>,
+    // LiveEventBadge wraps the badge in this when the row carries an event title.
+    Tooltip: ({ title, children }: { title?: React.ReactNode; children?: React.ReactNode }) => (
+      <div data-testid="tooltip" data-title={String(title ?? '')}>
+        {children}
+      </div>
+    ),
     UserCountBadge: ({ count }: { count?: number }) => <div>{count}</div>,
 
     dclColors: {

@@ -10,6 +10,7 @@ import {
   placeCoordsLabel,
   placeCoverImage,
   placeIsFeatured,
+  placeLiveEventName,
   placePlayers
 } from './discover.helpers'
 import type { DiscoverPlace } from './discover.types'
@@ -381,6 +382,36 @@ describe('when isHiddenPlace evaluates anonymous placeholder deploys', () => {
     expect(
       isHiddenPlace(makePlace({ title: 'asset-load', image: REAL_IMAGE, categories: [], owner: null, contact_name: 'RealCreator' }))
     ).toBe(false)
+  })
+})
+
+describe('when reading the live event title off a place', () => {
+  const place = (overrides: Partial<DiscoverPlace> = {}): DiscoverPlace =>
+    ({ id: 'p1', title: 'Genesis Plaza', ...overrides }) as DiscoverPlace
+
+  it('should return the title when an event is running', () => {
+    expect(placeLiveEventName(place({ live: true, live_event_name: 'Watch Party Wednesdays' }))).toBe('Watch Party Wednesdays')
+  })
+
+  it('should trim the title', () => {
+    expect(placeLiveEventName(place({ live: true, live_event_name: '  Watch Party Wednesdays  ' }))).toBe('Watch Party Wednesdays')
+  })
+
+  it('should return undefined when the row carries no title', () => {
+    // What every row looks like until the places-api field reaches the
+    // environment being read: `live` arrives, the name does not.
+    expect(placeLiveEventName(place({ live: true }))).toBeUndefined()
+  })
+
+  it.each(['', '   '])('should treat a blank title (%p) as no title', name => {
+    expect(placeLiveEventName(place({ live: true, live_event_name: name }))).toBeUndefined()
+  })
+
+  it('should return undefined when no event is running, title or not', () => {
+    // places-api derives `live` from the name so this cannot happen upstream,
+    // but a stale cached row must not put a tooltip on a badge nobody drew.
+    expect(placeLiveEventName(place({ live: false, live_event_name: 'Stale Party' }))).toBeUndefined()
+    expect(placeLiveEventName(place({}))).toBeUndefined()
   })
 })
 

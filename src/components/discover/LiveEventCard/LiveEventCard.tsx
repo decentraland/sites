@@ -1,13 +1,14 @@
 import { memo, useCallback, useMemo, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BadgeGroup, LiveBadge, UserCountBadge, useMediaQuery, useTheme } from 'decentraland-ui2'
+import { BadgeGroup, UserCountBadge, useMediaQuery, useTheme } from 'decentraland-ui2'
 import {
   buildDetailPath,
   discoverPlacePayload,
   placeCoverImage,
   placeHasLiveEvent,
   placeIsFeatured,
+  placeLiveEventName,
   placePlayers
 } from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
@@ -16,6 +17,7 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
 import { usePlaceCreator } from '../../../hooks/usePlaceCreator'
 import { SegmentEvent } from '../../../modules/segment.types'
+import { LiveEventBadge } from '../_shared'
 import { JumpInGlyph, MedalGlyph } from '../_shared/CardIcons'
 import { FeaturedBadge, TopRow } from '../_shared/DiscoverShell.styled'
 import { useDiscoverJumpIn } from '../DiscoverJumpInProvider'
@@ -113,7 +115,7 @@ function LiveEventCardComponent({ place }: LiveEventCardProps) {
             <BadgeGroup>
               {/* LIVE means an event is running, not that people are here — presence is the count
                   next to it. On the legacy path the badge still tracks presence. */}
-              {(newLayout ? placeHasLiveEvent(place) : true) && <LiveBadge />}
+              {(newLayout ? placeHasLiveEvent(place) : true) && <LiveEventBadge eventName={placeLiveEventName(place)} />}
               <UserCountBadge count={players} />
             </BadgeGroup>
             {newLayout && isFeatured && (
