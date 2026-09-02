@@ -1,3 +1,4 @@
+import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import type { DiscoverPlace } from '../../../features/discover'
 import { SegmentEvent } from '../../../modules/segment.types'
@@ -25,6 +26,11 @@ jest.mock('../../../hooks/useDeferredTrack', () => ({
 // can't parse); the card only consumes the pure helpers, so alias to them.
 jest.mock('../../../features/discover', () => jest.requireActual('../../../features/discover/discover.helpers'))
 
+const mockNewLayout = jest.fn()
+jest.mock('../../../features/discover/discover.flags', () => ({
+  useNewPlacesLayout: () => mockNewLayout()
+}))
+
 jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: (...args: unknown[]) => mockUseGetProfileQuery(...args)
 }))
@@ -32,6 +38,8 @@ jest.mock('../../../features/profile/profile.client', () => ({
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id?: string | null) => id ?? ''
 }))
+
+const mockIsTouchWidth = jest.fn()
 
 // Run the real FeaturedCard.styled.ts through the shared styled shim instead
 // of the emotion engine (decentraland-ui2 ships ESM Jest can't transform).
@@ -44,12 +52,85 @@ jest.mock('decentraland-ui2', () => {
     LiveBadge: () => <div>LIVE</div>,
     UserCountBadge: ({ count }: { count?: number }) => <div>{count}</div>,
 
+    useTheme: () => ({ breakpoints: { down: () => '(max-width:0px)' } }),
+    useMediaQuery: () => mockIsTouchWidth(),
+
+    // Stands in for the shared card, mirroring only what this component can be
+    // held to: which slot each node lands in, and the click contract. The
+    // card's own frame, hover lift and hover reveal are covered in ui2.
+    EventSmallCard: ({
+      image,
+      imageFallbackColor,
+      thumbnailOverlay,
+      title,
+      creatorName,
+      creatorAvatarUrl,
+      creatorAvatarBackgroundColor,
+      byLabel,
+      bottomPill,
+      hoverActions,
+      onClick,
+      disableHover
+    }: {
+      image?: string
+      imageFallbackColor?: string
+      thumbnailOverlay?: React.ReactNode
+      title?: string
+      creatorName?: string
+      creatorAvatarUrl?: string
+      creatorAvatarBackgroundColor?: string
+      byLabel?: string
+      bottomPill?: React.ReactNode
+      hoverActions?: React.ReactNode
+      onClick?: () => void
+      disableHover?: boolean
+    }) =>
+      React.createElement(
+        'div',
+        {
+          role: 'button',
+          tabIndex: 0,
+          onClick,
+          'data-disable-hover': String(Boolean(disableHover)),
+          'data-image-fallback': imageFallbackColor,
+          'data-avatar-bg': creatorAvatarBackgroundColor
+        },
+        // The real card marks the cover decorative (alt=""), so identify it by
+        // role instead of alt text.
+        image ? React.createElement('img', { key: 'cover', 'data-testid': 'cover', src: image, alt: '' }) : null,
+        thumbnailOverlay,
+        React.createElement('div', { key: 'title' }, title),
+        creatorName
+          ? React.createElement(
+              'span',
+              { key: 'by' },
+              creatorAvatarUrl ? React.createElement('img', { key: 'avatar', src: creatorAvatarUrl, alt: creatorName }) : null,
+              `${byLabel} `,
+              React.createElement('span', { key: 'name' }, creatorName)
+            )
+          : null,
+        bottomPill,
+        hoverActions
+      ),
+
     dclColors: {
       base: { primary: '#ff2d55', primaryDark1: '#e6284c' },
       neutral: { softWhite: '#fcfcfc', gray5: '#ecebed', gray3: '#a09ba8', softBlack1: '#161518', white: '#ffffff' }
     }
   }
 })
+
+// Enter/Space activation is no longer this component's: the shared card attaches
+// role, tabIndex and its own keydown handler whenever it gets an onClick, which
+// is why the local handler went away and no keyboard test lives here.
+//
+// The shared card is the element carrying the props this component hands down;
+// role="button" alone is ambiguous because the JUMP IN CTA is one too.
+function sharedCard(): HTMLElement {
+  const card = screen.getByText('Wonder Museum').closest('[data-disable-hover]')
+  if (!card) throw new Error('shared card not rendered')
+  return card as HTMLElement
+}
 
 function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
   return {
@@ -71,6 +152,9 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
 describe('FeaturedCard', () => {
   beforeEach(() => {
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
+    // Off by default so every legacy assertion below keeps describing production.
+    mockNewLayout.mockReturnValue(false)
+    mockIsTouchWidth.mockReturnValue(false)
   })
 
   afterEach(() => {
@@ -174,16 +258,43 @@ describe('FeaturedCard', () => {
     })
   })
 
-  describe('when the pointer enters and leaves the card', () => {
-    it('should keep the card clickable after the hover cycle', () => {
+  describe('when handing the shared card its cover', () => {
+    it('should pass a fallback color so a cover that 404s leaves a solid tile', () => {
       render(<FeaturedCard place={createPlace()} />)
-      const card = screen.getByText('Wonder Museum')
 
-      fireEvent.mouseEnter(card)
-      fireEvent.mouseLeave(card)
-      fireEvent.click(card)
+      expect(sharedCard()).toHaveAttribute('data-image-fallback', '#2a2435')
+    })
 
-      expect(mockNavigate).toHaveBeenCalledWith('/places/place/12,34', { state: { place: expect.any(Object) } })
+    it('should hand over the place cover as the card image', () => {
+      render(<FeaturedCard place={createPlace()} />)
+
+      expect(screen.getByTestId('cover')).toHaveAttribute('src', 'https://example.com/cover.png')
+    })
+
+    it('should withhold the cover when the place only has the map placeholder', () => {
+      render(<FeaturedCard place={createPlace({ image: 'https://api.decentraland.org/v2/map.png?center=1,2' })} />)
+
+      expect(screen.queryByTestId('cover')).not.toBeInTheDocument()
+    })
+
+    it('should pass the deterministic avatar background through (ADR-292)', () => {
+      render(<FeaturedCard place={createPlace()} />)
+
+      // usePlaceOwnerAvatar derives it from the name, so identity hue matches in-world.
+      expect(sharedCard().getAttribute('data-avatar-bg')).toMatch(/^#[0-9a-f]{6}$/i)
+    })
+
+    it('should keep the hover lift on pointer widths', () => {
+      render(<FeaturedCard place={createPlace()} />)
+
+      expect(sharedCard()).toHaveAttribute('data-disable-hover', 'false')
+    })
+
+    it('should disable the hover lift on touch widths so it does not stick after a tap', () => {
+      mockIsTouchWidth.mockReturnValue(true)
+      render(<FeaturedCard place={createPlace()} />)
+
+      expect(sharedCard()).toHaveAttribute('data-disable-hover', 'true')
     })
   })
 
@@ -200,16 +311,16 @@ describe('FeaturedCard', () => {
       mockUseGetProfileQuery.mockReturnValue({
         data: { avatars: [{ hasClaimedName: false, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }] }
       })
-      const { container } = render(<FeaturedCard place={createPlace()} />)
+      render(<FeaturedCard place={createPlace()} />)
 
-      expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer.decentraland.org/face256.png')
+      expect(screen.getByAltText('CuratorName')).toHaveAttribute('src', 'https://peer.decentraland.org/face256.png')
     })
 
     it('should skip the profile request and use a synthetic avatar when there is no owner', () => {
-      const { container } = render(<FeaturedCard place={createPlace({ owner: null })} />)
+      render(<FeaturedCard place={createPlace({ owner: null })} />)
 
       expect(mockUseGetProfileQuery).toHaveBeenCalledWith(undefined, { skip: true })
-      expect(container.querySelector('img')?.getAttribute('src')).toMatch(/^data:image\/svg\+xml/)
+      expect(screen.getByAltText('CuratorName').getAttribute('src')).toMatch(/^data:image\/svg\+xml/)
     })
 
     it('should fall back to the contact name when user_name is missing', () => {
@@ -235,6 +346,24 @@ describe('FeaturedCard', () => {
         SegmentEvent.DISCOVER_CLICK_FEATURED_CARD,
         expect.objectContaining({ place_id: expect.any(String), place_title: createPlace().title })
       )
+    })
+  })
+
+  describe('when the new layout is on', () => {
+    beforeEach(() => {
+      mockNewLayout.mockReturnValue(true)
+    })
+
+    it('should show LIVE for a featured scene hosting an event with nobody in it yet', () => {
+      render(<FeaturedCard place={createPlace({ user_count: 0, live: true })} />)
+
+      expect(screen.getByText('LIVE')).toBeInTheDocument()
+    })
+
+    it('should stay badge-free when no event is running', () => {
+      render(<FeaturedCard place={createPlace({ live: false })} />)
+
+      expect(screen.queryByText('LIVE')).not.toBeInTheDocument()
     })
   })
 })

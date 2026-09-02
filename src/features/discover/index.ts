@@ -13,6 +13,7 @@ export {
   DISCOVER_CATEGORIES,
   buildDetailPath,
   buildJumpLandingHref,
+  countGridTracks,
   discoverDeepLinkOptions,
   discoverPlacePayload,
   isHiddenPlace,
@@ -20,6 +21,8 @@ export {
   placeCoordsLabel,
   placeCoverImage,
   placeIsFeatured,
+  placeHasLiveEvent,
+  placeHasPeople,
   placeIsLive,
   placePlayers
 } from './discover.helpers'

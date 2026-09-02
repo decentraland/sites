@@ -19,6 +19,9 @@ interface DiscoverPlace {
   dislikes?: number
   user_count?: number
   user_name?: string
+  // Set only when the request asked for `with_live_events`: true when the events API reports an
+  // event running at this place right now. Presence (`user_count`) is a different thing.
+  live?: boolean
   world?: boolean
   world_name?: string
 }
@@ -68,11 +71,13 @@ interface GetDiscoverPlacesArgs {
   owner?: string
 }
 
-// `/destinations` — the combined places + worlds feed. Highlighted rows are
-// always returned first (API contract), then ranking, then `order_by`.
+// `/destinations` — the combined places + worlds feed. Omitting `order_by`
+// gets the curated order (highlighted, then ranking); `most_active` puts the
+// scenes people are actually in on top, with curation as the tie-breaker.
 interface GetDiscoverDestinationsArgs {
   limit?: number
   offset?: number
+  order_by?: DiscoverOrderBy
   search?: string
   categories?: string[]
   owner?: string
@@ -80,6 +85,9 @@ interface GetDiscoverDestinationsArgs {
   // Adds real-time realm/user-count detail to every row (`user_count` becomes
   // live instead of the stale snapshot) — powers the grid's LIVE badges.
   with_realms_detail?: boolean
+  // Adds `live` to every row, resolved against the events API. This — not the head count — is
+  // what the red LIVE badge means.
+  with_live_events?: boolean
 }
 
 // Favourites need a signed request — the places-api resolves `only_favorites`

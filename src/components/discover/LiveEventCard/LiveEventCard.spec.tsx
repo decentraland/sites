@@ -25,6 +25,14 @@ jest.mock('../../../hooks/useDeferredTrack', () => ({
 // can't parse); the card only consumes the pure helpers, so alias to them.
 jest.mock('../../../features/discover', () => jest.requireActual('../../../features/discover/discover.helpers'))
 
+// Desktop (hover-reveal) by default; the mobile card shows both rows at once.
+const mockIsMobileCard = jest.fn()
+
+const mockNewLayout = jest.fn()
+jest.mock('../../../features/discover/discover.flags', () => ({
+  useNewPlacesLayout: () => mockNewLayout()
+}))
+
 jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: (...args: unknown[]) => mockUseGetProfileQuery(...args)
 }))
@@ -44,10 +52,8 @@ jest.mock('decentraland-ui2', () => {
     LiveBadge: () => <div>LIVE</div>,
     UserCountBadge: ({ count }: { count?: number }) => <div>{count}</div>,
 
-    // Default to the desktop (hover-swap) path in tests; the mobile card path is
-    // covered by the browser-verified layout.
     useTheme: () => ({ breakpoints: { down: () => '(max-width:0px)' } }),
-    useMediaQuery: () => false,
+    useMediaQuery: () => mockIsMobileCard(),
     dclColors: {
       base: { primary: '#ff2d55', primaryDark1: '#e6284c' },
       neutral: { softWhite: '#fcfcfc', gray5: '#ecebed', gray3: '#a09ba8', softBlack1: '#161518', white: '#ffffff' }
@@ -72,9 +78,25 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
   }
 }
 
+// The By row and the CTA both stay mounted so the CTA can slide in, so being
+// "hidden" means being out of the accessibility tree, not out of the DOM.
+function isHiddenFromA11yTree(element: HTMLElement): boolean {
+  return element.closest('[aria-hidden="true"]') !== null
+}
+
+// The whole card is the role="button" wrapper around the title.
+function cardOf(title: string): HTMLElement {
+  const card = screen.getByText(title).closest('[role="button"]')
+  if (!card) throw new Error(`no card found for ${title}`)
+  return card as HTMLElement
+}
+
 describe('LiveEventCard', () => {
   beforeEach(() => {
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
+    // Off by default so every legacy assertion below keeps describing production.
+    mockNewLayout.mockReturnValue(false)
+    mockIsMobileCard.mockReturnValue(false)
   })
 
   afterEach(() => {
@@ -97,11 +119,24 @@ describe('LiveEventCard', () => {
       expect(screen.getByText('42')).toBeInTheDocument()
     })
 
-    it('should show the By row and no JUMP IN button', () => {
+    it('should expose the By row and keep the JUMP IN button out of the accessibility tree', () => {
       render(<LiveEventCard place={createPlace()} />)
 
-      expect(screen.getByText('DJName')).toBeInTheDocument()
+      expect(isHiddenFromA11yTree(screen.getByText('DJName'))).toBe(false)
       expect(screen.queryByRole('button', { name: 'discover.card.jump_in' })).not.toBeInTheDocument()
+    })
+
+    it('should keep the JUMP IN button mounted and untabbable while parked', () => {
+      render(<LiveEventCard place={createPlace()} />)
+
+      // The button has to stay in the DOM across the whole hover so it can
+      // slide up rather than pop in; aria-hidden + tabIndex keep it out of
+      // reach while it is parked below the card.
+      const cta = screen.getByText('discover.card.jump_in').closest('button')
+
+      expect(cta).toBeInTheDocument()
+      expect(cta).toHaveAttribute('aria-hidden', 'true')
+      expect(cta).toHaveAttribute('tabindex', '-1')
     })
 
     it('should default the player count to 0 when user_count is missing', () => {
@@ -118,7 +153,47 @@ describe('LiveEventCard', () => {
       fireEvent.mouseEnter(screen.getByText('Live Concert'))
 
       expect(screen.getByRole('button', { name: 'discover.card.jump_in' })).toBeInTheDocument()
-      expect(screen.queryByText('DJName')).not.toBeInTheDocument()
+      expect(isHiddenFromA11yTree(screen.getByText('DJName'))).toBe(true)
+    })
+
+    it('should make the JUMP IN button tabbable once it is revealed', () => {
+      render(<LiveEventCard place={createPlace()} />)
+
+      fireEvent.mouseEnter(screen.getByText('Live Concert'))
+
+      const cta = screen.getByRole('button', { name: 'discover.card.jump_in' })
+
+      expect(cta).not.toHaveAttribute('aria-hidden')
+      expect(cta).toHaveAttribute('tabindex', '0')
+    })
+
+    it('should stay revealed when the pointer leaves while the button holds focus', () => {
+      render(<LiveEventCard place={createPlace()} />)
+      const title = screen.getByText('Live Concert')
+      fireEvent.mouseEnter(title)
+
+      // Clicking the CTA focuses it and the launcher modal takes the pointer,
+      // so mouseleave arrives while focus is still on the button. Parking it
+      // then would aria-hide a focused node and leave Enter re-firing it.
+      const cta = screen.getByRole('button', { name: 'discover.card.jump_in' })
+      fireEvent.focus(cta)
+      fireEvent.mouseLeave(title)
+
+      expect(cta).not.toHaveAttribute('aria-hidden')
+      expect(cta).toHaveAttribute('tabindex', '0')
+    })
+
+    it('should park the button again once it loses focus', () => {
+      render(<LiveEventCard place={createPlace()} />)
+      const title = screen.getByText('Live Concert')
+      fireEvent.mouseEnter(title)
+      const cta = screen.getByRole('button', { name: 'discover.card.jump_in' })
+
+      fireEvent.focus(cta)
+      fireEvent.mouseLeave(title)
+      fireEvent.blur(cta)
+
+      expect(screen.queryByRole('button', { name: 'discover.card.jump_in' })).not.toBeInTheDocument()
     })
 
     it('should restore the By row when the pointer leaves', () => {
@@ -128,8 +203,30 @@ describe('LiveEventCard', () => {
       fireEvent.mouseEnter(title)
       fireEvent.mouseLeave(title)
 
-      expect(screen.getByText('DJName')).toBeInTheDocument()
+      expect(isHiddenFromA11yTree(screen.getByText('DJName'))).toBe(false)
       expect(screen.queryByRole('button', { name: 'discover.card.jump_in' })).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when rendered on a mobile viewport', () => {
+    beforeEach(() => {
+      mockIsMobileCard.mockReturnValue(true)
+    })
+
+    it('should expose both the By row and a reachable JUMP IN button', () => {
+      render(<LiveEventCard place={createPlace()} />)
+
+      expect(isHiddenFromA11yTree(screen.getByText('DJName'))).toBe(false)
+      expect(screen.getByRole('button', { name: 'discover.card.jump_in' })).toHaveAttribute('tabindex', '0')
+    })
+
+    it('should keep both rows exposed even while hovered', () => {
+      render(<LiveEventCard place={createPlace()} />)
+
+      fireEvent.mouseEnter(screen.getByText('Live Concert'))
+
+      expect(isHiddenFromA11yTree(screen.getByText('DJName'))).toBe(false)
+      expect(screen.getByRole('button', { name: 'discover.card.jump_in' })).not.toHaveAttribute('aria-hidden')
     })
   })
 
@@ -162,6 +259,24 @@ describe('LiveEventCard', () => {
       render(<LiveEventCard place={createPlace({ base_position: undefined, positions: [] })} />)
 
       fireEvent.click(screen.getByText('Live Concert'))
+
+      expect(mockNavigate).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when the card is activated from the keyboard', () => {
+    it.each(['Enter', ' '])('should navigate to the detail route on %s', key => {
+      render(<LiveEventCard place={createPlace()} />)
+
+      fireEvent.keyDown(cardOf('Live Concert'), { key })
+
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/1,2', { state: { place: expect.any(Object) } })
+    })
+
+    it('should ignore any other key', () => {
+      render(<LiveEventCard place={createPlace()} />)
+
+      fireEvent.keyDown(cardOf('Live Concert'), { key: 'Tab' })
 
       expect(mockNavigate).not.toHaveBeenCalled()
     })
@@ -231,6 +346,31 @@ describe('LiveEventCard', () => {
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
       expect(mockJumpIn).toHaveBeenCalledWith(place, 'live-card')
+    })
+  })
+
+  describe('when the new layout is on', () => {
+    beforeEach(() => {
+      mockNewLayout.mockReturnValue(true)
+    })
+
+    it('should carry the Featured badge, since a busy featured scene renders only here', () => {
+      render(<LiveEventCard place={createPlace({ highlighted: true })} />)
+
+      expect(screen.getByText('discover.card.featured')).toBeInTheDocument()
+    })
+
+    it('should show LIVE only when an event is running at the place', () => {
+      render(<LiveEventCard place={createPlace({ live: true })} />)
+
+      expect(screen.getByText('LIVE')).toBeInTheDocument()
+    })
+
+    it('should show the head count without LIVE when people are there but no event is', () => {
+      render(<LiveEventCard place={createPlace({ user_count: 12, live: false })} />)
+
+      expect(screen.queryByText('LIVE')).not.toBeInTheDocument()
+      expect(screen.getByText('12')).toBeInTheDocument()
     })
   })
 })

@@ -25,6 +25,11 @@ jest.mock('../../../hooks/useDeferredTrack', () => ({
 // can't parse); the card only consumes the pure helpers, so alias to them.
 jest.mock('../../../features/discover', () => jest.requireActual('../../../features/discover/discover.helpers'))
 
+const mockNewLayout = jest.fn()
+jest.mock('../../../features/discover/discover.flags', () => ({
+  useNewPlacesLayout: () => mockNewLayout()
+}))
+
 jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: (...args: unknown[]) => mockUseGetProfileQuery(...args)
 }))
@@ -71,6 +76,8 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
 describe('PlaceCard', () => {
   beforeEach(() => {
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
+    // Off by default so every legacy assertion below keeps describing production.
+    mockNewLayout.mockReturnValue(false)
   })
 
   afterEach(() => {
@@ -185,9 +192,31 @@ describe('PlaceCard', () => {
     it('should hand the place to the shared launcher when JUMP IN is clicked', () => {
       render(<PlaceCard place={place} />)
 
+      // The CTA is revealed by hover, so reach it the way a pointer does.
+      fireEvent.mouseEnter(screen.getByText('MyWorld'))
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
       expect(mockJumpIn).toHaveBeenCalledWith(place, 'place-card')
+    })
+  })
+
+  describe('when the card is activated from the keyboard', () => {
+    it.each(['Enter', ' '])('should navigate to the detail route on %s', key => {
+      render(<PlaceCard place={createPlace()} />)
+      const card = screen.getByText('Genesis Plaza').closest('[role="button"]')
+
+      fireEvent.keyDown(card as HTMLElement, { key })
+
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/-9,-9', { state: { place: expect.any(Object) } })
+    })
+
+    it('should ignore any other key', () => {
+      render(<PlaceCard place={createPlace()} />)
+      const card = screen.getByText('Genesis Plaza').closest('[role="button"]')
+
+      fireEvent.keyDown(card as HTMLElement, { key: 'Tab' })
+
+      expect(mockNavigate).not.toHaveBeenCalled()
     })
   })
 
@@ -216,10 +245,46 @@ describe('PlaceCard', () => {
       const place = createPlace({ user_count: 2 })
       render(<PlaceCard place={place} />)
 
+      fireEvent.mouseEnter(screen.getByText('Genesis Plaza'))
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
       expect(mockJumpIn).toHaveBeenCalledWith(place, 'place-card')
       expect(mockNavigate).not.toHaveBeenCalled()
+    })
+
+    it('should keep the parked CTA out of the accessibility tree and out of Tab order', () => {
+      render(<PlaceCard place={createPlace({ user_count: 2 })} />)
+
+      const cta = screen.getByText('discover.card.jump_in').closest('button')
+
+      expect(cta).toHaveAttribute('aria-hidden', 'true')
+      expect(cta).toHaveAttribute('tabindex', '-1')
+    })
+
+    it('should stay revealed when the pointer leaves while the CTA holds focus', () => {
+      render(<PlaceCard place={createPlace({ user_count: 2 })} />)
+      const title = screen.getByText('Genesis Plaza')
+      fireEvent.mouseEnter(title)
+
+      const cta = screen.getByRole('button', { name: 'discover.card.jump_in' })
+      fireEvent.focus(cta)
+      fireEvent.mouseLeave(title)
+
+      expect(cta).not.toHaveAttribute('aria-hidden')
+      expect(cta).toHaveAttribute('tabindex', '0')
+    })
+
+    it('should park the CTA again once it loses focus', () => {
+      render(<PlaceCard place={createPlace({ user_count: 2 })} />)
+      const title = screen.getByText('Genesis Plaza')
+      fireEvent.mouseEnter(title)
+      const cta = screen.getByRole('button', { name: 'discover.card.jump_in' })
+
+      fireEvent.focus(cta)
+      fireEvent.mouseLeave(title)
+      fireEvent.blur(cta)
+
+      expect(screen.queryByRole('button', { name: 'discover.card.jump_in' })).not.toBeInTheDocument()
     })
   })
 
@@ -303,6 +368,25 @@ describe('PlaceCard', () => {
         SegmentEvent.DISCOVER_CLICK_PLACE_CARD,
         expect.objectContaining({ place_id: 'place-1', place_title: 'Genesis Plaza', world: false, position: '-9,-9' })
       )
+    })
+  })
+
+  describe('when the new layout is on', () => {
+    beforeEach(() => {
+      mockNewLayout.mockReturnValue(true)
+    })
+
+    it('should show LIVE for an event even with nobody in the scene', () => {
+      render(<PlaceCard place={createPlace({ user_count: 0, live: true })} />)
+
+      expect(screen.getByText('LIVE')).toBeInTheDocument()
+    })
+
+    it('should not show LIVE for a crowd with no event, however big', () => {
+      render(<PlaceCard place={createPlace({ user_count: 40, live: false })} />)
+
+      expect(screen.queryByText('LIVE')).not.toBeInTheDocument()
+      expect(screen.getByText('40')).toBeInTheDocument()
     })
   })
 })

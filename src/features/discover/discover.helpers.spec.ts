@@ -1,5 +1,6 @@
 import {
   buildJumpLandingHref,
+  countGridTracks,
   discoverDeepLinkOptions,
   discoverPlacePayload,
   isHiddenPlace,
@@ -379,5 +380,25 @@ describe('when isHiddenPlace evaluates anonymous placeholder deploys', () => {
     expect(
       isHiddenPlace(makePlace({ title: 'asset-load', image: REAL_IMAGE, categories: [], owner: null, user_name: 'RealCreator' }))
     ).toBe(false)
+  })
+})
+
+describe('when counting the tracks of a resolved grid-template-columns', () => {
+  it('should count each track a four-up grid resolved to', () => {
+    expect(countGridTracks('326px 326px 326px 326px')).toBe(4)
+  })
+
+  it('should count a single-column grid', () => {
+    expect(countGridTracks('430px')).toBe(1)
+  })
+
+  it('should return 0 when there is no layout to measure', () => {
+    // jsdom reports an empty string, and so does a node that has not been laid
+    // out yet; callers keep their own fallback for this.
+    expect(countGridTracks('')).toBe(0)
+  })
+
+  it('should ignore the padding browsers add between tracks', () => {
+    expect(countGridTracks('  326px   326px  ')).toBe(2)
   })
 })
