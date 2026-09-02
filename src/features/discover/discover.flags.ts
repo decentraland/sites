@@ -27,7 +27,27 @@ function useNewPlacesLayout(): boolean {
   return useRemoteFeatureFlag(FEATURE_FLAG.placesRepeatCrossSections)
 }
 
+/**
+ * Whether /places drops the Featured rail entirely, leaving the curated picks to appear in the
+ * Explore grid like any other place.
+ *
+ * The two flags are independent by construction. Nothing is ever hidden by turning this one on: the
+ * grid reads `/destinations`, which returns `highlighted DESC` first, so the curated set sits at the
+ * head of the feed either way. What the layout flag does is subtract whatever the rails already
+ * showed from that grid, and with no rail rendering there is nothing to subtract.
+ *
+ *  - layout flag OFF: places repeat across sections regardless, so this one only removes the rail.
+ *  - layout flag ON + this OFF: Featured renders in its rail and is subtracted from the grid (today).
+ *  - layout flag ON + this ON: no rail, no subtraction, and the curated picks lead the grid.
+ *
+ * Default off, which is the rail production ships. Named for hiding rather than showing so that an
+ * in-flight or failed flag fetch resolves to the section still being there.
+ */
+function useHideFeaturedPlaces(): boolean {
+  return useRemoteFeatureFlag(FEATURE_FLAG.placesHideFeaturedSection)
+}
+
 /** @internal — exported for testing (see discover.flags.spec.ts); not part of this module's public contract. */
 const resetDiscoverFlagsForTests = resetFeatureFlagsForTests
 
-export { resetDiscoverFlagsForTests, useNewPlacesLayout }
+export { resetDiscoverFlagsForTests, useHideFeaturedPlaces, useNewPlacesLayout }
