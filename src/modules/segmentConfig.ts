@@ -1,5 +1,6 @@
 import { getEnv } from '../config/env'
 import { isAnalyticsExemptPath } from '../utils/isAnalyticsExemptPath'
+import { isSegmentProxyDisabled } from './segmentKillSwitch'
 
 // Segment's HTTP Tracking API endpoint. Accepts the public `writeKey` in the
 // JSON body (no Authorization header), which is what lets transports that
@@ -39,6 +40,10 @@ function getSegmentWriteKey(options?: { bypassExemptPathGate?: boolean }): strin
  * never from user input. A value that is not an absolute https URL is dropped
  * with a warning, so a misconfigured environment degrades to Segment's own
  * endpoints instead of pointing the SDK at an untrusted host.
+ *
+ * Both are also switched off together by the `dapps-seg-alt` kill switch (see
+ * `segmentKillSwitch.ts`), which takes a broken proxy out of the path without
+ * a deploy and degrades to those same endpoints.
  */
 function resolveProxyUrl(name: string, value: string): URL | undefined {
   let resolved: URL
@@ -65,9 +70,13 @@ function resolveProxyUrl(name: string, value: string): URL | undefined {
  * and the path survive (a query or fragment would land mid-URL) and the
  * trailing slash is dropped to keep the separator single.
  *
- * Returns `undefined` when unconfigured or rejected, which keeps Segment's CDN.
+ * Returns `undefined` when unconfigured, rejected or bypassed, which keeps Segment's CDN.
  */
 function getSegmentCdnUrl(): string | undefined {
+  if (isSegmentProxyDisabled()) {
+    return undefined
+  }
+
   const cdnUrl = getEnv('SEGMENT_CDN_URL')
   if (!cdnUrl) {
     return undefined
@@ -90,6 +99,10 @@ function getSegmentCdnUrl(): string | undefined {
  * only this one proxies the Tracking API.
  */
 function getSegmentApiHost(): string | undefined {
+  if (isSegmentProxyDisabled()) {
+    return undefined
+  }
+
   const apiHost = getEnv('SEGMENT_API_HOST')
   if (!apiHost) {
     return undefined
