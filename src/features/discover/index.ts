@@ -20,6 +20,8 @@ export {
   placeCoordsLabel,
   placeCoverImage,
   placeIsFeatured,
+  placeHasLiveEvent,
+  placeHasPeople,
   placeIsLive,
   placePlayers
 } from './discover.helpers'

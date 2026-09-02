@@ -25,6 +25,11 @@ jest.mock('../../../hooks/useDeferredTrack', () => ({
 // can't parse); the card only consumes the pure helpers, so alias to them.
 jest.mock('../../../features/discover', () => jest.requireActual('../../../features/discover/discover.helpers'))
 
+const mockNewLayout = jest.fn()
+jest.mock('../../../features/discover/discover.flags', () => ({
+  useNewPlacesLayout: () => mockNewLayout()
+}))
+
 jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: (...args: unknown[]) => mockUseGetProfileQuery(...args)
 }))
@@ -75,6 +80,8 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
 describe('LiveEventCard', () => {
   beforeEach(() => {
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
+    // Off by default so every legacy assertion below keeps describing production.
+    mockNewLayout.mockReturnValue(false)
   })
 
   afterEach(() => {
@@ -231,6 +238,31 @@ describe('LiveEventCard', () => {
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
       expect(mockJumpIn).toHaveBeenCalledWith(place, 'live-card')
+    })
+  })
+
+  describe('when the new layout is on', () => {
+    beforeEach(() => {
+      mockNewLayout.mockReturnValue(true)
+    })
+
+    it('should carry the Featured badge, since a busy featured scene renders only here', () => {
+      render(<LiveEventCard place={createPlace({ highlighted: true })} />)
+
+      expect(screen.getByText('discover.card.featured')).toBeInTheDocument()
+    })
+
+    it('should show LIVE only when an event is running at the place', () => {
+      render(<LiveEventCard place={createPlace({ live: true })} />)
+
+      expect(screen.getByText('LIVE')).toBeInTheDocument()
+    })
+
+    it('should show the head count without LIVE when people are there but no event is', () => {
+      render(<LiveEventCard place={createPlace({ user_count: 12, live: false })} />)
+
+      expect(screen.queryByText('LIVE')).not.toBeInTheDocument()
+      expect(screen.getByText('12')).toBeInTheDocument()
     })
   })
 })
