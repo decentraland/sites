@@ -55,6 +55,7 @@ function buildDestinationsUrl(baseUrl: string, args: GetDiscoverDestinationsArgs
   if (args.owner) params.set('owner', args.owner)
   if (args.only_highlighted) params.set('only_highlighted', 'true')
   if (args.with_realms_detail) params.set('with_realms_detail', 'true')
+  if (args.with_live_events) params.set('with_live_events', 'true')
   for (const c of args.categories ?? []) params.append('categories', c)
   return `${baseUrl}/destinations?${params.toString()}`
 }

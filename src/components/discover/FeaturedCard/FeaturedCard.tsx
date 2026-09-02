@@ -1,9 +1,10 @@
 import { memo, useCallback, useMemo, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { UserCountBadge } from 'decentraland-ui2'
+import { LiveBadge, UserCountBadge } from 'decentraland-ui2'
 import { buildDetailPath, discoverPlacePayload, placeCoordsLabel, placeCoverImage, placePlayers } from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
+import { useNewPlacesLayout } from '../../../features/discover/discover.flags'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
 import { usePlaceOwnerAvatar } from '../../../hooks/usePlaceOwnerAvatar'
@@ -47,6 +48,7 @@ function FeaturedCardComponent({ place, onEmptyClick }: FeaturedCardProps) {
 
   const track = useDeferredTrack()
 
+  const newLayout = useNewPlacesLayout()
   const isLive = placePlayers(place) > 0
 
   const handleClick = useCallback(() => {
@@ -96,9 +98,13 @@ function FeaturedCardComponent({ place, onEmptyClick }: FeaturedCardProps) {
               shows its count (same `> 0` rule as PlaceCard) so the card agrees
               with the scene page, which opens the live preview at any
               presence. */}
-          {placePlayers(place) > 0 && (
+          {/* A busy featured scene moves to the LIVE section, so the case left here is a scene
+              hosting an event with nobody in it yet — which is why the strip can no longer be gated
+              on presence alone. */}
+          {(placePlayers(place) > 0 || (newLayout && place.live === true)) && (
             <ThumbBadges>
-              <UserCountBadge count={placePlayers(place)} />
+              {newLayout && place.live === true && <LiveBadge />}
+              {placePlayers(place) > 0 && <UserCountBadge count={placePlayers(place)} />}
             </ThumbBadges>
           )}
         </Thumb>

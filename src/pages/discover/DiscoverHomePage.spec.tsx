@@ -42,7 +42,7 @@ jest.mock('../../features/discover', () => ({
 }))
 
 jest.mock('../../features/discover/discover.flags', () => ({
-  usePlacesDedupeCrossSections: () => mockDedupeFlag()
+  useNewPlacesLayout: () => mockDedupeFlag()
 }))
 
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
@@ -749,7 +749,8 @@ describe('DiscoverHomePage', () => {
           ok: true,
           total: 3,
           data: [
-            createPlace({ id: 'live-a', title: 'Live Plaza', positions: ['0,0'], base_position: '0,0' }),
+            // The new layout reads presence straight off this feed, so the head count lives here.
+            createPlace({ id: 'live-a', title: 'Live Plaza', positions: ['0,0'], base_position: '0,0', user_count: 9 }),
             createPlace({ id: 'feat-1', title: 'Featured Museum', positions: ['60,60'], base_position: '60,60' }),
             createPlace({ id: 'quiet-1', title: 'Quiet Gallery', positions: ['30,30'], base_position: '30,30' })
           ]
@@ -811,6 +812,64 @@ describe('DiscoverHomePage', () => {
         expect(titles('place-card')).toContain('Live Plaza')
         expect(titles('place-card')).toContain('Featured Museum')
       })
+    })
+  })
+
+  describe('when the new layout builds the LIVE section from the feed', () => {
+    beforeEach(() => {
+      mockDedupeFlag.mockReturnValue(true)
+      featuredPlaces = { data: { ok: true, total: 0, data: [] }, isLoading: false }
+      browseDestinations = {
+        data: {
+          ok: true,
+          total: 6,
+          data: [
+            createPlace({ id: 'b-20', title: 'Twenty', positions: ['1,1'], base_position: '1,1', user_count: 20 }),
+            createPlace({ id: 'b-5', title: 'Five', positions: ['2,2'], base_position: '2,2', user_count: 5 }),
+            createPlace({ id: 'b-4', title: 'Four', positions: ['3,3'], base_position: '3,3', user_count: 4 }),
+            createPlace({ id: 'b-2', title: 'Two', positions: ['4,4'], base_position: '4,4', user_count: 2 }),
+            createPlace({ id: 'b-1', title: 'One', positions: ['5,5'], base_position: '5,5', user_count: 1 }),
+            createPlace({ id: 'b-0', title: 'Nobody', positions: ['6,6'], base_position: '6,6', user_count: 0 })
+          ]
+        },
+        isLoading: false
+      }
+    })
+
+    const titles = (testId: string) => screen.getAllByTestId(testId).map(card => card.textContent)
+
+    it('should rank the four busiest scenes by head count', () => {
+      render(<DiscoverHomePage />)
+
+      expect(titles('live-card')).toEqual(['Twenty', 'Five', 'Four', 'Two'])
+    })
+
+    it('should admit a scene with a single person, retiring the five-user cut', () => {
+      browseDestinations.data!.data = browseDestinations.data!.data.filter(p => (p.user_count ?? 0) <= 1)
+
+      render(<DiscoverHomePage />)
+
+      expect(titles('live-card')).toEqual(['One'])
+    })
+
+    it('should leave empty scenes out of the section', () => {
+      render(<DiscoverHomePage />)
+
+      expect(titles('live-card')).not.toContain('Nobody')
+    })
+
+    it('should keep the promoted scenes out of the grid, in the order the feed returned', () => {
+      render(<DiscoverHomePage />)
+
+      expect(titles('place-card')).toEqual(['One', 'Nobody'])
+    })
+
+    it('should ask the feed for presence and live events in one request', () => {
+      render(<DiscoverHomePage />)
+
+      expect(mockDestinationsQuery).toHaveBeenCalledWith(
+        expect.objectContaining({ order_by: 'most_active', with_realms_detail: true, with_live_events: true })
+      )
     })
   })
 

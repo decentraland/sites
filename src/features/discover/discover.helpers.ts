@@ -74,6 +74,14 @@ function placeIsLive(place: DiscoverPlace): boolean {
   return placePlayers(place) >= LIVE_MIN_USERS
 }
 
+// "Live" per the 2026-09-01 product decision: anybody at all in the scene counts. This REPLACES
+// LIVE_MIN_USERS on the new layout — the 5-user cut is only still consulted on the legacy path
+// behind the flag. Kept as its own helper (rather than inlining `> 0`) because three callers now
+// need the same question and they disagreed before.
+function placeHasPeople(place: DiscoverPlace): boolean {
+  return placePlayers(place) > 0
+}
+
 function placePlayers(place: DiscoverPlace): number {
   return place.user_count ?? 0
 }
@@ -175,6 +183,7 @@ export {
   placeCoordsLabel,
   placeCoverImage,
   placeIsFeatured,
+  placeHasPeople,
   placeIsLive,
   placePlayers
 }

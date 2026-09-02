@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react'
-import { resetDiscoverFlagsForTests, usePlacesDedupeCrossSections } from './discover.flags'
+import { resetDiscoverFlagsForTests, useNewPlacesLayout } from './discover.flags'
 
 const flagsResponse = (flags: Record<string, boolean>) =>
   Promise.resolve({
@@ -26,7 +26,7 @@ describe('when resolving the places cross-section dedupe flag', () => {
     })
 
     it('should start off and turn on once the flag loads', async () => {
-      const { result } = renderHook(() => usePlacesDedupeCrossSections())
+      const { result } = renderHook(() => useNewPlacesLayout())
 
       expect(result.current).toBe(false)
       await waitFor(() => {
@@ -41,7 +41,7 @@ describe('when resolving the places cross-section dedupe flag', () => {
     })
 
     it('should stay off', async () => {
-      const { result } = renderHook(() => usePlacesDedupeCrossSections())
+      const { result } = renderHook(() => useNewPlacesLayout())
 
       await waitFor(() => {
         expect(fetchMock).toHaveBeenCalled()
@@ -56,7 +56,7 @@ describe('when resolving the places cross-section dedupe flag', () => {
     })
 
     it('should stay off rather than inherit another flag', async () => {
-      const { result } = renderHook(() => usePlacesDedupeCrossSections())
+      const { result } = renderHook(() => useNewPlacesLayout())
 
       await waitFor(() => {
         expect(fetchMock).toHaveBeenCalled()
@@ -75,7 +75,7 @@ describe('when resolving the places cross-section dedupe flag', () => {
     })
 
     it('should stay off without parsing the body', async () => {
-      const { result } = renderHook(() => usePlacesDedupeCrossSections())
+      const { result } = renderHook(() => useNewPlacesLayout())
 
       await waitFor(() => {
         expect(fetchMock).toHaveBeenCalled()
@@ -92,7 +92,7 @@ describe('when resolving the places cross-section dedupe flag', () => {
     })
 
     it('should stay off so the page keeps the behaviour production ships', async () => {
-      const { result } = renderHook(() => usePlacesDedupeCrossSections())
+      const { result } = renderHook(() => useNewPlacesLayout())
 
       await waitFor(() => {
         expect(fetchMock).toHaveBeenCalled()

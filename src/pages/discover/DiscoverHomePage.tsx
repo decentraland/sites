@@ -20,7 +20,9 @@ import {
   DISCOVER_CATEGORIES,
   buildDetailPath,
   isHiddenPlace,
+  placeHasPeople,
   placeIsLive,
+  placePlayers,
   useGetDiscoverDestinationsQuery,
   useGetDiscoverFavoritesQuery,
   useGetDiscoverPlacesQuery,
@@ -29,7 +31,7 @@ import {
   useGetLiveWorldsQuery
 } from '../../features/discover'
 import type { DiscoverCategory, DiscoverPlace } from '../../features/discover'
-import { usePlacesDedupeCrossSections } from '../../features/discover/discover.flags'
+import { useNewPlacesLayout } from '../../features/discover/discover.flags'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useDeferredTrack } from '../../hooks/useDeferredTrack'
@@ -333,9 +335,11 @@ function DiscoverHomePage() {
       order_by: 'most_active' as const,
       search: search || undefined,
       categories: activeCategory === 'all' ? undefined : [activeCategory],
-      // Real-time user counts on every row — the grid's LIVE badges come
-      // straight from the feed, no client-side presence join.
-      with_realms_detail: true
+      // Real-time user counts on every row, and whether an event is running there. Between them
+      // these are the whole card: `user_count` drives the presence pill and the LIVE section's
+      // membership, `live` drives the red badge. No client-side presence join needed.
+      with_realms_detail: true,
+      with_live_events: true
     }),
     [search, activeCategory, browseOffset]
   )
@@ -385,23 +389,32 @@ function DiscoverHomePage() {
   // `only_highlighted`). Skipped entirely while filtering since the Featured
   // rail is hidden then.
   const featuredQuery = useGetDiscoverDestinationsQuery(
-    showHighlights ? { limit: FEATURED_FETCH_LIMIT, only_highlighted: true } : skipToken
+    showHighlights ? { limit: FEATURED_FETCH_LIMIT, only_highlighted: true, with_realms_detail: true, with_live_events: true } : skipToken
   )
 
-  // Cross-section dedupe. Off by default, and off is what production ships today: every
-  // highlighted place is both in Featured and at the head of the grid, and a busy one is also in
-  // the Live rail, so the same card can render three times. Only the DEFAULT view is deduped —
-  // searching or filtering empties both rails, so `shownAbove` is empty and every match still
-  // shows up in the results grid.
-  const dedupeCrossSections = usePlacesDedupeCrossSections()
+  // The 2026-09-01 layout, off by default. See discover.flags.ts for what travels together.
+  // Searching or filtering empties both rails either way, so results are never hidden from a query.
+  const newLayout = useNewPlacesLayout()
 
-  // Top of the live feed goes to the Live Now rail; the rest lead the grid.
-  // Only genuinely-live scenes (>= LIVE_MIN_USERS in-world) qualify for the
-  // rail — a couple of stragglers doesn't make a scene "Live Now".
-  const liveRail = useMemo(
-    () => (showHighlights ? filteredLiveCards.filter(placeIsLive).slice(0, LIVE_NOW_LIMIT) : []),
-    [showHighlights, filteredLiveCards]
-  )
+  // The LIVE section: the four busiest scenes, "busiest" meaning anyone at all is in them.
+  //
+  // New layout reads presence from the destinations feed, the same rows the grid renders. That is
+  // not just less code than the three-service client join below — it is what makes the web and the
+  // explorer agree, since both then order the same rows from the same source. The feed sorts
+  // `highlighted DESC, live_user_count DESC`, so the busiest non-featured scenes are never far
+  // enough down to be missed by the first page; re-sorting by head count here is what turns that
+  // into "top four by people".
+  //
+  // Legacy path keeps the old join and the 5-user cut, which is what production ships.
+  const liveRail = useMemo(() => {
+    if (!showHighlights) return []
+    if (!newLayout) return filteredLiveCards.filter(placeIsLive).slice(0, LIVE_NOW_LIMIT)
+    return browseDestinations
+      .filter(p => !isHiddenPlace(p) && placeHasPeople(p))
+      .slice()
+      .sort((a, b) => placePlayers(b) - placePlayers(a))
+      .slice(0, LIVE_NOW_LIMIT)
+  }, [showHighlights, newLayout, filteredLiveCards, browseDestinations])
 
   // The curated rail shows every highlighted destination, live or not (the
   // API only marks a handful) — joined against the LIVE feed's real presence
@@ -412,13 +425,13 @@ function DiscoverHomePage() {
     const liveById = new Map(filteredLiveCards.map(c => [c.id, c.user_count ?? 0]))
     // Only the four cards the rail actually renders are removed: a featured place with people that
     // missed the top four still belongs here.
-    const shownInLiveRail = new Set(dedupeCrossSections ? liveRail.map(c => c.id) : [])
+    const shownInLiveRail = new Set(newLayout ? liveRail.map(c => c.id) : [])
     return (featuredQuery.data?.data ?? [])
       .filter(p => !isHiddenPlace(p))
       .filter(p => !shownInLiveRail.has(p.id))
       .map(p => ({ ...p, user_count: liveById.get(p.id) ?? 0 }))
       .sort((a, b) => (b.user_count ?? 0) - (a.user_count ?? 0))
-  }, [showHighlights, featuredQuery.data, filteredLiveCards, liveRail, dedupeCrossSections])
+  }, [showHighlights, featuredQuery.data, filteredLiveCards, liveRail, newLayout])
 
   // Explore All IS the /destinations feed: one page in the API's order, junk filtered. Rows keep
   // the feed's real-time `user_count` (with_realms_detail).
@@ -429,10 +442,10 @@ function DiscoverHomePage() {
   // empty both rails, so results are never hidden from a query.
   const exploreCards = useMemo<DiscoverPlace[]>(() => {
     const kept = browseDestinations.filter(p => !isHiddenPlace(p))
-    if (!dedupeCrossSections) return kept
+    if (!newLayout) return kept
     const shownAbove = new Set([...liveRail.map(c => c.id), ...featuredCards.map(c => c.id)])
     return kept.filter(p => !shownAbove.has(p.id))
-  }, [browseDestinations, dedupeCrossSections, liveRail, featuredCards])
+  }, [browseDestinations, newLayout, liveRail, featuredCards])
 
   // Wait for EVERYTHING on first paint — including the dependent worlds-
   // metadata batch fetch — so the rails and the grid appear together.
