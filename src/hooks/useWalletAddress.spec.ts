@@ -136,6 +136,19 @@ describe('useWalletAddress module', () => {
       handler?.(['0xNEW'])
     })
 
+    // The payload is the extension's, so a non-string entry must not reach
+    // `toLowerCase()`: nothing catches a throw inside an event callback.
+    it('should treat a non-string account as no account', async () => {
+      const stub = installEthereum()
+      await jest.isolateModulesAsync(async () => {
+        await import('./useWalletAddress')
+      })
+      const handler = stub.on.mock.calls.find(call => call[0] === 'accountsChanged')?.[1] as ((accounts: unknown[]) => void) | undefined
+
+      expect(() => handler?.([{ address: '0xabc' }])).not.toThrow()
+      expect(redirectToAuthMock).not.toHaveBeenCalled()
+    })
+
     it('should redirect to auth when MetaMask reports an unknown account', async () => {
       localStorageGetIdentityMock.mockReturnValue(null)
       const stub = installEthereum()

@@ -59,8 +59,12 @@ window.addEventListener('storage', (event: StorageEvent) => {
 // MetaMask account switch — explicit signal from an injected EVM wallet.
 // Magic and OTP flows never reach this branch (they don't inject `window.ethereum`).
 const handleAccountsChanged = (...args: unknown[]): void => {
-  const accounts = Array.isArray(args[0]) ? (args[0] as string[]) : []
-  const newAccount = accounts[0]?.toLowerCase()
+  // The payload comes from the extension, so the element type is checked rather than
+  // asserted: `Array.isArray` only narrows to `any[]`, and a non-string first entry
+  // would throw on `toLowerCase()` inside an event callback, where nothing catches it.
+  const accounts: unknown[] = Array.isArray(args[0]) ? args[0] : []
+  const firstAccount = accounts[0]
+  const newAccount = typeof firstAccount === 'string' ? firstAccount.toLowerCase() : undefined
   if (!newAccount) {
     // Wallet locked: drop the in-memory state but keep the pointer so the
     // user returns to the same wallet when they unlock.
@@ -85,8 +89,11 @@ const handleAccountsChanged = (...args: unknown[]): void => {
 // resolution does not depend on it (see the NOTE below), so the session still
 // works.
 try {
-  if (window.ethereum?.on) {
-    window.ethereum.on('accountsChanged', handleAccountsChanged)
+  // Read once: a second lookup could resolve to a different object if another
+  // extension replaces the global in between.
+  const provider = window.ethereum
+  if (provider?.on) {
+    provider.on('accountsChanged', handleAccountsChanged)
   }
 } catch {
   // A hostile or half-installed provider. Nothing to report: it is not ours to fix.
