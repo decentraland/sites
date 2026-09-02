@@ -32,7 +32,7 @@ import {
   useGetLiveWorldsQuery
 } from '../../features/discover'
 import type { DiscoverCategory, DiscoverPlace } from '../../features/discover'
-import { useNewPlacesLayout } from '../../features/discover/discover.flags'
+import { useHideFeaturedPlaces, useNewPlacesLayout } from '../../features/discover/discover.flags'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useDeferredTrack } from '../../hooks/useDeferredTrack'
@@ -245,6 +245,7 @@ function DiscoverHomePage() {
   // Read here, above the presence queries, because on the new layout those three requests are
   // dead weight: the LIVE section reads presence from the destinations feed instead.
   const newLayout = useNewPlacesLayout()
+  const hideFeatured = useHideFeaturedPlaces()
   const hotScenesQuery = useGetHotScenesQuery(newLayout ? skipToken : { limit: 40 }, LIVE_REFRESH_OPTIONS)
   const livePlacesQuery = useGetDiscoverPlacesQuery(
     newLayout ? skipToken : { limit: 50, order_by: 'most_active', order: 'desc' },
@@ -394,6 +395,10 @@ function DiscoverHomePage() {
   // filtering the Explore view collapses the page to a single results grid
   // (search/category apply to the browse query, not the signed-in tabs).
   const showHighlights = section !== 'all' || (!search && activeCategory === 'all')
+  // With the rail off, `featuredCards` stays empty, which is also what stops
+  // the Explore grid from subtracting it — so the curated picks lead the grid
+  // instead of disappearing. See useHideFeaturedPlaces for the flag matrix.
+  const showFeaturedRail = showHighlights && !hideFeatured
 
   // Mobile filter chip reflects a non-default category so the user can
   // see and clear active filters without reopening the drawer.
@@ -405,7 +410,7 @@ function DiscoverHomePage() {
   // `only_highlighted`). Skipped entirely while filtering since the Featured
   // rail is hidden then.
   const featuredQuery = useGetDiscoverDestinationsQuery(
-    showHighlights
+    showFeaturedRail
       ? {
           limit: FEATURED_FETCH_LIMIT,
           only_highlighted: true,
@@ -455,7 +460,7 @@ function DiscoverHomePage() {
   // so a live featured card navigates to the scene preview instead of opening
   // the empty-scene modal, and sorted so live ones lead the rail.
   const featuredCards = useMemo(() => {
-    if (!showHighlights) return []
+    if (!showFeaturedRail) return []
     // Legacy: the featured query carried no presence, so the count is joined in from the live feed.
     // New layout: the query asks for `with_realms_detail`, so the row already has the API's count
     // and joining would overwrite it with 0 for anything the (skipped) legacy join never saw.
@@ -469,7 +474,7 @@ function DiscoverHomePage() {
       .filter(p => !shownInLiveRail.has(p.id))
       .map(withPresence)
       .sort((a, b) => (b.user_count ?? 0) - (a.user_count ?? 0))
-  }, [showHighlights, featuredQuery.data, filteredLiveCards, liveRail, newLayout])
+  }, [showFeaturedRail, featuredQuery.data, filteredLiveCards, liveRail, newLayout])
 
   // Count the grid's real tracks. Declared here because it depends on the
   // rail being rendered at all.
@@ -505,7 +510,7 @@ function DiscoverHomePage() {
   // Polling / search refetches use `isFetching`, not `isLoading`, so they
   // don't re-trigger this gate.
   const isLoadingWorldsMetadata = liveWorldNames.length > 0 && worldsMetadataQuery.isLoading
-  const isLoadingFeatured = showHighlights && featuredQuery.isLoading
+  const isLoadingFeatured = showFeaturedRail && featuredQuery.isLoading
   const isLoadingLiveFeed = newLayout && showHighlights && liveFeedQuery.isLoading
   const isInitialLoading = isLoadingLive || isLoadingBrowse || isLoadingWorldsMetadata || isLoadingFeatured || isLoadingLiveFeed
   const isEmpty = !isInitialLoading && section === 'all' && featuredCards.length === 0 && exploreCards.length === 0
@@ -565,7 +570,7 @@ function DiscoverHomePage() {
 
       {/* Featured rail — curated POIs. The toolbar lives BELOW it (the
           featured picks are curated, not filtered). */}
-      {showHighlights && featuredCards.length > 0 && (
+      {showFeaturedRail && featuredCards.length > 0 && (
         <>
           <SectionTitle>{t('discover.explore.section.featured')}</SectionTitle>
           <FeaturedGrid ref={featuredGridRef}>

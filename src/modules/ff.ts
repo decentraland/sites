@@ -4,7 +4,8 @@ const FEATURE_FLAG = {
   onboardingFlow: 'dapps-onboarding-flow',
   inviteDirectDownload: 'dapps-invite-direct-download',
   eventFeaturedItemSearch: 'dapps-event-featured-item-search',
-  placesRepeatCrossSections: 'dapps-places-repeat-cross-sections'
+  placesRepeatCrossSections: 'dapps-places-repeat-cross-sections',
+  placesHideFeaturedSection: 'dapps-places-hide-featured-section'
 } as const
 
 enum OnboardingFlowVariant {

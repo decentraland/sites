@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react'
-import { resetDiscoverFlagsForTests, useNewPlacesLayout } from './discover.flags'
+import { resetDiscoverFlagsForTests, useHideFeaturedPlaces, useNewPlacesLayout } from './discover.flags'
 
 const flagsResponse = (flags: Record<string, boolean>) =>
   Promise.resolve({
@@ -99,5 +99,47 @@ describe('when resolving the new Places layout flag', () => {
       })
       expect(result.current).toBe(false)
     })
+  })
+})
+
+describe('when resolving the hide-Featured flag', () => {
+  let fetchMock: jest.Mock
+
+  beforeEach(() => {
+    resetDiscoverFlagsForTests()
+    fetchMock = jest.fn()
+    global.fetch = fetchMock as unknown as typeof fetch
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should turn on once the remote flag loads', async () => {
+    fetchMock.mockReturnValue(flagsResponse({ 'dapps-places-hide-featured-section': true }))
+
+    const { result } = renderHook(() => useHideFeaturedPlaces())
+
+    expect(result.current).toBe(false)
+    await waitFor(() => expect(result.current).toBe(true))
+  })
+
+  it('should stay off when the flag is absent, so the section survives', async () => {
+    fetchMock.mockReturnValue(flagsResponse({ 'dapps-places-repeat-cross-sections': true }))
+
+    const { result } = renderHook(() => useHideFeaturedPlaces())
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+
+    expect(result.current).toBe(false)
+  })
+
+  it('should read independently of the layout flag', async () => {
+    fetchMock.mockReturnValue(flagsResponse({ 'dapps-places-hide-featured-section': true, 'dapps-places-repeat-cross-sections': false }))
+
+    const hide = renderHook(() => useHideFeaturedPlaces())
+    const layout = renderHook(() => useNewPlacesLayout())
+
+    await waitFor(() => expect(hide.result.current).toBe(true))
+    expect(layout.result.current).toBe(false)
   })
 })

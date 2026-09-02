@@ -16,6 +16,7 @@ const mockLiveWorldsQuery = jest.fn()
 const mockWorldsByNamesQuery = jest.fn()
 const mockFavoritesQuery = jest.fn()
 const mockDedupeFlag = jest.fn()
+const mockHideFeatured = jest.fn()
 
 jest.mock('react-helmet-async', () => ({
   Helmet: () => null
@@ -42,7 +43,8 @@ jest.mock('../../features/discover', () => ({
 }))
 
 jest.mock('../../features/discover/discover.flags', () => ({
-  useNewPlacesLayout: () => mockDedupeFlag()
+  useNewPlacesLayout: () => mockDedupeFlag(),
+  useHideFeaturedPlaces: () => mockHideFeatured()
 }))
 
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
@@ -272,6 +274,7 @@ describe('DiscoverHomePage', () => {
     mockUseAdvancedUserAgentData.mockReturnValue([false, { mobile: false }])
     // Default off: the flag is opt-in, so every other suite keeps asserting today's page.
     mockDedupeFlag.mockReturnValue(false)
+    mockHideFeatured.mockReturnValue(false)
     // jsdom has no IntersectionObserver — capture the sentinel callback so the
     // pagination test can fire it manually.
     intersectionCallback = undefined
@@ -369,6 +372,74 @@ describe('DiscoverHomePage', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'discover.featured.view_less' }))
       expect(screen.getAllByTestId('featured-card')).toHaveLength(2)
+    })
+
+    it('should drop the whole section when the featured flag hides it', () => {
+      mockHideFeatured.mockReturnValue(true)
+
+      render(<DiscoverHomePage />)
+
+      expect(screen.queryByText('discover.explore.section.featured')).not.toBeInTheDocument()
+      expect(screen.queryAllByTestId('featured-card')).toHaveLength(0)
+    })
+
+    it('should skip the featured request entirely while the section is hidden', () => {
+      mockHideFeatured.mockReturnValue(true)
+
+      render(<DiscoverHomePage />)
+
+      expect(mockDestinationsQuery).not.toHaveBeenCalledWith(expect.objectContaining({ only_highlighted: true }), expect.anything())
+    })
+
+    describe('and a curated place also sits in the browse feed', () => {
+      beforeEach(() => {
+        // /destinations returns `highlighted DESC` first, so the curated set is
+        // at the head of the same feed the grid reads.
+        const curated = createPlace({ id: 'cur-1', title: 'Curated Pick', highlighted: true })
+        featuredPlaces = { data: { ok: true, total: 1, data: [curated] }, isLoading: false }
+        browseDestinations = {
+          data: { ok: true, total: 2, data: [curated, createPlace({ id: 'plain-1', title: 'Plain Place' })] },
+          isLoading: false
+        }
+      })
+
+      it('should leave it in the explore grid when the section is hidden', () => {
+        // The two flags are independent: dedupe subtracts whatever the rails
+        // rendered, and with no rail there is nothing to subtract.
+        mockDedupeFlag.mockReturnValue(true)
+        mockHideFeatured.mockReturnValue(true)
+
+        render(<DiscoverHomePage />)
+
+        expect(screen.getAllByTestId('place-card').map(card => card.textContent)).toEqual(
+          expect.arrayContaining([expect.stringContaining('Curated Pick')])
+        )
+      })
+
+      it('should subtract it from the grid while the section is shown', () => {
+        mockDedupeFlag.mockReturnValue(true)
+        mockHideFeatured.mockReturnValue(false)
+
+        render(<DiscoverHomePage />)
+
+        expect(screen.getAllByTestId('place-card').map(card => card.textContent)).not.toEqual(
+          expect.arrayContaining([expect.stringContaining('Curated Pick')])
+        )
+      })
+
+      it('should repeat it in both places while dedupe is off, hidden or not', () => {
+        mockDedupeFlag.mockReturnValue(false)
+        mockHideFeatured.mockReturnValue(false)
+
+        render(<DiscoverHomePage />)
+
+        expect(screen.getAllByTestId('featured-card').map(c => c.textContent)).toEqual(
+          expect.arrayContaining([expect.stringContaining('Curated Pick')])
+        )
+        expect(screen.getAllByTestId('place-card').map(c => c.textContent)).toEqual(
+          expect.arrayContaining([expect.stringContaining('Curated Pick')])
+        )
+      })
     })
 
     it('should not render the toggle when the curated set fits in two rows', () => {
