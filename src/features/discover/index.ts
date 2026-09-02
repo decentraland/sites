@@ -13,6 +13,7 @@ export {
   DISCOVER_CATEGORIES,
   buildDetailPath,
   buildJumpLandingHref,
+  countGridTracks,
   discoverDeepLinkOptions,
   discoverPlacePayload,
   isHiddenPlace,

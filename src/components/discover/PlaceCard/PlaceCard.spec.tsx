@@ -192,9 +192,31 @@ describe('PlaceCard', () => {
     it('should hand the place to the shared launcher when JUMP IN is clicked', () => {
       render(<PlaceCard place={place} />)
 
+      // The CTA is revealed by hover, so reach it the way a pointer does.
+      fireEvent.mouseEnter(screen.getByText('MyWorld'))
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
       expect(mockJumpIn).toHaveBeenCalledWith(place, 'place-card')
+    })
+  })
+
+  describe('when the card is activated from the keyboard', () => {
+    it.each(['Enter', ' '])('should navigate to the detail route on %s', key => {
+      render(<PlaceCard place={createPlace()} />)
+      const card = screen.getByText('Genesis Plaza').closest('[role="button"]')
+
+      fireEvent.keyDown(card as HTMLElement, { key })
+
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/-9,-9', { state: { place: expect.any(Object) } })
+    })
+
+    it('should ignore any other key', () => {
+      render(<PlaceCard place={createPlace()} />)
+      const card = screen.getByText('Genesis Plaza').closest('[role="button"]')
+
+      fireEvent.keyDown(card as HTMLElement, { key: 'Tab' })
+
+      expect(mockNavigate).not.toHaveBeenCalled()
     })
   })
 
@@ -223,10 +245,46 @@ describe('PlaceCard', () => {
       const place = createPlace({ user_count: 2 })
       render(<PlaceCard place={place} />)
 
+      fireEvent.mouseEnter(screen.getByText('Genesis Plaza'))
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
       expect(mockJumpIn).toHaveBeenCalledWith(place, 'place-card')
       expect(mockNavigate).not.toHaveBeenCalled()
+    })
+
+    it('should keep the parked CTA out of the accessibility tree and out of Tab order', () => {
+      render(<PlaceCard place={createPlace({ user_count: 2 })} />)
+
+      const cta = screen.getByText('discover.card.jump_in').closest('button')
+
+      expect(cta).toHaveAttribute('aria-hidden', 'true')
+      expect(cta).toHaveAttribute('tabindex', '-1')
+    })
+
+    it('should stay revealed when the pointer leaves while the CTA holds focus', () => {
+      render(<PlaceCard place={createPlace({ user_count: 2 })} />)
+      const title = screen.getByText('Genesis Plaza')
+      fireEvent.mouseEnter(title)
+
+      const cta = screen.getByRole('button', { name: 'discover.card.jump_in' })
+      fireEvent.focus(cta)
+      fireEvent.mouseLeave(title)
+
+      expect(cta).not.toHaveAttribute('aria-hidden')
+      expect(cta).toHaveAttribute('tabindex', '0')
+    })
+
+    it('should park the CTA again once it loses focus', () => {
+      render(<PlaceCard place={createPlace({ user_count: 2 })} />)
+      const title = screen.getByText('Genesis Plaza')
+      fireEvent.mouseEnter(title)
+      const cta = screen.getByRole('button', { name: 'discover.card.jump_in' })
+
+      fireEvent.focus(cta)
+      fireEvent.mouseLeave(title)
+      fireEvent.blur(cta)
+
+      expect(screen.queryByRole('button', { name: 'discover.card.jump_in' })).not.toBeInTheDocument()
     })
   })
 

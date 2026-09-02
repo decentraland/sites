@@ -53,6 +53,9 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
   const t = useFormatMessage()
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false)
+  // The CTA never unmounts, so hover alone would leave a focused button
+  // invisible and aria-hidden after the launcher modal takes the pointer.
+  const [ctaFocused, setCtaFocused] = useState(false)
 
   const detailHref = useMemo(() => buildDetailPath(place), [place])
 
@@ -66,6 +69,9 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
   const isLive = placeHasPeople(place)
   const isFeatured = placeIsFeatured(place)
   const coords = placeCoordsLabel(place)
+  // Hover reveals the CTA; focus keeps it revealed so it is never both focused
+  // and hidden.
+  const ctaShown = hovered || ctaFocused
 
   const track = useDeferredTrack()
 
@@ -130,7 +136,7 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
         <Body>
           <Title>{place.title}</Title>
           <SwapArea>
-            <MetaRow $hidden={hovered}>
+            <MetaRow $hidden={ctaShown} aria-hidden={ctaShown || undefined}>
               <CreatorRow>
                 {ownerAvatar && <Avatar src={ownerAvatar} alt="" loading="lazy" $bg={avatarBg} />}
                 {ownerName && (
@@ -146,7 +152,15 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
                 </LocationPill>
               )}
             </MetaRow>
-            <JumpInButton type="button" $visible={hovered} onClick={handleJumpIn}>
+            <JumpInButton
+              type="button"
+              $visible={ctaShown}
+              aria-hidden={!ctaShown || undefined}
+              tabIndex={ctaShown ? 0 : -1}
+              onFocus={() => setCtaFocused(true)}
+              onBlur={() => setCtaFocused(false)}
+              onClick={handleJumpIn}
+            >
               {t('discover.card.jump_in')}
               <JumpInGlyph size="min(5.715cqw, 24.874px)" />
             </JumpInButton>

@@ -7,7 +7,7 @@ import TuneRoundedIcon from '@mui/icons-material/TuneRounded'
 import type { SelectChangeEvent } from '@mui/material'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
-import { CircularProgress, InputAdornment, MenuItem, dclColors, useMediaQuery, useTheme } from 'decentraland-ui2'
+import { CircularProgress, InputAdornment, MenuItem, dclColors } from 'decentraland-ui2'
 import { CenteredBox } from '../../App.styled'
 import { CardGrid, Empty, ErrorBox, ErrorText, PageContent, RetryButton } from '../../components/discover/_shared'
 import { LiveHeadingGlyph } from '../../components/discover/_shared/CardIcons'
@@ -19,6 +19,7 @@ import { SceneJumpInModal } from '../../components/discover/SceneJumpInModal'
 import {
   DISCOVER_CATEGORIES,
   buildDetailPath,
+  countGridTracks,
   isHiddenPlace,
   placeHasPeople,
   placeIsLive,
@@ -176,13 +177,15 @@ function DiscoverHomePage() {
     band.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
   }, [section])
   // Featured rail collapse — capped at FEATURED_COLLAPSED_ROWS × the grid's
-  // current column count, mirroring FeaturedGrid's breakpoints.
+  // column count, counted off the rendered grid. FeaturedGrid derives its
+  // tracks from an auto-fill formula with a 300px floor (the shared card's
+  // minimum), so mirroring it with breakpoints here drifts: at 1280px that
+  // said 4 while the CSS laid out 3, and the collapsed rail spilled an orphan
+  // row. auto-fill keeps empty tracks, so the count is right even while
+  // collapsed. Falls back to one column where there is no layout to measure.
   const [featuredExpanded, setFeaturedExpanded] = useState(false)
-  const theme = useTheme()
-  const isSmUp = useMediaQuery(theme.breakpoints.up('sm'))
-  const isMdUp = useMediaQuery(theme.breakpoints.up('md'))
-  const isLgUp = useMediaQuery(theme.breakpoints.up('lg'))
-  const featuredColumns = isLgUp ? 4 : isMdUp ? 3 : isSmUp ? 2 : 1
+  const featuredGridRef = useRef<HTMLDivElement>(null)
+  const [featuredColumns, setFeaturedColumns] = useState(1)
   // Mobile-only filter drawer (Category). Desktop shows it inline.
   const [filtersOpen, setFiltersOpen] = useState(false)
   const { address, hasValidIdentity } = useAuthIdentity()
@@ -468,6 +471,21 @@ function DiscoverHomePage() {
       .sort((a, b) => (b.user_count ?? 0) - (a.user_count ?? 0))
   }, [showHighlights, featuredQuery.data, filteredLiveCards, liveRail, newLayout])
 
+  // Count the grid's real tracks. Declared here because it depends on the
+  // rail being rendered at all.
+  useEffect(() => {
+    const grid = featuredGridRef.current
+    if (!grid) return
+    const readColumns = () => {
+      const tracks = countGridTracks(getComputedStyle(grid).gridTemplateColumns)
+      if (tracks > 0) setFeaturedColumns(tracks)
+    }
+    readColumns()
+    const observer = new ResizeObserver(readColumns)
+    observer.observe(grid)
+    return () => observer.disconnect()
+  }, [showHighlights, featuredCards.length])
+
   // Explore All IS the /destinations feed: one page in the API's order, junk filtered. Rows keep
   // the feed's real-time `user_count` (with_realms_detail).
   //
@@ -550,7 +568,7 @@ function DiscoverHomePage() {
       {showHighlights && featuredCards.length > 0 && (
         <>
           <SectionTitle>{t('discover.explore.section.featured')}</SectionTitle>
-          <FeaturedGrid>
+          <FeaturedGrid ref={featuredGridRef}>
             {(featuredExpanded ? featuredCards : featuredCards.slice(0, featuredColumns * FEATURED_COLLAPSED_ROWS)).map(place => (
               <FeaturedCard key={place.id} place={place} onEmptyClick={handleCardEmptyClick} />
             ))}
