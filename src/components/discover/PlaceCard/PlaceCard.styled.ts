@@ -15,6 +15,7 @@ const SNOW = dclColors.neutral.softWhite // DCL/Snow, DCL/White (#fcfcfc)
 const GRAY5 = dclColors.neutral.gray5 // neutrals/gray-5 (#ecebed)
 const RUBY = dclColors.base.primary // DCL/Ruby (#ff2d55) — creator name + JUMP IN
 const LOC_BG = 'rgba(255, 255, 255, 0.05)'
+const BODY_BOTTOM_PADDING = '5.514cqw' // 24px
 
 // The query container — the grid cell. Everything inside resolves cqw against
 // this element's width.
@@ -64,7 +65,7 @@ const Body = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
   gap: '2.757cqw', // 12px
-  padding: '3.676cqw 5.514cqw 5.514cqw', // 16px 24px 24px
+  padding: `3.676cqw 5.514cqw ${BODY_BOTTOM_PADDING}`, // 16px 24px 24px
   width: '100%'
 })
 
@@ -95,7 +96,7 @@ const MetaRow = styled(Box, { shouldForwardProp: prop => prop !== '$hidden' })<{
   alignItems: 'center',
   justifyContent: 'space-between',
   gap: '2.298cqw', // 10px
-  transition: theme.transitions.create('opacity', { duration: theme.transitions.duration.shortest }),
+  transition: theme.transitions.create('opacity', { duration: theme.transitions.duration.complex }),
   ...($hidden && { opacity: 0, pointerEvents: 'none' })
 }))
 
@@ -170,9 +171,23 @@ const JumpInButton = styled('button', { shouldForwardProp: prop => prop !== '$vi
     textTransform: 'uppercase',
     cursor: 'pointer',
     opacity: 0,
+    // Parks one body-padding below the slot, which puts it past the card's
+    // bottom edge where Card's overflow clip hides it, so it rises into place
+    // rather than fading in — the same reveal as the Live Now rail and the
+    // What's On card. Parking it outside the card instead of clipping the slot
+    // is what keeps the focus outline visible.
+    transform: `translateY(calc(100% + ${BODY_BOTTOM_PADDING}))`,
     pointerEvents: 'none',
-    transition: theme.transitions.create(['opacity', 'background-color'], { duration: theme.transitions.duration.shortest }),
-    ...($visible && { opacity: 1, pointerEvents: 'auto' }),
+    transition: [
+      theme.transitions.create(['opacity', 'transform'], { duration: theme.transitions.duration.complex }),
+      theme.transitions.create('background-color', { duration: theme.transitions.duration.shortest })
+    ].join(', '),
+    ...($visible && { opacity: 1, transform: 'translateY(0)', pointerEvents: 'auto' }),
+    // The travel is decoration: cross-fade instead for anyone who asked for less motion.
+    ['@media (prefers-reduced-motion: reduce)']: {
+      transform: 'none',
+      transition: theme.transitions.create('opacity', { duration: theme.transitions.duration.shortest })
+    },
     // Same press feedback as the whats-on Live Now CTA.
     ['&:hover']: { backgroundColor: theme.palette.primary.dark },
     ['&:active']: { backgroundColor: theme.palette.primary.dark },
