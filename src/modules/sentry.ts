@@ -20,7 +20,13 @@ const errorFilters: RegExp[] = [
   // an unhandled rejection from our own instrumentation (SITES-2RH). Nothing to fix
   // here short of patching the dependency or polyfilling `at` for every visitor, and
   // the only cost of dropping it is losing CLS on browsers that never reported it.
-  /_sessionEntries\.at is not a function/i
+  /_sessionEntries\.at is not a function/i,
+  // WalletConnect's own session-proposal timeout. `@walletconnect/utils` rejects the
+  // pending proposal when nobody scans the QR in time, nothing awaits that rejection,
+  // and it reaches us as an unhandled one (SITES-2S6). Walking away from the connect
+  // modal is ordinary use rather than a failure, and the flow recovers on its own:
+  // the next attempt opens a fresh proposal.
+  /^Proposal expired$/i
 ]
 
 // In-app browsers inject their own instrumentation into the webview under a
