@@ -7,11 +7,14 @@ import {
   discoverPlacePayload,
   placeCoordsLabel,
   placeCoverImage,
+  placeHasLiveEvent,
+  placeHasPeople,
   placeIsFeatured,
   placeIsLive,
   placePlayers
 } from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
+import { useNewPlacesLayout } from '../../../features/discover/discover.flags'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
 import { usePlaceOwnerAvatar } from '../../../hooks/usePlaceOwnerAvatar'
@@ -57,7 +60,10 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
   const { ownerName, ownerAvatar, avatarBg } = usePlaceOwnerAvatar(place)
 
   const players = placePlayers(place)
-  const isLive = players > 0
+  const newLayout = useNewPlacesLayout()
+  // Presence, which decides where a click goes: a scene with people opens the viewer, an empty one
+  // opens the JUMP IN modal. Deliberately NOT the same question as the LIVE badge.
+  const isLive = placeHasPeople(place)
   const isFeatured = placeIsFeatured(place)
   const coords = placeCoordsLabel(place)
 
@@ -110,7 +116,7 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
           <TopRow>
             {/* ui2's badges — same animated LIVE pill What's On uses. */}
             <BadgeGroup>
-              {placeIsLive(place) && <LiveBadge />}
+              {(newLayout ? placeHasLiveEvent(place) : placeIsLive(place)) && <LiveBadge />}
               {players > 0 && <UserCountBadge count={players} />}
             </BadgeGroup>
             {isFeatured && (
