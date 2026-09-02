@@ -101,6 +101,11 @@ const BROWSE_LIMIT = 48
 // Live Now rail cap — the Figma shows one row of 4.
 const LIVE_NOW_LIMIT = 4
 
+// New layout: how many feed rows the LIVE section reads to find its top four. The feed puts every
+// highlighted row first (22 today), so this must comfortably exceed that count or the busiest
+// non-featured scene could fall off the end. Mirrors the 40-scene cap the legacy hot-scenes fetch used.
+const LIVE_FEED_LIMIT = 40
+
 // The Featured rail shows EVERY highlighted place (the curated set is small —
 // a handful of rows); this only bounds the request, it is not a display cap.
 const FEATURED_FETCH_LIMIT = 100
@@ -342,13 +347,14 @@ function DiscoverHomePage() {
       order_by: 'most_active' as const,
       search: search || undefined,
       categories: activeCategory === 'all' ? undefined : [activeCategory],
-      // Real-time user counts on every row, and whether an event is running there. Between them
-      // these are the whole card: `user_count` drives the presence pill and the LIVE section's
-      // membership, `live` drives the red badge. No client-side presence join needed.
+      // Real-time user counts on every row — the grid's presence pills. `live` (an event running
+      // there, from the events API) is only requested on the new layout: the legacy cards never read
+      // it, and server-side it is a cross-service call per request, so the flag-off path must not
+      // pay for it. Flipping the flag changes this cache key once, which is one extra page-0 fetch.
       with_realms_detail: true,
-      with_live_events: true
+      ...(newLayout && { with_live_events: true })
     }),
-    [search, activeCategory, browseOffset]
+    [search, activeCategory, browseOffset, newLayout]
   )
 
   const browseQuery = useGetDiscoverDestinationsQuery(browseArgs)
@@ -396,28 +402,50 @@ function DiscoverHomePage() {
   // `only_highlighted`). Skipped entirely while filtering since the Featured
   // rail is hidden then.
   const featuredQuery = useGetDiscoverDestinationsQuery(
-    showHighlights ? { limit: FEATURED_FETCH_LIMIT, only_highlighted: true, with_realms_detail: true, with_live_events: true } : skipToken
+    showHighlights
+      ? {
+          limit: FEATURED_FETCH_LIMIT,
+          only_highlighted: true,
+          // Legacy joins presence in from the live feed and never reads `live`, so neither is
+          // requested there (same backend-cost reasoning as browseArgs).
+          ...(newLayout && { with_realms_detail: true, with_live_events: true })
+        }
+      : skipToken,
+    // Featured carries presence on the new layout, so it refreshes on focus/reconnect like the
+    // legacy live feed did. A no-op on the legacy path, where its counts come from that feed.
+    LIVE_REFRESH_OPTIONS
+  )
+
+  // New layout: the LIVE section's own read of the destinations feed. It is deliberately NOT the
+  // paginated grid query: that cache entry drops `offset` from its key and `merge`s pages, so a
+  // focus/reconnect refetch there would refresh only the last-loaded page — never page 0, where the
+  // top four live. A small separate page (different `limit`, so a different cache key) restores the
+  // refresh contract the legacy hot-scenes query honoured, at one request instead of the three it
+  // replaces.
+  const liveFeedQuery = useGetDiscoverDestinationsQuery(
+    newLayout && showHighlights
+      ? { limit: LIVE_FEED_LIMIT, order_by: 'most_active', with_realms_detail: true, with_live_events: true }
+      : skipToken,
+    LIVE_REFRESH_OPTIONS
   )
 
   // The LIVE section: the four busiest scenes, "busiest" meaning anyone at all is in them.
   //
-  // New layout reads presence from the destinations feed, the same rows the grid renders. That is
-  // not just less code than the three-service client join below — it is what makes the web and the
-  // explorer agree, since both then order the same rows from the same source. The feed sorts
-  // `highlighted DESC, live_user_count DESC`, so the busiest non-featured scenes are never far
-  // enough down to be missed by the first page; re-sorting by head count here is what turns that
-  // into "top four by people".
+  // New layout reads presence from the destinations feed — the same source and order the grid and
+  // the explorer use, which is what makes the two surfaces agree. The feed sorts
+  // `highlighted DESC, live_user_count DESC`, so the busiest scenes sit inside the first
+  // LIVE_FEED_LIMIT rows; re-sorting by head count here is what turns that into "top four by
+  // people". `filter` already returns a fresh array, so sorting it in place leaves the cache alone.
   //
-  // Legacy path keeps the old join and the 5-user cut, which is what production ships.
+  // Legacy path keeps the old three-service join and the 5-user cut, which is what production ships.
   const liveRail = useMemo(() => {
     if (!showHighlights) return []
     if (!newLayout) return filteredLiveCards.filter(placeIsLive).slice(0, LIVE_NOW_LIMIT)
-    return browseDestinations
+    return (liveFeedQuery.data?.data ?? [])
       .filter(p => !isHiddenPlace(p) && placeHasPeople(p))
-      .slice()
       .sort((a, b) => placePlayers(b) - placePlayers(a))
       .slice(0, LIVE_NOW_LIMIT)
-  }, [showHighlights, newLayout, filteredLiveCards, browseDestinations])
+  }, [showHighlights, newLayout, filteredLiveCards, liveFeedQuery.data])
 
   // The curated rail shows every highlighted destination, live or not (the
   // API only marks a handful) — joined against the LIVE feed's real presence
@@ -460,7 +488,8 @@ function DiscoverHomePage() {
   // don't re-trigger this gate.
   const isLoadingWorldsMetadata = liveWorldNames.length > 0 && worldsMetadataQuery.isLoading
   const isLoadingFeatured = showHighlights && featuredQuery.isLoading
-  const isInitialLoading = isLoadingLive || isLoadingBrowse || isLoadingWorldsMetadata || isLoadingFeatured
+  const isLoadingLiveFeed = newLayout && showHighlights && liveFeedQuery.isLoading
+  const isInitialLoading = isLoadingLive || isLoadingBrowse || isLoadingWorldsMetadata || isLoadingFeatured || isLoadingLiveFeed
   const isEmpty = !isInitialLoading && section === 'all' && featuredCards.length === 0 && exploreCards.length === 0
 
   // Cold load: render the spinner straight inside `CenteredBox` so the

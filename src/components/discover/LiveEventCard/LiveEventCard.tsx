@@ -2,7 +2,14 @@ import { memo, useCallback, useMemo, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BadgeGroup, LiveBadge, UserCountBadge, useMediaQuery, useTheme } from 'decentraland-ui2'
-import { buildDetailPath, discoverPlacePayload, placeCoverImage, placeIsFeatured, placePlayers } from '../../../features/discover'
+import {
+  buildDetailPath,
+  discoverPlacePayload,
+  placeCoverImage,
+  placeHasLiveEvent,
+  placeIsFeatured,
+  placePlayers
+} from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
 import { useNewPlacesLayout } from '../../../features/discover/discover.flags'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
@@ -85,7 +92,7 @@ function LiveEventCardComponent({ place }: LiveEventCardProps) {
             <BadgeGroup>
               {/* LIVE means an event is running, not that people are here — presence is the count
                   next to it. On the legacy path the badge still tracks presence. */}
-              {(newLayout ? place.live === true : true) && <LiveBadge />}
+              {(newLayout ? placeHasLiveEvent(place) : true) && <LiveBadge />}
               <UserCountBadge count={players} />
             </BadgeGroup>
             {newLayout && isFeatured && (

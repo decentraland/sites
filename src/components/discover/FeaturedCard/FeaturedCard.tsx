@@ -2,7 +2,15 @@ import { memo, useCallback, useMemo, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LiveBadge, UserCountBadge } from 'decentraland-ui2'
-import { buildDetailPath, discoverPlacePayload, placeCoordsLabel, placeCoverImage, placePlayers } from '../../../features/discover'
+import {
+  buildDetailPath,
+  discoverPlacePayload,
+  placeCoordsLabel,
+  placeCoverImage,
+  placeHasLiveEvent,
+  placeHasPeople,
+  placePlayers
+} from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
 import { useNewPlacesLayout } from '../../../features/discover/discover.flags'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
@@ -49,7 +57,7 @@ function FeaturedCardComponent({ place, onEmptyClick }: FeaturedCardProps) {
   const track = useDeferredTrack()
 
   const newLayout = useNewPlacesLayout()
-  const isLive = placePlayers(place) > 0
+  const isLive = placeHasPeople(place)
 
   const handleClick = useCallback(() => {
     track(SegmentEvent.DISCOVER_CLICK_FEATURED_CARD, discoverPlacePayload(place))
@@ -101,10 +109,10 @@ function FeaturedCardComponent({ place, onEmptyClick }: FeaturedCardProps) {
           {/* A busy featured scene moves to the LIVE section, so the case left here is a scene
               hosting an event with nobody in it yet — which is why the strip can no longer be gated
               on presence alone. */}
-          {(placePlayers(place) > 0 || (newLayout && place.live === true)) && (
+          {(isLive || (newLayout && placeHasLiveEvent(place))) && (
             <ThumbBadges>
-              {newLayout && place.live === true && <LiveBadge />}
-              {placePlayers(place) > 0 && <UserCountBadge count={placePlayers(place)} />}
+              {newLayout && placeHasLiveEvent(place) && <LiveBadge />}
+              {isLive && <UserCountBadge count={placePlayers(place)} />}
             </ThumbBadges>
           )}
         </Thumb>

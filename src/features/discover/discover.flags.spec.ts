@@ -7,7 +7,7 @@ const flagsResponse = (flags: Record<string, boolean>) =>
     json: () => Promise.resolve({ flags })
   } as Response)
 
-describe('when resolving the places cross-section dedupe flag', () => {
+describe('when resolving the new Places layout flag', () => {
   let fetchMock: jest.Mock
 
   beforeEach(() => {

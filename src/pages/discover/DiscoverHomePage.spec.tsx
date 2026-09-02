@@ -762,6 +762,14 @@ describe('DiscoverHomePage', () => {
     const titles = (testId: string) => screen.getAllByTestId(testId).map(card => card.textContent)
 
     describe('and the dedupe flag is off', () => {
+      it('should not make the legacy path pay for the events cross-reference', () => {
+        render(<DiscoverHomePage />)
+
+        const argsSent = mockDestinationsQuery.mock.calls.map(call => call[0]).filter(a => a !== skipToken)
+        expect(argsSent.length).toBeGreaterThan(0)
+        argsSent.forEach(a => expect(a).not.toHaveProperty('with_live_events'))
+      })
+
       it('should render the same card in all three sections', () => {
         render(<DiscoverHomePage />)
 
@@ -887,6 +895,24 @@ describe('DiscoverHomePage', () => {
       // 2 people, but the rail is already full with 20 / 5 / 4 / 2 — the legacy join would have
       // zeroed this to 0 because hot-scenes never saw it.
       expect(screen.getByTestId('featured-card')).toHaveAttribute('data-users', '2')
+    })
+
+    it('should give the LIVE section its own small feed read that refreshes on focus and reconnect', () => {
+      render(<DiscoverHomePage />)
+
+      expect(mockDestinationsQuery).toHaveBeenCalledWith(
+        { limit: 40, order_by: 'most_active', with_realms_detail: true, with_live_events: true },
+        expect.objectContaining({ refetchOnFocus: true, refetchOnReconnect: true })
+      )
+    })
+
+    it('should refresh featured presence on focus and reconnect too', () => {
+      render(<DiscoverHomePage />)
+
+      expect(mockDestinationsQuery).toHaveBeenCalledWith(
+        expect.objectContaining({ only_highlighted: true, with_realms_detail: true, with_live_events: true }),
+        expect.objectContaining({ refetchOnFocus: true, refetchOnReconnect: true })
+      )
     })
 
     it('should ask the feed for presence and live events in one request', () => {

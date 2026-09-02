@@ -7,6 +7,8 @@ import {
   discoverPlacePayload,
   placeCoordsLabel,
   placeCoverImage,
+  placeHasLiveEvent,
+  placeHasPeople,
   placeIsFeatured,
   placeIsLive,
   placePlayers
@@ -61,7 +63,7 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
   const newLayout = useNewPlacesLayout()
   // Presence, which decides where a click goes: a scene with people opens the viewer, an empty one
   // opens the JUMP IN modal. Deliberately NOT the same question as the LIVE badge.
-  const isLive = players > 0
+  const isLive = placeHasPeople(place)
   const isFeatured = placeIsFeatured(place)
   const coords = placeCoordsLabel(place)
 
@@ -114,7 +116,7 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
           <TopRow>
             {/* ui2's badges — same animated LIVE pill What's On uses. */}
             <BadgeGroup>
-              {(newLayout ? place.live === true : placeIsLive(place)) && <LiveBadge />}
+              {(newLayout ? placeHasLiveEvent(place) : placeIsLive(place)) && <LiveBadge />}
               {players > 0 && <UserCountBadge count={players} />}
             </BadgeGroup>
             {isFeatured && (

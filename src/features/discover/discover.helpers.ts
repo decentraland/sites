@@ -74,12 +74,19 @@ function placeIsLive(place: DiscoverPlace): boolean {
   return placePlayers(place) >= LIVE_MIN_USERS
 }
 
-// "Live" per the 2026-09-01 product decision: anybody at all in the scene counts. This REPLACES
+// Presence per the 2026-09-01 product decision: anybody at all in the scene counts. This REPLACES
 // LIVE_MIN_USERS on the new layout — the 5-user cut is only still consulted on the legacy path
-// behind the flag. Kept as its own helper (rather than inlining `> 0`) because three callers now
-// need the same question and they disagreed before.
+// behind the flag. Answers two different questions from one place: whether a scene belongs in the
+// LIVE section, and whether a card click opens the live viewer (people) or the JUMP IN modal (empty).
 function placeHasPeople(place: DiscoverPlace): boolean {
   return placePlayers(place) > 0
+}
+
+// An event is running at the place right now, per the events API via `with_live_events`. This —
+// never presence — is what the red LIVE badge means on the new layout. `undefined` (the request did
+// not ask) reads as false so a card can never go red on a stale or partial row.
+function placeHasLiveEvent(place: DiscoverPlace): boolean {
+  return place.live === true
 }
 
 function placePlayers(place: DiscoverPlace): number {
@@ -183,6 +190,7 @@ export {
   placeCoordsLabel,
   placeCoverImage,
   placeIsFeatured,
+  placeHasLiveEvent,
   placeHasPeople,
   placeIsLive,
   placePlayers
