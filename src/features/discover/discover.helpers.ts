@@ -120,6 +120,15 @@ function isMapPlaceholderImage(image?: string): boolean {
   return DEFAULT_THUMBNAIL_HASHES.has(hash)
 }
 
+// Number of tracks in a resolved `grid-template-columns`. Used to size the
+// Featured rail's collapsed height off the grid the browser actually laid out:
+// its tracks come from an auto-fill formula with a px floor, which no
+// breakpoint mirror can predict. Returns 0 when there is nothing to measure
+// (jsdom, or before first layout), so callers can keep their own fallback.
+function countGridTracks(gridTemplateColumns: string): number {
+  return gridTemplateColumns.split(' ').filter(Boolean).length
+}
+
 // Real cover image for a card, or undefined when the place only has the
 // map-tile placeholder — so the card renders its solid fallback instead of a
 // blue Genesis City map square.
@@ -182,6 +191,7 @@ export {
   DISCOVER_CATEGORIES,
   buildDetailPath,
   buildJumpLandingHref,
+  countGridTracks,
   discoverDeepLinkOptions,
   discoverPlacePayload,
   isHiddenPlace,
