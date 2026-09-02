@@ -489,7 +489,7 @@ function DiscoverHomePage() {
     const observer = new ResizeObserver(readColumns)
     observer.observe(grid)
     return () => observer.disconnect()
-  }, [showHighlights, featuredCards.length])
+  }, [showFeaturedRail, featuredCards.length])
 
   // Explore All IS the /destinations feed: one page in the API's order, junk filtered. Rows keep
   // the feed's real-time `user_count` (with_realms_detail).
