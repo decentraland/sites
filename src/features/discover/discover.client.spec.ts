@@ -182,7 +182,25 @@ describe('discover.client', () => {
       expect(result.current.data).toEqual({ ...payload, exhausted: true })
     })
 
-    it('should assemble search, owner, realms-detail and repeated categories params — never order params', async () => {
+    it('should request most_active when the caller asks for it', async () => {
+      fetchMock.mockResolvedValue(jsonResponse({ ok: true, total: 0, data: [] }))
+
+      const { result } = renderQuery(() => useGetDiscoverDestinationsQuery({ order_by: 'most_active' }))
+      await waitFor(() => expect(result.current.isSuccess).toBe(true))
+
+      expect(fetchMock).toHaveBeenCalledWith('https://places.test/api/destinations?limit=100&offset=0&order_by=most_active')
+    })
+
+    it('should omit order_by when the caller wants the curated order', async () => {
+      fetchMock.mockResolvedValue(jsonResponse({ ok: true, total: 0, data: [] }))
+
+      const { result } = renderQuery(() => useGetDiscoverDestinationsQuery({}))
+      await waitFor(() => expect(result.current.isSuccess).toBe(true))
+
+      expect(fetchMock).toHaveBeenCalledWith('https://places.test/api/destinations?limit=100&offset=0')
+    })
+
+    it('should assemble search, owner, realms-detail and repeated categories params', async () => {
       fetchMock.mockResolvedValue(jsonResponse({ ok: true, total: 0, data: [] }))
 
       const { result } = renderQuery(() =>

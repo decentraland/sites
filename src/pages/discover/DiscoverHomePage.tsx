@@ -20,7 +20,9 @@ import {
   DISCOVER_CATEGORIES,
   buildDetailPath,
   isHiddenPlace,
+  placeHasPeople,
   placeIsLive,
+  placePlayers,
   useGetDiscoverDestinationsQuery,
   useGetDiscoverFavoritesQuery,
   useGetDiscoverPlacesQuery,
@@ -29,6 +31,7 @@ import {
   useGetLiveWorldsQuery
 } from '../../features/discover'
 import type { DiscoverCategory, DiscoverPlace } from '../../features/discover'
+import { useNewPlacesLayout } from '../../features/discover/discover.flags'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useDeferredTrack } from '../../hooks/useDeferredTrack'
@@ -97,6 +100,11 @@ const BROWSE_LIMIT = 48
 
 // Live Now rail cap — the Figma shows one row of 4.
 const LIVE_NOW_LIMIT = 4
+
+// New layout: how many feed rows the LIVE section reads to find its top four. The feed puts every
+// highlighted row first (22 today), so this must comfortably exceed that count or the busiest
+// non-featured scene could fall off the end. Mirrors the 40-scene cap the legacy hot-scenes fetch used.
+const LIVE_FEED_LIMIT = 40
 
 // The Featured rail shows EVERY highlighted place (the curated set is small —
 // a handful of rows); this only bounds the request, it is not a display cap.
@@ -230,9 +238,16 @@ function DiscoverHomePage() {
   // ── LIVE NOW queries ──────────────────────────────────────────────────
   // Independent of search/category — we always fetch the full live set
   // and filter client-side. Server APIs don't support "places with users".
-  const hotScenesQuery = useGetHotScenesQuery({ limit: 40 }, LIVE_REFRESH_OPTIONS)
-  const livePlacesQuery = useGetDiscoverPlacesQuery({ limit: 50, order_by: 'most_active', order: 'desc' }, LIVE_REFRESH_OPTIONS)
-  const liveWorldsQuery = useGetLiveWorldsQuery(undefined, LIVE_REFRESH_OPTIONS)
+  // The 2026-09-01 layout, off by default. See discover.flags.ts for what travels together.
+  // Read here, above the presence queries, because on the new layout those three requests are
+  // dead weight: the LIVE section reads presence from the destinations feed instead.
+  const newLayout = useNewPlacesLayout()
+  const hotScenesQuery = useGetHotScenesQuery(newLayout ? skipToken : { limit: 40 }, LIVE_REFRESH_OPTIONS)
+  const livePlacesQuery = useGetDiscoverPlacesQuery(
+    newLayout ? skipToken : { limit: 50, order_by: 'most_active', order: 'desc' },
+    LIVE_REFRESH_OPTIONS
+  )
+  const liveWorldsQuery = useGetLiveWorldsQuery(newLayout ? skipToken : undefined, LIVE_REFRESH_OPTIONS)
 
   const liveWorldNames = useMemo(() => {
     const names = (liveWorldsQuery.data ?? []).filter(w => w.users > 0).map(w => w.worldName.toLowerCase())
@@ -317,9 +332,9 @@ function DiscoverHomePage() {
   // ── BROWSE queries ────────────────────────────────────────────────────
   // Server-side search/category against the destinations endpoint.
   // Different args from the LIVE feed → separate RTK Query cache entry.
-  // `/destinations` serves places + worlds in one page, in the API's curated
-  // order (highlighted first, then ranking, then like_score) — there is no
-  // user-facing sort control.
+  // `/destinations` serves places + worlds in one page. The grid asks for
+  // `most_active` so scenes with people in them lead it, with curation as the
+  // tie-breaker; the Featured rail and My Places keep the curated order.
   // Safety net for the DEFERRED search value landing after the synchronous
   // handler reset (changeSearch/changeCategory reset in the same commit).
   useEffect(() => {
@@ -329,13 +344,17 @@ function DiscoverHomePage() {
     () => ({
       limit: BROWSE_LIMIT,
       offset: browseOffset,
+      order_by: 'most_active' as const,
       search: search || undefined,
       categories: activeCategory === 'all' ? undefined : [activeCategory],
-      // Real-time user counts on every row — the grid's LIVE badges come
-      // straight from the feed, no client-side presence join.
-      with_realms_detail: true
+      // Real-time user counts on every row — the grid's presence pills. `live` (an event running
+      // there, from the events API) is only requested on the new layout: the legacy cards never read
+      // it, and server-side it is a cross-service call per request, so the flag-off path must not
+      // pay for it. Flipping the flag changes this cache key once, which is one extra page-0 fetch.
+      with_realms_detail: true,
+      ...(newLayout && { with_live_events: true })
     }),
-    [search, activeCategory, browseOffset]
+    [search, activeCategory, browseOffset, newLayout]
   )
 
   const browseQuery = useGetDiscoverDestinationsQuery(browseArgs)
@@ -383,16 +402,50 @@ function DiscoverHomePage() {
   // `only_highlighted`). Skipped entirely while filtering since the Featured
   // rail is hidden then.
   const featuredQuery = useGetDiscoverDestinationsQuery(
-    showHighlights ? { limit: FEATURED_FETCH_LIMIT, only_highlighted: true } : skipToken
+    showHighlights
+      ? {
+          limit: FEATURED_FETCH_LIMIT,
+          only_highlighted: true,
+          // Legacy joins presence in from the live feed and never reads `live`, so neither is
+          // requested there (same backend-cost reasoning as browseArgs).
+          ...(newLayout && { with_realms_detail: true, with_live_events: true })
+        }
+      : skipToken,
+    // Featured carries presence on the new layout, so it refreshes on focus/reconnect like the
+    // legacy live feed did. A no-op on the legacy path, where its counts come from that feed.
+    LIVE_REFRESH_OPTIONS
   )
 
-  // Top of the live feed goes to the Live Now rail; the rest lead the grid.
-  // Only genuinely-live scenes (>= LIVE_MIN_USERS in-world) qualify for the
-  // rail — a couple of stragglers doesn't make a scene "Live Now".
-  const liveRail = useMemo(
-    () => (showHighlights ? filteredLiveCards.filter(placeIsLive).slice(0, LIVE_NOW_LIMIT) : []),
-    [showHighlights, filteredLiveCards]
+  // New layout: the LIVE section's own read of the destinations feed. It is deliberately NOT the
+  // paginated grid query: that cache entry drops `offset` from its key and `merge`s pages, so a
+  // focus/reconnect refetch there would refresh only the last-loaded page — never page 0, where the
+  // top four live. A small separate page (different `limit`, so a different cache key) restores the
+  // refresh contract the legacy hot-scenes query honoured, at one request instead of the three it
+  // replaces.
+  const liveFeedQuery = useGetDiscoverDestinationsQuery(
+    newLayout && showHighlights
+      ? { limit: LIVE_FEED_LIMIT, order_by: 'most_active', with_realms_detail: true, with_live_events: true }
+      : skipToken,
+    LIVE_REFRESH_OPTIONS
   )
+
+  // The LIVE section: the four busiest scenes, "busiest" meaning anyone at all is in them.
+  //
+  // New layout reads presence from the destinations feed — the same source and order the grid and
+  // the explorer use, which is what makes the two surfaces agree. The feed sorts
+  // `highlighted DESC, live_user_count DESC`, so the busiest scenes sit inside the first
+  // LIVE_FEED_LIMIT rows; re-sorting by head count here is what turns that into "top four by
+  // people". `filter` already returns a fresh array, so sorting it in place leaves the cache alone.
+  //
+  // Legacy path keeps the old three-service join and the 5-user cut, which is what production ships.
+  const liveRail = useMemo(() => {
+    if (!showHighlights) return []
+    if (!newLayout) return filteredLiveCards.filter(placeIsLive).slice(0, LIVE_NOW_LIMIT)
+    return (liveFeedQuery.data?.data ?? [])
+      .filter(p => !isHiddenPlace(p) && placeHasPeople(p))
+      .sort((a, b) => placePlayers(b) - placePlayers(a))
+      .slice(0, LIVE_NOW_LIMIT)
+  }, [showHighlights, newLayout, filteredLiveCards, liveFeedQuery.data])
 
   // The curated rail shows every highlighted destination, live or not (the
   // API only marks a handful) — joined against the LIVE feed's real presence
@@ -400,18 +453,34 @@ function DiscoverHomePage() {
   // the empty-scene modal, and sorted so live ones lead the rail.
   const featuredCards = useMemo(() => {
     if (!showHighlights) return []
+    // Legacy: the featured query carried no presence, so the count is joined in from the live feed.
+    // New layout: the query asks for `with_realms_detail`, so the row already has the API's count
+    // and joining would overwrite it with 0 for anything the (skipped) legacy join never saw.
     const liveById = new Map(filteredLiveCards.map(c => [c.id, c.user_count ?? 0]))
+    const withPresence = (p: DiscoverPlace): DiscoverPlace => (newLayout ? p : { ...p, user_count: liveById.get(p.id) ?? 0 })
+    // Only the four cards the rail actually renders are removed: a featured place with people that
+    // missed the top four still belongs here.
+    const shownInLiveRail = new Set(newLayout ? liveRail.map(c => c.id) : [])
     return (featuredQuery.data?.data ?? [])
       .filter(p => !isHiddenPlace(p))
-      .map(p => ({ ...p, user_count: liveById.get(p.id) ?? 0 }))
+      .filter(p => !shownInLiveRail.has(p.id))
+      .map(withPresence)
       .sort((a, b) => (b.user_count ?? 0) - (a.user_count ?? 0))
-  }, [showHighlights, featuredQuery.data, filteredLiveCards])
+  }, [showHighlights, featuredQuery.data, filteredLiveCards, liveRail, newLayout])
 
-  // Explore All IS the /destinations feed: one page in the API's order, junk
-  // filtered, WITHOUT deduping against the rails — a filtering user should
-  // find everything here, so live + featured scenes repeat with their tags.
-  // Rows keep the feed's real-time `user_count` (with_realms_detail).
-  const exploreCards = useMemo<DiscoverPlace[]>(() => browseDestinations.filter(p => !isHiddenPlace(p)), [browseDestinations])
+  // Explore All IS the /destinations feed: one page in the API's order, junk filtered. Rows keep
+  // the feed's real-time `user_count` (with_realms_detail).
+  //
+  // The rails are subtracted only when the dedupe flag is on. `/destinations` returns
+  // `highlighted DESC` first, so without it the head of this grid IS the Featured rail verbatim
+  // (22 of 22 today) and the user scrolls past the same cards twice. Search and category filtering
+  // empty both rails, so results are never hidden from a query.
+  const exploreCards = useMemo<DiscoverPlace[]>(() => {
+    const kept = browseDestinations.filter(p => !isHiddenPlace(p))
+    if (!newLayout) return kept
+    const shownAbove = new Set([...liveRail.map(c => c.id), ...featuredCards.map(c => c.id)])
+    return kept.filter(p => !shownAbove.has(p.id))
+  }, [browseDestinations, newLayout, liveRail, featuredCards])
 
   // Wait for EVERYTHING on first paint — including the dependent worlds-
   // metadata batch fetch — so the rails and the grid appear together.
@@ -419,7 +488,8 @@ function DiscoverHomePage() {
   // don't re-trigger this gate.
   const isLoadingWorldsMetadata = liveWorldNames.length > 0 && worldsMetadataQuery.isLoading
   const isLoadingFeatured = showHighlights && featuredQuery.isLoading
-  const isInitialLoading = isLoadingLive || isLoadingBrowse || isLoadingWorldsMetadata || isLoadingFeatured
+  const isLoadingLiveFeed = newLayout && showHighlights && liveFeedQuery.isLoading
+  const isInitialLoading = isLoadingLive || isLoadingBrowse || isLoadingWorldsMetadata || isLoadingFeatured || isLoadingLiveFeed
   const isEmpty = !isInitialLoading && section === 'all' && featuredCards.length === 0 && exploreCards.length === 0
 
   // Cold load: render the spinner straight inside `CenteredBox` so the

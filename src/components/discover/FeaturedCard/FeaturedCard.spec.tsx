@@ -25,6 +25,11 @@ jest.mock('../../../hooks/useDeferredTrack', () => ({
 // can't parse); the card only consumes the pure helpers, so alias to them.
 jest.mock('../../../features/discover', () => jest.requireActual('../../../features/discover/discover.helpers'))
 
+const mockNewLayout = jest.fn()
+jest.mock('../../../features/discover/discover.flags', () => ({
+  useNewPlacesLayout: () => mockNewLayout()
+}))
+
 jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: (...args: unknown[]) => mockUseGetProfileQuery(...args)
 }))
@@ -71,6 +76,8 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
 describe('FeaturedCard', () => {
   beforeEach(() => {
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
+    // Off by default so every legacy assertion below keeps describing production.
+    mockNewLayout.mockReturnValue(false)
   })
 
   afterEach(() => {
@@ -235,6 +242,24 @@ describe('FeaturedCard', () => {
         SegmentEvent.DISCOVER_CLICK_FEATURED_CARD,
         expect.objectContaining({ place_id: expect.any(String), place_title: createPlace().title })
       )
+    })
+  })
+
+  describe('when the new layout is on', () => {
+    beforeEach(() => {
+      mockNewLayout.mockReturnValue(true)
+    })
+
+    it('should show LIVE for a featured scene hosting an event with nobody in it yet', () => {
+      render(<FeaturedCard place={createPlace({ user_count: 0, live: true })} />)
+
+      expect(screen.getByText('LIVE')).toBeInTheDocument()
+    })
+
+    it('should stay badge-free when no event is running', () => {
+      render(<FeaturedCard place={createPlace({ live: false })} />)
+
+      expect(screen.queryByText('LIVE')).not.toBeInTheDocument()
     })
   })
 })
