@@ -10,14 +10,14 @@ jest.mock('../features/profile/profile.client', () => ({
 
 const mockUseGetProfileQuery = useGetProfileQuery as jest.Mock
 
-const OWNER_ADDRESS = '0x1e105bb213754519903788022b962fe2b9c4b263'
-const CREATOR_ADDRESS = '0x8967ad851ccbd4c1a2d57a128d3c606fcab29bad'
-const FACE_URL = 'https://peer/face256.png'
+const OWNER_ADDRESS = '0x1111111111111111111111111111111111111111'
+const CREATOR_ADDRESS = '0x2222222222222222222222222222222222222222'
+const FACE_URL = 'https://peer.example.com/face256.png'
 
 // A land owner with a full profile: this is the shape that used to take the
 // credit away from the scene's author.
 const OWNER_PROFILE = {
-  data: { avatars: [{ name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: FACE_URL } } }] }
+  data: { avatars: [{ name: 'ExampleLandOwner', hasClaimedName: true, avatar: { snapshots: { face256: FACE_URL } } }] }
 }
 
 function buildPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
@@ -66,8 +66,26 @@ describe('when resolving the creator credited on a place', () => {
     it('should fall back to the profile name when the scene declares no usable contact', () => {
       const { result } = renderHook(() => usePlaceCreator(buildPlace({ creator_address: CREATOR_ADDRESS, contact_name: 'SDK' })))
 
-      expect(result.current.creatorName).toBe('LandOwner')
+      expect(result.current.creatorName).toBe('ExampleLandOwner')
       expect(result.current.creatorAvatar).toBe(FACE_URL)
+    })
+  })
+
+  describe('and the reported creator address is a free-text label rather than a wallet', () => {
+    beforeEach(() => {
+      mockUseGetProfileQuery.mockReturnValue(OWNER_PROFILE)
+    })
+
+    it('should fall back to the land owner instead of trusting the label as an address', () => {
+      renderHook(() => usePlaceCreator(buildPlace({ creator_address: 'Example Studio' })))
+
+      expect(mockUseGetProfileQuery).toHaveBeenCalledWith(OWNER_ADDRESS, { skip: false })
+    })
+
+    it('should keep hiding the owner face behind the credited contact', () => {
+      const { result } = renderHook(() => usePlaceCreator(buildPlace({ creator_address: 'Example Studio' })))
+
+      expect(result.current.creatorAvatar).toBe(getSyntheticAvatarUrl('Alice'))
     })
   })
 
@@ -124,7 +142,7 @@ describe('when resolving the creator credited on a place', () => {
     it('should fall back to the owner profile, face included', () => {
       const { result } = renderHook(() => usePlaceCreator(buildPlace({ contact_name: undefined })))
 
-      expect(result.current.creatorName).toBe('LandOwner')
+      expect(result.current.creatorName).toBe('ExampleLandOwner')
       expect(result.current.creatorAvatar).toBe(FACE_URL)
     })
   })
@@ -137,13 +155,13 @@ describe('when resolving the creator credited on a place', () => {
     it.each(['SDK', 'sdk', ' Sdk '])('should treat %s as no contact at all', contactName => {
       const { result } = renderHook(() => usePlaceCreator(buildPlace({ contact_name: contactName })))
 
-      expect(result.current.creatorName).toBe('LandOwner')
+      expect(result.current.creatorName).toBe('ExampleLandOwner')
     })
 
     it.each(['', '   '])('should treat an empty contact (%p) as no contact at all', contactName => {
       const { result } = renderHook(() => usePlaceCreator(buildPlace({ contact_name: contactName })))
 
-      expect(result.current.creatorName).toBe('LandOwner')
+      expect(result.current.creatorName).toBe('ExampleLandOwner')
     })
   })
 

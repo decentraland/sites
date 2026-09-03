@@ -3,7 +3,7 @@ import type { DiscoverPlace } from '../features/discover'
 // Deep import on purpose: the feature barrel re-exports the RTK Query client,
 // whose import.meta env access Jest cannot parse, and this hook only needs the
 // pure helpers.
-import { isJunkContactName, placeCreatorAddress } from '../features/discover/discover.helpers'
+import { isJunkContactName, placeCreatorIdentity } from '../features/discover/discover.helpers'
 import { getAvatarBackgroundColor, getDisplayName, getSyntheticAvatarUrl } from '../utils/avatarColor'
 import { useProfileAvatar } from './useProfileAvatar'
 
@@ -27,36 +27,39 @@ function usePlaceCreator(place: DiscoverPlace | undefined): PlaceCreator {
   // `creator_address` (the deploying wallet) before `owner` (the LAND holder),
   // the same order the /events place cards already use. Resolving `owner`
   // first is what pointed the two pages at different profiles.
-  const creatorAddress = placeCreatorAddress(place)
+  const { address, isDeployer } = placeCreatorIdentity(place)
   // Via useProfileAvatar rather than the raw query so this shares the broken
   // face256 guard with /events: catalyst sometimes hands back a snapshot URL
-  // the CDN 404s, and only that hook knows the URL is dead.
-  const { avatar, avatarFace, name: profileName } = useProfileAvatar(creatorAddress, { skip: !creatorAddress })
-  const hasClaimedName = avatar?.hasClaimedName
+  // the CDN 404s, and only that hook knows the URL is dead. Its background
+  // color is keyed off the profile's own `ethAddress`, so a checksummed
+  // `creator_address` and its lowercase `owner` twin can't disagree.
+  const { avatarFace, name: profileName, backgroundColor } = useProfileAvatar(address, { skip: !address })
 
   // `contact_name` comes from the scene's own scene.json, so it is the author
   // saying who made this, and it wins over the profile's display name.
   const contactName = isJunkContactName(place?.contact_name) ? undefined : place?.contact_name?.trim()
   const creatorName = contactName || profileName || undefined
 
-  // The face has to belong to whoever the line credits. When the places-api
-  // named the deploying wallet the profile IS the author, so the face is theirs
-  // whatever label the scene's contact field puts on them. The `owner`
-  // fallback carries no such guarantee — a studio deploying from a shared
-  // wallet is exactly the case that made the page credit one person for six
-  // games they had not built — so there the face is only shown when the
-  // by-line came from that same profile.
-  const authored = Boolean(place?.creator_address?.trim())
-  const creditedFace = authored || !contactName ? avatarFace : undefined
+  // NOTE: this narrows the face suppression #818 added, which dropped the
+  // snapshot for EVERY place declaring a contact name and so left almost every
+  // card on a synthetic disc. The face still has to belong to whoever the line
+  // credits, but when the places-api named the deploying wallet the profile IS
+  // the author, so the face is theirs whatever label the contact field uses.
+  // The `owner` fallback carries no such guarantee — a studio deploying from a
+  // shared wallet is exactly the case #818 fixed — so there the face is only
+  // shown when the by-line itself came from that profile.
+  const creditedFace = isDeployer || !contactName ? avatarFace : undefined
   const creatorAvatar = creditedFace || (creatorName ? getSyntheticAvatarUrl(creatorName) : undefined)
 
   const avatarBg = useMemo(() => {
     if (!creatorName) return undefined
-    // Key the color off the credited identity only: a contact name has no
-    // address, and borrowing the creator's would colour it after the wrong person.
-    const ethAddress = contactName ? undefined : creatorAddress
-    return getAvatarBackgroundColor(getDisplayName({ name: creatorName, hasClaimedName: hasClaimedName ?? false, ethAddress }))
-  }, [creatorName, contactName, hasClaimedName, creatorAddress])
+    // A contact name is a label with no address behind it, so it gets its own
+    // deterministic color; borrowing the creator's would colour it after the
+    // wrong person. When the by-line came from the profile, reuse the color
+    // that profile already resolved to.
+    if (!contactName) return backgroundColor
+    return getAvatarBackgroundColor(getDisplayName({ name: creatorName, hasClaimedName: false, ethAddress: undefined }))
+  }, [creatorName, contactName, backgroundColor])
 
   return { creatorName, creatorAvatar, avatarBg }
 }
