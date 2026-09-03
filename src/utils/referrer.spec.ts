@@ -4,7 +4,7 @@ const VALID = '0x24e5f44999c151f08609f8e27b2238c773c4d020'
 const OTHER = '0x1111111111111111111111111111111111111111'
 
 const setSearch = (search: string) => {
-  Object.defineProperty(window, 'location', { value: { ...window.location, search }, writable: true })
+  window.history.replaceState({}, '', search || '/')
 }
 
 describe('when parsing a referrer', () => {

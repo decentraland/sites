@@ -48,10 +48,14 @@ function readUrlReferrerParam(): string | null {
  * Reads a valid referrer off the CURRENT URL, with no side effects.
  *
  * Separate from `resolveReferrer` because it is safe to call during render: it
- * never touches session storage, so it neither clears a stored value nor
- * inherits one. Used by the download CTAs, which run on every route and only
- * need to forward the referrer that arrived on the URL they are rendered at
- * (see `buildDownloadTrackingParams`).
+ * never touches session storage, so it neither clears a stored value (which
+ * `resolveReferrer` does when the URL carries an invalid one — a render must not
+ * discard attribution) nor inherits one (which would attribute a download
+ * started anywhere in the tab to a referral picked up earlier). Used by the
+ * download CTAs (see `buildDownloadTrackingParams`), which run on every route
+ * and only need to forward the referrer that arrived on the URL they render at:
+ * `/download` resolves the stored value itself, so the query param is the only
+ * thing that was ever lost in that hop.
  */
 function readUrlReferrer(): string | null {
   return parseReferrer(readUrlReferrerParam())
