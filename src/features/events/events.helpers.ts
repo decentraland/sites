@@ -1,5 +1,6 @@
 import { assetUrl } from '../../utils/assetUrl'
 import { isSameLocalDay } from '../../utils/whatsOnDate'
+import { isWalletAddress, placeCreatorAddress } from '../discover/discover.helpers'
 import { DCL_FOUNDATION_NAME, coordsKey } from './events.discovery.helpers'
 import type { ActiveEntity, DeploymentResponse, HotScene } from './events.discovery.types'
 import type { EventEntry, RecurrentFrequency } from './events.types'
@@ -366,8 +367,6 @@ interface EnrichmentConfig {
   peerUrl?: string
 }
 
-const WALLET_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/
-
 // TODO: N+1 optimization — Places API supports comma-separated `positions` param for batch lookups.
 // `entities/active` and `deployments` already support batch queries (see `resolveDeployers` in
 // `events.discovery.ts` for the batch pattern). Collapse all place-card requests into batch calls.
@@ -395,9 +394,9 @@ async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig):
               patch.categories = place.categories || []
 
               const trimmedOwner = place.owner?.trim() || undefined
-              const ownerIsWallet = !!trimmedOwner && WALLET_ADDRESS_REGEX.test(trimmedOwner)
+              const ownerIsWallet = isWalletAddress(trimmedOwner)
               if (!card.creatorAddress) {
-                const address = place.creator_address?.trim() || (ownerIsWallet ? trimmedOwner : undefined)
+                const address = placeCreatorAddress(place)
                 if (address) patch.creatorAddress = address
               }
               if (!card.creatorName) {

@@ -6,9 +6,11 @@ import {
   isHiddenPlace,
   isJunkContactName,
   isMapPlaceholderImage,
+  isWalletAddress,
   parsePositionParam,
   placeCoordsLabel,
   placeCoverImage,
+  placeCreatorAddress,
   placeIsFeatured,
   placeLiveEventName,
   placePlayers
@@ -446,5 +448,56 @@ describe('when counting the tracks of a resolved grid-template-columns', () => {
 
   it('should ignore the padding browsers add between tracks', () => {
     expect(countGridTracks('  326px   326px  ')).toBe(2)
+  })
+})
+
+describe('when deciding whether a places-api owner is an address', () => {
+  it('should accept a checksummed wallet', () => {
+    expect(isWalletAddress('0x8967AD851cCbD4C1a2D57A128D3C606fCAB29bad')).toBe(true)
+  })
+
+  it('should accept a wallet padded by the API', () => {
+    expect(isWalletAddress('  0x8967ad851ccbd4c1a2d57a128d3c606fcab29bad  ')).toBe(true)
+  })
+
+  it.each(['Digital Fashion Week', 'Decentraland', '0xabc', ''])('should reject the free-text owner %p', value => {
+    expect(isWalletAddress(value)).toBe(false)
+  })
+
+  it.each([undefined, null])('should reject an absent owner (%p)', value => {
+    expect(isWalletAddress(value)).toBe(false)
+  })
+})
+
+describe('when resolving the address a place is credited to', () => {
+  const CREATOR = '0x8967ad851ccbd4c1a2d57a128d3c606fcab29bad'
+  const OWNER = '0x1e105bb213754519903788022b962fe2b9c4b263'
+
+  it('should prefer the wallet that deployed the scene over the land owner', () => {
+    expect(placeCreatorAddress({ owner: OWNER, creator_address: CREATOR })).toBe(CREATOR)
+  })
+
+  it('should trim the reported creator address', () => {
+    expect(placeCreatorAddress({ owner: null, creator_address: `  ${CREATOR}  ` })).toBe(CREATOR)
+  })
+
+  it('should fall back to the land owner when the scene reports no creator', () => {
+    expect(placeCreatorAddress({ owner: OWNER })).toBe(OWNER)
+  })
+
+  it.each(['', '   '])('should ignore an empty creator address (%p) and fall back', creatorAddress => {
+    expect(placeCreatorAddress({ owner: OWNER, creator_address: creatorAddress })).toBe(OWNER)
+  })
+
+  it('should ignore an owner that is a display label rather than a wallet', () => {
+    expect(placeCreatorAddress({ owner: 'Digital Fashion Week                      ' })).toBeUndefined()
+  })
+
+  it('should return nothing when the place carries no identity', () => {
+    expect(placeCreatorAddress({ owner: null })).toBeUndefined()
+  })
+
+  it('should return nothing when there is no place yet', () => {
+    expect(placeCreatorAddress(undefined)).toBeUndefined()
   })
 })
