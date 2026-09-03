@@ -884,10 +884,19 @@ describe('DiscoverHomePage', () => {
       expect(titles('place-card')).toEqual(expect.arrayContaining(['Four', 'Two', 'One']))
     })
 
-    it('should leave empty scenes out of the section', () => {
+    it('should leave empty scenes out of the section while the cut is at least one', () => {
       render(<DiscoverHomePage />)
 
       expect(titles('live-card')).not.toContain('Nobody')
+    })
+
+    it('should admit empty scenes when the cut is zero, so the rail never goes blank', () => {
+      mockLiveMinUsers.mockReturnValue(0)
+      liveFeed.data!.data = liveFeed.data!.data.filter(p => (p.user_count ?? 0) <= 1)
+
+      render(<DiscoverHomePage />)
+
+      expect(titles('live-card')).toEqual(['One', 'Nobody'])
     })
 
     it('should keep the promoted scenes out of the grid, in the order the feed returned', () => {

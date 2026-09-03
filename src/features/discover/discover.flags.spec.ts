@@ -111,7 +111,7 @@ describe('when resolving the LIVE minimum from its flag variant', () => {
     expect(result.current).toBe(DEFAULT_LIVE_MIN_USERS)
   })
 
-  it.each(['0', '-3', 'five', '', '2.5', '1e3', '5px'])('should fall back to the default for an unusable payload (%p)', async value => {
+  it.each(['-3', 'five', '', '2.5', '1e3', '5px'])('should fall back to the default for an unusable payload (%p)', async value => {
     fetchMock.mockReturnValue(
       flagsResponse({ 'dapps-places-live-min-user': true }, { 'dapps-places-live-min-user': minUsersVariant(value) })
     )
@@ -120,6 +120,15 @@ describe('when resolving the LIVE minimum from its flag variant', () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalled())
 
     expect(result.current).toBe(DEFAULT_LIVE_MIN_USERS)
+  })
+
+  it('should read "0" as no cut at all, which is what both hosts serve today', async () => {
+    fetchMock.mockReturnValue(flagsResponse({ 'dapps-places-live-min-user': true }, { 'dapps-places-live-min-user': minUsersVariant('0') }))
+
+    const { result } = renderHook(() => useLiveMinUsers())
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+
+    expect(result.current).toBe(0)
   })
 
   it.each([' 5', '5\n', ' 5 '])('should tolerate whitespace around the number (%p)', async value => {
