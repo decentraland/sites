@@ -15,6 +15,9 @@ const FEATURE_FLAGS_URL = 'https://feature-flags.decentraland.org/dapps.json'
 const FETCH_TIMEOUT_MS = 5_000
 
 let flags: Record<string, boolean> = {}
+// Unleash variants ride along in the same file: `{ name, payload: { type, value }, enabled }`. Only
+// the payload value is read here; a flag with a number or a list behind it puts it there.
+let variants: Record<string, { payload?: { value?: string } }> = {}
 let fetchStarted = false
 const listeners = new Set<() => void>()
 
@@ -28,12 +31,17 @@ async function runFetch(): Promise<void> {
     if (!response.ok) {
       throw new Error(`Feature flags responded with ${response.status}`)
     }
-    const data = (await response.json()) as { flags?: Record<string, boolean> }
+    const data = (await response.json()) as {
+      flags?: Record<string, boolean>
+      variants?: Record<string, { payload?: { value?: string } }>
+    }
     flags = data?.flags ?? {}
+    variants = data?.variants ?? {}
   } catch (error) {
     // Default off for every flag: a failed fetch must never turn a gated feature on.
     console.warn('[featureFlags] fetch failed', error)
     flags = {}
+    variants = {}
   }
   emitChange()
 }
@@ -55,6 +63,13 @@ function isFeatureFlagEnabled(name: string): boolean {
   return flags[name] === true
 }
 
+// The variant payload is only meaningful while its flag is on: the service can serve the flag for a
+// host without serving its variant (zone does today), so callers must keep their own default.
+function featureFlagVariant(name: string): string | undefined {
+  if (!isFeatureFlagEnabled(name)) return undefined
+  return variants[name]?.payload?.value
+}
+
 /**
  * Reads one remote flag from `dapps.json`. Returns false until the file loads, so a gated feature
  * stays off while the fetch is in flight and if it fails outright.
@@ -64,11 +79,21 @@ function useRemoteFeatureFlag(name: string): boolean {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 }
 
+/**
+ * Reads the variant payload behind a remote flag, as the raw string the service stores. Undefined
+ * while the file loads, when the flag is off, and when the flag is on but carries no variant.
+ */
+function useRemoteFeatureFlagVariant(name: string): string | undefined {
+  const getSnapshot = useCallback(() => featureFlagVariant(name), [name])
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+}
+
 /** @internal — exported for testing; not part of this module's public contract. */
 function resetFeatureFlagsForTests(): void {
   flags = {}
+  variants = {}
   fetchStarted = false
   listeners.clear()
 }
 
-export { resetFeatureFlagsForTests, useRemoteFeatureFlag }
+export { resetFeatureFlagsForTests, useRemoteFeatureFlag, useRemoteFeatureFlagVariant }

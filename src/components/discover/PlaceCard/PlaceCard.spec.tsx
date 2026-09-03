@@ -25,11 +25,6 @@ jest.mock('../../../hooks/useDeferredTrack', () => ({
 // can't parse); the card only consumes the pure helpers, so alias to them.
 jest.mock('../../../features/discover', () => jest.requireActual('../../../features/discover/discover.helpers'))
 
-const mockNewLayout = jest.fn()
-jest.mock('../../../features/discover/discover.flags', () => ({
-  useNewPlacesLayout: () => mockNewLayout()
-}))
-
 jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: (...args: unknown[]) => mockUseGetProfileQuery(...args)
 }))
@@ -81,8 +76,6 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
 describe('PlaceCard', () => {
   beforeEach(() => {
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
-    // Off by default so every legacy assertion below keeps describing production.
-    mockNewLayout.mockReturnValue(false)
   })
 
   afterEach(() => {
@@ -96,10 +89,11 @@ describe('PlaceCard', () => {
       place = createPlace({ user_count: 5 })
     })
 
-    it('should render the LIVE badge', () => {
+    it('should not turn the badge red for presence alone', () => {
+      // The head count next to it is what says people are here.
       render(<PlaceCard place={place} />)
 
-      expect(screen.getByText('LIVE')).toBeInTheDocument()
+      expect(screen.queryByText('LIVE')).not.toBeInTheDocument()
     })
 
     it('should render the live player count', () => {
@@ -372,11 +366,7 @@ describe('PlaceCard', () => {
     })
   })
 
-  describe('when the new layout is on', () => {
-    beforeEach(() => {
-      mockNewLayout.mockReturnValue(true)
-    })
-
+  describe('when deciding the LIVE badge', () => {
     it('should show LIVE for an event even with nobody in the scene', () => {
       render(<PlaceCard place={createPlace({ user_count: 0, live: true })} />)
 

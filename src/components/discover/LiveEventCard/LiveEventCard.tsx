@@ -12,7 +12,6 @@ import {
   placePlayers
 } from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
-import { useNewPlacesLayout } from '../../../features/discover/discover.flags'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
 import { usePlaceCreator } from '../../../hooks/usePlaceCreator'
@@ -62,7 +61,6 @@ function LiveEventCardComponent({ place }: LiveEventCardProps) {
   const { creatorName, creatorAvatar, avatarBg } = usePlaceCreator(place)
 
   const players = placePlayers(place)
-  const newLayout = useNewPlacesLayout()
   // A scene that qualifies for LIVE renders only here, so its Featured identity has to travel with
   // it — otherwise being busy would look like losing the badge.
   const isFeatured = placeIsFeatured(place)
@@ -114,11 +112,11 @@ function LiveEventCardComponent({ place }: LiveEventCardProps) {
             {/* ui2's badges — same animated LIVE pill What's On uses. */}
             <BadgeGroup>
               {/* LIVE means an event is running, not that people are here — presence is the count
-                  next to it. On the legacy path the badge still tracks presence. */}
-              {(newLayout ? placeHasLiveEvent(place) : true) && <LiveEventBadge eventName={placeLiveEventName(place)} />}
+                  next to it. */}
+              {placeHasLiveEvent(place) && <LiveEventBadge eventName={placeLiveEventName(place)} />}
               <UserCountBadge count={players} />
             </BadgeGroup>
-            {newLayout && isFeatured && (
+            {isFeatured && (
               <FeaturedBadge>
                 <MedalGlyph size="min(3.455cqw, 14px)" />
                 {t('discover.card.featured')}

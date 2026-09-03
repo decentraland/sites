@@ -10,12 +10,10 @@ import {
   placeHasLiveEvent,
   placeHasPeople,
   placeIsFeatured,
-  placeIsLive,
   placeLiveEventName,
   placePlayers
 } from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
-import { useNewPlacesLayout } from '../../../features/discover/discover.flags'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
 import { usePlaceCreator } from '../../../hooks/usePlaceCreator'
@@ -65,7 +63,6 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
   const { creatorName, creatorAvatar, avatarBg } = usePlaceCreator(place)
 
   const players = placePlayers(place)
-  const newLayout = useNewPlacesLayout()
   // Presence, which decides where a click goes: a scene with people opens the viewer, an empty one
   // opens the JUMP IN modal. Deliberately NOT the same question as the LIVE badge.
   const isLive = placeHasPeople(place)
@@ -124,7 +121,10 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
           <TopRow>
             {/* ui2's badges — same animated LIVE pill What's On uses. */}
             <BadgeGroup>
-              {(newLayout ? placeHasLiveEvent(place) : placeIsLive(place)) && <LiveEventBadge eventName={placeLiveEventName(place)} />}
+              {/* NOTE: until 2026-09-03 this card went red on presence (five or more people) whenever
+                  the repeat flag was off. LIVE now means an event is running, on every path; the
+                  head count next to it is what says people are here. */}
+              {placeHasLiveEvent(place) && <LiveEventBadge eventName={placeLiveEventName(place)} />}
               {players > 0 && <UserCountBadge count={players} />}
             </BadgeGroup>
             {isFeatured && (

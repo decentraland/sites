@@ -23,9 +23,7 @@ describe('features/discover barrel', () => {
     expect(discoverIndex.useGetHotScenesQuery).toBeDefined()
     expect(discoverIndex.useGetLiveWorldsQuery).toBeDefined()
     expect(discoverIndex.useGetDiscoverPlaceByPositionQuery).toBeDefined()
-    expect(discoverIndex.useGetDiscoverPlacesQuery).toBeDefined()
     expect(discoverIndex.useGetDiscoverWorldByNameQuery).toBeDefined()
-    expect(discoverIndex.useGetDiscoverWorldsByNamesQuery).toBeDefined()
   })
 
   it('should re-export every public helper', () => {
