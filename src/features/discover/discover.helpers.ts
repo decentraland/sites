@@ -63,27 +63,16 @@ function placeIsFeatured(place: DiscoverPlace): boolean {
   return place.highlighted === true
 }
 
-// Real-time presence count, normalized to 0 when absent. Only the LIVE feed
-// populates this from hot-scenes / live-data; BROWSE entries are stripped to 0.
-// A place counts as LIVE when at least this many people are in-world —
-// product-tunable (5 per the current spec); a couple of stragglers doesn't
-// make a scene "live".
-const LIVE_MIN_USERS = 5
-
-function placeIsLive(place: DiscoverPlace): boolean {
-  return placePlayers(place) >= LIVE_MIN_USERS
-}
-
-// Presence per the 2026-09-01 product decision: anybody at all in the scene counts. This REPLACES
-// LIVE_MIN_USERS on the new layout — the 5-user cut is only still consulted on the legacy path
-// behind the flag. Answers two different questions from one place: whether a scene belongs in the
-// LIVE section, and whether a card click opens the live viewer (people) or the JUMP IN modal (empty).
+// Anybody at all in the scene. Decides whether a card click opens the live viewer (people) or the
+// JUMP IN modal (empty). The LIVE section's own cut is `useLiveMinUsers()`, which may be higher.
+// NOTE: the fixed 5-user `LIVE_MIN_USERS` cut and its `placeIsLive` predicate were removed on
+// 2026-09-03 along with the legacy Live Now path they served; the threshold is now a flag variant.
 function placeHasPeople(place: DiscoverPlace): boolean {
   return placePlayers(place) > 0
 }
 
 // An event is running at the place right now, per the events API via `with_live_events`. This —
-// never presence — is what the red LIVE badge means on the new layout. `undefined` (the request did
+// never presence — is what the red LIVE badge means. `undefined` (the request did
 // not ask) reads as false so a card can never go red on a stale or partial row.
 function placeHasLiveEvent(place: DiscoverPlace): boolean {
   return place.live === true
@@ -218,7 +207,6 @@ export {
   placeHasLiveEvent,
   placeLiveEventName,
   placeHasPeople,
-  placeIsLive,
   placePlayers
 }
 export type { DiscoverCategory }

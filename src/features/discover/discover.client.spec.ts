@@ -39,9 +39,7 @@ import {
   useGetDiscoverDestinationsQuery,
   useGetDiscoverFavoritesQuery,
   useGetDiscoverPlaceByPositionQuery,
-  useGetDiscoverPlacesQuery,
   useGetDiscoverWorldByNameQuery,
-  useGetDiscoverWorldsByNamesQuery,
   useGetHotScenesQuery,
   useGetLiveWorldsQuery
 } from './discover.client'
@@ -138,9 +136,7 @@ describe('discover.client', () => {
     it('exposes every places-tier endpoint the social pages consume', () => {
       // `injectEndpoints({overrideExisting:false})` patches the same `placesClient`
       // instance. The endpoints registry is the source of truth.
-      expect(placesClient.endpoints).toHaveProperty('getDiscoverPlaces')
       expect(placesClient.endpoints).toHaveProperty('getDiscoverDestinations')
-      expect(placesClient.endpoints).toHaveProperty('getDiscoverWorldsByNames')
       expect(placesClient.endpoints).toHaveProperty('getHotScenes')
       expect(placesClient.endpoints).toHaveProperty('getLiveWorlds')
       expect(placesClient.endpoints).toHaveProperty('getDiscoverPlaceByPosition')
@@ -157,9 +153,7 @@ describe('discover.client', () => {
       // We treat the hook identities as opaque — only assert they exist and are
       // functions. RTK Query's generator builds these from endpoint names; if
       // any endpoint stops being injected the hook becomes undefined.
-      expect(typeof useGetDiscoverPlacesQuery).toBe('function')
       expect(typeof useGetDiscoverDestinationsQuery).toBe('function')
-      expect(typeof useGetDiscoverWorldsByNamesQuery).toBe('function')
       expect(typeof useGetHotScenesQuery).toBe('function')
       expect(typeof useGetLiveWorldsQuery).toBe('function')
       expect(typeof useGetDiscoverPlaceByPositionQuery).toBe('function')
@@ -274,69 +268,6 @@ describe('discover.client', () => {
       fetchMock.mockRejectedValue(new Error('network down'))
 
       const { result } = renderQuery(() => useGetDiscoverDestinationsQuery({ only_highlighted: true }))
-      await waitFor(() => expect(result.current.isError).toBe(true))
-
-      expect(result.current.error).toEqual({ status: 'FETCH_ERROR', error: 'network down' })
-    })
-  })
-
-  describe('when fetching discover places', () => {
-    it('should request /places with the default paging and sorting params', async () => {
-      const payload = { ok: true, total: 1, data: [createPlace()] }
-      fetchMock.mockResolvedValue(jsonResponse(payload))
-
-      const { result } = renderQuery(() => useGetDiscoverPlacesQuery({}))
-      await waitFor(() => expect(result.current.isSuccess).toBe(true))
-
-      expect(fetchMock).toHaveBeenCalledWith('https://places.test/api/places?limit=24&offset=0&order_by=most_active&order=desc')
-      expect(result.current.data).toEqual({ ok: true, total: 1, data: [createPlace()] })
-    })
-
-    it('should assemble search, owner and repeated categories params', async () => {
-      fetchMock.mockResolvedValue(jsonResponse({ ok: true, total: 0, data: [] }))
-
-      const { result } = renderQuery(() =>
-        useGetDiscoverPlacesQuery({
-          limit: 5,
-          offset: 10,
-          order_by: 'like_score',
-          order: 'asc',
-          search: 'club',
-          owner: '0xAbC',
-          categories: ['art', 'music']
-        })
-      )
-      await waitFor(() => expect(result.current.isSuccess).toBe(true))
-
-      expect(fetchMock).toHaveBeenCalledWith(
-        'https://places.test/api/places?limit=5&offset=10&order_by=like_score&order=asc&search=club&owner=0xAbC&categories=art&categories=music'
-      )
-    })
-
-    it('should fall back to the prod places API when the env key is missing', async () => {
-      mockEnvValues.PLACES_API_URL = undefined
-      fetchMock.mockResolvedValue(jsonResponse({ ok: true, total: 0, data: [] }))
-
-      const { result } = renderQuery(() => useGetDiscoverPlacesQuery({}))
-      await waitFor(() => expect(result.current.isSuccess).toBe(true))
-
-      expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('https://places.decentraland.org/api/places?'))
-    })
-
-    it('should surface a generic status error and log the raw body on a non-ok response', async () => {
-      fetchMock.mockResolvedValue(jsonResponse({ secret: 'server text' }, false, 500))
-
-      const { result } = renderQuery(() => useGetDiscoverPlacesQuery({}))
-      await waitFor(() => expect(result.current.isError).toBe(true))
-
-      expect(result.current.error).toEqual({ status: 500, data: null })
-      expect(warnSpy).toHaveBeenCalledWith('[discover.client] getDiscoverPlaces failed', expect.objectContaining({ status: 500 }))
-    })
-
-    it('should map a thrown fetch into a FETCH_ERROR', async () => {
-      fetchMock.mockRejectedValue(new Error('network down'))
-
-      const { result } = renderQuery(() => useGetDiscoverPlacesQuery({}))
       await waitFor(() => expect(result.current.isError).toBe(true))
 
       expect(result.current.error).toEqual({ status: 'FETCH_ERROR', error: 'network down' })
@@ -578,62 +509,6 @@ describe('discover.client', () => {
       await waitFor(() => expect(result.current.isError).toBe(true))
 
       expect(result.current.error).toEqual({ status: 'FETCH_ERROR', error: 'names down' })
-    })
-  })
-
-  describe('when batch-fetching worlds by names', () => {
-    it('should short-circuit to an empty list without a network call for zero names', async () => {
-      const { result } = renderQuery(() => useGetDiscoverWorldsByNamesQuery({ names: [] }))
-      await waitFor(() => expect(result.current.isSuccess).toBe(true))
-
-      expect(result.current.data).toEqual([])
-      expect(fetchMock).not.toHaveBeenCalled()
-    })
-
-    it('should append every name lowercased', async () => {
-      const payload = { ok: true, total: 1, data: [createPlace({ world: true, world_name: 'AliceWorld' })] }
-      fetchMock.mockResolvedValue(jsonResponse(payload))
-
-      const { result } = renderQuery(() => useGetDiscoverWorldsByNamesQuery({ names: ['AliceWorld', 'BobWorld'] }))
-      await waitFor(() => expect(result.current.isSuccess).toBe(true))
-
-      expect(fetchMock).toHaveBeenCalledWith('https://places.test/api/worlds?names=aliceworld&names=bobworld')
-      expect(result.current.data).toEqual([createPlace({ world: true, world_name: 'AliceWorld' })])
-    })
-
-    it('should dedupe cache entries when the same names arrive in a different order', async () => {
-      fetchMock.mockResolvedValue(jsonResponse({ ok: true, total: 0, data: [] }))
-
-      const store = buildStore()
-      // eslint-disable-next-line react/no-children-prop
-      const wrapper = ({ children }: { children?: ReactNode }) => createElement(Provider, { store, children })
-      const first = renderHook(() => useGetDiscoverWorldsByNamesQuery({ names: ['beta', 'alpha'] }), { wrapper })
-      const second = renderHook(() => useGetDiscoverWorldsByNamesQuery({ names: ['alpha', 'beta'] }), { wrapper })
-
-      await waitFor(() => expect(first.result.current.isSuccess).toBe(true))
-      await waitFor(() => expect(second.result.current.isSuccess).toBe(true))
-
-      // The sorted+joined serializeQueryArgs collapses both arg orders into one
-      // cache entry, so only a single request goes out.
-      expect(fetchMock).toHaveBeenCalledTimes(1)
-    })
-
-    it('should surface a generic status error on a non-ok response', async () => {
-      fetchMock.mockResolvedValue(unreadableErrorResponse(500))
-
-      const { result } = renderQuery(() => useGetDiscoverWorldsByNamesQuery({ names: ['aworld'] }))
-      await waitFor(() => expect(result.current.isError).toBe(true))
-
-      expect(result.current.error).toEqual({ status: 500, data: null })
-    })
-
-    it('should map a thrown fetch into a FETCH_ERROR', async () => {
-      fetchMock.mockRejectedValue(new Error('batch down'))
-
-      const { result } = renderQuery(() => useGetDiscoverWorldsByNamesQuery({ names: ['aworld'] }))
-      await waitFor(() => expect(result.current.isError).toBe(true))
-
-      expect(result.current.error).toEqual({ status: 'FETCH_ERROR', error: 'batch down' })
     })
   })
 

@@ -5,9 +5,7 @@ export {
   useGetHotScenesQuery,
   useGetLiveWorldsQuery,
   useGetDiscoverPlaceByPositionQuery,
-  useGetDiscoverPlacesQuery,
-  useGetDiscoverWorldByNameQuery,
-  useGetDiscoverWorldsByNamesQuery
+  useGetDiscoverWorldByNameQuery
 } from './discover.client'
 export {
   DISCOVER_CATEGORIES,
@@ -25,7 +23,6 @@ export {
   placeHasLiveEvent,
   placeLiveEventName,
   placeHasPeople,
-  placeIsLive,
   placePlayers
 } from './discover.helpers'
 export type { DiscoverCategory } from './discover.helpers'

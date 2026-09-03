@@ -63,16 +63,6 @@ type DiscoverOrderBy = 'most_active' | 'like_score' | 'created_at' | 'updated_at
 
 type DiscoverOrder = 'asc' | 'desc'
 
-interface GetDiscoverPlacesArgs {
-  limit?: number
-  offset?: number
-  order_by?: DiscoverOrderBy
-  order?: DiscoverOrder
-  search?: string
-  categories?: string[]
-  owner?: string
-}
-
 // `/destinations` — the combined places + worlds feed. Omitting `order_by`
 // gets the curated order (highlighted, then ranking); `most_active` puts the
 // scenes people are actually in on top, with curation as the tie-breaker.
@@ -128,7 +118,6 @@ export type {
   GetCommunitiesListArgs,
   GetDiscoverDestinationsArgs,
   GetDiscoverFavoritesArgs,
-  GetDiscoverPlacesArgs,
   HotScene,
   LiveWorldEntry,
   DiscoverCommunitiesResponse,

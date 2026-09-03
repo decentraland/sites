@@ -12,7 +12,6 @@ import {
   placePlayers
 } from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
-import { useNewPlacesLayout } from '../../../features/discover/discover.flags'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
 import { usePlaceCreator } from '../../../hooks/usePlaceCreator'
@@ -50,11 +49,10 @@ function FeaturedCardComponent({ place, onEmptyClick }: FeaturedCardProps) {
 
   const track = useDeferredTrack()
 
-  const newLayout = useNewPlacesLayout()
   const isLive = placeHasPeople(place)
   // A busy featured scene moves to the LIVE section, so the case left here is a scene hosting an
   // event with nobody in it yet — which is why the strip can't be gated on presence alone.
-  const hasLiveEvent = newLayout && placeHasLiveEvent(place)
+  const hasLiveEvent = placeHasLiveEvent(place)
 
   const handleClick = useCallback(() => {
     track(SegmentEvent.DISCOVER_CLICK_FEATURED_CARD, discoverPlacePayload(place))
