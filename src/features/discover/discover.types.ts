@@ -12,6 +12,9 @@ interface DiscoverPlace {
   base_position?: string
   owner: string | null
   contact_name?: string
+  // The wallet that deployed the scene. This — not `owner`, which is whoever
+  // holds the LAND or the world name — is who the places-api says made it.
+  creator_address?: string | null
   categories?: string[]
   highlighted?: boolean
   favorites?: number
@@ -26,6 +29,14 @@ interface DiscoverPlace {
   live_event_name?: string
   world?: boolean
   world_name?: string
+}
+
+// The subset of a places-api row that decides who a place is credited to.
+// Kept structural so the /events place-card enrichment, which reads the raw
+// API row rather than a DiscoverPlace, shares the same resolution rule.
+interface PlaceCreatorSource {
+  owner?: string | null
+  creator_address?: string | null
 }
 
 interface DiscoverPlacesResponse {
@@ -136,5 +147,6 @@ export type {
   DiscoverOrder,
   DiscoverOrderBy,
   DiscoverPlace,
-  DiscoverPlacesResponse
+  DiscoverPlacesResponse,
+  PlaceCreatorSource
 }
