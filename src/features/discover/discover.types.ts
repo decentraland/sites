@@ -39,6 +39,15 @@ interface PlaceCreatorSource {
   creator_address?: string | null
 }
 
+interface PlaceCreatorIdentity {
+  // The address whose catalyst profile the card credits, if any.
+  address: string | undefined
+  // Whether that address came from `creator_address`, i.e. the places-api
+  // itself named the wallet that deployed the scene, rather than from the
+  // `owner` fallback which may be a different person entirely.
+  isDeployer: boolean
+}
+
 interface DiscoverPlacesResponse {
   ok: boolean
   total: number
@@ -148,5 +157,6 @@ export type {
   DiscoverOrderBy,
   DiscoverPlace,
   DiscoverPlacesResponse,
+  PlaceCreatorIdentity,
   PlaceCreatorSource
 }

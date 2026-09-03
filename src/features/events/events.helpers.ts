@@ -1,6 +1,7 @@
 import { assetUrl } from '../../utils/assetUrl'
+import { isValidEthAddress } from '../../utils/avatar'
 import { isSameLocalDay } from '../../utils/whatsOnDate'
-import { isWalletAddress, placeCreatorAddress } from '../discover/discover.helpers'
+import { placeCreatorIdentity } from '../discover/discover.helpers'
 import { DCL_FOUNDATION_NAME, coordsKey } from './events.discovery.helpers'
 import type { ActiveEntity, DeploymentResponse, HotScene } from './events.discovery.types'
 import type { EventEntry, RecurrentFrequency } from './events.types'
@@ -394,9 +395,9 @@ async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig):
               patch.categories = place.categories || []
 
               const trimmedOwner = place.owner?.trim() || undefined
-              const ownerIsWallet = isWalletAddress(trimmedOwner)
+              const ownerIsWallet = isValidEthAddress(trimmedOwner)
               if (!card.creatorAddress) {
-                const address = placeCreatorAddress(place)
+                const { address } = placeCreatorIdentity(place)
                 if (address) patch.creatorAddress = address
               }
               if (!card.creatorName) {

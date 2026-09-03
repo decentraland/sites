@@ -18,11 +18,9 @@ export {
   discoverPlacePayload,
   isHiddenPlace,
   isJunkContactName,
-  isWalletAddress,
   parsePositionParam,
   placeCoordsLabel,
   placeCoverImage,
-  placeCreatorAddress,
   placeIsFeatured,
   placeHasLiveEvent,
   placeLiveEventName,
@@ -31,4 +29,4 @@ export {
   placePlayers
 } from './discover.helpers'
 export type { DiscoverCategory } from './discover.helpers'
-export type { HotScene, LiveWorldEntry, DiscoverCommunity, DiscoverPlace, PlaceCreatorSource } from './discover.types'
+export type { HotScene, LiveWorldEntry, DiscoverCommunity, DiscoverPlace } from './discover.types'

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention -- Segment payload keys are snake_case */
-import type { DiscoverPlace, PlaceCreatorSource } from './discover.types'
+import { isValidEthAddress } from '../../utils/avatar'
+import type { DiscoverPlace, PlaceCreatorIdentity, PlaceCreatorSource } from './discover.types'
 
 // Canonical category set used by the EXPLORE tab. Order mirrors what the
 // places-api exposes and what users expect from the standalone decentraland.social
@@ -136,27 +137,20 @@ function isJunkContactName(name?: string | null): boolean {
   return !trimmed || trimmed === 'sdk'
 }
 
-const WALLET_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/
-
-// `owner` doubles as a free-text label on some places-api records ("Digital
-// Fashion Week", "Decentraland"), so only a wallet-shaped value can be used as
-// an address.
-function isWalletAddress(value?: string | null): boolean {
-  return WALLET_ADDRESS_REGEX.test(value?.trim() ?? '')
-}
-
 // The address whose catalyst profile a place should be credited to. The
 // places-api reports the deploying wallet in `creator_address`, which is the
 // author; `owner` only holds the LAND or the world name, so it is the same
 // person by coincidence and stops being them the moment a studio deploys from
 // a shared wallet. Reading `owner` first is what made the /places cards resolve
 // a different profile than the /events cards, which already prefer
-// `creator_address` (see enrichPlaceCards).
-function placeCreatorAddress(place: PlaceCreatorSource | undefined): string | undefined {
+// `creator_address` (see enrichPlaceCards). Both columns leak free-text labels
+// ("Digital Fashion Week", "Decentraland"), so neither is usable unless it is
+// wallet-shaped.
+function placeCreatorIdentity(place: PlaceCreatorSource | undefined): PlaceCreatorIdentity {
   const creator = place?.creator_address?.trim()
-  if (creator) return creator
+  if (isValidEthAddress(creator)) return { address: creator, isDeployer: true }
   const owner = place?.owner?.trim()
-  return owner && isWalletAddress(owner) ? owner : undefined
+  return { address: isValidEthAddress(owner) ? owner : undefined, isDeployer: false }
 }
 
 // Number of tracks in a resolved `grid-template-columns`. Used to size the
@@ -231,14 +225,13 @@ export {
   countGridTracks,
   discoverDeepLinkOptions,
   isJunkContactName,
-  isWalletAddress,
   discoverPlacePayload,
   isHiddenPlace,
   isMapPlaceholderImage,
   parsePositionParam,
   placeCoordsLabel,
   placeCoverImage,
-  placeCreatorAddress,
+  placeCreatorIdentity,
   placeIsFeatured,
   placeHasLiveEvent,
   placeLiveEventName,
