@@ -1,10 +1,10 @@
-import { REFERRER_STORAGE_KEY, parseReferrer, readStoredReferrer, resolveReferrer, storeReferrer } from './referrer'
+import { REFERRER_STORAGE_KEY, parseReferrer, readStoredReferrer, readUrlReferrer, resolveReferrer, storeReferrer } from './referrer'
 
 const VALID = '0x24e5f44999c151f08609f8e27b2238c773c4d020'
 const OTHER = '0x1111111111111111111111111111111111111111'
 
 const setSearch = (search: string) => {
-  Object.defineProperty(window, 'location', { value: { ...window.location, search }, writable: true })
+  window.history.replaceState({}, '', search || '/')
 }
 
 describe('when parsing a referrer', () => {
@@ -98,5 +98,41 @@ describe('when resolving the referrer for a download', () => {
   it('should return null when neither source has a valid referrer', () => {
     setSearch('?referrer=garbage')
     expect(resolveReferrer()).toBeNull()
+  })
+})
+
+describe('when reading the referrer off the URL for a download CTA', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    setSearch('')
+  })
+  afterEach(() => {
+    window.sessionStorage.clear()
+    setSearch('')
+  })
+
+  it('should return the lowercased address carried by the param', () => {
+    setSearch('?referrer=0x24E5F44999C151F08609F8E27B2238C773C4D020')
+    expect(readUrlReferrer()).toBe(VALID)
+  })
+
+  it('should return null when the param is absent, ignoring the stored referrer', () => {
+    storeReferrer(OTHER)
+    setSearch('?position=10,20')
+    expect(readUrlReferrer()).toBeNull()
+  })
+
+  it.each(['?referrer=not-an-address', '?referrer='])('should return null for the invalid param %p', search => {
+    setSearch(search)
+    expect(readUrlReferrer()).toBeNull()
+  })
+
+  // Callable during render: unlike `resolveReferrer` it must never clear the
+  // stored value, so a render pass cannot discard the invite flow's attribution.
+  it('should leave the stored referrer untouched when the param is invalid', () => {
+    storeReferrer(OTHER)
+    setSearch('?referrer=not-an-address')
+    readUrlReferrer()
+    expect(readStoredReferrer()).toBe(OTHER)
   })
 })
