@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import type { Profile } from '../../../features/cast2/peer'
+import type { ProfileSummary } from '../../../features/profile/profile.types'
 import { PeopleStack } from './PeopleStack'
 
 const mockUseRemoteParticipants = jest.fn()
@@ -57,7 +57,7 @@ function participant(identity: string): { identity: string } {
 }
 
 describe('PeopleStack', () => {
-  let profiles: Map<string, Profile>
+  let profiles: Map<string, ProfileSummary>
 
   beforeEach(() => {
     profiles = new Map()
@@ -100,8 +100,16 @@ describe('PeopleStack', () => {
         participant('0xbbb0000000000000000000000000000000000b0b'),
         participant('0xaaa0000000000000000000000000000000000aaa')
       ])
-      profiles.set('0xaaa0000000000000000000000000000000000aaa', { name: 'Alice', hasClaimedName: true } as unknown as Profile)
-      profiles.set('0xbbb0000000000000000000000000000000000b0b', { name: 'bob', hasClaimedName: false } as unknown as Profile)
+      profiles.set('0xaaa0000000000000000000000000000000000aaa', {
+        address: '0xaaa0000000000000000000000000000000000aaa',
+        name: 'Alice',
+        hasClaimedName: true
+      })
+      profiles.set('0xbbb0000000000000000000000000000000000b0b', {
+        address: '0xbbb0000000000000000000000000000000000b0b',
+        name: 'bob',
+        hasClaimedName: false
+      })
     })
 
     it('should request profiles only for the 0x wallet identities', () => {

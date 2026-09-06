@@ -11,6 +11,7 @@ import { isMember as checkIsMember } from '../../../features/communities/communi
 import { Privacy, RequestStatus, RequestType } from '../../../features/communities/communities.types'
 import { mapCommunityEventToEventEntry } from '../../../features/communities/events.helpers'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useCommunityMemberCards } from '../../../hooks/useCommunityMemberCards'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
 import { usePaginatedCommunityEvents } from '../../../hooks/usePaginatedCommunityEvents'
 import { usePaginatedCommunityMembers } from '../../../hooks/usePaginatedCommunityMembers'
@@ -18,7 +19,7 @@ import { EventDetailModal } from '../../whats-on/EventDetailModal'
 import { CommunityInfo } from './CommunityInfo'
 import { describeError } from './errorUtils'
 import { EventsList } from './EventsList'
-import { type MemberCardProps, MembersList } from './MembersList'
+import { MembersList } from './MembersList'
 import { PrivateMessage } from './PrivateMessage'
 import { type TabType, Tabs } from './Tabs'
 import { AllowedAction, type CommunityDetailProps } from './CommunityDetail.types'
@@ -162,13 +163,7 @@ function CommunityDetailComponent({ community, isLoggedIn, address }: CommunityD
     handleRequestToJoin
   ])
 
-  const memberCards: MemberCardProps[] = members.map(item => ({
-    memberAddress: item.memberAddress,
-    name: item.name ?? item.memberAddress,
-    role: item.role,
-    profilePictureUrl: item.profilePictureUrl ?? '',
-    hasClaimedName: item.hasClaimedName ?? false
-  }))
+  const { memberCards, isResolvingProfiles } = useCommunityMemberCards(community.id, members)
 
   const eventListItems = events.map(mapCommunityEventToEventEntry)
 
@@ -199,7 +194,7 @@ function CommunityDetailComponent({ community, isLoggedIn, address }: CommunityD
                 <MembersColumn>
                   <MembersList
                     members={memberCards}
-                    isLoading={isLoadingMembers}
+                    isLoading={isLoadingMembers || isResolvingProfiles}
                     isFetchingMore={isFetchingMoreMembers}
                     hasMore={hasMoreMembers}
                     onLoadMore={loadMoreMembers}
@@ -227,7 +222,7 @@ function CommunityDetailComponent({ community, isLoggedIn, address }: CommunityD
               <MembersColumn>
                 <MembersList
                   members={memberCards}
-                  isLoading={isLoadingMembers}
+                  isLoading={isLoadingMembers || isResolvingProfiles}
                   isFetchingMore={isFetchingMoreMembers}
                   hasMore={hasMoreMembers}
                   onLoadMore={loadMoreMembers}

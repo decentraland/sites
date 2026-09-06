@@ -99,7 +99,7 @@ describe('MembersList', () => {
 
     beforeEach(() => {
       members = [
-        { memberAddress: '0x111', name: 'John Doe', role: 'admin', profilePictureUrl: '', hasClaimedName: false },
+        { memberAddress: '0x111', name: 'John Doe', role: Role.MODERATOR, profilePictureUrl: '', hasClaimedName: false },
         { memberAddress: '0x222', name: 'Jane Smith', role: Role.MEMBER, profilePictureUrl: '', hasClaimedName: true }
       ]
     })
@@ -112,7 +112,7 @@ describe('MembersList', () => {
 
     it('should display every role label', () => {
       renderMembersList({ members })
-      expect(screen.getByText('admin')).toBeInTheDocument()
+      expect(screen.getByText('moderator')).toBeInTheDocument()
       expect(screen.getByText('member')).toBeInTheDocument()
     })
 
@@ -135,7 +135,7 @@ describe('MembersList', () => {
   describe('when fetching more members', () => {
     it('should render a sentinel progress indicator', () => {
       renderMembersList({
-        members: [{ memberAddress: '0x1', name: 'A', role: 'admin', profilePictureUrl: '' }],
+        members: [{ memberAddress: '0x1', name: 'A', role: Role.MODERATOR, profilePictureUrl: '' }],
         hasMore: true,
         isFetchingMore: true
       })

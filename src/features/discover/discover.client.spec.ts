@@ -522,12 +522,12 @@ describe('discover.client', () => {
       )
     })
 
-    it('should request /v1/communities with default paging and onlyMemberOf=false', async () => {
+    it('should request /v2/communities with default paging and onlyMemberOf=false', async () => {
       const { result } = renderQuery(() => useGetCommunitiesListQuery({}))
       await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
       const request = fetchMock.mock.calls[0][0] as Request
-      expect(request.url).toBe('https://social.test/v1/communities?limit=24&offset=0&onlyMemberOf=false')
+      expect(request.url).toBe('https://social.test/v2/communities?limit=24&offset=0&onlyMemberOf=false')
       expect(result.current.data).toEqual({ data: { results: [], total: 0 } })
     })
 
@@ -536,7 +536,7 @@ describe('discover.client', () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
       const request = fetchMock.mock.calls[0][0] as Request
-      expect(request.url).toBe('https://social.test/v1/communities?limit=10&offset=20&onlyMemberOf=false&search=club')
+      expect(request.url).toBe('https://social.test/v2/communities?limit=10&offset=20&onlyMemberOf=false&search=club')
     })
   })
 })

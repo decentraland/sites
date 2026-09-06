@@ -243,7 +243,7 @@ const eventsClient = createApi({
       queryFn: async ({ identity }, { signal }) => {
         try {
           const baseUrl = getEnv('SOCIAL_API_URL')!
-          const url = `${baseUrl}/v1/communities?roles=owner&roles=moderator`
+          const url = `${baseUrl}/v2/communities?roles=owner&roles=moderator`
           const response = await fetchWithOptionalIdentity(url, identity, signal)
           if (!response.ok) {
             throw new Error(`communities error: ${response.status}`)

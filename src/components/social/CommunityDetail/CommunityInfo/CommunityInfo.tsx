@@ -8,7 +8,7 @@ import { useTabletAndBelowMediaQuery, useTabletMediaQuery, useTheme } from 'dece
 import { getRarityColor, getThumbnailUrl } from '../../../../features/communities/communities.helpers'
 import { Privacy } from '../../../../features/communities/communities.types'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
-import { useProfilePicture } from '../../../../hooks/useProfilePicture'
+import { useProfileAvatar } from '../../../../hooks/useProfileAvatar'
 import { SegmentEvent } from '../../../../modules/segment.types'
 import { redirectToAuth } from '../../../../utils/authRedirect'
 import { AllowedAction } from '../CommunityDetail.types'
@@ -61,7 +61,8 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
   const { track } = useAnalytics()
   const isTabletOrMobile = useTabletAndBelowMediaQuery()
   const isTablet = useTabletMediaQuery()
-  const ownerProfilePicture = useProfilePicture(community.ownerAddress)
+  // The /v2 community payload carries the owner address only — the name comes from the Catalyst.
+  const { avatarFace: ownerProfilePicture, name: ownerName } = useProfileAvatar(community.ownerAddress)
   const ownerAvatarBackgroundColor = useMemo(() => getRarityColor(theme, community.ownerAddress), [theme, community.ownerAddress])
 
   const thumbnailUrl = getThumbnailUrl(community.id)
@@ -186,7 +187,7 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
                 <OwnerAvatar src={ownerProfilePicture} backgroundColor={ownerAvatarBackgroundColor} />
               </OwnerAvatarContainer>
               <OwnerText>
-                {t('community.info.by')} <OwnerName>{community.ownerName ?? t('community.info.unknown')}</OwnerName>
+                {t('community.info.by')} <OwnerName>{ownerName ?? t('community.info.unknown')}</OwnerName>
               </OwnerText>
             </OwnerRow>
             <ActionButtons>

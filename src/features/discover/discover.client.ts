@@ -221,7 +221,7 @@ const discoverCommunitiesListEndpoints = socialClient.injectEndpoints({
         params.set('offset', String(offset))
         params.set('onlyMemberOf', 'false')
         if (search) params.set('search', search)
-        return `/v1/communities?${params.toString()}`
+        return `/v2/communities?${params.toString()}`
       }
     })
   }),

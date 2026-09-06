@@ -46,7 +46,6 @@ type Community = {
   name: string
   description: string
   ownerAddress: string
-  ownerName?: string
   privacy: Privacy
   visibility: Visibility
   active: boolean
@@ -65,14 +64,14 @@ type JoinCommunityResponse = {
   message?: string
 }
 
+// The /v2 endpoints are address-only: name, avatar and hasClaimedName are resolved
+// client-side from the Catalyst. `friendshipStatus` comes from the social graph and
+// is still returned.
 type CommunityMember = {
   communityId: string
   memberAddress: string
   role: Role
   joinedAt: string
-  profilePictureUrl?: string
-  hasClaimedName?: boolean
-  name?: string
   friendshipStatus?: number
 }
 

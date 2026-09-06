@@ -1,6 +1,8 @@
 import type { Theme } from 'decentraland-ui2'
-import { getRarityColor, getThumbnailUrl, isMember } from './communities.helpers'
+import type { ProfileSummary } from './../../features/profile/profile.types'
+import { getRarityColor, getThumbnailUrl, isMember, toMemberCards } from './communities.helpers'
 import { Role } from './communities.types'
+import type { CommunityMember } from './communities.types'
 
 jest.mock('../../config/env', () => ({
   getEnv: (key: string) => (key === 'ASSETS_CDN_URL' ? 'https://cdn.test' : undefined)
@@ -77,6 +79,73 @@ describe('communities.helpers', () => {
           palette: { secondary: { main: '#ABCDEF' } }
         } as unknown as Theme
         expect(getRarityColor(theme, '0xseed')).toBe('#ABCDEF')
+      })
+    })
+  })
+
+  describe('toMemberCards', () => {
+    let members: CommunityMember[]
+    let profiles: Map<string, ProfileSummary>
+
+    beforeEach(() => {
+      members = [
+        { communityId: 'c-1', memberAddress: '0xAAA', role: Role.OWNER, joinedAt: '2026-01-01T00:00:00Z' },
+        { communityId: 'c-1', memberAddress: '0xBBB', role: Role.MEMBER, joinedAt: '2026-01-02T00:00:00Z' }
+      ]
+      profiles = new Map()
+    })
+
+    describe('when a member has a resolved profile', () => {
+      beforeEach(() => {
+        profiles.set('0xaaa', { address: '0xaaa', name: 'mojito', hasClaimedName: true, avatarFace256: 'https://cdn.test/face.png' })
+      })
+
+      it('should use the profile name, face and claimed-name flag', () => {
+        expect(toMemberCards(members, profiles)[0]).toEqual({
+          memberAddress: '0xAAA',
+          name: 'mojito',
+          role: Role.OWNER,
+          profilePictureUrl: 'https://cdn.test/face.png',
+          hasClaimedName: true
+        })
+      })
+    })
+
+    describe('when a member has no profile', () => {
+      it('should keep the row and fall back to the address with an empty picture', () => {
+        expect(toMemberCards(members, profiles)[1]).toEqual({
+          memberAddress: '0xBBB',
+          name: '0xBBB',
+          role: Role.MEMBER,
+          profilePictureUrl: '',
+          hasClaimedName: false
+        })
+      })
+
+      it('should not drop the member from the result', () => {
+        expect(toMemberCards(members, profiles)).toHaveLength(2)
+      })
+    })
+
+    describe('when a resolved profile only has some fields', () => {
+      beforeEach(() => {
+        profiles.set('0xaaa', { address: '0xaaa', hasClaimedName: false })
+      })
+
+      it('should fall back per field', () => {
+        expect(toMemberCards(members, profiles)[0]).toEqual({
+          memberAddress: '0xAAA',
+          name: '0xAAA',
+          role: Role.OWNER,
+          profilePictureUrl: '',
+          hasClaimedName: false
+        })
+      })
+    })
+
+    describe('when there are no members', () => {
+      it('should return an empty list', () => {
+        expect(toMemberCards([], profiles)).toEqual([])
       })
     })
   })
