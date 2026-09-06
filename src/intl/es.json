@@ -1325,9 +1325,7 @@
     "scene": {
       "people_count": "{count, plural, one {# persona en el mundo} other {# personas en el mundo}}",
       "people_empty": "Nadie por acá todavía.",
-      "tab_video": "Stream",
       "tab_streaming": "DCL Web",
-      "resume_cta": "Ver en vivo",
       "close_media": "Detener",
       "fullscreen": "Pantalla completa",
       "exit_fullscreen": "Salir",

@@ -1559,9 +1559,7 @@
     "scene": {
       "people_count": "{count, plural, one {# person in-world} other {# people in-world}}",
       "people_empty": "Nobody here yet.",
-      "tab_video": "Stream",
       "tab_streaming": "DCL Web",
-      "resume_cta": "Watch Live",
       "close_media": "Stop",
       "fullscreen": "Fullscreen",
       "exit_fullscreen": "Exit fullscreen",

@@ -312,10 +312,8 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
           </ViewerHeader>
           <SceneWatcherCard
             status={canRenderWatcher ? room.status : 'loading'}
-            mode={room.mode}
             streamingHref={streamingHref}
             coverImage={place?.image || undefined}
-            initialUserCount={livePlayers}
             place={place}
           />
         </ViewerCard>
