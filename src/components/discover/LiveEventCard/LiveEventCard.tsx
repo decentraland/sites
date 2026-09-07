@@ -16,23 +16,11 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
 import { usePlaceCreator } from '../../../hooks/usePlaceCreator'
 import { SegmentEvent } from '../../../modules/segment.types'
-import { LiveEventBadge } from '../_shared'
+import { CreatorByLineName, LiveEventBadge } from '../_shared'
 import { JumpInGlyph, MedalGlyph } from '../_shared/CardIcons'
 import { FeaturedBadge, TopRow } from '../_shared/DiscoverShell.styled'
 import { useDiscoverJumpIn } from '../DiscoverJumpInProvider'
-import {
-  Avatar,
-  ByRow,
-  ByText,
-  Card,
-  CardContainer,
-  ContentBar,
-  CreatorName,
-  EventTitle,
-  JumpInWide,
-  Media,
-  SwapArea
-} from './LiveEventCard.styled'
+import { Avatar, ByRow, ByText, Card, CardContainer, ContentBar, EventTitle, JumpInWide, Media, SwapArea } from './LiveEventCard.styled'
 
 interface LiveEventCardProps {
   place: DiscoverPlace
@@ -58,7 +46,7 @@ function LiveEventCardComponent({ place }: LiveEventCardProps) {
   const detailHref = useMemo(() => buildDetailPath(place), [place])
 
   const { jumpIn } = useDiscoverJumpIn()
-  const { creatorName, creatorAvatar, avatarBg } = usePlaceCreator(place)
+  const { creatorAddress, creatorName, creatorAvatar, avatarBg } = usePlaceCreator(place)
 
   const players = placePlayers(place)
   // A scene that qualifies for LIVE renders only here, so its Featured identity has to travel with
@@ -76,6 +64,9 @@ function LiveEventCardComponent({ place }: LiveEventCardProps) {
   // Keyboard activation for the role="button" card (Enter / Space).
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      // Enter on the JUMP IN button or the creator name bubbles up here, and
+      // would navigate into the scene on top of whatever the control did.
+      if (e.target !== e.currentTarget) return
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
         handleClick()
@@ -134,7 +125,7 @@ function LiveEventCardComponent({ place }: LiveEventCardProps) {
                 <>
                   {creatorAvatar && <Avatar src={creatorAvatar} alt="" loading="lazy" $bg={avatarBg} />}
                   <ByText>
-                    {t('discover.card.by')} <CreatorName>{creatorName}</CreatorName>
+                    {t('discover.card.by')} <CreatorByLineName name={creatorName} address={creatorAddress} inactive={byRowHidden} />
                   </ByText>
                 </>
               )}

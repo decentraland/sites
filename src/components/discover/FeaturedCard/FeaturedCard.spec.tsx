@@ -318,7 +318,9 @@ describe('FeaturedCard', () => {
       expect(screen.getByAltText('LandOwner')).toHaveAttribute('src', 'https://peer.decentraland.org/face256.png')
     })
 
-    it('should NOT put the land owner face next to a contact name', () => {
+    it('should show the resolved face next to the contact name it belongs to', () => {
+      // Suppressing it left a synthetic disc on nearly every card, because
+      // almost every scene declares a contact name.
       mockUseGetProfileQuery.mockReturnValue({
         data: { avatars: [{ name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer/face.png' } } }] }
       })
@@ -326,7 +328,7 @@ describe('FeaturedCard', () => {
 
       expect(screen.getByText('CuratorName')).toBeInTheDocument()
       expect(screen.queryByText('LandOwner')).not.toBeInTheDocument()
-      expect(screen.getByAltText('CuratorName').getAttribute('src')).toMatch(/^data:image\/svg\+xml/)
+      expect(screen.getByAltText('CuratorName')).toHaveAttribute('src', 'https://peer/face.png')
     })
 
     it('should skip the profile request and use a synthetic avatar when there is no owner', () => {

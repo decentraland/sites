@@ -1279,7 +1279,9 @@
       "featured": "Destacado"
     },
     "live": {
-      "heading": "En vivo"
+      "heading": "En vivo",
+      "scroll_previous": "Lugares en vivo anteriores",
+      "scroll_next": "Más lugares en vivo"
     },
     "explore": {
       "search_placeholder": "Buscar lugares",
@@ -1310,6 +1312,7 @@
       "signin_favourites": "Inicia sesión y marca lugares como favoritos para verlos aquí.",
       "empty_favourites": "Todavía no marcaste ningún lugar como favorito.",
       "signin_my_places": "Inicia sesión para ver los lugares que creaste.",
+      "sign_in": "Iniciar sesión",
       "empty_my_places": "Todavía no publicaste ningún lugar.",
       "error": "Algo salió mal al cargar los lugares.",
       "retry": "Reintentar"

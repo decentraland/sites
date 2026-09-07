@@ -1,7 +1,7 @@
 import { assetUrl } from '../../utils/assetUrl'
 import { isValidEthAddress } from '../../utils/avatar'
 import { isSameLocalDay } from '../../utils/whatsOnDate'
-import { placeCreatorIdentity } from '../discover/discover.helpers'
+import { placeCreatorAddress } from '../discover/discover.helpers'
 import { DCL_FOUNDATION_NAME, coordsKey } from './events.discovery.helpers'
 import type { ActiveEntity, DeploymentResponse, HotScene } from './events.discovery.types'
 import type { EventEntry, RecurrentFrequency } from './events.types'
@@ -397,7 +397,10 @@ async function enrichPlaceCards(cards: LiveNowCard[], config: EnrichmentConfig):
               const trimmedOwner = place.owner?.trim() || undefined
               const ownerIsWallet = isValidEthAddress(trimmedOwner)
               if (!card.creatorAddress) {
-                const { address } = placeCreatorIdentity(place)
+                // NOTE: `creator_address` now has to be wallet-shaped, where this used to
+                // take any non-empty string. Both columns leak free-text labels, and the
+                // rule lives in one helper so /places and /events credit the same person.
+                const address = placeCreatorAddress(place)
                 if (address) patch.creatorAddress = address
               }
               if (!card.creatorName) {

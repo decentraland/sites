@@ -1,7 +1,8 @@
 import { renderHook } from '@testing-library/react'
 import type { DiscoverPlace } from '../features/discover'
+import { DCL_FOUNDATION_LOGO_URL } from '../features/events/events.helpers'
 import { useGetProfileQuery } from '../features/profile/profile.client'
-import { getSyntheticAvatarUrl } from '../utils/avatarColor'
+import { DCL_FOUNDATION_BACKGROUND_COLOR, getSyntheticAvatarUrl } from '../utils/avatarColor'
 import { usePlaceCreator } from './usePlaceCreator'
 
 jest.mock('../features/profile/profile.client', () => ({
@@ -82,10 +83,10 @@ describe('when resolving the creator credited on a place', () => {
       expect(mockUseGetProfileQuery).toHaveBeenCalledWith(OWNER_ADDRESS, { skip: false })
     })
 
-    it('should keep hiding the owner face behind the credited contact', () => {
+    it('should still show the owner face, since that is the profile the by-line opens', () => {
       const { result } = renderHook(() => usePlaceCreator(buildPlace({ creator_address: 'Example Studio' })))
 
-      expect(result.current.creatorAvatar).toBe(getSyntheticAvatarUrl('Alice'))
+      expect(result.current.creatorAvatar).toBe(FACE_URL)
     })
   })
 
@@ -100,19 +101,28 @@ describe('when resolving the creator credited on a place', () => {
       expect(result.current.creatorName).toBe('Alice')
     })
 
-    it('should NOT show the land owner face next to somebody else name', () => {
+    it('should show the owner face, the same profile the by-line opens', () => {
+      // The alternative left a synthetic disc on nearly every card: almost every
+      // scene declares a contact name and most resolve no creator_address.
       const { result } = renderHook(() => usePlaceCreator(buildPlace()))
 
-      expect(result.current.creatorAvatar).toBe(getSyntheticAvatarUrl('Alice'))
+      expect(result.current.creatorAvatar).toBe(FACE_URL)
+      expect(result.current.creatorAddress).toBe(OWNER_ADDRESS)
     })
 
-    it('should colour the avatar after the credited contact, not the owner address', () => {
+    it('should colour the avatar after the resolved profile when there is one', () => {
       const { result } = renderHook(() => usePlaceCreator(buildPlace()))
-      const withoutOwner = renderHook(() => usePlaceCreator(buildPlace({ owner: null })))
 
-      // Same contact, so the same color whoever holds the land.
-      expect(result.current.avatarBg).toBe(withoutOwner.result.current.avatarBg)
       expect(result.current.avatarBg).toEqual(expect.stringMatching(/^#/))
+    })
+
+    it('should fall back to a name-derived colour when no wallet resolves', () => {
+      mockUseGetProfileQuery.mockReturnValue({ data: undefined })
+      const { result } = renderHook(() => usePlaceCreator(buildPlace({ owner: null })))
+
+      expect(result.current.creatorAvatar).toBe(getSyntheticAvatarUrl('Alice'))
+      expect(result.current.avatarBg).toEqual(expect.stringMatching(/^#/))
+      expect(result.current.creatorAddress).toBeUndefined()
     })
 
     it('should trim the contact name', () => {
@@ -182,11 +192,11 @@ describe('when resolving the creator credited on a place', () => {
       })
     })
 
-    it('should credit the contact and still keep its own avatar', () => {
+    it('should credit the contact and show the snapshot the profile carries', () => {
       const { result } = renderHook(() => usePlaceCreator(buildPlace()))
 
       expect(result.current.creatorName).toBe('Alice')
-      expect(result.current.creatorAvatar).toBe(getSyntheticAvatarUrl('Alice'))
+      expect(result.current.creatorAvatar).toBe(FACE_URL)
     })
 
     it('should render no by-line when there is no contact either', () => {
@@ -208,7 +218,7 @@ describe('when resolving the creator credited on a place', () => {
     it('should return undefined for every field and skip the profile query', () => {
       const { result } = renderHook(() => usePlaceCreator(buildPlace({ owner: null, contact_name: undefined })))
 
-      expect(result.current).toEqual({ creatorName: undefined, creatorAvatar: undefined, avatarBg: undefined })
+      expect(result.current).toEqual({ creatorName: undefined, creatorAvatar: undefined, avatarBg: undefined, creatorAddress: undefined })
       expect(mockUseGetProfileQuery).toHaveBeenCalledWith(undefined, { skip: true })
     })
   })
@@ -219,6 +229,24 @@ describe('when resolving the creator credited on a place', () => {
 
       expect(result.current.creatorName).toBeUndefined()
       expect(result.current.creatorAvatar).toBeUndefined()
+    })
+  })
+
+  describe('and the scene is credited to the Decentraland Foundation', () => {
+    it('should paint the DCL logo instead of probing a profile', () => {
+      const { result } = renderHook(() => usePlaceCreator(buildPlace({ contact_name: 'Decentraland Foundation', owner: null })))
+
+      expect(result.current.creatorName).toBe('Decentraland Foundation')
+      expect(result.current.creatorAvatar).toBe(DCL_FOUNDATION_LOGO_URL)
+      expect(result.current.avatarBg).toBe(DCL_FOUNDATION_BACKGROUND_COLOR)
+      expect(mockUseGetProfileQuery).toHaveBeenCalledWith(undefined, { skip: true })
+    })
+
+    it('should not offer a profile to open, since the Foundation has none', () => {
+      const { result } = renderHook(() => usePlaceCreator(buildPlace({ contact_name: '  decentraland foundation  ' })))
+
+      expect(result.current.creatorName).toBe('Decentraland Foundation')
+      expect(result.current.creatorAddress).toBeUndefined()
     })
   })
 })

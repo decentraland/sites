@@ -358,8 +358,46 @@ const CarouselSlide = styled(Box)(({ theme }) => ({
   }
 }))
 
-// Dot indicators under the mobile carousel — hidden on desktop (the grid shows
-// every card at once).
+// Positioning context for the rail arrows. The rail itself is the scrollport and
+// carries negative margins, so the arrows can't anchor to it without riding
+// along as it scrolls.
+const LiveRailLayer = styled(Box)({
+  position: 'relative'
+})
+
+// Desktop scroll affordance. Four 300px cards outgrow any viewport under about
+// 1300px, and the rail hides its scrollbar while a wheel only scrolls
+// vertically — so without these the last card was visible but unreachable.
+// Mobile swipes and has the dots instead.
+const LiveNavButton = styled('button', { shouldForwardProp: prop => prop !== '$side' })<{ $side: 'left' | 'right' }>(
+  ({ theme, $side }) => ({
+    position: 'absolute',
+    top: '50%',
+    [$side]: theme.spacing(1),
+    transform: 'translateY(-50%)',
+    zIndex: 2,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 40,
+    height: 40,
+    padding: 0,
+    border: 'none',
+    borderRadius: '50%',
+    cursor: 'pointer',
+    color: SNOW,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    transition: theme.transitions.create('background-color', { duration: theme.transitions.duration.short }),
+    ['&:hover']: { backgroundColor: 'rgba(0, 0, 0, 0.7)' },
+    ['&:active']: { backgroundColor: 'rgba(0, 0, 0, 0.85)' },
+    ['&:focus-visible']: { outline: `2px solid ${SNOW}`, outlineOffset: 2 },
+    ['&:disabled']: { opacity: 0.35, cursor: 'default' },
+    [theme.breakpoints.down('sm')]: { display: 'none' }
+  })
+)
+
+// Dot indicators under the mobile carousel — hidden on desktop (the arrows take
+// over there).
 const CarouselDots = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
@@ -459,7 +497,9 @@ export {
   LiveGrid,
   LoadMoreSentinel,
   LiveHeading,
+  LiveNavButton,
   LiveNowSection,
+  LiveRailLayer,
   SearchSlot,
   SectionTitle,
   TabPill,

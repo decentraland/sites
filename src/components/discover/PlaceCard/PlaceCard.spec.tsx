@@ -8,7 +8,9 @@ const mockNavigate = jest.fn()
 const mockUseGetProfileQuery = jest.fn()
 
 jest.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate
+  useNavigate: () => mockNavigate,
+  // The creator by-line resolves where to open a profile from the current URL.
+  useLocation: () => ({ pathname: '/places', search: '' })
 }))
 
 const mockJumpIn = jest.fn()
@@ -354,6 +356,31 @@ describe('PlaceCard', () => {
       const { container } = render(<PlaceCard place={createPlace({ owner: null })} />)
 
       expect(container.querySelector('img')?.getAttribute('src')).toMatch(/^data:image\/svg\+xml/)
+    })
+  })
+
+  describe('when the by-line credits a resolved wallet', () => {
+    it('should open that profile without also entering the scene', () => {
+      render(<PlaceCard place={createPlace()} />)
+
+      fireEvent.click(screen.getByText('CreatorName'))
+
+      // No ProfileModalHost in this tree, so the hook falls back to the profile
+      // route. Either way the click must not reach the card underneath.
+      expect(mockNavigate).toHaveBeenCalledTimes(1)
+      expect(mockNavigate).toHaveBeenCalledWith('/profile/0x1111111111111111111111111111111111111111')
+    })
+
+    // The card trades the by-line for the JUMP IN CTA on hover, which makes the
+    // row transparent, pointer-blocked and aria-hidden — so the control leaves
+    // the tab order with it. Reaching it with a mouse needs that swap to change.
+    it('should drop the control from the tab order while the CTA is shown', () => {
+      render(<PlaceCard place={createPlace()} />)
+      expect(screen.getByText('CreatorName')).toHaveAttribute('tabindex', '0')
+
+      fireEvent.mouseEnter(screen.getByText('Genesis Plaza').closest('[role="button"]') as HTMLElement)
+
+      expect(screen.getByText('CreatorName')).toHaveAttribute('tabindex', '-1')
     })
   })
 

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention -- Segment payload keys are snake_case */
 import { isValidEthAddress } from '../../utils/avatar'
-import type { DiscoverPlace, PlaceCreatorIdentity, PlaceCreatorSource } from './discover.types'
+import type { DiscoverPlace, PlaceCreatorSource } from './discover.types'
 
 // Canonical category set used by the EXPLORE tab. Order mirrors what the
 // places-api exposes and what users expect from the standalone decentraland.social
@@ -135,11 +135,11 @@ function isJunkContactName(name?: string | null): boolean {
 // `creator_address` (see enrichPlaceCards). Both columns leak free-text labels
 // ("Digital Fashion Week", "Decentraland"), so neither is usable unless it is
 // wallet-shaped.
-function placeCreatorIdentity(place: PlaceCreatorSource | undefined): PlaceCreatorIdentity {
+function placeCreatorAddress(place: PlaceCreatorSource | undefined): string | undefined {
   const creator = place?.creator_address?.trim()
-  if (isValidEthAddress(creator)) return { address: creator, isDeployer: true }
+  if (isValidEthAddress(creator)) return creator
   const owner = place?.owner?.trim()
-  return { address: isValidEthAddress(owner) ? owner : undefined, isDeployer: false }
+  return isValidEthAddress(owner) ? owner : undefined
 }
 
 // Number of tracks in a resolved `grid-template-columns`. Used to size the
@@ -220,7 +220,7 @@ export {
   parsePositionParam,
   placeCoordsLabel,
   placeCoverImage,
-  placeCreatorIdentity,
+  placeCreatorAddress,
   placeIsFeatured,
   placeHasLiveEvent,
   placeLiveEventName,

@@ -31,21 +31,16 @@ interface DiscoverPlace {
   world_name?: string
 }
 
+// Toolbar sections on the /places landing, mirroring the Figma "Experiences
+// tabs". Also the `?tab=` values the signed-out prompts round-trip through SSO.
+type ExploreSection = 'all' | 'favourites' | 'my'
+
 // The subset of a places-api row that decides who a place is credited to.
 // Kept structural so the /events place-card enrichment, which reads the raw
 // API row rather than a DiscoverPlace, shares the same resolution rule.
 interface PlaceCreatorSource {
   owner?: string | null
   creator_address?: string | null
-}
-
-interface PlaceCreatorIdentity {
-  // The address whose catalyst profile the card credits, if any.
-  address: string | undefined
-  // Whether that address came from `creator_address`, i.e. the places-api
-  // itself named the wallet that deployed the scene, rather than from the
-  // `owner` fallback which may be a different person entirely.
-  isDeployer: boolean
 }
 
 interface DiscoverPlacesResponse {
@@ -146,6 +141,6 @@ export type {
   DiscoverOrderBy,
   DiscoverPlace,
   DiscoverPlacesResponse,
-  PlaceCreatorIdentity,
+  ExploreSection,
   PlaceCreatorSource
 }

@@ -9,7 +9,7 @@ import {
   parsePositionParam,
   placeCoordsLabel,
   placeCoverImage,
-  placeCreatorIdentity,
+  placeCreatorAddress,
   placeIsFeatured,
   placeLiveEventName,
   placePlayers
@@ -450,42 +450,42 @@ describe('when counting the tracks of a resolved grid-template-columns', () => {
   })
 })
 
-describe('when resolving the identity a place is credited to', () => {
+describe('when resolving the address a place is credited to', () => {
   const CREATOR = '0x2222222222222222222222222222222222222222'
   const OWNER = '0x1111111111111111111111111111111111111111'
 
   it('should prefer the wallet that deployed the scene over the land owner', () => {
-    expect(placeCreatorIdentity({ owner: OWNER, creator_address: CREATOR })).toEqual({ address: CREATOR, isDeployer: true })
+    expect(placeCreatorAddress({ owner: OWNER, creator_address: CREATOR })).toBe(CREATOR)
   })
 
   it('should trim the reported creator address', () => {
-    expect(placeCreatorIdentity({ owner: null, creator_address: `  ${CREATOR}  ` })).toEqual({ address: CREATOR, isDeployer: true })
+    expect(placeCreatorAddress({ owner: null, creator_address: `  ${CREATOR}  ` })).toBe(CREATOR)
   })
 
   it('should fall back to the land owner when the scene reports no creator', () => {
-    expect(placeCreatorIdentity({ owner: OWNER })).toEqual({ address: OWNER, isDeployer: false })
+    expect(placeCreatorAddress({ owner: OWNER })).toBe(OWNER)
   })
 
   it.each(['', '   '])('should ignore an empty creator address (%p) and fall back', creatorAddress => {
-    expect(placeCreatorIdentity({ owner: OWNER, creator_address: creatorAddress })).toEqual({ address: OWNER, isDeployer: false })
+    expect(placeCreatorAddress({ owner: OWNER, creator_address: creatorAddress })).toBe(OWNER)
   })
 
   it('should ignore a creator address that is a display label rather than a wallet', () => {
-    expect(placeCreatorIdentity({ owner: OWNER, creator_address: 'Example Studio' })).toEqual({ address: OWNER, isDeployer: false })
+    expect(placeCreatorAddress({ owner: OWNER, creator_address: 'Example Studio' })).toBe(OWNER)
   })
 
   it.each(['Digital Fashion Week                      ', 'Decentraland', '0xabc'])(
     'should ignore the owner label %p, which is not a wallet',
     owner => {
-      expect(placeCreatorIdentity({ owner })).toEqual({ address: undefined, isDeployer: false })
+      expect(placeCreatorAddress({ owner })).toBe(undefined)
     }
   )
 
   it('should return nothing when the place carries no identity', () => {
-    expect(placeCreatorIdentity({ owner: null })).toEqual({ address: undefined, isDeployer: false })
+    expect(placeCreatorAddress({ owner: null })).toBe(undefined)
   })
 
   it('should return nothing when there is no place yet', () => {
-    expect(placeCreatorIdentity(undefined)).toEqual({ address: undefined, isDeployer: false })
+    expect(placeCreatorAddress(undefined)).toBe(undefined)
   })
 })

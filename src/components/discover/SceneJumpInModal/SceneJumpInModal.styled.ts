@@ -1,5 +1,6 @@
 import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
 import { safeCssUrl } from '../../../utils/safeCssUrl'
+import { CreatorName as SharedCreatorName } from '../_shared/CreatorByLineName.styled'
 import { MEDIA_FALLBACK, SCENE_PANEL_GRADIENT } from '../_shared/DiscoverShell.styled'
 
 // JUMP IN modal — pixel-matched to the Figma (2006:53288, 880×733): shown in
@@ -153,8 +154,8 @@ const ByText = styled(Typography)({
   whiteSpace: 'nowrap'
 })
 
-const CreatorName = styled('span')({
-  color: RUBY,
+// The shared by-line name, at this surface's heavier weight.
+const CreatorName = styled(SharedCreatorName)({
   fontWeight: 500
 })
 

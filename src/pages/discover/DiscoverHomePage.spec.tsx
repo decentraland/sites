@@ -16,12 +16,19 @@ const mockRepeat = jest.fn()
 const mockLiveMinUsers = jest.fn()
 const mockHideFeatured = jest.fn()
 
+// The signed-out prompt reaches `utils/authRedirect`, which reads the env
+// config through `import.meta` — unparseable under ts-jest.
+jest.mock('../../config/env')
+
 jest.mock('react-helmet-async', () => ({
   Helmet: () => null
 }))
 
 jest.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate
+  useNavigate: () => mockNavigate,
+  // The creator by-line resolves where to open a profile from the current URL.
+  useLocation: () => ({ pathname: '/places', search: window.location.search }),
+  useSearchParams: () => [new URLSearchParams(window.location.search), jest.fn()]
 }))
 
 jest.mock('@dcl/hooks', () => ({
@@ -136,6 +143,11 @@ jest.mock('decentraland-ui2', () => {
           {children}
         </div>
       ) : null,
+    Button: ({ children, onClick }: { children?: React.ReactNode; onClick?: () => void }) => (
+      <button type="button" onClick={onClick}>
+        {children}
+      </button>
+    ),
     IconButton: ({ children, ...rest }: { children?: React.ReactNode } & Record<string, unknown>) => (
       <button type="button" {...rest}>
         {children}
@@ -571,6 +583,82 @@ describe('DiscoverHomePage', () => {
       fireEvent.click(screen.getByRole('button', { name: 'GhostWorld' }))
 
       expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    })
+  })
+
+  describe('when the Live Now rail is wider than the viewport', () => {
+    let scrollBy: jest.Mock
+
+    function stretchRail(clientWidth: number, scrollWidth: number, scrollLeft: number): HTMLElement {
+      const rail = screen.getAllByTestId('live-card')[0].parentElement?.parentElement as HTMLElement
+      Object.defineProperty(rail, 'clientWidth', { configurable: true, value: clientWidth })
+      Object.defineProperty(rail, 'scrollWidth', { configurable: true, value: scrollWidth })
+      rail.scrollLeft = scrollLeft
+      fireEvent.scroll(rail)
+      return rail
+    }
+
+    beforeEach(() => {
+      mockRepeat.mockReturnValue(false)
+      scrollBy = jest.fn()
+      Object.defineProperty(HTMLElement.prototype, 'scrollBy', { configurable: true, value: scrollBy })
+    })
+
+    it('should offer a way forward while cards remain past the right edge', () => {
+      render(<DiscoverHomePage />)
+      stretchRail(400, 1600, 0)
+
+      expect(screen.getByRole('button', { name: 'discover.live.scroll_next' })).toBeEnabled()
+      // Kept mounted so a press that reaches an end doesn't drop the focus.
+      expect(screen.getByRole('button', { name: 'discover.live.scroll_previous' })).toBeDisabled()
+    })
+
+    it('should offer a way back once the rail has been scrolled to the end', () => {
+      render(<DiscoverHomePage />)
+      stretchRail(400, 1600, 1200)
+
+      expect(screen.getByRole('button', { name: 'discover.live.scroll_previous' })).toBeEnabled()
+      expect(screen.getByRole('button', { name: 'discover.live.scroll_next' })).toBeDisabled()
+    })
+
+    it('should advance one card per press', () => {
+      render(<DiscoverHomePage />)
+      const rail = stretchRail(400, 1600, 0)
+
+      fireEvent.click(screen.getByRole('button', { name: 'discover.live.scroll_next' }))
+
+      expect(scrollBy).toHaveBeenCalledWith({ left: 1600 / rail.children.length, behavior: 'smooth' })
+    })
+
+    it('should show no arrows while every card already fits', () => {
+      render(<DiscoverHomePage />)
+      stretchRail(1600, 1600, 0)
+
+      expect(screen.queryByRole('button', { name: 'discover.live.scroll_next' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'discover.live.scroll_previous' })).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the URL carries a tab param', () => {
+    afterEach(() => {
+      window.history.replaceState({}, '', '/places')
+    })
+
+    it('should open that tab, which is how the sign-in redirect comes back', () => {
+      window.history.replaceState({}, '', '/places?tab=my')
+
+      render(<DiscoverHomePage />)
+
+      expect(screen.getByText('discover.explore.signin_my_places')).toBeInTheDocument()
+    })
+
+    it('should ignore a tab it does not know and open Explore all', () => {
+      window.history.replaceState({}, '', '/places?tab=nonsense')
+
+      render(<DiscoverHomePage />)
+
+      expect(screen.queryByText('discover.explore.signin_my_places')).not.toBeInTheDocument()
+      expect(screen.getAllByTestId('place-card').length).toBeGreaterThan(0)
     })
   })
 

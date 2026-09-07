@@ -131,10 +131,6 @@ const ByText = styled(Typography)({
   textOverflow: 'ellipsis'
 })
 
-const CreatorName = styled('span')({
-  color: RUBY
-})
-
 const LocationPill = styled(Box)({
   flexShrink: 0,
   display: 'inline-flex',
@@ -195,19 +191,4 @@ const JumpInButton = styled('button', { shouldForwardProp: prop => prop !== '$vi
   })
 )
 
-export {
-  Avatar,
-  Body,
-  ByText,
-  Card,
-  CardContainer,
-  Cover,
-  CreatorName,
-  CreatorRow,
-  JumpInButton,
-  LocationPill,
-  Media,
-  MetaRow,
-  SwapArea,
-  Title
-}
+export { Avatar, Body, ByText, Card, CardContainer, Cover, CreatorRow, JumpInButton, LocationPill, Media, MetaRow, SwapArea, Title }
