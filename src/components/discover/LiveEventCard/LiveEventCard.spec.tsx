@@ -28,11 +28,6 @@ jest.mock('../../../features/discover', () => jest.requireActual('../../../featu
 // Desktop (hover-reveal) by default; the mobile card shows both rows at once.
 const mockIsMobileCard = jest.fn()
 
-const mockNewLayout = jest.fn()
-jest.mock('../../../features/discover/discover.flags', () => ({
-  useNewPlacesLayout: () => mockNewLayout()
-}))
-
 jest.mock('../../../features/profile/profile.client', () => ({
   useGetProfileQuery: (...args: unknown[]) => mockUseGetProfileQuery(...args)
 }))
@@ -99,8 +94,6 @@ function cardOf(title: string): HTMLElement {
 describe('LiveEventCard', () => {
   beforeEach(() => {
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
-    // Off by default so every legacy assertion below keeps describing production.
-    mockNewLayout.mockReturnValue(false)
     mockIsMobileCard.mockReturnValue(false)
   })
 
@@ -108,20 +101,12 @@ describe('LiveEventCard', () => {
     jest.resetAllMocks()
   })
 
-  describe('when the live place is featured', () => {
-    it('should NOT show a Featured badge (this rail carries LIVE + count only)', () => {
-      render(<LiveEventCard place={createPlace({ highlighted: true })} />)
-
-      expect(screen.queryByText('discover.card.featured')).not.toBeInTheDocument()
-    })
-  })
-
   describe('when rendered', () => {
-    it('should show the LIVE badge and the player count', () => {
+    it('should show the player count, and LIVE only when an event is running', () => {
       render(<LiveEventCard place={createPlace()} />)
 
-      expect(screen.getByText('LIVE')).toBeInTheDocument()
       expect(screen.getByText('42')).toBeInTheDocument()
+      expect(screen.queryByText('LIVE')).not.toBeInTheDocument()
     })
 
     it('should expose the By row and keep the JUMP IN button out of the accessibility tree', () => {
@@ -371,11 +356,7 @@ describe('LiveEventCard', () => {
     })
   })
 
-  describe('when the new layout is on', () => {
-    beforeEach(() => {
-      mockNewLayout.mockReturnValue(true)
-    })
-
+  describe('when deciding the badges', () => {
     it('should carry the Featured badge, since a busy featured scene renders only here', () => {
       render(<LiveEventCard place={createPlace({ highlighted: true })} />)
 
