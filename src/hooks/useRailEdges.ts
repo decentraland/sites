@@ -5,6 +5,13 @@ import type { MutableRefObject } from 'react'
 // rail scrolled to its end doesn't keep claiming there is more to reach.
 const EDGE_TOLERANCE_PX = 2
 
+interface RailEdgesOptions {
+  // Run alongside every edge measurement (mount, scroll, resize, item count
+  // change). Lets a caller that tracks more than the edges — paging, a snapped
+  // index — reuse this observer instead of putting a second one on the same box.
+  onMeasure?: () => void
+}
+
 interface RailEdges<T extends HTMLElement> {
   // Attach to the scrollport. A callback ref rather than a plain one because a
   // rail that only mounts once its query resolves would miss an effect: by the
@@ -27,11 +34,16 @@ interface RailEdges<T extends HTMLElement> {
  * from three cards to four grows its `scrollWidth` while its own box stays the
  * same size, which a ResizeObserver alone never reports.
  */
-function useRailEdges<T extends HTMLElement>(contentKey: unknown): RailEdges<T> {
+function useRailEdges<T extends HTMLElement>(contentKey: unknown, options: RailEdgesOptions = {}): RailEdges<T> {
   const railRef = useRef<T | null>(null)
   const observerRef = useRef<ResizeObserver | null>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
+
+  // Held in a ref so a caller passing an inline closure doesn't re-attach the
+  // observer and the scroll listener on every render.
+  const onMeasureRef = useRef(options.onMeasure)
+  onMeasureRef.current = options.onMeasure
 
   const measure = useCallback(() => {
     const el = railRef.current
@@ -39,6 +51,7 @@ function useRailEdges<T extends HTMLElement>(contentKey: unknown): RailEdges<T> 
     const { clientWidth, scrollLeft, scrollWidth } = el
     setCanScrollLeft(scrollLeft > EDGE_TOLERANCE_PX)
     setCanScrollRight(scrollLeft + clientWidth < scrollWidth - EDGE_TOLERANCE_PX)
+    onMeasureRef.current?.()
   }, [])
 
   const attachRail = useCallback(
@@ -66,5 +79,5 @@ function useRailEdges<T extends HTMLElement>(contentKey: unknown): RailEdges<T> 
   return { attachRail, railRef, canScrollLeft, canScrollRight }
 }
 
-export { useRailEdges, EDGE_TOLERANCE_PX }
-export type { RailEdges }
+export { useRailEdges }
+export type { RailEdges, RailEdgesOptions }

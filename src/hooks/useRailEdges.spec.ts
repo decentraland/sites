@@ -127,6 +127,30 @@ describe('when tracking which side of a rail still has content', () => {
     })
   })
 
+  describe('and the caller tracks more than the edges', () => {
+    it('should run its callback off the same measurement instead of a second observer', () => {
+      const onMeasure = jest.fn()
+      const rail = makeRail({ clientWidth: 400, scrollWidth: 1200 })
+      const { result } = renderHook(() => useRailEdges(4, { onMeasure }))
+
+      act(() => {
+        result.current.attachRail(rail)
+      })
+      expect(onMeasure).toHaveBeenCalledTimes(1)
+
+      act(() => {
+        rail.scrollLeft = 200
+        rail.dispatchEvent(new Event('scroll'))
+      })
+      expect(onMeasure).toHaveBeenCalledTimes(2)
+
+      act(() => {
+        observed.forEach(entry => entry.trigger())
+      })
+      expect(onMeasure).toHaveBeenCalledTimes(3)
+    })
+  })
+
   describe('and the rail unmounts', () => {
     it('should stop observing it', () => {
       const { result } = renderHook(() => useRailEdges(4))

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -36,7 +36,17 @@ function LiveNow() {
   const [modalData, setModalData] = useState<ModalEventData | null>(null)
   // Which side still has cards to reach — shared with the /places Live Now rail,
   // which hides its scrollbar the same way and needs the same two booleans.
-  const { attachRail, railRef: scrollRef, canScrollLeft: edgeLeft, canScrollRight: edgeRight } = useRailEdges<HTMLDivElement>(cards.length)
+  const {
+    attachRail,
+    railRef: scrollRef,
+    canScrollLeft: edgeLeft,
+    canScrollRight: edgeRight
+  } = useRailEdges<HTMLDivElement>(
+    cards.length,
+    // The page count and the active dot come off the same measurement, so they
+    // ride the hook's observer rather than a second one on the same element.
+    { onMeasure: () => syncScrollStateRef.current() }
+  )
   // Gated on paging: a rail that fits in one page shows no chevrons at all.
   const canScrollLeft = hasScroll && edgeLeft
   const canScrollRight = hasScroll && edgeRight
@@ -86,16 +96,11 @@ function LiveNow() {
     setHasScroll(scrollable)
 
     setActivePage(scrollable && clientWidth > 0 ? Math.min(Math.max(0, Math.round(scrollLeft / clientWidth)), pages - 1) : 0)
-  }, [cards.length])
+  }, [cards.length, scrollRef])
 
-  useEffect(() => {
-    const container = scrollRef.current
-    if (!container) return
-    syncScrollState()
-    const observer = new ResizeObserver(syncScrollState)
-    observer.observe(container)
-    return () => observer.disconnect()
-  }, [cards.length, scrollRef, syncScrollState])
+  // Declared after the hook call above, which is why it is read through a ref.
+  const syncScrollStateRef = useRef(syncScrollState)
+  syncScrollStateRef.current = syncScrollState
 
   const handleChevronClick = useCallback(
     (direction: 'left' | 'right') => {
