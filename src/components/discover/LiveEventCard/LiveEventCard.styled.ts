@@ -126,10 +126,6 @@ const ByText = styled(Typography)({
   textOverflow: 'ellipsis'
 })
 
-const CreatorName = styled('span')({
-  color: RUBY
-})
-
 // Hover CTA — full-width ruby JUMP IN, 47.674px tall, r12, 16.58px Bold. It
 // parks one bar-padding below the slot, which puts it past the card's bottom
 // edge (the Card clips it) so it slides into view instead of fading in place —
@@ -180,4 +176,4 @@ const JumpInWide = styled('button', { shouldForwardProp: prop => prop !== '$visi
   }
 }))
 
-export { Avatar, ByRow, ByText, Card, CardContainer, ContentBar, CreatorName, EventTitle, JumpInWide, Media, SwapArea }
+export { Avatar, ByRow, ByText, Card, CardContainer, ContentBar, EventTitle, JumpInWide, Media, SwapArea }

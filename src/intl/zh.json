@@ -1279,7 +1279,9 @@
       "featured": "精选"
     },
     "live": {
-      "heading": "直播中"
+      "heading": "直播中",
+      "scroll_previous": "上一批直播地点",
+      "scroll_next": "更多直播地点"
     },
     "explore": {
       "search_placeholder": "搜索地点",
@@ -1310,6 +1312,7 @@
       "signin_favourites": "登录并收藏地点后即可在此查看。",
       "empty_favourites": "你还没有收藏任何地点。",
       "signin_my_places": "登录后即可查看你创建的地点。",
+      "sign_in": "登录",
       "empty_my_places": "你还没有发布任何地点。",
       "error": "加载地点时出现问题。",
       "retry": "重试"

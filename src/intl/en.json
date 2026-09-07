@@ -1513,7 +1513,9 @@
       "featured": "Featured"
     },
     "live": {
-      "heading": "Live Now"
+      "heading": "Live Now",
+      "scroll_previous": "Previous live places",
+      "scroll_next": "More live places"
     },
     "explore": {
       "search_placeholder": "Search places",
@@ -1544,6 +1546,7 @@
       "signin_favourites": "Sign in and favourite places to find them here.",
       "empty_favourites": "You haven't favourited any places yet.",
       "signin_my_places": "Sign in to see the places you created.",
+      "sign_in": "Sign In",
       "empty_my_places": "You haven't published any places yet.",
       "error": "Something went wrong loading places.",
       "retry": "Retry"

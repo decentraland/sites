@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention -- places-api query args (with_realms_detail, only_highlighted, …) are snake_case */
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded'
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded'
 import type { SelectChangeEvent } from '@mui/material'
@@ -11,6 +13,7 @@ import { CircularProgress, InputAdornment, MenuItem, dclColors } from 'decentral
 import { CenteredBox } from '../../App.styled'
 import { CardGrid, Empty, ErrorBox, ErrorText, PageContent, RetryButton } from '../../components/discover/_shared'
 import { LiveHeadingGlyph } from '../../components/discover/_shared/CardIcons'
+import { DiscoverSignInPrompt } from '../../components/discover/_shared/DiscoverSignInPrompt'
 import { BrowseGlyph, FavoriteGlyph, MyPlacesGlyph, SearchGlyph } from '../../components/discover/_shared/ToolbarIcons'
 import { FeaturedCard } from '../../components/discover/FeaturedCard'
 import { LiveEventCard } from '../../components/discover/LiveEventCard'
@@ -25,13 +28,14 @@ import {
   useGetDiscoverDestinationsQuery,
   useGetDiscoverFavoritesQuery
 } from '../../features/discover'
-import type { DiscoverCategory, DiscoverPlace } from '../../features/discover'
+import type { DiscoverCategory, DiscoverPlace, ExploreSection } from '../../features/discover'
 import { useHideFeaturedPlaces, useLiveMinUsers, useRepeatAcrossSections } from '../../features/discover/discover.flags'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useDeferredTrack } from '../../hooks/useDeferredTrack'
 import { useInfiniteScrollSentinel } from '../../hooks/useInfiniteScrollSentinel'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
+import { useRailEdges } from '../../hooks/useRailEdges'
 import { SegmentEvent } from '../../modules/segment.types'
 import {
   CarouselDot,
@@ -58,7 +62,9 @@ import {
   FilterSelect,
   LiveGrid,
   LiveHeading,
+  LiveNavButton,
   LiveNowSection,
+  LiveRailLayer,
   LoadMoreSentinel,
   SearchSlot,
   SectionTitle,
@@ -66,9 +72,6 @@ import {
   TabsRow,
   ToolbarSearchField
 } from './DiscoverHomePage.styled'
-
-// Toolbar sections, mirroring the Figma "Experiences tabs".
-type ExploreSection = 'all' | 'favourites' | 'my'
 
 // Unified /discover landing, matching the "Places - Desktop" Figma:
 //   1. LIVE NOW      — glowing rounded rail with the 4 busiest scenes.
@@ -109,8 +112,15 @@ const FEATURED_FETCH_LIMIT = 100
 // hides behind the VIEW ALL FEATURED PLACES toggle.
 const FEATURED_COLLAPSED_ROWS = 2
 
+// `?tab=favourites` / `?tab=my`, the param the signed-out prompts round-trip
+// through SSO. Anything else opens the default tab.
+function readSectionParam(tab: string | null): ExploreSection {
+  return tab === 'favourites' || tab === 'my' ? tab : 'all'
+}
+
 function DiscoverHomePage() {
   const t = useFormatMessage()
+  const [searchParams] = useSearchParams()
 
   // `/places/*` is in `isPageTrackingExempt`, so the Layout's route-level
   // `page()` is suppressed. Fire it from the page so Segment still records a
@@ -143,7 +153,11 @@ function DiscoverHomePage() {
     setSearchInput(value)
     setBrowseOffset(0)
   }, [])
-  const [section, setSection] = useState<ExploreSection>('all')
+  // Seeded once from `?tab=`, which is how the signed-out prompts get the user
+  // back to the tab they were on. Read-only on purpose: the search box and the
+  // category filter are component state too, and mirroring the tab into the URL
+  // on every click would put three entries in the history for one glance.
+  const [section, setSection] = useState<ExploreSection>(() => readSectionParam(searchParams.get('tab')))
   // Switching tabs swaps the big Explore grid for the (often much shorter)
   // Favourites / My Places content, collapsing the page height — the browser
   // clamps the scroll and the toolbar drops down the viewport, so the user
@@ -183,33 +197,6 @@ function DiscoverHomePage() {
   // Mobile-only filter drawer (Category). Desktop shows it inline.
   const [filtersOpen, setFiltersOpen] = useState(false)
   const { address, hasValidIdentity } = useAuthIdentity()
-
-  // Live Now mobile carousel — track the snapped card so the dot indicators
-  // reflect the swipe position. Desktop renders the full grid (no horizontal
-  // scroll), so the scroll handler simply never fires there.
-  const liveRailRef = useRef<HTMLDivElement>(null)
-  const [activeLive, setActiveLive] = useState(0)
-  const handleLiveScroll = useCallback(() => {
-    const el = liveRailRef.current
-    if (!el) return
-    const center = el.scrollLeft + el.clientWidth / 2
-    let nearest = 0
-    let nearestDist = Infinity
-    Array.from(el.children).forEach((child, i) => {
-      const slide = child as HTMLElement
-      const slideCenter = slide.offsetLeft + slide.offsetWidth / 2
-      const dist = Math.abs(slideCenter - center)
-      if (dist < nearestDist) {
-        nearestDist = dist
-        nearest = i
-      }
-    })
-    setActiveLive(nearest)
-  }, [])
-  const scrollToLive = useCallback((index: number) => {
-    const slide = liveRailRef.current?.children[index] as HTMLElement | undefined
-    slide?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
-  }, [])
 
   // JUMP IN modal for empty scenes — on DESKTOP it opens in place over the grid
   // (the URL stays on /discover, per the Figma backdrop over the Places page).
@@ -354,6 +341,55 @@ function DiscoverHomePage() {
       .slice(0, LIVE_NOW_LIMIT)
   }, [showHighlights, liveMinUsers, liveFeedQuery.data])
 
+  // Live Now carousel. Mobile snaps one card at a time and the dots below track
+  // the swipe. Desktop lays the four cards in a row that outgrows any viewport
+  // under about 1300px — and since the rail hides its scrollbar and a wheel only
+  // scrolls vertically, the cards past the fold were visible but unreachable.
+  // Hence the arrows, enabled only while there is something left to reach.
+  const {
+    attachRail: attachLiveRail,
+    railRef: liveRailRef,
+    canScrollLeft: canScrollLiveLeft,
+    canScrollRight: canScrollLiveRight
+  } = useRailEdges<HTMLDivElement>(liveRail.length)
+  const [activeLive, setActiveLive] = useState(0)
+  const handleLiveScroll = useCallback(() => {
+    const el = liveRailRef.current
+    if (!el) return
+    const { clientWidth, scrollLeft } = el
+    const center = scrollLeft + clientWidth / 2
+    let nearest = 0
+    let nearestDist = Infinity
+    Array.from(el.children).forEach((child, i) => {
+      const slide = child as HTMLElement
+      const slideCenter = slide.offsetLeft + slide.offsetWidth / 2
+      const dist = Math.abs(slideCenter - center)
+      if (dist < nearestDist) {
+        nearestDist = dist
+        nearest = i
+      }
+    })
+    setActiveLive(nearest)
+  }, [liveRailRef])
+  const scrollToLive = useCallback(
+    (index: number) => {
+      const slide = liveRailRef.current?.children[index] as HTMLElement | undefined
+      slide?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    },
+    [liveRailRef]
+  )
+  // One card per press. The average card span (scrollWidth / count) includes the
+  // gap and survives the reflows the hover glow triggers, unlike a single
+  // card's offsetWidth.
+  const nudgeLive = useCallback(
+    (direction: -1 | 1) => {
+      const el = liveRailRef.current
+      if (!el || el.children.length === 0) return
+      el.scrollBy({ left: direction * (el.scrollWidth / el.children.length), behavior: 'smooth' })
+    },
+    [liveRailRef]
+  )
+
   // The curated rail shows every highlighted destination, live or not (the API only marks a
   // handful). Rows carry the API's own presence (`with_realms_detail`), so live ones lead the rail
   // and a live featured card navigates to the scene preview instead of opening the empty-scene
@@ -433,13 +469,39 @@ function DiscoverHomePage() {
             <LiveHeadingGlyph size="clamp(20px, 1.377vw, 26.4px)" />
             {t('discover.live.heading')}
           </LiveHeading>
-          <LiveGrid ref={liveRailRef} onScroll={handleLiveScroll}>
-            {liveRail.map(place => (
-              <CarouselSlide key={place.id}>
-                <LiveEventCard place={place} />
-              </CarouselSlide>
-            ))}
-          </LiveGrid>
+          <LiveRailLayer>
+            {/* Both stay mounted and go disabled at the ends: unmounting the one
+                just pressed would drop the keyboard focus back to the body. */}
+            {(canScrollLiveLeft || canScrollLiveRight) && (
+              <>
+                <LiveNavButton
+                  type="button"
+                  $side="left"
+                  disabled={!canScrollLiveLeft}
+                  aria-label={t('discover.live.scroll_previous')}
+                  onClick={() => nudgeLive(-1)}
+                >
+                  <ChevronLeftRoundedIcon />
+                </LiveNavButton>
+                <LiveNavButton
+                  type="button"
+                  $side="right"
+                  disabled={!canScrollLiveRight}
+                  aria-label={t('discover.live.scroll_next')}
+                  onClick={() => nudgeLive(1)}
+                >
+                  <ChevronRightRoundedIcon />
+                </LiveNavButton>
+              </>
+            )}
+            <LiveGrid ref={attachLiveRail} onScroll={handleLiveScroll}>
+              {liveRail.map(place => (
+                <CarouselSlide key={place.id}>
+                  <LiveEventCard place={place} />
+                </CarouselSlide>
+              ))}
+            </LiveGrid>
+          </LiveRailLayer>
           {liveRail.length > 1 && (
             <CarouselDots>
               {liveRail.map((place, i) => (
@@ -598,7 +660,7 @@ function DiscoverHomePage() {
                 <CircularProgress />
               </CenteredBox>
             ) : !hasValidIdentity || !address ? (
-              <Empty>{t('discover.explore.signin_favourites')}</Empty>
+              <DiscoverSignInPrompt message={t('discover.explore.signin_favourites')} returnTab="favourites" />
             ) : favoritesQuery.isError ? (
               <ErrorBox>
                 <ErrorText>{t('discover.explore.error')}</ErrorText>
@@ -622,7 +684,7 @@ function DiscoverHomePage() {
                 <CircularProgress />
               </CenteredBox>
             ) : !address ? (
-              <Empty>{t('discover.explore.signin_my_places')}</Empty>
+              <DiscoverSignInPrompt message={t('discover.explore.signin_my_places')} returnTab="my" />
             ) : myQuery.isError ? (
               <ErrorBox>
                 <ErrorText>{t('discover.explore.error')}</ErrorText>

@@ -18,7 +18,7 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
 import { usePlaceCreator } from '../../../hooks/usePlaceCreator'
 import { SegmentEvent } from '../../../modules/segment.types'
-import { LiveEventBadge } from '../_shared'
+import { CreatorByLineName, LiveEventBadge } from '../_shared'
 import { JumpInGlyph, MedalGlyph, PinGlyph } from '../_shared/CardIcons'
 import { FeaturedBadge, TopRow } from '../_shared/DiscoverShell.styled'
 import { useDiscoverJumpIn } from '../DiscoverJumpInProvider'
@@ -29,7 +29,6 @@ import {
   Card,
   CardContainer,
   Cover,
-  CreatorName,
   CreatorRow,
   JumpInButton,
   LocationPill,
@@ -60,7 +59,7 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
   const detailHref = useMemo(() => buildDetailPath(place), [place])
 
   const { jumpIn } = useDiscoverJumpIn()
-  const { creatorName, creatorAvatar, avatarBg } = usePlaceCreator(place)
+  const { creatorAddress, creatorName, creatorAvatar, avatarBg } = usePlaceCreator(place)
 
   const players = placePlayers(place)
   // Presence, which decides where a click goes: a scene with people opens the viewer, an empty one
@@ -88,6 +87,9 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
   // Keyboard activation for the role="button" card (Enter / Space).
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      // Enter on the JUMP IN button or the creator name bubbles up here, and
+      // would navigate into the scene on top of whatever the control did.
+      if (e.target !== e.currentTarget) return
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
         handleClick()
@@ -143,7 +145,7 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
                 {creatorAvatar && <Avatar src={creatorAvatar} alt="" loading="lazy" $bg={avatarBg} />}
                 {creatorName && (
                   <ByText variant="body2">
-                    {t('discover.card.by')} <CreatorName>{creatorName}</CreatorName>
+                    {t('discover.card.by')} <CreatorByLineName name={creatorName} address={creatorAddress} inactive={ctaShown} />
                   </ByText>
                 )}
               </CreatorRow>

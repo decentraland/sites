@@ -8,7 +8,9 @@ const mockNavigate = jest.fn()
 const mockUseGetProfileQuery = jest.fn()
 
 jest.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate
+  useNavigate: () => mockNavigate,
+  // The creator by-line resolves where to open a profile from the current URL.
+  useLocation: () => ({ pathname: '/places', search: '' })
 }))
 
 const mockJumpIn = jest.fn()
@@ -65,7 +67,7 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
     image: 'https://example.com/cover.png',
     positions: ['-9,-9'],
     base_position: '-9,-9',
-    owner: '0xabc',
+    owner: '0x1111111111111111111111111111111111111111',
     contact_name: 'CreatorName',
     categories: [],
     user_count: 0,
@@ -304,20 +306,42 @@ describe('PlaceCard', () => {
     it('should render the owner face256', () => {
       mockUseGetProfileQuery.mockReturnValue({
         data: {
-          avatars: [
-            { name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }
-          ]
+          avatars: [{ name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.example.com/face256.png' } } }]
         }
       })
       const { container } = render(<PlaceCard place={createPlace({ contact_name: undefined })} />)
 
-      expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer.decentraland.org/face256.png')
+      expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer.example.com/face256.png')
     })
 
     it('should request the profile for the owner address', () => {
       render(<PlaceCard place={createPlace()} />)
 
-      expect(mockUseGetProfileQuery).toHaveBeenCalledWith('0xabc', { skip: false })
+      expect(mockUseGetProfileQuery).toHaveBeenCalledWith('0x1111111111111111111111111111111111111111', { skip: false })
+    })
+  })
+
+  describe('when the places-api reports the wallet that deployed the scene', () => {
+    beforeEach(() => {
+      mockUseGetProfileQuery.mockReturnValue({
+        data: {
+          avatars: [
+            { name: 'ExampleDeployer', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.example.com/face256.png' } } }
+          ]
+        }
+      })
+    })
+
+    it('should resolve the profile from that wallet, not from whoever holds the land', () => {
+      render(<PlaceCard place={createPlace({ creator_address: '0x2222222222222222222222222222222222222222' })} />)
+
+      expect(mockUseGetProfileQuery).toHaveBeenCalledWith('0x2222222222222222222222222222222222222222', { skip: false })
+    })
+
+    it('should render that creator real face instead of a synthetic disc', () => {
+      const { container } = render(<PlaceCard place={createPlace({ creator_address: '0x2222222222222222222222222222222222222222' })} />)
+
+      expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer.example.com/face256.png')
     })
   })
 
@@ -332,6 +356,31 @@ describe('PlaceCard', () => {
       const { container } = render(<PlaceCard place={createPlace({ owner: null })} />)
 
       expect(container.querySelector('img')?.getAttribute('src')).toMatch(/^data:image\/svg\+xml/)
+    })
+  })
+
+  describe('when the by-line credits a resolved wallet', () => {
+    it('should open that profile without also entering the scene', () => {
+      render(<PlaceCard place={createPlace()} />)
+
+      fireEvent.click(screen.getByText('CreatorName'))
+
+      // No ProfileModalHost in this tree, so the hook falls back to the profile
+      // route. Either way the click must not reach the card underneath.
+      expect(mockNavigate).toHaveBeenCalledTimes(1)
+      expect(mockNavigate).toHaveBeenCalledWith('/profile/0x1111111111111111111111111111111111111111')
+    })
+
+    // The card trades the by-line for the JUMP IN CTA on hover, which makes the
+    // row transparent, pointer-blocked and aria-hidden — so the control leaves
+    // the tab order with it. Reaching it with a mouse needs that swap to change.
+    it('should drop the control from the tab order while the CTA is shown', () => {
+      render(<PlaceCard place={createPlace()} />)
+      expect(screen.getByText('CreatorName')).toHaveAttribute('tabindex', '0')
+
+      fireEvent.mouseEnter(screen.getByText('Genesis Plaza').closest('[role="button"]') as HTMLElement)
+
+      expect(screen.getByText('CreatorName')).toHaveAttribute('tabindex', '-1')
     })
   })
 

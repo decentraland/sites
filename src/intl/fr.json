@@ -1274,7 +1274,9 @@
       "featured": "En vedette"
     },
     "live": {
-      "heading": "En direct"
+      "heading": "En direct",
+      "scroll_previous": "Lieux en direct précédents",
+      "scroll_next": "Plus de lieux en direct"
     },
     "explore": {
       "search_placeholder": "Rechercher des lieux",
@@ -1305,6 +1307,7 @@
       "signin_favourites": "Connectez-vous et ajoutez des lieux en favoris pour les retrouver ici.",
       "empty_favourites": "Vous n'avez encore aucun lieu en favori.",
       "signin_my_places": "Connectez-vous pour voir les lieux que vous avez créés.",
+      "sign_in": "Se connecter",
       "empty_my_places": "Vous n'avez encore publié aucun lieu.",
       "error": "Une erreur est survenue lors du chargement des lieux.",
       "retry": "Réessayer"

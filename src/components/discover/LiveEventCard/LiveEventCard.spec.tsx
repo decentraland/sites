@@ -8,7 +8,9 @@ const mockNavigate = jest.fn()
 const mockUseGetProfileQuery = jest.fn()
 
 jest.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate
+  useNavigate: () => mockNavigate,
+  // The creator by-line resolves where to open a profile from the current URL.
+  useLocation: () => ({ pathname: '/places', search: '' })
 }))
 
 const mockJumpIn = jest.fn()
@@ -299,9 +301,10 @@ describe('LiveEventCard', () => {
       expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer.decentraland.org/face256.png')
     })
 
-    it('should NOT put the land owner face next to a contact name', () => {
-      // The owner of the land is not the author as soon as a studio deploys
-      // from a shared wallet, so their picture cannot ride along.
+    it('should show the resolved face next to the contact name it links to', () => {
+      // The by-line opens this address's profile, so its picture is the one that
+      // belongs beside it. Suppressing it left a synthetic disc on nearly every
+      // card, because almost every scene declares a contact name.
       mockUseGetProfileQuery.mockReturnValue({
         data: { avatars: [{ name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer/face.png' } } }] }
       })
@@ -309,7 +312,7 @@ describe('LiveEventCard', () => {
 
       expect(screen.getByText('DJName')).toBeInTheDocument()
       expect(screen.queryByText('LandOwner')).not.toBeInTheDocument()
-      expect(container.querySelector('img')?.getAttribute('src')).toMatch(/^data:image\/svg\+xml/)
+      expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer/face.png')
     })
 
     it('should skip the profile request and use a synthetic avatar when there is no owner', () => {
