@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention -- Segment payload keys are snake_case */
-import type { DiscoverPlace } from './discover.types'
+import { isValidEthAddress } from '../../utils/avatar'
+import type { DiscoverPlace, PlaceCreatorIdentity, PlaceCreatorSource } from './discover.types'
 
 // Canonical category set used by the EXPLORE tab. Order mirrors what the
 // places-api exposes and what users expect from the standalone decentraland.social
@@ -125,6 +126,22 @@ function isJunkContactName(name?: string | null): boolean {
   return !trimmed || trimmed === 'sdk'
 }
 
+// The address whose catalyst profile a place should be credited to. The
+// places-api reports the deploying wallet in `creator_address`, which is the
+// author; `owner` only holds the LAND or the world name, so it is the same
+// person by coincidence and stops being them the moment a studio deploys from
+// a shared wallet. Reading `owner` first is what made the /places cards resolve
+// a different profile than the /events cards, which already prefer
+// `creator_address` (see enrichPlaceCards). Both columns leak free-text labels
+// ("Digital Fashion Week", "Decentraland"), so neither is usable unless it is
+// wallet-shaped.
+function placeCreatorIdentity(place: PlaceCreatorSource | undefined): PlaceCreatorIdentity {
+  const creator = place?.creator_address?.trim()
+  if (isValidEthAddress(creator)) return { address: creator, isDeployer: true }
+  const owner = place?.owner?.trim()
+  return { address: isValidEthAddress(owner) ? owner : undefined, isDeployer: false }
+}
+
 // Number of tracks in a resolved `grid-template-columns`. Used to size the
 // Featured rail's collapsed height off the grid the browser actually laid out:
 // its tracks come from an auto-fill formula with a px floor, which no
@@ -203,6 +220,7 @@ export {
   parsePositionParam,
   placeCoordsLabel,
   placeCoverImage,
+  placeCreatorIdentity,
   placeIsFeatured,
   placeHasLiveEvent,
   placeLiveEventName,
