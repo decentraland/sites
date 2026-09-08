@@ -4,7 +4,7 @@ import type { BlogPost } from '../../shared/blog/types/blog.domain'
 import { PreviewPage } from './PreviewPage'
 
 const mockUseGetBlogPostPreviewQuery = jest.fn()
-const searchParams = new URLSearchParams({ contentful_id: 'abc', contentful_env: 'master', token: 'preview-token' })
+let searchParams = new URLSearchParams()
 
 jest.mock('react-router-dom', () => ({
   useSearchParams: () => [searchParams]
@@ -67,6 +67,7 @@ const post: BlogPost = {
 
 describe('when previewing a draft post', () => {
   beforeEach(() => {
+    searchParams = new URLSearchParams({ contentful_id: 'abc', contentful_env: 'master', token: 'preview-token' })
     mockUseGetBlogPostPreviewQuery.mockReturnValue({ data: post, isLoading: false, error: undefined })
   })
 
@@ -99,12 +100,11 @@ describe('when previewing a draft post', () => {
 
 describe('when the preview parameters are incomplete', () => {
   beforeEach(() => {
-    searchParams.delete('token')
+    searchParams = new URLSearchParams({ contentful_id: 'abc', contentful_env: 'master' })
     mockUseGetBlogPostPreviewQuery.mockReturnValue({ data: undefined, isLoading: false, error: undefined })
   })
 
   afterEach(() => {
-    searchParams.set('token', 'preview-token')
     jest.resetAllMocks()
   })
 

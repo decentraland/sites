@@ -1,11 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { ElementType } from 'react'
 import { Link } from 'react-router-dom'
 import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
-
-interface PolymorphicTypographyProps {
-  component?: ElementType
-}
+import type { PolymorphicTypographyProps } from '../../types/polymorphic.types'
 
 const CenteredBox = styled(Box)(({ theme }) => ({
   textAlign: 'center',

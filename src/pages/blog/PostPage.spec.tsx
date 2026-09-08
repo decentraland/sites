@@ -147,6 +147,17 @@ describe('when rendering a blog post', () => {
     expect(container.querySelector('time')).toHaveAttribute('datetime', post.publishedDate)
   })
 
+  // An empty `datetime` attribute is invalid HTML, so the element has to disappear
+  // rather than render `<time datetime="">`.
+  it('should omit the time element entirely when the post has no publish date', () => {
+    mockUseAppSelector.mockReturnValue({ ...post, publishedDate: '' })
+
+    const { container } = render(<PostPage />)
+
+    expect(container.querySelector('time')).not.toBeInTheDocument()
+    expect(container.querySelector('article')).toBeInTheDocument()
+  })
+
   it('should keep the current post out of the related list', () => {
     const sibling = { ...post, id: 'post-2', slug: 'another-post' }
     mockUseGetBlogPostsQuery.mockReturnValue({ data: { posts: [post, sibling] }, isLoading: false })

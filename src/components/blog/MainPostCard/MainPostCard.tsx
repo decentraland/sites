@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Typography } from 'decentraland-ui2'
 import { formatUtcDate } from '../../../shared/blog/utils/date'
 import type { MainPostCardProps } from './MainPostCard.types'
@@ -21,7 +22,7 @@ import {
   TitleLink
 } from './MainPostCard.styled'
 
-const MainPostCard = (props: MainPostCardProps) => {
+const MainPostCard = memo((props: MainPostCardProps) => {
   const { post, loading } = props
 
   if (loading) {
@@ -69,6 +70,6 @@ const MainPostCard = (props: MainPostCardProps) => {
       </CardInfo>
     </CardContainer>
   )
-}
+})
 
 export { MainPostCard }

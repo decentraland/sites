@@ -83,7 +83,9 @@ export const PreviewPage = () => {
   return (
     <BlogLayout showBlogNavigation={true}>
       <PreviewBanner>
-        <Typography variant="h6">{t('preview.mode')}</Typography>
+        <Typography variant="h6" component="p">
+          {t('preview.mode')}
+        </Typography>
         <Typography variant="body2">{t('preview.description')}</Typography>
       </PreviewBanner>
 
@@ -92,8 +94,12 @@ export const PreviewPage = () => {
 
         <HeaderBox>
           <MetaText as="span">
-            <PublishedTime dateTime={post.publishedDate}>{publishedDateUtc}</PublishedTime>
-            <MetaSeparator>•</MetaSeparator>
+            {publishedDateUtc && (
+              <>
+                <PublishedTime dateTime={post.publishedDate}>{publishedDateUtc}</PublishedTime>
+                <MetaSeparator>•</MetaSeparator>
+              </>
+            )}
             <CategoryText>{post.category.title}</CategoryText>
           </MetaText>
           <TitleBox>

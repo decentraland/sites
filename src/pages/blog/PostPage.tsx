@@ -104,6 +104,10 @@ export const PostPage = () => {
           categorySlug: displayPost.category.slug,
           author: displayPost.author?.title,
           authorSlug: displayPost.author?.slug,
+          // NOTE: 2026-09-08 — this property now carries the raw ISO 8601 date. It used to
+          // send the display string ("Sep 04, 2026") because the CMS mapper formatted it
+          // before the domain model saw it. Warehouse queries keyed on the old format need
+          // updating; the format is not going back.
           publishedDate: displayPost.publishedDate
         }
       : undefined
@@ -167,8 +171,12 @@ export const PostPage = () => {
 
         <HeaderBox>
           <MetaText as="span">
-            <PublishedTime dateTime={displayPost.publishedDate}>{publishedDateUtc}</PublishedTime>
-            <MetaSeparator>•</MetaSeparator>
+            {publishedDateUtc && (
+              <>
+                <PublishedTime dateTime={displayPost.publishedDate}>{publishedDateUtc}</PublishedTime>
+                <MetaSeparator>•</MetaSeparator>
+              </>
+            )}
             <CategoryMetaLink to={locations.category(displayPost.category.slug)}>{displayPost.category.title}</CategoryMetaLink>
           </MetaText>
           <TitleBox>
