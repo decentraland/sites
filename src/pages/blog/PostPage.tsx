@@ -31,6 +31,7 @@ import {
   MetaSeparator,
   MetaText,
   PostImage,
+  PublishedTime,
   ShareContainer,
   ShareLabel,
   ShareLink,
@@ -166,14 +167,18 @@ export const PostPage = () => {
 
         <HeaderBox>
           <MetaText as="span">
-            {publishedDateUtc}
+            <PublishedTime dateTime={displayPost.publishedDate}>{publishedDateUtc}</PublishedTime>
             <MetaSeparator>•</MetaSeparator>
             <CategoryMetaLink to={locations.category(displayPost.category.slug)}>{displayPost.category.title}</CategoryMetaLink>
           </MetaText>
           <TitleBox>
-            <TitleText variant="h4">{displayPost.title}</TitleText>
+            <TitleText variant="h4" component="h1">
+              {displayPost.title}
+            </TitleText>
           </TitleBox>
-          <SubtitleText variant="h6">{displayPost.description}</SubtitleText>
+          <SubtitleText variant="h6" component="p">
+            {displayPost.description}
+          </SubtitleText>
         </HeaderBox>
 
         {showAuthor && (
@@ -186,10 +191,15 @@ export const PostPage = () => {
             </AuthorBox>
             <ShareContainer>
               <ShareLabel>{t('blog.share')}</ShareLabel>
-              <ShareLink href={locations.twitter(displayPost)} target="_blank" rel="noopener noreferrer">
+              <ShareLink href={locations.twitter(displayPost)} target="_blank" rel="noopener noreferrer" aria-label={t('blog.share_on_x')}>
                 <XIcon fontSize="small" />
               </ShareLink>
-              <ShareLink href={locations.facebook(displayPost)} target="_blank" rel="noopener noreferrer">
+              <ShareLink
+                href={locations.facebook(displayPost)}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t('blog.share_on_facebook')}
+              >
                 <FacebookIcon fontSize="small" />
               </ShareLink>
             </ShareContainer>

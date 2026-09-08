@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import type { ElementType } from 'react'
 import { Link } from 'react-router-dom'
 import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
+
+interface PolymorphicTypographyProps {
+  component?: ElementType
+}
 
 const CenteredBox = styled(Box)(({ theme }) => ({
   textAlign: 'center',
@@ -8,7 +13,7 @@ const CenteredBox = styled(Box)(({ theme }) => ({
   paddingBottom: theme.spacing(8)
 }))
 
-const ContentContainer = styled(Box)(({ theme }) => ({
+const ContentContainer = styled('article')(({ theme }) => ({
   maxWidth: theme.spacing(96),
   width: '100%',
   margin: '0 auto',
@@ -32,6 +37,8 @@ const MetaText = styled(Typography)(({ theme }) => ({
   gap: theme.spacing(1)
 }))
 
+const PublishedTime = styled('time')(() => ({}))
+
 const MetaSeparator = styled('span')(({ theme }) => ({
   color: theme.palette.text.secondary
 }))
@@ -53,11 +60,14 @@ const TitleBox = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(1.5)
 }))
 
-const TitleText = styled(Typography)(({ theme }) => ({
+// `styled()` drops Typography's polymorphic `component` overload, so re-declare it:
+// the title keeps the h4 type scale while rendering as the page's only <h1>, and the
+// standfirst keeps the h6 scale without claiming to be a heading.
+const TitleText = styled(Typography)<PolymorphicTypographyProps>(({ theme }) => ({
   color: theme.palette.text.primary
 }))
 
-const SubtitleText = styled(Typography)(({ theme }) => ({
+const SubtitleText = styled(Typography)<PolymorphicTypographyProps>(({ theme }) => ({
   color: theme.palette.text.primary,
   marginTop: theme.spacing(1)
 }))
@@ -148,6 +158,7 @@ export {
   MetaSeparator,
   MetaText,
   PostImage,
+  PublishedTime,
   ShareContainer,
   ShareLabel,
   ShareLink,

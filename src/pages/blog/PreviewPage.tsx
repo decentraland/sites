@@ -17,6 +17,7 @@ import {
   MetaSeparator,
   MetaText,
   PostImage,
+  PublishedTime,
   SubtitleText,
   TitleBox,
   TitleText
@@ -91,14 +92,18 @@ export const PreviewPage = () => {
 
         <HeaderBox>
           <MetaText as="span">
-            {publishedDateUtc}
+            <PublishedTime dateTime={post.publishedDate}>{publishedDateUtc}</PublishedTime>
             <MetaSeparator>•</MetaSeparator>
             <CategoryText>{post.category.title}</CategoryText>
           </MetaText>
           <TitleBox>
-            <TitleText variant="h4">{post.title}</TitleText>
+            <TitleText variant="h4" component="h1">
+              {post.title}
+            </TitleText>
           </TitleBox>
-          <SubtitleText variant="h6">{post.description}</SubtitleText>
+          <SubtitleText variant="h6" component="p">
+            {post.description}
+          </SubtitleText>
         </HeaderBox>
 
         {showAuthor && (
