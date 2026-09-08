@@ -6,7 +6,7 @@ import { PostPage } from './PostPage'
 const mockUseGetBlogPostBySlugQuery = jest.fn()
 const mockUseGetBlogPostsQuery = jest.fn()
 const mockUseAppSelector = jest.fn()
-const mockRelatedPost = jest.fn(() => null)
+const mockRelatedPost = jest.fn((_props: unknown) => null)
 
 jest.mock('react-router-dom', () => ({
   useParams: () => ({ categorySlug: 'announcements', postSlug: 'a-post' }),

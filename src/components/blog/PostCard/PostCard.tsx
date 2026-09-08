@@ -1,4 +1,5 @@
 import { Typography } from 'decentraland-ui2'
+import { formatUtcDate } from '../../../shared/blog/utils/date'
 import type { PostCardProps } from './PostCard.types'
 import {
   CardContainer,
@@ -44,7 +45,7 @@ const PostCard = (props: PostCardProps) => {
       </CardImageLink>
       <CardInfo>
         <MetaBox>
-          <DateText>{post.publishedDate}</DateText>
+          <DateText>{formatUtcDate(post.publishedDate)}</DateText>
           <span>
             <CategoryLink to={post.category.url}>{post.category.title}</CategoryLink>
           </span>

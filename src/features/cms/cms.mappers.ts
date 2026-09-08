@@ -1,6 +1,5 @@
 import { Document } from '@contentful/rich-text-types'
 import type { BlogAuthor, BlogCategory, BlogPost, ContentfulAsset } from '../../shared/blog/types/blog.domain'
-import { formatUtcDate } from '../../shared/blog/utils/date'
 import { locations } from '../../shared/blog/utils/locations'
 import { decodeHtmlEntities, slugify } from '../../shared/blog/utils/string'
 import type { CMSEntry } from './cms.types'
@@ -198,7 +197,7 @@ function mapBlogPost(entry: CMSEntry | null | undefined): BlogPost | null {
     slug,
     title,
     description: decodeField(entry.fields.description),
-    publishedDate: formatUtcDate(publishedDate),
+    publishedDate: publishedDate ?? '',
     body: body || ({} as Document),
     bodyAssets: {},
     image,
