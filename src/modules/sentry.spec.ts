@@ -196,6 +196,43 @@ describe('when beforeSend inspects an event', () => {
     })
   })
 
+  // `livekit-client` rejects an internal promise with the socket's own `error` event,
+  // so the report has no message and no stack (SITES-2SF).
+  describe('and a promise was rejected with a raw socket event', () => {
+    it.each(['[object WebSocket]', '[object WebTransport]'])('should drop a rejection targeting %s', async target => {
+      const event = {
+        exception: { values: [{ type: 'Event', value: 'Event `Event` (type=error) captured as promise rejection' }] },
+        extra: { __serialized__: { isTrusted: true, target, type: 'error' } }
+      } as unknown as ErrorEvent
+
+      expect(await send(event)).toBeNull()
+    })
+
+    it('should keep a rejection that carries a real target', async () => {
+      const event = {
+        exception: { values: [{ type: 'Event', value: 'Event `Event` (type=error) captured as promise rejection' }] },
+        extra: { __serialized__: { isTrusted: true, target: '[object HTMLImageElement]', type: 'error' } }
+      } as unknown as ErrorEvent
+
+      expect(await send(event)).not.toBeNull()
+    })
+
+    it('should keep an event with no serialized payload', async () => {
+      const event = { exception: { values: [{ type: 'Error', value: 'boom' }] } } as ErrorEvent
+
+      expect(await send(event)).not.toBeNull()
+    })
+  })
+
+  // The browser refused the QUIC handshake; livekit falls back to WebSocket (SITES-2SA).
+  describe('and the realtime transport was refused', () => {
+    it('should drop the event', async () => {
+      const event = { exception: { values: [{ type: 'WebTransportError', value: 'WebTransport connection rejected' }] } } as ErrorEvent
+
+      expect(await send(event)).toBeNull()
+    })
+  })
+
   describe('and a non-analytics Segment destination failed to load', () => {
     it('should keep the event', async () => {
       const event = {

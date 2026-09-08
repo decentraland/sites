@@ -121,4 +121,24 @@ function isBlockedAnalyticsScriptError(event: ErrorEvent): boolean {
   return messages.some(message => typeof message === 'string' && BLOCKED_ANALYTICS_SCRIPT_REGEX.test(message))
 }
 
-export { isBlockedAnalyticsScriptError, redactBreadcrumbUrl, redactEventUrls, redactSensitiveUrl }
+// A realtime transport that rejects with its own DOM `error` event instead of an
+// Error. Sentry serializes the object into `extra.__serialized__`, so the target is
+// what identifies it — the report itself carries no message and no stack.
+const TRANSPORT_TARGET_REGEX = /^\[object (?:WebSocket|WebTransport)/
+
+/**
+ * True when an event is a promise rejected with a raw socket `error` event.
+ *
+ * `livekit-client` drives the scene viewer and cast, and when its signal socket
+ * drops it rejects an internal promise with the DOM event rather than an Error
+ * (SITES-2SF). What reaches Sentry is an untitled issue whose whole payload is
+ * `{ isTrusted: true, target: '[object WebSocket]', type: 'error' }`: no message, no
+ * stack, no frame of ours, and nothing to act on. A connection that actually matters
+ * surfaces through the room's own state, which is what drives the reconnect toast.
+ */
+function isRawTransportRejection(event: ErrorEvent): boolean {
+  const target = (event.extra?.__serialized__ as { target?: unknown } | undefined)?.target
+  return typeof target === 'string' && TRANSPORT_TARGET_REGEX.test(target)
+}
+
+export { isBlockedAnalyticsScriptError, isRawTransportRejection, redactBreadcrumbUrl, redactEventUrls, redactSensitiveUrl }
