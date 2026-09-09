@@ -7,6 +7,7 @@ import XIcon from '@mui/icons-material/X'
 import { useTranslation } from '@dcl/hooks'
 import { CircularProgress, Typography } from 'decentraland-ui2'
 import { BlogLayout } from '../../components/blog/BlogLayout'
+import { PostHeader } from '../../components/blog/PostHeader'
 import { RelatedPost } from '../../components/blog/RelatedPost'
 import { RichText } from '../../components/blog/RichText'
 import { OGType, SEO } from '../../components/blog/SEO/SEO'
@@ -14,7 +15,6 @@ import { getEnv } from '../../config/env'
 import { useGetBlogPostBySlugQuery, useGetBlogPostsQuery } from '../../features/cms/cms.client'
 import { selectPostByCategoryAndSlug } from '../../features/cms/cms.selectors'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
-import { formatUtcDate } from '../../shared/blog/utils/date'
 import { locations } from '../../shared/blog/utils/locations'
 import { useAppSelector } from '../../shells/store'
 import {
@@ -27,21 +27,15 @@ import {
   CategoryMetaLink,
   CenteredBox,
   ContentContainer,
-  HeaderBox,
-  MetaSeparator,
-  MetaText,
   PostImage,
   ShareContainer,
   ShareLabel,
-  ShareLink,
-  SubtitleText,
-  TitleBox,
-  TitleText
+  ShareLink
 } from './PostPage.styled'
 
 const RELATED_POSTS_COUNT = 3
-const RELATED_POSTS_FETCH_MULTIPLIER = 10
-const RELATED_POSTS_FETCH_LIMIT = RELATED_POSTS_COUNT * RELATED_POSTS_FETCH_MULTIPLIER
+// One spare row so filtering out the post being read still leaves a full rail.
+const RELATED_POSTS_FETCH_LIMIT = RELATED_POSTS_COUNT + 1
 
 export const PostPage = () => {
   const { t } = useTranslation()
@@ -70,12 +64,12 @@ export const PostPage = () => {
 
   const { data: relatedPostsData, isLoading: isRelatedPostsLoading } = useGetBlogPostsQuery(
     {
-      category: displayPost?.category.id,
+      category: displayPost?.category.slug,
       limit: RELATED_POSTS_FETCH_LIMIT,
       skip: 0
     },
     {
-      skip: !displayPost?.category.id
+      skip: !displayPost?.category.slug
     }
   )
 
@@ -87,7 +81,6 @@ export const PostPage = () => {
     return relatedPostsData.posts.filter(postItem => postItem.id !== displayPost.id)
   }, [displayPost, relatedPostsData?.posts])
 
-  const publishedDateUtc = useMemo(() => formatUtcDate(displayPost?.publishedDate), [displayPost?.publishedDate])
   const author = displayPost?.author
   const showAuthor = !!author && !!author.title
 
@@ -103,6 +96,10 @@ export const PostPage = () => {
           categorySlug: displayPost.category.slug,
           author: displayPost.author?.title,
           authorSlug: displayPost.author?.slug,
+          // NOTE: 2026-09-08 — this property now carries the raw ISO 8601 date. It used to
+          // send the display string ("Sep 04, 2026") because the CMS mapper formatted it
+          // before the domain model saw it. Warehouse queries keyed on the old format need
+          // updating; the format is not going back.
           publishedDate: displayPost.publishedDate
         }
       : undefined
@@ -164,17 +161,12 @@ export const PostPage = () => {
           decoding="async"
         />
 
-        <HeaderBox>
-          <MetaText as="span">
-            {publishedDateUtc}
-            <MetaSeparator>•</MetaSeparator>
-            <CategoryMetaLink to={locations.category(displayPost.category.slug)}>{displayPost.category.title}</CategoryMetaLink>
-          </MetaText>
-          <TitleBox>
-            <TitleText variant="h4">{displayPost.title}</TitleText>
-          </TitleBox>
-          <SubtitleText variant="h6">{displayPost.description}</SubtitleText>
-        </HeaderBox>
+        <PostHeader
+          title={displayPost.title}
+          description={displayPost.description}
+          publishedDate={displayPost.publishedDate}
+          category={<CategoryMetaLink to={locations.category(displayPost.category.slug)}>{displayPost.category.title}</CategoryMetaLink>}
+        />
 
         {showAuthor && (
           <AuthorRow>
@@ -186,10 +178,15 @@ export const PostPage = () => {
             </AuthorBox>
             <ShareContainer>
               <ShareLabel>{t('blog.share')}</ShareLabel>
-              <ShareLink href={locations.twitter(displayPost)} target="_blank" rel="noopener noreferrer">
+              <ShareLink href={locations.twitter(displayPost)} target="_blank" rel="noopener noreferrer" aria-label={t('blog.share_on_x')}>
                 <XIcon fontSize="small" />
               </ShareLink>
-              <ShareLink href={locations.facebook(displayPost)} target="_blank" rel="noopener noreferrer">
+              <ShareLink
+                href={locations.facebook(displayPost)}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t('blog.share_on_facebook')}
+              >
                 <FacebookIcon fontSize="small" />
               </ShareLink>
             </ShareContainer>

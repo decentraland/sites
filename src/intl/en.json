@@ -1316,6 +1316,8 @@
     "nothing_to_show": "Nothing to show",
     "related_post": "Related Articles",
     "share": "Share",
+    "share_on_x": "Share on X",
+    "share_on_facebook": "Share on Facebook",
     "posts_by": "Posts by {author}"
   },
   "search": {
