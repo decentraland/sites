@@ -3,25 +3,10 @@ import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
 import { CircularProgress, Typography } from 'decentraland-ui2'
 import { BlogLayout } from '../../components/blog/BlogLayout'
+import { PostHeader } from '../../components/blog/PostHeader'
 import { RichText } from '../../components/blog/RichText'
 import { useGetBlogPostPreviewQuery } from '../../features/cms/cms.client'
-import { formatUtcDate } from '../../shared/blog/utils/date'
-import {
-  AuthorAvatar,
-  AuthorBox,
-  AuthorName,
-  BodyContainer,
-  CenteredBox,
-  ContentContainer,
-  HeaderBox,
-  MetaSeparator,
-  MetaText,
-  PostImage,
-  PublishedTime,
-  SubtitleText,
-  TitleBox,
-  TitleText
-} from './PostPage.styled'
+import { AuthorAvatar, AuthorBox, AuthorName, BodyContainer, CenteredBox, ContentContainer, PostImage } from './PostPage.styled'
 import { AuthorContainer, CategoryText, PreviewBanner } from './PreviewPage.styled'
 
 const CONTENTFUL_PREVIEW_URL = 'https://preview.contentful.com'
@@ -46,7 +31,6 @@ export const PreviewPage = () => {
 
   const { data: post, isLoading, error } = useGetBlogPostPreviewQuery(previewOptions, { skip: !isValidParams })
 
-  const publishedDateUtc = useMemo(() => formatUtcDate(post?.publishedDate), [post?.publishedDate])
   const author = post?.author
   const showAuthor = !!author && !!author.title
 
@@ -92,25 +76,12 @@ export const PreviewPage = () => {
       <ContentContainer>
         <PostImage src={post.image.url} alt={post.title} />
 
-        <HeaderBox>
-          <MetaText as="span">
-            {publishedDateUtc && (
-              <>
-                <PublishedTime dateTime={post.publishedDate}>{publishedDateUtc}</PublishedTime>
-                <MetaSeparator>•</MetaSeparator>
-              </>
-            )}
-            <CategoryText>{post.category.title}</CategoryText>
-          </MetaText>
-          <TitleBox>
-            <TitleText variant="h4" component="h1">
-              {post.title}
-            </TitleText>
-          </TitleBox>
-          <SubtitleText variant="h6" component="p">
-            {post.description}
-          </SubtitleText>
-        </HeaderBox>
+        <PostHeader
+          title={post.title}
+          description={post.description}
+          publishedDate={post.publishedDate}
+          category={<CategoryText>{post.category.title}</CategoryText>}
+        />
 
         {showAuthor && (
           <AuthorBox>

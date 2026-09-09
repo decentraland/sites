@@ -1,6 +1,6 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import type { BlogPost } from '../../shared/blog/types/blog.domain'
+import { createBlogPost } from '../../__test-utils__/blogFixtures'
 import { PostPage } from './PostPage'
 
 const mockUseGetBlogPostBySlugQuery = jest.fn()
@@ -66,46 +66,9 @@ jest.mock('@mui/icons-material/X', () => ({ __esModule: true, default: () => Rea
 
 jest.mock('@mui/icons-material/Facebook', () => ({ __esModule: true, default: () => React.createElement('svg') }))
 
-jest.mock('decentraland-ui2', () => {
-  const actual = jest.requireActual('../../__test-utils__/styledMock')
-  return {
-    ...actual,
-    // Mirror MUI: `component` wins over the variant-derived tag, which is how the
-    // post title becomes an <h1> while keeping the h4 type scale.
-    Typography: ({ component, children, ...rest }: { component?: string; children?: React.ReactNode }) =>
-      React.createElement(component ?? 'span', rest, children),
-    CircularProgress: () => React.createElement('div', { role: 'progressbar' })
-  }
-})
+jest.mock('decentraland-ui2', () => jest.requireActual('../../__test-utils__/ui2Mock').createUi2Mock())
 
-const post: BlogPost = {
-  id: 'post-1',
-  slug: 'a-post',
-  title: 'How to make money in virtual worlds',
-  description: 'A standfirst that is not a heading.',
-  publishedDate: '2026-09-04T07:00-07:00',
-  body: { nodeType: 'document', data: {}, content: [] } as unknown as BlogPost['body'],
-  bodyAssets: {},
-  image: { id: 'img', url: 'https://cms-images.decentraland.org/a.png', width: 1200, height: 630, mimeType: 'image/png' },
-  category: {
-    id: 'cat-1',
-    slug: 'announcements',
-    title: 'Announcements',
-    description: '',
-    image: { id: 'ci', url: '', width: 0, height: 0, mimeType: '' },
-    isShownInMenu: true,
-    url: '/blog/announcements'
-  },
-  author: {
-    id: 'author-1',
-    slug: 'bay-backner',
-    title: 'Bay Backner',
-    description: '',
-    image: { id: 'ai', url: 'https://cms-images.decentraland.org/author.png', width: 64, height: 64, mimeType: 'image/png' },
-    url: '/blog/author/bay-backner'
-  },
-  url: '/blog/announcements/a-post'
-}
+const post = createBlogPost({ title: 'How to make money in virtual worlds' })
 
 describe('when rendering a blog post', () => {
   beforeEach(() => {

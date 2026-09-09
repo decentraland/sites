@@ -7,6 +7,7 @@ import XIcon from '@mui/icons-material/X'
 import { useTranslation } from '@dcl/hooks'
 import { CircularProgress, Typography } from 'decentraland-ui2'
 import { BlogLayout } from '../../components/blog/BlogLayout'
+import { PostHeader } from '../../components/blog/PostHeader'
 import { RelatedPost } from '../../components/blog/RelatedPost'
 import { RichText } from '../../components/blog/RichText'
 import { OGType, SEO } from '../../components/blog/SEO/SEO'
@@ -14,7 +15,6 @@ import { getEnv } from '../../config/env'
 import { useGetBlogPostBySlugQuery, useGetBlogPostsQuery } from '../../features/cms/cms.client'
 import { selectPostByCategoryAndSlug } from '../../features/cms/cms.selectors'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
-import { formatUtcDate } from '../../shared/blog/utils/date'
 import { locations } from '../../shared/blog/utils/locations'
 import { useAppSelector } from '../../shells/store'
 import {
@@ -27,17 +27,10 @@ import {
   CategoryMetaLink,
   CenteredBox,
   ContentContainer,
-  HeaderBox,
-  MetaSeparator,
-  MetaText,
   PostImage,
-  PublishedTime,
   ShareContainer,
   ShareLabel,
-  ShareLink,
-  SubtitleText,
-  TitleBox,
-  TitleText
+  ShareLink
 } from './PostPage.styled'
 
 const RELATED_POSTS_COUNT = 3
@@ -88,7 +81,6 @@ export const PostPage = () => {
     return relatedPostsData.posts.filter(postItem => postItem.id !== displayPost.id)
   }, [displayPost, relatedPostsData?.posts])
 
-  const publishedDateUtc = useMemo(() => formatUtcDate(displayPost?.publishedDate), [displayPost?.publishedDate])
   const author = displayPost?.author
   const showAuthor = !!author && !!author.title
 
@@ -169,25 +161,12 @@ export const PostPage = () => {
           decoding="async"
         />
 
-        <HeaderBox>
-          <MetaText as="span">
-            {publishedDateUtc && (
-              <>
-                <PublishedTime dateTime={displayPost.publishedDate}>{publishedDateUtc}</PublishedTime>
-                <MetaSeparator>•</MetaSeparator>
-              </>
-            )}
-            <CategoryMetaLink to={locations.category(displayPost.category.slug)}>{displayPost.category.title}</CategoryMetaLink>
-          </MetaText>
-          <TitleBox>
-            <TitleText variant="h4" component="h1">
-              {displayPost.title}
-            </TitleText>
-          </TitleBox>
-          <SubtitleText variant="h6" component="p">
-            {displayPost.description}
-          </SubtitleText>
-        </HeaderBox>
+        <PostHeader
+          title={displayPost.title}
+          description={displayPost.description}
+          publishedDate={displayPost.publishedDate}
+          category={<CategoryMetaLink to={locations.category(displayPost.category.slug)}>{displayPost.category.title}</CategoryMetaLink>}
+        />
 
         {showAuthor && (
           <AuthorRow>
