@@ -34,8 +34,8 @@ import {
 } from './PostPage.styled'
 
 const RELATED_POSTS_COUNT = 3
-const RELATED_POSTS_FETCH_MULTIPLIER = 10
-const RELATED_POSTS_FETCH_LIMIT = RELATED_POSTS_COUNT * RELATED_POSTS_FETCH_MULTIPLIER
+// One spare row so filtering out the post being read still leaves a full rail.
+const RELATED_POSTS_FETCH_LIMIT = RELATED_POSTS_COUNT + 1
 
 export const PostPage = () => {
   const { t } = useTranslation()
@@ -64,12 +64,12 @@ export const PostPage = () => {
 
   const { data: relatedPostsData, isLoading: isRelatedPostsLoading } = useGetBlogPostsQuery(
     {
-      category: displayPost?.category.id,
+      category: displayPost?.category.slug,
       limit: RELATED_POSTS_FETCH_LIMIT,
       skip: 0
     },
     {
-      skip: !displayPost?.category.id
+      skip: !displayPost?.category.slug
     }
   )
 

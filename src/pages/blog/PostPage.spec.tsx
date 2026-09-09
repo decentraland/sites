@@ -121,6 +121,14 @@ describe('when rendering a blog post', () => {
     expect(container.querySelector('article')).toBeInTheDocument()
   })
 
+  // cms-api filters by category slug; the entry id matched nothing and silently
+  // emptied the rail on every post.
+  it('should query related posts by category slug, not entry id', () => {
+    render(<PostPage />)
+
+    expect(mockUseGetBlogPostsQuery).toHaveBeenCalledWith(expect.objectContaining({ category: post.category.slug }), expect.anything())
+  })
+
   it('should keep the current post out of the related list', () => {
     const sibling = { ...post, id: 'post-2', slug: 'another-post' }
     mockUseGetBlogPostsQuery.mockReturnValue({ data: { posts: [post, sibling] }, isLoading: false })
