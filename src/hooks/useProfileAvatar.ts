@@ -11,6 +11,9 @@ type UseProfileAvatarResult = {
   avatarFace: string | undefined
   name: string | undefined
   backgroundColor: string
+  // False once the batch settled — with or without a profile, and after a failed batch
+  // too — so a row that holds on it never holds forever.
+  isLoading: boolean
 }
 
 type QueryOptions = { skip?: boolean }
@@ -34,7 +37,7 @@ function markFaceAsBroken(url: string): void {
 }
 
 function useProfileAvatar(address: string | undefined, options: QueryOptions = {}): UseProfileAvatarResult {
-  const { data: profile } = useGetProfileQuery(address, options)
+  const { data: profile, isLoading } = useGetProfileQuery(address, options)
   const avatar = profile?.avatars?.[0]
   const profileName = avatar?.name
   const profileEthAddress = avatar?.ethAddress ?? address
@@ -95,7 +98,8 @@ function useProfileAvatar(address: string | undefined, options: QueryOptions = {
     avatarForCard,
     avatarFace,
     name: profileName,
-    backgroundColor
+    backgroundColor,
+    isLoading
   }
 }
 

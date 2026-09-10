@@ -10,6 +10,9 @@ const PEER = 'https://peer.decentraland.org'
 const A = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 const B = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
 const C = '0xcccccccccccccccccccccccccccccccccccccccc'
+const E = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+const F = '0xffffffffffffffffffffffffffffffffffffffff'
+const G = '0x1111111111111111111111111111111111111111'
 
 function profileFor(address: string, name: string) {
   return { avatars: [{ ethAddress: address, name, hasClaimedName: true }] }
@@ -90,6 +93,77 @@ describe('profile.client batching', () => {
 
       expect(fetchMock).toHaveBeenCalledTimes(2)
       expect(second.result.current.data?.avatars?.[0]?.name).toBe('Recovered')
+    })
+  })
+
+  describe('when the peer answers with a non-ok status', () => {
+    beforeEach(() => {
+      fetchMock.mockResolvedValueOnce(jsonResponse({ error: 'upstream unavailable' }, false))
+    })
+
+    it('should flag the error and stop loading', async () => {
+      const { result } = renderHook(() => useGetProfileQuery(E))
+
+      await waitFor(() => expect(result.current.hasError).toBe(true))
+
+      expect(result.current.isLoading).toBe(false)
+      expect(result.current.data).toBeNull()
+    })
+
+    it('should leave the entry uncached so a later subscriber retries', async () => {
+      const first = renderHook(() => useGetProfileQuery(E))
+      await waitFor(() => expect(first.result.current.hasError).toBe(true))
+      first.unmount()
+
+      fetchMock.mockResolvedValueOnce(jsonResponse([profileFor(E, 'Eve')]))
+      const second = renderHook(() => useGetProfileQuery(E))
+      await waitFor(() => expect(second.result.current.data).not.toBeNull())
+
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+      expect(second.result.current.data?.avatars?.[0]?.name).toBe('Eve')
+    })
+  })
+
+  describe('when the peer answers 200 with something other than the profile list', () => {
+    beforeEach(() => {
+      fetchMock.mockResolvedValueOnce(jsonResponse({ error: 'not the list you asked for' }))
+    })
+
+    it('should settle the batch as failed instead of caching every address as profile-less', async () => {
+      const { result } = renderHook(() => useGetProfileQuery(F))
+
+      await waitFor(() => expect(result.current.hasError).toBe(true))
+
+      expect(result.current.isLoading).toBe(false)
+      expect(result.current.data).toBeNull()
+    })
+  })
+
+  describe('when the peer accepts the request and never answers', () => {
+    beforeEach(() => {
+      // Real microtasks keep the batch flush scheduling as it is in production; only
+      // the clock the timeout signal runs on is faked.
+      jest.useFakeTimers({ doNotFake: ['queueMicrotask', 'nextTick'] })
+      // Behave like a real fetch would: hang until the signal aborts, then reject.
+      fetchMock.mockImplementation(
+        (_url: string, init: RequestInit) =>
+          new Promise((_resolve, reject) => init.signal?.addEventListener('abort', () => reject(init.signal?.reason)))
+      )
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    it('should give up at the timeout and settle the batch as failed', async () => {
+      const { result } = renderHook(() => useGetProfileQuery(G))
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+      expect(result.current.isLoading).toBe(true)
+
+      jest.advanceTimersByTime(10_000)
+
+      await waitFor(() => expect(result.current.hasError).toBe(true))
+      expect(result.current.isLoading).toBe(false)
     })
   })
 })

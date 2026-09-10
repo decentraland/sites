@@ -1,6 +1,6 @@
 import type { Theme } from 'decentraland-ui2'
 import { getEnv } from '../../config/env'
-import type { ProfileSummary } from './../../features/profile/profile.types'
+import type { ProfileSummary } from '../profile/profile.types'
 import type { CommunityMemberCard, RarityPalette } from './communities.helpers.types'
 import { Role } from './communities.types'
 import type { CommunityMember } from './communities.types'
@@ -17,16 +17,19 @@ function isMember(community?: { role?: Role }): boolean {
 }
 
 // The members endpoint is address-only, so the display fields come from a batched
-// Catalyst lookup. A member without a profile keeps their row and shows the address.
+// Catalyst lookup. A member whose profile is still in flight is flagged so the row can
+// show a skeleton; one without a profile keeps their row and shows the address.
 function toMemberCards(members: CommunityMember[], profiles: Map<string, ProfileSummary>): CommunityMemberCard[] {
   return members.map(member => {
-    const profile = profiles.get(member.memberAddress.toLowerCase())
+    const key = member.memberAddress.toLowerCase()
+    const profile = profiles.get(key)
     return {
       memberAddress: member.memberAddress,
       name: profile?.name ?? member.memberAddress,
       role: member.role,
       profilePictureUrl: profile?.avatarFace256 ?? '',
-      hasClaimedName: profile?.hasClaimedName ?? false
+      hasClaimedName: profile?.hasClaimedName ?? false,
+      isLoadingProfile: !profiles.has(key)
     }
   })
 }

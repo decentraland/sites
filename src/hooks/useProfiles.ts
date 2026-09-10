@@ -21,8 +21,10 @@ function toProfileSummary(address: string, catalystProfile: CatalystProfile | nu
 
 // Batch view over the shared profile store (`features/profile/profile.client`), which
 // coalesces every profile read in a tick into one POST /lambdas/profiles per peer.
-// An address that settles without a deployed profile still gets an entry, so callers
-// can tell "resolved, has no name" from "still loading" and fall back to the address.
+// The map holds every address that has settled: with a profile, without one, or as part
+// of a batch that failed. Only an address still in flight is absent, so `profiles.has()`
+// is the one "stop waiting" signal every consumer reads, and the summary's empty fields
+// send them to the address fallback. `error` reports a failed batch on the side.
 function useProfiles(addresses: string[], peerUrl?: string): UseProfilesResult {
   const snapshots = useGetProfileSnapshots(addresses, peerUrl)
 
@@ -33,10 +35,7 @@ function useProfiles(addresses: string[], peerUrl?: string): UseProfilesResult {
 
     for (const [address, snapshot] of snapshots) {
       const settled: Snapshot = snapshot ?? { data: null, isLoading: true, hasError: false }
-      if (settled.hasError) {
-        failed = true
-        continue
-      }
+      if (settled.hasError) failed = true
       if (settled.isLoading) {
         isLoading = true
         continue

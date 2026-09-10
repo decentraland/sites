@@ -46,13 +46,36 @@ import { communitiesApi } from './communities.client'
 import { Privacy, RequestStatus, RequestType, Role } from './communities.types'
 /* eslint-enable import/order */
 
-type QueuedResponse = { body?: unknown; status?: number }
+// `release` holds the response open until the test lets it go — used to keep a refetch
+// from landing before an assertion reads the cache entry it would overwrite.
+type QueuedResponse = { body?: unknown; status?: number; release?: Promise<void> }
 
-const buildStore = () =>
+const createSocialStore = () =>
   configureStore({
     reducer: { [socialClient.reducerPath]: socialClient.reducer },
     middleware: getDefaultMiddleware => getDefaultMiddleware().concat(socialClient.middleware)
   })
+
+type SocialStore = ReturnType<typeof createSocialStore>
+
+// Every store a case builds, so `afterEach` can wait for the refetches its mutations
+// kicked off before the next case swaps the response queue.
+const stores: SocialStore[] = []
+
+function buildStore(): SocialStore {
+  const store = createSocialStore()
+  stores.push(store)
+  return store
+}
+
+const heldResponse = (response: QueuedResponse) => {
+  let release: () => void = () => undefined
+  const queued: QueuedResponse = { ...response, release: new Promise<void>(resolve => (release = resolve)) }
+  return { queued, release }
+}
+
+const requestUrl = (input: RequestInfo | URL): string =>
+  typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url
 
 const buildCommunity = () => ({
   id: 'c-1',
@@ -110,17 +133,35 @@ const buildMemberRequestsPage = () => ({
 
 describe('communitiesApi', () => {
   let responses: QueuedResponse[]
+  let unexpectedRequests: string[]
 
   beforeEach(() => {
     responses = []
-    signedFetchMock.mockReset()
-    global.fetch = jest.fn(async () => {
-      const next = responses.shift() ?? {}
-      return new Response(JSON.stringify(next.body ?? { data: {} }), {
+    unexpectedRequests = []
+    stores.length = 0
+    global.fetch = jest.fn(async (input: RequestInfo | URL) => {
+      const next = responses.shift()
+      if (!next) {
+        // Nothing queued for this request means the case did not expect it. Record it so
+        // `afterEach` fails the case, instead of a placeholder 200 letting it pass.
+        unexpectedRequests.push(requestUrl(input))
+        throw new Error(`unexpected request: ${requestUrl(input)}`)
+      }
+      await next.release
+      return new Response(JSON.stringify(next.body ?? {}), {
         status: next.status ?? 200,
         headers: { 'Content-Type': 'application/json' }
       })
     }) as unknown as typeof fetch
+  })
+
+  afterEach(async () => {
+    // A mutation invalidates its tags whether it succeeded or failed, which refetches
+    // every subscribed query. Let those land before the queue is swapped, then make sure
+    // nothing asked for more than the case queued.
+    await Promise.all(stores.map(store => store.dispatch(communitiesApi.util.getRunningQueriesThunk())))
+    expect(unexpectedRequests).toEqual([])
+    jest.resetAllMocks()
   })
 
   const readRequest = (index = 0) => {
@@ -128,13 +169,17 @@ describe('communitiesApi', () => {
     return typeof called === 'string' ? { url: called, method: 'GET' } : { url: called.url, method: called.method }
   }
 
-  const selectCommunity = (store: ReturnType<typeof buildStore>) =>
+  const selectCommunity = (store: SocialStore) =>
     communitiesApi.endpoints.getCommunityById.select({ id: 'c-1', isSigned: true })(store.getState()).data?.data
 
-  const selectMemberRequests = (store: ReturnType<typeof buildStore>) =>
+  const selectMemberRequests = (store: SocialStore) =>
     communitiesApi.endpoints.getMemberRequests.select({ address: '0xabc', type: RequestType.REQUEST_TO_JOIN })(store.getState()).data?.data
 
   describe('when reading a single community', () => {
+    beforeEach(() => {
+      responses = [{ body: { data: buildCommunity() } }]
+    })
+
     it('should call the address-only v2 endpoint with the id encoded', async () => {
       const store = buildStore()
 
@@ -145,6 +190,10 @@ describe('communitiesApi', () => {
   })
 
   describe('when reading community members', () => {
+    beforeEach(() => {
+      responses = [{ body: buildMembersPage(['0xAAA', '0xBBB'], 1) }]
+    })
+
     it('should call the address-only v2 endpoint with the pagination params', async () => {
       const store = buildStore()
 
@@ -162,7 +211,7 @@ describe('communitiesApi', () => {
     })
   })
 
-  describe('and a second members page is requested', () => {
+  describe('when a second members page is requested', () => {
     beforeEach(() => {
       responses = [{ body: buildMembersPage(['0xAAA', '0xBBB'], 1) }, { body: buildMembersPage(['0xCCC', '0xDDD'], 2) }]
     })
@@ -177,7 +226,7 @@ describe('communitiesApi', () => {
     })
   })
 
-  describe('and an empty members page comes back', () => {
+  describe('when an empty members page comes back', () => {
     beforeEach(() => {
       responses = [{ body: buildMembersPage(['0xAAA'], 1) }, { body: buildMembersPage([], 2) }]
     })
@@ -193,6 +242,10 @@ describe('communitiesApi', () => {
   })
 
   describe('when reading the member requests', () => {
+    beforeEach(() => {
+      responses = [{ body: buildMemberRequestsPage() }]
+    })
+
     it('should call the address-only v2 endpoint with the type filter', async () => {
       const store = buildStore()
 
@@ -252,12 +305,13 @@ describe('communitiesApi', () => {
   })
 
   describe('when joining a community', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
+      // Seeds the community entry the optimistic patch edits.
       responses = [{ body: { data: buildCommunity() } }]
     })
 
     it('should keep posting to the v1 endpoint, which has no v2 counterpart', async () => {
-      responses = []
+      responses = [{ body: { success: true } }]
       const store = buildStore()
 
       await store.dispatch(communitiesApi.endpoints.joinCommunity.initiate('c-1'))
@@ -266,6 +320,8 @@ describe('communitiesApi', () => {
     })
 
     it('should optimistically promote the cached role to member', async () => {
+      // The join, then the refetch its success invalidates.
+      responses.push({ body: { success: true } }, { body: { data: buildCommunity() } })
       const store = buildStore()
       const seeded = store.dispatch(communitiesApi.endpoints.getCommunityById.initiate({ id: 'c-1', isSigned: true }))
       await seeded
@@ -281,25 +337,31 @@ describe('communitiesApi', () => {
     })
 
     it('should undo the optimistic role when the request fails', async () => {
-      responses.push({ status: 500 })
+      // The rejection invalidates the entry too. Holding that refetch open means the
+      // read below sees the undone patch, not a fresh payload that happened to win.
+      const refetch = heldResponse({ body: { data: buildCommunity() } })
+      responses.push({ status: 500 }, refetch.queued)
       const store = buildStore()
       const seeded = store.dispatch(communitiesApi.endpoints.getCommunityById.initiate({ id: 'c-1', isSigned: true }))
       await seeded
 
       await store.dispatch(communitiesApi.endpoints.joinCommunity.initiate('c-1'))
+      const undoneRole = selectCommunity(store)?.role
+      refetch.release()
       seeded.unsubscribe()
 
-      expect(selectCommunity(store)?.role).toBe(Role.NONE)
+      expect(undoneRole).toBe(Role.NONE)
     })
   })
 
   describe('when creating a join request', () => {
     beforeEach(() => {
+      // Seeds the member-requests entry the optimistic patch edits.
       responses = [{ body: buildMemberRequestsPage() }]
     })
 
     it('should keep posting to the v1 endpoint, which has no v2 counterpart', async () => {
-      responses = []
+      responses = [{ body: {} }]
       const store = buildStore()
 
       await store.dispatch(communitiesApi.endpoints.createCommunityRequest.initiate({ communityId: 'c-1', targetedAddress: '0xabc' }))
@@ -308,6 +370,8 @@ describe('communitiesApi', () => {
     })
 
     it('should optimistically prepend a pending request', async () => {
+      // The request, then the refetch its success invalidates.
+      responses.push({ body: {} }, { body: buildMemberRequestsPage() })
       const store = buildStore()
       const seeded = store.dispatch(
         communitiesApi.endpoints.getMemberRequests.initiate({ address: '0xabc', type: RequestType.REQUEST_TO_JOIN })
@@ -326,7 +390,8 @@ describe('communitiesApi', () => {
     })
 
     it('should undo the optimistic request when the call fails', async () => {
-      responses.push({ status: 500 })
+      const refetch = heldResponse({ body: buildMemberRequestsPage() })
+      responses.push({ status: 500 }, refetch.queued)
       const store = buildStore()
       const seeded = store.dispatch(
         communitiesApi.endpoints.getMemberRequests.initiate({ address: '0xabc', type: RequestType.REQUEST_TO_JOIN })
@@ -334,19 +399,22 @@ describe('communitiesApi', () => {
       await seeded
 
       await store.dispatch(communitiesApi.endpoints.createCommunityRequest.initiate({ communityId: 'c-1', targetedAddress: '0xabc' }))
+      const undoneTotal = selectMemberRequests(store)?.total
+      refetch.release()
       seeded.unsubscribe()
 
-      expect(selectMemberRequests(store)?.total).toBe(1)
+      expect(undoneTotal).toBe(1)
     })
   })
 
   describe('when cancelling a join request', () => {
     beforeEach(() => {
+      // Seeds the member-requests entry the optimistic patch edits.
       responses = [{ body: buildMemberRequestsPage() }]
     })
 
     it('should keep patching the v1 endpoint, which has no v2 counterpart', async () => {
-      responses = []
+      responses = [{ body: {} }]
       const store = buildStore()
 
       await store.dispatch(communitiesApi.endpoints.cancelCommunityRequest.initiate({ communityId: 'c-1', requestId: 'r-1' }))
@@ -355,6 +423,8 @@ describe('communitiesApi', () => {
     })
 
     it('should optimistically drop the cancelled request', async () => {
+      // The cancel, then the refetch its success invalidates.
+      responses.push({ body: {} }, { body: buildMemberRequestsPage() })
       const store = buildStore()
       const seeded = store.dispatch(
         communitiesApi.endpoints.getMemberRequests.initiate({ address: '0xabc', type: RequestType.REQUEST_TO_JOIN })
@@ -373,7 +443,8 @@ describe('communitiesApi', () => {
     })
 
     it('should restore the request when the call fails', async () => {
-      responses.push({ status: 500 })
+      const refetch = heldResponse({ body: buildMemberRequestsPage() })
+      responses.push({ status: 500 }, refetch.queued)
       const store = buildStore()
       const seeded = store.dispatch(
         communitiesApi.endpoints.getMemberRequests.initiate({ address: '0xabc', type: RequestType.REQUEST_TO_JOIN })
@@ -383,9 +454,11 @@ describe('communitiesApi', () => {
       await store.dispatch(
         communitiesApi.endpoints.cancelCommunityRequest.initiate({ communityId: 'c-1', requestId: 'r-1', address: '0xabc' })
       )
+      const restoredIds = selectMemberRequests(store)?.results.map(request => request.id)
+      refetch.release()
       seeded.unsubscribe()
 
-      expect(selectMemberRequests(store)?.results.map(request => request.id)).toEqual(['r-1'])
+      expect(restoredIds).toEqual(['r-1'])
     })
   })
 })

@@ -163,7 +163,7 @@ function CommunityDetailComponent({ community, isLoggedIn, address }: CommunityD
     handleRequestToJoin
   ])
 
-  const { memberCards, isResolvingProfiles } = useCommunityMemberCards(community.id, members)
+  const memberCards = useCommunityMemberCards(members)
 
   const eventListItems = events.map(mapCommunityEventToEventEntry)
 
@@ -194,7 +194,7 @@ function CommunityDetailComponent({ community, isLoggedIn, address }: CommunityD
                 <MembersColumn>
                   <MembersList
                     members={memberCards}
-                    isLoading={isLoadingMembers || isResolvingProfiles}
+                    isLoading={isLoadingMembers}
                     isFetchingMore={isFetchingMoreMembers}
                     hasMore={hasMoreMembers}
                     onLoadMore={loadMoreMembers}
@@ -222,7 +222,7 @@ function CommunityDetailComponent({ community, isLoggedIn, address }: CommunityD
               <MembersColumn>
                 <MembersList
                   members={memberCards}
-                  isLoading={isLoadingMembers || isResolvingProfiles}
+                  isLoading={isLoadingMembers}
                   isFetchingMore={isFetchingMoreMembers}
                   hasMore={hasMoreMembers}
                   onLoadMore={loadMoreMembers}

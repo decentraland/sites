@@ -181,4 +181,4 @@ export type {
   CreateCommunityRequestResponse,
   MemberRequestsResponse
 }
-export { Privacy, RequestIntention, RequestStatus, RequestType, Role }
+export { Privacy, RequestIntention, RequestStatus, RequestType, Role, Visibility }

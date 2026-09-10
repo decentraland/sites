@@ -54,6 +54,17 @@ jest.mock('./MembersList.styled', () => {
   }
 })
 
+jest.mock('../CommunityDetail.styled', () => {
+  const make = (testid: string) =>
+    mockReact.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>((props, ref) =>
+      mockReact.createElement('div', { 'data-testid': testid, ref, ...props })
+    )
+  return {
+    AvatarSkeleton: make('avatar-skeleton'),
+    NameSkeleton: make('name-skeleton')
+  }
+})
+
 function renderMembersList(props: Partial<React.ComponentProps<typeof MembersList>> = {}) {
   const defaults = {
     members: [] as MemberCardProps[],
@@ -99,8 +110,22 @@ describe('MembersList', () => {
 
     beforeEach(() => {
       members = [
-        { memberAddress: '0x111', name: 'John Doe', role: Role.MODERATOR, profilePictureUrl: '', hasClaimedName: false },
-        { memberAddress: '0x222', name: 'Jane Smith', role: Role.MEMBER, profilePictureUrl: '', hasClaimedName: true }
+        {
+          memberAddress: '0x111',
+          name: 'John Doe',
+          role: Role.MODERATOR,
+          profilePictureUrl: '',
+          hasClaimedName: false,
+          isLoadingProfile: false
+        },
+        {
+          memberAddress: '0x222',
+          name: 'Jane Smith',
+          role: Role.MEMBER,
+          profilePictureUrl: '',
+          hasClaimedName: true,
+          isLoadingProfile: false
+        }
       ]
     })
 
@@ -130,12 +155,44 @@ describe('MembersList', () => {
       renderMembersList({ members, total: 15, showCount: false })
       expect(screen.getByText('community.members_list.title')).toBeInTheDocument()
     })
+
+    it('should not draw any skeleton once the profiles are in', () => {
+      renderMembersList({ members })
+      expect(screen.queryByTestId('name-skeleton')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('avatar-skeleton')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when a member profile is still loading', () => {
+    let members: MemberCardProps[]
+
+    beforeEach(() => {
+      members = [
+        { memberAddress: '0x333', name: '0x333', role: Role.MEMBER, profilePictureUrl: '', hasClaimedName: false, isLoadingProfile: true }
+      ]
+    })
+
+    it('should draw skeletons in place of the avatar and the name', () => {
+      renderMembersList({ members })
+      expect(screen.getByTestId('avatar-skeleton')).toBeInTheDocument()
+      expect(screen.getByTestId('name-skeleton')).toBeInTheDocument()
+    })
+
+    it('should not flash the address fallback while the skeleton is up', () => {
+      renderMembersList({ members })
+      expect(screen.queryByText('0x333')).not.toBeInTheDocument()
+    })
+
+    it('should still show the role, which the members page already carries', () => {
+      renderMembersList({ members })
+      expect(screen.getByText('member')).toBeInTheDocument()
+    })
   })
 
   describe('when fetching more members', () => {
     it('should render a sentinel progress indicator', () => {
       renderMembersList({
-        members: [{ memberAddress: '0x1', name: 'A', role: Role.MODERATOR, profilePictureUrl: '' }],
+        members: [{ memberAddress: '0x1', name: 'A', role: Role.MODERATOR, profilePictureUrl: '', isLoadingProfile: false }],
         hasMore: true,
         isFetchingMore: true
       })

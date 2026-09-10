@@ -14,22 +14,24 @@ jest.mock('../config/env', () => ({
   getEnv: () => undefined
 }))
 
-const buildMember = (memberAddress: string, communityId = 'c-1'): CommunityMember => ({
-  communityId,
+const buildMember = (memberAddress: string): CommunityMember => ({
+  communityId: 'c-1',
   memberAddress,
   role: Role.MEMBER,
   joinedAt: '2026-01-01T00:00:00Z'
 })
 
-const buildProfiles = (entries: Array<[string, string]>): Map<string, ProfileSummary> =>
-  new Map(entries.map(([address, name]) => [address, { address, name, hasClaimedName: true }]))
+// A settled address always has an entry; `name` is undefined for one that settled
+// without a deployed profile (or whose batch failed).
+const buildProfiles = (entries: Array<[string, string | undefined]>): Map<string, ProfileSummary> =>
+  new Map(entries.map(([address, name]) => [address, { address, name, hasClaimedName: Boolean(name) }]))
 
 describe('useCommunityMemberCards', () => {
   let members: CommunityMember[]
 
   beforeEach(() => {
     members = [buildMember('0xAAA'), buildMember('0xBBB')]
-    useProfilesMock.mockReturnValue({ profiles: new Map(), isLoading: false, error: null })
+    useProfilesMock.mockReturnValue({ profiles: new Map(), isLoading: true, error: null })
   })
 
   afterEach(() => {
@@ -37,16 +39,22 @@ describe('useCommunityMemberCards', () => {
   })
 
   describe('when the members arrived but the profile batch has not', () => {
-    it('should report that profiles are still resolving', () => {
-      const { result } = renderHook(() => useCommunityMemberCards('c-1', members))
+    it('should list every member right away', () => {
+      const { result } = renderHook(() => useCommunityMemberCards(members))
 
-      expect(result.current.isResolvingProfiles).toBe(true)
+      expect(result.current.map(card => card.memberAddress)).toEqual(['0xAAA', '0xBBB'])
     })
 
-    it('should expose no cards yet, since the caller renders the skeleton instead', () => {
-      const { result } = renderHook(() => useCommunityMemberCards('c-1', members))
+    it('should flag each row as still loading its profile', () => {
+      const { result } = renderHook(() => useCommunityMemberCards(members))
 
-      expect(result.current.memberCards).toEqual([])
+      expect(result.current.map(card => card.isLoadingProfile)).toEqual([true, true])
+    })
+
+    it('should ask for exactly those members profiles', () => {
+      renderHook(() => useCommunityMemberCards(members))
+
+      expect(useProfilesMock).toHaveBeenCalledWith(['0xAAA', '0xBBB'])
     })
   })
 
@@ -62,127 +70,74 @@ describe('useCommunityMemberCards', () => {
       })
     })
 
-    it('should stop resolving', () => {
-      const { result } = renderHook(() => useCommunityMemberCards('c-1', members))
-
-      expect(result.current.isResolvingProfiles).toBe(false)
-    })
-
     it('should expose the resolved names', () => {
-      const { result } = renderHook(() => useCommunityMemberCards('c-1', members))
+      const { result } = renderHook(() => useCommunityMemberCards(members))
 
-      expect(result.current.memberCards.map(card => card.name)).toEqual(['alice', 'bob'])
+      expect(result.current.map(card => card.name)).toEqual(['alice', 'bob'])
+    })
+
+    it('should clear the loading flag on every row', () => {
+      const { result } = renderHook(() => useCommunityMemberCards(members))
+
+      expect(result.current.map(card => card.isLoadingProfile)).toEqual([false, false])
     })
   })
 
-  describe('when a later page is appended to an already-resolved community', () => {
-    it('should keep rendering instead of blanking the list behind a skeleton', () => {
+  describe('when a later page is appended to a resolved list', () => {
+    beforeEach(() => {
       useProfilesMock.mockReturnValue({
         profiles: buildProfiles([
           ['0xaaa', 'alice'],
           ['0xbbb', 'bob']
         ]),
-        isLoading: false,
+        isLoading: true,
         error: null
       })
-      const { result, rerender } = renderHook(({ list }) => useCommunityMemberCards('c-1', list), {
-        initialProps: { list: members }
-      })
-      expect(result.current.isResolvingProfiles).toBe(false)
+    })
+
+    it('should keep the earlier rows named and flag only the new one, holding nothing back', () => {
+      const { result, rerender } = renderHook(({ list }) => useCommunityMemberCards(list), { initialProps: { list: members } })
 
       rerender({ list: [...members, buildMember('0xCCC')] })
 
-      expect(result.current.isResolvingProfiles).toBe(false)
-    })
-
-    it('should hold back the rows whose profiles are still in flight', () => {
-      useProfilesMock.mockReturnValue({
-        profiles: buildProfiles([
-          ['0xaaa', 'alice'],
-          ['0xbbb', 'bob']
-        ]),
-        isLoading: false,
-        error: null
-      })
-      const { result, rerender } = renderHook(({ list }) => useCommunityMemberCards('c-1', list), {
-        initialProps: { list: members }
-      })
-
-      rerender({ list: [...members, buildMember('0xCCC')] })
-
-      expect(result.current.memberCards.map(card => card.name)).toEqual(['alice', 'bob'])
-    })
-  })
-
-  describe('when returning to a community that already resolved earlier', () => {
-    it('should not treat it as unresolved again while a later page is pending', () => {
-      useProfilesMock.mockReturnValue({
-        profiles: buildProfiles([
-          ['0xaaa', 'alice'],
-          ['0xbbb', 'bob']
-        ]),
-        isLoading: false,
-        error: null
-      })
-      const { result, rerender } = renderHook(({ id, list }) => useCommunityMemberCards(id, list), {
-        initialProps: { id: 'c-1', list: members }
-      })
-      const otherMembers = [buildMember('0xZZZ', 'c-2')]
-
-      // c-1 resolves, the user visits c-2, then comes back to c-1 with a page appended.
-      rerender({ id: 'c-2', list: otherMembers })
-      rerender({ id: 'c-1', list: [...members, buildMember('0xCCC')] })
-
-      expect(result.current.isResolvingProfiles).toBe(false)
-    })
-  })
-
-  describe('when switching to a community whose members overlap the previous one', () => {
-    it('should wait rather than render the non-overlapping members as raw addresses', () => {
-      useProfilesMock.mockReturnValue({
-        profiles: buildProfiles([
-          ['0xaaa', 'alice'],
-          ['0xbbb', 'bob']
-        ]),
-        isLoading: false,
-        error: null
-      })
-      const { result, rerender } = renderHook(({ id, list }) => useCommunityMemberCards(id, list), {
-        initialProps: { id: 'c-1', list: members }
-      })
-      expect(result.current.isResolvingProfiles).toBe(false)
-
-      // c-2 shares 0xAAA with c-1, so the shared cache already covers one member.
-      rerender({ id: 'c-2', list: [buildMember('0xAAA', 'c-2'), buildMember('0xZZZ', 'c-2')] })
-
-      expect(result.current.isResolvingProfiles).toBe(true)
+      expect(result.current.map(card => [card.name, card.isLoadingProfile])).toEqual([
+        ['alice', false],
+        ['bob', false],
+        ['0xCCC', true]
+      ])
     })
   })
 
   describe('when the profile batch failed', () => {
     beforeEach(() => {
-      useProfilesMock.mockReturnValue({ profiles: new Map(), isLoading: false, error: new Error('offline') })
+      useProfilesMock.mockReturnValue({
+        profiles: buildProfiles([
+          ['0xaaa', undefined],
+          ['0xbbb', undefined]
+        ]),
+        isLoading: false,
+        error: new Error('offline')
+      })
     })
 
-    it('should stop waiting and fall through to the address fallback', () => {
-      const { result } = renderHook(() => useCommunityMemberCards('c-1', members))
+    it('should fall back to the address on every row', () => {
+      const { result } = renderHook(() => useCommunityMemberCards(members))
 
-      expect(result.current.isResolvingProfiles).toBe(false)
+      expect(result.current.map(card => card.name)).toEqual(['0xAAA', '0xBBB'])
     })
 
-    it('should keep every member visible rather than hiding rows it cannot resolve', () => {
-      const { result } = renderHook(() => useCommunityMemberCards('c-1', members))
+    it('should stop the skeletons rather than wait on a batch that will not come', () => {
+      const { result } = renderHook(() => useCommunityMemberCards(members))
 
-      expect(result.current.memberCards.map(card => card.name)).toEqual(['0xAAA', '0xBBB'])
+      expect(result.current.map(card => card.isLoadingProfile)).toEqual([false, false])
     })
   })
 
   describe('when the community has no members', () => {
-    it('should not gate the empty state behind a skeleton', () => {
-      const { result } = renderHook(() => useCommunityMemberCards('c-1', []))
+    it('should return an empty list', () => {
+      const { result } = renderHook(() => useCommunityMemberCards([]))
 
-      expect(result.current.isResolvingProfiles).toBe(false)
-      expect(result.current.memberCards).toEqual([])
+      expect(result.current).toEqual([])
     })
   })
 })

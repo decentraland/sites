@@ -153,6 +153,41 @@ describe('useProfiles', () => {
 
       expect(result.current.isLoading).toBe(false)
     })
+
+    it('should still settle the address with an empty summary so callers fall back to it', async () => {
+      const { result } = renderHook(() => useProfiles([failing]))
+
+      await waitFor(() => expect(result.current.error).not.toBeNull())
+
+      expect(result.current.profiles.get(failing)).toEqual({
+        address: failing,
+        name: undefined,
+        hasClaimedName: false,
+        avatarFace256: undefined
+      })
+    })
+  })
+
+  describe('when the peer answers with a non-ok status', () => {
+    const rejected = addr('d')
+
+    beforeEach(() => {
+      fetchMock.mockResolvedValue(jsonResponse({ error: 'upstream unavailable' }, false))
+    })
+
+    it('should treat it like a failed batch', async () => {
+      const { result } = renderHook(() => useProfiles([rejected]))
+
+      await waitFor(() => expect(result.current.error).not.toBeNull())
+
+      expect(result.current.isLoading).toBe(false)
+      expect(result.current.profiles.get(rejected)).toEqual({
+        address: rejected,
+        name: undefined,
+        hasClaimedName: false,
+        avatarFace256: undefined
+      })
+    })
   })
 
   describe('when a failed address is retried', () => {
@@ -176,6 +211,8 @@ describe('useProfiles', () => {
 
       expect(second.result.current.error).toBeNull()
       expect(second.result.current.isLoading).toBe(true)
+      // In flight means absent from the map — that is the signal consumers wait on.
+      expect(second.result.current.profiles.has(retried)).toBe(false)
 
       release(jsonResponse([profileFor(retried, 'recovered')]))
       await waitFor(() => expect(second.result.current.profiles.get(retried)?.name).toBe('recovered'))

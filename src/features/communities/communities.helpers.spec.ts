@@ -1,5 +1,5 @@
 import type { Theme } from 'decentraland-ui2'
-import type { ProfileSummary } from './../../features/profile/profile.types'
+import type { ProfileSummary } from '../profile/profile.types'
 import { getRarityColor, getThumbnailUrl, isMember, toMemberCards } from './communities.helpers'
 import { Role } from './communities.types'
 import type { CommunityMember } from './communities.types'
@@ -106,19 +106,21 @@ describe('communities.helpers', () => {
           name: 'mojito',
           role: Role.OWNER,
           profilePictureUrl: 'https://cdn.test/face.png',
-          hasClaimedName: true
+          hasClaimedName: true,
+          isLoadingProfile: false
         })
       })
     })
 
-    describe('when a member has no profile', () => {
-      it('should keep the row and fall back to the address with an empty picture', () => {
+    describe('when a member profile is still in flight', () => {
+      it('should keep the row, flag it as loading and fall back to the address meanwhile', () => {
         expect(toMemberCards(members, profiles)[1]).toEqual({
           memberAddress: '0xBBB',
           name: '0xBBB',
           role: Role.MEMBER,
           profilePictureUrl: '',
-          hasClaimedName: false
+          hasClaimedName: false,
+          isLoadingProfile: true
         })
       })
 
@@ -127,18 +129,19 @@ describe('communities.helpers', () => {
       })
     })
 
-    describe('when a resolved profile only has some fields', () => {
+    describe('when a member settled without a deployed profile', () => {
       beforeEach(() => {
         profiles.set('0xaaa', { address: '0xaaa', hasClaimedName: false })
       })
 
-      it('should fall back per field', () => {
+      it('should fall back per field and stop loading', () => {
         expect(toMemberCards(members, profiles)[0]).toEqual({
           memberAddress: '0xAAA',
           name: '0xAAA',
           role: Role.OWNER,
           profilePictureUrl: '',
-          hasClaimedName: false
+          hasClaimedName: false,
+          isLoadingProfile: false
         })
       })
     })

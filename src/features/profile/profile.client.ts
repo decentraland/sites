@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import type { Profile } from 'dcl-catalyst-client/dist/client/specs/lambdas-client'
 import { getEnv } from '../../config/env'
+import { timeoutSignal } from '../../utils/timeoutSignal'
 
 type Entry = {
   data: Profile | null
@@ -56,6 +57,11 @@ function buildCacheKey(address: string, peerUrlOverride?: string): string {
 // retries instead of pinning synthetic avatars for the whole tab session.
 const BATCH_FAILED = Symbol('profile-batch-failed')
 
+// A peer that accepts the connection and never answers would otherwise keep every row
+// waiting on this batch for as long as the browser cares to wait. On timeout the batch
+// settles as failed and callers fall back to the address.
+const FETCH_TIMEOUT_MS = 10_000
+
 const pendingByPeer = new Map<string, Map<string, Array<(profile: Profile | null | typeof BATCH_FAILED) => void>>>()
 
 async function flushBatch(peerUrl: string): Promise<void> {
@@ -70,23 +76,32 @@ async function flushBatch(peerUrl: string): Promise<void> {
       method: 'POST',
       // eslint-disable-next-line @typescript-eslint/naming-convention
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids: [...resolvers.keys()] })
+      body: JSON.stringify({ ids: [...resolvers.keys()] }),
+      signal: timeoutSignal(FETCH_TIMEOUT_MS)
     })
     if (!response.ok) {
       console.warn('[profile.client] batch profiles fetch non-ok', { status: response.status })
       settle(() => BATCH_FAILED)
       return
     }
-    const list: Profile[] = await response.json()
+    const list: unknown = await response.json()
+    if (!Array.isArray(list)) {
+      // A 200 that is not the profile list (a proxy error envelope, say) would otherwise
+      // read as "nobody here has a profile" and be cached that way for the session.
+      console.warn('[profile.client] batch profiles response is not a list', { status: response.status })
+      settle(() => BATCH_FAILED)
+      return
+    }
     // lamb2 >= 4.13.2 pins `ethAddress`/`userId` to the entity pointer, so the claimed
     // address is trustworthy against an up-to-date peer. Bind defensively anyway: the
     // response carries no pointer to check against, and PEER_URL can point at a peer
-    // still serving raw deployer metadata. Ignore claims on addresses we did not ask
-    // for, and drop a row two entries claim rather than pick one of them.
+    // still serving raw deployer metadata. Drop a row two entries claim rather than pick
+    // one of them. A claim on an address nobody asked for never matches a requested row,
+    // so it falls out on its own.
     const claims = new Map<string, Profile[]>()
-    for (const profile of Array.isArray(list) ? list : []) {
+    for (const profile of list as Profile[]) {
       const address = profile?.avatars?.[0]?.ethAddress?.toLowerCase()
-      if (!address || !resolvers.has(address)) continue
+      if (!address) continue
       claims.set(address, [...(claims.get(address) ?? []), profile])
     }
     settle(address => {

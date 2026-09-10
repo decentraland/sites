@@ -8,6 +8,7 @@ type CommunityMemberCard = {
   role: Role
   profilePictureUrl: string
   hasClaimedName?: boolean
+  isLoadingProfile: boolean
 }
 
 export type { CommunityMemberCard, RarityPalette }
