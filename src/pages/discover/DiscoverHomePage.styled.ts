@@ -3,6 +3,11 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import { Box, Drawer, IconButton, Select, Typography, dclColors, styled } from 'decentraland-ui2'
 import { SearchField } from '../../components/discover/_shared'
 
+// Track floor for both rails that render decentraland-ui2's EventSmallCard: the
+// card carries a 300px minimum, and a 4-up row spends three 24px gaps, so a
+// narrower track would overflow the card instead of dropping a column.
+const SHARED_CARD_TRACK = 'max(300px, calc((100% - 72px) / 4))'
+
 // Exact tokens from the "Places - Desktop" Figma.
 const SNOW = dclColors.neutral.softWhite // #fcfcfc
 const SOFT_BLACK = dclColors.neutral.softBlack1 // #161518
@@ -347,14 +352,52 @@ const CarouselSlide = styled(Box)(({ theme }) => ({
   scrollSnapAlign: 'center',
   [theme.breakpoints.up('sm')]: {
     flex: '1 1 0',
-    minWidth: 'max(300px, calc((100% - 72px) / 4))', // never smaller than the 4-up cell
+    minWidth: SHARED_CARD_TRACK, // never smaller than the 4-up cell
     maxWidth: 850, // What's On's cap — 1-2 live scenes grow, not balloon
     scrollSnapAlign: 'none'
   }
 }))
 
-// Dot indicators under the mobile carousel — hidden on desktop (the grid shows
-// every card at once).
+// Positioning context for the rail arrows. The rail itself is the scrollport and
+// carries negative margins, so the arrows can't anchor to it without riding
+// along as it scrolls.
+const LiveRailLayer = styled(Box)({
+  position: 'relative'
+})
+
+// Desktop scroll affordance. Four 300px cards outgrow any viewport under about
+// 1300px, and the rail hides its scrollbar while a wheel only scrolls
+// vertically — so without these the last card was visible but unreachable.
+// Mobile swipes and has the dots instead.
+const LiveNavButton = styled('button', { shouldForwardProp: prop => prop !== '$side' })<{ $side: 'left' | 'right' }>(
+  ({ theme, $side }) => ({
+    position: 'absolute',
+    top: '50%',
+    [$side]: theme.spacing(1),
+    transform: 'translateY(-50%)',
+    zIndex: 2,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 40,
+    height: 40,
+    padding: 0,
+    border: 'none',
+    borderRadius: '50%',
+    cursor: 'pointer',
+    color: SNOW,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    transition: theme.transitions.create('background-color', { duration: theme.transitions.duration.short }),
+    ['&:hover']: { backgroundColor: 'rgba(0, 0, 0, 0.7)' },
+    ['&:active']: { backgroundColor: 'rgba(0, 0, 0, 0.85)' },
+    ['&:focus-visible']: { outline: `2px solid ${SNOW}`, outlineOffset: 2 },
+    ['&:disabled']: { opacity: 0.35, cursor: 'default' },
+    [theme.breakpoints.down('sm')]: { display: 'none' }
+  })
+)
+
+// Dot indicators under the mobile carousel — hidden on desktop (the arrows take
+// over there).
 const CarouselDots = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
@@ -413,14 +456,19 @@ const LoadMoreSentinel = styled(Box)(({ theme }) => ({
   minHeight: theme.spacing(8)
 }))
 
+// Same track formula What's On uses for its Upcoming grid, because both now
+// render the same ui2 card: the card carries a 300px minimum, so fixed column
+// counts would overflow it (4-up at 1280 leaves ~290 per column). `auto-fill`
+// drops a column instead.
 const FeaturedGrid = styled(Box)(({ theme }) => ({
   display: 'grid',
   gridTemplateColumns: '1fr',
   gap: theme.spacing(2),
   marginBottom: theme.spacing(2),
-  [theme.breakpoints.up('sm')]: { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' },
-  [theme.breakpoints.up('md')]: { gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' },
-  [theme.breakpoints.up('lg')]: { gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }
+  [theme.breakpoints.up('sm')]: {
+    gridTemplateColumns: `repeat(auto-fill, minmax(${SHARED_CARD_TRACK}, 1fr))`,
+    gap: theme.spacing(3)
+  }
 }))
 
 export {
@@ -449,7 +497,9 @@ export {
   LiveGrid,
   LoadMoreSentinel,
   LiveHeading,
+  LiveNavButton,
   LiveNowSection,
+  LiveRailLayer,
   SearchSlot,
   SectionTitle,
   TabPill,

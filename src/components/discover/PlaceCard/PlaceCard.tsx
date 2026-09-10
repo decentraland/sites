@@ -1,21 +1,24 @@
 import { memo, useCallback, useMemo, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BadgeGroup, LiveBadge, UserCountBadge } from 'decentraland-ui2'
+import { BadgeGroup, UserCountBadge } from 'decentraland-ui2'
 import {
   buildDetailPath,
   discoverPlacePayload,
   placeCoordsLabel,
   placeCoverImage,
+  placeHasLiveEvent,
+  placeHasPeople,
   placeIsFeatured,
-  placeIsLive,
+  placeLiveEventName,
   placePlayers
 } from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
-import { usePlaceOwnerAvatar } from '../../../hooks/usePlaceOwnerAvatar'
+import { usePlaceCreator } from '../../../hooks/usePlaceCreator'
 import { SegmentEvent } from '../../../modules/segment.types'
+import { CreatorByLineName, LiveEventBadge } from '../_shared'
 import { JumpInGlyph, MedalGlyph, PinGlyph } from '../_shared/CardIcons'
 import { FeaturedBadge, TopRow } from '../_shared/DiscoverShell.styled'
 import { useDiscoverJumpIn } from '../DiscoverJumpInProvider'
@@ -26,7 +29,6 @@ import {
   Card,
   CardContainer,
   Cover,
-  CreatorName,
   CreatorRow,
   JumpInButton,
   LocationPill,
@@ -50,16 +52,24 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
   const t = useFormatMessage()
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false)
+  // The CTA never unmounts, so hover alone would leave a focused button
+  // invisible and aria-hidden after the launcher modal takes the pointer.
+  const [ctaFocused, setCtaFocused] = useState(false)
 
   const detailHref = useMemo(() => buildDetailPath(place), [place])
 
   const { jumpIn } = useDiscoverJumpIn()
-  const { ownerName, ownerAvatar, avatarBg } = usePlaceOwnerAvatar(place)
+  const { creatorAddress, creatorName, creatorAvatar, avatarBg } = usePlaceCreator(place)
 
   const players = placePlayers(place)
-  const isLive = players > 0
+  // Presence, which decides where a click goes: a scene with people opens the viewer, an empty one
+  // opens the JUMP IN modal. Deliberately NOT the same question as the LIVE badge.
+  const isLive = placeHasPeople(place)
   const isFeatured = placeIsFeatured(place)
   const coords = placeCoordsLabel(place)
+  // Hover reveals the CTA; focus keeps it revealed so it is never both focused
+  // and hidden.
+  const ctaShown = hovered || ctaFocused
 
   const track = useDeferredTrack()
 
@@ -77,6 +87,9 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
   // Keyboard activation for the role="button" card (Enter / Space).
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      // Enter on the JUMP IN button or the creator name bubbles up here, and
+      // would navigate into the scene on top of whatever the control did.
+      if (e.target !== e.currentTarget) return
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
         handleClick()
@@ -110,7 +123,10 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
           <TopRow>
             {/* ui2's badges — same animated LIVE pill What's On uses. */}
             <BadgeGroup>
-              {placeIsLive(place) && <LiveBadge />}
+              {/* NOTE: until 2026-09-03 this card went red on presence (five or more people) whenever
+                  the repeat flag was off. LIVE now means an event is running, on every path; the
+                  head count next to it is what says people are here. */}
+              {placeHasLiveEvent(place) && <LiveEventBadge eventName={placeLiveEventName(place)} />}
               {players > 0 && <UserCountBadge count={players} />}
             </BadgeGroup>
             {isFeatured && (
@@ -124,12 +140,12 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
         <Body>
           <Title>{place.title}</Title>
           <SwapArea>
-            <MetaRow $hidden={hovered}>
+            <MetaRow $hidden={ctaShown} aria-hidden={ctaShown || undefined}>
               <CreatorRow>
-                {ownerAvatar && <Avatar src={ownerAvatar} alt="" loading="lazy" $bg={avatarBg} />}
-                {ownerName && (
+                {creatorAvatar && <Avatar src={creatorAvatar} alt="" loading="lazy" $bg={avatarBg} />}
+                {creatorName && (
                   <ByText variant="body2">
-                    {t('discover.card.by')} <CreatorName>{ownerName}</CreatorName>
+                    {t('discover.card.by')} <CreatorByLineName name={creatorName} address={creatorAddress} inactive={ctaShown} />
                   </ByText>
                 )}
               </CreatorRow>
@@ -140,7 +156,15 @@ function PlaceCardComponent({ place, onEmptyClick }: PlaceCardProps) {
                 </LocationPill>
               )}
             </MetaRow>
-            <JumpInButton type="button" $visible={hovered} onClick={handleJumpIn}>
+            <JumpInButton
+              type="button"
+              $visible={ctaShown}
+              aria-hidden={!ctaShown || undefined}
+              tabIndex={ctaShown ? 0 : -1}
+              onFocus={() => setCtaFocused(true)}
+              onBlur={() => setCtaFocused(false)}
+              onClick={handleJumpIn}
+            >
               {t('discover.card.jump_in')}
               <JumpInGlyph size="min(5.715cqw, 24.874px)" />
             </JumpInButton>

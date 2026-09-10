@@ -15,6 +15,7 @@ import { useTranslation } from '@dcl/hooks'
 import { Tooltip } from 'decentraland-ui2'
 import { useGetCommunitiesQuery, useGetWorldNamesQuery } from '../../../features/events'
 import type { EventEntry } from '../../../features/events'
+import { useEventFeaturedItemSearch } from '../../../features/events/events.flags'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
 import {
@@ -30,6 +31,7 @@ import { buildEventJumpInUrl } from '../../../utils/whatsOnUrl'
 import { EventDetailModal } from '../EventDetailModal'
 import type { ModalEventData } from '../EventDetailModal'
 import { DurationField } from './DurationField'
+import { FeaturedItemField } from './FeaturedItemField'
 import { ImageUpload } from './ImageUpload'
 import { VerticalCoverPanel } from './VerticalCoverPanel'
 import {
@@ -45,7 +47,6 @@ import {
   DateTimeSection,
   DeleteButton,
   DescriptionFields,
-  EmailSection,
   EventDetailsBlock,
   EventFormControl,
   EventInputLabel,
@@ -56,6 +57,7 @@ import {
   EventTextField,
   FormActions,
   FormColumns,
+  FormFieldSection,
   ImageSection,
   LeftCard,
   LocationBlock,
@@ -85,7 +87,12 @@ import {
 
 const PREVIEW_REQUIRED_FIELDS: Array<keyof CreateEventFormState> = ['name', 'startDate', 'startTime', 'duration']
 
-function buildPreviewData(form: CreateEventFormState, address: string | undefined, initialEvent: EventEntry | null): ModalEventData {
+function buildPreviewData(
+  form: CreateEventFormState,
+  address: string | undefined,
+  initialEvent: EventEntry | null,
+  isFeaturedItemEnabled: boolean
+): ModalEventData {
   const startDate = form.startDate && form.startTime ? new Date(`${form.startDate}T${form.startTime}`) : null
   const startAt = startDate && !Number.isNaN(startDate.getTime()) ? startDate.toISOString() : null
   const durationMs = parseDurationMs(form.duration)
@@ -128,7 +135,8 @@ function buildPreviewData(form: CreateEventFormState, address: string | undefine
     realm: isWorld ? form.world.trim() || undefined : undefined,
     isWorld,
     placeName: null,
-    isEvent: false
+    isEvent: false,
+    featuredItem: isFeaturedItemEnabled ? form.featuredItem.trim() || null : null
   }
 }
 
@@ -165,6 +173,7 @@ function EventForm({
     handleSubmit
   } = useCreateEventForm({ onSuccess, initialEvent, initialCommunityId })
   const { identity, address } = useAuthIdentity()
+  const isFeaturedItemSearchEnabled = useEventFeaturedItemSearch()
   const { data: worldNames = [] } = useGetWorldNamesQuery(undefined, { skip: form.location !== 'world' })
   const { data: communities = [] } = useGetCommunitiesQuery({ identity }, { skip: !identity })
   const [verticalPanelOpen, setVerticalPanelOpen] = useState(false)
@@ -193,8 +202,8 @@ function EventForm({
   const imageMissing = !form.imageUrl
   const canPreview = missingPreviewFields.length === 0 && !imageMissing
   const previewData = useMemo(
-    () => (isPreviewOpen ? buildPreviewData(form, address, initialEvent) : null),
-    [isPreviewOpen, form, address, initialEvent]
+    () => (isPreviewOpen ? buildPreviewData(form, address, initialEvent, isFeaturedItemSearchEnabled) : null),
+    [isPreviewOpen, form, address, initialEvent, isFeaturedItemSearchEnabled]
   )
 
   const handlePreviewClick = useCallback(() => {
@@ -487,9 +496,22 @@ function EventForm({
                 </EventFormControl>
               </LocationBlock>
             )}
-
+            {/* Featured Item — the whole feature sits behind `dapps-event-featured-item-search`.
+                Off (and while the flag loads) the field is not rendered at all. A `featured_item`
+                already saved on the event is untouched: it stays in form state and is still sent on
+                submit, it just cannot be seen or edited while the flag is off. */}
+            {isFeaturedItemSearchEnabled && (
+              <FormFieldSection>
+                <FeaturedItemField
+                  value={form.featuredItem}
+                  onChange={urn => setField('featuredItem', urn)}
+                  error={Boolean(errors.featuredItem)}
+                  helperText={errors.featuredItem}
+                />
+              </FormFieldSection>
+            )}
             {/* Email */}
-            <EmailSection>
+            <FormFieldSection>
               <EventTextField
                 variant="outlined"
                 label={t('create_event.email_label')}
@@ -502,7 +524,7 @@ function EventForm({
                 fullWidth
                 InputLabelProps={{ shrink: true }}
               />
-            </EmailSection>
+            </FormFieldSection>
           </RightSectionFields>
 
           <RightSectionFooter>

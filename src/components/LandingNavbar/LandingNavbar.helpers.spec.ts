@@ -1,18 +1,18 @@
-import { isSectionActive } from './LandingNavbar.helpers'
+import { isSectionActive, toNotificationLocale } from './LandingNavbar.helpers'
 
 describe('when deciding which navbar section owns the current page', () => {
   it('should light up Discover on the What is On calendar', () => {
-    expect(isSectionActive('discover', '/whats-on')).toBe(true)
+    expect(isSectionActive('discover', '/events')).toBe(true)
   })
 
   it('should light up Discover on the places feed', () => {
-    expect(isSectionActive('discover', '/discover')).toBe(true)
+    expect(isSectionActive('discover', '/places')).toBe(true)
   })
 
-  // /discover/place/-102,129 and /whats-on/new-hangout are still the same section.
+  // /places/place/-102,129 and /events/new-event are still the same section.
   it('should light up Discover on a nested page of either destination', () => {
-    expect(isSectionActive('discover', '/discover/place/-102,129')).toBe(true)
-    expect(isSectionActive('discover', '/whats-on/new-hangout')).toBe(true)
+    expect(isSectionActive('discover', '/places/place/-102,129')).toBe(true)
+    expect(isSectionActive('discover', '/events/new-event')).toBe(true)
   })
 
   it('should not light up Discover on the landing page', () => {
@@ -31,9 +31,29 @@ describe('when deciding which navbar section owns the current page', () => {
   // Shop and Create point at absolute decentraland.org URLs, so no in-app path
   // can ever match them — a bare pathname must not accidentally light them up.
   it('should never light up the sections whose destinations are external', () => {
-    for (const pathname of ['/', '/shop', '/create', '/whats-on']) {
+    for (const pathname of ['/', '/shop', '/create', '/events']) {
       expect(isSectionActive('shop', pathname)).toBe(false)
       expect(isSectionActive('create', pathname)).toBe(false)
     }
+  })
+})
+
+describe('when narrowing a site locale for ui2 notifications', () => {
+  it.each(['en', 'es', 'zh'])('should keep %s, which ui2 ships copy for', locale => {
+    expect(toNotificationLocale(locale)).toBe(locale)
+  })
+
+  // These are the ones that crashed the navbar: ui2 has no dictionary entry, so the
+  // renderer read `.title` off undefined (SITES-2S0).
+  it.each(['ja', 'ko', 'fr'])('should fall back to english for %s', locale => {
+    expect(toNotificationLocale(locale)).toBe('en')
+  })
+
+  it.each([
+    ['an unknown code', 'pt'],
+    ['an empty string', ''],
+    ['a regional variant', 'es-AR']
+  ])('should fall back to english for %s', (_label, locale) => {
+    expect(toNotificationLocale(locale)).toBe('en')
   })
 })

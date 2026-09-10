@@ -75,6 +75,12 @@ function buildDeepLinkOptions(input: DeepLinkOptions): DeepLinkOptions {
   return options
 }
 
+// What a realm may look like on its way to the gateway: an ENS World name
+// (`foo.dcl.eth`) or a plain catalyst name. Same character set `isEns` allows,
+// without requiring the `.eth` suffix so a non-World realm still travels.
+// Anything outside it (`<`, `&`, `/`, quotes, spaces) is a payload, not a realm.
+const REALM_REGEX = /^[a-zA-Z0-9._-]{1,64}$/
+
 /**
  * Collects the first-launch deep-link params (position/realm) from the given
  * source (defaults to the current URL's search params). Defaults and empty
@@ -82,12 +88,24 @@ function buildDeepLinkOptions(input: DeepLinkOptions): DeepLinkOptions {
  * Used by the download surfaces to keep the params alive hop-by-hop until they
  * land on the file-origin URL the launcher parses on first run
  * (kMDItemWhereFroms / Zone.Identifier).
+ *
+ * Both values are validated here, not forwarded verbatim. This is the only
+ * place a raw string from one of our URLs reaches the gateway (which bakes it
+ * into the signed binary) and then the launcher and the explorer; the other
+ * params on that URL (`referrer`, `anon_user_id`) are already validated before
+ * they are forwarded, so these get the same treatment. `position` is re-emitted
+ * as `x,y` from the parsed integers, so `10.20` or `10abc,20` never leave as-is
+ * and anything that is not a coordinate pair is dropped; `realm` must match
+ * `REALM_REGEX`.
  */
 function collectDeepLinkParams(source?: URLSearchParams): { position?: string; realm?: string } {
   const params = source ?? new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+  const rawPosition = params.get('position')
+  const rawRealm = params.get('realm')
+  const parsedPosition = rawPosition ? parsePosition(rawPosition) : undefined
   const { position, realm } = buildDeepLinkOptions({
-    position: params.get('position') ?? undefined,
-    realm: params.get('realm') ?? undefined
+    position: parsedPosition?.isValid ? parsedPosition.coordinates.join(',') : undefined,
+    realm: rawRealm && REALM_REGEX.test(rawRealm) ? rawRealm : undefined
   })
   return { ...(position ? { position } : {}), ...(realm ? { realm } : {}) }
 }

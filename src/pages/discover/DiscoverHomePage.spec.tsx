@@ -9,19 +9,26 @@ const mockTrack = jest.fn()
 const mockUseAuthIdentity = jest.fn()
 const mockUseAdvancedUserAgentData = jest.fn()
 const mockUsePageViewTracking = jest.fn()
-const mockHotScenesQuery = jest.fn()
-const mockPlacesQuery = jest.fn()
 const mockDestinationsQuery = jest.fn()
-const mockLiveWorldsQuery = jest.fn()
-const mockWorldsByNamesQuery = jest.fn()
 const mockFavoritesQuery = jest.fn()
+// Repetition ON is what production shipped before the flag existed, so it is the default here.
+const mockRepeat = jest.fn()
+const mockLiveMinUsers = jest.fn()
+const mockHideFeatured = jest.fn()
+
+// The signed-out prompt reaches `utils/authRedirect`, which reads the env
+// config through `import.meta` — unparseable under ts-jest.
+jest.mock('../../config/env')
 
 jest.mock('react-helmet-async', () => ({
   Helmet: () => null
 }))
 
 jest.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate
+  useNavigate: () => mockNavigate,
+  // The creator by-line resolves where to open a profile from the current URL.
+  useLocation: () => ({ pathname: '/places', search: window.location.search }),
+  useSearchParams: () => [new URLSearchParams(window.location.search), jest.fn()]
 }))
 
 jest.mock('@dcl/hooks', () => ({
@@ -32,12 +39,14 @@ jest.mock('@dcl/hooks', () => ({
 // can't parse); keep the pure helpers real and stub only the query hooks.
 jest.mock('../../features/discover', () => ({
   ...jest.requireActual('../../features/discover/discover.helpers'),
-  useGetHotScenesQuery: (...args: unknown[]) => mockHotScenesQuery(...args),
-  useGetDiscoverPlacesQuery: (...args: unknown[]) => mockPlacesQuery(...args),
   useGetDiscoverDestinationsQuery: (...args: unknown[]) => mockDestinationsQuery(...args),
-  useGetLiveWorldsQuery: (...args: unknown[]) => mockLiveWorldsQuery(...args),
-  useGetDiscoverWorldsByNamesQuery: (...args: unknown[]) => mockWorldsByNamesQuery(...args),
   useGetDiscoverFavoritesQuery: (...args: unknown[]) => mockFavoritesQuery(...args)
+}))
+
+jest.mock('../../features/discover/discover.flags', () => ({
+  useRepeatAcrossSections: () => mockRepeat(),
+  useLiveMinUsers: () => mockLiveMinUsers(),
+  useHideFeaturedPlaces: () => mockHideFeatured()
 }))
 
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
@@ -63,7 +72,7 @@ jest.mock('../../components/discover/LiveEventCard', () => ({
 }))
 jest.mock('../../components/discover/FeaturedCard', () => ({
   FeaturedCard: ({ place, onEmptyClick }: { place: DiscoverPlace; onEmptyClick?: (p: DiscoverPlace) => void }) => (
-    <div data-testid="featured-card">
+    <div data-testid="featured-card" data-users={place.user_count ?? ''}>
       <button type="button" onClick={() => onEmptyClick?.(place)}>
         {place.title}
       </button>
@@ -134,6 +143,11 @@ jest.mock('decentraland-ui2', () => {
           {children}
         </div>
       ) : null,
+    Button: ({ children, onClick }: { children?: React.ReactNode; onClick?: () => void }) => (
+      <button type="button" onClick={onClick}>
+        {children}
+      </button>
+    ),
     IconButton: ({ children, ...rest }: { children?: React.ReactNode } & Record<string, unknown>) => (
       <button type="button" {...rest}>
         {children}
@@ -175,7 +189,7 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
     positions: ['0,0'],
     base_position: '0,0',
     owner: '0xowner',
-    user_name: 'Creator',
+    contact_name: 'Creator',
     ...overrides
   }
 }
@@ -189,45 +203,13 @@ interface QueryState<T> {
 
 describe('DiscoverHomePage', () => {
   let intersectionCallback: IntersectionObserverCallback | undefined
-  let hotScenes: QueryState<unknown[]>
-  let livePlaces: QueryState<{ ok: boolean; total: number; data: DiscoverPlace[] }>
   let browseDestinations: QueryState<{ ok: boolean; total: number; data: DiscoverPlace[] }>
   let featuredPlaces: QueryState<{ ok: boolean; total: number; data: DiscoverPlace[] }>
+  let liveFeed: QueryState<{ ok: boolean; total: number; data: DiscoverPlace[] }>
   let myDestinations: QueryState<{ ok: boolean; total: number; data: DiscoverPlace[] }>
-  let liveWorlds: QueryState<Array<{ worldName: string; users: number }>>
-  let worldsMeta: QueryState<DiscoverPlace[]>
   let favorites: QueryState<{ ok: boolean; total: number; data: DiscoverPlace[] }>
 
   beforeEach(() => {
-    hotScenes = {
-      data: [
-        { id: 'hs-1', name: 'Live Plaza', baseCoords: [0, 0], usersTotalCount: 9, realms: [], parcels: [] },
-        { id: 'hs-2', name: 'Live Beach', baseCoords: [5, 5], usersTotalCount: 7, realms: [], parcels: [] }
-      ],
-      isLoading: false
-    }
-    livePlaces = {
-      data: {
-        ok: true,
-        total: 2,
-        data: [
-          createPlace({ id: 'live-a', title: 'Live Plaza', positions: ['0,0', '0,1'], base_position: '0,0' }),
-          createPlace({ id: 'live-b', title: 'Live Beach', positions: ['5,5'], base_position: '5,5' })
-        ]
-      },
-      isLoading: false
-    }
-    liveWorlds = {
-      data: [
-        { worldName: 'AliceWorld', users: 8 },
-        { worldName: 'GhostWorld', users: 6 }
-      ],
-      isLoading: false
-    }
-    worldsMeta = {
-      data: [createPlace({ id: 'w-alice', title: 'Alice World', world: true, world_name: 'AliceWorld', positions: [] })],
-      isLoading: false
-    }
     browseDestinations = {
       data: {
         ok: true,
@@ -248,23 +230,40 @@ describe('DiscoverHomePage', () => {
       },
       isLoading: false
     }
+    // The Live Now rail's own page of the feed (`limit: LIVE_FEED_LIMIT`). Served out of head-count
+    // order on purpose: the rail has to sort it, and a fixture already sorted would pass without.
+    liveFeed = {
+      data: {
+        ok: true,
+        total: 4,
+        data: [
+          createPlace({ id: 'w-alice', title: 'Alice World', world: true, world_name: 'AliceWorld', positions: [], user_count: 8 }),
+          createPlace({ id: 'live-a', title: 'Live Plaza', positions: ['0,0', '0,1'], base_position: '0,0', user_count: 9 }),
+          createPlace({ id: 'w-ghost', title: 'GhostWorld', world: true, world_name: 'GhostWorld', positions: [], user_count: 6 }),
+          createPlace({ id: 'live-b', title: 'Live Beach', positions: ['5,5'], base_position: '5,5', user_count: 7 })
+        ]
+      },
+      isLoading: false
+    }
     myDestinations = { data: { ok: true, total: 0, data: [] }, isLoading: false }
     favorites = { data: undefined, isLoading: false }
 
-    mockHotScenesQuery.mockImplementation(() => hotScenes)
-    mockLiveWorldsQuery.mockImplementation(() => liveWorlds)
-    mockWorldsByNamesQuery.mockImplementation((args: unknown) => (args === skipToken ? { data: undefined, isLoading: false } : worldsMeta))
     mockDestinationsQuery.mockImplementation((args: unknown) => {
       if (args === skipToken) return { data: undefined, isLoading: false }
-      const a = args as { only_highlighted?: boolean; owner?: string }
+      const a = args as { only_highlighted?: boolean; owner?: string; limit?: number }
       if (a.only_highlighted) return featuredPlaces
       if (a.owner) return myDestinations
+      // The rail and the grid are different cache entries (different `limit`); keying the stub the
+      // same way is what lets a test notice the rail reading the wrong one.
+      if (a.limit === 40) return liveFeed
       return browseDestinations
     })
     mockFavoritesQuery.mockImplementation((args: unknown) => (args === skipToken ? { data: undefined, isLoading: false } : favorites))
-    mockPlacesQuery.mockImplementation((args: unknown) => (args === skipToken ? { data: undefined, isLoading: false } : livePlaces))
     mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
     mockUseAdvancedUserAgentData.mockReturnValue([false, { mobile: false }])
+    mockRepeat.mockReturnValue(true)
+    mockLiveMinUsers.mockReturnValue(1)
+    mockHideFeatured.mockReturnValue(false)
     // jsdom has no IntersectionObserver — capture the sentinel callback so the
     // pagination test can fire it manually.
     intersectionCallback = undefined
@@ -280,7 +279,7 @@ describe('DiscoverHomePage', () => {
 
   describe('when the first paint is still loading', () => {
     beforeEach(() => {
-      hotScenes = { data: undefined, isLoading: true }
+      browseDestinations = { data: undefined, isLoading: true }
     })
 
     it('should render only the centered spinner', () => {
@@ -292,13 +291,12 @@ describe('DiscoverHomePage', () => {
   })
 
   describe('when the default explore view renders', () => {
-    it('should render the Live Now rail with hot scenes and live worlds joined to metadata', () => {
+    it('should render the Live Now rail from the destinations feed, busiest first', () => {
       render(<DiscoverHomePage />)
 
       expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
       const liveTitles = screen.getAllByTestId('live-card').map(card => card.textContent)
-      // Sorted by presence: 9, 4, 3, 2 — the unknown world falls back to its
-      // live-data name instead of disappearing.
+      // Sorted by presence: 9, 8, 7, 6. Places and worlds come from the one feed.
       expect(liveTitles).toEqual(['Live Plaza', 'Alice World', 'Live Beach', 'GhostWorld'])
     })
 
@@ -364,6 +362,74 @@ describe('DiscoverHomePage', () => {
       expect(screen.getAllByTestId('featured-card')).toHaveLength(2)
     })
 
+    it('should drop the whole section when the featured flag hides it', () => {
+      mockHideFeatured.mockReturnValue(true)
+
+      render(<DiscoverHomePage />)
+
+      expect(screen.queryByText('discover.explore.section.featured')).not.toBeInTheDocument()
+      expect(screen.queryAllByTestId('featured-card')).toHaveLength(0)
+    })
+
+    it('should skip the featured request entirely while the section is hidden', () => {
+      mockHideFeatured.mockReturnValue(true)
+
+      render(<DiscoverHomePage />)
+
+      expect(mockDestinationsQuery).not.toHaveBeenCalledWith(expect.objectContaining({ only_highlighted: true }), expect.anything())
+    })
+
+    describe('and a curated place also sits in the browse feed', () => {
+      beforeEach(() => {
+        // /destinations returns `highlighted DESC` first, so the curated set is
+        // at the head of the same feed the grid reads.
+        const curated = createPlace({ id: 'cur-1', title: 'Curated Pick', highlighted: true })
+        featuredPlaces = { data: { ok: true, total: 1, data: [curated] }, isLoading: false }
+        browseDestinations = {
+          data: { ok: true, total: 2, data: [curated, createPlace({ id: 'plain-1', title: 'Plain Place' })] },
+          isLoading: false
+        }
+      })
+
+      it('should leave it in the explore grid when the section is hidden', () => {
+        // The two flags are independent: dedupe subtracts whatever the rails
+        // rendered, and with no rail there is nothing to subtract.
+        mockRepeat.mockReturnValue(false)
+        mockHideFeatured.mockReturnValue(true)
+
+        render(<DiscoverHomePage />)
+
+        expect(screen.getAllByTestId('place-card').map(card => card.textContent)).toEqual(
+          expect.arrayContaining([expect.stringContaining('Curated Pick')])
+        )
+      })
+
+      it('should subtract it from the grid while the section is shown', () => {
+        mockRepeat.mockReturnValue(false)
+        mockHideFeatured.mockReturnValue(false)
+
+        render(<DiscoverHomePage />)
+
+        expect(screen.getAllByTestId('place-card').map(card => card.textContent)).not.toEqual(
+          expect.arrayContaining([expect.stringContaining('Curated Pick')])
+        )
+      })
+
+      it('should repeat it in both places while repetition is on, hidden or not', () => {
+        mockRepeat.mockReturnValue(true)
+        mockHideFeatured.mockReturnValue(false)
+
+        render(<DiscoverHomePage />)
+
+        expect(screen.getAllByTestId('featured-card').map(c => c.textContent)).toEqual(
+          expect.arrayContaining([expect.stringContaining('Curated Pick')])
+        )
+        expect(screen.getAllByTestId('place-card').map(c => c.textContent)).toEqual(
+          expect.arrayContaining([expect.stringContaining('Curated Pick')])
+        )
+      })
+    })
+
     it('should not render the toggle when the curated set fits in two rows', () => {
       render(<DiscoverHomePage />)
 
@@ -384,20 +450,6 @@ describe('DiscoverHomePage', () => {
 
       expect(mockUsePageViewTracking).toHaveBeenCalledWith({ name: 'discover.home.page_title' })
     })
-
-    it('should not duplicate a place when two hot scenes resolve to it', () => {
-      hotScenes = {
-        data: [
-          { id: 'hs-1', name: 'Live Plaza', baseCoords: [0, 0], usersTotalCount: 9, realms: [], parcels: [] },
-          { id: 'hs-1b', name: 'Live Plaza annex', baseCoords: [0, 1], usersTotalCount: 4, realms: [], parcels: [] }
-        ],
-        isLoading: false
-      }
-      render(<DiscoverHomePage />)
-
-      const plazaCards = screen.getAllByTestId('live-card').filter(card => card.textContent === 'Live Plaza')
-      expect(plazaCards).toHaveLength(1)
-    })
   })
 
   describe('when the category filter changes on desktop', () => {
@@ -409,27 +461,6 @@ describe('DiscoverHomePage', () => {
       expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.DISCOVER_FILTER_CATEGORY, { category: 'art' })
       expect(screen.queryByText('discover.live.heading')).not.toBeInTheDocument()
       expect(mockDestinationsQuery).toHaveBeenCalledWith(expect.objectContaining({ categories: ['art'] }))
-    })
-  })
-
-  describe('when the explore grid renders the destinations feed', () => {
-    it('should keep the feed order and NOT re-inject live-feed cards into the grid', () => {
-      livePlaces = {
-        data: {
-          ok: true,
-          total: 1,
-          data: [createPlace({ id: 'live-a', title: 'Live Plaza', positions: ['0,0'], base_position: '0,0', categories: ['art'] })]
-        },
-        isLoading: false
-      }
-      render(<DiscoverHomePage />)
-
-      // The grid is exactly the /destinations page (junk-filtered, rail-deduped)
-      // — live scenes surface via the Live Now rail and their in-row LIVE badge,
-      // not by client-side injection.
-      const gridTitles = screen.getAllByTestId('place-card').map(card => card.textContent)
-      expect(gridTitles).not.toContain('Live Plaza')
-      expect(gridTitles[0]).toBe('Quiet Gallery')
     })
   })
 
@@ -512,7 +543,7 @@ describe('DiscoverHomePage', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Quiet Gallery' }))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/30,30', { state: { place: expect.objectContaining({ id: 'quiet-1' }) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/30,30', { state: { place: expect.objectContaining({ id: 'quiet-1' }) } })
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
   })
@@ -521,6 +552,9 @@ describe('DiscoverHomePage', () => {
     let scrollIntoView: jest.Mock
 
     beforeEach(() => {
+      // The dots are named after the rail's places; keep those places out of the grid so the name
+      // resolves to the dot alone.
+      mockRepeat.mockReturnValue(false)
       scrollIntoView = jest.fn()
       Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView })
     })
@@ -549,6 +583,82 @@ describe('DiscoverHomePage', () => {
       fireEvent.click(screen.getByRole('button', { name: 'GhostWorld' }))
 
       expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    })
+  })
+
+  describe('when the Live Now rail is wider than the viewport', () => {
+    let scrollBy: jest.Mock
+
+    function stretchRail(clientWidth: number, scrollWidth: number, scrollLeft: number): HTMLElement {
+      const rail = screen.getAllByTestId('live-card')[0].parentElement?.parentElement as HTMLElement
+      Object.defineProperty(rail, 'clientWidth', { configurable: true, value: clientWidth })
+      Object.defineProperty(rail, 'scrollWidth', { configurable: true, value: scrollWidth })
+      rail.scrollLeft = scrollLeft
+      fireEvent.scroll(rail)
+      return rail
+    }
+
+    beforeEach(() => {
+      mockRepeat.mockReturnValue(false)
+      scrollBy = jest.fn()
+      Object.defineProperty(HTMLElement.prototype, 'scrollBy', { configurable: true, value: scrollBy })
+    })
+
+    it('should offer a way forward while cards remain past the right edge', () => {
+      render(<DiscoverHomePage />)
+      stretchRail(400, 1600, 0)
+
+      expect(screen.getByRole('button', { name: 'discover.live.scroll_next' })).toBeEnabled()
+      // Kept mounted so a press that reaches an end doesn't drop the focus.
+      expect(screen.getByRole('button', { name: 'discover.live.scroll_previous' })).toBeDisabled()
+    })
+
+    it('should offer a way back once the rail has been scrolled to the end', () => {
+      render(<DiscoverHomePage />)
+      stretchRail(400, 1600, 1200)
+
+      expect(screen.getByRole('button', { name: 'discover.live.scroll_previous' })).toBeEnabled()
+      expect(screen.getByRole('button', { name: 'discover.live.scroll_next' })).toBeDisabled()
+    })
+
+    it('should advance one card per press', () => {
+      render(<DiscoverHomePage />)
+      const rail = stretchRail(400, 1600, 0)
+
+      fireEvent.click(screen.getByRole('button', { name: 'discover.live.scroll_next' }))
+
+      expect(scrollBy).toHaveBeenCalledWith({ left: 1600 / rail.children.length, behavior: 'smooth' })
+    })
+
+    it('should show no arrows while every card already fits', () => {
+      render(<DiscoverHomePage />)
+      stretchRail(1600, 1600, 0)
+
+      expect(screen.queryByRole('button', { name: 'discover.live.scroll_next' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'discover.live.scroll_previous' })).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the URL carries a tab param', () => {
+    afterEach(() => {
+      window.history.replaceState({}, '', '/places')
+    })
+
+    it('should open that tab, which is how the sign-in redirect comes back', () => {
+      window.history.replaceState({}, '', '/places?tab=my')
+
+      render(<DiscoverHomePage />)
+
+      expect(screen.getByText('discover.explore.signin_my_places')).toBeInTheDocument()
+    })
+
+    it('should ignore a tab it does not know and open Explore all', () => {
+      window.history.replaceState({}, '', '/places?tab=nonsense')
+
+      render(<DiscoverHomePage />)
+
+      expect(screen.queryByText('discover.explore.signin_my_places')).not.toBeInTheDocument()
+      expect(screen.getAllByTestId('place-card').length).toBeGreaterThan(0)
     })
   })
 
@@ -724,10 +834,211 @@ describe('DiscoverHomePage', () => {
     })
   })
 
+  describe('when the same place lands in the live rail, in featured and in the browse feed', () => {
+    beforeEach(() => {
+      featuredPlaces = {
+        data: {
+          ok: true,
+          total: 2,
+          data: [
+            createPlace({ id: 'live-a', title: 'Live Plaza', highlighted: true, positions: ['0,0'], base_position: '0,0' }),
+            createPlace({ id: 'feat-1', title: 'Featured Museum', highlighted: true, positions: ['60,60'], base_position: '60,60' })
+          ]
+        },
+        isLoading: false
+      }
+      browseDestinations = {
+        data: {
+          ok: true,
+          total: 3,
+          data: [
+            // The rail reads presence straight off this feed, so the head count lives here.
+            createPlace({ id: 'live-a', title: 'Live Plaza', positions: ['0,0'], base_position: '0,0', user_count: 9 }),
+            createPlace({ id: 'feat-1', title: 'Featured Museum', positions: ['60,60'], base_position: '60,60' }),
+            createPlace({ id: 'quiet-1', title: 'Quiet Gallery', positions: ['30,30'], base_position: '30,30' })
+          ]
+        },
+        isLoading: false
+      }
+    })
+
+    const titles = (testId: string) => screen.getAllByTestId(testId).map(card => card.textContent)
+
+    describe('and repetition is on', () => {
+      it('should ask the feed for live events on every request', () => {
+        render(<DiscoverHomePage />)
+
+        const argsSent = mockDestinationsQuery.mock.calls.map(call => call[0]).filter(a => a !== skipToken)
+        expect(argsSent.length).toBeGreaterThan(0)
+        argsSent.forEach(a => expect(a).toHaveProperty('with_live_events', true))
+      })
+
+      it('should render the same card in all three sections', () => {
+        render(<DiscoverHomePage />)
+
+        expect(titles('live-card')).toContain('Live Plaza')
+        expect(titles('featured-card')).toContain('Live Plaza')
+        expect(titles('place-card')).toContain('Live Plaza')
+      })
+
+      it('should repeat the featured places at the head of the grid', () => {
+        render(<DiscoverHomePage />)
+
+        expect(titles('place-card')).toContain('Featured Museum')
+      })
+    })
+
+    describe('and repetition is off', () => {
+      beforeEach(() => {
+        mockRepeat.mockReturnValue(false)
+      })
+
+      it('should keep a busy featured place only in the live rail', () => {
+        render(<DiscoverHomePage />)
+
+        expect(titles('live-card')).toContain('Live Plaza')
+        expect(titles('featured-card')).not.toContain('Live Plaza')
+        expect(titles('place-card')).not.toContain('Live Plaza')
+      })
+
+      it('should drop the featured places from the grid but keep the featured rail', () => {
+        render(<DiscoverHomePage />)
+
+        expect(titles('featured-card')).toContain('Featured Museum')
+        expect(titles('place-card')).not.toContain('Featured Museum')
+      })
+
+      it('should still render a place that only exists in the grid', () => {
+        render(<DiscoverHomePage />)
+
+        expect(titles('place-card')).toContain('Quiet Gallery')
+      })
+
+      it('should stop hiding anything once a search collapses the rails', () => {
+        render(<DiscoverHomePage />)
+
+        fireEvent.change(screen.getByPlaceholderText('discover.explore.search_placeholder'), { target: { value: 'plaza' } })
+
+        expect(screen.queryByText('discover.live.heading')).not.toBeInTheDocument()
+        expect(titles('place-card')).toContain('Live Plaza')
+        expect(titles('place-card')).toContain('Featured Museum')
+      })
+    })
+  })
+
+  describe('when the LIVE section is built from the feed', () => {
+    beforeEach(() => {
+      mockRepeat.mockReturnValue(false)
+      featuredPlaces = { data: { ok: true, total: 0, data: [] }, isLoading: false }
+      // The rail reads its own page of the feed and the grid reads the paginated one; both see
+      // the same six rows here, so the rail's cut and the grid's subtraction can be asserted together.
+      const rows = [
+        createPlace({ id: 'b-20', title: 'Twenty', positions: ['1,1'], base_position: '1,1', user_count: 20 }),
+        createPlace({ id: 'b-5', title: 'Five', positions: ['2,2'], base_position: '2,2', user_count: 5 }),
+        createPlace({ id: 'b-4', title: 'Four', positions: ['3,3'], base_position: '3,3', user_count: 4 }),
+        createPlace({ id: 'b-2', title: 'Two', positions: ['4,4'], base_position: '4,4', user_count: 2 }),
+        createPlace({ id: 'b-1', title: 'One', positions: ['5,5'], base_position: '5,5', user_count: 1 }),
+        createPlace({ id: 'b-0', title: 'Nobody', positions: ['6,6'], base_position: '6,6', user_count: 0 })
+      ]
+      liveFeed = { data: { ok: true, total: rows.length, data: rows }, isLoading: false }
+      browseDestinations = { data: { ok: true, total: rows.length, data: rows }, isLoading: false }
+    })
+
+    const titles = (testId: string) => screen.getAllByTestId(testId).map(card => card.textContent)
+
+    it('should rank the four busiest scenes by head count', () => {
+      render(<DiscoverHomePage />)
+
+      expect(titles('live-card')).toEqual(['Twenty', 'Five', 'Four', 'Two'])
+    })
+
+    it('should admit a scene with a single person by default', () => {
+      const quiet = liveFeed.data!.data.filter(p => (p.user_count ?? 0) <= 1)
+      liveFeed.data!.data = quiet
+      browseDestinations.data!.data = quiet
+
+      render(<DiscoverHomePage />)
+
+      expect(titles('live-card')).toEqual(['One'])
+    })
+
+    it('should raise the cut to whatever the flag variant says', () => {
+      mockLiveMinUsers.mockReturnValue(5)
+
+      render(<DiscoverHomePage />)
+
+      expect(titles('live-card')).toEqual(['Twenty', 'Five'])
+      // The scenes below the cut are not lost: they stay in the grid.
+      expect(titles('place-card')).toEqual(expect.arrayContaining(['Four', 'Two', 'One']))
+    })
+
+    it('should leave empty scenes out of the section while the cut is at least one', () => {
+      render(<DiscoverHomePage />)
+
+      expect(titles('live-card')).not.toContain('Nobody')
+    })
+
+    it('should admit empty scenes when the cut is zero, so the rail never goes blank', () => {
+      mockLiveMinUsers.mockReturnValue(0)
+      liveFeed.data!.data = liveFeed.data!.data.filter(p => (p.user_count ?? 0) <= 1)
+
+      render(<DiscoverHomePage />)
+
+      expect(titles('live-card')).toEqual(['One', 'Nobody'])
+    })
+
+    it('should keep the promoted scenes out of the grid, in the order the feed returned', () => {
+      render(<DiscoverHomePage />)
+
+      expect(titles('place-card')).toEqual(['One', 'Nobody'])
+    })
+
+    it("should keep the API's head count on a featured card the rail did not take", () => {
+      featuredPlaces = {
+        data: {
+          ok: true,
+          total: 1,
+          data: [createPlace({ id: 'f-2', title: 'Two Here', highlighted: true, positions: ['9,9'], base_position: '9,9', user_count: 2 })]
+        },
+        isLoading: false
+      }
+
+      render(<DiscoverHomePage />)
+
+      // 2 people, but the rail is already full with 20 / 5 / 4 / 2 — the legacy join would have
+      // zeroed this to 0 because hot-scenes never saw it.
+      expect(screen.getByTestId('featured-card')).toHaveAttribute('data-users', '2')
+    })
+
+    it('should give the LIVE section its own small feed read that refreshes on focus and reconnect', () => {
+      render(<DiscoverHomePage />)
+
+      expect(mockDestinationsQuery).toHaveBeenCalledWith(
+        { limit: 40, order_by: 'most_active', with_realms_detail: true, with_live_events: true },
+        expect.objectContaining({ refetchOnFocus: true, refetchOnReconnect: true })
+      )
+    })
+
+    it('should refresh featured presence on focus and reconnect too', () => {
+      render(<DiscoverHomePage />)
+
+      expect(mockDestinationsQuery).toHaveBeenCalledWith(
+        expect.objectContaining({ only_highlighted: true, with_realms_detail: true, with_live_events: true }),
+        expect.objectContaining({ refetchOnFocus: true, refetchOnReconnect: true })
+      )
+    })
+
+    it('should ask the feed for presence and live events in one request', () => {
+      render(<DiscoverHomePage />)
+
+      expect(mockDestinationsQuery).toHaveBeenCalledWith(
+        expect.objectContaining({ order_by: 'most_active', with_realms_detail: true, with_live_events: true })
+      )
+    })
+  })
+
   describe('when there is nothing to explore at all', () => {
     beforeEach(() => {
-      hotScenes = { data: [], isLoading: false }
-      liveWorlds = { data: [], isLoading: false }
       browseDestinations = { data: { ok: true, total: 0, data: [] }, isLoading: false }
       featuredPlaces = { data: { ok: true, total: 0, data: [] }, isLoading: false }
     })

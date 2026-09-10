@@ -118,6 +118,9 @@
         "view_all": "すべて見る"
       }
     },
+    "events": {
+      "page_title": "イベント — Decentraland"
+    },
     "cast": {
       "app": {
         "title": "Decentraland Cast 2.0",
@@ -931,8 +934,8 @@
     },
     "jump": {
       "events_page": {
-        "deleted_notice_prefix": "このハングアウトは利用できなくなりました。",
-        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_prefix": "このイベントは利用できなくなりました。",
+        "deleted_notice_link": "すべてのイベント",
         "deleted_notice_suffix": "でさらに探してみましょう。"
       }
     },
@@ -962,7 +965,18 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "approved_edit_warning": "Changing the name, description, image, or location of an approved hangout will send it back for review before the updates go live.",
+    "approved_edit_warning": "承認済みイベントの名前、説明、画像、場所を変更すると、再審査に戻ります。",
+    "featured_item_label": "注目のウェアラブル（任意）",
+    "featured_item_placeholder": "アイテムやコレクションを検索、またはURNを貼り付け",
+    "featured_item_by": "作成者: {creator}",
+    "featured_item_group_items": "アイテム",
+    "featured_item_group_collections": "コレクション",
+    "featured_item_searching": "検索中…",
+    "featured_item_no_results": "アイテムまたはコレクションが見つかりません",
+    "featured_item_min_length": "{count}文字以上入力してください",
+    "featured_item_error": "マーケットプレイスに接続できませんでした。もう一度お試しください。",
+    "featured_item_clear": "注目アイテムを削除",
+    "error_invalid_featured_item": "有効なコレクションまたはアイテムのURNを入力してください",
     "error_image_too_large": "この画像を500 KB以下に圧縮できませんでした。より小さいファイルを選択してください。",
     "vertical_recommended_size": "推奨サイズ：716 × 1814 px",
     "recurrence": "繰り返し",
@@ -1213,13 +1227,13 @@
   "event_detail": {
     "delete": "削除",
     "delete_modal": {
-      "title": "このハングアウトを削除してもよろしいですか？",
-      "subtitle": "このハングアウトはハングアウト一覧から完全に削除されます。この操作は元に戻せません。",
+      "title": "このイベントを削除してもよろしいですか？",
+      "subtitle": "このイベントはイベント一覧から完全に削除されます。この操作は元に戻せません。",
       "cancel": "キャンセル",
-      "confirm": "ハングアウトを削除",
-      "toast_title": "ハングアウトを削除しました",
-      "toast_description": "ハングアウト「{name}」を削除しました！",
-      "error": "ハングアウトを削除できませんでした。もう一度お試しください。"
+      "confirm": "イベントを削除",
+      "toast_title": "イベントを削除しました",
+      "toast_description": "イベント「{name}」を削除しました！",
+      "error": "イベントを削除できませんでした。もう一度お試しください。"
     },
     "recurrent_daily": "毎日繰り返し",
     "recurrent_weekly": "毎週繰り返し",
@@ -1238,7 +1252,8 @@
     "hero_every_days": "毎{days}",
     "location_with_coords": "{place} ({x},{y})",
     "location_coords": "({x},{y})",
-    "schedule_starting": "{schedule} から"
+    "schedule_starting": "{schedule} から",
+    "featured_item": "注目アイテム"
   },
   "event_time": {
     "utc_same_day": "{time} UTC",
@@ -1256,7 +1271,7 @@
   },
   "discover": {
     "home": {
-      "page_title": "見つける — Decentraland"
+      "page_title": "プレイス — Decentraland"
     },
     "card": {
       "jump_in": "参加",
@@ -1264,7 +1279,9 @@
       "featured": "注目"
     },
     "live": {
-      "heading": "ライブ中"
+      "heading": "ライブ中",
+      "scroll_previous": "前のライブ中の場所",
+      "scroll_next": "ライブ中の場所をもっと見る"
     },
     "explore": {
       "search_placeholder": "場所を検索",
@@ -1295,6 +1312,7 @@
       "signin_favourites": "サインインして場所をお気に入りに追加すると、ここに表示されます。",
       "empty_favourites": "お気に入りの場所はまだありません。",
       "signin_my_places": "サインインすると、作成した場所が表示されます。",
+      "sign_in": "サインイン",
       "empty_my_places": "公開した場所はまだありません。",
       "error": "場所の読み込み中に問題が発生しました。",
       "retry": "再試行"

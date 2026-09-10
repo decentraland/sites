@@ -34,9 +34,9 @@ function HostBanner() {
 
   const handleCreate = useCallback(() => {
     if (hasValidIdentity) {
-      navigate('/whats-on/new-hangout')
+      navigate('/events/new-event')
     } else {
-      redirectToAuth('/whats-on/new-hangout')
+      redirectToAuth('/events/new-event')
     }
   }, [hasValidIdentity, navigate])
 

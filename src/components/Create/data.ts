@@ -264,7 +264,7 @@ const createCards: CreateCardData[] = [
         links: [
           {
             label: 'Explore Places',
-            url: '/discover'
+            url: '/places'
           },
           {
             label: 'Download Creator Hub',

@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention -- Segment payload keys are snake_case */
-import type { DiscoverPlace } from './discover.types'
+import { isValidEthAddress } from '../../utils/avatar'
+import type { DiscoverPlace, PlaceCreatorSource } from './discover.types'
 
 // Canonical category set used by the EXPLORE tab. Order mirrors what the
 // places-api exposes and what users expect from the standalone decentraland.social
-// site this `/discover` route absorbs. The leading 'social' is a CATEGORY
+// site this `/places` route absorbs. The leading 'social' is a CATEGORY
 // value, unrelated to the route rename.
 const DISCOVER_CATEGORIES = ['social', 'music', 'art', 'game', 'fashion', 'education', 'shop', 'sports', 'business'] as const
 
@@ -49,10 +50,10 @@ function buildJumpLandingHref(place: DiscoverPlace): string {
 // over /discover without navigating).
 function buildDetailPath(place: DiscoverPlace): string | null {
   if (place.world && place.world_name) {
-    return `/discover/world/${encodeURIComponent(place.world_name.toLowerCase())}`
+    return `/places/world/${encodeURIComponent(place.world_name.toLowerCase())}`
   }
   const position = place.base_position ?? place.positions?.[0]
-  if (position) return `/discover/place/${position}`
+  if (position) return `/places/place/${position}`
   return null
 }
 
@@ -63,15 +64,27 @@ function placeIsFeatured(place: DiscoverPlace): boolean {
   return place.highlighted === true
 }
 
-// Real-time presence count, normalized to 0 when absent. Only the LIVE feed
-// populates this from hot-scenes / live-data; BROWSE entries are stripped to 0.
-// A place counts as LIVE when at least this many people are in-world —
-// product-tunable (5 per the current spec); a couple of stragglers doesn't
-// make a scene "live".
-const LIVE_MIN_USERS = 5
+// Anybody at all in the scene. Decides whether a card click opens the live viewer (people) or the
+// JUMP IN modal (empty). The LIVE section's own cut is `useLiveMinUsers()`, which may be higher.
+// NOTE: the fixed 5-user `LIVE_MIN_USERS` cut and its `placeIsLive` predicate were removed on
+// 2026-09-03 along with the legacy Live Now path they served; the threshold is now a flag variant.
+function placeHasPeople(place: DiscoverPlace): boolean {
+  return placePlayers(place) > 0
+}
 
-function placeIsLive(place: DiscoverPlace): boolean {
-  return placePlayers(place) >= LIVE_MIN_USERS
+// An event is running at the place right now, per the events API via `with_live_events`. This —
+// never presence — is what the red LIVE badge means. `undefined` (the request did
+// not ask) reads as false so a card can never go red on a stale or partial row.
+function placeHasLiveEvent(place: DiscoverPlace): boolean {
+  return place.live === true
+}
+
+// Title of the running event, for the LIVE badge's tooltip. Reads through one helper so the field
+// name lives in a single place while places-api is still adding it, and so a blank title from the
+// join is treated as no title rather than an empty tooltip.
+function placeLiveEventName(place: DiscoverPlace): string | undefined {
+  if (!placeHasLiveEvent(place)) return undefined
+  return place.live_event_name?.trim() || undefined
 }
 
 function placePlayers(place: DiscoverPlace): number {
@@ -105,6 +118,39 @@ function isMapPlaceholderImage(image?: string): boolean {
   return DEFAULT_THUMBNAIL_HASHES.has(hash)
 }
 
+// sdk-commands writes contact.name "SDK" into every scene it scaffolds, so it
+// is a default nobody chose, not an identity. Treated as absent everywhere a
+// contact name is read.
+function isJunkContactName(name?: string | null): boolean {
+  const trimmed = name?.trim().toLowerCase()
+  return !trimmed || trimmed === 'sdk'
+}
+
+// The address whose catalyst profile a place should be credited to. The
+// places-api reports the deploying wallet in `creator_address`, which is the
+// author; `owner` only holds the LAND or the world name, so it is the same
+// person by coincidence and stops being them the moment a studio deploys from
+// a shared wallet. Reading `owner` first is what made the /places cards resolve
+// a different profile than the /events cards, which already prefer
+// `creator_address` (see enrichPlaceCards). Both columns leak free-text labels
+// ("Digital Fashion Week", "Decentraland"), so neither is usable unless it is
+// wallet-shaped.
+function placeCreatorAddress(place: PlaceCreatorSource | undefined): string | undefined {
+  const creator = place?.creator_address?.trim()
+  if (isValidEthAddress(creator)) return creator
+  const owner = place?.owner?.trim()
+  return isValidEthAddress(owner) ? owner : undefined
+}
+
+// Number of tracks in a resolved `grid-template-columns`. Used to size the
+// Featured rail's collapsed height off the grid the browser actually laid out:
+// its tracks come from an auto-fill formula with a px floor, which no
+// breakpoint mirror can predict. Returns 0 when there is nothing to measure
+// (jsdom, or before first layout), so callers can keep their own fallback.
+function countGridTracks(gridTemplateColumns: string): number {
+  return gridTemplateColumns.split(' ').filter(Boolean).length
+}
+
 // Real cover image for a card, or undefined when the place only has the
 // map-tile placeholder — so the card renders its solid fallback instead of a
 // blue Genesis City map square.
@@ -135,14 +181,12 @@ function isHiddenPlace(place: DiscoverPlace): boolean {
   if (isRoad(place)) return true
   if (isMapPlaceholderImage(place.image) && !(place.world && (place.user_count ?? 0) > 0)) return true
   // No creator identity → junk, regardless of description or categories.
-  // Identity = an owner address, or a real user_name / contact_name — the
-  // sdk-commands default contact ("SDK") is template boilerplate and counts
-  // as none. Identity-less PARCELS are junk even when someone happens to be
+  // Identity = an owner address or a real contact name.
+  // Identity-less PARCELS are junk even when someone happens to be
   // standing in them; identity-less WORLDS keep the presence exception
   // because the Live Now rail synthesizes exactly this shape when a live
   // world has no places-api metadata.
-  const isJunkName = (name?: string | null) => !name || name.trim().toLowerCase() === 'sdk'
-  const hasIdentity = Boolean(place.owner) || !isJunkName(place.user_name) || !isJunkName(place.contact_name)
+  const hasIdentity = Boolean(place.owner) || !isJunkContactName(place.contact_name)
   if (hasIdentity) return false
   return place.world ? (place.user_count ?? 0) === 0 : true
 }
@@ -167,15 +211,20 @@ export {
   DISCOVER_CATEGORIES,
   buildDetailPath,
   buildJumpLandingHref,
+  countGridTracks,
   discoverDeepLinkOptions,
+  isJunkContactName,
   discoverPlacePayload,
   isHiddenPlace,
   isMapPlaceholderImage,
   parsePositionParam,
   placeCoordsLabel,
   placeCoverImage,
+  placeCreatorAddress,
   placeIsFeatured,
-  placeIsLive,
+  placeHasLiveEvent,
+  placeLiveEventName,
+  placeHasPeople,
   placePlayers
 }
 export type { DiscoverCategory }

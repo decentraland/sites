@@ -118,6 +118,9 @@
         "view_all": "查看全部"
       }
     },
+    "events": {
+      "page_title": "活动 — Decentraland"
+    },
     "cast": {
       "app": {
         "title": "Decentraland Cast 2.0",
@@ -931,8 +934,8 @@
     },
     "jump": {
       "events_page": {
-        "deleted_notice_prefix": "此聚会已不再可用。浏览",
-        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_prefix": "此活动已不再可用。浏览",
+        "deleted_notice_link": "所有活动",
         "deleted_notice_suffix": "发现更多。"
       }
     },
@@ -962,7 +965,18 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "approved_edit_warning": "Changing the name, description, image, or location of an approved hangout will send it back for review before the updates go live.",
+    "approved_edit_warning": "修改已批准活动的名称、描述、图片或位置后，将重新进入审核。",
+    "featured_item_label": "精选可穿戴道具（可选）",
+    "featured_item_placeholder": "搜索物品和合集，或粘贴 URN",
+    "featured_item_by": "作者：{creator}",
+    "featured_item_group_items": "物品",
+    "featured_item_group_collections": "合集",
+    "featured_item_searching": "搜索中…",
+    "featured_item_no_results": "未找到物品或合集",
+    "featured_item_min_length": "请至少输入 {count} 个字符",
+    "featured_item_error": "无法连接到市场，请重试。",
+    "featured_item_clear": "清除精选物品",
+    "error_invalid_featured_item": "必须是有效的合集或物品 URN",
     "error_image_too_large": "无法将此图片压缩到 500 KB 以下。请选择较小的文件。",
     "vertical_recommended_size": "建议尺寸：716 × 1814 px",
     "recurrence": "重复频率",
@@ -1213,13 +1227,13 @@
   "event_detail": {
     "delete": "删除",
     "delete_modal": {
-      "title": "确定要删除你的聚会吗？",
-      "subtitle": "此聚会将从你的聚会中永久删除。此操作无法撤销。",
+      "title": "确定要删除你的活动吗？",
+      "subtitle": "此活动将从你的活动中永久删除。此操作无法撤销。",
       "cancel": "取消",
-      "confirm": "删除聚会",
-      "toast_title": "聚会已成功删除",
-      "toast_description": "你的聚会 {name} 已成功删除！",
-      "error": "无法删除你的聚会，请重试。"
+      "confirm": "删除活动",
+      "toast_title": "活动已成功删除",
+      "toast_description": "你的活动 {name} 已成功删除！",
+      "error": "无法删除你的活动，请重试。"
     },
     "recurrent_daily": "每天重复",
     "recurrent_weekly": "每周重复",
@@ -1238,7 +1252,8 @@
     "hero_every_days": "每{days}",
     "location_with_coords": "{place} ({x},{y})",
     "location_coords": "({x},{y})",
-    "schedule_starting": "从 {schedule} 开始"
+    "schedule_starting": "从 {schedule} 开始",
+    "featured_item": "精选物品"
   },
   "event_time": {
     "utc_same_day": "{time} UTC",
@@ -1256,7 +1271,7 @@
   },
   "discover": {
     "home": {
-      "page_title": "发现 — Decentraland"
+      "page_title": "场所 — Decentraland"
     },
     "card": {
       "jump_in": "进入",
@@ -1264,7 +1279,9 @@
       "featured": "精选"
     },
     "live": {
-      "heading": "直播中"
+      "heading": "直播中",
+      "scroll_previous": "上一批直播地点",
+      "scroll_next": "更多直播地点"
     },
     "explore": {
       "search_placeholder": "搜索地点",
@@ -1295,6 +1312,7 @@
       "signin_favourites": "登录并收藏地点后即可在此查看。",
       "empty_favourites": "你还没有收藏任何地点。",
       "signin_my_places": "登录后即可查看你创建的地点。",
+      "sign_in": "登录",
       "empty_my_places": "你还没有发布任何地点。",
       "error": "加载地点时出现问题。",
       "retry": "重试"

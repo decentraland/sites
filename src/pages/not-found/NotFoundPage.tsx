@@ -47,7 +47,7 @@ const NotFoundPage = () => {
             document load keeps this lightweight Layout-less 404 chunk from
             coupling to the shell. The logo above uses a Link because `/` is a
             lightweight route where a client transition is cheap. */}
-        <CtaButton variant="contained" color="primary" size="large" href="/whats-on">
+        <CtaButton variant="contained" color="primary" size="large" href="/events">
           {l('page.not_found.cta')}
         </CtaButton>
       </Content>

@@ -23,7 +23,7 @@ import type { WorldSceneSummary } from '../../features/discover/sceneAdapter'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
-import { usePlaceOwnerAvatar } from '../../hooks/usePlaceOwnerAvatar'
+import { usePlaceCreator } from '../../hooks/usePlaceCreator'
 import { useSceneRoom } from '../../hooks/useSceneRoom'
 import {
   Avatar,
@@ -193,7 +193,7 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
   // page (deep-link + download fallback), not a bare protocol link.
   const chatJumpHref = useMemo(() => (place ? buildJumpLandingHref(place) : null), [place])
 
-  // `/discover/*` is in `isPageTrackingExempt`, so Layout's route-level
+  // `/places/*` is in `isPageTrackingExempt`, so Layout's route-level
   // `page()` is suppressed. Fire once the place title resolves so Segment
   // captures the scene name + kind. Stays silent on the loading frames.
   usePageViewTracking({
@@ -228,7 +228,7 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
 
   const streamingHref = useMemo(() => (watcherTarget ? buildBevyHref(watcherTarget.location) : null), [watcherTarget])
 
-  const { ownerName, ownerAvatar, avatarBg } = usePlaceOwnerAvatar(place)
+  const { creatorName, creatorAvatar, avatarBg } = usePlaceCreator(place)
 
   // Coordinates (places) and the world name are known from the URL on the
   // first frame, so the header title never blanks even before the places-api
@@ -277,7 +277,7 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
           <title>{`${place.title} | Decentraland`}</title>
           <meta name="description" content={place.description ?? ''} />
         </Helmet>
-        <SceneJumpInModal place={place} liveCount={livePlayers} onClose={() => navigate('/discover')} />
+        <SceneJumpInModal place={place} liveCount={livePlayers} onClose={() => navigate('/places')} />
       </>
     )
   }
@@ -294,11 +294,11 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
           <ViewerHeader>
             <SceneTitle>{headerTitle}</SceneTitle>
             <HeaderRight>
-              {ownerName && (
+              {creatorName && (
                 <CreatorRow>
-                  {ownerAvatar && <Avatar src={ownerAvatar} alt="" loading="lazy" $bg={avatarBg} />}
+                  {creatorAvatar && <Avatar src={creatorAvatar} alt="" loading="lazy" $bg={avatarBg} />}
                   <ByText>
-                    {t('discover.card.by')} <CreatorName>{ownerName}</CreatorName>
+                    {t('discover.card.by')} <CreatorName>{creatorName}</CreatorName>
                   </ByText>
                 </CreatorRow>
               )}

@@ -30,11 +30,11 @@ function CreateEventSuccess({ mode = 'create' }: CreateEventSuccessProps) {
   }, [])
 
   const handleBackToExplore = useCallback(() => {
-    navigate('/whats-on')
+    navigate('/events')
   }, [navigate])
 
   const handleMyEvents = useCallback(() => {
-    navigate('/whats-on?tab=my')
+    navigate('/events?tab=my')
   }, [navigate])
 
   return (

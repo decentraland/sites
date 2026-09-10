@@ -22,10 +22,10 @@ describe('DiscoverLayout', () => {
   describe('when a discover child route renders inside the layout', () => {
     it('should mount the child through the Outlet inside the page container', () => {
       render(
-        <MemoryRouter initialEntries={['/discover']}>
+        <MemoryRouter initialEntries={['/places']}>
           <Routes>
             <Route element={<DiscoverLayout />}>
-              <Route path="/discover" element={<span>discover home</span>} />
+              <Route path="/places" element={<span>discover home</span>} />
             </Route>
           </Routes>
         </MemoryRouter>

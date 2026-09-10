@@ -42,7 +42,7 @@ describe('jump.mappers', () => {
         user_count: 0
       }
 
-      it('should fall back to contact_name as user_name', () => {
+      it('should use contact_name as user_name', () => {
         expect(fromPlace(place).user_name).toBe('Alice')
       })
 
@@ -80,12 +80,21 @@ describe('jump.mappers', () => {
         description: '',
         positions: ['0,0'],
         base_position: '0,0',
-        owner: '0xOwner',
-        contact_name: 'ignored'
+        owner: '0x1e105bb21375451990378e5c9d0d3ad0e9ce8e58',
+        contact_name: 'LowPolyModels'
       }
 
       it('should leave user_avatar undefined so the Catalyst avatar wins when resolved', () => {
         expect(fromPlace(place).user_avatar).toBeUndefined()
+      })
+
+      it('should credit the scene contact rather than the wallet that holds the land', () => {
+        expect(fromPlace(place).user_name).toBe('LowPolyModels')
+      })
+
+      it('should never render the wallet itself as the creator', () => {
+        expect(fromPlace({ ...place, contact_name: undefined }).user_name).toBe('Unknown')
+        expect(fromPlace({ ...place, contact_name: undefined }).user).toBe(place.owner)
       })
     })
 

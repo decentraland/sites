@@ -90,8 +90,8 @@ jest.mock('../../hooks/usePageViewTracking', () => ({
   usePageViewTracking: (...args: unknown[]) => mockUsePageViewTracking(...args)
 }))
 
-jest.mock('../../hooks/usePlaceOwnerAvatar', () => ({
-  usePlaceOwnerAvatar: () => ({ ownerName: 'CreatorName', ownerAvatar: 'https://avatar.test/a.png', avatarBg: '#123456' })
+jest.mock('../../hooks/usePlaceCreator', () => ({
+  usePlaceCreator: () => ({ creatorName: 'CreatorName', creatorAvatar: 'https://avatar.test/a.png', avatarBg: '#123456' })
 }))
 
 jest.mock('../../hooks/useSceneRoom', () => ({
@@ -128,7 +128,7 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
     positions: ['10,20', '10,21'],
     base_position: '10,20',
     owner: '0xabc',
-    user_name: 'CreatorName',
+    contact_name: 'CreatorName',
     ...overrides
   }
 }
@@ -181,7 +181,7 @@ describe('DiscoverScenePage', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'close-scene-modal' }))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover')
+      expect(mockNavigate).toHaveBeenCalledWith('/places')
     })
 
     it('should not open the LiveKit room for an empty scene', () => {

@@ -218,17 +218,15 @@ describe('seo handler', () => {
     return { status: res.statusCode, headers: res.headers, body: res.body }
   }
 
-  it('serves event metadata for /whats-on?id=<uuid>', async () => {
-    const { status, headers, body } = await run({ path: '/whats-on', id: '11974ff3-675c-46fd-802a-618d4b40e3be' })
+  it('serves event metadata for /events?id=<uuid>', async () => {
+    const { status, headers, body } = await run({ path: '/events', id: '11974ff3-675c-46fd-802a-618d4b40e3be' })
     expect(status).toBe(200)
     expect(headers['X-SEO-Function']).toBe('active')
     expect(body).toContain('<title>Build Your Career at Decentraland Theatre | Decentraland</title>')
     expect(body).toMatch(/<meta property="og:description" content="Career workshop">/)
     expect(body).toMatch(/<meta property="og:image" content="https:\/\/events-assets-099ac00\.decentraland\.org\/poster\/abc\.jpg">/)
-    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on\?id=11974ff3-675c-46fd-802a-618d4b40e3be">/)
-    expect(body).toMatch(
-      /<meta property="og:url" content="https:\/\/decentraland\.org\/whats-on\?id=11974ff3-675c-46fd-802a-618d4b40e3be">/
-    )
+    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/events\?id=11974ff3-675c-46fd-802a-618d4b40e3be">/)
+    expect(body).toMatch(/<meta property="og:url" content="https:\/\/decentraland\.org\/events\?id=11974ff3-675c-46fd-802a-618d4b40e3be">/)
     // Twitter card + handles + og:site_name (parity with the legacy events frontend Helmet)
     expect(body).toMatch(/<meta name="twitter:card" content="summary_large_image">/)
     expect(body).toMatch(/<meta name="twitter:site" content="@decentraland">/)
@@ -239,12 +237,12 @@ describe('seo handler', () => {
     expect(body).toMatch(/<meta name="twitter:description" content="Career workshop">/)
   })
 
-  it('serves place-aware metadata for /whats-on?position=0,0 via places API', async () => {
-    const { body } = await run({ path: '/whats-on', position: '0,0' })
+  it('serves place-aware metadata for /events?position=0,0 via places API', async () => {
+    const { body } = await run({ path: '/events', position: '0,0' })
     expect(body).toContain('<title>Genesis Plaza | Decentraland</title>')
     expect(body).toMatch(/<meta property="og:description" content="Decentraland spawn point">/)
     expect(body).toMatch(/<meta property="og:image" content="https:\/\/peer\.decentraland\.org\/content\/contents\/abc">/)
-    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on\?position=0%2C0">/)
+    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/events\?position=0%2C0">/)
     // Twitter card + handles + og:site_name (parity with the legacy places frontend Helmet)
     expect(body).toMatch(/<meta name="twitter:card" content="summary_large_image">/)
     expect(body).toMatch(/<meta name="twitter:site" content="@decentraland">/)
@@ -254,7 +252,7 @@ describe('seo handler', () => {
     expect(body).toMatch(/<meta name="twitter:description" content="Decentraland spawn point">/)
   })
 
-  it('serves event metadata for /jump/events?id=<uuid> (same handler as /whats-on)', async () => {
+  it('serves event metadata for /jump/events?id=<uuid> (same handler as /events)', async () => {
     const { body, headers } = await run({ path: '/jump/events', id: '11974ff3-675c-46fd-802a-618d4b40e3be' })
     expect(headers['X-SEO-Function']).toBe('active')
     expect(body).toContain('<title>Build Your Career at Decentraland Theatre | Decentraland</title>')
@@ -268,56 +266,59 @@ describe('seo handler', () => {
     expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/jump\/places\?position=0%2C0">/)
   })
 
-  it('serves world metadata for /whats-on?world=<name> via places API /worlds endpoint', async () => {
-    const { body, headers } = await run({ path: '/whats-on', world: 'common.dcl.eth' })
+  it('serves world metadata for /events?world=<name> via places API /worlds endpoint', async () => {
+    const { body, headers } = await run({ path: '/events', world: 'common.dcl.eth' })
     expect(headers['X-SEO-Function']).toBe('active')
     expect(body).toContain('<title>Common World | Decentraland</title>')
     expect(body).toMatch(/<meta property="og:description" content="A community-curated Decentraland world">/)
     expect(body).toMatch(/<meta property="og:image" content="https:\/\/peer\.decentraland\.org\/content\/contents\/world-img">/)
-    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on\?world=common\.dcl\.eth">/)
+    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/events\?world=common\.dcl\.eth">/)
     expect(body).toMatch(/<meta name="twitter:title" content="Common World \| Decentraland">/)
   })
 
   it('rejects malformed world name and falls back to defaults', async () => {
-    const { body } = await run({ path: '/whats-on', world: 'not<a>world' })
-    expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
-    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on">/)
+    const { body } = await run({ path: '/events', world: 'not<a>world' })
+    expect(body).toContain('<title>Events in Decentraland | Decentraland</title>')
+    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/events">/)
   })
 
   it('falls back to a world-aware default when the API returns no entry', async () => {
-    const { body } = await run({ path: '/whats-on', world: 'missing.dcl.eth' })
+    const { body } = await run({ path: '/events', world: 'missing.dcl.eth' })
     expect(body).toContain('<title>Visit missing.dcl.eth in Decentraland | Decentraland</title>')
-    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on\?world=missing\.dcl\.eth">/)
+    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/events\?world=missing\.dcl\.eth">/)
   })
 
   it('falls back to a world-aware default when the entry has no title', async () => {
-    const { body } = await run({ path: '/whats-on', world: 'untitled.dcl.eth' })
+    const { body } = await run({ path: '/events', world: 'untitled.dcl.eth' })
     expect(body).toContain('<title>Visit untitled.dcl.eth in Decentraland | Decentraland</title>')
     expect(body).toMatch(/<meta property="og:description" content="Discover untitled\.dcl\.eth — a Decentraland world\.">/)
   })
 
-  it('serves generic whats-on metadata when no params', async () => {
-    const { body } = await run({ path: '/whats-on' })
-    expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
-    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on">/)
+  it('serves generic events metadata when no params', async () => {
+    const { body } = await run({ path: '/events' })
+    expect(body).toContain('<title>Events in Decentraland | Decentraland</title>')
+    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/events">/)
   })
 
+  // Runs against a reel title because those carry a real apostrophe from user content. The
+  // generic events title used to supply one and no longer does, so pinning the regression to
+  // it would have quietly stopped exercising this.
   it('keeps the apostrophe in the <title> element as a literal character, not an HTML entity, so a downstream re-encode cannot double-encode it', async () => {
-    const { body } = await run({ path: '/whats-on' })
+    const { body } = await run({ path: '/reels/reel-with-photographer' })
     const titleMatch = body.match(/<title>([^<]*)<\/title>/)
     expect(titleMatch).not.toBeNull()
     expect(titleMatch![1]).not.toMatch(/&#?x?\d*'?;/i)
-    expect(titleMatch![1]).toBe("What's On in Decentraland | Decentraland")
+    expect(titleMatch![1]).toBe("Alice's Decentraland snapshot | Decentraland")
     // Attribute-bound titles (twitter:title, og:title) still escape the apostrophe defensively
     // because the value is wrapped in double-quoted attributes.
-    expect(body).toMatch(/<meta name="twitter:title" content="What&#x27;s On in Decentraland \| Decentraland">/)
+    expect(body).toMatch(/<meta name="twitter:title" content="Alice&#x27;s Decentraland snapshot \| Decentraland">/)
   })
 
   it('rejects malformed event id and falls back to defaults', async () => {
-    const { body } = await run({ path: '/whats-on', id: 'not<a>uuid' })
-    expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
+    const { body } = await run({ path: '/events', id: 'not<a>uuid' })
+    expect(body).toContain('<title>Events in Decentraland | Decentraland</title>')
     // Canonical should NOT include the bad id
-    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/whats-on">/)
+    expect(body).toMatch(/<link rel="canonical" href="https:\/\/decentraland\.org\/events">/)
   })
 
   it('still handles /blog (regression)', async () => {
@@ -518,15 +519,15 @@ describe('seo handler', () => {
         return jsonResponse(false, {})
       },
       async () => {
-        const { body } = await run({ path: '/whats-on', position: '-50,-50' })
+        const { body } = await run({ path: '/events', position: '-50,-50' })
         expect(body).toContain('<title>Explore (-50,-50) in Decentraland | Decentraland</title>')
       }
     )
   })
 
   it('rejects a malformed position and falls back to whats-on defaults', async () => {
-    const { body } = await run({ path: '/whats-on', position: 'bogus' })
-    expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
+    const { body } = await run({ path: '/events', position: 'bogus' })
+    expect(body).toContain('<title>Events in Decentraland | Decentraland</title>')
   })
 
   it('returns 200 with a client-side redirect HTML when dist/index.html is unavailable', async () => {
@@ -689,7 +690,7 @@ describe('seo handler', () => {
         return jsonResponse(false, {})
       },
       async () => {
-        const { body } = await run({ path: '/whats-on', id: 'aaaaaaaaaaaa1111' })
+        const { body } = await run({ path: '/events', id: 'aaaaaaaaaaaa1111' })
         expect(body).toMatch(
           /<meta property="og:image" content="https:\/\/marketing-files\.decentraland\.org\/uploads\/1778186218133_decentraland-background\.webp">/
         )
@@ -707,8 +708,8 @@ describe('seo handler', () => {
         return jsonResponse(false, {})
       },
       async () => {
-        const { body } = await run({ path: '/whats-on', id: 'aaaaaaaaaaaa2222' })
-        expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
+        const { body } = await run({ path: '/events', id: 'aaaaaaaaaaaa2222' })
+        expect(body).toContain('<title>Events in Decentraland | Decentraland</title>')
       }
     )
   })
@@ -732,8 +733,8 @@ describe('seo handler', () => {
         return jsonResponse(false, {})
       },
       async () => {
-        const { body } = await run({ path: '/whats-on', id: 'aaaaaaaaaaaa3333' })
-        expect(body).toContain("<title>What's On in Decentraland | Decentraland</title>")
+        const { body } = await run({ path: '/events', id: 'aaaaaaaaaaaa3333' })
+        expect(body).toContain('<title>Events in Decentraland | Decentraland</title>')
       }
     )
   })
@@ -748,7 +749,7 @@ describe('seo handler', () => {
         return jsonResponse(false, {})
       },
       async () => {
-        const { body } = await run({ path: '/whats-on', position: '1,1' })
+        const { body } = await run({ path: '/events', position: '1,1' })
         expect(body).toContain('<title>Explore (1,1) in Decentraland | Decentraland</title>')
       }
     )
@@ -767,7 +768,7 @@ describe('seo handler', () => {
         return jsonResponse(false, {})
       },
       async () => {
-        const { body } = await run({ path: '/whats-on', position: '2,2' })
+        const { body } = await run({ path: '/events', position: '2,2' })
         expect(body).toContain('<title>Explore (2,2) in Decentraland | Decentraland</title>')
       }
     )
@@ -787,7 +788,7 @@ describe('seo handler', () => {
         return jsonResponse(false, {})
       },
       async () => {
-        const { body } = await run({ path: '/whats-on', world: 'blank.dcl.eth' })
+        const { body } = await run({ path: '/events', world: 'blank.dcl.eth' })
         expect(body).toContain('<title>Visit blank.dcl.eth in Decentraland | Decentraland</title>')
       }
     )
@@ -803,7 +804,7 @@ describe('seo handler', () => {
         return jsonResponse(false, {})
       },
       async () => {
-        const { body } = await run({ path: '/whats-on', world: 'fail.dcl.eth' })
+        const { body } = await run({ path: '/events', world: 'fail.dcl.eth' })
         expect(body).toContain('<title>Visit fail.dcl.eth in Decentraland | Decentraland</title>')
       }
     )

@@ -70,14 +70,14 @@ describe('when the visitor is on a page the Discover dropdown owns', () => {
   // getAllBy over every match rather than the first one: the desktop tab and the mobile accordion
   // header both carry the state, and jsdom only exposes the mobile one (the desktop list is display:
   // none without the media query), so asserting on all of them covers whichever surface is in the tree.
-  it.each(['/whats-on', '/discover', '/discover/place/-102,129'])('should mark the Discover tab as selected on %s', pathname => {
+  it.each(['/events', '/places', '/places/place/-102,129'])('should mark the Discover tab as selected on %s', pathname => {
     renderAt(pathname)
 
     screen.getAllByRole('button', { name: /navbar\.discover/i }).forEach(tab => expect(tab).toHaveAttribute('data-active'))
   })
 
   it('should leave the sections that own no in-app route unselected', () => {
-    renderAt('/whats-on')
+    renderAt('/events')
 
     screen.getAllByRole('button', { name: /navbar\.(shop|create)/i }).forEach(tab => expect(tab).not.toHaveAttribute('data-active'))
   })

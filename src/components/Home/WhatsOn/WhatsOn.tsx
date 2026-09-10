@@ -58,7 +58,7 @@ const WhatsOn = memo(() => {
         )}
       </MobileCarousel>
       <ViewAllButton
-        to="/whats-on"
+        to="/events"
         data-place={SectionViewedTrack.LANDING_EXPLORE}
         data-event={SegmentEvent.CLICK}
         data-section="view_all"

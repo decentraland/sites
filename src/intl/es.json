@@ -118,6 +118,9 @@
         "view_all": "Ver todo"
       }
     },
+    "events": {
+      "page_title": "Eventos — Decentraland"
+    },
     "cast": {
       "app": {
         "title": "Decentraland Cast 2.0",
@@ -931,8 +934,8 @@
     },
     "jump": {
       "events_page": {
-        "deleted_notice_prefix": "Este hangout ya no está disponible. Explora",
-        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_prefix": "Este evento ya no está disponible. Explora",
+        "deleted_notice_link": "Todos los eventos",
         "deleted_notice_suffix": "para descubrir más."
       }
     },
@@ -962,7 +965,18 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "approved_edit_warning": "Changing the name, description, image, or location of an approved hangout will send it back for review before the updates go live.",
+    "approved_edit_warning": "Cambiar el nombre, la descripción, la imagen o la ubicación de un evento aprobado lo devuelve a revisión.",
+    "featured_item_label": "Wearables Destacados (Opcional)",
+    "featured_item_placeholder": "Busca artículos y colecciones o pega un URN",
+    "featured_item_by": "Por {creator}",
+    "featured_item_group_items": "Artículos",
+    "featured_item_group_collections": "Colecciones",
+    "featured_item_searching": "Buscando…",
+    "featured_item_no_results": "No se encontraron artículos ni colecciones",
+    "featured_item_min_length": "Escribí al menos {count} caracteres",
+    "featured_item_error": "No pudimos conectar con el marketplace. Intentá de nuevo.",
+    "featured_item_clear": "Quitar artículo destacado",
+    "error_invalid_featured_item": "Debe ser un URN válido de colección o artículo",
     "error_image_too_large": "No pudimos comprimir esta imagen a menos de 500 KB. Por favor, elegí un archivo más pequeño.",
     "vertical_recommended_size": "Tamaño recomendado: 716 × 1814 px",
     "recurrence": "Recurrencia",
@@ -1213,13 +1227,13 @@
   "event_detail": {
     "delete": "Eliminar",
     "delete_modal": {
-      "title": "¿Seguro que quieres eliminar tu hangout?",
-      "subtitle": "Este hangout se eliminará permanentemente de tus hangouts. Esta acción no se puede deshacer.",
+      "title": "¿Seguro que quieres eliminar tu evento?",
+      "subtitle": "Este evento se eliminará permanentemente de tus eventos. Esta acción no se puede deshacer.",
       "cancel": "Cancelar",
-      "confirm": "Eliminar hangout",
-      "toast_title": "Hangout eliminado correctamente",
-      "toast_description": "¡Tu hangout {name} se ha eliminado correctamente!",
-      "error": "No pudimos eliminar tu hangout. Inténtalo de nuevo."
+      "confirm": "Eliminar evento",
+      "toast_title": "Evento eliminado correctamente",
+      "toast_description": "¡Tu evento {name} se ha eliminado correctamente!",
+      "error": "No pudimos eliminar tu evento. Inténtalo de nuevo."
     },
     "recurrent_daily": "Se repite diariamente",
     "recurrent_weekly": "Se repite semanalmente",
@@ -1238,7 +1252,8 @@
     "hero_every_days": "Todos los {days}",
     "location_with_coords": "{place} ({x},{y})",
     "location_coords": "({x},{y})",
-    "schedule_starting": "Empieza el {schedule}"
+    "schedule_starting": "Empieza el {schedule}",
+    "featured_item": "Artículo destacado"
   },
   "event_time": {
     "utc_same_day": "{time} UTC",
@@ -1256,7 +1271,7 @@
   },
   "discover": {
     "home": {
-      "page_title": "Descubrir — Decentraland"
+      "page_title": "Lugares — Decentraland"
     },
     "card": {
       "jump_in": "Entrar",
@@ -1264,7 +1279,9 @@
       "featured": "Destacado"
     },
     "live": {
-      "heading": "En vivo"
+      "heading": "En vivo",
+      "scroll_previous": "Lugares en vivo anteriores",
+      "scroll_next": "Más lugares en vivo"
     },
     "explore": {
       "search_placeholder": "Buscar lugares",
@@ -1295,6 +1312,7 @@
       "signin_favourites": "Inicia sesión y marca lugares como favoritos para verlos aquí.",
       "empty_favourites": "Todavía no marcaste ningún lugar como favorito.",
       "signin_my_places": "Inicia sesión para ver los lugares que creaste.",
+      "sign_in": "Iniciar sesión",
       "empty_my_places": "Todavía no publicaste ningún lugar.",
       "error": "Algo salió mal al cargar los lugares.",
       "retry": "Reintentar"

@@ -22,7 +22,13 @@ function fromPlace(data: JumpPlace): CardData {
     id: data.id,
     type: 'place',
     title: data.title,
-    user_name: data.owner || data.contact_name || 'Unknown',
+    // The scene's own contact wins: `owner` is whoever holds the land or the
+    // world name, which is a different person as soon as a studio deploys from
+    // a shared wallet. And when it IS a wallet, a hex string in the creator
+    // slot says nothing to a reader while claiming authorship, so it is left
+    // out entirely — the address still drives the profile lookup through
+    // `user`, and a non-address owner is a display string that can stand in.
+    user_name: data.contact_name || (ownerAddress ? undefined : data.owner) || 'Unknown',
     user: ownerAddress,
     user_avatar: isFoundationPlace ? decentralandLogo : undefined,
     coordinates,

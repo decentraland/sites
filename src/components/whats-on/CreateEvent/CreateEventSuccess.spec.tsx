@@ -79,22 +79,22 @@ describe('CreateEventSuccess', () => {
   })
 
   describe('when the back-to-explore button is clicked', () => {
-    it('should navigate to /whats-on', () => {
+    it('should navigate to /events', () => {
       render(<CreateEventSuccess />)
 
       fireEvent.click(screen.getByTestId('secondary-button'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/whats-on')
+      expect(mockNavigate).toHaveBeenCalledWith('/events')
     })
   })
 
   describe('when the my-events button is clicked', () => {
-    it('should navigate to /whats-on with the my tab activated via query param', () => {
+    it('should navigate to /events with the my tab activated via query param', () => {
       render(<CreateEventSuccess />)
 
       fireEvent.click(screen.getByTestId('primary-button'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/whats-on?tab=my')
+      expect(mockNavigate).toHaveBeenCalledWith('/events?tab=my')
     })
   })
 

@@ -118,6 +118,9 @@
         "view_all": "Voir tout"
       }
     },
+    "events": {
+      "page_title": "Événements — Decentraland"
+    },
     "cast": {
       "app": {
         "title": "Decentraland Cast 2.0",
@@ -926,8 +929,8 @@
     },
     "jump": {
       "events_page": {
-        "deleted_notice_prefix": "Ce hangout n’est plus disponible. Parcourez",
-        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_prefix": "Cet événement n’est plus disponible. Parcourez",
+        "deleted_notice_link": "Tous les événements",
         "deleted_notice_suffix": "pour en découvrir plus."
       }
     },
@@ -957,7 +960,18 @@
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "approved_edit_warning": "Changing the name, description, image, or location of an approved hangout will send it back for review before the updates go live.",
+    "approved_edit_warning": "Modifier le nom, la description, l'image ou le lieu d'un événement approuvé le renvoie en révision.",
+    "featured_item_label": "Wearables en Vedette (Optionnel)",
+    "featured_item_placeholder": "Recherchez des articles et collections ou collez un URN",
+    "featured_item_by": "Par {creator}",
+    "featured_item_group_items": "Articles",
+    "featured_item_group_collections": "Collections",
+    "featured_item_searching": "Recherche…",
+    "featured_item_no_results": "Aucun article ni collection trouvé",
+    "featured_item_min_length": "Saisissez au moins {count} caractères",
+    "featured_item_error": "Impossible de joindre la marketplace. Réessayez.",
+    "featured_item_clear": "Retirer l'article en vedette",
+    "error_invalid_featured_item": "Doit être un URN valide de collection ou d'article",
     "error_image_too_large": "Nous n'avons pas pu compresser cette image en dessous de 500 Ko. Veuillez choisir un fichier plus petit.",
     "vertical_recommended_size": "Taille recommandée : 716 × 1814 px",
     "recurrence": "Récurrence",
@@ -1208,13 +1222,13 @@
   "event_detail": {
     "delete": "Supprimer",
     "delete_modal": {
-      "title": "Voulez-vous vraiment supprimer votre hangout ?",
-      "subtitle": "Ce hangout sera définitivement supprimé de vos hangouts. Cette action est irréversible.",
+      "title": "Voulez-vous vraiment supprimer votre événement ?",
+      "subtitle": "Cet événement sera définitivement supprimé de vos événements. Cette action est irréversible.",
       "cancel": "Annuler",
-      "confirm": "Supprimer le hangout",
-      "toast_title": "Hangout supprimé avec succès",
-      "toast_description": "Votre hangout {name} a été supprimé avec succès !",
-      "error": "Nous n'avons pas pu supprimer votre hangout. Veuillez réessayer."
+      "confirm": "Supprimer l'événement",
+      "toast_title": "Événement supprimé avec succès",
+      "toast_description": "Votre événement {name} a été supprimé avec succès !",
+      "error": "Nous n'avons pas pu supprimer votre événement. Veuillez réessayer."
     },
     "recurrent_daily": "Se répète tous les jours",
     "recurrent_weekly": "Se répète chaque semaine",
@@ -1233,7 +1247,8 @@
     "hero_every_days": "Tous les {days}",
     "location_with_coords": "{place} ({x},{y})",
     "location_coords": "({x},{y})",
-    "schedule_starting": "À partir du {schedule}"
+    "schedule_starting": "À partir du {schedule}",
+    "featured_item": "Article en vedette"
   },
   "event_time": {
     "utc_same_day": "{time} UTC",
@@ -1251,7 +1266,7 @@
   },
   "discover": {
     "home": {
-      "page_title": "Découvrir — Decentraland"
+      "page_title": "Lieux — Decentraland"
     },
     "card": {
       "jump_in": "Rejoindre",
@@ -1259,7 +1274,9 @@
       "featured": "En vedette"
     },
     "live": {
-      "heading": "En direct"
+      "heading": "En direct",
+      "scroll_previous": "Lieux en direct précédents",
+      "scroll_next": "Plus de lieux en direct"
     },
     "explore": {
       "search_placeholder": "Rechercher des lieux",
@@ -1290,6 +1307,7 @@
       "signin_favourites": "Connectez-vous et ajoutez des lieux en favoris pour les retrouver ici.",
       "empty_favourites": "Vous n'avez encore aucun lieu en favori.",
       "signin_my_places": "Connectez-vous pour voir les lieux que vous avez créés.",
+      "sign_in": "Se connecter",
       "empty_my_places": "Vous n'avez encore publié aucun lieu.",
       "error": "Une erreur est survenue lors du chargement des lieux.",
       "retry": "Réessayer"

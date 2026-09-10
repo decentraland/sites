@@ -1,6 +1,7 @@
 import { useMemo, useSyncExternalStore } from 'react'
 import { hasValidIdentityFor, isRelevantStorageKey, resolveActiveAddress, writeActivePointer } from '../utils/activeIdentity'
 import { redirectToAuth } from '../utils/authRedirect'
+import { removeStorageItems } from '../utils/safeStorage'
 
 type WalletState = {
   address: string | null
@@ -57,22 +58,45 @@ window.addEventListener('storage', (event: StorageEvent) => {
 
 // MetaMask account switch — explicit signal from an injected EVM wallet.
 // Magic and OTP flows never reach this branch (they don't inject `window.ethereum`).
-if (window.ethereum?.on) {
-  window.ethereum.on('accountsChanged', (...args: unknown[]) => {
-    const accounts = Array.isArray(args[0]) ? (args[0] as string[]) : []
-    const newAccount = accounts[0]?.toLowerCase()
-    if (!newAccount) {
-      // Wallet locked: drop the in-memory state but keep the pointer so the
-      // user returns to the same wallet when they unlock.
-      setSharedAddress(null)
-      return
-    }
-    if (hasValidIdentityFor(newAccount)) {
-      setActiveAddress(newAccount)
-      return
-    }
-    redirectToAuth(window.location.pathname, { loginMethod: 'METAMASK' })
-  })
+const handleAccountsChanged = (...args: unknown[]): void => {
+  // The payload comes from the extension, so the element type is checked rather than
+  // asserted: `Array.isArray` only narrows to `any[]`, and a non-string first entry
+  // would throw on `toLowerCase()` inside an event callback, where nothing catches it.
+  const accounts: unknown[] = Array.isArray(args[0]) ? args[0] : []
+  const firstAccount = accounts[0]
+  const newAccount = typeof firstAccount === 'string' ? firstAccount.toLowerCase() : undefined
+  if (!newAccount) {
+    // Wallet locked: drop the in-memory state but keep the pointer so the
+    // user returns to the same wallet when they unlock.
+    setSharedAddress(null)
+    return
+  }
+  if (hasValidIdentityFor(newAccount)) {
+    setActiveAddress(newAccount)
+    return
+  }
+  redirectToAuth(window.location.pathname, { loginMethod: 'METAMASK' })
+}
+
+// `window.ethereum` belongs to whatever extensions the visitor has installed, so
+// touching it is guarded: with two wallets competing for the global, one of them
+// installs a Proxy whose `get` breaks a JS invariant, and merely reading `.on`
+// throws `'get' on proxy: property 'on' is a read-only and non-configurable data
+// property...` (SITES-2S5). This runs at module top level in a file the navbar
+// imports, so an unguarded read took the page down with it.
+//
+// Losing the subscription only costs the live account-switch signal. Address
+// resolution does not depend on it (see the NOTE below), so the session still
+// works.
+try {
+  // Read once: a second lookup could resolve to a different object if another
+  // extension replaces the global in between.
+  const provider = window.ethereum
+  if (provider?.on) {
+    provider.on('accountsChanged', handleAccountsChanged)
+  }
+} catch {
+  // A hostile or half-installed provider. Nothing to report: it is not ours to fix.
 }
 
 // NOTE: a previous version of this file probed `eth_accounts` on load to seed
@@ -85,23 +109,18 @@ if (window.ethereum?.on) {
 
 // ── Disconnect ──────────────────────────────────────────────────────
 
+const isSessionKey = (key: string): boolean =>
+  key.startsWith('single-sign-on-') ||
+  key.startsWith('decentraland-connect') ||
+  key.startsWith('wagmi') ||
+  key.startsWith('wc@2') ||
+  key === 'dcl_magic_user_email' ||
+  key === 'dcl_thirdweb_user_email'
+
 function disconnectWallet() {
-  const keysToRemove: string[] = []
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i)
-    if (
-      key &&
-      (key.startsWith('single-sign-on-') ||
-        key.startsWith('decentraland-connect') ||
-        key.startsWith('wagmi') ||
-        key.startsWith('wc@2') ||
-        key === 'dcl_magic_user_email' ||
-        key === 'dcl_thirdweb_user_email')
-    ) {
-      keysToRemove.push(key)
-    }
-  }
-  keysToRemove.forEach(key => localStorage.removeItem(key))
+  // Guarded because storage can be missing or denied (SITES-2RY). The in-memory
+  // cleanup below still runs, so the session ends on screen either way.
+  removeStorageItems(isSessionKey)
   writeActivePointer(null)
   setSharedAddress(null)
 }

@@ -14,7 +14,7 @@ jest.mock('../../hooks/adapters/useFormatMessage', () => ({
 
 jest.mock('../../modules/captureHandledError', () => ({ captureHandledError: jest.fn() }))
 
-const mockedPathname = { value: '/discover' }
+const mockedPathname = { value: '/places' }
 jest.mock('react-router-dom', () => ({
   useLocation: () => ({ pathname: mockedPathname.value })
 }))
@@ -31,7 +31,7 @@ let consoleErrorSpy: jest.SpyInstance
 
 beforeEach(() => {
   consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
-  mockedPathname.value = '/discover'
+  mockedPathname.value = '/places'
 })
 
 afterEach(() => {

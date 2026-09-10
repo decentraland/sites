@@ -47,6 +47,7 @@ interface EventEntry {
   world: boolean
   place_id: string | null
   community_id: string | null
+  featured_item: string | null
   total_attendees: number
   latest_attendees: string[]
   attending?: boolean
@@ -123,6 +124,7 @@ interface CreateEventPayload {
   world?: boolean
   server?: string | null
   community_id?: string | null
+  featured_item?: string | null
   recurrent?: boolean
   recurrent_frequency?: RecurrentFrequency | null
   recurrent_interval?: number

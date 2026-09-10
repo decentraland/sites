@@ -12,7 +12,6 @@ import type {
   GetCommunitiesListArgs,
   GetDiscoverDestinationsArgs,
   GetDiscoverFavoritesArgs,
-  GetDiscoverPlacesArgs,
   HotScene,
   LiveWorldEntry
 } from './discover.types'
@@ -27,18 +26,6 @@ const FALLBACK_HOT_SCENES_URL = 'https://realm-provider-ea.decentraland.org/hot-
 const getPlacesApiUrl = (): string => getEnv('PLACES_API_URL') || FALLBACK_PLACES_API_URL
 const getHotScenesUrl = (): string => getEnv('HOT_SCENES_URL') || FALLBACK_HOT_SCENES_URL
 
-function buildPlacesListUrl(baseUrl: string, args: GetDiscoverPlacesArgs): string {
-  const params = new URLSearchParams()
-  params.set('limit', String(args.limit ?? 24))
-  params.set('offset', String(args.offset ?? 0))
-  params.set('order_by', args.order_by ?? 'most_active')
-  params.set('order', args.order ?? 'desc')
-  if (args.search) params.set('search', args.search)
-  if (args.owner) params.set('owner', args.owner)
-  for (const c of args.categories ?? []) params.append('categories', c)
-  return `${baseUrl}/places?${params.toString()}`
-}
-
 // `/destinations` mixes places + worlds in one feed. `limit` is capped at 100
 // server-side; `search` needs at least 3 chars (shorter values 400) so the
 // builder drops it below that.
@@ -48,12 +35,14 @@ function buildDestinationsUrl(baseUrl: string, args: GetDiscoverDestinationsArgs
   const params = new URLSearchParams()
   params.set('limit', String(args.limit ?? DESTINATIONS_DEFAULT_LIMIT))
   params.set('offset', String(args.offset ?? 0))
-  // No order params: /destinations serves a single fixed order (highlighted →
-  // ranking → tail) and silently ignores order_by — don't pretend otherwise.
+  // Omitted rather than defaulted: the curated order is what the Featured rail
+  // and My Places want, so only the caller that wants live-first asks for it.
+  if (args.order_by) params.set('order_by', args.order_by)
   if (args.search && args.search.trim().length >= 3) params.set('search', args.search.trim())
   if (args.owner) params.set('owner', args.owner)
   if (args.only_highlighted) params.set('only_highlighted', 'true')
   if (args.with_realms_detail) params.set('with_realms_detail', 'true')
+  if (args.with_live_events) params.set('with_live_events', 'true')
   for (const c of args.categories ?? []) params.append('categories', c)
   return `${baseUrl}/destinations?${params.toString()}`
 }
@@ -73,20 +62,6 @@ function logAndShape(scope: string, response: Response, body: string | null) {
 
 const discoverPlacesEndpoints = placesClient.injectEndpoints({
   endpoints: build => ({
-    getDiscoverPlaces: build.query<DiscoverPlacesResponse, GetDiscoverPlacesArgs>({
-      queryFn: async args => {
-        try {
-          const baseUrl = getPlacesApiUrl()
-          const response = await fetch(buildPlacesListUrl(baseUrl, args))
-          if (!response.ok) return logAndShape('getDiscoverPlaces', response, await response.text().catch(() => null))
-          const json: DiscoverPlacesResponse = await response.json()
-          return { data: json }
-        } catch (error) {
-          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
-        }
-      }
-    }),
-
     // Places AND worlds in one feed — browse grid, My Places and the Featured
     // rail all read from here. It is also the only server-side way to get
     // highlighted worlds (`/worlds` ignores `only_highlighted`).
@@ -232,30 +207,6 @@ const discoverPlacesEndpoints = placesClient.injectEndpoints({
         }
       },
       providesTags: (_r, _e, { name }) => [{ type: 'World', id: name.toLowerCase() }]
-    }),
-
-    // Batch metadata for a specific list of worlds (used by the LIVE tab to
-    // resolve images/titles for the active worlds returned by `/live-data`).
-    // Most active-but-niche worlds are NOT in the top-N of /api/worlds; this
-    // hits the same endpoint with `names=` filters to retrieve them directly.
-    getDiscoverWorldsByNames: build.query<DiscoverPlace[], { names: string[] }>({
-      queryFn: async ({ names }) => {
-        try {
-          if (names.length === 0) return { data: [] }
-          const baseUrl = getPlacesApiUrl()
-          const params = new URLSearchParams()
-          for (const n of names) params.append('names', n.toLowerCase())
-          const response = await fetch(`${baseUrl}/worlds?${params.toString()}`)
-          if (!response.ok) return logAndShape('getDiscoverWorldsByNames', response, await response.text().catch(() => null))
-          const json: DiscoverPlacesResponse = await response.json()
-          return { data: json.data ?? [] }
-        } catch (error) {
-          return { error: { status: 'FETCH_ERROR', error: error instanceof Error ? error.message : 'Unknown error' } }
-        }
-      },
-      // Cache key off the sorted+joined names so the order doesn't churn the
-      // cache when the same names come back from /live-data in different order.
-      serializeQueryArgs: ({ queryArgs }) => ({ names: [...queryArgs.names].sort().join(',') })
     })
   }),
   overrideExisting: false
@@ -280,8 +231,6 @@ const discoverCommunitiesListEndpoints = socialClient.injectEndpoints({
 const {
   useGetDiscoverDestinationsQuery,
   useGetDiscoverFavoritesQuery,
-  useGetDiscoverPlacesQuery,
-  useGetDiscoverWorldsByNamesQuery,
   useGetHotScenesQuery,
   useGetLiveWorldsQuery,
   useGetDiscoverPlaceByPositionQuery,
@@ -297,7 +246,5 @@ export {
   useGetHotScenesQuery,
   useGetLiveWorldsQuery,
   useGetDiscoverPlaceByPositionQuery,
-  useGetDiscoverPlacesQuery,
-  useGetDiscoverWorldByNameQuery,
-  useGetDiscoverWorldsByNamesQuery
+  useGetDiscoverWorldByNameQuery
 }

@@ -53,7 +53,7 @@ const communitiesApi = socialClient.injectEndpoints({
     // Both clients hit the same EVENTS_API_URL, but each lives in its own RTK Query base
     // (`socialClient` here, `eventsClient` there) so they can't share cache entries or tag
     // invalidations — joining a community here does not invalidate the matching event card
-    // on /whats-on. After the social rollout stabilizes, fold these into a single events
+    // on /events. After the social rollout stabilizes, fold these into a single events
     // client (or one per backend) and inject community-scoped endpoints from this feature.
     getCommunityEvents: builder.query<CommunityEventsResponse, { communityId: string; limit?: number; offset?: number }>({
       query: ({ communityId, limit, offset }) => {

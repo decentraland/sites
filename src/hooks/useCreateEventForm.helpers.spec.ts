@@ -3,6 +3,7 @@ import {
   computeUpcomingOccurrences,
   eventEntryToFormState,
   hasModeratedContentChanged,
+  isValidFeaturedItemUrn,
   localDateToEndOfDayIso,
   recurrenceToApi
 } from './useCreateEventForm.helpers'
@@ -33,6 +34,7 @@ function buildEvent(overrides: Partial<EventEntry> = {}): EventEntry {
     world: false,
     server: null,
     community_id: null,
+    featured_item: null,
     contact: null,
     recurrent: false,
     user: '0xabc',
@@ -372,6 +374,45 @@ describe('localDateToEndOfDayIso', () => {
   })
 })
 
+// Contract for what the form accepts as a featured item. Must stay in parity with the events API's
+// `featured_item` schema pattern (collections-v2 only, mainnet + testnet chains, optional item id).
+describe('isValidFeaturedItemUrn', () => {
+  const COLLECTION = '0x1234567890abcdef1234567890abcdef12345678'
+
+  it.each([
+    ['matic collection', `urn:decentraland:matic:collections-v2:${COLLECTION}`],
+    ['ethereum collection', `urn:decentraland:ethereum:collections-v2:${COLLECTION}`],
+    ['amoy testnet collection', `urn:decentraland:amoy:collections-v2:${COLLECTION}`],
+    ['sepolia testnet collection', `urn:decentraland:sepolia:collections-v2:${COLLECTION}`],
+    ['item inside a collection', `urn:decentraland:matic:collections-v2:${COLLECTION}:0`],
+    ['item with a multi-digit id', `urn:decentraland:matic:collections-v2:${COLLECTION}:123`],
+    ['mixed-case contract address', 'urn:decentraland:matic:collections-v2:0xAbCdEf1234567890ABCDEF1234567890abcdef12']
+  ])('should accept a %s URN', (_label, urn) => {
+    expect(isValidFeaturedItemUrn(urn)).toBe(true)
+  })
+
+  it.each([
+    ['empty string', ''],
+    ['collections-v1 (L1 wearables)', `urn:decentraland:ethereum:collections-v1:${COLLECTION}:some_wearable`],
+    ['base avatar', 'urn:decentraland:off-chain:base-avatars:BaseMale'],
+    ['third-party collection', `urn:decentraland:matic:collections-thirdparty:tp-name:${COLLECTION}:0`],
+    [
+      'smart wearable with baseUrl',
+      `urn:decentraland:matic:collections-v2:${COLLECTION}:0?baseUrl=https://peer.decentraland.org/content/contents/`
+    ],
+    ['unknown chain', `urn:decentraland:polygon:collections-v2:${COLLECTION}`],
+    ['address too short', 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef1234567'],
+    ['address too long', 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef123456789'],
+    ['non-hex address', 'urn:decentraland:matic:collections-v2:0xzzzz567890abcdef1234567890abcdef12345678'],
+    ['non-numeric item id', `urn:decentraland:matic:collections-v2:${COLLECTION}:abc`],
+    ['surrounding whitespace', ` urn:decentraland:matic:collections-v2:${COLLECTION}`],
+    ['missing urn prefix', `decentraland:matic:collections-v2:${COLLECTION}`],
+    ['longer than the 160-char server cap', `urn:decentraland:matic:collections-v2:${COLLECTION}:${'9'.repeat(120)}`]
+  ])('should reject a %s', (_label, urn) => {
+    expect(isValidFeaturedItemUrn(urn)).toBe(false)
+  })
+})
+
 describe('hasModeratedContentChanged', () => {
   const savedEvent = buildEvent({
     name: 'Fest',
@@ -483,6 +524,67 @@ describe('hasModeratedContentChanged', () => {
 
     it('should return true', () => {
       expect(changed).toBe(true)
+    })
+  })
+
+  describe('when the featured item changes', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      changed = hasModeratedContentChanged(
+        {
+          ...eventEntryToFormState(savedEvent),
+          featuredItem: 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef12345678'
+        },
+        savedEvent
+      )
+    })
+
+    it('should return true', () => {
+      expect(changed).toBe(true)
+    })
+  })
+
+  describe('when the featured item is cleared on an event that has one', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      const eventWithItem = buildEvent({
+        ...savedEvent,
+        featured_item: 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef12345678'
+      })
+      changed = hasModeratedContentChanged({ ...eventEntryToFormState(eventWithItem), featuredItem: '' }, eventWithItem)
+    })
+
+    it('should return true', () => {
+      expect(changed).toBe(true)
+    })
+  })
+
+  describe('when the saved event predates the featured_item column and omits the key', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      const legacyEvent = buildEvent({ ...savedEvent, featured_item: undefined as unknown as null })
+      changed = hasModeratedContentChanged(eventEntryToFormState(legacyEvent), legacyEvent)
+    })
+
+    it('should return false', () => {
+      expect(changed).toBe(false)
+    })
+  })
+
+  describe('when the featured item only gains surrounding whitespace', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      const urn = 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef12345678'
+      const eventWithItem = buildEvent({ ...savedEvent, featured_item: urn })
+      changed = hasModeratedContentChanged({ ...eventEntryToFormState(eventWithItem), featuredItem: `  ${urn}  ` }, eventWithItem)
+    })
+
+    it('should return false', () => {
+      expect(changed).toBe(false)
     })
   })
 

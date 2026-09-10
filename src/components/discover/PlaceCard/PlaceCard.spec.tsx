@@ -8,7 +8,9 @@ const mockNavigate = jest.fn()
 const mockUseGetProfileQuery = jest.fn()
 
 jest.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate
+  useNavigate: () => mockNavigate,
+  // The creator by-line resolves where to open a profile from the current URL.
+  useLocation: () => ({ pathname: '/places', search: '' })
 }))
 
 const mockJumpIn = jest.fn()
@@ -42,6 +44,12 @@ jest.mock('decentraland-ui2', () => {
     Typography: actual.Box,
     BadgeGroup: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
     LiveBadge: () => <div>LIVE</div>,
+    // LiveEventBadge wraps the badge in this when the row carries an event title.
+    Tooltip: ({ title, children }: { title?: React.ReactNode; children?: React.ReactNode }) => (
+      <div data-testid="tooltip" data-title={String(title ?? '')}>
+        {children}
+      </div>
+    ),
     UserCountBadge: ({ count }: { count?: number }) => <div>{count}</div>,
 
     dclColors: {
@@ -59,9 +67,8 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
     image: 'https://example.com/cover.png',
     positions: ['-9,-9'],
     base_position: '-9,-9',
-    owner: '0xabc',
-    user_name: 'CreatorName',
-    contact_name: 'ContactName',
+    owner: '0x1111111111111111111111111111111111111111',
+    contact_name: 'CreatorName',
     categories: [],
     user_count: 0,
     ...overrides
@@ -84,10 +91,11 @@ describe('PlaceCard', () => {
       place = createPlace({ user_count: 5 })
     })
 
-    it('should render the LIVE badge', () => {
+    it('should not turn the badge red for presence alone', () => {
+      // The head count next to it is what says people are here.
       render(<PlaceCard place={place} />)
 
-      expect(screen.getByText('LIVE')).toBeInTheDocument()
+      expect(screen.queryByText('LIVE')).not.toBeInTheDocument()
     })
 
     it('should render the live player count', () => {
@@ -101,7 +109,7 @@ describe('PlaceCard', () => {
 
       fireEvent.click(screen.getByText('Genesis Plaza'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/-9,-9', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/-9,-9', { state: { place: expect.any(Object) } })
     })
 
     it('should navigate instead of calling onEmptyClick because the scene is live', () => {
@@ -111,7 +119,7 @@ describe('PlaceCard', () => {
       fireEvent.click(screen.getByText('Genesis Plaza'))
 
       expect(onEmptyClick).not.toHaveBeenCalled()
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/-9,-9', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/-9,-9', { state: { place: expect.any(Object) } })
     })
   })
 
@@ -143,7 +151,7 @@ describe('PlaceCard', () => {
 
       fireEvent.click(screen.getByText('Genesis Plaza'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/-9,-9', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/-9,-9', { state: { place: expect.any(Object) } })
     })
   })
 
@@ -173,7 +181,7 @@ describe('PlaceCard', () => {
 
       fireEvent.click(screen.getByText('Genesis Plaza'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/world/myworld', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/world/myworld', { state: { place: expect.any(Object) } })
     })
 
     it('should show the world name in the location pill', () => {
@@ -185,9 +193,31 @@ describe('PlaceCard', () => {
     it('should hand the place to the shared launcher when JUMP IN is clicked', () => {
       render(<PlaceCard place={place} />)
 
+      // The CTA is revealed by hover, so reach it the way a pointer does.
+      fireEvent.mouseEnter(screen.getByText('MyWorld'))
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
       expect(mockJumpIn).toHaveBeenCalledWith(place, 'place-card')
+    })
+  })
+
+  describe('when the card is activated from the keyboard', () => {
+    it.each(['Enter', ' '])('should navigate to the detail route on %s', key => {
+      render(<PlaceCard place={createPlace()} />)
+      const card = screen.getByText('Genesis Plaza').closest('[role="button"]')
+
+      fireEvent.keyDown(card as HTMLElement, { key })
+
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/-9,-9', { state: { place: expect.any(Object) } })
+    })
+
+    it('should ignore any other key', () => {
+      render(<PlaceCard place={createPlace()} />)
+      const card = screen.getByText('Genesis Plaza').closest('[role="button"]')
+
+      fireEvent.keyDown(card as HTMLElement, { key: 'Tab' })
+
+      expect(mockNavigate).not.toHaveBeenCalled()
     })
   })
 
@@ -197,7 +227,7 @@ describe('PlaceCard', () => {
 
       fireEvent.click(screen.getByText('Genesis Plaza'))
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/10,20', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/10,20', { state: { place: expect.any(Object) } })
     })
   })
 
@@ -216,10 +246,46 @@ describe('PlaceCard', () => {
       const place = createPlace({ user_count: 2 })
       render(<PlaceCard place={place} />)
 
+      fireEvent.mouseEnter(screen.getByText('Genesis Plaza'))
       fireEvent.click(screen.getByRole('button', { name: 'discover.card.jump_in' }))
 
       expect(mockJumpIn).toHaveBeenCalledWith(place, 'place-card')
       expect(mockNavigate).not.toHaveBeenCalled()
+    })
+
+    it('should keep the parked CTA out of the accessibility tree and out of Tab order', () => {
+      render(<PlaceCard place={createPlace({ user_count: 2 })} />)
+
+      const cta = screen.getByText('discover.card.jump_in').closest('button')
+
+      expect(cta).toHaveAttribute('aria-hidden', 'true')
+      expect(cta).toHaveAttribute('tabindex', '-1')
+    })
+
+    it('should stay revealed when the pointer leaves while the CTA holds focus', () => {
+      render(<PlaceCard place={createPlace({ user_count: 2 })} />)
+      const title = screen.getByText('Genesis Plaza')
+      fireEvent.mouseEnter(title)
+
+      const cta = screen.getByRole('button', { name: 'discover.card.jump_in' })
+      fireEvent.focus(cta)
+      fireEvent.mouseLeave(title)
+
+      expect(cta).not.toHaveAttribute('aria-hidden')
+      expect(cta).toHaveAttribute('tabindex', '0')
+    })
+
+    it('should park the CTA again once it loses focus', () => {
+      render(<PlaceCard place={createPlace({ user_count: 2 })} />)
+      const title = screen.getByText('Genesis Plaza')
+      fireEvent.mouseEnter(title)
+      const cta = screen.getByRole('button', { name: 'discover.card.jump_in' })
+
+      fireEvent.focus(cta)
+      fireEvent.mouseLeave(title)
+      fireEvent.blur(cta)
+
+      expect(screen.queryByRole('button', { name: 'discover.card.jump_in' })).not.toBeInTheDocument()
     })
   })
 
@@ -232,24 +298,50 @@ describe('PlaceCard', () => {
       fireEvent.mouseLeave(card)
       fireEvent.click(card)
 
-      expect(mockNavigate).toHaveBeenCalledWith('/discover/place/-9,-9', { state: { place: expect.any(Object) } })
+      expect(mockNavigate).toHaveBeenCalledWith('/places/place/-9,-9', { state: { place: expect.any(Object) } })
     })
   })
 
-  describe('when the owner has a catalyst profile with a face snapshot', () => {
-    it('should render the real face256 avatar', () => {
+  describe('when the scene names no contact and the owner has a catalyst profile', () => {
+    it('should render the owner face256', () => {
       mockUseGetProfileQuery.mockReturnValue({
-        data: { avatars: [{ hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }] }
+        data: {
+          avatars: [{ name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.example.com/face256.png' } } }]
+        }
       })
-      const { container } = render(<PlaceCard place={createPlace()} />)
+      const { container } = render(<PlaceCard place={createPlace({ contact_name: undefined })} />)
 
-      expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer.decentraland.org/face256.png')
+      expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer.example.com/face256.png')
     })
 
     it('should request the profile for the owner address', () => {
       render(<PlaceCard place={createPlace()} />)
 
-      expect(mockUseGetProfileQuery).toHaveBeenCalledWith('0xabc', { skip: false })
+      expect(mockUseGetProfileQuery).toHaveBeenCalledWith('0x1111111111111111111111111111111111111111', { skip: false })
+    })
+  })
+
+  describe('when the places-api reports the wallet that deployed the scene', () => {
+    beforeEach(() => {
+      mockUseGetProfileQuery.mockReturnValue({
+        data: {
+          avatars: [
+            { name: 'ExampleDeployer', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.example.com/face256.png' } } }
+          ]
+        }
+      })
+    })
+
+    it('should resolve the profile from that wallet, not from whoever holds the land', () => {
+      render(<PlaceCard place={createPlace({ creator_address: '0x2222222222222222222222222222222222222222' })} />)
+
+      expect(mockUseGetProfileQuery).toHaveBeenCalledWith('0x2222222222222222222222222222222222222222', { skip: false })
+    })
+
+    it('should render that creator real face instead of a synthetic disc', () => {
+      const { container } = render(<PlaceCard place={createPlace({ creator_address: '0x2222222222222222222222222222222222222222' })} />)
+
+      expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer.example.com/face256.png')
     })
   })
 
@@ -267,7 +359,32 @@ describe('PlaceCard', () => {
     })
   })
 
-  describe('when the place has a user_name', () => {
+  describe('when the by-line credits a resolved wallet', () => {
+    it('should open that profile without also entering the scene', () => {
+      render(<PlaceCard place={createPlace()} />)
+
+      fireEvent.click(screen.getByText('CreatorName'))
+
+      // No ProfileModalHost in this tree, so the hook falls back to the profile
+      // route. Either way the click must not reach the card underneath.
+      expect(mockNavigate).toHaveBeenCalledTimes(1)
+      expect(mockNavigate).toHaveBeenCalledWith('/profile/0x1111111111111111111111111111111111111111')
+    })
+
+    // The card trades the by-line for the JUMP IN CTA on hover, which makes the
+    // row transparent, pointer-blocked and aria-hidden — so the control leaves
+    // the tab order with it. Reaching it with a mouse needs that swap to change.
+    it('should drop the control from the tab order while the CTA is shown', () => {
+      render(<PlaceCard place={createPlace()} />)
+      expect(screen.getByText('CreatorName')).toHaveAttribute('tabindex', '0')
+
+      fireEvent.mouseEnter(screen.getByText('Genesis Plaza').closest('[role="button"]') as HTMLElement)
+
+      expect(screen.getByText('CreatorName')).toHaveAttribute('tabindex', '-1')
+    })
+  })
+
+  describe('when the place declares a contact name', () => {
     it('should render the by-line with the creator name', () => {
       render(<PlaceCard place={createPlace()} />)
 
@@ -276,17 +393,9 @@ describe('PlaceCard', () => {
     })
   })
 
-  describe('when the place only has a contact_name', () => {
-    it('should render the contact name as the creator', () => {
-      render(<PlaceCard place={createPlace({ user_name: undefined })} />)
-
-      expect(screen.getByText('ContactName')).toBeInTheDocument()
-    })
-  })
-
   describe('when the place has no creator name at all', () => {
     it('should render neither the by-line nor an avatar', () => {
-      const { container } = render(<PlaceCard place={createPlace({ user_name: undefined, contact_name: undefined, owner: null })} />)
+      const { container } = render(<PlaceCard place={createPlace({ contact_name: undefined, owner: null })} />)
 
       expect(screen.queryByText(/discover\.card\.by/)).not.toBeInTheDocument()
       expect(container.querySelector('img')).not.toBeInTheDocument()
@@ -303,6 +412,21 @@ describe('PlaceCard', () => {
         SegmentEvent.DISCOVER_CLICK_PLACE_CARD,
         expect.objectContaining({ place_id: 'place-1', place_title: 'Genesis Plaza', world: false, position: '-9,-9' })
       )
+    })
+  })
+
+  describe('when deciding the LIVE badge', () => {
+    it('should show LIVE for an event even with nobody in the scene', () => {
+      render(<PlaceCard place={createPlace({ user_count: 0, live: true })} />)
+
+      expect(screen.getByText('LIVE')).toBeInTheDocument()
+    })
+
+    it('should not show LIVE for a crowd with no event, however big', () => {
+      render(<PlaceCard place={createPlace({ user_count: 40, live: false })} />)
+
+      expect(screen.queryByText('LIVE')).not.toBeInTheDocument()
+      expect(screen.getByText('40')).toBeInTheDocument()
     })
   })
 })

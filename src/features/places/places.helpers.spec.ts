@@ -171,6 +171,39 @@ describe('jump.helpers', () => {
       })
     })
 
+    describe('and the position is a coordinate pair in a non-canonical form', () => {
+      it('should re-emit it as "x,y" from the parsed integers', () => {
+        expect(collectDeepLinkParams(new URLSearchParams('position=10.20'))).toEqual({ position: '10,20' })
+        expect(collectDeepLinkParams(new URLSearchParams('position=10abc,20'))).toEqual({ position: '10,20' })
+        expect(collectDeepLinkParams(new URLSearchParams('position=-3,-2'))).toEqual({ position: '-3,-2' })
+      })
+    })
+
+    describe('and the position is not a coordinate pair', () => {
+      it.each(['<script>alert(1)</script>', '1,2,3', 'abc,def', '10', 'x,1'])('should drop %p', value => {
+        expect(collectDeepLinkParams(new URLSearchParams({ position: value }))).toEqual({})
+      })
+    })
+
+    describe('and the realm is a plain catalyst name', () => {
+      it('should forward it', () => {
+        expect(collectDeepLinkParams(new URLSearchParams('realm=hela'))).toEqual({ realm: 'hela' })
+      })
+    })
+
+    describe('and the realm carries characters outside the realm charset', () => {
+      it.each(['<img src=x onerror=alert(1)>', 'foo.eth/../x', 'foo.eth?x=1', 'foo eth', '"foo.eth"', 'a'.repeat(65)])(
+        'should drop %p',
+        value => {
+          expect(collectDeepLinkParams(new URLSearchParams({ realm: value }))).toEqual({})
+        }
+      )
+
+      it('should still forward the valid position next to it', () => {
+        expect(collectDeepLinkParams(new URLSearchParams({ position: '1,2', realm: '<b>' }))).toEqual({ position: '1,2' })
+      })
+    })
+
     describe('and no source is provided', () => {
       beforeEach(() => {
         window.history.pushState({}, '', '/download?position=1,2&realm=bar.eth')

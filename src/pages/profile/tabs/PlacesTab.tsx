@@ -63,7 +63,7 @@ function PlacesTab({ address, isOwnProfile }: PlacesTabProps) {
   const handleSelectFavorites = useCallback(() => setView('favorites'), [])
   // "Explore places" sends the user to the in-site places browse (/whats-on);
   // the legacy /places paths already redirect there.
-  const handleExplorePlaces = useCallback(() => navigate('/whats-on'), [navigate])
+  const handleExplorePlaces = useCallback(() => navigate('/events'), [navigate])
 
   const handleJumpInTrack = useCallback(
     (data: JumpInTrackData) => track(SegmentEvent.GO_TO_EXPLORER, { ...data, position: 'profile-places' }),

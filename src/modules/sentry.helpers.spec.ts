@@ -1,5 +1,11 @@
 import type { Breadcrumb, ErrorEvent } from '@sentry/browser'
-import { isBlockedAnalyticsScriptError, redactBreadcrumbUrl, redactEventUrls, redactSensitiveUrl } from './sentry.helpers'
+import {
+  isBlockedAnalyticsScriptError,
+  isRawTransportRejection,
+  redactBreadcrumbUrl,
+  redactEventUrls,
+  redactSensitiveUrl
+} from './sentry.helpers'
 
 const GTAG_FAILURE = 'Failed to load https://www.googletagmanager.com/gtag/js?id=G-7DM7BF7RJG'
 
@@ -154,13 +160,13 @@ describe('when redacting a sensitive URL', () => {
 
   describe('and the query string has nothing sensitive', () => {
     it('should return the URL untouched', () => {
-      expect(redactSensitiveUrl('/whats-on?page=2&sort=asc')).toBe('/whats-on?page=2&sort=asc')
+      expect(redactSensitiveUrl('/events?page=2&sort=asc')).toBe('/events?page=2&sort=asc')
     })
   })
 
   describe('and the URL has no query string', () => {
     it('should return the URL untouched', () => {
-      expect(redactSensitiveUrl('/discover/communities')).toBe('/discover/communities')
+      expect(redactSensitiveUrl('/places/communities')).toBe('/places/communities')
     })
   })
 
@@ -242,5 +248,29 @@ describe('when redacting the URLs on an event', () => {
       const event = { request: { method: 'GET' } } as ErrorEvent
       expect(redactEventUrls(event).request).toEqual({ method: 'GET' })
     })
+  })
+})
+
+describe('when a promise was rejected with a raw transport event', () => {
+  const eventWithTarget = (target: unknown): ErrorEvent =>
+    ({ extra: { __serialized__: { isTrusted: true, target, type: 'error' } } }) as unknown as ErrorEvent
+
+  it.each(['[object WebSocket]', '[object WebTransport]', '[object WebTransportError]'])(
+    'should recognize %s as a transport rejection',
+    target => {
+      expect(isRawTransportRejection(eventWithTarget(target))).toBe(true)
+    }
+  )
+
+  it.each(['[object HTMLImageElement]', '[object XMLHttpRequest]', 'WebSocket', ''])('should not recognize %s', target => {
+    expect(isRawTransportRejection(eventWithTarget(target))).toBe(false)
+  })
+
+  it('should not recognize a non-string target', () => {
+    expect(isRawTransportRejection(eventWithTarget({ url: 'wss://x' }))).toBe(false)
+  })
+
+  it('should not recognize an event without a serialized payload', () => {
+    expect(isRawTransportRejection({} as ErrorEvent)).toBe(false)
   })
 })

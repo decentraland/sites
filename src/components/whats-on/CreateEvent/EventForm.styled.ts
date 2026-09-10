@@ -393,9 +393,9 @@ const CoordPrefix = styled(InputAdornment)({
   /* eslint-enable @typescript-eslint/naming-convention */
 })
 
-/* ── email section ──────────────────────────────────────────────────── */
+/* ── half-width form field section (featured item, email) ───────────── */
 
-const EmailSection = styled(Box)(({ theme }) => ({
+const FormFieldSection = styled(Box)(({ theme }) => ({
   paddingTop: theme.spacing(1.5),
   display: 'flex',
   flexDirection: 'column',
@@ -677,7 +677,6 @@ export {
   DateTimeRow,
   DateTimeSection,
   DescriptionFields,
-  EmailSection,
   ErrorMessage,
   EventDetailsBlock,
   EventFormControl,
@@ -691,6 +690,7 @@ export {
   labelColor,
   FormActions,
   FormColumns,
+  FormFieldSection,
   ImageSection,
   LeftCard,
   LocationBlock,

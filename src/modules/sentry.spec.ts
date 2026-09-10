@@ -93,6 +93,30 @@ describe('when the module loads on a deployed host with a DSN', () => {
   })
 })
 
+describe('when the module loads on a deployed host', () => {
+  // Instagram's in-app browser reports its own bridge failures through our
+  // `onerror` handler, from a script served under this scheme (SITES-2P4).
+  it('should deny events whose top frame comes from an in-app browser script', async () => {
+    const mockedInit = await loadSentryModule()
+    const { denyUrls } = getOptions(mockedInit)
+
+    expect(denyUrls).toEqual([expect.any(RegExp)])
+    const matches = (url: string): boolean => (denyUrls ?? []).some(pattern => (pattern as RegExp).test(url))
+    expect(matches('iabjs://navigation_performance_logger_android')).toBe(true)
+    expect(matches('IABJS://navigation_performance_logger_android')).toBe(true)
+  })
+
+  it('should keep reporting events from our own bundle', async () => {
+    const mockedInit = await loadSentryModule()
+    const { denyUrls } = getOptions(mockedInit)
+    const matches = (url: string): boolean => (denyUrls ?? []).some(pattern => (pattern as RegExp).test(url))
+
+    expect(matches('https://cdn.decentraland.org/@dcl/sites/0.61.0/assets/index.js')).toBe(false)
+    // The scheme only counts at the start of the url, not anywhere inside it.
+    expect(matches('https://decentraland.org/blog/iabjs://fake')).toBe(false)
+  })
+})
+
 describe('when a release is injected at build time', () => {
   it('should forward it so uploaded source maps match', async () => {
     const mockedInit = await loadSentryModule({ release: 'sites@1.2.3' })
@@ -152,6 +176,59 @@ describe('when beforeSend inspects an event', () => {
       const event = {
         exception: { values: [{ value: 'Failed to load https://www.googletagmanager.com/gtag/js?id=G-7DM7BF7RJG' }] }
       } as ErrorEvent
+      expect(await send(event)).toBeNull()
+    })
+  })
+
+  // WalletConnect rejects its pending proposal when nobody scans the QR, and nothing
+  // awaits it, so it lands on us as an unhandled rejection (SITES-2S6).
+  describe('and a WalletConnect session proposal expired', () => {
+    it('should drop the event', async () => {
+      const event = { exception: { values: [{ type: 'Error', value: 'Proposal expired' }] } } as ErrorEvent
+      expect(await send(event)).toBeNull()
+    })
+  })
+
+  describe('and an error merely mentions a proposal', () => {
+    it('should keep the event', async () => {
+      const event = { exception: { values: [{ type: 'Error', value: 'Proposal expired while loading the DAO page' }] } } as ErrorEvent
+      expect(await send(event)).not.toBeNull()
+    })
+  })
+
+  // `livekit-client` rejects an internal promise with the socket's own `error` event,
+  // so the report has no message and no stack (SITES-2SF).
+  describe('and a promise was rejected with a raw socket event', () => {
+    it.each(['[object WebSocket]', '[object WebTransport]'])('should drop a rejection targeting %s', async target => {
+      const event = {
+        exception: { values: [{ type: 'Event', value: 'Event `Event` (type=error) captured as promise rejection' }] },
+        extra: { __serialized__: { isTrusted: true, target, type: 'error' } }
+      } as unknown as ErrorEvent
+
+      expect(await send(event)).toBeNull()
+    })
+
+    it('should keep a rejection that carries a real target', async () => {
+      const event = {
+        exception: { values: [{ type: 'Event', value: 'Event `Event` (type=error) captured as promise rejection' }] },
+        extra: { __serialized__: { isTrusted: true, target: '[object HTMLImageElement]', type: 'error' } }
+      } as unknown as ErrorEvent
+
+      expect(await send(event)).not.toBeNull()
+    })
+
+    it('should keep an event with no serialized payload', async () => {
+      const event = { exception: { values: [{ type: 'Error', value: 'boom' }] } } as ErrorEvent
+
+      expect(await send(event)).not.toBeNull()
+    })
+  })
+
+  // The browser refused the QUIC handshake; livekit falls back to WebSocket (SITES-2SA).
+  describe('and the realtime transport was refused', () => {
+    it('should drop the event', async () => {
+      const event = { exception: { values: [{ type: 'WebTransportError', value: 'WebTransport connection rejected' }] } } as ErrorEvent
+
       expect(await send(event)).toBeNull()
     })
   })

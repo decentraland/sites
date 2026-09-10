@@ -14,6 +14,7 @@ import {
   INITIAL_STATE,
   eventEntryToFormState,
   hasModeratedContentChanged,
+  isValidFeaturedItemUrn,
   localDateToEndOfDayIso,
   parseDurationMs,
   recurrenceToApi
@@ -337,6 +338,10 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
       newErrors.world = t('create_event.error_required')
     }
 
+    if (form.featuredItem.trim() && !isValidFeaturedItemUrn(form.featuredItem.trim())) {
+      newErrors.featuredItem = t('create_event.error_invalid_featured_item')
+    }
+
     if (!isValidEmail(form.email)) {
       newErrors.email = t('create_event.error_invalid_email')
     }
@@ -399,6 +404,7 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         world: isWorld,
         server: isWorld ? form.world : null,
         community_id: form.communityId || null,
+        featured_item: form.featuredItem.trim() || null,
         recurrent: form.repeatEnabled || undefined,
         recurrent_frequency: recurrenceApi?.frequency,
         recurrent_interval: recurrenceApi?.interval,

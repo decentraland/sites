@@ -6,15 +6,15 @@ const allUrls = (): (string | undefined)[] => [
 ]
 
 describe('when reading the navbar menu config', () => {
-  // Events (What's On) and Places (/discover) used to be two separate tabs at
+  // Events (What's On) and Places (/places) used to be two separate tabs at
   // opposite ends of the list. They now live in a single leading "Discover"
   // dropdown. Both the desktop tab list and the mobile menu render straight
   // from this config, so asserting here covers both surfaces.
   it('should expose both destination feeds inside the Discover dropdown', () => {
     expect(MENU_CONFIG.discover.labelKey).toBe('component.landing.navbar.discover')
     expect(MENU_CONFIG.discover.items).toEqual([
-      { labelKey: 'component.landing.navbar.events', url: '/whats-on' },
-      { labelKey: 'component.landing.navbar.places', url: '/discover' }
+      { labelKey: 'component.landing.navbar.events', url: '/events' },
+      { labelKey: 'component.landing.navbar.places', url: '/places' }
     ])
   })
 

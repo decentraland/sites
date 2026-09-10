@@ -29,7 +29,7 @@ import {
   ShoppingBagIcon,
   WearableIcon
 } from './icons'
-import { isSectionActive } from './LandingNavbar.helpers'
+import { isSectionActive, toNotificationLocale } from './LandingNavbar.helpers'
 import { DROPDOWN_SECTIONS, MENU_CONFIG, USER_MENU_ITEMS } from './navbarConfig'
 import type { DropdownSection } from './navbarConfig'
 import {
@@ -247,6 +247,9 @@ const LandingNavbar = memo(function LandingNavbar({
   const showMinimalNavbar = isLandingPage && !isSignedIn
   const l = useFormatMessage()
   const { locale } = useLocale()
+  // ui2 renders notifications in en/es/zh only, so the site locale cannot go
+  // straight through (SITES-2S0).
+  const notificationLocale = toNotificationLocale(locale)
   const { isInitialized, track } = useAnalytics()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -666,7 +669,7 @@ const LandingNavbar = memo(function LandingNavbar({
                               // Use ui2's full notification renderer (correct icon, title, description per type)
                               return (
                                 <NotificationListItem key={item.id} style={{ padding: 0 }}>
-                                  <Comp notification={item} locale={locale} />
+                                  <Comp notification={item} locale={notificationLocale} />
                                 </NotificationListItem>
                               )
                             }

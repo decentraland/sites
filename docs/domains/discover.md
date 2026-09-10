@@ -1,6 +1,6 @@
 # Discover
 
-The `/discover` explore section (heavy `DappsShell` tier). Routes: `/discover` (Live Now rail + Featured rail + Explore band), `/discover/communities`, `/discover/place/:position`, `/discover/world/:name`, `/discover/*` (404, reuses `SocialNotFoundPage`). All render inside `<DiscoverLayout />` (purple radial page background, 64/96 navbar clearance).
+The `/places` explore section (heavy `DappsShell` tier). Routes: `/places` (Live Now rail + Featured rail + Explore band), `/places/communities`, `/places/place/:position`, `/places/world/:name`, `/places/*` (404, reuses `SocialNotFoundPage`). All render inside `<DiscoverLayout />` (purple radial page background, 64/96 navbar clearance).
 
 ## Data layer
 

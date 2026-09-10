@@ -55,8 +55,7 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
     positions: ['3,4'],
     base_position: '3,4',
     owner: '0xabc',
-    user_name: 'GalleristName',
-    contact_name: 'ContactName',
+    contact_name: 'GalleristName',
     categories: ['art'],
     user_count: 0,
     ...overrides
@@ -74,7 +73,7 @@ describe('SceneJumpInModal', () => {
     originalLocation = window.location
     Object.defineProperty(window, 'location', {
       configurable: true,
-      value: { origin: 'https://decentraland.org', href: 'https://decentraland.org/discover' }
+      value: { origin: 'https://decentraland.org', href: 'https://decentraland.org/places' }
     })
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
   })
@@ -244,8 +243,8 @@ describe('SceneJumpInModal', () => {
       fireEvent.click(screen.getByRole('button', { name: 'discover.scene.copy_link' }))
 
       // origin + buildDetailPath(place) — canonical even when the modal opened
-      // in place over /discover without navigating.
-      expect(writeText).toHaveBeenCalledWith('https://decentraland.org/discover/place/3,4')
+      // in place over /places without navigating.
+      expect(writeText).toHaveBeenCalledWith('https://decentraland.org/places/place/3,4')
     })
 
     it('should copy the world detail URL for world places', () => {
@@ -253,7 +252,7 @@ describe('SceneJumpInModal', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'discover.scene.copy_link' }))
 
-      expect(writeText).toHaveBeenCalledWith('https://decentraland.org/discover/world/galleryworld')
+      expect(writeText).toHaveBeenCalledWith('https://decentraland.org/places/world/galleryworld')
     })
 
     it('should fall back to the current page URL when the place has no detail path', () => {
@@ -261,7 +260,7 @@ describe('SceneJumpInModal', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'discover.scene.copy_link' }))
 
-      expect(writeText).toHaveBeenCalledWith('https://decentraland.org/discover')
+      expect(writeText).toHaveBeenCalledWith('https://decentraland.org/places')
     })
 
     it('should swallow clipboard rejections', () => {
@@ -283,11 +282,15 @@ describe('SceneJumpInModal', () => {
   })
 
   describe('when rendering the creator identity', () => {
-    it('should render the real face256 avatar when the owner profile has one', () => {
+    it('should render the owner face256 only when the scene names no contact', () => {
       mockUseGetProfileQuery.mockReturnValue({
-        data: { avatars: [{ hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }] }
+        data: {
+          avatars: [
+            { name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }
+          ]
+        }
       })
-      const { container } = render(<SceneJumpInModal place={createPlace()} onClose={onClose} />)
+      const { container } = render(<SceneJumpInModal place={createPlace({ contact_name: undefined })} onClose={onClose} />)
 
       expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer.decentraland.org/face256.png')
     })
@@ -300,7 +303,7 @@ describe('SceneJumpInModal', () => {
     })
 
     it('should render no by-line when the place has no creator name', () => {
-      render(<SceneJumpInModal place={createPlace({ user_name: undefined, contact_name: undefined, owner: null })} onClose={onClose} />)
+      render(<SceneJumpInModal place={createPlace({ contact_name: undefined, owner: null })} onClose={onClose} />)
 
       expect(screen.queryByText(/discover\.card\.by/)).not.toBeInTheDocument()
     })

@@ -12,15 +12,35 @@ interface DiscoverPlace {
   base_position?: string
   owner: string | null
   contact_name?: string
+  // The wallet that deployed the scene. This — not `owner`, which is whoever
+  // holds the LAND or the world name — is who the places-api says made it.
+  creator_address?: string | null
   categories?: string[]
   highlighted?: boolean
   favorites?: number
   likes?: number
   dislikes?: number
   user_count?: number
-  user_name?: string
+  // Set only when the request asked for `with_live_events`: true when the events API reports an
+  // event running at this place right now. Presence (`user_count`) is a different thing.
+  live?: boolean
+  // Title of that event, from the same `with_live_events` join. Absent on rows with no event, and
+  // absent everywhere until the places-api field ships, so the badge has to read fine without it.
+  live_event_name?: string
   world?: boolean
   world_name?: string
+}
+
+// Toolbar sections on the /places landing, mirroring the Figma "Experiences
+// tabs". Also the `?tab=` values the signed-out prompts round-trip through SSO.
+type ExploreSection = 'all' | 'favourites' | 'my'
+
+// The subset of a places-api row that decides who a place is credited to.
+// Kept structural so the /events place-card enrichment, which reads the raw
+// API row rather than a DiscoverPlace, shares the same resolution rule.
+interface PlaceCreatorSource {
+  owner?: string | null
+  creator_address?: string | null
 }
 
 interface DiscoverPlacesResponse {
@@ -58,21 +78,13 @@ type DiscoverOrderBy = 'most_active' | 'like_score' | 'created_at' | 'updated_at
 
 type DiscoverOrder = 'asc' | 'desc'
 
-interface GetDiscoverPlacesArgs {
-  limit?: number
-  offset?: number
-  order_by?: DiscoverOrderBy
-  order?: DiscoverOrder
-  search?: string
-  categories?: string[]
-  owner?: string
-}
-
-// `/destinations` — the combined places + worlds feed. Highlighted rows are
-// always returned first (API contract), then ranking, then `order_by`.
+// `/destinations` — the combined places + worlds feed. Omitting `order_by`
+// gets the curated order (highlighted, then ranking); `most_active` puts the
+// scenes people are actually in on top, with curation as the tie-breaker.
 interface GetDiscoverDestinationsArgs {
   limit?: number
   offset?: number
+  order_by?: DiscoverOrderBy
   search?: string
   categories?: string[]
   owner?: string
@@ -80,6 +92,9 @@ interface GetDiscoverDestinationsArgs {
   // Adds real-time realm/user-count detail to every row (`user_count` becomes
   // live instead of the stale snapshot) — powers the grid's LIVE badges.
   with_realms_detail?: boolean
+  // Adds `live` to every row, resolved against the events API. This — not the head count — is
+  // what the red LIVE badge means.
+  with_live_events?: boolean
 }
 
 // Favourites need a signed request — the places-api resolves `only_favorites`
@@ -117,7 +132,6 @@ export type {
   GetCommunitiesListArgs,
   GetDiscoverDestinationsArgs,
   GetDiscoverFavoritesArgs,
-  GetDiscoverPlacesArgs,
   HotScene,
   LiveWorldEntry,
   DiscoverCommunitiesResponse,
@@ -125,5 +139,7 @@ export type {
   DiscoverOrder,
   DiscoverOrderBy,
   DiscoverPlace,
-  DiscoverPlacesResponse
+  DiscoverPlacesResponse,
+  ExploreSection,
+  PlaceCreatorSource
 }
