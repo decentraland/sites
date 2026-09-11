@@ -5,6 +5,7 @@ import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTranslation } from '@dcl/hooks'
 import { Tooltip, useTheme } from 'decentraland-ui2'
 import { useCopyShareLink } from '../../../hooks/useCopyShareLink'
+import { useShareUrl } from '../../../hooks/useShareUrl'
 import { buildPlaceShareUrl } from '../../../utils/whatsOnUrl'
 import { JumpInButton } from '../../jump/JumpInButton'
 import { DetailModalCreator } from '../DetailModal'
@@ -42,7 +43,7 @@ function PlaceDetailModalHero({ data, onClose, onBack }: PlaceDetailModalHeroPro
     () => buildPlaceShareUrl({ position: data.isWorld ? null : `${x},${y}`, world: data.worldName }),
     [data.isWorld, data.worldName, x, y]
   )
-  const { copied, handleCopy } = useCopyShareLink(shareUrl)
+  const { copied, handleCopy } = useCopyShareLink(useShareUrl(shareUrl))
 
   return (
     <HeroSection>

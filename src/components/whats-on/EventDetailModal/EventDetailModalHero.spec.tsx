@@ -2,6 +2,10 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { createMockModalData } from '../../../__test-utils__/factories'
 import { EventDetailModalHero } from './EventDetailModalHero'
 
+// The share link carries the sharer's wallet, and that chain reaches the env
+// config through `import.meta`, which ts-jest cannot parse.
+jest.mock('../../../config/env')
+
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
     t: (key: string, values?: Record<string, string | number>) => {

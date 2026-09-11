@@ -18,6 +18,7 @@ import { useCanEditEvent } from '../../../hooks/useCanEditEvent'
 import { useCopyShareLink } from '../../../hooks/useCopyShareLink'
 import { useLaunchExplorer } from '../../../hooks/useLaunchExplorer'
 import { useRemindMe } from '../../../hooks/useRemindMe'
+import { useShareUrl } from '../../../hooks/useShareUrl'
 import { optimizedImageUrl } from '../../../utils/imageUrl'
 import { localizedWeekdayLong, normalizeDayIndices } from '../../../utils/recurrence'
 import { formatLocalDate, formatLocalTime } from '../../../utils/whatsOnTime'
@@ -117,7 +118,7 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
     () => (data.isEvent ? buildEventShareUrl(data.id, data.live) : data.url),
     [data.id, data.isEvent, data.live, data.url]
   )
-  const { copied, handleCopy } = useCopyShareLink(shareUrl)
+  const { copied, handleCopy } = useCopyShareLink(useShareUrl(shareUrl))
 
   // Clickable coordinates: recurrent users can jump straight to the location regardless of
   // whether the event is live. Disabled in the unsaved-event preview.
