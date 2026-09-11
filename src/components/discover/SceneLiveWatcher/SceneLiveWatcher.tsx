@@ -19,6 +19,7 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
 import type { SceneRoomState } from '../../../hooks/useSceneRoom'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../../../modules/downloadConstants'
+import { captureLiveKitConnectError } from '../../../modules/liveKitSentry'
 import { SegmentEvent } from '../../../modules/segment.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { ChatPanel } from '../../cast/ChatPanel/ChatPanel'
@@ -67,10 +68,28 @@ const SHOW_PEOPLE_COUNT = false
 // level profileCache (and now de-dupes in-flight requests), so we don't need
 // a separate Prefetch component — saves a duplicate batch HTTP call.
 function SceneRoomMount({ credentials, children }: { credentials: LiveKitCredentials | null; children: ReactNode }) {
+  // `useCallback` is not optional here: `LiveKitRoom` lists `onError` in the deps of
+  // the effect that calls `room.connect()`, so a new identity on every render would
+  // reconnect the room in a loop.
+  const serverUrl = credentials?.url
+  const handleError = useCallback(
+    (error: Error) => {
+      void captureLiveKitConnectError(error, { surface: 'scene_watcher', serverUrl })
+    },
+    [serverUrl]
+  )
   if (!credentials) return <>{children}</>
   return (
     <LiveKitProvider>
-      <LiveKitRoom token={credentials.token} serverUrl={credentials.url} connect audio={false} video={false} screen={false}>
+      <LiveKitRoom
+        token={credentials.token}
+        serverUrl={credentials.url}
+        connect
+        audio={false}
+        video={false}
+        screen={false}
+        onError={handleError}
+      >
         <ChatProvider peerUrl={getLivePeerUrl()}>{children}</ChatProvider>
       </LiveKitRoom>
     </LiveKitProvider>
