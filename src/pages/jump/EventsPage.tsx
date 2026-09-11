@@ -24,6 +24,8 @@ import type { CardData, JumpEvent } from '../../features/places/places.types'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useRemindMe } from '../../hooks/useRemindMe'
+import { useShareAction } from '../../hooks/useShareAction'
+import { useShareUrl } from '../../hooks/useShareUrl'
 import { appendRealmParam, resolveEventRealm } from '../../utils/whatsOnUrl'
 import { CalendarButton, DeletedNotice, DeletedNoticeLink, EventActions, ExploreEventsButton, ShareIconButton } from './EventsPage.styled'
 import { JumpPageContainer, JumpPageContent } from './PageContainer.styled'
@@ -118,25 +120,15 @@ const EventsPage = () => {
     window.open(buildGoogleCalendarUrl(event, label), '_blank', 'noopener,noreferrer')
   }, [event, formatMessage])
 
-  const handleShare = useCallback(async () => {
+  // This page is where a shared live event LANDS, so its own share button is the
+  // second hop of a referral chain. Crediting the visitor here is what keeps the
+  // chain alive past one share.
+  const creditedShareUrl = useShareUrl(event ? buildJumpEventShareUrl(event) : '')
+  const share = useShareAction()
+  const handleShare = useCallback(() => {
     if (!event) return
-    const title = event.name
-    const text = event.description
-    const url = buildJumpEventShareUrl(event)
-    if (typeof navigator.share === 'function') {
-      try {
-        await navigator.share({ title, text, url })
-        return
-      } catch {
-        /* fallback to clipboard */
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(url)
-    } catch (error) {
-      console.error('Share failed', error)
-    }
-  }, [event])
+    void share({ url: creditedShareUrl, title: event.name, text: event.description })
+  }, [creditedShareUrl, event, share])
 
   const actions = useMemo(() => {
     if (!cardData || !cardData.start_at) return null

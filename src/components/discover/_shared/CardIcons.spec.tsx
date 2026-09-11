@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react'
-import { CloseGlyph, CopyGlyph, JumpInGlyph, LiveGlyph, LiveHeadingGlyph, MedalGlyph, PinGlyph, glyphStyle } from './CardIcons'
+import { CloseGlyph, JumpInGlyph, LiveGlyph, LiveHeadingGlyph, MedalGlyph, PinGlyph, ShareGlyph, glyphStyle } from './CardIcons'
 
 describe('glyphStyle', () => {
   describe('when given a number', () => {
@@ -22,7 +22,7 @@ describe('CardIcons', () => {
     ['PinGlyph', PinGlyph],
     ['LiveHeadingGlyph', LiveHeadingGlyph],
     ['CloseGlyph', CloseGlyph],
-    ['CopyGlyph', CopyGlyph],
+    ['ShareGlyph', ShareGlyph],
     ['JumpInGlyph', JumpInGlyph]
   ] as const)('when rendering %s', (_name, Glyph) => {
     it('should render an svg with a viewBox', () => {

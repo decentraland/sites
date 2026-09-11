@@ -60,7 +60,7 @@ function SceneJumpInModalComponent({ place, onClose, liveCount = 0 }: SceneJumpI
   // The canonical detail URL, not window.location.href: when the modal opens in
   // place over the grid the address bar still reads /places, so the shared link
   // would carry no place context.
-  const shareTarget = buildDetailPath(place) ?? window.location.href
+  const shareTarget = buildDetailPath(place) ?? window.location.pathname
 
   // Backdrop click closes; clicks inside the modal don't bubble out.
   const handleBackdropClick = useCallback(

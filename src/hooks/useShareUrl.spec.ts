@@ -56,6 +56,30 @@ describe('when building the link to hand to someone else', () => {
     })
   })
 
+  describe('and the target points somewhere that is not ours', () => {
+    beforeEach(() => {
+      mockUseWalletAddress.mockReturnValue({ address: WALLET, isConnected: true, disconnect: jest.fn() })
+    })
+
+    it('should share it uncredited rather than leak the wallet cross-origin', () => {
+      const { result } = renderHook(() => useShareUrl('https://example.com/anything'))
+
+      expect(result.current).toBe('https://example.com/anything')
+    })
+
+    it('should still credit a sibling Decentraland environment, which the jump links point at', () => {
+      const { result } = renderHook(() => useShareUrl('https://decentraland.zone/jump/events?position=145,-6'))
+
+      expect(result.current).toBe(`https://decentraland.zone/jump/events?position=145,-6&referrer=${WALLET}`)
+    })
+
+    it('should not be fooled by a lookalike host', () => {
+      const { result } = renderHook(() => useShareUrl('https://notdecentraland.org/x'))
+
+      expect(result.current).toBe('https://notdecentraland.org/x')
+    })
+  })
+
   describe('and the connected address is malformed', () => {
     it('should share the link uncredited instead of a param the installer chain would reject', () => {
       mockUseWalletAddress.mockReturnValue({ address: 'not-a-wallet', isConnected: true, disconnect: jest.fn() })
