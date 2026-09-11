@@ -84,25 +84,34 @@ describe('communities.helpers', () => {
   })
 
   describe('toMemberCards', () => {
+    // Full-length addresses: the fallback truncates, and a short stub would pass through
+    // unchanged without ever exercising it.
+    const ownerAddress = '0xAbCdEf0123456789AbCdEf0123456789AbCdEf01'
+    const memberAddress = '0xFeDcBa9876543210FeDcBa9876543210FeDcBa98'
     let members: CommunityMember[]
     let profiles: Map<string, ProfileSummary>
 
     beforeEach(() => {
       members = [
-        { communityId: 'c-1', memberAddress: '0xAAA', role: Role.OWNER, joinedAt: '2026-01-01T00:00:00Z' },
-        { communityId: 'c-1', memberAddress: '0xBBB', role: Role.MEMBER, joinedAt: '2026-01-02T00:00:00Z' }
+        { communityId: 'c-1', memberAddress: ownerAddress, role: Role.OWNER, joinedAt: '2026-01-01T00:00:00Z' },
+        { communityId: 'c-1', memberAddress, role: Role.MEMBER, joinedAt: '2026-01-02T00:00:00Z' }
       ]
       profiles = new Map()
     })
 
     describe('when a member has a resolved profile', () => {
       beforeEach(() => {
-        profiles.set('0xaaa', { address: '0xaaa', name: 'mojito', hasClaimedName: true, avatarFace256: 'https://cdn.test/face.png' })
+        profiles.set(ownerAddress.toLowerCase(), {
+          address: ownerAddress.toLowerCase(),
+          name: 'mojito',
+          hasClaimedName: true,
+          avatarFace256: 'https://cdn.test/face.png'
+        })
       })
 
       it('should use the profile name, face and claimed-name flag', () => {
         expect(toMemberCards(members, profiles)[0]).toEqual({
-          memberAddress: '0xAAA',
+          memberAddress: ownerAddress,
           name: 'mojito',
           role: Role.OWNER,
           profilePictureUrl: 'https://cdn.test/face.png',
@@ -113,10 +122,10 @@ describe('communities.helpers', () => {
     })
 
     describe('when a member profile is still in flight', () => {
-      it('should keep the row, flag it as loading and fall back to the address meanwhile', () => {
+      it('should keep the row, flag it as loading and show the truncated address meanwhile', () => {
         expect(toMemberCards(members, profiles)[1]).toEqual({
-          memberAddress: '0xBBB',
-          name: '0xBBB',
+          memberAddress,
+          name: '0xFeDc…Ba98',
           role: Role.MEMBER,
           profilePictureUrl: '',
           hasClaimedName: false,
@@ -131,18 +140,22 @@ describe('communities.helpers', () => {
 
     describe('when a member settled without a deployed profile', () => {
       beforeEach(() => {
-        profiles.set('0xaaa', { address: '0xaaa', hasClaimedName: false })
+        profiles.set(ownerAddress.toLowerCase(), { address: ownerAddress.toLowerCase(), hasClaimedName: false })
       })
 
       it('should fall back per field and stop loading', () => {
         expect(toMemberCards(members, profiles)[0]).toEqual({
-          memberAddress: '0xAAA',
-          name: '0xAAA',
+          memberAddress: ownerAddress,
+          name: '0xAbCd…Ef01',
           role: Role.OWNER,
           profilePictureUrl: '',
           hasClaimedName: false,
           isLoadingProfile: false
         })
+      })
+
+      it('should keep the full address on the card, which keys the row and seeds its avatar colour', () => {
+        expect(toMemberCards(members, profiles)[0].memberAddress).toBe(ownerAddress)
       })
     })
 

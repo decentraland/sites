@@ -14,6 +14,10 @@ jest.mock('../config/env', () => ({
   getEnv: () => undefined
 }))
 
+const ALICE = '0xAbCdEf0123456789AbCdEf0123456789AbCdEf01'
+const BOB = '0xFeDcBa9876543210FeDcBa9876543210FeDcBa98'
+const CAROL = '0x9876543210FeDcBa9876543210FeDcBa98765432'
+
 const buildMember = (memberAddress: string): CommunityMember => ({
   communityId: 'c-1',
   memberAddress,
@@ -30,7 +34,7 @@ describe('useCommunityMemberCards', () => {
   let members: CommunityMember[]
 
   beforeEach(() => {
-    members = [buildMember('0xAAA'), buildMember('0xBBB')]
+    members = [buildMember(ALICE), buildMember(BOB)]
     useProfilesMock.mockReturnValue({ profiles: new Map(), isLoading: true, error: null })
   })
 
@@ -42,7 +46,7 @@ describe('useCommunityMemberCards', () => {
     it('should list every member right away', () => {
       const { result } = renderHook(() => useCommunityMemberCards(members))
 
-      expect(result.current.map(card => card.memberAddress)).toEqual(['0xAAA', '0xBBB'])
+      expect(result.current.map(card => card.memberAddress)).toEqual([ALICE, BOB])
     })
 
     it('should flag each row as still loading its profile', () => {
@@ -54,7 +58,7 @@ describe('useCommunityMemberCards', () => {
     it('should ask for exactly those members profiles', () => {
       renderHook(() => useCommunityMemberCards(members))
 
-      expect(useProfilesMock).toHaveBeenCalledWith(['0xAAA', '0xBBB'])
+      expect(useProfilesMock).toHaveBeenCalledWith([ALICE, BOB])
     })
   })
 
@@ -62,8 +66,8 @@ describe('useCommunityMemberCards', () => {
     beforeEach(() => {
       useProfilesMock.mockReturnValue({
         profiles: buildProfiles([
-          ['0xaaa', 'alice'],
-          ['0xbbb', 'bob']
+          [ALICE.toLowerCase(), 'alice'],
+          [BOB.toLowerCase(), 'bob']
         ]),
         isLoading: false,
         error: null
@@ -87,8 +91,8 @@ describe('useCommunityMemberCards', () => {
     beforeEach(() => {
       useProfilesMock.mockReturnValue({
         profiles: buildProfiles([
-          ['0xaaa', 'alice'],
-          ['0xbbb', 'bob']
+          [ALICE.toLowerCase(), 'alice'],
+          [BOB.toLowerCase(), 'bob']
         ]),
         isLoading: true,
         error: null
@@ -98,12 +102,12 @@ describe('useCommunityMemberCards', () => {
     it('should keep the earlier rows named and flag only the new one, holding nothing back', () => {
       const { result, rerender } = renderHook(({ list }) => useCommunityMemberCards(list), { initialProps: { list: members } })
 
-      rerender({ list: [...members, buildMember('0xCCC')] })
+      rerender({ list: [...members, buildMember(CAROL)] })
 
       expect(result.current.map(card => [card.name, card.isLoadingProfile])).toEqual([
         ['alice', false],
         ['bob', false],
-        ['0xCCC', true]
+        ['0x9876…5432', true]
       ])
     })
   })
@@ -112,8 +116,8 @@ describe('useCommunityMemberCards', () => {
     beforeEach(() => {
       useProfilesMock.mockReturnValue({
         profiles: buildProfiles([
-          ['0xaaa', undefined],
-          ['0xbbb', undefined]
+          [ALICE.toLowerCase(), undefined],
+          [BOB.toLowerCase(), undefined]
         ]),
         isLoading: false,
         error: new Error('offline')
@@ -123,7 +127,7 @@ describe('useCommunityMemberCards', () => {
     it('should fall back to the address on every row', () => {
       const { result } = renderHook(() => useCommunityMemberCards(members))
 
-      expect(result.current.map(card => card.name)).toEqual(['0xAAA', '0xBBB'])
+      expect(result.current.map(card => card.name)).toEqual(['0xAbCd…Ef01', '0xFeDc…Ba98'])
     })
 
     it('should stop the skeletons rather than wait on a batch that will not come', () => {
