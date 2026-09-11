@@ -118,7 +118,9 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
     () => (data.isEvent ? buildEventShareUrl(data.id, data.live) : data.url),
     [data.id, data.isEvent, data.live, data.url]
   )
-  const { copied, handleCopy } = useCopyShareLink(useShareUrl(shareUrl))
+  // The link carries the sharer's wallet, so a shared event keeps its referral.
+  const creditedShareUrl = useShareUrl(shareUrl)
+  const { copied, handleCopy } = useCopyShareLink(creditedShareUrl)
 
   // Clickable coordinates: recurrent users can jump straight to the location regardless of
   // whether the event is live. Disabled in the unsaved-event preview.

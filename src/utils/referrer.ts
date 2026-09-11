@@ -77,7 +77,13 @@ function appendReferrer(url: string, referrer?: string | null): string {
   const parsed = new URL(url, window.location.origin)
   parsed.searchParams.set('referrer', referrer)
 
-  return wasAbsolute ? parsed.toString() : `${parsed.pathname}${parsed.search}${parsed.hash}`
+  // `searchParams` re-serialises the whole query, which escapes the comma in a
+  // position (`?position=10,43` -> `10%2C43`). Both parse identically, but a
+  // comma is legal in a query and it is how every Decentraland deep link and
+  // share link spells coordinates, so put it back rather than hand someone a
+  // link that reads worse than the one they had.
+  const restored = wasAbsolute ? parsed.toString() : `${parsed.pathname}${parsed.search}${parsed.hash}`
+  return restored.replace(/%2C/gi, ',')
 }
 
 /**

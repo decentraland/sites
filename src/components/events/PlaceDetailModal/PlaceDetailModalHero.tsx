@@ -43,7 +43,9 @@ function PlaceDetailModalHero({ data, onClose, onBack }: PlaceDetailModalHeroPro
     () => buildPlaceShareUrl({ position: data.isWorld ? null : `${x},${y}`, world: data.worldName }),
     [data.isWorld, data.worldName, x, y]
   )
-  const { copied, handleCopy } = useCopyShareLink(useShareUrl(shareUrl))
+  // The link carries the sharer's wallet, so a shared event keeps its referral.
+  const creditedShareUrl = useShareUrl(shareUrl)
+  const { copied, handleCopy } = useCopyShareLink(creditedShareUrl)
 
   return (
     <HeroSection>

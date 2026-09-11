@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { SharePlaceButton } from './SharePlaceButton'
 
 const mockShareUrl = jest.fn()
@@ -62,7 +62,7 @@ describe('SharePlaceButton', () => {
       await Promise.resolve()
 
       expect(writeText).not.toHaveBeenCalled()
-      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+      expect(screen.getByRole('status')).toBeEmptyDOMElement()
     })
   })
 
@@ -71,9 +71,7 @@ describe('SharePlaceButton', () => {
       render(<SharePlaceButton target="/places/world/foo.dcl.eth" />)
 
       fireEvent.click(screen.getByRole('button', { name: 'discover.scene.share' }))
-      await screen.findByRole('status')
-
-      expect(screen.getByRole('status')).toHaveTextContent('discover.scene.copied')
+      await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('discover.scene.copied'))
     })
 
     it('should stay quiet when the clipboard rejects, rather than claim a copy that did not happen', async () => {
@@ -83,7 +81,7 @@ describe('SharePlaceButton', () => {
       fireEvent.click(screen.getByRole('button', { name: 'discover.scene.share' }))
       await Promise.resolve()
 
-      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+      expect(screen.getByRole('status')).toBeEmptyDOMElement()
     })
   })
 })
