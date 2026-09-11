@@ -17,7 +17,7 @@ import type { EventsApiResponse } from './events.helpers.types'
 const communitiesApi = socialClient.injectEndpoints({
   endpoints: builder => ({
     getCommunityById: builder.query<CommunityResponse, { id: string; isSigned: boolean }>({
-      query: ({ id }) => `/v1/communities/${encodeURIComponent(id)}`,
+      query: ({ id }) => `/v2/communities/${encodeURIComponent(id)}`,
       // Include auth state in cache key so signed/unsigned requests don't share cache.
       // Triggers automatic refetch when isSigned flips (identity becomes available).
       serializeQueryArgs: ({ queryArgs }) => ({ id: queryArgs.id, isSigned: queryArgs.isSigned }),
@@ -30,7 +30,7 @@ const communitiesApi = socialClient.injectEndpoints({
         if (limit !== undefined) params.append('limit', String(limit))
         if (offset !== undefined) params.append('offset', String(offset))
         const qs = params.toString()
-        return `/v1/communities/${encodeURIComponent(id)}/members${qs ? `?${qs}` : ''}`
+        return `/v2/communities/${encodeURIComponent(id)}/members${qs ? `?${qs}` : ''}`
       },
       serializeQueryArgs: ({ queryArgs }) => ({ id: queryArgs.id }),
       merge: (currentCache, newItems) => {
@@ -191,7 +191,7 @@ const communitiesApi = socialClient.injectEndpoints({
         const params = new URLSearchParams()
         if (type) params.append('type', type)
         const qs = params.toString()
-        return `/v1/members/${encodeURIComponent(address)}/requests${qs ? `?${qs}` : ''}`
+        return `/v2/members/${encodeURIComponent(address)}/requests${qs ? `?${qs}` : ''}`
       },
       providesTags: (result, _error, { address }) =>
         result ? [{ type: 'MemberRequests' as const, id: address }, 'MemberRequests'] : ['MemberRequests']

@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Profile } from '../../../features/cast2/peer'
+import type { ProfileSummary } from '../../../features/profile/profile.types'
 import { getAvatarBackgroundColor, getDisplayName as getValidatedDisplayName } from '../../../utils/avatarColor'
 import { AvatarContainer, AvatarFallbackCircle, AvatarImage, AvatarInitial } from './Avatar.styled'
 
 interface AvatarProps {
   // Convenience prop — pass the resolved peer profile and Avatar will pick
   // avatarFace256, name, hasClaimedName and address from it.
-  profile?: Profile | null
+  profile?: ProfileSummary | null
   // Manual overrides for callers that don't have a Profile (e.g. anonymous
   // LiveKit participants known only by their displayName). `address` and
   // `ethAddress` are equivalent — both feed the deterministic background

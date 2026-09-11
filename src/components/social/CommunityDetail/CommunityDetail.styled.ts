@@ -1,4 +1,4 @@
-import { Box, styled } from 'decentraland-ui2'
+import { Box, Skeleton, styled } from 'decentraland-ui2'
 
 const ContentContainer = styled(Box)({
   display: 'flex',
@@ -73,4 +73,28 @@ const PageContainer = styled(Box)(({ theme }) => ({
   [theme.breakpoints.up('md')]: { paddingTop: 96 }
 }))
 
-export { BottomSection, ContentContainer, EventsColumn, HiddenStatus, InitialLoader, MembersColumn, PageContainer }
+// Profile-lookup placeholders shared by the owner row and the member cards: the /v2
+// payloads carry addresses only, so a face and a name wait on the Catalyst batch.
+// Fills whatever avatar ring it is dropped into.
+const AvatarSkeleton = styled(Skeleton)({
+  width: '100%',
+  height: '100%'
+})
+
+// Sized off the body font so the row keeps its height when the name lands; callers
+// pass Skeleton's own `width` for the slot they are holding.
+const NameSkeleton = styled(Skeleton)(({ theme }) => ({
+  fontSize: theme.typography.body1.fontSize
+}))
+
+export {
+  AvatarSkeleton,
+  BottomSection,
+  ContentContainer,
+  EventsColumn,
+  HiddenStatus,
+  InitialLoader,
+  MembersColumn,
+  NameSkeleton,
+  PageContainer
+}
