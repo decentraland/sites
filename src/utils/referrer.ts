@@ -62,6 +62,25 @@ function readUrlReferrer(): string | null {
 }
 
 /**
+ * Adds `referrer` to a URL that may be absolute or relative, preserving its shape.
+ *
+ * Parsed rather than concatenated: string manipulation puts the query in the
+ * wrong place when the value carries a hash fragment, and appends a second
+ * `referrer` when one is already there. `searchParams.set` handles both, and the
+ * absolute/relative shape is restored afterwards because auth may validate the
+ * redirect target it receives.
+ */
+function appendReferrer(url: string, referrer?: string | null): string {
+  if (!referrer) return url
+
+  const wasAbsolute = /^[a-z][a-z0-9+.-]*:\/\//i.test(url)
+  const parsed = new URL(url, window.location.origin)
+  parsed.searchParams.set('referrer', referrer)
+
+  return wasAbsolute ? parsed.toString() : `${parsed.pathname}${parsed.search}${parsed.hash}`
+}
+
+/**
  * Resolves the referrer for the current download. Has side effects (see below)
  * — call it from an event handler or an effect, never during render.
  *
@@ -100,4 +119,4 @@ function resolveReferrer(): string | null {
   return readStoredReferrer()
 }
 
-export { REFERRER_STORAGE_KEY, parseReferrer, readStoredReferrer, readUrlReferrer, resolveReferrer, storeReferrer }
+export { REFERRER_STORAGE_KEY, appendReferrer, parseReferrer, readStoredReferrer, readUrlReferrer, resolveReferrer, storeReferrer }
