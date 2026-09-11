@@ -5,6 +5,10 @@ import { SceneJumpInModal } from '.'
 
 const mockUseGetProfileQuery = jest.fn()
 
+// The share link carries the sharer's wallet, and that chain reaches the env
+// config through `import.meta`, which ts-jest cannot parse.
+jest.mock('../../../config/env')
+
 // The barrel re-exports the RTK Query clients (import.meta env access Jest
 // can't parse); the modal only consumes the pure helpers, so alias to them.
 jest.mock('../../../features/discover', () => jest.requireActual('../../../features/discover/discover.helpers'))
@@ -68,12 +72,13 @@ describe('SceneJumpInModal', () => {
 
   beforeEach(() => {
     onClose = jest.fn()
-    // The copy-link handler builds the shared URL from `window.location.origin`;
-    // pin it so the assertions don't depend on the jsdom default host.
+    // The share link is built from `window.location`; pin it so the assertions
+    // don't depend on the jsdom default host. The `?env=` on `href` is there to
+    // prove the fallback shares the path, not whatever the address bar carries.
     originalLocation = window.location
     Object.defineProperty(window, 'location', {
       configurable: true,
-      value: { origin: 'https://decentraland.org', href: 'https://decentraland.org/places' }
+      value: { origin: 'https://decentraland.org', href: 'https://decentraland.org/places?env=dev', pathname: '/places' }
     })
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
   })
@@ -207,7 +212,7 @@ describe('SceneJumpInModal', () => {
     })
   })
 
-  describe('when the copy-link button is clicked', () => {
+  describe('when the share button is clicked', () => {
     let writeText: jest.Mock
 
     beforeEach(() => {
@@ -219,46 +224,31 @@ describe('SceneJumpInModal', () => {
       Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined })
     })
 
-    it('should show a transient Copied confirmation after a successful write', async () => {
+    // The confirmation bubble and the native-sheet hand-off belong to
+    // SharePlaceButton and are covered by its own spec; what the modal owns is
+    // the target it hands over.
+    it('should share the canonical detail URL for the place', async () => {
       render(<SceneJumpInModal place={createPlace()} onClose={onClose} />)
 
-      fireEvent.click(screen.getByRole('button', { name: 'discover.scene.copy_link' }))
+      fireEvent.click(screen.getByRole('button', { name: 'discover.scene.share' }))
 
-      expect(await screen.findByRole('status')).toHaveTextContent('discover.scene.copied')
+      // origin + buildDetailPath(place): canonical even when the modal opened in
+      // place over /places without navigating.
+      await waitFor(() => expect(writeText).toHaveBeenCalledWith('https://decentraland.org/places/place/3,4'))
     })
 
-    it('should NOT show the confirmation when the clipboard write is rejected', async () => {
-      writeText.mockRejectedValue(new Error('denied'))
-      render(<SceneJumpInModal place={createPlace()} onClose={onClose} />)
-
-      fireEvent.click(screen.getByRole('button', { name: 'discover.scene.copy_link' }))
-
-      await waitFor(() => expect(writeText).toHaveBeenCalled())
-      expect(screen.queryByRole('status')).not.toBeInTheDocument()
-    })
-
-    it('should copy the canonical detail URL for the place', () => {
-      render(<SceneJumpInModal place={createPlace()} onClose={onClose} />)
-
-      fireEvent.click(screen.getByRole('button', { name: 'discover.scene.copy_link' }))
-
-      // origin + buildDetailPath(place) — canonical even when the modal opened
-      // in place over /places without navigating.
-      expect(writeText).toHaveBeenCalledWith('https://decentraland.org/places/place/3,4')
-    })
-
-    it('should copy the world detail URL for world places', () => {
+    it('should share the world detail URL for world places', async () => {
       render(<SceneJumpInModal place={createPlace({ world: true, world_name: 'GalleryWorld' })} onClose={onClose} />)
 
-      fireEvent.click(screen.getByRole('button', { name: 'discover.scene.copy_link' }))
+      fireEvent.click(screen.getByRole('button', { name: 'discover.scene.share' }))
 
-      expect(writeText).toHaveBeenCalledWith('https://decentraland.org/places/world/galleryworld')
+      await waitFor(() => expect(writeText).toHaveBeenCalledWith('https://decentraland.org/places/world/galleryworld'))
     })
 
     it('should fall back to the current page URL when the place has no detail path', () => {
       render(<SceneJumpInModal place={createPlace({ base_position: undefined, positions: [] })} onClose={onClose} />)
 
-      fireEvent.click(screen.getByRole('button', { name: 'discover.scene.copy_link' }))
+      fireEvent.click(screen.getByRole('button', { name: 'discover.scene.share' }))
 
       expect(writeText).toHaveBeenCalledWith('https://decentraland.org/places')
     })
@@ -267,17 +257,17 @@ describe('SceneJumpInModal', () => {
       writeText.mockRejectedValue(new Error('denied'))
       render(<SceneJumpInModal place={createPlace()} onClose={onClose} />)
 
-      expect(() => fireEvent.click(screen.getByRole('button', { name: 'discover.scene.copy_link' }))).not.toThrow()
+      expect(() => fireEvent.click(screen.getByRole('button', { name: 'discover.scene.share' }))).not.toThrow()
       expect(writeText).toHaveBeenCalledTimes(1)
     })
   })
 
   describe('when the clipboard API is unavailable', () => {
-    it('should not throw on copy-link click', () => {
+    it('should not throw on share click', () => {
       Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined })
       render(<SceneJumpInModal place={createPlace()} onClose={onClose} />)
 
-      expect(() => fireEvent.click(screen.getByRole('button', { name: 'discover.scene.copy_link' }))).not.toThrow()
+      expect(() => fireEvent.click(screen.getByRole('button', { name: 'discover.scene.share' }))).not.toThrow()
     })
   })
 
