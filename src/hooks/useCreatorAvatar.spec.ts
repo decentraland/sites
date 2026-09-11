@@ -22,7 +22,8 @@ describe('useCreatorAvatar', () => {
         avatarForCard: undefined,
         avatarFace: undefined,
         name: undefined,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        isLoading: false
       })
     })
 
@@ -47,7 +48,8 @@ describe('useCreatorAvatar', () => {
         avatarForCard: undefined,
         avatarFace: REAL_FACE_URL,
         name: 'CatalystName',
-        backgroundColor: '#abcdef'
+        backgroundColor: '#abcdef',
+        isLoading: false
       })
     })
 
@@ -86,7 +88,8 @@ describe('useCreatorAvatar', () => {
         avatarForCard: undefined,
         avatarFace: undefined,
         name: undefined,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        isLoading: false
       })
     })
 

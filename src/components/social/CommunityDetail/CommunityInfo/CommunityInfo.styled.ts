@@ -146,9 +146,12 @@ const OwnerAvatar = styled(Avatar, {
   backgroundColor: backgroundColor ?? theme.palette.secondary.main
 }))
 
+// The gap spaces the "By" label from whatever follows it — the owner's name or, while
+// the profile is still in flight, its skeleton — so the two line up.
 const OwnerText = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
+  gap: theme.spacing(0.5),
   fontSize: theme.typography.body1.fontSize,
   fontWeight: 400,
   lineHeight: 1.5,
@@ -157,8 +160,7 @@ const OwnerText = styled(Box)(({ theme }) => ({
 }))
 
 const OwnerName = styled('span')(({ theme }) => ({
-  color: theme.palette.primary.main,
-  marginLeft: theme.spacing(0.5)
+  color: theme.palette.primary.main
 }))
 
 const ActionButtons = styled(Box)(({ theme }) => ({
