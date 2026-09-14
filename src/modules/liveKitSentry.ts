@@ -28,9 +28,6 @@ function toHost(serverUrl?: string): string | undefined {
  * `onError`, so with no handler a real failure (an expired token, a gatekeeper
  * outage, a missing url) is a `console.warn` and nothing else: the visitor waits
  * behind the connection toast and we get no signal at all.
- *
- * `feature` goes after the spread so a caller cannot drop it, matching
- * `captureDiscoverError`.
  */
 async function captureLiveKitConnectError(error: unknown, { surface, serverUrl }: LiveKitConnectErrorContext): Promise<void> {
   await captureHandledError(error, { tags: { surface, host: toHost(serverUrl), feature: 'livekit' } })
