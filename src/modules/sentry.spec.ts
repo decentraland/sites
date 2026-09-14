@@ -224,6 +224,43 @@ describe('when beforeSend inspects an event', () => {
     })
   })
 
+  // Session Replay reaching into the cross-origin newsletter iframe (SITES-2SN).
+  describe('and the SDK threw inside its own instrumentation', () => {
+    const sentryFrame = { filename: 'https://cdn.decentraland.org/@dcl/sites/0.63.1/assets/vendor-sentry-ChAWWyE7.js' }
+
+    it('should drop the event', async () => {
+      const event = {
+        exception: {
+          values: [
+            {
+              type: 'SecurityError',
+              value: "Failed to read a named property 'Element' from 'Window': Blocked a frame with origin",
+              stacktrace: { frames: [sentryFrame, sentryFrame] }
+            }
+          ]
+        }
+      } as ErrorEvent
+
+      expect(await send(event)).toBeNull()
+    })
+
+    it('should keep the same error when it reaches our own code', async () => {
+      const event = {
+        exception: {
+          values: [
+            {
+              type: 'SecurityError',
+              value: "Failed to read a named property 'Element' from 'Window': Blocked a frame with origin",
+              stacktrace: { frames: [sentryFrame, { filename: 'https://cdn.decentraland.org/@dcl/sites/0.63.1/assets/Jump-abc.js' }] }
+            }
+          ]
+        }
+      } as ErrorEvent
+
+      expect(await send(event)).not.toBeNull()
+    })
+  })
+
   // The browser refused the QUIC handshake; livekit falls back to WebSocket (SITES-2SA).
   describe('and the realtime transport was refused', () => {
     it('should drop the event', async () => {
