@@ -30,6 +30,48 @@ describe('when a room connection fails', () => {
   })
 })
 
+// The room asks for camera and microphone as part of connecting, so a declined prompt
+// arrives at `onError`. It is a choice, not a failure (SITES-2SP).
+describe('when the visitor declined the camera or microphone', () => {
+  it('should not report a DOMException-shaped denial', async () => {
+    const denial = new Error('Permission denied')
+    denial.name = 'NotAllowedError'
+
+    await captureLiveKitConnectError(denial, { surface: 'cast_streamer' })
+
+    expect(captureHandledErrorMock).not.toHaveBeenCalled()
+  })
+
+  // The room also hands over a plain Error wrapping the text.
+  it.each(['NotAllowedError: Permission denied', 'Permission denied'])('should not report %s', async message => {
+    await captureLiveKitConnectError(new Error(message), { surface: 'cast_streamer' })
+
+    expect(captureHandledErrorMock).not.toHaveBeenCalled()
+  })
+
+  it('should still report a genuine connection failure', async () => {
+    await captureLiveKitConnectError(new Error('could not establish signal connection'), { surface: 'cast_streamer' })
+
+    expect(captureHandledErrorMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('should still report a thrown value that is not an Error', async () => {
+    await captureLiveKitConnectError('Permission denied', { surface: 'cast_streamer' })
+
+    expect(captureHandledErrorMock).toHaveBeenCalledTimes(1)
+  })
+
+  // No device and a busy device are left reporting on purpose, for now.
+  it.each(['NotFoundError', 'NotReadableError'])('should still report a %s', async name => {
+    const failure = new Error('device unavailable')
+    failure.name = name
+
+    await captureLiveKitConnectError(failure, { surface: 'cast_streamer' })
+
+    expect(captureHandledErrorMock).toHaveBeenCalledTimes(1)
+  })
+})
+
 // The gatekeeper's envelope carries the access token as a query param.
 describe('when the server url carries a query string', () => {
   it('should report the host without it', async () => {
