@@ -1,6 +1,12 @@
 import { type ErrorEvent, browserTracingIntegration, init, replayIntegration } from '@sentry/browser'
 import { getEnv } from '../config/env'
-import { isBlockedAnalyticsScriptError, isRawTransportRejection, redactBreadcrumbUrl, redactEventUrls } from './sentry.helpers'
+import {
+  isBlockedAnalyticsScriptError,
+  isRawTransportRejection,
+  isSentrySdkError,
+  redactBreadcrumbUrl,
+  redactEventUrls
+} from './sentry.helpers'
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '0.0.0.0', ''])
 
@@ -105,6 +111,10 @@ if (dsn && !isLocalHost()) {
       // A socket error event rejected as a promise carries no message and no stack,
       // so it lands as an untitled issue with nothing to act on (SITES-2SF).
       if (isRawTransportRejection(event)) return null
+
+      // Thrown inside the SDK's own instrumentation, with no frame of ours on the
+      // stack and nothing for us to fix (SITES-2SN).
+      if (isSentrySdkError(event)) return null
 
       const errorMessage = event.message ?? event.exception?.values?.[0]?.value ?? ''
       if (errorFilters.some(filter => filter.test(errorMessage))) return null

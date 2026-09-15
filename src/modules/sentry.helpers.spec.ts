@@ -2,6 +2,7 @@ import type { Breadcrumb, ErrorEvent } from '@sentry/browser'
 import {
   isBlockedAnalyticsScriptError,
   isRawTransportRejection,
+  isSentrySdkError,
   redactBreadcrumbUrl,
   redactEventUrls,
   redactSensitiveUrl
@@ -272,5 +273,60 @@ describe('when a promise was rejected with a raw transport event', () => {
 
   it('should not recognize an event without a serialized payload', () => {
     expect(isRawTransportRejection({} as ErrorEvent)).toBe(false)
+  })
+})
+
+const CDN = 'https://cdn.decentraland.org/@dcl/sites/0.63.1/assets'
+
+const eventWithFrames = (filenames: (string | undefined)[]): ErrorEvent =>
+  ({ exception: { values: [{ stacktrace: { frames: filenames.map(filename => ({ filename })) } }] } }) as ErrorEvent
+
+// Session Replay reaching into the cross-origin newsletter iframe (SITES-2SN).
+describe('when the error was thrown inside the Sentry SDK', () => {
+  it('should recognize a stack that never leaves the sentry chunk', () => {
+    expect(isSentrySdkError(eventWithFrames([`${CDN}/vendor-sentry-ChAWWyE7.js`, `${CDN}/vendor-sentry-ChAWWyE7.js`]))).toBe(true)
+  })
+
+  it('should recognize it whatever the chunk hash is', () => {
+    expect(isSentrySdkError(eventWithFrames([`${CDN}/vendor-sentry-Dx5SXArC.js`]))).toBe(true)
+  })
+})
+
+describe('when our own code is on the stack', () => {
+  // The SDK wraps our event handlers, so its frames ride along on genuine errors.
+  it('should keep an error that mixes app frames with the sentry wrapper', () => {
+    expect(isSentrySdkError(eventWithFrames([`${CDN}/vendor-sentry-ChAWWyE7.js`, `${CDN}/index-BdxL.js`]))).toBe(false)
+  })
+
+  it('should keep an error with only app frames', () => {
+    expect(isSentrySdkError(eventWithFrames([`${CDN}/Layout-DZ4nLUQW.js`]))).toBe(false)
+  })
+
+  it('should keep an error whose frame has no filename', () => {
+    expect(isSentrySdkError(eventWithFrames([undefined]))).toBe(false)
+  })
+
+  it('should keep an error with no frames at all', () => {
+    expect(isSentrySdkError({ exception: { values: [{ value: 'boom' }] } } as ErrorEvent)).toBe(false)
+  })
+
+  it('should keep an event with no exception', () => {
+    expect(isSentrySdkError({} as ErrorEvent)).toBe(false)
+  })
+})
+
+// A chained exception must not sneak app frames past the check.
+describe('when the error is chained', () => {
+  it('should keep it when any linked exception carries an app frame', () => {
+    const event = {
+      exception: {
+        values: [
+          { stacktrace: { frames: [{ filename: `${CDN}/vendor-sentry-ChAWWyE7.js` }] } },
+          { stacktrace: { frames: [{ filename: `${CDN}/WhatsOn-BtIfzzhz.js` }] } }
+        ]
+      }
+    } as ErrorEvent
+
+    expect(isSentrySdkError(event)).toBe(false)
   })
 })

@@ -121,6 +121,31 @@ function isBlockedAnalyticsScriptError(event: ErrorEvent): boolean {
   return messages.some(message => typeof message === 'string' && BLOCKED_ANALYTICS_SCRIPT_REGEX.test(message))
 }
 
+// `beforeSend` runs in the browser, so a frame's filename is the emitted chunk URL,
+// not the `node_modules/@sentry-internal/replay` path the Sentry UI shows once it has
+// resolved source maps server-side. Matching the package path here would never fire,
+// which is exactly how the blocked-analytics filter silently broke twice (#739, #745).
+// `vite.config.ts` bundles every @sentry package into this single manual chunk.
+const SENTRY_CHUNK_REGEX = /\/vendor-sentry-[^/]*\.js/i
+
+/**
+ * True when every frame of the error belongs to the Sentry SDK itself.
+ *
+ * The SDK instruments the page, so it walks DOM the app never touches: Session Replay
+ * reaching into a cross-origin iframe to observe its shadow DOM throws
+ * `SecurityError: Blocked a frame with origin ...` on the newsletter embed
+ * (SITES-2SN). Nothing of ours is on the stack and nothing of ours can fix it.
+ *
+ * The check is "every frame", not "any frame": the SDK wraps our event handlers, so
+ * its wrapper shows up on plenty of genuine errors. Only a stack that never leaves
+ * the Sentry chunk is a throw that originated inside the SDK.
+ */
+function isSentrySdkError(event: ErrorEvent): boolean {
+  const frames = event.exception?.values?.flatMap(value => value.stacktrace?.frames ?? []) ?? []
+  if (frames.length === 0) return false
+  return frames.every(frame => typeof frame.filename === 'string' && SENTRY_CHUNK_REGEX.test(frame.filename))
+}
+
 // A realtime transport that rejects with its own DOM `error` event instead of an
 // Error. Sentry serializes the object into `extra.__serialized__`, so the target is
 // what identifies it — the report itself carries no message and no stack.
@@ -141,4 +166,11 @@ function isRawTransportRejection(event: ErrorEvent): boolean {
   return typeof target === 'string' && TRANSPORT_TARGET_REGEX.test(target)
 }
 
-export { isBlockedAnalyticsScriptError, isRawTransportRejection, redactBreadcrumbUrl, redactEventUrls, redactSensitiveUrl }
+export {
+  isBlockedAnalyticsScriptError,
+  isRawTransportRejection,
+  isSentrySdkError,
+  redactBreadcrumbUrl,
+  redactEventUrls,
+  redactSensitiveUrl
+}
