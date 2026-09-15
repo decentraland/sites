@@ -96,6 +96,15 @@ const LandingFooter = memo(() => {
   const [langOpen, setLangOpen] = useState(false)
   const langRef = useRef<HTMLDivElement>(null)
 
+  // The footer is shared by every route, but only the ones the worker serves with COEP
+  // (`/places*`, so the bevy-web frame can be cross-origin-isolated) block the beehiiv embed:
+  // it sends no COEP of its own, so the frame is refused with ERR_BLOCKED_BY_RESPONSE and the
+  // form renders as an empty box. `credentialless` is the opt-in that unblocks it, at the cost
+  // of an embed with no cookies, so we only pay that price where the frame would otherwise not
+  // load at all. `crossOriginIsolated` reflects the policy of the served document — the one the
+  // browser enforces — so a client-side navigation into /places does not change it.
+  const credentiallessEmbed = typeof window !== 'undefined' && window.crossOriginIsolated ? '' : undefined
+
   const currentLang = LANGUAGES.find(lang => lang.code === locale) || LANGUAGES[0]
 
   const trackFooter = useCallback(
@@ -137,6 +146,7 @@ const LandingFooter = memo(() => {
           <NewsletterSection>
             <NewsletterTitle>{l('component.landing.footer.newsletter.title')}</NewsletterTitle>
             <iframe
+              credentialless={credentiallessEmbed}
               src={BEEHIIV_EMBED_URL}
               data-test-id="beehiiv-embed"
               height="65"

@@ -98,22 +98,6 @@ function SceneRoomMount({ credentials, children }: { credentials: LiveKitCredent
 
 type WatcherTab = 'video' | 'scene'
 
-// `<iframe credentialless>` opts the bevy-web frame into credentialless
-// loading so it inherits our parent COEP: credentialless context and
-// becomes cross-origin-isolated. Without it, Chrome refuses COI and
-// bevy's worker postMessage of a SharedArrayBuffer throws DataCloneError.
-// React strips unknown camelCase + boolean-empty attributes on iframe in
-// some build paths, so we attach it via a ref after mount instead of
-// rendering it as JSX. Idempotent.
-function useCredentiallessIframeRef() {
-  const ref = useRef<HTMLIFrameElement | null>(null)
-  const setRef = useCallback((node: HTMLIFrameElement | null) => {
-    ref.current = node
-    if (node && !node.hasAttribute('credentialless')) node.setAttribute('credentialless', '')
-  }, [])
-  return setRef
-}
-
 // Shared fullscreen wiring for both watcher variants: syncs with the browser's
 // fullscreenchange (Esc / OS exit) and toggles on the video-area element.
 function useSceneFullscreen(videoAreaRef: React.MutableRefObject<HTMLDivElement | null>) {
@@ -214,13 +198,15 @@ function JumpInFloatCard({ onJumpIn }: { onJumpIn: () => void }) {
   )
 }
 
-// The bevy-web iframe with the credentialless ref + sandbox/permission set.
+// The bevy-web iframe with the credentialless opt-in + sandbox/permission set.
+// `credentialless` has to be part of the initial markup: the browser starts the
+// frame's navigation as soon as the element enters the document, so setting the
+// attribute afterwards (a ref callback) arrives too late to matter.
 function BevyIframe({ src, visible }: { src: string; visible: boolean }) {
   const t = useFormatMessage()
-  const ref = useCredentiallessIframeRef()
   return (
     <SceneIframe
-      ref={ref}
+      credentialless=""
       $visible={visible}
       src={src}
       title={t('discover.scene.tab_streaming')}
