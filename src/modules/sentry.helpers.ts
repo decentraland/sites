@@ -1,4 +1,4 @@
-import type { Breadcrumb, ErrorEvent } from '@sentry/browser'
+import type { Breadcrumb, ErrorEvent, StackFrame } from '@sentry/browser'
 
 const REDACTED = '[redacted]'
 
@@ -121,6 +121,56 @@ function isBlockedAnalyticsScriptError(event: ErrorEvent): boolean {
   return messages.some(message => typeof message === 'string' && BLOCKED_ANALYTICS_SCRIPT_REGEX.test(message))
 }
 
+// `beforeSend` runs in the browser, so a frame's filename is the emitted chunk URL,
+// not the `node_modules/@sentry-internal/replay` path the Sentry UI shows once it has
+// resolved source maps server-side. Matching the package path here would never fire,
+// which is exactly how the blocked-analytics filter silently broke twice (#739, #745).
+// `vite.config.ts` bundles every @sentry package into this single manual chunk.
+const SENTRY_CHUNK_REGEX = /\/vendor-sentry-[^/]*\.js/i
+
+/**
+ * True when every frame of the error belongs to the Sentry SDK itself.
+ *
+ * The SDK instruments the page, so it walks DOM the app never touches: Session Replay
+ * reaching into a cross-origin iframe to observe its shadow DOM throws
+ * `SecurityError: Blocked a frame with origin ...` on the newsletter embed
+ * (SITES-2SN). Nothing of ours is on the stack and nothing of ours can fix it.
+ *
+ * The check is "every frame", not "any frame": the SDK wraps our event handlers, so
+ * its wrapper shows up on plenty of genuine errors. Only a stack that never leaves
+ * the Sentry chunk is a throw that originated inside the SDK.
+ */
+function collectFrames(event: ErrorEvent): StackFrame[] {
+  return event.exception?.values?.flatMap(value => value.stacktrace?.frames ?? []) ?? []
+}
+
+function isSentrySdkError(event: ErrorEvent): boolean {
+  const frames = collectFrames(event)
+  if (frames.length === 0) return false
+  return frames.every(frame => typeof frame.filename === 'string' && SENTRY_CHUNK_REGEX.test(frame.filename))
+}
+
+/**
+ * True when no frame of the error points at a file.
+ *
+ * A script the browser evaluated rather than loaded leaves `<anonymous>` as the whole
+ * stack: an extension, or the shim a TV browser injects (SITES-2SQ came from a Tizen
+ * set, reporting `n.data.split is not a function` against code the page never
+ * shipped). There is no file and no line, so the report cannot be opened, let alone
+ * fixed. Everything we ship carries a chunk url.
+ *
+ * `<anonymous>` is what V8 writes. Firefox names evaluated code instead (`debugger
+ * eval code`, `<url> line 12 > eval`), so the same noise from Firefox still reports:
+ * those frames carry a filename and the empty-filename fallback never sees them.
+ * Deliberate. Adding markers for a browser that has not produced an event here yet
+ * would be guessing at the string, and a real one is cheap to add when it shows up.
+ */
+function isUnattributableError(event: ErrorEvent): boolean {
+  const frames = collectFrames(event)
+  if (frames.length === 0) return false
+  return frames.every(frame => !frame.filename || frame.filename === '<anonymous>')
+}
+
 // A realtime transport that rejects with its own DOM `error` event instead of an
 // Error. Sentry serializes the object into `extra.__serialized__`, so the target is
 // what identifies it — the report itself carries no message and no stack.
@@ -141,4 +191,12 @@ function isRawTransportRejection(event: ErrorEvent): boolean {
   return typeof target === 'string' && TRANSPORT_TARGET_REGEX.test(target)
 }
 
-export { isBlockedAnalyticsScriptError, isRawTransportRejection, redactBreadcrumbUrl, redactEventUrls, redactSensitiveUrl }
+export {
+  isBlockedAnalyticsScriptError,
+  isRawTransportRejection,
+  isSentrySdkError,
+  isUnattributableError,
+  redactBreadcrumbUrl,
+  redactEventUrls,
+  redactSensitiveUrl
+}
