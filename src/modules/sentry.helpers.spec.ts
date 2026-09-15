@@ -3,6 +3,7 @@ import {
   isBlockedAnalyticsScriptError,
   isRawTransportRejection,
   isSentrySdkError,
+  isUnattributableError,
   redactBreadcrumbUrl,
   redactEventUrls,
   redactSensitiveUrl
@@ -328,5 +329,33 @@ describe('when the error is chained', () => {
     } as ErrorEvent
 
     expect(isSentrySdkError(event)).toBe(false)
+  })
+})
+
+// A TV browser shim throwing against code the page never shipped (SITES-2SQ).
+describe('when no frame of the error points at a file', () => {
+  it('should recognize a stack that is only anonymous', () => {
+    expect(isUnattributableError(eventWithFrames(['<anonymous>']))).toBe(true)
+  })
+
+  it('should recognize frames with no filename at all', () => {
+    expect(isUnattributableError(eventWithFrames([undefined, undefined]))).toBe(true)
+  })
+
+  it('should keep an error that reaches one of our chunks', () => {
+    expect(isUnattributableError(eventWithFrames(['<anonymous>', `${CDN}/index-BdxL.js`]))).toBe(false)
+  })
+
+  it('should keep an error with no frames at all', () => {
+    expect(isUnattributableError({ exception: { values: [{ value: 'boom' }] } } as ErrorEvent)).toBe(false)
+  })
+
+  it('should keep an event with no exception', () => {
+    expect(isUnattributableError({} as ErrorEvent)).toBe(false)
+  })
+
+  // The document-hosted stacks stay reported: they at least name a url.
+  it('should keep an error whose frames point at the document', () => {
+    expect(isUnattributableError(eventWithFrames(['/item-editor']))).toBe(false)
   })
 })

@@ -4,6 +4,7 @@ import {
   isBlockedAnalyticsScriptError,
   isRawTransportRejection,
   isSentrySdkError,
+  isUnattributableError,
   redactBreadcrumbUrl,
   redactEventUrls
 } from './sentry.helpers'
@@ -115,6 +116,9 @@ if (dsn && !isLocalHost()) {
       // Thrown inside the SDK's own instrumentation, with no frame of ours on the
       // stack and nothing for us to fix (SITES-2SN).
       if (isSentrySdkError(event)) return null
+
+      // Evaluated code with no file behind it, so there is nothing to open (SITES-2SQ).
+      if (isUnattributableError(event)) return null
 
       const errorMessage = event.message ?? event.exception?.values?.[0]?.value ?? ''
       if (errorFilters.some(filter => filter.test(errorMessage))) return null

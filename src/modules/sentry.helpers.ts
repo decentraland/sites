@@ -1,4 +1,4 @@
-import type { Breadcrumb, ErrorEvent } from '@sentry/browser'
+import type { Breadcrumb, ErrorEvent, StackFrame } from '@sentry/browser'
 
 const REDACTED = '[redacted]'
 
@@ -140,10 +140,35 @@ const SENTRY_CHUNK_REGEX = /\/vendor-sentry-[^/]*\.js/i
  * its wrapper shows up on plenty of genuine errors. Only a stack that never leaves
  * the Sentry chunk is a throw that originated inside the SDK.
  */
+function collectFrames(event: ErrorEvent): StackFrame[] {
+  return event.exception?.values?.flatMap(value => value.stacktrace?.frames ?? []) ?? []
+}
+
 function isSentrySdkError(event: ErrorEvent): boolean {
-  const frames = event.exception?.values?.flatMap(value => value.stacktrace?.frames ?? []) ?? []
+  const frames = collectFrames(event)
   if (frames.length === 0) return false
   return frames.every(frame => typeof frame.filename === 'string' && SENTRY_CHUNK_REGEX.test(frame.filename))
+}
+
+/**
+ * True when no frame of the error points at a file.
+ *
+ * A script the browser evaluated rather than loaded leaves `<anonymous>` as the whole
+ * stack: an extension, or the shim a TV browser injects (SITES-2SQ came from a Tizen
+ * set, reporting `n.data.split is not a function` against code the page never
+ * shipped). There is no file and no line, so the report cannot be opened, let alone
+ * fixed. Everything we ship carries a chunk url.
+ *
+ * `<anonymous>` is what V8 writes. Firefox names evaluated code instead (`debugger
+ * eval code`, `<url> line 12 > eval`), so the same noise from Firefox still reports:
+ * those frames carry a filename and the empty-filename fallback never sees them.
+ * Deliberate. Adding markers for a browser that has not produced an event here yet
+ * would be guessing at the string, and a real one is cheap to add when it shows up.
+ */
+function isUnattributableError(event: ErrorEvent): boolean {
+  const frames = collectFrames(event)
+  if (frames.length === 0) return false
+  return frames.every(frame => !frame.filename || frame.filename === '<anonymous>')
 }
 
 // A realtime transport that rejects with its own DOM `error` event instead of an
@@ -170,6 +195,7 @@ export {
   isBlockedAnalyticsScriptError,
   isRawTransportRejection,
   isSentrySdkError,
+  isUnattributableError,
   redactBreadcrumbUrl,
   redactEventUrls,
   redactSensitiveUrl

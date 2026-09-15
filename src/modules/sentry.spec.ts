@@ -261,6 +261,37 @@ describe('when beforeSend inspects an event', () => {
     })
   })
 
+  // A TV browser shim throwing against code the page never shipped (SITES-2SQ).
+  describe('and the error has no file behind it', () => {
+    it('should drop the event', async () => {
+      const event = {
+        exception: {
+          values: [{ type: 'TypeError', value: 'n.data.split is not a function', stacktrace: { frames: [{ filename: '<anonymous>' }] } }]
+        }
+      } as ErrorEvent
+
+      expect(await send(event)).toBeNull()
+    })
+
+    it('should keep it once one of our chunks is on the stack', async () => {
+      const event = {
+        exception: {
+          values: [
+            {
+              type: 'TypeError',
+              value: 'n.data.split is not a function',
+              stacktrace: {
+                frames: [{ filename: '<anonymous>' }, { filename: 'https://cdn.decentraland.org/@dcl/sites/0.64.0/assets/index-a.js' }]
+              }
+            }
+          ]
+        }
+      } as ErrorEvent
+
+      expect(await send(event)).not.toBeNull()
+    })
+  })
+
   // The browser refused the QUIC handshake; livekit falls back to WebSocket (SITES-2SA).
   describe('and the realtime transport was refused', () => {
     it('should drop the event', async () => {
