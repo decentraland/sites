@@ -1,4 +1,5 @@
-import type { CardData, DeepLinkOptions } from './places.types'
+import { normalizeDclenv } from '../../config/dclenv'
+import type { CardData, DeepLinkOptions, DeepLinkParams } from './places.types'
 
 interface ParsedPosition {
   original: string
@@ -98,16 +99,61 @@ const REALM_REGEX = /^[a-zA-Z0-9._-]{1,64}$/
  * and anything that is not a coordinate pair is dropped; `realm` must match
  * `REALM_REGEX`.
  */
-function collectDeepLinkParams(source?: URLSearchParams): { position?: string; realm?: string } {
+function collectDeepLinkParams(source?: URLSearchParams): DeepLinkParams {
   const params = source ?? new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
-  const rawPosition = params.get('position')
-  const rawRealm = params.get('realm')
-  const parsedPosition = rawPosition ? parsePosition(rawPosition) : undefined
+  return sanitizeDeepLinkParams({ position: params.get('position') ?? undefined, realm: params.get('realm') ?? undefined })
+}
+
+// Validates the pair described above: `position` is re-emitted as `x,y` from the
+// parsed integers (so `10.20` or `10abc,20` never travel as-is) and `realm` must
+// match `REALM_REGEX`. Defaults and empty values are dropped by
+// `buildDeepLinkOptions`.
+function sanitizeDeepLinkParams(input: DeepLinkParams): DeepLinkParams {
+  const parsedPosition = input.position ? parsePosition(input.position) : undefined
   const { position, realm } = buildDeepLinkOptions({
     position: parsedPosition?.isValid ? parsedPosition.coordinates.join(',') : undefined,
-    realm: rawRealm && REALM_REGEX.test(rawRealm) ? rawRealm : undefined
+    realm: input.realm && REALM_REGEX.test(input.realm) ? input.realm : undefined
   })
   return { ...(position ? { position } : {}), ...(realm ? { realm } : {}) }
+}
+
+/**
+ * The mobile explorer's registered app-link entry point. `/open*` on this host is
+ * the only path declared in the app's AASA (iOS) and assetlinks.json (Android),
+ * so an installed app takes this navigation and teleports to the target; a device
+ * without it just loads the page, which shows the place and both store links.
+ *
+ * Our own `/jump/*` URLs are declared in the Android manifest too, but
+ * decentraland.org serves neither well-known file, and same-origin navigation
+ * never hands a link to the app anyway — hence the dedicated host.
+ */
+const MOBILE_APP_LINK_URL = 'https://mobile.dclexplorer.com/open'
+
+/**
+ * Builds the app link a touch device opens instead of the desktop deep link.
+ * `position`/`realm` go through the same validation as the download hop and
+ * `dclenv` travels so a jump from the zone site opens the zone explorer.
+ *
+ * `campaignParams` (utm_*, see `collectCampaignParams`) ride along because the
+ * store links on the landing page are untagged: forwarding them is what lets
+ * that page attribute an install the visitor starts from there.
+ */
+function buildMobileAppLink(input: DeepLinkOptions, campaignParams: Record<string, string> = {}): string {
+  const { position, realm } = sanitizeDeepLinkParams(input)
+  // `dclenv` reaches the explorer the same way `position`/`realm` do, so it is
+  // narrowed here too instead of trusting whichever call site assembled it.
+  const dclenv = normalizeDclenv(input.dclenv)
+  const params = new URLSearchParams()
+  if (position) params.set('position', position)
+  if (realm) params.set('realm', realm)
+  if (dclenv) params.set('dclenv', dclenv)
+  for (const [key, value] of Object.entries(campaignParams)) {
+    // Never let a campaign param overwrite the jump target, same guard as
+    // `buildDownloadSuccessHref`.
+    if (!params.has(key)) params.set(key, value)
+  }
+  const query = params.toString()
+  return query ? `${MOBILE_APP_LINK_URL}?${query}` : MOBILE_APP_LINK_URL
 }
 
 function formatLocation(coordinates: [number, number]): string {
@@ -118,6 +164,7 @@ export {
   DEFAULT_POSITION,
   DEFAULT_REALM,
   buildDeepLinkOptions,
+  buildMobileAppLink,
   collectDeepLinkParams,
   eventHasEnded,
   formatDateForGoogleCalendar,

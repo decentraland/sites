@@ -196,7 +196,7 @@ describe('DiscoverJumpInProvider', () => {
   })
 
   describe('when on a mobile device', () => {
-    it('should send the user to the app store and never launch or prompt', async () => {
+    it('should open the explorer app link at the place and never launch or prompt', async () => {
       mockedUserAgent.mockReturnValue([false, { mobile: true, os: { name: 'iOS' } }] as never)
       mockedDetectOS.mockReturnValue('ios')
       renderProvider()
@@ -205,12 +205,12 @@ describe('DiscoverJumpInProvider', () => {
         fireEvent.click(screen.getByText('jump'))
       })
 
-      expect(window.open).toHaveBeenCalledWith('https://appstore', '_self')
+      expect(window.open).toHaveBeenCalledWith('https://mobile.dclexplorer.com/open?position=-3%2C-2', '_self')
       expect(mockedLaunch).not.toHaveBeenCalled()
       expect(screen.queryByTestId('download-modal')).not.toBeInTheDocument()
     })
 
-    it('should send Android users to Google Play', async () => {
+    it('should open the same app link on Android', async () => {
       mockedUserAgent.mockReturnValue([false, { mobile: true, os: { name: 'Android' } }] as never)
       mockedDetectOS.mockReturnValue('android')
       renderProvider()
@@ -219,7 +219,7 @@ describe('DiscoverJumpInProvider', () => {
         fireEvent.click(screen.getByText('jump'))
       })
 
-      expect(window.open).toHaveBeenCalledWith('https://gplay', '_self')
+      expect(window.open).toHaveBeenCalledWith('https://mobile.dclexplorer.com/open?position=-3%2C-2', '_self')
     })
   })
 

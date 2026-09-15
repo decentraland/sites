@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
-import { detectDownloadOS } from '../../../modules/downloadConstants'
 import { buildTrackedDownloadUrl } from '../../../modules/url'
 import { JumpInButton } from './JumpInButton'
 
@@ -57,19 +56,6 @@ jest.mock('../../../modules/downloadConstants', () => ({
 jest.mock('../../../modules/segment', () => ({
   SegmentEvent: { GO_TO_EXPLORER: 'Go To Explorer', CLICK: 'Click' }
 }))
-jest.mock('../../../features/places/places.helpers', () => ({
-  DEFAULT_POSITION: '0,0',
-  DEFAULT_REALM: 'main',
-  // Mirrors the real helper's default-filtering so the hook's deep-link
-  // params stay empty on default position/realm (like production).
-  buildDeepLinkOptions: (input: { position?: string; realm?: string; dclenv?: string; sceneConsole?: string; multiInstance?: string }) => ({
-    ...(input.realm && input.realm !== 'main' ? { realm: input.realm } : {}),
-    ...(input.position && input.position !== '0,0' ? { position: input.position } : {}),
-    ...(input.dclenv ? { dclenv: input.dclenv } : {}),
-    ...(input.sceneConsole ? { sceneConsole: input.sceneConsole } : {}),
-    ...(input.multiInstance ? { multiInstance: input.multiInstance } : {})
-  })
-}))
 jest.mock('../../../modules/url', () => ({
   buildTrackedDownloadUrl: jest.fn()
 }))
@@ -80,7 +66,6 @@ const mockBuildTrackedDownloadUrl = jest.mocked(buildTrackedDownloadUrl)
 const mockUseSearchParams = jest.mocked(useSearchParams)
 const mockUseAdvancedUserAgentData = jest.mocked(useAdvancedUserAgentData)
 const mockUseAnalytics = jest.mocked(useAnalytics)
-const mockDetectDownloadOS = jest.mocked(detectDownloadOS)
 const mockLaunchDesktopApp = jest.mocked(launchDesktopApp)
 
 describe('JumpInButton', () => {
@@ -208,40 +193,19 @@ describe('JumpInButton', () => {
       windowOpenMock.mockReset()
     })
 
-    describe('and the device is iOS', () => {
-      beforeEach(() => {
-        mockDetectDownloadOS.mockReturnValue('ios')
-      })
-
-      it('should redirect to the Apple App Store', async () => {
-        render(<JumpInButton position="0,0" />)
-        await userEvent.click(screen.getByRole('button'))
-        expect(windowOpenMock).toHaveBeenCalledWith('https://apple', '_self')
-      })
+    it('should open the explorer app link carrying the jump target', async () => {
+      render(<JumpInButton position="75,-9" realm="sdk7testscenes.dcl.eth" />)
+      await userEvent.click(screen.getByRole('button'))
+      expect(windowOpenMock).toHaveBeenCalledWith(
+        'https://mobile.dclexplorer.com/open?position=75%2C-9&realm=sdk7testscenes.dcl.eth',
+        '_self'
+      )
     })
 
-    describe('and the device is Android', () => {
-      beforeEach(() => {
-        mockDetectDownloadOS.mockReturnValue('android')
-      })
-
-      it('should redirect to Google Play', async () => {
-        render(<JumpInButton position="0,0" />)
-        await userEvent.click(screen.getByRole('button'))
-        expect(windowOpenMock).toHaveBeenCalledWith('https://google', '_self')
-      })
-    })
-
-    describe('and the device reports a desktop OS (e.g. iPadOS desktop-mode)', () => {
-      beforeEach(() => {
-        mockDetectDownloadOS.mockReturnValue('apple')
-      })
-
-      it('should redirect to the Apple App Store by default', async () => {
-        render(<JumpInButton position="0,0" />)
-        await userEvent.click(screen.getByRole('button'))
-        expect(windowOpenMock).toHaveBeenCalledWith('https://apple', '_self')
-      })
+    it('should never try the desktop client, which no touch device can run', async () => {
+      render(<JumpInButton position="0,0" />)
+      await userEvent.click(screen.getByRole('button'))
+      expect(mockLaunchDesktopApp).not.toHaveBeenCalled()
     })
   })
 

@@ -2,6 +2,7 @@ import {
   DEFAULT_POSITION,
   DEFAULT_REALM,
   buildDeepLinkOptions,
+  buildMobileAppLink,
   collectDeepLinkParams,
   eventHasEnded,
   formatDateForGoogleCalendar,
@@ -215,6 +216,72 @@ describe('jump.helpers', () => {
 
       it('should read the params from the current URL', () => {
         expect(collectDeepLinkParams()).toEqual({ position: '1,2', realm: 'bar.eth' })
+      })
+    })
+  })
+
+  describe('when buildMobileAppLink is called', () => {
+    describe('and a custom position and realm are provided', () => {
+      it('should point at the explorer app-link host carrying both', () => {
+        expect(buildMobileAppLink({ position: '10,20', realm: 'cool.dcl.eth' })).toBe(
+          'https://mobile.dclexplorer.com/open?position=10%2C20&realm=cool.dcl.eth'
+        )
+      })
+    })
+
+    describe('and the values are the explorer defaults', () => {
+      it('should return the bare app link so the app opens its own jump panel', () => {
+        expect(buildMobileAppLink({ position: DEFAULT_POSITION, realm: DEFAULT_REALM })).toBe('https://mobile.dclexplorer.com/open')
+      })
+    })
+
+    describe('and no options are provided', () => {
+      it('should return the bare app link', () => {
+        expect(buildMobileAppLink({})).toBe('https://mobile.dclexplorer.com/open')
+      })
+    })
+
+    describe('and the position is in a non-canonical form', () => {
+      it('should re-emit it as "x,y"', () => {
+        expect(buildMobileAppLink({ position: '10.20' })).toBe('https://mobile.dclexplorer.com/open?position=10%2C20')
+      })
+    })
+
+    describe('and the position is not a coordinate pair', () => {
+      it('should drop it instead of forwarding the raw value', () => {
+        expect(buildMobileAppLink({ position: 'javascript:alert(1)' })).toBe('https://mobile.dclexplorer.com/open')
+      })
+    })
+
+    describe('and the realm carries characters outside the realm charset', () => {
+      it('should drop it', () => {
+        expect(buildMobileAppLink({ realm: 'evil realm/../x' })).toBe('https://mobile.dclexplorer.com/open')
+      })
+    })
+
+    describe('and campaign params are provided', () => {
+      it('should carry them so the landing page can attribute the install', () => {
+        expect(buildMobileAppLink({ position: '1,2' }, { utm_source: 'shefi', utm_medium: 'qr' })).toBe(
+          'https://mobile.dclexplorer.com/open?position=1%2C2&utm_source=shefi&utm_medium=qr'
+        )
+      })
+
+      it('should never let one overwrite the jump target', () => {
+        expect(buildMobileAppLink({ position: '1,2' }, { position: '99,99' })).toBe('https://mobile.dclexplorer.com/open?position=1%2C2')
+      })
+    })
+
+    describe('and an unknown dclenv is provided', () => {
+      it('should drop it instead of redirecting the app to an arbitrary environment', () => {
+        expect(buildMobileAppLink({ position: '1,2', dclenv: 'evil' })).toBe('https://mobile.dclexplorer.com/open?position=1%2C2')
+      })
+    })
+
+    describe('and a dclenv is provided', () => {
+      it('should forward it so the app opens the matching environment', () => {
+        expect(buildMobileAppLink({ position: '1,2', dclenv: 'zone' })).toBe(
+          'https://mobile.dclexplorer.com/open?position=1%2C2&dclenv=zone'
+        )
       })
     })
   })

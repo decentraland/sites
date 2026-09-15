@@ -217,14 +217,30 @@ describe('useLaunchExplorer', () => {
       ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
     })
 
-    it('should open the mobile store instead of launching the desktop app', async () => {
-      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
+    it('should open the explorer app link instead of launching the desktop app', async () => {
+      const { result } = renderHook(() => useLaunchExplorer({ position: '42,-5', realm: 'myworld.dcl.eth' }))
 
       await act(() => result.current.launchExplorer())
 
       expect(result.current.isMobile).toBe(true)
-      expect(windowOpenSpy).toHaveBeenCalledWith('https://app-store', '_self')
+      expect(windowOpenSpy).toHaveBeenCalledWith('https://mobile.dclexplorer.com/open?position=42%2C-5&realm=myworld.dcl.eth', '_self')
       expect(mockedLaunchDesktopApp).not.toHaveBeenCalled()
+    })
+
+    it('should report the app link as the tracked target', async () => {
+      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
+
+      await act(() => result.current.launchExplorer())
+
+      expect(track).toHaveBeenCalledWith(SegmentEvent.GO_TO_EXPLORER, expect.objectContaining({ target: 'mobile-app-link' }))
+    })
+
+    it('should not open the download modal, which is not rendered on mobile', async () => {
+      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
+
+      await act(() => result.current.launchExplorer())
+
+      expect(result.current.isDownloadModalOpen).toBe(false)
     })
   })
 })
