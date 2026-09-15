@@ -158,6 +158,12 @@ function isSentrySdkError(event: ErrorEvent): boolean {
  * set, reporting `n.data.split is not a function` against code the page never
  * shipped). There is no file and no line, so the report cannot be opened, let alone
  * fixed. Everything we ship carries a chunk url.
+ *
+ * `<anonymous>` is what V8 writes. Firefox names evaluated code instead (`debugger
+ * eval code`, `<url> line 12 > eval`), so the same noise from Firefox still reports:
+ * those frames carry a filename and the empty-filename fallback never sees them.
+ * Deliberate. Adding markers for a browser that has not produced an event here yet
+ * would be guessing at the string, and a real one is cheap to add when it shows up.
  */
 function isUnattributableError(event: ErrorEvent): boolean {
   const frames = collectFrames(event)
