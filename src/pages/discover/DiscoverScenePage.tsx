@@ -21,7 +21,6 @@ import type { DiscoverPlace } from '../../features/discover'
 import { fetchWorldScenes } from '../../features/discover/sceneAdapter'
 import type { WorldSceneSummary } from '../../features/discover/sceneAdapter'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
-import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { usePlaceCreator } from '../../hooks/usePlaceCreator'
 import { useSceneRoom } from '../../hooks/useSceneRoom'
@@ -218,12 +217,10 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
 
   // Only open the LiveKit room when there are players AND we're on a device
   // that renders the watcher — the empty state and mobile never mount it.
-  const { identity } = useAuthIdentity()
   const room = useSceneRoom({
     location: !isMobile && livePlayers > 0 ? watcherTarget?.location ?? '' : '',
     parcel: watcherTarget?.parcel,
-    sceneId: watcherTarget?.sceneId,
-    identity
+    sceneId: watcherTarget?.sceneId
   })
 
   const streamingHref = useMemo(() => (watcherTarget ? buildBevyHref(watcherTarget.location) : null), [watcherTarget])

@@ -10,7 +10,7 @@ The `/places` explore section (heavy `DappsShell` tier). Routes: `/places` (Live
 | `src/features/discover/discover.types.ts`   | Row + args types. `DiscoverOrderBy` mirrors the API enum (`most_active`, `like_score`, `created_at`, `updated_at`) — there is NO server-side alphabetical ordering.                                                   |
 | `src/features/discover/discover.helpers.ts` | `isHiddenPlace` (junk filter), `placeCoverImage`, `buildDetailPath`, `buildJumpInHref`, `discoverPlacePayload` (Segment), categories.                                                                                 |
 | `src/features/discover/sceneAdapter.ts`     | Scene detail plumbing: catalyst entity resolution, gatekeeper `/get-scene-adapter` + cast watcher-token (signed fetch), `fetchWorldScenes` (returns `null` on transient failure vs `[]` for a genuinely empty world). |
-| `src/features/discover/guestIdentity.ts`    | Tab-lifetime guest auth chain for read-only room joins.                                                                                                                                                               |
+| `src/features/discover/guestIdentity.ts`    | Tab-lifetime guest auth chain for read-only room joins. **Always** the signer for `/get-scene-adapter`, even when logged in — see below.                                                                              |
 
 ### Endpoint quirks (places-api, verified against docs/openapi.yaml)
 
@@ -24,6 +24,10 @@ The `/places` explore section (heavy `DappsShell` tier). Routes: `/places` (Live
 - `src/pages/discover/DiscoverScenePage.tsx` — live-presence-gated detail. Desktop live → bevy iframe (`BEVY_WEB_URL` + `systemScene=tortilla.dcl.eth&portables=none&guest=1&hud=0`) + always-visible read-only chat; empty/mobile → JUMP IN modal/full page.
 - `src/components/discover/` — cards (`PlaceCard`, `FeaturedCard`, `LiveEventCard`, `CommunityCard`, all `memo()`d, covers via `safeCssUrl`), `SceneLiveWatcher` (viewer card + chat dock), `SceneJumpInModal`, `_shared/` (tokens: `SCENE_PANEL_GRADIENT`, `FEATURED_GRADIENT`, `HOVER_GLOW`, error/retry styled).
 - Owner by-lines resolve the owner's profile name first (batched `POST /lambdas/profiles` in `features/profile/profile.client.ts`), falling back to scene metadata.
+
+### Watcher identity invariant
+
+`/get-scene-adapter` is signed with the ephemeral guest identity and never with the visitor's wallet. The gatekeeper derives the LiveKit participant identity from the signer, and LiveKit evicts the older participant when two connections share one identity, so signing as the real wallet kicks that same user out of the scene in the Explorer (`DisconnectReason.DUPLICATE_IDENTITY`). The watcher chat is read-only, so it gains nothing from the real address. Making it writable requires a distinct participant identity issued by the gatekeeper, not the wallet.
 
 ## Observability
 
