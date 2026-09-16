@@ -10,7 +10,7 @@ interface ParsedPosition {
 const DEFAULT_POSITION = '0,0'
 const DEFAULT_REALM = 'main'
 
-const POSITION_SEPARATORS = /[,.]/g
+const POSITION_SEPARATORS = /[,.]/
 
 // Accepts "x,y" and "x.y" equivalently. The dot form is treated as a
 // separator, not a decimal: "10.20" resolves to (10, 20) — same as "10,20".
