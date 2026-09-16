@@ -118,42 +118,29 @@ function sanitizeDeepLinkParams(input: DeepLinkParams): DeepLinkParams {
 }
 
 /**
- * The mobile explorer's registered app-link entry point. `/open*` on this host is
- * the only path declared in the app's AASA (iOS) and assetlinks.json (Android),
- * so an installed app takes this navigation and teleports to the target; a device
- * without it just loads the page, which shows the place and both store links.
- *
- * Our own `/jump/*` URLs are declared in the Android manifest too, but
- * decentraland.org serves neither well-known file, and same-origin navigation
- * never hands a link to the app anyway — hence the dedicated host.
+ * Route the mobile explorer answers on the `decentraland://` scheme. A bare
+ * `decentraland://?x` has no route, so the path is explicit: `/open` teleports
+ * when a position or realm travels with it, and opens the app's jump panel when
+ * nothing does.
  */
-const MOBILE_APP_LINK_URL = 'https://mobile.dclexplorer.com/open'
+const MOBILE_DEEP_LINK_URL = 'decentraland://open'
 
 /**
- * Builds the app link a touch device opens instead of the desktop deep link.
- * `position`/`realm` go through the same validation as the download hop and
- * `dclenv` travels so a jump from the zone site opens the zone explorer.
- *
- * `campaignParams` (utm_*, see `collectCampaignParams`) ride along because the
- * store links on the landing page are untagged: forwarding them is what lets
- * that page attribute an install the visitor starts from there.
+ * Builds the deep link a touch device fires instead of the desktop one.
+ * `position`/`realm` go through the same validation as the download hop, and
+ * `dclenv` is narrowed here too instead of trusting whichever call site
+ * assembled it, so a jump from the zone site opens the zone explorer and
+ * nothing else can redirect which environment the app boots.
  */
-function buildMobileAppLink(input: DeepLinkOptions, campaignParams: Record<string, string> = {}): string {
+function buildMobileDeepLink(input: DeepLinkOptions): string {
   const { position, realm } = sanitizeDeepLinkParams(input)
-  // `dclenv` reaches the explorer the same way `position`/`realm` do, so it is
-  // narrowed here too instead of trusting whichever call site assembled it.
   const dclenv = normalizeDclenv(input.dclenv)
   const params = new URLSearchParams()
   if (position) params.set('position', position)
   if (realm) params.set('realm', realm)
   if (dclenv) params.set('dclenv', dclenv)
-  for (const [key, value] of Object.entries(campaignParams)) {
-    // Never let a campaign param overwrite the jump target, same guard as
-    // `buildDownloadSuccessHref`.
-    if (!params.has(key)) params.set(key, value)
-  }
   const query = params.toString()
-  return query ? `${MOBILE_APP_LINK_URL}?${query}` : MOBILE_APP_LINK_URL
+  return query ? `${MOBILE_DEEP_LINK_URL}?${query}` : MOBILE_DEEP_LINK_URL
 }
 
 function formatLocation(coordinates: [number, number]): string {
@@ -164,7 +151,7 @@ export {
   DEFAULT_POSITION,
   DEFAULT_REALM,
   buildDeepLinkOptions,
-  buildMobileAppLink,
+  buildMobileDeepLink,
   collectDeepLinkParams,
   eventHasEnded,
   formatDateForGoogleCalendar,

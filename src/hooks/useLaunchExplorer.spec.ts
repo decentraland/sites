@@ -6,6 +6,7 @@ import { getEnv } from '../config/env'
 import { collectCampaignParams } from '../modules/campaignParams'
 import { detectDownloadOS } from '../modules/downloadConstants'
 import { SegmentEvent } from '../modules/segment.types'
+import { launchMobileApp } from '../utils/mobileAppLaunch'
 import { useAnonUserId } from './useAnonUserId'
 import { useLaunchExplorer } from './useLaunchExplorer'
 import { useTotalDownloads } from './useTotalDownloads'
@@ -24,6 +25,7 @@ jest.mock('decentraland-ui2', () => ({
 jest.mock('./useAnonUserId', () => ({ ANON_USER_ID_PARAM: 'anon_user_id', useAnonUserId: jest.fn() }))
 jest.mock('./useTotalDownloads', () => ({ useTotalDownloads: jest.fn(() => '+400K') }))
 jest.mock('../config/env', () => ({ getEnv: jest.fn() }))
+jest.mock('../utils/mobileAppLaunch', () => ({ launchMobileApp: jest.fn() }))
 jest.mock('../modules/campaignParams', () => ({ collectCampaignParams: jest.fn(() => ({})) }))
 jest.mock('../modules/url', () => ({
   // Mirror the real helper: resolve relative bases against the origin, append
@@ -60,6 +62,7 @@ const mockedUseAnonUserId = useAnonUserId as jest.MockedFunction<typeof useAnonU
 const mockedUseTotalDownloads = useTotalDownloads as jest.MockedFunction<typeof useTotalDownloads>
 const mockedGetEnv = getEnv as jest.MockedFunction<typeof getEnv>
 const mockedCollectCampaignParams = collectCampaignParams as jest.MockedFunction<typeof collectCampaignParams>
+const mockedLaunchMobileApp = launchMobileApp as jest.MockedFunction<typeof launchMobileApp>
 
 describe('useLaunchExplorer', () => {
   let track: jest.Mock
@@ -79,6 +82,7 @@ describe('useLaunchExplorer', () => {
     mockedUseTotalDownloads.mockReturnValue('+400K')
     mockedGetEnv.mockReturnValue(undefined)
     mockedCollectCampaignParams.mockReturnValue({})
+    mockedLaunchMobileApp.mockResolvedValue(true)
   })
 
   afterEach(() => {
@@ -217,22 +221,34 @@ describe('useLaunchExplorer', () => {
       ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
     })
 
-    it('should open the explorer app link instead of launching the desktop app', async () => {
+    it('should fire the protocol deep link carrying the jump target, not the desktop app', async () => {
       const { result } = renderHook(() => useLaunchExplorer({ position: '42,-5', realm: 'myworld.dcl.eth' }))
 
       await act(() => result.current.launchExplorer())
 
       expect(result.current.isMobile).toBe(true)
-      expect(windowOpenSpy).toHaveBeenCalledWith('https://mobile.dclexplorer.com/open?position=42%2C-5&realm=myworld.dcl.eth', '_self')
+      expect(mockedLaunchMobileApp).toHaveBeenCalledWith(
+        expect.objectContaining({ deepLink: 'decentraland://open?position=42%2C-5&realm=myworld.dcl.eth' })
+      )
+      expect(windowOpenSpy).not.toHaveBeenCalled()
       expect(mockedLaunchDesktopApp).not.toHaveBeenCalled()
     })
 
-    it('should report the app link as the tracked target', async () => {
+    it('should fall back to the tagged store url when the protocol does not take', async () => {
+      mockedLaunchMobileApp.mockResolvedValue(false)
       const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
 
       await act(() => result.current.launchExplorer())
 
-      expect(track).toHaveBeenCalledWith(SegmentEvent.GO_TO_EXPLORER, expect.objectContaining({ target: 'mobile-app-link' }))
+      expect(windowOpenSpy).toHaveBeenCalledWith('https://app-store', '_self')
+    })
+
+    it('should report the app as the tracked target', async () => {
+      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
+
+      await act(() => result.current.launchExplorer())
+
+      expect(track).toHaveBeenCalledWith(SegmentEvent.GO_TO_EXPLORER, expect.objectContaining({ target: 'mobile-app' }))
     })
 
     it('should not open the download modal, which is not rendered on mobile', async () => {

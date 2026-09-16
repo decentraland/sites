@@ -2,7 +2,9 @@ import { useSearchParams } from 'react-router-dom'
 import { act, renderHook } from '@testing-library/react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
-import { buildMobileAppLink } from '../features/places/places.helpers'
+import { buildMobileDeepLink } from '../features/places/places.helpers'
+import { detectDownloadOS } from '../modules/downloadConstants'
+import { launchMobileApp } from '../utils/mobileAppLaunch'
 import { isClientNotInstalled, shouldPromptDownload, useExplorerLauncher } from './useExplorerLauncher'
 
 jest.mock('react-router-dom', () => ({ useSearchParams: jest.fn() }))
@@ -16,13 +18,20 @@ jest.mock('../features/places/places.helpers', () => ({
     ...(input.sceneConsole ? { sceneConsole: input.sceneConsole } : {}),
     ...(input.multiInstance ? { multiInstance: input.multiInstance } : {})
   }),
-  buildMobileAppLink: jest.fn()
+  buildMobileDeepLink: jest.fn()
 }))
+jest.mock('../modules/downloadConstants', () => ({
+  DOWNLOAD_URLS: { googlePlay: 'https://gplay', appStore: 'https://appstore' },
+  detectDownloadOS: jest.fn(() => 'apple')
+}))
+jest.mock('../utils/mobileAppLaunch', () => ({ launchMobileApp: jest.fn() }))
 
 const mockedSearchParams = useSearchParams as jest.MockedFunction<typeof useSearchParams>
 const mockedUserAgent = useAdvancedUserAgentData as jest.MockedFunction<typeof useAdvancedUserAgentData>
 const mockedLaunch = launchDesktopApp as jest.MockedFunction<typeof launchDesktopApp>
-const mockedBuildMobileAppLink = buildMobileAppLink as jest.MockedFunction<typeof buildMobileAppLink>
+const mockedBuildMobileDeepLink = buildMobileDeepLink as jest.MockedFunction<typeof buildMobileDeepLink>
+const mockedDetectOS = detectDownloadOS as jest.MockedFunction<typeof detectDownloadOS>
+const mockedLaunchMobileApp = launchMobileApp as jest.MockedFunction<typeof launchMobileApp>
 
 describe('useExplorerLauncher', () => {
   let originalOpen: typeof window.open
@@ -30,7 +39,9 @@ describe('useExplorerLauncher', () => {
   beforeEach(() => {
     mockedSearchParams.mockReturnValue([new URLSearchParams(''), jest.fn()])
     mockedUserAgent.mockReturnValue([false, { mobile: false, os: { name: 'macOS' }, cpu: { architecture: 'arm64' } }] as never)
-    mockedBuildMobileAppLink.mockReturnValue('https://app-link/open?position=1%2C2')
+    mockedBuildMobileDeepLink.mockReturnValue('decentraland://open?position=1%2C2')
+    mockedDetectOS.mockReturnValue('apple')
+    mockedLaunchMobileApp.mockResolvedValue(true)
     originalOpen = window.open
     window.open = jest.fn()
   })
@@ -131,9 +142,10 @@ describe('useExplorerLauncher', () => {
   describe('on mobile', () => {
     beforeEach(() => {
       mockedUserAgent.mockReturnValue([false, { mobile: true }] as never)
+      mockedDetectOS.mockReturnValue('ios')
     })
 
-    it('should open the explorer app link with the jump target and never launch the desktop client', async () => {
+    it('should fire the protocol deep link with the jump target and never launch the desktop client', async () => {
       const { result } = renderHook(() => useExplorerLauncher())
 
       let outcome: string | undefined
@@ -141,13 +153,44 @@ describe('useExplorerLauncher', () => {
         outcome = await result.current.launch({ position: '1,2', realm: 'myworld.dcl.eth' })
       })
 
-      expect(outcome).toBe('mobile-app-link')
-      expect(mockedBuildMobileAppLink).toHaveBeenCalledWith({ position: '1,2', realm: 'myworld.dcl.eth', dclenv: undefined }, {})
-      expect(window.open).toHaveBeenCalledWith('https://app-link/open?position=1%2C2', '_self')
+      expect(outcome).toBe('mobile-launched')
+      expect(mockedBuildMobileDeepLink).toHaveBeenCalledWith({ position: '1,2', realm: 'myworld.dcl.eth', dclenv: undefined })
+      expect(mockedLaunchMobileApp).toHaveBeenCalledWith({
+        deepLink: 'decentraland://open?position=1%2C2',
+        storeUrl: 'https://appstore',
+        isAndroid: false
+      })
+      expect(window.open).not.toHaveBeenCalled()
       expect(mockedLaunch).not.toHaveBeenCalled()
     })
 
-    it('should thread the ?env deep-link param into the app link', async () => {
+    it('should send an android device to google play when the protocol does not take', async () => {
+      mockedDetectOS.mockReturnValue('android')
+      mockedLaunchMobileApp.mockResolvedValue(false)
+      const { result } = renderHook(() => useExplorerLauncher())
+
+      let outcome: string | undefined
+      await act(async () => {
+        outcome = await result.current.launch({ position: '1,2' })
+      })
+
+      expect(outcome).toBe('mobile-store')
+      expect(mockedLaunchMobileApp).toHaveBeenCalledWith(expect.objectContaining({ storeUrl: 'https://gplay', isAndroid: true }))
+      expect(window.open).toHaveBeenCalledWith('https://gplay', '_self')
+    })
+
+    it('should send an ios device to the app store when the protocol does not take', async () => {
+      mockedLaunchMobileApp.mockResolvedValue(false)
+      const { result } = renderHook(() => useExplorerLauncher())
+
+      await act(async () => {
+        await result.current.launch({ position: '1,2' })
+      })
+
+      expect(window.open).toHaveBeenCalledWith('https://appstore', '_self')
+    })
+
+    it('should thread the ?env deep-link param into the protocol url', async () => {
       mockedSearchParams.mockReturnValue([new URLSearchParams('env=dev'), jest.fn()])
       const { result } = renderHook(() => useExplorerLauncher())
 
@@ -155,7 +198,7 @@ describe('useExplorerLauncher', () => {
         await result.current.launch({ position: '1,2' })
       })
 
-      expect(mockedBuildMobileAppLink).toHaveBeenCalledWith({ position: '1,2', realm: undefined, dclenv: 'zone' }, {})
+      expect(mockedBuildMobileDeepLink).toHaveBeenCalledWith({ position: '1,2', realm: undefined, dclenv: 'zone' })
     })
   })
 
@@ -171,7 +214,8 @@ describe('shouldPromptDownload', () => {
     expect(shouldPromptDownload('not-installed')).toBe(true)
     expect(shouldPromptDownload('launch-error')).toBe(true)
     expect(shouldPromptDownload('launched')).toBe(false)
-    expect(shouldPromptDownload('mobile-app-link')).toBe(false)
+    expect(shouldPromptDownload('mobile-launched')).toBe(false)
+    expect(shouldPromptDownload('mobile-store')).toBe(false)
   })
 })
 
@@ -180,6 +224,7 @@ describe('isClientNotInstalled', () => {
     expect(isClientNotInstalled('not-installed')).toBe(true)
     expect(isClientNotInstalled('launch-error')).toBe(false)
     expect(isClientNotInstalled('launched')).toBe(false)
-    expect(isClientNotInstalled('mobile-app-link')).toBe(false)
+    expect(isClientNotInstalled('mobile-launched')).toBe(false)
+    expect(isClientNotInstalled('mobile-store')).toBe(false)
   })
 })
