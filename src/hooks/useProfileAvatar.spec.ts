@@ -238,4 +238,31 @@ describe('when useProfileAvatar is called', () => {
       })
     })
   })
+
+  describe('and the profile query is still in flight', () => {
+    let rendered: RenderedHook
+
+    beforeEach(() => {
+      mockUseGetProfileQuery.mockReturnValue({ data: null, isLoading: true })
+      rendered = renderHook(() => useProfileAvatar('0xdelta')) as RenderedHook
+    })
+
+    it('should report loading so callers can hold the slot instead of guessing', () => {
+      expect(rendered.result.current.isLoading).toBe(true)
+    })
+  })
+
+  describe('and the profile query settled without a profile', () => {
+    let rendered: RenderedHook
+
+    beforeEach(() => {
+      mockUseGetProfileQuery.mockReturnValue({ data: null, isLoading: false })
+      rendered = renderHook(() => useProfileAvatar('0xecho')) as RenderedHook
+    })
+
+    it('should stop reporting loading even though there is no name to show', () => {
+      expect(rendered.result.current.isLoading).toBe(false)
+      expect(rendered.result.current.name).toBeUndefined()
+    })
+  })
 })

@@ -168,6 +168,9 @@
         "view_all": "View All"
       }
     },
+    "events": {
+      "page_title": "Events — Decentraland"
+    },
     "cast": {
       "app": {
         "title": "Decentraland Cast 2.0",
@@ -254,13 +257,16 @@
         "messages_count": "{count} message",
         "messages_count_plural": "{count} messages",
         "no_messages": "No messages yet. {action}",
-        "no_messages_yet": "No messages yet",
+        "no_messages_yet": "No messages yet.",
         "start_conversation": "Start the conversation!",
         "sign_in_to_participate": "Sign in to participate.",
         "type_message": "Type a message...",
         "sign_in_prompt": "Sign in to send messages in chat",
         "connect_wallet_prompt": "Connect your Decentraland wallet to send messages",
-        "footer_text": "Jump into {sceneName} in Decentraland to participate in the chat."
+        "footer_text": "Jump into {sceneName} in Decentraland to participate in the chat.",
+        "footer_jump_prefix": "Jump into",
+        "footer_jump_suffix": "in Decentraland to participate in the chat.",
+        "unavailable": "Chat is unavailable right now."
       },
       "people": {
         "title": "Participants",
@@ -396,6 +402,27 @@
       "title": "Report a player – Decentraland",
       "success_title": "Report submitted – Decentraland"
     },
+    "confirm_email": {
+      "title": "Confirm Your Email – Decentraland",
+      "logo_alt": "Decentraland",
+      "heading": "Confirm Your Email",
+      "heading_confirmed": "Email Confirmed!",
+      "description_account": "Complete the security challenge below and click \"Confirm Email\" to activate your account notifications.",
+      "description_credits": "Complete the security challenge below and click \"Confirm Email\" to start earning Marketplace Credits!",
+      "confirmed_account": "You're ready to go. Jump back over to the Decentraland app and start using your account!",
+      "confirmed_credits": "You're ready to go. Jump back over to the Decentraland app and start earning Marketplace Credits!",
+      "confirm_button": "Confirm Email",
+      "confirming_button": "Confirming...",
+      "go_to_marketplace": "Go to Marketplace",
+      "go_to_account": "Go back to Account",
+      "error_generic": "We couldn't confirm your email. Please try again or request a new confirmation link.",
+      "invalid_link_title": "Invalid Link",
+      "invalid_link_description": "This confirmation link is invalid or expired.",
+      "invalid_source_title": "Invalid Source",
+      "invalid_source_description": "Invalid confirmation source. Please check your email link.",
+      "missing_address_title": "Missing Address",
+      "missing_address_description": "Address parameter is required in the URL. Please check your email link."
+    },
     "play": {
       "title": "The Web Version Is No Longer Available.",
       "subtitle": "Continue Playing on Desktop or Mobile App.",
@@ -404,12 +431,19 @@
       "jump_in": "JUMP IN!",
       "experimental": "Want to keep playing on web? Try the experimental version {here}",
       "here": "HERE"
+    },
+    "not_found": {
+      "title_oops": "Oops!",
+      "title_rest": "This page has left the world.",
+      "description": "The link may be outdated, but Decentraland is still live. Find community events, DJ sets, creator-built games, and new experiences happening in-world.",
+      "cta": "See Events"
     }
   },
   "page_invite": {
     "social": {
       "title": "Join Decentraland - A Virtual World Built by Its Community",
-      "description": "Customize your avatar, hang out with people around the world, and discover Decentraland. Start from your browser, then download the app to enter."
+      "description": "Decentraland is where you hang out online. Join movie screenings, live music, trivia, and other community events. Show up anytime and see who's around.",
+      "title_with_name": "{name} invited you to join Decentraland"
     },
     "hero": {
       "title": "invited you to join Decentraland",
@@ -524,7 +558,7 @@
         "menu": "Menu",
         "getting_started": {
           "title": "Getting Started",
-          "what_is": "What is Decentraland?",
+          "what_is": "About Decentraland",
           "download": "Download Decentraland",
           "system_requirements": "System Requirements",
           "faqs": "FAQs",
@@ -610,17 +644,13 @@
         },
         "support_updates_section": {
           "title": "Support Updates",
-          "item_count": "5",
-          "item_0_question": "Explorer Release - v0.141.0 (22/4/2026)",
-          "item_0_answer": "Client:\n\nFeatures:\n- Disable \"switch account\" button for new users\n- Extend AVPro to support YouTube and public Google Drive videos (v2)\n- Lens flare for sun and moon\n\nFixes:\n- Enable only the current scene stream setting\n- Error when removing members from a community\n- Multiple LSD and asset load issues\n- Overlapping login screen on new account\n- Remove the mic button when outgoing call\n\nFor more details, please check the PR.",
-          "item_1_question": "New Creator Hub (v0.35.0) Release",
-          "item_1_answer": "Features:\n- Spawn Areas: You can now see a visual representation of spawn areas directly in the scene editor, and adjust spawn areas visually, including random offset ranges.\n- Dynamic Asset Catalog with SDK Compatibility: The asset catalog now loads the latest version from the CDN at runtime, so new assets appear automatically without waiting for a full app update.\n- World Access Permissions: The \"Access\" tab is now available in Worlds settings, letting you manage who can enter your world directly from the Creator Hub.\n\nFixes:\n- Scene Layout in Advanced Mode: The scene layout now updates correctly when editing in advanced mode.\n- Duplicated Ground in Scenes: Opening a scene no longer renders a duplicated ground plane.\n- Fetch Managed Projects: Fixed a failure when loading managed projects.\n- Windows Code Signing: The Windows build pipeline now properly fails on code-signing errors instead of silently producing unsigned executables.\n- Removed Legacy Dependency: Replaced the deprecated decentraland-connect library with a lighter vendored implementation using viem, reducing bundle size.\n\nImprovements:\n- UI Polish: Updated colors, component styles, transform alignment, entity inspector header, entity renaming, and asset tab styling for a better editing experience.\n- Collaborators Tab Copy: Updated the text in the collaborators tab with clearer guidance.",
-          "item_2_question": "Attention Creators: Backface Culling Updates",
-          "item_2_answer": "Backface Culling is now set to On on the engine by default on all model materials.\n\nWhy: Significant Performance Optimization.\nHow: Because it is an engine optimization, it also affects materials that are already published.\n\nAction Points:\nWe encourage you to check your scenes following the Troubleshooting section in the documentation.\n\nSome scenarios worth checking first:\n- Flags, curtains, walls made of Planes: If a wall made of a plane with a single-sided material, it won't be seen from the other side.\n- Grass / Leaves of a tree made of Planes with single-sided materials: Same case as above.\n- Interior of Cubes and other shapes that act as rooms: If the cube material is facing out, it won't be seen from the inside.",
-          "item_3_question": "Visual Studio Extension - Support Ending",
-          "item_3_answer": "With the focus on the Creator Hub, the Visual Studio Extension is no longer supported.\n\nThe Extension has been removed from the VS Marketplace.",
-          "item_4_question": "Player.logs - How to get them",
-          "item_4_answer": "Below is a guide on how to find and generate the Player.log file. These files can be helpful when it comes to troubleshooting issues reported.\n\nOpen the chat in the Decentraland Desktop app and type: /logs\n\nOr:\n\nFor Windows:\nNavigate to: C:\\Users\\{YourUserName}\\AppData\\LocalLow\\Decentraland\\Explorer\nFind the file named Player.log\n\nFor Mac:\nOpen Finder and press Cmd + Shift + G to open the \"Go to Folder\" dialog.\nEnter the path: /Users/UserName/Library/Logs/Decentraland/Explorer/\nFind the file named Player.log\n\nPlayer.log file would show issues with the current/active session.\nPlayer-prev.log file would show issues with the previous session.\n\nLauncher Logs (output.log):\nWindows: C:\\Users\\username\\AppData\\Roaming\\DecentralandLauncherLight\nMac: /Users/UserName/Library/Logs/DecentralandLauncherLight"
+          "item_count": "3",
+          "item_0_question": "Attention Creators: Backface Culling Updates",
+          "item_0_answer": "Backface Culling is now set to On on the engine by default on all model materials.\n\nWhy: Significant Performance Optimization.\nHow: Because it is an engine optimization, it also affects materials that are already published.\n\nAction Points:\nWe encourage you to check your scenes following the Troubleshooting section in the documentation.\n\nSome scenarios worth checking first:\n- Flags, curtains, walls made of Planes: If a wall made of a plane with a single-sided material, it won't be seen from the other side.\n- Grass / Leaves of a tree made of Planes with single-sided materials: Same case as above.\n- Interior of Cubes and other shapes that act as rooms: If the cube material is facing out, it won't be seen from the inside.",
+          "item_1_question": "Visual Studio Extension - Support Ending",
+          "item_1_answer": "With the focus on the Creator Hub, the Visual Studio Extension is no longer supported.\n\nThe Extension has been removed from the VS Marketplace.",
+          "item_2_question": "Player.logs - How to get them",
+          "item_2_answer": "Below is a guide on how to find and generate the Player.log file. These files can be helpful when it comes to troubleshooting issues reported.\n\nOpen the chat in the Decentraland Desktop app and type: /logs\n\nOr:\n\nFor Windows:\nNavigate to: C:\\Users\\{YourUserName}\\AppData\\LocalLow\\Decentraland\\Explorer\nFind the file named Player.log\n\nFor Mac:\nOpen Finder and press Cmd + Shift + G to open the \"Go to Folder\" dialog.\nEnter the path: /Users/UserName/Library/Logs/Decentraland/Explorer/\nFind the file named Player.log\n\nPlayer.log file would show issues with the current/active session.\nPlayer-prev.log file would show issues with the previous session.\n\nLauncher Logs (output.log):\nWindows: C:\\Users\\username\\AppData\\Roaming\\DecentralandLauncherLight\nMac: /Users/UserName/Library/Logs/DecentralandLauncherLight"
         },
         "dropdown": {
           "title": "System Status",
@@ -655,10 +685,12 @@
         "download": "Download"
       },
       "navbar": {
-        "whats_on": "What's On",
         "shop": "Shop",
         "create": "Create",
         "learn": "Learn",
+        "discover": "Discover",
+        "events": "Events",
+        "places": "Places",
         "jump_in": "Jump In",
         "sign_in": "Sign In",
         "signing_in": "Signing in...",
@@ -687,7 +719,8 @@
         "view_profile": "View Profile",
         "my_assets": "My Assets",
         "account_settings": "Account Settings",
-        "marketplace_authorizations": "Marketplace Authorizations"
+        "marketplace_authorizations": "Marketplace Authorizations",
+        "credits_balance": "{count} credits"
       }
     },
     "creators_landing": {
@@ -719,17 +752,20 @@
         "your_tutorial_button": "Submit tutorial for review",
         "your_tutorial_target": "https://docs.google.com/forms/d/e/1FAIpQLScn1HL8_ZFL_Lw-7sbqL9g4WLctWALWUKthGEtjBGQlmIuHLQ/viewform"
       },
-      "earn": {
-        "title": "Want to create but not a creator?",
-        "second_title": "Hire the best through ",
-        "title_highlight": "Decentraland Studios",
-        "subtitle": "Browse a vetted registry of Decentraland's most talented creators skilled in:",
-        "browse_creator_label": "Ready to get started?",
-        "browse_creator_button": "browse creators",
-        "browse_creator_url": "https://studios.decentraland.org/studios",
-        "are_you_creator_label": "Already a creator?",
-        "are_you_creator_button": "Join the Registry",
-        "are_you_creator_url": "https://docs.google.com/forms/d/e/1FAIpQLSc_KsbODUsJdC4_UTn7T91RTYwSJBAEZIWlCAxnk3rRBinFWg/viewform"
+      "live_scenes": {
+        "title": "what creators are building right now",
+        "title_highlight": "Explore",
+        "online": "{count} online",
+        "view_all": "See all live scenes"
+      },
+      "blog": {
+        "title": "from the blog",
+        "title_highlight": "Fresh",
+        "view_all": "Read the blog"
+      },
+      "hero": {
+        "mobile_docs_cta": "Explore the Creator Docs",
+        "scroll_label": "Scroll to the next section"
       }
     },
     "jump": {
@@ -766,8 +802,8 @@
         "explore_events_button": "EXPLORE EVENTS",
         "jump_in_button": "Jump In",
         "calendar_label": "Jump In",
-        "deleted_notice_prefix": "This hangout is no longer available. Browse",
-        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_prefix": "This event is no longer available. Browse",
+        "deleted_notice_link": "All Events",
         "deleted_notice_suffix": "to discover more."
       },
       "invalid_page": {
@@ -976,7 +1012,8 @@
         "not_found": "This world or scene was not found in the storage service.",
         "payload_too_large": "Value is too large for this storage namespace.",
         "rate_limited": "Too many requests. Wait a moment and try again.",
-        "server": "The storage service returned an error. Try again in a few minutes."
+        "server": "The storage service returned an error. Try again in a few minutes.",
+        "world_scene_unresolved": "We couldn’t resolve this world’s scene location. It may not have a deployed scene yet."
       }
     },
     "report": {
@@ -1034,6 +1071,11 @@
         "body": "Your report has been received and will be reviewed shortly.",
         "dismiss": "You can close this window now."
       }
+    },
+    "error_boundary": {
+      "title": "Something went wrong",
+      "message": "We couldn't load this page. Check your connection and try again.",
+      "reload": "Reload"
     }
   },
   "live_now": {
@@ -1071,13 +1113,13 @@
     "edit": "Edit",
     "delete": "Delete",
     "delete_modal": {
-      "title": "Are you sure you want to delete your hangout?",
-      "subtitle": "This hangout will be permanently removed from your hangouts. This action can’t be undone.",
+      "title": "Are you sure you want to delete your event?",
+      "subtitle": "This event will be permanently removed from your events. This action can’t be undone.",
       "cancel": "Cancel",
-      "confirm": "Delete hangout",
-      "toast_title": "Hangout Deleted successfully",
-      "toast_description": "Your hangout {name} has been deleted successfully!",
-      "error": "We couldn't delete your hangout. Please try again."
+      "confirm": "Delete event",
+      "toast_title": "Event Deleted successfully",
+      "toast_description": "Your event {name} has been deleted successfully!",
+      "error": "We couldn't delete your event. Please try again."
     },
     "by_prefix": "By ",
     "unknown_creator": "Unknown",
@@ -1098,7 +1140,8 @@
     "hero_every_days": "Every {days}",
     "location_with_coords": "{place} ({x},{y})",
     "location_coords": "({x},{y})",
-    "schedule_starting": "Starting {schedule}"
+    "schedule_starting": "Starting {schedule}",
+    "featured_item": "Featured item"
   },
   "event_time": {
     "utc_same_day": "{time} UTC",
@@ -1124,14 +1167,14 @@
     "people_now": "{count, plural, one {# person here now} other {# people here now}}"
   },
   "all_hangouts": {
-    "title": "All Hangouts",
-    "tab_all": "All Hangouts",
-    "tab_my": "My Hangouts",
+    "title": "All Events",
+    "tab_all": "All Events",
+    "tab_my": "My Events",
     "today": "Today",
     "tomorrow": "Tomorrow",
     "navigate_previous": "Navigate to previous dates",
     "navigate_next": "Navigate to next dates",
-    "events_for_day": "Hangouts for {day}",
+    "events_for_day": "Events for {day}",
     "jump_in": "Jump In",
     "add_to_calendar": "Add to calendar",
     "remind_me": "Remind me",
@@ -1141,41 +1184,42 @@
     "unknown_creator": "Unknown"
   },
   "my_hangouts": {
-    "empty_title": "You don't have any hangout created",
-    "empty_cta": "Create Hangout",
+    "empty_title": "You don't have any event created",
+    "empty_cta": "Create Event",
     "hosted_by_me": "Hosted by me",
     "status_approved": "Approved",
     "status_pending": "Pending",
     "status_rejected": "Rejected"
   },
   "create_event": {
-    "title": "Submit a Hangout",
-    "edit_title": "Edit Hangout",
+    "title": "Submit an Event",
+    "edit_title": "Edit Event",
     "save_changes": "Save Changes",
     "back": "Go back",
-    "sign_in_message": "To create a hangout you will need to sign in or create an account",
+    "sign_in_message": "To create an event you will need to sign in or create an account",
     "sign_in": "Sign In",
     "create_account": "Create Account",
-    "image_upload_label": "Upload hangout cover image",
-    "image_preview_alt": "Hangout cover preview",
-    "select_cover": "Select a Hangout Cover",
+    "image_upload_label": "Upload event cover image",
+    "image_preview_alt": "Event cover preview",
+    "select_cover": "Select an Event Cover",
     "choose_picture": "Choose a Picture",
     "drop_hint": "from your gallery or drop it here",
     "recommended_size": "(recommended size: 1340 × 670)",
     "image_helper": "Upload a PNG, JPG, or GIF (1340×670px, max 500kb). Center visuals and text to fit all screen resolutions.",
     "change_image": "Change Image",
-    "event_name": "Hangout Name",
+    "event_name": "Event Name",
     "name_placeholder": "Be as descriptive as you can",
-    "event_description": "Hangout Description",
+    "event_description": "Event Description",
     "description_placeholder": "Be as descriptive as you can",
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
-    "event_details": "Hangout Details",
+    "approved_edit_warning": "Changing the name, description, image, or location of an approved event sends it back for review.",
+    "event_details": "Event Details",
     "date": "Date",
     "start": "Start",
     "duration": "Duration",
     "repeat_until": "Ends",
-    "repeat_event": "Repeat Hangout",
+    "repeat_event": "Repeat Event",
     "every_day": "Every Day",
     "every_week": "Every Week",
     "every_month": "Every Month",
@@ -1196,14 +1240,25 @@
     "community_gaming": "Gaming",
     "email_label": "Email (Optional)",
     "email_placeholder": "hello@example.com",
+    "featured_item_label": "Featured Wearables (Optional)",
+    "featured_item_placeholder": "Search items & collections or paste URN",
+    "featured_item_by": "By {creator}",
+    "featured_item_group_items": "Items",
+    "featured_item_group_collections": "Collections",
+    "featured_item_searching": "Searching…",
+    "featured_item_no_results": "No items or collections found",
+    "featured_item_min_length": "Type at least {count} characters",
+    "featured_item_error": "We couldn't reach the marketplace. Try again.",
+    "featured_item_clear": "Clear featured item",
     "additional_notes": "Additional Notes",
     "notes_placeholder": "Be as descriptive as you can",
     "cancel": "Cancel",
-    "submit": "Submit Hangout",
+    "submit": "Submit Event",
     "submitting": "Submitting...",
-    "review_notice": "The hangout submission will be reviewed by our team, you'll be notified by email",
+    "review_notice": "The event submission will be reviewed by our team, you'll be notified by email",
     "error_required": "This field is required",
     "error_invalid_email": "Please enter a valid email address",
+    "error_invalid_featured_item": "Must be a valid collection or item URN",
     "error_coord_x_range": "Latitude must be between -150 and 163",
     "error_coord_y_range": "Longitude must be between -150 and 158",
     "error_name_too_long": "Name cannot exceed 150 characters",
@@ -1217,24 +1272,24 @@
     "error_image_dimensions": "Image must be 1340×670 pixels.",
     "error_vertical_image_dimensions": "Vertical cover must be 716×1814 pixels.",
     "error_vertical_image_decode": "We couldn't read this image. Please try a different file.",
-    "error_not_signed_in": "Your session expired. Please sign in again to submit this hangout.",
+    "error_not_signed_in": "Your session expired. Please sign in again to submit this event.",
     "error_upload_failed": "Failed to upload image. Please try again.",
-    "error_image_required": "A hangout cover is required.",
-    "success_message": "Your hangout was created successfully. You'll be notified once it's approved. Track its status in \"My Hangouts\"",
-    "edit_success_message": "Your hangout was updated successfully.",
+    "error_image_required": "An event cover is required.",
+    "success_message": "Your event was created successfully. You'll be notified once it's approved. Track its status in \"My Events\"",
+    "edit_success_message": "Your event was updated successfully.",
     "back_to_explore": "Back to Explore",
-    "my_events": "My Hangouts",
+    "my_events": "My Events",
     "add_vertical_cover": "Add Vertical Cover",
     "remove_vertical_cover": "Remove Vertical Cover",
     "recommended_parenthetical": "(recommended)",
-    "select_vertical_cover": "Select a Hangout Cover (Vertical - Optional)",
+    "select_vertical_cover": "Select an Event Cover (Vertical - Optional)",
     "vertical_recommended_size": "Recommended size: 716 × 1814 px",
-    "vertical_modal_label": "Upload vertical hangout cover",
+    "vertical_modal_label": "Upload vertical event cover",
     "world_placeholder": "Select a world",
     "community_none": "None",
     "close": "Close",
     "preview": "Preview",
-    "preview_disabled_tooltip": "Complete the required fields to preview the hangout",
+    "preview_disabled_tooltip": "Complete the required fields to preview the event",
     "vertical_file_hint": "PNG or JPG, max 500 KB",
     "vertical_image_usage": "Used for featured events in-world",
     "recurrence": "Recurrence",
@@ -1245,12 +1300,12 @@
     "upcoming_dates_empty": "No upcoming dates for this recurrence"
   },
   "host_banner": {
-    "title": "Host a Hangout",
+    "title": "Host an Event",
     "subtitle": "Bring people together, your way.",
     "check_1": "Choose a vibe people can drop into.",
-    "check_2": "Add the hangout details.",
+    "check_2": "Add the event details.",
     "check_3": "Publish it and send the invites.",
-    "create_event": "Create a Hangout",
+    "create_event": "Create an Event",
     "learn_more": "Learn More"
   },
   "blog": {
@@ -1261,6 +1316,8 @@
     "nothing_to_show": "Nothing to show",
     "related_post": "Related Articles",
     "share": "Share",
+    "share_on_x": "Share on X",
+    "share_on_facebook": "Share on Facebook",
     "posts_by": "Posts by {author}"
   },
   "search": {
@@ -1296,30 +1353,30 @@
   },
   "whats_on_admin": {
     "tabs": {
-      "whats_on": "What's On",
-      "pending_events": "Pending Hangouts",
+      "whats_on": "Events",
+      "pending_events": "Pending Events",
       "users": "Users"
     },
     "cta": {
-      "create_event": "+ Create Hangout",
+      "create_event": "+ Create Event",
       "add_user": "+ Add User"
     },
     "pending_events": {
-      "title": "Pending Hangouts",
+      "title": "Pending Events",
       "recently_approved": "Recently Approved",
       "recently_approved_subtitle": "(Last 24hs)",
-      "empty": "No hangouts waiting for approval",
+      "empty": "No events waiting for approval",
       "approve": "Approve",
       "reject": "Reject",
-      "action_error": "Unable to update hangout. Please try again.",
+      "action_error": "Unable to update event. Please try again.",
       "today": "Today",
       "tomorrow": "Tomorrow",
       "in_n_days": "In {count} Days",
       "status_pending": "Pending",
       "status_approved": "Approved",
       "status_rejected": "Rejected",
-      "approve_success": "Hangout/Experience approved successfully",
-      "reject_success": "Hangout/Experience rejected successfully"
+      "approve_success": "Event/Experience approved successfully",
+      "reject_success": "Event/Experience rejected successfully"
     },
     "users": {
       "title": "Users",
@@ -1327,9 +1384,9 @@
       "search_placeholder": "Type wallet address",
       "columns": {
         "user": "User",
-        "approve_own_events": "Approve Own Hangouts",
-        "approve_events": "Approve Hangouts",
-        "edit_events": "Edit Hangouts",
+        "approve_own_events": "Approve Own Events",
+        "approve_events": "Approve Events",
+        "edit_events": "Edit Events",
         "edit_schedules": "Edit Schedules",
         "edit_users": "Edit Users"
       },
@@ -1343,7 +1400,7 @@
           "description": "Does not comply with our Terms or Code of Ethics"
         },
         "invalid_event_name": {
-          "title": "Invalid hangout name",
+          "title": "Invalid event name",
           "description": "Does not comply with our Terms or Code of Ethics"
         },
         "inappropriate_description": {
@@ -1378,16 +1435,16 @@
       "self_edit_locked": "You cannot remove your own admin permission",
       "permissions": {
         "approve_own_event": {
-          "title": "Approve Own Hangouts",
-          "description": "Allow this user to approve hangouts they create"
+          "title": "Approve Own Events",
+          "description": "Allow this user to approve events they create"
         },
         "approve_any_event": {
-          "title": "Approve Hangouts",
-          "description": "Allow this user to approve any hangout"
+          "title": "Approve Events",
+          "description": "Allow this user to approve any event"
         },
         "edit_any_event": {
-          "title": "Edit Hangouts",
-          "description": "Allow this user to edit any hangout"
+          "title": "Edit Events",
+          "description": "Allow this user to edit any event"
         },
         "edit_any_schedule": {
           "title": "Edit Schedules",
@@ -1413,7 +1470,6 @@
       "decentraland_community": "Decentraland Community",
       "members": "Members",
       "by": "By",
-      "unknown": "Unknown",
       "joined": "JOINED",
       "sign_in_to_join": "SIGN IN TO JOIN",
       "request_to_join": "REQUEST TO JOIN",
@@ -1446,6 +1502,96 @@
     "tabs": {
       "members": "Members",
       "upcoming_events": "Upcoming Events"
+    }
+  },
+  "discover": {
+    "home": {
+      "page_title": "Places — Decentraland"
+    },
+    "card": {
+      "jump_in": "Jump in",
+      "by": "By",
+      "featured": "Featured"
+    },
+    "live": {
+      "heading": "Live Now",
+      "scroll_previous": "Previous live places",
+      "scroll_next": "More live places"
+    },
+    "explore": {
+      "search_placeholder": "Search places",
+      "empty": "No places match your filters.",
+      "filters": "Filters",
+      "remove_filter": "Remove filter",
+      "category": {
+        "label": "Category",
+        "all": "Any Category",
+        "social": "Social",
+        "music": "Music",
+        "art": "Art",
+        "game": "Game",
+        "fashion": "Fashion",
+        "education": "Education",
+        "shop": "Shop",
+        "sports": "Sports",
+        "business": "Business"
+      },
+      "section": {
+        "featured": "Featured Places"
+      },
+      "tab": {
+        "explore_all": "Explore all",
+        "favourites": "Favourites",
+        "my_places": "My places"
+      },
+      "signin_favourites": "Sign in and favourite places to find them here.",
+      "empty_favourites": "You haven't favourited any places yet.",
+      "signin_my_places": "Sign in to see the places you created.",
+      "sign_in": "Sign In",
+      "empty_my_places": "You haven't published any places yet.",
+      "error": "Something went wrong loading places.",
+      "retry": "Retry"
+    },
+    "communities": {
+      "page_title": "Communities — Decentraland",
+      "heading": "Communities",
+      "search_placeholder": "Search communities",
+      "empty": "No communities found.",
+      "members_count": "{count, plural, one {# member} other {# members}}",
+      "error": "Something went wrong loading communities."
+    },
+    "scene": {
+      "people_count": "{count, plural, one {# person in-world} other {# people in-world}}",
+      "people_empty": "Nobody here yet.",
+      "tab_video": "Stream",
+      "tab_streaming": "DCL Web",
+      "resume_cta": "Watch Live",
+      "close_media": "Stop",
+      "fullscreen": "Fullscreen",
+      "exit_fullscreen": "Exit fullscreen",
+      "scene_picker": "Scene",
+      "connecting": "Connecting to the scene…",
+      "waiting": {
+        "title": "Scene activity",
+        "hint": "{count, plural, =0 {Nobody else is here yet — be the first to jump in.} one {# person is in this scene. Their chat is live on the right.} other {# people are in this scene. Their chat is live on the right.}}"
+      },
+      "not_found": {
+        "title": "Scene not found",
+        "description": "We couldn't load that place or world. It may have been removed."
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "This experience is not available on mobile browsers. Download the app instead:"
+      },
+      "what_to_expect": "What to expect",
+      "copy_link": "Copy link",
+      "close": "Close",
+      "explore_scene": "Explore the scene",
+      "copied": "Copied!"
+    },
+    "featured": {
+      "view_all": "View all featured places",
+      "view_less": "View less"
     }
   },
   "profile": {
@@ -1826,6 +1972,7 @@
         "title": "Email Notification",
         "placeholder": "example@decentraland.org",
         "invalid": "Invalid email",
+        "error": "We couldn't save your email. Please try again.",
         "description": {
           "without_email": "Enter your email, then check your inbox for an email with the confirmation link. After confirming, you will be able to customize the notifications below.",
           "with_email": "If you'd like to update your email address, edit it below. Make sure to check for the confirmation email in your inbox afterwards!",
@@ -1910,8 +2057,8 @@
       }
     },
     "delete": {
-      "danger_zone": "Danger Zone",
-      "danger_description": "Once you delete your account, there is no going back. Please be certain.",
+      "title": "Delete Account",
+      "danger_description": "This action is irreversible. All your data will be permanently deleted.",
       "warning": "The following will be lost forever:",
       "consequences": {
         "profile": {
@@ -1945,6 +2092,7 @@
       "export_key_link": "Go to Wallets",
       "export_key_description_magic": "Go to the Security tab to view and back up your private key before you delete your account.",
       "export_key_link_magic": "Go to Security",
+      "acknowledge": "I have backed up my private key and I understand that deleting my account is irreversible.",
       "delete_button": "Delete Account",
       "modal": {
         "title": "Are you sure you want to delete your account?",

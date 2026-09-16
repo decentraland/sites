@@ -136,28 +136,28 @@ describe('buildEventJumpInUrl', () => {
 
 describe('buildEventShareUrl', () => {
   describe('when the event is not live', () => {
-    it('should produce a /whats-on deep link that preserves the env override and adds the id', () => {
-      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/whats-on?env=prod')).toBe(
-        'http://localhost:5173/whats-on?env=prod&id=uuid-1'
+    it('should produce a /events deep link that preserves the env override and adds the id', () => {
+      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/events?env=prod')).toBe(
+        'http://localhost:5173/events?env=prod&id=uuid-1'
       )
     })
 
     it('should not carry filter, pagination or other ambient query params into the share link', () => {
-      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/whats-on?category=music&page=3&debug=true')).toBe(
-        'http://localhost:5173/whats-on?id=uuid-1'
+      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/events?category=music&page=3&debug=true')).toBe(
+        'http://localhost:5173/events?id=uuid-1'
       )
     })
 
     it('should drop a stale id from the source URL instead of duplicating it', () => {
-      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/whats-on?env=prod&id=stale')).toBe(
-        'http://localhost:5173/whats-on?env=prod&id=uuid-1'
+      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/events?env=prod&id=stale')).toBe(
+        'http://localhost:5173/events?env=prod&id=uuid-1'
       )
     })
   })
 
   describe('when the event is live', () => {
     it('should produce a /jump/events deep link so the destination opens the launcher flow', () => {
-      expect(buildEventShareUrl('uuid-1', true, 'http://localhost:5173/whats-on?env=prod')).toBe(
+      expect(buildEventShareUrl('uuid-1', true, 'http://localhost:5173/events?env=prod')).toBe(
         'http://localhost:5173/jump/events?env=prod&id=uuid-1'
       )
     })
@@ -165,8 +165,8 @@ describe('buildEventShareUrl', () => {
 
   describe('when the source URL has a hash fragment', () => {
     it('should drop the hash so it does not leak into the share link', () => {
-      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/whats-on?env=prod#section')).toBe(
-        'http://localhost:5173/whats-on?env=prod&id=uuid-1'
+      expect(buildEventShareUrl('uuid-1', false, 'http://localhost:5173/events?env=prod#section')).toBe(
+        'http://localhost:5173/events?env=prod&id=uuid-1'
       )
     })
   })
@@ -180,41 +180,41 @@ describe('buildEventShareUrl', () => {
 
 describe('buildPlaceShareUrl', () => {
   describe('when only a position is provided', () => {
-    it('should produce a /whats-on deep link with the position param', () => {
-      expect(buildPlaceShareUrl({ position: '10,20', world: null }, 'http://localhost:5173/whats-on')).toBe(
-        'http://localhost:5173/whats-on?position=10%2C20'
+    it('should produce a /events deep link with the position param', () => {
+      expect(buildPlaceShareUrl({ position: '10,20', world: null }, 'http://localhost:5173/events')).toBe(
+        'http://localhost:5173/events?position=10%2C20'
       )
     })
   })
 
   describe('when a world is provided', () => {
-    it('should produce a /whats-on deep link with the world param and ignore position', () => {
-      expect(buildPlaceShareUrl({ position: '10,20', world: 'foo.dcl.eth' }, 'http://localhost:5173/whats-on')).toBe(
-        'http://localhost:5173/whats-on?world=foo.dcl.eth'
+    it('should produce a /events deep link with the world param and ignore position', () => {
+      expect(buildPlaceShareUrl({ position: '10,20', world: 'foo.dcl.eth' }, 'http://localhost:5173/events')).toBe(
+        'http://localhost:5173/events?world=foo.dcl.eth'
       )
     })
   })
 
   describe('when the source URL has env override', () => {
     it('should preserve env in the share link', () => {
-      expect(buildPlaceShareUrl({ position: '10,20', world: null }, 'http://localhost:5173/whats-on?env=prod')).toBe(
-        'http://localhost:5173/whats-on?env=prod&position=10%2C20'
+      expect(buildPlaceShareUrl({ position: '10,20', world: null }, 'http://localhost:5173/events?env=prod')).toBe(
+        'http://localhost:5173/events?env=prod&position=10%2C20'
       )
     })
   })
 
   describe('when ambient query params are present', () => {
     it('should drop them from the share link', () => {
-      expect(
-        buildPlaceShareUrl({ position: '10,20', world: null }, 'http://localhost:5173/whats-on?category=music&page=3&debug=true')
-      ).toBe('http://localhost:5173/whats-on?position=10%2C20')
+      expect(buildPlaceShareUrl({ position: '10,20', world: null }, 'http://localhost:5173/events?category=music&page=3&debug=true')).toBe(
+        'http://localhost:5173/events?position=10%2C20'
+      )
     })
   })
 
   describe('when both position and world are null', () => {
-    it('should produce a bare /whats-on URL', () => {
-      expect(buildPlaceShareUrl({ position: null, world: null }, 'http://localhost:5173/whats-on?env=prod')).toBe(
-        'http://localhost:5173/whats-on?env=prod'
+    it('should produce a bare /events URL', () => {
+      expect(buildPlaceShareUrl({ position: null, world: null }, 'http://localhost:5173/events?env=prod')).toBe(
+        'http://localhost:5173/events?env=prod'
       )
     })
   })

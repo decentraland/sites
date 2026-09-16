@@ -26,7 +26,7 @@ function renderAt(initialEntry: { pathname: string; search?: string; state?: unk
     <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
         <Route path="/places/world" element={<LegacyWorldRedirect />} />
-        <Route path="/whats-on" element={<LocationProbe />} />
+        <Route path="/events" element={<LocationProbe />} />
       </Routes>
     </MemoryRouter>
   )
@@ -50,11 +50,11 @@ describe('LegacyWorldRedirect', () => {
   })
 
   describe('when entering /places/world with a name param', () => {
-    it('should redirect to /whats-on renaming name to world', () => {
+    it('should redirect to /events renaming name to world', () => {
       renderAt({ pathname: '/places/world', search: '?name=fairyland.dcl.eth' })
 
       const search = screen.getByTestId('search').textContent ?? ''
-      expect(screen.getByTestId('pathname')).toHaveTextContent('/whats-on')
+      expect(screen.getByTestId('pathname')).toHaveTextContent('/events')
       expect(new URLSearchParams(search).get('world')).toBe('fairyland.dcl.eth')
       expect(new URLSearchParams(search).has('name')).toBe(false)
     })
@@ -76,7 +76,7 @@ describe('LegacyWorldRedirect', () => {
         SegmentEvent.LEGACY_PLACES_REDIRECTED,
         expect.objectContaining({
           source: '/places/world?name=fairyland.dcl.eth&utm_source=twitter',
-          destination: '/whats-on?utm_source=twitter&world=fairyland.dcl.eth',
+          destination: '/events?utm_source=twitter&world=fairyland.dcl.eth',
           origin: 'places',
           preservedParams: { utm_source: 'twitter', world: 'fairyland.dcl.eth' }
         })
@@ -85,20 +85,20 @@ describe('LegacyWorldRedirect', () => {
   })
 
   describe('when /places/world carries no name param', () => {
-    it('should redirect to /whats-on preserving any unrelated query string', () => {
+    it('should redirect to /events preserving any unrelated query string', () => {
       renderAt({ pathname: '/places/world', search: '?utm_source=newsletter' })
 
       const search = screen.getByTestId('search').textContent ?? ''
       const params = new URLSearchParams(search)
-      expect(screen.getByTestId('pathname')).toHaveTextContent('/whats-on')
+      expect(screen.getByTestId('pathname')).toHaveTextContent('/events')
       expect(params.get('utm_source')).toBe('newsletter')
       expect(params.has('world')).toBe(false)
     })
 
-    it('should redirect to /whats-on with an empty search when there is no query string', () => {
+    it('should redirect to /events with an empty search when there is no query string', () => {
       renderAt({ pathname: '/places/world' })
 
-      expect(screen.getByTestId('pathname')).toHaveTextContent('/whats-on')
+      expect(screen.getByTestId('pathname')).toHaveTextContent('/events')
       expect(screen.getByTestId('search')).toHaveTextContent('')
     })
 

@@ -45,6 +45,35 @@ describe('mapBlogPost', () => {
       const post = mapBlogPost(entry)
       expect(post?.description).toBe('Agora: Results & New Polls')
     })
+
+    it('should keep the publish date as the raw ISO value', () => {
+      const post = mapBlogPost(entry)
+      expect(post?.publishedDate).toBe('2022-08-09T00:00:00Z')
+    })
+  })
+
+  describe('when the entry has no publish date', () => {
+    it('should map it to an empty string', () => {
+      const entry = {
+        sys: { id: 'post-2', type: 'Entry' },
+        fields: {
+          id: 'no-date',
+          title: 'No date',
+          description: 'desc',
+          image: makeAsset(),
+          category: {
+            sys: { id: 'cat-1', type: 'Entry' },
+            fields: { id: 'community-highlights', title: 'Community Highlights', image: makeAsset() }
+          },
+          author: {
+            sys: { id: 'author-1', type: 'Entry' },
+            fields: { id: 'author', title: 'Author Name', image: makeAsset() }
+          }
+        }
+      } as unknown as CMSEntry
+
+      expect(mapBlogPost(entry)?.publishedDate).toBe('')
+    })
   })
 })
 

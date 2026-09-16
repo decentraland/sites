@@ -3,8 +3,9 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
-import { GOOGLE_PLAY_MOBILE_URL } from '../../components/Home/shared/googlePlay'
 import { useGetProfileQuery } from '../../features/profile/profile.client'
+import { useDeepLinkQueryParams } from '../../hooks/useDeepLinkQueryParams'
+import { useDownloadPageExit } from '../../hooks/useDownloadPageExit'
 import { useWalletAddress } from '../../hooks/useWalletAddress'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
 import { SegmentEvent } from '../../modules/segment'
@@ -23,7 +24,13 @@ jest.mock('@dcl/hooks', () => ({
 }))
 
 jest.mock('../../modules/segmentBeacon', () => ({ postSegmentEvent: jest.fn() }))
-jest.mock('../../modules/segmentAnonymousId', () => ({ ensureSegmentAnonymousId: () => 'anon-fixed' }))
+jest.mock('../../modules/segmentAnonymousId', () => ({
+  ensureSegmentAnonymousId: () => 'anon-fixed',
+  // `downloadClickCorrelation` (used by `useDownloadClick`, wired on the store-exit
+  // CTAs below) imports `generateUuid` from this same module, so the mock must
+  // keep exporting it — mirrors the fix in `useDownloadClick.spec.ts`.
+  generateUuid: () => '11111111-1111-4111-8111-111111111111'
+}))
 
 jest.mock('decentraland-ui2', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -59,6 +66,9 @@ jest.mock('../../features/profile/profile.client', () => ({ useGetProfileQuery: 
 
 jest.mock('../../hooks/useWalletAddress', () => ({ useWalletAddress: jest.fn() }))
 
+jest.mock('../../hooks/useDownloadPageExit', () => ({ useDownloadPageExit: jest.fn() }))
+jest.mock('../../hooks/useDeepLinkQueryParams', () => ({ useDeepLinkQueryParams: jest.fn(() => ({})) }))
+
 jest.mock('../../utils/authRedirect', () => ({ redirectToAuth: jest.fn() }))
 
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
@@ -80,6 +90,8 @@ const mockUseWalletAddress = jest.mocked(useWalletAddress)
 const mockUseGetProfileQuery = jest.mocked(useGetProfileQuery)
 const mockLaunchDesktopApp = jest.mocked(launchDesktopApp)
 const mockRedirectToAuth = jest.mocked(redirectToAuth)
+const mockUseDownloadPageExit = jest.mocked(useDownloadPageExit)
+const mockUseDeepLinkQueryParams = jest.mocked(useDeepLinkQueryParams)
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const mockUseDesktopMediaQuery = require('decentraland-ui2').useDesktopMediaQuery as jest.Mock
 
@@ -97,12 +109,18 @@ describe('DownloadLayout', () => {
     mockUseInView.mockReturnValue({ ref: jest.fn(), inView: false } as unknown as ReturnType<typeof useInView>)
     mockUseDesktopMediaQuery.mockReturnValue(true)
     mockUseAdvancedUserAgentData.mockReturnValue([false, undefined] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+    mockUseDeepLinkQueryParams.mockReturnValue({})
     setWallet(null)
     setProfile(undefined)
   })
 
   afterEach(() => {
     jest.clearAllMocks()
+  })
+
+  it('should mount the download page exit diagnostic', () => {
+    render(<DownloadLayout title={TITLE} />)
+    expect(mockUseDownloadPageExit).toHaveBeenCalled()
   })
 
   describe('when the user is not signed in', () => {
@@ -273,6 +291,16 @@ describe('DownloadLayout', () => {
       await waitFor(() => expect(mockLaunchDesktopApp).toHaveBeenCalledWith({}))
     })
 
+    it('should forward the deep-link query params into the launch', async () => {
+      mockUseDeepLinkQueryParams.mockReturnValue({ dclenv: 'zone', sceneConsole: 'true', multiInstance: 'true' })
+      mockLaunchDesktopApp.mockResolvedValue(true)
+      render(<DownloadLayout title={TITLE} />)
+      await userEvent.click(screen.getByText('page.download.jump_in'))
+      await waitFor(() =>
+        expect(mockLaunchDesktopApp).toHaveBeenCalledWith({ dclenv: 'zone', sceneConsole: 'true', multiInstance: 'true' })
+      )
+    })
+
     it('should surface the fallback modal when the launcher is unavailable', async () => {
       mockLaunchDesktopApp.mockResolvedValue(false)
       render(<DownloadLayout title={TITLE} />)
@@ -332,7 +360,7 @@ describe('DownloadLayout', () => {
       >)
       render(<DownloadLayout title={TITLE} />)
       const anchor = screen.getByAltText('Get it on Google Play').closest('a') as HTMLAnchorElement
-      expect(anchor).toHaveAttribute('href', GOOGLE_PLAY_MOBILE_URL)
+      expect(anchor).toHaveAttribute('href', DOWNLOAD_URLS.googlePlay)
       expect(anchor.getAttribute('href')).not.toContain('/download_success')
     })
 

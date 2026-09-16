@@ -18,7 +18,7 @@ import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { type ScheduledHandle, cancelScheduledIdleCall, scheduleWhenIdle } from '../../../utils/scheduleWhenIdle'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
-import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
+import { googlePlayBadge } from '../shared/googlePlay'
 import {
   DownloadButton,
   EpicButton,
@@ -42,7 +42,7 @@ import {
 } from './Hero.styled'
 
 // Delay after React's hero image is ready before fading the prerendered shell.
-// Kept small (must be >0 so Chrome commits the shell's h3 as an LCP candidate
+// Kept small (must be >0 so Chrome commits the shell's h1 as an LCP candidate
 // before its ancestor transitions to opacity:0, which excludes it from LCP
 // tracking) but not so large that users see the static image longer than
 // necessary. ~12 frames @ 60fps is ample headroom across slow CPUs.
@@ -204,7 +204,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
           <MobileHeroTitle>{l('page.home.hero.mobile_android_title')}</MobileHeroTitle>
           <MobileHeroSubtitle>{l('page.home.hero.mobile_android_subtitle')}</MobileHeroSubtitle>
           <GooglePlayButton
-            href={GOOGLE_PLAY_MOBILE_URL}
+            href={DOWNLOAD_URLS.googlePlay}
             target="_blank"
             rel="noopener noreferrer"
             data-event={SegmentEvent.DOWNLOAD}
@@ -241,10 +241,10 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
       {/* Desktop */}
       {isDesktop && (
         <HeroContent>
-          {/* Title is also present in the prerendered shell (same tag, same computed
-              styles). Chrome paints the shell's h3 first and keeps it as the LCP
-              candidate because React's h3 ties on size. When the shell is absent
-              (dev mode, build misconfig) this React title is the only one visible. */}
+          {/* Main page heading (<h1>). Also present in the prerendered shell (same
+              tag, same computed styles). Chrome paints the shell's h1 first and keeps
+              it as the LCP candidate because React's h1 ties on size. When the shell is
+              absent (dev mode, build misconfig) this React title is the only one visible. */}
           <HeroTitle>{l('page.home.hero.title')}</HeroTitle>
 
           <HeroCTAWrapper>
@@ -278,7 +278,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
               rel="noopener noreferrer"
               data-place={DownloadPlace.LANDING_HERO_EPIC}
               data-event={SegmentEvent.DOWNLOAD}
-              data-download-target={DownloadTarget.DESKTOP_INSTALLER}
+              data-download-target={DownloadTarget.EPIC}
               onClick={trackDownloadClick}
             >
               {l('page.download.download_on')}
@@ -325,6 +325,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
                 data-event={SegmentEvent.DOWNLOAD}
                 data-os="iOS"
                 data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}
+                data-download-target={DownloadTarget.APP_STORE}
                 onClick={e => {
                   trackDownloadClick(e)
                   e.preventDefault()
@@ -340,6 +341,7 @@ const Hero = memo(({ isDesktop }: { isDesktop: boolean }) => {
                 data-event={SegmentEvent.DOWNLOAD}
                 data-os="Android"
                 data-place={DownloadPlace.LANDING_HERO_PLATFORM_SWITCH}
+                data-download-target={DownloadTarget.GOOGLE_PLAY}
                 onClick={e => {
                   trackDownloadClick(e)
                   e.preventDefault()

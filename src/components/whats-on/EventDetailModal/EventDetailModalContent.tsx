@@ -8,10 +8,19 @@ import { linkifyText } from '../../../utils/linkifyText'
 import { localizedWeekdayShort, normalizeDayIndices } from '../../../utils/recurrence'
 import { formatLocalDate, formatLocalTime } from '../../../utils/whatsOnTime'
 import { buildCalendarUrl, normalizeRecurrence } from '../../../utils/whatsOnUrl'
+import { JumpInButton } from '../../jump/JumpInButton'
 import { LocalDateTimeTooltip } from '../common/LocalDateTimeTooltip'
 import { ContentDivider, ContentSection, DescriptionText, SectionLabel } from '../DetailModal/DetailModal.styled'
 import type { AdminActions, ModalEventData } from './EventDetailModal.types'
-import { AdminActionsRow, RecurrenceText, ScheduleIconButton, ScheduleRow, ScheduleText } from './EventDetailModal.styled'
+import {
+  AdminActionsRow,
+  BottomJumpInRow,
+  FeaturedItemText,
+  RecurrenceText,
+  ScheduleIconButton,
+  ScheduleRow,
+  ScheduleText
+} from './EventDetailModal.styled'
 
 function formatRecurrentDays(days: number[], locale: string): string {
   return normalizeDayIndices(days)
@@ -57,13 +66,20 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
 
   const hasDescription = Boolean(data.description)
   const hasSchedule = Boolean(data.startAt)
+  // Bottom Jump In mirrors the in-world panel for real event/place details. Hidden in the
+  // pending-admin review flow and in the unsaved-event preview.
+  const showBottomJumpIn = !adminActions && data.id !== 'preview'
+  // Moderators approve the promoted item too, so show the raw URN in the pending-events review.
+  // Creators also see it in the unsaved-event preview so they can double-check the pasted URN
+  // before submitting. The public detail modal hides it (the item is featured in-world, not on the site).
+  const showFeaturedItem = Boolean(data.featuredItem && (adminActions || data.id === 'preview'))
 
   const handleAddToCalendar = useCallback(() => {
     const url = buildCalendarUrl(data)
     if (url) window.open(url, '_blank', 'noopener,noreferrer')
   }, [data])
 
-  if (!hasDescription && !hasSchedule && !adminActions) {
+  if (!hasDescription && !hasSchedule && !adminActions && !showBottomJumpIn) {
     return null
   }
 
@@ -101,6 +117,13 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
           </ScheduleRow>
         </>
       )}
+      {showFeaturedItem && (
+        <>
+          {(hasDescription || hasSchedule) && <ContentDivider />}
+          <SectionLabel>{t('event_detail.featured_item')}</SectionLabel>
+          <FeaturedItemText>{data.featuredItem}</FeaturedItemText>
+        </>
+      )}
       {adminActions && (
         <AdminActionsRow>
           <Button variant="contained" color="primary" disabled={adminActions.isProcessing} onClick={adminActions.onApprove}>
@@ -110,6 +133,13 @@ function EventDetailModalContent({ data, adminActions }: { data: ModalEventData;
             {t('whats_on_admin.pending_events.reject')}
           </Button>
         </AdminActionsRow>
+      )}
+      {showBottomJumpIn && (
+        <BottomJumpInRow>
+          <JumpInButton position={`${data.x},${data.y}`} realm={data.realm} size="large">
+            {t('event_detail.jump_in')}
+          </JumpInButton>
+        </BottomJumpInRow>
       )}
     </ContentSection>
   )

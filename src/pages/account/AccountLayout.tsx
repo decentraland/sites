@@ -72,9 +72,10 @@ const AccountLayout = () => {
 
   if (isMobile) {
     // Dashboard: the sidebar is the whole screen; the index <Outlet /> renders nothing on mobile.
+    // $dashboard stretches the panel to the bottom edge (Figma 776:69124 — full-screen menu).
     if (isIndex) {
       return (
-        <AccountLayoutRoot>
+        <AccountLayoutRoot $dashboard>
           <AccountSidebar address={address} />
           <Outlet />
         </AccountLayoutRoot>

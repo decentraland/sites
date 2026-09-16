@@ -285,5 +285,22 @@ describe('SendManaContent', () => {
       expect(mockUpdateTransactionStatus).toHaveBeenCalledWith('0xHASH', 'confirmed')
       expect(onSuccess).toHaveBeenCalledTimes(1)
     })
+
+    // `onSuccess` is inline in the parent, so its identity changes on every render and
+    // the effect re-runs. It used to write and call back once per render (SITES-2RX).
+    it('should not confirm again when the parent re-renders with a new onSuccess', () => {
+      mockWalletReturn = { isConnected: true, connect: mockConnect, connectors: [] }
+      mockAccountReturn = { chainId: 137 }
+      mockWriteReturn = { writeContract: mockWriteContract, data: '0xHASH', isPending: false, error: null }
+      mockReceiptReturn = { isLoading: false, isSuccess: true }
+      const onSuccess = jest.fn()
+
+      const { rerender } = render(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} onSuccess={() => onSuccess()} />)
+      rerender(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} onSuccess={() => onSuccess()} />)
+      rerender(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} onSuccess={() => onSuccess()} />)
+
+      expect(mockUpdateTransactionStatus).toHaveBeenCalledTimes(1)
+      expect(onSuccess).toHaveBeenCalledTimes(1)
+    })
   })
 })

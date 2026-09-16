@@ -90,6 +90,28 @@ describe('Hero', () => {
     jest.resetAllMocks()
   })
 
+  describe('when rendering the main page heading', () => {
+    it('should render the desktop hero title as the page <h1>', () => {
+      mockUserAgent.mockReturnValue([false, { os: { name: 'Windows' }, mobile: false }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+
+      render(<Hero isDesktop />)
+
+      expect(screen.getByRole('heading', { level: 1, name: 'page.home.hero.title' })).toBeInTheDocument()
+    })
+
+    it('should render the mobile hero title as the page <h1>', () => {
+      mockUserAgent.mockReturnValue([false, { os: { name: 'iOS' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+
+      render(<Hero isDesktop={false} />)
+
+      expect(screen.getByRole('heading', { level: 1, name: 'page.home.hero.mobile_android_title' })).toBeInTheDocument()
+    })
+  })
+
   describe('when rendering the desktop hero on a Windows user agent', () => {
     beforeEach(() => {
       mockUserAgent.mockReturnValue([false, { os: { name: 'Windows' }, mobile: false }] as unknown as ReturnType<
@@ -118,6 +140,7 @@ describe('Hero', () => {
       expect(iosIcon).toHaveAttribute('data-event', SegmentEvent.DOWNLOAD)
       expect(iosIcon).toHaveAttribute('data-os', 'iOS')
       expect(iosIcon).toHaveAttribute('data-place', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)
+      expect(iosIcon).toHaveAttribute('data-download-target', 'app_store')
 
       fireEvent.click(iosIcon)
 
@@ -133,6 +156,7 @@ describe('Hero', () => {
       expect(androidIcon).toHaveAttribute('data-event', SegmentEvent.DOWNLOAD)
       expect(androidIcon).toHaveAttribute('data-os', 'Android')
       expect(androidIcon).toHaveAttribute('data-place', DownloadPlace.LANDING_HERO_PLATFORM_SWITCH)
+      expect(androidIcon).toHaveAttribute('data-download-target', 'google_play')
 
       fireEvent.click(androidIcon)
 
@@ -151,7 +175,7 @@ describe('Hero', () => {
       expect(trackDownloadClick).toHaveBeenCalledTimes(1)
     })
 
-    it('should tag the main CTA, Epic button, and platform-switch icon as desktop_installer', () => {
+    it('should tag the main CTA and platform-switch icon as desktop_installer and Epic as epic', () => {
       render(<Hero isDesktop />)
 
       const downloadButton = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
@@ -159,7 +183,9 @@ describe('Hero', () => {
       const macIcon = screen.getByAltText('macOS').closest('a') as HTMLAnchorElement
 
       expect(downloadButton).toHaveAttribute('data-download-target', 'desktop_installer')
-      expect(epicButton).toHaveAttribute('data-download-target', 'desktop_installer')
+      // Epic redirects to the Epic Games Store, never reaching download_started —
+      // its own target keeps it out of the desktop activation funnel.
+      expect(epicButton).toHaveAttribute('data-download-target', 'epic')
       expect(macIcon).toHaveAttribute('data-download-target', 'desktop_installer')
     })
   })

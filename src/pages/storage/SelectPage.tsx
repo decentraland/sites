@@ -16,7 +16,7 @@ import {
 import type { Land, World } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
 import { CardsGrid, EmptyState, SelectPageContainer } from './SelectPage.styled'
 
@@ -90,7 +90,7 @@ function SelectPage() {
     [navigate]
   )
 
-  useBlogPageTracking({
+  usePageViewTracking({
     name: t('page.storage.select.title'),
     properties: { section: 'storage_select' }
   })

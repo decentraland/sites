@@ -34,6 +34,7 @@ type CreateEventFormState = {
   coordY: string
   world: string
   communityId: string
+  featuredItem: string
   email: string
 }
 

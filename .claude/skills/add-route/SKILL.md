@@ -18,7 +18,7 @@ This SPA has a **dual shell with a third Layout-less group**. Routes go in one o
 
 - Anything that needs Redux/RTK Query.
 - Pages that consume Contentful rich-text, dompurify, LiveKit, full-text search.
-- Existing heavy areas you can mirror: `/whats-on/*`, `/blog/*`, `/jump/*`, `/social/*`, `/cast/*`, `/storage/*`, `/profile/*`.
+- Existing heavy areas you can mirror: `/events/*`, `/blog/*`, `/jump/*`, `/social/*`, `/cast/*`, `/storage/*`, `/profile/*`.
 
 **Layout-less** (rare — fullscreen UX that bypasses navbar + footer):
 

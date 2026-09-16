@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useAnalytics } from '@dcl/hooks'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { MIN_DISPLAY_BALANCE } from '../../hooks/useManaBalances'
@@ -17,6 +18,7 @@ import {
   ChevronUpIcon,
   CloseIcon,
   CopyIcon,
+  CreditsIcon,
   DclLogo,
   ExternalLinkIcon,
   HamburgerIcon,
@@ -27,12 +29,14 @@ import {
   ShoppingBagIcon,
   WearableIcon
 } from './icons'
+import { isSectionActive, toNotificationLocale } from './LandingNavbar.helpers'
 import { DROPDOWN_SECTIONS, MENU_CONFIG, USER_MENU_ITEMS } from './navbarConfig'
 import type { DropdownSection } from './navbarConfig'
 import {
   AvatarButton,
   AvatarImage,
   BellButton,
+  CreditsChip,
   DesktopDropdown,
   DesktopDropdownInner,
   DesktopDropdownItem,
@@ -130,6 +134,8 @@ interface LandingNavbarProps {
   }
   manaBalances?: { ethereum: number; polygon: number } | null
   isManaLoading?: boolean
+  /** Spendable USD credits. `null`/absent hides the chip — see the render for why 0 and "unknown" differ. */
+  creditsBalance?: number | null
   notifications?: NotificationsData
   onClickSignIn: () => void
   onClickSignOut: () => void
@@ -138,6 +144,14 @@ interface LandingNavbarProps {
 }
 
 const PEER_BASE_URL = 'https://peer.decentraland.org/content/contents/'
+
+// Where the credits chip goes: the Shop's page for BUYING credits, not the account section's credits
+// settings. Someone clicking their balance is reaching for more of it.
+//
+// A same-origin path rather than an absolute URL, so it keeps the visitor on the environment they are
+// already on (.zone / .today / .org) — the Shop is served by-path at <domain>/shop, so this leaves this
+// app and the browser navigates for real. Still a plain href like the rest of the navbar's links.
+const CREDITS_URL = '/shop/credits'
 
 function formatTimeAgo(timestamp: number): string {
   const seconds = Math.floor((Date.now() - timestamp) / 1000)
@@ -162,6 +176,12 @@ function formatMana(balance: number): string {
     return balance.toFixed(2)
   }
   return Math.floor(balance).toString()
+}
+
+// Credits are whole units (1 credit = $0.10), so no decimals — just thousands separators, which is how
+// the shop renders the same number.
+function formatCredits(credits: number): string {
+  return Math.floor(credits).toLocaleString('en-US')
 }
 
 function renderManaBalances(
@@ -214,6 +234,7 @@ const LandingNavbar = memo(function LandingNavbar({
   avatar,
   manaBalances,
   isManaLoading = false,
+  creditsBalance,
   notifications,
   onClickSignIn,
   onClickSignOut,
@@ -222,9 +243,13 @@ const LandingNavbar = memo(function LandingNavbar({
 }: LandingNavbarProps) {
   // On the landing page (/), show a minimal transparent navbar initially.
   // Once we know the user is signed in, transition to the full navbar.
+  const { pathname } = useLocation()
   const showMinimalNavbar = isLandingPage && !isSignedIn
   const l = useFormatMessage()
   const { locale } = useLocale()
+  // ui2 renders notifications in en/es/zh only, so the site locale cannot go
+  // straight through (SITES-2S0).
+  const notificationLocale = toNotificationLocale(locale)
   const { isInitialized, track } = useAnalytics()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -441,17 +466,19 @@ const LandingNavbar = memo(function LandingNavbar({
   const renderMobileMenuContent = useCallback(() => {
     return (
       <>
-        <MobileMenuItem>
-          <MobileMenuLink href={MENU_CONFIG.whatsOn.url}>{l(MENU_CONFIG.whatsOn.labelKey)}</MobileMenuLink>
-        </MobileMenuItem>
-
         {DROPDOWN_SECTIONS.map(section => {
           const config = MENU_CONFIG[section]
           const isExpanded = mobileAccordion === section
+          const isActive = isSectionActive(section, pathname)
 
           return (
             <MobileMenuItem key={section}>
-              <MobileMenuAccordionHeader onClick={() => toggleMobileAccordion(section)} aria-expanded={isExpanded}>
+              <MobileMenuAccordionHeader
+                onClick={() => toggleMobileAccordion(section)}
+                aria-expanded={isExpanded}
+                active={isActive}
+                data-active={isActive || undefined}
+              >
                 {l(config.labelKey)}
                 {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
               </MobileMenuAccordionHeader>
@@ -478,7 +505,7 @@ const LandingNavbar = memo(function LandingNavbar({
         </MobileMenuItem>
       </>
     )
-  }, [l, mobileAccordion, toggleMobileAccordion])
+  }, [l, mobileAccordion, pathname, toggleMobileAccordion])
 
   // Minimal navbar: transparent, only logo + sign in (no tabs, no blur, no shadow)
   if (showMinimalNavbar) {
@@ -543,50 +570,54 @@ const LandingNavbar = memo(function LandingNavbar({
           </LogoLink>
 
           <DesktopTabList>
-            <DesktopTabLink href={MENU_CONFIG.whatsOn.url}>{l(MENU_CONFIG.whatsOn.labelKey)}</DesktopTabLink>
+            {DROPDOWN_SECTIONS.map(section => {
+              const isActive = isSectionActive(section, pathname)
 
-            {DROPDOWN_SECTIONS.map(section => (
-              <DesktopDropdownWrapper
-                key={section}
-                onMouseEnter={() => openDesktopDropdown(section)}
-                onMouseLeave={scheduleCloseDesktopDropdown}
-              >
-                <DesktopTabWithDropdown
-                  aria-expanded={desktopDropdown === section}
-                  aria-haspopup="true"
-                  onClick={() => {
-                    const firstItem = MENU_CONFIG[section].items?.[0]
-                    if (firstItem) window.open(firstItem.url, '_self')
-                  }}
+              return (
+                <DesktopDropdownWrapper
+                  key={section}
+                  onMouseEnter={() => openDesktopDropdown(section)}
+                  onMouseLeave={scheduleCloseDesktopDropdown}
                 >
-                  {l(MENU_CONFIG[section].labelKey)}
-                  <ChevronDownIcon
-                    style={{
-                      transform: desktopDropdown === section ? 'rotate(180deg)' : 'rotate(0deg)',
-                      transition: 'transform 0.25s ease'
+                  <DesktopTabWithDropdown
+                    aria-expanded={desktopDropdown === section}
+                    aria-haspopup="true"
+                    active={isActive}
+                    data-active={isActive || undefined}
+                    onClick={() => {
+                      const firstItem = MENU_CONFIG[section].items?.[0]
+                      if (firstItem) window.open(firstItem.url, '_self')
                     }}
-                  />
-                </DesktopTabWithDropdown>
+                  >
+                    {l(MENU_CONFIG[section].labelKey)}
+                    <ChevronDownIcon
+                      style={{
+                        transform: desktopDropdown === section ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.25s ease'
+                      }}
+                    />
+                  </DesktopTabWithDropdown>
 
-                {desktopDropdown === section && (
-                  <DesktopDropdown>
-                    <DesktopDropdownInner>
-                      {MENU_CONFIG[section].items?.map(item => (
-                        <DesktopDropdownItem
-                          key={item.labelKey}
-                          href={item.url}
-                          target={item.isExternal ? '_blank' : undefined}
-                          rel={item.isExternal ? 'noopener noreferrer' : undefined}
-                        >
-                          {l(item.labelKey)}
-                          {item.isExternal && <ExternalLinkIcon />}
-                        </DesktopDropdownItem>
-                      ))}
-                    </DesktopDropdownInner>
-                  </DesktopDropdown>
-                )}
-              </DesktopDropdownWrapper>
-            ))}
+                  {desktopDropdown === section && (
+                    <DesktopDropdown>
+                      <DesktopDropdownInner>
+                        {MENU_CONFIG[section].items?.map(item => (
+                          <DesktopDropdownItem
+                            key={item.labelKey}
+                            href={item.url}
+                            target={item.isExternal ? '_blank' : undefined}
+                            rel={item.isExternal ? 'noopener noreferrer' : undefined}
+                          >
+                            {l(item.labelKey)}
+                            {item.isExternal && <ExternalLinkIcon />}
+                          </DesktopDropdownItem>
+                        ))}
+                      </DesktopDropdownInner>
+                    </DesktopDropdown>
+                  )}
+                </DesktopDropdownWrapper>
+              )
+            })}
 
             <DesktopTabLink href={MENU_CONFIG.learn.url}>{l(MENU_CONFIG.learn.labelKey)}</DesktopTabLink>
           </DesktopTabList>
@@ -595,6 +626,17 @@ const LandingNavbar = memo(function LandingNavbar({
         <NavBarRight>
           {isSignedIn && (
             <NavBarRightGroup>
+              {/* Hidden while loading and on a failed read: a `0` there would state that the wallet has
+                  no credits, which is a different claim from "we could not find out". */}
+              {creditsBalance !== null && creditsBalance !== undefined && (
+                <CreditsChip
+                  href={CREDITS_URL}
+                  aria-label={l('component.landing.navbar.credits_balance', { count: formatCredits(creditsBalance) })}
+                >
+                  <CreditsIcon />
+                  {formatCredits(creditsBalance)}
+                </CreditsChip>
+              )}
               <NotificationWrapper>
                 <BellButton
                   onClick={onClickNotificationBell}
@@ -627,7 +669,7 @@ const LandingNavbar = memo(function LandingNavbar({
                               // Use ui2's full notification renderer (correct icon, title, description per type)
                               return (
                                 <NotificationListItem key={item.id} style={{ padding: 0 }}>
-                                  <Comp notification={item} locale={locale} />
+                                  <Comp notification={item} locale={notificationLocale} />
                                 </NotificationListItem>
                               )
                             }

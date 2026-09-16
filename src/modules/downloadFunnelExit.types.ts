@@ -13,6 +13,8 @@ interface DownloadFunnelExitData {
   /** Resolved DownloadPlace (may be the `unknown` sentinel). */
   place: string
   anonUserId?: string
+  /** `click_id` from the originating download CTA click, when correlation is still fresh. */
+  clickId?: string
   /** Whether `download_started` had been fired by the time the page closed. */
   startedFired: boolean
   /** Whether `download_success` had been fired by the time the page closed. */

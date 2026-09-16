@@ -1,9 +1,11 @@
 import { Box, Typography, styled } from 'decentraland-ui2'
 
-// Mirrors the Account area design tokens: translucent black panel (rgba(0,0,0,0.2)), text #FCFCFC,
-// muted #A09BA8 / #CFCDD4, and the amber warning (#FFA500) reused from the Delete section's asset
-// warning box. Hardcoded hexes follow the sibling account styled files.
+// Mirrors the Account area design tokens: translucent black panel (rgba(0,0,0,0.2)) and text #FCFCFC.
+// Body copy is white (never muted); only the amber warning (#FFA500) reused from the Delete section's
+// asset warning box stays as a semantic accent. Hardcoded hexes follow the sibling account styled files.
 
+// Stretches the full width of the account content column (no maxWidth) so the panel matches the
+// other account sections that fill the available width.
 const Container = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -11,7 +13,6 @@ const Container = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
   borderRadius: theme.spacing(2),
   background: 'rgba(0, 0, 0, 0.2)',
-  maxWidth: 660,
   [theme.breakpoints.up('md')]: {
     padding: theme.spacing(3)
   }
@@ -31,7 +32,7 @@ const SectionTitle = styled(Typography)({
 })
 
 const Intro = styled(Typography)({
-  color: '#CFCDD4',
+  color: '#FCFCFC',
   fontSize: 14,
   lineHeight: '22px'
 })
@@ -44,7 +45,7 @@ const ResponsibilityTitle = styled(Typography)({
 })
 
 const ResponsibilityDescription = styled(Typography)({
-  color: '#A09BA8',
+  color: '#FCFCFC',
   fontSize: 14,
   lineHeight: '22px'
 })
@@ -73,23 +74,28 @@ const WarningTitle = styled(Typography)({
 })
 
 const WarningDescription = styled(Typography)({
-  color: '#A09BA8',
+  color: '#FCFCFC',
   fontSize: 13,
   lineHeight: '20px'
 })
 
 const RevealDescription = styled(Typography)({
-  color: '#A09BA8',
+  color: '#FCFCFC',
   fontSize: 13,
   lineHeight: '20px'
 })
 
-// Keeps the reveal Button at its natural width (left-aligned) inside the column layout, instead of
-// stretching full-width. The Button itself stays a plain MUI Button rendered as an anchor
-// (component="a"), which — unlike styled(Button) — preserves MUI's polymorphic href/target typing.
-const RevealActions = styled(Box)({
-  display: 'flex'
-})
+// On mobile the reveal Button stretches the full width of the section (column layout → the flex item
+// stretches on the cross axis). On desktop it switches to a row so the Button keeps its natural width,
+// left-aligned. The Button itself stays a plain MUI Button rendered as an anchor (component="a"),
+// which — unlike styled(Button) — preserves MUI's polymorphic href/target typing.
+const RevealActions = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  [theme.breakpoints.up('md')]: {
+    flexDirection: 'row'
+  }
+}))
 
 export {
   Container,

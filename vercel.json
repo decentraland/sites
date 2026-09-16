@@ -14,8 +14,8 @@
     { "source": "/blog/:path*", "destination": "/api/seo?path=/blog/:path*" },
     { "source": "/blog", "destination": "/api/seo?path=/blog" },
     { "source": "/reels/:imageId", "destination": "/api/seo?path=/reels/:imageId" },
-    { "source": "/whats-on/:path*", "destination": "/api/seo?path=/whats-on/:path*" },
-    { "source": "/whats-on", "destination": "/api/seo?path=/whats-on" },
+    { "source": "/events/:path*", "destination": "/api/seo?path=/events/:path*" },
+    { "source": "/events", "destination": "/api/seo?path=/events" },
     { "source": "/jump/events/:path*", "destination": "/api/seo?path=/jump/events/:path*" },
     { "source": "/jump/events", "destination": "/api/seo?path=/jump/events" },
     { "source": "/jump/places/:path*", "destination": "/api/seo?path=/jump/places/:path*" },
@@ -44,6 +44,28 @@
         {
           "key": "Permissions-Policy",
           "value": "accelerometer=(self \"https://www.youtube.com\"), autoplay=(self \"https://www.youtube.com\"), encrypted-media=(self \"https://www.youtube.com\"), gyroscope=(self \"https://www.youtube.com\"), fullscreen=*, camera=(self), microphone=(self), display-capture=(self), clipboard-write=(self), geolocation=(), interest-cohort=(), payment=(), usb=(), xr-spatial-tracking=()"
+        }
+      ]
+    },
+    {
+      "source": "/places",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "credentialless" },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self \"https://decentraland.zone\" \"https://decentraland.org\"), microphone=(self \"https://decentraland.zone\" \"https://decentraland.org\"), clipboard-read=(self \"https://decentraland.zone\" \"https://decentraland.org\"), clipboard-write=(self \"https://decentraland.zone\" \"https://decentraland.org\"), display-capture=(self \"https://decentraland.zone\" \"https://decentraland.org\"), xr-spatial-tracking=(self \"https://decentraland.zone\" \"https://decentraland.org\"), fullscreen=*, cross-origin-isolated=*"
+        }
+      ]
+    },
+    {
+      "source": "/places/:path*",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "credentialless" },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self \"https://decentraland.zone\" \"https://decentraland.org\"), microphone=(self \"https://decentraland.zone\" \"https://decentraland.org\"), clipboard-read=(self \"https://decentraland.zone\" \"https://decentraland.org\"), clipboard-write=(self \"https://decentraland.zone\" \"https://decentraland.org\"), display-capture=(self \"https://decentraland.zone\" \"https://decentraland.org\"), xr-spatial-tracking=(self \"https://decentraland.zone\" \"https://decentraland.org\"), fullscreen=*, cross-origin-isolated=*"
         }
       ]
     }

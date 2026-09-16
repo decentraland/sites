@@ -21,7 +21,7 @@ import {
 } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
 import { useStorageScope } from '../../hooks/useStorageScope'
 import { useStorageTrack } from '../../hooks/useStorageTrack'
@@ -34,10 +34,13 @@ function PlayerDetailPage() {
   const navigate = useNavigate()
   const { address = '' } = useParams<{ address: string }>()
   const { identity } = useAuthIdentity()
-  const { realm, position } = useStorageScope()
+  const { realm, position, blocked } = useStorageScope()
   const track = useStorageTrack()
 
-  const { data: keys, isLoading } = useListPlayerKeysQuery({ identity, address, realm, position }, { skip: !identity || !address })
+  const { data: keys, isLoading } = useListPlayerKeysQuery(
+    { identity, address, realm, position },
+    { skip: !identity || !address || blocked }
+  )
   const [deletePlayerValue] = useDeletePlayerValueMutation()
   const [clearPlayer] = useClearPlayerMutation()
 
@@ -71,7 +74,7 @@ function PlayerDetailPage() {
     navigate({ pathname: '/storage/players', search: window.location.search })
   }, [navigate])
 
-  useBlogPageTracking({
+  usePageViewTracking({
     name: t('page.storage.player_detail.title', { address: truncateAddress(address) }),
     properties: {
       section: 'storage_player_detail',

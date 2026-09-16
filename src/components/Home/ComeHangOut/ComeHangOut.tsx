@@ -17,7 +17,7 @@ import { OperativeSystem } from '../../../types/download.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { VerifiedIcon } from '../../Icon/VerifiedIcon'
 import { DownloadButton, EpicButton } from '../Hero/Hero.styled'
-import { GOOGLE_PLAY_MOBILE_URL, googlePlayBadge } from '../shared/googlePlay'
+import { googlePlayBadge } from '../shared/googlePlay'
 import {
   AvatarsImage,
   ComeHangOutContainer,
@@ -58,7 +58,7 @@ const ComeHangOut = memo(() => {
     if (isMobileAndroid) {
       return (
         <GooglePlayButton
-          href={GOOGLE_PLAY_MOBILE_URL}
+          href={DOWNLOAD_URLS.googlePlay}
           target="_blank"
           rel="noopener noreferrer"
           data-event={SegmentEvent.DOWNLOAD}
@@ -125,7 +125,7 @@ const ComeHangOut = memo(() => {
           rel="noopener noreferrer"
           data-event={SegmentEvent.DOWNLOAD}
           data-place={DownloadPlace.COME_HANG_OUT}
-          data-download-target={DownloadTarget.DESKTOP_INSTALLER}
+          data-download-target={DownloadTarget.EPIC}
           onClick={trackDownloadClick}
         >
           {l('page.download.download_on')}
@@ -168,6 +168,7 @@ const ComeHangOut = memo(() => {
             data-event={SegmentEvent.DOWNLOAD}
             data-os="iOS"
             data-place={DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}
+            data-download-target={DownloadTarget.APP_STORE}
             onClick={e => {
               trackDownloadClick(e)
               e.preventDefault()
@@ -181,6 +182,7 @@ const ComeHangOut = memo(() => {
             data-event={SegmentEvent.DOWNLOAD}
             data-os="Android"
             data-place={DownloadPlace.COME_HANG_OUT_PLATFORM_SWITCH}
+            data-download-target={DownloadTarget.GOOGLE_PLAY}
             onClick={e => {
               trackDownloadClick(e)
               e.preventDefault()

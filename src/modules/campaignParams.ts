@@ -61,6 +61,12 @@ function collectCampaignParams(source?: URLSearchParams): Record<string, string>
   return collected
 }
 
+/** Shared empty-guard for the two `with*` builders below. */
+function collectNonEmptyCampaignParams(): Record<string, string> | null {
+  const collected = collectCampaignParams()
+  return Object.keys(collected).length === 0 ? null : collected
+}
+
 /**
  * Appends the current URL's campaign params to an internal path, preserving
  * partner attribution across a plain navigation. Used by the `'/download'`
@@ -69,10 +75,28 @@ function collectCampaignParams(source?: URLSearchParams): Record<string, string>
  * with the utm params stripped, silently losing the whole funnel attribution.
  */
 function withCampaignParams(path: string): string {
-  const collected = collectCampaignParams()
-  if (Object.keys(collected).length === 0) return path
+  const collected = collectNonEmptyCampaignParams()
+  if (!collected) return path
   const params = new URLSearchParams(collected)
   return `${path}${path.includes('?') ? '&' : '?'}${params.toString()}`
 }
 
-export { collectCampaignParams, withCampaignParams }
+/**
+ * Overlays the visitor's incoming campaign params (if any) onto a base URL's
+ * own query string, overriding same-named params the base URL already
+ * carries. For URLs that ship a baked-in default attribution (e.g. the Play
+ * Store listing's own "QR code" campaign tag), this lets a live incoming
+ * campaign win instead of being silently discarded at the store handoff.
+ * Falls back to the base URL untouched when no campaign params are present.
+ */
+function withCampaignParamsOverlay(baseUrl: string): string {
+  const collected = collectNonEmptyCampaignParams()
+  if (!collected) return baseUrl
+  const url = new URL(baseUrl)
+  for (const [key, value] of Object.entries(collected)) {
+    url.searchParams.set(key, value)
+  }
+  return url.toString()
+}
+
+export { collectCampaignParams, withCampaignParams, withCampaignParamsOverlay }

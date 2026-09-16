@@ -1,6 +1,8 @@
 import { act, renderHook } from '@testing-library/react'
+import { markDownloadCtaClicked } from '../modules/downloadPageExit'
+import { attachMacArchHint } from '../modules/macArchHint'
 import { SegmentEvent } from '../modules/segment'
-import { ensureSegmentAnonymousId } from '../modules/segmentAnonymousId'
+import { ensureSegmentAnonymousId, generateUuid } from '../modules/segmentAnonymousId'
 import { postSegmentEvent } from '../modules/segmentBeacon'
 import { useDownloadClick } from './useDownloadClick'
 
@@ -12,11 +14,22 @@ jest.mock('@dcl/hooks', () => ({
 }))
 
 jest.mock('../modules/segmentAnonymousId', () => ({
-  ensureSegmentAnonymousId: jest.fn()
+  ensureSegmentAnonymousId: jest.fn(),
+  // `downloadClickCorrelation` (used by `useDownloadClick`) imports `generateUuid`
+  // from this same module, so the mock must keep exporting it.
+  generateUuid: jest.fn(() => '11111111-1111-4111-8111-111111111111')
 }))
 
 jest.mock('../modules/segmentBeacon', () => ({
   postSegmentEvent: jest.fn()
+}))
+
+jest.mock('../modules/downloadPageExit', () => ({
+  markDownloadCtaClicked: jest.fn()
+}))
+
+jest.mock('../modules/macArchHint', () => ({
+  attachMacArchHint: jest.fn()
 }))
 
 const buildClickEvent = (attrs: Record<string, string>): React.MouseEvent<HTMLElement> => {
@@ -32,9 +45,16 @@ describe('when tracking a download click', () => {
     mockTrack = jest.fn()
     mockIsInitialized = true
     ;(ensureSegmentAnonymousId as jest.Mock).mockReturnValue('33333333-3333-4333-8333-333333333333')
+    // `jest.resetAllMocks()` in the outer `afterEach` wipes the implementation
+    // set at mock-creation time above, so `generateUuid` (consumed by
+    // `recordDownloadClickCorrelation`) needs to be re-armed here too.
+    ;(generateUuid as jest.Mock).mockReturnValue('11111111-1111-4111-8111-111111111111')
   })
 
   afterEach(() => {
+    // Every handler invocation with the default options mints a correlation
+    // entry; clear it so ordering between describes can't leak state.
+    sessionStorage.removeItem('downloadFunnel:lastClick')
     jest.resetAllMocks()
   })
 
@@ -205,6 +225,143 @@ describe('when tracking a download click', () => {
         expect.any(String)
       )
       expect((postSegmentEvent as jest.Mock).mock.calls[0][1]).not.toHaveProperty('event')
+    })
+  })
+
+  describe('and the download page exit diagnostic is fed', () => {
+    it('should mark the CTA as clicked on a warm click', () => {
+      mockIsInitialized = true
+      const { result } = renderHook(() => useDownloadClick())
+      act(() => {
+        result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD, 'data-place': 'Landing Hero' }))
+      })
+      expect(markDownloadCtaClicked).toHaveBeenCalledTimes(1)
+    })
+
+    it('should mark the CTA as clicked on a cold click', () => {
+      mockIsInitialized = false
+      const { result } = renderHook(() => useDownloadClick())
+      act(() => {
+        result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD, 'data-place': 'Landing Hero' }))
+      })
+      expect(markDownloadCtaClicked).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('and the click correlation is recorded', () => {
+    afterEach(() => {
+      sessionStorage.removeItem('downloadFunnel:lastClick')
+    })
+
+    it('should include click_id and clicked_at in the warm payload', () => {
+      mockIsInitialized = true
+      const { result } = renderHook(() => useDownloadClick())
+      act(() => {
+        result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD, 'data-place': 'Landing Hero' }))
+      })
+      expect(mockTrack).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ click_id: expect.any(String), clicked_at: expect.any(Number) })
+      )
+    })
+
+    it('should include click_id and clicked_at in the cold beacon payload', () => {
+      mockIsInitialized = false
+      const { result } = renderHook(() => useDownloadClick())
+      act(() => {
+        result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD }))
+      })
+      expect(postSegmentEvent).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ click_id: expect.any(String), clicked_at: expect.any(Number) }),
+        expect.any(String)
+      )
+    })
+
+    it('should persist the same click_id it sent so /download_success can join it', () => {
+      mockIsInitialized = true
+      const { result } = renderHook(() => useDownloadClick())
+      act(() => {
+        result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD }))
+      })
+      const sentPayload = mockTrack.mock.calls[0][1] as Record<string, unknown>
+      const stored = JSON.parse(sessionStorage.getItem('downloadFunnel:lastClick')!)
+      expect(stored.click_id).toBe(sentPayload.click_id)
+    })
+  })
+
+  describe('and the CTA carries a download_target on a macOS visitor', () => {
+    beforeEach(() => {
+      mockIsInitialized = true
+      ;(attachMacArchHint as jest.Mock).mockImplementation((payload: Record<string, unknown>) => {
+        payload.mac_arch = 'apple_silicon'
+      })
+    })
+
+    it('should attach mac_arch to the payload', () => {
+      const { result } = renderHook(() => useDownloadClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-download-target': 'desktop_installer', 'data-place': 'Landing Hero' }))
+      })
+
+      expect(mockTrack).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ download_target: 'desktop_installer', mac_arch: 'apple_silicon' })
+      )
+    })
+  })
+
+  describe('and the visitor is not on macOS', () => {
+    beforeEach(() => {
+      mockIsInitialized = true
+      ;(attachMacArchHint as jest.Mock).mockImplementation(() => {})
+    })
+
+    it('should not include a mac_arch key in the payload', () => {
+      const { result } = renderHook(() => useDownloadClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-download-target': 'desktop_installer', 'data-place': 'Landing Hero' }))
+      })
+
+      expect(mockTrack.mock.calls[0][1]).not.toHaveProperty('mac_arch')
+    })
+  })
+
+  describe('and the CTA has no download_target', () => {
+    beforeEach(() => {
+      mockIsInitialized = true
+      ;(attachMacArchHint as jest.Mock).mockImplementation(() => {})
+    })
+
+    it('should not call attachMacArchHint at all', () => {
+      const { result } = renderHook(() => useDownloadClick())
+
+      act(() => {
+        result.current(buildClickEvent({ 'data-place': 'Landing Footer Link' }))
+      })
+
+      expect(attachMacArchHint).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('and the caller opts out of click correlation', () => {
+    afterEach(() => {
+      sessionStorage.removeItem('downloadFunnel:lastClick')
+    })
+
+    it('should not mint a click_id nor persist correlation state', () => {
+      mockIsInitialized = true
+      const { result } = renderHook(() => useDownloadClick({ recordCorrelation: false }))
+      act(() => {
+        result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD, 'data-place': 'Creators Hero' }))
+      })
+
+      const payload = mockTrack.mock.calls[0][1] as Record<string, unknown>
+      expect(payload).not.toHaveProperty('click_id')
+      expect(payload).not.toHaveProperty('clicked_at')
+      expect(sessionStorage.getItem('downloadFunnel:lastClick')).toBeNull()
     })
   })
 })

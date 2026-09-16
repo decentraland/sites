@@ -13,6 +13,17 @@ interface DownloadSuccessHrefOptions {
    * carried. Snake_case keys are appended as-is (see `collectCampaignParams`).
    */
   campaignParams?: Record<string, string>
+  /**
+   * First-launch deep-link params (position/realm, see `collectDeepLinkParams`)
+   * forwarded so `/download_success` can put them on the file-origin URL the
+   * launcher parses on first run (kMDItemWhereFroms / Zone.Identifier).
+   */
+  deepLinkParams?: Record<string, string>
+  /**
+   * Referral attribution address, forwarded so `/download_success` embeds it in
+   * the gateway download URL the launcher parses for attribution.
+   */
+  referrer?: string
 }
 
 const addQueryParamsToUrlString = (url: string, params: Record<string, string | undefined | null>): string => {
@@ -29,6 +40,20 @@ const addQueryParamsToUrlString = (url: string, params: Record<string, string | 
   })
 
   return urlObj.toString()
+}
+
+/**
+ * Appends download/tracking params to a download CTA URL, resolving relative
+ * env URLs (dev/zone use `/download`) against the current origin so `new URL`
+ * doesn't throw. The params are an enhancement — a malformed base must never
+ * block the download, so any failure returns `base` untouched.
+ */
+const buildTrackedDownloadUrl = (base: string, params: Record<string, string | undefined | null>): string => {
+  try {
+    return addQueryParamsToUrlString(new URL(base, window.location.origin).toString(), params)
+  } catch {
+    return base
+  }
 }
 
 const updateUrlWithLastValue = (url: string, paramKey: string, paramValue: string) => {
@@ -159,6 +184,16 @@ const buildDownloadSuccessHref = (os: string, place: string, options: DownloadSu
   if (options.arch) {
     params.set('arch', options.arch)
   }
+  if (options.referrer) {
+    params.set('referrer', options.referrer)
+  }
+  if (options.deepLinkParams) {
+    for (const [key, value] of Object.entries(options.deepLinkParams)) {
+      // Same guard as campaignParams below: never overwrite the routing params.
+      if (params.has(key)) continue
+      params.set(key, value)
+    }
+  }
   if (options.campaignParams) {
     for (const [key, value] of Object.entries(options.campaignParams)) {
       // Never let a campaign param overwrite the routing params set above
@@ -176,6 +211,7 @@ export {
   FALLBACK_CDN_RELEASE_LINKS,
   addQueryParamsToUrlString,
   buildDownloadSuccessHref,
+  buildTrackedDownloadUrl,
   calculateCDNReleaseLinksWithIdentity,
   extractDownloadLinkFromCDNReleaseOption,
   sanitizeCDNReleaseLinks,

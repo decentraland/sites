@@ -1,6 +1,6 @@
 ---
 name: tracking-events
-description: Reference and investigation playbook for analytics tracking in sites. Use when locating where an event is fired, understanding the deferred-analytics provider, adding/changing a Segment event, debugging missing events in the warehouse, or reasoning about download/onboarding/Click funnels. Triggers on "Segment", "analytics event", "tracking", "useTrackClick", "useDeferredTrack", "useAnalytics", "data-event", "download_started", "download_success", "download_failed", "Onboarding Checkpoint", "REELS_*", "GO_TO_EXPLORER", "page tracking", "where is X fired", "what tracks X", "anon_user_id", "dónde se manda evento".
+description: Reference and investigation playbook for analytics tracking in sites. Use when locating where an event is fired, understanding the deferred-analytics provider, adding/changing a Segment event, debugging missing events in the warehouse, or reasoning about download/onboarding/Click funnels. Triggers on "Segment", "analytics event", "tracking", "useTrackClick", "useDeferredTrack", "useAnalytics", "data-event", "download_started", "download_success", "download_failed", "Onboarding Checkpoint", "REELS_*", "GO_TO_EXPLORER", "page tracking", "where is X fired", "what tracks X", "anon_user_id", "dónde se manda evento", "utm", "campaign attribution", "partner attribution", "download_target".
 ---
 
 # tracking-events
@@ -13,6 +13,7 @@ The single source of truth for understanding analytics in sites. **Read top-to-b
 - **Underlying lib:** `@dcl/hooks` (workspace submodule `hooks/`) exposes `useAnalytics()` which returns `{ isInitialized, track, identify, page }`. When `isInitialized === false`, `track` is a no-op — calls just drop. There is **no built-in queueing** in `useAnalytics`.
 - **Contentsquare:** activated alongside Segment via `scheduleDeferredThirdParty` in `src/modules/deferredThirdParty.ts`. Out of scope here; it's session recording, not event tracking.
 - **Anonymous id:** `@segment/analytics-next` stores its anonymous id in `localStorage` as `ajs_anonymous_id` (JSON-encoded). Read it via `useAnonUserId()` (`src/hooks/useAnonUserId.ts`) which validates against UUID format and also accepts an `?anon_user_id=…` URL param override (used by the download success → launcher → Explorer attribution chain).
+- **First-party proxy:** ad-blocker filter lists match `cdn.segment.com` and `api.segment.io`, so those sessions send nothing. Two env keys route Segment through Decentraland's own domain (`src/modules/segmentConfig.ts`): `SEGMENT_CDN_URL` (`https://evs.e.decentraland.org`, a CloudFront distribution over static objects: settings + the GA4 remote plugin, passed to the SDK as `cdnUrl`) and `SEGMENT_API_HOST` (`api.e.decentraland.org/v1`, the proxied Tracking API: SDK delivery plus the base of the beacon's track URL via `getSegmentTrackUrl()`). They are **different hosts** and not interchangeable, the CDN one 404s on the ingestion paths. Both are validated: a value that is not an absolute https URL is dropped with a warning and Segment's own hosts are kept. **Gotcha:** the proxy is only first-party on `decentraland.org`. On `.zone` / `.today` it is third-party, so EasyPrivacy's blanket `$ping,third-party` rule still drops `navigator.sendBeacon` there and `postSegmentEvent` degrades to its `fetch keepalive` fallback.
 
 ## 2. Two abstraction layers — infra and domain
 
@@ -45,7 +46,7 @@ You should almost never call `useAnalytics().track` directly. The decision tree:
 All declared in `src/modules/segment.types.ts` and re-exported by `src/modules/segment.ts`:
 
 - **`SegmentEvent`** — every event name fired with `track()`. Mixed casing because some literals are historical: `'Click'`, `'Download'`, `'Reels Click …'` (Title Case Words), and the funnel events `download_started / download_success / download_failed` (snake_case). Don't normalize — the data team tracks by these literal strings.
-- **`DownloadPlace`** — kebab-case enum for the `place` field of `download_*` events. Values: `landing-hero`, `landing-hero-epic`, `landing-hero-platform-switch`, `come-hang-out`, `jump-in-already-user`, `download-page`, `download-success-footer`, `unknown`.
+- **`DownloadPlace`** — kebab-case enum for the `place` field of `download_*` events. 16 values incl. `landing-hero`, `landing-hero-epic`, `landing-hero-platform-switch`, `come-hang-out`, `come-hang-out-platform-switch`, `jump-in-already-user`, `play-hero`, `play-hero-epic`, `play-hero-app-store`, `play-hero-google-play`, `play-experimental-web`, `download-page`, `download-success-footer`, `creator-hub-download-page`, `creator-hub-success-page`, `unknown` — see `src/modules/segment.types.ts` for the authoritative list (it grows; don't copy this one stale).
 - **`SectionViewedTrack`** — Title Case enum for the `place` field of `Click` events (consumed via `data-place`). Values: `Landing Hero`, `Creators Hero`, `Landing Explore`, etc. **Different namespace from `DownloadPlace`** — they happen to overlap in intent (e.g. `SectionViewedTrack.LANDING_HERO = 'Landing Hero'` vs `DownloadPlace.LANDING_HERO = 'landing-hero'`), but to join them in a query the warehouse has to normalize.
 
 ## 4. The `data-event` convention (Click events)
@@ -126,9 +127,81 @@ DOWNLOAD_FAILED → DOWNLOAD_STARTED's payload + {
 
 When the upstream `Click` (post-P0-1 fix: `'Download'` event name) is correctly fired with `place: 'Landing Hero'` (Title Case `SectionViewedTrack`), but `download_started` arrives with `place: 'landing-hero'` (kebab-case `DownloadPlace`). They're the same intent — different namespace. The data team must normalize to join them.
 
+### 5.5 Partner (UTM) attribution + `download_target` — PR #654, 2026-07-02
+
+Marketing shares links like `https://decentraland.org/download?utm_source=shefi&utm_campaign=…`. Two things had to be threaded through the whole funnel: the UTM params themselves, and a `download_target` dimension (`desktop_installer` / `app_store` / `google_play`) so the warehouse can split desktop installer activations from mobile store exits (the latter never reach `/download_success`).
+
+**Campaign params — `src/modules/campaignParams.ts` (new):**
+
+- `CAMPAIGN_PARAM_KEYS` — allowlist of the 5 params: `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`.
+- `collectCampaignParams(source?: URLSearchParams)` — reads those keys off `source` (defaults to `window.location.search`, SSR-guarded), truncates each value to `MAX_CAMPAIGN_VALUE_LENGTH = 256` chars, omits absent/empty ones.
+- `withCampaignParams(path)` — appends the currently-collected params to a path. Used for the `/download` fallback href rendered before `userAgentData` resolves (Hero, ComeHangOut, PlayPage).
+- **Documented limitation (in the file's own docstring):** params are read from the CURRENT URL at call time, not persisted per session. A visitor landing on `/?utm_source=…` who then browses internally before clicking a download CTA loses the attribution — the query string is gone by the time `collectCampaignParams()` runs. Partner links must point directly at a page hosting download CTAs (`/`, `/download`, `/play`).
+- Kept snake_case (`utm_source`, not `utmSource`) so the keys match both the raw partner-sent param names and the Segment payload convention (LL-3) — no renaming needed to flow into tracking payloads.
+
+**`src/hooks/useDownloadSuccessHref.ts` (new):** returns a memoized `(os, place) => href` builder for `/download_success` links: `buildDownloadSuccessHref(os, place, { anonUserId, campaignParams: collectCampaignParams() })`. `anonUserId` is captured via `useAnonUserId()` at hook scope, but `collectCampaignParams()` is called **inside the returned callback**, not at hook render time — i.e. re-evaluated fresh on every click, not cached. Intentional: it keeps the params live for the button's actual click moment rather than whatever the URL was when the component last rendered. Replaces a local `useCallback(() => buildDownloadSuccessHref(os, place, { anonUserId }), [anonUserId])` that used to be duplicated in Hero, ComeHangOut, and PlayPage — now they all call this hook (`DownloadOptions` still composes `buildDownloadSuccessHref` inline because it also needs to pass `arch`).
+
+**`src/modules/segment.types.ts` — `DownloadTarget` enum (new):**
+
+```ts
+enum DownloadTarget {
+  DESKTOP_INSTALLER = 'desktop_installer',
+  APP_STORE = 'app_store',
+  GOOGLE_PLAY = 'google_play',
+  EPIC = 'epic',
+  CREATOR_HUB = 'creator_hub'
+}
+```
+
+Set via `data-download-target={DownloadTarget.X}` on every download CTA (Hero, ComeHangOut, DownloadOptions, DownloadLayout's mobile store badges, PlayPage, Creator Hub CTAs) and read into payloads by `useDownloadClick`, `useTrackClick`, and `buildTrackerExtra` (below).
+
+**`src/modules/url.ts` — `DownloadSuccessHrefOptions.campaignParams`:** the param-assembly loop in `buildDownloadSuccessHref` guards against a campaign key clobbering a routing param: `if (params.has(key)) continue` before `params.set(key, value)`, so no `utm_*` can overwrite `os`/`place`/`arch`/`anon_user_id`. Unreachable today (the `utm_*` allowlist in `collectCampaignParams` can't collide with those names), but the option accepts a bare `Record<string, string>` so a future caller passing raw `searchParams` entries can't corrupt the funnel.
+
+**`src/hooks/useDownloadClick.ts` — merge order:** the returned click handler builds `payload = { ...collectCampaignParams(), ...dataAttributes }` — `data-*` attributes are spread **after** campaign params, so a same-named `data-*` attribute wins on collision (campaign params never override component-controlled data). `downloadTarget` is destructured out of `dataAttributes` first and re-added as `payload.download_target` (`readDataAttributes` camelCases `data-download-target` → `downloadTarget`; the warehouse dimension is snake_case) — this rename happens once on the shared payload object before the warm/cold branch, so both transports (`deferredTrack` when Segment is warm, `postSegmentEvent` when cold) get the same snake_case key.
+
+**`mac_arch` (`apple_silicon` | `intel` | `unknown`) — 2026-07-21:** Mac-only GPU-based architecture hint attached inside the shared `buildClickPayload` (`src/hooks/adapters/clickPayload.helpers.ts`, consumed by both `useDownloadClick` and `useTrackClick`) to any Click that carries a `download_target` (omitted entirely off-macOS). Source: `src/modules/macArchHint.ts` — reads the WebGL unmasked renderer once per page load (memoized), because the UA reports "Intel Mac OS X" even on Apple Silicon and `userAgentData.architecture` comes back empty. Why it exists: the launcher DMG is arm64-only; an Intel Mac downloads it, cannot open it, and fires zero launcher telemetry — this property is the only place in the pipeline where that doomed cohort is measurable. The macOS gate matches "Macintosh" only — iPhone/iPad UAs say "like Mac OS X" but never "Macintosh", so iOS store-badge taps stay excluded — and iPads in desktop mode (Macintosh UA but `maxTouchPoints > 1`; real Macs report 0) are excluded too, so they can't dilute the Intel share. NVIDIA/GeForce/Quadro renderers classify as `intel` (NVIDIA GPUs only ever shipped in Intel-era Macs).
+
+**`src/pages/DownloadSuccess/DownloadSuccess.tsx` — `buildTrackerExtra()`:** builds the shared `extra` object merged into every `download_started/_success/_failed` payload (`downloadTracking.ts`'s `buildBasePayload` spreads `ctx.extra` first, so core schema fields still win on collision):
+
+```ts
+{
+  ...(collectClientFingerprint() ?? {}),
+  ...campaignParamsRef.current,
+  ...(correlation ? { click_id: correlation.click_id, ms_since_click: Date.now() - correlation.clicked_at } : {}),
+  download_target: DownloadTarget.DESKTOP_INSTALLER
+}
+```
+
+Only `collectClientFingerprint()` is wrapped in try/catch. Campaign params, click correlation, and `download_target` are spread outside that catch so a fingerprint failure cannot drop attribution (P2-4 resolved).
+
+**`src/components/Layout/DownloadLayout.tsx`:** the mobile store badges (Google Play / App Store) call `useDownloadClick()` (aliased `trackStoreExit`) with their own `data-*` attributes (`data-download-target={DownloadTarget.GOOGLE_PLAY | APP_STORE}`, `data-os`, `data-place={DownloadPlace.DOWNLOAD_PAGE}`). This is the only attribution signal for these exits — they leave to the store and never reach `/download_success`, so there's no `download_started` for them; the beacon-backed `Click` event is the whole record.
+
+**Hero.tsx / ComeHangOut.tsx:** both replaced their local `downloadSuccessHref` builder with `useDownloadSuccessHref()` and added `data-download-target` to every download CTA (desktop button, Epic button, platform-switch icons, mobile store buttons). `PlayPage.tsx` and `DownloadOptions.tsx` got the same `data-download-target` additions (all `DESKTOP_INSTALLER` except the store badges).
+
+### 5.6 Click correlation + funnel diagnostics — PR #675, 2026-07-07
+
+This PR instruments the blind window between the upstream `Click` and `download_started` without changing existing funnel event semantics.
+
+**`click_id` / `clicked_at`:** `src/modules/downloadClickCorrelation.ts` mints `{ click_id, clicked_at }` with `generateUuid()` and stores it in `sessionStorage` under `downloadFunnel:lastClick`. `readDownloadClickCorrelation()` returns only fresh, valid records; max age is 30 minutes. `useDownloadClick()` attaches the same object to the upstream `Click`, and `/download_success` reads it back so `download_started/_success/_failed` can include `click_id` plus `ms_since_click`.
+
+**`download_success_arrived`:** `DownloadSuccess.tsx` fires this immediately on mount via `postSegmentEvent` + `ensureSegmentAnonymousId()`, before the download attempt starts. It includes `os`, `arch`, `revisit`, `auth_state`, UTM params, `download_target=desktop_installer`, optional `click_id`/`ms_since_click`, and always includes `place` (including `unknown`) so direct or malformed landings are measurable.
+
+**`download_page_exit`:** `/download` mounts `useDownloadPageExit()` from `DownloadLayout.tsx`. The hook resets a module-level CTA flag on mount, then sends `download_page_exit` on every `visibilitychange -> hidden` with `cta_clicked`, `ms_on_page`, and campaign params. `useDownloadClick()` marks the CTA flag on every download CTA click. There is intentionally no fire-once guard; the warehouse can collapse multiple rows.
+
+**`download_redirect_failed`:** `DownloadOptions.tsx` wraps only `getDownloadLinkWithIdentity()` in a try/catch when `downloadOnClick` is enabled. On failure it emits `download_redirect_failed` with `{ os, arch?, place: 'download-page', reason, download_target: 'desktop_installer', utm_*? }` and rethrows, preserving the previous behavior where a dispatch failure aborts the redirect.
+
+**`download_target` coverage:** `useTrackClick()` now mirrors `useDownloadClick()` by renaming `data-download-target` / `downloadTarget` into payload key `download_target`. Creator Hub CTAs use `DownloadTarget.CREATOR_HUB` on their existing `Click` events only; do not add a `creator_hub_download_*` event family. `DownloadTarget.EPIC` separates Epic Store exits from desktop installer activations. The proposed ComeHangOut `Click` -> `Download` change was deliberately not executed; changing existing funnel buckets is a data-team decision, not part of this tracking-only PR.
+
 ## 6. The Creator Hub funnel — current state
 
-**Only the upstream `Click` is tracked**, by design. Decision (2026-05-22): the Creator Hub flow doesn't ship `creator_hub_download_*` outcome events because the download is `dispatch-and-forget` — we have no signal that the file actually saved, no progress, no `_FAILED` to fire. The primary download CTAs (CreatorsHero, CreatorHubDownload page) emit `Click` with `place=Creators Hero` or `place=Download` and `event=Download` via the standard `useTrackClick` adapter. The footer re-download on `/download/creator-hub-success` also fires `Click` with `place=Creator Hub Success Footer` + `data-os` so analytics can distinguish footer clicks from primary CTAs. No `page()` event on the success page.
+**Upstream `Click` + `download_started` + `download_success`, reusing the shared enum — NOT a separate `creator_hub_download_*` family.** Shipped by PR #619 (merged 2026-06-23, predates the 2026-07 tracking work in this doc).
+
+- **Click** — the primary download CTAs (CreatorsHero, `/download/creator-hub` page) emit `Click` with `place=Creators Hero` / `place=Download` and `event=Download` via the standard `useTrackClick` adapter, same as any other download surface.
+- **`download_started`** — fired from `src/hooks/useCreatorHubDownload.ts` (`handleDownload`) via `createDownloadTracker(...).started()` at the moment the file download is triggered (`place: DownloadPlace.CREATOR_HUB_DOWNLOAD_PAGE`). `revisit` is hardcoded `0` — a click is a one-shot intent, there's no per-attempt revisit notion on this page.
+- **`download_success`** — fired from `src/pages/download/CreatorHubDownloadSuccess.tsx` on mount (`useEffect`, guarded by a ref so React strict-mode double-invoke only fires once) via `createDownloadTracker(...).success(filename)`, `place: DownloadPlace.CREATOR_HUB_SUCCESS_PAGE`. **Semantically this is "the visitor reached the post-download page", not "bytes arrived"** — sites can't observe the actual download outcome for this flow (see below), so reaching the success page is used as the completion signal. `revisit` increments per mount for the same `os:arch` (sessionStorage counter, mirrors the Explorer `DownloadSuccess` pattern).
+- **No `download_failed`** — still true, and still by design: the Creator Hub download is `dispatch-and-forget` (`triggerFileDownload` + a 3s `setTimeout` redirect, no stream to observe). There is no browser-observable failure signal to fire it from.
+- The footer re-download on `/download/creator-hub-success` fires `Click` via the standard `useTrackClick` adapter with `data-place={SectionViewedTrack.CREATOR_HUB_SUCCESS_FOOTER}`, `data-os`, `data-download-target={DownloadTarget.CREATOR_HUB}` so analytics can distinguish footer clicks from primary CTAs.
+- No `page()` event on the success page.
 
 ## 7. Adjacent / route-level tracking
 
@@ -181,11 +254,12 @@ If grep returns zero matches the enum value is **dead code** — verify with a r
 
 - **P0-1** (✅ shipped): `useTrackClick` ignoring `data-event` for non-Click events — fixed; verify with the dead-enum grep above when touching callsites.
 - **P0-2** (✅ done — Onboarding Checkpoint family deprecated 2026-05-22): all CP5/CP6 fires and the `trackCheckpoint` helper were removed. No replacement scheduled.
-- **P0-3:** Creator Hub has zero outcome tracking. Solution: mirror Explorer pattern with a `CREATOR_HUB_DOWNLOAD_*` enum family, reuse `createDownloadTracker`.
+- **P0-3** (✅ done — PR #619): Creator Hub now fires `download_started` (on click) and `download_success` (on success-page mount) via the shared `createDownloadTracker`, reusing `SegmentEvent.DOWNLOAD_STARTED/_SUCCESS` — NOT a separate `CREATOR_HUB_DOWNLOAD_*` enum family. No `_FAILED` (still no observable failure signal). See section 6.
 - **P1-1** (✅ done): `download_started/success/failed` payload + timing fixes. See Plan.md section.
 - **P1-2** (✅ done — `useAnonUserId` reactivity 2026-05-22): hook now depends on `isInitialized` so it re-evaluates when Segment boots; `DownloadSuccess` gates the auto-download on a `anonUserIdReady` state with an 800ms timeout fallback. See LL-9.
 - **P1-3** (✅ partial via `useDeferredTrack`): `useTrackClick` silent drop when `isInitialized === false`. Adopting `useDeferredTrack` inside the adapter would resolve this for Click events too.
 - **P1-4** (✅ done — `download_started/_success/_failed` drop-on-unmount fixed 2026-07-01): these events used to fire via `useDeferredTrack`, whose queue is component-scoped and drops pending events on unmount — a real risk on `/download_success`, the page users are most likely to abruptly leave. `createDownloadTracker` now fires via `postSegmentEvent` + `ensureSegmentAnonymousId()` instead, matching the `useDownloadClick` (PR #636) / `downloadFunnelExit.ts` (PR #632) precedent. See 5.3 and LL-10.
+- **P2-4** (✅ done — PR #668): `DownloadSuccess.tsx` now catches only `collectClientFingerprint()` inside `buildTrackerExtra()`. Campaign params, click correlation, and `download_target` are always spread outside that catch, so a fingerprint failure no longer drops attribution.
 - **P2 list:** see Plan.md.
 
 ## 12. Lessons learned — anti-patterns to NOT repeat
@@ -194,7 +268,7 @@ Discovered the hard way during the 2026-05-22 tracking overhaul. Read before des
 
 ### LL-1. Don't mirror the Explorer pattern blindly on the Creator Hub
 
-The Creator Hub flow is **dispatch-and-forget** (anchor click → 3s setTimeout → redirect). There is no stream, no progress, no failure signal from the browser. **Do NOT add a `creator_hub_download_started/_success/_failed` event family unless the data team explicitly requests it** — the upstream `Click` already covers the funnel that product needs. The 2026-05-22 P0-3 was originally scoped as a full event family by reading the analysis HTML in isolation; the user corrected it to "just fix the footer click" because the rest was unnecessary scope creep.
+The Creator Hub flow is **dispatch-and-forget** (anchor click → 3s setTimeout → redirect). There is no stream, no progress, no failure signal from the browser. PR #619 did add `download_started`/`download_success` for this funnel (see section 6) — but **reusing the shared `SegmentEvent` enum**, not a new `creator_hub_download_*` family, and **without** a `_failed` counterpart (there's nothing to catch a failure from). If a future change proposes a dedicated `CREATOR_HUB_DOWNLOAD_*` enum family or a `_failed` event for this flow, that's the anti-pattern this lesson warns against — confirm with the data team first, don't invent a failure signal that doesn't exist in the browser.
 
 ### LL-2. Don't assume an event family is active — check with the data team
 
@@ -260,6 +334,10 @@ If you add a NEW page that derives URLs or analytics payloads from `useAnonUserI
 5. `src/hooks/adapters/useTrackLinkContext.ts` — Click adapter.
 6. `src/modules/downloadTracking.ts` + `.types.ts` — Download events factory (fires via the beacon transport, see 5.3/LL-10).
 7. `src/modules/downloadFunnelExit.ts` — sibling beacon-transport precedent for the download family.
-8. `src/modules/DeferredAnalyticsProvider.tsx` — provider wiring.
-9. `src/components/Layout/Layout.tsx` + `Layout.helpers.ts` — automatic `page()` + `isPageTrackingExempt`.
-10. `src/hooks/useBlogPageTracking.ts` — manual `page()` for Helmet routes.
+8. `src/modules/campaignParams.ts` — UTM param collection + truncation, `withCampaignParams` (see 5.5).
+9. `src/hooks/useDownloadSuccessHref.ts` — memoized `/download_success` href builder baking in `anonUserId` + campaign params (see 5.5).
+10. `src/modules/downloadClickCorrelation.ts` — mints/reads the `click_id`/`clicked_at` pair that joins `Click` to `download_*` (see 5.6).
+11. `src/modules/downloadPageExit.ts` + `src/hooks/useDownloadPageExit.ts` — `/download` abandonment diagnostic (see 5.6).
+12. `src/modules/DeferredAnalyticsProvider.tsx` — provider wiring.
+13. `src/components/Layout/Layout.tsx` + `Layout.helpers.ts` — automatic `page()` + `isPageTrackingExempt`.
+14. `src/hooks/useBlogPageTracking.ts` — manual `page()` for Helmet routes.

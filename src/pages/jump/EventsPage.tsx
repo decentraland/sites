@@ -147,7 +147,7 @@ const EventsPage = () => {
         <EventActions isMobile={isMobile}>
           <DeletedNotice>
             {formatMessage('component.jump.events_page.deleted_notice_prefix')}{' '}
-            <DeletedNoticeLink to="/whats-on">{formatMessage('component.jump.events_page.deleted_notice_link')}</DeletedNoticeLink>{' '}
+            <DeletedNoticeLink to="/events">{formatMessage('component.jump.events_page.deleted_notice_link')}</DeletedNoticeLink>{' '}
             {formatMessage('component.jump.events_page.deleted_notice_suffix')}
           </DeletedNotice>
         </EventActions>

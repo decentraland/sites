@@ -12,7 +12,7 @@ import { StorageLayout } from '../../components/storage/StorageLayout'
 import { getStorageErrorStatus, useClearEnvMutation, useDeleteEnvMutation, useListEnvKeysQuery } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
 import { useStorageScope } from '../../hooks/useStorageScope'
 import { useStorageTrack } from '../../hooks/useStorageTrack'
@@ -23,10 +23,10 @@ function EnvPage() {
   useStorageRedirect()
   const t = useFormatMessage()
   const { identity } = useAuthIdentity()
-  const { realm, position } = useStorageScope()
+  const { realm, position, blocked } = useStorageScope()
   const track = useStorageTrack()
 
-  const { data: envKeys, isLoading } = useListEnvKeysQuery({ identity, realm, position }, { skip: !identity })
+  const { data: envKeys, isLoading } = useListEnvKeysQuery({ identity, realm, position }, { skip: !identity || blocked })
   const [deleteEnv] = useDeleteEnvMutation()
   const [clearEnv] = useClearEnvMutation()
 
@@ -56,7 +56,7 @@ function EnvPage() {
     setClearOpen(false)
   }, [clearEnv, identity, realm, position, track])
 
-  useBlogPageTracking({
+  usePageViewTracking({
     name: t('page.storage.env.title'),
     properties: { section: 'storage_env', realm: realm ?? undefined, position: position ?? undefined }
   })

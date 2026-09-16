@@ -1,4 +1,4 @@
-import { collectCampaignParams, withCampaignParams } from './campaignParams'
+import { collectCampaignParams, withCampaignParams, withCampaignParamsOverlay } from './campaignParams'
 
 // Mirrors the module-private cap in campaignParams.ts; asserted here as the
 // documented, stable public behavior (a partner cannot flood the warehouse).
@@ -95,6 +95,40 @@ describe('withCampaignParams', () => {
     it('should ignore non-campaign params on the current URL', () => {
       window.history.pushState({}, '', '/?utm_source=shefi&os=evil')
       expect(withCampaignParams('/download')).toBe('/download?utm_source=shefi')
+    })
+  })
+})
+
+describe('withCampaignParamsOverlay', () => {
+  afterEach(() => {
+    window.history.pushState({}, '', '/')
+  })
+
+  describe('when the current URL has no campaign params', () => {
+    it('should return the base URL unchanged', () => {
+      const baseUrl = 'https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&utm_source=fdn'
+      expect(withCampaignParamsOverlay(baseUrl)).toBe(baseUrl)
+    })
+  })
+
+  describe('when the current URL carries campaign params', () => {
+    beforeEach(() => {
+      window.history.pushState({}, '', '/?utm_source=x&utm_medium=paid&utm_campaign=ad')
+    })
+
+    it('should override same-named params already present on the base URL', () => {
+      const baseUrl =
+        'https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&utm_org=dclrgl&utm_source=fdn&utm_medium=qr&utm_campaign=dclpage&utm_content=android'
+      const result = new URL(withCampaignParamsOverlay(baseUrl))
+      expect(result.searchParams.get('utm_source')).toBe('x')
+      expect(result.searchParams.get('utm_medium')).toBe('paid')
+      expect(result.searchParams.get('utm_campaign')).toBe('ad')
+    })
+
+    it('should preserve params not part of the campaign allowlist', () => {
+      const baseUrl = 'https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&utm_source=fdn'
+      const result = new URL(withCampaignParamsOverlay(baseUrl))
+      expect(result.searchParams.get('id')).toBe('org.decentraland.godotexplorer')
     })
   })
 })

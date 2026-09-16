@@ -2,8 +2,8 @@
 import { localStorageGetIdentity } from '@dcl/single-sign-on-client'
 import { getEnv } from '../../config/env'
 import { placesClient } from '../../services/placesClient'
+import { isEns } from '../../utils/ens'
 import { fetchWithOptionalIdentity } from '../../utils/signedFetch'
-import { isEns } from './places.helpers'
 import type {
   Creator,
   GetEventByIdArgs,

@@ -16,7 +16,7 @@ import windowsSetup from '../../images/download/creator-hub/windows_setup.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
 import { createDownloadTracker, toAuthState } from '../../modules/downloadTracking'
 import { triggerFileDownload } from '../../modules/file'
-import { DownloadPlace, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
+import { DownloadPlace, DownloadTarget, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { Architecture, OperativeSystem } from '../../types/download.types'
 import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from '../DownloadSuccess/DownloadSuccess.types'
 import { DownloadSuccessLayout } from '../DownloadSuccess/DownloadSuccessLayout'
@@ -80,7 +80,14 @@ const CreatorHubDownloadSuccess = memo(() => {
       anon_user_id: anonUserId,
       // eslint-disable-next-line @typescript-eslint/naming-convention
       auth_state: toAuthState(hasValidIdentity),
-      revisit: revisitNumber
+      revisit: revisitNumber,
+      // Split the Creator Hub funnel from the Explorer funnel — the matching
+      // download_success carries download_target=creator_hub, same as the
+      // download_started fired on the previous page (useCreatorHubDownload).
+      extra: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        download_target: DownloadTarget.CREATOR_HUB
+      }
     })
     tracker.success(filename)
   }, [osLink, clientOS, clientArch, anonUserId, hasValidIdentity, revisitNumber])
@@ -158,6 +165,7 @@ const CreatorHubDownloadSuccess = memo(() => {
             data-place={SectionViewedTrack.CREATOR_HUB_SUCCESS_FOOTER}
             data-event={SegmentEvent.DOWNLOAD}
             data-os={clientOS}
+            data-download-target={DownloadTarget.CREATOR_HUB}
           >
             {l('page.creator-hub.download.success.footer_link_label')}
           </a>

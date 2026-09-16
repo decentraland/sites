@@ -16,7 +16,7 @@ interface EmailCardProps {
 
 const EmailCard = ({ email = '', unconfirmedEmail, details, disabled = false, onToggleAll }: EmailCardProps) => {
   const t = useFormatMessage()
-  const [setEmail, { isLoading }] = useSetEmailMutation()
+  const [setEmail, { isLoading, isError, reset }] = useSetEmailMutation()
   const [value, setValue] = useState(unconfirmedEmail || email)
   const [isValid, setIsValid] = useState(true)
   const lastSyncedRef = useRef(unconfirmedEmail || email)
@@ -32,10 +32,17 @@ const EmailCard = ({ email = '', unconfirmedEmail, details, disabled = false, on
     }
   }, [email, unconfirmedEmail])
 
-  const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(event.target.value)
-    setIsValid(true)
-  }, [])
+  const handleChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setValue(event.target.value)
+      setIsValid(true)
+      // Clear a previous server rejection so the generic error disappears as the user edits.
+      if (isError) {
+        reset()
+      }
+    },
+    [isError, reset]
+  )
 
   const handleSave = useCallback(() => {
     if (!Email.validate(value)) {
@@ -63,6 +70,11 @@ const EmailCard = ({ email = '', unconfirmedEmail, details, disabled = false, on
   }, [email, unconfirmedEmail, value, t])
 
   const isSaveDisabled = disabled || isLoading || value === '' || (value === email && !unconfirmedEmail)
+
+  // Surface the client-side format error first, then any server rejection as a generic message
+  // (rule 10: the raw server body is not shown to the user).
+  const hasError = !isValid || isError
+  const helperText = !isValid ? t('account.notifications.email.invalid') : isError ? t('account.notifications.email.error') : undefined
 
   // `aria-label` is a valid DOM attribute but not camelCase; scope the lint exception to this object.
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -97,8 +109,8 @@ const EmailCard = ({ email = '', unconfirmedEmail, details, disabled = false, on
           value={value}
           onChange={handleChange}
           placeholder={t('account.notifications.email.placeholder')}
-          error={!isValid}
-          helperText={!isValid ? t('account.notifications.email.invalid') : undefined}
+          error={hasError}
+          helperText={helperText}
           disabled={disabled || isLoading}
           data-role="notifications-email-input"
         />

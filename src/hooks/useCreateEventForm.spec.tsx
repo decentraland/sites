@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import type { AuthIdentity } from '@dcl/crypto'
 import type { EventEntry } from '../features/events'
 import { useCreateEventForm } from './useCreateEventForm'
@@ -60,6 +60,14 @@ jest.mock('./useAuthIdentity', () => ({
   useAuthIdentity: () => mockUseAuthIdentityReturn
 }))
 
+jest.mock('./useAdminPermissions', () => ({
+  useAdminPermissions: () => ({
+    isAdmin: false,
+    canApproveAnyEvent: false,
+    canApproveOwnEvent: false
+  })
+}))
+
 type FormOverrides = Partial<Record<keyof CreateEventFormState, string>>
 
 function buildValidFormFields(overrides: FormOverrides = {}) {
@@ -87,6 +95,7 @@ function fillValidForm(setField: ReturnType<typeof useCreateEventForm>['setField
     setField('coordX', values.coordX)
     setField('coordY', values.coordY)
     setField('email', values.email)
+    if (values.featuredItem !== undefined) setField('featuredItem', values.featuredItem)
     setField('imageUrl', 'https://cdn/test.png')
     setField('imagePreviewUrl', 'https://cdn/test.png')
   })
@@ -221,6 +230,60 @@ describe('useCreateEventForm', () => {
     })
   })
 
+  describe('when the featured item URN is invalid', () => {
+    it('should report the invalid-featured-item error and not submit', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField, { featuredItem: 'urn:decentraland:matic:collections-v1:not-allowed' })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.featuredItem).toBe('create_event.error_invalid_featured_item')
+      expect(mockCreateEvent).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when the featured item URN is valid', () => {
+    it('should send the trimmed URN as featured_item', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+      const urn = 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef12345678:7'
+
+      fillValidForm(result.current.setField, { featuredItem: `  ${urn}  ` })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.featuredItem).toBeUndefined()
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({ featured_item: urn })
+        })
+      )
+    })
+  })
+
+  describe('when the featured item is left blank', () => {
+    it('should send featured_item as null', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField, { featuredItem: '   ' })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.featuredItem).toBeUndefined()
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({ featured_item: null })
+        })
+      )
+    })
+  })
+
   describe('when repeat is enabled on a weekly recurrence with a valid end date', () => {
     it('should send WEEKLY, interval 1 and a 0 weekday mask so the server uses the start_at weekday', async () => {
       const { result } = renderHook(() => useCreateEventForm())
@@ -244,7 +307,7 @@ describe('useCreateEventForm', () => {
             recurrent_interval: 1,
             // 0 (not undefined) so the backend clears any stale mask and recurs on start_at's weekday — issue #560.
             recurrent_weekday_mask: 0,
-            recurrent_until: expect.stringContaining('2030-02-01')
+            recurrent_until: new Date('2030-02-01T23:59:59.999').toISOString()
           })
         })
       )
@@ -1042,10 +1105,15 @@ describe('useCreateEventForm', () => {
       let pendingSelect: Promise<void> | null = null
       await act(async () => {
         pendingSelect = result.current.handleVerticalImageSelect(file)
-        // let the async dimension check resolve and the state flip to uploading
-        await new Promise(resolve => setTimeout(resolve, 0))
       })
-      expect(result.current.form.isUploadingVerticalImage).toBe(true)
+      // Wait for the async dimension check to resolve and flip the state to
+      // uploading. A single `setTimeout(0)` used to stand in for this, which
+      // assumed the check always lands within one macrotask: on a loaded CI
+      // runner it does not, the assertion below then failed to settle, and the
+      // whole suite fell over on a 5s timeout.
+      await waitFor(() => {
+        expect(result.current.form.isUploadingVerticalImage).toBe(true)
+      })
 
       await act(async () => {
         await result.current.handleSubmit()

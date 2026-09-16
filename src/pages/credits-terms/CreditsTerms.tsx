@@ -18,13 +18,15 @@ const TABLE_OF_CONTENTS: TOCEntry[] = [
 const CreditsTerms = memo(() => (
   <LegalPageLayout title="Credits" activeSlug="/credits-terms" tableOfContents={TABLE_OF_CONTENTS}>
     <Paragraph>Terms and Conditions</Paragraph>
-    <Paragraph>Last Updated: June 18, 2026</Paragraph>
+    <Paragraph>Last Updated: August 4, 2026</Paragraph>
+    <Paragraph>Previous Update: June 18, 2026</Paragraph>
 
     <Section id="general-provisions">
       <SectionTitle>1. General Provisions</SectionTitle>
       <Paragraph>
         1.1. These Terms and Conditions (the &quot;Credits Terms&quot;) govern the purchase and use of Decentraland Credits
-        (&quot;Credits&quot;) within the Decentraland iOS mobile application and the Decentraland platform, if applicable.
+        (&quot;Credits&quot;) within the Decentraland iOS mobile application, the Decentraland platform and any future mobile or web
+        application, if applicable.
       </Paragraph>
       <Paragraph>
         1.2. Credits are offered by the Decentraland Foundation (&quot;Foundation&quot;, &quot;we&quot;, &quot;us&quot;, or
@@ -44,7 +46,8 @@ const CreditsTerms = memo(() => (
       <SectionTitle>2. Credits</SectionTitle>
       <Paragraph>
         2.1. Credits are a limited digital in-app utility purchased with real money via Apple In-App Purchase (&quot;IAP&quot;) on the
-        Decentraland iOS mobile application.
+        Decentraland iOS mobile application, via Stripe on the Decentraland platform or any other online payment service provider and/or app
+        to be connected to Decentraland apps or platform in the future.
       </Paragraph>
       <Paragraph>
         2.2. Credits are available solely for use within Decentraland. Credits do not constitute money, stored value, cryptocurrency,
@@ -56,8 +59,9 @@ const CreditsTerms = memo(() => (
         within the Decentraland ecosystem in accordance with these Terms.
       </Paragraph>
       <Paragraph>
-        2.4. These Credits are licensed content provided by the Foundation and are not sold by Apple. Apple has no obligation to provide
-        maintenance, support, refunds, or warranties relating to Credits except as required under Apple&apos;s applicable policies.
+        2.4. Where Credits are purchased via IAP, these Credits are licensed content provided by the Foundation and are not sold by Apple.
+        Apple has no obligation to provide maintenance, support, refunds, or warranties relating to Credits except as required under
+        Apple&apos;s applicable policies.
       </Paragraph>
     </Section>
 
@@ -80,12 +84,15 @@ const CreditsTerms = memo(() => (
     <Section id="purchase-of-credits">
       <SectionTitle>4. Purchase of Credits</SectionTitle>
       <Paragraph>
-        4.1. Credits may only be purchased through IAP on iOS devices. The purchase of Credits is processed through Apple&apos;s checkout
-        flow, which constitutes explicit consent to the transaction.
+        4.1. Credits may only be purchased through (a) IAP on iOS devices, (b) Stripe on the Decentraland platform, or (c) any other online
+        payment service provider and/or app to be connected to Decentraland apps or platform in the future. The purchase of Credits is
+        processed through Apple&apos;s, Stripe&apos;s or any other online service providers checkout flow, as applicable, which constitutes
+        explicit consent to the transaction.
       </Paragraph>
       <Paragraph>
         4.2. All purchases are subject to the daily purchase cap and holding cap limits set by the Foundation from time to time and to
-        Apple&apos;s applicable App Store policies. The Foundation may modify such limits at any time.
+        Apple&apos;s applicable App Store policies or, where applicable, Stripe&apos;s or other online payment service providers, applicable
+        terms of service. The Foundation may modify such limits at any time.
       </Paragraph>
       <Paragraph>
         4.3. When you use Credits to acquire a Wearable, Emote, or any other item of digital content, you expressly request immediate
@@ -105,7 +112,8 @@ const CreditsTerms = memo(() => (
         Credit pricing at any time.
       </Paragraph>
       <Paragraph>
-        4.5. All payments are processed by Apple. The Foundation does not store or process your payment information directly.
+        4.5. All payments are processed by Apple, Stripe or any future online payment service provider, as applicable. The Foundation does
+        not store or process your payment information directly.
       </Paragraph>
       <Paragraph>
         4.6. You accept that any applicable taxes in connection with the purchase of Credits shall be paid by you directly. You are solely
@@ -179,17 +187,18 @@ const CreditsTerms = memo(() => (
       <SectionTitle>8. Refunds</SectionTitle>
       <Paragraph>
         8.1. All purchases of Credits through IAP are subject to Apple&apos;s refund policies. Refund requests for the IAP purchase must be
-        directed to Apple. The Foundation does not process refunds for Credit purchases directly.
+        directed to Apple. Purchases of Credits made via Stripe or any future online payment service provider, are final and non-refundable,
+        except as required by applicable law. The Foundation does not process refunds for Credit purchases directly.
       </Paragraph>
       <Paragraph>
         8.2. When you use Credits to acquire a Wearable, Emote, or any other digital content, the Credits are immediately deducted from your
-        balance and the transaction is final, non-refundable, and non-reversible. This applies regardless of any Apple refund decision on
-        the original IAP purchase.
+        balance and the transaction is final, non-refundable, and non-reversible. This applies regardless of any refund, chargeback, or
+        reversal decision on the original purchase whether made via IAP, Stripe or any future online payment service provider.
       </Paragraph>
       <Paragraph>
-        8.3. If Apple grants a refund, chargeback, reversal, or other payment recovery after Credits have been used, the Foundation may
-        deduct Credits, revoke access to associated digital content, suspend access to certain features, or take any other reasonable action
-        necessary to address the resulting negative balance.
+        8.3. If Apple, Stripe or any online payment service provider grants a refund, chargeback, reversal, or other payment recovery after
+        Credits have been used, the Foundation may deduct Credits, revoke access to associated digital content, suspend access to certain
+        features, or take any other reasonable action necessary to address the resulting negative balance.
       </Paragraph>
     </Section>
 

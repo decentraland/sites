@@ -37,6 +37,7 @@ jest.mock('../../hooks/useManaBalances', () => ({
   useManaBalances: jest.fn(() => ({ balances: undefined, isLoading: false, fetchBalances: jest.fn(), minDisplayBalance: 0 }))
 }))
 jest.mock('../../hooks/useAuthIdentity', () => ({ useAuthIdentity: jest.fn(() => ({ identity: undefined })) }))
+jest.mock('../../hooks/useCreditsBalance', () => ({ useCreditsBalance: jest.fn(() => ({ credits: null })) }))
 jest.mock('../../features/notifications/usePageNotifications', () => ({ usePageNotifications: jest.fn(() => ({ notificationProps: {} })) }))
 jest.mock('../../hooks/useHangOutAction', () => ({
   useHangOutAction: jest.fn(() => ({

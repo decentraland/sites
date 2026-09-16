@@ -15,6 +15,12 @@ const Sidebar = styled(Box)(({ theme }) => ({
   background: 'rgba(0, 0, 0, 0.4)',
   padding: theme.spacing(2),
   gap: theme.spacing(1.5),
+  // Mobile dashboard (Figma 776:69124): the menu is a full-screen panel, edge to edge — it grows to
+  // fill the layout root's leftover viewport height so BottomGroup pins Delete/Logout to the bottom.
+  [theme.breakpoints.down('md')]: {
+    flexGrow: 1,
+    borderRadius: 0
+  },
   [theme.breakpoints.up('md')]: {
     position: 'sticky',
     top: 96,

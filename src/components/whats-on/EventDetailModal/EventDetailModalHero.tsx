@@ -11,11 +11,12 @@ import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined'
 import PublicRoundedIcon from '@mui/icons-material/PublicRounded'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTranslation } from '@dcl/hooks'
-import { LiveBadge, Tooltip, useTheme } from 'decentraland-ui2'
+import { DownloadModal, LiveBadge, Tooltip, useTheme } from 'decentraland-ui2'
 import type { RecurrentFrequency } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCanEditEvent } from '../../../hooks/useCanEditEvent'
 import { useCopyShareLink } from '../../../hooks/useCopyShareLink'
+import { useLaunchExplorer } from '../../../hooks/useLaunchExplorer'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { optimizedImageUrl } from '../../../utils/imageUrl'
 import { localizedWeekdayLong, normalizeDayIndices } from '../../../utils/recurrence'
@@ -118,12 +119,30 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
   )
   const { copied, handleCopy } = useCopyShareLink(shareUrl)
 
+  // Clickable coordinates: recurrent users can jump straight to the location regardless of
+  // whether the event is live. Disabled in the unsaved-event preview.
+  const {
+    launchExplorer,
+    isMobile: isLauncherMobile,
+    isDownloadModalOpen,
+    closeDownloadModal,
+    downloadModalProps
+  } = useLaunchExplorer({ position: `${data.x},${data.y}`, realm: data.realm })
+
   const handleAddToCalendar = useCallback(() => {
     const url = buildCalendarUrl(data)
     if (url) window.open(url, '_blank', 'noopener,noreferrer')
   }, [data])
 
   const scheduleSubtitle = useMemo(() => buildHeroSubtitle(data, t, locale), [data, t, locale])
+
+  // Visible text for the location chip (Genesis City coords/place). Reused as the accessible
+  // name so screen readers announce the destination alongside the "Jump In" action.
+  const coordsText = data.placeName
+    ? t('event_detail.location_with_coords', { place: data.placeName, x: data.x, y: data.y })
+    : t('event_detail.location_coords', { x: data.x, y: data.y })
+  const worldLocationLabel = `${t('event_detail.jump_in')} – ${data.realm ?? ''}`
+  const coordsLocationLabel = `${t('event_detail.jump_in')} – ${coordsText}`
 
   // Hero renders at ~960 CSS px max-width; serve at 1600 to cover 2× DPR and
   // let Vercel's image optimizer downscale + WebP encode the raw poster.
@@ -155,19 +174,15 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
             <DetailModalCreator address={data.creatorAddress} name={data.creatorName} prefixLabel={t('event_detail.by_prefix')} />
             {data.isWorld ? (
               data.realm && (
-                <LocationRow>
+                <LocationRow type="button" onClick={launchExplorer} disabled={isPreview} aria-label={worldLocationLabel}>
                   <PublicRoundedIcon />
                   <LocationText>{data.realm}</LocationText>
                 </LocationRow>
               )
             ) : (
-              <LocationRow>
+              <LocationRow type="button" onClick={launchExplorer} disabled={isPreview} aria-label={coordsLocationLabel}>
                 <LocationOnOutlinedIcon />
-                <LocationText>
-                  {data.placeName
-                    ? t('event_detail.location_with_coords', { place: data.placeName, x: data.x, y: data.y })
-                    : t('event_detail.location_coords', { x: data.x, y: data.y })}
-                </LocationText>
+                <LocationText>{coordsText}</LocationText>
               </LocationRow>
             )}
           </CreatorLocationRow>
@@ -219,6 +234,7 @@ function EventDetailModalHero({ data, onClose, onEdit }: { data: ModalEventData;
           </ActionsRow>
         </HeroContent>
       </HeroSection>
+      {!isLauncherMobile && <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />}
     </>
   )
 }

@@ -23,8 +23,13 @@ interface DownloadTrackerContext {
 
 interface DownloadTracker {
   started: () => void
-  success: (filename: string, bytesTransferred?: number) => void
-  failed: (reason: string) => void
+  /**
+   * `extra` carries event-level fields known only at resolution time (e.g.
+   * `delivery_mode`, `gateway_request_id`). Merged before the core schema so
+   * core fields win on any collision, matching `ctx.extra` in `buildBasePayload`.
+   */
+  success: (filename: string, bytesTransferred?: number, extra?: Record<string, unknown>) => void
+  failed: (reason: string, extra?: Record<string, unknown>) => void
 }
 
 export type { AuthState, DownloadTracker, DownloadTrackerContext }

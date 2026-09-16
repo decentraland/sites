@@ -12,7 +12,7 @@ import { StorageLayout } from '../../components/storage/StorageLayout'
 import { getStorageErrorStatus, useClearSceneMutation, useDeleteSceneValueMutation, useListSceneKeysQuery } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
 import { useStorageScope } from '../../hooks/useStorageScope'
 import { useStorageTrack } from '../../hooks/useStorageTrack'
@@ -23,10 +23,10 @@ function ScenePage() {
   useStorageRedirect()
   const t = useFormatMessage()
   const { identity } = useAuthIdentity()
-  const { realm, position } = useStorageScope()
+  const { realm, position, blocked } = useStorageScope()
   const track = useStorageTrack()
 
-  const { data: sceneKeys, isLoading } = useListSceneKeysQuery({ identity, realm, position }, { skip: !identity })
+  const { data: sceneKeys, isLoading } = useListSceneKeysQuery({ identity, realm, position }, { skip: !identity || blocked })
   const [deleteSceneValue] = useDeleteSceneValueMutation()
   const [clearScene] = useClearSceneMutation()
 
@@ -56,7 +56,7 @@ function ScenePage() {
     setClearOpen(false)
   }, [clearScene, identity, realm, position, track])
 
-  useBlogPageTracking({
+  usePageViewTracking({
     name: t('page.storage.scene.title'),
     properties: { section: 'storage_scene', realm: realm ?? undefined, position: position ?? undefined }
   })

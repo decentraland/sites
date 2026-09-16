@@ -32,6 +32,8 @@ interface ModalEventData {
   placeName: string | null
   /** False when the modal is opened from a live scene without a matching event — the bell (attendees API) requires a real event UUID. */
   isEvent: boolean
+  /** URN of the wearable/emote/collection the creator wants to promote. Surfaced to moderators in the pending-events review; null when none. */
+  featuredItem: string | null
 }
 
 interface AdminActions {

@@ -82,10 +82,11 @@ function createDownloadTracker(ctx: DownloadTrackerContext): DownloadTracker {
         anonymousId
       )
     },
-    success: (filename, bytesTransferred) => {
+    success: (filename, bytesTransferred, extra) => {
       const succeededAt = Date.now()
       const anchor = startedAt ?? succeededAt
       const payload: Record<string, unknown> = {
+        ...(extra ?? {}),
         ...buildBasePayload(ctx),
         filename,
         // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -100,12 +101,13 @@ function createDownloadTracker(ctx: DownloadTrackerContext): DownloadTracker {
       }
       postSegmentEvent(SegmentEvent.DOWNLOAD_SUCCESS, withTrackAuditFields(payload), anonymousId)
     },
-    failed: reason => {
+    failed: (reason, extra) => {
       const failedAt = Date.now()
       const anchor = startedAt ?? failedAt
       postSegmentEvent(
         SegmentEvent.DOWNLOAD_FAILED,
         withTrackAuditFields({
+          ...(extra ?? {}),
           ...buildBasePayload(ctx),
           reason,
           // eslint-disable-next-line @typescript-eslint/naming-convention

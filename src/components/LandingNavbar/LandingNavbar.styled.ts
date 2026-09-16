@@ -223,9 +223,22 @@ const DesktopTabLink = styled('a')({
   }
 })
 
-const DesktopTabWithDropdown = styled(DesktopTab)({
-  paddingRight: 16
-})
+// `active` marks the section the current page belongs to. It reuses the hover
+// treatment so the selected tab reads as permanently lit rather than inventing a
+// second visual language; shouldForwardProp keeps it off the <button>.
+const DesktopTabWithDropdown = styled(DesktopTab, {
+  shouldForwardProp: prop => prop !== 'active'
+})<{ active?: boolean }>(({ active }) => ({
+  paddingRight: 16,
+  ...(active && {
+    color: dclColors.neutral.white,
+    backgroundColor: GLASS_BG,
+    // The same faux-bold the hover state uses. Without it the selected tab sits
+    // a hair lighter than the one under the cursor, which reads as a glitch when
+    // you hover across the row.
+    textShadow: '0 0 0.5px currentColor, 0 0 0.5px currentColor'
+  })
+}))
 
 const DesktopDropdownWrapper = styled('div')({
   position: 'relative',
@@ -292,6 +305,34 @@ const bellShake = keyframes`
   50% { transform: rotate(-8deg); }
   75% { transform: rotate(4deg); }
 `
+
+// The credits balance chip, sitting left of the bell. A link rather than a button: it goes to the
+// credits page, so it should behave like one (middle-click, open in a new tab) instead of trapping the
+// destination behind an onClick.
+const CreditsChip = styled('a')({
+  all: 'unset',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  color: dclColors.neutral.white,
+  cursor: 'pointer',
+  flexShrink: 0,
+  borderRadius: 4,
+  fontSize: 14,
+  fontWeight: 600,
+  lineHeight: 1,
+  transition: 'opacity 0.15s ease',
+  ['&:hover']: {
+    opacity: 0.8
+  },
+  ['&:focus-visible']: {
+    outline: `2px solid ${dclColors.base.primary}`,
+    outlineOffset: 2
+  },
+  ['& svg']: {
+    flexShrink: 0
+  }
+})
 
 const BellButton = styled('button')({
   all: 'unset',
@@ -755,7 +796,11 @@ const MobileMenuLink = styled('a')({
   }
 })
 
-const MobileMenuAccordionHeader = styled('button')({
+// Mirrors the desktop `active` tab. The label here is already white, so the
+// selected row is marked with the glass fill instead of a colour change.
+const MobileMenuAccordionHeader = styled('button', {
+  shouldForwardProp: prop => prop !== 'active'
+})<{ active?: boolean }>(({ active }) => ({
   all: 'unset',
   display: 'flex',
   alignItems: 'center',
@@ -781,8 +826,9 @@ const MobileMenuAccordionHeader = styled('button')({
     height: 20,
     flexShrink: 0,
     transition: 'transform 0.2s ease'
-  }
-})
+  },
+  ...(active && { backgroundColor: GLASS_BG })
+}))
 
 const MobileMenuSubItems = styled('div')<{ open: boolean }>(({ open }) => ({
   maxHeight: open ? 500 : 0,
@@ -1118,6 +1164,7 @@ export {
   AvatarFallback,
   AvatarImage,
   BellButton,
+  CreditsChip,
   DesktopDropdown,
   DesktopDropdownInner,
   DesktopDropdownItem,

@@ -56,7 +56,7 @@ function PendingEventsPage() {
     })
   }, [events])
 
-  if (!isLoading && !allowed) return <Navigate to="/whats-on" replace />
+  if (!isLoading && !allowed) return <Navigate to="/events" replace />
 
   const handleApprove = async () => {
     if (!activeEvent || !identity) {

@@ -393,9 +393,9 @@ const CoordPrefix = styled(InputAdornment)({
   /* eslint-enable @typescript-eslint/naming-convention */
 })
 
-/* ── email section ──────────────────────────────────────────────────── */
+/* ── half-width form field section (featured item, email) ───────────── */
 
-const EmailSection = styled(Box)(({ theme }) => ({
+const FormFieldSection = styled(Box)(({ theme }) => ({
   paddingTop: theme.spacing(1.5),
   display: 'flex',
   flexDirection: 'column',
@@ -653,6 +653,17 @@ const RejectionAlert = styled(Alert)({
   '& .MuiAlert-icon': { color: rejectionAlertText }
 })
 
+const reviewWarningAlertBg = '#ffe8cc'
+const reviewWarningAlertText = '#8a4b00'
+
+const ReviewWarningAlert = styled(Alert)({
+  width: '100%',
+  backgroundColor: reviewWarningAlertBg,
+  color: reviewWarningAlertText,
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  '& .MuiAlert-icon': { color: reviewWarningAlertText }
+})
+
 export {
   AddCoverBold,
   AddCoverLight,
@@ -666,7 +677,6 @@ export {
   DateTimeRow,
   DateTimeSection,
   DescriptionFields,
-  EmailSection,
   ErrorMessage,
   EventDetailsBlock,
   EventFormControl,
@@ -680,6 +690,7 @@ export {
   labelColor,
   FormActions,
   FormColumns,
+  FormFieldSection,
   ImageSection,
   LeftCard,
   LocationBlock,
@@ -687,6 +698,7 @@ export {
   LocationRow,
   PreviewButton,
   RejectionAlert,
+  ReviewWarningAlert,
   RepeatFields,
   RepeatLabel,
   RepeatRow,

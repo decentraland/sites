@@ -1,9 +1,9 @@
 import { SegmentEvent } from './segment'
 import { postSegmentEvent } from './segmentBeacon'
-import { SEGMENT_TRACK_URL, getSegmentWriteKey } from './segmentConfig'
+import { getSegmentTrackUrl, getSegmentWriteKey } from './segmentConfig'
 
 jest.mock('./segmentConfig', () => ({
-  SEGMENT_TRACK_URL: 'https://api.segment.io/v1/track',
+  getSegmentTrackUrl: jest.fn(() => 'https://api.segment.io/v1/track'),
   getSegmentWriteKey: jest.fn()
 }))
 
@@ -46,7 +46,8 @@ describe('when posting a Segment event via beacon', () => {
   it('should post a text/plain payload with the Segment track envelope and page context', async () => {
     postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero', event: SegmentEvent.DOWNLOAD }, 'anon-1')
 
-    expect(mockSendBeacon).toHaveBeenCalledWith(SEGMENT_TRACK_URL, expect.any(Blob))
+    const trackUrl = getSegmentTrackUrl()
+    expect(mockSendBeacon).toHaveBeenCalledWith(trackUrl, expect.any(Blob))
     const [, blob] = mockSendBeacon.mock.calls[0] as [string, Blob]
     expect(blob.type).toBe('text/plain')
     const body = JSON.parse(await readBlobText(blob))
@@ -60,6 +61,7 @@ describe('when posting a Segment event via beacon', () => {
       timestamp: expect.any(String),
       sentAt: body.timestamp,
       context: {
+        direct: true,
         page: {
           url: window.location.href,
           path: '/download',
@@ -79,6 +81,25 @@ describe('when posting a Segment event via beacon', () => {
     // The /v1/track endpoint infers the message type; the SDK does not send it
     // on this transport, so neither do we.
     expect(body).not.toHaveProperty('type')
+  })
+
+  it('should use the proxy track URL when SEGMENT_API_HOST is configured', () => {
+    ;(getSegmentTrackUrl as jest.Mock).mockReturnValue('https://evs.e.decentraland.org/v1/track')
+
+    postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero' }, 'anon-1')
+
+    expect(mockSendBeacon).toHaveBeenCalledWith('https://evs.e.decentraland.org/v1/track', expect.any(Blob))
+  })
+
+  it('should set context.direct so Segment stamps the request IP on device-originated events', async () => {
+    // Regression guard: context.direct must stay true so Segment stamps the
+    // request IP (see the rationale on SegmentBeaconContext.direct). Dropping it
+    // silently breaks the warehouse's IP-keyed attribution join.
+    postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero' }, 'anon-1')
+
+    const [, blob] = mockSendBeacon.mock.calls[0] as [string, Blob]
+    const body = JSON.parse(await readBlobText(blob))
+    expect(body.context.direct).toBe(true)
   })
 
   it('should omit userId when the visitor is anonymous', async () => {
@@ -147,8 +168,9 @@ describe('when posting a Segment event via beacon', () => {
 
     postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero' }, 'anon-1')
 
+    const trackUrl = getSegmentTrackUrl()
     expect(mockFetch).toHaveBeenCalledWith(
-      SEGMENT_TRACK_URL,
+      trackUrl,
       expect.objectContaining({
         method: 'POST',
         keepalive: true,
@@ -157,6 +179,11 @@ describe('when posting a Segment event via beacon', () => {
         headers: { 'Content-Type': 'text/plain' }
       })
     )
+    // Both transports serialize the same body, but assert it here too so a
+    // future per-transport split can't silently drop context.direct (and the IP
+    // it unlocks) from the keepalive path.
+    const fetchBody = JSON.parse((mockFetch.mock.calls[0][1] as { body: string }).body)
+    expect(fetchBody.context.direct).toBe(true)
   })
 
   it('should fall back to fetch keepalive when sendBeacon is unavailable', () => {

@@ -27,12 +27,26 @@ const flush = () =>
     await Promise.resolve()
   })
 
+// A real MediaStreamTrack is an EventTarget, and the hook subscribes to its `ended`
+// event, so the stand-in has to record handlers rather than just expose getSettings.
+// `emit` stands in for the browser firing the event when the capture source stops.
+const makeMediaStreamTrack = () => {
+  const listeners: Record<string, (() => void)[]> = {}
+  return {
+    getSettings: () => ({ width: 3024, height: 1964, frameRate: 30 }),
+    addEventListener: (type: string, handler: () => void) => {
+      listeners[type] = [...(listeners[type] ?? []), handler]
+    },
+    emit: (type: string) => (listeners[type] ?? []).forEach(handler => handler())
+  }
+}
+
+let mediaStreamTrack: ReturnType<typeof makeMediaStreamTrack>
+
 const makeParticipant = (overrides = {}) => ({
   setScreenShareEnabled: jest.fn().mockResolvedValue(undefined),
   unpublishTrack: jest.fn().mockResolvedValue(undefined),
-  getTrackPublication: jest.fn().mockReturnValue({
-    track: { mediaStreamTrack: { getSettings: () => ({ width: 3024, height: 1964, frameRate: 30 }) } }
-  }),
+  getTrackPublication: jest.fn().mockReturnValue({ track: { mediaStreamTrack } }),
   ...overrides
 })
 
@@ -40,6 +54,7 @@ describe('useScreenShare', () => {
   let participant: ReturnType<typeof makeParticipant>
 
   beforeEach(() => {
+    mediaStreamTrack = makeMediaStreamTrack()
     participant = makeParticipant()
     mockUseLocalParticipant.mockReturnValue({ localParticipant: participant })
     mockUseConnectionState.mockReturnValue(ConnectionState.Connected)
@@ -119,14 +134,22 @@ describe('useScreenShare', () => {
       participant.setScreenShareEnabled.mockRejectedValue(err)
     })
 
-    it('should show a permission-denied toast and report to Sentry', async () => {
+    it('should show a permission-denied toast', async () => {
       const { result } = renderHook(() => useScreenShare())
       await act(async () => {
         await result.current.startScreenShare()
       })
       await flush()
       expect(showMock).toHaveBeenCalledWith('ScreenShareFailed', { message: 'streaming_controls.screen_share_permission_denied' })
-      expect(captureException).toHaveBeenCalledWith(expect.any(Error), { tags: { feature: 'cast', area: 'screen_share', step: 'start' } })
+    })
+
+    it('should NOT report to Sentry, since declining is a user choice', async () => {
+      const { result } = renderHook(() => useScreenShare())
+      await act(async () => {
+        await result.current.startScreenShare()
+      })
+      await flush()
+      expect(captureException).not.toHaveBeenCalled()
     })
   })
 
@@ -159,6 +182,66 @@ describe('useScreenShare', () => {
       })
       await flush()
       expect(showMock).toHaveBeenCalledWith('ScreenShareFailed')
+    })
+
+    it('should still report to Sentry', async () => {
+      const { result } = renderHook(() => useScreenShare())
+      await act(async () => {
+        await result.current.startScreenShare()
+      })
+      await flush()
+      expect(captureException).toHaveBeenCalledWith(expect.any(Error), { tags: { feature: 'cast', area: 'screen_share', step: 'start' } })
+    })
+  })
+
+  // Only NotAllowedError is silenced, and the check reads `.name` off an Error. A
+  // non-Error rejection has no name, so it must keep reaching Sentry even though it
+  // shows no toast.
+  describe('when the screen-share start rejects with a non-Error value', () => {
+    beforeEach(() => {
+      participant.setScreenShareEnabled.mockRejectedValue('just a string')
+    })
+
+    it('should report to Sentry without showing a toast', async () => {
+      const { result } = renderHook(() => useScreenShare())
+      await act(async () => {
+        await result.current.startScreenShare()
+      })
+      await flush()
+      expect(showMock).not.toHaveBeenCalled()
+      expect(captureException).toHaveBeenCalledWith('just a string', {
+        tags: { feature: 'cast', area: 'screen_share', step: 'start' }
+      })
+    })
+  })
+
+  // The browser's own "Stop sharing" bar, and closing the captured window, both end
+  // the source track without going through stopScreenShare. That is a user decision,
+  // so it must not surface as a failure (SITES-2PY).
+  describe('when the capture source ends on its own while connected', () => {
+    const stopFromTheBrowser = async () => {
+      mockUseLocalVideoTracks.mockReturnValue({ hasLocalCamera: false, hasLocalScreenShare: true })
+      const { result, rerender } = renderHook(() => useScreenShare())
+      await act(async () => {
+        await result.current.startScreenShare()
+      })
+
+      await act(async () => {
+        mediaStreamTrack.emit('ended')
+      })
+      mockUseLocalVideoTracks.mockReturnValue({ hasLocalCamera: false, hasLocalScreenShare: false })
+      rerender()
+      await flush()
+    }
+
+    it('should not show a toast', async () => {
+      await stopFromTheBrowser()
+      expect(showMock).not.toHaveBeenCalled()
+    })
+
+    it('should not report to Sentry', async () => {
+      await stopFromTheBrowser()
+      expect(captureMessage).not.toHaveBeenCalled()
     })
   })
 

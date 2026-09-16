@@ -17,10 +17,12 @@ type InputProps = {
 type ButtonProps = ChildrenProps & { onClick?: () => void; disabled?: boolean; 'data-role'?: string }
 
 const mockSetEmail = jest.fn()
+const mockReset = jest.fn()
 let mockIsLoading = false
+let mockIsError = false
 
 jest.mock('../../../../features/account-notifications/account-notifications.client', () => ({
-  useSetEmailMutation: () => [mockSetEmail, { isLoading: mockIsLoading }]
+  useSetEmailMutation: () => [mockSetEmail, { isLoading: mockIsLoading, isError: mockIsError, reset: mockReset }]
 }))
 
 jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({
@@ -86,6 +88,7 @@ jest.mock('./EmailCard.styled', () => ({
 describe('EmailCard', () => {
   beforeEach(() => {
     mockIsLoading = false
+    mockIsError = false
   })
 
   afterEach(() => {
@@ -137,6 +140,29 @@ describe('EmailCard', () => {
       mockIsLoading = true
       render(<EmailCard />)
       expect(screen.getByTestId('spinner')).toBeInTheDocument()
+    })
+  })
+
+  describe('when the server rejects the email', () => {
+    it('should surface the generic error message under the input', () => {
+      mockIsError = true
+      render(<EmailCard email="user@decentraland.org" unconfirmedEmail="user@decentraland.org" />)
+      expect(screen.getByTestId('helper')).toHaveTextContent('account.notifications.email.error')
+    })
+
+    it('should reset the mutation error as the user edits the field', () => {
+      mockIsError = true
+      render(<EmailCard email="user@decentraland.org" unconfirmedEmail="user@decentraland.org" />)
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: 'user2@decentraland.org' } })
+      expect(mockReset).toHaveBeenCalled()
+    })
+
+    it('should show the client-side invalid message before the server error', () => {
+      mockIsError = true
+      render(<EmailCard />)
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: 'not-an-email' } })
+      fireEvent.click(screen.getByRole('button'))
+      expect(screen.getByTestId('helper')).toHaveTextContent('account.notifications.email.invalid')
     })
   })
 

@@ -19,6 +19,9 @@ function buildProperties(data: DownloadFunnelExitData): Record<string, unknown> 
   if (data.anonUserId) {
     properties.anon_user_id = data.anonUserId
   }
+  if (data.clickId) {
+    properties.click_id = data.clickId
+  }
   /* eslint-enable @typescript-eslint/naming-convention */
 
   return properties

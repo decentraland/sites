@@ -8,7 +8,7 @@ const CenteredBox = styled(Box)(({ theme }) => ({
   paddingBottom: theme.spacing(8)
 }))
 
-const ContentContainer = styled(Box)(({ theme }) => ({
+const ContentContainer = styled('article')(({ theme }) => ({
   maxWidth: theme.spacing(96),
   width: '100%',
   margin: '0 auto',
@@ -16,24 +16,6 @@ const ContentContainer = styled(Box)(({ theme }) => ({
   [theme.breakpoints.down('xs')]: {
     padding: `${theme.spacing(4)} ${theme.spacing(2)}`
   }
-}))
-
-const HeaderBox = styled(Box)(({ theme }) => ({
-  marginBottom: theme.spacing(5)
-}))
-
-const MetaText = styled(Typography)(({ theme }) => ({
-  ...theme.typography.caption,
-  color: theme.palette.text.primary,
-  letterSpacing: theme.typography.caption.letterSpacing,
-  textTransform: 'uppercase',
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1)
-}))
-
-const MetaSeparator = styled('span')(({ theme }) => ({
-  color: theme.palette.text.secondary
 }))
 
 const CategoryMetaLink = styled(Link)(({ theme }) => ({
@@ -47,19 +29,6 @@ const CategoryMetaLink = styled(Link)(({ theme }) => ({
     outline: `2px solid ${theme.palette.primary.main}`,
     outlineOffset: 2
   }
-}))
-
-const TitleBox = styled(Box)(({ theme }) => ({
-  marginTop: theme.spacing(1.5)
-}))
-
-const TitleText = styled(Typography)(({ theme }) => ({
-  color: theme.palette.text.primary
-}))
-
-const SubtitleText = styled(Typography)(({ theme }) => ({
-  color: theme.palette.text.primary,
-  marginTop: theme.spacing(1)
 }))
 
 const PostImage = styled('img')(({ theme }) => ({
@@ -144,14 +113,8 @@ export {
   CategoryMetaLink,
   CenteredBox,
   ContentContainer,
-  HeaderBox,
-  MetaSeparator,
-  MetaText,
   PostImage,
   ShareContainer,
   ShareLabel,
-  ShareLink,
-  SubtitleText,
-  TitleBox,
-  TitleText
+  ShareLink
 }

@@ -117,11 +117,27 @@ describe('useCreatorHubDownload', () => {
           auth_state: 'anonymous',
           revisit: 0,
 
+          download_target: 'creator_hub',
+
           started_at: expect.any(Number)
         }),
         'anon-fixed'
       )
       expect(mockTriggerFileDownload).toHaveBeenCalledWith(MAC_LINK)
+    })
+
+    it('should report a caller-provided place so hero downloads are not mixed with the download page', () => {
+      const { result } = renderHook(() => useCreatorHubDownload(DownloadPlace.CREATORS_HERO))
+
+      act(() => {
+        result.current.handleDownload(result.current.primaryOption!)
+      })
+
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+        SegmentEvent.DOWNLOAD_STARTED,
+        expect.objectContaining({ place: DownloadPlace.CREATORS_HERO }),
+        'anon-fixed'
+      )
     })
 
     it('should report auth_state authenticated when the visitor has a valid identity', () => {

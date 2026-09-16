@@ -4,16 +4,29 @@ import { useAdvancedUserAgentData, useAsyncMemo } from '@dcl/hooks'
 import { getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
 import { getDownloadLinkWithIdentity } from '../../modules/downloadWithIdentity'
-import { GOOGLE_PLAY_DESKTOP_URL } from '../Home/shared/googlePlay'
-import { DownloadOptions } from './DownloadOptions'
+import { postSegmentEvent } from '../../modules/segmentBeacon'
+import type { DownloadOptionProps } from '../../types/download.types'
+import { DownloadOptions, handleDownloadOptionClick } from './DownloadOptions'
+
+// getEnv reaches config/index which uses import.meta (Vite-only). The referrer
+// util pulls it in transitively; stub it so the flag reads as off by default.
+jest.mock('../../config/env', () => ({ getEnv: jest.fn(() => undefined) }))
 
 // Keep ../../modules/url REAL so the actual /download_success URL is built and
 // we can assert UTM preservation end-to-end. Mock only the decentraland-ui2
 // entry points url.ts (and this component) pull in at module load.
+//
+// The arch keys below MUST mirror ui2's real `cdnReleases.ts`: Windows publishes
+// only `amd64`, macOS only `arm64` (plus a legacy `amd64`). This mock used to say
+// `Windows: { x64: … }`, which matched nothing in production but matched the
+// component's `.x64` read, so a fix that rendered no button at all passed CI.
+// `ua-parser-js` likewise reports `amd64` for Windows and Linux, never `x64` —
+// verified against the installed package — so the `cpu.architecture` values in
+// these tests use `amd64` too. Do not "simplify" either back to `x64`.
 jest.mock('decentraland-ui2/dist/modules/cdnReleases', () => ({
   CDNSource: { LAUNCHER: 'LAUNCHER', AUTO_SIGNING: 'AUTO_SIGNING' },
   getCDNRelease: jest.fn(() => ({
-    Windows: { x64: 'https://cdn.decentraland.org/launcher/win.exe' },
+    Windows: { amd64: 'https://cdn.decentraland.org/launcher/win.exe' },
     macOS: { arm64: 'https://cdn.decentraland.org/launcher/mac.dmg' }
   }))
 }))
@@ -42,7 +55,14 @@ jest.mock('../../hooks/useAnonUserId', () => ({ ANON_USER_ID_PARAM: 'anon_user_i
 
 jest.mock('../../hooks/useGetIdentityId', () => ({ useGetIdentityId: () => () => Promise.resolve(undefined) }))
 
-jest.mock('../../modules/downloadWithIdentity', () => ({ getDownloadLinkWithIdentity: jest.fn() }))
+jest.mock('../../modules/downloadWithIdentity', () => ({
+  ...jest.requireActual('../../modules/downloadWithIdentity'),
+  getDownloadLinkWithIdentity: jest.fn()
+}))
+
+jest.mock('../../modules/segmentBeacon', () => ({ postSegmentEvent: jest.fn() }))
+
+jest.mock('../../modules/segmentAnonymousId', () => ({ ensureSegmentAnonymousId: jest.fn(() => 'anon-id') }))
 
 jest.mock('../../modules/explorerDownloads', () => ({
   ExplorerDownloads: { get: () => ({ getTotalDownloads: () => Promise.resolve(0) }) }
@@ -97,7 +117,7 @@ const asyncMemoStub = (value: unknown, loaded: boolean) => (factory: () => Promi
 const setWindowsUserAgent = () =>
   mockUseAdvancedUserAgentData.mockReturnValue([
     false,
-    { os: { name: 'Windows' }, cpu: { architecture: 'x64' }, mobile: false }
+    { os: { name: 'Windows' }, cpu: { architecture: 'amd64' }, mobile: false }
   ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
 
 // Swap window.location for a stub that records href assignments (the redirect)
@@ -126,7 +146,7 @@ describe('DownloadOptions', () => {
     setWindowsUserAgent()
     mockAnonUserId.mockReturnValue(undefined)
     mockGetCDNRelease.mockReturnValue({
-      Windows: { x64: 'https://cdn.decentraland.org/launcher/win.exe' },
+      Windows: { amd64: 'https://cdn.decentraland.org/launcher/win.exe' },
       macOS: { arm64: 'https://cdn.decentraland.org/launcher/mac.dmg' }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
@@ -164,7 +184,7 @@ describe('DownloadOptions', () => {
         const redirectUrl = hrefSpy.mock.calls[0][0] as string
         expect(redirectUrl).toContain('/download_success')
         expect(redirectUrl).toContain('os=Windows')
-        expect(redirectUrl).toContain('arch=x64')
+        expect(redirectUrl).toContain('arch=amd64')
         expect(redirectUrl).toContain('place=download-page')
         expect(redirectUrl).toContain('utm_source=shefi')
         expect(redirectUrl).toContain('utm_campaign=partner-launch')
@@ -202,7 +222,7 @@ describe('DownloadOptions', () => {
         expect(redirectUrl).toContain('os=Windows')
         expect(redirectUrl).toContain('place=download-page')
         expect(redirectUrl).toContain('anon_user_id=11111111-1111-4111-8111-111111111111')
-        expect(redirectUrl).toContain('arch=x64')
+        expect(redirectUrl).toContain('arch=amd64')
       } finally {
         restore()
       }
@@ -216,10 +236,12 @@ describe('DownloadOptions', () => {
       expect(button).toHaveAttribute('data-download-target', 'desktop_installer')
     })
 
-    it('should tag the Epic button with download_target=desktop_installer', () => {
+    it('should tag the Epic button with download_target=epic', () => {
       render(<DownloadOptions />)
       const epicButton = screen.getByText('page.download.download_on').closest('a') as HTMLAnchorElement
-      expect(epicButton).toHaveAttribute('data-download-target', 'desktop_installer')
+      // Epic redirects to the Epic Games Store, never reaching download_started —
+      // its own target keeps it out of the desktop activation funnel.
+      expect(epicButton).toHaveAttribute('data-download-target', 'epic')
     })
 
     it('should tag the secondary platform option (macOS) with download_target=desktop_installer', () => {
@@ -245,7 +267,7 @@ describe('DownloadOptions', () => {
       const googlePlay = screen.getByLabelText('Google Play')
       expect(googlePlay).toHaveAttribute('data-download-target', 'google_play')
       expect(googlePlay).toHaveAttribute('data-os', 'Android')
-      expect(googlePlay).toHaveAttribute('href', GOOGLE_PLAY_DESKTOP_URL)
+      expect(googlePlay).toHaveAttribute('href', DOWNLOAD_URLS.googlePlay)
     })
 
     it('should fire the tracker when a store badge is clicked (unload-safe path handled by useDownloadClick)', async () => {
@@ -291,10 +313,52 @@ describe('DownloadOptions', () => {
       expect(screen.queryByText('page.download.download_for_short')).not.toBeInTheDocument()
     })
 
-    it('should render no primary button when the detected OS has no matching CDN link', () => {
+    it('should offer the Windows build as primary when the detected desktop OS has no matching CDN link', () => {
       mockUseAdvancedUserAgentData.mockReturnValue([
         false,
-        { os: { name: 'Linux' }, cpu: { architecture: 'x64' }, mobile: false }
+        { os: { name: 'Linux' }, cpu: { architecture: 'amd64' }, mobile: false }
+      ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+      render(<DownloadOptions />)
+      expect(screen.getByText('page.download.download_for_short')).toBeInTheDocument()
+      expect(screen.getByLabelText('macOS')).toBeInTheDocument()
+    })
+
+    it('should point the unknown-OS primary at the Windows installer', () => {
+      mockUseAdvancedUserAgentData.mockReturnValue([
+        false,
+        { os: { name: 'Linux' }, cpu: { architecture: 'amd64' }, mobile: false }
+      ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+      render(<DownloadOptions />)
+      const primary = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
+      expect(primary).toHaveAttribute('href', 'https://cdn.decentraland.org/launcher/win.exe')
+    })
+
+    it('should render no primary button when the OS has no CDN link and there is no Windows fallback either', () => {
+      mockGetCDNRelease.mockReturnValue({
+        macOS: { arm64: 'https://cdn.decentraland.org/launcher/mac.dmg' }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any)
+      mockUseAdvancedUserAgentData.mockReturnValue([
+        false,
+        { os: { name: 'Linux' }, cpu: { architecture: 'amd64' }, mobile: false }
+      ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+      render(<DownloadOptions />)
+      expect(screen.queryByText('page.download.download_for_short')).not.toBeInTheDocument()
+    })
+
+    it('should render no primary button when the OS has no CDN link and the device is mobile', () => {
+      mockUseAdvancedUserAgentData.mockReturnValue([
+        false,
+        { os: { name: 'Linux' }, cpu: { architecture: 'Unknown' }, mobile: true }
+      ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+      render(<DownloadOptions />)
+      expect(screen.queryByText('page.download.download_for_short')).not.toBeInTheDocument()
+    })
+
+    it('should render no primary button when the OS has no CDN link and the device is a tablet', () => {
+      mockUseAdvancedUserAgentData.mockReturnValue([
+        false,
+        { os: { name: 'Linux' }, cpu: { architecture: 'Unknown' }, mobile: false, tablet: true }
       ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
       render(<DownloadOptions />)
       expect(screen.queryByText('page.download.download_for_short')).not.toBeInTheDocument()
@@ -312,6 +376,89 @@ describe('DownloadOptions', () => {
     })
   })
 
+  describe('when the URL carries first-launch deep-link params', () => {
+    it('should forward position and realm into the /download_success redirect URL', async () => {
+      const { hrefSpy, restore } = installLocation('?position=10,20&realm=foo.eth')
+      try {
+        render(<DownloadOptions />)
+        await userEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
+        await waitFor(() => expect(hrefSpy).toHaveBeenCalled())
+        const redirectUrl = hrefSpy.mock.calls[0][0] as string
+        expect(redirectUrl).toContain('position=10%2C20')
+        expect(redirectUrl).toContain('realm=foo.eth')
+      } finally {
+        restore()
+      }
+    })
+
+    it('should forward position and realm into the file URL query params when downloadOnClick is set', async () => {
+      const { hrefSpy, restore } = installLocation('?position=10,20&realm=foo.eth')
+      mockGetDownloadLinkWithIdentity.mockResolvedValue(undefined as never)
+      try {
+        render(<DownloadOptions downloadOnClick />)
+        await userEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
+        await waitFor(() => expect(hrefSpy).toHaveBeenCalled())
+        expect(mockGetDownloadLinkWithIdentity).toHaveBeenCalledWith(
+          expect.objectContaining({
+            queryParams: expect.objectContaining({ position: '10,20', realm: 'foo.eth' })
+          })
+        )
+      } finally {
+        restore()
+      }
+    })
+
+    it('should mint an anon_user_id for deep-link downloads so they stay on the gateway route', async () => {
+      // No anon_user_id from URL/Segment, but position/realm are present — the
+      // installer must come from the gateway, which needs an anon id, so one is
+      // minted rather than falling back to the CDN.
+      mockAnonUserId.mockReturnValue(undefined)
+      const { hrefSpy, restore } = installLocation('?position=10,20&realm=foo.eth')
+      mockGetDownloadLinkWithIdentity.mockResolvedValue(undefined as never)
+      try {
+        render(<DownloadOptions downloadOnClick />)
+        await userEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
+        await waitFor(() => expect(hrefSpy).toHaveBeenCalled())
+        expect(mockGetDownloadLinkWithIdentity).toHaveBeenCalledWith(
+          expect.objectContaining({
+            anonUserId: 'anon-id',
+            queryParams: expect.objectContaining({ anon_user_id: 'anon-id' })
+          })
+        )
+      } finally {
+        restore()
+      }
+    })
+
+    it('should not mint an anon_user_id when there are no deep-link params', async () => {
+      mockAnonUserId.mockReturnValue(undefined)
+      const { hrefSpy, restore } = installLocation('')
+      mockGetDownloadLinkWithIdentity.mockResolvedValue(undefined as never)
+      try {
+        render(<DownloadOptions downloadOnClick />)
+        await userEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
+        await waitFor(() => expect(hrefSpy).toHaveBeenCalled())
+        expect(mockGetDownloadLinkWithIdentity).toHaveBeenCalledWith(expect.objectContaining({ anonUserId: undefined }))
+      } finally {
+        restore()
+      }
+    })
+
+    it('should not forward default position and realm values', async () => {
+      const { hrefSpy, restore } = installLocation('?position=0,0&realm=main')
+      try {
+        render(<DownloadOptions />)
+        await userEvent.click(screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement)
+        await waitFor(() => expect(hrefSpy).toHaveBeenCalled())
+        const redirectUrl = hrefSpy.mock.calls[0][0] as string
+        expect(redirectUrl).not.toContain('position=')
+        expect(redirectUrl).not.toContain('realm=')
+      } finally {
+        restore()
+      }
+    })
+  })
+
   describe('when downloadOnClick is set', () => {
     it('should trigger the identity-bound download before redirecting', async () => {
       const { hrefSpy, restore } = installLocation('')
@@ -324,6 +471,54 @@ describe('DownloadOptions', () => {
       } finally {
         restore()
       }
+    })
+
+    describe('and the in-page download dispatch rejects', () => {
+      let callDownloadHandler: () => Promise<void>
+      let downloadOption: DownloadOptionProps
+      let getIdentityId: jest.Mock<Promise<string | undefined>, []>
+      let links: Record<string, Record<string, string>>
+
+      beforeEach(() => {
+        downloadOption = {
+          text: 'Windows',
+          image: '',
+          link: 'https://cdn.decentraland.org/launcher/win.exe',
+          arch: 'amd64'
+        }
+        getIdentityId = jest.fn(() => Promise.resolve(undefined))
+        links = { Windows: { amd64: 'https://cdn.decentraland.org/launcher/win.exe' } }
+        mockGetDownloadLinkWithIdentity.mockRejectedValue(new Error('gateway 500'))
+        callDownloadHandler = () =>
+          handleDownloadOptionClick({
+            downloadOnClick: true,
+            getIdentityId,
+            links,
+            option: downloadOption
+          })
+      })
+
+      it('should fire download_redirect_failed on dispatch failure', async () => {
+        await expect(callDownloadHandler()).rejects.toThrow('gateway 500')
+        expect(postSegmentEvent).toHaveBeenCalledWith(
+          'download_redirect_failed',
+          expect.objectContaining({ reason: 'gateway 500', place: 'download-page', download_target: 'desktop_installer' }),
+          expect.any(String)
+        )
+      })
+
+      it('should NOT change navigation behavior on failure (tracking-only: flow preserved)', async () => {
+        const { hrefSpy, restore } = installLocation('')
+        try {
+          const hrefBefore = window.location.href
+          await expect(callDownloadHandler()).rejects.toThrow('gateway 500')
+          expect(postSegmentEvent).toHaveBeenCalled()
+          expect(hrefSpy).not.toHaveBeenCalled()
+          expect(window.location.href).toBe(hrefBefore)
+        } finally {
+          restore()
+        }
+      })
     })
   })
 

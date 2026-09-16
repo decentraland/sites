@@ -3,7 +3,7 @@ import type { AuthIdentity } from '@dcl/crypto'
 // `decentraland-crypto-fetch` and its peer `eth-connect` total ~340 KB. These
 // helpers only run on whats-on mutations (form submit, attendee toggle) and on
 // authenticated reads, never on initial render. Defer the import so the
-// vendor-crypto chunk stays out of the critical path on `/whats-on` and `/`.
+// vendor-crypto chunk stays out of the critical path on `/events` and `/`.
 type SignedFetch = ReturnType<typeof import('decentraland-crypto-fetch').signedFetchFactory>
 
 let signedFetchInstance: SignedFetch | undefined

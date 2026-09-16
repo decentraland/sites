@@ -110,7 +110,9 @@ describe('CreatorHubDownloadSuccess', () => {
           anon_user_id: 'anon-xyz',
 
           auth_state: 'anonymous',
-          revisit: 0
+          revisit: 0,
+
+          download_target: 'creator_hub'
         }),
         'anon-fixed'
       )
@@ -194,7 +196,10 @@ describe('CreatorHubDownloadSuccess', () => {
       render(<CreatorHubDownloadSuccess />)
       await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledTimes(1))
 
-      fireEvent.click(screen.getByText('page.creator-hub.download.success.footer_link_label'))
+      const footerLink = screen.getByText('page.creator-hub.download.success.footer_link_label')
+      expect(footerLink).toHaveAttribute('data-download-target', 'creator_hub')
+
+      fireEvent.click(footerLink)
 
       expect(mockPostSegmentEventClick).toHaveBeenCalledTimes(1)
       expect(mockTriggerFileDownload).toHaveBeenCalledWith(MAC_LINK)

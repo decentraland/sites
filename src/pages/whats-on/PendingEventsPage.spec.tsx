@@ -172,12 +172,12 @@ describe('PendingEventsPage', () => {
 
   describe('when rendering with canApproveAnyEvent', () => {
     it('should render the Pending Events title', () => {
-      renderPage('/whats-on/admin/pending-events')
+      renderPage('/events/admin/pending-events')
       expect(screen.getByRole('heading', { level: 1, name: 'whats_on_admin.pending_events.title' })).toBeInTheDocument()
     })
 
     it('should render the Recently Approved section heading', () => {
-      renderPage('/whats-on/admin/pending-events')
+      renderPage('/events/admin/pending-events')
       expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('whats_on_admin.pending_events.recently_approved')
     })
   })
@@ -195,7 +195,7 @@ describe('PendingEventsPage', () => {
     })
 
     it('should open the EventDetailModal with admin actions', () => {
-      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+      renderPage('/events/admin/pending-events?id=ev-pending')
 
       const modal = screen.getByTestId('event-detail-modal')
       expect(modal).toHaveAttribute('data-event-id', 'ev-pending')
@@ -204,7 +204,7 @@ describe('PendingEventsPage', () => {
 
     it('should strip the id from the URL when the modal is closed', async () => {
       const user = userEvent.setup()
-      renderPage('/whats-on/admin/pending-events?id=ev-pending&filter=mine')
+      renderPage('/events/admin/pending-events?id=ev-pending&filter=mine')
 
       await user.click(screen.getByRole('button', { name: 'close-modal' }))
 
@@ -226,7 +226,7 @@ describe('PendingEventsPage', () => {
     })
 
     it('should open the modal in read-only mode without admin actions', () => {
-      renderPage('/whats-on/admin/pending-events?id=ev-approved')
+      renderPage('/events/admin/pending-events?id=ev-approved')
 
       const modal = screen.getByTestId('event-detail-modal')
       expect(modal).toHaveAttribute('data-event-id', 'ev-approved')
@@ -240,7 +240,7 @@ describe('PendingEventsPage', () => {
     })
 
     it('should not open the modal and should strip the dangling id param', () => {
-      renderPage('/whats-on/admin/pending-events?id=ev-missing&filter=mine')
+      renderPage('/events/admin/pending-events?id=ev-missing&filter=mine')
 
       expect(screen.queryByTestId('event-detail-modal')).not.toBeInTheDocument()
       expect(screen.getByTestId('location-search').textContent).toBe('?filter=mine')
@@ -262,7 +262,7 @@ describe('PendingEventsPage', () => {
     it('should call approve and show the success snackbar', async () => {
       mockApprove.mockResolvedValueOnce(undefined)
       const user = userEvent.setup()
-      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+      renderPage('/events/admin/pending-events?id=ev-pending')
 
       await user.click(screen.getByRole('button', { name: 'approve' }))
 
@@ -274,7 +274,7 @@ describe('PendingEventsPage', () => {
       mockApprove.mockRejectedValueOnce(new Error('boom'))
       jest.spyOn(console, 'error').mockImplementation(() => undefined)
       const user = userEvent.setup()
-      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+      renderPage('/events/admin/pending-events?id=ev-pending')
 
       await user.click(screen.getByRole('button', { name: 'approve' }))
 
@@ -297,7 +297,7 @@ describe('PendingEventsPage', () => {
     it('should open the RejectEventModal and call reject with a built reason', async () => {
       mockReject.mockResolvedValueOnce(undefined)
       const user = userEvent.setup()
-      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+      renderPage('/events/admin/pending-events?id=ev-pending')
 
       await user.click(screen.getByRole('button', { name: 'reject' }))
       expect(screen.getByTestId('reject-event-modal')).toBeInTheDocument()
@@ -310,7 +310,7 @@ describe('PendingEventsPage', () => {
       mockReject.mockRejectedValueOnce(new Error('boom'))
       jest.spyOn(console, 'error').mockImplementation(() => undefined)
       const user = userEvent.setup()
-      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+      renderPage('/events/admin/pending-events?id=ev-pending')
 
       await user.click(screen.getByRole('button', { name: 'reject' }))
       await user.click(screen.getByRole('button', { name: 'submit-reject' }))
@@ -320,7 +320,7 @@ describe('PendingEventsPage', () => {
 
     it('should close the RejectEventModal without rejecting when dismissed', async () => {
       const user = userEvent.setup()
-      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+      renderPage('/events/admin/pending-events?id=ev-pending')
 
       await user.click(screen.getByRole('button', { name: 'reject' }))
       expect(screen.getByTestId('reject-event-modal')).toBeInTheDocument()
@@ -342,8 +342,8 @@ describe('PendingEventsPage', () => {
       })
     })
 
-    it('should redirect to /whats-on instead of rendering the admin page', () => {
-      renderPage('/whats-on/admin/pending-events')
+    it('should redirect to /events instead of rendering the admin page', () => {
+      renderPage('/events/admin/pending-events')
 
       expect(screen.queryByRole('heading', { level: 1, name: 'whats_on_admin.pending_events.title' })).not.toBeInTheDocument()
     })
@@ -360,7 +360,7 @@ describe('PendingEventsPage', () => {
     })
 
     it('should render the page while permissions resolve rather than redirecting prematurely', () => {
-      renderPage('/whats-on/admin/pending-events')
+      renderPage('/events/admin/pending-events')
 
       expect(screen.getByRole('heading', { level: 1, name: 'whats_on_admin.pending_events.title' })).toBeInTheDocument()
     })
@@ -382,7 +382,7 @@ describe('PendingEventsPage', () => {
 
     it('should bail out of approve without calling the mutation', async () => {
       const user = userEvent.setup()
-      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+      renderPage('/events/admin/pending-events?id=ev-pending')
 
       await user.click(screen.getByRole('button', { name: 'approve' }))
 
@@ -391,7 +391,7 @@ describe('PendingEventsPage', () => {
 
     it('should bail out of reject submit without calling the mutation', async () => {
       const user = userEvent.setup()
-      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+      renderPage('/events/admin/pending-events?id=ev-pending')
 
       await user.click(screen.getByRole('button', { name: 'reject' }))
       await user.click(screen.getByRole('button', { name: 'submit-reject' }))
@@ -415,7 +415,7 @@ describe('PendingEventsPage', () => {
     it('should close the snackbar when its Alert close button is pressed', async () => {
       mockApprove.mockResolvedValueOnce(undefined)
       const user = userEvent.setup()
-      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+      renderPage('/events/admin/pending-events?id=ev-pending')
 
       await user.click(screen.getByRole('button', { name: 'approve' }))
       expect(screen.getByRole('alert')).toBeInTheDocument()
@@ -428,7 +428,7 @@ describe('PendingEventsPage', () => {
     it('should close the snackbar when it auto-dismisses via onClose', async () => {
       mockApprove.mockResolvedValueOnce(undefined)
       const user = userEvent.setup()
-      renderPage('/whats-on/admin/pending-events?id=ev-pending')
+      renderPage('/events/admin/pending-events?id=ev-pending')
 
       await user.click(screen.getByRole('button', { name: 'approve' }))
       expect(screen.getByRole('alert')).toBeInTheDocument()

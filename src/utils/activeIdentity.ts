@@ -59,13 +59,6 @@ function markSignInPending(): void {
     const fingerprints = listIdentityFingerprints()
     localStorage.setItem(SIGN_IN_PENDING_KEY, String(Date.now()))
     localStorage.setItem(SIGN_IN_PENDING_SNAPSHOT_KEY, JSON.stringify(fingerprints))
-
-    console.log('[wallet-switch] markSignInPending', {
-      pointer: localStorage.getItem(ACTIVE_ADDRESS_KEY),
-      snapshotAddresses: Object.keys(fingerprints),
-      snapshotFingerprints: fingerprints,
-      timestamp: Date.now()
-    })
   } catch (err) {
     console.warn('[wallet-switch] markSignInPending FAILED', err)
     // Non-fatal: without the flag, fresh sign-ins fall back to the standard
@@ -86,14 +79,12 @@ function consumePendingSignIn(): PendingSignIn {
     if (!value) {
       if (snapshotRaw !== null) localStorage.removeItem(SIGN_IN_PENDING_SNAPSHOT_KEY)
 
-      console.log('[wallet-switch] consumePendingSignIn: no pending flag', { snapshotRawWasPresent: snapshotRaw !== null })
       return empty
     }
     localStorage.removeItem(SIGN_IN_PENDING_KEY)
     localStorage.removeItem(SIGN_IN_PENDING_SNAPSHOT_KEY)
     const ts = Number(value)
     if (!Number.isFinite(ts) || Date.now() - ts >= SIGN_IN_PENDING_TTL_MS) {
-      console.log('[wallet-switch] consumePendingSignIn: flag expired or invalid', { rawValue: value, ts, ageMs: Date.now() - ts })
       return empty
     }
     let parsed: unknown = {}
@@ -101,21 +92,19 @@ function consumePendingSignIn(): PendingSignIn {
       try {
         parsed = JSON.parse(snapshotRaw)
       } catch (err) {
-        console.warn('[wallet-switch] consumePendingSignIn: snapshot JSON malformed', { snapshotRaw, err })
+        // The raw value is deliberately not logged: it carries identity fingerprints.
+        console.warn('[wallet-switch] consumePendingSignIn: snapshot JSON malformed', err)
         // Malformed snapshot — treat as empty so any current identity is a newcomer.
       }
     }
     const fingerprints: Record<string, string> = {}
-    let formatUsed: 'modern' | 'legacy-array' | 'empty' = 'empty'
     if (Array.isArray(parsed)) {
-      formatUsed = 'legacy-array'
       // Legacy snapshot format (addresses only). Preserve the membership
       // signal so newcomer detection still works during the rollout window.
       for (const value of parsed) {
         if (typeof value === 'string') fingerprints[value.toLowerCase()] = ''
       }
     } else if (parsed && typeof parsed === 'object') {
-      formatUsed = 'modern'
       for (const [address, fingerprint] of Object.entries(parsed as Record<string, unknown>)) {
         if (typeof address === 'string' && typeof fingerprint === 'string') {
           fingerprints[address.toLowerCase()] = fingerprint
@@ -123,12 +112,6 @@ function consumePendingSignIn(): PendingSignIn {
       }
     }
 
-    console.log('[wallet-switch] consumePendingSignIn: pending active', {
-      ageMs: Date.now() - ts,
-      formatUsed,
-      snapshotAddresses: Object.keys(fingerprints),
-      snapshotFingerprints: fingerprints
-    })
     return { active: true, fingerprints }
   } catch (err) {
     console.warn('[wallet-switch] consumePendingSignIn FAILED', err)
@@ -244,19 +227,7 @@ function pickByLatestExpiration(records: IdentityRecord[]): ActiveSelection {
 
 type SnapshotVerdict = 'newcomer' | 'refreshed' | 'unchanged' | 'legacy-membership'
 
-function classifyAgainstSnapshot(
-  records: IdentityRecord[],
-  snapshot: Record<string, string>
-): {
-  comparison: {
-    address: string
-    expiration: number
-    previousFingerprint: string | undefined
-    currentFingerprint: string
-    verdict: SnapshotVerdict
-  }[]
-  candidates: IdentityRecord[]
-} {
+function classifyAgainstSnapshot(records: IdentityRecord[], snapshot: Record<string, string>): { candidates: IdentityRecord[] } {
   const comparison = records.map(rec => {
     const previousFingerprint = snapshot[rec.address]
     const currentFingerprint = ephemeralFingerprintFromIdentity(rec.identity)
@@ -268,7 +239,7 @@ function classifyAgainstSnapshot(
     return { address: rec.address, expiration: rec.expiration, previousFingerprint, currentFingerprint, verdict }
   })
   const candidates = records.filter((_, i) => comparison[i].verdict === 'newcomer' || comparison[i].verdict === 'refreshed')
-  return { comparison, candidates }
+  return { candidates }
 }
 
 /**
@@ -301,59 +272,32 @@ function resolveActive(): ActiveSelection {
   const records = listValidIdentities()
   const currentFingerprints = listIdentityFingerprints()
 
-  console.log('[wallet-switch] resolveActive: entry', {
-    pointer: (() => {
-      try {
-        return localStorage.getItem(ACTIVE_ADDRESS_KEY)
-      } catch {
-        return null
-      }
-    })(),
-    recordCount: records.length,
-    addresses: records.map(r => r.address)
-  })
-
   const pending = consumePendingSignIn()
   if (pending.active) {
-    const { comparison, candidates } = classifyAgainstSnapshot(records, pending.fingerprints)
+    const { candidates } = classifyAgainstSnapshot(records, pending.fingerprints)
 
-    console.log('[wallet-switch] resolveActive: pending path', {
-      knownAddresses: records.map(r => r.address),
-      comparison,
-      candidateCount: candidates.length
-    })
     if (candidates.length > 0) {
       const fresh = pickByLatestExpiration(candidates)
       if (fresh.bestAddress) {
         writeActivePointer(fresh.bestAddress)
         writeLastKnownSnapshot(currentFingerprints)
 
-        console.log('[wallet-switch] resolveActive: promoted pending candidate', { picked: fresh.bestAddress })
         return fresh
       }
     }
-    console.log('[wallet-switch] resolveActive: no pending candidates, trying silent newcomer path')
   }
 
   // Silent newcomer detection: compare the persisted snapshot of the last
   // resolve against the current storage to catch sign-ins that didn't go
   // through our `redirectToAuth` (direct `/auth/login`, cross-app SSO sync, etc.).
   const lastSnapshot = readLastKnownSnapshot()
-  const { comparison: silentComparison, candidates: silentCandidates } = classifyAgainstSnapshot(records, lastSnapshot)
-  console.log('[wallet-switch] resolveActive: silent newcomer evaluation', {
-    lastSnapshotSize: Object.keys(lastSnapshot).length,
-    lastSnapshot,
-    currentFingerprints,
-    comparison: silentComparison,
-    candidateCount: silentCandidates.length
-  })
+  const { candidates: silentCandidates } = classifyAgainstSnapshot(records, lastSnapshot)
   if (Object.keys(lastSnapshot).length > 0 && silentCandidates.length > 0) {
     const fresh = pickByLatestExpiration(silentCandidates)
     if (fresh.bestAddress) {
       writeActivePointer(fresh.bestAddress)
       writeLastKnownSnapshot(currentFingerprints)
 
-      console.log('[wallet-switch] resolveActive: promoted silent newcomer', { picked: fresh.bestAddress })
       return fresh
     }
   }
@@ -364,7 +308,6 @@ function resolveActive(): ActiveSelection {
   if (pointer) {
     const identity = localStorageGetIdentity(pointer)
     if (identity) {
-      console.log('[wallet-switch] resolveActive: returning pointer', { pointer })
       return { bestAddress: pointer, bestIdentity: identity }
     }
     writeActivePointer(null)
@@ -372,15 +315,10 @@ function resolveActive(): ActiveSelection {
   if (records.length === 1) {
     writeActivePointer(records[0].address)
 
-    console.log('[wallet-switch] resolveActive: auto-promoted single identity', { picked: records[0].address })
     return { bestAddress: records[0].address, bestIdentity: records[0].identity }
   }
   const heuristic = pickByLatestExpiration(records)
 
-  console.log('[wallet-switch] resolveActive: heuristic (max expiration)', {
-    knownAddresses: records.map(r => ({ address: r.address, expiration: r.expiration })),
-    picked: heuristic.bestAddress
-  })
   return heuristic
 }
 

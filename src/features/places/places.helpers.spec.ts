@@ -2,41 +2,16 @@ import {
   DEFAULT_POSITION,
   DEFAULT_REALM,
   buildDeepLinkOptions,
+  buildMobileDeepLink,
+  collectDeepLinkParams,
   eventHasEnded,
   formatDateForGoogleCalendar,
-  isEns,
   parsePosition,
   resolvePlacesPosition
 } from './places.helpers'
 import type { CardData } from './places.types'
 
 describe('jump.helpers', () => {
-  describe('when isEns is called', () => {
-    describe('and the value ends with .eth', () => {
-      it('should return true', () => {
-        expect(isEns('decentraland.eth')).toBe(true)
-      })
-    })
-
-    describe('and the value has dots and alphanumerics ending in .eth', () => {
-      it('should return true for sub.realm.eth', () => {
-        expect(isEns('sub.realm.eth')).toBe(true)
-      })
-    })
-
-    describe('and the value does not end with .eth', () => {
-      it('should return false', () => {
-        expect(isEns('decentraland.org')).toBe(false)
-      })
-    })
-
-    describe('and the value is undefined', () => {
-      it('should return false', () => {
-        expect(isEns(undefined)).toBe(false)
-      })
-    })
-  })
-
   describe('when parsePosition is called', () => {
     describe('and the value is a valid "x,y" string', () => {
       it('should return coordinates as a tuple with isValid=true', () => {
@@ -123,31 +98,176 @@ describe('jump.helpers', () => {
   describe('when buildDeepLinkOptions is called', () => {
     describe('and the realm is the default value', () => {
       it('should omit realm', () => {
-        expect(buildDeepLinkOptions('10,20', DEFAULT_REALM)).toEqual({ position: '10,20' })
+        expect(buildDeepLinkOptions({ position: '10,20', realm: DEFAULT_REALM })).toEqual({ position: '10,20' })
       })
     })
 
     describe('and the position is the default value', () => {
       it('should omit position', () => {
-        expect(buildDeepLinkOptions(DEFAULT_POSITION, 'foo.eth')).toEqual({ realm: 'foo.eth' })
+        expect(buildDeepLinkOptions({ position: DEFAULT_POSITION, realm: 'foo.eth' })).toEqual({ realm: 'foo.eth' })
       })
     })
 
     describe('and both values are custom', () => {
       it('should include both in the options', () => {
-        expect(buildDeepLinkOptions('1,2', 'foo.eth')).toEqual({ position: '1,2', realm: 'foo.eth' })
+        expect(buildDeepLinkOptions({ position: '1,2', realm: 'foo.eth' })).toEqual({ position: '1,2', realm: 'foo.eth' })
       })
     })
 
-    describe('and env is provided', () => {
-      it('should include it in the options as dclenv', () => {
-        expect(buildDeepLinkOptions('1,2', 'foo.eth', 'zone')).toEqual({ position: '1,2', realm: 'foo.eth', dclenv: 'zone' })
+    describe('and dclenv, sceneConsole and multiInstance are provided', () => {
+      it('should include all of them in the options', () => {
+        expect(
+          buildDeepLinkOptions({ position: '1,2', realm: 'foo.eth', dclenv: 'zone', sceneConsole: 'true', multiInstance: 'true' })
+        ).toEqual({
+          position: '1,2',
+          realm: 'foo.eth',
+          dclenv: 'zone',
+          sceneConsole: 'true',
+          multiInstance: 'true'
+        })
       })
     })
 
-    describe('and env is not provided', () => {
-      it('should omit dclenv from the options', () => {
-        expect(buildDeepLinkOptions('1,2', 'foo.eth', undefined)).toEqual({ position: '1,2', realm: 'foo.eth' })
+    describe('and the optional launch params are omitted', () => {
+      it('should keep dclenv, sceneConsole and multiInstance out of the options', () => {
+        expect(buildDeepLinkOptions({ position: '1,2', realm: 'foo.eth' })).toEqual({ position: '1,2', realm: 'foo.eth' })
+      })
+    })
+
+    describe('and the optional launch params are empty strings', () => {
+      it('should keep them out of the options', () => {
+        // `URLSearchParams.get` returns '' for a valueless param, so `?? undefined`
+        // never fires and the falsy check here is what drops it. Reachable via
+        // `collectDeepLinkParams`, which reads position/realm straight off the URL.
+        expect(buildDeepLinkOptions({ position: '1,2', realm: 'foo.eth', dclenv: '', sceneConsole: '', multiInstance: '' })).toEqual({
+          position: '1,2',
+          realm: 'foo.eth'
+        })
+      })
+    })
+
+    describe('and an already-built options object is passed back in', () => {
+      it('should return it unchanged', () => {
+        const built = buildDeepLinkOptions({ position: '1,2', realm: 'foo.eth', dclenv: 'zone', multiInstance: 'true' })
+
+        expect(buildDeepLinkOptions(built)).toEqual(built)
+      })
+    })
+  })
+
+  describe('when collectDeepLinkParams is called', () => {
+    describe('and a source with custom position and realm is provided', () => {
+      it('should collect both params', () => {
+        expect(collectDeepLinkParams(new URLSearchParams('position=10,20&realm=foo.eth'))).toEqual({
+          position: '10,20',
+          realm: 'foo.eth'
+        })
+      })
+    })
+
+    describe('and the source carries default or empty values', () => {
+      it('should filter them out', () => {
+        expect(collectDeepLinkParams(new URLSearchParams(`position=${DEFAULT_POSITION}&realm=${DEFAULT_REALM}`))).toEqual({})
+        expect(collectDeepLinkParams(new URLSearchParams('position=&realm='))).toEqual({})
+      })
+    })
+
+    describe('and the position is a coordinate pair in a non-canonical form', () => {
+      it('should re-emit it as "x,y" from the parsed integers', () => {
+        expect(collectDeepLinkParams(new URLSearchParams('position=10.20'))).toEqual({ position: '10,20' })
+        expect(collectDeepLinkParams(new URLSearchParams('position=10abc,20'))).toEqual({ position: '10,20' })
+        expect(collectDeepLinkParams(new URLSearchParams('position=-3,-2'))).toEqual({ position: '-3,-2' })
+      })
+    })
+
+    describe('and the position is not a coordinate pair', () => {
+      it.each(['<script>alert(1)</script>', '1,2,3', 'abc,def', '10', 'x,1'])('should drop %p', value => {
+        expect(collectDeepLinkParams(new URLSearchParams({ position: value }))).toEqual({})
+      })
+    })
+
+    describe('and the realm is a plain catalyst name', () => {
+      it('should forward it', () => {
+        expect(collectDeepLinkParams(new URLSearchParams('realm=hela'))).toEqual({ realm: 'hela' })
+      })
+    })
+
+    describe('and the realm carries characters outside the realm charset', () => {
+      it.each(['<img src=x onerror=alert(1)>', 'foo.eth/../x', 'foo.eth?x=1', 'foo eth', '"foo.eth"', 'a'.repeat(65)])(
+        'should drop %p',
+        value => {
+          expect(collectDeepLinkParams(new URLSearchParams({ realm: value }))).toEqual({})
+        }
+      )
+
+      it('should still forward the valid position next to it', () => {
+        expect(collectDeepLinkParams(new URLSearchParams({ position: '1,2', realm: '<b>' }))).toEqual({ position: '1,2' })
+      })
+    })
+
+    describe('and no source is provided', () => {
+      beforeEach(() => {
+        window.history.pushState({}, '', '/download?position=1,2&realm=bar.eth')
+      })
+
+      afterEach(() => {
+        window.history.pushState({}, '', '/')
+      })
+
+      it('should read the params from the current URL', () => {
+        expect(collectDeepLinkParams()).toEqual({ position: '1,2', realm: 'bar.eth' })
+      })
+    })
+  })
+
+  describe('when buildMobileDeepLink is called', () => {
+    describe('and a custom position and realm are provided', () => {
+      it('should target the explorer protocol route carrying both', () => {
+        expect(buildMobileDeepLink({ position: '10,20', realm: 'cool.dcl.eth' })).toBe(
+          'decentraland://open?position=10%2C20&realm=cool.dcl.eth'
+        )
+      })
+    })
+
+    describe('and the values are the explorer defaults', () => {
+      it('should return the bare route so the app opens its own jump panel', () => {
+        expect(buildMobileDeepLink({ position: DEFAULT_POSITION, realm: DEFAULT_REALM })).toBe('decentraland://open')
+      })
+    })
+
+    describe('and no options are provided', () => {
+      it('should return the bare route', () => {
+        expect(buildMobileDeepLink({})).toBe('decentraland://open')
+      })
+    })
+
+    describe('and the position is in a non-canonical form', () => {
+      it('should re-emit it as "x,y"', () => {
+        expect(buildMobileDeepLink({ position: '10.20' })).toBe('decentraland://open?position=10%2C20')
+      })
+    })
+
+    describe('and the position is not a coordinate pair', () => {
+      it('should drop it instead of forwarding the raw value', () => {
+        expect(buildMobileDeepLink({ position: 'javascript:alert(1)' })).toBe('decentraland://open')
+      })
+    })
+
+    describe('and the realm carries characters outside the realm charset', () => {
+      it('should drop it', () => {
+        expect(buildMobileDeepLink({ realm: 'evil realm/../x' })).toBe('decentraland://open')
+      })
+    })
+
+    describe('and an unknown dclenv is provided', () => {
+      it('should drop it instead of redirecting the app to an arbitrary environment', () => {
+        expect(buildMobileDeepLink({ position: '1,2', dclenv: 'evil' })).toBe('decentraland://open?position=1%2C2')
+      })
+    })
+
+    describe('and a dclenv is provided', () => {
+      it('should forward it so the app opens the matching environment', () => {
+        expect(buildMobileDeepLink({ position: '1,2', dclenv: 'zone' })).toBe('decentraland://open?position=1%2C2&dclenv=zone')
       })
     })
   })
