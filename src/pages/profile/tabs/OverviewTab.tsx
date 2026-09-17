@@ -13,6 +13,7 @@ import VerifiedIcon from '@mui/icons-material/Verified'
 /* eslint-enable @typescript-eslint/naming-convention */
 import { Box, Button, CatalogCard, CircularProgress, Tooltip, Typography, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import { EditProfileButton } from '../../../components/profile/EditProfileButton'
+import { GET_A_NAME_URL } from '../../../components/profile/profileLinks'
 import { getEnv } from '../../../config/env'
 import { useProfileBadges } from '../../../features/profile/profile.badges.client'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
@@ -104,9 +105,7 @@ function OverviewTab({ address, isOwnProfile }: OverviewTabProps) {
   // The own-profile name/world CTA lives in the desktop header; on mobile there is no
   // header, so it renders here in the Overview action row (Figma 322:49226).
   const handleGetAName = useCallback(() => {
-    const builderUrl = getEnv('BUILDER_URL')
-    if (!builderUrl) return
-    window.open(`${builderUrl.replace(/\/+$/, '')}/names`, '_blank', 'noopener,noreferrer')
+    window.open(GET_A_NAME_URL, '_blank', 'noopener,noreferrer')
   }, [])
 
   const handleManageWorld = useCallback(() => {
