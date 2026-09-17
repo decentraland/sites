@@ -5,7 +5,7 @@
   "page": {
     "download": {
       "title": "下载 Decentraland",
-      "description": "下载 Decentraland 开始探索元宇宙",
+      "description": "下载 Decentraland 来一起玩",
       "download_onboarding_title": "下载 Decentraland\n来一起玩！",
       "not_available": "不支持您的操作系统",
       "not_available_subtitle": "Decentraland 支持 <span>Windows</span> 和 <span>macOS</span>。",
@@ -1002,7 +1002,6 @@
       "decentraland_community": "Decentraland 社区",
       "members": "成员",
       "by": "创建者",
-      "unknown": "未知",
       "joined": "已加入",
       "sign_in_to_join": "登录以加入",
       "request_to_join": "申请加入",
@@ -1279,7 +1278,9 @@
       "featured": "精选"
     },
     "live": {
-      "heading": "直播中"
+      "heading": "直播中",
+      "scroll_previous": "上一批直播地点",
+      "scroll_next": "更多直播地点"
     },
     "explore": {
       "search_placeholder": "搜索地点",
@@ -1310,6 +1311,7 @@
       "signin_favourites": "登录并收藏地点后即可在此查看。",
       "empty_favourites": "你还没有收藏任何地点。",
       "signin_my_places": "登录后即可查看你创建的地点。",
+      "sign_in": "登录",
       "empty_my_places": "你还没有发布任何地点。",
       "error": "加载地点时出现问题。",
       "retry": "重试"

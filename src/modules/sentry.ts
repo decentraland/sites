@@ -1,6 +1,13 @@
 import { type ErrorEvent, browserTracingIntegration, init, replayIntegration } from '@sentry/browser'
 import { getEnv } from '../config/env'
-import { isBlockedAnalyticsScriptError, redactBreadcrumbUrl, redactEventUrls } from './sentry.helpers'
+import {
+  isBlockedAnalyticsScriptError,
+  isRawTransportRejection,
+  isSentrySdkError,
+  isUnattributableError,
+  redactBreadcrumbUrl,
+  redactEventUrls
+} from './sentry.helpers'
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '0.0.0.0', ''])
 
@@ -20,7 +27,18 @@ const errorFilters: RegExp[] = [
   // an unhandled rejection from our own instrumentation (SITES-2RH). Nothing to fix
   // here short of patching the dependency or polyfilling `at` for every visitor, and
   // the only cost of dropping it is losing CLS on browsers that never reported it.
-  /_sessionEntries\.at is not a function/i
+  /_sessionEntries\.at is not a function/i,
+  // WalletConnect's own session-proposal timeout. `@walletconnect/utils` rejects the
+  // pending proposal when nobody scans the QR in time, nothing awaits that rejection,
+  // and it reaches us as an unhandled one (SITES-2S6). Walking away from the connect
+  // modal is ordinary use rather than a failure, and the flow recovers on its own:
+  // the next attempt opens a fresh proposal.
+  /^Proposal expired$/i,
+  // The browser refused a QUIC handshake for the realtime transport, usually a
+  // network or proxy that blocks UDP (SITES-2SA). `livekit-client` falls back to
+  // WebSocket on its own, so the visitor is unaffected and there is nothing here to
+  // fix from the app.
+  /^WebTransport connection rejected$/i
 ]
 
 // In-app browsers inject their own instrumentation into the webview under a
@@ -90,6 +108,17 @@ if (dsn && !isLocalHost()) {
       // never actionable, but the existing `gtm`/`stag` frame filter above misses
       // it: the frame belongs to Segment's loader, not to a gtm file.
       if (isBlockedAnalyticsScriptError(event)) return null
+
+      // A socket error event rejected as a promise carries no message and no stack,
+      // so it lands as an untitled issue with nothing to act on (SITES-2SF).
+      if (isRawTransportRejection(event)) return null
+
+      // Thrown inside the SDK's own instrumentation, with no frame of ours on the
+      // stack and nothing for us to fix (SITES-2SN).
+      if (isSentrySdkError(event)) return null
+
+      // Evaluated code with no file behind it, so there is nothing to open (SITES-2SQ).
+      if (isUnattributableError(event)) return null
 
       const errorMessage = event.message ?? event.exception?.values?.[0]?.value ?? ''
       if (errorFilters.some(filter => filter.test(errorMessage))) return null

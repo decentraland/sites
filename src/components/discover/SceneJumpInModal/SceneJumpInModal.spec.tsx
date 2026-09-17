@@ -55,8 +55,7 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
     positions: ['3,4'],
     base_position: '3,4',
     owner: '0xabc',
-    user_name: 'GalleristName',
-    contact_name: 'ContactName',
+    contact_name: 'GalleristName',
     categories: ['art'],
     user_count: 0,
     ...overrides
@@ -283,11 +282,15 @@ describe('SceneJumpInModal', () => {
   })
 
   describe('when rendering the creator identity', () => {
-    it('should render the real face256 avatar when the owner profile has one', () => {
+    it('should render the owner face256 only when the scene names no contact', () => {
       mockUseGetProfileQuery.mockReturnValue({
-        data: { avatars: [{ hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }] }
+        data: {
+          avatars: [
+            { name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }
+          ]
+        }
       })
-      const { container } = render(<SceneJumpInModal place={createPlace()} onClose={onClose} />)
+      const { container } = render(<SceneJumpInModal place={createPlace({ contact_name: undefined })} onClose={onClose} />)
 
       expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer.decentraland.org/face256.png')
     })
@@ -300,7 +303,7 @@ describe('SceneJumpInModal', () => {
     })
 
     it('should render no by-line when the place has no creator name', () => {
-      render(<SceneJumpInModal place={createPlace({ user_name: undefined, contact_name: undefined, owner: null })} onClose={onClose} />)
+      render(<SceneJumpInModal place={createPlace({ contact_name: undefined, owner: null })} onClose={onClose} />)
 
       expect(screen.queryByText(/discover\.card\.by/)).not.toBeInTheDocument()
     })

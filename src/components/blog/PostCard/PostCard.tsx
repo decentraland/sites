@@ -1,4 +1,6 @@
+import { memo } from 'react'
 import { Typography } from 'decentraland-ui2'
+import { formatUtcDate } from '../../../shared/blog/utils/date'
 import type { PostCardProps } from './PostCard.types'
 import {
   CardContainer,
@@ -16,7 +18,7 @@ import {
   TitleLink
 } from './PostCard.styled'
 
-const PostCard = (props: PostCardProps) => {
+const PostCard = memo((props: PostCardProps) => {
   const { post, loading } = props
 
   if (loading) {
@@ -44,7 +46,7 @@ const PostCard = (props: PostCardProps) => {
       </CardImageLink>
       <CardInfo>
         <MetaBox>
-          <DateText>{post.publishedDate}</DateText>
+          <DateText>{formatUtcDate(post.publishedDate)}</DateText>
           <span>
             <CategoryLink to={post.category.url}>{post.category.title}</CategoryLink>
           </span>
@@ -57,6 +59,6 @@ const PostCard = (props: PostCardProps) => {
       </CardInfo>
     </CardContainer>
   )
-}
+})
 
 export { PostCard }

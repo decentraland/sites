@@ -1,17 +1,26 @@
 import { memo, useCallback, useMemo, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BadgeGroup, LiveBadge, UserCountBadge, useMediaQuery, useTheme } from 'decentraland-ui2'
-import { buildDetailPath, discoverPlacePayload, placeCoverImage, placePlayers } from '../../../features/discover'
+import { BadgeGroup, UserCountBadge, useMediaQuery, useTheme } from 'decentraland-ui2'
+import {
+  buildDetailPath,
+  discoverPlacePayload,
+  placeCoverImage,
+  placeHasLiveEvent,
+  placeIsFeatured,
+  placeLiveEventName,
+  placePlayers
+} from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
-import { usePlaceOwnerAvatar } from '../../../hooks/usePlaceOwnerAvatar'
+import { usePlaceCreator } from '../../../hooks/usePlaceCreator'
 import { SegmentEvent } from '../../../modules/segment.types'
-import { JumpInGlyph } from '../_shared/CardIcons'
-import { TopRow } from '../_shared/DiscoverShell.styled'
+import { CreatorByLineName, LiveEventBadge } from '../_shared'
+import { JumpInGlyph, MedalGlyph } from '../_shared/CardIcons'
+import { FeaturedBadge, TopRow } from '../_shared/DiscoverShell.styled'
 import { useDiscoverJumpIn } from '../DiscoverJumpInProvider'
-import { Avatar, ByRow, ByText, Card, CardContainer, ContentBar, CreatorName, EventTitle, JumpInWide, Media } from './LiveEventCard.styled'
+import { Avatar, ByRow, ByText, Card, CardContainer, ContentBar, EventTitle, JumpInWide, Media, SwapArea } from './LiveEventCard.styled'
 
 interface LiveEventCardProps {
   place: DiscoverPlace
@@ -19,7 +28,8 @@ interface LiveEventCardProps {
 
 // Live Now rail card (Figma EventCard/Live, 223:20444). Only ever rendered
 // for scenes with players, so clicking always navigates to the live viewer;
-// hover swaps the By row for a full-width JUMP IN into the native client.
+// hover fades the By row out and raises a full-width JUMP IN into the native
+// client from under the content bar.
 function LiveEventCardComponent({ place }: LiveEventCardProps) {
   const t = useFormatMessage()
   const navigate = useNavigate()
@@ -28,13 +38,20 @@ function LiveEventCardComponent({ place }: LiveEventCardProps) {
   // button (Figma 2014-20434), rather than the desktop hover-swap.
   const isMobileCard = useMediaQuery(theme.breakpoints.down('sm'))
   const [hovered, setHovered] = useState(false)
+  // Clicking the CTA focuses it, and the launcher's modal then steals the
+  // pointer — so hover alone would park a focused button outside the card's
+  // clip, aria-hidden and still activatable by Enter.
+  const [ctaFocused, setCtaFocused] = useState(false)
 
   const detailHref = useMemo(() => buildDetailPath(place), [place])
 
   const { jumpIn } = useDiscoverJumpIn()
-  const { ownerName, ownerAvatar, avatarBg } = usePlaceOwnerAvatar(place)
+  const { creatorAddress, creatorName, creatorAvatar, avatarBg } = usePlaceCreator(place)
 
   const players = placePlayers(place)
+  // A scene that qualifies for LIVE renders only here, so its Featured identity has to travel with
+  // it — otherwise being busy would look like losing the badge.
+  const isFeatured = placeIsFeatured(place)
   const track = useDeferredTrack()
 
   const handleClick = useCallback(() => {
@@ -47,6 +64,9 @@ function LiveEventCardComponent({ place }: LiveEventCardProps) {
   // Keyboard activation for the role="button" card (Enter / Space).
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      // Enter on the JUMP IN button or the creator name bubbles up here, and
+      // would navigate into the scene on top of whatever the control did.
+      if (e.target !== e.currentTarget) return
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
         handleClick()
@@ -63,6 +83,10 @@ function LiveEventCardComponent({ place }: LiveEventCardProps) {
     [jumpIn, place]
   )
 
+  // Mobile keeps both rows; desktop trades one for the other on hover.
+  const ctaVisible = isMobileCard || hovered || ctaFocused
+  const byRowHidden = !isMobileCard && (hovered || ctaFocused)
+
   return (
     <CardContainer>
       <Card
@@ -78,32 +102,47 @@ function LiveEventCardComponent({ place }: LiveEventCardProps) {
           <TopRow>
             {/* ui2's badges — same animated LIVE pill What's On uses. */}
             <BadgeGroup>
-              <LiveBadge />
+              {/* LIVE means an event is running, not that people are here — presence is the count
+                  next to it. */}
+              {placeHasLiveEvent(place) && <LiveEventBadge eventName={placeLiveEventName(place)} />}
               <UserCountBadge count={players} />
             </BadgeGroup>
+            {isFeatured && (
+              <FeaturedBadge>
+                <MedalGlyph size="min(3.455cqw, 14px)" />
+                {t('discover.card.featured')}
+              </FeaturedBadge>
+            )}
           </TopRow>
         </Media>
         <ContentBar>
           <EventTitle>{place.title}</EventTitle>
-          {/* Desktop swaps By ↔ JUMP IN on hover; mobile shows both stacked. */}
-          {(isMobileCard || !hovered) && (
-            <ByRow>
-              {ownerName && (
+          {/* Both stay mounted so the CTA can animate in; whichever is off-state
+              leaves the a11y tree instead of the DOM. Mobile shows both. */}
+          <SwapArea>
+            <ByRow $hidden={byRowHidden} aria-hidden={byRowHidden || undefined}>
+              {creatorName && (
                 <>
-                  {ownerAvatar && <Avatar src={ownerAvatar} alt="" loading="lazy" $bg={avatarBg} />}
+                  {creatorAvatar && <Avatar src={creatorAvatar} alt="" loading="lazy" $bg={avatarBg} />}
                   <ByText>
-                    {t('discover.card.by')} <CreatorName>{ownerName}</CreatorName>
+                    {t('discover.card.by')} <CreatorByLineName name={creatorName} address={creatorAddress} inactive={byRowHidden} />
                   </ByText>
                 </>
               )}
             </ByRow>
-          )}
-          {(isMobileCard || hovered) && (
-            <JumpInWide type="button" onClick={handleJumpIn}>
+            <JumpInWide
+              type="button"
+              $visible={ctaVisible}
+              aria-hidden={!ctaVisible || undefined}
+              tabIndex={ctaVisible ? 0 : -1}
+              onFocus={() => setCtaFocused(true)}
+              onBlur={() => setCtaFocused(false)}
+              onClick={handleJumpIn}
+            >
               {t('discover.card.jump_in')}
               <JumpInGlyph size="min(6.138cqw, 24.874px)" />
             </JumpInWide>
-          )}
+          </SwapArea>
         </ContentBar>
       </Card>
     </CardContainer>

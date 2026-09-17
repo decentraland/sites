@@ -1,4 +1,5 @@
-import type { CardData, DeepLinkOptions } from './places.types'
+import { normalizeDclenv } from '../../config/dclenv'
+import type { CardData, DeepLinkOptions, DeepLinkParams } from './places.types'
 
 interface ParsedPosition {
   original: string
@@ -9,7 +10,7 @@ interface ParsedPosition {
 const DEFAULT_POSITION = '0,0'
 const DEFAULT_REALM = 'main'
 
-const POSITION_SEPARATORS = /[,.]/g
+const POSITION_SEPARATORS = /[,.]/
 
 // Accepts "x,y" and "x.y" equivalently. The dot form is treated as a
 // separator, not a decimal: "10.20" resolves to (10, 20) — same as "10,20".
@@ -75,6 +76,12 @@ function buildDeepLinkOptions(input: DeepLinkOptions): DeepLinkOptions {
   return options
 }
 
+// What a realm may look like on its way to the gateway: an ENS World name
+// (`foo.dcl.eth`) or a plain catalyst name. Same character set `isEns` allows,
+// without requiring the `.eth` suffix so a non-World realm still travels.
+// Anything outside it (`<`, `&`, `/`, quotes, spaces) is a payload, not a realm.
+const REALM_REGEX = /^[a-zA-Z0-9._-]{1,64}$/
+
 /**
  * Collects the first-launch deep-link params (position/realm) from the given
  * source (defaults to the current URL's search params). Defaults and empty
@@ -82,14 +89,58 @@ function buildDeepLinkOptions(input: DeepLinkOptions): DeepLinkOptions {
  * Used by the download surfaces to keep the params alive hop-by-hop until they
  * land on the file-origin URL the launcher parses on first run
  * (kMDItemWhereFroms / Zone.Identifier).
+ *
+ * Both values are validated here, not forwarded verbatim. This is the only
+ * place a raw string from one of our URLs reaches the gateway (which bakes it
+ * into the signed binary) and then the launcher and the explorer; the other
+ * params on that URL (`referrer`, `anon_user_id`) are already validated before
+ * they are forwarded, so these get the same treatment. `position` is re-emitted
+ * as `x,y` from the parsed integers, so `10.20` or `10abc,20` never leave as-is
+ * and anything that is not a coordinate pair is dropped; `realm` must match
+ * `REALM_REGEX`.
  */
-function collectDeepLinkParams(source?: URLSearchParams): { position?: string; realm?: string } {
+function collectDeepLinkParams(source?: URLSearchParams): DeepLinkParams {
   const params = source ?? new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+  return sanitizeDeepLinkParams({ position: params.get('position') ?? undefined, realm: params.get('realm') ?? undefined })
+}
+
+// Validates the pair described above: `position` is re-emitted as `x,y` from the
+// parsed integers (so `10.20` or `10abc,20` never travel as-is) and `realm` must
+// match `REALM_REGEX`. Defaults and empty values are dropped by
+// `buildDeepLinkOptions`.
+function sanitizeDeepLinkParams(input: DeepLinkParams): DeepLinkParams {
+  const parsedPosition = input.position ? parsePosition(input.position) : undefined
   const { position, realm } = buildDeepLinkOptions({
-    position: params.get('position') ?? undefined,
-    realm: params.get('realm') ?? undefined
+    position: parsedPosition?.isValid ? parsedPosition.coordinates.join(',') : undefined,
+    realm: input.realm && REALM_REGEX.test(input.realm) ? input.realm : undefined
   })
   return { ...(position ? { position } : {}), ...(realm ? { realm } : {}) }
+}
+
+/**
+ * Route the mobile explorer answers on the `decentraland://` scheme. A bare
+ * `decentraland://?x` has no route, so the path is explicit: `/open` teleports
+ * when a position or realm travels with it, and opens the app's jump panel when
+ * nothing does.
+ */
+const MOBILE_DEEP_LINK_URL = 'decentraland://open'
+
+/**
+ * Builds the deep link a touch device fires instead of the desktop one.
+ * `position`/`realm` go through the same validation as the download hop, and
+ * `dclenv` is narrowed here too instead of trusting whichever call site
+ * assembled it, so a jump from the zone site opens the zone explorer and
+ * nothing else can redirect which environment the app boots.
+ */
+function buildMobileDeepLink(input: DeepLinkOptions): string {
+  const { position, realm } = sanitizeDeepLinkParams(input)
+  const dclenv = normalizeDclenv(input.dclenv)
+  const params = new URLSearchParams()
+  if (position) params.set('position', position)
+  if (realm) params.set('realm', realm)
+  if (dclenv) params.set('dclenv', dclenv)
+  const query = params.toString()
+  return query ? `${MOBILE_DEEP_LINK_URL}?${query}` : MOBILE_DEEP_LINK_URL
 }
 
 function formatLocation(coordinates: [number, number]): string {
@@ -100,6 +151,7 @@ export {
   DEFAULT_POSITION,
   DEFAULT_REALM,
   buildDeepLinkOptions,
+  buildMobileDeepLink,
   collectDeepLinkParams,
   eventHasEnded,
   formatDateForGoogleCalendar,

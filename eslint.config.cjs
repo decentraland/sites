@@ -21,4 +21,13 @@ module.exports = [
       '@typescript-eslint/naming-convention': 'off',
     },
   },
+  {
+    // The beehiiv newsletter embed is the only raw `<iframe>` that needs `credentialless`,
+    // a real Chromium attribute eslint-plugin-react does not know about yet. It is what
+    // lets a cross-origin frame load inside our COEP documents — see src/react-iframe.d.ts.
+    files: ['src/components/LandingFooter/LandingFooter.tsx'],
+    rules: {
+      'react/no-unknown-property': ['error', { ignore: ['credentialless'] }],
+    },
+  },
 ]
