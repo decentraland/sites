@@ -2,7 +2,7 @@ import { type MouseEvent, memo, useCallback, useEffect, useState } from 'react'
 import { LocationOnOutlined } from '@mui/icons-material'
 import { useAnalytics } from '@dcl/hooks'
 import { useMediaQuery } from 'decentraland-ui2'
-import { buildJumpInUrl, buildPlaceUrl, buildProfileUrl, formatPhotoDate } from '../../../features/reels'
+import { buildJumpInUrl, buildPlaceUrl, formatPhotoDate } from '../../../features/reels'
 import type { ImageMetadata } from '../../../features/reels'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { SegmentEvent } from '../../../modules/segment'
@@ -52,7 +52,7 @@ const Metadata = memo(({ metadata, loading, visible }: MetadataProps) => {
   }, [x, y])
 
   const jumpInUrl = buildJumpInUrl(x, y, metadata.realm)
-  const profileUrl = metadata.userAddress ? buildProfileUrl(metadata.userAddress) : undefined
+  const profileUrl = metadata.userAddress ? `/profile/${metadata.userAddress.toLowerCase()}` : undefined
   const photoTakenByFaceUrl = metadata.visiblePeople.find(
     person => person.userAddress?.toLowerCase() === metadata.userAddress?.toLowerCase()
   )?.faceUrl
@@ -102,7 +102,7 @@ const Metadata = memo(({ metadata, loading, visible }: MetadataProps) => {
               <span>{l('component.reels.metadata.photo_taken_by')}</span>
               {photoTakenByFaceUrl && <UserAvatar src={photoTakenByFaceUrl} alt="" loading="lazy" />}
               {profileUrl ? (
-                <UserNameLink href={profileUrl} target="_blank" rel="noopener noreferrer" onClick={handleProfileClick}>
+                <UserNameLink href={profileUrl} onClick={handleProfileClick}>
                   {metadata.userName}
                 </UserNameLink>
               ) : (
