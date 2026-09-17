@@ -2,6 +2,7 @@ import {
   DEFAULT_POSITION,
   DEFAULT_REALM,
   buildDeepLinkOptions,
+  buildMobileDeepLink,
   collectDeepLinkParams,
   eventHasEnded,
   formatDateForGoogleCalendar,
@@ -171,6 +172,39 @@ describe('jump.helpers', () => {
       })
     })
 
+    describe('and the position is a coordinate pair in a non-canonical form', () => {
+      it('should re-emit it as "x,y" from the parsed integers', () => {
+        expect(collectDeepLinkParams(new URLSearchParams('position=10.20'))).toEqual({ position: '10,20' })
+        expect(collectDeepLinkParams(new URLSearchParams('position=10abc,20'))).toEqual({ position: '10,20' })
+        expect(collectDeepLinkParams(new URLSearchParams('position=-3,-2'))).toEqual({ position: '-3,-2' })
+      })
+    })
+
+    describe('and the position is not a coordinate pair', () => {
+      it.each(['<script>alert(1)</script>', '1,2,3', 'abc,def', '10', 'x,1'])('should drop %p', value => {
+        expect(collectDeepLinkParams(new URLSearchParams({ position: value }))).toEqual({})
+      })
+    })
+
+    describe('and the realm is a plain catalyst name', () => {
+      it('should forward it', () => {
+        expect(collectDeepLinkParams(new URLSearchParams('realm=hela'))).toEqual({ realm: 'hela' })
+      })
+    })
+
+    describe('and the realm carries characters outside the realm charset', () => {
+      it.each(['<img src=x onerror=alert(1)>', 'foo.eth/../x', 'foo.eth?x=1', 'foo eth', '"foo.eth"', 'a'.repeat(65)])(
+        'should drop %p',
+        value => {
+          expect(collectDeepLinkParams(new URLSearchParams({ realm: value }))).toEqual({})
+        }
+      )
+
+      it('should still forward the valid position next to it', () => {
+        expect(collectDeepLinkParams(new URLSearchParams({ position: '1,2', realm: '<b>' }))).toEqual({ position: '1,2' })
+      })
+    })
+
     describe('and no source is provided', () => {
       beforeEach(() => {
         window.history.pushState({}, '', '/download?position=1,2&realm=bar.eth')
@@ -182,6 +216,58 @@ describe('jump.helpers', () => {
 
       it('should read the params from the current URL', () => {
         expect(collectDeepLinkParams()).toEqual({ position: '1,2', realm: 'bar.eth' })
+      })
+    })
+  })
+
+  describe('when buildMobileDeepLink is called', () => {
+    describe('and a custom position and realm are provided', () => {
+      it('should target the explorer protocol route carrying both', () => {
+        expect(buildMobileDeepLink({ position: '10,20', realm: 'cool.dcl.eth' })).toBe(
+          'decentraland://open?position=10%2C20&realm=cool.dcl.eth'
+        )
+      })
+    })
+
+    describe('and the values are the explorer defaults', () => {
+      it('should return the bare route so the app opens its own jump panel', () => {
+        expect(buildMobileDeepLink({ position: DEFAULT_POSITION, realm: DEFAULT_REALM })).toBe('decentraland://open')
+      })
+    })
+
+    describe('and no options are provided', () => {
+      it('should return the bare route', () => {
+        expect(buildMobileDeepLink({})).toBe('decentraland://open')
+      })
+    })
+
+    describe('and the position is in a non-canonical form', () => {
+      it('should re-emit it as "x,y"', () => {
+        expect(buildMobileDeepLink({ position: '10.20' })).toBe('decentraland://open?position=10%2C20')
+      })
+    })
+
+    describe('and the position is not a coordinate pair', () => {
+      it('should drop it instead of forwarding the raw value', () => {
+        expect(buildMobileDeepLink({ position: 'javascript:alert(1)' })).toBe('decentraland://open')
+      })
+    })
+
+    describe('and the realm carries characters outside the realm charset', () => {
+      it('should drop it', () => {
+        expect(buildMobileDeepLink({ realm: 'evil realm/../x' })).toBe('decentraland://open')
+      })
+    })
+
+    describe('and an unknown dclenv is provided', () => {
+      it('should drop it instead of redirecting the app to an arbitrary environment', () => {
+        expect(buildMobileDeepLink({ position: '1,2', dclenv: 'evil' })).toBe('decentraland://open?position=1%2C2')
+      })
+    })
+
+    describe('and a dclenv is provided', () => {
+      it('should forward it so the app opens the matching environment', () => {
+        expect(buildMobileDeepLink({ position: '1,2', dclenv: 'zone' })).toBe('decentraland://open?position=1%2C2&dclenv=zone')
       })
     })
   })

@@ -7,6 +7,7 @@ import type { DiscoverPlace } from '../../../features/discover'
 import { useAnonUserId } from '../../../hooks/useAnonUserId'
 import { detectDownloadOS } from '../../../modules/downloadConstants'
 import { SegmentEvent } from '../../../modules/segment.types'
+import { launchMobileApp } from '../../../utils/mobileAppLaunch'
 import { DiscoverJumpInProvider, useDiscoverJumpIn } from './DiscoverJumpInProvider'
 
 const mockTrack = jest.fn()
@@ -14,6 +15,7 @@ jest.mock('../../../hooks/useDeferredTrack', () => ({ useDeferredTrack: () => mo
 jest.mock('../../../hooks/useTotalDownloads', () => ({ useTotalDownloads: () => '+400K' }))
 jest.mock('../../../hooks/useAnonUserId', () => ({ useAnonUserId: jest.fn() }))
 jest.mock('../../../config/env', () => ({ getEnv: jest.fn() }))
+jest.mock('../../../utils/mobileAppLaunch', () => ({ launchMobileApp: jest.fn() }))
 jest.mock('@dcl/hooks', () => ({ useAdvancedUserAgentData: jest.fn() }))
 jest.mock('decentraland-ui2', () => ({
   launchDesktopApp: jest.fn(),
@@ -62,6 +64,7 @@ const mockedLaunch = launchDesktopApp as jest.MockedFunction<typeof launchDeskto
 const mockedUserAgent = useAdvancedUserAgentData as jest.MockedFunction<typeof useAdvancedUserAgentData>
 const mockedAnonUserId = useAnonUserId as jest.MockedFunction<typeof useAnonUserId>
 const mockedDetectOS = detectDownloadOS as jest.MockedFunction<typeof detectDownloadOS>
+const mockedLaunchMobileApp = launchMobileApp as jest.MockedFunction<typeof launchMobileApp>
 const mockedGetEnv = getEnv as jest.MockedFunction<typeof getEnv>
 
 const place = { id: 'p-1', title: 'Genesis Plaza', base_position: '-3,-2', world: false } as DiscoverPlace
@@ -196,9 +199,27 @@ describe('DiscoverJumpInProvider', () => {
   })
 
   describe('when on a mobile device', () => {
-    it('should send the user to the app store and never launch or prompt', async () => {
+    beforeEach(() => {
       mockedUserAgent.mockReturnValue([false, { mobile: true, os: { name: 'iOS' } }] as never)
       mockedDetectOS.mockReturnValue('ios')
+    })
+
+    it('should fire the protocol deep link at the place and never launch or prompt', async () => {
+      mockedLaunchMobileApp.mockResolvedValue(true)
+      renderProvider()
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('jump'))
+      })
+
+      expect(mockedLaunchMobileApp).toHaveBeenCalledWith(expect.objectContaining({ deepLink: 'decentraland://open?position=-3%2C-2' }))
+      expect(window.open).not.toHaveBeenCalled()
+      expect(mockedLaunch).not.toHaveBeenCalled()
+      expect(screen.queryByTestId('download-modal')).not.toBeInTheDocument()
+    })
+
+    it('should fall back to the store without prompting the download modal', async () => {
+      mockedLaunchMobileApp.mockResolvedValue(false)
       renderProvider()
 
       await act(async () => {
@@ -206,20 +227,7 @@ describe('DiscoverJumpInProvider', () => {
       })
 
       expect(window.open).toHaveBeenCalledWith('https://appstore', '_self')
-      expect(mockedLaunch).not.toHaveBeenCalled()
       expect(screen.queryByTestId('download-modal')).not.toBeInTheDocument()
-    })
-
-    it('should send Android users to Google Play', async () => {
-      mockedUserAgent.mockReturnValue([false, { mobile: true, os: { name: 'Android' } }] as never)
-      mockedDetectOS.mockReturnValue('android')
-      renderProvider()
-
-      await act(async () => {
-        fireEvent.click(screen.getByText('jump'))
-      })
-
-      expect(window.open).toHaveBeenCalledWith('https://gplay', '_self')
     })
   })
 

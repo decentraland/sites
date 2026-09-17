@@ -1,4 +1,5 @@
 import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
+import type { PolymorphicTypographyProps } from '../../../types/polymorphic.types'
 
 const RelatedSection = styled('section')(({ theme }) => ({
   backgroundColor: dclColors.neutral.softBlack2,
@@ -18,7 +19,9 @@ const RelatedContainer = styled(Box)(({ theme }) => ({
   margin: '0 auto'
 }))
 
-const RelatedTitle = styled(Typography)(({ theme }) => ({
+// The related rail follows the article's <h1>, so its title has to be an <h2>
+// while keeping the h6 type scale.
+const RelatedTitle = styled(Typography)<PolymorphicTypographyProps>(({ theme }) => ({
   ...theme.typography.h6,
   color: theme.palette.text.primary
 }))

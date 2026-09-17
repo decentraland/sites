@@ -68,6 +68,10 @@ const TabButton = styled('button', { shouldForwardProp: prop => prop !== '$activ
 // `$visible` toggles display so the iframe stays mounted while the user
 // switches to the VIDEO tab — without it the bevy scene reloads on every
 // tab switch (cold start = many seconds of asset download).
+// The custom `shouldForwardProp` is also what lets `credentialless` reach the
+// DOM: emotion only falls back to its `is-prop-valid` allowlist when no
+// predicate is given, and that list doesn't know the attribute yet. Any
+// replacement predicate must keep forwarding it or the COEP opt-in is lost.
 const SceneIframe = styled('iframe', { shouldForwardProp: prop => prop !== '$visible' })<{ $visible?: boolean }>(({ $visible }) => ({
   width: '100%',
   height: '100%',

@@ -1,16 +1,18 @@
 import { useCallback } from 'react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { launchDesktopApp } from 'decentraland-ui2'
-import { buildDeepLinkOptions } from '../features/places/places.helpers'
+import { buildDeepLinkOptions, buildMobileDeepLink } from '../features/places/places.helpers'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
+import { launchMobileApp } from '../utils/mobileAppLaunch'
 import { useDeepLinkQueryParams } from './useDeepLinkQueryParams'
 
 // What a launch attempt resolved to, so the caller can track + fall back:
-//   'mobile-store'  → sent to the app store (no desktop client on touch devices)
-//   'launched'      → the desktop client opened the deep link
-//   'not-installed' → launchDesktopApp reported the client didn't take
-//   'launch-error'  → the launch threw (blocked protocol handler, etc.)
-type LaunchOutcome = 'mobile-store' | 'launched' | 'not-installed' | 'launch-error'
+//   'mobile-launched' → the phone left the page for the app (see `launchMobileApp`)
+//   'mobile-store'    → the protocol didn't take, we sent the phone to the store
+//   'launched'        → the desktop client opened the deep link
+//   'not-installed'   → launchDesktopApp reported the client didn't take
+//   'launch-error'    → the launch threw (blocked protocol handler, etc.)
+type LaunchOutcome = 'mobile-launched' | 'mobile-store' | 'launched' | 'not-installed' | 'launch-error'
 
 // The launch didn't take → prompt the download (shared by every caller so the
 // decision lives in one place).
@@ -27,8 +29,9 @@ function isClientNotInstalled(outcome: LaunchOutcome): boolean {
 
 /**
  * The device-aware "open the explorer" mechanics shared by every jump-in
- * surface (homepage `useLaunchExplorer`, discover jump-in): mobile → app store,
- * desktop → `launchDesktopApp`. It emits NO analytics and owns no modal state —
+ * surface (homepage `useLaunchExplorer`, discover jump-in): both tiers fire the
+ * `decentraland://` protocol first, mobile through `launchMobileApp` and desktop
+ * through `launchDesktopApp`. It emits NO analytics and owns no modal state —
  * it returns the outcome so each caller tracks its own event and renders its own
  * DownloadModal. The deep-link query params (see `useDeepLinkQueryParams`) are
  * threaded into the deep link, matching the standalone flow.
@@ -45,7 +48,19 @@ function useExplorerLauncher() {
   const launch = useCallback(
     async (options: { position?: string; realm?: string }): Promise<LaunchOutcome> => {
       if (isMobile) {
-        const storeUrl = downloadOs === 'android' ? DOWNLOAD_URLS.googlePlay : DOWNLOAD_URLS.appStore
+        // NOTE: 2026-09-16 — this used to go straight to the store, which dropped
+        // the target and sent an owner of the app to a download page. A phone gets
+        // the same two-step as the desktop client now: fire the protocol, and fall
+        // back only when it didn't take. The app registers `decentraland://` on
+        // both platforms (iOS CFBundleURLSchemes, Android BROWSABLE intent-filter).
+        const isAndroid = downloadOs === 'android'
+        const storeUrl = isAndroid ? DOWNLOAD_URLS.googlePlay : DOWNLOAD_URLS.appStore
+        const deepLink = buildMobileDeepLink({ position: options.position, realm: options.realm, dclenv })
+        const launched = await launchMobileApp({ deepLink, storeUrl, isAndroid })
+        if (launched) return 'mobile-launched'
+        // The store URLs carry the campaign overlay and the Play install-referrer
+        // (see `downloadConstants.buildGooglePlayUrl`), so the install stays
+        // attributable exactly as it was before this change.
         window.open(storeUrl, '_self')
         return 'mobile-store'
       }
@@ -67,7 +82,7 @@ function useExplorerLauncher() {
     [isMobile, downloadOs, dclenv, sceneConsole, multiInstance]
   )
 
-  return { launch, isMobile, downloadOs, osName, arch }
+  return { launch, isMobile, osName, arch }
 }
 
 export { isClientNotInstalled, shouldPromptDownload, useExplorerLauncher }

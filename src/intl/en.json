@@ -11,7 +11,7 @@
     },
     "download": {
       "title": "Download Decentraland",
-      "description": "Download Decentraland and start exploring the metaverse",
+      "description": "Download Decentraland and come hang out",
       "download_onboarding_title": "Download Decentraland\nand Come Hang Out!",
       "not_available": "Not available for your OS",
       "not_available_subtitle": "Decentraland is available for <span>Windows</span> & <span>macOS</span>.",
@@ -1316,6 +1316,8 @@
     "nothing_to_show": "Nothing to show",
     "related_post": "Related Articles",
     "share": "Share",
+    "share_on_x": "Share on X",
+    "share_on_facebook": "Share on Facebook",
     "posts_by": "Posts by {author}"
   },
   "search": {
@@ -1468,7 +1470,6 @@
       "decentraland_community": "Decentraland Community",
       "members": "Members",
       "by": "By",
-      "unknown": "Unknown",
       "joined": "JOINED",
       "sign_in_to_join": "SIGN IN TO JOIN",
       "request_to_join": "REQUEST TO JOIN",
@@ -1513,7 +1514,9 @@
       "featured": "Featured"
     },
     "live": {
-      "heading": "Live Now"
+      "heading": "Live Now",
+      "scroll_previous": "Previous live places",
+      "scroll_next": "More live places"
     },
     "explore": {
       "search_placeholder": "Search places",
@@ -1544,6 +1547,7 @@
       "signin_favourites": "Sign in and favourite places to find them here.",
       "empty_favourites": "You haven't favourited any places yet.",
       "signin_my_places": "Sign in to see the places you created.",
+      "sign_in": "Sign In",
       "empty_my_places": "You haven't published any places yet.",
       "error": "Something went wrong loading places.",
       "retry": "Retry"

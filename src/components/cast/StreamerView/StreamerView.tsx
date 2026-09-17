@@ -13,6 +13,7 @@ import {
 import { ChatProvider } from '../../../features/cast2/contexts/ChatProvider'
 import { useLiveKitCredentials } from '../../../features/cast2/contexts/LiveKitContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
+import { captureLiveKitConnectError } from '../../../modules/liveKitSentry'
 import { ViewContainer as StreamerContainer } from '../CommonView/CommonView.styled'
 import { ErrorModal } from '../ErrorModal'
 import { LoadingScreen } from '../LoadingScreen/LoadingScreen'
@@ -124,6 +125,15 @@ export function StreamerView() {
     setIsJoining(false)
   }, [])
 
+  // Memoized because `LiveKitRoom` lists `onError` in the deps of the effect that
+  // calls `room.connect()`: a new identity per render would reconnect in a loop.
+  const handleConnectError = useCallback(
+    (error: Error) => {
+      void captureLiveKitConnectError(error, { surface: 'cast_streamer', serverUrl: credentials?.url })
+    },
+    [credentials?.url]
+  )
+
   const handleLeaveRoom = useCallback(() => {
     setOnboardingComplete(false)
     setCredentials(null)
@@ -155,6 +165,7 @@ export function StreamerView() {
         serverUrl={credentials.url}
         connect={true}
         onConnected={handleRoomConnect}
+        onError={handleConnectError}
         audio={
           userConfig?.audioInputId
             ? {
