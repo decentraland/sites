@@ -7,6 +7,7 @@ export {
   useDeleteEnvMutation,
   useDeletePlayerValueMutation,
   useDeleteSceneValueMutation,
+  useGetCollaboratorScenesQuery,
   useGetContributableDomainsQuery,
   useGetPlayerValueQuery,
   useGetSceneValueQuery,
@@ -32,12 +33,16 @@ export {
 } from './storage.helpers'
 export { LandType, RoleType } from './storage.types'
 export type {
+  CollaboratorScene,
+  CollaboratorScenesResponse,
   ContributableDomain,
   EnvKey,
+  GetCollaboratorScenesParams,
   Land,
   PlayerKey,
   PlayerProfile,
   PlayerValue,
+  RealmKind,
   Rental,
   SceneKey,
   SceneValue,
