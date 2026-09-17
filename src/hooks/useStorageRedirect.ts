@@ -24,7 +24,9 @@ function useStorageRedirect(): UseStorageRedirectResult {
     const queryParams: Record<string, string> = {}
     if (realm) queryParams.realm = realm
     if (position) queryParams.position = position
-    redirectToAuth(pathname, Object.keys(queryParams).length > 0 ? queryParams : undefined)
+    // Mount-time guard: replace so Back from the login screen doesn't return
+    // here only to be forwarded to login again.
+    redirectToAuth(pathname, Object.keys(queryParams).length > 0 ? queryParams : undefined, { replace: true })
   }, [hasValidIdentity, pathname, realm, position])
 
   return { isReady: hasValidIdentity }

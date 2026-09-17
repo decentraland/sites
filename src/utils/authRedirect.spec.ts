@@ -64,15 +64,23 @@ describe('buildAuthRedirectUrl', () => {
 })
 
 describe('redirectToAuth', () => {
+  let assignMock: jest.Mock
   let replaceMock: jest.Mock
   const originalLocation = window.location
 
   beforeEach(() => {
     mockGetEnv.mockImplementation((key: string) => (key === 'AUTH_URL' ? 'https://decentraland.org/auth' : undefined))
+    assignMock = jest.fn()
     replaceMock = jest.fn()
     Object.defineProperty(window, 'location', {
       writable: true,
-      value: { ...originalLocation, origin: 'https://decentraland.org', hostname: 'decentraland.org', replace: replaceMock }
+      value: {
+        ...originalLocation,
+        origin: 'https://decentraland.org',
+        hostname: 'decentraland.org',
+        assign: assignMock,
+        replace: replaceMock
+      }
     })
     localStorage.removeItem('dcl:sign-in-pending')
     localStorage.removeItem('dcl:sign-in-pending-snapshot')
@@ -105,15 +113,28 @@ describe('redirectToAuth', () => {
   })
 
   describe('when called from a same-origin page', () => {
-    it('should call window.location.replace with a same-origin redirectTo', () => {
+    it('should push a history entry (location.assign) with a same-origin redirectTo so Back returns here', () => {
       redirectToAuth('/events', { loginMethod: 'METAMASK' })
 
-      expect(replaceMock).toHaveBeenCalledTimes(1)
-      const [calledWith] = replaceMock.mock.calls[0] as [string]
+      expect(assignMock).toHaveBeenCalledTimes(1)
+      expect(replaceMock).not.toHaveBeenCalled()
+      const [calledWith] = assignMock.mock.calls[0] as [string]
       const url = new URL(calledWith)
       const redirectTo = url.searchParams.get('redirectTo')
       expect(redirectTo).toBe('/events?loginMethod=METAMASK')
       expect(redirectTo).not.toContain('cdn.decentraland.org')
+    })
+  })
+
+  describe('when called from a pure redirector page with { replace: true }', () => {
+    it('should replace the current history entry so Back skips the redirector', () => {
+      redirectToAuth('/events', undefined, { replace: true })
+
+      expect(replaceMock).toHaveBeenCalledTimes(1)
+      expect(assignMock).not.toHaveBeenCalled()
+      const [calledWith] = replaceMock.mock.calls[0] as [string]
+      const url = new URL(calledWith)
+      expect(url.searchParams.get('redirectTo')).toBe('/events')
     })
   })
 
@@ -126,6 +147,7 @@ describe('redirectToAuth', () => {
           ...originalLocation,
           origin: 'https://nautilus-preview.vercel.app',
           hostname: 'nautilus-preview.vercel.app',
+          assign: assignMock,
           replace: replaceMock
         }
       })
@@ -134,8 +156,8 @@ describe('redirectToAuth', () => {
     it('should target the preview origin so the Vercel rewrite proxies /auth same-origin', () => {
       redirectToAuth('/events')
 
-      expect(replaceMock).toHaveBeenCalledTimes(1)
-      const [calledWith] = replaceMock.mock.calls[0] as [string]
+      expect(assignMock).toHaveBeenCalledTimes(1)
+      const [calledWith] = assignMock.mock.calls[0] as [string]
       const url = new URL(calledWith)
       expect(url.origin).toBe('https://nautilus-preview.vercel.app')
       expect(url.pathname).toBe('/auth/login')
@@ -152,6 +174,7 @@ describe('redirectToAuth', () => {
           ...originalLocation,
           origin: 'http://localhost:5173',
           hostname: 'localhost',
+          assign: assignMock,
           replace: replaceMock
         }
       })
@@ -160,8 +183,8 @@ describe('redirectToAuth', () => {
     it('should fall back to the relative /auth path', () => {
       redirectToAuth('/events')
 
-      expect(replaceMock).toHaveBeenCalledTimes(1)
-      const [calledWith] = replaceMock.mock.calls[0] as [string]
+      expect(assignMock).toHaveBeenCalledTimes(1)
+      const [calledWith] = assignMock.mock.calls[0] as [string]
       expect(calledWith.startsWith('/auth/login?')).toBe(true)
     })
   })
@@ -175,6 +198,7 @@ describe('redirectToAuth', () => {
           ...originalLocation,
           origin: 'http://localhost:5173',
           hostname: 'localhost',
+          assign: assignMock,
           replace: replaceMock
         }
       })
@@ -183,8 +207,8 @@ describe('redirectToAuth', () => {
     it('should use the relative /auth path so the Vite proxy handles the request', () => {
       redirectToAuth('/events')
 
-      expect(replaceMock).toHaveBeenCalledTimes(1)
-      const [calledWith] = replaceMock.mock.calls[0] as [string]
+      expect(assignMock).toHaveBeenCalledTimes(1)
+      const [calledWith] = assignMock.mock.calls[0] as [string]
       expect(calledWith.startsWith('/auth/login?')).toBe(true)
     })
   })

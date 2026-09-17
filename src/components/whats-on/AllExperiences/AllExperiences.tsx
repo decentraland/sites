@@ -131,7 +131,9 @@ function AllExperiences() {
       )
       return
     }
-    redirectToAuth('/events', { [TAB_QUERY_PARAM]: MY_TAB_PARAM_VALUE })
+    // Mount-time redirect: replace so Back from the login screen doesn't land
+    // on ?tab=my again and immediately re-forward the anonymous user to login.
+    redirectToAuth('/events', { [TAB_QUERY_PARAM]: MY_TAB_PARAM_VALUE }, { replace: true })
   }, [hasValidIdentity, activeTab, setSearchParams])
 
   const isMyTab = hasValidIdentity && activeTab === 'my'

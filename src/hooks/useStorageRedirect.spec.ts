@@ -37,7 +37,7 @@ describe('useStorageRedirect', () => {
     it('should redirect to auth preserving realm and position', () => {
       mockedAuth.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
       renderHook(() => useStorageRedirect())
-      expect(mockedRedirect).toHaveBeenCalledWith('/storage/env', { realm: 'foo', position: '0,0' })
+      expect(mockedRedirect).toHaveBeenCalledWith('/storage/env', { realm: 'foo', position: '0,0' }, { replace: true })
     })
   })
 
@@ -49,7 +49,7 @@ describe('useStorageRedirect', () => {
         address: '0xabc' as `0x${string}`
       })
       renderHook(() => useStorageRedirect())
-      expect(mockedRedirect).toHaveBeenCalledWith('/storage/env', { realm: 'foo', position: '0,0' })
+      expect(mockedRedirect).toHaveBeenCalledWith('/storage/env', { realm: 'foo', position: '0,0' }, { replace: true })
     })
   })
 

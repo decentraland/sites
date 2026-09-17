@@ -191,7 +191,7 @@ describe('AllExperiences', () => {
     it('should redirect to auth preserving tab=my so the user lands back on My Hangouts after sign-in', () => {
       render(<AllExperiences />)
 
-      expect(mockRedirectToAuth).toHaveBeenCalledWith('/events', { tab: 'my' })
+      expect(mockRedirectToAuth).toHaveBeenCalledWith('/events', { tab: 'my' }, { replace: true })
     })
   })
 
