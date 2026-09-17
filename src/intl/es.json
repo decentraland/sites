@@ -1162,6 +1162,7 @@
       "filter_favorites": "Favoritos",
       "empty_owner_title": "Todavía no hay nada acá, pero es fácil de cambiar",
       "empty_owner_subtitle": "Mis Lugares muestra los espacios que tenés o gestionás en Decentraland. La forma más fácil de empezar es con un NAME, que desbloquea tu propio World.",
+      "empty_owner_has_name_subtitle": "Mis Lugares muestra los espacios que tenés o gestionás en Decentraland. Ya tenés un NAME: publicá un World con él y va a aparecer acá.",
       "empty_owner_cta": "Obtené un name",
       "empty_favorites_title": "Todavía no guardaste nada",
       "empty_favorites_subtitle": "Agregá Lugares favoritos tocando el corazón en una tarjeta de lugar o en el mapa de Decentraland. Vas a encontrarlos todos acá.",
