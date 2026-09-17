@@ -15,3 +15,13 @@
  * `?category=names` is the Shop's NAMEs surface; the navbar's own NAMEs entry uses the same one.
  */
 export const GET_A_NAME_URL = '/shop/items?category=names'
+
+/**
+ * "Manage World", shown to an owner who already holds a NAME.
+ *
+ * Worlds are published and managed in the Builder, so unlike the Shop link above this one is absolute and
+ * per-environment — hence a function reading config rather than a constant.
+ */
+export function manageWorldUrl(builderUrl: string | undefined): string | undefined {
+  return builderUrl ? `${builderUrl.replace(/\/+$/, '')}/worlds` : undefined
+}
