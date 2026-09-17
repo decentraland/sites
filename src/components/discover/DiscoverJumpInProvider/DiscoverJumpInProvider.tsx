@@ -39,8 +39,8 @@ function DiscoverJumpInProvider({ children }: { children: ReactNode }) {
 
       const options = discoverDeepLinkOptions(place)
       const outcome = await launch(options)
-      // Couldn't launch → prompt the download (mobile already went to the store,
-      // a successful launch needs nothing more).
+      // Couldn't launch → prompt the download (mobile already resolved its own
+      // store fallback, a successful launch needs nothing more).
       if (shouldPromptDownload(outcome)) {
         if (isClientNotInstalled(outcome)) track(SegmentEvent.CLICK, { event: SegmentEvent.CLIENT_NOT_INSTALLED, os: osName, arch })
         setPendingDeepLink(options)

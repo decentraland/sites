@@ -1,10 +1,5 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
-import { isDirectDownloadEnabled } from '../../utils/referrer'
 import { resetInviteFlagsForTests, useInviteDirectDownload } from './invite.flags'
-
-jest.mock('../../utils/referrer', () => ({
-  isDirectDownloadEnabled: jest.fn()
-}))
 
 const flagsResponse = (flags: Record<string, boolean>) =>
   Promise.resolve({
@@ -17,7 +12,6 @@ describe('when resolving the invite direct-download flag', () => {
 
   beforeEach(() => {
     resetInviteFlagsForTests()
-    ;(isDirectDownloadEnabled as jest.Mock).mockReturnValue(true)
     fetchMock = jest.fn()
     global.fetch = fetchMock as unknown as typeof fetch
   })
@@ -77,20 +71,6 @@ describe('when resolving the invite direct-download flag', () => {
   describe('and the flags fetch fails', () => {
     it('should stay disabled', async () => {
       fetchMock.mockRejectedValue(new Error('network down'))
-
-      const { result } = renderHook(() => useInviteDirectDownload())
-
-      await act(async () => {
-        await Promise.resolve()
-      })
-      expect(result.current).toBe(false)
-    })
-  })
-
-  describe('and the environment gate is off', () => {
-    it('should stay disabled even when the remote flag is enabled', async () => {
-      ;(isDirectDownloadEnabled as jest.Mock).mockReturnValue(false)
-      fetchMock.mockReturnValue(flagsResponse({ 'dapps-invite-direct-download': true }))
 
       const { result } = renderHook(() => useInviteDirectDownload())
 

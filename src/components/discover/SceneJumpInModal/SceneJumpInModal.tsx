@@ -3,7 +3,7 @@ import { LiveBadge, UserCountBadge, dclColors } from 'decentraland-ui2'
 import { buildDetailPath, placeCoordsLabel, placeCoverImage } from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { usePlaceOwnerAvatar } from '../../../hooks/usePlaceOwnerAvatar'
+import { usePlaceCreator } from '../../../hooks/usePlaceCreator'
 import { CloseGlyph, CopyGlyph, JumpInGlyph, PinGlyph } from '../_shared/CardIcons'
 import { useDiscoverJumpIn } from '../DiscoverJumpInProvider'
 import {
@@ -50,7 +50,7 @@ function SceneJumpInModalComponent({ place, onClose, liveCount = 0 }: SceneJumpI
 
   const coords = placeCoordsLabel(place)
 
-  const { ownerName, ownerAvatar, avatarBg } = usePlaceOwnerAvatar(place)
+  const { creatorName, creatorAvatar, avatarBg } = usePlaceCreator(place)
 
   const { jumpIn } = useDiscoverJumpIn()
 
@@ -120,11 +120,11 @@ function SceneJumpInModalComponent({ place, onClose, liveCount = 0 }: SceneJumpI
           <HeroText>
             <Title>{place.title}</Title>
             <MetaRow>
-              {ownerName && (
+              {creatorName && (
                 <CreatorRow>
-                  {ownerAvatar && <Avatar src={ownerAvatar} alt="" loading="lazy" $bg={avatarBg} />}
+                  {creatorAvatar && <Avatar src={creatorAvatar} alt="" loading="lazy" $bg={avatarBg} />}
                   <ByText>
-                    {t('discover.card.by')} <CreatorName>{ownerName}</CreatorName>
+                    {t('discover.card.by')} <CreatorName>{creatorName}</CreatorName>
                   </ByText>
                 </CreatorRow>
               )}

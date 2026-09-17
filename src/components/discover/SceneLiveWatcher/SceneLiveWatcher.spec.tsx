@@ -5,6 +5,8 @@ import { SegmentEvent } from '../../../modules/segment.types'
 import { SceneChatDock, SceneRoomMount, SceneWatcherCard } from '.'
 
 const mockUseTracks = jest.fn()
+const mockRoomProps = jest.fn()
+const mockCaptureLiveKitConnectError = jest.fn()
 const mockUseAdvancedUserAgentData = jest.fn()
 const mockTrack = jest.fn()
 const mockJumpIn = jest.fn()
@@ -20,13 +22,19 @@ const mockChatContext = {
 }
 
 jest.mock('@livekit/components-react', () => ({
-  LiveKitRoom: ({ children }: { children?: React.ReactNode }) => <div data-testid="livekit-room">{children}</div>,
+  LiveKitRoom: ({ children, ...props }: { children?: React.ReactNode }) => {
+    mockRoomProps(props)
+    return <div data-testid="livekit-room">{children}</div>
+  },
   RoomAudioRenderer: () => null,
   ConnectionStateToast: () => null,
   useTracks: () => mockUseTracks(),
   useRemoteParticipants: () => []
 }))
 jest.mock('@livekit/components-styles', () => ({}))
+jest.mock('../../../modules/liveKitSentry', () => ({
+  captureLiveKitConnectError: (...args: unknown[]) => mockCaptureLiveKitConnectError(...args)
+}))
 jest.mock('livekit-client', () => ({
   Track: { Source: { Camera: 'camera', ScreenShare: 'screen_share' } }
 }))
@@ -137,6 +145,25 @@ describe('SceneLiveWatcher', () => {
     })
 
     describe('when credentials resolve', () => {
+      // Without a handler `LiveKitRoom` swallows a failed connect into a console
+      // warning, so a gatekeeper outage produced no signal at all.
+      it('should report a failed connection with the surface and the host', () => {
+        render(
+          <SceneRoomMount credentials={credentials}>
+            <span>roomed child</span>
+          </SceneRoomMount>
+        )
+        const { onError } = mockRoomProps.mock.calls[0][0] as { onError: (error: Error) => void }
+        const failure = new Error('could not establish signal connection')
+
+        onError(failure)
+
+        expect(mockCaptureLiveKitConnectError).toHaveBeenCalledWith(failure, {
+          surface: 'scene_watcher',
+          serverUrl: 'wss://livekit.test'
+        })
+      })
+
       it('should wrap the children in the LiveKit room and the chat provider', () => {
         render(
           <SceneRoomMount credentials={credentials}>
