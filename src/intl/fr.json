@@ -758,7 +758,13 @@
         "scene_count_one": "1 scène",
         "edit": "Modifier",
         "edit_scenes": "Modifier les scènes",
-        "select_scene": "Sélectionner une scène"
+        "select_scene": "Sélectionner une scène",
+        "collaborations": "Collaborations",
+        "no_collaborations": "Aucune scène partagée trouvée",
+        "collaborations_hint": "Les scènes récemment accordées peuvent mettre un moment à apparaître.",
+        "load_more": "Charger plus",
+        "realm_world": "Monde",
+        "realm_genesis": "Genesis City"
       },
       "env_page": {
         "title": "Variables d’environnement",

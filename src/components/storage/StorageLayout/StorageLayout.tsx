@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import type { FC, ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -38,6 +38,16 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
     return 'env'
   }, [location.pathname])
 
+  const isCollaborator = useMemo(() => new URLSearchParams(location.search).get('access') === 'collaborator', [location.search])
+  const tabs = useMemo(() => (isCollaborator ? STORAGE_TABS.filter(tab => tab.value !== 'env') : STORAGE_TABS), [isCollaborator])
+  const selectedTab = tabs.some(tab => tab.value === activeTab) ? activeTab : tabs[0].value
+
+  useEffect(() => {
+    if (isCollaborator && activeTab === 'env') {
+      navigate({ pathname: '/storage/scene', search: location.search }, { replace: true })
+    }
+  }, [isCollaborator, activeTab, navigate, location.search])
+
   const handleTabChange = useCallback(
     (_event: React.SyntheticEvent, newValue: 'env' | 'scene' | 'players') => {
       navigate({ pathname: `/storage/${newValue}`, search: window.location.search })
@@ -75,8 +85,8 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
         ) : null}
       </StorageHeader>
       <StorageTabsRoot>
-        <Tabs value={activeTab} onChange={handleTabChange} aria-label="storage sections" variant="scrollable">
-          {STORAGE_TABS.map(tab => (
+        <Tabs value={selectedTab} onChange={handleTabChange} aria-label="storage sections" variant="scrollable">
+          {tabs.map(tab => (
             <Tab
               key={tab.value}
               value={tab.value}
