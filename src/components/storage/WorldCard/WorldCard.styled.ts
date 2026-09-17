@@ -1,11 +1,4 @@
-import { Box, styled } from 'decentraland-ui2'
-
-const CardLabel = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-  gap: 4,
-  marginBottom: 4
-})
+import { styled } from 'decentraland-ui2'
 
 const MenuDivider = styled('span')(({ theme }) => ({
   width: 1,
@@ -15,4 +8,4 @@ const MenuDivider = styled('span')(({ theme }) => ({
   marginRight: 4
 }))
 
-export { CardLabel, MenuDivider }
+export { MenuDivider }

@@ -2,23 +2,35 @@ import { useCallback, useMemo, useState } from 'react'
 import type { ChangeEvent, SyntheticEvent } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
-import { Box, CircularProgress, Tab, Tabs, Typography } from 'decentraland-ui2'
+import { Box, Button, CircularProgress, Tab, Tabs, Typography } from 'decentraland-ui2'
+import { CollaboratorSceneCard } from '../../components/storage/CollaboratorSceneCard'
 import { LandCard } from '../../components/storage/LandCard'
 import { SearchField } from '../../components/storage/SearchField'
 import { WorldCard } from '../../components/storage/WorldCard'
 import {
   getLandPosition,
+  useGetCollaboratorScenesQuery,
   useGetContributableDomainsQuery,
   useGetUserDCLNamesQuery,
   useGetUserLandsQuery,
   useGetUserRentalsQuery
 } from '../../features/storage'
-import type { Land, World } from '../../features/storage'
+import type {
+  AuthParams,
+  CollaboratorScene,
+  CollaboratorScenesResponse,
+  GetCollaboratorScenesParams,
+  Land,
+  World
+} from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
+import { usePaginatedQuery } from '../../hooks/usePaginatedQuery'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
-import { CardsGrid, EmptyState, SelectPageContainer } from './SelectPage.styled'
+import { CardsGrid, CenteredRow, EmptyState, LoadMoreRow, SelectPageContainer } from './SelectPage.styled'
+
+const COLLABORATIONS_PAGE_SIZE = 20
 
 function SelectPage() {
   useStorageRedirect()
@@ -30,6 +42,24 @@ function SelectPage() {
   const [landsQuery, setLandsQuery] = useState('')
 
   const { data: contributableDomains, isLoading: domainsLoading } = useGetContributableDomainsQuery({ identity }, { skip: !identity })
+  const {
+    items: collaboratorScenes,
+    total: collaborationsTotal,
+    hasMore: hasMoreCollaborations,
+    loadMore: handleLoadMoreCollaborations,
+    isError: collaborationsError,
+    isLoading: collaborationsLoading,
+    isFetchingMore: collaborationsFetchingMore
+  } = usePaginatedQuery<GetCollaboratorScenesParams & AuthParams, CollaboratorScenesResponse, CollaboratorScene[]>({
+    queryHook: useGetCollaboratorScenesQuery,
+    queryArg: { identity },
+    enabled: Boolean(identity),
+    defaultLimit: COLLABORATIONS_PAGE_SIZE,
+    extractItems: page => page.data,
+    extractTotal: page => page.pagination.total,
+    getHasMore: page => page.pagination.offset + page.pagination.limit < page.pagination.total,
+    resetDependency: address
+  })
   const { data: dclNames, isLoading: namesLoading } = useGetUserDCLNamesQuery({ address: address ?? '' }, { skip: !address })
   const { data: rentals, isLoading: rentalsLoading } = useGetUserRentalsQuery({ address: address ?? '' }, { skip: !address })
 
@@ -90,6 +120,17 @@ function SelectPage() {
     [navigate]
   )
 
+  const handleSelectCollaboratorScene = useCallback(
+    (scene: CollaboratorScene) => {
+      const params = new URLSearchParams()
+      if (scene.realmKind === 'world') params.set('realm', scene.worldName)
+      params.set('position', scene.baseParcel)
+      params.set('access', 'collaborator')
+      navigate(`/storage/scene?${params.toString()}`)
+    },
+    [navigate]
+  )
+
   usePageViewTracking({
     name: t('page.storage.select.title'),
     properties: { section: 'storage_select' }
@@ -118,12 +159,17 @@ function SelectPage() {
           id="storage-tab-1"
           aria-controls="storage-tabpanel-1"
         />
+        <Tab
+          label={`${t('component.storage.select_page.collaborations')} (${collaborationsTotal})`}
+          id="storage-tab-2"
+          aria-controls="storage-tabpanel-2"
+        />
       </Tabs>
 
       {isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+        <CenteredRow>
           <CircularProgress aria-label={t('component.storage.select_page.loading')} />
-        </Box>
+        </CenteredRow>
       ) : null}
 
       {!isLoading && activeTab === 0 ? (
@@ -170,6 +216,46 @@ function SelectPage() {
                 <LandCard key={land.id} land={land} onClick={() => handleSelectLand(land)} />
               ))}
             </CardsGrid>
+          )}
+        </Box>
+      ) : null}
+
+      {!isLoading && activeTab === 2 ? (
+        <Box role="tabpanel" id="storage-tabpanel-2" aria-labelledby="storage-tab-2" sx={{ pt: 3 }}>
+          {collaborationsLoading ? (
+            <CenteredRow>
+              <CircularProgress aria-label={t('component.storage.select_page.loading')} />
+            </CenteredRow>
+          ) : (
+            <>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {t('component.storage.select_page.collaborations_hint')}
+              </Typography>
+              {collaboratorScenes.length === 0 ? (
+                <EmptyState>
+                  {t(
+                    collaborationsError
+                      ? 'component.storage.select_page.collaborations_error'
+                      : 'component.storage.select_page.no_collaborations'
+                  )}
+                </EmptyState>
+              ) : (
+                <>
+                  <CardsGrid>
+                    {collaboratorScenes.map(scene => (
+                      <CollaboratorSceneCard key={scene.sceneId} scene={scene} onEditClick={handleSelectCollaboratorScene} />
+                    ))}
+                  </CardsGrid>
+                  {hasMoreCollaborations ? (
+                    <LoadMoreRow>
+                      <Button variant="outlined" onClick={handleLoadMoreCollaborations} disabled={collaborationsFetchingMore}>
+                        {t('component.storage.select_page.load_more')}
+                      </Button>
+                    </LoadMoreRow>
+                  ) : null}
+                </>
+              )}
+            </>
           )}
         </Box>
       ) : null}

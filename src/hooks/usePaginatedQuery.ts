@@ -7,6 +7,7 @@ type PaginatedQueryHook<TQueryArg, TData> = (
   data?: TData
   isLoading: boolean
   isFetching: boolean
+  isError: boolean
 }
 
 type UsePaginatedQueryOptions<TQueryArg extends { limit?: number; offset?: number }, TData, TItems extends unknown[]> = {
@@ -46,7 +47,7 @@ function usePaginatedQuery<TQueryArg extends { limit?: number; offset?: number }
     totalRef.current = 0
   }, [resetDependency])
 
-  const { data, isLoading, isFetching } = queryHook(
+  const { data, isLoading, isFetching, isError } = queryHook(
     {
       ...(queryArg as TQueryArg),
       limit,
@@ -80,6 +81,7 @@ function usePaginatedQuery<TQueryArg extends { limit?: number; offset?: number }
 
   return {
     items,
+    isError,
     isLoading: isLoading && currentOffset === 0,
     isFetchingMore: isFetching && currentOffset > 0,
     hasMore,

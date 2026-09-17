@@ -3,12 +3,14 @@ import { createScopedSignedFetch, sendSignedFetch, storageContextId, wrapSignedF
 import type {
   AuthParams,
   ClearPlayerParams,
+  CollaboratorScenesResponse,
   ContributableDomain,
   ContributableDomainsResponse,
   DeleteEnvParams,
   DeletePlayerValueParams,
   DeleteSceneValueParams,
   EnvKey,
+  GetCollaboratorScenesParams,
   GetPlayerValueParams,
   GetSceneValueParams,
   ListEnvKeysResponse,
@@ -352,6 +354,39 @@ const storageEndpoints = storageClient.injectEndpoints({
       providesTags: ['ContributableDomains' as const]
     }),
 
+    getCollaboratorScenes: build.query<CollaboratorScenesResponse, GetCollaboratorScenesParams & AuthParams>({
+      queryFn: async ({ identity, limit, offset }) => {
+        const signedFetch = createScopedSignedFetch(identity)
+        try {
+          const params = new URLSearchParams()
+          if (limit !== undefined) params.set('limit', String(limit))
+          if (offset !== undefined) params.set('offset', String(offset))
+          const query = params.toString()
+          const response = await wrapSignedFetch<CollaboratorScenesResponse>(
+            signedFetch,
+            `${getStorageApiUrl()}/collaborator${query ? `?${query}` : ''}`
+          )
+          return { data: response }
+        } catch (error) {
+          return { error: error as WrapSignedFetchError }
+        }
+      },
+      serializeQueryArgs: ({ queryArgs }) => {
+        const { offset, ...rest } = queryArgs
+        return rest
+      },
+      merge: (currentCache, newItems, { arg }) => {
+        if ((arg.offset ?? 0) === 0) return newItems
+        const existingIds = new Set(currentCache.data.map(scene => scene.sceneId))
+        return {
+          ...newItems,
+          data: [...currentCache.data, ...newItems.data.filter(scene => !existingIds.has(scene.sceneId))]
+        }
+      },
+      forceRefetch: ({ currentArg, previousArg }) => currentArg?.offset !== previousArg?.offset,
+      providesTags: ['CollaboratorScenes' as const]
+    }),
+
     getWorldScenes: build.query<WorldScene[], { worldName: string }>({
       queryFn: async ({ worldName }) => {
         try {
@@ -384,6 +419,7 @@ const {
   useDeleteEnvMutation,
   useDeletePlayerValueMutation,
   useDeleteSceneValueMutation,
+  useGetCollaboratorScenesQuery,
   useGetContributableDomainsQuery,
   useGetPlayerValueQuery,
   useGetSceneValueQuery,
@@ -406,6 +442,7 @@ export {
   useDeleteEnvMutation,
   useDeletePlayerValueMutation,
   useDeleteSceneValueMutation,
+  useGetCollaboratorScenesQuery,
   useGetContributableDomainsQuery,
   useGetPlayerValueQuery,
   useGetSceneValueQuery,

@@ -763,7 +763,14 @@
         "scene_count_one": "1 個のシーン",
         "edit": "編集",
         "edit_scenes": "シーンを編集",
-        "select_scene": "シーンを選択"
+        "select_scene": "シーンを選択",
+        "collaborations": "コラボレーション",
+        "no_collaborations": "コラボレーションが見つかりません",
+        "collaborations_error": "コラボレーションを読み込めませんでした。もう一度お試しください。",
+        "collaborations_hint": "最近付与されたシーンは表示されるまで少し時間がかかる場合があります。",
+        "load_more": "もっと読み込む",
+        "realm_world": "ワールド",
+        "realm_genesis": "Genesis City"
       },
       "env_page": {
         "title": "環境変数",
