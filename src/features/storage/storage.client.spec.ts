@@ -284,6 +284,19 @@ describe('storage.client endpoints', () => {
       const result = await store.dispatch(storageEndpoints.endpoints.getCollaboratorScenes.initiate({ identity }))
       expect((result.error as { status: number }).status).toBe(400)
     })
+
+    it('accumulates offset pages into one cache entry and drops repeated scenes', async () => {
+      const first = { sceneId: 's1', worldName: 'foo.dcl.eth', baseParcel: '0,0', title: 'One', realmKind: 'world' }
+      const second = { sceneId: 's2', worldName: '', baseParcel: '10,10', title: null, realmKind: 'genesis' }
+      const third = { sceneId: 's3', worldName: 'bar.dcl.eth', baseParcel: '1,1', title: 'Three', realmKind: 'world' }
+      signedFetchMock
+        .mockResolvedValueOnce(makeResponse({ data: [first, second], pagination: { limit: 2, offset: 0, total: 3 } }))
+        .mockResolvedValueOnce(makeResponse({ data: [second, third], pagination: { limit: 2, offset: 2, total: 3 } }))
+      const store = setupStore()
+      await store.dispatch(storageEndpoints.endpoints.getCollaboratorScenes.initiate({ identity, limit: 2, offset: 0 }))
+      const result = await store.dispatch(storageEndpoints.endpoints.getCollaboratorScenes.initiate({ identity, limit: 2, offset: 2 }))
+      expect(result.data?.data.map(scene => scene.sceneId)).toEqual(['s1', 's2', 's3'])
+    })
   })
 
   describe('signed-fetch endpoints surface HTTP errors from their catch branch', () => {

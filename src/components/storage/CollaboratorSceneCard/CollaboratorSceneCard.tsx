@@ -1,14 +1,19 @@
 import { memo, useCallback } from 'react'
 import type { FC } from 'react'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import FmdGoodIcon from '@mui/icons-material/FmdGood'
-import { Box, Button, Card, CardActions, CardContent, Chip, Typography } from 'decentraland-ui2'
+import { Button, Card, CardContent, Chip } from 'decentraland-ui2'
 import type { CollaboratorScene } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { CardFooter, CardLabel, LocationIcon } from '../_shared/StorageCard.styled'
+import { SceneLocation, SceneTitle } from './CollaboratorSceneCard.styled'
 
 interface CollaboratorSceneCardProps {
   scene: CollaboratorScene
   onEditClick: (scene: CollaboratorScene) => void
+}
+
+const getSceneLocation = (scene: CollaboratorScene): string => {
+  if (scene.worldName) return `${scene.worldName} · ${scene.baseParcel}`
+  return scene.title ? scene.baseParcel : ''
 }
 
 const CollaboratorSceneCardComponent: FC<CollaboratorSceneCardProps> = ({ scene, onEditClick }) => {
@@ -16,7 +21,7 @@ const CollaboratorSceneCardComponent: FC<CollaboratorSceneCardProps> = ({ scene,
 
   const realmLabel =
     scene.realmKind === 'world' ? t('component.storage.select_page.realm_world') : t('component.storage.select_page.realm_genesis')
-  const location = scene.worldName ? `${scene.worldName} · ${scene.baseParcel}` : scene.title ? scene.baseParcel : ''
+  const location = getSceneLocation(scene)
 
   const handleEditClick = useCallback(() => {
     onEditClick(scene)
@@ -25,19 +30,19 @@ const CollaboratorSceneCardComponent: FC<CollaboratorSceneCardProps> = ({ scene,
   return (
     <Card variant="outlined">
       <CardContent sx={{ pb: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-          <FmdGoodIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-          <Typography variant="subtitle2" fontWeight={600} noWrap sx={{ maxWidth: 220 }}>
+        <CardLabel>
+          <LocationIcon />
+          <SceneTitle variant="subtitle2" noWrap>
             {scene.title ?? scene.baseParcel}
-          </Typography>
-        </Box>
+          </SceneTitle>
+        </CardLabel>
         {location ? (
-          <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block', maxWidth: 240 }}>
+          <SceneLocation variant="caption" color="text.secondary" noWrap>
             {location}
-          </Typography>
+          </SceneLocation>
         ) : null}
       </CardContent>
-      <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 1.5 }}>
+      <CardFooter>
         <Chip label={realmLabel} size="small" color="default" />
         <Button
           variant="contained"
@@ -49,7 +54,7 @@ const CollaboratorSceneCardComponent: FC<CollaboratorSceneCardProps> = ({ scene,
         >
           {t('component.storage.select_page.edit')}
         </Button>
-      </CardActions>
+      </CardFooter>
     </Card>
   )
 }

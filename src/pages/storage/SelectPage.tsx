@@ -15,12 +15,20 @@ import {
   useGetUserLandsQuery,
   useGetUserRentalsQuery
 } from '../../features/storage'
-import type { CollaboratorScene, Land, World } from '../../features/storage'
+import type {
+  AuthParams,
+  CollaboratorScene,
+  CollaboratorScenesResponse,
+  GetCollaboratorScenesParams,
+  Land,
+  World
+} from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
+import { usePaginatedQuery } from '../../hooks/usePaginatedQuery'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
-import { CardsGrid, EmptyState, SelectPageContainer } from './SelectPage.styled'
+import { CardsGrid, CenteredRow, EmptyState, LoadMoreRow, SelectPageContainer } from './SelectPage.styled'
 
 const COLLABORATIONS_PAGE_SIZE = 20
 
@@ -32,16 +40,29 @@ function SelectPageContent() {
   const [activeTab, setActiveTab] = useState(0)
   const [worldsQuery, setWorldsQuery] = useState('')
   const [landsQuery, setLandsQuery] = useState('')
-  const [collaborationsLimit, setCollaborationsLimit] = useState(COLLABORATIONS_PAGE_SIZE)
 
   const { currentData: contributableDomains, isLoading: domainsLoading } = useGetContributableDomainsQuery(
     { identity },
     { skip: !identity }
   )
-  const { data: collaboratorPage, isFetching: collaborationsFetching } = useGetCollaboratorScenesQuery(
-    { identity, limit: collaborationsLimit },
-    { skip: !identity }
-  )
+  const {
+    items: collaboratorScenes,
+    total: collaborationsTotal,
+    hasMore: hasMoreCollaborations,
+    loadMore: handleLoadMoreCollaborations,
+    isError: collaborationsError,
+    isLoading: collaborationsLoading,
+    isFetchingMore: collaborationsFetchingMore
+  } = usePaginatedQuery<GetCollaboratorScenesParams & AuthParams, CollaboratorScenesResponse, CollaboratorScene[]>({
+    queryHook: useGetCollaboratorScenesQuery,
+    queryArg: { identity },
+    enabled: Boolean(identity),
+    defaultLimit: COLLABORATIONS_PAGE_SIZE,
+    extractItems: page => page.data,
+    extractTotal: page => page.pagination.total,
+    getHasMore: page => page.pagination.offset + page.pagination.limit < page.pagination.total,
+    resetDependency: address
+  })
   const { data: dclNames, isLoading: namesLoading } = useGetUserDCLNamesQuery({ address: address ?? '' }, { skip: !address })
   const { data: rentals, isLoading: rentalsLoading } = useGetUserRentalsQuery({ address: address ?? '' }, { skip: !address })
 
@@ -76,10 +97,6 @@ function SelectPageContent() {
     const query = landsQuery.trim().toLowerCase()
     return lands.filter(land => land.name.toLowerCase().includes(query))
   }, [lands, landsQuery])
-
-  const collaboratorScenes = collaboratorPage?.data ?? []
-  const collaborationsTotal = collaboratorPage?.pagination.total ?? 0
-  const hasMoreCollaborations = collaboratorScenes.length < collaborationsTotal
 
   const isLoading = domainsLoading || namesLoading || rentalsLoading || landsLoading
 
@@ -117,10 +134,6 @@ function SelectPageContent() {
     [navigate]
   )
 
-  const handleLoadMoreCollaborations = useCallback(() => {
-    setCollaborationsLimit(prev => prev + COLLABORATIONS_PAGE_SIZE)
-  }, [])
-
   usePageViewTracking({
     name: t('page.storage.select.title'),
     properties: { section: 'storage_select' }
@@ -157,9 +170,9 @@ function SelectPageContent() {
       </Tabs>
 
       {isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+        <CenteredRow>
           <CircularProgress aria-label={t('component.storage.select_page.loading')} />
-        </Box>
+        </CenteredRow>
       ) : null}
 
       {!isLoading && activeTab === 0 ? (
@@ -212,17 +225,23 @@ function SelectPageContent() {
 
       {!isLoading && activeTab === 2 ? (
         <Box role="tabpanel" id="storage-tabpanel-2" aria-labelledby="storage-tab-2" sx={{ pt: 3 }}>
-          {collaborationsFetching && collaboratorScenes.length === 0 ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+          {collaborationsLoading ? (
+            <CenteredRow>
               <CircularProgress aria-label={t('component.storage.select_page.loading')} />
-            </Box>
+            </CenteredRow>
           ) : (
             <>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 {t('component.storage.select_page.collaborations_hint')}
               </Typography>
               {collaboratorScenes.length === 0 ? (
-                <EmptyState>{t('component.storage.select_page.no_collaborations')}</EmptyState>
+                <EmptyState>
+                  {t(
+                    collaborationsError
+                      ? 'component.storage.select_page.collaborations_error'
+                      : 'component.storage.select_page.no_collaborations'
+                  )}
+                </EmptyState>
               ) : (
                 <>
                   <CardsGrid>
@@ -231,11 +250,11 @@ function SelectPageContent() {
                     ))}
                   </CardsGrid>
                   {hasMoreCollaborations ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-                      <Button variant="outlined" onClick={handleLoadMoreCollaborations} disabled={collaborationsFetching}>
+                    <LoadMoreRow>
+                      <Button variant="outlined" onClick={handleLoadMoreCollaborations} disabled={collaborationsFetchingMore}>
                         {t('component.storage.select_page.load_more')}
                       </Button>
-                    </Box>
+                    </LoadMoreRow>
                   ) : null}
                 </>
               )}
