@@ -5,6 +5,7 @@ import type { CollaboratorScene } from '../../../features/storage'
 import { CollaboratorSceneCard } from './CollaboratorSceneCard'
 
 jest.mock('decentraland-ui2', () => {
+  const actual = jest.requireActual('../../../__test-utils__/styledMock')
   const h = React.createElement as unknown as (
     type: string,
     props?: Record<string, unknown> | null,
@@ -15,6 +16,7 @@ jest.mock('decentraland-ui2', () => {
     ({ children }: { children?: unknown }) =>
       h(tag, null, children)
   return {
+    ...actual,
     Box: pass('div'),
     Button: (props: Record<string, unknown>) =>
       h('button', { type: 'button', onClick: props.onClick, disabled: props.disabled, 'aria-label': props['aria-label'] }, props.children),
@@ -59,6 +61,12 @@ describe('CollaboratorSceneCard', () => {
 
   it('falls back to the base parcel when the scene has no title', () => {
     render(<CollaboratorSceneCard scene={genesisScene} onEditClick={jest.fn()} />)
+    expect(screen.getByText('5,7')).toBeInTheDocument()
+  })
+
+  it('shows the base parcel under the title of a titled Genesis City scene', () => {
+    render(<CollaboratorSceneCard scene={{ ...genesisScene, title: 'Plaza' }} onEditClick={jest.fn()} />)
+    expect(screen.getByText('Plaza')).toBeInTheDocument()
     expect(screen.getByText('5,7')).toBeInTheDocument()
   })
 

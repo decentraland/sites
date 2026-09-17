@@ -33,6 +33,7 @@ export {
 } from './storage.helpers'
 export { LandType, RoleType } from './storage.types'
 export type {
+  AuthParams,
   CollaboratorScene,
   CollaboratorScenesResponse,
   ContributableDomain,

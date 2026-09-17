@@ -371,6 +371,19 @@ const storageEndpoints = storageClient.injectEndpoints({
           return { error: error as WrapSignedFetchError }
         }
       },
+      serializeQueryArgs: ({ queryArgs }) => {
+        const { offset, ...rest } = queryArgs
+        return rest
+      },
+      merge: (currentCache, newItems, { arg }) => {
+        if ((arg.offset ?? 0) === 0) return newItems
+        const existingIds = new Set(currentCache.data.map(scene => scene.sceneId))
+        return {
+          ...newItems,
+          data: [...currentCache.data, ...newItems.data.filter(scene => !existingIds.has(scene.sceneId))]
+        }
+      },
+      forceRefetch: ({ currentArg, previousArg }) => currentArg?.offset !== previousArg?.offset,
       providesTags: ['CollaboratorScenes' as const]
     }),
 
