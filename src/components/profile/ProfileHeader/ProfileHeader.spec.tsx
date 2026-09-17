@@ -351,7 +351,7 @@ describe('ProfileHeader', () => {
       getEnvMock.mockReturnValue('https://builder.test/')
     })
 
-    it('should open the names builder from Get a name', async () => {
+    it('should send Get a name to the shop, where NAMEs are sold', async () => {
       useProfileAvatarMock.mockReturnValue({
         avatar: { name: '0xCafe', hasClaimedName: false, userId: address },
         name: '0xCafe',
@@ -363,7 +363,7 @@ describe('ProfileHeader', () => {
 
       await user.click(screen.getByRole('button', { name: /profile\.header\.get_a_name/i }))
 
-      expect(openSpy).toHaveBeenCalledWith('https://builder.test/names', '_blank', 'noopener,noreferrer')
+      expect(openSpy).toHaveBeenCalledWith('/shop/items?category=names', '_blank', 'noopener,noreferrer')
       openSpy.mockRestore()
     })
 

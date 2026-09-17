@@ -223,13 +223,13 @@ describe('PlacesTab', () => {
         >)
       })
 
-      it('should render the my places empty state with a get-a-name CTA linking to the builder', () => {
+      it('should render the my places empty state with a get-a-name CTA linking to the shop', () => {
         render(<PlacesTab address={ADDRESS} isOwnProfile={true} />)
 
         expect(screen.getByText('profile.places.empty_owner_title')).toBeInTheDocument()
         const cta = screen.getByText('profile.places.empty_owner_cta')
         expect(cta).toBeInTheDocument()
-        expect(cta.getAttribute('data-href')).toBe('https://decentraland.org/builder/names')
+        expect(cta.getAttribute('data-href')).toBe('/shop/items?category=names')
       })
     })
 
