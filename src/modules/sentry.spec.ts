@@ -180,6 +180,127 @@ describe('when beforeSend inspects an event', () => {
     })
   })
 
+  // WalletConnect rejects its pending proposal when nobody scans the QR, and nothing
+  // awaits it, so it lands on us as an unhandled rejection (SITES-2S6).
+  describe('and a WalletConnect session proposal expired', () => {
+    it('should drop the event', async () => {
+      const event = { exception: { values: [{ type: 'Error', value: 'Proposal expired' }] } } as ErrorEvent
+      expect(await send(event)).toBeNull()
+    })
+  })
+
+  describe('and an error merely mentions a proposal', () => {
+    it('should keep the event', async () => {
+      const event = { exception: { values: [{ type: 'Error', value: 'Proposal expired while loading the DAO page' }] } } as ErrorEvent
+      expect(await send(event)).not.toBeNull()
+    })
+  })
+
+  // `livekit-client` rejects an internal promise with the socket's own `error` event,
+  // so the report has no message and no stack (SITES-2SF).
+  describe('and a promise was rejected with a raw socket event', () => {
+    it.each(['[object WebSocket]', '[object WebTransport]'])('should drop a rejection targeting %s', async target => {
+      const event = {
+        exception: { values: [{ type: 'Event', value: 'Event `Event` (type=error) captured as promise rejection' }] },
+        extra: { __serialized__: { isTrusted: true, target, type: 'error' } }
+      } as unknown as ErrorEvent
+
+      expect(await send(event)).toBeNull()
+    })
+
+    it('should keep a rejection that carries a real target', async () => {
+      const event = {
+        exception: { values: [{ type: 'Event', value: 'Event `Event` (type=error) captured as promise rejection' }] },
+        extra: { __serialized__: { isTrusted: true, target: '[object HTMLImageElement]', type: 'error' } }
+      } as unknown as ErrorEvent
+
+      expect(await send(event)).not.toBeNull()
+    })
+
+    it('should keep an event with no serialized payload', async () => {
+      const event = { exception: { values: [{ type: 'Error', value: 'boom' }] } } as ErrorEvent
+
+      expect(await send(event)).not.toBeNull()
+    })
+  })
+
+  // Session Replay reaching into the cross-origin newsletter iframe (SITES-2SN).
+  describe('and the SDK threw inside its own instrumentation', () => {
+    const sentryFrame = { filename: 'https://cdn.decentraland.org/@dcl/sites/0.63.1/assets/vendor-sentry-ChAWWyE7.js' }
+
+    it('should drop the event', async () => {
+      const event = {
+        exception: {
+          values: [
+            {
+              type: 'SecurityError',
+              value: "Failed to read a named property 'Element' from 'Window': Blocked a frame with origin",
+              stacktrace: { frames: [sentryFrame, sentryFrame] }
+            }
+          ]
+        }
+      } as ErrorEvent
+
+      expect(await send(event)).toBeNull()
+    })
+
+    it('should keep the same error when it reaches our own code', async () => {
+      const event = {
+        exception: {
+          values: [
+            {
+              type: 'SecurityError',
+              value: "Failed to read a named property 'Element' from 'Window': Blocked a frame with origin",
+              stacktrace: { frames: [sentryFrame, { filename: 'https://cdn.decentraland.org/@dcl/sites/0.63.1/assets/Jump-abc.js' }] }
+            }
+          ]
+        }
+      } as ErrorEvent
+
+      expect(await send(event)).not.toBeNull()
+    })
+  })
+
+  // A TV browser shim throwing against code the page never shipped (SITES-2SQ).
+  describe('and the error has no file behind it', () => {
+    it('should drop the event', async () => {
+      const event = {
+        exception: {
+          values: [{ type: 'TypeError', value: 'n.data.split is not a function', stacktrace: { frames: [{ filename: '<anonymous>' }] } }]
+        }
+      } as ErrorEvent
+
+      expect(await send(event)).toBeNull()
+    })
+
+    it('should keep it once one of our chunks is on the stack', async () => {
+      const event = {
+        exception: {
+          values: [
+            {
+              type: 'TypeError',
+              value: 'n.data.split is not a function',
+              stacktrace: {
+                frames: [{ filename: '<anonymous>' }, { filename: 'https://cdn.decentraland.org/@dcl/sites/0.64.0/assets/index-a.js' }]
+              }
+            }
+          ]
+        }
+      } as ErrorEvent
+
+      expect(await send(event)).not.toBeNull()
+    })
+  })
+
+  // The browser refused the QUIC handshake; livekit falls back to WebSocket (SITES-2SA).
+  describe('and the realtime transport was refused', () => {
+    it('should drop the event', async () => {
+      const event = { exception: { values: [{ type: 'WebTransportError', value: 'WebTransport connection rejected' }] } } as ErrorEvent
+
+      expect(await send(event)).toBeNull()
+    })
+  })
+
   describe('and a non-analytics Segment destination failed to load', () => {
     it('should keep the event', async () => {
       const event = {

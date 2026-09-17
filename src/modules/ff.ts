@@ -3,7 +3,10 @@ const FEATURE_FLAG = {
   unityWearablePreview: 'dapps-unity-wearable-preview',
   onboardingFlow: 'dapps-onboarding-flow',
   inviteDirectDownload: 'dapps-invite-direct-download',
-  eventFeaturedItemSearch: 'dapps-event-featured-item-search'
+  eventFeaturedItemSearch: 'dapps-event-featured-item-search',
+  placesRepeatCrossSections: 'dapps-places-repeat-cross-sections',
+  placesHideFeaturedSection: 'dapps-places-hide-featured-section',
+  placesLiveMinUsers: 'dapps-places-live-min-user'
 } as const
 
 enum OnboardingFlowVariant {

@@ -12,9 +12,9 @@ interface LaunchExplorerOptions {
 }
 
 /**
- * Shared "open the explorer" behavior (JumpInButton, EditProfileButton): mobile goes to the
- * store, desktop deep-links via `launchDesktopApp`, and a missing client falls back to the
- * DownloadModal (the caller renders it). The modal's download URL carries the deep-link
+ * Shared "open the explorer" behavior (JumpInButton, EditProfileButton): both tiers fire the
+ * `decentraland://` protocol, a phone falls back to the store and a desktop without the client
+ * falls back to the DownloadModal (the caller renders it). The modal's download URL carries the deep-link
  * (position/realm) plus the tracking params (campaign utm_*, anon_user_id) so attribution and
  * first-launch location survive the hop to `/download`.
  */
@@ -32,7 +32,10 @@ function useLaunchExplorer({ position, realm }: LaunchExplorerOptions) {
   const deepLinkParams = useMemo(() => buildDeepLinkOptions({ position, realm }), [position, realm])
 
   const launchExplorer = useCallback(async () => {
-    track(SegmentEvent.GO_TO_EXPLORER, { position, realm, osName, arch, ...(isMobile ? { target: 'mobile-store' } : {}) })
+    // NOTE: 2026-09-16 — `target` was 'mobile-store', when that was the only
+    // thing a mobile tap could do. It now names the first step (the protocol);
+    // whether it fell back to the store isn't known yet at track time.
+    track(SegmentEvent.GO_TO_EXPLORER, { position, realm, osName, arch, ...(isMobile ? { target: 'mobile-app' } : {}) })
 
     const outcome = await launch({ position, realm })
     // NOTE: 2026-07-21 — the fallback used to redirect straight to DOWNLOAD_URL /

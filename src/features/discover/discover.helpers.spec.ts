@@ -1,13 +1,17 @@
 import {
   buildJumpLandingHref,
+  countGridTracks,
   discoverDeepLinkOptions,
   discoverPlacePayload,
   isHiddenPlace,
+  isJunkContactName,
   isMapPlaceholderImage,
   parsePositionParam,
   placeCoordsLabel,
   placeCoverImage,
+  placeCreatorAddress,
   placeIsFeatured,
+  placeLiveEventName,
   placePlayers
 } from './discover.helpers'
 import type { DiscoverPlace } from './discover.types'
@@ -230,9 +234,9 @@ describe('when isHiddenPlace is called', () => {
     })
 
     it('should NOT hide a categorized scene that merely starts with "Road at"', () => {
-      expect(isHiddenPlace(makePlace({ title: 'Road at the Edge', image: REAL_IMAGE, categories: ['art'], user_name: 'RoadArtist' }))).toBe(
-        false
-      )
+      expect(
+        isHiddenPlace(makePlace({ title: 'Road at the Edge', image: REAL_IMAGE, categories: ['art'], contact_name: 'RoadArtist' }))
+      ).toBe(false)
     })
   })
 
@@ -246,7 +250,7 @@ describe('when isHiddenPlace is called', () => {
     it('should NOT hide a described scene with a real screenshot', () => {
       expect(
         isHiddenPlace(
-          makePlace({ title: 'Cool Gallery', image: REAL_IMAGE, categories: [], description: 'Rotating exhibits', user_name: 'Curator' })
+          makePlace({ title: 'Cool Gallery', image: REAL_IMAGE, categories: [], description: 'Rotating exhibits', contact_name: 'Curator' })
         )
       ).toBe(false)
     })
@@ -377,7 +381,111 @@ describe('when isHiddenPlace evaluates anonymous placeholder deploys', () => {
 
   it('should NOT hide a scene with a real creator identity', () => {
     expect(
-      isHiddenPlace(makePlace({ title: 'asset-load', image: REAL_IMAGE, categories: [], owner: null, user_name: 'RealCreator' }))
+      isHiddenPlace(makePlace({ title: 'asset-load', image: REAL_IMAGE, categories: [], owner: null, contact_name: 'RealCreator' }))
     ).toBe(false)
+  })
+})
+
+describe('when reading the live event title off a place', () => {
+  const place = (overrides: Partial<DiscoverPlace> = {}): DiscoverPlace =>
+    ({ id: 'p1', title: 'Genesis Plaza', ...overrides }) as DiscoverPlace
+
+  it('should return the title when an event is running', () => {
+    expect(placeLiveEventName(place({ live: true, live_event_name: 'Watch Party Wednesdays' }))).toBe('Watch Party Wednesdays')
+  })
+
+  it('should trim the title', () => {
+    expect(placeLiveEventName(place({ live: true, live_event_name: '  Watch Party Wednesdays  ' }))).toBe('Watch Party Wednesdays')
+  })
+
+  it('should return undefined when the row carries no title', () => {
+    // What every row looks like until the places-api field reaches the
+    // environment being read: `live` arrives, the name does not.
+    expect(placeLiveEventName(place({ live: true }))).toBeUndefined()
+  })
+
+  it.each(['', '   '])('should treat a blank title (%p) as no title', name => {
+    expect(placeLiveEventName(place({ live: true, live_event_name: name }))).toBeUndefined()
+  })
+
+  it('should return undefined when no event is running, title or not', () => {
+    // places-api derives `live` from the name so this cannot happen upstream,
+    // but a stale cached row must not put a tooltip on a badge nobody drew.
+    expect(placeLiveEventName(place({ live: false, live_event_name: 'Stale Party' }))).toBeUndefined()
+    expect(placeLiveEventName(place({}))).toBeUndefined()
+  })
+})
+
+describe('when deciding whether a contact name is junk', () => {
+  it.each(['SDK', 'sdk', ' Sdk '])('should call the sdk-commands default (%p) junk', name => {
+    expect(isJunkContactName(name)).toBe(true)
+  })
+
+  it.each([undefined, null, '', '   '])('should call an absent contact (%p) junk', name => {
+    expect(isJunkContactName(name)).toBe(true)
+  })
+
+  it('should accept a real contact name', () => {
+    expect(isJunkContactName('LowPolyModels')).toBe(false)
+  })
+})
+
+describe('when counting the tracks of a resolved grid-template-columns', () => {
+  it('should count each track a four-up grid resolved to', () => {
+    expect(countGridTracks('326px 326px 326px 326px')).toBe(4)
+  })
+
+  it('should count a single-column grid', () => {
+    expect(countGridTracks('430px')).toBe(1)
+  })
+
+  it('should return 0 when there is no layout to measure', () => {
+    // jsdom reports an empty string, and so does a node that has not been laid
+    // out yet; callers keep their own fallback for this.
+    expect(countGridTracks('')).toBe(0)
+  })
+
+  it('should ignore the padding browsers add between tracks', () => {
+    expect(countGridTracks('  326px   326px  ')).toBe(2)
+  })
+})
+
+describe('when resolving the address a place is credited to', () => {
+  const CREATOR = '0x2222222222222222222222222222222222222222'
+  const OWNER = '0x1111111111111111111111111111111111111111'
+
+  it('should prefer the wallet that deployed the scene over the land owner', () => {
+    expect(placeCreatorAddress({ owner: OWNER, creator_address: CREATOR })).toBe(CREATOR)
+  })
+
+  it('should trim the reported creator address', () => {
+    expect(placeCreatorAddress({ owner: null, creator_address: `  ${CREATOR}  ` })).toBe(CREATOR)
+  })
+
+  it('should fall back to the land owner when the scene reports no creator', () => {
+    expect(placeCreatorAddress({ owner: OWNER })).toBe(OWNER)
+  })
+
+  it.each(['', '   '])('should ignore an empty creator address (%p) and fall back', creatorAddress => {
+    expect(placeCreatorAddress({ owner: OWNER, creator_address: creatorAddress })).toBe(OWNER)
+  })
+
+  it('should ignore a creator address that is a display label rather than a wallet', () => {
+    expect(placeCreatorAddress({ owner: OWNER, creator_address: 'Example Studio' })).toBe(OWNER)
+  })
+
+  it.each(['Digital Fashion Week                      ', 'Decentraland', '0xabc'])(
+    'should ignore the owner label %p, which is not a wallet',
+    owner => {
+      expect(placeCreatorAddress({ owner })).toBe(undefined)
+    }
+  )
+
+  it('should return nothing when the place carries no identity', () => {
+    expect(placeCreatorAddress({ owner: null })).toBe(undefined)
+  })
+
+  it('should return nothing when there is no place yet', () => {
+    expect(placeCreatorAddress(undefined)).toBe(undefined)
   })
 })

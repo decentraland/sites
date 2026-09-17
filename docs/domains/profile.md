@@ -8,16 +8,16 @@ Profile route group absorbed from the standalone `profile.decentraland.org` dapp
 
 ## Key paths
 
-| Path                                         | Purpose                                                                                                                                 |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/pages/profile/`                         | `ProfilePage` (route mount, tab URL sync) + `tabs/` (one component per tab) + `ProfileAccountsRedirect`.                                |
-| `src/components/profile/`                    | `ProfileSurface` (shared by route + modal), `ProfileLayout`, `ProfileHeader`, `ProfileTabs`, `ProfileModal`, `ProfileMobileMenu`, etc.  |
-| `src/features/profile/profile.client.ts`     | Lightweight Catalyst profile client (`useSyncExternalStore`) — the ONLY profile file safe on lightweight routes.                        |
-| `src/features/profile/profile.*.client.ts`   | RTK Query endpoints per tab (`assets`, `creations`, `places`, `photos`, `badges`, `wearables`, `referrals`) injected into base clients. |
-| `src/features/profile/profile.social.rpc.ts` | Friendship/block/mutuals over `@dcl/social-rpc-client` (WebSocket singleton with idle teardown + retry-on-stale-client guard).          |
-| `src/services/marketplaceClient.ts`          | Base client for marketplace catalog/NFT endpoints (creations, assets, equipped wearables).                                              |
-| `src/services/referralClient.ts`             | Base client for referral-progress (signed via `resolveActiveIdentity` — NEVER scan localStorage for identities).                        |
-| `src/hooks/useLaunchExplorer.ts`             | Shared deep-link launch (JUMP IN + EDIT CTAs): `launchDesktopApp` + ui2 `DownloadModal` fallback; fires `GO_TO_EXPLORER`.               |
+| Path                                         | Purpose                                                                                                                                                            |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/pages/profile/`                         | `ProfilePage` (route mount, tab URL sync) + `tabs/` (one component per tab) + `ProfileAccountsRedirect`.                                                           |
+| `src/components/profile/`                    | `ProfileSurface` (shared by route + modal), `ProfileLayout`, `ProfileHeader`, `ProfileTabs`, `ProfileModal`, `ProfileMobileMenu`, etc.                             |
+| `src/features/profile/profile.client.ts`     | The single Catalyst profile cache (`useSyncExternalStore`, per-tick batched `POST /lambdas/profiles` per peer) — the ONLY profile file safe on lightweight routes. |
+| `src/features/profile/profile.*.client.ts`   | RTK Query endpoints per tab (`assets`, `creations`, `places`, `photos`, `badges`, `wearables`, `referrals`) injected into base clients.                            |
+| `src/features/profile/profile.social.rpc.ts` | Friendship/block/mutuals over `@dcl/social-rpc-client` (WebSocket singleton with idle teardown + retry-on-stale-client guard).                                     |
+| `src/services/marketplaceClient.ts`          | Base client for marketplace catalog/NFT endpoints (creations, assets, equipped wearables).                                                                         |
+| `src/services/referralClient.ts`             | Base client for referral-progress (signed via `resolveActiveIdentity` — NEVER scan localStorage for identities).                                                   |
+| `src/hooks/useLaunchExplorer.ts`             | Shared deep-link launch (JUMP IN + EDIT CTAs): `launchDesktopApp` + ui2 `DownloadModal` fallback; fires `GO_TO_EXPLORER`.                                          |
 
 ## Surfaces & modals
 

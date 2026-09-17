@@ -19,6 +19,7 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
 import type { SceneRoomState } from '../../../hooks/useSceneRoom'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../../../modules/downloadConstants'
+import { captureLiveKitConnectError } from '../../../modules/liveKitSentry'
 import { SegmentEvent } from '../../../modules/segment.types'
 import { assetUrl } from '../../../utils/assetUrl'
 import { ChatPanel } from '../../cast/ChatPanel/ChatPanel'
@@ -67,10 +68,28 @@ const SHOW_PEOPLE_COUNT = false
 // level profileCache (and now de-dupes in-flight requests), so we don't need
 // a separate Prefetch component — saves a duplicate batch HTTP call.
 function SceneRoomMount({ credentials, children }: { credentials: LiveKitCredentials | null; children: ReactNode }) {
+  // `useCallback` is not optional here: `LiveKitRoom` lists `onError` in the deps of
+  // the effect that calls `room.connect()`, so a new identity on every render would
+  // reconnect the room in a loop.
+  const serverUrl = credentials?.url
+  const handleError = useCallback(
+    (error: Error) => {
+      void captureLiveKitConnectError(error, { surface: 'scene_watcher', serverUrl })
+    },
+    [serverUrl]
+  )
   if (!credentials) return <>{children}</>
   return (
     <LiveKitProvider>
-      <LiveKitRoom token={credentials.token} serverUrl={credentials.url} connect audio={false} video={false} screen={false}>
+      <LiveKitRoom
+        token={credentials.token}
+        serverUrl={credentials.url}
+        connect
+        audio={false}
+        video={false}
+        screen={false}
+        onError={handleError}
+      >
         <ChatProvider peerUrl={getLivePeerUrl()}>{children}</ChatProvider>
       </LiveKitRoom>
     </LiveKitProvider>
@@ -78,22 +97,6 @@ function SceneRoomMount({ credentials, children }: { credentials: LiveKitCredent
 }
 
 type WatcherTab = 'video' | 'scene'
-
-// `<iframe credentialless>` opts the bevy-web frame into credentialless
-// loading so it inherits our parent COEP: credentialless context and
-// becomes cross-origin-isolated. Without it, Chrome refuses COI and
-// bevy's worker postMessage of a SharedArrayBuffer throws DataCloneError.
-// React strips unknown camelCase + boolean-empty attributes on iframe in
-// some build paths, so we attach it via a ref after mount instead of
-// rendering it as JSX. Idempotent.
-function useCredentiallessIframeRef() {
-  const ref = useRef<HTMLIFrameElement | null>(null)
-  const setRef = useCallback((node: HTMLIFrameElement | null) => {
-    ref.current = node
-    if (node && !node.hasAttribute('credentialless')) node.setAttribute('credentialless', '')
-  }, [])
-  return setRef
-}
 
 // Shared fullscreen wiring for both watcher variants: syncs with the browser's
 // fullscreenchange (Esc / OS exit) and toggles on the video-area element.
@@ -195,13 +198,15 @@ function JumpInFloatCard({ onJumpIn }: { onJumpIn: () => void }) {
   )
 }
 
-// The bevy-web iframe with the credentialless ref + sandbox/permission set.
+// The bevy-web iframe with the credentialless opt-in + sandbox/permission set.
+// `credentialless` has to be part of the initial markup: the browser starts the
+// frame's navigation as soon as the element enters the document, so setting the
+// attribute afterwards (a ref callback) arrives too late to matter.
 function BevyIframe({ src, visible }: { src: string; visible: boolean }) {
   const t = useFormatMessage()
-  const ref = useCredentiallessIframeRef()
   return (
     <SceneIframe
-      ref={ref}
+      credentialless=""
       $visible={visible}
       src={src}
       title={t('discover.scene.tab_streaming')}
