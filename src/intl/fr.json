@@ -973,6 +973,8 @@
     "featured_item_clear": "Retirer l'article en vedette",
     "error_invalid_featured_item": "Doit être un URN valide de collection ou d'article",
     "error_image_too_large": "Nous n'avons pas pu compresser cette image en dessous de 500 Ko. Veuillez choisir un fichier plus petit.",
+    "recommended_size": "(taille recommandée : 1920 × 1080, zone de sécurité : 1080 × 1080)",
+    "image_helper": "Importez un PNG, JPG ou GIF (1920×1080px, 500 ko max). Gardez les visuels et le texte importants dans la zone de sécurité centrée de 1080×1080 pour qu'ils s'adaptent à toutes les résolutions d'écran.",
     "vertical_recommended_size": "Taille recommandée : 716 × 1814 px",
     "recurrence": "Récurrence",
     "every_day": "Chaque jour",
