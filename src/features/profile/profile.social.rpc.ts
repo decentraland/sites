@@ -134,33 +134,41 @@ function retainClient(): () => void {
   }
 }
 
+// Friendship status is relative to the viewer, so the cache key carries the signed-in account
+// as well as the viewed address — same shape as `mutualCache` below. Keying on the viewed
+// address alone let wallet B read wallet A's relationship (e.g. `blocked`) after a switch,
+// because the hook short-circuits on a cache hit and never reaches the RPC layer.
 const statusCache = new Map<string, FriendshipStatus>()
 const subscribers = new Map<string, Set<() => void>>()
 
-function notify(address: string) {
-  subscribers.get(address)?.forEach(cb => cb())
+function statusKey(identity: AuthIdentity, address: string): string {
+  return `${identityKey(identity)}|${address.toLowerCase()}`
+}
+
+function notify(key: string) {
+  subscribers.get(key)?.forEach(cb => cb())
 }
 
 function notifyAll() {
   subscribers.forEach(set => set.forEach(cb => cb()))
 }
 
-function subscribe(address: string, listener: () => void): () => void {
-  let set = subscribers.get(address)
+function subscribe(key: string, listener: () => void): () => void {
+  let set = subscribers.get(key)
   if (!set) {
     set = new Set()
-    subscribers.set(address, set)
+    subscribers.set(key, set)
   }
   set.add(listener)
   return () => {
     set.delete(listener)
-    if (set.size === 0) subscribers.delete(address)
+    if (set.size === 0) subscribers.delete(key)
   }
 }
 
 async function fetchStatus(identity: AuthIdentity, address: string): Promise<FriendshipStatus> {
-  const key = address.toLowerCase()
-  const response = await withClient(identity, c => c.getFriendshipStatus(key))
+  const key = statusKey(identity, address)
+  const response = await withClient(identity, c => c.getFriendshipStatus(address.toLowerCase()))
   const status = toFriendshipStatus(response.status)
   statusCache.set(key, status)
   notify(key)
@@ -218,7 +226,7 @@ function useFriendshipStatus(address: string | undefined): UseFriendshipStatusRe
       setError(null)
       return undefined
     }
-    const key = address.toLowerCase()
+    const key = statusKey(identity, address)
     const releaseClient = retainClient()
     const unsubscribe = subscribe(key, () => setTick(t => t + 1))
 
@@ -226,7 +234,7 @@ function useFriendshipStatus(address: string | undefined): UseFriendshipStatusRe
       setIsLoading(true)
       setError(null)
       let cancelled = false
-      void fetchStatus(identity, key)
+      void fetchStatus(identity, address)
         .catch(err => {
           if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)))
         })
@@ -245,7 +253,7 @@ function useFriendshipStatus(address: string | undefined): UseFriendshipStatusRe
     }
   }, [address, identity])
 
-  const status = address ? statusCache.get(address.toLowerCase()) : undefined
+  const status = address && identity ? statusCache.get(statusKey(identity, address)) : undefined
   return { status, isLoading, error }
 }
 
