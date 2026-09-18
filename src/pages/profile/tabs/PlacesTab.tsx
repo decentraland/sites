@@ -12,7 +12,7 @@ import { CircularProgress, SceneCard, Typography } from 'decentraland-ui2'
 import { FilterChip, FiltersRow } from '../../../components/profile/FilterChips'
 import { PlaceDetailModal, useOpenPlaceModal } from '../../../components/profile/PlaceDetailModal'
 import { JumpInBadgeIcon, ProfileEmptyState } from '../../../components/profile/ProfileEmptyState'
-import { getEnv } from '../../../config/env'
+import { GET_A_NAME_URL } from '../../../components/profile/profileLinks'
 import { useGetProfileFavoritePlacesQuery, useGetProfilePlacesQuery } from '../../../features/profile/profile.places.client'
 import type { ProfileFavoritePlace, ProfilePlace } from '../../../features/profile/profile.places.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
@@ -115,13 +115,12 @@ function PlacesTab({ address, isOwnProfile }: PlacesTabProps) {
         />
       )
     } else if (isOwnProfile) {
-      const namesUrl = `${(getEnv('BUILDER_URL') ?? 'https://decentraland.org/builder').replace(/\/+$/, '')}/names`
       emptyContent = (
         <ProfileEmptyState
           icon={<PlaceOutlinedIcon />}
           title={t('profile.places.empty_owner_title')}
           subtitle={t('profile.places.empty_owner_subtitle')}
-          action={{ label: t('profile.places.empty_owner_cta'), href: namesUrl, startIcon: <VerifiedIcon /> }}
+          action={{ label: t('profile.places.empty_owner_cta'), href: GET_A_NAME_URL, startIcon: <VerifiedIcon /> }}
         />
       )
     } else {
