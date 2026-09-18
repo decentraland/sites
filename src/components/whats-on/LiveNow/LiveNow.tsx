@@ -137,12 +137,12 @@ function LiveNow() {
       </LiveNowHeader>
       <ChevronLayer>
         {canScrollLeft && (
-          <ChevronButton side="left" onClick={() => handleChevronClick('left')}>
+          <ChevronButton aria-label={t('live_now.navigate_previous')} side="left" onClick={() => handleChevronClick('left')}>
             <ChevronLeftIcon />
           </ChevronButton>
         )}
         {canScrollRight && (
-          <ChevronButton side="right" onClick={() => handleChevronClick('right')}>
+          <ChevronButton aria-label={t('live_now.navigate_next')} side="right" onClick={() => handleChevronClick('right')}>
             <ChevronRightIcon />
           </ChevronButton>
         )}

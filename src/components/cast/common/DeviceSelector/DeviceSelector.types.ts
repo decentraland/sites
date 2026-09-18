@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { ComponentType } from 'react'
+import type { ComponentProps, ComponentType } from 'react'
+import type { Menu, MenuItem } from 'decentraland-ui2'
 
 interface DeviceOption {
   deviceId: string
@@ -10,19 +11,16 @@ interface DeviceOption {
 interface DeviceSelectorChildComponents {
   SelectorButton: ComponentType<React.ButtonHTMLAttributes<HTMLButtonElement> & { $isOpen: boolean }>
   SelectorLabel: ComponentType<React.LabelHTMLAttributes<HTMLLabelElement>>
-  DropdownList: ComponentType<React.HTMLAttributes<HTMLDivElement>>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  DropdownItem: ComponentType<any>
+  DropdownList: ComponentType<ComponentProps<typeof Menu>>
+  DropdownItem: ComponentType<ComponentProps<typeof MenuItem>>
 }
 
 interface DeviceSelectorProps {
   label: string
-  icon?: React.ReactNode
   devices: DeviceOption[]
   selectedDeviceId: string
   onDeviceSelect: (deviceId: string) => void
   childComponents: DeviceSelectorChildComponents
-  logPrefix?: string
 }
 
 export type { DeviceOption, DeviceSelectorProps, DeviceSelectorChildComponents }

@@ -1697,5 +1697,9 @@
     },
     "copy": "コピー",
     "copied": "コピーしました"
+  },
+  "live_now": {
+    "navigate_previous": "前のライブシーンを表示",
+    "navigate_next": "次のライブシーンを表示"
   }
 }

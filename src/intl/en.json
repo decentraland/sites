@@ -1079,6 +1079,8 @@
     }
   },
   "live_now": {
+    "navigate_previous": "Show previous live scenes",
+    "navigate_next": "Show next live scenes",
     "title": "Live Now",
     "by_prefix": "by ",
     "unknown_creator": "Unknown",

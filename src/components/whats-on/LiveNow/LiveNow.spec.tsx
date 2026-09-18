@@ -1,5 +1,6 @@
 import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { createMockLiveNowCard } from '../../../__test-utils__/factories'
 import type { LiveNowCard } from '../../../features/events'
 import { LiveNow } from './LiveNow'
@@ -371,16 +372,16 @@ describe('LiveNow', () => {
       scrollLeftSpy.mockRestore()
     })
 
-    it('should scroll to the previous page when the left chevron is clicked', () => {
+    it('should scroll to the previous page using the named control', async () => {
       render(<LiveNow />)
-      fireEvent.click(screen.getByTestId('chevron-left'))
+      await userEvent.click(screen.getByRole('button', { name: 'live_now.navigate_previous' }))
       // current page 0 → clamped to 0 → scrollTo page 0.
       expect(scrollToMock).toHaveBeenCalledWith(expect.objectContaining({ left: 0 }))
     })
 
-    it('should scroll to the next page when the right chevron is clicked', () => {
+    it('should scroll to the next page using the named control', async () => {
       render(<LiveNow />)
-      fireEvent.click(screen.getByTestId('chevron-right'))
+      await userEvent.click(screen.getByRole('button', { name: 'live_now.navigate_next' }))
       // current page 0 → next page 1 → scrollTo (1 * clientWidth 300) = 300.
       expect(scrollToMock).toHaveBeenCalledWith(expect.objectContaining({ left: 300 }))
     })
