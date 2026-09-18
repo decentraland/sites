@@ -2,6 +2,10 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { createMockModalData } from '../../../__test-utils__/factories'
 import { EventDetailModalHero } from './EventDetailModalHero'
 
+// The share link carries the sharer's wallet, and that chain reaches the env
+// config through `import.meta`, which ts-jest cannot parse.
+jest.mock('../../../config/env')
+
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
     t: (key: string, values?: Record<string, string | number>) => {
@@ -25,6 +29,12 @@ jest.mock('../../../hooks/useAuthIdentity', () => ({
 }))
 
 const mockBuildEventShareUrl = jest.fn()
+const WALLET = '0x1111111111111111111111111111111111111111'
+const mockUseWalletAddress = jest.fn()
+jest.mock('../../../hooks/useWalletAddress', () => ({
+  useWalletAddress: () => mockUseWalletAddress()
+}))
+
 jest.mock('../../../utils/whatsOnUrl', () => ({
   buildCalendarUrl: jest.fn(() => 'https://calendar.google.com/test'),
   buildEventShareUrl: (...args: unknown[]) => mockBuildEventShareUrl(...args),
@@ -178,6 +188,7 @@ describe('EventDetailModalHero', () => {
   beforeEach(() => {
     mockOnClose = jest.fn()
     jest.spyOn(window, 'open').mockImplementation(jest.fn())
+    mockUseWalletAddress.mockReturnValue({ address: null, isConnected: false, disconnect: jest.fn() })
     mockUseAuthIdentity.mockReset()
     mockUseAuthIdentity.mockReturnValue({ hasValidIdentity: false, identity: undefined, address: undefined })
     mockUseCanEditEvent.mockReset()
@@ -542,6 +553,23 @@ describe('EventDetailModalHero', () => {
 
         expect(mockBuildEventShareUrl).toHaveBeenCalledWith('event-1', false)
         expect(mockWriteText).toHaveBeenCalledWith('http://localhost/events?id=event-1')
+      })
+    })
+
+    describe('and the sharer is connected', () => {
+      beforeEach(() => {
+        mockBuildEventShareUrl.mockReturnValue('http://localhost/events?id=event-1')
+        mockUseWalletAddress.mockReturnValue({ address: WALLET, isConnected: true, disconnect: jest.fn() })
+      })
+
+      it('should credit them on the link so a shared event keeps its referral', async () => {
+        render(<EventDetailModalHero data={createMockData({ live: false, isEvent: true, id: 'event-1' })} onClose={mockOnClose} />)
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('copy-button'))
+        })
+
+        expect(mockWriteText).toHaveBeenCalledWith(`http://localhost/events?id=event-1&referrer=${WALLET}`)
       })
     })
 
