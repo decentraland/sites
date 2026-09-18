@@ -1697,5 +1697,9 @@
     },
     "copy": "Copiar",
     "copied": "¡Copiado!"
+  },
+  "live_now": {
+    "navigate_previous": "Mostrar escenas en vivo anteriores",
+    "navigate_next": "Mostrar las siguientes escenas en vivo"
   }
 }

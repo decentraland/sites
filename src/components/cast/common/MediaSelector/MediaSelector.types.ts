@@ -1,15 +1,7 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-import { ComponentType } from 'react'
+import type { DeviceSelectorChildComponents } from '../DeviceSelector/DeviceSelector.types'
 
 type MediaDeviceType = 'microphone' | 'camera' | 'audioOutput'
-
-interface MediaSelectorChildComponents {
-  SelectorButton: ComponentType<React.ButtonHTMLAttributes<HTMLButtonElement> & { $isOpen: boolean }>
-  SelectorLabel: ComponentType<React.LabelHTMLAttributes<HTMLLabelElement>>
-  DropdownList: ComponentType<React.HTMLAttributes<HTMLDivElement>>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  DropdownItem: ComponentType<any>
-}
+type MediaSelectorChildComponents = DeviceSelectorChildComponents
 
 interface MediaSelectorProps {
   type: MediaDeviceType

@@ -1,76 +1,74 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useId, useState } from 'react'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import CheckIcon from '@mui/icons-material/Check'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import { useDropdownPosition } from '../../../../hooks/useDropdownPosition'
-import { DeviceSelectorProps } from './DeviceSelector.types'
+import type { DeviceSelectorProps } from './DeviceSelector.types'
+import { SelectorContainer } from './DeviceSelector.styled'
 
-export function DeviceSelector({
-  label,
-  devices,
-  selectedDeviceId,
-  onDeviceSelect,
-  childComponents,
-  logPrefix = 'DeviceSelector'
-}: DeviceSelectorProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const { SelectorButton, SelectorLabel, DropdownList, DropdownItem } = childComponents
+function DeviceSelector(props: DeviceSelectorProps) {
+  const { label, devices, selectedDeviceId, onDeviceSelect, childComponents } = props
+  const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null)
+  const triggerId = useId()
+  const listId = useId()
+  const isOpen = Boolean(anchor)
 
-  const dropdownPosition = useDropdownPosition({
-    isOpen,
-    containerRef,
-    minWidth: 250
-  })
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
+  const handleClose = useCallback(() => setAnchor(null), [])
+  const handleOpen = useCallback((event: React.MouseEvent<HTMLButtonElement>) => setAnchor(event.currentTarget), [])
+  const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      setAnchor(event.currentTarget)
     }
+  }, [])
 
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isOpen])
-
-  const handleSelect = (deviceId: string) => {
-    const selectedDevice = devices.find(d => d.deviceId === deviceId)
-    console.log(`[${logPrefix}] User selected ${label}:`, selectedDevice)
-    onDeviceSelect(deviceId)
-    setIsOpen(false)
-  }
+  const handleSelect = useCallback(
+    (deviceId: string) => {
+      onDeviceSelect(deviceId)
+      setAnchor(null)
+    },
+    [onDeviceSelect]
+  )
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', flex: 1 }}>
-      <SelectorButton onClick={() => setIsOpen(!isOpen)} $isOpen={isOpen}>
-        <SelectorLabel>{label}</SelectorLabel>
-        <KeyboardArrowDownIcon style={{ fontSize: '20px' }} />
-      </SelectorButton>
-
-      {isOpen && dropdownPosition && (
-        <DropdownList
-          style={{
-            top: `${dropdownPosition.top}px`,
-            ...(dropdownPosition.left !== undefined ? { left: `${dropdownPosition.left}px` } : {}),
-            ...(dropdownPosition.right !== undefined ? { right: `${dropdownPosition.right}px` } : {}),
-            width: `${dropdownPosition.width}px`
-          }}
-        >
-          {devices.map(device => (
-            <DropdownItem
-              key={device.deviceId}
-              onClick={() => handleSelect(device.deviceId)}
-              $isSelected={device.deviceId === selectedDeviceId}
-            >
-              <span>{device.label}</span>
-              {device.deviceId === selectedDeviceId && <CheckIcon />}
-            </DropdownItem>
-          ))}
-        </DropdownList>
-      )}
-    </div>
+    <SelectorContainer>
+      <childComponents.SelectorButton
+        id={triggerId}
+        type="button"
+        aria-label={label}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-controls={isOpen ? listId : undefined}
+        onClick={handleOpen}
+        onKeyDown={handleKeyDown}
+        $isOpen={isOpen}
+      >
+        <childComponents.SelectorLabel>{label}</childComponents.SelectorLabel>
+        <KeyboardArrowDownIcon fontSize="small" />
+      </childComponents.SelectorButton>
+      <childComponents.DropdownList
+        anchorEl={anchor}
+        open={isOpen}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        MenuListProps={{ id: listId, role: 'listbox', ['aria-labelledby']: triggerId }}
+      >
+        {devices.map(device => (
+          <childComponents.DropdownItem
+            key={device.deviceId}
+            role="option"
+            selected={device.deviceId === selectedDeviceId}
+            aria-selected={device.deviceId === selectedDeviceId}
+            onClick={() => handleSelect(device.deviceId)}
+          >
+            <span>{device.label}</span>
+            {device.deviceId === selectedDeviceId && <CheckIcon fontSize="small" />}
+          </childComponents.DropdownItem>
+        ))}
+      </childComponents.DropdownList>
+    </SelectorContainer>
   )
 }
+
+export { DeviceSelector }

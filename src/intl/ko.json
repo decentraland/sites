@@ -1697,5 +1697,9 @@
     },
     "copy": "복사",
     "copied": "복사됨"
+  },
+  "live_now": {
+    "navigate_previous": "이전 라이브 장면 표시",
+    "navigate_next": "다음 라이브 장면 표시"
   }
 }

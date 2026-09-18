@@ -1692,5 +1692,9 @@
     },
     "copy": "Copier",
     "copied": "Copié !"
+  },
+  "live_now": {
+    "navigate_previous": "Afficher les scènes en direct précédentes",
+    "navigate_next": "Afficher les scènes en direct suivantes"
   }
 }
