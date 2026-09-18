@@ -202,13 +202,15 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
 
 ### 2. Architectural boundary check (P1 failures)
 
-Enforce the boundary rule from Architecture > Dual Shell. Grep diff:
+Enforce the boundary rule from Architecture > Dual Shell:
 
 ```bash
-git diff master...HEAD --name-only | xargs grep -l "from ['\"].*shells/" 2>/dev/null
+npm run lint:shells
 ```
 
-Hits outside `src/App.tsx` and `src/shells/` itself = violation.
+It walks the import graph from every lightweight entry point (`src/main.tsx`, `src/pages/*` outside the heavy route groups, `components/Layout`, `components/LandingNavbar`, `components/LandingFooter`) and fails if any of them can reach `src/shells/*` at runtime, printing the full chain. Indirect paths through a helper or a barrel count; `import type` does not, because it leaves nothing in the bundle.
+
+Do NOT grep for `from '.*shells/'` instead. It misses the indirect paths and flags the heavy route trees (`src/pages/{whats-on,blog,jump,social,discover,cast,storage,account,profile}/*` and the components they own), which are explicitly allowed to import the shell.
 
 ### 3. YAGNI check
 

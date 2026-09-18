@@ -72,6 +72,7 @@ npm run format         # Prettier
 npm run lint:fix       # ESLint
 npm run lint:pkg       # package.json lint
 npm run lint:i18n      # locale parity + strict JSON (duplicate members) for src/intl/*.json
+npm run lint:shells    # no lightweight route reaches src/shells (rule 2)
 ```
 
 ## Testing
@@ -88,7 +89,7 @@ Conventions live in `CLAUDE.md` > Coding conventions > Testing — `describe('wh
 ## Contributing
 
 1. Branch: `<type>/<description>` (feat, fix, chore, docs, refactor, style, test).
-2. Run the pre-PR gate (`format` → `lint:fix` → `lint:pkg` → `lint:i18n` → `build` → `test`) — see `CLAUDE.md` > Pre-PR review for the full 25-rule checklist.
+2. Run the pre-PR gate (`format` → `lint:fix` → `lint:pkg` → `lint:i18n` → `lint:shells` → `build` → `test`) — see `CLAUDE.md` > Pre-PR review for the full 25-rule checklist.
 3. Single-line commits: `<type>: <summary>`. No `Co-authored-by`. No `--no-verify`.
 4. Squash-merged to `master`.
 

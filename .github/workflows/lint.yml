@@ -18,3 +18,5 @@ jobs:
         run: npm run lint
       - name: Lint i18n
         run: npm run lint:i18n
+      - name: Lint shell boundary
+        run: npm run lint:shells
