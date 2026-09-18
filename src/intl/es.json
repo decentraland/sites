@@ -978,6 +978,8 @@
     "featured_item_clear": "Quitar artículo destacado",
     "error_invalid_featured_item": "Debe ser un URN válido de colección o artículo",
     "error_image_too_large": "No pudimos comprimir esta imagen a menos de 500 KB. Por favor, elegí un archivo más pequeño.",
+    "recommended_size": "(tamaño recomendado: 1920 × 1080, área segura: 1080 × 1080)",
+    "image_helper": "Sube un PNG, JPG o GIF (1920×1080px, máx. 500kb). Mantén los elementos visuales y el texto clave dentro del área segura centrada de 1080×1080 para que se adapten a todas las resoluciones de pantalla.",
     "vertical_recommended_size": "Tamaño recomendado: 716 × 1814 px",
     "recurrence": "Recurrencia",
     "every_day": "Cada día",

@@ -978,6 +978,8 @@
     "featured_item_clear": "清除精选物品",
     "error_invalid_featured_item": "必须是有效的合集或物品 URN",
     "error_image_too_large": "无法将此图片压缩到 500 KB 以下。请选择较小的文件。",
+    "recommended_size": "（推荐尺寸：1920 × 1080，安全区域：1080 × 1080）",
+    "image_helper": "上传 PNG、JPG 或 GIF（1920×1080px，最大 500kb）。请将关键视觉元素和文字放在居中的 1080×1080 安全区域内，以适配所有屏幕分辨率。",
     "vertical_recommended_size": "建议尺寸：716 × 1814 px",
     "recurrence": "重复频率",
     "every_day": "每天",
