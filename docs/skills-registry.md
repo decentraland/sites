@@ -43,14 +43,14 @@ Reference docs for per-dapp file maps. **Not skills** — no auto-load. Read on 
 
 Configured in `.claude/settings.json`.
 
-| Hook                             | Event                                    | Purpose                                                                                                                         | Token cost when silent     |
-| -------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| `session-start.sh`               | SessionStart                             | Prints branch + reminders into context                                                                                          | ~200 chars/session         |
-| `pre-bash-block-destructive.sh`  | PreToolUse(Bash)                         | Blocks `rm -rf src/`, force-push to master, `--package-lock-only`, `--no-verify`, `reset --hard`, `clean -fd`, branch -D master | 0 (silent unless blocking) |
-| `pre-write-warn-package-lock.sh` | PreToolUse(Edit/Write/MultiEdit)         | Warns on `package.json` / `package-lock.json` / `src/config/env/*.json` edits                                                   | 0 (silent unless match)    |
-| `pre-write-warn-classname.sh`    | PreToolUse(Edit/Write/MultiEdit) on .tsx | Warns when introducing `className=` (violates the styled-components-only rule)                                                  | 0 (silent unless match)    |
-| `post-edit-i18n-parity.sh`       | PostToolUse(Edit/Write/MultiEdit)        | Reminds about 5 locale siblings when `src/intl/*` is edited                                                                     | 0 (silent unless match)    |
-| `post-edit-routes-readme.sh`     | PostToolUse(Edit/Write/MultiEdit)        | Reminds about README route table when `src/App.tsx` is edited                                                                   | 0 (silent unless match)    |
+| Hook                             | Event                                    | Purpose                                                                                                                            | Token cost when silent     |
+| -------------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| `session-start.sh`               | SessionStart                             | Prints branch + reminders into context                                                                                             | ~200 chars/session         |
+| `pre-bash-block-destructive.sh`  | PreToolUse(Bash)                         | Blocks `rm -rf src/`, force-push to master, `--package-lock-only`, `--no-verify`, `reset --hard`, `clean -fd`, branch -D master    | 0 (silent unless blocking) |
+| `pre-write-warn-package-lock.sh` | PreToolUse(Edit/Write/MultiEdit)         | Warns on `package.json` / `package-lock.json` / `src/config/env/*.json` edits                                                      | 0 (silent unless match)    |
+| `pre-write-warn-classname.sh`    | PreToolUse(Edit/Write/MultiEdit) on .tsx | Warns when introducing `className=` (violates the styled-components-only rule)                                                     | 0 (silent unless match)    |
+| `post-edit-i18n-parity.sh`       | PostToolUse(Edit/Write/MultiEdit)        | Runs `scripts/check-i18n.mjs` (strict JSON + exact-set parity vs `src/intl/parity-baseline.json`) when `src/intl/*.json` is edited | 0 (silent unless match)    |
+| `post-edit-routes-readme.sh`     | PostToolUse(Edit/Write/MultiEdit)        | Reminds about README route table when `src/App.tsx` is edited                                                                      | 0 (silent unless match)    |
 
 **Removed:** `stop-coverage-guard.sh` (Stop hook) — was auto-dispatching the `coverage-keeper` agent on every Stop after `src/**` / `api/**` edits. Removed on 2026-05-20 for token cost. Coverage floor (rule 6) still applies as policy; run `/coverage-guard` skill on demand.
 

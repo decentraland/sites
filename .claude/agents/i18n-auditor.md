@@ -8,36 +8,21 @@ You audit `src/intl/*.json` for parity and structural issues. Read-only.
 
 ## Checks
 
-1. **Parity.** Every nested key path that exists in `en.json` must exist in `es.json`, `fr.json`, `ja.json`, `ko.json`, `zh.json`. The reverse must also hold (no orphan keys in non-English locales).
-2. **Duplicate top-level keys.** JSON parsers silently keep the last duplicate; this hides bugs.
+1. **Strict JSON.** Duplicate members at any depth, comments, trailing commas, non-object roots. `JSON.parse` collapses duplicates, so this MUST run on the raw text; `scripts/check-i18n.mjs` does it with `jsonc-parser`'s visitor.
+2. **Parity vs the baseline.** Every leaf key path in `en.json` must exist with the same value type in `es.json`, `fr.json`, `ja.json`, `ko.json`, `zh.json`, and the reverse (no orphan keys). Known debt lives in `src/intl/parity-baseline.json` as exact `(locale, type, key)` sets: anything not in the baseline is NEW, anything in the baseline that no longer reproduces is RESOLVED and must be pruned.
 3. **Empty / placeholder values.** Flag values that are empty strings or obvious untranslated placeholders (e.g. literally `"TODO"`).
 
 ## How to run
 
 ```bash
-# Duplicate top-level keys — must be zero per file
-for f in en es fr ja ko zh; do
-  node -e "const j=require('./src/intl/${f}.json');const k=Object.keys(j);if(new Set(k).size!==k.length)console.log('${f}: DUPLICATE TOP-LEVEL KEYS');"
-done
+# Strict JSON + parity vs baseline. Exit 0 = clean or matches baseline, 1 = findings, 2 = usage error.
+npm run lint:i18n
 
-# Parity — list keys in EN missing from each non-EN locale
-node <<'EOF'
-const fs = require('fs');
-const flat = (o, p='') => Object.entries(o).flatMap(([k,v]) =>
-  v && typeof v === 'object' && !Array.isArray(v) ? flat(v, p?`${p}.${k}`:k) : [`${p?`${p}.${k}`:k}`]
-);
-const en = flat(JSON.parse(fs.readFileSync('./src/intl/en.json','utf8')));
-const enSet = new Set(en);
-for (const loc of ['es','fr','ja','ko','zh']) {
-  const keys = flat(JSON.parse(fs.readFileSync(`./src/intl/${loc}.json`,'utf8')));
-  const missing = en.filter(k => !keys.includes(k));
-  const orphan = keys.filter(k => !enSet.has(k));
-  console.log(`--- ${loc} ---`);
-  if (missing.length) console.log('  MISSING:', missing);
-  if (orphan.length) console.log('  ORPHAN:', orphan);
-  if (!missing.length && !orphan.length) console.log('  ok');
-}
-EOF
+# Full debt inventory (what the baseline currently accepts), for release audits
+node -e 'const b=require("./src/intl/parity-baseline.json");for(const [l,v] of Object.entries(b)){if(l.startsWith("$"))continue;console.log(l,"missing",v.missing?.length??0,"extra",v.extra?.length??0,"mismatch",v.mismatch?.length??0)}'
+
+# Empty / placeholder values
+node -e 'const fs=require("fs");for(const l of ["en","es","fr","ja","ko","zh"]){const walk=(o,p)=>{for(const [k,v] of Object.entries(o)){const q=p?p+"."+k:k;if(v&&typeof v==="object")walk(v,q);else if(v===""||/^TODO$/i.test(String(v)))console.log(l+":",q)}};walk(JSON.parse(fs.readFileSync(`./src/intl/${l}.json`,"utf8")),"")}'
 ```
 
 ## Output format
@@ -45,20 +30,22 @@ EOF
 ```
 ## i18n audit
 
-### Duplicate top-level keys
-- en.json: _none_
-- es.json: _none_
+### Strict JSON
+- <file>: _none_ | duplicate key "a.b" at line:col | <error> at line:col
+
+### New parity findings (not in baseline)
+- es.json missing: <paths or "_none_">
+- ... (fr, ja, ko, zh; also `extra` and `mismatch`)
+
+### Resolved baseline entries (prune with --write-baseline)
+- <locale> <type>: <path> or _none_
+
+### Baseline debt (accepted, for context)
+- es: missing N, extra N, mismatch N
 - ...
 
-### Missing keys (vs en.json)
-- es.json: <list of paths or "_none_">
-- fr.json: ...
-- ja.json: ...
-- ko.json: ...
-- zh.json: ...
-
-### Orphan keys (in locale, not in en.json)
-- es.json: ...
+### Empty / placeholder values
+- <locale>: <path> or _none_
 
 ### Verdict
 - PASS / FAIL — one line summary.

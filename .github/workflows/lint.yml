@@ -16,3 +16,5 @@ jobs:
         run: npm install
       - name: Lint
         run: npm run lint
+      - name: Lint i18n
+        run: npm run lint:i18n

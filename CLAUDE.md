@@ -151,6 +151,7 @@ npm test             # Jest, co-located *.spec.ts(x) suites
 npm run format       # Prettier
 npm run lint:fix     # ESLint
 npm run lint:pkg     # package.json lint (silent on success — easy to skip; do not skip)
+npm run lint:i18n    # strict JSON + locale parity vs src/intl/parity-baseline.json (rule 9)
 ```
 
 ## Adding a route
@@ -241,14 +242,13 @@ Hits outside `src/App.tsx` and `src/shells/` itself = violation.
 
 ### 9. JSON merges + i18n parity
 
-- When merging two JSON files (e.g. `intl/en.json`), verify no duplicate top-level keys:
+- Adding a translation key to `en.json` MUST add it to all five sibling locales (`es`, `fr`, `ja`, `ko`, `zh`) in the same commit. A missing key renders the English copy (`LocaleContext` sets `fallbackLocale="en"`), so the gap is invisible in the UI and only the check below catches it.
+- Run the check; it is the same command CI (`lint.yml`) and lint-staged run:
   ```bash
-  node -e 'const j=require("./src/intl/en.json");const k=Object.keys(j);if(new Set(k).size!==k.length)throw new Error("dupe keys")'
+  npm run lint:i18n
   ```
-- Adding a translation key to `en.json` MUST add it to all five sibling locales (`es`, `fr`, `ja`, `ko`, `zh`) in the same commit. Missing locales fall back to the raw key, which the Jarvis review bot will flag as P2. Verify with:
-  ```bash
-  for f in en es fr ja ko zh; do node -e "const j=require('./src/intl/${f}.json'); const v=j.path?.to?.your_key; if(!v) throw new Error('${f}: missing'); console.log('${f}:', v)"; done
-  ```
+  It parses the raw text with `jsonc-parser` in strict mode (duplicate members at any depth, comments, trailing commas, wrong root) and compares leaf key paths against `en.json`. Never check duplicates with `Object.keys` after `JSON.parse`: the parser has already collapsed them and the check passes on `{"key":1,"key":2}`.
+- Known parity debt lives in `src/intl/parity-baseline.json` as exact `(locale, type, key)` sets. New debt fails; a resolved key still listed there also fails. Regenerate with `npm run lint:i18n -- --write-baseline` only after fixing keys, or, for new debt, with a reason in the PR. The diff of that file is the review surface.
 
 ### 10. Error handling
 
