@@ -1697,5 +1697,9 @@
     },
     "copy": "複製",
     "copied": "已複製"
+  },
+  "live_now": {
+    "navigate_previous": "显示上一个实时场景",
+    "navigate_next": "显示下一个实时场景"
   }
 }
