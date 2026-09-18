@@ -47,7 +47,7 @@ const callMethod = (call: unknown[]): string | undefined => {
 }
 // Find a fetch invocation by HTTP method + URL, so assertions don't depend on call ordering
 // (RTK Query may fire extra background refetches).
-const findCall = (spy: jest.SpyInstance, method: string, url: string): unknown[] | undefined =>
+const findCall = (spy: jest.Mock | jest.SpyInstance, method: string, url: string): unknown[] | undefined =>
   spy.mock.calls.find(call => callMethod(call) === method && callUrl(call) === url)
 
 const createTestStore = () =>
@@ -56,36 +56,33 @@ const createTestStore = () =>
     middleware: getDefaultMiddleware => getDefaultMiddleware().concat(accountNotificationsClient.middleware)
   })
 
-describe('accountNotificationsApi', () => {
-  let fetchSpy: jest.SpyInstance
-
+describe('when using the notifications API', () => {
   beforeEach(() => {
-    fetchSpy = jest.spyOn(global, 'fetch')
-    mockResolveActiveIdentity.mockReturnValue(undefined)
+    mockResolveActiveIdentity.mockReturnValue({ authChain: [{ payload: '0xabc' }] })
     mockSignedFetch.mockReset()
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    jest.resetAllMocks()
   })
 
   describe('when getSubscription is called', () => {
     it('should GET /subscription and return the payload', async () => {
-      fetchSpy.mockResolvedValueOnce(jsonResponse(buildSubscription()))
+      mockSignedFetch.mockResolvedValueOnce(jsonResponse(buildSubscription()))
       const store = createTestStore()
 
-      const result = await store.dispatch(accountNotificationsApi.endpoints.getSubscription.initiate())
+      const result = await store.dispatch(accountNotificationsApi.endpoints.getSubscription.initiate({ address: '0xabc' }))
 
-      expect(findCall(fetchSpy, 'GET', 'https://notifications.test/subscription')).toBeDefined()
+      expect(findCall(mockSignedFetch, 'GET', 'https://notifications.test/subscription')).toBeDefined()
       expect((result.data as SubscriptionResponse).email).toBe('user@decentraland.org')
     })
 
     it('should sign the request when an identity is available', async () => {
-      mockResolveActiveIdentity.mockReturnValue({ authChain: [] })
+      mockResolveActiveIdentity.mockReturnValue({ authChain: [{ payload: '0xabc' }] })
       mockSignedFetch.mockResolvedValueOnce(jsonResponse(buildSubscription()))
       const store = createTestStore()
 
-      await store.dispatch(accountNotificationsApi.endpoints.getSubscription.initiate())
+      await store.dispatch(accountNotificationsApi.endpoints.getSubscription.initiate({ address: '0xabc' }))
 
       expect(mockSignedFetch).toHaveBeenCalledTimes(1)
     })
@@ -99,7 +96,7 @@ describe('accountNotificationsApi', () => {
         message_type: { tip_received: { email: true, in_app: true } }
       } as SubscriptionResponse['details']
 
-      fetchSpy.mockImplementation((input: Request | string) => {
+      mockSignedFetch.mockImplementation((input: Request | string) => {
         const method = input instanceof Request ? input.method : 'GET'
         return Promise.resolve(
           method === 'PUT' ? jsonResponse(buildSubscription({ details: updatedDetails })) : jsonResponse(buildSubscription())
@@ -107,13 +104,13 @@ describe('accountNotificationsApi', () => {
       })
 
       const store = createTestStore()
-      await store.dispatch(accountNotificationsApi.endpoints.getSubscription.initiate())
-      await store.dispatch(accountNotificationsApi.endpoints.updateSubscription.initiate(updatedDetails))
+      await store.dispatch(accountNotificationsApi.endpoints.getSubscription.initiate({ address: '0xabc' }))
+      await store.dispatch(accountNotificationsApi.endpoints.updateSubscription.initiate({ address: '0xabc', details: updatedDetails }))
 
-      const putCall = findCall(fetchSpy, 'PUT', 'https://notifications.test/subscription')
+      const putCall = findCall(mockSignedFetch, 'PUT', 'https://notifications.test/subscription')
       expect(putCall).toBeDefined()
 
-      const cached = accountNotificationsApi.endpoints.getSubscription.select()(store.getState() as never)
+      const cached = accountNotificationsApi.endpoints.getSubscription.select({ address: '0xabc' })(store.getState() as never)
       expect(cached.data?.details).toEqual(updatedDetails)
     })
   })
@@ -121,41 +118,44 @@ describe('accountNotificationsApi', () => {
   describe('when updateSubscription fails', () => {
     it('should roll the optimistic cache update back to the previous details', async () => {
       const original = buildSubscription()
-      fetchSpy.mockImplementation((input: Request | string) => {
+      mockSignedFetch.mockImplementation((input: Request | string) => {
         const method = input instanceof Request ? input.method : 'GET'
         return Promise.resolve(method === 'PUT' ? jsonResponse('nope', 500) : jsonResponse(original))
       })
 
       const store = createTestStore()
-      await store.dispatch(accountNotificationsApi.endpoints.getSubscription.initiate())
+      await store.dispatch(accountNotificationsApi.endpoints.getSubscription.initiate({ address: '0xabc' }))
       await store.dispatch(
         accountNotificationsApi.endpoints.updateSubscription.initiate({
-          ignore_all_email: true,
-          ignore_all_in_app: false,
-          message_type: {}
-        } as SubscriptionResponse['details'])
+          address: '0xabc',
+          details: {
+            ignore_all_email: true,
+            ignore_all_in_app: false,
+            message_type: {}
+          } as SubscriptionResponse['details']
+        })
       )
 
-      const cached = accountNotificationsApi.endpoints.getSubscription.select()(store.getState() as never)
+      const cached = accountNotificationsApi.endpoints.getSubscription.select({ address: '0xabc' })(store.getState() as never)
       expect(cached.data?.details).toEqual(original.details)
     })
   })
 
   describe('when setEmail succeeds', () => {
     it('should PUT /set-email and write the address as unconfirmedEmail in the cache', async () => {
-      fetchSpy.mockImplementation((input: Request | string) => {
+      mockSignedFetch.mockImplementation((input: Request | string) => {
         const method = input instanceof Request ? input.method : 'GET'
         return Promise.resolve(method === 'PUT' ? jsonResponse({}) : jsonResponse(buildSubscription({ email: '' })))
       })
 
       const store = createTestStore()
-      await store.dispatch(accountNotificationsApi.endpoints.getSubscription.initiate())
-      await store.dispatch(accountNotificationsApi.endpoints.setEmail.initiate({ email: 'new@decentraland.org' }))
+      await store.dispatch(accountNotificationsApi.endpoints.getSubscription.initiate({ address: '0xabc' }))
+      await store.dispatch(accountNotificationsApi.endpoints.setEmail.initiate({ address: '0xabc', email: 'new@decentraland.org' }))
 
-      const putCall = findCall(fetchSpy, 'PUT', 'https://notifications.test/set-email')
+      const putCall = findCall(mockSignedFetch, 'PUT', 'https://notifications.test/set-email')
       expect(putCall).toBeDefined()
 
-      const cached = accountNotificationsApi.endpoints.getSubscription.select()(store.getState() as never)
+      const cached = accountNotificationsApi.endpoints.getSubscription.select({ address: '0xabc' })(store.getState() as never)
       expect(cached.data?.unconfirmedEmail).toBe('new@decentraland.org')
     })
   })

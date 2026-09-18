@@ -19,7 +19,7 @@ function useEventDeepLink(): UseEventDeepLinkResult {
   const eventId = searchParams.get(EVENT_ID_PARAM)
   const { identity } = useAuthIdentity()
 
-  const { data: event, error } = useGetEventByIdQuery(eventId ? { eventId, identity } : skipToken)
+  const { currentData: event, error } = useGetEventByIdQuery(eventId ? { eventId, identity } : skipToken)
 
   const modalData = useMemo<ModalEventData | null>(() => (event ? normalizeEventEntry(event) : null), [event])
 

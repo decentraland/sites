@@ -57,7 +57,7 @@ const UserTableRow = memo(function UserTableRow({ row, onClick }: { row: AdminPr
   )
 })
 
-function UsersAdminPage() {
+function UsersAdminPageContent() {
   const { t } = useTranslation()
   const { canEditAnyProfile, isLoading } = useAdminPermissions()
   const { identity } = useAuthIdentity()
@@ -67,7 +67,7 @@ function UsersAdminPage() {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
 
-  const { data = [], isFetching } = useListAdminsQuery(identity && canEditAnyProfile ? { identity } : skipToken)
+  const { currentData: data = [], isFetching } = useListAdminsQuery(identity && canEditAnyProfile ? { identity } : skipToken)
   const [updatePermissions, { isLoading: isSubmitting }] = useUpdateAdminPermissionsMutation()
 
   const addresses = useMemo(() => data.map(row => row.user), [data])
@@ -195,6 +195,11 @@ function UsersAdminPage() {
       </Snackbar>
     </AdminPageContainer>
   )
+}
+
+function UsersAdminPage() {
+  const { address } = useAuthIdentity()
+  return <UsersAdminPageContent key={address?.toLowerCase() ?? 'anon'} />
 }
 
 export { UsersAdminPage }

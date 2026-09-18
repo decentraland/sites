@@ -14,7 +14,7 @@ jest.mock('../../config/env', () => ({
 }))
 
 jest.mock('../../utils/activeIdentity', () => ({
-  resolveActiveIdentity: () => undefined
+  resolveActiveIdentity: () => ({ authChain: [{ payload: '0x1234567890123456789012345678901234567890' }] })
 }))
 
 const ADDRESS = '0x1234567890123456789012345678901234567890'

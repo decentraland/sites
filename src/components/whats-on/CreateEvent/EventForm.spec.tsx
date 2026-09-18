@@ -203,7 +203,7 @@ jest.mock('./FeaturedItemField', () => ({
 }))
 
 const mockUseGetWorldNamesQuery = jest.fn(() => ({ data: [] as string[] }))
-const mockUseGetCommunitiesQuery = jest.fn(() => ({ data: [] as Array<{ id: string; name: string }> }))
+const mockUseGetCommunitiesQuery = jest.fn(() => ({ currentData: [] as Array<{ id: string; name: string }> }))
 
 jest.mock('../../../features/events', () => ({
   useGetWorldNamesQuery: () => mockUseGetWorldNamesQuery(),
@@ -310,7 +310,7 @@ describe('EventForm', () => {
     mockOnCancel = jest.fn()
     mockUseAuthIdentity.mockReturnValue({ identity: null, hasValidIdentity: false, address: null })
     mockUseGetWorldNamesQuery.mockReturnValue({ data: [] })
-    mockUseGetCommunitiesQuery.mockReturnValue({ data: [] })
+    mockUseGetCommunitiesQuery.mockReturnValue({ currentData: [] })
     mockUseEventFeaturedItemSearch.mockReturnValue(false)
     mockUseCreateEventForm.mockReturnValue({
       form: createFormState(),
@@ -1122,7 +1122,7 @@ describe('EventForm', () => {
         hasValidIdentity: true,
         address: '0xabc'
       })
-      mockUseGetCommunitiesQuery.mockReturnValue({ data: [{ id: 'c1', name: 'My Community' }] })
+      mockUseGetCommunitiesQuery.mockReturnValue({ currentData: [{ id: 'c1', name: 'My Community' }] })
       mockUseCreateEventForm.mockReturnValue({
         form: createFormState({ communityId: 'c1' }),
         errors: {},
@@ -1140,7 +1140,7 @@ describe('EventForm', () => {
     })
 
     afterEach(() => {
-      mockUseGetCommunitiesQuery.mockReturnValue({ data: [] })
+      mockUseGetCommunitiesQuery.mockReturnValue({ currentData: [] })
     })
 
     it('should render the communities select with the community name', () => {
@@ -1506,7 +1506,7 @@ describe('EventForm', () => {
         address: '0xabc'
       })
       mockUseGetCommunitiesQuery.mockReturnValue({
-        data: [
+        currentData: [
           { id: 'c1', name: 'My Community' },
           { id: 'c2', name: 'Other Community' }
         ]
@@ -1528,7 +1528,7 @@ describe('EventForm', () => {
     })
 
     afterEach(() => {
-      mockUseGetCommunitiesQuery.mockReturnValue({ data: [] })
+      mockUseGetCommunitiesQuery.mockReturnValue({ currentData: [] })
     })
 
     it('should call setField with the chosen communityId', () => {

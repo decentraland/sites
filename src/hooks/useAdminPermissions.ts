@@ -24,7 +24,7 @@ function useAdminPermissions(): AdminPermissionsState {
   const queryResult = useGetMyProfileSettingsQuery(hasValidIdentity && identity ? { identity } : skipToken)
 
   return useMemo(() => {
-    const permissions = hasValidIdentity ? queryResult.data?.permissions ?? EMPTY : EMPTY
+    const permissions = hasValidIdentity ? queryResult.currentData?.permissions ?? EMPTY : EMPTY
     return {
       isLoading: queryResult.isLoading,
       hasIdentity: hasValidIdentity,
@@ -36,7 +36,7 @@ function useAdminPermissions(): AdminPermissionsState {
       canEditAnyProfile: permissions.includes(AdminPermission.EDIT_ANY_PROFILE),
       isAdmin: hasAnyAdminPermission(permissions)
     }
-  }, [hasValidIdentity, queryResult.data, queryResult.isLoading])
+  }, [hasValidIdentity, queryResult.currentData, queryResult.isLoading])
 }
 
 export { useAdminPermissions }

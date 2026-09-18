@@ -91,7 +91,7 @@ describe('Upcoming', () => {
 
   describe('when there are no events', () => {
     beforeEach(() => {
-      mockUseGetUpcomingEventsQuery.mockReturnValue({ data: [] })
+      mockUseGetUpcomingEventsQuery.mockReturnValue({ currentData: [] })
     })
 
     it('should return null', () => {
@@ -110,7 +110,7 @@ describe('Upcoming', () => {
         createMockEvent({ id: 'ev-2', name: 'Event 2' }),
         createMockEvent({ id: 'ev-3', name: 'Event 3' })
       ]
-      mockUseGetUpcomingEventsQuery.mockReturnValue({ data: events })
+      mockUseGetUpcomingEventsQuery.mockReturnValue({ currentData: events })
     })
 
     it('should render the upcoming section', () => {
@@ -148,7 +148,7 @@ describe('Upcoming', () => {
 
   describe('when query returns undefined data', () => {
     beforeEach(() => {
-      mockUseGetUpcomingEventsQuery.mockReturnValue({ data: undefined })
+      mockUseGetUpcomingEventsQuery.mockReturnValue({ currentData: undefined })
     })
 
     it('should return null since default is empty array', () => {
@@ -163,7 +163,7 @@ describe('Upcoming', () => {
       // The events API returns the caller's own non-approved events when authenticated. Issue #482:
       // those pending/rejected drafts must NOT leak into the public Upcoming carousel.
       mockUseGetUpcomingEventsQuery.mockReturnValue({
-        data: [
+        currentData: [
           createMockEvent({ id: 'approved', name: 'Approved', approved: true, rejected: false }),
           createMockEvent({ id: 'pending', name: 'Pending', approved: false, rejected: false }),
           createMockEvent({ id: 'rejected', name: 'Rejected', approved: false, rejected: true })
@@ -184,7 +184,7 @@ describe('Upcoming', () => {
   describe('when every event is pending or rejected', () => {
     beforeEach(() => {
       mockUseGetUpcomingEventsQuery.mockReturnValue({
-        data: [
+        currentData: [
           createMockEvent({ id: 'pending', name: 'Pending', approved: false, rejected: false }),
           createMockEvent({ id: 'rejected', name: 'Rejected', approved: false, rejected: true })
         ]
@@ -200,7 +200,7 @@ describe('Upcoming', () => {
 
   describe('when an event card is clicked', () => {
     it('should open the event detail modal', () => {
-      mockUseGetUpcomingEventsQuery.mockReturnValue({ data: [createMockEvent({ id: 'ev-1', name: 'Event 1' })] })
+      mockUseGetUpcomingEventsQuery.mockReturnValue({ currentData: [createMockEvent({ id: 'ev-1', name: 'Event 1' })] })
       render(<Upcoming />)
       fireEvent.click(screen.getAllByTestId('upcoming-card')[0])
       expect(screen.getByTestId('event-detail-modal')).toBeInTheDocument()
@@ -214,7 +214,7 @@ describe('Upcoming', () => {
 
     beforeEach(() => {
       const events = Array.from({ length: 10 }, (_, i) => createMockEvent({ id: `ev-${i}`, name: `Event ${i}` }))
-      mockUseGetUpcomingEventsQuery.mockReturnValue({ data: events })
+      mockUseGetUpcomingEventsQuery.mockReturnValue({ currentData: events })
       clientWidthSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(300)
       scrollLeftSpy = jest.spyOn(HTMLElement.prototype, 'scrollLeft', 'get').mockReturnValue(300)
       scrollToMock = jest.fn()
@@ -264,7 +264,7 @@ describe('Upcoming', () => {
   describe('when the user drags the mobile carousel', () => {
     beforeEach(() => {
       const events = Array.from({ length: 10 }, (_, i) => createMockEvent({ id: `ev-${i}`, name: `Event ${i}` }))
-      mockUseGetUpcomingEventsQuery.mockReturnValue({ data: events })
+      mockUseGetUpcomingEventsQuery.mockReturnValue({ currentData: events })
       HTMLElement.prototype.setPointerCapture = jest.fn()
       HTMLElement.prototype.releasePointerCapture = jest.fn()
       HTMLElement.prototype.hasPointerCapture = jest.fn(() => true)

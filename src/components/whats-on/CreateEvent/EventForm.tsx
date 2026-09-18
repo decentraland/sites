@@ -175,7 +175,7 @@ function EventForm({
   const { identity, address } = useAuthIdentity()
   const isFeaturedItemSearchEnabled = useEventFeaturedItemSearch()
   const { data: worldNames = [] } = useGetWorldNamesQuery(undefined, { skip: form.location !== 'world' })
-  const { data: communities = [] } = useGetCommunitiesQuery({ identity }, { skip: !identity })
+  const { currentData: communities = [] } = useGetCommunitiesQuery({ identity }, { skip: !identity })
   const [verticalPanelOpen, setVerticalPanelOpen] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(initialOpenPreview)
   const showVerticalPanel = verticalPanelOpen || Boolean(form.verticalImagePreviewUrl)

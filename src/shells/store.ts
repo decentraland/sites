@@ -16,7 +16,9 @@ import { referralClient } from '../services/referralClient'
 import { socialClient } from '../services/socialClient'
 import { storageClient } from '../services/storageClient'
 import { subgraphClient } from '../services/subgraphClient'
+import { watchAuthCache } from './authCacheReset'
 import { createJumpEventsListenerMiddleware } from './jumpEvents.listeners'
+import { clearPrivateCaches } from './privateCaches'
 import { createWhatsOnAdminListenerMiddleware } from './whatsOnAdmin.listeners'
 
 // Kept as a map (not the combined reducer) so the BlockchainShell's lazy enhancer can rebuild the
@@ -65,6 +67,9 @@ const store = configureStore({
 // those flags are silently ignored. Used by the /places LIVE rail to keep
 // hot-scenes / live-worlds data fresh when the user returns to the tab.
 setupListeners(store.dispatch)
+
+const stopAuthCacheWatch = watchAuthCache(() => clearPrivateCaches(store.dispatch))
+if (import.meta.hot) import.meta.hot.dispose(stopAuthCacheWatch)
 
 /**
  * Lazily injects core-web3's `wallet` / `network` / `transactions` slices into the store once the

@@ -21,7 +21,7 @@ import { SegmentEvent } from '../../modules/segment.types'
 import { CardsGrid } from './SelectPage.styled'
 import { SectionHeader } from './shared.styled'
 
-function PlayersPage() {
+function PlayersPageContent() {
   useStorageRedirect()
   const t = useFormatMessage()
   const navigate = useNavigate()
@@ -29,7 +29,7 @@ function PlayersPage() {
   const { realm, position, blocked } = useStorageScope()
   const track = useStorageTrack()
 
-  const { data: players, isLoading } = useListPlayersQuery({ identity, realm, position }, { skip: !identity || blocked })
+  const { currentData: players, isLoading } = useListPlayersQuery({ identity, realm, position }, { skip: !identity || blocked })
   const [clearAllPlayers] = useClearAllPlayersMutation()
 
   const [query, setQuery] = useState('')
@@ -129,6 +129,11 @@ function PlayersPage() {
       />
     </StorageLayout>
   )
+}
+
+function PlayersPage() {
+  const { address } = useAuthIdentity()
+  return <PlayersPageContent key={address?.toLowerCase() ?? 'anon'} />
 }
 
 export { PlayersPage }

@@ -19,14 +19,14 @@ import { useStorageTrack } from '../../hooks/useStorageTrack'
 import { SegmentEvent } from '../../modules/segment.types'
 import { SectionHeader } from './shared.styled'
 
-function EnvPage() {
+function EnvPageContent() {
   useStorageRedirect()
   const t = useFormatMessage()
   const { identity } = useAuthIdentity()
   const { realm, position, blocked } = useStorageScope()
   const track = useStorageTrack()
 
-  const { data: envKeys, isLoading } = useListEnvKeysQuery({ identity, realm, position }, { skip: !identity || blocked })
+  const { currentData: envKeys, isLoading } = useListEnvKeysQuery({ identity, realm, position }, { skip: !identity || blocked })
   const [deleteEnv] = useDeleteEnvMutation()
   const [clearEnv] = useClearEnvMutation()
 
@@ -131,6 +131,11 @@ function EnvPage() {
       />
     </StorageLayout>
   )
+}
+
+function EnvPage() {
+  const { address } = useAuthIdentity()
+  return <EnvPageContent key={address?.toLowerCase() ?? 'anon'} />
 }
 
 export { EnvPage }

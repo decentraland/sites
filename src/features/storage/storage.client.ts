@@ -1,4 +1,5 @@
 import { getStorageApiUrl, getWorldsContentServerUrl, storageClient } from '../../services/storageClient'
+import { identityAddress } from '../../utils/identityScope'
 import { createScopedSignedFetch, sendSignedFetch, storageContextId, wrapSignedFetch } from './storage.helpers'
 import type {
   AuthParams,
@@ -48,6 +49,7 @@ const storageEndpoints = storageClient.injectEndpoints({
       },
       serializeQueryArgs: ({ endpointName, queryArgs }) => ({
         endpointName,
+        account: identityAddress(queryArgs.identity),
         storageContext: storageContextId(queryArgs)
       }),
       providesTags: (_result, _error, args) => [{ type: 'Env' as const, id: storageContextId(args) }]
@@ -108,6 +110,7 @@ const storageEndpoints = storageClient.injectEndpoints({
       },
       serializeQueryArgs: ({ endpointName, queryArgs }) => ({
         endpointName,
+        account: identityAddress(queryArgs.identity),
         storageContext: storageContextId(queryArgs)
       }),
       providesTags: (_result, _error, args) => [{ type: 'Scene' as const, id: storageContextId(args) }]
@@ -129,6 +132,7 @@ const storageEndpoints = storageClient.injectEndpoints({
       serializeQueryArgs: ({ queryArgs, endpointName }) => ({
         endpointName,
         key: queryArgs.key,
+        account: identityAddress(queryArgs.identity),
         storageContext: storageContextId(queryArgs)
       }),
       providesTags: (_result, _error, args) => [
@@ -196,6 +200,7 @@ const storageEndpoints = storageClient.injectEndpoints({
       },
       serializeQueryArgs: ({ endpointName, queryArgs }) => ({
         endpointName,
+        account: identityAddress(queryArgs.identity),
         storageContext: storageContextId(queryArgs)
       }),
       providesTags: (_result, _error, args) => [{ type: 'Player' as const, id: storageContextId(args) }]
@@ -217,6 +222,7 @@ const storageEndpoints = storageClient.injectEndpoints({
       serializeQueryArgs: ({ queryArgs, endpointName }) => ({
         endpointName,
         address: queryArgs.address,
+        account: identityAddress(queryArgs.identity),
         storageContext: storageContextId(queryArgs)
       }),
       providesTags: (result, _error, args) => [
@@ -245,6 +251,7 @@ const storageEndpoints = storageClient.injectEndpoints({
         endpointName,
         address: queryArgs.address,
         key: queryArgs.key,
+        account: identityAddress(queryArgs.identity),
         storageContext: storageContextId(queryArgs)
       }),
       providesTags: (_result, _error, args) => [
@@ -331,6 +338,7 @@ const storageEndpoints = storageClient.injectEndpoints({
     }),
 
     getContributableDomains: build.query<ContributableDomain[], AuthParams>({
+      serializeQueryArgs: ({ queryArgs }) => ({ account: identityAddress(queryArgs.identity) }),
       queryFn: async ({ identity }) => {
         const signedFetch = createScopedSignedFetch(identity)
         try {

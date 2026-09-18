@@ -156,7 +156,7 @@ const FAR_FUTURE = '2099-01-01T12:00:00Z'
 
 describe('PendingEventsPage', () => {
   beforeEach(() => {
-    mockUseGetAdminEventsQuery.mockReturnValue({ data: [], isSuccess: true, refetch: jest.fn() })
+    mockUseGetAdminEventsQuery.mockReturnValue({ currentData: [], isSuccess: true, refetch: jest.fn() })
     mockUseAdminPermissions.mockReturnValue({
       canApproveAnyEvent: true,
       canApproveOwnEvent: false,
@@ -191,7 +191,7 @@ describe('PendingEventsPage', () => {
         rejected: false,
         finish_at: FAR_FUTURE
       })
-      mockUseGetAdminEventsQuery.mockReturnValue({ data: [pending], isSuccess: true, refetch: jest.fn() })
+      mockUseGetAdminEventsQuery.mockReturnValue({ currentData: [pending], isSuccess: true, refetch: jest.fn() })
     })
 
     it('should open the EventDetailModal with admin actions', () => {
@@ -222,7 +222,7 @@ describe('PendingEventsPage', () => {
         rejected: false,
         updated_at: new Date().toISOString()
       })
-      mockUseGetAdminEventsQuery.mockReturnValue({ data: [approved], isSuccess: true, refetch: jest.fn() })
+      mockUseGetAdminEventsQuery.mockReturnValue({ currentData: [approved], isSuccess: true, refetch: jest.fn() })
     })
 
     it('should open the modal in read-only mode without admin actions', () => {
@@ -236,7 +236,11 @@ describe('PendingEventsPage', () => {
 
   describe('when the URL carries an id query param that does not match any event', () => {
     beforeEach(() => {
-      mockUseGetAdminEventsQuery.mockReturnValue({ data: [createMockEvent({ id: 'ev-other' })], isSuccess: true, refetch: jest.fn() })
+      mockUseGetAdminEventsQuery.mockReturnValue({
+        currentData: [createMockEvent({ id: 'ev-other' })],
+        isSuccess: true,
+        refetch: jest.fn()
+      })
     })
 
     it('should not open the modal and should strip the dangling id param', () => {
@@ -256,7 +260,7 @@ describe('PendingEventsPage', () => {
         rejected: false,
         finish_at: FAR_FUTURE
       })
-      mockUseGetAdminEventsQuery.mockReturnValue({ data: [pending], isSuccess: true, refetch: jest.fn() })
+      mockUseGetAdminEventsQuery.mockReturnValue({ currentData: [pending], isSuccess: true, refetch: jest.fn() })
     })
 
     it('should call approve and show the success snackbar', async () => {
@@ -291,7 +295,7 @@ describe('PendingEventsPage', () => {
         rejected: false,
         finish_at: FAR_FUTURE
       })
-      mockUseGetAdminEventsQuery.mockReturnValue({ data: [pending], isSuccess: true, refetch: jest.fn() })
+      mockUseGetAdminEventsQuery.mockReturnValue({ currentData: [pending], isSuccess: true, refetch: jest.fn() })
     })
 
     it('should open the RejectEventModal and call reject with a built reason', async () => {
@@ -376,7 +380,7 @@ describe('PendingEventsPage', () => {
         rejected: false,
         finish_at: FAR_FUTURE
       })
-      mockUseGetAdminEventsQuery.mockReturnValue({ data: [pending], isSuccess: true, refetch: jest.fn() })
+      mockUseGetAdminEventsQuery.mockReturnValue({ currentData: [pending], isSuccess: true, refetch: jest.fn() })
       jest.spyOn(console, 'error').mockImplementation(() => undefined)
     })
 
@@ -409,7 +413,7 @@ describe('PendingEventsPage', () => {
         rejected: false,
         finish_at: FAR_FUTURE
       })
-      mockUseGetAdminEventsQuery.mockReturnValue({ data: [pending], isSuccess: true, refetch: jest.fn() })
+      mockUseGetAdminEventsQuery.mockReturnValue({ currentData: [pending], isSuccess: true, refetch: jest.fn() })
     })
 
     it('should close the snackbar when its Alert close button is pressed', async () => {

@@ -11,25 +11,31 @@ import type { EventEntry } from '../../features/events'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useCanEditEvent } from '../../hooks/useCanEditEvent'
 import { useDeleteHangout } from '../../hooks/useDeleteHangout'
+import { getAuthSession } from '../../utils/authSession'
 import { BackArrowIcon, BackButton, HeaderRow, PageBackground, PageContent, PageTitle } from './CreateEventPage.styled'
 
-function CreateEventPage() {
+function CreateEventPageContent() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const params = useParams<{ eventId?: string }>()
   const [searchParams] = useSearchParams()
-  const { hasValidIdentity, identity } = useAuthIdentity()
+  const { address, hasValidIdentity, identity } = useAuthIdentity()
   const [submitted, setSubmitted] = useState(false)
 
-  const eventFromState = (location.state as { event?: EventEntry } | null)?.event ?? null
+  const navigationState = location.state as { event?: EventEntry; account?: string; session?: number } | null
+  // History entries outlive account switches. Only reuse a payload from this account/session.
+  const eventFromState =
+    address && navigationState?.account === address.toLowerCase() && navigationState.session === getAuthSession()
+      ? navigationState.event ?? null
+      : null
   const isEditRoute = Boolean(params.eventId)
   const initialCommunityId = isEditRoute ? null : searchParams.get('community_id')?.trim() || null
   const initialOpenPreview = isEditRoute && searchParams.has('openPreview')
   const shouldFetchEvent = isEditRoute && hasValidIdentity && !eventFromState
 
   const {
-    data: fetchedEvent,
+    currentData: fetchedEvent,
     isFetching: isEventFetching,
     isError: isEventError
   } = useGetEventByIdQuery(shouldFetchEvent && params.eventId ? { eventId: params.eventId, identity } : skipToken)
@@ -97,7 +103,7 @@ function CreateEventPage() {
 
   if (!hasValidIdentity) return null
   if (isEditRoute && shouldFetchEvent && isEventFetching) return null
-  if (isEditRoute && !initialEvent) return null
+  if (isEditRoute && (!initialEvent || isPermissionsLoading || !canEdit)) return null
   if (isEditRoute && isPermissionsLoading) return null
 
   const titleKey = initialEvent ? 'create_event.edit_title' : 'create_event.title'
@@ -148,6 +154,11 @@ function CreateEventPage() {
       </Snackbar>
     </>
   )
+}
+
+function CreateEventPage() {
+  const { address } = useAuthIdentity()
+  return <CreateEventPageContent key={address?.toLowerCase() ?? 'anon'} />
 }
 
 export { CreateEventPage }

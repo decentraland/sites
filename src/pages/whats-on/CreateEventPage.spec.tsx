@@ -1,14 +1,15 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { createMockEvent } from '../../__test-utils__/factories'
 import type { EventEntry } from '../../features/events/events.types'
+import { getAuthSession } from '../../utils/authSession'
 
 const mockNavigate = jest.fn()
 const mockUseCanEditEvent = jest.fn()
 const mockUseGetEventByIdQuery = jest.fn()
 const mockRequestDelete = jest.fn()
 let mockDeleteOnDeleted: (() => void) | undefined
-let mockIdentityReturn: { hasValidIdentity: boolean; identity?: unknown }
-let mockLocationState: { event?: EventEntry } | null
+let mockIdentityReturn: { address?: string; hasValidIdentity: boolean; identity?: unknown }
+let mockLocationState: { event?: EventEntry; account?: string; session?: number } | null
 let mockParams: { eventId?: string }
 let mockSearch = ''
 
@@ -127,12 +128,12 @@ jest.mock('../../hooks/useAuthIdentity', () => ({
 
 describe('CreateEventPage', () => {
   beforeEach(() => {
-    mockIdentityReturn = { hasValidIdentity: true, identity: undefined }
+    mockIdentityReturn = { address: '0xaaa', hasValidIdentity: true, identity: undefined }
     mockLocationState = null
     mockParams = {}
     mockSearch = ''
     mockUseCanEditEvent.mockReturnValue({ canEdit: false, isLoading: false })
-    mockUseGetEventByIdQuery.mockReturnValue({ data: undefined, isFetching: false, isError: false })
+    mockUseGetEventByIdQuery.mockReturnValue({ currentData: undefined, isFetching: false, isError: false })
     mockRequestDelete.mockReset()
     mockDeleteOnDeleted = undefined
   })
@@ -157,6 +158,20 @@ describe('CreateEventPage', () => {
 
       expect(screen.queryByTestId('event-form')).not.toBeInTheDocument()
       expect(screen.queryByTestId('create-event-success')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when edit navigation state belongs to the previous account', () => {
+    beforeEach(() => {
+      mockParams = { eventId: 'private-event' }
+      mockLocationState = { event: createMockEvent({ id: 'private-event' }), account: '0xbbb', session: getAuthSession() }
+      mockUseGetEventByIdQuery.mockReturnValue({ currentData: undefined, isFetching: true, isError: false })
+    })
+
+    it('should fetch for the current account and hide the old form while waiting', () => {
+      render(<CreateEventPage />)
+      expect(mockUseGetEventByIdQuery).toHaveBeenCalledWith({ eventId: 'private-event', identity: mockIdentityReturn.identity })
+      expect(screen.queryByTestId('event-form')).not.toBeInTheDocument()
     })
   })
 
@@ -219,7 +234,7 @@ describe('CreateEventPage', () => {
 
     beforeEach(() => {
       event = createMockEvent({ id: 'ev-42', user: '0xCreator' })
-      mockLocationState = { event }
+      mockLocationState = { event, account: '0xaaa', session: getAuthSession() }
       mockParams = { eventId: 'ev-42' }
       mockSearch = '?community_id=stale-deeplink'
       mockUseCanEditEvent.mockReturnValue({ canEdit: true, isLoading: false })
@@ -248,7 +263,7 @@ describe('CreateEventPage', () => {
 
     beforeEach(() => {
       event = createMockEvent({ id: 'ev-42', user: '0xCreator' })
-      mockLocationState = { event }
+      mockLocationState = { event, account: '0xaaa', session: getAuthSession() }
       mockParams = { eventId: 'ev-42' }
       mockUseCanEditEvent.mockReturnValue({ canEdit: true, isLoading: false })
     })
@@ -277,7 +292,7 @@ describe('CreateEventPage', () => {
 
     beforeEach(() => {
       event = createMockEvent({ id: 'ev-42', user: '0xCreator' })
-      mockLocationState = { event }
+      mockLocationState = { event, account: '0xaaa', session: getAuthSession() }
       mockParams = { eventId: 'ev-42' }
       mockUseCanEditEvent.mockReturnValue({ canEdit: false, isLoading: true })
     })
@@ -300,7 +315,7 @@ describe('CreateEventPage', () => {
 
     beforeEach(() => {
       event = createMockEvent({ id: 'ev-42', user: '0xCreator' })
-      mockLocationState = { event }
+      mockLocationState = { event, account: '0xaaa', session: getAuthSession() }
       mockParams = { eventId: 'ev-42' }
       mockUseCanEditEvent.mockReturnValue({ canEdit: false, isLoading: false })
     })
@@ -317,7 +332,7 @@ describe('CreateEventPage', () => {
 
     beforeEach(() => {
       event = createMockEvent({ id: 'ev-42', user: '0xCreator' })
-      mockLocationState = { event }
+      mockLocationState = { event, account: '0xaaa', session: getAuthSession() }
       mockParams = { eventId: 'ev-42' }
       mockSearch = '?openPreview'
       mockUseCanEditEvent.mockReturnValue({ canEdit: true, isLoading: false })
@@ -335,7 +350,7 @@ describe('CreateEventPage', () => {
 
     beforeEach(() => {
       event = createMockEvent({ id: 'ev-42', user: '0xCreator' })
-      mockLocationState = { event }
+      mockLocationState = { event, account: '0xaaa', session: getAuthSession() }
       mockParams = { eventId: 'ev-42' }
       mockUseCanEditEvent.mockReturnValue({ canEdit: true, isLoading: false })
     })
@@ -367,7 +382,7 @@ describe('CreateEventPage', () => {
 
     describe('and the event fetch is in flight', () => {
       beforeEach(() => {
-        mockUseGetEventByIdQuery.mockReturnValue({ data: undefined, isFetching: true, isError: false })
+        mockUseGetEventByIdQuery.mockReturnValue({ currentData: undefined, isFetching: true, isError: false })
       })
 
       it('should not redirect while loading', () => {
@@ -388,7 +403,7 @@ describe('CreateEventPage', () => {
 
       beforeEach(() => {
         event = createMockEvent({ id: 'ev-42', user: '0xCreator' })
-        mockUseGetEventByIdQuery.mockReturnValue({ data: event, isFetching: false, isError: false })
+        mockUseGetEventByIdQuery.mockReturnValue({ currentData: event, isFetching: false, isError: false })
         mockUseCanEditEvent.mockReturnValue({ canEdit: true, isLoading: false })
       })
 
@@ -407,7 +422,7 @@ describe('CreateEventPage', () => {
 
     describe('and the event fetch errors', () => {
       beforeEach(() => {
-        mockUseGetEventByIdQuery.mockReturnValue({ data: undefined, isFetching: false, isError: true })
+        mockUseGetEventByIdQuery.mockReturnValue({ currentData: undefined, isFetching: false, isError: true })
       })
 
       it('should redirect to /events', () => {
@@ -431,7 +446,7 @@ describe('CreateEventPage', () => {
 
       beforeEach(() => {
         event = createMockEvent({ id: 'ev-42', user: '0xCreator', name: 'My Hangout' })
-        mockLocationState = { event }
+        mockLocationState = { event, account: '0xaaa', session: getAuthSession() }
         mockParams = { eventId: 'ev-42' }
         mockUseCanEditEvent.mockReturnValue({ canEdit: true, isLoading: false })
       })

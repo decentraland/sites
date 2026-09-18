@@ -14,6 +14,7 @@ import { getThumbnailUrl as getCommunityThumbnailUrl } from '../../../features/c
 import { useGetProfileCommunitiesQuery } from '../../../features/profile/profile.social.client'
 import type { ProfileCommunity } from '../../../features/profile/profile.social.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCopyShareLink } from '../../../hooks/useCopyShareLink'
 import {
   CommunityActionButton,
@@ -40,9 +41,13 @@ interface CommunitiesTabProps {
 
 function CommunitiesTab({ address, isOwnProfile }: CommunitiesTabProps) {
   const t = useFormatMessage()
+  const { address: activeAddress, hasValidIdentity } = useAuthIdentity()
   // Member view only receives the user's publicly visible communities (public + listed);
   // the endpoint returns the full list (incl. private/unlisted) for the member themselves.
-  const { data, isLoading } = useGetProfileCommunitiesQuery({ address })
+  const { currentData: data, isLoading } = useGetProfileCommunitiesQuery({
+    address,
+    account: hasValidIdentity ? activeAddress?.toLowerCase() : undefined
+  })
   const communities = useMemo<ProfileCommunity[]>(() => data?.data?.results ?? [], [data])
   const { openCommunityId, open: openCommunity, close: closeCommunity } = useOpenCommunityModal()
 

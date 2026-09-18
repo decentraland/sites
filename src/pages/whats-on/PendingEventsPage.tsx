@@ -19,7 +19,7 @@ import { CardGrid, EmptyStateText, Section, SectionSubtitle, SectionTitle } from
 
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
 
-function PendingEventsPage() {
+function PendingEventsPageContent() {
   const { t } = useTranslation()
   const { identity } = useAuthIdentity()
   const { canApproveAnyEvent, canApproveOwnEvent, canEditAnyEvent, isLoading } = useAdminPermissions()
@@ -29,7 +29,7 @@ function PendingEventsPage() {
   const [feedback, setFeedback] = useState<{ message: string; severity: 'success' | 'error' } | null>(null)
   const { activeEvent, closeEventDetailModal, editActiveEvent, modalData, openEventDetailModal } = useEventDetailModal()
 
-  const { data: events = [], isSuccess: areEventsLoaded } = useGetAdminEventsQuery(identity && allowed ? { identity } : skipToken, {
+  const { currentData: events = [], isSuccess: areEventsLoaded } = useGetAdminEventsQuery(identity && allowed ? { identity } : skipToken, {
     refetchOnMountOrArgChange: true
   })
   const [approve, { isLoading: isApproving }] = useApproveEventMutation()
@@ -154,6 +154,11 @@ function PendingEventsPage() {
       </Snackbar>
     </AdminPageContainer>
   )
+}
+
+function PendingEventsPage() {
+  const { address } = useAuthIdentity()
+  return <PendingEventsPageContent key={address?.toLowerCase() ?? 'anon'} />
 }
 
 export { PendingEventsPage }

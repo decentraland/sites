@@ -61,12 +61,15 @@ jest.mock('../../features/account-credits', () => ({
 }))
 
 jest.mock('../../hooks/useAuthIdentity', () => ({
-  useAuthIdentity: () => ({ address: '0x1234567890123456789012345678901234567890' })
+  useAuthIdentity: () => ({ hasValidIdentity: true, address: '0x1234567890123456789012345678901234567890' })
 }))
 
 describe('CreditsPage', () => {
   beforeEach(() => {
-    mockUseGetUserCreditsStatusQuery.mockReturnValue({ data: { status: UserCreditsStatus.ENROLLED, optedOutAt: null }, isLoading: false })
+    mockUseGetUserCreditsStatusQuery.mockReturnValue({
+      currentData: { status: UserCreditsStatus.ENROLLED, optedOutAt: null },
+      isLoading: false
+    })
     mockOptOut.mockReturnValue({ unwrap: () => Promise.resolve(undefined) })
     mockRegister.mockReturnValue({ unwrap: () => Promise.resolve(undefined) })
   })
@@ -83,7 +86,7 @@ describe('CreditsPage', () => {
 
   it('should register via the credits API when Join is clicked', async () => {
     mockUseGetUserCreditsStatusQuery.mockReturnValue({
-      data: { status: UserCreditsStatus.NOT_REGISTERED, optedOutAt: null },
+      currentData: { status: UserCreditsStatus.NOT_REGISTERED, optedOutAt: null },
       isLoading: false
     })
     render(<CreditsPage />)

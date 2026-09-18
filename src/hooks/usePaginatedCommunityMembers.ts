@@ -1,5 +1,6 @@
 import { useGetCommunityMembersQuery } from '../features/communities/communities.client'
 import type { CommunityMember, CommunityMembersResponse } from '../features/communities/communities.types'
+import { useAuthIdentity } from './useAuthIdentity'
 import { usePaginatedQuery } from './usePaginatedQuery'
 import type { UsePaginatedCommunityMembersOptions, UsePaginatedCommunityMembersResult } from './usePaginatedCommunityMembers.types'
 
@@ -9,9 +10,15 @@ function usePaginatedCommunityMembers({
   communityId,
   enabled = true
 }: UsePaginatedCommunityMembersOptions): UsePaginatedCommunityMembersResult {
-  const result = usePaginatedQuery<{ id: string; limit?: number; offset?: number }, CommunityMembersResponse, CommunityMember[]>({
+  const { address, hasValidIdentity } = useAuthIdentity()
+  const account = hasValidIdentity ? address?.toLowerCase() : undefined
+  const result = usePaginatedQuery<
+    { id: string; account?: string; limit?: number; offset?: number },
+    CommunityMembersResponse,
+    CommunityMember[]
+  >({
     queryHook: useGetCommunityMembersQuery,
-    queryArg: { id: communityId },
+    queryArg: { id: communityId, account },
     enabled: enabled && !!communityId,
     defaultLimit: DEFAULT_LIMIT,
     extractItems: data => data.data.results ?? [],
@@ -21,7 +28,7 @@ function usePaginatedCommunityMembers({
       const totalPages = data.data.pages ?? 1
       return currentPage < totalPages
     },
-    resetDependency: communityId
+    resetDependency: `${communityId}:${account ?? 'anon'}`
   })
 
   return {

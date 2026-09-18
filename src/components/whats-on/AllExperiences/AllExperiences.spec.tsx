@@ -185,7 +185,7 @@ describe('AllExperiences', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(3)
       mockSearchParams = new URLSearchParams('tab=my')
-      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: [], isLoading: false, isError: false })
     })
 
     it('should redirect to auth preserving tab=my so the user lands back on My Hangouts after sign-in', () => {
@@ -198,7 +198,7 @@ describe('AllExperiences', () => {
   describe('when signed out with 3 columns', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(3)
-      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: [], isLoading: false, isError: false })
     })
 
     it('should render the section title', () => {
@@ -260,7 +260,7 @@ describe('AllExperiences', () => {
   describe('when rendered with 5 columns', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(5)
-      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: [], isLoading: false, isError: false })
     })
 
     it('should render 5 day columns', () => {
@@ -273,7 +273,7 @@ describe('AllExperiences', () => {
   describe('when rendered with 1 column (mobile)', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(1)
-      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: [], isLoading: false, isError: false })
     })
 
     it('should render the mobile vertical list instead of day columns', () => {
@@ -287,7 +287,7 @@ describe('AllExperiences', () => {
   describe('when data is loading', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(2)
-      mockUseGetEventsQuery.mockReturnValue({ data: undefined, isLoading: true, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: undefined, isLoading: true, isError: false })
     })
 
     it('should pass isLoading=true to DayColumn', () => {
@@ -305,7 +305,7 @@ describe('AllExperiences', () => {
         createMockEvent({ id: 'e1', start_at: '2026-09-13T14:00:00Z', finish_at: '2026-09-13T15:00:00Z' }),
         createMockEvent({ id: 'e2', start_at: '2026-09-13T16:00:00Z', finish_at: '2026-09-13T17:00:00Z' })
       ]
-      mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: events, isLoading: false, isError: false })
     })
 
     it('should pass the event count to DayColumn', () => {
@@ -321,7 +321,7 @@ describe('AllExperiences', () => {
       // Issue #482: events API includes the caller's own non-approved events when authenticated.
       // The public All tab must hide them; only the My tab is allowed to surface drafts.
       mockUseGetEventsQuery.mockReturnValue({
-        data: [
+        currentData: [
           createMockEvent({
             id: 'approved',
             approved: true,
@@ -361,7 +361,7 @@ describe('AllExperiences', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(3)
       mockUseGetEventsQuery.mockReturnValue({
-        data: [
+        currentData: [
           createMockEvent({ id: 'pending-1', approved: false, rejected: false, start_at: '2026-09-13T14:00:00Z' }),
           createMockEvent({ id: 'pending-2', approved: false, rejected: false, start_at: '2026-09-14T15:00:00Z' }),
           createMockEvent({ id: 'rejected-1', approved: false, rejected: true, start_at: '2026-09-15T16:00:00Z' })
@@ -387,7 +387,7 @@ describe('AllExperiences', () => {
         createMockEvent({ id: 'e2', start_at: '2026-09-13T16:00:00Z', finish_at: '2026-09-13T17:00:00Z' }),
         createMockEvent({ id: 'e3', start_at: '2026-09-13T18:00:00Z', finish_at: '2026-09-13T19:00:00Z' })
       ]
-      mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: events, isLoading: false, isError: false })
     })
 
     it('should render every event for the day as a vertical list so nothing is hidden behind a swipe', () => {
@@ -419,7 +419,7 @@ describe('AllExperiences', () => {
           recurrent_dates: ['2026-01-28T14:00:00Z', '2026-04-29T14:00:00Z', '2026-05-06T14:00:00Z', '2026-05-13T14:00:00Z']
         })
       ]
-      mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: events, isLoading: false, isError: false })
     })
 
     it('should display the event on its upcoming occurrence column, not on the original start_at column', () => {
@@ -453,7 +453,7 @@ describe('AllExperiences', () => {
           recurrent_dates: ['2026-04-29T09:00:00Z']
         })
       ]
-      mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: events, isLoading: false, isError: false })
 
       render(<AllExperiences />)
 
@@ -478,7 +478,7 @@ describe('AllExperiences', () => {
   describe('when navigating right', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(3)
-      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: [], isLoading: false, isError: false })
     })
 
     it('should update startOffset by columnCount', () => {
@@ -492,7 +492,7 @@ describe('AllExperiences', () => {
   describe('when navigating left after navigating right', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(3)
-      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: [], isLoading: false, isError: false })
     })
 
     it('should return startOffset to 0', () => {
@@ -507,7 +507,7 @@ describe('AllExperiences', () => {
   describe('when navigating left at startOffset 0', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(3)
-      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: [], isLoading: false, isError: false })
     })
 
     it('should not go below 0', () => {
@@ -521,7 +521,7 @@ describe('AllExperiences', () => {
   describe('when fetching events', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(3)
-      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: [], isLoading: false, isError: false })
     })
 
     it('should make a single API call for the entire visible date range', () => {
@@ -539,7 +539,7 @@ describe('AllExperiences', () => {
         hasValidIdentity: true,
         address: '0xCreator'
       })
-      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: [], isLoading: false, isError: false })
     })
 
     it('should render the tabs switcher instead of the plain title', () => {
@@ -569,7 +569,7 @@ describe('AllExperiences', () => {
 
     describe('and the user clicks the "my" tab', () => {
       beforeEach(() => {
-        mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+        mockUseGetEventsQuery.mockReturnValue({ currentData: [], isLoading: false, isError: false })
       })
 
       it('should write ?tab=my into the URL via replace so back navigation is unaffected', () => {
@@ -585,7 +585,7 @@ describe('AllExperiences', () => {
     describe('and the user clicks the "all" tab after landing on ?tab=my', () => {
       beforeEach(() => {
         mockSearchParams = new URLSearchParams('tab=my')
-        mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+        mockUseGetEventsQuery.mockReturnValue({ currentData: [], isLoading: false, isError: false })
       })
 
       it('should remove the tab param from the URL instead of writing tab=all', () => {
@@ -619,7 +619,7 @@ describe('AllExperiences', () => {
             user: '0xCreator'
           })
         ]
-        mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
+        mockUseGetEventsQuery.mockReturnValue({ currentData: events, isLoading: false, isError: false })
       })
 
       it('should query events with owner=true and identity, no creator param', () => {
@@ -701,7 +701,7 @@ describe('AllExperiences', () => {
     describe("and the owner=true response includes the caller's rejected events", () => {
       beforeEach(() => {
         mockUseGetEventsQuery.mockReturnValue({
-          data: [
+          currentData: [
             createMockEvent({
               id: 'mine-approved',
               user: '0xCreator',
@@ -753,7 +753,7 @@ describe('AllExperiences', () => {
     describe('and the owner=true response contains both pending and rejected drafts', () => {
       beforeEach(() => {
         mockUseGetEventsQuery.mockReturnValue({
-          data: [
+          currentData: [
             createMockEvent({
               id: 'mine-pending',
               user: '0xCreator',
@@ -796,7 +796,7 @@ describe('AllExperiences', () => {
 
     describe('and "my" tab has no events', () => {
       beforeEach(() => {
-        mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+        mockUseGetEventsQuery.mockReturnValue({ currentData: [], isLoading: false, isError: false })
       })
 
       it('should render the empty state and hide the grid', () => {
@@ -820,7 +820,7 @@ describe('AllExperiences', () => {
             user: '0xCreator'
           })
         ]
-        mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
+        mockUseGetEventsQuery.mockReturnValue({ currentData: events, isLoading: false, isError: false })
       })
 
       it('should render the empty state because no upcoming events remain after filtering', () => {
@@ -836,7 +836,7 @@ describe('AllExperiences', () => {
     describe('and the user signs out while ?tab=my is active', () => {
       beforeEach(() => {
         mockSearchParams = new URLSearchParams('tab=my')
-        mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+        mockUseGetEventsQuery.mockReturnValue({ currentData: [], isLoading: false, isError: false })
       })
 
       it('should strip the tab param instead of redirecting to auth, so the user falls back to All gracefully', () => {
@@ -868,7 +868,7 @@ describe('AllExperiences', () => {
             next_finish_at: '2026-09-20T16:00:00Z'
           })
         ]
-        mockUseGetEventsQuery.mockReturnValue({ data: events, isLoading: false, isError: false })
+        mockUseGetEventsQuery.mockReturnValue({ currentData: events, isLoading: false, isError: false })
       })
 
       it('should surface the recurrent event using its upcoming occurrence instead of the past start_at', () => {
@@ -888,7 +888,9 @@ describe('AllExperiences', () => {
         mockUseAuthIdentity.mockReturnValue({ identity: { authChain: [] }, hasValidIdentity: true, address: '' })
         mockSearchParams = new URLSearchParams('tab=my')
         mockUseGetEventsQuery.mockReturnValue({
-          data: [createMockEvent({ id: 'mine', user: '0xCreator', start_at: '2026-09-20T14:00:00Z', finish_at: '2026-09-20T16:00:00Z' })],
+          currentData: [
+            createMockEvent({ id: 'mine', user: '0xCreator', start_at: '2026-09-20T14:00:00Z', finish_at: '2026-09-20T16:00:00Z' })
+          ],
           isLoading: false,
           isError: false
         })
@@ -908,7 +910,7 @@ describe('AllExperiences', () => {
     beforeEach(() => {
       mockColumnCount.mockReturnValue(3)
       mockUseAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
-      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: [], isLoading: false, isError: false })
     })
 
     it('should reset the visible day window when a visibilitychange fires after midnight', () => {
@@ -945,7 +947,7 @@ describe('AllExperiences', () => {
       mockColumnCount.mockReturnValue(3)
       mockUseAuthIdentity.mockReturnValue({ identity: { authChain: [] }, hasValidIdentity: true, address: '0xCreator' })
       mockSearchParams = new URLSearchParams('tab=my')
-      mockUseGetEventsQuery.mockReturnValue({ data: [], isLoading: false, isError: false })
+      mockUseGetEventsQuery.mockReturnValue({ currentData: [], isLoading: false, isError: false })
       scrollIntoViewMock = jest.fn()
       // jsdom does not implement scrollIntoView.
       Element.prototype.scrollIntoView = scrollIntoViewMock

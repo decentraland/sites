@@ -146,4 +146,4 @@ function useWalletAddress(): WalletState {
   )
 }
 
-export { disconnectWallet, useWalletAddress }
+export { disconnectWallet, getSnapshot as getWalletAddress, subscribe as subscribeWalletAddress, useWalletAddress }
